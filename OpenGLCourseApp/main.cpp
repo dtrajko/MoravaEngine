@@ -20,6 +20,7 @@ GLuint VBO;
 GLuint IBO;
 GLuint programID;
 GLuint uniformModel;
+GLuint uniformProjection;
 
 // Translation
 bool direction = true;
@@ -42,12 +43,13 @@ static const char* vShader = R"(
 layout (location = 0) in vec3 pos;
 
 uniform mat4 model;
+uniform mat4 projection;
 
 out vec4 v_Color;
 
 void main()
 {
-	gl_Position = model * vec4(pos, 1.0);
+	gl_Position = projection * model * vec4(pos, 1.0);
 	v_Color = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);
 }
 )";
@@ -178,6 +180,7 @@ void CompileShaders()
 	}
 
 	uniformModel = glGetUniformLocation(programID, "model");
+	uniformProjection = glGetUniformLocation(programID, "projection");
 
 	printf("Shader program validation complete.\n");
 }
@@ -239,6 +242,14 @@ int main()
 	CreateTriangle();
 	CompileShaders();
 
+	// Projection matrix
+	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)bufferWidth / (GLfloat)bufferHeight, 0.1f, 100.0f);
+	glUseProgram(programID);
+	{
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+	}
+	glUseProgram(0);
+
 	// Loop until window closed
 	while (!glfwWindowShouldClose(mainWindow))
 	{
@@ -284,12 +295,13 @@ int main()
 
 		glUseProgram(programID);
 		{
+			// Model matrix
 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+			model = glm::translate(model, glm::vec3(0.0f, 0.0f, -2.0f));
 			model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 			model = glm::rotate(model, currentAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-			model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+			model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.75f));
 
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 
