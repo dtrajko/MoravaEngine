@@ -31,7 +31,7 @@ bool sizeDirection = true;
 // Scale
 float currentSize = 0.5f;
 float maxSize = 0.8f;
-float minSize = 0.2;
+float minSize = 0.2f;
 
 
 // Vertex shader
@@ -42,12 +42,12 @@ layout (location = 0) in vec3 pos;
 
 uniform mat4 model;
 
-out vec4 v_Position;
+out vec4 v_Color;
 
 void main()
 {
-	v_Position = model * vec4(pos, 1.0);
 	gl_Position = model * vec4(pos, 1.0);
+	v_Color = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);
 }
 )";
 
@@ -55,13 +55,13 @@ void main()
 static const char* fShader = R"(
 #version 330
 
-in vec4 v_Position;
+in vec4 v_Color;
 
 out vec4 color;
 
 void main()
 {
-	color = (v_Position + 1.0) / 2.0;
+	color = v_Color;
 }
 )";
 
@@ -268,10 +268,11 @@ int main()
 		glUseProgram(programID);
 		{
 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(triangleOffset, 0.0f, 0.0f));
-			model = glm::rotate(model, currentAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::rotate(model, currentAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-			model = glm::scale(model, glm::vec3(currentSize, currentSize, 1.0f));
+			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+			model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+			model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+			model = glm::scale(model, glm::vec3(0.5f, 0.5f, 1.0f));
 
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 
