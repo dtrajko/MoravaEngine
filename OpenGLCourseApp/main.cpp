@@ -19,11 +19,19 @@ GLuint VAO;
 GLuint VBO;
 GLuint programID;
 GLuint uniformModel;
+
+// Translation
 bool direction = true;
 float triangleOffset = 0.0f;
 float triangleMaxOffset = 0.5f;
 float triangleIncrement = 0.0005f;
+// Rotation
 float currentAngle = 0.0f;
+bool sizeDirection = true;
+// Scale
+float currentSize = 0.5f;
+float maxSize = 0.8f;
+float minSize = 0.2;
 
 
 // Vertex shader
@@ -220,6 +228,7 @@ int main()
 		// Get and handle user input events
 		glfwPollEvents();
 
+		// Translation
 		if (direction)
 		{
 			triangleOffset += triangleIncrement;
@@ -234,9 +243,23 @@ int main()
 			direction = !direction;
 		}
 
+		// Rotation
 		currentAngle += 0.05f;
 		if (currentAngle >= 360.0f)
 			currentAngle -= 360.0f;
+
+		// Scale
+		if (sizeDirection)
+		{
+			currentSize += 0.0001f;
+		}
+		else
+		{
+			currentSize -= 0.0001f;
+		}
+
+		if (currentSize >= maxSize || currentSize <= minSize)
+			sizeDirection = !sizeDirection;
 
 		// Clear the window
 		glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
@@ -248,7 +271,7 @@ int main()
 			model = glm::translate(model, glm::vec3(triangleOffset, 0.0f, 0.0f));
 			model = glm::rotate(model, currentAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 			model = glm::rotate(model, currentAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-			model = glm::scale(model, glm::vec3(0.5f));
+			model = glm::scale(model, glm::vec3(currentSize, currentSize, 1.0f));
 
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 
