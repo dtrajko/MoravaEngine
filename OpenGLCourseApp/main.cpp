@@ -31,14 +31,14 @@ static const char* vShader = R"(
 
 layout (location = 0) in vec3 pos;
 
-uniform float xMove;
+uniform mat4 model;
 
-out vec3 v_Position;
+out vec4 v_Position;
 
 void main()
 {
-	v_Position = pos;
-	gl_Position = vec4(0.5 * pos.x + xMove, 0.5 * pos.y, pos.z, 1.0);
+	v_Position = model * vec4(pos, 1.0);
+	gl_Position = model * vec4(pos / 2, 1.0);
 }
 )";
 
@@ -46,13 +46,13 @@ void main()
 static const char* fShader = R"(
 #version 330
 
-in vec3 v_Position;
+in vec4 v_Position;
 
 out vec4 color;
 
 void main()
 {
-	color = vec4((v_Position + 1.0) / 2.0, 1.0);
+	color = (v_Position + 1.0) / 2.0;
 }
 )";
 
@@ -153,7 +153,7 @@ void CompileShaders()
 		return;
 	}
 
-	uniformModel = glGetUniformLocation(programID, "xMove");
+	uniformModel = glGetUniformLocation(programID, "model");
 
 	printf("Shader program validation complete.\n");
 }
@@ -233,13 +233,16 @@ int main()
 			direction = !direction;
 		}
 
-		// Clear window
+		// Clear the window
 		glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(programID);
 		{
-			glUniform1f(uniformModel, triangleOffset);
+			glm::mat4 model;
+			model = glm::translate(glm::mat4(1.0f), glm::vec3(triangleOffset, triangleOffset, 0.0f));
+
+			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 
 			glBindVertexArray(VAO);
 			{
