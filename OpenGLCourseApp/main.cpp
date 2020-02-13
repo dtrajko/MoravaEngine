@@ -13,6 +13,7 @@
 // Window dimensions
 const GLint WIDTH = 1280;
 const GLint HEIGHT = 720;
+const float toRadians = 3.14159265f / 180.0f;
 
 GLuint VAO;
 GLuint VBO;
@@ -20,9 +21,9 @@ GLuint programID;
 GLuint uniformModel;
 bool direction = true;
 float triangleOffset = 0.0f;
-float triangleMaxOffset = 1.0f;
+float triangleMaxOffset = 0.5f;
 float triangleIncrement = 0.0005f;
-
+float currentAngle = 0.0f;
 
 
 // Vertex shader
@@ -38,7 +39,7 @@ out vec4 v_Position;
 void main()
 {
 	v_Position = model * vec4(pos, 1.0);
-	gl_Position = model * vec4(pos / 2, 1.0);
+	gl_Position = model * vec4(pos, 1.0);
 }
 )";
 
@@ -233,14 +234,21 @@ int main()
 			direction = !direction;
 		}
 
+		currentAngle += 0.05f;
+		if (currentAngle >= 360.0f)
+			currentAngle -= 360.0f;
+
 		// Clear the window
 		glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(programID);
 		{
-			glm::mat4 model;
-			model = glm::translate(glm::mat4(1.0f), glm::vec3(triangleOffset, triangleOffset, 0.0f));
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(triangleOffset, 0.0f, 0.0f));
+			model = glm::rotate(model, currentAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, currentAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+			model = glm::scale(model, glm::vec3(0.5f));
 
 			glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 
