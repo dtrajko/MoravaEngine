@@ -16,8 +16,9 @@ public:
 	void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);
 	std::string ReadFile(const char* fileLocation);
 	GLuint GetProgramID();
-	GLuint GetProjectionLocation();
 	GLuint GetModelLocation();
+	GLuint GetViewLocation();
+	GLuint GetProjectionLocation();
 	void Bind();
 	void Unbind();
 	void ClearShader();
@@ -31,7 +32,8 @@ private:
 private:
 	GLuint programID;
 	GLuint shaderID;
-	GLuint uniformProjection;
 	GLuint uniformModel;
+	GLuint uniformView;
+	GLuint uniformProjection;
 
 };

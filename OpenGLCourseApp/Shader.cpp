@@ -51,14 +51,19 @@ GLuint Shader::GetProgramID()
 	return programID;
 }
 
-GLuint Shader::GetProjectionLocation()
-{
-	return uniformProjection;
-}
-
 GLuint Shader::GetModelLocation()
 {
 	return uniformModel;
+}
+
+GLuint Shader::GetViewLocation()
+{
+	return uniformView;
+}
+
+GLuint Shader::GetProjectionLocation()
+{
+	return uniformProjection;
 }
 
 void Shader::Bind()
@@ -80,6 +85,7 @@ void Shader::ClearShader()
 	}
 
 	uniformModel = 0;
+	uniformView = 0;
 	uniformProjection = 0;
 }
 
@@ -125,6 +131,7 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 	}
 
 	uniformModel = glGetUniformLocation(programID, "model");
+	uniformView = glGetUniformLocation(programID, "view");
 	uniformProjection = glGetUniformLocation(programID, "projection");
 
 	printf("Shader program validation complete.\n");

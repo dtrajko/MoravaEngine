@@ -46,5 +46,6 @@ private:
 	static void handleMouse(GLFWwindow* window, double xPos, double yPos);
 	static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 	static void cursorEnterCallback(GLFWwindow* window, int entered);
+	static void windowSizeCallback(GLFWwindow* window, int width, int height);
 
 };

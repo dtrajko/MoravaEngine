@@ -87,6 +87,7 @@ void Window::CreateCallbacks()
 	glfwSetCursorPosCallback(mainWindow, handleMouse);
 	glfwSetMouseButtonCallback(mainWindow, mouseButtonCallback);
 	glfwSetCursorEnterCallback(mainWindow, cursorEnterCallback);
+	glfwSetWindowSizeCallback(mainWindow, windowSizeCallback);
 }
 
 void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
@@ -95,7 +96,7 @@ void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int m
 
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
-		// glfwSetWindowShouldClose(window, GL_TRUE);
+		glfwSetWindowShouldClose(window, GL_TRUE);
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 
@@ -104,12 +105,12 @@ void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int m
 		if (action == GLFW_PRESS)
 		{
 			theWindow->keys[key] = true;
-			printf("Key pressed: %d\n", key);
+			// printf("Key pressed: %d\n", key);
 		}
 		else if (action == GLFW_RELEASE)
 		{
 			theWindow->keys[key] = false;
-			printf("Key released: %d\n", key);
+			// printf("Key released: %d\n", key);
 		}
 	}
 }
@@ -131,7 +132,7 @@ void Window::handleMouse(GLFWwindow* window, double xPos, double yPos)
 	theWindow->lastX = (GLfloat)xPos;
 	theWindow->lastY = (GLfloat)yPos;
 
-	printf("x:%.2f, y:%.2f\n", theWindow->xChange, theWindow->yChange);
+	// printf("x:%.2f, y:%.2f\n", theWindow->xChange, theWindow->yChange);
 }
 
 void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
@@ -143,12 +144,12 @@ void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
 		if (action == GLFW_PRESS)
 		{
 			theWindow->buttons[button] = true;
-			printf("Mouse button pressed: %d\n", button);
+			// printf("Mouse button pressed: %d\n", button);
 		}
 		else if (action == GLFW_RELEASE)
 		{
 			theWindow->buttons[button] = false;
-			printf("Mouse button released: %d\n", button);
+			// printf("Mouse button released: %d\n", button);
 		}
 	}
 
@@ -166,6 +167,16 @@ void Window::cursorEnterCallback(GLFWwindow* window, int entered)
 		theWindow->mouseCursorAboveWindow = true;
 	else
 		theWindow->mouseCursorAboveWindow = false;
+}
+
+void Window::windowSizeCallback(GLFWwindow* window, int width, int height)
+{
+	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	theWindow->width = width;
+	theWindow->height = height;
+	glfwGetFramebufferSize(window, &theWindow->bufferWidth, &theWindow->bufferHeight);
+	glViewport(0, 0, theWindow->bufferWidth, theWindow->bufferHeight);
 }
 
 GLfloat Window::getXChange()
