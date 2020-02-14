@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 
+
 class Window
 {
 public:
@@ -14,14 +15,36 @@ public:
 	inline GLfloat GetBufferWidth() { return (GLfloat)bufferWidth; };
 	inline GLfloat GetBufferHeight() { return (GLfloat)bufferHeight; };
 	bool GetShouldClose() { return glfwWindowShouldClose(mainWindow); };
+	bool* getKeys() { return keys; };
+	bool* getMouseButtons() { return buttons; };
+	GLfloat getXChange();
+	GLfloat getYChange();
 	void SwapBuffers() { glfwSwapBuffers(mainWindow); };
 	~Window();
 
 private:
 	GLFWwindow* mainWindow;
+
 	GLint width;
 	GLint height;
 	GLsizei bufferWidth;
 	GLsizei bufferHeight;
+
+	bool keys[1024];
+	bool buttons[32];
+
+	GLfloat lastX;
+	GLfloat lastY;
+	GLfloat xChange;
+	GLfloat yChange;
+	bool mouseFirstMoved;
+	bool mouseCursorAboveWindow;
+
+	void CreateCallbacks();
+
+	static void handleKeys(GLFWwindow* window, int key, int code, int action, int mode);
+	static void handleMouse(GLFWwindow* window, double xPos, double yPos);
+	static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+	static void cursorEnterCallback(GLFWwindow* window, int entered);
 
 };
