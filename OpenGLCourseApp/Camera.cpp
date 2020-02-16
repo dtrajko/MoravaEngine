@@ -66,7 +66,7 @@ glm::mat4 Camera::CalculateViewMatrix()
 
 void Camera::update()
 {
-	printf("Pitch: %.2f, Yaw: %.2f\n", pitch, yaw);
+	// printf("Pitch: %.2f, Yaw: %.2f\n", pitch, yaw);
 
 	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 	front.y = sin(glm::radians(pitch));

@@ -1,3 +1,5 @@
+#define STB_IMAGE_IMPLEMENTATION
+
 #include <stdio.h>
 #include <string.h>
 #include <cmath>
@@ -13,6 +15,7 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "Camera.h"
+#include "Texture.h"
 
 
 
@@ -27,21 +30,25 @@ std::vector <Shader*> shaderList;
 
 Camera camera;
 
+Texture brickTexture;
+Texture dirtTexture;
+
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
 
-static const char* vShader = "shaders/shader.vert";
-static const char* fShader = "shaders/shader.frag";
+static const char* vShader = "Shaders/shader.vert";
+static const char* fShader = "Shaders/shader.frag";
 
 
 void CreateObjects()
 {
 	GLfloat vertices[] =
 	{
-		-1.0f, -1.0f, 0.0f,
-		 0.0f, -1.0f, 1.0f,
-		 1.0f, -1.0f, 0.0f,
-		 0.0f,  1.0f, 0.0f,
+		//  X      Y     Z      U     V
+		-1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
+		 0.0f, -1.0f, 1.0f,  0.5f, 0.0f,
+		 1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
+		 0.0f,  1.0f, 0.0f,  0.5f, 1.0f,
 	};
 
 	unsigned int indices[] =
@@ -78,6 +85,11 @@ int main()
 	CreateShaders();
 
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 2.0f, 0.1f);
+
+	brickTexture = Texture("Textures/brick.png");
+	brickTexture.LoadTexture();
+	dirtTexture = Texture("Textures/dirt.png");
+	dirtTexture.LoadTexture();
 
 	GLuint uniformModel = 0;
 	GLuint uniformView = 0;
@@ -121,7 +133,7 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-
+		brickTexture.UseTexture();
 		meshList[0]->RenderMesh();
 
 		model = glm::mat4(1.0f);
@@ -133,6 +145,7 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		dirtTexture.UseTexture();
 		meshList[1]->RenderMesh();
 
 		shaderList[0]->Unbind();
