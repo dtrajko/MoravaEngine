@@ -1,13 +1,13 @@
 #version 330
 
-in vec4 v_Color;
-in vec2 v_TexCoord;
+in vec4 vCol;
+in vec2 TexCoord;
 
 out vec4 color;
 
-uniform sampler2D u_Texture;
+uniform sampler2D theTexture;
 
 void main()
 {
-	color = texture(u_Texture, v_TexCoord);
+	color = texture(theTexture, TexCoord);
 }
