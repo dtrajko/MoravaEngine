@@ -51,19 +51,29 @@ GLuint Shader::GetProgramID()
 	return programID;
 }
 
-GLuint Shader::GetModelLocation()
+GLint Shader::GetModelLocation()
 {
 	return uniformModel;
 }
 
-GLuint Shader::GetViewLocation()
+GLint Shader::GetViewLocation()
 {
 	return uniformView;
 }
 
-GLuint Shader::GetProjectionLocation()
+GLint Shader::GetProjectionLocation()
 {
 	return uniformProjection;
+}
+
+GLint Shader::GetUniformAmbientColorLocation()
+{
+	return uniformAmbientColor;
+}
+
+GLint Shader::GetUniformAmbientIntensityLocation()
+{
+	return uniformAmbientIntensity;
 }
 
 void Shader::Bind()
@@ -133,6 +143,8 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 	uniformModel = glGetUniformLocation(programID, "model");
 	uniformView = glGetUniformLocation(programID, "view");
 	uniformProjection = glGetUniformLocation(programID, "projection");
+	uniformAmbientColor = glGetUniformLocation(programID, "directionalLight.color");
+	uniformAmbientIntensity = glGetUniformLocation(programID, "directionalLight.ambientIntensity");
 
 	printf("Shader program validation complete.\n");
 }
