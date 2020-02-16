@@ -2,6 +2,7 @@
 
 in vec4 vCol;
 in vec2 TexCoord;
+in vec3 Norma;
 
 out vec4 color;
 

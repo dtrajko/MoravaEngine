@@ -21,6 +21,8 @@ public:
 	GLint GetProjectionLocation();
 	GLint GetUniformAmbientColorLocation();
 	GLint GetUniformAmbientIntensityLocation();
+	GLint GetUniformDiffuseDirectionLocation();
+	GLint GetUniformDiffuseIntensityLocation();
 
 	void Bind();
 	void Unbind();
@@ -35,10 +37,14 @@ private:
 private:
 	GLuint programID;
 	GLint shaderID;
+
+	// Locations of uniform variables
 	GLint uniformModel;
 	GLint uniformView;
 	GLint uniformProjection;
 	GLint uniformAmbientColor;
 	GLint uniformAmbientIntensity;
+	GLint uniformDiffuseDirection;
+	GLint uniformDiffuseIntensity;
 
 };

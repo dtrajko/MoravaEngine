@@ -93,13 +93,15 @@ int main()
 	dirtTexture = Texture("Textures/dirt.png");
 	dirtTexture.LoadTexture();
 
-	mainLight = Light(1.0f, 1.0f, 1.0f, 1.0f);
+	mainLight = Light(1.0f, 1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f);
 
 	GLint uniformModel = 0;
 	GLint uniformView = 0;
 	GLint uniformProjection = 0;
 	GLint uniformAmbientColor = 0;
 	GLint uniformAmbientIntensity = 0;
+	GLint uniformDiffuseDirection = 0;
+	GLint uniformDiffuseIntensity = 0;
 
 	// Projection matrix
 	glm::mat4 projection = glm::perspective(45.0f, mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 100.0f);
@@ -115,7 +117,7 @@ int main()
 		glfwPollEvents();
 
 		camera.keyControl(mainWindow.getKeys(), deltaTime);
-		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+		camera.mouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
 
 		// Clear the window
 		glClearColor(0.2f, 0.0f, 0.2f, 1.0f);
@@ -127,8 +129,10 @@ int main()
 		uniformView = shaderList[0]->GetViewLocation();
 		uniformAmbientColor = shaderList[0]->GetUniformAmbientColorLocation();
 		uniformAmbientIntensity = shaderList[0]->GetUniformAmbientIntensityLocation();
+		uniformDiffuseDirection = shaderList[0]->GetUniformDiffuseDirectionLocation();
+		uniformDiffuseIntensity = shaderList[0]->GetUniformDiffuseIntensityLocation();
 
-		mainLight.UseLight(uniformAmbientColor, uniformAmbientIntensity);
+		mainLight.UseLight(uniformAmbientColor, uniformAmbientIntensity, uniformDiffuseDirection, uniformDiffuseIntensity);
 
 		// Model matrix
 		glm::mat4 model = glm::mat4(1.0f);

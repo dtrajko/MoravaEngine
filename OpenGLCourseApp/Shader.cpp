@@ -76,6 +76,16 @@ GLint Shader::GetUniformAmbientIntensityLocation()
 	return uniformAmbientIntensity;
 }
 
+GLint Shader::GetUniformDiffuseDirectionLocation()
+{
+	return uniformDiffuseDirection;
+}
+
+GLint Shader::GetUniformDiffuseIntensityLocation()
+{
+	return uniformDiffuseIntensity;
+}
+
 void Shader::Bind()
 {
 	glUseProgram(programID);

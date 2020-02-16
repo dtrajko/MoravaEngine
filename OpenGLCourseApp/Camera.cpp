@@ -50,12 +50,15 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime)
 	}
 }
 
-void Camera::mouseControl(GLfloat xChange, GLfloat yChange)
+void Camera::mouseControl(bool* buttons, GLfloat xChange, GLfloat yChange)
 {
-	yaw += xChange * turnSpeed;
-	pitch += yChange * turnSpeed;
+	if (buttons[GLFW_MOUSE_BUTTON_RIGHT])
+	{
+		yaw += xChange * turnSpeed;
+		pitch += yChange * turnSpeed;
 
-	update();
+		update();
+	}
 }
 
 glm::mat4 Camera::CalculateViewMatrix()
