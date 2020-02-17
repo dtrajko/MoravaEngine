@@ -31,7 +31,7 @@ std::vector <Shader*> shaderList;
 Camera camera;
 
 Texture brickTexture;
-Texture dirtTexture;
+Texture pyramidTexture;
 
 Light mainLight;
 
@@ -79,33 +79,48 @@ void CreateObjects()
 {
 	GLfloat vertices[] =
 	{
-		//  X      Y     Z       U     V      NX     NY    NZ
-		-1.0f, -1.0f, 0.0f,   0.0f, 0.0f,  -1.0f, -1.0f, 0.0f,
-		 0.0f, -1.0f, 1.0f,   0.5f, 0.0f,   0.0f, -1.0f, 1.0f,
-		 1.0f, -1.0f, 0.0f,   1.0f, 0.0f,   1.0f, -1.0f, 0.0f,
-		 0.0f,  1.0f, 0.0f,   0.5f, 1.0f,   0.0f,  1.0f, 0.0f,
+		//  X      Y      Z       U     V       NX     NY     NZ
+		-1.0f, -1.0f,  1.0f,   0.0f, 0.0f,   -1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,   1.0f, 0.0f,    1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,   1.0f, 0.0f,   -1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,   0.0f, 0.0f,    1.0f, -1.0f, -1.0f,
+		 0.0f,  1.0f,  0.0f,   0.5f, 1.0f,    0.0f,  1.0f,  0.0f,
+
+		// -1.0f, -1.0f, 0.0f,   0.0f, 0.0f,  -1.0f, -1.0f, 0.0f,
+		//  0.0f, -1.0f, 1.0f,   0.5f, 0.0f,   0.0f, -1.0f, 1.0f,
+		//  1.0f, -1.0f, 0.0f,   1.0f, 0.0f,   1.0f, -1.0f, 0.0f,
+		//  0.0f,  1.0f, 0.0f,   0.5f, 1.0f,   0.0f,  1.0f, 0.0f,
 	};
 
-	unsigned int vertexCount = 32;
+	unsigned int vertexCount = 40; // 32
 
 	printf("Size of vertices array: %.2d\n", vertexCount);
 
 	unsigned int indices[] =
 	{
-		0, 3, 1,
-		1, 3, 2,
-		2, 3, 0,
 		0, 1, 2,
+		2, 1, 3,
+		1, 3, 4,
+		3, 4, 2,
+		4, 2, 0,
+		0, 1, 4,
+
+		// 0, 3, 1,
+		// 1, 3, 2,
+		// 2, 3, 0,
+		// 0, 1, 2,
 	};
 
-	calcAverageNormals(indices, 12, vertices, vertexCount, 8, 5);
+	unsigned int indexCount = 18; // 12
+
+	calcAverageNormals(indices, indexCount, vertices, vertexCount, 8, 5);
 
 	Mesh* obj1 = new Mesh();
-	obj1->CreateMesh(vertices, indices, vertexCount, 12);
+	obj1->CreateMesh(vertices, indices, vertexCount, indexCount);
 	meshList.push_back(obj1);
 
 	Mesh* obj2 = new Mesh();
-	obj2->CreateMesh(vertices, indices, vertexCount, 12);
+	obj2->CreateMesh(vertices, indices, vertexCount, indexCount);
 	meshList.push_back(obj2);
 }
 
@@ -129,12 +144,12 @@ int main()
 
 	brickTexture = Texture("Textures/brick.png");
 	brickTexture.LoadTexture();
-	dirtTexture = Texture("Textures/dirt.png");
-	dirtTexture.LoadTexture();
+	pyramidTexture = Texture("Textures/pyramid.png");
+	pyramidTexture.LoadTexture();
 
 	mainLight = Light(
-		1.0f, 1.0f, 1.0f, 0.2f,
-		2.0f, -1.0f, -2.0f, 1.0f);
+		 1.0f, 1.0f, 1.0f, 0.2f,
+		-3.0f, -1.0f, 3.0f, 1.0f);
 
 	GLint uniformModel = 0;
 	GLint uniformView = 0;
@@ -179,11 +194,11 @@ int main()
 		glm::mat4 model = glm::mat4(1.0f);
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-0.6f, 0.0f, -3.0f));
+		model = glm::translate(model, glm::vec3(-0.8f, 0.0f, -2.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.75f));
+		model = glm::scale(model, glm::vec3(0.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
@@ -191,15 +206,15 @@ int main()
 		meshList[0]->RenderMesh();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.6f, 0.0f, -3.0f));
+		model = glm::translate(model, glm::vec3(0.8f, 0.0f, -2.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.75f));
+		model = glm::scale(model, glm::vec3(0.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		dirtTexture.UseTexture();
+		pyramidTexture.UseTexture();
 		meshList[1]->RenderMesh();
 
 		shaderList[0]->Unbind();
