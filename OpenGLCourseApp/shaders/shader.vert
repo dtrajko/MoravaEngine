@@ -17,5 +17,5 @@ void main()
 	gl_Position = projection * view * model * vec4(pos, 1.0);
 	vCol = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);
 	TexCoord = tex;
-	Normal = mat3(model) * norm; // mat3 - normal depends on model's rotation and scale
+	Normal = mat3(transpose(inverse(model))) * norm; // mat3 - normal depends on model's rotation and scale
 }

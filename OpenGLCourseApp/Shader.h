@@ -21,7 +21,7 @@ public:
 	GLint GetProjectionLocation();
 	GLint GetUniformAmbientColorLocation();
 	GLint GetUniformAmbientIntensityLocation();
-	GLint GetUniformDiffuseDirectionLocation();
+	GLint GetUniformDirectionLocation();
 	GLint GetUniformDiffuseIntensityLocation();
 
 	void Bind();
@@ -44,7 +44,7 @@ private:
 	GLint uniformProjection;
 	GLint uniformAmbientColor;
 	GLint uniformAmbientIntensity;
-	GLint uniformDiffuseDirection;
+	GLint uniformDirection;
 	GLint uniformDiffuseIntensity;
 
 };

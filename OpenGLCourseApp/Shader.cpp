@@ -76,14 +76,14 @@ GLint Shader::GetUniformAmbientIntensityLocation()
 	return uniformAmbientIntensity;
 }
 
-GLint Shader::GetUniformDiffuseDirectionLocation()
-{
-	return uniformDiffuseDirection;
-}
-
 GLint Shader::GetUniformDiffuseIntensityLocation()
 {
 	return uniformDiffuseIntensity;
+}
+
+GLint Shader::GetUniformDirectionLocation()
+{
+	return uniformDirection;
 }
 
 void Shader::Bind()
@@ -155,6 +155,8 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 	uniformProjection = glGetUniformLocation(programID, "projection");
 	uniformAmbientColor = glGetUniformLocation(programID, "directionalLight.color");
 	uniformAmbientIntensity = glGetUniformLocation(programID, "directionalLight.ambientIntensity");
+	uniformDirection = glGetUniformLocation(programID, "directionalLight.direction");
+	uniformDiffuseIntensity = glGetUniformLocation(programID, "directionalLight.diffuseIntensity");
 
 	printf("Shader program validation complete.\n");
 }
