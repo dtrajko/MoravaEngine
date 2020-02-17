@@ -19,10 +19,13 @@ public:
 	GLint GetModelLocation();
 	GLint GetViewLocation();
 	GLint GetProjectionLocation();
-	GLint GetUniformAmbientColorLocation();
-	GLint GetUniformAmbientIntensityLocation();
-	GLint GetUniformDirectionLocation();
-	GLint GetUniformDiffuseIntensityLocation();
+	GLint GetUniformLocationEyePosition();
+	GLint GetUniformLocationAmbientColor();
+	GLint GetUniformLocationAmbientIntensity();
+	GLint GetUniformLocationLightDirection();
+	GLint GetUniformLocationDiffuseIntensity();
+	GLint GetUniformLocationSpecularIntensity();
+	GLint GetUniformLocationShininess();
 
 	void Bind();
 	void Unbind();
@@ -42,9 +45,13 @@ private:
 	GLint uniformModel;
 	GLint uniformView;
 	GLint uniformProjection;
+	GLint uniformEyePosition;
+
 	GLint uniformAmbientColor;
 	GLint uniformAmbientIntensity;
-	GLint uniformDirection;
+	GLint uniformLightDirection;
 	GLint uniformDiffuseIntensity;
+	GLint uniformSpecularIntensity;
+	GLint uniformShininess;
 
 };

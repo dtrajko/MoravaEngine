@@ -17,6 +17,7 @@
 #include "Camera.h"
 #include "Texture.h"
 #include "Light.h"
+#include "Material.h"
 
 
 // Window dimensions
@@ -32,6 +33,9 @@ Camera camera;
 
 Texture brickTexture;
 Texture pyramidTexture;
+
+Material shinyMaterial;
+Material dullMaterial;
 
 Light mainLight;
 
@@ -80,10 +84,10 @@ void CreateObjects()
 	GLfloat vertices[] =
 	{
 		//  X      Y      Z       U     V       NX     NY     NZ
-		-1.0f, -1.0f,  1.0f,   0.0f, 0.0f,   -1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f,  1.0f,   1.0f, 0.0f,    1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f, -1.0f,   1.0f, 0.0f,   -1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,   0.0f, 0.0f,    1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,   1.0f, 0.0f,   -1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,   0.0f, 0.0f,    1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,   1.0f, 1.0f,   -1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,   0.0f, 1.0f,    1.0f, -1.0f, -1.0f,
 		 0.0f,  1.0f,  0.0f,   0.5f, 1.0f,    0.0f,  1.0f,  0.0f,
 
 		// -1.0f, -1.0f, 0.0f,   0.0f, 0.0f,  -1.0f, -1.0f, 0.0f,
@@ -147,17 +151,23 @@ int main()
 	pyramidTexture = Texture("Textures/pyramid.png");
 	pyramidTexture.LoadTexture();
 
+	shinyMaterial = Material(1.0f, 32.0f);
+	dullMaterial = Material(1.0f, 64.0f);
+
 	mainLight = Light(
 		 1.0f, 1.0f, 1.0f, 0.2f,
-		-3.0f, -1.0f, 3.0f, 1.0f);
+		-2.0f, -1.0f, 2.0f, 0.3f);
 
 	GLint uniformModel = 0;
 	GLint uniformView = 0;
 	GLint uniformProjection = 0;
+	GLint uniformEyePosition = 0;
 	GLint uniformAmbientColor = 0;
 	GLint uniformAmbientIntensity = 0;
-	GLint uniformDirection = 0;
+	GLint uniformLightDirection = 0;
 	GLint uniformDiffuseIntensity = 0;
+	GLint uniformSpecularIntensity = 0;
+	GLint uniformShininess = 0;
 
 	// Projection matrix
 	glm::mat4 projection = glm::perspective(45.0f, mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 100.0f);
@@ -180,41 +190,46 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shaderList[0]->Bind();
-		uniformModel = shaderList[0]->GetModelLocation();
-		uniformProjection = shaderList[0]->GetProjectionLocation();
-		uniformView = shaderList[0]->GetViewLocation();
-		uniformAmbientColor = shaderList[0]->GetUniformAmbientColorLocation();
-		uniformAmbientIntensity = shaderList[0]->GetUniformAmbientIntensityLocation();
-		uniformDirection = shaderList[0]->GetUniformDirectionLocation();
-		uniformDiffuseIntensity = shaderList[0]->GetUniformDiffuseIntensityLocation();
+		uniformModel             = shaderList[0]->GetModelLocation();
+		uniformProjection        = shaderList[0]->GetProjectionLocation();
+		uniformView              = shaderList[0]->GetViewLocation();
+		uniformEyePosition       = shaderList[0]->GetUniformLocationEyePosition();
+		uniformAmbientColor      = shaderList[0]->GetUniformLocationAmbientColor();
+		uniformAmbientIntensity  = shaderList[0]->GetUniformLocationAmbientIntensity();
+		uniformLightDirection    = shaderList[0]->GetUniformLocationLightDirection();
+		uniformDiffuseIntensity  = shaderList[0]->GetUniformLocationDiffuseIntensity();
+		uniformSpecularIntensity = shaderList[0]->GetUniformLocationSpecularIntensity();
+		uniformShininess         = shaderList[0]->GetUniformLocationShininess();
 
-		mainLight.UseLight(uniformAmbientColor, uniformAmbientIntensity, uniformDirection, uniformDiffuseIntensity);
+		mainLight.UseLight(uniformAmbientColor, uniformAmbientIntensity, uniformLightDirection, uniformDiffuseIntensity);
+
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
 		// Model matrix
-		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 model;
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-0.8f, 0.0f, -2.0f));
+		model = glm::translate(model, glm::vec3(-1.5f, 0.0f, -5.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(0.5f));
+		model = glm::scale(model, glm::vec3(1.0f, -1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
-		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		brickTexture.UseTexture();
+		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[0]->RenderMesh();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.8f, 0.0f, -2.0f));
+		model = glm::translate(model, glm::vec3(1.5f, 0.0f, -5.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(0.5f));
+		model = glm::scale(model, glm::vec3(1.0f, -1.0f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
-		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		pyramidTexture.UseTexture();
+		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[1]->RenderMesh();
 
 		shaderList[0]->Unbind();
