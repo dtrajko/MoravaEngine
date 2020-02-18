@@ -16,7 +16,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "Texture.h"
-#include "Light.h"
+#include "DirectionalLight.h"
 #include "Material.h"
 
 
@@ -37,7 +37,7 @@ Texture pyramidTexture;
 Material shinyMaterial;
 Material dullMaterial;
 
-Light mainLight;
+DirectionalLight mainLight;
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -154,9 +154,9 @@ int main()
 	shinyMaterial = Material(1.0f, 32.0f);
 	dullMaterial = Material(1.0f, 64.0f);
 
-	mainLight = Light(
-		 1.0f, 1.0f, 1.0f, 0.2f,
-		-2.0f, -1.0f, 2.0f, 0.3f);
+	mainLight = DirectionalLight(
+		1.0f, 1.0f, 1.0f, 0.2f,
+		0.3f, -2.0f, -1.0f, 2.0f);
 
 	GLint uniformModel = 0;
 	GLint uniformView = 0;
@@ -201,7 +201,7 @@ int main()
 		uniformSpecularIntensity = shaderList[0]->GetUniformLocationSpecularIntensity();
 		uniformShininess         = shaderList[0]->GetUniformLocationShininess();
 
-		mainLight.UseLight(uniformAmbientColor, uniformAmbientIntensity, uniformLightDirection, uniformDiffuseIntensity);
+		mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColor, uniformDiffuseIntensity, uniformLightDirection);
 
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
