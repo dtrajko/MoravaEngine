@@ -89,11 +89,6 @@ void CreateObjects()
 		-1.0f, -1.0f, -1.0f,   1.0f, 1.0f,   -1.0f, -1.0f, -1.0f,
 		 1.0f, -1.0f, -1.0f,   0.0f, 1.0f,    1.0f, -1.0f, -1.0f,
 		 0.0f,  1.0f,  0.0f,   0.5f, 1.0f,    0.0f,  1.0f,  0.0f,
-
-		// -1.0f, -1.0f, 0.0f,   0.0f, 0.0f,  -1.0f, -1.0f, 0.0f,
-		//  0.0f, -1.0f, 1.0f,   0.5f, 0.0f,   0.0f, -1.0f, 1.0f,
-		//  1.0f, -1.0f, 0.0f,   1.0f, 0.0f,   1.0f, -1.0f, 0.0f,
-		//  0.0f,  1.0f, 0.0f,   0.5f, 1.0f,   0.0f,  1.0f, 0.0f,
 	};
 
 	unsigned int vertexCount = 40; // 32
@@ -108,11 +103,6 @@ void CreateObjects()
 		3, 4, 2,
 		4, 2, 0,
 		0, 1, 4,
-
-		// 0, 3, 1,
-		// 1, 3, 2,
-		// 2, 3, 0,
-		// 0, 1, 2,
 	};
 
 	unsigned int indexCount = 18; // 12
@@ -160,10 +150,6 @@ int main()
 	GLint uniformView = 0;
 	GLint uniformProjection = 0;
 	GLint uniformEyePosition = 0;
-	GLint uniformAmbientColor = 0;
-	GLint uniformAmbientIntensity = 0;
-	GLint uniformLightDirection = 0;
-	GLint uniformDiffuseIntensity = 0;
 	GLint uniformSpecularIntensity = 0;
 	GLint uniformShininess = 0;
 
@@ -192,14 +178,10 @@ int main()
 		uniformProjection        = shaderList[0]->GetProjectionLocation();
 		uniformView              = shaderList[0]->GetViewLocation();
 		uniformEyePosition       = shaderList[0]->GetUniformLocationEyePosition();
-		uniformAmbientColor      = shaderList[0]->GetUniformLocationAmbientColor();
-		uniformAmbientIntensity  = shaderList[0]->GetUniformLocationAmbientIntensity();
-		uniformLightDirection    = shaderList[0]->GetUniformLocationLightDirection();
-		uniformDiffuseIntensity  = shaderList[0]->GetUniformLocationDiffuseIntensity();
 		uniformSpecularIntensity = shaderList[0]->GetUniformLocationSpecularIntensity();
 		uniformShininess         = shaderList[0]->GetUniformLocationShininess();
 
-		mainLight.UseLight(uniformAmbientColor, uniformAmbientIntensity, uniformDiffuseIntensity, uniformLightDirection);
+		shaderList[0]->SetDirectionalLight(&mainLight);
 
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));

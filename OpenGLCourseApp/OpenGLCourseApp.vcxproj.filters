@@ -74,5 +74,8 @@
     <ClInclude Include="PointLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CommonValues.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
