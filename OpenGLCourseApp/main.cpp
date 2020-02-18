@@ -11,12 +11,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "CommonValues.h"
+
 #include "Window.h"
 #include "Mesh.h"
 #include "Shader.h"
 #include "Camera.h"
 #include "Texture.h"
 #include "DirectionalLight.h"
+#include "PointLight.h"
 #include "Material.h"
 
 
@@ -38,6 +41,7 @@ Material shinyMaterial;
 Material dullMaterial;
 
 DirectionalLight mainLight;
+PointLight pointLights[MAX_POINT_LIGHTS];
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -91,7 +95,7 @@ void CreateObjects()
 		 0.0f,  1.0f,  0.0f,   0.5f, 1.0f,    0.0f,  1.0f,  0.0f,
 	};
 
-	unsigned int vertexCount = 40; // 32
+	unsigned int vertexCount = 40;
 
 	printf("Size of vertices array: %.2d\n", vertexCount);
 
@@ -116,6 +120,29 @@ void CreateObjects()
 	Mesh* obj2 = new Mesh();
 	obj2->CreateMesh(vertices, indices, vertexCount, indexCount);
 	meshList.push_back(obj2);
+
+	/* Floor Mesh */
+	GLfloat floorVertices[] =
+	{
+		-10.0f, 0.0f, -10.0f,    0.0f,  0.0f,   0.0f, -1.0f, 0.0f,
+		 10.0f, 0.0f, -10.0f,   10.0f,  0.0f,   0.0f, -1.0f, 0.0f,
+		-10.0f, 0.0f,  10.0f,    0.0f, 10.0f,   0.0f, -1.0f, 0.0f,
+		 10.0f, 0.0f,  10.0f,   10.0f, 10.0f,   0.0f, -1.0f, 0.0f,
+	};
+
+	unsigned int floorVertexCount = 32;
+
+	unsigned int floorIndices[] =
+	{
+		0, 2, 1,
+		1, 2, 3,
+	};
+
+	unsigned int floorIndexCount = 6;
+
+	Mesh* floor = new Mesh();
+	floor->CreateMesh(floorVertices, floorIndices, floorVertexCount, floorIndexCount);
+	meshList.push_back(floor);
 }
 
 void CreateShaders()
@@ -134,17 +161,25 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 2.0f, 0.1f);
+	camera = Camera(glm::vec3(0.0f, 2.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 2.0f, 0.1f);
 
 	brickTexture = Texture("Textures/brick.png");
 	brickTexture.LoadTexture();
 	pyramidTexture = Texture("Textures/pyramid.png");
 	pyramidTexture.LoadTexture();
 
-	shinyMaterial = Material(1.0f, 32.0f);
-	dullMaterial = Material(1.0f, 64.0f);
+	shinyMaterial = Material(1.0f, 64.0f);
+	dullMaterial = Material(1.0f, 32.0f);
 
-	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.2f, 0.3f, { -2.0f, -1.0f, 2.0f });
+	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.1f, 0.2f, { 0.0f, -2.0f, 4.0f });
+
+	unsigned int pointLightCount = 0;
+	pointLights[0] = PointLight({ 1.0f, 0.0f, 0.0f }, 0.1f, 1.0f, {  0.0f, 1.5f, -2.0f }, 0.3f, 0.2f, 0.1f);
+	pointLightCount++;															 
+	pointLights[1] = PointLight({ 0.0f, 1.0f, 0.0f }, 0.1f, 1.0f, { -2.0f, 1.5f, 2.0f }, 0.3f, 0.2f, 0.1f);
+	pointLightCount++;															 
+	pointLights[2] = PointLight({ 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, {  2.0f, 1.5f, 2.0f }, 0.3f, 0.2f, 0.1f);
+	pointLightCount++;
 
 	GLint uniformModel = 0;
 	GLint uniformView = 0;
@@ -182,6 +217,7 @@ int main()
 		uniformShininess         = shaderList[0]->GetUniformLocationShininess();
 
 		shaderList[0]->SetDirectionalLight(&mainLight);
+		shaderList[0]->SetPointLights(pointLights, pointLightCount);
 
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
@@ -191,26 +227,34 @@ int main()
 		glm::mat4 model;
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-1.5f, 0.0f, -5.0f));
+		model = glm::translate(model, glm::vec3(-1.5f, 2.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(1.0f, -1.0f, 1.0f));
+		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		brickTexture.UseTexture();
 		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[0]->RenderMesh();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(1.5f, 0.0f, -5.0f));
+		model = glm::translate(model, glm::vec3(1.5f, 2.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(1.0f, -1.0f, 1.0f));
+		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		pyramidTexture.UseTexture();
 		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[1]->RenderMesh();
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		pyramidTexture.UseTexture();
+		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		meshList[2]->RenderMesh();
 
 		shaderList[0]->Unbind();
 
