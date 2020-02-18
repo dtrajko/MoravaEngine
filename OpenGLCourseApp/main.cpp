@@ -199,7 +199,7 @@ int main()
 		uniformSpecularIntensity = shaderList[0]->GetUniformLocationSpecularIntensity();
 		uniformShininess         = shaderList[0]->GetUniformLocationShininess();
 
-		mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColor, uniformDiffuseIntensity, uniformLightDirection);
+		mainLight.UseLight(uniformAmbientColor, uniformAmbientIntensity, uniformDiffuseIntensity, uniformLightDirection);
 
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
