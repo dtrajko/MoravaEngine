@@ -20,6 +20,7 @@
 #include "Texture.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
+#include "SpotLight.h"
 #include "Material.h"
 
 
@@ -42,6 +43,7 @@ Material dullMaterial;
 
 DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
+SpotLight spotLights[MAX_SPOT_LIGHTS];
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -201,7 +203,7 @@ int main()
 	shinyMaterial = Material(1.0f, 128.0f);
 	dullMaterial = Material(1.0f, 64.0f);
 
-	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.1f, 0.2f, { 0.0f, -2.0f, 4.0f });
+	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.1f, 0.2f, { 1.0f, -1.0f, 1.0f });
 
 	unsigned int pointLightCount = 0;
 	pointLights[0] = PointLight({ 1.0f, 0.0f, 0.0f }, 0.1f, 1.0f, {  2.0f, 2.0f, -4.0f }, 0.3f, 0.2f, 0.1f);
@@ -210,6 +212,9 @@ int main()
 	pointLightCount++;															 
 	pointLights[2] = PointLight({ 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, {  4.0f, 2.0f, 0.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
+
+	unsigned int spotLightCount = 0;
+	// Create spot lights
 
 	GLint uniformModel = 0;
 	GLint uniformView = 0;
@@ -248,6 +253,7 @@ int main()
 
 		shaderList[0]->SetDirectionalLight(&mainLight);
 		shaderList[0]->SetPointLights(pointLights, pointLightCount);
+		shaderList[0]->SetSpotLights(spotLights, spotLightCount);
 
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));

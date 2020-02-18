@@ -11,6 +11,7 @@
 
 #include "DirectionalLight.h"
 #include "PointLight.h"
+#include "SpotLight.h"
 
 
 
@@ -37,6 +38,7 @@ public:
 
 	void SetDirectionalLight(DirectionalLight* directionalLight);
 	void SetPointLights(PointLight* pointLights, unsigned int lightCount);
+	void SetSpotLights(SpotLight* spotLights, unsigned int lightCount);
 
 	void Bind();
 	void Unbind();
@@ -50,6 +52,7 @@ private:
 
 private:
 	int pointLightCount;
+	int spotLightCount;
 
 	GLuint programID;
 	GLint shaderID;
@@ -80,6 +83,21 @@ private:
 		GLint uniformLinear;
 		GLint uniformExponent;
 	} uniformPointLight[MAX_POINT_LIGHTS];
+
+	GLint uniformSpotLightCount;
+
+	struct
+	{
+		GLint uniformColor;
+		GLint uniformAmbientIntensity;
+		GLint uniformDiffuseIntensity;
+		GLint uniformPosition;
+		GLint uniformDirection;
+		GLint uniformConstant;
+		GLint uniformLinear;
+		GLint uniformExponent;
+		GLint uniformEdge;
+	} uniformSpotLight[MAX_SPOT_LIGHTS];
 
 	GLint uniformSpecularIntensity;
 	GLint uniformShininess;

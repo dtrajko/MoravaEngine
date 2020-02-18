@@ -13,7 +13,7 @@ public:
 		GLint positionLocation, GLint constantLocation, GLint linearLocation, GLint exponentLocation);
 	~PointLight();
 
-private:
+protected:
 	glm::vec3 m_Position;
 	GLfloat m_Constant;
 	GLfloat m_Linear;
