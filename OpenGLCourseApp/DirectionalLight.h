@@ -9,9 +9,7 @@ class DirectionalLight : public Light
 public:
 	DirectionalLight();
 
-	DirectionalLight(GLfloat red, GLfloat green, GLfloat blue,
-		GLfloat ambIntensity, GLfloat diffIntensity,
-		GLfloat directionX, GLfloat directionY, GLfloat directionZ);
+	DirectionalLight(glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity, glm::vec3 direction);
 
 	void UseLight(GLint ambientIntensityLocation, GLint ambientColorLocation,
 		GLint diffuseIntensityLocation, GLint diffuseDirectionLocation);
@@ -19,7 +17,7 @@ public:
 	~DirectionalLight();
 
 private:
-	glm::vec3 direction;
+	glm::vec3 m_Direction;
 
 
 };

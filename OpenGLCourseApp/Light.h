@@ -9,12 +9,12 @@ class Light
 {
 public:
 	Light();
-	Light(GLfloat red, GLfloat green, GLfloat blue, GLfloat ambIntensity, GLfloat diffIntensity);
+	Light(glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity);
 	~Light();
 
 protected:
-	glm::vec3 color;
-	GLfloat ambientIntensity;
-	GLfloat diffuseIntensity;
+	glm::vec3 m_Color;
+	GLfloat m_AmbientIntensity;
+	GLfloat m_DiffuseIntensity;
 
 };

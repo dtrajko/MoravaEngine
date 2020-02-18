@@ -154,9 +154,7 @@ int main()
 	shinyMaterial = Material(1.0f, 32.0f);
 	dullMaterial = Material(1.0f, 64.0f);
 
-	mainLight = DirectionalLight(
-		1.0f, 1.0f, 1.0f, 0.2f,
-		0.3f, -2.0f, -1.0f, 2.0f);
+	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.2f, 0.3f, { -2.0f, -1.0f, 2.0f });
 
 	GLint uniformModel = 0;
 	GLint uniformView = 0;
