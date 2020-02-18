@@ -88,28 +88,58 @@ void CreateObjects()
 	GLfloat vertices[] =
 	{
 		//  X      Y      Z       U     V       NX     NY     NZ
-		-1.0f, -1.0f,  1.0f,   1.0f, 0.0f,   -1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f,  1.0f,   0.0f, 0.0f,    1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f, -1.0f,   1.0f, 1.0f,   -1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,   0.0f, 1.0f,    1.0f, -1.0f, -1.0f,
-		 0.0f,  1.0f,  0.0f,   0.5f, 1.0f,    0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,   1.0f, 1.0f,   -0.5f,  0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,   1.0f, 0.0f,   -0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,   0.0f, 0.0f,    0.5f, -0.5f, -0.5f,
+		 0.5f,  0.5f, -0.5f,   0.0f, 1.0f,    0.5f,  0.5f, -0.5f,
+
+		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f,   -0.5f,  0.5f,  0.5f,
+		-0.5f, -0.5f,  0.5f,   1.0f, 0.0f,   -0.5f, -0.5f,  0.5f,
+		 0.5f, -0.5f,  0.5f,   0.0f, 0.0f,    0.5f, -0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,   0.0f, 1.0f,    0.5f,  0.5f,  0.5f,
+
+		 0.5f,  0.5f, -0.5f,   1.0f, 1.0f,    0.5f,  0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,   1.0f, 0.0f,    0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f,  0.5f,   0.0f, 0.0f,    0.5f, -0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,   0.0f, 1.0f,    0.5f,  0.5f,  0.5f,
+
+		-0.5f,  0.5f, -0.5f,   1.0f, 1.0f,   -0.5f,  0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,   1.0f, 0.0f,   -0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f,  0.5f,   0.0f, 0.0f,   -0.5f, -0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f,   0.0f, 1.0f,   -0.5f,  0.5f,  0.5f,
+
+		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f,   -0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f, -0.5f,   1.0f, 0.0f,   -0.5f,  0.5f, -0.5f,
+		 0.5f,  0.5f, -0.5f,   0.0f, 0.0f,    0.5f,  0.5f, -0.5f,
+		 0.5f,  0.5f,  0.5f,   0.0f, 1.0f,    0.5f,  0.5f,  0.5f,
+
+		-0.5f, -0.5f,  0.5f,   1.0f, 1.0f,   -0.5f, -0.5f,  0.5f,
+		-0.5f, -0.5f, -0.5f,   1.0f, 0.0f,   -0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,   0.0f, 0.0f,    0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f,  0.5f,   0.0f, 1.0f,    0.5f, -0.5f,  0.5f,
 	};
 
-	unsigned int vertexCount = 40;
+	unsigned int vertexCount = 8 * 4 * 6;
 
 	printf("Size of vertices array: %.2d\n", vertexCount);
 
 	unsigned int indices[] =
 	{
-		0, 1, 2,
-		2, 1, 3,
-		1, 3, 4,
-		3, 4, 2,
-		4, 2, 0,
-		0, 1, 4,
+		 0,  1,  3,
+		 3,  1,  2,
+		 4,  5,  7,
+		 7,  5,  6,
+		 8,  9, 11,
+		11,  9, 10,
+		12, 13, 15,
+		15, 13, 14,
+		16, 17, 19,
+		19, 17, 18,
+		20, 21, 23,
+		23, 21, 22,
 	};
 
-	unsigned int indexCount = 18; // 12
+	unsigned int indexCount = 12 * 3;
 
 	calcAverageNormals(indices, indexCount, vertices, vertexCount, 8, 5);
 
@@ -168,17 +198,17 @@ int main()
 	pyramidTexture = Texture("Textures/pyramid.png");
 	pyramidTexture.LoadTexture();
 
-	shinyMaterial = Material(1.0f, 64.0f);
-	dullMaterial = Material(1.0f, 32.0f);
+	shinyMaterial = Material(1.0f, 128.0f);
+	dullMaterial = Material(1.0f, 64.0f);
 
 	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.1f, 0.2f, { 0.0f, -2.0f, 4.0f });
 
 	unsigned int pointLightCount = 0;
-	pointLights[0] = PointLight({ 1.0f, 0.0f, 0.0f }, 0.1f, 1.0f, {  0.0f, 1.5f, -2.0f }, 0.3f, 0.2f, 0.1f);
+	pointLights[0] = PointLight({ 1.0f, 0.0f, 0.0f }, 0.1f, 1.0f, {  2.0f, 2.0f, -4.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;															 
-	pointLights[1] = PointLight({ 0.0f, 1.0f, 0.0f }, 0.1f, 1.0f, { -2.0f, 1.5f, 2.0f }, 0.3f, 0.2f, 0.1f);
+	pointLights[1] = PointLight({ 0.0f, 1.0f, 0.0f }, 0.1f, 1.0f, { -2.0f, 2.0f, 2.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;															 
-	pointLights[2] = PointLight({ 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, {  2.0f, 1.5f, 2.0f }, 0.3f, 0.2f, 0.1f);
+	pointLights[2] = PointLight({ 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, {  4.0f, 2.0f, 0.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
 
 	GLint uniformModel = 0;
@@ -227,22 +257,22 @@ int main()
 		glm::mat4 model;
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-1.5f, 2.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(-2.0f, 2.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(2.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		brickTexture.UseTexture();
 		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[0]->RenderMesh();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(1.5f, 2.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(2.0f, 2.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(2.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		pyramidTexture.UseTexture();
 		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
