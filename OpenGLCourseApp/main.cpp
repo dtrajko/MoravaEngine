@@ -37,9 +37,11 @@ Camera camera;
 
 Texture brickTexture;
 Texture pyramidTexture;
+Texture sponzaFloorTexture;
 
 Material shinyMaterial;
 Material dullMaterial;
+Material superShinyMaterial;
 
 DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
@@ -175,6 +177,18 @@ void CreateObjects()
 	Mesh* floor = new Mesh();
 	floor->CreateMesh(floorVertices, floorIndices, floorVertexCount, floorIndexCount);
 	meshList.push_back(floor);
+
+	Mesh* wallRight = new Mesh();
+	wallRight->CreateMesh(floorVertices, floorIndices, floorVertexCount, floorIndexCount);
+	meshList.push_back(wallRight);
+
+	Mesh* wallBack = new Mesh();
+	wallBack->CreateMesh(floorVertices, floorIndices, floorVertexCount, floorIndexCount);
+	meshList.push_back(wallBack);
+
+	Mesh* ceil = new Mesh();
+	ceil->CreateMesh(floorVertices, floorIndices, floorVertexCount, floorIndexCount);
+	meshList.push_back(ceil);
 }
 
 void CreateShaders()
@@ -193,28 +207,34 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(glm::vec3(0.0f, 2.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 2.0f, 0.1f);
+	camera = Camera(glm::vec3(0.0f, 2.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 4.0f, 0.1f);
 
 	brickTexture = Texture("Textures/brick.png");
 	brickTexture.LoadTexture();
 	pyramidTexture = Texture("Textures/pyramid.png");
 	pyramidTexture.LoadTexture();
+	sponzaFloorTexture = Texture("Textures/sponza_floor.jpg");
+	sponzaFloorTexture.LoadTexture();
 
 	shinyMaterial = Material(1.0f, 128.0f);
 	dullMaterial = Material(1.0f, 64.0f);
+	superShinyMaterial = Material(1.0f, 256.0f);
 
-	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.1f, 0.2f, { 1.0f, -1.0f, 1.0f });
+	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.1f, 0.2f, { -0.5f, -0.3f, 0.5f });
 
 	unsigned int pointLightCount = 0;
-	pointLights[0] = PointLight({ 1.0f, 0.0f, 0.0f }, 0.1f, 1.0f, {  2.0f, 2.0f, -4.0f }, 0.3f, 0.2f, 0.1f);
+	pointLights[0] = PointLight({ 1.0f, 0.0f, 0.0f }, 0.1f, 1.0f, {  8.0f, 5.0f, -8.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;															 
 	pointLights[1] = PointLight({ 0.0f, 1.0f, 0.0f }, 0.1f, 1.0f, { -2.0f, 2.0f, 2.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;															 
-	pointLights[2] = PointLight({ 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, {  4.0f, 2.0f, 0.0f }, 0.3f, 0.2f, 0.1f);
+	pointLights[2] = PointLight({ 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, {  -6.0f, 6.0f, -8.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
 
 	unsigned int spotLightCount = 0;
-	// Create spot lights
+	spotLights[0] = SpotLight({ 1.0f, 0.0f, 1.0f }, 0.1f, 1.0f, { 9.0f, 2.0f, 0.0f }, { 1.5f, 1.5f, 0.0f }, 0.3f, 0.2f, 0.1f, 10.0f);
+	spotLightCount++;
+	spotLights[1] = SpotLight({ 0.4f, 0.4f, 1.0f }, 0.1f, 2.0f, { 0.0f, 2.0f, -9.0f }, { 0.0f, 1.5f, -1.5f }, 0.3f, 0.2f, 0.1f, 10.0f);
+	spotLightCount++;
 
 	GLint uniformModel = 0;
 	GLint uniformView = 0;
@@ -262,6 +282,7 @@ int main()
 		// Model matrix
 		glm::mat4 model;
 
+		/* Cube Left */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-2.0f, 2.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -273,6 +294,7 @@ int main()
 		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[0]->RenderMesh();
 
+		/* Cube Right */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(2.0f, 2.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -284,13 +306,48 @@ int main()
 		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[1]->RenderMesh();
 
+		/* Floor */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		pyramidTexture.UseTexture();
-		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		sponzaFloorTexture.UseTexture();
+		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[2]->RenderMesh();
+
+		/* Wall Right */
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(10.0f, 10.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		brickTexture.UseTexture();
+		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		meshList[3]->RenderMesh();
+
+		/* Wall Back */
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 10.0f, -10.0f));
+		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		brickTexture.UseTexture();
+		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		meshList[4]->RenderMesh();
+
+		/* Ceil */
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 8.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		sponzaFloorTexture.UseTexture();
+		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		meshList[5]->RenderMesh();
 
 		shaderList[0]->Unbind();
 
