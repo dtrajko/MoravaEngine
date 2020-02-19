@@ -8,45 +8,45 @@ Camera::Camera()
 Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch,
 	GLfloat startMoveSpeed, GLfloat startTurnSpeed)
 {
-	position = startPosition;
-	worldUp = startUp;
-	yaw = startYaw;
-	pitch = startPitch;
-	front = glm::vec3(0.0f, 0.0f, -1.0f);
+	m_Position = startPosition;
+	m_WorldUp = startUp;
+	m_Yaw = startYaw;
+	m_Pitch = startPitch;
+	m_Front = glm::vec3(0.0f, 0.0f, -1.0f);
 
-	moveSpeed = startMoveSpeed;
-	turnSpeed = startTurnSpeed;
+	m_MoveSpeed = startMoveSpeed;
+	m_TurnSpeed = startTurnSpeed;
 
 	update();
 }
 
 void Camera::keyControl(bool* keys, GLfloat deltaTime)
 {
-	GLfloat velocity = moveSpeed * deltaTime;
+	GLfloat velocity = m_MoveSpeed * deltaTime;
 
 	if (keys[GLFW_KEY_W])
 	{
-		position += front * velocity;
+		m_Position += m_Front * velocity;
 	}
 	if (keys[GLFW_KEY_S])
 	{
-		position -= front * velocity;
+		m_Position -= m_Front * velocity;
 	}
 	if (keys[GLFW_KEY_A])
 	{
-		position -= right * velocity;
+		m_Position -= m_Right * velocity;
 	}
 	if (keys[GLFW_KEY_D])
 	{
-		position += right * velocity;
+		m_Position += m_Right * velocity;
 	}
 	if (keys[GLFW_KEY_Q])
 	{
-		position -= up * velocity;
+		m_Position -= m_Up * velocity;
 	}
 	if (keys[GLFW_KEY_E])
 	{
-		position += up * velocity;
+		m_Position += m_Up * velocity;
 	}
 }
 
@@ -54,8 +54,8 @@ void Camera::mouseControl(bool* buttons, GLfloat xChange, GLfloat yChange)
 {
 	if (buttons[GLFW_MOUSE_BUTTON_RIGHT])
 	{
-		yaw += xChange * turnSpeed;
-		pitch += yChange * turnSpeed;
+		m_Yaw += xChange * m_TurnSpeed;
+		m_Pitch += yChange * m_TurnSpeed;
 
 		update();
 	}
@@ -63,26 +63,29 @@ void Camera::mouseControl(bool* buttons, GLfloat xChange, GLfloat yChange)
 
 glm::vec3 Camera::getCameraPosition()
 {
-	return position;
+	return m_Position;
+}
+
+glm::vec3 Camera::getCameraDirection()
+{
+	return glm::normalize(m_Front);
 }
 
 glm::mat4 Camera::CalculateViewMatrix()
 {
-	glm::mat4 viewMatrix = glm::lookAt(position, position + front, up);
+	glm::mat4 viewMatrix = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
 	return viewMatrix;
 }
 
 void Camera::update()
 {
-	// printf("Pitch: %.2f, Yaw: %.2f\n", pitch, yaw);
+	m_Front.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+	m_Front.y = sin(glm::radians(m_Pitch));
+	m_Front.z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
+	m_Front = glm::normalize(m_Front);
 
-	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	front.y = sin(glm::radians(pitch));
-	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	front = glm::normalize(front);
-
-	right = glm::normalize(glm::cross(front, worldUp));
-	up = glm::normalize(glm::cross(right, front));
+	m_Right = glm::normalize(glm::cross(m_Front, m_WorldUp));
+	m_Up = glm::normalize(glm::cross(m_Right, m_Front));
 }
 
 Camera::~Camera()

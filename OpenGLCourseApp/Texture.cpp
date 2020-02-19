@@ -16,13 +16,13 @@ Texture::Texture(const char* fileLoc)
 	fileLocation = fileLoc;
 }
 
-void Texture::LoadTexture()
+bool Texture::LoadTexture()
 {
 	unsigned char* texData = stbi_load(fileLocation, &width, &height, &bitDepth, 0);
 	if (!texData)
 	{
 		printf("Failed to find: '%s'\n", fileLocation);
-		return;
+		return false;
 	}
 
 	GLenum internalFormat = 0;
@@ -51,6 +51,8 @@ void Texture::LoadTexture()
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(texData);
+
+	return true;
 }
 
 void Texture::UseTexture()

@@ -111,6 +111,7 @@ vec4 CalcSpotLight(SpotLight spotLight)
 	if (spotLightFactor > spotLight.edge)
 	{
 		vec4 color = CalcPointLight(spotLight.base);
+		color *= (1.0 - (1.0 - spotLightFactor) * (1.0 / (1.0 - spotLight.edge)));
 		return color;
 	}
 	else

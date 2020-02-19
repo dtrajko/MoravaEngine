@@ -15,6 +15,7 @@ public:
 		GLint positionLocation, GLint directionLocation,
 		GLint constantLocation, GLint linearLocation, GLint exponentLocation,
 		GLint edgeLocation);
+	void SetFlash(glm::vec3 position, glm::vec3 direction);
 	~SpotLight();
 
 private:
