@@ -6,11 +6,6 @@ Model::Model()
 {
 }
 
-Model::Model(const std::string& fileName)
-{
-	LoadModel(fileName);
-}
-
 void Model::LoadModel(const std::string& fileName)
 {
 	Assimp::Importer importer;

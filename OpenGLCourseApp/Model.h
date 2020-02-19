@@ -15,7 +15,6 @@ class Model
 {
 public:
 	Model();
-	Model(const std::string& fileName);
 	void LoadModel(const std::string& fileName);
 	void RenderModel();
 	void ClearModel();

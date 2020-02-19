@@ -231,8 +231,10 @@ int main()
 	dullMaterial = Material(1.0f, 64.0f);
 	superShinyMaterial = Material(1.0f, 256.0f);
 
-	xwing = Model("Models/x-wing.obj");
-	blackHawk = Model("Models/x-wing.obj");
+	xwing = Model();
+	xwing.LoadModel("Models/x-wing.obj");
+	// blackHawk = Model();
+	// blackHawk.LoadModel("Models/uh60.obj");
 
 	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.05f, 0.1f, { 10.0f, -4.0f, -10.0f });
 
@@ -415,7 +417,7 @@ int main()
 		model = glm::scale(model, glm::vec3(0.006f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		// xwing.RenderModel();
+		xwing.RenderModel();
 
 		/* Black Hawk model */
 		model = glm::mat4(1.0f);
@@ -426,7 +428,7 @@ int main()
 		model = glm::scale(model, glm::vec3(0.4f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		blackHawk.RenderModel();
+		// blackHawk.RenderModel();
 
 		shaderList[0]->Unbind();
 
