@@ -43,6 +43,7 @@ Texture pyramidTexture;
 Texture sponzaFloorTexture;
 Texture sponzaWallTexture;
 Texture sponzaCeilTexture;
+Texture crateTexture;
 
 Material shinyMaterial;
 Material dullMaterial;
@@ -102,30 +103,30 @@ void CreateObjects()
 		 0.5f, -0.5f, -0.5f,   0.0f, 0.0f,    0.5f, -0.5f, -0.5f,
 		 0.5f,  0.5f, -0.5f,   0.0f, 1.0f,    0.5f,  0.5f, -0.5f,
 
-		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f,   -0.5f,  0.5f,  0.5f,
-		-0.5f, -0.5f,  0.5f,   1.0f, 0.0f,   -0.5f, -0.5f,  0.5f,
-		 0.5f, -0.5f,  0.5f,   0.0f, 0.0f,    0.5f, -0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,   0.0f, 1.0f,    0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f,   0.0f, 1.0f,   -0.5f,  0.5f,  0.5f,
+		-0.5f, -0.5f,  0.5f,   0.0f, 0.0f,   -0.5f, -0.5f,  0.5f,
+		 0.5f, -0.5f,  0.5f,   1.0f, 0.0f,    0.5f, -0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,   1.0f, 1.0f,    0.5f,  0.5f,  0.5f,
 
 		 0.5f,  0.5f, -0.5f,   1.0f, 1.0f,    0.5f,  0.5f, -0.5f,
 		 0.5f, -0.5f, -0.5f,   1.0f, 0.0f,    0.5f, -0.5f, -0.5f,
 		 0.5f, -0.5f,  0.5f,   0.0f, 0.0f,    0.5f, -0.5f,  0.5f,
 		 0.5f,  0.5f,  0.5f,   0.0f, 1.0f,    0.5f,  0.5f,  0.5f,
 
-		-0.5f,  0.5f, -0.5f,   1.0f, 1.0f,   -0.5f,  0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,   1.0f, 0.0f,   -0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f,  0.5f,   0.0f, 0.0f,   -0.5f, -0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f,   0.0f, 1.0f,   -0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f, -0.5f,   0.0f, 1.0f,   -0.5f,  0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,   0.0f, 0.0f,   -0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f,  0.5f,   1.0f, 0.0f,   -0.5f, -0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f,   -0.5f,  0.5f,  0.5f,
 
 		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f,   -0.5f,  0.5f,  0.5f,
 		-0.5f,  0.5f, -0.5f,   1.0f, 0.0f,   -0.5f,  0.5f, -0.5f,
 		 0.5f,  0.5f, -0.5f,   0.0f, 0.0f,    0.5f,  0.5f, -0.5f,
 		 0.5f,  0.5f,  0.5f,   0.0f, 1.0f,    0.5f,  0.5f,  0.5f,
 
-		-0.5f, -0.5f,  0.5f,   1.0f, 1.0f,   -0.5f, -0.5f,  0.5f,
-		-0.5f, -0.5f, -0.5f,   1.0f, 0.0f,   -0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,   0.0f, 0.0f,    0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f,  0.5f,   0.0f, 1.0f,    0.5f, -0.5f,  0.5f,
+		-0.5f, -0.5f,  0.5f,   0.0f, 1.0f,   -0.5f, -0.5f,  0.5f,
+		-0.5f, -0.5f, -0.5f,   0.0f, 0.0f,   -0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,   1.0f, 0.0f,    0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f,  0.5f,   1.0f, 1.0f,    0.5f, -0.5f,  0.5f,
 	};
 
 	unsigned int vertexCount = 8 * 4 * 6;
@@ -134,18 +135,18 @@ void CreateObjects()
 
 	unsigned int indices[] =
 	{
-		 0,  1,  3,
-		 3,  1,  2,
-		 4,  7,  5,
-		 7,  6,  5,
-		 8,  9, 11,
-		11,  9, 10,
-		12, 15, 13,
-		15, 14, 13,
-		16, 17, 19,
-		19, 17, 18,
-		20, 23, 21,
-		23, 22, 21,
+		 0,  3,  1,
+		 3,  2,  1,
+		 4,  5,  7,
+		 7,  5,  6,
+		 8, 11,  9,
+		11, 10,  9,
+		12, 13, 15,
+		15, 13, 14,
+		16, 19, 17,
+		19, 18, 17,
+		20, 21, 23,
+		23, 21, 22,
 	};
 
 	unsigned int indexCount = 6 * 6;
@@ -163,10 +164,10 @@ void CreateObjects()
 	/* Floor Mesh */
 	GLfloat floorVertices[] =
 	{
-		-10.0f, 0.0f, -10.0f,    0.0f,  0.0f,   0.0f, -1.0f, 0.0f,
-		 10.0f, 0.0f, -10.0f,   10.0f,  0.0f,   0.0f, -1.0f, 0.0f,
-		-10.0f, 0.0f,  10.0f,    0.0f, 10.0f,   0.0f, -1.0f, 0.0f,
-		 10.0f, 0.0f,  10.0f,   10.0f, 10.0f,   0.0f, -1.0f, 0.0f,
+		-10.0f, 0.0f, -10.0f,    0.0f,  0.0f,   0.0f, 1.0f, 0.0f,
+		 10.0f, 0.0f, -10.0f,   10.0f,  0.0f,   0.0f, 1.0f, 0.0f,
+		-10.0f, 0.0f,  10.0f,    0.0f, 10.0f,   0.0f, 1.0f, 0.0f,
+		 10.0f, 0.0f,  10.0f,   10.0f, 10.0f,   0.0f, 1.0f, 0.0f,
 	};
 
 	unsigned int floorVertexCount = 32;
@@ -220,6 +221,8 @@ int main()
 	sponzaWallTexture.LoadTexture();
 	sponzaCeilTexture = Texture("Textures/sponza_ceiling.jpg");
 	sponzaCeilTexture.LoadTexture();
+	crateTexture = Texture("Textures/crate.png");
+	crateTexture.LoadTexture();
 
 	shinyMaterial = Material(1.0f, 128.0f);
 	dullMaterial = Material(1.0f, 64.0f);
@@ -252,8 +255,6 @@ int main()
 
 	// Projection matrix
 	glm::mat4 projection = glm::perspective(45.0f, mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 100.0f);
-
-	Assimp::Importer importer = Assimp::Importer();
 
 	// Loop until window closed
 	while (!mainWindow.GetShouldClose())
@@ -315,7 +316,7 @@ int main()
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(2.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		pyramidTexture.UseTexture();
+		crateTexture.UseTexture();
 		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[1]->RenderMesh();
 
