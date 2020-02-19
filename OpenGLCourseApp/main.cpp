@@ -23,6 +23,9 @@
 #include "SpotLight.h"
 #include "Material.h"
 
+#include <assimp/Importer.hpp>
+
+
 
 // Window dimensions
 const GLint WIDTH = 1280;
@@ -80,7 +83,7 @@ void calcAverageNormals(unsigned int* indices, unsigned int indiceCount,
 		vertices[in2 + 0] += normal.x; vertices[in2 + 1] += normal.y; vertices[in2 + 2] += normal.z;
 	}
 
-	for (size_t i = 0; i < verticeCount / vLength; i++)
+	for (unsigned int i = 0; i < verticeCount / vLength; i++)
 	{
 		unsigned int nOffset = i * vLength + normalOffset;
 		glm::vec3 vec(vertices[nOffset + 0], vertices[nOffset + 1], vertices[nOffset + 2]);
@@ -249,6 +252,8 @@ int main()
 
 	// Projection matrix
 	glm::mat4 projection = glm::perspective(45.0f, mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 100.0f);
+
+	Assimp::Importer importer = Assimp::Importer();
 
 	// Loop until window closed
 	while (!mainWindow.GetShouldClose())

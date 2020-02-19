@@ -231,7 +231,7 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 
 	uniformPointLightCount = glGetUniformLocation(programID, "pointLightCount");
 
-	for (size_t i = 0; i < MAX_POINT_LIGHTS; i++)
+	for (int i = 0; i < MAX_POINT_LIGHTS; i++)
 	{
 		char locBuff[100] = { '\0' };
 
@@ -259,7 +259,7 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 
 	uniformSpotLightCount = glGetUniformLocation(programID, "spotLightCount");
 
-	for (size_t i = 0; i < MAX_SPOT_LIGHTS; i++)
+	for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
 	{
 		char locBuff[100] = { '\0' };
 
@@ -316,7 +316,7 @@ void Shader::AddShader(GLuint programID, const char* shaderCode, GLenum shaderTy
 	theCode[0] = shaderCode;
 
 	GLint codeLength[1];
-	codeLength[0] = strlen(shaderCode);
+	codeLength[0] = (GLint)strlen(shaderCode);
 
 	glShaderSource(shaderID, 1, theCode, codeLength);
 	glCompileShader(shaderID);
