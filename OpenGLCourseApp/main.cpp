@@ -23,7 +23,7 @@
 #include "SpotLight.h"
 #include "Material.h"
 
-#include <assimp/Importer.hpp>
+#include "Model.h"
 
 
 
@@ -48,6 +48,9 @@ Texture crateTexture;
 Material shinyMaterial;
 Material dullMaterial;
 Material superShinyMaterial;
+
+Model xwing;
+Model blackHawk;
 
 DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
@@ -228,6 +231,9 @@ int main()
 	dullMaterial = Material(1.0f, 64.0f);
 	superShinyMaterial = Material(1.0f, 256.0f);
 
+	xwing = Model("Models/x-wing.obj");
+	blackHawk = Model("Models/x-wing.obj");
+
 	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.05f, 0.1f, { 10.0f, -4.0f, -10.0f });
 
 	unsigned int pointLightCount = 0;
@@ -402,6 +408,25 @@ int main()
 		sponzaCeilTexture.UseTexture();
 		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[4]->RenderMesh();
+
+		/* xwing model */
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.006f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		// xwing.RenderModel();
+
+		/* Black Hawk model */
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.4f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		blackHawk.RenderModel();
 
 		shaderList[0]->Unbind();
 
