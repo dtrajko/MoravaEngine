@@ -233,25 +233,25 @@ int main()
 
 	xwing = Model();
 	xwing.LoadModel("Models/x-wing.obj");
-	// blackHawk = Model();
-	// blackHawk.LoadModel("Models/uh60.obj");
+	blackHawk = Model();
+	blackHawk.LoadModel("Models/uh60.obj");
 
 	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.05f, 0.1f, { 10.0f, -4.0f, -10.0f });
 
 	unsigned int pointLightCount = 0;
-	pointLights[0] = PointLight({ 1.0f, 0.0f, 0.0f }, 0.1f, 1.0f, {  8.0f, 5.0f, -8.0f }, 0.3f, 0.2f, 0.1f);
+	pointLights[0] = PointLight({ 1.0f, 0.0f, 0.0f }, 0.1f, 1.0f, {  4.0f, 2.0f, 2.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;															 
-	pointLights[1] = PointLight({ 0.0f, 1.0f, 0.0f }, 0.1f, 1.0f, { 2.0f, 2.0f, -6.0f }, 0.3f, 0.2f, 0.1f);
+	pointLights[1] = PointLight({ 0.0f, 1.0f, 0.0f }, 0.1f, 1.0f, { -4.0f, 6.0f, -6.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;															 
-	pointLights[2] = PointLight({ 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, {  -6.0f, 6.0f, -8.0f }, 0.3f, 0.2f, 0.1f);
+	pointLights[2] = PointLight({ 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, {  4.0f, 12.0f, -2.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
 
 	unsigned int spotLightCount = 0;
-	spotLights[0] = SpotLight({ 1.0f, 0.0f, 1.0f }, 0.3f, 2.0f, { 8.0f, 3.0f, 0.0f }, { 2.0f, 4.0f, 0.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
+	spotLights[0] = SpotLight({ 1.0f, 0.0f, 1.0f }, 0.3f, 4.0f, { -8.0f, 12.0f, 8.0f }, { 8.0f, 2.0f, -8.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
 	spotLightCount++;
 	spotLights[1] = SpotLight({ 0.4f, 0.4f, 1.0f }, 0.3f, 3.0f, { 0.0f, 3.0f, -8.0f }, { 0.0f, 4.0f, -2.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
 	spotLightCount++;
-	spotLights[2] = SpotLight({ 1.0f, 1.0f, 1.0f }, 0.0f, 3.0f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
+	spotLights[2] = SpotLight({ 1.0f, 1.0f, 1.0f }, 0.0f, 4.0f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
 	spotLightCount++;
 
 	GLint uniformModel = 0;
@@ -306,7 +306,7 @@ int main()
 
 		/* Cube Left */
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 5.0f, -5.0f));
+		model = glm::translate(model, glm::vec3(-9.0f, 1.0f, -9.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -318,7 +318,7 @@ int main()
 
 		/* Cube Right */
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(6.0f, 5.0f, -5.0f));
+		model = glm::translate(model, glm::vec3(9.0f, 1.0f, -9.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -413,22 +413,22 @@ int main()
 
 		/* xwing model */
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.006f));
+		model = glm::translate(model, glm::vec3(-42.0f, 0.0f, 50.0f));
+		model = glm::scale(model, glm::vec3(0.03f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		xwing.RenderModel();
 
 		/* Black Hawk model */
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(0.4f));
+		model = glm::translate(model, glm::vec3(0.0f, 11.6f, 3.0f));
+		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		// blackHawk.RenderModel();
+		blackHawk.RenderModel();
 
 		shaderList[0]->Unbind();
 

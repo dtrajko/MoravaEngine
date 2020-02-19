@@ -113,7 +113,7 @@ void Model::LoadMaterials(const aiScene* scene)
 
 void Model::RenderModel()
 {
-	for (size_t i = 0; meshList.size(); i++)
+	for (size_t i = 0; i < meshList.size(); i++)
 	{
 		unsigned int materialIndex = meshToTexture[i];
 
@@ -128,18 +128,18 @@ void Model::RenderModel()
 
 void Model::ClearModel()
 {
-	for (size_t i = 0; meshList.size(); i++)
+	for (size_t i = 0; i < meshList.size(); i++)
 	{
-		if (i < meshList.size() && meshList[i])
+		if (meshList[i])
 		{
 			delete meshList[i];
 			meshList[i] = nullptr;
 		}
 	}
 
-	for (size_t i = 0; textureList.size(); i++)
+	for (size_t i = 0; i < textureList.size(); i++)
 	{
-		if (textureList[i])
+		if (textureList[i] != nullptr)
 		{
 			delete textureList[i];
 			textureList[i] = nullptr;
