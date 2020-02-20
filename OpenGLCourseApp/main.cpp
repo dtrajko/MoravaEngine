@@ -233,10 +233,10 @@ int main()
 	sponza = Model();
 	sponza.LoadModel("Models/sponza.obj");
 
-	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.1f, 1.2f, { 0.76f, -0.64f, -0.1f });
+	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.2f, 1.2f, { 0.76f, -0.64f, -0.1f });
 
 	unsigned int pointLightCount = 0;
-	pointLights[0] = PointLight({ 1.0f, 0.0f, 0.0f }, 0.1f, 1.0f, {  4.0f, 2.0f, 2.0f }, 0.3f, 0.2f, 0.1f);
+	pointLights[0] = PointLight({ 1.0f, 1.0f, 0.9f }, 0.2f, 1.0f, {  4.0f, 2.0f, 2.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;															 
 	pointLights[1] = PointLight({ 0.0f, 1.0f, 0.0f }, 0.1f, 1.0f, { -4.0f, 6.0f, -6.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;															 
@@ -244,9 +244,9 @@ int main()
 	pointLightCount++;
 
 	unsigned int spotLightCount = 0;
-	spotLights[0] = SpotLight({ 1.0f, 0.0f, 1.0f }, 0.3f, 4.0f, { -8.0f, 12.0f, 8.0f }, { 8.0f, 2.0f, -8.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
+	spotLights[0] = SpotLight({ 1.0f, 1.0f, 0.8f }, 0.3f, 6.0f, { -50.0f, 54.0f, -1.2f }, { -0.6f, -1.0f, 0.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
 	spotLightCount++;
-	spotLights[1] = SpotLight({ 0.4f, 0.4f, 1.0f }, 0.3f, 3.0f, { 0.0f, 3.0f, -8.0f }, { 0.0f, 4.0f, -2.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
+	spotLights[1] = SpotLight({ 0.8f, 0.8f, 1.0f }, 0.3f, 6.0f, { -50.0f, 74.0f, -1.2f }, { -0.6f, -1.0f, 0.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
 	spotLightCount++;
 	spotLights[2] = SpotLight({ 1.0f, 1.0f, 1.0f }, 0.0f, 4.0f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
 	spotLightCount++;
