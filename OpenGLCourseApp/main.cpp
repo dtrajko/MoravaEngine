@@ -234,7 +234,7 @@ int main()
 	xwing = Model();
 	xwing.LoadModel("Models/x-wing.obj");
 	blackHawk = Model();
-	blackHawk.LoadModel("Models/uh60.obj");
+	blackHawk.LoadModel("Models/x-wing.obj");
 
 	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.05f, 0.1f, { 10.0f, -4.0f, -10.0f });
 
@@ -421,10 +421,8 @@ int main()
 
 		/* Black Hawk model */
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 11.6f, 3.0f));
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::translate(model, glm::vec3(-42.0f, 10.0f, 50.0f));
+		model = glm::scale(model, glm::vec3(0.03f));
 		model = glm::scale(model, glm::vec3(1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
