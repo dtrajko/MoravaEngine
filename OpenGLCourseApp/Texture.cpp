@@ -18,7 +18,7 @@ Texture::Texture(const char* fileLoc)
 
 bool Texture::LoadTexture()
 {
-	stbi_set_flip_vertically_on_load(1);
+	// stbi_set_flip_vertically_on_load(1);
 	unsigned char* texData = stbi_load(fileLocation, &width, &height, &bitDepth, 0);
 	if (!texData)
 	{

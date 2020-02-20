@@ -49,8 +49,7 @@ Material shinyMaterial;
 Material dullMaterial;
 Material superShinyMaterial;
 
-Model xwing;
-Model blackHawk;
+Model sponza;
 
 DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
@@ -212,7 +211,7 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(glm::vec3(0.0f, 4.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 4.0f, 0.1f);
+	camera = Camera(glm::vec3(-25.0f, 45.0f, -2.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f, 4.0f, 0.1f);
 
 	brickTexture = Texture("Textures/brick.png");
 	brickTexture.LoadTexture();
@@ -231,12 +230,10 @@ int main()
 	dullMaterial = Material(1.0f, 64.0f);
 	superShinyMaterial = Material(1.0f, 256.0f);
 
-	xwing = Model();
-	xwing.LoadModel("Models/x-wing.obj");
-	blackHawk = Model();
-	blackHawk.LoadModel("Models/x-wing.obj");
+	sponza = Model();
+	sponza.LoadModel("Models/sponza.obj");
 
-	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.05f, 0.1f, { 10.0f, -4.0f, -10.0f });
+	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.1f, 1.2f, { 0.76f, -0.64f, -0.1f });
 
 	unsigned int pointLightCount = 0;
 	pointLights[0] = PointLight({ 1.0f, 0.0f, 0.0f }, 0.1f, 1.0f, {  4.0f, 2.0f, 2.0f }, 0.3f, 0.2f, 0.1f);
@@ -262,7 +259,7 @@ int main()
 	GLint uniformShininess = 0;
 
 	// Projection matrix
-	glm::mat4 projection = glm::perspective(45.0f, mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 100.0f);
+	glm::mat4 projection = glm::perspective(45.0f, mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 200.0f);
 
 	// Loop until window closed
 	while (!mainWindow.GetShouldClose())
@@ -278,7 +275,7 @@ int main()
 		camera.mouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
 
 		// Clear the window
-		glClearColor(0.1f, 0.0f, 0.1f, 1.0f);
+		glClearColor(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shaderList[0]->Bind();
@@ -411,22 +408,16 @@ int main()
 		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[4]->RenderMesh();
 
-		/* xwing model */
+		/* Sponza scene */
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-42.0f, 0.0f, 50.0f));
-		model = glm::scale(model, glm::vec3(0.03f));
+		model = glm::translate(model, glm::vec3(0.0f, 40.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.04f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		xwing.RenderModel();
-
-		/* Black Hawk model */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-42.0f, 10.0f, 50.0f));
-		model = glm::scale(model, glm::vec3(0.03f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		blackHawk.RenderModel();
+		sponza.RenderModel();
 
 		shaderList[0]->Unbind();
 

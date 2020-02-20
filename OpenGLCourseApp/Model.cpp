@@ -8,6 +8,8 @@ Model::Model()
 
 void Model::LoadModel(const std::string& fileName)
 {
+	printf("Loading model '%s'...\n", fileName.c_str());
+
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(fileName, 
 		aiProcess_Triangulate | 
@@ -21,7 +23,11 @@ void Model::LoadModel(const std::string& fileName)
 		return;
 	}
 
+	printf("Loading meshes...\n");
+
 	LoadNode(scene->mRootNode, scene);
+
+	printf("Loading materials...\n");
 
 	LoadMaterials(scene);
 }
@@ -92,6 +98,8 @@ void Model::LoadMaterials(const aiScene* scene)
 				std::string filename = std::string(path.data).substr(idx + 1);
 
 				std::string texPath = std::string("Textures/") + filename;
+
+				printf("Texture loaded 'Textures/%s'\n", filename.c_str());
 
 				textureList[i] = new Texture(texPath.c_str());
 

@@ -36,5 +36,6 @@ private:
 
 	GLfloat m_MoveSpeed;
 	GLfloat m_TurnSpeed;
+	GLfloat m_SpeedBoost = 4.0f;
 
 };

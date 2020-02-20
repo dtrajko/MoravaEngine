@@ -24,19 +24,24 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime)
 {
 	GLfloat velocity = m_MoveSpeed * deltaTime;
 
-	if (keys[GLFW_KEY_W])
+	if (keys[GLFW_KEY_LEFT_SHIFT])
+	{
+		velocity *= m_SpeedBoost;
+	}
+
+	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
 	{
 		m_Position += m_Front * velocity;
 	}
-	if (keys[GLFW_KEY_S])
+	if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN])
 	{
 		m_Position -= m_Front * velocity;
 	}
-	if (keys[GLFW_KEY_A])
+	if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT])
 	{
 		m_Position -= m_Right * velocity;
 	}
-	if (keys[GLFW_KEY_D])
+	if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT])
 	{
 		m_Position += m_Right * velocity;
 	}
@@ -44,9 +49,15 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime)
 	{
 		m_Position -= m_Up * velocity;
 	}
-	if (keys[GLFW_KEY_E])
+	if (keys[GLFW_KEY_E] || keys[GLFW_KEY_SPACE])
 	{
 		m_Position += m_Up * velocity;
+	}
+
+	if (keys[GLFW_KEY_L])
+	{
+		printf("Camera Position X: %.2f Y: %.2f Z: %.2f\n", m_Position.x, m_Position.y, m_Position.z);
+		printf("Camera Direction X: %.2f Y: %.2f Z: %.2f\n", m_Front.x, m_Front.y, m_Front.z);
 	}
 }
 
@@ -91,4 +102,3 @@ void Camera::update()
 Camera::~Camera()
 {
 }
-
