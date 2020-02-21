@@ -11,7 +11,7 @@ SpotLight::SpotLight()
 SpotLight::SpotLight(glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity,
 	glm::vec3 position, glm::vec3 direction,
 	GLfloat constant, GLfloat linear, GLfloat exponent, GLfloat edge)
-	: DirectionalLight(color, ambientIntensity, diffuseIntensity, direction),
+	: DirectionalLight(1024, 1024, color, ambientIntensity, diffuseIntensity, direction),
 	PointLight(color, ambientIntensity, diffuseIntensity, position, constant, linear, exponent)
 {
 	m_Edge = edge;

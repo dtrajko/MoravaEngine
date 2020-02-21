@@ -1,5 +1,7 @@
 #include "Model.h"
 
+#include <chrono>
+
 
 
 Model::Model()
@@ -9,6 +11,9 @@ Model::Model()
 void Model::LoadModel(const std::string& fileName)
 {
 	printf("Loading model '%s'...\n", fileName.c_str());
+
+	std::chrono::time_point<std::chrono::steady_clock> startTimepoint = std::chrono::high_resolution_clock::now();
+
 
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(fileName, 
@@ -22,6 +27,12 @@ void Model::LoadModel(const std::string& fileName)
 		printf("Model '%s' failed to load: '%s'\n", fileName.c_str(), importer.GetErrorString());
 		return;
 	}
+
+	auto endTimepoint = std::chrono::high_resolution_clock::now();
+	long long start = std::chrono::time_point_cast<std::chrono::microseconds>(startTimepoint).time_since_epoch().count();
+	long long end = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch().count();
+	float duration = (end - start) * 0.000001f;
+	printf("Model loaded in %.2f seconds.\n", duration);
 
 	printf("Loading meshes...\n");
 

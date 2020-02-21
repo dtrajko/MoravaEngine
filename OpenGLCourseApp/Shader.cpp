@@ -1,5 +1,6 @@
 #include "Shader.h"
 
+
 Shader::Shader()
 {
 	shaderID = 0;
@@ -152,6 +153,21 @@ void Shader::SetSpotLights(SpotLight* spotLights, unsigned int lightCount)
 	}
 }
 
+void Shader::SetTexture(GLuint textureUnit)
+{
+	glUniform1i(uniformTexture, textureUnit);
+}
+
+void Shader::SetDirectionalShadowMap(GLuint textureUnit)
+{
+	glUniform1i(uniformDirectionalShadowMap, textureUnit);
+}
+
+void Shader::SetDirectionalLightTransform(glm::mat4* transform)
+{
+	glUniformMatrix4fv(uniformDirectionalLightTransform, 1, GL_FALSE, glm::value_ptr(*transform));
+}
+
 void Shader::Bind()
 {
 	glUseProgram(programID);
@@ -290,6 +306,10 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 		snprintf(locBuff, sizeof(locBuff), "spotLights[%d].edge", i);
 		uniformSpotLight[i].uniformEdge = glGetUniformLocation(programID, locBuff);
 	}
+
+	uniformTexture = glGetUniformLocation(programID, "theTexture");
+	uniformDirectionalLightTransform = glGetUniformLocation(programID, "directionalLightTransform");
+	uniformDirectionalShadowMap = glGetUniformLocation(programID, "directionalShadowMap");
 
 	printf("Shader program validation complete.\n");
 }

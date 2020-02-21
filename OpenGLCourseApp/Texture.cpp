@@ -51,6 +51,7 @@ bool Texture::LoadTexture()
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+
 	stbi_image_free(texData);
 
 	return true;

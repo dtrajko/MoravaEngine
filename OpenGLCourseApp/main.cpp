@@ -36,6 +36,8 @@ Window mainWindow;
 std::vector <Mesh*> meshList;
 std::vector <Shader*> shaderList;
 
+Shader directionalShadowShader;
+
 Camera camera;
 
 Texture brickTexture;
@@ -55,11 +57,25 @@ DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
 SpotLight spotLights[MAX_SPOT_LIGHTS];
 
+unsigned int pointLightCount = 0;
+unsigned int spotLightCount = 0;
+
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
 
 static const char* vShader = "Shaders/shader.vert";
 static const char* fShader = "Shaders/shader.frag";
+
+static const char* vShaderDirShadowMap = "Shaders/directional_shadow_map.vert";
+static const char* fShaderDirShadowMap = "Shaders/directional_shadow_map.frag";
+
+
+GLint uniformModel = 0;
+GLint uniformView = 0;
+GLint uniformProjection = 0;
+GLint uniformEyePosition = 0;
+GLint uniformSpecularIntensity = 0;
+GLint uniformShininess = 0;
 
 
 // The Phong shading approach
@@ -200,6 +216,189 @@ void CreateShaders()
 	Shader* shader1 = new Shader();
 	shader1->CreateFromFiles(vShader, fShader);
 	shaderList.push_back(shader1);
+
+	directionalShadowShader = Shader();
+	directionalShadowShader.CreateFromFiles(vShaderDirShadowMap, fShaderDirShadowMap);
+}
+
+
+void RenderScene()
+{
+	// Model matrix
+	glm::mat4 model;
+
+	/* Cube Left */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-5.0f, 5.0f, -5.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(2.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	brickTexture.UseTexture();
+	shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	meshList[0]->RenderMesh();
+
+	/* Cube Right */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(5.0f, 5.0f, -5.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(2.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	crateTexture.UseTexture();
+	dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	meshList[1]->RenderMesh();
+
+	/* Floor */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	sponzaFloorTexture.UseTexture();
+	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	meshList[2]->RenderMesh();
+
+	/* Floor 2nd */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 10.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	sponzaFloorTexture.UseTexture();
+	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	meshList[2]->RenderMesh();
+
+	/* Floor 3nd */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	sponzaFloorTexture.UseTexture();
+	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	meshList[2]->RenderMesh();
+
+	/* Wall Right */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(10.0f, 10.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	sponzaWallTexture.UseTexture();
+	shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	meshList[3]->RenderMesh();
+
+	/* Wall Left */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-10.0f, 10.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	sponzaWallTexture.UseTexture();
+	shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	meshList[3]->RenderMesh();
+
+	/* Wall Back */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 10.0f, -10.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	sponzaWallTexture.UseTexture();
+	shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	meshList[3]->RenderMesh();
+
+	/* Ceil */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 9.99f, 0.0f));
+	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	sponzaCeilTexture.UseTexture();
+	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	meshList[4]->RenderMesh();
+
+	/* Ceil 2nd */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 19.99f, 0.0f));
+	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	sponzaCeilTexture.UseTexture();
+	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	meshList[4]->RenderMesh();
+
+	/* Sponza scene */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 40.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(0.04f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	// sponza.RenderModel();
+}
+
+void DirectionalShadowMapPass(DirectionalLight* light)
+{
+	directionalShadowShader.Bind();
+
+	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
+
+	light->GetShadowMap()->Write();
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	uniformModel = directionalShadowShader.GetModelLocation();
+	directionalShadowShader.SetDirectionalLightTransform(&light->CalculateLightTransform());
+
+	RenderScene();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderPass(glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
+{
+	shaderList[0]->Bind();
+
+	uniformModel = shaderList[0]->GetModelLocation();
+	uniformProjection = shaderList[0]->GetProjectionLocation();
+	uniformView = shaderList[0]->GetViewLocation();
+	uniformEyePosition = shaderList[0]->GetUniformLocationEyePosition();
+	uniformSpecularIntensity = shaderList[0]->GetUniformLocationSpecularIntensity();
+	uniformShininess = shaderList[0]->GetUniformLocationShininess();
+
+	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+
+	// Clear the window
+	glClearColor(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+	glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+
+	shaderList[0]->SetDirectionalLight(&mainLight);
+	shaderList[0]->SetPointLights(pointLights, pointLightCount);
+	shaderList[0]->SetSpotLights(spotLights, spotLightCount);
+	shaderList[0]->SetDirectionalLightTransform(&mainLight.CalculateLightTransform());
+
+	mainLight.GetShadowMap()->Read(GL_TEXTURE1);
+	shaderList[0]->SetTexture(0);
+	shaderList[0]->SetDirectionalShadowMap(1);
+
+	glm::vec3 lowerLight = camera.getCameraPosition();
+	lowerLight.y -= 0.2f;
+	spotLights[2].SetFlash(lowerLight, camera.getCameraDirection());
+
+	RenderScene();
 }
 
 
@@ -231,11 +430,10 @@ int main()
 	superShinyMaterial = Material(1.0f, 256.0f);
 
 	sponza = Model();
-	sponza.LoadModel("Models/sponza.obj");
+	// sponza.LoadModel("Models/sponza.obj");
 
-	mainLight = DirectionalLight({ 1.0f, 1.0f, 1.0f }, 0.2f, 1.2f, { 0.76f, -0.64f, -0.1f });
+	mainLight = DirectionalLight(1024, 1024, { 1.0f, 1.0f, 1.0f }, 0.2f, 1.2f, { 0.2f, -0.8f, 0.2f }); // { 0.76f, -0.64f, -0.1f }
 
-	unsigned int pointLightCount = 0;
 	pointLights[0] = PointLight({ 1.0f, 1.0f, 0.9f }, 0.2f, 1.0f, {  4.0f, 2.0f, 2.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;															 
 	pointLights[1] = PointLight({ 0.0f, 1.0f, 0.0f }, 0.1f, 1.0f, { -4.0f, 6.0f, -6.0f }, 0.3f, 0.2f, 0.1f);
@@ -243,20 +441,12 @@ int main()
 	pointLights[2] = PointLight({ 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, {  4.0f, 12.0f, -2.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
 
-	unsigned int spotLightCount = 0;
 	spotLights[0] = SpotLight({ 1.0f, 1.0f, 0.8f }, 0.3f, 6.0f, { -50.0f, 54.0f, -1.2f }, { -0.6f, -1.0f, 0.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
 	spotLightCount++;
 	spotLights[1] = SpotLight({ 0.8f, 0.8f, 1.0f }, 0.3f, 6.0f, { -50.0f, 74.0f, -1.2f }, { -0.6f, -1.0f, 0.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
 	spotLightCount++;
 	spotLights[2] = SpotLight({ 1.0f, 1.0f, 1.0f }, 0.0f, 4.0f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
 	spotLightCount++;
-
-	GLint uniformModel = 0;
-	GLint uniformView = 0;
-	GLint uniformProjection = 0;
-	GLint uniformEyePosition = 0;
-	GLint uniformSpecularIntensity = 0;
-	GLint uniformShininess = 0;
 
 	// Projection matrix
 	glm::mat4 projection = glm::perspective(45.0f, mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 200.0f);
@@ -274,150 +464,9 @@ int main()
 		camera.keyControl(mainWindow.getKeys(), deltaTime);
 		camera.mouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
 
-		// Clear the window
-		glClearColor(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		DirectionalShadowMapPass(&mainLight);
 
-		shaderList[0]->Bind();
-		uniformModel             = shaderList[0]->GetModelLocation();
-		uniformProjection        = shaderList[0]->GetProjectionLocation();
-		uniformView              = shaderList[0]->GetViewLocation();
-		uniformEyePosition       = shaderList[0]->GetUniformLocationEyePosition();
-		uniformSpecularIntensity = shaderList[0]->GetUniformLocationSpecularIntensity();
-		uniformShininess         = shaderList[0]->GetUniformLocationShininess();
-
-		glm::vec3 lowerLight = camera.getCameraPosition();
-		lowerLight.y -= 0.2f;
-		spotLights[2].SetFlash(lowerLight, camera.getCameraDirection());
-
-		shaderList[0]->SetDirectionalLight(&mainLight);
-		shaderList[0]->SetPointLights(pointLights, pointLightCount);
-		shaderList[0]->SetSpotLights(spotLights, spotLightCount);
-
-		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.CalculateViewMatrix()));
-		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
-
-		// Model matrix
-		glm::mat4 model;
-
-		/* Cube Left */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-9.0f, 1.0f, -9.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(2.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		brickTexture.UseTexture();
-		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[0]->RenderMesh();
-
-		/* Cube Right */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(9.0f, 1.0f, -9.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(2.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		crateTexture.UseTexture();
-		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[1]->RenderMesh();
-
-		/* Floor */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		sponzaFloorTexture.UseTexture();
-		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[2]->RenderMesh();
-
-		/* Floor 2nd */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 10.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		sponzaFloorTexture.UseTexture();
-		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[2]->RenderMesh();
-
-		/* Floor 3nd */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		sponzaFloorTexture.UseTexture();
-		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[2]->RenderMesh();
-
-		/* Wall Right */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(10.0f, 10.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		sponzaWallTexture.UseTexture();
-		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[3]->RenderMesh();
-
-		/* Wall Left */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-10.0f, 10.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		sponzaWallTexture.UseTexture();
-		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[3]->RenderMesh();
-
-		/* Wall Back */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 10.0f, -10.0f));
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		sponzaWallTexture.UseTexture();
-		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[3]->RenderMesh();
-
-		/* Ceil */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 9.99f, 0.0f));
-		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		sponzaCeilTexture.UseTexture();
-		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[4]->RenderMesh();
-
-		/* Ceil 2nd */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 19.99f, 0.0f));
-		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		sponzaCeilTexture.UseTexture();
-		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[4]->RenderMesh();
-
-		/* Sponza scene */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 40.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(0.04f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		sponza.RenderModel();
+		RenderPass(projection, camera.CalculateViewMatrix());
 
 		shaderList[0]->Unbind();
 

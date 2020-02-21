@@ -13,7 +13,7 @@ PointLight::PointLight()
 
 PointLight::PointLight(glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity,
 	glm::vec3 position, GLfloat constant, GLfloat linear, GLfloat exponent)
-	: Light(color, ambientIntensity, diffuseIntensity)
+	: Light(1024, 1024, color, ambientIntensity, diffuseIntensity)
 {
 	m_Position = position;
 	m_Constant = constant;
