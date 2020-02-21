@@ -2,7 +2,7 @@
 
 in vec4 vCol;
 in vec2 TexCoord;
-in vec3 Normal;
+in vec3 vNormal;
 in vec3 FragPos;
 in vec4 DirectionalLightSpacePos;
 
@@ -61,6 +61,11 @@ uniform Material material;
 uniform vec3 eyePosition;
 
 
+vec3 GetNormal()
+{
+	return normalize(vNormal);
+}
+
 float CalcDirectionalShadowFactor(DirectionalLight light)
 {
 	vec3 projCoords = DirectionalLightSpacePos.xyz / DirectionalLightSpacePos.w;
@@ -69,9 +74,8 @@ float CalcDirectionalShadowFactor(DirectionalLight light)
 	float closestDepth = texture(directionalShadowMap, projCoords.xy).r;
 	float currentDepth = projCoords.z;
 
-	vec3 normal = normalize(Normal);
 	vec3 lightDir = normalize(light.direction);
-	float bias = max(0.5 * (1.0 - dot(normal, lightDir)), 0.005);
+	float bias = max(0.5 * (1.0 - dot(GetNormal(), lightDir)), 0.005);
 	
 	float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 
@@ -87,7 +91,7 @@ vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
 {
 	vec4 ambientColor = vec4(light.color, 1.0) * light.ambientIntensity;
 
-	float diffuseFactor = max(dot(normalize(Normal), -normalize(direction)), 0.0);
+	float diffuseFactor = max(dot(GetNormal(), -normalize(direction)), 0.0);
 	vec4 diffuseColor = vec4(light.color, 1.0) * light.diffuseIntensity * diffuseFactor;
 
 	vec4 specularColor = vec4(0.0, 0.0, 0.0, 0.0);
@@ -95,7 +99,7 @@ vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
 	if (diffuseFactor > 0.0)
 	{
 		vec3 fragToEye = normalize(eyePosition - FragPos);
-		vec3 reflectedVertex = normalize(reflect(direction, normalize(Normal)));
+		vec3 reflectedVertex = normalize(reflect(direction, GetNormal()));
 
 		float specularFactor = dot(fragToEye, reflectedVertex);
 		if (specularFactor > 0.0)

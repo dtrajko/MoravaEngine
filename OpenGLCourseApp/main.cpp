@@ -25,6 +25,7 @@
 #include "Material.h"
 
 #include "Model.h"
+#include "Vertex.h"
 
 
 
@@ -44,6 +45,8 @@ struct SceneSettings
 	float diffuseIntensity; // = 1.0f;
 };
 
+std::string currentScene = "default"; // "default", "sponza"
+
 
 std::vector <Mesh*> meshList;
 std::vector <Shader*> shaderList;
@@ -54,11 +57,16 @@ Camera camera;
 
 Texture brickTexture;
 Texture pyramidTexture;
-Texture sponzaFloorTexture;
-Texture sponzaWallTexture;
-Texture sponzaCeilTexture;
-Texture crateTexture;
+Texture crateTextureDiffuse;
+Texture crateTextureNormal;
 Texture grassTexture;
+// Sponza textures
+Texture textureSponzaFloorDiffuse;
+Texture textureSponzaFloorNormal;
+Texture textureSponzaWallDiffuse;
+Texture textureSponzaWallNormal;
+Texture textureSponzaCeilDiffuse;
+Texture textureSponzaCeilNormal;
 
 Material shinyMaterial;
 Material dullMaterial;
@@ -129,39 +137,39 @@ void CreateObjects()
 {
 	GLfloat vertices[] =
 	{
-		//  X      Y      Z       U     V       NX     NY     NZ
-		-0.5f,  0.5f, -0.5f,   1.0f, 1.0f,   -0.5f,  0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,   1.0f, 0.0f,   -0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,   0.0f, 0.0f,    0.5f, -0.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,   0.0f, 1.0f,    0.5f,  0.5f, -0.5f,
-
-		-0.5f,  0.5f,  0.5f,   0.0f, 1.0f,   -0.5f,  0.5f,  0.5f,
-		-0.5f, -0.5f,  0.5f,   0.0f, 0.0f,   -0.5f, -0.5f,  0.5f,
-		 0.5f, -0.5f,  0.5f,   1.0f, 0.0f,    0.5f, -0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,   1.0f, 1.0f,    0.5f,  0.5f,  0.5f,
-
-		 0.5f,  0.5f, -0.5f,   1.0f, 1.0f,    0.5f,  0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,   1.0f, 0.0f,    0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f,  0.5f,   0.0f, 0.0f,    0.5f, -0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,   0.0f, 1.0f,    0.5f,  0.5f,  0.5f,
-
-		-0.5f,  0.5f, -0.5f,   0.0f, 1.0f,   -0.5f,  0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,   0.0f, 0.0f,   -0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f,  0.5f,   1.0f, 0.0f,   -0.5f, -0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f,   -0.5f,  0.5f,  0.5f,
-
-		-0.5f,  0.5f,  0.5f,   1.0f, 1.0f,   -0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f, -0.5f,   1.0f, 0.0f,   -0.5f,  0.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,   0.0f, 0.0f,    0.5f,  0.5f, -0.5f,
-		 0.5f,  0.5f,  0.5f,   0.0f, 1.0f,    0.5f,  0.5f,  0.5f,
-
-		-0.5f, -0.5f,  0.5f,   0.0f, 1.0f,   -0.5f, -0.5f,  0.5f,
-		-0.5f, -0.5f, -0.5f,   0.0f, 0.0f,   -0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,   1.0f, 0.0f,    0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f,  0.5f,   1.0f, 1.0f,    0.5f, -0.5f,  0.5f,
+		//  X      Y      Z        U     V        NX     NY     NZ        TX     TY     TZ
+		-0.5f,  0.5f, -0.5f,    1.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,    1.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,    0.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
+		 0.5f,  0.5f, -0.5f,    0.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
+							 				 						  
+		-0.5f,  0.5f,  0.5f,    0.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
+		-0.5f, -0.5f,  0.5f,    0.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
+		 0.5f, -0.5f,  0.5f,    1.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,    1.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
+							 				 						  
+		 0.5f,  0.5f, -0.5f,    1.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f,  0.5f,    0.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
+							 				 						  
+		-0.5f,  0.5f, -0.5f,    0.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f,  0.5f,    1.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
+							 				 						  
+		-0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f, -0.5f,    1.0f, 0.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
+		 0.5f,  0.5f, -0.5f,    0.0f, 0.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
+		 0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
+							 				 						  
+		-0.5f, -0.5f,  0.5f,    0.0f, 1.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
+		-0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f,  0.5f,    1.0f, 1.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
 	};
 
-	unsigned int vertexCount = 8 * 4 * 6;
+	unsigned int vertexCount = 11 * 4 * 6;
 
 	printf("Size of vertices array: %.2d\n", vertexCount);
 
@@ -183,18 +191,19 @@ void CreateObjects()
 
 	unsigned int indexCount = 6 * 6;
 
-	calcAverageNormals(indices, indexCount, vertices, vertexCount, 8, 5);
+	calcAverageNormals(indices, indexCount, vertices, vertexCount, sizeof(Vertex) / sizeof(float), offsetof(Vertex, Normal) / sizeof(float));
 
 	/* Floor Mesh */
 	GLfloat floorVertices[] =
 	{
-		-10.0f, 0.0f, -10.0f,    0.0f,  0.0f,   0.0f, 1.0f, 0.0f,
-		 10.0f, 0.0f, -10.0f,   10.0f,  0.0f,   0.0f, 1.0f, 0.0f,
-		-10.0f, 0.0f,  10.0f,    0.0f, 10.0f,   0.0f, 1.0f, 0.0f,
-		 10.0f, 0.0f,  10.0f,   10.0f, 10.0f,   0.0f, 1.0f, 0.0f,
+		// position               tex coords      normal               tangent
+		-10.0f, 0.0f, -10.0f,     0.0f,  0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+		 10.0f, 0.0f, -10.0f,    10.0f,  0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+		-10.0f, 0.0f,  10.0f,     0.0f, 10.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+		 10.0f, 0.0f,  10.0f,    10.0f, 10.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,
 	};
 
-	unsigned int floorVertexCount = 32;
+	unsigned int floorVertexCount = 44;
 
 	unsigned int floorIndices[] =
 	{
@@ -207,13 +216,14 @@ void CreateObjects()
 	/* Basic Quad mesh */
 	GLfloat quadVertices[] =
 	{
-		-1.0f, 0.0f, -1.0f,   0.0f, 0.0f,   0.0f, 1.0f, 0.0f,
-		 1.0f, 0.0f, -1.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,
-		-1.0f, 0.0f,  1.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
-		 1.0f, 0.0f,  1.0f,   1.0f, 1.0f,   0.0f, 1.0f, 0.0f,
+		// position           tex coords    normal              tangent
+		-1.0f, 0.0f, -1.0f,   0.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
+		 1.0f, 0.0f, -1.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
+		-1.0f, 0.0f,  1.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
+		 1.0f, 0.0f,  1.0f,   1.0f, 1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
 	};
 
-	unsigned int quadVertexCount = 32;
+	unsigned int quadVertexCount = 44;
 
 	unsigned int quadIndices[] =
 	{
@@ -284,8 +294,9 @@ void RenderScene()
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(2.0f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	crateTexture.UseTexture();
-	dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	crateTextureDiffuse.UseTexture(0);
+	crateTextureNormal.UseTexture(1);
+	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	meshList[1]->RenderMesh();
 
 	/* Floor */
@@ -293,7 +304,8 @@ void RenderScene()
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	sponzaFloorTexture.UseTexture();
+	textureSponzaFloorDiffuse.UseTexture(0);
+	textureSponzaFloorNormal.UseTexture(1);
 	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	meshList[2]->RenderMesh();
 
@@ -302,7 +314,8 @@ void RenderScene()
 	model = glm::translate(model, glm::vec3(0.0f, 10.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	sponzaFloorTexture.UseTexture();
+	textureSponzaFloorDiffuse.UseTexture(0);
+	textureSponzaFloorNormal.UseTexture(1);
 	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	meshList[2]->RenderMesh();
 
@@ -323,7 +336,8 @@ void RenderScene()
 	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	sponzaWallTexture.UseTexture();
+	textureSponzaWallDiffuse.UseTexture(0);
+	textureSponzaWallNormal.UseTexture(1);
 	shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	meshList[3]->RenderMesh();
 
@@ -335,7 +349,8 @@ void RenderScene()
 	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	sponzaWallTexture.UseTexture();
+	textureSponzaWallDiffuse.UseTexture(0);
+	textureSponzaWallNormal.UseTexture(1);
 	shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	meshList[3]->RenderMesh();
 
@@ -347,7 +362,8 @@ void RenderScene()
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	sponzaWallTexture.UseTexture();
+	textureSponzaWallDiffuse.UseTexture(0);
+	textureSponzaWallNormal.UseTexture(1);
 	shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	meshList[3]->RenderMesh();
 
@@ -357,7 +373,8 @@ void RenderScene()
 	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	sponzaCeilTexture.UseTexture();
+	textureSponzaCeilDiffuse.UseTexture(0);
+	textureSponzaCeilNormal.UseTexture(1);
 	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	meshList[4]->RenderMesh();
 
@@ -367,7 +384,8 @@ void RenderScene()
 	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	sponzaCeilTexture.UseTexture();
+	textureSponzaCeilDiffuse.UseTexture(0);
+	textureSponzaCeilNormal.UseTexture(1);
 	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	meshList[4]->RenderMesh();
 
@@ -380,7 +398,10 @@ void RenderScene()
 	model = glm::scale(model, glm::vec3(0.04f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-	// sponza.RenderModel();
+	if (currentScene == "sponza")
+	{
+		sponza.RenderModel();
+	}
 
 	/* Cottage */
 	model = glm::mat4(1.0f);
@@ -477,8 +498,8 @@ int main()
 
 	sceneSettings["default"].cameraPosition = glm::vec3(0.0f, 25.0f, 15.0f);
 	sceneSettings["default"].cameraStartYaw = -90.0f;
-	sceneSettings["default"].ambientIntensity = 0.2f;
-	sceneSettings["default"].diffuseIntensity = 1.0f;
+	sceneSettings["default"].ambientIntensity = 0.1f;
+	sceneSettings["default"].diffuseIntensity = 0.5f;
 
 	sceneSettings["sponza"].cameraPosition = glm::vec3(-25.0f, 45.0f, -2.0f);
 	sceneSettings["sponza"].cameraStartYaw = 0.0f;
@@ -489,27 +510,31 @@ int main()
 	CreateObjects();
 	CreateShaders();
 
-	glm::vec3 camPositionDefault = glm::vec3(0.0f, 25.0f, 15.0f);
-	float startYawDefault = -90.0f;
-	glm::vec3 camPositionSponza = glm::vec3(-25.0f, 45.0f, -2.0f);
-	float startYawSponza = 0.0f;
-	float ambientIntensitySponza = 0.2f;
-	float diffuseIntensitySponza = 1.2f;
-
-	camera = Camera(sceneSettings["default"].cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), sceneSettings["default"].cameraStartYaw, 0.0f, 4.0f, 0.1f);
+	camera = Camera(sceneSettings[currentScene].cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), sceneSettings[currentScene].cameraStartYaw, 0.0f, 4.0f, 0.1f);
 
 	brickTexture = Texture("Textures/brick.png");
 	brickTexture.LoadTexture();
 	pyramidTexture = Texture("Textures/pyramid.png");
 	pyramidTexture.LoadTexture();
-	sponzaFloorTexture = Texture("Textures/sponza_floor.jpg");
-	sponzaFloorTexture.LoadTexture();
-	sponzaWallTexture = Texture("Textures/sponza_wall.jpg");
-	sponzaWallTexture.LoadTexture();
-	sponzaCeilTexture = Texture("Textures/sponza_ceiling.jpg");
-	sponzaCeilTexture.LoadTexture();
-	crateTexture = Texture("Textures/crate.png");
-	crateTexture.LoadTexture();
+
+	// Sponza textures
+	textureSponzaFloorDiffuse = Texture("Textures/sponza_floor_a_diff.tga");
+	textureSponzaFloorDiffuse.LoadTexture();
+	textureSponzaFloorNormal = Texture("Textures/sponza_floor_a_ddn.tga");
+	textureSponzaFloorNormal.LoadTexture();
+	textureSponzaWallDiffuse = Texture("Textures/sponza_bricks_a_diff.tga");
+	textureSponzaWallDiffuse.LoadTexture();
+	textureSponzaWallNormal = Texture("Textures/sponza_bricks_a_ddn.tga");
+	textureSponzaWallNormal.LoadTexture();
+	textureSponzaCeilDiffuse = Texture("Textures/sponza_ceiling_a_diff.tga");
+	textureSponzaCeilDiffuse.LoadTexture();
+	textureSponzaCeilNormal = Texture("Textures/sponza_ceiling_a_ddn.tga");
+	textureSponzaCeilNormal.LoadTexture();
+
+	crateTextureDiffuse = Texture("Textures/crate.png");
+	crateTextureDiffuse.LoadTexture(true);
+	crateTextureNormal = Texture("Textures/crateNormal.png");
+	crateTextureNormal.LoadTexture(true);
 	grassTexture = Texture("Textures/grass.jpg");
 	grassTexture.LoadTexture();
 
@@ -517,14 +542,17 @@ int main()
 	dullMaterial = Material(1.0f, 64.0f);
 	superShinyMaterial = Material(1.0f, 256.0f);
 
-	// sponza = Model();
-	// sponza.LoadModel("Models/sponza.obj");
+	if (currentScene == "sponza")
+	{
+		sponza = Model();
+		sponza.LoadModel("Models/sponza.obj");
+	}
 
 	cottage = Model();
 	cottage.LoadModel("Models/cottage.obj");
 
 	mainLight = DirectionalLight(1024, 1024, { 1.0f, 1.0f, 1.0f },
-		sceneSettings["default"].ambientIntensity, sceneSettings["default"].diffuseIntensity, { 0.2f, -0.8f, 0.2f });
+		sceneSettings[currentScene].ambientIntensity, sceneSettings[currentScene].diffuseIntensity, { 0.2f, -0.8f, 0.2f });
 
 	pointLights[0] = PointLight({ 1.0f, 1.0f, 0.9f }, 0.2f, 1.0f, {  4.0f, 2.0f, 2.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;															 
@@ -537,7 +565,7 @@ int main()
 	spotLightCount++;
 	spotLights[1] = SpotLight({ 0.8f, 0.8f, 1.0f }, 0.3f, 6.0f, { -50.0f, 74.0f, -1.2f }, { -0.6f, -1.0f, 0.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
 	spotLightCount++;
-	spotLights[2] = SpotLight({ 1.0f, 1.0f, 1.0f }, 0.0f, 4.0f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
+	spotLights[2] = SpotLight({ 1.0f, 1.0f, 1.0f }, 0.2f, 4.0f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
 	spotLightCount++;
 
 	// Projection matrix
@@ -556,7 +584,7 @@ int main()
 		camera.keyControl(mainWindow.getKeys(), deltaTime);
 		camera.mouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
 
-		DirectionalShadowMapPass(&mainLight);
+		// DirectionalShadowMapPass(&mainLight);
 
 		RenderPass(projection, camera.CalculateViewMatrix());
 

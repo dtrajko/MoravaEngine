@@ -18,9 +18,10 @@ void Model::LoadModel(const std::string& fileName)
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(fileName, 
 		aiProcess_Triangulate | 
-		aiProcess_FlipUVs | 
+		aiProcess_FlipUVs |
 		aiProcess_GenSmoothNormals | 
-		aiProcess_JoinIdenticalVertices);
+		aiProcess_JoinIdenticalVertices |
+		aiProcess_CalcTangentSpace);
 
 	if (!scene)
 	{
@@ -63,7 +64,10 @@ void Model::LoadMesh(aiMesh* mesh, const aiScene* scene)
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
+		// position
 		vertices.insert(vertices.end(), { mesh->mVertices[i].x, mesh->mVertices[i].y , mesh->mVertices[i].z });
+
+		// tex coords
 		if (mesh->mTextureCoords[0])
 		{
 			vertices.insert(vertices.end(), { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y });
@@ -72,7 +76,19 @@ void Model::LoadMesh(aiMesh* mesh, const aiScene* scene)
 		{
 			vertices.insert(vertices.end(), { 0.0f, 0.0f });
 		}
+
+		// normals
 		vertices.insert(vertices.end(), { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z });
+
+		// tangents
+		if (mesh->mTangents)
+		{
+			vertices.insert(vertices.end(), { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z });
+		}
+		else
+		{
+			vertices.insert(vertices.end(), { 0.0f, 0.0f, 0.0f });
+		}		
 	}
 
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
@@ -141,7 +157,7 @@ void Model::LoadMaterials(const aiScene* scene)
 
 				normalMapList[i] = new Texture(texPath.c_str());
 
-				if (!normalMapList[i]->LoadNormalMap())
+				if (!normalMapList[i]->LoadTexture())
 				{
 					printf("Failed to load normal map at '%s'\n", texPath.c_str());
 					delete normalMapList[i];
@@ -165,7 +181,12 @@ void Model::RenderModel()
 
 		if (materialIndex < textureList.size() && textureList[materialIndex])
 		{
-			textureList[materialIndex]->UseTexture();
+			textureList[materialIndex]->UseTexture(0);
+		}
+
+		if (materialIndex < normalMapList.size() && normalMapList[materialIndex])
+		{
+			normalMapList[materialIndex]->UseTexture(1);
 		}
 
 		meshList[i]->RenderMesh();
