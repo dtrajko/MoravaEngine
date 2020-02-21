@@ -4,6 +4,7 @@
 #include <string.h>
 #include <cmath>
 #include <vector>
+#include <map>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -33,6 +34,17 @@ const GLint HEIGHT = 720;
 const float toRadians = 3.14159265f / 180.0f;
 
 Window mainWindow;
+
+
+struct SceneSettings
+{
+	glm::vec3 cameraPosition; // = glm::vec3(0.0f, 2.0f, 5.0f);
+	float cameraStartYaw; // = -90.0f;
+	float ambientIntensity; // = 0.2f;
+	float diffuseIntensity; // = 1.0f;
+};
+
+
 std::vector <Mesh*> meshList;
 std::vector <Shader*> shaderList;
 
@@ -46,12 +58,14 @@ Texture sponzaFloorTexture;
 Texture sponzaWallTexture;
 Texture sponzaCeilTexture;
 Texture crateTexture;
+Texture grassTexture;
 
 Material shinyMaterial;
 Material dullMaterial;
 Material superShinyMaterial;
 
 Model sponza;
+Model cottage;
 
 DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
@@ -171,14 +185,6 @@ void CreateObjects()
 
 	calcAverageNormals(indices, indexCount, vertices, vertexCount, 8, 5);
 
-	Mesh* obj1 = new Mesh();
-	obj1->CreateMesh(vertices, indices, vertexCount, indexCount);
-	meshList.push_back(obj1);
-
-	Mesh* obj2 = new Mesh();
-	obj2->CreateMesh(vertices, indices, vertexCount, indexCount);
-	meshList.push_back(obj2);
-
 	/* Floor Mesh */
 	GLfloat floorVertices[] =
 	{
@@ -198,6 +204,33 @@ void CreateObjects()
 
 	unsigned int floorIndexCount = 6;
 
+	/* Basic Quad mesh */
+	GLfloat quadVertices[] =
+	{
+		-1.0f, 0.0f, -1.0f,   0.0f, 0.0f,   0.0f, 1.0f, 0.0f,
+		 1.0f, 0.0f, -1.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,
+		-1.0f, 0.0f,  1.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
+		 1.0f, 0.0f,  1.0f,   1.0f, 1.0f,   0.0f, 1.0f, 0.0f,
+	};
+
+	unsigned int quadVertexCount = 32;
+
+	unsigned int quadIndices[] =
+	{
+		0, 2, 1,
+		1, 2, 3,
+	};
+
+	unsigned int quadIndexCount = 6;
+
+	Mesh* obj1 = new Mesh();
+	obj1->CreateMesh(vertices, indices, vertexCount, indexCount);
+	meshList.push_back(obj1);
+
+	Mesh* obj2 = new Mesh();
+	obj2->CreateMesh(vertices, indices, vertexCount, indexCount);
+	meshList.push_back(obj2);
+
 	Mesh* floor = new Mesh();
 	floor->CreateMesh(floorVertices, floorIndices, floorVertexCount, floorIndexCount);
 	meshList.push_back(floor);
@@ -209,6 +242,10 @@ void CreateObjects()
 	Mesh* ceil = new Mesh();
 	ceil->CreateMesh(floorVertices, floorIndices, floorVertexCount, floorIndexCount);
 	meshList.push_back(ceil);
+
+	Mesh* shadowMapDisplay = new Mesh();
+	shadowMapDisplay->CreateMesh(quadVertices, quadIndices, quadVertexCount, quadIndexCount);
+	meshList.push_back(shadowMapDisplay);
 }
 
 void CreateShaders()
@@ -274,8 +311,8 @@ void RenderScene()
 	model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	sponzaFloorTexture.UseTexture();
-	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	grassTexture.UseTexture();
+	shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	meshList[2]->RenderMesh();
 
 	/* Wall Right */
@@ -344,6 +381,31 @@ void RenderScene()
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	// sponza.RenderModel();
+
+	/* Cottage */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 20.0f, -5.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	cottage.RenderModel();
+
+	/* Shadow map display */
+	// model = glm::mat4(1.0f);
+	// model = glm::translate(model, glm::vec3(0.0f, 5.0f, -9.0f));
+	// model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	// model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	// model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	// model = glm::scale(model, glm::vec3(2.0f));
+	// glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	// mainLight.GetShadowMap()->Read(GL_TEXTURE1);
+	// shaderList[0]->SetTexture(1);
+	// shaderList[0]->SetDirectionalShadowMap(1);
+	// superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	// meshList[5]->RenderMesh();
 }
 
 void DirectionalShadowMapPass(DirectionalLight* light)
@@ -407,10 +469,34 @@ int main()
 	mainWindow = Window(WIDTH, HEIGHT);
 	mainWindow.Initialize();
 
+	/* Start scene settings */
+	std::map<std::string, SceneSettings> sceneSettings;
+
+	sceneSettings.insert(std::make_pair("default", SceneSettings()));
+	sceneSettings.insert(std::make_pair("sponza", SceneSettings()));
+
+	sceneSettings["default"].cameraPosition = glm::vec3(0.0f, 25.0f, 15.0f);
+	sceneSettings["default"].cameraStartYaw = -90.0f;
+	sceneSettings["default"].ambientIntensity = 0.2f;
+	sceneSettings["default"].diffuseIntensity = 1.0f;
+
+	sceneSettings["sponza"].cameraPosition = glm::vec3(-25.0f, 45.0f, -2.0f);
+	sceneSettings["sponza"].cameraStartYaw = 0.0f;
+	sceneSettings["sponza"].ambientIntensity = 0.2f;
+	sceneSettings["sponza"].diffuseIntensity = 1.2f;
+	/* End scene settings */
+
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(glm::vec3(-25.0f, 45.0f, -2.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f, 4.0f, 0.1f);
+	glm::vec3 camPositionDefault = glm::vec3(0.0f, 25.0f, 15.0f);
+	float startYawDefault = -90.0f;
+	glm::vec3 camPositionSponza = glm::vec3(-25.0f, 45.0f, -2.0f);
+	float startYawSponza = 0.0f;
+	float ambientIntensitySponza = 0.2f;
+	float diffuseIntensitySponza = 1.2f;
+
+	camera = Camera(sceneSettings["default"].cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), sceneSettings["default"].cameraStartYaw, 0.0f, 4.0f, 0.1f);
 
 	brickTexture = Texture("Textures/brick.png");
 	brickTexture.LoadTexture();
@@ -424,15 +510,21 @@ int main()
 	sponzaCeilTexture.LoadTexture();
 	crateTexture = Texture("Textures/crate.png");
 	crateTexture.LoadTexture();
+	grassTexture = Texture("Textures/grass.jpg");
+	grassTexture.LoadTexture();
 
 	shinyMaterial = Material(1.0f, 128.0f);
 	dullMaterial = Material(1.0f, 64.0f);
 	superShinyMaterial = Material(1.0f, 256.0f);
 
-	sponza = Model();
+	// sponza = Model();
 	// sponza.LoadModel("Models/sponza.obj");
 
-	mainLight = DirectionalLight(1024, 1024, { 1.0f, 1.0f, 1.0f }, 0.2f, 1.2f, { 0.2f, -0.8f, 0.2f }); // { 0.76f, -0.64f, -0.1f }
+	cottage = Model();
+	cottage.LoadModel("Models/cottage.obj");
+
+	mainLight = DirectionalLight(1024, 1024, { 1.0f, 1.0f, 1.0f },
+		sceneSettings["default"].ambientIntensity, sceneSettings["default"].diffuseIntensity, { 0.2f, -0.8f, 0.2f });
 
 	pointLights[0] = PointLight({ 1.0f, 1.0f, 0.9f }, 0.2f, 1.0f, {  4.0f, 2.0f, 2.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;															 

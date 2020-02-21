@@ -93,6 +93,7 @@ void Model::LoadMesh(aiMesh* mesh, const aiScene* scene)
 void Model::LoadMaterials(const aiScene* scene)
 {
 	textureList.resize(scene->mNumMaterials);
+	normalMapList.resize(scene->mNumMaterials);
 
 	for (unsigned int i = 0; i < scene->mNumMaterials; i++)
 	{
@@ -119,6 +120,32 @@ void Model::LoadMaterials(const aiScene* scene)
 					printf("Failed to load texture at '%s'\n", texPath.c_str());
 					delete textureList[i];
 					textureList[i] = nullptr;
+				}
+			}
+		}
+
+		if (material->GetTextureCount(aiTextureType_HEIGHT))
+		{
+			aiString path;
+			if (material->GetTexture(aiTextureType_HEIGHT, 0, &path) == AI_SUCCESS)
+			{
+				size_t idx = std::string(path.data).rfind("\\");
+				std::string filename = std::string(path.data).substr(idx + 1);
+
+				size_t idxBm = filename.rfind("-bm");
+				filename = filename.substr(0, idxBm - 1);
+
+				std::string texPath = std::string("Textures/") + filename;
+
+				printf("Normal Map Texture loaded 'Textures/%s'\n", filename.c_str());
+
+				normalMapList[i] = new Texture(texPath.c_str());
+
+				if (!normalMapList[i]->LoadNormalMap())
+				{
+					printf("Failed to load normal map at '%s'\n", texPath.c_str());
+					delete normalMapList[i];
+					normalMapList[i] = nullptr;
 				}
 			}
 		}

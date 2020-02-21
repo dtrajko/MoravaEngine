@@ -28,6 +28,7 @@ private:
 private:
 	std::vector <Mesh*> meshList;
 	std::vector <Texture*> textureList;
+	std::vector <Texture*> normalMapList;
 	std::vector <unsigned int> meshToTexture;
 
 

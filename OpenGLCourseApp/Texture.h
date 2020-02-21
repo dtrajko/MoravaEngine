@@ -12,6 +12,7 @@ public:
 	Texture(const char* fileLoc);
 
 	bool LoadTexture();
+	bool LoadNormalMap();
 	void UseTexture();
 	void ClearTexture();
 
