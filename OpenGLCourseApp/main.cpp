@@ -538,8 +538,8 @@ int main()
 
 	sceneSettings["sponza"].cameraPosition = glm::vec3(-25.0f, 45.0f, -2.0f);
 	sceneSettings["sponza"].cameraStartYaw = 0.0f;
-	sceneSettings["sponza"].ambientIntensity = 0.2f;
-	sceneSettings["sponza"].diffuseIntensity = 1.0f;
+	sceneSettings["sponza"].ambientIntensity = 0.3f;
+	sceneSettings["sponza"].diffuseIntensity = 1.1f;
 	/* End scene settings */
 
 	CreateObjects();

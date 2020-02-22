@@ -38,12 +38,11 @@ struct Material
 	float shininess;
 };
 
-in vec4 vCol;
-in vec2 TexCoord;
-in vec3 vNormal;
+in vec2 TexCoords;
+in vec3 Normal;
 in vec3 FragPos;
 in vec4 DirectionalLightSpacePos;
-in mat3 tbnMatrix;
+in mat3 TBN;
 
 out vec4 color;
 
@@ -64,9 +63,13 @@ uniform vec3 eyePosition;
 
 vec3 GetNormal()
 {
-	return normalize(vNormal);
-	vec3 tbnNormal = normalize(texture(normalMap, TexCoord).rgb * 255.0/128.0 - 1.0);
-	return tbnNormal;
+	vec3 normal = normalize(Normal);
+	return normal;
+
+	normal = texture(normalMap, TexCoords).rgb;
+	normal = normal * 2.0 - 1.0;
+	normal = normalize(TBN * normal);
+	return normal;
 }
 
 float CalcDirectionalShadowFactor(DirectionalLight light)
@@ -117,7 +120,7 @@ vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
 
 vec4 CalcDirectionalLight()
 {
-	float shadowFactor = CalcDirectionalShadowFactor(directionalLight);
+	float shadowFactor = 0.0; // CalcDirectionalShadowFactor(directionalLight);
 	return CalcLightByDirection(directionalLight.base, directionalLight.direction, shadowFactor);
 }
 
@@ -126,7 +129,7 @@ vec4 CalcPointLight(PointLight pointLight)
 	vec3 direction = FragPos - pointLight.position;
 	float distance = length(direction);
 	direction = normalize(direction);
-	
+
 	vec4 color = CalcLightByDirection(pointLight.base, direction, 0.0);
 	float attenuation =	pointLight.exponent * distance * distance +
 						pointLight.linear * distance +
@@ -179,7 +182,7 @@ void main()
 	finalColor += CalcPointLights();
 	finalColor += CalcSpotLights();
 
-	vec4 texColor = texture(theTexture, TexCoord);
+	vec4 texColor = texture(theTexture, TexCoords);
 	if(texColor.a < 0.1)
         discard;
 

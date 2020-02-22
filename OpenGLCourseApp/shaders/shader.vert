@@ -1,17 +1,16 @@
 #version 330
 
-layout (location = 0) in vec3 pos;
-layout (location = 1) in vec2 tex;
-layout (location = 2) in vec3 normal;
-layout (location = 3) in vec3 tangent;
-layout (location = 4) in vec3 bitangent;
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoords;
+layout (location = 2) in vec3 aNormal;
+layout (location = 3) in vec3 aTangent;
+layout (location = 4) in vec3 aBitangent;
 
-out vec4 vCol;
-out vec2 TexCoord;
-out vec3 vNormal;
+out vec2 TexCoords;
+out vec3 Normal;
 out vec3 FragPos;
 out vec4 DirectionalLightSpacePos;
-out mat3 tbnMatrix;
+out mat3 TBN;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -20,19 +19,19 @@ uniform mat4 directionalLightTransform;
 
 void main()
 {
-	gl_Position = projection * view * model * vec4(pos, 1.0);
+	FragPos = (model * vec4(aPos, 1.0)).xyz;
+	TexCoords = aTexCoords;
 	
-	DirectionalLightSpacePos = directionalLightTransform * model * vec4(pos, 1.0);
+	DirectionalLightSpacePos = directionalLightTransform * model * vec4(aPos, 1.0);
 	
-	vCol = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);
-	TexCoord = tex;
-	vNormal = mat3(transpose(inverse(model))) * normal; // mat3 - normal depends on model's rotation and scale
-	FragPos = (model * vec4(pos, 1.0)).xyz;
+	mat3 modelVector = transpose(inverse(mat3(model)));
 
-	mat3 modelView3x3 = mat3(transpose(view * model));
-	vec3 tbnNormal    = modelView3x3 * normalize(normal);
-    vec3 tbnTangent   = modelView3x3 * normalize(tangent);
-    vec3 tbnBitangent = modelView3x3 * normalize(bitangent);
+	vec3 T = normalize(modelVector * aTangent);
+	vec3 B = normalize(modelVector * aBitangent);
+	vec3 N = normalize(modelVector * aNormal);
+	TBN = mat3(T, B, N);
 
-	tbnMatrix = transpose(mat3(tbnTangent, tbnBitangent, tbnNormal));
+	Normal = normalize(modelVector * aNormal);
+
+	gl_Position = projection * view * vec4(FragPos, 1.0);
 }
