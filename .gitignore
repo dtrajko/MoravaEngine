@@ -71,6 +71,7 @@ StyleCopReport.xml
 *.ilk
 *.meta
 *.obj
+!OpenGLCourseApp/Models/*.obj
 *.iobj
 *.pch
 *.pdb
