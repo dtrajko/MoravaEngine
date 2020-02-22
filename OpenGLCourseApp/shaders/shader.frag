@@ -179,5 +179,9 @@ void main()
 	finalColor += CalcPointLights();
 	finalColor += CalcSpotLights();
 
-	color = texture(theTexture, TexCoord) * finalColor;
+	vec4 texColor = texture(theTexture, TexCoord);
+	if(texColor.a < 0.1)
+        discard;
+
+	color = texColor * finalColor;
 }
