@@ -45,6 +45,7 @@ public:
 
 	// Directional light shadow map
 	void SetTexture(GLuint textureUnit);
+	void SetNormalMap(GLuint textureUnit);
 	void SetDirectionalShadowMap(GLuint textureUnit);
 	void SetDirectionalLightTransform(glm::mat4* transform);
 
@@ -114,5 +115,6 @@ private:
 	GLint uniformShininess;
 
 	GLint uniformTexture;
+	GLint uniformNormalMap;
 
 };

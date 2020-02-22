@@ -64,7 +64,7 @@ uniform vec3 eyePosition;
 vec3 GetNormal()
 {
 	vec3 normal = normalize(Normal);
-	return normal;
+	// return normal;
 
 	normal = texture(normalMap, TexCoords).rgb;
 	normal = normal * 2.0 - 1.0;

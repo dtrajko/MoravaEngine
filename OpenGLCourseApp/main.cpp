@@ -40,6 +40,7 @@ Window mainWindow;
 struct SceneSettings
 {
 	glm::vec3 cameraPosition;
+	glm::vec3 lightDirection;
 	float cameraStartYaw;
 	float ambientIntensity;
 	float diffuseIntensity;
@@ -508,9 +509,10 @@ void RenderPass(glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 	shaderList[0]->SetSpotLights(spotLights, spotLightCount);
 	shaderList[0]->SetDirectionalLightTransform(&mainLight.CalculateLightTransform());
 
-	mainLight.GetShadowMap()->Read(GL_TEXTURE1);
+	mainLight.GetShadowMap()->Read(2);
 	shaderList[0]->SetTexture(0);
-	shaderList[0]->SetDirectionalShadowMap(1);
+	shaderList[0]->SetNormalMap(1);
+	shaderList[0]->SetDirectionalShadowMap(2);
 
 	glm::vec3 lowerLight = camera.getCameraPosition();
 	lowerLight.y -= 0.2f;
@@ -532,14 +534,16 @@ int main()
 	sceneSettings.insert(std::make_pair("sponza", SceneSettings()));
 
 	sceneSettings["default"].cameraPosition = glm::vec3(0.0f, 25.0f, 15.0f);
+	sceneSettings["default"].lightDirection = glm::vec3(-0.4f, -1.0f, -0.4f);
 	sceneSettings["default"].cameraStartYaw = -90.0f;
 	sceneSettings["default"].ambientIntensity = 0.1f;
 	sceneSettings["default"].diffuseIntensity = 0.5f;
 
 	sceneSettings["sponza"].cameraPosition = glm::vec3(-25.0f, 45.0f, -2.0f);
+	sceneSettings["sponza"].lightDirection = glm::vec3(-0.4f, -1.0f, -0.4f);
 	sceneSettings["sponza"].cameraStartYaw = 0.0f;
-	sceneSettings["sponza"].ambientIntensity = 0.3f;
-	sceneSettings["sponza"].diffuseIntensity = 1.1f;
+	sceneSettings["sponza"].ambientIntensity = 0.5f;
+	sceneSettings["sponza"].diffuseIntensity = 1.2f;
 	/* End scene settings */
 
 	CreateObjects();
@@ -587,7 +591,7 @@ int main()
 	cottage.LoadModel("Models/cottage.obj");
 
 	mainLight = DirectionalLight(1024, 1024, { 1.0f, 1.0f, 1.0f },
-		sceneSettings[currentScene].ambientIntensity, sceneSettings[currentScene].diffuseIntensity, { 0.2f, -0.8f, 0.2f });
+		sceneSettings[currentScene].ambientIntensity, sceneSettings[currentScene].diffuseIntensity, sceneSettings[currentScene].lightDirection);
 
 	pointLights[0] = PointLight({ 1.0f, 1.0f, 0.9f }, 0.2f, 1.0f, {  4.0f, 2.0f, 2.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;															 
@@ -600,7 +604,7 @@ int main()
 	spotLightCount++;
 	spotLights[1] = SpotLight({ 0.8f, 0.8f, 1.0f }, 0.3f, 6.0f, { -50.0f, 74.0f, -1.2f }, { -0.6f, -1.0f, 0.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
 	spotLightCount++;
-	spotLights[2] = SpotLight({ 1.0f, 1.0f, 1.0f }, 0.2f, 0.6f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
+	spotLights[2] = SpotLight({ 1.0f, 1.0f, 1.0f }, 0.4f, 0.8f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
 	spotLightCount++;
 
 	// Projection matrix

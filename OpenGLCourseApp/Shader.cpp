@@ -158,6 +158,11 @@ void Shader::SetTexture(GLuint textureUnit)
 	glUniform1i(uniformTexture, textureUnit);
 }
 
+void Shader::SetNormalMap(GLuint textureUnit)
+{
+	glUniform1i(uniformNormalMap, textureUnit);
+}
+
 void Shader::SetDirectionalShadowMap(GLuint textureUnit)
 {
 	glUniform1i(uniformDirectionalShadowMap, textureUnit);
@@ -310,6 +315,8 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 	uniformTexture = glGetUniformLocation(programID, "theTexture");
 	uniformDirectionalLightTransform = glGetUniformLocation(programID, "directionalLightTransform");
 	uniformDirectionalShadowMap = glGetUniformLocation(programID, "directionalShadowMap");
+
+	uniformNormalMap = glGetUniformLocation(programID, "normalMap");
 
 	printf("Shader program validation complete.\n");
 }
