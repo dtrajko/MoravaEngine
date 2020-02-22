@@ -1,13 +1,5 @@
 #version 330
 
-in vec4 vCol;
-in vec2 TexCoord;
-in vec3 vNormal;
-in vec3 FragPos;
-in vec4 DirectionalLightSpacePos;
-
-out vec4 color;
-
 const int MAX_POINT_LIGHTS = 3;
 const int MAX_SPOT_LIGHTS = 3;
 
@@ -40,12 +32,20 @@ struct SpotLight
 	float edge;
 };
 
-
 struct Material
 {
 	float specularIntensity;
 	float shininess;
 };
+
+in vec4 vCol;
+in vec2 TexCoord;
+in vec3 vNormal;
+in vec3 FragPos;
+in vec4 DirectionalLightSpacePos;
+in mat3 tbnMatrix;
+
+out vec4 color;
 
 uniform int pointLightCount;
 uniform int spotLightCount;
@@ -55,6 +55,7 @@ uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 
 uniform sampler2D theTexture;
+uniform sampler2D normalMap;
 uniform sampler2D directionalShadowMap;
 
 uniform Material material;
