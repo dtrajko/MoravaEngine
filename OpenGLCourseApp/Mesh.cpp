@@ -37,6 +37,9 @@ void Mesh::CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int num
 	// tangent
 	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Tangent));
+	// bitangent
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Bitangent));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
@@ -75,7 +78,7 @@ void Mesh::ClearMesh()
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
 	glDisableVertexAttribArray(3);
-
+	glDisableVertexAttribArray(4);
 }
 
 Mesh::~Mesh()

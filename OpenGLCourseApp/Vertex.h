@@ -9,4 +9,5 @@ struct Vertex
 	glm::vec2 TexCoord;
 	glm::vec3 Normal;
 	glm::vec3 Tangent;
+	glm::vec3 Bitangent;
 };

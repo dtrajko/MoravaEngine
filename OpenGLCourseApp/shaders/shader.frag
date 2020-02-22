@@ -65,6 +65,8 @@ uniform vec3 eyePosition;
 vec3 GetNormal()
 {
 	return normalize(vNormal);
+	vec3 tbnNormal = normalize(texture(normalMap, TexCoord).rgb * 255.0/128.0 - 1.0);
+	return tbnNormal;
 }
 
 float CalcDirectionalShadowFactor(DirectionalLight light)
@@ -82,7 +84,7 @@ float CalcDirectionalShadowFactor(DirectionalLight light)
 
 	if (projCoords.z > 1.0)
 	{
-		shadow = 0.0f;
+		shadow = 0.0;
 	}
 
 	return shadow;

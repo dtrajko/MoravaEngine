@@ -88,7 +88,17 @@ void Model::LoadMesh(aiMesh* mesh, const aiScene* scene)
 		else
 		{
 			vertices.insert(vertices.end(), { 0.0f, 0.0f, 0.0f });
-		}		
+		}
+
+		// bitangents
+		if (mesh->mBitangents)
+		{
+			vertices.insert(vertices.end(), { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z });
+		}
+		else
+		{
+			vertices.insert(vertices.end(), { 0.0f, 0.0f, 0.0f });
+		}
 	}
 
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)

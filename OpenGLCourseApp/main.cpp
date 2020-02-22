@@ -39,13 +39,13 @@ Window mainWindow;
 
 struct SceneSettings
 {
-	glm::vec3 cameraPosition; // = glm::vec3(0.0f, 2.0f, 5.0f);
-	float cameraStartYaw; // = -90.0f;
-	float ambientIntensity; // = 0.2f;
-	float diffuseIntensity; // = 1.0f;
+	glm::vec3 cameraPosition;
+	float cameraStartYaw;
+	float ambientIntensity;
+	float diffuseIntensity;
 };
 
-std::string currentScene = "default"; // "default", "sponza"
+std::string currentScene = "sponza"; // "default", "sponza"
 
 
 std::vector <Mesh*> meshList;
@@ -133,43 +133,86 @@ void calcAverageNormals(unsigned int* indices, unsigned int indiceCount,
 	}
 }
 
+void calcTangentSpace(unsigned int* indices, unsigned int indiceCount,
+	GLfloat* vertices, unsigned int verticeCount)
+{
+	unsigned int vLength = sizeof(Vertex) / sizeof(float);
+
+	for (size_t i = 0; i < indiceCount; i += 3)
+	{
+		unsigned int in0 = indices[i + 0] * vLength;
+		unsigned int in1 = indices[i + 1] * vLength;
+		unsigned int in2 = indices[i + 2] * vLength;
+		glm::vec3 v0(vertices[in0 + 0], vertices[in0 + 1], vertices[in0 + 2]);
+		glm::vec3 v1(vertices[in1 + 0], vertices[in1 + 1], vertices[in1 + 2]);
+		glm::vec3 v2(vertices[in0 + 2], vertices[in2 + 1], vertices[in2 + 2]);
+
+		glm::vec2 uv0(vertices[in0 + 3], vertices[in0 + 4]);
+		glm::vec2 uv1(vertices[in1 + 3], vertices[in1 + 4]);
+		glm::vec2 uv2(vertices[in2 + 3], vertices[in2 + 4]);
+
+		// Edges of the triangle : position delta
+		glm::vec3 deltaPos1 = v1 - v0;
+		glm::vec3 deltaPos2 = v2 - v1;
+
+		// UV delta
+		glm::vec2 deltaUV1 = uv1 - uv0;
+		glm::vec2 deltaUV2 = uv2 - uv0;
+
+		float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+		glm::vec3 tangent   = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+		glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+
+		// write tangents
+		vertices[in0 + 8] = tangent.x; vertices[in0 + 9] = tangent.y; vertices[in0 + 10] = tangent.z;
+		vertices[in1 + 8] = tangent.x; vertices[in1 + 9] = tangent.y; vertices[in1 + 10] = tangent.z;
+		vertices[in2 + 8] = tangent.x; vertices[in2 + 9] = tangent.y; vertices[in2 + 10] = tangent.z;
+
+		// write bitangents
+		vertices[in0 + 11] = bitangent.x; vertices[in0 + 12] = bitangent.y; vertices[in0 + 13] = bitangent.z;
+		vertices[in1 + 11] = bitangent.x; vertices[in1 + 12] = bitangent.y; vertices[in1 + 13] = bitangent.z;
+		vertices[in2 + 11] = bitangent.x; vertices[in2 + 12] = bitangent.y; vertices[in2 + 13] = bitangent.z;
+	}
+}
+
+
 void CreateObjects()
 {
 	GLfloat vertices[] =
 	{
-		//  X      Y      Z        U     V        NX     NY     NZ        TX     TY     TZ
-		-0.5f,  0.5f, -0.5f,    1.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,    1.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,    0.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,    0.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
-							 				 						  
-		-0.5f,  0.5f,  0.5f,    0.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
-		-0.5f, -0.5f,  0.5f,    0.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
-		 0.5f, -0.5f,  0.5f,    1.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,    1.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
-							 				 						  
-		 0.5f,  0.5f, -0.5f,    1.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f,  0.5f,    0.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
-							 				 						  
-		-0.5f,  0.5f, -0.5f,    0.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f,  0.5f,    1.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
-							 				 						  
-		-0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f, -0.5f,    1.0f, 0.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,    0.0f, 0.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
-		 0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
-							 				 						  
-		-0.5f, -0.5f,  0.5f,    0.0f, 1.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
-		-0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f,  0.5f,    1.0f, 1.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
+		//  X      Y      Z        U     V        NX     NY     NZ        TX     TY     TZ        BX     BY     BZ
+		-0.5f,  0.5f, -0.5f,    1.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,    1.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,    0.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
+		 0.5f,  0.5f, -0.5f,    0.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
+
+		-0.5f,  0.5f,  0.5f,    0.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
+		-0.5f, -0.5f,  0.5f,    0.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
+		 0.5f, -0.5f,  0.5f,    1.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,    1.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
+
+		 0.5f,  0.5f, -0.5f,    1.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f,  0.5f,    0.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
+
+		-0.5f,  0.5f, -0.5f,    0.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f,  0.5f,    1.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
+
+		-0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f, -0.5f,    1.0f, 0.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
+		 0.5f,  0.5f, -0.5f,    0.0f, 0.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
+		 0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
+
+		-0.5f, -0.5f,  0.5f,    0.0f, 1.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
+		-0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f,  0.5f,    1.0f, 1.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
 	};
 
-	unsigned int vertexCount = 11 * 4 * 6;
+	unsigned int vertexCount = 14 * 4 * 6;
 
 	printf("Size of vertices array: %.2d\n", vertexCount);
 
@@ -192,18 +235,19 @@ void CreateObjects()
 	unsigned int indexCount = 6 * 6;
 
 	calcAverageNormals(indices, indexCount, vertices, vertexCount, sizeof(Vertex) / sizeof(float), offsetof(Vertex, Normal) / sizeof(float));
+	calcTangentSpace(indices, indexCount, vertices, vertexCount);
 
 	/* Floor Mesh */
 	GLfloat floorVertices[] =
 	{
-		// position               tex coords      normal               tangent
-		-10.0f, 0.0f, -10.0f,     0.0f,  0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,
-		 10.0f, 0.0f, -10.0f,    10.0f,  0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,
-		-10.0f, 0.0f,  10.0f,     0.0f, 10.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,
-		 10.0f, 0.0f,  10.0f,    10.0f, 10.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+		// position               tex coords      normal               tangent              bitangent
+		-10.0f, 0.0f, -10.0f,     0.0f,  0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
+		 10.0f, 0.0f, -10.0f,    10.0f,  0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
+		-10.0f, 0.0f,  10.0f,     0.0f, 10.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
+		 10.0f, 0.0f,  10.0f,    10.0f, 10.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
 	};
 
-	unsigned int floorVertexCount = 44;
+	unsigned int floorVertexCount = 14 * 4;
 
 	unsigned int floorIndices[] =
 	{
@@ -213,17 +257,18 @@ void CreateObjects()
 
 	unsigned int floorIndexCount = 6;
 
+
 	/* Basic Quad mesh */
 	GLfloat quadVertices[] =
 	{
-		// position           tex coords    normal              tangent
-		-1.0f, 0.0f, -1.0f,   0.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
-		 1.0f, 0.0f, -1.0f,   1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
-		-1.0f, 0.0f,  1.0f,   0.0f, 1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
-		 1.0f, 0.0f,  1.0f,   1.0f, 1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,
+		// position            tex coords     normal               tangent              bitangent 
+		-1.0f, 0.0f, -1.0f,    0.0f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
+		 1.0f, 0.0f, -1.0f,    1.0f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
+		-1.0f, 0.0f,  1.0f,    0.0f, 1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
+		 1.0f, 0.0f,  1.0f,    1.0f, 1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
 	};
 
-	unsigned int quadVertexCount = 44;
+	unsigned int quadVertexCount = 14 * 4;
 
 	unsigned int quadIndices[] =
 	{
@@ -232,6 +277,10 @@ void CreateObjects()
 	};
 
 	unsigned int quadIndexCount = 6;
+
+	calcAverageNormals(quadIndices, quadIndexCount, quadVertices, quadVertexCount, sizeof(Vertex) / sizeof(float), offsetof(Vertex, Normal) / sizeof(float));
+	calcTangentSpace(quadIndices, quadIndexCount, quadVertices, quadVertexCount);
+
 
 	Mesh* obj1 = new Mesh();
 	obj1->CreateMesh(vertices, indices, vertexCount, indexCount);
@@ -413,20 +462,6 @@ void RenderScene()
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	cottage.RenderModel();
-
-	/* Shadow map display */
-	// model = glm::mat4(1.0f);
-	// model = glm::translate(model, glm::vec3(0.0f, 5.0f, -9.0f));
-	// model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	// model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	// model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	// model = glm::scale(model, glm::vec3(2.0f));
-	// glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	// mainLight.GetShadowMap()->Read(GL_TEXTURE1);
-	// shaderList[0]->SetTexture(1);
-	// shaderList[0]->SetDirectionalShadowMap(1);
-	// superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-	// meshList[5]->RenderMesh();
 }
 
 void DirectionalShadowMapPass(DirectionalLight* light)
@@ -504,7 +539,7 @@ int main()
 	sceneSettings["sponza"].cameraPosition = glm::vec3(-25.0f, 45.0f, -2.0f);
 	sceneSettings["sponza"].cameraStartYaw = 0.0f;
 	sceneSettings["sponza"].ambientIntensity = 0.2f;
-	sceneSettings["sponza"].diffuseIntensity = 1.2f;
+	sceneSettings["sponza"].diffuseIntensity = 1.0f;
 	/* End scene settings */
 
 	CreateObjects();
@@ -565,7 +600,7 @@ int main()
 	spotLightCount++;
 	spotLights[1] = SpotLight({ 0.8f, 0.8f, 1.0f }, 0.3f, 6.0f, { -50.0f, 74.0f, -1.2f }, { -0.6f, -1.0f, 0.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
 	spotLightCount++;
-	spotLights[2] = SpotLight({ 1.0f, 1.0f, 1.0f }, 0.2f, 4.0f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
+	spotLights[2] = SpotLight({ 1.0f, 1.0f, 1.0f }, 0.2f, 0.6f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
 	spotLightCount++;
 
 	// Projection matrix
