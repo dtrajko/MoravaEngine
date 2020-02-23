@@ -113,7 +113,7 @@ float CalcDirectionalShadowFactor(DirectionalLight light)
 		shadow = 0.0;
 	}
 
-	return shadow * 0.5;
+	return shadow;
 }
 
 vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
