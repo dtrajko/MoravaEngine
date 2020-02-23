@@ -313,10 +313,9 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 	}
 
 	uniformTexture = glGetUniformLocation(programID, "theTexture");
-	uniformDirectionalLightTransform = glGetUniformLocation(programID, "directionalLightTransform");
-	uniformDirectionalShadowMap = glGetUniformLocation(programID, "directionalShadowMap");
-
 	uniformNormalMap = glGetUniformLocation(programID, "normalMap");
+	uniformDirectionalShadowMap = glGetUniformLocation(programID, "directionalShadowMap");
+	uniformDirectionalLightTransform = glGetUniformLocation(programID, "directionalLightTransform");
 
 	printf("Shader program validation complete.\n");
 }

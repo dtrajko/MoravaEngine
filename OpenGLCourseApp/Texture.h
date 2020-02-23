@@ -10,11 +10,10 @@ class Texture
 public:
 	Texture();
 	Texture(const char* fileLoc);
-
 	bool LoadTexture(bool flipVert = false);
-	void UseTexture(unsigned int textureUnit = 0);
+	void Bind(unsigned int textureUnit = 0);
+	void Unbind();
 	void ClearTexture();
-
 	~Texture();
 
 private:

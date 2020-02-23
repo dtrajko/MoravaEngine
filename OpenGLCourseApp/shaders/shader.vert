@@ -29,6 +29,11 @@ void main()
 	vec3 T = normalize(modelVector * aTangent);
 	vec3 B = normalize(modelVector * aBitangent);
 	vec3 N = normalize(modelVector * aNormal);
+
+	// Gram-Schmidt process
+	T = normalize(T - dot(T, N) * N);
+	B = cross(N, T);
+
 	TBN = mat3(T, B, N);
 
 	Normal = normalize(modelVector * aNormal);

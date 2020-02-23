@@ -191,12 +191,12 @@ void Model::RenderModel()
 
 		if (materialIndex < textureList.size() && textureList[materialIndex])
 		{
-			textureList[materialIndex]->UseTexture(0);
+			textureList[materialIndex]->Bind(0);
 		}
 
 		if (materialIndex < normalMapList.size() && normalMapList[materialIndex])
 		{
-			normalMapList[materialIndex]->UseTexture(1);
+			normalMapList[materialIndex]->Bind(1);
 		}
 
 		meshList[i]->RenderMesh();

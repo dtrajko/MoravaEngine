@@ -16,7 +16,7 @@ Light::Light(GLuint shadowWidth, GLuint shadowHeight,
 {
 	shadowMap = new ShadowMap();
 	shadowMap->Init(shadowWidth, shadowHeight);
-	lightProj = glm::mat4(1.0f);
+	// lightProj = glm::mat4(1.0f);
 
 	m_Color = glm::vec3(color.r, color.g, color.b);
 	m_AmbientIntensity = ambientIntensity;

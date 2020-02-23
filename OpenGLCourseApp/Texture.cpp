@@ -57,10 +57,15 @@ bool Texture::LoadTexture(bool flipVert)
 	return true;
 }
 
-void Texture::UseTexture(unsigned int textureUnit)
+void Texture::Bind(unsigned int textureUnit)
 {
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
 	glBindTexture(GL_TEXTURE_2D, textureID);
+}
+
+void Texture::Unbind()
+{
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Texture::ClearTexture()

@@ -72,8 +72,10 @@ private:
 	GLint uniformProjection;
 	GLint uniformEyePosition;
 
-	GLint uniformDirectionalLightTransform;
+	GLint uniformTexture;
+	GLint uniformNormalMap;
 	GLint uniformDirectionalShadowMap;
+	GLint uniformDirectionalLightTransform;
 
 	struct
 	{
@@ -113,8 +115,5 @@ private:
 
 	GLint uniformSpecularIntensity;
 	GLint uniformShininess;
-
-	GLint uniformTexture;
-	GLint uniformNormalMap;
 
 };
