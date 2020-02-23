@@ -15,6 +15,8 @@ public:
 	void UseLight(GLint ambientColorLocation, GLint ambientIntensityLocation,
 		GLint diffuseIntensityLocation, GLint directionLocation);
 
+	void SetDirection(glm::vec3 direction) { m_Direction = direction; };
+
 	glm::mat4 CalculateLightTransform();
 
 	~DirectionalLight();

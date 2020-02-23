@@ -481,7 +481,7 @@ void RenderSceneEiffel()
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(2.0f));
+	model = glm::scale(model, glm::vec3(3.0f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 	textureSponzaCeilDiffuse.Bind(0);
 	textureSponzaCeilNormal.Bind(1);
@@ -494,14 +494,14 @@ void RenderSceneEiffel()
 	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(0.0005f));
+	model = glm::scale(model, glm::vec3(0.0005f, 0.0005f, 0.0005f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	eiffel.RenderModel();
 
 	/* ShadowMap display */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 10.0f, -20.0f));
+	model = glm::translate(model, glm::vec3(0.0f, 10.0f, -30.0f));
 	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -619,7 +619,7 @@ int main()
 	sceneSettings["sponza"].shadowMapHeight = 2048.0f;
 
 	sceneSettings["eiffel"].cameraPosition = glm::vec3(0.0f, 7.0f, 20.0f);
-	sceneSettings["eiffel"].lightDirection = glm::vec3(4.0f, -2.0f, -4.0f);
+	sceneSettings["eiffel"].lightDirection = glm::vec3(6.0f, -7.0f, -6.0f);
 	sceneSettings["eiffel"].cameraStartYaw = -90.0f;
 	sceneSettings["eiffel"].ambientIntensity = 0.2f;
 	sceneSettings["eiffel"].diffuseIntensity = 1.0f;
@@ -715,6 +715,12 @@ int main()
 
 		camera.keyControl(mainWindow.getKeys(), deltaTime);
 		camera.mouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
+
+		// Shadow rotation
+		glm::vec3 lightDirection = sceneSettings[currentScene].lightDirection;
+		lightDirection.x = cos(now) * 6.0f;
+		lightDirection.z = sin(now) * 6.0f;
+		mainLight.SetDirection(lightDirection);
 
 		DirectionalShadowMapPass(&mainLight);
 
