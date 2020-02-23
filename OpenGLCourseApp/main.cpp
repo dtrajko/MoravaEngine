@@ -44,10 +44,11 @@ struct SceneSettings
 	float cameraStartYaw;
 	float ambientIntensity;
 	float diffuseIntensity;
-	float shadowMapWidth;
-	float shadowMapHeight;
+	unsigned int shadowMapWidth;
+	unsigned int shadowMapHeight;
 };
 
+std::map<std::string, SceneSettings> sceneSettings;
 std::string currentScene = "eiffel"; // "cottage", "sponza", "watchtower"
 
 
@@ -79,6 +80,7 @@ Material superShinyMaterial;
 Model sponza;
 Model cottage;
 Model eiffel;
+Model watchtower;
 
 DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
@@ -471,7 +473,7 @@ void RenderSceneSponza()
 	sponza.RenderModel();
 }
 
-void RenderSceneEiffel()
+void RenderSceneEiffel(bool shadowPass = false)
 {
 	glm::mat4 model;
 
@@ -486,36 +488,48 @@ void RenderSceneEiffel()
 	textureSponzaCeilDiffuse.Bind(0);
 	textureSponzaCeilNormal.Bind(1);
 	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-	meshList[2]->RenderMesh();
+	if (!shadowPass)
+	{
+		meshList[2]->RenderMesh();
+	}
 
-	/* Watchtower scene */
+	/* Eiffel model */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+	model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(0.0005f, 0.0005f, 0.0005f));
+	model = glm::scale(model, glm::vec3(0.0003f, 0.0003f, 0.0003f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	eiffel.RenderModel();
 
-	/* ShadowMap display */
+	/* Watchtower model */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 10.0f, -30.0f));
-	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::translate(model, glm::vec3(4.0f, -0.35f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(4.0f));
+	model = glm::scale(model, glm::vec3(0.5f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	// mainLight.GetShadowMap()->Read(2);
+	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	watchtower.RenderModel();
+
+	/* ShadowMap display */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 20.0f, -40.0f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(10.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 	shaderList[0]->SetTexture(2);
 	shaderList[0]->SetNormalMap(2);
-	// shaderList[0]->SetDirectionalShadowMap(2);
 	dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	meshList[5]->RenderMesh();
 }
 
-void RenderScene()
+void RenderScene(bool shadowPass = false)
 {
 	if (currentScene == "cottage")
 	{
@@ -529,7 +543,7 @@ void RenderScene()
 
 	if (currentScene == "eiffel")
 	{
-		RenderSceneEiffel();
+		RenderSceneEiffel(shadowPass);
 	}
 }
 
@@ -546,7 +560,8 @@ void DirectionalShadowMapPass(DirectionalLight* light)
 	uniformModel = directionalShadowShader.GetModelLocation();
 	directionalShadowShader.SetDirectionalLightTransform(&light->CalculateLightTransform());
 
-	RenderScene();
+	bool shadowPass = true;
+	RenderScene(shadowPass);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -589,6 +604,26 @@ void RenderPass(glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 	RenderScene();
 }
 
+void setupLight()
+{
+	mainLight = DirectionalLight(sceneSettings[currentScene].shadowMapWidth, sceneSettings[currentScene].shadowMapHeight, { 1.0f, 1.0f, 1.0f },
+		sceneSettings[currentScene].ambientIntensity, sceneSettings[currentScene].diffuseIntensity, sceneSettings[currentScene].lightDirection);
+
+	pointLights[0] = PointLight({ 1.0f, 0.0f, 1.0f }, 0.5f, 6.0f, { 0.0f, 20.0f, 0.0f }, 0.3f, 0.2f, 0.1f);
+	pointLightCount++;
+	pointLights[1] = PointLight({ 0.0f, 1.0f, 0.0f }, 0.1f, 1.0f, { 10.0f, 2.0f, -10.0f }, 0.3f, 0.2f, 0.1f);
+	pointLightCount++;
+	pointLights[2] = PointLight({ 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, { 10.0f, 2.0f, 10.0f }, 0.3f, 0.2f, 0.1f);
+	pointLightCount++;
+
+	spotLights[0] = SpotLight({ 1.0f, 1.0f, 1.0f }, 1.0f, 10.0f, { 0.0f, 20.0f, -28.0f }, { 0.0f, 0.0f, -1.0f }, 0.3f, 0.2f, 0.1f, 160.0f);
+	spotLightCount++;
+	spotLights[1] = SpotLight({ 0.8f, 0.8f, 1.0f }, 0.3f, 6.0f, { -10.0f, 2.0f, -10.0f }, { -0.6f, -1.0f, 0.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
+	spotLightCount++;
+	spotLights[2] = SpotLight({ 1.0f, 1.0f, 1.0f }, 0.4f, 0.8f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
+	spotLightCount++;
+}
+
 
 int main()
 {
@@ -596,8 +631,6 @@ int main()
 	mainWindow.Initialize();
 
 	/* Start scene settings */
-	std::map<std::string, SceneSettings> sceneSettings;
-
 	sceneSettings.insert(std::make_pair("cottage", SceneSettings()));
 	sceneSettings.insert(std::make_pair("sponza", SceneSettings()));
 	sceneSettings.insert(std::make_pair("eiffel", SceneSettings()));
@@ -607,24 +640,24 @@ int main()
 	sceneSettings["cottage"].cameraStartYaw = -90.0f;
 	sceneSettings["cottage"].ambientIntensity = 0.05f;
 	sceneSettings["cottage"].diffuseIntensity = 0.2f;
-	sceneSettings["cottage"].shadowMapWidth = 1048.0f;
-	sceneSettings["cottage"].shadowMapHeight = 1048.0f;
+	sceneSettings["cottage"].shadowMapWidth = 1024;
+	sceneSettings["cottage"].shadowMapHeight = 1024;
 
 	sceneSettings["sponza"].cameraPosition = glm::vec3(-25.0f, 45.0f, -2.0f);
 	sceneSettings["sponza"].lightDirection = glm::vec3(0.0f, -100.0f, 50.0f);
 	sceneSettings["sponza"].cameraStartYaw = 0.0f;
 	sceneSettings["sponza"].ambientIntensity = 0.2f;
 	sceneSettings["sponza"].diffuseIntensity = 0.9f;
-	sceneSettings["sponza"].shadowMapWidth = 2048.0f;
-	sceneSettings["sponza"].shadowMapHeight = 2048.0f;
+	sceneSettings["sponza"].shadowMapWidth = 2048;
+	sceneSettings["sponza"].shadowMapHeight = 2048;
 
-	sceneSettings["eiffel"].cameraPosition = glm::vec3(0.0f, 7.0f, 20.0f);
-	sceneSettings["eiffel"].lightDirection = glm::vec3(6.0f, -7.0f, -6.0f);
+	sceneSettings["eiffel"].cameraPosition = glm::vec3(0.0f, 6.0f, 20.0f);
+	sceneSettings["eiffel"].lightDirection = glm::vec3(3.0f, -8.0f, -3.0f);
 	sceneSettings["eiffel"].cameraStartYaw = -90.0f;
-	sceneSettings["eiffel"].ambientIntensity = 0.2f;
-	sceneSettings["eiffel"].diffuseIntensity = 1.0f;
-	sceneSettings["eiffel"].shadowMapWidth = 1048.0f;
-	sceneSettings["eiffel"].shadowMapHeight = 1048.0f;
+	sceneSettings["eiffel"].ambientIntensity = 0.1f;
+	sceneSettings["eiffel"].diffuseIntensity = 0.6f;
+	sceneSettings["eiffel"].shadowMapWidth = 2048;
+	sceneSettings["eiffel"].shadowMapHeight = 2048;
 	/* End scene settings */
 
 	CreateObjects();
@@ -681,24 +714,11 @@ int main()
 	{
 		eiffel = Model();
 		eiffel.LoadModel("Models/Eiffel_Tower.obj");
+		watchtower = Model();
+		watchtower.LoadModel("Models/wooden_watch_tower.obj");
 	}
 
-	mainLight = DirectionalLight(1024, 1024, { 1.0f, 1.0f, 1.0f },
-		sceneSettings[currentScene].ambientIntensity, sceneSettings[currentScene].diffuseIntensity, sceneSettings[currentScene].lightDirection);
-
-	pointLights[0] = PointLight({ 1.0f, 1.0f, 0.9f }, 0.2f, 1.0f, {  4.0f, 2.0f, 2.0f }, 0.3f, 0.2f, 0.1f);
-	pointLightCount++;															 
-	pointLights[1] = PointLight({ 0.0f, 1.0f, 0.0f }, 0.1f, 1.0f, { -4.0f, 6.0f, -6.0f }, 0.3f, 0.2f, 0.1f);
-	pointLightCount++;															 
-	pointLights[2] = PointLight({ 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, {  4.0f, 12.0f, -2.0f }, 0.3f, 0.2f, 0.1f);
-	pointLightCount++;
-
-	spotLights[0] = SpotLight({ 1.0f, 1.0f, 0.8f }, 0.3f, 6.0f, { -50.0f, 54.0f, -1.2f }, { -0.6f, -1.0f, 0.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
-	spotLightCount++;
-	spotLights[1] = SpotLight({ 0.8f, 0.8f, 1.0f }, 0.3f, 6.0f, { -50.0f, 74.0f, -1.2f }, { -0.6f, -1.0f, 0.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
-	spotLightCount++;
-	spotLights[2] = SpotLight({ 1.0f, 1.0f, 1.0f }, 0.4f, 0.8f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
-	spotLightCount++;
+	setupLight();
 
 	// Projection matrix
 	glm::mat4 projection = glm::perspective(45.0f, mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 200.0f);
@@ -718,8 +738,9 @@ int main()
 
 		// Shadow rotation
 		glm::vec3 lightDirection = sceneSettings[currentScene].lightDirection;
-		lightDirection.x = cos(now) * 6.0f;
-		lightDirection.z = sin(now) * 6.0f;
+		float lightRadius = abs(lightDirection.x);
+		lightDirection.x = cos(now) * lightRadius;
+		lightDirection.z = sin(now) * lightRadius;
 		mainLight.SetDirection(lightDirection);
 
 		DirectionalShadowMapPass(&mainLight);
