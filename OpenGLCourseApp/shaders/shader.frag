@@ -67,6 +67,14 @@ uniform OmniShadowMap omniShadowMaps[MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS];
 uniform Material material;
 uniform vec3 eyePosition;
 
+vec3 sampleOffsetDirections[20] = vec3[]
+(
+	vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1),
+	vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+	vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+	vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+	vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
 
 vec3 GetNormal()
 {
@@ -84,8 +92,8 @@ float CalcDirectionalShadowFactor(DirectionalLight light)
 	vec3 projCoords = DirectionalLightSpacePos.xyz / DirectionalLightSpacePos.w;
 	projCoords = (projCoords * 0.5) + 0.5;
 	
-	float closest = texture(directionalShadowMap, projCoords.xy).r;
-	float current = projCoords.z;
+	float closestDepth = texture(directionalShadowMap, projCoords.xy).r;
+	float currentDepth = projCoords.z;
 
 	vec3 normal = normalize(Normal);
 	vec3 lightDir = normalize(light.direction);
@@ -93,9 +101,10 @@ float CalcDirectionalShadowFactor(DirectionalLight light)
 	float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001);
 	
 	float shadow = 0.0;
+	shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 
 	// PCF method
-	if (false)
+	if (true)
 	{
 		vec2 texelSize = 1.0 / textureSize(directionalShadowMap, 0);
 		for (int x = -1; x <= 1; ++x)
@@ -103,15 +112,10 @@ float CalcDirectionalShadowFactor(DirectionalLight light)
 			for (int y = -1; y <= 1; ++y)
 			{
 				float pcfDepth = texture(directionalShadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
-				shadow += current - bias > pcfDepth ? 1.0 : 0.0;
+				shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
 			}
 		}
-
 		shadow /= 9.0;
-	}
-	else
-	{
-		shadow = current - bias > closest ? 1.0 : 0.0;
 	}
 
 	if (projCoords.z > 1.0)
@@ -124,16 +128,33 @@ float CalcDirectionalShadowFactor(DirectionalLight light)
 
 float CalcOmniShadowFactor(PointLight light, int shadowIndex)
 {
+	float shadow = 0.0;
+	float bias = 0.001;
+	float samples = 20.0;
+
+	float viewDistance = length(eyePosition - FragPos);
+	float diskRadius = (1.0 + (viewDistance / omniShadowMaps[shadowIndex].farPlane)) / 25.0;
+
 	vec3 fragToLight = FragPos - light.position;
-	float closest = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight).r;
+	float currentDepth = length(fragToLight);
+	float closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight).r;
+	closestDepth *= omniShadowMaps[shadowIndex].farPlane;
+	shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 
-	closest *= omniShadowMaps[shadowIndex].farPlane;
-
-	float current = length(fragToLight);
-
-	float bias = 0.001; // 0.05;
-	float shadow = current - bias > closest ? 1.0 : 0.0;
-
+	// PCF method
+	if (true)
+	{
+		for (int i = 0; i < samples; i++)
+		{
+			closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
+			closestDepth *= omniShadowMaps[shadowIndex].farPlane;
+			if (currentDepth - bias > closestDepth)
+			{
+				shadow += 1.0;
+			}		
+		}
+		shadow /= samples;
+	}
 	return shadow;
 }
 

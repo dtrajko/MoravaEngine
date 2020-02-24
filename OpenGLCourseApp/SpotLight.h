@@ -16,13 +16,15 @@ public:
 		GLint positionLocation, GLint directionLocation,
 		GLint constantLocation, GLint linearLocation, GLint exponentLocation,
 		GLint edgeLocation);
-	void SetFlash(glm::vec3 position, glm::vec3 direction);
 	inline ShadowMap* GetShadowMap() { return PointLight::GetShadowMap(); };
 	inline GLfloat GetFarPlane() { return PointLight::GetFarPlane(); };
+	void SetFlash(glm::vec3 position, glm::vec3 direction);
+	void Toggle() { m_Enabled = !m_Enabled; };
 	~SpotLight();
 
 private:
 	GLfloat m_Edge;
 	GLfloat m_EdgeProcessed;
+	bool m_Enabled;
 
 };

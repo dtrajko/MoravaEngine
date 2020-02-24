@@ -450,11 +450,11 @@ void Shader::Validate()
 	if (!result)
 	{
 		glGetProgramInfoLog(programID, sizeof(eLog), NULL, eLog);
-		printf("Shader program [ID = %d] validation error: '%s'\n", programID, eLog);
+		printf("Shader program [ID=%d] validation error: '%s'\n", programID, eLog);
 		return;
 	}
 
-	printf("Shader program [ID = %d] validation complete.\n", programID);
+	printf("Shader program [ID=%d] validation complete.\n", programID);
 
 	m_Validated = true;
 }
