@@ -60,8 +60,8 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime)
 
 	if (keys[GLFW_KEY_L])
 	{
-		printf("Camera Position X: %.2f Y: %.2f Z: %.2f\n", m_Position.x, m_Position.y, m_Position.z);
-		printf("Camera Direction X: %.2f Y: %.2f Z: %.2f\n", m_Front.x, m_Front.y, m_Front.z);
+		printf("Camera Position %.1ff, %.1ff, %.1ff\n", m_Position.x, m_Position.y, m_Position.z);
+		printf("Camera Direction %.1ff, %.1ff, %.1ff\n", m_Front.x, m_Front.y, m_Front.z);
 	}
 }
 

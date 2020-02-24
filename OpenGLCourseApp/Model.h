@@ -16,7 +16,7 @@ class Model
 public:
 	Model();
 	void LoadModel(const std::string& fileName);
-	void RenderModel();
+	void RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal);
 	void ClearModel();
 	~Model();
 
@@ -30,6 +30,5 @@ private:
 	std::vector <Texture*> textureList;
 	std::vector <Texture*> normalMapList;
 	std::vector <unsigned int> meshToTexture;
-
 
 };

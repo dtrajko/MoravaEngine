@@ -17,6 +17,8 @@ public:
 		GLint constantLocation, GLint linearLocation, GLint exponentLocation,
 		GLint edgeLocation);
 	void SetFlash(glm::vec3 position, glm::vec3 direction);
+	inline ShadowMap* GetShadowMap() { return PointLight::GetShadowMap(); };
+	inline GLfloat GetFarPlane() { return PointLight::GetFarPlane(); };
 	~SpotLight();
 
 private:

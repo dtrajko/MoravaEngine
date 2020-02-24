@@ -25,6 +25,9 @@ public:
 	void CreateFromString(const char* vertexCode, const char* fragmentCode);
 	void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);
 	void CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation);
+
+	void Validate();
+
 	std::string ReadFile(const char* fileLocation);
 
 	GLuint GetProgramID();
@@ -47,8 +50,8 @@ public:
 	GLint GetUniformLocationShininess();
 
 	void SetDirectionalLight(DirectionalLight* directionalLight);
-	void SetPointLights(PointLight* pointLights, unsigned int lightCount);
-	void SetSpotLights(SpotLight* spotLights, unsigned int lightCount);
+	void SetPointLights(PointLight* pointLights, unsigned int lightCount, unsigned int textureUnit, unsigned int offset);
+	void SetSpotLights(SpotLight* spotLights, unsigned int lightCount, unsigned int textureUnit, unsigned int offset);
 
 	// Directional light shadow map
 	void SetTexture(GLuint textureUnit);
@@ -78,6 +81,8 @@ private:
 
 	GLuint programID;
 	GLint shaderID;
+
+	bool m_Validated = false;
 
 	// Locations of uniform variables
 	GLint uniformModel;
@@ -131,6 +136,12 @@ private:
 		GLint uniformExponent;
 		GLint uniformEdge;
 	} uniformSpotLight[MAX_SPOT_LIGHTS];
+
+	struct
+	{
+		GLuint shadowMap;
+		GLuint farPlane;
+	} uniformOmniShadowMap[MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS];
 
 	GLint uniformSpecularIntensity;
 	GLint uniformShininess;

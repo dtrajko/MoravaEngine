@@ -15,8 +15,9 @@ public:
 	void UseLight(GLint ambientColorLocation, GLint ambientIntensityLocation, GLint diffuseIntensityLocation,
 		GLint positionLocation, GLint constantLocation, GLint linearLocation, GLint exponentLocation);
 	std::vector<glm::mat4> CalculateLightTransform();
-	inline GLfloat GetFarPlane() { return m_FarPlane; };
-	inline glm::vec3 GetPosition() { return m_Position; };
+	inline GLfloat GetFarPlane() const { return m_FarPlane; };
+	inline glm::vec3 GetPosition() const { return m_Position; };
+	inline void SetPosition(glm::vec3 position) { m_Position = position; };
 	~PointLight();
 
 protected:
