@@ -46,16 +46,33 @@ struct SceneSettings
 	float diffuseIntensity;
 	unsigned int shadowMapWidth;
 	unsigned int shadowMapHeight;
+	float shadowSpeed;
+	glm::vec3 pointLight0_color;
+	glm::vec3 pointLight0_position;
+	glm::vec3 pointLight1_color;
+	glm::vec3 pointLight1_position;
+	glm::mat4 lightProjectionMatrix;
 };
 
 std::map<std::string, SceneSettings> sceneSettings;
-std::string currentScene = "eiffel"; // "cottage", "sponza", "watchtower"
+std::string currentScene = "eiffel"; // "cottage", "sponza", "eiffel"
 
+
+GLint uniformModel = 0;
+GLint uniformView = 0;
+GLint uniformProjection = 0;
+GLint uniformEyePosition = 0;
+GLint uniformSpecularIntensity = 0;
+GLint uniformShininess = 0;
+GLint uniformDirectionalLightTransform = 0;
+GLint uniformOmniLightPos = 0;
+GLint uniformFarPlane = 0;
 
 std::vector <Mesh*> meshList;
 std::vector <Shader*> shaderList;
 
 Shader directionalShadowShader;
+Shader omniShadowShader;
 
 Camera camera;
 
@@ -92,19 +109,15 @@ unsigned int spotLightCount = 0;
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
 
-static const char* vShader = "Shaders/shader.vert";
-static const char* fShader = "Shaders/shader.frag";
+static const char* vertShader = "Shaders/shader.vert";
+static const char* fragShader = "Shaders/shader.frag";
 
-static const char* vShaderDirShadowMap = "Shaders/directional_shadow_map.vert";
-static const char* fShaderDirShadowMap = "Shaders/directional_shadow_map.frag";
+static const char* vertShaderDirShadowMap = "Shaders/directional_shadow_map.vert";
+static const char* fragShaderDirShadowMap = "Shaders/directional_shadow_map.frag";
 
-
-GLint uniformModel = 0;
-GLint uniformView = 0;
-GLint uniformProjection = 0;
-GLint uniformEyePosition = 0;
-GLint uniformSpecularIntensity = 0;
-GLint uniformShininess = 0;
+static const char* vertShaderOmniShadowMap = "Shaders/omni_shadow_map.vert";
+static const char* geomShaderOmniShadowMap = "Shaders/omni_shadow_map.geom";
+static const char* fragShaderOmniShadowMap = "Shaders/omni_shadow_map.frag";
 
 
 // The Phong shading approach
@@ -317,11 +330,14 @@ void CreateObjects()
 void CreateShaders()
 {
 	Shader* shader1 = new Shader();
-	shader1->CreateFromFiles(vShader, fShader);
+	shader1->CreateFromFiles(vertShader, fragShader);
 	shaderList.push_back(shader1);
 
 	directionalShadowShader = Shader();
-	directionalShadowShader.CreateFromFiles(vShaderDirShadowMap, fShaderDirShadowMap);
+	directionalShadowShader.CreateFromFiles(vertShaderDirShadowMap, fragShaderDirShadowMap);
+
+	omniShadowShader = Shader();
+	omniShadowShader.CreateFromFiles(vertShaderOmniShadowMap, geomShaderOmniShadowMap, fragShaderOmniShadowMap);
 }
 
 void RenderSceneCottage()
@@ -459,7 +475,7 @@ void RenderSceneCottage()
 	cottage.RenderModel();
 }
 
-void RenderSceneSponza()
+void RenderSceneSponza(bool shadowPass = false)
 {
 	/* Sponza scene */
 	glm::mat4 model = glm::mat4(1.0f);
@@ -467,10 +483,26 @@ void RenderSceneSponza()
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(0.04f));
+	model = glm::scale(model, glm::vec3(0.008f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	sponza.RenderModel();
+
+	if (!shadowPass)
+	{
+		/* ShadowMap display */
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 16.0f, -0.5f));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(1.2f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		shaderList[0]->SetTexture(2);
+		shaderList[0]->SetNormalMap(2);
+		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		meshList[5]->RenderMesh();
+	}
 }
 
 void RenderSceneEiffel(bool shadowPass = false)
@@ -515,18 +547,21 @@ void RenderSceneEiffel(bool shadowPass = false)
 	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	watchtower.RenderModel();
 
-	/* ShadowMap display */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 20.0f, -40.0f));
-	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(10.0f));
-	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	shaderList[0]->SetTexture(2);
-	shaderList[0]->SetNormalMap(2);
-	dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-	meshList[5]->RenderMesh();
+	if (!shadowPass)
+	{
+		/* ShadowMap display */
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 20.0f, -40.0f));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(10.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		shaderList[0]->SetTexture(2);
+		shaderList[0]->SetNormalMap(2);
+		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		meshList[5]->RenderMesh();
+	}
 }
 
 void RenderScene(bool shadowPass = false)
@@ -538,7 +573,7 @@ void RenderScene(bool shadowPass = false)
 
 	if (currentScene == "sponza")
 	{
-		RenderSceneSponza();
+		RenderSceneSponza(shadowPass);
 	}
 
 	if (currentScene == "eiffel")
@@ -559,6 +594,31 @@ void DirectionalShadowMapPass(DirectionalLight* light)
 
 	uniformModel = directionalShadowShader.GetModelLocation();
 	directionalShadowShader.SetDirectionalLightTransform(&light->CalculateLightTransform());
+
+	bool shadowPass = true;
+	RenderScene(shadowPass);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void OmniShadowMapPass(PointLight* light)
+{
+	omniShadowShader.Bind();
+
+	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
+
+	light->GetShadowMap()->Write();
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	uniformModel = omniShadowShader.GetModelLocation();
+	uniformOmniLightPos = omniShadowShader.GetUniformLocationOmniLightPos();
+	uniformFarPlane = omniShadowShader.GetUniformLocationFarPlane();
+
+	glUniform3f(uniformOmniLightPos, light->GetPosition().x, light->GetPosition().y, light->GetPosition().z);
+	glUniform1f(uniformFarPlane, light->GetFarPlane());
+
+	omniShadowShader.SetLightMatrices(light->CalculateLightTransform());
 
 	bool shadowPass = true;
 	RenderScene(shadowPass);
@@ -608,19 +668,20 @@ void setupLight()
 {
 	mainLight = DirectionalLight(sceneSettings[currentScene].shadowMapWidth, sceneSettings[currentScene].shadowMapHeight, { 1.0f, 1.0f, 1.0f },
 		sceneSettings[currentScene].ambientIntensity, sceneSettings[currentScene].diffuseIntensity, sceneSettings[currentScene].lightDirection);
+	mainLight.SetLightProjection(sceneSettings[currentScene].lightProjectionMatrix);
 
-	pointLights[0] = PointLight({ 1.0f, 0.0f, 1.0f }, 0.5f, 6.0f, { 0.0f, 20.0f, 0.0f }, 0.3f, 0.2f, 0.1f);
+	pointLights[0] = PointLight(1024, 1024, 0.01f, 100.0f, sceneSettings[currentScene].pointLight0_color, 0.5f, 6.0f, sceneSettings[currentScene].pointLight0_position, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
-	pointLights[1] = PointLight({ 0.0f, 1.0f, 0.0f }, 0.1f, 1.0f, { 10.0f, 2.0f, -10.0f }, 0.3f, 0.2f, 0.1f);
+	pointLights[1] = PointLight(1024, 1024, 0.01f, 100.0f, sceneSettings[currentScene].pointLight1_color, 0.4f, 6.0f, sceneSettings[currentScene].pointLight1_position, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
-	pointLights[2] = PointLight({ 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, { 10.0f, 2.0f, 10.0f }, 0.3f, 0.2f, 0.1f);
+	pointLights[2] = PointLight(1024, 1024, 0.01f, 100.0f, { 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, { 10.0f, 2.0f, 10.0f }, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
 
-	spotLights[0] = SpotLight({ 1.0f, 1.0f, 1.0f }, 1.0f, 10.0f, { 0.0f, 20.0f, -28.0f }, { 0.0f, 0.0f, -1.0f }, 0.3f, 0.2f, 0.1f, 160.0f);
+	spotLights[0] = SpotLight(1024, 1024, 0.01f, 100.0f, { 1.0f, 1.0f, 1.0f }, 1.0f, 10.0f, { 0.0f, 20.0f, -28.0f }, { 0.0f, 0.0f, -1.0f }, 0.3f, 0.2f, 0.1f, 160.0f);
 	spotLightCount++;
-	spotLights[1] = SpotLight({ 0.8f, 0.8f, 1.0f }, 0.3f, 6.0f, { -10.0f, 2.0f, -10.0f }, { -0.6f, -1.0f, 0.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
+	spotLights[1] = SpotLight(1024, 1024, 0.01f, 100.0f, { 0.8f, 0.8f, 1.0f }, 0.3f, 6.0f, { -10.0f, 2.0f, -10.0f }, { -0.6f, -1.0f, 0.0f }, 0.3f, 0.2f, 0.1f, 45.0f);
 	spotLightCount++;
-	spotLights[2] = SpotLight({ 1.0f, 1.0f, 1.0f }, 0.4f, 0.8f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
+	spotLights[2] = SpotLight(1024, 1024, 0.01f, 100.0f, { 1.0f, 1.0f, 1.0f }, 0.4f, 0.8f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
 	spotLightCount++;
 }
 
@@ -642,22 +703,40 @@ int main()
 	sceneSettings["cottage"].diffuseIntensity = 0.2f;
 	sceneSettings["cottage"].shadowMapWidth = 1024;
 	sceneSettings["cottage"].shadowMapHeight = 1024;
-
-	sceneSettings["sponza"].cameraPosition = glm::vec3(-25.0f, 45.0f, -2.0f);
-	sceneSettings["sponza"].lightDirection = glm::vec3(0.0f, -100.0f, 50.0f);
-	sceneSettings["sponza"].cameraStartYaw = 0.0f;
-	sceneSettings["sponza"].ambientIntensity = 0.2f;
-	sceneSettings["sponza"].diffuseIntensity = 0.9f;
-	sceneSettings["sponza"].shadowMapWidth = 2048;
-	sceneSettings["sponza"].shadowMapHeight = 2048;
+	sceneSettings["cottage"].shadowSpeed = 1.0f;
+	sceneSettings["cottage"].pointLight0_color = glm::vec3(1.0f, 0.0f, 1.0f);
+	sceneSettings["cottage"].pointLight0_position = glm::vec3(0.0f, 20.0f, 0.0f);
+	sceneSettings["cottage"].pointLight1_color = glm::vec3(1.0f, 0.0f, 1.0f);
+	sceneSettings["cottage"].pointLight1_position = glm::vec3(-2.0f, 10.0f, 0.0f);
+	sceneSettings["cottage"].lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
 
 	sceneSettings["eiffel"].cameraPosition = glm::vec3(0.0f, 6.0f, 20.0f);
-	sceneSettings["eiffel"].lightDirection = glm::vec3(3.0f, -8.0f, -3.0f);
+	sceneSettings["eiffel"].lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);
 	sceneSettings["eiffel"].cameraStartYaw = -90.0f;
-	sceneSettings["eiffel"].ambientIntensity = 0.1f;
-	sceneSettings["eiffel"].diffuseIntensity = 0.6f;
+	sceneSettings["eiffel"].ambientIntensity = 0.2f;
+	sceneSettings["eiffel"].diffuseIntensity = 0.8f;
 	sceneSettings["eiffel"].shadowMapWidth = 2048;
 	sceneSettings["eiffel"].shadowMapHeight = 2048;
+	sceneSettings["eiffel"].shadowSpeed = 1.0f;
+	sceneSettings["eiffel"].pointLight0_color = glm::vec3(1.0f, 0.0f, 1.0f);
+	sceneSettings["eiffel"].pointLight0_position = glm::vec3(0.0f, 20.0f, 0.0f);
+	sceneSettings["eiffel"].pointLight1_color = glm::vec3(1.0f, 0.0f, 0.0f);
+	sceneSettings["eiffel"].pointLight1_position = glm::vec3(-2.0f, 9.6f, 0.0f);
+	sceneSettings["eiffel"].lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
+
+	sceneSettings["sponza"].cameraPosition = glm::vec3(-4.0f, 10.0f, -0.5f);
+	sceneSettings["sponza"].lightDirection = glm::vec3(1.2f, -14.0f, 1.2f);
+	sceneSettings["sponza"].cameraStartYaw = 0.0f;
+	sceneSettings["sponza"].ambientIntensity = 0.2f;
+	sceneSettings["sponza"].diffuseIntensity = 1.0f;
+	sceneSettings["sponza"].shadowMapWidth = 4096;
+	sceneSettings["sponza"].shadowMapHeight = 4096;
+	sceneSettings["sponza"].shadowSpeed = 0.1f;
+	sceneSettings["sponza"].pointLight0_color = glm::vec3(1.0f, 1.0f, 1.0f);
+	sceneSettings["sponza"].pointLight0_position = glm::vec3(0.0f, 20.0f, 0.0f);
+	sceneSettings["sponza"].pointLight1_color = glm::vec3(1.0f, 0.0f, 1.0f);
+	sceneSettings["sponza"].pointLight1_position = glm::vec3(-2.0f, 10.0f, 0.0f);
+	sceneSettings["sponza"].lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
 	/* End scene settings */
 
 	CreateObjects();
@@ -721,7 +800,7 @@ int main()
 	setupLight();
 
 	// Projection matrix
-	glm::mat4 projection = glm::perspective(45.0f, mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 200.0f);
+	glm::mat4 projection = glm::perspective(glm::radians(60.0f), mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 200.0f);
 
 	// Loop until window closed
 	while (!mainWindow.GetShouldClose())
@@ -735,15 +814,27 @@ int main()
 
 		camera.keyControl(mainWindow.getKeys(), deltaTime);
 		camera.mouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
+		camera.mouseScrollControl(mainWindow.getKeys(), deltaTime, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
 
 		// Shadow rotation
 		glm::vec3 lightDirection = sceneSettings[currentScene].lightDirection;
 		float lightRadius = abs(lightDirection.x);
-		lightDirection.x = cos(now) * lightRadius;
-		lightDirection.z = sin(now) * lightRadius;
+		float lightAngle = now * sceneSettings[currentScene].shadowSpeed;
+		lightDirection.x = cos(lightAngle) * lightRadius;
+		lightDirection.z = sin(lightAngle) * lightRadius;
 		mainLight.SetDirection(lightDirection);
 
 		DirectionalShadowMapPass(&mainLight);
+
+		for (size_t i = 0; i < pointLightCount; i++)
+		{
+			OmniShadowMapPass(&pointLights[i]);
+		}
+
+		for (size_t i = 0; i < spotLightCount; i++)
+		{
+			OmniShadowMapPass((PointLight*)&spotLights[i]);
+		}
 
 		RenderPass(projection, camera.CalculateViewMatrix());
 

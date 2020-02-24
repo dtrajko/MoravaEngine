@@ -1,5 +1,9 @@
 #include "PointLight.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "OmniShadowMap.h"
+
 
 
 PointLight::PointLight()
@@ -11,14 +15,23 @@ PointLight::PointLight()
 	m_Exponent = 0.0f;
 }
 
-PointLight::PointLight(glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity,
+PointLight::PointLight(GLuint shadowWidth, GLuint shadowHeight, GLfloat nearPlane, GLfloat farPlane,
+	glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity,
 	glm::vec3 position, GLfloat constant, GLfloat linear, GLfloat exponent)
-	: Light(1024, 1024, color, ambientIntensity, diffuseIntensity)
+	: Light(shadowWidth, shadowHeight, color, ambientIntensity, diffuseIntensity)
 {
 	m_Position = position;
 	m_Constant = constant;
 	m_Linear = linear;
 	m_Exponent = exponent;
+
+	m_FarPlane = farPlane;
+
+	float aspect = (float)shadowWidth / (float)shadowHeight;
+	m_LightProj = glm::perspective(glm::radians(90.0f), aspect, nearPlane, farPlane);
+
+	m_ShadowMap = new OmniShadowMap();
+	m_ShadowMap->Init(shadowWidth, shadowHeight);
 }
 
 void PointLight::UseLight(GLint ambientColorLocation, GLint ambientIntensityLocation, GLint diffuseIntensityLocation,
@@ -31,6 +44,22 @@ void PointLight::UseLight(GLint ambientColorLocation, GLint ambientIntensityLoca
 	glUniform1f(constantLocation, m_Constant);
 	glUniform1f(linearLocation, m_Linear);
 	glUniform1f(exponentLocation, m_Exponent);
+}
+
+std::vector<glm::mat4> PointLight::CalculateLightTransform()
+{
+	std::vector<glm::mat4> lightMatrices = std::vector<glm::mat4>();
+	// X axis
+	lightMatrices.push_back(m_LightProj * glm::lookAt(m_Position, m_Position + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	lightMatrices.push_back(m_LightProj * glm::lookAt(m_Position, m_Position + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	// Y axis
+	lightMatrices.push_back(m_LightProj * glm::lookAt(m_Position, m_Position + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+	lightMatrices.push_back(m_LightProj * glm::lookAt(m_Position, m_Position + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+	// Z axis
+	lightMatrices.push_back(m_LightProj * glm::lookAt(m_Position, m_Position + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	lightMatrices.push_back(m_LightProj * glm::lookAt(m_Position, m_Position + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+
+	return lightMatrices;
 }
 
 PointLight::~PointLight()

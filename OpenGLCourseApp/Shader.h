@@ -24,17 +24,24 @@ public:
 	Shader();
 	void CreateFromString(const char* vertexCode, const char* fragmentCode);
 	void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);
+	void CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation);
 	std::string ReadFile(const char* fileLocation);
+
 	GLuint GetProgramID();
 	GLint GetModelLocation();
 	GLint GetViewLocation();
 	GLint GetProjectionLocation();
 	GLint GetUniformLocationEyePosition();
+
 	// Directional Light
 	GLint GetUniformLocationAmbientColor();
 	GLint GetUniformLocationAmbientIntensity();
 	GLint GetUniformLocationDiffuseIntensity();
 	GLint GetUniformLocationLightDirection();
+
+	// Omni shadow maps
+	GLuint GetUniformLocationOmniLightPos();
+	GLuint GetUniformLocationFarPlane();
 
 	GLint GetUniformLocationSpecularIntensity();
 	GLint GetUniformLocationShininess();
@@ -49,6 +56,9 @@ public:
 	void SetDirectionalShadowMap(GLuint textureUnit);
 	void SetDirectionalLightTransform(glm::mat4* transform);
 
+	// Omni shadow maps
+	void SetLightMatrices(std::vector<glm::mat4> lightMatrices);
+
 	void Bind();
 	void Unbind();
 	void ClearShader();
@@ -56,7 +66,10 @@ public:
 
 private:
 	void CompileShader(const char* vertexCode, const char* fragmentCode);
+	void CompileShader(const char* vertexCode, const char* geometryCode, const char* fragmentCode);
 	void AddShader(GLuint programID, const char* shaderCode, GLenum shaderType);
+	void CompileProgram();
+
 	const char* GetShaderTypeNameFromEnum(const GLenum shaderType);
 
 private:
@@ -76,6 +89,12 @@ private:
 	GLint uniformNormalMap;
 	GLint uniformDirectionalShadowMap;
 	GLint uniformDirectionalLightTransform;
+
+	// omni shadow maps
+	GLint uniformOmniLightPos;
+	GLint uniformFarPlane;
+
+	GLuint uniformLightMatrices[6];
 
 	struct
 	{

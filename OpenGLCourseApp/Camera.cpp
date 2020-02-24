@@ -1,5 +1,9 @@
 #include "Camera.h"
 
+#include "glm/glm.hpp"
+#include "glm/gtx/compatibility.hpp"
+
+
 Camera::Camera()
 	: Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f, 2.0f, 0.1f)
 {
@@ -69,6 +73,21 @@ void Camera::mouseControl(bool* buttons, GLfloat xChange, GLfloat yChange)
 		m_Pitch += yChange * m_TurnSpeed;
 
 		update();
+	}
+}
+
+void Camera::mouseScrollControl(bool* keys, GLfloat deltaTime, double xOffset, double yOffset)
+{
+	GLfloat velocity = m_MoveSpeed * (float)yOffset;
+
+	if (keys[GLFW_KEY_LEFT_SHIFT])
+	{
+		velocity *= m_SpeedBoost;
+	}
+
+	if (velocity)
+	{
+		m_Position += m_Front * velocity;
 	}
 }
 

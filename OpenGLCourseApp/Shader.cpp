@@ -24,6 +24,17 @@ void Shader::CreateFromFiles(const char* vertexLocation, const char* fragmentLoc
 	CompileShader(vertexCode, fragmentCode);
 }
 
+void Shader::CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation)
+{
+	std::string vertexString = ReadFile(vertexLocation);
+	std::string geometryString = ReadFile(geometryLocation);
+	std::string fragmentString = ReadFile(fragmentLocation);
+	const char* vertexCode = vertexString.c_str();
+	const char* geometryCode = geometryString.c_str();
+	const char* fragmentCode = fragmentString.c_str();
+	CompileShader(vertexCode, geometryCode, fragmentCode);
+}
+
 std::string Shader::ReadFile(const char* fileLocation)
 {
 	std::string content;
@@ -92,6 +103,16 @@ GLint Shader::GetUniformLocationDiffuseIntensity()
 GLint Shader::GetUniformLocationLightDirection()
 {
 	return uniformDirectionalLight.uniformDirection;
+}
+
+GLuint Shader::GetUniformLocationOmniLightPos()
+{
+	return uniformOmniLightPos;
+}
+
+GLuint Shader::GetUniformLocationFarPlane()
+{
+	return uniformFarPlane;
 }
 
 GLint Shader::GetUniformLocationSpecularIntensity()
@@ -173,6 +194,14 @@ void Shader::SetDirectionalLightTransform(glm::mat4* transform)
 	glUniformMatrix4fv(uniformDirectionalLightTransform, 1, GL_FALSE, glm::value_ptr(*transform));
 }
 
+void Shader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
+{
+	for (GLuint i = 0; i < 6; i++)
+	{
+		glUniformMatrix4fv(uniformLightMatrices[i], 1, GL_FALSE, glm::value_ptr(lightMatrices[i]));
+	}
+}
+
 void Shader::Bind()
 {
 	glUseProgram(programID);
@@ -214,6 +243,72 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 	AddShader(programID, vertexCode, GL_VERTEX_SHADER);
 	AddShader(programID, fragmentCode, GL_FRAGMENT_SHADER);
 
+	CompileProgram();
+}
+
+void Shader::CompileShader(const char* vertexCode, const char* geometryCode, const char* fragmentCode)
+{
+	programID = glCreateProgram();
+
+	if (!programID)
+	{
+		printf("Error creating shader program!");
+		return;
+	}
+
+	AddShader(programID, vertexCode, GL_VERTEX_SHADER);
+	AddShader(programID, geometryCode, GL_GEOMETRY_SHADER);
+	AddShader(programID, fragmentCode, GL_FRAGMENT_SHADER);
+
+	CompileProgram();
+}
+
+const char* Shader::GetShaderTypeNameFromEnum(const GLenum shaderType)
+{
+	const char* shaderTypeName = "Unknown";
+	if (shaderType == GL_VERTEX_SHADER)               shaderTypeName = "Vertex";
+	else if (shaderType == GL_FRAGMENT_SHADER)        shaderTypeName = "Fragment";
+	else if (shaderType == GL_TESS_CONTROL_SHADER)    shaderTypeName = "Tessellation Control";
+	else if (shaderType == GL_TESS_EVALUATION_SHADER) shaderTypeName = "Tessellation Evaluation";
+	else if (shaderType == GL_GEOMETRY_SHADER)        shaderTypeName = "Geometry";
+	else if (shaderType == GL_COMPUTE_SHADER)         shaderTypeName = "Compute";
+	return shaderTypeName;
+}
+
+void Shader::AddShader(GLuint programID, const char* shaderCode, GLenum shaderType)
+{
+	const char* shaderTypeName = GetShaderTypeNameFromEnum(shaderType);
+
+	GLuint shaderID = glCreateShader(shaderType);
+
+	const GLchar* theCode[1];
+	theCode[0] = shaderCode;
+
+	GLint codeLength[1];
+	codeLength[0] = (GLint)strlen(shaderCode);
+
+	glShaderSource(shaderID, 1, theCode, codeLength);
+	glCompileShader(shaderID);
+
+	GLint result = 0;
+	GLchar eLog[1024] = { 0 };
+
+	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
+	if (!result)
+	{
+		glGetShaderInfoLog(shaderID, sizeof(eLog), NULL, eLog);
+		printf("%s shader compilation error: '%s'\n", shaderTypeName, eLog);
+		return;
+	}
+
+	printf("%s shader compiled.\n", shaderTypeName);
+
+	glAttachShader(programID, shaderID);
+	return;
+}
+
+void Shader::CompileProgram()
+{
 	GLint result = 0;
 	GLchar eLog[1024] = { 0 };
 
@@ -237,10 +332,10 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 		return;
 	}
 
-	uniformModel             = glGetUniformLocation(programID, "model");
-	uniformView              = glGetUniformLocation(programID, "view");
-	uniformProjection        = glGetUniformLocation(programID, "projection");
-	uniformEyePosition       = glGetUniformLocation(programID, "eyePosition");
+	uniformModel = glGetUniformLocation(programID, "model");
+	uniformView = glGetUniformLocation(programID, "view");
+	uniformProjection = glGetUniformLocation(programID, "projection");
+	uniformEyePosition = glGetUniformLocation(programID, "eyePosition");
 
 	uniformDirectionalLight.uniformColor = glGetUniformLocation(programID, "directionalLight.base.color");
 	uniformDirectionalLight.uniformAmbientIntensity = glGetUniformLocation(programID, "directionalLight.base.ambientIntensity");
@@ -248,7 +343,7 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 	uniformDirectionalLight.uniformDirection = glGetUniformLocation(programID, "directionalLight.direction");
 
 	uniformSpecularIntensity = glGetUniformLocation(programID, "material.specularIntensity");
-	uniformShininess         = glGetUniformLocation(programID, "material.shininess");
+	uniformShininess = glGetUniformLocation(programID, "material.shininess");
 
 	uniformPointLightCount = glGetUniformLocation(programID, "pointLightCount");
 
@@ -312,54 +407,23 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 		uniformSpotLight[i].uniformEdge = glGetUniformLocation(programID, locBuff);
 	}
 
+	// Directional shadow map
 	uniformTexture = glGetUniformLocation(programID, "theTexture");
 	uniformNormalMap = glGetUniformLocation(programID, "normalMap");
 	uniformDirectionalShadowMap = glGetUniformLocation(programID, "directionalShadowMap");
 	uniformDirectionalLightTransform = glGetUniformLocation(programID, "directionalLightTransform");
 
-	printf("Shader program validation complete.\n");
-}
+	// Omni shadow map
+	uniformOmniLightPos = glGetUniformLocation(programID, "lightPos");
+	uniformFarPlane = glGetUniformLocation(programID, "farPlane");
 
-const char* Shader::GetShaderTypeNameFromEnum(const GLenum shaderType)
-{
-	const char* shaderTypeName = "Unknown";
-	if (shaderType == GL_VERTEX_SHADER)               shaderTypeName = "Vertex";
-	else if (shaderType == GL_FRAGMENT_SHADER)        shaderTypeName = "Fragment";
-	else if (shaderType == GL_TESS_CONTROL_SHADER)    shaderTypeName = "Tessellation Control";
-	else if (shaderType == GL_TESS_EVALUATION_SHADER) shaderTypeName = "Tessellation Evaluation";
-	else if (shaderType == GL_GEOMETRY_SHADER)        shaderTypeName = "Geometry";
-	else if (shaderType == GL_COMPUTE_SHADER)         shaderTypeName = "Compute";
-	return shaderTypeName;
-}
-
-void Shader::AddShader(GLuint programID, const char* shaderCode, GLenum shaderType)
-{
-	const char* shaderTypeName = GetShaderTypeNameFromEnum(shaderType);
-
-	GLuint shaderID = glCreateShader(shaderType);
-
-	const GLchar* theCode[1];
-	theCode[0] = shaderCode;
-
-	GLint codeLength[1];
-	codeLength[0] = (GLint)strlen(shaderCode);
-
-	glShaderSource(shaderID, 1, theCode, codeLength);
-	glCompileShader(shaderID);
-
-	GLint result = 0;
-	GLchar eLog[1024] = { 0 };
-
-	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
-	if (!result)
+	for (unsigned int i = 0; i < 6; i++)
 	{
-		glGetShaderInfoLog(shaderID, sizeof(eLog), NULL, eLog);
-		printf("%s shader compilation error: '%s'\n", shaderTypeName, eLog);
-		return;
+		char locBuff[100] = { '\0' };
+
+		snprintf(locBuff, sizeof(locBuff), "lightMatrices[%d]", i);
+		uniformLightMatrices[i] = glGetUniformLocation(programID, locBuff);
 	}
 
-	printf("%s shader compiled.\n", shaderTypeName);
-
-	glAttachShader(programID, shaderID);
-	return;
+	printf("Shader program validation complete.\n");
 }

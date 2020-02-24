@@ -12,7 +12,8 @@ public:
 	Light();
 	Light(GLuint shadowWidth, GLuint shadowHeight,
 		glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity);
-	ShadowMap* GetShadowMap() { return shadowMap; };
+	ShadowMap* GetShadowMap() { return m_ShadowMap; };
+	inline void SetLightProjection(glm::mat4 lightProj) { m_LightProj = lightProj; };
 	~Light();
 
 protected:
@@ -20,7 +21,6 @@ protected:
 	GLfloat m_AmbientIntensity;
 	GLfloat m_DiffuseIntensity;
 
-	glm::mat4 lightProj;
-	ShadowMap* shadowMap;
-
+	glm::mat4 m_LightProj;
+	ShadowMap* m_ShadowMap;
 };
