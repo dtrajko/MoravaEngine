@@ -5,6 +5,7 @@
 #include <cmath>
 #include <vector>
 #include <map>
+#include <cmath>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -13,7 +14,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "CommonValues.h"
-
 #include "Window.h"
 #include "Mesh.h"
 #include "Shader.h"
@@ -23,9 +23,9 @@
 #include "PointLight.h"
 #include "SpotLight.h"
 #include "Material.h"
-
 #include "Model.h"
 #include "Vertex.h"
+#include "Skybox.h"
 
 
 
@@ -60,8 +60,7 @@ struct SceneSettings
 };
 
 std::map<std::string, SceneSettings> sceneSettings;
-std::string currentScene = "cottage"; // "cottage", "sponza", "eiffel"
-
+std::string currentScene = "eiffel"; // "cottage", "sponza", "eiffel"
 
 GLint uniformModel = 0;
 GLint uniformView = 0;
@@ -113,6 +112,8 @@ Model watchtower;
 DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
 SpotLight spotLights[MAX_SPOT_LIGHTS];
+
+Skybox skybox;
 
 unsigned int pointLightCount = 0;
 unsigned int spotLightCount = 0;
@@ -351,7 +352,7 @@ void CreateShaders()
 	omniShadowShader.CreateFromFiles(vertShaderOmniShadowMap, geomShaderOmniShadowMap, fragShaderOmniShadowMap);
 }
 
-void RenderSceneCottage(bool shadowPass = false)
+void RenderSceneCottage(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass = false)
 {
 	glm::mat4 sceneOrigin = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 
@@ -386,7 +387,7 @@ void RenderSceneCottage(bool shadowPass = false)
 
 	/* Cube Front */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 5.0f, -2.0f)) * sceneOrigin;
+	model = glm::translate(model, glm::vec3(8.0f, 1.0f, 3.0f)) * sceneOrigin;
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -450,7 +451,7 @@ void RenderSceneCottage(bool shadowPass = false)
 		textureSponzaWallDiffuse.Bind(txSlotDiffuse);
 		textureSponzaWallNormal.Bind(txSlotNormal);
 		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[3]->RenderMesh();
+		// meshList[3]->RenderMesh();
 
 		/* Wall Left */
 		model = glm::mat4(1.0f);
@@ -515,7 +516,7 @@ void RenderSceneCottage(bool shadowPass = false)
 	}
 }
 
-void RenderSceneEiffel(bool shadowPass = false)
+void RenderSceneEiffel(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass = false)
 {
 	glm::mat4 model;
 
@@ -574,7 +575,7 @@ void RenderSceneEiffel(bool shadowPass = false)
 	}
 }
 
-void RenderSceneSponza(bool shadowPass = false)
+void RenderSceneSponza(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass = false)
 {
 	/* Sponza scene */
 	glm::mat4 model = glm::mat4(1.0f);
@@ -655,25 +656,25 @@ void UpdateScene(float now)
 	}
 }
 
-void RenderScene(bool shadowPass = false)
+void RenderScene(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass = false)
 {
 	if (currentScene == "cottage")
 	{
-		RenderSceneCottage(shadowPass);
+		RenderSceneCottage(viewMatrix, projectionMatrix, shadowPass);
 	}
 
 	if (currentScene == "sponza")
 	{
-		RenderSceneSponza(shadowPass);
+		RenderSceneSponza(viewMatrix, projectionMatrix, shadowPass);
 	}
 
 	if (currentScene == "eiffel")
 	{
-		RenderSceneEiffel(shadowPass);
+		RenderSceneEiffel(viewMatrix, projectionMatrix, shadowPass);
 	}
 }
 
-void DirectionalShadowMapPass(DirectionalLight* light)
+void DirectionalShadowMapPass(DirectionalLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix)
 {
 	directionalShadowShader.Bind();
 
@@ -689,12 +690,12 @@ void DirectionalShadowMapPass(DirectionalLight* light)
 	directionalShadowShader.Validate();
 
 	bool shadowPass = true;
-	RenderScene(shadowPass);
+	RenderScene(viewMatrix, projectionMatrix, shadowPass);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void OmniShadowMapPass(PointLight* light)
+void OmniShadowMapPass(PointLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix)
 {
 	omniShadowShader.Bind();
 
@@ -716,13 +717,30 @@ void OmniShadowMapPass(PointLight* light)
 	omniShadowShader.Validate();
 
 	bool shadowPass = true;
-	RenderScene(shadowPass);
+	RenderScene(viewMatrix, projectionMatrix, shadowPass);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RenderPass(glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
+void RenderPass(glm::mat4 viewMatrix, glm::mat4 projectionMatrix)
 {
+	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+
+	// Clear the window
+	glClearColor(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+
+	if (currentScene == "eiffel")
+	{
+		glm::vec3 dLightDir = mainLight.GetDirection();
+		float angleRadians = atan2(dLightDir.x, dLightDir.z) + 0.6f;
+		modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+	}
+
+	skybox.Draw(modelMatrix, viewMatrix, projectionMatrix);
+
 	shaderList[0]->Bind();
 
 	uniformModel = shaderList[0]->GetModelLocation();
@@ -731,12 +749,6 @@ void RenderPass(glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 	uniformEyePosition = shaderList[0]->GetUniformLocationEyePosition();
 	uniformSpecularIntensity = shaderList[0]->GetUniformLocationSpecularIntensity();
 	uniformShininess = shaderList[0]->GetUniformLocationShininess();
-
-	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
-
-	// Clear the window
-	glClearColor(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(viewMatrix));
 	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
@@ -758,7 +770,7 @@ void RenderPass(glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 
 	shaderList[0]->Validate();
 
-	RenderScene();
+	RenderScene(viewMatrix, projectionMatrix);
 }
 
 void setupLight()
@@ -767,11 +779,20 @@ void setupLight()
 		sceneSettings[currentScene].ambientIntensity, sceneSettings[currentScene].diffuseIntensity, sceneSettings[currentScene].lightDirection);
 	mainLight.SetLightProjection(sceneSettings[currentScene].lightProjectionMatrix);
 
-	pointLights[0] = PointLight(1024, 1024, 0.01f, 100.0f, sceneSettings[currentScene].pLight_0_color, 0.5f, 6.0f, sceneSettings[currentScene].pLight_0_position, 0.3f, 0.2f, 0.1f);
+	pointLights[0] = PointLight(1024, 1024, 0.01f, 100.0f, 
+		sceneSettings[currentScene].pLight_0_color, 0.4f, 
+		sceneSettings[currentScene].pLight_0_diffuseIntensity, 
+		sceneSettings[currentScene].pLight_0_position, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
-	pointLights[1] = PointLight(1024, 1024, 0.01f, 100.0f, sceneSettings[currentScene].pLight_1_color, 0.4f, sceneSettings[currentScene].pLight_1_diffuseIntensity, sceneSettings[currentScene].pLight_1_position, 0.3f, 0.2f, 0.1f);
+	pointLights[1] = PointLight(1024, 1024, 0.01f, 100.0f, 
+		sceneSettings[currentScene].pLight_1_color, 0.4f,
+		sceneSettings[currentScene].pLight_1_diffuseIntensity,
+		sceneSettings[currentScene].pLight_1_position, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
-	pointLights[2] = PointLight(1024, 1024, 0.01f, 100.0f, { 0.0f, 0.0f, 1.0f }, 0.1f, 1.0f, { 10.0f, 2.0f, 10.0f }, 0.3f, 0.2f, 0.1f);
+	pointLights[2] = PointLight(1024, 1024, 0.01f, 100.0f,
+		sceneSettings[currentScene].pLight_2_color, 0.4f,
+		sceneSettings[currentScene].pLight_2_diffuseIntensity,
+		sceneSettings[currentScene].pLight_2_position, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
 
 	spotLights[0] = SpotLight(1024, 1024, 0.01f, 100.0f, { 1.0f, 1.0f, 1.0f }, 1.0f, 10.0f, { 0.0f, 20.0f, -28.0f }, { 0.0f, 0.0f, -1.0f }, 0.3f, 0.2f, 0.1f, 160.0f);
@@ -800,10 +821,10 @@ int main()
 	sceneSettings.insert(std::make_pair("eiffel", SceneSettings()));
 
 	sceneSettings["cottage"].cameraPosition = glm::vec3(0.0f, 25.0f, 15.0f);
-	sceneSettings["cottage"].lightDirection = glm::vec3(-0.1f, -0.6f, -0.8f);
+	sceneSettings["cottage"].lightDirection = glm::vec3(-0.4f, -0.4f, 0.8f);
 	sceneSettings["cottage"].cameraStartYaw = -90.0f;
-	sceneSettings["cottage"].ambientIntensity = 0.05f;
-	sceneSettings["cottage"].diffuseIntensity = 0.2f;
+	sceneSettings["cottage"].ambientIntensity = 0.2f;
+	sceneSettings["cottage"].diffuseIntensity = 2.0f;
 	sceneSettings["cottage"].shadowMapWidth = 1024;
 	sceneSettings["cottage"].shadowMapHeight = 1024;
 	sceneSettings["cottage"].shadowSpeed = 2.0f;
@@ -825,16 +846,16 @@ int main()
 	sceneSettings["eiffel"].diffuseIntensity = 0.8f;
 	sceneSettings["eiffel"].shadowMapWidth = 2048;
 	sceneSettings["eiffel"].shadowMapHeight = 2048;
-	sceneSettings["eiffel"].shadowSpeed = 1.0f;
+	sceneSettings["eiffel"].shadowSpeed = 0.4f;
 	sceneSettings["eiffel"].pLight_0_color = glm::vec3(1.0f, 0.0f, 1.0f);
 	sceneSettings["eiffel"].pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
 	sceneSettings["eiffel"].pLight_0_diffuseIntensity = 6.0f;
 	sceneSettings["eiffel"].pLight_1_color = glm::vec3(1.0f, 0.0f, 0.0f);
 	sceneSettings["eiffel"].pLight_1_position = glm::vec3(-2.0f, 9.6f, 0.0f);
 	sceneSettings["eiffel"].pLight_1_diffuseIntensity = 6.0f;
-	sceneSettings["eiffel"].pLight_2_color = glm::vec3(0.6f, 0.6f, 1.0f);
-	sceneSettings["eiffel"].pLight_2_position = glm::vec3(6.0f, 17.6f, -13.7f);
-	sceneSettings["eiffel"].pLight_2_diffuseIntensity = 12.0f;
+	sceneSettings["eiffel"].pLight_2_color = glm::vec3(0.8f, 0.8f, 0.5f);
+	sceneSettings["eiffel"].pLight_2_position = glm::vec3(-2.0f, 4.0f, 0.0f);
+	sceneSettings["eiffel"].pLight_2_diffuseIntensity = 6.0f;
 	sceneSettings["eiffel"].lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
 
 	sceneSettings["sponza"].cameraPosition = glm::vec3(-4.0f, 10.0f, -0.5f);
@@ -917,6 +938,15 @@ int main()
 
 	setupLight();
 
+	std::vector<std::string> skyboxFaces;
+	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_rt.tga");
+	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_lf.tga");
+	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_up.tga");
+	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_dn.tga");
+	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_bk.tga");
+	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_ft.tga");
+	skybox = Skybox(skyboxFaces);
+
 	// Projection matrix
 	glm::mat4 projection = glm::perspective(glm::radians(60.0f), mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 200.0f);
 
@@ -942,19 +972,19 @@ int main()
 
 		UpdateScene(now);
 
-		DirectionalShadowMapPass(&mainLight);
+		DirectionalShadowMapPass(&mainLight, camera.CalculateViewMatrix(), projection);
 
 		for (size_t i = 0; i < pointLightCount; i++)
 		{
-			OmniShadowMapPass(&pointLights[i]);
+			OmniShadowMapPass(&pointLights[i], camera.CalculateViewMatrix(), projection);
 		}
 
 		for (size_t i = 0; i < spotLightCount; i++)
 		{
-			OmniShadowMapPass((PointLight*)&spotLights[i]);
+			OmniShadowMapPass((PointLight*)&spotLights[i], camera.CalculateViewMatrix(), projection);
 		}
 
-		RenderPass(projection, camera.CalculateViewMatrix());
+		RenderPass(camera.CalculateViewMatrix(), projection);
 
 		shaderList[0]->Unbind();
 
