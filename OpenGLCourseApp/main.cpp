@@ -60,7 +60,7 @@ struct SceneSettings
 };
 
 std::map<std::string, SceneSettings> sceneSettings;
-std::string currentScene = "eiffel"; // "cottage", "sponza", "eiffel"
+std::string currentScene = "cottage"; // "cottage", "sponza", "eiffel"
 
 GLint uniformModel = 0;
 GLint uniformView = 0;
@@ -132,81 +132,6 @@ static const char* geomShaderOmniShadowMap = "Shaders/omni_shadow_map.geom";
 static const char* fragShaderOmniShadowMap = "Shaders/omni_shadow_map.frag";
 
 
-// The Phong shading approach
-void calcAverageNormals(unsigned int* indices, unsigned int indiceCount,
-	GLfloat* vertices, unsigned int verticeCount,
-	unsigned int vLength, unsigned int normalOffset)
-{
-	for (size_t i = 0; i < indiceCount; i += 3)
-	{
-		unsigned int in0 = indices[i + 0] * vLength;
-		unsigned int in1 = indices[i + 1] * vLength;
-		unsigned int in2 = indices[i + 2] * vLength;
-		glm::vec3 v1(vertices[in1 + 0] - vertices[in0 + 0], vertices[in1 + 1] - vertices[in0 + 1], vertices[in1 + 2] - vertices[in0 + 2]);
-		glm::vec3 v2(vertices[in2 + 0] - vertices[in0 + 0], vertices[in2 + 1] - vertices[in0 + 1], vertices[in2 + 2] - vertices[in0 + 2]);
-		glm::vec3 normal = glm::cross(v1, v2);
-		normal = glm::normalize(normal);
-
-		in0 += normalOffset;
-		in1 += normalOffset;
-		in2 += normalOffset;
-
-		vertices[in0 + 0] += normal.x; vertices[in0 + 1] += normal.y; vertices[in0 + 2] += normal.z;
-		vertices[in1 + 0] += normal.x; vertices[in1 + 1] += normal.y; vertices[in1 + 2] += normal.z;
-		vertices[in2 + 0] += normal.x; vertices[in2 + 1] += normal.y; vertices[in2 + 2] += normal.z;
-	}
-
-	for (unsigned int i = 0; i < verticeCount / vLength; i++)
-	{
-		unsigned int nOffset = i * vLength + normalOffset;
-		glm::vec3 vec(vertices[nOffset + 0], vertices[nOffset + 1], vertices[nOffset + 2]);
-		vec = glm::normalize(vec);
-		vertices[nOffset + 0] = vec.x; vertices[nOffset + 1] = vec.y; vertices[nOffset + 2] = vec.z;
-	}
-}
-
-void calcTangentSpace(unsigned int* indices, unsigned int indiceCount,
-	GLfloat* vertices, unsigned int verticeCount)
-{
-	unsigned int vLength = sizeof(Vertex) / sizeof(float);
-
-	for (size_t i = 0; i < indiceCount; i += 3)
-	{
-		unsigned int in0 = indices[i + 0] * vLength;
-		unsigned int in1 = indices[i + 1] * vLength;
-		unsigned int in2 = indices[i + 2] * vLength;
-		glm::vec3 v0(vertices[in0 + 0], vertices[in0 + 1], vertices[in0 + 2]);
-		glm::vec3 v1(vertices[in1 + 0], vertices[in1 + 1], vertices[in1 + 2]);
-		glm::vec3 v2(vertices[in0 + 2], vertices[in2 + 1], vertices[in2 + 2]);
-
-		glm::vec2 uv0(vertices[in0 + 3], vertices[in0 + 4]);
-		glm::vec2 uv1(vertices[in1 + 3], vertices[in1 + 4]);
-		glm::vec2 uv2(vertices[in2 + 3], vertices[in2 + 4]);
-
-		// Edges of the triangle : position delta
-		glm::vec3 deltaPos1 = v1 - v0;
-		glm::vec3 deltaPos2 = v2 - v1;
-
-		// UV delta
-		glm::vec2 deltaUV1 = uv1 - uv0;
-		glm::vec2 deltaUV2 = uv2 - uv0;
-
-		float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
-		glm::vec3 tangent   = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
-		glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
-
-		// write tangents
-		vertices[in0 + 8] = tangent.x; vertices[in0 + 9] = tangent.y; vertices[in0 + 10] = tangent.z;
-		vertices[in1 + 8] = tangent.x; vertices[in1 + 9] = tangent.y; vertices[in1 + 10] = tangent.z;
-		vertices[in2 + 8] = tangent.x; vertices[in2 + 9] = tangent.y; vertices[in2 + 10] = tangent.z;
-
-		// write bitangents
-		vertices[in0 + 11] = bitangent.x; vertices[in0 + 12] = bitangent.y; vertices[in0 + 13] = bitangent.z;
-		vertices[in1 + 11] = bitangent.x; vertices[in1 + 12] = bitangent.y; vertices[in1 + 13] = bitangent.z;
-		vertices[in2 + 11] = bitangent.x; vertices[in2 + 12] = bitangent.y; vertices[in2 + 13] = bitangent.z;
-	}
-}
-
 
 void CreateObjects()
 {
@@ -266,8 +191,8 @@ void CreateObjects()
 
 	unsigned int indexCount = 6 * 6;
 
-	calcAverageNormals(indices, indexCount, vertices, vertexCount, sizeof(Vertex) / sizeof(float), offsetof(Vertex, Normal) / sizeof(float));
-	calcTangentSpace(indices, indexCount, vertices, vertexCount);
+	Mesh::calcAverageNormals(indices, indexCount, vertices, vertexCount, sizeof(Vertex) / sizeof(float), offsetof(Vertex, Normal) / sizeof(float));
+	Mesh::calcTangentSpace(indices, indexCount, vertices, vertexCount);
 
 	/* Floor Mesh */
 	GLfloat floorVertices[] =
@@ -310,8 +235,8 @@ void CreateObjects()
 
 	unsigned int quadIndexCount = 6;
 
-	calcAverageNormals(quadIndices, quadIndexCount, quadVertices, quadVertexCount, sizeof(Vertex) / sizeof(float), offsetof(Vertex, Normal) / sizeof(float));
-	calcTangentSpace(quadIndices, quadIndexCount, quadVertices, quadVertexCount);
+	Mesh::calcAverageNormals(quadIndices, quadIndexCount, quadVertices, quadVertexCount, sizeof(Vertex) / sizeof(float), offsetof(Vertex, Normal) / sizeof(float));
+	Mesh::calcTangentSpace(quadIndices, quadIndexCount, quadVertices, quadVertexCount);
 
 
 	Mesh* obj1 = new Mesh();
@@ -374,7 +299,7 @@ void RenderSceneCottage(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool s
 
 	/* Cube Right */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(5.0f, 3.0f, -5.0f)) * sceneOrigin;
+	model = glm::translate(model, glm::vec3(6.0f, 2.0f, 0.0f)) * sceneOrigin;
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -821,7 +746,7 @@ int main()
 	sceneSettings.insert(std::make_pair("eiffel", SceneSettings()));
 
 	sceneSettings["cottage"].cameraPosition = glm::vec3(0.0f, 25.0f, 15.0f);
-	sceneSettings["cottage"].lightDirection = glm::vec3(-0.4f, -0.4f, 0.8f);
+	sceneSettings["cottage"].lightDirection = glm::vec3(-0.8f, -1.2f, 0.8f);
 	sceneSettings["cottage"].cameraStartYaw = -90.0f;
 	sceneSettings["cottage"].ambientIntensity = 0.2f;
 	sceneSettings["cottage"].diffuseIntensity = 2.0f;
