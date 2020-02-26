@@ -21,17 +21,70 @@ SceneCottage::SceneCottage()
 	sceneSettings.pLight_2_position = glm::vec3(10.0f, 2.0f, 10.0f);
 	sceneSettings.pLight_2_diffuseIntensity = 6.0f;
 	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
+
+	SetSkybox();
+	SetTextures();
+	SetupModels();
 }
 
-void SceneCottage::Update(float timestep)
+void SceneCottage::SetSkybox()
 {
+	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_rt.tga");
+	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_lf.tga");
+	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_up.tga");
+	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_dn.tga");
+	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_bk.tga");
+	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_ft.tga");
+	skybox = new Skybox(skyboxFaces);
+}
+
+void SceneCottage::SetTextures()
+{
+	textures.insert(std::make_pair("brick", new Texture("Textures/brick.png")));
+	textures.insert(std::make_pair("crateDiffuse", new Texture("Textures/crate.png")));
+	textures.insert(std::make_pair("crateNormal", new Texture("Textures/crateNormal.png")));
+	textures.insert(std::make_pair("grass", new Texture("Textures/grass.jpg")));
+	textures.insert(std::make_pair("normalMapDefault", new Texture("Textures/normal_map_default.png")));
+	textures.insert(std::make_pair("sponzaFloorDiffuse", new Texture("Textures/sponza_floor_a_diff.tga")));
+	textures.insert(std::make_pair("sponzaFloorNormal", new Texture("Textures/sponza_floor_a_ddn.tga")));
+	textures.insert(std::make_pair("sponzaWallDiffuse", new Texture("Textures/sponza_bricks_a_diff.tga")));
+	textures.insert(std::make_pair("sponzaWallNormal", new Texture("Textures/sponza_bricks_a_ddn.tga")));
+	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
+	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
+
+	textures["brick"]->LoadTexture();
+	textures["crateDiffuse"]->LoadTexture();
+	textures["crateNormal"]->LoadTexture();
+	textures["grass"]->LoadTexture();
+	textures["normalMapDefault"]->LoadTexture();
+	textures["sponzaFloorDiffuse"]->LoadTexture();
+	textures["sponzaFloorNormal"]->LoadTexture();
+	textures["sponzaWallDiffuse"]->LoadTexture();
+	textures["sponzaWallNormal"]->LoadTexture();
+	textures["sponzaCeilDiffuse"]->LoadTexture();
+	textures["sponzaCeilNormal"]->LoadTexture();
+}
+
+void SceneCottage::SetupModels()
+{
+	Model* cottage = new Model();
+	cottage->LoadModel("Models/cottage.obj");
+	models.insert(std::make_pair("cottage", cottage));
+}
+
+void SceneCottage::Update(float timestep, LightManager* lightManager)
+{
+	glm::vec3 pLightPos = sceneSettings.pLight_0_position;
+	float lightRadius = 6.0;
+	float lightAngle = timestep * sceneSettings.shadowSpeed;
+	pLightPos.x += (float)cos(lightAngle) * lightRadius;
+	pLightPos.z += (float)sin(lightAngle) * lightRadius;
+	pLightPos.y += (float)cos(lightAngle * 0.5) * lightRadius * 0.5f;
+	lightManager->pointLights[0].SetPosition(pLightPos);
 }
 
 void SceneCottage::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms,
-	std::map<std::string, Texture*> textures, std::map<std::string, GLuint> textureSlots,
-	std::map<std::string, Mesh*> meshes, std::map<std::string, Material*> materials,
-	std::map<std::string, Model*> models)
+	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	glm::mat4 sceneOrigin = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 

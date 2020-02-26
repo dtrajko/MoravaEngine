@@ -16,6 +16,7 @@
 #include "PointLight.h"
 #include "SpotLight.h"
 #include "Skybox.h"
+#include "LightManager.h"
 
 
 
@@ -41,42 +42,51 @@ struct SceneSettings
 	glm::mat4 lightProjectionMatrix;
 };
 
+class LightManager;
+
 class Scene
 {
 
 public:
 	Scene();
-	virtual void Update(float timestep) = 0;
+	virtual void Update(float timestep, LightManager* lightManager) = 0;
 	virtual void Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass,
-		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms,
-		std::map<std::string, Texture*> textures, std::map<std::string, GLuint> textureSlots,
-		std::map<std::string, Mesh*> meshes, std::map<std::string, Material*> materials,
-		std::map<std::string, Model*> models) = 0;
+		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) = 0;
 	inline Skybox* GetSkybox() const { return skybox; };
 	static inline SceneSettings GetSettings() { return sceneSettings; };
+	std::map<std::string, Texture*> GetTextures() const { return textures; };
+	std::map<std::string, GLuint> GetTextureSlots() const { return textureSlots; };
 	~Scene();
+
+private:
+	virtual void SetSkybox() = 0;
+	virtual void SetupModels() = 0;
+
+	virtual void SetTextures();
+	void SetupMaterials();
+	void SetupMeshes();
 
 protected:
 	static SceneSettings sceneSettings;
 
-private:
-
-	Camera camera;
-
-	std::vector<std::string> skyboxFaces;
 	Skybox* skybox;
+	std::vector<std::string> skyboxFaces;
+
+	std::map<std::string, Texture*> textures;
+	std::map<std::string, GLuint> textureSlots;
+	std::map<std::string, Mesh*> meshes;
+	std::map<std::string, Material*> materials;
+	std::map<std::string, Model*> models;
+
+private:
+	Camera camera;
 
 	DirectionalLight directionalLight;
 	PointLight pointLights[MAX_POINT_LIGHTS];
 	SpotLight spotLights[MAX_SPOT_LIGHTS];
 
-	std::map<std::string, Mesh*> meshes;
 	std::map<std::string, Shader*> shaders;
 	std::map<std::string, GLint> uniforms;
-	std::map<std::string, Texture*> textures;
-	std::map<std::string, GLuint> textureSlots;
-	std::map<std::string, Material*> materials;
-	std::map<std::string, Model*> models;
 
 	unsigned int shadowMapWidth;
 	unsigned int shadowMapHeight;

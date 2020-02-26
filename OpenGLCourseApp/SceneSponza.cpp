@@ -21,17 +21,47 @@ SceneSponza::SceneSponza()
 	sceneSettings.pLight_2_position = glm::vec3(10.0f, 2.0f, 10.0f);
 	sceneSettings.pLight_2_diffuseIntensity = 2.0f;
 	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
+
+	SetSkybox();
+	SetTextures();
+	SetupModels();
 }
 
-void SceneSponza::Update(float timestep)
+void SceneSponza::SetSkybox()
+{
+	skyboxFaces.push_back("Textures/skybox_4/right.png");
+	skyboxFaces.push_back("Textures/skybox_4/left.png");
+	skyboxFaces.push_back("Textures/skybox_4/top.png");
+	skyboxFaces.push_back("Textures/skybox_4/bottom.png");
+	skyboxFaces.push_back("Textures/skybox_4/back.png");
+	skyboxFaces.push_back("Textures/skybox_4/front.png");
+	skybox = new Skybox(skyboxFaces);
+}
+
+void SceneSponza::SetTextures()
 {
 }
 
+void SceneSponza::SetupModels()
+{
+	Model* sponza = new Model();
+	sponza->LoadModel("Models/sponza.obj");
+	models.insert(std::make_pair("sponza", sponza));
+}
+
+void SceneSponza::Update(float timestep, LightManager* lightManager)
+{
+	// Shadow rotation
+	glm::vec3 lightDirection = sceneSettings.lightDirection;
+	float lightRadius = abs(lightDirection.x);
+	float lightAngle = timestep * sceneSettings.shadowSpeed;
+	lightDirection.x = (float)cos(lightAngle) * lightRadius;
+	lightDirection.z = (float)sin(lightAngle) * lightRadius;
+	lightManager->directionalLight.SetDirection(lightDirection);
+}
+
 void SceneSponza::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms,
-	std::map<std::string, Texture*> textures, std::map<std::string, GLuint> textureSlots,
-	std::map<std::string, Mesh*> meshes, std::map<std::string, Material*> materials,
-	std::map<std::string, Model*> models)
+	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	/* Sponza scene */
 	glm::mat4 model = glm::mat4(1.0f);

@@ -185,8 +185,8 @@ void Window::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOff
 {
 	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
-	theWindow->xMouseScrollOffset = xOffset;
-	theWindow->yMouseScrollOffset = yOffset;
+	theWindow->xMouseScrollOffset = (float)xOffset;
+	theWindow->yMouseScrollOffset = (float)yOffset;
 }
 
 GLfloat Window::getXChange()
@@ -203,16 +203,16 @@ GLfloat Window::getYChange()
 	return theChange;
 }
 
-double Window::getXMouseScrollOffset()
+float Window::getXMouseScrollOffset()
 {
-	double theOffset = xMouseScrollOffset;
+	float theOffset = xMouseScrollOffset;
 	xMouseScrollOffset = 0.0f;
 	return theOffset;
 }
 
-double Window::getYMouseScrollOffset()
+float Window::getYMouseScrollOffset()
 {
-	double theOffset = yMouseScrollOffset;
+	float theOffset = yMouseScrollOffset;
 	yMouseScrollOffset = 0.0f;
 	return theOffset;
 }

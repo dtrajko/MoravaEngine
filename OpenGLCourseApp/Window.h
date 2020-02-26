@@ -19,8 +19,8 @@ public:
 	bool* getMouseButtons() { return buttons; };
 	GLfloat getXChange();
 	GLfloat getYChange();
-	double getXMouseScrollOffset();
-	double getYMouseScrollOffset();
+	float getXMouseScrollOffset();
+	float getYMouseScrollOffset();
 	void SwapBuffers() { glfwSwapBuffers(mainWindow); };
 	~Window();
 
@@ -39,8 +39,8 @@ private:
 	GLfloat lastY;
 	GLfloat xChange;
 	GLfloat yChange;
-	double xMouseScrollOffset;
-	double yMouseScrollOffset;
+	float xMouseScrollOffset;
+	float yMouseScrollOffset;
 	bool mouseFirstMoved;
 	bool mouseCursorAboveWindow;
 

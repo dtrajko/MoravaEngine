@@ -167,6 +167,7 @@
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Light.cpp" />
+    <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Light.h" />
+    <ClInclude Include="LightManager.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshData.h" />

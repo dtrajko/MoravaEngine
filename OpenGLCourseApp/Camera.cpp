@@ -76,19 +76,19 @@ void Camera::mouseControl(bool* buttons, GLfloat xChange, GLfloat yChange)
 	}
 }
 
-void Camera::mouseScrollControl(bool* keys, GLfloat deltaTime, double xOffset, double yOffset)
+void Camera::mouseScrollControl(bool* keys, GLfloat deltaTime, float xOffset, float yOffset)
 {
-	GLfloat velocity = m_MoveSpeed * (float)yOffset;
+	if (abs(yOffset) < 0.1f)
+		return;
+
+	GLfloat velocity = m_MoveSpeed * yOffset;
 
 	if (keys[GLFW_KEY_LEFT_SHIFT])
 	{
 		velocity *= m_SpeedBoost;
 	}
 
-	if (velocity)
-	{
-		m_Position += m_Front * velocity;
-	}
+	m_Position += m_Front * velocity;
 }
 
 glm::vec3 Camera::getCameraPosition()
@@ -103,7 +103,7 @@ glm::vec3 Camera::getCameraDirection()
 
 glm::mat4 Camera::CalculateViewMatrix()
 {
-	glm::mat4 viewMatrix = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
+	glm::mat4 viewMatrix = glm::lookAt(m_Position, m_Position + glm::normalize(m_Front), m_Up);
 	return viewMatrix;
 }
 

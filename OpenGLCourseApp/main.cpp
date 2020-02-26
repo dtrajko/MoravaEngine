@@ -18,7 +18,6 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "Camera.h"
-#include "Texture.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
 #include "SpotLight.h"
@@ -29,7 +28,7 @@
 #include "SceneCottage.h"
 #include "SceneEiffel.h"
 #include "SceneSponza.h"
-#include "MeshData.h"
+#include "LightManager.h"
 
 
 // Window dimensions
@@ -43,22 +42,10 @@ Scene* scene;
 
 Camera camera;
 
-std::string currentScene = "sponza"; // "cottage", "sponza", "eiffel"
+std::string currentScene = "eiffel"; // "cottage", "eiffel", "sponza"
 
-std::map<std::string, Mesh*> meshes;
 std::map<std::string, Shader*> shaders;
 std::map<std::string, GLint> uniforms;
-std::map<std::string, Texture*> textures;
-std::map<std::string, GLuint> textureSlots;
-std::map<std::string, Material*> materials;
-std::map<std::string, Model*> models;
-
-DirectionalLight mainLight;
-PointLight pointLights[MAX_POINT_LIGHTS];
-SpotLight spotLights[MAX_SPOT_LIGHTS];
-
-unsigned int pointLightCount = 0;
-unsigned int spotLightCount = 0;
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -76,64 +63,7 @@ void SetUniforms(std::map<std::string, GLint>& uniforms)
 	uniforms.insert(std::make_pair("farPlane", 0));
 }
 
-void SetTextures(std::map<std::string, Texture*>& textures, std::map<std::string, GLuint>& textureSlots)
-{
-	// cottage
-	textures.insert(std::make_pair("pyramid", new Texture("Textures/pyramid.png")));
-	textures.insert(std::make_pair("brick", new Texture("Textures/brick.png")));
-	textures.insert(std::make_pair("crateDiffuse", new Texture("Textures/crate.png")));
-	textures.insert(std::make_pair("crateNormal", new Texture("Textures/crateNormal.png")));
-	textures.insert(std::make_pair("grass", new Texture("Textures/grass.jpg")));
-	textures.insert(std::make_pair("normalMapDefault", new Texture("Textures/normal_map_default.png")));
-	// sponza
-	textures.insert(std::make_pair("sponzaFloorDiffuse", new Texture("Textures/sponza_floor_a_diff.tga")));
-	textures.insert(std::make_pair("sponzaFloorNormal", new Texture("Textures/sponza_floor_a_ddn.tga")));
-	textures.insert(std::make_pair("sponzaWallDiffuse", new Texture("Textures/sponza_bricks_a_diff.tga")));
-	textures.insert(std::make_pair("sponzaWallNormal", new Texture("Textures/sponza_bricks_a_ddn.tga")));
-	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
-	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
-
-	textures["pyramid"]->LoadTexture();
-	textures["brick"]->LoadTexture();
-	textures["crateDiffuse"]->LoadTexture();
-	textures["crateNormal"]->LoadTexture();
-	textures["grass"]->LoadTexture();
-	textures["normalMapDefault"]->LoadTexture();
-	textures["sponzaFloorDiffuse"]->LoadTexture();
-	textures["sponzaFloorNormal"]->LoadTexture();
-	textures["sponzaWallDiffuse"]->LoadTexture();
-	textures["sponzaWallNormal"]->LoadTexture();
-	textures["sponzaCeilDiffuse"]->LoadTexture();
-	textures["sponzaCeilNormal"]->LoadTexture();
-
-	textureSlots.insert(std::make_pair("diffuse", 1));
-	textureSlots.insert(std::make_pair("normal", 2));
-	textureSlots.insert(std::make_pair("shadow", 3));
-	textureSlots.insert(std::make_pair("omniShadow", 4));
-}
-
-void CreateObjects()
-{
-	Mesh::CalcAverageNormals(MeshData::indices, MeshData::indexCount, MeshData::vertices, MeshData::vertexCount);
-	Mesh::CalcTangentSpace(MeshData::indices, MeshData::indexCount, MeshData::vertices, MeshData::vertexCount);
-
-	Mesh::CalcAverageNormals(MeshData::quadIndices, MeshData::quadIndexCount, MeshData::quadVertices, MeshData::quadVertexCount);
-	Mesh::CalcTangentSpace(MeshData::quadIndices, MeshData::quadIndexCount, MeshData::quadVertices, MeshData::quadVertexCount);
-
-	Mesh* cube = new Mesh();
-	cube->CreateMesh(MeshData::vertices, MeshData::indices, MeshData::vertexCount, MeshData::indexCount);
-	meshes.insert(std::make_pair("cube", cube));
-
-	Mesh* quad = new Mesh();
-	quad->CreateMesh(MeshData::quadVertices, MeshData::quadIndices, MeshData::quadVertexCount, MeshData::quadIndexCount);
-	meshes.insert(std::make_pair("quad", quad));
-
-	Mesh* quadLarge = new Mesh();
-	quadLarge->CreateMesh(MeshData::floorVertices, MeshData::floorIndices, MeshData::floorVertexCount, MeshData::floorIndexCount);
-	meshes.insert(std::make_pair("quadLarge", quadLarge));
-}
-
-void CreateShaders()
+void SetupShaders(std::map<std::string, Shader*>& shaders)
 {
 	static const char* vertShader = "Shaders/shader.vert";
 	static const char* fragShader = "Shaders/shader.frag";
@@ -158,62 +88,6 @@ void CreateShaders()
 	shaders.insert(std::make_pair("omniShadow", omniShadowShader));
 }
 
-void UpdateSceneCottage(float now)
-{
-	glm::vec3 pLightPos = SceneCottage::GetSettings().pLight_0_position;
-	float lightRadius = 6.0;
-	float lightAngle = now * SceneCottage::GetSettings().shadowSpeed;
-	pLightPos.x += (float)cos(lightAngle) * lightRadius;
-	pLightPos.z += (float)sin(lightAngle) * lightRadius;
-	pLightPos.y += (float)cos(lightAngle * 0.5) * lightRadius * 0.5f;
-	pointLights[0].SetPosition(pLightPos);
-}
-
-void UpdateSceneEiffel(float now)
-{
-	// Shadow rotation
-	glm::vec3 lightDirection = SceneEiffel::GetSettings().lightDirection;
-	float lightRadius = abs(lightDirection.x);
-	float lightAngle = now * SceneEiffel::GetSettings().shadowSpeed;
-	lightDirection.x = (float)cos(lightAngle) * lightRadius;
-	lightDirection.z = (float)sin(lightAngle) * lightRadius;
-	mainLight.SetDirection(lightDirection);
-}
-
-void UpdateSceneSponza(float now)
-{
-	// Shadow rotation
-	glm::vec3 lightDirection = SceneSponza::GetSettings().lightDirection;
-	float lightRadius = abs(lightDirection.x);
-	float lightAngle = now * SceneSponza::GetSettings().shadowSpeed;
-	lightDirection.x = (float)cos(lightAngle) * lightRadius;
-	lightDirection.z = (float)sin(lightAngle) * lightRadius;
-	mainLight.SetDirection(lightDirection);
-}
-
-void UpdateScene(float now)
-{
-	if (currentScene == "cottage")
-	{
-		UpdateSceneCottage(now);
-	}
-
-	if (currentScene == "eiffel")
-	{
-		UpdateSceneEiffel(now);
-	}
-
-	if (currentScene == "sponza")
-	{
-		UpdateSceneSponza(now);
-	}
-}
-
-void RenderScene(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass = false)
-{
-	scene->Render(viewMatrix, projectionMatrix, shadowPass, shaders, uniforms, textures, textureSlots, meshes, materials, models);
-}
-
 void DirectionalShadowMapPass(DirectionalLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix)
 {
 	shaders["directionalShadow"]->Bind();
@@ -230,7 +104,7 @@ void DirectionalShadowMapPass(DirectionalLight* light, glm::mat4 viewMatrix, glm
 	shaders["directionalShadow"]->Validate();
 
 	bool shadowPass = true;
-	RenderScene(viewMatrix, projectionMatrix, shadowPass);
+	scene->Render(viewMatrix, projectionMatrix, shadowPass, shaders, uniforms);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -257,7 +131,7 @@ void OmniShadowMapPass(PointLight* light, glm::mat4 viewMatrix, glm::mat4 projec
 	shaders["omniShadow"]->Validate();
 
 	bool shadowPass = true;
-	RenderScene(viewMatrix, projectionMatrix, shadowPass);
+	scene->Render(viewMatrix, projectionMatrix, shadowPass, shaders, uniforms);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -271,13 +145,8 @@ void RenderPass(glm::mat4 viewMatrix, glm::mat4 projectionMatrix)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
-
-	if (currentScene == "eiffel")
-	{
-		glm::vec3 dLightDir = mainLight.GetDirection();
-		float angleRadians = atan2(dLightDir.x, dLightDir.z) + 0.6f;
-		modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-	}
+	float angleRadians = glm::radians((GLfloat)glfwGetTime());
+	modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	scene->GetSkybox()->Draw(modelMatrix, viewMatrix, projectionMatrix);
 
@@ -294,80 +163,33 @@ void RenderPass(glm::mat4 viewMatrix, glm::mat4 projectionMatrix)
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 	glUniform3f(uniforms["eyePosition"], camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-	shaders["main"]->SetDirectionalLight(&mainLight);
-	shaders["main"]->SetPointLights(pointLights, pointLightCount, textureSlots["omniShadow"], 0);
-	shaders["main"]->SetSpotLights(spotLights, spotLightCount, textureSlots["omniShadow"], pointLightCount);
-	shaders["main"]->SetDirectionalLightTransform(&mainLight.CalculateLightTransform());
+	shaders["main"]->SetDirectionalLight(&LightManager::directionalLight);
+	shaders["main"]->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
+	shaders["main"]->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
+	shaders["main"]->SetDirectionalLightTransform(&LightManager::directionalLight.CalculateLightTransform());
 
-	mainLight.GetShadowMap()->Read(textureSlots["shadow"]);
-	shaders["main"]->SetTexture(textureSlots["diffuse"]);
-	shaders["main"]->SetNormalMap(textureSlots["normal"]);
-	shaders["main"]->SetDirectionalShadowMap(textureSlots["shadow"]);
+	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
+	shaders["main"]->SetTexture(scene->GetTextureSlots()["diffuse"]);
+	shaders["main"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
+	shaders["main"]->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
 
 	glm::vec3 lowerLight = camera.getCameraPosition();
 	lowerLight.y -= 0.2f;
-	spotLights[2].SetFlash(lowerLight, camera.getCameraDirection());
+	LightManager::spotLights[2].SetFlash(lowerLight, camera.getCameraDirection());
 
 	shaders["main"]->Validate();
 
-	RenderScene(viewMatrix, projectionMatrix);
-}
-
-void setupLight()
-{
-	mainLight = DirectionalLight(scene->GetSettings().shadowMapWidth, scene->GetSettings().shadowMapHeight, { 1.0f, 1.0f, 1.0f },
-		scene->GetSettings().ambientIntensity, scene->GetSettings().diffuseIntensity, scene->GetSettings().lightDirection);
-	mainLight.SetLightProjection(scene->GetSettings().lightProjectionMatrix);
-
-	pointLights[0] = PointLight(1024, 1024, 0.01f, 100.0f, 
-		scene->GetSettings().pLight_0_color, 0.4f, 
-		scene->GetSettings().pLight_0_diffuseIntensity, 
-		scene->GetSettings().pLight_0_position, 0.3f, 0.2f, 0.1f);
-	pointLightCount++;
-	pointLights[1] = PointLight(1024, 1024, 0.01f, 100.0f, 
-		scene->GetSettings().pLight_1_color, 0.4f,
-		scene->GetSettings().pLight_1_diffuseIntensity,
-		scene->GetSettings().pLight_1_position, 0.3f, 0.2f, 0.1f);
-	pointLightCount++;
-	pointLights[2] = PointLight(1024, 1024, 0.01f, 100.0f,
-		scene->GetSettings().pLight_2_color, 0.4f,
-		scene->GetSettings().pLight_2_diffuseIntensity,
-		scene->GetSettings().pLight_2_position, 0.3f, 0.2f, 0.1f);
-	pointLightCount++;
-
-	spotLights[0] = SpotLight(1024, 1024, 0.01f, 100.0f, { 1.0f, 1.0f, 1.0f }, 1.0f, 10.0f, { 0.0f, 20.0f, -28.0f }, { 0.0f, 0.0f, -1.0f }, 0.3f, 0.2f, 0.1f, 160.0f);
-	spotLightCount++;
-	spotLights[1] = SpotLight(1024, 1024, 0.01f, 100.0f, { 0.8f, 0.8f, 1.0f }, 0.3f, 6.0f, { 8.0f, 2.0f, 0.0f }, { -0.25f, 0.5f, -0.5f }, 0.3f, 0.2f, 0.1f, 45.0f);
-	spotLightCount++;
-	spotLights[2] = SpotLight(1024, 1024, 0.01f, 100.0f, { 1.0f, 1.0f, 1.0f }, 0.4f, 1.6f, glm::vec3(), glm::vec3(), 0.4f, 0.3f, 0.2f, 35.0f);
-	spotLightCount++;
+	bool shadowPass = false;
+	scene->Render(viewMatrix, projectionMatrix, shadowPass, shaders, uniforms);
 }
 
 void Cleanup()
 {
-	for (auto& mesh : meshes)
-		delete mesh.second;
-
 	for (auto& shader : shaders)
 		delete shader.second;
 
-	for (auto& texture : textures)
-		delete texture.second;
-
-	for (auto& material : materials)
-		delete material.second;
-
-	for (auto& model : models)
-		delete model.second;
-
-	meshes.clear();
 	shaders.clear();
-	textures.clear();
-	materials.clear();
-	models.clear();
-
 	uniforms.clear();	
-	textureSlots.clear();
 
 	delete scene;
 }
@@ -395,47 +217,15 @@ int main()
 		scene = new SceneSponza();
 	}
 
-	CreateObjects();
-	CreateShaders();
-
 	camera = Camera(scene->GetSettings().cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), scene->GetSettings().cameraStartYaw, 0.0f, 4.0f, 0.1f);
 
 	// Projection matrix
 	glm::mat4 projection = glm::perspective(glm::radians(60.0f), mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 200.0f);
 
-	setupLight();
+	LightManager* lightManager = new LightManager(scene->GetSettings());
 
+	SetupShaders(shaders);
 	SetUniforms(uniforms);
-	SetTextures(textures, textureSlots);
-
-	materials.insert(std::make_pair("shiny", new Material(1.0f, 128.0f)));
-	materials.insert(std::make_pair("dull", new Material(1.0f, 64.0f)));
-	materials.insert(std::make_pair("superShiny", new Material(1.0f, 1024.0f)));
-
-	if (currentScene == "sponza")
-	{
-		Model* sponza = new Model();
-		sponza->LoadModel("Models/sponza.obj");
-		models.insert(std::make_pair("sponza", sponza));
-	}
-
-	if (currentScene == "cottage")
-	{
-		Model* cottage = new Model();
-		cottage->LoadModel("Models/cottage.obj");
-		models.insert(std::make_pair("cottage", cottage));
-	}
-
-	if (currentScene == "eiffel")
-	{
-		Model* eiffel = new Model();
-		eiffel->LoadModel("Models/Eiffel_Tower.obj");
-		models.insert(std::make_pair("eiffel", eiffel));
-
-		Model* watchtower = new Model();
-		watchtower->LoadModel("Models/wooden_watch_tower.obj");
-		models.insert(std::make_pair("watchtower", watchtower));
-	}
 
 	// Loop until window closed
 	while (!mainWindow.GetShouldClose())
@@ -453,22 +243,22 @@ int main()
 
 		if (mainWindow.getKeys()[GLFW_KEY_L])
 		{
-			spotLights[2].Toggle();
+			LightManager::spotLights[2].Toggle();
 			mainWindow.getKeys()[GLFW_KEY_L] = false;
 		}
 
-		UpdateScene(now);
+		scene->Update(now, lightManager);
 
-		DirectionalShadowMapPass(&mainLight, camera.CalculateViewMatrix(), projection);
+		DirectionalShadowMapPass(&LightManager::directionalLight, camera.CalculateViewMatrix(), projection);
 
-		for (size_t i = 0; i < pointLightCount; i++)
+		for (size_t i = 0; i < LightManager::pointLightCount; i++)
 		{
-			OmniShadowMapPass(&pointLights[i], camera.CalculateViewMatrix(), projection);
+			OmniShadowMapPass(&LightManager::pointLights[i], camera.CalculateViewMatrix(), projection);
 		}
 
-		for (size_t i = 0; i < spotLightCount; i++)
+		for (size_t i = 0; i < LightManager::spotLightCount; i++)
 		{
-			OmniShadowMapPass((PointLight*)&spotLights[i], camera.CalculateViewMatrix(), projection);
+			OmniShadowMapPass((PointLight*)&LightManager::spotLights[i], camera.CalculateViewMatrix(), projection);
 		}
 
 		RenderPass(camera.CalculateViewMatrix(), projection);

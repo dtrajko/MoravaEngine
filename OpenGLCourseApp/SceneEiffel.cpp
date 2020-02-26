@@ -21,17 +21,55 @@ SceneEiffel::SceneEiffel()
 	sceneSettings.pLight_2_position = glm::vec3(-2.0f, 4.0f, 0.0f);
 	sceneSettings.pLight_2_diffuseIntensity = 6.0f;
 	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
+
+	SetSkybox();
+	SetTextures();
+	SetupModels();
 }
 
-void SceneEiffel::Update(float timestep)
+void SceneEiffel::SetSkybox()
 {
+	skyboxFaces.push_back("Textures/skybox_3/right.png");
+	skyboxFaces.push_back("Textures/skybox_3/left.png");
+	skyboxFaces.push_back("Textures/skybox_3/top.png");
+	skyboxFaces.push_back("Textures/skybox_3/bottom.png");
+	skyboxFaces.push_back("Textures/skybox_3/back.png");
+	skyboxFaces.push_back("Textures/skybox_3/front.png");
+	skybox = new Skybox(skyboxFaces);
+}
+
+void SceneEiffel::SetTextures()
+{
+	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
+	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
+
+	textures["sponzaCeilDiffuse"]->LoadTexture();
+	textures["sponzaCeilNormal"]->LoadTexture();
+}
+void SceneEiffel::SetupModels()
+{
+	Model* eiffel = new Model();
+	eiffel->LoadModel("Models/Eiffel_Tower.obj");
+	models.insert(std::make_pair("eiffel", eiffel));
+
+	Model* watchtower = new Model();
+	watchtower->LoadModel("Models/wooden_watch_tower.obj");
+	models.insert(std::make_pair("watchtower", watchtower));
+}
+
+void SceneEiffel::Update(float timestep, LightManager* lightManager)
+{
+	// Shadow rotation
+	glm::vec3 lightDirection = sceneSettings.lightDirection;
+	float lightRadius = abs(lightDirection.x);
+	float lightAngle = timestep * sceneSettings.shadowSpeed;
+	lightDirection.x = (float)cos(lightAngle) * lightRadius;
+	lightDirection.z = (float)sin(lightAngle) * lightRadius;
+	lightManager->directionalLight.SetDirection(lightDirection);
 }
 
 void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms,
-	std::map<std::string, Texture*> textures, std::map<std::string, GLuint> textureSlots,
-	std::map<std::string, Mesh*> meshes, std::map<std::string, Material*> materials,
-	std::map<std::string, Model*> models)
+	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	glm::mat4 model;
 
