@@ -61,10 +61,9 @@ public:
 private:
 	virtual void SetSkybox() = 0;
 	virtual void SetupModels() = 0;
-
+	virtual void SetupMeshes();
 	virtual void SetTextures();
 	void SetupMaterials();
-	void SetupMeshes();
 
 protected:
 	static SceneSettings sceneSettings;
