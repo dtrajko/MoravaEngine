@@ -12,12 +12,8 @@ public:
 	void RenderMesh();
 	void ClearMesh();
 
-	static void calcAverageNormals(unsigned int* indices, unsigned int indiceCount,
-		GLfloat* vertices, unsigned int verticeCount,
-		unsigned int vLength, unsigned int normalOffset);
-
-	static void calcTangentSpace(unsigned int* indices, unsigned int indiceCount,
-		GLfloat* vertices, unsigned int verticeCount);
+	static void CalcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount);
+	static void CalcTangentSpace(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount);
 
 	~Mesh();
 

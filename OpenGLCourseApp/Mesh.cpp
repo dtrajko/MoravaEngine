@@ -81,10 +81,11 @@ void Mesh::ClearMesh()
 	glDisableVertexAttribArray(4);
 }
 
-void Mesh::calcAverageNormals(unsigned int* indices, unsigned int indiceCount, 
-	GLfloat* vertices, unsigned int verticeCount, 
-	unsigned int vLength, unsigned int normalOffset)
+void Mesh::CalcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount)
 {
+	unsigned int vLength = sizeof(Vertex) / sizeof(float);
+	unsigned int normalOffset = offsetof(Vertex, Normal) / sizeof(float);
+
 	// The Phong shading approach
 	for (size_t i = 0; i < indiceCount; i += 3)
 	{
@@ -114,7 +115,7 @@ void Mesh::calcAverageNormals(unsigned int* indices, unsigned int indiceCount,
 	}
 }
 
-void Mesh::calcTangentSpace(unsigned int* indices, unsigned int indiceCount,
+void Mesh::CalcTangentSpace(unsigned int* indices, unsigned int indiceCount,
 	GLfloat* vertices, unsigned int verticeCount)
 {
 	unsigned int vLength = sizeof(Vertex) / sizeof(float);

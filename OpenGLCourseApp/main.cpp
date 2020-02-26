@@ -26,7 +26,10 @@
 #include "Model.h"
 #include "Vertex.h"
 #include "Skybox.h"
-
+#include "SceneCottage.h"
+#include "SceneEiffel.h"
+#include "SceneSponza.h"
+#include "MeshData.h"
 
 
 // Window dimensions
@@ -36,84 +39,23 @@ const float toRadians = 3.14159265f / 180.0f;
 
 Window mainWindow;
 
-
-struct SceneSettings
-{
-	glm::vec3 cameraPosition;
-	glm::vec3 lightDirection;
-	float cameraStartYaw;
-	float ambientIntensity;
-	float diffuseIntensity;
-	unsigned int shadowMapWidth;
-	unsigned int shadowMapHeight;
-	float shadowSpeed;
-	glm::vec3 pLight_0_color;
-	glm::vec3 pLight_0_position;
-	float pLight_0_diffuseIntensity;
-	glm::vec3 pLight_1_color;
-	glm::vec3 pLight_1_position;
-	float pLight_1_diffuseIntensity;
-	glm::vec3 pLight_2_color;
-	glm::vec3 pLight_2_position;
-	float pLight_2_diffuseIntensity;
-	glm::mat4 lightProjectionMatrix;
-};
-
-std::map<std::string, SceneSettings> sceneSettings;
-std::string currentScene = "cottage"; // "cottage", "sponza", "eiffel"
-
-GLint uniformModel = 0;
-GLint uniformView = 0;
-GLint uniformProjection = 0;
-GLint uniformEyePosition = 0;
-GLint uniformSpecularIntensity = 0;
-GLint uniformShininess = 0;
-GLint uniformDirectionalLightTransform = 0;
-GLint uniformOmniLightPos = 0;
-GLint uniformFarPlane = 0;
-
-std::vector <Mesh*> meshList;
-std::vector <Shader*> shaderList;
-
-Shader directionalShadowShader;
-Shader omniShadowShader;
+Scene* scene;
 
 Camera camera;
 
-Texture brickTexture;
-Texture pyramidTexture;
-Texture crateTextureDiffuse;
-Texture crateTextureNormal;
-Texture grassTexture;
-// Sponza textures
-Texture textureSponzaFloorDiffuse;
-Texture textureSponzaFloorNormal;
-Texture textureSponzaWallDiffuse;
-Texture textureSponzaWallNormal;
-Texture textureSponzaCeilDiffuse;
-Texture textureSponzaCeilNormal;
-Texture normalMapDefault;
+std::string currentScene = "sponza"; // "cottage", "sponza", "eiffel"
 
-// Avoid the default GL_TEXTURE0, always be explicit
-GLuint txSlotDiffuse = 1;
-GLuint txSlotNormal = 2;
-GLuint txSlotShadow = 3;
-GLuint txSlotOmniShadow = 4;
-
-Material shinyMaterial;
-Material dullMaterial;
-Material superShinyMaterial;
-
-Model sponza;
-Model cottage;
-Model eiffel;
-Model watchtower;
+std::map<std::string, Mesh*> meshes;
+std::map<std::string, Shader*> shaders;
+std::map<std::string, GLint> uniforms;
+std::map<std::string, Texture*> textures;
+std::map<std::string, GLuint> textureSlots;
+std::map<std::string, Material*> materials;
+std::map<std::string, Model*> models;
 
 DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
 SpotLight spotLights[MAX_SPOT_LIGHTS];
-
-Skybox skybox;
 
 unsigned int pointLightCount = 0;
 unsigned int spotLightCount = 0;
@@ -121,420 +63,106 @@ unsigned int spotLightCount = 0;
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
 
-static const char* vertShader = "Shaders/shader.vert";
-static const char* fragShader = "Shaders/shader.frag";
+void SetUniforms(std::map<std::string, GLint>& uniforms)
+{
+	uniforms.insert(std::make_pair("model", 0));
+	uniforms.insert(std::make_pair("view", 0));
+	uniforms.insert(std::make_pair("projection", 0));
+	uniforms.insert(std::make_pair("eyePosition", 0));
+	uniforms.insert(std::make_pair("specularIntensity", 0));
+	uniforms.insert(std::make_pair("shininess", 0));
+	uniforms.insert(std::make_pair("directionalLightTransform", 0));
+	uniforms.insert(std::make_pair("omniLightPos", 0));
+	uniforms.insert(std::make_pair("farPlane", 0));
+}
 
-static const char* vertShaderDirShadowMap = "Shaders/directional_shadow_map.vert";
-static const char* fragShaderDirShadowMap = "Shaders/directional_shadow_map.frag";
+void SetTextures(std::map<std::string, Texture*>& textures, std::map<std::string, GLuint>& textureSlots)
+{
+	// cottage
+	textures.insert(std::make_pair("pyramid", new Texture("Textures/pyramid.png")));
+	textures.insert(std::make_pair("brick", new Texture("Textures/brick.png")));
+	textures.insert(std::make_pair("crateDiffuse", new Texture("Textures/crate.png")));
+	textures.insert(std::make_pair("crateNormal", new Texture("Textures/crateNormal.png")));
+	textures.insert(std::make_pair("grass", new Texture("Textures/grass.jpg")));
+	textures.insert(std::make_pair("normalMapDefault", new Texture("Textures/normal_map_default.png")));
+	// sponza
+	textures.insert(std::make_pair("sponzaFloorDiffuse", new Texture("Textures/sponza_floor_a_diff.tga")));
+	textures.insert(std::make_pair("sponzaFloorNormal", new Texture("Textures/sponza_floor_a_ddn.tga")));
+	textures.insert(std::make_pair("sponzaWallDiffuse", new Texture("Textures/sponza_bricks_a_diff.tga")));
+	textures.insert(std::make_pair("sponzaWallNormal", new Texture("Textures/sponza_bricks_a_ddn.tga")));
+	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
+	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
 
-static const char* vertShaderOmniShadowMap = "Shaders/omni_shadow_map.vert";
-static const char* geomShaderOmniShadowMap = "Shaders/omni_shadow_map.geom";
-static const char* fragShaderOmniShadowMap = "Shaders/omni_shadow_map.frag";
+	textures["pyramid"]->LoadTexture();
+	textures["brick"]->LoadTexture();
+	textures["crateDiffuse"]->LoadTexture();
+	textures["crateNormal"]->LoadTexture();
+	textures["grass"]->LoadTexture();
+	textures["normalMapDefault"]->LoadTexture();
+	textures["sponzaFloorDiffuse"]->LoadTexture();
+	textures["sponzaFloorNormal"]->LoadTexture();
+	textures["sponzaWallDiffuse"]->LoadTexture();
+	textures["sponzaWallNormal"]->LoadTexture();
+	textures["sponzaCeilDiffuse"]->LoadTexture();
+	textures["sponzaCeilNormal"]->LoadTexture();
 
-
+	textureSlots.insert(std::make_pair("diffuse", 1));
+	textureSlots.insert(std::make_pair("normal", 2));
+	textureSlots.insert(std::make_pair("shadow", 3));
+	textureSlots.insert(std::make_pair("omniShadow", 4));
+}
 
 void CreateObjects()
 {
-	GLfloat vertices[] =
-	{
-		//  X      Y      Z        U     V        NX     NY     NZ        TX     TY     TZ        BX     BY     BZ
-		-0.5f,  0.5f, -0.5f,    1.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,    1.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,    0.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,    0.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
+	Mesh::CalcAverageNormals(MeshData::indices, MeshData::indexCount, MeshData::vertices, MeshData::vertexCount);
+	Mesh::CalcTangentSpace(MeshData::indices, MeshData::indexCount, MeshData::vertices, MeshData::vertexCount);
 
-		-0.5f,  0.5f,  0.5f,    0.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
-		-0.5f, -0.5f,  0.5f,    0.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
-		 0.5f, -0.5f,  0.5f,    1.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,    1.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
+	Mesh::CalcAverageNormals(MeshData::quadIndices, MeshData::quadIndexCount, MeshData::quadVertices, MeshData::quadVertexCount);
+	Mesh::CalcTangentSpace(MeshData::quadIndices, MeshData::quadIndexCount, MeshData::quadVertices, MeshData::quadVertexCount);
 
-		 0.5f,  0.5f, -0.5f,    1.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f,  0.5f,    0.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
+	Mesh* cube = new Mesh();
+	cube->CreateMesh(MeshData::vertices, MeshData::indices, MeshData::vertexCount, MeshData::indexCount);
+	meshes.insert(std::make_pair("cube", cube));
 
-		-0.5f,  0.5f, -0.5f,    0.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f,  0.5f,    1.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
+	Mesh* quad = new Mesh();
+	quad->CreateMesh(MeshData::quadVertices, MeshData::quadIndices, MeshData::quadVertexCount, MeshData::quadIndexCount);
+	meshes.insert(std::make_pair("quad", quad));
 
-		-0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f, -0.5f,    1.0f, 0.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,    0.0f, 0.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
-		 0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
-
-		-0.5f, -0.5f,  0.5f,    0.0f, 1.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
-		-0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f,  0.5f,    1.0f, 1.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
-	};
-
-	unsigned int vertexCount = 14 * 4 * 6;
-
-	printf("Size of vertices array: %.2d\n", vertexCount);
-
-	unsigned int indices[] =
-	{
-		 0,  3,  1,
-		 3,  2,  1,
-		 4,  5,  7,
-		 7,  5,  6,
-		 8, 11,  9,
-		11, 10,  9,
-		12, 13, 15,
-		15, 13, 14,
-		16, 19, 17,
-		19, 18, 17,
-		20, 21, 23,
-		23, 21, 22,
-	};
-
-	unsigned int indexCount = 6 * 6;
-
-	Mesh::calcAverageNormals(indices, indexCount, vertices, vertexCount, sizeof(Vertex) / sizeof(float), offsetof(Vertex, Normal) / sizeof(float));
-	Mesh::calcTangentSpace(indices, indexCount, vertices, vertexCount);
-
-	/* Floor Mesh */
-	GLfloat floorVertices[] =
-	{
-		// position               tex coords      normal               tangent              bitangent
-		-10.0f, 0.0f, -10.0f,     0.0f,  0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
-		 10.0f, 0.0f, -10.0f,    10.0f,  0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
-		-10.0f, 0.0f,  10.0f,     0.0f, 10.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
-		 10.0f, 0.0f,  10.0f,    10.0f, 10.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
-	};
-
-	unsigned int floorVertexCount = 14 * 4;
-
-	unsigned int floorIndices[] =
-	{
-		0, 2, 1,
-		1, 2, 3,
-	};
-
-	unsigned int floorIndexCount = 6;
-
-
-	/* Basic Quad mesh */
-	GLfloat quadVertices[] =
-	{
-		// position            tex coords     normal               tangent              bitangent 
-		-1.0f, 0.0f, -1.0f,    0.0f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
-		 1.0f, 0.0f, -1.0f,    1.0f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
-		-1.0f, 0.0f,  1.0f,    0.0f, 1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
-		 1.0f, 0.0f,  1.0f,    1.0f, 1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,
-	};
-
-	unsigned int quadVertexCount = 14 * 4;
-
-	unsigned int quadIndices[] =
-	{
-		0, 2, 1,
-		1, 2, 3,
-	};
-
-	unsigned int quadIndexCount = 6;
-
-	Mesh::calcAverageNormals(quadIndices, quadIndexCount, quadVertices, quadVertexCount, sizeof(Vertex) / sizeof(float), offsetof(Vertex, Normal) / sizeof(float));
-	Mesh::calcTangentSpace(quadIndices, quadIndexCount, quadVertices, quadVertexCount);
-
-
-	Mesh* obj1 = new Mesh();
-	obj1->CreateMesh(vertices, indices, vertexCount, indexCount);
-	meshList.push_back(obj1);
-
-	Mesh* obj2 = new Mesh();
-	obj2->CreateMesh(vertices, indices, vertexCount, indexCount);
-	meshList.push_back(obj2);
-
-	Mesh* floor = new Mesh();
-	floor->CreateMesh(floorVertices, floorIndices, floorVertexCount, floorIndexCount);
-	meshList.push_back(floor);
-
-	Mesh* wall = new Mesh();
-	wall->CreateMesh(floorVertices, floorIndices, floorVertexCount, floorIndexCount);
-	meshList.push_back(wall);
-
-	Mesh* ceil = new Mesh();
-	ceil->CreateMesh(floorVertices, floorIndices, floorVertexCount, floorIndexCount);
-	meshList.push_back(ceil);
-
-	Mesh* shadowMapDisplay = new Mesh();
-	shadowMapDisplay->CreateMesh(quadVertices, quadIndices, quadVertexCount, quadIndexCount);
-	meshList.push_back(shadowMapDisplay);
+	Mesh* quadLarge = new Mesh();
+	quadLarge->CreateMesh(MeshData::floorVertices, MeshData::floorIndices, MeshData::floorVertexCount, MeshData::floorIndexCount);
+	meshes.insert(std::make_pair("quadLarge", quadLarge));
 }
 
 void CreateShaders()
 {
-	Shader* shader1 = new Shader();
-	shader1->CreateFromFiles(vertShader, fragShader);
-	shaderList.push_back(shader1);
+	static const char* vertShader = "Shaders/shader.vert";
+	static const char* fragShader = "Shaders/shader.frag";
 
-	directionalShadowShader = Shader();
-	directionalShadowShader.CreateFromFiles(vertShaderDirShadowMap, fragShaderDirShadowMap);
+	static const char* vertShaderDirShadowMap = "Shaders/directional_shadow_map.vert";
+	static const char* fragShaderDirShadowMap = "Shaders/directional_shadow_map.frag";
 
-	omniShadowShader = Shader();
-	omniShadowShader.CreateFromFiles(vertShaderOmniShadowMap, geomShaderOmniShadowMap, fragShaderOmniShadowMap);
-}
+	static const char* vertShaderOmniShadowMap = "Shaders/omni_shadow_map.vert";
+	static const char* geomShaderOmniShadowMap = "Shaders/omni_shadow_map.geom";
+	static const char* fragShaderOmniShadowMap = "Shaders/omni_shadow_map.frag";
 
-void RenderSceneCottage(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass = false)
-{
-	glm::mat4 sceneOrigin = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	Shader* mainShader = new Shader();
+	mainShader->CreateFromFiles(vertShader, fragShader);
+	shaders.insert(std::make_pair("main", mainShader));
 
-	// Model matrix
-	glm::mat4 model;
+	Shader* directionalShadowShader = new Shader();
+	directionalShadowShader->CreateFromFiles(vertShaderDirShadowMap, fragShaderDirShadowMap);
+	shaders.insert(std::make_pair("directionalShadow", directionalShadowShader));
 
-	/* Cube Left */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-5.0f, 3.0f, -5.0f)) * sceneOrigin;
-	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(2.0f));
-	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	brickTexture.Bind(txSlotDiffuse);
-	normalMapDefault.Bind(txSlotNormal);
-	shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-	meshList[0]->RenderMesh();
-
-	/* Cube Right */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(6.0f, 2.0f, 0.0f)) * sceneOrigin;
-	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(2.0f));
-	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	crateTextureDiffuse.Bind(txSlotDiffuse);
-	crateTextureNormal.Bind(txSlotNormal);
-	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-	meshList[1]->RenderMesh();
-
-	/* Cube Front */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(8.0f, 1.0f, 3.0f)) * sceneOrigin;
-	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(2.0f));
-	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	crateTextureDiffuse.Bind(txSlotDiffuse);
-	crateTextureNormal.Bind(txSlotNormal);
-	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-	meshList[1]->RenderMesh();
-
-	/* Cottage */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 20.0f, -5.0f)) * sceneOrigin;
-	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(1.0f));
-	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-	cottage.RenderModel(txSlotDiffuse, txSlotNormal);
-
-	if (!shadowPass)
-	{
-		/* Floor */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)) * sceneOrigin;
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		textureSponzaFloorDiffuse.Bind(txSlotDiffuse);
-		textureSponzaFloorNormal.Bind(txSlotNormal);
-		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[2]->RenderMesh();
-
-		/* Floor 2nd */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 10.0f, 0.0f)) * sceneOrigin;
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		textureSponzaFloorDiffuse.Bind(txSlotDiffuse);
-		textureSponzaFloorNormal.Bind(txSlotNormal);
-		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[2]->RenderMesh();
-
-		/* Floor 3nd */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f)) * sceneOrigin;
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		grassTexture.Bind(txSlotDiffuse);
-		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[2]->RenderMesh();
-
-		/* Wall Right */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(10.0f, 10.0f, 0.0f)) * sceneOrigin;
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		textureSponzaWallDiffuse.Bind(txSlotDiffuse);
-		textureSponzaWallNormal.Bind(txSlotNormal);
-		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		// meshList[3]->RenderMesh();
-
-		/* Wall Left */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-10.0f, 10.0f, 0.0f)) * sceneOrigin;
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		textureSponzaWallDiffuse.Bind(txSlotDiffuse);
-		textureSponzaWallNormal.Bind(txSlotNormal);
-		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[3]->RenderMesh();
-
-		/* Wall Back */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 10.0f, -10.0f)) * sceneOrigin;
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		textureSponzaWallDiffuse.Bind(txSlotDiffuse);
-		textureSponzaWallNormal.Bind(txSlotNormal);
-		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[3]->RenderMesh();
-
-		/* Ceil */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 9.99f, 0.0f)) * sceneOrigin;
-		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		textureSponzaCeilDiffuse.Bind(txSlotDiffuse);
-		textureSponzaCeilNormal.Bind(txSlotNormal);
-		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[4]->RenderMesh();
-
-		/* Ceil 2nd */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 19.99f, 0.0f)) * sceneOrigin;
-		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		textureSponzaCeilDiffuse.Bind(txSlotDiffuse);
-		textureSponzaCeilNormal.Bind(txSlotNormal);
-		superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[4]->RenderMesh();
-
-		/* ShadowMap display */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-9.95f, 5.0f, 5.0f));
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, 0.0f,                glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(2.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		shaderList[0]->SetTexture(txSlotShadow);
-		shaderList[0]->SetNormalMap(txSlotShadow);
-		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[5]->RenderMesh();
-	}
-}
-
-void RenderSceneEiffel(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass = false)
-{
-	glm::mat4 model;
-
-	/* Floor */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(3.0f));
-	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	textureSponzaCeilDiffuse.Bind(txSlotDiffuse);
-	textureSponzaCeilNormal.Bind(txSlotNormal);
-	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-	if (!shadowPass)
-	{
-		meshList[2]->RenderMesh();
-	}
-
-	/* Eiffel model */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(0.0003f, 0.0003f, 0.0003f));
-	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-	eiffel.RenderModel(txSlotDiffuse, txSlotNormal);
-
-	/* Watchtower model */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(4.0f, -0.35f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(0.5f));
-	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-	watchtower.RenderModel(txSlotDiffuse, txSlotNormal);
-
-	if (!shadowPass)
-	{
-		/* ShadowMap display */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 20.0f, -40.0f));
-		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(10.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		shaderList[0]->SetTexture(txSlotShadow);
-		shaderList[0]->SetNormalMap(txSlotShadow);
-		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[5]->RenderMesh();
-	}
-}
-
-void RenderSceneSponza(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass = false)
-{
-	/* Sponza scene */
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(0.008f));
-	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	superShinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-	sponza.RenderModel(txSlotDiffuse, txSlotNormal);
-
-	if (!shadowPass)
-	{
-		/* ShadowMap display */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 16.0f, -0.5f));
-		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(1.2f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		shaderList[0]->SetTexture(txSlotShadow);
-		shaderList[0]->SetNormalMap(txSlotShadow);
-		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[5]->RenderMesh();
-	}
+	Shader* omniShadowShader = new Shader();
+	omniShadowShader->CreateFromFiles(vertShaderOmniShadowMap, geomShaderOmniShadowMap, fragShaderOmniShadowMap);
+	shaders.insert(std::make_pair("omniShadow", omniShadowShader));
 }
 
 void UpdateSceneCottage(float now)
 {
-	glm::vec3 pLightPos = sceneSettings[currentScene].pLight_0_position;
+	glm::vec3 pLightPos = SceneCottage::GetSettings().pLight_0_position;
 	float lightRadius = 6.0;
-	float lightAngle = now * sceneSettings[currentScene].shadowSpeed;
+	float lightAngle = now * SceneCottage::GetSettings().shadowSpeed;
 	pLightPos.x += (float)cos(lightAngle) * lightRadius;
 	pLightPos.z += (float)sin(lightAngle) * lightRadius;
 	pLightPos.y += (float)cos(lightAngle * 0.5) * lightRadius * 0.5f;
@@ -544,9 +172,9 @@ void UpdateSceneCottage(float now)
 void UpdateSceneEiffel(float now)
 {
 	// Shadow rotation
-	glm::vec3 lightDirection = sceneSettings[currentScene].lightDirection;
+	glm::vec3 lightDirection = SceneEiffel::GetSettings().lightDirection;
 	float lightRadius = abs(lightDirection.x);
-	float lightAngle = now * sceneSettings[currentScene].shadowSpeed;
+	float lightAngle = now * SceneEiffel::GetSettings().shadowSpeed;
 	lightDirection.x = (float)cos(lightAngle) * lightRadius;
 	lightDirection.z = (float)sin(lightAngle) * lightRadius;
 	mainLight.SetDirection(lightDirection);
@@ -555,9 +183,9 @@ void UpdateSceneEiffel(float now)
 void UpdateSceneSponza(float now)
 {
 	// Shadow rotation
-	glm::vec3 lightDirection = sceneSettings[currentScene].lightDirection;
+	glm::vec3 lightDirection = SceneSponza::GetSettings().lightDirection;
 	float lightRadius = abs(lightDirection.x);
-	float lightAngle = now * sceneSettings[currentScene].shadowSpeed;
+	float lightAngle = now * SceneSponza::GetSettings().shadowSpeed;
 	lightDirection.x = (float)cos(lightAngle) * lightRadius;
 	lightDirection.z = (float)sin(lightAngle) * lightRadius;
 	mainLight.SetDirection(lightDirection);
@@ -583,25 +211,12 @@ void UpdateScene(float now)
 
 void RenderScene(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass = false)
 {
-	if (currentScene == "cottage")
-	{
-		RenderSceneCottage(viewMatrix, projectionMatrix, shadowPass);
-	}
-
-	if (currentScene == "sponza")
-	{
-		RenderSceneSponza(viewMatrix, projectionMatrix, shadowPass);
-	}
-
-	if (currentScene == "eiffel")
-	{
-		RenderSceneEiffel(viewMatrix, projectionMatrix, shadowPass);
-	}
+	scene->Render(viewMatrix, projectionMatrix, shadowPass, shaders, uniforms, textures, textureSlots, meshes, materials, models);
 }
 
 void DirectionalShadowMapPass(DirectionalLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix)
 {
-	directionalShadowShader.Bind();
+	shaders["directionalShadow"]->Bind();
 
 	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
@@ -609,10 +224,10 @@ void DirectionalShadowMapPass(DirectionalLight* light, glm::mat4 viewMatrix, glm
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	uniformModel = directionalShadowShader.GetModelLocation();
-	directionalShadowShader.SetDirectionalLightTransform(&light->CalculateLightTransform());
+	uniforms["model"] = shaders["directionalShadow"]->GetModelLocation();
+	shaders["directionalShadow"]->SetDirectionalLightTransform(&light->CalculateLightTransform());
 
-	directionalShadowShader.Validate();
+	shaders["directionalShadow"]->Validate();
 
 	bool shadowPass = true;
 	RenderScene(viewMatrix, projectionMatrix, shadowPass);
@@ -622,7 +237,7 @@ void DirectionalShadowMapPass(DirectionalLight* light, glm::mat4 viewMatrix, glm
 
 void OmniShadowMapPass(PointLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix)
 {
-	omniShadowShader.Bind();
+	shaders["omniShadow"]->Bind();
 
 	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
@@ -630,16 +245,16 @@ void OmniShadowMapPass(PointLight* light, glm::mat4 viewMatrix, glm::mat4 projec
 
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	uniformModel = omniShadowShader.GetModelLocation();
-	uniformOmniLightPos = omniShadowShader.GetUniformLocationOmniLightPos();
-	uniformFarPlane = omniShadowShader.GetUniformLocationFarPlane();
+	uniforms["model"] = shaders["omniShadow"]->GetModelLocation();
+	uniforms["omniLightPos"] = shaders["omniShadow"]->GetUniformLocationOmniLightPos();
+	uniforms["farPlane"] = shaders["omniShadow"]->GetUniformLocationFarPlane();
 
-	glUniform3f(uniformOmniLightPos, light->GetPosition().x, light->GetPosition().y, light->GetPosition().z);
-	glUniform1f(uniformFarPlane, light->GetFarPlane());
+	glUniform3f(uniforms["omniLightPos"] , light->GetPosition().x, light->GetPosition().y, light->GetPosition().z);
+	glUniform1f(uniforms["farPlane"] , light->GetFarPlane());
 
-	omniShadowShader.SetLightMatrices(light->CalculateLightTransform());
+	shaders["omniShadow"]->SetLightMatrices(light->CalculateLightTransform());
 
-	omniShadowShader.Validate();
+	shaders["omniShadow"]->Validate();
 
 	bool shadowPass = true;
 	RenderScene(viewMatrix, projectionMatrix, shadowPass);
@@ -664,60 +279,60 @@ void RenderPass(glm::mat4 viewMatrix, glm::mat4 projectionMatrix)
 		modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 	}
 
-	skybox.Draw(modelMatrix, viewMatrix, projectionMatrix);
+	scene->GetSkybox()->Draw(modelMatrix, viewMatrix, projectionMatrix);
 
-	shaderList[0]->Bind();
+	shaders["main"]->Bind();
 
-	uniformModel = shaderList[0]->GetModelLocation();
-	uniformProjection = shaderList[0]->GetProjectionLocation();
-	uniformView = shaderList[0]->GetViewLocation();
-	uniformEyePosition = shaderList[0]->GetUniformLocationEyePosition();
-	uniformSpecularIntensity = shaderList[0]->GetUniformLocationSpecularIntensity();
-	uniformShininess = shaderList[0]->GetUniformLocationShininess();
+	uniforms["model"] = shaders["main"]->GetModelLocation();
+	uniforms["projection"] = shaders["main"]->GetProjectionLocation();
+	uniforms["view"] = shaders["main"]->GetViewLocation();
+	uniforms["eyePosition"] = shaders["main"]->GetUniformLocationEyePosition();
+	uniforms["specularIntensity"] = shaders["main"]->GetUniformLocationSpecularIntensity();
+	uniforms["shininess"] = shaders["main"]->GetUniformLocationShininess();
 
-	glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
+	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(viewMatrix));
+	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+	glUniform3f(uniforms["eyePosition"], camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-	shaderList[0]->SetDirectionalLight(&mainLight);
-	shaderList[0]->SetPointLights(pointLights, pointLightCount, txSlotOmniShadow, 0);
-	shaderList[0]->SetSpotLights(spotLights, spotLightCount, txSlotOmniShadow, pointLightCount);
-	shaderList[0]->SetDirectionalLightTransform(&mainLight.CalculateLightTransform());
+	shaders["main"]->SetDirectionalLight(&mainLight);
+	shaders["main"]->SetPointLights(pointLights, pointLightCount, textureSlots["omniShadow"], 0);
+	shaders["main"]->SetSpotLights(spotLights, spotLightCount, textureSlots["omniShadow"], pointLightCount);
+	shaders["main"]->SetDirectionalLightTransform(&mainLight.CalculateLightTransform());
 
-	mainLight.GetShadowMap()->Read(txSlotShadow);
-	shaderList[0]->SetTexture(txSlotDiffuse);
-	shaderList[0]->SetNormalMap(txSlotNormal);
-	shaderList[0]->SetDirectionalShadowMap(txSlotShadow);
+	mainLight.GetShadowMap()->Read(textureSlots["shadow"]);
+	shaders["main"]->SetTexture(textureSlots["diffuse"]);
+	shaders["main"]->SetNormalMap(textureSlots["normal"]);
+	shaders["main"]->SetDirectionalShadowMap(textureSlots["shadow"]);
 
 	glm::vec3 lowerLight = camera.getCameraPosition();
 	lowerLight.y -= 0.2f;
 	spotLights[2].SetFlash(lowerLight, camera.getCameraDirection());
 
-	shaderList[0]->Validate();
+	shaders["main"]->Validate();
 
 	RenderScene(viewMatrix, projectionMatrix);
 }
 
 void setupLight()
 {
-	mainLight = DirectionalLight(sceneSettings[currentScene].shadowMapWidth, sceneSettings[currentScene].shadowMapHeight, { 1.0f, 1.0f, 1.0f },
-		sceneSettings[currentScene].ambientIntensity, sceneSettings[currentScene].diffuseIntensity, sceneSettings[currentScene].lightDirection);
-	mainLight.SetLightProjection(sceneSettings[currentScene].lightProjectionMatrix);
+	mainLight = DirectionalLight(scene->GetSettings().shadowMapWidth, scene->GetSettings().shadowMapHeight, { 1.0f, 1.0f, 1.0f },
+		scene->GetSettings().ambientIntensity, scene->GetSettings().diffuseIntensity, scene->GetSettings().lightDirection);
+	mainLight.SetLightProjection(scene->GetSettings().lightProjectionMatrix);
 
 	pointLights[0] = PointLight(1024, 1024, 0.01f, 100.0f, 
-		sceneSettings[currentScene].pLight_0_color, 0.4f, 
-		sceneSettings[currentScene].pLight_0_diffuseIntensity, 
-		sceneSettings[currentScene].pLight_0_position, 0.3f, 0.2f, 0.1f);
+		scene->GetSettings().pLight_0_color, 0.4f, 
+		scene->GetSettings().pLight_0_diffuseIntensity, 
+		scene->GetSettings().pLight_0_position, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
 	pointLights[1] = PointLight(1024, 1024, 0.01f, 100.0f, 
-		sceneSettings[currentScene].pLight_1_color, 0.4f,
-		sceneSettings[currentScene].pLight_1_diffuseIntensity,
-		sceneSettings[currentScene].pLight_1_position, 0.3f, 0.2f, 0.1f);
+		scene->GetSettings().pLight_1_color, 0.4f,
+		scene->GetSettings().pLight_1_diffuseIntensity,
+		scene->GetSettings().pLight_1_position, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
 	pointLights[2] = PointLight(1024, 1024, 0.01f, 100.0f,
-		sceneSettings[currentScene].pLight_2_color, 0.4f,
-		sceneSettings[currentScene].pLight_2_diffuseIntensity,
-		sceneSettings[currentScene].pLight_2_position, 0.3f, 0.2f, 0.1f);
+		scene->GetSettings().pLight_2_color, 0.4f,
+		scene->GetSettings().pLight_2_diffuseIntensity,
+		scene->GetSettings().pLight_2_position, 0.3f, 0.2f, 0.1f);
 	pointLightCount++;
 
 	spotLights[0] = SpotLight(1024, 1024, 0.01f, 100.0f, { 1.0f, 1.0f, 1.0f }, 1.0f, 10.0f, { 0.0f, 20.0f, -28.0f }, { 0.0f, 0.0f, -1.0f }, 0.3f, 0.2f, 0.1f, 160.0f);
@@ -728,7 +343,34 @@ void setupLight()
 	spotLightCount++;
 }
 
+void Cleanup()
+{
+	for (auto& mesh : meshes)
+		delete mesh.second;
 
+	for (auto& shader : shaders)
+		delete shader.second;
+
+	for (auto& texture : textures)
+		delete texture.second;
+
+	for (auto& material : materials)
+		delete material.second;
+
+	for (auto& model : models)
+		delete model.second;
+
+	meshes.clear();
+	shaders.clear();
+	textures.clear();
+	materials.clear();
+	models.clear();
+
+	uniforms.clear();	
+	textureSlots.clear();
+
+	delete scene;
+}
 
 int main()
 {
@@ -740,140 +382,60 @@ int main()
 	printf("   Renderer: %s\n", glGetString(GL_RENDERER));
 	printf("   Version: %s\n", glGetString(GL_VERSION));
 
-	/* Start scene settings */
-	sceneSettings.insert(std::make_pair("cottage", SceneSettings()));
-	sceneSettings.insert(std::make_pair("sponza", SceneSettings()));
-	sceneSettings.insert(std::make_pair("eiffel", SceneSettings()));
-
-	sceneSettings["cottage"].cameraPosition = glm::vec3(0.0f, 25.0f, 15.0f);
-	sceneSettings["cottage"].lightDirection = glm::vec3(-0.8f, -1.2f, 0.8f);
-	sceneSettings["cottage"].cameraStartYaw = -90.0f;
-	sceneSettings["cottage"].ambientIntensity = 0.2f;
-	sceneSettings["cottage"].diffuseIntensity = 2.0f;
-	sceneSettings["cottage"].shadowMapWidth = 1024;
-	sceneSettings["cottage"].shadowMapHeight = 1024;
-	sceneSettings["cottage"].shadowSpeed = 2.0f;
-	sceneSettings["cottage"].pLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
-	sceneSettings["cottage"].pLight_0_position = glm::vec3(0.0f, 6.0f, 0.0f);
-	sceneSettings["cottage"].pLight_0_diffuseIntensity = 6.0f;
-	sceneSettings["cottage"].pLight_1_color = glm::vec3(1.0f, 0.0f, 1.0f);
-	sceneSettings["cottage"].pLight_1_position = glm::vec3(-5.0f, 8.0f, -5.0f);
-	sceneSettings["cottage"].pLight_1_diffuseIntensity = 6.0f;
-	sceneSettings["cottage"].pLight_2_color = glm::vec3(0.0f, 0.0f, 1.0f);
-	sceneSettings["cottage"].pLight_2_position = glm::vec3(10.0f, 2.0f, 10.0f);
-	sceneSettings["cottage"].pLight_2_diffuseIntensity = 6.0f;
-	sceneSettings["cottage"].lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
-
-	sceneSettings["eiffel"].cameraPosition = glm::vec3(0.0f, 6.0f, 20.0f);
-	sceneSettings["eiffel"].lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);
-	sceneSettings["eiffel"].cameraStartYaw = -90.0f;
-	sceneSettings["eiffel"].ambientIntensity = 0.2f;
-	sceneSettings["eiffel"].diffuseIntensity = 0.8f;
-	sceneSettings["eiffel"].shadowMapWidth = 2048;
-	sceneSettings["eiffel"].shadowMapHeight = 2048;
-	sceneSettings["eiffel"].shadowSpeed = 0.4f;
-	sceneSettings["eiffel"].pLight_0_color = glm::vec3(1.0f, 0.0f, 1.0f);
-	sceneSettings["eiffel"].pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
-	sceneSettings["eiffel"].pLight_0_diffuseIntensity = 6.0f;
-	sceneSettings["eiffel"].pLight_1_color = glm::vec3(1.0f, 0.0f, 0.0f);
-	sceneSettings["eiffel"].pLight_1_position = glm::vec3(-2.0f, 9.6f, 0.0f);
-	sceneSettings["eiffel"].pLight_1_diffuseIntensity = 6.0f;
-	sceneSettings["eiffel"].pLight_2_color = glm::vec3(0.8f, 0.8f, 0.5f);
-	sceneSettings["eiffel"].pLight_2_position = glm::vec3(-2.0f, 4.0f, 0.0f);
-	sceneSettings["eiffel"].pLight_2_diffuseIntensity = 6.0f;
-	sceneSettings["eiffel"].lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
-
-	sceneSettings["sponza"].cameraPosition = glm::vec3(-4.0f, 10.0f, -0.5f);
-	sceneSettings["sponza"].lightDirection = glm::vec3(1.2f, -14.0f, 1.2f);
-	sceneSettings["sponza"].cameraStartYaw = 0.0f;
-	sceneSettings["sponza"].ambientIntensity = 0.2f;
-	sceneSettings["sponza"].diffuseIntensity = 1.0f;
-	sceneSettings["sponza"].shadowMapWidth = 4096;
-	sceneSettings["sponza"].shadowMapHeight = 4096;
-	sceneSettings["sponza"].shadowSpeed = 0.1f;
-	sceneSettings["sponza"].pLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
-	sceneSettings["sponza"].pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
-	sceneSettings["sponza"].pLight_0_diffuseIntensity = 2.0f;
-	sceneSettings["sponza"].pLight_1_color = glm::vec3(1.0f, 1.0f, 1.0f);
-	sceneSettings["sponza"].pLight_1_position = glm::vec3(8.92f, 2.75f, -0.85f);
-	sceneSettings["sponza"].pLight_1_diffuseIntensity = 2.0f;
-	sceneSettings["sponza"].pLight_2_color = glm::vec3(0.0f, 0.0f, 1.0f);
-	sceneSettings["sponza"].pLight_2_position = glm::vec3(10.0f, 2.0f, 10.0f);
-	sceneSettings["sponza"].pLight_2_diffuseIntensity = 2.0f;
-	sceneSettings["sponza"].lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
-	/* End scene settings */
+	if (currentScene == "cottage")
+	{
+		scene = new SceneCottage();
+	}
+	else if (currentScene == "eiffel")
+	{
+		scene = new SceneEiffel();
+	}
+	else if (currentScene == "sponza")
+	{
+		scene = new SceneSponza();
+	}
 
 	CreateObjects();
 	CreateShaders();
 
-	camera = Camera(sceneSettings[currentScene].cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), sceneSettings[currentScene].cameraStartYaw, 0.0f, 4.0f, 0.1f);
+	camera = Camera(scene->GetSettings().cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), scene->GetSettings().cameraStartYaw, 0.0f, 4.0f, 0.1f);
 
-	brickTexture = Texture("Textures/brick.png");
-	brickTexture.LoadTexture();
-	pyramidTexture = Texture("Textures/pyramid.png");
-	pyramidTexture.LoadTexture();
+	// Projection matrix
+	glm::mat4 projection = glm::perspective(glm::radians(60.0f), mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 200.0f);
 
-	// Sponza textures
-	textureSponzaFloorDiffuse = Texture("Textures/sponza_floor_a_diff.tga");
-	textureSponzaFloorDiffuse.LoadTexture();
-	textureSponzaFloorNormal = Texture("Textures/sponza_floor_a_ddn.tga");
-	textureSponzaFloorNormal.LoadTexture();
-	textureSponzaWallDiffuse = Texture("Textures/sponza_bricks_a_diff.tga");
-	textureSponzaWallDiffuse.LoadTexture();
-	textureSponzaWallNormal = Texture("Textures/sponza_bricks_a_ddn.tga");
-	textureSponzaWallNormal.LoadTexture();
-	textureSponzaCeilDiffuse = Texture("Textures/sponza_ceiling_a_diff.tga");
-	textureSponzaCeilDiffuse.LoadTexture();
-	textureSponzaCeilNormal = Texture("Textures/sponza_ceiling_a_ddn.tga");
-	textureSponzaCeilNormal.LoadTexture();
+	setupLight();
 
-	crateTextureDiffuse = Texture("Textures/crate.png");
-	crateTextureDiffuse.LoadTexture(true);
-	crateTextureNormal = Texture("Textures/crateNormal.png");
-	crateTextureNormal.LoadTexture(true);
-	grassTexture = Texture("Textures/grass.jpg");
-	grassTexture.LoadTexture();
-	normalMapDefault = Texture("Textures/normal_map_default.png");
-	normalMapDefault.LoadTexture();
+	SetUniforms(uniforms);
+	SetTextures(textures, textureSlots);
 
-
-	shinyMaterial = Material(1.0f, 128.0f);
-	dullMaterial = Material(1.0f, 64.0f);
-	superShinyMaterial = Material(1.0f, 1024.0f);
+	materials.insert(std::make_pair("shiny", new Material(1.0f, 128.0f)));
+	materials.insert(std::make_pair("dull", new Material(1.0f, 64.0f)));
+	materials.insert(std::make_pair("superShiny", new Material(1.0f, 1024.0f)));
 
 	if (currentScene == "sponza")
 	{
-		sponza = Model();
-		sponza.LoadModel("Models/sponza.obj");
+		Model* sponza = new Model();
+		sponza->LoadModel("Models/sponza.obj");
+		models.insert(std::make_pair("sponza", sponza));
 	}
 
 	if (currentScene == "cottage")
 	{
-		cottage = Model();
-		cottage.LoadModel("Models/cottage.obj");
+		Model* cottage = new Model();
+		cottage->LoadModel("Models/cottage.obj");
+		models.insert(std::make_pair("cottage", cottage));
 	}
 
 	if (currentScene == "eiffel")
 	{
-		eiffel = Model();
-		eiffel.LoadModel("Models/Eiffel_Tower.obj");
-		watchtower = Model();
-		watchtower.LoadModel("Models/wooden_watch_tower.obj");
+		Model* eiffel = new Model();
+		eiffel->LoadModel("Models/Eiffel_Tower.obj");
+		models.insert(std::make_pair("eiffel", eiffel));
+
+		Model* watchtower = new Model();
+		watchtower->LoadModel("Models/wooden_watch_tower.obj");
+		models.insert(std::make_pair("watchtower", watchtower));
 	}
-
-	setupLight();
-
-	std::vector<std::string> skyboxFaces;
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_rt.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_lf.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_up.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_dn.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_bk.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_ft.tga");
-	skybox = Skybox(skyboxFaces);
-
-	// Projection matrix
-	glm::mat4 projection = glm::perspective(glm::radians(60.0f), mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 200.0f);
 
 	// Loop until window closed
 	while (!mainWindow.GetShouldClose())
@@ -911,10 +473,11 @@ int main()
 
 		RenderPass(camera.CalculateViewMatrix(), projection);
 
-		shaderList[0]->Unbind();
+		shaders["main"]->Unbind();
 
 		mainWindow.SwapBuffers();
 	}
 
+	Cleanup();
 	return 0;
 }
