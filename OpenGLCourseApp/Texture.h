@@ -9,13 +9,14 @@ public:
 	Texture();
 	Texture(const char* fileLoc);
 	bool LoadTexture(bool flipVert = false);
+	unsigned int GetID() const { return textureID; };
 	void Bind(unsigned int textureUnit = 0);
 	void Unbind();
 	void ClearTexture();
 	~Texture();
 
 private:
-	GLuint textureID;
+	unsigned int textureID;
 	int width;
 	int height;
 	int bitDepth;

@@ -21,7 +21,10 @@ void Scene::SetTextures()
 	textureSlots.insert(std::make_pair("normal", 2));
 	textureSlots.insert(std::make_pair("shadow", 3));
 	textureSlots.insert(std::make_pair("omniShadow", 4));
-	textureSlots.insert(std::make_pair("DuDv", 5));
+	textureSlots.insert(std::make_pair("waterReflection", 5));
+	textureSlots.insert(std::make_pair("waterRefraction", 6));
+	textureSlots.insert(std::make_pair("DuDv", 7));
+	textureSlots.insert(std::make_pair("waterRefractionDepth", 8));
 }
 
 void Scene::SetupMaterials()

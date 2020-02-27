@@ -61,7 +61,7 @@ void SceneSponza::Update(float timestep, LightManager* lightManager)
 }
 
 void SceneSponza::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	/* Sponza scene */
 	glm::mat4 model = glm::mat4(1.0f);

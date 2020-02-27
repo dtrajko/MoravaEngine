@@ -17,7 +17,7 @@
 #include "SpotLight.h"
 #include "Skybox.h"
 #include "LightManager.h"
-
+#include "WaterManager.h"
 
 
 struct SceneSettings
@@ -51,7 +51,7 @@ public:
 	Scene();
 	virtual void Update(float timestep, LightManager* lightManager) = 0;
 	virtual void Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass,
-		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) = 0;
+		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager) = 0;
 	inline Skybox* GetSkybox() const { return skybox; };
 	static inline SceneSettings GetSettings() { return sceneSettings; };
 	std::map<std::string, Texture*> GetTextures() const { return textures; };

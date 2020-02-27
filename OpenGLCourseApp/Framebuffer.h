@@ -1,8 +1,9 @@
 #pragma once
 
 #include "FramebufferTexture.h"
+#include "Renderbuffer.h"
 
-#include <map>
+#include <vector>
 #include <string>
 
 
@@ -20,18 +21,25 @@ class Framebuffer
 
 public:
 	Framebuffer();
-	Framebuffer(int width, int height);
-	bool Init();
+	Framebuffer(unsigned int width, unsigned int height);
+	void AddColorAttachment(FramebufferTexture* colorAttachment);
+	void AddDepthAttachment(FramebufferTexture* depthAttachment);
+	void AddDepthBuffer(Renderbuffer* depthBuffer);
+	std::vector<FramebufferTexture*> GetColorAttachments() const { return m_ColorAttachments; };
+	FramebufferTexture* GetDepthAttachment() const { return m_DepthAttachment; };
 	void Write();
 	void Read(unsigned int textureUnit);
+	void Unbind();
 	~Framebuffer();
 
 private:
-	unsigned int fboID;
-	unsigned int textureID;
-	int m_Width;
-	int m_Height;
+	unsigned int fbo;
+	unsigned int m_Width;
+	unsigned int m_Height;
 
-	std::map<std::string, FramebufferTexture*> attachments;
+	std::vector<FramebufferTexture*> m_ColorAttachments;
+	FramebufferTexture* m_DepthAttachment;
+	Renderbuffer* m_DepthBuffer;
+	FramebufferTexture* m_StencilAttachment; // still not in use
 
 };

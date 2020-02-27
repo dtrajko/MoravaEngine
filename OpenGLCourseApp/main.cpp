@@ -14,6 +14,7 @@
 #include "SceneSponza.h"
 #include "LightManager.h"
 #include "Renderer.h"
+#include "WaterManager.h"
 
 
 // Window dimensions
@@ -25,7 +26,7 @@ Window mainWindow;
 Scene* scene;
 Camera* camera;
 
-std::string currentScene = "cottage"; // "cottage", "eiffel", "sponza"
+std::string currentScene = "eiffel"; // "cottage", "eiffel", "sponza"
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -55,6 +56,9 @@ int main()
 
 	LightManager* lightManager = new LightManager(scene->GetSettings());
 
+	// Water framebuffers
+	WaterManager* waterManager = new WaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight());
+
 	Renderer::Init();
 
 	// Loop until window closed
@@ -79,15 +83,18 @@ int main()
 
 		scene->Update(now, lightManager);
 
-		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projection, scene);
+		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projection, scene, waterManager);
 
 		for (size_t i = 0; i < LightManager::pointLightCount; i++)
-			Renderer::RenderPassOmniShadow(&LightManager::pointLights[i], camera->CalculateViewMatrix(), projection, scene);
+			Renderer::RenderPassOmniShadow(&LightManager::pointLights[i], camera->CalculateViewMatrix(), projection, scene, waterManager);
 
 		for (size_t i = 0; i < LightManager::spotLightCount; i++)
-			Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], camera->CalculateViewMatrix(), projection, scene);
+			Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], camera->CalculateViewMatrix(), projection, scene, waterManager);
 
-		Renderer::RenderPass(camera->CalculateViewMatrix(), projection, mainWindow, scene, camera);
+		Renderer::RenderPassWaterReflection(waterManager, projection, scene, camera);
+		Renderer::RenderPassWaterRefraction(waterManager, projection, scene, camera);
+
+		Renderer::RenderPass(projection, mainWindow, scene, camera, waterManager);
 
 		Renderer::GetShaders()["main"]->Unbind();
 

@@ -1,6 +1,7 @@
 #include "SceneEiffel.h"
 
 
+
 SceneEiffel::SceneEiffel()
 {
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 20.0f);
@@ -45,11 +46,15 @@ void SceneEiffel::SetTextures()
 	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
 	textures.insert(std::make_pair("water", new Texture("Textures/water.png")));
 	textures.insert(std::make_pair("normalMapDefault", new Texture("Textures/normal_map_default.png")));
+	textures.insert(std::make_pair("waterDuDv", new Texture("Textures/water/waterDuDv.png")));
+	textures.insert(std::make_pair("waterNormal", new Texture("Textures/water/waterNormal.png")));
 
 	textures["sponzaCeilDiffuse"]->LoadTexture();
 	textures["sponzaCeilNormal"]->LoadTexture();
 	textures["water"]->LoadTexture();
 	textures["normalMapDefault"]->LoadTexture();
+	textures["waterDuDv"]->LoadTexture();
+	textures["waterNormal"]->LoadTexture();
 }
 
 void SceneEiffel::SetupMeshes()
@@ -79,7 +84,7 @@ void SceneEiffel::Update(float timestep, LightManager* lightManager)
 }
 
 void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	glm::mat4 model;
 
@@ -157,10 +162,11 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool 
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(5.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		shaders["main"]->SetTexture(textureSlots["diffuse"]);
+		waterManager->GetReflectionFramebuffer()->GetColorAttachments()[0]->Bind(textureSlots["waterReflection"]);
+		textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
+		textures["waterNormal"]->Bind(textureSlots["normal"]);
+		shaders["main"]->SetTexture(textureSlots["waterReflection"]);
 		shaders["main"]->SetNormalMap(textureSlots["normal"]);
-		textures["water"]->Bind(textureSlots["diffuse"]);
-		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 
@@ -172,10 +178,12 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool 
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(5.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		shaders["main"]->SetTexture(textureSlots["diffuse"]);
+		waterManager->GetRefractionFramebuffer()->GetColorAttachments()[0]->Bind(textureSlots["waterRefraction"]);
+		waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["waterRefractionDepth"]);
+		textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
+		textures["waterNormal"]->Bind(textureSlots["normal"]);
+		shaders["main"]->SetTexture(textureSlots["waterReflection"]);
 		shaders["main"]->SetNormalMap(textureSlots["normal"]);
-		textures["water"]->Bind(textureSlots["diffuse"]);
-		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 	}
