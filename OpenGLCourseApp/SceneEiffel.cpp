@@ -149,11 +149,8 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool 
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(5.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		// printf("Bind reflection framebuffer color attachment to slot=%d\n", textureSlots["diffuse"]);
 		waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind();
-		shaders["main"]->SetTexture(textureSlots["diffuse"]);
-		shaders["main"]->SetNormalMap(textureSlots["normalMapDefault"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 
@@ -165,13 +162,8 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool 
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(5.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		// printf("Bind refraction framebuffer color attachment to slot=%d\n", textureSlots["diffuse"]);
 		waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["diffuse"]);
-		// printf("Bind refraction framebuffer depth attachment to slot=%d\n", textureSlots["normal"]);
 		waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["normal"]);
-		textures["normalMapDefault"]->Bind();
-		shaders["main"]->SetTexture(textureSlots["diffuse"]);
-		shaders["main"]->SetNormalMap(textureSlots["normalMapDefault"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 
