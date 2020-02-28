@@ -150,8 +150,9 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool 
 		model = glm::scale(model, glm::vec3(5.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflectionTexture"]);
-		shaders["main"]->SetTexture(textureSlots["reflectionTexture"]);
-		shaders["main"]->SetNormalMap(textureSlots["depthMap"]);
+		textures["normalMapDefault"]->Bind();
+		shaders["main"]->SetTexture(textureSlots["diffuse"]);
+		shaders["main"]->SetNormalMap(textureSlots["normal"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 
@@ -164,8 +165,9 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool 
 		model = glm::scale(model, glm::vec3(5.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refractionTexture"]);
-		shaders["main"]->SetTexture(textureSlots["refractionTexture"]);
-		shaders["main"]->SetNormalMap(textureSlots["depthMap"]);
+		textures["normalMapDefault"]->Bind();
+		shaders["main"]->SetTexture(textureSlots["diffuse"]);
+		shaders["main"]->SetNormalMap(textureSlots["normal"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 

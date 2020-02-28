@@ -29,7 +29,7 @@ public:
 	inline FramebufferTexture* GetColorAttachment() const { return m_ColorAttachment; };
 	inline FramebufferTexture* GetDepthAttachment() const { return m_DepthAttachment; };
 	inline Renderbuffer* GetDepthBuffer() const { return m_DepthBuffer; };
-	void Bind(unsigned int colorAttachmentSlot, unsigned int depthAttachmentSlot);
+	void Bind();
 	void Unbind();
 	~Framebuffer();
 

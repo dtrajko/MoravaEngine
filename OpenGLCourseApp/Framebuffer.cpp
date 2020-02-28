@@ -44,7 +44,7 @@ void Framebuffer::AddDepthBuffer(Renderbuffer* depthBuffer)
 	m_DepthBuffer = depthBuffer;
 }
 
-void Framebuffer::Bind(unsigned int colorAttachmentSlot, unsigned int depthAttachmentSlot)
+void Framebuffer::Bind()
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);

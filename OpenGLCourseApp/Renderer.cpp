@@ -97,13 +97,6 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	shaders["main"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
 	shaders["main"]->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
 
-	// Water shader sampler2D uniforms
-	shaders["water"]->SetReflectionTexture(scene->GetTextureSlots()["reflectionTexture"]);
-	shaders["water"]->SetRefractionTexture(scene->GetTextureSlots()["refractionTexture"]);
-	shaders["water"]->SetDuDvMap(scene->GetTextureSlots()["dudvMap"]);
-	shaders["water"]->SetNormalMap(scene->GetTextureSlots()["normalMap"]);
-	shaders["water"]->SetDepthMap(scene->GetTextureSlots()["depthMap"]);
-
 	glm::vec3 lowerLight = camera->getCameraPosition();
 	lowerLight.y -= 0.2f;
 	LightManager::spotLights[2].SetFlash(lowerLight, camera->getCameraDirection());
@@ -170,7 +163,8 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 
 	shaders["water"]->Bind();
 
-	waterManager->GetReflectionFramebuffer()->Bind(scene->GetTextureSlots()["reflectionTexture"], scene->GetTextureSlots()["depthMap"]); // reflectionTexture, depthMap
+	waterManager->GetReflectionFramebuffer()->Bind(); // reflectionTexture, depthMap
+	waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(scene->GetTextureSlots()["diffuse"]);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// glEnable(GL_BLEND);
@@ -195,7 +189,9 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	glViewport(0, 0, waterManager->GetFramebufferWidth(), waterManager->GetFramebufferHeight());
 
 	shaders["water"]->Bind();
-	waterManager->GetRefractionFramebuffer()->Bind(scene->GetTextureSlots()["refractionTexture"], scene->GetTextureSlots()["depthMap"]); // refractionTexture, depthMap
+	waterManager->GetRefractionFramebuffer()->Bind(); // refractionTexture, depthMap
+	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(scene->GetTextureSlots()["diffuse"]);
+	waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["normal"]);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// glEnable(GL_BLEND);
