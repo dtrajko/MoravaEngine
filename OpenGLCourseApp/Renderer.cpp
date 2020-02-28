@@ -162,13 +162,17 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 {
 	glViewport(0, 0, waterManager->GetFramebufferWidth(), waterManager->GetFramebufferHeight());
 
-	shaders["water"]->Bind();
-
 	waterManager->GetReflectionFramebuffer()->Bind();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_BLEND);
 
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	float angleRadians = glm::radians((GLfloat)glfwGetTime());
+	modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+	scene->GetSkybox()->Draw(modelMatrix, camera->CalculateViewMatrix(), projectionMatrix);
+
+	shaders["water"]->Bind();
 	uniforms["model"] = shaders["water"]->GetModelLocation();
 	uniforms["view"] = shaders["water"]->GetViewLocation();
 	uniforms["projection"] = shaders["water"]->GetProjectionLocation();
@@ -188,12 +192,17 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 {
 	glViewport(0, 0, waterManager->GetFramebufferWidth(), waterManager->GetFramebufferHeight());
 
-	shaders["water"]->Bind();
 	waterManager->GetRefractionFramebuffer()->Bind();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_BLEND);
 
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	float angleRadians = glm::radians((GLfloat)glfwGetTime());
+	modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+	scene->GetSkybox()->Draw(modelMatrix, camera->CalculateViewMatrix(), projectionMatrix);
+
+	shaders["water"]->Bind();
 	uniforms["model"] = shaders["water"]->GetModelLocation();
 	uniforms["view"] = shaders["water"]->GetViewLocation();
 	uniforms["projection"] = shaders["water"]->GetProjectionLocation();
