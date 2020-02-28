@@ -1,12 +1,11 @@
 #version 400 core
 
-in vec2 textureCoords;
-
 out vec4 out_Color;
 
+uniform vec3 eyePosition;
 
 void main(void) {
 
-	out_Color = vec4(0.0, 0.0, 1.0, 1.0);
+	out_Color = vec4(eyePosition, 1.0);
 
 }

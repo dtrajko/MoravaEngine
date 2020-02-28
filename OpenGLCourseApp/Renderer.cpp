@@ -173,10 +173,16 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 	waterManager->GetReflectionFramebuffer()->Bind(scene->GetTextureSlots()["reflectionTexture"], scene->GetTextureSlots()["depthMap"]); // reflectionTexture, depthMap
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// glEnable(GL_BLEND);
+	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_BLEND);
 
 	uniforms["model"] = shaders["water"]->GetModelLocation();
+	uniforms["eyePosition"] = shaders["water"]->GetUniformLocationEyePosition();
+
+	glUniform3f(uniforms["eyePosition"], 1.0f, 0.0f, 1.0f);
+
+	shaders["water"]->Validate();
 
 	bool mainPass = false;
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, mainPass, shaders, uniforms, waterManager);
@@ -192,10 +198,16 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	waterManager->GetRefractionFramebuffer()->Bind(scene->GetTextureSlots()["refractionTexture"], scene->GetTextureSlots()["depthMap"]); // refractionTexture, depthMap
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// glEnable(GL_BLEND);
+	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_BLEND);
 
 	uniforms["model"] = shaders["water"]->GetModelLocation();
+	uniforms["eyePosition"] = shaders["water"]->GetUniformLocationEyePosition();
+
+	glUniform3f(uniforms["eyePosition"], 1.0f, 1.0f, 0.0f);
+
+	shaders["water"]->Validate();
 
 	bool mainPass = false;
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, mainPass, shaders, uniforms, waterManager);

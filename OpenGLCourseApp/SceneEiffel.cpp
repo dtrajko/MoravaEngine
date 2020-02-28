@@ -141,6 +141,34 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool 
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 
+		/* Water reflection framebuffer */
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 10.0f, -20.0f));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(5.0f));
+		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+		waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflectionTexture"]);
+		shaders["main"]->SetTexture(textureSlots["reflectionTexture"]);
+		shaders["main"]->SetNormalMap(textureSlots["depthMap"]);
+		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		meshes["quad"]->RenderMesh();
+
+		/* Water refraction framebuffer */
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(12.0f, 10.0f, -20.0f));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(5.0f));
+		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+		waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refractionTexture"]);
+		shaders["main"]->SetTexture(textureSlots["refractionTexture"]);
+		shaders["main"]->SetNormalMap(textureSlots["depthMap"]);
+		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		meshes["quad"]->RenderMesh();
+
 		/* ShadowMap display */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-12.0f, 10.0f, -20.0f));
@@ -154,34 +182,6 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool 
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 
-		/* Water reflection framebuffer */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 10.0f, -20.0f));
-		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(5.0f));
-		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflectionTexture"]); // reflectionTexture, depthMap
-		shaders["main"]->SetTexture(textureSlots["reflectionTexture"]);
-		shaders["main"]->SetTexture(textureSlots["depthMap"]);
-		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quad"]->RenderMesh();
-
-		/* Water refraction framebuffer */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(12.0f, 10.0f, -20.0f));
-		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(5.0f));
-		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refractionTexture"]); // refractionTexture, depthMap
-		waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depthMap"]);
-		shaders["main"]->SetTexture(textureSlots["refractionTexture"]);
-		shaders["main"]->SetTexture(textureSlots["depthMap"]);
-		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quad"]->RenderMesh();
 	}
 }
 

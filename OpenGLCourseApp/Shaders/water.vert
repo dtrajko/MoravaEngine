@@ -1,17 +1,8 @@
 #version 400 core
 
-layout (location = 0) in vec3 position;
-
-out vec2 textureCoords;
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+const vec2 quadVertices[4] = { vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(-1.0, 1.0), vec2(1.0, 1.0) };
 
 
 void main(void) {
-
-	gl_Position = projection * view * model * vec4(position.x, 0.0, position.y, 1.0);
-	textureCoords = vec2(position.x / 2.0 + 0.5, position.y / 2.0 + 0.5);
- 
+	gl_Position = vec4(quadVertices[gl_VertexID], 0.0, 1.0); 
 }
