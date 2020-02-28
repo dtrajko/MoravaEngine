@@ -83,6 +83,7 @@ int main()
 
 		scene->Update(now, lightManager);
 
+		glEnable(GL_CLIP_DISTANCE0);
 
 		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projection, scene, waterManager);
 

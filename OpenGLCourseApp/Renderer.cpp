@@ -8,6 +8,7 @@
 
 std::map<std::string, Shader*> Renderer::shaders;
 std::map<std::string, GLint> Renderer::uniforms;
+glm::vec4 Renderer::m_BgColor = glm::vec4(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
 
 void Renderer::Init()
 {
@@ -65,7 +66,7 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 
 	// Clear the window
-	glClearColor(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
+	glClearColor(m_BgColor.r, m_BgColor.g, m_BgColor.b, m_BgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
@@ -163,18 +164,17 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 
 	shaders["water"]->Bind();
 
-	waterManager->GetReflectionFramebuffer()->Bind(); // reflectionTexture, depthMap
-	// waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(scene->GetTextureSlots()["diffuse"]);
+	waterManager->GetReflectionFramebuffer()->Bind();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// glEnable(GL_BLEND);
-	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_BLEND);
 
 	uniforms["model"] = shaders["water"]->GetModelLocation();
-	uniforms["eyePosition"] = shaders["water"]->GetUniformLocationEyePosition();
+	uniforms["view"] = shaders["water"]->GetViewLocation();
+	uniforms["projection"] = shaders["water"]->GetProjectionLocation();
 
-	glUniform3f(uniforms["eyePosition"], 1.0f, 0.0f, 1.0f);
+	shaders["water"]->SetViewMatrix(&camera->CalculateViewMatrix());
+	shaders["water"]->SetProjectionMatrix(&projectionMatrix);
 
 	shaders["water"]->Validate();
 
@@ -189,19 +189,17 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	glViewport(0, 0, waterManager->GetFramebufferWidth(), waterManager->GetFramebufferHeight());
 
 	shaders["water"]->Bind();
-	waterManager->GetRefractionFramebuffer()->Bind(); // refractionTexture, depthMap
-	// waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(scene->GetTextureSlots()["diffuse"]);
-	// waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["normal"]);
+	waterManager->GetRefractionFramebuffer()->Bind();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// glEnable(GL_BLEND);
-	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_BLEND);
 
 	uniforms["model"] = shaders["water"]->GetModelLocation();
-	uniforms["eyePosition"] = shaders["water"]->GetUniformLocationEyePosition();
+	uniforms["view"] = shaders["water"]->GetViewLocation();
+	uniforms["projection"] = shaders["water"]->GetProjectionLocation();
 
-	glUniform3f(uniforms["eyePosition"], 1.0f, 1.0f, 0.0f);
+	shaders["water"]->SetViewMatrix(&camera->CalculateViewMatrix());
+	shaders["water"]->SetProjectionMatrix(&projectionMatrix);
 
 	shaders["water"]->Validate();
 

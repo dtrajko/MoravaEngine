@@ -222,6 +222,16 @@ void Shader::SetDepthMap(GLuint textureUnit)
 	glUniform1i(uniformDepthMap, textureUnit);
 }
 
+void Shader::SetViewMatrix(glm::mat4* viewMatrix)
+{
+	glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(*viewMatrix));
+}
+
+void Shader::SetProjectionMatrix(glm::mat4* projectionMatrix)
+{
+	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(*projectionMatrix));
+}
+
 void Shader::Bind()
 {
 	glUseProgram(programID);

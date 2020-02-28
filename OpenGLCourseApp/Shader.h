@@ -65,6 +65,8 @@ public:
 	// Water shader samplers
 	void SetDuDvMap(GLuint textureUnit);
 	void SetDepthMap(GLuint textureUnit);
+	void SetViewMatrix(glm::mat4* viewMatrix);
+	void SetProjectionMatrix(glm::mat4* projectionMatrix);
 
 	void Bind();
 	void Unbind();

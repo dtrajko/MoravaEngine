@@ -16,12 +16,18 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 directionalLightTransform;
+uniform vec4 plane;
+
 
 void main()
 {
+
 	FragPos = (model * vec4(aPos, 1.0)).xyz;
 	TexCoords = aTexCoords;
-	
+
+	vec4 WorldPosition = model * vec4(aPos, 1.0);
+	gl_ClipDistance[0] = dot(WorldPosition, plane);
+
 	DirectionalLightSpacePos = directionalLightTransform * model * vec4(aPos, 1.0);
 	
 	mat3 modelVector = transpose(inverse(mat3(model)));
