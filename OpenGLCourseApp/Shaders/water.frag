@@ -1,8 +1,11 @@
 #version 400 core
 
+in vec2 TexCoord;
+
 out vec4 out_Color;
 
 uniform vec3 eyePosition;
+
 
 void main(void) {
 

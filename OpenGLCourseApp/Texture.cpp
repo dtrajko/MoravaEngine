@@ -64,7 +64,7 @@ void Texture::Bind(unsigned int textureUnit)
 {
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
 	glBindTexture(GL_TEXTURE_2D, textureID);
-	// printf("Bind texture ID=%d, Slot=%d\n", textureID, textureUnit);
+	// printf("Bind texture ID=%d to slot=%d\n", textureID, textureUnit);
 }
 
 void Texture::Unbind()

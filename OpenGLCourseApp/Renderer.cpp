@@ -164,7 +164,7 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 	shaders["water"]->Bind();
 
 	waterManager->GetReflectionFramebuffer()->Bind(); // reflectionTexture, depthMap
-	waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(scene->GetTextureSlots()["diffuse"]);
+	// waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(scene->GetTextureSlots()["diffuse"]);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// glEnable(GL_BLEND);
@@ -190,8 +190,8 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 
 	shaders["water"]->Bind();
 	waterManager->GetRefractionFramebuffer()->Bind(); // refractionTexture, depthMap
-	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(scene->GetTextureSlots()["diffuse"]);
-	waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["normal"]);
+	// waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(scene->GetTextureSlots()["diffuse"]);
+	// waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["normal"]);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// glEnable(GL_BLEND);

@@ -212,16 +212,6 @@ void Shader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
 	}
 }
 
-void Shader::SetReflectionTexture(GLuint textureUnit)
-{
-	glUniform1i(uniformReflectionTexture, textureUnit);
-}
-
-void Shader::SetRefractionTexture(GLuint textureUnit)
-{
-	glUniform1i(uniformRefractionTexture, textureUnit);
-}
-
 void Shader::SetDuDvMap(GLuint textureUnit)
 {
 	glUniform1i(uniformDuDvMap, textureUnit);
@@ -439,8 +429,6 @@ void Shader::CompileProgram()
 	uniformFarPlane = glGetUniformLocation(programID, "farPlane");
 
 	// Water shader sampler2D uniforms
-	uniformReflectionTexture = glGetUniformLocation(programID, "uniformReflectionTexture");
-	uniformRefractionTexture = glGetUniformLocation(programID, "uniformRefractionTexture");
 	uniformDuDvMap = glGetUniformLocation(programID, "uniformDuDvMap");
 	uniformDepthMap = glGetUniformLocation(programID, "uniformDepthMap");
 

@@ -15,7 +15,6 @@ public:
 	void ClearTexture();
 	~Texture();
 
-private:
 	unsigned int textureID;
 	int width;
 	int height;
