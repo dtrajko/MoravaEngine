@@ -60,7 +60,7 @@ void SceneSponza::Update(float timestep, LightManager* lightManager)
 	lightManager->directionalLight.SetDirection(lightDirection);
 }
 
-void SceneSponza::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass,
+void SceneSponza::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool mainPass,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	/* Sponza scene */
@@ -74,7 +74,7 @@ void SceneSponza::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool 
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	models["sponza"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"]);
 
-	if (!shadowPass)
+	if (mainPass)
 	{
 		/* ShadowMap display */
 		model = glm::mat4(1.0f);

@@ -83,6 +83,9 @@ int main()
 
 		scene->Update(now, lightManager);
 
+		Renderer::RenderPassWaterReflection(waterManager, projection, scene, camera);
+		Renderer::RenderPassWaterRefraction(waterManager, projection, scene, camera);
+
 		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projection, scene, waterManager);
 
 		for (size_t i = 0; i < LightManager::pointLightCount; i++)
@@ -90,9 +93,6 @@ int main()
 
 		for (size_t i = 0; i < LightManager::spotLightCount; i++)
 			Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], camera->CalculateViewMatrix(), projection, scene, waterManager);
-
-		Renderer::RenderPassWaterReflection(waterManager, projection, scene, camera);
-		Renderer::RenderPassWaterRefraction(waterManager, projection, scene, camera);
 
 		Renderer::RenderPass(projection, mainWindow, scene, camera, waterManager);
 

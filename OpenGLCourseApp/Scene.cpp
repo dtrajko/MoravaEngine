@@ -10,21 +10,22 @@ Scene::Scene()
 	shadowMapWidth = 1024;
 	shadowMapHeight = 1024;
 
-	SetTextures();
+	SetTextureSlots();
 	SetupMaterials();
 	SetupMeshes();
 }
 
-void Scene::SetTextures()
+void Scene::SetTextureSlots()
 {
 	textureSlots.insert(std::make_pair("diffuse", 1));
 	textureSlots.insert(std::make_pair("normal", 2));
 	textureSlots.insert(std::make_pair("shadow", 3));
 	textureSlots.insert(std::make_pair("omniShadow", 4));
-	textureSlots.insert(std::make_pair("waterReflection", 5));
-	textureSlots.insert(std::make_pair("waterRefraction", 6));
-	textureSlots.insert(std::make_pair("DuDv", 7));
-	textureSlots.insert(std::make_pair("waterRefractionDepth", 8));
+	textureSlots.insert(std::make_pair("reflectionTexture", 11));
+	textureSlots.insert(std::make_pair("refractionTexture", 12));
+	textureSlots.insert(std::make_pair("dudvMap", 13));
+	textureSlots.insert(std::make_pair("normalMap", 14));
+	textureSlots.insert(std::make_pair("depthMap", 15));
 }
 
 void Scene::SetupMaterials()
@@ -57,7 +58,6 @@ void Scene::SetupMeshes()
 
 Scene::~Scene()
 {
-
 	for (auto& texture : textures)
 		delete texture.second;
 

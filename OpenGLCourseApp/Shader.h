@@ -62,6 +62,12 @@ public:
 	// Omni shadow maps
 	void SetLightMatrices(std::vector<glm::mat4> lightMatrices);
 
+	// Water shader samplers
+	void SetReflectionTexture(GLuint textureUnit);
+	void SetRefractionTexture(GLuint textureUnit);
+	void SetDuDvMap(GLuint textureUnit);
+	void SetDepthMap(GLuint textureUnit);
+
 	void Bind();
 	void Unbind();
 	void ClearShader();
@@ -100,6 +106,12 @@ private:
 	GLint uniformFarPlane;
 
 	GLuint uniformLightMatrices[6];
+
+	// Water shader sampler2D uniforms
+	GLuint uniformReflectionTexture;
+	GLuint uniformRefractionTexture;
+	GLuint uniformDuDvMap;
+	GLuint uniformDepthMap;
 
 	struct
 	{

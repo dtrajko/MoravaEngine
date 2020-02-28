@@ -97,14 +97,21 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	shaders["main"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
 	shaders["main"]->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
 
+	// Water shader sampler2D uniforms
+	shaders["water"]->SetReflectionTexture(scene->GetTextureSlots()["reflectionTexture"]);
+	shaders["water"]->SetRefractionTexture(scene->GetTextureSlots()["refractionTexture"]);
+	shaders["water"]->SetDuDvMap(scene->GetTextureSlots()["dudvMap"]);
+	shaders["water"]->SetNormalMap(scene->GetTextureSlots()["normalMap"]);
+	shaders["water"]->SetDepthMap(scene->GetTextureSlots()["depthMap"]);
+
 	glm::vec3 lowerLight = camera->getCameraPosition();
 	lowerLight.y -= 0.2f;
 	LightManager::spotLights[2].SetFlash(lowerLight, camera->getCameraDirection());
 
 	shaders["main"]->Validate();
 
-	bool shadowPass = false;
-	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, shadowPass, shaders, uniforms, waterManager);
+	bool mainPass = true;
+	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, mainPass, shaders, uniforms, waterManager);
 }
 
 void Renderer::RenderPassShadow(DirectionalLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
@@ -115,15 +122,16 @@ void Renderer::RenderPassShadow(DirectionalLight* light, glm::mat4 viewMatrix, g
 
 	light->GetShadowMap()->Write();
 
-	glClear(GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_BLEND);
 
 	uniforms["model"] = shaders["directionalShadow"]->GetModelLocation();
 	shaders["directionalShadow"]->SetDirectionalLightTransform(&light->CalculateLightTransform());
 
 	shaders["directionalShadow"]->Validate();
 
-	bool shadowPass = true;
-	scene->Render(viewMatrix, projectionMatrix, shadowPass, shaders, uniforms, waterManager);
+	bool mainPass = false;
+	scene->Render(viewMatrix, projectionMatrix, mainPass, shaders, uniforms, waterManager);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -136,7 +144,8 @@ void Renderer::RenderPassOmniShadow(PointLight* light, glm::mat4 viewMatrix, glm
 
 	light->GetShadowMap()->Write();
 
-	glClear(GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_BLEND);
 
 	uniforms["model"] = shaders["omniShadow"]->GetModelLocation();
 	uniforms["omniLightPos"] = shaders["omniShadow"]->GetUniformLocationOmniLightPos();
@@ -149,48 +158,47 @@ void Renderer::RenderPassOmniShadow(PointLight* light, glm::mat4 viewMatrix, glm
 
 	shaders["omniShadow"]->Validate();
 
-	bool shadowPass = true;
-	scene->Render(viewMatrix, projectionMatrix, shadowPass, shaders, uniforms, waterManager);
+	bool mainPass = false;
+	scene->Render(viewMatrix, projectionMatrix, mainPass, shaders, uniforms, waterManager);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene, Camera* camera)
 {
-	shaders["water"]->Bind();
-
 	glViewport(0, 0, waterManager->GetFramebufferWidth(), waterManager->GetFramebufferHeight());
 
-	waterManager->GetReflectionFramebuffer()->Write();
+	shaders["water"]->Bind();
+
+	waterManager->GetReflectionFramebuffer()->Bind(scene->GetTextureSlots()["reflectionTexture"], scene->GetTextureSlots()["depthMap"]);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// glEnable(GL_BLEND);
+	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	uniforms["model"] = shaders["water"]->GetModelLocation();
 
-	bool shadowPass = false;
-	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, shadowPass, shaders, uniforms, waterManager);
+	bool mainPass = false;
+	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, mainPass, shaders, uniforms, waterManager);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene, Camera* camera)
 {
-	shaders["water"]->Bind();
-
 	glViewport(0, 0, waterManager->GetFramebufferWidth(), waterManager->GetFramebufferHeight());
 
-	waterManager->GetRefractionFramebuffer()->Write();
+	shaders["water"]->Bind();
+	waterManager->GetRefractionFramebuffer()->Bind(scene->GetTextureSlots()["refractionTexture"], scene->GetTextureSlots()["depthMap"]);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// glEnable(GL_BLEND);
+	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	uniforms["model"] = shaders["water"]->GetModelLocation();
 
-	bool shadowPass = false;
-	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, shadowPass, shaders, uniforms, waterManager);
+	bool mainPass = false;
+	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, mainPass, shaders, uniforms, waterManager);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

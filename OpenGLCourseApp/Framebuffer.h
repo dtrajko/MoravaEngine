@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 
 /**
@@ -25,10 +26,10 @@ public:
 	void AddColorAttachment(FramebufferTexture* colorAttachment);
 	void AddDepthAttachment(FramebufferTexture* depthAttachment);
 	void AddDepthBuffer(Renderbuffer* depthBuffer);
-	std::vector<FramebufferTexture*> GetColorAttachments() const { return m_ColorAttachments; };
-	FramebufferTexture* GetDepthAttachment() const { return m_DepthAttachment; };
-	void Write();
-	void Read(unsigned int textureUnit);
+	inline FramebufferTexture* GetColorAttachment() const { return m_ColorAttachment; };
+	inline FramebufferTexture* GetDepthAttachment() const { return m_DepthAttachment; };
+	inline Renderbuffer* GetDepthBuffer() const { return m_DepthBuffer; };
+	void Bind(unsigned int colorAttachmentSlot, unsigned int depthAttachmentSlot);
 	void Unbind();
 	~Framebuffer();
 
@@ -37,8 +38,8 @@ private:
 	unsigned int m_Width;
 	unsigned int m_Height;
 
-	std::vector<FramebufferTexture*> m_ColorAttachments;
-	FramebufferTexture* m_DepthAttachment;
+	FramebufferTexture* m_ColorAttachment = nullptr;
+	FramebufferTexture* m_DepthAttachment = nullptr;
 	Renderbuffer* m_DepthBuffer;
 	FramebufferTexture* m_StencilAttachment; // still not in use
 

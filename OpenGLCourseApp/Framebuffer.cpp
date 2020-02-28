@@ -10,12 +10,19 @@ Framebuffer::Framebuffer()
 	fbo = 0;
 	m_Width = 0;
 	m_Height = 0;
+	m_ColorAttachment = nullptr;
+	m_DepthAttachment = nullptr;
+	m_DepthBuffer = nullptr;
 }
 
 Framebuffer::Framebuffer(unsigned int width, unsigned int height)
 {
 	m_Width = width;
 	m_Height = height;
+
+	m_ColorAttachment = nullptr;
+	m_DepthAttachment = nullptr;
+	m_DepthBuffer = nullptr;
 
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -24,7 +31,7 @@ Framebuffer::Framebuffer(unsigned int width, unsigned int height)
 
 void Framebuffer::AddColorAttachment(FramebufferTexture* colorAttachment)
 {
-	m_ColorAttachments.push_back(colorAttachment);
+	m_ColorAttachment = colorAttachment;
 }
 
 void Framebuffer::AddDepthAttachment(FramebufferTexture* depthAttachment)
@@ -37,29 +44,25 @@ void Framebuffer::AddDepthBuffer(Renderbuffer* depthBuffer)
 	m_DepthBuffer = depthBuffer;
 }
 
-void Framebuffer::Write()
+void Framebuffer::Bind(unsigned int colorAttachmentSlot, unsigned int depthAttachmentSlot)
 {
-	glBindTexture(GL_TEXTURE_2D, 0); // to make sure the texture is not bound
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	glViewport(0, 0, m_Width, m_Height);
-}
-
-void Framebuffer::Read(unsigned int textureUnit)
-{
-	glActiveTexture(GL_TEXTURE0 + textureUnit);
-	// glBindTexture(GL_TEXTURE_2D, textureID);
 }
 
 void Framebuffer::Unbind()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_ColorAttachment->Unbind();
+	m_DepthAttachment->Unbind();
 	glViewport(0, 0, m_Width, m_Height);
 }
 
 Framebuffer::~Framebuffer()
 {
-	for (auto& colorAttachment : m_ColorAttachments)
-		delete colorAttachment;
+	if (m_DepthAttachment)
+		delete m_DepthAttachment;
 
 	if (m_DepthAttachment)
 		delete m_DepthAttachment;

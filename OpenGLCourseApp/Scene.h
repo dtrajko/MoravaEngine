@@ -50,7 +50,7 @@ class Scene
 public:
 	Scene();
 	virtual void Update(float timestep, LightManager* lightManager) = 0;
-	virtual void Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass,
+	virtual void Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool mainPass,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager) = 0;
 	inline Skybox* GetSkybox() const { return skybox; };
 	static inline SceneSettings GetSettings() { return sceneSettings; };
@@ -62,7 +62,8 @@ private:
 	virtual void SetSkybox() = 0;
 	virtual void SetupModels() = 0;
 	virtual void SetupMeshes();
-	virtual void SetTextures();
+	virtual void SetTextures() = 0;
+	virtual void SetTextureSlots();
 	void SetupMaterials();
 
 protected:

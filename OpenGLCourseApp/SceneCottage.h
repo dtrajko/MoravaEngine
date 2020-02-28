@@ -9,7 +9,7 @@ class SceneCottage : public Scene
 public:
 	SceneCottage();
 	virtual void Update(float timestep, LightManager* lightManager) override;
-	virtual void Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool shadowPass,
+	virtual void Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool mainPass,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager) override;
 	~SceneCottage();
 

@@ -167,7 +167,6 @@
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="FramebufferTexture.cpp" />
-    <ClCompile Include="Input.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -196,7 +195,6 @@
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="FramebufferTexture.h" />
-    <ClInclude Include="Input.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Material.h" />

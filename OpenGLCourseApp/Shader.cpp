@@ -212,6 +212,26 @@ void Shader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
 	}
 }
 
+void Shader::SetReflectionTexture(GLuint textureUnit)
+{
+	glUniform1i(uniformReflectionTexture, textureUnit);
+}
+
+void Shader::SetRefractionTexture(GLuint textureUnit)
+{
+	glUniform1i(uniformRefractionTexture, textureUnit);
+}
+
+void Shader::SetDuDvMap(GLuint textureUnit)
+{
+	glUniform1i(uniformDuDvMap, textureUnit);
+}
+
+void Shader::SetDepthMap(GLuint textureUnit)
+{
+	glUniform1i(uniformDepthMap, textureUnit);
+}
+
 void Shader::Bind()
 {
 	glUseProgram(programID);

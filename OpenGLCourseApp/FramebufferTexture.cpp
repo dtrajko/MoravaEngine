@@ -29,10 +29,7 @@ FramebufferTexture::FramebufferTexture(int width, int height, std::string txType
 
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
-
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, nullptr);
-	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, nullptr);
-
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glFramebufferTexture(GL_FRAMEBUFFER, attachment, textureID, 0);
@@ -40,4 +37,5 @@ FramebufferTexture::FramebufferTexture(int width, int height, std::string txType
 
 FramebufferTexture::~FramebufferTexture()
 {
+	glDeleteTextures(1, &textureID);
 }
