@@ -170,11 +170,11 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 
 	shaders["water"]->Bind();
 
-	waterManager->GetReflectionFramebuffer()->Bind(scene->GetTextureSlots()["reflectionTexture"], scene->GetTextureSlots()["depthMap"]);
+	waterManager->GetReflectionFramebuffer()->Bind(scene->GetTextureSlots()["reflectionTexture"], scene->GetTextureSlots()["depthMap"]); // reflectionTexture, depthMap
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// glEnable(GL_BLEND);
-	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	uniforms["model"] = shaders["water"]->GetModelLocation();
 
@@ -189,11 +189,11 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	glViewport(0, 0, waterManager->GetFramebufferWidth(), waterManager->GetFramebufferHeight());
 
 	shaders["water"]->Bind();
-	waterManager->GetRefractionFramebuffer()->Bind(scene->GetTextureSlots()["refractionTexture"], scene->GetTextureSlots()["depthMap"]);
+	waterManager->GetRefractionFramebuffer()->Bind(scene->GetTextureSlots()["refractionTexture"], scene->GetTextureSlots()["depthMap"]); // refractionTexture, depthMap
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// glEnable(GL_BLEND);
-	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	uniforms["model"] = shaders["water"]->GetModelLocation();
 

@@ -438,6 +438,12 @@ void Shader::CompileProgram()
 	uniformOmniLightPos = glGetUniformLocation(programID, "lightPos");
 	uniformFarPlane = glGetUniformLocation(programID, "farPlane");
 
+	// Water shader sampler2D uniforms
+	uniformReflectionTexture = glGetUniformLocation(programID, "uniformReflectionTexture");
+	uniformRefractionTexture = glGetUniformLocation(programID, "uniformRefractionTexture");
+	uniformDuDvMap = glGetUniformLocation(programID, "uniformDuDvMap");
+	uniformDepthMap = glGetUniformLocation(programID, "uniformDepthMap");
+
 	for (unsigned int i = 0; i < 6; i++)
 	{
 		char locBuff[100] = { '\0' };
