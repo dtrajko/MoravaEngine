@@ -83,7 +83,7 @@ void SceneCottage::Update(float timestep, LightManager* lightManager)
 	lightManager->pointLights[0].SetPosition(pLightPos);
 }
 
-void SceneCottage::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool mainPass,
+void SceneCottage::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	glm::mat4 sceneOrigin = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
@@ -141,7 +141,7 @@ void SceneCottage::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	models["cottage"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"]);
 
-	if (mainPass)
+	if (passType == "main")
 	{
 		/* Floor */
 		model = glm::mat4(1.0f);

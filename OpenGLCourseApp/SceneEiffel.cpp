@@ -83,7 +83,7 @@ void SceneEiffel::Update(float timestep, LightManager* lightManager)
 	lightManager->directionalLight.SetDirection(lightDirection);
 }
 
-void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool mainPass,
+void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	glm::mat4 model;
@@ -99,10 +99,8 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool 
 	textures["sponzaCeilDiffuse"]->Bind(textureSlots["diffuse"]);
 	textures["sponzaCeilNormal"]->Bind(textureSlots["normal"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	if (mainPass)
-	{
+	if (passType != "shadow")
 		meshes["quadLarge"]->RenderMesh();
-	}
 
 	/* Eiffel model */
 	model = glm::mat4(1.0f);
@@ -126,7 +124,7 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, bool 
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	models["watchtower"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"]);
 
-	if (mainPass)
+	if (passType == "main")
 	{
 		/* Water Tile */
 		model = glm::mat4(1.0f);
