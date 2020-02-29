@@ -28,6 +28,8 @@ void Renderer::SetUniforms()
 	uniforms.insert(std::make_pair("directionalLightTransform", 0));
 	uniforms.insert(std::make_pair("omniLightPos", 0));
 	uniforms.insert(std::make_pair("farPlane", 0));
+	uniforms.insert(std::make_pair("reflectionTexture", 0));
+	uniforms.insert(std::make_pair("refractionTexture", 0));
 }
 
 void Renderer::SetShaders()
@@ -42,6 +44,9 @@ void Renderer::SetShaders()
 	static const char* geomShaderOmniShadowMap = "Shaders/omni_shadow_map.geom";
 	static const char* fragShaderOmniShadowMap = "Shaders/omni_shadow_map.frag";
 
+	static const char* vertWaterShader = "Shaders/water.vert";
+	static const char* fragWaterShader = "Shaders/water.frag";
+
 	Shader* mainShader = new Shader();
 	mainShader->CreateFromFiles(vertShader, fragShader);
 	shaders.insert(std::make_pair("main", mainShader));
@@ -53,6 +58,10 @@ void Renderer::SetShaders()
 	Shader* omniShadowShader = new Shader();
 	omniShadowShader->CreateFromFiles(vertShaderOmniShadowMap, geomShaderOmniShadowMap, fragShaderOmniShadowMap);
 	shaders.insert(std::make_pair("omniShadow", omniShadowShader));
+
+	Shader* waterShader = new Shader();
+	waterShader->CreateFromFiles(vertWaterShader, fragWaterShader);
+	shaders.insert(std::make_pair("water", waterShader));
 }
 
 void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene, Camera* camera, WaterManager* waterManager)
@@ -93,14 +102,31 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 
 	shaders["main"]->SetClipPlane(glm::vec4(0.0f, -1.0f, 0.0f, -10000));
 
+	shaders["main"]->Validate();
+
 	glm::vec3 lowerLight = camera->getCameraPosition();
 	lowerLight.y -= 0.2f;
 	LightManager::spotLights[2].SetFlash(lowerLight, camera->getCameraDirection());
 
-	shaders["main"]->Validate();
-
 	std::string passType = "main";
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
+
+	shaders["water"]->Bind();
+	uniforms["model"] = shaders["water"]->GetModelLocation();
+	uniforms["projection"] = shaders["water"]->GetProjectionLocation();
+	uniforms["view"] = shaders["water"]->GetViewLocation();
+	uniforms["reflectionTexture"] = shaders["water"]->GetUniformLocationReflectionTexture();
+	uniforms["refractionTexture"] = shaders["water"]->GetUniformLocationRefractionTexture();
+
+	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
+	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
+	shaders["water"]->SetWater(scene->GetTextureSlots()["reflection"], scene->GetTextureSlots()["refraction"],
+		scene->GetTextureSlots()["DuDv"], scene->GetTextureSlots()["depth"]);
+	shaders["water"]->Validate();
+
+	passType = "main";
+	scene->RenderWater(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
 }
 
 void Renderer::RenderPassShadow(DirectionalLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
@@ -217,11 +243,6 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	// Clear the window
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glm::mat4 modelMatrix = glm::mat4(1.0f);
-	float angleRadians = glm::radians((GLfloat)glfwGetTime());
-	modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-	scene->GetSkybox()->Draw(modelMatrix, camera->CalculateViewMatrix(), projectionMatrix);
 
 	shaders["main"]->Bind();
 

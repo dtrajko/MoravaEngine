@@ -49,6 +49,10 @@ public:
 	GLint GetUniformLocationSpecularIntensity();
 	GLint GetUniformLocationShininess();
 
+	// Water shader
+	GLint GetUniformLocationReflectionTexture();
+	GLint GetUniformLocationRefractionTexture();
+
 	void SetDirectionalLight(DirectionalLight* directionalLight);
 	void SetPointLights(PointLight* pointLights, unsigned int lightCount, unsigned int textureUnit, unsigned int offset);
 	void SetSpotLights(SpotLight* spotLights, unsigned int lightCount, unsigned int textureUnit, unsigned int offset);
@@ -63,7 +67,8 @@ public:
 	void SetLightMatrices(std::vector<glm::mat4> lightMatrices);
 
 	// Water shader samplers
-	void SetWater(glm::vec4 plane, unsigned int txUnitDuDv, unsigned int txUnitDepth);
+	void SetWater(unsigned int txUnitReflection, unsigned int txUnitRefraction,
+		unsigned int txUnitDuDv, unsigned int txUnitDepth);
 	void SetClipPlane(glm::vec4 clipPlane);
 	void SetViewMatrix(glm::mat4* viewMatrix);
 	void SetProjectionMatrix(glm::mat4* projectionMatrix);
@@ -109,6 +114,8 @@ private:
 
 	// Water shader sampler2D uniforms
 	GLuint uniformPlane;
+	GLuint uniformReflectionTexture;
+	GLuint uniformRefractionTexture;
 	GLuint uniformDuDvMap;
 	GLuint uniformDepthMap;
 

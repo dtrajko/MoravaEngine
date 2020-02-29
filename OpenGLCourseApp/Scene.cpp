@@ -17,12 +17,14 @@ Scene::Scene()
 
 void Scene::SetTextureSlots()
 {
-	textureSlots.insert(std::make_pair("diffuse", 1));
-	textureSlots.insert(std::make_pair("normal", 2));
-	textureSlots.insert(std::make_pair("depth", 6));
-	textureSlots.insert(std::make_pair("shadow", 3));
+	textureSlots.insert(std::make_pair("diffuse",    1));
+	textureSlots.insert(std::make_pair("normal",     2));
+	textureSlots.insert(std::make_pair("shadow",     3));
 	textureSlots.insert(std::make_pair("omniShadow", 4));
-	textureSlots.insert(std::make_pair("DuDv", 5));
+	textureSlots.insert(std::make_pair("reflection", 5));
+	textureSlots.insert(std::make_pair("refraction", 6));
+	textureSlots.insert(std::make_pair("depth",      7));
+	textureSlots.insert(std::make_pair("DuDv",       8));
 }
 
 void Scene::SetupMaterials()

@@ -52,6 +52,8 @@ public:
 	virtual void Update(float timestep, LightManager* lightManager) = 0;
 	virtual void Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager) = 0;
+	virtual void RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager) {};
 	inline Skybox* GetSkybox() const { return skybox; };
 	static inline SceneSettings GetSettings() { return sceneSettings; };
 	std::map<std::string, Texture*> GetTextures() const { return textures; };

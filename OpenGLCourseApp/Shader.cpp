@@ -55,7 +55,7 @@ std::string Shader::ReadFile(const char* fileLocation)
 
 	fileStream.close();
 
-	printf("Content loaded from file '%s'.\n", fileLocation);
+	printf("Content loaded from file '%s'\n", fileLocation);
 
 	return content;
 }
@@ -125,6 +125,16 @@ GLint Shader::GetUniformLocationShininess()
 	return uniformShininess;
 }
 
+GLint Shader::GetUniformLocationReflectionTexture()
+{
+	return uniformReflectionTexture;
+}
+
+GLint Shader::GetUniformLocationRefractionTexture()
+{
+	return uniformRefractionTexture;
+}
+
 void Shader::SetDirectionalLight(DirectionalLight* directionalLight)
 {
 	directionalLight->UseLight(
@@ -188,9 +198,11 @@ void Shader::SetClipPlane(glm::vec4 clipPlane)
 	glUniform4f(uniformPlane, clipPlane.x, clipPlane.y, clipPlane.z, clipPlane.w);
 }
 
-void Shader::SetWater(glm::vec4 clipPlane, unsigned int txUnitDuDv, unsigned int txUnitDepth)
+void Shader::SetWater(unsigned int txUnitReflection, unsigned int txUnitRefraction,
+	unsigned int txUnitDuDv, unsigned int txUnitDepth)
 {
-	glUniform4f(uniformPlane, clipPlane.x, clipPlane.y, clipPlane.z, clipPlane.w);
+	glUniform1i(uniformReflectionTexture, txUnitReflection);
+	glUniform1i(uniformRefractionTexture, txUnitRefraction);
 	glUniform1i(uniformDuDvMap, txUnitDuDv);
 	glUniform1i(uniformDepthMap, txUnitDepth);
 }
@@ -459,8 +471,10 @@ void Shader::CompileProgram()
 	}
 
 	// Water shader sampler2D uniforms
-	uniformDuDvMap = glGetUniformLocation(programID, "uniformDuDvMap");
-	uniformDepthMap = glGetUniformLocation(programID, "uniformDepthMap");
+	uniformReflectionTexture = glGetUniformLocation(programID, "reflectionTexture");
+	uniformRefractionTexture = glGetUniformLocation(programID, "refractionTexture");
+	uniformDuDvMap = glGetUniformLocation(programID, "DuDv");
+	uniformDepthMap = glGetUniformLocation(programID, "depthMap");
 	uniformPlane = glGetUniformLocation(programID, "plane");
 }
 
