@@ -8,7 +8,8 @@
 
 std::map<std::string, Shader*> Renderer::shaders;
 std::map<std::string, GLint> Renderer::uniforms;
-glm::vec4 Renderer::m_BgColor = glm::vec4(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
+glm::vec4 Renderer::bgColor = glm::vec4(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
+int Renderer::waterHeight = 2;
 
 void Renderer::Init()
 {
@@ -59,13 +60,12 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 
 	// Clear the window
-	glClearColor(m_BgColor.r, m_BgColor.g, m_BgColor.b, m_BgColor.a);
+	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 	float angleRadians = glm::radians((GLfloat)glfwGetTime());
 	modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-
 	scene->GetSkybox()->Draw(modelMatrix, camera->CalculateViewMatrix(), projectionMatrix);
 
 	shaders["main"]->Bind();
@@ -90,6 +90,8 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	shaders["main"]->SetTexture(scene->GetTextureSlots()["diffuse"]);
 	shaders["main"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
 	shaders["main"]->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
+
+	shaders["main"]->SetClipPlane(glm::vec4(0.0f, -1.0f, 0.0f, -10000));
 
 	glm::vec3 lowerLight = camera->getCameraPosition();
 	lowerLight.y -= 0.2f;
@@ -158,14 +160,13 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 	waterManager->GetReflectionFramebuffer()->Bind();
 
 	// Clear the window
-	glClearColor(m_BgColor.r, m_BgColor.g, m_BgColor.b, m_BgColor.a);
+	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	glm::mat4 modelMatrixSkybox = glm::mat4(1.0f);
 	float angleRadians = glm::radians((GLfloat)glfwGetTime());
-	modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-
-	scene->GetSkybox()->Draw(modelMatrix, camera->CalculateViewMatrix(), projectionMatrix);
+	modelMatrixSkybox = glm::rotate(modelMatrixSkybox, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+	scene->GetSkybox()->Draw(modelMatrixSkybox, camera->CalculateViewMatrix(), projectionMatrix);
 
 	shaders["main"]->Bind();
 
@@ -190,14 +191,19 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 	shaders["main"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
 	shaders["main"]->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
 
-	glm::vec3 lowerLight = camera->getCameraPosition();
-	lowerLight.y -= 0.2f;
-	LightManager::spotLights[2].SetFlash(lowerLight, camera->getCameraDirection());
+	shaders["main"]->SetClipPlane(glm::vec4(0.0f, 1.0f, 0.0f, -waterHeight)); // reflection clip plane
 
 	shaders["main"]->Validate();
 
+	float distance = 2.0f * (camera->getCameraPosition().y - (float)waterHeight);
+	camera->SetCameraPosition(glm::vec3(camera->getCameraPosition().x, camera->getCameraPosition().y - distance, camera->getCameraPosition().z));
+	camera->InvertPitch();
+
 	std::string passType = "water";
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
+
+	camera->SetCameraPosition(glm::vec3(camera->getCameraPosition().x, camera->getCameraPosition().y + distance, camera->getCameraPosition().z));
+	camera->InvertPitch();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -209,13 +215,12 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	waterManager->GetRefractionFramebuffer()->Bind();
 
 	// Clear the window
-	glClearColor(m_BgColor.r, m_BgColor.g, m_BgColor.b, m_BgColor.a);
+	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 	float angleRadians = glm::radians((GLfloat)glfwGetTime());
 	modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-
 	scene->GetSkybox()->Draw(modelMatrix, camera->CalculateViewMatrix(), projectionMatrix);
 
 	shaders["main"]->Bind();
@@ -241,14 +246,19 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	shaders["main"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
 	shaders["main"]->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
 
-	glm::vec3 lowerLight = camera->getCameraPosition();
-	lowerLight.y -= 0.2f;
-	LightManager::spotLights[2].SetFlash(lowerLight, camera->getCameraDirection());
+	shaders["main"]->SetClipPlane(glm::vec4(0.0f, -1.0f, 0.0f, waterHeight)); // refraction clip plane
 
 	shaders["main"]->Validate();
 
+	float distance = 2.0f * (camera->getCameraPosition().y - (float)waterHeight);
+	camera->SetCameraPosition(glm::vec3(camera->getCameraPosition().x, camera->getCameraPosition().y - distance, camera->getCameraPosition().z));
+	camera->InvertPitch();
+
 	std::string passType = "water";
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
+
+	camera->SetCameraPosition(glm::vec3(camera->getCameraPosition().x, camera->getCameraPosition().y + distance, camera->getCameraPosition().z));
+	camera->InvertPitch();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

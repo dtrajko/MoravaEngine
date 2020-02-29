@@ -63,8 +63,8 @@ public:
 	void SetLightMatrices(std::vector<glm::mat4> lightMatrices);
 
 	// Water shader samplers
-	void SetDuDvMap(GLuint textureUnit);
-	void SetDepthMap(GLuint textureUnit);
+	void SetWater(glm::vec4 plane, unsigned int txUnitDuDv, unsigned int txUnitDepth);
+	void SetClipPlane(glm::vec4 clipPlane);
 	void SetViewMatrix(glm::mat4* viewMatrix);
 	void SetProjectionMatrix(glm::mat4* projectionMatrix);
 
@@ -108,6 +108,7 @@ private:
 	GLuint uniformLightMatrices[6];
 
 	// Water shader sampler2D uniforms
+	GLuint uniformPlane;
 	GLuint uniformDuDvMap;
 	GLuint uniformDepthMap;
 

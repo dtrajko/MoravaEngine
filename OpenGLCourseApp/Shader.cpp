@@ -180,8 +180,19 @@ void Shader::SetSpotLights(SpotLight* spotLights, unsigned int lightCount, unsig
 		spotLights[i].GetShadowMap()->Read(textureUnit + offset + i);
 		glUniform1i(uniformOmniShadowMap[offset + i].shadowMap, textureUnit + offset + i);
 		glUniform1f(uniformOmniShadowMap[offset + i].farPlane, spotLights[i].GetFarPlane());
-		// printf("SpotLight light using texture slot %d\n", textureUnit + offset + i);
 	}
+}
+
+void Shader::SetClipPlane(glm::vec4 clipPlane)
+{
+	glUniform4f(uniformPlane, clipPlane.x, clipPlane.y, clipPlane.z, clipPlane.w);
+}
+
+void Shader::SetWater(glm::vec4 clipPlane, unsigned int txUnitDuDv, unsigned int txUnitDepth)
+{
+	glUniform4f(uniformPlane, clipPlane.x, clipPlane.y, clipPlane.z, clipPlane.w);
+	glUniform1i(uniformDuDvMap, txUnitDuDv);
+	glUniform1i(uniformDepthMap, txUnitDepth);
 }
 
 void Shader::SetTexture(GLuint textureUnit)
@@ -210,16 +221,6 @@ void Shader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
 	{
 		glUniformMatrix4fv(uniformLightMatrices[i], 1, GL_FALSE, glm::value_ptr(lightMatrices[i]));
 	}
-}
-
-void Shader::SetDuDvMap(GLuint textureUnit)
-{
-	glUniform1i(uniformDuDvMap, textureUnit);
-}
-
-void Shader::SetDepthMap(GLuint textureUnit)
-{
-	glUniform1i(uniformDepthMap, textureUnit);
 }
 
 void Shader::SetViewMatrix(glm::mat4* viewMatrix)
@@ -438,10 +439,6 @@ void Shader::CompileProgram()
 	uniformOmniLightPos = glGetUniformLocation(programID, "lightPos");
 	uniformFarPlane = glGetUniformLocation(programID, "farPlane");
 
-	// Water shader sampler2D uniforms
-	uniformDuDvMap = glGetUniformLocation(programID, "uniformDuDvMap");
-	uniformDepthMap = glGetUniformLocation(programID, "uniformDepthMap");
-
 	for (unsigned int i = 0; i < 6; i++)
 	{
 		char locBuff[100] = { '\0' };
@@ -460,6 +457,11 @@ void Shader::CompileProgram()
 		snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", i);
 		uniformOmniShadowMap[i].farPlane = glGetUniformLocation(programID, locBuff);
 	}
+
+	// Water shader sampler2D uniforms
+	uniformDuDvMap = glGetUniformLocation(programID, "uniformDuDvMap");
+	uniformDepthMap = glGetUniformLocation(programID, "uniformDepthMap");
+	uniformPlane = glGetUniformLocation(programID, "plane");
 }
 
 void Shader::Validate()

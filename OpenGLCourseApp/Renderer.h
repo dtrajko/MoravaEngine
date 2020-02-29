@@ -27,5 +27,6 @@ private:
 	static std::map<std::string, Shader*> shaders;
 	static std::map<std::string, GLint> uniforms;
 
-	static glm::vec4 m_BgColor;
+	static glm::vec4 bgColor;
+	static int waterHeight;
 };

@@ -83,8 +83,6 @@ int main()
 
 		scene->Update(now, lightManager);
 
-		glEnable(GL_CLIP_DISTANCE0);
-
 		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projection, scene, waterManager);
 
 		for (size_t i = 0; i < LightManager::pointLightCount; i++)
@@ -93,9 +91,11 @@ int main()
 		for (size_t i = 0; i < LightManager::spotLightCount; i++)
 			Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], camera->CalculateViewMatrix(), projection, scene, waterManager);
 
+		glEnable(GL_CLIP_DISTANCE0);
 		Renderer::RenderPassWaterReflection(waterManager, projection, scene, camera);
 		Renderer::RenderPassWaterRefraction(waterManager, projection, scene, camera);
 
+		glDisable(GL_CLIP_DISTANCE0);
 		Renderer::RenderPass(projection, mainWindow, scene, camera, waterManager);
 
 		Renderer::GetShaders()["main"]->Unbind();

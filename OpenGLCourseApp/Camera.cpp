@@ -2,6 +2,7 @@
 
 #include "glm/glm.hpp"
 #include "glm/gtx/compatibility.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 
 Camera::Camera()
@@ -91,19 +92,31 @@ void Camera::mouseScrollControl(bool* keys, GLfloat deltaTime, float xOffset, fl
 	m_Position += m_Front * velocity;
 }
 
-glm::vec3 Camera::getCameraPosition()
+void Camera::SetCameraPosition(glm::vec3 position)
 {
-	return m_Position;
+	m_Position = position;
 }
 
-glm::vec3 Camera::getCameraDirection()
+void Camera::InvertPitch()
 {
-	return glm::normalize(m_Front);
+	m_Pitch = -m_Pitch;
+	update();
 }
 
 glm::mat4 Camera::CalculateViewMatrix()
 {
 	glm::mat4 viewMatrix = glm::lookAt(m_Position, m_Position + glm::normalize(m_Front), m_Up);
+	return viewMatrix;
+}
+
+glm::mat4 Camera::CalculateViewMatrixStrife()
+{
+	glm::mat4 viewMatrix;
+	viewMatrix = glm::rotate(viewMatrix, glm::radians(m_Pitch), glm::vec3(1, 0, 0));
+	viewMatrix = glm::rotate(viewMatrix, glm::radians(m_Yaw),   glm::vec3(0, 1, 0));
+	viewMatrix = glm::rotate(viewMatrix, glm::radians(m_Roll),  glm::vec3(0, 0, 1));
+	glm::vec3 positionNegative = -m_Position;
+	viewMatrix = glm::translate(viewMatrix, positionNegative);
 	return viewMatrix;
 }
 
