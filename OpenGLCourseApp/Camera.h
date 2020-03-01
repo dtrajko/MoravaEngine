@@ -16,9 +16,9 @@ public:
 	void keyControl(bool* keys, GLfloat deltaTime);
 	void mouseControl(bool* buttons, GLfloat xChange, GLfloat yChange);
 	void mouseScrollControl(bool* keys, GLfloat deltaTime, float xOffset, float yOffset);
-	void SetCameraPosition(glm::vec3 position);
-	inline glm::vec3 getCameraPosition() const { return m_Position; };
-	inline glm::vec3 getCameraDirection() const { return glm::normalize(m_Front); };
+	void SetPosition(glm::vec3 position);
+	inline glm::vec3 getPosition() const { return m_Position; };
+	inline glm::vec3 getDirection() const { return glm::normalize(m_Front); };
 	void InvertPitch();
 	glm::mat4 CalculateViewMatrix();
 	glm::mat4 CalculateViewMatrixStrife();

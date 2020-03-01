@@ -135,7 +135,7 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(5.0f));
+		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f * (9.0f / 16.0f)));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
@@ -148,7 +148,7 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(5.0f));
+		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f * (9.0f / 16.0f)));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["diffuse"]);
 		waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["normal"]);
@@ -161,7 +161,7 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(5.0f));
+		model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f * (9.0f / 16.0f)));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		shaders["main"]->SetTexture(textureSlots["shadow"]);
 		shaders["main"]->SetNormalMap(textureSlots["shadow"]);

@@ -88,7 +88,7 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 
 	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniform3f(uniforms["eyePosition"], camera->getCameraPosition().x, camera->getCameraPosition().y, camera->getCameraPosition().z);
+	glUniform3f(uniforms["eyePosition"], camera->getPosition().x, camera->getPosition().y, camera->getPosition().z);
 
 	shaders["main"]->SetDirectionalLight(&LightManager::directionalLight);
 	shaders["main"]->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
@@ -104,9 +104,9 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 
 	shaders["main"]->Validate();
 
-	glm::vec3 lowerLight = camera->getCameraPosition();
+	glm::vec3 lowerLight = camera->getPosition();
 	lowerLight.y -= 0.2f;
-	LightManager::spotLights[2].SetFlash(lowerLight, camera->getCameraDirection());
+	LightManager::spotLights[2].SetFlash(lowerLight, camera->getDirection());
 
 	std::string passType = "main";
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
@@ -206,7 +206,7 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 
 	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniform3f(uniforms["eyePosition"], camera->getCameraPosition().x, camera->getCameraPosition().y, camera->getCameraPosition().z);
+	glUniform3f(uniforms["eyePosition"], camera->getPosition().x, camera->getPosition().y, camera->getPosition().z);
 
 	shaders["main"]->SetDirectionalLight(&LightManager::directionalLight);
 	shaders["main"]->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
@@ -222,14 +222,14 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 
 	shaders["main"]->Validate();
 
-	float distance = 2.0f * (camera->getCameraPosition().y - (float)waterHeight);
-	camera->SetCameraPosition(glm::vec3(camera->getCameraPosition().x, camera->getCameraPosition().y - distance, camera->getCameraPosition().z));
+	float distance = 2.0f * (camera->getPosition().y - (float)waterHeight);
+	camera->SetPosition(glm::vec3(camera->getPosition().x, camera->getPosition().y - distance, camera->getPosition().z));
 	camera->InvertPitch();
 
 	std::string passType = "water";
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
 
-	camera->SetCameraPosition(glm::vec3(camera->getCameraPosition().x, camera->getCameraPosition().y + distance, camera->getCameraPosition().z));
+	camera->SetPosition(glm::vec3(camera->getPosition().x, camera->getPosition().y + distance, camera->getPosition().z));
 	camera->InvertPitch();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -256,7 +256,7 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 
 	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniform3f(uniforms["eyePosition"], camera->getCameraPosition().x, camera->getCameraPosition().y, camera->getCameraPosition().z);
+	glUniform3f(uniforms["eyePosition"], camera->getPosition().x, camera->getPosition().y, camera->getPosition().z);
 
 	shaders["main"]->SetDirectionalLight(&LightManager::directionalLight);
 	shaders["main"]->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
@@ -272,15 +272,8 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 
 	shaders["main"]->Validate();
 
-	float distance = 2.0f * (camera->getCameraPosition().y - (float)waterHeight);
-	camera->SetCameraPosition(glm::vec3(camera->getCameraPosition().x, camera->getCameraPosition().y - distance, camera->getCameraPosition().z));
-	camera->InvertPitch();
-
 	std::string passType = "water";
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
-
-	camera->SetCameraPosition(glm::vec3(camera->getCameraPosition().x, camera->getCameraPosition().y + distance, camera->getCameraPosition().z));
-	camera->InvertPitch();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
