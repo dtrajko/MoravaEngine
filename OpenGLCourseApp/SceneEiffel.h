@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Scene.h"
+#include "Tile2D.h"
 
 
 class SceneEiffel : public Scene
@@ -20,5 +21,7 @@ private:
 	virtual void SetTextures() override;
 	virtual void SetupModels() override;
 	virtual void SetupMeshes() override;
+
+	Tile2D* m_Tile2D;
 
 };

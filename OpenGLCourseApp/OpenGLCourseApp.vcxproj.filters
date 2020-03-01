@@ -90,6 +90,9 @@
     <ClCompile Include="Renderbuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Tile2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mesh.h">
@@ -171,6 +174,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderbuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tile2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

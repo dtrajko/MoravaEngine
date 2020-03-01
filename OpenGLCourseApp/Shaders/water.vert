@@ -1,10 +1,8 @@
 #version 330
 
-layout (location = 0) in vec3 aPosition;
-layout (location = 1) in vec2 aTexCoords;
+layout (location = 0) in vec2 aPosition;
 
-out vec3 vPosition;
-out vec2 textureCoords;
+out vec4 clipSpace;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -12,7 +10,6 @@ uniform mat4 projection;
 
 void main()
 {
-	gl_Position = projection * view * model * vec4(aPosition, 1.0);
-	vPosition = aPosition;
-	textureCoords = aTexCoords;
+	clipSpace = projection * view * model * vec4(aPosition.x, 0.0, aPosition.y, 1.0);
+	gl_Position = clipSpace;
 }

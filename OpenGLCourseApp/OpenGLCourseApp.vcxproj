@@ -186,6 +186,7 @@
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Tile2D.cpp" />
     <ClCompile Include="WaterManager.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -214,6 +215,7 @@
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="Tile2D.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="WaterManager.h" />
     <ClInclude Include="Window.h" />

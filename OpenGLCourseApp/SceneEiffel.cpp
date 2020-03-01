@@ -1,7 +1,6 @@
 #include "SceneEiffel.h"
 
 
-
 SceneEiffel::SceneEiffel()
 {
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 20.0f);
@@ -59,10 +58,13 @@ void SceneEiffel::SetTextures()
 
 void SceneEiffel::SetupMeshes()
 {
+	float vertices[] = { -1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 1 };
+	m_Tile2D = new Tile2D();
+	m_Tile2D->CreateMesh(&vertices[0], 12);
 }
 
 void SceneEiffel::SetupModels()
-{
+{ 
 	Model* eiffel = new Model();
 	eiffel->LoadModel("Models/Eiffel_Tower.obj");
 	models.insert(std::make_pair("eiffel", eiffel));
@@ -183,7 +185,7 @@ void SceneEiffel::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, 
 	shaders["water"]->SetTexture(textureSlots["reflection"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["quad"]->RenderMesh();
+	m_Tile2D->RenderMesh();
 }
 
 SceneEiffel::~SceneEiffel()
