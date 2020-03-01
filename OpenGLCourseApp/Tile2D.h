@@ -8,7 +8,7 @@ class Tile2D
 public:
 	Tile2D();
 
-	void CreateMesh(GLfloat* vertices, unsigned int vertexCount);
+	void CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int numOfVertices, unsigned int numOfIndices);
 	void RenderMesh();
 	void ClearMesh();
 	~Tile2D();
@@ -16,6 +16,7 @@ public:
 private:
 	GLuint VAO;
 	GLuint VBO;
-	GLsizei m_VertexCount;
+	GLuint IBO;
+	GLsizei indexCount;
 
 };

@@ -118,6 +118,7 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	uniforms["reflectionTexture"] = shaders["water"]->GetUniformLocationReflectionTexture();
 	uniforms["refractionTexture"] = shaders["water"]->GetUniformLocationRefractionTexture();
 
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
 	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
@@ -192,7 +193,7 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 	glm::mat4 modelMatrixSkybox = glm::mat4(1.0f);
 	float angleRadians = glm::radians((GLfloat)glfwGetTime());
 	modelMatrixSkybox = glm::rotate(modelMatrixSkybox, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-	scene->GetSkybox()->Draw(modelMatrixSkybox, camera->CalculateViewMatrix(), projectionMatrix);
+	// scene->GetSkybox()->Draw(modelMatrixSkybox, camera->CalculateViewMatrix(), projectionMatrix);
 
 	shaders["main"]->Bind();
 

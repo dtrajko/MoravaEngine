@@ -5,40 +5,50 @@ Tile2D::Tile2D()
 {
 	VAO = 0;
 	VBO = 0;
+	IBO = 0;
+	indexCount = 0;
 }
 
-void Tile2D::CreateMesh(GLfloat* vertices, unsigned int vertexCount)
+void Tile2D::CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int numOfVertices, unsigned int numOfIndices)
 {
-	m_VertexCount = vertexCount;
+	indexCount = numOfIndices;
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
+	glGenBuffers(1, &IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * numOfIndices, indices, GL_STATIC_DRAW);
+
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * vertexCount, vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * numOfVertices, vertices, GL_STATIC_DRAW);
 
 	// position
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (const void*)0);
-	// tex coord
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (const void*)2);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (const void*)0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
 	glBindVertexArray(0);                     // Unbind VAO
 }
 
 void Tile2D::RenderMesh()
 {
 	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, m_VertexCount);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
 	glBindVertexArray(0);                     // Unbind VAO
 }
 
 void Tile2D::ClearMesh()
 {
+	if (IBO != 0)
+	{
+		glDeleteBuffers(1, &IBO);
+		IBO = 0;
+	}
 	if (VBO != 0)
 	{
 		glDeleteBuffers(1, &VBO);
@@ -49,9 +59,9 @@ void Tile2D::ClearMesh()
 		glDeleteVertexArrays(1, &VAO);
 		VAO = 0;
 	}
+	indexCount = 0;
 
 	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
 }
 
 Tile2D::~Tile2D()

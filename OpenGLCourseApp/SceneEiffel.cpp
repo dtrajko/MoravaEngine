@@ -59,8 +59,9 @@ void SceneEiffel::SetTextures()
 void SceneEiffel::SetupMeshes()
 {
 	float vertices[] = { -1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 1 };
+	unsigned int indices[] = { 0, 1, 2, 3, 5, 4 };
 	m_Tile2D = new Tile2D();
-	m_Tile2D->CreateMesh(&vertices[0], 12);
+	m_Tile2D->CreateMesh(&vertices[0], &indices[0], 12, 6);
 }
 
 void SceneEiffel::SetupModels()
@@ -174,7 +175,7 @@ void SceneEiffel::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, 
 {
 	/* Water Tile */
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
+	model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
