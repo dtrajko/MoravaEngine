@@ -21,6 +21,7 @@ SceneSponza::SceneSponza()
 	sceneSettings.pLight_2_position = glm::vec3(10.0f, 2.0f, 10.0f);
 	sceneSettings.pLight_2_diffuseIntensity = 2.0f;
 	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
+	sceneSettings.waterHeight = 1.0f;
 
 	SetSkybox();
 	SetTextures();
@@ -40,6 +41,8 @@ void SceneSponza::SetSkybox()
 
 void SceneSponza::SetTextures()
 {
+	textures.insert(std::make_pair("normalMapDefault", new Texture("Textures/normal_map_default.png")));
+	textures["normalMapDefault"]->LoadTexture();
 }
 
 void SceneSponza::SetupModels()
@@ -89,6 +92,25 @@ void SceneSponza::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 	}
+}
+
+void SceneSponza::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
+{
+	/* Water Tile */
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, waterManager->GetWaterHeight(), 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(12.0f, 0.0f, 8.0f));
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
+	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
+	shaders["water"]->SetTexture(textureSlots["reflection"]);
+	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	meshes["water"]->RenderMesh();
 }
 
 SceneSponza::~SceneSponza()

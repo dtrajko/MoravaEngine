@@ -26,7 +26,7 @@ Window mainWindow;
 Scene* scene;
 Camera* camera;
 
-std::string currentScene = "eiffel"; // "cottage", "eiffel", "sponza"
+std::string currentScene = "sponza"; // "cottage", "eiffel", "sponza"
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -57,7 +57,8 @@ int main()
 	LightManager* lightManager = new LightManager(scene->GetSettings());
 
 	// Water framebuffers
-	WaterManager* waterManager = new WaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight());
+	float waterHeight = 1.0f;
+	WaterManager* waterManager = new WaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight(), scene->GetSettings().waterHeight);
 
 	Renderer::Init();
 
@@ -92,7 +93,16 @@ int main()
 			Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], camera->CalculateViewMatrix(), projection, scene, waterManager);
 
 		glEnable(GL_CLIP_DISTANCE0);
+
+		float distance = 2.0f * (camera->getPosition().y - waterManager->GetWaterHeight());
+		camera->SetPosition(glm::vec3(camera->getPosition().x, camera->getPosition().y - distance, camera->getPosition().z));
+		camera->InvertPitch();
+
 		Renderer::RenderPassWaterReflection(waterManager, projection, scene, camera);
+
+		camera->SetPosition(glm::vec3(camera->getPosition().x, camera->getPosition().y + distance, camera->getPosition().z));
+		camera->InvertPitch();
+
 		Renderer::RenderPassWaterRefraction(waterManager, projection, scene, camera);
 
 		glDisable(GL_CLIP_DISTANCE0);

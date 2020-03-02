@@ -8,16 +8,16 @@ class Mesh
 public:
 	Mesh();
 
-	void CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int numOfVertices, unsigned int numOfIndices);
-	void RenderMesh();
-	void ClearMesh();
+	virtual void CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int numOfVertices, unsigned int numOfIndices);
+	virtual void RenderMesh();
+	virtual void ClearMesh();
 
 	static void CalcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount);
 	static void CalcTangentSpace(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount);
 
-	~Mesh();
+	virtual ~Mesh();
 
-private:
+protected:
 	GLuint VAO;
 	GLuint VBO;
 	GLuint IBO;

@@ -4,12 +4,13 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include <GLFW/glfw3.h>
 
+#include "WaterManager.h"
+
 
 
 std::map<std::string, Shader*> Renderer::shaders;
 std::map<std::string, GLint> Renderer::uniforms;
 glm::vec4 Renderer::bgColor = glm::vec4(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
-int Renderer::waterHeight = 2;
 
 void Renderer::Init()
 {
@@ -193,7 +194,7 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 	glm::mat4 modelMatrixSkybox = glm::mat4(1.0f);
 	float angleRadians = glm::radians((GLfloat)glfwGetTime());
 	modelMatrixSkybox = glm::rotate(modelMatrixSkybox, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-	// scene->GetSkybox()->Draw(modelMatrixSkybox, camera->CalculateViewMatrix(), projectionMatrix);
+	scene->GetSkybox()->Draw(modelMatrixSkybox, camera->CalculateViewMatrix(), projectionMatrix);
 
 	shaders["main"]->Bind();
 
@@ -218,19 +219,12 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 	shaders["main"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
 	shaders["main"]->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
 
-	shaders["main"]->SetClipPlane(glm::vec4(0.0f, 1.0f, 0.0f, -waterHeight)); // reflection clip plane
+	shaders["main"]->SetClipPlane(glm::vec4(0.0f, 1.0f, 0.0f, -waterManager->GetWaterHeight())); // reflection clip plane
 
 	shaders["main"]->Validate();
 
-	float distance = 2.0f * (camera->getPosition().y - (float)waterHeight);
-	camera->SetPosition(glm::vec3(camera->getPosition().x, camera->getPosition().y - distance, camera->getPosition().z));
-	camera->InvertPitch();
-
 	std::string passType = "water";
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
-
-	camera->SetPosition(glm::vec3(camera->getPosition().x, camera->getPosition().y + distance, camera->getPosition().z));
-	camera->InvertPitch();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -268,7 +262,7 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	shaders["main"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
 	shaders["main"]->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
 
-	shaders["main"]->SetClipPlane(glm::vec4(0.0f, -1.0f, 0.0f, waterHeight)); // refraction clip plane
+	shaders["main"]->SetClipPlane(glm::vec4(0.0f, -1.0f, 0.0f, waterManager->GetWaterHeight())); // refraction clip plane
 
 	shaders["main"]->Validate();
 

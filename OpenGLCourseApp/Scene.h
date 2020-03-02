@@ -40,6 +40,7 @@ struct SceneSettings
 	glm::vec3 pLight_2_position;
 	float pLight_2_diffuseIntensity;
 	glm::mat4 lightProjectionMatrix;
+	float waterHeight;
 };
 
 class LightManager;

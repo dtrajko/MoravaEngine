@@ -3,12 +3,16 @@
 
 WaterManager::WaterManager()
 {
+	m_Width = 0;
+	m_Height = 0;
+	m_WaterHeight = 0.0f;
 }
 
-WaterManager::WaterManager(int width, int height)
+WaterManager::WaterManager(int width, int height, float waterHeight)
 {
 	m_Width = width;
 	m_Height = height;
+	m_WaterHeight = waterHeight;
 
 	reflectionFB = new Framebuffer(m_Width, m_Height);
 
