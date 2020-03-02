@@ -49,7 +49,7 @@ int main()
 	else if (currentScene == "sponza")
 		scene = new SceneSponza();
 
-	camera = new Camera(scene->GetSettings().cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), scene->GetSettings().cameraStartYaw, 0.0f, 4.0f, 0.1f);
+	camera = new Camera(scene->GetSettings().cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), scene->GetSettings().cameraStartYaw, 0.0f, scene->GetSettings().cameraMoveSpeed, 0.1f);
 
 	// Projection matrix
 	glm::mat4 projection = glm::perspective(glm::radians(60.0f), mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 200.0f);

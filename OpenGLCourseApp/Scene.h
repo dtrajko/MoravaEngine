@@ -41,6 +41,7 @@ struct SceneSettings
 	float pLight_2_diffuseIntensity;
 	glm::mat4 lightProjectionMatrix;
 	float waterHeight;
+	float cameraMoveSpeed;
 };
 
 class LightManager;

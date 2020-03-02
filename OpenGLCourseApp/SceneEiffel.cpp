@@ -25,6 +25,7 @@ SceneEiffel::SceneEiffel()
 	sceneSettings.pLight_2_diffuseIntensity = 6.0f;
 	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
 	sceneSettings.waterHeight = 1.0f;
+	sceneSettings.cameraMoveSpeed = 4.0f;
 
 	SetSkybox();
 	SetTextures();
