@@ -4,13 +4,12 @@
 SceneSponza::SceneSponza()
 {
 	sceneSettings.cameraPosition = glm::vec3(-4.0f, 10.0f, -0.5f);
-	sceneSettings.lightDirection = glm::vec3(1.2f, -14.0f, 1.2f);
 	sceneSettings.cameraStartYaw = 0.0f;
+	sceneSettings.cameraMoveSpeed = 1.0f;
 	sceneSettings.ambientIntensity = 0.2f;
 	sceneSettings.diffuseIntensity = 1.0f;
-	sceneSettings.shadowMapWidth = 4096;
-	sceneSettings.shadowMapHeight = 4096;
-	sceneSettings.shadowSpeed = 0.1f;
+	sceneSettings.lightDirection = glm::vec3(1.2f, -14.0f, 1.2f);
+	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
 	sceneSettings.pLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
 	sceneSettings.pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
 	sceneSettings.pLight_0_diffuseIntensity = 2.0f;
@@ -20,9 +19,11 @@ SceneSponza::SceneSponza()
 	sceneSettings.pLight_2_color = glm::vec3(0.0f, 0.0f, 1.0f);
 	sceneSettings.pLight_2_position = glm::vec3(10.0f, 2.0f, 10.0f);
 	sceneSettings.pLight_2_diffuseIntensity = 2.0f;
-	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
+	sceneSettings.shadowMapWidth = 4096;
+	sceneSettings.shadowMapHeight = 4096;
+	sceneSettings.shadowSpeed = 0.1f;
 	sceneSettings.waterHeight = 0.2f;
-	sceneSettings.cameraMoveSpeed = 1.0f;
+	sceneSettings.waterWaveSpeed = 0.005f;
 
 	SetSkybox();
 	SetTextures();
@@ -42,8 +43,6 @@ void SceneSponza::SetSkybox()
 
 void SceneSponza::SetTextures()
 {
-	textures.insert(std::make_pair("normalMapDefault", new Texture("Textures/normal_map_default.png")));
-	textures["normalMapDefault"]->LoadTexture();
 }
 
 void SceneSponza::SetupModels()
@@ -110,6 +109,7 @@ void SceneSponza::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, 
 	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	shaders["water"]->SetTexture(textureSlots["reflection"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["water"]->RenderMesh();
 }

@@ -19,6 +19,7 @@ public:
 	void SetPosition(glm::vec3 position);
 	inline glm::vec3 getPosition() const { return m_Position; };
 	inline glm::vec3 getDirection() const { return glm::normalize(m_Front); };
+	inline float getPitch() const { return m_Pitch; };
 	void InvertPitch();
 	glm::mat4 CalculateViewMatrix();
 	glm::mat4 CalculateViewMatrixStrife();

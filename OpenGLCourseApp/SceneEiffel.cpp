@@ -7,13 +7,12 @@
 SceneEiffel::SceneEiffel()
 {
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 20.0f);
-	sceneSettings.lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
+	sceneSettings.cameraMoveSpeed = 4.0f;
 	sceneSettings.ambientIntensity = 0.2f;
 	sceneSettings.diffuseIntensity = 0.8f;
-	sceneSettings.shadowMapWidth = 2048;
-	sceneSettings.shadowMapHeight = 2048;
-	sceneSettings.shadowSpeed = 0.4f;
+	sceneSettings.lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);
+	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
 	sceneSettings.pLight_0_color = glm::vec3(1.0f, 0.0f, 1.0f);
 	sceneSettings.pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
 	sceneSettings.pLight_0_diffuseIntensity = 6.0f;
@@ -23,9 +22,11 @@ SceneEiffel::SceneEiffel()
 	sceneSettings.pLight_2_color = glm::vec3(0.8f, 0.8f, 0.5f);
 	sceneSettings.pLight_2_position = glm::vec3(-2.0f, 4.0f, 0.0f);
 	sceneSettings.pLight_2_diffuseIntensity = 6.0f;
-	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
-	sceneSettings.waterHeight = 1.0f;
-	sceneSettings.cameraMoveSpeed = 4.0f;
+	sceneSettings.shadowMapWidth = 2048;
+	sceneSettings.shadowMapHeight = 2048;
+	sceneSettings.shadowSpeed = 0.4f;
+	sceneSettings.waterHeight = 1.5f;
+	sceneSettings.waterWaveSpeed = 0.01f;
 
 	SetSkybox();
 	SetTextures();
@@ -49,16 +50,10 @@ void SceneEiffel::SetTextures()
 	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
 	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
 	textures.insert(std::make_pair("water", new Texture("Textures/water.png")));
-	textures.insert(std::make_pair("normalMapDefault", new Texture("Textures/normal_map_default.png")));
-	textures.insert(std::make_pair("waterDuDv", new Texture("Textures/water/waterDuDv.png")));
-	textures.insert(std::make_pair("waterNormal", new Texture("Textures/water/waterNormal.png")));
 
 	textures["sponzaCeilDiffuse"]->LoadTexture();
 	textures["sponzaCeilNormal"]->LoadTexture();
 	textures["water"]->LoadTexture();
-	textures["normalMapDefault"]->LoadTexture();
-	textures["waterDuDv"]->LoadTexture();
-	textures["waterNormal"]->LoadTexture();
 }
 
 void SceneEiffel::SetupMeshes()
@@ -186,6 +181,7 @@ void SceneEiffel::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, 
 	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	shaders["water"]->SetTexture(textureSlots["reflection"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["water"]->RenderMesh();
 }

@@ -11,6 +11,7 @@ Scene::Scene()
 	shadowMapWidth = 1024;
 	shadowMapHeight = 1024;
 
+	SetTextures();
 	SetTextureSlots();
 	SetupMaterials();
 	SetupMeshes();
@@ -60,6 +61,17 @@ void Scene::SetupMeshes()
 	Tile2D* m_Tile2D = new Tile2D();
 	m_Tile2D->CreateMesh(&vertices[0], &indices[0], 12, 6);
 	meshes.insert(std::make_pair("water", m_Tile2D));
+}
+
+void Scene::SetTextures()
+{
+	textures.insert(std::make_pair("normalMapDefault", new Texture("Textures/normal_map_default.png")));
+	textures.insert(std::make_pair("waterDuDv", new Texture("Textures/water/waterDuDv.png")));
+	textures.insert(std::make_pair("waterNormal", new Texture("Textures/water/waterNormal.png")));
+
+	textures["normalMapDefault"]->LoadTexture();
+	textures["waterDuDv"]->LoadTexture();
+	textures["waterNormal"]->LoadTexture();
 }
 
 Scene::~Scene()

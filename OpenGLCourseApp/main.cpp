@@ -26,7 +26,7 @@ Window mainWindow;
 Scene* scene;
 Camera* camera;
 
-std::string currentScene = "sponza"; // "cottage", "eiffel", "sponza"
+std::string currentScene = "eiffel"; // "cottage", "eiffel", "sponza"
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -57,7 +57,8 @@ int main()
 	LightManager* lightManager = new LightManager(scene->GetSettings());
 
 	// Water framebuffers
-	WaterManager* waterManager = new WaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight(), scene->GetSettings().waterHeight);
+	WaterManager* waterManager = new WaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight(),
+		scene->GetSettings().waterHeight, scene->GetSettings().waterWaveSpeed);
 
 	Renderer::Init();
 
@@ -92,6 +93,12 @@ int main()
 			Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], camera->CalculateViewMatrix(), projection, scene, waterManager);
 
 		glEnable(GL_CLIP_DISTANCE0);
+
+		float waterMoveFactor = waterManager->GetWaterMoveFactor();
+		waterMoveFactor += WaterManager::m_WaveSpeed * deltaTime;
+		if (waterMoveFactor >= 1.0f)
+			waterMoveFactor = waterMoveFactor - 1.0f;
+		waterManager->SetWaterMoveFactor(waterMoveFactor);
 
 		float distance = 2.0f * (camera->getPosition().y - waterManager->GetWaterHeight());
 		camera->SetPosition(glm::vec3(camera->getPosition().x, camera->getPosition().y - distance, camera->getPosition().z));

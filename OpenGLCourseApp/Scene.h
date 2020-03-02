@@ -22,14 +22,15 @@
 
 struct SceneSettings
 {
+	// camera
 	glm::vec3 cameraPosition;
-	glm::vec3 lightDirection;
 	float cameraStartYaw;
+	float cameraMoveSpeed;
+	// light
+	glm::vec3 lightDirection;
 	float ambientIntensity;
 	float diffuseIntensity;
-	unsigned int shadowMapWidth;
-	unsigned int shadowMapHeight;
-	float shadowSpeed;
+	glm::mat4 lightProjectionMatrix;
 	glm::vec3 pLight_0_color;
 	glm::vec3 pLight_0_position;
 	float pLight_0_diffuseIntensity;
@@ -39,9 +40,13 @@ struct SceneSettings
 	glm::vec3 pLight_2_color;
 	glm::vec3 pLight_2_position;
 	float pLight_2_diffuseIntensity;
-	glm::mat4 lightProjectionMatrix;
+	// shadow
+	unsigned int shadowMapWidth;
+	unsigned int shadowMapHeight;
+	float shadowSpeed;
+	// water
 	float waterHeight;
-	float cameraMoveSpeed;
+	float waterWaveSpeed;
 };
 
 class LightManager;
@@ -66,7 +71,7 @@ private:
 	virtual void SetSkybox() = 0;
 	virtual void SetupModels() = 0;
 	virtual void SetupMeshes();
-	virtual void SetTextures() = 0;
+	virtual void SetTextures();
 	virtual void SetTextureSlots();
 	void SetupMaterials();
 

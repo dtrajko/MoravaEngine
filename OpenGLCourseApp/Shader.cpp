@@ -135,6 +135,16 @@ GLint Shader::GetUniformLocationRefractionTexture()
 	return uniformRefractionTexture;
 }
 
+GLint Shader::GetUniformLocationDuDvMap()
+{
+	return uniformDuDvMap;
+}
+
+GLint Shader::GetUniformLocationWaterMoveFactor()
+{
+	return uniformWaterMoveFactor;
+}
+
 void Shader::SetDirectionalLight(DirectionalLight* directionalLight)
 {
 	directionalLight->UseLight(
@@ -196,6 +206,11 @@ void Shader::SetSpotLights(SpotLight* spotLights, unsigned int lightCount, unsig
 void Shader::SetClipPlane(glm::vec4 clipPlane)
 {
 	glUniform4f(uniformPlane, clipPlane.x, clipPlane.y, clipPlane.z, clipPlane.w);
+}
+
+void Shader::SetWaterMoveFactor(float waterMoveFactor)
+{
+	glUniform1f(uniformWaterMoveFactor, waterMoveFactor);
 }
 
 void Shader::SetWater(unsigned int txUnitReflection, unsigned int txUnitRefraction,
@@ -473,9 +488,10 @@ void Shader::CompileProgram()
 	// Water shader sampler2D uniforms
 	uniformReflectionTexture = glGetUniformLocation(programID, "reflectionTexture");
 	uniformRefractionTexture = glGetUniformLocation(programID, "refractionTexture");
-	uniformDuDvMap = glGetUniformLocation(programID, "DuDv");
+	uniformDuDvMap = glGetUniformLocation(programID, "dudvMap");
 	uniformDepthMap = glGetUniformLocation(programID, "depthMap");
 	uniformPlane = glGetUniformLocation(programID, "plane");
+	uniformWaterMoveFactor = glGetUniformLocation(programID, "waterMoveFactor");
 }
 
 void Shader::Validate()

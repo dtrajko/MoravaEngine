@@ -53,6 +53,8 @@ bool Texture::LoadTexture(bool flipVert)
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, texData);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
+	printf("Loading texture '%s'\n", fileLocation);
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	stbi_image_free(texData);

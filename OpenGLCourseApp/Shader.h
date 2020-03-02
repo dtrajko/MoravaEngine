@@ -52,6 +52,8 @@ public:
 	// Water shader
 	GLint GetUniformLocationReflectionTexture();
 	GLint GetUniformLocationRefractionTexture();
+	GLint GetUniformLocationDuDvMap();
+	GLint GetUniformLocationWaterMoveFactor();
 
 	void SetDirectionalLight(DirectionalLight* directionalLight);
 	void SetPointLights(PointLight* pointLights, unsigned int lightCount, unsigned int textureUnit, unsigned int offset);
@@ -70,6 +72,7 @@ public:
 	void SetWater(unsigned int txUnitReflection, unsigned int txUnitRefraction,
 		unsigned int txUnitDuDv, unsigned int txUnitDepth);
 	void SetClipPlane(glm::vec4 clipPlane);
+	void SetWaterMoveFactor(float waterMoveFactor);
 	void SetViewMatrix(glm::mat4* viewMatrix);
 	void SetProjectionMatrix(glm::mat4* projectionMatrix);
 
@@ -112,8 +115,11 @@ private:
 
 	GLuint uniformLightMatrices[6];
 
-	// Water shader sampler2D uniforms
+	// Setting the gl_ClipDistance
 	GLuint uniformPlane;
+
+	// Water shader sampler2D uniforms
+	GLuint uniformWaterMoveFactor;
 	GLuint uniformReflectionTexture;
 	GLuint uniformRefractionTexture;
 	GLuint uniformDuDvMap;

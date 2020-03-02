@@ -4,13 +4,12 @@
 SceneCottage::SceneCottage()
 {
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 25.0f, 15.0f);
-	sceneSettings.lightDirection = glm::vec3(-0.8f, -1.2f, 0.8f);
 	sceneSettings.cameraStartYaw = -90.0f;
+	sceneSettings.cameraMoveSpeed = 4.0f;
 	sceneSettings.ambientIntensity = 0.2f;
 	sceneSettings.diffuseIntensity = 2.0f;
-	sceneSettings.shadowMapWidth = 1024;
-	sceneSettings.shadowMapHeight = 1024;
-	sceneSettings.shadowSpeed = 2.0f;
+	sceneSettings.lightDirection = glm::vec3(-0.8f, -1.2f, 0.8f);
+	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
 	sceneSettings.pLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
 	sceneSettings.pLight_0_position = glm::vec3(0.0f, 6.0f, 0.0f);
 	sceneSettings.pLight_0_diffuseIntensity = 6.0f;
@@ -20,9 +19,11 @@ SceneCottage::SceneCottage()
 	sceneSettings.pLight_2_color = glm::vec3(0.0f, 0.0f, 1.0f);
 	sceneSettings.pLight_2_position = glm::vec3(10.0f, 2.0f, 10.0f);
 	sceneSettings.pLight_2_diffuseIntensity = 6.0f;
-	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
+	sceneSettings.shadowMapWidth = 1024;
+	sceneSettings.shadowMapHeight = 1024;
+	sceneSettings.shadowSpeed = 2.0f;
 	sceneSettings.waterHeight = 20.0f;
-	sceneSettings.cameraMoveSpeed = 4.0f;
+	sceneSettings.waterWaveSpeed = 0.01f;
 
 	SetSkybox();
 	SetTextures();
@@ -46,7 +47,6 @@ void SceneCottage::SetTextures()
 	textures.insert(std::make_pair("crateDiffuse", new Texture("Textures/crate.png")));
 	textures.insert(std::make_pair("crateNormal", new Texture("Textures/crateNormal.png")));
 	textures.insert(std::make_pair("grass", new Texture("Textures/grass.jpg")));
-	textures.insert(std::make_pair("normalMapDefault", new Texture("Textures/normal_map_default.png")));
 	textures.insert(std::make_pair("sponzaFloorDiffuse", new Texture("Textures/sponza_floor_a_diff.tga")));
 	textures.insert(std::make_pair("sponzaFloorNormal", new Texture("Textures/sponza_floor_a_ddn.tga")));
 	textures.insert(std::make_pair("sponzaWallDiffuse", new Texture("Textures/sponza_bricks_a_diff.tga")));
@@ -58,7 +58,6 @@ void SceneCottage::SetTextures()
 	textures["crateDiffuse"]->LoadTexture();
 	textures["crateNormal"]->LoadTexture();
 	textures["grass"]->LoadTexture();
-	textures["normalMapDefault"]->LoadTexture();
 	textures["sponzaFloorDiffuse"]->LoadTexture();
 	textures["sponzaFloorNormal"]->LoadTexture();
 	textures["sponzaWallDiffuse"]->LoadTexture();
