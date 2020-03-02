@@ -57,7 +57,6 @@ int main()
 	LightManager* lightManager = new LightManager(scene->GetSettings());
 
 	// Water framebuffers
-	float waterHeight = 1.0f;
 	WaterManager* waterManager = new WaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight(), scene->GetSettings().waterHeight);
 
 	Renderer::Init();
