@@ -14,6 +14,7 @@ public:
 	void UseLight(GLint ambientColorLocation, GLint ambientIntensityLocation,
 		GLint diffuseIntensityLocation, GLint directionLocation);
 	inline glm::vec3 GetDirection() const { return m_Direction; };
+	inline glm::vec3 GetPosition() const { return -m_Direction; };
 	inline void SetDirection(glm::vec3 direction) { m_Direction = direction; };
 	glm::mat4 CalculateLightTransform();
 

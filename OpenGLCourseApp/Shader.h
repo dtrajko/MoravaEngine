@@ -53,8 +53,11 @@ public:
 	GLint GetUniformLocationReflectionTexture();
 	GLint GetUniformLocationRefractionTexture();
 	GLint GetUniformLocationDuDvMap();
+	GLint GetUniformLocationNormalMap();
 	GLint GetUniformLocationWaterMoveFactor();
 	GLint GetUniformLocationCameraPosition();
+	GLint GetUniformLocationLightColor();
+	GLint GetUniformLocationLightPosition();
 
 	void SetDirectionalLight(DirectionalLight* directionalLight);
 	void SetPointLights(PointLight* pointLights, unsigned int lightCount, unsigned int textureUnit, unsigned int offset);
@@ -75,6 +78,8 @@ public:
 	void SetClipPlane(glm::vec4 clipPlane);
 	void SetWaterMoveFactor(float waterMoveFactor);
 	void SetCameraPosition(glm::vec3 cameraPosition);
+	void SetLightColor(glm::vec3 lightColor);
+	void SetLightPosition(glm::vec3 lightPosition);
 	void SetViewMatrix(glm::mat4* viewMatrix);
 	void SetProjectionMatrix(glm::mat4* projectionMatrix);
 
@@ -127,6 +132,8 @@ private:
 	GLuint uniformDuDvMap;
 	GLuint uniformDepthMap;
 	GLuint uniformCameraPosition;
+	GLuint uniformLightColor;
+	GLuint uniformLightPosition;
 
 	struct
 	{

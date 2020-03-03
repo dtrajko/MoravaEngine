@@ -80,7 +80,7 @@ void SceneCottage::SetupModels()
 	models.insert(std::make_pair("cottage", cottage));
 }
 
-void SceneCottage::Update(float timestep, LightManager* lightManager)
+void SceneCottage::Update(float timestep, LightManager& lightManager)
 {
 	glm::vec3 pLightPos = sceneSettings.pLight_0_position;
 	float lightRadius = 6.0;
@@ -88,7 +88,7 @@ void SceneCottage::Update(float timestep, LightManager* lightManager)
 	pLightPos.x += (float)cos(lightAngle) * lightRadius;
 	pLightPos.z += (float)sin(lightAngle) * lightRadius;
 	pLightPos.y += (float)cos(lightAngle * 0.5) * lightRadius * 0.5f;
-	lightManager->pointLights[0].SetPosition(pLightPos);
+	lightManager.pointLights[0].SetPosition(pLightPos);
 }
 
 void SceneCottage::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,

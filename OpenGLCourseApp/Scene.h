@@ -65,7 +65,7 @@ class Scene
 
 public:
 	Scene();
-	virtual void Update(float timestep, LightManager* lightManager) = 0;
+	virtual void Update(float timestep, LightManager& lightManager) = 0;
 	virtual void Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager) = 0;
 	virtual void RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,

@@ -59,7 +59,7 @@ void SceneSponza::SetupModels()
 	models.insert(std::make_pair("sponza", sponza));
 }
 
-void SceneSponza::Update(float timestep, LightManager* lightManager)
+void SceneSponza::Update(float timestep, LightManager& lightManager)
 {
 	// Shadow rotation
 	glm::vec3 lightDirection = sceneSettings.lightDirection;
@@ -67,7 +67,7 @@ void SceneSponza::Update(float timestep, LightManager* lightManager)
 	float lightAngle = timestep * sceneSettings.shadowSpeed;
 	lightDirection.x = (float)cos(lightAngle) * lightRadius;
 	lightDirection.z = (float)sin(lightAngle) * lightRadius;
-	lightManager->directionalLight.SetDirection(lightDirection);
+	lightManager.directionalLight.SetDirection(lightDirection);
 }
 
 void SceneSponza::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,

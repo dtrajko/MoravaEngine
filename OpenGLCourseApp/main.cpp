@@ -83,7 +83,7 @@ int main()
 			mainWindow.getKeys()[GLFW_KEY_L] = false;
 		}
 
-		scene->Update(now, lightManager);
+		scene->Update(now, *lightManager);
 
 		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
 		Renderer::RenderOmniShadows(camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
@@ -94,6 +94,7 @@ int main()
 		mainWindow.SwapBuffers();
 	}
 
+	delete lightManager;
 	delete scene;
 	delete camera;
 

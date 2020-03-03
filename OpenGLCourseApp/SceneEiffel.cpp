@@ -78,15 +78,15 @@ void SceneEiffel::SetupModels()
 	models.insert(std::make_pair("watchtower", watchtower));
 }
 
-void SceneEiffel::Update(float timestep, LightManager* lightManager)
+void SceneEiffel::Update(float timestep, LightManager& lightManager)
 {
 	// Shadow rotation
-	glm::vec3 lightDirection = sceneSettings.lightDirection;
-	float lightRadius = abs(lightDirection.x);
+	m_LightDirection = sceneSettings.lightDirection;
+	float lightRadius = abs(m_LightDirection.x);
 	float lightAngle = timestep * sceneSettings.shadowSpeed;
-	lightDirection.x = (float)cos(lightAngle) * lightRadius;
-	lightDirection.z = (float)sin(lightAngle) * lightRadius;
-	lightManager->directionalLight.SetDirection(lightDirection);
+	m_LightDirection.x = (float)cos(lightAngle) * lightRadius;
+	m_LightDirection.z = (float)sin(lightAngle) * lightRadius;
+	lightManager.directionalLight.SetDirection(m_LightDirection);
 }
 
 void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
@@ -189,8 +189,9 @@ void SceneEiffel::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, 
 	waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
 	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	shaders["water"]->SetTexture(textureSlots["reflection"]);
-	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	shaders["water"]->SetLightPosition(glm::vec3(-m_LightDirection.x, m_LightDirection.y, -m_LightDirection.z));
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
+	textures["waterNormal"]->Bind(textureSlots["normal"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["water"]->RenderMesh();
 }

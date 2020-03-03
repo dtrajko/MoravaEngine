@@ -14,6 +14,7 @@ public:
 		glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity);
 	ShadowMap* GetShadowMap() { return m_ShadowMap; };
 	inline void SetLightProjection(glm::mat4 lightProj) { m_LightProj = lightProj; };
+	inline glm::vec3 GetColor() const { return m_Color; }
 	~Light();
 
 protected:
