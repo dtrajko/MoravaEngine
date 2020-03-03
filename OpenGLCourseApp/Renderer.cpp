@@ -32,6 +32,7 @@ void Renderer::SetUniforms()
 	uniforms.insert(std::make_pair("reflectionTexture", 0));
 	uniforms.insert(std::make_pair("refractionTexture", 0));
 	uniforms.insert(std::make_pair("dudvMap", 0));
+	uniforms.insert(std::make_pair("cameraPosition", 0));
 }
 
 void Renderer::SetShaders()
@@ -130,6 +131,7 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	uniforms["refractionTexture"] = shaders["water"]->GetUniformLocationRefractionTexture();
 	uniforms["dudvMap"] = shaders["water"]->GetUniformLocationDuDvMap();
 	uniforms["waterMoveFactor"] = shaders["water"]->GetUniformLocationWaterMoveFactor();
+	uniforms["cameraPosition"] = shaders["water"]->GetUniformLocationCameraPosition();
 
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
 	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
@@ -138,6 +140,7 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	shaders["water"]->SetWater(scene->GetTextureSlots()["reflection"], scene->GetTextureSlots()["refraction"],
 		scene->GetTextureSlots()["DuDv"], scene->GetTextureSlots()["depth"]);
 	shaders["water"]->SetWaterMoveFactor(waterManager->GetWaterMoveFactor());
+	shaders["water"]->SetCameraPosition(camera->getPosition());
 	shaders["water"]->Validate();
 
 	passType = "main";
