@@ -13,7 +13,7 @@ uniform mat4 projection;
 uniform vec3 cameraPosition;
 uniform vec3 lightPosition;
 
-const float tiling = 2.0;
+const float tiling = 4.0;
 
 void main()
 {

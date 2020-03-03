@@ -33,7 +33,7 @@ SceneEiffel::SceneEiffel()
 	sceneSettings.shadowMapHeight = 2048;
 	sceneSettings.shadowSpeed = 0.4f;
 	sceneSettings.waterHeight = 1.6f;
-	sceneSettings.waterWaveSpeed = 0.01f;
+	sceneSettings.waterWaveSpeed = 0.05f;
 
 	SetSkybox();
 	SetTextures();
@@ -189,7 +189,7 @@ void SceneEiffel::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, 
 	waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
 	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	shaders["water"]->SetTexture(textureSlots["reflection"]);
-	shaders["water"]->SetLightPosition(glm::vec3(-m_LightDirection.x, m_LightDirection.y, -m_LightDirection.z));
+	shaders["water"]->SetLightPosition(-m_LightDirection);
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
 	textures["waterNormal"]->Bind(textureSlots["normal"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
