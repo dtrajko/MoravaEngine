@@ -183,7 +183,7 @@ void Model::LoadMaterials(const aiScene* scene)
 	}
 }
 
-void Model::RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal)
+void Model::RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNormalMaps)
 {
 	for (size_t i = 0; i < meshList.size(); i++)
 	{
@@ -194,9 +194,12 @@ void Model::RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal)
 			textureList[materialIndex]->Bind(txSlotDiffuse);
 		}
 
-		if (materialIndex < normalMapList.size() && normalMapList[materialIndex])
+		if (useNormalMaps)
 		{
-			normalMapList[materialIndex]->Bind(txSlotNormal);
+			if (materialIndex < normalMapList.size() && normalMapList[materialIndex])
+			{
+				normalMapList[materialIndex]->Bind(txSlotNormal);
+			}
 		}
 
 		meshList[i]->RenderMesh();

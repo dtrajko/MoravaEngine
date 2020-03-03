@@ -17,6 +17,7 @@
 #include "WaterManager.h"
 
 
+
 // Window dimensions
 const GLint WIDTH = 1280;
 const GLint HEIGHT = 720;
@@ -52,7 +53,7 @@ int main()
 	camera = new Camera(scene->GetSettings().cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), scene->GetSettings().cameraStartYaw, 0.0f, scene->GetSettings().cameraMoveSpeed, 0.1f);
 
 	// Projection matrix
-	glm::mat4 projection = glm::perspective(glm::radians(60.0f), mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 200.0f);
+	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f), mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 200.0f);
 
 	LightManager* lightManager = new LightManager(scene->GetSettings());
 
@@ -84,38 +85,12 @@ int main()
 
 		scene->Update(now, lightManager);
 
-		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projection, scene, waterManager);
-
-		for (size_t i = 0; i < LightManager::pointLightCount; i++)
-			Renderer::RenderPassOmniShadow(&LightManager::pointLights[i], camera->CalculateViewMatrix(), projection, scene, waterManager);
-
-		for (size_t i = 0; i < LightManager::spotLightCount; i++)
-			Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], camera->CalculateViewMatrix(), projection, scene, waterManager);
-
-		glEnable(GL_CLIP_DISTANCE0);
-
-		float waterMoveFactor = waterManager->GetWaterMoveFactor();
-		waterMoveFactor += WaterManager::m_WaveSpeed * deltaTime;
-		if (waterMoveFactor >= 1.0f)
-			waterMoveFactor = waterMoveFactor - 1.0f;
-		waterManager->SetWaterMoveFactor(waterMoveFactor);
-
-		float distance = 2.0f * (camera->getPosition().y - waterManager->GetWaterHeight());
-		camera->SetPosition(glm::vec3(camera->getPosition().x, camera->getPosition().y - distance, camera->getPosition().z));
-		camera->InvertPitch();
-
-		Renderer::RenderPassWaterReflection(waterManager, projection, scene, camera);
-
-		camera->SetPosition(glm::vec3(camera->getPosition().x, camera->getPosition().y + distance, camera->getPosition().z));
-		camera->InvertPitch();
-
-		Renderer::RenderPassWaterRefraction(waterManager, projection, scene, camera);
-
-		glDisable(GL_CLIP_DISTANCE0);
-		Renderer::RenderPass(projection, mainWindow, scene, camera, waterManager);
+		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
+		Renderer::RenderOmniShadows(camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
+		Renderer::RenderWaterEffects(waterManager, projectionMatrix, scene, camera, deltaTime);
+		Renderer::RenderPass(projectionMatrix, mainWindow, scene, camera, waterManager);
 
 		Renderer::GetShaders()["main"]->Unbind();
-
 		mainWindow.SwapBuffers();
 	}
 

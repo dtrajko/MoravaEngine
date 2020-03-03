@@ -22,6 +22,15 @@
 
 struct SceneSettings
 {
+	// features
+	bool enableShadows;
+	bool enableOmniShadows;
+	bool enablePointLights;
+	bool enableSpotLights;
+	bool enableWaterEffects;
+	bool enableSkybox;
+	bool enableNormalMaps;
+
 	// camera
 	glm::vec3 cameraPosition;
 	float cameraStartYaw;

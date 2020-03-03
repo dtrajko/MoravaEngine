@@ -8,6 +8,35 @@ SceneSettings Scene::sceneSettings;
 
 Scene::Scene()
 {
+	sceneSettings.enableShadows      = false;
+	sceneSettings.enableOmniShadows  = false;
+	sceneSettings.enablePointLights  = false;
+	sceneSettings.enableSpotLights   = false;
+	sceneSettings.enableWaterEffects = false;
+	sceneSettings.enableSkybox       = false;
+	sceneSettings.enableNormalMaps   = false;
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 20.0f);
+	sceneSettings.cameraStartYaw = -90.0f;
+	sceneSettings.cameraMoveSpeed = 4.0f;
+	sceneSettings.ambientIntensity = 0.2f;
+	sceneSettings.diffuseIntensity = 0.8f;
+	sceneSettings.lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);
+	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
+	sceneSettings.pLight_0_color = glm::vec3(1.0f, 0.0f, 1.0f);
+	sceneSettings.pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
+	sceneSettings.pLight_0_diffuseIntensity = 6.0f;
+	sceneSettings.pLight_1_color = glm::vec3(1.0f, 0.0f, 0.0f);
+	sceneSettings.pLight_1_position = glm::vec3(-2.0f, 9.6f, 0.0f);
+	sceneSettings.pLight_1_diffuseIntensity = 6.0f;
+	sceneSettings.pLight_2_color = glm::vec3(0.8f, 0.8f, 0.5f);
+	sceneSettings.pLight_2_position = glm::vec3(-2.0f, 4.0f, 0.0f);
+	sceneSettings.pLight_2_diffuseIntensity = 6.0f;
+	sceneSettings.shadowMapWidth = 2048;
+	sceneSettings.shadowMapHeight = 2048;
+	sceneSettings.shadowSpeed = 0.4f;
+	sceneSettings.waterHeight = 1.6f;
+	sceneSettings.waterWaveSpeed = 0.005f;
+
 	shadowMapWidth = 1024;
 	shadowMapHeight = 1024;
 
@@ -66,6 +95,7 @@ void Scene::SetupMeshes()
 void Scene::SetTextures()
 {
 	textures.insert(std::make_pair("normalMapDefault", new Texture("Textures/normal_map_default.png")));
+	textures.insert(std::make_pair("shadowMapDefault", new Texture("Textures/shadow_map_default.png")));
 	textures.insert(std::make_pair("waterDuDv", new Texture("Textures/water/waterDuDv.png")));
 	textures.insert(std::make_pair("waterNormal", new Texture("Textures/water/waterNormal.png")));
 

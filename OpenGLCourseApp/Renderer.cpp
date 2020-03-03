@@ -68,16 +68,21 @@ void Renderer::SetShaders()
 
 void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene, Camera* camera, WaterManager* waterManager)
 {
+	glDisable(GL_CLIP_DISTANCE0);
+
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 
 	// Clear the window
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glm::mat4 modelMatrix = glm::mat4(1.0f);
-	float angleRadians = glm::radians((GLfloat)glfwGetTime());
-	modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-	scene->GetSkybox()->Draw(modelMatrix, camera->CalculateViewMatrix(), projectionMatrix);
+	if (scene->GetSettings().enableSkybox)
+	{
+		glm::mat4 modelMatrix = glm::mat4(1.0f);
+		float angleRadians = glm::radians((GLfloat)glfwGetTime());
+		modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		scene->GetSkybox()->Draw(modelMatrix, camera->CalculateViewMatrix(), projectionMatrix);
+	}
 
 	shaders["main"]->Bind();
 
@@ -97,9 +102,10 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	shaders["main"]->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
 	shaders["main"]->SetDirectionalLightTransform(&LightManager::directionalLight.CalculateLightTransform());
 
-	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
 	shaders["main"]->SetTexture(scene->GetTextureSlots()["diffuse"]);
 	shaders["main"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
+
+	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
 	shaders["main"]->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
 
 	shaders["main"]->SetClipPlane(glm::vec4(0.0f, -1.0f, 0.0f, -10000));
@@ -140,6 +146,8 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 
 void Renderer::RenderPassShadow(DirectionalLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
 {
+	if (!scene->GetSettings().enableShadows) return;
+
 	shaders["directionalShadow"]->Bind();
 
 	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
@@ -158,6 +166,17 @@ void Renderer::RenderPassShadow(DirectionalLight* light, glm::mat4 viewMatrix, g
 	scene->Render(viewMatrix, projectionMatrix, passType, shaders, uniforms, waterManager);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::RenderOmniShadows(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
+{
+	if (!scene->GetSettings().enableOmniShadows) return;
+
+	for (size_t i = 0; i < LightManager::pointLightCount; i++)
+		Renderer::RenderPassOmniShadow(&LightManager::pointLights[i], viewMatrix, projectionMatrix, scene, waterManager);
+
+	for (size_t i = 0; i < LightManager::spotLightCount; i++)
+		Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], viewMatrix, projectionMatrix, scene, waterManager);
 }
 
 void Renderer::RenderPassOmniShadow(PointLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
@@ -186,6 +205,29 @@ void Renderer::RenderPassOmniShadow(PointLight* light, glm::mat4 viewMatrix, glm
 	scene->Render(viewMatrix, projectionMatrix, passType, shaders, uniforms, waterManager);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::RenderWaterEffects(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene, Camera* camera, float deltaTime)
+{
+	if (!scene->GetSettings().enableWaterEffects) return;
+
+	glEnable(GL_CLIP_DISTANCE0);
+	float waterMoveFactor = waterManager->GetWaterMoveFactor();
+	waterMoveFactor += WaterManager::m_WaveSpeed * deltaTime;
+	if (waterMoveFactor >= 1.0f)
+		waterMoveFactor = waterMoveFactor - 1.0f;
+	waterManager->SetWaterMoveFactor(waterMoveFactor);
+
+	float distance = 2.0f * (camera->getPosition().y - waterManager->GetWaterHeight());
+	camera->SetPosition(glm::vec3(camera->getPosition().x, camera->getPosition().y - distance, camera->getPosition().z));
+	camera->InvertPitch();
+
+	Renderer::RenderPassWaterReflection(waterManager, projectionMatrix, scene, camera);
+
+	camera->SetPosition(glm::vec3(camera->getPosition().x, camera->getPosition().y + distance, camera->getPosition().z));
+	camera->InvertPitch();
+
+	Renderer::RenderPassWaterRefraction(waterManager, projectionMatrix, scene, camera);
 }
 
 void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene, Camera* camera)

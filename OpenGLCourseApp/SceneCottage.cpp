@@ -3,6 +3,13 @@
 
 SceneCottage::SceneCottage()
 {
+	sceneSettings.enableShadows      = false;
+	sceneSettings.enableOmniShadows  = true;
+	sceneSettings.enablePointLights  = true;
+	sceneSettings.enableSpotLights   = true;
+	sceneSettings.enableWaterEffects = true;
+	sceneSettings.enableSkybox       = true;
+	sceneSettings.enableNormalMaps   = true;
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 25.0f, 15.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 4.0f;
@@ -140,7 +147,7 @@ void SceneCottage::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std:
 	model = glm::scale(model, glm::vec3(1.0f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	models["cottage"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"]);
+	models["cottage"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
 	if (passType == "main")
 	{

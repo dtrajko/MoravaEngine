@@ -6,10 +6,17 @@
 
 SceneEiffel::SceneEiffel()
 {
+	sceneSettings.enableShadows      = true;
+	sceneSettings.enableOmniShadows  = false;
+	sceneSettings.enablePointLights  = false;
+	sceneSettings.enableSpotLights   = false;
+	sceneSettings.enableWaterEffects = true;
+	sceneSettings.enableSkybox       = true;
+	sceneSettings.enableNormalMaps   = false;
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 20.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 4.0f;
-	sceneSettings.ambientIntensity = 0.2f;
+	sceneSettings.ambientIntensity = 0.4f;
 	sceneSettings.diffuseIntensity = 0.8f;
 	sceneSettings.lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);
 	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
@@ -25,7 +32,7 @@ SceneEiffel::SceneEiffel()
 	sceneSettings.shadowMapWidth = 2048;
 	sceneSettings.shadowMapHeight = 2048;
 	sceneSettings.shadowSpeed = 0.4f;
-	sceneSettings.waterHeight = 1.5f;
+	sceneSettings.waterHeight = 1.6f;
 	sceneSettings.waterWaveSpeed = 0.01f;
 
 	SetSkybox();
@@ -110,7 +117,7 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 	model = glm::scale(model, glm::vec3(0.0003f, 0.0003f, 0.0003f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	models["eiffel"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"]);
+	models["eiffel"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
 	/* Watchtower model */
 	model = glm::mat4(1.0f);
@@ -121,7 +128,7 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 	model = glm::scale(model, glm::vec3(0.5f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	models["watchtower"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"]);
+	models["watchtower"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
 	if (passType == "main")
 	{
@@ -169,6 +176,8 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 void SceneEiffel::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
+	if (!sceneSettings.enableWaterEffects) return;
+
 	/* Water Tile */
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, waterManager->GetWaterHeight(), 0.0f));

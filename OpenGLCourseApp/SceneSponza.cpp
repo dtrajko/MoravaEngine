@@ -3,6 +3,13 @@
 
 SceneSponza::SceneSponza()
 {
+	sceneSettings.enableShadows      = true;
+	sceneSettings.enableOmniShadows  = false;
+	sceneSettings.enablePointLights  = true;
+	sceneSettings.enableSpotLights   = true;
+	sceneSettings.enableWaterEffects = true;
+	sceneSettings.enableSkybox       = true;
+	sceneSettings.enableNormalMaps   = true;
 	sceneSettings.cameraPosition = glm::vec3(-4.0f, 10.0f, -0.5f);
 	sceneSettings.cameraStartYaw = 0.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
@@ -75,13 +82,13 @@ void SceneSponza::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 	model = glm::scale(model, glm::vec3(0.008f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	models["sponza"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"]);
+	models["sponza"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
 	if (passType == "main")
 	{
 		/* ShadowMap display */
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 16.0f, -0.5f));
+		model = glm::translate(model, glm::vec3(0.0f, 16.0f, -0.25f));
 		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -90,13 +97,15 @@ void SceneSponza::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 		shaders["main"]->SetTexture(textureSlots["shadow"]);
 		shaders["main"]->SetNormalMap(textureSlots["shadow"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quad"]->RenderMesh();
+		// meshes["quad"]->RenderMesh();
 	}
 }
 
 void SceneSponza::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
+	if (!sceneSettings.enableWaterEffects) return;
+
 	/* Water Tile */
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, waterManager->GetWaterHeight(), 0.0f));
