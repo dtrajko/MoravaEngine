@@ -100,7 +100,7 @@ GLint Shader::GetUniformLocationDiffuseIntensity()
 	return uniformDirectionalLight.uniformDiffuseIntensity;
 }
 
-GLint Shader::GetUniformLocationLightDirection()
+GLint Shader::GetUniformLocationDirectionalLightDirection()
 {
 	return uniformDirectionalLight.uniformDirection;
 }
@@ -160,9 +160,9 @@ GLint Shader::GetUniformLocationLightColor()
 	return uniformLightColor;
 }
 
-GLint Shader::GetUniformLocationLightPosition()
+GLint Shader::GetUniformLocationLightDirection()
 {
-	return uniformLightPosition;
+	return uniformLightDirection;
 }
 
 void Shader::SetDirectionalLight(DirectionalLight* directionalLight)
@@ -243,9 +243,9 @@ void Shader::SetLightColor(glm::vec3 lightColor)
 	glUniform3f(uniformLightColor, lightColor.r, lightColor.g, lightColor.b);
 }
 
-void Shader::SetLightPosition(glm::vec3 lightPosition)
+void Shader::SetLightDirection(glm::vec3 lightDirection)
 {
-	glUniform3f(uniformLightPosition, lightPosition.x, lightPosition.y, lightPosition.z);
+	glUniform3f(uniformLightDirection, lightDirection.x, lightDirection.y, lightDirection.z);
 }
 
 void Shader::SetWater(unsigned int txUnitReflection, unsigned int txUnitRefraction,
@@ -529,7 +529,7 @@ void Shader::CompileProgram()
 	uniformWaterMoveFactor = glGetUniformLocation(programID, "waterMoveFactor");
 	uniformCameraPosition = glGetUniformLocation(programID, "cameraPosition");
 	uniformLightColor = glGetUniformLocation(programID, "lightColor");
-	uniformLightPosition = glGetUniformLocation(programID, "lightPosition");
+	uniformLightDirection = glGetUniformLocation(programID, "lightDirection");
 }
 
 void Shader::Validate()

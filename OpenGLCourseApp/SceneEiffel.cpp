@@ -189,7 +189,8 @@ void SceneEiffel::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, 
 	waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
 	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	shaders["water"]->SetTexture(textureSlots["reflection"]);
-	shaders["water"]->SetLightPosition(-m_LightDirection);
+	shaders["water"]->SetLightColor(LightManager::directionalLight.GetColor());
+	shaders["water"]->SetLightDirection(glm::vec3(0.5f, -1.0f, 0.5f));
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
 	textures["waterNormal"]->Bind(textureSlots["normal"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);

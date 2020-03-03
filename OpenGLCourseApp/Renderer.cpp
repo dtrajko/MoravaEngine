@@ -36,7 +36,7 @@ void Renderer::SetUniforms()
 	uniforms.insert(std::make_pair("waterMoveFactor", 0));
 	uniforms.insert(std::make_pair("cameraPosition", 0));
 	uniforms.insert(std::make_pair("lightColor", 0));
-	uniforms.insert(std::make_pair("lightPosition", 0));
+	uniforms.insert(std::make_pair("lightDirection", 0));
 }
 
 void Renderer::SetShaders()
@@ -138,7 +138,7 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	uniforms["waterMoveFactor"] = shaders["water"]->GetUniformLocationWaterMoveFactor();
 	uniforms["cameraPosition"] = shaders["water"]->GetUniformLocationCameraPosition();
 	uniforms["lightColor"] = shaders["water"]->GetUniformLocationLightColor();
-	uniforms["lightPosition"] = shaders["water"]->GetUniformLocationLightPosition();
+	uniforms["lightDirection"] = shaders["water"]->GetUniformLocationLightDirection();
 
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
 	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
@@ -149,7 +149,7 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	shaders["water"]->SetWaterMoveFactor(waterManager->GetWaterMoveFactor());
 	shaders["water"]->SetCameraPosition(camera->getPosition());
 	shaders["water"]->SetLightColor(LightManager::directionalLight.GetColor());
-	shaders["water"]->SetLightPosition(LightManager::directionalLight.GetPosition());
+	shaders["water"]->SetLightDirection(glm::vec3(0.5f, -1.0f, 0.5f));
 	shaders["water"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
 	shaders["water"]->Validate();
 
