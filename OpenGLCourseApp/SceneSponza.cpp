@@ -113,12 +113,18 @@ void SceneSponza::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, 
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(12.0f, 0.0f, 8.0f));
+
+	shaders["water"]->Bind();
+
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
 	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
+	waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
 	shaders["water"]->SetTexture(textureSlots["reflection"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
+	shaders["water"]->SetLightColor(LightManager::directionalLight.GetColor());
+	shaders["water"]->SetLightDirection(LightManager::directionalLight.GetDirection());
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["water"]->RenderMesh();
 }

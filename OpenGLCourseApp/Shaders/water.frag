@@ -18,9 +18,9 @@ uniform float waterMoveFactor;
 uniform float nearPlane;
 uniform float farPlane;
 
-const float waveStrength = 0.04;
+const float waveStrength = 0.01;
 const float shineDamper = 20.0;
-const float reflectivity = 0.5;
+const float reflectivity = 1.0;
 const vec3 waterColor = vec3(0.0, 0.3, 0.5);
 
 
