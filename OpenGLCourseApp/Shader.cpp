@@ -115,6 +115,11 @@ GLuint Shader::GetUniformLocationFarPlane()
 	return uniformFarPlane;
 }
 
+GLuint Shader::GetUniformLocationNearPlane()
+{
+	return uniformNearPlane;
+}
+
 GLint Shader::GetUniformLocationSpecularIntensity()
 {
 	return uniformSpecularIntensity;
@@ -143,6 +148,11 @@ GLint Shader::GetUniformLocationDuDvMap()
 GLint Shader::GetUniformLocationNormalMap()
 {
 	return uniformNormalMap;
+}
+
+GLint Shader::GetUniformLocationDepthMap()
+{
+	return uniformDepthMap;
 }
 
 GLint Shader::GetUniformLocationWaterMoveFactor()
@@ -194,7 +204,6 @@ void Shader::SetPointLights(PointLight* pointLights, unsigned int lightCount, un
 		pointLights[i].GetShadowMap()->Read(textureUnit + offset + i);
 		glUniform1i(uniformOmniShadowMap[offset + i].shadowMap, textureUnit + offset + i);
 		glUniform1f(uniformOmniShadowMap[offset + i].farPlane, pointLights[i].GetFarPlane());
-		// printf("Point light using texture slot %d\n", textureUnit + offset + i);
 	}
 }
 
@@ -226,6 +235,18 @@ void Shader::SetSpotLights(SpotLight* spotLights, unsigned int lightCount, unsig
 void Shader::SetClipPlane(glm::vec4 clipPlane)
 {
 	glUniform4f(uniformPlane, clipPlane.x, clipPlane.y, clipPlane.z, clipPlane.w);
+}
+
+void Shader::SetNearPlane(float nearPlane)
+{
+	glUniform1f(uniformNearPlane, nearPlane);
+	// printf("Shader::SetNearPlane %.2f Uniform: %d\n", nearPlane, uniformNearPlane);
+}
+
+void Shader::SetFarPlane(float farPlane)
+{
+	glUniform1f(uniformFarPlane, farPlane);
+	// printf("Shader::SetFarPlane %.2f Uniform: %d\n", farPlane, uniformFarPlane);
 }
 
 void Shader::SetWaterMoveFactor(float waterMoveFactor)
@@ -265,6 +286,11 @@ void Shader::SetTexture(GLuint textureUnit)
 void Shader::SetNormalMap(GLuint textureUnit)
 {
 	glUniform1i(uniformNormalMap, textureUnit);
+}
+
+void Shader::SetDepthMap(GLuint textureUnit)
+{
+	glUniform1i(uniformDepthMap, textureUnit);
 }
 
 void Shader::SetDirectionalShadowMap(GLuint textureUnit)
@@ -530,6 +556,8 @@ void Shader::CompileProgram()
 	uniformCameraPosition = glGetUniformLocation(programID, "cameraPosition");
 	uniformLightColor = glGetUniformLocation(programID, "lightColor");
 	uniformLightDirection = glGetUniformLocation(programID, "lightDirection");
+	uniformFarPlane = glGetUniformLocation(programID, "farPlane");
+	uniformNearPlane = glGetUniformLocation(programID, "nearPlane");
 }
 
 void Shader::Validate()

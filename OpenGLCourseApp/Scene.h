@@ -35,6 +35,9 @@ struct SceneSettings
 	glm::vec3 cameraPosition;
 	float cameraStartYaw;
 	float cameraMoveSpeed;
+	float nearPlane;
+	float farPlane;
+
 	// light
 	glm::vec3 lightDirection;
 	float ambientIntensity;

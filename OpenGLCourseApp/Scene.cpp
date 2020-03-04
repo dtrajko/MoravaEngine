@@ -18,6 +18,8 @@ Scene::Scene()
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 20.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 4.0f;
+	sceneSettings.nearPlane = 0.01f;
+	sceneSettings.farPlane = 200.0f;
 	sceneSettings.ambientIntensity = 0.2f;
 	sceneSettings.diffuseIntensity = 0.8f;
 	sceneSettings.lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);

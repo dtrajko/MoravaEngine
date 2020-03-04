@@ -53,7 +53,9 @@ int main()
 	camera = new Camera(scene->GetSettings().cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), scene->GetSettings().cameraStartYaw, 0.0f, scene->GetSettings().cameraMoveSpeed, 0.1f);
 
 	// Projection matrix
-	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f), mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 0.1f, 200.0f);
+	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
+		mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 
+		scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
 
 	LightManager* lightManager = new LightManager(scene->GetSettings());
 
@@ -89,6 +91,8 @@ int main()
 		Renderer::RenderOmniShadows(camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
 		Renderer::RenderWaterEffects(waterManager, projectionMatrix, scene, camera, deltaTime);
 		Renderer::RenderPass(projectionMatrix, mainWindow, scene, camera, waterManager);
+
+		glDisable(GL_BLEND);
 
 		Renderer::GetShaders()["main"]->Unbind();
 		mainWindow.SwapBuffers();
