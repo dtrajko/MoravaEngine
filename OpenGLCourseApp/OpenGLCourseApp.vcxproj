@@ -180,11 +180,13 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneCottage.cpp" />
     <ClCompile Include="SceneEiffel.cpp" />
+    <ClCompile Include="SceneTerrain.cpp" />
     <ClCompile Include="SceneSponza.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="SpotLight.cpp" />
+    <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Tile2D.cpp" />
     <ClCompile Include="WaterManager.cpp" />
@@ -209,11 +211,13 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneCottage.h" />
     <ClInclude Include="SceneEiffel.h" />
+    <ClInclude Include="SceneTerrain.h" />
     <ClInclude Include="SceneSponza.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="SpotLight.h" />
+    <ClInclude Include="Terrain.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Tile2D.h" />
     <ClInclude Include="Vertex.h" />

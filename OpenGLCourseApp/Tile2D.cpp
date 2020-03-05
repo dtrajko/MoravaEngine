@@ -6,12 +6,12 @@ Tile2D::Tile2D()
 	VAO = 0;
 	VBO = 0;
 	IBO = 0;
-	indexCount = 0;
+	m_IndexCount = 0;
 }
 
 void Tile2D::CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int numOfVertices, unsigned int numOfIndices)
 {
-	indexCount = numOfIndices;
+	m_IndexCount = numOfIndices;
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -37,7 +37,7 @@ void Tile2D::RenderMesh()
 {
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
 	glBindVertexArray(0);                     // Unbind VAO
 }
@@ -59,7 +59,7 @@ void Tile2D::ClearMesh()
 		glDeleteVertexArrays(1, &VAO);
 		VAO = 0;
 	}
-	indexCount = 0;
+	m_IndexCount = 0;
 
 	glDisableVertexAttribArray(0);
 }

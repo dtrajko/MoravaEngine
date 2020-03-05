@@ -58,6 +58,7 @@ public:
 	GLint GetUniformLocationWaterMoveFactor();
 	GLint GetUniformLocationCameraPosition();
 	GLint GetUniformLocationLightColor();
+	GLint GetUniformLocationLightPosition();
 	GLint GetUniformLocationLightDirection();
 	GLuint GetUniformLocationNearPlane();
 
@@ -84,6 +85,7 @@ public:
 	void SetWaterMoveFactor(float waterMoveFactor);
 	void SetCameraPosition(glm::vec3 cameraPosition);
 	void SetLightColor(glm::vec3 lightColor);
+	void SetLightPosition(glm::vec3 lightPosition);
 	void SetLightDirection(glm::vec3 lightDirection);
 	void SetViewMatrix(glm::mat4* viewMatrix);
 	void SetProjectionMatrix(glm::mat4* projectionMatrix);
@@ -139,6 +141,7 @@ private:
 	GLuint uniformDepthMap;
 	GLuint uniformCameraPosition;
 	GLuint uniformLightColor;
+	GLuint uniformLightPosition;
 	GLuint uniformLightDirection;
 
 	struct

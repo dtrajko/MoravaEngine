@@ -13,13 +13,17 @@ public:
 	void Bind(unsigned int textureUnit = 0);
 	void Unbind();
 	void ClearTexture();
+	int getRed(int x, int z);
+	int getGreen(int x, int z);
+	int getBlue(int x, int z);
+	int getAlpha(int x, int z);
 	~Texture();
 
 	unsigned int textureID;
-	int width;
-	int height;
-	int bitDepth;
-
+	int m_Width;
+	int m_Height;
+	int m_BitDepth;
+	unsigned char* m_Buffer;
 	const char* fileLocation;
 
 };

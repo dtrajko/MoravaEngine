@@ -7,23 +7,23 @@ Mesh::Mesh()
 	VAO = 0;
 	VBO = 0;
 	IBO = 0;
-	indexCount = 0;
+	m_IndexCount = 0;
 }
 
-void Mesh::CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int numOfVertices, unsigned int numOfIndices)
+void Mesh::CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indexCount)
 {
-	indexCount = numOfIndices;
+	m_IndexCount = indexCount;
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
 	glGenBuffers(1, &IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * numOfIndices, indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * indexCount, indices, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * numOfVertices, vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * vertexCount, vertices, GL_STATIC_DRAW);
 
 	// position
 	glEnableVertexAttribArray(0);
@@ -50,7 +50,7 @@ void Mesh::RenderMesh()
 {
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
 	glBindVertexArray(0);                     // Unbind VAO
 }
@@ -72,7 +72,7 @@ void Mesh::ClearMesh()
 		glDeleteVertexArrays(1, &VAO);
 		VAO = 0;
 	}
-	indexCount = 0;
+	m_IndexCount = 0;
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
@@ -81,13 +81,13 @@ void Mesh::ClearMesh()
 	glDisableVertexAttribArray(4);
 }
 
-void Mesh::CalcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount)
+void Mesh::CalcAverageNormals(unsigned int* indices, unsigned int indexCount, GLfloat* vertices, unsigned int vertexCount)
 {
 	unsigned int vLength = sizeof(Vertex) / sizeof(float);
 	unsigned int normalOffset = offsetof(Vertex, Normal) / sizeof(float);
 
 	// The Phong shading approach
-	for (size_t i = 0; i < indiceCount; i += 3)
+	for (size_t i = 0; i < indexCount; i += 3)
 	{
 		unsigned int in0 = indices[i + 0] * vLength;
 		unsigned int in1 = indices[i + 1] * vLength;
@@ -106,7 +106,7 @@ void Mesh::CalcAverageNormals(unsigned int* indices, unsigned int indiceCount, G
 		vertices[in2 + 0] += normal.x; vertices[in2 + 1] += normal.y; vertices[in2 + 2] += normal.z;
 	}
 
-	for (unsigned int i = 0; i < verticeCount / vLength; i++)
+	for (unsigned int i = 0; i < vertexCount / vLength; i++)
 	{
 		unsigned int nOffset = i * vLength + normalOffset;
 		glm::vec3 vec(vertices[nOffset + 0], vertices[nOffset + 1], vertices[nOffset + 2]);
@@ -115,12 +115,12 @@ void Mesh::CalcAverageNormals(unsigned int* indices, unsigned int indiceCount, G
 	}
 }
 
-void Mesh::CalcTangentSpace(unsigned int* indices, unsigned int indiceCount,
-	GLfloat* vertices, unsigned int verticeCount)
+void Mesh::CalcTangentSpace(unsigned int* indices, unsigned int indexCount,
+	GLfloat* vertices, unsigned int vertexCount)
 {
 	unsigned int vLength = sizeof(Vertex) / sizeof(float);
 
-	for (size_t i = 0; i < indiceCount; i += 3)
+	for (size_t i = 0; i < indexCount; i += 3)
 	{
 		unsigned int in0 = indices[i + 0] * vLength;
 		unsigned int in1 = indices[i + 1] * vLength;

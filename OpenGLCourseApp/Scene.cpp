@@ -88,7 +88,7 @@ void Scene::SetupMeshes()
 	meshes.insert(std::make_pair("quadLarge", quadLarge));
 
 	float vertices[] = { -1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 1 };
-	unsigned int indices[] = { 0, 1, 2, 3, 5, 4 };
+	unsigned int indices[] = { 0, 1, 2, 3, 4, 5 };
 	Tile2D* m_Tile2D = new Tile2D();
 	m_Tile2D->CreateMesh(&vertices[0], &indices[0], 12, 6);
 	meshes.insert(std::make_pair("water", m_Tile2D));

@@ -38,6 +38,7 @@ void Renderer::SetUniforms()
 	uniforms.insert(std::make_pair("waterMoveFactor", 0));
 	uniforms.insert(std::make_pair("cameraPosition", 0));
 	uniforms.insert(std::make_pair("lightColor", 0));
+	uniforms.insert(std::make_pair("lightPosition", 0));
 	uniforms.insert(std::make_pair("lightDirection", 0));
 }
 
@@ -142,6 +143,7 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	uniforms["waterMoveFactor"] = shaders["water"]->GetUniformLocationWaterMoveFactor();
 	uniforms["cameraPosition"] = shaders["water"]->GetUniformLocationCameraPosition();
 	uniforms["lightColor"] = shaders["water"]->GetUniformLocationLightColor();
+	uniforms["lightPosition"] = shaders["water"]->GetUniformLocationLightPosition();
 	uniforms["lightDirection"] = shaders["water"]->GetUniformLocationLightDirection();
 	uniforms["nearPlane"] = shaders["water"]->GetUniformLocationNearPlane();
 	uniforms["farPlane"] = shaders["water"]->GetUniformLocationFarPlane();
@@ -157,7 +159,8 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	shaders["water"]->SetWaterMoveFactor(waterManager->GetWaterMoveFactor());
 	shaders["water"]->SetCameraPosition(camera->getPosition());
 	shaders["water"]->SetLightColor(LightManager::directionalLight.GetColor());
-	shaders["water"]->SetLightDirection(glm::vec3(0.5f, -1.0f, 0.5f));
+	shaders["water"]->SetLightPosition(LightManager::directionalLight.GetPosition());
+	shaders["water"]->SetLightDirection(LightManager::directionalLight.GetDirection());
 	shaders["water"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
 	shaders["water"]->SetDepthMap(scene->GetTextureSlots()["depth"]);
 	shaders["water"]->Validate();
@@ -343,6 +346,17 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::EnableCulling()
+{
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+}
+
+void Renderer::DisableCulling()
+{
+	glDisable(GL_CULL_FACE);
 }
 
 void Renderer::Cleanup()
