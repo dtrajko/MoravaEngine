@@ -12,13 +12,13 @@ SceneTerrain::SceneTerrain()
 	sceneSettings.enableWaterEffects = true;
 	sceneSettings.enableSkybox       = true;
 	sceneSettings.enableNormalMaps   = true;
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 12.0f, 60.0f);
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 30.0f, 130.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 5.0f;
 	sceneSettings.nearPlane = 0.01f;
 	sceneSettings.farPlane = 400.0f;
-	sceneSettings.ambientIntensity = 0.2f;
-	sceneSettings.diffuseIntensity = 1.0f;
+	sceneSettings.ambientIntensity = 0.6f;
+	sceneSettings.diffuseIntensity = 1.2f;
 	sceneSettings.lightDirection = glm::vec3(1.2f, -14.0f, 1.2f);
 	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
 	sceneSettings.pLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -33,8 +33,8 @@ SceneTerrain::SceneTerrain()
 	sceneSettings.shadowMapWidth = 2048;
 	sceneSettings.shadowMapHeight = 2048;
 	sceneSettings.shadowSpeed = 0.1f;
-	sceneSettings.waterHeight = 1.0f; // 1.0f 5.0f
-	sceneSettings.waterWaveSpeed = 0.05f;
+	sceneSettings.waterHeight = 6.0f; // 1.0f 5.0f
+	sceneSettings.waterWaveSpeed = 0.1f;
 
 	SetSkybox();
 	SetTextures();
@@ -60,7 +60,9 @@ void SceneTerrain::SetTextures()
 
 void SceneTerrain::SetupModels()
 {
-	Terrain* terrain = new Terrain("Textures/heightmap_island_64x64.png", false); // heightmap_island_8x6.png
+	Terrain* terrain = new Terrain("Textures/island_flat.png", nullptr); // heightmap_island_8x6.png
+	textures.insert(std::make_pair("colorMap", terrain->GetColorMap()));
+
 	Mesh* mesh = new Mesh();
 	mesh->CreateMesh(terrain->GetVertices(), terrain->GetIndices(), terrain->GetVertexCount(), terrain->GetIndexCount());
 	meshes.insert(std::make_pair("terrain", mesh));
@@ -73,18 +75,19 @@ void SceneTerrain::Update(float timestep, LightManager& lightManager)
 void SceneTerrain::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
-	Renderer::DisableCulling();
+	Renderer::EnableCulling();
 
 	/* Island scene */
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-32.0f, 0.0f, -32.0f));
+	model = glm::translate(model, glm::vec3(-128.0f, 0.0f, -128.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(1.0f, 0.1f, 1.0f));
+	model = glm::scale(model, glm::vec3(1.0f, 0.25f, 1.0f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	textures["rock"]->Bind(textureSlots["diffuse"]);
+	// textures["colorMap"]->Bind(textureSlots["diffuse"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	meshes["terrain"]->RenderMesh();
 }
@@ -102,7 +105,7 @@ void SceneTerrain::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix,
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(32.0f, 1.0f, 32.0f));
+	model = glm::scale(model, glm::vec3(128.0f, 1.0f, 128.0f));
 
 	shaders["water"]->Bind();
 

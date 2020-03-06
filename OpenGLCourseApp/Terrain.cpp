@@ -3,23 +3,27 @@
 #include "Mesh.h"
 
 
-Terrain::Terrain(const char* heightMapPath, bool invertHeight)
+Terrain::Terrain(const char* heightMapPath, const char* colorMapPath)
 {
 	m_HeightMapPath = heightMapPath;
-	m_InvertHeight = invertHeight;
-	LoadHeightMap(m_HeightMapPath);
+
+	m_TxHeightMap = new Texture(heightMapPath);
+	m_TxHeightMap->LoadTexture();
+
+	if (colorMapPath != nullptr)
+	{
+		m_TxColorMap = new Texture(colorMapPath);
+		m_TxColorMap->LoadTexture();
+		printf("Color map texture width=%d height=%d\n", m_TxColorMap->m_Width, m_TxColorMap->m_Height);
+	}
+
 	GenerateTerrain();
 }
 
 Terrain::~Terrain()
 {
 	delete m_TxHeightMap;
-}
-
-void Terrain::LoadHeightMap(const char* heightMapPath)
-{
-	m_TxHeightMap = new Texture(heightMapPath);
-	m_TxHeightMap->LoadTexture();
+	delete m_TxColorMap;
 }
 
 void Terrain::GenerateTerrain()
@@ -54,8 +58,18 @@ void Terrain::GenerateTerrain()
 			vertexPointer += vertexStride;
 
 			// texture coords
-			vertices[vertexPointer + 3] = ((float)x * m_TextureTileRatio) / (float)(hiMapWidth - 1);
-			vertices[vertexPointer + 4] = ((float)z * m_TextureTileRatio) / (float)(hiMapHeight - 1);
+			if (m_TxColorMap != nullptr)
+			{
+				// use texture coords for color map
+				vertices[vertexPointer + 3] = 1.0f - GetHeight(x, z) * (1.0f / (float)m_TxColorMap->m_Height);
+				vertices[vertexPointer + 4] = 1.0f - GetHeight(x, z) * (1.0f / (float)m_TxColorMap->m_Height);
+			}
+			else
+			{
+				// use texture coords for a regular diffuse texture
+				vertices[vertexPointer + 3] = ((float)x * m_TextureTileRatio) / (float)(hiMapWidth - 1);
+				vertices[vertexPointer + 4] = ((float)z * m_TextureTileRatio) / (float)(hiMapHeight - 1);
+			}
 
 			// normals
 			vertices[vertexPointer + 5] = 0.0f;
@@ -99,12 +113,13 @@ void Terrain::GenerateTerrain()
 
 	for (unsigned int i = 0; i < pixelCount; i++)
 	{
-		/**
-		printf("Index=%d Vertex X=%.2f Y=%.2f Z=%.2f TexCoords U=%.2f V=%.2f Normals NX=%.2f NY=%.2f NZ=%.2f\n", i, 
-			vertices[i * vertexStride + 0], vertices[i * vertexStride + 1], vertices[i * vertexStride + 2],
-			vertices[i * vertexStride + 3], vertices[i * vertexStride + 4],
-			vertices[i * vertexStride + 5], vertices[i * vertexStride + 6], vertices[i * vertexStride + 7]);
-		*/
+		if (false && vertices[i * vertexStride + 3] > 0.9f)
+		{
+			printf("Index=%d Vertex X=%.2f Y=%.2f Z=%.2f TexCoords U=%.2f V=%.2f Normals NX=%.2f NY=%.2f NZ=%.2f\n", i, 
+				vertices[i * vertexStride + 0], vertices[i * vertexStride + 1], vertices[i * vertexStride + 2],
+				vertices[i * vertexStride + 3], vertices[i * vertexStride + 4],
+				vertices[i * vertexStride + 5], vertices[i * vertexStride + 6], vertices[i * vertexStride + 7]);
+		}
 	}
 
 	printf("GenerateTerrain pixelCount=%d vertexStride=%d\n", pixelCount, vertexStride);
@@ -129,6 +144,6 @@ float Terrain::GetHeight(int x, int z)
 	float height = ((float)red + (float)green + (float)blue) / 3;
 	if (m_InvertHeight)
 		height = m_MaxPixelColor - height;
-	height *= heightRatio;
+	// height *= heightRatio;
 	return height;
 }
