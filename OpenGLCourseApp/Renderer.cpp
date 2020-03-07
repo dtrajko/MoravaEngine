@@ -4,6 +4,8 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include <GLFW/glfw3.h>
 
+#include "ShaderMain.h"
+#include "ShaderWater.h"
 #include "WaterManager.h"
 
 
@@ -20,26 +22,27 @@ void Renderer::Init()
 
 void Renderer::SetUniforms()
 {
+	// common
 	uniforms.insert(std::make_pair("model", 0));
 	uniforms.insert(std::make_pair("view", 0));
 	uniforms.insert(std::make_pair("projection", 0));
-	uniforms.insert(std::make_pair("eyePosition", 0));
-	uniforms.insert(std::make_pair("specularIntensity", 0));
-	uniforms.insert(std::make_pair("shininess", 0));
-	uniforms.insert(std::make_pair("directionalLightTransform", 0));
-	uniforms.insert(std::make_pair("omniLightPos", 0));
 	uniforms.insert(std::make_pair("nearPlane", 0));
 	uniforms.insert(std::make_pair("farPlane", 0));
+	uniforms.insert(std::make_pair("directionalLightTransform", 0));
+	uniforms.insert(std::make_pair("normalMap", 0));
+	uniforms.insert(std::make_pair("lightPosition", 0));
+
+	// main
+	uniforms.insert(std::make_pair("eyePosition", 0));
+
+	// water
 	uniforms.insert(std::make_pair("reflectionTexture", 0));
 	uniforms.insert(std::make_pair("refractionTexture", 0));
 	uniforms.insert(std::make_pair("dudvMap", 0));
-	uniforms.insert(std::make_pair("normalMap", 0));
 	uniforms.insert(std::make_pair("depthMap", 0));
-	uniforms.insert(std::make_pair("waterMoveFactor", 0));
+	uniforms.insert(std::make_pair("moveFactor", 0));
 	uniforms.insert(std::make_pair("cameraPosition", 0));
 	uniforms.insert(std::make_pair("lightColor", 0));
-	uniforms.insert(std::make_pair("lightPosition", 0));
-	uniforms.insert(std::make_pair("lightDirection", 0));
 }
 
 void Renderer::SetShaders()
@@ -57,21 +60,29 @@ void Renderer::SetShaders()
 	static const char* vertWaterShader = "Shaders/water.vert";
 	static const char* fragWaterShader = "Shaders/water.frag";
 
-	Shader* mainShader = new Shader();
+	ShaderMain* mainShader = new ShaderMain();
 	mainShader->CreateFromFiles(vertShader, fragShader);
 	shaders.insert(std::make_pair("main", mainShader));
+
+	printf("Renderer: Main shader compiled [programID=%d]\n", mainShader->GetProgramID());
 
 	Shader* directionalShadowShader = new Shader();
 	directionalShadowShader->CreateFromFiles(vertShaderDirShadowMap, fragShaderDirShadowMap);
 	shaders.insert(std::make_pair("directionalShadow", directionalShadowShader));
 
+	printf("Renderer: Shadow shader compiled [programID=%d]\n", directionalShadowShader->GetProgramID());
+
 	Shader* omniShadowShader = new Shader();
 	omniShadowShader->CreateFromFiles(vertShaderOmniShadowMap, geomShaderOmniShadowMap, fragShaderOmniShadowMap);
 	shaders.insert(std::make_pair("omniShadow", omniShadowShader));
 
-	Shader* waterShader = new Shader();
+	printf("Renderer: OmniShadow shader compiled [programID=%d]\n", omniShadowShader->GetProgramID());
+
+	ShaderWater* waterShader = new ShaderWater();
 	waterShader->CreateFromFiles(vertWaterShader, fragWaterShader);
 	shaders.insert(std::make_pair("water", waterShader));
+
+	printf("Renderer: Water shader compiled [programID=%d]\n", waterShader->GetProgramID());
 }
 
 void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene, Camera* camera, WaterManager* waterManager)
@@ -92,38 +103,38 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 		scene->GetSkybox()->Draw(modelMatrix, camera->CalculateViewMatrix(), projectionMatrix);
 	}
 
-	shaders["main"]->Bind();
+	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
+	shaderMain->Bind();
 
-	uniforms["model"] = shaders["main"]->GetModelLocation();
-	uniforms["projection"] = shaders["main"]->GetProjectionLocation();
-	uniforms["view"] = shaders["main"]->GetViewLocation();
-	uniforms["eyePosition"] = shaders["main"]->GetUniformLocationEyePosition();
-	uniforms["specularIntensity"] = shaders["main"]->GetUniformLocationSpecularIntensity();
-	uniforms["shininess"] = shaders["main"]->GetUniformLocationShininess();
+	uniforms["model"] = shaderMain->GetModelLocation();
+	uniforms["projection"] = shaderMain->GetProjectionLocation();
+	uniforms["view"] = shaderMain->GetViewLocation();
+	uniforms["eyePosition"] = shaderMain->GetUniformLocationEyePosition();
+	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
+	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 
 	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniform3f(uniforms["eyePosition"], camera->getPosition().x, camera->getPosition().y, camera->getPosition().z);
+	glUniform3f(uniforms["eyePosition"], camera->GetPosition().x, camera->GetPosition().y, camera->GetPosition().z);
 
-	shaders["main"]->SetDirectionalLight(&LightManager::directionalLight);
-	shaders["main"]->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
-	shaders["main"]->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
-	shaders["main"]->SetDirectionalLightTransform(&LightManager::directionalLight.CalculateLightTransform());
-
-	shaders["main"]->SetTexture(scene->GetTextureSlots()["diffuse"]);
-	shaders["main"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
-	shaders["main"]->SetDepthMap(scene->GetTextureSlots()["depth"]);
+	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
+	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
+	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
+	shaderMain->SetDirectionalLightTransform(&LightManager::directionalLight.CalculateLightTransform());
 
 	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
-	shaders["main"]->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
+	shaderMain->SetTexture(scene->GetTextureSlots()["diffuse"]);
+	shaderMain->SetNormalMap(scene->GetTextureSlots()["normal"]);
+	shaderMain->SetDepthMap(scene->GetTextureSlots()["depth"]);
+	shaderMain->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
 
-	shaders["main"]->SetClipPlane(glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+	shaderMain->SetClipPlane(glm::vec4(0.0f, -1.0f, 0.0f, -10000));
 
-	shaders["main"]->Validate();
+	shaderMain->Validate();
 
-	glm::vec3 lowerLight = camera->getPosition();
+	glm::vec3 lowerLight = camera->GetPosition();
 	lowerLight.y -= 0.2f;
-	LightManager::spotLights[2].SetFlash(lowerLight, camera->getDirection());
+	LightManager::spotLights[2].SetFlash(lowerLight, camera->GetDirection());
 
 	std::string passType = "main";
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
@@ -131,39 +142,42 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	shaders["water"]->Bind();
-	uniforms["model"] = shaders["water"]->GetModelLocation();
-	uniforms["projection"] = shaders["water"]->GetProjectionLocation();
-	uniforms["view"] = shaders["water"]->GetViewLocation();
-	uniforms["reflectionTexture"] = shaders["water"]->GetUniformLocationReflectionTexture();
-	uniforms["refractionTexture"] = shaders["water"]->GetUniformLocationRefractionTexture();
-	uniforms["dudvMap"] = shaders["water"]->GetUniformLocationDuDvMap();
-	uniforms["normalMap"] = shaders["water"]->GetUniformLocationNormalMap();
-	uniforms["depthMap"] = shaders["water"]->GetUniformLocationDepthMap();
-	uniforms["waterMoveFactor"] = shaders["water"]->GetUniformLocationWaterMoveFactor();
-	uniforms["cameraPosition"] = shaders["water"]->GetUniformLocationCameraPosition();
-	uniforms["lightColor"] = shaders["water"]->GetUniformLocationLightColor();
-	uniforms["lightPosition"] = shaders["water"]->GetUniformLocationLightPosition();
-	uniforms["lightDirection"] = shaders["water"]->GetUniformLocationLightDirection();
-	uniforms["nearPlane"] = shaders["water"]->GetUniformLocationNearPlane();
-	uniforms["farPlane"] = shaders["water"]->GetUniformLocationFarPlane();
+	ShaderWater* shaderWater = (ShaderWater*)shaders["water"];
+	shaderWater->Bind();
+	uniforms["model"] = shaderWater->GetModelLocation();
+	uniforms["projection"] = shaderWater->GetProjectionLocation();
+	uniforms["view"] = shaderWater->GetViewLocation();
+	uniforms["reflectionTexture"] = shaderWater->GetUniformLocationReflectionTexture();
+	uniforms["refractionTexture"] = shaderWater->GetUniformLocationRefractionTexture();
+	uniforms["dudvMap"] = shaderWater->GetUniformLocationDuDvMap();
+	uniforms["normalMap"] = shaderWater->GetUniformLocationNormalMap();
+	uniforms["depthMap"] = shaderWater->GetUniformLocationDepthMap();
+	uniforms["moveFactor"] = shaderWater->GetUniformLocationMoveFactor();
+	uniforms["cameraPosition"] = shaderWater->GetUniformLocationCameraPosition();
+	uniforms["lightColor"] = shaderWater->GetUniformLocationLightColor();
+	uniforms["lightPosition"] = shaderWater->GetUniformLocationLightPosition();
+	uniforms["nearPlane"] = shaderWater->GetUniformLocationNearPlane();
+	uniforms["farPlane"] = shaderWater->GetUniformLocationFarPlane();
 
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
 	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
-	shaders["water"]->SetNearPlane(scene->GetSettings().nearPlane);
-	shaders["water"]->SetFarPlane(scene->GetSettings().farPlane);
-	shaders["water"]->SetWater(scene->GetTextureSlots()["reflection"], scene->GetTextureSlots()["refraction"],
+	waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["depth"]);
+	scene->GetTextures()["waterDuDv"]->Bind(scene->GetTextureSlots()["DuDv"]);
+
+	shaderWater->SetNearPlane(scene->GetSettings().nearPlane);
+	shaderWater->SetFarPlane(scene->GetSettings().farPlane);
+	shaderWater->SetWater(scene->GetTextureSlots()["reflection"], scene->GetTextureSlots()["refraction"],
 		scene->GetTextureSlots()["DuDv"], scene->GetTextureSlots()["depth"]);
-	shaders["water"]->SetWaterMoveFactor(waterManager->GetWaterMoveFactor());
-	shaders["water"]->SetCameraPosition(camera->getPosition());
-	shaders["water"]->SetLightColor(LightManager::directionalLight.GetColor());
-	shaders["water"]->SetLightPosition(LightManager::directionalLight.GetPosition());
-	shaders["water"]->SetLightDirection(LightManager::directionalLight.GetDirection());
-	shaders["water"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
-	shaders["water"]->SetDepthMap(scene->GetTextureSlots()["depth"]);
-	shaders["water"]->Validate();
+	shaderWater->SetMoveFactor(waterManager->GetWaterMoveFactor());
+	shaderWater->SetCameraPosition(camera->GetPosition());
+	shaderWater->SetLightColor(LightManager::directionalLight.GetColor());
+	shaderWater->SetLightPosition(LightManager::directionalLight.GetPosition());
+	shaderWater->SetNormalMap(scene->GetTextureSlots()["normal"]);
+	shaderWater->SetDepthMap(scene->GetTextureSlots()["depth"]);
+	shaderWater->SetDuDvMap(scene->GetTextureSlots()["DuDv"]);
+	shaderWater->Validate();
 
 	passType = "main";
 	scene->RenderWater(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
@@ -216,7 +230,7 @@ void Renderer::RenderPassOmniShadow(PointLight* light, glm::mat4 viewMatrix, glm
 	glDisable(GL_BLEND);
 
 	uniforms["model"] = shaders["omniShadow"]->GetModelLocation();
-	uniforms["omniLightPos"] = shaders["omniShadow"]->GetUniformLocationOmniLightPos();
+	uniforms["omniLightPos"] = shaders["omniShadow"]->GetUniformLocationLightPosition();
 	uniforms["farPlane"] = shaders["omniShadow"]->GetUniformLocationFarPlane();
 
 	glUniform3f(uniforms["omniLightPos"], light->GetPosition().x, light->GetPosition().y, light->GetPosition().z);
@@ -243,13 +257,13 @@ void Renderer::RenderWaterEffects(WaterManager* waterManager, glm::mat4 projecti
 		waterMoveFactor = waterMoveFactor - 1.0f;
 	waterManager->SetWaterMoveFactor(waterMoveFactor);
 
-	float distance = 2.0f * (camera->getPosition().y - waterManager->GetWaterHeight());
-	camera->SetPosition(glm::vec3(camera->getPosition().x, camera->getPosition().y - distance, camera->getPosition().z));
+	float distance = 2.0f * (camera->GetPosition().y - waterManager->GetWaterHeight());
+	camera->SetPosition(glm::vec3(camera->GetPosition().x, camera->GetPosition().y - distance, camera->GetPosition().z));
 	camera->InvertPitch();
 
 	Renderer::RenderPassWaterReflection(waterManager, projectionMatrix, scene, camera);
 
-	camera->SetPosition(glm::vec3(camera->getPosition().x, camera->getPosition().y + distance, camera->getPosition().z));
+	camera->SetPosition(glm::vec3(camera->GetPosition().x, camera->GetPosition().y + distance, camera->GetPosition().z));
 	camera->InvertPitch();
 
 	Renderer::RenderPassWaterRefraction(waterManager, projectionMatrix, scene, camera);
@@ -270,33 +284,34 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 	modelMatrixSkybox = glm::rotate(modelMatrixSkybox, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 	scene->GetSkybox()->Draw(modelMatrixSkybox, camera->CalculateViewMatrix(), projectionMatrix);
 
-	shaders["main"]->Bind();
+	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
+	shaderMain->Bind();
 
-	uniforms["model"] = shaders["main"]->GetModelLocation();
-	uniforms["projection"] = shaders["main"]->GetProjectionLocation();
-	uniforms["view"] = shaders["main"]->GetViewLocation();
-	uniforms["eyePosition"] = shaders["main"]->GetUniformLocationEyePosition();
-	uniforms["specularIntensity"] = shaders["main"]->GetUniformLocationSpecularIntensity();
-	uniforms["shininess"] = shaders["main"]->GetUniformLocationShininess();
+	uniforms["model"] = shaderMain->GetModelLocation();
+	uniforms["projection"] = shaderMain->GetProjectionLocation();
+	uniforms["view"] = shaderMain->GetViewLocation();
+	uniforms["eyePosition"] = shaderMain->GetUniformLocationEyePosition();
+	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
+	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 
 	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniform3f(uniforms["eyePosition"], camera->getPosition().x, camera->getPosition().y, camera->getPosition().z);
+	glUniform3f(uniforms["eyePosition"], camera->GetPosition().x, camera->GetPosition().y, camera->GetPosition().z);
 
-	shaders["main"]->SetDirectionalLight(&LightManager::directionalLight);
-	shaders["main"]->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
-	shaders["main"]->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
-	shaders["main"]->SetDirectionalLightTransform(&LightManager::directionalLight.CalculateLightTransform());
+	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
+	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
+	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
+	shaderMain->SetDirectionalLightTransform(&LightManager::directionalLight.CalculateLightTransform());
 
 	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
-	shaders["main"]->SetTexture(scene->GetTextureSlots()["diffuse"]);
-	shaders["main"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
-	shaders["main"]->SetDepthMap(scene->GetTextureSlots()["depth"]);
-	shaders["main"]->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
+	shaderMain->SetTexture(scene->GetTextureSlots()["diffuse"]);
+	shaderMain->SetNormalMap(scene->GetTextureSlots()["normal"]);
+	shaderMain->SetDepthMap(scene->GetTextureSlots()["depth"]);
+	shaderMain->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
 
-	shaders["main"]->SetClipPlane(glm::vec4(0.0f, 1.0f, 0.0f, -waterManager->GetWaterHeight())); // reflection clip plane
+	shaderMain->SetClipPlane(glm::vec4(0.0f, 1.0f, 0.0f, -waterManager->GetWaterHeight())); // reflection clip plane
 
-	shaders["main"]->Validate();
+	shaderMain->Validate();
 
 	std::string passType = "water";
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
@@ -309,38 +324,41 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	glViewport(0, 0, waterManager->GetFramebufferWidth(), waterManager->GetFramebufferHeight());
 
 	waterManager->GetRefractionFramebuffer()->Bind();
+	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(scene->GetTextureSlots()["refraction"]);
+	waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["depth"]);
 
 	// Clear the window
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	shaders["main"]->Bind();
+	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
+	shaderMain->Bind();
 
-	uniforms["model"] = shaders["main"]->GetModelLocation();
-	uniforms["projection"] = shaders["main"]->GetProjectionLocation();
-	uniforms["view"] = shaders["main"]->GetViewLocation();
-	uniforms["eyePosition"] = shaders["main"]->GetUniformLocationEyePosition();
-	uniforms["specularIntensity"] = shaders["main"]->GetUniformLocationSpecularIntensity();
-	uniforms["shininess"] = shaders["main"]->GetUniformLocationShininess();
+	uniforms["model"] = shaderMain->GetModelLocation();
+	uniforms["projection"] = shaderMain->GetProjectionLocation();
+	uniforms["view"] = shaderMain->GetViewLocation();
+	uniforms["eyePosition"] = shaderMain->GetUniformLocationEyePosition();
+	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
+	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 
 	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniform3f(uniforms["eyePosition"], camera->getPosition().x, camera->getPosition().y, camera->getPosition().z);
+	glUniform3f(uniforms["eyePosition"], camera->GetPosition().x, camera->GetPosition().y, camera->GetPosition().z);
 
-	shaders["main"]->SetDirectionalLight(&LightManager::directionalLight);
-	shaders["main"]->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
-	shaders["main"]->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
-	shaders["main"]->SetDirectionalLightTransform(&LightManager::directionalLight.CalculateLightTransform());
+	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
+	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
+	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
+	shaderMain->SetDirectionalLightTransform(&LightManager::directionalLight.CalculateLightTransform());
 
 	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
-	shaders["main"]->SetTexture(scene->GetTextureSlots()["diffuse"]);
-	shaders["main"]->SetNormalMap(scene->GetTextureSlots()["normal"]);
-	shaders["main"]->SetDepthMap(scene->GetTextureSlots()["depth"]);
-	shaders["main"]->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
+	shaderMain->SetTexture(scene->GetTextureSlots()["diffuse"]);
+	shaderMain->SetNormalMap(scene->GetTextureSlots()["normal"]);
+	shaderMain->SetDepthMap(scene->GetTextureSlots()["depth"]);
+	shaderMain->SetDirectionalShadowMap(scene->GetTextureSlots()["shadow"]);
 
-	shaders["main"]->SetClipPlane(glm::vec4(0.0f, -1.0f, 0.0f, waterManager->GetWaterHeight())); // refraction clip plane
+	shaderMain->SetClipPlane(glm::vec4(0.0f, -1.0f, 0.0f, waterManager->GetWaterHeight())); // refraction clip plane
 
-	shaders["main"]->Validate();
+	shaderMain->Validate();
 
 	std::string passType = "water";
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);

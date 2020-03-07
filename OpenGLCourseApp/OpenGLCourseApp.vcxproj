@@ -183,6 +183,8 @@
     <ClCompile Include="SceneTerrain.cpp" />
     <ClCompile Include="SceneSponza.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShaderMain.cpp" />
+    <ClCompile Include="ShaderWater.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="SpotLight.cpp" />
@@ -214,6 +216,8 @@
     <ClInclude Include="SceneTerrain.h" />
     <ClInclude Include="SceneSponza.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderMain.h" />
+    <ClInclude Include="ShaderWater.h" />
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="SpotLight.h" />

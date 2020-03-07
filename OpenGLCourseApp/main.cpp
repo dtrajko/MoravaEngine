@@ -28,7 +28,7 @@ Window mainWindow;
 Scene* scene;
 Camera* camera;
 
-std::string currentScene = "terrain"; // "cottage", "eiffel", "sponza", "terrain"
+std::string currentScene = "eiffel"; // "cottage", "eiffel", "sponza", "terrain"
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -78,8 +78,8 @@ int main()
 		// Get and handle user input events
 		glfwPollEvents();
 
-		camera->keyControl(mainWindow.getKeys(), deltaTime);
-		camera->mouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
+		camera->KeyControl(mainWindow.getKeys(), deltaTime);
+		camera->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
 		// camera->mouseScrollControl(mainWindow.getKeys(), deltaTime, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
 
 		if (mainWindow.getKeys()[GLFW_KEY_L])

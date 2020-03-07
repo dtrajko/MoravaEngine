@@ -1,6 +1,7 @@
 #include "SceneTerrain.h"
-#include "Renderer.h"
 #include "Terrain.h"
+#include "ShaderWater.h"
+#include "Renderer.h"
 
 
 SceneTerrain::SceneTerrain()
@@ -97,6 +98,8 @@ void SceneTerrain::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix,
 
 	Renderer::EnableCulling();
 
+	ShaderWater* shaderWater = (ShaderWater*)shaders["water"];
+
 	/* Water Tile */
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, waterManager->GetWaterHeight(), 0.0f));
@@ -114,8 +117,7 @@ void SceneTerrain::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix,
 	shaders["water"]->SetTexture(textureSlots["reflection"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
-	shaders["water"]->SetLightColor(LightManager::directionalLight.GetColor());
-	shaders["water"]->SetLightDirection(LightManager::directionalLight.GetDirection());
+	shaderWater->SetLightColor(LightManager::directionalLight.GetColor());
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["water"]->RenderMesh();
 }

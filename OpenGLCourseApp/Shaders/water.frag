@@ -1,4 +1,4 @@
-#version 400 core
+#version 440
 
 in vec4 clipSpace;
 in vec2 textureCoords;
@@ -14,7 +14,7 @@ uniform sampler2D dudvMap;
 uniform sampler2D normalMap;
 uniform sampler2D depthMap;
 uniform vec3 lightColor;
-uniform float waterMoveFactor;
+uniform float moveFactor;
 uniform float nearPlane;
 uniform float farPlane;
 
@@ -36,8 +36,8 @@ void main(void) {
 	float waterDistance = 2.0 * nearPlane * farPlane / (farPlane + nearPlane - (2.0 * waterDepthAbs - 1.0) * (farPlane - nearPlane));
 	float waterDepth = floorDistance - waterDistance;
 	waterDepth = clamp(waterDepth / 2.0, 0.1, 1.0);
-	vec2 distortedTexCoords = texture(dudvMap, vec2(textureCoords.x + waterMoveFactor, textureCoords.y)).rg * 0.1;
-	distortedTexCoords = textureCoords + vec2(distortedTexCoords.x, distortedTexCoords.y + waterMoveFactor);
+	vec2 distortedTexCoords = texture(dudvMap, vec2(textureCoords.x + moveFactor, textureCoords.y)).rg * 0.1;
+	distortedTexCoords = textureCoords + vec2(distortedTexCoords.x, distortedTexCoords.y + moveFactor);
 	vec2 totalDistortion = (texture(dudvMap, distortedTexCoords).rg * 2.0 - 1.0) * waveStrength * waterDepth;
 
 	refractTexCoords += totalDistortion;
@@ -60,13 +60,14 @@ void main(void) {
 	refractiveFactor = pow(refractiveFactor, 0.5);
 	refractiveFactor = clamp(refractiveFactor, 0.0, 0.8);
 
-	vec3 reflectedLight = reflect(normalize(fromLightVector), normal);
-	float specular = max(dot(reflectedLight, viewVector), 0.0);
-	specular = pow(specular, shineDamper);
-	vec3 specularHighlights = lightColor * specular * reflectivity * waterDepth;
+	// vec3 reflectedLight = reflect(normalize(fromLightVector), normal);
+	// float specular = max(dot(reflectedLight, viewVector), 0.0);
+	// specular = pow(specular, shineDamper);
+	// vec3 specularHighlights = lightColor * specular * reflectivity * waterDepth;
 
 	out_Color = mix(reflectColor, refractColor, refractiveFactor);
-	out_Color = mix(out_Color, vec4(waterColor, 1.0), 0.4) + vec4(specularHighlights, 0.0);
+	out_Color = mix(out_Color, vec4(waterColor, 1.0), 0.4);
+	// out_Color = mix(out_Color, vec4(waterColor, 1.0), 0.4) + vec4(specularHighlights, 0.0);
 	out_Color.a = max(waterDepth, 0.5);
 
 	out_BrightColor = vec4(0.0, 0.0, 1.0, 1.0);

@@ -15,8 +15,8 @@ public:
 	inline Framebuffer* GetRefractionFramebuffer() const { return refractionFB; };
 	inline float GetWaterHeight() const { return m_WaterHeight; };
 	inline void SetWaterHeight(float waterHeight) { m_WaterHeight = waterHeight; };
-	inline float GetWaterMoveFactor() const { return m_WaterMoveFactor; };
-	inline void SetWaterMoveFactor(float waterMoveFactor) { m_WaterMoveFactor = waterMoveFactor; };
+	inline float GetWaterMoveFactor() const { return m_MoveFactor; };
+	inline void SetWaterMoveFactor(float moveFactor) { m_MoveFactor = moveFactor; };
 	~WaterManager();
 
 public:
@@ -30,5 +30,5 @@ private:
 	int m_Height;
 
 	float m_WaterHeight;
-	float m_WaterMoveFactor;
+	float m_MoveFactor;
 };

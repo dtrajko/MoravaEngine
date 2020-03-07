@@ -1,5 +1,7 @@
 #include "SceneCottage.h"
 
+#include "ShaderMain.h"
+
 
 SceneCottage::SceneCottage()
 {
@@ -95,6 +97,8 @@ void SceneCottage::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std:
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	glm::mat4 sceneOrigin = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+
+	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
 
 	// Model matrix
 	glm::mat4 model;
@@ -249,8 +253,8 @@ void SceneCottage::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std:
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(2.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		shaders["main"]->SetTexture(textureSlots["shadow"]);
-		shaders["main"]->SetNormalMap(textureSlots["shadow"]);
+		shaderMain->SetTexture(textureSlots["shadow"]);
+		shaderMain->SetNormalMap(textureSlots["shadow"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 	}

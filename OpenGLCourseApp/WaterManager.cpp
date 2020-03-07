@@ -8,7 +8,7 @@ WaterManager::WaterManager()
 	m_Width = 0;
 	m_Height = 0;
 	m_WaterHeight = 0.0f;
-	m_WaterMoveFactor = m_WaveSpeed;
+	m_MoveFactor = m_WaveSpeed;
 }
 
 WaterManager::WaterManager(int width, int height, float waterHeight, float waveSpeed)
@@ -17,7 +17,7 @@ WaterManager::WaterManager(int width, int height, float waterHeight, float waveS
 	m_Height = height;
 	m_WaterHeight = waterHeight;
 	m_WaveSpeed = waveSpeed;
-	m_WaterMoveFactor = waveSpeed;
+	m_MoveFactor = waveSpeed;
 
 	reflectionFB = new Framebuffer(m_Width, m_Height);
 

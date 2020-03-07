@@ -16,7 +16,7 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 directionalLightTransform;
-uniform vec4 plane;
+uniform vec4 clipPlane;
 
 
 void main()
@@ -26,7 +26,7 @@ void main()
 	TexCoords = aTexCoords;
 
 	vec4 WorldPosition = model * vec4(aPos, 1.0);
-	gl_ClipDistance[0] = dot(WorldPosition, plane);
+	gl_ClipDistance[0] = dot(WorldPosition, clipPlane);
 
 	DirectionalLightSpacePos = directionalLightTransform * model * vec4(aPos, 1.0);
 	
