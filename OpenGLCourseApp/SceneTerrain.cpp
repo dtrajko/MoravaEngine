@@ -12,7 +12,7 @@ SceneTerrain::SceneTerrain()
 	sceneSettings.enableWaterEffects = true;
 	sceneSettings.enableSkybox       = true;
 	sceneSettings.enableNormalMaps   = true;
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 30.0f, 130.0f);
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 25.0f, 200.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 5.0f;
 	sceneSettings.nearPlane = 0.01f;
@@ -61,8 +61,6 @@ void SceneTerrain::SetTextures()
 void SceneTerrain::SetupModels()
 {
 	Terrain* terrain = new Terrain("Textures/island_flat.png", nullptr); // heightmap_island_8x6.png
-	textures.insert(std::make_pair("colorMap", terrain->GetColorMap()));
-
 	Mesh* mesh = new Mesh();
 	mesh->CreateMesh(terrain->GetVertices(), terrain->GetIndices(), terrain->GetVertexCount(), terrain->GetIndexCount());
 	meshes.insert(std::make_pair("terrain", mesh));
@@ -77,13 +75,13 @@ void SceneTerrain::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std:
 {
 	Renderer::EnableCulling();
 
-	/* Island scene */
+	/* Island */
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-128.0f, 0.0f, -128.0f));
+	model = glm::translate(model, glm::vec3(-196.0f, 0.0f, -196.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(1.0f, 0.25f, 1.0f));
+	model = glm::scale(model, glm::vec3(1.5f, 0.25f, 1.5f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	textures["rock"]->Bind(textureSlots["diffuse"]);
@@ -105,7 +103,7 @@ void SceneTerrain::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix,
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(128.0f, 1.0f, 128.0f));
+	model = glm::scale(model, glm::vec3(256.0f, 1.0f, 256.0f));
 
 	shaders["water"]->Bind();
 
