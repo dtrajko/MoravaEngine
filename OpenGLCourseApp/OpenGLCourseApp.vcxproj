@@ -178,6 +178,7 @@
     <ClCompile Include="Renderbuffer.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneCerberus.cpp" />
     <ClCompile Include="SceneCottage.cpp" />
     <ClCompile Include="SceneEiffel.cpp" />
     <ClCompile Include="SceneTerrain.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="Renderbuffer.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneCerberus.h" />
     <ClInclude Include="SceneCottage.h" />
     <ClInclude Include="SceneEiffel.h" />
     <ClInclude Include="SceneTerrain.h" />
