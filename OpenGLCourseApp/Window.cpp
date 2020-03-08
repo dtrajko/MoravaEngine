@@ -42,8 +42,8 @@ int Window::Initialize()
 	// Allow forward compatibility
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	mainWindow = glfwCreateWindow(width, height, "Test Window", NULL, NULL);
-	if (!mainWindow)
+	glfwWindow = glfwCreateWindow(width, height, "Test Window", NULL, NULL);
+	if (!glfwWindow)
 	{
 		printf("GLFW Window creation failed!\n");
 		glfwTerminate();
@@ -51,10 +51,10 @@ int Window::Initialize()
 	}
 
 	// Get Buffer size information
-	glfwGetFramebufferSize(mainWindow, &bufferWidth, &bufferHeight);
+	glfwGetFramebufferSize(glfwWindow, &bufferWidth, &bufferHeight);
 
 	// Set context for GLEW to use
-	glfwMakeContextCurrent(mainWindow);
+	glfwMakeContextCurrent(glfwWindow);
 
 	// Handle Key and Mouse input
 	CreateCallbacks();
@@ -66,7 +66,7 @@ int Window::Initialize()
 	if (glewInit() != GLEW_OK)
 	{
 		printf("GLEW initialization failed!\n");
-		glfwDestroyWindow(mainWindow);
+		glfwDestroyWindow(glfwWindow);
 		glfwTerminate();
 		return 1;
 	}
@@ -76,7 +76,7 @@ int Window::Initialize()
 	// Setup Viewport size
 	glViewport(0, 0, bufferWidth, bufferHeight);
 
-	glfwSetWindowUserPointer(mainWindow, this);
+	glfwSetWindowUserPointer(glfwWindow, this);
 
 	printf("GLFW and GLEW initialized.\n");
 
@@ -85,12 +85,12 @@ int Window::Initialize()
 
 void Window::CreateCallbacks()
 {
-	glfwSetKeyCallback(mainWindow, handleKeys);
-	glfwSetCursorPosCallback(mainWindow, handleMouse);
-	glfwSetMouseButtonCallback(mainWindow, mouseButtonCallback);
-	glfwSetCursorEnterCallback(mainWindow, cursorEnterCallback);
-	glfwSetWindowSizeCallback(mainWindow, windowSizeCallback);
-	glfwSetScrollCallback(mainWindow, mouseScrollCallback);
+	glfwSetKeyCallback(glfwWindow, handleKeys);
+	glfwSetCursorPosCallback(glfwWindow, handleMouse);
+	glfwSetMouseButtonCallback(glfwWindow, mouseButtonCallback);
+	glfwSetCursorEnterCallback(glfwWindow, cursorEnterCallback);
+	glfwSetWindowSizeCallback(glfwWindow, windowSizeCallback);
+	glfwSetScrollCallback(glfwWindow, mouseScrollCallback);
 }
 
 void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
@@ -155,7 +155,7 @@ void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
 		}
 	}
 
-	if (theWindow->buttons[GLFW_MOUSE_BUTTON_LEFT] && theWindow->mouseCursorAboveWindow)
+	if (theWindow->buttons[GLFW_MOUSE_BUTTON_MIDDLE] && theWindow->mouseCursorAboveWindow)
 	{
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
@@ -219,6 +219,6 @@ float Window::getYMouseScrollOffset()
 
 Window::~Window()
 {
-	glfwDestroyWindow(mainWindow);
+	glfwDestroyWindow(glfwWindow);
 	glfwTerminate();
 }

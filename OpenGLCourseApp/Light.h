@@ -15,6 +15,7 @@ public:
 	ShadowMap* GetShadowMap() { return m_ShadowMap; };
 	inline void SetLightProjection(glm::mat4 lightProj) { m_LightProj = lightProj; };
 	inline glm::vec3 GetColor() const { return m_Color; }
+	inline void SetColor(glm::vec3 color) { m_Color = color; }
 	~Light();
 
 protected:

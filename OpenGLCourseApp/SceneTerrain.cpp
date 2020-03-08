@@ -67,7 +67,7 @@ void SceneTerrain::SetupModels()
 	meshes.insert(std::make_pair("terrain", mesh));
 }
 
-void SceneTerrain::Update(float timestep, LightManager& lightManager)
+void SceneTerrain::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
 {
 }
 

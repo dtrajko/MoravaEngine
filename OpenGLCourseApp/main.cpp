@@ -29,7 +29,7 @@ Window mainWindow;
 Scene* scene;
 Camera* camera;
 
-std::string currentScene = "cerberus"; // "cottage", "eiffel", "sponza", "terrain", "cerberus"
+std::string currentScene = "eiffel"; // "cottage", "eiffel", "sponza", "terrain", "cerberus"
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -69,7 +69,14 @@ int main()
 	WaterManager* waterManager = new WaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight(),
 		scene->GetSettings().waterHeight, scene->GetSettings().waterWaveSpeed);
 
-	Renderer::Init();
+	Renderer::Init();	
+
+	// ImGui Setup Dear ImGui context
+	ImGui::CreateContext();
+
+	// Setup Platform/Renderer bindings
+	ImGui_ImplGlfw_InitForOpenGL(mainWindow.GetHandler(), true);
+	ImGui_ImplOpenGL3_Init("#version 330");
 
 	// Loop until window closed
 	while (!mainWindow.GetShouldClose())
@@ -78,8 +85,10 @@ int main()
 		deltaTime = now - lastTime;
 		lastTime = now;
 
-		// Get and handle user input events
-		glfwPollEvents();
+		// ImGui Start the Dear ImGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
 
 		camera->KeyControl(mainWindow.getKeys(), deltaTime);
 		camera->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
@@ -91,7 +100,7 @@ int main()
 			mainWindow.getKeys()[GLFW_KEY_L] = false;
 		}
 
-		scene->Update(now, *lightManager);
+		scene->Update(now, *lightManager, waterManager);
 
 		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
 		Renderer::RenderOmniShadows(camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
@@ -101,8 +110,22 @@ int main()
 		glDisable(GL_BLEND);
 
 		Renderer::GetShaders()["main"]->Unbind();
+
+		// ImGui Rendering
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		// Swap buffers
 		mainWindow.SwapBuffers();
+
+		// Get and handle user input events
+		glfwPollEvents();
 	}
+
+	// ImGui Cleanup
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 
 	delete lightManager;
 	delete scene;

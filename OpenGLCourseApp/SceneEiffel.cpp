@@ -80,15 +80,24 @@ void SceneEiffel::SetupModels()
 	models.insert(std::make_pair("watchtower", watchtower));
 }
 
-void SceneEiffel::Update(float timestep, LightManager& lightManager)
+void SceneEiffel::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
 {
 	// Shadow rotation
 	m_LightDirection = sceneSettings.lightDirection;
+	glm::vec3 lightColor = lightManager.directionalLight.GetColor();
+
 	float lightRadius = abs(m_LightDirection.x);
 	float lightAngle = timestep * sceneSettings.shadowSpeed;
 	m_LightDirection.x = (float)cos(lightAngle) * lightRadius;
 	m_LightDirection.z = (float)sin(lightAngle) * lightRadius;
+
+	ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, 0.0f, 20.0f);
+	ImGui::SliderFloat3("DirLight direction", glm::value_ptr(m_LightDirection), -100.0f, 100.0f);
+	ImGui::ColorEdit4("DirLight Color", glm::value_ptr(lightColor));
+
+	waterManager->SetWaterHeight(sceneSettings.waterHeight);
 	lightManager.directionalLight.SetDirection(m_LightDirection);
+	lightManager.directionalLight.SetColor(lightColor);
 }
 
 void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,

@@ -82,7 +82,7 @@ void SceneCottage::SetupModels()
 	models.insert(std::make_pair("cottage", cottage));
 }
 
-void SceneCottage::Update(float timestep, LightManager& lightManager)
+void SceneCottage::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
 {
 	glm::vec3 pLightPos = sceneSettings.pLight_0_position;
 	float lightRadius = 6.0;

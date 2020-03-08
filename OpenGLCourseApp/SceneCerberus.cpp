@@ -64,7 +64,7 @@ void SceneCerberus::SetupModels()
 	models.insert(std::make_pair("cerberus", cerberus));
 }
 
-void SceneCerberus::Update(float timestep, LightManager& lightManager)
+void SceneCerberus::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
 {
 }
 

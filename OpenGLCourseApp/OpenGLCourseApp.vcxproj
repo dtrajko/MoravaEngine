@@ -109,7 +109,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,7 +151,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -163,6 +163,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\vendor\ImGui\imgui.cpp" />
+    <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp" />
+    <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="..\vendor\ImGui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\vendor\ImGui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
@@ -196,6 +203,15 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\vendor\ImGui\imconfig.h" />
+    <ClInclude Include="..\vendor\ImGui\imgui.h" />
+    <ClInclude Include="..\vendor\ImGui\imgui_impl_glfw.h" />
+    <ClInclude Include="..\vendor\ImGui\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\vendor\ImGui\imgui_impl_win32.h" />
+    <ClInclude Include="..\vendor\ImGui\imgui_internal.h" />
+    <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
+    <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CommonValues.h" />
     <ClInclude Include="DirectionalLight.h" />

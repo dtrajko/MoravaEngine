@@ -12,20 +12,21 @@ public:
 	Window();
 	Window(GLint windowWidth, GLint windowHeight);
 	int Initialize();
+	inline GLFWwindow* GetHandler() { return glfwWindow; };
 	inline GLfloat GetBufferWidth() { return (GLfloat)bufferWidth; };
 	inline GLfloat GetBufferHeight() { return (GLfloat)bufferHeight; };
-	bool GetShouldClose() { return glfwWindowShouldClose(mainWindow); };
+	bool GetShouldClose() { return glfwWindowShouldClose(glfwWindow); };
 	bool* getKeys() { return keys; };
 	bool* getMouseButtons() { return buttons; };
 	GLfloat getXChange();
 	GLfloat getYChange();
 	float getXMouseScrollOffset();
 	float getYMouseScrollOffset();
-	void SwapBuffers() { glfwSwapBuffers(mainWindow); };
+	void SwapBuffers() { glfwSwapBuffers(glfwWindow); };
 	~Window();
 
 private:
-	GLFWwindow* mainWindow;
+	GLFWwindow* glfwWindow;
 
 	GLint width;
 	GLint height;
