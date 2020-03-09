@@ -9,7 +9,7 @@
 SceneSponza::SceneSponza()
 {
 	sceneSettings.enableShadows      = true;
-	sceneSettings.enableOmniShadows  = false;
+	sceneSettings.enableOmniShadows  = true;
 	sceneSettings.enablePointLights  = true;
 	sceneSettings.enableSpotLights   = true;
 	sceneSettings.enableWaterEffects = true;
@@ -90,7 +90,7 @@ void SceneSponza::Update(float timestep, LightManager& lightManager, WaterManage
 
 	ImGui::SliderFloat("Water level",         &sceneSettings.waterHeight, 0.0f, 20.0f);
 
-	ImGui::ColorEdit4("DirLight Color",       glm::value_ptr(lightColor));
+	ImGui::ColorEdit3("DirLight Color",       glm::value_ptr(lightColor));
 	ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(lightDirection), -100.0f, 100.0f);
 
 	ImGui::ColorEdit3("PL0 Color",            glm::value_ptr(PL0_Color));

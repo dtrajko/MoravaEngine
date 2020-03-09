@@ -86,7 +86,7 @@ void SceneEiffel::Update(float timestep, LightManager& lightManager, WaterManage
 {
 	// Shadow rotation
 	m_LightDirection = sceneSettings.lightDirection;
-	glm::vec3 lightColor = lightManager.directionalLight.GetColor();
+	m_LightColor = lightManager.directionalLight.GetColor();
 
 	float lightRadius = abs(m_LightDirection.x);
 	float lightAngle = timestep * sceneSettings.shadowSpeed;
@@ -95,11 +95,11 @@ void SceneEiffel::Update(float timestep, LightManager& lightManager, WaterManage
 
 	ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, 0.0f, 20.0f);
 	ImGui::SliderFloat3("DirLight direction", glm::value_ptr(m_LightDirection), -100.0f, 100.0f);
-	ImGui::ColorEdit4("DirLight Color", glm::value_ptr(lightColor));
+	ImGui::ColorEdit3("DirLight Color", glm::value_ptr(m_LightColor));
 
 	waterManager->SetWaterHeight(sceneSettings.waterHeight);
 	lightManager.directionalLight.SetDirection(m_LightDirection);
-	lightManager.directionalLight.SetColor(lightColor);
+	lightManager.directionalLight.SetColor(m_LightColor);
 }
 
 void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,

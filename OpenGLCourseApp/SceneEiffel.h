@@ -22,5 +22,6 @@ private:
 	virtual void SetupMeshes() override;
 
 	glm::vec3 m_LightDirection;
+	glm::vec3 m_LightColor;
 
 };

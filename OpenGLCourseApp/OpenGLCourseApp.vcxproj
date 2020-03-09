@@ -167,14 +167,13 @@
     <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_impl_dx11.cpp" />
-    <ClCompile Include="..\vendor\ImGui\imgui_impl_glfw.cpp" />
-    <ClCompile Include="..\vendor\ImGui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="FramebufferTexture.cpp" />
+    <ClCompile Include="ImGuiBuild.cpp" />
     <ClCompile Include="ImGuiWrapper.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightManager.cpp" />

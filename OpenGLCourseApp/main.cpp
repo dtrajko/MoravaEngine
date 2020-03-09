@@ -30,7 +30,7 @@ Window mainWindow;
 Scene* scene;
 Camera* camera;
 
-std::string currentScene = "eiffel"; // "cottage", "eiffel", "sponza", "terrain", "cerberus"
+std::string currentScene = "sponza"; // "cottage", "eiffel", "sponza", "terrain", "cerberus"
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -81,8 +81,6 @@ int main()
 		deltaTime = now - lastTime;
 		lastTime = now;
 
-		ImGuiWrapper::NewFrame();
-
 		camera->KeyControl(mainWindow.getKeys(), deltaTime);
 		camera->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
 		// camera->mouseScrollControl(mainWindow.getKeys(), deltaTime, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
@@ -93,6 +91,8 @@ int main()
 			mainWindow.getKeys()[GLFW_KEY_L] = false;
 		}
 
+		ImGuiWrapper::Begin();
+
 		scene->Update(now, *lightManager, waterManager);
 
 		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
@@ -100,7 +100,7 @@ int main()
 		Renderer::RenderWaterEffects(waterManager, projectionMatrix, scene, camera, deltaTime);
 		Renderer::RenderPass(projectionMatrix, mainWindow, scene, camera, waterManager);
 
-		ImGuiWrapper::Render();
+		ImGuiWrapper::End();
 
 		Renderer::GetShaders()["main"]->Unbind();
 

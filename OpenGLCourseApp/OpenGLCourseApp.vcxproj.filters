@@ -111,6 +111,12 @@
     <ClCompile Include="SceneCerberus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ImGuiWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGuiBuild.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\vendor\ImGui\imgui.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
@@ -120,10 +126,7 @@
     <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="..\vendor\ImGui\imgui_impl_glfw.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\vendor\ImGui\imgui_impl_opengl3.cpp">
+    <ClCompile Include="..\vendor\ImGui\imgui_impl_dx11.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp">
@@ -131,12 +134,6 @@
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp">
       <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\vendor\ImGui\imgui_impl_dx11.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGuiWrapper.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
