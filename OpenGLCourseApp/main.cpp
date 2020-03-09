@@ -29,7 +29,7 @@ Window mainWindow;
 Scene* scene;
 Camera* camera;
 
-std::string currentScene = "eiffel"; // "cottage", "eiffel", "sponza", "terrain", "cerberus"
+std::string currentScene = "sponza"; // "cottage", "eiffel", "sponza", "terrain", "cerberus"
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;

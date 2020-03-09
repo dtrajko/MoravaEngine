@@ -18,6 +18,8 @@ public:
 	inline GLfloat GetFarPlane() const { return m_FarPlane; };
 	inline glm::vec3 GetPosition() const { return m_Position; };
 	inline void SetPosition(glm::vec3 position) { m_Position = position; };
+	inline float GetAmbientIntensity() const { return m_AmbientIntensity; }
+	inline void SetAmbientIntensity(float ambientIntensity) { m_AmbientIntensity = ambientIntensity; }
 	~PointLight();
 
 protected:

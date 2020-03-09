@@ -91,6 +91,33 @@ void SceneCottage::Update(float timestep, LightManager& lightManager, WaterManag
 	pLightPos.z += (float)sin(lightAngle) * lightRadius;
 	pLightPos.y += (float)cos(lightAngle * 0.5) * lightRadius * 0.5f;
 	lightManager.pointLights[0].SetPosition(pLightPos);
+
+	glm::vec3 PL0_Position  = lightManager.pointLights[0].GetPosition();
+	glm::vec3 PL0_Color     = lightManager.pointLights[0].GetColor();
+	float PL0_AmbIntensity  = lightManager.pointLights[0].GetAmbientIntensity();
+	float PL0_DiffIntensity = lightManager.pointLights[0].GetDiffuseIntensity();
+	glm::vec3 PL1_Position  = lightManager.pointLights[1].GetPosition();
+	glm::vec3 PL1_Color     = lightManager.pointLights[1].GetColor();
+	float PL1_AmbIntensity  = lightManager.pointLights[1].GetAmbientIntensity();
+	float PL1_DiffIntensity = lightManager.pointLights[1].GetDiffuseIntensity();
+
+	ImGui::SliderFloat3("PL0 Position",      glm::value_ptr(PL0_Position), -20.0f, 20.0f);
+	ImGui::ColorEdit3("PL0 Color",           glm::value_ptr(PL0_Color));
+	ImGui::SliderFloat("PL0 Amb Intensity",  &PL0_AmbIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat("PL0 Diff Intensity", &PL0_DiffIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat3("PL1 Position",      glm::value_ptr(PL1_Position), -20.0f, 20.0f);
+	ImGui::ColorEdit3("PL1 Color",           glm::value_ptr(PL1_Color));
+	ImGui::SliderFloat("PL1 Amb Intensity",  &PL1_AmbIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat("PL1 Diff Intensity", &PL1_DiffIntensity, -20.0f, 20.0f);
+
+	lightManager.pointLights[0].SetPosition(PL0_Position);
+	lightManager.pointLights[0].SetColor(PL0_Color);
+	lightManager.pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
+	lightManager.pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
+	lightManager.pointLights[1].SetPosition(PL1_Position);
+	lightManager.pointLights[1].SetColor(PL1_Color);
+	lightManager.pointLights[1].SetAmbientIntensity(PL1_AmbIntensity);
+	lightManager.pointLights[1].SetDiffuseIntensity(PL1_DiffIntensity);
 }
 
 void SceneCottage::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,

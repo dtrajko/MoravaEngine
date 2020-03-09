@@ -16,6 +16,10 @@ public:
 	inline void SetLightProjection(glm::mat4 lightProj) { m_LightProj = lightProj; };
 	inline glm::vec3 GetColor() const { return m_Color; }
 	inline void SetColor(glm::vec3 color) { m_Color = color; }
+	inline float GetAmbientIntensity() const { return m_AmbientIntensity; }
+	inline void SetAmbientIntensity(float ambientIntensity) { m_AmbientIntensity = ambientIntensity; }
+	inline float GetDiffuseIntensity() const { return m_DiffuseIntensity; }
+	inline void SetDiffuseIntensity(float diffuseIntensity) { m_DiffuseIntensity = diffuseIntensity; }
 	~Light();
 
 protected:
