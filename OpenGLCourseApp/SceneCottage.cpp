@@ -1,5 +1,7 @@
 #include "SceneCottage.h"
 
+#include "ImGuiWrapper.h"
+
 #include "ShaderMain.h"
 
 

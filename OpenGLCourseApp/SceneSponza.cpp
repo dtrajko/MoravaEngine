@@ -1,4 +1,7 @@
 #include "SceneSponza.h"
+
+#include "ImGuiWrapper.h"
+
 #include "ShaderWater.h"
 #include "Renderer.h"
 

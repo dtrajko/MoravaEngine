@@ -166,6 +166,7 @@
     <ClCompile Include="..\vendor\ImGui\imgui.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="..\vendor\ImGui\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_impl_glfw.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
@@ -174,6 +175,7 @@
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="FramebufferTexture.cpp" />
+    <ClCompile Include="ImGuiWrapper.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -205,6 +207,7 @@
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h" />
     <ClInclude Include="..\vendor\ImGui\imgui.h" />
+    <ClInclude Include="..\vendor\ImGui\imgui_impl_dx11.h" />
     <ClInclude Include="..\vendor\ImGui\imgui_impl_glfw.h" />
     <ClInclude Include="..\vendor\ImGui\imgui_impl_opengl3.h" />
     <ClInclude Include="..\vendor\ImGui\imgui_impl_win32.h" />
@@ -217,6 +220,7 @@
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="FramebufferTexture.h" />
+    <ClInclude Include="ImGuiWrapper.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Material.h" />
