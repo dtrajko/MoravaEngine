@@ -1,4 +1,7 @@
 #include "SceneTerrain.h"
+
+#include "ImGuiWrapper.h"
+
 #include "Terrain.h"
 #include "ShaderWater.h"
 #include "Renderer.h"
@@ -69,6 +72,10 @@ void SceneTerrain::SetupModels()
 
 void SceneTerrain::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
 {
+	ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, -20.0f, 100.0f);
+	ImGui::SliderFloat3("Terrain scale", glm::value_ptr(m_TerrainScale), -5.0f, 5.0f);
+
+	waterManager->SetWaterHeight(sceneSettings.waterHeight);
 }
 
 void SceneTerrain::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
@@ -82,7 +89,7 @@ void SceneTerrain::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std:
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(1.5f, 0.25f, 1.5f));
+	model = glm::scale(model, glm::vec3(m_TerrainScale));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	textures["rock"]->Bind(textureSlots["diffuse"]);

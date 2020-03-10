@@ -9,7 +9,7 @@
 SceneSponza::SceneSponza()
 {
 	sceneSettings.enableShadows      = true;
-	sceneSettings.enableOmniShadows  = true;
+	sceneSettings.enableOmniShadows  = false;
 	sceneSettings.enablePointLights  = true;
 	sceneSettings.enableSpotLights   = true;
 	sceneSettings.enableWaterEffects = true;

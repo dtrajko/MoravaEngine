@@ -20,4 +20,6 @@ private:
 	virtual void SetTextures() override;
 	virtual void SetupModels() override;
 
+	glm::vec3 m_TerrainScale = glm::vec3(1.5f, 0.25f, 1.5f);
+
 };
