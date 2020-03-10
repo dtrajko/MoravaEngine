@@ -55,7 +55,6 @@ void Terrain::GenerateTerrain()
 			vertices[vertexPointer + 0] = (float)x;
 			vertices[vertexPointer + 1] = GetHeight(x, z);
 			vertices[vertexPointer + 2] = (float)z;
-			vertexPointer += vertexStride;
 
 			// texture coords
 			if (m_TxColorMap != nullptr)
@@ -75,6 +74,8 @@ void Terrain::GenerateTerrain()
 			vertices[vertexPointer + 5] = 0.0f;
 			vertices[vertexPointer + 6] = 0.0f;
 			vertices[vertexPointer + 7] = 0.0f;
+
+			vertexPointer += vertexStride;
 		}
 	}
 

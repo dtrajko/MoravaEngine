@@ -1,10 +1,12 @@
-#include "SceneCerberus.h"
+#include "ScenePBR.h"
 #include "Terrain.h"
+#include "ShaderMain.h"
 #include "ShaderWater.h"
 #include "Renderer.h"
+#include "Sphere.h"
 
 
-SceneCerberus::SceneCerberus()
+ScenePBR::ScenePBR()
 {
 	sceneSettings.enableShadows      = true;
 	sceneSettings.enableOmniShadows  = false;
@@ -13,7 +15,7 @@ SceneCerberus::SceneCerberus()
 	sceneSettings.enableWaterEffects = true;
 	sceneSettings.enableSkybox       = true;
 	sceneSettings.enableNormalMaps   = true;
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 25.0f, 200.0f);
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 20.0f, 20.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 5.0f;
 	sceneSettings.nearPlane = 0.01f;
@@ -42,7 +44,7 @@ SceneCerberus::SceneCerberus()
 	SetupModels();
 }
 
-void SceneCerberus::SetSkybox()
+void ScenePBR::SetSkybox()
 {
 	skyboxFaces.push_back("Textures/skybox_4/right.png");
 	skyboxFaces.push_back("Textures/skybox_4/left.png");
@@ -53,71 +55,79 @@ void SceneCerberus::SetSkybox()
 	skybox = new Skybox(skyboxFaces);
 }
 
-void SceneCerberus::SetTextures()
+void ScenePBR::SetTextures()
+{
+	textures.insert(std::make_pair("sponzaWallDiffuse", new Texture("Textures/sponza_bricks_a_diff.tga")));
+	textures["sponzaWallDiffuse"]->LoadTexture();
+}
+
+void ScenePBR::SetupModels()
+{
+	Sphere* sphere = new Sphere();
+	sphere->CreateMesh();
+	meshes.insert(std::make_pair("sphere", sphere));
+}
+
+void ScenePBR::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
 {
 }
 
-void SceneCerberus::SetupModels()
-{
-	Model* cerberus = new Model();
-	cerberus->LoadModel("Models/Cerberus/Cerberus_LP.obj");
-	models.insert(std::make_pair("cerberus", cerberus));
-}
-
-void SceneCerberus::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
-{
-}
-
-void SceneCerberus::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+void ScenePBR::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	Renderer::EnableCulling();
 }
 
-void SceneCerberus::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+void ScenePBR::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	if (!sceneSettings.enableWaterEffects) return;
 
 	Renderer::EnableCulling();
 
+	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
 	ShaderWater* shaderWater = (ShaderWater*)shaders["water"];
 
-	shaderWater->Bind();
+	// shaderMain->Bind();
 
-	/* Cerberus model */
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
+	// Model matrix
+	glm::mat4 model;
+
+	/* Sphere model */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	models["cerberus"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
-
-	/* Water Tile */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, waterManager->GetWaterHeight(), 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(256.0f, 1.0f, 256.0f));
-
-	shaders["water"]->Bind();
-
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
-	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
-	waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
-	shaders["water"]->SetTexture(textureSlots["reflection"]);
+	textures["sponzaWallDiffuse"]->Bind(textureSlots["diffuse"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
-	shaderWater->SetLightColor(LightManager::directionalLight.GetColor());
-	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["water"]->RenderMesh();
+	materials["shiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	meshes["sphere"]->RenderMesh();
+
+	// shaderWater->Bind();
+	// 
+	// /* Water Tile */
+	// model = glm::mat4(1.0f);
+	// model = glm::translate(model, glm::vec3(0.0f, waterManager->GetWaterHeight(), 0.0f));
+	// model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	// model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	// model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	// model = glm::scale(model, glm::vec3(32.0f, 1.0f, 32.0f));
+	// 
+	// glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	// waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
+	// waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
+	// waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
+	// shaders["water"]->SetTexture(textureSlots["reflection"]);
+	// textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	// textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
+	// shaderWater->SetLightColor(LightManager::directionalLight.GetColor());
+	// materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	// // meshes["water"]->RenderMesh();
 }
 
-SceneCerberus::~SceneCerberus()
+ScenePBR::~ScenePBR()
 {
 }

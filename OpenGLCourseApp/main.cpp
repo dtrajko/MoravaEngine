@@ -14,7 +14,7 @@
 #include "SceneEiffel.h"
 #include "SceneSponza.h"
 #include "SceneTerrain.h"
-#include "SceneCerberus.h"
+#include "ScenePBR.h"
 #include "Renderer.h"
 #include "LightManager.h"
 #include "WaterManager.h"
@@ -30,7 +30,7 @@ Window mainWindow;
 Scene* scene;
 Camera* camera;
 
-std::string currentScene = "terrain"; // "eiffel", "eiffel", "sponza", "terrain", "cerberus"
+std::string currentScene = "cottage"; // "cottage", "eiffel", "sponza", "terrain", "pbr"
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -54,8 +54,8 @@ int main()
 		scene = new SceneSponza();
 	else if (currentScene == "terrain")
 		scene = new SceneTerrain();
-	else if (currentScene == "cerberus")
-		scene = new SceneCerberus();
+	else if (currentScene == "pbr")
+		scene = new ScenePBR();
 
 	camera = new Camera(scene->GetSettings().cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), scene->GetSettings().cameraStartYaw, 0.0f, scene->GetSettings().cameraMoveSpeed, 0.1f);
 

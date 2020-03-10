@@ -3,17 +3,17 @@
 #include "Scene.h"
 
 
-class SceneCerberus : public Scene
+class ScenePBR : public Scene
 {
 
 public:
-	SceneCerberus();
+	ScenePBR();
 	virtual void Update(float timestep, LightManager& lightManager, WaterManager* waterManager) override;
 	virtual void Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager) override;
 	virtual void RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager) override;
-	~SceneCerberus();
+	~ScenePBR();
 
 private:
 	virtual void SetSkybox() override;
