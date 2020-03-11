@@ -6,6 +6,7 @@
 
 #include "ShaderMain.h"
 #include "ShaderWater.h"
+#include "ShaderPBR.h"
 #include "WaterManager.h"
 
 
@@ -43,6 +44,18 @@ void Renderer::SetUniforms()
 	uniforms.insert(std::make_pair("moveFactor", 0));
 	uniforms.insert(std::make_pair("cameraPosition", 0));
 	uniforms.insert(std::make_pair("lightColor", 0));
+
+	// PBR - physically based rendering
+	uniforms.insert(std::make_pair("albedo", 0));
+	uniforms.insert(std::make_pair("metallic", 0));
+	uniforms.insert(std::make_pair("roughness", 0));
+	uniforms.insert(std::make_pair("ao", 0));
+	uniforms.insert(std::make_pair("albedoMap", 0));
+	uniforms.insert(std::make_pair("normalMap", 0));
+	uniforms.insert(std::make_pair("metallicMap", 0));
+	uniforms.insert(std::make_pair("roughnessMap", 0));
+	uniforms.insert(std::make_pair("aoMap", 0));
+	uniforms.insert(std::make_pair("camPos", 0));
 }
 
 void Renderer::SetShaders()
@@ -59,6 +72,9 @@ void Renderer::SetShaders()
 
 	static const char* vertWaterShader = "Shaders/water.vert";
 	static const char* fragWaterShader = "Shaders/water.frag";
+
+	static const char* vertPBRShader = "Shaders/PBR.vert";
+	static const char* fragPBRShader = "Shaders/PBR.frag";
 
 	ShaderMain* mainShader = new ShaderMain();
 	mainShader->CreateFromFiles(vertShader, fragShader);
@@ -83,6 +99,12 @@ void Renderer::SetShaders()
 	shaders.insert(std::make_pair("water", waterShader));
 
 	printf("Renderer: Water shader compiled [programID=%d]\n", waterShader->GetProgramID());
+
+	ShaderPBR* pbrShader = new ShaderPBR();
+	pbrShader->CreateFromFiles(vertPBRShader, fragPBRShader);
+	shaders.insert(std::make_pair("pbr", pbrShader));
+
+	printf("Renderer: PBR shader compiled [programID=%d]\n", waterShader->GetProgramID());
 }
 
 void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene, Camera* camera, WaterManager* waterManager)
@@ -181,6 +203,8 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 
 	passType = "main";
 	scene->RenderWater(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
+
+	// scene->RenderPBR();
 }
 
 void Renderer::RenderPassShadow(DirectionalLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)

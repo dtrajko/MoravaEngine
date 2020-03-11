@@ -25,6 +25,23 @@ uniform vec3 camPos;
 
 const float PI = 3.14159265359;
 
+vec3 GetNormalFromMap()
+{
+    vec3 tangentNormal = texture(normalMap, TexCoords).xyz * 2.0 - 1.0;
+
+    vec3 Q1  = dFdx(WorldPos);
+    vec3 Q2  = dFdy(WorldPos);
+    vec2 st1 = dFdx(TexCoords);
+    vec2 st2 = dFdy(TexCoords);
+
+    vec3 N   = normalize(Normal);
+    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
+    vec3 B  = -normalize(cross(N, T));
+    mat3 TBN = mat3(T, B, N);
+
+    return normalize(TBN * tangentNormal);
+}
+
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float a      = roughness * roughness;
@@ -35,16 +52,6 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
     denom = PI * denom * denom;
 
     return a2 / max(denom, 0.0000001); // prevent divide by zero
-}
-
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
-{
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
-    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
-
-    return ggx1 * ggx2;
 }
 
 float GeometrySchlickGGX(float NdotV, float roughness)
@@ -58,6 +65,16 @@ float GeometrySchlickGGX(float NdotV, float roughness)
     return num / denom;
 }
 
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
+
+    return ggx1 * ggx2;
+}
+
 vec3 fresnelSchlick(float cosTheta, vec3 baseReflectivity)
 {
     // baseReflectivity in range 0 to 1
@@ -68,8 +85,8 @@ vec3 fresnelSchlick(float cosTheta, vec3 baseReflectivity)
 
 void main()
 {
-	vec3 albedo     = pow(texture(albedoMap, TexCoords).rgb, 2.2);
-    vec3 normal     = getNormalFromNormalMap();
+	vec3 albedo     = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
+    vec3 normal     = GetNormalFromMap();
     float metallic  = texture(metallicMap, TexCoords).r;
     float roughness = texture(roughnessMap, TexCoords).r;
     float ao        = texture(aoMap, TexCoords).r;
