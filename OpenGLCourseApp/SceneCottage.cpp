@@ -3,6 +3,7 @@
 #include "ImGuiWrapper.h"
 
 #include "ShaderMain.h"
+#include "Sphere.h"
 
 
 SceneCottage::SceneCottage()
@@ -82,6 +83,10 @@ void SceneCottage::SetupModels()
 	Model* cottage = new Model();
 	cottage->LoadModel("Models/cottage.obj");
 	models.insert(std::make_pair("cottage", cottage));
+
+	Sphere* sphere = new Sphere();
+	sphere->CreateMesh();
+	meshes.insert(std::make_pair("sphere", sphere));
 }
 
 void SceneCottage::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
@@ -131,6 +136,19 @@ void SceneCottage::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std:
 
 	// Model matrix
 	glm::mat4 model;
+
+	/* Sphere model */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 3.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	textures["sponzaCeilDiffuse"]->Bind(textureSlots["diffuse"]);
+	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	meshes["sphere"]->RenderMesh();
 
 	/* Cube Left */
 	model = glm::mat4(1.0f);

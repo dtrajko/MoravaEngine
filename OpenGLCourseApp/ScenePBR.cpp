@@ -36,7 +36,7 @@ ScenePBR::ScenePBR()
 	sceneSettings.shadowMapWidth = 2048;
 	sceneSettings.shadowMapHeight = 2048;
 	sceneSettings.shadowSpeed = 0.1f;
-	sceneSettings.waterHeight = 6.0f; // 1.0f 5.0f
+	sceneSettings.waterHeight = 0.0f; // 1.0f 5.0f
 	sceneSettings.waterWaveSpeed = 0.1f;
 
 	SetSkybox();
@@ -58,7 +58,9 @@ void ScenePBR::SetSkybox()
 void ScenePBR::SetTextures()
 {
 	textures.insert(std::make_pair("sponzaWallDiffuse", new Texture("Textures/sponza_bricks_a_diff.tga")));
+	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
 	textures["sponzaWallDiffuse"]->LoadTexture();
+	textures["sponzaCeilDiffuse"]->LoadTexture();
 }
 
 void ScenePBR::SetupModels()
@@ -76,6 +78,22 @@ void ScenePBR::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::str
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	Renderer::EnableCulling();
+
+	// Model matrix
+	glm::mat4 model;
+
+	/* Sphere model */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	textures["sponzaCeilDiffuse"]->Bind(textureSlots["diffuse"]);
+	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	meshes["sphere"]->RenderMesh();
 }
 
 void ScenePBR::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
@@ -85,47 +103,29 @@ void ScenePBR::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std
 
 	Renderer::EnableCulling();
 
-	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
 	ShaderWater* shaderWater = (ShaderWater*)shaders["water"];
-
-	// shaderMain->Bind();
 
 	// Model matrix
 	glm::mat4 model;
-
-	/* Sphere model */
+	
+	/* Water Tile */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
+	model = glm::translate(model, glm::vec3(0.0f, waterManager->GetWaterHeight(), 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(1.0f));
+	model = glm::scale(model, glm::vec3(32.0f, 1.0f, 32.0f));
+	
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	textures["sponzaWallDiffuse"]->Bind(textureSlots["diffuse"]);
+	waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
+	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
+	waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
+	shaders["water"]->SetTexture(textureSlots["reflection"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-	materials["shiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["sphere"]->RenderMesh();
-
-	// shaderWater->Bind();
-	// 
-	// /* Water Tile */
-	// model = glm::mat4(1.0f);
-	// model = glm::translate(model, glm::vec3(0.0f, waterManager->GetWaterHeight(), 0.0f));
-	// model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	// model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	// model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	// model = glm::scale(model, glm::vec3(32.0f, 1.0f, 32.0f));
-	// 
-	// glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	// waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
-	// waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
-	// waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
-	// shaders["water"]->SetTexture(textureSlots["reflection"]);
-	// textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-	// textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
-	// shaderWater->SetLightColor(LightManager::directionalLight.GetColor());
-	// materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	// // meshes["water"]->RenderMesh();
+	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
+	shaderWater->SetLightColor(LightManager::directionalLight.GetColor());
+	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	meshes["water"]->RenderMesh();
 }
 
 ScenePBR::~ScenePBR()

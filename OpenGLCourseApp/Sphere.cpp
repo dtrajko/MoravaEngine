@@ -15,43 +15,61 @@ Sphere::Sphere()
 
 void Sphere::GenerateGeometry()
 {
-	const unsigned int X_SEGMENTS = 8;
-	const unsigned int Y_SEGMENTS = 8;
+	float radius = 1.0f;
+	const unsigned int sectorCount = 32;
+	const unsigned int stackCount = 32;
 	const float PI = 3.14159265359f;
 
+	float x, y, z, xy; // vertex position
+	float nx, ny, nz, lengthInv = 1.0f / radius; // vertex normal
+	float s, t; // vertex texCoord
+
+	float sectorStep = 2 * PI / sectorCount;
+	float stackStep = PI / stackCount;
+	float sectorAngle, stackAngle;
+
 	unsigned int vertexStride = (unsigned int)(sizeof(Vertex) / sizeof(float));
-	m_VertexCount = sizeof(Vertex) * (X_SEGMENTS + 1) * (Y_SEGMENTS + 1);
-	m_IndexCount = 2 * (X_SEGMENTS + 1) * Y_SEGMENTS;
+	m_VertexCount = sizeof(Vertex) * (sectorCount + 1) * (stackCount + 1);
+	m_IndexCount = 6 * sectorCount * (stackCount - 1);
 
 	m_Vertices = new float[m_VertexCount];
 	m_Indices = new unsigned int[m_IndexCount];
 
 	unsigned int vertexPointer = 0;
-	for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
+	for (int i = 0; i <= stackCount; ++i)
 	{
-		for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
+		stackAngle = PI / 2 - i * stackStep; // starting from pi/2 to -pi/2
+		xy = radius * cosf(stackAngle); // r * cos(u)
+		z = radius * sinf(stackAngle); // r * sin(u)
+
+		// add (sectorCount+1) vertices per stack
+		// the first and last vertices have same position and normal, but different tex coords
+		for (int j = 0; j <= sectorCount; ++j)
 		{
-			float xSegment = (float)x / (float)X_SEGMENTS;
-			float ySegment = (float)y / (float)Y_SEGMENTS;
-			float xPos = cos(xSegment * 2.0f * PI) * sin(ySegment * PI);
-			float yPos = cos(ySegment * PI);
-			float zPos = sin(xSegment * 2.0f * PI) * sin(ySegment * PI);
+			sectorAngle = j * sectorStep; // starting from 0 to 2pi
 
 			// positions
-			m_Vertices[vertexPointer + 0] = xPos;
-			m_Vertices[vertexPointer + 1] = yPos;
-			m_Vertices[vertexPointer + 2] = zPos;
+			x = xy * cosf(sectorAngle); // r * cos(u) * cos(v)
+			y = xy * sinf(sectorAngle); // r * cos(u) * sin(v)
+			m_Vertices[vertexPointer + 0] = x;
+			m_Vertices[vertexPointer + 1] = y;
+			m_Vertices[vertexPointer + 2] = z;
 
-			printf("Vertex index=%d, X=%.2ff Y=%.2ff Z=%.2ff\n", vertexPointer, xPos, yPos, zPos);
+			// printf("Vertex index=%d, X=%.2ff Y=%.2ff Z=%.2ff\n", vertexPointer, x, y, z);
 
-			// tex coords
-			m_Vertices[vertexPointer + 3] = xSegment;
-			m_Vertices[vertexPointer + 4] = ySegment;
+			// vertex tex coord (s, t) range between [0, 1]
+			s = (float)j / sectorCount;
+			t = (float)i / stackCount;
+			m_Vertices[vertexPointer + 3] = s;
+			m_Vertices[vertexPointer + 4] = t;
 
-			// normals
-			m_Vertices[vertexPointer + 5] = xPos;
-			m_Vertices[vertexPointer + 6] = yPos;
-			m_Vertices[vertexPointer + 7] = zPos;
+			// normalized vertex normal (nx, ny, nz)
+			nx = x * lengthInv;
+			ny = y * lengthInv;
+			nz = z * lengthInv;
+			m_Vertices[vertexPointer + 5] = nx;
+			m_Vertices[vertexPointer + 6] = ny;
+			m_Vertices[vertexPointer + 7] = nz;
 
 			// tangents
 			m_Vertices[vertexPointer + 8] = 0.0f;
@@ -67,32 +85,36 @@ void Sphere::GenerateGeometry()
 		}
 	}
 
-	bool oddRow = false;
+	// generate CCW index list of sphere triangles
+	int k1, k2;
 	unsigned int indexIndex = 0;
-	for (int y = 0; y < Y_SEGMENTS; ++y)
+	for (int i = 0; i < stackCount; ++i)
 	{
-		if (!oddRow) // even rows: y == 0, y == 2; and so on
+		k1 = i * (sectorCount + 1); // beginning of current stack
+		k2 = k1 + sectorCount + 1;  // beginning of next stack
+
+		for (int j = 0; j < sectorCount; ++j, ++k1, ++k2)
 		{
-			for (int x = 0; x <= X_SEGMENTS; ++x)
+			// 2 triangles per sector excluding first and last stacks
+			// k1 => k2 => k1+1
+			if (i != 0)
 			{
-				m_Indices[indexIndex++] = y       * (X_SEGMENTS + 1) + x;
-				printf("Index index=%d, value=%d\n", indexIndex, y * (X_SEGMENTS + 1) + x);
-				m_Indices[indexIndex++] = (y + 1) * (X_SEGMENTS + 1) + x;
-				printf("Index index=%d, value=%d\n", indexIndex, (y + 1) * (X_SEGMENTS + 1) + x);
+				m_Indices[indexIndex++] = k1;
+				m_Indices[indexIndex++] = k2;
+				m_Indices[indexIndex++] = k1 + 1;
+			}
+
+			// k1+1 => k2 => k2+1
+			if (i != (stackCount - 1))
+			{
+				m_Indices[indexIndex++] = k1 + 1;
+				m_Indices[indexIndex++] = k2;
+				m_Indices[indexIndex++] = k2 + 1;
 			}
 		}
-		else
-		{
-			for (int x = X_SEGMENTS; x >= 0; --x)
-			{
-				m_Indices[indexIndex++] = (y + 1) * (X_SEGMENTS + 1) + x;
-				printf("Index index=%d, value=%d\n", indexIndex, (y + 1) * (X_SEGMENTS + 1) + x);
-				m_Indices[indexIndex++] = y       * (X_SEGMENTS + 1) + x;
-				printf("Index index=%d, value=%d\n", indexIndex, y * (X_SEGMENTS + 1) + x);
-			}
-		}
-		oddRow = !oddRow;
 	}
+
+	// printf("m_IndexCount=%d, actual index count: %d", m_IndexCount, indexIndex);
 }
 
 void Sphere::CreateMesh()
