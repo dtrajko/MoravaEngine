@@ -17,7 +17,7 @@ SceneEiffel::SceneEiffel()
 	sceneSettings.enableWaterEffects = true;
 	sceneSettings.enableSkybox       = true;
 	sceneSettings.enableNormalMaps   = true;
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 20.0f);
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 16.0f, 28.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 4.0f;
 	sceneSettings.ambientIntensity = 0.4f;
@@ -80,6 +80,10 @@ void SceneEiffel::SetupModels()
 	Model* watchtower = new Model();
 	watchtower->LoadModel("Models/wooden_watch_tower.obj");
 	models.insert(std::make_pair("watchtower", watchtower));
+
+	Model* cerberus = new Model();
+	cerberus->LoadModel("Models/Cerberus_LP.FBX");
+	models.insert(std::make_pair("cerberus", cerberus));
 }
 
 void SceneEiffel::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
@@ -146,6 +150,17 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	models["watchtower"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
+
+	/* Cerberus model */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 10.0f, 10.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(0.05f));
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	models["cerberus"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
 	if (passType == "main")
 	{
@@ -220,7 +235,7 @@ void SceneEiffel::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, 
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(30.0f, 1.0f, 14.0f));
+	model = glm::scale(model, glm::vec3(30.0f, 1.0f, 30.0f));
 
 	shaderWater->Bind();
 

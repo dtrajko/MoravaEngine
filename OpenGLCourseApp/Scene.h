@@ -38,11 +38,12 @@ struct SceneSettings
 	float nearPlane;
 	float farPlane;
 
-	// light
+	// directional light
 	glm::vec3 lightDirection;
 	float ambientIntensity;
 	float diffuseIntensity;
 	glm::mat4 lightProjectionMatrix;
+	// point light
 	glm::vec3 pLight_0_color;
 	glm::vec3 pLight_0_position;
 	float pLight_0_diffuseIntensity;
@@ -52,6 +53,12 @@ struct SceneSettings
 	glm::vec3 pLight_2_color;
 	glm::vec3 pLight_2_position;
 	float pLight_2_diffuseIntensity;
+	// spot light
+	glm::vec3 sLight_2_color;
+	glm::vec3 sLight_2_position;
+	glm::vec3 sLight_2_direction;
+	float sLight_2_ambientIntensity;
+	float sLight_2_diffuseIntensity;
 	// shadow
 	unsigned int shadowMapWidth;
 	unsigned int shadowMapHeight;

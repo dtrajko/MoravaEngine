@@ -20,19 +20,24 @@ ScenePBR::ScenePBR()
 	sceneSettings.cameraMoveSpeed = 5.0f;
 	sceneSettings.nearPlane = 0.01f;
 	sceneSettings.farPlane = 400.0f;
-	sceneSettings.ambientIntensity = 0.6f;
-	sceneSettings.diffuseIntensity = 1.2f;
+	sceneSettings.ambientIntensity = 0.2f;
+	sceneSettings.diffuseIntensity = 0.4f;
 	sceneSettings.lightDirection = glm::vec3(1.2f, -14.0f, 1.2f);
 	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
 	sceneSettings.pLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
 	sceneSettings.pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
-	sceneSettings.pLight_0_diffuseIntensity = 2.0f;
+	sceneSettings.pLight_0_diffuseIntensity = 0.0f;
 	sceneSettings.pLight_1_color = glm::vec3(1.0f, 1.0f, 1.0f);
 	sceneSettings.pLight_1_position = glm::vec3(8.92f, 2.75f, -0.85f);
-	sceneSettings.pLight_1_diffuseIntensity = 2.0f;
+	sceneSettings.pLight_1_diffuseIntensity = 0.0f;
 	sceneSettings.pLight_2_color = glm::vec3(0.0f, 0.0f, 1.0f);
 	sceneSettings.pLight_2_position = glm::vec3(10.0f, 2.0f, 10.0f);
-	sceneSettings.pLight_2_diffuseIntensity = 2.0f;
+	sceneSettings.pLight_2_diffuseIntensity = 0.0f;
+	sceneSettings.sLight_2_color = glm::vec3(0.0f, 1.0f, 1.0f);
+	sceneSettings.sLight_2_position = glm::vec3(0.0f, 0.0f, 0.0f);
+	sceneSettings.sLight_2_direction = glm::vec3(0.0f, 0.0f, 0.0f);
+	sceneSettings.sLight_2_ambientIntensity = 0.4f;
+	sceneSettings.sLight_2_diffuseIntensity = 4.0f;
 	sceneSettings.shadowMapWidth = 2048;
 	sceneSettings.shadowMapHeight = 2048;
 	sceneSettings.shadowSpeed = 0.1f;
@@ -59,8 +64,10 @@ void ScenePBR::SetTextures()
 {
 	textures.insert(std::make_pair("sponzaWallDiffuse", new Texture("Textures/sponza_bricks_a_diff.tga")));
 	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
+	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
 	textures["sponzaWallDiffuse"]->LoadTexture();
 	textures["sponzaCeilDiffuse"]->LoadTexture();
+	textures["sponzaCeilNormal"]->LoadTexture();
 }
 
 void ScenePBR::SetupModels()
@@ -82,18 +89,28 @@ void ScenePBR::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::str
 	// Model matrix
 	glm::mat4 model;
 
-	/* Sphere model */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(1.0f));
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	textures["sponzaCeilDiffuse"]->Bind(textureSlots["diffuse"]);
-	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["sphere"]->RenderMesh();
+	for (int v = -2; v <= 2; ++v)
+	{
+		for (int h = -2; h <= 2; ++h)
+		{
+			float x = (float)h * 2.5f;
+			float y = (float)v * 2.5f + 8.0f;
+
+			/* Sphere model */
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(x, y, 0.0f));
+			model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+			model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+			model = glm::scale(model, glm::vec3(1.0f));
+			glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+			textures["sponzaCeilDiffuse"]->Bind(textureSlots["diffuse"]);
+			textures["sponzaCeilNormal"]->Bind(textureSlots["normal"]);
+			materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+			meshes["sphere"]->RenderMesh();
+
+		}
+	}
 }
 
 void ScenePBR::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
