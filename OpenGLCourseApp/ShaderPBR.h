@@ -20,6 +20,7 @@ public:
 	GLint GetUniformLocationAmbientOcclusionMap();
 
 	GLint GetUniformLocationCameraPosition();
+	GLint GetUniformLocationAmbientIntensity();
 
 	void SetAlbedo(glm::vec3 albedo);
 	void SetMetallic(float metallic);
@@ -33,6 +34,7 @@ public:
 	void SetAmbientOcclusionMap(unsigned int textureUnit);
 
 	void SetCameraPosition(glm::vec3 cameraPosition);
+	void SetAmbientIntensity(float ambientIntensity);
 
 	void SetLightPositions(glm::vec3* lightPositions, unsigned int lightCount);
 	void SetLightColors(glm::vec3* lightColors, unsigned int lightCount);
@@ -58,6 +60,7 @@ private:
 	GLint uniformAmbientOcclusionMap = -1;
 
 	GLint uniformCameraPosition = -1;
+	GLint uniformAmbientIntensity = -1;
 
 	// lights
 	GLint uniformLightPositions[lightCount];

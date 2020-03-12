@@ -66,9 +66,14 @@ GLint ShaderPBR::GetUniformLocationCameraPosition()
 	return uniformCameraPosition;
 }
 
+GLint ShaderPBR::GetUniformLocationAmbientIntensity()
+{
+	return uniformAmbientIntensity;
+}
+
 void ShaderPBR::SetAlbedo(glm::vec3 albedo)
 {
-	glUniform3f(uniformAlbedo, albedo.x, albedo.y, albedo.z);
+	glUniform3f(uniformAlbedo, albedo.r, albedo.g, albedo.b);
 }
 
 void ShaderPBR::SetMetallic(float metallic)
@@ -116,6 +121,11 @@ void ShaderPBR::SetCameraPosition(glm::vec3 cameraPosition)
 	glUniform3f(uniformCameraPosition, cameraPosition.x, cameraPosition.y, cameraPosition.z);
 }
 
+void ShaderPBR::SetAmbientIntensity(float ambientIntensity)
+{
+	glUniform1f(uniformAmbientIntensity, ambientIntensity);
+}
+
 void ShaderPBR::SetLightPositions(glm::vec3* lightPositions, unsigned int lightCount)
 {
 	for (unsigned int i = 0; i < lightCount; ++i)
@@ -150,6 +160,7 @@ void ShaderPBR::GetUniformLocations()
 	uniformAmbientOcclusionMap = glGetUniformLocation(programID, "aoMap");
 
 	uniformCameraPosition = glGetUniformLocation(programID, "camPos");
+	uniformAmbientIntensity = glGetUniformLocation(programID, "ambientIntensity");
 
 	for (int i = 0; i < lightCount; i++)
 	{

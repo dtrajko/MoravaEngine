@@ -93,7 +93,7 @@ int main()
 
 		ImGuiWrapper::Begin();
 
-		scene->Update(now, *lightManager, waterManager);
+		scene->Update(now, camera, *lightManager, waterManager);
 
 		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
 		Renderer::RenderOmniShadows(camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);

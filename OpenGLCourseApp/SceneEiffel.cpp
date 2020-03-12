@@ -86,7 +86,7 @@ void SceneEiffel::SetupModels()
 	models.insert(std::make_pair("cerberus", cerberus));
 }
 
-void SceneEiffel::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
+void SceneEiffel::Update(float timestep, Camera* camera, LightManager& lightManager, WaterManager* waterManager)
 {
 	// Shadow rotation
 	m_LightDirection = sceneSettings.lightDirection;

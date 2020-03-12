@@ -1,6 +1,7 @@
 #version 330 core
 
 out vec4 FragColor;
+
 in vec2 TexCoords;
 in vec3 WorldPos;
 in vec3 Normal;
@@ -22,6 +23,7 @@ uniform vec3 lightPositions[4];
 uniform vec3 lightColors[4];
 
 uniform vec3 camPos;
+uniform float ambientIntensity;
 
 const float PI = 3.14159265359;
 
@@ -86,10 +88,10 @@ vec3 fresnelSchlick(float cosTheta, vec3 baseReflectivity)
 void main()
 {
 	vec3 albedo     = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
-    vec3 normal     = GetNormalFromMap();
-    float metallic  = texture(metallicMap, TexCoords).r;
-    float roughness = texture(roughnessMap, TexCoords).r;
-    float ao        = texture(aoMap, TexCoords).r;
+    // vec3 Normal     = GetNormalFromMap();
+    // float metallic  = texture(metallicMap, TexCoords).r;
+    // float roughness = texture(roughnessMap, TexCoords).r;
+    // float ao        = texture(aoMap, TexCoords).r;
 
     vec3 N = normalize(Normal);
     vec3 V = normalize(camPos - WorldPos);
@@ -141,7 +143,7 @@ void main()
 
     // ambient lighting (note that the next IBL tutorial will replace
     // this ambient lighting with environment lighting)
-    vec3 ambient = vec3(0.03) * albedo * ao;
+    vec3 ambient = vec3(ambientIntensity) * albedo * ao;
 
     vec3 color = ambient + Lo;
 

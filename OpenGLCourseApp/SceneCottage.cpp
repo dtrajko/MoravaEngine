@@ -89,7 +89,7 @@ void SceneCottage::SetupModels()
 	meshes.insert(std::make_pair("sphere", sphere));
 }
 
-void SceneCottage::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
+void SceneCottage::Update(float timestep, Camera* camera, LightManager& lightManager, WaterManager* waterManager)
 {
 	glm::vec3 pLightPos = sceneSettings.pLight_0_position;
 	float lightRadius = 6.0;

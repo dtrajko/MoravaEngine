@@ -56,6 +56,7 @@ void Renderer::SetUniforms()
 	uniforms.insert(std::make_pair("roughnessMap", 0));
 	uniforms.insert(std::make_pair("aoMap", 0));
 	uniforms.insert(std::make_pair("camPos", 0));
+	uniforms.insert(std::make_pair("ambientIntensity", 0));
 }
 
 void Renderer::SetShaders()
@@ -203,8 +204,22 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 
 	passType = "main";
 	scene->RenderWater(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
+	shaderWater->Unbind();
 
-	// scene->RenderPBR();
+	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(shaders["pbr"]);
+
+	shaderPBR->Bind();
+	uniforms["model"] = shaderPBR->GetModelLocation();
+	uniforms["projection"] = shaderPBR->GetProjectionLocation();
+	uniforms["view"] = shaderPBR->GetViewLocation();
+
+	shaderPBR->SetCameraPosition(camera->GetPosition());
+
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
+	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
+	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
+	scene->RenderPBR(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms);
 }
 
 void Renderer::RenderPassShadow(DirectionalLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
