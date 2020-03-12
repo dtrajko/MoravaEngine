@@ -19,7 +19,7 @@ ScenePBR::ScenePBR()
 	sceneSettings.enableNormalMaps   = true;
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 10.0f, 15.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
-	sceneSettings.cameraMoveSpeed = 5.0f;
+	sceneSettings.cameraMoveSpeed = 1.0f;
 	sceneSettings.nearPlane = 0.01f;
 	sceneSettings.farPlane = 400.0f;
 	sceneSettings.ambientIntensity = 1.0f;
@@ -115,7 +115,7 @@ void ScenePBR::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::str
 
 void ScenePBR::RenderPBR(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType, std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
-	Renderer::EnableCulling();
+	Renderer::DisableCulling();
 
 	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(shaders["pbr"]);
 

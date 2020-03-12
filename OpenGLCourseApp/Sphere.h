@@ -11,6 +11,7 @@ public:
 	Sphere();
 	
 	void GenerateGeometry();
+	void GenerateGeometrySongHo();
 	void CreateMesh();
 	virtual void RenderMesh() override;
 	virtual void ClearMesh() override;

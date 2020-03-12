@@ -88,10 +88,10 @@ vec3 fresnelSchlick(float cosTheta, vec3 baseReflectivity)
 void main()
 {
 	vec3 albedo     = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
-    // vec3 Normal     = GetNormalFromMap();
-    // float metallic  = texture(metallicMap, TexCoords).r;
-    // float roughness = texture(roughnessMap, TexCoords).r;
-    // float ao        = texture(aoMap, TexCoords).r;
+    vec3 Normal     = GetNormalFromMap();
+    float metallic  = texture(metallicMap, TexCoords).r;
+    float roughness = texture(roughnessMap, TexCoords).r;
+    float ao        = texture(aoMap, TexCoords).r;
 
     vec3 N = normalize(Normal);
     vec3 V = normalize(camPos - WorldPos);
