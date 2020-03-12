@@ -14,7 +14,6 @@ void Model::LoadModel(const std::string& fileName)
 
 	std::chrono::time_point<std::chrono::steady_clock> startTimepoint = std::chrono::high_resolution_clock::now();
 
-
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(fileName, 
 		aiProcess_Triangulate | 
@@ -209,6 +208,14 @@ void Model::RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNorma
 			}
 		}
 
+		meshList[i]->RenderMesh();
+	}
+}
+
+void Model::RenderModelPBR()
+{
+	for (size_t i = 0; i < meshList.size(); i++)
+	{
 		meshList[i]->RenderMesh();
 	}
 }

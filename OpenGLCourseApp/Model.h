@@ -17,6 +17,7 @@ public:
 	Model();
 	void LoadModel(const std::string& fileName);
 	void RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNormalMaps);
+	void RenderModelPBR();
 	void ClearModel();
 	~Model();
 

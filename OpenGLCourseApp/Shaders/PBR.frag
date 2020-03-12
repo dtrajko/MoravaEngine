@@ -87,11 +87,15 @@ vec3 fresnelSchlick(float cosTheta, vec3 baseReflectivity)
 
 void main()
 {
-	vec3 albedo     = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
+	vec3 txAlbedo     = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
     vec3 Normal     = GetNormalFromMap();
-    float metallic  = texture(metallicMap, TexCoords).r;
-    float roughness = texture(roughnessMap, TexCoords).r;
+    float txMetallic  = texture(metallicMap, TexCoords).r;
+    float txRoughness = texture(roughnessMap, TexCoords).r;
     float ao        = texture(aoMap, TexCoords).r;
+
+    vec3 finalAlbedo = (albedo + txAlbedo) / 2.0;
+    float finalMetallic = (metallic + txMetallic) / 2.0;
+    float finalRoughness = (roughness + txRoughness) / 2.0;
 
     vec3 N = normalize(Normal);
     vec3 V = normalize(camPos - WorldPos);
@@ -99,7 +103,7 @@ void main()
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use baseReflectivity
     // of 0.04 and if it's a metal, use the albedo color as baseReflectivity (metallic workflow)
     vec3 baseReflectivity = vec3(0.04);
-    baseReflectivity = mix(baseReflectivity, albedo, metallic);
+    baseReflectivity = mix(baseReflectivity, finalAlbedo, finalMetallic);
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
@@ -113,8 +117,8 @@ void main()
         vec3 radiance     = lightColors[i] * attenuation;
 
         // cook-torrance BRDF
-        float NDF = DistributionGGX(N, H, roughness);
-        float G   = GeometrySmith(N, V, L, roughness);
+        float NDF = DistributionGGX(N, H, finalRoughness);
+        float G   = GeometrySmith(N, V, L, finalRoughness);
         vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), baseReflectivity);
 
         vec3 kS = F;
@@ -127,7 +131,7 @@ void main()
 		// multiply kD by the inverse metalness such that only non-metals
         // have diffuse lighting, or a linear blend if partly metal
         // (pure metals have no diffuse light).
-        kD *= 1.0 - metallic;	  
+        kD *= 1.0 - finalMetallic;	  
 
         vec3 numerator    = NDF * G * F;
         float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
@@ -138,12 +142,12 @@ void main()
 
         // note that 1) angle of light to surface affects specular, not just diffuse
         //           2) we mix albedo with diffuse, but not specular
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+        Lo += (kD * finalAlbedo / PI + specular) * radiance * NdotL;
     }
 
     // ambient lighting (note that the next IBL tutorial will replace
     // this ambient lighting with environment lighting)
-    vec3 ambient = vec3(ambientIntensity) * albedo * ao;
+    vec3 ambient = vec3(ambientIntensity) * finalAlbedo * ao;
 
     vec3 color = ambient + Lo;
 
