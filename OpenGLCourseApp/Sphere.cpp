@@ -17,6 +17,9 @@ void Sphere::CreateMesh()
 {
 	GenerateGeometrySongHo();
 
+	CalcAverageNormals(m_Indices, m_IndexCount, m_Vertices, m_VertexCount);
+	CalcTangentSpace(m_Indices, m_IndexCount, m_Vertices, m_VertexCount);
+
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 

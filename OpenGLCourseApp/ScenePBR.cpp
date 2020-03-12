@@ -50,11 +50,18 @@ ScenePBR::ScenePBR()
 	SetTextures();
 	SetupModels();
 
-	m_LightPosition = glm::vec3(-9.0f, 24.0f, 6.0f);
+	m_CameraPosition = glm::vec3(-9.0f, 24.0f, 6.0f);
 	m_LightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-	m_Albedo = glm::vec3(1.0f, 0.78f, 0.34f);
+	m_Albedo = glm::vec3(1.0f, 1.0f, 1.0f);
+	m_Metallic = 0.8f;
+	m_Roughness = 0.2f;
 	m_AmbientOcclusion = 1.0f;
-	m_AmbientIntensity = 0.1f;
+	m_AmbientIntensity = 0.5f;
+
+	m_LightPosOffset_0 = glm::vec3(0.0f, 0.0f, 0.0f);
+	m_LightPosOffset_1 = glm::vec3(0.0f, 0.0f, 0.0f);
+	m_LightPosOffset_2 = glm::vec3(0.0f, 0.0f, 0.0f);
+	m_LightPosOffset_3 = glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
 void ScenePBR::SetSkybox()
@@ -70,13 +77,6 @@ void ScenePBR::SetSkybox()
 
 void ScenePBR::SetTextures()
 {
-	textures.insert(std::make_pair("sponzaWallDiffuse", new Texture("Textures/sponza_bricks_a_diff.tga")));
-	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
-	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
-	textures["sponzaWallDiffuse"]->LoadTexture();
-	textures["sponzaCeilDiffuse"]->LoadTexture();
-	textures["sponzaCeilNormal"]->LoadTexture();
-
 	// PBR sphere
 	textures.insert(std::make_pair("rustedIronAlbedo", new Texture("Textures/PBR/rustediron2_basecolor.png")));
 	textures.insert(std::make_pair("rustedIronNormal", new Texture("Textures/PBR/rustediron2_normal.png")));
@@ -89,12 +89,24 @@ void ScenePBR::SetTextures()
 	textures["rustedIronRoughness"]->LoadTexture();
 	textures["rustedIronAmbientOcclusion"]->LoadTexture();
 
+	// PBR gold
+	textures.insert(std::make_pair("goldAlbedo", new Texture("Textures/PBR/gold-scuffed_basecolor-boosted.png")));
+	textures.insert(std::make_pair("goldNormal", new Texture("Textures/PBR/gold-scuffed_normal.png")));
+	textures.insert(std::make_pair("goldMetallic", new Texture("Textures/PBR/gold-scuffed_metallic.png")));
+	textures.insert(std::make_pair("goldRoughness", new Texture("Textures/PBR/gold-scuffed_roughness.png")));
+	textures.insert(std::make_pair("goldAmbientOcclusion", new Texture("Textures/PBR/rustediron2_ambient_occlusion.png")));
+	textures["goldAlbedo"]->LoadTexture();
+	textures["goldNormal"]->LoadTexture();
+	textures["goldMetallic"]->LoadTexture();
+	textures["goldRoughness"]->LoadTexture();
+	textures["goldAmbientOcclusion"]->LoadTexture();
+
 	// PBR cerberus
 	textures.insert(std::make_pair("cerberusAlbedo", new Texture("Textures/Cerberus_A.tga")));
 	textures.insert(std::make_pair("cerberusNormal", new Texture("Textures/Cerberus_N.tga")));
 	textures.insert(std::make_pair("cerberusMetallic", new Texture("Textures/Cerberus_M.tga")));
 	textures.insert(std::make_pair("cerberusRoughness", new Texture("Textures/Cerberus_R.tga")));
-	textures.insert(std::make_pair("cerberusAmbientOcclusion", new Texture("Textures/rustediron2_ambient_occlusion.png")));
+	textures.insert(std::make_pair("cerberusAmbientOcclusion", new Texture("Textures/Cerberus_AO.tga")));
 	textures["cerberusAlbedo"]->LoadTexture();
 	textures["cerberusNormal"]->LoadTexture();
 	textures["cerberusMetallic"]->LoadTexture();
@@ -115,13 +127,20 @@ void ScenePBR::SetupModels()
 
 void ScenePBR::Update(float timestep, Camera* camera, LightManager& lightManager, WaterManager* waterManager)
 {
-	m_LightPosition = camera->GetPosition() + glm::vec3(-5.0f, 5.0f, 0.0f);
+	m_CameraPosition = camera->GetPosition() + glm::vec3(-5.0f, 5.0f, 0.0f);
 
-	ImGui::SliderFloat3("Light Position", glm::value_ptr(m_LightPosition), -100.0f, 100.0f);
-	ImGui::ColorEdit3("Light Color", glm::value_ptr(m_LightColor));
 	ImGui::ColorEdit3("Albedo", glm::value_ptr(m_Albedo));
-	ImGui::SliderFloat("Ambient Occlusion", &m_AmbientOcclusion, 0.0f, 2.0f);
-	ImGui::SliderFloat("Ambient Intensity", &m_AmbientIntensity, 0.0f, 10.0f);
+	ImGui::SliderFloat("Metallic", &m_Metallic, 0.0f, 1.0f);
+	ImGui::SliderFloat("Roughness", &m_Roughness, 0.0f, 1.0f);
+	ImGui::SliderFloat("Ambient Occlusion", &m_AmbientOcclusion, 0.0f, 5.0f);
+	ImGui::SliderFloat("Ambient Intensity", &m_AmbientIntensity, 0.0f, 1.0f);
+
+	ImGui::ColorEdit3("Light Color", glm::value_ptr(m_LightColor));
+
+	ImGui::SliderFloat3("Light Pos Offset 0", glm::value_ptr(m_LightPosOffset_0), -100.0f, 100.0f);
+	ImGui::SliderFloat3("Light Pos Offset 1", glm::value_ptr(m_LightPosOffset_1), -100.0f, 100.0f);
+	ImGui::SliderFloat3("Light Pos Offset 2", glm::value_ptr(m_LightPosOffset_2), -100.0f, 100.0f);
+	ImGui::SliderFloat3("Light Pos Offset 3", glm::value_ptr(m_LightPosOffset_3), -100.0f, 100.0f);
 }
 
 void ScenePBR::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
@@ -140,10 +159,10 @@ void ScenePBR::RenderPBR(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 
 	glm::vec3 lightPositions[4] =
 	{
-		m_LightPosition,
-		m_LightPosition + glm::vec3( 0.0f, -4.0f, 0.0f),
-		m_LightPosition + glm::vec3(4.0f,  0.0f,  0.0f),
-		m_LightPosition + glm::vec3(4.0f, -4.0f, 0.0f),
+		m_CameraPosition + m_LightPosOffset_0,
+		m_CameraPosition + m_LightPosOffset_1,
+		m_CameraPosition + m_LightPosOffset_2,
+		m_CameraPosition + m_LightPosOffset_3,
 	};
 
 	glm::vec3 lightColors[4] =
@@ -178,16 +197,27 @@ void ScenePBR::RenderPBR(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 			glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 
 			shaderPBR->SetAlbedo(m_Albedo);
-			shaderPBR->SetMetallic((float)v / 5.0f);
-			shaderPBR->SetRoughness((float)h / 5.0f);
+			shaderPBR->SetMetallic(((float)v / 5.0f + m_Metallic) / 2.0f);
+			shaderPBR->SetRoughness(((float)h / 5.0f + m_Roughness) / 2.0f);
 			shaderPBR->SetAmbientOcclusion(m_AmbientOcclusion);
 			shaderPBR->SetAmbientIntensity(m_AmbientIntensity);
 
-			textures["rustedIronAlbedo"]->Bind(textureSlots["albedo"]);
-			textures["rustedIronNormal"]->Bind(textureSlots["normal"]);
-			textures["rustedIronMetallic"]->Bind(textureSlots["metallic"]);
-			textures["rustedIronRoughness"]->Bind(textureSlots["roughness"]);
-			textures["rustedIronAmbientOcclusion"]->Bind(textureSlots["ao"]);
+			if ((v + h) % 2 == 0)
+			{
+				textures["rustedIronAlbedo"]->Bind(textureSlots["albedo"]);
+				textures["rustedIronNormal"]->Bind(textureSlots["normal"]);
+				textures["rustedIronMetallic"]->Bind(textureSlots["metallic"]);
+				textures["rustedIronRoughness"]->Bind(textureSlots["roughness"]);
+				textures["rustedIronAmbientOcclusion"]->Bind(textureSlots["ao"]);
+			}
+			else
+			{
+				textures["goldAlbedo"]->Bind(textureSlots["albedo"]);
+				textures["goldNormal"]->Bind(textureSlots["normal"]);
+				textures["goldMetallic"]->Bind(textureSlots["metallic"]);
+				textures["goldRoughness"]->Bind(textureSlots["roughness"]);
+				textures["goldAmbientOcclusion"]->Bind(textureSlots["ao"]);
+			}
 
 			shaderPBR->SetAlbedoMap(textureSlots["albedo"]);
 			shaderPBR->SetNormalMap(textureSlots["normal"]);
@@ -202,32 +232,31 @@ void ScenePBR::RenderPBR(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 
 	/* Cerberus model */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 15.0f, 0.0f));
+	model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(0.05f));
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 
-	shaderPBR->SetAlbedo(glm::vec3(1.0f));
-	shaderPBR->SetMetallic(1.0f);
-	shaderPBR->SetRoughness(1.0f);
-	shaderPBR->SetAmbientOcclusion(1.0f);
-	shaderPBR->SetAmbientIntensity(1.0f);
+	shaderPBR->SetAlbedo(m_Albedo);
+	shaderPBR->SetMetallic(m_Metallic);
+	shaderPBR->SetRoughness(m_Roughness);
+	shaderPBR->SetAmbientOcclusion(m_AmbientOcclusion);
+	shaderPBR->SetAmbientIntensity(m_AmbientIntensity);
 
 	textures["cerberusAlbedo"]->Bind(textureSlots["albedo"]);
 	textures["cerberusNormal"]->Bind(textureSlots["normal"]);
-	// textures["cerberusMetallic"]->Bind(textureSlots["metallic"]);
-	// textures["cerberusRoughness"]->Bind(textureSlots["roughness"]);
-	// textures["cerberusAmbientOcclusion"]->Bind(textureSlots["ao"]);
+	textures["cerberusMetallic"]->Bind(textureSlots["metallic"]);
+	textures["cerberusRoughness"]->Bind(textureSlots["roughness"]);
+	textures["cerberusAmbientOcclusion"]->Bind(textureSlots["ao"]);
 
 	shaderPBR->SetAlbedoMap(textureSlots["albedo"]);
 	shaderPBR->SetNormalMap(textureSlots["normal"]);
-	// shaderPBR->SetMetallicMap(textureSlots["metallic"]);
-	// shaderPBR->SetRoughnessMap(textureSlots["roughness"]);
-	// shaderPBR->SetAmbientOcclusionMap(textureSlots["ao"]);
+	shaderPBR->SetMetallicMap(textureSlots["metallic"]);
+	shaderPBR->SetRoughnessMap(textureSlots["roughness"]);
+	shaderPBR->SetAmbientOcclusionMap(textureSlots["ao"]);
 
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	// materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	models["cerberus"]->RenderModelPBR();
 }
 

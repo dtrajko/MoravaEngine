@@ -23,10 +23,16 @@ private:
 	virtual void SetupModels() override;
 
 private:
-	glm::vec3 m_LightPosition;
+	glm::vec3 m_CameraPosition;
 	glm::vec3 m_LightColor;
 	glm::vec3 m_Albedo;
+	float m_Metallic;
+	float m_Roughness;
 	float m_AmbientOcclusion;
 	float m_AmbientIntensity;
 
+	glm::vec3 m_LightPosOffset_0;
+	glm::vec3 m_LightPosOffset_1;
+	glm::vec3 m_LightPosOffset_2;
+	glm::vec3 m_LightPosOffset_3;
 };

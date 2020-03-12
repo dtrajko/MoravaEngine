@@ -91,11 +91,12 @@ void main()
     vec3 Normal     = GetNormalFromMap();
     float txMetallic  = texture(metallicMap, TexCoords).r;
     float txRoughness = texture(roughnessMap, TexCoords).r;
-    float ao        = texture(aoMap, TexCoords).r;
+    float txAO        = texture(aoMap, TexCoords).r;
 
-    vec3 finalAlbedo = (albedo + txAlbedo) / 2.0;
+    vec3  finalAlbedo = albedo * txAlbedo;
     float finalMetallic = (metallic + txMetallic) / 2.0;
     float finalRoughness = (roughness + txRoughness) / 2.0;
+	float finalAO = (ao + txAO + ambientIntensity) / 3.0;
 
     vec3 N = normalize(Normal);
     vec3 V = normalize(camPos - WorldPos);
@@ -147,7 +148,7 @@ void main()
 
     // ambient lighting (note that the next IBL tutorial will replace
     // this ambient lighting with environment lighting)
-    vec3 ambient = vec3(ambientIntensity) * finalAlbedo * ao;
+    vec3 ambient = vec3(ambientIntensity) * finalAlbedo * finalAO;
 
     vec3 color = ambient + Lo;
 
