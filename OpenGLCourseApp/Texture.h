@@ -10,7 +10,7 @@ public:
 	Texture(const char* fileLoc);
 	bool Load(bool flipVert = false);
 	inline unsigned int GetID() const { return m_TextureID; };
-	void Bind(unsigned int textureUnit = 0);
+	virtual void Bind(unsigned int textureUnit = 0);
 	void Unbind();
 	void Clear();
 	inline unsigned int GetWidth() const { return m_Width; };

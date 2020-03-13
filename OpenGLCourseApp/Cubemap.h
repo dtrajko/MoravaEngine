@@ -10,6 +10,9 @@ class Cubemap
 public:
 	Cubemap();
 	Cubemap(int width, int height);
+	inline TextureCubemap* GetTextureCubemap() { return m_TextureCubemap; };
+	inline Framebuffer* GetCaptureFBO() { return m_CaptureFBO; };
+	inline Renderbuffer* GetCaptureRBO() { return m_CaptureRBO; };
 	~Cubemap();
 
 private:

@@ -30,6 +30,12 @@ TextureCubemap::TextureCubemap(unsigned int width, unsigned int height)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
+void TextureCubemap::Bind(unsigned int textureUnit)
+{
+	glActiveTexture(GL_TEXTURE0 + textureUnit);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
+}
+
 TextureCubemap::~TextureCubemap()
 {
 }

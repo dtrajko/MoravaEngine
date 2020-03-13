@@ -15,7 +15,7 @@ ScenePBR::ScenePBR()
 	sceneSettings.enablePointLights  = true;
 	sceneSettings.enableSpotLights   = true;
 	sceneSettings.enableWaterEffects = true;
-	sceneSettings.enableSkybox       = true;
+	sceneSettings.enableSkybox       = false;
 	sceneSettings.enableNormalMaps   = true;
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 10.0f, 15.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
@@ -51,17 +51,32 @@ ScenePBR::ScenePBR()
 	SetupModels();
 
 	m_CameraPosition = glm::vec3(-9.0f, 24.0f, 6.0f);
-	m_LightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+
 	m_Albedo = glm::vec3(1.0f, 1.0f, 1.0f);
 	m_Metallic = 0.8f;
 	m_Roughness = 0.2f;
 	m_AmbientOcclusion = 1.0f;
 	m_AmbientIntensity = 0.5f;
 
-	m_LightPosOffset_0 = glm::vec3(0.0f, 0.0f, 0.0f);
-	m_LightPosOffset_1 = glm::vec3(0.0f, 0.0f, 0.0f);
-	m_LightPosOffset_2 = glm::vec3(0.0f, 0.0f, 0.0f);
-	m_LightPosOffset_3 = glm::vec3(0.0f, 0.0f, 0.0f);
+	m_LightColor_0 = glm::vec3(1.0f, 1.0f, 1.0f);
+	m_LightColor_1 = glm::vec3(1.0f, 1.0f, 1.0f);
+	m_LightColor_2 = glm::vec3(1.0f, 1.0f, 1.0f);
+	m_LightColor_3 = glm::vec3(1.0f, 1.0f, 1.0f);
+
+	m_LightPosOffset_0 = glm::vec3(-1.0f,  0.0f, 0.0f);
+	m_LightPosOffset_1 = glm::vec3( 1.0f,  0.0f, 0.0f);
+	m_LightPosOffset_2 = glm::vec3( 0.0f, -1.0f, 0.0f);
+	m_LightPosOffset_3 = glm::vec3( 0.0f,  1.0f, 0.0f);
+
+	m_LightPositions[0] = m_CameraPosition + m_LightPosOffset_0;
+	m_LightPositions[1] = m_CameraPosition + m_LightPosOffset_1;
+	m_LightPositions[2] = m_CameraPosition + m_LightPosOffset_2;
+	m_LightPositions[3] = m_CameraPosition + m_LightPosOffset_3;
+
+	m_LightColors[0] = m_LightColor_0 * 255.0f;
+	m_LightColors[1] = m_LightColor_1 * 255.0f;
+	m_LightColors[2] = m_LightColor_2 * 255.0f;
+	m_LightColors[3] = m_LightColor_3 * 255.0f;
 }
 
 void ScenePBR::SetSkybox()
@@ -127,20 +142,26 @@ void ScenePBR::SetupModels()
 
 void ScenePBR::Update(float timestep, Camera* camera, LightManager& lightManager, WaterManager* waterManager)
 {
-	m_CameraPosition = camera->GetPosition() + glm::vec3(-5.0f, 5.0f, 0.0f);
+	m_CameraPosition = camera->GetPosition();
 
 	ImGui::ColorEdit3("Albedo", glm::value_ptr(m_Albedo));
 	ImGui::SliderFloat("Metallic", &m_Metallic, 0.0f, 1.0f);
 	ImGui::SliderFloat("Roughness", &m_Roughness, 0.0f, 1.0f);
 	ImGui::SliderFloat("Ambient Occlusion", &m_AmbientOcclusion, 0.0f, 5.0f);
+
 	ImGui::SliderFloat("Ambient Intensity", &m_AmbientIntensity, 0.0f, 1.0f);
 
-	ImGui::ColorEdit3("Light Color", glm::value_ptr(m_LightColor));
+	ImGui::ColorEdit3("Light Color 0", glm::value_ptr(m_LightColor_0));
+	ImGui::SliderFloat3("Light Pos Offset 0", glm::value_ptr(m_LightPosOffset_0), -60.0f, 60.0f);
 
-	ImGui::SliderFloat3("Light Pos Offset 0", glm::value_ptr(m_LightPosOffset_0), -100.0f, 100.0f);
-	ImGui::SliderFloat3("Light Pos Offset 1", glm::value_ptr(m_LightPosOffset_1), -100.0f, 100.0f);
-	ImGui::SliderFloat3("Light Pos Offset 2", glm::value_ptr(m_LightPosOffset_2), -100.0f, 100.0f);
-	ImGui::SliderFloat3("Light Pos Offset 3", glm::value_ptr(m_LightPosOffset_3), -100.0f, 100.0f);
+	ImGui::ColorEdit3("Light Color 1", glm::value_ptr(m_LightColor_1));
+	ImGui::SliderFloat3("Light Pos Offset 1", glm::value_ptr(m_LightPosOffset_1), -60.0f, 60.0f);
+
+	ImGui::ColorEdit3("Light Color 2", glm::value_ptr(m_LightColor_2));
+	ImGui::SliderFloat3("Light Pos Offset 2", glm::value_ptr(m_LightPosOffset_2), -60.0f, 60.0f);
+
+	ImGui::ColorEdit3("Light Color 3", glm::value_ptr(m_LightColor_3));
+	ImGui::SliderFloat3("Light Pos Offset 3", glm::value_ptr(m_LightPosOffset_3), -60.0f, 60.0f);
 }
 
 void ScenePBR::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
@@ -157,24 +178,18 @@ void ScenePBR::RenderPBR(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 
 	shaderPBR->Bind();
 
-	glm::vec3 lightPositions[4] =
-	{
-		m_CameraPosition + m_LightPosOffset_0,
-		m_CameraPosition + m_LightPosOffset_1,
-		m_CameraPosition + m_LightPosOffset_2,
-		m_CameraPosition + m_LightPosOffset_3,
-	};
+	m_LightPositions[0] = m_CameraPosition + m_LightPosOffset_0;
+	m_LightPositions[1] = m_CameraPosition + m_LightPosOffset_1;
+	m_LightPositions[2] = m_CameraPosition + m_LightPosOffset_2;
+	m_LightPositions[3] = m_CameraPosition + m_LightPosOffset_3;
 
-	glm::vec3 lightColors[4] =
-	{
-		m_LightColor,
-		m_LightColor,
-		m_LightColor,
-		m_LightColor,
-	};
+	m_LightColors[0] = m_LightColor_0 * 255.0f;
+	m_LightColors[1] = m_LightColor_1 * 255.0f;
+	m_LightColors[2] = m_LightColor_2 * 255.0f;
+	m_LightColors[3] = m_LightColor_3 * 255.0f;
 
-	shaderPBR->SetLightPositions(lightPositions, 4);
-	shaderPBR->SetLightColors(lightColors, 4);
+	shaderPBR->SetLightPositions(m_LightPositions, 4);
+	shaderPBR->SetLightColors(m_LightColors, 4);
 
 	// Model matrix
 	glm::mat4 model;

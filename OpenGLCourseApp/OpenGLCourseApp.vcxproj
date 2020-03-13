@@ -170,6 +170,7 @@
     <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Cube.cpp" />
     <ClCompile Include="Cubemap.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
@@ -194,8 +195,10 @@
     <ClCompile Include="SceneTerrain.cpp" />
     <ClCompile Include="SceneSponza.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShaderCubemap.cpp" />
     <ClCompile Include="ShaderMain.cpp" />
     <ClCompile Include="ShaderPBR.cpp" />
+    <ClCompile Include="ShaderSkyboxJoey.cpp" />
     <ClCompile Include="ShaderWater.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="Skybox.cpp" />
@@ -221,6 +224,7 @@
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CommonValues.h" />
+    <ClInclude Include="Cube.h" />
     <ClInclude Include="Cubemap.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="Framebuffer.h" />
@@ -244,8 +248,10 @@
     <ClInclude Include="SceneTerrain.h" />
     <ClInclude Include="SceneSponza.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderCubemap.h" />
     <ClInclude Include="ShaderMain.h" />
     <ClInclude Include="ShaderPBR.h" />
+    <ClInclude Include="ShaderSkyboxJoey.h" />
     <ClInclude Include="ShaderWater.h" />
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="Skybox.h" />

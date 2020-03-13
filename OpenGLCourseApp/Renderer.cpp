@@ -7,6 +7,9 @@
 #include "ShaderMain.h"
 #include "ShaderWater.h"
 #include "ShaderPBR.h"
+#include "ShaderCubemap.h"
+#include "ShaderSkyboxJoey.h"
+
 #include "WaterManager.h"
 
 
@@ -14,11 +17,16 @@
 std::map<std::string, Shader*> Renderer::shaders;
 std::map<std::string, GLint> Renderer::uniforms;
 glm::vec4 Renderer::bgColor = glm::vec4(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
+Cubemap* Renderer::m_EnvironmentCubemap;
+Cube* Renderer::m_Cube1x1;
 
 void Renderer::Init()
 {
 	SetUniforms();
 	SetShaders();
+
+	m_EnvironmentCubemap = new Cubemap(512, 512);
+	m_Cube1x1 = new Cube();
 }
 
 void Renderer::SetUniforms()
@@ -57,55 +65,65 @@ void Renderer::SetUniforms()
 	uniforms.insert(std::make_pair("aoMap", 0));
 	uniforms.insert(std::make_pair("camPos", 0));
 	uniforms.insert(std::make_pair("ambientIntensity", 0));
+
+	// cubemap shader
+	uniforms.insert(std::make_pair("equirectangularMap", 0));
+
+	// skybox Joey shader
+	uniforms.insert(std::make_pair("environmentMap", 0));
 }
 
 void Renderer::SetShaders()
 {
 	static const char* vertShader = "Shaders/shader.vert";
 	static const char* fragShader = "Shaders/shader.frag";
+	ShaderMain* shaderMain = new ShaderMain();
+	shaderMain->CreateFromFiles(vertShader, fragShader);
+	shaders.insert(std::make_pair("main", shaderMain));
+	printf("Renderer: Main shader compiled [programID=%d]\n", shaderMain->GetProgramID());
 
 	static const char* vertShaderDirShadowMap = "Shaders/directional_shadow_map.vert";
 	static const char* fragShaderDirShadowMap = "Shaders/directional_shadow_map.frag";
+	Shader* shaderDirectionalShadow = new Shader();
+	shaderDirectionalShadow->CreateFromFiles(vertShaderDirShadowMap, fragShaderDirShadowMap);
+	shaders.insert(std::make_pair("directionalShadow", shaderDirectionalShadow));
+	printf("Renderer: Shadow shader compiled [programID=%d]\n", shaderDirectionalShadow->GetProgramID());
 
 	static const char* vertShaderOmniShadowMap = "Shaders/omni_shadow_map.vert";
 	static const char* geomShaderOmniShadowMap = "Shaders/omni_shadow_map.geom";
 	static const char* fragShaderOmniShadowMap = "Shaders/omni_shadow_map.frag";
+	Shader* shaderOmniShadow = new Shader();
+	shaderOmniShadow->CreateFromFiles(vertShaderOmniShadowMap, geomShaderOmniShadowMap, fragShaderOmniShadowMap);
+	shaders.insert(std::make_pair("omniShadow", shaderOmniShadow));
+	printf("Renderer: OmniShadow shader compiled [programID=%d]\n", shaderOmniShadow->GetProgramID());
 
 	static const char* vertWaterShader = "Shaders/water.vert";
 	static const char* fragWaterShader = "Shaders/water.frag";
+	ShaderWater* shaderWater = new ShaderWater();
+	shaderWater->CreateFromFiles(vertWaterShader, fragWaterShader);
+	shaders.insert(std::make_pair("water", shaderWater));
+	printf("Renderer: Water shader compiled [programID=%d]\n", shaderWater->GetProgramID());
 
 	static const char* vertPBRShader = "Shaders/PBR.vert";
 	static const char* fragPBRShader = "Shaders/PBR.frag";
+	ShaderPBR* shaderPBR = new ShaderPBR();
+	shaderPBR->CreateFromFiles(vertPBRShader, fragPBRShader);
+	shaders.insert(std::make_pair("pbr", shaderPBR));
+	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
 
-	ShaderMain* mainShader = new ShaderMain();
-	mainShader->CreateFromFiles(vertShader, fragShader);
-	shaders.insert(std::make_pair("main", mainShader));
+	static const char* vertCubemapShader = "Shaders/cubemap.vert";
+	static const char* fragCubemapShader = "Shaders/cubemap.frag";
+	ShaderCubemap* shaderCubemap = new ShaderCubemap();
+	shaderCubemap->CreateFromFiles(vertCubemapShader, fragCubemapShader);
+	shaders.insert(std::make_pair("cubemap", shaderCubemap));
+	printf("Renderer: Cubemap shader compiled [programID=%d]\n", shaderCubemap->GetProgramID());
 
-	printf("Renderer: Main shader compiled [programID=%d]\n", mainShader->GetProgramID());
-
-	Shader* directionalShadowShader = new Shader();
-	directionalShadowShader->CreateFromFiles(vertShaderDirShadowMap, fragShaderDirShadowMap);
-	shaders.insert(std::make_pair("directionalShadow", directionalShadowShader));
-
-	printf("Renderer: Shadow shader compiled [programID=%d]\n", directionalShadowShader->GetProgramID());
-
-	Shader* omniShadowShader = new Shader();
-	omniShadowShader->CreateFromFiles(vertShaderOmniShadowMap, geomShaderOmniShadowMap, fragShaderOmniShadowMap);
-	shaders.insert(std::make_pair("omniShadow", omniShadowShader));
-
-	printf("Renderer: OmniShadow shader compiled [programID=%d]\n", omniShadowShader->GetProgramID());
-
-	ShaderWater* waterShader = new ShaderWater();
-	waterShader->CreateFromFiles(vertWaterShader, fragWaterShader);
-	shaders.insert(std::make_pair("water", waterShader));
-
-	printf("Renderer: Water shader compiled [programID=%d]\n", waterShader->GetProgramID());
-
-	ShaderPBR* pbrShader = new ShaderPBR();
-	pbrShader->CreateFromFiles(vertPBRShader, fragPBRShader);
-	shaders.insert(std::make_pair("pbr", pbrShader));
-
-	printf("Renderer: PBR shader compiled [programID=%d]\n", waterShader->GetProgramID());
+	static const char* vertSkyboxJoey = "Shaders/skybox_joey.vert";
+	static const char* fragSkyboxJoey = "Shaders/skybox_joey.frag";
+	ShaderSkyboxJoey* skyboxJoeyShader = new ShaderSkyboxJoey();
+	skyboxJoeyShader->CreateFromFiles(vertSkyboxJoey, fragSkyboxJoey);
+	shaders.insert(std::make_pair("skybox_joey", skyboxJoeyShader));
+	printf("Renderer: SkyboxJoey shader compiled [programID=%d]\n", skyboxJoeyShader->GetProgramID());
 }
 
 void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene, Camera* camera, WaterManager* waterManager)
@@ -205,6 +223,9 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	passType = "main";
 	scene->RenderWater(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
 	shaderWater->Unbind();
+
+	// RenderSimpleSkyboxJoey(camera->CalculateViewMatrix(), projectionMatrix);
+	// RenderEnvironmentCubemap(mainWindow);
 
 	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(shaders["pbr"]);
 
@@ -403,6 +424,63 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::RenderEnvironmentCubemap(Window& mainWindow)
+{
+	glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+	glm::mat4 captureViews[] =
+	{
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+	};
+
+	// convert HDR equirectangular environment map to cubemap equivalent
+	ShaderCubemap* shaderCubemap = static_cast<ShaderCubemap*>(shaders["cubemap"]);
+
+	shaderCubemap->Bind();
+	shaderCubemap->SetEquirectangularMap(0);
+	shaderCubemap->SetProjectionMatrix(&captureProjection);
+
+	m_EnvironmentCubemap->GetTextureCubemap()->Bind(0);
+
+	glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
+	m_EnvironmentCubemap->GetCaptureFBO()->Bind();
+
+	shaders["main"]->Bind();
+
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		shaderCubemap->SetViewMatrix(&captureViews[i]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+			m_EnvironmentCubemap->GetTextureCubemap()->GetID(), 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		m_Cube1x1->Render();
+	}
+
+	m_EnvironmentCubemap->GetCaptureFBO()->Unbind();
+	shaderCubemap->Unbind();
+
+	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+}
+
+void Renderer::RenderSimpleSkyboxJoey(glm::mat4 viewMatrix, glm::mat4 projectionMatrix)
+{
+	glDepthFunc(GL_LEQUAL);
+
+	ShaderSkyboxJoey* shaderSkyboxJoey = static_cast<ShaderSkyboxJoey*>(shaders["skybox_joey"]);
+	shaderSkyboxJoey->Bind();
+	shaderSkyboxJoey->SetEnvironmentMap(0);
+	shaderSkyboxJoey->SetProjectionMatrix(&projectionMatrix);
+	shaderSkyboxJoey->SetViewMatrix(&viewMatrix);
+	m_EnvironmentCubemap->GetTextureCubemap()->Bind(0);
+	m_Cube1x1->Render();
+	shaderSkyboxJoey->Unbind();
 }
 
 void Renderer::EnableCulling()
