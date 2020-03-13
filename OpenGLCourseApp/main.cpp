@@ -98,6 +98,7 @@ int main()
 		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
 		Renderer::RenderOmniShadows(camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
 		Renderer::RenderWaterEffects(waterManager, projectionMatrix, scene, camera, deltaTime);
+		Renderer::RenderEnvironmentCubemap(mainWindow, scene);
 		Renderer::RenderPass(projectionMatrix, mainWindow, scene, camera, waterManager);
 
 		ImGuiWrapper::End();

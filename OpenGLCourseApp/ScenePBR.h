@@ -41,4 +41,6 @@ private:
 
 	glm::vec3 m_LightPositions[4];
 	glm::vec3 m_LightColors[4];
+
+	bool m_CerberusEnabled = false;
 };

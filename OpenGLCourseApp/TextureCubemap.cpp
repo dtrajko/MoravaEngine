@@ -28,6 +28,8 @@ TextureCubemap::TextureCubemap(unsigned int width, unsigned int height)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	printf("TextureCubemap GL_TEXTURE_CUBE_MAP m_TextureID=%d\n", m_TextureID);
 }
 
 void TextureCubemap::Bind(unsigned int textureUnit)

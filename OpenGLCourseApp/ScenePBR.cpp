@@ -14,7 +14,7 @@ ScenePBR::ScenePBR()
 	sceneSettings.enableOmniShadows  = false;
 	sceneSettings.enablePointLights  = true;
 	sceneSettings.enableSpotLights   = true;
-	sceneSettings.enableWaterEffects = true;
+	sceneSettings.enableWaterEffects = false;
 	sceneSettings.enableSkybox       = false;
 	sceneSettings.enableNormalMaps   = true;
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 10.0f, 15.0f);
@@ -117,16 +117,19 @@ void ScenePBR::SetTextures()
 	textures["goldAmbientOcclusion"]->Load();
 
 	// PBR cerberus
-	textures.insert(std::make_pair("cerberusAlbedo", new Texture("Textures/Cerberus_A.tga")));
-	textures.insert(std::make_pair("cerberusNormal", new Texture("Textures/Cerberus_N.tga")));
-	textures.insert(std::make_pair("cerberusMetallic", new Texture("Textures/Cerberus_M.tga")));
-	textures.insert(std::make_pair("cerberusRoughness", new Texture("Textures/Cerberus_R.tga")));
-	textures.insert(std::make_pair("cerberusAmbientOcclusion", new Texture("Textures/Cerberus_AO.tga")));
-	textures["cerberusAlbedo"]->Load();
-	textures["cerberusNormal"]->Load();
-	textures["cerberusMetallic"]->Load();
-	textures["cerberusRoughness"]->Load();
-	textures["cerberusAmbientOcclusion"]->Load();
+	if (m_CerberusEnabled)
+	{
+		textures.insert(std::make_pair("cerberusAlbedo", new Texture("Textures/Cerberus_A.tga")));
+		textures.insert(std::make_pair("cerberusNormal", new Texture("Textures/Cerberus_N.tga")));
+		textures.insert(std::make_pair("cerberusMetallic", new Texture("Textures/Cerberus_M.tga")));
+		textures.insert(std::make_pair("cerberusRoughness", new Texture("Textures/Cerberus_R.tga")));
+		textures.insert(std::make_pair("cerberusAmbientOcclusion", new Texture("Textures/Cerberus_AO.tga")));
+		textures["cerberusAlbedo"]->Load();
+		textures["cerberusNormal"]->Load();
+		textures["cerberusMetallic"]->Load();
+		textures["cerberusRoughness"]->Load();
+		textures["cerberusAmbientOcclusion"]->Load();
+	}
 }
 
 void ScenePBR::SetupModels()
@@ -135,9 +138,12 @@ void ScenePBR::SetupModels()
 	sphere->CreateMesh();
 	meshes.insert(std::make_pair("sphere", sphere));
 
-	Model* cerberus = new Model();
-	cerberus->LoadModel("Models/Cerberus_LP.FBX");
-	models.insert(std::make_pair("cerberus", cerberus));
+	if (m_CerberusEnabled)
+	{
+		Model* cerberus = new Model();
+		cerberus->LoadModel("Models/Cerberus_LP.FBX");
+		models.insert(std::make_pair("cerberus", cerberus));
+	}
 }
 
 void ScenePBR::Update(float timestep, Camera* camera, LightManager& lightManager, WaterManager* waterManager)
@@ -246,33 +252,36 @@ void ScenePBR::RenderPBR(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 	}
 
 	/* Cerberus model */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(0.05f));
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	if (m_CerberusEnabled)
+	{
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(0.05f));
+		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 
-	shaderPBR->SetAlbedo(m_Albedo);
-	shaderPBR->SetMetallic(m_Metallic);
-	shaderPBR->SetRoughness(m_Roughness);
-	shaderPBR->SetAmbientOcclusion(m_AmbientOcclusion);
-	shaderPBR->SetAmbientIntensity(m_AmbientIntensity);
+		shaderPBR->SetAlbedo(m_Albedo);
+		shaderPBR->SetMetallic(m_Metallic);
+		shaderPBR->SetRoughness(m_Roughness);
+		shaderPBR->SetAmbientOcclusion(m_AmbientOcclusion);
+		shaderPBR->SetAmbientIntensity(m_AmbientIntensity);
 
-	textures["cerberusAlbedo"]->Bind(textureSlots["albedo"]);
-	textures["cerberusNormal"]->Bind(textureSlots["normal"]);
-	textures["cerberusMetallic"]->Bind(textureSlots["metallic"]);
-	textures["cerberusRoughness"]->Bind(textureSlots["roughness"]);
-	textures["cerberusAmbientOcclusion"]->Bind(textureSlots["ao"]);
+		textures["cerberusAlbedo"]->Bind(textureSlots["albedo"]);
+		textures["cerberusNormal"]->Bind(textureSlots["normal"]);
+		textures["cerberusMetallic"]->Bind(textureSlots["metallic"]);
+		textures["cerberusRoughness"]->Bind(textureSlots["roughness"]);
+		textures["cerberusAmbientOcclusion"]->Bind(textureSlots["ao"]);
 
-	shaderPBR->SetAlbedoMap(textureSlots["albedo"]);
-	shaderPBR->SetNormalMap(textureSlots["normal"]);
-	shaderPBR->SetMetallicMap(textureSlots["metallic"]);
-	shaderPBR->SetRoughnessMap(textureSlots["roughness"]);
-	shaderPBR->SetAmbientOcclusionMap(textureSlots["ao"]);
+		shaderPBR->SetAlbedoMap(textureSlots["albedo"]);
+		shaderPBR->SetNormalMap(textureSlots["normal"]);
+		shaderPBR->SetMetallicMap(textureSlots["metallic"]);
+		shaderPBR->SetRoughnessMap(textureSlots["roughness"]);
+		shaderPBR->SetAmbientOcclusionMap(textureSlots["ao"]);
 
-	models["cerberus"]->RenderModelPBR();
+		models["cerberus"]->RenderModelPBR();
+	}
 }
 
 void ScenePBR::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,

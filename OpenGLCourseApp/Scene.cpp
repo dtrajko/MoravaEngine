@@ -58,12 +58,17 @@ void Scene::SetTextureSlots()
 	textureSlots.insert(std::make_pair("refraction", 6));
 	textureSlots.insert(std::make_pair("depth",      7));
 	textureSlots.insert(std::make_pair("DuDv",       8));
+
 	// PBR
 	textureSlots.insert(std::make_pair("albedo",     1));
 	textureSlots.insert(std::make_pair("normal",     2));
 	textureSlots.insert(std::make_pair("metallic",   3));
 	textureSlots.insert(std::make_pair("roughness",  4));
 	textureSlots.insert(std::make_pair("ao",         5));
+
+	// environment cubemap
+	textureSlots.insert(std::make_pair("equirectangularMap", 6));
+	textureSlots.insert(std::make_pair("environmentMap", 7));
 }
 
 void Scene::SetupMaterials()

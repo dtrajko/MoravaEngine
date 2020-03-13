@@ -38,13 +38,14 @@ bool RadianceHDR::Load()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	stbi_image_free(m_Buffer);
+	// stbi_image_free(m_Buffer);
 
-	printf("Loading texture '%s'\n", m_FileLocation);
+	printf("Loading texture '%s' [ID=%d]\n", m_FileLocation, m_TextureID);
 
 	return true;
 }
 
 RadianceHDR::~RadianceHDR()
 {
+	Texture::Clear();
 }

@@ -16,6 +16,8 @@ Cubemap::Cubemap(int width, int height)
 	m_CaptureRBO = new Renderbuffer(m_Width, m_Height, GL_DEPTH_COMPONENT24);
 
 	m_TextureCubemap = new TextureCubemap(m_Width, m_Height);
+
+	printf("Environment cubemap created.\n");
 }
 
 Cubemap::~Cubemap()

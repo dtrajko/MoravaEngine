@@ -53,7 +53,7 @@ bool Texture::Load(bool flipVert)
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, dataFormat, GL_UNSIGNED_BYTE, m_Buffer);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	printf("Loading texture '%s'\n", m_FileLocation);
+	printf("Loading texture '%s' [ID=%d]\n", m_FileLocation, m_TextureID);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -85,7 +85,7 @@ void Texture::Bind(unsigned int textureUnit)
 {
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
 	glBindTexture(GL_TEXTURE_2D, m_TextureID);
-	// printf("Bind texture ID=%d to slot=%d\n", textureID, textureUnit);
+	// printf("Texture: bind texture ID=%d to slot=%d\n", m_TextureID, textureUnit);
 }
 
 void Texture::Unbind()
