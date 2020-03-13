@@ -62,9 +62,9 @@ void SceneEiffel::SetTextures()
 	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
 	textures.insert(std::make_pair("water", new Texture("Textures/water.png")));
 
-	textures["sponzaCeilDiffuse"]->LoadTexture();
-	textures["sponzaCeilNormal"]->LoadTexture();
-	textures["water"]->LoadTexture();
+	textures["sponzaCeilDiffuse"]->Load();
+	textures["sponzaCeilNormal"]->Load();
+	textures["water"]->Load();
 }
 
 void SceneEiffel::SetupMeshes()

@@ -66,16 +66,16 @@ void SceneCottage::SetTextures()
 	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
 	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
 
-	textures["brick"]->LoadTexture();
-	textures["crateDiffuse"]->LoadTexture();
-	textures["crateNormal"]->LoadTexture();
-	textures["grass"]->LoadTexture();
-	textures["sponzaFloorDiffuse"]->LoadTexture();
-	textures["sponzaFloorNormal"]->LoadTexture();
-	textures["sponzaWallDiffuse"]->LoadTexture();
-	textures["sponzaWallNormal"]->LoadTexture();
-	textures["sponzaCeilDiffuse"]->LoadTexture();
-	textures["sponzaCeilNormal"]->LoadTexture();
+	textures["brick"]->Load();
+	textures["crateDiffuse"]->Load();
+	textures["crateNormal"]->Load();
+	textures["grass"]->Load();
+	textures["sponzaFloorDiffuse"]->Load();
+	textures["sponzaFloorNormal"]->Load();
+	textures["sponzaWallDiffuse"]->Load();
+	textures["sponzaWallNormal"]->Load();
+	textures["sponzaCeilDiffuse"]->Load();
+	textures["sponzaCeilNormal"]->Load();
 }
 
 void SceneCottage::SetupModels()

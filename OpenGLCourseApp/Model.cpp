@@ -147,7 +147,7 @@ void Model::LoadMaterials(const aiScene* scene)
 
 				textureList[i] = new Texture(texPath.c_str());
 
-				if (!textureList[i]->LoadTexture())
+				if (!textureList[i]->Load())
 				{
 					printf("Failed to load texture at '%s'\n", texPath.c_str());
 					delete textureList[i];
@@ -173,7 +173,7 @@ void Model::LoadMaterials(const aiScene* scene)
 
 				normalMapList[i] = new Texture(texPath.c_str());
 
-				if (!normalMapList[i]->LoadTexture())
+				if (!normalMapList[i]->Load())
 				{
 					printf("Failed to load normal map at '%s'\n", texPath.c_str());
 					delete normalMapList[i];

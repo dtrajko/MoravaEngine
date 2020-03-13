@@ -59,7 +59,7 @@ void SceneTerrain::SetSkybox()
 void SceneTerrain::SetTextures()
 {
 	textures.insert(std::make_pair("rock", new Texture("Textures/rock.png")));
-	textures["rock"]->LoadTexture();
+	textures["rock"]->Load();
 }
 
 void SceneTerrain::SetupModels()

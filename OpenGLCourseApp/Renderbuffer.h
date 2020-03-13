@@ -1,11 +1,13 @@
 #pragma once
 
+#include "GL/glew.h"
+
 
 class Renderbuffer
 {
 public:
 	Renderbuffer();
-	Renderbuffer(unsigned int width, unsigned int height);
+	Renderbuffer(unsigned int width, unsigned int height, GLenum internalFormat);
 	~Renderbuffer();
 
 private:

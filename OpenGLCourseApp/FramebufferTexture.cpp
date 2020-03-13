@@ -27,15 +27,15 @@ FramebufferTexture::FramebufferTexture(int width, int height, std::string txType
 		type = GL_FLOAT;
 	}
 
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
+	glGenTextures(1, &m_TextureID);
+	glBindTexture(GL_TEXTURE_2D, m_TextureID);
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glFramebufferTexture(GL_FRAMEBUFFER, attachment, textureID, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, attachment, m_TextureID, 0);
 }
 
 FramebufferTexture::~FramebufferTexture()
 {
-	glDeleteTextures(1, &textureID);
+	glDeleteTextures(1, &m_TextureID);
 }

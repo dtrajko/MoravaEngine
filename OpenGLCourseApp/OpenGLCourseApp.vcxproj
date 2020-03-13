@@ -170,6 +170,7 @@
     <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Cubemap.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="FramebufferTexture.cpp" />
@@ -183,6 +184,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="OmniShadowMap.cpp" />
     <ClCompile Include="PointLight.cpp" />
+    <ClCompile Include="RadianceHDR.cpp" />
     <ClCompile Include="Renderbuffer.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -201,6 +203,7 @@
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureCubemap.cpp" />
     <ClCompile Include="Tile2D.cpp" />
     <ClCompile Include="WaterManager.cpp" />
     <ClCompile Include="Window.cpp" />
@@ -218,6 +221,7 @@
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CommonValues.h" />
+    <ClInclude Include="Cubemap.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="FramebufferTexture.h" />
@@ -230,6 +234,7 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="OmniShadowMap.h" />
     <ClInclude Include="PointLight.h" />
+    <ClInclude Include="RadianceHDR.h" />
     <ClInclude Include="Renderbuffer.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
@@ -248,6 +253,7 @@
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureCubemap.h" />
     <ClInclude Include="Tile2D.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="WaterManager.h" />

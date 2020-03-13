@@ -8,13 +8,13 @@ Terrain::Terrain(const char* heightMapPath, const char* colorMapPath)
 	m_HeightMapPath = heightMapPath;
 
 	m_TxHeightMap = new Texture(heightMapPath);
-	m_TxHeightMap->LoadTexture();
+	m_TxHeightMap->Load();
 
 	if (colorMapPath != nullptr)
 	{
 		m_TxColorMap = new Texture(colorMapPath);
-		m_TxColorMap->LoadTexture();
-		printf("Color map texture width=%d height=%d\n", m_TxColorMap->m_Width, m_TxColorMap->m_Height);
+		m_TxColorMap->Load();
+		printf("Color map texture width=%d height=%d\n", m_TxColorMap->GetWidth(), m_TxColorMap->GetHeight());
 	}
 
 	GenerateTerrain();
@@ -28,8 +28,8 @@ Terrain::~Terrain()
 
 void Terrain::GenerateTerrain()
 {
-	unsigned int hiMapWidth = m_TxHeightMap->m_Width;
-	unsigned int hiMapHeight = m_TxHeightMap->m_Height;
+	unsigned int hiMapWidth = m_TxHeightMap->GetWidth();
+	unsigned int hiMapHeight = m_TxHeightMap->GetHeight();
 	unsigned int pixelCount = hiMapWidth * hiMapHeight;
 	unsigned int vertexStride = (unsigned int)(sizeof(Vertex) / sizeof(float));
 
@@ -60,8 +60,8 @@ void Terrain::GenerateTerrain()
 			if (m_TxColorMap != nullptr)
 			{
 				// use texture coords for color map
-				vertices[vertexPointer + 3] = 1.0f - GetHeight(x, z) * (1.0f / (float)m_TxColorMap->m_Height);
-				vertices[vertexPointer + 4] = 1.0f - GetHeight(x, z) * (1.0f / (float)m_TxColorMap->m_Height);
+				vertices[vertexPointer + 3] = 1.0f - GetHeight(x, z) * (1.0f / (float)m_TxColorMap->GetHeight());
+				vertices[vertexPointer + 4] = 1.0f - GetHeight(x, z) * (1.0f / (float)m_TxColorMap->GetHeight());
 			}
 			else
 			{
@@ -128,12 +128,12 @@ void Terrain::GenerateTerrain()
 
 float Terrain::GetHeight(int x, int z)
 {
-	if (x < 0 || x >= m_TxHeightMap->m_Width || z < 0 || z >= m_TxHeightMap->m_Height)
+	if (x < 0 || x >= (int)m_TxHeightMap->GetWidth() || z < 0 || z >= (int)m_TxHeightMap->GetHeight())
 	{
 		return 0.0f;
 	}
 
-	float heightRatio = ((float)(m_TxHeightMap->m_Width + m_TxHeightMap->m_Height) / 2.0f) / (float)m_MaxPixelColor;
+	float heightRatio = ((float)(m_TxHeightMap->GetWidth() + m_TxHeightMap->GetHeight()) / 2.0f) / (float)m_MaxPixelColor;
 
 	int red   = m_TxHeightMap->getRed(x, z);
 	int green = m_TxHeightMap->getGreen(x, z);

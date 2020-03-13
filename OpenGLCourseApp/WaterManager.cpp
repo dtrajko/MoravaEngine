@@ -24,7 +24,7 @@ WaterManager::WaterManager(int width, int height, float waterHeight, float waveS
 	FramebufferTexture* reflectionTextureAttachment = new FramebufferTexture(m_Width, m_Height, "color");
 	reflectionFB->AddColorAttachment(reflectionTextureAttachment);
 
-	Renderbuffer* reflectionDepthBuffer = new Renderbuffer(m_Width, m_Height);
+	Renderbuffer* reflectionDepthBuffer = new Renderbuffer(m_Width, m_Height, GL_DEPTH_COMPONENT);
 	reflectionFB->AddDepthBuffer(reflectionDepthBuffer);
 
 	SwitchToDefaultFramebuffer();

@@ -6,26 +6,26 @@
 
 Texture::Texture()
 {
-	textureID = 0;
+	m_TextureID = 0;
 	m_Width = 0;
 	m_Height = 0;
 	m_BitDepth = 0;
-	fileLocation = "";
+	m_FileLocation = "";
 }
 
 Texture::Texture(const char* fileLoc)
 	: Texture()
 {
-	fileLocation = fileLoc;
+	m_FileLocation = fileLoc;
 }
 
-bool Texture::LoadTexture(bool flipVert)
+bool Texture::Load(bool flipVert)
 {
 	stbi_set_flip_vertically_on_load(flipVert ? 1 : 0);
-	m_Buffer = stbi_load(fileLocation, &m_Width, &m_Height, &m_BitDepth, 0);
+	m_Buffer = stbi_load(m_FileLocation, (int*)&m_Width, (int*)&m_Height, &m_BitDepth, 0);
 	if (!m_Buffer)
 	{
-		printf("Failed to find: '%s'\n", fileLocation);
+		printf("Failed to find: '%s'\n", m_FileLocation);
 		return false;
 	}
 
@@ -42,8 +42,8 @@ bool Texture::LoadTexture(bool flipVert)
 		dataFormat = GL_RGB;
 	}
 
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
+	glGenTextures(1, &m_TextureID);
+	glBindTexture(GL_TEXTURE_2D, m_TextureID);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -53,7 +53,7 @@ bool Texture::LoadTexture(bool flipVert)
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, dataFormat, GL_UNSIGNED_BYTE, m_Buffer);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	printf("Loading texture '%s'\n", fileLocation);
+	printf("Loading texture '%s'\n", m_FileLocation);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -84,7 +84,7 @@ int Texture::getAlpha(int x, int z)
 void Texture::Bind(unsigned int textureUnit)
 {
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
-	glBindTexture(GL_TEXTURE_2D, textureID);
+	glBindTexture(GL_TEXTURE_2D, m_TextureID);
 	// printf("Bind texture ID=%d to slot=%d\n", textureID, textureUnit);
 }
 
@@ -93,18 +93,18 @@ void Texture::Unbind()
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture::ClearTexture()
+void Texture::Clear()
 {
 	stbi_image_free(m_Buffer);
-	glDeleteTextures(1, &textureID);
-	textureID = 0;
+	glDeleteTextures(1, &m_TextureID);
+	m_TextureID = 0;
 	m_Width = 0;
 	m_Height = 0;
 	m_BitDepth = 0;
-	fileLocation = "";
+	m_FileLocation = "";
 }
 
 Texture::~Texture()
 {
-	ClearTexture();
+	Clear();
 }
