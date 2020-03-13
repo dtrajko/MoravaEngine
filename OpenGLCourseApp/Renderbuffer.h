@@ -8,6 +8,7 @@ class Renderbuffer
 public:
 	Renderbuffer();
 	Renderbuffer(unsigned int width, unsigned int height, GLenum internalFormat);
+	inline unsigned int GetID() const { return bufferID; };
 	~Renderbuffer();
 
 private:

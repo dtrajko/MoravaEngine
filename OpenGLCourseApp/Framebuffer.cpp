@@ -27,6 +27,8 @@ Framebuffer::Framebuffer(unsigned int width, unsigned int height)
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+	printf("Framebuffer fbo=%d, m_Width=%d, m_Height=%d\n", fbo, m_Width, m_Height);
 }
 
 void Framebuffer::AddColorAttachment(FramebufferTexture* colorAttachment)

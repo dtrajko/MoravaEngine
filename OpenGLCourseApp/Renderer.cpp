@@ -229,8 +229,6 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	scene->RenderWater(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
 	shaderWater->Unbind();
 
-	RenderSimpleSkyboxJoey(camera->CalculateViewMatrix(), projectionMatrix, scene);
-
 	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(shaders["pbr"]);
 
 	shaderPBR->Bind();
@@ -245,6 +243,8 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
 	scene->RenderPBR(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms);
+
+	RenderSimpleSkyboxJoey(camera->CalculateViewMatrix(), projectionMatrix, scene);
 }
 
 void Renderer::RenderPassShadow(DirectionalLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
@@ -444,7 +444,7 @@ void Renderer::RenderEnvironmentCubemap(Window& mainWindow, Scene* scene)
 	};
 
 	// convert HDR equirectangular environment map to cubemap equivalent
-	ShaderCubemap* shaderCubemap = static_cast<ShaderCubemap*>(shaders["cubemap"]);
+	ShaderCubemap* shaderCubemap = (ShaderCubemap*)shaders["cubemap"];
 
 	shaderCubemap->Bind();
 
@@ -456,10 +456,13 @@ void Renderer::RenderEnvironmentCubemap(Window& mainWindow, Scene* scene)
 	// printf("Renderer: bind m_RadianceHDR ID=%d to slot=%d\n", m_RadianceHDR->GetID(), scene->GetTextureSlots()["equirectangularMap"]);
 	m_RadianceHDR->Bind(scene->GetTextureSlots()["equirectangularMap"]);
 
-	m_EnvironmentCubemap->GetTextureCubemap()->Bind(scene->GetTextureSlots()["environmentMap"]);
+	m_EnvironmentCubemap->GetTextureCubemap()->Bind(0); // scene->GetTextureSlots()["environmentMap"]
 
 	glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
 	m_EnvironmentCubemap->GetCaptureFBO()->Bind();
+	glBindFramebuffer(GL_FRAMEBUFFER, m_EnvironmentCubemap->GetCaptureFBO()->GetID());
+
+	// printf("m_EnvironmentCubemap GetCaptureFBO.GetID=%d\n", m_EnvironmentCubemap->GetCaptureFBO()->GetID());
 
 	for (unsigned int i = 0; i < 6; ++i)
 	{
