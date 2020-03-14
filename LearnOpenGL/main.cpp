@@ -1,3 +1,5 @@
+#define STB_IMAGE_IMPLEMENTATION
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "stb_image.h"
@@ -83,9 +85,9 @@ int main()
 
     // build and compile shaders
     // -------------------------
-    Shader pbrShader("2.1.1.pbr.vs", "2.1.1.pbr.fs");
-    Shader equirectangularToCubemapShader("2.1.1.cubemap.vs", "2.1.1.equirectangular_to_cubemap.fs");
-    Shader backgroundShader("2.1.1.background.vs", "2.1.1.background.fs");
+    Shader pbrShader("Shaders/2.1.1.pbr.vs", "Shaders/2.1.1.pbr.fs");
+    Shader equirectangularToCubemapShader("Shaders/2.1.1.cubemap.vs", "Shaders/2.1.1.equirectangular_to_cubemap.fs");
+    Shader backgroundShader("Shaders/2.1.1.background.vs", "Shaders/2.1.1.background.fs");
 
 
     pbrShader.use();
