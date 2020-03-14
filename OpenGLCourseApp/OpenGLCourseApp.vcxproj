@@ -188,6 +188,8 @@
     <ClCompile Include="RadianceHDR.cpp" />
     <ClCompile Include="Renderbuffer.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RendererBasic.cpp" />
+    <ClCompile Include="RendererIBL.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ScenePBR.cpp" />
     <ClCompile Include="SceneCottage.cpp" />
@@ -241,6 +243,8 @@
     <ClInclude Include="RadianceHDR.h" />
     <ClInclude Include="Renderbuffer.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RendererBasic.h" />
+    <ClInclude Include="RendererIBL.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ScenePBR.h" />
     <ClInclude Include="SceneCottage.h" />

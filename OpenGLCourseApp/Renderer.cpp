@@ -1,37 +1,16 @@
 #include "Renderer.h"
 
-#include "GL/glew.h"
-#include "glm/gtc/matrix_transform.hpp"
-#include <GLFW/glfw3.h>
-
 #include "ShaderMain.h"
 #include "ShaderWater.h"
 #include "ShaderPBR.h"
-#include "ShaderCubemap.h"
-#include "ShaderSkyboxJoey.h"
 
 #include "WaterManager.h"
 
-
-
-std::map<std::string, Shader*> Renderer::shaders;
-std::map<std::string, GLint> Renderer::uniforms;
-glm::vec4 Renderer::bgColor = glm::vec4(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
-
-RadianceHDR* Renderer::m_RadianceHDR;
-Cubemap* Renderer::m_EnvironmentCubemap;
-Cube* Renderer::m_Cube1x1;
 
 void Renderer::Init()
 {
 	SetUniforms();
 	SetShaders();
-
-	m_RadianceHDR = new RadianceHDR("Textures/HDR/newport_loft.hdr");
-	m_RadianceHDR->Load();
-	printf("Renderer m_RadianceHDR Width=%d, Height=%d\n", m_RadianceHDR->GetWidth(), m_RadianceHDR->GetHeight());
-	m_EnvironmentCubemap = new Cubemap(512, 512);
-	m_Cube1x1 = new Cube();
 }
 
 void Renderer::SetUniforms()
@@ -115,20 +94,6 @@ void Renderer::SetShaders()
 	shaderPBR->CreateFromFiles(vertPBRShader, fragPBRShader);
 	shaders.insert(std::make_pair("pbr", shaderPBR));
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
-
-	static const char* vertCubemapShader = "Shaders/cubemap.vert";
-	static const char* fragCubemapShader = "Shaders/cubemap.frag";
-	ShaderCubemap* shaderCubemap = new ShaderCubemap();
-	shaderCubemap->CreateFromFiles(vertCubemapShader, fragCubemapShader);
-	shaders.insert(std::make_pair("cubemap", shaderCubemap));
-	printf("Renderer: Cubemap shader compiled [programID=%d]\n", shaderCubemap->GetProgramID());
-
-	static const char* vertSkyboxJoey = "Shaders/skybox_joey.vert";
-	static const char* fragSkyboxJoey = "Shaders/skybox_joey.frag";
-	ShaderSkyboxJoey* skyboxJoeyShader = new ShaderSkyboxJoey();
-	skyboxJoeyShader->CreateFromFiles(vertSkyboxJoey, fragSkyboxJoey);
-	shaders.insert(std::make_pair("skybox_joey", skyboxJoeyShader));
-	printf("Renderer: SkyboxJoey shader compiled [programID=%d]\n", skyboxJoeyShader->GetProgramID());
 }
 
 void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene, Camera* camera, WaterManager* waterManager)
@@ -243,8 +208,6 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
 	scene->RenderPBR(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms);
-
-	RenderSimpleSkyboxJoey(camera->CalculateViewMatrix(), projectionMatrix, scene);
 }
 
 void Renderer::RenderPassShadow(DirectionalLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
@@ -428,93 +391,4 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void Renderer::RenderEnvironmentCubemap(Window& mainWindow, Scene* scene)
-{
-	glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-	glm::mat4 captureViews[] =
-	{
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-	};
-
-	// convert HDR equirectangular environment map to cubemap equivalent
-	ShaderCubemap* shaderCubemap = (ShaderCubemap*)shaders["cubemap"];
-
-	shaderCubemap->Bind();
-
-	uniforms["equirectangularMap"] = shaderCubemap->GetUniformLocationEquirectangularMap();
-
-	shaderCubemap->SetEquirectangularMap(scene->GetTextureSlots()["equirectangularMap"]);
-	shaderCubemap->SetProjectionMatrix(&captureProjection);
-
-	// printf("Renderer: bind m_RadianceHDR ID=%d to slot=%d\n", m_RadianceHDR->GetID(), scene->GetTextureSlots()["equirectangularMap"]);
-	m_RadianceHDR->Bind(scene->GetTextureSlots()["equirectangularMap"]);
-
-	m_EnvironmentCubemap->GetTextureCubemap()->Bind(0); // scene->GetTextureSlots()["environmentMap"]
-
-	glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
-	m_EnvironmentCubemap->GetCaptureFBO()->Bind();
-	glBindFramebuffer(GL_FRAMEBUFFER, m_EnvironmentCubemap->GetCaptureFBO()->GetID());
-
-	// printf("m_EnvironmentCubemap GetCaptureFBO.GetID=%d\n", m_EnvironmentCubemap->GetCaptureFBO()->GetID());
-
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		shaderCubemap->SetViewMatrix(&captureViews[i]);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-			m_EnvironmentCubemap->GetTextureCubemap()->GetID(), 0);
-		// printf("Renderer m_EnvironmentCubemap GetID=%d\n", m_EnvironmentCubemap->GetTextureCubemap()->GetID());
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		m_Cube1x1->Render();
-	}
-
-	m_EnvironmentCubemap->GetCaptureFBO()->Unbind();
-	shaderCubemap->Unbind();
-
-	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
-}
-
-void Renderer::RenderSimpleSkyboxJoey(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene)
-{
-	glDepthFunc(GL_LEQUAL);
-
-	ShaderSkyboxJoey* shaderSkyboxJoey = static_cast<ShaderSkyboxJoey*>(shaders["skybox_joey"]);
-
-	shaderSkyboxJoey->Bind();
-
-	uniforms["environmentMap"] = shaderSkyboxJoey->GetUniformLocationEnvironmentMap();
-
-	shaderSkyboxJoey->SetEnvironmentMap(scene->GetTextureSlots()["environmentMap"]);
-	shaderSkyboxJoey->SetProjectionMatrix(&projectionMatrix);
-	shaderSkyboxJoey->SetViewMatrix(&viewMatrix);
-	m_EnvironmentCubemap->GetTextureCubemap()->Bind(scene->GetTextureSlots()["environmentMap"]);
-	m_Cube1x1->Render();
-	shaderSkyboxJoey->Unbind();
-}
-
-void Renderer::EnableCulling()
-{
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-}
-
-void Renderer::DisableCulling()
-{
-	glDisable(GL_CULL_FACE);
-}
-
-void Renderer::Cleanup()
-{
-	for (auto& shader : shaders)
-		delete shader.second;
-
-	shaders.clear();
-	uniforms.clear();
 }

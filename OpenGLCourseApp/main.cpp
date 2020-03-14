@@ -18,7 +18,7 @@
 #include "Renderer.h"
 #include "LightManager.h"
 #include "WaterManager.h"
-
+#include "RendererIBL.h"
 
 
 // Window dimensions
@@ -70,7 +70,8 @@ int main()
 	WaterManager* waterManager = new WaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight(),
 		scene->GetSettings().waterHeight, scene->GetSettings().waterWaveSpeed);
 
-	Renderer::Init();	
+	Renderer::Init();
+	RendererIBL::Init();
 
 	ImGuiWrapper::Init(&mainWindow);
 
@@ -98,7 +99,7 @@ int main()
 		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
 		Renderer::RenderOmniShadows(camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
 		Renderer::RenderWaterEffects(waterManager, projectionMatrix, scene, camera, deltaTime);
-		Renderer::RenderEnvironmentCubemap(mainWindow, scene);
+		RendererIBL::RenderEnvironmentCubemap(mainWindow, scene);
 		Renderer::RenderPass(projectionMatrix, mainWindow, scene, camera, waterManager);
 
 		ImGuiWrapper::End();

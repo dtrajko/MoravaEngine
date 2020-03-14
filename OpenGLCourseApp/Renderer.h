@@ -1,17 +1,11 @@
 #pragma once
 
-#include "glm/glm.hpp"
+#include "RendererBasic.h"
 
-#include "Window.h"
-#include "Scene.h"
-#include "Shader.h"
 #include "WaterManager.h"
-#include "RadianceHDR.h"
-#include "Cubemap.h"
-#include "Cube.h"
 
 
-class Renderer
+class Renderer : public RendererBasic
 {
 
 public:
@@ -29,21 +23,5 @@ public:
 	static void RenderPassOmniShadow(PointLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager);
 	static void RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene, Camera* camera);
 	static void RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene, Camera* camera);
-	static void RenderEnvironmentCubemap(Window& mainWindow, Scene* scene);
-	static void RenderSimpleSkyboxJoey(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene);
 
-	static void EnableCulling();
-	static void DisableCulling();
-
-	static void Cleanup();
-
-private:
-	static std::map<std::string, Shader*> shaders;
-	static std::map<std::string, GLint> uniforms;
-
-	static glm::vec4 bgColor;
-
-	static RadianceHDR* m_RadianceHDR;
-	static Cubemap* m_EnvironmentCubemap;
-	static Cube* m_Cube1x1;
 };
