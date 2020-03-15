@@ -158,10 +158,6 @@ int main()
 		glm::vec3(300.0f, 300.0f, 300.0f)
 	};
 
-	int nrRows = 7;
-	int nrColumns = 7;
-	float spacing = 2.5;
-
 	// pbr: setup framebuffer
 	// ----------------------
 	unsigned int captureFBO;

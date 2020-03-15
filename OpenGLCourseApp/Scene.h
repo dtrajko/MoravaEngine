@@ -81,8 +81,6 @@ public:
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) = 0;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) {};
-	virtual void RenderPBR(glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) {};
 	inline Skybox* GetSkybox() const { return m_Skybox; };
 	static inline SceneSettings GetSettings() { return sceneSettings; };
 	std::map<std::string, Texture*> GetTextures() const { return textures; };
@@ -93,6 +91,7 @@ public:
 	inline LightManager* GetLightManager() const { return m_LightManager; };
 	void SetWaterManager(int width, int height);
 	inline WaterManager* GetWaterManager() const { return m_WaterManager; };
+
 	~Scene();
 
 private:

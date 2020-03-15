@@ -10,13 +10,13 @@
 
 ScenePBR::ScenePBR()
 {
-	sceneSettings.enableShadows      = true;
-	sceneSettings.enableOmniShadows  = false;
-	sceneSettings.enablePointLights  = true;
-	sceneSettings.enableSpotLights   = true;
+	sceneSettings.enableShadows = true;
+	sceneSettings.enableOmniShadows = false;
+	sceneSettings.enablePointLights = true;
+	sceneSettings.enableSpotLights = true;
 	sceneSettings.enableWaterEffects = false;
-	sceneSettings.enableSkybox       = false;
-	sceneSettings.enableNormalMaps   = true;
+	sceneSettings.enableSkybox = true;
+	sceneSettings.enableNormalMaps = true;
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 10.0f, 15.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
@@ -63,10 +63,10 @@ ScenePBR::ScenePBR()
 	m_LightColor_2 = glm::vec3(1.0f, 1.0f, 1.0f);
 	m_LightColor_3 = glm::vec3(1.0f, 1.0f, 1.0f);
 
-	m_LightPosOffset_0 = glm::vec3(-1.0f,  0.0f, 0.0f);
-	m_LightPosOffset_1 = glm::vec3( 1.0f,  0.0f, 0.0f);
-	m_LightPosOffset_2 = glm::vec3( 0.0f, -1.0f, 0.0f);
-	m_LightPosOffset_3 = glm::vec3( 0.0f,  1.0f, 0.0f);
+	m_LightPosOffset_0 = glm::vec3(-1.0f, 0.0f, 0.0f);
+	m_LightPosOffset_1 = glm::vec3(1.0f, 0.0f, 0.0f);
+	m_LightPosOffset_2 = glm::vec3(0.0f, -1.0f, 0.0f);
+	m_LightPosOffset_3 = glm::vec3(0.0f, 1.0f, 0.0f);
 
 	m_LightPositions[0] = m_CameraPosition + m_LightPosOffset_0;
 	m_LightPositions[1] = m_CameraPosition + m_LightPosOffset_1;
@@ -93,11 +93,11 @@ void ScenePBR::SetSkybox()
 void ScenePBR::SetTextures()
 {
 	// PBR sphere
-	textures.insert(std::make_pair("rustedIronAlbedo", new Texture("Textures/PBR/rustediron2_basecolor.png")));
-	textures.insert(std::make_pair("rustedIronNormal", new Texture("Textures/PBR/rustediron2_normal.png")));
-	textures.insert(std::make_pair("rustedIronMetallic", new Texture("Textures/PBR/rustediron2_metallic.png")));
-	textures.insert(std::make_pair("rustedIronRoughness", new Texture("Textures/PBR/rustediron2_roughness.png")));
-	textures.insert(std::make_pair("rustedIronAmbientOcclusion", new Texture("Textures/PBR/rustediron2_ambient_occlusion.png")));
+	textures.insert(std::make_pair("rustedIronAlbedo", new Texture("Textures/PBR/rusted_iron/albedo.png")));
+	textures.insert(std::make_pair("rustedIronNormal", new Texture("Textures/PBR/rusted_iron/normal.png")));
+	textures.insert(std::make_pair("rustedIronMetallic", new Texture("Textures/PBR/rusted_iron/metallic.png")));
+	textures.insert(std::make_pair("rustedIronRoughness", new Texture("Textures/PBR/rusted_iron/roughness.png")));
+	textures.insert(std::make_pair("rustedIronAmbientOcclusion", new Texture("Textures/PBR/rusted_iron/ao.png")));
 	textures["rustedIronAlbedo"]->Load();
 	textures["rustedIronNormal"]->Load();
 	textures["rustedIronMetallic"]->Load();
@@ -105,11 +105,11 @@ void ScenePBR::SetTextures()
 	textures["rustedIronAmbientOcclusion"]->Load();
 
 	// PBR gold
-	textures.insert(std::make_pair("goldAlbedo", new Texture("Textures/PBR/gold-scuffed_basecolor-boosted.png")));
-	textures.insert(std::make_pair("goldNormal", new Texture("Textures/PBR/gold-scuffed_normal.png")));
-	textures.insert(std::make_pair("goldMetallic", new Texture("Textures/PBR/gold-scuffed_metallic.png")));
-	textures.insert(std::make_pair("goldRoughness", new Texture("Textures/PBR/gold-scuffed_roughness.png")));
-	textures.insert(std::make_pair("goldAmbientOcclusion", new Texture("Textures/PBR/rustediron2_ambient_occlusion.png")));
+	textures.insert(std::make_pair("goldAlbedo", new Texture("Textures/PBR/gold/albedo.png")));
+	textures.insert(std::make_pair("goldNormal", new Texture("Textures/PBR/gold/normal.png")));
+	textures.insert(std::make_pair("goldMetallic", new Texture("Textures/PBR/gold/metallic.png")));
+	textures.insert(std::make_pair("goldRoughness", new Texture("Textures/PBR/gold/roughness.png")));
+	textures.insert(std::make_pair("goldAmbientOcclusion", new Texture("Textures/PBR/gold/ao.png")));
 	textures["goldAlbedo"]->Load();
 	textures["goldNormal"]->Load();
 	textures["goldMetallic"]->Load();
@@ -168,19 +168,6 @@ void ScenePBR::Update(float timestep)
 
 	ImGui::ColorEdit3("Light Color 3", glm::value_ptr(m_LightColor_3));
 	ImGui::SliderFloat3("Light Pos Offset 3", glm::value_ptr(m_LightPosOffset_3), -60.0f, 60.0f);
-}
-
-void ScenePBR::Render(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
-{
-}
-
-void ScenePBR::RenderPBR(glm::mat4 projectionMatrix, std::string passType, std::map<std::string, 
-	Shader*> shaders, std::map<std::string, GLint> uniforms)
-{
-	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(shaders["pbr"]);
-
-	shaderPBR->Bind();
 
 	m_LightPositions[0] = m_CameraPosition + m_LightPosOffset_0;
 	m_LightPositions[1] = m_CameraPosition + m_LightPosOffset_1;
@@ -191,6 +178,14 @@ void ScenePBR::RenderPBR(glm::mat4 projectionMatrix, std::string passType, std::
 	m_LightColors[1] = m_LightColor_1 * 255.0f;
 	m_LightColors[2] = m_LightColor_2 * 255.0f;
 	m_LightColors[3] = m_LightColor_3 * 255.0f;
+}
+
+void ScenePBR::Render(glm::mat4 projectionMatrix, std::string passType,
+	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+{
+	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(shaders["pbr"]);
+
+	shaderPBR->Bind();
 
 	shaderPBR->SetLightPositions(m_LightPositions, 4);
 	shaderPBR->SetLightColors(m_LightColors, 4);
@@ -291,7 +286,7 @@ void ScenePBR::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 
 	// Model matrix
 	glm::mat4 model;
-	
+
 	/* Water Tile */
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, m_WaterManager->GetWaterHeight(), 0.0f));
@@ -299,7 +294,7 @@ void ScenePBR::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(32.0f, 1.0f, 32.0f));
-	
+
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);

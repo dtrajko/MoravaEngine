@@ -48,6 +48,12 @@ void RendererBasic::RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window&
 	// Rendering here
 }
 
+void RendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+}
+
 void RendererBasic::EnableCulling()
 {
 	glEnable(GL_CULL_FACE);

@@ -177,6 +177,7 @@
     <ClCompile Include="FramebufferTexture.cpp" />
     <ClCompile Include="ImGuiBuild.cpp" />
     <ClCompile Include="ImGuiWrapper.cpp" />
+    <ClCompile Include="learnopengl\shaderJoey.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -189,8 +190,10 @@
     <ClCompile Include="Renderbuffer.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererBasic.cpp" />
+    <ClCompile Include="RendererJoey.cpp" />
     <ClCompile Include="RendererPBR.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneJoey.cpp" />
     <ClCompile Include="ScenePBR.cpp" />
     <ClCompile Include="SceneCottage.cpp" />
     <ClCompile Include="SceneEiffel.cpp" />
@@ -232,6 +235,11 @@
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="FramebufferTexture.h" />
     <ClInclude Include="ImGuiWrapper.h" />
+    <ClInclude Include="learnopengl\camera.h" />
+    <ClInclude Include="learnopengl\functions.h" />
+    <ClInclude Include="learnopengl\mesh.h" />
+    <ClInclude Include="learnopengl\model.h" />
+    <ClInclude Include="learnopengl\shaderJoey.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Material.h" />
@@ -244,8 +252,10 @@
     <ClInclude Include="Renderbuffer.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RendererBasic.h" />
+    <ClInclude Include="RendererJoey.h" />
     <ClInclude Include="RendererPBR.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneJoey.h" />
     <ClInclude Include="ScenePBR.h" />
     <ClInclude Include="SceneCottage.h" />
     <ClInclude Include="SceneEiffel.h" />

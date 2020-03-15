@@ -51,7 +51,7 @@ int Window::Initialize()
 	}
 
 	// Get Buffer size information
-	glfwGetFramebufferSize(glfwWindow, &bufferWidth, &bufferHeight);
+	glfwGetFramebufferSize(glfwWindow, (int*)&bufferWidth, (int*)&bufferHeight);
 
 	// Set context for GLEW to use
 	glfwMakeContextCurrent(glfwWindow);
@@ -177,7 +177,7 @@ void Window::windowSizeCallback(GLFWwindow* window, int width, int height)
 
 	theWindow->width = width;
 	theWindow->height = height;
-	glfwGetFramebufferSize(window, &theWindow->bufferWidth, &theWindow->bufferHeight);
+	glfwGetFramebufferSize(window, (int*)&theWindow->bufferWidth, (int*)&theWindow->bufferHeight);
 	glViewport(0, 0, theWindow->bufferWidth, theWindow->bufferHeight);
 }
 

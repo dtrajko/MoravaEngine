@@ -13,8 +13,8 @@ public:
 	Window(GLint windowWidth, GLint windowHeight);
 	int Initialize();
 	inline GLFWwindow* GetHandler() { return glfwWindow; };
-	inline GLfloat GetBufferWidth() { return (GLfloat)bufferWidth; };
-	inline GLfloat GetBufferHeight() { return (GLfloat)bufferHeight; };
+	inline unsigned int GetBufferWidth() { return bufferWidth; };
+	inline unsigned int GetBufferHeight() { return bufferHeight; };
 	bool GetShouldClose() { return glfwWindowShouldClose(glfwWindow); };
 	bool* getKeys() { return keys; };
 	bool* getMouseButtons() { return buttons; };
@@ -30,8 +30,8 @@ private:
 
 	GLint width;
 	GLint height;
-	GLsizei bufferWidth;
-	GLsizei bufferHeight;
+	unsigned int bufferWidth;
+	unsigned int bufferHeight;
 
 	bool keys[1024];
 	bool buttons[32];

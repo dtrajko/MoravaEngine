@@ -100,6 +100,14 @@ void Renderer::SetShaders()
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
 }
 
+void Renderer::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	RenderPassShadow(scene, projectionMatrix);
+	RenderOmniShadows(scene, projectionMatrix);
+	RenderWaterEffects(deltaTime, scene, projectionMatrix);
+	RenderPass(mainWindow, scene, projectionMatrix);
+}
+
 void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glDisable(GL_CLIP_DISTANCE0);
@@ -202,22 +210,6 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	passType = "main";
 	scene->RenderWater(projectionMatrix, passType, shaders, uniforms);
 	shaderWater->Unbind();
-
-	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(shaders["pbr"]);
-
-	shaderPBR->Bind();
-	uniforms["model"] = shaderPBR->GetModelLocation();
-	uniforms["projection"] = shaderPBR->GetProjectionLocation();
-	uniforms["view"] = shaderPBR->GetViewLocation();
-
-	shaderPBR->SetCameraPosition(scene->GetCamera()->GetPosition());
-
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
-	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(scene->GetCamera()->CalculateViewMatrix()));
-	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-
-	DisableCulling();
-	scene->RenderPBR(projectionMatrix, passType, shaders, uniforms);
 }
 
 void Renderer::RenderPassShadow(Scene* scene, glm::mat4 projectionMatrix)
@@ -244,14 +236,6 @@ void Renderer::RenderPassShadow(Scene* scene, glm::mat4 projectionMatrix)
 	scene->Render(projectionMatrix, passType, shaders, uniforms);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void Renderer::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
-{
-	RenderPassShadow(scene, projectionMatrix);
-	RenderOmniShadows(scene, projectionMatrix);
-	RenderWaterEffects(deltaTime, scene, projectionMatrix);
-	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
 void Renderer::RenderOmniShadows(Scene* scene, glm::mat4 projectionMatrix)

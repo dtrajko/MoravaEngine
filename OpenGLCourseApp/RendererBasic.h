@@ -13,12 +13,15 @@ class RendererBasic
 public:
 
 	RendererBasic();
-	void Init();
-	void SetUniforms();
-	void SetShaders();
-	std::map<std::string, Shader*> GetShaders() { return shaders; };
+
+	virtual void Init();
+	virtual void SetUniforms();
+	virtual void SetShaders();
 	virtual void Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix) = 0;
+
+	std::map<std::string, Shader*> GetShaders() { return shaders; };
 	void RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window& mainWindow);
+	void SetDefaultFramebuffer(unsigned int width, unsigned int height);
 	void EnableCulling();
 	void DisableCulling();
 	void Cleanup();

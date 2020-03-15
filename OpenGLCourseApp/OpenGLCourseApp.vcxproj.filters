@@ -16,6 +16,12 @@
     <Filter Include="ImGui">
       <UniqueIdentifier>{a884542e-61ec-48af-bfab-35bf796e0272}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\learnopengl">
+      <UniqueIdentifier>{67e8cd45-2dd1-4abd-b7bb-40c3204637b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\learnopengl">
+      <UniqueIdentifier>{17a5bc3f-f72e-4f3d-b6e6-0c52a9052428}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -160,6 +166,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RendererBasic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="learnopengl\shaderJoey.cpp">
+      <Filter>Source Files\learnopengl</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererJoey.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneJoey.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RendererPBR.cpp">
@@ -324,6 +339,27 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RendererBasic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="learnopengl\camera.h">
+      <Filter>Header Files\learnopengl</Filter>
+    </ClInclude>
+    <ClInclude Include="learnopengl\mesh.h">
+      <Filter>Header Files\learnopengl</Filter>
+    </ClInclude>
+    <ClInclude Include="learnopengl\model.h">
+      <Filter>Header Files\learnopengl</Filter>
+    </ClInclude>
+    <ClInclude Include="learnopengl\shaderJoey.h">
+      <Filter>Header Files\learnopengl</Filter>
+    </ClInclude>
+    <ClInclude Include="learnopengl\functions.h">
+      <Filter>Header Files\learnopengl</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererJoey.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneJoey.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RendererPBR.h">

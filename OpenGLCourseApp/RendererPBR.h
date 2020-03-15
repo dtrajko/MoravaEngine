@@ -13,12 +13,14 @@ class RendererPBR : public RendererBasic
 public:
 
 	RendererPBR();
-	void Init();
-	void SetUniforms();
-	void SetShaders();
-	std::map<std::string, Shader*> GetShaders() { return shaders; };
+
+	virtual void Init() override;
+	virtual void SetUniforms() override;
+	virtual void SetShaders() override;
 	virtual void Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
-	void RenderPass();
+
+	std::map<std::string, Shader*> GetShaders() { return shaders; };
+	void RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 	~RendererPBR();
 
 private:

@@ -8,11 +8,13 @@ class SceneTerrain : public Scene
 
 public:
 	SceneTerrain();
+
 	virtual void Update(float timestep) override;
 	virtual void Render(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
+
 	~SceneTerrain();
 
 private:
