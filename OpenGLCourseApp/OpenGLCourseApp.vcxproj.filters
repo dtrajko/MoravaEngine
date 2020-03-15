@@ -162,7 +162,7 @@
     <ClCompile Include="RendererBasic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RendererIBL.cpp">
+    <ClCompile Include="RendererPBR.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -326,7 +326,7 @@
     <ClInclude Include="RendererBasic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RendererIBL.h">
+    <ClInclude Include="RendererPBR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

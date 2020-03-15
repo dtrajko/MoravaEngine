@@ -50,7 +50,7 @@ void SceneCottage::SetSkybox()
 	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_dn.tga");
 	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_bk.tga");
 	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_ft.tga");
-	skybox = new Skybox(skyboxFaces);
+	m_Skybox = new Skybox(skyboxFaces);
 }
 
 void SceneCottage::SetTextures()
@@ -89,7 +89,7 @@ void SceneCottage::SetupModels()
 	meshes.insert(std::make_pair("sphere", sphere));
 }
 
-void SceneCottage::Update(float timestep, Camera* camera, LightManager& lightManager, WaterManager* waterManager)
+void SceneCottage::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
 {
 	glm::vec3 pLightPos = sceneSettings.pLight_0_position;
 	float lightRadius = 6.0;
@@ -127,7 +127,7 @@ void SceneCottage::Update(float timestep, Camera* camera, LightManager& lightMan
 	lightManager.pointLights[1].SetDiffuseIntensity(PL1_DiffIntensity);
 }
 
-void SceneCottage::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	glm::mat4 sceneOrigin = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));

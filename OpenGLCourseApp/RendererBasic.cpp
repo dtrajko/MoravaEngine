@@ -5,15 +5,17 @@
 #include <GLFW/glfw3.h>
 
 
-std::map<std::string, Shader*> RendererBasic::shaders;
-std::map<std::string, GLint> RendererBasic::uniforms;
-glm::vec4 RendererBasic::bgColor = glm::vec4(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
 
+RendererBasic::RendererBasic()
+{
+}
 
 void RendererBasic::Init()
 {
 	SetUniforms();
 	SetShaders();
+
+	bgColor = glm::vec4(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
 }
 
 void RendererBasic::SetUniforms()
@@ -33,7 +35,7 @@ void RendererBasic::SetShaders()
 {
 }
 
-void RendererBasic::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene, Camera* camera)
+void RendererBasic::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene)
 {
 	glDisable(GL_CLIP_DISTANCE0);
 
@@ -64,4 +66,8 @@ void RendererBasic::Cleanup()
 
 	shaders.clear();
 	uniforms.clear();
+}
+
+RendererBasic::~RendererBasic()
+{
 }

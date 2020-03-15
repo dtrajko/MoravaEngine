@@ -53,7 +53,7 @@ void SceneTerrain::SetSkybox()
 	skyboxFaces.push_back("Textures/skybox_4/bottom.png");
 	skyboxFaces.push_back("Textures/skybox_4/back.png");
 	skyboxFaces.push_back("Textures/skybox_4/front.png");
-	skybox = new Skybox(skyboxFaces);
+	m_Skybox = new Skybox(skyboxFaces);
 }
 
 void SceneTerrain::SetTextures()
@@ -70,7 +70,7 @@ void SceneTerrain::SetupModels()
 	meshes.insert(std::make_pair("terrain", mesh));
 }
 
-void SceneTerrain::Update(float timestep, Camera* camera, LightManager& lightManager, WaterManager* waterManager)
+void SceneTerrain::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
 {
 	ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, -20.0f, 100.0f);
 	ImGui::SliderFloat3("Terrain scale", glm::value_ptr(m_TerrainScale), -5.0f, 5.0f);
@@ -78,11 +78,9 @@ void SceneTerrain::Update(float timestep, Camera* camera, LightManager& lightMan
 	waterManager->SetWaterHeight(sceneSettings.waterHeight);
 }
 
-void SceneTerrain::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+void SceneTerrain::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
-	Renderer::EnableCulling();
-
 	/* Island */
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-196.0f, 0.0f, -196.0f));
@@ -98,12 +96,10 @@ void SceneTerrain::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std:
 	meshes["terrain"]->RenderMesh();
 }
 
-void SceneTerrain::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	if (!sceneSettings.enableWaterEffects) return;
-
-	Renderer::EnableCulling();
 
 	ShaderWater* shaderWater = (ShaderWater*)shaders["water"];
 

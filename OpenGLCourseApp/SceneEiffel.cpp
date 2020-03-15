@@ -53,7 +53,7 @@ void SceneEiffel::SetSkybox()
 	skyboxFaces.push_back("Textures/skybox_3/bottom.png");
 	skyboxFaces.push_back("Textures/skybox_3/back.png");
 	skyboxFaces.push_back("Textures/skybox_3/front.png");
-	skybox = new Skybox(skyboxFaces);
+	m_Skybox = new Skybox(skyboxFaces);
 }
 
 void SceneEiffel::SetTextures()
@@ -86,7 +86,7 @@ void SceneEiffel::SetupModels()
 	models.insert(std::make_pair("cerberus", cerberus));
 }
 
-void SceneEiffel::Update(float timestep, Camera* camera, LightManager& lightManager, WaterManager* waterManager)
+void SceneEiffel::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
 {
 	// Shadow rotation
 	m_LightDirection = sceneSettings.lightDirection;
@@ -106,11 +106,9 @@ void SceneEiffel::Update(float timestep, Camera* camera, LightManager& lightMana
 	lightManager.directionalLight.SetColor(m_LightColor);
 }
 
-void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+void SceneEiffel::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
-	Renderer::EnableCulling();
-
 	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
 
 	glm::mat4 model;
@@ -220,12 +218,10 @@ void SceneEiffel::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 	}
 }
 
-void SceneEiffel::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+void SceneEiffel::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	if (!sceneSettings.enableWaterEffects) return;
-
-	Renderer::EnableCulling();
 
 	ShaderWater* shaderWater = (ShaderWater*)shaders["water"];
 

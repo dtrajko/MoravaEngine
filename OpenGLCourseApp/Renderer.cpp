@@ -7,6 +7,10 @@
 #include "WaterManager.h"
 
 
+Renderer::Renderer()
+{
+}
+
 void Renderer::Init()
 {
 	SetUniforms();
@@ -96,7 +100,7 @@ void Renderer::SetShaders()
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
 }
 
-void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene, Camera* camera, WaterManager* waterManager)
+void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene, WaterManager* waterManager)
 {
 	glDisable(GL_CLIP_DISTANCE0);
 
@@ -111,7 +115,7 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		float angleRadians = glm::radians((GLfloat)glfwGetTime());
 		modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		scene->GetSkybox()->Draw(modelMatrix, camera->CalculateViewMatrix(), projectionMatrix);
+		scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->CalculateViewMatrix(), projectionMatrix);
 	}
 
 	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
@@ -124,9 +128,9 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
 	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 
-	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
+	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(scene->GetCamera()->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniform3f(uniforms["eyePosition"], camera->GetPosition().x, camera->GetPosition().y, camera->GetPosition().z);
+	glUniform3f(uniforms["eyePosition"], scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
 
 	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
 	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
@@ -143,12 +147,16 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 
 	shaderMain->Validate();
 
-	glm::vec3 lowerLight = camera->GetPosition();
+	glm::vec3 lowerLight = scene->GetCamera()->GetPosition();
 	lowerLight.y -= 0.2f;
-	LightManager::spotLights[2].SetFlash(lowerLight, camera->GetDirection());
+	LightManager::spotLights[2].SetFlash(lowerLight, scene->GetCamera()->GetDirection());
 
 	std::string passType = "main";
-	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
+
+	EnableCulling();
+	scene->Render(projectionMatrix, passType, shaders, uniforms, waterManager);
+
+	shaderMain->Unbind();
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -171,7 +179,7 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	uniforms["farPlane"] = shaderWater->GetUniformLocationFarPlane();
 
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
-	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
+	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(scene->GetCamera()->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
 	waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["depth"]);
@@ -182,7 +190,7 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	shaderWater->SetWater(scene->GetTextureSlots()["reflection"], scene->GetTextureSlots()["refraction"],
 		scene->GetTextureSlots()["DuDv"], scene->GetTextureSlots()["depth"]);
 	shaderWater->SetMoveFactor(waterManager->GetWaterMoveFactor());
-	shaderWater->SetCameraPosition(camera->GetPosition());
+	shaderWater->SetCameraPosition(scene->GetCamera()->GetPosition());
 	shaderWater->SetLightColor(LightManager::directionalLight.GetColor());
 	shaderWater->SetLightPosition(LightManager::directionalLight.GetPosition());
 	shaderWater->SetNormalMap(scene->GetTextureSlots()["normal"]);
@@ -190,8 +198,9 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	shaderWater->SetDuDvMap(scene->GetTextureSlots()["DuDv"]);
 	shaderWater->Validate();
 
+	EnableCulling();
 	passType = "main";
-	scene->RenderWater(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
+	scene->RenderWater(projectionMatrix, passType, shaders, uniforms, waterManager);
 	shaderWater->Unbind();
 
 	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(shaders["pbr"]);
@@ -201,16 +210,17 @@ void Renderer::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene*
 	uniforms["projection"] = shaderPBR->GetProjectionLocation();
 	uniforms["view"] = shaderPBR->GetViewLocation();
 
-	shaderPBR->SetCameraPosition(camera->GetPosition());
+	shaderPBR->SetCameraPosition(scene->GetCamera()->GetPosition());
 
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
-	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
+	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(scene->GetCamera()->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
-	scene->RenderPBR(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms);
+	DisableCulling();
+	scene->RenderPBR(projectionMatrix, passType, shaders, uniforms);
 }
 
-void Renderer::RenderPassShadow(DirectionalLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
+void Renderer::RenderPassShadow(DirectionalLight* light, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
 {
 	if (!scene->GetSettings().enableShadows) return;
 
@@ -228,24 +238,25 @@ void Renderer::RenderPassShadow(DirectionalLight* light, glm::mat4 viewMatrix, g
 
 	shaders["directionalShadow"]->Validate();
 
+	EnableCulling();
 	std::string passType = "shadow";
-	scene->Render(viewMatrix, projectionMatrix, passType, shaders, uniforms, waterManager);
+	scene->Render(projectionMatrix, passType, shaders, uniforms, waterManager);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::RenderOmniShadows(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
+void Renderer::RenderOmniShadows(glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
 {
 	if (!scene->GetSettings().enableOmniShadows) return;
 
 	for (size_t i = 0; i < LightManager::pointLightCount; i++)
-		Renderer::RenderPassOmniShadow(&LightManager::pointLights[i], viewMatrix, projectionMatrix, scene, waterManager);
+		Renderer::RenderPassOmniShadow(&LightManager::pointLights[i], projectionMatrix, scene, waterManager);
 
 	for (size_t i = 0; i < LightManager::spotLightCount; i++)
-		Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], viewMatrix, projectionMatrix, scene, waterManager);
+		Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], projectionMatrix, scene, waterManager);
 }
 
-void Renderer::RenderPassOmniShadow(PointLight* light, glm::mat4 viewMatrix, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
+void Renderer::RenderPassOmniShadow(PointLight* light, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager)
 {
 	shaders["omniShadow"]->Bind();
 
@@ -267,13 +278,14 @@ void Renderer::RenderPassOmniShadow(PointLight* light, glm::mat4 viewMatrix, glm
 
 	shaders["omniShadow"]->Validate();
 
+	EnableCulling();
 	std::string passType = "shadow";
-	scene->Render(viewMatrix, projectionMatrix, passType, shaders, uniforms, waterManager);
+	scene->Render(projectionMatrix, passType, shaders, uniforms, waterManager);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::RenderWaterEffects(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene, Camera* camera, float deltaTime)
+void Renderer::RenderWaterEffects(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene, float deltaTime)
 {
 	if (!scene->GetSettings().enableWaterEffects) return;
 
@@ -284,19 +296,19 @@ void Renderer::RenderWaterEffects(WaterManager* waterManager, glm::mat4 projecti
 		waterMoveFactor = waterMoveFactor - 1.0f;
 	waterManager->SetWaterMoveFactor(waterMoveFactor);
 
-	float distance = 2.0f * (camera->GetPosition().y - waterManager->GetWaterHeight());
-	camera->SetPosition(glm::vec3(camera->GetPosition().x, camera->GetPosition().y - distance, camera->GetPosition().z));
-	camera->InvertPitch();
+	float distance = 2.0f * (scene->GetCamera()->GetPosition().y - waterManager->GetWaterHeight());
+	scene->GetCamera()->SetPosition(glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y - distance, scene->GetCamera()->GetPosition().z));
+	scene->GetCamera()->InvertPitch();
 
-	Renderer::RenderPassWaterReflection(waterManager, projectionMatrix, scene, camera);
+	Renderer::RenderPassWaterReflection(waterManager, projectionMatrix, scene);
 
-	camera->SetPosition(glm::vec3(camera->GetPosition().x, camera->GetPosition().y + distance, camera->GetPosition().z));
-	camera->InvertPitch();
+	scene->GetCamera()->SetPosition(glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y + distance, scene->GetCamera()->GetPosition().z));
+	scene->GetCamera()->InvertPitch();
 
-	Renderer::RenderPassWaterRefraction(waterManager, projectionMatrix, scene, camera);
+	Renderer::RenderPassWaterRefraction(waterManager, projectionMatrix, scene);
 }
 
-void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene, Camera* camera)
+void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene)
 {
 	glViewport(0, 0, waterManager->GetFramebufferWidth(), waterManager->GetFramebufferHeight());
 
@@ -309,7 +321,7 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 	glm::mat4 modelMatrixSkybox = glm::mat4(1.0f);
 	float angleRadians = glm::radians((GLfloat)glfwGetTime());
 	modelMatrixSkybox = glm::rotate(modelMatrixSkybox, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-	scene->GetSkybox()->Draw(modelMatrixSkybox, camera->CalculateViewMatrix(), projectionMatrix);
+	scene->GetSkybox()->Draw(modelMatrixSkybox, scene->GetCamera()->CalculateViewMatrix(), projectionMatrix);
 
 	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
 	shaderMain->Bind();
@@ -321,9 +333,9 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
 	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 
-	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
+	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(scene->GetCamera()->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniform3f(uniforms["eyePosition"], camera->GetPosition().x, camera->GetPosition().y, camera->GetPosition().z);
+	glUniform3f(uniforms["eyePosition"], scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
 
 	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
 	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
@@ -340,13 +352,14 @@ void Renderer::RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 p
 
 	shaderMain->Validate();
 
-	std::string passType = "water";
-	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
+	EnableCulling();
+	std::string passType ="water";
+	scene->Render(projectionMatrix, passType, shaders, uniforms, waterManager);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene, Camera* camera)
+void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene)
 {
 	glViewport(0, 0, waterManager->GetFramebufferWidth(), waterManager->GetFramebufferHeight());
 
@@ -368,9 +381,9 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
 	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 
-	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(camera->CalculateViewMatrix()));
+	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(scene->GetCamera()->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniform3f(uniforms["eyePosition"], camera->GetPosition().x, camera->GetPosition().y, camera->GetPosition().z);
+	glUniform3f(uniforms["eyePosition"], scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
 
 	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
 	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
@@ -388,7 +401,11 @@ void Renderer::RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 p
 	shaderMain->Validate();
 
 	std::string passType = "water";
-	scene->Render(camera->CalculateViewMatrix(), projectionMatrix, passType, shaders, uniforms, waterManager);
+	scene->Render(projectionMatrix, passType, shaders, uniforms, waterManager);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+Renderer::~Renderer()
+{
 }

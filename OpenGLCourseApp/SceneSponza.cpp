@@ -35,7 +35,7 @@ SceneSponza::SceneSponza()
 	sceneSettings.shadowMapHeight = 4096;
 	sceneSettings.shadowSpeed = 0.1f;
 	sceneSettings.waterHeight = 0.2f;
-	sceneSettings.waterWaveSpeed = 0.005f;
+	sceneSettings.waterWaveSpeed = 0.02f;
 
 	SetSkybox();
 	SetTextures();
@@ -50,7 +50,7 @@ void SceneSponza::SetSkybox()
 	skyboxFaces.push_back("Textures/skybox_4/bottom.png");
 	skyboxFaces.push_back("Textures/skybox_4/back.png");
 	skyboxFaces.push_back("Textures/skybox_4/front.png");
-	skybox = new Skybox(skyboxFaces);
+	m_Skybox = new Skybox(skyboxFaces);
 }
 
 void SceneSponza::SetTextures()
@@ -64,7 +64,7 @@ void SceneSponza::SetupModels()
 	models.insert(std::make_pair("sponza", sponza));
 }
 
-void SceneSponza::Update(float timestep, Camera* camera, LightManager& lightManager, WaterManager* waterManager)
+void SceneSponza::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
 {
 	// Shadow rotation
 	glm::vec3 lightDirection = lightManager.directionalLight.GetDirection();
@@ -125,11 +125,9 @@ void SceneSponza::Update(float timestep, Camera* camera, LightManager& lightMana
 	lightManager.pointLights[2].SetDiffuseIntensity(PL2_DiffIntensity);
 }
 
-void SceneSponza::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+void SceneSponza::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
-	Renderer::EnableCulling();
-
 	/* Sponza scene */
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -158,12 +156,10 @@ void SceneSponza::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 	}
 }
 
-void SceneSponza::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+void SceneSponza::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	if (!sceneSettings.enableWaterEffects) return;
-
-	Renderer::EnableCulling();
 
 	ShaderWater* shaderWater = (ShaderWater*)shaders["water"];
 

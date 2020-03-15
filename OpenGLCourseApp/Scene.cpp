@@ -118,6 +118,11 @@ void Scene::SetTextures()
 	textures["waterNormal"]->Load();
 }
 
+void Scene::SetCamera()
+{
+	m_Camera = new Camera(sceneSettings.cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), sceneSettings.cameraStartYaw, 0.0f, sceneSettings.cameraMoveSpeed, 0.1f);
+}
+
 Scene::~Scene()
 {
 	for (auto& texture : textures)
@@ -139,5 +144,6 @@ Scene::~Scene()
 	meshes.clear();
 	models.clear();
 
-	delete skybox;
+	delete m_Skybox;
+	delete m_Camera;
 }

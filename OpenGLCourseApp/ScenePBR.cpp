@@ -87,7 +87,7 @@ void ScenePBR::SetSkybox()
 	skyboxFaces.push_back("Textures/skybox_4/bottom.png");
 	skyboxFaces.push_back("Textures/skybox_4/back.png");
 	skyboxFaces.push_back("Textures/skybox_4/front.png");
-	skybox = new Skybox(skyboxFaces);
+	m_Skybox = new Skybox(skyboxFaces);
 }
 
 void ScenePBR::SetTextures()
@@ -146,9 +146,9 @@ void ScenePBR::SetupModels()
 	}
 }
 
-void ScenePBR::Update(float timestep, Camera* camera, LightManager& lightManager, WaterManager* waterManager)
+void ScenePBR::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
 {
-	m_CameraPosition = camera->GetPosition();
+	m_CameraPosition = m_Camera->GetPosition();
 
 	ImGui::ColorEdit3("Albedo", glm::value_ptr(m_Albedo));
 	ImGui::SliderFloat("Metallic", &m_Metallic, 0.0f, 1.0f);
@@ -170,16 +170,14 @@ void ScenePBR::Update(float timestep, Camera* camera, LightManager& lightManager
 	ImGui::SliderFloat3("Light Pos Offset 3", glm::value_ptr(m_LightPosOffset_3), -60.0f, 60.0f);
 }
 
-void ScenePBR::Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+void ScenePBR::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
-	Renderer::EnableCulling();
 }
 
-void ScenePBR::RenderPBR(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType, std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+void ScenePBR::RenderPBR(glm::mat4 projectionMatrix, std::string passType, std::map<std::string, 
+	Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
-	Renderer::DisableCulling();
-
 	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(shaders["pbr"]);
 
 	shaderPBR->Bind();
@@ -284,12 +282,10 @@ void ScenePBR::RenderPBR(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::
 	}
 }
 
-void ScenePBR::RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+void ScenePBR::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
 {
 	if (!sceneSettings.enableWaterEffects) return;
-
-	Renderer::EnableCulling();
 
 	ShaderWater* shaderWater = (ShaderWater*)shaders["water"];
 

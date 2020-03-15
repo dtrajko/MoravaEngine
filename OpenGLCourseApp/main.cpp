@@ -18,7 +18,6 @@
 #include "Renderer.h"
 #include "LightManager.h"
 #include "WaterManager.h"
-#include "RendererIBL.h"
 
 
 // Window dimensions
@@ -28,7 +27,7 @@ const float toRadians = 3.14159265f / 180.0f;
 
 Window mainWindow;
 Scene* scene;
-Camera* camera;
+Renderer* renderer;
 
 std::string currentScene = "pbr"; // "cottage", "eiffel", "sponza", "terrain", "pbr"
 
@@ -57,7 +56,8 @@ int main()
 	else if (currentScene == "pbr")
 		scene = new ScenePBR();
 
-	camera = new Camera(scene->GetSettings().cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), scene->GetSettings().cameraStartYaw, 0.0f, scene->GetSettings().cameraMoveSpeed, 0.1f);
+	scene->SetCamera();
+	renderer = new Renderer();
 
 	// Projection matrix
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
@@ -70,8 +70,7 @@ int main()
 	WaterManager* waterManager = new WaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight(),
 		scene->GetSettings().waterHeight, scene->GetSettings().waterWaveSpeed);
 
-	Renderer::Init();
-	RendererIBL::Init();
+	renderer->Init();
 
 	ImGuiWrapper::Init(&mainWindow);
 
@@ -82,8 +81,8 @@ int main()
 		deltaTime = now - lastTime;
 		lastTime = now;
 
-		camera->KeyControl(mainWindow.getKeys(), deltaTime);
-		camera->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
+		scene->GetCamera()->KeyControl(mainWindow.getKeys(), deltaTime);
+		scene->GetCamera()->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
 		// camera->mouseScrollControl(mainWindow.getKeys(), deltaTime, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
 
 		if (mainWindow.getKeys()[GLFW_KEY_L])
@@ -94,17 +93,14 @@ int main()
 
 		ImGuiWrapper::Begin();
 
-		scene->Update(now, camera, *lightManager, waterManager);
+		scene->Update(now, *lightManager, waterManager);
 
-		Renderer::RenderPassShadow(&LightManager::directionalLight, camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
-		Renderer::RenderOmniShadows(camera->CalculateViewMatrix(), projectionMatrix, scene, waterManager);
-		Renderer::RenderWaterEffects(waterManager, projectionMatrix, scene, camera, deltaTime);
-		RendererIBL::RenderEnvironmentCubemap(mainWindow, scene);
-		Renderer::RenderPass(projectionMatrix, mainWindow, scene, camera, waterManager);
+		renderer->RenderPassShadow(&LightManager::directionalLight, projectionMatrix, scene, waterManager);
+		renderer->RenderOmniShadows(projectionMatrix, scene, waterManager);
+		renderer->RenderWaterEffects(waterManager, projectionMatrix, scene, deltaTime);
+		renderer->RenderPass(projectionMatrix, mainWindow, scene, waterManager);
 
 		ImGuiWrapper::End();
-
-		Renderer::GetShaders()["main"]->Unbind();
 
 		glDisable(GL_BLEND);
 
@@ -119,7 +115,7 @@ int main()
 
 	delete lightManager;
 	delete scene;
-	delete camera;
+	delete renderer;
 
 	return 0;
 }

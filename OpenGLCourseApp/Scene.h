@@ -75,17 +75,19 @@ class Scene
 
 public:
 	Scene();
-	virtual void Update(float timestep, Camera* camera, LightManager& lightManager, WaterManager* waterManager) = 0;
-	virtual void Render(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+	virtual void Update(float timestep, LightManager& lightManager, WaterManager* waterManager) = 0;
+	virtual void Render(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager) = 0;
-	virtual void RenderWater(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager) {};
-	virtual void RenderPBR(glm::mat4 viewMatrix, glm::mat4 projectionMatrix, std::string passType,
+	virtual void RenderPBR(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) {};
-	inline Skybox* GetSkybox() const { return skybox; };
+	inline Skybox* GetSkybox() const { return m_Skybox; };
 	static inline SceneSettings GetSettings() { return sceneSettings; };
 	std::map<std::string, Texture*> GetTextures() const { return textures; };
 	std::map<std::string, GLuint> GetTextureSlots() const { return textureSlots; };
+	void SetCamera();
+	Camera* GetCamera() const { return m_Camera; };
 	~Scene();
 
 private:
@@ -99,7 +101,8 @@ private:
 protected:
 	static SceneSettings sceneSettings;
 
-	Skybox* skybox;
+	Camera* m_Camera;
+	Skybox* m_Skybox;
 	std::vector<std::string> skyboxFaces;
 
 	std::map<std::string, Texture*> textures;
@@ -109,8 +112,6 @@ protected:
 	std::map<std::string, Model*> models;
 
 private:
-	Camera camera;
-
 	DirectionalLight directionalLight;
 	PointLight pointLights[MAX_POINT_LIGHTS];
 	SpotLight spotLights[MAX_SPOT_LIGHTS];

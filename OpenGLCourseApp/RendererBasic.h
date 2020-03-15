@@ -12,20 +12,19 @@ class RendererBasic
 
 public:
 
-	static void Init();
-	static void SetUniforms();
-	static void SetShaders();
-	static std::map<std::string, Shader*> GetShaders() { return shaders; };
-
-	static void RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene, Camera* camera);
-
-	static void EnableCulling();
-	static void DisableCulling();
-
-	static void Cleanup();
+	RendererBasic();
+	void Init();
+	void SetUniforms();
+	void SetShaders();
+	std::map<std::string, Shader*> GetShaders() { return shaders; };
+	void RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene);
+	void EnableCulling();
+	void DisableCulling();
+	void Cleanup();
+	~RendererBasic();
 
 protected:
-	static std::map<std::string, Shader*> shaders;
-	static std::map<std::string, GLint> uniforms;
-	static glm::vec4 bgColor;
+	std::map<std::string, Shader*> shaders;
+	std::map<std::string, GLint> uniforms;
+	glm::vec4 bgColor;
 };

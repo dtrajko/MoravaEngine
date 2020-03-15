@@ -189,7 +189,7 @@
     <ClCompile Include="Renderbuffer.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererBasic.cpp" />
-    <ClCompile Include="RendererIBL.cpp" />
+    <ClCompile Include="RendererPBR.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ScenePBR.cpp" />
     <ClCompile Include="SceneCottage.cpp" />
@@ -244,7 +244,7 @@
     <ClInclude Include="Renderbuffer.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RendererBasic.h" />
-    <ClInclude Include="RendererIBL.h" />
+    <ClInclude Include="RendererPBR.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ScenePBR.h" />
     <ClInclude Include="SceneCottage.h" />
