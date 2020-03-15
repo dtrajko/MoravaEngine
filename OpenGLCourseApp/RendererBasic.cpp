@@ -35,7 +35,7 @@ void RendererBasic::SetShaders()
 {
 }
 
-void RendererBasic::RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene)
+void RendererBasic::RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window& mainWindow)
 {
 	glDisable(GL_CLIP_DISTANCE0);
 

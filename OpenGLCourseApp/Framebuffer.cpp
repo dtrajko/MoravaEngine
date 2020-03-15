@@ -63,15 +63,8 @@ void Framebuffer::Unbind()
 
 Framebuffer::~Framebuffer()
 {
-	if (m_DepthAttachment)
-		delete m_DepthAttachment;
-
-	if (m_DepthAttachment)
-		delete m_DepthAttachment;
-
-	if (m_DepthBuffer)
-		delete m_DepthBuffer;
-
-	if (fbo)
-		glDeleteFramebuffers(1, &fbo);
+	delete m_ColorAttachment;
+	delete m_DepthAttachment;
+	delete m_DepthBuffer;
+	glDeleteFramebuffers(1, &fbo);
 }

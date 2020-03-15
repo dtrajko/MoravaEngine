@@ -89,7 +89,7 @@ void SceneCottage::SetupModels()
 	meshes.insert(std::make_pair("sphere", sphere));
 }
 
-void SceneCottage::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
+void SceneCottage::Update(float timestep)
 {
 	glm::vec3 pLightPos = sceneSettings.pLight_0_position;
 	float lightRadius = 6.0;
@@ -97,16 +97,16 @@ void SceneCottage::Update(float timestep, LightManager& lightManager, WaterManag
 	pLightPos.x += (float)cos(lightAngle) * lightRadius;
 	pLightPos.z += (float)sin(lightAngle) * lightRadius;
 	pLightPos.y += (float)cos(lightAngle * 0.5) * lightRadius * 0.5f;
-	lightManager.pointLights[0].SetPosition(pLightPos);
+	m_LightManager->pointLights[0].SetPosition(pLightPos);
 
-	glm::vec3 PL0_Position  = lightManager.pointLights[0].GetPosition();
-	glm::vec3 PL0_Color     = lightManager.pointLights[0].GetColor();
-	float PL0_AmbIntensity  = lightManager.pointLights[0].GetAmbientIntensity();
-	float PL0_DiffIntensity = lightManager.pointLights[0].GetDiffuseIntensity();
-	glm::vec3 PL1_Position  = lightManager.pointLights[1].GetPosition();
-	glm::vec3 PL1_Color     = lightManager.pointLights[1].GetColor();
-	float PL1_AmbIntensity  = lightManager.pointLights[1].GetAmbientIntensity();
-	float PL1_DiffIntensity = lightManager.pointLights[1].GetDiffuseIntensity();
+	glm::vec3 PL0_Position  = m_LightManager->pointLights[0].GetPosition();
+	glm::vec3 PL0_Color     = m_LightManager->pointLights[0].GetColor();
+	float PL0_AmbIntensity  = m_LightManager->pointLights[0].GetAmbientIntensity();
+	float PL0_DiffIntensity = m_LightManager->pointLights[0].GetDiffuseIntensity();
+	glm::vec3 PL1_Position  = m_LightManager->pointLights[1].GetPosition();
+	glm::vec3 PL1_Color     = m_LightManager->pointLights[1].GetColor();
+	float PL1_AmbIntensity  = m_LightManager->pointLights[1].GetAmbientIntensity();
+	float PL1_DiffIntensity = m_LightManager->pointLights[1].GetDiffuseIntensity();
 
 	ImGui::SliderFloat3("PL0 Position",      glm::value_ptr(PL0_Position), -20.0f, 20.0f);
 	ImGui::ColorEdit3("PL0 Color",           glm::value_ptr(PL0_Color));
@@ -117,18 +117,18 @@ void SceneCottage::Update(float timestep, LightManager& lightManager, WaterManag
 	ImGui::SliderFloat("PL1 Amb Intensity",  &PL1_AmbIntensity, -20.0f, 20.0f);
 	ImGui::SliderFloat("PL1 Diff Intensity", &PL1_DiffIntensity, -20.0f, 20.0f);
 
-	lightManager.pointLights[0].SetPosition(PL0_Position);
-	lightManager.pointLights[0].SetColor(PL0_Color);
-	lightManager.pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
-	lightManager.pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
-	lightManager.pointLights[1].SetPosition(PL1_Position);
-	lightManager.pointLights[1].SetColor(PL1_Color);
-	lightManager.pointLights[1].SetAmbientIntensity(PL1_AmbIntensity);
-	lightManager.pointLights[1].SetDiffuseIntensity(PL1_DiffIntensity);
+	m_LightManager->pointLights[0].SetPosition(PL0_Position);
+	m_LightManager->pointLights[0].SetColor(PL0_Color);
+	m_LightManager->pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
+	m_LightManager->pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
+	m_LightManager->pointLights[1].SetPosition(PL1_Position);
+	m_LightManager->pointLights[1].SetColor(PL1_Color);
+	m_LightManager->pointLights[1].SetAmbientIntensity(PL1_AmbIntensity);
+	m_LightManager->pointLights[1].SetDiffuseIntensity(PL1_DiffIntensity);
 }
 
 void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
+	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	glm::mat4 sceneOrigin = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 

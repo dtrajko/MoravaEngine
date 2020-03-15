@@ -56,20 +56,16 @@ int main()
 	else if (currentScene == "pbr")
 		scene = new ScenePBR();
 
-	scene->SetCamera();
-	renderer = new Renderer();
-
 	// Projection matrix
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
 		mainWindow.GetBufferWidth() / mainWindow.GetBufferHeight(), 
 		scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
 
-	LightManager* lightManager = new LightManager(scene->GetSettings());
+	scene->SetCamera();
+	scene->SetLightManager();
+	scene->SetWaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferWidth());
 
-	// Water framebuffers
-	WaterManager* waterManager = new WaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight(),
-		scene->GetSettings().waterHeight, scene->GetSettings().waterWaveSpeed);
-
+	renderer = new Renderer();
 	renderer->Init();
 
 	ImGuiWrapper::Init(&mainWindow);
@@ -83,7 +79,7 @@ int main()
 
 		scene->GetCamera()->KeyControl(mainWindow.getKeys(), deltaTime);
 		scene->GetCamera()->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
-		// camera->mouseScrollControl(mainWindow.getKeys(), deltaTime, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
+		// scene->GetCamera()->MouseScrollControl(mainWindow.getKeys(), deltaTime, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
 
 		if (mainWindow.getKeys()[GLFW_KEY_L])
 		{
@@ -93,12 +89,9 @@ int main()
 
 		ImGuiWrapper::Begin();
 
-		scene->Update(now, *lightManager, waterManager);
+		scene->Update(now);
 
-		renderer->RenderPassShadow(&LightManager::directionalLight, projectionMatrix, scene, waterManager);
-		renderer->RenderOmniShadows(projectionMatrix, scene, waterManager);
-		renderer->RenderWaterEffects(waterManager, projectionMatrix, scene, deltaTime);
-		renderer->RenderPass(projectionMatrix, mainWindow, scene, waterManager);
+		renderer->Render(deltaTime, mainWindow, scene, projectionMatrix);
 
 		ImGuiWrapper::End();
 
@@ -113,7 +106,6 @@ int main()
 
 	ImGuiWrapper::Cleanup();
 
-	delete lightManager;
 	delete scene;
 	delete renderer;
 

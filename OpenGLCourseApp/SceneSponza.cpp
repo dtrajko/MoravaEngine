@@ -64,29 +64,29 @@ void SceneSponza::SetupModels()
 	models.insert(std::make_pair("sponza", sponza));
 }
 
-void SceneSponza::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
+void SceneSponza::Update(float timestep)
 {
 	// Shadow rotation
-	glm::vec3 lightDirection = lightManager.directionalLight.GetDirection();
-	glm::vec3 lightColor = lightManager.directionalLight.GetColor();
+	glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();
+	glm::vec3 lightColor = m_LightManager->directionalLight.GetColor();
 	float lightRadius = abs(lightDirection.x);
 	float lightAngle = timestep * sceneSettings.shadowSpeed;
 	lightDirection.x = (float)cos(lightAngle) * lightRadius;
 	lightDirection.z = (float)sin(lightAngle) * lightRadius;
-	lightManager.directionalLight.SetDirection(lightDirection);
+	m_LightManager->directionalLight.SetDirection(lightDirection);
 
-	glm::vec3 PL0_Position = lightManager.pointLights[0].GetPosition();
-	glm::vec3 PL0_Color = lightManager.pointLights[0].GetColor();
-	float PL0_AmbIntensity = lightManager.pointLights[0].GetAmbientIntensity();
-	float PL0_DiffIntensity = lightManager.pointLights[0].GetDiffuseIntensity();
-	glm::vec3 PL1_Position = lightManager.pointLights[1].GetPosition();
-	glm::vec3 PL1_Color = lightManager.pointLights[1].GetColor();
-	float PL1_AmbIntensity = lightManager.pointLights[1].GetAmbientIntensity();
-	float PL1_DiffIntensity = lightManager.pointLights[1].GetDiffuseIntensity();
-	glm::vec3 PL2_Position = lightManager.pointLights[2].GetPosition();
-	glm::vec3 PL2_Color = lightManager.pointLights[2].GetColor();
-	float PL2_AmbIntensity = lightManager.pointLights[2].GetAmbientIntensity();
-	float PL2_DiffIntensity = lightManager.pointLights[2].GetDiffuseIntensity();
+	glm::vec3 PL0_Position = m_LightManager->pointLights[0].GetPosition();
+	glm::vec3 PL0_Color = m_LightManager->pointLights[0].GetColor();
+	float PL0_AmbIntensity = m_LightManager->pointLights[0].GetAmbientIntensity();
+	float PL0_DiffIntensity = m_LightManager->pointLights[0].GetDiffuseIntensity();
+	glm::vec3 PL1_Position = m_LightManager->pointLights[1].GetPosition();
+	glm::vec3 PL1_Color = m_LightManager->pointLights[1].GetColor();
+	float PL1_AmbIntensity = m_LightManager->pointLights[1].GetAmbientIntensity();
+	float PL1_DiffIntensity = m_LightManager->pointLights[1].GetDiffuseIntensity();
+	glm::vec3 PL2_Position = m_LightManager->pointLights[2].GetPosition();
+	glm::vec3 PL2_Color = m_LightManager->pointLights[2].GetColor();
+	float PL2_AmbIntensity = m_LightManager->pointLights[2].GetAmbientIntensity();
+	float PL2_DiffIntensity = m_LightManager->pointLights[2].GetDiffuseIntensity();
 
 	ImGui::SliderFloat("Water level",         &sceneSettings.waterHeight, 0.0f, 20.0f);
 
@@ -108,25 +108,25 @@ void SceneSponza::Update(float timestep, LightManager& lightManager, WaterManage
 	ImGui::SliderFloat("PL2 Amb Intensity",   &PL2_AmbIntensity, -20.0f, 20.0f);
 	ImGui::SliderFloat("PL2 Diff Intensity",  &PL2_DiffIntensity, -20.0f, 20.0f);
 
-	waterManager->SetWaterHeight(sceneSettings.waterHeight);
-	lightManager.directionalLight.SetDirection(lightDirection);
-	lightManager.directionalLight.SetColor(lightColor);
-	lightManager.pointLights[0].SetPosition(PL0_Position);
-	lightManager.pointLights[0].SetColor(PL0_Color);
-	lightManager.pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
-	lightManager.pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
-	lightManager.pointLights[1].SetPosition(PL1_Position);
-	lightManager.pointLights[1].SetColor(PL1_Color);
-	lightManager.pointLights[1].SetAmbientIntensity(PL1_AmbIntensity);
-	lightManager.pointLights[1].SetDiffuseIntensity(PL1_DiffIntensity);
-	lightManager.pointLights[2].SetPosition(PL2_Position);
-	lightManager.pointLights[2].SetColor(PL2_Color);
-	lightManager.pointLights[2].SetAmbientIntensity(PL2_AmbIntensity);
-	lightManager.pointLights[2].SetDiffuseIntensity(PL2_DiffIntensity);
+	m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
+	m_LightManager->directionalLight.SetDirection(lightDirection);
+	m_LightManager->directionalLight.SetColor(lightColor);
+	m_LightManager->pointLights[0].SetPosition(PL0_Position);
+	m_LightManager->pointLights[0].SetColor(PL0_Color);
+	m_LightManager->pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
+	m_LightManager->pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
+	m_LightManager->pointLights[1].SetPosition(PL1_Position);
+	m_LightManager->pointLights[1].SetColor(PL1_Color);
+	m_LightManager->pointLights[1].SetAmbientIntensity(PL1_AmbIntensity);
+	m_LightManager->pointLights[1].SetDiffuseIntensity(PL1_DiffIntensity);
+	m_LightManager->pointLights[2].SetPosition(PL2_Position);
+	m_LightManager->pointLights[2].SetColor(PL2_Color);
+	m_LightManager->pointLights[2].SetAmbientIntensity(PL2_AmbIntensity);
+	m_LightManager->pointLights[2].SetDiffuseIntensity(PL2_DiffIntensity);
 }
 
 void SceneSponza::Render(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
+	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	/* Sponza scene */
 	glm::mat4 model = glm::mat4(1.0f);
@@ -157,7 +157,7 @@ void SceneSponza::Render(glm::mat4 projectionMatrix, std::string passType,
 }
 
 void SceneSponza::RenderWater(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
+	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	if (!sceneSettings.enableWaterEffects) return;
 
@@ -165,7 +165,7 @@ void SceneSponza::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 
 	/* Water Tile */
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, waterManager->GetWaterHeight(), 0.0f));
+	model = glm::translate(model, glm::vec3(0.0f, m_WaterManager->GetWaterHeight(), 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -174,9 +174,9 @@ void SceneSponza::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	shaders["water"]->Bind();
 
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
-	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
-	waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
+	m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
+	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
+	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
 	shaders["water"]->SetTexture(textureSlots["reflection"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);

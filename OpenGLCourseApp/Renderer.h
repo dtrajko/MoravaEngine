@@ -16,14 +16,14 @@ public:
 	void SetShaders();
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
 
-	void RenderOmniShadows(glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager);
-	void RenderWaterEffects(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene, float deltaTime);
-
-	void RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene, WaterManager* waterManager);
-	void RenderPassShadow(DirectionalLight* light, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager);
-	void RenderPassOmniShadow(PointLight* light, glm::mat4 projectionMatrix, Scene* scene, WaterManager* waterManager);
-	void RenderPassWaterReflection(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene);
-	void RenderPassWaterRefraction(WaterManager* waterManager, glm::mat4 projectionMatrix, Scene* scene);
+	virtual void Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
+	void RenderOmniShadows(Scene* scene, glm::mat4 projectionMatrix);
+	void RenderWaterEffects(float deltaTime, Scene* scene, glm::mat4 projectionMatrix);
+	void RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix);
+	void RenderPassShadow(Scene* scene, glm::mat4 projectionMatrix);
+	void RenderPassOmniShadow(PointLight* light, Scene* scene, glm::mat4 projectionMatrix);
+	void RenderPassWaterReflection(Scene* scene, glm::mat4 projectionMatrix);
+	void RenderPassWaterRefraction(Scene* scene ,glm::mat4 projectionMatrix);
 	~Renderer();
 
 };

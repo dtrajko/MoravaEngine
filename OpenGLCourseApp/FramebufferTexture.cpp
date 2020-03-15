@@ -37,5 +37,4 @@ FramebufferTexture::FramebufferTexture(int width, int height, std::string txType
 
 FramebufferTexture::~FramebufferTexture()
 {
-	glDeleteTextures(1, &m_TextureID);
 }

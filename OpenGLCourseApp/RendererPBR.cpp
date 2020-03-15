@@ -24,6 +24,10 @@ void RendererPBR::SetShaders()
 {
 }
 
+void RendererPBR::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+}
+
 void RendererPBR::RenderPass()
 {
 }

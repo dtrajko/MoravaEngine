@@ -17,6 +17,7 @@ public:
 	void SetUniforms();
 	void SetShaders();
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
+	virtual void Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
 	void RenderPass();
 	~RendererPBR();
 

@@ -70,16 +70,16 @@ void SceneTerrain::SetupModels()
 	meshes.insert(std::make_pair("terrain", mesh));
 }
 
-void SceneTerrain::Update(float timestep, LightManager& lightManager, WaterManager* waterManager)
+void SceneTerrain::Update(float timestep)
 {
 	ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, -20.0f, 100.0f);
 	ImGui::SliderFloat3("Terrain scale", glm::value_ptr(m_TerrainScale), -5.0f, 5.0f);
 
-	waterManager->SetWaterHeight(sceneSettings.waterHeight);
+	m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
 }
 
 void SceneTerrain::Render(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
+	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	/* Island */
 	glm::mat4 model = glm::mat4(1.0f);
@@ -97,7 +97,7 @@ void SceneTerrain::Render(glm::mat4 projectionMatrix, std::string passType,
 }
 
 void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager)
+	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	if (!sceneSettings.enableWaterEffects) return;
 
@@ -105,7 +105,7 @@ void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 
 	/* Water Tile */
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, waterManager->GetWaterHeight(), 0.0f));
+	model = glm::translate(model, glm::vec3(0.0f, m_WaterManager->GetWaterHeight(), 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -114,9 +114,9 @@ void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	shaders["water"]->Bind();
 
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	waterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
-	waterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
-	waterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
+	m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
+	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
+	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
 	shaders["water"]->SetTexture(textureSlots["reflection"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);

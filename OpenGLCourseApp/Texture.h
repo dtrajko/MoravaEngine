@@ -24,7 +24,7 @@ public:
 protected:
 	unsigned int m_Width;
 	unsigned int m_Height;
-	unsigned int m_TextureID;
+	unsigned int m_TextureID = -1;
 	const char* m_FileLocation;
 	int m_BitDepth;
 	unsigned char* m_Buffer;

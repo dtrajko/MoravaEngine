@@ -18,6 +18,7 @@
 #include "Skybox.h"
 #include "LightManager.h"
 #include "WaterManager.h"
+#include "Window.h"
 
 
 struct SceneSettings
@@ -75,11 +76,11 @@ class Scene
 
 public:
 	Scene();
-	virtual void Update(float timestep, LightManager& lightManager, WaterManager* waterManager) = 0;
+	virtual void Update(float timestep) = 0;
 	virtual void Render(glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager) = 0;
+		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) = 0;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms, WaterManager* waterManager) {};
+		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) {};
 	virtual void RenderPBR(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) {};
 	inline Skybox* GetSkybox() const { return m_Skybox; };
@@ -87,7 +88,11 @@ public:
 	std::map<std::string, Texture*> GetTextures() const { return textures; };
 	std::map<std::string, GLuint> GetTextureSlots() const { return textureSlots; };
 	void SetCamera();
-	Camera* GetCamera() const { return m_Camera; };
+	inline Camera* GetCamera() const { return m_Camera; };
+	void SetLightManager();
+	inline LightManager* GetLightManager() const { return m_LightManager; };
+	void SetWaterManager(int width, int height);
+	inline WaterManager* GetWaterManager() const { return m_WaterManager; };
 	~Scene();
 
 private:
@@ -104,6 +109,9 @@ protected:
 	Camera* m_Camera;
 	Skybox* m_Skybox;
 	std::vector<std::string> skyboxFaces;
+
+	LightManager* m_LightManager;
+	WaterManager* m_WaterManager;
 
 	std::map<std::string, Texture*> textures;
 	std::map<std::string, GLuint> textureSlots;

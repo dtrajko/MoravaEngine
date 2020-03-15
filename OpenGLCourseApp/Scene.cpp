@@ -123,8 +123,24 @@ void Scene::SetCamera()
 	m_Camera = new Camera(sceneSettings.cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), sceneSettings.cameraStartYaw, 0.0f, sceneSettings.cameraMoveSpeed, 0.1f);
 }
 
+void Scene::SetLightManager()
+{
+	m_LightManager = new LightManager(sceneSettings);
+}
+
+void Scene::SetWaterManager(int width, int height)
+{
+	// Water framebuffers
+	m_WaterManager = new WaterManager(width, height, sceneSettings.waterHeight, sceneSettings.waterWaveSpeed);
+}
+
 Scene::~Scene()
 {
+	delete m_Skybox;
+	delete m_Camera;
+	delete m_LightManager;
+	delete m_WaterManager;
+
 	for (auto& texture : textures)
 		delete texture.second;
 
@@ -144,6 +160,4 @@ Scene::~Scene()
 	meshes.clear();
 	models.clear();
 
-	delete m_Skybox;
-	delete m_Camera;
 }

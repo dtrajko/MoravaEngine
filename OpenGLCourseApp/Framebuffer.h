@@ -35,9 +35,9 @@ public:
 	~Framebuffer();
 
 private:
-	unsigned int fbo;
-	unsigned int m_Width;
-	unsigned int m_Height;
+	unsigned int fbo = -1;
+	unsigned int m_Width = -1;
+	unsigned int m_Height = -1;
 
 	FramebufferTexture* m_ColorAttachment = nullptr;
 	FramebufferTexture* m_DepthAttachment = nullptr;

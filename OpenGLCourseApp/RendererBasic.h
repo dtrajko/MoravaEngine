@@ -17,7 +17,8 @@ public:
 	void SetUniforms();
 	void SetShaders();
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
-	void RenderPass(glm::mat4 projectionMatrix, Window& mainWindow, Scene* scene);
+	virtual void Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix) = 0;
+	void RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window& mainWindow);
 	void EnableCulling();
 	void DisableCulling();
 	void Cleanup();
