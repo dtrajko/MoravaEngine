@@ -201,6 +201,7 @@
     <ClCompile Include="SceneSponza.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderCubemap.cpp" />
+    <ClCompile Include="ShaderLearnOpenGL.cpp" />
     <ClCompile Include="ShaderMain.cpp" />
     <ClCompile Include="ShaderPBR.cpp" />
     <ClCompile Include="ShaderSkyboxJoey.cpp" />
@@ -263,6 +264,7 @@
     <ClInclude Include="SceneSponza.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderCubemap.h" />
+    <ClInclude Include="ShaderLearnOpenGL.h" />
     <ClInclude Include="ShaderMain.h" />
     <ClInclude Include="ShaderPBR.h" />
     <ClInclude Include="ShaderSkyboxJoey.h" />
