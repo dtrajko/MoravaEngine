@@ -316,11 +316,13 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	// bind pre-computed IBL data
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textureIDs["irradianceMap"]);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceMap);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textureIDs["prefilterMap"]);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilterMap);
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["brdfLUTTexture"]);
+	glBindTexture(GL_TEXTURE_2D, m_BRDF_LUT_Texture);
+
+	// printf("irradianceMap=%d prefilterMap=%d brdfLUTTexture=%d\n", m_IrradianceMap,m_PrefilterMap, m_BRDF_LUT_Texture);
 
 	// rusted iron
 	glActiveTexture(GL_TEXTURE3);
