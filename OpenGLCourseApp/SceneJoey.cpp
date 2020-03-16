@@ -19,13 +19,13 @@ SceneJoey::SceneJoey()
 	sceneSettings.enableWaterEffects = false;
 	sceneSettings.enableSkybox       = false;
 	sceneSettings.enableNormalMaps   = true;
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f);
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 0.0f, 10.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
 	sceneSettings.nearPlane = 0.01f;
 	sceneSettings.farPlane = 400.0f;
-	sceneSettings.ambientIntensity = 0.02f;
-	sceneSettings.diffuseIntensity = 0.8f;
+	sceneSettings.ambientIntensity = 0.4f;
+	sceneSettings.diffuseIntensity = 1.0f;
 	sceneSettings.lightDirection = glm::vec3(1.2f, -14.0f, 1.2f);
 	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
 	sceneSettings.pLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);

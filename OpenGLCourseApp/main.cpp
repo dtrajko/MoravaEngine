@@ -23,6 +23,7 @@
 #include "RendererJoey.h"
 
 
+
 // Window dimensions
 const GLint WIDTH = 1280;
 const GLint HEIGHT = 720;
@@ -32,7 +33,17 @@ Window mainWindow;
 Scene* scene;
 RendererBasic* renderer;
 
-std::string currentScene = "pbr"; // "cottage", "eiffel", "sponza", "terrain", "pbr", "learnopengl"
+enum class SceneName
+{
+	Cottage,
+	Eiffel,
+	Sponza,
+	Terrain,
+	PBR,
+	LearnOpenGL,
+};
+
+SceneName currentScene = SceneName::LearnOpenGL;
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -48,18 +59,33 @@ int main()
 	printf("   Renderer: %s\n", glGetString(GL_RENDERER));
 	printf("   Version: %s\n", glGetString(GL_VERSION));
 
-	if (currentScene == "cottage")
+	switch (currentScene)
+	{
+	case SceneName::Cottage:
 		scene = new SceneCottage();
-	else if (currentScene == "eiffel")
+		renderer = static_cast<RendererBasic*>(new Renderer());
+		break;
+	case SceneName::Eiffel:
 		scene = new SceneEiffel();
-	else if (currentScene == "sponza")
+		renderer = static_cast<RendererBasic*>(new Renderer());
+		break;
+	case SceneName::Sponza:
 		scene = new SceneSponza();
-	else if (currentScene == "terrain")
+		renderer = static_cast<RendererBasic*>(new Renderer());
+		break;
+	case SceneName::Terrain:
 		scene = new SceneTerrain();
-	else if (currentScene == "pbr")
+		renderer = static_cast<RendererBasic*>(new Renderer());
+		break;
+	case SceneName::PBR:
 		scene = new ScenePBR();
-	else if (currentScene == "learnopengl")
+		renderer = static_cast<RendererBasic*>(new RendererPBR());
+		break;
+	case SceneName::LearnOpenGL:
 		scene = new SceneJoey();
+		renderer = static_cast<RendererBasic*>(new RendererJoey());
+		break;
+	}
 
 	// Projection matrix
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
@@ -70,7 +96,6 @@ int main()
 	scene->SetLightManager();
 	scene->SetWaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferWidth());
 
-	renderer = static_cast<RendererBasic*>(new RendererPBR());
 	renderer->Init();
 
 	ImGuiWrapper::Init(&mainWindow);

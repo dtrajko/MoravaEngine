@@ -39,11 +39,7 @@ public:
 	~RendererJoey();
 
 private:
-	RadianceHDR* m_RadianceHDR;
-	Cubemap* m_EnvironmentCubemap;
-	Cube* m_Cube1x1;
 	unsigned int m_HDRTexture;
-
 	std::map<std::string, ShaderJoey*> m_ShadersJoey;
 	unsigned int m_CaptureFBO;
 	unsigned int m_CaptureRBO;

@@ -11,7 +11,6 @@ class ShaderJoey
 public:
 	unsigned int ID;
 	// constructor generates the shader on the fly
-	// ------------------------------------------------------------------------
 	ShaderJoey(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
 	void use();
 	void setBool(const std::string& name, bool value) const;

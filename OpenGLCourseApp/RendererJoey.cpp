@@ -37,39 +37,37 @@ void RendererJoey::SetUniforms()
 
 void RendererJoey::SetShaders()
 {
-	ShaderJoey pbrShader("Shaders/learnopengl/2.2.2.pbr.vs", "Shaders/learnopengl/2.2.2.pbr.fs");
-	ShaderJoey equirectangularToCubemapShader("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.equirectangular_to_cubemap.fs");
-	ShaderJoey irradianceShader("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.irradiance_convolution.fs");
-	ShaderJoey prefilterShader("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.prefilter.fs");
-	ShaderJoey brdfShader("Shaders/learnopengl/2.2.2.brdf.vs", "Shaders/learnopengl/2.2.2.brdf.fs");
-	ShaderJoey backgroundShader("Shaders/learnopengl/2.2.2.background.vs", "Shaders/learnopengl/2.2.2.background.fs");
+	ShaderJoey* pbrShader                      = new ShaderJoey("Shaders/learnopengl/2.2.2.pbr.vs", "Shaders/learnopengl/2.2.2.pbr.fs");
+	ShaderJoey* equirectangularToCubemapShader = new ShaderJoey("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.equirectangular_to_cubemap.fs");
+	ShaderJoey* irradianceShader               = new ShaderJoey("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.irradiance_convolution.fs");
+	ShaderJoey* prefilterShader                = new ShaderJoey("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.prefilter.fs");
+	ShaderJoey* brdfShader                     = new ShaderJoey("Shaders/learnopengl/2.2.2.brdf.vs", "Shaders/learnopengl/2.2.2.brdf.fs");
+	ShaderJoey* backgroundShader               = new ShaderJoey("Shaders/learnopengl/2.2.2.background.vs", "Shaders/learnopengl/2.2.2.background.fs");
 
-	m_ShadersJoey.insert(std::make_pair("pbrShader", &pbrShader));
-	m_ShadersJoey.insert(std::make_pair("equirectangularToCubemapShader", &equirectangularToCubemapShader));
-	m_ShadersJoey.insert(std::make_pair("irradianceShader", &irradianceShader));
-	m_ShadersJoey.insert(std::make_pair("prefilterShader", &prefilterShader));
-	m_ShadersJoey.insert(std::make_pair("brdfShader", &brdfShader));
-	m_ShadersJoey.insert(std::make_pair("backgroundShader", &backgroundShader));
+	m_ShadersJoey.insert(std::make_pair("pbrShader", pbrShader));
+	m_ShadersJoey.insert(std::make_pair("equirectangularToCubemapShader", equirectangularToCubemapShader));
+	m_ShadersJoey.insert(std::make_pair("irradianceShader", irradianceShader));
+	m_ShadersJoey.insert(std::make_pair("prefilterShader", prefilterShader));
+	m_ShadersJoey.insert(std::make_pair("brdfShader", brdfShader));
+	m_ShadersJoey.insert(std::make_pair("backgroundShader", backgroundShader));
 
-	pbrShader.use();
-	pbrShader.setInt("irradianceMap", 0);
-	pbrShader.setInt("prefilterMap", 1);
-	pbrShader.setInt("brdfLUT", 2);
-	pbrShader.setInt("albedoMap", 3);
-	pbrShader.setInt("normalMap", 4);
-	pbrShader.setInt("metallicMap", 5);
-	pbrShader.setInt("roughnessMap", 6);
-	pbrShader.setInt("aoMap", 7);
+	pbrShader->use();
+	pbrShader->setInt("irradianceMap", 0);
+	pbrShader->setInt("prefilterMap", 1);
+	pbrShader->setInt("brdfLUT", 2);
+	pbrShader->setInt("albedoMap", 3);
+	pbrShader->setInt("normalMap", 4);
+	pbrShader->setInt("metallicMap", 5);
+	pbrShader->setInt("roughnessMap", 6);
+	pbrShader->setInt("aoMap", 7);
 
-	backgroundShader.use();
-	backgroundShader.setInt("environmentMap", 0);
+	backgroundShader->use();
+	backgroundShader->setInt("environmentMap", 0);
 }
 
 void RendererJoey::SetFramebuffers()
 {
 	// PBR: setup framebuffer
-	unsigned int m_CaptureFBO;
-	unsigned int m_CaptureRBO;
 	glGenFramebuffers(1, &m_CaptureFBO);
 	glGenRenderbuffers(1, &m_CaptureRBO);
 
@@ -232,12 +230,14 @@ void RendererJoey::RunQuasiMonteCarloSimulation()
 	unsigned int maxMipLevels = 5;
 	for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
 	{
-		// reisze framebuffer according to mip-level size.
+		// resize framebuffer according to mip-level size.
 		unsigned int mipWidth = (unsigned int)(128 * std::pow(0.5, mip));
 		unsigned int mipHeight = (unsigned int)(128 * std::pow(0.5, mip));
 		glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRBO);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
 		glViewport(0, 0, mipWidth, mipHeight);
+
+		printf("RunQuasiMonteCarloSimulation mipWidth=%d mipHeight=%d\n", mipWidth, mipHeight);
 
 		float roughness = (float)mip / (float)(maxMipLevels - 1);
 		m_ShadersJoey["prefilterShader"]->setFloat("roughness", roughness);
@@ -284,17 +284,19 @@ void RendererJoey::Generate2DLUTFromBRDF()
 
 void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	// // Clear the window
+	// Clear the window
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// configure global opengl state
-// -----------------------------
 	glEnable(GL_DEPTH_TEST);
 	// set depth function to less than AND equal for skybox depth trick.
 	glDepthFunc(GL_LEQUAL);
 	// enable seamless cubemap sampling for lower mip levels in the pre-filter map.
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+	// then before rendering, configure the viewport to the original framebuffer's screen dimensions
+	SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
 
 	SceneJoey* sceneJoey = static_cast<SceneJoey*>(scene);
 	std::map<std::string, unsigned int> textureIDs = sceneJoey->GetTextureIDs();
@@ -304,9 +306,6 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	m_ShadersJoey["pbrShader"]->setMat4("projection", projectionMatrix);
 	m_ShadersJoey["backgroundShader"]->use();
 	m_ShadersJoey["backgroundShader"]->setMat4("projection", projectionMatrix);
-
-	// then before rendering, configure the viewport to the original framebuffer's screen dimensions
-	SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
 
 	// render scene, supplying the convoluted irradiance map to the final shader.
 	m_ShadersJoey["pbrShader"]->use();
@@ -430,12 +429,11 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	// render skybox (render as last to prevent overdraw)
 	m_ShadersJoey["backgroundShader"]->use();
-
 	m_ShadersJoey["backgroundShader"]->setMat4("view", view);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvCubemap);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap); // display irradiance map
-	//glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap); // display prefilter map
+	// glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceMap); // display irradiance map
+	// glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilterMap); // display prefilter map
 	RenderCube();
 }
 
