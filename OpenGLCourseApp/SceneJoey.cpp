@@ -136,10 +136,31 @@ void SceneJoey::SetTextures()
 	m_TextureIDs.insert(std::make_pair("wallMetallicMap",  wallMetallicMap));
 	m_TextureIDs.insert(std::make_pair("wallRoughnessMap", wallRoughnessMap));
 	m_TextureIDs.insert(std::make_pair("wallAOMap",        wallAOMap));
+
+	// Cerberus model PBR textures
+	textures.insert(std::make_pair("cerberusAlbedo", new Texture("Textures/PBR/Cerberus/Cerberus_A.tga")));
+	textures.insert(std::make_pair("cerberusNormal", new Texture("Textures/PBR/Cerberus/Cerberus_N.tga")));
+	textures.insert(std::make_pair("cerberusMetallic", new Texture("Textures/PBR/Cerberus/Cerberus_M.tga")));
+	textures.insert(std::make_pair("cerberusRoughness", new Texture("Textures/PBR/Cerberus/Cerberus_R.tga")));
+	textures.insert(std::make_pair("cerberusAmbientOcclusion", new Texture("Textures/PBR/Cerberus/Cerberus_AO.tga")));
+	textures["cerberusAlbedo"]->Load();
+	textures["cerberusNormal"]->Load();
+	textures["cerberusMetallic"]->Load();
+	textures["cerberusRoughness"]->Load();
+	textures["cerberusAmbientOcclusion"]->Load();
+
+	m_TextureIDs.insert(std::make_pair("cerberusAlbedoMap",    textures["cerberusAlbedo"]->GetID()));
+	m_TextureIDs.insert(std::make_pair("cerberusNormalMap",    textures["cerberusNormal"]->GetID()));
+	m_TextureIDs.insert(std::make_pair("cerberusMetallicMap",  textures["cerberusMetallic"]->GetID()));
+	m_TextureIDs.insert(std::make_pair("cerberusRoughnessMap", textures["cerberusRoughness"]->GetID()));
+	m_TextureIDs.insert(std::make_pair("cerberusAOMap",        textures["cerberusAmbientOcclusion"]->GetID()));
 }
 
 void SceneJoey::SetupModels()
 {
+	Model* cerberus = new Model();
+	cerberus->LoadModel("Models/Cerberus_LP.FBX");
+	models.insert(std::make_pair("cerberus", cerberus));
 }
 
 void SceneJoey::Update(float timestep)

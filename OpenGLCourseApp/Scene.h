@@ -91,6 +91,7 @@ public:
 	inline LightManager* GetLightManager() const { return m_LightManager; };
 	void SetWaterManager(int width, int height);
 	inline WaterManager* GetWaterManager() const { return m_WaterManager; };
+	inline std::map<std::string, Model*> GetModels() const { return models; };
 
 	~Scene();
 

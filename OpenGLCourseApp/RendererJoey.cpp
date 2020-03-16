@@ -237,8 +237,6 @@ void RendererJoey::RunQuasiMonteCarloSimulation()
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
 		glViewport(0, 0, mipWidth, mipHeight);
 
-		printf("RunQuasiMonteCarloSimulation mipWidth=%d mipHeight=%d\n", mipWidth, mipHeight);
-
 		float roughness = (float)mip / (float)(maxMipLevels - 1);
 		m_ShadersJoey["prefilterShader"]->setFloat("roughness", roughness);
 		for (unsigned int i = 0; i < 6; ++i)
@@ -428,6 +426,27 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	std::string passType = "main";
 	scene->Render(projectionMatrix, passType, shaders, uniforms);
+
+	/* Cerberus model */
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, textureIDs["cerberusAlbedoMap"]);
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, textureIDs["cerberusNormalMap"]);
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, textureIDs["cerberusMetallicMap"]);
+	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_2D, textureIDs["cerberusRoughnessMap"]);
+	glActiveTexture(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_2D, textureIDs["goldAOMap"]);
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 3.0f, -5.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(0.1f));
+	m_ShadersJoey["pbrShader"]->setMat4("model", model);
+	sceneJoey->GetModels()["cerberus"]->RenderModelPBR();
 
 	// render skybox (render as last to prevent overdraw)
 	m_ShadersJoey["backgroundShader"]->use();

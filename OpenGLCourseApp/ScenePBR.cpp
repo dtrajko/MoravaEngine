@@ -119,11 +119,11 @@ void ScenePBR::SetTextures()
 	// PBR cerberus
 	if (m_CerberusEnabled)
 	{
-		textures.insert(std::make_pair("cerberusAlbedo", new Texture("Textures/Cerberus_A.tga")));
-		textures.insert(std::make_pair("cerberusNormal", new Texture("Textures/Cerberus_N.tga")));
-		textures.insert(std::make_pair("cerberusMetallic", new Texture("Textures/Cerberus_M.tga")));
-		textures.insert(std::make_pair("cerberusRoughness", new Texture("Textures/Cerberus_R.tga")));
-		textures.insert(std::make_pair("cerberusAmbientOcclusion", new Texture("Textures/Cerberus_AO.tga")));
+		textures.insert(std::make_pair("cerberusAlbedo", new Texture("Textures/PBR/Cerberus/Cerberus_A.tga")));
+		textures.insert(std::make_pair("cerberusNormal", new Texture("Textures/PBR/Cerberus/Cerberus_N.tga")));
+		textures.insert(std::make_pair("cerberusMetallic", new Texture("Textures/PBR/Cerberus/Cerberus_M.tga")));
+		textures.insert(std::make_pair("cerberusRoughness", new Texture("Textures/PBR/Cerberus/Cerberus_R.tga")));
+		textures.insert(std::make_pair("cerberusAmbientOcclusion", new Texture("Textures/PBR/Cerberus/Cerberus_AO.tga")));
 		textures["cerberusAlbedo"]->Load();
 		textures["cerberusNormal"]->Load();
 		textures["cerberusMetallic"]->Load();
