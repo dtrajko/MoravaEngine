@@ -98,11 +98,6 @@ void ScenePBR::SetTextures()
 	textures.insert(std::make_pair("rustedIronMetallic", new Texture("Textures/PBR/rusted_iron/metallic.png")));
 	textures.insert(std::make_pair("rustedIronRoughness", new Texture("Textures/PBR/rusted_iron/roughness.png")));
 	textures.insert(std::make_pair("rustedIronAmbientOcclusion", new Texture("Textures/PBR/rusted_iron/ao.png")));
-	textures["rustedIronAlbedo"]->Load();
-	textures["rustedIronNormal"]->Load();
-	textures["rustedIronMetallic"]->Load();
-	textures["rustedIronRoughness"]->Load();
-	textures["rustedIronAmbientOcclusion"]->Load();
 
 	// PBR gold
 	textures.insert(std::make_pair("goldAlbedo", new Texture("Textures/PBR/gold/albedo.png")));
@@ -110,11 +105,6 @@ void ScenePBR::SetTextures()
 	textures.insert(std::make_pair("goldMetallic", new Texture("Textures/PBR/gold/metallic.png")));
 	textures.insert(std::make_pair("goldRoughness", new Texture("Textures/PBR/gold/roughness.png")));
 	textures.insert(std::make_pair("goldAmbientOcclusion", new Texture("Textures/PBR/gold/ao.png")));
-	textures["goldAlbedo"]->Load();
-	textures["goldNormal"]->Load();
-	textures["goldMetallic"]->Load();
-	textures["goldRoughness"]->Load();
-	textures["goldAmbientOcclusion"]->Load();
 
 	// PBR cerberus
 	if (m_CerberusEnabled)
@@ -123,12 +113,7 @@ void ScenePBR::SetTextures()
 		textures.insert(std::make_pair("cerberusNormal", new Texture("Textures/PBR/Cerberus/Cerberus_N.tga")));
 		textures.insert(std::make_pair("cerberusMetallic", new Texture("Textures/PBR/Cerberus/Cerberus_M.tga")));
 		textures.insert(std::make_pair("cerberusRoughness", new Texture("Textures/PBR/Cerberus/Cerberus_R.tga")));
-		textures.insert(std::make_pair("cerberusAmbientOcclusion", new Texture("Textures/PBR/Cerberus/Cerberus_AO.tga")));
-		textures["cerberusAlbedo"]->Load();
-		textures["cerberusNormal"]->Load();
-		textures["cerberusMetallic"]->Load();
-		textures["cerberusRoughness"]->Load();
-		textures["cerberusAmbientOcclusion"]->Load();
+		textures.insert(std::make_pair("cerberusAmbOcclusion", new Texture("Textures/PBR/Cerberus/Cerberus_AO.tga")));
 	}
 }
 
@@ -265,7 +250,7 @@ void ScenePBR::Render(glm::mat4 projectionMatrix, std::string passType,
 		textures["cerberusNormal"]->Bind(textureSlots["normal"]);
 		textures["cerberusMetallic"]->Bind(textureSlots["metallic"]);
 		textures["cerberusRoughness"]->Bind(textureSlots["roughness"]);
-		textures["cerberusAmbientOcclusion"]->Bind(textureSlots["ao"]);
+		textures["cerberusAmbOcclusion"]->Bind(textureSlots["ao"]);
 
 		shaderPBR->SetAlbedoMap(textureSlots["albedo"]);
 		shaderPBR->SetNormalMap(textureSlots["normal"]);

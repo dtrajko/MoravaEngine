@@ -308,7 +308,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
 
 	SceneJoey* sceneJoey = static_cast<SceneJoey*>(scene);
-	std::map<std::string, unsigned int> textureIDs = sceneJoey->GetTextureIDs();
+	std::map<std::string, Texture*> textures = sceneJoey->GetTextures();
 
 	// initialize static shader uniforms before rendering
 	shaders["pbrShader"]->Bind();
@@ -335,15 +335,15 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	// rusted iron
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["ironAlbedoMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["ironAlbedoMap"]->GetID());
 	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["ironNormalMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["ironNormalMap"]->GetID());
 	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["ironMetallicMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["ironMetallicMap"]->GetID());
 	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["ironRoughnessMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["ironRoughnessMap"]->GetID());
 	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["ironAOMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["ironAOMap"]->GetID());
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-5.0, 0.0, 2.0));
@@ -352,15 +352,19 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	// gold
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["goldAlbedoMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["goldAlbedoMap"]->GetID());
 	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["goldNormalMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["goldNormalMap"]->GetID());
 	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["goldMetallicMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["goldMetallicMap"]->GetID());
 	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["goldRoughnessMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["goldRoughnessMap"]->GetID());
 	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["goldAOMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["goldAOMap"]->GetID());
+
+	// printf("goldAlbedoMap=%d goldNormalMap=%d goldMetallicMap=%d goldRoughnessMap=%d goldAOMap=%d\n",
+	// 	textures["goldAlbedoMap"]->GetID(), textures["goldNormalMap"]->GetID(), textures["goldMetallicMap"]->GetID(),
+	// 	textures["goldRoughnessMap"]->GetID(), textures["goldAOMap"]->GetID());
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-3.0, 0.0, 2.0));
@@ -369,15 +373,15 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	// grass
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["grassAlbedoMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["grassAlbedoMap"]->GetID());
 	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["grassNormalMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["grassNormalMap"]->GetID());
 	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["grassMetallicMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["grassMetallicMap"]->GetID());
 	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["grassRoughnessMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["grassRoughnessMap"]->GetID());
 	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["grassAOMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["grassAOMap"]->GetID());
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-1.0, 0.0, 2.0));
@@ -386,15 +390,15 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	// plastic
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["plasticAlbedoMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["plasticAlbedoMap"]->GetID());
 	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["plasticNormalMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["plasticNormalMap"]->GetID());
 	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["plasticMetallicMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["plasticMetallicMap"]->GetID());
 	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["plasticRoughnessMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["plasticRoughnessMap"]->GetID());
 	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["plasticAOMap"] );
+	glBindTexture(GL_TEXTURE_2D, textures["plasticAOMap"]->GetID());
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(1.0, 0.0, 2.0));
@@ -403,15 +407,15 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	// wall
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["wallAlbedoMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["wallAlbedoMap"]->GetID());
 	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["wallNormalMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["wallNormalMap"]->GetID());
 	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["wallMetallicMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["wallMetallicMap"]->GetID());
 	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["wallRoughnessMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["wallRoughnessMap"]->GetID());
 	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["wallAOMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["wallAOMap"]->GetID());
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(3.0, 0.0, 2.0));
@@ -440,15 +444,15 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	/* Cerberus model */
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["cerberusAlbedoMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["cerberusAlbedoMap"]->GetID());
 	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["cerberusNormalMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["cerberusNormalMap"]->GetID());
 	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["cerberusMetallicMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["cerberusMetallicMap"]->GetID());
 	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["cerberusRoughnessMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["cerberusRoughnessMap"]->GetID());
 	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_2D, textureIDs["goldAOMap"]);
+	glBindTexture(GL_TEXTURE_2D, textures["goldAOMap"]->GetID());
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 3.0f, -5.0f));

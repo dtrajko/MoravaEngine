@@ -1,8 +1,5 @@
 #include "Texture.h"
 
-#include "CommonValues.h"
-
-
 
 Texture::Texture()
 {
@@ -13,14 +10,22 @@ Texture::Texture()
 	m_FileLocation = "";
 }
 
-Texture::Texture(const char* fileLoc)
+Texture::Texture(const char* fileLoc, bool flipVert)
 	: Texture()
 {
 	m_FileLocation = fileLoc;
+
+	Load(flipVert);
 }
 
 bool Texture::Load(bool flipVert)
 {
+	if (m_Buffer)
+	{
+		printf("Texture '%s' already loaded. Skipping...\n", m_FileLocation);
+		return true;
+	}
+
 	stbi_set_flip_vertically_on_load(flipVert ? 1 : 0);
 	m_Buffer = stbi_load(m_FileLocation, (int*)&m_Width, (int*)&m_Height, &m_BitDepth, 0);
 	if (!m_Buffer)

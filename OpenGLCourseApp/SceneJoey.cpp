@@ -6,8 +6,7 @@
 #include "Renderer.h"
 #include "Sphere.h"
 #include "ImGuiWrapper.h"
-
-#include "learnopengl/functions.h"
+#include "TextureJoey.h"
 
 
 SceneJoey::SceneJoey()
@@ -69,97 +68,53 @@ void SceneJoey::SetSkybox()
 
 void SceneJoey::SetTextures()
 {
-	// learnopengl textures
-	// load PBR material textures
-
 	// rusted iron
-	unsigned int ironAlbedoMap = loadTexture("Textures/PBR/rusted_iron/albedo.png");
-	unsigned int ironNormalMap = loadTexture("Textures/PBR/rusted_iron/normal.png");
-	unsigned int ironMetallicMap = loadTexture("Textures/PBR/rusted_iron/metallic.png");
-	unsigned int ironRoughnessMap = loadTexture("Textures/PBR/rusted_iron/roughness.png");
-	unsigned int ironAOMap = loadTexture("Textures/PBR/rusted_iron/ao.png");
-
-	m_TextureIDs.insert(std::make_pair("ironAlbedoMap",    ironAlbedoMap));
-	m_TextureIDs.insert(std::make_pair("ironNormalMap",    ironNormalMap));
-	m_TextureIDs.insert(std::make_pair("ironMetallicMap",  ironMetallicMap));
-	m_TextureIDs.insert(std::make_pair("ironRoughnessMap", ironRoughnessMap));
-	m_TextureIDs.insert(std::make_pair("ironAOMap",        ironAOMap));
+	textures.insert(std::make_pair("ironAlbedoMap",     new TextureJoey("Textures/PBR/rusted_iron/albedo.png")));
+	textures.insert(std::make_pair("ironNormalMap",     new TextureJoey("Textures/PBR/rusted_iron/normal.png")));
+	textures.insert(std::make_pair("ironMetallicMap",   new TextureJoey("Textures/PBR/rusted_iron/metallic.png")));
+	textures.insert(std::make_pair("ironRoughnessMap",  new TextureJoey("Textures/PBR/rusted_iron/roughness.png")));
+	textures.insert(std::make_pair("ironAOMap",         new TextureJoey("Textures/PBR/rusted_iron/ao.png")));
 
 	// gold
-	unsigned int goldAlbedoMap = loadTexture("Textures/PBR/gold/albedo.png");
-	unsigned int goldNormalMap = loadTexture("Textures/PBR/gold/normal.png");
-	unsigned int goldMetallicMap = loadTexture("Textures/PBR/gold/metallic.png");
-	unsigned int goldRoughnessMap = loadTexture("Textures/PBR/gold/roughness.png");
-	unsigned int goldAOMap = loadTexture("Textures/PBR/gold/ao.png");
-
-	m_TextureIDs.insert(std::make_pair("goldAlbedoMap",    goldAlbedoMap));
-	m_TextureIDs.insert(std::make_pair("goldNormalMap",    goldNormalMap));
-	m_TextureIDs.insert(std::make_pair("goldMetallicMap",  goldMetallicMap));
-	m_TextureIDs.insert(std::make_pair("goldRoughnessMap", goldRoughnessMap));
-	m_TextureIDs.insert(std::make_pair("goldAOMap",        goldAOMap));
+	textures.insert(std::make_pair("goldAlbedoMap",     new TextureJoey("Textures/PBR/gold/albedo.png")));
+	textures.insert(std::make_pair("goldNormalMap",     new TextureJoey("Textures/PBR/gold/normal.png")));
+	textures.insert(std::make_pair("goldMetallicMap",   new TextureJoey("Textures/PBR/gold/metallic.png")));
+	textures.insert(std::make_pair("goldRoughnessMap",  new TextureJoey("Textures/PBR/gold/roughness.png")));
+	textures.insert(std::make_pair("goldAOMap",         new TextureJoey("Textures/PBR/gold/ao.png")));
 
 	// grass
-	unsigned int grassAlbedoMap = loadTexture("Textures/PBR/grass/albedo.png");
-	unsigned int grassNormalMap = loadTexture("Textures/PBR/grass/normal.png");
-	unsigned int grassMetallicMap = loadTexture("Textures/PBR/grass/metallic.png");
-	unsigned int grassRoughnessMap = loadTexture("Textures/PBR/grass/roughness.png");
-	unsigned int grassAOMap = loadTexture("Textures/PBR/grass/ao.png");
-
-	m_TextureIDs.insert(std::make_pair("grassAlbedoMap",    grassAlbedoMap));
-	m_TextureIDs.insert(std::make_pair("grassNormalMap",    grassNormalMap));
-	m_TextureIDs.insert(std::make_pair("grassMetallicMap",  grassMetallicMap));
-	m_TextureIDs.insert(std::make_pair("grassRoughnessMap", grassRoughnessMap));
-	m_TextureIDs.insert(std::make_pair("grassAOMap",        grassAOMap));
+	textures.insert(std::make_pair("grassAlbedoMap",    new TextureJoey("Textures/PBR/grass/albedo.png")));
+	textures.insert(std::make_pair("grassNormalMap",    new TextureJoey("Textures/PBR/grass/normal.png")));
+	textures.insert(std::make_pair("grassMetallicMap",  new TextureJoey("Textures/PBR/grass/metallic.png")));
+	textures.insert(std::make_pair("grassRoughnessMap", new TextureJoey("Textures/PBR/grass/roughness.png")));
+	textures.insert(std::make_pair("grassAOMap",        new TextureJoey("Textures/PBR/grass/ao.png")));
 
 	// plastic
-	unsigned int plasticAlbedoMap = loadTexture("Textures/PBR/plastic/albedo.png");
-	unsigned int plasticNormalMap = loadTexture("Textures/PBR/plastic/normal.png");
-	unsigned int plasticMetallicMap = loadTexture("Textures/PBR/plastic/metallic.png");
-	unsigned int plasticRoughnessMap = loadTexture("Textures/PBR/plastic/roughness.png");
-	unsigned int plasticAOMap = loadTexture("Textures/PBR/plastic/ao.png");
-
-	m_TextureIDs.insert(std::make_pair("plasticAlbedoMap",    plasticAlbedoMap));
-	m_TextureIDs.insert(std::make_pair("plasticNormalMap",    plasticNormalMap));
-	m_TextureIDs.insert(std::make_pair("plasticMetallicMap",  plasticMetallicMap));
-	m_TextureIDs.insert(std::make_pair("plasticRoughnessMap", plasticRoughnessMap));
-	m_TextureIDs.insert(std::make_pair("plasticAOMap",        plasticAOMap));
+	textures.insert(std::make_pair("plasticAlbedoMap",    new TextureJoey("Textures/PBR/plastic/albedo.png")));
+	textures.insert(std::make_pair("plasticNormalMap",    new TextureJoey("Textures/PBR/plastic/normal.png")));
+	textures.insert(std::make_pair("plasticMetallicMap",  new TextureJoey("Textures/PBR/plastic/metallic.png")));
+	textures.insert(std::make_pair("plasticRoughnessMap", new TextureJoey("Textures/PBR/plastic/roughness.png")));
+	textures.insert(std::make_pair("plasticAOMap",        new TextureJoey("Textures/PBR/plastic/ao.png")));
 
 	// wall
-	unsigned int wallAlbedoMap = loadTexture("Textures/PBR/wall/albedo.png");
-	unsigned int wallNormalMap = loadTexture("Textures/PBR/wall/normal.png");
-	unsigned int wallMetallicMap = loadTexture("Textures/PBR/wall/metallic.png");
-	unsigned int wallRoughnessMap = loadTexture("Textures/PBR/wall/roughness.png");
-	unsigned int wallAOMap = loadTexture("Textures/PBR/wall/ao.png");
-
-	m_TextureIDs.insert(std::make_pair("wallAlbedoMap",    wallAlbedoMap));
-	m_TextureIDs.insert(std::make_pair("wallNormalMap",    wallNormalMap));
-	m_TextureIDs.insert(std::make_pair("wallMetallicMap",  wallMetallicMap));
-	m_TextureIDs.insert(std::make_pair("wallRoughnessMap", wallRoughnessMap));
-	m_TextureIDs.insert(std::make_pair("wallAOMap",        wallAOMap));
+	textures.insert(std::make_pair("wallAlbedoMap",     new TextureJoey("Textures/PBR/wall/albedo.png")));
+	textures.insert(std::make_pair("wallNormalMap",     new TextureJoey("Textures/PBR/wall/normal.png")));
+	textures.insert(std::make_pair("wallMetallicMap",   new TextureJoey("Textures/PBR/wall/metallic.png")));
+	textures.insert(std::make_pair("wallRoughnessMap",  new TextureJoey("Textures/PBR/wall/roughness.png")));
+	textures.insert(std::make_pair("wallAOMap",         new TextureJoey("Textures/PBR/wall/ao.png")));
 
 	// Cerberus model PBR textures
-	textures.insert(std::make_pair("cerberusAlbedo", new Texture("Textures/PBR/Cerberus/Cerberus_A.tga")));
-	textures.insert(std::make_pair("cerberusNormal", new Texture("Textures/PBR/Cerberus/Cerberus_N.tga")));
-	textures.insert(std::make_pair("cerberusMetallic", new Texture("Textures/PBR/Cerberus/Cerberus_M.tga")));
-	textures.insert(std::make_pair("cerberusRoughness", new Texture("Textures/PBR/Cerberus/Cerberus_R.tga")));
-	textures.insert(std::make_pair("cerberusAmbientOcclusion", new Texture("Textures/PBR/Cerberus/Cerberus_AO.tga")));
-	textures["cerberusAlbedo"]->Load();
-	textures["cerberusNormal"]->Load();
-	textures["cerberusMetallic"]->Load();
-	textures["cerberusRoughness"]->Load();
-	textures["cerberusAmbientOcclusion"]->Load();
-
-	m_TextureIDs.insert(std::make_pair("cerberusAlbedoMap",    textures["cerberusAlbedo"]->GetID()));
-	m_TextureIDs.insert(std::make_pair("cerberusNormalMap",    textures["cerberusNormal"]->GetID()));
-	m_TextureIDs.insert(std::make_pair("cerberusMetallicMap",  textures["cerberusMetallic"]->GetID()));
-	m_TextureIDs.insert(std::make_pair("cerberusRoughnessMap", textures["cerberusRoughness"]->GetID()));
-	m_TextureIDs.insert(std::make_pair("cerberusAOMap",        textures["cerberusAmbientOcclusion"]->GetID()));
+	textures.insert(std::make_pair("cerberusAlbedoMap",       new TextureJoey("Textures/PBR/Cerberus/Cerberus_A.tga")));
+	textures.insert(std::make_pair("cerberusNormalMap",       new TextureJoey("Textures/PBR/Cerberus/Cerberus_N.tga")));
+	textures.insert(std::make_pair("cerberusMetallicMap",     new TextureJoey("Textures/PBR/Cerberus/Cerberus_M.tga")));
+	textures.insert(std::make_pair("cerberusRoughnessMap",    new TextureJoey("Textures/PBR/Cerberus/Cerberus_R.tga")));
+	textures.insert(std::make_pair("cerberusAmbOcclusionMap", new TextureJoey("Textures/PBR/Cerberus/Cerberus_AO.tga")));
 }
 
 void SceneJoey::SetupModels()
 {
 	Model* cerberus = new Model();
-	cerberus->LoadModel("Models/Cerberus_LP.FBX");
+	cerberus->LoadModel("Models/Cerberus_LP.FBX", "Textures/PBR/Cerberus");
 	models.insert(std::make_pair("cerberus", cerberus));
 }
 

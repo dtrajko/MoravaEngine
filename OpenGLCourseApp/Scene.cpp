@@ -112,10 +112,6 @@ void Scene::SetTextures()
 	textures.insert(std::make_pair("shadowMapDefault", new Texture("Textures/shadow_map_default.png")));
 	textures.insert(std::make_pair("waterDuDv", new Texture("Textures/water/waterDuDv.png")));
 	textures.insert(std::make_pair("waterNormal", new Texture("Textures/water/waterNormal.png")));
-
-	textures["normalMapDefault"]->Load();
-	textures["waterDuDv"]->Load();
-	textures["waterNormal"]->Load();
 }
 
 void Scene::SetCamera()

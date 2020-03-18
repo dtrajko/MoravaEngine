@@ -6,11 +6,14 @@
 
 Model::Model()
 {
+	m_TexturesPath = "Textures";
 }
 
-void Model::LoadModel(const std::string& fileName)
+void Model::LoadModel(const std::string& fileName, const std::string& texturesPath)
 {
-	printf("Loading model '%s'...\n", fileName.c_str());
+	printf("Loading model '%s'. Textures path '%s'\n", fileName.c_str(), texturesPath.c_str());
+
+	m_TexturesPath = texturesPath;
 
 	std::chrono::time_point<std::chrono::steady_clock> startTimepoint = std::chrono::high_resolution_clock::now();
 
@@ -141,9 +144,9 @@ void Model::LoadMaterials(const aiScene* scene)
 				size_t idx = std::string(path.data).rfind("\\");
 				std::string filename = std::string(path.data).substr(idx + 1);
 
-				std::string texPath = std::string("Textures/") + filename;
+				std::string texPath = m_TexturesPath + std::string("/") + filename;
 
-				printf("Texture loaded 'Textures/%s'\n", filename.c_str());
+				printf("Texture loaded '%s'\n", texPath.c_str());
 
 				textureList[i] = new Texture(texPath.c_str());
 
@@ -167,9 +170,9 @@ void Model::LoadMaterials(const aiScene* scene)
 				size_t idxBm = filename.rfind("-bm");
 				filename = filename.substr(0, idxBm - 1);
 
-				std::string texPath = std::string("Textures/") + filename;
+				std::string texPath = m_TexturesPath + std::string("/") + filename;
 
-				printf("Normal Map Texture loaded 'Textures/%s'\n", filename.c_str());
+				printf("Normal Map Texture loaded at '%s'\n", texPath.c_str());
 
 				normalMapList[i] = new Texture(texPath.c_str());
 
@@ -243,7 +246,6 @@ void Model::ClearModel()
 	meshList.clear();
 	textureList.clear();
 	meshToTexture.clear();
-
 }
 
 Model::~Model()
