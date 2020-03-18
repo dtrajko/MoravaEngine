@@ -8,6 +8,12 @@ Shader::Shader()
 	uniformProjection = 0;
 }
 
+Shader::Shader(const char* vertexLocation, const char* fragmentLocation)
+	: Shader()
+{
+	CreateFromFiles(vertexLocation, fragmentLocation);
+}
+
 void Shader::CreateFromString(const char* vertexCode, const char* fragmentCode)
 {
 	CompileShader(vertexCode, fragmentCode);

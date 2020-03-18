@@ -18,6 +18,7 @@ class Shader
 {
 public:
 	Shader();
+	Shader(const char* vertexLocation, const char* fragmentLocation);
 	void CreateFromString(const char* vertexCode, const char* fragmentCode);
 	void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);
 	void CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation);

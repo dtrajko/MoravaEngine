@@ -38,47 +38,29 @@ void RendererJoey::SetUniforms()
 
 void RendererJoey::SetShaders()
 {
-	static const char* pbrShaderVert = "Shaders/learnopengl/2.2.2.pbr.vs";
-	static const char* pbrShaderFrag = "Shaders/learnopengl/2.2.2.pbr.fs";
-	ShaderLearnOpenGL* pbrShader = new ShaderLearnOpenGL();
-	pbrShader->CreateFromFiles(pbrShaderVert, pbrShaderFrag);
+	ShaderLearnOpenGL* pbrShader = new ShaderLearnOpenGL("Shaders/learnopengl/2.2.2.pbr.vs", "Shaders/learnopengl/2.2.2.pbr.fs");
 	shaders.insert(std::make_pair("pbrShader", pbrShader));
-	printf("Renderer: pbrShader compiled [programID=%d]\n", pbrShader->GetProgramID());
+	printf("RendererJoey: pbrShader compiled [programID=%d]\n", pbrShader->GetProgramID());
 
-	static const char* equirectangularToCubemapShaderVert = "Shaders/learnopengl/2.2.2.cubemap.vs";
-	static const char* equirectangularToCubemapShaderFrag = "Shaders/learnopengl/2.2.2.equirectangular_to_cubemap.fs";
-	ShaderLearnOpenGL* equirectangularToCubemapShader = new ShaderLearnOpenGL();
-	equirectangularToCubemapShader->CreateFromFiles(equirectangularToCubemapShaderVert, equirectangularToCubemapShaderFrag);
+	ShaderLearnOpenGL* equirectangularToCubemapShader = new ShaderLearnOpenGL("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.equirectangular_to_cubemap.fs");
 	shaders.insert(std::make_pair("equirectangularToCubemapShader", equirectangularToCubemapShader));
-	printf("Renderer: equirectangularToCubemapShader compiled [programID=%d]\n", equirectangularToCubemapShader->GetProgramID());
+	printf("RendererJoey: equirectangularToCubemapShader compiled [programID=%d]\n", equirectangularToCubemapShader->GetProgramID());
 
-	static const char* irradianceShaderVert = "Shaders/learnopengl/2.2.2.cubemap.vs";
-	static const char* irradianceShaderFrag = "Shaders/learnopengl/2.2.2.irradiance_convolution.fs";
-	ShaderLearnOpenGL* irradianceShader = new ShaderLearnOpenGL();
-	irradianceShader->CreateFromFiles(irradianceShaderVert, irradianceShaderFrag);
+	ShaderLearnOpenGL* irradianceShader = new ShaderLearnOpenGL("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.irradiance_convolution.fs");
 	shaders.insert(std::make_pair("irradianceShader", irradianceShader));
-	printf("Renderer: irradianceShader compiled [programID=%d]\n", irradianceShader->GetProgramID());
+	printf("RendererJoey: irradianceShader compiled [programID=%d]\n", irradianceShader->GetProgramID());
 
-	static const char* prefilterShaderVert = "Shaders/learnopengl/2.2.2.cubemap.vs";
-	static const char* prefilterShaderFrag = "Shaders/learnopengl/2.2.2.prefilter.fs";
-	ShaderLearnOpenGL* prefilterShader = new ShaderLearnOpenGL();
-	prefilterShader->CreateFromFiles(prefilterShaderVert, prefilterShaderFrag);
+	ShaderLearnOpenGL* prefilterShader = new ShaderLearnOpenGL("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.prefilter.fs");
 	shaders.insert(std::make_pair("prefilterShader", prefilterShader));
-	printf("Renderer: prefilterShader compiled [programID=%d]\n", prefilterShader->GetProgramID());
+	printf("RendererJoey: prefilterShader compiled [programID=%d]\n", prefilterShader->GetProgramID());
 
-	static const char* brdfShaderVert = "Shaders/learnopengl/2.2.2.brdf.vs";
-	static const char* brdfShaderFrag = "Shaders/learnopengl/2.2.2.brdf.fs";
-	ShaderLearnOpenGL* brdfShader = new ShaderLearnOpenGL();
-	brdfShader->CreateFromFiles(brdfShaderVert, brdfShaderFrag);
+	ShaderLearnOpenGL* brdfShader = new ShaderLearnOpenGL("Shaders/learnopengl/2.2.2.brdf.vs", "Shaders/learnopengl/2.2.2.brdf.fs");
 	shaders.insert(std::make_pair("brdfShader", brdfShader));
-	printf("Renderer: brdfShader compiled [programID=%d]\n", brdfShader->GetProgramID());
+	printf("RendererJoey: brdfShader compiled [programID=%d]\n", brdfShader->GetProgramID());
 
-	static const char* backgroundShaderVert = "Shaders/learnopengl/2.2.2.background.vs";
-	static const char* backgroundShaderFrag = "Shaders/learnopengl/2.2.2.background.fs";
-	ShaderLearnOpenGL* backgroundShader = new ShaderLearnOpenGL();
-	backgroundShader->CreateFromFiles(backgroundShaderVert, backgroundShaderFrag);
+	ShaderLearnOpenGL* backgroundShader = new ShaderLearnOpenGL("Shaders/learnopengl/2.2.2.background.vs", "Shaders/learnopengl/2.2.2.background.fs");
 	shaders.insert(std::make_pair("backgroundShader", backgroundShader));
-	printf("Renderer: backgroundShader compiled [programID=%d]\n", backgroundShader->GetProgramID());
+	printf("RendererJoey: backgroundShader compiled [programID=%d]\n", backgroundShader->GetProgramID());
 
 	shaders["pbrShader"]->Bind();
 	shaders["pbrShader"]->setInt("irradianceMap", 0);
