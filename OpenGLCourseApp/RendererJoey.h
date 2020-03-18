@@ -40,7 +40,6 @@ public:
 
 private:
 	unsigned int m_HDRTexture;
-	std::map<std::string, ShaderJoey*> m_ShadersJoey;
 	unsigned int m_CaptureFBO;
 	unsigned int m_CaptureRBO;
 	unsigned int m_EnvCubemap;

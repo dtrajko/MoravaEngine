@@ -5,6 +5,7 @@
 #include "ShaderSkyboxJoey.h"
 #include "learnopengl/shaderJoey.h"
 #include "SceneJoey.h"
+#include "ShaderLearnOpenGL.h"
 
 
 
@@ -37,32 +38,60 @@ void RendererJoey::SetUniforms()
 
 void RendererJoey::SetShaders()
 {
-	ShaderJoey* pbrShader                      = new ShaderJoey("Shaders/learnopengl/2.2.2.pbr.vs", "Shaders/learnopengl/2.2.2.pbr.fs");
-	ShaderJoey* equirectangularToCubemapShader = new ShaderJoey("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.equirectangular_to_cubemap.fs");
-	ShaderJoey* irradianceShader               = new ShaderJoey("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.irradiance_convolution.fs");
-	ShaderJoey* prefilterShader                = new ShaderJoey("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.prefilter.fs");
-	ShaderJoey* brdfShader                     = new ShaderJoey("Shaders/learnopengl/2.2.2.brdf.vs", "Shaders/learnopengl/2.2.2.brdf.fs");
-	ShaderJoey* backgroundShader               = new ShaderJoey("Shaders/learnopengl/2.2.2.background.vs", "Shaders/learnopengl/2.2.2.background.fs");
+	static const char* pbrShaderVert = "Shaders/learnopengl/2.2.2.pbr.vs";
+	static const char* pbrShaderFrag = "Shaders/learnopengl/2.2.2.pbr.fs";
+	ShaderLearnOpenGL* pbrShader = new ShaderLearnOpenGL();
+	pbrShader->CreateFromFiles(pbrShaderVert, pbrShaderFrag);
+	shaders.insert(std::make_pair("pbrShader", pbrShader));
+	printf("Renderer: pbrShader compiled [programID=%d]\n", pbrShader->GetProgramID());
 
-	m_ShadersJoey.insert(std::make_pair("pbrShader", pbrShader));
-	m_ShadersJoey.insert(std::make_pair("equirectangularToCubemapShader", equirectangularToCubemapShader));
-	m_ShadersJoey.insert(std::make_pair("irradianceShader", irradianceShader));
-	m_ShadersJoey.insert(std::make_pair("prefilterShader", prefilterShader));
-	m_ShadersJoey.insert(std::make_pair("brdfShader", brdfShader));
-	m_ShadersJoey.insert(std::make_pair("backgroundShader", backgroundShader));
+	static const char* equirectangularToCubemapShaderVert = "Shaders/learnopengl/2.2.2.cubemap.vs";
+	static const char* equirectangularToCubemapShaderFrag = "Shaders/learnopengl/2.2.2.equirectangular_to_cubemap.fs";
+	ShaderLearnOpenGL* equirectangularToCubemapShader = new ShaderLearnOpenGL();
+	equirectangularToCubemapShader->CreateFromFiles(equirectangularToCubemapShaderVert, equirectangularToCubemapShaderFrag);
+	shaders.insert(std::make_pair("equirectangularToCubemapShader", equirectangularToCubemapShader));
+	printf("Renderer: equirectangularToCubemapShader compiled [programID=%d]\n", equirectangularToCubemapShader->GetProgramID());
 
-	pbrShader->use();
-	pbrShader->setInt("irradianceMap", 0);
-	pbrShader->setInt("prefilterMap", 1);
-	pbrShader->setInt("brdfLUT", 2);
-	pbrShader->setInt("albedoMap", 3);
-	pbrShader->setInt("normalMap", 4);
-	pbrShader->setInt("metallicMap", 5);
-	pbrShader->setInt("roughnessMap", 6);
-	pbrShader->setInt("aoMap", 7);
+	static const char* irradianceShaderVert = "Shaders/learnopengl/2.2.2.cubemap.vs";
+	static const char* irradianceShaderFrag = "Shaders/learnopengl/2.2.2.irradiance_convolution.fs";
+	ShaderLearnOpenGL* irradianceShader = new ShaderLearnOpenGL();
+	irradianceShader->CreateFromFiles(irradianceShaderVert, irradianceShaderFrag);
+	shaders.insert(std::make_pair("irradianceShader", irradianceShader));
+	printf("Renderer: irradianceShader compiled [programID=%d]\n", irradianceShader->GetProgramID());
 
-	backgroundShader->use();
-	backgroundShader->setInt("environmentMap", 0);
+	static const char* prefilterShaderVert = "Shaders/learnopengl/2.2.2.cubemap.vs";
+	static const char* prefilterShaderFrag = "Shaders/learnopengl/2.2.2.prefilter.fs";
+	ShaderLearnOpenGL* prefilterShader = new ShaderLearnOpenGL();
+	prefilterShader->CreateFromFiles(prefilterShaderVert, prefilterShaderFrag);
+	shaders.insert(std::make_pair("prefilterShader", prefilterShader));
+	printf("Renderer: prefilterShader compiled [programID=%d]\n", prefilterShader->GetProgramID());
+
+	static const char* brdfShaderVert = "Shaders/learnopengl/2.2.2.brdf.vs";
+	static const char* brdfShaderFrag = "Shaders/learnopengl/2.2.2.brdf.fs";
+	ShaderLearnOpenGL* brdfShader = new ShaderLearnOpenGL();
+	brdfShader->CreateFromFiles(brdfShaderVert, brdfShaderFrag);
+	shaders.insert(std::make_pair("brdfShader", brdfShader));
+	printf("Renderer: brdfShader compiled [programID=%d]\n", brdfShader->GetProgramID());
+
+	static const char* backgroundShaderVert = "Shaders/learnopengl/2.2.2.background.vs";
+	static const char* backgroundShaderFrag = "Shaders/learnopengl/2.2.2.background.fs";
+	ShaderLearnOpenGL* backgroundShader = new ShaderLearnOpenGL();
+	backgroundShader->CreateFromFiles(backgroundShaderVert, backgroundShaderFrag);
+	shaders.insert(std::make_pair("backgroundShader", backgroundShader));
+	printf("Renderer: backgroundShader compiled [programID=%d]\n", backgroundShader->GetProgramID());
+
+	shaders["pbrShader"]->Bind();
+	shaders["pbrShader"]->setInt("irradianceMap", 0);
+	shaders["pbrShader"]->setInt("prefilterMap", 1);
+	shaders["pbrShader"]->setInt("brdfLUT", 2);
+	shaders["pbrShader"]->setInt("albedoMap", 3);
+	shaders["pbrShader"]->setInt("normalMap", 4);
+	shaders["pbrShader"]->setInt("metallicMap", 5);
+	shaders["pbrShader"]->setInt("roughnessMap", 6);
+	shaders["pbrShader"]->setInt("aoMap", 7);
+
+	shaders["backgroundShader"]->Bind();
+	shaders["backgroundShader"]->setInt("environmentMap", 0);
 }
 
 void RendererJoey::SetFramebuffers()
@@ -134,9 +163,9 @@ void RendererJoey::ConvertHDREquirectangularToCubemap()
 {
 	// pbr: convert HDR equirectangular environment map to cubemap equivalent
 	// ----------------------------------------------------------------------
-	m_ShadersJoey["equirectangularToCubemapShader"]->use();
-	m_ShadersJoey["equirectangularToCubemapShader"]->setInt("equirectangularMap", 0);
-	m_ShadersJoey["equirectangularToCubemapShader"]->setMat4("projection", m_CaptureProjection);
+	shaders["equirectangularToCubemapShader"]->Bind();
+	shaders["equirectangularToCubemapShader"]->setInt("equirectangularMap", 0);
+	shaders["equirectangularToCubemapShader"]->setMat4("projection", m_CaptureProjection);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_HDRTexture);
 
@@ -144,7 +173,7 @@ void RendererJoey::ConvertHDREquirectangularToCubemap()
 	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		m_ShadersJoey["equirectangularToCubemapShader"]->setMat4("view", m_CaptureViews[i]);
+		shaders["equirectangularToCubemapShader"]->setMat4("view", m_CaptureViews[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_EnvCubemap, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -180,9 +209,9 @@ void RendererJoey::CreateIrradianceCubemap()
 void RendererJoey::SolveDiffuseIntegralByConvolution()
 {
 	// pbr: solve diffuse integral by convolution to create an irradiance (cube)map.	
-	m_ShadersJoey["irradianceShader"]->use();
-	m_ShadersJoey["irradianceShader"]->setInt("environmentMap", 0);
-	m_ShadersJoey["irradianceShader"]->setMat4("projection", m_CaptureProjection);
+	shaders["irradianceShader"]->Bind();
+	shaders["irradianceShader"]->setInt("environmentMap", 0);
+	shaders["irradianceShader"]->setMat4("projection", m_CaptureProjection);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvCubemap);
 
@@ -190,7 +219,7 @@ void RendererJoey::SolveDiffuseIntegralByConvolution()
 	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		m_ShadersJoey["irradianceShader"]->setMat4("view", m_CaptureViews[i]);
+		shaders["irradianceShader"]->setMat4("view", m_CaptureViews[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_IrradianceMap, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -220,9 +249,9 @@ void RendererJoey::CreatePreFilterCubemap()
 void RendererJoey::RunQuasiMonteCarloSimulation()
 {
 	// pbr: run a quasi monte-carlo simulation on the environment lighting to create a prefilter (cube)map.
-	m_ShadersJoey["prefilterShader"]->use();
-	m_ShadersJoey["prefilterShader"]->setInt("environmentMap", 0);
-	m_ShadersJoey["prefilterShader"]->setMat4("projection", m_CaptureProjection);
+	shaders["prefilterShader"]->Bind();
+	shaders["prefilterShader"]->setInt("environmentMap", 0);
+	shaders["prefilterShader"]->setMat4("projection", m_CaptureProjection);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvCubemap);
 
@@ -238,10 +267,10 @@ void RendererJoey::RunQuasiMonteCarloSimulation()
 		glViewport(0, 0, mipWidth, mipHeight);
 
 		float roughness = (float)mip / (float)(maxMipLevels - 1);
-		m_ShadersJoey["prefilterShader"]->setFloat("roughness", roughness);
+		shaders["prefilterShader"]->setFloat("roughness", roughness);
 		for (unsigned int i = 0; i < 6; ++i)
 		{
-			m_ShadersJoey["prefilterShader"]->setMat4("view", m_CaptureViews[i]);
+			shaders["prefilterShader"]->setMat4("view", m_CaptureViews[i]);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_PrefilterMap, mip);
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -273,7 +302,7 @@ void RendererJoey::Generate2DLUTFromBRDF()
 
 	glViewport(0, 0, 512, 512);
 	
-	m_ShadersJoey["brdfShader"]->use();
+	shaders["brdfShader"]->Bind();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	RenderQuad();
 
@@ -300,17 +329,17 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	std::map<std::string, unsigned int> textureIDs = sceneJoey->GetTextureIDs();
 
 	// initialize static shader uniforms before rendering
-	m_ShadersJoey["pbrShader"]->use();
-	m_ShadersJoey["pbrShader"]->setMat4("projection", projectionMatrix);
-	m_ShadersJoey["backgroundShader"]->use();
-	m_ShadersJoey["backgroundShader"]->setMat4("projection", projectionMatrix);
+	shaders["pbrShader"]->Bind();
+	shaders["pbrShader"]->setMat4("projection", projectionMatrix);
+	shaders["backgroundShader"]->Bind();
+	shaders["backgroundShader"]->setMat4("projection", projectionMatrix);
 
 	// render scene, supplying the convoluted irradiance map to the final shader.
-	m_ShadersJoey["pbrShader"]->use();
+	shaders["pbrShader"]->Bind();
 	glm::mat4 model = glm::mat4(1.0f);
 	glm::mat4 view = scene->GetCamera()->CalculateViewMatrix();
-	m_ShadersJoey["pbrShader"]->setMat4("view", view);
-	m_ShadersJoey["pbrShader"]->setVec3("camPos", scene->GetCamera()->GetPosition());
+	shaders["pbrShader"]->setMat4("view", view);
+	shaders["pbrShader"]->setVec3("camPos", scene->GetCamera()->GetPosition());
 
 	// bind pre-computed IBL data
 	glActiveTexture(GL_TEXTURE0);
@@ -336,7 +365,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-5.0, 0.0, 2.0));
-	m_ShadersJoey["pbrShader"]->setMat4("model", model);
+	shaders["pbrShader"]->setMat4("model", model);
 	RenderSphere();
 
 	// gold
@@ -353,7 +382,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-3.0, 0.0, 2.0));
-	m_ShadersJoey["pbrShader"]->setMat4("model", model);
+	shaders["pbrShader"]->setMat4("model", model);
 	RenderSphere();
 
 	// grass
@@ -370,7 +399,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-1.0, 0.0, 2.0));
-	m_ShadersJoey["pbrShader"]->setMat4("model", model);
+	shaders["pbrShader"]->setMat4("model", model);
 	RenderSphere();
 
 	// plastic
@@ -387,7 +416,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(1.0, 0.0, 2.0));
-	m_ShadersJoey["pbrShader"]->setMat4("model", model);
+	shaders["pbrShader"]->setMat4("model", model);
 	RenderSphere();
 
 	// wall
@@ -404,7 +433,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(3.0, 0.0, 2.0));
-	m_ShadersJoey["pbrShader"]->setMat4("model", model);
+	shaders["pbrShader"]->setMat4("model", model);
 	RenderSphere();
 
 	// render light source (simply re-render sphere at light positions)
@@ -414,13 +443,13 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	{
 		glm::vec3 newPos = sceneJoey->m_LightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
 		newPos = sceneJoey->m_LightPositions[i];
-		m_ShadersJoey["pbrShader"]->setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
-		m_ShadersJoey["pbrShader"]->setVec3("lightColors[" + std::to_string(i) + "]", sceneJoey->m_LightColors[i]);
+		shaders["pbrShader"]->setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+		shaders["pbrShader"]->setVec3("lightColors[" + std::to_string(i) + "]", sceneJoey->m_LightColors[i]);
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, newPos);
 		model = glm::scale(model, glm::vec3(0.5f));
-		m_ShadersJoey["pbrShader"]->setMat4("model", model);
+		shaders["pbrShader"]->setMat4("model", model);
 		RenderSphere();
 	}
 
@@ -445,12 +474,12 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(0.1f));
-	m_ShadersJoey["pbrShader"]->setMat4("model", model);
+	shaders["pbrShader"]->setMat4("model", model);
 	sceneJoey->GetModels()["cerberus"]->RenderModelPBR();
 
 	// render skybox (render as last to prevent overdraw)
-	m_ShadersJoey["backgroundShader"]->use();
-	m_ShadersJoey["backgroundShader"]->setMat4("view", view);
+	shaders["backgroundShader"]->Bind();
+	shaders["backgroundShader"]->setMat4("view", view);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvCubemap);
 	// glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceMap); // display irradiance map
