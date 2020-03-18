@@ -30,7 +30,7 @@ bool Texture::Load(bool flipVert)
 	m_Buffer = stbi_load(m_FileLocation, (int*)&m_Width, (int*)&m_Height, &m_BitDepth, 0);
 	if (!m_Buffer)
 	{
-		printf("Failed to find: '%s'\n", m_FileLocation);
+		printf("Texture failed to load '%s'\n", m_FileLocation);
 		return false;
 	}
 
