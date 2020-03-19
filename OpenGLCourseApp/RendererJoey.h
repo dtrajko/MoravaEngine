@@ -34,7 +34,6 @@ public:
 	void Generate2DLUTFromBRDF();
 
 	void RenderPass();
-	void RenderCube();
 	void RenderQuad();
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
 	~RendererJoey();
@@ -55,4 +54,5 @@ private:
 	unsigned int m_QuadVBO;
 
 	SphereJoey* m_SphereJoey;
+	Cube* m_Cube;
 };
