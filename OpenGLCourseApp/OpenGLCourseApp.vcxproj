@@ -177,7 +177,6 @@
     <ClCompile Include="FramebufferTexture.cpp" />
     <ClCompile Include="ImGuiBuild.cpp" />
     <ClCompile Include="ImGuiWrapper.cpp" />
-    <ClCompile Include="learnopengl\shaderJoey.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -213,7 +212,6 @@
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureCubemap.cpp" />
-    <ClCompile Include="TextureJoey.cpp" />
     <ClCompile Include="Tile2D.cpp" />
     <ClCompile Include="WaterManager.cpp" />
     <ClCompile Include="Window.cpp" />
@@ -237,11 +235,6 @@
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="FramebufferTexture.h" />
     <ClInclude Include="ImGuiWrapper.h" />
-    <ClInclude Include="learnopengl\camera.h" />
-    <ClInclude Include="learnopengl\functions.h" />
-    <ClInclude Include="learnopengl\mesh.h" />
-    <ClInclude Include="learnopengl\model.h" />
-    <ClInclude Include="learnopengl\shaderJoey.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Material.h" />
@@ -277,7 +270,6 @@
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureCubemap.h" />
-    <ClInclude Include="TextureJoey.h" />
     <ClInclude Include="Tile2D.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="WaterManager.h" />

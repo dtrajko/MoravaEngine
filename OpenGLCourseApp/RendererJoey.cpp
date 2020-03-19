@@ -425,6 +425,19 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	// render light source (simply re-render sphere at light positions)
 	// this looks a bit off as we use the same shader, but it'll make their positions obvious and 
 	// keeps the codeprint small.
+
+	// silver (light source)
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, textures["silverAlbedoMap"]->GetID());
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, textures["silverNormalMap"]->GetID());
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, textures["silverMetallicMap"]->GetID());
+	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_2D, textures["silverRoughnessMap"]->GetID());
+	glActiveTexture(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_2D, textures["silverAOMap"]->GetID());
+
 	for (unsigned int i = 0; i < sizeof(sceneJoey->m_LightPositions) / sizeof(sceneJoey->m_LightPositions[0]); ++i)
 	{
 		glm::vec3 newPos = sceneJoey->m_LightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
@@ -455,13 +468,34 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	glBindTexture(GL_TEXTURE_2D, textures["goldAOMap"]->GetID());
 
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 3.0f, -5.0f));
+	model = glm::translate(model, glm::vec3(0.0f, -10.0f, 25.0f));
 	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(0.1f));
 	shaders["pbrShader"]->setMat4("model", model);
 	sceneJoey->GetModels()["cerberus"]->RenderModelPBR();
+
+	/* Khronos DamagedHelmet model */
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetAlbedoMap"]->GetID());
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetNormalMap"]->GetID());
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetMetallicMap"]->GetID());
+	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetRoughnessMap"]->GetID());
+	glActiveTexture(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetAmbOcclusionMap"]->GetID());
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 15.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(5.0f));
+	shaders["pbrShader"]->setMat4("model", model);
+	sceneJoey->GetModels()["damagedHelmet"]->RenderModelPBR();
 
 	// render skybox (render as last to prevent overdraw)
 	shaders["backgroundShader"]->Bind();

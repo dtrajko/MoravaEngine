@@ -36,15 +36,20 @@ bool Texture::Load(bool flipVert)
 
 	GLenum internalFormat = 0;
 	GLenum dataFormat = 0;
-	if (m_BitDepth == 4)
+	if (m_BitDepth == 1)
 	{
-		internalFormat = GL_RGBA8;
-		dataFormat = GL_RGBA;
+		internalFormat = GL_RED;
+		dataFormat = GL_RED;
 	}
 	else if (m_BitDepth == 3)
 	{
 		internalFormat = GL_RGB8;
 		dataFormat = GL_RGB;
+	}
+	else if (m_BitDepth == 4)
+	{
+		internalFormat = GL_RGBA8;
+		dataFormat = GL_RGBA;
 	}
 
 	glGenTextures(1, &m_TextureID);

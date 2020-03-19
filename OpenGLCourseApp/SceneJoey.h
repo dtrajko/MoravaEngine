@@ -20,9 +20,15 @@ private:
 	virtual void SetSkybox() override;
 	virtual void SetTextures() override;
 	virtual void SetupModels() override;
+	void SetupLights();
 
 public:
 	glm::vec3 m_LightPositions[4];
 	glm::vec3 m_LightColors[4];
+
+private:
+	glm::vec3 m_CameraPosition;
+	glm::vec3 m_LightPositionOffset[4];
+	glm::vec3 m_LightColorsNormal[4];
 
 };

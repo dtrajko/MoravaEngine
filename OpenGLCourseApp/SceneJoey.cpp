@@ -6,7 +6,6 @@
 #include "Renderer.h"
 #include "Sphere.h"
 #include "ImGuiWrapper.h"
-#include "TextureJoey.h"
 
 
 SceneJoey::SceneJoey()
@@ -49,17 +48,33 @@ SceneJoey::SceneJoey()
 
 	SetTextures();
 	SetupModels();
+	SetupLights();
+}
+
+void SceneJoey::SetupLights()
+{
+	m_CameraPosition = sceneSettings.cameraPosition;
 
 	// lights
-	m_LightPositions[0] = glm::vec3(-10.0f,  10.0f, 10.0f);
-	m_LightPositions[1] = glm::vec3( 10.0f,  10.0f, 10.0f);
-	m_LightPositions[2] = glm::vec3(-10.0f, -10.0f, 10.0f);
-	m_LightPositions[3] = glm::vec3( 10.0f, -10.0f, 10.0f);
+	m_LightColorsNormal[0] = glm::vec3(1.0f, 1.0f, 1.0f);
+	m_LightColorsNormal[1] = glm::vec3(1.0f, 1.0f, 1.0f);
+	m_LightColorsNormal[2] = glm::vec3(1.0f, 1.0f, 1.0f);
+	m_LightColorsNormal[3] = glm::vec3(1.0f, 1.0f, 1.0f);
 
-	m_LightColors[0] = glm::vec3(300.0f, 300.0f, 300.0f);
-	m_LightColors[1] = glm::vec3(300.0f, 300.0f, 300.0f);
-	m_LightColors[2] = glm::vec3(300.0f, 300.0f, 300.0f);
-	m_LightColors[3] = glm::vec3(300.0f, 300.0f, 300.0f);
+	m_LightPositionOffset[0] = glm::vec3(-5.0f, 10.0f, -5.0f);
+	m_LightPositionOffset[1] = glm::vec3( 5.0f, 10.0f, -5.0f);
+	m_LightPositionOffset[2] = glm::vec3(-5.0f, 10.0f,  5.0f);
+	m_LightPositionOffset[3] = glm::vec3( 5.0f, 10.0f,  5.0f);
+
+	m_LightPositions[0] = m_LightPositionOffset[0]; // m_CameraPosition + m_LightPositionOffset[0];
+	m_LightPositions[1] = m_LightPositionOffset[1]; // m_CameraPosition + m_LightPositionOffset[1];
+	m_LightPositions[2] = m_LightPositionOffset[2]; // m_CameraPosition + m_LightPositionOffset[2];
+	m_LightPositions[3] = m_LightPositionOffset[3]; // m_CameraPosition + m_LightPositionOffset[3];
+
+	m_LightColors[0] = m_LightColorsNormal[0] * 300.0f;
+	m_LightColors[1] = m_LightColorsNormal[1] * 300.0f;
+	m_LightColors[2] = m_LightColorsNormal[2] * 300.0f;
+	m_LightColors[3] = m_LightColorsNormal[3] * 300.0f;
 }
 
 void SceneJoey::SetSkybox()
@@ -69,46 +84,60 @@ void SceneJoey::SetSkybox()
 void SceneJoey::SetTextures()
 {
 	// rusted iron
-	textures.insert(std::make_pair("ironAlbedoMap",     new TextureJoey("Textures/PBR/rusted_iron/albedo.png")));
-	textures.insert(std::make_pair("ironNormalMap",     new TextureJoey("Textures/PBR/rusted_iron/normal.png")));
-	textures.insert(std::make_pair("ironMetallicMap",   new TextureJoey("Textures/PBR/rusted_iron/metallic.png")));
-	textures.insert(std::make_pair("ironRoughnessMap",  new TextureJoey("Textures/PBR/rusted_iron/roughness.png")));
-	textures.insert(std::make_pair("ironAOMap",         new TextureJoey("Textures/PBR/rusted_iron/ao.png")));
+	textures.insert(std::make_pair("ironAlbedoMap",     new Texture("Textures/PBR/rusted_iron/albedo.png")));
+	textures.insert(std::make_pair("ironNormalMap",     new Texture("Textures/PBR/rusted_iron/normal.png")));
+	textures.insert(std::make_pair("ironMetallicMap",   new Texture("Textures/PBR/rusted_iron/metallic.png")));
+	textures.insert(std::make_pair("ironRoughnessMap",  new Texture("Textures/PBR/rusted_iron/roughness.png")));
+	textures.insert(std::make_pair("ironAOMap",         new Texture("Textures/PBR/rusted_iron/ao.png")));
 
 	// gold
-	textures.insert(std::make_pair("goldAlbedoMap",     new TextureJoey("Textures/PBR/gold/albedo.png")));
-	textures.insert(std::make_pair("goldNormalMap",     new TextureJoey("Textures/PBR/gold/normal.png")));
-	textures.insert(std::make_pair("goldMetallicMap",   new TextureJoey("Textures/PBR/gold/metallic.png")));
-	textures.insert(std::make_pair("goldRoughnessMap",  new TextureJoey("Textures/PBR/gold/roughness.png")));
-	textures.insert(std::make_pair("goldAOMap",         new TextureJoey("Textures/PBR/gold/ao.png")));
+	textures.insert(std::make_pair("goldAlbedoMap",     new Texture("Textures/PBR/gold/albedo.png")));
+	textures.insert(std::make_pair("goldNormalMap",     new Texture("Textures/PBR/gold/normal.png")));
+	textures.insert(std::make_pair("goldMetallicMap",   new Texture("Textures/PBR/gold/metallic.png")));
+	textures.insert(std::make_pair("goldRoughnessMap",  new Texture("Textures/PBR/gold/roughness.png")));
+	textures.insert(std::make_pair("goldAOMap",         new Texture("Textures/PBR/gold/ao.png")));
+
+	// silver
+	textures.insert(std::make_pair("silverAlbedoMap",    new Texture("Textures/PBR/silver/albedo.png")));
+	textures.insert(std::make_pair("silverNormalMap",    new Texture("Textures/PBR/silver/normal.png")));
+	textures.insert(std::make_pair("silverMetallicMap",  new Texture("Textures/PBR/silver/metallic.png")));
+	textures.insert(std::make_pair("silverRoughnessMap", new Texture("Textures/PBR/silver/roughness.png")));
+	textures.insert(std::make_pair("silverAOMap",        new Texture("Textures/PBR/silver/ao.png")));
 
 	// grass
-	textures.insert(std::make_pair("grassAlbedoMap",    new TextureJoey("Textures/PBR/grass/albedo.png")));
-	textures.insert(std::make_pair("grassNormalMap",    new TextureJoey("Textures/PBR/grass/normal.png")));
-	textures.insert(std::make_pair("grassMetallicMap",  new TextureJoey("Textures/PBR/grass/metallic.png")));
-	textures.insert(std::make_pair("grassRoughnessMap", new TextureJoey("Textures/PBR/grass/roughness.png")));
-	textures.insert(std::make_pair("grassAOMap",        new TextureJoey("Textures/PBR/grass/ao.png")));
+	textures.insert(std::make_pair("grassAlbedoMap",    new Texture("Textures/PBR/grass/albedo.png")));
+	textures.insert(std::make_pair("grassNormalMap",    new Texture("Textures/PBR/grass/normal.png")));
+	textures.insert(std::make_pair("grassMetallicMap",  new Texture("Textures/PBR/grass/metallic.png")));
+	textures.insert(std::make_pair("grassRoughnessMap", new Texture("Textures/PBR/grass/roughness.png")));
+	textures.insert(std::make_pair("grassAOMap",        new Texture("Textures/PBR/grass/ao.png")));
 
 	// plastic
-	textures.insert(std::make_pair("plasticAlbedoMap",    new TextureJoey("Textures/PBR/plastic/albedo.png")));
-	textures.insert(std::make_pair("plasticNormalMap",    new TextureJoey("Textures/PBR/plastic/normal.png")));
-	textures.insert(std::make_pair("plasticMetallicMap",  new TextureJoey("Textures/PBR/plastic/metallic.png")));
-	textures.insert(std::make_pair("plasticRoughnessMap", new TextureJoey("Textures/PBR/plastic/roughness.png")));
-	textures.insert(std::make_pair("plasticAOMap",        new TextureJoey("Textures/PBR/plastic/ao.png")));
+	textures.insert(std::make_pair("plasticAlbedoMap",    new Texture("Textures/PBR/plastic/albedo.png")));
+	textures.insert(std::make_pair("plasticNormalMap",    new Texture("Textures/PBR/plastic/normal.png")));
+	textures.insert(std::make_pair("plasticMetallicMap",  new Texture("Textures/PBR/plastic/metallic.png")));
+	textures.insert(std::make_pair("plasticRoughnessMap", new Texture("Textures/PBR/plastic/roughness.png")));
+	textures.insert(std::make_pair("plasticAOMap",        new Texture("Textures/PBR/plastic/ao.png")));
 
 	// wall
-	textures.insert(std::make_pair("wallAlbedoMap",     new TextureJoey("Textures/PBR/wall/albedo.png")));
-	textures.insert(std::make_pair("wallNormalMap",     new TextureJoey("Textures/PBR/wall/normal.png")));
-	textures.insert(std::make_pair("wallMetallicMap",   new TextureJoey("Textures/PBR/wall/metallic.png")));
-	textures.insert(std::make_pair("wallRoughnessMap",  new TextureJoey("Textures/PBR/wall/roughness.png")));
-	textures.insert(std::make_pair("wallAOMap",         new TextureJoey("Textures/PBR/wall/ao.png")));
+	textures.insert(std::make_pair("wallAlbedoMap",     new Texture("Textures/PBR/wall/albedo.png")));
+	textures.insert(std::make_pair("wallNormalMap",     new Texture("Textures/PBR/wall/normal.png")));
+	textures.insert(std::make_pair("wallMetallicMap",   new Texture("Textures/PBR/wall/metallic.png")));
+	textures.insert(std::make_pair("wallRoughnessMap",  new Texture("Textures/PBR/wall/roughness.png")));
+	textures.insert(std::make_pair("wallAOMap",         new Texture("Textures/PBR/wall/ao.png")));
 
 	// Cerberus model PBR textures
-	textures.insert(std::make_pair("cerberusAlbedoMap",       new TextureJoey("Textures/PBR/Cerberus/Cerberus_A.tga")));
-	textures.insert(std::make_pair("cerberusNormalMap",       new TextureJoey("Textures/PBR/Cerberus/Cerberus_N.tga")));
-	textures.insert(std::make_pair("cerberusMetallicMap",     new TextureJoey("Textures/PBR/Cerberus/Cerberus_M.tga")));
-	textures.insert(std::make_pair("cerberusRoughnessMap",    new TextureJoey("Textures/PBR/Cerberus/Cerberus_R.tga")));
-	textures.insert(std::make_pair("cerberusAmbOcclusionMap", new TextureJoey("Textures/PBR/Cerberus/Cerberus_AO.tga")));
+	textures.insert(std::make_pair("cerberusAlbedoMap",       new Texture("Textures/PBR/Cerberus/Cerberus_A.tga")));
+	textures.insert(std::make_pair("cerberusNormalMap",       new Texture("Textures/PBR/Cerberus/Cerberus_N.tga")));
+	textures.insert(std::make_pair("cerberusMetallicMap",     new Texture("Textures/PBR/Cerberus/Cerberus_M.tga")));
+	textures.insert(std::make_pair("cerberusRoughnessMap",    new Texture("Textures/PBR/Cerberus/Cerberus_R.tga")));
+	textures.insert(std::make_pair("cerberusAmbOcclusionMap", new Texture("Textures/PBR/Cerberus/Cerberus_AO.tga")));
+
+	// Khronos DamagedHelmet model PBR textures
+	textures.insert(std::make_pair("damagedHelmetAlbedoMap",       new Texture("Textures/PBR/DamagedHelmet/Default_albedo.jpg")));
+	textures.insert(std::make_pair("damagedHelmetNormalMap",       new Texture("Textures/PBR/DamagedHelmet/Default_normal.jpg")));
+	textures.insert(std::make_pair("damagedHelmetMetallicMap",     new Texture("Textures/PBR/DamagedHelmet/Default_metallic.jpg")));
+	textures.insert(std::make_pair("damagedHelmetRoughnessMap",    new Texture("Textures/PBR/DamagedHelmet/Default_roughness.jpg")));
+	textures.insert(std::make_pair("damagedHelmetAmbOcclusionMap", new Texture("Textures/PBR/DamagedHelmet/Default_AO.jpg")));
 }
 
 void SceneJoey::SetupModels()
@@ -116,10 +145,37 @@ void SceneJoey::SetupModels()
 	Model* cerberus = new Model();
 	cerberus->LoadModel("Models/Cerberus_LP.FBX", "Textures/PBR/Cerberus");
 	models.insert(std::make_pair("cerberus", cerberus));
+
+	Model* damagedHelmet = new Model();
+	damagedHelmet->LoadModel("Models/DamagedHelmet.gltf", "Textures/PBR/DamagedHelmet");
+	models.insert(std::make_pair("damagedHelmet", damagedHelmet));
 }
 
 void SceneJoey::Update(float timestep)
 {
+	m_CameraPosition = m_Camera->GetPosition();
+
+	ImGui::ColorEdit3("Light Color 0", glm::value_ptr(m_LightColorsNormal[0]));
+	ImGui::SliderFloat3("Light Pos Offset 0", glm::value_ptr(m_LightPositionOffset[0]), -60.0f, 60.0f);
+
+	ImGui::ColorEdit3("Light Color 1", glm::value_ptr(m_LightColorsNormal[1]));
+	ImGui::SliderFloat3("Light Pos Offset 1", glm::value_ptr(m_LightPositionOffset[1]), -60.0f, 60.0f);
+
+	ImGui::ColorEdit3("Light Color 2", glm::value_ptr(m_LightColorsNormal[2]));
+	ImGui::SliderFloat3("Light Pos Offset 2", glm::value_ptr(m_LightPositionOffset[2]), -60.0f, 60.0f);
+
+	ImGui::ColorEdit3("Light Color 3", glm::value_ptr(m_LightColorsNormal[3]));
+	ImGui::SliderFloat3("Light Pos Offset 3", glm::value_ptr(m_LightPositionOffset[3]), -60.0f, 60.0f);
+
+	m_LightPositions[0] = m_LightPositionOffset[0]; // m_CameraPosition + m_LightPositionOffset[0];
+	m_LightPositions[1] = m_LightPositionOffset[1]; // m_CameraPosition + m_LightPositionOffset[1];
+	m_LightPositions[2] = m_LightPositionOffset[2]; // m_CameraPosition + m_LightPositionOffset[2];
+	m_LightPositions[3] = m_LightPositionOffset[3]; // m_CameraPosition + m_LightPositionOffset[3];
+
+	m_LightColors[0] = m_LightColorsNormal[0] * 255.0f;
+	m_LightColors[1] = m_LightColorsNormal[1] * 255.0f;
+	m_LightColors[2] = m_LightColorsNormal[2] * 255.0f;
+	m_LightColors[3] = m_LightColorsNormal[3] * 255.0f;
 }
 
 void SceneJoey::Render(glm::mat4 projectionMatrix, std::string passType,

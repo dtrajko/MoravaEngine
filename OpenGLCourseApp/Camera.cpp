@@ -109,17 +109,6 @@ glm::mat4 Camera::CalculateViewMatrix()
 	return viewMatrix;
 }
 
-glm::mat4 Camera::CalculateViewMatrixStrife()
-{
-	glm::mat4 viewMatrix;
-	viewMatrix = glm::rotate(viewMatrix, glm::radians(m_Pitch), glm::vec3(1, 0, 0));
-	viewMatrix = glm::rotate(viewMatrix, glm::radians(m_Yaw),   glm::vec3(0, 1, 0));
-	viewMatrix = glm::rotate(viewMatrix, glm::radians(m_Roll),  glm::vec3(0, 0, 1));
-	glm::vec3 positionNegative = -m_Position;
-	viewMatrix = glm::translate(viewMatrix, positionNegative);
-	return viewMatrix;
-}
-
 void Camera::Update()
 {
 	m_Front.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));

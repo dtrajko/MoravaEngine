@@ -20,9 +20,10 @@ public:
 	inline glm::vec3 GetPosition() const { return m_Position; };
 	inline glm::vec3 GetDirection() const { return glm::normalize(m_Front); };
 	inline float GetPitch() const { return m_Pitch; };
+	inline float GetYaw() const { return m_Yaw; };
+	inline glm::vec3 GetFront() const { return m_Front; };
 	void InvertPitch();
 	glm::mat4 CalculateViewMatrix();
-	glm::mat4 CalculateViewMatrixStrife();
 	~Camera();
 
 private:
