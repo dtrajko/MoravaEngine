@@ -185,6 +185,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="OmniShadowMap.cpp" />
     <ClCompile Include="PointLight.cpp" />
+    <ClCompile Include="Quad.cpp" />
     <ClCompile Include="RadianceHDR.cpp" />
     <ClCompile Include="Renderbuffer.cpp" />
     <ClCompile Include="Renderer.cpp" />
@@ -244,6 +245,7 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="OmniShadowMap.h" />
     <ClInclude Include="PointLight.h" />
+    <ClInclude Include="Quad.h" />
     <ClInclude Include="RadianceHDR.h" />
     <ClInclude Include="Renderbuffer.h" />
     <ClInclude Include="Renderer.h" />

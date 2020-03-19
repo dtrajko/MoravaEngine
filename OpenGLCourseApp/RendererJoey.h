@@ -5,6 +5,7 @@
 #include "RadianceHDR.h"
 #include "Cubemap.h"
 #include "Cube.h"
+#include "Quad.h"
 #include "learnopengl/shaderJoey.h"
 #include "SphereJoey.h"
 
@@ -34,7 +35,6 @@ public:
 	void Generate2DLUTFromBRDF();
 
 	void RenderPass();
-	void RenderQuad();
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
 	~RendererJoey();
 
@@ -55,4 +55,5 @@ private:
 
 	SphereJoey* m_SphereJoey;
 	Cube* m_Cube;
+	Quad* m_Quad;
 };

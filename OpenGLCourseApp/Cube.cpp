@@ -51,6 +51,8 @@ Cube::Cube()
 		-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f,  // bottom-left        
 	};
 
+	unsigned int m_VBO = 0;
+
 	glGenVertexArrays(1, &m_VAO);
 	glGenBuffers(1, &m_VBO);
 

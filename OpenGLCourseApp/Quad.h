@@ -1,12 +1,12 @@
 #pragma once
 
 
-class Cube
+class Quad
 {
 public:
-	Cube();
+	Quad();
 	void Render();
-	~Cube();
+	~Quad();
 
 private:
 	unsigned int m_VAO = 0;
