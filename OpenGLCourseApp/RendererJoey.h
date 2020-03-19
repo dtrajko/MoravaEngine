@@ -6,6 +6,7 @@
 #include "Cubemap.h"
 #include "Cube.h"
 #include "learnopengl/shaderJoey.h"
+#include "SphereJoey.h"
 
 
 class RendererJoey : public RendererBasic
@@ -16,6 +17,7 @@ public:
 	RendererJoey();
 
 	virtual void Init() override;
+	void SetGeometry();
 	virtual void SetUniforms() override;
 	virtual void SetShaders() override;
 	virtual void Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
@@ -34,7 +36,6 @@ public:
 	void RenderPass();
 	void RenderCube();
 	void RenderQuad();
-	void RenderSphere();
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
 	~RendererJoey();
 
@@ -52,6 +53,6 @@ private:
 	unsigned int m_BRDF_LUT_Texture;
 	unsigned int m_QuadVAO = 0;
 	unsigned int m_QuadVBO;
-	unsigned int m_SphereVAO = 0;
-	unsigned int m_SphereIndexCount;
+
+	SphereJoey* m_SphereJoey;
 };

@@ -15,6 +15,7 @@ RendererJoey::RendererJoey()
 
 void RendererJoey::Init()
 {
+	SetGeometry();
 	SetUniforms();
 	SetShaders();
 	SetFramebuffers();
@@ -27,6 +28,11 @@ void RendererJoey::Init()
 	CreatePreFilterCubemap();
 	RunQuasiMonteCarloSimulation();
 	Generate2DLUTFromBRDF();
+}
+
+void RendererJoey::SetGeometry()
+{
+	m_SphereJoey = new SphereJoey();
 }
 
 void RendererJoey::SetUniforms()
@@ -348,7 +354,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-5.0, 0.0, 2.0));
 	shaders["pbrShader"]->setMat4("model", model);
-	RenderSphere();
+	m_SphereJoey->Render();
 
 	// gold
 	glActiveTexture(GL_TEXTURE3);
@@ -369,7 +375,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-3.0, 0.0, 2.0));
 	shaders["pbrShader"]->setMat4("model", model);
-	RenderSphere();
+	m_SphereJoey->Render();
 
 	// grass
 	glActiveTexture(GL_TEXTURE3);
@@ -386,7 +392,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-1.0, 0.0, 2.0));
 	shaders["pbrShader"]->setMat4("model", model);
-	RenderSphere();
+	m_SphereJoey->Render();
 
 	// plastic
 	glActiveTexture(GL_TEXTURE3);
@@ -403,7 +409,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(1.0, 0.0, 2.0));
 	shaders["pbrShader"]->setMat4("model", model);
-	RenderSphere();
+	m_SphereJoey->Render();
 
 	// wall
 	glActiveTexture(GL_TEXTURE3);
@@ -420,7 +426,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(3.0, 0.0, 2.0));
 	shaders["pbrShader"]->setMat4("model", model);
-	RenderSphere();
+	m_SphereJoey->Render();
 
 	// render light source (simply re-render sphere at light positions)
 	// this looks a bit off as we use the same shader, but it'll make their positions obvious and 
@@ -449,7 +455,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 		model = glm::translate(model, newPos);
 		model = glm::scale(model, glm::vec3(0.5f));
 		shaders["pbrShader"]->setMat4("model", model);
-		RenderSphere();
+		m_SphereJoey->Render();
 	}
 
 	std::string passType = "main";
@@ -610,100 +616,6 @@ void RendererJoey::RenderQuad()
 	glBindVertexArray(m_QuadVAO);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
-}
-
-void RendererJoey::RenderSphere()
-{
-	// renders (and builds at first invocation) a sphere
-	if (m_SphereVAO == 0)
-	{
-		glGenVertexArrays(1, &m_SphereVAO);
-
-		unsigned int vbo, ebo;
-		glGenBuffers(1, &vbo);
-		glGenBuffers(1, &ebo);
-
-		std::vector<glm::vec3> positions;
-		std::vector<glm::vec2> uv;
-		std::vector<glm::vec3> normals;
-		std::vector<unsigned int> indices;
-
-		const unsigned int X_SEGMENTS = 64;
-		const unsigned int Y_SEGMENTS = 64;
-		const float PI = 3.14159265359f;
-		for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
-		{
-			for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
-			{
-				float xSegment = (float)x / (float)X_SEGMENTS;
-				float ySegment = (float)y / (float)Y_SEGMENTS;
-				float xPos = std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-				float yPos = std::cos(ySegment * PI);
-				float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
-
-				positions.push_back(glm::vec3(xPos, yPos, zPos));
-				uv.push_back(glm::vec2(xSegment, ySegment));
-				normals.push_back(glm::vec3(xPos, yPos, zPos));
-			}
-		}
-
-		bool oddRow = false;
-		for (int y = 0; y < Y_SEGMENTS; ++y)
-		{
-			if (!oddRow) // even rows: y == 0, y == 2; and so on
-			{
-				for (int x = 0; x <= X_SEGMENTS; ++x)
-				{
-					indices.push_back(y * (X_SEGMENTS + 1) + x);
-					indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
-				}
-			}
-			else
-			{
-				for (int x = X_SEGMENTS; x >= 0; --x)
-				{
-					indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
-					indices.push_back(y * (X_SEGMENTS + 1) + x);
-				}
-			}
-			oddRow = !oddRow;
-		}
-		m_SphereIndexCount = (unsigned int)indices.size();
-
-		std::vector<float> data;
-		for (int i = 0; i < positions.size(); ++i)
-		{
-			data.push_back(positions[i].x);
-			data.push_back(positions[i].y);
-			data.push_back(positions[i].z);
-			if (uv.size() > 0)
-			{
-				data.push_back(uv[i].x);
-				data.push_back(uv[i].y);
-			}
-			if (normals.size() > 0)
-			{
-				data.push_back(normals[i].x);
-				data.push_back(normals[i].y);
-				data.push_back(normals[i].z);
-			}
-		}
-		glBindVertexArray(m_SphereVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-		float stride = (3 + 2 + 3) * sizeof(float);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, (GLsizei)stride, (void*)0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, (GLsizei)stride, (void*)(3 * sizeof(float)));
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, (GLsizei)stride, (void*)(5 * sizeof(float)));
-	}
-
-	glBindVertexArray(m_SphereVAO);
-	glDrawElements(GL_TRIANGLE_STRIP, m_SphereIndexCount, GL_UNSIGNED_INT, 0);
 }
 
 RendererJoey::~RendererJoey()

@@ -92,7 +92,7 @@ public:
 	void SetWaterManager(int width, int height);
 	inline WaterManager* GetWaterManager() const { return m_WaterManager; };
 	inline std::map<std::string, Model*> GetModels() const { return models; };
-
+	inline std::map<std::string, Mesh*> GetMeshes() const { return meshes; };
 	~Scene();
 
 private:

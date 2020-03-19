@@ -208,6 +208,7 @@
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="SphereJoey.cpp" />
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -266,6 +267,7 @@
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="SphereJoey.h" />
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Texture.h" />
