@@ -50,6 +50,10 @@ void RendererJoey::SetShaders()
 	shaders.insert(std::make_pair("pbrShader", pbrShader));
 	printf("RendererJoey: pbrShader compiled [programID=%d]\n", pbrShader->GetProgramID());
 
+	ShaderLearnOpenGL* pbrShaderMRE = new ShaderLearnOpenGL("Shaders/learnopengl/2.2.2.pbr.vs", "Shaders/learnopengl/2.2.3.pbr.fs");
+	shaders.insert(std::make_pair("pbrShaderMRE", pbrShaderMRE));
+	printf("RendererJoey: pbrShaderMRE compiled [programID=%d]\n", pbrShaderMRE->GetProgramID());
+
 	ShaderLearnOpenGL* equirectangularToCubemapShader = new ShaderLearnOpenGL("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.equirectangular_to_cubemap.fs");
 	shaders.insert(std::make_pair("equirectangularToCubemapShader", equirectangularToCubemapShader));
 	printf("RendererJoey: equirectangularToCubemapShader compiled [programID=%d]\n", equirectangularToCubemapShader->GetProgramID());
@@ -80,6 +84,16 @@ void RendererJoey::SetShaders()
 	shaders["pbrShader"]->setInt("roughnessMap", 6);
 	shaders["pbrShader"]->setInt("aoMap", 7);
 
+	shaders["pbrShaderMRE"]->Bind();
+	shaders["pbrShaderMRE"]->setInt("irradianceMap", 0);
+	shaders["pbrShaderMRE"]->setInt("prefilterMap", 1);
+	shaders["pbrShaderMRE"]->setInt("brdfLUT", 2);
+	shaders["pbrShaderMRE"]->setInt("albedoMap", 3);
+	shaders["pbrShaderMRE"]->setInt("normalMap", 4);
+	shaders["pbrShaderMRE"]->setInt("metalRoughMap", 5);
+	shaders["pbrShaderMRE"]->setInt("emissiveMap", 6);
+	shaders["pbrShaderMRE"]->setInt("aoMap", 7);
+
 	shaders["backgroundShader"]->Bind();
 	shaders["backgroundShader"]->setInt("environmentMap", 0);
 }
@@ -101,7 +115,7 @@ void RendererJoey::LoadHDREnvironmentMap()
 	// pbr: load the HDR environment map
 	stbi_set_flip_vertically_on_load(true);
 	int width, height, nrComponents;
-	float* data = stbi_loadf("Textures/HDR/newport_loft.hdr", &width, &height, &nrComponents, 0);
+	float* data = stbi_loadf("Textures/HDR/Ice_Lake_Ref.hdr", &width, &height, &nrComponents, 0); // newport_loft.hdr
 	if (data)
 	{
 		glGenTextures(1, &m_HDRTexture);
@@ -448,14 +462,20 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	{
 		glm::vec3 newPos = sceneJoey->m_LightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
 		newPos = sceneJoey->m_LightPositions[i];
+
+		shaders["pbrShaderMRE"]->Bind();
+		shaders["pbrShaderMRE"]->setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+		shaders["pbrShaderMRE"]->setVec3("lightColors[" + std::to_string(i) + "]", sceneJoey->m_LightColors[i]);
+
+		shaders["pbrShader"]->Bind();
 		shaders["pbrShader"]->setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
 		shaders["pbrShader"]->setVec3("lightColors[" + std::to_string(i) + "]", sceneJoey->m_LightColors[i]);
-
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, newPos);
 		model = glm::scale(model, glm::vec3(0.5f));
 		shaders["pbrShader"]->setMat4("model", model);
 		m_SphereJoey->Render();
+
 	}
 
 	std::string passType = "main";
@@ -479,18 +499,28 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(0.1f));
+	shaders["pbrShader"]->Bind();
 	shaders["pbrShader"]->setMat4("model", model);
 	sceneJoey->GetModels()["cerberus"]->RenderModelPBR();
 
 	/* Khronos DamagedHelmet model */
+	// initialize static shader uniforms before rendering
+
+	m_Timestep += 0.0f; // -0.05f;
+
+	shaders["pbrShaderMRE"]->Bind();
+	shaders["pbrShaderMRE"]->setMat4("projection", projectionMatrix);
+	shaders["pbrShaderMRE"]->setMat4("view", view);
+	shaders["pbrShaderMRE"]->setVec3("camPos", scene->GetCamera()->GetPosition());
+
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetAlbedoMap"]->GetID());
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetNormalMap"]->GetID());
 	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetMetallicMap"]->GetID());
+	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetMetalRoughMap"]->GetID());
 	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetRoughnessMap"]->GetID());
+	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetEmissiveMap"]->GetID());
 	glActiveTexture(GL_TEXTURE7);
 	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetAmbOcclusionMap"]->GetID());
 
@@ -498,9 +528,9 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	model = glm::translate(model, glm::vec3(0.0f, 15.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::rotate(model, glm::radians(0.0f + m_Timestep), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(5.0f));
-	shaders["pbrShader"]->setMat4("model", model);
+	shaders["pbrShaderMRE"]->setMat4("model", model);
 	sceneJoey->GetModels()["damagedHelmet"]->RenderModelPBR();
 
 	// render skybox (render as last to prevent overdraw)

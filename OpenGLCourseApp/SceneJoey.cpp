@@ -61,10 +61,10 @@ void SceneJoey::SetupLights()
 	m_LightColorsNormal[2] = glm::vec3(1.0f, 1.0f, 1.0f);
 	m_LightColorsNormal[3] = glm::vec3(1.0f, 1.0f, 1.0f);
 
-	m_LightPositionOffset[0] = glm::vec3(-5.0f, 10.0f, -5.0f);
-	m_LightPositionOffset[1] = glm::vec3( 5.0f, 10.0f, -5.0f);
-	m_LightPositionOffset[2] = glm::vec3(-5.0f, 10.0f,  5.0f);
-	m_LightPositionOffset[3] = glm::vec3( 5.0f, 10.0f,  5.0f);
+	m_LightPositionOffset[0] = glm::vec3(-5.0f, 18.0f, -5.0f);
+	m_LightPositionOffset[1] = glm::vec3( 5.0f, 18.0f, -5.0f);
+	m_LightPositionOffset[2] = glm::vec3(-5.0f, 18.0f,  5.0f);
+	m_LightPositionOffset[3] = glm::vec3( 5.0f, 18.0f,  5.0f);
 
 	m_LightPositions[0] = m_LightPositionOffset[0]; // m_CameraPosition + m_LightPositionOffset[0];
 	m_LightPositions[1] = m_LightPositionOffset[1]; // m_CameraPosition + m_LightPositionOffset[1];
@@ -135,8 +135,8 @@ void SceneJoey::SetTextures()
 	// Khronos DamagedHelmet model PBR textures
 	textures.insert(std::make_pair("damagedHelmetAlbedoMap",       new Texture("Textures/PBR/DamagedHelmet/Default_albedo.jpg")));
 	textures.insert(std::make_pair("damagedHelmetNormalMap",       new Texture("Textures/PBR/DamagedHelmet/Default_normal.jpg")));
-	textures.insert(std::make_pair("damagedHelmetMetallicMap",     new Texture("Textures/PBR/DamagedHelmet/Default_metallic.jpg")));
-	textures.insert(std::make_pair("damagedHelmetRoughnessMap",    new Texture("Textures/PBR/DamagedHelmet/Default_roughness.jpg")));
+	textures.insert(std::make_pair("damagedHelmetMetalRoughMap",   new Texture("Textures/PBR/DamagedHelmet/Default_metalRoughness.jpg")));
+	textures.insert(std::make_pair("damagedHelmetEmissiveMap",     new Texture("Textures/PBR/DamagedHelmet/Default_emissive.jpg")));
 	textures.insert(std::make_pair("damagedHelmetAmbOcclusionMap", new Texture("Textures/PBR/DamagedHelmet/Default_AO.jpg")));
 }
 

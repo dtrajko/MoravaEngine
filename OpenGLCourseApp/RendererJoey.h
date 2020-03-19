@@ -56,4 +56,7 @@ private:
 	SphereJoey* m_SphereJoey;
 	Cube* m_Cube;
 	Quad* m_Quad;
+
+	float m_Timestep = 0.0f;
+
 };
