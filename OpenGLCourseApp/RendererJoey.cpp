@@ -504,8 +504,6 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	sceneJoey->GetModels()["cerberus"]->RenderModelPBR();
 
 	/* Khronos DamagedHelmet model */
-	// initialize static shader uniforms before rendering
-
 	m_Timestep = sceneJoey->m_IsRotating ? m_Timestep - 0.1f * sceneJoey->m_RotationFactor : 0.0f;
 
 	shaders["pbrShaderMRE"]->Bind();
@@ -528,13 +526,42 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetAmbOcclusionMap"]->GetID());
 
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 15.0f, 0.0f));
+	model = glm::translate(model, glm::vec3(-10.0f, 15.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f + m_Timestep), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(5.0f));
 	shaders["pbrShaderMRE"]->setMat4("model", model);
 	sceneJoey->GetModels()["damagedHelmet"]->RenderModelPBR();
+
+	/* Khronos SciFiHelmet model */
+	shaders["pbrShaderMRE"]->Bind();
+	shaders["pbrShaderMRE"]->setMat4("projection", projectionMatrix);
+	shaders["pbrShaderMRE"]->setMat4("view", view);
+	shaders["pbrShaderMRE"]->setVec3("camPos", scene->GetCamera()->GetPosition());
+	shaders["pbrShaderMRE"]->setFloat("emissiveFactor", sceneJoey->m_EmissiveFactor);
+	shaders["pbrShaderMRE"]->setFloat("metalnessFactor", sceneJoey->m_MetalnessFactor);
+	shaders["pbrShaderMRE"]->setFloat("roughnessFactor", sceneJoey->m_RoughnessFactor);
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, textures["sfHelmetAlbedoMap"]->GetID());
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, textures["sfHelmetNormalMap"]->GetID());
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, textures["sfHelmetMetalRoughMap"]->GetID());
+	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_2D, textures["sfHelmetEmissiveMap"]->GetID());
+	glActiveTexture(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_2D, textures["sfHelmetAmbOcclusionMap"]->GetID());
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(10.0f, 15.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f - m_Timestep), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(5.0f));
+	shaders["pbrShaderMRE"]->setMat4("model", model);
+	sceneJoey->GetModels()["sfHelmet"]->RenderModelPBR();
 
 	// render skybox (render as last to prevent overdraw)
 	shaders["backgroundShader"]->Bind();

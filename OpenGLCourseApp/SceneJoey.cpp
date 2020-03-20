@@ -144,6 +144,13 @@ void SceneJoey::SetTextures()
 	textures.insert(std::make_pair("damagedHelmetMetalRoughMap",   new Texture("Textures/PBR/DamagedHelmet/Default_metalRoughness.jpg")));
 	textures.insert(std::make_pair("damagedHelmetEmissiveMap",     new Texture("Textures/PBR/DamagedHelmet/Default_emissive.jpg")));
 	textures.insert(std::make_pair("damagedHelmetAmbOcclusionMap", new Texture("Textures/PBR/DamagedHelmet/Default_AO.jpg")));
+
+	// Khronos SciFiHelmet model PBR textures
+	textures.insert(std::make_pair("sfHelmetAlbedoMap",       new Texture("Textures/PBR/SciFiHelmet/SciFiHelmet_BaseColor.png")));
+	textures.insert(std::make_pair("sfHelmetNormalMap",       new Texture("Textures/PBR/SciFiHelmet/SciFiHelmet_Normal.png")));
+	textures.insert(std::make_pair("sfHelmetMetalRoughMap",   new Texture("Textures/PBR/SciFiHelmet/SciFiHelmet_MetallicRoughness.png")));
+	textures.insert(std::make_pair("sfHelmetEmissiveMap",     new Texture("Textures/PBR/SciFiHelmet/SciFiHelmet_Emissive.png")));
+	textures.insert(std::make_pair("sfHelmetAmbOcclusionMap", new Texture("Textures/PBR/SciFiHelmet/SciFiHelmet_AmbientOcclusion.png")));
 }
 
 void SceneJoey::SetupModels()
@@ -155,6 +162,10 @@ void SceneJoey::SetupModels()
 	Model* damagedHelmet = new Model();
 	damagedHelmet->LoadModel("Models/DamagedHelmet.gltf", "Textures/PBR/DamagedHelmet");
 	models.insert(std::make_pair("damagedHelmet", damagedHelmet));
+
+	Model* sfHelmet = new Model();
+	sfHelmet->LoadModel("Models/SciFiHelmet.gltf", "Textures/PBR/SciFiHelmet");
+	models.insert(std::make_pair("sfHelmet", sfHelmet));
 }
 
 void SceneJoey::Update(float timestep)
