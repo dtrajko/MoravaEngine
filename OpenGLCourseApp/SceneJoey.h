@@ -25,10 +25,16 @@ private:
 public:
 	glm::vec3 m_LightPositions[4];
 	glm::vec3 m_LightColors[4];
+	float m_EmissiveFactor;
+	float m_MetalnessFactor;
+	float m_RoughnessFactor;
+	bool m_IsRotating;
+	float m_RotationFactor;
 
 private:
 	glm::vec3 m_CameraPosition;
 	glm::vec3 m_LightPositionOffset[4];
 	glm::vec3 m_LightColorsNormal[4];
+
 
 };

@@ -21,12 +21,13 @@ uniform vec3 lightPositions[4];
 uniform vec3 lightColors[4];
 
 uniform vec3 camPos;
+uniform float emissiveFactor;
+uniform float metalnessFactor;
+uniform float roughnessFactor;
 
 const float PI = 3.14159265359;
 
-const float emissiveFactor = 4.0;
 
-// ----------------------------------------------------------------------------
 // Easy trick to get tangent-normals to world-space to keep PBR code simplified.
 // Don't worry if you don't get what's going on; you generally want to do normal 
 // mapping the usual way for performance anways; I do plan make a note of this 
@@ -47,7 +48,7 @@ vec3 getNormalFromMap()
 
     return normalize(TBN * tangentNormal);
 }
-// ----------------------------------------------------------------------------
+
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float a = roughness*roughness;
@@ -61,7 +62,7 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 
     return nom / denom;
 }
-// ----------------------------------------------------------------------------
+
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
     float r = (roughness + 1.0);
@@ -72,7 +73,7 @@ float GeometrySchlickGGX(float NdotV, float roughness)
 
     return nom / denom;
 }
-// ----------------------------------------------------------------------------
+
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 {
     float NdotV = max(dot(N, V), 0.0);
@@ -82,17 +83,16 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 
     return ggx1 * ggx2;
 }
-// ----------------------------------------------------------------------------
+
 vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
-// ----------------------------------------------------------------------------
+
 vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
 }   
-// ----------------------------------------------------------------------------
 
 vec4 SRGBtoLINEAR(vec4 srgbIn)
 {
@@ -105,9 +105,10 @@ void main()
     // material properties
     vec3 albedo = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
     vec3 metallicRoughness = texture(metalRoughMap, TexCoords).rgb;
-	float metallic  = metallicRoughness.b;
-	float roughness = metallicRoughness.g;
+	float metallic  = metallicRoughness.b * metalnessFactor;
+	float roughness = metallicRoughness.g * roughnessFactor;
 	vec3 emission = SRGBtoLINEAR(texture(emissiveMap, TexCoords)).rgb;
+	emission *= emissiveFactor;
 
     // float roughness = texture(emissiveMap, TexCoords).r;
     float ao = texture(aoMap, TexCoords).r;
@@ -180,7 +181,7 @@ void main()
   
     vec3 color = ambient + Lo;
 
-	color += emission * emissiveFactor;
+	color += emission;
 
     // HDR tonemapping
     color = color / (color + vec3(1.0));

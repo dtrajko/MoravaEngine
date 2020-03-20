@@ -506,12 +506,15 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	/* Khronos DamagedHelmet model */
 	// initialize static shader uniforms before rendering
 
-	m_Timestep += 0.0f; // -0.05f;
+	m_Timestep = sceneJoey->m_IsRotating ? m_Timestep - 0.1f * sceneJoey->m_RotationFactor : 0.0f;
 
 	shaders["pbrShaderMRE"]->Bind();
 	shaders["pbrShaderMRE"]->setMat4("projection", projectionMatrix);
 	shaders["pbrShaderMRE"]->setMat4("view", view);
 	shaders["pbrShaderMRE"]->setVec3("camPos", scene->GetCamera()->GetPosition());
+	shaders["pbrShaderMRE"]->setFloat("emissiveFactor", sceneJoey->m_EmissiveFactor);
+	shaders["pbrShaderMRE"]->setFloat("metalnessFactor", sceneJoey->m_MetalnessFactor);
+	shaders["pbrShaderMRE"]->setFloat("roughnessFactor", sceneJoey->m_RoughnessFactor);
 
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, textures["damagedHelmetAlbedoMap"]->GetID());

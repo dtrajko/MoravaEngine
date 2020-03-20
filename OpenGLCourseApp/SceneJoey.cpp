@@ -75,6 +75,12 @@ void SceneJoey::SetupLights()
 	m_LightColors[1] = m_LightColorsNormal[1] * 300.0f;
 	m_LightColors[2] = m_LightColorsNormal[2] * 300.0f;
 	m_LightColors[3] = m_LightColorsNormal[3] * 300.0f;
+
+	m_EmissiveFactor = 4.0f;
+	m_MetalnessFactor = 1.0f;
+	m_RoughnessFactor = 1.0f;
+	m_IsRotating = false;
+	m_RotationFactor = 0.0f;
 }
 
 void SceneJoey::SetSkybox()
@@ -166,6 +172,13 @@ void SceneJoey::Update(float timestep)
 
 	ImGui::ColorEdit3("Light Color 3", glm::value_ptr(m_LightColorsNormal[3]));
 	ImGui::SliderFloat3("Light Pos Offset 3", glm::value_ptr(m_LightPositionOffset[3]), -60.0f, 60.0f);
+
+	ImGui::SliderFloat("Emissive Factor", &m_EmissiveFactor, 0.0f, 10.0f);
+	ImGui::SliderFloat("Metalness Factor", &m_MetalnessFactor, 0.0f, 1.0f);
+	ImGui::SliderFloat("Roughness Factor", &m_RoughnessFactor, 0.0f, 1.0f);
+
+	ImGui::Checkbox("Is Rotating?", &m_IsRotating);
+	ImGui::SliderFloat("Rotation Factor", &m_RotationFactor, 0.0f, 10.0f);
 
 	m_LightPositions[0] = m_LightPositionOffset[0]; // m_CameraPosition + m_LightPositionOffset[0];
 	m_LightPositions[1] = m_LightPositionOffset[1]; // m_CameraPosition + m_LightPositionOffset[1];
