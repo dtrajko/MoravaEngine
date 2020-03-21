@@ -1,7 +1,6 @@
 #include "Renderer.h"
 
 #include "ShaderMain.h"
-#include "ShaderWater.h"
 #include "ShaderPBR.h"
 
 #include "WaterManager.h"
@@ -87,8 +86,7 @@ void Renderer::SetShaders()
 
 	static const char* vertWaterShader = "Shaders/water.vert";
 	static const char* fragWaterShader = "Shaders/water.frag";
-	ShaderWater* shaderWater = new ShaderWater();
-	shaderWater->CreateFromFiles(vertWaterShader, fragWaterShader);
+	Shader* shaderWater = new Shader(vertWaterShader, fragWaterShader);
 	shaders.insert(std::make_pair("water", shaderWater));
 	printf("Renderer: Water shader compiled [programID=%d]\n", shaderWater->GetProgramID());
 
@@ -166,7 +164,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	ShaderWater* shaderWater = (ShaderWater*)shaders["water"];
+	Shader* shaderWater = shaders["water"];
 	shaderWater->Bind();
 	uniforms["model"]      = shaderWater->GetUniformLocation("model");
 	uniforms["projection"] = shaderWater->GetUniformLocation("projection");

@@ -200,10 +200,8 @@
     <ClCompile Include="SceneTerrain.cpp" />
     <ClCompile Include="SceneSponza.cpp" />
     <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="ShaderLearnOpenGL.cpp" />
     <ClCompile Include="ShaderMain.cpp" />
     <ClCompile Include="ShaderPBR.cpp" />
-    <ClCompile Include="ShaderWater.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Sphere.cpp" />
@@ -258,10 +256,8 @@
     <ClInclude Include="SceneTerrain.h" />
     <ClInclude Include="SceneSponza.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="ShaderLearnOpenGL.h" />
     <ClInclude Include="ShaderMain.h" />
     <ClInclude Include="ShaderPBR.h" />
-    <ClInclude Include="ShaderWater.h" />
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="Sphere.h" />

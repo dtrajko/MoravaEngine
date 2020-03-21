@@ -1,9 +1,7 @@
 #include "RendererPBR.h"
 
 #include "ShaderMain.h"
-#include "ShaderWater.h"
 #include "ShaderPBR.h"
-#include "ShaderWater.h"
 
 
 RendererPBR::RendererPBR()
@@ -62,17 +60,12 @@ void RendererPBR::SetUniforms()
 
 void RendererPBR::SetShaders()
 {
-	static const char* vertShader = "Shaders/shader.vert";
-	static const char* fragShader = "Shaders/shader.frag";
 	ShaderMain* shaderMain = new ShaderMain();
-	shaderMain->CreateFromFiles(vertShader, fragShader);
+	shaderMain->CreateFromFiles("Shaders/shader.vert", "Shaders/shader.frag");
 	shaders.insert(std::make_pair("main", shaderMain));
 	printf("Renderer: Main shader compiled [programID=%d]\n", shaderMain->GetProgramID());
 
-	static const char* vertShaderDirShadowMap = "Shaders/directional_shadow_map.vert";
-	static const char* fragShaderDirShadowMap = "Shaders/directional_shadow_map.frag";
-	Shader* shaderDirectionalShadow = new Shader();
-	shaderDirectionalShadow->CreateFromFiles(vertShaderDirShadowMap, fragShaderDirShadowMap);
+	Shader* shaderDirectionalShadow = new Shader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
 	shaders.insert(std::make_pair("directionalShadow", shaderDirectionalShadow));
 	printf("Renderer: Shadow shader compiled [programID=%d]\n", shaderDirectionalShadow->GetProgramID());
 
@@ -84,17 +77,12 @@ void RendererPBR::SetShaders()
 	shaders.insert(std::make_pair("omniShadow", shaderOmniShadow));
 	printf("Renderer: OmniShadow shader compiled [programID=%d]\n", shaderOmniShadow->GetProgramID());
 
-	static const char* vertWaterShader = "Shaders/water.vert";
-	static const char* fragWaterShader = "Shaders/water.frag";
-	ShaderWater* shaderWater = new ShaderWater();
-	shaderWater->CreateFromFiles(vertWaterShader, fragWaterShader);
+	Shader* shaderWater = new Shader("Shaders/water.vert", "Shaders/water.frag");
 	shaders.insert(std::make_pair("water", shaderWater));
 	printf("Renderer: Water shader compiled [programID=%d]\n", shaderWater->GetProgramID());
 
-	static const char* vertPBRShader = "Shaders/PBR.vert";
-	static const char* fragPBRShader = "Shaders/PBR.frag";
 	ShaderPBR* shaderPBR = new ShaderPBR();
-	shaderPBR->CreateFromFiles(vertPBRShader, fragPBRShader);
+	shaderPBR->CreateFromFiles("Shaders/PBR.vert", "Shaders/PBR.frag");
 	shaders.insert(std::make_pair("pbr", shaderPBR));
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
 }
@@ -161,7 +149,7 @@ void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 project
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	ShaderWater* shaderWater = (ShaderWater*)shaders["water"];
+	Shader* shaderWater = shaders["water"];
 	shaderWater->Bind();
 	uniforms["model"]             = shaderWater->GetUniformLocation("model");
 	uniforms["projection"]        = shaderWater->GetUniformLocation("projection");
