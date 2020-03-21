@@ -1,5 +1,7 @@
 #include "Texture.h"
 
+#include "ColorModifier.h"
+
 
 Texture::Texture()
 {
@@ -20,6 +22,8 @@ Texture::Texture(const char* fileLoc, bool flipVert)
 
 bool Texture::Load(bool flipVert)
 {
+	Color::Modifier red(Color::BG_RED);
+
 	if (m_Buffer)
 	{
 		printf("Texture '%s' already loaded. Skipping...\n", m_FileLocation);
