@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <map>
 
 #include <GL/glew.h>
 
@@ -27,19 +28,19 @@ public:
 	void Bind();
 
 	// generic setter methods for uniform location variables
-	void setBool(const std::string& name, bool value) const;
-	void setInt(const std::string& name, int value) const;
-	void setFloat(const std::string& name, float value) const;
-	void setVec2(const std::string& name, const glm::vec2& value) const;
-	void setVec2(const std::string& name, float x, float y) const;
-	void setVec3(const std::string& name, const glm::vec3& value) const;
-	void setVec3(const std::string& name, float x, float y, float z) const;
-	void setVec4(const std::string& name, const glm::vec4& value) const;
+	void setBool(const std::string& name, bool value);
+	void setInt(const std::string& name, int value);
+	void setFloat(const std::string& name, float value);
+	void setVec2(const std::string& name, const glm::vec2& value);
+	void setVec2(const std::string& name, float x, float y);
+	void setVec3(const std::string& name, const glm::vec3& value);
+	void setVec3(const std::string& name, float x, float y, float z);
+	void setVec4(const std::string& name, const glm::vec4& value);
 	void setVec4(const std::string& name, float x, float y, float z, float w);
-	void setMat2(const std::string& name, const glm::mat2& mat) const;
-	void setMat3(const std::string& name, const glm::mat3& mat) const;
-	void setMat4(const std::string& name, const glm::mat4& mat) const;
-	GLint GetUniformLocation(const std::string& name) const;
+	void setMat2(const std::string& name, const glm::mat2& mat);
+	void setMat3(const std::string& name, const glm::mat3& mat);
+	void setMat4(const std::string& name, const glm::mat4& mat);
+	GLint GetUniformLocation(const std::string& name);
 
 	void Unbind();
 	void ClearShader();
@@ -94,6 +95,7 @@ protected:
 	GLint uniformDepthMap = -1;
 
 private:
+	std::map<std::string, int> m_UniformLocations;
 	bool m_Validated = false;
 
 	// Locations of uniform variables
