@@ -65,17 +65,6 @@ void SceneCottage::SetTextures()
 	textures.insert(std::make_pair("sponzaWallNormal", new Texture("Textures/sponza_bricks_a_ddn.tga")));
 	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
 	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
-
-	textures["brick"]->Load();
-	textures["crateDiffuse"]->Load();
-	textures["crateNormal"]->Load();
-	textures["grass"]->Load();
-	textures["sponzaFloorDiffuse"]->Load();
-	textures["sponzaFloorNormal"]->Load();
-	textures["sponzaWallDiffuse"]->Load();
-	textures["sponzaWallNormal"]->Load();
-	textures["sponzaCeilDiffuse"]->Load();
-	textures["sponzaCeilNormal"]->Load();
 }
 
 void SceneCottage::SetupModels()
@@ -300,8 +289,8 @@ void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(2.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		shaderMain->SetTexture(textureSlots["shadow"]);
-		shaderMain->SetNormalMap(textureSlots["shadow"]);
+		shaderMain->setInt("theTexture", textureSlots["shadow"]);
+		shaderMain->setInt("normalMap", textureSlots["shadow"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 	}

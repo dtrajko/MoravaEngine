@@ -149,8 +149,10 @@ void SceneSponza::Render(glm::mat4 projectionMatrix, std::string passType,
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(1.2f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		shaders["main"]->SetTexture(textureSlots["shadow"]);
-		shaders["main"]->SetNormalMap(textureSlots["shadow"]);
+
+		shaders["main"]->setInt("theTexture", textureSlots["shadow"]);
+		shaders["main"]->setInt("normalMap", textureSlots["shadow"]);
+
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 	}
@@ -171,16 +173,17 @@ void SceneSponza::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(12.0f, 0.0f, 8.0f));
 
-	shaders["water"]->Bind();
+	shaderWater->Bind();
+	shaderWater->setMat4("model", model);
 
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
-	shaders["water"]->SetTexture(textureSlots["reflection"]);
+
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
-	shaderWater->SetLightColor(LightManager::directionalLight.GetColor());
+	shaderWater->setInt("reflectionTexture", textureSlots["reflection"]);
+	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["water"]->RenderMesh();
 }

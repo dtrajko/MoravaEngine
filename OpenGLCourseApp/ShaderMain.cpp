@@ -197,7 +197,6 @@ void ShaderMain::GetUniformLocations()
 	}
 
 	// Directional shadow map
-	uniformTexture = glGetUniformLocation(programID, "theTexture");
 	uniformDirectionalShadowMap = glGetUniformLocation(programID, "directionalShadowMap");
 	uniformDirectionalLightTransform = glGetUniformLocation(programID, "directionalLightTransform");
 

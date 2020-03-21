@@ -61,10 +61,6 @@ void SceneEiffel::SetTextures()
 	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
 	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
 	textures.insert(std::make_pair("water", new Texture("Textures/water.png")));
-
-	textures["sponzaCeilDiffuse"]->Load();
-	textures["sponzaCeilNormal"]->Load();
-	textures["water"]->Load();
 }
 
 void SceneEiffel::SetupMeshes()
@@ -82,7 +78,7 @@ void SceneEiffel::SetupModels()
 	models.insert(std::make_pair("watchtower", watchtower));
 
 	Model* cerberus = new Model();
-	cerberus->LoadModel("Models/Cerberus_LP.FBX");
+	cerberus->LoadModel("Models/Cerberus_LP.FBX", "Textures/PBR/Cerberus");
 	models.insert(std::make_pair("cerberus", cerberus));
 }
 
@@ -197,9 +193,8 @@ void SceneEiffel::Render(glm::mat4 projectionMatrix, std::string passType,
 		model = glm::scale(model, glm::vec3(-5.0f, 1.0f, 5.0f * (9.0f / 16.0f)));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
-		shaderMain->SetTexture(textureSlots["depth"]);
-		shaderMain->SetNormalMap(textureSlots["depth"]);
-		shaderMain->SetDepthMap(textureSlots["depth"]);
+		shaderMain->setInt("theTexture", textureSlots["depth"]);
+		shaderMain->setInt("normalMap", textureSlots["depth"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 
@@ -211,8 +206,8 @@ void SceneEiffel::Render(glm::mat4 projectionMatrix, std::string passType,
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(-5.0f, 1.0f, 5.0f * (9.0f / 16.0f)));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		shaderMain->SetTexture(textureSlots["shadow"]);
-		shaderMain->SetNormalMap(textureSlots["shadow"]);
+		shaderMain->setInt("theTexture", textureSlots["shadow"]);
+		shaderMain->setInt("normalMap", textureSlots["shadow"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->RenderMesh();
 	}
@@ -241,12 +236,13 @@ void SceneEiffel::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
 	textures["waterNormal"]->Bind(textureSlots["normal"]);
-	shaderWater->SetTexture(textureSlots["reflection"]);
-	shaderWater->SetNormalMap(textureSlots["normal"]);
-	shaderWater->SetDepthMap(textureSlots["depth"]);
-	shaderWater->SetDuDvMap(textureSlots["DuDv"]);
-	shaderWater->SetLightColor(LightManager::directionalLight.GetColor());
-	shaderWater->SetLightPosition(-m_LightDirection);
+	shaderWater->setInt("theTexture", textureSlots["reflection"]);
+	shaderWater->setInt("normalMap", textureSlots["normal"]);
+	shaderWater->setInt("depthMap", textureSlots["depth"]);
+	shaderWater->setInt("dudvMap", textureSlots["DuDv"]);
+
+	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
+	shaderWater->setVec3("lightPosition", -m_LightDirection);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["water"]->RenderMesh();
 }

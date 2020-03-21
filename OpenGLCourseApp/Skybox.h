@@ -27,8 +27,5 @@ private:
 	Mesh* skyMesh;
 	Shader* skyShader;
 	GLuint textureID;
-	GLint uniformModel;
-	GLint uniformView;
-	GLint uniformProjection;
 
 };

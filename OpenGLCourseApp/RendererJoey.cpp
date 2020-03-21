@@ -1,8 +1,6 @@
 #include "RendererJoey.h"
 
 #include "ShaderPBR.h"
-#include "ShaderCubemap.h"
-#include "ShaderSkyboxJoey.h"
 #include "learnopengl/shaderJoey.h"
 #include "SceneJoey.h"
 #include "ShaderLearnOpenGL.h"

@@ -4,8 +4,6 @@
 Shader::Shader()
 {
 	shaderID = 0;
-	uniformModel = 0;
-	uniformProjection = 0;
 }
 
 Shader::Shader(const char* vertexLocation, const char* fragmentLocation)
@@ -169,96 +167,6 @@ GLint Shader::GetUniformLocation(const std::string& name)
 	}
 }
 
-GLint Shader::GetModelLocation()
-{
-	return uniformModel;
-}
-
-GLint Shader::GetViewLocation()
-{
-	return uniformView;
-}
-
-GLint Shader::GetProjectionLocation()
-{
-	return uniformProjection;
-}
-
-GLuint Shader::GetUniformLocationNearPlane()
-{
-	return uniformNearPlane;
-}
-
-GLuint Shader::GetUniformLocationFarPlane()
-{
-	return uniformFarPlane;
-}
-
-GLint Shader::GetUniformLocationNormalMap()
-{
-	return uniformNormalMap;
-}
-
-GLint Shader::GetUniformLocationDepthMap()
-{
-	return uniformDepthMap;
-}
-
-GLint Shader::GetUniformLocationLightPosition()
-{
-	return uniformLightPosition;
-}
-
-void Shader::SetNearPlane(float nearPlane)
-{
-	glUniform1f(uniformNearPlane, nearPlane);
-}
-
-void Shader::SetFarPlane(float farPlane)
-{
-	glUniform1f(uniformFarPlane, farPlane);
-}
-
-void Shader::SetLightPosition(glm::vec3 lightPosition)
-{
-	glUniform3f(uniformLightPosition, lightPosition.x, lightPosition.y, lightPosition.z);
-}
-
-void Shader::SetViewMatrix(glm::mat4* viewMatrix)
-{
-	glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(*viewMatrix));
-}
-
-void Shader::SetProjectionMatrix(glm::mat4* projectionMatrix)
-{
-	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(*projectionMatrix));
-}
-
-void Shader::SetTexture(GLuint textureUnit)
-{
-	glUniform1i(uniformTexture, textureUnit);
-}
-
-void Shader::SetNormalMap(GLuint textureUnit)
-{
-	glUniform1i(uniformNormalMap, textureUnit);
-}
-
-void Shader::SetDepthMap(GLuint textureUnit)
-{
-	glUniform1i(uniformDepthMap, textureUnit);
-}
-
-void Shader::SetDirectionalLightTransform(glm::mat4* transform)
-{
-	glUniformMatrix4fv(uniformDirectionalLightTransform, 1, GL_FALSE, glm::value_ptr(*transform));
-}
-
-void Shader::SetDirectionalShadowMap(GLuint textureUnit)
-{
-	glUniform1i(uniformDirectionalShadowMap, textureUnit);
-}
-
 void Shader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
 {
 	for (GLuint i = 0; i < 6; i++)
@@ -284,10 +192,6 @@ void Shader::ClearShader()
 		glDeleteProgram(programID);
 		programID = 0;
 	}
-
-	uniformModel = 0;
-	uniformView = 0;
-	uniformProjection = 0;
 
 	m_UniformLocations.clear();
 }
@@ -396,17 +300,6 @@ void Shader::CompileProgram()
 void Shader::GetUniformLocations()
 {
 	printf("Shader::GetUniformLocations\n");
-
-	uniformModel = glGetUniformLocation(programID, "model");
-	uniformView = glGetUniformLocation(programID, "view");
-	uniformProjection = glGetUniformLocation(programID, "projection");
-
-	uniformNearPlane = glGetUniformLocation(programID, "nearPlane");
-	uniformFarPlane = glGetUniformLocation(programID, "farPlane");
-	uniformLightPosition = glGetUniformLocation(programID, "lightPosition");
-
-	uniformNormalMap = glGetUniformLocation(programID, "normalMap");
-	uniformDirectionalLightTransform = glGetUniformLocation(programID, "directionalLightTransform");
 
 	for (unsigned int i = 0; i < 6; i++)
 	{

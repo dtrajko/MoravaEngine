@@ -284,10 +284,10 @@ void ScenePBR::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
-	shaders["water"]->SetTexture(textureSlots["reflection"]);
+	shaderWater->setInt("reflectionTexture", textureSlots["reflection"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
-	shaderWater->SetLightColor(LightManager::directionalLight.GetColor());
+	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["water"]->RenderMesh();
 }

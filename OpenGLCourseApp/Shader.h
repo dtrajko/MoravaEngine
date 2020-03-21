@@ -47,30 +47,6 @@ public:
 	~Shader();
 
 	GLuint GetProgramID();
-	GLint GetModelLocation();
-	GLint GetViewLocation();
-	GLint GetProjectionLocation();
-
-	GLuint GetUniformLocationNearPlane();
-	GLuint GetUniformLocationFarPlane();
-
-	GLint GetUniformLocationNormalMap();
-	GLint GetUniformLocationDepthMap();
-	GLint GetUniformLocationLightPosition();
-
-	void SetNearPlane(float nearPlane);
-	void SetFarPlane(float farPlane);
-	void SetLightPosition(glm::vec3 lightPosition);
-	void SetViewMatrix(glm::mat4* viewMatrix);
-	void SetProjectionMatrix(glm::mat4* projectionMatrix);
-
-	void SetTexture(GLuint textureUnit);
-	void SetNormalMap(GLuint textureUnit);
-	void SetDepthMap(GLuint textureUnit);
-
-	// Directional light shadow map
-	void SetDirectionalLightTransform(glm::mat4* transform);
-	void SetDirectionalShadowMap(GLuint textureUnit);
 
 	// Omni shadow maps
 	void SetLightMatrices(std::vector<glm::mat4> lightMatrices);
@@ -89,25 +65,10 @@ private:
 protected:
 	GLuint programID = -1;
 	GLint shaderID = -1;
-	GLint uniformLightPosition = -1;
-	GLint uniformTexture = -1;
-	GLint uniformNormalMap = -1;
-	GLint uniformDepthMap = -1;
 
 private:
 	std::map<std::string, int> m_UniformLocations;
 	bool m_Validated = false;
-
-	// Locations of uniform variables
-	GLint uniformModel = -1;
-	GLint uniformView = -1;
-	GLint uniformProjection = -1;
-	GLint uniformNearPlane = -1;
-	GLint uniformFarPlane = -1;
-
-	// directional light shadow map
-	GLint uniformDirectionalShadowMap = -1;
-	GLint uniformDirectionalLightTransform = -1;
 
 	// omni shadow map
 	GLint uniformLightMatrices[6];

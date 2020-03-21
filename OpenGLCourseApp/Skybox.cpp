@@ -11,10 +11,6 @@ Skybox::Skybox(std::vector<std::string> faceLocations, bool flipVert)
 	skyShader = new Shader();
 	skyShader->CreateFromFiles("Shaders/skybox.vert", "Shaders/skybox.frag");
 
-	uniformModel = skyShader->GetModelLocation();
-	uniformView = skyShader->GetViewLocation();
-	uniformProjection = skyShader->GetProjectionLocation();
-
 	// Texture setup
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
@@ -105,9 +101,9 @@ void Skybox::Draw(glm::mat4 modelMatrix, glm::mat4 viewMatrix, glm::mat4 project
 
 	skyShader->Bind();
 
-	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-	glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+	skyShader->setMat4("model", modelMatrix);
+	skyShader->setMat4("view", viewMatrix);
+	skyShader->setMat4("projection", projectionMatrix);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
