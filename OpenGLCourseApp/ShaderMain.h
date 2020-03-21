@@ -11,6 +11,8 @@ class ShaderMain : public Shader
 public:
 	ShaderMain();
 
+	GLint GetUniformLocationEyePosition();
+
 	// Directional Light
 	GLint GetUniformLocationAmbientColor();
 	GLint GetUniformLocationAmbientIntensity();
@@ -24,6 +26,12 @@ public:
 	void SetPointLights(PointLight* pointLights, unsigned int lightCount, unsigned int textureUnit, unsigned int offset);
 	void SetSpotLights(SpotLight* spotLights, unsigned int lightCount, unsigned int textureUnit, unsigned int offset);
 
+	// Directional light shadow map
+	void SetDirectionalShadowMap(GLuint textureUnit);
+	void SetDirectionalLightTransform(glm::mat4* transform);
+
+	void SetClipPlane(glm::vec4 clipPlane);
+
 	~ShaderMain();
 
 private:
@@ -33,6 +41,13 @@ private:
 	int pointLightCount = 0;
 	int spotLightCount = 0;
 
+	GLint uniformEyePosition = -1;
+	GLint uniformDirectionalShadowMap = -1;
+	GLint uniformDirectionalLightTransform = -1;
+
+	// Setting the gl_ClipDistance
+	GLuint uniformClipPlane = -1;
+
 	struct
 	{
 		GLint uniformColor = -1;
@@ -40,6 +55,8 @@ private:
 		GLint uniformDiffuseIntensity = -1;
 		GLint uniformDirection = -1;
 	} uniformDirectionalLight;
+
+	GLint uniformPointLightCount = -1;
 
 	struct
 	{
@@ -51,6 +68,8 @@ private:
 		GLint uniformLinear = -1;
 		GLint uniformExponent = -1;
 	} uniformPointLight[MAX_POINT_LIGHTS];
+
+	GLint uniformSpotLightCount = -1;
 
 	struct
 	{
@@ -71,10 +90,7 @@ private:
 		GLint farPlane = -1;
 	} uniformOmniShadowMap[MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS];
 
-	struct
-	{
-		GLint uniformSpecularIntensity = -1;
-		GLint uniformShininess = -1;
-	} uniformMaterial;
+	GLint uniformMaterialSpecularIntensity = -1;
+	GLint uniformMaterialShininess = -1;
 
 };

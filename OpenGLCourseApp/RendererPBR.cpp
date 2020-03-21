@@ -1,7 +1,9 @@
 #include "RendererPBR.h"
 
 #include "ShaderMain.h"
+#include "ShaderWater.h"
 #include "ShaderPBR.h"
+#include "ShaderWater.h"
 
 
 RendererPBR::RendererPBR()
@@ -84,7 +86,8 @@ void RendererPBR::SetShaders()
 
 	static const char* vertWaterShader = "Shaders/water.vert";
 	static const char* fragWaterShader = "Shaders/water.frag";
-	Shader* shaderWater = new Shader(vertWaterShader, fragWaterShader);
+	ShaderWater* shaderWater = new ShaderWater();
+	shaderWater->CreateFromFiles(vertWaterShader, fragWaterShader);
 	shaders.insert(std::make_pair("water", shaderWater));
 	printf("Renderer: Water shader compiled [programID=%d]\n", shaderWater->GetProgramID());
 
@@ -122,10 +125,10 @@ void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 project
 	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
 	shaderMain->Bind();
 
-	uniforms["model"]       = shaderMain->GetUniformLocation("model");
-	uniforms["projection"]  = shaderMain->GetUniformLocation("projection");
-	uniforms["view"]        = shaderMain->GetUniformLocation("view");
-	uniforms["eyePosition"] = shaderMain->GetUniformLocation("eyePosition");
+	uniforms["model"]      = shaderMain->GetUniformLocation("model");
+	uniforms["projection"] = shaderMain->GetUniformLocation("projection");
+	uniforms["view"]       = shaderMain->GetUniformLocation("view");
+	uniforms["eyePosition"] = shaderMain->GetUniformLocationEyePosition();
 	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
 	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 
@@ -135,9 +138,9 @@ void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 project
 	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
 	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
 	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
-	shaderMain->setMat4("directionalLightTransform", LightManager::directionalLight.CalculateLightTransform());
+	shaderMain->SetDirectionalLightTransform(&LightManager::directionalLight.CalculateLightTransform());
 
-	LightManager::directionalLight.GetShadowMap()->Bind(scene->GetTextureSlots()["shadow"]);
+	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
 	shaderMain->setInt("theTexture", scene->GetTextureSlots()["diffuse"]);
 	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderMain->setInt("directionalShadowMap", scene->GetTextureSlots()["shadow"]);
@@ -158,7 +161,7 @@ void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 project
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	Shader* shaderWater = shaders["water"];
+	ShaderWater* shaderWater = (ShaderWater*)shaders["water"];
 	shaderWater->Bind();
 	uniforms["model"]             = shaderWater->GetUniformLocation("model");
 	uniforms["projection"]        = shaderWater->GetUniformLocation("projection");

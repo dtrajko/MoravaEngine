@@ -105,6 +105,9 @@
     <ClCompile Include="ShaderMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderWater.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="ImGuiWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -160,6 +163,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RendererPBR.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderLearnOpenGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SphereJoey.cpp">
@@ -263,6 +269,9 @@
     <ClInclude Include="ShaderMain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ShaderWater.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
       <Filter>ImGui</Filter>
     </ClInclude>
@@ -329,13 +338,13 @@
     <ClInclude Include="RendererPBR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ShaderLearnOpenGL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="SphereJoey.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Quad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ColorModifier.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

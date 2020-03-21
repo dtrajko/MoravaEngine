@@ -11,7 +11,7 @@ public:
 	ShadowMap();
 	virtual bool Init(GLuint width, GLuint height);
 	virtual void Write();
-	virtual void Bind(unsigned int textureUnit);
+	virtual void Read(unsigned int textureUnit);
 	GLuint GetShadowWidth() { return shadowWidth; };
 	GLuint GetShadowHeight() { return shadowHeight; };
 	~ShadowMap();

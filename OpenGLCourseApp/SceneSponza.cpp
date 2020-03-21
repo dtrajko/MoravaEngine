@@ -2,6 +2,7 @@
 
 #include "ImGuiWrapper.h"
 
+#include "ShaderWater.h"
 #include "Renderer.h"
 
 
@@ -162,7 +163,7 @@ void SceneSponza::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 {
 	if (!sceneSettings.enableWaterEffects) return;
 
-	Shader* shaderWater = shaders["water"];
+	ShaderWater* shaderWater = (ShaderWater*)shaders["water"];
 
 	/* Water Tile */
 	glm::mat4 model = glm::mat4(1.0f);

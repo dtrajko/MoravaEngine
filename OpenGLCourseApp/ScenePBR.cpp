@@ -1,6 +1,7 @@
 #include "ScenePBR.h"
 #include "Terrain.h"
 #include "ShaderMain.h"
+#include "ShaderWater.h"
 #include "ShaderPBR.h"
 #include "Renderer.h"
 #include "Sphere.h"
@@ -266,7 +267,7 @@ void ScenePBR::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 {
 	if (!sceneSettings.enableWaterEffects) return;
 
-	Shader* shaderWater = shaders["water"];
+	ShaderWater* shaderWater = (ShaderWater*)shaders["water"];
 
 	// Model matrix
 	glm::mat4 model;
