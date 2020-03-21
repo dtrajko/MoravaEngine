@@ -205,7 +205,7 @@ void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 project
 	uniforms["model"]      = shaderPBR->GetUniformLocation("model");
 	uniforms["projection"] = shaderPBR->GetUniformLocation("projection");
 	uniforms["view"]       = shaderPBR->GetUniformLocation("view");
-	shaderPBR->setVec3("camPos", scene->GetCamera()->GetPosition());
+	shaderPBR->SetCameraPosition(scene->GetCamera()->GetPosition());
 
 	shaderPBR->setMat4("model", glm::mat4(1.0f));
 	shaderPBR->setMat4("view", scene->GetCamera()->CalculateViewMatrix());

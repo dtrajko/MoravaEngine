@@ -16,6 +16,116 @@ ShaderPBR::ShaderPBR() : Shader()
 	}
 }
 
+GLint ShaderPBR::GetUniformLocationAlbedo()
+{
+	return uniformAlbedo;
+}
+
+GLint ShaderPBR::GetUniformLocationMetallic()
+{
+	return uniformMetallic;
+}
+
+GLint ShaderPBR::GetUniformLocationRoughness()
+{
+	return uniformRoughness;
+}
+
+GLint ShaderPBR::GetUniformLocationAmbientOcclusion()
+{
+	return uniformAmbientOcclusion;
+}
+
+GLint ShaderPBR::GetUniformLocationAlbedoMap()
+{
+	return uniformAlbedoMap;
+}
+
+GLint ShaderPBR::GetUniformLocationNormalMap()
+{
+	return uniformNormalMap;
+}
+
+GLint ShaderPBR::GetUniformLocationMetallicMap()
+{
+	return uniformMetallicMap;
+}
+
+GLint ShaderPBR::GetUniformLocationRoughnessMap()
+{
+	return uniformRoughnessMap;
+}
+
+GLint ShaderPBR::GetUniformLocationAmbientOcclusionMap()
+{
+	return uniformAmbientOcclusionMap;
+}
+
+GLint ShaderPBR::GetUniformLocationCameraPosition()
+{
+	return uniformCameraPosition;
+}
+
+GLint ShaderPBR::GetUniformLocationAmbientIntensity()
+{
+	return uniformAmbientIntensity;
+}
+
+void ShaderPBR::SetAlbedo(glm::vec3 albedo)
+{
+	glUniform3f(uniformAlbedo, albedo.r, albedo.g, albedo.b);
+}
+
+void ShaderPBR::SetMetallic(float metallic)
+{
+	glUniform1f(uniformMetallic, metallic);
+}
+
+void ShaderPBR::SetRoughness(float roughness)
+{
+	glUniform1f(uniformRoughness, roughness);
+}
+
+void ShaderPBR::SetAmbientOcclusion(float ao)
+{
+	glUniform1f(uniformAmbientOcclusion, ao);
+}
+
+void ShaderPBR::SetAlbedoMap(unsigned int textureUnit)
+{
+	glUniform1i(uniformAlbedoMap, textureUnit);
+}
+
+void ShaderPBR::SetNormalMap(unsigned int textureUnit)
+{
+	glUniform1i(uniformNormalMap, textureUnit);
+}
+
+void ShaderPBR::SetMetallicMap(unsigned int textureUnit)
+{
+	glUniform1i(uniformMetallicMap, textureUnit);
+}
+
+void ShaderPBR::SetRoughnessMap(unsigned int textureUnit)
+{
+	glUniform1i(uniformRoughnessMap, textureUnit);
+}
+
+void ShaderPBR::SetAmbientOcclusionMap(unsigned int textureUnit)
+{
+	glUniform1i(uniformAmbientOcclusionMap, textureUnit);
+}
+
+void ShaderPBR::SetCameraPosition(glm::vec3 cameraPosition)
+{
+	glUniform3f(uniformCameraPosition, cameraPosition.x, cameraPosition.y, cameraPosition.z);
+}
+
+void ShaderPBR::SetAmbientIntensity(float ambientIntensity)
+{
+	glUniform1f(uniformAmbientIntensity, ambientIntensity);
+}
+
 void ShaderPBR::SetLightPositions(glm::vec3* lightPositions, unsigned int lightCount)
 {
 	for (unsigned int i = 0; i < lightCount; ++i)
@@ -37,6 +147,20 @@ void ShaderPBR::GetUniformLocations()
 	printf("ShaderWater::GetUniformLocations\n");
 
 	Shader::GetUniformLocations();
+
+	uniformAlbedo = glGetUniformLocation(programID, "albedo");
+	uniformMetallic = glGetUniformLocation(programID, "metallic");
+	uniformRoughness = glGetUniformLocation(programID, "roughness");
+	uniformAmbientOcclusion = glGetUniformLocation(programID, "ao");
+
+	uniformAlbedoMap = glGetUniformLocation(programID, "albedoMap");
+	uniformNormalMap = glGetUniformLocation(programID, "normalMap");
+	uniformMetallicMap = glGetUniformLocation(programID, "metallicMap");
+	uniformRoughnessMap = glGetUniformLocation(programID, "roughnessMap");
+	uniformAmbientOcclusionMap = glGetUniformLocation(programID, "aoMap");
+
+	uniformCameraPosition = glGetUniformLocation(programID, "camPos");
+	uniformAmbientIntensity = glGetUniformLocation(programID, "ambientIntensity");
 
 	for (int i = 0; i < lightCount; i++)
 	{

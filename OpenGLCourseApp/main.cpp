@@ -43,7 +43,7 @@ enum class SceneName
 	LearnOpenGL,
 };
 
-SceneName currentScene = SceneName::PBR;
+SceneName currentScene = SceneName::Eiffel;
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
