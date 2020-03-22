@@ -194,11 +194,11 @@ void ScenePBR::Render(glm::mat4 projectionMatrix, std::string passType,
 			model = glm::scale(model, glm::vec3(1.0f));
 			glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 
-			shaderPBR->SetAlbedo(m_Albedo);
-			shaderPBR->SetMetallic(((float)v / 5.0f + m_Metallic) / 2.0f);
-			shaderPBR->SetRoughness(((float)h / 5.0f + m_Roughness) / 2.0f);
-			shaderPBR->SetAmbientOcclusion(m_AmbientOcclusion);
-			shaderPBR->SetAmbientIntensity(m_AmbientIntensity);
+			shaderPBR->setVec3("albedo", m_Albedo);
+			shaderPBR->setFloat("metallic", ((float)v / 5.0f + m_Metallic) / 2.0f);
+			shaderPBR->setFloat("roughness", ((float)h / 5.0f + m_Roughness) / 2.0f);
+			shaderPBR->setFloat("ao", m_AmbientOcclusion);
+			shaderPBR->setFloat("ambientIntensity", m_AmbientIntensity);
 
 			if ((v + h) % 2 == 0)
 			{
@@ -217,11 +217,11 @@ void ScenePBR::Render(glm::mat4 projectionMatrix, std::string passType,
 				textures["goldAmbientOcclusion"]->Bind(textureSlots["ao"]);
 			}
 
-			shaderPBR->SetAlbedoMap(textureSlots["albedo"]);
-			shaderPBR->SetNormalMap(textureSlots["normal"]);
-			shaderPBR->SetMetallicMap(textureSlots["metallic"]);
-			shaderPBR->SetRoughnessMap(textureSlots["roughness"]);
-			shaderPBR->SetAmbientOcclusionMap(textureSlots["ao"]);
+			shaderPBR->setInt("albedoMap", textureSlots["albedo"]);
+			shaderPBR->setInt("normalMap", textureSlots["normal"]);
+			shaderPBR->setInt("metallicMap", textureSlots["metallic"]);
+			shaderPBR->setInt("roughnessMap", textureSlots["roughness"]);
+			shaderPBR->setInt("aoMap", textureSlots["ao"]);
 
 			meshes["sphere"]->RenderMesh();
 
@@ -239,11 +239,11 @@ void ScenePBR::Render(glm::mat4 projectionMatrix, std::string passType,
 		model = glm::scale(model, glm::vec3(0.05f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 
-		shaderPBR->SetAlbedo(m_Albedo);
-		shaderPBR->SetMetallic(m_Metallic);
-		shaderPBR->SetRoughness(m_Roughness);
-		shaderPBR->SetAmbientOcclusion(m_AmbientOcclusion);
-		shaderPBR->SetAmbientIntensity(m_AmbientIntensity);
+		shaderPBR->setVec3("albedo", m_Albedo);
+		shaderPBR->setFloat("metallic", m_Metallic);
+		shaderPBR->setFloat("roughness", m_Roughness);
+		shaderPBR->setFloat("ao", m_AmbientOcclusion);
+		shaderPBR->setFloat("ambientIntensity", m_AmbientIntensity);
 
 		textures["cerberusAlbedo"]->Bind(textureSlots["albedo"]);
 		textures["cerberusNormal"]->Bind(textureSlots["normal"]);
@@ -251,11 +251,11 @@ void ScenePBR::Render(glm::mat4 projectionMatrix, std::string passType,
 		textures["cerberusRoughness"]->Bind(textureSlots["roughness"]);
 		textures["cerberusAmbOcclusion"]->Bind(textureSlots["ao"]);
 
-		shaderPBR->SetAlbedoMap(textureSlots["albedo"]);
-		shaderPBR->SetNormalMap(textureSlots["normal"]);
-		shaderPBR->SetMetallicMap(textureSlots["metallic"]);
-		shaderPBR->SetRoughnessMap(textureSlots["roughness"]);
-		shaderPBR->SetAmbientOcclusionMap(textureSlots["ao"]);
+		shaderPBR->setInt("albedoMap", textureSlots["albedo"]);
+		shaderPBR->setInt("normalMap", textureSlots["normal"]);
+		shaderPBR->setInt("metallicMap", textureSlots["metallic"]);
+		shaderPBR->setInt("roughnessMap", textureSlots["roughness"]);
+		shaderPBR->setInt("aoMap", textureSlots["ao"]);
 
 		models["cerberus"]->RenderModelPBR();
 	}

@@ -118,7 +118,7 @@ void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 project
 	uniforms["view"]        = shaderMain->GetUniformLocation("view");
 	uniforms["eyePosition"] = shaderMain->GetUniformLocation("eyePosition");
 	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
-	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
+	uniforms["shininess"]         = shaderMain->GetUniformLocationMaterialShininess();
 
 	shaderMain->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
 	shaderMain->setMat4("projection", projectionMatrix);
@@ -196,11 +196,11 @@ void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 project
 	uniforms["model"]      = shaderPBR->GetUniformLocation("model");
 	uniforms["projection"] = shaderPBR->GetUniformLocation("projection");
 	uniforms["view"]       = shaderPBR->GetUniformLocation("view");
-	shaderPBR->SetCameraPosition(scene->GetCamera()->GetPosition());
-
+	uniforms["camPos"]     = shaderPBR->GetUniformLocation("camPos");
 	shaderPBR->setMat4("model", glm::mat4(1.0f));
-	shaderPBR->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
 	shaderPBR->setMat4("projection", projectionMatrix);
+	shaderPBR->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+	shaderPBR->setVec3("camPos", scene->GetCamera()->GetPosition());
 
 	DisableCulling();
 	scene->Render(projectionMatrix, passType, shaders, uniforms);
