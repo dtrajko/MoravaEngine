@@ -127,10 +127,10 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
 	shaderMain->Bind();
 
-	uniforms["model"]      = shaderMain->GetUniformLocation("model");
-	uniforms["projection"] = shaderMain->GetUniformLocation("projection");
-	uniforms["view"]       = shaderMain->GetUniformLocation("view");
-	uniforms["eyePosition"] = shaderMain->GetUniformLocationEyePosition();
+	uniforms["model"]       = shaderMain->GetUniformLocation("model");
+	uniforms["projection"]  = shaderMain->GetUniformLocation("projection");
+	uniforms["view"]        = shaderMain->GetUniformLocation("view");
+	uniforms["eyePosition"] = shaderMain->GetUniformLocation("eyePosition");
 	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
 	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 
@@ -310,10 +310,10 @@ void Renderer::RenderPassWaterReflection(Scene* scene, glm::mat4 projectionMatri
 	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
 	shaderMain->Bind();
 
-	uniforms["model"]      = shaderMain->GetUniformLocation("model");
-	uniforms["projection"] = shaderMain->GetUniformLocation("projection");
-	uniforms["view"]       = shaderMain->GetUniformLocation("view");
-	uniforms["eyePosition"] = shaderMain->GetUniformLocationEyePosition();
+	uniforms["model"]       = shaderMain->GetUniformLocation("model");
+	uniforms["projection"]  = shaderMain->GetUniformLocation("projection");
+	uniforms["view"]        = shaderMain->GetUniformLocation("view");
+	uniforms["eyePosition"] = shaderMain->GetUniformLocation("eyePosition");
 	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
 	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 
@@ -355,10 +355,10 @@ void Renderer::RenderPassWaterRefraction(Scene* scene, glm::mat4 projectionMatri
 	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
 	shaderMain->Bind();
 
-	uniforms["model"]      = shaderMain->GetUniformLocation("model");
-	uniforms["projection"] = shaderMain->GetUniformLocation("projection");
-	uniforms["view"]       = shaderMain->GetUniformLocation("view");
-	uniforms["eyePosition"] = shaderMain->GetUniformLocationEyePosition();
+	uniforms["model"]       = shaderMain->GetUniformLocation("model");
+	uniforms["projection"]  = shaderMain->GetUniformLocation("projection");
+	uniforms["view"]        = shaderMain->GetUniformLocation("view");
+	uniforms["eyePosition"] = shaderMain->GetUniformLocation("eyePosition");
 	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
 	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 

@@ -60,10 +60,10 @@ void SceneJoey::SetupLights()
 	m_LightColorsNormal[2] = glm::vec3(1.0f, 1.0f, 1.0f);
 	m_LightColorsNormal[3] = glm::vec3(1.0f, 1.0f, 1.0f);
 
-	m_LightPositionOffset[0] = glm::vec3(-5.0f, 18.0f, -5.0f);
-	m_LightPositionOffset[1] = glm::vec3( 5.0f, 18.0f, -5.0f);
-	m_LightPositionOffset[2] = glm::vec3(-5.0f, 18.0f,  5.0f);
-	m_LightPositionOffset[3] = glm::vec3( 5.0f, 18.0f,  5.0f);
+	m_LightPositionOffset[0] = glm::vec3(-3.0f, 10.0f, -3.0f);
+	m_LightPositionOffset[1] = glm::vec3( 3.0f, 10.0f, -3.0f);
+	m_LightPositionOffset[2] = glm::vec3(-3.0f, 10.0f,  3.0f);
+	m_LightPositionOffset[3] = glm::vec3( 3.0f, 10.0f,  3.0f);
 
 	m_LightPositions[0] = m_LightPositionOffset[0]; // m_CameraPosition + m_LightPositionOffset[0];
 	m_LightPositions[1] = m_LightPositionOffset[1]; // m_CameraPosition + m_LightPositionOffset[1];

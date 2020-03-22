@@ -7,11 +7,6 @@ ShaderMain::ShaderMain() : Shader()
 	spotLightCount = 0;
 }
 
-GLint ShaderMain::GetUniformLocationEyePosition()
-{
-	return uniformEyePosition;
-}
-
 GLint ShaderMain::GetUniformLocationAmbientColor()
 {
 	return uniformDirectionalLight.uniformColor;
@@ -34,12 +29,12 @@ GLint ShaderMain::GetUniformLocationDirectionalLightDirection()
 
 GLint ShaderMain::GetUniformLocationMaterialSpecularIntensity()
 {
-	return uniformMaterialSpecularIntensity;
+	return uniformMaterial.uniformSpecularIntensity;
 }
 
 GLint ShaderMain::GetUniformLocationMaterialShininess()
 {
-	return uniformMaterialShininess;
+	return uniformMaterial.uniformShininess;
 }
 
 void ShaderMain::SetDirectionalLight(DirectionalLight* directionalLight)
@@ -99,11 +94,6 @@ void ShaderMain::SetSpotLights(SpotLight* spotLights, unsigned int lightCount, u
 	}
 }
 
-void ShaderMain::SetClipPlane(glm::vec4 clipPlane)
-{
-	glUniform4f(uniformClipPlane, clipPlane.x, clipPlane.y, clipPlane.z, clipPlane.w);
-}
-
 ShaderMain::~ShaderMain()
 {
 }
@@ -124,15 +114,13 @@ void ShaderMain::GetUniformLocations()
 
 	Shader::GetUniformLocations();
 
-	uniformEyePosition = glGetUniformLocation(programID, "eyePosition");
-
 	uniformDirectionalLight.uniformColor = glGetUniformLocation(programID, "directionalLight.base.color");
 	uniformDirectionalLight.uniformAmbientIntensity = glGetUniformLocation(programID, "directionalLight.base.ambientIntensity");
 	uniformDirectionalLight.uniformDiffuseIntensity = glGetUniformLocation(programID, "directionalLight.base.diffuseIntensity");
 	uniformDirectionalLight.uniformDirection = glGetUniformLocation(programID, "directionalLight.direction");
 
-	uniformMaterialSpecularIntensity = glGetUniformLocation(programID, "material.specularIntensity");
-	uniformMaterialShininess = glGetUniformLocation(programID, "material.shininess");
+	uniformMaterial.uniformSpecularIntensity = glGetUniformLocation(programID, "material.specularIntensity");
+	uniformMaterial.uniformShininess = glGetUniformLocation(programID, "material.shininess");
 
 	uniformPointLightCount = glGetUniformLocation(programID, "pointLightCount");
 
@@ -210,6 +198,4 @@ void ShaderMain::GetUniformLocations()
 		snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", i);
 		uniformOmniShadowMap[i].farPlane = glGetUniformLocation(programID, locBuff);
 	}
-
-	uniformClipPlane = glGetUniformLocation(programID, "clipPlane");
 }
