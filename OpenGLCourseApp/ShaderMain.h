@@ -24,10 +24,6 @@ public:
 	void SetPointLights(PointLight* pointLights, unsigned int lightCount, unsigned int textureUnit, unsigned int offset);
 	void SetSpotLights(SpotLight* spotLights, unsigned int lightCount, unsigned int textureUnit, unsigned int offset);
 
-	// Directional light shadow map
-	void SetDirectionalShadowMap(GLuint textureUnit);
-	void SetDirectionalLightTransform(glm::mat4* transform);
-
 	~ShaderMain();
 
 private:
@@ -37,9 +33,6 @@ private:
 	int pointLightCount = 0;
 	int spotLightCount = 0;
 
-	GLint uniformDirectionalShadowMap = -1;
-	GLint uniformDirectionalLightTransform = -1;
-
 	struct
 	{
 		GLint uniformColor = -1;
@@ -47,8 +40,6 @@ private:
 		GLint uniformDiffuseIntensity = -1;
 		GLint uniformDirection = -1;
 	} uniformDirectionalLight;
-
-	GLint uniformPointLightCount = -1;
 
 	struct
 	{
@@ -60,8 +51,6 @@ private:
 		GLint uniformLinear = -1;
 		GLint uniformExponent = -1;
 	} uniformPointLight[MAX_POINT_LIGHTS];
-
-	GLint uniformSpotLightCount = -1;
 
 	struct
 	{

@@ -50,7 +50,7 @@ void ShaderMain::SetPointLights(PointLight* pointLights, unsigned int lightCount
 {
 	if (lightCount > MAX_POINT_LIGHTS) lightCount = MAX_POINT_LIGHTS;
 
-	glUniform1i(uniformPointLightCount, lightCount);
+	setInt("pointLightCount", lightCount);
 
 	for (unsigned int i = 0; i < lightCount; i++)
 	{
@@ -73,7 +73,7 @@ void ShaderMain::SetSpotLights(SpotLight* spotLights, unsigned int lightCount, u
 {
 	if (lightCount > MAX_SPOT_LIGHTS) lightCount = MAX_SPOT_LIGHTS;
 
-	glUniform1i(uniformSpotLightCount, lightCount);
+	setInt("spotLightCount", lightCount);
 
 	for (unsigned int i = 0; i < lightCount; i++)
 	{
@@ -98,16 +98,6 @@ ShaderMain::~ShaderMain()
 {
 }
 
-void ShaderMain::SetDirectionalShadowMap(GLuint textureUnit)
-{
-	glUniform1i(uniformDirectionalShadowMap, textureUnit);
-}
-
-void ShaderMain::SetDirectionalLightTransform(glm::mat4* transform)
-{
-	glUniformMatrix4fv(uniformDirectionalLightTransform, 1, GL_FALSE, glm::value_ptr(*transform));
-}
-
 void ShaderMain::GetUniformLocations()
 {
 	printf("ShaderMain::GetUniformLocations\n");
@@ -121,8 +111,6 @@ void ShaderMain::GetUniformLocations()
 
 	uniformMaterial.uniformSpecularIntensity = glGetUniformLocation(programID, "material.specularIntensity");
 	uniformMaterial.uniformShininess = glGetUniformLocation(programID, "material.shininess");
-
-	uniformPointLightCount = glGetUniformLocation(programID, "pointLightCount");
 
 	for (int i = 0; i < MAX_POINT_LIGHTS; i++)
 	{
@@ -149,8 +137,6 @@ void ShaderMain::GetUniformLocations()
 		snprintf(locBuff, sizeof(locBuff), "pointLights[%d].exponent", i);
 		uniformPointLight[i].uniformExponent = glGetUniformLocation(programID, locBuff);
 	}
-
-	uniformSpotLightCount = glGetUniformLocation(programID, "spotLightCount");
 
 	for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
 	{
@@ -183,10 +169,6 @@ void ShaderMain::GetUniformLocations()
 		snprintf(locBuff, sizeof(locBuff), "spotLights[%d].edge", i);
 		uniformSpotLight[i].uniformEdge = glGetUniformLocation(programID, locBuff);
 	}
-
-	// Directional shadow map
-	uniformDirectionalShadowMap = glGetUniformLocation(programID, "directionalShadowMap");
-	uniformDirectionalLightTransform = glGetUniformLocation(programID, "directionalLightTransform");
 
 	for (unsigned int i = 0; i < MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS; i++)
 	{
