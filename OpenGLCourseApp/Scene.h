@@ -87,7 +87,7 @@ public:
 	std::map<std::string, GLuint> GetTextureSlots() const { return textureSlots; };
 	void SetCamera();
 	inline Camera* GetCamera() const { return m_Camera; };
-	void SetLightManager();
+	virtual void SetLightManager();
 	inline LightManager* GetLightManager() const { return m_LightManager; };
 	void SetWaterManager(int width, int height);
 	inline WaterManager* GetWaterManager() const { return m_WaterManager; };

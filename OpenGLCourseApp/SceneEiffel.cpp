@@ -60,6 +60,7 @@ void SceneEiffel::SetTextures()
 	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
 	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
 	textures.insert(std::make_pair("water", new Texture("Textures/water.png")));
+	textures.insert(std::make_pair("pyramid", new Texture("Textures/pyramid.png")));
 }
 
 void SceneEiffel::SetupMeshes()
@@ -154,6 +155,19 @@ void SceneEiffel::Render(glm::mat4 projectionMatrix, std::string passType,
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	models["cerberus"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
+
+	/* Cube */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(1.0f));
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	textures["pyramid"]->Bind(textureSlots["diffuse"]);
+	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	meshes["cube"]->Render();
 
 	if (passType == "main")
 	{

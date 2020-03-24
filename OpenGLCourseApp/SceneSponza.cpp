@@ -8,7 +8,7 @@
 SceneSponza::SceneSponza()
 {
 	sceneSettings.enableShadows      = true;
-	sceneSettings.enableOmniShadows  = false;
+	sceneSettings.enableOmniShadows  = true;
 	sceneSettings.enablePointLights  = true;
 	sceneSettings.enableSpotLights   = true;
 	sceneSettings.enableWaterEffects = true;
@@ -19,7 +19,7 @@ SceneSponza::SceneSponza()
 	sceneSettings.cameraMoveSpeed = 1.0f;
 	sceneSettings.ambientIntensity = 0.2f;
 	sceneSettings.diffuseIntensity = 1.0f;
-	sceneSettings.lightDirection = glm::vec3(1.2f, -14.0f, 1.2f);
+	sceneSettings.lightDirection = glm::vec3(0.10f, -0.16f, 0.38f);
 	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
 	sceneSettings.pLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
 	sceneSettings.pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
@@ -30,8 +30,8 @@ SceneSponza::SceneSponza()
 	sceneSettings.pLight_2_color = glm::vec3(0.0f, 0.0f, 1.0f);
 	sceneSettings.pLight_2_position = glm::vec3(10.0f, 2.0f, 10.0f);
 	sceneSettings.pLight_2_diffuseIntensity = 2.0f;
-	sceneSettings.shadowMapWidth = 4096;
-	sceneSettings.shadowMapHeight = 4096;
+	sceneSettings.shadowMapWidth = 2048;
+	sceneSettings.shadowMapHeight = 2048;
 	sceneSettings.shadowSpeed = 0.1f;
 	sceneSettings.waterHeight = 0.2f;
 	sceneSettings.waterWaveSpeed = 0.02f;

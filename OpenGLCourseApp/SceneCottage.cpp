@@ -8,7 +8,7 @@
 
 SceneCottage::SceneCottage()
 {
-	sceneSettings.enableShadows      = false;
+	sceneSettings.enableShadows      = true;
 	sceneSettings.enableOmniShadows  = true;
 	sceneSettings.enablePointLights  = true;
 	sceneSettings.enableSpotLights   = true;
