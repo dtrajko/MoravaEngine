@@ -119,7 +119,7 @@ void ScenePBR::SetTextures()
 void ScenePBR::SetupModels()
 {
 	Sphere* sphere = new Sphere();
-	sphere->CreateMesh();
+	sphere->Create();
 	meshes.insert(std::make_pair("sphere", sphere));
 
 	if (m_CerberusEnabled)
@@ -223,7 +223,7 @@ void ScenePBR::Render(glm::mat4 projectionMatrix, std::string passType,
 			shaderPBR->setInt("roughnessMap", textureSlots["roughness"]);
 			shaderPBR->setInt("aoMap", textureSlots["ao"]);
 
-			meshes["sphere"]->RenderMesh();
+			meshes["sphere"]->Render();
 
 		}
 	}
@@ -288,7 +288,7 @@ void ScenePBR::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
 	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["water"]->RenderMesh();
+	meshes["water"]->Render();
 }
 
 ScenePBR::~ScenePBR()

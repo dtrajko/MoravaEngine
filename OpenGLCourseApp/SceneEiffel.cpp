@@ -120,7 +120,7 @@ void SceneEiffel::Render(glm::mat4 projectionMatrix, std::string passType,
 	textures["sponzaCeilNormal"]->Bind(textureSlots["normal"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	if (passType != "shadow")
-		meshes["quadLarge"]->RenderMesh();
+		meshes["quadLarge"]->Render();
 
 	/* Eiffel model */
 	model = glm::mat4(1.0f);
@@ -168,7 +168,7 @@ void SceneEiffel::Render(glm::mat4 projectionMatrix, std::string passType,
 		m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quad"]->RenderMesh();
+		meshes["quad"]->Render();
 
 		/* Water refraction framebuffer */
 		model = glm::mat4(1.0f);
@@ -181,7 +181,7 @@ void SceneEiffel::Render(glm::mat4 projectionMatrix, std::string passType,
 		m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["diffuse"]);
 		m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["normal"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quad"]->RenderMesh();
+		meshes["quad"]->Render();
 
 		/* Water refraction depth texture */
 		model = glm::mat4(1.0f);
@@ -195,7 +195,7 @@ void SceneEiffel::Render(glm::mat4 projectionMatrix, std::string passType,
 		shaderMain->setInt("theTexture", textureSlots["depth"]);
 		shaderMain->setInt("normalMap", textureSlots["depth"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quad"]->RenderMesh();
+		meshes["quad"]->Render();
 
 		/* ShadowMap display */
 		model = glm::mat4(1.0f);
@@ -208,7 +208,7 @@ void SceneEiffel::Render(glm::mat4 projectionMatrix, std::string passType,
 		shaderMain->setInt("theTexture", textureSlots["shadow"]);
 		shaderMain->setInt("normalMap", textureSlots["shadow"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quad"]->RenderMesh();
+		meshes["quad"]->Render();
 	}
 }
 
@@ -243,7 +243,7 @@ void SceneEiffel::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
 	shaderWater->setVec3("lightPosition", -m_LightDirection);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["water"]->RenderMesh();
+	meshes["water"]->Render();
 }
 
 SceneEiffel::~SceneEiffel()

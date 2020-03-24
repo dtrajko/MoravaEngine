@@ -90,7 +90,7 @@ Skybox::Skybox(std::vector<std::string> faceLocations, bool flipVert)
 	};
 
 	skyMesh = new Mesh();
-	skyMesh->CreateMesh(skyboxVertices, skyboxIndices, 14 * 8, 6 * 6);
+	skyMesh->Create(skyboxVertices, skyboxIndices, 14 * 8, 6 * 6);
 }
 
 void Skybox::Draw(glm::mat4 modelMatrix, glm::mat4 viewMatrix, glm::mat4 projectionMatrix)
@@ -110,7 +110,7 @@ void Skybox::Draw(glm::mat4 modelMatrix, glm::mat4 viewMatrix, glm::mat4 project
 
 	skyShader->Validate();
 
-	skyMesh->RenderMesh();
+	skyMesh->Render();
 
 	glDepthMask(GL_TRUE);
 }

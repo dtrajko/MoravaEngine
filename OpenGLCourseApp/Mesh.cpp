@@ -1,28 +1,31 @@
 #include "Mesh.h"
+
+#include <GL/glew.h>
+
 #include "Vertex.h"
 
 
 Mesh::Mesh()
 {
-	VAO = 0;
-	VBO = 0;
-	IBO = 0;
+	m_VAO = 0;
+	m_VBO = 0;
+	m_IBO = 0;
 	m_IndexCount = 0;
 }
 
-void Mesh::CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indexCount)
+void Mesh::Create(float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indexCount)
 {
 	m_IndexCount = indexCount;
 
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	glGenVertexArrays(1, &m_VAO);
+	glBindVertexArray(m_VAO);
 
-	glGenBuffers(1, &IBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glGenBuffers(1, &m_IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * indexCount, indices, GL_STATIC_DRAW);
 
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glGenBuffers(1, &m_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * vertexCount, vertices, GL_STATIC_DRAW);
 
 	// position
@@ -46,31 +49,31 @@ void Mesh::CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int ver
 	glBindVertexArray(0);                     // Unbind VAO
 }
 
-void Mesh::RenderMesh()
+void Mesh::Render()
 {
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBindVertexArray(m_VAO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
 	glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
 	glBindVertexArray(0);                     // Unbind VAO
 }
 
-void Mesh::ClearMesh()
+void Mesh::Clear()
 {
-	if (IBO != 0)
+	if (m_IBO != 0)
 	{
-		glDeleteBuffers(1, &IBO);
-		IBO = 0;
+		glDeleteBuffers(1, &m_IBO);
+		m_IBO = 0;
 	}
-	if (VBO != 0)
+	if (m_VBO != 0)
 	{
-		glDeleteBuffers(1, &VBO);
-		VBO = 0;
+		glDeleteBuffers(1, &m_VBO);
+		m_VBO = 0;
 	}
-	if (VAO != 0)
+	if (m_VAO != 0)
 	{
-		glDeleteVertexArrays(1, &VAO);
-		VAO = 0;
+		glDeleteVertexArrays(1, &m_VAO);
+		m_VAO = 0;
 	}
 	m_IndexCount = 0;
 
@@ -81,7 +84,7 @@ void Mesh::ClearMesh()
 	glDisableVertexAttribArray(4);
 }
 
-void Mesh::CalcAverageNormals(unsigned int* indices, unsigned int indexCount, GLfloat* vertices, unsigned int vertexCount)
+void Mesh::CalcAverageNormals(unsigned int* indices, unsigned int indexCount, float* vertices, unsigned int vertexCount)
 {
 	unsigned int vLength = sizeof(Vertex) / sizeof(float);
 	unsigned int normalOffset = offsetof(Vertex, Normal) / sizeof(float);
@@ -115,8 +118,7 @@ void Mesh::CalcAverageNormals(unsigned int* indices, unsigned int indexCount, GL
 	}
 }
 
-void Mesh::CalcTangentSpace(unsigned int* indices, unsigned int indexCount,
-	GLfloat* vertices, unsigned int vertexCount)
+void Mesh::CalcTangentSpace(unsigned int* indices, unsigned int indexCount, float* vertices, unsigned int vertexCount)
 {
 	unsigned int vLength = sizeof(Vertex) / sizeof(float);
 
@@ -159,5 +161,5 @@ void Mesh::CalcTangentSpace(unsigned int* indices, unsigned int indexCount,
 
 Mesh::~Mesh()
 {
-	ClearMesh();
+	Clear();
 }

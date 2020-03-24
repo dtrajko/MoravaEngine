@@ -1,15 +1,13 @@
 #pragma once
 
+#include "Mesh.h"
 
-class SphereJoey
+
+class SphereJoey : public Mesh
 {
 public:
 	SphereJoey();
-	void Render();
+	virtual void Render() override;
 	~SphereJoey();
-
-private:
-	unsigned int m_VAO;
-	int m_IndexCount;
 
 };

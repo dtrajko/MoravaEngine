@@ -109,7 +109,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,7 +151,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -193,6 +193,7 @@
     <ClCompile Include="RendererJoey.cpp" />
     <ClCompile Include="RendererPBR.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneBullet.cpp" />
     <ClCompile Include="SceneJoey.cpp" />
     <ClCompile Include="ScenePBR.cpp" />
     <ClCompile Include="SceneCottage.cpp" />
@@ -249,6 +250,7 @@
     <ClInclude Include="RendererJoey.h" />
     <ClInclude Include="RendererPBR.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneBullet.h" />
     <ClInclude Include="SceneJoey.h" />
     <ClInclude Include="ScenePBR.h" />
     <ClInclude Include="SceneCottage.h" />

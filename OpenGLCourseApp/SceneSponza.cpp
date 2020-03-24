@@ -153,7 +153,7 @@ void SceneSponza::Render(glm::mat4 projectionMatrix, std::string passType,
 		shaders["main"]->setInt("normalMap", textureSlots["shadow"]);
 
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quad"]->RenderMesh();
+		meshes["quad"]->Render();
 	}
 }
 
@@ -184,7 +184,7 @@ void SceneSponza::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	shaderWater->setInt("reflectionTexture", textureSlots["reflection"]);
 	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["water"]->RenderMesh();
+	meshes["water"]->Render();
 }
 
 SceneSponza::~SceneSponza()

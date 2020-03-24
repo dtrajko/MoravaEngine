@@ -132,11 +132,12 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	uniforms["view"]        = shaderMain->GetUniformLocation("view");
 	uniforms["eyePosition"] = shaderMain->GetUniformLocation("eyePosition");
 	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
-	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
+	uniforms["shininess"]         = shaderMain->GetUniformLocationMaterialShininess();
 
-	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(scene->GetCamera()->CalculateViewMatrix()));
-	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniform3f(uniforms["eyePosition"], scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
+	shaderMain->setMat4("model", glm::mat4(1.0f));
+	shaderMain->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+	shaderMain->setMat4("projection", projectionMatrix);
+	shaderMain->setVec3("eyePosition", scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
 
 	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
 	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);

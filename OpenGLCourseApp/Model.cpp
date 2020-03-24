@@ -120,7 +120,7 @@ void Model::LoadMesh(aiMesh* mesh, const aiScene* scene)
 	}
 
 	Mesh* newMesh = new Mesh();
-	newMesh->CreateMesh(&vertices[0], &indices[0], (unsigned int)vertices.size(), (unsigned int)indices.size());
+	newMesh->Create(&vertices[0], &indices[0], (unsigned int)vertices.size(), (unsigned int)indices.size());
 	meshList.push_back(newMesh);
 	meshToTexture.push_back(mesh->mMaterialIndex);
 }
@@ -211,7 +211,7 @@ void Model::RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNorma
 			}
 		}
 
-		meshList[i]->RenderMesh();
+		meshList[i]->Render();
 	}
 }
 
@@ -219,7 +219,7 @@ void Model::RenderModelPBR()
 {
 	for (size_t i = 0; i < meshList.size(); i++)
 	{
-		meshList[i]->RenderMesh();
+		meshList[i]->Render();
 	}
 }
 

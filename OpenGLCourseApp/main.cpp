@@ -16,12 +16,12 @@
 #include "SceneTerrain.h"
 #include "ScenePBR.h"
 #include "SceneJoey.h"
+#include "SceneBullet.h"
 #include "LightManager.h"
 #include "WaterManager.h"
 #include "Renderer.h"
 #include "RendererPBR.h"
 #include "RendererJoey.h"
-
 
 
 // Window dimensions
@@ -41,9 +41,10 @@ enum class SceneName
 	Terrain,
 	PBR,
 	LearnOpenGL,
+	Bullet,
 };
 
-SceneName currentScene = SceneName::LearnOpenGL;
+SceneName currentScene = SceneName::Bullet;
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -84,6 +85,10 @@ int main()
 	case SceneName::LearnOpenGL:
 		scene = new SceneJoey();
 		renderer = static_cast<RendererBasic*>(new RendererJoey());
+		break;
+	case SceneName::Bullet:
+		scene = new SceneBullet();
+		renderer = static_cast<RendererBasic*>(new Renderer());
 		break;
 	}
 

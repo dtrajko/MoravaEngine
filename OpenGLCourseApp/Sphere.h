@@ -12,9 +12,9 @@ public:
 	
 	void GenerateGeometry();
 	void GenerateGeometrySongHo();
-	void CreateMesh();
-	virtual void RenderMesh() override;
-	virtual void ClearMesh() override;
+	void Create();
+	virtual void Render() override;
+	virtual void Clear() override;
 
 	inline void SetRadius(float radius) { m_Radius = radius; };
 	inline void SetSectorCount(unsigned int sectorCount) { m_SectorCount = sectorCount; };

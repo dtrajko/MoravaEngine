@@ -88,21 +88,21 @@ void Scene::SetupMeshes()
 	Mesh::CalcTangentSpace(MeshData::quadIndices, MeshData::quadIndexCount, MeshData::quadVertices, MeshData::quadVertexCount);
 
 	Mesh* cube = new Mesh();
-	cube->CreateMesh(MeshData::vertices, MeshData::indices, MeshData::vertexCount, MeshData::indexCount);
+	cube->Create(MeshData::vertices, MeshData::indices, MeshData::vertexCount, MeshData::indexCount);
 	meshes.insert(std::make_pair("cube", cube));
 
 	Mesh* quad = new Mesh();
-	quad->CreateMesh(MeshData::quadVertices, MeshData::quadIndices, MeshData::quadVertexCount, MeshData::quadIndexCount);
+	quad->Create(MeshData::quadVertices, MeshData::quadIndices, MeshData::quadVertexCount, MeshData::quadIndexCount);
 	meshes.insert(std::make_pair("quad", quad));
 
 	Mesh* quadLarge = new Mesh();
-	quadLarge->CreateMesh(MeshData::floorVertices, MeshData::floorIndices, MeshData::floorVertexCount, MeshData::floorIndexCount);
+	quadLarge->Create(MeshData::floorVertices, MeshData::floorIndices, MeshData::floorVertexCount, MeshData::floorIndexCount);
 	meshes.insert(std::make_pair("quadLarge", quadLarge));
 
 	float vertices[] = { -1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 1 };
 	unsigned int indices[] = { 0, 1, 2, 3, 4, 5 };
 	Tile2D* m_Tile2D = new Tile2D();
-	m_Tile2D->CreateMesh(&vertices[0], &indices[0], 12, 6);
+	m_Tile2D->Create(&vertices[0], &indices[0], 12, 6);
 	meshes.insert(std::make_pair("water", m_Tile2D));
 }
 

@@ -74,7 +74,7 @@ void SceneCottage::SetupModels()
 	models.insert(std::make_pair("cottage", cottage));
 
 	Sphere* sphere = new Sphere();
-	sphere->CreateMesh();
+	sphere->Create();
 	meshes.insert(std::make_pair("sphere", sphere));
 }
 
@@ -137,7 +137,7 @@ void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 	textures["sponzaCeilDiffuse"]->Bind(textureSlots["diffuse"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["sphere"]->RenderMesh();
+	meshes["sphere"]->Render();
 
 	/* Cube Left */
 	model = glm::mat4(1.0f);
@@ -150,7 +150,7 @@ void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 	textures["brick"]->Bind(textureSlots["diffuse"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	materials["shiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["cube"]->RenderMesh();
+	meshes["cube"]->Render();
 
 	/* Cube Right */
 	model = glm::mat4(1.0f);
@@ -163,7 +163,7 @@ void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 	textures["crateDiffuse"]->Bind(textureSlots["diffuse"]);
 	textures["crateNormal"]->Bind(textureSlots["normal"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["cube"]->RenderMesh();
+	meshes["cube"]->Render();
 
 	/* Cube Front */
 	model = glm::mat4(1.0f);
@@ -176,7 +176,7 @@ void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 	textures["crateDiffuse"]->Bind(textureSlots["diffuse"]);
 	textures["crateNormal"]->Bind(textureSlots["normal"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["cube"]->RenderMesh();
+	meshes["cube"]->Render();
 
 	/* Cottage */
 	model = glm::mat4(1.0f);
@@ -199,7 +199,7 @@ void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 		textures["sponzaFloorDiffuse"]->Bind(textureSlots["diffuse"]);
 		textures["sponzaFloorNormal"]->Bind(textureSlots["normal"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quadLarge"]->RenderMesh();
+		meshes["quadLarge"]->Render();
 
 		/* Floor 2nd */
 		model = glm::mat4(1.0f);
@@ -209,7 +209,7 @@ void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 		textures["sponzaFloorDiffuse"]->Bind(textureSlots["diffuse"]);
 		textures["sponzaFloorNormal"]->Bind(textureSlots["normal"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quadLarge"]->RenderMesh();
+		meshes["quadLarge"]->Render();
 
 		/* Floor 3nd */
 		model = glm::mat4(1.0f);
@@ -218,7 +218,7 @@ void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["grass"]->Bind(textureSlots["diffuse"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quadLarge"]->RenderMesh();
+		meshes["quadLarge"]->Render();
 
 		/* Wall Right */
 		model = glm::mat4(1.0f);
@@ -244,7 +244,7 @@ void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 		textures["sponzaWallDiffuse"]->Bind(textureSlots["diffuse"]);
 		textures["sponzaWallNormal"]->Bind(textureSlots["normal"]);
 		materials["shiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quadLarge"]->RenderMesh();
+		meshes["quadLarge"]->Render();
 
 		/* Wall Back */
 		model = glm::mat4(1.0f);
@@ -257,7 +257,7 @@ void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 		textures["sponzaWallDiffuse"]->Bind(textureSlots["diffuse"]);
 		textures["sponzaWallNormal"]->Bind(textureSlots["normal"]);
 		materials["shiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quadLarge"]->RenderMesh();
+		meshes["quadLarge"]->Render();
 
 		/* Ceil */
 		model = glm::mat4(1.0f);
@@ -268,7 +268,7 @@ void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 		textures["sponzaCeilDiffuse"]->Bind(textureSlots["diffuse"]);
 		textures["sponzaCeilNormal"]->Bind(textureSlots["normal"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quadLarge"]->RenderMesh();
+		meshes["quadLarge"]->Render();
 
 		/* Ceil 2nd */
 		model = glm::mat4(1.0f);
@@ -279,7 +279,7 @@ void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 		textures["sponzaCeilDiffuse"]->Bind(textureSlots["diffuse"]);
 		textures["sponzaCeilNormal"]->Bind(textureSlots["normal"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quadLarge"]->RenderMesh();
+		meshes["quadLarge"]->Render();
 
 		/* ShadowMap display */
 		model = glm::mat4(1.0f);
@@ -292,7 +292,7 @@ void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
 		shaderMain->setInt("theTexture", textureSlots["shadow"]);
 		shaderMain->setInt("normalMap", textureSlots["shadow"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["quad"]->RenderMesh();
+		meshes["quad"]->Render();
 	}
 }
 

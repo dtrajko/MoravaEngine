@@ -64,7 +64,7 @@ void SceneTerrain::SetupModels()
 {
 	Terrain* terrain = new Terrain("Textures/island_flat.png", nullptr); // heightmap_island_8x6.png
 	Mesh* mesh = new Mesh();
-	mesh->CreateMesh(terrain->GetVertices(), terrain->GetIndices(), terrain->GetVertexCount(), terrain->GetIndexCount());
+	mesh->Create(terrain->GetVertices(), terrain->GetIndices(), terrain->GetVertexCount(), terrain->GetIndexCount());
 	meshes.insert(std::make_pair("terrain", mesh));
 }
 
@@ -91,7 +91,7 @@ void SceneTerrain::Render(glm::mat4 projectionMatrix, std::string passType,
 	textures["rock"]->Bind(textureSlots["diffuse"]);
 	// textures["colorMap"]->Bind(textureSlots["diffuse"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-	meshes["terrain"]->RenderMesh();
+	meshes["terrain"]->Render();
 }
 
 void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
@@ -120,7 +120,7 @@ void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
 	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["water"]->RenderMesh();
+	meshes["water"]->Render();
 }
 
 SceneTerrain::~SceneTerrain()
