@@ -22,7 +22,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{4FDC2033-F1D4-3C7D-9192-1B65784CAA54}</ProjectGuid>
+    <ProjectGuid>{02BAFC83-20C2-3E50-8F55-B5405C33D5B5}</ProjectGuid>
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <Keyword>Win32Proj</Keyword>
     <Platform>x64</Platform>
@@ -59,26 +59,26 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\workspace\cpp\BulletPhysics\bullet3\lib\Debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\lib\Debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Bullet3OpenCL_clew.dir\Debug\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Bullet3OpenCL_clew_Debug</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\workspace\cpp\BulletPhysics\bullet3\lib\Release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\lib\Release\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Bullet3OpenCL_clew.dir\Release\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Bullet3OpenCL_clew</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\workspace\cpp\BulletPhysics\bullet3\lib\MinSizeRel\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\lib\MinSizeRel\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Bullet3OpenCL_clew.dir\MinSizeRel\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Bullet3OpenCL_clew_MinsizeRel</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\workspace\cpp\BulletPhysics\bullet3\lib\RelWithDebInfo\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\lib\RelWithDebInfo\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Bullet3OpenCL_clew.dir\RelWithDebInfo\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Bullet3OpenCL_clew_RelWithDebugInfo</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.lib</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\workspace\cpp\BulletPhysics\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -100,10 +100,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WIN64;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;B3_USE_CLEW;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\workspace\cpp\BulletPhysics\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\workspace\cpp\BulletPhysics\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -116,7 +116,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\workspace\cpp\BulletPhysics\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DisableSpecificWarnings>4244;4267</DisableSpecificWarnings>
@@ -138,10 +138,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WIN64;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;B3_USE_CLEW;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\workspace\cpp\BulletPhysics\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\workspace\cpp\BulletPhysics\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -154,7 +154,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\workspace\cpp\BulletPhysics\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DisableSpecificWarnings>4244;4267</DisableSpecificWarnings>
@@ -176,10 +176,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WIN64;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;B3_USE_CLEW;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\workspace\cpp\BulletPhysics\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\workspace\cpp\BulletPhysics\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -192,7 +192,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\workspace\cpp\BulletPhysics\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -213,10 +213,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WIN64;USE_GRAPHICAL_BENCHMARK;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;B3_USE_CLEW;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\workspace\cpp\BulletPhysics\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\workspace\cpp\BulletPhysics\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -228,10 +228,10 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\CMakeLists.txt">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule D:/workspace/cpp/BulletPhysics/bullet3/src/Bullet3OpenCL/CMakeLists.txt</Message>
+    <CustomBuild Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule D:/workspace/cpp/OpenGLCourseApp/vendor/bullet3/src/Bullet3OpenCL/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SD:/workspace/cpp/BulletPhysics/bullet3 -BD:/workspace/cpp/BulletPhysics/bullet3 --check-stamp-file D:/workspace/cpp/BulletPhysics/bullet3/src/Bullet3OpenCL/CMakeFiles/generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/workspace/cpp/OpenGLCourseApp/vendor/bullet3 -BD:/workspace/cpp/OpenGLCourseApp/vendor/bullet3 --check-stamp-file D:/workspace/cpp/OpenGLCourseApp/vendor/bullet3/src/Bullet3OpenCL/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -240,11 +240,11 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\CMakeFiles\generate.stamp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/workspace/cpp/BulletPhysics/bullet3/src/Bullet3OpenCL/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/workspace/cpp/OpenGLCourseApp/vendor/bullet3/src/Bullet3OpenCL/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SD:/workspace/cpp/BulletPhysics/bullet3 -BD:/workspace/cpp/BulletPhysics/bullet3 --check-stamp-file D:/workspace/cpp/BulletPhysics/bullet3/src/Bullet3OpenCL/CMakeFiles/generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/workspace/cpp/OpenGLCourseApp/vendor/bullet3 -BD:/workspace/cpp/OpenGLCourseApp/vendor/bullet3 --check-stamp-file D:/workspace/cpp/OpenGLCourseApp/vendor/bullet3/src/Bullet3OpenCL/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -253,11 +253,11 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\CMakeFiles\generate.stamp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule D:/workspace/cpp/BulletPhysics/bullet3/src/Bullet3OpenCL/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule D:/workspace/cpp/OpenGLCourseApp/vendor/bullet3/src/Bullet3OpenCL/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SD:/workspace/cpp/BulletPhysics/bullet3 -BD:/workspace/cpp/BulletPhysics/bullet3 --check-stamp-file D:/workspace/cpp/BulletPhysics/bullet3/src/Bullet3OpenCL/CMakeFiles/generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/workspace/cpp/OpenGLCourseApp/vendor/bullet3 -BD:/workspace/cpp/OpenGLCourseApp/vendor/bullet3 --check-stamp-file D:/workspace/cpp/OpenGLCourseApp/vendor/bullet3/src/Bullet3OpenCL/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -266,11 +266,11 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\CMakeFiles\generate.stamp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule D:/workspace/cpp/BulletPhysics/bullet3/src/Bullet3OpenCL/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule D:/workspace/cpp/OpenGLCourseApp/vendor/bullet3/src/Bullet3OpenCL/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SD:/workspace/cpp/BulletPhysics/bullet3 -BD:/workspace/cpp/BulletPhysics/bullet3 --check-stamp-file D:/workspace/cpp/BulletPhysics/bullet3/src/Bullet3OpenCL/CMakeFiles/generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/workspace/cpp/OpenGLCourseApp/vendor/bullet3 -BD:/workspace/cpp/OpenGLCourseApp/vendor/bullet3 --check-stamp-file D:/workspace/cpp/OpenGLCourseApp/vendor/bullet3/src/Bullet3OpenCL/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -279,49 +279,49 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\CMakeFiles\generate.stamp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\clew\clew.c">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\clew\clew.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">CompileAsC</CompileAs>
     </ClCompile>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\BroadphaseCollision\b3GpuGridBroadphase.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\BroadphaseCollision\b3GpuSapBroadphase.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\BroadphaseCollision\b3GpuParallelLinearBvhBroadphase.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\BroadphaseCollision\b3GpuParallelLinearBvh.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\Initialize\b3OpenCLUtils.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3ContactCache.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3ConvexHullContact.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3GjkEpa.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3OptimizedBvh.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3QuantizedBvh.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3StridingMeshInterface.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3TriangleCallback.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3TriangleIndexVertexArray.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3VoronoiSimplexSolver.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\ParallelPrimitives\b3BoundSearchCL.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\ParallelPrimitives\b3FillCL.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\ParallelPrimitives\b3LauncherCL.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\ParallelPrimitives\b3PrefixScanCL.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\ParallelPrimitives\b3PrefixScanFloat4CL.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\ParallelPrimitives\b3RadixSort32CL.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\Raycast\b3GpuRaycast.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\RigidBody\b3GpuGenericConstraint.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\RigidBody\b3GpuJacobiContactSolver.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\RigidBody\b3GpuNarrowPhase.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\RigidBody\b3GpuPgsConstraintSolver.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\RigidBody\b3GpuPgsContactSolver.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\RigidBody\b3GpuRigidBodyPipeline.cpp" />
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3OpenCL\RigidBody\b3Solver.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\BroadphaseCollision\b3GpuGridBroadphase.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\BroadphaseCollision\b3GpuSapBroadphase.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\BroadphaseCollision\b3GpuParallelLinearBvhBroadphase.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\BroadphaseCollision\b3GpuParallelLinearBvh.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\Initialize\b3OpenCLUtils.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3ContactCache.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3ConvexHullContact.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3GjkEpa.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3OptimizedBvh.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3QuantizedBvh.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3StridingMeshInterface.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3TriangleCallback.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3TriangleIndexVertexArray.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\NarrowphaseCollision\b3VoronoiSimplexSolver.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\ParallelPrimitives\b3BoundSearchCL.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\ParallelPrimitives\b3FillCL.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\ParallelPrimitives\b3LauncherCL.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\ParallelPrimitives\b3PrefixScanCL.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\ParallelPrimitives\b3PrefixScanFloat4CL.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\ParallelPrimitives\b3RadixSort32CL.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\Raycast\b3GpuRaycast.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\RigidBody\b3GpuGenericConstraint.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\RigidBody\b3GpuJacobiContactSolver.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\RigidBody\b3GpuNarrowPhase.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\RigidBody\b3GpuPgsConstraintSolver.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\RigidBody\b3GpuPgsContactSolver.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\RigidBody\b3GpuRigidBodyPipeline.cpp" />
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3OpenCL\RigidBody\b3Solver.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="D:\workspace\cpp\BulletPhysics\bullet3\ZERO_CHECK.vcxproj">
-      <Project>{75DCF03A-5C4D-3C1D-B2A8-EB0F53CF46F8}</Project>
+    <ProjectReference Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\ZERO_CHECK.vcxproj">
+      <Project>{03D331CE-BE03-32D8-8241-72342F472348}</Project>
       <Name>ZERO_CHECK</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>

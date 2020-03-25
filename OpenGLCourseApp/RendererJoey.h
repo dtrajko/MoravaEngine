@@ -14,9 +14,7 @@ class RendererJoey : public RendererBasic
 {
 
 public:
-
 	RendererJoey();
-
 	virtual void Init() override;
 	void SetGeometry();
 	virtual void SetUniforms() override;
@@ -36,7 +34,7 @@ public:
 
 	void RenderPass();
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
-	~RendererJoey();
+	virtual ~RendererJoey() override;
 
 private:
 	unsigned int m_HDRTexture;

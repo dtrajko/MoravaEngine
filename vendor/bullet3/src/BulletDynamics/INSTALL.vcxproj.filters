@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="D:\workspace\cpp\BulletPhysics\bullet3\CMakeFiles\556dd07bcdcfd40304bdc2598fe37821\INSTALL_force.rule">
+    <CustomBuild Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\CMakeFiles\5609a7ca02b41785e3b969f57b2dd309\INSTALL_force.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{4320E407-7998-34D5-8130-0898B4921357}</UniqueIdentifier>
+      <UniqueIdentifier>{66CA157C-8D61-3110-8679-7E2890596355}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

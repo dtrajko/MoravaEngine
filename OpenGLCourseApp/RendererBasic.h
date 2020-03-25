@@ -25,7 +25,7 @@ public:
 	void EnableCulling();
 	void DisableCulling();
 	void Cleanup();
-	~RendererBasic();
+	virtual ~RendererBasic();
 
 protected:
 	std::map<std::string, Shader*> shaders;

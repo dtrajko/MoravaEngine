@@ -1,117 +1,117 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvh.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvhBroadphase.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvhBroadphase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3OverlappingPairCache.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3OverlappingPairCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3ConvexUtility.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3ConvexUtility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3CpuNarrowPhase.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3CpuNarrowPhase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3BroadphaseCallback.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3BroadphaseCallback.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvh.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvhBroadphase.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3DynamicBvhBroadphase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3OverlappingPair.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3OverlappingPair.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3OverlappingPairCache.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\BroadPhaseCollision\b3OverlappingPairCache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\BroadPhaseCollision\shared\b3Aabb.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\BroadPhaseCollision\shared\b3Aabb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3BvhSubtreeInfoData.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3BvhSubtreeInfoData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3BvhTraversal.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3BvhTraversal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ClipFaces.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ClipFaces.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3Collidable.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3Collidable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3Contact4Data.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3Contact4Data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ContactConvexConvexSAT.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ContactConvexConvexSAT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ContactSphereSphere.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ContactSphereSphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ConvexPolyhedronData.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ConvexPolyhedronData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3FindConcaveSatAxis.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3FindConcaveSatAxis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3FindSeparatingAxis.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3FindSeparatingAxis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3MprPenetration.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3MprPenetration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3NewContactReduction.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3NewContactReduction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3QuantizedBvhNodeData.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3QuantizedBvhNodeData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ReduceContacts.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3ReduceContacts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3RigidBodyData.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3RigidBodyData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3UpdateAabbs.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\shared\b3UpdateAabbs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3Config.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3Config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3Contact4.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3Contact4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3ConvexUtility.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3ConvexUtility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3CpuNarrowPhase.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3CpuNarrowPhase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3RaycastInfo.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3RaycastInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3RigidBodyCL.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\NarrowPhaseCollision\b3RigidBodyCL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Collision\CMakeLists.txt" />
+    <CustomBuild Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Collision\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{5B036173-8662-3EBC-B643-166475C9EA70}</UniqueIdentifier>
+      <UniqueIdentifier>{B222B39C-B3F8-3901-A01D-591BAB7B173C}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{419BE8E1-5701-330B-A31D-67FAF978A6BE}</UniqueIdentifier>
+      <UniqueIdentifier>{D3F1056B-D561-3525-8DE4-E94DD80F658E}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

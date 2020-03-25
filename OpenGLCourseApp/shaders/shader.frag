@@ -3,6 +3,8 @@
 const int MAX_POINT_LIGHTS = 3;
 const int MAX_SPOT_LIGHTS = 3;
 
+const float dirLightShadowIntensity = 0.6;
+
 struct Light
 {
 	vec3 color;
@@ -186,6 +188,7 @@ vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
 vec4 CalcDirectionalLight()
 {
 	float shadowFactor = CalcDirectionalShadowFactor(directionalLight);
+	shadowFactor *= dirLightShadowIntensity;
 	return CalcLightByDirection(directionalLight.base, directionalLight.direction, shadowFactor);
 }
 

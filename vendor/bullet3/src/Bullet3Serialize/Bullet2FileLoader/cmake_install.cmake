@@ -1,4 +1,4 @@
-# Install script for directory: D:/workspace/cpp/BulletPhysics/bullet3/src/Bullet3Serialize/Bullet2FileLoader
+# Install script for directory: D:/workspace/cpp/OpenGLCourseApp/vendor/bullet3/src/Bullet3Serialize/Bullet2FileLoader
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

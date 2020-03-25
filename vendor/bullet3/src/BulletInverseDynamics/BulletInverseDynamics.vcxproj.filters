@@ -1,63 +1,63 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\IDMath.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\IDMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\MultiBodyTree.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\MultiBodyTree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeInitCache.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeInitCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeImpl.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeImpl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\IDConfig.hpp">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\IDConfig.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\IDConfigEigen.hpp">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\IDConfigEigen.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\IDMath.hpp">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\IDMath.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\IDConfigBuiltin.hpp">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\IDConfigBuiltin.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\IDErrorMessages.hpp">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\IDErrorMessages.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\MultiBodyTree.hpp">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\MultiBodyTree.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\details\IDEigenInterface.hpp">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\details\IDEigenInterface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\details\IDMatVec.hpp">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\details\IDMatVec.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\details\IDLinearMathInterface.hpp">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\details\IDLinearMathInterface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeImpl.hpp">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeImpl.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeInitCache.hpp">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\details\MultiBodyTreeInitCache.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="D:\workspace\cpp\BulletPhysics\bullet3\src\BulletInverseDynamics\CMakeLists.txt" />
+    <CustomBuild Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\BulletInverseDynamics\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{5B036173-8662-3EBC-B643-166475C9EA70}</UniqueIdentifier>
+      <UniqueIdentifier>{B222B39C-B3F8-3901-A01D-591BAB7B173C}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{419BE8E1-5701-330B-A31D-67FAF978A6BE}</UniqueIdentifier>
+      <UniqueIdentifier>{D3F1056B-D561-3525-8DE4-E94DD80F658E}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

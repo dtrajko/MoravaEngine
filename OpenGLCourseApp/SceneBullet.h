@@ -13,19 +13,22 @@ public:
 	virtual void Update(float timestep) override;
 	virtual void Render(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
-	~SceneBullet();
+	virtual ~SceneBullet() override;
 
 private:
-	void SetupBullet();
+	void BulletSetup();
+	void BulletSimulation();
+	void BulletCleanup();
 	virtual void SetSkybox() override;
 	virtual void SetTextures() override;
 	virtual void SetupModels() override;
 
 private:
-	btDefaultCollisionConfiguration* collisionConfiguration;
-	btCollisionDispatcher* dispatcher;
-	btBroadphaseInterface* overlappingPairCache;
-	btSequentialImpulseConstraintSolver* solver;
 	btDiscreteDynamicsWorld* dynamicsWorld;
+	btAlignedObjectArray<btCollisionShape*> collisionShapes;
+	btSequentialImpulseConstraintSolver* solver;
+	btBroadphaseInterface* overlappingPairCache;
+	btCollisionDispatcher* dispatcher;
+	btDefaultCollisionConfiguration* collisionConfiguration;
 
 };

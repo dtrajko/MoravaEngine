@@ -1,4 +1,4 @@
-# Install script for directory: D:/workspace/cpp/BulletPhysics/bullet3/src/BulletSoftBody
+# Install script for directory: D:/workspace/cpp/OpenGLCourseApp/vendor/bullet3/src/BulletSoftBody
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

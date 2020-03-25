@@ -1,78 +1,78 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\b3CpuRigidBodyPipeline.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\b3CpuRigidBodyPipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3FixedConstraint.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3FixedConstraint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Generic6DofConstraint.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Generic6DofConstraint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3PgsJacobiSolver.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3PgsJacobiSolver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Point2PointConstraint.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Point2PointConstraint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3TypedConstraint.cpp">
+    <ClCompile Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3TypedConstraint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\b3CpuRigidBodyPipeline.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\b3CpuRigidBodyPipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3ContactSolverInfo.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3ContactSolverInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3FixedConstraint.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3FixedConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Generic6DofConstraint.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Generic6DofConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3JacobianEntry.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3JacobianEntry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3PgsJacobiSolver.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3PgsJacobiSolver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Point2PointConstraint.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3Point2PointConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3SolverBody.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3SolverBody.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3SolverConstraint.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3SolverConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3TypedConstraint.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\ConstraintSolver\b3TypedConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\shared\b3ContactConstraint4.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\shared\b3ContactConstraint4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\shared\b3ConvertConstraint4.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\shared\b3ConvertConstraint4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\shared\b3Inertia.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\shared\b3Inertia.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\shared\b3IntegrateTransforms.h">
+    <ClInclude Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\shared\b3IntegrateTransforms.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="D:\workspace\cpp\BulletPhysics\bullet3\src\Bullet3Dynamics\CMakeLists.txt" />
+    <CustomBuild Include="D:\workspace\cpp\OpenGLCourseApp\vendor\bullet3\src\Bullet3Dynamics\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{5B036173-8662-3EBC-B643-166475C9EA70}</UniqueIdentifier>
+      <UniqueIdentifier>{B222B39C-B3F8-3901-A01D-591BAB7B173C}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{419BE8E1-5701-330B-A31D-67FAF978A6BE}</UniqueIdentifier>
+      <UniqueIdentifier>{D3F1056B-D561-3525-8DE4-E94DD80F658E}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
