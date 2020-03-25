@@ -39,10 +39,21 @@ SceneBullet::SceneBullet()
 	sceneSettings.waterHeight = 6.0f; // 1.0f 5.0f
 	sceneSettings.waterWaveSpeed = 0.1f;
 
+	SetupBullet();
 	SetLightManager();
 	SetSkybox();
 	SetTextures();
 	SetupModels();
+}
+
+void SceneBullet::SetupBullet()
+{
+	// collisionConfiguration = new btDefaultCollisionConfiguration();
+	// dispatcher = new btCollisionDispatcher(collisionConfiguration);
+	// overlappingPairCache = new btDbvtBroadphase();
+	// solver = new btSequentialImpulseConstraintSolver;
+	// dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+	// dynamicsWorld->setGravity(btVector3(0, -10, 0));
 }
 
 void SceneBullet::SetSkybox()
