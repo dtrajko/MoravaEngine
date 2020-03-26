@@ -31,4 +31,7 @@ private:
 	btCollisionDispatcher* dispatcher;
 	btDefaultCollisionConfiguration* collisionConfiguration;
 
+	int sphereCount = 20;
+	int gravityIntensity = -1;
+
 };
