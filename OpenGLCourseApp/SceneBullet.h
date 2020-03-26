@@ -17,7 +17,7 @@ public:
 
 private:
 	void BulletSetup();
-	void BulletSimulation();
+	void BulletSimulation(float timestep);
 	void BulletCleanup();
 	virtual void SetSkybox() override;
 	virtual void SetTextures() override;

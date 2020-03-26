@@ -15,14 +15,14 @@ SceneBullet::SceneBullet()
 	sceneSettings.enableWaterEffects = false;
 	sceneSettings.enableSkybox       = true;
 	sceneSettings.enableNormalMaps   = true;
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 3.0f, 15.0f);
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 20.0f, 40.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 5.0f;
 	sceneSettings.nearPlane = 0.01f;
 	sceneSettings.farPlane = 400.0f;
 	sceneSettings.ambientIntensity = 0.2f;
 	sceneSettings.diffuseIntensity = 0.8f;
-	sceneSettings.lightDirection = glm::vec3(2.0f, -10.0f, 2.0f);
+	sceneSettings.lightDirection = glm::vec3(0.05f, -30.0f, 0.05f);
 	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
 	sceneSettings.pLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
 	sceneSettings.pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
@@ -62,95 +62,93 @@ void SceneBullet::BulletSetup()
 
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 
-	dynamicsWorld->setGravity(btVector3(0, -10, 0));
+	dynamicsWorld->setGravity(btVector3(0, -5, 0));
 
-	// create a few basic rigid bodies
-
-	// the ground is a cube of side 100 at position y = -56.
-	// the sphere will hit it at y = -6, with center at -5
 	{
-		btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
-
+		btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(10.), btScalar(10.), btScalar(10.)));
 		collisionShapes.push_back(groundShape);
-
 		btTransform groundTransform;
 		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(0, -56, 0));
-
+		groundTransform.setOrigin(btVector3(0, 0, 0));
 		btScalar mass(0.);
-
 		//rigidbody is dynamic if and only if mass is non zero, otherwise static
 		bool isDynamic = (mass != 0.f);
-
 		btVector3 localInertia(0, 0, 0);
 		if (isDynamic)
 			groundShape->calculateLocalInertia(mass, localInertia);
-
 		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
 		btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
 		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
 		btRigidBody* body = new btRigidBody(rbInfo);
-
 		//add the body to the dynamics world
 		dynamicsWorld->addRigidBody(body);
 	}
 
 	{
-		//create a dynamic rigidbody
-
-		//btCollisionShape* colShape = new btBoxShape(btVector3(1,1,1));
+		// Sphere 1 create a dynamic rigidbody
 		btCollisionShape* colShape = new btSphereShape(btScalar(1.));
 		collisionShapes.push_back(colShape);
-
 		/// Create Dynamic Objects
 		btTransform startTransform;
 		startTransform.setIdentity();
-
-		btScalar mass(1.f);
-
+		btScalar mass(5.0f);
 		//rigidbody is dynamic if and only if mass is non zero, otherwise static
 		bool isDynamic = (mass != 0.f);
-
 		btVector3 localInertia(0, 0, 0);
 		if (isDynamic)
 			colShape->calculateLocalInertia(mass, localInertia);
-
-		startTransform.setOrigin(btVector3(2, 10, 0));
-
+		startTransform.setOrigin(btVector3(0, 40, 0));
 		//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
 		btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
 		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
 		btRigidBody* body = new btRigidBody(rbInfo);
+		dynamicsWorld->addRigidBody(body);
+	}
 
+	{
+		// Sphere 2 create a dynamic rigidbody
+		btCollisionShape* colShape = new btSphereShape(btScalar(2.));
+		collisionShapes.push_back(colShape);
+		/// Create Dynamic Objects
+		btTransform startTransform;
+		startTransform.setIdentity();
+		btScalar mass(4.0f);
+		//rigidbody is dynamic if and only if mass is non zero, otherwise static
+		bool isDynamic = (mass != 0.f);
+		btVector3 localInertia(0, 0, 0);
+		if (isDynamic)
+			colShape->calculateLocalInertia(mass, localInertia);
+		startTransform.setOrigin(btVector3(-0.5, 25, -0.5));
+		//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
+		btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
+		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
+		btRigidBody* body = new btRigidBody(rbInfo);
 		dynamicsWorld->addRigidBody(body);
 	}
 
 	printf("Bullet Setup complete.\n");
 }
 
-void SceneBullet::BulletSimulation()
+void SceneBullet::BulletSimulation(float timestep)
 {
-	for (int i = 0; i < 150; i++)
-	{
-		dynamicsWorld->stepSimulation(1.f / 60.f, 10);
+	dynamicsWorld->stepSimulation(timestep * 0.001f, 10);
 
-		//print positions of all objects
-		for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
+	//print positions of all objects
+	for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
+	{
+		btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[j];
+		btRigidBody* body = btRigidBody::upcast(obj);
+		btTransform trans;
+		if (body && body->getMotionState())
 		{
-			btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[j];
-			btRigidBody* body = btRigidBody::upcast(obj);
-			btTransform trans;
-			if (body && body->getMotionState())
-			{
-				body->getMotionState()->getWorldTransform(trans);
-			}
-			else
-			{
-				trans = obj->getWorldTransform();
-			}
-			printf("Bullet Simulation running: ");
-			printf("world pos object %d = %f,%f,%f\r", j, float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
+			body->getMotionState()->getWorldTransform(trans);
 		}
+		else
+		{
+			trans = obj->getWorldTransform();
+		}
+		printf("Bullet Simulation running: ");
+		printf("world pos object %d = %f,%f,%f\r", j, float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
 	}
 }
 
@@ -214,7 +212,8 @@ void SceneBullet::SetTextures()
 
 void SceneBullet::SetupModels()
 {
-	SphereJoey* sphere = new SphereJoey();
+	Sphere* sphere = new Sphere();
+	sphere->Create();
 	meshes.insert(std::make_pair("sphere", sphere));
 }
 
@@ -226,7 +225,7 @@ void SceneBullet::Update(float timestep)
 
 	m_LightManager->directionalLight.SetDirection(lightDirection);
 
-	BulletSimulation();
+	BulletSimulation(timestep);
 }
 
 void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
@@ -234,29 +233,87 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 {
 	glm::mat4 model;
 
-	/* Cube */
+	btCollisionObject* sphereObj1 = dynamicsWorld->getCollisionObjectArray()[1];
+	btRigidBody* sphereRB1 = btRigidBody::upcast(sphereObj1);
+	btTransform sphereTrans1;
+	if (sphereRB1 && sphereRB1->getMotionState())
+	{
+		sphereRB1->getMotionState()->getWorldTransform(sphereTrans1);
+	}
+	else
+	{
+		sphereTrans1 = sphereObj1->getWorldTransform();
+	}
+
+	btCollisionObject* sphereObj2 = dynamicsWorld->getCollisionObjectArray()[2];
+	btRigidBody* sphereRB2 = btRigidBody::upcast(sphereObj2);
+	btTransform sphereTrans2;
+	if (sphereRB2 && sphereRB2->getMotionState())
+	{
+		sphereRB2->getMotionState()->getWorldTransform(sphereTrans2);
+	}
+	else
+	{
+		sphereTrans2 = sphereObj2->getWorldTransform();
+	}
+
+	/* Sphere 1 */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::translate(model, glm::vec3(
+		float(sphereTrans1.getOrigin().getX()),
+		float(sphereTrans1.getOrigin().getY()),
+		float(sphereTrans1.getOrigin().getZ())
+	));
+	model = glm::rotate(model, sphereTrans1.getRotation().getX(), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, sphereTrans1.getRotation().getY(), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, sphereTrans1.getRotation().getZ(), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	textures["pyramid"]->Bind(textureSlots["diffuse"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["cube"]->Render();
+	meshes["sphere"]->Render();
+
+	/* Sphere 2 */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(
+		float(sphereTrans2.getOrigin().getX()),
+		float(sphereTrans2.getOrigin().getY()),
+		float(sphereTrans2.getOrigin().getZ())
+		));
+	model = glm::rotate(model, sphereTrans2.getRotation().getX(), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, sphereTrans2.getRotation().getY(), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, sphereTrans2.getRotation().getZ(), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(2.0f));
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	textures["pyramid"]->Bind(textureSlots["diffuse"]);
+	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	meshes["sphere"]->Render();
 
 	if (passType == "main")
 	{
-		/* Plane */
+		/* Cube */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(20.0f, 20.0f, 20.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["pyramid"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-		meshes["quadLarge"]->Render();
+		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		meshes["cube"]->Render();
+
+		/* Plane */
+		// model = glm::mat4(1.0f);
+		// model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		// model = glm::scale(model, glm::vec3(1.0f));
+		// glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+		// textures["pyramid"]->Bind(textureSlots["diffuse"]);
+		// textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+		// meshes["quadLarge"]->Render();
 	}
 }
 
