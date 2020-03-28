@@ -22,6 +22,7 @@ private:
 	virtual void SetSkybox() override;
 	virtual void SetTextures() override;
 	virtual void SetupModels() override;
+	void Fire();
 
 private:
 	btDiscreteDynamicsWorld* dynamicsWorld;
@@ -33,5 +34,8 @@ private:
 
 	int sphereCount = 20;
 	int gravityIntensity = -1;
+
+	float m_LastTimestep = 0.0f;
+	float m_FireCooldown = 0.2f;
 
 };

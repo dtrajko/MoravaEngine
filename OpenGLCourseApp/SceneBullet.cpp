@@ -127,8 +127,8 @@ void SceneBullet::BulletSimulation(float timestep)
 		{
 			trans = obj->getWorldTransform();
 		}
-		printf("Bullet Simulation running: ");
-		printf("world pos object %d = %f,%f,%f\r", j, float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
+		// printf("Bullet Simulation running: ");
+		// printf("world pos object %d = %f,%f,%f\r", j, float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
 	}
 }
 
@@ -197,8 +197,22 @@ void SceneBullet::SetupModels()
 	meshes.insert(std::make_pair("sphere", sphere));
 }
 
+void SceneBullet::Fire()
+{
+	printf("SceneBullet::Fire: DUMM!\n");
+}
+
 void SceneBullet::Update(float timestep, Window& mainWindow)
 {
+	if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_LEFT])
+	{
+		if (timestep - m_LastTimestep > m_FireCooldown)
+		{
+			Fire();
+			m_LastTimestep = timestep;
+		}
+	}
+
 	glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();
 
 	ImGui::SliderFloat3("Directional Light Direction", glm::value_ptr(lightDirection), -40.0f, 40.0f);
