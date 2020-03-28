@@ -167,7 +167,7 @@ void SceneJoey::SetupModels()
 	models.insert(std::make_pair("sfHelmet", sfHelmet));
 }
 
-void SceneJoey::Update(float timestep)
+void SceneJoey::Update(float timestep, Window& mainWindow)
 {
 	m_CameraPosition = m_Camera->GetPosition();
 

@@ -6,10 +6,15 @@
 Window::Window()
 	: Window(1280, 720)
 {
+	xChange = 0.0f;
+	yChange = 0.0f;
 }
 
 Window::Window(GLint windowWidth, GLint windowHeight)
 {
+	xChange = 0.0f;
+	yChange = 0.0f;
+
 	width = windowWidth;
 	height = windowHeight;
 

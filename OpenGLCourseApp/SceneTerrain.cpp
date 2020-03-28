@@ -68,7 +68,7 @@ void SceneTerrain::SetupModels()
 	meshes.insert(std::make_pair("terrain", mesh));
 }
 
-void SceneTerrain::Update(float timestep)
+void SceneTerrain::Update(float timestep, Window& mainWindow)
 {
 	ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, -20.0f, 100.0f);
 	ImGui::SliderFloat3("Terrain scale", glm::value_ptr(m_TerrainScale), -5.0f, 5.0f);

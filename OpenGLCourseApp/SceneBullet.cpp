@@ -197,7 +197,7 @@ void SceneBullet::SetupModels()
 	meshes.insert(std::make_pair("sphere", sphere));
 }
 
-void SceneBullet::Update(float timestep)
+void SceneBullet::Update(float timestep, Window& mainWindow)
 {
 	glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();
 

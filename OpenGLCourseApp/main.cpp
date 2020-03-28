@@ -124,7 +124,7 @@ int main()
 
 		ImGuiWrapper::Begin();
 
-		scene->Update(now);
+		scene->Update(now, mainWindow);
 
 		renderer->Render(deltaTime, mainWindow, scene, projectionMatrix);
 

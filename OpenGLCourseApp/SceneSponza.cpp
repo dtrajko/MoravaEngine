@@ -63,7 +63,7 @@ void SceneSponza::SetupModels()
 	models.insert(std::make_pair("sponza", sponza));
 }
 
-void SceneSponza::Update(float timestep)
+void SceneSponza::Update(float timestep, Window& mainWindow)
 {
 	// Shadow rotation
 	glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();

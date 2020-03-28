@@ -130,7 +130,7 @@ void ScenePBR::SetupModels()
 	}
 }
 
-void ScenePBR::Update(float timestep)
+void ScenePBR::Update(float timestep, Window& mainWindow)
 {
 	m_CameraPosition = m_Camera->GetPosition();
 
