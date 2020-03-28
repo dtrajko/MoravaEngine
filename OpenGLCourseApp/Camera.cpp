@@ -79,7 +79,7 @@ void Camera::MouseControl(bool* buttons, GLfloat xChange, GLfloat yChange)
 
 void Camera::MouseScrollControl(bool* keys, GLfloat deltaTime, float xOffset, float yOffset)
 {
-	if (abs(yOffset) < 0.1f)
+	if (abs(yOffset) < 0.1f || abs(yOffset) > 10.0f)
 		return;
 
 	GLfloat velocity = m_MoveSpeed * yOffset;

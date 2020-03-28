@@ -114,7 +114,7 @@ int main()
 
 		scene->GetCamera()->KeyControl(mainWindow.getKeys(), deltaTime);
 		scene->GetCamera()->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
-		// scene->GetCamera()->MouseScrollControl(mainWindow.getKeys(), deltaTime, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
+		scene->GetCamera()->MouseScrollControl(mainWindow.getKeys(), deltaTime, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
 
 		if (mainWindow.getKeys()[GLFW_KEY_F])
 		{
