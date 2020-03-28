@@ -32,10 +32,13 @@ private:
 	btCollisionDispatcher* dispatcher;
 	btDefaultCollisionConfiguration* collisionConfiguration;
 
-	int sphereCount = 20;
+	int m_SphereCount = 0;
 	int gravityIntensity = -1;
 
 	float m_LastTimestep = 0.0f;
 	float m_FireCooldown = 0.2f;
+	int m_SpheresOffset = 0;
+
+	float m_Bounciness = 0.6f;
 
 };
