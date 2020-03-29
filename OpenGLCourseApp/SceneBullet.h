@@ -13,6 +13,7 @@ public:
 	virtual void Update(float timestep, Window& mainWindow) override;
 	virtual void Render(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
+	virtual void SetLightManager() override;
 	virtual ~SceneBullet() override;
 
 private:
@@ -43,5 +44,7 @@ private:
 	float m_Bounciness = 0.6f;
 	float m_FireIntensity = 50.0f;
 	bool m_FireEnabled = true;
+
+	btRigidBody* m_LatestBulletBody;
 
 };

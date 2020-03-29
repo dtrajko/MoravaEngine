@@ -10,7 +10,7 @@ SceneBullet::SceneBullet()
 {
 	sceneSettings.enableShadows      = true;
 	sceneSettings.enableOmniShadows  = false;
-	sceneSettings.enablePointLights  = false;
+	sceneSettings.enablePointLights  = true;
 	sceneSettings.enableSpotLights   = false;
 	sceneSettings.enableWaterEffects = false;
 	sceneSettings.enableSkybox       = true;
@@ -21,10 +21,10 @@ SceneBullet::SceneBullet()
 	sceneSettings.nearPlane = 0.01f;
 	sceneSettings.farPlane = 400.0f;
 	sceneSettings.ambientIntensity = 0.2f;
-	sceneSettings.diffuseIntensity = 0.8f;
+	sceneSettings.diffuseIntensity = 0.4f;
 	sceneSettings.lightDirection = glm::vec3(0.05f, -0.9f, 0.05f);
 	sceneSettings.lightProjectionMatrix = glm::ortho(-60.0f, 60.0f, -60.0f, 60.0f, 0.1f, 60.0f);
-	sceneSettings.pLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
+	sceneSettings.pLight_0_color = glm::vec3(0.8f, 0.8f, 0.6f);
 	sceneSettings.pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
 	sceneSettings.pLight_0_diffuseIntensity = 2.0f;
 	sceneSettings.pLight_1_color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -44,6 +44,14 @@ SceneBullet::SceneBullet()
 	SetSkybox();
 	SetTextures();
 	SetupModels();
+}
+
+void SceneBullet::SetLightManager()
+{
+	Scene::SetLightManager();
+
+	m_LightManager->pointLights[0].SetAmbientIntensity(3.0f);
+	m_LightManager->pointLights[0].SetDiffuseIntensity(1.0f);
 }
 
 void SceneBullet::SetSkybox()
@@ -291,15 +299,14 @@ void SceneBullet::Fire()
 	//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
 	btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
-	btRigidBody* body = new btRigidBody(rbInfo);
-	body->setRestitution(m_Bounciness);
-	dynamicsWorld->addRigidBody(body);
+	m_LatestBulletBody = new btRigidBody(rbInfo);
+	m_LatestBulletBody->setRestitution(m_Bounciness);
+	dynamicsWorld->addRigidBody(m_LatestBulletBody);
 	m_SphereCount++;
 
 	// apply the force
 	glm::vec3 fireImpulse = m_Camera->GetDirection() * m_FireIntensity;
-	body->applyCentralImpulse(btVector3(fireImpulse.x, fireImpulse.y, fireImpulse.z));
-
+	m_LatestBulletBody->applyCentralImpulse(btVector3(fireImpulse.x, fireImpulse.y, fireImpulse.z));
 	// printf("\rSceneBullet::Fire: BOOOM! m_SphereCount: %i", m_SphereCount);
 }
 
@@ -316,7 +323,29 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 
 	glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();
 
+	if (m_LatestBulletBody != nullptr)
+	{
+		btTransform bulletTransform;
+		m_LatestBulletBody->getMotionState()->getWorldTransform(bulletTransform);
+		glm::vec3 bulletPosition = glm::vec3(
+			bulletTransform.getOrigin().getX(),
+			bulletTransform.getOrigin().getY(),
+			bulletTransform.getOrigin().getZ()
+		);
+		m_LightManager->pointLights[0].SetPosition(bulletPosition);
+	}
+
+	// Point light for sphere bullet
+	glm::vec3 PL0_Position = m_LightManager->pointLights[0].GetPosition();
+	glm::vec3 PL0_Color = m_LightManager->pointLights[0].GetColor();
+	float PL0_AmbIntensity = m_LightManager->pointLights[0].GetAmbientIntensity();
+	float PL0_DiffIntensity = m_LightManager->pointLights[0].GetDiffuseIntensity();
+
 	ImGui::SliderFloat3("Directional Light Direction", glm::value_ptr(lightDirection), -1.0f, 1.0f);
+	ImGui::ColorEdit3("PL0 Color", glm::value_ptr(PL0_Color));
+	ImGui::SliderFloat3("PL0 Position", glm::value_ptr(PL0_Position), -20.0f, 20.0f);
+	ImGui::SliderFloat("PL0 Amb Intensity", &PL0_AmbIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat("PL0 Diff Intensity", &PL0_DiffIntensity, -20.0f, 20.0f);
 	ImGui::SliderInt("Gravity Intensity", &m_GravityIntensity, -10, 10);
 	ImGui::SliderFloat("Bouncincess", &m_Bounciness, 0.0f, 2.0f);
 	ImGui::Checkbox("Fire Enabled", &m_FireEnabled);
@@ -325,6 +354,10 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 	ImGui::Text(bulletsText.c_str());
 
 	m_LightManager->directionalLight.SetDirection(lightDirection);
+
+	m_LightManager->pointLights[0].SetColor(PL0_Color);
+	m_LightManager->pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
+	m_LightManager->pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
 
 	dynamicsWorld->setGravity(btVector3(0, btScalar(m_GravityIntensity), 0));
 
@@ -449,59 +482,58 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["cube"]->Render();
 
+		/* Wall 1 */
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 10.0f, -50.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(100.0f, 20.0f, 2.0f));
+		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
+		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		meshes["cube"]->Render();
+
+		/* Wall 2 */
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 10.0f, 50.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(100.0f, 20.0f, 2.0f));
+		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
+		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		meshes["cube"]->Render();
+
+		/* Wall 3 */
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-50.0f, 10.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(2.0f, 20.0f, 100.0f));
+		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
+		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		meshes["cube"]->Render();
+
+		/* Wall */
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(50.0f, 10.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(2.0f, 20.0f, 100.0f));
+		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
+		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		meshes["cube"]->Render();
 	}
-
-	/* Wall 1 */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 10.0f, -50.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(100.0f, 20.0f, 2.0f));
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	textures["texture_chess"]->Bind(textureSlots["diffuse"]);
-	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["cube"]->Render();
-
-	/* Wall 2 */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 10.0f, 50.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(100.0f, 20.0f, 2.0f));
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	textures["texture_chess"]->Bind(textureSlots["diffuse"]);
-	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["cube"]->Render();
-
-	/* Wall 3 */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(-50.0f, 10.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(2.0f, 20.0f, 100.0f));
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	textures["texture_chess"]->Bind(textureSlots["diffuse"]);
-	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["cube"]->Render();
-
-	/* Wall */
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(50.0f, 10.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(2.0f, 20.0f, 100.0f));
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	textures["texture_chess"]->Bind(textureSlots["diffuse"]);
-	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["cube"]->Render();
 }
 
 void SceneBullet::BulletCleanup()
