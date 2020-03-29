@@ -50,7 +50,7 @@ void SceneBullet::SetLightManager()
 {
 	Scene::SetLightManager();
 
-	m_LightManager->pointLights[0].SetAmbientIntensity(3.0f);
+	m_LightManager->pointLights[0].SetAmbientIntensity(2.0f);
 	m_LightManager->pointLights[0].SetDiffuseIntensity(1.0f);
 }
 
@@ -150,22 +150,6 @@ void SceneBullet::AddBoxRigidBody(glm::vec3 position, glm::vec3 scale, float mas
 void SceneBullet::BulletSimulation(float timestep)
 {
 	dynamicsWorld->stepSimulation(timestep * 0.005f, 10);
-
-	//print positions of all objects
-	for (int j = dynamicsWorld->getNumCollisionObjects() - 1; j >= 0; j--)
-	{
-		btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[j];
-		btRigidBody* body = btRigidBody::upcast(obj);
-		btTransform trans;
-		if (body && body->getMotionState())
-		{
-			body->getMotionState()->getWorldTransform(trans);
-		}
-		else
-		{
-			trans = obj->getWorldTransform();
-		}
-	}
 }
 
 void SceneBullet::Fire()
@@ -227,20 +211,20 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 	}
 
 	// Point light for sphere bullet
-	glm::vec3 PL0_Position = m_LightManager->pointLights[0].GetPosition();
-	glm::vec3 PL0_Color = m_LightManager->pointLights[0].GetColor();
-	float PL0_AmbIntensity = m_LightManager->pointLights[0].GetAmbientIntensity();
+	glm::vec3 PL0_Position  = m_LightManager->pointLights[0].GetPosition();
+	glm::vec3 PL0_Color     = m_LightManager->pointLights[0].GetColor();
+	float PL0_AmbIntensity  = m_LightManager->pointLights[0].GetAmbientIntensity();
 	float PL0_DiffIntensity = m_LightManager->pointLights[0].GetDiffuseIntensity();
 
-	ImGui::SliderFloat3("Directional Light Direction", glm::value_ptr(lightDirection), -1.0f, 1.0f);
-	ImGui::ColorEdit3("PL0 Color", glm::value_ptr(PL0_Color));
-	ImGui::SliderFloat3("PL0 Position", glm::value_ptr(PL0_Position), -20.0f, 20.0f);
-	ImGui::SliderFloat("PL0 Amb Intensity", &PL0_AmbIntensity, -20.0f, 20.0f);
-	ImGui::SliderFloat("PL0 Diff Intensity", &PL0_DiffIntensity, -20.0f, 20.0f);
-	ImGui::SliderInt("Gravity Intensity", &m_GravityIntensity, -10, 10);
-	ImGui::SliderFloat("Bouncincess", &m_Bounciness, 0.0f, 2.0f);
-	ImGui::Checkbox("Fire Enabled", &m_FireEnabled);
-	ImGui::SliderFloat("Fire Intensity", &m_FireIntensity, 0.0f, 100.0f);
+	ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(lightDirection), -1.0f, 1.0f);
+	ImGui::ColorEdit3("PL0 Color",            glm::value_ptr(PL0_Color));
+	ImGui::SliderFloat3("PL0 Position",       glm::value_ptr(PL0_Position), -20.0f, 20.0f);
+	ImGui::SliderFloat("PL0 Amb Intensity",   &PL0_AmbIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat("PL0 Diff Intensity",  &PL0_DiffIntensity, -20.0f, 20.0f);
+	ImGui::SliderInt("Gravity Intensity",     &m_GravityIntensity, -10, 10);
+	ImGui::SliderFloat("Bouncincess",         &m_Bounciness, 0.0f, 2.0f);
+	ImGui::Checkbox("Fire Enabled",           &m_FireEnabled);
+	ImGui::SliderFloat("Fire Intensity",      &m_FireIntensity, 0.0f, 100.0f);
 	std::string bulletsText = "Bullets: " + std::to_string(m_SphereCount) + "/" + std::to_string(m_SphereCountMax);
 	ImGui::Text(bulletsText.c_str());
 
@@ -259,26 +243,11 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	glm::mat4 model;
-
-	btCollisionObject* sphereObj;
-	btRigidBody* sphereRB;
 	btTransform sphereTrans;
-
 	for (int i = 0; i < m_SphereCount; i++)
 	{
-		sphereObj = dynamicsWorld->getCollisionObjectArray()[i + m_SpheresOffset];
-		sphereRB = btRigidBody::upcast(sphereObj);
-		
-		if (sphereRB && sphereRB->getMotionState())
-		{
-			sphereRB->getMotionState()->getWorldTransform(sphereTrans);
-		}
-		else
-		{
-			sphereTrans = sphereObj->getWorldTransform();
-		}
-
 		/* Sphere bullet */
+		sphereTrans = GetCollisionObjectTransform(i + m_SpheresOffset);
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(
 			float(sphereTrans.getOrigin().getX()),
@@ -296,29 +265,16 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		meshes["sphere"]->Render();
 	}
 
-	btCollisionObject* cubeObj;
-	btRigidBody* cubeRB;
 	btTransform cubeTrans;
 
 	/* Cube 1 */
-	cubeObj = dynamicsWorld->getCollisionObjectArray()[5];
-	cubeRB = btRigidBody::upcast(cubeObj);
-
-	if (cubeRB && cubeRB->getMotionState())
-	{
-		cubeRB->getMotionState()->getWorldTransform(cubeTrans);
-	}
-	else
-	{
-		cubeTrans = cubeObj->getWorldTransform();
-	}
-
+	cubeTrans = GetCollisionObjectTransform(5);
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(
 		float(cubeTrans.getOrigin().getX()),
 		float(cubeTrans.getOrigin().getY()),
 		float(cubeTrans.getOrigin().getZ())
-		));
+	));
 	model = glm::rotate(model, cubeTrans.getRotation().getX(), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, cubeTrans.getRotation().getY(), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, cubeTrans.getRotation().getZ(), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -330,24 +286,13 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 	meshes["cube"]->Render();
 
 	/* Cube 2 */
-	cubeObj = dynamicsWorld->getCollisionObjectArray()[6];
-	cubeRB = btRigidBody::upcast(cubeObj);
-
-	if (cubeRB && cubeRB->getMotionState())
-	{
-		cubeRB->getMotionState()->getWorldTransform(cubeTrans);
-	}
-	else
-	{
-		cubeTrans = cubeObj->getWorldTransform();
-	}
-
+	cubeTrans = GetCollisionObjectTransform(6);
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(
 		float(cubeTrans.getOrigin().getX()),
 		float(cubeTrans.getOrigin().getY()),
 		float(cubeTrans.getOrigin().getZ())
-		));
+	));
 	model = glm::rotate(model, cubeTrans.getRotation().getX(), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, cubeTrans.getRotation().getY(), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, cubeTrans.getRotation().getZ(), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -363,9 +308,6 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		/* Floor */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(100.0f, 2.0f, 100.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
@@ -376,9 +318,6 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		/* Wall 1 */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 10.0f, -50.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(100.0f, 20.0f, 2.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
@@ -389,9 +328,6 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		/* Wall 2 */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 10.0f, 50.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(100.0f, 20.0f, 2.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
@@ -402,9 +338,6 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		/* Wall 3 */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-50.0f, 10.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(2.0f, 20.0f, 100.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
@@ -415,9 +348,6 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		/* Wall 4 */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(50.0f, 10.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(2.0f, 20.0f, 100.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
@@ -425,6 +355,18 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["cube"]->Render();
 	}
+}
+
+btTransform SceneBullet::GetCollisionObjectTransform(int id)
+{
+	btTransform transform;
+	btCollisionObject* collisionObject = dynamicsWorld->getCollisionObjectArray()[id];
+	btRigidBody* rigidBody = btRigidBody::upcast(collisionObject);
+	if (rigidBody && rigidBody->getMotionState())
+		rigidBody->getMotionState()->getWorldTransform(transform);
+	else
+		transform = rigidBody->getWorldTransform();
+	return transform;
 }
 
 void SceneBullet::BulletCleanup()

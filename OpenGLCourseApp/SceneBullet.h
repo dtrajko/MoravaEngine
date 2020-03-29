@@ -25,6 +25,7 @@ private:
 	virtual void SetupModels() override;
 	void Fire();
 	void AddBoxRigidBody(glm::vec3 position, glm::vec3 scale, float mass, float bounciness);
+	btTransform GetCollisionObjectTransform(int id);
 
 private:
 	btDiscreteDynamicsWorld* dynamicsWorld;
