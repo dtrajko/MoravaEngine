@@ -8,12 +8,23 @@ Texture::Texture()
 	m_Height = 0;
 	m_BitDepth = 0;
 	m_FileLocation = "";
+	m_Filter = GL_LINEAR;
 }
 
 Texture::Texture(const char* fileLoc, bool flipVert)
 	: Texture()
 {
 	m_FileLocation = fileLoc;
+	m_Filter = GL_LINEAR;
+
+	Load(flipVert);
+}
+
+Texture::Texture(const char* fileLoc, bool flipVert, GLenum filter)
+	: Texture()
+{
+	m_FileLocation = fileLoc;
+	m_Filter = filter;
 
 	Load(flipVert);
 }
@@ -57,8 +68,8 @@ bool Texture::Load(bool flipVert)
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_Filter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_Filter);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, dataFormat, GL_UNSIGNED_BYTE, m_Buffer);
 	glGenerateMipmap(GL_TEXTURE_2D);

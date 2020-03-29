@@ -33,13 +33,15 @@ private:
 	btDefaultCollisionConfiguration* collisionConfiguration;
 
 	int m_SphereCount = 0;
-	int gravityIntensity = -1;
+	int m_SphereCountMax = 100;
+	int m_GravityIntensity = -1;
 
 	float m_LastTimestep = 0.0f;
 	float m_FireCooldown = 0.2f;
 	int m_SpheresOffset = 0;
 
 	float m_Bounciness = 0.6f;
-	float m_FireForce = 50.0f;
+	float m_FireIntensity = 50.0f;
+	bool m_FireEnabled = true;
 
 };

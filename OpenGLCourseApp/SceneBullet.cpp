@@ -67,6 +67,7 @@ void SceneBullet::SetTextures()
 	textures.insert(std::make_pair("crate_normal", new Texture("Textures/crateNormal.png")));
 	textures.insert(std::make_pair("rusted_iron_diffuse", new Texture("Textures/PBR/rusted_iron/albedo.png")));
 	textures.insert(std::make_pair("rusted_iron_normal", new Texture("Textures/PBR/rusted_iron/normal.png")));
+	textures.insert(std::make_pair("texture_chess", new Texture("Textures/texture_chess.png", false, GL_NEAREST)));
 }
 
 void SceneBullet::SetupModels()
@@ -92,7 +93,7 @@ void SceneBullet::BulletSetup()
 
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 
-	dynamicsWorld->setGravity(btVector3(0, btScalar(gravityIntensity), 0));
+	dynamicsWorld->setGravity(btVector3(0, btScalar(m_GravityIntensity), 0));
 
 	{
 		btCollisionShape* groundShape;
@@ -270,6 +271,9 @@ void SceneBullet::BulletSimulation(float timestep)
 
 void SceneBullet::Fire()
 {
+	if (!m_FireEnabled) return;
+	if (m_SphereCount >= m_SphereCountMax) return;
+
 	// Sphere 1 create a dynamic rigidbody
 	btCollisionShape* colShape = new btSphereShape(btScalar(1.5));
 	collisionShapes.push_back(colShape);
@@ -293,10 +297,10 @@ void SceneBullet::Fire()
 	m_SphereCount++;
 
 	// apply the force
-	glm::vec3 fireImpulse = m_Camera->GetDirection() * m_FireForce;
+	glm::vec3 fireImpulse = m_Camera->GetDirection() * m_FireIntensity;
 	body->applyCentralImpulse(btVector3(fireImpulse.x, fireImpulse.y, fireImpulse.z));
 
-	printf("\rSceneBullet::Fire: BOOOM! m_SphereCount: %i", m_SphereCount);
+	// printf("\rSceneBullet::Fire: BOOOM! m_SphereCount: %i", m_SphereCount);
 }
 
 void SceneBullet::Update(float timestep, Window& mainWindow)
@@ -313,13 +317,16 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 	glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();
 
 	ImGui::SliderFloat3("Directional Light Direction", glm::value_ptr(lightDirection), -1.0f, 1.0f);
-	ImGui::SliderInt("Gravity Intensity", &gravityIntensity, -10, 10);
+	ImGui::SliderInt("Gravity Intensity", &m_GravityIntensity, -10, 10);
 	ImGui::SliderFloat("Bouncincess", &m_Bounciness, 0.0f, 2.0f);
-	ImGui::SliderFloat("Fire Strength", &m_FireForce, 0.0f, 100.0f);
+	ImGui::Checkbox("Fire Enabled", &m_FireEnabled);
+	ImGui::SliderFloat("Fire Intensity", &m_FireIntensity, 0.0f, 100.0f);
+	std::string bulletsText = "Bullets: " + std::to_string(m_SphereCount) + "/" + std::to_string(m_SphereCountMax);
+	ImGui::Text(bulletsText.c_str());
 
 	m_LightManager->directionalLight.SetDirection(lightDirection);
 
-	dynamicsWorld->setGravity(btVector3(0, btScalar(gravityIntensity), 0));
+	dynamicsWorld->setGravity(btVector3(0, btScalar(m_GravityIntensity), 0));
 
 	BulletSimulation(timestep);
 }
@@ -437,63 +444,64 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(100.0f, 2.0f, 100.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		textures["texture_gray"]->Bind(textureSlots["diffuse"]);
+		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["cube"]->Render();
 
-		/* Wall 1 */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 10.0f, -50.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(100.0f, 20.0f, 2.0f));
-		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		textures["texture_blue"]->Bind(textureSlots["diffuse"]);
-		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["cube"]->Render();
-
-		/* Wall 2 */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 10.0f, 50.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(100.0f, 20.0f, 2.0f));
-		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		textures["texture_blue"]->Bind(textureSlots["diffuse"]);
-		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["cube"]->Render();
-
-		/* Wall 3 */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-50.0f, 10.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(2.0f, 20.0f, 100.0f));
-		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		textures["texture_blue"]->Bind(textureSlots["diffuse"]);
-		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["cube"]->Render();
-
-		/* Wall */
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(50.0f, 10.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(2.0f, 20.0f, 100.0f));
-		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		textures["texture_blue"]->Bind(textureSlots["diffuse"]);
-		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["cube"]->Render();
 	}
+
+	/* Wall 1 */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 10.0f, -50.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(100.0f, 20.0f, 2.0f));
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	textures["texture_chess"]->Bind(textureSlots["diffuse"]);
+	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	meshes["cube"]->Render();
+
+	/* Wall 2 */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 10.0f, 50.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(100.0f, 20.0f, 2.0f));
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	textures["texture_chess"]->Bind(textureSlots["diffuse"]);
+	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	meshes["cube"]->Render();
+
+	/* Wall 3 */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-50.0f, 10.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(2.0f, 20.0f, 100.0f));
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	textures["texture_chess"]->Bind(textureSlots["diffuse"]);
+	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	meshes["cube"]->Render();
+
+	/* Wall */
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(50.0f, 10.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(2.0f, 20.0f, 100.0f));
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	textures["texture_chess"]->Bind(textureSlots["diffuse"]);
+	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	meshes["cube"]->Render();
 }
 
 void SceneBullet::BulletCleanup()
@@ -535,7 +543,7 @@ void SceneBullet::BulletCleanup()
 	//next line is optional: it will be cleared by the destructor when the array goes out of scope
 	collisionShapes.clear();
 
-	printf("\nBullet cleanup complete.\n");
+	printf("Bullet cleanup complete.\n");
 }
 
 SceneBullet::~SceneBullet()

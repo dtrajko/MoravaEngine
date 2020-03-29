@@ -80,6 +80,9 @@ void SceneCottage::SetupModels()
 
 void SceneCottage::Update(float timestep, Window& mainWindow)
 {
+	glm::vec3 dirLightDirection = m_LightManager->directionalLight.GetDirection();
+	glm::vec3 dirLightColor = m_LightManager->directionalLight.GetColor();
+
 	glm::vec3 pLightPos = sceneSettings.pLight_0_position;
 	float lightRadius = 6.0;
 	float lightAngle = timestep * sceneSettings.shadowSpeed;
@@ -97,14 +100,19 @@ void SceneCottage::Update(float timestep, Window& mainWindow)
 	float PL1_AmbIntensity  = m_LightManager->pointLights[1].GetAmbientIntensity();
 	float PL1_DiffIntensity = m_LightManager->pointLights[1].GetDiffuseIntensity();
 
-	ImGui::SliderFloat3("PL0 Position",      glm::value_ptr(PL0_Position), -20.0f, 20.0f);
-	ImGui::ColorEdit3("PL0 Color",           glm::value_ptr(PL0_Color));
-	ImGui::SliderFloat("PL0 Amb Intensity",  &PL0_AmbIntensity, -20.0f, 20.0f);
-	ImGui::SliderFloat("PL0 Diff Intensity", &PL0_DiffIntensity, -20.0f, 20.0f);
-	ImGui::SliderFloat3("PL1 Position",      glm::value_ptr(PL1_Position), -20.0f, 20.0f);
-	ImGui::ColorEdit3("PL1 Color",           glm::value_ptr(PL1_Color));
-	ImGui::SliderFloat("PL1 Amb Intensity",  &PL1_AmbIntensity, -20.0f, 20.0f);
-	ImGui::SliderFloat("PL1 Diff Intensity", &PL1_DiffIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(dirLightDirection), -1.0f, 1.0f);
+	ImGui::ColorEdit3("DirLight Color",       glm::value_ptr(dirLightColor));
+	ImGui::SliderFloat3("PL0 Position",       glm::value_ptr(PL0_Position), -20.0f, 20.0f);
+	ImGui::ColorEdit3("PL0 Color",            glm::value_ptr(PL0_Color));
+	ImGui::SliderFloat("PL0 Amb Intensity",   &PL0_AmbIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat("PL0 Diff Intensity",  &PL0_DiffIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat3("PL1 Position",       glm::value_ptr(PL1_Position), -20.0f, 20.0f);
+	ImGui::ColorEdit3("PL1 Color",            glm::value_ptr(PL1_Color));
+	ImGui::SliderFloat("PL1 Amb Intensity",   &PL1_AmbIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat("PL1 Diff Intensity",  &PL1_DiffIntensity, -20.0f, 20.0f);
+
+	m_LightManager->directionalLight.SetDirection(dirLightDirection);
+	m_LightManager->directionalLight.SetColor(dirLightColor);
 
 	m_LightManager->pointLights[0].SetPosition(PL0_Position);
 	m_LightManager->pointLights[0].SetColor(PL0_Color);
