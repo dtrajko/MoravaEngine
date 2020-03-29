@@ -225,7 +225,7 @@ void Renderer::RenderPassShadow(Scene* scene, glm::mat4 projectionMatrix)
 	shaders["directionalShadow"]->setMat4("directionalLightTransform", light->CalculateLightTransform());
 	shaders["directionalShadow"]->Validate();
 
-	EnableCulling();
+	DisableCulling();
 	std::string passType = "shadow";
 	scene->Render(projectionMatrix, passType, shaders, uniforms);
 

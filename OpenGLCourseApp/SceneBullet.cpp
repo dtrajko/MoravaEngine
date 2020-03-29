@@ -22,8 +22,8 @@ SceneBullet::SceneBullet()
 	sceneSettings.farPlane = 400.0f;
 	sceneSettings.ambientIntensity = 0.2f;
 	sceneSettings.diffuseIntensity = 0.8f;
-	sceneSettings.lightDirection = glm::vec3(0.05f, -30.0f, 0.05f);
-	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
+	sceneSettings.lightDirection = glm::vec3(0.05f, -0.9f, 0.05f);
+	sceneSettings.lightProjectionMatrix = glm::ortho(-60.0f, 60.0f, -60.0f, 60.0f, 0.1f, 60.0f);
 	sceneSettings.pLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
 	sceneSettings.pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
 	sceneSettings.pLight_0_diffuseIntensity = 2.0f;
@@ -293,11 +293,10 @@ void SceneBullet::Fire()
 	m_SphereCount++;
 
 	// apply the force
-	float force = 50.0f;
-	glm::vec3 impulse = m_Camera->GetDirection() * force;
-	body->applyCentralImpulse(btVector3(impulse.x, impulse.y, impulse.z));
+	glm::vec3 fireImpulse = m_Camera->GetDirection() * m_FireForce;
+	body->applyCentralImpulse(btVector3(fireImpulse.x, fireImpulse.y, fireImpulse.z));
 
-	printf("SceneBullet::Fire: BOOOM! m_SphereCount: %i\n", m_SphereCount);
+	printf("\rSceneBullet::Fire: BOOOM! m_SphereCount: %i", m_SphereCount);
 }
 
 void SceneBullet::Update(float timestep, Window& mainWindow)
@@ -313,9 +312,10 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 
 	glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();
 
-	ImGui::SliderFloat3("Directional Light Direction", glm::value_ptr(lightDirection), -40.0f, 40.0f);
+	ImGui::SliderFloat3("Directional Light Direction", glm::value_ptr(lightDirection), -1.0f, 1.0f);
 	ImGui::SliderInt("Gravity Intensity", &gravityIntensity, -10, 10);
 	ImGui::SliderFloat("Bouncincess", &m_Bounciness, 0.0f, 2.0f);
+	ImGui::SliderFloat("Fire Strength", &m_FireForce, 0.0f, 100.0f);
 
 	m_LightManager->directionalLight.SetDirection(lightDirection);
 
@@ -535,7 +535,7 @@ void SceneBullet::BulletCleanup()
 	//next line is optional: it will be cleared by the destructor when the array goes out of scope
 	collisionShapes.clear();
 
-	printf("Bullet cleanup complete.\n");
+	printf("\nBullet cleanup complete.\n");
 }
 
 SceneBullet::~SceneBullet()

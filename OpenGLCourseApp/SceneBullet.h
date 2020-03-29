@@ -40,5 +40,6 @@ private:
 	int m_SpheresOffset = 0;
 
 	float m_Bounciness = 0.6f;
+	float m_FireForce = 50.0f;
 
 };
