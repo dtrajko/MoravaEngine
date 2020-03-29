@@ -103,157 +103,48 @@ void SceneBullet::BulletSetup()
 
 	dynamicsWorld->setGravity(btVector3(0, btScalar(m_GravityIntensity), 0));
 
-	{
-		btCollisionShape* groundShape;
-		btTransform groundTransform;
-		btScalar mass;
-		bool isDynamic;
-		btVector3 localInertia;
-		btDefaultMotionState* myMotionState;
-		btRigidBody* body;
+	// Floor
+	AddBoxRigidBody(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 1.0f, 50.0f), 0.0f, m_Bounciness);
+	// Wall 1
+	AddBoxRigidBody(glm::vec3(0.0f, 10.0f, -50.0f), glm::vec3(50.0f, 10.0f, 1.0f), 0.0f, m_Bounciness);
+	// Wall 2
+	AddBoxRigidBody(glm::vec3(0.0f, 10.0f, 50.0f), glm::vec3(50.0f, 10.0f, 1.0f), 0.0f, m_Bounciness);
+	// Wall 3
+	AddBoxRigidBody(glm::vec3(-50.0f, 10.0f, 0.0f), glm::vec3(1.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
+	// Wall 4
+	AddBoxRigidBody(glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(1.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
+	// Cube 1
+	AddBoxRigidBody(glm::vec3(10.0f, 3.0f, 10.0f), glm::vec3(3.0f), 20.0f, 0.2f);
+	// Cube 2
+	AddBoxRigidBody(glm::vec3(-10.0f, 8.0f, -10.0f), glm::vec3(4.0f), 40.0f, 0.2f);
 
-		// Floor
-		groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(1.), btScalar(50.)));
-		collisionShapes.push_back(groundShape);
-		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(0, 0, 0));
-		mass = btScalar(0.);
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		isDynamic = (mass != 0.f);
-		localInertia = btVector3(0, 0, 0);
-		if (isDynamic)
-			groundShape->calculateLocalInertia(mass, localInertia);
-		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-		myMotionState = new btDefaultMotionState(groundTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfoF(mass, myMotionState, groundShape, localInertia);
-		body = new btRigidBody(rbInfoF);
-		body->setRestitution(m_Bounciness);
-		//add the body to the dynamics world
-		dynamicsWorld->addRigidBody(body);
-		m_SpheresOffset++;
-
-		// Wall 1
-		groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(10.), btScalar(1.)));
-		collisionShapes.push_back(groundShape);
-		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(0, 10, -50));
-		mass = btScalar(0.);
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		isDynamic = (mass != 0.f);
-		localInertia = btVector3(0, 0, 0);
-		if (isDynamic)
-			groundShape->calculateLocalInertia(mass, localInertia);
-		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-		myMotionState = new btDefaultMotionState(groundTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfoW1(mass, myMotionState, groundShape, localInertia);
-		body = new btRigidBody(rbInfoW1);
-		body->setRestitution(m_Bounciness);
-		//add the body to the dynamics world
-		dynamicsWorld->addRigidBody(body);
-		m_SpheresOffset++;
-
-		// Wall 2
-		groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(10.), btScalar(1.)));
-		collisionShapes.push_back(groundShape);
-		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(0, 10, 50));
-		mass = btScalar(0.);
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		isDynamic = (mass != 0.f);
-		localInertia = btVector3(0, 0, 0);
-		if (isDynamic)
-			groundShape->calculateLocalInertia(mass, localInertia);
-		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-		myMotionState = new btDefaultMotionState(groundTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfoW2(mass, myMotionState, groundShape, localInertia);
-		body = new btRigidBody(rbInfoW2);
-		body->setRestitution(m_Bounciness);
-		//add the body to the dynamics world
-		dynamicsWorld->addRigidBody(body);
-		m_SpheresOffset++;
-
-		// Wall 3
-		groundShape = new btBoxShape(btVector3(btScalar(1.), btScalar(10.), btScalar(50.)));
-		collisionShapes.push_back(groundShape);
-		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(-50, 10, 0));
-		mass = btScalar(0.);
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		isDynamic = (mass != 0.f);
-		localInertia = btVector3(0, 0, 0);
-		if (isDynamic)
-			groundShape->calculateLocalInertia(mass, localInertia);
-		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-		myMotionState = new btDefaultMotionState(groundTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfoW3(mass, myMotionState, groundShape, localInertia);
-		body = new btRigidBody(rbInfoW3);
-		body->setRestitution(m_Bounciness);
-		//add the body to the dynamics world
-		dynamicsWorld->addRigidBody(body);
-		m_SpheresOffset++;
-
-		// Wall 4
-		groundShape = new btBoxShape(btVector3(btScalar(1.), btScalar(10.), btScalar(50.)));
-		collisionShapes.push_back(groundShape);
-		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(50, 10, 0));
-		mass = btScalar(0.);
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		isDynamic = (mass != 0.f);
-		localInertia = btVector3(0, 0, 0);
-		if (isDynamic)
-			groundShape->calculateLocalInertia(mass, localInertia);
-		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-		myMotionState = new btDefaultMotionState(groundTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfoW4(mass, myMotionState, groundShape, localInertia);
-		body = new btRigidBody(rbInfoW4);
-		body->setRestitution(m_Bounciness);
-		//add the body to the dynamics world
-		dynamicsWorld->addRigidBody(body);
-		m_SpheresOffset++;
-
-		// Cube 1
-		groundShape = new btBoxShape(btVector3(btScalar(3.), btScalar(3.), btScalar(3.)));
-		collisionShapes.push_back(groundShape);
-		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(10, 3, 10));
-		mass = btScalar(20.);
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		isDynamic = (mass != 0.f);
-		localInertia = btVector3(0, 0, 0);
-		if (isDynamic)
-			groundShape->calculateLocalInertia(mass, localInertia);
-		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-		myMotionState = new btDefaultMotionState(groundTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfoC1(mass, myMotionState, groundShape, localInertia);
-		body = new btRigidBody(rbInfoC1);
-		body->setRestitution(0.2f);
-		//add the body to the dynamics world
-		dynamicsWorld->addRigidBody(body);
-		m_SpheresOffset++;
-
-		// Cube 2
-		groundShape = new btBoxShape(btVector3(btScalar(4.), btScalar(4.), btScalar(4.)));
-		collisionShapes.push_back(groundShape);
-		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(-10, 8, -10));
-		mass = btScalar(40.);
-		//rigidbody is dynamic if and only if mass is non zero, otherwise static
-		isDynamic = (mass != 0.f);
-		localInertia = btVector3(0, 0, 0);
-		if (isDynamic)
-			groundShape->calculateLocalInertia(mass, localInertia);
-		//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-		myMotionState = new btDefaultMotionState(groundTransform);
-		btRigidBody::btRigidBodyConstructionInfo rbInfoC2(mass, myMotionState, groundShape, localInertia);
-		body = new btRigidBody(rbInfoC2);
-		body->setRestitution(0.2f);
-		//add the body to the dynamics world
-		dynamicsWorld->addRigidBody(body);
-		m_SpheresOffset++;
-	}
+	m_SpheresOffset += 7;
 
 	printf("Bullet Setup complete.\n");
+}
+
+void SceneBullet::AddBoxRigidBody(glm::vec3 position, glm::vec3 scale, float mass, float bounciness)
+{
+	btTransform shapeTransform;
+	shapeTransform.setIdentity();
+	shapeTransform.setOrigin(btVector3(position.x, position.y, position.z));
+
+	btCollisionShape* collisionShape = new btBoxShape(btVector3(btScalar(scale.x), btScalar(scale.y), btScalar(scale.z)));
+	m_CollisionShapes.push_back(collisionShape);
+
+	btScalar bodyMass = btScalar(mass);
+	//rigidbody is dynamic if and only if mass is non zero, otherwise static
+	bool isDynamic = (mass != 0.f);
+	btVector3 localInertia = btVector3(0, 0, 0);
+	if (isDynamic)
+		collisionShape->calculateLocalInertia(mass, localInertia);
+	//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
+	btDefaultMotionState* myMotionState = new btDefaultMotionState(shapeTransform);
+	btRigidBody::btRigidBodyConstructionInfo rbInfoF(mass, myMotionState, collisionShape, localInertia);
+	btRigidBody* body = new btRigidBody(rbInfoF);
+	body->setRestitution(bounciness);
+	//add the body to the dynamics world
+	dynamicsWorld->addRigidBody(body);
 }
 
 void SceneBullet::BulletSimulation(float timestep)
@@ -284,7 +175,7 @@ void SceneBullet::Fire()
 
 	// Sphere 1 create a dynamic rigidbody
 	btCollisionShape* colShape = new btSphereShape(btScalar(1.5));
-	collisionShapes.push_back(colShape);
+	m_CollisionShapes.push_back(colShape);
 	/// Create Dynamic Objects
 	btTransform startTransform;
 	startTransform.setIdentity();
@@ -521,7 +412,7 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["cube"]->Render();
 
-		/* Wall */
+		/* Wall 4 */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(50.0f, 10.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -551,10 +442,10 @@ void SceneBullet::BulletCleanup()
 	}
 
 	//delete collision shapes
-	for (int j = 0; j < collisionShapes.size(); j++)
+	for (int j = 0; j < m_CollisionShapes.size(); j++)
 	{
-		btCollisionShape* shape = collisionShapes[j];
-		collisionShapes[j] = 0;
+		btCollisionShape* shape = m_CollisionShapes[j];
+		m_CollisionShapes[j] = 0;
 		delete shape;
 	}
 
@@ -573,7 +464,7 @@ void SceneBullet::BulletCleanup()
 	delete collisionConfiguration;
 
 	//next line is optional: it will be cleared by the destructor when the array goes out of scope
-	collisionShapes.clear();
+	m_CollisionShapes.clear();
 
 	printf("Bullet cleanup complete.\n");
 }

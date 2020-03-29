@@ -24,10 +24,11 @@ private:
 	virtual void SetTextures() override;
 	virtual void SetupModels() override;
 	void Fire();
+	void AddBoxRigidBody(glm::vec3 position, glm::vec3 scale, float mass, float bounciness);
 
 private:
 	btDiscreteDynamicsWorld* dynamicsWorld;
-	btAlignedObjectArray<btCollisionShape*> collisionShapes;
+	btAlignedObjectArray<btCollisionShape*> m_CollisionShapes;
 	btSequentialImpulseConstraintSolver* solver;
 	btBroadphaseInterface* overlappingPairCache;
 	btCollisionDispatcher* dispatcher;
