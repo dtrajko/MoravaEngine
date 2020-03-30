@@ -24,7 +24,9 @@ private:
 	virtual void SetTextures() override;
 	virtual void SetupModels() override;
 	void Fire();
-	void AddBoxRigidBody(glm::vec3 position, glm::vec3 scale, float mass, float bounciness);
+	btRigidBody* AddRigidBodyBox(glm::vec3 position, glm::vec3 scale, float mass, float bounciness);
+	btRigidBody* AddRigidBodySphere(glm::vec3 position, float scale, float mass, float bounciness);
+	btRigidBody* AddRigidBody(btCollisionShape* collisionShape, glm::vec3 position, float mass, float bounciness);
 	btTransform GetCollisionObjectTransform(int id);
 
 private:
@@ -49,5 +51,6 @@ private:
 
 	btRigidBody* m_LatestBulletBody;
 	float m_TextureMultiplier = 4.0f;
+	btRigidBody* m_CameraCollisionSphere;
 
 };

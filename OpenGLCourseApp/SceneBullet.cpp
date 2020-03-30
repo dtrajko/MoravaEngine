@@ -25,7 +25,7 @@ SceneBullet::SceneBullet()
 	sceneSettings.diffuseIntensity = 0.4f;
 	sceneSettings.lightDirection = glm::vec3(0.05f, -0.9f, 0.05f);
 	sceneSettings.lightProjectionMatrix = glm::ortho(-60.0f, 60.0f, -60.0f, 60.0f, 0.1f, 60.0f);
-	sceneSettings.pLight_0_color = glm::vec3(0.8f, 0.8f, 0.6f);
+	sceneSettings.pLight_0_color = glm::vec3(1.0f, 0.4f, 0.0f);
 	sceneSettings.pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
 	sceneSettings.pLight_0_diffuseIntensity = 2.0f;
 	sceneSettings.pLight_1_color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -74,12 +74,13 @@ void SceneBullet::SetTextures()
 	textures.insert(std::make_pair("texture_blue", new Texture("Textures/texture_blue.png")));
 	textures.insert(std::make_pair("crate_diffuse", new Texture("Textures/crate.png")));
 	textures.insert(std::make_pair("crate_normal", new Texture("Textures/crateNormal.png")));
-	textures.insert(std::make_pair("rusted_iron_diffuse", new Texture("Textures/PBR/rusted_iron/albedo.png")));
-	textures.insert(std::make_pair("rusted_iron_normal", new Texture("Textures/PBR/rusted_iron/normal.png")));
+	textures.insert(std::make_pair("silver_diffuse", new Texture("Textures/PBR/silver/albedo.png")));
+	textures.insert(std::make_pair("silver_normal", new Texture("Textures/PBR/silver/normal.png")));
 	textures.insert(std::make_pair("texture_chess", new Texture("Textures/texture_chess.png", false, GL_NEAREST)));
 	textures.insert(std::make_pair("texture_checker", new Texture("Textures/texture_checker.png", false, GL_NEAREST)));
 	textures.insert(std::make_pair("texture_wall_albedo", new Texture("Textures/PBR/wall/albedo.png", false, GL_LINEAR)));
 	textures.insert(std::make_pair("texture_wall_normal", new Texture("Textures/PBR/wall/normal.png", false, GL_LINEAR)));
+	textures.insert(std::make_pair("texture_lego", new Texture("Textures/lego.png", false, GL_LINEAR)));
 	
 
 	
@@ -120,33 +121,46 @@ void SceneBullet::BulletSetup()
 	dynamicsWorld->setGravity(btVector3(0, btScalar(m_GravityIntensity), 0));
 
 	// Floor
-	AddBoxRigidBody(glm::vec3(0.0f, 0.0f, 0.0f),     glm::vec3(50.0f, 2.0f, 50.0f), 0.0f, m_Bounciness);
+	AddRigidBodyBox(glm::vec3(  0.0f,  0.0f,   0.0f), glm::vec3(50.0f, 2.0f, 50.0f), 0.0f, m_Bounciness);
 	// Wall 1
-	AddBoxRigidBody(glm::vec3(0.0f, 10.0f, -50.0f),  glm::vec3(50.0f, 10.0f, 2.0f), 0.0f, m_Bounciness);
+	AddRigidBodyBox(glm::vec3(  0.0f, 12.0f, -52.0f), glm::vec3(50.0f, 10.0f, 2.0f), 0.0f, m_Bounciness);
 	// Wall 2
-	AddBoxRigidBody(glm::vec3(0.0f, 10.0f, 50.0f),   glm::vec3(50.0f, 10.0f, 2.0f), 0.0f, m_Bounciness);
+	AddRigidBodyBox(glm::vec3(  0.0f, 12.0f,  52.0f), glm::vec3(50.0f, 10.0f, 2.0f), 0.0f, m_Bounciness);
 	// Wall 3
-	AddBoxRigidBody(glm::vec3(-50.0f, 10.0f, 0.0f),  glm::vec3(2.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
+	AddRigidBodyBox(glm::vec3(-52.0f, 12.0f,   0.0f), glm::vec3(2.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
 	// Wall 4
-	AddBoxRigidBody(glm::vec3(50.0f, 10.0f, 0.0f),   glm::vec3(2.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
+	AddRigidBodyBox(glm::vec3( 52.0f, 12.0f,   0.0f), glm::vec3(2.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
 	// Cube 1
-	AddBoxRigidBody(glm::vec3(10.0f, 3.0f, 10.0f),   glm::vec3(3.0f), 20.0f, 0.2f);
+	AddRigidBodyBox(glm::vec3( 10.0f,  3.0f,  10.0f), glm::vec3(3.0f), 20.0f, 0.2f);
 	// Cube 2
-	AddBoxRigidBody(glm::vec3(-10.0f, 8.0f, -10.0f), glm::vec3(4.0f), 40.0f, 0.2f);
+	AddRigidBodyBox(glm::vec3(-10.0f,  8.0f, -10.0f), glm::vec3(4.0f), 40.0f, 0.2f);
+	// Camera
+	m_CameraCollisionSphere = AddRigidBodySphere(glm::vec3(0.0f), 2.0f, 2.0f, 0.0f);
 
-	m_SpheresOffset += 7;
+	m_SpheresOffset += 8;
 
 	printf("Bullet Setup complete.\n");
 }
 
-void SceneBullet::AddBoxRigidBody(glm::vec3 position, glm::vec3 scale, float mass, float bounciness)
+btRigidBody* SceneBullet::AddRigidBodyBox(glm::vec3 position, glm::vec3 scale, float mass, float bounciness)
 {
+	btCollisionShape* collisionShape = new btBoxShape(btVector3(btScalar(scale.x), btScalar(scale.y), btScalar(scale.z)));
+	return AddRigidBody(collisionShape, position, mass, bounciness);
+}
+
+btRigidBody* SceneBullet::AddRigidBodySphere(glm::vec3 position, float scale, float mass, float bounciness)
+{
+	btCollisionShape* collisionShape = new btSphereShape(btScalar(scale));
+	return AddRigidBody(collisionShape, position, mass, bounciness);
+}
+
+btRigidBody* SceneBullet::AddRigidBody(btCollisionShape* collisionShape, glm::vec3 position, float mass, float bounciness)
+{
+	m_CollisionShapes.push_back(collisionShape);
+
 	btTransform shapeTransform;
 	shapeTransform.setIdentity();
 	shapeTransform.setOrigin(btVector3(position.x, position.y, position.z));
-
-	btCollisionShape* collisionShape = new btBoxShape(btVector3(btScalar(scale.x), btScalar(scale.y), btScalar(scale.z)));
-	m_CollisionShapes.push_back(collisionShape);
 
 	btScalar bodyMass = btScalar(mass);
 	//rigidbody is dynamic if and only if mass is non zero, otherwise static
@@ -161,11 +175,8 @@ void SceneBullet::AddBoxRigidBody(glm::vec3 position, glm::vec3 scale, float mas
 	body->setRestitution(bounciness);
 	//add the body to the dynamics world
 	dynamicsWorld->addRigidBody(body);
-}
 
-void SceneBullet::BulletSimulation(float timestep)
-{
-	dynamicsWorld->stepSimulation(timestep * 0.005f, 10);
+	return body;
 }
 
 void SceneBullet::Fire()
@@ -173,36 +184,37 @@ void SceneBullet::Fire()
 	if (!m_FireEnabled) return;
 	if (m_SphereCount >= m_SphereCountMax) return;
 
-	// Sphere 1 create a dynamic rigidbody
-	btCollisionShape* colShape = new btSphereShape(btScalar(1.5));
-	m_CollisionShapes.push_back(colShape);
-	/// Create Dynamic Objects
-	btTransform startTransform;
-	startTransform.setIdentity();
-	btScalar mass(2.0f);
-	//rigidbody is dynamic if and only if mass is non zero, otherwise static
-	bool isDynamic = (mass != 0.f);
-	btVector3 localInertia(0, 0, 0);
-	if (isDynamic)
-		colShape->calculateLocalInertia(mass, localInertia);
-	glm::vec3 origin = m_Camera->GetPosition() + glm::vec3(0.0f, -1.0f, 0.0f) + m_Camera->GetFront() * 2.0f;
-	startTransform.setOrigin(btVector3(origin.x, origin.y, origin.z));
-	//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
-	btDefaultMotionState* myMotionState = new btDefaultMotionState(startTransform);
-	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
-	m_LatestBulletBody = new btRigidBody(rbInfo);
-	m_LatestBulletBody->setRestitution(m_Bounciness);
-	dynamicsWorld->addRigidBody(m_LatestBulletBody);
+	glm::vec3 position = m_Camera->GetPosition() + glm::vec3(0.0f, -1.0f, 0.0f) + m_Camera->GetFront() * 2.0f;	
+	m_LatestBulletBody = AddRigidBodySphere(position, 1.5f, 2.0f, m_Bounciness);
 	m_SphereCount++;
 
 	// apply the force
 	glm::vec3 fireImpulse = m_Camera->GetDirection() * m_FireIntensity;
 	m_LatestBulletBody->applyCentralImpulse(btVector3(fireImpulse.x, fireImpulse.y, fireImpulse.z));
-	// printf("\rSceneBullet::Fire: BOOOM! m_SphereCount: %i", m_SphereCount);
+}
+
+void SceneBullet::BulletSimulation(float timestep)
+{
+	dynamicsWorld->stepSimulation(timestep * 0.005f, 10);
 }
 
 void SceneBullet::Update(float timestep, Window& mainWindow)
 {
+	// Update camera collision sphere
+	btTransform camTransform;
+	camTransform.setIdentity();
+	camTransform.setOrigin(btVector3(m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z));
+	m_CameraCollisionSphere->setWorldTransform(camTransform);
+	m_CameraCollisionSphere->getMotionState()->setWorldTransform(camTransform);
+	m_CameraCollisionSphere->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+	m_CameraCollisionSphere->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
+	m_CameraCollisionSphere->clearForces();
+
+	// printf("Camera Collision sphere: %.2ff %.2ff %.2ff\n",
+	// 	m_CameraCollisionSphere->getWorldTransform().getOrigin().getX(),
+	// 	m_CameraCollisionSphere->getWorldTransform().getOrigin().getY(),
+	// 	m_CameraCollisionSphere->getWorldTransform().getOrigin().getZ());
+
 	if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_LEFT])
 	{
 		if (timestep - m_LastTimestep > m_FireCooldown)
@@ -275,9 +287,9 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		model = glm::rotate(model, sphereTrans.getRotation().getZ(), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(1.5f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		textures["rusted_iron_diffuse"]->Bind(textureSlots["diffuse"]);
-		textures["rusted_iron_normal"]->Bind(textureSlots["normal"]);
-		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		textures["silver_diffuse"]->Bind(textureSlots["diffuse"]);
+		textures["silver_normal"]->Bind(textureSlots["normal"]);
+		materials["shiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["sphere"]->Render();
 	}
 
@@ -326,43 +338,43 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(1.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
+		textures["texture_lego"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["block_floor"]->Render();
 
 		/* Wall 1 */
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 10.0f, -50.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 12.0f, -52.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
+		textures["texture_lego"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["block_wall_1"]->Render();
 
 		/* Wall 2 */
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 10.0f, 50.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 12.0f, 52.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
+		textures["texture_lego"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["block_wall_1"]->Render();
 
 		/* Wall 3 */
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-50.0f, 10.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(-52.0f, 12.0f, 0.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
+		textures["texture_lego"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["block_wall_2"]->Render();
 
 		/* Wall 4 */
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(50.0f, 10.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(52.0f, 12.0f, 0.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
+		textures["texture_lego"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["block_wall_2"]->Render();
