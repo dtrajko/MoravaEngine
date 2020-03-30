@@ -48,5 +48,6 @@ private:
 	bool m_FireEnabled = true;
 
 	btRigidBody* m_LatestBulletBody;
+	float m_TextureMultiplier = 4.0f;
 
 };

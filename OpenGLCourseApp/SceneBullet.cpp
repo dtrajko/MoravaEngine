@@ -2,6 +2,7 @@
 
 #include "Sphere.h"
 #include "SphereJoey.h"
+#include "Block.h"
 
 #include "ImGuiWrapper.h"
 
@@ -15,7 +16,7 @@ SceneBullet::SceneBullet()
 	sceneSettings.enableWaterEffects = false;
 	sceneSettings.enableSkybox       = true;
 	sceneSettings.enableNormalMaps   = true;
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 20.0f, 40.0f);
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 10.0f, 40.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 5.0f;
 	sceneSettings.nearPlane = 0.01f;
@@ -76,10 +77,25 @@ void SceneBullet::SetTextures()
 	textures.insert(std::make_pair("rusted_iron_diffuse", new Texture("Textures/PBR/rusted_iron/albedo.png")));
 	textures.insert(std::make_pair("rusted_iron_normal", new Texture("Textures/PBR/rusted_iron/normal.png")));
 	textures.insert(std::make_pair("texture_chess", new Texture("Textures/texture_chess.png", false, GL_NEAREST)));
+	textures.insert(std::make_pair("texture_checker", new Texture("Textures/texture_checker.png", false, GL_NEAREST)));
+	textures.insert(std::make_pair("texture_wall_albedo", new Texture("Textures/PBR/wall/albedo.png", false, GL_LINEAR)));
+	textures.insert(std::make_pair("texture_wall_normal", new Texture("Textures/PBR/wall/normal.png", false, GL_LINEAR)));
+	
+
+	
 }
 
 void SceneBullet::SetupModels()
 {
+	Block* block_floor = new Block(100.0f, 4.0f, 100.0f, m_TextureMultiplier);
+	meshes.insert(std::make_pair("block_floor", block_floor));
+
+	Block* block_wall_1 = new Block(100.0f, 20.0f, 4.0f, m_TextureMultiplier);
+	meshes.insert(std::make_pair("block_wall_1", block_wall_1));
+
+	Block* block_wall_2 = new Block(4.0f, 20.0f, 100.0f, m_TextureMultiplier);
+	meshes.insert(std::make_pair("block_wall_2", block_wall_2));
+
 	Sphere* sphere = new Sphere();
 	sphere->Create();
 	meshes.insert(std::make_pair("sphere", sphere));
@@ -104,17 +120,17 @@ void SceneBullet::BulletSetup()
 	dynamicsWorld->setGravity(btVector3(0, btScalar(m_GravityIntensity), 0));
 
 	// Floor
-	AddBoxRigidBody(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 1.0f, 50.0f), 0.0f, m_Bounciness);
+	AddBoxRigidBody(glm::vec3(0.0f, 0.0f, 0.0f),     glm::vec3(50.0f, 2.0f, 50.0f), 0.0f, m_Bounciness);
 	// Wall 1
-	AddBoxRigidBody(glm::vec3(0.0f, 10.0f, -50.0f), glm::vec3(50.0f, 10.0f, 1.0f), 0.0f, m_Bounciness);
+	AddBoxRigidBody(glm::vec3(0.0f, 10.0f, -50.0f),  glm::vec3(50.0f, 10.0f, 2.0f), 0.0f, m_Bounciness);
 	// Wall 2
-	AddBoxRigidBody(glm::vec3(0.0f, 10.0f, 50.0f), glm::vec3(50.0f, 10.0f, 1.0f), 0.0f, m_Bounciness);
+	AddBoxRigidBody(glm::vec3(0.0f, 10.0f, 50.0f),   glm::vec3(50.0f, 10.0f, 2.0f), 0.0f, m_Bounciness);
 	// Wall 3
-	AddBoxRigidBody(glm::vec3(-50.0f, 10.0f, 0.0f), glm::vec3(1.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
+	AddBoxRigidBody(glm::vec3(-50.0f, 10.0f, 0.0f),  glm::vec3(2.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
 	// Wall 4
-	AddBoxRigidBody(glm::vec3(50.0f, 10.0f, 0.0f), glm::vec3(1.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
+	AddBoxRigidBody(glm::vec3(50.0f, 10.0f, 0.0f),   glm::vec3(2.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
 	// Cube 1
-	AddBoxRigidBody(glm::vec3(10.0f, 3.0f, 10.0f), glm::vec3(3.0f), 20.0f, 0.2f);
+	AddBoxRigidBody(glm::vec3(10.0f, 3.0f, 10.0f),   glm::vec3(3.0f), 20.0f, 0.2f);
 	// Cube 2
 	AddBoxRigidBody(glm::vec3(-10.0f, 8.0f, -10.0f), glm::vec3(4.0f), 40.0f, 0.2f);
 
@@ -308,52 +324,48 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		/* Floor */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(100.0f, 2.0f, 100.0f));
+		model = glm::scale(model, glm::vec3(1.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["cube"]->Render();
+		meshes["block_floor"]->Render();
 
 		/* Wall 1 */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 10.0f, -50.0f));
-		model = glm::scale(model, glm::vec3(100.0f, 20.0f, 2.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["cube"]->Render();
+		meshes["block_wall_1"]->Render();
 
 		/* Wall 2 */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 10.0f, 50.0f));
-		model = glm::scale(model, glm::vec3(100.0f, 20.0f, 2.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["cube"]->Render();
+		meshes["block_wall_1"]->Render();
 
 		/* Wall 3 */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-50.0f, 10.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(2.0f, 20.0f, 100.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["cube"]->Render();
+		meshes["block_wall_2"]->Render();
 
 		/* Wall 4 */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(50.0f, 10.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(2.0f, 20.0f, 100.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["texture_chess"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-		meshes["cube"]->Render();
+		meshes["block_wall_2"]->Render();
 	}
 }
 

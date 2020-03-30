@@ -1,14 +1,13 @@
 #pragma once
 
+#include "Mesh.h"
 
-class Cube
+
+class Cube : public Mesh
 {
 public:
 	Cube();
-	void Render();
-	~Cube();
-
-private:
-	unsigned int m_VAO = 0;
+	virtual void Render() override;
+	virtual ~Cube() override;
 
 };
