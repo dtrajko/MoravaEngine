@@ -134,10 +134,8 @@ void SceneBullet::BulletSetup()
 	AddRigidBodyBox(glm::vec3( 10.0f,  3.0f,  10.0f), glm::vec3(3.0f), 20.0f, 0.2f);
 	// Cube 2
 	AddRigidBodyBox(glm::vec3(-10.0f,  8.0f, -10.0f), glm::vec3(4.0f), 40.0f, 0.2f);
-	// Camera
-	m_CameraCollisionSphere = AddRigidBodySphere(glm::vec3(0.0f), 2.0f, 2.0f, 0.0f);
 
-	m_SpheresOffset += 8;
+	m_SpheresOffset += 7;
 
 	printf("Bullet Setup complete.\n");
 }
@@ -200,21 +198,6 @@ void SceneBullet::BulletSimulation(float timestep)
 
 void SceneBullet::Update(float timestep, Window& mainWindow)
 {
-	// Update camera collision sphere
-	btTransform camTransform;
-	camTransform.setIdentity();
-	camTransform.setOrigin(btVector3(m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z));
-	m_CameraCollisionSphere->setWorldTransform(camTransform);
-	m_CameraCollisionSphere->getMotionState()->setWorldTransform(camTransform);
-	m_CameraCollisionSphere->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
-	m_CameraCollisionSphere->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
-	m_CameraCollisionSphere->clearForces();
-
-	// printf("Camera Collision sphere: %.2ff %.2ff %.2ff\n",
-	// 	m_CameraCollisionSphere->getWorldTransform().getOrigin().getX(),
-	// 	m_CameraCollisionSphere->getWorldTransform().getOrigin().getY(),
-	// 	m_CameraCollisionSphere->getWorldTransform().getOrigin().getZ());
-
 	if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_LEFT])
 	{
 		if (timestep - m_LastTimestep > m_FireCooldown)

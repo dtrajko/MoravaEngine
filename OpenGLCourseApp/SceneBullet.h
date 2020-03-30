@@ -51,6 +51,5 @@ private:
 
 	btRigidBody* m_LatestBulletBody;
 	float m_TextureMultiplier = 4.0f;
-	btRigidBody* m_CameraCollisionSphere;
 
 };
