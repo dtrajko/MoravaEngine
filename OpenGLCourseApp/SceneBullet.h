@@ -11,6 +11,7 @@ class SceneBullet : public Scene
 public:
 	SceneBullet();
 	virtual void Update(float timestep, Window& mainWindow) override;
+	virtual void UpdateImGui(float timestep, Window& mainWindow) override;
 	virtual void Render(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
 	virtual void SetLightManager() override;
@@ -37,17 +38,24 @@ private:
 	btCollisionDispatcher* dispatcher;
 	btDefaultCollisionConfiguration* collisionConfiguration;
 
+	int m_GravityIntensity = -5;
+
 	int m_SphereCount = 0;
 	int m_SphereCountMax = 100;
-	int m_GravityIntensity = -1;
+	int m_SpheresOffset = 0;
+	float m_Bounciness = 0.6f;
+	float m_SphereMass = 4.0f;
 
+	int m_PlankOffset = 0;
+	int m_PlankFloors = 10;
+	float m_PlankMass = 4.0f;
+	float m_PlankBounciness = 0.0f;
+
+	float m_FireIntensity = 100.0f;
+	float m_FireIntensityMax = 200.0f;
+	bool m_FireEnabled = true;
 	float m_LastTimestep = 0.0f;
 	float m_FireCooldown = 0.2f;
-	int m_SpheresOffset = 0;
-
-	float m_Bounciness = 0.6f;
-	float m_FireIntensity = 50.0f;
-	bool m_FireEnabled = true;
 
 	btRigidBody* m_LatestBulletBody;
 	float m_TextureMultiplier = 4.0f;

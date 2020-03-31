@@ -132,6 +132,10 @@ void ScenePBR::SetupModels()
 
 void ScenePBR::Update(float timestep, Window& mainWindow)
 {
+}
+
+void ScenePBR::UpdateImGui(float timestep, Window& mainWindow)
+{
 	m_CameraPosition = m_Camera->GetPosition();
 
 	ImGui::ColorEdit3("Albedo", glm::value_ptr(m_Albedo));

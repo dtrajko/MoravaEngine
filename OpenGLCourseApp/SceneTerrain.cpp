@@ -70,10 +70,13 @@ void SceneTerrain::SetupModels()
 
 void SceneTerrain::Update(float timestep, Window& mainWindow)
 {
+	m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
+}
+
+void SceneTerrain::UpdateImGui(float timestep, Window& mainWindow)
+{
 	ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, -20.0f, 100.0f);
 	ImGui::SliderFloat3("Terrain scale", glm::value_ptr(m_TerrainScale), -5.0f, 5.0f);
-
-	m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
 }
 
 void SceneTerrain::Render(glm::mat4 projectionMatrix, std::string passType,

@@ -169,6 +169,10 @@ void SceneJoey::SetupModels()
 
 void SceneJoey::Update(float timestep, Window& mainWindow)
 {
+}
+
+void SceneJoey::UpdateImGui(float timestep, Window& mainWindow)
+{
 	m_CameraPosition = m_Camera->GetPosition();
 
 	ImGui::ColorEdit3("Light Color 0", glm::value_ptr(m_LightColorsNormal[0]));

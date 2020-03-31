@@ -84,6 +84,10 @@ void SceneEiffel::SetupModels()
 
 void SceneEiffel::Update(float timestep, Window& mainWindow)
 {
+}
+
+void SceneEiffel::UpdateImGui(float timestep, Window& mainWindow)
+{
 	// Shadow rotation
 	m_LightDirection = sceneSettings.lightDirection;
 	m_LightColor = m_LightManager->directionalLight.GetColor();

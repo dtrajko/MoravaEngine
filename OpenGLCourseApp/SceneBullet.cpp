@@ -81,9 +81,7 @@ void SceneBullet::SetTextures()
 	textures.insert(std::make_pair("texture_wall_albedo", new Texture("Textures/PBR/wall/albedo.png", false, GL_LINEAR)));
 	textures.insert(std::make_pair("texture_wall_normal", new Texture("Textures/PBR/wall/normal.png", false, GL_LINEAR)));
 	textures.insert(std::make_pair("texture_lego", new Texture("Textures/lego.png", false, GL_LINEAR)));
-	
-
-	
+	textures.insert(std::make_pair("texture_plank", new Texture("Textures/texture_plank.png", false, GL_LINEAR)));
 }
 
 void SceneBullet::SetupModels()
@@ -96,6 +94,12 @@ void SceneBullet::SetupModels()
 
 	Block* block_wall_2 = new Block(4.0f, 20.0f, 100.0f, m_TextureMultiplier);
 	meshes.insert(std::make_pair("block_wall_2", block_wall_2));
+
+	Block* plank_1 = new Block(1.0f, 1.0f, 12.0f, m_TextureMultiplier);
+	meshes.insert(std::make_pair("plank_1", plank_1));
+
+	Block* plank_2 = new Block(12.0f, 1.0f, 1.0f, m_TextureMultiplier);
+	meshes.insert(std::make_pair("plank_2", plank_2));
 
 	Sphere* sphere = new Sphere();
 	sphere->Create();
@@ -131,11 +135,26 @@ void SceneBullet::BulletSetup()
 	// Wall 4
 	AddRigidBodyBox(glm::vec3( 52.0f, 12.0f,   0.0f), glm::vec3(2.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
 	// Cube 1
-	AddRigidBodyBox(glm::vec3( 10.0f,  3.0f,  10.0f), glm::vec3(3.0f), 20.0f, 0.2f);
+	AddRigidBodyBox(glm::vec3( 40.0f,  3.0f,  40.0f), glm::vec3(3.0f), 20.0f, 0.2f);
 	// Cube 2
-	AddRigidBodyBox(glm::vec3(-10.0f,  8.0f, -10.0f), glm::vec3(4.0f), 40.0f, 0.2f);
+	AddRigidBodyBox(glm::vec3(-40.0f,  8.0f, -40.0f), glm::vec3(4.0f), 40.0f, 0.2f);
 
 	m_SpheresOffset += 7;
+	m_PlankOffset = 7;
+
+	for (int i = 0; i < m_PlankFloors; i++)
+	{
+		// Plank 1
+		AddRigidBodyBox(glm::vec3(-4.0f, i * 2.0f + 0.0f,  0.0f), glm::vec3(0.5f, 0.5f, 6.0f), m_PlankMass, m_PlankBounciness);
+		// Plank 2
+		AddRigidBodyBox(glm::vec3( 4.0f, i * 2.0f + 0.0f,  0.0f), glm::vec3(0.5f, 0.5f, 6.0f), m_PlankMass, m_PlankBounciness);
+		// Plank 3
+		AddRigidBodyBox(glm::vec3( 0.0f, i * 2.0f + 1.0f, -4.0f), glm::vec3(6.0f, 0.5f, 0.5f), m_PlankMass, m_PlankBounciness);
+		// Plank 4
+		AddRigidBodyBox(glm::vec3( 0.0f, i * 2.0f + 1.0f,  4.0f), glm::vec3(6.0f, 0.5f, 0.5f), m_PlankMass, m_PlankBounciness);
+	}
+
+	m_SpheresOffset += 4 * m_PlankFloors;
 
 	printf("Bullet Setup complete.\n");
 }
@@ -183,7 +202,7 @@ void SceneBullet::Fire()
 	if (m_SphereCount >= m_SphereCountMax) return;
 
 	glm::vec3 position = m_Camera->GetPosition() + glm::vec3(0.0f, -1.0f, 0.0f) + m_Camera->GetFront() * 2.0f;	
-	m_LatestBulletBody = AddRigidBodySphere(position, 1.5f, 2.0f, m_Bounciness);
+	m_LatestBulletBody = AddRigidBodySphere(position, 1.5f, m_SphereMass, m_Bounciness);
 	m_SphereCount++;
 
 	// apply the force
@@ -207,8 +226,6 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 		}
 	}
 
-	glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();
-
 	if (m_LatestBulletBody != nullptr)
 	{
 		btTransform bulletTransform;
@@ -221,21 +238,30 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 		m_LightManager->pointLights[0].SetPosition(bulletPosition);
 	}
 
+	dynamicsWorld->setGravity(btVector3(0, btScalar(m_GravityIntensity), 0));
+
+	BulletSimulation(timestep);
+}
+
+void SceneBullet::UpdateImGui(float timestep, Window& mainWindow)
+{
+	glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();
+
 	// Point light for sphere bullet
-	glm::vec3 PL0_Position  = m_LightManager->pointLights[0].GetPosition();
-	glm::vec3 PL0_Color     = m_LightManager->pointLights[0].GetColor();
-	float PL0_AmbIntensity  = m_LightManager->pointLights[0].GetAmbientIntensity();
+	glm::vec3 PL0_Position = m_LightManager->pointLights[0].GetPosition();
+	glm::vec3 PL0_Color = m_LightManager->pointLights[0].GetColor();
+	float PL0_AmbIntensity = m_LightManager->pointLights[0].GetAmbientIntensity();
 	float PL0_DiffIntensity = m_LightManager->pointLights[0].GetDiffuseIntensity();
 
 	ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(lightDirection), -1.0f, 1.0f);
-	ImGui::ColorEdit3("PL0 Color",            glm::value_ptr(PL0_Color));
-	ImGui::SliderFloat3("PL0 Position",       glm::value_ptr(PL0_Position), -20.0f, 20.0f);
-	ImGui::SliderFloat("PL0 Amb Intensity",   &PL0_AmbIntensity, -20.0f, 20.0f);
-	ImGui::SliderFloat("PL0 Diff Intensity",  &PL0_DiffIntensity, -20.0f, 20.0f);
-	ImGui::SliderInt("Gravity Intensity",     &m_GravityIntensity, -10, 10);
-	ImGui::SliderFloat("Bouncincess",         &m_Bounciness, 0.0f, 2.0f);
-	ImGui::Checkbox("Fire Enabled",           &m_FireEnabled);
-	ImGui::SliderFloat("Fire Intensity",      &m_FireIntensity, 0.0f, 100.0f);
+	ImGui::ColorEdit3("PL0 Color", glm::value_ptr(PL0_Color));
+	ImGui::SliderFloat3("PL0 Position", glm::value_ptr(PL0_Position), -20.0f, 20.0f);
+	ImGui::SliderFloat("PL0 Amb Intensity", &PL0_AmbIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat("PL0 Diff Intensity", &PL0_DiffIntensity, -20.0f, 20.0f);
+	ImGui::SliderInt("Gravity Intensity", &m_GravityIntensity, -10, 10);
+	ImGui::SliderFloat("Bouncincess", &m_Bounciness, 0.0f, 2.0f);
+	ImGui::Checkbox("Fire Enabled", &m_FireEnabled);
+	ImGui::SliderFloat("Fire Intensity", &m_FireIntensity, 0.0f, m_FireIntensityMax);
 	std::string bulletsText = "Bullets: " + std::to_string(m_SphereCount) + "/" + std::to_string(m_SphereCountMax);
 	ImGui::Text(bulletsText.c_str());
 
@@ -244,10 +270,6 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 	m_LightManager->pointLights[0].SetColor(PL0_Color);
 	m_LightManager->pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
 	m_LightManager->pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
-
-	dynamicsWorld->setGravity(btVector3(0, btScalar(m_GravityIntensity), 0));
-
-	BulletSimulation(timestep);
 }
 
 void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
@@ -272,7 +294,7 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["silver_diffuse"]->Bind(textureSlots["diffuse"]);
 		textures["silver_normal"]->Bind(textureSlots["normal"]);
-		materials["shiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["sphere"]->Render();
 	}
 
@@ -313,6 +335,32 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 	textures["crate_normal"]->Bind(textureSlots["normal"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["cube"]->Render();
+
+	btTransform plankTrans;
+
+	for (int i = 0; i < m_PlankFloors * 4; i++)
+	{
+		/* Plank */
+		plankTrans = GetCollisionObjectTransform(m_PlankOffset + i);
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(
+			float(plankTrans.getOrigin().getX()),
+			float(plankTrans.getOrigin().getY()),
+			float(plankTrans.getOrigin().getZ())
+			));
+		model = glm::rotate(model, plankTrans.getRotation().getX(), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, plankTrans.getRotation().getY(), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, plankTrans.getRotation().getZ(), glm::vec3(0.0f, 0.0f, 1.0f));
+		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+		textures["texture_plank"]->Bind(textureSlots["diffuse"]);
+		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+		if (i % 4 == 0 || i % 4 == 1)
+			meshes["plank_1"]->Render();
+		else if (i % 4 == 2 || i % 4 == 3)
+			meshes["plank_2"]->Render();
+	}
 
 	if (passType == "main")
 	{

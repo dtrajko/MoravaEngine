@@ -33,6 +33,7 @@ Window mainWindow;
 Scene* scene;
 RendererBasic* renderer;
 
+
 enum class SceneName
 {
 	Cottage,
@@ -46,8 +47,11 @@ enum class SceneName
 
 SceneName currentScene = SceneName::Bullet;
 
-GLfloat deltaTime = 0.0f;
-GLfloat lastTime = 0.0f;
+float deltaTime = 0.0f;
+float lastTime = 0.0f;
+float lastUpdateTime = 0.0f;
+float updateInterval = 0.0416f; // 24 times per second
+bool shouldUpdate = false;
 
 
 int main()
@@ -110,7 +114,15 @@ int main()
 	{
 		GLfloat now = (GLfloat)glfwGetTime();
 		deltaTime = now - lastTime;
+		// printf("now=%.4f deltaTime=%.4f lastTime=%.4f\n", deltaTime, now, lastTime);
 		lastTime = now;
+
+		shouldUpdate = false;
+		if (now - lastUpdateTime > updateInterval)
+		{
+			shouldUpdate = true;
+			lastUpdateTime = now;
+		}
 
 		scene->GetCamera()->KeyControl(mainWindow.getKeys(), deltaTime);
 		scene->GetCamera()->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
@@ -124,7 +136,10 @@ int main()
 
 		ImGuiWrapper::Begin();
 
-		scene->Update(now, mainWindow);
+		if (shouldUpdate)
+			scene->Update(now, mainWindow);
+
+		scene->UpdateImGui(now, mainWindow);
 
 		renderer->Render(deltaTime, mainWindow, scene, projectionMatrix);
 
