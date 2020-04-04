@@ -138,6 +138,17 @@ int main()
 			mainWindow.getKeys()[GLFW_KEY_L] = false;
 		}
 
+		// Toggle wireframe mode
+		if (mainWindow.getKeys()[GLFW_KEY_R])
+		{
+			scene->SetWireframeEnabled(!scene->IsWireframeEnabled());
+		}
+
+		if (scene->IsWireframeEnabled())
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 		ImGuiWrapper::Begin();
 
 		{

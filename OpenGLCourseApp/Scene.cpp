@@ -42,6 +42,8 @@ Scene::Scene()
 	shadowMapWidth = 1024;
 	shadowMapHeight = 1024;
 
+	m_WireframeEnabled = false;
+
 	SetLightManager();
 	SetTextures();
 	SetTextureSlots();

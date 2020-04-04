@@ -94,6 +94,8 @@ public:
 	inline WaterManager* GetWaterManager() const { return m_WaterManager; };
 	inline std::map<std::string, Model*> GetModels() const { return models; };
 	inline std::map<std::string, Mesh*> GetMeshes() const { return meshes; };
+	inline void SetWireframeEnabled(bool wireframeEnabled) { m_WireframeEnabled = wireframeEnabled; };
+	inline bool IsWireframeEnabled() { return m_WireframeEnabled; };
 	virtual ~Scene();
 
 private:
@@ -130,4 +132,6 @@ private:
 
 	unsigned int shadowMapWidth;
 	unsigned int shadowMapHeight;
+
+	bool m_WireframeEnabled;
 };
