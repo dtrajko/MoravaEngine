@@ -3,8 +3,9 @@
 #include "Sphere.h"
 #include "SphereJoey.h"
 #include "Block.h"
-
 #include "ImGuiWrapper.h"
+
+#include <string>
 
 
 SceneBullet::SceneBullet()
@@ -243,7 +244,7 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 	BulletSimulation(timestep);
 }
 
-void SceneBullet::UpdateImGui(float timestep, Window& mainWindow)
+void SceneBullet::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
 {
 	glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();
 
@@ -264,6 +265,17 @@ void SceneBullet::UpdateImGui(float timestep, Window& mainWindow)
 	ImGui::SliderFloat("Fire Intensity", &m_FireIntensity, 0.0f, m_FireIntensityMax);
 	std::string bulletsText = "Bullets: " + std::to_string(m_SphereCount) + "/" + std::to_string(m_SphereCountMax);
 	ImGui::Text(bulletsText.c_str());
+
+	// print profiler results
+	ImGui::Separator();
+	ImGui::Text("Profiler results:");
+	for (auto& profilerResult : profilerResults)
+	{
+		char label[50];
+		strcpy(label, "%.2fms ");
+		strcat(label, profilerResult.first);
+		ImGui::Text(label, profilerResult.second);
+	}
 
 	m_LightManager->directionalLight.SetDirection(lightDirection);
 

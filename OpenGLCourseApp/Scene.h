@@ -77,7 +77,7 @@ class Scene
 public:
 	Scene();
 	virtual void Update(float timestep, Window& mainWindow) = 0;
-	virtual void UpdateImGui(float timestep, Window& mainWindow) = 0;
+	virtual void UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults) = 0;
 	virtual void Render(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) = 0;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,

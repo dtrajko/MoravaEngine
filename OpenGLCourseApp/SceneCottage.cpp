@@ -82,7 +82,7 @@ void SceneCottage::Update(float timestep, Window& mainWindow)
 {
 }
 
-void SceneCottage::UpdateImGui(float timestep, Window& mainWindow)
+void SceneCottage::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
 {
 	glm::vec3 dirLightDirection = m_LightManager->directionalLight.GetDirection();
 	glm::vec3 dirLightColor = m_LightManager->directionalLight.GetColor();

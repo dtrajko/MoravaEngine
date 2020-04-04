@@ -171,7 +171,7 @@ void SceneJoey::Update(float timestep, Window& mainWindow)
 {
 }
 
-void SceneJoey::UpdateImGui(float timestep, Window& mainWindow)
+void SceneJoey::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
 {
 	m_CameraPosition = m_Camera->GetPosition();
 

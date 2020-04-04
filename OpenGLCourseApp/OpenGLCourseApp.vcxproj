@@ -245,6 +245,7 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="OmniShadowMap.h" />
     <ClInclude Include="PointLight.h" />
+    <ClInclude Include="Profiler.h" />
     <ClInclude Include="Quad.h" />
     <ClInclude Include="RadianceHDR.h" />
     <ClInclude Include="Renderbuffer.h" />

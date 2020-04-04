@@ -22,6 +22,7 @@
 #include "Renderer.h"
 #include "RendererPBR.h"
 #include "RendererJoey.h"
+#include "Profiler.h"
 
 
 // Window dimensions
@@ -52,6 +53,9 @@ float lastTime = 0.0f;
 float lastUpdateTime = 0.0f;
 float updateInterval = 0.0416f; // 24 times per second
 bool shouldUpdate = false;
+
+// Profiler results
+std::map<const char*, float> profilerResults;
 
 
 int main()
@@ -136,12 +140,22 @@ int main()
 
 		ImGuiWrapper::Begin();
 
-		if (shouldUpdate)
-			scene->Update(now, mainWindow);
+		{
+			Profiler profiler("Scene::Update");
+			if (shouldUpdate)
+				scene->Update(now, mainWindow);
+			profilerResults.insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+		}
 
-		scene->UpdateImGui(now, mainWindow);
+		{
+			Profiler profiler("Renderer::Render");
+			renderer->Render(deltaTime, mainWindow, scene, projectionMatrix);
+			profilerResults.insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+		}
 
-		renderer->Render(deltaTime, mainWindow, scene, projectionMatrix);
+		scene->UpdateImGui(now, mainWindow, profilerResults);
+
+		profilerResults.clear();
 
 		ImGuiWrapper::End();
 

@@ -86,7 +86,7 @@ void SceneEiffel::Update(float timestep, Window& mainWindow)
 {
 }
 
-void SceneEiffel::UpdateImGui(float timestep, Window& mainWindow)
+void SceneEiffel::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
 {
 	// Shadow rotation
 	m_LightDirection = sceneSettings.lightDirection;
