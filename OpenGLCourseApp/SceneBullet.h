@@ -3,7 +3,7 @@
 #include "Scene.h"
 
 #include "btBulletDynamicsCommon.h"
-
+#include "BulletDebugDrawer.h"
 
 class SceneBullet : public Scene
 {
@@ -59,5 +59,9 @@ private:
 
 	btRigidBody* m_LatestBulletBody;
 	float m_TextureMultiplier = 4.0f;
+
+	std::map<const char*, float> m_ProfilerResults;
+
+	BulletDebugDrawer* m_BulletDebugDrawer;
 
 };

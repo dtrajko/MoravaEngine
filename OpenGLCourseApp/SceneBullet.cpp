@@ -4,6 +4,7 @@
 #include "SphereJoey.h"
 #include "Block.h"
 #include "ImGuiWrapper.h"
+#include "Profiler.h"
 
 #include <string>
 
@@ -123,6 +124,10 @@ void SceneBullet::BulletSetup()
 
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 
+	m_BulletDebugDrawer = new BulletDebugDrawer();
+	dynamicsWorld->setDebugDrawer(m_BulletDebugDrawer);
+	dynamicsWorld->getDebugDrawer()->setDebugMode(btIDebugDraw::DBG_DrawAabb);
+
 	dynamicsWorld->setGravity(btVector3(0, btScalar(m_GravityIntensity), 0));
 
 	// Floor
@@ -213,7 +218,8 @@ void SceneBullet::Fire()
 
 void SceneBullet::BulletSimulation(float timestep)
 {
-	dynamicsWorld->stepSimulation(timestep * 0.005f, 10);
+	dynamicsWorld->debugDrawWorld();
+	dynamicsWorld->stepSimulation(timestep, 2);
 }
 
 void SceneBullet::Update(float timestep, Window& mainWindow)
@@ -241,7 +247,11 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 
 	dynamicsWorld->setGravity(btVector3(0, btScalar(m_GravityIntensity), 0));
 
-	BulletSimulation(timestep);
+	{
+		Profiler profiler("SceneBullet::BulletSimulation");
+		BulletSimulation(timestep);
+		m_ProfilerResults.insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+	}
 }
 
 void SceneBullet::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
@@ -272,6 +282,7 @@ void SceneBullet::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 	// print profiler results
 	ImGui::Separator();
 	ImGui::Text("Profiler results:");
+	// profiler results for main.cpp
 	for (auto& profilerResult : profilerResults)
 	{
 		char label[50];
@@ -279,6 +290,15 @@ void SceneBullet::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 		strcat(label, profilerResult.first);
 		ImGui::Text(label, profilerResult.second);
 	}
+	// profiler results for SceneBullet
+	for (auto& profilerResult : m_ProfilerResults)
+	{
+		char label[50];
+		strcpy(label, "%.2fms ");
+		strcat(label, profilerResult.first);
+		ImGui::Text(label, profilerResult.second);
+	}
+	m_ProfilerResults.clear();
 
 	m_LightManager->directionalLight.SetDirection(lightDirection);
 
@@ -441,6 +461,7 @@ btTransform SceneBullet::GetCollisionObjectTransform(int id)
 
 void SceneBullet::BulletCleanup()
 {
+	delete m_BulletDebugDrawer;
 	for (int i = dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
 	{
 		btCollisionObject* obj = dynamicsWorld->getCollisionObjectArray()[i];

@@ -153,8 +153,7 @@ int main()
 
 		{
 			Profiler profiler("Scene::Update");
-			if (shouldUpdate)
-				scene->Update(now, mainWindow);
+			scene->Update(now, mainWindow);
 			profilerResults.insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 		}
 
