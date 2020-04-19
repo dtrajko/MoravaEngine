@@ -46,6 +46,9 @@ void Sphere::Create()
 	// bitangent
 	glEnableVertexAttribArray(4);
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Bitangent));
+	// bitangent
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TilingFactor));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
@@ -120,6 +123,9 @@ void Sphere::GenerateGeometry()
 			m_Vertices[vertexPointer + 12] = 0.0f;
 			m_Vertices[vertexPointer + 13] = 0.0f;
 
+			// tiling factor
+			m_Vertices[vertexPointer + 14] = 1.0f;
+
 			vertexPointer += vertexStride;
 		}
 	}
@@ -188,6 +194,11 @@ void Sphere::Clear()
 	m_IndexCount = 0;
 
 	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+	glDisableVertexAttribArray(3);
+	glDisableVertexAttribArray(4);
+	glDisableVertexAttribArray(5);
 }
 
 Sphere::~Sphere()

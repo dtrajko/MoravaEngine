@@ -43,6 +43,9 @@ void Mesh::Create(float* vertices, unsigned int* indices, unsigned int vertexCou
 	// bitangent
 	glEnableVertexAttribArray(4);
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Bitangent));
+	// tilingFactor
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TilingFactor));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
@@ -82,6 +85,7 @@ void Mesh::Clear()
 	glDisableVertexAttribArray(2);
 	glDisableVertexAttribArray(3);
 	glDisableVertexAttribArray(4);
+	glDisableVertexAttribArray(5);
 }
 
 void Mesh::CalcAverageNormals(unsigned int* indices, unsigned int indexCount, float* vertices, unsigned int vertexCount)
@@ -156,6 +160,8 @@ void Mesh::CalcTangentSpace(unsigned int* indices, unsigned int indexCount, floa
 		vertices[in0 + 11] = bitangent.x; vertices[in0 + 12] = bitangent.y; vertices[in0 + 13] = bitangent.z;
 		vertices[in1 + 11] = bitangent.x; vertices[in1 + 12] = bitangent.y; vertices[in1 + 13] = bitangent.z;
 		vertices[in2 + 11] = bitangent.x; vertices[in2 + 12] = bitangent.y; vertices[in2 + 13] = bitangent.z;
+
+		vertices[14] = 1.0f;
 	}
 }
 

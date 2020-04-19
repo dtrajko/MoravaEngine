@@ -51,6 +51,7 @@ in vec3 Normal;
 in vec3 FragPos;
 in vec4 DirectionalLightSpacePos;
 in mat3 TBN;
+in float tilingFactor;
 
 out vec4 color;
 
@@ -83,7 +84,7 @@ vec3 GetNormal()
 	vec3 normal = normalize(Normal);
 	// return normal;
 
-	normal = texture(normalMap, TexCoords).rgb;
+	normal = texture(normalMap, TexCoords * tilingFactor).rgb;
 	normal = normal * 2.0 - 1.0;
 	normal = normalize(TBN * normal);
 	return normal;
@@ -252,7 +253,7 @@ void main()
 	finalColor += CalcPointLights();
 	finalColor += CalcSpotLights();
 
-	vec4 texColor = texture(theTexture, TexCoords);
+	vec4 texColor = texture(theTexture, TexCoords * tilingFactor);
 	if(texColor.a < 0.1)
         discard;
 

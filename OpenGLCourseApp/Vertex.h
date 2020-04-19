@@ -10,4 +10,5 @@ struct Vertex
 	glm::vec3 Normal;
 	glm::vec3 Tangent;
 	glm::vec3 Bitangent;
+	float TilingFactor;
 };

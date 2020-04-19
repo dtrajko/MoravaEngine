@@ -44,8 +44,8 @@ void Terrain::GenerateTerrain()
 	printf("Generate terrain vertices...\n");
 	printf("Number of vertices: %d Number of indices: %d\n", pixelCount, indexCount);
 
-	// position   tex coords   normal       tangent      bitangent 
-	// X  Y  Z    U  V         NX  NY  NZ   TX  TY  TZ   BX  BY  BZ
+	// position   tex coords   normal       tangent      bitangent
+	// X  Y  Z    U  V         NX  NY  NZ   TX  TY  TZ   BX  BY  BZ   TF
 	int vertexPointer = 0;
 	for (unsigned int z = 0; z < hiMapHeight; z++)
 	{
@@ -74,6 +74,19 @@ void Terrain::GenerateTerrain()
 			vertices[vertexPointer + 5] = 0.0f;
 			vertices[vertexPointer + 6] = 0.0f;
 			vertices[vertexPointer + 7] = 0.0f;
+
+			// tangents
+			vertices[vertexPointer + 8] = 0.0f;
+			vertices[vertexPointer + 9] = 0.0f;
+			vertices[vertexPointer + 10] = 0.0f;
+
+			// bitangents
+			vertices[vertexPointer + 11] = 0.0f;
+			vertices[vertexPointer + 12] = 0.0f;
+			vertices[vertexPointer + 13] = 0.0f;
+
+			// tiling Factor
+			vertices[vertexPointer + 14] = 1.0f;
 
 			vertexPointer += vertexStride;
 		}

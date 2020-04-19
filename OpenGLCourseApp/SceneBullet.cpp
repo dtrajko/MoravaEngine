@@ -130,20 +130,22 @@ void SceneBullet::BulletSetup()
 
 	dynamicsWorld->setGravity(btVector3(0, btScalar(m_GravityIntensity), 0));
 
+	glm::vec3 rotation(0.0f, 0.0f, 0.0f);
+
 	// Floor
-	AddRigidBodyBox(glm::vec3(  0.0f,  0.0f,   0.0f), glm::vec3(50.0f, 2.0f, 50.0f), 0.0f, m_Bounciness);
+	AddRigidBodyBox(glm::vec3(  0.0f,  0.0f,   0.0f), rotation, glm::vec3(50.0f, 2.0f, 50.0f), 0.0f, m_Bounciness);
 	// Wall 1
-	AddRigidBodyBox(glm::vec3(  0.0f, 12.0f, -52.0f), glm::vec3(50.0f, 10.0f, 2.0f), 0.0f, m_Bounciness);
+	AddRigidBodyBox(glm::vec3(  0.0f, 12.0f, -52.0f), rotation, glm::vec3(50.0f, 10.0f, 2.0f), 0.0f, m_Bounciness);
 	// Wall 2
-	AddRigidBodyBox(glm::vec3(  0.0f, 12.0f,  52.0f), glm::vec3(50.0f, 10.0f, 2.0f), 0.0f, m_Bounciness);
+	AddRigidBodyBox(glm::vec3(  0.0f, 12.0f,  52.0f), rotation, glm::vec3(50.0f, 10.0f, 2.0f), 0.0f, m_Bounciness);
 	// Wall 3
-	AddRigidBodyBox(glm::vec3(-52.0f, 12.0f,   0.0f), glm::vec3(2.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
+	AddRigidBodyBox(glm::vec3(-52.0f, 12.0f,   0.0f), rotation, glm::vec3(2.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
 	// Wall 4
-	AddRigidBodyBox(glm::vec3( 52.0f, 12.0f,   0.0f), glm::vec3(2.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
+	AddRigidBodyBox(glm::vec3( 52.0f, 12.0f,   0.0f), rotation, glm::vec3(2.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
 	// Cube 1
-	AddRigidBodyBox(glm::vec3( 40.0f,  3.0f,  40.0f), glm::vec3(3.0f), 20.0f, 0.2f);
+	AddRigidBodyBox(glm::vec3( 40.0f,  3.0f,  40.0f), rotation, glm::vec3(3.0f), 20.0f, 0.2f);
 	// Cube 2
-	AddRigidBodyBox(glm::vec3(-40.0f,  8.0f, -40.0f), glm::vec3(4.0f), 40.0f, 0.2f);
+	AddRigidBodyBox(glm::vec3(-40.0f,  8.0f, -40.0f), rotation, glm::vec3(4.0f), 40.0f, 0.2f);
 
 	m_SpheresOffset += 7;
 	m_PlankOffset = 7;
@@ -151,13 +153,13 @@ void SceneBullet::BulletSetup()
 	for (int i = 0; i < m_PlankFloors; i++)
 	{
 		// Plank 1
-		AddRigidBodyBox(glm::vec3(-4.0f, i * 2.0f + 0.0f,  0.0f), glm::vec3(0.5f, 0.5f, 6.0f), m_PlankMass, m_PlankBounciness);
+		AddRigidBodyBox(glm::vec3(-4.0f, i * 2.0f + 0.0f,  0.0f), rotation, glm::vec3(0.5f, 0.5f, 6.0f), m_PlankMass, m_PlankBounciness);
 		// Plank 2
-		AddRigidBodyBox(glm::vec3( 4.0f, i * 2.0f + 0.0f,  0.0f), glm::vec3(0.5f, 0.5f, 6.0f), m_PlankMass, m_PlankBounciness);
+		AddRigidBodyBox(glm::vec3( 4.0f, i * 2.0f + 0.0f,  0.0f), rotation, glm::vec3(0.5f, 0.5f, 6.0f), m_PlankMass, m_PlankBounciness);
 		// Plank 3
-		AddRigidBodyBox(glm::vec3( 0.0f, i * 2.0f + 1.0f, -4.0f), glm::vec3(6.0f, 0.5f, 0.5f), m_PlankMass, m_PlankBounciness);
+		AddRigidBodyBox(glm::vec3(0.0f, i * 2.0f + 1.0f, -4.0f),  rotation, glm::vec3(6.0f, 0.5f, 0.5f), m_PlankMass, m_PlankBounciness);
 		// Plank 4
-		AddRigidBodyBox(glm::vec3( 0.0f, i * 2.0f + 1.0f,  4.0f), glm::vec3(6.0f, 0.5f, 0.5f), m_PlankMass, m_PlankBounciness);
+		AddRigidBodyBox(glm::vec3( 0.0f, i * 2.0f + 1.0f,  4.0f), rotation, glm::vec3(6.0f, 0.5f, 0.5f), m_PlankMass, m_PlankBounciness);
 	}
 
 	m_SpheresOffset += 4 * m_PlankFloors;
@@ -165,25 +167,32 @@ void SceneBullet::BulletSetup()
 	printf("Bullet Setup complete.\n");
 }
 
-btRigidBody* SceneBullet::AddRigidBodyBox(glm::vec3 position, glm::vec3 scale, float mass, float bounciness)
+btRigidBody* SceneBullet::AddRigidBodyBox(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, float mass, float bounciness)
 {
 	btCollisionShape* collisionShape = new btBoxShape(btVector3(btScalar(scale.x), btScalar(scale.y), btScalar(scale.z)));
-	return AddRigidBody(collisionShape, position, mass, bounciness);
+	return AddRigidBody(collisionShape, position, rotation, mass, bounciness);
 }
 
-btRigidBody* SceneBullet::AddRigidBodySphere(glm::vec3 position, float scale, float mass, float bounciness)
+btRigidBody* SceneBullet::AddRigidBodySphere(glm::vec3 position, glm::vec3 rotation, float scale, float mass, float bounciness)
 {
 	btCollisionShape* collisionShape = new btSphereShape(btScalar(scale));
-	return AddRigidBody(collisionShape, position, mass, bounciness);
+	return AddRigidBody(collisionShape, position, rotation, mass, bounciness);
 }
 
-btRigidBody* SceneBullet::AddRigidBody(btCollisionShape* collisionShape, glm::vec3 position, float mass, float bounciness)
+btRigidBody* SceneBullet::AddRigidBody(btCollisionShape* collisionShape, glm::vec3 position, glm::vec3 rotation, float mass, float bounciness)
 {
 	m_CollisionShapes.push_back(collisionShape);
+
+	btQuaternion quatRotation;
+	quatRotation.getIdentity();
+	quatRotation.setRotation(btVector3(1.0f, 0.0f, 0.0f), rotation.x);
+	quatRotation.setRotation(btVector3(0.0f, 1.0f, 0.0f), rotation.y);
+	quatRotation.setRotation(btVector3(0.0f, 0.0f, 1.0f), rotation.z);
 
 	btTransform shapeTransform;
 	shapeTransform.setIdentity();
 	shapeTransform.setOrigin(btVector3(position.x, position.y, position.z));
+	shapeTransform.setRotation(quatRotation);
 
 	btScalar bodyMass = btScalar(mass);
 	//rigidbody is dynamic if and only if mass is non zero, otherwise static
@@ -207,8 +216,10 @@ void SceneBullet::Fire()
 	if (!m_FireEnabled) return;
 	if (m_SphereCount >= m_SphereCountMax) return;
 
+	glm::vec3 rotation(0.0f, 0.0f, 0.0f);
+
 	glm::vec3 position = m_Camera->GetPosition() + glm::vec3(0.0f, -1.0f, 0.0f) + m_Camera->GetFront() * 2.0f;	
-	m_LatestBulletBody = AddRigidBodySphere(position, 1.5f, m_SphereMass, m_Bounciness);
+	m_LatestBulletBody = AddRigidBodySphere(position, rotation, 1.5f, m_SphereMass, m_Bounciness);
 	m_SphereCount++;
 
 	// apply the force

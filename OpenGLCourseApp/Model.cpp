@@ -108,6 +108,9 @@ void Model::LoadMesh(aiMesh* mesh, const aiScene* scene)
 		{
 			vertices.insert(vertices.end(), { 0.0f, 0.0f, 0.0f });
 		}
+
+		// tilingFactor
+		vertices.insert(vertices.end(), 1.0f);
 	}
 
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)

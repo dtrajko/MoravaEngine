@@ -20,40 +20,42 @@ Block::Block(float scaleX, float scaleY, float scaleZ, float txMultiplier)
 	float txCoY = 1.0f * scaleY / txMultiplier;
 	float txCoZ = 1.0f * scaleZ / txMultiplier;
 
+	float tilingFactor = 0.5f;
+
 	float vertices[] = {
 		//   X       Y       Z         U      V         NX     NY     NZ        TX     TY     TZ        BX     BY     BZ
-		-sizeX,  sizeY, -sizeZ,    txCoX,  0.0f,     -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
-		-sizeX, -sizeY, -sizeZ,    txCoX, txCoY,     -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
-		 sizeX, -sizeY, -sizeZ,     0.0f, txCoY,      0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
-		 sizeX,  sizeY, -sizeZ,     0.0f,  0.0f,      0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
+		-sizeX,  sizeY, -sizeZ,    txCoX,  0.0f,     -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    tilingFactor,
+		-sizeX, -sizeY, -sizeZ,    txCoX, txCoY,     -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    tilingFactor,
+		 sizeX, -sizeY, -sizeZ,     0.0f, txCoY,      0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,    tilingFactor,
+		 sizeX,  sizeY, -sizeZ,     0.0f,  0.0f,      0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,    tilingFactor,
 
-		-sizeX,  sizeY,  sizeZ,     0.0f,  0.0f,     -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
-		-sizeX, -sizeY,  sizeZ,     0.0f, txCoY,     -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
-		 sizeX, -sizeY,  sizeZ,    txCoX, txCoY,      0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
-		 sizeX,  sizeY,  sizeZ,    txCoX,  0.0f,      0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
+		-sizeX,  sizeY,  sizeZ,     0.0f,  0.0f,     -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    tilingFactor,
+		-sizeX, -sizeY,  sizeZ,     0.0f, txCoY,     -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    tilingFactor,
+		 sizeX, -sizeY,  sizeZ,    txCoX, txCoY,      0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,    tilingFactor,
+		 sizeX,  sizeY,  sizeZ,    txCoX,  0.0f,      0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,    tilingFactor,
 
-		 sizeX,  sizeY, -sizeZ,    txCoZ,  0.0f,      0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
-		 sizeX, -sizeY, -sizeZ,    txCoZ, txCoY,      0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
-		 sizeX, -sizeY,  sizeZ,     0.0f, txCoY,      0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
-		 sizeX,  sizeY,  sizeZ,     0.0f,  0.0f,      0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
+		 sizeX,  sizeY, -sizeZ,    txCoZ,  0.0f,      0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,    tilingFactor,
+		 sizeX, -sizeY, -sizeZ,    txCoZ, txCoY,      0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,    tilingFactor,
+		 sizeX, -sizeY,  sizeZ,     0.0f, txCoY,      0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,    tilingFactor,
+		 sizeX,  sizeY,  sizeZ,     0.0f,  0.0f,      0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,    tilingFactor,
 
-		-sizeX,  sizeY, -sizeZ,     0.0f,  0.0f,     -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
-		-sizeX, -sizeY, -sizeZ,     0.0f, txCoY,     -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
-		-sizeX, -sizeY,  sizeZ,    txCoZ, txCoY,     -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
-		-sizeX,  sizeY,  sizeZ,    txCoZ,  0.0f,     -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
+		-sizeX,  sizeY, -sizeZ,     0.0f,  0.0f,     -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    tilingFactor,
+		-sizeX, -sizeY, -sizeZ,     0.0f, txCoY,     -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    tilingFactor,
+		-sizeX, -sizeY,  sizeZ,    txCoZ, txCoY,     -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    tilingFactor,
+		-sizeX,  sizeY,  sizeZ,    txCoZ,  0.0f,     -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    tilingFactor,
 
-		-sizeX,  sizeY,  sizeZ,     0.0f, txCoZ,     -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,
-		-sizeX,  sizeY, -sizeZ,     0.0f,  0.0f,     -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
-		 sizeX,  sizeY, -sizeZ,    txCoX,  0.0f,      0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,
-		 sizeX,  sizeY,  sizeZ,    txCoX, txCoZ,      0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,
+		-sizeX,  sizeY,  sizeZ,     0.0f, txCoZ,     -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    tilingFactor,
+		-sizeX,  sizeY, -sizeZ,     0.0f,  0.0f,     -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    tilingFactor,
+		 sizeX,  sizeY, -sizeZ,    txCoX,  0.0f,      0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,    tilingFactor,
+		 sizeX,  sizeY,  sizeZ,    txCoX, txCoZ,      0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,    tilingFactor,
 
-		-sizeX, -sizeY,  sizeZ,     0.0f, txCoZ,     -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,
-		-sizeX, -sizeY, -sizeZ,     0.0f,  0.0f,     -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
-		 sizeX, -sizeY, -sizeZ,    txCoX,  0.0f,      0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,
-		 sizeX, -sizeY,  sizeZ,    txCoX, txCoZ,      0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,
+		-sizeX, -sizeY,  sizeZ,     0.0f, txCoZ,     -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    tilingFactor,
+		-sizeX, -sizeY, -sizeZ,     0.0f,  0.0f,     -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    tilingFactor,
+		 sizeX, -sizeY, -sizeZ,    txCoX,  0.0f,      0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,    tilingFactor,
+		 sizeX, -sizeY,  sizeZ,    txCoX, txCoZ,      0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,    tilingFactor,
 	};
 
-	unsigned int vertexCount = 14 * 4 * 6;
+	unsigned int vertexCount = 15 * 4 * 6;
 
 	unsigned int indices[] =
 	{
@@ -99,6 +101,9 @@ Block::Block(float scaleX, float scaleY, float scaleZ, float txMultiplier)
 	// bitangent
 	glEnableVertexAttribArray(4);
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Bitangent));
+	// tilingFactor
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TilingFactor));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
@@ -138,4 +143,5 @@ Block::~Block()
 	glDisableVertexAttribArray(2);
 	glDisableVertexAttribArray(3);
 	glDisableVertexAttribArray(4);
+	glDisableVertexAttribArray(5);
 }

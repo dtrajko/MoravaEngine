@@ -17,11 +17,13 @@
 #include "ScenePBR.h"
 #include "SceneJoey.h"
 #include "SceneBullet.h"
+#include "SceneInstanced.h"
 #include "LightManager.h"
 #include "WaterManager.h"
 #include "Renderer.h"
 #include "RendererPBR.h"
 #include "RendererJoey.h"
+#include "RendererInstanced.h"
 #include "Profiler.h"
 
 
@@ -44,9 +46,10 @@ enum class SceneName
 	PBR,
 	LearnOpenGL,
 	Bullet,
+	Instanced,
 };
 
-SceneName currentScene = SceneName::Bullet;
+SceneName currentScene = SceneName::Instanced;
 
 float deltaTime = 0.0f;
 float lastTime = 0.0f;
@@ -97,6 +100,10 @@ int main()
 	case SceneName::Bullet:
 		scene = new SceneBullet();
 		renderer = static_cast<RendererBasic*>(new Renderer());
+		break;
+	case SceneName::Instanced:
+		scene = new SceneInstanced();
+		renderer = static_cast<RendererBasic*>(new RendererInstanced());
 		break;
 	}
 
