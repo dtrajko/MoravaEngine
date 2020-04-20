@@ -389,5 +389,11 @@
     <ClInclude Include="SceneAsteroids.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ModelJoey.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshJoey.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

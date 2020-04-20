@@ -2,6 +2,8 @@
 
 #include "RendererBasic.h"
 
+#include "ModelJoey.h"
+
 
 class RendererAsteroids : public RendererBasic
 {
@@ -19,5 +21,12 @@ public:
 private:
 	unsigned int quadVAO;
 	unsigned int quadVBO;
+
+	// Asteroid field
+	unsigned int amount = 50000;
+	glm::mat4* modelMatrices;
+
+	ModelJoey* rock;
+	ModelJoey* planet;
 
 };

@@ -249,7 +249,9 @@
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshData.h" />
+    <ClInclude Include="MeshJoey.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="ModelJoey.h" />
     <ClInclude Include="OmniShadowMap.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="Profiler.h" />

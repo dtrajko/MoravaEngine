@@ -52,7 +52,7 @@ enum class SceneName
 	Asteroids,
 };
 
-SceneName currentScene = SceneName::Instanced;
+SceneName currentScene = SceneName::Asteroids;
 
 float deltaTime = 0.0f;
 float lastTime = 0.0f;
