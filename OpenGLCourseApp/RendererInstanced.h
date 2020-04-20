@@ -15,4 +15,7 @@ public:
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
 	void RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 	~RendererInstanced();
+
+private:
+
 };

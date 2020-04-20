@@ -206,6 +206,7 @@
     <ClCompile Include="SceneTerrain.cpp" />
     <ClCompile Include="SceneSponza.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShaderInstanced.cpp" />
     <ClCompile Include="ShaderMain.cpp" />
     <ClCompile Include="ShaderPBR.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
@@ -268,6 +269,7 @@
     <ClInclude Include="SceneTerrain.h" />
     <ClInclude Include="SceneSponza.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderInstanced.h" />
     <ClInclude Include="ShaderMain.h" />
     <ClInclude Include="ShaderPBR.h" />
     <ClInclude Include="ShadowMap.h" />
@@ -280,6 +282,7 @@
     <ClInclude Include="TextureCubemap.h" />
     <ClInclude Include="Tile2D.h" />
     <ClInclude Include="Vertex.h" />
+    <ClInclude Include="VertexInstanced.h" />
     <ClInclude Include="WaterManager.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
