@@ -46,6 +46,10 @@ void SceneAsteroids::SetupMeshes()
 
 void SceneAsteroids::SetupModels()
 {
+	ModelJoey* rock = new ModelJoey("Models/rock.obj");
+	ModelJoey* planet = new ModelJoey("Models/planet.obj");
+	models.insert(std::make_pair("rock", rock));
+	models.insert(std::make_pair("planet", planet));
 }
 
 void SceneAsteroids::Update(float timestep, Window& mainWindow)
@@ -63,4 +67,6 @@ void SceneAsteroids::Render(glm::mat4 projectionMatrix, std::string passType,
 
 SceneAsteroids::~SceneAsteroids()
 {
+	for (auto& model : models)
+		delete model.second;
 }

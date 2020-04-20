@@ -14,7 +14,7 @@ public:
 
 	RendererBasic();
 
-	virtual void Init();
+	virtual void Init(Scene* scene); // Scene param here could be a mistake
 	virtual void SetUniforms();
 	virtual void SetShaders();
 	virtual void Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix) = 0;

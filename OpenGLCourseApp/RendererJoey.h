@@ -15,7 +15,7 @@ class RendererJoey : public RendererBasic
 
 public:
 	RendererJoey();
-	virtual void Init() override;
+	virtual void Init(Scene* scene) override;
 	void SetGeometry();
 	virtual void SetUniforms() override;
 	virtual void SetShaders() override;

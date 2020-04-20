@@ -1,6 +1,6 @@
 #include "RendererAsteroids.h"
 
-#include "SceneInstanced.h"
+#include "SceneAsteroids.h"
 #include "ShaderInstanced.h"
 #include "VertexInstanced.h"
 
@@ -10,13 +10,12 @@ RendererAsteroids::RendererAsteroids()
 {
 }
 
-void RendererAsteroids::Init()
+void RendererAsteroids::Init(Scene* scene)
 {
 	SetUniforms();
 	SetShaders();
 
-	rock = new ModelJoey("Models/rock.obj");
-	planet = new ModelJoey("Models/planet.obj");
+	models = ((SceneAsteroids*)scene)->GetModels();
 
 	modelMatrices = new glm::mat4[amount];
 	srand((unsigned int)glfwGetTime()); // initialize random seed	
@@ -54,9 +53,9 @@ void RendererAsteroids::Init()
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
 
-	for (unsigned int i = 0; i < rock->meshes.size(); i++)
+	for (unsigned int i = 0; i < models["rock"]->meshes.size(); i++)
 	{
-		unsigned int VAO = rock->meshes[i].VAO;
+		unsigned int VAO = models["rock"]->meshes[i].VAO;
 		glBindVertexArray(VAO);
 		// set attribute pointers for matrix (4 times vec4)
 		glEnableVertexAttribArray(3);
@@ -135,17 +134,17 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	model = glm::translate(model, glm::vec3(0.0f, -20.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(20.0f));
 	shaders["planet"]->setMat4("model", model);
-	planet->Draw(shaders["planet"]);
+	models["planet"]->Draw(shaders["planet"]);
 
 	// draw meteorites
 	shaders["asteroids"]->Bind();
 	shaders["asteroids"]->setInt("texture_diffuse1", 0);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, rock->textures_loaded[0].id); // note: we also made the textures_loaded vector public (instead of private) from the model class.
-	for (unsigned int i = 0; i < rock->meshes.size(); i++)
+	glBindTexture(GL_TEXTURE_2D, models["rock"]->textures_loaded[0].id); // note: we also made the textures_loaded vector public (instead of private) from the model class.
+	for (unsigned int i = 0; i < models["rock"]->meshes.size(); i++)
 	{
-		glBindVertexArray(rock->meshes[i].VAO);
-		glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)rock->meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount);
+		glBindVertexArray(models["rock"]->meshes[i].VAO);
+		glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)models["rock"]->meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount);
 		glBindVertexArray(0);
 	}
 
@@ -155,9 +154,6 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 
 RendererAsteroids::~RendererAsteroids()
 {
-	delete rock;
-	delete planet;
-
 	glDeleteVertexArrays(1, &quadVAO);
 	glDeleteBuffers(1, &quadVBO);
 }

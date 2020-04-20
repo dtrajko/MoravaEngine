@@ -139,7 +139,7 @@ private:
 
 public:
 
-    static unsigned int TextureJoeyFromFile(const char* path, const string& directory, bool gamma)
+    static unsigned int TextureFromFile(const char* path, const string& directory, bool gamma)
     {
         string filename = string(path);
         // filename = directory + '/' + filename;

@@ -185,7 +185,7 @@ private:
             if (!skip)
             {   // if texture hasn't been loaded already, load it
                 TextureJoey texture;
-                texture.id = MeshJoey::TextureJoeyFromFile(str.C_Str(), this->directory, false);
+                texture.id = MeshJoey::TextureFromFile(str.C_Str(), this->directory, false);
                 texture.type = typeName;
                 texture.path = str.C_Str();
                 textures.push_back(texture);

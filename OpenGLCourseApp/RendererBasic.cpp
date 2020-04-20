@@ -10,7 +10,7 @@ RendererBasic::RendererBasic()
 {
 }
 
-void RendererBasic::Init()
+void RendererBasic::Init(Scene* scene)
 {
 	SetUniforms();
 	SetShaders();

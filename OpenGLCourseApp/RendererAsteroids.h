@@ -10,7 +10,7 @@ class RendererAsteroids : public RendererBasic
 
 public:
 	RendererAsteroids();
-	virtual void Init() override;
+	virtual void Init(Scene* scene) override;
 	virtual void SetUniforms() override;
 	virtual void SetShaders() override;
 	virtual void Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
@@ -26,7 +26,6 @@ private:
 	unsigned int amount = 50000;
 	glm::mat4* modelMatrices;
 
-	ModelJoey* rock;
-	ModelJoey* planet;
+	std::map<std::string, ModelJoey*> models;
 
 };

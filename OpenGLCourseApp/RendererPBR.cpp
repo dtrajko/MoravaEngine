@@ -8,7 +8,7 @@ RendererPBR::RendererPBR()
 {
 }
 
-void RendererPBR::Init()
+void RendererPBR::Init(Scene* scene)
 {
 	SetUniforms();
 	SetShaders();

@@ -10,7 +10,7 @@ class Renderer : public RendererBasic
 
 public:
 	Renderer();
-	virtual void Init() override;
+	virtual void Init(Scene* scene) override;
 	virtual void SetUniforms() override;
 	virtual void SetShaders() override;
 	virtual void Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;

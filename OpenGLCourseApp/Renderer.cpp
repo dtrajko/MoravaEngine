@@ -10,7 +10,7 @@ Renderer::Renderer()
 {
 }
 
-void Renderer::Init()
+void Renderer::Init(Scene* scene)
 {
 	SetUniforms();
 	SetShaders();

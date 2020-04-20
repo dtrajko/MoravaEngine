@@ -8,7 +8,7 @@ RendererJoey::RendererJoey()
 {
 }
 
-void RendererJoey::Init()
+void RendererJoey::Init(Scene* scene)
 {
 	SetGeometry();
 	SetUniforms();

@@ -10,7 +10,7 @@ RendererInstanced::RendererInstanced()
 {
 }
 
-void RendererInstanced::Init()
+void RendererInstanced::Init(Scene* scene)
 {
 	SetUniforms();
 	SetShaders();

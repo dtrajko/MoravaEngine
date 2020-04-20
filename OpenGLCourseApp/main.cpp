@@ -52,7 +52,7 @@ enum class SceneName
 	Asteroids,
 };
 
-SceneName currentScene = SceneName::Bullet;
+SceneName currentScene = SceneName::Cottage;
 
 float deltaTime = 0.0f;
 float lastTime = 0.0f;
@@ -123,7 +123,7 @@ int main()
 	scene->SetLightManager();
 	scene->SetWaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferWidth());
 
-	renderer->Init();
+	renderer->Init(scene);
 
 	ImGuiWrapper::Init(&mainWindow);
 
