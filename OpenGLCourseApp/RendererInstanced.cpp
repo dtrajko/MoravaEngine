@@ -2,6 +2,7 @@
 
 #include "SceneInstanced.h"
 #include "ShaderInstanced.h"
+#include "VertexInstanced.h"
 
 
 
@@ -27,6 +28,45 @@ void RendererInstanced::Init()
 			translations[index++] = translation;
 		}
 	}
+
+	unsigned int instanceVBO;
+	glGenBuffers(1, &instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	float quadVertices[] = {
+		// positions       // colors
+		-0.05f,  0.05f,    1.0f, 0.0f, 0.0f,
+		 0.05f, -0.05f,    0.0f, 1.0f, 0.0f,
+		-0.05f, -0.05f,    0.0f, 0.0f, 1.0f,
+
+		-0.05f,  0.05f,    1.0f, 0.0f, 0.0f,
+		 0.05f, -0.05f,    0.0f, 1.0f, 0.0f,
+		 0.05f,  0.05f,    0.0f, 1.0f, 1.0f,
+	};
+
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+
+	// VertexInstanced.Position
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(VertexInstanced), (const void*)offsetof(VertexInstanced, Position));
+
+	// VertexInstanced.Color
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexInstanced), (const void*)offsetof(VertexInstanced, Color));
+
+	// also set instance data - VertexInstanced.Offset
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO); // this attribute comes from a different vertex buffer
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
 
 	ShaderInstanced* shaderInstanced = static_cast<ShaderInstanced*>(shaders["instanced"]);
 	shaderInstanced->Bind();
@@ -66,15 +106,19 @@ void RendererInstanced::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	ShaderInstanced* shaderInstanced = static_cast<ShaderInstanced*>(shaders["instanced"]);
 	shaderInstanced->Bind();
 
-	unsigned int quadVAO = static_cast<SceneInstanced*>(scene)->GetQuadVAO();
+	shaderInstanced->setMat4("projection", projectionMatrix);
+	shaderInstanced->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+
 	glBindVertexArray(quadVAO);
-	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100); // 100 triangles of 6 vertices each
+	glBindVertexArray(0);
 
 	std::string passType = "main";
 	scene->Render(projectionMatrix, passType, shaders, uniforms);
-
 }
 
 RendererInstanced::~RendererInstanced()
 {
+	glDeleteVertexArrays(1, &quadVAO);
+	glDeleteBuffers(1, &quadVBO);
 }

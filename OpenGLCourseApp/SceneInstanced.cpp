@@ -4,7 +4,6 @@
 
 #include "ShaderMain.h"
 #include "RendererInstanced.h"
-#include "VertexInstanced.h"
 
 
 SceneInstanced::SceneInstanced()
@@ -32,37 +31,6 @@ void SceneInstanced::SetTextures()
 
 void SceneInstanced::SetupMeshes()
 {
-	float quadVertices[] = {
-		// positions       // colors
-		-0.05f,  0.05f,    1.0f, 0.0f, 0.0f,
-		 0.05f, -0.05f,    0.0f, 1.0f, 0.0f,
-		-0.05f, -0.05f,    0.0f, 0.0f, 1.0f,
-
-		-0.05f,  0.05f,    1.0f, 0.0f, 0.0f,
-		 0.05f, -0.05f,    0.0f, 1.0f, 0.0f,
-		 0.05f,  0.05f,    0.0f, 1.0f, 1.0f
-	};
-
-	unsigned int vertexCount = 6 * 5;
-
-	glGenVertexArrays(1, &quadVAO);
-	glBindVertexArray(quadVAO);
-
-	unsigned int quadVBO;
-
-	glGenBuffers(1, &quadVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices[0]) * vertexCount, quadVertices, GL_STATIC_DRAW);
-
-	// VertexInstanced.Position
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(VertexInstanced), (const void*)offsetof(VertexInstanced, Position));
-	// VertexInstanced.Color
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexInstanced), (const void*)offsetof(VertexInstanced, Color));
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind VBO
-	glBindVertexArray(0);             // Unbind VAO
 }
 
 void SceneInstanced::SetupModels()

@@ -17,5 +17,7 @@ public:
 	~RendererInstanced();
 
 private:
+	unsigned int quadVAO;
+	unsigned int quadVBO;
 
 };
