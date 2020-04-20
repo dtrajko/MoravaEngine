@@ -192,11 +192,13 @@
     <ClCompile Include="RadianceHDR.cpp" />
     <ClCompile Include="Renderbuffer.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RendererAsteroids.cpp" />
     <ClCompile Include="RendererBasic.cpp" />
     <ClCompile Include="RendererInstanced.cpp" />
     <ClCompile Include="RendererJoey.cpp" />
     <ClCompile Include="RendererPBR.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneAsteroids.cpp" />
     <ClCompile Include="SceneBullet.cpp" />
     <ClCompile Include="SceneInstanced.cpp" />
     <ClCompile Include="SceneJoey.cpp" />
@@ -255,11 +257,13 @@
     <ClInclude Include="RadianceHDR.h" />
     <ClInclude Include="Renderbuffer.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RendererAsteroids.h" />
     <ClInclude Include="RendererBasic.h" />
     <ClInclude Include="RendererInstanced.h" />
     <ClInclude Include="RendererJoey.h" />
     <ClInclude Include="RendererPBR.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneAsteroids.h" />
     <ClInclude Include="SceneBullet.h" />
     <ClInclude Include="SceneInstanced.h" />
     <ClInclude Include="SceneJoey.h" />

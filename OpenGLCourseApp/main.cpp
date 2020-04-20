@@ -18,12 +18,14 @@
 #include "SceneJoey.h"
 #include "SceneBullet.h"
 #include "SceneInstanced.h"
+#include "SceneAsteroids.h"
 #include "LightManager.h"
 #include "WaterManager.h"
 #include "Renderer.h"
 #include "RendererPBR.h"
 #include "RendererJoey.h"
 #include "RendererInstanced.h"
+#include "RendererAsteroids.h"
 #include "Profiler.h"
 
 
@@ -47,9 +49,10 @@ enum class SceneName
 	LearnOpenGL,
 	Bullet,
 	Instanced,
+	Asteroids,
 };
 
-SceneName currentScene = SceneName::Instanced;
+SceneName currentScene = SceneName::Asteroids;
 
 float deltaTime = 0.0f;
 float lastTime = 0.0f;
@@ -104,6 +107,10 @@ int main()
 	case SceneName::Instanced:
 		scene = new SceneInstanced();
 		renderer = static_cast<RendererBasic*>(new RendererInstanced());
+		break;
+	case SceneName::Asteroids:
+		scene = new SceneAsteroids();
+		renderer = static_cast<RendererBasic*>(new RendererAsteroids());
 		break;
 	}
 
