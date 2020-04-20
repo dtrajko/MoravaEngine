@@ -15,64 +15,35 @@ void RendererAsteroids::Init()
 	SetUniforms();
 	SetShaders();
 
-	glm::vec2 translations[100];
-	int index = 0;
-	float offset = 0.1f;
-	for (int y = -10; y < 10; y += 2)
+	unsigned int amount = 1000;
+	glm::mat4* modelMatrices;
+	modelMatrices = new glm::mat4[amount];
+	srand((unsigned int)glfwGetTime()); // initialize random seed	
+	float radius = 50.0;
+	float offset = 2.5f;
+	for (unsigned int i = 0; i < amount; i++)
 	{
-		for (int x = -10; x < 10; x += 2)
-		{
-			glm::vec2 translation;
-			translation.x = (float)x / 10.0f + offset;
-			translation.y = (float)y / 10.0f + offset;
-			translations[index++] = translation;
-		}
-	}
+		glm::mat4 model = glm::mat4(1.0f);
+		// 1. translation: displace along circle with 'radius' in range [-offset, offset]
+		float angle = (float)i / (float)amount * 360.0f;
+		float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float x = sin(angle) * radius + displacement;
+		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float y = displacement * 0.4f; // keep height of field smaller compared to width of x and z
+		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float z = cos(angle) * radius + displacement;
+		model = glm::translate(model, glm::vec3(x, y, z));
 
-	unsigned int instanceVBO;
-	glGenBuffers(1, &instanceVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+		// 2. scale: scale between 0.05 and 0.25f
+		float scale = (float)(rand() % 20) / 100.0f + 0.05f;
+		model = glm::scale(model, glm::vec3(scale));
 
-	float quadVertices[] = {
-		// positions       // colors
-		-0.05f,  0.05f,    1.0f, 0.0f, 0.0f,
-		 0.05f, -0.05f,    0.0f, 1.0f, 0.0f,
-		-0.05f, -0.05f,    0.0f, 0.0f, 1.0f,
+		// 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
+		float rotAngle = (float)(rand() % 360);
+		model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
 
-		-0.05f,  0.05f,    1.0f, 0.0f, 0.0f,
-		 0.05f, -0.05f,    0.0f, 1.0f, 0.0f,
-		 0.05f,  0.05f,    0.0f, 1.0f, 1.0f,
-	};
-
-	glGenVertexArrays(1, &quadVAO);
-	glGenBuffers(1, &quadVBO);
-	glBindVertexArray(quadVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-
-	// VertexInstanced.Position
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(VertexInstanced), (const void*)offsetof(VertexInstanced, Position));
-
-	// VertexInstanced.Color
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexInstanced), (const void*)offsetof(VertexInstanced, Color));
-
-	// also set instance data - VertexInstanced.Offset
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO); // this attribute comes from a different vertex buffer
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
-
-	ShaderInstanced* shaderInstanced = static_cast<ShaderInstanced*>(shaders["instanced"]);
-	shaderInstanced->Bind();
-	for (unsigned int i = 0; i < 100; i++)
-	{
-		shaderInstanced->setVec2("offsets[" + std::to_string(i) + "]", translations[i]);
+		// 4. now add to list of matrices
+		modelMatrices[i] = model;
 	}
 }
 
@@ -106,12 +77,23 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	ShaderInstanced* shaderInstanced = static_cast<ShaderInstanced*>(shaders["instanced"]);
 	shaderInstanced->Bind();
 
+	// draw planet
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
+
 	shaderInstanced->setMat4("projection", projectionMatrix);
 	shaderInstanced->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+	shaderInstanced->setMat4("model", model);
 
-	glBindVertexArray(quadVAO);
-	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100); // 100 triangles of 6 vertices each
-	glBindVertexArray(0);
+	// planet.Draw(shader);
+
+	// draw meteorites
+	// for (unsigned int i = 0; i < amount; i++)
+	// {
+	// 	shader.setMat4("model", modelMatrices[i]);
+	// 	rock.Draw(shader);
+	// }
 
 	std::string passType = "main";
 	scene->Render(projectionMatrix, passType, shaders, uniforms);

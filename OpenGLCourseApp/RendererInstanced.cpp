@@ -108,6 +108,7 @@ void RendererInstanced::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 
 	shaderInstanced->setMat4("projection", projectionMatrix);
 	shaderInstanced->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+	shaderInstanced->setMat4("model", glm::mat4(1.0f));
 
 	glBindVertexArray(quadVAO);
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100); // 100 triangles of 6 vertices each
