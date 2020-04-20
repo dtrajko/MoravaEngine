@@ -30,7 +30,7 @@ void RendererAsteroids::Init()
 		float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
 		float x = sin(angle) * radius + displacement;
 		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-		float y = displacement * 0.4f; // keep height of asteroid field smaller compared to width of x and z
+		float y = displacement * 0.2f; // keep height of asteroid field smaller compared to width of x and z
 		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
 		float z = cos(angle) * radius + displacement;
 		model = glm::translate(model, glm::vec3(x, y, z));
@@ -111,6 +111,14 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	if (scene->GetSettings().enableSkybox)
+	{
+		glm::mat4 modelMatrix = glm::mat4(1.0f);
+		float angleRadians = glm::radians((GLfloat)glfwGetTime());
+		modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->CalculateViewMatrix(), projectionMatrix);
+	}
+
 	glm::mat4 view = scene->GetCamera()->CalculateViewMatrix();
 
 	// configure transformation matrices
@@ -123,11 +131,11 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	shaders["planet"]->setMat4("view", view);
 
 	// draw planet
-	// glm::mat4 model = glm::mat4(1.0f);
-	// model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
-	// model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
-	// shaders["planet"]->setMat4("model", model);
-	// planet->Draw(*shaders["planet"]);
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, -20.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(20.0f));
+	shaders["planet"]->setMat4("model", model);
+	planet->Draw(shaders["planet"]);
 
 	// draw meteorites
 	shaders["asteroids"]->Bind();
@@ -137,16 +145,9 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	for (unsigned int i = 0; i < rock->meshes.size(); i++)
 	{
 		glBindVertexArray(rock->meshes[i].VAO);
-		// printf("Rock Mesh VAO = %i\n", rock->meshes[i].VAO);
 		glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)rock->meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount);
 		glBindVertexArray(0);
 	}
-
-	// printf("Rocket Texture ID = %i\n", rock->textures_loaded[0].id);
-	// printf("Rock Meshes Size = %zi\n", rock->meshes.size());
-	// printf("Asteroids amount = %i\n", amount);
-	// glm::vec3 camPos = scene->GetCamera()->GetPosition();
-	// printf("Camera position X = %.2ff Y = %.2ff Z = %.2ff\n", camPos.x, camPos.y, camPos.z);
 
 	std::string passType = "main";
 	scene->Render(projectionMatrix, passType, shaders, uniforms);
