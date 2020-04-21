@@ -8,8 +8,8 @@
 SceneAsteroids::SceneAsteroids()
 {
 	sceneSettings.enableSkybox = true;
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 30.0f, -220.0f);
-	sceneSettings.cameraStartYaw = 90.0f;
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 30.0f, 220.0f);
+	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraStartPitch = -10.0f;
 	sceneSettings.cameraMoveSpeed = 5.0f;
 	sceneSettings.ambientIntensity = 0.4f;
@@ -28,12 +28,13 @@ SceneAsteroids::SceneAsteroids()
 
 void SceneAsteroids::SetSkybox()
 {
-	skyboxFaces.push_back("Textures/skybox_2/right.png");
-	skyboxFaces.push_back("Textures/skybox_2/left.png");
-	skyboxFaces.push_back("Textures/skybox_2/top.png");
-	skyboxFaces.push_back("Textures/skybox_2/bottom.png");
-	skyboxFaces.push_back("Textures/skybox_2/back.png");
-	skyboxFaces.push_back("Textures/skybox_2/front.png");
+	skyboxFaces.push_back("Textures/skybox_1/right.jpg");
+	skyboxFaces.push_back("Textures/skybox_1/left.jpg");
+	skyboxFaces.push_back("Textures/skybox_1/top.jpg");
+	skyboxFaces.push_back("Textures/skybox_1/bottom.jpg");
+	skyboxFaces.push_back("Textures/skybox_1/back.jpg");
+	skyboxFaces.push_back("Textures/skybox_1/front.jpg");
+
 	m_Skybox = new Skybox(skyboxFaces);
 }
 
