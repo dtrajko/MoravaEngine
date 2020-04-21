@@ -35,6 +35,7 @@ struct SceneSettings
 	// camera
 	glm::vec3 cameraPosition;
 	float cameraStartYaw;
+	float cameraStartPitch;
 	float cameraMoveSpeed;
 	float nearPlane;
 	float farPlane;

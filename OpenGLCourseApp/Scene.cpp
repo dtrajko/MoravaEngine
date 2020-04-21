@@ -17,6 +17,7 @@ Scene::Scene()
 	sceneSettings.enableNormalMaps   = false;
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 20.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
+	sceneSettings.cameraStartPitch = 0.0f;
 	sceneSettings.cameraMoveSpeed = 4.0f;
 	sceneSettings.nearPlane = 0.01f;
 	sceneSettings.farPlane = 200.0f;
@@ -119,7 +120,8 @@ void Scene::SetTextures()
 
 void Scene::SetCamera()
 {
-	m_Camera = new Camera(sceneSettings.cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f), sceneSettings.cameraStartYaw, 0.0f, sceneSettings.cameraMoveSpeed, 0.1f);
+	m_Camera = new Camera(sceneSettings.cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f),
+		sceneSettings.cameraStartYaw, sceneSettings.cameraStartPitch, sceneSettings.cameraMoveSpeed, 0.1f);
 }
 
 void Scene::SetLightManager()

@@ -14,6 +14,7 @@ public:
 	virtual void Render(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
 	inline std::map<std::string, ModelJoey*> GetModels() const { return models; };
+	inline float GetFOV() { return m_FOV; };
 	virtual ~SceneAsteroids() override;
 
 private:
@@ -23,5 +24,7 @@ private:
 	virtual void SetupModels() override;
 
 	std::map<std::string, ModelJoey*> models;
+
+	float m_FOV = 60.0f;
 
 };

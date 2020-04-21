@@ -19,7 +19,7 @@ void RendererAsteroids::Init(Scene* scene)
 
 	modelMatrices = new glm::mat4[amount];
 	srand((unsigned int)glfwGetTime()); // initialize random seed	
-	float radius = 150.0;
+	float radius = 120.0;
 	float offset = 25.0f;
 	for (unsigned int i = 0; i < amount; i++)
 	{
@@ -82,15 +82,15 @@ void RendererAsteroids::SetUniforms()
 
 void RendererAsteroids::SetShaders()
 {
-	static const char* asteroidsVert = "Shaders/learnopengl/10.3.asteroids.vs";
-	static const char* asteroidsFrag = "Shaders/learnopengl/10.3.asteroids.fs";
+	static const char* asteroidsVert = "Shaders/asteroids.vs";
+	static const char* asteroidsFrag = "Shaders/asteroids.fs";
 	ShaderInstanced* shaderAsteroids = new ShaderInstanced();
 	shaderAsteroids->CreateFromFiles(asteroidsVert, asteroidsFrag);
 	shaders.insert(std::make_pair("asteroids", shaderAsteroids));
 	printf("Renderer: shaderAsteroids shader compiled [programID=%d]\n", shaderAsteroids->GetProgramID());
 
-	static const char* planetVert = "Shaders/learnopengl/10.3.planet.vs";
-	static const char* planetFrag = "Shaders/learnopengl/10.3.planet.fs";
+	static const char* planetVert = "Shaders/asteroids_planet.vs";
+	static const char* planetFrag = "Shaders/asteroids.fs";
 	ShaderInstanced* shaderPlanet = new ShaderInstanced();
 	shaderPlanet->CreateFromFiles(planetVert, planetFrag);
 	shaders.insert(std::make_pair("planet", shaderPlanet));
@@ -99,6 +99,8 @@ void RendererAsteroids::SetShaders()
 
 void RendererAsteroids::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
+	planetRotationY += 10.0f * deltaTime;
+
 	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
@@ -109,6 +111,11 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	// Clear the window
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Override the Projection matrix (update FOV)
+	projectionMatrix = glm::perspective(glm::radians(((SceneAsteroids*)scene)->GetFOV()),
+		(float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
+		scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
 
 	if (scene->GetSettings().enableSkybox)
 	{
@@ -132,6 +139,7 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	// draw planet
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, -20.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(planetRotationY), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(20.0f));
 	shaders["planet"]->setMat4("model", model);
 	models["planet"]->Draw(shaders["planet"]);

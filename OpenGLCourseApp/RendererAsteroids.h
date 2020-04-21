@@ -28,4 +28,7 @@ private:
 
 	std::map<std::string, ModelJoey*> models;
 
+	float planetRotationY = 0.0f;
+	float m_FOV = 60.0f;
+
 };
