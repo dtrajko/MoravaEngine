@@ -10,8 +10,8 @@
 TextureJoey::TextureJoey(const char* path, const std::string& directory, bool gamma)
 {
     std::string filename = std::string(path);
-    // filename = directory + '/' + filename;
 
+    // filename = directory + '/' + filename;
     // printf("TextureJoeyFromFile path: %s, directory: %s, filename: %s\n", path, directory.c_str(), filename.c_str());
 
     glGenTextures(1, &textureID);
@@ -44,4 +44,4 @@ TextureJoey::TextureJoey(const char* path, const std::string& directory, bool ga
         std::cout << "Texture failed to load at path: " << path << std::endl;
         stbi_image_free(data);
     }
-};
+}

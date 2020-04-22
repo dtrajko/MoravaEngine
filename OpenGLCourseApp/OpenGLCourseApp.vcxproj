@@ -180,9 +180,8 @@
     <ClCompile Include="FramebufferTexture.cpp" />
     <ClCompile Include="ImGuiBuild.cpp" />
     <ClCompile Include="ImGuiWrapper.cpp" />
-    <ClCompile Include="LearnOpenGL\ShaderJoey.cpp" />
     <ClCompile Include="LearnOpenGL\SphereJoey.cpp" />
-    <ClCompile Include="LearnOpenGL\TextureJoey.cpp" />
+    <ClCompile Include="learnopengl\TextureJoey.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -247,14 +246,10 @@
     <ClInclude Include="FramebufferTexture.h" />
     <ClInclude Include="ImGuiWrapper.h" />
     <ClInclude Include="LearnOpenGL\Camera.h" />
-    <ClInclude Include="LearnOpenGL\functions.h" />
-    <ClInclude Include="LearnOpenGL\Mesh.h" />
     <ClInclude Include="LearnOpenGL\MeshJoey.h" />
-    <ClInclude Include="LearnOpenGL\Model.h" />
     <ClInclude Include="LearnOpenGL\ModelJoey.h" />
-    <ClInclude Include="LearnOpenGL\ShaderJoey.h" />
     <ClInclude Include="LearnOpenGL\SphereJoey.h" />
-    <ClInclude Include="LearnOpenGL\TextureJoey.h" />
+    <ClInclude Include="learnopengl\TextureJoey.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Material.h" />

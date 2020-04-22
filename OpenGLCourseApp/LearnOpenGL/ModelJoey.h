@@ -23,6 +23,7 @@ using namespace std;
 class ModelJoey
 {
 public:
+
     /*  Model Data */
     vector<TextureData> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
     vector<MeshJoey> meshes;
@@ -31,7 +32,7 @@ public:
 
     /*  Functions   */
     // constructor, expects a filepath to a 3D model.
-    ModelJoey(string const& path, bool gamma = false) : gammaCorrection(gamma)
+    ModelJoey(string const &path, bool gamma = false) : gammaCorrection(gamma)
     {
         loadModel(path);
     }
@@ -44,6 +45,7 @@ public:
     }
 
 private:
+
     /*  Functions   */
     // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
     void loadModel(string const& path)
@@ -193,7 +195,7 @@ private:
                 textureData.type = typeName;
                 textureData.path = str.C_Str();
                 textures.push_back(textureData);
-                textures_loaded.push_back(textureData);  // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+                textures_loaded.push_back(textureData); // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
             }
         }
         return textures;
