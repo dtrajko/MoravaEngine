@@ -53,9 +53,9 @@ void RendererAsteroids::Init(Scene* scene)
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
 
-	for (unsigned int i = 0; i < models["rock"]->meshes.size(); i++)
+	for (unsigned int i = 0; i < models["rock"]->GetMeshes().size(); i++)
 	{
-		unsigned int VAO = models["rock"]->meshes[i].VAO;
+		unsigned int VAO = models["rock"]->GetMeshes()[i].GetVAO();
 		glBindVertexArray(VAO);
 		// set attribute pointers for matrix (4 times vec4)
 		glEnableVertexAttribArray(3);
@@ -148,11 +148,11 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	shaders["asteroids"]->Bind();
 	shaders["asteroids"]->setInt("texture_diffuse1", 0);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, models["rock"]->textures_loaded[0].id); // note: we also made the textures_loaded vector public (instead of private) from the model class.
-	for (unsigned int i = 0; i < models["rock"]->meshes.size(); i++)
+	glBindTexture(GL_TEXTURE_2D, models["rock"]->GetTextures()[0].id); // note: we also made the textures_loaded vector public (instead of private) from the model class.
+	for (unsigned int i = 0; i < models["rock"]->GetMeshes().size(); i++)
 	{
-		glBindVertexArray(models["rock"]->meshes[i].VAO);
-		glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)models["rock"]->meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount);
+		glBindVertexArray(models["rock"]->GetMeshes()[i].GetVAO());
+		glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)models["rock"]->GetMeshes()[i].GetIndices().size(), GL_UNSIGNED_INT, 0, amount);
 		glBindVertexArray(0);
 	}
 

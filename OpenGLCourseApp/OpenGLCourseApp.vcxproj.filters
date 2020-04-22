@@ -255,6 +255,12 @@
     <ClCompile Include="learnopengl\TextureJoey.cpp">
       <Filter>Source Files\LearnOpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="MeshJoey.cpp">
+      <Filter>Source Files\LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelJoey.cpp">
+      <Filter>Source Files\LearnOpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">

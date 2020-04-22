@@ -187,7 +187,9 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshJoey.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ModelJoey.cpp" />
     <ClCompile Include="OmniShadowMap.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Quad.cpp" />
