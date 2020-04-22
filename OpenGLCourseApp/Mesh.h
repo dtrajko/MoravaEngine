@@ -3,7 +3,9 @@
 
 class Mesh
 {
+
 public:
+
 	Mesh();
 
 	virtual void Create(float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indexCount);

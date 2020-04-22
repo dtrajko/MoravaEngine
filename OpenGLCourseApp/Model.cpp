@@ -46,6 +46,9 @@ void Model::LoadModel(const std::string& fileName, const std::string& texturesPa
 	LoadMaterials(scene);
 }
 
+/*
+ * Recursive method for loading all nodes (meshes) from the ASSIMP tree data structure
+ */
 void Model::LoadNode(aiNode* node, const aiScene* scene)
 {
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
@@ -59,6 +62,12 @@ void Model::LoadNode(aiNode* node, const aiScene* scene)
 	}
 }
 
+/*
+ * Process and convert ASSIMP aiMesh data structure to our internal Mesh class
+ * Mesh data structure contains of Vertex Position, Normals, Texture Coordinates,
+ * Tangents, BiTangents and the texture tilingFactor
+ * It also processes Indices from Mesh Faces
+ */
 void Model::LoadMesh(aiMesh* mesh, const aiScene* scene)
 {
 	std::vector<GLfloat> vertices;
@@ -128,6 +137,9 @@ void Model::LoadMesh(aiMesh* mesh, const aiScene* scene)
 	meshToTexture.push_back(mesh->mMaterialIndex);
 }
 
+/*
+ * Loads Materials and corresponding textures - Diffuse (Albedo), Height (Normal)
+ */
 void Model::LoadMaterials(const aiScene* scene)
 {
 	textureList.resize(scene->mNumMaterials);
@@ -195,6 +207,10 @@ void Model::LoadMaterials(const aiScene* scene)
 	}
 }
 
+/*
+ * Render Model by using only Diffuse (Albedo) and Normal textures
+ * Texture binding done within the method
+ */
 void Model::RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNormalMaps)
 {
 	for (size_t i = 0; i < meshList.size(); i++)
@@ -218,6 +234,10 @@ void Model::RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNorma
 	}
 }
 
+/* 
+ * Renders meshes in a model after previously binding all PBR textures:
+ * Albedo, Normal, Metalness/Roughness, Emissive, Ambient Occlusion
+ */
 void Model::RenderModelPBR()
 {
 	for (size_t i = 0; i < meshList.size(); i++)
