@@ -188,7 +188,6 @@ private:
                 // if texture hasn't been loaded already, load it
                 TextureJoey texture(str.C_Str(), this->directory, false);
 
-
                 TextureData textureData;
                 textureData.id = texture.GetTextureID();
                 textureData.type = typeName;

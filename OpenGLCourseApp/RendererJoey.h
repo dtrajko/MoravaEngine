@@ -7,7 +7,7 @@
 #include "Cube.h"
 #include "Quad.h"
 #include "LearnOpenGL/ShaderJoey.h"
-#include "SphereJoey.h"
+#include "LearnOpenGL/SphereJoey.h"
 
 
 class RendererJoey : public RendererBasic

@@ -2,7 +2,7 @@
 
 #include "RendererBasic.h"
 
-#include "ModelJoey.h"
+#include "LearnOpenGL/ModelJoey.h"
 
 
 class RendererAsteroids : public RendererBasic

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Scene.h"
-#include "ModelJoey.h"
+#include "LearnOpenGL/ModelJoey.h"
 
 
 class SceneAsteroids : public Scene

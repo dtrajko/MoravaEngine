@@ -1,6 +1,3 @@
-#ifndef SHADER_H
-#define SHADER_H
-
 #include <glm/glm.hpp>
 
 #include <string>
@@ -9,9 +6,9 @@
 class ShaderJoey
 {
 public:
-	unsigned int ID;
 	// constructor generates the shader on the fly
 	ShaderJoey(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
+	inline unsigned int GetProgramID() { return ID; };
 	void use();
 	void setBool(const std::string& name, bool value) const;
 	void setInt(const std::string& name, int value) const;
@@ -29,6 +26,6 @@ public:
 private:
 	void checkCompileErrors(GLuint shader, std::string type);
 
+private:
+	unsigned int ID;
 };
-
-#endif

@@ -165,9 +165,6 @@
     <ClCompile Include="RendererPBR.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SphereJoey.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Quad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -195,10 +192,13 @@
     <ClCompile Include="SceneAsteroids.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextureJoey.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LearnOpenGL\ShaderJoey.cpp">
+      <Filter>LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="LearnOpenGL\SphereJoey.cpp">
+      <Filter>LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="LearnOpenGL\TextureJoey.cpp">
       <Filter>LearnOpenGL</Filter>
     </ClCompile>
   </ItemGroup>
@@ -362,9 +362,6 @@
     <ClInclude Include="RendererPBR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SphereJoey.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Quad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -398,15 +395,6 @@
     <ClInclude Include="SceneAsteroids.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ModelJoey.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshJoey.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureJoey.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LearnOpenGL\Camera.h">
       <Filter>LearnOpenGL</Filter>
     </ClInclude>
@@ -420,6 +408,18 @@
       <Filter>LearnOpenGL</Filter>
     </ClInclude>
     <ClInclude Include="LearnOpenGL\ShaderJoey.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\MeshJoey.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\ModelJoey.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\SphereJoey.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\TextureJoey.h">
       <Filter>LearnOpenGL</Filter>
     </ClInclude>
   </ItemGroup>
