@@ -1,16 +1,14 @@
-#ifndef MODEL_H
-#define MODEL_H
-
-#include <GL/glew.h>
+#pragma once
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "mesh.h"
-#include "shader.h"
+#include "Mesh.h"
+#include "ShaderJoey.h"
 
 #include <string>
 #include <fstream>

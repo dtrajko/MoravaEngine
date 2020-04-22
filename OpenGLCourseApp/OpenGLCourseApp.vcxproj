@@ -180,6 +180,7 @@
     <ClCompile Include="FramebufferTexture.cpp" />
     <ClCompile Include="ImGuiBuild.cpp" />
     <ClCompile Include="ImGuiWrapper.cpp" />
+    <ClCompile Include="LearnOpenGL\ShaderJoey.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -219,6 +220,7 @@
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureCubemap.cpp" />
+    <ClCompile Include="TextureJoey.cpp" />
     <ClCompile Include="Tile2D.cpp" />
     <ClCompile Include="WaterManager.cpp" />
     <ClCompile Include="Window.cpp" />
@@ -244,6 +246,11 @@
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="FramebufferTexture.h" />
     <ClInclude Include="ImGuiWrapper.h" />
+    <ClInclude Include="LearnOpenGL\Camera.h" />
+    <ClInclude Include="LearnOpenGL\functions.h" />
+    <ClInclude Include="LearnOpenGL\Mesh.h" />
+    <ClInclude Include="LearnOpenGL\Model.h" />
+    <ClInclude Include="LearnOpenGL\ShaderJoey.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Material.h" />
@@ -286,6 +293,7 @@
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureCubemap.h" />
+    <ClInclude Include="TextureJoey.h" />
     <ClInclude Include="Tile2D.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexInstanced.h" />

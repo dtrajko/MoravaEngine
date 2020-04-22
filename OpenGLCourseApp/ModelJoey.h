@@ -9,6 +9,7 @@
 
 #include "Shader.h"
 #include "MeshJoey.h"
+#include "TextureJoey.h"
 
 #include <string>
 #include <fstream>
@@ -23,7 +24,7 @@ class ModelJoey
 {
 public:
     /*  Model Data */
-    vector<TextureJoey> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
+    vector<TextureData> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
     vector<MeshJoey> meshes;
     string directory;
     bool gammaCorrection;
@@ -87,7 +88,7 @@ private:
         // data to fill
         vector<Vertex> vertices;
         vector<unsigned int> indices;
-        vector<TextureJoey> textures;
+        vector<TextureData> textures;
 
         // Walk through each of the mesh's vertices
         for (unsigned int i = 0; i < mesh->mNumVertices; i++)
@@ -146,16 +147,16 @@ private:
         // normal: texture_normalN
 
         // 1. diffuse maps
-        vector<TextureJoey> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+        vector<TextureData> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
         // 2. specular maps
-        vector<TextureJoey> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+        vector<TextureData> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
         // 3. normal maps
-        std::vector<TextureJoey> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+        std::vector<TextureData> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
         textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
         // 4. height maps
-        std::vector<TextureJoey> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+        std::vector<TextureData> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
         textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
         // return a mesh object created from the extracted mesh data
@@ -164,9 +165,9 @@ private:
 
     // checks all material textures of a given type and loads the textures if they're not loaded yet.
     // the required info is returned as a Texture struct.
-    vector<TextureJoey> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName)
+    vector<TextureData> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName)
     {
-        vector<TextureJoey> textures;
+        vector<TextureData> textures;
         for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
         {
             aiString str;
@@ -183,13 +184,17 @@ private:
                 }
             }
             if (!skip)
-            {   // if texture hasn't been loaded already, load it
-                TextureJoey texture;
-                texture.id = MeshJoey::TextureFromFile(str.C_Str(), this->directory, false);
-                texture.type = typeName;
-                texture.path = str.C_Str();
-                textures.push_back(texture);
-                textures_loaded.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+            {
+                // if texture hasn't been loaded already, load it
+                TextureJoey texture(str.C_Str(), this->directory, false);
+
+
+                TextureData textureData;
+                textureData.id = texture.GetTextureID();
+                textureData.type = typeName;
+                textureData.path = str.C_Str();
+                textures.push_back(textureData);
+                textures_loaded.push_back(textureData);  // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
             }
         }
         return textures;

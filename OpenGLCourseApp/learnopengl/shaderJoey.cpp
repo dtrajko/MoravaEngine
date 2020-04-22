@@ -5,7 +5,7 @@
 
 #include <GL/glew.h>
 
-#include "shaderJoey.h"
+#include "ShaderJoey.h"
 
 
 ShaderJoey::ShaderJoey(const char* vertexPath, const char* fragmentPath, const char* geometryPath)

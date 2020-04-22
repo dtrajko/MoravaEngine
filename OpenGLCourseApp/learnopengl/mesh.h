@@ -6,7 +6,7 @@
 
 #include <GL/glew.h>
 
-#include "shader.h"
+#include "ShaderJoey.h"
 
 #include <string>
 #include <fstream>

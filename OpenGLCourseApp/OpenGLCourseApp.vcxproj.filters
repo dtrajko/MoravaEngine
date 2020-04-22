@@ -16,6 +16,9 @@
     <Filter Include="ImGui">
       <UniqueIdentifier>{a884542e-61ec-48af-bfab-35bf796e0272}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LearnOpenGL">
+      <UniqueIdentifier>{a81ac37b-3787-4dde-8ed5-3fa8578209ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -191,6 +194,12 @@
     </ClCompile>
     <ClCompile Include="SceneAsteroids.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureJoey.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LearnOpenGL\ShaderJoey.cpp">
+      <Filter>LearnOpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -394,6 +403,24 @@
     </ClInclude>
     <ClInclude Include="MeshJoey.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureJoey.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\Camera.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\functions.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\Mesh.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\Model.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\ShaderJoey.h">
+      <Filter>LearnOpenGL</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

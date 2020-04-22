@@ -6,7 +6,7 @@
 #include "Cubemap.h"
 #include "Cube.h"
 #include "Quad.h"
-#include "learnopengl/shaderJoey.h"
+#include "LearnOpenGL/ShaderJoey.h"
 #include "SphereJoey.h"
 
 
