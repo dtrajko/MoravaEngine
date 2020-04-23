@@ -4,19 +4,17 @@
 
 
 Window::Window()
-	: Window(1280, 720)
+	: Window(1280, 720, "Window Title Undefined")
 {
 	xChange = 0.0f;
 	yChange = 0.0f;
 }
 
-Window::Window(GLint windowWidth, GLint windowHeight)
+Window::Window(GLint windowWidth, GLint windowHeight, const char* windowTitle)
+	: width(windowWidth), height(windowHeight), m_Title(windowTitle)
 {
 	xChange = 0.0f;
 	yChange = 0.0f;
-
-	width = windowWidth;
-	height = windowHeight;
 
 	for (size_t i = 0; i < 1024; i++)
 		keys[i] = false;
@@ -47,7 +45,7 @@ int Window::Initialize()
 	// Allow forward compatibility
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	glfwWindow = glfwCreateWindow(width, height, "Test Window", NULL, NULL);
+	glfwWindow = glfwCreateWindow(width, height, m_Title, NULL, NULL);
 	if (!glfwWindow)
 	{
 		printf("GLFW Window creation failed!\n");

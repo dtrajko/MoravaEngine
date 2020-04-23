@@ -82,4 +82,6 @@ SceneAsteroids::~SceneAsteroids()
 {
 	for (auto& model : models)
 		delete model.second;
+
+	models.clear();
 }

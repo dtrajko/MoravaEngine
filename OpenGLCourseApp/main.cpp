@@ -10,6 +10,10 @@
 #include "ImGuiWrapper.h"
 #include "Window.h"
 #include "Camera.h"
+#include "LightManager.h"
+#include "WaterManager.h"
+#include "Profiler.h"
+
 #include "SceneCottage.h"
 #include "SceneEiffel.h"
 #include "SceneSponza.h"
@@ -19,17 +23,18 @@
 #include "SceneBullet.h"
 #include "SceneInstanced.h"
 #include "SceneAsteroids.h"
-#include "LightManager.h"
-#include "WaterManager.h"
+#include "SceneNanosuit.h"
+
 #include "Renderer.h"
 #include "RendererPBR.h"
 #include "RendererJoey.h"
 #include "RendererInstanced.h"
 #include "RendererAsteroids.h"
-#include "Profiler.h"
+#include "RendererNanosuit.h"
 
 
 // Window dimensions
+const char* windowTitle = "3D Graphics Engine (C++ / OpenGL)";
 const GLint WIDTH = 1280;
 const GLint HEIGHT = 720;
 const float toRadians = 3.14159265f / 180.0f;
@@ -50,9 +55,10 @@ enum class SceneName
 	Bullet,
 	Instanced,
 	Asteroids,
+	Nanosuit,
 };
 
-SceneName currentScene = SceneName::Asteroids;
+SceneName currentScene = SceneName::Nanosuit;
 
 float deltaTime = 0.0f;
 float lastTime = 0.0f;
@@ -66,7 +72,7 @@ std::map<const char*, float> profilerResults;
 
 int main()
 {
-	mainWindow = Window(WIDTH, HEIGHT);
+	mainWindow = Window(WIDTH, HEIGHT, windowTitle);
 	mainWindow.Initialize();
 
 	printf("OpenGL Info:\n");
@@ -111,6 +117,10 @@ int main()
 	case SceneName::Asteroids:
 		scene = new SceneAsteroids();
 		renderer = static_cast<RendererBasic*>(new RendererAsteroids());
+		break;
+	case SceneName::Nanosuit:
+		scene = new SceneNanosuit();
+		renderer = static_cast<RendererBasic*>(new RendererNanosuit());
 		break;
 	}
 

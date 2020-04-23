@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "Shader.h"
+#include "../Shader.h"
 
 
 struct Vertex

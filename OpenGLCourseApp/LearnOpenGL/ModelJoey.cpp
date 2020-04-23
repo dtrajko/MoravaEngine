@@ -1,18 +1,19 @@
-#include "LearnOpenGL/ModelJoey.h"
+#include "ModelJoey.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "Shader.h"
-#include "LearnOpenGL/MeshJoey.h"
-#include "LearnOpenGL/TextureJoey.h"
+#include "../Shader.h"
+#include "MeshJoey.h"
+#include "TextureJoey.h"
 
 #include <string>
 
 
 // constructor, expects a filepath to a 3D model.
-ModelJoey::ModelJoey(std::string const& path, bool gamma) : gammaCorrection(gamma)
+ModelJoey::ModelJoey(std::string const& path, std::string const& textureDirectory, bool gamma)
+    : gammaCorrection(gamma), m_TextureDirectory(textureDirectory)
 {
     loadModel(path);
 }
@@ -29,7 +30,11 @@ void ModelJoey::loadModel(std::string const& path)
 {
     // read file via ASSIMP
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    const aiScene* scene = importer.ReadFile(path,
+        aiProcess_Triangulate |
+        aiProcess_FlipUVs |
+        aiProcess_CalcTangentSpace |
+        aiProcess_GenNormals);
     // check for errors
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
     {
@@ -38,7 +43,7 @@ void ModelJoey::loadModel(std::string const& path)
     }
 
     // retrieve the directory path of the filepath
-    directory = path.substr(0, path.find_last_of('/'));
+    m_ModelDirectory = path.substr(0, path.find_last_of('/'));
 
     // process ASSIMP's root node recursively
     processNode(scene->mRootNode, scene);
@@ -82,11 +87,13 @@ MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
         vector.y = mesh->mVertices[i].y;
         vector.z = mesh->mVertices[i].z;
         vertex.Position = vector;
+
         // normals
         vector.x = mesh->mNormals[i].x;
         vector.y = mesh->mNormals[i].y;
         vector.z = mesh->mNormals[i].z;
         vertex.Normal = vector;
+
         // texture coordinates
         if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
         {
@@ -99,11 +106,13 @@ MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
         }
         else
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+
         // tangent
         vector.x = mesh->mTangents[i].x;
         vector.y = mesh->mTangents[i].y;
         vector.z = mesh->mTangents[i].z;
         vertex.Tangent = vector;
+
         // bitangent
         vector.x = mesh->mBitangents[i].x;
         vector.y = mesh->mBitangents[i].y;
@@ -111,7 +120,8 @@ MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
         vertex.Bitangent = vector;
         vertices.push_back(vertex);
     }
-    // now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
+
+    // Indices - now walk through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
     {
         aiFace face = mesh->mFaces[i];
@@ -119,7 +129,8 @@ MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
         for (unsigned int j = 0; j < face.mNumIndices; j++)
             indices.push_back(face.mIndices[j]);
     }
-    // process materials
+
+    // Materials - process materials
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
     // we assume a convention for sampler names in the shaders. Each diffuse texture should be named
     // as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER. 
@@ -169,7 +180,8 @@ std::vector<TextureData> ModelJoey::loadMaterialTextures(aiMaterial* mat, aiText
         if (!skip)
         {
             // if texture hasn't been loaded already, load it
-            TextureJoey texture(str.C_Str(), this->directory, false);
+            std::string textureDirectory = m_TextureDirectory.length() > 0 ? m_TextureDirectory : this->m_ModelDirectory;
+            TextureJoey texture(str.C_Str(), textureDirectory, gammaCorrection);
 
             TextureData textureData;
             textureData.id = texture.GetTextureID();

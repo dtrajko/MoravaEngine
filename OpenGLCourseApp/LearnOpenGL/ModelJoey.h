@@ -7,8 +7,9 @@
 
 class ModelJoey
 {
+
 public:
-    ModelJoey(std::string const& path, bool gamma = false);
+    ModelJoey(std::string const& path, std::string const& textureDirectory = "", bool gamma = false);
     void Draw(Shader* shader);
     inline std::vector<TextureData> GetTextures() { return textures_loaded; };
     inline std::vector<MeshJoey> GetMeshes() { return meshes; };
@@ -22,7 +23,8 @@ private:
 private:
     std::vector<TextureData> textures_loaded; // stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
     std::vector<MeshJoey> meshes;
-    std::string directory;
+    std::string m_ModelDirectory;
+    std::string m_TextureDirectory;
     bool gammaCorrection;
 
 };

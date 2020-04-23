@@ -5,12 +5,11 @@
 #include <GLFW/glfw3.h>
 
 
-
 class Window
 {
 public:
 	Window();
-	Window(GLint windowWidth, GLint windowHeight);
+	Window(GLint windowWidth, GLint windowHeight, const char* windowTitle);
 	int Initialize();
 	inline GLFWwindow* GetHandler() { return glfwWindow; };
 	inline unsigned int GetBufferWidth() { return bufferWidth; };
@@ -28,6 +27,7 @@ public:
 private:
 	GLFWwindow* glfwWindow;
 
+	const char* m_Title;
 	GLint width;
 	GLint height;
 	unsigned int bufferWidth;
