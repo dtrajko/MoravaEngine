@@ -3,6 +3,7 @@
 #include "RendererBasic.h"
 
 #include "LearnOpenGL/ModelJoey.h"
+#include "SceneNanosuit.h"
 
 
 class RendererNanosuit : public RendererBasic
@@ -19,5 +20,7 @@ public:
 	~RendererNanosuit();
 
 	std::map<std::string, ModelJoey*> models;
-	float modelRotationY = 0.0f;
+	float m_ModelRotationY = 0.0f;
+
+	NanosuitUniforms* nanosuitUniforms;
 };
