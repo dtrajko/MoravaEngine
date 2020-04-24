@@ -54,6 +54,7 @@ void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 	nanosuitUniforms = sceneNanosuit->GetNanosuitUniforms();
 
 	shaderNanosuit->setVec3("viewPos", sceneNanosuit->m_LightOnCamera ? scene->GetCamera()->GetPosition() : nanosuitUniforms->viewPos);
+	shaderNanosuit->setBool("enableNormalMap", nanosuitUniforms->enableNormalMap);
 
 	// light properties
 	shaderNanosuit->setVec3("light.position",      sceneNanosuit->m_LightOnCamera ? scene->GetCamera()->GetPosition() : nanosuitUniforms->light.position);
@@ -73,6 +74,7 @@ void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 	// material properties
 	shaderNanosuit->setInt("material.diffuse",     nanosuitUniforms->material.diffuse);
 	shaderNanosuit->setInt("material.specular",    nanosuitUniforms->material.specular);
+	shaderNanosuit->setInt("material.normalMap",   nanosuitUniforms->material.normalMap);
 	shaderNanosuit->setFloat("material.shininess", nanosuitUniforms->material.shininess);
 
 	glm::mat4 view = scene->GetCamera()->CalculateViewMatrix();

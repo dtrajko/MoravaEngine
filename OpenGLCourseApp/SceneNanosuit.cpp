@@ -35,9 +35,11 @@ void SceneNanosuit::InitNanosuitUniforms()
 		nanosuitUniforms = new NanosuitUniforms;
 
 	nanosuitUniforms->viewPos = m_Camera->GetPosition();
+	nanosuitUniforms->enableNormalMap = true;
 
-	nanosuitUniforms->material.diffuse = 0;
-	nanosuitUniforms->material.specular = 1;
+	nanosuitUniforms->material.diffuse =   0; // sampler2D / Texture slot
+	nanosuitUniforms->material.specular =  1; // sampler2D / Texture slot
+	nanosuitUniforms->material.normalMap = 2; // sampler2D / Texture slot
 	nanosuitUniforms->material.shininess = 32.0f;
 
 	nanosuitUniforms->light.position = m_Camera->GetPosition();
@@ -81,6 +83,7 @@ void SceneNanosuit::UpdateImGui(float timestep, Window& mainWindow, std::map<con
 	ImGui::Begin("Nanosuit Shader Parameters:");
 
 	ImGui::Checkbox("Set Defaults", &m_DefaultNanosuitUniforms);
+	ImGui::Checkbox("Enable Normal Map", &nanosuitUniforms->enableNormalMap);
 	ImGui::Checkbox("Light on Camera", &m_LightOnCamera);
 	ImGui::Checkbox("Is Rotating", &m_IsRotating);
 	ImGui::SliderFloat("Rotating Speed", &m_RotationSpeed, -500.0f, 500.0f);
@@ -91,13 +94,14 @@ void SceneNanosuit::UpdateImGui(float timestep, Window& mainWindow, std::map<con
 	ImGui::Separator();
 	ImGui::SliderInt("Material.diffuse",      &nanosuitUniforms->material.diffuse,   0, 3);
 	ImGui::SliderInt("Material.specular",     &nanosuitUniforms->material.specular,  0, 3);
+	ImGui::SliderInt("Material.normalMap",    &nanosuitUniforms->material.normalMap, 0, 3);
 	ImGui::SliderFloat("Material.shininess",  &nanosuitUniforms->material.shininess, 0, 1024);
 	ImGui::Separator();
 	ImGui::Separator();
 	ImGui::SliderFloat3("Light.position",   glm::value_ptr(nanosuitUniforms->light.position),  -100.0f, 100.0f);
 	ImGui::SliderFloat3("Light.direction",  glm::value_ptr(nanosuitUniforms->light.direction), -100.0f, 100.0f);
-	ImGui::SliderFloat("Light.cutOff",      &nanosuitUniforms->light.cutOff,      -100.0f, 100.0f);
-	ImGui::SliderFloat("Light.outerCutOff", &nanosuitUniforms->light.outerCutOff, -100.0f, 100.0f);
+	ImGui::SliderFloat("Light.cutOff",      &nanosuitUniforms->light.cutOff,      -1.0f, 1.0f);
+	ImGui::SliderFloat("Light.outerCutOff", &nanosuitUniforms->light.outerCutOff, -1.0f, 1.0f);
 	ImGui::Separator();
 	ImGui::ColorEdit3("Light.ambient", glm::value_ptr(nanosuitUniforms->light.ambient));
 	ImGui::ColorEdit3("Light.diffuse", glm::value_ptr(nanosuitUniforms->light.diffuse));
