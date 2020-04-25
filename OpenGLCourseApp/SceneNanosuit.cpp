@@ -99,9 +99,6 @@ void SceneNanosuit::UpdateImGui(float timestep, Window& mainWindow, std::map<con
 	ImGui::ColorEdit3("Background Color", glm::value_ptr(m_BgColor));
 	ImGui::Separator();
 	ImGui::Separator();
-	ImGui::SliderFloat3("ViewPos", glm::value_ptr(nanosuitUniforms->viewPos), -100.0f, 100.0f);
-	ImGui::Separator();
-	ImGui::Separator();
 	ImGui::SliderInt("Material.diffuse",      &nanosuitUniforms->material.diffuse,   0, 3);
 	ImGui::SliderInt("Material.specular",     &nanosuitUniforms->material.specular,  0, 3);
 	ImGui::SliderInt("Material.normalMap",    &nanosuitUniforms->material.normalMap, 0, 3);

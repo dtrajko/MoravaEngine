@@ -53,7 +53,7 @@ void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 
 	nanosuitUniforms = sceneNanosuit->GetNanosuitUniforms();
 
-	shaderNanosuit->setVec3("viewPos", sceneNanosuit->m_LightOnCamera ? scene->GetCamera()->GetPosition() : nanosuitUniforms->viewPos);
+	shaderNanosuit->setVec3("viewPos", sceneNanosuit->m_LightOnCamera ? scene->GetCamera()->GetPosition() : nanosuitUniforms->light.position);
 	shaderNanosuit->setBool("enableNormalMap", nanosuitUniforms->enableNormalMap);
 
 	// light properties
