@@ -56,6 +56,8 @@ public:
 	bool m_IsRotating;
 	float m_RotationSpeed;
 	bool m_DefaultNanosuitUniforms;
+	bool m_LightSourceVisible;
+	glm::vec3 m_BgColor;
 
 private:
 	virtual void SetSkybox() override;

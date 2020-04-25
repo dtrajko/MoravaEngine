@@ -38,12 +38,12 @@ void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 {
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 
-	// Clear the window
-	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	Shader* shaderNanosuit = shaders["nanosuit"];
 	SceneNanosuit* sceneNanosuit = (SceneNanosuit*)scene;
+
+	// Clear the window
+	glClearColor(sceneNanosuit->m_BgColor.r, sceneNanosuit->m_BgColor.g, sceneNanosuit->m_BgColor.b, bgColor.a);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// be sure to activate shader when setting uniforms/drawing objects
 	shaderNanosuit->Bind();
@@ -90,6 +90,17 @@ void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 	model = glm::scale(model, glm::vec3(1.0f));
 	shaderNanosuit->setMat4("model", model);
 	models["nanosuit"]->Draw(shaders["nanosuit"]);
+
+	// Render Sphere (Light source)
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, sceneNanosuit->m_LightOnCamera ? scene->GetCamera()->GetPosition() : nanosuitUniforms->light.position);
+	model = glm::scale(model, glm::vec3(0.25f));
+	shaderNanosuit->setMat4("model", model);
+	scene->GetTextures()["plain"]->Bind(0);
+	scene->GetTextures()["plain"]->Bind(1);
+	scene->GetTextures()["plain"]->Bind(2);
+	if (!sceneNanosuit->m_LightOnCamera && sceneNanosuit->m_LightSourceVisible)
+		scene->GetMeshes()["sphere"]->Render();
 
 	std::string passType = "main";
 	scene->Render(projectionMatrix, passType, shaders, uniforms);

@@ -4,6 +4,7 @@
 
 #include "RendererNanosuit.h"
 #include "LearnOpenGL/ModelJoey.h"
+#include "Sphere.h"
 
 
 SceneNanosuit::SceneNanosuit()
@@ -25,6 +26,8 @@ SceneNanosuit::SceneNanosuit()
 	m_IsRotating = true;
 	m_RotationSpeed = 10.0f;
 	m_DefaultNanosuitUniforms = false;
+	m_LightSourceVisible = false;
+	m_BgColor = glm::vec3(0.0f, 0.0f, 0.0f);
 
 	InitNanosuitUniforms();
 }
@@ -62,6 +65,7 @@ void SceneNanosuit::SetSkybox()
 
 void SceneNanosuit::SetTextures()
 {
+	textures.insert(std::make_pair("plain", new Texture("Textures/plain.png")));
 }
 
 void SceneNanosuit::SetupMeshes()
@@ -72,6 +76,10 @@ void SceneNanosuit::SetupModels()
 {
 	ModelJoey* nanosuit = new ModelJoey("Models/nanosuit.obj", "Textures/nanosuit");
 	models.insert(std::make_pair("nanosuit", nanosuit));
+
+	Sphere* sphere = new Sphere();
+	sphere->Create();
+	meshes.insert(std::make_pair("sphere", sphere));
 }
 
 void SceneNanosuit::Update(float timestep, Window& mainWindow)
@@ -85,8 +93,10 @@ void SceneNanosuit::UpdateImGui(float timestep, Window& mainWindow, std::map<con
 	ImGui::Checkbox("Set Defaults", &m_DefaultNanosuitUniforms);
 	ImGui::Checkbox("Enable Normal Map", &nanosuitUniforms->enableNormalMap);
 	ImGui::Checkbox("Light on Camera", &m_LightOnCamera);
+	ImGui::Checkbox("Light Source Visible", &m_LightSourceVisible);
 	ImGui::Checkbox("Is Rotating", &m_IsRotating);
 	ImGui::SliderFloat("Rotating Speed", &m_RotationSpeed, -500.0f, 500.0f);
+	ImGui::ColorEdit3("Background Color", glm::value_ptr(m_BgColor));
 	ImGui::Separator();
 	ImGui::Separator();
 	ImGui::SliderFloat3("ViewPos", glm::value_ptr(nanosuitUniforms->viewPos), -100.0f, 100.0f);
@@ -95,11 +105,11 @@ void SceneNanosuit::UpdateImGui(float timestep, Window& mainWindow, std::map<con
 	ImGui::SliderInt("Material.diffuse",      &nanosuitUniforms->material.diffuse,   0, 3);
 	ImGui::SliderInt("Material.specular",     &nanosuitUniforms->material.specular,  0, 3);
 	ImGui::SliderInt("Material.normalMap",    &nanosuitUniforms->material.normalMap, 0, 3);
-	ImGui::SliderFloat("Material.shininess",  &nanosuitUniforms->material.shininess, 0, 1024);
+	ImGui::SliderFloat("Material.shininess",  &nanosuitUniforms->material.shininess, 0, 512);
 	ImGui::Separator();
 	ImGui::Separator();
-	ImGui::SliderFloat3("Light.position",   glm::value_ptr(nanosuitUniforms->light.position),  -100.0f, 100.0f);
-	ImGui::SliderFloat3("Light.direction",  glm::value_ptr(nanosuitUniforms->light.direction), -100.0f, 100.0f);
+	ImGui::SliderFloat3("Light.position",   glm::value_ptr(nanosuitUniforms->light.position),  -20.0f, 20.0f);
+	ImGui::SliderFloat3("Light.direction",  glm::value_ptr(nanosuitUniforms->light.direction), -1.0f, 1.0f);
 	ImGui::SliderFloat("Light.cutOff",      &nanosuitUniforms->light.cutOff,      -1.0f, 1.0f);
 	ImGui::SliderFloat("Light.outerCutOff", &nanosuitUniforms->light.outerCutOff, -1.0f, 1.0f);
 	ImGui::Separator();
