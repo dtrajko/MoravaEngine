@@ -52,7 +52,7 @@ void SceneNanosuit::InitNanosuitUniforms()
 	nanosuitUniforms->light.position = m_Camera->GetPosition();
 	nanosuitUniforms->light.direction = m_Camera->GetFront();
 	nanosuitUniforms->light.cutOff = glm::cos(glm::radians(12.5f));
-	nanosuitUniforms->light.outerCutOff = glm::cos(glm::radians(17.5f));
+	nanosuitUniforms->light.outerCutOff = glm::cos(glm::radians(20.0f));
 
 	nanosuitUniforms->light.ambient = glm::vec3(2.0f, 2.0f, 2.0f);
 	nanosuitUniforms->light.diffuse = glm::vec3(3.0f, 3.0f, 3.0f);
