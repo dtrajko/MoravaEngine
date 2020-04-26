@@ -5,6 +5,7 @@
 #include "RendererNanosuit.h"
 #include "LearnOpenGL/ModelJoey.h"
 #include "Sphere.h"
+#include "CubeNanosuit.h"
 
 
 SceneNanosuit::SceneNanosuit()
@@ -69,6 +70,9 @@ void SceneNanosuit::SetSkybox()
 void SceneNanosuit::SetTextures()
 {
 	textures.insert(std::make_pair("plain", new Texture("Textures/plain.png")));
+
+	textures.insert(std::make_pair("containerDiffuse", new Texture("Textures/container/container2.png")));
+	textures.insert(std::make_pair("containerSpecular", new Texture("Textures/container/container2_specular.png")));
 }
 
 void SceneNanosuit::SetupMeshes()
@@ -83,6 +87,10 @@ void SceneNanosuit::SetupModels()
 	Sphere* sphere = new Sphere();
 	sphere->Create();
 	meshes.insert(std::make_pair("sphere", sphere));
+
+	CubeNanosuit* cubeNanosuit = new CubeNanosuit("Textures/container");
+	MeshJoey* cube = cubeNanosuit->GetMesh();
+	meshesJoey.insert(std::make_pair("cube", cube));
 }
 
 void SceneNanosuit::Update(float timestep, Window& mainWindow)

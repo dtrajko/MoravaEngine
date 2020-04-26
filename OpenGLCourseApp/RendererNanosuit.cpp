@@ -102,6 +102,13 @@ void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 	if (!sceneNanosuit->m_LightOnCamera && sceneNanosuit->m_LightSourceVisible)
 		scene->GetMeshes()["sphere"]->Render();
 
+	// Render Cube (with Diffuse/Specular maps)
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, { 0.0f, 20.0f, 0.0f });
+	model = glm::scale(model, glm::vec3(40.0f));
+	shaderNanosuit->setMat4("model", model);
+	// sceneNanosuit->GetMeshesJoey()["cube"]->Draw(shaders["nanosuit"]);
+
 	std::string passType = "main";
 	scene->Render(projectionMatrix, passType, shaders, uniforms);
 }

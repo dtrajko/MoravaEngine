@@ -41,6 +41,7 @@ public:
 	virtual void Render(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
 	inline std::map<std::string, ModelJoey*> GetModels() const { return models; };
+	inline std::map<std::string, MeshJoey*> GetMeshesJoey() const { return meshesJoey; };
 	NanosuitUniforms* GetNanosuitUniforms() { return nanosuitUniforms; };
 	void InitNanosuitUniforms();
 	virtual ~SceneNanosuit() override;
@@ -60,6 +61,7 @@ private:
 	virtual void SetupModels() override;
 
 	std::map<std::string, ModelJoey*> models;
+	std::map<std::string, MeshJoey*> meshesJoey;
 	NanosuitUniforms* nanosuitUniforms;
 
 };

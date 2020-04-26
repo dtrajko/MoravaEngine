@@ -26,6 +26,7 @@ struct TextureData
 class MeshJoey
 {
 public:
+    MeshJoey();
     MeshJoey(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<TextureData> textures);
     void Draw(Shader* shader);
     inline unsigned int GetVAO() const { return VAO; };

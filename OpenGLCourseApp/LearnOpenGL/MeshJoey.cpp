@@ -4,6 +4,10 @@
 #include <vector>
 
 
+MeshJoey::MeshJoey()
+{
+}
+
 MeshJoey::MeshJoey(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<TextureData> textures)
 {
     this->vertices = vertices;
