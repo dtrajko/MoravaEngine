@@ -125,9 +125,9 @@ void SceneNanosuit::UpdateImGui(float timestep, Window& mainWindow, std::map<con
 	ImGui::ColorEdit3("Light.diffuse", glm::value_ptr(nanosuitUniforms->light.diffuse));
 	ImGui::ColorEdit3("Light.specular", glm::value_ptr(nanosuitUniforms->light.specular));
 	ImGui::Separator();
-	ImGui::SliderFloat("Light.constant",  &nanosuitUniforms->light.constant,  0.0f, 10.0f);
-	ImGui::SliderFloat("Light.linear",    &nanosuitUniforms->light.linear,    0.0f, 10.0f);
-	ImGui::SliderFloat("Light.quadratic", &nanosuitUniforms->light.quadratic, 0.0f, 1.0f);
+	ImGui::SliderFloat("Light.constant",  &nanosuitUniforms->light.constant,  0.8f, 1.2f);
+	ImGui::SliderFloat("Light.linear",    &nanosuitUniforms->light.linear,    0.0f, 0.6f);
+	ImGui::SliderFloat("Light.quadratic", &nanosuitUniforms->light.quadratic, 0.0f, 0.6f);
 
 	ImGui::End();
 }
