@@ -24,6 +24,10 @@ void RendererNanosuit::SetShaders()
 	Shader* shaderNanosuit = new Shader("Shaders/nanosuit.vs", "Shaders/nanosuit.fs");
 	shaders.insert(std::make_pair("nanosuit", shaderNanosuit));
 	printf("RendererNanosuit: shaderNanosuit compiled [programID=%d]\n", shaderNanosuit->GetProgramID());
+
+	Shader* shaderLightingMaps = new Shader("Shaders/learnopengl/4.2.lighting_maps.vs", "Shaders/learnopengl/4.2.lighting_maps.fs");
+	shaders.insert(std::make_pair("lighting_maps", shaderLightingMaps));
+	printf("RendererNanosuit: shaderLightingMaps compiled [programID=%d]\n", shaderLightingMaps->GetProgramID());
 }
 
 void RendererNanosuit::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -39,6 +43,7 @@ void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 
 	Shader* shaderNanosuit = shaders["nanosuit"];
+	Shader* shaderLightingMaps = shaders["lighting_maps"];
 	SceneNanosuit* sceneNanosuit = (SceneNanosuit*)scene;
 
 	// Clear the window
@@ -89,7 +94,7 @@ void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 	model = glm::rotate(model, glm::radians(m_ModelRotationY), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
 	shaderNanosuit->setMat4("model", model);
-	models["nanosuit"]->Draw(shaders["nanosuit"]);
+	models["nanosuit"]->Draw(shaderNanosuit);
 
 	// Render Sphere (Light source)
 	model = glm::mat4(1.0f);
@@ -102,12 +107,27 @@ void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 	if (!sceneNanosuit->m_LightOnCamera && sceneNanosuit->m_LightSourceVisible)
 		scene->GetMeshes()["sphere"]->Render();
 
+	// Init 'LightingMaps' shader uniforms
+	shaderLightingMaps->Bind();
+	shaderLightingMaps->setMat4("projection", projectionMatrix);
+	shaderLightingMaps->setMat4("view", view);
+
+	shaderLightingMaps->setInt("material.diffuse", 0);
+	shaderLightingMaps->setInt("material.specular", 1);
+	shaderLightingMaps->setFloat("material.shininess", 32.0f);
+
+	shaderLightingMaps->setVec3("light.position", sceneNanosuit->m_LightOnCamera ? scene->GetCamera()->GetPosition() : nanosuitUniforms->light.position);
+	shaderLightingMaps->setVec3("viewPos", scene->GetCamera()->GetPosition());
+	shaderLightingMaps->setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+	shaderLightingMaps->setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+	shaderLightingMaps->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
 	// Render Cube (with Diffuse/Specular maps)
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, { 15.0f, 4.0f, 0.0f });
 	model = glm::scale(model, glm::vec3(8.0f));
-	shaderNanosuit->setMat4("model", model);
-	sceneNanosuit->GetMeshesJoey()["cube"]->Draw(shaders["nanosuit"]);
+	shaderLightingMaps->setMat4("model", model);
+	sceneNanosuit->GetMeshesJoey()["cube"]->Draw(shaderLightingMaps);
 
 	std::string passType = "main";
 	scene->Render(projectionMatrix, passType, shaders, uniforms);

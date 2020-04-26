@@ -135,6 +135,10 @@ MeshJoey* CubeNanosuit::processMesh()
     std::vector<TextureData> specularMaps = loadMaterialTextures("container2_specular.png", "texture_specular");
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
+    // 3. normal maps
+    std::vector<TextureData> normalMaps = loadMaterialTextures("container2_normal.png", "texture_normal");
+    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+
     // return a mesh object created from the extracted mesh data
     return new MeshJoey(vertices, m_Indices, textures);
 }
