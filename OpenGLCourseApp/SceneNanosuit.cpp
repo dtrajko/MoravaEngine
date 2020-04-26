@@ -40,10 +40,13 @@ void SceneNanosuit::InitNanosuitUniforms()
 	nanosuitUniforms->viewPos = m_Camera->GetPosition();
 	nanosuitUniforms->enableNormalMap = true;
 
-	nanosuitUniforms->material.diffuse =   0; // sampler2D / Texture slot
-	nanosuitUniforms->material.specular =  1; // sampler2D / Texture slot
-	nanosuitUniforms->material.normalMap = 2; // sampler2D / Texture slot
-	nanosuitUniforms->material.shininess = 32.0f;
+	int txSlotDiffuse =  0; // sampler2D / Texture slot
+	int txSlotSpecular = 1; // sampler2D / Texture slot
+	int txSlotNormal =   2; // sampler2D / Texture slot
+	float shininess = 32.0f;
+	Material material(txSlotDiffuse, txSlotSpecular, txSlotNormal, shininess);
+
+	nanosuitUniforms->material = material;
 
 	nanosuitUniforms->light.position = m_Camera->GetPosition();
 	nanosuitUniforms->light.direction = m_Camera->GetFront();
@@ -99,10 +102,10 @@ void SceneNanosuit::UpdateImGui(float timestep, Window& mainWindow, std::map<con
 	ImGui::ColorEdit3("Background Color", glm::value_ptr(m_BgColor));
 	ImGui::Separator();
 	ImGui::Separator();
-	ImGui::SliderInt("Material.diffuse",      &nanosuitUniforms->material.diffuse,   0, 3);
-	ImGui::SliderInt("Material.specular",     &nanosuitUniforms->material.specular,  0, 3);
-	ImGui::SliderInt("Material.normalMap",    &nanosuitUniforms->material.normalMap, 0, 3);
-	ImGui::SliderFloat("Material.shininess",  &nanosuitUniforms->material.shininess, 0, 512);
+	ImGui::SliderInt("Material.diffuse",      &nanosuitUniforms->material.m_AlbedoMap,   0, 3);
+	ImGui::SliderInt("Material.specular",     &nanosuitUniforms->material.m_SpecularMap, 0, 3);
+	ImGui::SliderInt("Material.normalMap",    &nanosuitUniforms->material.m_NormalMap,   0, 3);
+	ImGui::SliderFloat("Material.shininess",  &nanosuitUniforms->material.m_Shininess,   0, 512);
 	ImGui::Separator();
 	ImGui::Separator();
 	ImGui::SliderFloat3("Light.position",   glm::value_ptr(nanosuitUniforms->light.position),  -20.0f, 20.0f);

@@ -72,10 +72,10 @@ void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 	shaderNanosuit->setFloat("light.quadratic",    nanosuitUniforms->light.quadratic);
 
 	// material properties
-	shaderNanosuit->setInt("material.diffuse",     nanosuitUniforms->material.diffuse);
-	shaderNanosuit->setInt("material.specular",    nanosuitUniforms->material.specular);
-	shaderNanosuit->setInt("material.normalMap",   nanosuitUniforms->material.normalMap);
-	shaderNanosuit->setFloat("material.shininess", nanosuitUniforms->material.shininess);
+	shaderNanosuit->setInt("material.diffuse",     nanosuitUniforms->material.m_AlbedoMap);
+	shaderNanosuit->setInt("material.specular",    nanosuitUniforms->material.m_SpecularMap);
+	shaderNanosuit->setInt("material.normalMap",   nanosuitUniforms->material.m_NormalMap);
+	shaderNanosuit->setFloat("material.shininess", nanosuitUniforms->material.m_Shininess);
 
 	glm::mat4 view = scene->GetCamera()->CalculateViewMatrix();
 

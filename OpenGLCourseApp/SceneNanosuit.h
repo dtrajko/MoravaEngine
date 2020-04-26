@@ -3,15 +3,9 @@
 #include "Scene.h"
 
 #include "LearnOpenGL/ModelJoey.h"
+#include "Material.h"
 
 
-struct NanosuitMaterial
-{
-	int diffuse;   // sampler2D 0
-	int specular;  // sampler2D 1
-	int normalMap; // sampler2D 2
-	float shininess;
-};
 
 struct NanosuitLight
 {
@@ -33,7 +27,7 @@ struct NanosuitUniforms
 {
 	glm::vec3 viewPos;
 	bool enableNormalMap;
-	NanosuitMaterial material;
+	Material material;
 	NanosuitLight light;
 };
 
