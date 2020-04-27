@@ -273,6 +273,12 @@
     <ClCompile Include="Renderbuffer.cpp">
       <Filter>Source Files\Framebuffer</Filter>
     </ClCompile>
+    <ClCompile Include="RendererFramebuffers.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneFramebuffers.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -493,6 +499,12 @@
     </ClInclude>
     <ClInclude Include="Renderbuffer.h">
       <Filter>Header Files\Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneFramebuffers.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererFramebuffers.h">
+      <Filter>Header Files\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

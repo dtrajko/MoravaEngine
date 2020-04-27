@@ -24,6 +24,7 @@
 #include "SceneInstanced.h"
 #include "SceneAsteroids.h"
 #include "SceneNanosuit.h"
+#include "SceneFramebuffers.h"
 
 #include "Renderer.h"
 #include "RendererPBR.h"
@@ -31,6 +32,7 @@
 #include "RendererInstanced.h"
 #include "RendererAsteroids.h"
 #include "RendererNanosuit.h"
+#include "RendererFramebuffers.h"
 
 
 // Window dimensions
@@ -56,9 +58,10 @@ enum class SceneName
 	Instanced,
 	Asteroids,
 	Nanosuit,
+	Framebuffers,
 };
 
-SceneName currentScene = SceneName::LearnOpenGL;
+SceneName currentScene = SceneName::Framebuffers;
 
 float deltaTime = 0.0f;
 float lastTime = 0.0f;
@@ -121,6 +124,10 @@ int main()
 	case SceneName::Nanosuit:
 		scene = new SceneNanosuit();
 		renderer = static_cast<RendererBasic*>(new RendererNanosuit());
+		break;
+	case SceneName::Framebuffers:
+		scene = new SceneFramebuffers();
+		renderer = static_cast<RendererBasic*>(new RendererFramebuffers());
 		break;
 	}
 

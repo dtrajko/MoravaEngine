@@ -6,6 +6,13 @@
 Framebuffer::Framebuffer()
 {
 	glGenFramebuffers(1, &m_FBO);
+
+	m_TextureAttachmentsColor = std::vector<FramebufferTexture*>();
+	m_TextureAttachmentDepth = nullptr;
+	m_TextureAttachmentStencil = nullptr;
+
+	m_BufferAttachmentDepth = nullptr;
+	m_BufferAttachmentStencil = nullptr;
 }
 
 void Framebuffer::Bind()
@@ -24,16 +31,30 @@ bool Framebuffer::CheckStatus()
 	return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 }
 
-void Framebuffer::AttachTexture(unsigned int width, unsigned int height, FramebufferTextureType type)
+void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, FramebufferTextureType txType)
 {
-	FramebufferTexture* texture = new FramebufferTexture(width, height, type, (unsigned int)m_TextureAttachments.size());
-	m_TextureAttachments.push_back(texture);
+	FramebufferTexture* texture = new FramebufferTexture(width, height, txType, (unsigned int)m_TextureAttachmentsColor.size());
+	m_TextureAttachmentsColor.push_back(texture);
 }
 
-void Framebuffer::AttachRenderbuffer(unsigned int width, unsigned int height, RenderbufferFormatType internalFormat)
+void Framebuffer::CreateTextureAttachmentDepth(unsigned int width, unsigned int height, FramebufferTextureType txType)
 {
-	Renderbuffer* renderbuffer = new Renderbuffer(width, height, internalFormat, (unsigned int)m_RenderbufferAttachments.size());
-	m_RenderbufferAttachments.push_back(renderbuffer);
+	m_TextureAttachmentDepth = new FramebufferTexture(width, height, txType, 0);
+}
+
+void Framebuffer::CreateTextureAttachmentStencil(unsigned int width, unsigned int height, FramebufferTextureType txType)
+{
+	m_TextureAttachmentStencil = new FramebufferTexture(width, height, txType, 0);
+}
+
+void Framebuffer::CreateBufferAttachmentDepth(unsigned int width, unsigned int height, RenderbufferFormatType formatType)
+{
+	m_BufferAttachmentDepth = new Renderbuffer(width, height, formatType, 0);
+}
+
+void Framebuffer::CreateBufferAttachmentStencil(unsigned int width, unsigned int height, RenderbufferFormatType formatType)
+{
+	m_BufferAttachmentStencil = new Renderbuffer(width, height, formatType, 0);
 }
 
 Framebuffer::~Framebuffer()
