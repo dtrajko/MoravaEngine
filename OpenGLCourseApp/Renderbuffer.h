@@ -3,11 +3,12 @@
 #include "GL/glew.h"
 
 
-enum class RenderbufferFormatType
+enum class RBOType
 {
 	Depth =              0, // GL_DEPTH_COMPONENT
-	Depth_24 =           1, // GL_DEPTH_COMPONENT24
-	Depth_24_Stencil_8 = 2, // GL_DEPTH24_STENCIL8
+	Stencil =            1, // GL_STENCIL
+	Depth_24 =           2, // GL_DEPTH_COMPONENT24
+	Depth_24_Stencil_8 = 3, // GL_DEPTH24_STENCIL8
 };
 
 
@@ -15,7 +16,7 @@ class Renderbuffer
 {
 public:
 	Renderbuffer();
-	Renderbuffer(unsigned int width, unsigned int height, RenderbufferFormatType formatType, unsigned int orderID);
+	Renderbuffer(unsigned int width, unsigned int height, RBOType formatType, unsigned int orderID);
 	void Bind();
 	void Unbind();
 	inline unsigned int GetID() const { return m_RBO; };

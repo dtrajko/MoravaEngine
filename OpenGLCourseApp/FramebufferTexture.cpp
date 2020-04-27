@@ -5,35 +5,35 @@ FramebufferTexture::FramebufferTexture()
 {
 }
 
-FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, FramebufferTextureType txType, unsigned int orderID)
+FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, FBOTextureType txType, unsigned int orderID)
 {
 	GLenum attachment = GL_COLOR_ATTACHMENT0 + orderID;
 	GLint internalFormat = GL_RGB;
 	GLenum format = GL_RGB;
 	GLenum type = GL_UNSIGNED_BYTE;
 
-	if (txType == FramebufferTextureType::Color)
+	if (txType == FBOTextureType::Color)
 	{
 		attachment = GL_COLOR_ATTACHMENT0 + orderID;
 		internalFormat = GL_RGB;
 		format = GL_RGB;
 		type = GL_UNSIGNED_BYTE;
 	}
-	else if (txType == FramebufferTextureType::Depth)
+	else if (txType == FBOTextureType::Depth)
 	{
 		attachment = GL_DEPTH_ATTACHMENT;
 		internalFormat = GL_DEPTH_COMPONENT;
 		format = GL_DEPTH_COMPONENT;
 		type = GL_FLOAT;
 	}
-	else if (txType == FramebufferTextureType::Stencil)
+	else if (txType == FBOTextureType::Stencil)
 	{
 		attachment = GL_STENCIL_ATTACHMENT;
 		internalFormat = GL_STENCIL_INDEX;
 		format = GL_STENCIL_INDEX;
 		type = GL_FLOAT;
 	}
-	else if (txType == FramebufferTextureType::DepthStencil)
+	else if (txType == FBOTextureType::DepthStencil)
 	{
 		attachment = GL_DEPTH_STENCIL_ATTACHMENT;
 		internalFormat = GL_DEPTH24_STENCIL8;

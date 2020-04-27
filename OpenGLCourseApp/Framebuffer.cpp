@@ -13,6 +13,7 @@ Framebuffer::Framebuffer()
 
 	m_BufferAttachmentDepth = nullptr;
 	m_BufferAttachmentStencil = nullptr;
+	m_BufferAttachmentDepthAndStencil = nullptr;
 }
 
 void Framebuffer::Bind()
@@ -31,30 +32,35 @@ bool Framebuffer::CheckStatus()
 	return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 }
 
-void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, FramebufferTextureType txType)
+void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, FBOTextureType txType)
 {
 	FramebufferTexture* texture = new FramebufferTexture(width, height, txType, (unsigned int)m_TextureAttachmentsColor.size());
 	m_TextureAttachmentsColor.push_back(texture);
 }
 
-void Framebuffer::CreateTextureAttachmentDepth(unsigned int width, unsigned int height, FramebufferTextureType txType)
+void Framebuffer::CreateTextureAttachmentDepth(unsigned int width, unsigned int height, FBOTextureType txType)
 {
 	m_TextureAttachmentDepth = new FramebufferTexture(width, height, txType, 0);
 }
 
-void Framebuffer::CreateTextureAttachmentStencil(unsigned int width, unsigned int height, FramebufferTextureType txType)
+void Framebuffer::CreateTextureAttachmentStencil(unsigned int width, unsigned int height, FBOTextureType txType)
 {
 	m_TextureAttachmentStencil = new FramebufferTexture(width, height, txType, 0);
 }
 
-void Framebuffer::CreateBufferAttachmentDepth(unsigned int width, unsigned int height, RenderbufferFormatType formatType)
+void Framebuffer::CreateBufferAttachmentDepth(unsigned int width, unsigned int height, RBOType formatType)
 {
 	m_BufferAttachmentDepth = new Renderbuffer(width, height, formatType, 0);
 }
 
-void Framebuffer::CreateBufferAttachmentStencil(unsigned int width, unsigned int height, RenderbufferFormatType formatType)
+void Framebuffer::CreateBufferAttachmentStencil(unsigned int width, unsigned int height, RBOType formatType)
 {
 	m_BufferAttachmentStencil = new Renderbuffer(width, height, formatType, 0);
+}
+
+void Framebuffer::CreateBufferAttachmentDepthAndStencil(unsigned int width, unsigned int height, RBOType formatType)
+{
+	m_BufferAttachmentDepthAndStencil = new Renderbuffer(width, height, formatType, 0);
 }
 
 Framebuffer::~Framebuffer()

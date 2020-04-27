@@ -5,7 +5,7 @@
 #include <string>
 
 
-enum class FramebufferTextureType
+enum class FBOTextureType
 {
 	Color = 0,
 	Depth = 1,
@@ -19,7 +19,7 @@ class FramebufferTexture : public Texture
 
 public:
 	FramebufferTexture();
-	FramebufferTexture(unsigned int width, unsigned int height, FramebufferTextureType txType, unsigned int orderID);
+	FramebufferTexture(unsigned int width, unsigned int height, FBOTextureType txType, unsigned int orderID);
 	~FramebufferTexture();
 
 };

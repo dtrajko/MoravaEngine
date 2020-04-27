@@ -10,22 +10,22 @@ Renderbuffer::Renderbuffer()
 	m_Height = 0;
 }
 
-Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, RenderbufferFormatType formatType, unsigned int orderID)
+Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, RBOType formatType, unsigned int orderID)
 {
 	GLenum internalFormat;
 	GLenum attachment;
 
-	if (formatType == RenderbufferFormatType::Depth)
+	if (formatType == RBOType::Depth)
 	{
 		internalFormat = GL_DEPTH_COMPONENT;
 		attachment = GL_DEPTH_ATTACHMENT;
 	}
-	else if (formatType == RenderbufferFormatType::Depth_24)
+	else if (formatType == RBOType::Depth_24)
 	{
 		internalFormat = GL_DEPTH_COMPONENT24;
 		attachment = GL_DEPTH_ATTACHMENT;
 	}
-	else if (formatType == RenderbufferFormatType::Depth_24_Stencil_8)
+	else if (formatType == RBOType::Depth_24_Stencil_8)
 	{
 		internalFormat = GL_DEPTH24_STENCIL8;
 		attachment = GL_DEPTH_STENCIL_ATTACHMENT;

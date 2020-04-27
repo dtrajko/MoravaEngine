@@ -14,12 +14,13 @@ public:
 	void Unbind();
 	bool CheckStatus();
 
-	void CreateTextureAttachmentColor(unsigned int width, unsigned int height, FramebufferTextureType txType);
-	void CreateTextureAttachmentDepth(unsigned int width, unsigned int height, FramebufferTextureType txType);
-	void CreateTextureAttachmentStencil(unsigned int width, unsigned int height, FramebufferTextureType txType);
+	void CreateTextureAttachmentColor(unsigned int width, unsigned int height, FBOTextureType txType = FBOTextureType::Color);
+	void CreateTextureAttachmentDepth(unsigned int width, unsigned int height, FBOTextureType txType = FBOTextureType::Depth);
+	void CreateTextureAttachmentStencil(unsigned int width, unsigned int height, FBOTextureType txType = FBOTextureType::Stencil);
 
-	void CreateBufferAttachmentDepth(unsigned int width, unsigned int height, RenderbufferFormatType formatType);
-	void CreateBufferAttachmentStencil(unsigned int width, unsigned int height, RenderbufferFormatType formatType);
+	void CreateBufferAttachmentDepth(unsigned int width, unsigned int height, RBOType formatType = RBOType::Depth);
+	void CreateBufferAttachmentStencil(unsigned int width, unsigned int height, RBOType formatType = RBOType::Stencil);
+	void CreateBufferAttachmentDepthAndStencil(unsigned int width, unsigned int height, RBOType formatType = RBOType::Depth_24_Stencil_8);
 
 	~Framebuffer();
 
@@ -32,11 +33,6 @@ private:
 
 	Renderbuffer* m_BufferAttachmentDepth;
 	Renderbuffer* m_BufferAttachmentStencil;
-
-	// buffer color
-	// buffer depth
-	// buffer stencil
-
-	// color attachment (at least one)
+	Renderbuffer* m_BufferAttachmentDepthAndStencil;
 
 };
