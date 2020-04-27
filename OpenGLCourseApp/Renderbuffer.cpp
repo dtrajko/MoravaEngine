@@ -5,18 +5,50 @@
 
 Renderbuffer::Renderbuffer()
 {
-	bufferID = 0;
+	m_RBO = 0;
 	m_Width = 0;
 	m_Height = 0;
 }
 
-Renderbuffer::Renderbuffer(unsigned int m_Width, unsigned int m_Height, GLenum internalFormat)
+Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, RenderbufferFormatType formatType, unsigned int orderID)
 {
-	glGenRenderbuffers(1, &bufferID);
-	glBindRenderbuffer(GL_RENDERBUFFER, bufferID);
+	GLenum internalFormat;
+	GLenum attachment;
+
+	if (formatType == RenderbufferFormatType::Depth)
+	{
+		internalFormat = GL_DEPTH_COMPONENT;
+		attachment = GL_DEPTH_ATTACHMENT;
+	}
+	else if (formatType == RenderbufferFormatType::Depth_24)
+	{
+		internalFormat = GL_DEPTH_COMPONENT24;
+		attachment = GL_DEPTH_ATTACHMENT;
+	}
+	else if (formatType == RenderbufferFormatType::Depth_24_Stencil_8)
+	{
+		internalFormat = GL_DEPTH24_STENCIL8;
+		attachment = GL_DEPTH_STENCIL_ATTACHMENT;
+	}
+
+	glGenRenderbuffers(1, &m_RBO);
+	Bind();
+	// Create a depth and stencil renderbuffer object
 	glRenderbufferStorage(GL_RENDERBUFFER, internalFormat, m_Width, m_Height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, bufferID);
-	printf("Renderbuffer ID=%d, m_Width=%d, m_Height=%d\n", bufferID, m_Width, m_Height);
+	// Attach the renderbuffer object
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, m_RBO);
+
+	printf("Renderbuffer ID=%d, m_Width=%d, m_Height=%d\n", m_RBO, m_Width, m_Height);
+}
+
+void Renderbuffer::Bind()
+{
+	glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
+}
+
+void Renderbuffer::Unbind()
+{
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
 Renderbuffer::~Renderbuffer()

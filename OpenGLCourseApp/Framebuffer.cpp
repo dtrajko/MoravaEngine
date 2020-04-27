@@ -1,70 +1,42 @@
 #include "Framebuffer.h"
 
-#include "GL/glew.h"
-
-#include <cstdio>
+#include <GL/glew.h>
 
 
 Framebuffer::Framebuffer()
 {
-	fbo = 0;
-	m_Width = 0;
-	m_Height = 0;
-	m_ColorAttachment = nullptr;
-	m_DepthAttachment = nullptr;
-	m_DepthBuffer = nullptr;
-}
-
-Framebuffer::Framebuffer(unsigned int width, unsigned int height)
-{
-	m_Width = width;
-	m_Height = height;
-
-	m_ColorAttachment = nullptr;
-	m_DepthAttachment = nullptr;
-	m_DepthBuffer = nullptr;
-
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	glDrawBuffer(GL_COLOR_ATTACHMENT0);
-
-	printf("Framebuffer fbo=%d, m_Width=%d, m_Height=%d\n", fbo, m_Width, m_Height);
-}
-
-void Framebuffer::AddColorAttachment(FramebufferTexture* colorAttachment)
-{
-	m_ColorAttachment = colorAttachment;
-}
-
-void Framebuffer::AddDepthAttachment(FramebufferTexture* depthAttachment)
-{
-	m_DepthAttachment = depthAttachment;
-}
-
-void Framebuffer::AddDepthBuffer(Renderbuffer* depthBuffer)
-{
-	m_DepthBuffer = depthBuffer;
+	glGenFramebuffers(1, &m_FBO);
 }
 
 void Framebuffer::Bind()
 {
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	glViewport(0, 0, m_Width, m_Height);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 }
 
 void Framebuffer::Unbind()
 {
+	// unbind custom framebuffer and make the default framebuffer active
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	m_ColorAttachment->Unbind();
-	m_DepthAttachment->Unbind();
-	glViewport(0, 0, m_Width, m_Height);
+}
+
+bool Framebuffer::CheckStatus()
+{
+	return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+}
+
+void Framebuffer::AttachTexture(unsigned int width, unsigned int height, FramebufferTextureType type)
+{
+	FramebufferTexture* texture = new FramebufferTexture(width, height, type, (unsigned int)m_TextureAttachments.size());
+	m_TextureAttachments.push_back(texture);
+}
+
+void Framebuffer::AttachRenderbuffer(unsigned int width, unsigned int height, RenderbufferFormatType internalFormat)
+{
+	Renderbuffer* renderbuffer = new Renderbuffer(width, height, internalFormat, (unsigned int)m_RenderbufferAttachments.size());
+	m_RenderbufferAttachments.push_back(renderbuffer);
 }
 
 Framebuffer::~Framebuffer()
 {
-	delete m_ColorAttachment;
-	delete m_DepthAttachment;
-	delete m_DepthBuffer;
-	glDeleteFramebuffers(1, &fbo);
+	glDeleteFramebuffers(1, &m_FBO);
 }

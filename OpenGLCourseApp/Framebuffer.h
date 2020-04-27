@@ -4,44 +4,29 @@
 #include "Renderbuffer.h"
 
 #include <vector>
-#include <string>
-#include <map>
 
-
-/**
-GL_COLOR_ATTACHMENT0
-GL_DEPTH_ATTACHMENT
-GL_STENCIL_ATTACHMENT
-GL_DEPTH_STENCIL_ATTACHMENT
-
-Each attachment is either a Texture or Renderbuffer Object
-*/
 
 class Framebuffer
 {
-
 public:
 	Framebuffer();
-	Framebuffer(unsigned int width, unsigned int height);
-	void AddColorAttachment(FramebufferTexture* colorAttachment);
-	void AddDepthAttachment(FramebufferTexture* depthAttachment);
-	void AddDepthBuffer(Renderbuffer* depthBuffer);
-	inline FramebufferTexture* GetColorAttachment() const { return m_ColorAttachment; };
-	inline FramebufferTexture* GetDepthAttachment() const { return m_DepthAttachment; };
-	inline Renderbuffer* GetDepthBuffer() const { return m_DepthBuffer; };
-	inline unsigned int GetID() const { return fbo; };
 	void Bind();
 	void Unbind();
+	bool CheckStatus();
+	void AttachTexture(unsigned int width, unsigned int height, FramebufferTextureType type);
+	void AttachRenderbuffer(unsigned int width, unsigned int height, RenderbufferFormatType internalFormat);
 	~Framebuffer();
 
 private:
-	unsigned int fbo = -1;
-	unsigned int m_Width = -1;
-	unsigned int m_Height = -1;
+	unsigned int m_FBO;
 
-	FramebufferTexture* m_ColorAttachment = nullptr;
-	FramebufferTexture* m_DepthAttachment = nullptr;
-	Renderbuffer* m_DepthBuffer;
-	FramebufferTexture* m_StencilAttachment; // still not in use
+	std::vector<FramebufferTexture*> m_TextureAttachments;
+	std::vector<Renderbuffer*> m_RenderbufferAttachments;
+
+	// buffer color
+	// buffer depth
+	// buffer stencil
+
+	// color attachment (at least one)
 
 };

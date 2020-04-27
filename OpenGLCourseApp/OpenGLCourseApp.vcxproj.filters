@@ -93,9 +93,6 @@
     <ClCompile Include="WaterManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderbuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Terrain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -137,12 +134,6 @@
     </ClCompile>
     <ClCompile Include="DirectionalLight.cpp">
       <Filter>Source Files\Light</Filter>
-    </ClCompile>
-    <ClCompile Include="Framebuffer.cpp">
-      <Filter>Source Files\Framebuffer</Filter>
-    </ClCompile>
-    <ClCompile Include="FramebufferTexture.cpp">
-      <Filter>Source Files\Texture</Filter>
     </ClCompile>
     <ClCompile Include="Light.cpp">
       <Filter>Source Files\Light</Filter>
@@ -270,6 +261,18 @@
     <ClCompile Include="CubeNanosuit.cpp">
       <Filter>Source Files\Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="FramebufferWater.cpp">
+      <Filter>Source Files\Framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="FramebufferTexture.cpp">
+      <Filter>Source Files\Framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Framebuffer.cpp">
+      <Filter>Source Files\Framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderbuffer.cpp">
+      <Filter>Source Files\Framebuffer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -285,9 +288,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WaterManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderbuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -431,9 +431,6 @@
     <ClInclude Include="DirectionalLight.h">
       <Filter>Header Files\Light</Filter>
     </ClInclude>
-    <ClInclude Include="Framebuffer.h">
-      <Filter>Header Files\Framebuffer</Filter>
-    </ClInclude>
     <ClInclude Include="FramebufferTexture.h">
       <Filter>Header Files\Framebuffer</Filter>
     </ClInclude>
@@ -487,6 +484,15 @@
     </ClInclude>
     <ClInclude Include="CubeNanosuit.h">
       <Filter>Header Files\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="FramebufferWater.h">
+      <Filter>Header Files\Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Framebuffer.h">
+      <Filter>Header Files\Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderbuffer.h">
+      <Filter>Header Files\Framebuffer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

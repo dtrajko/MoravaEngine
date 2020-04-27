@@ -31,6 +31,7 @@ struct SceneSettings
 	bool enableWaterEffects;
 	bool enableSkybox;
 	bool enableNormalMaps;
+	bool enableCulling;
 
 	// camera
 	glm::vec3 cameraPosition;

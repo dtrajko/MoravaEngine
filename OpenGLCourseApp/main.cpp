@@ -58,7 +58,7 @@ enum class SceneName
 	Nanosuit,
 };
 
-SceneName currentScene = SceneName::Nanosuit;
+SceneName currentScene = SceneName::LearnOpenGL;
 
 float deltaTime = 0.0f;
 float lastTime = 0.0f;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Framebuffer.h"
+#include "FramebufferWater.h"
 #include "Renderbuffer.h"
 #include "TextureCubemap.h"
 
@@ -11,7 +11,7 @@ public:
 	Cubemap();
 	Cubemap(int width, int height);
 	inline TextureCubemap* GetTextureCubemap() { return m_TextureCubemap; };
-	inline Framebuffer* GetCaptureFBO() { return m_CaptureFBO; };
+	inline FramebufferWater* GetCaptureFBO() { return m_CaptureFBO; };
 	inline Renderbuffer* GetCaptureRBO() { return m_CaptureRBO; };
 	~Cubemap();
 
@@ -19,7 +19,7 @@ private:
 	unsigned int m_Width;
 	unsigned int m_Height;
 
-	Framebuffer* m_CaptureFBO;
+	FramebufferWater* m_CaptureFBO;
 	Renderbuffer* m_CaptureRBO;
 	TextureCubemap* m_TextureCubemap;
 

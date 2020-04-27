@@ -157,7 +157,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 
 	std::string passType = "main";
 
-	EnableCulling();
+	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
 	scene->Render(projectionMatrix, passType, shaders, uniforms);
 
 	shaderMain->Unbind();
@@ -201,7 +201,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	shaderWater->setVec3("lightPosition", LightManager::directionalLight.GetPosition());
 	shaderWater->Validate();
 
-	EnableCulling();
+	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
 	passType = "main";
 	scene->RenderWater(projectionMatrix, passType, shaders, uniforms);
 	shaderWater->Unbind();
