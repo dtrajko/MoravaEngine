@@ -13,63 +13,67 @@ void RendererFramebuffers::Init(Scene* scene)
 	SetShaders();
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
-	float cubeVertices[] = {
-		// positions          // texture Coords
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	float cubeVertices[] =
+	{
+		 // positions           // texture Coords
+		-0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,    1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,    0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
 
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
 
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,    1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+		-0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,    0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,    0.0f, 1.0f
 	};
 
-	float planeVertices[] = {
-		// positions          // texture Coords 
-		 5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-		-5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
-		-5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
+	float planeVertices[] =
+	{
+		 // positions           // texture Coords 
+		 5.0f, -0.5f,  5.0f,    2.0f, 0.0f,
+		-5.0f, -0.5f,  5.0f,    0.0f, 0.0f,
+		-5.0f, -0.5f, -5.0f,    0.0f, 2.0f,
 
-		 5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-		-5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
-		 5.0f, -0.5f, -5.0f,  2.0f, 2.0f
+		 5.0f, -0.5f,  5.0f,    2.0f, 0.0f,
+		-5.0f, -0.5f, -5.0f,    0.0f, 2.0f,
+		 5.0f, -0.5f, -5.0f,    2.0f, 2.0f
 	};
 
-	float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+	// vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates
+	float quadVertices[] =
+	{
 		// positions   // texCoords
 		-1.0f,  1.0f,  0.0f, 1.0f,
 		-1.0f, -1.0f,  0.0f, 0.0f,
@@ -167,7 +171,6 @@ void RendererFramebuffers::Init(Scene* scene)
 
 	// Unbind the framebuffer / back to default framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 }
 
 void RendererFramebuffers::SetUniforms()

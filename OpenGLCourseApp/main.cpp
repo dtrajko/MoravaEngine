@@ -61,7 +61,7 @@ enum class SceneName
 	Framebuffers,
 };
 
-SceneName currentScene = SceneName::LearnOpenGL;
+SceneName currentScene = SceneName::Framebuffers;
 
 float deltaTime = 0.0f;
 float lastTimestamp = 0.0f;
