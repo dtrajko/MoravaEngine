@@ -5,28 +5,32 @@
 
 Framebuffer::Framebuffer()
 {
-	glGenFramebuffers(1, &m_FBO);
-
 	m_TextureAttachmentsColor = std::vector<FramebufferTexture*>();
-	m_TextureAttachmentDepth = nullptr;
-	m_TextureAttachmentStencil = nullptr;
-
-	m_BufferAttachmentDepth = nullptr;
-	m_BufferAttachmentStencil = nullptr;
-	m_BufferAttachmentDepthAndStencil = nullptr;
-
-	Bind();
+	m_AttachmentDepth = nullptr;
+	m_AttachmentStencil = nullptr;
+	m_AttachmentDepthAndStencil = nullptr;
 }
 
-void Framebuffer::Bind()
+Framebuffer::Framebuffer(unsigned int width, unsigned int height)
+	: Framebuffer()
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+	glGenFramebuffers(1, &m_FBO);
+	Bind(width, height);
 }
 
-void Framebuffer::Unbind()
+void Framebuffer::Bind(unsigned int width, unsigned int height)
+{
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+	glViewport(0, 0, width, height);
+}
+
+void Framebuffer::Unbind(unsigned int width, unsigned int height)
 {
 	// unbind custom framebuffer and make the default framebuffer active
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, width, height);
 }
 
 bool Framebuffer::CheckStatus()
@@ -34,40 +38,34 @@ bool Framebuffer::CheckStatus()
 	return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 }
 
-void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, FBOTextureType txType)
+void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat)
 {
-	FramebufferTexture* texture = new FramebufferTexture(width, height, txType, (unsigned int)m_TextureAttachmentsColor.size());
+	FramebufferTexture* texture = new FramebufferTexture(width, height, attachmentFormat, (unsigned int)m_TextureAttachmentsColor.size());
 	m_TextureAttachmentsColor.push_back(texture);
 }
 
-void Framebuffer::CreateTextureAttachmentDepth(unsigned int width, unsigned int height, FBOTextureType txType)
+void Framebuffer::CreateAttachmentDepth(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
-	m_TextureAttachmentDepth = new FramebufferTexture(width, height, txType, 0);
+	if (attachmentType == AttachmentType::Texture)
+		m_AttachmentDepth = new FramebufferTexture(width, height, attachmentFormat, 0);
+	else if (attachmentType == AttachmentType::Renderbuffer)
+		m_AttachmentDepth = new Renderbuffer(width, height, attachmentFormat, 0);
 }
 
-void Framebuffer::CreateTextureAttachmentStencil(unsigned int width, unsigned int height, FBOTextureType txType)
+void Framebuffer::CreateAttachmentStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
-	m_TextureAttachmentStencil = new FramebufferTexture(width, height, txType, 0);
+	if (attachmentType == AttachmentType::Texture)
+		m_AttachmentStencil = new FramebufferTexture(width, height, attachmentFormat, 0);
+	else if (attachmentType == AttachmentType::Renderbuffer)
+		m_AttachmentStencil = new Renderbuffer(width, height, attachmentFormat, 0);
 }
 
-void Framebuffer::CreateBufferAttachmentDepth(unsigned int width, unsigned int height, RBOType formatType)
+void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
-	m_BufferAttachmentDepth = new Renderbuffer(width, height, formatType, 0);
-}
-
-void Framebuffer::CreateBufferAttachmentStencil(unsigned int width, unsigned int height, RBOType formatType)
-{
-	m_BufferAttachmentStencil = new Renderbuffer(width, height, formatType, 0);
-}
-
-void Framebuffer::CreateBufferAttachmentDepthAndStencil(unsigned int width, unsigned int height, RBOType formatType)
-{
-	m_BufferAttachmentDepthAndStencil = new Renderbuffer(width, height, formatType, 0);
-}
-
-FramebufferTexture* Framebuffer::GetTextureAttachmentColor(unsigned int orderID)
-{
-	return m_TextureAttachmentsColor.at(orderID);
+	if (attachmentType == AttachmentType::Texture)
+		m_AttachmentDepthAndStencil = new FramebufferTexture(width, height, attachmentFormat, 0);
+	else if (attachmentType == AttachmentType::Renderbuffer)
+		m_AttachmentDepthAndStencil = new Renderbuffer(width, height, attachmentFormat, 0);
 }
 
 void Framebuffer::Clear()
@@ -82,12 +80,9 @@ Framebuffer::~Framebuffer()
 
 	m_TextureAttachmentsColor.clear();
 
-	delete m_TextureAttachmentDepth;
-	delete m_TextureAttachmentStencil;
-
-	delete m_BufferAttachmentDepth;
-	delete m_BufferAttachmentStencil;
-	delete m_BufferAttachmentDepthAndStencil;
+	delete m_AttachmentDepth;
+	delete m_AttachmentStencil;
+	delete m_AttachmentDepthAndStencil;
 
 	glDeleteFramebuffers(1, &m_FBO);
 }

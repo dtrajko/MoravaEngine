@@ -1,39 +1,43 @@
 #include "FramebufferTexture.h"
 
+#include <GL/glew.h>
+
 
 FramebufferTexture::FramebufferTexture()
+	: Attachment()
 {
 }
 
-FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, FBOTextureType txType, unsigned int orderID)
+FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat, unsigned int orderID)
+	: Attachment::Attachment(width, height, AttachmentType::Texture, attachmentFormat, orderID)
 {
 	GLenum attachment = GL_COLOR_ATTACHMENT0 + orderID;
 	GLint internalFormat = GL_RGB;
 	GLenum format = GL_RGB;
 	GLenum type = GL_UNSIGNED_BYTE;
 
-	if (txType == FBOTextureType::Color)
+	if (attachmentFormat == AttachmentFormat::Color)
 	{
 		attachment = GL_COLOR_ATTACHMENT0 + orderID;
 		internalFormat = GL_RGB;
 		format = GL_RGB;
 		type = GL_UNSIGNED_BYTE;
 	}
-	else if (txType == FBOTextureType::Depth)
+	else if (attachmentFormat == AttachmentFormat::Depth)
 	{
 		attachment = GL_DEPTH_ATTACHMENT;
 		internalFormat = GL_DEPTH_COMPONENT;
 		format = GL_DEPTH_COMPONENT;
 		type = GL_FLOAT;
 	}
-	else if (txType == FBOTextureType::Stencil)
+	else if (attachmentFormat == AttachmentFormat::Stencil)
 	{
 		attachment = GL_STENCIL_ATTACHMENT;
 		internalFormat = GL_STENCIL_INDEX;
 		format = GL_STENCIL_INDEX;
 		type = GL_FLOAT;
 	}
-	else if (txType == FBOTextureType::DepthStencil)
+	else if (attachmentFormat == AttachmentFormat::DepthStencil)
 	{
 		attachment = GL_DEPTH_STENCIL_ATTACHMENT;
 		internalFormat = GL_DEPTH24_STENCIL8;
@@ -41,19 +45,33 @@ FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, 
 		type = GL_UNSIGNED_INT_24_8;
 	}
 
-	glGenTextures(1, &m_TextureID);
-	glBindTexture(GL_TEXTURE_2D, m_TextureID);
+	glGenTextures(1, &m_ID);
+	glBindTexture(GL_TEXTURE_2D, m_ID);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, format, type, nullptr);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glFramebufferTexture(GL_FRAMEBUFFER, attachment, m_TextureID, 0);
-	// glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, m_TextureID, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, attachment, m_ID, 0);
+	// glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, m_ID, 0);
+}
+
+void FramebufferTexture::Bind(unsigned int slot)
+{
+	glActiveTexture(GL_TEXTURE0 + slot);
+	glBindTexture(GL_TEXTURE_2D, m_ID);
+}
+
+void FramebufferTexture::Unbind()
+{
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 FramebufferTexture::~FramebufferTexture()
 {
-	glDeleteTextures(1, &m_TextureID);
+	glDeleteTextures(1, &m_ID);
 }

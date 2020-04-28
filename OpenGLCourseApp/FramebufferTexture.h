@@ -1,25 +1,18 @@
 #pragma once
 
-#include "Texture.h"
+#include "Attachment.h"
 
 #include <string>
 
 
-enum class FBOTextureType
-{
-	Color = 0,
-	Depth = 1,
-	Stencil = 2,
-	DepthStencil = 3,
-};
-
-
-class FramebufferTexture : public Texture
+class FramebufferTexture : public Attachment
 {
 
 public:
 	FramebufferTexture();
-	FramebufferTexture(unsigned int width, unsigned int height, FBOTextureType txType, unsigned int orderID);
+	FramebufferTexture(unsigned int width, unsigned int height, AttachmentFormat attachmentType, unsigned int orderID);
+	virtual void Bind(unsigned int slot = 0) override;
+	virtual void Unbind() override;
 	~FramebufferTexture();
 
 };

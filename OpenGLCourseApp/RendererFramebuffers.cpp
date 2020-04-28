@@ -40,14 +40,14 @@ void RendererFramebuffers::SetFramebuffers()
 {
 	// Framebuffer configuration
 	// -- create a framebuffer (FBO)
-	m_Framebuffer = new Framebuffer();
+	m_Framebuffer = new Framebuffer(SCR_WIDTH, SCR_HEIGHT);
 
 	// -- generate a color texture attachment
 	m_Framebuffer->CreateTextureAttachmentColor(SCR_WIDTH, SCR_HEIGHT);
 
 	// -- create a renderbuffer object (RBO) to be used as a depth and stencil attachment to the framebuffer
 	//      (we won't be sampling these)
-	m_Framebuffer->CreateBufferAttachmentDepthAndStencil(SCR_WIDTH, SCR_HEIGHT);
+	m_Framebuffer->CreateAttachmentDepthAndStencil(SCR_WIDTH, SCR_HEIGHT, AttachmentType::Renderbuffer);
 
 	if (!m_Framebuffer->CheckStatus())
 		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
@@ -55,7 +55,7 @@ void RendererFramebuffers::SetFramebuffers()
 	std::cout << "Framebuffer created successfully." << std::endl;
 
 	// -- Unbind the framebuffer / back to default framebuffer
-	m_Framebuffer->Unbind();
+	m_Framebuffer->Unbind(SCR_WIDTH, SCR_HEIGHT);
 }
 
 void RendererFramebuffers::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -73,8 +73,10 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 
 	{
 		// First Render Pass
-		m_Framebuffer->Bind();
+		m_Framebuffer->Bind((GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+
 		glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
+
 
 		// -- make sure we clear the framebuffer's content
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -89,7 +91,8 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	{
 		// Second Render Pass
 		// -- now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
-		m_Framebuffer->Unbind();
+		m_Framebuffer->Unbind((GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+
 		glDisable(GL_DEPTH_TEST);
 
 		// -- clear all relevant buffers

@@ -10,19 +10,20 @@ class Framebuffer
 {
 public:
 	Framebuffer();
-	void Bind();
-	void Unbind();
+	Framebuffer(unsigned int width, unsigned int height);
+	void Bind(unsigned int width, unsigned int height);
+	void Unbind(unsigned int width, unsigned int height);
 	bool CheckStatus();
 
-	void CreateTextureAttachmentColor(unsigned int width, unsigned int height, FBOTextureType txType = FBOTextureType::Color);
-	void CreateTextureAttachmentDepth(unsigned int width, unsigned int height, FBOTextureType txType = FBOTextureType::Depth);
-	void CreateTextureAttachmentStencil(unsigned int width, unsigned int height, FBOTextureType txType = FBOTextureType::Stencil);
+	void CreateTextureAttachmentColor(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat = AttachmentFormat::Color);
+	void CreateAttachmentDepth(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth);
+	void CreateAttachmentStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Stencil);
+	void CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth_24_Stencil_8);
 
-	void CreateBufferAttachmentDepth(unsigned int width, unsigned int height, RBOType formatType = RBOType::Depth);
-	void CreateBufferAttachmentStencil(unsigned int width, unsigned int height, RBOType formatType = RBOType::Stencil);
-	void CreateBufferAttachmentDepthAndStencil(unsigned int width, unsigned int height, RBOType formatType = RBOType::Depth_24_Stencil_8);
-
-	FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0);
+	inline FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0) { return m_TextureAttachmentsColor.at(orderID); }
+	inline Attachment* GetAttachmentDepth() { return m_AttachmentDepth; };
+	inline Attachment* GetAttachmentStencil() { return m_AttachmentStencil; };
+	inline Attachment* GetAttachmentDepthAndStencil() { return m_AttachmentDepthAndStencil; };
 
 	void Clear();
 
@@ -32,11 +33,8 @@ private:
 	unsigned int m_FBO;
 
 	std::vector<FramebufferTexture*> m_TextureAttachmentsColor;
-	FramebufferTexture* m_TextureAttachmentDepth;
-	FramebufferTexture* m_TextureAttachmentStencil;
-
-	Renderbuffer* m_BufferAttachmentDepth;
-	Renderbuffer* m_BufferAttachmentStencil;
-	Renderbuffer* m_BufferAttachmentDepthAndStencil;
+	Attachment* m_AttachmentDepth;
+	Attachment* m_AttachmentStencil;
+	Attachment* m_AttachmentDepthAndStencil;
 
 };

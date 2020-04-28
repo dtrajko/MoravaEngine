@@ -23,20 +23,20 @@ WaterManager::WaterManager(int width, int height, float waterHeight, float waveS
 
 	reflectionFB = new FramebufferWater(m_Width, m_Height);
 
-	FramebufferTexture* reflectionTextureAttachment = new FramebufferTexture(m_Width, m_Height, FBOTextureType::Color, 0);
+	FramebufferTexture* reflectionTextureAttachment = new FramebufferTexture(m_Width, m_Height, AttachmentFormat::Color, 0);
 	reflectionFB->AddColorAttachment(reflectionTextureAttachment);
 
-	Renderbuffer* reflectionDepthBuffer = new Renderbuffer(m_Width, m_Height, RBOType::Depth, 0);
+	Renderbuffer* reflectionDepthBuffer = new Renderbuffer(m_Width, m_Height, AttachmentFormat::Depth, 0);
 	reflectionFB->AddDepthBuffer(reflectionDepthBuffer);
 
 	SwitchToDefaultFramebuffer();
 
 	refractionFB = new FramebufferWater(m_Width, m_Height);
 
-	FramebufferTexture* refractionTextureAttachment = new FramebufferTexture(m_Width, m_Height, FBOTextureType::Color, 0);
+	FramebufferTexture* refractionTextureAttachment = new FramebufferTexture(m_Width, m_Height, AttachmentFormat::Color, 0);
 	refractionFB->AddColorAttachment(refractionTextureAttachment);
 
-	FramebufferTexture* refractionDepthAttachment = new FramebufferTexture(m_Width, m_Height, FBOTextureType::Depth, 0);
+	FramebufferTexture* refractionDepthAttachment = new FramebufferTexture(m_Width, m_Height, AttachmentFormat::Depth, 0);
 	refractionFB->AddDepthAttachment(refractionDepthAttachment);
 
 	SwitchToDefaultFramebuffer();
