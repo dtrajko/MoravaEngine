@@ -5,7 +5,7 @@
 
 SceneFramebuffers::SceneFramebuffers()
 {
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 10.5f, 10.0f);
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 1.0f, 5.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
 	sceneSettings.ambientIntensity = 0.4f;
@@ -25,6 +25,8 @@ void SceneFramebuffers::SetSkybox()
 
 void SceneFramebuffers::SetTextures()
 {
+	textures.insert(std::make_pair("cube_marble", new Texture("Textures/marble.jpg")));
+	textures.insert(std::make_pair("floor_metal", new Texture("Textures/metal.png")));
 }
 
 void SceneFramebuffers::SetupMeshes()

@@ -17,4 +17,21 @@ public:
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
 	void RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 	~RendererFramebuffers();
+
+private:
+	unsigned int SCR_WIDTH = 1280;
+	unsigned int SCR_HEIGHT = 720;
+
+	unsigned int framebuffer;
+	unsigned int textureColorbuffer;
+
+	unsigned int cubeVAO;
+	unsigned int cubeVBO;
+
+	unsigned int planeVAO;
+	unsigned int planeVBO;
+
+	unsigned int quadVAO;
+	unsigned int quadVBO;
+
 };

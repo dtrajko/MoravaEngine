@@ -61,13 +61,17 @@ enum class SceneName
 	Framebuffers,
 };
 
-SceneName currentScene = SceneName::Framebuffers;
+SceneName currentScene = SceneName::LearnOpenGL;
 
 float deltaTime = 0.0f;
-float lastTime = 0.0f;
+float lastTimestamp = 0.0f;
 float lastUpdateTime = 0.0f;
 float updateInterval = 0.0416f; // 24 times per second
 bool shouldUpdate = false;
+
+// Key cooldown time (emulate onKeyReleased)
+float m_KeyCooldownTime = 0.2f;
+float m_LastKeyPressTime = 0.0f;
 
 // Profiler results
 std::map<const char*, float> profilerResults;
@@ -147,16 +151,16 @@ int main()
 	// Loop until window closed
 	while (!mainWindow.GetShouldClose())
 	{
-		GLfloat now = (GLfloat)glfwGetTime();
-		deltaTime = now - lastTime;
-		// printf("now=%.4f deltaTime=%.4f lastTime=%.4f\n", deltaTime, now, lastTime);
-		lastTime = now;
+		GLfloat currentTimestamp = (GLfloat)glfwGetTime();
+		deltaTime = currentTimestamp - lastTimestamp;
+		// printf("currentTimestamp=%.4f deltaTime=%.4f lastTimestamp=%.4f\n", deltaTime, currentTimestamp, lastTimestamp);
+		lastTimestamp = currentTimestamp;
 
 		shouldUpdate = false;
-		if (now - lastUpdateTime > updateInterval)
+		if (currentTimestamp - lastUpdateTime > updateInterval)
 		{
 			shouldUpdate = true;
-			lastUpdateTime = now;
+			lastUpdateTime = currentTimestamp;
 		}
 
 		scene->GetCamera()->KeyControl(mainWindow.getKeys(), deltaTime);
@@ -172,7 +176,11 @@ int main()
 		// Toggle wireframe mode
 		if (mainWindow.getKeys()[GLFW_KEY_R])
 		{
-			scene->SetWireframeEnabled(!scene->IsWireframeEnabled());
+			if (currentTimestamp - m_LastKeyPressTime > m_KeyCooldownTime)
+			{
+				scene->SetWireframeEnabled(!scene->IsWireframeEnabled());
+				m_LastKeyPressTime = currentTimestamp;
+			}
 		}
 
 		if (scene->IsWireframeEnabled())
@@ -184,7 +192,7 @@ int main()
 
 		{
 			Profiler profiler("Scene::Update");
-			scene->Update(now, mainWindow);
+			scene->Update(currentTimestamp, mainWindow);
 			profilerResults.insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 		}
 
@@ -194,7 +202,7 @@ int main()
 			profilerResults.insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 		}
 
-		scene->UpdateImGui(now, mainWindow, profilerResults);
+		scene->UpdateImGui(currentTimestamp, mainWindow, profilerResults);
 
 		profilerResults.clear();
 
