@@ -223,7 +223,7 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	glBindVertexArray(cubeVAO);
 	glActiveTexture(GL_TEXTURE0);
 
-	scene->GetTextures()["cube_marble"]->Bind(0);
+	scene->GetTextures()["cube_wood"]->Bind(0);
 
 	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
 	shaders["framebuffers_scene"]->setMat4("model", model);
