@@ -63,6 +63,11 @@ void Framebuffer::CreateBufferAttachmentDepthAndStencil(unsigned int width, unsi
 	m_BufferAttachmentDepthAndStencil = new Renderbuffer(width, height, formatType, 0);
 }
 
+FramebufferTexture* Framebuffer::GetTextureAttachmentColor(unsigned int orderID)
+{
+	return m_TextureAttachmentsColor.at(orderID);
+}
+
 Framebuffer::~Framebuffer()
 {
 	glDeleteFramebuffers(1, &m_FBO);

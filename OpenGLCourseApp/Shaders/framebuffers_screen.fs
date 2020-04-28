@@ -83,9 +83,9 @@ void Kernel(float kernel[9])
 void main()
 {
     // DefaultColors();
-    // InvertColors();
+    InvertColors();
     // Grayscale();
     // Nightvision();
     // Kernel(kernel_sharpen);
-    Kernel(kernel_blur);
+    // Kernel(kernel_blur);
 }

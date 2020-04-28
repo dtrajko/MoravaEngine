@@ -3,6 +3,7 @@
 #include "RendererBasic.h"
 
 #include "SceneFramebuffers.h"
+#include "Framebuffer.h"
 
 
 class RendererFramebuffers : public RendererBasic
@@ -22,9 +23,12 @@ private:
 	unsigned int SCR_WIDTH = 1280;
 	unsigned int SCR_HEIGHT = 720;
 
-	unsigned int framebuffer;
-	unsigned int textureColorbuffer;
-	unsigned int rbo;
+	// unsigned int m_FBO;
+	// unsigned int textureColorbuffer;
+	// unsigned int m_RBO;
+
+	// OOP
+	Framebuffer* m_Framebuffer;
 
 	unsigned int cubeVAO;
 	unsigned int cubeVBO;

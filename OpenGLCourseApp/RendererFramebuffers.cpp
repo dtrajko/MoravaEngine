@@ -127,49 +127,60 @@ void RendererFramebuffers::Init(Scene* scene)
 	// Framebuffer configuration
 
 	// create a framebuffer (FBO)
-	glGenFramebuffers(1, &framebuffer);
+	// glGenFramebuffers(1, &m_FBO);
+	m_Framebuffer = new Framebuffer();
 
 	// bind the framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	m_Framebuffer->Bind();
+	// glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 
 	// generate a texture
-	glGenTextures(1, &textureColorbuffer);
+	// glGenTextures(1, &textureColorbuffer);
+	m_Framebuffer->CreateTextureAttachmentColor(SCR_WIDTH, SCR_HEIGHT);
 
 	// bind the texture
-	glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+	// glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+	// m_Framebuffer->GetTextureAttachmentColor(0)->Bind();
 
 	// Specify the target texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// unbind the texture
-	glBindTexture(GL_TEXTURE_2D, 0);
+	// glBindTexture(GL_TEXTURE_2D, 0);
+	// m_Framebuffer->GetTextureAttachmentColor(0)->Unbind();
 
 	// attach the texture to currently bound framebuffer object
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+	// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
 
 	// create a renderbuffer object (RBO) to be used as a depth and stencil attachment to the framebuffer
 	// (we won't be sampling these)
-	glGenRenderbuffers(1, &rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+	m_Framebuffer->CreateBufferAttachmentDepthAndStencil(SCR_WIDTH, SCR_HEIGHT);
+
+	// glGenRenderbuffers(1, &m_RBO);
+	// glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
+	// glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
 
 	// Unbind the renderbuffer, once we've allocated enough memory for the renderbuffer object
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	// glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	// Attach the renderbuffer object to the depth and stencil attachment of the framebuffer
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+	// glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBO);
 
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	// if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	if (m_Framebuffer->CheckStatus())
+	{
+		std::cout << "Framebuffer created successfully." << std::endl;
+	}
+	else
 	{
 		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
 	}
 
-	std::cout << "Framebuffer created successfully." << std::endl;
-
 	// Unbind the framebuffer / back to default framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_Framebuffer->Unbind();
 }
 
 void RendererFramebuffers::SetUniforms()
@@ -204,7 +215,8 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// First render pass
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	// glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+	m_Framebuffer->Bind();
 	glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
 
 	// make sure we clear the framebuffer's content
@@ -247,7 +259,8 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	// Second Pass
 
 	// now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	// glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_Framebuffer->Unbind();
 	glDisable(GL_DEPTH_TEST);
 
 	// clear all relevant buffers
@@ -259,7 +272,8 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	glBindVertexArray(quadVAO);
 
 	// use the color attachment texture as the texture of the quad plane
-	glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+	// glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+	m_Framebuffer->GetTextureAttachmentColor(0)->Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	std::string passType = "main";
@@ -275,7 +289,10 @@ RendererFramebuffers::~RendererFramebuffers()
 	glDeleteBuffers(1, &planeVBO);
 	glDeleteBuffers(1, &quadVBO);
 
-	glDeleteTextures(1, &textureColorbuffer);
-	glDeleteRenderbuffers(1, &rbo);
-	glDeleteFramebuffers(1, &framebuffer);
+	// OOP
+	delete m_Framebuffer;
+
+	// glDeleteTextures(1, &textureColorbuffer);
+	// glDeleteRenderbuffers(1, &m_RBO);
+	// glDeleteFramebuffers(1, &m_FBO);
 }

@@ -50,6 +50,7 @@ FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	glFramebufferTexture(GL_FRAMEBUFFER, attachment, m_TextureID, 0);
+	// glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, m_TextureID, 0);
 }
 
 FramebufferTexture::~FramebufferTexture()

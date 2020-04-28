@@ -22,6 +22,8 @@ public:
 	void CreateBufferAttachmentStencil(unsigned int width, unsigned int height, RBOType formatType = RBOType::Stencil);
 	void CreateBufferAttachmentDepthAndStencil(unsigned int width, unsigned int height, RBOType formatType = RBOType::Depth_24_Stencil_8);
 
+	FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0);
+
 	~Framebuffer();
 
 private:

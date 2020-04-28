@@ -11,6 +11,7 @@ Renderbuffer::Renderbuffer()
 }
 
 Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, RBOType formatType, unsigned int orderID)
+	: m_Width(width), m_Height(height)
 {
 	GLenum internalFormat;
 	GLenum attachment;
@@ -37,7 +38,7 @@ Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, RBOType form
 	glRenderbufferStorage(GL_RENDERBUFFER, internalFormat, m_Width, m_Height);
 	// Attach the renderbuffer object
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, m_RBO);
-
+	Unbind();
 	printf("Renderbuffer ID=%d, m_Width=%d, m_Height=%d\n", m_RBO, m_Width, m_Height);
 }
 
