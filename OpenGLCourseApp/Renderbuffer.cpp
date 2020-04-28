@@ -53,4 +53,5 @@ void Renderbuffer::Unbind()
 
 Renderbuffer::~Renderbuffer()
 {
+	glDeleteRenderbuffers(1, &m_RBO);
 }

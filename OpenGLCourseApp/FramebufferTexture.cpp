@@ -54,4 +54,5 @@ FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, 
 
 FramebufferTexture::~FramebufferTexture()
 {
+	glDeleteTextures(1, &m_TextureID);
 }

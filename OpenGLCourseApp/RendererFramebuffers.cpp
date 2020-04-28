@@ -151,7 +151,6 @@ void RendererFramebuffers::Init(Scene* scene)
 
 	// create a renderbuffer object (RBO) to be used as a depth and stencil attachment to the framebuffer
 	// (we won't be sampling these)
-	unsigned int rbo;
 	glGenRenderbuffers(1, &rbo);
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
@@ -275,4 +274,8 @@ RendererFramebuffers::~RendererFramebuffers()
 	glDeleteBuffers(1, &cubeVBO);
 	glDeleteBuffers(1, &planeVBO);
 	glDeleteBuffers(1, &quadVBO);
+
+	glDeleteTextures(1, &textureColorbuffer);
+	glDeleteRenderbuffers(1, &rbo);
+	glDeleteFramebuffers(1, &framebuffer);
 }

@@ -24,6 +24,7 @@ private:
 
 	unsigned int framebuffer;
 	unsigned int textureColorbuffer;
+	unsigned int rbo;
 
 	unsigned int cubeVAO;
 	unsigned int cubeVBO;
