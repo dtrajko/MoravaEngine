@@ -14,6 +14,8 @@ Framebuffer::Framebuffer()
 	m_BufferAttachmentDepth = nullptr;
 	m_BufferAttachmentStencil = nullptr;
 	m_BufferAttachmentDepthAndStencil = nullptr;
+
+	Bind();
 }
 
 void Framebuffer::Bind()
@@ -68,7 +70,24 @@ FramebufferTexture* Framebuffer::GetTextureAttachmentColor(unsigned int orderID)
 	return m_TextureAttachmentsColor.at(orderID);
 }
 
+void Framebuffer::Clear()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+}
+
 Framebuffer::~Framebuffer()
 {
+	for (auto& textureAttachment : m_TextureAttachmentsColor)
+		delete textureAttachment;
+
+	m_TextureAttachmentsColor.clear();
+
+	delete m_TextureAttachmentDepth;
+	delete m_TextureAttachmentStencil;
+
+	delete m_BufferAttachmentDepth;
+	delete m_BufferAttachmentStencil;
+	delete m_BufferAttachmentDepthAndStencil;
+
 	glDeleteFramebuffers(1, &m_FBO);
 }

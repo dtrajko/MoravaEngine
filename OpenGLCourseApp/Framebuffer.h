@@ -24,6 +24,8 @@ public:
 
 	FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0);
 
+	void Clear();
+
 	~Framebuffer();
 
 private:

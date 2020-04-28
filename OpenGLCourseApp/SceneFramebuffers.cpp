@@ -17,6 +17,7 @@ SceneFramebuffers::SceneFramebuffers()
 	SetTextures();
 	SetupMeshes();
 	SetupModels();
+	SetGeometry();
 }
 
 void SceneFramebuffers::SetSkybox()
@@ -38,6 +39,114 @@ void SceneFramebuffers::SetupModels()
 {
 }
 
+void SceneFramebuffers::SetGeometry()
+{
+	// set up vertex data (and buffer(s)) and configure vertex attributes
+	float cubeVertices[] =
+	{
+		// positions           // texture Coords
+	   -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f,    1.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+		0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+	   -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
+	   -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
+
+	   -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
+		0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
+	   -0.5f,  0.5f,  0.5f,    0.0f, 1.0f,
+	   -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+
+	   -0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+	   -0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+	   -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+	   -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+	   -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+	   -0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+
+		0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+		0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+
+	   -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,    1.0f, 1.0f,
+		0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+	   -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+	   -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+
+	   -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
+		0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+		0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+	   -0.5f,  0.5f,  0.5f,    0.0f, 0.0f,
+	   -0.5f,  0.5f, -0.5f,    0.0f, 1.0f
+	};
+
+	float planeVertices[] =
+	{
+		// positions           // texture Coords 
+		5.0f, -0.5f,  5.0f,    2.0f, 0.0f,
+	   -5.0f, -0.5f,  5.0f,    0.0f, 0.0f,
+	   -5.0f, -0.5f, -5.0f,    0.0f, 2.0f,
+
+		5.0f, -0.5f,  5.0f,    2.0f, 0.0f,
+	   -5.0f, -0.5f, -5.0f,    0.0f, 2.0f,
+		5.0f, -0.5f, -5.0f,    2.0f, 2.0f
+	};
+
+	// vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates
+	float quadVertices[] =
+	{
+		// positions   // texCoords
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		 1.0f,  1.0f,  1.0f, 1.0f
+	};
+
+	// cube VAO
+	glGenVertexArrays(1, &cubeVAO);
+	glGenBuffers(1, &cubeVBO);
+	glBindVertexArray(cubeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	// plane VAO
+	glGenVertexArrays(1, &planeVAO);
+	glGenBuffers(1, &planeVBO);
+	glBindVertexArray(planeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	// screen quad VAO
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+}
+
 void SceneFramebuffers::Update(float timestep, Window& mainWindow)
 {
 }
@@ -49,8 +158,49 @@ void SceneFramebuffers::UpdateImGui(float timestep, Window& mainWindow, std::map
 void SceneFramebuffers::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
+	shaders["framebuffers_scene"]->Bind();
+
+	glm::mat4 model = glm::mat4(1.0f);
+	shaders["framebuffers_scene"]->setMat4("view", m_Camera->CalculateViewMatrix());
+	shaders["framebuffers_scene"]->setMat4("projection", projectionMatrix);
+
+	// -- cubes
+	glBindVertexArray(cubeVAO);
+	glActiveTexture(GL_TEXTURE0);
+
+	textures["cube_wood"]->Bind(0);
+
+	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+	shaders["framebuffers_scene"]->setMat4("model", model);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+	shaders["framebuffers_scene"]->setMat4("model", model);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	// -- floor
+	glBindVertexArray(planeVAO);
+
+	textures["floor_metal"]->Bind(0);
+
+	shaders["framebuffers_scene"]->setMat4("model", glm::mat4(1.0f));
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
+void SceneFramebuffers::CleanupGeometry()
+{
+	// Geometry cleanup
+	glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteVertexArrays(1, &planeVAO);
+	glDeleteVertexArrays(1, &quadVAO);
+	glDeleteBuffers(1, &cubeVBO);
+	glDeleteBuffers(1, &planeVBO);
+	glDeleteBuffers(1, &quadVBO);
 }
 
 SceneFramebuffers::~SceneFramebuffers()
 {
+	CleanupGeometry();
 }
