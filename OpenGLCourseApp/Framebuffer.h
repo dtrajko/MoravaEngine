@@ -20,10 +20,10 @@ public:
 	void CreateAttachmentStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Stencil);
 	void CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth_24_Stencil_8);
 
-	inline FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0) { return m_TextureAttachmentsColor.at(orderID); }
-	inline Attachment* GetAttachmentDepth() { return m_AttachmentDepth; };
-	inline Attachment* GetAttachmentStencil() { return m_AttachmentStencil; };
-	inline Attachment* GetAttachmentDepthAndStencil() { return m_AttachmentDepthAndStencil; };
+	FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0);
+	Attachment* GetAttachmentDepth();
+	Attachment* GetAttachmentStencil();
+	Attachment* GetAttachmentDepthAndStencil();
 
 	void Clear();
 

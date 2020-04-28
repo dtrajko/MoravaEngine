@@ -2,6 +2,8 @@
 
 #include <GL/glew.h>
 
+#include <stdexcept>
+
 
 Framebuffer::Framebuffer()
 {
@@ -66,6 +68,46 @@ void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned i
 		m_AttachmentDepthAndStencil = new FramebufferTexture(width, height, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
 		m_AttachmentDepthAndStencil = new Renderbuffer(width, height, attachmentFormat, 0);
+}
+
+FramebufferTexture* Framebuffer::GetTextureAttachmentColor(unsigned int orderID)
+{
+	if (m_TextureAttachmentsColor.size() < (size_t)orderID + 1)
+	{
+		throw std::runtime_error("Color texture attachment does not exist [orderID = " + std::to_string(orderID) +
+			", m_FBO = " + std::to_string(m_FBO) + "]");
+	}
+
+	return m_TextureAttachmentsColor.at(orderID);
+}
+
+Attachment* Framebuffer::GetAttachmentDepth()
+{
+	if (m_AttachmentDepth == nullptr)
+	{
+		throw std::runtime_error("Depth attachment does not exist in current Framebuffer [ " + std::to_string(m_FBO) + " ]");
+	}
+
+	return m_AttachmentDepth;
+}
+
+Attachment* Framebuffer::GetAttachmentStencil()
+{
+	if (m_AttachmentStencil == nullptr)
+	{
+		throw std::runtime_error("Stencil attachment does not exist in current Framebuffer [ " + std::to_string(m_FBO) + " ]");
+	}
+	return m_AttachmentStencil;
+}
+
+Attachment* Framebuffer::GetAttachmentDepthAndStencil()
+{
+	if (m_AttachmentDepthAndStencil == nullptr)
+	{
+		throw std::runtime_error("Depth/Stencil attachment does not exist in current Framebuffer [ " + std::to_string(m_FBO) + " ]");
+	}
+
+	return m_AttachmentDepthAndStencil;
 }
 
 void Framebuffer::Clear()

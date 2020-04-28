@@ -73,8 +73,7 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 
 	{
 		// First Render Pass
-		m_Framebuffer->Bind((GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
-
+		m_Framebuffer->Bind(SCR_WIDTH, SCR_HEIGHT);
 		glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
 
 
