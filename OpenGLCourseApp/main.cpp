@@ -25,6 +25,7 @@
 #include "SceneAsteroids.h"
 #include "SceneNanosuit.h"
 #include "SceneFramebuffers.h"
+#include "SceneCubemaps.h"
 
 #include "Renderer.h"
 #include "RendererPBR.h"
@@ -33,6 +34,7 @@
 #include "RendererAsteroids.h"
 #include "RendererNanosuit.h"
 #include "RendererFramebuffers.h"
+#include "RendererCubemaps.h"
 
 
 // Window dimensions
@@ -59,9 +61,10 @@ enum class SceneName
 	Asteroids,
 	Nanosuit,
 	Framebuffers,
+	Cubemaps,
 };
 
-SceneName currentScene = SceneName::Framebuffers;
+SceneName currentScene = SceneName::Cubemaps;
 
 float deltaTime = 0.0f;
 float lastTimestamp = 0.0f;
@@ -133,6 +136,12 @@ int main()
 		scene = new SceneFramebuffers();
 		renderer = static_cast<RendererBasic*>(new RendererFramebuffers());
 		break;
+	case SceneName::Cubemaps:
+		scene = new SceneCubemaps();
+		renderer = static_cast<RendererBasic*>(new RendererCubemaps());
+		break;
+	default:
+		throw std::runtime_error("Scene and Renderer could not be loaded!");
 	}
 
 	// Projection matrix
