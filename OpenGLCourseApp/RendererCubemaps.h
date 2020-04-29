@@ -18,4 +18,7 @@ public:
 	void RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 	~RendererCubemaps();
 
+private:
+	std::map<std::string, ModelJoey*> models;
+
 };

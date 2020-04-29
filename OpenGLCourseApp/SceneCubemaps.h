@@ -2,6 +2,9 @@
 
 #include "Scene.h"
 
+#include "TextureCubeMap.h"
+#include "LearnOpenGL/ModelJoey.h"
+
 
 class SceneCubemaps : public Scene
 {
@@ -13,12 +16,13 @@ public:
 	virtual void Render(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
 
+	inline std::map<std::string, ModelJoey*> GetModels() const { return models; };
 	void SetGeometry();
 	void CleanupGeometry();
 
 	inline unsigned int GetCubeVAO() const { return cubeVAO; };
 	inline unsigned int GetSkyboxVAO() const { return skyboxVAO; };
-	inline unsigned int GetCubemapTexture() const { return cubemapTexture; };
+	inline unsigned int GetCubemapTextureID() const { return cubemapTextureID; };
 
 	virtual ~SceneCubemaps() override;
 
@@ -28,7 +32,10 @@ private:
 	virtual void SetupMeshes() override;
 	virtual void SetupModels() override;
 
-	unsigned int cubemapTexture;
+	TextureCubeMap* textureCubeMap;
+	unsigned int cubemapTextureID;
+
+	std::map<std::string, ModelJoey*> models;
 
 	unsigned int cubeVAO;
 	unsigned int cubeVBO;

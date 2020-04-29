@@ -11,6 +11,8 @@ RendererCubemaps::RendererCubemaps()
 
 void RendererCubemaps::Init(Scene* scene)
 {
+    models = ((SceneCubemaps*)scene)->GetModels();
+
 	SetUniforms();
 	SetShaders();
 }
@@ -53,17 +55,27 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     SceneCubemaps* sceneCubemaps = (SceneCubemaps*)scene;
 
     shaders["cubemaps"]->Bind();
-    shaders["cubemaps"]->setMat4("model", glm::mat4(1.0f));
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::scale(model, glm::vec3(2.0f));
+    shaders["cubemaps"]->setMat4("model", model);
     shaders["cubemaps"]->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
     shaders["cubemaps"]->setMat4("projection", projectionMatrix);
     shaders["cubemaps"]->setVec3("cameraPos", scene->GetCamera()->GetPosition());
 
-    // cubes
+    // cube
     glBindVertexArray(sceneCubemaps->GetCubeVAO());
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, sceneCubemaps->GetCubemapTexture());
+    glBindTexture(GL_TEXTURE_CUBE_MAP, sceneCubemaps->GetCubemapTextureID());
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
+
+    // Draw the Nanosuit model
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(0.2f));
+    shaders["cubemaps"]->setMat4("model", model);
+    models["nanosuit"]->Draw(shaders["cubemaps"]);
 
     // draw skybox as last
     glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth buffer's content
@@ -75,7 +87,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     // skybox cube
     glBindVertexArray(sceneCubemaps->GetSkyboxVAO());
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, sceneCubemaps->GetCubemapTexture());
+    glBindTexture(GL_TEXTURE_CUBE_MAP, sceneCubemaps->GetCubemapTextureID());
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
     glDepthFunc(GL_LESS); // set depth function back to default

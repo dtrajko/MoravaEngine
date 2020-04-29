@@ -2,15 +2,13 @@
 
 #include "ImGuiWrapper.h"
 
-#include "TextureCubeMap.h"
-
 #include <vector>
 #include <string>
 
 
 SceneCubemaps::SceneCubemaps()
 {
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 1.0f, 5.0f);
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 2.0f, 5.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
 	sceneSettings.ambientIntensity = 0.4f;
@@ -39,6 +37,8 @@ void SceneCubemaps::SetupMeshes()
 
 void SceneCubemaps::SetupModels()
 {
+    ModelJoey* nanosuit = new ModelJoey("Models/nanosuit.obj", "Textures/nanosuit");
+    models.insert(std::make_pair("nanosuit", nanosuit));
 }
 
 void SceneCubemaps::SetGeometry()
@@ -167,8 +167,8 @@ void SceneCubemaps::SetGeometry()
         "Textures/skybox_cubemaps/back.jpg",
     };
 
-    TextureCubeMap textureCubeMap(faces);
-    cubemapTexture = textureCubeMap.GetID();
+    textureCubeMap = new TextureCubeMap(faces);
+    cubemapTextureID = textureCubeMap->GetID();
 }
 
 void SceneCubemaps::Update(float timestep, Window& mainWindow)
@@ -195,4 +195,5 @@ void SceneCubemaps::CleanupGeometry()
 SceneCubemaps::~SceneCubemaps()
 {
 	CleanupGeometry();
+    delete textureCubeMap;
 }
