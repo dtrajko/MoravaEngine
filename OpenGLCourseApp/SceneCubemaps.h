@@ -16,6 +16,10 @@ public:
 	void SetGeometry();
 	void CleanupGeometry();
 
+	inline unsigned int GetCubeVAO() const { return cubeVAO; };
+	inline unsigned int GetSkyboxVAO() const { return skyboxVAO; };
+	inline unsigned int GetCubemapTexture() const { return cubemapTexture; };
+
 	virtual ~SceneCubemaps() override;
 
 private:
@@ -23,4 +27,12 @@ private:
 	virtual void SetTextures() override;
 	virtual void SetupMeshes() override;
 	virtual void SetupModels() override;
+
+	unsigned int cubemapTexture;
+
+	unsigned int cubeVAO;
+	unsigned int cubeVBO;
+	unsigned int skyboxVAO;
+	unsigned int skyboxVBO;
+
 };

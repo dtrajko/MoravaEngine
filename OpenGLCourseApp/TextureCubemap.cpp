@@ -1,43 +1,59 @@
-#include "TextureCubemap.h"
+#include "TextureCubeMap.h"
 
-#include "CommonValues.h"
+#include <GL/glew.h>
+#include "stb_image.h"
+
+#include <stdexcept>
 
 
-
-TextureCubemap::TextureCubemap()
-	: Texture()
+TextureCubeMap::TextureCubeMap()
 {
+    m_ID = 0;
 }
 
-TextureCubemap::TextureCubemap(unsigned int width, unsigned int height)
+/** Loads a cubemap texture from 6 individual texture faces
+    order:
+    +X (right)
+    -X (left)
+    +Y (top)
+    -Y (bottom)
+    +Z (front)
+    -Z (back)
+*/
+TextureCubeMap::TextureCubeMap(std::vector<std::string> faces)
+    : TextureCubeMap()
 {
-	m_Width = width;
-	m_Height = height;
+    glGenTextures(1, &m_ID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);
 
-	glGenTextures(1, &m_TextureID);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
+    int width, height, nrComponents;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrComponents, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            stbi_image_free(data);
+        }
+        else
+        {
+            throw std::runtime_error("Cubemap texture failed to load at path: " + faces[i]);
+            stbi_image_free(data);
+        }
 
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		// note that we store each face with 16-bit floating point values
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, m_Width, m_Height, 0, GL_RGB, GL_FLOAT, nullptr);
-	}
+        printf("Cubemap texture '%s' succesfully loaded.\n", faces[i].c_str());
+    }
 
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	printf("TextureCubemap GL_TEXTURE_CUBE_MAP m_TextureID=%d\n", m_TextureID);
+    printf("Texture Cube Map succesfully created! [m_ID=%i]\n", m_ID);
 }
 
-void TextureCubemap::Bind(unsigned int textureUnit)
+TextureCubeMap::~TextureCubeMap()
 {
-	glActiveTexture(GL_TEXTURE0 + textureUnit);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
-}
-
-TextureCubemap::~TextureCubemap()
-{
+    glDeleteTextures(1, &m_ID);
 }

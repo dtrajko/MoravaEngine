@@ -230,7 +230,8 @@
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="TextureCubemap.cpp" />
+    <ClCompile Include="TextureCubeMap.cpp" />
+    <ClCompile Include="TextureCubemapLite.cpp" />
     <ClCompile Include="Tile2D.cpp" />
     <ClCompile Include="WaterManager.cpp" />
     <ClCompile Include="Window.cpp" />
@@ -308,7 +309,8 @@
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Texture.h" />
-    <ClInclude Include="TextureCubemap.h" />
+    <ClInclude Include="TextureCubeMap.h" />
+    <ClInclude Include="TextureCubemapLite.h" />
     <ClInclude Include="Tile2D.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexInstanced.h" />

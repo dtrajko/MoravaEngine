@@ -195,9 +195,6 @@
     <ClCompile Include="Tile2D.cpp">
       <Filter>Source Files\Texture</Filter>
     </ClCompile>
-    <ClCompile Include="TextureCubemap.cpp">
-      <Filter>Source Files\Texture</Filter>
-    </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files\Texture</Filter>
     </ClCompile>
@@ -287,6 +284,12 @@
     </ClCompile>
     <ClCompile Include="RendererCubemaps.cpp">
       <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureCubemapLite.cpp">
+      <Filter>Source Files\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureCubeMap.cpp">
+      <Filter>Source Files\Texture</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -473,9 +476,6 @@
     <ClInclude Include="Tile2D.h">
       <Filter>Header Files\Texture</Filter>
     </ClInclude>
-    <ClInclude Include="TextureCubemap.h">
-      <Filter>Header Files\Texture</Filter>
-    </ClInclude>
     <ClInclude Include="Texture.h">
       <Filter>Header Files\Texture</Filter>
     </ClInclude>
@@ -523,6 +523,12 @@
     </ClInclude>
     <ClInclude Include="RendererCubemaps.h">
       <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureCubemapLite.h">
+      <Filter>Header Files\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureCubeMap.h">
+      <Filter>Header Files\Texture</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

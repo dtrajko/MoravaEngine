@@ -1,16 +1,17 @@
 #pragma once
 
-#include <GL/glew.h>
+#include <vector>
+#include <string>
 
-#include "Texture.h"
 
-
-class TextureCubemap : public Texture
+class TextureCubeMap
 {
 public:
-	TextureCubemap();
-	TextureCubemap(unsigned int width, unsigned int height);
-	virtual void Bind(unsigned int textureUnit) override;
-	~TextureCubemap();
+	TextureCubeMap();
+	TextureCubeMap(std::vector<std::string> faces);
+	inline unsigned int GetID() const { return m_ID; };
+	~TextureCubeMap();
 
+private:
+	unsigned int m_ID;
 };
