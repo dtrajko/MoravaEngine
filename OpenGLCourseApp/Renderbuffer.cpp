@@ -1,6 +1,7 @@
 #include "Renderbuffer.h"
 
 #include <stdio.h>
+#include <stdexcept>
 
 
 Renderbuffer::Renderbuffer() : Attachment()
@@ -13,20 +14,28 @@ Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, AttachmentFo
 	GLenum internalFormat;
 	GLenum attachment;
 
-	if (attachmentFormat == AttachmentFormat::Depth)
+	switch (attachmentFormat)
 	{
+	case AttachmentFormat::Depth:
 		internalFormat = GL_DEPTH_COMPONENT;
 		attachment = GL_DEPTH_ATTACHMENT;
-	}
-	else if (attachmentFormat == AttachmentFormat::Depth_24)
-	{
+		break;
+	case AttachmentFormat::Depth_24:
 		internalFormat = GL_DEPTH_COMPONENT24;
 		attachment = GL_DEPTH_ATTACHMENT;
-	}
-	else if (attachmentFormat == AttachmentFormat::Depth_24_Stencil_8)
-	{
+		break;
+	case AttachmentFormat::Stencil:
+		internalFormat = GL_STENCIL_INDEX;
+		attachment = GL_STENCIL_ATTACHMENT;
+		break;
+	case AttachmentFormat::DepthStencil:
+	case AttachmentFormat::Depth_24_Stencil_8:
 		internalFormat = GL_DEPTH24_STENCIL8;
 		attachment = GL_DEPTH_STENCIL_ATTACHMENT;
+		break;
+	default:
+		throw std::runtime_error("AttachmentFormat not supported!");
+		return;
 	}
 
 	glGenRenderbuffers(1, &m_ID);

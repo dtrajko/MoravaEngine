@@ -85,7 +85,7 @@ void main()
     // DefaultColors();
     // InvertColors();
     // Grayscale();
-    // Nightvision();
-    Kernel(kernel_sharpen);
+    Nightvision();
+    // Kernel(kernel_sharpen);
     // Kernel(kernel_blur);
 }

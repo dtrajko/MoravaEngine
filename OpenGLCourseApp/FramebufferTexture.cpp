@@ -2,6 +2,8 @@
 
 #include <GL/glew.h>
 
+#include <stdexcept>
+
 
 FramebufferTexture::FramebufferTexture()
 	: Attachment()
@@ -11,38 +13,40 @@ FramebufferTexture::FramebufferTexture()
 FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat, unsigned int orderID)
 	: Attachment::Attachment(width, height, AttachmentType::Texture, attachmentFormat, orderID)
 {
-	GLenum attachment = GL_COLOR_ATTACHMENT0 + orderID;
-	GLint internalFormat = GL_RGB;
-	GLenum format = GL_RGB;
-	GLenum type = GL_UNSIGNED_BYTE;
+	GLenum attachment;
+	GLint internalFormat;
+	GLenum format;
+	GLenum type;
 
-	if (attachmentFormat == AttachmentFormat::Color)
+	switch (attachmentFormat)
 	{
+	case AttachmentFormat::Color:
 		attachment = GL_COLOR_ATTACHMENT0 + orderID;
 		internalFormat = GL_RGB;
 		format = GL_RGB;
 		type = GL_UNSIGNED_BYTE;
-	}
-	else if (attachmentFormat == AttachmentFormat::Depth)
-	{
+		break;
+	case AttachmentFormat::Depth:
 		attachment = GL_DEPTH_ATTACHMENT;
 		internalFormat = GL_DEPTH_COMPONENT;
 		format = GL_DEPTH_COMPONENT;
 		type = GL_FLOAT;
-	}
-	else if (attachmentFormat == AttachmentFormat::Stencil)
-	{
+		break;
+	case AttachmentFormat::Stencil:
 		attachment = GL_STENCIL_ATTACHMENT;
 		internalFormat = GL_STENCIL_INDEX;
 		format = GL_STENCIL_INDEX;
 		type = GL_FLOAT;
-	}
-	else if (attachmentFormat == AttachmentFormat::DepthStencil)
-	{
+		break;
+	case AttachmentFormat::DepthStencil:
 		attachment = GL_DEPTH_STENCIL_ATTACHMENT;
 		internalFormat = GL_DEPTH24_STENCIL8;
 		format = GL_DEPTH_STENCIL;
 		type = GL_UNSIGNED_INT_24_8;
+		break;
+	default:
+		throw std::runtime_error("AttachmentFormat not supported!");
+		return;
 	}
 
 	glGenTextures(1, &m_ID);

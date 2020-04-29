@@ -2,6 +2,8 @@
 
 #include "SceneFramebuffers.h"
 
+#include <stdexcept>
+
 
 RendererFramebuffers::RendererFramebuffers()
 {
@@ -50,7 +52,7 @@ void RendererFramebuffers::SetFramebuffers()
 	m_Framebuffer->CreateAttachmentDepthAndStencil(SCR_WIDTH, SCR_HEIGHT, AttachmentType::Renderbuffer);
 
 	if (!m_Framebuffer->CheckStatus())
-		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+		throw std::runtime_error("ERROR: Framebuffer is not complete!");
 
 	std::cout << "Framebuffer created successfully." << std::endl;
 
@@ -105,6 +107,27 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 
 		// -- use the color attachment texture as the texture of the quad plane
 		m_Framebuffer->GetTextureAttachmentColor(0)->Bind();
+
+		glm::mat4 model;
+		
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.5f));
+		shaders["framebuffers_screen"]->setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.5f));
+		shaders["framebuffers_screen"]->setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.5f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.5f));
+		shaders["framebuffers_screen"]->setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -0.5f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.5f));
+		shaders["framebuffers_screen"]->setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 }
