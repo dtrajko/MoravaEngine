@@ -65,6 +65,17 @@ void RendererBasic::DisableCulling()
 	glDisable(GL_CULL_FACE);
 }
 
+void RendererBasic::EnableTransparency()
+{
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void RendererBasic::DisableTransparency()
+{
+	glDisable(GL_BLEND);
+}
+
 void RendererBasic::Cleanup()
 {
 	for (auto& shader : shaders)

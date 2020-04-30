@@ -162,8 +162,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 
 	shaderMain->Unbind();
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	EnableTransparency();
 
 	Shader* shaderWater = shaders["water"];
 	shaderWater->Bind();

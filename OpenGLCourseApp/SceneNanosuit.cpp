@@ -70,9 +70,6 @@ void SceneNanosuit::SetSkybox()
 void SceneNanosuit::SetTextures()
 {
 	textures.insert(std::make_pair("plain", new Texture("Textures/plain.png")));
-
-	textures.insert(std::make_pair("containerDiffuse", new Texture("Textures/container/container2.png")));
-	textures.insert(std::make_pair("containerSpecular", new Texture("Textures/container/container2_specular.png")));
 }
 
 void SceneNanosuit::SetupMeshes()

@@ -24,6 +24,8 @@ public:
 	void SetDefaultFramebuffer(unsigned int width, unsigned int height);
 	void EnableCulling();
 	void DisableCulling();
+	void EnableTransparency();
+	void DisableTransparency();
 	void Cleanup();
 	virtual ~RendererBasic();
 
