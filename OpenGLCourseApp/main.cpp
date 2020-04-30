@@ -13,6 +13,7 @@
 #include "LightManager.h"
 #include "WaterManager.h"
 #include "Profiler.h"
+#include "MousePicker.h"
 
 #include "SceneCottage.h"
 #include "SceneEiffel.h"
@@ -162,7 +163,6 @@ int main()
 	{
 		GLfloat currentTimestamp = (GLfloat)glfwGetTime();
 		deltaTime = currentTimestamp - lastTimestamp;
-		// printf("currentTimestamp=%.4f deltaTime=%.4f lastTimestamp=%.4f\n", deltaTime, currentTimestamp, lastTimestamp);
 		lastTimestamp = currentTimestamp;
 
 		shouldUpdate = false;
@@ -175,6 +175,9 @@ int main()
 		scene->GetCamera()->KeyControl(mainWindow.getKeys(), deltaTime);
 		scene->GetCamera()->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
 		scene->GetCamera()->MouseScrollControl(mainWindow.getKeys(), deltaTime, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
+
+		MousePicker::Get()->Update(mainWindow.GetMouseX(), mainWindow.GetMouseY(),
+			(float)mainWindow.GetBufferWidth(), (float)mainWindow.GetBufferWidth(), projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
 
 		if (mainWindow.getKeys()[GLFW_KEY_F])
 		{

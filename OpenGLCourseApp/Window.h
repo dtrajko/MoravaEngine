@@ -17,8 +17,10 @@ public:
 	bool GetShouldClose() { return glfwWindowShouldClose(glfwWindow); };
 	bool* getKeys() { return keys; };
 	bool* getMouseButtons() { return buttons; };
-	GLfloat getXChange();
-	GLfloat getYChange();
+	float getXChange();
+	float getYChange();
+	inline float GetMouseX() const { return m_MouseX; };
+	inline float GetMouseY() const { return m_MouseY; };
 	float getXMouseScrollOffset();
 	float getYMouseScrollOffset();
 	void SwapBuffers() { glfwSwapBuffers(glfwWindow); };
@@ -36,10 +38,12 @@ private:
 	bool keys[1024];
 	bool buttons[32];
 
+	float m_MouseX;
+	float m_MouseY;
 	GLfloat lastX;
 	GLfloat lastY;
-	GLfloat xChange;
-	GLfloat yChange;
+	float xChange;
+	float yChange;
 	float xMouseScrollOffset;
 	float yMouseScrollOffset;
 	bool mouseFirstMoved;

@@ -124,6 +124,9 @@ void Window::handleMouse(GLFWwindow* window, double xPos, double yPos)
 {
 	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
+	theWindow->m_MouseX = (float)xPos;
+	theWindow->m_MouseY = (float)yPos;
+
 	if (theWindow->mouseFirstMoved)
 	{
 		theWindow->lastX = (GLfloat)xPos;
@@ -194,14 +197,14 @@ void Window::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOff
 
 GLfloat Window::getXChange()
 {
-	GLfloat theChange = xChange;
+	float theChange = xChange;
 	xChange = 0.0f;
 	return theChange;
 }
 
 GLfloat Window::getYChange()
 {
-	GLfloat theChange = yChange;
+	float theChange = yChange;
 	yChange = 0.0f;
 	return theChange;
 }

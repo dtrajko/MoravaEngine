@@ -193,6 +193,7 @@
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="MousePicker.cpp" />
     <ClCompile Include="OmniShadowMap.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Quad.cpp" />
@@ -271,6 +272,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshData.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="MousePicker.h" />
     <ClInclude Include="OmniShadowMap.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="Profiler.h" />
