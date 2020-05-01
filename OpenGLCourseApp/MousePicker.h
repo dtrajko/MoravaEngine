@@ -14,6 +14,7 @@ public:
 	glm::vec2 GetNormalizedDeviceCoords();
 	glm::vec4 ToEyeCoords(glm::vec4 clipCoords);
 	glm::vec3 ToWorldCoords(glm::vec4 eyeCoords);
+	glm::vec3 GetPointOnRay(glm::vec3 ray, glm::vec3 cameraPosition, float distance);
 	~MousePicker();
 
 private:

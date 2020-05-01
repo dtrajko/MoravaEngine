@@ -72,6 +72,13 @@ glm::vec3 MousePicker::ToWorldCoords(glm::vec4 eyeCoords)
 	return mouseRay;
 }
 
+glm::vec3 MousePicker::GetPointOnRay(glm::vec3 ray, glm::vec3 cameraPosition, float distance)
+{
+	glm::vec3 start = glm::vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+	glm::vec3 scaledRay = glm::vec3(ray.x * distance, ray.y * distance, ray.z * distance);
+	return start + scaledRay;
+}
+
 MousePicker::~MousePicker()
 {
 }
