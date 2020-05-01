@@ -1,6 +1,7 @@
 #include "SceneCubemaps.h"
 
 #include "ImGuiWrapper.h"
+#include "MousePicker.h"
 
 #include <vector>
 #include <string>
@@ -37,8 +38,8 @@ void SceneCubemaps::SetupMeshes()
 
 void SceneCubemaps::SetupModels()
 {
-    ModelJoey* nanosuit = new ModelJoey("Models/nanosuit.obj", "Textures/nanosuit");
-    models.insert(std::make_pair("nanosuit", nanosuit));
+    // ModelJoey* nanosuit = new ModelJoey("Models/nanosuit.obj", "Textures/nanosuit");
+    // models.insert(std::make_pair("nanosuit", nanosuit));
 }
 
 void SceneCubemaps::SetGeometry()
@@ -177,6 +178,47 @@ void SceneCubemaps::Update(float timestep, Window& mainWindow)
 
 void SceneCubemaps::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
 {
+    MousePicker* mp = MousePicker::Get();
+
+    ImGui::Begin("Ray Casting");
+
+    ImGui::Separator();
+    std::string cameraPosition = "Camera Position: X = " + std::to_string(mp->m_CameraPosition.x) +
+                                                 " Y = " + std::to_string(mp->m_CameraPosition.y) +
+                                                 " Z = " + std::to_string(mp->m_CameraPosition.z);
+    ImGui::Text(cameraPosition.c_str());
+    ImGui::Separator();
+
+    std::string mouseCoords = "Mouse Coordinates: MouseX = " + std::to_string(mp->m_MouseX) +
+        " MouseY = " + std::to_string(mp->m_MouseY);
+    ImGui::Text(mouseCoords.c_str());
+    ImGui::Separator();
+
+    std::string normalizedCoords = "Normalized Coords: X = " + std::to_string(mp->m_NormalizedCoords.x) +
+                                                     " Y = " + std::to_string(mp->m_NormalizedCoords.y);
+    ImGui::Text(normalizedCoords.c_str());
+    ImGui::Separator();
+
+    std::string clipCoords = "Clip Coords: X = " + std::to_string(mp->m_ClipCoords.x) +
+                                         " Y = " + std::to_string(mp->m_ClipCoords.y);
+    ImGui::Text(clipCoords.c_str());
+    ImGui::Separator();
+
+    std::string eyeCoords = "Eye Coords: X = " + std::to_string(mp->m_EyeCoords.x) + " Y = " + std::to_string(mp->m_EyeCoords.y) +
+                                       " Z = " + std::to_string(mp->m_EyeCoords.z) + " W = " + std::to_string(mp->m_EyeCoords.w);
+    ImGui::Text(eyeCoords.c_str());
+    ImGui::Separator();
+
+    std::string worldRay = "World Ray: X = " + std::to_string(mp->m_WorldRay.x) +
+                                     " Y = " + std::to_string(mp->m_WorldRay.y) +
+                                     " Z = " + std::to_string(mp->m_WorldRay.z);
+    ImGui::Text(worldRay.c_str());
+    ImGui::Separator();
+
+    ImGui::SliderFloat3("Line Start", glm::value_ptr(m_LineStart), -10.0f, 10.0f);
+    ImGui::SliderFloat3("Line End",   glm::value_ptr(m_LineEnd),   -10.0f, 10.0f);
+
+    ImGui::End();
 }
 
 void SceneCubemaps::Render(glm::mat4 projectionMatrix, std::string passType,

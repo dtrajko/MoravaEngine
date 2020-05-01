@@ -22,6 +22,12 @@ MousePicker::MousePicker()
 	m_MouseY = 0.0f;
 	m_DisplayWidth = 0.0f;
 	m_DisplayHeight = 0.0f;
+
+	m_NormalizedCoords = glm::vec2(0.0f);
+	m_ClipCoords = glm::vec4(0.0f);
+	m_EyeCoords = glm::vec4(0.0f);
+	m_WorldRay = glm::vec3(0.0f);
+	m_CameraPosition = glm::vec3(0.0f);
 }
 
 glm::vec3 MousePicker::GetCurrentRay()
@@ -42,18 +48,18 @@ void MousePicker::Update(float mouseX, float mouseY, float displayWidth, float d
 
 glm::vec3 MousePicker::CalculateMouseRay()
 {
-	glm::vec2 normalizedCoords = GetNormalizedDeviceCoords();
-	glm::vec4 clipCoords = glm::vec4(normalizedCoords.x, normalizedCoords.y, -1.0f, -1.0f);
-	glm::vec4 eyeCoords = ToEyeCoords(clipCoords);
-	glm::vec3 worldRay = ToWorldCoords(eyeCoords);
-	return worldRay;
+	m_NormalizedCoords = GetNormalizedDeviceCoords();
+	m_ClipCoords = glm::vec4(m_NormalizedCoords.x, m_NormalizedCoords.y, -1.0f, 1.0f);
+	m_EyeCoords = ToEyeCoords(m_ClipCoords);
+	m_WorldRay = ToWorldCoords(m_EyeCoords);
+	return m_WorldRay;
 }
 
 glm::vec2 MousePicker::GetNormalizedDeviceCoords()
 {
 	float x = (m_MouseX * 2.0f) / m_DisplayWidth - 1.0f;
 	float y = (m_MouseY * 2.0f) / m_DisplayHeight - 1.0f;
-	return glm::vec2(x, y); // it may happen to be { x, -y }
+	return glm::vec2(x, -y); // it may happen to be { x, -y }
 }
 
 glm::vec4 MousePicker::ToEyeCoords(glm::vec4 clipCoords)
@@ -72,10 +78,11 @@ glm::vec3 MousePicker::ToWorldCoords(glm::vec4 eyeCoords)
 	return mouseRay;
 }
 
-glm::vec3 MousePicker::GetPointOnRay(glm::vec3 ray, glm::vec3 cameraPosition, float distance)
+glm::vec3 MousePicker::GetPointOnRay(glm::vec3 cameraPosition, float distance)
 {
-	glm::vec3 start = glm::vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-	glm::vec3 scaledRay = glm::vec3(ray.x * distance, ray.y * distance, ray.z * distance);
+	m_CameraPosition = cameraPosition;
+	glm::vec3 start = glm::vec3(m_CameraPosition.x, m_CameraPosition.y, m_CameraPosition.z);
+	glm::vec3 scaledRay = glm::vec3(m_CurrentRay.x * distance, m_CurrentRay.y * distance, m_CurrentRay.z * distance);
 	return start + scaledRay;
 }
 

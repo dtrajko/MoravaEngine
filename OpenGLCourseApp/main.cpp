@@ -152,7 +152,7 @@ int main()
 
 	scene->SetCamera();
 	scene->SetLightManager();
-	scene->SetWaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferWidth());
+	scene->SetWaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight());
 
 	renderer->Init(scene);
 
@@ -177,7 +177,7 @@ int main()
 		scene->GetCamera()->MouseScrollControl(mainWindow.getKeys(), deltaTime, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
 
 		MousePicker::Get()->Update(mainWindow.GetMouseX(), mainWindow.GetMouseY(),
-			(float)mainWindow.GetBufferWidth(), (float)mainWindow.GetBufferWidth(), projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+			(float)mainWindow.GetBufferWidth(), (float)mainWindow.GetBufferHeight(), projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
 
 		if (mainWindow.getKeys()[GLFW_KEY_F])
 		{

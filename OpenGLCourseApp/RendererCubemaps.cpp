@@ -57,6 +57,9 @@ void RendererCubemaps::DrawLine(glm::vec3 start, glm::vec3 end, Shader* shader, 
         //    X        Y         Z        R     G     B     A
         start.x, start.y,  start.z,    1.0f, 0.0f, 0.0f, 1.0f,
         end.x,   end.y,    end.z,      0.0f, 1.0f, 0.0f, 1.0f,
+
+        // 0.0f, 0.0f,  1.0f,    1.0f, 0.0f, 0.0f, 1.0f,
+        // 0.0f, 0.0f, -1.0f,    0.0f, 1.0f, 0.0f, 1.0f,
     };
 
     // printf("Draw Line! Start %.2ff %.2ff %.2ff End %.2ff %.2ff %.2ff\n", start.x, start.y, start.z, end.x, end.y, end.z);
@@ -76,7 +79,8 @@ void RendererCubemaps::DrawLine(glm::vec3 start, glm::vec3 end, Shader* shader, 
 
     // line
     shader->Bind();
-    shader->setMat4("model", glm::mat4(1.0f));
+    glm::mat4 model = glm::mat4(1.0f);
+    shader->setMat4("model", model);
     shader->setMat4("view", viewMatrix);
     shader->setMat4("projection", projectionMatrix);
 
@@ -96,9 +100,11 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     SceneCubemaps* sceneCubemaps = (SceneCubemaps*)scene;
 
     // Experimenting with ray casting and MousePicker
-    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
-        DrawLine(scene->GetCamera()->GetPosition() + glm::vec3(0.0f, -0.1f, 0.0f), { 0.0f, 3.4f, 0.0f },
-            shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+    MousePicker* mp = MousePicker::Get();
+    glm::vec3 camPos = scene->GetCamera()->GetPosition();
+    sceneCubemaps->m_LineStart = mp->GetPointOnRay(scene->GetCamera()->GetPosition() * glm::vec3(1.0f, 1.001f, 1.0f), 0.1f);
+    sceneCubemaps->m_LineEnd = mp->GetPointOnRay(scene->GetCamera()->GetPosition(), 100.0f);
+    DrawLine(sceneCubemaps->m_LineStart, sceneCubemaps->m_LineEnd, shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
 
     // cube
     shaders["cubemaps"]->Bind();
@@ -121,7 +127,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::scale(model, glm::vec3(0.2f));
     shaders["cubemaps"]->setMat4("model", model);
-    models["nanosuit"]->Draw(shaders["cubemaps"]);
+    // models["nanosuit"]->Draw(shaders["cubemaps"]);
 
     // draw skybox as last
     glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth buffer's content

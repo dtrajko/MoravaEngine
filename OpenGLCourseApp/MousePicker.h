@@ -14,10 +14,10 @@ public:
 	glm::vec2 GetNormalizedDeviceCoords();
 	glm::vec4 ToEyeCoords(glm::vec4 clipCoords);
 	glm::vec3 ToWorldCoords(glm::vec4 eyeCoords);
-	glm::vec3 GetPointOnRay(glm::vec3 ray, glm::vec3 cameraPosition, float distance);
+	glm::vec3 GetPointOnRay(glm::vec3 cameraPosition, float distance);
 	~MousePicker();
 
-private:
+public:
 	static MousePicker* s_Instance;
 	glm::vec3 m_CurrentRay;
 	glm::mat4 m_ProjectionMatrix;
@@ -26,4 +26,10 @@ private:
 	float m_MouseY;
 	float m_DisplayWidth;
 	float m_DisplayHeight;
+
+	glm::vec2 m_NormalizedCoords;
+	glm::vec4 m_ClipCoords;
+	glm::vec4 m_EyeCoords;
+	glm::vec3 m_WorldRay;
+	glm::vec3 m_CameraPosition;
 };

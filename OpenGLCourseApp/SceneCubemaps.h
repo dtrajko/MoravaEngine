@@ -42,4 +42,9 @@ private:
 	unsigned int m_SkyboxVAO;
 	unsigned int m_SkyboxVBO;
 
+public:
+	// ray casting line
+	glm::vec3 m_LineStart = glm::vec3(0.0f);
+	glm::vec3 m_LineEnd = glm::vec3(0.0f);
+
 };
