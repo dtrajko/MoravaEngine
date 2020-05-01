@@ -1,6 +1,7 @@
 #include "RendererCubemaps.h"
 
 #include "SceneCubemaps.h"
+#include "MousePicker.h"
 
 #include <stdexcept>
 
@@ -31,6 +32,10 @@ void RendererCubemaps::SetShaders()
 	shaders.insert(std::make_pair("skybox", shaderSkybox));
 	printf("RendererCubemaps: shaderSkybox compiled [programID=%d]\n", shaderSkybox->GetProgramID());
 
+    Shader* shaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
+    shaders.insert(std::make_pair("basic", shaderBasic));
+    printf("RendererCubemaps: shaderBasic compiled [programID=%d]\n", shaderBasic->GetProgramID());
+
 	// shader configuration
 	shaders["cubemaps"]->Bind();
 	shaders["cubemaps"]->setInt("skybox", 0);
@@ -44,6 +49,42 @@ void RendererCubemaps::Render(float deltaTime, Window& mainWindow, Scene* scene,
 	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
+void RendererCubemaps::DrawLine(glm::vec3 start, glm::vec3 end, Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
+{
+    float lineVertices[] =
+    {
+        // position                    // color
+        //    X        Y         Z        R     G     B     A
+        start.x, start.y,  start.z,    1.0f, 0.0f, 0.0f, 1.0f,
+        end.x,   end.y,    end.z,      0.0f, 1.0f, 0.0f, 1.0f,
+    };
+
+    // printf("Draw Line! Start %.2ff %.2ff %.2ff End %.2ff %.2ff %.2ff\n", start.x, start.y, start.z, end.x, end.y, end.z);
+
+    // line VAO
+    unsigned int m_LineVAO;
+    unsigned int m_LineVBO;
+    glGenVertexArrays(1, &m_LineVAO);
+    glGenBuffers(1, &m_LineVBO);
+    glBindVertexArray(m_LineVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_LineVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices), &lineVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
+
+    // line
+    shader->Bind();
+    shader->setMat4("model", glm::mat4(1.0f));
+    shader->setMat4("view", viewMatrix);
+    shader->setMat4("projection", projectionMatrix);
+
+    glBindVertexArray(m_LineVAO);
+    glDrawArrays(GL_LINES, 0, 2);
+    glBindVertexArray(0);
+}
+
 void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
@@ -54,6 +95,12 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 
     SceneCubemaps* sceneCubemaps = (SceneCubemaps*)scene;
 
+    // Experimenting with ray casting and MousePicker
+    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
+        DrawLine(scene->GetCamera()->GetPosition() + glm::vec3(0.0f, -0.1f, 0.0f), { 0.0f, 3.4f, 0.0f },
+            shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+
+    // cube
     shaders["cubemaps"]->Bind();
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::scale(model, glm::vec3(2.0f));
@@ -62,7 +109,6 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     shaders["cubemaps"]->setMat4("projection", projectionMatrix);
     shaders["cubemaps"]->setVec3("cameraPos", scene->GetCamera()->GetPosition());
 
-    // cube
     glBindVertexArray(sceneCubemaps->GetCubeVAO());
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, sceneCubemaps->GetCubemapTextureID());
@@ -91,8 +137,6 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
     glDepthFunc(GL_LESS); // set depth function back to default
-
-    // printf("cubeVAO=%i skyboxVAO=%i cubemapTexture=%i\n", sceneCubemaps->GetCubeVAO(), sceneCubemaps->GetSkyboxVAO(), sceneCubemaps->GetCubemapTexture());
 
 	std::string passType = "main";
 	scene->Render(projectionMatrix, passType, shaders, uniforms);

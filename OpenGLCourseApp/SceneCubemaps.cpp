@@ -136,10 +136,10 @@ void SceneCubemaps::SetGeometry()
     };
 
     // cube VAO
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &cubeVBO);
-    glBindVertexArray(cubeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glGenVertexArrays(1, &m_CubeVAO);
+    glGenBuffers(1, &m_CubeVBO);
+    glBindVertexArray(m_CubeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_CubeVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
@@ -147,10 +147,10 @@ void SceneCubemaps::SetGeometry()
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
     // skybox VAO
-    glGenVertexArrays(1, &skyboxVAO);
-    glGenBuffers(1, &skyboxVBO);
-    glBindVertexArray(skyboxVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glGenVertexArrays(1, &m_SkyboxVAO);
+    glGenBuffers(1, &m_SkyboxVBO);
+    glBindVertexArray(m_SkyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_SkyboxVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -167,8 +167,8 @@ void SceneCubemaps::SetGeometry()
         "Textures/skybox_cubemaps/back.jpg",
     };
 
-    textureCubeMap = new TextureCubeMap(faces);
-    cubemapTextureID = textureCubeMap->GetID();
+    m_TextureCubeMap = new TextureCubeMap(faces);
+    m_TextureCubeMapID = m_TextureCubeMap->GetID();
 }
 
 void SceneCubemaps::Update(float timestep, Window& mainWindow)
@@ -186,14 +186,14 @@ void SceneCubemaps::Render(glm::mat4 projectionMatrix, std::string passType,
 
 void SceneCubemaps::CleanupGeometry()
 {
-    glDeleteVertexArrays(1, &cubeVAO);
-    glDeleteVertexArrays(1, &skyboxVAO);
-    glDeleteBuffers(1, &cubeVBO);
-    glDeleteBuffers(1, &skyboxVAO);
+    glDeleteVertexArrays(1, &m_CubeVAO);
+    glDeleteVertexArrays(1, &m_SkyboxVAO);
+    glDeleteBuffers(1, &m_CubeVBO);
+    glDeleteBuffers(1, &m_SkyboxVAO);
 }
 
 SceneCubemaps::~SceneCubemaps()
 {
 	CleanupGeometry();
-    delete textureCubeMap;
+    delete m_TextureCubeMap;
 }

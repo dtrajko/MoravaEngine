@@ -20,9 +20,9 @@ public:
 	void SetGeometry();
 	void CleanupGeometry();
 
-	inline unsigned int GetCubeVAO() const { return cubeVAO; };
-	inline unsigned int GetSkyboxVAO() const { return skyboxVAO; };
-	inline unsigned int GetCubemapTextureID() const { return cubemapTextureID; };
+	inline unsigned int GetCubeVAO() const { return m_CubeVAO; };
+	inline unsigned int GetSkyboxVAO() const { return m_SkyboxVAO; };
+	inline unsigned int GetCubemapTextureID() const { return m_TextureCubeMapID; };
 
 	virtual ~SceneCubemaps() override;
 
@@ -32,14 +32,14 @@ private:
 	virtual void SetupMeshes() override;
 	virtual void SetupModels() override;
 
-	TextureCubeMap* textureCubeMap;
-	unsigned int cubemapTextureID;
+	TextureCubeMap* m_TextureCubeMap;
+	unsigned int m_TextureCubeMapID;
 
 	std::map<std::string, ModelJoey*> models;
 
-	unsigned int cubeVAO;
-	unsigned int cubeVBO;
-	unsigned int skyboxVAO;
-	unsigned int skyboxVBO;
+	unsigned int m_CubeVAO;
+	unsigned int m_CubeVBO;
+	unsigned int m_SkyboxVAO;
+	unsigned int m_SkyboxVBO;
 
 };
