@@ -12,8 +12,8 @@ public:
 	virtual void Render();
 	virtual void Clear();
 
-	static void CalcAverageNormals(unsigned int* indices, unsigned int indexCount, float* vertices, unsigned int vertexCount);
-	static void CalcTangentSpace(unsigned int* indices, unsigned int indexCount, float* vertices, unsigned int vertexCount);
+	static void CalcAverageNormals(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount);
+	static void CalcTangentSpace(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount);
 
 	virtual ~Mesh();
 

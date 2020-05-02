@@ -2,6 +2,8 @@
 
 #include "ImGuiWrapper.h"
 
+#include "MeshData.h"
+#include "Tile2D.h"
 #include "Renderer.h"
 
 
@@ -38,6 +40,7 @@ SceneSponza::SceneSponza()
 
 	SetSkybox();
 	SetTextures();
+	SetupMeshes();
 	SetupModels();
 }
 
@@ -58,6 +61,15 @@ void SceneSponza::SetTextures()
 
 void SceneSponza::SetupMeshes()
 {
+	Mesh* quad = new Mesh();
+	quad->Create(&MeshData::quadVertices[0], &MeshData::quadIndices[0], MeshData::quadVertexCount, MeshData::quadIndexCount);
+	meshes.insert(std::make_pair("quad", quad));
+
+	float vertices[] = { -1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 1 };
+	unsigned int indices[] = { 0, 1, 2, 3, 4, 5 };
+	Tile2D* m_Tile2D = new Tile2D();
+	m_Tile2D->Create(&vertices[0], &indices[0], 12, 6);
+	meshes.insert(std::make_pair("water", m_Tile2D));
 }
 
 void SceneSponza::SetupModels()

@@ -12,6 +12,11 @@ SceneFramebuffers::SceneFramebuffers()
 	sceneSettings.diffuseIntensity = 0.8f;
 	sceneSettings.lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);
 
+	m_EffectFrame_0 = 0;
+	m_EffectFrame_1 = 0;
+	m_EffectFrame_2 = 0;
+	m_EffectFrame_3 = 0;
+
 	SetCamera();
 	SetSkybox();
 	SetTextures();
@@ -153,6 +158,12 @@ void SceneFramebuffers::Update(float timestep, Window& mainWindow)
 
 void SceneFramebuffers::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
 {
+	ImGui::Begin("Effects");
+	ImGui::SliderInt("Effect Frame 0", &m_EffectFrame_0, 0, 5);
+	ImGui::SliderInt("Effect Frame 1", &m_EffectFrame_1, 0, 5);
+	ImGui::SliderInt("Effect Frame 2", &m_EffectFrame_2, 0, 5);
+	ImGui::SliderInt("Effect Frame 3", &m_EffectFrame_3, 0, 5);
+	ImGui::End();
 }
 
 void SceneFramebuffers::Render(glm::mat4 projectionMatrix, std::string passType,
@@ -198,6 +209,23 @@ void SceneFramebuffers::CleanupGeometry()
 	glDeleteBuffers(1, &cubeVBO);
 	glDeleteBuffers(1, &planeVBO);
 	glDeleteBuffers(1, &quadVBO);
+}
+
+int SceneFramebuffers::GetEffectForFrame(int frameID)
+{
+	switch (frameID)
+	{
+	case 0:
+		return m_EffectFrame_0;
+	case 1:
+		return m_EffectFrame_1;
+	case 2:
+		return m_EffectFrame_2;
+	case 3:
+		return m_EffectFrame_3;
+	default:
+		return 0;
+	}
 }
 
 SceneFramebuffers::~SceneFramebuffers()

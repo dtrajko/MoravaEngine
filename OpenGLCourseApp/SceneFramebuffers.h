@@ -15,6 +15,7 @@ public:
 
 	void SetGeometry();
 	void CleanupGeometry();
+	int GetEffectForFrame(int frameID);
 	inline unsigned int GetQuadVAO() const { return quadVAO; };
 
 	virtual ~SceneFramebuffers() override;
@@ -32,4 +33,9 @@ private:
 	unsigned int planeVBO;
 	unsigned int quadVAO;
 	unsigned int quadVBO;
+
+	int m_EffectFrame_0;
+	int m_EffectFrame_1;
+	int m_EffectFrame_2;
+	int m_EffectFrame_3;
 };

@@ -114,6 +114,7 @@ void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	if (!sceneSettings.enableWaterEffects) return;
 
 	Shader* shaderWater = shaders["water"];
+	shaderWater->Bind();
 
 	/* Water Tile */
 	glm::mat4 model = glm::mat4(1.0f);
@@ -123,15 +124,22 @@ void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(256.0f, 1.0f, 256.0f));
 
-	shaders["water"]->Bind();
-
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
-	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
-	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
-	shaderWater->setInt("reflectionTexture", textureSlots["reflection"]);
-	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
+	unsigned int reflectionSlot = textureSlots["reflection"];
+	unsigned int refractionSlot = textureSlots["refraction"];
+	unsigned int depthSlot = textureSlots["depth"];
+
+	shaderWater->setInt("reflectionTexture", reflectionSlot);
+	shaderWater->setInt("refractionTexture", refractionSlot);
+	shaderWater->setInt("depthMap", depthSlot);
+
+	m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(reflectionSlot);
+	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(refractionSlot);
+	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(depthSlot);
+
+	// textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	// textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
+
 	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["water"]->Render();

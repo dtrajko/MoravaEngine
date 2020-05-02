@@ -2,6 +2,7 @@
 
 #include "ImGuiWrapper.h"
 
+#include "MeshData.h"
 #include "ShaderMain.h"
 #include "Sphere.h"
 
@@ -39,6 +40,7 @@ SceneCottage::SceneCottage()
 
 	SetSkybox();
 	SetTextures();
+	SetupMeshes();
 	SetupModels();
 }
 
@@ -69,6 +71,17 @@ void SceneCottage::SetTextures()
 
 void SceneCottage::SetupMeshes()
 {
+	Mesh* cube = new Mesh();
+	cube->Create(&MeshData::vertices[0], &MeshData::indices[0], MeshData::vertexCount, MeshData::indexCount);
+	meshes.insert(std::make_pair("cube", cube));
+
+	Mesh* quad = new Mesh();
+	quad->Create(&MeshData::quadVertices[0], &MeshData::quadIndices[0], MeshData::quadVertexCount, MeshData::quadIndexCount);
+	meshes.insert(std::make_pair("quad", quad));
+
+	Mesh* quadLarge = new Mesh();
+	quadLarge->Create(&MeshData::floorVertices[0], &MeshData::floorIndices[0], MeshData::floorVertexCount, MeshData::floorIndexCount);
+	meshes.insert(std::make_pair("quadLarge", quadLarge));
 }
 
 void SceneCottage::SetupModels()

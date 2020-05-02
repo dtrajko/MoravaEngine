@@ -17,6 +17,9 @@ void Mesh::Create(float* vertices, unsigned int* indices, unsigned int vertexCou
 {
 	m_IndexCount = indexCount;
 
+	Mesh::CalcAverageNormals(vertices, vertexCount, indices, indexCount);
+	Mesh::CalcTangentSpace(vertices, vertexCount, indices, indexCount);
+
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
 
@@ -88,7 +91,7 @@ void Mesh::Clear()
 	glDisableVertexAttribArray(5);
 }
 
-void Mesh::CalcAverageNormals(unsigned int* indices, unsigned int indexCount, float* vertices, unsigned int vertexCount)
+void Mesh::CalcAverageNormals(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount)
 {
 	unsigned int vLength = sizeof(VertexTiling) / sizeof(float);
 	unsigned int normalOffset = offsetof(VertexTiling, Normal) / sizeof(float);
@@ -122,7 +125,7 @@ void Mesh::CalcAverageNormals(unsigned int* indices, unsigned int indexCount, fl
 	}
 }
 
-void Mesh::CalcTangentSpace(unsigned int* indices, unsigned int indexCount, float* vertices, unsigned int vertexCount)
+void Mesh::CalcTangentSpace(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount)
 {
 	unsigned int vLength = sizeof(VertexTiling) / sizeof(float);
 

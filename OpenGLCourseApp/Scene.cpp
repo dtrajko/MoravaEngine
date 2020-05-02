@@ -86,29 +86,6 @@ void Scene::SetupMaterials()
 
 void Scene::SetupMeshes()
 {
-	Mesh::CalcAverageNormals(&MeshData::indices[0], MeshData::indexCount, &MeshData::vertices[0], MeshData::vertexCount);
-	Mesh::CalcTangentSpace(&MeshData::indices[0], MeshData::indexCount, &MeshData::vertices[0], MeshData::vertexCount);
-
-	Mesh::CalcAverageNormals(&MeshData::quadIndices[0], MeshData::quadIndexCount, &MeshData::quadVertices[0], MeshData::quadVertexCount);
-	Mesh::CalcTangentSpace(&MeshData::quadIndices[0], MeshData::quadIndexCount, &MeshData::quadVertices[0], MeshData::quadVertexCount);
-
-	Mesh* cube = new Mesh();
-	cube->Create(&MeshData::vertices[0], &MeshData::indices[0], MeshData::vertexCount, MeshData::indexCount);
-	meshes.insert(std::make_pair("cube", cube));
-
-	Mesh* quad = new Mesh();
-	quad->Create(&MeshData::quadVertices[0], &MeshData::quadIndices[0], MeshData::quadVertexCount, MeshData::quadIndexCount);
-	meshes.insert(std::make_pair("quad", quad));
-
-	Mesh* quadLarge = new Mesh();
-	quadLarge->Create(&MeshData::floorVertices[0], &MeshData::floorIndices[0], MeshData::floorVertexCount, MeshData::floorIndexCount);
-	meshes.insert(std::make_pair("quadLarge", quadLarge));
-
-	float vertices[] = { -1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 1 };
-	unsigned int indices[] = { 0, 1, 2, 3, 4, 5 };
-	Tile2D* m_Tile2D = new Tile2D();
-	m_Tile2D->Create(&vertices[0], &indices[0], 12, 6);
-	meshes.insert(std::make_pair("water", m_Tile2D));
 }
 
 void Scene::SetTextures()

@@ -123,8 +123,8 @@ void Terrain::GenerateTerrain()
 
 	printf("Final value of indexPointer: %d\n", indexPointer);
 
-	Mesh::CalcAverageNormals(indices, indexCount, vertices, vertexCount);
-	Mesh::CalcTangentSpace(indices, indexCount, vertices, vertexCount);
+	Mesh::CalcAverageNormals(vertices, vertexCount, indices, indexCount);
+	Mesh::CalcTangentSpace(vertices, vertexCount, indices, indexCount);
 
 	for (unsigned int i = 0; i < pixelCount; i++)
 	{

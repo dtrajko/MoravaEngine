@@ -17,8 +17,8 @@ void Sphere::Create()
 {
 	GenerateGeometry();
 
-	CalcAverageNormals(m_Indices, m_IndexCount, m_Vertices, m_VertexCount);
-	CalcTangentSpace(m_Indices, m_IndexCount, m_Vertices, m_VertexCount);
+	CalcAverageNormals(m_Vertices, m_VertexCount, m_Indices, m_IndexCount);
+	CalcTangentSpace(m_Vertices, m_VertexCount, m_Indices, m_IndexCount);
 
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
