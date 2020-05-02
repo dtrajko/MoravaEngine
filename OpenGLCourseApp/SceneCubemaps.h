@@ -4,6 +4,7 @@
 
 #include "TextureCubeMap.h"
 #include "LearnOpenGL/ModelJoey.h"
+#include "Quad.h"
 
 
 class SceneCubemaps : public Scene
@@ -41,6 +42,8 @@ private:
 	unsigned int m_CubeVBO;
 	unsigned int m_SkyboxVAO;
 	unsigned int m_SkyboxVBO;
+
+	Quad* m_Quad;
 
 public:
 	// ray casting line

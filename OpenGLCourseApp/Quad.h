@@ -1,14 +1,13 @@
 #pragma once
 
+#include "Mesh.h"
 
-class Quad
+
+class Quad : public Mesh
 {
 public:
 	Quad();
 	void Render();
 	~Quad();
-
-private:
-	unsigned int m_VAO = 0;
 
 };

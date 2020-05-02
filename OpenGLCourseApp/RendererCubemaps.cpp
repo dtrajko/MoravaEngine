@@ -36,6 +36,10 @@ void RendererCubemaps::SetShaders()
     shaders.insert(std::make_pair("basic", shaderBasic));
     printf("RendererCubemaps: shaderBasic compiled [programID=%d]\n", shaderBasic->GetProgramID());
 
+    Shader* shaderFramebuffersScene = new Shader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
+    shaders.insert(std::make_pair("framebuffers_scene", shaderFramebuffersScene));
+    printf("RendererCubemaps: shaderFramebuffersScene compiled [programID=%d]\n", shaderFramebuffersScene->GetProgramID());
+
 	// shader configuration
 	shaders["cubemaps"]->Bind();
 	shaders["cubemaps"]->setInt("skybox", 0);
@@ -97,14 +101,9 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    SceneCubemaps* sceneCubemaps = (SceneCubemaps*)scene;
+    EnableTransparency();
 
-    // Experimenting with ray casting and MousePicker
-    MousePicker* mp = MousePicker::Get();
-    glm::vec3 camPos = scene->GetCamera()->GetPosition();
-    sceneCubemaps->m_LineStart = mp->GetPointOnRay(scene->GetCamera()->GetPosition() * glm::vec3(1.0f, 1.001f, 1.0f), 0.1f);
-    sceneCubemaps->m_LineEnd = mp->GetPointOnRay(scene->GetCamera()->GetPosition(), 100.0f);
-    DrawLine(sceneCubemaps->m_LineStart, sceneCubemaps->m_LineEnd, shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+    SceneCubemaps* sceneCubemaps = (SceneCubemaps*)scene;
 
     // cube
     shaders["cubemaps"]->Bind();
@@ -128,6 +127,26 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     model = glm::scale(model, glm::vec3(0.2f));
     shaders["cubemaps"]->setMat4("model", model);
     // models["nanosuit"]->Draw(shaders["cubemaps"]);
+
+    // Experimenting with ray casting and MousePicker
+    MousePicker* mp = MousePicker::Get();
+    glm::vec3 camPos = scene->GetCamera()->GetPosition();
+    sceneCubemaps->m_LineStart = camPos + scene->GetCamera()->GetFront();
+    sceneCubemaps->m_LineEnd = mp->GetPointOnRay(scene->GetCamera()->GetPosition(), 100.0f);
+    DrawLine(sceneCubemaps->m_LineStart, sceneCubemaps->m_LineEnd, shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+
+    /* Floor */
+    shaders["framebuffers_scene"]->Bind();
+    shaders["framebuffers_scene"]->setMat4("projection", projectionMatrix);
+    shaders["framebuffers_scene"]->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(5.0f));
+    shaders["framebuffers_scene"]->setMat4("model", model);
+    shaders["framebuffers_scene"]->setInt("texture1", 0);
+    scene->GetTextures()["semi_transparent"]->Bind(0);
+    scene->GetMeshes()["quad"]->Render();
 
     // draw skybox as last
     glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth buffer's content

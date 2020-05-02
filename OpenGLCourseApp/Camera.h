@@ -22,6 +22,7 @@ public:
 	inline float GetPitch() const { return m_Pitch; };
 	inline float GetYaw() const { return m_Yaw; };
 	inline glm::vec3 GetFront() const { return m_Front; };
+	inline glm::vec3 GetUp() const { return m_Up; };
 	void InvertPitch();
 	glm::mat4 CalculateViewMatrix();
 	~Camera();

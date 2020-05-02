@@ -30,10 +30,13 @@ void SceneCubemaps::SetSkybox()
 
 void SceneCubemaps::SetTextures()
 {
+    textures.insert(std::make_pair("semi_transparent", new Texture("Textures/semi_transparent.png")));
 }
 
 void SceneCubemaps::SetupMeshes()
 {
+    m_Quad = new Quad();
+    meshes.insert(std::make_pair("quad", m_Quad));
 }
 
 void SceneCubemaps::SetupModels()

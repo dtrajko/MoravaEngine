@@ -6,11 +6,11 @@
 Quad::Quad()
 {
 	float quadVertices[] = {
-		// positions        // texture Coords
-		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-		 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-		 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		// positions           // texture Coords
+		-1.0f,  1.0f, 0.0f,    0.0f, 1.0f,
+		-1.0f, -1.0f, 0.0f,    0.0f, 0.0f,
+		 1.0f,  1.0f, 0.0f,    1.0f, 1.0f,
+		 1.0f, -1.0f, 0.0f,    1.0f, 0.0f,
 	};
 
 	// setup plane VAO
