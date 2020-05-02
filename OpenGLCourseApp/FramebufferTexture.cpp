@@ -11,7 +11,7 @@ FramebufferTexture::FramebufferTexture()
 }
 
 FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat, unsigned int orderID)
-	: Attachment::Attachment(width, height, AttachmentType::Texture, attachmentFormat, orderID)
+	: Attachment(width, height, AttachmentType::Texture, attachmentFormat, orderID)
 {
 	GLenum attachment;
 	GLint internalFormat;
@@ -28,7 +28,7 @@ FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, 
 		break;
 	case AttachmentFormat::Depth:
 		attachment = GL_DEPTH_ATTACHMENT;
-		internalFormat = GL_DEPTH_COMPONENT;
+		internalFormat = GL_DEPTH_COMPONENT32;
 		format = GL_DEPTH_COMPONENT;
 		type = GL_FLOAT;
 		break;

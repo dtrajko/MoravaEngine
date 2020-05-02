@@ -9,7 +9,7 @@ Renderbuffer::Renderbuffer() : Attachment()
 }
 
 Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat, unsigned int orderID)
-	: Attachment::Attachment(width, height, AttachmentType::Renderbuffer, attachmentFormat, orderID)
+	: Attachment(width, height, AttachmentType::Renderbuffer, attachmentFormat, orderID)
 {
 	GLenum internalFormat;
 	GLenum attachment;

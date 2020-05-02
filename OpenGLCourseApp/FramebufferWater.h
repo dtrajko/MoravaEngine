@@ -41,7 +41,7 @@ private:
 
 	FramebufferTexture* m_ColorAttachment = nullptr;
 	FramebufferTexture* m_DepthAttachment = nullptr;
-	Renderbuffer* m_DepthBuffer;
-	FramebufferTexture* m_StencilAttachment; // still not in use
+	Renderbuffer* m_DepthBuffer = nullptr;
+	FramebufferTexture* m_StencilAttachment = nullptr; // still not in use
 
 };
