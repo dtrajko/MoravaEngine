@@ -1,5 +1,5 @@
 #include "Block.h"
-#include "Vertex.h"
+#include "VertexTiling.h"
 
 #include "GL/glew.h"
 
@@ -88,22 +88,22 @@ Block::Block(float scaleX, float scaleY, float scaleZ, float txMultiplier)
 
 	// position
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Position));
 	// tex coord
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexCoord));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, TexCoord));
 	// normal
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Normal));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Normal));
 	// tangent
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Tangent));
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Tangent));
 	// bitangent
 	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Bitangent));
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Bitangent));
 	// tilingFactor
 	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TilingFactor));
+	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, TilingFactor));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO

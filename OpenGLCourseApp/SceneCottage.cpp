@@ -67,6 +67,10 @@ void SceneCottage::SetTextures()
 	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
 }
 
+void SceneCottage::SetupMeshes()
+{
+}
+
 void SceneCottage::SetupModels()
 {
 	Model* cottage = new Model();

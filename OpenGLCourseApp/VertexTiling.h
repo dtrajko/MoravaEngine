@@ -3,7 +3,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-struct Vertex
+struct VertexTiling
 {
 	glm::vec3 Position;
 	glm::vec2 TexCoord;

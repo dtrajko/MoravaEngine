@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "Vertex.h"
+#include "VertexTiling.h"
 
 
 Sphere::Sphere()
@@ -33,22 +33,22 @@ void Sphere::Create()
 
 	// position
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Position));
 	// tex coord
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexCoord));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, TexCoord));
 	// normal
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Normal));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Normal));
 	// tangent
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Tangent));
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Tangent));
 	// bitangent
 	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Bitangent));
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Bitangent));
 	// bitangent
 	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TilingFactor));
+	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, TilingFactor));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
@@ -70,8 +70,8 @@ void Sphere::GenerateGeometry()
 	float stackStep = PI / stackCount;
 	float sectorAngle, stackAngle;
 
-	unsigned int vertexStride = (unsigned int)(sizeof(Vertex) / sizeof(float));
-	m_VertexCount = sizeof(Vertex) * (sectorCount + 1) * (stackCount + 1);
+	unsigned int vertexStride = (unsigned int)(sizeof(VertexTiling) / sizeof(float));
+	m_VertexCount = sizeof(VertexTiling) * (sectorCount + 1) * (stackCount + 1);
 	m_IndexCount = 6 * sectorCount * (stackCount - 1);
 
 	m_Vertices = new float[m_VertexCount];

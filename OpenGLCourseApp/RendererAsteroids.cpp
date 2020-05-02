@@ -128,10 +128,6 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	glm::mat4 view = scene->GetCamera()->CalculateViewMatrix();
 
 	// configure transformation matrices
-	shaders["asteroids"]->Bind();
-	shaders["asteroids"]->setMat4("projection", projectionMatrix);
-	shaders["asteroids"]->setMat4("view", view);
-
 	shaders["planet"]->Bind();
 	shaders["planet"]->setMat4("projection", projectionMatrix);
 	shaders["planet"]->setMat4("view", view);
@@ -146,6 +142,8 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 
 	// draw meteorites
 	shaders["asteroids"]->Bind();
+	shaders["asteroids"]->setMat4("projection", projectionMatrix);
+	shaders["asteroids"]->setMat4("view", view);
 	shaders["asteroids"]->setInt("texture_diffuse1", 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, models["rock"]->GetTextures()[0].id); // note: we also made the textures_loaded vector public (instead of private) from the model class.

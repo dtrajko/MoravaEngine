@@ -2,13 +2,13 @@
 
 #include <GL/glew.h>
 
-#include "Vertex.h"
+#include "VertexTiling.h"
 
 
 namespace MeshData
 {
 
-unsigned int vertexStrideCount = sizeof(Vertex) / sizeof(float);
+unsigned int vertexStrideCount = sizeof(VertexTiling) / sizeof(float);
 
 GLfloat vertices[] =
 {

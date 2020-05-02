@@ -1,11 +1,12 @@
 #include "Terrain.h"
-#include "Vertex.h"
+#include "VertexTiling.h"
 #include "Mesh.h"
 
 
-Terrain::Terrain(const char* heightMapPath, const char* colorMapPath)
+Terrain::Terrain(const char* heightMapPath, float tilingFactor, const char* colorMapPath)
 {
 	m_HeightMapPath = heightMapPath;
+	m_TilingFactor = tilingFactor;
 
 	m_TxHeightMap = new Texture(heightMapPath);
 	m_TxHeightMap->Load();
@@ -28,12 +29,12 @@ Terrain::~Terrain()
 
 void Terrain::GenerateTerrain()
 {
-	unsigned int hiMapWidth = m_TxHeightMap->GetWidth();
-	unsigned int hiMapHeight = m_TxHeightMap->GetHeight();
+	int hiMapWidth = m_TxHeightMap->GetWidth();
+	int hiMapHeight = m_TxHeightMap->GetHeight();
 	unsigned int pixelCount = hiMapWidth * hiMapHeight;
-	unsigned int vertexStride = (unsigned int)(sizeof(Vertex) / sizeof(float));
+	unsigned int vertexStride = (unsigned int)(sizeof(VertexTiling) / sizeof(float));
 
-	vertexCount = sizeof(Vertex) * pixelCount;
+	vertexCount = sizeof(VertexTiling) * pixelCount;
 	indexCount = 6 * (hiMapWidth - 1) * (hiMapHeight - 1);
 
 	printf("Generate terrain vertexCount=%d indexCount=%d\n", vertexCount, indexCount);
@@ -47,9 +48,9 @@ void Terrain::GenerateTerrain()
 	// position   tex coords   normal       tangent      bitangent
 	// X  Y  Z    U  V         NX  NY  NZ   TX  TY  TZ   BX  BY  BZ   TF
 	int vertexPointer = 0;
-	for (unsigned int z = 0; z < hiMapHeight; z++)
+	for (int z = -(hiMapHeight / 2); z < (hiMapHeight / 2); z++)
 	{
-		for (unsigned int x = 0; x < hiMapWidth; x++)
+		for (int x = -(hiMapWidth / 2); x < (hiMapWidth / 2); x++)
 		{
 			// vertex
 			vertices[vertexPointer + 0] = (float)x;
@@ -86,7 +87,7 @@ void Terrain::GenerateTerrain()
 			vertices[vertexPointer + 13] = 0.0f;
 
 			// tiling Factor
-			vertices[vertexPointer + 14] = 1.0f;
+			vertices[vertexPointer + 14] = m_TilingFactor;
 
 			vertexPointer += vertexStride;
 		}
@@ -96,14 +97,14 @@ void Terrain::GenerateTerrain()
 	printf("Generate terrain indices...\n");
 
 	unsigned int indexPointer = 0;
-	for (unsigned int z = 0; z < hiMapHeight - 1; z++)
+	for (int z = 0; z < hiMapHeight - 1; z++)
 	{
-		for (unsigned int x = 0; x < hiMapWidth - 1; x++)
+		for (int x = 0; x < hiMapWidth - 1; x++)
 		{
-			unsigned int topLeft = z * hiMapWidth + x;
-			unsigned int topRight = topLeft + 1;
-			unsigned int bottomLeft  = (z + 1) * hiMapWidth + x;
-			unsigned int bottomRight = bottomLeft + 1;
+			int topLeft = z * hiMapWidth + x;
+			int topRight = topLeft + 1;
+			int bottomLeft  = (z + 1) * hiMapWidth + x;
+			int bottomRight = bottomLeft + 1;
 
 			indices[indexPointer + 0] = topLeft;
 			indices[indexPointer + 1] = bottomLeft;
@@ -141,6 +142,9 @@ void Terrain::GenerateTerrain()
 
 float Terrain::GetHeight(int x, int z)
 {
+	x += (int)m_TxHeightMap->GetWidth() / 2;
+	z += (int)m_TxHeightMap->GetHeight() / 2;
+
 	if (x < 0 || x >= (int)m_TxHeightMap->GetWidth() || z < 0 || z >= (int)m_TxHeightMap->GetHeight())
 	{
 		return 0.0f;

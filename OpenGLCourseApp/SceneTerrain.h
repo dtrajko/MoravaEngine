@@ -20,8 +20,9 @@ public:
 private:
 	virtual void SetSkybox() override;
 	virtual void SetTextures() override;
+	virtual void SetupMeshes() override;
 	virtual void SetupModels() override;
 
-	glm::vec3 m_TerrainScale = glm::vec3(1.5f, 0.25f, 1.5f);
+	glm::vec3 m_TerrainScale = glm::vec3(3.0f, 0.5f, 3.0f);
 
 };

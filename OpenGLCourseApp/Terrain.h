@@ -9,7 +9,7 @@ class Terrain
 {
 
 public:
-	Terrain(const char* heightMapPath, const char* colorMapPath);
+	Terrain(const char* heightMapPath, float tilingFactor, const char* colorMapPath);
 	inline float* GetVertices() const { return &vertices[0]; };
 	inline unsigned int* GetIndices() const { return &indices[0]; };
 	inline unsigned int GetVertexCount() const { return vertexCount; };
@@ -36,4 +36,6 @@ private:
 	int m_MaxPixelColor = 256;
 	int m_TextureTileRatio = 10;
 	bool m_InvertHeight = false;
+
+	float m_TilingFactor = 1.0f;
 };

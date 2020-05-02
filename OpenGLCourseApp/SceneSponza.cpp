@@ -56,6 +56,10 @@ void SceneSponza::SetTextures()
 {
 }
 
+void SceneSponza::SetupMeshes()
+{
+}
+
 void SceneSponza::SetupModels()
 {
 	Model* sponza = new Model();
