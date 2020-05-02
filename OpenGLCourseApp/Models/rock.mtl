@@ -9,5 +9,5 @@ Ks 0.007937 0.007937 0.007937
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump Textures/rock/Rock-Texture-Surface.jpg
-map_Kd Textures/rock/Rock-Texture-Surface.jpg
+map_Bump rock/Rock-Texture-Surface.jpg
+map_Kd rock/Rock-Texture-Surface.jpg

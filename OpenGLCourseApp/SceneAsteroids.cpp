@@ -48,8 +48,8 @@ void SceneAsteroids::SetupMeshes()
 
 void SceneAsteroids::SetupModels()
 {
-	ModelJoey* rock = new ModelJoey("Models/rock.obj");
-	ModelJoey* planet = new ModelJoey("Models/planet.obj");
+	ModelJoey* rock = new ModelJoey("Models/rock.obj", "Textures");
+	ModelJoey* planet = new ModelJoey("Models/planet.obj", "Textures");
 	models.insert(std::make_pair("rock", rock));
 	models.insert(std::make_pair("planet", planet));
 }

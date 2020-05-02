@@ -9,5 +9,5 @@ Ks 0.087302 0.087302 0.087302
 Ni 1.000000
 d 1.000000
 illum 2
-map_Kd Textures/planet/planet_Quom1200.png
-map_Bump Textures/planet/planet_Quom1200.png
+map_Kd planet/planet_Quom1200.png
+map_Bump planet/planet_Quom1200.png
