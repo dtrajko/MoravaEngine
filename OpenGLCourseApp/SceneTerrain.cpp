@@ -86,8 +86,20 @@ void SceneTerrain::Update(float timestep, Window& mainWindow)
 
 void SceneTerrain::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
 {
+	glm::vec3 dirLightDirection = m_LightManager->directionalLight.GetDirection();
+	glm::vec3 dirLightColor = m_LightManager->directionalLight.GetColor();
+
+	ImGui::Begin("Scene Settings");
 	ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, -20.0f, 100.0f);
 	ImGui::SliderFloat3("Terrain scale", glm::value_ptr(m_TerrainScale), -4.0f, 4.0f);
+	ImGui::Separator();
+	ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(dirLightDirection), -1.0f, 1.0f);
+	ImGui::ColorEdit3("DirLight Color", glm::value_ptr(dirLightColor));
+	ImGui::End();
+
+	m_LightManager->directionalLight.SetDirection(dirLightDirection);
+	m_LightManager->directionalLight.SetColor(dirLightColor);
+
 }
 
 void SceneTerrain::Render(glm::mat4 projectionMatrix, std::string passType,
@@ -129,6 +141,7 @@ void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
 	shaderWater->setInt("reflectionTexture", textureSlots["reflection"]);
+	shaderWater->setInt("refractionTexture", textureSlots["refraction"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
 	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
