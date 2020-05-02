@@ -4,105 +4,26 @@
 
 #include "VertexTiling.h"
 
+#include <vector>
 
-namespace MeshData
+
+class MeshData
 {
+public:
+	static unsigned int vertexStrideCount;
+	static unsigned int vertexCount;
+	static unsigned int indexCount;
+	static std::vector<float> vertices;
+	static std::vector<unsigned int> indices;
 
-unsigned int vertexStrideCount = sizeof(VertexTiling) / sizeof(float);
+	static unsigned int floorVertexCount;
+	static unsigned int floorIndexCount;
+	static std::vector<float> floorVertices;
+	static std::vector<unsigned int> floorIndices;
 
-GLfloat vertices[] =
-{
-	//  X      Y      Z        U     V        NX     NY     NZ        TX     TY     TZ        BX     BY     BZ       TF
-	-0.5f,  0.5f, -0.5f,    1.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    1.0f,
-	-0.5f, -0.5f, -0.5f,    1.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    1.0f,
-	 0.5f, -0.5f, -0.5f,    0.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,    1.0f,
-	 0.5f,  0.5f, -0.5f,    0.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,    1.0f,
-
-	-0.5f,  0.5f,  0.5f,    0.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    1.0f,
-	-0.5f, -0.5f,  0.5f,    0.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    1.0f,
-	 0.5f, -0.5f,  0.5f,    1.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,    1.0f,
-	 0.5f,  0.5f,  0.5f,    1.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,    1.0f,
-	 
-	 0.5f,  0.5f, -0.5f,    1.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,    1.0f,
-	 0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,    1.0f,
-	 0.5f, -0.5f,  0.5f,    0.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,    1.0f,
-	 0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,    1.0f,
-
-	-0.5f,  0.5f, -0.5f,    0.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    1.0f,
-	-0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    1.0f,
-	-0.5f, -0.5f,  0.5f,    1.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    1.0f,
-	-0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    1.0f,
-
-	-0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    1.0f,
-	-0.5f,  0.5f, -0.5f,    1.0f, 0.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    1.0f,
-	 0.5f,  0.5f, -0.5f,    0.0f, 0.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,    1.0f,
-	 0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,    1.0f,
-
-	-0.5f, -0.5f,  0.5f,    0.0f, 1.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    1.0f,
-	-0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    1.0f,
-	 0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,    1.0f,
-	 0.5f, -0.5f,  0.5f,    1.0f, 1.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,    1.0f,
+	/* Basic Quad mesh */
+	static unsigned int quadVertexCount;
+	static unsigned int quadIndexCount;
+	static std::vector<float> quadVertices;
+	static std::vector<unsigned int> quadIndices;
 };
-
-unsigned int vertexCount = 15 * 4 * 6;
-
-unsigned int indices[] =
-{
-	 0,  3,  1,
-	 3,  2,  1,
-	 4,  5,  7,
-	 7,  5,  6,
-	 8, 11,  9,
-	11, 10,  9,
-	12, 13, 15,
-	15, 13, 14,
-	16, 19, 17,
-	19, 18, 17,
-	20, 21, 23,
-	23, 21, 22,
-};
-
-unsigned int indexCount = 6 * 6;
-
-/* Floor Mesh */
-GLfloat floorVertices[] =
-{
-	// position               tex coords      normal               tangent              bitangent               TF
-	-10.0f, 0.0f, -10.0f,     0.0f,  0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,    1.0f,
-	 10.0f, 0.0f, -10.0f,    10.0f,  0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,    1.0f,
-	-10.0f, 0.0f,  10.0f,     0.0f, 10.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,    1.0f,
-	 10.0f, 0.0f,  10.0f,    10.0f, 10.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,    1.0f,
-};
-
-unsigned int floorVertexCount = 15 * 4;
-
-unsigned int floorIndices[] =
-{
-	0, 2, 1,
-	1, 2, 3,
-};
-
-unsigned int floorIndexCount = 6;
-
-
-/* Basic Quad mesh */
-GLfloat quadVertices[] =
-{
-	// position            tex coords     normal               tangent              bitangent               TF
-	-1.0f, 0.0f, -1.0f,    0.0f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,    1.0f,
-	 1.0f, 0.0f, -1.0f,    1.0f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,    1.0f,
-	-1.0f, 0.0f,  1.0f,    0.0f, 1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,    1.0f,
-	 1.0f, 0.0f,  1.0f,    1.0f, 1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,    0.0f, 0.0f, -1.0f,    1.0f,
-};
-
-unsigned int quadVertexCount = 15 * 4;
-
-unsigned int quadIndices[] =
-{
-	0, 2, 1,
-	1, 2, 3,
-};
-
-unsigned int quadIndexCount = 6;
-
-}

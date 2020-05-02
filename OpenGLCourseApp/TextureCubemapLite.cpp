@@ -1,5 +1,7 @@
 #include "TextureCubemapLite.h"
 
+#include <GL/glew.h>
+
 #include "CommonValues.h"
 
 

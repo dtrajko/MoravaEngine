@@ -113,21 +113,25 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.5f));
 		shaders["framebuffers_screen"]->setMat4("model", model);
+		shaders["framebuffers_screen"]->setInt("effect", 0); // diffuse (default)
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.5f));
 		shaders["framebuffers_screen"]->setMat4("model", model);
+		shaders["framebuffers_screen"]->setInt("effect", 1); // inverse color
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.5f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.5f));
 		shaders["framebuffers_screen"]->setMat4("model", model);
+		shaders["framebuffers_screen"]->setInt("effect", 3); // nightvision
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -0.5f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.5f));
 		shaders["framebuffers_screen"]->setMat4("model", model);
+		shaders["framebuffers_screen"]->setInt("effect", 4); // kernel sharp
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 }

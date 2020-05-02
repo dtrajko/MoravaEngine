@@ -37,7 +37,7 @@ TextureCubeMap::TextureCubeMap(std::vector<std::string> faces)
         }
         else
         {
-            throw std::runtime_error("Cubemap texture failed to load at path: " + faces[i]);
+            throw std::runtime_error("ERROR: Cubemap texture failed to load at path: " + faces[i]);
             stbi_image_free(data);
         }
 

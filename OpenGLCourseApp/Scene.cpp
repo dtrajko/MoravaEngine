@@ -86,22 +86,22 @@ void Scene::SetupMaterials()
 
 void Scene::SetupMeshes()
 {
-	Mesh::CalcAverageNormals(MeshData::indices, MeshData::indexCount, MeshData::vertices, MeshData::vertexCount);
-	Mesh::CalcTangentSpace(MeshData::indices, MeshData::indexCount, MeshData::vertices, MeshData::vertexCount);
+	Mesh::CalcAverageNormals(&MeshData::indices[0], MeshData::indexCount, &MeshData::vertices[0], MeshData::vertexCount);
+	Mesh::CalcTangentSpace(&MeshData::indices[0], MeshData::indexCount, &MeshData::vertices[0], MeshData::vertexCount);
 
-	Mesh::CalcAverageNormals(MeshData::quadIndices, MeshData::quadIndexCount, MeshData::quadVertices, MeshData::quadVertexCount);
-	Mesh::CalcTangentSpace(MeshData::quadIndices, MeshData::quadIndexCount, MeshData::quadVertices, MeshData::quadVertexCount);
+	Mesh::CalcAverageNormals(&MeshData::quadIndices[0], MeshData::quadIndexCount, &MeshData::quadVertices[0], MeshData::quadVertexCount);
+	Mesh::CalcTangentSpace(&MeshData::quadIndices[0], MeshData::quadIndexCount, &MeshData::quadVertices[0], MeshData::quadVertexCount);
 
 	Mesh* cube = new Mesh();
-	cube->Create(MeshData::vertices, MeshData::indices, MeshData::vertexCount, MeshData::indexCount);
+	cube->Create(&MeshData::vertices[0], &MeshData::indices[0], MeshData::vertexCount, MeshData::indexCount);
 	meshes.insert(std::make_pair("cube", cube));
 
 	Mesh* quad = new Mesh();
-	quad->Create(MeshData::quadVertices, MeshData::quadIndices, MeshData::quadVertexCount, MeshData::quadIndexCount);
+	quad->Create(&MeshData::quadVertices[0], &MeshData::quadIndices[0], MeshData::quadVertexCount, MeshData::quadIndexCount);
 	meshes.insert(std::make_pair("quad", quad));
 
 	Mesh* quadLarge = new Mesh();
-	quadLarge->Create(MeshData::floorVertices, MeshData::floorIndices, MeshData::floorVertexCount, MeshData::floorIndexCount);
+	quadLarge->Create(&MeshData::floorVertices[0], &MeshData::floorIndices[0], MeshData::floorVertexCount, MeshData::floorIndexCount);
 	meshes.insert(std::make_pair("quadLarge", quadLarge));
 
 	float vertices[] = { -1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 1 };

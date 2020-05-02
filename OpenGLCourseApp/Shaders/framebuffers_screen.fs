@@ -6,6 +6,8 @@ in vec2 TexCoords;
 
 uniform sampler2D screenTexture;
 
+uniform int effect;
+
 // kernel calculation
 const float offset = 1.0 / 300.0;
 
@@ -82,10 +84,16 @@ void Kernel(float kernel[9])
 
 void main()
 {
-    // DefaultColors();
-    // InvertColors();
-    // Grayscale();
-    Nightvision();
-    // Kernel(kernel_sharpen);
-    // Kernel(kernel_blur);
+    if (effect == 0)
+        DefaultColors();
+    if (effect == 1)
+        InvertColors();
+    if (effect == 2)
+        Grayscale();
+    if (effect == 3)
+        Nightvision();
+    if (effect == 4)
+        Kernel(kernel_sharpen);
+    if (effect == 5)
+        Kernel(kernel_blur);
 }
