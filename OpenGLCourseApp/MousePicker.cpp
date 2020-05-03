@@ -46,15 +46,9 @@ void MousePicker::Update(float mouseX, float mouseY, float displayWidth, float d
 	m_CurrentRay = CalculateMouseRay();
 
 	if (IntersectionInRange(m_RayStartPoint, m_CurrentRay, 0, m_RayRange))
-	{
 		m_IntersectionPoint = BinarySearch(m_RayStartPoint, m_CurrentRay, 0, m_RayRange, 0);
-		m_Hit = true;
-	}
 	else
-	{
 		m_IntersectionPoint = glm::vec3(0.0f);
-		m_Hit = false;
-	}
 }
 
 glm::vec3 MousePicker::CalculateMouseRay()
@@ -102,7 +96,10 @@ glm::vec3 MousePicker::BinarySearch(glm::vec3 rayStartPoint, glm::vec3 ray, floa
 	if (count >= m_RecursionCount)
 	{
 		glm::vec3 endPoint = GetPointOnRay(rayStartPoint, ray, halfDistance);
-		return endPoint;
+		if (m_Terrain != nullptr)
+			return endPoint;
+		else
+			return glm::vec3(0.0f);
 	}
 	if (IntersectionInRange(rayStartPoint, ray, startDistance, halfDistance))
 		return BinarySearch(rayStartPoint, ray, startDistance, halfDistance, count + 1);
@@ -115,14 +112,28 @@ bool MousePicker::IntersectionInRange(glm::vec3 rayStartPoint, glm::vec3 ray, fl
 	glm::vec3 startPoint = GetPointOnRay(rayStartPoint, ray, startDistance);
 	glm::vec3 endPoint = GetPointOnRay(rayStartPoint, ray, finishDistance);
 	if (IsAboveGround(startPoint) && !IsAboveGround(endPoint))
+	{
+		m_Hit = true;
 		return true;
+	}
 	else
+	{
+		m_Hit = false;
 		return false;
+	}
 }
 
 bool MousePicker::IsAboveGround(glm::vec3 testPoint)
 {
-	if (testPoint.y > 0.0f)
+	m_TestPoint = glm::vec3((int)testPoint.x, (int)testPoint.y, (int)testPoint.z);
+
+	m_TerrainHeight = 0;
+	if (m_Terrain != nullptr)
+	{
+		m_TerrainHeight = (int)m_Terrain->GetHeight((int)m_TestPoint.x, (int)m_TestPoint.y);
+	}
+
+	if ((int)testPoint.y > m_TerrainHeight)
 		return true;
 	else
 		return false;

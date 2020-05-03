@@ -6,6 +6,7 @@
 #include "LearnOpenGL/ModelJoey.h"
 #include "Quad.h"
 #include "Raycast.h"
+#include "Terrain.h"
 
 
 class SceneCubemaps : public Scene
@@ -26,8 +27,13 @@ public:
 	inline unsigned int GetSkyboxVAO() const { return m_SkyboxVAO; };
 	inline unsigned int GetCubemapTextureID() const { return m_TextureCubeMapID; };
 	inline Raycast* GetRaycast() const { return m_Raycast; };
+	inline Terrain* GetTerrain() const { return m_Terrain; };
 
 	virtual ~SceneCubemaps() override;
+
+public:
+	bool m_TerrainEnabled = true;
+	bool m_CubeTerrainEnabled = true;
 
 private:
 	virtual void SetSkybox() override;
@@ -46,7 +52,7 @@ private:
 	unsigned int m_SkyboxVBO;
 
 	Quad* m_Quad;
-
 	Raycast* m_Raycast;
+	Terrain* m_Terrain;
 
 };

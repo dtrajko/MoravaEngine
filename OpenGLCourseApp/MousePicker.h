@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 
+#include "Terrain.h"
+
 
 class MousePicker
 {
@@ -10,6 +12,7 @@ public:
 	static MousePicker* Get();
 	glm::vec3 GetCurrentRay();
 	void Update(float mouseX, float mouseY, float displayWidth, float displayHeight, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
+	inline void SetTerrain(Terrain* terrain) { m_Terrain = terrain; };
 	glm::vec3 CalculateMouseRay();
 	glm::vec2 GetNormalizedDeviceCoords();
 	glm::vec4 ToEyeCoords(glm::vec4 clipCoords);
@@ -43,5 +46,10 @@ public:
 
 	int m_RecursionCount = 20;
 	float m_RayRange = 600.0f;
+
+	Terrain* m_Terrain = nullptr;
+
+	glm::vec3 m_TestPoint = glm::vec3(0.0f);
+	int m_TerrainHeight = 0;
 
 };

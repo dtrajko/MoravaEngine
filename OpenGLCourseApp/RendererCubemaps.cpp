@@ -64,16 +64,60 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     EnableTransparency();
 
     SceneCubemaps* sceneCubemaps = (SceneCubemaps*)scene;
+    MousePicker* mp = MousePicker::Get();
 
-    // cube
+    // Experimenting with ray casting and MousePicker
+    mp->GetPointOnRay(scene->GetCamera()->GetPosition(), mp->GetCurrentRay(), mp->m_RayRange);
+    Raycast* raycast = sceneCubemaps->GetRaycast();
+    raycast->m_Hit = mp->m_Hit;
+    raycast->Draw(mp->m_RayStartPoint + scene->GetCamera()->GetFront() * 0.1f, mp->GetCurrentRay() * mp->m_RayRange, raycast->m_Color,
+        shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+
     shaders["cubemaps"]->Bind();
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::scale(model, glm::vec3(2.0f));
-    shaders["cubemaps"]->setMat4("model", model);
     shaders["cubemaps"]->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
     shaders["cubemaps"]->setMat4("projection", projectionMatrix);
     shaders["cubemaps"]->setVec3("cameraPos", scene->GetCamera()->GetPosition());
 
+    glm::mat4 model = glm::mat4(1.0f);
+
+    int terrainWidth = sceneCubemaps->GetTerrain()->GetHeightMap()->GetWidth();
+    int terrainHeight = sceneCubemaps->GetTerrain()->GetHeightMap()->GetHeight();
+
+    // Draw cube terrain
+    if (sceneCubemaps->m_CubeTerrainEnabled)
+    {
+        for (int th = -(terrainHeight / 2); th < (terrainHeight / 2); th++)
+        {
+            for (int tw = -(terrainWidth / 2); tw < (terrainWidth / 2); tw++)
+            {
+                model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3(tw, (int)sceneCubemaps->GetTerrain()->GetHeight(tw, th), th));
+                model = glm::scale(model, glm::vec3(1.0f));
+                shaders["cubemaps"]->setMat4("model", model);
+                shaders["cubemaps"]->setVec4("tintColor", glm::vec4(1.0f, 0.6f, 0.4f, 0.9f));
+                glBindVertexArray(sceneCubemaps->GetCubeVAO());
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, sceneCubemaps->GetCubemapTextureID());
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+                glBindVertexArray(0);
+            }
+        }
+    }
+
+    // cube
+    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
+    {
+        if (mp->m_TestPoint.x > -(terrainWidth / 2) && mp->m_TestPoint.x <= (terrainWidth / 2) &&
+            mp->m_TestPoint.z > -(terrainHeight / 2) && mp->m_TestPoint.z <= (terrainHeight / 2))
+        {
+            m_ModelCube = glm::mat4(1.0f);
+            m_ModelCube = glm::scale(m_ModelCube, glm::vec3(1.0f));
+            m_ModelCube = glm::translate(m_ModelCube, glm::vec3(mp->m_TestPoint.x, (int)mp->m_TerrainHeight + 1.0f, mp->m_TestPoint.z));
+        }
+    }
+
+    shaders["cubemaps"]->setMat4("model", m_ModelCube);
+    shaders["cubemaps"]->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 0.9f));
     glBindVertexArray(sceneCubemaps->GetCubeVAO());
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, sceneCubemaps->GetCubemapTextureID());
@@ -88,19 +132,11 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     shaders["cubemaps"]->setMat4("model", model);
     // models["nanosuit"]->Draw(shaders["cubemaps"]);
 
-    // Experimenting with ray casting and MousePicker
-    MousePicker* mp = MousePicker::Get();
-    mp->GetPointOnRay(scene->GetCamera()->GetPosition(), mp->GetCurrentRay(), mp->m_RayRange);
-    Raycast* raycast = sceneCubemaps->GetRaycast();
-    raycast->m_Hit = mp->m_Hit;
-    raycast->Draw(mp->m_RayStartPoint + scene->GetCamera()->GetFront() * 0.1f, mp->GetCurrentRay() * mp->m_RayRange, raycast->m_Color,
-        shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
-
-    /* Floor */
     shaders["framebuffers_scene"]->Bind();
     shaders["framebuffers_scene"]->setMat4("projection", projectionMatrix);
     shaders["framebuffers_scene"]->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
 
+    /* Floor */
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -108,7 +144,17 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     shaders["framebuffers_scene"]->setMat4("model", model);
     shaders["framebuffers_scene"]->setInt("texture1", 0);
     scene->GetTextures()["semi_transparent"]->Bind(0);
-    scene->GetMeshes()["quad"]->Render();
+    // scene->GetMeshes()["quad"]->Render();
+
+    // Terrain
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(1.0f));
+    shaders["framebuffers_scene"]->setMat4("model", model);
+    shaders["framebuffers_scene"]->setInt("texture1", 0);
+    scene->GetTextures()["semi_transparent"]->Bind(0);
+    if (sceneCubemaps->m_TerrainEnabled)
+        scene->GetMeshes()["terrain"]->Render();
 
     // draw skybox as last
     glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth buffer's content

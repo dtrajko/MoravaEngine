@@ -34,12 +34,13 @@ void Terrain::GenerateTerrain()
 	unsigned int pixelCount = hiMapWidth * hiMapHeight;
 	unsigned int vertexStride = (unsigned int)(sizeof(VertexTiling) / sizeof(float));
 
-	vertexCount = sizeof(VertexTiling) * pixelCount;
+	vertexBufferSize = sizeof(VertexTiling) * pixelCount;
 	indexCount = 6 * (hiMapWidth - 1) * (hiMapHeight - 1);
 
-	printf("Generate terrain vertexCount=%d indexCount=%d\n", vertexCount, indexCount);
+	printf("Generate terrain hiMapWidth=%d hiMapHeight=%d vertexStride=%d vertexBufferSize=%d indexCount=%d\n",
+		hiMapWidth, hiMapHeight, vertexStride, vertexBufferSize, indexCount);
 
-	vertices = new float[vertexCount];
+	vertices = new float[vertexBufferSize];
 	indices = new unsigned int[indexCount];
 
 	printf("Generate terrain vertices...\n");
@@ -56,6 +57,8 @@ void Terrain::GenerateTerrain()
 			vertices[vertexPointer + 0] = (float)x;
 			vertices[vertexPointer + 1] = GetHeight(x, z);
 			vertices[vertexPointer + 2] = (float)z;
+
+			// printf("Terrain vertices X=%.2ff Y=%.2ff Z=%.2ff\n", vertices[vertexPointer + 0], vertices[vertexPointer + 1], vertices[vertexPointer + 2]);
 
 			// texture coords
 			if (m_TxColorMap != nullptr)
@@ -123,8 +126,8 @@ void Terrain::GenerateTerrain()
 
 	printf("Final value of indexPointer: %d\n", indexPointer);
 
-	Mesh::CalcAverageNormals(vertices, vertexCount, indices, indexCount);
-	Mesh::CalcTangentSpace(vertices, vertexCount, indices, indexCount);
+	Mesh::CalcAverageNormals(vertices, vertexBufferSize, indices, indexCount);
+	Mesh::CalcTangentSpace(vertices, vertexBufferSize, indices, indexCount);
 
 	for (unsigned int i = 0; i < pixelCount; i++)
 	{
@@ -151,6 +154,7 @@ float Terrain::GetHeight(int x, int z)
 	}
 
 	float heightRatio = ((float)(m_TxHeightMap->GetWidth() + m_TxHeightMap->GetHeight()) / 2.0f) / (float)m_MaxPixelColor;
+	heightRatio /= 4.0f;
 
 	int red   = m_TxHeightMap->getRed(x, z);
 	int green = m_TxHeightMap->getGreen(x, z);
@@ -162,6 +166,6 @@ float Terrain::GetHeight(int x, int z)
 	float height = ((float)red + (float)green + (float)blue) / 3;
 	if (m_InvertHeight)
 		height = m_MaxPixelColor - height;
-	// height *= heightRatio;
+	height *= heightRatio;
 	return height;
 }

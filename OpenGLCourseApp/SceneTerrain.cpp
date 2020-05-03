@@ -37,7 +37,7 @@ SceneTerrain::SceneTerrain()
 	sceneSettings.shadowMapWidth = 2048;
 	sceneSettings.shadowMapHeight = 2048;
 	sceneSettings.shadowSpeed = 0.1f;
-	sceneSettings.waterHeight = 6.0f; // 1.0f 5.0f
+	sceneSettings.waterHeight = 1.0f; // 1.0f 5.0f
 	sceneSettings.waterWaveSpeed = 0.1f;
 
 	SetSkybox();

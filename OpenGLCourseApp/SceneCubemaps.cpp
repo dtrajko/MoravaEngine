@@ -9,12 +9,10 @@
 
 SceneCubemaps::SceneCubemaps()
 {
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 2.0f, 5.0f);
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 15.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
+    sceneSettings.cameraStartPitch = -20.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
-	sceneSettings.ambientIntensity = 0.4f;
-	sceneSettings.diffuseIntensity = 0.8f;
-	sceneSettings.lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);
 
 	SetCamera();
 	SetSkybox();
@@ -46,6 +44,13 @@ void SceneCubemaps::SetupModels()
 {
     // ModelJoey* nanosuit = new ModelJoey("Models/nanosuit.obj", "Textures/nanosuit");
     // models.insert(std::make_pair("nanosuit", nanosuit));
+
+    m_Terrain = new Terrain("Textures/heightmap_16x16.png", 4.0f, nullptr);
+    Mesh* mesh = new Mesh();
+    mesh->Create(m_Terrain->GetVertices(), m_Terrain->GetIndices(), m_Terrain->GetVertexCount(), m_Terrain->GetIndexCount());
+    meshes.insert(std::make_pair("terrain", mesh));
+
+    MousePicker::Get()->SetTerrain(m_Terrain);
 }
 
 void SceneCubemaps::SetGeometry()
@@ -186,49 +191,52 @@ void SceneCubemaps::UpdateImGui(float timestep, Window& mainWindow, std::map<con
 {
     MousePicker* mp = MousePicker::Get();
 
+    // No support in shader for directional light
+    // glm::vec3 dirLightDirection = m_LightManager->directionalLight.GetDirection();
+    // glm::vec3 dirLightColor = m_LightManager->directionalLight.GetColor();
+
     ImGui::Begin("Ray Casting");
-
     ImGui::Separator();
-    std::string cameraPosition = "Camera Position: X = " + std::to_string(mp->m_CameraPosition.x) +
-                                                 " Y = " + std::to_string(mp->m_CameraPosition.y) +
-                                                 " Z = " + std::to_string(mp->m_CameraPosition.z);
-    ImGui::Text(cameraPosition.c_str());
-    ImGui::Separator();
-
     std::string mouseCoords = "Mouse Coordinates: MouseX = " + std::to_string(mp->m_MouseX) +
         " MouseY = " + std::to_string(mp->m_MouseY);
     ImGui::Text(mouseCoords.c_str());
     ImGui::Separator();
-
     std::string normalizedCoords = "Normalized Coords: X = " + std::to_string(mp->m_NormalizedCoords.x) +
                                                      " Y = " + std::to_string(mp->m_NormalizedCoords.y);
     ImGui::Text(normalizedCoords.c_str());
     ImGui::Separator();
-
     std::string clipCoords = "Clip Coords: X = " + std::to_string(mp->m_ClipCoords.x) +
                                          " Y = " + std::to_string(mp->m_ClipCoords.y);
     ImGui::Text(clipCoords.c_str());
     ImGui::Separator();
-
     std::string eyeCoords = "Eye Coords: X = " + std::to_string(mp->m_EyeCoords.x) + " Y = " + std::to_string(mp->m_EyeCoords.y) +
                                        " Z = " + std::to_string(mp->m_EyeCoords.z) + " W = " + std::to_string(mp->m_EyeCoords.w);
     ImGui::Text(eyeCoords.c_str());
     ImGui::Separator();
-
     std::string worldRay = "World Ray: X = " + std::to_string(mp->m_WorldRay.x) +
                                      " Y = " + std::to_string(mp->m_WorldRay.y) +
                                      " Z = " + std::to_string(mp->m_WorldRay.z);
     ImGui::Text(worldRay.c_str());
     ImGui::Separator();
-
+    ImGui::Checkbox("Terrain Enabled", &m_TerrainEnabled);
+    ImGui::Checkbox("Cube Terrain Enabled", &m_CubeTerrainEnabled);
+    ImGui::Separator();
+    ImGui::SliderFloat3("Test Point", glm::value_ptr(mp->m_TestPoint), -20.0f, 20.0f);
+    ImGui::SliderInt("Terrain Height", &mp->m_TerrainHeight, -20, 20);
     ImGui::SliderFloat3("Ray Start", glm::value_ptr(m_Raycast->m_LineStart), -10.0f, 10.0f);
     ImGui::SliderFloat3("Ray End",   glm::value_ptr(m_Raycast->m_LineEnd),   -10.0f, 10.0f);
     // ImGui::ColorEdit4("Ray Color",   glm::value_ptr(m_Raycast->m_Color));
-
     ImGui::Separator();
     ImGui::SliderFloat3("Intersection point", glm::value_ptr(mp->m_IntersectionPoint), -10.0f, 10.0f);
-
+    // No support in shader for directional light
+    // ImGui::Separator();
+    // ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(dirLightDirection), -1.0f, 1.0f);
+    // ImGui::ColorEdit3("DirLight Color", glm::value_ptr(dirLightColor));
     ImGui::End();
+
+    // No support in shader for directional light
+    // m_LightManager->directionalLight.SetDirection(dirLightDirection);
+    // m_LightManager->directionalLight.SetColor(dirLightColor);
 }
 
 void SceneCubemaps::Render(glm::mat4 projectionMatrix, std::string passType,

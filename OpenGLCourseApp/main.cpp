@@ -161,7 +161,7 @@ int main()
 	// Loop until window closed
 	while (!mainWindow.GetShouldClose())
 	{
-		GLfloat currentTimestamp = (GLfloat)glfwGetTime();
+		float currentTimestamp = (float)glfwGetTime();
 		deltaTime = currentTimestamp - lastTimestamp;
 		lastTimestamp = currentTimestamp;
 
