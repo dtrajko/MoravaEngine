@@ -199,6 +199,7 @@
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Quad.cpp" />
     <ClCompile Include="RadianceHDR.cpp" />
+    <ClCompile Include="Raycast.cpp" />
     <ClCompile Include="Renderbuffer.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererAsteroids.cpp" />
@@ -279,6 +280,7 @@
     <ClInclude Include="Profiler.h" />
     <ClInclude Include="Quad.h" />
     <ClInclude Include="RadianceHDR.h" />
+    <ClInclude Include="Raycast.h" />
     <ClInclude Include="Renderbuffer.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RendererAsteroids.h" />

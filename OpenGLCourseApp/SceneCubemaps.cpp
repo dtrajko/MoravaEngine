@@ -22,6 +22,9 @@ SceneCubemaps::SceneCubemaps()
 	SetupMeshes();
 	SetupModels();
 	SetGeometry();
+
+    m_Raycast = new Raycast();
+    m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
 }
 
 void SceneCubemaps::SetSkybox()
@@ -41,8 +44,8 @@ void SceneCubemaps::SetupMeshes()
 
 void SceneCubemaps::SetupModels()
 {
-    // ModelJoey* nanosuit = new ModelJoey("Models/nanosuit.obj", "Textures/nanosuit");
-    // models.insert(std::make_pair("nanosuit", nanosuit));
+    ModelJoey* nanosuit = new ModelJoey("Models/nanosuit.obj", "Textures/nanosuit");
+    models.insert(std::make_pair("nanosuit", nanosuit));
 }
 
 void SceneCubemaps::SetGeometry()
@@ -218,8 +221,9 @@ void SceneCubemaps::UpdateImGui(float timestep, Window& mainWindow, std::map<con
     ImGui::Text(worldRay.c_str());
     ImGui::Separator();
 
-    ImGui::SliderFloat3("Line Start", glm::value_ptr(m_LineStart), -10.0f, 10.0f);
-    ImGui::SliderFloat3("Line End",   glm::value_ptr(m_LineEnd),   -10.0f, 10.0f);
+    ImGui::SliderFloat3("Ray Start", glm::value_ptr(m_Raycast->m_LineStart), -10.0f, 10.0f);
+    ImGui::SliderFloat3("Ray End",   glm::value_ptr(m_Raycast->m_LineEnd),   -10.0f, 10.0f);
+    ImGui::ColorEdit4("Ray Color",   glm::value_ptr(m_Raycast->m_Color));
 
     ImGui::End();
 }
@@ -241,4 +245,5 @@ SceneCubemaps::~SceneCubemaps()
 {
 	CleanupGeometry();
     delete m_TextureCubeMap;
+    delete m_Raycast;
 }

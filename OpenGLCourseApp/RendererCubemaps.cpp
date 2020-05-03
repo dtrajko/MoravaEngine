@@ -53,46 +53,6 @@ void RendererCubemaps::Render(float deltaTime, Window& mainWindow, Scene* scene,
 	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
-void RendererCubemaps::DrawLine(glm::vec3 start, glm::vec3 end, Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
-{
-    float lineVertices[] =
-    {
-        // position                    // color
-        //    X        Y         Z        R     G     B     A
-        start.x, start.y,  start.z,    1.0f, 0.0f, 0.0f, 1.0f,
-        end.x,   end.y,    end.z,      0.0f, 1.0f, 0.0f, 1.0f,
-
-        // 0.0f, 0.0f,  1.0f,    1.0f, 0.0f, 0.0f, 1.0f,
-        // 0.0f, 0.0f, -1.0f,    0.0f, 1.0f, 0.0f, 1.0f,
-    };
-
-    // printf("Draw Line! Start %.2ff %.2ff %.2ff End %.2ff %.2ff %.2ff\n", start.x, start.y, start.z, end.x, end.y, end.z);
-
-    // line VAO
-    unsigned int m_LineVAO;
-    unsigned int m_LineVBO;
-    glGenVertexArrays(1, &m_LineVAO);
-    glGenBuffers(1, &m_LineVBO);
-    glBindVertexArray(m_LineVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, m_LineVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices), &lineVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
-
-    // line
-    shader->Bind();
-    glm::mat4 model = glm::mat4(1.0f);
-    shader->setMat4("model", model);
-    shader->setMat4("view", viewMatrix);
-    shader->setMat4("projection", projectionMatrix);
-
-    glBindVertexArray(m_LineVAO);
-    glDrawArrays(GL_LINES, 0, 2);
-    glBindVertexArray(0);
-}
-
 void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
@@ -130,10 +90,11 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 
     // Experimenting with ray casting and MousePicker
     MousePicker* mp = MousePicker::Get();
+    Raycast* raycast = sceneCubemaps->GetRaycast();
     glm::vec3 camPos = scene->GetCamera()->GetPosition();
-    sceneCubemaps->m_LineStart = camPos + scene->GetCamera()->GetFront();
-    sceneCubemaps->m_LineEnd = mp->GetPointOnRay(scene->GetCamera()->GetPosition(), 100.0f);
-    DrawLine(sceneCubemaps->m_LineStart, sceneCubemaps->m_LineEnd, shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+    raycast->m_LineStart = camPos + scene->GetCamera()->GetFront();
+    raycast->m_LineEnd = mp->GetPointOnRay(scene->GetCamera()->GetPosition(), 100.0f);
+    raycast->Draw(raycast->m_LineStart, raycast->m_LineEnd, raycast->m_Color, shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
 
     /* Floor */
     shaders["framebuffers_scene"]->Bind();

@@ -5,6 +5,7 @@
 #include "TextureCubeMap.h"
 #include "LearnOpenGL/ModelJoey.h"
 #include "Quad.h"
+#include "Raycast.h"
 
 
 class SceneCubemaps : public Scene
@@ -24,6 +25,7 @@ public:
 	inline unsigned int GetCubeVAO() const { return m_CubeVAO; };
 	inline unsigned int GetSkyboxVAO() const { return m_SkyboxVAO; };
 	inline unsigned int GetCubemapTextureID() const { return m_TextureCubeMapID; };
+	inline Raycast* GetRaycast() const { return m_Raycast; };
 
 	virtual ~SceneCubemaps() override;
 
@@ -45,9 +47,6 @@ private:
 
 	Quad* m_Quad;
 
-public:
-	// ray casting line
-	glm::vec3 m_LineStart = glm::vec3(0.0f);
-	glm::vec3 m_LineEnd = glm::vec3(0.0f);
+	Raycast* m_Raycast;
 
 };

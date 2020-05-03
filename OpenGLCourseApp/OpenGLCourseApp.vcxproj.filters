@@ -297,6 +297,9 @@
     <ClCompile Include="MeshData.cpp">
       <Filter>Source Files\Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="Raycast.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -537,6 +540,9 @@
       <Filter>Header Files\Texture</Filter>
     </ClInclude>
     <ClInclude Include="MousePicker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Raycast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
