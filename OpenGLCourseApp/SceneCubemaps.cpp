@@ -44,8 +44,8 @@ void SceneCubemaps::SetupMeshes()
 
 void SceneCubemaps::SetupModels()
 {
-    ModelJoey* nanosuit = new ModelJoey("Models/nanosuit.obj", "Textures/nanosuit");
-    models.insert(std::make_pair("nanosuit", nanosuit));
+    // ModelJoey* nanosuit = new ModelJoey("Models/nanosuit.obj", "Textures/nanosuit");
+    // models.insert(std::make_pair("nanosuit", nanosuit));
 }
 
 void SceneCubemaps::SetGeometry()
@@ -223,7 +223,10 @@ void SceneCubemaps::UpdateImGui(float timestep, Window& mainWindow, std::map<con
 
     ImGui::SliderFloat3("Ray Start", glm::value_ptr(m_Raycast->m_LineStart), -10.0f, 10.0f);
     ImGui::SliderFloat3("Ray End",   glm::value_ptr(m_Raycast->m_LineEnd),   -10.0f, 10.0f);
-    ImGui::ColorEdit4("Ray Color",   glm::value_ptr(m_Raycast->m_Color));
+    // ImGui::ColorEdit4("Ray Color",   glm::value_ptr(m_Raycast->m_Color));
+
+    ImGui::Separator();
+    ImGui::SliderFloat3("Intersection point", glm::value_ptr(mp->m_IntersectionPoint), -10.0f, 10.0f);
 
     ImGui::End();
 }

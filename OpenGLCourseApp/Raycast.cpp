@@ -12,13 +12,13 @@ void Raycast::Draw(glm::vec3 start, glm::vec3 end, glm::vec4 color, Shader* shad
     m_LineStart = start;
     m_LineEnd = end;
     m_Color = color;
+    m_Color = m_Hit ? m_ColorHitTrue : m_ColorHitFalse;
 
     float lineVertices[] =
     {
-        // position                    // color
-        //    X        Y         Z           R        G        B        A
-        start.x, start.y,  start.z,    color.r, color.g, color.b, color.a,
-        end.x,   end.y,    end.z,      color.r, color.g, color.b, color.a,
+        // position                                     // color
+        m_LineStart.x, m_LineStart.y, m_LineStart.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,
+        m_LineEnd.x,   m_LineEnd.y,   m_LineEnd.z,      m_Color.r, m_Color.g, m_Color.b, m_Color.a,
     };
 
     // line VAO

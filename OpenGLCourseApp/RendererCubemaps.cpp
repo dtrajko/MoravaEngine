@@ -90,11 +90,11 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 
     // Experimenting with ray casting and MousePicker
     MousePicker* mp = MousePicker::Get();
+    mp->GetPointOnRay(scene->GetCamera()->GetPosition(), mp->GetCurrentRay(), mp->m_RayRange);
     Raycast* raycast = sceneCubemaps->GetRaycast();
-    glm::vec3 camPos = scene->GetCamera()->GetPosition();
-    raycast->m_LineStart = camPos + scene->GetCamera()->GetFront();
-    raycast->m_LineEnd = mp->GetPointOnRay(scene->GetCamera()->GetPosition(), 100.0f);
-    raycast->Draw(raycast->m_LineStart, raycast->m_LineEnd, raycast->m_Color, shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+    raycast->m_Hit = mp->m_Hit;
+    raycast->Draw(mp->m_RayStartPoint + scene->GetCamera()->GetFront() * 0.1f, mp->GetCurrentRay() * mp->m_RayRange, raycast->m_Color,
+        shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
 
     /* Floor */
     shaders["framebuffers_scene"]->Bind();

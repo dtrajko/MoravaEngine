@@ -23,5 +23,8 @@ public:
 	glm::vec3 m_LineStart = glm::vec3(0.0f);
 	glm::vec3 m_LineEnd = glm::vec3(0.0f);
 	glm::vec4 m_Color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	glm::vec4 m_ColorHitTrue = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	glm::vec4 m_ColorHitFalse = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+	bool m_Hit = false;
 
 };

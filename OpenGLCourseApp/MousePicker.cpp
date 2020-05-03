@@ -44,6 +44,17 @@ void MousePicker::Update(float mouseX, float mouseY, float displayWidth, float d
 	m_ProjectionMatrix = projectionMatrix;
 	m_ViewMatrix = viewMatrix;
 	m_CurrentRay = CalculateMouseRay();
+
+	if (IntersectionInRange(m_RayStartPoint, m_CurrentRay, 0, m_RayRange))
+	{
+		m_IntersectionPoint = BinarySearch(m_RayStartPoint, m_CurrentRay, 0, m_RayRange, 0);
+		m_Hit = true;
+	}
+	else
+	{
+		m_IntersectionPoint = glm::vec3(0.0f);
+		m_Hit = false;
+	}
 }
 
 glm::vec3 MousePicker::CalculateMouseRay()
@@ -58,8 +69,8 @@ glm::vec3 MousePicker::CalculateMouseRay()
 glm::vec2 MousePicker::GetNormalizedDeviceCoords()
 {
 	float x = (m_MouseX * 2.0f) / m_DisplayWidth - 1.0f;
-	float y = (m_MouseY * 2.0f) / m_DisplayHeight - 1.0f;
-	return glm::vec2(x, -y); // it may happen to be { x, -y }
+	float y = 1.0f - (m_MouseY * 2.0f) / m_DisplayHeight;
+	return glm::vec2(x, y); // it may happen to be { x, -y }
 }
 
 glm::vec4 MousePicker::ToEyeCoords(glm::vec4 clipCoords)
@@ -78,12 +89,43 @@ glm::vec3 MousePicker::ToWorldCoords(glm::vec4 eyeCoords)
 	return mouseRay;
 }
 
-glm::vec3 MousePicker::GetPointOnRay(glm::vec3 cameraPosition, float distance)
+glm::vec3 MousePicker::GetPointOnRay(glm::vec3 rayStartPoint, glm::vec3 ray, float distance)
 {
-	m_CameraPosition = cameraPosition;
-	glm::vec3 start = glm::vec3(m_CameraPosition.x, m_CameraPosition.y, m_CameraPosition.z);
-	glm::vec3 scaledRay = glm::vec3(m_CurrentRay.x * distance, m_CurrentRay.y * distance, m_CurrentRay.z * distance);
-	return start + scaledRay;
+	m_RayStartPoint = rayStartPoint;
+	glm::vec3 scaledRay = glm::vec3(ray.x * distance, ray.y * distance, ray.z * distance);
+	return m_RayStartPoint + scaledRay;
+}
+
+glm::vec3 MousePicker::BinarySearch(glm::vec3 rayStartPoint, glm::vec3 ray, float startDistance, float finishDistance, int count)
+{
+	float halfDistance = startDistance + ((finishDistance - startDistance) / 2.0f);
+	if (count >= m_RecursionCount)
+	{
+		glm::vec3 endPoint = GetPointOnRay(rayStartPoint, ray, halfDistance);
+		return endPoint;
+	}
+	if (IntersectionInRange(rayStartPoint, ray, startDistance, halfDistance))
+		return BinarySearch(rayStartPoint, ray, startDistance, halfDistance, count + 1);
+	else
+		return BinarySearch(rayStartPoint, ray, halfDistance, finishDistance, count + 1);
+}
+
+bool MousePicker::IntersectionInRange(glm::vec3 rayStartPoint, glm::vec3 ray, float startDistance, float finishDistance)
+{
+	glm::vec3 startPoint = GetPointOnRay(rayStartPoint, ray, startDistance);
+	glm::vec3 endPoint = GetPointOnRay(rayStartPoint, ray, finishDistance);
+	if (IsAboveGround(startPoint) && !IsAboveGround(endPoint))
+		return true;
+	else
+		return false;
+}
+
+bool MousePicker::IsAboveGround(glm::vec3 testPoint)
+{
+	if (testPoint.y > 0.0f)
+		return true;
+	else
+		return false;
 }
 
 MousePicker::~MousePicker()

@@ -14,7 +14,10 @@ public:
 	glm::vec2 GetNormalizedDeviceCoords();
 	glm::vec4 ToEyeCoords(glm::vec4 clipCoords);
 	glm::vec3 ToWorldCoords(glm::vec4 eyeCoords);
-	glm::vec3 GetPointOnRay(glm::vec3 cameraPosition, float distance);
+	glm::vec3 GetPointOnRay(glm::vec3 rayStartPoint, glm::vec3 ray, float distance);
+	glm::vec3 BinarySearch(glm::vec3 rayStartPoint, glm::vec3 ray, float startDistance, float finishDistance, int count);
+	bool IntersectionInRange(glm::vec3 rayStartPoint, glm::vec3 ray, float startDistance, float finishDistance);
+	bool IsAboveGround(glm::vec3 testPoint);
 	~MousePicker();
 
 public:
@@ -32,4 +35,13 @@ public:
 	glm::vec4 m_EyeCoords;
 	glm::vec3 m_WorldRay;
 	glm::vec3 m_CameraPosition;
+
+	glm::vec3 m_IntersectionPoint = glm::vec3(0.0f);
+	bool m_Hit = false;
+
+	glm::vec3 m_RayStartPoint = glm::vec3(0.0f); // it should be camera position or somewhere near
+
+	int m_RecursionCount = 20;
+	float m_RayRange = 600.0f;
+
 };
