@@ -79,12 +79,12 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
         shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
 
     shaders["cubemaps"]->Bind();
-    shaders["cubemaps"]->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
     shaders["cubemaps"]->setMat4("projection", projectionMatrix);
+    shaders["cubemaps"]->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
     shaders["cubemaps"]->setVec3("cameraPos", scene->GetCamera()->GetPosition());
 
     glm::mat4 model = glm::mat4(1.0f);
-
+ 
     int terrainWidth = sceneCubemaps->GetTerrain()->GetHeightMap()->GetWidth();
     int terrainHeight = sceneCubemaps->GetTerrain()->GetHeightMap()->GetHeight();
 
@@ -119,7 +119,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
             m_ModelCube = glm::scale(m_ModelCube, glm::vec3(1.0f));
             glm::vec3 cubePosition = glm::vec3(mp->m_TestPoint.x, (int)mp->m_TerrainHeight + 1.0f, mp->m_TestPoint.z);
             m_ModelCube = glm::translate(m_ModelCube, cubePosition);
-
+    
             if (sceneCubemaps->m_AABBEnabled)
                 m_CubeAABB->UpdatePosition(cubePosition);
         }
@@ -133,14 +133,14 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     if (sceneCubemaps->m_ModelCubeEnabled)
         glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
-
+    
     if (sceneCubemaps->m_AABBEnabled)
         m_CubeAABB->Draw(shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
 
     // Draw the Nanosuit model
+    shaders["cubemaps"]->Bind();
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::scale(model, glm::vec3(0.2f));
     shaders["cubemaps"]->setMat4("model", model);
     shaders["cubemaps"]->setVec4("tintColor", glm::vec4(0.8281f, 0.6836f, 0.2148f, 0.9f)); // Gold color
@@ -160,7 +160,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     shaders["framebuffers_scene"]->setInt("texture1", 0);
     scene->GetTextures()["semi_transparent"]->Bind(0);
     // scene->GetMeshes()["quad"]->Render();
-
+ 
     // Terrain
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -185,9 +185,9 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
         glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
     glDepthFunc(GL_LESS); // set depth function back to default
-
-	std::string passType = "main";
-	scene->Render(projectionMatrix, passType, shaders, uniforms);
+       
+    std::string passType = "main";
+    scene->Render(projectionMatrix, passType, shaders, uniforms);
 }
 
 RendererCubemaps::~RendererCubemaps()

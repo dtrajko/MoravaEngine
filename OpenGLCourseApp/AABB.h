@@ -17,6 +17,7 @@ public:
 	glm::vec3 m_Scale = glm::vec3(1.0f);
 
 private:
+	std::vector<unsigned int> m_Indices;
 
 public:
 	AABB(glm::vec3 position, glm::vec3 scale);

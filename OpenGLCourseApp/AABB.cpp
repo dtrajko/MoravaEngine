@@ -46,47 +46,49 @@ void AABB::Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix
 {
     glm::vec4 color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 
-    float offset = 0.05f;
-    float size = 0.5f + offset;
+    float offset = 0.02f;
+    float sizeX = (0.5f + offset) * m_Scale.x;
+    float sizeY = (0.5f + offset) * m_Scale.y;
+    float sizeZ = (0.5f + offset) * m_Scale.z;
 
     // Front face
-    DrawLine(glm::vec3(m_Position.x - size, m_Position.y - size, m_Position.z + size),
-             glm::vec3(m_Position.x + size, m_Position.y - size, m_Position.z + size), color, shader, projectionMatrix, viewMatrix);
+    DrawLine(glm::vec3(m_Position.x - sizeX, m_Position.y - sizeY, m_Position.z + sizeZ),
+             glm::vec3(m_Position.x + sizeX, m_Position.y - sizeY, m_Position.z + sizeZ), color, shader, projectionMatrix, viewMatrix);
 
-    DrawLine(glm::vec3(m_Position.x - size, m_Position.y + size, m_Position.z + size),
-             glm::vec3(m_Position.x + size, m_Position.y + size, m_Position.z + size), color, shader, projectionMatrix, viewMatrix);
+    DrawLine(glm::vec3(m_Position.x - sizeX, m_Position.y + sizeY, m_Position.z + sizeZ),
+             glm::vec3(m_Position.x + sizeX, m_Position.y + sizeY, m_Position.z + sizeZ), color, shader, projectionMatrix, viewMatrix);
 
-    DrawLine(glm::vec3(m_Position.x - size, m_Position.y - size, m_Position.z + size),
-             glm::vec3(m_Position.x - size, m_Position.y + size, m_Position.z + size), color, shader, projectionMatrix, viewMatrix);
+    DrawLine(glm::vec3(m_Position.x - sizeX, m_Position.y - sizeY, m_Position.z + sizeZ),
+             glm::vec3(m_Position.x - sizeX, m_Position.y + sizeY, m_Position.z + sizeZ), color, shader, projectionMatrix, viewMatrix);
 
-    DrawLine(glm::vec3(m_Position.x + size, m_Position.y - size, m_Position.z + size),
-             glm::vec3(m_Position.x + size, m_Position.y + size, m_Position.z + size), color, shader, projectionMatrix, viewMatrix);
+    DrawLine(glm::vec3(m_Position.x + sizeX, m_Position.y - sizeY, m_Position.z + sizeZ),
+             glm::vec3(m_Position.x + sizeX, m_Position.y + sizeY, m_Position.z + sizeZ), color, shader, projectionMatrix, viewMatrix);
 
     // Back face
-    DrawLine(glm::vec3(m_Position.x - size, m_Position.y - size, m_Position.z - size),
-             glm::vec3(m_Position.x + size, m_Position.y - size, m_Position.z - size), color, shader, projectionMatrix, viewMatrix);
+    DrawLine(glm::vec3(m_Position.x - sizeX, m_Position.y - sizeY, m_Position.z - sizeZ),
+             glm::vec3(m_Position.x + sizeX, m_Position.y - sizeY, m_Position.z - sizeZ), color, shader, projectionMatrix, viewMatrix);
 
-    DrawLine(glm::vec3(m_Position.x - size, m_Position.y + size, m_Position.z - size),
-             glm::vec3(m_Position.x + size, m_Position.y + size, m_Position.z - size), color, shader, projectionMatrix, viewMatrix);
+    DrawLine(glm::vec3(m_Position.x - sizeX, m_Position.y + sizeY, m_Position.z - sizeZ),
+             glm::vec3(m_Position.x + sizeX, m_Position.y + sizeY, m_Position.z - sizeZ), color, shader, projectionMatrix, viewMatrix);
 
-    DrawLine(glm::vec3(m_Position.x - size, m_Position.y - size, m_Position.z - size),
-             glm::vec3(m_Position.x - size, m_Position.y + size, m_Position.z - size), color, shader, projectionMatrix, viewMatrix);
+    DrawLine(glm::vec3(m_Position.x - sizeX, m_Position.y - sizeY, m_Position.z - sizeZ),
+             glm::vec3(m_Position.x - sizeX, m_Position.y + sizeY, m_Position.z - sizeZ), color, shader, projectionMatrix, viewMatrix);
 
-    DrawLine(glm::vec3(m_Position.x + size, m_Position.y - size, m_Position.z - size),
-             glm::vec3(m_Position.x + size, m_Position.y + size, m_Position.z - size), color, shader, projectionMatrix, viewMatrix);
+    DrawLine(glm::vec3(m_Position.x + sizeX, m_Position.y - sizeY, m_Position.z - sizeZ),
+             glm::vec3(m_Position.x + sizeX, m_Position.y + sizeY, m_Position.z - sizeZ), color, shader, projectionMatrix, viewMatrix);
 
     // Side lines
-    DrawLine(glm::vec3(m_Position.x - size, m_Position.y - size, m_Position.z + size),
-             glm::vec3(m_Position.x - size, m_Position.y - size, m_Position.z - size), color, shader, projectionMatrix, viewMatrix);
+    DrawLine(glm::vec3(m_Position.x - sizeX, m_Position.y - sizeY, m_Position.z + sizeZ),
+             glm::vec3(m_Position.x - sizeX, m_Position.y - sizeY, m_Position.z - sizeZ), color, shader, projectionMatrix, viewMatrix);
 
-    DrawLine(glm::vec3(m_Position.x + size, m_Position.y - size, m_Position.z + size),
-             glm::vec3(m_Position.x + size, m_Position.y - size, m_Position.z - size), color, shader, projectionMatrix, viewMatrix);
+    DrawLine(glm::vec3(m_Position.x + sizeX, m_Position.y - sizeY, m_Position.z + sizeZ),
+             glm::vec3(m_Position.x + sizeX, m_Position.y - sizeY, m_Position.z - sizeZ), color, shader, projectionMatrix, viewMatrix);
 
-    DrawLine(glm::vec3(m_Position.x - size, m_Position.y + size, m_Position.z + size),
-             glm::vec3(m_Position.x - size, m_Position.y + size, m_Position.z - size), color, shader, projectionMatrix, viewMatrix);
+    DrawLine(glm::vec3(m_Position.x - sizeX, m_Position.y + sizeY, m_Position.z + sizeZ),
+             glm::vec3(m_Position.x - sizeX, m_Position.y + sizeY, m_Position.z - sizeZ), color, shader, projectionMatrix, viewMatrix);
 
-    DrawLine(glm::vec3(m_Position.x + size, m_Position.y + size, m_Position.z + size),
-             glm::vec3(m_Position.x + size, m_Position.y + size, m_Position.z - size), color, shader, projectionMatrix, viewMatrix);
+    DrawLine(glm::vec3(m_Position.x + sizeX, m_Position.y + sizeY, m_Position.z + sizeZ),
+             glm::vec3(m_Position.x + sizeX, m_Position.y + sizeY, m_Position.z - sizeZ), color, shader, projectionMatrix, viewMatrix);
 
 }
 
@@ -122,6 +124,13 @@ void AABB::DrawLine(glm::vec3 start, glm::vec3 end, glm::vec4 color, Shader* sha
     glBindVertexArray(m_LineVAO);
     glDrawArrays(GL_LINES, 0, 2);
     glBindVertexArray(0);
+
+    // glBindVertexArray(m_LineVAO);
+    // glDrawElements(GL_LINES, (GLsizei)m_Indices.size(), GL_UNSIGNED_INT, 0);
+    // glBindVertexArray(0);
+
+    glDeleteVertexArrays(1, &m_LineVAO);
+    glDeleteBuffers(1, &m_LineVBO);
 }
 
 AABB::~AABB()

@@ -235,6 +235,7 @@
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureAtlas.cpp" />
     <ClCompile Include="TextureCubeMap.cpp" />
     <ClCompile Include="TextureCubemapLite.cpp" />
     <ClCompile Include="Tile2D.cpp" />
@@ -318,6 +319,7 @@
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureAtlas.h" />
     <ClInclude Include="TextureCubeMap.h" />
     <ClInclude Include="TextureCubemapLite.h" />
     <ClInclude Include="Tile2D.h" />
