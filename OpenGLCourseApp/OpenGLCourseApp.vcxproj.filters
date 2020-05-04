@@ -82,6 +82,12 @@
     <Filter Include="Source Files\Collision">
       <UniqueIdentifier>{5d201ba4-cf6e-4664-be2e-1ccf3b329558}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Editor">
+      <UniqueIdentifier>{228a3903-0385-41d1-91ca-02a79ecec7e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor">
+      <UniqueIdentifier>{a03eba21-4b06-44a3-86ea-7c3d2c010a76}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -314,6 +320,9 @@
     </ClCompile>
     <ClCompile Include="TextureAtlas.cpp">
       <Filter>Source Files\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Pivot.cpp">
+      <Filter>Source Files\Editor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -568,6 +577,9 @@
     </ClInclude>
     <ClInclude Include="TextureAtlas.h">
       <Filter>Header Files\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Pivot.h">
+      <Filter>Header Files\Editor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

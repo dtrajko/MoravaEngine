@@ -7,7 +7,12 @@ AABB::AABB(glm::vec3 position, glm::vec3 scale)
 	m_Scale = scale;
 }
 
-bool AABB::contains(glm::vec3 position, glm::vec3 scale)
+void AABB::UpdatePosition(glm::vec3 position)
+{
+    m_Position = position;
+}
+
+bool AABB::Contains(glm::vec3 position, glm::vec3 scale)
 {
 	bool contains = !(
 		m_Position.x + m_Scale.x < position.x || position.x + scale.x < m_Position.x ||
@@ -19,7 +24,7 @@ bool AABB::contains(glm::vec3 position, glm::vec3 scale)
 /*
 	* https://www.toptal.com/game/video-game-physics-part-ii-collision-detection-for-solid-objects
 	*/
-bool AABB::testAABBOverlap(AABB * a, AABB * b)
+bool AABB::TestAABBOverlap(AABB * a, AABB * b)
 {
 	float d1x = b->m_Position.x - a->m_Position.x + a->m_Scale.x;
 	float d1y = b->m_Position.y - a->m_Position.y + a->m_Scale.y;
@@ -35,11 +40,6 @@ bool AABB::testAABBOverlap(AABB * a, AABB * b)
 		return false;
 
 	return true;
-}
-
-void AABB::UpdatePosition(glm::vec3 position)
-{
-	m_Position = position;
 }
 
 void AABB::Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)

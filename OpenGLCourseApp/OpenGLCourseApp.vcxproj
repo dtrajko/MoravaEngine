@@ -198,6 +198,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="MousePicker.cpp" />
     <ClCompile Include="OmniShadowMap.cpp" />
+    <ClCompile Include="Pivot.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Quad.cpp" />
     <ClCompile Include="RadianceHDR.cpp" />
@@ -281,6 +282,7 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="MousePicker.h" />
     <ClInclude Include="OmniShadowMap.h" />
+    <ClInclude Include="Pivot.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="Profiler.h" />
     <ClInclude Include="Quad.h" />

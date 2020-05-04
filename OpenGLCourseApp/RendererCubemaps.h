@@ -4,6 +4,7 @@
 
 #include "SceneCubemaps.h"
 #include "AABB.h"
+#include "Pivot.h"
 
 
 class RendererCubemaps : public RendererBasic
@@ -25,5 +26,7 @@ private:
 	float m_CubeRenderCooldown = 1.0f;
 	glm::mat4 m_ModelCube;
 	AABB* m_CubeAABB;
+	Pivot* m_PivotCube;
+	Pivot* m_PivotScene;
 
 };

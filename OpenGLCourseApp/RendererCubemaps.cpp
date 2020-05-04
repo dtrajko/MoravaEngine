@@ -21,6 +21,9 @@ void RendererCubemaps::Init(Scene* scene)
 
     if (sceneCubemaps->m_AABBEnabled)
         m_CubeAABB = new AABB(glm::vec3(0.0f), glm::vec3(1.0f));
+
+    m_PivotCube = new Pivot(glm::vec3(0.0f), glm::vec3(2.0f));
+    m_PivotScene = new Pivot(glm::vec3(0.0f), glm::vec3(60.0f));
 }
 
 void RendererCubemaps::SetUniforms()
@@ -122,6 +125,8 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     
             if (sceneCubemaps->m_AABBEnabled)
                 m_CubeAABB->UpdatePosition(cubePosition);
+
+            m_PivotCube->UpdatePosition(cubePosition);
         }
     }
 
@@ -136,6 +141,10 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     
     if (sceneCubemaps->m_AABBEnabled)
         m_CubeAABB->Draw(shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+
+    m_PivotCube->Draw(shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+
+    m_PivotScene->Draw(shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
 
     // Draw the Nanosuit model
     shaders["cubemaps"]->Bind();

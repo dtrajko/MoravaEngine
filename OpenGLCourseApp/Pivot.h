@@ -1,16 +1,13 @@
-#ifndef _AABB_H
-#define _AABB_H
+#pragma once
 
-#include <iostream>
 #include <glm/glm.hpp>
+
+#include <vector>
 
 #include "Shader.h"
 
 
-/**
- * Taken from the strifeEngine project
- */
-class AABB
+class Pivot
 {
 public:
 	glm::vec3 m_Position = glm::vec3(0.0f);
@@ -21,13 +18,8 @@ private:
 	std::vector<unsigned int> m_Indices;
 
 public:
-	AABB(glm::vec3 position, glm::vec3 scale);
-	bool Contains(glm::vec3 position, glm::vec3 scale);
-	bool TestAABBOverlap(AABB* a, AABB* b);
+	Pivot(glm::vec3 position, glm::vec3 scale);
 	void UpdatePosition(glm::vec3 position);
 	void Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
-	virtual ~AABB();
-
+	virtual ~Pivot();
 };
-	
-#endif
