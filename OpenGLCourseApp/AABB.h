@@ -17,6 +17,7 @@ public:
 	glm::vec3 m_Scale = glm::vec3(1.0f);
 
 private:
+	std::vector<float> m_Vertices;
 	std::vector<unsigned int> m_Indices;
 
 public:
@@ -25,7 +26,6 @@ public:
 	bool testAABBOverlap(AABB* a, AABB* b);
 	void UpdatePosition(glm::vec3 position);
 	void Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
-	void DrawLine(glm::vec3 start, glm::vec3 end, glm::vec4 color, Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 	virtual ~AABB();
 
 };
