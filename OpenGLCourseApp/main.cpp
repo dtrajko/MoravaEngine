@@ -65,7 +65,7 @@ enum class SceneName
 	Cubemaps,
 };
 
-SceneName currentScene = SceneName::Cubemaps;
+SceneName currentScene = SceneName::Framebuffers;
 
 float deltaTime = 0.0f;
 float lastTimestamp = 0.0f;

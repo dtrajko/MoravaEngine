@@ -170,6 +170,7 @@
     <ClCompile Include="..\vendor\ImGui\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="AABB.cpp" />
     <ClCompile Include="Attachment.cpp" />
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="BulletDebugDrawer.cpp" />
@@ -251,6 +252,7 @@
     <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
+    <ClInclude Include="AABB.h" />
     <ClInclude Include="Attachment.h" />
     <ClInclude Include="Block.h" />
     <ClInclude Include="BulletDebugDrawer.h" />

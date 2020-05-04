@@ -17,6 +17,8 @@ void RendererCubemaps::Init(Scene* scene)
 
 	SetUniforms();
 	SetShaders();
+
+    m_CubeAABB = new AABB(glm::vec3(0.0f), glm::vec3(1.0f));
 }
 
 void RendererCubemaps::SetUniforms()
@@ -113,7 +115,10 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
         {
             m_ModelCube = glm::mat4(1.0f);
             m_ModelCube = glm::scale(m_ModelCube, glm::vec3(1.0f));
-            m_ModelCube = glm::translate(m_ModelCube, glm::vec3(mp->m_TestPoint.x, (int)mp->m_TerrainHeight + 1.0f, mp->m_TestPoint.z));
+            glm::vec3 cubePosition = glm::vec3(mp->m_TestPoint.x, (int)mp->m_TerrainHeight + 1.0f, mp->m_TestPoint.z);
+            m_ModelCube = glm::translate(m_ModelCube, cubePosition);
+
+            m_CubeAABB->UpdatePosition(cubePosition);
         }
     }
 
@@ -124,6 +129,8 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     glBindTexture(GL_TEXTURE_CUBE_MAP, sceneCubemaps->GetCubemapTextureID());
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
+
+    m_CubeAABB->Draw(shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
 
     // Draw the Nanosuit model
     model = glm::mat4(1.0f);

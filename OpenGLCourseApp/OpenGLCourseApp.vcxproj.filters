@@ -76,6 +76,12 @@
     <Filter Include="Source Files\LearnOpenGL">
       <UniqueIdentifier>{9b3fba9d-78a6-4302-8b52-a641be182db8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Collision">
+      <UniqueIdentifier>{685cd2d7-f03e-4271-a3d9-c62a8d43bdaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Collision">
+      <UniqueIdentifier>{5d201ba4-cf6e-4664-be2e-1ccf3b329558}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -302,6 +308,9 @@
     </ClCompile>
     <ClCompile Include="GeometryFactory.cpp">
       <Filter>Source Files\LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="AABB.cpp">
+      <Filter>Source Files\Collision</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -550,6 +559,9 @@
     </ClInclude>
     <ClInclude Include="GeometryFactory.h">
       <Filter>Header Files\LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="AABB.h">
+      <Filter>Header Files\Collision</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

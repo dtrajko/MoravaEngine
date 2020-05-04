@@ -44,7 +44,6 @@ void Raycast::Draw(glm::vec3 start, glm::vec3 end, glm::vec4 color, Shader* shad
     glBindVertexArray(m_LineVAO);
     glDrawArrays(GL_LINES, 0, 2);
     glBindVertexArray(0);
-
 }
 
 Raycast::~Raycast()

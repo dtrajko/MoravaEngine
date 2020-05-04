@@ -3,6 +3,7 @@
 #include "RendererBasic.h"
 
 #include "SceneCubemaps.h"
+#include "AABB.h"
 
 
 class RendererCubemaps : public RendererBasic
@@ -23,5 +24,6 @@ private:
 	float m_CubeRenderLastTime = 0.0f;
 	float m_CubeRenderCooldown = 1.0f;
 	glm::mat4 m_ModelCube;
+	AABB* m_CubeAABB;
 
 };
