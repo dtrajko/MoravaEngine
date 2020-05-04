@@ -12,10 +12,10 @@ SceneFramebuffers::SceneFramebuffers()
 	sceneSettings.diffuseIntensity = 0.8f;
 	sceneSettings.lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);
 
-	m_EffectFrame_0 = 0;
-	m_EffectFrame_1 = 0;
-	m_EffectFrame_2 = 0;
-	m_EffectFrame_3 = 0;
+	m_EffectFrame_0 = 0; // default colors (diffuse)
+	m_EffectFrame_1 = 1; // inverse colors
+	m_EffectFrame_2 = 3; // nightvision
+	m_EffectFrame_3 = 4; // kernel sharpen
 
 	SetCamera();
 	SetSkybox();
@@ -204,10 +204,10 @@ void SceneFramebuffers::CleanupGeometry()
 {
 	// Geometry cleanup
 	glDeleteVertexArrays(1, &cubeVAO);
-	glDeleteVertexArrays(1, &planeVAO);
-	glDeleteVertexArrays(1, &quadVAO);
 	glDeleteBuffers(1, &cubeVBO);
+	glDeleteVertexArrays(1, &planeVAO);
 	glDeleteBuffers(1, &planeVBO);
+	glDeleteVertexArrays(1, &quadVAO);
 	glDeleteBuffers(1, &quadVBO);
 }
 

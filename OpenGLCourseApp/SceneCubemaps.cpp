@@ -247,8 +247,8 @@ void SceneCubemaps::Render(glm::mat4 projectionMatrix, std::string passType,
 void SceneCubemaps::CleanupGeometry()
 {
     glDeleteVertexArrays(1, &m_CubeVAO);
-    glDeleteVertexArrays(1, &m_SkyboxVAO);
     glDeleteBuffers(1, &m_CubeVBO);
+    glDeleteVertexArrays(1, &m_SkyboxVAO);
     glDeleteBuffers(1, &m_SkyboxVAO);
 }
 
