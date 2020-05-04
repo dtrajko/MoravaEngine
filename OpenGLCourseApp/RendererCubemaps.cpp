@@ -13,12 +13,14 @@ RendererCubemaps::RendererCubemaps()
 
 void RendererCubemaps::Init(Scene* scene)
 {
+    SceneCubemaps* sceneCubemaps = (SceneCubemaps*)scene;
     models = ((SceneCubemaps*)scene)->GetModels();
 
 	SetUniforms();
 	SetShaders();
 
-    m_CubeAABB = new AABB(glm::vec3(0.0f), glm::vec3(1.0f));
+    if (sceneCubemaps->m_AABBEnabled)
+        m_CubeAABB = new AABB(glm::vec3(0.0f), glm::vec3(1.0f));
 }
 
 void RendererCubemaps::SetUniforms()
@@ -118,7 +120,8 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
             glm::vec3 cubePosition = glm::vec3(mp->m_TestPoint.x, (int)mp->m_TerrainHeight + 1.0f, mp->m_TestPoint.z);
             m_ModelCube = glm::translate(m_ModelCube, cubePosition);
 
-            m_CubeAABB->UpdatePosition(cubePosition);
+            if (sceneCubemaps->m_AABBEnabled)
+                m_CubeAABB->UpdatePosition(cubePosition);
         }
     }
 
@@ -127,10 +130,12 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     glBindVertexArray(GeometryFactory::CubeNormals::GetVAO());
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, sceneCubemaps->GetCubemapTextureID());
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    if (sceneCubemaps->m_ModelCubeEnabled)
+        glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
 
-    m_CubeAABB->Draw(shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+    if (sceneCubemaps->m_AABBEnabled)
+        m_CubeAABB->Draw(shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
 
     // Draw the Nanosuit model
     model = glm::mat4(1.0f);
@@ -169,15 +174,15 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     // draw skybox as last
     glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth buffer's content
     shaders["skybox"]->Bind();
-    glm::mat4 view = glm::mat4(glm::mat3(scene->GetCamera()->CalculateViewMatrix())); // remove translation from the view matrix
-    shaders["skybox"]->setMat4("view", view);
+    shaders["skybox"]->setMat4("view", glm::mat4(glm::mat3(scene->GetCamera()->CalculateViewMatrix()))); // remove translation from the view matrix
     shaders["skybox"]->setMat4("projection", projectionMatrix);
 
     // skybox cube
     glBindVertexArray(GeometryFactory::Skybox::GetVAO());
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, sceneCubemaps->GetCubemapTextureID());
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    if (sceneCubemaps->m_SkyboxEnabled)
+        glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
     glDepthFunc(GL_LESS); // set depth function back to default
 

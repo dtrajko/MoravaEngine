@@ -30,9 +30,12 @@ public:
 	virtual ~SceneCubemaps() override;
 
 public:
-	bool m_TerrainEnabled = true;
-	bool m_CubeTerrainEnabled = true;
-	bool m_NanosuitModelEnabled = false;
+	bool m_SkyboxEnabled        = true;
+	bool m_ModelCubeEnabled     = true;
+	bool m_TerrainEnabled       = true;
+	bool m_CubeTerrainEnabled   = true;
+	bool m_NanosuitModelEnabled = true;
+	bool m_AABBEnabled          = true;
 
 private:
 	virtual void SetSkybox() override;
