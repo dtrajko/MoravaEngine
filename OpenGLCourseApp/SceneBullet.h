@@ -23,6 +23,7 @@ private:
 	void BulletCleanup();
 	virtual void SetSkybox() override;
 	virtual void SetTextures() override;
+	virtual void SetupMeshes() override;
 	virtual void SetupModels() override;
 	void Fire();
 	btRigidBody* AddRigidBodyBox(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, float mass, float bounciness);

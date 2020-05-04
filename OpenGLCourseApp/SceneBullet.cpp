@@ -1,5 +1,6 @@
 #include "SceneBullet.h"
 
+#include "MeshData.h"
 #include "LearnOpenGL/SphereJoey.h"
 #include "Sphere.h"
 #include "Block.h"
@@ -46,6 +47,7 @@ SceneBullet::SceneBullet()
 	SetLightManager();
 	SetSkybox();
 	SetTextures();
+	SetupMeshes();
 	SetupModels();
 }
 
@@ -86,8 +88,12 @@ void SceneBullet::SetTextures()
 	textures.insert(std::make_pair("texture_plank", new Texture("Textures/texture_plank.png", false, GL_LINEAR)));
 }
 
-void SceneBullet::SetupModels()
+void SceneBullet::SetupMeshes()
 {
+	Mesh* cube = new Mesh();
+	cube->Create(&MeshData::vertices[0], &MeshData::indices[0], MeshData::vertexCount, MeshData::indexCount);
+	meshes.insert(std::make_pair("cube", cube));
+
 	Block* block_floor = new Block(100.0f, 4.0f, 100.0f, m_TextureMultiplier);
 	meshes.insert(std::make_pair("block_floor", block_floor));
 
@@ -106,6 +112,10 @@ void SceneBullet::SetupModels()
 	Sphere* sphere = new Sphere();
 	sphere->Create();
 	meshes.insert(std::make_pair("sphere", sphere));
+}
+
+void SceneBullet::SetupModels()
+{
 }
 
 void SceneBullet::BulletSetup()

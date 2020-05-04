@@ -3,277 +3,280 @@
 #include <GL/glew.h>
 
 
-// set up vertex data (and buffer(s)) and configure vertex attributes
-std::vector<float> GeometryFactory::cubeVerticesTexCoords =
+namespace GeometryFactory
 {
-	// positions           // texture Coords
-   -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
-	0.5f, -0.5f, -0.5f,    1.0f, 0.0f,
-	0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
-	0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
-   -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
-   -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
+    // set up vertex data (and buffer(s)) and configure vertex attributes
+    std::vector<float> CubeTexCoords::s_Vertices =
+    {
+        // positions           // texture Coords
+       -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f,    1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+       -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
+       -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
 
-   -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
-	0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
-	0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
-	0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
-   -0.5f,  0.5f,  0.5f,    0.0f, 1.0f,
-   -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+       -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
+       -0.5f,  0.5f,  0.5f,    0.0f, 1.0f,
+       -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
 
-   -0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
-   -0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
-   -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
-   -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
-   -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
-   -0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+       -0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+       -0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+       -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+       -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+       -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+       -0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
 
-	0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
-	0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
-	0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
-	0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
 
-   -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
-	0.5f, -0.5f, -0.5f,    1.0f, 1.0f,
-	0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
-	0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
-   -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
-   -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+       -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f,    1.0f, 1.0f,
+        0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+        0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+       -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+       -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
 
-   -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
-	0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
-	0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
-	0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
-   -0.5f,  0.5f,  0.5f,    0.0f, 0.0f,
-   -0.5f,  0.5f, -0.5f,    0.0f, 1.0f
-};
+       -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
+        0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+        0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+        0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+       -0.5f,  0.5f,  0.5f,    0.0f, 0.0f,
+       -0.5f,  0.5f, -0.5f,    0.0f, 1.0f
+    };
 
-std::vector<float> GeometryFactory::planeVertices =
-{
-	// positions           // texture Coords 
-	5.0f, -0.5f,  5.0f,    2.0f, 0.0f,
-   -5.0f, -0.5f,  5.0f,    0.0f, 0.0f,
-   -5.0f, -0.5f, -5.0f,    0.0f, 2.0f,
+    std::vector<float> Plane::s_Vertices =
+    {
+        // positions           // texture Coords 
+        5.0f, -0.5f,  5.0f,    2.0f, 0.0f,
+       -5.0f, -0.5f,  5.0f,    0.0f, 0.0f,
+       -5.0f, -0.5f, -5.0f,    0.0f, 2.0f,
 
-	5.0f, -0.5f,  5.0f,    2.0f, 0.0f,
-   -5.0f, -0.5f, -5.0f,    0.0f, 2.0f,
-	5.0f, -0.5f, -5.0f,    2.0f, 2.0f
-};
+        5.0f, -0.5f,  5.0f,    2.0f, 0.0f,
+       -5.0f, -0.5f, -5.0f,    0.0f, 2.0f,
+        5.0f, -0.5f, -5.0f,    2.0f, 2.0f
+    };
 
-// vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates
-std::vector<float> GeometryFactory::quadVertices =
-{
-	// positions   // texCoords
-	-1.0f,  1.0f,  0.0f, 1.0f,
-	-1.0f, -1.0f,  0.0f, 0.0f,
-	 1.0f, -1.0f,  1.0f, 0.0f,
+    // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates
+    std::vector<float> Quad::s_Vertices =
+    {
+        // positions   // texCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
 
-	-1.0f,  1.0f,  0.0f, 1.0f,
-	 1.0f, -1.0f,  1.0f, 0.0f,
-	 1.0f,  1.0f,  1.0f, 1.0f,
-};
+        -1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f, 1.0f,
+    };
 
-std::vector<float> GeometryFactory::cubeVerticesNormals =
-{
-    // positions          // normals
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+    std::vector<float> CubeNormals::s_Vertices =
+    {
+        // positions          // normals
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
 
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-};
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+    };
 
-std::vector<float> GeometryFactory::skyboxVertices =
-{
-    // positions          
-    -1.0f,  1.0f, -1.0f,
-    -1.0f, -1.0f, -1.0f,
-     1.0f, -1.0f, -1.0f,
-     1.0f, -1.0f, -1.0f,
-     1.0f,  1.0f, -1.0f,
-    -1.0f,  1.0f, -1.0f,
+    std::vector<float> Skybox::s_Vertices =
+    {
+        // positions          
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
 
-    -1.0f, -1.0f,  1.0f,
-    -1.0f, -1.0f, -1.0f,
-    -1.0f,  1.0f, -1.0f,
-    -1.0f,  1.0f, -1.0f,
-    -1.0f,  1.0f,  1.0f,
-    -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
 
-     1.0f, -1.0f, -1.0f,
-     1.0f, -1.0f,  1.0f,
-     1.0f,  1.0f,  1.0f,
-     1.0f,  1.0f,  1.0f,
-     1.0f,  1.0f, -1.0f,
-     1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
 
-    -1.0f, -1.0f,  1.0f,
-    -1.0f,  1.0f,  1.0f,
-     1.0f,  1.0f,  1.0f,
-     1.0f,  1.0f,  1.0f,
-     1.0f, -1.0f,  1.0f,
-    -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
 
-    -1.0f,  1.0f, -1.0f,
-     1.0f,  1.0f, -1.0f,
-     1.0f,  1.0f,  1.0f,
-     1.0f,  1.0f,  1.0f,
-    -1.0f,  1.0f,  1.0f,
-    -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
 
-    -1.0f, -1.0f, -1.0f,
-    -1.0f, -1.0f,  1.0f,
-     1.0f, -1.0f, -1.0f,
-     1.0f, -1.0f, -1.0f,
-    -1.0f, -1.0f,  1.0f,
-     1.0f, -1.0f,  1.0f
-};
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
+    };
 
-unsigned int GeometryFactory::s_CubeTexCoordsVAO;
-unsigned int GeometryFactory::s_CubeTexCoordsVBO;
-unsigned int GeometryFactory::s_PlaneVAO;
-unsigned int GeometryFactory::s_PlaneVBO;
-unsigned int GeometryFactory::s_QuadVAO;
-unsigned int GeometryFactory::s_QuadVBO;
+    unsigned int CubeTexCoords::s_VAO;
+    unsigned int CubeTexCoords::s_VBO;
+    unsigned int Plane::s_VAO;
+    unsigned int Plane::s_VBO;
+    unsigned int Quad::s_VAO;
+    unsigned int Quad::s_VBO;
 
-unsigned int GeometryFactory::s_CubeNormalsVAO;
-unsigned int GeometryFactory::s_CubeNormalsVBO;
-unsigned int GeometryFactory::s_SkyboxVAO;
-unsigned int GeometryFactory::s_SkyboxVBO;
+    unsigned int CubeNormals::s_VAO;
+    unsigned int CubeNormals::s_VBO;
+    unsigned int Skybox::s_VAO;
+    unsigned int Skybox::s_VBO;
 
 
-void GeometryFactory::CreateCubeTexCoords()
-{
-    // cube VAO
-    glGenVertexArrays(1, &s_CubeTexCoordsVAO);
-    glGenBuffers(1, &s_CubeTexCoordsVBO);
-    glBindVertexArray(s_CubeTexCoordsVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, s_CubeTexCoordsVBO);
-    glBufferData(GL_ARRAY_BUFFER, GeometryFactory::cubeVerticesTexCoords.size() * sizeof(float), GeometryFactory::cubeVerticesTexCoords.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-}
+    void CubeTexCoords::Create()
+    {
+        // cube VAO
+        glGenVertexArrays(1, &s_VAO);
+        glGenBuffers(1, &s_VBO);
+        glBindVertexArray(s_VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, s_VBO);
+        glBufferData(GL_ARRAY_BUFFER, s_Vertices.size() * sizeof(float), s_Vertices.data(), GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    }
 
-void GeometryFactory::CreatePlane()
-{
-    // plane VAO
-    glGenVertexArrays(1, &s_PlaneVAO);
-    glGenBuffers(1, &s_PlaneVBO);
-    glBindVertexArray(s_PlaneVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, s_PlaneVBO);
-    glBufferData(GL_ARRAY_BUFFER, GeometryFactory::planeVertices.size() * sizeof(float), GeometryFactory::planeVertices.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-}
+    void CubeTexCoords::Destroy()
+    {
+        glDeleteVertexArrays(1, &s_VAO);
+        glDeleteBuffers(1, &s_VBO);
+    }
 
-void GeometryFactory::CreateQuad()
-{
-    // screen quad VAO
-    glGenVertexArrays(1, &s_QuadVAO);
-    glGenBuffers(1, &s_QuadVBO);
-    glBindVertexArray(s_QuadVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, s_QuadVBO);
-    glBufferData(GL_ARRAY_BUFFER, GeometryFactory::quadVertices.size() * sizeof(float), GeometryFactory::quadVertices.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-}
+    void Plane::Create()
+    {
+        // plane VAO
+        glGenVertexArrays(1, &s_VAO);
+        glGenBuffers(1, &s_VBO);
+        glBindVertexArray(s_VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, s_VBO);
+        glBufferData(GL_ARRAY_BUFFER, s_Vertices.size() * sizeof(float), s_Vertices.data(), GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    }
 
-void GeometryFactory::DestroyCubeTexCoords()
-{
-    glDeleteVertexArrays(1, &s_CubeTexCoordsVAO);
-    glDeleteBuffers(1, &s_CubeTexCoordsVBO);
-}
+    void Plane::Destroy()
+    {
+        glDeleteVertexArrays(1, &s_VAO);
+        glDeleteBuffers(1, &s_VBO);
+    }
 
-void GeometryFactory::DestroyPlane()
-{
-    glDeleteVertexArrays(1, &s_PlaneVAO);
-    glDeleteBuffers(1, &s_PlaneVBO);
-}
+    void Quad::Create()
+    {
+        // screen quad VAO
+        glGenVertexArrays(1, &s_VAO);
+        glGenBuffers(1, &s_VBO);
+        glBindVertexArray(s_VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, s_VBO);
+        glBufferData(GL_ARRAY_BUFFER, s_Vertices.size() * sizeof(float), s_Vertices.data(), GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    }
 
-void GeometryFactory::DestroyQuad()
-{
-    glDeleteVertexArrays(1, &s_QuadVAO);
-    glDeleteBuffers(1, &s_QuadVBO);
-}
+    void Quad::Destroy()
+    {
+        glDeleteVertexArrays(1, &s_VAO);
+        glDeleteBuffers(1, &s_VBO);
+    }
 
-void GeometryFactory::CreateCubeNormals()
-{
-    // cube VAO
-    glGenVertexArrays(1, &s_CubeNormalsVAO);
-    glGenBuffers(1, &s_CubeNormalsVBO);
-    glBindVertexArray(s_CubeNormalsVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, s_CubeNormalsVBO);
-    glBufferData(GL_ARRAY_BUFFER, GeometryFactory::cubeVerticesNormals.size() * sizeof(float), GeometryFactory::cubeVerticesNormals.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-}
+    void CubeNormals::Create()
+    {
+        // cube VAO
+        glGenVertexArrays(1, &s_VAO);
+        glGenBuffers(1, &s_VBO);
+        glBindVertexArray(s_VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, s_VBO);
+        glBufferData(GL_ARRAY_BUFFER, s_Vertices.size() * sizeof(float), s_Vertices.data(), GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    }
 
-void GeometryFactory::CreateSkybox()
-{
-    // skybox VAO
-    glGenVertexArrays(1, &s_SkyboxVAO);
-    glGenBuffers(1, &s_SkyboxVBO);
-    glBindVertexArray(s_SkyboxVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, s_SkyboxVBO);
-    glBufferData(GL_ARRAY_BUFFER, GeometryFactory::skyboxVertices.size() * sizeof(float), GeometryFactory::skyboxVertices.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-}
+    void CubeNormals::Destroy()
+    {
+        glDeleteVertexArrays(1, &s_VAO);
+        glDeleteBuffers(1, &s_VBO);
+    }
 
-void GeometryFactory::DestroyCubeNormals()
-{
-    glDeleteVertexArrays(1, &s_CubeNormalsVAO);
-    glDeleteBuffers(1, &s_CubeNormalsVBO);
-}
+    void Skybox::Create()
+    {
+        // skybox VAO
+        glGenVertexArrays(1, &s_VAO);
+        glGenBuffers(1, &s_VBO);
+        glBindVertexArray(s_VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, s_VBO);
+        glBufferData(GL_ARRAY_BUFFER, s_Vertices.size() * sizeof(float), s_Vertices.data(), GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    }
 
-void GeometryFactory::DestroySkybox()
-{
-    glDeleteVertexArrays(1, &s_SkyboxVAO);
-    glDeleteBuffers(1, &s_SkyboxVBO);
+    void Skybox::Destroy()
+    {
+        glDeleteVertexArrays(1, &s_VAO);
+        glDeleteBuffers(1, &s_VBO);
+    }
 }

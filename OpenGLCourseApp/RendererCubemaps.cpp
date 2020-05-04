@@ -2,6 +2,7 @@
 
 #include "SceneCubemaps.h"
 #include "MousePicker.h"
+#include "GeometryFactory.h"
 
 #include <stdexcept>
 
@@ -95,7 +96,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
                 model = glm::scale(model, glm::vec3(1.0f));
                 shaders["cubemaps"]->setMat4("model", model);
                 shaders["cubemaps"]->setVec4("tintColor", glm::vec4(1.0f, 0.6f, 0.4f, 0.9f));
-                glBindVertexArray(sceneCubemaps->GetCubeVAO());
+                glBindVertexArray(GeometryFactory::CubeNormals::GetVAO());
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_CUBE_MAP, sceneCubemaps->GetCubemapTextureID());
                 glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -118,7 +119,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 
     shaders["cubemaps"]->setMat4("model", m_ModelCube);
     shaders["cubemaps"]->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 0.9f));
-    glBindVertexArray(sceneCubemaps->GetCubeVAO());
+    glBindVertexArray(GeometryFactory::CubeNormals::GetVAO());
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, sceneCubemaps->GetCubemapTextureID());
     glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -126,11 +127,13 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 
     // Draw the Nanosuit model
     model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
     model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::scale(model, glm::vec3(0.2f));
     shaders["cubemaps"]->setMat4("model", model);
-    // models["nanosuit"]->Draw(shaders["cubemaps"]);
+    shaders["cubemaps"]->setVec4("tintColor", glm::vec4(0.8281f, 0.6836f, 0.2148f, 0.9f)); // Gold color
+    if (sceneCubemaps->m_NanosuitModelEnabled)
+        models["nanosuit"]->Draw(shaders["cubemaps"]);
 
     shaders["framebuffers_scene"]->Bind();
     shaders["framebuffers_scene"]->setMat4("projection", projectionMatrix);
@@ -164,7 +167,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     shaders["skybox"]->setMat4("projection", projectionMatrix);
 
     // skybox cube
-    glBindVertexArray(sceneCubemaps->GetSkyboxVAO());
+    glBindVertexArray(GeometryFactory::Skybox::GetVAO());
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, sceneCubemaps->GetCubemapTextureID());
     glDrawArrays(GL_TRIANGLES, 0, 36);

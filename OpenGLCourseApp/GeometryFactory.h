@@ -6,52 +6,71 @@
 /****
  * A common class for building geometry shapes for LearnOpenGL examples
  */
-class GeometryFactory
+namespace GeometryFactory
 {
-public:
-    // SceneFramebuffers Methods
-    static void CreateCubeTexCoords();
-    static void CreatePlane();
-    static void CreateQuad();
+    class CubeTexCoords
+    {
+    public:
+        static void Create();
+        static void Destroy();
+        static inline unsigned int GetVAO() { return s_VAO; };
 
-    static void DestroyCubeTexCoords();
-    static void DestroyPlane();
-    static void DestroyQuad();
+    private:
+        static std::vector<float> s_Vertices;
+        static unsigned int s_VAO;
+        static unsigned int s_VBO;
+    };
 
-    static inline unsigned int GetCubeTexCoordsVAO() { return s_CubeTexCoordsVAO; };
-    static inline unsigned int GetPlaneVAO() { return s_PlaneVAO; };
-    static inline unsigned int GetQuadVAO() { return s_QuadVAO; };
+    class Plane
+    {
+    public:
+        static void Create();
+        static void Destroy();
+        static inline unsigned int GetVAO() { return s_VAO; };
 
-    // SceneFramebuffers Data
-    static std::vector<float> cubeVerticesTexCoords;
-    static std::vector<float> planeVertices;
-    static std::vector<float> quadVertices;
+    private:
+        static std::vector<float> s_Vertices;
+        static unsigned int s_VAO;
+        static unsigned int s_VBO;
+    };
 
-    static unsigned int s_CubeTexCoordsVAO;
-    static unsigned int s_CubeTexCoordsVBO;
-    static unsigned int s_PlaneVAO;
-    static unsigned int s_PlaneVBO;
-    static unsigned int s_QuadVAO;
-    static unsigned int s_QuadVBO;
+    class Quad
+    {
+    public:
+        static void Create();
+        static void Destroy();
+        static inline unsigned int GetVAO() { return s_VAO; };
 
+    private:
+        static std::vector<float> s_Vertices;
+        static unsigned int s_VAO;
+        static unsigned int s_VBO;
+    };
 
-    // SceneCubemaps Methods
-    static void CreateCubeNormals();
-    static void CreateSkybox();
+    class CubeNormals
+    {
+    public:
+        static void Create();
+        static void Destroy();
+        static inline unsigned int GetVAO() { return s_VAO; };
 
-    static void DestroyCubeNormals();
-    static void DestroySkybox();
+    private:
+        static std::vector<float> s_Vertices;
+        static unsigned int s_VAO;
+        static unsigned int s_VBO;
+    };
 
-    static inline unsigned int GetCubeNormalsVAO() { return s_CubeNormalsVAO; };
-    static inline unsigned int GetSkyboxVAO() { return s_SkyboxVAO; };
+    class Skybox
+    {
+    public:
+        static void Create();
+        static void Destroy();
+        static inline unsigned int GetVAO() { return s_VAO; };
 
-    // SceneCubemaps Data
-    static std::vector<float> cubeVerticesNormals;
-    static std::vector<float> skyboxVertices;
+    private:
+        static std::vector<float> s_Vertices;
+        static unsigned int s_VAO;
+        static unsigned int s_VBO;
+    };
 
-    static unsigned int s_CubeNormalsVAO;
-    static unsigned int s_CubeNormalsVBO;
-    static unsigned int s_SkyboxVAO;
-    static unsigned int s_SkyboxVBO;
-
-};
+}

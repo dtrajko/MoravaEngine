@@ -301,7 +301,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GeometryFactory.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\LearnOpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -549,7 +549,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GeometryFactory.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\LearnOpenGL</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

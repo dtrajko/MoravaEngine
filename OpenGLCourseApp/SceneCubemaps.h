@@ -23,8 +23,6 @@ public:
 	void SetGeometry();
 	void CleanupGeometry();
 
-	inline unsigned int GetCubeVAO() const { return m_CubeVAO; };
-	inline unsigned int GetSkyboxVAO() const { return m_SkyboxVAO; };
 	inline unsigned int GetCubemapTextureID() const { return m_TextureCubeMapID; };
 	inline Raycast* GetRaycast() const { return m_Raycast; };
 	inline Terrain* GetTerrain() const { return m_Terrain; };
@@ -34,6 +32,7 @@ public:
 public:
 	bool m_TerrainEnabled = true;
 	bool m_CubeTerrainEnabled = true;
+	bool m_NanosuitModelEnabled = false;
 
 private:
 	virtual void SetSkybox() override;
@@ -45,11 +44,6 @@ private:
 	unsigned int m_TextureCubeMapID;
 
 	std::map<std::string, ModelJoey*> models;
-
-	unsigned int m_CubeVAO;
-	unsigned int m_CubeVBO;
-	unsigned int m_SkyboxVAO;
-	unsigned int m_SkyboxVBO;
 
 	Quad* m_Quad;
 	Raycast* m_Raycast;

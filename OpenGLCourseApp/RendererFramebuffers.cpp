@@ -1,6 +1,7 @@
 #include "RendererFramebuffers.h"
 
 #include "SceneFramebuffers.h"
+#include "GeometryFactory.h"
 
 #include <stdexcept>
 
@@ -103,7 +104,7 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 
 		shaders["framebuffers_screen"]->Bind();
 		SceneFramebuffers* sceneFramebuffers = (SceneFramebuffers*)scene;
-		glBindVertexArray(sceneFramebuffers->GetQuadVAO());
+		glBindVertexArray(GeometryFactory::Quad::GetVAO());
 
 		// -- use the color attachment texture as the texture of the quad plane
 		m_Framebuffer->GetTextureAttachmentColor(0)->Bind();
