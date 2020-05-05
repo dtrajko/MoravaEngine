@@ -149,6 +149,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderMain->setInt("directionalShadowMap", scene->GetTextureSlots()["shadow"]);
 	shaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+	shaderMain->setFloat("tilingFactor", 1.0f);
 	shaderMain->Validate();
 
 	glm::vec3 lowerLight = scene->GetCamera()->GetPosition();
@@ -201,6 +202,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	shaderWater->Validate();
 
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
+
 	passType = "main";
 	scene->RenderWater(projectionMatrix, passType, shaders, uniforms);
 	shaderWater->Unbind();

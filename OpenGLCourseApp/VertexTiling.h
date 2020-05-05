@@ -10,5 +10,5 @@ struct VertexTiling
 	glm::vec3 Normal;
 	glm::vec3 Tangent;
 	glm::vec3 Bitangent;
-	float TilingFactor;
+	float TilingFactor; // obsolete, changed to uniform
 };

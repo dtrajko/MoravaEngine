@@ -92,6 +92,7 @@ void SceneTerrain::UpdateImGui(float timestep, Window& mainWindow, std::map<cons
 	ImGui::Begin("Scene Settings");
 	ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, -20.0f, 100.0f);
 	ImGui::SliderFloat3("Terrain scale", glm::value_ptr(m_TerrainScale), -4.0f, 4.0f);
+	ImGui::SliderFloat("Tiling Factor", &m_Tiling_Factor, 0.0f, 5.0f);
 	ImGui::Separator();
 	ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(dirLightDirection), -1.0f, 1.0f);
 	ImGui::ColorEdit3("DirLight Color", glm::value_ptr(dirLightColor));
@@ -105,6 +106,8 @@ void SceneTerrain::UpdateImGui(float timestep, Window& mainWindow, std::map<cons
 void SceneTerrain::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
+	if (passType == "shadow") return;
+
 	/* Island */
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -117,6 +120,7 @@ void SceneTerrain::Render(glm::mat4 projectionMatrix, std::string passType,
 	textures["rock"]->Bind(textureSlots["diffuse"]);
 	// textures["colorMap"]->Bind(textureSlots["diffuse"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
+	shaders["main"]->setFloat("tilingFactor", m_Tiling_Factor);
 	meshes["terrain"]->Render();
 }
 

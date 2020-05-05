@@ -5,14 +5,12 @@ layout (location = 1) in vec2 aTexCoords;
 layout (location = 2) in vec3 aNormal;
 layout (location = 3) in vec3 aTangent;
 layout (location = 4) in vec3 aBitangent;
-layout (location = 5) in float aTilingFactor;
 
 out vec2 TexCoords;
 out vec3 Normal;
 out vec3 FragPos;
 out vec4 DirectionalLightSpacePos;
 out mat3 TBN;
-out float tilingFactor;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -26,7 +24,6 @@ void main()
 
 	FragPos = (model * vec4(aPos, 1.0)).xyz;
 	TexCoords = aTexCoords;
-	tilingFactor = aTilingFactor;
 
 	vec4 WorldPosition = model * vec4(aPos, 1.0);
 	gl_ClipDistance[0] = dot(WorldPosition, clipPlane);

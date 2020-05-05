@@ -51,7 +51,6 @@ in vec3 Normal;
 in vec3 FragPos;
 in vec4 DirectionalLightSpacePos;
 in mat3 TBN;
-in float tilingFactor;
 
 out vec4 color;
 
@@ -69,6 +68,8 @@ uniform OmniShadowMap omniShadowMaps[MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS];
 
 uniform Material material;
 uniform vec3 eyePosition;
+
+uniform float tilingFactor;
 
 vec3 sampleOffsetDirections[20] = vec3[]
 (
