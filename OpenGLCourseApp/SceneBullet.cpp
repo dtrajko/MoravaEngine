@@ -94,19 +94,19 @@ void SceneBullet::SetupMeshes()
 	cube->Create(&MeshData::vertices[0], &MeshData::indices[0], MeshData::vertexCount, MeshData::indexCount);
 	meshes.insert(std::make_pair("cube", cube));
 
-	Block* block_floor = new Block(100.0f, 4.0f, 100.0f, m_TextureMultiplier);
+	Block* block_floor = new Block(100.0f, 4.0f, 100.0f);
 	meshes.insert(std::make_pair("block_floor", block_floor));
 
-	Block* block_wall_1 = new Block(100.0f, 20.0f, 4.0f, m_TextureMultiplier);
+	Block* block_wall_1 = new Block(100.0f, 20.0f, 4.0f);
 	meshes.insert(std::make_pair("block_wall_1", block_wall_1));
 
-	Block* block_wall_2 = new Block(4.0f, 20.0f, 100.0f, m_TextureMultiplier);
+	Block* block_wall_2 = new Block(4.0f, 20.0f, 100.0f);
 	meshes.insert(std::make_pair("block_wall_2", block_wall_2));
 
-	Block* plank_1 = new Block(1.0f, 1.0f, 12.0f, m_TextureMultiplier);
+	Block* plank_1 = new Block(1.0f, 1.0f, 12.0f);
 	meshes.insert(std::make_pair("plank_1", plank_1));
 
-	Block* plank_2 = new Block(12.0f, 1.0f, 1.0f, m_TextureMultiplier);
+	Block* plank_2 = new Block(12.0f, 1.0f, 1.0f);
 	meshes.insert(std::make_pair("plank_2", plank_2));
 
 	Sphere* sphere = new Sphere();
@@ -294,6 +294,7 @@ void SceneBullet::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 	ImGui::SliderFloat("Bouncincess", &m_Bounciness, 0.0f, 2.0f);
 	ImGui::Checkbox("Fire Enabled", &m_FireEnabled);
 	ImGui::SliderFloat("Fire Intensity", &m_FireIntensity, 0.0f, m_FireIntensityMax);
+	ImGui::SliderFloat("Tiling Factor", &m_TilingFactor, 0.0f, 2.0f);
 	std::string bulletsText = "Bullets: " + std::to_string(m_SphereCount) + "/" + std::to_string(m_SphereCountMax);
 	ImGui::Text(bulletsText.c_str());
 	bool wireframeEnabled = IsWireframeEnabled();
@@ -420,6 +421,9 @@ void SceneBullet::Render(glm::mat4 projectionMatrix, std::string passType,
 
 	if (passType == "main")
 	{
+		shaders["main"]->Bind();
+		shaders["main"]->setFloat("tilingFactor", m_TilingFactor);
+
 		/* Floor */
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));

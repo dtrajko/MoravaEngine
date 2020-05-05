@@ -40,29 +40,23 @@ private:
 	btDefaultCollisionConfiguration* collisionConfiguration;
 
 	int m_GravityIntensity = -5;
-
 	int m_SphereCount = 0;
 	int m_SphereCountMax = 100;
 	int m_SpheresOffset = 0;
 	float m_Bounciness = 0.6f;
 	float m_SphereMass = 4.0f;
-
 	int m_PlankOffset = 0;
 	int m_PlankFloors = 10;
 	float m_PlankMass = 4.0f;
 	float m_PlankBounciness = 0.0f;
-
 	float m_FireIntensity = 100.0f;
 	float m_FireIntensityMax = 200.0f;
 	bool m_FireEnabled = true;
 	float m_LastTimestep = 0.0f;
 	float m_FireCooldown = 0.2f;
-
 	btRigidBody* m_LatestBulletBody;
-	float m_TextureMultiplier = 4.0f;
-
 	std::map<const char*, float> m_ProfilerResults;
-
 	BulletDebugDrawer* m_BulletDebugDrawer;
+	float m_TilingFactor = 0.25f;
 
 };

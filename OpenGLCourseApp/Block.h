@@ -8,7 +8,7 @@ class Block : public Mesh
 {
 public:
 	Block();
-	Block(float scaleX, float scaleY, float scaleZ, float txMultiplier);
+	Block(float scaleX, float scaleY, float scaleZ);
 	virtual void Render() override;
 	virtual ~Block() override;
 

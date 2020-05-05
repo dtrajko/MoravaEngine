@@ -10,15 +10,15 @@ Block::Block()
 {
 }
 
-Block::Block(float scaleX, float scaleY, float scaleZ, float txMultiplier)
+Block::Block(float scaleX, float scaleY, float scaleZ)
 {
 	float sizeX = 0.5f * scaleX;
 	float sizeY = 0.5f * scaleY;
 	float sizeZ = 0.5f * scaleZ;
 
-	float txCoX = 1.0f * scaleX / txMultiplier;
-	float txCoY = 1.0f * scaleY / txMultiplier;
-	float txCoZ = 1.0f * scaleZ / txMultiplier;
+	float txCoX = 1.0f * scaleX;
+	float txCoY = 1.0f * scaleY;
+	float txCoZ = 1.0f * scaleZ;
 
 	float tilingFactor = 0.5f;
 

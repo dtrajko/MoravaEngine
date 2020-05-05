@@ -94,9 +94,9 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     // Draw cube terrain
     if (sceneCubemaps->m_CubeTerrainEnabled)
     {
-        for (int th = -(terrainHeight / 2); th < (terrainHeight / 2); th++)
+        for (int th = -(terrainHeight / 2) + 1; th < (terrainHeight / 2); th++)
         {
-            for (int tw = -(terrainWidth / 2); tw < (terrainWidth / 2); tw++)
+            for (int tw = -(terrainWidth / 2) + 1; tw < (terrainWidth / 2); tw++)
             {
                 model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3(tw, (int)sceneCubemaps->GetTerrain()->GetHeight(tw, th), th));
