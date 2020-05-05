@@ -1,5 +1,7 @@
 #include "AABB.h"
 
+#include <limits>
+
 
 AABB::AABB(glm::vec3 position, glm::vec3 scale)
 {
@@ -114,6 +116,57 @@ void AABB::Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix
     glDeleteBuffers(1, &m_LineEBO);
     glDeleteBuffers(1, &m_LineVBO);
     glDeleteVertexArrays(1, &m_LineVAO);
+}
+
+/*
+ * Taken from JOML Intersectionf::intersectRayAab
+ * https://github.com/JOML-CI/JOML/blob/master/src/org/joml/Intersectionf.java
+ *
+ */
+bool AABB::IntersectRayAab(glm::vec3 origin, glm::vec3 dir, glm::vec3 min, glm::vec3 max, glm::vec2 result)
+{
+    float NaN = std::numeric_limits<float>::min();
+    glm::vec3 invDir = glm::vec3(1.0f / dir.x, 1.0f / dir.y, 1.0f / dir.z);
+    float tNear, tFar, tymin, tymax, tzmin, tzmax = NaN;
+
+    if (invDir.x >= 0.0f) {
+        tNear = (min.x - origin.x) * invDir.x;
+        tFar = (max.x - origin.x) * invDir.x;
+    }
+    else {
+        tNear = (max.x - origin.x) * invDir.x;
+        tFar = (min.x - origin.x) * invDir.x;
+    }
+    if (invDir.y >= 0.0f) {
+        tymin = (min.y - origin.y) * invDir.y;
+        tymax = (max.y - origin.y) * invDir.y;
+    }
+    else {
+        tymin = (max.y - origin.y) * invDir.y;
+        tymax = (min.y - origin.y) * invDir.y;
+    }
+    if (tNear > tymax || tymin > tFar)
+        return false;
+    if (invDir.z >= 0.0f) {
+        tzmin = (min.z - origin.z) * invDir.z;
+        tzmax = (max.z - origin.z) * invDir.z;
+    }
+    else {
+        tzmin = (max.z - origin.z) * invDir.z;
+        tzmax = (min.z - origin.z) * invDir.z;
+    }
+    if (tNear > tzmax || tzmin > tFar)
+        return false;
+    tNear = tymin > tNear || tNear == NaN ? tymin : tNear;
+    tFar = tymax < tFar || tFar == NaN ? tymax : tFar;
+    tNear = tzmin > tNear ? tzmin : tNear;
+    tFar = tzmax < tFar ? tzmax : tFar;
+    if (tNear < tFar && tFar >= 0.0f) {
+        result.x = tNear;
+        result.y = tFar;
+        return true;
+    }
+    return false;
 }
 
 AABB::~AABB()
