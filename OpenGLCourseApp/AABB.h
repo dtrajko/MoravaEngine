@@ -25,6 +25,7 @@ public:
 	bool Contains(glm::vec3 position, glm::vec3 scale);
 	bool TestAABBOverlap(AABB* a, AABB* b);
 	void UpdatePosition(glm::vec3 position);
+	void Update(glm::vec3 position, glm::vec3 scale);
 	bool IntersectRayAab(glm::vec3 origin, glm::vec3 dir, glm::vec3 min, glm::vec3 max, glm::vec2 result);
 	void Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 	virtual ~AABB();

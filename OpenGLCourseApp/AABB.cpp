@@ -14,6 +14,12 @@ void AABB::UpdatePosition(glm::vec3 position)
     m_Position = position;
 }
 
+void AABB::Update(glm::vec3 position, glm::vec3 scale)
+{
+    m_Position = position;
+    m_Scale = scale;
+}
+
 bool AABB::Contains(glm::vec3 position, glm::vec3 scale)
 {
 	bool contains = !(
@@ -49,9 +55,9 @@ void AABB::Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix
     glm::vec4 color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 
     float offset = 0.02f;
-    float sizeX = (0.5f + offset) * m_Scale.x;
-    float sizeY = (0.5f + offset) * m_Scale.y;
-    float sizeZ = (0.5f + offset) * m_Scale.z;
+    float sizeX = 0.5f * m_Scale.x + offset;
+    float sizeY = 0.5f * m_Scale.y + offset;
+    float sizeZ = 0.5f * m_Scale.z + offset;
 
     m_Vertices = {
         m_Position.x - sizeX, m_Position.y - sizeY, m_Position.z + sizeZ,    color.r, color.g, color.b, color.a,

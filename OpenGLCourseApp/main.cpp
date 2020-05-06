@@ -27,6 +27,7 @@
 #include "SceneNanosuit.h"
 #include "SceneFramebuffers.h"
 #include "SceneCubemaps.h"
+#include "SceneEditor.h"
 
 #include "Renderer.h"
 #include "RendererPBR.h"
@@ -36,6 +37,7 @@
 #include "RendererNanosuit.h"
 #include "RendererFramebuffers.h"
 #include "RendererCubemaps.h"
+#include "RendererEditor.h"
 
 
 // Window dimensions
@@ -63,9 +65,10 @@ enum class SceneName
 	Nanosuit,
 	Framebuffers,
 	Cubemaps,
+	Editor,
 };
 
-SceneName currentScene = SceneName::Cubemaps;
+SceneName currentScene = SceneName::Editor;
 
 float deltaTime = 0.0f;
 float lastTimestamp = 0.0f;
@@ -140,6 +143,10 @@ int main()
 	case SceneName::Cubemaps:
 		scene = new SceneCubemaps();
 		renderer = static_cast<RendererBasic*>(new RendererCubemaps());
+		break;
+	case SceneName::Editor:
+		scene = new SceneEditor();
+		renderer = static_cast<RendererBasic*>(new RendererEditor());
 		break;
 	default:
 		throw std::runtime_error("Scene and Renderer could not be loaded!");
