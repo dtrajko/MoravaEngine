@@ -31,9 +31,11 @@ private:
 	Raycast* m_Raycast;
 	Quad* m_Quad;
 
-public:
 	glm::vec3 m_Position_1;
 	glm::vec3 m_Position_2;
+
+	glm::vec3 m_Rotation_1;
+	glm::vec3 m_Rotation_2;
 
 	glm::vec3 m_Scale_1;
 	glm::vec3 m_Scale_2;
@@ -48,6 +50,7 @@ public:
 	bool m_IsSelected_2;
 
 	glm::vec3* m_PositionEdit;
+	glm::vec3* m_RotationEdit;
 	glm::vec3* m_ScaleEdit;
 	glm::vec4* m_ColorEdit;
 

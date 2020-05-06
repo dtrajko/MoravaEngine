@@ -27,6 +27,9 @@ SceneEditor::SceneEditor()
     m_Position_1 = glm::vec3(2.0f, 0.5f, 2.0f);
     m_Position_2 = glm::vec3(-2.0f, 0.5f, -2.0f);
 
+    m_Rotation_1 = glm::vec3(0.0f);
+    m_Rotation_2 = glm::vec3(0.0f);
+
     m_Scale_1 = glm::vec3(1.0f);
     m_Scale_2 = glm::vec3(1.0f);
 
@@ -107,27 +110,23 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     std::string worldRay = "World Ray: X = " + std::to_string(mp->m_WorldRay.x) +
                                      " Y = " + std::to_string(mp->m_WorldRay.y) +
                                      " Z = " + std::to_string(mp->m_WorldRay.z);
-    ImGui::Text(worldRay.c_str());
-    ImGui::Separator();
-    ImGui::SliderFloat3("Ray Start", glm::value_ptr(m_Raycast->m_LineStart), -10.0f, 10.0f);
-    ImGui::SliderFloat3("Ray End",   glm::value_ptr(m_Raycast->m_LineEnd),   -10.0f, 10.0f);
-    ImGui::Separator();
-    ImGui::SliderFloat3("Intersection point", glm::value_ptr(mp->m_IntersectionPoint), -10.0f, 10.0f);
-    ImGui::Separator();
 
     if (m_Selected == 1) {
         m_PositionEdit = &m_Position_1;
+        m_RotationEdit = &m_Rotation_1;
         m_ScaleEdit = &m_Scale_1;
         m_ColorEdit = &m_Color_1;
     }
     else if (m_Selected == 2) {
         m_PositionEdit = &m_Position_2;
+        m_RotationEdit = &m_Rotation_2;
         m_ScaleEdit = &m_Scale_2;
         m_ColorEdit = &m_Color_2;
     }
 
     ImGui::Text("Transform");
     ImGui::SliderFloat3("Position", (float*)m_PositionEdit, -10.0f, 10.0f);
+    // ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -179.0f, 180.0f);
     ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.0f, 10.0f);
     ImGui::ColorEdit4("Color", (float*)m_ColorEdit);
     ImGui::SliderInt("Selected Object", &m_Selected, 1, 2);
@@ -144,6 +143,9 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 
     m_Transform_1 = glm::mat4(1.0f);
     m_Transform_1 = glm::translate(m_Transform_1, m_Position_1);
+    m_Transform_1 = glm::rotate(m_Transform_1, glm::radians(m_Rotation_1.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    m_Transform_1 = glm::rotate(m_Transform_1, glm::radians(m_Rotation_1.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    m_Transform_1 = glm::rotate(m_Transform_1, glm::radians(m_Rotation_1.z), glm::vec3(0.0f, 0.0f, 1.0f));
     m_Transform_1 = glm::scale(m_Transform_1, m_Scale_1);
     shaders["editor_object"]->setMat4("model", m_Transform_1);
     shaders["editor_object"]->setVec4("tintColor", m_Color_1);
@@ -154,6 +156,9 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 
     m_Transform_2 = glm::mat4(1.0f);
     m_Transform_2 = glm::translate(m_Transform_2, m_Position_2);
+    m_Transform_2 = glm::rotate(m_Transform_2, glm::radians(m_Rotation_2.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    m_Transform_2 = glm::rotate(m_Transform_2, glm::radians(m_Rotation_2.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    m_Transform_2 = glm::rotate(m_Transform_2, glm::radians(m_Rotation_2.z), glm::vec3(0.0f, 0.0f, 1.0f));
     m_Transform_2 = glm::scale(m_Transform_2, m_Scale_2);
     shaders["editor_object"]->setMat4("model", m_Transform_2);
     shaders["editor_object"]->setVec4("tintColor", m_Color_2);
