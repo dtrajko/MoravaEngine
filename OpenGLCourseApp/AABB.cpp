@@ -54,10 +54,9 @@ void AABB::Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix
 {
     glm::vec4 color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 
-    float offset = 0.02f;
-    float sizeX = 0.5f * m_Scale.x + offset;
-    float sizeY = 0.5f * m_Scale.y + offset;
-    float sizeZ = 0.5f * m_Scale.z + offset;
+    float sizeX = m_UnitSize * m_Scale.x + m_Offset;
+    float sizeY = m_UnitSize * m_Scale.y + m_Offset;
+    float sizeZ = m_UnitSize * m_Scale.z + m_Offset;
 
     m_Vertices = {
         m_Position.x - sizeX, m_Position.y - sizeY, m_Position.z + sizeZ,    color.r, color.g, color.b, color.a,
@@ -122,6 +121,24 @@ void AABB::Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix
     glDeleteBuffers(1, &m_LineEBO);
     glDeleteBuffers(1, &m_LineVBO);
     glDeleteVertexArrays(1, &m_LineVAO);
+}
+
+glm::vec3 AABB::GetMin() const
+{
+    return glm::vec3(
+        m_Position.x - m_UnitSize * m_Scale.x,
+        m_Position.y - m_UnitSize * m_Scale.y,
+        m_Position.z - m_UnitSize * m_Scale.z
+    );
+}
+
+glm::vec3 AABB::GetMax() const
+{
+    return glm::vec3(
+        m_Position.x + m_UnitSize * m_Scale.x,
+        m_Position.y + m_UnitSize * m_Scale.y,
+        m_Position.z + m_UnitSize * m_Scale.z
+    );
 }
 
 /*

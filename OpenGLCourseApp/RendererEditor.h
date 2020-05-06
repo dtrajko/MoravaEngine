@@ -4,7 +4,6 @@
 
 #include "learnopengl/ModelJoey.h"
 #include "AABB.h"
-#include "Pivot.h"
 
 
 class RendererEditor : public RendererBasic
@@ -19,9 +18,5 @@ public:
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
 	void RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 	~RendererEditor();
-
-private:
-	Pivot* m_PivotCube;
-	Pivot* m_PivotScene;
 
 };

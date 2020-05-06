@@ -2,9 +2,10 @@
 
 #include "Scene.h"
 
+#include "Quad.h"
 #include "Raycast.h"
 #include "AABB.h"
-#include "Quad.h"
+#include "Pivot.h"
 
 
 class SceneEditor : public Scene
@@ -43,6 +44,9 @@ public:
 	glm::vec4 m_Color_1;
 	glm::vec4 m_Color_2;
 
+	bool m_IsSelected_1;
+	bool m_IsSelected_2;
+
 	glm::vec3* m_PositionEdit;
 	glm::vec3* m_ScaleEdit;
 	glm::vec4* m_ColorEdit;
@@ -51,5 +55,8 @@ public:
 
 	AABB* m_AABB_1;
 	AABB* m_AABB_2;
+
+	Pivot* m_Pivot_1;
+	Pivot* m_Pivot_2;
 
 };

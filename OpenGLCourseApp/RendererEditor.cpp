@@ -17,8 +17,6 @@ void RendererEditor::Init(Scene* scene)
 
 	SetUniforms();
 	SetShaders();
-
-    m_PivotScene = new Pivot(glm::vec3(0.0f), glm::vec3(60.0f));
 }
 
 void RendererEditor::SetUniforms()
@@ -54,16 +52,6 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     EnableTransparency();
-
-    SceneEditor* sceneEditor = (SceneEditor*)scene;
-    MousePicker* mp = MousePicker::Get();
-
-    // Experimenting with ray casting and MousePicker
-    mp->GetPointOnRay(scene->GetCamera()->GetPosition(), mp->GetCurrentRay(), mp->m_RayRange);
-    Raycast* raycast = sceneEditor->GetRaycast();
-    raycast->m_Hit = mp->m_Hit;
-    raycast->Draw(mp->m_RayStartPoint + scene->GetCamera()->GetFront() * 0.1f, mp->GetCurrentRay() * mp->m_RayRange, raycast->m_Color,
-        shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
 
     glm::mat4 model = glm::mat4(1.0f);
    

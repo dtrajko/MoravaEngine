@@ -11,6 +11,12 @@ void Pivot::UpdatePosition(glm::vec3 position)
     m_Position = position;
 }
 
+void Pivot::Update(glm::vec3 position, glm::vec3 scale)
+{
+    m_Position = position;
+    m_Scale = scale;
+}
+
 void Pivot::Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 {
     glm::vec4 colorX = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
