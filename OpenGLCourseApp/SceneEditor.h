@@ -20,6 +20,12 @@ struct SceneObject
 	Pivot* pivot;
 };
 
+struct EventCooldown
+{
+	float lastTime;
+	float cooldown;
+};
+
 
 class SceneEditor : public Scene
 {
@@ -59,12 +65,8 @@ private:
 	unsigned int m_ObjectInFocusPrev;
 
 	// add object cooldown
-	float m_LastTimeAdd = 0.0f;
-	float m_CooldownAdd = 1.0f;
+	EventCooldown m_ObjectSelect = { 0.0f, 0.2f };
+	EventCooldown m_ObjectAdd = { 0.0f, 1.0f };
+	EventCooldown m_ObjectCopy = { 0.0f, 1.0f };
 
-	float m_LastTimeCopy = 0.0f;
-	float m_CooldownCopy = 1.0f;
-
-	float m_LastTimeSelect = 0.0f;
-	float m_CooldownSelect = 0.2f;
 };

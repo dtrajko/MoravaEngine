@@ -113,8 +113,8 @@ void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject> sceneOb
 {
     // Cooldown
     float currentTimestamp = (float)glfwGetTime();
-    if (currentTimestamp - m_LastTimeSelect < m_CooldownSelect) return;
-    m_LastTimeSelect = currentTimestamp;
+    if (currentTimestamp - m_ObjectSelect.lastTime < m_ObjectSelect.cooldown) return;
+    m_ObjectSelect.lastTime = currentTimestamp;
 
     std::vector<unsigned int> sceneObjectsInFocusIndices = std::vector<unsigned int>();
 
@@ -146,28 +146,29 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 {
     MousePicker* mp = MousePicker::Get();
 
-    ImGui::Begin("Scene Editor");
+    ImGui::Begin("Mouse Picker Info");
 
-    ImGui::Separator();
-    std::string mouseCoords = "Mouse Coordinates: MouseX = " + std::to_string(mp->m_MouseX) +
-        " MouseY = " + std::to_string(mp->m_MouseY);
-    ImGui::Text(mouseCoords.c_str());
-    ImGui::Separator();
-    std::string normalizedCoords = "Normalized Coords: X = " + std::to_string(mp->m_NormalizedCoords.x) +
-                                                     " Y = " + std::to_string(mp->m_NormalizedCoords.y);
-    ImGui::Text(normalizedCoords.c_str());
-    ImGui::Separator();
-    std::string clipCoords = "Clip Coords: X = " + std::to_string(mp->m_ClipCoords.x) +
-                                         " Y = " + std::to_string(mp->m_ClipCoords.y);
-    ImGui::Text(clipCoords.c_str());
-    ImGui::Separator();
-    std::string eyeCoords = "Eye Coords: X = " + std::to_string(mp->m_EyeCoords.x) + " Y = " + std::to_string(mp->m_EyeCoords.y) +
-                                       " Z = " + std::to_string(mp->m_EyeCoords.z) + " W = " + std::to_string(mp->m_EyeCoords.w);
-    ImGui::Text(eyeCoords.c_str());
-    ImGui::Separator();
-    std::string worldRay = "World Ray: X = " + std::to_string(mp->m_WorldRay.x) +
-                                     " Y = " + std::to_string(mp->m_WorldRay.y) +
-                                     " Z = " + std::to_string(mp->m_WorldRay.z);
+        ImGui::Separator();
+        std::string mouseCoords = "Mouse Coordinates: MouseX = " + std::to_string(mp->m_MouseX) +
+            " MouseY = " + std::to_string(mp->m_MouseY);
+        ImGui::Text(mouseCoords.c_str());
+        ImGui::Separator();
+        std::string normalizedCoords = "Normalized Coords: X = " + std::to_string(mp->m_NormalizedCoords.x) +
+                                                         " Y = " + std::to_string(mp->m_NormalizedCoords.y);
+        ImGui::Text(normalizedCoords.c_str());
+        ImGui::Separator();
+        std::string clipCoords = "Clip Coords: X = " + std::to_string(mp->m_ClipCoords.x) +
+                                             " Y = " + std::to_string(mp->m_ClipCoords.y);
+        ImGui::Text(clipCoords.c_str());
+        ImGui::Separator();
+        std::string eyeCoords = "Eye Coords: X = " + std::to_string(mp->m_EyeCoords.x) + " Y = " + std::to_string(mp->m_EyeCoords.y) +
+                                           " Z = " + std::to_string(mp->m_EyeCoords.z) + " W = " + std::to_string(mp->m_EyeCoords.w);
+        ImGui::Text(eyeCoords.c_str());
+        ImGui::Separator();
+        std::string worldRay = "World Ray: X = " + std::to_string(mp->m_WorldRay.x) +
+                                         " Y = " + std::to_string(mp->m_WorldRay.y) +
+                                         " Z = " + std::to_string(mp->m_WorldRay.z);
+    ImGui::End();
 
     if (m_SelectedIndex < sceneObjects.size())
     {
@@ -177,7 +178,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         m_ColorEdit =    &sceneObjects[m_SelectedIndex].color;
     }
 
-    ImGui::Text("Transform");
+    ImGui::Begin("Transform");
+
     ImGui::SliderFloat3("Position", (float*)m_PositionEdit, -10.0f, 10.0f);
     // ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -179.0f, 180.0f);
     ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.0f, 10.0f);
@@ -229,8 +231,8 @@ void SceneEditor::AddSceneObject()
 {
     // Cooldown
     float currentTimestamp = (float)glfwGetTime();
-    if (currentTimestamp - m_LastTimeAdd < m_CooldownAdd) return;
-    m_LastTimeAdd = currentTimestamp;
+    if (currentTimestamp - m_ObjectAdd.lastTime < m_ObjectAdd.cooldown) return;
+    m_ObjectAdd.lastTime = currentTimestamp;
 
     // Add Scene Object here
     SceneObject sceneObject = {
@@ -251,8 +253,8 @@ void SceneEditor::CopySceneObject(SceneObject sceneObject)
 {
     // Cooldown
     float currentTimestamp = (float)glfwGetTime();
-    if (currentTimestamp - m_LastTimeCopy < m_CooldownCopy) return;
-    m_LastTimeCopy = currentTimestamp;
+    if (currentTimestamp - m_ObjectCopy.lastTime < m_ObjectCopy.cooldown) return;
+    m_ObjectCopy.lastTime = currentTimestamp;
 
     sceneObject.isSelected = true;
     sceneObject.AABB = new AABB(sceneObject.position, sceneObject.scale);
