@@ -34,6 +34,9 @@ public:
 	void CleanupGeometry();
 	inline Raycast* GetRaycast() const { return m_Raycast; };
 	void AddSceneObject();
+	void CopySceneObject(SceneObject sceneObject);
+	void SelectNextFromMultipleObjects(std::vector<SceneObject> sceneObjects, unsigned int* selected);
+	bool IsObjectSelected(unsigned int objectIndex);
 	virtual ~SceneEditor() override;
 
 private:
@@ -52,10 +55,16 @@ private:
 	glm::vec3* m_ScaleEdit;
 	glm::vec4* m_ColorEdit;
 
-	int m_Selected;
+	unsigned int m_SelectedIndex;
+	unsigned int m_ObjectInFocusPrev;
 
 	// add object cooldown
-	float m_AddObjectLastTime = 0.0f;
-	float m_AddObjectCooldown = 1.0f;
+	float m_LastTimeAdd = 0.0f;
+	float m_CooldownAdd = 1.0f;
 
+	float m_LastTimeCopy = 0.0f;
+	float m_CooldownCopy = 1.0f;
+
+	float m_LastTimeSelect = 0.0f;
+	float m_CooldownSelect = 0.2f;
 };

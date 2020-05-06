@@ -5,6 +5,7 @@
 #include "GeometryFactory.h"
 
 #include <vector>
+#include <map>
 #include <string>
 
 
@@ -14,6 +15,7 @@ SceneEditor::SceneEditor()
 	sceneSettings.cameraStartYaw = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
+    sceneSettings.enableSkybox = true;
 
 	SetCamera();
 	SetSkybox();
@@ -22,7 +24,7 @@ SceneEditor::SceneEditor()
 	SetupModels();
 	SetGeometry();
 
-    m_Selected = 0;
+    m_SelectedIndex = 0;
 
     sceneObjects.resize(2);
 
@@ -50,6 +52,13 @@ SceneEditor::SceneEditor()
 
 void SceneEditor::SetSkybox()
 {
+    skyboxFaces.push_back("Textures/skybox_4/right.png");
+    skyboxFaces.push_back("Textures/skybox_4/left.png");
+    skyboxFaces.push_back("Textures/skybox_4/top.png");
+    skyboxFaces.push_back("Textures/skybox_4/bottom.png");
+    skyboxFaces.push_back("Textures/skybox_4/back.png");
+    skyboxFaces.push_back("Textures/skybox_4/front.png");
+    m_Skybox = new Skybox(skyboxFaces);
 }
 
 void SceneEditor::SetTextures()
@@ -81,18 +90,56 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
             object.AABB->GetMin(), object.AABB->GetMax(), glm::vec2(0.0f));
     }
 
+    // Switching between scene objects that are currently in focus (mouse over)
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
-        for (unsigned int i = 0; i < sceneObjects.size(); i++)
-        {
-            if (sceneObjects[i].isSelected) m_Selected = i;
-        }
+        SelectNextFromMultipleObjects(sceneObjects, &m_SelectedIndex);
     }
 
+    // Add new scene object with default settings
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1] && mainWindow.getKeys()[GLFW_KEY_LEFT_SHIFT])
     {
         AddSceneObject();
     }
+
+    // Copy selected scene object
+    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_D])
+    {
+        CopySceneObject(sceneObjects[m_SelectedIndex]);
+    }
+}
+
+void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject> sceneObjects, unsigned int* selected)
+{
+    // Cooldown
+    float currentTimestamp = (float)glfwGetTime();
+    if (currentTimestamp - m_LastTimeSelect < m_CooldownSelect) return;
+    m_LastTimeSelect = currentTimestamp;
+
+    std::vector<unsigned int> sceneObjectsInFocusIndices = std::vector<unsigned int>();
+
+    for (unsigned int i = 0; i < sceneObjects.size(); i++) {
+        if (sceneObjects[i].isSelected) {
+            *selected = i;
+            sceneObjectsInFocusIndices.push_back(i);
+        }
+    }
+
+    // if there is 0 or 1 elements in focus - finish
+    if (sceneObjectsInFocusIndices.size() <= 1) return;
+
+    // handle multiple selections
+    m_ObjectInFocusPrev++;
+    if (m_ObjectInFocusPrev > sceneObjectsInFocusIndices.size() - 1)
+        m_ObjectInFocusPrev = 0;
+    *selected = sceneObjectsInFocusIndices[m_ObjectInFocusPrev];
+
+    // printf("Total objects in focus: %i, currently selected: %i\n", (int)sceneObjectsInFocusIndices.size(), (int)currentlySelected);
+}
+
+bool SceneEditor::IsObjectSelected(unsigned int objectIndex)
+{
+    return objectIndex = m_SelectedIndex;
 }
 
 void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
@@ -122,12 +169,12 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
                                      " Y = " + std::to_string(mp->m_WorldRay.y) +
                                      " Z = " + std::to_string(mp->m_WorldRay.z);
 
-    if (m_Selected < sceneObjects.size())
+    if (m_SelectedIndex < sceneObjects.size())
     {
-        m_PositionEdit = &sceneObjects[m_Selected].position;
-        m_RotationEdit = &sceneObjects[m_Selected].rotation;
-        m_ScaleEdit =    &sceneObjects[m_Selected].scale;
-        m_ColorEdit =    &sceneObjects[m_Selected].color;
+        m_PositionEdit = &sceneObjects[m_SelectedIndex].position;
+        m_RotationEdit = &sceneObjects[m_SelectedIndex].rotation;
+        m_ScaleEdit =    &sceneObjects[m_SelectedIndex].scale;
+        m_ColorEdit =    &sceneObjects[m_SelectedIndex].color;
     }
 
     ImGui::Text("Transform");
@@ -135,7 +182,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     // ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -179.0f, 180.0f);
     ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.0f, 10.0f);
     ImGui::ColorEdit4("Color", (float*)m_ColorEdit);
-    ImGui::SliderInt("Selected Object", &m_Selected, 0, (int)(sceneObjects.size() - 1));
+    ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(sceneObjects.size() - 1));
 
     ImGui::End();
 }
@@ -166,10 +213,10 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         object.pivot->Update(object.position, object.scale + 1.0f);
     }
 
-    if (m_Selected < sceneObjects.size())
+    if (m_SelectedIndex < sceneObjects.size())
     {
-        sceneObjects[m_Selected].AABB->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
-        sceneObjects[m_Selected].pivot->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
+        sceneObjects[m_SelectedIndex].AABB->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
+        sceneObjects[m_SelectedIndex].pivot->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
     }
 }
 
@@ -180,16 +227,13 @@ void SceneEditor::CleanupGeometry()
 
 void SceneEditor::AddSceneObject()
 {
+    // Cooldown
     float currentTimestamp = (float)glfwGetTime();
-
-    if (currentTimestamp - m_AddObjectLastTime < m_AddObjectCooldown)
-        return;
-
-    m_AddObjectLastTime = currentTimestamp;
+    if (currentTimestamp - m_LastTimeAdd < m_CooldownAdd) return;
+    m_LastTimeAdd = currentTimestamp;
 
     // Add Scene Object here
-
-    sceneObjects.push_back({
+    SceneObject sceneObject = {
         glm::mat4(1.0f),
         glm::vec3(0.0f, 0.5f, 0.0f),
         glm::vec3(0.0f),
@@ -198,7 +242,23 @@ void SceneEditor::AddSceneObject()
         false,
         new AABB(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(1.0f)),
         new Pivot(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(1.0f)),
-    });
+    };
+
+    sceneObjects.push_back(sceneObject);
+}
+
+void SceneEditor::CopySceneObject(SceneObject sceneObject)
+{
+    // Cooldown
+    float currentTimestamp = (float)glfwGetTime();
+    if (currentTimestamp - m_LastTimeCopy < m_CooldownCopy) return;
+    m_LastTimeCopy = currentTimestamp;
+
+    sceneObject.isSelected = true;
+    sceneObject.AABB = new AABB(sceneObject.position, sceneObject.scale);
+    sceneObject.pivot = new Pivot(sceneObject.position, sceneObject.scale);
+
+    sceneObjects.push_back(sceneObject);
 }
 
 SceneEditor::~SceneEditor()

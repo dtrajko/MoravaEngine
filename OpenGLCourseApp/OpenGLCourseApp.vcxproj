@@ -329,8 +329,8 @@
     <ClInclude Include="TextureCubeMap.h" />
     <ClInclude Include="TextureCubemapLite.h" />
     <ClInclude Include="Tile2D.h" />
-    <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexInstanced.h" />
+    <ClInclude Include="VertexTiling.h" />
     <ClInclude Include="WaterManager.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>

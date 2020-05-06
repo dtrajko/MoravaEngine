@@ -53,6 +53,14 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 
     EnableTransparency();
 
+    if (scene->GetSettings().enableSkybox)
+    {
+        glm::mat4 modelMatrix = glm::mat4(1.0f);
+        float angleRadians = glm::radians((GLfloat)glfwGetTime());
+        modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+        scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->CalculateViewMatrix(), projectionMatrix);
+    }
+
     glm::mat4 model = glm::mat4(1.0f);
    
     shaders["framebuffers_scene"]->Bind();

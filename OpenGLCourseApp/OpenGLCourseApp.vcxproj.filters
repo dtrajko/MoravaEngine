@@ -503,9 +503,6 @@
     <ClInclude Include="Sphere.h">
       <Filter>Header Files\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="Vertex.h">
-      <Filter>Header Files\Mesh</Filter>
-    </ClInclude>
     <ClInclude Include="VertexInstanced.h">
       <Filter>Header Files\Mesh</Filter>
     </ClInclude>
@@ -592,6 +589,9 @@
     </ClInclude>
     <ClInclude Include="SceneEditor.h">
       <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexTiling.h">
+      <Filter>Header Files\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
