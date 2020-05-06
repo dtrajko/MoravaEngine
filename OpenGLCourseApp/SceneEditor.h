@@ -8,6 +8,19 @@
 #include "Pivot.h"
 
 
+struct SceneObject
+{
+	glm::mat4 transform;
+	glm::vec3 position;
+	glm::vec3 rotation;
+	glm::vec3 scale;
+	glm::vec4 color;
+	bool isSelected;
+	AABB* AABB;
+	Pivot* pivot;
+};
+
+
 class SceneEditor : public Scene
 {
 
@@ -20,6 +33,7 @@ public:
 	void SetGeometry();
 	void CleanupGeometry();
 	inline Raycast* GetRaycast() const { return m_Raycast; };
+	void AddSceneObject();
 	virtual ~SceneEditor() override;
 
 private:
@@ -31,23 +45,7 @@ private:
 	Raycast* m_Raycast;
 	Quad* m_Quad;
 
-	glm::vec3 m_Position_1;
-	glm::vec3 m_Position_2;
-
-	glm::vec3 m_Rotation_1;
-	glm::vec3 m_Rotation_2;
-
-	glm::vec3 m_Scale_1;
-	glm::vec3 m_Scale_2;
-
-	glm::mat4 m_Transform_1;
-	glm::mat4 m_Transform_2;
-
-	glm::vec4 m_Color_1;
-	glm::vec4 m_Color_2;
-
-	bool m_IsSelected_1;
-	bool m_IsSelected_2;
+	std::vector<SceneObject> sceneObjects;
 
 	glm::vec3* m_PositionEdit;
 	glm::vec3* m_RotationEdit;
@@ -56,10 +54,8 @@ private:
 
 	int m_Selected;
 
-	AABB* m_AABB_1;
-	AABB* m_AABB_2;
-
-	Pivot* m_Pivot_1;
-	Pivot* m_Pivot_2;
+	// add object cooldown
+	float m_AddObjectLastTime = 0.0f;
+	float m_AddObjectCooldown = 1.0f;
 
 };

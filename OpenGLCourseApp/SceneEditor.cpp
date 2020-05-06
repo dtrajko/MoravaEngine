@@ -22,25 +22,27 @@ SceneEditor::SceneEditor()
 	SetupModels();
 	SetGeometry();
 
-    m_Selected = 1;
+    m_Selected = 0;
 
-    m_Position_1 = glm::vec3(2.0f, 0.5f, 2.0f);
-    m_Position_2 = glm::vec3(-2.0f, 0.5f, -2.0f);
+    sceneObjects.resize(2);
 
-    m_Rotation_1 = glm::vec3(0.0f);
-    m_Rotation_2 = glm::vec3(0.0f);
+    sceneObjects[0].position = glm::vec3(2.0f, 0.5f, 2.0f);
+    sceneObjects[1].position = glm::vec3(-2.0f, 0.5f, -2.0f);
 
-    m_Scale_1 = glm::vec3(1.0f);
-    m_Scale_2 = glm::vec3(1.0f);
+    sceneObjects[0].rotation = glm::vec3(0.0f);
+    sceneObjects[1].rotation = glm::vec3(0.0f);
 
-    m_Color_1 = glm::vec4(0.8f, 0.4f, 0.0f, 0.8f);
-    m_Color_2 = glm::vec4(0.4f, 0.4f, 0.8f, 0.8f);
+    sceneObjects[0].scale = glm::vec3(1.0f);
+    sceneObjects[1].scale = glm::vec3(1.0f);
 
-    m_AABB_1 = new AABB(m_Position_1, m_Scale_1);
-    m_AABB_2 = new AABB(m_Position_2, m_Scale_2);
+    sceneObjects[0].color = glm::vec4(0.8f, 0.4f, 0.0f, 0.8f);
+    sceneObjects[1].color = glm::vec4(0.4f, 0.4f, 0.8f, 0.8f);
 
-    m_Pivot_1 = new Pivot(m_Position_1, m_Scale_1 + 1.0f);
-    m_Pivot_2 = new Pivot(m_Position_2, m_Scale_2 + 1.0f);
+    sceneObjects[0].AABB = new AABB(sceneObjects[0].position, sceneObjects[0].scale);
+    sceneObjects[1].AABB = new AABB(sceneObjects[1].position, sceneObjects[1].scale);
+
+    sceneObjects[0].pivot = new Pivot(sceneObjects[0].position, sceneObjects[0].scale + 1.0f);
+    sceneObjects[1].pivot = new Pivot(sceneObjects[1].position, sceneObjects[1].scale + 1.0f);
 
     m_Raycast = new Raycast();
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
@@ -74,13 +76,22 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 {
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
-    m_IsSelected_1 = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), m_AABB_1->GetMin(), m_AABB_1->GetMax(), glm::vec2(0.0f));
-    m_IsSelected_2 = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), m_AABB_2->GetMin(), m_AABB_2->GetMax(), glm::vec2(0.0f));
+    for (auto& object : sceneObjects) {
+        object.isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
+            object.AABB->GetMin(), object.AABB->GetMax(), glm::vec2(0.0f));
+    }
 
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
-        if (m_IsSelected_1) m_Selected = 1;
-        else if (m_IsSelected_2) m_Selected = 2;
+        for (unsigned int i = 0; i < sceneObjects.size(); i++)
+        {
+            if (sceneObjects[i].isSelected) m_Selected = i;
+        }
+    }
+
+    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1] && mainWindow.getKeys()[GLFW_KEY_LEFT_SHIFT])
+    {
+        AddSceneObject();
     }
 }
 
@@ -111,17 +122,12 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
                                      " Y = " + std::to_string(mp->m_WorldRay.y) +
                                      " Z = " + std::to_string(mp->m_WorldRay.z);
 
-    if (m_Selected == 1) {
-        m_PositionEdit = &m_Position_1;
-        m_RotationEdit = &m_Rotation_1;
-        m_ScaleEdit = &m_Scale_1;
-        m_ColorEdit = &m_Color_1;
-    }
-    else if (m_Selected == 2) {
-        m_PositionEdit = &m_Position_2;
-        m_RotationEdit = &m_Rotation_2;
-        m_ScaleEdit = &m_Scale_2;
-        m_ColorEdit = &m_Color_2;
+    if (m_Selected < sceneObjects.size())
+    {
+        m_PositionEdit = &sceneObjects[m_Selected].position;
+        m_RotationEdit = &sceneObjects[m_Selected].rotation;
+        m_ScaleEdit =    &sceneObjects[m_Selected].scale;
+        m_ColorEdit =    &sceneObjects[m_Selected].color;
     }
 
     ImGui::Text("Transform");
@@ -129,7 +135,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     // ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -179.0f, 180.0f);
     ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.0f, 10.0f);
     ImGui::ColorEdit4("Color", (float*)m_ColorEdit);
-    ImGui::SliderInt("Selected Object", &m_Selected, 1, 2);
+    ImGui::SliderInt("Selected Object", &m_Selected, 0, (int)(sceneObjects.size() - 1));
 
     ImGui::End();
 }
@@ -141,51 +147,58 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     shaders["editor_object"]->setMat4("projection", projectionMatrix);
     shaders["editor_object"]->setMat4("view", m_Camera->CalculateViewMatrix());
 
-    m_Transform_1 = glm::mat4(1.0f);
-    m_Transform_1 = glm::translate(m_Transform_1, m_Position_1);
-    m_Transform_1 = glm::rotate(m_Transform_1, glm::radians(m_Rotation_1.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    m_Transform_1 = glm::rotate(m_Transform_1, glm::radians(m_Rotation_1.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    m_Transform_1 = glm::rotate(m_Transform_1, glm::radians(m_Rotation_1.z), glm::vec3(0.0f, 0.0f, 1.0f));
-    m_Transform_1 = glm::scale(m_Transform_1, m_Scale_1);
-    shaders["editor_object"]->setMat4("model", m_Transform_1);
-    shaders["editor_object"]->setVec4("tintColor", m_Color_1);
-    shaders["editor_object"]->setBool("isSelected", m_IsSelected_1);
-    glBindVertexArray(GeometryFactory::CubeNormals::GetVAO());
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glBindVertexArray(0);
+    for (auto& object : sceneObjects)
+    {
+        object.transform = glm::mat4(1.0f);
+        object.transform = glm::translate(object.transform, object.position);
+        object.transform = glm::rotate(object.transform, glm::radians(object.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        object.transform = glm::rotate(object.transform, glm::radians(object.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        object.transform = glm::rotate(object.transform, glm::radians(object.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        object.transform = glm::scale(object.transform, object.scale);
+        shaders["editor_object"]->setMat4("model", object.transform);
+        shaders["editor_object"]->setVec4("tintColor", object.color);
+        shaders["editor_object"]->setBool("isSelected", object.isSelected);
+        glBindVertexArray(GeometryFactory::CubeNormals::GetVAO());
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
 
-    m_Transform_2 = glm::mat4(1.0f);
-    m_Transform_2 = glm::translate(m_Transform_2, m_Position_2);
-    m_Transform_2 = glm::rotate(m_Transform_2, glm::radians(m_Rotation_2.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    m_Transform_2 = glm::rotate(m_Transform_2, glm::radians(m_Rotation_2.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    m_Transform_2 = glm::rotate(m_Transform_2, glm::radians(m_Rotation_2.z), glm::vec3(0.0f, 0.0f, 1.0f));
-    m_Transform_2 = glm::scale(m_Transform_2, m_Scale_2);
-    shaders["editor_object"]->setMat4("model", m_Transform_2);
-    shaders["editor_object"]->setVec4("tintColor", m_Color_2);
-    shaders["editor_object"]->setBool("isSelected", m_IsSelected_2);
-    glBindVertexArray(GeometryFactory::CubeNormals::GetVAO());
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glBindVertexArray(0);
-
-    m_AABB_1->Update(m_Position_1, m_Scale_1);
-    m_AABB_2->Update(m_Position_2, m_Scale_2);
-
-    m_Pivot_1->Update(m_Position_1, m_Scale_1 + 1.0f);
-    m_Pivot_2->Update(m_Position_2, m_Scale_2 + 1.0f);
-
-    if (m_Selected == 1) {
-        m_AABB_1->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
-        m_Pivot_1->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
+        object.AABB->Update(object.position, object.scale);
+        object.pivot->Update(object.position, object.scale + 1.0f);
     }
-    else if (m_Selected == 2) {
-        m_AABB_2->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
-        m_Pivot_2->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
-    }    
+
+    if (m_Selected < sceneObjects.size())
+    {
+        sceneObjects[m_Selected].AABB->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
+        sceneObjects[m_Selected].pivot->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
+    }
 }
 
 void SceneEditor::CleanupGeometry()
 {
     GeometryFactory::CubeNormals::Destroy();
+}
+
+void SceneEditor::AddSceneObject()
+{
+    float currentTimestamp = (float)glfwGetTime();
+
+    if (currentTimestamp - m_AddObjectLastTime < m_AddObjectCooldown)
+        return;
+
+    m_AddObjectLastTime = currentTimestamp;
+
+    // Add Scene Object here
+
+    sceneObjects.push_back({
+        glm::mat4(1.0f),
+        glm::vec3(0.0f, 0.5f, 0.0f),
+        glm::vec3(0.0f),
+        glm::vec3(1.0f),
+        glm::vec4(1.0f),
+        false,
+        new AABB(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(1.0f)),
+        new Pivot(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(1.0f)),
+    });
 }
 
 SceneEditor::~SceneEditor()
@@ -194,9 +207,11 @@ SceneEditor::~SceneEditor()
 
     delete m_Raycast;
 
-    delete m_AABB_1;
-    delete m_AABB_2;
+    for (auto& object : sceneObjects)
+    {
+        delete object.AABB;
+        delete object.pivot;
+    }
 
-    delete m_Pivot_1;
-    delete m_Pivot_2;
+    sceneObjects.clear();
 }
