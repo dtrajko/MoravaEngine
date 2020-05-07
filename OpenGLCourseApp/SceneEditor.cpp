@@ -184,7 +184,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::SliderFloat3("Position", (float*)m_PositionEdit, -10.0f, 10.0f);
     // ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -179.0f, 180.0f);
-    ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.0f, 10.0f);
+    ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.1f, 20.0f);
     ImGui::ColorEdit4("Color", (float*)m_ColorEdit);
     ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(sceneObjects.size() - 1));
 

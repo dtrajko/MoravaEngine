@@ -19,23 +19,10 @@ Grid::Grid(int size)
         {
                 vector = { (float)x, 0.0f, (float)z, color.r, color.g, color.b, color.a };
                 m_Vertices.insert(m_Vertices.end(), std::begin(vector), std::end(vector));
-                printf("Grid vertices Index: %i, X=%.2ff Z=%.2ff\n", (int)index, (float)x, (float)z);
+                // printf("Grid vertices Index: %i, X=%.2ff Z=%.2ff\n", (int)index, (float)x, (float)z);
                 index++;
         }
     }
-
-    // Static version, obsolete
-    // m_Vertices = {
-    //     -1.0f, 0.0f,  0.0f,    color.r, color.g, color.b, color.a,
-    //      1.0f, 0.0f,  0.0f,    color.r, color.g, color.b, color.a,
-    //      0.0f, 0.0f, -1.0f,    color.r, color.g, color.b, color.a,
-    //      0.0f, 0.0f,  1.0f,    color.r, color.g, color.b, color.a,
-    //                            
-    //     -1.0f, 0.0f,  1.0f,    color.r, color.g, color.b, color.a,
-    //      1.0f, 0.0f,  1.0f,    color.r, color.g, color.b, color.a,
-    //     -1.0f, 0.0f, -1.0f,    color.r, color.g, color.b, color.a,
-    //      1.0f, 0.0f, -1.0f,    color.r, color.g, color.b, color.a,
-    // };
 
     unsigned int lineCount = 2 * size + 1;
     std::vector<unsigned int> indexPair;
@@ -45,7 +32,7 @@ Grid::Grid(int size)
     {
         indexPair = { i * lineCount, i * lineCount + lineCount - 1 };
         m_Indices.insert(m_Indices.end(), std::begin(indexPair), std::end(indexPair));
-        printf("Grid indices %i, %i\n", indexPair[0], indexPair[1]);
+        // printf("Grid indices %i, %i\n", indexPair[0], indexPair[1]);
     }
 
     // indices z direction
@@ -53,18 +40,8 @@ Grid::Grid(int size)
     {
         indexPair = { i, i + lineCount * (lineCount - 1) };
         m_Indices.insert(m_Indices.end(), std::begin(indexPair), std::end(indexPair));
-        printf("Grid indices %i, %i\n", indexPair[0], indexPair[1]);
+        // printf("Grid indices %i, %i\n", indexPair[0], indexPair[1]);
     }
-
-    // Static version, obsolete
-    // m_Indices = {
-    //     0, 1,
-    //     2, 3,
-    //     4, 5,
-    //     6, 7,
-    //     4, 6,
-    //     5, 7,
-    // };
 
     glGenVertexArrays(1, &m_VAO);
     glGenBuffers(1, &m_VBO);
