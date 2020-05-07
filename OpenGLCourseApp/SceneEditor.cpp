@@ -43,6 +43,9 @@ SceneEditor::SceneEditor()
     sceneObjects[0].useTexture = false;
     sceneObjects[1].useTexture = false;
 
+    sceneObjects[0].textureName = "texture_checker";
+    sceneObjects[0].textureName = "texture_checker";
+
     sceneObjects[0].tilingFactor = 1.0f;
     sceneObjects[1].tilingFactor = 1.0f;
 
@@ -82,6 +85,24 @@ void SceneEditor::SetTextures()
     textures.insert(std::make_pair("semi_transparent", new Texture("Textures/semi_transparent.png")));
     textures.insert(std::make_pair("texture_checker", new Texture("Textures/texture_checker.png")));
     textures.insert(std::make_pair("plain", new Texture("Textures/plain.png")));
+    textures.insert(std::make_pair("wood", new Texture("Textures/wood.png")));
+    textures.insert(std::make_pair("plank", new Texture("Textures/texture_plank.png")));
+    textures.insert(std::make_pair("rock", new Texture("Textures/rock.png")));
+    textures.insert(std::make_pair("pyramid", new Texture("Textures/pyramid.png")));
+    textures.insert(std::make_pair("lego", new Texture("Textures/lego.png")));
+    textures.insert(std::make_pair("marble", new Texture("Textures/marble.jpg")));
+    textures.insert(std::make_pair("metal", new Texture("Textures/metal.png")));
+    textures.insert(std::make_pair("brick", new Texture("Textures/brick.png")));
+    textures.insert(std::make_pair("crate", new Texture("Textures/crate.png")));
+    textures.insert(std::make_pair("grass", new Texture("Textures/grass.jpg")));
+    textures.insert(std::make_pair("water", new Texture("Textures/water.png")));
+    textures.insert(std::make_pair("rock2", new Texture("Textures/rock/Rock-Texture-Surface.jpg")));
+    textures.insert(std::make_pair("planet", new Texture("Textures/planet/planet_Quom1200.png")));
+    textures.insert(std::make_pair("gold_albedo", new Texture("Textures/PBR/gold/albedo.png")));
+    textures.insert(std::make_pair("silver_albedo", new Texture("Textures/PBR/silver/albedo.png")));
+    textures.insert(std::make_pair("grass_albedo", new Texture("Textures/PBR/grass/albedo.png")));
+    textures.insert(std::make_pair("wall_albedo", new Texture("Textures/PBR/wall/albedo.png")));
+    textures.insert(std::make_pair("plastic_albedo", new Texture("Textures/PBR/plastic/albedo.png")));
 }
 
 void SceneEditor::SetupMeshes()
@@ -194,9 +215,10 @@ void SceneEditor::SaveScene()
         printf("Rotation %.2ff %.2ff %.2ff\n", sceneObjects[i].rotation.x, sceneObjects[i].rotation.y, sceneObjects[i].rotation.z);
         printf("Scale %.2ff %.2ff %.2ff\n", sceneObjects[i].scale.x, sceneObjects[i].scale.y, sceneObjects[i].scale.z);
         printf("Color %.2ff %.2ff %.2ff %.2ff\n", sceneObjects[i].color.r, sceneObjects[i].color.g, sceneObjects[i].color.b, sceneObjects[i].color.a);
-        printf("UseTexture: %i\n", sceneObjects[i].useTexture ? 1 : 0);
-        printf("TilingFactor: %.2ff\n", sceneObjects[i].tilingFactor);
-        printf("IsSelected: %i\n", m_SelectedIndex == i ? 1 : 0);
+        printf("UseTexture %i\n", sceneObjects[i].useTexture ? 1 : 0);
+        printf("TextureName %s\n", sceneObjects[i].textureName.c_str());
+        printf("TilingFactor %.2ff\n", sceneObjects[i].tilingFactor);
+        printf("IsSelected %i\n", m_SelectedIndex == i ? 1 : 0);
     }
 }
 
@@ -262,18 +284,51 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         m_ScaleEdit =        &sceneObjects[m_SelectedIndex].scale;
         m_ColorEdit =        &sceneObjects[m_SelectedIndex].color;
         m_UseTextureEdit =   &sceneObjects[m_SelectedIndex].useTexture;
+        m_TextureNameEdit  = &sceneObjects[m_SelectedIndex].textureName;
         m_TilingFactorEdit = &sceneObjects[m_SelectedIndex].tilingFactor;
     }
 
     ImGui::Begin("Transform");
 
     ImGui::SliderFloat3("Position", (float*)m_PositionEdit, -10.0f, 10.0f);
-    // ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -179.0f, 180.0f);
+    ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -179.0f, 180.0f);
     ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.1f, 20.0f);
     ImGui::ColorEdit4("Color", (float*)m_ColorEdit);
     ImGui::Checkbox("Use Texture", m_UseTextureEdit);
+
+    // Begin ImGui drop-down list
+    std::vector<const char*> items;
+    std::map<std::string, Texture*>::iterator it;
+    for (it = textures.begin(); it != textures.end(); it++)
+        items.push_back(it->first.c_str());
+    static const char* currentItem = m_TextureNameEdit->c_str();
+
+    if (ImGui::BeginCombo("Texture Name", currentItem))
+    {
+        for (int n = 0; n < items.size(); n++)
+        {
+            bool isSelected = (currentItem == items[n]);
+            if (ImGui::Selectable(items[n], isSelected))
+            {
+                currentItem = items[n];
+                if (m_SelectedIndex < sceneObjects.size())
+                    sceneObjects[m_SelectedIndex].textureName = items[n];
+                else
+                    m_SelectedIndex = sceneObjects.size() > 0 ? (unsigned int)sceneObjects.size() - 1 : 0;
+            }
+            if (isSelected)
+            {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+    // End ImGui drop-down list
+
     ImGui::SliderFloat("Tiling Factor", m_TilingFactorEdit, 0.0f, 10.0f);
     ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(sceneObjects.size() - 1));
+    ImGui::Separator();
+    ImGui::SliderFloat("FOV", &m_FOV, 1.0f, 120.0f);
 
     ImGui::End();
 }
@@ -297,8 +352,8 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         shaders["editor_object"]->setVec4("tintColor", object.color);
         shaders["editor_object"]->setBool("isSelected", object.isSelected);
 
-        if (object.useTexture)
-            textures["texture_checker"]->Bind(0);
+        if (object.useTexture && object.textureName != "")
+            textures[object.textureName]->Bind(0);
         else
             textures["plain"]->Bind(0);
         shaders["editor_object"]->setInt("albedoMap", 0);
@@ -339,6 +394,7 @@ void SceneEditor::AddSceneObject()
         glm::vec3(1.0f),
         glm::vec4(1.0f),
         false,
+        "plain",
         1.0f,
         true,
         new AABB(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(1.0f)),

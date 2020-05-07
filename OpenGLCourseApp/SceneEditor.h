@@ -17,6 +17,7 @@ struct SceneObject
 	glm::vec3 scale;
 	glm::vec4 color;
 	bool useTexture;
+	std::string textureName;
 	float tilingFactor;
 	bool isSelected;
 	AABB* AABB;
@@ -51,6 +52,7 @@ public:
 	void SaveScene();
 	void LoadScene();
 	void ResetScene();
+	inline float GetFOV() { return m_FOV; };
 	virtual ~SceneEditor() override;
 
 private:
@@ -72,6 +74,7 @@ private:
 	glm::vec4* m_ColorEdit;
 	bool* m_UseTextureEdit;
 	float* m_TilingFactorEdit;
+	std::string* m_TextureNameEdit;
 
 	unsigned int m_SelectedIndex;
 	unsigned int m_ObjectInFocusPrev;
@@ -86,6 +89,8 @@ private:
 	EventCooldown m_SceneLoad = { 0.0f, 1.0f };
 	EventCooldown m_SceneReset = { 0.0f, 1.0f };
 
-	glm::vec3 defaultSpawnPosition = glm::vec3(0.5f, 0.5f, 0.5f);
+	glm::vec3 defaultSpawnPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	float m_FOV = 60.0f;
 
 };
