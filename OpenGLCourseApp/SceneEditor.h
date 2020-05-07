@@ -16,6 +16,7 @@ struct SceneObject
 	glm::vec3 rotation;
 	glm::vec3 scale;
 	glm::vec4 color;
+	bool useTexture;
 	float tilingFactor;
 	bool isSelected;
 	AABB* AABB;
@@ -43,6 +44,7 @@ public:
 	inline Raycast* GetRaycast() const { return m_Raycast; };
 	void AddSceneObject();
 	void CopySceneObject(SceneObject sceneObject);
+	void DeleteSceneObject();
 	void SelectNextFromMultipleObjects(std::vector<SceneObject> sceneObjects, unsigned int* selected);
 	bool IsObjectSelected(unsigned int objectIndex);
 	virtual ~SceneEditor() override;
@@ -63,7 +65,7 @@ private:
 	glm::vec3* m_RotationEdit;
 	glm::vec3* m_ScaleEdit;
 	glm::vec4* m_ColorEdit;
-	bool m_UseTextureEdit;
+	bool* m_UseTextureEdit;
 	float* m_TilingFactorEdit;
 
 	unsigned int m_SelectedIndex;
@@ -73,6 +75,7 @@ private:
 	EventCooldown m_ObjectSelect = { 0.0f, 0.2f };
 	EventCooldown m_ObjectAdd = { 0.0f, 1.0f };
 	EventCooldown m_ObjectCopy = { 0.0f, 1.0f };
+	EventCooldown m_ObjectDelete = { 0.0f, 1.0f };
 
 	glm::vec3 defaultSpawnPosition = glm::vec3(0.5f, 0.5f, 0.5f);
 

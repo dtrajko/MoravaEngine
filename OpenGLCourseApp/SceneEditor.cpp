@@ -2,7 +2,7 @@
 
 #include "ImGuiWrapper.h"
 #include "MousePicker.h"
-#include "GeometryFactory.h"
+#include "Block.h"
 
 #include <vector>
 #include <map>
@@ -39,6 +39,9 @@ SceneEditor::SceneEditor()
 
     sceneObjects[0].color = glm::vec4(0.8f, 0.4f, 0.0f, 0.8f);
     sceneObjects[1].color = glm::vec4(0.4f, 0.4f, 0.8f, 0.8f);
+
+    sceneObjects[0].useTexture = false;
+    sceneObjects[1].useTexture = false;
 
     sceneObjects[0].tilingFactor = 1.0f;
     sceneObjects[1].tilingFactor = 1.0f;
@@ -77,6 +80,9 @@ void SceneEditor::SetupMeshes()
 {
     m_Quad = new Quad();
     meshes.insert(std::make_pair("quad", m_Quad));
+
+    Block* m_Block = new Block(1.0f, 1.0f, 1.0f);
+    meshes.insert(std::make_pair("block", m_Block));
 }
 
 void SceneEditor::SetupModels()
@@ -85,7 +91,6 @@ void SceneEditor::SetupModels()
 
 void SceneEditor::SetGeometry()
 {
-    GeometryFactory::Cube::Create();
 }
 
 void SceneEditor::Update(float timestep, Window& mainWindow)
@@ -114,6 +119,12 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     {
         CopySceneObject(sceneObjects[m_SelectedIndex]);
         sceneObjects[m_SelectedIndex].isSelected = false;
+    }
+
+    // Delete selected object
+    if (mainWindow.getKeys()[GLFW_KEY_DELETE])
+    {
+        DeleteSceneObject();
     }
 }
 
@@ -184,6 +195,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         m_RotationEdit =     &sceneObjects[m_SelectedIndex].rotation;
         m_ScaleEdit =        &sceneObjects[m_SelectedIndex].scale;
         m_ColorEdit =        &sceneObjects[m_SelectedIndex].color;
+        m_UseTextureEdit =   &sceneObjects[m_SelectedIndex].useTexture;
         m_TilingFactorEdit = &sceneObjects[m_SelectedIndex].tilingFactor;
     }
 
@@ -193,7 +205,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     // ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -179.0f, 180.0f);
     ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.1f, 20.0f);
     ImGui::ColorEdit4("Color", (float*)m_ColorEdit);
-    ImGui::Checkbox("Use Texture", &m_UseTextureEdit);
+    ImGui::Checkbox("Use Texture", m_UseTextureEdit);
     ImGui::SliderFloat("Tiling Factor", m_TilingFactorEdit, 0.0f, 10.0f);
     ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(sceneObjects.size() - 1));
 
@@ -219,16 +231,14 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         shaders["editor_object"]->setVec4("tintColor", object.color);
         shaders["editor_object"]->setBool("isSelected", object.isSelected);
 
-        if (m_UseTextureEdit)
+        if (object.useTexture)
             textures["texture_checker"]->Bind(0);
         else
             textures["plain"]->Bind(0);
         shaders["editor_object"]->setInt("albedoMap", 0);
         shaders["editor_object"]->setFloat("tilingFactor", object.tilingFactor);
 
-        glBindVertexArray(GeometryFactory::Cube::GetVAO());
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
+        meshes["block"]->Render();
 
         object.AABB->Update(object.position, object.scale);
         object.pivot->Update(object.position, object.scale + 1.0f);
@@ -245,7 +255,6 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 
 void SceneEditor::CleanupGeometry()
 {
-    GeometryFactory::Cube::Destroy();
 }
 
 void SceneEditor::AddSceneObject()
@@ -262,6 +271,7 @@ void SceneEditor::AddSceneObject()
         glm::vec3(0.0f),
         glm::vec3(1.0f),
         glm::vec4(1.0f),
+        false,
         1.0f,
         true,
         new AABB(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(1.0f)),
@@ -284,6 +294,19 @@ void SceneEditor::CopySceneObject(SceneObject sceneObject)
     sceneObject.pivot = new Pivot(sceneObject.position, sceneObject.scale);
 
     sceneObjects.push_back(sceneObject);
+}
+
+void SceneEditor::DeleteSceneObject()
+{
+    // Cooldown
+    float currentTimestamp = (float)glfwGetTime();
+    if (currentTimestamp - m_ObjectDelete.lastTime < m_ObjectDelete.cooldown) return;
+    m_ObjectDelete.lastTime = currentTimestamp;
+
+    if (m_SelectedIndex < sceneObjects.size())
+        sceneObjects.erase(sceneObjects.begin() + m_SelectedIndex);
+
+    if (m_SelectedIndex > 0) m_SelectedIndex--;
 }
 
 SceneEditor::~SceneEditor()
