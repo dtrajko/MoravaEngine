@@ -6,6 +6,7 @@
 #include "Raycast.h"
 #include "AABB.h"
 #include "Pivot.h"
+#include "Grid.h"
 
 
 struct SceneObject
@@ -53,6 +54,7 @@ private:
 
 	Raycast* m_Raycast;
 	Quad* m_Quad;
+	Grid* m_Grid;
 
 	std::vector<SceneObject> sceneObjects;
 
@@ -68,5 +70,7 @@ private:
 	EventCooldown m_ObjectSelect = { 0.0f, 0.2f };
 	EventCooldown m_ObjectAdd = { 0.0f, 1.0f };
 	EventCooldown m_ObjectCopy = { 0.0f, 1.0f };
+
+	glm::vec3 defaultSpawnPosition = glm::vec3(0.5f, 0.5f, 0.5f);
 
 };

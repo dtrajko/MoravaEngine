@@ -75,7 +75,7 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     shaders["framebuffers_scene"]->setMat4("model", model);
     shaders["framebuffers_scene"]->setInt("texture1", 0);
     scene->GetTextures()["semi_transparent"]->Bind(0);
-    scene->GetMeshes()["quad"]->Render();
+    // scene->GetMeshes()["quad"]->Render();
         
     std::string passType = "main";
     scene->Render(projectionMatrix, passType, shaders, uniforms);

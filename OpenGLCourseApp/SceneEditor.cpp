@@ -48,6 +48,8 @@ SceneEditor::SceneEditor()
 
     m_Raycast = new Raycast();
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
+
+    m_Grid = new Grid(10);
 }
 
 void SceneEditor::SetSkybox()
@@ -220,6 +222,8 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         sceneObjects[m_SelectedIndex].AABB->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
         sceneObjects[m_SelectedIndex].pivot->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
     }
+
+    m_Grid->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
 }
 
 void SceneEditor::CleanupGeometry()
@@ -237,7 +241,7 @@ void SceneEditor::AddSceneObject()
     // Add Scene Object here
     SceneObject sceneObject = {
         glm::mat4(1.0f),
-        glm::vec3(0.0f, 0.5f, 0.0f),
+        defaultSpawnPosition,
         glm::vec3(0.0f),
         glm::vec3(1.0f),
         glm::vec4(1.0f),
@@ -267,6 +271,7 @@ SceneEditor::~SceneEditor()
 {
 	CleanupGeometry();
 
+    delete m_Grid;
     delete m_Raycast;
 
     for (auto& object : sceneObjects)
