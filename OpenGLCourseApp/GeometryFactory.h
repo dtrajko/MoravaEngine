@@ -8,6 +8,19 @@
  */
 namespace GeometryFactory
 {
+    class Cube
+    {
+    public:
+        static void Create();
+        static void Destroy();
+        static inline unsigned int GetVAO() { return s_VAO; };
+
+    private:
+        static std::vector<float> s_Vertices;
+        static unsigned int s_VAO;
+        static unsigned int s_VBO;
+    };
+
     class CubeTexCoords
     {
     public:

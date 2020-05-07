@@ -40,6 +40,9 @@ SceneEditor::SceneEditor()
     sceneObjects[0].color = glm::vec4(0.8f, 0.4f, 0.0f, 0.8f);
     sceneObjects[1].color = glm::vec4(0.4f, 0.4f, 0.8f, 0.8f);
 
+    sceneObjects[0].tilingFactor = 1.0f;
+    sceneObjects[1].tilingFactor = 1.0f;
+
     sceneObjects[0].AABB = new AABB(sceneObjects[0].position, sceneObjects[0].scale);
     sceneObjects[1].AABB = new AABB(sceneObjects[1].position, sceneObjects[1].scale);
 
@@ -66,6 +69,8 @@ void SceneEditor::SetSkybox()
 void SceneEditor::SetTextures()
 {
     textures.insert(std::make_pair("semi_transparent", new Texture("Textures/semi_transparent.png")));
+    textures.insert(std::make_pair("texture_checker", new Texture("Textures/texture_checker.png")));
+    textures.insert(std::make_pair("plain", new Texture("Textures/plain.png")));
 }
 
 void SceneEditor::SetupMeshes()
@@ -80,7 +85,7 @@ void SceneEditor::SetupModels()
 
 void SceneEditor::SetGeometry()
 {
-    GeometryFactory::CubeNormals::Create();
+    GeometryFactory::Cube::Create();
 }
 
 void SceneEditor::Update(float timestep, Window& mainWindow)
@@ -99,15 +104,16 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     }
 
     // Add new scene object with default settings
-    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1] && mainWindow.getKeys()[GLFW_KEY_LEFT_SHIFT])
+    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1] && mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL])
     {
         AddSceneObject();
     }
 
     // Copy selected scene object
-    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_D])
+    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_C])
     {
         CopySceneObject(sceneObjects[m_SelectedIndex]);
+        sceneObjects[m_SelectedIndex].isSelected = false;
     }
 }
 
@@ -174,10 +180,11 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     if (m_SelectedIndex < sceneObjects.size())
     {
-        m_PositionEdit = &sceneObjects[m_SelectedIndex].position;
-        m_RotationEdit = &sceneObjects[m_SelectedIndex].rotation;
-        m_ScaleEdit =    &sceneObjects[m_SelectedIndex].scale;
-        m_ColorEdit =    &sceneObjects[m_SelectedIndex].color;
+        m_PositionEdit =     &sceneObjects[m_SelectedIndex].position;
+        m_RotationEdit =     &sceneObjects[m_SelectedIndex].rotation;
+        m_ScaleEdit =        &sceneObjects[m_SelectedIndex].scale;
+        m_ColorEdit =        &sceneObjects[m_SelectedIndex].color;
+        m_TilingFactorEdit = &sceneObjects[m_SelectedIndex].tilingFactor;
     }
 
     ImGui::Begin("Transform");
@@ -186,6 +193,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     // ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -179.0f, 180.0f);
     ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.1f, 20.0f);
     ImGui::ColorEdit4("Color", (float*)m_ColorEdit);
+    ImGui::Checkbox("Use Texture", &m_UseTextureEdit);
+    ImGui::SliderFloat("Tiling Factor", m_TilingFactorEdit, 0.0f, 10.0f);
     ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(sceneObjects.size() - 1));
 
     ImGui::End();
@@ -209,7 +218,15 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         shaders["editor_object"]->setMat4("model", object.transform);
         shaders["editor_object"]->setVec4("tintColor", object.color);
         shaders["editor_object"]->setBool("isSelected", object.isSelected);
-        glBindVertexArray(GeometryFactory::CubeNormals::GetVAO());
+
+        if (m_UseTextureEdit)
+            textures["texture_checker"]->Bind(0);
+        else
+            textures["plain"]->Bind(0);
+        shaders["editor_object"]->setInt("albedoMap", 0);
+        shaders["editor_object"]->setFloat("tilingFactor", object.tilingFactor);
+
+        glBindVertexArray(GeometryFactory::Cube::GetVAO());
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
 
@@ -228,7 +245,7 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 
 void SceneEditor::CleanupGeometry()
 {
-    GeometryFactory::CubeNormals::Destroy();
+    GeometryFactory::Cube::Destroy();
 }
 
 void SceneEditor::AddSceneObject()
@@ -245,12 +262,14 @@ void SceneEditor::AddSceneObject()
         glm::vec3(0.0f),
         glm::vec3(1.0f),
         glm::vec4(1.0f),
-        false,
+        1.0f,
+        true,
         new AABB(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(1.0f)),
         new Pivot(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(1.0f)),
     };
 
     sceneObjects.push_back(sceneObject);
+    m_SelectedIndex++;
 }
 
 void SceneEditor::CopySceneObject(SceneObject sceneObject)

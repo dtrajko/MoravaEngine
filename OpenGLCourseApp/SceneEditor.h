@@ -16,6 +16,7 @@ struct SceneObject
 	glm::vec3 rotation;
 	glm::vec3 scale;
 	glm::vec4 color;
+	float tilingFactor;
 	bool isSelected;
 	AABB* AABB;
 	Pivot* pivot;
@@ -62,6 +63,8 @@ private:
 	glm::vec3* m_RotationEdit;
 	glm::vec3* m_ScaleEdit;
 	glm::vec4* m_ColorEdit;
+	bool m_UseTextureEdit;
+	float* m_TilingFactorEdit;
 
 	unsigned int m_SelectedIndex;
 	unsigned int m_ObjectInFocusPrev;
