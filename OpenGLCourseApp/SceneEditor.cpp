@@ -46,16 +46,24 @@ SceneEditor::SceneEditor()
     sceneObjects[0].tilingFactor = 1.0f;
     sceneObjects[1].tilingFactor = 1.0f;
 
+    sceneObjects[0].isSelected = false;
+    sceneObjects[1].isSelected = false;
+
     sceneObjects[0].AABB = new AABB(sceneObjects[0].position, sceneObjects[0].scale);
     sceneObjects[1].AABB = new AABB(sceneObjects[1].position, sceneObjects[1].scale);
 
     sceneObjects[0].pivot = new Pivot(sceneObjects[0].position, sceneObjects[0].scale + 1.0f);
     sceneObjects[1].pivot = new Pivot(sceneObjects[1].position, sceneObjects[1].scale + 1.0f);
 
+    sceneObjects[0].mesh = new Block(glm::vec3(1.0f, 1.0f, 1.0f));
+    sceneObjects[1].mesh = new Block(glm::vec3(1.0f, 1.0f, 1.0f));
+
     m_Raycast = new Raycast();
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
 
     m_Grid = new Grid(10);
+
+    m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(40.0f, 40.0f, 40.0f));
 }
 
 void SceneEditor::SetSkybox()
@@ -79,10 +87,7 @@ void SceneEditor::SetTextures()
 void SceneEditor::SetupMeshes()
 {
     m_Quad = new Quad();
-    meshes.insert(std::make_pair("quad", m_Quad));
-
-    Block* m_Block = new Block(1.0f, 1.0f, 1.0f);
-    meshes.insert(std::make_pair("block", m_Block));
+    meshes.insert(std::make_pair("quad", m_Quad));    
 }
 
 void SceneEditor::SetupModels()
@@ -95,11 +100,16 @@ void SceneEditor::SetGeometry()
 
 void SceneEditor::Update(float timestep, Window& mainWindow)
 {
+    m_CurrentTimestamp = timestep;
+
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
     for (auto& object : sceneObjects) {
         object.isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             object.AABB->GetMin(), object.AABB->GetMax(), glm::vec2(0.0f));
+
+        Block* block = (Block*)object.mesh;
+        block->Update(object.scale);
     }
 
     // Switching between scene objects that are currently in focus (mouse over)
@@ -126,14 +136,22 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     {
         DeleteSceneObject();
     }
+
+    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_R])
+        ResetScene();
+
+    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_S])
+        SaveScene();
+
+    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_L])
+        LoadScene();
 }
 
 void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject> sceneObjects, unsigned int* selected)
 {
     // Cooldown
-    float currentTimestamp = (float)glfwGetTime();
-    if (currentTimestamp - m_ObjectSelect.lastTime < m_ObjectSelect.cooldown) return;
-    m_ObjectSelect.lastTime = currentTimestamp;
+    if (m_CurrentTimestamp - m_ObjectSelect.lastTime < m_ObjectSelect.cooldown) return;
+    m_ObjectSelect.lastTime = m_CurrentTimestamp;
 
     std::vector<unsigned int> sceneObjectsInFocusIndices = std::vector<unsigned int>();
 
@@ -159,6 +177,54 @@ void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject> sceneOb
 bool SceneEditor::IsObjectSelected(unsigned int objectIndex)
 {
     return objectIndex = m_SelectedIndex;
+}
+
+void SceneEditor::SaveScene()
+{
+    // Cooldown
+    if (m_CurrentTimestamp - m_SceneSave.lastTime < m_SceneSave.cooldown) return;
+    m_SceneSave.lastTime = m_CurrentTimestamp;
+
+    printf("SceneEditor::SaveScene: Saving %zu objects!\n", sceneObjects.size());
+
+    for (int i = 0; i < sceneObjects.size(); i++)
+    {
+        printf("Scene Object %i\n", i);
+        printf("Position %.2ff %.2ff %.2ff\n", sceneObjects[i].position.x, sceneObjects[i].position.y, sceneObjects[i].position.z);
+        printf("Rotation %.2ff %.2ff %.2ff\n", sceneObjects[i].rotation.x, sceneObjects[i].rotation.y, sceneObjects[i].rotation.z);
+        printf("Scale %.2ff %.2ff %.2ff\n", sceneObjects[i].scale.x, sceneObjects[i].scale.y, sceneObjects[i].scale.z);
+        printf("Color %.2ff %.2ff %.2ff %.2ff\n", sceneObjects[i].color.r, sceneObjects[i].color.g, sceneObjects[i].color.b, sceneObjects[i].color.a);
+        printf("UseTexture: %i\n", sceneObjects[i].useTexture ? 1 : 0);
+        printf("TilingFactor: %.2ff\n", sceneObjects[i].tilingFactor);
+        printf("IsSelected: %i\n", m_SelectedIndex == i ? 1 : 0);
+    }
+}
+
+void SceneEditor::LoadScene()
+{
+    // Cooldown
+    if (m_CurrentTimestamp - m_SceneLoad.lastTime < m_SceneLoad.cooldown) return;
+    m_SceneLoad.lastTime = m_CurrentTimestamp;
+
+    printf("SceneEditor::LoadScene: Loading %zu objects!\n", sceneObjects.size());
+}
+
+void SceneEditor::ResetScene()
+{
+    // Cooldown
+    if (m_CurrentTimestamp - m_SceneReset.lastTime < m_SceneReset.cooldown) return;
+    m_SceneReset.lastTime = m_CurrentTimestamp;
+
+    printf("SceneEditor::ResetScene: Deleting %zu objects!\n", sceneObjects.size());
+
+    for (auto& object : sceneObjects)
+    {
+        delete object.AABB;
+        delete object.pivot;
+        delete object.mesh;
+    }
+
+    sceneObjects.clear();
 }
 
 void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
@@ -226,7 +292,7 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         object.transform = glm::rotate(object.transform, glm::radians(object.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
         object.transform = glm::rotate(object.transform, glm::radians(object.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
         object.transform = glm::rotate(object.transform, glm::radians(object.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-        object.transform = glm::scale(object.transform, object.scale);
+        // object.transform = glm::scale(object.transform, object.scale);
         shaders["editor_object"]->setMat4("model", object.transform);
         shaders["editor_object"]->setVec4("tintColor", object.color);
         shaders["editor_object"]->setBool("isSelected", object.isSelected);
@@ -238,7 +304,7 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         shaders["editor_object"]->setInt("albedoMap", 0);
         shaders["editor_object"]->setFloat("tilingFactor", object.tilingFactor);
 
-        meshes["block"]->Render();
+        object.mesh->Render();
 
         object.AABB->Update(object.position, object.scale);
         object.pivot->Update(object.position, object.scale + 1.0f);
@@ -251,6 +317,8 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     }
 
     m_Grid->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
+
+    m_PivotScene->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
 }
 
 void SceneEditor::CleanupGeometry()
@@ -260,9 +328,8 @@ void SceneEditor::CleanupGeometry()
 void SceneEditor::AddSceneObject()
 {
     // Cooldown
-    float currentTimestamp = (float)glfwGetTime();
-    if (currentTimestamp - m_ObjectAdd.lastTime < m_ObjectAdd.cooldown) return;
-    m_ObjectAdd.lastTime = currentTimestamp;
+    if (m_CurrentTimestamp - m_ObjectAdd.lastTime < m_ObjectAdd.cooldown) return;
+    m_ObjectAdd.lastTime = m_CurrentTimestamp;
 
     // Add Scene Object here
     SceneObject sceneObject = {
@@ -276,6 +343,7 @@ void SceneEditor::AddSceneObject()
         true,
         new AABB(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(1.0f)),
         new Pivot(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(1.0f)),
+        new Block(glm::vec3(1.0f, 1.5f, 1.0f)),
     };
 
     sceneObjects.push_back(sceneObject);
@@ -285,13 +353,15 @@ void SceneEditor::AddSceneObject()
 void SceneEditor::CopySceneObject(SceneObject sceneObject)
 {
     // Cooldown
-    float currentTimestamp = (float)glfwGetTime();
-    if (currentTimestamp - m_ObjectCopy.lastTime < m_ObjectCopy.cooldown) return;
-    m_ObjectCopy.lastTime = currentTimestamp;
+    if (m_CurrentTimestamp - m_ObjectCopy.lastTime < m_ObjectCopy.cooldown) return;
+    m_ObjectCopy.lastTime = m_CurrentTimestamp;
+
+    Block* block = (Block*)sceneObject.mesh;
 
     sceneObject.isSelected = true;
     sceneObject.AABB = new AABB(sceneObject.position, sceneObject.scale);
     sceneObject.pivot = new Pivot(sceneObject.position, sceneObject.scale);
+    sceneObject.mesh = new Block(block->GetScale());
 
     sceneObjects.push_back(sceneObject);
 }
@@ -299,9 +369,12 @@ void SceneEditor::CopySceneObject(SceneObject sceneObject)
 void SceneEditor::DeleteSceneObject()
 {
     // Cooldown
-    float currentTimestamp = (float)glfwGetTime();
-    if (currentTimestamp - m_ObjectDelete.lastTime < m_ObjectDelete.cooldown) return;
-    m_ObjectDelete.lastTime = currentTimestamp;
+    if (m_CurrentTimestamp - m_ObjectDelete.lastTime < m_ObjectDelete.cooldown) return;
+    m_ObjectDelete.lastTime = m_CurrentTimestamp;
+
+    delete sceneObjects[m_SelectedIndex].AABB;
+    delete sceneObjects[m_SelectedIndex].pivot;
+    delete sceneObjects[m_SelectedIndex].mesh;
 
     if (m_SelectedIndex < sceneObjects.size())
         sceneObjects.erase(sceneObjects.begin() + m_SelectedIndex);
@@ -316,11 +389,5 @@ SceneEditor::~SceneEditor()
     delete m_Grid;
     delete m_Raycast;
 
-    for (auto& object : sceneObjects)
-    {
-        delete object.AABB;
-        delete object.pivot;
-    }
-
-    sceneObjects.clear();
+    ResetScene();
 }

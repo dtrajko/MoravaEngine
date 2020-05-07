@@ -193,7 +193,7 @@ int main()
 		}
 
 		// Toggle wireframe mode
-		if (mainWindow.getKeys()[GLFW_KEY_R])
+		if (mainWindow.getKeys()[GLFW_KEY_R] && !mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL])
 		{
 			if (currentTimestamp - m_LastKeyPressTime > m_KeyCooldownTime)
 			{

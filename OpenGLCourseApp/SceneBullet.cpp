@@ -94,19 +94,19 @@ void SceneBullet::SetupMeshes()
 	cube->Create(&MeshData::vertices[0], &MeshData::indices[0], MeshData::vertexCount, MeshData::indexCount);
 	meshes.insert(std::make_pair("cube", cube));
 
-	Block* block_floor = new Block(100.0f, 4.0f, 100.0f);
+	Block* block_floor = new Block(glm::vec3(100.0f, 4.0f, 100.0f));
 	meshes.insert(std::make_pair("block_floor", block_floor));
 
-	Block* block_wall_1 = new Block(100.0f, 20.0f, 4.0f);
+	Block* block_wall_1 = new Block(glm::vec3(100.0f, 20.0f, 4.0f));
 	meshes.insert(std::make_pair("block_wall_1", block_wall_1));
 
-	Block* block_wall_2 = new Block(4.0f, 20.0f, 100.0f);
+	Block* block_wall_2 = new Block(glm::vec3(4.0f, 20.0f, 100.0f));
 	meshes.insert(std::make_pair("block_wall_2", block_wall_2));
 
-	Block* plank_1 = new Block(1.0f, 1.0f, 12.0f);
+	Block* plank_1 = new Block(glm::vec3(1.0f, 1.0f, 12.0f));
 	meshes.insert(std::make_pair("plank_1", plank_1));
 
-	Block* plank_2 = new Block(12.0f, 1.0f, 1.0f);
+	Block* plank_2 = new Block(glm::vec3(12.0f, 1.0f, 1.0f));
 	meshes.insert(std::make_pair("plank_2", plank_2));
 
 	Sphere* sphere = new Sphere();

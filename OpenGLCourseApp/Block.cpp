@@ -4,21 +4,34 @@
 #include "GL/glew.h"
 
 
-
 Block::Block()
 	: Mesh()
 {
 }
 
-Block::Block(float scaleX, float scaleY, float scaleZ)
+Block::Block(glm::vec3 scale)
 {
-	float sizeX = 0.5f * scaleX;
-	float sizeY = 0.5f * scaleY;
-	float sizeZ = 0.5f * scaleZ;
+	m_Scale = scale;
+	Generate(scale);
+}
 
-	float txCoX = 1.0f * scaleX;
-	float txCoY = 1.0f * scaleY;
-	float txCoZ = 1.0f * scaleZ;
+void Block::Update(glm::vec3 scale)
+{
+	if (scale != m_Scale)
+		Generate(scale);
+}
+
+void Block::Generate(glm::vec3 scale)
+{
+	m_Scale = scale;
+
+	float sizeX = 0.5f * scale.x;
+	float sizeY = 0.5f * scale.y;
+	float sizeZ = 0.5f * scale.z;
+
+	float txCoX = 1.0f * scale.x;
+	float txCoY = 1.0f * scale.y;
+	float txCoZ = 1.0f * scale.z;
 
 	float tilingFactor = 0.5f;
 

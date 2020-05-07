@@ -27,6 +27,9 @@ Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLf
 
 void Camera::KeyControl(bool* keys, GLfloat deltaTime)
 {
+	// Don't move camera when using Ctrl+S or Ctrl+D in Editor
+	if (keys[GLFW_KEY_LEFT_CONTROL]) return;
+
 	GLfloat velocity = m_MoveSpeed * deltaTime;
 
 	if (keys[GLFW_KEY_LEFT_SHIFT])

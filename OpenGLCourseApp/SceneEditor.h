@@ -21,6 +21,7 @@ struct SceneObject
 	bool isSelected;
 	AABB* AABB;
 	Pivot* pivot;
+	Mesh* mesh;
 };
 
 struct EventCooldown
@@ -47,6 +48,9 @@ public:
 	void DeleteSceneObject();
 	void SelectNextFromMultipleObjects(std::vector<SceneObject> sceneObjects, unsigned int* selected);
 	bool IsObjectSelected(unsigned int objectIndex);
+	void SaveScene();
+	void LoadScene();
+	void ResetScene();
 	virtual ~SceneEditor() override;
 
 private:
@@ -56,8 +60,9 @@ private:
 	virtual void SetupModels() override;
 
 	Raycast* m_Raycast;
-	Quad* m_Quad;
 	Grid* m_Grid;
+	Quad* m_Quad;
+	Pivot* m_PivotScene;
 
 	std::vector<SceneObject> sceneObjects;
 
@@ -72,10 +77,14 @@ private:
 	unsigned int m_ObjectInFocusPrev;
 
 	// add object cooldown
+	float m_CurrentTimestamp = 0.0f;
 	EventCooldown m_ObjectSelect = { 0.0f, 0.2f };
 	EventCooldown m_ObjectAdd = { 0.0f, 1.0f };
 	EventCooldown m_ObjectCopy = { 0.0f, 1.0f };
 	EventCooldown m_ObjectDelete = { 0.0f, 1.0f };
+	EventCooldown m_SceneSave = { 0.0f, 1.0f };
+	EventCooldown m_SceneLoad = { 0.0f, 1.0f };
+	EventCooldown m_SceneReset = { 0.0f, 1.0f };
 
 	glm::vec3 defaultSpawnPosition = glm::vec3(0.5f, 0.5f, 0.5f);
 
