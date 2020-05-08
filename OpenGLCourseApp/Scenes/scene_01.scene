@@ -1,0 +1,40 @@
+BeginObject	0
+Position	0.00f	0.00f	0.00f
+Rotation	0.00f	0.00f	0.00f
+Scale	10.05f	0.20f	10.05f
+Color	1.00f	1.00f	1.00f	1.00f
+UseTexture	1
+TextureName	marble
+TilingFactor	0.50f
+IsSelected	0
+EndObject
+BeginObject	1
+Position	3.03f	0.62f	3.01f
+Rotation	0.00f	0.00f	0.00f
+Scale	1.00f	1.00f	1.00f
+Color	1.00f	1.00f	1.00f	1.00f
+UseTexture	1
+TextureName	wood
+TilingFactor	1.00f
+IsSelected	0
+EndObject
+BeginObject	2
+Position	0.00f	1.74f	-2.09f
+Rotation	0.00f	0.00f	0.00f
+Scale	6.43f	3.37f	0.20f
+Color	1.00f	1.00f	1.00f	1.00f
+UseTexture	1
+TextureName	wall_albedo
+TilingFactor	1.00f
+IsSelected	0
+EndObject
+BeginObject	3
+Position	-2.46f	0.62f	0.97f
+Rotation	0.00f	0.00f	0.00f
+Scale	1.00f	1.00f	4.06f
+Color	0.00f	0.71f	1.00f	0.65f
+UseTexture	1
+TextureName	plain
+TilingFactor	1.00f
+IsSelected	1
+EndObject

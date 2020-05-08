@@ -66,7 +66,7 @@ private:
 	Quad* m_Quad;
 	Pivot* m_PivotScene;
 
-	std::vector<SceneObject> sceneObjects;
+	std::vector<SceneObject> m_SceneObjects;
 
 	glm::vec3* m_PositionEdit;
 	glm::vec3* m_RotationEdit;

@@ -23,7 +23,7 @@ public:
 	void CreateFromString(const char* vertexCode, const char* fragmentCode);
 	void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);
 	void CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation);
-	std::string ReadFile(const char* fileLocation);
+	static std::string ReadFile(const char* fileLocation);
 	void Validate();
 	void Bind();
 
