@@ -90,7 +90,7 @@ private:
 	EventCooldown m_SceneReset = { 0.0f, 1.0f };
 
 	glm::vec3 defaultSpawnPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-
 	float m_FOV = 60.0f;
+	const char* m_SceneFilename = "Scenes/scene_tmp.scene";
 
 };

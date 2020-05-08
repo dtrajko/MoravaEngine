@@ -30,47 +30,20 @@ SceneEditor::SceneEditor()
 
     m_SelectedIndex = 0;
 
-    m_SceneObjects.resize(2);
-
-    m_SceneObjects[0].position = glm::vec3(2.0f, 0.5f, 2.0f);
-    m_SceneObjects[1].position = glm::vec3(-2.0f, 0.5f, -2.0f);
-
-    m_SceneObjects[0].rotation = glm::vec3(0.0f);
-    m_SceneObjects[1].rotation = glm::vec3(0.0f);
-
-    m_SceneObjects[0].scale = glm::vec3(1.0f);
-    m_SceneObjects[1].scale = glm::vec3(1.0f);
-
-    m_SceneObjects[0].color = glm::vec4(0.8f, 0.4f, 0.0f, 0.8f);
-    m_SceneObjects[1].color = glm::vec4(0.4f, 0.4f, 0.8f, 0.8f);
-
-    m_SceneObjects[0].useTexture = false;
-    m_SceneObjects[1].useTexture = false;
-
-    m_SceneObjects[0].textureName = "texture_checker";
-    m_SceneObjects[0].textureName = "texture_checker";
-
-    m_SceneObjects[0].tilingFactor = 1.0f;
-    m_SceneObjects[1].tilingFactor = 1.0f;
-
-    m_SceneObjects[0].isSelected = false;
-    m_SceneObjects[1].isSelected = false;
-
-    m_SceneObjects[0].AABB = new AABB(m_SceneObjects[0].position, m_SceneObjects[0].scale);
-    m_SceneObjects[1].AABB = new AABB(m_SceneObjects[1].position, m_SceneObjects[1].scale);
-
-    m_SceneObjects[0].pivot = new Pivot(m_SceneObjects[0].position, m_SceneObjects[0].scale + 1.0f);
-    m_SceneObjects[1].pivot = new Pivot(m_SceneObjects[1].position, m_SceneObjects[1].scale + 1.0f);
-
-    m_SceneObjects[0].mesh = new Block(glm::vec3(1.0f, 1.0f, 1.0f));
-    m_SceneObjects[1].mesh = new Block(glm::vec3(1.0f, 1.0f, 1.0f));
-
     m_Raycast = new Raycast();
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
 
     m_Grid = new Grid(10);
 
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(40.0f, 40.0f, 40.0f));
+
+    m_PositionEdit     = new glm::vec3(0.0f);
+    m_RotationEdit     = new glm::vec3(0.0f);
+    m_ScaleEdit        = new glm::vec3(1.0f);
+    m_ColorEdit        = new glm::vec4(1.0f);
+    m_UseTextureEdit   = new bool(false);
+    m_TextureNameEdit  = new std::string;
+    m_TilingFactorEdit = new float(1.0f);
 }
 
 void SceneEditor::SetSkybox()
@@ -104,6 +77,7 @@ void SceneEditor::SetTextures()
     textures.insert(std::make_pair("planet", new Texture("Textures/planet/planet_Quom1200.png")));
     textures.insert(std::make_pair("gold_albedo", new Texture("Textures/PBR/gold/albedo.png")));
     textures.insert(std::make_pair("silver_albedo", new Texture("Textures/PBR/silver/albedo.png")));
+    textures.insert(std::make_pair("rusted_iron", new Texture("Textures/PBR/rusted_iron/albedo.png")));
     textures.insert(std::make_pair("grass_albedo", new Texture("Textures/PBR/grass/albedo.png")));
     textures.insert(std::make_pair("wall_albedo", new Texture("Textures/PBR/wall/albedo.png")));
     textures.insert(std::make_pair("plastic_albedo", new Texture("Textures/PBR/plastic/albedo.png")));
@@ -212,18 +186,46 @@ void SceneEditor::SaveScene()
 
     printf("SceneEditor::SaveScene: Saving %zu objects!\n", m_SceneObjects.size());
 
+    std::vector<std::string> lines;
     for (int i = 0; i < m_SceneObjects.size(); i++)
     {
-        printf("Scene Object %i\n", i);
-        printf("Position %.2ff %.2ff %.2ff\n", m_SceneObjects[i].position.x, m_SceneObjects[i].position.y, m_SceneObjects[i].position.z);
-        printf("Rotation %.2ff %.2ff %.2ff\n", m_SceneObjects[i].rotation.x, m_SceneObjects[i].rotation.y, m_SceneObjects[i].rotation.z);
-        printf("Scale %.2ff %.2ff %.2ff\n", m_SceneObjects[i].scale.x, m_SceneObjects[i].scale.y, m_SceneObjects[i].scale.z);
-        printf("Color %.2ff %.2ff %.2ff %.2ff\n", m_SceneObjects[i].color.r, m_SceneObjects[i].color.g, m_SceneObjects[i].color.b, m_SceneObjects[i].color.a);
-        printf("UseTexture %i\n", m_SceneObjects[i].useTexture ? 1 : 0);
-        printf("TextureName %s\n", m_SceneObjects[i].textureName.c_str());
-        printf("TilingFactor %.2ff\n", m_SceneObjects[i].tilingFactor);
-        printf("IsSelected %i\n", m_SelectedIndex == i ? 1 : 0);
+        lines.push_back("BeginObject\t" + std::to_string(i));
+        lines.push_back("Position\t" +
+            std::to_string(m_SceneObjects[i].position.x) + "\t" +
+            std::to_string(m_SceneObjects[i].position.y) + "\t" +
+            std::to_string(m_SceneObjects[i].position.z) + "\t");
+        lines.push_back("Rotation\t" +
+            std::to_string(m_SceneObjects[i].rotation.x) + "\t" +
+            std::to_string(m_SceneObjects[i].rotation.y) + "\t" +
+            std::to_string(m_SceneObjects[i].rotation.z) + "\t");
+        lines.push_back("Scale\t" +
+            std::to_string(m_SceneObjects[i].scale.x) + "\t" +
+            std::to_string(m_SceneObjects[i].scale.y) + "\t" +
+            std::to_string(m_SceneObjects[i].scale.z) + "\t");
+        lines.push_back("Color\t" +
+            std::to_string(m_SceneObjects[i].color.r) + "\t" +
+            std::to_string(m_SceneObjects[i].color.g) + "\t" +
+            std::to_string(m_SceneObjects[i].color.b) + "\t" +
+            std::to_string(m_SceneObjects[i].color.a) + "\t");
+        std::string useTexture = m_SceneObjects[i].useTexture ? "1" : "0";
+        lines.push_back("UseTexture\t" + useTexture);
+        lines.push_back("TextureName\t" + m_SceneObjects[i].textureName);
+        lines.push_back("TilingFactor\t" + std::to_string(m_SceneObjects[i].tilingFactor));
+        std::string isSelected = m_SceneObjects[i].isSelected ? "1" : "0";
+        lines.push_back("IsSelected\t" + isSelected);
+        lines.push_back("EndObject");
     }
+
+    std::ofstream ofs;
+    ofs.open(m_SceneFilename);
+    for (auto& line : lines)
+    {
+        ofs << line << std::endl;
+        // printf("%s\n", line.c_str());
+    }
+    ofs.close();
+
+    printf("SceneEditor::SaveScene: Content saved to file '%s'\n", m_SceneFilename);
 }
 
 void SceneEditor::LoadScene()
@@ -234,9 +236,7 @@ void SceneEditor::LoadScene()
 
     printf("SceneEditor::LoadScene: Loading objects...\n");
 
-    const char* sceneFilename = "Scenes/scene_01.scene";
-
-    std::string sceneFileContent = Shader::ReadFile(sceneFilename);
+    std::string sceneFileContent = Shader::ReadFile(m_SceneFilename);
 
     // printf(sceneFileContent.c_str());
 
@@ -267,40 +267,40 @@ void SceneEditor::LoadScene()
         if (tokens.size() >= 2 && tokens[0] == "BeginObject") {
             objectId = (unsigned int)std::stoi(tokens[1]);
             sceneObject = {};
-            printf("ObjectID=%i\n", objectId);
+            // printf("ObjectID=%i\n", objectId);
         }
         else if (tokens.size() >= 4 && tokens[0] == "Position") {
             sceneObject.position = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
-            printf("Position %.2ff %.2ff %.2ff\n", sceneObject.position.x, sceneObject.position.y, sceneObject.position.z);
+            // printf("Position %.2ff %.2ff %.2ff\n", sceneObject.position.x, sceneObject.position.y, sceneObject.position.z);
         }
         else if (tokens.size() >= 4 && tokens[0] == "Rotation") {
             sceneObject.rotation = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
-            printf("Rotation %.2ff %.2ff %.2ff\n", sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z);
+            // printf("Rotation %.2ff %.2ff %.2ff\n", sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z);
         }
         else if (tokens.size() >= 4 && tokens[0] == "Scale") {
             sceneObject.scale = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
-            printf("Scale %.2ff %.2ff %.2ff\n", sceneObject.scale.x, sceneObject.scale.y, sceneObject.scale.z);
+            // printf("Scale %.2ff %.2ff %.2ff\n", sceneObject.scale.x, sceneObject.scale.y, sceneObject.scale.z);
         }
         else if (tokens.size() >= 5 && tokens[0] == "Color") {
             sceneObject.color = glm::vec4(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]), std::stof(tokens[4]));
-            printf("Color %.2ff %.2ff %.2ff %.2ff\n", sceneObject.color.r, sceneObject.color.g, sceneObject.color.b, sceneObject.color.a);
+            // printf("Color %.2ff %.2ff %.2ff %.2ff\n", sceneObject.color.r, sceneObject.color.g, sceneObject.color.b, sceneObject.color.a);
         }
         else if (tokens.size() >= 2 && tokens[0] == "UseTexture") {
             sceneObject.useTexture = std::stoi(tokens[1]) == 1 ? true : false;
-            printf("UseTexture %d\n", sceneObject.useTexture);
+            // printf("UseTexture %d\n", sceneObject.useTexture);
         }
         else if (tokens.size() >= 2 && tokens[0] == "TextureName") {
             sceneObject.textureName = tokens[1];
-            printf("UseTexture %s\n", sceneObject.textureName.c_str());
+            // printf("UseTexture %s\n", sceneObject.textureName.c_str());
         }
         else if (tokens.size() >= 2 && tokens[0] == "TilingFactor") {
             sceneObject.tilingFactor = std::stof(tokens[1]);
-            printf("TilingFactor %.2f\n", sceneObject.tilingFactor);
+            // printf("TilingFactor %.2f\n", sceneObject.tilingFactor);
         }
         else if (tokens.size() >= 2 && tokens[0] == "IsSelected") {
             sceneObject.isSelected = std::stoi(tokens[1]) == 1 ? true : false;
             if (sceneObject.isSelected) m_SelectedIndex = (unsigned int)m_SceneObjects.size();
-            printf("IsSelected %d\n", sceneObject.isSelected);
+            // printf("IsSelected %d\n", sceneObject.isSelected);
         }
         else if (tokens.size() >= 1 && tokens[0] == "EndObject") {
             sceneObject.transform = Math::CreateTransform(sceneObject.position, sceneObject.rotation, sceneObject.scale);
@@ -308,7 +308,7 @@ void SceneEditor::LoadScene()
             sceneObject.pivot = new Pivot(sceneObject.position, sceneObject.scale);
             sceneObject.mesh = new Block(sceneObject.scale);
             m_SceneObjects.push_back(sceneObject);
-            printf("EndObject: New SceneObject added to m_SceneObjects...\n");
+            // printf("EndObject: New SceneObject added to m_SceneObjects...\n");
         }
     }
 }
@@ -359,7 +359,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
                                          " Z = " + std::to_string(mp->m_WorldRay.z);
     ImGui::End();
 
-    if (m_SelectedIndex < m_SceneObjects.size())
+    if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
     {
         m_PositionEdit =     &m_SceneObjects[m_SelectedIndex].position;
         m_RotationEdit =     &m_SceneObjects[m_SelectedIndex].rotation;
@@ -522,8 +522,18 @@ void SceneEditor::DeleteSceneObject()
 
 SceneEditor::~SceneEditor()
 {
+    SaveScene();
+
 	CleanupGeometry();
 
+    // delete m_PositionEdit;
+    // delete m_RotationEdit;
+    // delete m_ScaleEdit;
+    // delete m_ColorEdit;
+    // delete m_TextureNameEdit;
+    // delete m_TilingFactorEdit;
+
+    delete m_PivotScene;
     delete m_Grid;
     delete m_Raycast;
 
