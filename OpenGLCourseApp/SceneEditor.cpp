@@ -24,9 +24,9 @@ SceneEditor::SceneEditor()
     sceneSettings.enableSpotLights = true;
 
     // directional light
-    sceneSettings.lightDirection = glm::vec3(20.1f, -100.0f, 20.1f);
-    sceneSettings.ambientIntensity = 0.8f;
-    sceneSettings.diffuseIntensity = 0.2f;
+    sceneSettings.lightDirection = glm::vec3(0.5f, -0.7f, -0.5f);
+    sceneSettings.ambientIntensity = 1.0f;
+    sceneSettings.diffuseIntensity = 0.0f;
     sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 40.0f);
 
     // point lights
@@ -371,6 +371,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 {
     MousePicker* mp = MousePicker::Get();
 
+#if 0
     ImGui::Begin("Mouse Picker Info");
 
         ImGui::Separator();
@@ -394,6 +395,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
                                          " Y = " + std::to_string(mp->m_WorldRay.y) +
                                          " Z = " + std::to_string(mp->m_WorldRay.z);
     ImGui::End();
+#endif
 
     if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
     {
@@ -456,7 +458,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Separator();
     ImGui::Text("Directional Light");
     ImGui::ColorEdit3("DirLight Color", glm::value_ptr(lightColor));
-    ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(lightDirection), -100.0f, 100.0f);
+    ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(lightDirection), -1.0f, 1.0f);
     ImGui::SliderFloat("DirLight Ambient Intensity", &dirLightAmbIntensity, 0.0f, 2.0f);
     ImGui::SliderFloat("DirLight Diffuse Intensity", &dirLightDiffIntensity, 0.0f, 2.0f);
 
