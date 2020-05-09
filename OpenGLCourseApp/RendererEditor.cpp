@@ -52,9 +52,9 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Override the Projection matrix (update FOV)
-    projectionMatrix = glm::perspective(glm::radians(((SceneEditor*)scene)->GetFOV()),
-        (float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
-        scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+    // projectionMatrix = glm::perspective(glm::radians(((SceneEditor*)scene)->GetFOV()),
+    //     (float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
+    //     scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
 
     EnableTransparency();
 

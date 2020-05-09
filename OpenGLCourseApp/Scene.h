@@ -46,7 +46,8 @@ struct SceneSettings
 	float ambientIntensity;
 	float diffuseIntensity;
 	glm::mat4 lightProjectionMatrix;
-	// point light
+
+	// point lights
 	glm::vec3 pLight_0_color;
 	glm::vec3 pLight_0_position;
 	float pLight_0_diffuseIntensity;
@@ -56,10 +57,24 @@ struct SceneSettings
 	glm::vec3 pLight_2_color;
 	glm::vec3 pLight_2_position;
 	float pLight_2_diffuseIntensity;
-	// spot light
+	glm::vec3 pLight_3_color;
+	glm::vec3 pLight_3_position;
+	float pLight_3_diffuseIntensity;
+
+	// spot lights
+	glm::vec3 sLight_0_color;
+	glm::vec3 sLight_0_position;
+	glm::vec3 sLight_0_direction;
+	glm::vec3 sLight_1_color;
+	glm::vec3 sLight_1_position;
+	glm::vec3 sLight_1_direction;
 	glm::vec3 sLight_2_color;
 	glm::vec3 sLight_2_position;
 	glm::vec3 sLight_2_direction;
+	glm::vec3 sLight_3_color;
+	glm::vec3 sLight_3_position;
+	glm::vec3 sLight_3_direction;
+
 	float sLight_2_ambientIntensity;
 	float sLight_2_diffuseIntensity;
 	// shadow

@@ -22,10 +22,14 @@ Scene::Scene()
 	sceneSettings.cameraMoveSpeed = 4.0f;
 	sceneSettings.nearPlane = 0.01f;
 	sceneSettings.farPlane = 200.0f;
+
+	// Directional light
 	sceneSettings.ambientIntensity = 0.2f;
 	sceneSettings.diffuseIntensity = 0.8f;
 	sceneSettings.lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);
 	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
+
+	// Point lights
 	sceneSettings.pLight_0_color = glm::vec3(1.0f, 0.0f, 1.0f);
 	sceneSettings.pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
 	sceneSettings.pLight_0_diffuseIntensity = 6.0f;
@@ -35,6 +39,24 @@ Scene::Scene()
 	sceneSettings.pLight_2_color = glm::vec3(0.8f, 0.8f, 0.5f);
 	sceneSettings.pLight_2_position = glm::vec3(-2.0f, 4.0f, 0.0f);
 	sceneSettings.pLight_2_diffuseIntensity = 6.0f;
+	sceneSettings.pLight_3_color = glm::vec3(0.8f, 0.8f, 0.5f);
+	sceneSettings.pLight_3_position = glm::vec3(-2.0f, 4.0f, 0.0f);
+	sceneSettings.pLight_3_diffuseIntensity = 6.0f;
+
+	// Spot lights
+	sceneSettings.sLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
+	sceneSettings.sLight_0_position = glm::vec3(0.0f, 0.0f, 0.0f);
+	sceneSettings.sLight_0_direction = glm::vec3(0.0f, -1.0f, 0.0f);
+	sceneSettings.sLight_1_color = glm::vec3(1.0f, 1.0f, 1.0f);
+	sceneSettings.sLight_1_position = glm::vec3(0.0f, 0.0f, 0.0f);
+	sceneSettings.sLight_1_direction = glm::vec3(0.0f, -1.0f, 0.0f);
+	sceneSettings.sLight_2_color = glm::vec3(1.0f, 1.0f, 1.0f);
+	sceneSettings.sLight_2_position = glm::vec3(0.0f, 0.0f, 0.0f);
+	sceneSettings.sLight_2_direction = glm::vec3(0.0f, -1.0f, 0.0f);
+	sceneSettings.sLight_3_color = glm::vec3(1.0f, 1.0f, 1.0f);
+	sceneSettings.sLight_3_position = glm::vec3(0.0f, 0.0f, 0.0f);
+	sceneSettings.sLight_3_direction = glm::vec3(0.0f, -1.0f, 0.0f);
+
 	sceneSettings.shadowMapWidth = 2048;
 	sceneSettings.shadowMapHeight = 2048;
 	sceneSettings.shadowSpeed = 0.4f;

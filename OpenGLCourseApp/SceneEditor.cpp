@@ -20,8 +20,39 @@ SceneEditor::SceneEditor()
     sceneSettings.cameraStartPitch = 0.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
     sceneSettings.enableSkybox = true;
+    sceneSettings.enablePointLights = true;
+    sceneSettings.enableSpotLights = true;
+
+    // directional light
+    sceneSettings.lightDirection = glm::vec3(20.1f, -100.0f, 20.1f);
+    sceneSettings.ambientIntensity = 0.8f;
+    sceneSettings.diffuseIntensity = 0.2f;
+    sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 40.0f);
+
+    // point lights
+    sceneSettings.pLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    sceneSettings.pLight_0_position = glm::vec3(0.0f, 0.0f, 0.0f);
+    sceneSettings.pLight_0_diffuseIntensity;
+    sceneSettings.pLight_1_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    sceneSettings.pLight_1_position = glm::vec3(0.0f, 0.0f, 0.0f);
+    sceneSettings.pLight_1_diffuseIntensity;
+    sceneSettings.pLight_2_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    sceneSettings.pLight_2_position = glm::vec3(0.0f, 0.0f, 0.0f);
+    sceneSettings.pLight_2_diffuseIntensity;
+
+    // spot lights
+    sceneSettings.sLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    sceneSettings.sLight_0_position = glm::vec3(0.0f, 0.0f, 0.0f);
+    sceneSettings.sLight_0_direction = glm::vec3(0.1f, -0.8f, 0.1f);
+    sceneSettings.sLight_1_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    sceneSettings.sLight_1_position = glm::vec3(0.0f, 0.0f, 0.0f);
+    sceneSettings.sLight_1_direction = glm::vec3(0.1f, -0.8f, 0.1f);
+    sceneSettings.sLight_2_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    sceneSettings.sLight_2_position = glm::vec3(0.0f, 0.0f, 0.0f);
+    sceneSettings.sLight_2_direction = glm::vec3(0.1f, -0.8f, 0.1f);
 
 	SetCamera();
+    SetLightManager();
 	SetSkybox();
 	SetTextures();
 	SetupMeshes();
@@ -44,6 +75,11 @@ SceneEditor::SceneEditor()
     m_UseTextureEdit   = new bool(false);
     m_TextureNameEdit  = new std::string;
     m_TilingFactorEdit = new float(1.0f);
+}
+
+void SceneEditor::SetLightManager()
+{
+    Scene::SetLightManager();
 }
 
 void SceneEditor::SetSkybox()
@@ -412,15 +448,71 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Separator();
     ImGui::SliderFloat("FOV", &m_FOV, 1.0f, 120.0f);
 
+    glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();
+    glm::vec3 lightColor = m_LightManager->directionalLight.GetColor();
+    float dirLightAmbIntensity = m_LightManager->directionalLight.GetAmbientIntensity();
+    float dirLightDiffIntensity = m_LightManager->directionalLight.GetDiffuseIntensity();
+
+    ImGui::Separator();
+    ImGui::Text("Directional Light");
+    ImGui::ColorEdit3("DirLight Color", glm::value_ptr(lightColor));
+    ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(lightDirection), -100.0f, 100.0f);
+    ImGui::SliderFloat("DirLight Ambient Intensity", &dirLightAmbIntensity, 0.0f, 2.0f);
+    ImGui::SliderFloat("DirLight Diffuse Intensity", &dirLightDiffIntensity, 0.0f, 2.0f);
+
+    ImGui::Separator();
+    ImGui::Text("Point Lights");
+    ImGui::Separator();
+    ImGui::Text("Point Light 0");
+    ImGui::Separator();
+    ImGui::Text("Point Light 1");
+    ImGui::Separator();
+    ImGui::Text("Point Light 2");
+    ImGui::Separator();
+    ImGui::Text("Point Light 3");
+
+    ImGui::Separator();
+    ImGui::Text("Spot Lights");
+    ImGui::Separator();
+    ImGui::Text("Spot Light 0");
+    ImGui::Separator();
+    ImGui::Text("Spot Light 1");
+    ImGui::Separator();
+    ImGui::Text("Spot Light 2");
+    ImGui::Separator();
+    ImGui::Text("Spot Light 3");
+
+    m_LightManager->directionalLight.SetDirection(lightDirection);
+    m_LightManager->directionalLight.SetColor(lightColor);
+    m_LightManager->directionalLight.SetAmbientIntensity(dirLightAmbIntensity);
+    m_LightManager->directionalLight.SetDiffuseIntensity(dirLightDiffIntensity);
+
     ImGui::End();
 }
 
 void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
-    shaders["editor_object"]->Bind();
-    shaders["editor_object"]->setMat4("projection", projectionMatrix);
-    shaders["editor_object"]->setMat4("view", m_Camera->CalculateViewMatrix());
+    Shader* shaderEditor = shaders["editor_object"];
+
+    shaderEditor->Bind();
+    shaderEditor->setMat4("projection", projectionMatrix);
+    shaderEditor->setMat4("view", m_Camera->CalculateViewMatrix());
+
+    // Set shader variables for Phong lighting model
+
+    // Material
+    shaderEditor->setFloat("material.specularIntensity", 1.0f);
+    shaderEditor->setFloat("material.shininess", 64.0f);
+
+    // Directional Light
+    shaderEditor->setVec3("directionalLight.color", m_LightManager->directionalLight.GetColor());
+    shaderEditor->setVec3("directionalLight.direction", m_LightManager->directionalLight.GetDirection());
+    shaderEditor->setFloat("directionalLight.ambientIntensity", m_LightManager->directionalLight.GetAmbientIntensity());
+    shaderEditor->setFloat("directionalLight.diffuseIntensity", m_LightManager->directionalLight.GetDiffuseIntensity());
+
+    // Eye position / camera direction
+    shaderEditor->setVec3("eyePosition", m_Camera->GetPosition());
 
     for (auto& object : m_SceneObjects)
     {
@@ -430,16 +522,16 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         object.transform = glm::rotate(object.transform, glm::radians(object.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
         object.transform = glm::rotate(object.transform, glm::radians(object.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
         // object.transform = glm::scale(object.transform, object.scale);
-        shaders["editor_object"]->setMat4("model", object.transform);
-        shaders["editor_object"]->setVec4("tintColor", object.color);
-        shaders["editor_object"]->setBool("isSelected", object.isSelected);
+        shaderEditor->setMat4("model", object.transform);
+        shaderEditor->setVec4("tintColor", object.color);
+        shaderEditor->setBool("isSelected", object.isSelected);
 
         if (object.useTexture && object.textureName != "")
             textures[object.textureName]->Bind(0);
         else
             textures["plain"]->Bind(0);
-        shaders["editor_object"]->setInt("albedoMap", 0);
-        shaders["editor_object"]->setFloat("tilingFactor", object.tilingFactor);
+        shaderEditor->setInt("albedoMap", 0);
+        shaderEditor->setFloat("tilingFactor", object.tilingFactor);
 
         object.mesh->Render();
 

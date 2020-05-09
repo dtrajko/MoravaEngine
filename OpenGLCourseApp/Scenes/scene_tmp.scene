@@ -29,12 +29,12 @@ TilingFactor	1.000000
 IsSelected	0
 EndObject
 BeginObject	3
-Position	0.000000	0.000000	0.000000	
+Position	0.000000	-0.169000	0.000000	
 Rotation	0.000000	0.000000	0.000000	
-Scale	16.010000	0.200000	16.010000	
+Scale	20.000000	0.100000	20.000000	
 Color	1.000000	1.000000	1.000000	1.000000	
 UseTexture	1
-TextureName	marble
+TextureName	water
 TilingFactor	0.500000
 IsSelected	0
 EndObject
@@ -106,5 +106,15 @@ Color	1.000000	1.000000	1.000000	1.000000
 UseTexture	1
 TextureName	grass
 TilingFactor	0.488000
+IsSelected	0
+EndObject
+BeginObject	11
+Position	0.000000	0.000000	0.000000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	16.010000	0.200000	16.010000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	marble
+TilingFactor	0.500000
 IsSelected	0
 EndObject
