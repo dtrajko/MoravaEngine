@@ -24,64 +24,71 @@ Scene::Scene()
 	sceneSettings.farPlane = 200.0f;
 
 	// Directional light
-	sceneSettings.dirLightEnabled = true;
-	sceneSettings.dirLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-	sceneSettings.ambientIntensity = 0.2f;
-	sceneSettings.diffuseIntensity = 0.8f;
-	sceneSettings.lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);
+	sceneSettings.directionalLight.base.enabled = true;
+	sceneSettings.directionalLight.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
+	sceneSettings.directionalLight.base.ambientIntensity = 0.2f;
+	sceneSettings.directionalLight.base.diffuseIntensity = 0.8f;
+	sceneSettings.directionalLight.direction = glm::vec3(3.0f, -9.0f, -3.0f);
 	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
 
 	// Point lights
-	sceneSettings.pLight_0_enabled = true;
-	sceneSettings.pLight_0_color = glm::vec3(1.0f, 0.0f, 1.0f);
-	sceneSettings.pLight_0_position = glm::vec3(0.0f, 20.0f, 0.0f);
-	sceneSettings.pLight_0_ambientIntensity = 0.5f;
-	sceneSettings.pLight_0_diffuseIntensity = 0.8f;
+	sceneSettings.pointLights[0].base.enabled = true;
+	sceneSettings.pointLights[0].base.color = glm::vec3(1.0f, 0.0f, 1.0f);
+	sceneSettings.pointLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
+	sceneSettings.pointLights[0].base.ambientIntensity = 1.0f;
+	sceneSettings.pointLights[0].base.diffuseIntensity = 1.0f;
 
-	sceneSettings.pLight_1_enabled = true;
-	sceneSettings.pLight_1_color = glm::vec3(1.0f, 0.0f, 0.0f);
-	sceneSettings.pLight_1_position = glm::vec3(-2.0f, 9.6f, 0.0f);
-	sceneSettings.pLight_1_diffuseIntensity = 6.0f;
-	sceneSettings.pLight_1_ambientIntensity = 0.5f;
-	sceneSettings.pLight_1_diffuseIntensity = 0.8f;
+	sceneSettings.pointLights[1].base.enabled = true;
+	sceneSettings.pointLights[1].base.color = glm::vec3(1.0f, 0.0f, 0.0f);
+	sceneSettings.pointLights[1].position = glm::vec3(-2.0f, 9.6f, 0.0f);
+	sceneSettings.pointLights[1].base.ambientIntensity = 1.0f;
+	sceneSettings.pointLights[1].base.diffuseIntensity = 1.0f;
 
-	sceneSettings.pLight_2_enabled = true;
-	sceneSettings.pLight_2_color = glm::vec3(0.8f, 0.8f, 0.5f);
-	sceneSettings.pLight_2_position = glm::vec3(-2.0f, 4.0f, 0.0f);
-	sceneSettings.pLight_2_ambientIntensity = 0.5f;
-	sceneSettings.pLight_2_diffuseIntensity = 0.8f;
+	sceneSettings.pointLights[2].base.enabled = true;
+	sceneSettings.pointLights[2].base.color = glm::vec3(0.8f, 0.8f, 0.5f);
+	sceneSettings.pointLights[2].position = glm::vec3(-2.0f, 4.0f, 0.0f);
+	sceneSettings.pointLights[2].base.ambientIntensity = 1.0f;
+	sceneSettings.pointLights[2].base.ambientIntensity = 1.0f;
 
-	sceneSettings.pLight_3_enabled = true;
-	sceneSettings.pLight_3_color = glm::vec3(0.8f, 0.8f, 0.5f);
-	sceneSettings.pLight_3_position = glm::vec3(-2.0f, 4.0f, 0.0f);
-	sceneSettings.pLight_3_ambientIntensity = 0.5f;
-	sceneSettings.pLight_3_diffuseIntensity = 0.8f;
+	sceneSettings.pointLights[3].base.enabled = true;
+	sceneSettings.pointLights[3].base.color = glm::vec3(0.8f, 0.8f, 0.5f);
+	sceneSettings.pointLights[3].position = glm::vec3(-2.0f, 4.0f, 0.0f);
+	sceneSettings.pointLights[3].base.ambientIntensity = 1.0f;
+	sceneSettings.pointLights[3].base.diffuseIntensity = 1.0f;
 
 
 	// Spot lights
-	sceneSettings.sLight_0_enabled = true;
-	sceneSettings.sLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
-	sceneSettings.sLight_0_position = glm::vec3(0.0f, 0.0f, 0.0f);
-	sceneSettings.sLight_0_direction = glm::vec3(0.0f, -1.0f, 0.0f);
-	sceneSettings.sLight_0_edge = 35.0f;
+	sceneSettings.spotLights[0].base.base.enabled = true;
+	sceneSettings.spotLights[0].base.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
+	sceneSettings.spotLights[0].base.position = glm::vec3(0.0f, 0.0f, 0.0f);
+	sceneSettings.spotLights[0].direction = glm::vec3(0.0f, -1.0f, 0.0f);
+	sceneSettings.spotLights[0].base.base.ambientIntensity = 1.0f;
+	sceneSettings.spotLights[0].base.base.diffuseIntensity = 1.0f;
+	sceneSettings.spotLights[0].edge = 35.0f;
 
-	sceneSettings.sLight_1_enabled = true;
-	sceneSettings.sLight_1_color = glm::vec3(1.0f, 1.0f, 1.0f);
-	sceneSettings.sLight_1_position = glm::vec3(0.0f, 0.0f, 0.0f);
-	sceneSettings.sLight_1_direction = glm::vec3(0.0f, -1.0f, 0.0f);
-	sceneSettings.sLight_1_edge = 35.0f;
+	sceneSettings.spotLights[1].base.base.enabled = true;
+	sceneSettings.spotLights[1].base.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
+	sceneSettings.spotLights[1].base.position = glm::vec3(0.0f, 0.0f, 0.0f);
+	sceneSettings.spotLights[1].direction = glm::vec3(0.0f, -1.0f, 0.0f);
+	sceneSettings.spotLights[1].base.base.ambientIntensity = 1.0f;
+	sceneSettings.spotLights[1].base.base.diffuseIntensity = 1.0f;
+	sceneSettings.spotLights[1].edge = 35.0f;
 
-	sceneSettings.sLight_2_enabled = true;
-	sceneSettings.sLight_2_color = glm::vec3(1.0f, 1.0f, 1.0f);
-	sceneSettings.sLight_2_position = glm::vec3(0.0f, 0.0f, 0.0f);
-	sceneSettings.sLight_2_direction = glm::vec3(0.0f, -1.0f, 0.0f);
-	sceneSettings.sLight_2_edge = 35.0f;
+	sceneSettings.spotLights[2].base.base.enabled = true;
+	sceneSettings.spotLights[2].base.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
+	sceneSettings.spotLights[2].base.position = glm::vec3(0.0f, 0.0f, 0.0f);
+	sceneSettings.spotLights[2].direction = glm::vec3(0.0f, -1.0f, 0.0f);
+	sceneSettings.spotLights[2].base.base.ambientIntensity = 1.0f;
+	sceneSettings.spotLights[2].base.base.diffuseIntensity = 1.0f;
+	sceneSettings.spotLights[2].edge = 35.0f;
 
-	sceneSettings.sLight_3_enabled = true;
-	sceneSettings.sLight_3_color = glm::vec3(1.0f, 1.0f, 1.0f);
-	sceneSettings.sLight_3_position = glm::vec3(0.0f, 0.0f, 0.0f);
-	sceneSettings.sLight_3_direction = glm::vec3(0.0f, -1.0f, 0.0f);
-	sceneSettings.sLight_3_edge = 35.0f;
+	sceneSettings.spotLights[3].base.base.enabled = true;
+	sceneSettings.spotLights[3].base.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
+	sceneSettings.spotLights[3].base.position = glm::vec3(0.0f, 0.0f, 0.0f);
+	sceneSettings.spotLights[3].direction = glm::vec3(0.0f, -1.0f, 0.0f);
+	sceneSettings.spotLights[3].base.base.ambientIntensity = 1.0f;
+	sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
+	sceneSettings.spotLights[3].edge = 35.0f;
 
 	sceneSettings.shadowMapWidth = 2048;
 	sceneSettings.shadowMapHeight = 2048;

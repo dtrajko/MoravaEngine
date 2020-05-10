@@ -12,9 +12,9 @@ SceneAsteroids::SceneAsteroids()
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraStartPitch = -10.0f;
 	sceneSettings.cameraMoveSpeed = 5.0f;
-	sceneSettings.ambientIntensity = 0.4f;
-	sceneSettings.diffuseIntensity = 0.8f;
-	sceneSettings.lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);
+	sceneSettings.directionalLight.base.ambientIntensity = 0.4f;
+	sceneSettings.directionalLight.base.diffuseIntensity = 0.8f;
+	sceneSettings.directionalLight.direction = glm::vec3(3.0f, -9.0f, -3.0f);
 	sceneSettings.nearPlane = 0.01f;
 	sceneSettings.farPlane = 500.0f;
 

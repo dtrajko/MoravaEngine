@@ -13,9 +13,9 @@ SceneNanosuit::SceneNanosuit()
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 10.5f, 10.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
-	sceneSettings.ambientIntensity = 0.4f;
-	sceneSettings.diffuseIntensity = 0.8f;
-	sceneSettings.lightDirection = glm::vec3(3.0f, -9.0f, -3.0f);
+	sceneSettings.directionalLight.base.ambientIntensity = 0.4f;
+	sceneSettings.directionalLight.base.diffuseIntensity = 0.8f;
+	sceneSettings.directionalLight.direction = glm::vec3(3.0f, -9.0f, -3.0f);
 
 	SetCamera();
 	SetSkybox();

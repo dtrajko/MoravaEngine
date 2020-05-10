@@ -19,19 +19,19 @@ SceneCottage::SceneCottage()
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 25.0f, 15.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 4.0f;
-	sceneSettings.ambientIntensity = 0.2f;
-	sceneSettings.diffuseIntensity = 2.0f;
-	sceneSettings.lightDirection = glm::vec3(-0.8f, -1.2f, 0.8f);
+	sceneSettings.directionalLight.base.ambientIntensity = 0.2f;
+	sceneSettings.directionalLight.base.diffuseIntensity = 2.0f;
+	sceneSettings.directionalLight.direction = glm::vec3(-0.8f, -1.2f, 0.8f);
 	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
-	sceneSettings.pLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
-	sceneSettings.pLight_0_position = glm::vec3(0.0f, 6.0f, 0.0f);
-	sceneSettings.pLight_0_diffuseIntensity = 6.0f;
-	sceneSettings.pLight_1_color = glm::vec3(1.0f, 0.0f, 1.0f);
-	sceneSettings.pLight_1_position = glm::vec3(-5.0f, 8.0f, -5.0f);
-	sceneSettings.pLight_1_diffuseIntensity = 6.0f;
-	sceneSettings.pLight_2_color = glm::vec3(0.0f, 0.0f, 1.0f);
-	sceneSettings.pLight_2_position = glm::vec3(10.0f, 2.0f, 10.0f);
-	sceneSettings.pLight_2_diffuseIntensity = 6.0f;
+	sceneSettings.pointLights[0].base.color = glm::vec3(1.0f, 1.0f, 1.0f);
+	sceneSettings.pointLights[0].position = glm::vec3(0.0f, 6.0f, 0.0f);
+	sceneSettings.pointLights[0].base.diffuseIntensity = 6.0f;
+	sceneSettings.pointLights[1].base.color = glm::vec3(1.0f, 0.0f, 1.0f);
+	sceneSettings.pointLights[1].position = glm::vec3(-5.0f, 8.0f, -5.0f);
+	sceneSettings.pointLights[1].base.diffuseIntensity = 6.0f;
+	sceneSettings.pointLights[2].base.color = glm::vec3(0.0f, 0.0f, 1.0f);
+	sceneSettings.pointLights[2].position = glm::vec3(10.0f, 2.0f, 10.0f);
+	sceneSettings.pointLights[2].base.diffuseIntensity = 6.0f;
 	sceneSettings.shadowMapWidth = 1024;
 	sceneSettings.shadowMapHeight = 1024;
 	sceneSettings.shadowSpeed = 2.0f;
@@ -101,48 +101,51 @@ void SceneCottage::Update(float timestep, Window& mainWindow)
 
 void SceneCottage::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
 {
-	glm::vec3 dirLightDirection = m_LightManager->directionalLight.GetDirection();
-	glm::vec3 dirLightColor = m_LightManager->directionalLight.GetColor();
+	SDirectionalLight directionalLight;
+	SPointLight pointLights[4];
 
-	glm::vec3 pLightPos = sceneSettings.pLight_0_position;
+	directionalLight.direction  = m_LightManager->directionalLight.GetDirection();
+	directionalLight.base.color = m_LightManager->directionalLight.GetColor();
+
+	pointLights[0].position = sceneSettings.pointLights[0].position;
 	float lightRadius = 6.0;
 	float lightAngle = timestep * sceneSettings.shadowSpeed;
-	pLightPos.x += (float)cos(lightAngle) * lightRadius;
-	pLightPos.z += (float)sin(lightAngle) * lightRadius;
-	pLightPos.y += (float)cos(lightAngle * 0.5) * lightRadius * 0.5f;
-	m_LightManager->pointLights[0].SetPosition(pLightPos);
+	pointLights[0].position.x += (float)cos(lightAngle) * lightRadius;
+	pointLights[0].position.z += (float)sin(lightAngle) * lightRadius;
+	pointLights[0].position.y += (float)cos(lightAngle * 0.5) * lightRadius * 0.5f;
+	m_LightManager->pointLights[0].SetPosition(pointLights[0].position);
 
-	glm::vec3 PL0_Position = m_LightManager->pointLights[0].GetPosition();
-	glm::vec3 PL0_Color = m_LightManager->pointLights[0].GetColor();
-	float PL0_AmbIntensity = m_LightManager->pointLights[0].GetAmbientIntensity();
-	float PL0_DiffIntensity = m_LightManager->pointLights[0].GetDiffuseIntensity();
-	glm::vec3 PL1_Position = m_LightManager->pointLights[1].GetPosition();
-	glm::vec3 PL1_Color = m_LightManager->pointLights[1].GetColor();
-	float PL1_AmbIntensity = m_LightManager->pointLights[1].GetAmbientIntensity();
-	float PL1_DiffIntensity = m_LightManager->pointLights[1].GetDiffuseIntensity();
+	pointLights[0].position              = m_LightManager->pointLights[0].GetPosition();
+	pointLights[0].base.color            = m_LightManager->pointLights[0].GetColor();
+	pointLights[0].base.ambientIntensity = m_LightManager->pointLights[0].GetAmbientIntensity();
+	pointLights[0].base.diffuseIntensity = m_LightManager->pointLights[0].GetDiffuseIntensity();
+	pointLights[1].position              = m_LightManager->pointLights[1].GetPosition();
+	pointLights[1].base.color            = m_LightManager->pointLights[1].GetColor();
+	pointLights[1].base.ambientIntensity = m_LightManager->pointLights[1].GetAmbientIntensity();
+	pointLights[1].base.diffuseIntensity = m_LightManager->pointLights[1].GetDiffuseIntensity();
 
-	ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(dirLightDirection), -1.0f, 1.0f);
-	ImGui::ColorEdit3("DirLight Color", glm::value_ptr(dirLightColor));
-	ImGui::SliderFloat3("PL0 Position", glm::value_ptr(PL0_Position), -20.0f, 20.0f);
-	ImGui::ColorEdit3("PL0 Color", glm::value_ptr(PL0_Color));
-	ImGui::SliderFloat("PL0 Amb Intensity", &PL0_AmbIntensity, -20.0f, 20.0f);
-	ImGui::SliderFloat("PL0 Diff Intensity", &PL0_DiffIntensity, -20.0f, 20.0f);
-	ImGui::SliderFloat3("PL1 Position", glm::value_ptr(PL1_Position), -20.0f, 20.0f);
-	ImGui::ColorEdit3("PL1 Color", glm::value_ptr(PL1_Color));
-	ImGui::SliderFloat("PL1 Amb Intensity", &PL1_AmbIntensity, -20.0f, 20.0f);
-	ImGui::SliderFloat("PL1 Diff Intensity", &PL1_DiffIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(directionalLight.direction), -1.0f, 1.0f);
+	ImGui::ColorEdit3("DirLight Color",       glm::value_ptr(directionalLight.base.color));
+	ImGui::SliderFloat3("PL0 Position",       glm::value_ptr(pointLights[0].position), -20.0f, 20.0f);
+	ImGui::ColorEdit3("PL0 Color",            glm::value_ptr(pointLights[0].base.color));
+	ImGui::SliderFloat("PL0 Amb Intensity",                 &pointLights[0].base.ambientIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat("PL0 Diff Intensity",                &pointLights[0].base.diffuseIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat3("PL1 Position",       glm::value_ptr(pointLights[1].position), -20.0f, 20.0f);
+	ImGui::ColorEdit3("PL1 Color",            glm::value_ptr(pointLights[1].base.color));
+	ImGui::SliderFloat("PL1 Amb Intensity",                 &pointLights[1].base.ambientIntensity, -20.0f, 20.0f);
+	ImGui::SliderFloat("PL1 Diff Intensity",                &pointLights[1].base.diffuseIntensity, -20.0f, 20.0f);
 
-	m_LightManager->directionalLight.SetDirection(dirLightDirection);
-	m_LightManager->directionalLight.SetColor(dirLightColor);
+	m_LightManager->directionalLight.SetDirection(directionalLight.direction);
+	m_LightManager->directionalLight.SetColor(directionalLight.base.color);
 
-	m_LightManager->pointLights[0].SetPosition(PL0_Position);
-	m_LightManager->pointLights[0].SetColor(PL0_Color);
-	m_LightManager->pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
-	m_LightManager->pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
-	m_LightManager->pointLights[1].SetPosition(PL1_Position);
-	m_LightManager->pointLights[1].SetColor(PL1_Color);
-	m_LightManager->pointLights[1].SetAmbientIntensity(PL1_AmbIntensity);
-	m_LightManager->pointLights[1].SetDiffuseIntensity(PL1_DiffIntensity);
+	m_LightManager->pointLights[0].SetPosition(        pointLights[0].position);
+	m_LightManager->pointLights[0].SetColor(           pointLights[0].base.color);
+	m_LightManager->pointLights[0].SetAmbientIntensity(pointLights[0].base.ambientIntensity);
+	m_LightManager->pointLights[0].SetDiffuseIntensity(pointLights[0].base.diffuseIntensity);
+	m_LightManager->pointLights[1].SetPosition(        pointLights[1].position);
+	m_LightManager->pointLights[1].SetColor(           pointLights[1].base.color);
+	m_LightManager->pointLights[1].SetAmbientIntensity(pointLights[1].base.ambientIntensity);
+	m_LightManager->pointLights[1].SetDiffuseIntensity(pointLights[1].base.diffuseIntensity);
 }
 
 void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,

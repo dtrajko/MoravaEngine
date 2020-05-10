@@ -68,7 +68,7 @@ enum class SceneName
 	Editor,
 };
 
-SceneName currentScene = SceneName::Editor;
+SceneName currentScene = SceneName::Cottage;
 
 float deltaTime = 0.0f;
 float lastTimestamp = 0.0f;
