@@ -37,25 +37,36 @@ Scene::Scene()
 	sceneSettings.pointLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
 	sceneSettings.pointLights[0].base.ambientIntensity = 1.0f;
 	sceneSettings.pointLights[0].base.diffuseIntensity = 1.0f;
+	sceneSettings.pointLights[0].constant = 0.4f;
+	sceneSettings.pointLights[0].linear   = 0.3f;
+	sceneSettings.pointLights[0].exponent = 0.2f;
 
 	sceneSettings.pointLights[1].base.enabled = true;
 	sceneSettings.pointLights[1].base.color = glm::vec3(1.0f, 0.0f, 0.0f);
 	sceneSettings.pointLights[1].position = glm::vec3(-2.0f, 9.6f, 0.0f);
 	sceneSettings.pointLights[1].base.ambientIntensity = 1.0f;
 	sceneSettings.pointLights[1].base.diffuseIntensity = 1.0f;
+	sceneSettings.pointLights[1].constant = 0.4f;
+	sceneSettings.pointLights[1].linear   = 0.3f;
+	sceneSettings.pointLights[1].exponent = 0.2f;
 
 	sceneSettings.pointLights[2].base.enabled = true;
 	sceneSettings.pointLights[2].base.color = glm::vec3(0.8f, 0.8f, 0.5f);
 	sceneSettings.pointLights[2].position = glm::vec3(-2.0f, 4.0f, 0.0f);
 	sceneSettings.pointLights[2].base.ambientIntensity = 1.0f;
 	sceneSettings.pointLights[2].base.ambientIntensity = 1.0f;
+	sceneSettings.pointLights[2].constant = 0.4f;
+	sceneSettings.pointLights[2].linear   = 0.3f;
+	sceneSettings.pointLights[2].exponent = 0.2f;
 
 	sceneSettings.pointLights[3].base.enabled = true;
 	sceneSettings.pointLights[3].base.color = glm::vec3(0.8f, 0.8f, 0.5f);
 	sceneSettings.pointLights[3].position = glm::vec3(-2.0f, 4.0f, 0.0f);
 	sceneSettings.pointLights[3].base.ambientIntensity = 1.0f;
 	sceneSettings.pointLights[3].base.diffuseIntensity = 1.0f;
-
+	sceneSettings.pointLights[3].constant = 0.4f;
+	sceneSettings.pointLights[3].linear   = 0.3f;
+	sceneSettings.pointLights[3].exponent = 0.2f;
 
 	// Spot lights
 	sceneSettings.spotLights[0].base.base.enabled = true;
@@ -64,6 +75,9 @@ Scene::Scene()
 	sceneSettings.spotLights[0].direction = glm::vec3(0.0f, -1.0f, 0.0f);
 	sceneSettings.spotLights[0].base.base.ambientIntensity = 1.0f;
 	sceneSettings.spotLights[0].base.base.diffuseIntensity = 1.0f;
+	sceneSettings.spotLights[0].base.constant = 0.4f;
+	sceneSettings.spotLights[0].base.linear   = 0.3f;
+	sceneSettings.spotLights[0].base.exponent = 0.2f;
 	sceneSettings.spotLights[0].edge = 35.0f;
 
 	sceneSettings.spotLights[1].base.base.enabled = true;
@@ -72,6 +86,9 @@ Scene::Scene()
 	sceneSettings.spotLights[1].direction = glm::vec3(0.0f, -1.0f, 0.0f);
 	sceneSettings.spotLights[1].base.base.ambientIntensity = 1.0f;
 	sceneSettings.spotLights[1].base.base.diffuseIntensity = 1.0f;
+	sceneSettings.spotLights[1].base.constant = 0.4f;
+	sceneSettings.spotLights[1].base.linear   = 0.3f;
+	sceneSettings.spotLights[1].base.exponent = 0.2f;
 	sceneSettings.spotLights[1].edge = 35.0f;
 
 	sceneSettings.spotLights[2].base.base.enabled = true;
@@ -80,6 +97,9 @@ Scene::Scene()
 	sceneSettings.spotLights[2].direction = glm::vec3(0.0f, -1.0f, 0.0f);
 	sceneSettings.spotLights[2].base.base.ambientIntensity = 1.0f;
 	sceneSettings.spotLights[2].base.base.diffuseIntensity = 1.0f;
+	sceneSettings.spotLights[2].base.constant = 0.4f;
+	sceneSettings.spotLights[2].base.linear   = 0.3f;
+	sceneSettings.spotLights[2].base.exponent = 0.2f;
 	sceneSettings.spotLights[2].edge = 35.0f;
 
 	sceneSettings.spotLights[3].base.base.enabled = true;
@@ -88,6 +108,9 @@ Scene::Scene()
 	sceneSettings.spotLights[3].direction = glm::vec3(0.0f, -1.0f, 0.0f);
 	sceneSettings.spotLights[3].base.base.ambientIntensity = 1.0f;
 	sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
+	sceneSettings.spotLights[3].base.constant = 0.4f;
+	sceneSettings.spotLights[3].base.linear   = 0.3f;
+	sceneSettings.spotLights[3].base.exponent = 0.2f;
 	sceneSettings.spotLights[3].edge = 35.0f;
 
 	sceneSettings.shadowMapWidth = 2048;

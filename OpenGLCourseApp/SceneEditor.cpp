@@ -494,11 +494,11 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::Separator();
     ImGui::Text("Directional Light");
-    ImGui::Checkbox("DL Enabled", &directionalLight.base.enabled);
-    ImGui::ColorEdit3("DL Color", glm::value_ptr(directionalLight.base.color));
-    ImGui::SliderFloat("DL Ambient Intensity", &directionalLight.base.ambientIntensity, 0.0f, 4.0f);
-    ImGui::SliderFloat("DL Diffuse Intensity", &directionalLight.base.diffuseIntensity, 0.0f, 4.0f);
+    ImGui::Checkbox(    "DL Enabled", &directionalLight.base.enabled);
+    ImGui::ColorEdit3(  "DL Color", glm::value_ptr(directionalLight.base.color));
     ImGui::SliderFloat3("DL Direction", glm::value_ptr(directionalLight.direction), -1.0f, 1.0f);
+    ImGui::SliderFloat( "DL Ambient Intensity", &directionalLight.base.ambientIntensity, 0.0f, 4.0f);
+    ImGui::SliderFloat( "DL Diffuse Intensity", &directionalLight.base.diffuseIntensity, 0.0f, 4.0f);
 
     // Shutdown directional light (it appears it's better to do it here than in shader
     if (directionalLight.base.enabled != m_DirLightEnabledPrev)
@@ -542,9 +542,9 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         snprintf(locBuff, sizeof(locBuff), "PL %i Enabled", pl);
         ImGui::Checkbox(locBuff, &pointLights[pl].base.enabled);
         snprintf(locBuff, sizeof(locBuff), "PL %i Color", pl);
+        ImGui::ColorEdit3(locBuff, glm::value_ptr(pointLights[pl].base.color));
         snprintf(locBuff, sizeof(locBuff), "PL %i Position", pl);
         ImGui::SliderFloat3(locBuff, glm::value_ptr(pointLights[pl].position), -20.0f, 20.0f);
-        ImGui::ColorEdit3(locBuff, glm::value_ptr(pointLights[pl].base.color));
         snprintf(locBuff, sizeof(locBuff), "PL %i Ambient Intensity", pl);
         ImGui::SliderFloat(locBuff, &pointLights[pl].base.ambientIntensity, -2.0f, 2.0f);
         snprintf(locBuff, sizeof(locBuff), "PL %i Diffuse Intensity", pl);
@@ -644,12 +644,11 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     shaderEditor->setFloat("material.shininess", 64.0f);
 
     // Directional Light
-    shaderEditor->setBool("directionalLight.base.enabled", m_LightManager->directionalLight.GetEnabled());
-    shaderEditor->setVec3("directionalLight.base.color", m_LightManager->directionalLight.GetColor());
+    shaderEditor->setBool( "directionalLight.base.enabled",          m_LightManager->directionalLight.GetEnabled());
+    shaderEditor->setVec3( "directionalLight.base.color",            m_LightManager->directionalLight.GetColor());
     shaderEditor->setFloat("directionalLight.base.ambientIntensity", m_LightManager->directionalLight.GetAmbientIntensity());
     shaderEditor->setFloat("directionalLight.base.diffuseIntensity", m_LightManager->directionalLight.GetDiffuseIntensity());
-
-    shaderEditor->setVec3("directionalLight.direction", m_LightManager->directionalLight.GetDirection());
+    shaderEditor->setVec3( "directionalLight.direction",             m_LightManager->directionalLight.GetDirection());
 
     // Point Lights
     for (unsigned int i = 0; i < m_LightManager->pointLightCount; i++)
@@ -828,12 +827,12 @@ SceneEditor::~SceneEditor()
 
 	CleanupGeometry();
 
-    // delete m_PositionEdit;
-    // delete m_RotationEdit;
-    // delete m_ScaleEdit;
-    // delete m_ColorEdit;
-    // delete m_TextureNameEdit;
-    // delete m_TilingFactorEdit;
+    delete m_PositionEdit;
+    delete m_RotationEdit;
+    delete m_ScaleEdit;
+    delete m_ColorEdit;
+    delete m_TextureNameEdit;
+    delete m_TilingFactorEdit;
 
     delete m_PivotScene;
     delete m_Grid;

@@ -152,5 +152,9 @@ void main()
 	vec4 finalColor = CalcDirectionalLight();
 	finalColor += CalcPointLights();
 	finalColor += CalcSpotLights();
-	FragColor = texture(albedoMap, vTexCoord * tilingFactor) * tintColor * finalColor;
+
+	vec4 texColor = texture(albedoMap, vTexCoord * tilingFactor);
+	if(texColor.a < 0.1)
+		discard;
+	FragColor = texColor * tintColor * finalColor;
 }

@@ -35,6 +35,7 @@ private:
 
 	struct
 	{
+		GLint uniformEnabled = -1;
 		GLint uniformColor = -1;
 		GLint uniformAmbientIntensity = -1;
 		GLint uniformDiffuseIntensity = -1;
@@ -43,6 +44,7 @@ private:
 
 	struct
 	{
+		GLint uniformEnabled = -1;
 		GLint uniformColor = -1;
 		GLint uniformAmbientIntensity = -1;
 		GLint uniformDiffuseIntensity = -1;
@@ -54,6 +56,7 @@ private:
 
 	struct
 	{
+		GLint uniformEnabled = -1;
 		GLint uniformColor = -1;
 		GLint uniformAmbientIntensity = -1;
 		GLint uniformDiffuseIntensity = -1;

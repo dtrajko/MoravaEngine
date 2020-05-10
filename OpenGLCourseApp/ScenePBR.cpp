@@ -21,24 +21,30 @@ ScenePBR::ScenePBR()
 	sceneSettings.cameraMoveSpeed = 1.0f;
 	sceneSettings.nearPlane = 0.01f;
 	sceneSettings.farPlane = 400.0f;
+
 	sceneSettings.directionalLight.base.ambientIntensity = 0.02f;
 	sceneSettings.directionalLight.base.diffuseIntensity = 0.8f;
 	sceneSettings.directionalLight.direction = glm::vec3(1.2f, -14.0f, 1.2f);
 	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
+
 	sceneSettings.pointLights[0].base.color = glm::vec3(1.0f, 1.0f, 1.0f);
 	sceneSettings.pointLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
 	sceneSettings.pointLights[0].base.diffuseIntensity = 0.0f;
+
 	sceneSettings.pointLights[1].base.color = glm::vec3(1.0f, 1.0f, 1.0f);
 	sceneSettings.pointLights[1].position = glm::vec3(8.92f, 2.75f, -0.85f);
 	sceneSettings.pointLights[1].base.diffuseIntensity = 0.0f;
+
 	sceneSettings.pointLights[2].base.color = glm::vec3(0.0f, 0.0f, 1.0f);
 	sceneSettings.pointLights[2].position = glm::vec3(10.0f, 2.0f, 10.0f);
 	sceneSettings.pointLights[2].base.diffuseIntensity = 0.0f;
+
 	sceneSettings.spotLights[2].base.base.color = glm::vec3(0.0f, 1.0f, 1.0f);
 	sceneSettings.spotLights[2].base.position = glm::vec3(0.0f, 0.0f, 0.0f);
 	sceneSettings.spotLights[2].direction = glm::vec3(0.0f, 0.0f, 0.0f);
 	sceneSettings.spotLights[2].base.base.ambientIntensity = 0.4f;
 	sceneSettings.spotLights[2].base.base.diffuseIntensity = 4.0f;
+
 	sceneSettings.shadowMapWidth = 2048;
 	sceneSettings.shadowMapHeight = 2048;
 	sceneSettings.shadowSpeed = 0.1f;

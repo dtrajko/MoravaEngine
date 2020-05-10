@@ -7,6 +7,7 @@ const float dirLightShadowIntensity = 0.6;
 
 struct Light
 {
+	bool enabled;
 	vec3 color;
 	float ambientIntensity;
 	float diffuseIntensity;
@@ -196,6 +197,8 @@ vec4 CalcDirectionalLight()
 
 vec4 CalcPointLight(PointLight pointLight, int shadowIndex)
 {
+	if (!pointLight.base.enabled) return vec4(0.0, 0.0, 0.0, 0.0);
+
 	vec3 direction = FragPos - pointLight.position;
 	float distance = length(direction);
 	direction = normalize(direction);
@@ -212,6 +215,8 @@ vec4 CalcPointLight(PointLight pointLight, int shadowIndex)
 
 vec4 CalcSpotLight(SpotLight spotLight, int shadowIndex)
 {
+	if (!spotLight.base.base.enabled) return vec4(0.0, 0.0, 0.0, 0.0);
+
 	vec3 rayDirection = normalize(FragPos - spotLight.base.position);
 	float spotLightFactor = dot(rayDirection, spotLight.direction);
 
@@ -230,7 +235,7 @@ vec4 CalcSpotLight(SpotLight spotLight, int shadowIndex)
 vec4 CalcPointLights()
 {
 	vec4 totalColor = vec4(0, 0, 0, 0);
-	for (int i = 0; i < pointLightCount; i++)
+	for (int i = 0; i < 2; i++)
 	{
 		totalColor += CalcPointLight(pointLights[i], i);
 	}
@@ -240,7 +245,7 @@ vec4 CalcPointLights()
 vec4 CalcSpotLights()
 {
 	vec4 totalColor = vec4(0, 0, 0, 0);
-	for (int i = 0; i < spotLightCount; i++)
+	for (int i = 0; i < 0; i++)
 	{
 		totalColor += CalcSpotLight(spotLights[i], pointLightCount + i);
 	}

@@ -40,6 +40,7 @@ GLint ShaderMain::GetUniformLocationMaterialShininess()
 void ShaderMain::SetDirectionalLight(DirectionalLight* directionalLight)
 {
 	directionalLight->UseLight(
+		uniformDirectionalLight.uniformEnabled,
 		uniformDirectionalLight.uniformColor,
 		uniformDirectionalLight.uniformAmbientIntensity,
 		uniformDirectionalLight.uniformDiffuseIntensity,
@@ -55,6 +56,7 @@ void ShaderMain::SetPointLights(PointLight* pointLights, unsigned int lightCount
 	for (unsigned int i = 0; i < lightCount; i++)
 	{
 		pointLights[i].UseLight(
+			uniformPointLight[i].uniformEnabled,
 			uniformPointLight[i].uniformColor,
 			uniformPointLight[i].uniformAmbientIntensity,
 			uniformPointLight[i].uniformDiffuseIntensity,
@@ -78,6 +80,7 @@ void ShaderMain::SetSpotLights(SpotLight* spotLights, unsigned int lightCount, u
 	for (unsigned int i = 0; i < lightCount; i++)
 	{
 		spotLights[i].UseLight(
+			uniformSpotLight[i].uniformEnabled,
 			uniformSpotLight[i].uniformColor,
 			uniformSpotLight[i].uniformAmbientIntensity,
 			uniformSpotLight[i].uniformDiffuseIntensity,
@@ -116,6 +119,9 @@ void ShaderMain::GetUniformLocations()
 	{
 		char locBuff[100] = { '\0' };
 
+		snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.enabled", i);
+		uniformSpotLight[i].uniformColor = glGetUniformLocation(programID, locBuff);
+
 		snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.color", i);
 		uniformPointLight[i].uniformColor = glGetUniformLocation(programID, locBuff);
 
@@ -141,6 +147,9 @@ void ShaderMain::GetUniformLocations()
 	for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
 	{
 		char locBuff[100] = { '\0' };
+
+		snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.enabled", i);
+		uniformSpotLight[i].uniformColor = glGetUniformLocation(programID, locBuff);
 
 		snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.color", i);
 		uniformSpotLight[i].uniformColor = glGetUniformLocation(programID, locBuff);

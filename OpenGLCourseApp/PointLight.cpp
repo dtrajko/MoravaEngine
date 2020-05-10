@@ -13,14 +13,18 @@ PointLight::PointLight()
 	m_Constant = 1.0f;
 	m_Linear = 0.0f;
 	m_Exponent = 0.0f;
+
+	m_FarPlane = 100.0f;
+
+	m_Enabled = false;
 }
 
 PointLight::PointLight(GLuint shadowWidth, GLuint shadowHeight, GLfloat nearPlane, GLfloat farPlane,
-	glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity,
+	bool enabled, glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity,
 	glm::vec3 position, GLfloat constant, GLfloat linear, GLfloat exponent)
 	: Light(shadowWidth, shadowHeight, color, ambientIntensity, diffuseIntensity)
 {
-	m_Enabled = false;
+	m_Enabled = enabled;
 
 	m_Position = position;
 	m_Constant = constant;
@@ -36,9 +40,10 @@ PointLight::PointLight(GLuint shadowWidth, GLuint shadowHeight, GLfloat nearPlan
 	m_ShadowMap->Init(shadowWidth, shadowHeight);
 }
 
-void PointLight::UseLight(GLint ambientColorLocation, GLint ambientIntensityLocation, GLint diffuseIntensityLocation,
+void PointLight::UseLight(GLint enabledLocation, GLint ambientColorLocation, GLint ambientIntensityLocation, GLint diffuseIntensityLocation,
 	GLint positionLocation, GLint constantLocation, GLint linearLocation, GLint exponentLocation)
 {
+	glUniform1i(enabledLocation, m_Enabled);
 	glUniform3f(ambientColorLocation, m_Color.r, m_Color.g, m_Color.b);
 	glUniform1f(ambientIntensityLocation, m_AmbientIntensity);
 	glUniform1f(diffuseIntensityLocation, m_DiffuseIntensity);
