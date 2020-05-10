@@ -33,29 +33,43 @@ SceneEditor::SceneEditor()
     sceneSettings.pLight_0_color = glm::vec3(1.0f, 1.0f, 0.0f);
     sceneSettings.pLight_0_position = glm::vec3(-5.0f, 2.0f, 5.0f);
     sceneSettings.pLight_0_diffuseIntensity;
+
     sceneSettings.pLight_1_color = glm::vec3(1.0f, 0.0f, 1.0f);
     sceneSettings.pLight_1_position = glm::vec3(5.0f, 2.0f, 5.0f);
     sceneSettings.pLight_1_diffuseIntensity;
+
     sceneSettings.pLight_2_color = glm::vec3(0.0f, 1.0f, 1.0f);
     sceneSettings.pLight_2_position = glm::vec3(-5.0f, 2.0f, -5.0f);
     sceneSettings.pLight_2_diffuseIntensity;
+
     sceneSettings.pLight_3_color = glm::vec3(0.0f, 0.0f, 1.0f);
     sceneSettings.pLight_3_position = glm::vec3(5.0f, 2.0f, -5.0f);
     sceneSettings.pLight_3_diffuseIntensity;
 
     // spot lights
-    sceneSettings.sLight_0_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    sceneSettings.sLight_0_color = glm::vec3(1.0f, 0.0f, 0.0f);
     sceneSettings.sLight_0_position = glm::vec3(-5.0f, 1.0f,  0.0f);
-    sceneSettings.sLight_0_direction = glm::vec3(0.1f, -0.8f, 0.1f);
-    sceneSettings.sLight_1_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    sceneSettings.sLight_0_direction = glm::vec3(0.0f, -1.0f, 1.0f);
+    sceneSettings.sLight_0_ambientIntensity = 1.0f;
+    sceneSettings.sLight_0_diffuseIntensity = 1.0f;
+
+    sceneSettings.sLight_1_color = glm::vec3(1.0f, 1.0f, 0.0f);
     sceneSettings.sLight_1_position = glm::vec3( 5.0f, 1.0f,  0.0f);
-    sceneSettings.sLight_1_direction = glm::vec3(0.1f, -0.8f, 0.1f);
-    sceneSettings.sLight_2_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    sceneSettings.sLight_1_direction = glm::vec3(0.0f, -1.0f, 1.0f);
+    sceneSettings.sLight_1_ambientIntensity = 1.0f;
+    sceneSettings.sLight_1_diffuseIntensity = 1.0f;
+
+    sceneSettings.sLight_2_color = glm::vec3(0.0f, 1.0f, 0.0f);
     sceneSettings.sLight_2_position = glm::vec3( 0.0f, 1.0f, -5.0f);
-    sceneSettings.sLight_2_direction = glm::vec3(0.1f, -0.8f, 0.1f);
-    sceneSettings.sLight_3_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    sceneSettings.sLight_2_direction = glm::vec3(0.0f, -1.0f, 1.0f);
+    sceneSettings.sLight_2_ambientIntensity = 1.0f;
+    sceneSettings.sLight_2_diffuseIntensity = 1.0f;
+
+    sceneSettings.sLight_3_color = glm::vec3(1.0f, 0.0f, 1.0f);
     sceneSettings.sLight_3_position = glm::vec3( 0.0f, 1.0f,  5.0f);
-    sceneSettings.sLight_3_direction = glm::vec3(0.1f, -0.8f, 0.1f);
+    sceneSettings.sLight_3_direction = glm::vec3(0.0f, -1.0f, 1.0f);
+    sceneSettings.sLight_3_ambientIntensity = 1.0f;
+    sceneSettings.sLight_3_diffuseIntensity = 1.0f;
 
 	SetCamera();
 	SetSkybox();
@@ -448,20 +462,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Separator();
     ImGui::SliderFloat("FOV", &m_FOV, 1.0f, 120.0f);
 
-    struct Light
-    {
-        glm::vec3 color;
-        float ambientIntensity;
-        float diffuseIntensity;
-    };
-
-    struct DirectionalLight
-    {
-        Light base;
-        glm::vec3 direction;
-    };
-
-    DirectionalLight directionalLight;
+    SDirectionalLight directionalLight;
 
     directionalLight.base.color            = m_LightManager->directionalLight.GetColor();
     directionalLight.base.ambientIntensity = m_LightManager->directionalLight.GetAmbientIntensity();
@@ -485,16 +486,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Text("Point Lights");
     ImGui::Separator();
 
-    struct PointLight
-    {
-        Light base;
-        glm::vec3 position;
-        float constant;
-        float linear;
-        float exponent;
-    };
-
-    PointLight pointLights[4];
+    SPointLight pointLights[4];
     char locBuff[100] = { '\0' };
 
     for (unsigned int pl = 0; pl < m_LightManager->pointLightCount; pl++)
@@ -539,13 +531,55 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Separator();
     ImGui::Text("Spot Lights");
     ImGui::Separator();
-    ImGui::Text("Spot Light 0");
-    ImGui::Separator();
-    ImGui::Text("Spot Light 1");
-    ImGui::Separator();
-    ImGui::Text("Spot Light 2");
-    ImGui::Separator();
-    ImGui::Text("Spot Light 3");
+
+    SSpotLight spotLights[4];
+
+    for (unsigned int sl = 0; sl < m_LightManager->spotLightCount; sl++)
+    {
+        spotLights[sl].base.base.color            = m_LightManager->spotLights[sl].GetBasePL()->GetColor();
+        spotLights[sl].base.base.ambientIntensity = m_LightManager->spotLights[sl].GetBasePL()->GetAmbientIntensity();
+        spotLights[sl].base.base.diffuseIntensity = m_LightManager->spotLights[sl].GetBasePL()->GetDiffuseIntensity();
+        spotLights[sl].base.position              = m_LightManager->spotLights[sl].GetBasePL()->GetPosition();
+        spotLights[sl].base.constant              = m_LightManager->spotLights[sl].GetBasePL()->GetConstant();
+        spotLights[sl].base.linear                = m_LightManager->spotLights[sl].GetBasePL()->GetLinear();
+        spotLights[sl].base.exponent              = m_LightManager->spotLights[sl].GetBasePL()->GetExponent();
+        spotLights[sl].direction                  = m_LightManager->spotLights[sl].GetDirection();
+        spotLights[sl].edge                       = m_LightManager->spotLights[sl].GetEdge();
+
+        snprintf(locBuff, sizeof(locBuff), "Spot Light %i", sl);
+        ImGui::Text(locBuff);
+
+        snprintf(locBuff, sizeof(locBuff), "SL %i Color", sl);
+        ImGui::ColorEdit3(locBuff, glm::value_ptr(spotLights[sl].base.base.color));
+        snprintf(locBuff, sizeof(locBuff), "SL %i Ambient Intensity", sl);
+        ImGui::SliderFloat(locBuff, &spotLights[sl].base.base.ambientIntensity, -2.0f, 2.0f);
+        snprintf(locBuff, sizeof(locBuff), "SL %i Diffuse Intensity", sl);
+        ImGui::SliderFloat(locBuff, &spotLights[sl].base.base.diffuseIntensity, -2.0f, 2.0f);
+        snprintf(locBuff, sizeof(locBuff), "SL %i Position", sl);
+        ImGui::SliderFloat3(locBuff, glm::value_ptr(spotLights[sl].base.position), -20.0f, 20.0f);
+        snprintf(locBuff, sizeof(locBuff), "SL %i Constant", sl);
+        ImGui::SliderFloat(locBuff, &spotLights[sl].base.constant, -2.0f, 2.0f);
+        snprintf(locBuff, sizeof(locBuff), "SL %i Linear", sl);
+        ImGui::SliderFloat(locBuff, &spotLights[sl].base.linear, -2.0f, 2.0f);
+        snprintf(locBuff, sizeof(locBuff), "SL %i Exponent", sl);
+        ImGui::SliderFloat(locBuff, &spotLights[sl].base.exponent, -2.0f, 2.0f);
+        snprintf(locBuff, sizeof(locBuff), "SL %i Direction", sl);
+        ImGui::SliderFloat3(locBuff, glm::value_ptr(spotLights[sl].direction), -1.0f, 1.0f);
+        snprintf(locBuff, sizeof(locBuff), "SL %i Edge", sl);
+        ImGui::SliderFloat(locBuff, &spotLights[sl].edge, -100.0f, 100.0f);
+
+        m_LightManager->spotLights[sl].GetBasePL()->SetColor(spotLights[sl].base.base.color);
+        m_LightManager->spotLights[sl].GetBasePL()->SetAmbientIntensity(spotLights[sl].base.base.ambientIntensity);
+        m_LightManager->spotLights[sl].GetBasePL()->SetDiffuseIntensity(spotLights[sl].base.base.diffuseIntensity);
+        m_LightManager->spotLights[sl].GetBasePL()->SetPosition(spotLights[sl].base.position);
+        m_LightManager->spotLights[sl].GetBasePL()->SetConstant(spotLights[sl].base.constant);
+        m_LightManager->spotLights[sl].GetBasePL()->SetLinear(spotLights[sl].base.linear);
+        m_LightManager->spotLights[sl].GetBasePL()->SetExponent(spotLights[sl].base.exponent);
+        m_LightManager->spotLights[sl].SetDirection(spotLights[sl].direction);
+        m_LightManager->spotLights[sl].SetEdge(spotLights[sl].edge);
+
+        ImGui::Separator();
+    }
 
     ImGui::End();
 }
@@ -573,7 +607,7 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     shaderEditor->setVec3("directionalLight.direction", m_LightManager->directionalLight.GetDirection());
 
     // Point Lights
-    for (unsigned int i = 0; i < MAX_POINT_LIGHTS; i++)
+    for (unsigned int i = 0; i < m_LightManager->pointLightCount; i++)
     {
         char locBuff[100] = { '\0' };
 
@@ -599,7 +633,42 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         shaderEditor->setFloat(locBuff, m_LightManager->pointLights[i].GetExponent());
     }
 
-    shaderEditor->setInt("pointLightCount", MAX_POINT_LIGHTS);
+    shaderEditor->setInt("pointLightCount", m_LightManager->pointLightCount);
+
+    // Spot Lights
+    for (unsigned int i = 0; i < m_LightManager->spotLightCount; i++)
+    {
+        char locBuff[100] = { '\0' };
+
+        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.color", i);
+        shaderEditor->setVec3(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetColor());
+
+        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.ambientIntensity", i);
+        shaderEditor->setFloat(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetAmbientIntensity());
+
+        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.diffuseIntensity", i);
+        shaderEditor->setFloat(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetDiffuseIntensity());
+
+        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.position", i);
+        shaderEditor->setVec3(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetPosition());
+
+        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.constant", i);
+        shaderEditor->setFloat(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetConstant());
+
+        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.linear", i);
+        shaderEditor->setFloat(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetLinear());
+
+        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.exponent", i);
+        shaderEditor->setFloat(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetExponent());
+
+        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].direction", i);
+        shaderEditor->setVec3(locBuff, m_LightManager->spotLights[i].GetDirection());
+
+        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].edge", i);
+        shaderEditor->setFloat(locBuff, m_LightManager->spotLights[i].GetEdge());
+    }
+
+    shaderEditor->setInt("spotLightCount", m_LightManager->spotLightCount);
 
     // Eye position / camera direction
     shaderEditor->setVec3("eyePosition", m_Camera->GetPosition());

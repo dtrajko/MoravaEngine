@@ -20,6 +20,10 @@ public:
 	inline GLfloat GetFarPlane() { return PointLight::GetFarPlane(); };
 	void SetFlash(glm::vec3 position, glm::vec3 direction);
 	void Toggle() { m_Enabled = !m_Enabled; };
+	PointLight* const GetBasePL() const { return (PointLight*)this; }
+	inline const float GetEdge() const { return m_Edge; };
+	void SetEdge(float edge);
+
 	~SpotLight();
 
 private:
