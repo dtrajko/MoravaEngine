@@ -6,7 +6,8 @@ SpotLight::SpotLight()
 {
 	m_Edge = 0.0f;
 	m_EdgeProcessed = cosf(glm::radians(m_Edge));
-	m_Enabled = true;
+
+	Light::m_Enabled = false;
 }
 
 SpotLight::SpotLight(GLuint shadowWidth, GLuint shadowHeight, GLfloat nearPlane, GLfloat farPlane,
@@ -19,7 +20,8 @@ SpotLight::SpotLight(GLuint shadowWidth, GLuint shadowHeight, GLfloat nearPlane,
 {
 	m_Edge = edge;
 	m_EdgeProcessed = cosf(glm::radians(m_Edge));
-	m_Enabled = true;
+
+	Light::m_Enabled = false;
 }
 
 void SpotLight::UseLight(GLint ambientColorLocation, GLint ambientIntensityLocation, GLint diffuseIntensityLocation,
@@ -28,8 +30,8 @@ void SpotLight::UseLight(GLint ambientColorLocation, GLint ambientIntensityLocat
 	GLint edgeLocation)
 {
 	glUniform3f(ambientColorLocation, Light::m_Color.r, Light::m_Color.g, Light::m_Color.b);
-	glUniform1f(ambientIntensityLocation, m_Enabled ? Light::m_AmbientIntensity : 0.0f);
-	glUniform1f(diffuseIntensityLocation, m_Enabled ? Light::m_DiffuseIntensity : 0.0f);
+	glUniform1f(ambientIntensityLocation, Light::m_Enabled ? Light::m_AmbientIntensity : 0.0f);
+	glUniform1f(diffuseIntensityLocation, Light::m_Enabled ? Light::m_DiffuseIntensity : 0.0f);
 	glUniform3f(positionLocation, m_Position.x, m_Position.y, m_Position.z);
 	glUniform3f(directionLocation, m_Direction.x, m_Direction.y, m_Direction.z);
 	glUniform1f(constantLocation, m_Constant);

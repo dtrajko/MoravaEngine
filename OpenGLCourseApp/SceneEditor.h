@@ -33,6 +33,7 @@ struct EventCooldown
 
 struct SLight
 {
+	bool enabled;
 	glm::vec3 color;
 	float ambientIntensity;
 	float diffuseIntensity;
@@ -121,5 +122,8 @@ private:
 	glm::vec3 defaultSpawnPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 	float m_FOV = 60.0f;
 	const char* m_SceneFilename = "Scenes/scene_tmp.scene";
+
+	bool m_DirLightEnabledPrev;
+	glm::vec3 m_DirLightColorPrev;
 
 };

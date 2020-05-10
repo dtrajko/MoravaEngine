@@ -12,6 +12,7 @@ const int MAX_SPOT_LIGHTS = 4;
 
 struct Light
 {
+	bool enabled;
 	vec3 color;
 	float ambientIntensity;
 	float diffuseIntensity;
@@ -93,6 +94,8 @@ vec4 CalcDirectionalLight()
 
 vec4 CalcPointLight(PointLight pointLight)
 {
+	if (!pointLight.base.enabled) return vec4(0.0, 0.0, 0.0, 0.0);
+
 	vec3 direction = vFragPos - pointLight.position;
 	float distance = length(direction);
 	direction = normalize(direction);
@@ -107,6 +110,8 @@ vec4 CalcPointLight(PointLight pointLight)
 
 vec4 CalcSpotLight(SpotLight spotLight)
 {
+	if (!spotLight.base.base.enabled) return vec4(0.0, 0.0, 0.0, 0.0);
+
 	vec3 rayDirection = normalize(vFragPos - spotLight.base.position);
 	float spotLightFactor = dot(rayDirection, spotLight.direction);
 
@@ -118,13 +123,13 @@ vec4 CalcSpotLight(SpotLight spotLight)
 	}
 	else
 	{
-		return vec4(0, 0, 0, 0);
+		return vec4(0.0, 0.0, 0.0, 0.0);
 	}
 }
 
 vec4 CalcPointLights()
 {
-	vec4 totalColor = vec4(0, 0, 0, 0);
+	vec4 totalColor = vec4(0.0, 0.0, 0.0, 0.0);
 	for (int i = 0; i < pointLightCount; i++)
 	{
 		totalColor += CalcPointLight(pointLights[i]);
@@ -134,7 +139,7 @@ vec4 CalcPointLights()
 
 vec4 CalcSpotLights()
 {
-	vec4 totalColor = vec4(0, 0, 0, 0);
+	vec4 totalColor = vec4(0.0, 0.0, 0.0, 0.0);
 	for (int i = 0; i < spotLightCount; i++)
 	{
 		totalColor += CalcSpotLight(spotLights[i]);
@@ -147,5 +152,5 @@ void main()
 	vec4 finalColor = CalcDirectionalLight();
 	finalColor += CalcPointLights();
 	finalColor += CalcSpotLights();
-	FragColor = texture(albedoMap, vTexCoord) * tintColor * finalColor;
+	FragColor = texture(albedoMap, vTexCoord * tilingFactor) * tintColor * finalColor;
 }

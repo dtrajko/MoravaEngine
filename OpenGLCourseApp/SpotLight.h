@@ -19,7 +19,6 @@ public:
 	inline ShadowMap* GetShadowMap() { return PointLight::GetShadowMap(); };
 	inline GLfloat GetFarPlane() { return PointLight::GetFarPlane(); };
 	void SetFlash(glm::vec3 position, glm::vec3 direction);
-	void Toggle() { m_Enabled = !m_Enabled; };
 	PointLight* const GetBasePL() const { return (PointLight*)this; }
 	inline const float GetEdge() const { return m_Edge; };
 	void SetEdge(float edge);
@@ -29,6 +28,5 @@ public:
 private:
 	GLfloat m_Edge;
 	GLfloat m_EdgeProcessed;
-	bool m_Enabled;
 
 };

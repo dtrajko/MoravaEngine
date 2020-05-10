@@ -42,47 +42,70 @@ struct SceneSettings
 	float farPlane;
 
 	// directional light
+	bool dirLightEnabled;
+	glm::vec3 dirLightColor;
 	glm::vec3 lightDirection;
 	float ambientIntensity;
 	float diffuseIntensity;
 	glm::mat4 lightProjectionMatrix;
 
 	// point lights
+	bool pLight_0_enabled;
 	glm::vec3 pLight_0_color;
 	glm::vec3 pLight_0_position;
+	float pLight_0_ambientIntensity;
 	float pLight_0_diffuseIntensity;
+
+	bool pLight_1_enabled;
 	glm::vec3 pLight_1_color;
 	glm::vec3 pLight_1_position;
+	float pLight_1_ambientIntensity;
 	float pLight_1_diffuseIntensity;
+
+	bool pLight_2_enabled;
 	glm::vec3 pLight_2_color;
 	glm::vec3 pLight_2_position;
+	float pLight_2_ambientIntensity;
 	float pLight_2_diffuseIntensity;
+
+	bool pLight_3_enabled;
 	glm::vec3 pLight_3_color;
 	glm::vec3 pLight_3_position;
+	float pLight_3_ambientIntensity;
 	float pLight_3_diffuseIntensity;
 
 	// spot lights
+	bool sLight_0_enabled;
 	glm::vec3 sLight_0_color;
 	glm::vec3 sLight_0_position;
 	glm::vec3 sLight_0_direction;
+	float sLight_0_ambientIntensity;
+	float sLight_0_diffuseIntensity;
+	float sLight_0_edge;
+
+	bool sLight_1_enabled;
 	glm::vec3 sLight_1_color;
 	glm::vec3 sLight_1_position;
 	glm::vec3 sLight_1_direction;
+	float sLight_1_ambientIntensity;
+	float sLight_1_diffuseIntensity;
+	float sLight_1_edge;
+
+	bool sLight_2_enabled;
 	glm::vec3 sLight_2_color;
 	glm::vec3 sLight_2_position;
 	glm::vec3 sLight_2_direction;
+	float sLight_2_ambientIntensity;
+	float sLight_2_diffuseIntensity;
+	float sLight_2_edge;
+
+	bool sLight_3_enabled;
 	glm::vec3 sLight_3_color;
 	glm::vec3 sLight_3_position;
 	glm::vec3 sLight_3_direction;
-
-	float sLight_0_ambientIntensity;
-	float sLight_0_diffuseIntensity;
-	float sLight_1_ambientIntensity;
-	float sLight_1_diffuseIntensity;
-	float sLight_2_ambientIntensity;
-	float sLight_2_diffuseIntensity;
 	float sLight_3_ambientIntensity;
 	float sLight_3_diffuseIntensity;
+	float sLight_3_edge;
 
 	// shadow
 	unsigned int shadowMapWidth;

@@ -20,6 +20,8 @@ PointLight::PointLight(GLuint shadowWidth, GLuint shadowHeight, GLfloat nearPlan
 	glm::vec3 position, GLfloat constant, GLfloat linear, GLfloat exponent)
 	: Light(shadowWidth, shadowHeight, color, ambientIntensity, diffuseIntensity)
 {
+	m_Enabled = false;
+
 	m_Position = position;
 	m_Constant = constant;
 	m_Linear = linear;

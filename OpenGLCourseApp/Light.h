@@ -20,9 +20,14 @@ public:
 	inline void SetAmbientIntensity(float ambientIntensity) { m_AmbientIntensity = ambientIntensity; }
 	inline float GetDiffuseIntensity() const { return m_DiffuseIntensity; }
 	inline void SetDiffuseIntensity(float diffuseIntensity) { m_DiffuseIntensity = diffuseIntensity; }
+	inline const bool GetEnabled() const { return m_Enabled; };
+	inline void SetEnabled(bool enabled) { m_Enabled = enabled; }
+	void Toggle() { m_Enabled = !m_Enabled; };
+
 	~Light();
 
 protected:
+	bool m_Enabled;
 	glm::vec3 m_Color;
 	GLfloat m_AmbientIntensity;
 	GLfloat m_DiffuseIntensity;

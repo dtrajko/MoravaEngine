@@ -9,6 +9,8 @@ DirectionalLight::DirectionalLight()
 {
 	m_Direction = glm::vec3(0.0f, -1.0f, 0.0f);
 	m_LightProj = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
+
+	m_Enabled = true;
 }
 
 DirectionalLight::DirectionalLight(GLuint shadowWidth, GLuint shadowHeight,
@@ -17,6 +19,8 @@ DirectionalLight::DirectionalLight(GLuint shadowWidth, GLuint shadowHeight,
 {
 	m_Direction = glm::normalize(direction);
 	m_LightProj = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
+
+	m_Enabled = true;
 }
 
 void DirectionalLight::UseLight(GLint ambientColorLocation, GLint ambientIntensityLocation,

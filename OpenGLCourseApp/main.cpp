@@ -188,7 +188,7 @@ int main()
 
 		if (mainWindow.getKeys()[GLFW_KEY_F])
 		{
-			LightManager::spotLights[2].Toggle();
+			LightManager::spotLights[2].GetBasePL()->Toggle();
 			mainWindow.getKeys()[GLFW_KEY_L] = false;
 		}
 
