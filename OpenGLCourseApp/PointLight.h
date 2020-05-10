@@ -18,8 +18,15 @@ public:
 	inline GLfloat GetFarPlane() const { return m_FarPlane; };
 	inline glm::vec3 GetPosition() const { return m_Position; };
 	inline void SetPosition(glm::vec3 position) { m_Position = position; };
-	inline float GetAmbientIntensity() const { return m_AmbientIntensity; }
-	inline void SetAmbientIntensity(float ambientIntensity) { m_AmbientIntensity = ambientIntensity; }
+	inline float GetAmbientIntensity() const { return m_AmbientIntensity; };
+	inline void SetAmbientIntensity(float ambientIntensity) { m_AmbientIntensity = ambientIntensity; };
+	inline const float GetConstant() const { return m_Constant; };
+	inline const float GetLinear() const { return m_Linear; };
+	inline const float GetExponent() const { return m_Exponent; };
+	inline void SetConstant(float constant) { m_Constant = constant; };
+	inline void SetLinear(float linear) { m_Linear = linear; };
+	inline void SetExponent(float exponent) { m_Exponent = exponent; };
+
 	~PointLight();
 
 protected:

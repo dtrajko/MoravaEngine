@@ -88,6 +88,9 @@ void Block::Generate(glm::vec3 scale)
 
 	m_IndexCount = 6 * 6;
 
+	CalcAverageNormals(vertices, vertexCount, indices, m_IndexCount);
+	CalcTangentSpace(vertices, vertexCount, indices, m_IndexCount);
+
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
 

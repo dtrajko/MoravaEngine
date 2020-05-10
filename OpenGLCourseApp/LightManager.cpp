@@ -34,22 +34,33 @@ LightManager::LightManager(SceneSettings sceneSettings)
 			sceneSettings.pLight_2_position, 0.3f, 0.2f, 0.1f);
 		LightManager::pointLightCount++;
 		LightManager::pointLights[3] = PointLight(1024, 1024, 0.01f, 100.0f,
-			sceneSettings.pLight_2_color, 0.4f,
-			sceneSettings.pLight_2_diffuseIntensity,
-			sceneSettings.pLight_2_position, 0.3f, 0.2f, 0.1f);
+			sceneSettings.pLight_3_color, 0.4f,
+			sceneSettings.pLight_3_diffuseIntensity,
+			sceneSettings.pLight_3_position, 0.3f, 0.2f, 0.1f);
 		LightManager::pointLightCount++;
 	}
 
 	if (sceneSettings.enableSpotLights)
 	{
-		LightManager::spotLights[0] = SpotLight(1024, 1024, 0.01f, 100.0f, { 1.0f, 1.0f, 1.0f }, 1.0f, 10.0f, { 0.0f, 20.0f, -28.0f }, { 0.0f, 0.0f, -1.0f }, 0.3f, 0.2f, 0.1f, 160.0f);
+		LightManager::spotLights[0] = SpotLight(1024, 1024, 0.01f, 100.0f, 
+			sceneSettings.sLight_0_color, sceneSettings.sLight_0_ambientIntensity, sceneSettings.sLight_0_diffuseIntensity,
+			sceneSettings.sLight_0_position, sceneSettings.sLight_0_direction,
+			0.4f, 0.3f, 0.2f, 35.0f);
 		LightManager::spotLightCount++;
-		LightManager::spotLights[1] = SpotLight(1024, 1024, 0.01f, 100.0f, { 0.8f, 0.8f, 1.0f }, 0.3f, 6.0f, { 8.0f, 2.0f, 0.0f }, { -0.25f, 0.5f, -0.5f }, 0.3f, 0.2f, 0.1f, 45.0f);
+		LightManager::spotLights[1] = SpotLight(1024, 1024, 0.01f, 100.0f,
+			sceneSettings.sLight_1_color, sceneSettings.sLight_1_ambientIntensity, sceneSettings.sLight_1_diffuseIntensity,
+			sceneSettings.sLight_1_position, sceneSettings.sLight_1_direction,
+			0.4f, 0.3f, 0.2f, 35.0f);
 		LightManager::spotLightCount++;
-		LightManager::spotLights[2] = SpotLight(1024, 1024, 0.01f, 100.0f, sceneSettings.sLight_2_color, sceneSettings.sLight_2_ambientIntensity,
-			sceneSettings.sLight_2_diffuseIntensity, sceneSettings.sLight_2_position, sceneSettings.sLight_2_direction, 0.4f, 0.3f, 0.2f, 35.0f);
+		LightManager::spotLights[2] = SpotLight(1024, 1024, 0.01f, 100.0f,
+			sceneSettings.sLight_2_color, sceneSettings.sLight_2_ambientIntensity, sceneSettings.sLight_2_diffuseIntensity,
+			sceneSettings.sLight_2_position, sceneSettings.sLight_2_direction,
+			0.4f, 0.3f, 0.2f, 35.0f);
 		LightManager::spotLightCount++;
-		LightManager::spotLights[3] = SpotLight(1024, 1024, 0.01f, 100.0f, { 0.8f, 0.8f, 1.0f }, 0.3f, 6.0f, { 8.0f, 2.0f, 0.0f }, { -0.25f, 0.5f, -0.5f }, 0.3f, 0.2f, 0.1f, 45.0f);
+		LightManager::spotLights[3] = SpotLight(1024, 1024, 0.01f, 100.0f,
+			sceneSettings.sLight_3_color, sceneSettings.sLight_3_ambientIntensity, sceneSettings.sLight_3_diffuseIntensity,
+			sceneSettings.sLight_3_position, sceneSettings.sLight_3_direction,
+			0.4f, 0.3f, 0.2f, 35.0f);
 		LightManager::spotLightCount++;
 	}
 }

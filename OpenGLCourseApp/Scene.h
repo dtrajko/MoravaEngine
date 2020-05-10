@@ -75,8 +75,15 @@ struct SceneSettings
 	glm::vec3 sLight_3_position;
 	glm::vec3 sLight_3_direction;
 
+	float sLight_0_ambientIntensity;
+	float sLight_0_diffuseIntensity;
+	float sLight_1_ambientIntensity;
+	float sLight_1_diffuseIntensity;
 	float sLight_2_ambientIntensity;
 	float sLight_2_diffuseIntensity;
+	float sLight_3_ambientIntensity;
+	float sLight_3_diffuseIntensity;
+
 	// shadow
 	unsigned int shadowMapWidth;
 	unsigned int shadowMapHeight;
