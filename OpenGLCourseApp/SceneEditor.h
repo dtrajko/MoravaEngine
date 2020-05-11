@@ -9,6 +9,12 @@
 #include "Grid.h"
 
 
+enum class ECMeshType
+{
+	Block = 0,
+	Pyramid = 0,
+};
+
 struct SceneObject
 {
 	glm::mat4 transform;
@@ -23,6 +29,7 @@ struct SceneObject
 	AABB* AABB;
 	Pivot* pivot;
 	Mesh* mesh;
+	int meshType;
 };
 
 struct EventCooldown
@@ -53,6 +60,7 @@ public:
 	void LoadScene();
 	void ResetScene();
 	inline float GetFOV() { return m_FOV; };
+	Mesh* CreateNewPrimitive(int meshTypeID, glm::vec3 scale);
 	virtual ~SceneEditor() override;
 
 private:
@@ -79,6 +87,8 @@ private:
 	unsigned int m_SelectedIndex;
 	unsigned int m_ObjectInFocusPrev;
 
+	int m_CurrentMeshTypeInt;
+
 	// add object cooldown
 	float m_CurrentTimestamp = 0.0f;
 	EventCooldown m_ObjectSelect = { 0.0f, 0.2f };
@@ -97,4 +107,5 @@ private:
 	glm::vec3 m_DirLightColorPrev;
 
 	bool m_DisplayLightSources;
+
 };

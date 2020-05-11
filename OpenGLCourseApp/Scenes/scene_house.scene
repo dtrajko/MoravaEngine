@@ -42,14 +42,3 @@ TilingFactor	1.000000
 IsSelected	0
 MeshType	0
 EndObject
-BeginObject	4
-Position	2.401000	1.029000	1.579000	
-Rotation	0.000000	0.000000	0.000000	
-Scale	0.100000	1.728000	0.100000	
-Color	1.000000	1.000000	1.000000	1.000000	
-UseTexture	1
-TextureName	metal
-TilingFactor	1.000000
-IsSelected	0
-MeshType	0
-EndObject

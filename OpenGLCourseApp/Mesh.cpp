@@ -55,6 +55,10 @@ void Mesh::Create(float* vertices, unsigned int* indices, unsigned int vertexCou
 	glBindVertexArray(0);                     // Unbind VAO
 }
 
+void Mesh::Update(glm::vec3 scale)
+{
+}
+
 void Mesh::Render()
 {
 	glBindVertexArray(m_VAO);

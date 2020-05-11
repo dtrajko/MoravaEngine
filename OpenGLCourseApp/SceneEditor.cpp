@@ -4,6 +4,7 @@
 #include "MousePicker.h"
 #include "Block.h"
 #include "Sphere.h"
+#include "Pyramid.h"
 #include "Shader.h"
 #include "Math.h"
 
@@ -98,6 +99,7 @@ SceneEditor::SceneEditor()
 	SetGeometry();
 
     m_SelectedIndex = 0;
+    m_CurrentMeshTypeInt = 0;
 
     m_Raycast = new Raycast();
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
@@ -289,6 +291,7 @@ void SceneEditor::SaveScene()
         lines.push_back("TilingFactor\t" + std::to_string(m_SceneObjects[i].tilingFactor));
         std::string isSelected = m_SceneObjects[i].isSelected ? "1" : "0";
         lines.push_back("IsSelected\t" + isSelected);
+        lines.push_back("MeshType\t" + std::to_string(m_SceneObjects[i].meshType));
         lines.push_back("EndObject");
     }
 
@@ -378,11 +381,15 @@ void SceneEditor::LoadScene()
             if (sceneObject.isSelected) m_SelectedIndex = (unsigned int)m_SceneObjects.size();
             // printf("IsSelected %d\n", sceneObject.isSelected);
         }
+        else if (tokens.size() >= 2 && tokens[0] == "MeshType") {
+            sceneObject.meshType = std::stoi(tokens[1]);
+            // printf("MeshType %d\n", sceneObject.meshType);
+        }
         else if (tokens.size() >= 1 && tokens[0] == "EndObject") {
             sceneObject.transform = Math::CreateTransform(sceneObject.position, sceneObject.rotation, sceneObject.scale);
             sceneObject.AABB = new AABB(sceneObject.position, sceneObject.scale);
             sceneObject.pivot = new Pivot(sceneObject.position, sceneObject.scale);
-            sceneObject.mesh = new Block(sceneObject.scale);
+            sceneObject.mesh = CreateNewPrimitive(sceneObject.meshType, sceneObject.scale);
             m_SceneObjects.push_back(sceneObject);
             // printf("EndObject: New SceneObject added to m_SceneObjects...\n");
         }
@@ -489,6 +496,11 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(m_SceneObjects.size() - 1));
     ImGui::Separator();
     ImGui::SliderFloat("FOV", &m_FOV, 1.0f, 120.0f);
+
+    ImGui::Separator();
+    ImGui::Text("Select Object Type");
+    ImGui::RadioButton("Cube", &m_CurrentMeshTypeInt, 0);
+    ImGui::RadioButton("Pyramid", &m_CurrentMeshTypeInt, 1);
 
     ImGui::Separator();
     ImGui::Text("Lights");
@@ -819,6 +831,8 @@ void SceneEditor::AddSceneObject()
     if (m_CurrentTimestamp - m_ObjectAdd.lastTime < m_ObjectAdd.cooldown) return;
     m_ObjectAdd.lastTime = m_CurrentTimestamp;
 
+    Mesh* mesh = CreateNewPrimitive(m_CurrentMeshTypeInt, glm::vec3(1.0f, 1.0f, 1.0f));
+
     // Add Scene Object here
     SceneObject sceneObject = {
         glm::mat4(1.0f),
@@ -832,7 +846,8 @@ void SceneEditor::AddSceneObject()
         true,
         new AABB(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(1.0f)),
         new Pivot(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec3(1.0f)),
-        new Block(glm::vec3(1.0f, 1.5f, 1.0f)),
+        mesh,
+        m_CurrentMeshTypeInt,
     };
 
     m_SceneObjects.push_back(sceneObject);
@@ -845,12 +860,12 @@ void SceneEditor::CopySceneObject(SceneObject sceneObject)
     if (m_CurrentTimestamp - m_ObjectCopy.lastTime < m_ObjectCopy.cooldown) return;
     m_ObjectCopy.lastTime = m_CurrentTimestamp;
 
-    Block* block = (Block*)sceneObject.mesh;
+    Mesh* newMesh = CreateNewPrimitive(m_CurrentMeshTypeInt, sceneObject.mesh->GetScale());
 
     sceneObject.isSelected = true;
     sceneObject.AABB = new AABB(sceneObject.position, sceneObject.scale);
     sceneObject.pivot = new Pivot(sceneObject.position, sceneObject.scale);
-    sceneObject.mesh = new Block(block->GetScale());
+    sceneObject.mesh = newMesh;
 
     m_SceneObjects.push_back(sceneObject);
 }
@@ -869,6 +884,24 @@ void SceneEditor::DeleteSceneObject()
         m_SceneObjects.erase(m_SceneObjects.begin() + m_SelectedIndex);
 
     if (m_SelectedIndex > 0) m_SelectedIndex--;
+}
+
+Mesh* SceneEditor::CreateNewPrimitive(int meshTypeID, glm::vec3 scale)
+{
+    Mesh* mesh;
+    switch (meshTypeID)
+    {
+    case 0:
+        mesh = new Block(scale);
+        break;
+    case 1:
+        mesh = new Pyramid(scale);
+        break;
+    default:
+        mesh = new Block(scale);
+        break;
+    }
+    return mesh;
 }
 
 SceneEditor::~SceneEditor()

@@ -178,6 +178,7 @@
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="Cubemap.cpp" />
     <ClCompile Include="CubeNanosuit.cpp" />
+    <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="FramebufferWater.cpp" />
@@ -202,6 +203,7 @@
     <ClCompile Include="OmniShadowMap.cpp" />
     <ClCompile Include="Pivot.cpp" />
     <ClCompile Include="PointLight.cpp" />
+    <ClCompile Include="Pyramid.cpp" />
     <ClCompile Include="Quad.cpp" />
     <ClCompile Include="RadianceHDR.cpp" />
     <ClCompile Include="Raycast.cpp" />
@@ -267,6 +269,7 @@
     <ClInclude Include="Cube.h" />
     <ClInclude Include="Cubemap.h" />
     <ClInclude Include="CubeNanosuit.h" />
+    <ClInclude Include="Cylinder.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="FramebufferWater.h" />
@@ -291,6 +294,7 @@
     <ClInclude Include="Pivot.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="Profiler.h" />
+    <ClInclude Include="Pyramid.h" />
     <ClInclude Include="Quad.h" />
     <ClInclude Include="RadianceHDR.h" />
     <ClInclude Include="Raycast.h" />
