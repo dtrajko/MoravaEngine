@@ -9,23 +9,15 @@ class Sphere : public Mesh
 {
 public:
 	Sphere();
-	
-	void GenerateGeometry();
-	void Create();
-	virtual void Render() override;
-	virtual void Clear() override;
-
+	Sphere(glm::vec3 scale);
+	virtual void Generate(glm::vec3 scale) override;
 	inline void SetRadius(float radius) { m_Radius = radius; };
 	inline void SetSectorCount(unsigned int sectorCount) { m_SectorCount = sectorCount; };
 	inline void SetStackCount(unsigned int stackCount) { m_StackCount = stackCount; };
 	inline void SetSmooth(bool smooth) { m_Radius = smooth; };
-
 	virtual ~Sphere() override;
 
-	float* m_Vertices;
-	unsigned int* m_Indices;
-	unsigned int m_VertexCount;
-
+private:
 	float m_Radius;
 	unsigned int m_SectorCount;
 	unsigned int m_StackCount;

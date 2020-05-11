@@ -5,54 +5,27 @@
 #include "VertexTBN.h"
 
 
-Sphere::Sphere()
+Sphere::Sphere() : Mesh()
 {
 	m_VAO = 0;
 	m_VBO = 0;
 	m_IBO = 0;
+	m_Vertices = nullptr;
+	m_Indices = nullptr;
+	m_VertexCount = 0;
 	m_IndexCount = 0;
+	m_Scale = glm::vec3(1.0f);
+
+	Create();
 }
 
-void Sphere::Create()
+Sphere::Sphere(glm::vec3 scale)
 {
-	GenerateGeometry();
-
-	CalcAverageNormals(m_Vertices, m_VertexCount, m_Indices, m_IndexCount);
-	CalcTangentSpace(m_Vertices, m_VertexCount, m_Indices, m_IndexCount);
-
-	glGenVertexArrays(1, &m_VAO);
-	glBindVertexArray(m_VAO);
-
-	glGenBuffers(1, &m_IBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_Indices[0]) * m_IndexCount, m_Indices, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &m_VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(m_Vertices[0]) * m_VertexCount, m_Vertices, GL_STATIC_DRAW);
-
-	// position
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Position));
-	// tex coord
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, TexCoord));
-	// normal
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Normal));
-	// tangent
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Tangent));
-	// bitangent
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Bitangent));
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
-	glBindVertexArray(0);                     // Unbind VAO
+	m_Scale = scale;
+	Create();
 }
 
-void Sphere::GenerateGeometry()
+void Sphere::Generate(glm::vec3 scale)
 {
 	float radius = 1.0f;
 	const unsigned int sectorCount = 64;
@@ -152,44 +125,6 @@ void Sphere::GenerateGeometry()
 			}
 		}
 	}
-}
-
-void Sphere::Render()
-{
-	glBindVertexArray(m_VAO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
-	glBindVertexArray(0);                     // Unbind VAO
-}
-
-void Sphere::Clear()
-{
-	delete m_Vertices;
-	delete m_Indices;
-
-	if (m_IBO != 0)
-	{
-		glDeleteBuffers(1, &m_IBO);
-		m_IBO = 0;
-	}
-	if (m_VBO != 0)
-	{
-		glDeleteBuffers(1, &m_VBO);
-		m_VBO = 0;
-	}
-	if (m_VAO != 0)
-	{
-		glDeleteVertexArrays(1, &m_VAO);
-		m_VAO = 0;
-	}
-	m_IndexCount = 0;
-
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
-	glDisableVertexAttribArray(3);
-	glDisableVertexAttribArray(4);
 }
 
 Sphere::~Sphere()

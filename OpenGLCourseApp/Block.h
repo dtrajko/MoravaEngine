@@ -11,8 +11,6 @@ public:
 	virtual void Update(glm::vec3 scale) override;
 	virtual void Render() override;
 	virtual ~Block() override;
-
-private:
-	void Generate(glm::vec3 scale);
+	virtual void Generate(glm::vec3 scale) override;
 
 };

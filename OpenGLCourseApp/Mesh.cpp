@@ -10,26 +10,36 @@ Mesh::Mesh()
 	m_VAO = 0;
 	m_VBO = 0;
 	m_IBO = 0;
+
+	m_Vertices = nullptr;
+	m_Indices = nullptr;
+	m_VertexCount = 0;
 	m_IndexCount = 0;
+	m_Scale = glm::vec3(1.0f);
 }
 
-void Mesh::Create(float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indexCount)
+Mesh::Mesh(glm::vec3 scale)
 {
-	m_IndexCount = indexCount;
+	m_Scale = scale;
+}
 
-	Mesh::CalcAverageNormals(vertices, vertexCount, indices, indexCount);
-	Mesh::CalcTangentSpace(vertices, vertexCount, indices, indexCount);
+void Mesh::Create()
+{
+	Generate(m_Scale);
+
+	CalcAverageNormals(m_Vertices, m_VertexCount, m_Indices, m_IndexCount);
+	CalcTangentSpace(m_Vertices, m_VertexCount, m_Indices, m_IndexCount);
 
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
 
 	glGenBuffers(1, &m_IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * indexCount, indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_Indices[0]) * m_IndexCount, m_Indices, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &m_VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * vertexCount, vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(m_Vertices[0]) * m_VertexCount, m_Vertices, GL_STATIC_DRAW);
 
 	// position
 	glEnableVertexAttribArray(0);
@@ -52,8 +62,24 @@ void Mesh::Create(float* vertices, unsigned int* indices, unsigned int vertexCou
 	glBindVertexArray(0);                     // Unbind VAO
 }
 
+void Mesh::Create(float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indexCount)
+{
+	m_Vertices = vertices;
+	m_Indices = indices;
+	m_VertexCount = vertexCount;
+	m_IndexCount = indexCount;
+
+	Generate(m_Scale);
+}
+
+void Mesh::Generate(glm::vec3 scale)
+{
+}
+
 void Mesh::Update(glm::vec3 scale)
 {
+	if (scale != m_Scale)
+		Generate(scale);
 }
 
 void Mesh::Render()
@@ -67,6 +93,12 @@ void Mesh::Render()
 
 void Mesh::Clear()
 {
+	delete m_Vertices;
+	delete m_Indices;
+
+	m_IndexCount = 0;
+	m_VertexCount = 0;
+
 	if (m_IBO != 0)
 	{
 		glDeleteBuffers(1, &m_IBO);
@@ -82,7 +114,7 @@ void Mesh::Clear()
 		glDeleteVertexArrays(1, &m_VAO);
 		m_VAO = 0;
 	}
-	m_IndexCount = 0;
+	
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
