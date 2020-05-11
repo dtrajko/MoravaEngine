@@ -1,5 +1,5 @@
 #include "Terrain.h"
-#include "VertexTiling.h"
+#include "VertexTBN.h"
 #include "Mesh.h"
 
 
@@ -32,9 +32,9 @@ void Terrain::GenerateTerrain()
 	int hiMapWidth = m_TxHeightMap->GetWidth();
 	int hiMapHeight = m_TxHeightMap->GetHeight();
 	unsigned int pixelCount = hiMapWidth * hiMapHeight;
-	unsigned int vertexStride = (unsigned int)(sizeof(VertexTiling) / sizeof(float));
+	unsigned int vertexStride = (unsigned int)(sizeof(VertexTBN) / sizeof(float));
 
-	vertexBufferSize = sizeof(VertexTiling) * pixelCount;
+	vertexBufferSize = sizeof(VertexTBN) * pixelCount;
 	indexCount = 6 * (hiMapWidth - 1) * (hiMapHeight - 1);
 
 	printf("Generate terrain hiMapWidth=%d hiMapHeight=%d vertexStride=%d vertexBufferSize=%d indexCount=%d\n",
@@ -47,7 +47,7 @@ void Terrain::GenerateTerrain()
 	printf("Number of vertices: %d Number of indices: %d\n", pixelCount, indexCount);
 
 	// position   tex coords   normal       tangent      bitangent
-	// X  Y  Z    U  V         NX  NY  NZ   TX  TY  TZ   BX  BY  BZ   TF
+	// X  Y  Z    U  V         NX  NY  NZ   TX  TY  TZ   BX  BY  BZ
 	int vertexPointer = 0;
 	for (int z = -(hiMapHeight / 2); z < (hiMapHeight / 2); z++)
 	{
@@ -57,8 +57,6 @@ void Terrain::GenerateTerrain()
 			vertices[vertexPointer + 0] = (float)x;
 			vertices[vertexPointer + 1] = GetHeight(x, z);
 			vertices[vertexPointer + 2] = (float)z;
-
-			// printf("Terrain vertices X=%.2ff Y=%.2ff Z=%.2ff\n", vertices[vertexPointer + 0], vertices[vertexPointer + 1], vertices[vertexPointer + 2]);
 
 			// texture coords
 			if (m_TxColorMap != nullptr)
@@ -89,9 +87,6 @@ void Terrain::GenerateTerrain()
 			vertices[vertexPointer + 12] = 0.0f;
 			vertices[vertexPointer + 13] = 0.0f;
 
-			// tiling Factor
-			vertices[vertexPointer + 14] = m_TilingFactor;
-
 			vertexPointer += vertexStride;
 		}
 	}
@@ -115,10 +110,6 @@ void Terrain::GenerateTerrain()
 			indices[indexPointer + 3] = topRight;
 			indices[indexPointer + 4] = bottomLeft;
 			indices[indexPointer + 5] = bottomRight;
-
-			// printf("Indices indexPointer=%d %d %d %d %d %d %d\n", indexPointer,
-			// 	indices[indexPointer + 0], indices[indexPointer + 1], indices[indexPointer + 2],
-			// 	indices[indexPointer + 3], indices[indexPointer + 4], indices[indexPointer + 5]);
 
 			indexPointer += 6;
 		}

@@ -51,12 +51,15 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    SceneEditor* sceneEditor = (SceneEditor*)scene;
+
     // Override the Projection matrix (update FOV)
-    // projectionMatrix = glm::perspective(glm::radians(((SceneEditor*)scene)->GetFOV()),
-    //     (float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
-    //     scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+    projectionMatrix = glm::perspective(glm::radians(sceneEditor->GetFOV()),
+        (float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
+        scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
 
     EnableTransparency();
+    EnableCulling();
 
     if (scene->GetSettings().enableSkybox)
     {

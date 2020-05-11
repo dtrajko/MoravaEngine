@@ -602,9 +602,6 @@
     <ClInclude Include="SceneEditor.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="VertexTiling.h">
-      <Filter>Header Files\Mesh</Filter>
-    </ClInclude>
     <ClInclude Include="Math.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -615,6 +612,9 @@
       <Filter>Header Files\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Pyramid.h">
+      <Filter>Header Files\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexTBN.h">
       <Filter>Header Files\Mesh</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "VertexTiling.h"
+#include "VertexTBN.h"
 
 
 Sphere::Sphere()
@@ -33,22 +33,19 @@ void Sphere::Create()
 
 	// position
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Position));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Position));
 	// tex coord
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, TexCoord));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, TexCoord));
 	// normal
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Normal));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Normal));
 	// tangent
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Tangent));
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Tangent));
 	// bitangent
 	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Bitangent));
-	// bitangent
-	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, TilingFactor));
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Bitangent));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
@@ -70,8 +67,8 @@ void Sphere::GenerateGeometry()
 	float stackStep = PI / stackCount;
 	float sectorAngle, stackAngle;
 
-	unsigned int vertexStride = (unsigned int)(sizeof(VertexTiling) / sizeof(float));
-	m_VertexCount = sizeof(VertexTiling) * (sectorCount + 1) * (stackCount + 1);
+	unsigned int vertexStride = (unsigned int)(sizeof(VertexTBN) / sizeof(float));
+	m_VertexCount = sizeof(VertexTBN) * (sectorCount + 1) * (stackCount + 1);
 	m_IndexCount = 6 * sectorCount * (stackCount - 1);
 
 	m_Vertices = new float[m_VertexCount];
@@ -123,9 +120,6 @@ void Sphere::GenerateGeometry()
 			m_Vertices[vertexPointer + 12] = 0.0f;
 			m_Vertices[vertexPointer + 13] = 0.0f;
 
-			// tiling factor
-			m_Vertices[vertexPointer + 14] = 1.0f;
-
 			vertexPointer += vertexStride;
 		}
 	}
@@ -158,8 +152,6 @@ void Sphere::GenerateGeometry()
 			}
 		}
 	}
-
-	// printf("m_IndexCount=%d, actual index count: %d", m_IndexCount, indexIndex);
 }
 
 void Sphere::Render()
@@ -198,7 +190,6 @@ void Sphere::Clear()
 	glDisableVertexAttribArray(2);
 	glDisableVertexAttribArray(3);
 	glDisableVertexAttribArray(4);
-	glDisableVertexAttribArray(5);
 }
 
 Sphere::~Sphere()

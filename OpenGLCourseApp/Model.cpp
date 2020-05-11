@@ -79,47 +79,32 @@ void Model::LoadMesh(aiMesh* mesh, const aiScene* scene)
 		vertices.insert(vertices.end(), { mesh->mVertices[i].x, mesh->mVertices[i].y , mesh->mVertices[i].z });
 
 		// tex coords
-		if (mesh->mTextureCoords[0])
-		{
+		if (mesh->mTextureCoords[0]) {
 			vertices.insert(vertices.end(), { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y });
-		}
-		else
-		{
+		} else {
 			vertices.insert(vertices.end(), { 0.0f, 0.0f });
 		}
 
 		// normals
-		if (mesh->mNormals)
-		{
+		if (mesh->mNormals) {
 			vertices.insert(vertices.end(), { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z });
-		}
-		else
-		{
+		} else {
 			vertices.insert(vertices.end(), { 0.0f, 0.0f, 0.0f });
 		}
 
 		// tangents
-		if (mesh->mTangents)
-		{
+		if (mesh->mTangents) {
 			vertices.insert(vertices.end(), { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z });
-		}
-		else
-		{
+		} else {
 			vertices.insert(vertices.end(), { 0.0f, 0.0f, 0.0f });
 		}
 
 		// bitangents
-		if (mesh->mBitangents)
-		{
+		if (mesh->mBitangents) {
 			vertices.insert(vertices.end(), { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z });
-		}
-		else
-		{
+		} else {
 			vertices.insert(vertices.end(), { 0.0f, 0.0f, 0.0f });
 		}
-
-		// tilingFactor
-		vertices.insert(vertices.end(), 1.0f);
 	}
 
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)

@@ -2,7 +2,7 @@
 
 #include <GL/glew.h>
 
-#include "VertexTiling.h"
+#include "VertexTBN.h"
 
 
 Mesh::Mesh()
@@ -33,22 +33,19 @@ void Mesh::Create(float* vertices, unsigned int* indices, unsigned int vertexCou
 
 	// position
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Position));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Position));
 	// tex coord
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, TexCoord));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, TexCoord));
 	// normal
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Normal));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Normal));
 	// tangent
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Tangent));
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Tangent));
 	// bitangent
 	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, Bitangent));
-	// tilingFactor
-	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(VertexTiling), (const void*)offsetof(VertexTiling, TilingFactor));
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Bitangent));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
@@ -92,13 +89,12 @@ void Mesh::Clear()
 	glDisableVertexAttribArray(2);
 	glDisableVertexAttribArray(3);
 	glDisableVertexAttribArray(4);
-	glDisableVertexAttribArray(5);
 }
 
 void Mesh::CalcAverageNormals(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount)
 {
-	unsigned int vLength = sizeof(VertexTiling) / sizeof(float);
-	unsigned int normalOffset = offsetof(VertexTiling, Normal) / sizeof(float);
+	unsigned int vLength = sizeof(VertexTBN) / sizeof(float);
+	unsigned int normalOffset = offsetof(VertexTBN, Normal) / sizeof(float);
 
 	// The Phong shading approach
 	for (size_t i = 0; i < indexCount; i += 3)
@@ -131,7 +127,7 @@ void Mesh::CalcAverageNormals(float* vertices, unsigned int vertexCount, unsigne
 
 void Mesh::CalcTangentSpace(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount)
 {
-	unsigned int vLength = sizeof(VertexTiling) / sizeof(float);
+	unsigned int vLength = sizeof(VertexTBN) / sizeof(float);
 
 	for (size_t i = 0; i < indexCount; i += 3)
 	{
@@ -167,8 +163,6 @@ void Mesh::CalcTangentSpace(float* vertices, unsigned int vertexCount, unsigned 
 		vertices[in0 + 11] = bitangent.x; vertices[in0 + 12] = bitangent.y; vertices[in0 + 13] = bitangent.z;
 		vertices[in1 + 11] = bitangent.x; vertices[in1 + 12] = bitangent.y; vertices[in1 + 13] = bitangent.z;
 		vertices[in2 + 11] = bitangent.x; vertices[in2 + 12] = bitangent.y; vertices[in2 + 13] = bitangent.z;
-
-		vertices[14] = 1.0f;
 	}
 }
 

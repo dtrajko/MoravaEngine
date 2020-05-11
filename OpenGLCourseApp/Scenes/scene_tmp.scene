@@ -1,54 +1,43 @@
 BeginObject	0
-Position	0.123000	0.617000	0.000000	
+Position	1.907000	1.546000	2.000000	
 Rotation	0.000000	0.000000	0.000000	
-Scale	3.048000	1.574000	3.217000	
+Scale	1.000000	1.000000	1.000000	
 Color	1.000000	1.000000	1.000000	1.000000	
 UseTexture	1
-TextureName	brick
+TextureName	crate
+TilingFactor	1.000000
+IsSelected	0
+MeshType	1
+EndObject
+BeginObject	1
+Position	0.000000	1.289000	-2.268000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	5.485000	2.511000	0.984000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	crate
 TilingFactor	1.000000
 IsSelected	0
 MeshType	0
-EndObject
-BeginObject	1
-Position	0.123000	1.852000	0.000000	
-Rotation	0.000000	0.000000	0.000000	
-Scale	4.031000	1.000000	4.176000	
-Color	1.000000	1.000000	1.000000	1.000000	
-UseTexture	1
-TextureName	wood
-TilingFactor	2.028000
-IsSelected	0
-MeshType	1
 EndObject
 BeginObject	2
 Position	0.000000	0.000000	0.000000	
 Rotation	0.000000	0.000000	0.000000	
-Scale	8.207000	0.346000	8.012000	
+Scale	6.049000	0.100000	6.049000	
 Color	1.000000	1.000000	1.000000	1.000000	
 UseTexture	1
-TextureName	grass_albedo
-TilingFactor	1.000000
+TextureName	metal
+TilingFactor	0.233000
 IsSelected	0
 MeshType	0
 EndObject
 BeginObject	3
-Position	0.123000	2.346000	-1.084000	
+Position	1.907000	0.562000	2.000000	
 Rotation	0.000000	0.000000	0.000000	
-Scale	0.591000	1.328000	0.340000	
+Scale	1.000000	1.000000	0.984000	
 Color	1.000000	1.000000	1.000000	1.000000	
 UseTexture	1
-TextureName	brick
-TilingFactor	1.000000
-IsSelected	0
-MeshType	0
-EndObject
-BeginObject	4
-Position	2.401000	1.029000	1.579000	
-Rotation	0.000000	0.000000	0.000000	
-Scale	0.100000	1.728000	0.100000	
-Color	1.000000	1.000000	1.000000	1.000000	
-UseTexture	1
-TextureName	metal
+TextureName	crate
 TilingFactor	1.000000
 IsSelected	0
 MeshType	0

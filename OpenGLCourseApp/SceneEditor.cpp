@@ -860,7 +860,7 @@ void SceneEditor::CopySceneObject(SceneObject sceneObject)
     if (m_CurrentTimestamp - m_ObjectCopy.lastTime < m_ObjectCopy.cooldown) return;
     m_ObjectCopy.lastTime = m_CurrentTimestamp;
 
-    Mesh* newMesh = CreateNewPrimitive(m_CurrentMeshTypeInt, sceneObject.mesh->GetScale());
+    Mesh* newMesh = CreateNewPrimitive(sceneObject.meshType, sceneObject.mesh->GetScale());
 
     sceneObject.isSelected = true;
     sceneObject.AABB = new AABB(sceneObject.position, sceneObject.scale);
