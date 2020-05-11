@@ -96,4 +96,5 @@ private:
 	bool m_DirLightEnabledPrev;
 	glm::vec3 m_DirLightColorPrev;
 
+	bool m_DisplayLightSources;
 };

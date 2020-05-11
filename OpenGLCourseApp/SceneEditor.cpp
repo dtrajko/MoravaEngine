@@ -3,6 +3,7 @@
 #include "ImGuiWrapper.h"
 #include "MousePicker.h"
 #include "Block.h"
+#include "Sphere.h"
 #include "Shader.h"
 #include "Math.h"
 
@@ -39,7 +40,7 @@ SceneEditor::SceneEditor()
     sceneSettings.pointLights[0].base.diffuseIntensity = 1.0f;
 
     sceneSettings.pointLights[1].base.enabled = false;
-    sceneSettings.pointLights[1].base.color = glm::vec3(1.0f, 0.0f, 1.0f);
+    sceneSettings.pointLights[1].base.color = glm::vec3(1.0f, 1.0f, 1.0f);
     sceneSettings.pointLights[1].position = glm::vec3(5.0f, 0.5f, 5.0f);
     sceneSettings.pointLights[1].base.ambientIntensity = 1.0f;
     sceneSettings.pointLights[1].base.diffuseIntensity = 1.0f;
@@ -59,7 +60,7 @@ SceneEditor::SceneEditor()
     // spot lights
     sceneSettings.spotLights[0].base.base.enabled = false;
     sceneSettings.spotLights[0].base.base.color = glm::vec3(1.0f, 0.0f, 0.0f);
-    sceneSettings.spotLights[0].base.position = glm::vec3(-5.0f, 0.5f, 0.0f);
+    sceneSettings.spotLights[0].base.position = glm::vec3(-5.0f, 1.0f, 0.0f);
     sceneSettings.spotLights[0].direction = glm::vec3(1.0f, -1.0f, 0.0f);
     sceneSettings.spotLights[0].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[0].base.base.diffuseIntensity = 1.0f;
@@ -67,7 +68,7 @@ SceneEditor::SceneEditor()
 
     sceneSettings.spotLights[1].base.base.enabled = false;
     sceneSettings.spotLights[1].base.base.color = glm::vec3(1.0f, 1.0f, 0.0f);
-    sceneSettings.spotLights[1].base.position = glm::vec3(5.0f, 0.5f, 0.0f);
+    sceneSettings.spotLights[1].base.position = glm::vec3(5.0f, 1.0f, 0.0f);
     sceneSettings.spotLights[1].direction = glm::vec3(-1.0f, -1.0f, 0.0f);
     sceneSettings.spotLights[1].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[1].base.base.diffuseIntensity = 1.0f;
@@ -75,7 +76,7 @@ SceneEditor::SceneEditor()
 
     sceneSettings.spotLights[2].base.base.enabled = false;
     sceneSettings.spotLights[2].base.base.color = glm::vec3(0.0f, 1.0f, 0.0f);
-    sceneSettings.spotLights[2].base.position = glm::vec3(0.0f, 0.5f, -5.0f);
+    sceneSettings.spotLights[2].base.position = glm::vec3(0.0f, 1.0f, -5.0f);
     sceneSettings.spotLights[2].direction = glm::vec3(0.0f, -1.0f, 1.0f);
     sceneSettings.spotLights[2].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[2].base.base.diffuseIntensity = 1.0f;
@@ -83,7 +84,7 @@ SceneEditor::SceneEditor()
 
     sceneSettings.spotLights[3].base.base.enabled = false;
     sceneSettings.spotLights[3].base.base.color = glm::vec3(1.0f, 0.0f, 1.0f);
-    sceneSettings.spotLights[3].base.position = glm::vec3(0.0f, 0.5f, 5.0f);
+    sceneSettings.spotLights[3].base.position = glm::vec3(0.0f, 1.0f, 5.0f);
     sceneSettings.spotLights[3].direction = glm::vec3(0.0f, -1.0f, -1.0f);
     sceneSettings.spotLights[3].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
@@ -116,6 +117,8 @@ SceneEditor::SceneEditor()
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
     m_DirLightColorPrev = sceneSettings.directionalLight.base.color;
+
+    m_DisplayLightSources = true;
 }
 
 void SceneEditor::SetSkybox()
@@ -161,6 +164,9 @@ void SceneEditor::SetupMeshes()
 
 void SceneEditor::SetupModels()
 {
+    Sphere* sphere = new Sphere();
+    sphere->Create();
+    meshes.insert(std::make_pair("sphere", sphere));
 }
 
 void SceneEditor::SetGeometry()
@@ -484,6 +490,10 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Separator();
     ImGui::SliderFloat("FOV", &m_FOV, 1.0f, 120.0f);
 
+    ImGui::Separator();
+    ImGui::Text("Lights");
+    ImGui::Checkbox("Display Light Sources", &m_DisplayLightSources);
+
     SDirectionalLight directionalLight;
 
     directionalLight.base.enabled          = m_LightManager->directionalLight.GetEnabled();
@@ -741,12 +751,52 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
             textures["plain"]->Bind(0);
         shaderEditor->setInt("albedoMap", 0);
         shaderEditor->setFloat("tilingFactor", object.tilingFactor);
-
         object.mesh->Render();
 
         object.AABB->Update(object.position, object.scale);
         object.pivot->Update(object.position, object.scale + 1.0f);
     }
+
+    // Render spheres on light positions
+    // Directional light (somewhere on pozitive Y axis, at X=0, Z=0)
+    // Render Sphere (Light source)
+    glm::mat4 model;
+    textures["plain"]->Bind(0);
+    textures["plain"]->Bind(1);
+    textures["plain"]->Bind(2);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(0.5f));
+    shaderEditor->setMat4("model", model);
+    if (m_DisplayLightSources)
+        meshes["sphere"]->Render();
+
+    // Point lights
+    for (unsigned int i = 0; i < m_LightManager->pointLightCount; i++)
+    {
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, m_LightManager->pointLights[i].GetPosition());
+        model = glm::scale(model, glm::vec3(0.25f));
+        shaderEditor->setMat4("model", model);
+        if (m_DisplayLightSources && m_LightManager->pointLights[i].GetEnabled())
+            meshes["sphere"]->Render();
+    }
+
+    // Spot lights
+    for (unsigned int i = 0; i < m_LightManager->spotLightCount; i++)
+    {
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, m_LightManager->spotLights[i].GetBasePL()->GetPosition());
+        model = glm::scale(model, glm::vec3(0.25f));
+        shaderEditor->setMat4("model", model);
+        if (m_DisplayLightSources && m_LightManager->spotLights[i].GetBasePL()->GetEnabled())
+            meshes["sphere"]->Render();
+    }
+
+    /* End of shaderEditor */
+
+    /* Begin of shaderBasic */
 
     if (m_SelectedIndex < m_SceneObjects.size())
     {
@@ -826,13 +876,6 @@ SceneEditor::~SceneEditor()
     SaveScene();
 
 	CleanupGeometry();
-
-    delete m_PositionEdit;
-    delete m_RotationEdit;
-    delete m_ScaleEdit;
-    delete m_ColorEdit;
-    delete m_TextureNameEdit;
-    delete m_TilingFactorEdit;
 
     delete m_PivotScene;
     delete m_Grid;
