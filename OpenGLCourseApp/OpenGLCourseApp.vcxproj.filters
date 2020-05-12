@@ -94,6 +94,12 @@
     <Filter Include="Source Files\SongHo">
       <UniqueIdentifier>{06870274-069e-4a33-bc72-09d5ccdf7354}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\tinygizmo">
+      <UniqueIdentifier>{279e5c84-f99f-42d1-8c9d-a8fac4892354}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tinygizmo">
+      <UniqueIdentifier>{ea0e27cb-2f0c-4bbc-b5db-e41927a249b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -109,9 +115,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WaterManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Terrain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImGuiWrapper.cpp">
@@ -352,6 +355,15 @@
       <Filter>Source Files\SongHo</Filter>
     </ClCompile>
     <ClCompile Include="Cone.cpp">
+      <Filter>Source Files\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="tinygizmo\tiny-gizmo.cpp">
+      <Filter>Source Files\tinygizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="Ring.cpp">
+      <Filter>Source Files\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
       <Filter>Source Files\Mesh</Filter>
     </ClCompile>
   </ItemGroup>
@@ -632,8 +644,14 @@
     <ClInclude Include="SongHo\CylinderSongHo.h">
       <Filter>Header Files\SongHo</Filter>
     </ClInclude>
+    <ClInclude Include="tinygizmo\tiny-gizmo.hpp">
+      <Filter>Header Files\tinygizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="Ring.h">
+      <Filter>Header Files\Mesh</Filter>
+    </ClInclude>
     <ClInclude Include="Cone.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

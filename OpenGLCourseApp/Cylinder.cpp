@@ -75,10 +75,18 @@ void Cylinder::Generate(glm::vec3 scale)
 		vertices.push_back(u);
 		vertices.push_back(v);
 
+		// rotate each vertex -90 degrees along X axis
+		glm::vec3 normal = glm::vec3(
+			m_CylinderSH->normals.at(i * 3 + 0),
+			m_CylinderSH->normals.at(i * 3 + 1),
+			m_CylinderSH->normals.at(i * 3 + 2));
+
+		normal = glm::rotate(normal, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
 		// normals
-		vertices.push_back(m_CylinderSH->normals.at(i * 3 + 0));
-		vertices.push_back(m_CylinderSH->normals.at(i * 3 + 1));
-		vertices.push_back(m_CylinderSH->normals.at(i * 3 + 2));
+		vertices.push_back(normal.x);
+		vertices.push_back(normal.y);
+		vertices.push_back(normal.z);
 
 		// tangents
 		vertices.push_back(0.0f);

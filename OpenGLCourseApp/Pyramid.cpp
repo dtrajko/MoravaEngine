@@ -13,13 +13,8 @@ Pyramid::Pyramid() : Mesh()
 Pyramid::Pyramid(glm::vec3 scale)
 {
 	m_Scale = scale;
-	Generate(scale);
-}
 
-void Pyramid::Update(glm::vec3 scale)
-{
-	if (scale != m_Scale)
-		Generate(scale);
+	Generate(scale);
 }
 
 void Pyramid::Generate(glm::vec3 scale)
@@ -103,37 +98,6 @@ void Pyramid::Generate(glm::vec3 scale)
 	glBindVertexArray(0);                     // Unbind VAO
 }
 
-void Pyramid::Render()
-{
-	glBindVertexArray(m_VAO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
-	glBindVertexArray(0);                     // Unbind VAO
-}
-
 Pyramid::~Pyramid()
 {
-	if (m_IBO != 0)
-	{
-		glDeleteBuffers(1, &m_IBO);
-		m_IBO = 0;
-	}
-	if (m_VBO != 0)
-	{
-		glDeleteBuffers(1, &m_VBO);
-		m_VBO = 0;
-	}
-	if (m_VAO != 0)
-	{
-		glDeleteVertexArrays(1, &m_VAO);
-		m_VAO = 0;
-	}
-	m_IndexCount = 0;
-
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
-	glDisableVertexAttribArray(3);
-	glDisableVertexAttribArray(4);
 }

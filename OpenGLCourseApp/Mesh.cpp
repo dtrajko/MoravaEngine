@@ -114,7 +114,6 @@ void Mesh::Clear()
 		glDeleteVertexArrays(1, &m_VAO);
 		m_VAO = 0;
 	}
-	
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);

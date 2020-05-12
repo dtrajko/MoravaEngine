@@ -54,9 +54,12 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     SceneEditor* sceneEditor = (SceneEditor*)scene;
 
     // Override the Projection matrix (update FOV)
-    projectionMatrix = glm::perspective(glm::radians(sceneEditor->GetFOV()),
-        (float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
-        scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+    if (mainWindow.GetBufferWidth() > 0 && mainWindow.GetBufferHeight() > 0)
+    {
+        projectionMatrix = glm::perspective(glm::radians(sceneEditor->GetFOV()),
+            (float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
+            scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+    }
 
     EnableTransparency();
     EnableCulling();

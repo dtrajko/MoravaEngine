@@ -219,6 +219,7 @@
     <ClCompile Include="RendererJoey.cpp" />
     <ClCompile Include="RendererNanosuit.cpp" />
     <ClCompile Include="RendererPBR.cpp" />
+    <ClCompile Include="Ring.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneAsteroids.cpp" />
     <ClCompile Include="SceneBullet.cpp" />
@@ -248,6 +249,7 @@
     <ClCompile Include="TextureCubeMap.cpp" />
     <ClCompile Include="TextureCubemapLite.cpp" />
     <ClCompile Include="Tile2D.cpp" />
+    <ClCompile Include="tinygizmo\tiny-gizmo.cpp" />
     <ClCompile Include="WaterManager.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -312,6 +314,7 @@
     <ClInclude Include="RendererJoey.h" />
     <ClInclude Include="RendererNanosuit.h" />
     <ClInclude Include="RendererPBR.h" />
+    <ClInclude Include="Ring.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneAsteroids.h" />
     <ClInclude Include="SceneBullet.h" />
@@ -341,6 +344,7 @@
     <ClInclude Include="TextureCubeMap.h" />
     <ClInclude Include="TextureCubemapLite.h" />
     <ClInclude Include="Tile2D.h" />
+    <ClInclude Include="tinygizmo\tiny-gizmo.hpp" />
     <ClInclude Include="VertexInstanced.h" />
     <ClInclude Include="VertexTBN.h" />
     <ClInclude Include="WaterManager.h" />
