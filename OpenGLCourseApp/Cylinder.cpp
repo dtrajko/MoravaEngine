@@ -1,6 +1,7 @@
 #include "Cylinder.h"
 
 #include <GL/glew.h>
+#include <glm/gtx/rotate_vector.hpp>
 
 #include "VertexTBN.h"
 
@@ -13,14 +14,28 @@ Cylinder::Cylinder(glm::vec3 scale) : Mesh()
 {
 	m_Scale = scale;
 
-	m_CylinderSH = new CylinderSongHo(m_BaseRadius, m_TopRadius, m_Height, m_Sectors, m_Stacks, m_Smooth);
-
 	Generate(m_Scale);
 }
 
 void Cylinder::Generate(glm::vec3 scale)
 {
+	float newRadius = m_BaseRadius;
+
+	if (scale != m_Scale)
+	{
+		newRadius = scale.x / 2.0f;
+		if (scale.z > scale.x) newRadius = scale.z / 2.0f;
+
+		m_BaseRadius = newRadius;
+		m_TopRadius = newRadius;
+
+		m_Height = scale.y;
+		m_Stacks = (int)scale.y;
+	}
+
 	m_Scale = scale;
+
+	m_CylinderSH = new CylinderSongHo(m_BaseRadius, m_TopRadius, m_Height, m_Sectors, m_Stacks, m_Smooth);
 
 	unsigned int vertexCountSH = m_CylinderSH->getVertexCount();
 	unsigned int indexCountSH = m_CylinderSH->getIndexCount();
@@ -34,14 +49,28 @@ void Cylinder::Generate(glm::vec3 scale)
 
 	for (unsigned int i = 0; i < vertexCountSH; i++)
 	{
+		// rotate each vertex -90 degrees along X axis
+		glm::vec3 vertex = glm::vec3(
+			m_CylinderSH->vertices.at(i * 3 + 0),
+			m_CylinderSH->vertices.at(i * 3 + 1),
+			m_CylinderSH->vertices.at(i * 3 + 2));
+
+		vertex = glm::rotate(vertex, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
 		// position
-		vertices.push_back(m_CylinderSH->vertices.at(i * 3 + 0));
-		vertices.push_back(m_CylinderSH->vertices.at(i * 3 + 1));
-		vertices.push_back(m_CylinderSH->vertices.at(i * 3 + 2));
+		vertices.push_back(vertex.x);
+		vertices.push_back(vertex.y);
+		vertices.push_back(vertex.z);
 
 		// tex coords
-		vertices.push_back(m_CylinderSH->texCoords.at(i * 2 + 0));
-		vertices.push_back(m_CylinderSH->texCoords.at(i * 2 + 1));
+		float u = m_CylinderSH->texCoords.at(i * 2 + 0);
+		float v = m_CylinderSH->texCoords.at(i * 2 + 1);
+
+		u *= newRadius;
+		v *= m_Height;
+
+		vertices.push_back(u);
+		vertices.push_back(v);
 
 		// normals
 		vertices.push_back(m_CylinderSH->normals.at(i * 3 + 0));
@@ -98,15 +127,11 @@ void Cylinder::Generate(glm::vec3 scale)
 	glBindVertexArray(0);                     // Unbind VAO
 
 	vertices.clear();
-}
 
-void Cylinder::Update(glm::vec3 scale)
-{
+	delete m_CylinderSH;
 }
 
 Cylinder::~Cylinder()
 {
-	delete m_CylinderSH;
-
 	Clear();
 }

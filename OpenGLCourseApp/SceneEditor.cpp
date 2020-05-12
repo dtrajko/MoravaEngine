@@ -779,7 +779,7 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         object.transform = glm::rotate(object.transform, glm::radians(object.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
         // For meshes that can't be scaled on vertex level
-        if (object.meshType == MESH_TYPE_SPHERE || object.meshType == MESH_TYPE_CYLINDER)
+        if (object.meshType == MESH_TYPE_SPHERE)
             object.transform = glm::scale(object.transform, object.scale);
 
         shaderEditor->setMat4("model", object.transform);

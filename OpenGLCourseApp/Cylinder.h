@@ -12,7 +12,6 @@ public:
 	Cylinder();
 	Cylinder(glm::vec3 scale);
 	void Generate(glm::vec3 scale);
-	virtual void Update(glm::vec3 scale) override;
 	virtual ~Cylinder() override;
 
 private:
