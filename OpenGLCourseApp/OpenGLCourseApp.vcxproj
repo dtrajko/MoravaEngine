@@ -238,6 +238,7 @@
     <ClCompile Include="ShaderPBR.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="SongHo\CylinderSongHo.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="Terrain.cpp" />
@@ -329,6 +330,7 @@
     <ClInclude Include="ShaderPBR.h" />
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="Skybox.h" />
+    <ClInclude Include="SongHo\CylinderSongHo.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="Terrain.h" />

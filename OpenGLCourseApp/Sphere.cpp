@@ -27,13 +27,20 @@ Sphere::Sphere(glm::vec3 scale)
 
 void Sphere::Generate(glm::vec3 scale)
 {
-	float radius = 1.0f;
+	float maxScale = scale.x;
+	if (scale.y > maxScale) maxScale = scale.y;
+	if (scale.z > maxScale) maxScale = scale.z;
+
+	m_Radius = 0.5f * maxScale;
+
+	// printf("Sphere::Generate maxScale=%.2f radius=%.2f\n", maxScale, m_Radius);
+
 	const unsigned int sectorCount = 64;
 	const unsigned int stackCount = 64;
 	const float PI = 3.14159265359f;
 
 	float x, y, z, xy; // vertex position
-	float nx, ny, nz, lengthInv = 1.0f / radius; // vertex normal
+	float nx, ny, nz, lengthInv = 1.0f / m_Radius; // vertex normal
 	float s, t; // vertex texCoord
 
 	float sectorStep = 2 * PI / sectorCount;
@@ -51,8 +58,8 @@ void Sphere::Generate(glm::vec3 scale)
 	for (int i = 0; i <= stackCount; ++i)
 	{
 		stackAngle = PI / 2 - i * stackStep; // starting from pi/2 to -pi/2
-		xy = radius * cosf(stackAngle); // r * cos(u)
-		z = radius * sinf(stackAngle); // r * sin(u)
+		xy = m_Radius * cosf(stackAngle); // r * cos(u)
+		z = m_Radius * sinf(stackAngle); // r * sin(u)
 
 		// add (sectorCount+1) vertices per stack
 		// the first and last vertices have same position and normal, but different tex coords

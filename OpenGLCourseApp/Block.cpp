@@ -15,12 +15,6 @@ Block::Block(glm::vec3 scale)
 	Generate(scale);
 }
 
-void Block::Update(glm::vec3 scale)
-{
-	if (scale != m_Scale)
-		Generate(scale);
-}
-
 void Block::Generate(glm::vec3 scale)
 {
 	m_Scale = scale;

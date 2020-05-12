@@ -88,6 +88,12 @@
     <Filter Include="Source Files\Editor">
       <UniqueIdentifier>{a03eba21-4b06-44a3-86ea-7c3d2c010a76}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\SongHo">
+      <UniqueIdentifier>{669a2402-a0fc-4ad8-84ba-86c977bb9812}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SongHo">
+      <UniqueIdentifier>{06870274-069e-4a33-bc72-09d5ccdf7354}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -341,6 +347,9 @@
     </ClCompile>
     <ClCompile Include="Pyramid.cpp">
       <Filter>Source Files\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SongHo\CylinderSongHo.cpp">
+      <Filter>Source Files\SongHo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -616,6 +625,9 @@
     </ClInclude>
     <ClInclude Include="VertexTBN.h">
       <Filter>Header Files\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SongHo\CylinderSongHo.h">
+      <Filter>Header Files\SongHo</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

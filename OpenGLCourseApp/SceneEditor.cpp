@@ -5,6 +5,7 @@
 #include "Block.h"
 #include "Sphere.h"
 #include "Pyramid.h"
+#include "Cylinder.h"
 #include "Shader.h"
 #include "Math.h"
 
@@ -30,7 +31,7 @@ SceneEditor::SceneEditor()
     sceneSettings.directionalLight.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
     sceneSettings.directionalLight.direction = glm::vec3(0.5f, -0.7f, -0.5f);
     sceneSettings.directionalLight.base.ambientIntensity = 1.0f;
-    sceneSettings.directionalLight.base.diffuseIntensity = 0.0f;
+    sceneSettings.directionalLight.base.diffuseIntensity = 1.0f;
     sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 40.0f);
 
     // point lights
@@ -99,7 +100,7 @@ SceneEditor::SceneEditor()
 	SetGeometry();
 
     m_SelectedIndex = 0;
-    m_CurrentMeshTypeInt = 0;
+    m_CurrentMeshTypeInt = MESH_TYPE_CUBE;
 
     m_Raycast = new Raycast();
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
@@ -121,17 +122,30 @@ SceneEditor::SceneEditor()
     m_DirLightColorPrev = sceneSettings.directionalLight.base.color;
 
     m_DisplayLightSources = true;
+
+    m_CurrentSkyboxInt = SKYBOX_DAY;
 }
 
 void SceneEditor::SetSkybox()
 {
-    skyboxFaces.push_back("Textures/skybox_4/right.png");
-    skyboxFaces.push_back("Textures/skybox_4/left.png");
-    skyboxFaces.push_back("Textures/skybox_4/top.png");
-    skyboxFaces.push_back("Textures/skybox_4/bottom.png");
-    skyboxFaces.push_back("Textures/skybox_4/back.png");
-    skyboxFaces.push_back("Textures/skybox_4/front.png");
-    m_Skybox = new Skybox(skyboxFaces);
+    m_SkyboxFacesDay.push_back("Textures/skybox_4/right.png");
+    m_SkyboxFacesDay.push_back("Textures/skybox_4/left.png");
+    m_SkyboxFacesDay.push_back("Textures/skybox_4/top.png");
+    m_SkyboxFacesDay.push_back("Textures/skybox_4/bottom.png");
+    m_SkyboxFacesDay.push_back("Textures/skybox_4/back.png");
+    m_SkyboxFacesDay.push_back("Textures/skybox_4/front.png");
+
+    m_SkyboxFacesNight.push_back("Textures/skybox_2/right.png");
+    m_SkyboxFacesNight.push_back("Textures/skybox_2/left.png");
+    m_SkyboxFacesNight.push_back("Textures/skybox_2/top.png");
+    m_SkyboxFacesNight.push_back("Textures/skybox_2/bottom.png");
+    m_SkyboxFacesNight.push_back("Textures/skybox_2/back.png");
+    m_SkyboxFacesNight.push_back("Textures/skybox_2/front.png");
+
+    m_SkyboxDay = new Skybox(m_SkyboxFacesDay);
+    m_SkyboxNight = new Skybox(m_SkyboxFacesNight);
+
+    m_Skybox = m_SkyboxNight;
 }
 
 void SceneEditor::SetTextures()
@@ -185,9 +199,13 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         object.isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             object.AABB->GetMin(), object.AABB->GetMax(), glm::vec2(0.0f));
 
-        Block* block = (Block*)object.mesh;
-        block->Update(object.scale);
+        object.mesh->Update(object.scale);
     }
+
+    if (m_CurrentSkyboxInt == SKYBOX_DAY)
+        m_Skybox = m_SkyboxDay;
+    else if (m_CurrentSkyboxInt == SKYBOX_NIGHT)
+        m_Skybox = m_SkyboxNight;
 
     // Switching between scene objects that are currently in focus (mouse over)
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
@@ -499,8 +517,15 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::Separator();
     ImGui::Text("Select Object Type");
-    ImGui::RadioButton("Cube", &m_CurrentMeshTypeInt, 0);
-    ImGui::RadioButton("Pyramid", &m_CurrentMeshTypeInt, 1);
+    ImGui::RadioButton("Cube",     &m_CurrentMeshTypeInt,    MESH_TYPE_CUBE);
+    ImGui::RadioButton("Pyramid",  &m_CurrentMeshTypeInt, MESH_TYPE_PYRAMID);
+    ImGui::RadioButton("Sphere",   &m_CurrentMeshTypeInt,  MESH_TYPE_SPHERE);
+    ImGui::RadioButton("Cylinder", &m_CurrentMeshTypeInt, MESH_TYPE_CYLINDER);
+
+    ImGui::Separator();
+    ImGui::Text("Select Skybox");
+    ImGui::RadioButton("Day",   &m_CurrentSkyboxInt, SKYBOX_DAY);
+    ImGui::RadioButton("Night", &m_CurrentSkyboxInt, SKYBOX_NIGHT);
 
     ImGui::Separator();
     ImGui::Text("Lights");
@@ -752,7 +777,11 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         object.transform = glm::rotate(object.transform, glm::radians(object.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
         object.transform = glm::rotate(object.transform, glm::radians(object.rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
         object.transform = glm::rotate(object.transform, glm::radians(object.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-        // object.transform = glm::scale(object.transform, object.scale);
+
+        // For meshes that can't be scaled on vertex level
+        if (object.meshType == MESH_TYPE_SPHERE || object.meshType == MESH_TYPE_CYLINDER)
+            object.transform = glm::scale(object.transform, object.scale);
+
         shaderEditor->setMat4("model", object.transform);
         shaderEditor->setVec4("tintColor", object.color);
         shaderEditor->setBool("isSelected", object.isSelected);
@@ -763,6 +792,7 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
             textures["plain"]->Bind(0);
         shaderEditor->setInt("albedoMap", 0);
         shaderEditor->setFloat("tilingFactor", object.tilingFactor);
+
         object.mesh->Render();
 
         object.AABB->Update(object.position, object.scale);
@@ -891,11 +921,17 @@ Mesh* SceneEditor::CreateNewPrimitive(int meshTypeID, glm::vec3 scale)
     Mesh* mesh;
     switch (meshTypeID)
     {
-    case 0:
+    case MESH_TYPE_CUBE:
         mesh = new Block(scale);
         break;
-    case 1:
+    case MESH_TYPE_PYRAMID:
         mesh = new Pyramid(scale);
+        break;
+    case MESH_TYPE_SPHERE:
+        mesh = new Sphere(scale);
+        break;
+    case MESH_TYPE_CYLINDER:
+        mesh = new Cylinder(scale);
         break;
     default:
         mesh = new Block(scale);

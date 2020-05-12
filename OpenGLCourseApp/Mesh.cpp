@@ -69,7 +69,7 @@ void Mesh::Create(float* vertices, unsigned int* indices, unsigned int vertexCou
 	m_VertexCount = vertexCount;
 	m_IndexCount = indexCount;
 
-	Generate(m_Scale);
+	Create();
 }
 
 void Mesh::Generate(glm::vec3 scale)
@@ -93,8 +93,8 @@ void Mesh::Render()
 
 void Mesh::Clear()
 {
-	delete m_Vertices;
-	delete m_Indices;
+	m_Vertices = nullptr;
+	m_Indices = nullptr;
 
 	m_IndexCount = 0;
 	m_VertexCount = 0;

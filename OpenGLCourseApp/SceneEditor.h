@@ -9,11 +9,14 @@
 #include "Grid.h"
 
 
-enum class ECMeshType
-{
-	Block = 0,
-	Pyramid = 0,
-};
+const int MESH_TYPE_CUBE     = 0;
+const int MESH_TYPE_PYRAMID  = 1;
+const int MESH_TYPE_SPHERE   = 2;
+const int MESH_TYPE_CYLINDER = 3;
+
+const int SKYBOX_DAY   = 0;
+const int SKYBOX_NIGHT = 1;
+
 
 struct SceneObject
 {
@@ -107,5 +110,13 @@ private:
 	glm::vec3 m_DirLightColorPrev;
 
 	bool m_DisplayLightSources;
+
+	std::vector<std::string> m_SkyboxFacesDay;
+	std::vector<std::string> m_SkyboxFacesNight;
+
+	Skybox* m_SkyboxDay;
+	Skybox* m_SkyboxNight;
+
+	int m_CurrentSkyboxInt;
 
 };
