@@ -175,6 +175,7 @@
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="BulletDebugDrawer.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Cone.cpp" />
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="Cubemap.cpp" />
     <ClCompile Include="CubeNanosuit.cpp" />
@@ -267,6 +268,7 @@
     <ClInclude Include="BulletDebugDrawer.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CommonValues.h" />
+    <ClInclude Include="Cone.h" />
     <ClInclude Include="Cube.h" />
     <ClInclude Include="Cubemap.h" />
     <ClInclude Include="CubeNanosuit.h" />

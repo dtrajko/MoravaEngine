@@ -39,20 +39,19 @@ void Pyramid::Generate(glm::vec3 scale)
 	float vertices[] = {
 		//   X       Y       Z         U             V         NX     NY     NZ        TX     TY     TZ        BX     BY     BZ
 		// side vertices
-		-sizeX, -sizeY,  sizeZ,     0.0f,         0.0f,     -0.5f,  0.0f,  0.5f,    -0.5f,  0.0f,  0.5f,    -0.5f,  0.0f,  0.5f,
-		 sizeX, -sizeY,  sizeZ,    txCoX,         0.0f,      0.5f,  0.0f,  0.5f,     0.5f,  0.0f,  0.5f,     0.5f,  0.0f,  0.5f,
-		 sizeX, -sizeY, -sizeZ,     0.0f,         0.0f,      0.5f,  0.0f, -0.5f,     0.5f,  0.0f, -0.5f,     0.5f,  0.0f, -0.5f,
-		-sizeX, -sizeY, -sizeZ,    txCoX,         0.0f,     -0.5f,  0.0f, -0.5f,    -0.5f,  0.0f, -0.5f,    -0.5f,  0.0f, -0.5f,
+		-sizeX, -sizeY,  sizeZ,     0.0f,         0.0f,     -1.0f,  0.0f,  1.0f,    -1.0f,  0.0f,  1.0f,    -1.0f,  0.0f,  1.0f,
+		 sizeX, -sizeY,  sizeZ,    txCoX,         0.0f,      1.0f,  0.0f,  1.0f,     1.0f,  0.0f,  1.0f,     1.0f,  0.0f,  1.0f,
+		 sizeX, -sizeY, -sizeZ,     0.0f,         0.0f,      1.0f,  0.0f, -1.0f,     1.0f,  0.0f, -1.0f,     1.0f,  0.0f, -1.0f,
+		-sizeX, -sizeY, -sizeZ,    txCoX,         0.0f,     -1.0f,  0.0f, -1.0f,    -1.0f,  0.0f, -1.0f,    -1.0f,  0.0f, -1.0f,
 
 		// top vertex
-			 0,  sizeY,      0,    txCoX / 2.0f, txCoY,      0.0f,  0.0f,  0.0f,     0.0f,  0.0f,  0.0f,     0.0f,  0.0f,  0.0f,
+			 0,  sizeY,      0,    txCoX / 2.0f, txCoY,      0.0f,  1.0f,  0.0f,     0.0f,  1.0f,  0.0f,     0.0f,  1.0f,  0.0f,
 
 	    // bottom vertices
-	     sizeX, -sizeY,  sizeZ,     0.0f,         0.0f,      0.0f, -0.0f,  0.0f,     0.0f, -0.0f,  0.0f,     0.0f, -0.0f,  0.0f, // 5 00
-		-sizeX, -sizeY,  sizeZ,    txCoX,         0.0f,      0.0f, -0.0f,  0.0f,     0.0f, -0.0f,  0.0f,     0.0f, -0.0f,  0.0f, // 6 10
-		-sizeX, -sizeY, -sizeZ,    txCoX,        txCoY,      0.0f, -0.0f,  0.0f,     0.0f, -0.0f,  0.0f,     0.0f, -0.0f,  0.0f, // 7 11
-		 sizeX, -sizeY, -sizeZ,     0.0f,        txCoY,      0.0f, -0.0f,  0.0f,     0.0f, -0.0f,  0.0f,     0.0f, -0.0f,  0.0f, // 8 01
-
+	     sizeX, -sizeY,  sizeZ,     0.0f,         0.0f,      0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f, // 5 00
+		-sizeX, -sizeY,  sizeZ,    txCoX,         0.0f,      0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f, // 6 10
+		-sizeX, -sizeY, -sizeZ,    txCoX,        txCoY,      0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f, // 7 11
+		 sizeX, -sizeY, -sizeZ,     0.0f,        txCoY,      0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f, // 8 01
 	};
 
 	unsigned int vertexCount = 14 * 9;
@@ -69,8 +68,8 @@ void Pyramid::Generate(glm::vec3 scale)
 
 	m_IndexCount = 6 * 3;
 
-	CalcAverageNormals(vertices, vertexCount, indices, m_IndexCount);
-	CalcTangentSpace(vertices, vertexCount, indices, m_IndexCount);
+	// CalcAverageNormals(vertices, vertexCount, indices, m_IndexCount);
+	// CalcTangentSpace(vertices, vertexCount, indices, m_IndexCount);
 
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);

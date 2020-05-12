@@ -89,7 +89,7 @@ vec4 CalcLightByDirection(Light light, vec3 direction)
 
 vec4 CalcDirectionalLight()
 {
-	return CalcLightByDirection(directionalLight.base, directionalLight.direction);
+	return CalcLightByDirection(directionalLight.base, -directionalLight.direction);
 }
 
 vec4 CalcPointLight(PointLight pointLight)

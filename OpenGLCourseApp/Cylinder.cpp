@@ -12,12 +12,10 @@ Cylinder::Cylinder() : Cylinder(glm::vec3(1.0f))
 
 Cylinder::Cylinder(glm::vec3 scale) : Mesh()
 {
-	m_Scale = scale;
-
-	Generate(m_Scale);
+	Generate(scale);
 }
 
-void Cylinder::Generate(glm::vec3 scale)
+void Cylinder::AdjustParameters(glm::vec3 scale)
 {
 	float newRadius = m_BaseRadius;
 
@@ -27,11 +25,16 @@ void Cylinder::Generate(glm::vec3 scale)
 		if (scale.z > scale.x) newRadius = scale.z / 2.0f;
 
 		m_BaseRadius = newRadius;
-		m_TopRadius = newRadius;
+		m_TopRadius  = newRadius;
 
 		m_Height = scale.y;
 		m_Stacks = (int)scale.y;
 	}
+}
+
+void Cylinder::Generate(glm::vec3 scale)
+{
+	AdjustParameters(scale);
 
 	m_Scale = scale;
 
@@ -66,7 +69,7 @@ void Cylinder::Generate(glm::vec3 scale)
 		float u = m_CylinderSH->texCoords.at(i * 2 + 0);
 		float v = m_CylinderSH->texCoords.at(i * 2 + 1);
 
-		u *= newRadius;
+		u *= m_BaseRadius;
 		v *= m_Height;
 
 		vertices.push_back(u);
@@ -92,8 +95,8 @@ void Cylinder::Generate(glm::vec3 scale)
 	m_VertexCount = vertexCountSH;
 	m_IndexCount = indexCountSH;
 
-	// CalcAverageNormals(vertices.data(), m_VertexCount, cylinderSH.indices.data(), m_IndexCount);
-	// CalcTangentSpace(vertices.data(), m_VertexCount, cylinderSH.indices.data(), m_IndexCount);
+	// CalcAverageNormals(vertices.data(), m_VertexCount, m_CylinderSH->indices.data(), m_IndexCount);
+	// CalcTangentSpace(vertices.data(), m_VertexCount, m_CylinderSH->indices.data(), m_IndexCount);
 
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);

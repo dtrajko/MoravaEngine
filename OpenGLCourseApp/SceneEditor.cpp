@@ -6,6 +6,7 @@
 #include "Sphere.h"
 #include "Pyramid.h"
 #include "Cylinder.h"
+#include "Cone.h"
 #include "Shader.h"
 #include "Math.h"
 
@@ -29,9 +30,9 @@ SceneEditor::SceneEditor()
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
     sceneSettings.directionalLight.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
-    sceneSettings.directionalLight.direction = glm::vec3(0.5f, -0.7f, -0.5f);
-    sceneSettings.directionalLight.base.ambientIntensity = 1.0f;
-    sceneSettings.directionalLight.base.diffuseIntensity = 1.0f;
+    sceneSettings.directionalLight.direction = glm::vec3(-0.2f, -0.4f, -0.2f);
+    sceneSettings.directionalLight.base.ambientIntensity = 0.75f;
+    sceneSettings.directionalLight.base.diffuseIntensity = 0.4f;
     sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 40.0f);
 
     // point lights
@@ -521,6 +522,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::RadioButton("Pyramid",  &m_CurrentMeshTypeInt, MESH_TYPE_PYRAMID);
     ImGui::RadioButton("Sphere",   &m_CurrentMeshTypeInt,  MESH_TYPE_SPHERE);
     ImGui::RadioButton("Cylinder", &m_CurrentMeshTypeInt, MESH_TYPE_CYLINDER);
+    ImGui::RadioButton("Cone",     &m_CurrentMeshTypeInt, MESH_TYPE_CONE);
 
     ImGui::Separator();
     ImGui::Text("Select Skybox");
@@ -537,7 +539,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     directionalLight.base.color            = m_LightManager->directionalLight.GetColor();
     directionalLight.base.ambientIntensity = m_LightManager->directionalLight.GetAmbientIntensity();
     directionalLight.base.diffuseIntensity = m_LightManager->directionalLight.GetDiffuseIntensity();
-    directionalLight.direction        = m_LightManager->directionalLight.GetDirection();
+    directionalLight.direction             = m_LightManager->directionalLight.GetDirection();
 
     ImGui::Separator();
     ImGui::Text("Directional Light");
@@ -932,6 +934,9 @@ Mesh* SceneEditor::CreateNewPrimitive(int meshTypeID, glm::vec3 scale)
         break;
     case MESH_TYPE_CYLINDER:
         mesh = new Cylinder(scale);
+        break;
+    case MESH_TYPE_CONE:
+        mesh = new Cone(scale);
         break;
     default:
         mesh = new Block(scale);

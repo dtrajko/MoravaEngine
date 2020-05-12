@@ -351,6 +351,9 @@
     <ClCompile Include="SongHo\CylinderSongHo.cpp">
       <Filter>Source Files\SongHo</Filter>
     </ClCompile>
+    <ClCompile Include="Cone.cpp">
+      <Filter>Source Files\Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -628,6 +631,9 @@
     </ClInclude>
     <ClInclude Include="SongHo\CylinderSongHo.h">
       <Filter>Header Files\SongHo</Filter>
+    </ClInclude>
+    <ClInclude Include="Cone.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

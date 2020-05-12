@@ -11,16 +11,15 @@ class Cylinder : public Mesh
 public:
 	Cylinder();
 	Cylinder(glm::vec3 scale);
+	virtual void AdjustParameters(glm::vec3 scale);
 	void Generate(glm::vec3 scale);
 	virtual ~Cylinder() override;
 
-private:
-	glm::vec3 m_Scale;
-
+protected:
 	float m_BaseRadius = 0.5f;
 	float m_TopRadius = 0.5f;
 	float m_Height = 1.0f;
-	int m_Sectors = 12;
+	int m_Sectors = 24;
 	int m_Stacks = 1;
 	bool m_Smooth = false;
 
