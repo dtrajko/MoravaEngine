@@ -7,6 +7,7 @@
 #include "Pyramid.h"
 #include "Cylinder.h"
 #include "Cone.h"
+#include "Ring.h"
 #include "Shader.h"
 #include "Math.h"
 
@@ -523,6 +524,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::RadioButton("Sphere",   &m_CurrentMeshTypeInt,  MESH_TYPE_SPHERE);
     ImGui::RadioButton("Cylinder", &m_CurrentMeshTypeInt, MESH_TYPE_CYLINDER);
     ImGui::RadioButton("Cone",     &m_CurrentMeshTypeInt, MESH_TYPE_CONE);
+    ImGui::RadioButton("Ring",     &m_CurrentMeshTypeInt, MESH_TYPE_RING);
 
     ImGui::Separator();
     ImGui::Text("Select Skybox");
@@ -781,7 +783,8 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         object.transform = glm::rotate(object.transform, glm::radians(object.rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
         // For meshes that can't be scaled on vertex level
-        if (object.meshType == MESH_TYPE_SPHERE)
+        if (object.meshType == MESH_TYPE_SPHERE ||
+            object.meshType == MESH_TYPE_RING)
             object.transform = glm::scale(object.transform, object.scale);
 
         shaderEditor->setMat4("model", object.transform);
@@ -937,6 +940,9 @@ Mesh* SceneEditor::CreateNewPrimitive(int meshTypeID, glm::vec3 scale)
         break;
     case MESH_TYPE_CONE:
         mesh = new Cone(scale);
+        break;
+    case MESH_TYPE_RING:
+        mesh = new Ring(scale);
         break;
     default:
         mesh = new Block(scale);

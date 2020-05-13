@@ -19,11 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="third-party\glfw-3.1.2\glfw3.vcxproj">
-      <Project>{be423e72-28c2-4fb7-9fe1-42aa2f393bbc}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\tiny-gizmo.hpp" />
     <ClInclude Include="gl-api.hpp" />
     <ClInclude Include="teapot.h" />
@@ -122,12 +117,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)third-party;$(SolutionDir)third-party\glew;$(SolutionDir)third-party\glfw-3.1.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\tinygizmo\tiny-gizmo-example\third-party;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)third-party\glew\lib\$(Platform);$(SolutionDir)third-party\fbxsdk\lib\x64\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32s.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)vendor\GLEW\lib\Release\$(Platform);$(SolutionDir)vendor\GLFW\lib-vc2019\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>

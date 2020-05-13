@@ -11,7 +11,7 @@
 
 #define GLEW_STATIC
 #define GL_GLEXT_PROTOTYPES
-#include "glew.h"
+#include <GL/glew.h>
 
 #define GLFW_INCLUDE_GLU
 #include "GLFW\glfw3.h"

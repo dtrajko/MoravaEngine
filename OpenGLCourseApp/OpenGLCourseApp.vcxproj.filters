@@ -357,14 +357,14 @@
     <ClCompile Include="Cone.cpp">
       <Filter>Source Files\Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="tinygizmo\tiny-gizmo.cpp">
-      <Filter>Source Files\tinygizmo</Filter>
-    </ClCompile>
     <ClCompile Include="Ring.cpp">
       <Filter>Source Files\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Terrain.cpp">
       <Filter>Source Files\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\tinygizmo\tiny-gizmo.cpp">
+      <Filter>Source Files\tinygizmo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -644,14 +644,14 @@
     <ClInclude Include="SongHo\CylinderSongHo.h">
       <Filter>Header Files\SongHo</Filter>
     </ClInclude>
-    <ClInclude Include="tinygizmo\tiny-gizmo.hpp">
-      <Filter>Header Files\tinygizmo</Filter>
-    </ClInclude>
     <ClInclude Include="Ring.h">
       <Filter>Header Files\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Cone.h">
       <Filter>Header Files\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\tinygizmo\tiny-gizmo.hpp">
+      <Filter>Header Files\tinygizmo</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

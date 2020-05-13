@@ -18,16 +18,18 @@ public:
 	virtual void Clear();
 	inline glm::vec3 GetScale() const { return m_Scale; };
 
+	inline const unsigned int GetVertexCount() const { return m_VertexCount; };
+	inline const unsigned int GetIndexCount() const { return m_IndexCount; };
+
 	static void CalcAverageNormals(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount);
 	static void CalcTangentSpace(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount);
 
 	virtual ~Mesh();
 
-protected:
+public:
 	unsigned int m_VAO;
 	unsigned int m_VBO;
 	unsigned int m_IBO;
-
 	float* m_Vertices;
 	unsigned int* m_Indices;
 	unsigned int m_VertexCount;

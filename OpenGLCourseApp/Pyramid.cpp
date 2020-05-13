@@ -32,33 +32,37 @@ void Pyramid::Generate(glm::vec3 scale)
 	float tilingFactor = 0.5f;
 
 	float vertices[] = {
-		//   X       Y       Z         U             V         NX     NY     NZ        TX     TY     TZ        BX     BY     BZ
+		//   X       Y       Z         U          V         NX     NY     NZ        TX    TY    TZ        BX     BY     BZ
 		// side vertices
-		-sizeX, -sizeY,  sizeZ,     0.0f,         0.0f,     -1.0f,  0.0f,  1.0f,    -1.0f,  0.0f,  1.0f,    -1.0f,  0.0f,  1.0f,
-		 sizeX, -sizeY,  sizeZ,    txCoX,         0.0f,      1.0f,  0.0f,  1.0f,     1.0f,  0.0f,  1.0f,     1.0f,  0.0f,  1.0f,
-		 sizeX, -sizeY, -sizeZ,     0.0f,         0.0f,      1.0f,  0.0f, -1.0f,     1.0f,  0.0f, -1.0f,     1.0f,  0.0f, -1.0f,
-		-sizeX, -sizeY, -sizeZ,    txCoX,         0.0f,     -1.0f,  0.0f, -1.0f,    -1.0f,  0.0f, -1.0f,    -1.0f,  0.0f, -1.0f,
+		-sizeX, -sizeY,  sizeZ,     0.0f,      0.0f,      0.0f,  0.5f,  1.0f,     0.0f, 0.0f, 0.0f,     0.0f,  0.0f,  1.0f, // 0 front
+		 sizeX, -sizeY,  sizeZ,    txCoX,      0.0f,      0.0f,  0.5f,  1.0f,     0.0f, 0.0f, 0.0f,     0.0f,  0.0f,  1.0f, // 1 front
+		 sizeX, -sizeY,  sizeZ,     0.0f,      0.0f,      1.0f,  0.5f,  0.0f,     0.0f, 0.0f, 0.0f,     0.0f,  0.0f,  1.0f, // 2 right
+		 sizeX, -sizeY, -sizeZ,    txCoX,      0.0f,      1.0f,  0.5f,  0.0f,     0.0f, 0.0f, 0.0f,     0.0f,  0.0f, -1.0f, // 3 right
+		 sizeX, -sizeY, -sizeZ,     0.0f,      0.0f,      0.0f,  0.5f, -1.0f,     0.0f, 0.0f, 0.0f,     0.0f,  0.0f, -1.0f, // 4 back
+		-sizeX, -sizeY, -sizeZ,    txCoX,      0.0f,      0.0f,  0.5f, -1.0f,     0.0f, 0.0f, 0.0f,     0.0f,  0.0f, -1.0f, // 5 back
+		-sizeX, -sizeY, -sizeZ,     0.0f,      0.0f,     -1.0f,  0.5f,  0.0f,     0.0f, 0.0f, 0.0f,     0.0f,  0.0f, -1.0f, // 6 left
+		-sizeX, -sizeY,  sizeZ,    txCoX,      0.0f,     -1.0f,  0.5f,  0.0f,     0.0f, 0.0f, 0.0f,     0.0f,  0.0f,  1.0f, // 7 left
 
 		// top vertex
-			 0,  sizeY,      0,    txCoX / 2.0f, txCoY,      0.0f,  1.0f,  0.0f,     0.0f,  1.0f,  0.0f,     0.0f,  1.0f,  0.0f,
+			 0,  sizeY,      0,    txCoX/2.0f, txCoY,     0.0f,  1.0f,  0.0f,     0.0f,  0.0f,  0.0f,   0.0f,  0.0f,  0.0f, // 8
 
 	    // bottom vertices
-	     sizeX, -sizeY,  sizeZ,     0.0f,         0.0f,      0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f, // 5 00
-		-sizeX, -sizeY,  sizeZ,    txCoX,         0.0f,      0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f, // 6 10
-		-sizeX, -sizeY, -sizeZ,    txCoX,        txCoY,      0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f, // 7 11
-		 sizeX, -sizeY, -sizeZ,     0.0f,        txCoY,      0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f, // 8 01
+	     sizeX, -sizeY,  sizeZ,     0.0f,       0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,   0.0f,  0.0f,  0.0f, // 9  00
+		-sizeX, -sizeY,  sizeZ,    txCoX,       0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,   0.0f,  0.0f,  0.0f, // 10 10
+		-sizeX, -sizeY, -sizeZ,    txCoX,      txCoY,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,   0.0f,  0.0f,  0.0f, // 11 11
+		 sizeX, -sizeY, -sizeZ,     0.0f,      txCoY,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,   0.0f,  0.0f,  0.0f, // 12 01
 	};
 
-	unsigned int vertexCount = 14 * 9;
+	unsigned int vertexCount = 14 * 13;
 
 	unsigned int indices[] =
 	{
-		 0, 1, 4, // side front
-		 1, 2, 4, // side right
-		 2, 3, 4, // side back
-		 3, 0, 4, // side left
-		 5, 6, 8, // bottom
-		 6, 7, 8, // bottom
+		 0,   1,  8, // side front
+		 2,   3,  8, // side right
+		 4,   5,  8, // side back
+		 6,   7,  8, // side left
+		 9,  10, 12, // bottom
+		 10, 11, 12, // bottom
 	};
 
 	m_IndexCount = 6 * 3;
