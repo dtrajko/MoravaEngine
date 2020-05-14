@@ -12,46 +12,37 @@ AABB::AABB(glm::vec3 position, glm::vec3 scaleObject)
 	m_ScaleObject = scaleObject;
     m_ScaleAABB = scaleObject;
 
-    InitVertices();
+    glm::vec3 size = glm::vec3(
+        m_UnitSize * scaleObject.x + m_Offset,
+        m_UnitSize * scaleObject.y + m_Offset,
+        m_UnitSize * scaleObject.z + m_Offset);
 
-    glm::vec3 vecMin = GetMin();
-    glm::vec3 vecMax = GetMax();
-
-    m_BoundMinX = vecMin.x;
-    m_BoundMinY = vecMin.y;
-    m_BoundMinZ = vecMin.z;
-    m_BoundMaxX = vecMax.x;
-    m_BoundMaxY = vecMax.y;
-    m_BoundMaxZ = vecMax.z;
-}
-
-void AABB::InitVertices()
-{
-    glm::vec4 color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-
-    float sizeX = m_UnitSize * m_ScaleAABB.x + m_Offset;
-    float sizeY = m_UnitSize * m_ScaleAABB.y + m_Offset;
-    float sizeZ = m_UnitSize * m_ScaleAABB.z + m_Offset;
+    m_OriginVectors.push_back(glm::vec3(m_Position.x - size.x, m_Position.y - size.y, m_Position.z + size.z)); // 0 - MinX MinY MaxZ
+    m_OriginVectors.push_back(glm::vec3(m_Position.x + size.x, m_Position.y - size.y, m_Position.z + size.z)); // 1 - MaxX MinY MaxZ
+    m_OriginVectors.push_back(glm::vec3(m_Position.x + size.x, m_Position.y + size.y, m_Position.z + size.z)); // 2 - MaxX MaxY MaxZ
+    m_OriginVectors.push_back(glm::vec3(m_Position.x - size.x, m_Position.y + size.y, m_Position.z + size.z)); // 3 - MinX MaxY MaxZ
+    m_OriginVectors.push_back(glm::vec3(m_Position.x - size.x, m_Position.y - size.y, m_Position.z - size.z)); // 4 - MinX MinY MinZ
+    m_OriginVectors.push_back(glm::vec3(m_Position.x + size.x, m_Position.y - size.y, m_Position.z - size.z)); // 5 - MaxX MinY MinZ
+    m_OriginVectors.push_back(glm::vec3(m_Position.x + size.x, m_Position.y + size.y, m_Position.z - size.z)); // 6 - MaxX MaxY MinZ
+    m_OriginVectors.push_back(glm::vec3(m_Position.x - size.x, m_Position.y + size.y, m_Position.z - size.z)); // 7 - MinX MaxY MinZ
 
     m_Vertices = {
-        m_Position.x - sizeX, m_Position.y - sizeY, m_Position.z + sizeZ,    color.r, color.g, color.b, color.a,
-        m_Position.x + sizeX, m_Position.y - sizeY, m_Position.z + sizeZ,    color.r, color.g, color.b, color.a,
-        m_Position.x + sizeX, m_Position.y + sizeY, m_Position.z + sizeZ,    color.r, color.g, color.b, color.a,
-        m_Position.x - sizeX, m_Position.y + sizeY, m_Position.z + sizeZ,    color.r, color.g, color.b, color.a,
-        m_Position.x - sizeX, m_Position.y - sizeY, m_Position.z - sizeZ,    color.r, color.g, color.b, color.a,
-        m_Position.x + sizeX, m_Position.y - sizeY, m_Position.z - sizeZ,    color.r, color.g, color.b, color.a,
-        m_Position.x + sizeX, m_Position.y + sizeY, m_Position.z - sizeZ,    color.r, color.g, color.b, color.a,
-        m_Position.x - sizeX, m_Position.y + sizeY, m_Position.z - sizeZ,    color.r, color.g, color.b, color.a,
+        m_OriginVectors[0].x, m_OriginVectors[0].y, m_OriginVectors[0].z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,
+        m_OriginVectors[1].x, m_OriginVectors[1].y, m_OriginVectors[1].z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,
+        m_OriginVectors[2].x, m_OriginVectors[2].y, m_OriginVectors[2].z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,
+        m_OriginVectors[3].x, m_OriginVectors[3].y, m_OriginVectors[3].z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,
+        m_OriginVectors[4].x, m_OriginVectors[4].y, m_OriginVectors[4].z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,
+        m_OriginVectors[5].x, m_OriginVectors[5].y, m_OriginVectors[5].z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,
+        m_OriginVectors[6].x, m_OriginVectors[6].y, m_OriginVectors[6].z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,
+        m_OriginVectors[7].x, m_OriginVectors[7].y, m_OriginVectors[7].z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,
     };
 
-    // printf("AABB::InitVertices m_Vertices 0 %.2ff %.2ff %.2ff\n", m_Position.x - sizeX, m_Position.y - sizeY, m_Position.z + sizeZ);
-    // printf("AABB::InitVertices m_Vertices 1 %.2ff %.2ff %.2ff\n", m_Position.x + sizeX, m_Position.y - sizeY, m_Position.z + sizeZ);
-    // printf("AABB::InitVertices m_Vertices 2 %.2ff %.2ff %.2ff\n", m_Position.x + sizeX, m_Position.y + sizeY, m_Position.z + sizeZ);
-    // printf("AABB::InitVertices m_Vertices 3 %.2ff %.2ff %.2ff\n", m_Position.x - sizeX, m_Position.y + sizeY, m_Position.z + sizeZ);
-    // printf("AABB::InitVertices m_Vertices 4 %.2ff %.2ff %.2ff\n", m_Position.x - sizeX, m_Position.y - sizeY, m_Position.z - sizeZ);
-    // printf("AABB::InitVertices m_Vertices 5 %.2ff %.2ff %.2ff\n", m_Position.x + sizeX, m_Position.y - sizeY, m_Position.z - sizeZ);
-    // printf("AABB::InitVertices m_Vertices 6 %.2ff %.2ff %.2ff\n", m_Position.x + sizeX, m_Position.y + sizeY, m_Position.z - sizeZ);
-    // printf("AABB::InitVertices m_Vertices 7 %.2ff %.2ff %.2ff\n", m_Position.x - sizeX, m_Position.y + sizeY, m_Position.z - sizeZ);
+    m_BoundMin.x = m_Position.x - size.x;
+    m_BoundMax.x = m_Position.x + size.x;
+    m_BoundMin.y = m_Position.y - size.y;
+    m_BoundMax.y = m_Position.y + size.y;
+    m_BoundMin.z = m_Position.z - size.z;
+    m_BoundMax.z = m_Position.z + size.z;
 }
 
 void AABB::UpdatePosition(glm::vec3 position)
@@ -61,79 +52,66 @@ void AABB::UpdatePosition(glm::vec3 position)
 
 void AABB::Update(glm::vec3 position, glm::vec3 rotation, glm::vec3 scaleObject)
 {
-    if (position != m_Position || m_Rotation != m_Rotation || scaleObject != m_ScaleObject)
+    if (position != m_Position || rotation != m_Rotation || scaleObject != m_ScaleObject)
     {
         glm::mat4 transform = Math::CreateTransform(position, rotation, scaleObject);
 
-        UpdateVertices(transform);
+        size_t vertexCount = m_Vertices.size() / m_VertexStride;
 
-        m_ScaleAABB.x = (m_BoundMaxX - m_BoundMinX - 2 * m_Offset) * m_UnitSize;
-        m_ScaleAABB.y = (m_BoundMaxY - m_BoundMinY - 2 * m_Offset) * m_UnitSize;
-        m_ScaleAABB.z = (m_BoundMaxZ - m_BoundMinZ - 2 * m_Offset) * m_UnitSize;
+        m_BoundMin.x, m_BoundMin.y, m_BoundMin.z = std::numeric_limits<float>::max();
+        m_BoundMax.x, m_BoundMax.y, m_BoundMax.z = std::numeric_limits<float>::min();
+
+        for (size_t i = 0; i < vertexCount; i++)
+        {
+            glm::vec4 originVertex = glm::vec4(m_OriginVectors[i].x, m_OriginVectors[i].y, m_OriginVectors[i].z, 1.0f);
+
+            glm::vec4 newVertex = transform * originVertex;
+
+            // printf("AABB::Update newVertex [ %.2ff %.2ff %.2ff ]\n", newVertex.x, newVertex.y, newVertex.z);
+
+            if (i == 0) {
+                m_BoundMin = newVertex;
+                m_BoundMax = newVertex;
+            }
+
+            if (newVertex.x < m_BoundMin.x) m_BoundMin.x = newVertex.x;
+            if (newVertex.x > m_BoundMax.x) m_BoundMax.x = newVertex.x;
+            if (newVertex.y < m_BoundMin.y) m_BoundMin.y = newVertex.y;
+            if (newVertex.y > m_BoundMax.y) m_BoundMax.y = newVertex.y;
+            if (newVertex.z < m_BoundMin.z) m_BoundMin.z = newVertex.z;
+            if (newVertex.z > m_BoundMax.z) m_BoundMax.z = newVertex.z;
+        }
+
+        m_Vertices = {
+            m_BoundMin.x, m_BoundMin.y, m_BoundMax.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 0 - MinX MinY MaxZ
+            m_BoundMax.x, m_BoundMin.y, m_BoundMax.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 1 - MaxX MinY MaxZ
+            m_BoundMax.x, m_BoundMax.y, m_BoundMax.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 2 - MaxX MaxY MaxZ
+            m_BoundMin.x, m_BoundMax.y, m_BoundMax.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 3 - MinX MaxY MaxZ
+            m_BoundMin.x, m_BoundMin.y, m_BoundMin.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 4 - MinX MinY MinZ
+            m_BoundMax.x, m_BoundMin.y, m_BoundMin.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 5 - MaxX MinY MinZ
+            m_BoundMax.x, m_BoundMax.y, m_BoundMin.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 6 - MaxX MaxY MinZ
+            m_BoundMin.x, m_BoundMax.y, m_BoundMin.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 7 - MinX MaxY MinZ
+        };
 
         m_Position = position;
         m_Rotation = rotation;
         m_ScaleObject = scaleObject;
 
-        printf("AABB::Update m_ScaleAABB %.2ff %.2ff %.2ff\n", m_ScaleAABB.x, m_ScaleAABB.y, m_ScaleAABB.z);
-    }
-}
-
-void AABB::UpdateVertices(glm::mat4 transform)
-{
-    size_t vertexCount = m_Vertices.size() / m_VertexStride;
-
-    m_BoundMinX, m_BoundMinY, m_BoundMinZ = std::numeric_limits<float>::max();
-    m_BoundMaxX, m_BoundMaxY, m_BoundMaxZ = std::numeric_limits<float>::min();
-
-    for (size_t i = 0; i < vertexCount; i++)
-    {
-        glm::vec4 vertex = glm::vec4(
-            m_Vertices[i * m_VertexStride + 0],
-            m_Vertices[i * m_VertexStride + 1],
-            m_Vertices[i * m_VertexStride + 2], 0.0f);
-
-        glm::vec4 newVertex = transform * vertex;
-
-        if (newVertex.y < m_BoundMinY || newVertex.y > m_BoundMaxY)
-        {
-            printf("AABB::UpdateVertices vertex.y=%.2ff m_BoundMinY=%.2ff m_BoundMaxY=%.2ff \n", newVertex.y, m_BoundMinY, m_BoundMaxY);
-        }
-
-        if (newVertex.x < m_BoundMinX) m_BoundMinX = newVertex.x;
-        if (newVertex.x > m_BoundMaxX) m_BoundMaxX = newVertex.x;
-        if (newVertex.y < m_BoundMinY) m_BoundMinY = newVertex.y;
-        if (newVertex.y > m_BoundMaxY) m_BoundMaxY = newVertex.y;
-        if (newVertex.z < m_BoundMinZ) m_BoundMinZ = newVertex.z;
-        if (newVertex.z > m_BoundMaxZ) m_BoundMaxZ = newVertex.z;
-
-        m_Vertices[i * m_VertexStride + 0] = newVertex.x;
-        m_Vertices[i * m_VertexStride + 1] = newVertex.y;
-        m_Vertices[i * m_VertexStride + 2] = newVertex.z;
-
-        // printf("AABB::UpdateVertices Position %.2ff %.2ff %.2ff\n", m_Position.x, m_Position.y, m_Position.z);
-        // printf("AABB::UpdateVertices m_ScaleObject %.2ff %.2ff %.2ff\n", m_ScaleObject.x, m_ScaleObject.y, m_ScaleObject.z);
-        // printf("AABB::UpdateVertices m_ScaleAABB %.2ff %.2ff %.2ff\n", m_ScaleAABB.x, m_ScaleAABB.y, m_ScaleAABB.z);
-        // printf("AABB::UpdateVertices Vertex %zu [X=%.2ff Y=%.2ff Z=%.2ff]\n", i, vertex.z, vertex.y, vertex.z);
+        // printf("AABB::Update m_BoundMin [ %.2ff %.2ff %.2ff ]\n", m_BoundMin.x, m_BoundMin.y, m_BoundMin.z);
+        // printf("AABB::Update m_BoundMax [ %.2ff %.2ff %.2ff ]\n", m_BoundMax.x, m_BoundMax.y, m_BoundMax.z);
+        // printf("AABB::Update scaleObject [ %.2ff %.2ff %.2ff ]\n", scaleObject.x, scaleObject.y, scaleObject.z);
+        // printf("AABB::Update m_ScaleAABB [ %.2ff %.2ff %.2ff ]\n", m_ScaleAABB.x, m_ScaleAABB.y, m_ScaleAABB.z);
     }
 }
 
 glm::vec3 AABB::GetMin() const
 {
-    return glm::vec3(
-        m_Position.x - m_UnitSize * m_ScaleAABB.x,
-        m_Position.y - m_UnitSize * m_ScaleAABB.y,
-        m_Position.z - m_UnitSize * m_ScaleAABB.z
-    );
+    return m_BoundMin;
 }
 
 glm::vec3 AABB::GetMax() const
 {
-    return glm::vec3(
-        m_Position.x + m_UnitSize * m_ScaleAABB.x,
-        m_Position.y + m_UnitSize * m_ScaleAABB.y,
-        m_Position.z + m_UnitSize * m_ScaleAABB.z
-    );
+    return m_BoundMax;
 }
 
 void AABB::Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
@@ -143,10 +121,12 @@ void AABB::Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix
         1, 2,
         2, 3,
         3, 0,
+
         4, 5,
         5, 6,
         6, 7,
         7, 4,
+
         0, 4,
         1, 5,
         2, 6,
@@ -275,5 +255,4 @@ bool AABB::IntersectRayAab(glm::vec3 origin, glm::vec3 dir, glm::vec3 min, glm::
 
 AABB::~AABB()
 {
-
 }
