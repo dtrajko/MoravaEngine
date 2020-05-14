@@ -800,7 +800,7 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 
         object.mesh->Render();
 
-        object.AABB->Update(object.position, object.scale);
+        object.AABB->Update(object.position, object.rotation, object.scale);
         object.pivot->Update(object.position, object.scale + 1.0f);
     }
 
