@@ -291,20 +291,20 @@ void SceneEditor::SaveScene()
         lines.push_back("Position\t" +
             std::to_string(m_SceneObjects[i].position.x) + "\t" +
             std::to_string(m_SceneObjects[i].position.y) + "\t" +
-            std::to_string(m_SceneObjects[i].position.z) + "\t");
+            std::to_string(m_SceneObjects[i].position.z));
         lines.push_back("Rotation\t" +
             std::to_string(m_SceneObjects[i].rotation.x) + "\t" +
             std::to_string(m_SceneObjects[i].rotation.y) + "\t" +
-            std::to_string(m_SceneObjects[i].rotation.z) + "\t");
+            std::to_string(m_SceneObjects[i].rotation.z));
         lines.push_back("Scale\t" +
             std::to_string(m_SceneObjects[i].scale.x) + "\t" +
             std::to_string(m_SceneObjects[i].scale.y) + "\t" +
-            std::to_string(m_SceneObjects[i].scale.z) + "\t");
+            std::to_string(m_SceneObjects[i].scale.z));
         lines.push_back("Color\t" +
             std::to_string(m_SceneObjects[i].color.r) + "\t" +
             std::to_string(m_SceneObjects[i].color.g) + "\t" +
             std::to_string(m_SceneObjects[i].color.b) + "\t" +
-            std::to_string(m_SceneObjects[i].color.a) + "\t");
+            std::to_string(m_SceneObjects[i].color.a));
         std::string useTexture = m_SceneObjects[i].useTexture ? "1" : "0";
         lines.push_back("UseTexture\t" + useTexture);
         lines.push_back("TextureName\t" + m_SceneObjects[i].textureName);
@@ -407,7 +407,7 @@ void SceneEditor::LoadScene()
         }
         else if (tokens.size() >= 1 && tokens[0] == "EndObject") {
             sceneObject.transform = Math::CreateTransform(sceneObject.position, sceneObject.rotation, sceneObject.scale);
-            sceneObject.AABB = new AABB(sceneObject.position, sceneObject.scale);
+            sceneObject.AABB = new AABB(sceneObject.position, sceneObject.rotation, sceneObject.scale);
             sceneObject.pivot = new Pivot(sceneObject.position, sceneObject.scale);
             sceneObject.mesh = CreateNewPrimitive(sceneObject.meshType, sceneObject.scale);
             m_SceneObjects.push_back(sceneObject);
@@ -866,7 +866,7 @@ void SceneEditor::AddSceneObject()
     if (m_CurrentTimestamp - m_ObjectAdd.lastTime < m_ObjectAdd.cooldown) return;
     m_ObjectAdd.lastTime = m_CurrentTimestamp;
 
-    Mesh* mesh = CreateNewPrimitive(m_CurrentMeshTypeInt, glm::vec3(1.0f, 1.0f, 1.0f));
+    Mesh* mesh = CreateNewPrimitive(m_CurrentMeshTypeInt, glm::vec3(1.0f));
 
     glm::vec3 scaleAABB = glm::vec3(1.0f);
 
@@ -884,8 +884,8 @@ void SceneEditor::AddSceneObject()
         "plain",
         1.0f,
         true,
-        new AABB(glm::vec3(0.0f, 0.0f, 0.0f), scaleAABB),
-        new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f)),
+        new AABB(glm::vec3(0.0f), glm::vec3(0.0f), scaleAABB),
+        new Pivot(glm::vec3(0.0f), glm::vec3(1.0f)),
         mesh,
         m_CurrentMeshTypeInt,
     };
@@ -903,7 +903,7 @@ void SceneEditor::CopySceneObject(SceneObject sceneObject)
     Mesh* newMesh = CreateNewPrimitive(sceneObject.meshType, sceneObject.mesh->GetScale());
 
     sceneObject.isSelected = true;
-    sceneObject.AABB = new AABB(sceneObject.position, sceneObject.scale);
+    sceneObject.AABB = new AABB(sceneObject.position, sceneObject.rotation, sceneObject.scale);
     sceneObject.pivot = new Pivot(sceneObject.position, sceneObject.scale);
     sceneObject.mesh = newMesh;
 

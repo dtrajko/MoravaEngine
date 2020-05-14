@@ -20,7 +20,7 @@ void RendererCubemaps::Init(Scene* scene)
 	SetShaders();
 
     if (sceneCubemaps->m_AABBEnabled)
-        m_CubeAABB = new AABB(glm::vec3(0.0f), glm::vec3(1.0f));
+        m_CubeAABB = new AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
 
     m_PivotCube = new Pivot(glm::vec3(0.0f), glm::vec3(2.0f));
     m_PivotScene = new Pivot(glm::vec3(0.0f), glm::vec3(60.0f));

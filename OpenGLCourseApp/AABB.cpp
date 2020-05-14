@@ -5,10 +5,10 @@
 #include <limits>
 
 
-AABB::AABB(glm::vec3 position, glm::vec3 scaleObject)
+AABB::AABB(glm::vec3 position, glm::vec3 rotation, glm::vec3 scaleObject)
 {
 	m_Position = position;
-    m_Rotation = glm::vec3(0.0f);
+    m_Rotation = rotation;
 	m_ScaleObject = scaleObject;
     m_ScaleAABB = scaleObject;
 

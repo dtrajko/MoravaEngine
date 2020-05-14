@@ -13,7 +13,7 @@
 class AABB
 {
 public:
-	AABB(glm::vec3 position, glm::vec3 scale);
+	AABB(glm::vec3 position, glm::vec3 rotation, glm::vec3 scaleObject);
 	bool Contains(glm::vec3 position, glm::vec3 scale);
 	bool TestAABBOverlap(AABB* a, AABB* b);
 	void UpdatePosition(glm::vec3 position);
