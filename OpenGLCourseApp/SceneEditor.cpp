@@ -868,6 +868,11 @@ void SceneEditor::AddSceneObject()
 
     Mesh* mesh = CreateNewPrimitive(m_CurrentMeshTypeInt, glm::vec3(1.0f, 1.0f, 1.0f));
 
+    glm::vec3 scaleAABB = glm::vec3(1.0f);
+
+    if (m_CurrentMeshTypeInt == MESH_TYPE_RING)
+        scaleAABB = glm::vec3(1.0f, 0.2f, 1.0f);
+
     // Add Scene Object here
     SceneObject sceneObject = {
         glm::mat4(1.0f),
@@ -879,7 +884,7 @@ void SceneEditor::AddSceneObject()
         "plain",
         1.0f,
         true,
-        new AABB(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f)),
+        new AABB(glm::vec3(0.0f, 0.0f, 0.0f), scaleAABB),
         new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f)),
         mesh,
         m_CurrentMeshTypeInt,

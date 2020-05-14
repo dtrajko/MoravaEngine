@@ -33,10 +33,13 @@ void Sphere::Generate(glm::vec3 scale)
 
 	m_Radius = 0.5f * maxScale;
 
+	// printf("Sphere::Generate scale [ %2.ff %2.ff %2.ff ] m_Scale [ %2.ff %2.ff %2.ff ]\n", scale.x, scale.y, scale.z, m_Scale.x, m_Scale.y, m_Scale.z);
 	// printf("Sphere::Generate maxScale=%.2f radius=%.2f\n", maxScale, m_Radius);
 
-	const unsigned int sectorCount = 64;
-	const unsigned int stackCount = 64;
+	m_Scale = scale;
+
+	const unsigned int sectorCount = 32;
+	const unsigned int stackCount = 32;
 	const float PI = 3.14159265359f;
 
 	float x, y, z, xy; // vertex position

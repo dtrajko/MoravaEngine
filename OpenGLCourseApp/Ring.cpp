@@ -7,18 +7,11 @@
 #include "VertexTBN.h"
 
 
-Ring::Ring() : Mesh()
+Ring::Ring() : Ring(glm::vec3(1.0f))
 {
-	m_Scale = glm::vec3(1.0f);
 }
 
-Ring::Ring(glm::vec3 scale)
-{
-	m_Scale = scale;
-	Generate(scale);
-}
-
-void Ring::Generate(glm::vec3 scale)
+Ring::Ring(glm::vec3 scale) : Mesh(scale)
 {
 	m_Scale = scale;
 
@@ -31,6 +24,13 @@ void Ring::Generate(glm::vec3 scale)
 	m_IBO = mesh->m_IBO;
 	m_VBO = mesh->m_VBO;
 	m_IndexCount = mesh->GetIndexCount();
+
+	Generate(scale);
+}
+
+void Ring::Generate(glm::vec3 scale)
+{
+	m_Scale = scale;
 }
 
 Ring::~Ring()
