@@ -27,6 +27,7 @@
 #include "SceneNanosuit.h"
 #include "SceneFramebuffers.h"
 #include "SceneCubemaps.h"
+#include "SceneParticles.h"
 #include "SceneEditor.h"
 
 #include "Renderer.h"
@@ -65,6 +66,7 @@ enum class SceneName
 	Nanosuit,
 	Framebuffers,
 	Cubemaps,
+	Particles,
 	Editor,
 };
 
@@ -143,6 +145,10 @@ int main()
 	case SceneName::Cubemaps:
 		scene = new SceneCubemaps();
 		renderer = static_cast<RendererBasic*>(new RendererCubemaps());
+		break;
+	case SceneName::Particles:
+		scene = new SceneParticles();
+		renderer = static_cast<RendererBasic*>(new RendererEditor());
 		break;
 	case SceneName::Editor:
 		scene = new SceneEditor();

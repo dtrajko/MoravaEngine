@@ -100,6 +100,12 @@
     <Filter Include="Source Files\tinygizmo">
       <UniqueIdentifier>{ea0e27cb-2f0c-4bbc-b5db-e41927a249b1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Particles">
+      <UniqueIdentifier>{755e5c4f-3942-48ba-80f0-99aa0fdc7e67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Particles">
+      <UniqueIdentifier>{c0899ef3-a557-4073-92d2-df85815f4fb8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -365,6 +371,12 @@
     </ClCompile>
     <ClCompile Include="..\vendor\tinygizmo\tiny-gizmo.cpp">
       <Filter>Source Files\tinygizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSystem.cpp">
+      <Filter>Source Files\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneParticles.cpp">
+      <Filter>Source Files\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -652,6 +664,12 @@
     </ClInclude>
     <ClInclude Include="..\vendor\tinygizmo\tiny-gizmo.hpp">
       <Filter>Header Files\tinygizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSystem.h">
+      <Filter>Header Files\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneParticles.h">
+      <Filter>Header Files\Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

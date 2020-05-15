@@ -203,6 +203,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="MousePicker.cpp" />
     <ClCompile Include="OmniShadowMap.cpp" />
+    <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="Pivot.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Pyramid.cpp" />
@@ -230,6 +231,7 @@
     <ClCompile Include="SceneInstanced.cpp" />
     <ClCompile Include="SceneJoey.cpp" />
     <ClCompile Include="SceneNanosuit.cpp" />
+    <ClCompile Include="SceneParticles.cpp" />
     <ClCompile Include="ScenePBR.cpp" />
     <ClCompile Include="SceneCottage.cpp" />
     <ClCompile Include="SceneEiffel.cpp" />
@@ -297,6 +299,7 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="MousePicker.h" />
     <ClInclude Include="OmniShadowMap.h" />
+    <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="Pivot.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="Profiler.h" />
@@ -325,6 +328,7 @@
     <ClInclude Include="SceneInstanced.h" />
     <ClInclude Include="SceneJoey.h" />
     <ClInclude Include="SceneNanosuit.h" />
+    <ClInclude Include="SceneParticles.h" />
     <ClInclude Include="ScenePBR.h" />
     <ClInclude Include="SceneCottage.h" />
     <ClInclude Include="SceneEiffel.h" />
