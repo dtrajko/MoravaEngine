@@ -1,8 +1,24 @@
 #include "Gizmo.h"
 
+
 Gizmo::Gizmo()
 {
 	m_Mode = GIZMO_MODE_TRANSLATE;
+
+	m_Position = glm::vec3(0.0f);
+	m_Rotation = glm::vec3(0.0f);
+	m_Scale = glm::vec3(1.0f);
+
+	m_ToggleMode = { 0.0f, 0.5f };
+
+	m_SceneObject = new SceneObject{};
+	m_SceneObject->transform = glm::mat4(1.0f);
+	m_SceneObject->position = m_Position;
+	m_SceneObject->rotation = m_Rotation;
+	m_SceneObject->scale = m_Scale;
+	m_SceneObject->AABB = new AABB(m_Position, m_Rotation, m_Scale);
+	m_SceneObject->pivot = new Pivot(m_Position, m_Scale);
+	m_SceneObject->color = glm::vec4(1.0f);
 
 	// Initialize Translation meshes
 	m_Axis_T_X = new Cylinder();
@@ -30,7 +46,6 @@ Gizmo::Gizmo()
 	m_Ring_S_X = new Ring();
 	m_Ring_S_Y = new Ring();
 	m_Ring_S_Z = new Ring();
-
 }
 
 void Gizmo::ChangeMode(int mode)
@@ -40,13 +55,44 @@ void Gizmo::ChangeMode(int mode)
 
 void Gizmo::ToggleMode()
 {
-	if (m_Mode == GIZMO_MODE_TRANSLATE) m_Mode = GIZMO_MODE_SCALE;
-	if (m_Mode == GIZMO_MODE_SCALE)     m_Mode = GIZMO_MODE_ROTATE;
-	if (m_Mode == GIZMO_MODE_ROTATE)    m_Mode = GIZMO_MODE_TRANSLATE;
+	float currentTimestamp = (float)glfwGetTime();
+	if (currentTimestamp - m_ToggleMode.lastTime < m_ToggleMode.cooldown) return;
+	m_ToggleMode.lastTime = currentTimestamp;
+
+	if (m_Mode == GIZMO_MODE_TRANSLATE) {
+		m_Mode = GIZMO_MODE_SCALE;
+		// printf("Gizmo::ToggleMode - toggle from %i to %i\n", GIZMO_MODE_TRANSLATE, m_Mode);
+		return;
+	}
+	if (m_Mode == GIZMO_MODE_SCALE) {
+		m_Mode = GIZMO_MODE_ROTATE;
+		// printf("Gizmo::ToggleMode - toggle from %i to %i\n", GIZMO_MODE_SCALE, m_Mode);
+		return;
+	}
+	if (m_Mode == GIZMO_MODE_ROTATE) {
+		m_Mode = GIZMO_MODE_TRANSLATE;
+		// printf("Gizmo::ToggleMode - toggle from %i to %i\n", GIZMO_MODE_ROTATE, m_Mode);
+		return;
+	}
+}
+
+void Gizmo::SetSceneObject(SceneObject& sceneObject)
+{
+	if (m_SceneObject != nullptr && sceneObject.id != m_SceneObject->id)
+		m_Mode = GIZMO_MODE_TRANSLATE; // reset mode to translate when swiching to a different object
+
+	m_SceneObject = &sceneObject;
+
+	m_Position = sceneObject.position;
+	m_Rotation = sceneObject.rotation;
+	m_Scale    = sceneObject.scale;
 }
 
 void Gizmo::Update()
 {
+	m_Position = m_SceneObject->position;
+	m_Rotation = m_SceneObject->rotation;
+	m_Scale    = m_SceneObject->scale;
 }
 
 void Gizmo::Render(Shader* shader)
@@ -58,7 +104,7 @@ void Gizmo::Render(Shader* shader)
 	{
 		// Translation Gizmo - Axes
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		model = glm::translate(model, m_Position + glm::vec3(2.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.2f, 4.0f, 0.2f));
 		shader->setMat4("model", model);
@@ -66,7 +112,7 @@ void Gizmo::Render(Shader* shader)
 		m_Axis_T_X->Render();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
+		model = glm::translate(model, m_Position + glm::vec3(0.0f, 2.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.2f, 4.0f, 0.2f));
 		shader->setMat4("model", model);
@@ -74,7 +120,7 @@ void Gizmo::Render(Shader* shader)
 		m_Axis_T_Y->Render();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 2.0f));
+		model = glm::translate(model, m_Position + glm::vec3(0.0f, 0.0f, 2.0f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.2f, 4.0f, 0.2f));
 		shader->setMat4("model", model);
@@ -83,7 +129,7 @@ void Gizmo::Render(Shader* shader)
 
 		// Translation Gizmo - Arrows (Cones)
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(4.4f, 0.0f, 0.0f));
+		model = glm::translate(model, m_Position + glm::vec3(4.4f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.6f, 0.8f, 0.6f));
 		shader->setMat4("model", model);
@@ -91,7 +137,7 @@ void Gizmo::Render(Shader* shader)
 		m_Arrow_T_X->Render();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 4.4f, 0.0f));
+		model = glm::translate(model, m_Position + glm::vec3(0.0f, 4.4f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.6f, 0.8f, 0.6f));
 		shader->setMat4("model", model);
@@ -99,7 +145,7 @@ void Gizmo::Render(Shader* shader)
 		m_Arrow_T_Y->Render();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 4.4f));
+		model = glm::translate(model, m_Position + glm::vec3(0.0f, 0.0f, 4.4f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.6f, 0.8f, 0.6f));
 		shader->setMat4("model", model);
@@ -108,7 +154,7 @@ void Gizmo::Render(Shader* shader)
 
 		// Translation Gizmo - 2D squares
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 2.0f, 0.0f));
+		model = glm::translate(model, m_Position + glm::vec3(2.0f, 2.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(1.5f, 1.5f, 0.15f));
 		shader->setMat4("model", model);
@@ -116,7 +162,7 @@ void Gizmo::Render(Shader* shader)
 		m_Square_T_XY->Render();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 2.0f, 2.0f));
+		model = glm::translate(model, m_Position + glm::vec3(0.0f, 2.0f, 2.0f));
 		// model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.15f, 1.5f, 1.5f));
 		shader->setMat4("model", model);
@@ -124,7 +170,7 @@ void Gizmo::Render(Shader* shader)
 		m_Square_T_YZ->Render();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 2.0f));
+		model = glm::translate(model, m_Position + glm::vec3(2.0f, 0.0f, 2.0f));
 		// model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(1.5f, 0.15f, 1.5f));
 		shader->setMat4("model", model);
@@ -137,7 +183,7 @@ void Gizmo::Render(Shader* shader)
 	{
 		// Scale Gizmo - Axes
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		model = glm::translate(model, m_Position + glm::vec3(2.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.2f, 4.0f, 0.2f));
 		shader->setMat4("model", model);
@@ -145,7 +191,7 @@ void Gizmo::Render(Shader* shader)
 		m_Axis_S_X->Render();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
+		model = glm::translate(model, m_Position + glm::vec3(0.0f, 2.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.2f, 4.0f, 0.2f));
 		shader->setMat4("model", model);
@@ -153,7 +199,7 @@ void Gizmo::Render(Shader* shader)
 		m_Axis_S_Y->Render();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 2.0f));
+		model = glm::translate(model, m_Position + glm::vec3(0.0f, 0.0f, 2.0f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.2f, 4.0f, 0.2f));
 		shader->setMat4("model", model);
@@ -162,7 +208,7 @@ void Gizmo::Render(Shader* shader)
 
 		// Scale Gizmo - Handles
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(4.4f, 0.0f, 0.0f));
+		model = glm::translate(model, m_Position + glm::vec3(4.4f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.6f, 0.8f, 0.6f));
 		shader->setMat4("model", model);
@@ -170,7 +216,7 @@ void Gizmo::Render(Shader* shader)
 		m_Handle_S_X->Render();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 4.4f, 0.0f));
+		model = glm::translate(model, m_Position + glm::vec3(0.0f, 4.4f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.6f, 0.8f, 0.6f));
 		shader->setMat4("model", model);
@@ -178,7 +224,7 @@ void Gizmo::Render(Shader* shader)
 		m_Handle_S_Y->Render();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 4.4f));
+		model = glm::translate(model, m_Position + glm::vec3(0.0f, 0.0f, 4.4f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.6f, 0.8f, 0.6f));
 		shader->setMat4("model", model);
@@ -191,7 +237,7 @@ void Gizmo::Render(Shader* shader)
 	{
 		// Rotation gizmo - Rings
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::translate(model, m_Position + glm::vec3(0.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(8.0f, 0.6f, 8.0f));
 		shader->setMat4("model", model);
@@ -199,7 +245,7 @@ void Gizmo::Render(Shader* shader)
 		m_Ring_S_X->Render();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::translate(model, m_Position + glm::vec3(0.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(8.0f, 0.6f, 8.0f));
 		shader->setMat4("model", model);
@@ -207,7 +253,7 @@ void Gizmo::Render(Shader* shader)
 		m_Ring_S_Y->Render();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::translate(model, m_Position + glm::vec3(0.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(8.0f, 0.6f, 8.0f));
 		shader->setMat4("model", model);

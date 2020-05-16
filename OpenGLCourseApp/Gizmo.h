@@ -6,6 +6,7 @@
 #include "Cone.h"
 #include "Block.h"
 #include "Ring.h"
+#include "Scene.h"
 
 
 const int GIZMO_MODE_TRANSLATE = 0;
@@ -19,12 +20,20 @@ public:
 	Gizmo();
 	void ChangeMode(int mode);
 	void ToggleMode();
+	void SetSceneObject(SceneObject& sceneObject);
 	void Update();
 	void Render(Shader* shader);
 	~Gizmo();
 
 private:
 	int m_Mode;
+
+	SceneObject* m_SceneObject;
+	glm::vec3 m_Position;
+	glm::vec3 m_Rotation;
+	glm::vec3 m_Scale;
+
+	EventCooldown m_ToggleMode;
 
 	std::vector<Mesh*> m_Meshes;
 

@@ -19,7 +19,33 @@
 #include "LightManager.h"
 #include "WaterManager.h"
 #include "Window.h"
+#include "AABB.h"
+#include "Pivot.h"
 
+
+struct SceneObject
+{
+	int id;
+	glm::mat4 transform;
+	glm::vec3 position;
+	glm::vec3 rotation;
+	glm::vec3 scale;
+	glm::vec4 color;
+	bool useTexture;
+	std::string textureName;
+	float tilingFactor;
+	bool isSelected;
+	AABB* AABB;
+	Pivot* pivot;
+	Mesh* mesh;
+	int meshType;
+};
+
+struct EventCooldown
+{
+	float lastTime;
+	float cooldown;
+};
 
 struct SLight
 {

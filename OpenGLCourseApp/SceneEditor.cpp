@@ -217,6 +217,12 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
         SelectNextFromMultipleObjects(m_SceneObjects, &m_SelectedIndex);
+
+        if (m_SceneObjects.size() > 0 && m_SceneObjects.at(m_SelectedIndex).isSelected)
+        {
+            m_Gizmo->ToggleMode();
+            m_Gizmo->SetSceneObject(m_SceneObjects.at(m_SelectedIndex));
+        }
     }
 
     // Add new scene object with default settings
@@ -420,6 +426,7 @@ void SceneEditor::LoadScene()
             // printf("MeshType %d\n", sceneObject.meshType);
         }
         else if (tokens.size() >= 1 && tokens[0] == "EndObject") {
+            sceneObject.id = (int)m_SceneObjects.size();
             sceneObject.transform = Math::CreateTransform(sceneObject.position, sceneObject.rotation, sceneObject.scale);
             sceneObject.AABB = new AABB(sceneObject.position, sceneObject.rotation, sceneObject.scale);
             sceneObject.pivot = new Pivot(sceneObject.position, sceneObject.scale);
@@ -428,6 +435,9 @@ void SceneEditor::LoadScene()
             // printf("EndObject: New SceneObject added to m_SceneObjects...\n");
         }
     }
+
+    if (m_SceneObjects.size() > 0)
+        m_Gizmo->SetSceneObject(m_SceneObjects[m_SceneObjects.size() - 1]);
 }
 
 void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
@@ -755,13 +765,14 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
             meshes["sphere"]->Render();
     }
 
-    m_Gizmo->Render(shaderEditor);
+    if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
+        m_Gizmo->Render(shaderEditor);
 
     /* End of shaderEditor */
 
     /* Begin of shaderBasic */
 
-    if (m_SelectedIndex < m_SceneObjects.size())
+    if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
     {
         m_SceneObjects[m_SelectedIndex].AABB->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
         m_SceneObjects[m_SelectedIndex].pivot->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
@@ -786,6 +797,7 @@ void SceneEditor::AddSceneObject()
 
     // Add Scene Object here
     SceneObject sceneObject = {
+        (int)m_SceneObjects.size(),
         glm::mat4(1.0f),
         defaultSpawnPosition,
         glm::vec3(0.0f),
@@ -802,7 +814,7 @@ void SceneEditor::AddSceneObject()
     };
 
     m_SceneObjects.push_back(sceneObject);
-    m_SelectedIndex++;
+    m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
 }
 
 void SceneEditor::CopySceneObject(SceneObject sceneObject)
@@ -813,6 +825,7 @@ void SceneEditor::CopySceneObject(SceneObject sceneObject)
 
     Mesh* newMesh = CreateNewPrimitive(sceneObject.meshType, sceneObject.mesh->GetScale());
 
+    sceneObject.id = (int)m_SceneObjects.size(),
     sceneObject.isSelected = true;
     sceneObject.AABB = new AABB(sceneObject.position, sceneObject.rotation, sceneObject.scale);
     sceneObject.pivot = new Pivot(sceneObject.position, sceneObject.scale);
@@ -834,7 +847,11 @@ void SceneEditor::DeleteSceneObject()
     if (m_SelectedIndex < m_SceneObjects.size())
         m_SceneObjects.erase(m_SceneObjects.begin() + m_SelectedIndex);
 
-    if (m_SelectedIndex > 0) m_SelectedIndex--;
+    if (m_SceneObjects.size() > 0) m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
+
+    // refresh scene object IDs
+    for (int i = 0; i < m_SceneObjects.size(); i++)
+        m_SceneObjects[i].id = i;
 }
 
 Mesh* SceneEditor::CreateNewPrimitive(int meshTypeID, glm::vec3 scale)
