@@ -139,8 +139,13 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
         glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
     
+    shaders["basic"]->Bind();
+    shaders["basic"]->setMat4("model", glm::mat4(1.0f));
+    shaders["basic"]->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    shaders["basic"]->setMat4("projection", projectionMatrix);
+
     if (sceneCubemaps->m_AABBEnabled)
-        m_CubeAABB->Draw(shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+        m_CubeAABB->Draw();
 
     m_PivotCube->Draw(shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
 

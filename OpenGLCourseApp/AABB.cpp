@@ -5,8 +5,14 @@
 #include <limits>
 
 
+AABB::AABB() : AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f))
+{
+}
+
 AABB::AABB(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
 {
+    m_IsColliding = false;
+
     m_BoundMin = glm::vec3(
         -m_UnitSize,
         -m_UnitSize,
@@ -122,7 +128,7 @@ glm::vec3 AABB::GetMax() const
     return m_BoundMax;
 }
 
-void AABB::Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
+void AABB::Draw()
 {
     m_Indices = {
         0, 1,
@@ -164,12 +170,6 @@ void AABB::Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
     glBindVertexArray(0);
-
-    shader->Bind();
-    glm::mat4 model = glm::mat4(1.0f);
-    shader->setMat4("model", model);
-    shader->setMat4("view", viewMatrix);
-    shader->setMat4("projection", projectionMatrix);
 
     glBindVertexArray(m_LineVAO);
     glDrawElements(GL_LINES, (GLsizei)m_Indices.size(), GL_UNSIGNED_INT, 0);

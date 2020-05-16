@@ -10,16 +10,9 @@
 #include "Gizmo.h"
 
 
-const int MESH_TYPE_CUBE     = 0;
-const int MESH_TYPE_PYRAMID  = 1;
-const int MESH_TYPE_SPHERE   = 2;
-const int MESH_TYPE_CYLINDER = 3;
-const int MESH_TYPE_CONE     = 4;
-const int MESH_TYPE_RING     = 5;
- 
+
 const int SKYBOX_DAY   = 0;
 const int SKYBOX_NIGHT = 1;
-
 
 
 class SceneEditor : public Scene
@@ -35,9 +28,9 @@ public:
 	void CleanupGeometry();
 	inline Raycast* GetRaycast() const { return m_Raycast; };
 	void AddSceneObject();
-	void CopySceneObject(SceneObject sceneObject);
+	void CopySceneObject(SceneObject* sceneObject);
 	void DeleteSceneObject();
-	void SelectNextFromMultipleObjects(std::vector<SceneObject> sceneObjects, unsigned int* selected);
+	void SelectNextFromMultipleObjects(std::vector<SceneObject*> sceneObjects, unsigned int* selected);
 	bool IsObjectSelected(unsigned int objectIndex);
 	void SaveScene();
 	void LoadScene();
@@ -57,7 +50,7 @@ private:
 	Pivot* m_PivotScene;
 	Gizmo* m_Gizmo;
 
-	std::vector<SceneObject> m_SceneObjects;
+	std::vector<SceneObject*> m_SceneObjects;
 
 	glm::vec3* m_PositionEdit;
 	glm::vec3* m_RotationEdit;

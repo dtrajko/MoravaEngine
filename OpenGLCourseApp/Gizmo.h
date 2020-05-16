@@ -20,8 +20,8 @@ public:
 	Gizmo();
 	void ChangeMode(int mode);
 	void ToggleMode();
-	void SetSceneObject(SceneObject& sceneObject);
-	void Update();
+	void SetSceneObject(SceneObject* sceneObject);
+	void Update(glm::vec3 cameraPosition);
 	void Render(Shader* shader);
 	~Gizmo();
 
@@ -35,34 +35,34 @@ private:
 
 	EventCooldown m_ToggleMode;
 
-	std::vector<Mesh*> m_Meshes;
+	std::vector<SceneObject*> m_SceneObjects;
 
 	// Translate meshes
-	Cylinder* m_Axis_T_X;
-	Cylinder* m_Axis_T_Y;
-	Cylinder* m_Axis_T_Z;
+	SceneObject* m_Axis_T_X;
+	SceneObject* m_Axis_T_Y;
+	SceneObject* m_Axis_T_Z;
 
-	Cone* m_Arrow_T_X;
-	Cone* m_Arrow_T_Y;
-	Cone* m_Arrow_T_Z;
+	SceneObject* m_Arrow_T_X;
+	SceneObject* m_Arrow_T_Y;
+	SceneObject* m_Arrow_T_Z;
 
-	Block* m_Square_T_XY; // yellow
-	Block* m_Square_T_YZ; // cyan
-	Block* m_Square_T_ZX; // magenta
+	SceneObject* m_Square_T_XY; // yellow
+	SceneObject* m_Square_T_YZ; // cyan
+	SceneObject* m_Square_T_ZX; // magenta
 
 	// Rotate meshes
-	Ring* m_Ring_S_X;
-	Ring* m_Ring_S_Y;
-	Ring* m_Ring_S_Z;
+	SceneObject* m_Ring_S_X;
+	SceneObject* m_Ring_S_Y;
+	SceneObject* m_Ring_S_Z;
 
 	// Scale meshes
-	Cylinder* m_Axis_S_X;
-	Cylinder* m_Axis_S_Y;
-	Cylinder* m_Axis_S_Z;
+	SceneObject* m_Axis_S_X;
+	SceneObject* m_Axis_S_Y;
+	SceneObject* m_Axis_S_Z;
 
-	Cylinder* m_Handle_S_X;
-	Cylinder* m_Handle_S_Y;
-	Cylinder* m_Handle_S_Z;
+	SceneObject* m_Handle_S_X;
+	SceneObject* m_Handle_S_Y;
+	SceneObject* m_Handle_S_Z;
 
 	// Colors
 	glm::vec4 m_Color_Red   = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -72,4 +72,6 @@ private:
 	glm::vec4 m_Color_Yellow  = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);
 	glm::vec4 m_Color_Cyan    = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
 	glm::vec4 m_Color_Magenta = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
+
+	glm::vec4 m_Color_Selected = m_Color_Yellow;
 };

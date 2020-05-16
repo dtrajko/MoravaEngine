@@ -23,6 +23,15 @@
 #include "Pivot.h"
 
 
+
+const int MESH_TYPE_CUBE     = 0;
+const int MESH_TYPE_PYRAMID  = 1;
+const int MESH_TYPE_SPHERE   = 2;
+const int MESH_TYPE_CYLINDER = 3;
+const int MESH_TYPE_CONE     = 4;
+const int MESH_TYPE_RING     = 5;
+
+
 struct SceneObject
 {
 	int id;

@@ -1,44 +1,11 @@
 BeginObject	0
-Position	3.750000	2.500000	-3.878000
-Rotation	0.000000	0.000000	0.000000
-Scale	2.006000	2.006000	2.041000
-Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	1
-TextureName	semi_transparent
-TilingFactor	0.102000
-IsSelected	0
-MeshType	0
-EndObject
-BeginObject	1
-Position	2.500000	0.000000	5.102000
+Position	5.185000	0.000000	-3.455000
 Rotation	0.000000	0.000000	0.000000
 Scale	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	1
-TextureName	rusted_iron
+UseTexture	0
+TextureName	plain
 TilingFactor	1.000000
 IsSelected	0
 MeshType	0
-EndObject
-BeginObject	2
-Position	-3.333000	2.083000	3.469000
-Rotation	0.000000	0.000000	0.000000
-Scale	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	1
-TextureName	gold_albedo
-TilingFactor	1.000000
-IsSelected	0
-MeshType	0
-EndObject
-BeginObject	3
-Position	-4.167000	0.000000	-4.286000
-Rotation	0.000000	0.000000	0.000000
-Scale	1.031000	1.031000	1.027000
-Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	1
-TextureName	water
-TilingFactor	1.000000
-IsSelected	0
-MeshType	2
 EndObject

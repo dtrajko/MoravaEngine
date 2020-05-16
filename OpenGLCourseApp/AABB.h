@@ -13,13 +13,14 @@
 class AABB
 {
 public:
+	AABB();
 	AABB(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 	bool Contains(glm::vec3 position, glm::vec3 scale);
 	bool TestAABBOverlap(AABB* a, AABB* b);
 	void UpdatePosition(glm::vec3 position);
 	void Update(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 	void TransformBounds(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
-	void Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
+	void Draw();
 	glm::vec3 GetMin() const;
 	glm::vec3 GetMax() const;
 	virtual ~AABB();
@@ -34,6 +35,8 @@ public:
 
 	glm::vec3 m_BoundMin;
 	glm::vec3 m_BoundMax;
+
+	bool m_IsColliding;
 
 private:
 	std::vector<float> m_Vertices;
