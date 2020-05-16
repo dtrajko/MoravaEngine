@@ -7,6 +7,7 @@
 #include "AABB.h"
 #include "Pivot.h"
 #include "Grid.h"
+#include "Gizmo.h"
 
 
 const int MESH_TYPE_CUBE     = 0;
@@ -77,6 +78,7 @@ private:
 	Grid* m_Grid;
 	Quad* m_Quad;
 	Pivot* m_PivotScene;
+	Gizmo* m_Gizmo;
 
 	std::vector<SceneObject> m_SceneObjects;
 

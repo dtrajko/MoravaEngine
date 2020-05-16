@@ -186,6 +186,7 @@
     <ClCompile Include="FramebufferWater.cpp" />
     <ClCompile Include="FramebufferTexture.cpp" />
     <ClCompile Include="GeometryFactory.cpp" />
+    <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="ImGuiBuild.cpp" />
     <ClCompile Include="ImGuiWrapper.cpp" />
@@ -283,6 +284,7 @@
     <ClInclude Include="FramebufferWater.h" />
     <ClInclude Include="FramebufferTexture.h" />
     <ClInclude Include="GeometryFactory.h" />
+    <ClInclude Include="Gizmo.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="ImGuiWrapper.h" />
     <ClInclude Include="LearnOpenGL\Camera.h" />

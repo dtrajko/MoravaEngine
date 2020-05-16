@@ -70,7 +70,7 @@ enum class SceneName
 	Editor,
 };
 
-SceneName currentScene = SceneName::Cubemaps;
+SceneName currentScene = SceneName::Editor;
 
 float deltaTime = 0.0f;
 float lastTimestamp = 0.0f;

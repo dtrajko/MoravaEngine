@@ -5,7 +5,7 @@
 
 
 Block::Block()
-	: Mesh()
+	: Block(glm::vec3(1.0f))
 {
 }
 

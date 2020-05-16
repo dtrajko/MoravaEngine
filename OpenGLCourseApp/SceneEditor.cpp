@@ -111,6 +111,8 @@ SceneEditor::SceneEditor()
 
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(40.0f, 40.0f, 40.0f));
 
+    m_Gizmo = new Gizmo();
+
     m_PositionEdit     = new glm::vec3(0.0f);
     m_RotationEdit     = new glm::vec3(0.0f);
     m_ScaleEdit        = new glm::vec3(1.0f);
@@ -209,6 +211,8 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     else if (m_CurrentSkyboxInt == SKYBOX_NIGHT)
         m_Skybox = m_SkyboxNight;
 
+    m_Gizmo->Update();
+
     // Switching between scene objects that are currently in focus (mouse over)
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
@@ -242,6 +246,16 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_L])
         LoadScene();
+
+    // Gizmo switching modes
+    if (mainWindow.getKeys()[GLFW_KEY_1])
+        m_Gizmo->ChangeMode(GIZMO_MODE_TRANSLATE);
+
+    if (mainWindow.getKeys()[GLFW_KEY_2])
+        m_Gizmo->ChangeMode(GIZMO_MODE_ROTATE);
+
+    if (mainWindow.getKeys()[GLFW_KEY_3])
+        m_Gizmo->ChangeMode(GIZMO_MODE_SCALE);
 }
 
 void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject> sceneObjects, unsigned int* selected)
@@ -414,24 +428,6 @@ void SceneEditor::LoadScene()
             // printf("EndObject: New SceneObject added to m_SceneObjects...\n");
         }
     }
-}
-
-void SceneEditor::ResetScene()
-{
-    // Cooldown
-    if (m_CurrentTimestamp - m_SceneReset.lastTime < m_SceneReset.cooldown) return;
-    m_SceneReset.lastTime = m_CurrentTimestamp;
-
-    printf("SceneEditor::ResetScene: Deleting %zu objects!\n", m_SceneObjects.size());
-
-    for (auto& object : m_SceneObjects)
-    {
-        delete object.AABB;
-        delete object.pivot;
-        delete object.mesh;
-    }
-
-    m_SceneObjects.clear();
 }
 
 void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
@@ -723,9 +719,12 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     // Directional light (somewhere on pozitive Y axis, at X=0, Z=0)
     // Render Sphere (Light source)
     glm::mat4 model;
+
     textures["plain"]->Bind(0);
     textures["plain"]->Bind(1);
     textures["plain"]->Bind(2);
+
+    shaderEditor->setVec4("tintColor", glm::vec4(1.0f));
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
@@ -755,6 +754,8 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         if (m_DisplayLightSources && m_LightManager->spotLights[i].GetBasePL()->GetEnabled())
             meshes["sphere"]->Render();
     }
+
+    m_Gizmo->Render(shaderEditor);
 
     /* End of shaderEditor */
 
@@ -864,6 +865,26 @@ Mesh* SceneEditor::CreateNewPrimitive(int meshTypeID, glm::vec3 scale)
         break;
     }
     return mesh;
+}
+
+void SceneEditor::ResetScene()
+{
+    // Cooldown
+    if (m_CurrentTimestamp - m_SceneReset.lastTime < m_SceneReset.cooldown) return;
+    m_SceneReset.lastTime = m_CurrentTimestamp;
+
+    printf("SceneEditor::ResetScene: Deleting %zu objects!\n", m_SceneObjects.size());
+
+    for (auto& object : m_SceneObjects)
+    {
+        delete object.AABB;
+        delete object.pivot;
+        delete object.mesh;
+    }
+
+    m_SceneObjects.clear();
+
+    delete m_Gizmo;
 }
 
 SceneEditor::~SceneEditor()
