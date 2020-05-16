@@ -3,6 +3,8 @@
 #include "Scene.h"
 
 #include "ParticleSystem.h"
+#include "Grid.h"
+#include "Pivot.h"
 
 
 class SceneParticles : public Scene
@@ -14,7 +16,6 @@ public:
 	virtual void UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults) override;
 	virtual void Render(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
-	inline float GetFOV() { return m_FOV; };
 	virtual ~SceneParticles() override;
 
 private:
@@ -24,10 +25,10 @@ private:
 	virtual void SetupModels() override;
 	void SetupParticles();
 
-	float m_FOV = 60.0f;
-
 	// Particle System
 	ParticleSystem m_ParticleSystem;
 	ParticleProps m_Particle;
 
+	Grid* m_Grid;
+	Pivot* m_PivotScene;
 };

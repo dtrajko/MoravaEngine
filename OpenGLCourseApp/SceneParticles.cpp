@@ -19,6 +19,9 @@ SceneParticles::SceneParticles()
 	SetupMeshes();
 	SetupModels();
     SetupParticles();
+
+    m_Grid = new Grid(10);
+    m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(40.0f, 40.0f, 40.0f));
 }
 
 void SceneParticles::SetSkybox()
@@ -71,8 +74,7 @@ void SceneParticles::Update(float timestep, Window& mainWindow)
 
         m_Particle.Position = { particlePosition.x * normalizedMouseX, particlePosition.y * normalizedMouseY};
 
-        printf("SceneEditor::Update MouseCoords [ %.2ff %.2ff ] Particle Position [ %.2ff %.2ff ]\n",
-            normalizedMouseX, normalizedMouseY, particlePosition.x, particlePosition.y);
+        // printf("SceneEditor::Update MouseCoords [ %.2ff %.2ff ] Particle Position [ %.2ff %.2ff ]\n", normalizedMouseX, normalizedMouseY, particlePosition.x, particlePosition.y);
 
         for (int i = 0; i < 10; i++)
             m_ParticleSystem.Emit(m_Particle);
@@ -83,25 +85,27 @@ void SceneParticles::Update(float timestep, Window& mainWindow)
 
 void SceneParticles::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
 {
-    ImGui::Begin("Particles");
-    ImGui::SliderFloat("FOV", &m_FOV, 1.0f, 120.0f);
-    ImGui::End();
+    // ImGui::Begin("Particles");
+    // ImGui::SliderFloat("FOV", &m_FOV, 1.0f, 120.0f);
+    // ImGui::End();
 }
 
 void SceneParticles::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
     Shader* shaderEditor = shaders["editor_object"];
-
     shaderEditor->Bind();
-    shaderEditor->setMat4("projection", projectionMatrix);
-    shaderEditor->setMat4("view", m_Camera->CalculateViewMatrix());
 
     // Render Particles
     m_ParticleSystem.OnRender(m_Camera, shaderEditor);
+
+    m_Grid->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
+    m_PivotScene->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
 }
 
 
 SceneParticles::~SceneParticles()
 {
+    delete m_PivotScene;
+    delete m_Grid;
 }

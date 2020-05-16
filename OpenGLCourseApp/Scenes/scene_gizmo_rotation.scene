@@ -1,21 +1,21 @@
 BeginObject	0
 Position	0.000000	0.000000	0.000000
 Rotation	0.000000	0.000000	0.000000
-Scale	10.000000	1.000000	10.000000
+Scale	4.000000	0.500000	4.000000
 Color	0.000000	1.000000	0.000000	1.000000
 UseTexture	0
-TextureName	gold_albedo
+TextureName	plain
 TilingFactor	1.000000
 IsSelected	0
 MeshType	5
 EndObject
 BeginObject	1
 Position	0.000000	0.000000	0.000000
-Rotation	90.000000	0.000000	90.000000
-Scale	10.000000	1.000000	10.000000
+Rotation	0.000000	0.000000	90.000000
+Scale	4.000000	0.500000	4.000000
 Color	0.000000	0.000000	1.000000	1.000000
 UseTexture	0
-TextureName	gold_albedo
+TextureName	plain
 TilingFactor	1.000000
 IsSelected	0
 MeshType	5
@@ -23,10 +23,10 @@ EndObject
 BeginObject	2
 Position	0.000000	0.000000	0.000000
 Rotation	90.000000	0.000000	0.000000
-Scale	10.000000	1.000000	10.000000
+Scale	4.000000	0.500000	4.000000
 Color	1.000000	0.000000	0.000000	1.000000
 UseTexture	0
-TextureName	gold_albedo
+TextureName	plain
 TilingFactor	1.000000
 IsSelected	0
 MeshType	5

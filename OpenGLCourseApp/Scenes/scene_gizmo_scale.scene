@@ -1,18 +1,7 @@
 BeginObject	0
-Position	4.600000	0.000000	0.000000
-Rotation	0.000000	0.000000	90.000000
-Scale	0.400000	9.200000	0.400000
-Color	1.000000	0.000000	0.000000	1.000000
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-MeshType	3
-EndObject
-BeginObject	1
-Position	0.000000	4.600000	0.000000
+Position	0.000000	2.000000	0.000000
 Rotation	0.000000	0.000000	0.000000
-Scale	0.400000	9.200000	0.400000
+Scale	0.200000	4.000000	0.200000
 Color	0.000000	1.000000	0.000000	1.000000
 UseTexture	0
 TextureName	plain
@@ -20,10 +9,21 @@ TilingFactor	1.000000
 IsSelected	0
 MeshType	3
 EndObject
+BeginObject	1
+Position	2.000000	0.000000	0.000000
+Rotation	0.000000	0.000000	-90.000000
+Scale	0.200000	4.000000	0.200000
+Color	1.000000	0.000000	0.000000	1.000000
+UseTexture	0
+TextureName	plain
+TilingFactor	1.000000
+IsSelected	0
+MeshType	3
+EndObject
 BeginObject	2
-Position	0.000000	0.000000	4.600000
+Position	0.000000	0.000000	2.000000
 Rotation	90.000000	0.000000	0.000000
-Scale	0.400000	9.200000	0.400000
+Scale	0.200000	4.000000	0.200000
 Color	0.000000	0.000000	1.000000	1.000000
 UseTexture	0
 TextureName	plain
@@ -32,9 +32,9 @@ IsSelected	0
 MeshType	3
 EndObject
 BeginObject	3
-Position	10.000000	0.000000	0.000000
+Position	4.400000	0.000000	0.000000
 Rotation	0.000000	0.000000	-90.000000
-Scale	1.000000	1.600000	1.000000
+Scale	0.600000	0.800000	0.600000
 Color	1.000000	0.000000	0.000000	1.000000
 UseTexture	0
 TextureName	plain
@@ -43,9 +43,9 @@ IsSelected	0
 MeshType	3
 EndObject
 BeginObject	4
-Position	0.000000	10.000000	0.000000
+Position	0.000000	4.400000	0.000000
 Rotation	0.000000	0.000000	0.000000
-Scale	1.000000	1.600000	1.000000
+Scale	0.600000	0.800000	0.600000
 Color	0.000000	1.000000	0.000000	1.000000
 UseTexture	0
 TextureName	plain
@@ -54,9 +54,9 @@ IsSelected	0
 MeshType	3
 EndObject
 BeginObject	5
-Position	0.000000	0.000000	10.000000
+Position	0.000000	0.000000	4.400000
 Rotation	90.000000	0.000000	0.000000
-Scale	1.000000	1.600000	1.000000
+Scale	0.600000	0.800000	0.600000
 Color	0.000000	0.000000	1.000000	1.000000
 UseTexture	0
 TextureName	plain

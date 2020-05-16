@@ -117,6 +117,8 @@ public:
 	inline std::map<std::string, Mesh*> GetMeshes() const { return meshes; };
 	inline void SetWireframeEnabled(bool wireframeEnabled) { m_WireframeEnabled = wireframeEnabled; };
 	inline bool IsWireframeEnabled() { return m_WireframeEnabled; };
+	inline float GetFOV() { return m_FOV; };
+	inline void SetFOV(float FOV) { m_FOV = FOV; };
 	virtual ~Scene();
 
 private:
@@ -155,4 +157,6 @@ private:
 	unsigned int shadowMapHeight;
 
 	bool m_WireframeEnabled;
+
+	float m_FOV = 60.0f;
 };

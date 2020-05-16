@@ -512,10 +512,14 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     }
     // End ImGui drop-down list
 
+    float FOV = GetFOV();
+
     ImGui::SliderFloat("Tiling Factor", m_TilingFactorEdit, 0.0f, 10.0f);
     ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(m_SceneObjects.size() - 1));
     ImGui::Separator();
-    ImGui::SliderFloat("FOV", &m_FOV, 1.0f, 120.0f);
+    ImGui::SliderFloat("FOV", &FOV, 1.0f, 120.0f);
+
+    SetFOV(FOV);
 
     ImGui::Separator();
     ImGui::Text("Select Object Type");
@@ -683,96 +687,7 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
     Shader* shaderEditor = shaders["editor_object"];
-
     shaderEditor->Bind();
-    shaderEditor->setMat4("projection", projectionMatrix);
-    shaderEditor->setMat4("view", m_Camera->CalculateViewMatrix());
-
-    // Set shader variables for Phong lighting model
-
-    // Material
-    shaderEditor->setFloat("material.specularIntensity", 1.0f);
-    shaderEditor->setFloat("material.shininess", 64.0f);
-
-    // Directional Light
-    shaderEditor->setBool( "directionalLight.base.enabled",          m_LightManager->directionalLight.GetEnabled());
-    shaderEditor->setVec3( "directionalLight.base.color",            m_LightManager->directionalLight.GetColor());
-    shaderEditor->setFloat("directionalLight.base.ambientIntensity", m_LightManager->directionalLight.GetAmbientIntensity());
-    shaderEditor->setFloat("directionalLight.base.diffuseIntensity", m_LightManager->directionalLight.GetDiffuseIntensity());
-    shaderEditor->setVec3( "directionalLight.direction",             m_LightManager->directionalLight.GetDirection());
-
-    // Point Lights
-    for (unsigned int i = 0; i < m_LightManager->pointLightCount; i++)
-    {
-        char locBuff[100] = { '\0' };
-
-        snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.enabled", i);
-        shaderEditor->setBool(locBuff, m_LightManager->pointLights[i].GetEnabled());
-
-        snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.color", i);
-        shaderEditor->setVec3(locBuff, m_LightManager->pointLights[i].GetColor());
-
-        snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.ambientIntensity", i);
-        shaderEditor->setFloat(locBuff, m_LightManager->pointLights[i].GetAmbientIntensity());
-
-        snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.diffuseIntensity", i);
-        shaderEditor->setFloat(locBuff, m_LightManager->pointLights[i].GetDiffuseIntensity());
-
-        snprintf(locBuff, sizeof(locBuff), "pointLights[%d].position", i);
-        shaderEditor->setVec3(locBuff, m_LightManager->pointLights[i].GetPosition());
-
-        snprintf(locBuff, sizeof(locBuff), "pointLights[%d].constant", i);
-        shaderEditor->setFloat(locBuff, m_LightManager->pointLights[i].GetConstant());
-
-        snprintf(locBuff, sizeof(locBuff), "pointLights[%d].linear", i);
-        shaderEditor->setFloat(locBuff, m_LightManager->pointLights[i].GetLinear());
-
-        snprintf(locBuff, sizeof(locBuff), "pointLights[%d].exponent", i);
-        shaderEditor->setFloat(locBuff, m_LightManager->pointLights[i].GetExponent());
-    }
-
-    shaderEditor->setInt("pointLightCount", m_LightManager->pointLightCount);
-
-    // Spot Lights
-    for (unsigned int i = 0; i < m_LightManager->spotLightCount; i++)
-    {
-        char locBuff[100] = { '\0' };
-
-        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.enabled", i);
-        shaderEditor->setBool(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetEnabled());
-
-        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.color", i);
-        shaderEditor->setVec3(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetColor());
-
-        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.ambientIntensity", i);
-        shaderEditor->setFloat(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetAmbientIntensity());
-
-        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.diffuseIntensity", i);
-        shaderEditor->setFloat(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetDiffuseIntensity());
-
-        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.position", i);
-        shaderEditor->setVec3(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetPosition());
-
-        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.constant", i);
-        shaderEditor->setFloat(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetConstant());
-
-        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.linear", i);
-        shaderEditor->setFloat(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetLinear());
-
-        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.exponent", i);
-        shaderEditor->setFloat(locBuff, m_LightManager->spotLights[i].GetBasePL()->GetExponent());
-
-        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].direction", i);
-        shaderEditor->setVec3(locBuff, m_LightManager->spotLights[i].GetDirection());
-
-        snprintf(locBuff, sizeof(locBuff), "spotLights[%d].edge", i);
-        shaderEditor->setFloat(locBuff, m_LightManager->spotLights[i].GetEdge());
-    }
-
-    shaderEditor->setInt("spotLightCount", m_LightManager->spotLightCount);
-
-    // Eye position / camera direction
-    shaderEditor->setVec3("eyePosition", m_Camera->GetPosition());
 
     for (auto& object : m_SceneObjects)
     {
@@ -868,11 +783,6 @@ void SceneEditor::AddSceneObject()
 
     Mesh* mesh = CreateNewPrimitive(m_CurrentMeshTypeInt, glm::vec3(1.0f));
 
-    glm::vec3 scaleAABB = glm::vec3(1.0f);
-
-    if (m_CurrentMeshTypeInt == MESH_TYPE_RING)
-        scaleAABB = glm::vec3(1.0f, 0.2f, 1.0f);
-
     // Add Scene Object here
     SceneObject sceneObject = {
         glm::mat4(1.0f),
@@ -884,7 +794,7 @@ void SceneEditor::AddSceneObject()
         "plain",
         1.0f,
         true,
-        new AABB(glm::vec3(0.0f), glm::vec3(0.0f), scaleAABB),
+        new AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f)),
         new Pivot(glm::vec3(0.0f), glm::vec3(1.0f)),
         mesh,
         m_CurrentMeshTypeInt,
