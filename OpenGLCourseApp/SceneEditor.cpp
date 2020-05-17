@@ -258,10 +258,10 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         m_Gizmo->ChangeMode(GIZMO_MODE_TRANSLATE);
 
     if (mainWindow.getKeys()[GLFW_KEY_2])
-        m_Gizmo->ChangeMode(GIZMO_MODE_ROTATE);
+        m_Gizmo->ChangeMode(GIZMO_MODE_SCALE);
 
     if (mainWindow.getKeys()[GLFW_KEY_3])
-        m_Gizmo->ChangeMode(GIZMO_MODE_SCALE);
+        m_Gizmo->ChangeMode(GIZMO_MODE_ROTATE);
 }
 
 void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*> sceneObjects, unsigned int* selected)

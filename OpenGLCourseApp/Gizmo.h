@@ -13,6 +13,10 @@ const int GIZMO_MODE_TRANSLATE = 0;
 const int GIZMO_MODE_SCALE     = 1;
 const int GIZMO_MODE_ROTATE    = 2;
 
+const int ACTIVE_AXIS_X = 0;
+const int ACTIVE_AXIS_Y = 1;
+const int ACTIVE_AXIS_Z = 2;
+
 
 class Gizmo
 {
@@ -33,6 +37,8 @@ private:
 	glm::vec3 m_Rotation;
 	glm::vec3 m_Scale;
 
+	int m_ActiveAxis;
+
 	EventCooldown m_ToggleMode;
 
 	std::vector<SceneObject*> m_SceneObjects;
@@ -50,11 +56,6 @@ private:
 	SceneObject* m_Square_T_YZ; // cyan
 	SceneObject* m_Square_T_ZX; // magenta
 
-	// Rotate meshes
-	SceneObject* m_Ring_S_X;
-	SceneObject* m_Ring_S_Y;
-	SceneObject* m_Ring_S_Z;
-
 	// Scale meshes
 	SceneObject* m_Axis_S_X;
 	SceneObject* m_Axis_S_Y;
@@ -63,6 +64,11 @@ private:
 	SceneObject* m_Handle_S_X;
 	SceneObject* m_Handle_S_Y;
 	SceneObject* m_Handle_S_Z;
+
+	// Rotate meshes
+	SceneObject* m_Ring_R_X;
+	SceneObject* m_Ring_R_Y;
+	SceneObject* m_Ring_R_Z;
 
 	// Colors
 	glm::vec4 m_Color_Red   = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
