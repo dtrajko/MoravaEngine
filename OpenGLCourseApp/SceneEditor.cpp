@@ -211,7 +211,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     else if (m_CurrentSkyboxInt == SKYBOX_NIGHT)
         m_Skybox = m_SkyboxNight;
 
-    m_Gizmo->Update(m_Camera->GetPosition());
+    m_Gizmo->Update(m_Camera->GetPosition(), mainWindow);
 
     // Switching between scene objects that are currently in focus (mouse over)
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
@@ -220,7 +220,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
         if (m_SceneObjects.size() > 0 && m_SceneObjects.at(m_SelectedIndex)->isSelected)
         {
-            m_Gizmo->ToggleMode();
+            //  m_Gizmo->ToggleMode();
             m_Gizmo->SetSceneObject(m_SceneObjects.at(m_SelectedIndex));
         }
     }

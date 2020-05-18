@@ -137,6 +137,8 @@ void Window::handleMouse(GLFWwindow* window, double xPos, double yPos)
 	theWindow->xChange = (GLfloat)xPos - theWindow->lastX;
 	theWindow->yChange = theWindow->lastY - (GLfloat)yPos;
 
+	// printf("theWindow->xChange [%.2f] theWindow->yChange [%.2f]\n", theWindow->xChange, theWindow->yChange);
+
 	theWindow->lastX = (GLfloat)xPos;
 	theWindow->lastY = (GLfloat)yPos;
 
@@ -198,14 +200,14 @@ void Window::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOff
 GLfloat Window::getXChange()
 {
 	float theChange = xChange;
-	xChange = 0.0f;
+	// xChange = 0.0f;
 	return theChange;
 }
 
 GLfloat Window::getYChange()
 {
 	float theChange = yChange;
-	yChange = 0.0f;
+	// yChange = 0.0f;
 	return theChange;
 }
 
