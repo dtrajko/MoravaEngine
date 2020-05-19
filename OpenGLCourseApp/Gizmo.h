@@ -9,9 +9,10 @@
 #include "Scene.h"
 
 
-const int GIZMO_MODE_TRANSLATE = 0;
-const int GIZMO_MODE_SCALE     = 1;
-const int GIZMO_MODE_ROTATE    = 2;
+const int GIZMO_MODE_NONE      = 0;
+const int GIZMO_MODE_TRANSLATE = 1;
+const int GIZMO_MODE_SCALE     = 2;
+const int GIZMO_MODE_ROTATE    = 3;
 
 
 struct Bool3
@@ -25,30 +26,42 @@ struct GizmoObject
 {
 	SceneObject so;
 	Bool3 axes;
+	std::string name;
 };
 
 class Gizmo
 {
 public:
 	Gizmo();
+	void Update(glm::vec3 cameraPosition, Window& mainWindow);
+	void UpdateActive(glm::vec3 cameraPosition, Window& mainWindow);
+	void Render(Shader* shader);
+	void CreateObjects();
 	void ChangeMode(int mode);
 	void ToggleMode();
 	void SetSceneObject(SceneObject* sceneObject);
-	void Update(glm::vec3 cameraPosition, Window& mainWindow);
-	void Render(Shader* shader);
+	void UpdateTransformFromObject(SceneObject* sceneObject);
+	void SetActive(bool active);
+	inline bool GetActive() { return m_Active; };
+	inline Bool3 GetAxesEnabled() { return m_AxesEnabled; };
+	std::string GetModeDescriptive();
+	void PrintObjects();
+	void OnMouseClick(Window& mainWindow, SceneObject* sceneObject);
 	~Gizmo();
 
 private:
 	int m_Mode;
+	Bool3 m_AxesEnabled;
+	bool m_Active;
 
 	SceneObject* m_SceneObject;
 	glm::vec3 m_Position;
 	glm::vec3 m_Rotation;
 	glm::vec3 m_Scale;
 
-	Bool3 m_AxesEnabled;
-
-	EventCooldown m_ToggleMode;
+	EventCooldown m_MouseClick;
+	EventCooldown m_PrintObjects;
+	EventCooldown m_ChangeActive;
 
 	std::vector<GizmoObject*> m_GizmoObjects;
 
@@ -61,9 +74,9 @@ private:
 	GizmoObject* m_Arrow_T_Y;
 	GizmoObject* m_Arrow_T_Z;
 
-	GizmoObject* m_Square_T_XY; // yellow
 	GizmoObject* m_Square_T_YZ; // cyan
 	GizmoObject* m_Square_T_ZX; // magenta
+	GizmoObject* m_Square_T_XY; // yellow
 
 	// Scale meshes
 	GizmoObject* m_Axis_S_X;
@@ -90,7 +103,7 @@ private:
 
 	glm::vec4 m_Color_Selected = m_Color_Yellow;
 
-	float m_FactorTranslate = 0.04f;
-	float m_FactorScale = 0.04f;
+	float m_FactorTranslate = 0.01f;
+	float m_FactorScale = 0.01f;
 	float m_FactorRotate = 0.1f;
 };

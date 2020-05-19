@@ -202,7 +202,6 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     for (auto& object : m_SceneObjects) {
         object->isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             object->AABB->GetMin(), object->AABB->GetMax(), glm::vec2(0.0f));
-
         object->mesh->Update(object->scale);
     }
 
@@ -220,8 +219,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
         if (m_SceneObjects.size() > 0 && m_SceneObjects.at(m_SelectedIndex)->isSelected)
         {
-            //  m_Gizmo->ToggleMode();
-            m_Gizmo->SetSceneObject(m_SceneObjects.at(m_SelectedIndex));
+            m_Gizmo->OnMouseClick(mainWindow, m_SceneObjects.at(m_SelectedIndex));
         }
     }
 
@@ -262,6 +260,10 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     if (mainWindow.getKeys()[GLFW_KEY_3])
         m_Gizmo->ChangeMode(GIZMO_MODE_ROTATE);
+
+    if (mainWindow.getKeys()[GLFW_KEY_4])
+        m_Gizmo->ChangeMode(GIZMO_MODE_NONE);
+
 }
 
 void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*> sceneObjects, unsigned int* selected)
@@ -428,9 +430,9 @@ void SceneEditor::LoadScene()
         else if (tokens.size() >= 1 && tokens[0] == "EndObject") {
             sceneObject.id = (int)m_SceneObjects.size();
             sceneObject.transform = Math::CreateTransform(sceneObject.position, sceneObject.rotation, sceneObject.scale);
-            sceneObject.AABB = new AABB(sceneObject.position, sceneObject.rotation, sceneObject.scale);
+            sceneObject.AABB  = new AABB(sceneObject.position, sceneObject.rotation, sceneObject.scale);
             sceneObject.pivot = new Pivot(sceneObject.position, sceneObject.scale);
-            sceneObject.mesh = CreateNewPrimitive(sceneObject.meshType, sceneObject.scale);
+            sceneObject.mesh  = CreateNewPrimitive(sceneObject.meshType, sceneObject.scale);
             m_SceneObjects.push_back(&sceneObject);
             // printf("EndObject: New SceneObject added to m_SceneObjects...\n");
         }
@@ -518,20 +520,28 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     }
     // End ImGui drop-down list
 
-    float FOV = GetFOV();
-
     ImGui::SliderFloat("Tiling Factor", m_TilingFactorEdit, 0.0f, 10.0f);
     ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(m_SceneObjects.size() - 1));
-    ImGui::Separator();
-    ImGui::SliderFloat("FOV", &FOV, 1.0f, 120.0f);
 
-    SetFOV(FOV);
+    bool gizmoActive = m_Gizmo->GetActive();
+    int sceneObjectCount = (int)m_SceneObjects.size();
+    Bool3 axesEnabled = m_Gizmo->GetAxesEnabled();
+
+    ImGui::Separator();
+    ImGui::Text("Transform Gizmo");
+    ImGui::Text(m_Gizmo->GetModeDescriptive().c_str());
+    ImGui::SliderInt("Scene Objects Count", &sceneObjectCount, 0, 100);
+    ImGui::Checkbox("Gizmo Active", &gizmoActive);
+    ImGui::Text("Axes Enabled");
+    ImGui::Checkbox("Axis X", &axesEnabled.x);
+    ImGui::Checkbox("Axis Y", &axesEnabled.y);
+    ImGui::Checkbox("Axis Z", &axesEnabled.z);
 
     ImGui::Separator();
     ImGui::Text("Select Object Type");
-    ImGui::RadioButton("Cube",     &m_CurrentMeshTypeInt,    MESH_TYPE_CUBE);
+    ImGui::RadioButton("Cube",     &m_CurrentMeshTypeInt, MESH_TYPE_CUBE);
     ImGui::RadioButton("Pyramid",  &m_CurrentMeshTypeInt, MESH_TYPE_PYRAMID);
-    ImGui::RadioButton("Sphere",   &m_CurrentMeshTypeInt,  MESH_TYPE_SPHERE);
+    ImGui::RadioButton("Sphere",   &m_CurrentMeshTypeInt, MESH_TYPE_SPHERE);
     ImGui::RadioButton("Cylinder", &m_CurrentMeshTypeInt, MESH_TYPE_CYLINDER);
     ImGui::RadioButton("Cone",     &m_CurrentMeshTypeInt, MESH_TYPE_CONE);
     ImGui::RadioButton("Ring",     &m_CurrentMeshTypeInt, MESH_TYPE_RING);
@@ -540,6 +550,11 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Text("Select Skybox");
     ImGui::RadioButton("Day",   &m_CurrentSkyboxInt, SKYBOX_DAY);
     ImGui::RadioButton("Night", &m_CurrentSkyboxInt, SKYBOX_NIGHT);
+
+    ImGui::Separator();
+    float FOV = GetFOV();
+    ImGui::SliderFloat("FOV", &FOV, 1.0f, 120.0f);
+    SetFOV(FOV);
 
     ImGui::Separator();
     ImGui::Text("Lights");
@@ -585,7 +600,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     SPointLight pointLights[4];
     char locBuff[100] = { '\0' };
-
     for (unsigned int pl = 0; pl < m_LightManager->pointLightCount; pl++)
     {
         pointLights[pl].base.enabled          = m_LightManager->pointLights[pl].GetEnabled();
@@ -685,7 +699,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
         ImGui::Separator();
     }
-
     ImGui::End();
 }
 
@@ -697,12 +710,6 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 
     for (auto& object : m_SceneObjects)
     {
-        // object->transform = glm::mat4(1.0f);
-        // object->transform = glm::translate(object->transform, object->position);
-        // object->transform = glm::rotate(object->transform, glm::radians(object->rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-        // object->transform = glm::rotate(object->transform, glm::radians(object->rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-        // object->transform = glm::rotate(object->transform, glm::radians(object->rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-
         object->transform = Math::CreateTransform(object->position, object->rotation, glm::vec3(1.0f));
 
         // For meshes that can't be scaled on vertex level
@@ -772,7 +779,6 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     /* End of shaderEditor */
 
     /* Begin of shaderBasic */
-
     if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
     {
         shaders["basic"]->Bind();
@@ -785,7 +791,6 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     }
 
     m_Grid->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
-
     m_PivotScene->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
 }
 
@@ -798,6 +803,8 @@ void SceneEditor::AddSceneObject()
     // Cooldown
     if (m_CurrentTimestamp - m_ObjectAdd.lastTime < m_ObjectAdd.cooldown) return;
     m_ObjectAdd.lastTime = m_CurrentTimestamp;
+
+    m_Gizmo->SetActive(false);
 
     Mesh* mesh = CreateNewPrimitive(m_CurrentMeshTypeInt, glm::vec3(1.0f));
 
@@ -828,6 +835,8 @@ void SceneEditor::CopySceneObject(SceneObject* sceneObject)
     // Cooldown
     if (m_CurrentTimestamp - m_ObjectCopy.lastTime < m_ObjectCopy.cooldown) return;
     m_ObjectCopy.lastTime = m_CurrentTimestamp;
+
+    m_Gizmo->SetActive(false);
 
     Mesh* newMesh = CreateNewPrimitive(sceneObject->meshType, sceneObject->mesh->GetScale());
 
@@ -900,12 +909,11 @@ void SceneEditor::ResetScene()
 
     for (auto& object : m_SceneObjects)
     {
-        // delete object.AABB;
-        // delete object.pivot;
-        // delete object.mesh;
+        // delete object->AABB;
+        // delete object->pivot;
+        // delete object->mesh;
     }
-
-    // m_SceneObjects.clear();
+    m_SceneObjects.clear();
 }
 
 SceneEditor::~SceneEditor()

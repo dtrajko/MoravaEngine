@@ -45,4 +45,7 @@ private:
 	GLfloat m_TurnSpeed;
 	GLfloat m_SpeedBoost = 4.0f;
 
+	float m_MouseDeltaX = 0.0f;
+	float m_MouseDeltaY = 0.0f;
+
 };

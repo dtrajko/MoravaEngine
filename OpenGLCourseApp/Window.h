@@ -19,6 +19,8 @@ public:
 	bool* getMouseButtons() { return buttons; };
 	float getXChange();
 	float getYChange();
+	float getXChangeReset();
+	float getYChangeReset();
 	inline float GetMouseX() const { return m_MouseX; };
 	inline float GetMouseY() const { return m_MouseY; };
 	float getXMouseScrollOffset();
@@ -44,6 +46,8 @@ private:
 	GLfloat lastY;
 	float xChange;
 	float yChange;
+	float xChangeReset;
+	float yChangeReset;
 	float xMouseScrollOffset;
 	float yMouseScrollOffset;
 	bool mouseFirstMoved;

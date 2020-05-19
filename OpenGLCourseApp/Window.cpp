@@ -8,6 +8,8 @@ Window::Window()
 {
 	xChange = 0.0f;
 	yChange = 0.0f;
+	xChangeReset = 0.0f;
+	yChangeReset = 0.0f;
 }
 
 Window::Window(GLint windowWidth, GLint windowHeight, const char* windowTitle)
@@ -15,6 +17,8 @@ Window::Window(GLint windowWidth, GLint windowHeight, const char* windowTitle)
 {
 	xChange = 0.0f;
 	yChange = 0.0f;
+	xChangeReset = 0.0f;
+	yChangeReset = 0.0f;
 
 	for (size_t i = 0; i < 1024; i++)
 		keys[i] = false;
@@ -137,6 +141,9 @@ void Window::handleMouse(GLFWwindow* window, double xPos, double yPos)
 	theWindow->xChange = (GLfloat)xPos - theWindow->lastX;
 	theWindow->yChange = theWindow->lastY - (GLfloat)yPos;
 
+	theWindow->xChangeReset = theWindow->xChange;
+	theWindow->yChangeReset = theWindow->yChange;
+
 	// printf("theWindow->xChange [%.2f] theWindow->yChange [%.2f]\n", theWindow->xChange, theWindow->yChange);
 
 	theWindow->lastX = (GLfloat)xPos;
@@ -200,14 +207,26 @@ void Window::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOff
 GLfloat Window::getXChange()
 {
 	float theChange = xChange;
-	// xChange = 0.0f;
 	return theChange;
 }
 
 GLfloat Window::getYChange()
 {
 	float theChange = yChange;
-	// yChange = 0.0f;
+	return theChange;
+}
+
+float Window::getXChangeReset()
+{
+	float theChange = xChangeReset;
+	xChangeReset = 0.0f;
+	return theChange;
+}
+
+float Window::getYChangeReset()
+{
+	float theChange = yChangeReset;
+	yChangeReset = 0.0f;
 	return theChange;
 }
 
