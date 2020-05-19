@@ -150,6 +150,9 @@ void SceneEditor::SetSkybox()
     m_SkyboxNight = new Skybox(m_SkyboxFacesNight);
 
     m_Skybox = m_SkyboxNight;
+
+    // m_TextureCubeMap = new TextureCubeMap(m_SkyboxFacesDay);
+    // m_TextureCubeMapID = m_TextureCubeMap->GetID();
 }
 
 void SceneEditor::SetTextures()
@@ -529,7 +532,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::Separator();
     ImGui::Text("Transform Gizmo");
-    ImGui::Text(m_Gizmo->GetModeDescriptive().c_str());
     ImGui::SliderInt("Scene Objects Count", &sceneObjectCount, 0, 100);
     ImGui::Checkbox("Gizmo Active", &gizmoActive);
     ImGui::Text("Axes Enabled");
@@ -707,6 +709,9 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 {
     Shader* shaderEditor = shaders["editor_object"];
     shaderEditor->Bind();
+
+    // m_TextureCubeMap->Bind(1);
+    // shaderEditor->setInt("cubeMap", 1);
 
     for (auto& object : m_SceneObjects)
     {

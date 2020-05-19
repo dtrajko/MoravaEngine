@@ -146,7 +146,6 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     // Eye position / camera direction
     shaderEditor->setVec3("eyePosition", scene->GetCamera()->GetPosition());
 
-
     if (scene->GetSettings().enableSkybox)
     {
         glm::mat4 modelMatrix = glm::mat4(1.0f);

@@ -44,7 +44,7 @@ public:
 	void SetActive(bool active);
 	inline bool GetActive() { return m_Active; };
 	inline Bool3 GetAxesEnabled() { return m_AxesEnabled; };
-	std::string GetModeDescriptive();
+	std::string GetModeDescriptive(int modeID = -1);
 	void PrintObjects();
 	void OnMouseClick(Window& mainWindow, SceneObject* sceneObject);
 	~Gizmo();

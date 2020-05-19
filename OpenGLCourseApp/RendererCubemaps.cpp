@@ -157,7 +157,9 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
     model = glm::scale(model, glm::vec3(0.2f));
     shaders["cubemaps"]->setMat4("model", model);
-    shaders["cubemaps"]->setVec4("tintColor", glm::vec4(0.8281f, 0.6836f, 0.2148f, 0.9f)); // Gold color
+    // shaders["cubemaps"]->setVec4("tintColor", glm::vec4(0.8281f, 0.6836f, 0.2148f, 0.9f)); // Gold color
+    shaders["cubemaps"]->setVec4("tintColor", glm::vec4(0.7529f, 0.7529f, 0.7529f, 0.9f)); // Silver color
+
     if (sceneCubemaps->m_NanosuitModelEnabled)
         models["nanosuit"]->Draw(shaders["cubemaps"]);
 

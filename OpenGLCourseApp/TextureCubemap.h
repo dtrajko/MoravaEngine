@@ -10,6 +10,7 @@ public:
 	TextureCubeMap();
 	TextureCubeMap(std::vector<std::string> faces);
 	inline unsigned int GetID() const { return m_ID; };
+	void Bind(unsigned int slot);
 	~TextureCubeMap();
 
 private:

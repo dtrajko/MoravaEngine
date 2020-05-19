@@ -8,6 +8,7 @@
 #include "Pivot.h"
 #include "Grid.h"
 #include "Gizmo.h"
+#include "TextureCubeMap.h"
 
 
 
@@ -90,5 +91,8 @@ private:
 	Skybox* m_SkyboxNight;
 
 	int m_CurrentSkyboxInt;
+
+	TextureCubeMap* m_TextureCubeMap;
+	unsigned int m_TextureCubeMapID;
 
 };

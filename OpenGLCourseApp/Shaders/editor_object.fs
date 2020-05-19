@@ -4,6 +4,7 @@ in vec4 vColor;
 in vec2 vTexCoord;
 in vec3 vNormal;
 in vec3 vFragPos;
+in vec3 vPosition;
 
 out vec4 FragColor;
 
@@ -55,6 +56,7 @@ uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 
 uniform Material material;
 
+// uniform samplerCube cubeMap;
 uniform sampler2D albedoMap;
 uniform vec4  tintColor;
 uniform float tilingFactor;
@@ -149,6 +151,10 @@ vec4 CalcSpotLights()
 
 void main()
 {
+    vec3 I = normalize(vPosition - eyePosition);
+    vec3 R = reflect(I, normalize(vNormal));
+    // CubeMapColor = vec4(texture(cubeMap, R).rgb, 1.0);
+
 	vec4 finalColor = CalcDirectionalLight();
 	finalColor += CalcPointLights();
 	finalColor += CalcSpotLights();
@@ -156,5 +162,5 @@ void main()
 	vec4 texColor = texture(albedoMap, vTexCoord * tilingFactor);
 	if(texColor.a < 0.1)
 		discard;
-	FragColor = texColor * tintColor * finalColor;
+	FragColor = texColor * tintColor * finalColor; // CubeMapColor
 }

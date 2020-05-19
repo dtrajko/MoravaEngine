@@ -72,12 +72,13 @@ void Gizmo::SetActive(bool active)
 	printf("Gizmo::SetActive m_Active = %d m_Mode %s\n", m_Active, GetModeDescriptive().c_str());
 }
 
-std::string Gizmo::GetModeDescriptive()
+std::string Gizmo::GetModeDescriptive(int modeID)
 {
-	if (m_Mode == GIZMO_MODE_NONE)      return "GIZMO_MODE_NONE";
-	if (m_Mode == GIZMO_MODE_TRANSLATE) return "GIZMO_MODE_TRANSLATE";
-	if (m_Mode == GIZMO_MODE_SCALE)     return "GIZMO_MODE_SCALE";
-	if (m_Mode == GIZMO_MODE_ROTATE)    return "GIZMO_MODE_ROTATE";
+	if (modeID == -1) modeID = m_Mode;
+	if (modeID == GIZMO_MODE_NONE)      return "GIZMO_MODE_NONE";
+	if (modeID == GIZMO_MODE_TRANSLATE) return "GIZMO_MODE_TRANSLATE";
+	if (modeID == GIZMO_MODE_SCALE)     return "GIZMO_MODE_SCALE";
+	if (modeID == GIZMO_MODE_ROTATE)    return "GIZMO_MODE_ROTATE";
 	return "Undefined";
 }
 
@@ -87,14 +88,14 @@ void Gizmo::OnMouseClick(Window& mainWindow, SceneObject* sceneObject)
 	if (currentTimestamp - m_MouseClick.lastTime < m_MouseClick.cooldown) return;
 	m_MouseClick.lastTime = currentTimestamp;
 
-	printf("Gizmo::OnMouseClick BEGIN m_Active: %d Mode: %s Object Count: %zu\n", m_Active, GetModeDescriptive().c_str(), m_GizmoObjects.size());
+	// printf("Gizmo::OnMouseClick BEGIN m_Active: %d Mode: %s Object Count: %zu\n", m_Active, GetModeDescriptive().c_str(), m_GizmoObjects.size());
 
 	SetActive(true);
 	SetSceneObject(sceneObject);
 	if (mainWindow.getKeys()[GLFW_KEY_TAB])
 		ToggleMode();
 
-	printf("Gizmo::OnMouseClick END m_Active: %d Mode: %s Object Count: %zu\n", m_Active, GetModeDescriptive().c_str(), m_GizmoObjects.size());
+	// printf("Gizmo::OnMouseClick END m_Active: %d Mode: %s Object Count: %zu\n", m_Active, GetModeDescriptive().c_str(), m_GizmoObjects.size());
 }
 
 void Gizmo::ChangeMode(int mode)
@@ -106,6 +107,8 @@ void Gizmo::ChangeMode(int mode)
 
 void Gizmo::ToggleMode()
 {
+	int oldMode = m_Mode;
+
 	if (!m_Active)
 	{
 		m_Mode = GIZMO_MODE_NONE;
@@ -114,25 +117,35 @@ void Gizmo::ToggleMode()
 
 	if (m_Mode == GIZMO_MODE_NONE) {
 		m_Mode = GIZMO_MODE_TRANSLATE;
-		// printf("Gizmo::ToggleMode - toggle from %i to %i\n", GIZMO_MODE_NONE, m_Mode);
 	}
 	else if (m_Mode == GIZMO_MODE_TRANSLATE) {
 		m_Mode = GIZMO_MODE_SCALE;
-		// printf("Gizmo::ToggleMode - toggle from %i to %i\n", GIZMO_MODE_TRANSLATE, m_Mode);
 	}
 	else if (m_Mode == GIZMO_MODE_SCALE) {
 		m_Mode = GIZMO_MODE_ROTATE;
-		// printf("Gizmo::ToggleMode - toggle from %i to %i\n", GIZMO_MODE_SCALE, m_Mode);
 	}
 	else if (m_Mode == GIZMO_MODE_ROTATE) {
 		m_Mode = GIZMO_MODE_NONE;
-		// printf("Gizmo::ToggleMode - toggle from %i to %i\n", GIZMO_MODE_ROTATE, m_Mode);
 	}
 
-	printf("Gizmo::ToggleMode m_Active = %d m_Mode = %s m_GizmoObjects.size = %zu\n", m_Active, GetModeDescriptive().c_str(), m_GizmoObjects.size());
+	printf("Gizmo::ToggleMode m_Active = %d oldMode = %s m_Mode = %s m_GizmoObjects.size = %zu\n",
+		m_Active, GetModeDescriptive(oldMode).c_str(), GetModeDescriptive().c_str(), m_GizmoObjects.size());
 
 	UpdateTransformFromObject(m_SceneObject);
 	CreateObjects();
+}
+
+void Gizmo::PrintObjects()
+{
+	float currentTimestamp = (float)glfwGetTime();
+	if (currentTimestamp - m_PrintObjects.lastTime < m_PrintObjects.cooldown) return;
+	m_PrintObjects.lastTime = currentTimestamp;
+
+	for (size_t i = 0; i < m_GizmoObjects.size(); i++)
+	{
+		printf("Gizmo Object\ti = %zu\tSO.id = %i\tName = '%s'\t\tAxes [ %d %d %d ]\n",
+			i, m_GizmoObjects[i]->so.id, m_GizmoObjects[i]->name.c_str(), m_GizmoObjects[i]->axes.x, m_GizmoObjects[i]->axes.y, m_GizmoObjects[i]->axes.z);
+	}
 }
 
 void Gizmo::Update(glm::vec3 cameraPosition, Window& mainWindow)
@@ -706,19 +719,6 @@ void Gizmo::CreateObjects()
 	}
 
 	printf("Gizmo::CreateObjects m_Active: %d Mode: %s Object Count: %zu\n", m_Active, GetModeDescriptive().c_str(), m_GizmoObjects.size());
-}
-
-void Gizmo::PrintObjects()
-{
-	float currentTimestamp = (float)glfwGetTime();
-	if (currentTimestamp - m_PrintObjects.lastTime < m_PrintObjects.cooldown) return;
-	m_PrintObjects.lastTime = currentTimestamp;
-
-	for (size_t i = 0; i < m_GizmoObjects.size(); i++)
-	{
-		printf("Gizmo Object\ti = %zu\tSO.id = %i\tName = '%s'\t\tAxes [ %d %d %d ]\n",
-			i, m_GizmoObjects[i]->so.id, m_GizmoObjects[i]->name.c_str(), m_GizmoObjects[i]->axes.x, m_GizmoObjects[i]->axes.y, m_GizmoObjects[i]->axes.z);
-	}
 }
 
 Gizmo::~Gizmo()

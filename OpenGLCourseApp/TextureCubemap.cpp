@@ -53,6 +53,12 @@ TextureCubeMap::TextureCubeMap(std::vector<std::string> faces)
     printf("Texture Cube Map succesfully created! [m_ID=%i]\n", m_ID);
 }
 
+void TextureCubeMap::Bind(unsigned int slot)
+{
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);
+}
+
 TextureCubeMap::~TextureCubeMap()
 {
     glDeleteTextures(1, &m_ID);
