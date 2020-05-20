@@ -144,5 +144,4 @@ void Cylinder::Generate(glm::vec3 scale)
 
 Cylinder::~Cylinder()
 {
-	Clear();
 }

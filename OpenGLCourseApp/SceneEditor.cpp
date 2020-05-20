@@ -153,8 +153,8 @@ void SceneEditor::SetSkybox()
 
     m_Skybox = m_SkyboxNight;
 
-    // m_TextureCubeMap = new TextureCubeMap(m_SkyboxFacesDay);
-    // m_TextureCubeMapID = m_TextureCubeMap->GetID();
+    m_TextureCubeMap = new TextureCubeMap(m_SkyboxFacesDay);
+    m_TextureCubeMapID = m_TextureCubeMap->GetID();
 }
 
 void SceneEditor::SetTextures()
@@ -189,8 +189,7 @@ void SceneEditor::SetupMeshes()
 
 void SceneEditor::SetupModels()
 {
-    Sphere* sphere = new Sphere();
-    sphere->Create();
+    Sphere* sphere = new Sphere(glm::vec3(1.0f));
     meshes.insert(std::make_pair("sphere", sphere));
 }
 

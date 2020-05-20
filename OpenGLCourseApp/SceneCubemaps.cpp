@@ -11,9 +11,9 @@
 SceneCubemaps::SceneCubemaps()
 {
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 15.0f);
-	sceneSettings.cameraStartYaw = -90.0f;
+	sceneSettings.cameraStartYaw   = -90.0f;
     sceneSettings.cameraStartPitch = -20.0f;
-	sceneSettings.cameraMoveSpeed = 1.0f;
+	sceneSettings.cameraMoveSpeed  = 1.0f;
 
 	SetCamera();
 	SetSkybox();

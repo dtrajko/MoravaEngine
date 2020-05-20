@@ -105,8 +105,8 @@ private:
 
 	glm::vec4 m_Color_Selected = m_Color_Yellow;
 
-	float m_FactorTranslate = 0.005f;
-	float m_FactorScale = 0.005f;
-	float m_FactorRotate = 0.05f;
+	float m_FactorTranslate = 0.001f;
+	float m_FactorScale = 0.001f;
+	float m_FactorRotate = 0.01f;
 	float m_ShiftSpeed = 5.0f;
 };

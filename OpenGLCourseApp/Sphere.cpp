@@ -5,24 +5,13 @@
 #include "VertexTBN.h"
 
 
-Sphere::Sphere() : Mesh()
+Sphere::Sphere() : Sphere(glm::vec3(1.0f))
 {
-	m_VAO = 0;
-	m_VBO = 0;
-	m_IBO = 0;
-	m_Vertices = nullptr;
-	m_Indices = nullptr;
-	m_VertexCount = 0;
-	m_IndexCount = 0;
-	m_Scale = glm::vec3(1.0f);
-
-	Create();
 }
 
-Sphere::Sphere(glm::vec3 scale)
+Sphere::Sphere(glm::vec3 scale) : Mesh()
 {
-	m_Scale = scale;
-	Create();
+	Generate(scale);
 }
 
 void Sphere::Generate(glm::vec3 scale)
@@ -33,8 +22,7 @@ void Sphere::Generate(glm::vec3 scale)
 
 	m_Radius = 0.5f * maxScale;
 
-	// printf("Sphere::Generate scale [ %2.ff %2.ff %2.ff ] m_Scale [ %2.ff %2.ff %2.ff ]\n", scale.x, scale.y, scale.z, m_Scale.x, m_Scale.y, m_Scale.z);
-	// printf("Sphere::Generate maxScale=%.2f radius=%.2f\n", maxScale, m_Radius);
+	// printf("Sphere::Generate m_Radius = %.2ff\n", m_Radius);
 
 	m_Scale = scale;
 
@@ -54,8 +42,8 @@ void Sphere::Generate(glm::vec3 scale)
 	m_VertexCount = sizeof(VertexTBN) * (sectorCount + 1) * (stackCount + 1);
 	m_IndexCount = 6 * sectorCount * (stackCount - 1);
 
-	m_Vertices = new float[m_VertexCount];
-	m_Indices = new unsigned int[m_IndexCount];
+	vertices.resize(m_VertexCount);
+	indices.resize(m_IndexCount);
 
 	unsigned int vertexPointer = 0;
 	for (int i = 0; i <= stackCount; ++i)
@@ -73,35 +61,35 @@ void Sphere::Generate(glm::vec3 scale)
 			// positions
 			x = xy * cosf(sectorAngle); // r * cos(u) * cos(v)
 			y = xy * sinf(sectorAngle); // r * cos(u) * sin(v)
-			m_Vertices[vertexPointer + 0] = x;
-			m_Vertices[vertexPointer + 1] = y;
-			m_Vertices[vertexPointer + 2] = z;
+			vertices[vertexPointer + 0] = x;
+			vertices[vertexPointer + 1] = y;
+			vertices[vertexPointer + 2] = z;
 
 			// printf("Vertex index=%d, X=%.2ff Y=%.2ff Z=%.2ff\n", vertexPointer, x, y, z);
 
 			// vertex tex coord (s, t) range between [0, 1]
 			s = (float)j / sectorCount;
 			t = (float)i / stackCount;
-			m_Vertices[vertexPointer + 3] = s;
-			m_Vertices[vertexPointer + 4] = t;
+			vertices[vertexPointer + 3] = s;
+			vertices[vertexPointer + 4] = t;
 
 			// normalized vertex normal (nx, ny, nz)
 			nx = x * lengthInv;
 			ny = y * lengthInv;
 			nz = z * lengthInv;
-			m_Vertices[vertexPointer + 5] = nx;
-			m_Vertices[vertexPointer + 6] = ny;
-			m_Vertices[vertexPointer + 7] = nz;
+			vertices[vertexPointer + 5] = nx;
+			vertices[vertexPointer + 6] = ny;
+			vertices[vertexPointer + 7] = nz;
 
 			// tangents
-			m_Vertices[vertexPointer + 8] = 0.0f;
-			m_Vertices[vertexPointer + 9] = 0.0f;
-			m_Vertices[vertexPointer + 10] = 0.0f;
+			vertices[vertexPointer + 8] = 0.0f;
+			vertices[vertexPointer + 9] = 0.0f;
+			vertices[vertexPointer + 10] = 0.0f;
 
 			// bi-tangents
-			m_Vertices[vertexPointer + 11] = 0.0f;
-			m_Vertices[vertexPointer + 12] = 0.0f;
-			m_Vertices[vertexPointer + 13] = 0.0f;
+			vertices[vertexPointer + 11] = 0.0f;
+			vertices[vertexPointer + 12] = 0.0f;
+			vertices[vertexPointer + 13] = 0.0f;
 
 			vertexPointer += vertexStride;
 		}
@@ -121,23 +109,65 @@ void Sphere::Generate(glm::vec3 scale)
 			// k1 => k2 => k1+1
 			if (i != 0)
 			{
-				m_Indices[indexIndex++] = k1;
-				m_Indices[indexIndex++] = k2;
-				m_Indices[indexIndex++] = k1 + 1;
+				indices[indexIndex++] = k1;
+				indices[indexIndex++] = k2;
+				indices[indexIndex++] = k1 + 1;
 			}
 
 			// k1+1 => k2 => k2+1
 			if (i != (stackCount - 1))
 			{
-				m_Indices[indexIndex++] = k1 + 1;
-				m_Indices[indexIndex++] = k2;
-				m_Indices[indexIndex++] = k2 + 1;
+				indices[indexIndex++] = k1 + 1;
+				indices[indexIndex++] = k2;
+				indices[indexIndex++] = k2 + 1;
 			}
 		}
 	}
+
+	m_Vertices = &vertices[0];
+	m_Indices = &indices[0];
+
+	glGenVertexArrays(1, &m_VAO);
+	glBindVertexArray(m_VAO);
+
+	glGenBuffers(1, &m_IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_Indices[0]) * m_IndexCount, m_Indices, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &m_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(m_Vertices[0]) * m_VertexCount, m_Vertices, GL_STATIC_DRAW);
+
+	// position
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Position));
+	// tex coord
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, TexCoord));
+	// normal
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Normal));
+	// tangent
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Tangent));
+	// bitangent
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Bitangent));
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
+	glBindVertexArray(0);                     // Unbind VAO
+
+	vertices.clear();
+	indices.clear();
+
+	std::vector<float>().swap(vertices);
+	std::vector<unsigned int>().swap(indices);
+
+	m_Vertices = nullptr;
+	m_Indices = nullptr;
 }
 
 Sphere::~Sphere()
 {
-	Clear();
 }

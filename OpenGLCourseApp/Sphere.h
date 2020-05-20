@@ -2,6 +2,8 @@
 
 #include <GL/glew.h>
 
+#include <vector>
+
 #include "Mesh.h"
 
 
@@ -18,6 +20,9 @@ public:
 	virtual ~Sphere() override;
 
 private:
+	std::vector<float> vertices;
+	std::vector<unsigned int> indices;
+
 	float m_Radius;
 	unsigned int m_SectorCount;
 	unsigned int m_StackCount;
