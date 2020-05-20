@@ -29,9 +29,9 @@ public:
 	void CleanupGeometry();
 	inline Raycast* GetRaycast() const { return m_Raycast; };
 	void AddSceneObject();
-	void CopySceneObject(SceneObject* sceneObject);
-	void DeleteSceneObject();
-	void SelectNextFromMultipleObjects(std::vector<SceneObject*> sceneObjects, unsigned int* selected);
+	void CopySceneObject(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
+	void DeleteSceneObject(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
+	void SelectNextFromMultipleObjects(std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
 	bool IsObjectSelected(unsigned int objectIndex);
 	void SaveScene();
 	void LoadScene();
@@ -65,6 +65,8 @@ private:
 	unsigned int m_ObjectInFocusPrev;
 
 	int m_CurrentMeshTypeInt;
+
+	bool m_MouseButton_1_Prev; // previous state of GLFW_MOUSE_BUTTON_1
 
 	// add object cooldown
 	float m_CurrentTimestamp = 0.0f;

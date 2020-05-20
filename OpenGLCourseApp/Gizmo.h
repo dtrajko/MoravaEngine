@@ -46,7 +46,8 @@ public:
 	inline Bool3 GetAxesEnabled() { return m_AxesEnabled; };
 	std::string GetModeDescriptive(int modeID = -1);
 	void PrintObjects();
-	void OnMouseClick(Window& mainWindow, SceneObject* sceneObject);
+	void OnMousePress(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
+	void OnMouseRelease(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
 	~Gizmo();
 
 private:
@@ -59,7 +60,8 @@ private:
 	glm::vec3 m_Rotation;
 	glm::vec3 m_Scale;
 
-	EventCooldown m_MouseClick;
+	EventCooldown m_MousePress;
+	EventCooldown m_MouseRelease;
 	EventCooldown m_PrintObjects;
 	EventCooldown m_ChangeActive;
 
@@ -103,7 +105,8 @@ private:
 
 	glm::vec4 m_Color_Selected = m_Color_Yellow;
 
-	float m_FactorTranslate = 0.01f;
-	float m_FactorScale = 0.01f;
-	float m_FactorRotate = 0.1f;
+	float m_FactorTranslate = 0.005f;
+	float m_FactorScale = 0.005f;
+	float m_FactorRotate = 0.05f;
+	float m_ShiftSpeed = 5.0f;
 };

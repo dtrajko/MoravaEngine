@@ -128,6 +128,8 @@ SceneEditor::SceneEditor()
     m_DisplayLightSources = true;
 
     m_CurrentSkyboxInt = SKYBOX_DAY;
+
+    m_MouseButton_1_Prev = false;
 }
 
 void SceneEditor::SetSkybox()
@@ -202,6 +204,8 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
+    // printf("SceneEditor::Update m_SceneObjects.size = %zu\n", m_SceneObjects.size());
+
     for (auto& object : m_SceneObjects) {
         object->isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             object->AABB->GetMin(), object->AABB->GetMax(), glm::vec2(0.0f));
@@ -218,12 +222,15 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     // Switching between scene objects that are currently in focus (mouse over)
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
-        SelectNextFromMultipleObjects(m_SceneObjects, &m_SelectedIndex);
+        SelectNextFromMultipleObjects(&m_SceneObjects, m_SelectedIndex);
+        m_Gizmo->OnMousePress(mainWindow, &m_SceneObjects, m_SelectedIndex);
+        m_MouseButton_1_Prev = true;
+    }
 
-        if (m_SceneObjects.size() > 0 && m_SceneObjects.at(m_SelectedIndex)->isSelected)
-        {
-            m_Gizmo->OnMouseClick(mainWindow, m_SceneObjects.at(m_SelectedIndex));
-        }
+    if (!mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1] && m_MouseButton_1_Prev)
+    {
+        m_Gizmo->OnMouseRelease(mainWindow, &m_SceneObjects, m_SelectedIndex);
+        m_MouseButton_1_Prev = false;
     }
 
     // Add new scene object with default settings
@@ -235,14 +242,14 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     // Copy selected scene object
     if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_C])
     {
-        CopySceneObject(m_SceneObjects[m_SelectedIndex]);
+        CopySceneObject(mainWindow, &m_SceneObjects, m_SelectedIndex);
         m_SceneObjects[m_SelectedIndex]->isSelected = false;
     }
 
     // Delete selected object
     if (mainWindow.getKeys()[GLFW_KEY_DELETE])
     {
-        DeleteSceneObject();
+        DeleteSceneObject(mainWindow, &m_SceneObjects, m_SelectedIndex);
     }
 
     if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_R])
@@ -269,7 +276,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
 }
 
-void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*> sceneObjects, unsigned int* selected)
+void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
 {
     // Cooldown
     if (m_CurrentTimestamp - m_ObjectSelect.lastTime < m_ObjectSelect.cooldown) return;
@@ -277,9 +284,9 @@ void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*> sceneO
 
     std::vector<unsigned int> sceneObjectsInFocusIndices = std::vector<unsigned int>();
 
-    for (unsigned int i = 0; i < sceneObjects.size(); i++) {
-        if (sceneObjects[i]->isSelected) {
-            *selected = i;
+    for (unsigned int i = 0; i < sceneObjects->size(); i++) {
+        if (sceneObjects->at(i)->isSelected) {
+            selectedIndex = i;
             sceneObjectsInFocusIndices.push_back(i);
         }
     }
@@ -291,7 +298,7 @@ void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*> sceneO
     m_ObjectInFocusPrev++;
     if (m_ObjectInFocusPrev > sceneObjectsInFocusIndices.size() - 1)
         m_ObjectInFocusPrev = 0;
-    *selected = sceneObjectsInFocusIndices[m_ObjectInFocusPrev];
+    selectedIndex = sceneObjectsInFocusIndices[m_ObjectInFocusPrev];
 
     // printf("Total objects in focus: %i, currently selected: %i\n", (int)sceneObjectsInFocusIndices.size(), (int)currentlySelected);
 }
@@ -778,9 +785,9 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
             meshes["sphere"]->Render();
     }
 
+    // Render gizmo on front of everything (depth mask enabled)w
     if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
         m_Gizmo->Render(shaderEditor);
-
     /* End of shaderEditor */
 
     /* Begin of shaderBasic */
@@ -835,26 +842,44 @@ void SceneEditor::AddSceneObject()
     m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
 }
 
-void SceneEditor::CopySceneObject(SceneObject* sceneObject)
+void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
 {
     // Cooldown
     if (m_CurrentTimestamp - m_ObjectCopy.lastTime < m_ObjectCopy.cooldown) return;
     m_ObjectCopy.lastTime = m_CurrentTimestamp;
 
-    m_Gizmo->SetActive(false);
+    printf("SceneEditor::CopySceneObject sceneObjects = %zu selectedIndex = %i\n", sceneObjects->size(), selectedIndex);
 
-    Mesh* newMesh = CreateNewPrimitive(sceneObject->meshType, sceneObject->mesh->GetScale());
+    SceneObject* oldSceneObject = nullptr;
 
-    sceneObject->id = (int)m_SceneObjects.size(),
-    sceneObject->isSelected = true;
-    sceneObject->AABB = new AABB(sceneObject->position, sceneObject->rotation, sceneObject->scale);
-    sceneObject->pivot = new Pivot(sceneObject->position, sceneObject->scale);
-    sceneObject->mesh = newMesh;
+    if (selectedIndex < (unsigned int)sceneObjects->size())
+        oldSceneObject = sceneObjects->at(selectedIndex);
 
-    m_SceneObjects.push_back(sceneObject);
+    if (oldSceneObject == nullptr) return;
+
+    SceneObject* newSceneObject = new SceneObject{
+        (int)sceneObjects->size(),
+        oldSceneObject->transform,
+        oldSceneObject->position,
+        oldSceneObject->rotation,
+        oldSceneObject->scale,
+        oldSceneObject->color,
+        oldSceneObject->useTexture,
+        oldSceneObject->textureName,
+        oldSceneObject->tilingFactor,
+        true,
+        new AABB(oldSceneObject->position, oldSceneObject->rotation, oldSceneObject->scale),
+        new Pivot(oldSceneObject->position, oldSceneObject->scale),
+        CreateNewPrimitive(oldSceneObject->meshType, oldSceneObject->mesh->GetScale()),
+        m_CurrentMeshTypeInt
+    };
+
+    sceneObjects->push_back(newSceneObject);
+
+    m_Gizmo->OnMouseRelease(mainWindow, sceneObjects, selectedIndex);
 }
 
-void SceneEditor::DeleteSceneObject()
+void SceneEditor::DeleteSceneObject(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
 {
     // Cooldown
     if (m_CurrentTimestamp - m_ObjectDelete.lastTime < m_ObjectDelete.cooldown) return;
@@ -867,11 +892,18 @@ void SceneEditor::DeleteSceneObject()
     if (m_SelectedIndex < m_SceneObjects.size())
         m_SceneObjects.erase(m_SceneObjects.begin() + m_SelectedIndex);
 
-    if (m_SceneObjects.size() > 0) m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
+    if (m_SceneObjects.size() > 0) {
+        m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
+        m_Gizmo->OnMousePress(mainWindow, sceneObjects, selectedIndex);
+    }
 
     // refresh scene object IDs
     for (int i = 0; i < m_SceneObjects.size(); i++)
         m_SceneObjects[i]->id = i;
+
+    // delete Gizmo if there's no objects
+    if (m_SceneObjects.size() == 0)
+        m_Gizmo->SetActive(false);
 }
 
 Mesh* SceneEditor::CreateNewPrimitive(int meshTypeID, glm::vec3 scale)

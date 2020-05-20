@@ -10,7 +10,8 @@ Gizmo::Gizmo()
 
 	m_Active = false;
 
-	m_MouseClick   = { 0.0f, 1.0f };
+	m_MousePress   = { 0.0f, 1.0f };
+	m_MouseRelease = { 0.0f, 1.0f };
 	m_PrintObjects = { 0.0f, 1.0f };
 	m_ChangeActive = { 0.0f, 1.0f };
 
@@ -36,7 +37,7 @@ Gizmo::Gizmo()
 void Gizmo::SetSceneObject(SceneObject* sceneObject)
 {
 	if (m_SceneObject != nullptr && sceneObject->id != m_SceneObject->id)
-		m_Mode = GIZMO_MODE_TRANSLATE; // reset mode to translate when swiching to a different object
+		m_Mode = GIZMO_MODE_NONE; // reset mode to NONE when swiching to a different object
 
 	m_SceneObject = sceneObject;
 	UpdateTransformFromObject(sceneObject);
@@ -62,10 +63,13 @@ void Gizmo::SetActive(bool active)
 	m_ChangeActive.lastTime = currentTimestamp;
 
 	if (!active)
+	{
+		m_SceneObject = nullptr;
 		ChangeMode(GIZMO_MODE_NONE);
+	}
 
 	if (active && !m_Active)
-		ChangeMode(GIZMO_MODE_TRANSLATE);
+		ChangeMode(GIZMO_MODE_NONE);
 
 	m_Active = active;
 
@@ -82,20 +86,54 @@ std::string Gizmo::GetModeDescriptive(int modeID)
 	return "Undefined";
 }
 
-void Gizmo::OnMouseClick(Window& mainWindow, SceneObject* sceneObject)
+void Gizmo::OnMousePress(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
 {
 	float currentTimestamp = (float)glfwGetTime();
-	if (currentTimestamp - m_MouseClick.lastTime < m_MouseClick.cooldown) return;
-	m_MouseClick.lastTime = currentTimestamp;
+	if (currentTimestamp - m_MousePress.lastTime < m_MousePress.cooldown) return;
+	m_MousePress.lastTime = currentTimestamp;
 
-	// printf("Gizmo::OnMouseClick BEGIN m_Active: %d Mode: %s Object Count: %zu\n", m_Active, GetModeDescriptive().c_str(), m_GizmoObjects.size());
+	printf("Gizmo::OnMouseClick\n");
 
-	SetActive(true);
-	SetSceneObject(sceneObject);
-	if (mainWindow.getKeys()[GLFW_KEY_TAB])
-		ToggleMode();
+	if (sceneObjects->size() > 0 && sceneObjects->at(selectedIndex)->isSelected)
+	{
+	}
+}
 
-	// printf("Gizmo::OnMouseClick END m_Active: %d Mode: %s Object Count: %zu\n", m_Active, GetModeDescriptive().c_str(), m_GizmoObjects.size());
+void Gizmo::OnMouseRelease(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
+{
+	float currentTimestamp = (float)glfwGetTime();
+	if (currentTimestamp - m_MouseRelease.lastTime < m_MouseRelease.cooldown) return;
+	m_MouseRelease.lastTime = currentTimestamp;
+
+	printf("Gizmo::OnMouseRelease\n");
+
+	if (sceneObjects->size() > 0 && sceneObjects->at(selectedIndex)->isSelected)
+	{
+		SceneObject* sceneObject = nullptr;
+		if (selectedIndex < (unsigned int)sceneObjects->size())
+			sceneObject = sceneObjects->at(selectedIndex);
+
+		if (sceneObject == nullptr) return;
+
+		bool canToggleGizmo = false;
+
+		// start rules for switching / toggling the Gizmo
+		if (m_SceneObject == nullptr)
+			canToggleGizmo = true;
+
+		if (sceneObjects->size() == 1)
+			canToggleGizmo = true;
+
+		if (m_SceneObject != nullptr && mainWindow.getKeys()[GLFW_KEY_TAB])
+			canToggleGizmo = true;
+
+		if (canToggleGizmo)
+		{
+			SetActive(true);
+			SetSceneObject(sceneObject);
+			ToggleMode();
+		}
+	}
 }
 
 void Gizmo::ChangeMode(int mode)
@@ -208,38 +246,42 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
 			mouseDeltaY = mainWindow.getYChange();
 		}
 
+		float shiftSpeed = 1.0f;
+		if (mainWindow.getKeys()[GLFW_KEY_LEFT_SHIFT])
+			shiftSpeed = m_ShiftSpeed;
+
 		if (m_Mode == GIZMO_MODE_TRANSLATE)
 		{
 			if (m_AxesEnabled.x && !m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Position.x += (mouseDeltaX + mouseDeltaY) * m_FactorTranslate;
+				m_Position.x += (mouseDeltaX + mouseDeltaY) * m_FactorTranslate * shiftSpeed;
 				// printf("Gizmo::UpdateActive m_AxesEnabled [ %d %d %d mouseDeltaX [ %.2ff %.2ff ]\n",
 				// 	m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z, mouseDeltaX, mouseDeltaY);
 			}
 			else if (!m_AxesEnabled.x && m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Position.y += (mouseDeltaX + mouseDeltaY) * m_FactorTranslate;
+				m_Position.y += (mouseDeltaX + mouseDeltaY) * m_FactorTranslate * shiftSpeed;
 				// printf("Gizmo::UpdateActive m_AxesEnabled [ %d %d %d mouseDeltaX [ %.2ff %.2ff ]\n",
 				// 	m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z, mouseDeltaX, mouseDeltaY);
 			}
 			else if (!m_AxesEnabled.x && !m_AxesEnabled.y && m_AxesEnabled.z) {
-				m_Position.z -= (mouseDeltaX + mouseDeltaY) * m_FactorTranslate;
+				m_Position.z -= (mouseDeltaX + mouseDeltaY) * m_FactorTranslate * shiftSpeed;
 				// printf("Gizmo::UpdateActive m_AxesEnabled [ %d %d %d mouseDeltaX [ %.2ff %.2ff ]\n",
 				// 	m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z, mouseDeltaX, mouseDeltaY);
 			}
 			else if (m_AxesEnabled.x && m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Position.x += mouseDeltaX * m_FactorTranslate;
-				m_Position.y += mouseDeltaY * m_FactorTranslate;
+				m_Position.x += mouseDeltaX * m_FactorTranslate * shiftSpeed;
+				m_Position.y += mouseDeltaY * m_FactorTranslate * shiftSpeed;
 				// printf("Gizmo::UpdateActive m_AxesEnabled [ %d %d %d mouseDeltaX [ %.2ff %.2ff ]\n",
 				// 	m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z, mouseDeltaX, mouseDeltaY);
 			}
 			else if (!m_AxesEnabled.x && m_AxesEnabled.y && m_AxesEnabled.z) {
-				m_Position.y += mouseDeltaY * m_FactorTranslate;
-				m_Position.z -= mouseDeltaX * m_FactorTranslate;
+				m_Position.y += mouseDeltaY * m_FactorTranslate * shiftSpeed;
+				m_Position.z -= mouseDeltaX * m_FactorTranslate * shiftSpeed;
 				// printf("Gizmo::UpdateActive m_AxesEnabled [ %d %d %d mouseDeltaX [ %.2ff %.2ff ]\n",
 				// 	m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z, mouseDeltaX, mouseDeltaY);
 			}
 			else if (m_AxesEnabled.x && !m_AxesEnabled.y && m_AxesEnabled.z) {
-				m_Position.z -= mouseDeltaY * m_FactorTranslate;
-				m_Position.x += mouseDeltaX * m_FactorTranslate;
+				m_Position.z -= mouseDeltaY * m_FactorTranslate * shiftSpeed;
+				m_Position.x += mouseDeltaX * m_FactorTranslate * shiftSpeed;
 				// printf("Gizmo::UpdateActive m_AxesEnabled [ %d %d %d mouseDeltaX [ %.2ff %.2ff ]\n",
 				// 	m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z, mouseDeltaX, mouseDeltaY);
 			}
@@ -248,28 +290,29 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
 		if (m_Mode == GIZMO_MODE_SCALE)
 		{
 			if (m_AxesEnabled.x && !m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Scale.x += (mouseDeltaX + mouseDeltaY) * m_FactorScale;
+				m_Scale.x += (mouseDeltaX + mouseDeltaY) * m_FactorScale * shiftSpeed;
 			}
 			else if (!m_AxesEnabled.x && m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Scale.y += (mouseDeltaX + mouseDeltaY) * m_FactorScale;
+				m_Scale.y += (mouseDeltaX + mouseDeltaY) * m_FactorScale * shiftSpeed;
 			}
 			else if (!m_AxesEnabled.x && !m_AxesEnabled.y && m_AxesEnabled.z) {
-				m_Scale.z -= (mouseDeltaX + mouseDeltaY) * m_FactorScale;
+				m_Scale.z -= (mouseDeltaX + mouseDeltaY) * m_FactorScale * shiftSpeed;
 			}
 		}
 
 		if (m_Mode == GIZMO_MODE_ROTATE)
 		{
 			if (m_AxesEnabled.x && !m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Rotation.x += (mouseDeltaX + mouseDeltaY) * m_FactorRotate;
+				m_Rotation.x += (mouseDeltaX + mouseDeltaY) * m_FactorRotate * shiftSpeed;
 			}
 			else if (!m_AxesEnabled.x && m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Rotation.y += (mouseDeltaX + mouseDeltaY) * m_FactorRotate;
+				m_Rotation.y += (mouseDeltaX + mouseDeltaY) * m_FactorRotate * shiftSpeed;
 			}
 			else if (!m_AxesEnabled.x && !m_AxesEnabled.y && m_AxesEnabled.z) {
-				m_Rotation.z += (mouseDeltaX + mouseDeltaY) * m_FactorRotate;
+				m_Rotation.z += (mouseDeltaX + mouseDeltaY) * m_FactorRotate * shiftSpeed;
 			}
 		}
+
 		m_SceneObject->position = m_Position;
 		m_SceneObject->rotation = m_Rotation;
 		m_SceneObject->scale = m_Scale;
@@ -283,7 +326,8 @@ void Gizmo::Render(Shader* shader)
 	if (m_GizmoObjects.empty())
 		CreateObjects();
 
-	// printf("Gizmo::Render m_Active = %d m_Mode = %s m_GizmoObjects.size = %zu\n", m_Active, GetModeDescriptive().c_str(), m_GizmoObjects.size());
+	shader->Bind();
+	// glDepthMask(GL_FALSE);
 
 	// Render Translation Gizmo
 	if (m_Mode == GIZMO_MODE_TRANSLATE)
@@ -463,6 +507,8 @@ void Gizmo::Render(Shader* shader)
 		shader->setVec4("tintColor", m_Ring_R_Z->so.AABB->m_Color);
 		// m_Ring_R_Z->so.AABB->Draw();
 	}
+
+	// glDepthMask(GL_TRUE);
 }
 
 void Gizmo::CreateObjects()

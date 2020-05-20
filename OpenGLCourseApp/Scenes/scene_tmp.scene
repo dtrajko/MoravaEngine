@@ -1,11 +1,44 @@
 BeginObject	0
-Position	-5.210001	0.770000	1.120000
-Rotation	0.000000	0.000000	-13.200014
-Scale	1.000000	1.080000	0.860000
+Position	0.705037	1.340039	2.999867
+Rotation	0.000000	0.000000	0.000000
+Scale	2.314996	2.140002	2.379992
 Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
+UseTexture	1
+TextureName	crate
+TilingFactor	0.219000
+IsSelected	0
+MeshType	0
+EndObject
+BeginObject	1
+Position	-7.244967	2.410044	-0.235025
+Rotation	0.000000	0.000000	-0.050004
+Scale	4.600026	4.595043	2.314991
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	1
+TextureName	crate
+TilingFactor	0.219000
+IsSelected	0
+MeshType	0
+EndObject
+BeginObject	2
+Position	2.140003	1.239999	-1.455002
+Rotation	0.000000	0.000000	0.000000
+Scale	2.314996	2.140002	2.314991
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	1
+TextureName	crate
+TilingFactor	0.219000
+IsSelected	0
+MeshType	0
+EndObject
+BeginObject	3
+Position	-0.220000	-0.085000	-0.320001
+Rotation	-0.400000	0.000000	0.000000
+Scale	38.775173	0.404997	47.180027
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	1
+TextureName	wall_albedo
+TilingFactor	0.440000
 IsSelected	0
 MeshType	0
 EndObject
