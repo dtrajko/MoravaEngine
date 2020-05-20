@@ -130,6 +130,8 @@ SceneEditor::SceneEditor()
     m_CurrentSkyboxInt = SKYBOX_DAY;
 
     m_MouseButton_1_Prev = false;
+
+    m_UseCubeMaps = false;
 }
 
 void SceneEditor::SetSkybox()
@@ -150,11 +152,11 @@ void SceneEditor::SetSkybox()
 
     m_SkyboxDay = new Skybox(m_SkyboxFacesDay);
     m_SkyboxNight = new Skybox(m_SkyboxFacesNight);
+    m_Skybox = m_SkyboxDay;
 
-    m_Skybox = m_SkyboxNight;
-
-    m_TextureCubeMap = new TextureCubeMap(m_SkyboxFacesDay);
-    m_TextureCubeMapID = m_TextureCubeMap->GetID();
+    m_TextureCubeMapDay = new TextureCubeMap(m_SkyboxFacesDay);
+    m_TextureCubeMapNight = new TextureCubeMap(m_SkyboxFacesNight);
+    m_TextureCubeMap = m_TextureCubeMapDay;
 }
 
 void SceneEditor::SetTextures()
@@ -211,10 +213,14 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         object->mesh->Update(object->scale);
     }
 
-    if (m_CurrentSkyboxInt == SKYBOX_DAY)
+    if (m_CurrentSkyboxInt == SKYBOX_DAY) {
         m_Skybox = m_SkyboxDay;
-    else if (m_CurrentSkyboxInt == SKYBOX_NIGHT)
+        m_TextureCubeMap = m_TextureCubeMapDay;
+    }
+    else if (m_CurrentSkyboxInt == SKYBOX_NIGHT) {
         m_Skybox = m_SkyboxNight;
+        m_TextureCubeMap = m_TextureCubeMapNight;
+    }
 
     m_Gizmo->Update(m_Camera->GetPosition(), mainWindow);
 
@@ -560,6 +566,10 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::RadioButton("Night", &m_CurrentSkyboxInt, SKYBOX_NIGHT);
 
     ImGui::Separator();
+    ImGui::Text("Cube Maps");
+    ImGui::Checkbox("Use Cube Maps", &m_UseCubeMaps);
+
+    ImGui::Separator();
     float FOV = GetFOV();
     ImGui::SliderFloat("FOV", &FOV, 1.0f, 120.0f);
     SetFOV(FOV);
@@ -716,9 +726,6 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     Shader* shaderEditor = shaders["editor_object"];
     shaderEditor->Bind();
 
-    // m_TextureCubeMap->Bind(1);
-    // shaderEditor->setInt("cubeMap", 1);
-
     for (auto& object : m_SceneObjects)
     {
         object->transform = Math::CreateTransform(object->position, object->rotation, glm::vec3(1.0f));
@@ -737,6 +744,10 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
             textures["plain"]->Bind(0);
         shaderEditor->setInt("albedoMap", 0);
         shaderEditor->setFloat("tilingFactor", object->tilingFactor);
+
+        m_TextureCubeMap->Bind(1);
+        shaderEditor->setInt("cubeMap", 1);
+        shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
 
         object->mesh->Render();
 
@@ -962,6 +973,7 @@ SceneEditor::~SceneEditor()
     delete m_Grid;
     delete m_Raycast;
     delete m_Gizmo;
+    delete m_TextureCubeMap;
 
     ResetScene();
 }

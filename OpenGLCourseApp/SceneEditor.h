@@ -95,6 +95,9 @@ private:
 	int m_CurrentSkyboxInt;
 
 	TextureCubeMap* m_TextureCubeMap;
-	unsigned int m_TextureCubeMapID;
+	TextureCubeMap* m_TextureCubeMapDay;
+	TextureCubeMap* m_TextureCubeMapNight;
+
+	bool m_UseCubeMaps;
 
 };

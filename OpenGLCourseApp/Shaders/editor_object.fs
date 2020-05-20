@@ -1,10 +1,9 @@
 #version 330 core
 
-in vec4 vColor;
 in vec2 vTexCoord;
 in vec3 vNormal;
-in vec3 vFragPos;
 in vec3 vPosition;
+in vec3 vFragPos;
 
 out vec4 FragColor;
 
@@ -56,13 +55,14 @@ uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 
 uniform Material material;
 
-// uniform samplerCube cubeMap;
-uniform sampler2D albedoMap;
+uniform samplerCube cubeMap;
+uniform sampler2D   albedoMap;
 uniform vec4  tintColor;
 uniform float tilingFactor;
 uniform bool  isSelected;
+uniform bool  useCubeMaps;
 
-uniform vec3 eyePosition;
+uniform vec3 eyePosition; // same as cameraPosition
 
 vec4 CalcLightByDirection(Light light, vec3 direction)
 {
@@ -151,16 +151,20 @@ vec4 CalcSpotLights()
 
 void main()
 {
-    vec3 I = normalize(vPosition - eyePosition);
-    vec3 R = reflect(I, normalize(vNormal));
-    // CubeMapColor = vec4(texture(cubeMap, R).rgb, 1.0);
+	vec4 CubeMapColor = vec4(1.0, 1.0, 1.0, 1.0);
+	if (useCubeMaps) {
+		vec3 I = normalize(vPosition - eyePosition);
+		vec3 R = reflect(I, normalize(vNormal));
+		CubeMapColor = vec4(texture(cubeMap, R).rgb, 1.0);	
+	}
+
+	vec4 texColor = texture(albedoMap, vTexCoord * tilingFactor);
+	if(texColor.a < 0.1) // enable alpha transparency
+		discard;
 
 	vec4 finalColor = CalcDirectionalLight();
 	finalColor += CalcPointLights();
 	finalColor += CalcSpotLights();
 
-	vec4 texColor = texture(albedoMap, vTexCoord * tilingFactor);
-	if(texColor.a < 0.1)
-		discard;
-	FragColor = texColor * tintColor * finalColor; // CubeMapColor
+	FragColor = texColor * finalColor * tintColor * CubeMapColor;
 }

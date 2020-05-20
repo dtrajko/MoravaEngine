@@ -1,0 +1,33 @@
+BeginObject	0
+Position	-0.010000	1.545003	0.004000
+Rotation	0.000000	0.000000	0.000000
+Scale	4.940001	2.960999	4.560004
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	1
+TextureName	gold_albedo
+TilingFactor	0.444000
+IsSelected	0
+MeshType	0
+EndObject
+BeginObject	1
+Position	0.004000	4.921982	0.003000
+Rotation	0.000000	0.000000	0.000000
+Scale	8.704010	4.045001	8.803004
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	1
+TextureName	metal
+TilingFactor	1.000000
+IsSelected	0
+MeshType	4
+EndObject
+BeginObject	2
+Position	0.296000	0.018000	-0.001999
+Rotation	0.000000	0.000000	0.000000
+Scale	17.784086	0.347002	18.210985
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	1
+TextureName	grass_albedo
+TilingFactor	1.000000
+IsSelected	0
+MeshType	0
+EndObject
