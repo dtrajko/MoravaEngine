@@ -52,6 +52,7 @@ SceneJoey::SceneJoey()
 	sceneSettings.waterWaveSpeed = 0.1f;
 
 	SetTextures();
+	SetupMaterials();
 	SetupModels();
 	SetupGeometry();
 	SetupLights();
@@ -62,86 +63,90 @@ SceneJoey::SceneJoey()
 
 void SceneJoey::SetTextures()
 {
+}
+
+void SceneJoey::SetupMaterials()
+{
 	// rusted iron
 	TextureInfo textureInfoRustedIron = {};
-	textureInfoRustedIron.albedo = "Textures/PBR/rusted_iron/albedo.png";
-	textureInfoRustedIron.normal = "Textures/PBR/rusted_iron/normal.png";
-	textureInfoRustedIron.metallic = "Textures/PBR/rusted_iron/metallic.png";
+	textureInfoRustedIron.albedo    = "Textures/PBR/rusted_iron/albedo.png";
+	textureInfoRustedIron.normal    = "Textures/PBR/rusted_iron/normal.png";
+	textureInfoRustedIron.metallic  = "Textures/PBR/rusted_iron/metallic.png";
 	textureInfoRustedIron.roughness = "Textures/PBR/rusted_iron/roughness.png";
-	textureInfoRustedIron.ao = "Textures/PBR/rusted_iron/ao.png";
-	m_Materials.insert(std::make_pair("rusted_iron", new Material(textureInfoRustedIron)));
+	textureInfoRustedIron.ao        = "Textures/PBR/rusted_iron/ao.png";
+	materials.insert(std::make_pair("rusted_iron", new Material(textureInfoRustedIron)));
 
 	// gold
 	TextureInfo textureInfoGold = {};
-	textureInfoGold.albedo = "Textures/PBR/gold/albedo.png";
-	textureInfoGold.normal = "Textures/PBR/gold/normal.png";
-	textureInfoGold.metallic = "Textures/PBR/gold/metallic.png";
+	textureInfoGold.albedo    = "Textures/PBR/gold/albedo.png";
+	textureInfoGold.normal    = "Textures/PBR/gold/normal.png";
+	textureInfoGold.metallic  = "Textures/PBR/gold/metallic.png";
 	textureInfoGold.roughness = "Textures/PBR/gold/roughness.png";
-	textureInfoGold.ao = "Textures/PBR/gold/ao.png";
-	m_Materials.insert(std::make_pair("gold", new Material(textureInfoGold)));
+	textureInfoGold.ao        = "Textures/PBR/gold/ao.png";
+	materials.insert(std::make_pair("gold", new Material(textureInfoGold)));
 
 	// silver
 	TextureInfo textureInfoSilver = {};
-	textureInfoSilver.albedo = "Textures/PBR/silver/albedo.png";
-	textureInfoSilver.normal = "Textures/PBR/silver/normal.png";
-	textureInfoSilver.metallic = "Textures/PBR/silver/metallic.png";
+	textureInfoSilver.albedo    = "Textures/PBR/silver/albedo.png";
+	textureInfoSilver.normal    = "Textures/PBR/silver/normal.png";
+	textureInfoSilver.metallic  = "Textures/PBR/silver/metallic.png";
 	textureInfoSilver.roughness = "Textures/PBR/silver/roughness.png";
-	textureInfoSilver.ao = "Textures/PBR/silver/ao.png";
-	m_Materials.insert(std::make_pair("silver", new Material(textureInfoSilver)));
+	textureInfoSilver.ao        = "Textures/PBR/silver/ao.png";
+	materials.insert(std::make_pair("silver", new Material(textureInfoSilver)));
 
 	// grass
 	TextureInfo textureInfoGrass = {};
-	textureInfoGrass.albedo = "Textures/PBR/grass/albedo.png";
-	textureInfoGrass.normal = "Textures/PBR/grass/normal.png";
-	textureInfoGrass.metallic = "Textures/PBR/grass/metallic.png";
+	textureInfoGrass.albedo    = "Textures/PBR/grass/albedo.png";
+	textureInfoGrass.normal    = "Textures/PBR/grass/normal.png";
+	textureInfoGrass.metallic  = "Textures/PBR/grass/metallic.png";
 	textureInfoGrass.roughness = "Textures/PBR/grass/roughness.png";
-	textureInfoGrass.ao = "Textures/PBR/grass/ao.png";
-	m_Materials.insert(std::make_pair("grass", new Material(textureInfoGrass)));
+	textureInfoGrass.ao        = "Textures/PBR/grass/ao.png";
+	materials.insert(std::make_pair("grass", new Material(textureInfoGrass)));
 
 	// plastic
 	TextureInfo textureInfoPlastic = {};
-	textureInfoPlastic.albedo = "Textures/PBR/plastic/albedo.png";
-	textureInfoPlastic.normal = "Textures/PBR/plastic/normal.png";
-	textureInfoPlastic.metallic = "Textures/PBR/plastic/metallic.png";
+	textureInfoPlastic.albedo    = "Textures/PBR/plastic/albedo.png";
+	textureInfoPlastic.normal    = "Textures/PBR/plastic/normal.png";
+	textureInfoPlastic.metallic  = "Textures/PBR/plastic/metallic.png";
 	textureInfoPlastic.roughness = "Textures/PBR/plastic/roughness.png";
-	textureInfoPlastic.ao = "Textures/PBR/plastic/ao.png";
-	m_Materials.insert(std::make_pair("plastic", new Material(textureInfoPlastic)));
+	textureInfoPlastic.ao        = "Textures/PBR/plastic/ao.png";
+	materials.insert(std::make_pair("plastic", new Material(textureInfoPlastic)));
 
 	// wall
 	TextureInfo textureInfoWall = {};
-	textureInfoWall.albedo = "Textures/PBR/wall/albedo.png";
-	textureInfoWall.normal = "Textures/PBR/wall/normal.png";
-	textureInfoWall.metallic = "Textures/PBR/wall/metallic.png";
+	textureInfoWall.albedo    = "Textures/PBR/wall/albedo.png";
+	textureInfoWall.normal    = "Textures/PBR/wall/normal.png";
+	textureInfoWall.metallic  = "Textures/PBR/wall/metallic.png";
 	textureInfoWall.roughness = "Textures/PBR/wall/roughness.png";
-	textureInfoWall.ao = "Textures/PBR/wall/ao.png";
-	m_Materials.insert(std::make_pair("wall", new Material(textureInfoWall)));
+	textureInfoWall.ao        = "Textures/PBR/wall/ao.png";
+	materials.insert(std::make_pair("wall", new Material(textureInfoWall)));
 
 	// Cerberus model PBR textures
 	TextureInfo textureInfoCerberus = {};
-	textureInfoCerberus.albedo = "Textures/PBR/Cerberus/Cerberus_A.tga";
-	textureInfoCerberus.normal = "Textures/PBR/Cerberus/Cerberus_N.tga";
-	textureInfoCerberus.metallic = "Textures/PBR/Cerberus/Cerberus_M.tga";
+	textureInfoCerberus.albedo    = "Textures/PBR/Cerberus/Cerberus_A.tga";
+	textureInfoCerberus.normal    = "Textures/PBR/Cerberus/Cerberus_N.tga";
+	textureInfoCerberus.metallic  = "Textures/PBR/Cerberus/Cerberus_M.tga";
 	textureInfoCerberus.roughness = "Textures/PBR/Cerberus/Cerberus_R.tga";
-	textureInfoCerberus.ao = "Textures/PBR/Cerberus/Cerberus_AO.tga";
-	m_Materials.insert(std::make_pair("cerberus", new Material(textureInfoCerberus)));
+	textureInfoCerberus.ao        = "Textures/PBR/Cerberus/Cerberus_AO.tga";
+	materials.insert(std::make_pair("cerberus", new Material(textureInfoCerberus)));
 
 	// Khronos DamagedHelmet model PBR textures
 	TextureInfo textureInfoDamagedHelmet = {};
-	textureInfoDamagedHelmet.albedo = "Textures/PBR/DamagedHelmet/Default_albedo.jpg";
-	textureInfoDamagedHelmet.normal = "Textures/PBR/DamagedHelmet/Default_normal.jpg";
-	textureInfoDamagedHelmet.metallic = "Textures/PBR/DamagedHelmet/Default_metalRoughness.jpg";
+	textureInfoDamagedHelmet.albedo    = "Textures/PBR/DamagedHelmet/Default_albedo.jpg";
+	textureInfoDamagedHelmet.normal    = "Textures/PBR/DamagedHelmet/Default_normal.jpg";
+	textureInfoDamagedHelmet.metallic  = "Textures/PBR/DamagedHelmet/Default_metalRoughness.jpg";
 	textureInfoDamagedHelmet.roughness = "Textures/PBR/DamagedHelmet/Default_emissive.jpg";
-	textureInfoDamagedHelmet.ao = "Textures/PBR/DamagedHelmet/Default_AO.jpg";
-	m_Materials.insert(std::make_pair("damaged_helmet", new Material(textureInfoDamagedHelmet)));
+	textureInfoDamagedHelmet.ao        = "Textures/PBR/DamagedHelmet/Default_AO.jpg";
+	materials.insert(std::make_pair("damaged_helmet", new Material(textureInfoDamagedHelmet)));
 
 	// Khronos SciFiHelmet model PBR textures
 	TextureInfo textureInfoSFHelmet = {};
-	textureInfoSFHelmet.albedo = "Textures/PBR/SciFiHelmet/SciFiHelmet_BaseColor.png";
-	textureInfoSFHelmet.normal = "Textures/PBR/SciFiHelmet/SciFiHelmet_Normal.png";
-	textureInfoSFHelmet.metallic = "Textures/PBR/SciFiHelmet/SciFiHelmet_MetallicRoughness.png";
+	textureInfoSFHelmet.albedo    = "Textures/PBR/SciFiHelmet/SciFiHelmet_BaseColor.png";
+	textureInfoSFHelmet.normal    = "Textures/PBR/SciFiHelmet/SciFiHelmet_Normal.png";
+	textureInfoSFHelmet.metallic  = "Textures/PBR/SciFiHelmet/SciFiHelmet_MetallicRoughness.png";
 	textureInfoSFHelmet.roughness = "Textures/PBR/SciFiHelmet/SciFiHelmet_Emissive.png";
-	textureInfoSFHelmet.ao = "Textures/PBR/SciFiHelmet/SciFiHelmet_AmbientOcclusion.png";
-	m_Materials.insert(std::make_pair("sf_helmet", new Material(textureInfoSFHelmet)));
+	textureInfoSFHelmet.ao        = "Textures/PBR/SciFiHelmet/SciFiHelmet_AmbientOcclusion.png";
+	materials.insert(std::make_pair("sf_helmet", new Material(textureInfoSFHelmet)));
 }
 
 void SceneJoey::SetupModels()
@@ -264,35 +269,35 @@ void SceneJoey::Render(glm::mat4 projectionMatrix, std::string passType,
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-5.0, 0.0, 2.0));
 		shaders["pbrShader"]->setMat4("model", model);
-		GetMaterials()["rusted_iron"]->BindTextures(3);
+		materials["rusted_iron"]->BindTextures(3);
 		m_SphereJoey->Render();
 
 		// gold
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-3.0, 0.0, 2.0));
 		shaders["pbrShader"]->setMat4("model", model);
-		GetMaterials()["gold"]->BindTextures(3);
+		materials["gold"]->BindTextures(3);
 		m_SphereJoey->Render();
 
 		// grass
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-1.0, 0.0, 2.0));
 		shaders["pbrShader"]->setMat4("model", model);
-		GetMaterials()["grass"]->BindTextures(3);
+		materials["grass"]->BindTextures(3);
 		m_SphereJoey->Render();
 
 		// plastic
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(1.0, 0.0, 2.0));
 		shaders["pbrShader"]->setMat4("model", model);
-		GetMaterials()["plastic"]->BindTextures(3);
+		materials["plastic"]->BindTextures(3);
 		m_SphereJoey->Render();
 
 		// wall
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(3.0, 0.0, 2.0));
 		shaders["pbrShader"]->setMat4("model", model);
-		GetMaterials()["wall"]->BindTextures(3);
+		materials["wall"]->BindTextures(3);
 		m_SphereJoey->Render();
 
 		// render light source (simply re-render sphere at light positions)
@@ -308,12 +313,12 @@ void SceneJoey::Render(glm::mat4 projectionMatrix, std::string passType,
 			model = glm::translate(model, newPos);
 			model = glm::scale(model, glm::vec3(0.5f));
 			shaders["pbrShader"]->setMat4("model", model);
-			GetMaterials()["silver"]->BindTextures(3);
+			materials["silver"]->BindTextures(3);
 			m_SphereJoey->Render();
 		}
 
 		/* Cerberus model */
-		// glBindTexture(GL_TEXTURE_2D, sceneJoey->GetMaterials()["gold"]->GetTextureAO()->GetID()); // textures["goldAOMap"]->GetID()
+		// glBindTexture(GL_TEXTURE_2D, sceneJoey->materials["gold"]->GetTextureAO()->GetID()); // textures["goldAOMap"]->GetID()
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, -10.0f, 25.0f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -321,8 +326,8 @@ void SceneJoey::Render(glm::mat4 projectionMatrix, std::string passType,
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.1f));
 		shaders["pbrShader"]->setMat4("model", model);
-		GetMaterials()["cerberus"]->BindTextures(3);
-		GetModels()["cerberus"]->RenderModelPBR();
+		materials["cerberus"]->BindTextures(3);
+		models["cerberus"]->RenderModelPBR();
 	}
 	/* End pbrShader */
 
@@ -354,8 +359,8 @@ void SceneJoey::Render(glm::mat4 projectionMatrix, std::string passType,
 		model = glm::rotate(model, glm::radians(0.0f + m_Timestep), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(5.0f));
 		shaders["pbrShaderMRE"]->setMat4("model", model);
-		GetMaterials()["damaged_helmet"]->BindTextures(3);
-		GetModels()["damagedHelmet"]->RenderModelPBR();
+		materials["damaged_helmet"]->BindTextures(3);
+		models["damagedHelmet"]->RenderModelPBR();
 
 		/* Khronos SciFiHelmet model */
 		model = glm::mat4(1.0f);
@@ -365,8 +370,8 @@ void SceneJoey::Render(glm::mat4 projectionMatrix, std::string passType,
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(5.0f));
 		shaders["pbrShaderMRE"]->setMat4("model", model);
-		GetMaterials()["sf_helmet"]->BindTextures(3);
-		GetModels()["sfHelmet"]->RenderModelPBR();
+		materials["sf_helmet"]->BindTextures(3);
+		models["sfHelmet"]->RenderModelPBR();
 	}
 	/* End pbrShaderMRE */
 

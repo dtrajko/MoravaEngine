@@ -138,31 +138,36 @@ public:
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) = 0;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) {};
-	inline Skybox* GetSkybox() const { return m_Skybox; };
+	inline bool IsWireframeEnabled() { return m_WireframeEnabled; };
+	virtual ~Scene();
+
+	// Getters
+	inline Camera* GetCamera() const { return m_Camera; };
 	static inline SceneSettings GetSettings() { return sceneSettings; };
 	std::map<std::string, Texture*> GetTextures() const { return textures; };
 	std::map<std::string, GLuint> GetTextureSlots() const { return textureSlots; };
-	void SetCamera();
-	inline Camera* GetCamera() const { return m_Camera; };
-	virtual void SetLightManager();
-	inline LightManager* GetLightManager() const { return m_LightManager; };
-	void SetWaterManager(int width, int height);
-	inline WaterManager* GetWaterManager() const { return m_WaterManager; };
+	inline std::map<std::string, Material*> GetMaterials() const { return materials; };
 	inline std::map<std::string, Model*> GetModels() const { return models; };
 	inline std::map<std::string, Mesh*> GetMeshes() const { return meshes; };
-	inline void SetWireframeEnabled(bool wireframeEnabled) { m_WireframeEnabled = wireframeEnabled; };
-	inline bool IsWireframeEnabled() { return m_WireframeEnabled; };
+	inline LightManager* GetLightManager() const { return m_LightManager; };
+	inline WaterManager* GetWaterManager() const { return m_WaterManager; };
+	inline Skybox* GetSkybox() const { return m_Skybox; };
 	inline float GetFOV() { return m_FOV; };
+
+	// Setters
+	void SetCamera();
+	virtual void SetLightManager();
+	void SetWaterManager(int width, int height);
+	inline void SetWireframeEnabled(bool wireframeEnabled) { m_WireframeEnabled = wireframeEnabled; };
 	inline void SetFOV(float FOV) { m_FOV = FOV; };
-	virtual ~Scene();
 
 private:
-	virtual void SetSkybox() = 0;
-	virtual void SetupModels() = 0;
-	virtual void SetupMeshes();
 	virtual void SetTextures();
 	virtual void SetTextureSlots();
-	void SetupMaterials();
+	virtual void SetupMaterials();
+	virtual void SetupMeshes();
+	virtual void SetupModels() = 0;
+	virtual void SetSkybox() = 0;
 
 protected:
 	static SceneSettings sceneSettings;
@@ -177,8 +182,8 @@ protected:
 	std::map<std::string, Texture*> textures;
 	std::map<std::string, GLuint> textureSlots;
 	std::map<std::string, Mesh*> meshes;
-	std::map<std::string, Material*> materials;
 	std::map<std::string, Model*> models;
+	std::map<std::string, Material*> materials;
 
 private:
 	DirectionalLight directionalLight;

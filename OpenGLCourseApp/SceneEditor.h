@@ -9,12 +9,11 @@
 #include "Grid.h"
 #include "Gizmo.h"
 #include "TextureCubeMap.h"
-
+#include "MaterialWorkflowPBR.h"
 
 
 const int SKYBOX_DAY   = 0;
 const int SKYBOX_NIGHT = 1;
-
 
 class SceneEditor : public Scene
 {
@@ -41,10 +40,14 @@ public:
 	virtual ~SceneEditor() override;
 
 private:
-	virtual void SetSkybox() override;
-	virtual void SetTextures() override;
-	virtual void SetupMeshes() override;
-	virtual void SetupModels() override;
+	virtual void SetTextures()    override;
+	virtual void SetupMaterials() override;
+	virtual void SetupMeshes()    override;
+	virtual void SetupModels()    override;
+	virtual void SetSkybox()      override;
+
+private:
+	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
 
 	Raycast* m_Raycast;
 	Grid* m_Grid;

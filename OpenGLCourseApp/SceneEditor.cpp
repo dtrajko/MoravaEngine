@@ -97,9 +97,14 @@ SceneEditor::SceneEditor()
 	SetCamera();
 	SetSkybox();
 	SetTextures();
+    SetupMaterials();
 	SetupMeshes();
 	SetupModels();
 	SetGeometry();
+
+    // Initialize the PBR/IBL Material Workflow component
+    m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
+    m_MaterialWorkflowPBR->Init("Textures/HDR/Ice_Lake_Ref.hdr");
 
     m_SelectedIndex = 0;
     m_CurrentMeshTypeInt = MESH_TYPE_CUBE;
@@ -190,6 +195,45 @@ void SceneEditor::SetTextures()
     textures.insert(std::make_pair("goldMetallicMap", new Texture("Textures/PBR/gold/metallic.png")));
     textures.insert(std::make_pair("goldRoughnessMap", new Texture("Textures/PBR/gold/roughness.png")));
     textures.insert(std::make_pair("goldAOMap", new Texture("Textures/PBR/gold/ao.png")));
+}
+
+void SceneEditor::SetupMaterials()
+{
+    // gold
+    TextureInfo textureInfoGold     = {};
+    textureInfoGold.albedo          = "Textures/PBR/gold/albedo.png";
+    textureInfoGold.normal          = "Textures/PBR/gold/normal.png";
+    textureInfoGold.metallic        = "Textures/PBR/gold/metallic.png";
+    textureInfoGold.roughness       = "Textures/PBR/gold/roughness.png";
+    textureInfoGold.ao              = "Textures/PBR/gold/ao.png";
+    materials.insert(std::make_pair("gold", new Material(textureInfoGold)));
+
+    // silver
+    TextureInfo textureInfoSilver   = {};
+    textureInfoSilver.albedo        = "Textures/PBR/silver/albedo.png";
+    textureInfoSilver.normal        = "Textures/PBR/silver/normal.png";
+    textureInfoSilver.metallic      = "Textures/PBR/silver/metallic.png";
+    textureInfoSilver.roughness     = "Textures/PBR/silver/roughness.png";
+    textureInfoSilver.ao            = "Textures/PBR/silver/ao.png";
+    materials.insert(std::make_pair("silver", new Material(textureInfoSilver)));
+
+    // rusted iron
+    TextureInfo textureInfoRustedIron = {};
+    textureInfoRustedIron.albedo    = "Textures/PBR/rusted_iron/albedo.png";
+    textureInfoRustedIron.normal    = "Textures/PBR/rusted_iron/normal.png";
+    textureInfoRustedIron.metallic  = "Textures/PBR/rusted_iron/metallic.png";
+    textureInfoRustedIron.roughness = "Textures/PBR/rusted_iron/roughness.png";
+    textureInfoRustedIron.ao        = "Textures/PBR/rusted_iron/ao.png";
+    materials.insert(std::make_pair("rusted_iron", new Material(textureInfoRustedIron)));
+
+    // plastic
+    TextureInfo textureInfoPlastic  = {};
+    textureInfoPlastic.albedo       = "Textures/PBR/plastic/albedo.png";
+    textureInfoPlastic.normal       = "Textures/PBR/plastic/normal.png";
+    textureInfoPlastic.metallic     = "Textures/PBR/plastic/metallic.png";
+    textureInfoPlastic.roughness    = "Textures/PBR/plastic/roughness.png";
+    textureInfoPlastic.ao           = "Textures/PBR/plastic/ao.png";
+    materials.insert(std::make_pair("plastic", new Material(textureInfoPlastic)));
 }
 
 void SceneEditor::SetupMeshes()
@@ -503,7 +547,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     }
 
     ImGui::Begin("Transform");
-
     ImGui::SliderFloat3("Position", (float*)m_PositionEdit, -10.0f, 10.0f);
     ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -179.0f, 180.0f);
     ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.1f, 20.0f);
@@ -728,6 +771,9 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
     Shader* shaderEditor = shaders["editor_object"];
+    Shader* shaderPBR    = shaders["shaderPBR"];
+    Shader* shaderBasic  = shaders["basic"];
+
     shaderEditor->Bind();
 
     for (auto& object : m_SceneObjects)
@@ -746,6 +792,7 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
             textures[object->textureName]->Bind(0);
         else
             textures["plain"]->Bind(0);
+
         shaderEditor->setInt("albedoMap", 0);
         shaderEditor->setFloat("tilingFactor", object->tilingFactor);
 
@@ -804,24 +851,77 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         m_Gizmo->Render(shaderEditor);
     /* End of shaderEditor */
 
+    /* Begin of pbrShader */
+    {
+        // initialize static shader uniforms before rendering
+        shaderPBR->Bind();
+
+        shaderPBR->setInt("irradianceMap", 0);
+        shaderPBR->setInt("prefilterMap",  1);
+        shaderPBR->setInt("brdfLUT",       2);
+        shaderPBR->setInt("albedoMap",     3);
+        shaderPBR->setInt("normalMap",     4);
+        shaderPBR->setInt("metallicMap",   5);
+        shaderPBR->setInt("roughnessMap",  6);
+        shaderPBR->setInt("aoMap",         7);
+
+        shaderPBR->setMat4("projection", projectionMatrix);
+        shaderPBR->setMat4("view", m_Camera->CalculateViewMatrix());
+        shaderPBR->setVec3("camPos", m_Camera->GetPosition());
+
+        // render scene, supplying the convoluted irradiance map to the final shader.
+        // bind pre-computed IBL data
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap());
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap());
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D,       m_MaterialWorkflowPBR->GetBRDF_LUT_Texture());
+
+        // rusted iron
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-3.0f, 5.0f, 0.0f));
+        shaderPBR->setMat4("model", model);
+        materials["rusted_iron"]->BindTextures(3);
+        meshes["sphere"]->Render();
+
+        // gold
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-1.0f, 5.0f, 0.0f));
+        shaderPBR->setMat4("model", model);
+        materials["gold"]->BindTextures(3);
+        meshes["sphere"]->Render();
+
+        // silver
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(1.0f, 5.0f, 0.0f));
+        shaderPBR->setMat4("model", model);
+        materials["silver"]->BindTextures(3);
+        meshes["sphere"]->Render();
+
+        // plastic
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(3.0f, 5.0f, 0.0f));
+        shaderPBR->setMat4("model", model);
+        materials["plastic"]->BindTextures(3);
+        meshes["sphere"]->Render();
+    }
+    /* End of pbrShader */
+
     /* Begin of shaderBasic */
+    shaderBasic->Bind();
+    shaderBasic->setMat4("projection", projectionMatrix);
+    shaderBasic->setMat4("view", m_Camera->CalculateViewMatrix());
+
     if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
     {
-        shaders["basic"]->Bind();
-        shaders["basic"]->setMat4("model", glm::mat4(1.0f));
-        shaders["basic"]->setMat4("view", m_Camera->CalculateViewMatrix());
-        shaders["basic"]->setMat4("projection", projectionMatrix);
-
+        shaderBasic->setMat4("model", glm::mat4(1.0f));
         m_SceneObjects[m_SelectedIndex]->AABB->Draw();
-        m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
+        m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
     }
 
-    m_Grid->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
-    m_PivotScene->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
-}
-
-void SceneEditor::CleanupGeometry()
-{
+    m_Grid->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+    m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
 }
 
 SceneObject* SceneEditor::CreateNewSceneObject()
@@ -975,6 +1075,10 @@ void SceneEditor::ResetScene()
         // delete object->mesh;
     }
     m_SceneObjects.clear();
+}
+
+void SceneEditor::CleanupGeometry()
+{
 }
 
 SceneEditor::~SceneEditor()
