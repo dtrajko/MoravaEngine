@@ -107,9 +107,9 @@ SceneEditor::SceneEditor()
     m_Raycast = new Raycast();
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
 
-    m_Grid = new Grid(10);
+    m_Grid = new Grid(20);
 
-    m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(40.0f, 40.0f, 40.0f));
+    m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 
     m_Gizmo = new Gizmo();
 
@@ -278,7 +278,6 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     if (mainWindow.getKeys()[GLFW_KEY_4])
         m_Gizmo->ChangeMode(GIZMO_MODE_NONE);
-
 }
 
 void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
@@ -304,8 +303,6 @@ void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*>* scene
     if (m_ObjectInFocusPrev > sceneObjectsInFocusIndices.size() - 1)
         m_ObjectInFocusPrev = 0;
     selectedIndex = sceneObjectsInFocusIndices[m_ObjectInFocusPrev];
-
-    // printf("Total objects in focus: %i, currently selected: %i\n", (int)sceneObjectsInFocusIndices.size(), (int)currentlySelected);
 }
 
 bool SceneEditor::IsObjectSelected(unsigned int objectIndex)
@@ -384,7 +381,7 @@ void SceneEditor::LoadScene()
     }
 
     unsigned int objectId;
-    SceneObject sceneObject;
+    SceneObject* sceneObject = CreateNewSceneObject();
     m_SceneObjects.clear();
 
     for (auto& line : lines)
@@ -402,53 +399,53 @@ void SceneEditor::LoadScene()
         
         if (tokens.size() >= 2 && tokens[0] == "BeginObject") {
             objectId = (unsigned int)std::stoi(tokens[1]);
-            sceneObject = {};
+            sceneObject = CreateNewSceneObject();
             // printf("ObjectID=%i\n", objectId);
         }
         else if (tokens.size() >= 4 && tokens[0] == "Position") {
-            sceneObject.position = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
+            sceneObject->position = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
             // printf("Position %.2ff %.2ff %.2ff\n", sceneObject.position.x, sceneObject.position.y, sceneObject.position.z);
         }
         else if (tokens.size() >= 4 && tokens[0] == "Rotation") {
-            sceneObject.rotation = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
+            sceneObject->rotation = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
             // printf("Rotation %.2ff %.2ff %.2ff\n", sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z);
         }
         else if (tokens.size() >= 4 && tokens[0] == "Scale") {
-            sceneObject.scale = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
+            sceneObject->scale = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
             // printf("Scale %.2ff %.2ff %.2ff\n", sceneObject.scale.x, sceneObject.scale.y, sceneObject.scale.z);
         }
         else if (tokens.size() >= 5 && tokens[0] == "Color") {
-            sceneObject.color = glm::vec4(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]), std::stof(tokens[4]));
+            sceneObject->color = glm::vec4(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]), std::stof(tokens[4]));
             // printf("Color %.2ff %.2ff %.2ff %.2ff\n", sceneObject.color.r, sceneObject.color.g, sceneObject.color.b, sceneObject.color.a);
         }
         else if (tokens.size() >= 2 && tokens[0] == "UseTexture") {
-            sceneObject.useTexture = std::stoi(tokens[1]) == 1 ? true : false;
+            sceneObject->useTexture = std::stoi(tokens[1]) == 1 ? true : false;
             // printf("UseTexture %d\n", sceneObject.useTexture);
         }
         else if (tokens.size() >= 2 && tokens[0] == "TextureName") {
-            sceneObject.textureName = tokens[1];
+            sceneObject->textureName = tokens[1];
             // printf("UseTexture %s\n", sceneObject.textureName.c_str());
         }
         else if (tokens.size() >= 2 && tokens[0] == "TilingFactor") {
-            sceneObject.tilingFactor = std::stof(tokens[1]);
+            sceneObject->tilingFactor = std::stof(tokens[1]);
             // printf("TilingFactor %.2f\n", sceneObject.tilingFactor);
         }
         else if (tokens.size() >= 2 && tokens[0] == "IsSelected") {
-            sceneObject.isSelected = std::stoi(tokens[1]) == 1 ? true : false;
-            if (sceneObject.isSelected) m_SelectedIndex = (unsigned int)m_SceneObjects.size();
+            sceneObject->isSelected = std::stoi(tokens[1]) == 1 ? true : false;
+            if (sceneObject->isSelected) m_SelectedIndex = (unsigned int)m_SceneObjects.size();
             // printf("IsSelected %d\n", sceneObject.isSelected);
         }
         else if (tokens.size() >= 2 && tokens[0] == "MeshType") {
-            sceneObject.meshType = std::stoi(tokens[1]);
+            sceneObject->meshType = std::stoi(tokens[1]);
             // printf("MeshType %d\n", sceneObject.meshType);
         }
         else if (tokens.size() >= 1 && tokens[0] == "EndObject") {
-            sceneObject.id = (int)m_SceneObjects.size();
-            sceneObject.transform = Math::CreateTransform(sceneObject.position, sceneObject.rotation, sceneObject.scale);
-            sceneObject.AABB  = new AABB(sceneObject.position, sceneObject.rotation, sceneObject.scale);
-            sceneObject.pivot = new Pivot(sceneObject.position, sceneObject.scale);
-            sceneObject.mesh  = CreateNewPrimitive(sceneObject.meshType, sceneObject.scale);
-            m_SceneObjects.push_back(&sceneObject);
+            sceneObject->id = (int)m_SceneObjects.size();
+            sceneObject->transform = Math::CreateTransform(sceneObject->position, sceneObject->rotation, sceneObject->scale);
+            sceneObject->AABB  = new AABB(sceneObject->position, sceneObject->rotation, sceneObject->scale);
+            sceneObject->pivot = new Pivot(sceneObject->position, sceneObject->scale);
+            sceneObject->mesh  = CreateNewPrimitive(sceneObject->meshType, sceneObject->scale);
+            m_SceneObjects.push_back(sceneObject);
             // printf("EndObject: New SceneObject added to m_SceneObjects...\n");
         }
     }
@@ -820,16 +817,8 @@ void SceneEditor::CleanupGeometry()
 {
 }
 
-void SceneEditor::AddSceneObject()
+SceneObject* SceneEditor::CreateNewSceneObject()
 {
-    // Cooldown
-    if (m_CurrentTimestamp - m_ObjectAdd.lastTime < m_ObjectAdd.cooldown) return;
-    m_ObjectAdd.lastTime = m_CurrentTimestamp;
-
-    m_Gizmo->SetActive(false);
-
-    Mesh* mesh = CreateNewPrimitive(m_CurrentMeshTypeInt, glm::vec3(1.0f));
-
     // Add Scene Object here
     SceneObject* sceneObject = new SceneObject{
         (int)m_SceneObjects.size(),
@@ -844,9 +833,27 @@ void SceneEditor::AddSceneObject()
         true,
         new AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f)),
         new Pivot(glm::vec3(0.0f), glm::vec3(1.0f)),
-        mesh,
-        m_CurrentMeshTypeInt,
+        nullptr, // Mesh
+        0,
     };
+
+    return sceneObject;
+}
+
+void SceneEditor::AddSceneObject()
+{
+    // Cooldown
+    if (m_CurrentTimestamp - m_ObjectAdd.lastTime < m_ObjectAdd.cooldown) return;
+    m_ObjectAdd.lastTime = m_CurrentTimestamp;
+
+    m_Gizmo->SetActive(false);
+
+    Mesh* mesh = CreateNewPrimitive(m_CurrentMeshTypeInt, glm::vec3(1.0f));
+
+    // Add Scene Object here
+    SceneObject* sceneObject = CreateNewSceneObject();
+    sceneObject->mesh = mesh;
+    sceneObject->meshType = m_CurrentMeshTypeInt;
 
     m_SceneObjects.push_back(sceneObject);
     m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
