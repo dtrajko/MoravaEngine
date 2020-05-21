@@ -48,6 +48,7 @@ struct SceneObject
 	Pivot* pivot;
 	Mesh* mesh;
 	int meshType;
+	std::string materialName;
 };
 
 struct EventCooldown

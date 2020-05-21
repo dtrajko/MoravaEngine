@@ -26,6 +26,18 @@ void MaterialWorkflowPBR::Init(std::string envMapHDR)
 	Generate2DLUTFromBRDF();              // Line 230
 }
 
+void MaterialWorkflowPBR::BindTextures(unsigned int slot)
+{
+	// render scene, supplying the convoluted irradiance map to the final shader.
+	// bind pre-computed IBL data
+	glActiveTexture(GL_TEXTURE0 + slot + 0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceMap);
+	glActiveTexture(GL_TEXTURE0 + slot + 1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilterMap);
+	glActiveTexture(GL_TEXTURE0 + slot + 2);
+	glBindTexture(GL_TEXTURE_2D, m_BRDF_LUT_Texture);
+}
+
 void MaterialWorkflowPBR::SetupShaders()
 {
 	m_ShaderEquirectangularToCubemap = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/equirectangular_to_cubemap.fs");

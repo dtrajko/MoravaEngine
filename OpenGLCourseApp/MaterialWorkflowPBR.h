@@ -14,6 +14,7 @@ public:
 	~MaterialWorkflowPBR();
 
 	void Init(std::string envMapHDR);
+	void BindTextures(unsigned int slot);
 	inline const unsigned int GetHDRTexture() const { return m_HDRTexture; };
 	inline const unsigned int GetIrradianceMap() const { return m_IrradianceMap; };
 	inline const unsigned int GetPrefilterMap() const { return m_PrefilterMap; };

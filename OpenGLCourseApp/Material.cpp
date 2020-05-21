@@ -23,6 +23,8 @@ Material::Material()
 	m_HeightMap           = -1;
 	m_AmbientOcclusionMap = -1;
 	m_EmissionMap         = -1;
+
+	m_TexturePlaceholder = new Texture("Textures/plain.png");
 }
 
 Material::Material(TextureInfo textureInfoGold) : Material()
@@ -37,15 +39,44 @@ Material::Material(TextureInfo textureInfoGold) : Material()
 void Material::BindTextures(unsigned int slot)
 {
 	glActiveTexture(GL_TEXTURE0 + slot + 0);
-	glBindTexture(GL_TEXTURE_2D, m_TextureAlbedo->GetID());
+	if (m_TextureAlbedo != nullptr) {
+		glBindTexture(GL_TEXTURE_2D, m_TextureAlbedo->GetID());
+	}
+	else {
+		glBindTexture(GL_TEXTURE_2D, m_TexturePlaceholder->GetID());
+	}
+
 	glActiveTexture(GL_TEXTURE0 + slot + 1);
-	glBindTexture(GL_TEXTURE_2D, m_TextureNormal->GetID());
+	if (m_TextureNormal != nullptr) {
+		glBindTexture(GL_TEXTURE_2D, m_TextureNormal->GetID());
+	}
+	else {
+		glBindTexture(GL_TEXTURE_2D, m_TexturePlaceholder->GetID());
+	}
+
 	glActiveTexture(GL_TEXTURE0 + slot + 2);
-	glBindTexture(GL_TEXTURE_2D, m_TextureMetallic->GetID());
+	if (m_TextureMetallic != nullptr) {
+		glBindTexture(GL_TEXTURE_2D, m_TextureMetallic->GetID());
+	}
+	else {
+		glBindTexture(GL_TEXTURE_2D, m_TexturePlaceholder->GetID());
+	}
+
 	glActiveTexture(GL_TEXTURE0 + slot + 3);
-	glBindTexture(GL_TEXTURE_2D, m_TextureRoughness->GetID());
+	if (m_TextureRoughness != nullptr) {
+		glBindTexture(GL_TEXTURE_2D, m_TextureRoughness->GetID());
+	}
+	else {
+		glBindTexture(GL_TEXTURE_2D, m_TexturePlaceholder->GetID());
+	}
+
 	glActiveTexture(GL_TEXTURE0 + slot + 4);
-	glBindTexture(GL_TEXTURE_2D, m_TextureAO->GetID());
+	if (m_TextureAO != nullptr) {
+		glBindTexture(GL_TEXTURE_2D, m_TextureAO->GetID());
+	}
+	else {
+		glBindTexture(GL_TEXTURE_2D, m_TexturePlaceholder->GetID());
+	}
 }
 
 Material::Material(float specularIntensity, float shininess) : Material()

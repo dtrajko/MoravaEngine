@@ -64,6 +64,7 @@ private:
 	bool* m_UseTextureEdit;
 	float* m_TilingFactorEdit;
 	std::string* m_TextureNameEdit;
+	std::string* m_MaterialNameEdit;
 
 	unsigned int m_SelectedIndex;
 	unsigned int m_ObjectInFocusPrev;

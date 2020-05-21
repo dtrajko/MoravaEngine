@@ -1,11 +1,60 @@
 BeginObject	0
-Position	-1.940000	5.452037	-0.359001
+Position	-2.390003	3.038014	-5.117015
 Rotation	0.000000	0.000000	0.000000
-Scale	0.770001	1.957998	1.153000
+Scale	3.880003	5.725000	4.075007
 Color	1.000000	1.000000	1.000000	1.000000
 UseTexture	1
-TextureName	silver_albedo
+TextureName	plank
+TilingFactor	0.757000
+IsSelected	0
+MeshType	3
+MaterialName	silver
+EndObject
+BeginObject	1
+Position	12.625011	3.646005	5.187001
+Rotation	0.000000	0.000000	0.000000
+Scale	3.880003	6.765003	4.075007
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	1
+TextureName	rock2
+TilingFactor	0.357000
+IsSelected	0
+MeshType	3
+MaterialName	plastic
+EndObject
+BeginObject	2
+Position	-13.110016	1.218001	5.892001
+Rotation	0.000000	0.000000	0.000000
+Scale	2.011995	2.002994	2.035000
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	1
+TextureName	crate
+TilingFactor	0.494000
+IsSelected	0
+MeshType	0
+MaterialName	
+EndObject
+BeginObject	3
+Position	-0.083000	0.003001	0.074000
+Rotation	0.000000	0.000000	0.000000
+Scale	33.184937	0.415001	17.809996
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	0
+TextureName	plain
 TilingFactor	1.000000
 IsSelected	0
-MeshType	2
+MeshType	0
+MaterialName	gold
+EndObject
+BeginObject	4
+Position	3.614998	3.038014	5.416988
+Rotation	0.000000	0.000000	0.000000
+Scale	3.880003	5.725000	4.075007
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	1
+TextureName	plank
+TilingFactor	0.757000
+IsSelected	0
+MeshType	0
+MaterialName	silver
 EndObject

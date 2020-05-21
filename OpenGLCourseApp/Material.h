@@ -64,6 +64,8 @@ private:
 	Texture* m_TextureRoughness;
 	Texture* m_TextureAO;
 
+	Texture* m_TexturePlaceholder;
+
 	std::map<int, MapType> m_Maps;
 
 	glm::vec3 m_Ambient;  // color value

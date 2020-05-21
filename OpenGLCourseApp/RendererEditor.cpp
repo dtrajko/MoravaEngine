@@ -27,6 +27,10 @@ void RendererEditor::SetShaders()
     shaders.insert(std::make_pair("editor_object", shaderEditorObject));
     printf("RendererEditor: shaderEditorObject compiled [programID=%d]\n", shaderEditorObject->GetProgramID());
 
+    Shader* shaderEditorObjectPBR = new Shader("Shaders/PBR/editor_object_pbr.vs", "Shaders/PBR/editor_object_pbr.fs");
+    shaders.insert(std::make_pair("editor_object_PBR", shaderEditorObjectPBR));
+    printf("RendererEditor: shaderEditorObjectPBR compiled [programID=%d]\n", shaderEditorObjectPBR->GetProgramID());
+
     Shader* shaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
     shaders.insert(std::make_pair("basic", shaderBasic));
     printf("RendererEditor: shaderBasic compiled [programID=%d]\n", shaderBasic->GetProgramID());
@@ -34,10 +38,6 @@ void RendererEditor::SetShaders()
     Shader* shaderFramebuffersScene = new Shader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
     shaders.insert(std::make_pair("framebuffers_scene", shaderFramebuffersScene));
     printf("RendererEditor: shaderFramebuffersScene compiled [programID=%d]\n", shaderFramebuffersScene->GetProgramID());
-
-    Shader* shaderPBR = new Shader("Shaders/learnopengl/2.2.2.pbr.vs", "Shaders/learnopengl/2.2.2.pbr.fs");
-    shaders.insert(std::make_pair("shaderPBR", shaderPBR));
-    printf("RendererEditor: shaderPBR compiled [programID=%d]\n", shaderPBR->GetProgramID());
 }
 
 void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)

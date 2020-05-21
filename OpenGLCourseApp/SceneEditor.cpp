@@ -125,6 +125,7 @@ SceneEditor::SceneEditor()
     m_UseTextureEdit   = new bool(false);
     m_TextureNameEdit  = new std::string;
     m_TilingFactorEdit = new float(1.0f);
+    m_MaterialNameEdit = new std::string;
 
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
@@ -199,6 +200,15 @@ void SceneEditor::SetTextures()
 
 void SceneEditor::SetupMaterials()
 {
+    // none (placeholder)
+    TextureInfo textureInfoNone = {};
+    textureInfoNone.albedo    = "Textures/plain.png";
+    textureInfoNone.normal    = "Textures/normal_map_default.png";
+    textureInfoNone.metallic  = "Textures/plain.png";
+    textureInfoNone.roughness = "Textures/plain.png";
+    textureInfoNone.ao        = "Textures/plain.png";
+    materials.insert(std::make_pair("none", new Material(textureInfoNone)));
+
     // gold
     TextureInfo textureInfoGold     = {};
     textureInfoGold.albedo          = "Textures/PBR/gold/albedo.png";
@@ -234,6 +244,15 @@ void SceneEditor::SetupMaterials()
     textureInfoPlastic.roughness    = "Textures/PBR/plastic/roughness.png";
     textureInfoPlastic.ao           = "Textures/PBR/plastic/ao.png";
     materials.insert(std::make_pair("plastic", new Material(textureInfoPlastic)));
+
+    // grass
+    TextureInfo textureInfoGrass = {};
+    textureInfoGrass.albedo    = "Textures/PBR/grass/albedo.png";
+    textureInfoGrass.normal    = "Textures/PBR/grass/normal.png";
+    textureInfoGrass.metallic  = "Textures/PBR/grass/metallic.png";
+    textureInfoGrass.roughness = "Textures/PBR/grass/roughness.png";
+    textureInfoGrass.ao        = "Textures/PBR/grass/ao.png";
+    materials.insert(std::make_pair("grass", new Material(textureInfoGrass)));
 }
 
 void SceneEditor::SetupMeshes()
@@ -397,6 +416,7 @@ void SceneEditor::SaveScene()
         std::string isSelected = m_SceneObjects[i]->isSelected ? "1" : "0";
         lines.push_back("IsSelected\t" + isSelected);
         lines.push_back("MeshType\t" + std::to_string(m_SceneObjects[i]->meshType));
+        lines.push_back("MaterialName\t" + m_SceneObjects[i]->materialName);
         lines.push_back("EndObject");
     }
 
@@ -490,6 +510,10 @@ void SceneEditor::LoadScene()
             sceneObject->meshType = std::stoi(tokens[1]);
             // printf("MeshType %d\n", sceneObject.meshType);
         }
+        else if (tokens.size() >= 2 && tokens[0] == "MaterialName") {
+            sceneObject->materialName = tokens[1];
+            // printf("UseTexture %s\n", sceneObject.textureName.c_str());
+        }
         else if (tokens.size() >= 1 && tokens[0] == "EndObject") {
             sceneObject->id = (int)m_SceneObjects.size();
             sceneObject->transform = Math::CreateTransform(sceneObject->position, sceneObject->rotation, sceneObject->scale);
@@ -544,6 +568,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         m_UseTextureEdit =   &m_SceneObjects[m_SelectedIndex]->useTexture;
         m_TextureNameEdit  = &m_SceneObjects[m_SelectedIndex]->textureName;
         m_TilingFactorEdit = &m_SceneObjects[m_SelectedIndex]->tilingFactor;
+        m_MaterialNameEdit = &m_SceneObjects[m_SelectedIndex]->materialName;
     }
 
     ImGui::Begin("Transform");
@@ -553,23 +578,23 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::ColorEdit4("Color", (float*)m_ColorEdit);
     ImGui::Checkbox("Use Texture", m_UseTextureEdit);
 
-    // Begin ImGui drop-down list
-    std::vector<const char*> items;
-    std::map<std::string, Texture*>::iterator it;
-    for (it = textures.begin(); it != textures.end(); it++)
-        items.push_back(it->first.c_str());
-    static const char* currentItem = m_TextureNameEdit->c_str();
+    // Begin TextureName ImGui drop-down list
+    std::vector<const char*> itemsTexture;
+    std::map<std::string, Texture*>::iterator itTexture;
+    for (itTexture = textures.begin(); itTexture != textures.end(); itTexture++)
+        itemsTexture.push_back(itTexture->first.c_str());
+    static const char* currentItemTexture = m_TextureNameEdit->c_str();
 
-    if (ImGui::BeginCombo("Texture Name", currentItem))
+    if (ImGui::BeginCombo("Texture Name", currentItemTexture))
     {
-        for (int n = 0; n < items.size(); n++)
+        for (int n = 0; n < itemsTexture.size(); n++)
         {
-            bool isSelected = (currentItem == items[n]);
-            if (ImGui::Selectable(items[n], isSelected))
+            bool isSelected = (currentItemTexture == itemsTexture[n]);
+            if (ImGui::Selectable(itemsTexture[n], isSelected))
             {
-                currentItem = items[n];
+                currentItemTexture = itemsTexture[n];
                 if (m_SelectedIndex < m_SceneObjects.size())
-                    m_SceneObjects[m_SelectedIndex]->textureName = items[n];
+                    m_SceneObjects[m_SelectedIndex]->textureName = itemsTexture[n];
                 else
                     m_SelectedIndex = m_SceneObjects.size() > 0 ? (unsigned int)m_SceneObjects.size() - 1 : 0;
             }
@@ -580,9 +605,38 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         }
         ImGui::EndCombo();
     }
-    // End ImGui drop-down list
+    // End TextureName ImGui drop-down list
 
     ImGui::SliderFloat("Tiling Factor", m_TilingFactorEdit, 0.0f, 10.0f);
+
+    // Begin MaterialName ImGui drop-down list
+    std::vector<const char*> itemsMaterial;
+    std::map<std::string, Material*>::iterator itMaterial;
+    for (itMaterial = materials.begin(); itMaterial != materials.end(); itMaterial++)
+        itemsMaterial.push_back(itMaterial->first.c_str());
+    static const char* currentItemMaterial = m_MaterialNameEdit->c_str();
+    if (ImGui::BeginCombo("Material Name", currentItemMaterial))
+    {
+        for (int n = 0; n < itemsMaterial.size(); n++)
+        {
+            bool isSelectedMaterial = (currentItemMaterial == itemsMaterial[n]);
+            if (ImGui::Selectable(itemsMaterial[n], isSelectedMaterial))
+            {
+                currentItemMaterial = itemsMaterial[n];
+                if (m_SelectedIndex < m_SceneObjects.size())
+                    m_SceneObjects[m_SelectedIndex]->materialName = itemsMaterial[n];
+                else
+                    m_SelectedIndex = m_SceneObjects.size() > 0 ? (unsigned int)m_SceneObjects.size() - 1 : 0;
+            }
+            if (isSelectedMaterial)
+            {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+    // End MaterialName ImGui drop-down list
+
     ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(m_SceneObjects.size() - 1));
 
     bool gizmoActive = m_Gizmo->GetActive();
@@ -770,14 +824,48 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
-    Shader* shaderEditor = shaders["editor_object"];
-    Shader* shaderPBR    = shaders["shaderPBR"];
-    Shader* shaderBasic  = shaders["basic"];
+    Shader* shaderEditor    = shaders["editor_object"];
+    Shader* shaderEditorPBR = shaders["editor_object_PBR"];
+    Shader* shaderBasic     = shaders["basic"];
 
-    shaderEditor->Bind();
+    // Init shaderEditorPBR
+    // initialize static shader uniforms before rendering
+    shaderEditorPBR->Bind();
+    shaderEditorPBR->setInt("irradianceMap", 0);
+    shaderEditorPBR->setInt("prefilterMap",  1);
+    shaderEditorPBR->setInt("brdfLUT",       2);
+    shaderEditorPBR->setInt("albedoMap",     3);
+    shaderEditorPBR->setInt("normalMap",     4);
+    shaderEditorPBR->setInt("metallicMap",   5);
+    shaderEditorPBR->setInt("roughnessMap",  6);
+    shaderEditorPBR->setInt("aoMap",         7);
+    shaderEditorPBR->setMat4("projection", projectionMatrix);
+    shaderEditorPBR->setMat4("view", m_Camera->CalculateViewMatrix());
+    shaderEditorPBR->setVec3("camPos", m_Camera->GetPosition());
+
+    // directional light
+    unsigned int lightIndex = 0;
+    shaderEditorPBR->setVec3("lightPositions[0]", m_LightManager->directionalLight.GetPosition());
+    shaderEditorPBR->setVec3("lightColors[0]", m_LightManager->directionalLight.GetColor());
+
+    for (unsigned int i = 0; i < m_LightManager->pointLightCount; ++i)
+    {
+        lightIndex = i + 1; // offset for point lights
+        shaderEditorPBR->setVec3("lightPositions[" + std::to_string(lightIndex) + "]", m_LightManager->pointLights[i].GetPosition());
+        shaderEditorPBR->setVec3("lightColors[" + std::to_string(lightIndex) + "]", m_LightManager->pointLights[i].GetColor());
+    }
+
+    for (unsigned int i = 0; i < m_LightManager->spotLightCount; ++i)
+    {
+        lightIndex = i + 5; // offset for point lights
+        shaderEditorPBR->setVec3("lightPositions[" + std::to_string(lightIndex) + "]", m_LightManager->spotLights[i].GetBasePL()->GetPosition());
+        shaderEditorPBR->setVec3("lightColors[" + std::to_string(lightIndex) + "]", m_LightManager->spotLights[i].GetBasePL()->GetColor());
+    }
 
     for (auto& object : m_SceneObjects)
     {
+        shaderEditor->Bind();
+
         object->transform = Math::CreateTransform(object->position, object->rotation, glm::vec3(1.0f));
 
         // For meshes that can't be scaled on vertex level
@@ -800,6 +888,19 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         shaderEditor->setInt("cubeMap", 1);
         shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
 
+        if (object->materialName == "" || object->materialName == "none") {
+            // Render with shaderEditor
+            shaderEditor->Bind();
+        }
+        else {
+            // Render with shaderEditorPBR
+            shaderEditorPBR->Bind();
+            shaderEditorPBR->setMat4("model", object->transform);
+            m_MaterialWorkflowPBR->BindTextures(0);
+            materials[object->materialName]->BindTextures(3);
+        }
+
+        // Render by shaderEditor OR shaderEditorPBR
         object->mesh->Render();
 
         object->AABB->Update(object->position, object->rotation, object->scale);
@@ -814,6 +915,8 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     textures["plain"]->Bind(0);
     textures["plain"]->Bind(1);
     textures["plain"]->Bind(2);
+
+    shaderEditor->Bind();
 
     shaderEditor->setVec4("tintColor", glm::vec4(1.0f));
 
@@ -851,63 +954,6 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         m_Gizmo->Render(shaderEditor);
     /* End of shaderEditor */
 
-    /* Begin of pbrShader */
-    {
-        // initialize static shader uniforms before rendering
-        shaderPBR->Bind();
-
-        shaderPBR->setInt("irradianceMap", 0);
-        shaderPBR->setInt("prefilterMap",  1);
-        shaderPBR->setInt("brdfLUT",       2);
-        shaderPBR->setInt("albedoMap",     3);
-        shaderPBR->setInt("normalMap",     4);
-        shaderPBR->setInt("metallicMap",   5);
-        shaderPBR->setInt("roughnessMap",  6);
-        shaderPBR->setInt("aoMap",         7);
-
-        shaderPBR->setMat4("projection", projectionMatrix);
-        shaderPBR->setMat4("view", m_Camera->CalculateViewMatrix());
-        shaderPBR->setVec3("camPos", m_Camera->GetPosition());
-
-        // render scene, supplying the convoluted irradiance map to the final shader.
-        // bind pre-computed IBL data
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap());
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap());
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D,       m_MaterialWorkflowPBR->GetBRDF_LUT_Texture());
-
-        // rusted iron
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-3.0f, 5.0f, 0.0f));
-        shaderPBR->setMat4("model", model);
-        materials["rusted_iron"]->BindTextures(3);
-        meshes["sphere"]->Render();
-
-        // gold
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-1.0f, 5.0f, 0.0f));
-        shaderPBR->setMat4("model", model);
-        materials["gold"]->BindTextures(3);
-        meshes["sphere"]->Render();
-
-        // silver
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(1.0f, 5.0f, 0.0f));
-        shaderPBR->setMat4("model", model);
-        materials["silver"]->BindTextures(3);
-        meshes["sphere"]->Render();
-
-        // plastic
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(3.0f, 5.0f, 0.0f));
-        shaderPBR->setMat4("model", model);
-        materials["plastic"]->BindTextures(3);
-        meshes["sphere"]->Render();
-    }
-    /* End of pbrShader */
-
     /* Begin of shaderBasic */
     shaderBasic->Bind();
     shaderBasic->setMat4("projection", projectionMatrix);
@@ -942,6 +988,7 @@ SceneObject* SceneEditor::CreateNewSceneObject()
         new Pivot(glm::vec3(0.0f), glm::vec3(1.0f)),
         nullptr, // Mesh
         0,
+        ""
     };
 
     return sceneObject;
@@ -995,7 +1042,8 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
         new AABB(oldSceneObject->position, oldSceneObject->rotation, oldSceneObject->scale),
         new Pivot(oldSceneObject->position, oldSceneObject->scale),
         CreateNewPrimitive(oldSceneObject->meshType, oldSceneObject->mesh->GetScale()),
-        m_CurrentMeshTypeInt
+        m_CurrentMeshTypeInt,
+        oldSceneObject->materialName
     };
 
     sceneObjects->push_back(newSceneObject);
