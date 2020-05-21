@@ -106,6 +106,12 @@
     <Filter Include="Source Files\Particles">
       <UniqueIdentifier>{c0899ef3-a557-4073-92d2-df85815f4fb8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Components">
+      <UniqueIdentifier>{e44a433a-7aab-44de-90c2-69ee3f18b95b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components">
+      <UniqueIdentifier>{bba0dda7-1d9c-41e2-a279-6725057d0ff8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -380,6 +386,9 @@
     </ClCompile>
     <ClCompile Include="Gizmo.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialWorkflowPBR.cpp">
+      <Filter>Source Files\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -676,6 +685,9 @@
     </ClInclude>
     <ClInclude Include="Gizmo.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialWorkflowPBR.h">
+      <Filter>Header Files\Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

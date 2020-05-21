@@ -183,6 +183,13 @@ void SceneEditor::SetTextures()
     textures.insert(std::make_pair("grass_albedo", new Texture("Textures/PBR/grass/albedo.png")));
     textures.insert(std::make_pair("wall_albedo", new Texture("Textures/PBR/wall/albedo.png")));
     textures.insert(std::make_pair("plastic_albedo", new Texture("Textures/PBR/plastic/albedo.png")));
+
+    // PBR/IBL - gold material
+    textures.insert(std::make_pair("goldAlbedoMap", new Texture("Textures/PBR/gold/albedo.png")));
+    textures.insert(std::make_pair("goldNormalMap", new Texture("Textures/PBR/gold/normal.png")));
+    textures.insert(std::make_pair("goldMetallicMap", new Texture("Textures/PBR/gold/metallic.png")));
+    textures.insert(std::make_pair("goldRoughnessMap", new Texture("Textures/PBR/gold/roughness.png")));
+    textures.insert(std::make_pair("goldAOMap", new Texture("Textures/PBR/gold/ao.png")));
 }
 
 void SceneEditor::SetupMeshes()

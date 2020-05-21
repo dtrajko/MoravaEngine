@@ -13,23 +13,14 @@ void RendererJoey::Init(Scene* scene)
 	SetGeometry();
 	SetUniforms();
 	SetShaders();
-	SetFramebuffers();
-	LoadHDREnvironmentMap();
-	SetupCubemap();
-	SetupMatrices();
-	ConvertHDREquirectangularToCubemap();
-	CreateIrradianceCubemap();
-	SolveDiffuseIntegralByConvolution();
-	CreatePreFilterCubemap();
-	RunQuasiMonteCarloSimulation();
-	Generate2DLUTFromBRDF();
+
+	m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
+	m_MaterialWorkflowPBR->Init("Textures/HDR/Ice_Lake_Ref.hdr");
 }
 
 void RendererJoey::SetGeometry()
 {
 	m_SphereJoey = new SphereJoey();
-	m_Cube = new Cube();
-	m_Quad = new Quad();
 }
 
 void RendererJoey::SetUniforms()
@@ -48,22 +39,6 @@ void RendererJoey::SetShaders()
 	Shader* pbrShaderMRE = new Shader("Shaders/learnopengl/2.2.2.pbr.vs", "Shaders/learnopengl/2.2.3.pbr.fs");
 	shaders.insert(std::make_pair("pbrShaderMRE", pbrShaderMRE));
 	printf("RendererJoey: pbrShaderMRE compiled [programID=%d]\n", pbrShaderMRE->GetProgramID());
-
-	Shader* equirectangularToCubemapShader = new Shader("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.equirectangular_to_cubemap.fs");
-	shaders.insert(std::make_pair("equirectangularToCubemapShader", equirectangularToCubemapShader));
-	printf("RendererJoey: equirectangularToCubemapShader compiled [programID=%d]\n", equirectangularToCubemapShader->GetProgramID());
-
-	Shader* irradianceShader = new Shader("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.irradiance_convolution.fs");
-	shaders.insert(std::make_pair("irradianceShader", irradianceShader));
-	printf("RendererJoey: irradianceShader compiled [programID=%d]\n", irradianceShader->GetProgramID());
-
-	Shader* prefilterShader = new Shader("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.prefilter.fs");
-	shaders.insert(std::make_pair("prefilterShader", prefilterShader));
-	printf("RendererJoey: prefilterShader compiled [programID=%d]\n", prefilterShader->GetProgramID());
-
-	Shader* brdfShader = new Shader("Shaders/learnopengl/2.2.2.brdf.vs", "Shaders/learnopengl/2.2.2.brdf.fs");
-	shaders.insert(std::make_pair("brdfShader", brdfShader));
-	printf("RendererJoey: brdfShader compiled [programID=%d]\n", brdfShader->GetProgramID());
 
 	Shader* backgroundShader = new Shader("Shaders/learnopengl/2.2.2.background.vs", "Shaders/learnopengl/2.2.2.background.fs");
 	shaders.insert(std::make_pair("backgroundShader", backgroundShader));
@@ -91,219 +66,6 @@ void RendererJoey::SetShaders()
 
 	shaders["backgroundShader"]->Bind();
 	shaders["backgroundShader"]->setInt("environmentMap", 0);
-}
-
-void RendererJoey::SetFramebuffers()
-{
-	// PBR: setup framebuffer
-	glGenFramebuffers(1, &m_CaptureFBO);
-	glGenRenderbuffers(1, &m_CaptureRBO);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_CaptureRBO);
-}
-
-void RendererJoey::LoadHDREnvironmentMap()
-{
-	// pbr: load the HDR environment map
-	stbi_set_flip_vertically_on_load(true);
-	int width, height, nrComponents;
-	float* data = stbi_loadf("Textures/HDR/Ice_Lake_Ref.hdr", &width, &height, &nrComponents, 0); // newport_loft.hdr
-	if (data)
-	{
-		glGenTextures(1, &m_HDRTexture);
-		glBindTexture(GL_TEXTURE_2D, m_HDRTexture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data); // note how we specify the texture's data value to be float
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		stbi_image_free(data);
-	}
-	else
-	{
-		std::cout << "Failed to load HDR image." << std::endl;
-	}
-}
-
-void RendererJoey::SetupCubemap()
-{
-	// pbr: setup cubemap to render to and attach to framebuffer
-	glGenTextures(1, &m_EnvCubemap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvCubemap);
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // enable pre-filter mipmap sampling (combatting visible dots artifact)
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-}
-
-void RendererJoey::SetupMatrices()
-{
-	// pbr: set up projection and view matrices for capturing data onto the 6 cubemap face directions
-	m_CaptureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-	m_CaptureViews[0] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f));
-	m_CaptureViews[1] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f));
-	m_CaptureViews[2] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f));
-	m_CaptureViews[3] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f));
-	m_CaptureViews[4] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f));
-	m_CaptureViews[5] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f));
-}
-
-void RendererJoey::ConvertHDREquirectangularToCubemap()
-{
-	// pbr: convert HDR equirectangular environment map to cubemap equivalent
-	// ----------------------------------------------------------------------
-	shaders["equirectangularToCubemapShader"]->Bind();
-	shaders["equirectangularToCubemapShader"]->setInt("equirectangularMap", 0);
-	shaders["equirectangularToCubemapShader"]->setMat4("projection", m_CaptureProjection);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_HDRTexture);
-
-	glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
-	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		shaders["equirectangularToCubemapShader"]->setMat4("view", m_CaptureViews[i]);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_EnvCubemap, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		m_Cube->Render();
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	// then let OpenGL generate mipmaps from first mip face (combatting visible dots artifact)
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvCubemap);
-	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-}
-
-void RendererJoey::CreateIrradianceCubemap()
-{
-	// pbr: create an irradiance cubemap, and re-scale capture FBO to irradiance scale.
-	glGenTextures(1, &m_IrradianceMap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceMap);
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
-}
-
-void RendererJoey::SolveDiffuseIntegralByConvolution()
-{
-	// pbr: solve diffuse integral by convolution to create an irradiance (cube)map.	
-	shaders["irradianceShader"]->Bind();
-	shaders["irradianceShader"]->setInt("environmentMap", 0);
-	shaders["irradianceShader"]->setMat4("projection", m_CaptureProjection);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvCubemap);
-
-	glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
-	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		shaders["irradianceShader"]->setMat4("view", m_CaptureViews[i]);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_IrradianceMap, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		m_Cube->Render();
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void RendererJoey::CreatePreFilterCubemap()
-{
-	// PBR: create a pre-filter cubemap, and re-scale capture FBO to pre-filter scale.
-	glGenTextures(1, &m_PrefilterMap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilterMap);
-	for (unsigned int i = 0; i < 6; ++i)
-	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 128, 128, 0, GL_RGB, GL_FLOAT, nullptr);
-	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // be sure to set minifcation filter to mip_linear 
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// generate mipmaps for the cubemap so OpenGL automatically allocates the required memory.
-	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-}
-
-void RendererJoey::RunQuasiMonteCarloSimulation()
-{
-	// pbr: run a quasi monte-carlo simulation on the environment lighting to create a prefilter (cube)map.
-	shaders["prefilterShader"]->Bind();
-	shaders["prefilterShader"]->setInt("environmentMap", 0);
-	shaders["prefilterShader"]->setMat4("projection", m_CaptureProjection);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvCubemap);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
-	unsigned int maxMipLevels = 5;
-	for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
-	{
-		// resize framebuffer according to mip-level size.
-		unsigned int mipWidth = (unsigned int)(128 * std::pow(0.5, mip));
-		unsigned int mipHeight = (unsigned int)(128 * std::pow(0.5, mip));
-		glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRBO);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
-		glViewport(0, 0, mipWidth, mipHeight);
-
-		float roughness = (float)mip / (float)(maxMipLevels - 1);
-		shaders["prefilterShader"]->setFloat("roughness", roughness);
-		for (unsigned int i = 0; i < 6; ++i)
-		{
-			shaders["prefilterShader"]->setMat4("view", m_CaptureViews[i]);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_PrefilterMap, mip);
-
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			m_Cube->Render();
-		}
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void RendererJoey::Generate2DLUTFromBRDF()
-{
-	// pbr: generate a 2D LUT from the BRDF equations used
-	glGenTextures(1, &m_BRDF_LUT_Texture);
-
-	// pre-allocate enough memory for the LUT texture.
-	glBindTexture(GL_TEXTURE_2D, m_BRDF_LUT_Texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
-	// be sure to set wrapping mode to GL_CLAMP_TO_EDGE
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// then re-configure capture framebuffer object and render screen-space quad with BRDF shader.
-	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_BRDF_LUT_Texture, 0);
-
-	glViewport(0, 0, 512, 512);
-	
-	shaders["brdfShader"]->Bind();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	m_Quad->Render();
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -340,13 +102,11 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 
 	// bind pre-computed IBL data
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap());
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilterMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap());
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, m_BRDF_LUT_Texture);
-
-	// printf("irradianceMap=%d prefilterMap=%d brdfLUTTexture=%d\n", m_IrradianceMap,m_PrefilterMap, m_BRDF_LUT_Texture);
+	glBindTexture(GL_TEXTURE_2D, m_MaterialWorkflowPBR->GetBRDF_LUT_Texture());
 
 	// rusted iron
 	glActiveTexture(GL_TEXTURE3);
@@ -376,10 +136,6 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	glBindTexture(GL_TEXTURE_2D, textures["goldRoughnessMap"]->GetID());
 	glActiveTexture(GL_TEXTURE7);
 	glBindTexture(GL_TEXTURE_2D, textures["goldAOMap"]->GetID());
-
-	// printf("goldAlbedoMap=%d goldNormalMap=%d goldMetallicMap=%d goldRoughnessMap=%d goldAOMap=%d\n",
-	// 	textures["goldAlbedoMap"]->GetID(), textures["goldNormalMap"]->GetID(), textures["goldMetallicMap"]->GetID(),
-	// 	textures["goldRoughnessMap"]->GetID(), textures["goldAOMap"]->GetID());
 
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-3.0, 0.0, 2.0));
@@ -562,10 +318,10 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	shaders["backgroundShader"]->Bind();
 	shaders["backgroundShader"]->setMat4("view", view);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvCubemap);
-	// glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceMap); // display irradiance map
-	// glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilterMap); // display prefilter map
-	m_Cube->Render();
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
+	// glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap()); // display irradiance map
+	// glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap()); // display prefilter map
+	m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
 }
 
 void RendererJoey::RenderPass()

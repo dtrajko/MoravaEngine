@@ -1,5 +1,5 @@
 BeginObject	0
-Position	-3.481964	2.312987	-8.349046
+Position	-5.463965	2.324984	-7.975029
 Rotation	0.000000	0.000000	0.000000
 Scale	5.508052	4.489996	6.008092
 Color	1.000000	1.000000	1.000000	1.000000
@@ -10,7 +10,7 @@ IsSelected	0
 MeshType	1
 EndObject
 BeginObject	1
-Position	-1.726994	3.756014	1.029000
+Position	-2.380990	3.756014	2.712999
 Rotation	0.000000	-0.400000	0.000000
 Scale	7.899074	7.360031	9.401143
 Color	1.000000	1.000000	1.000000	1.000000
@@ -21,9 +21,9 @@ IsSelected	0
 MeshType	1
 EndObject
 BeginObject	2
-Position	4.564005	2.199997	8.956011
+Position	2.127002	2.537989	10.759021
 Rotation	0.000000	0.000000	0.000000
-Scale	5.848057	4.209977	6.143095
+Scale	7.198073	4.974990	7.428098
 Color	1.000000	1.000000	1.000000	1.000000
 UseTexture	1
 TextureName	pyramid
@@ -32,9 +32,42 @@ IsSelected	0
 MeshType	1
 EndObject
 BeginObject	3
-Position	0.000000	0.014000	0.000000
+Position	0.006000	1.503994	-18.525845
+Rotation	0.000000	0.000000	0.000000
+Scale	-23.625937	3.112004	-0.120051
+Color	1.000000	0.904844	0.676471	1.000000
+UseTexture	1
+TextureName	rock
+TilingFactor	0.444000
+IsSelected	0
+MeshType	0
+EndObject
+BeginObject	4
+Position	-11.905972	1.522007	0.041001
+Rotation	0.000000	0.000000	0.000000
+Scale	0.208102	3.074993	37.224998
+Color	1.000000	0.904844	0.676471	1.000000
+UseTexture	1
+TextureName	rock
+TilingFactor	0.444000
+IsSelected	0
+MeshType	0
+EndObject
+BeginObject	5
+Position	0.010000	0.004000	0.004000
 Rotation	0.000000	0.000000	0.000000
 Scale	-23.626993	-0.138000	37.162033
+Color	1.000000	0.904844	0.676471	1.000000
+UseTexture	1
+TextureName	rock
+TilingFactor	0.444000
+IsSelected	0
+MeshType	0
+EndObject
+BeginObject	6
+Position	0.006000	1.503994	18.589148
+Rotation	0.000000	0.000000	0.000000
+Scale	-23.625937	3.112004	-0.120051
 Color	1.000000	0.904844	0.676471	1.000000
 UseTexture	1
 TextureName	rock
