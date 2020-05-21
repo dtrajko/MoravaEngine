@@ -23,7 +23,29 @@ Material::Material()
 	m_HeightMap           = -1;
 	m_AmbientOcclusionMap = -1;
 	m_EmissionMap         = -1;
+}
 
+Material::Material(TextureInfo textureInfoGold) : Material()
+{
+	m_TextureAlbedo    = new Texture(textureInfoGold.albedo.c_str());
+	m_TextureNormal    = new Texture(textureInfoGold.normal.c_str());
+	m_TextureMetallic  = new Texture(textureInfoGold.metallic.c_str());
+	m_TextureRoughness = new Texture(textureInfoGold.roughness.c_str());
+	m_TextureAO        = new Texture(textureInfoGold.ao.c_str());
+}
+
+void Material::BindTextures(unsigned int slot)
+{
+	glActiveTexture(GL_TEXTURE0 + slot + 0);
+	glBindTexture(GL_TEXTURE_2D, m_TextureAlbedo->GetID());
+	glActiveTexture(GL_TEXTURE0 + slot + 1);
+	glBindTexture(GL_TEXTURE_2D, m_TextureNormal->GetID());
+	glActiveTexture(GL_TEXTURE0 + slot + 2);
+	glBindTexture(GL_TEXTURE_2D, m_TextureMetallic->GetID());
+	glActiveTexture(GL_TEXTURE0 + slot + 3);
+	glBindTexture(GL_TEXTURE_2D, m_TextureRoughness->GetID());
+	glActiveTexture(GL_TEXTURE0 + slot + 4);
+	glBindTexture(GL_TEXTURE_2D, m_TextureAO->GetID());
 }
 
 Material::Material(float specularIntensity, float shininess) : Material()

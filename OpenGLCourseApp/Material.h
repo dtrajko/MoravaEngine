@@ -2,7 +2,10 @@
 
 #include <glm/glm.hpp>
 
+#include "Texture.h"
+
 #include <map>
+#include <string>
 
 
 enum class MapType
@@ -17,6 +20,15 @@ enum class MapType
 	Emission         =  7,
 };
 
+struct TextureInfo
+{
+	std::string albedo;
+	std::string normal;
+	std::string metallic;
+	std::string roughness;
+	std::string ao;
+};
+
 
 class Material
 {
@@ -25,9 +37,19 @@ public:
 	Material(float specularIntensity, float shininess);
 	Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess); // based on LearnOpenGL material classint 
 	Material(int albedo, int specular, int normal, float shininess); // used in SceneNanosuit
+	~Material();
+
 	void UseMaterial(int specularIntensityLocation, int shininessLocation);
 	void AddMap(MapType mapType, int textureSlot);
-	~Material();
+
+	// PBR/IBL Material Workflow
+	Material(TextureInfo textureInfoGold);
+	void BindTextures(unsigned int slot);
+	inline const Texture* GetTextureAlbedo()    const { return m_TextureAlbedo;    };
+	inline const Texture* GetTextureNormal()    const { return m_TextureNormal;    };
+	inline const Texture* GetTextureMetallic()  const { return m_TextureMetallic;  };
+	inline const Texture* GetTextureRoughness() const { return m_TextureRoughness; };
+	inline const Texture* GetTextureAO()        const { return m_TextureAO;        };
 
 public:
 	int m_AlbedoMap;      // sampler2D, texture slot - diffuse/albedo
@@ -36,6 +58,12 @@ public:
 	float m_Shininess;
 
 private:
+	Texture* m_TextureAlbedo;
+	Texture* m_TextureNormal;
+	Texture* m_TextureMetallic;
+	Texture* m_TextureRoughness;
+	Texture* m_TextureAO;
+
 	std::map<int, MapType> m_Maps;
 
 	glm::vec3 m_Ambient;  // color value

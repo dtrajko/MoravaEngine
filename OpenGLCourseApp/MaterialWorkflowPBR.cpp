@@ -28,16 +28,16 @@ void MaterialWorkflowPBR::Init(std::string envMapHDR)
 
 void MaterialWorkflowPBR::SetupShaders()
 {
-	m_ShaderEquirectangularToCubemap = new Shader("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.equirectangular_to_cubemap.fs");
+	m_ShaderEquirectangularToCubemap = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/equirectangular_to_cubemap.fs");
 	printf("MaterialWorkflowPBR: m_ShaderEquirectangularToCubemap compiled [programID=%d]\n", m_ShaderEquirectangularToCubemap->GetProgramID());
 
-	m_ShaderIrradiance = new Shader("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.irradiance_convolution.fs");
+	m_ShaderIrradiance = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/irradiance_convolution.fs");
 	printf("MaterialWorkflowPBR: m_IrradianceShader compiled [programID=%d]\n", m_ShaderIrradiance->GetProgramID());
 
-	m_ShaderPrefilter = new Shader("Shaders/learnopengl/2.2.2.cubemap.vs", "Shaders/learnopengl/2.2.2.prefilter.fs");
+	m_ShaderPrefilter = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/prefilter.fs");
 	printf("MaterialWorkflowPBR: m_PrefilterShader compiled [programID=%d]\n", m_ShaderPrefilter->GetProgramID());
 
-	m_ShaderBRDF = new Shader("Shaders/learnopengl/2.2.2.brdf.vs", "Shaders/learnopengl/2.2.2.brdf.fs");
+	m_ShaderBRDF = new Shader("Shaders/PBR/brdf.vs", "Shaders/PBR/brdf.fs");
 	printf("MaterialWorkflowPBR: m_ShaderBRDF compiled [programID=%d]\n", m_ShaderBRDF->GetProgramID());
 }
 

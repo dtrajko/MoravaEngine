@@ -70,7 +70,7 @@ enum class SceneName
 	Editor,
 };
 
-SceneName currentScene = SceneName::Editor;
+SceneName currentScene = SceneName::LearnOpenGL;
 
 float deltaTime = 0.0f;
 float lastTimestamp = 0.0f;
