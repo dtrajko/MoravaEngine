@@ -164,9 +164,9 @@ Ks 0.000000 0.000000 0.000000
 Ni 1.000000
 d 0.000000
 illum 2
-map_Kd Sponza/sponza_curtain_diff.tga
-map_Ka Sponza/sponza_curtain_diff.tga
-bump Sponza/sponza_curtain_ddn.tga -bm 1
+map_Kd Sponza/sponza_curtain_diff.png
+map_Ka Sponza/sponza_curtain_diff.png
+bump Sponza/sponza_curtain_ddn.png -bm 1
 
 
 newmtl fabric_d
@@ -203,9 +203,9 @@ Ks 0.000000 0.000000 0.000000
 Ni 1.000000
 d 0.000000
 illum 2
-map_Kd Sponza/sponza_curtain_green_diff.tga
-map_Ka Sponza/sponza_curtain_green_diff.tga
-bump Sponza/sponza_curtain_ddn.tga -bm 1
+map_Kd Sponza/sponza_curtain_green_diff.png
+map_Ka Sponza/sponza_curtain_green_diff.png
+bump Sponza/sponza_curtain_ddn.png -bm 1
 
 newmtl fabric_g
 Ns 7.843137
@@ -215,9 +215,9 @@ Ks 0.000000 0.000000 0.000000
 Ni 1.000000
 d 0.000000
 illum 2
-map_Kd Sponza/sponza_curtain_blue_diff.tga
-map_Ka Sponza/sponza_curtain_blue_diff.tga
-bump Sponza/sponza_curtain_ddn.tga -bm 1
+map_Kd Sponza/sponza_curtain_blue_diff.png
+map_Ka Sponza/sponza_curtain_blue_diff.png
+bump Sponza/sponza_curtain_ddn.png -bm 1
 
 
 newmtl flagpole

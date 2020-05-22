@@ -49,6 +49,7 @@ struct SceneObject
 	Mesh* mesh;
 	int meshType;
 	std::string materialName;
+	float tilingFactorMaterial;
 };
 
 struct EventCooldown

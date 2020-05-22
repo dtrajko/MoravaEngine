@@ -65,6 +65,11 @@ private:
 	float* m_TilingFactorEdit;
 	std::string* m_TextureNameEdit;
 	std::string* m_MaterialNameEdit;
+	float* m_TilingFactorMaterialEdit;
+
+	float* m_PointLightExponent; // temp common values
+	float* m_PointLightLinear;   // temp common values
+	float* m_PointLightConstant; // temp common values
 
 	unsigned int m_SelectedIndex;
 	unsigned int m_ObjectInFocusPrev;

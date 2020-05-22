@@ -1,5 +1,7 @@
 #include "SceneParticles.h"
 
+#include "RendererBasic.h"
+
 #include "ImGuiWrapper.h"
 
 
@@ -9,7 +11,7 @@ SceneParticles::SceneParticles()
 	sceneSettings.cameraStartYaw = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
-    sceneSettings.enableSkybox = true;
+    sceneSettings.enableSkybox = false;
     sceneSettings.enablePointLights = false;
     sceneSettings.enableSpotLights = false;
 
@@ -22,6 +24,10 @@ SceneParticles::SceneParticles()
 
     m_Grid = new Grid(10);
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(40.0f, 40.0f, 40.0f));
+
+    // Initialize the PBR/IBL Material Workflow component
+    m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
+    m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
 }
 
 void SceneParticles::SetSkybox()
@@ -32,12 +38,14 @@ void SceneParticles::SetSkybox()
     skyboxFaces.push_back("Textures/skybox_4/bottom.png");
     skyboxFaces.push_back("Textures/skybox_4/back.png");
     skyboxFaces.push_back("Textures/skybox_4/front.png");
+    // m_Skybox = new Skybox(skyboxFaces);
 
-    m_Skybox = new Skybox(skyboxFaces);
+    m_TextureCubeMap = new TextureCubeMap(skyboxFaces);
 }
 
 void SceneParticles::SetTextures()
 {
+    textures.insert(std::make_pair("water", new Texture("Textures/water.png")));
 }
 
 void SceneParticles::SetupMeshes()
@@ -93,14 +101,39 @@ void SceneParticles::UpdateImGui(float timestep, Window& mainWindow, std::map<co
 void SceneParticles::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
-    Shader* shaderEditor = shaders["editor_object"];
-    shaderEditor->Bind();
+    Shader* shaderFBScene = shaders["framebuffers_scene"];
+
+    shaderFBScene->Bind();
+    shaderFBScene->setMat4("projection", projectionMatrix);
+    shaderFBScene->setMat4("view", m_Camera->CalculateViewMatrix());
+
+    textures["water"]->Bind(0);
+    shaderFBScene->setInt("texture1", 0);
 
     // Render Particles
-    m_ParticleSystem.OnRender(m_Camera, shaderEditor);
+    m_ParticleSystem.OnRender(m_Camera, shaderFBScene);
 
     m_Grid->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
     m_PivotScene->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
+
+    // Skybox shaderBackground
+    /* Begin backgroundShader */
+    {
+        RendererBasic::DisableCulling();
+        Shader* shaderBackground = shaders["background"];
+        // render skybox (render as last to prevent overdraw)
+        shaderBackground->Bind();
+        shaderBackground->setMat4("projection", projectionMatrix);
+        shaderBackground->setMat4("view", m_Camera->CalculateViewMatrix());
+        shaderBackground->setInt("environmentMap", 0);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap()); // display irradiance map
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap()); // display prefilter map
+        m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
+    }
+    /* End backgroundShader */
 }
 
 

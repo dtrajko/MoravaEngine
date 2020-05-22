@@ -27,8 +27,8 @@ void Mesh::Create()
 {
 	Generate(m_Scale);
 
-	CalcAverageNormals(m_Vertices, m_VertexCount, m_Indices, m_IndexCount);
-	CalcTangentSpace(m_Vertices, m_VertexCount, m_Indices, m_IndexCount);
+	// CalcAverageNormals(m_Vertices, m_VertexCount, m_Indices, m_IndexCount);
+	// CalcTangentSpace(m_Vertices, m_VertexCount, m_Indices, m_IndexCount);
 
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);

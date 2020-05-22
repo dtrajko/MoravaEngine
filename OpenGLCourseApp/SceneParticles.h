@@ -5,6 +5,8 @@
 #include "ParticleSystem.h"
 #include "Grid.h"
 #include "Pivot.h"
+#include "MaterialWorkflowPBR.h"
+#include "TextureCubemap.h"
 
 
 class SceneParticles : public Scene
@@ -24,6 +26,10 @@ private:
 	virtual void SetupMeshes() override;
 	virtual void SetupModels() override;
 	void SetupParticles();
+
+	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
+
+	TextureCubeMap* m_TextureCubeMap;
 
 	// Particle System
 	ParticleSystem m_ParticleSystem;

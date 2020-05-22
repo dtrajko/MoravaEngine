@@ -82,7 +82,6 @@ void SceneNanosuit::SetupModels()
 	models.insert(std::make_pair("nanosuit", nanosuit));
 
 	Sphere* sphere = new Sphere();
-	sphere->Create();
 	meshes.insert(std::make_pair("sphere", sphere));
 
 	CubeNanosuit* cubeNanosuit = new CubeNanosuit("Textures/container");

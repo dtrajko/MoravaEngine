@@ -1,5 +1,7 @@
 #include "Texture.h"
 
+#include <fstream>
+
 
 Texture::Texture()
 {
@@ -74,7 +76,9 @@ bool Texture::Load(bool flipVert)
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, dataFormat, GL_UNSIGNED_BYTE, m_Buffer);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	printf("Loading texture '%s' [ID=%d]\n", m_FileLocation, m_TextureID);
+	float fileSize = GetFileSize(m_FileLocation) / (1024.0f * 1024.0f);
+
+	printf("Loading texture '%s' [ ID=%d, size=%.2f MB ]\n", m_FileLocation, m_TextureID, fileSize);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -112,6 +116,13 @@ void Texture::Bind(unsigned int textureUnit)
 void Texture::Unbind()
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+float Texture::GetFileSize(const char* filename)
+{
+	struct stat stat_buf;
+	int rc = stat(filename, &stat_buf);
+	return rc == 0 ? (float) stat_buf.st_size : -1.0f;
 }
 
 void Texture::Clear()

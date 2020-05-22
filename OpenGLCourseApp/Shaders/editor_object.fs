@@ -166,5 +166,7 @@ void main()
 	finalColor += CalcPointLights();
 	finalColor += CalcSpotLights();
 
+	finalColor = vec4(1.0, 1.0, 1.0, 1.0);
+
 	FragColor = texColor * finalColor * tintColor * CubeMapColor;
 }

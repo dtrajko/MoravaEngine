@@ -110,7 +110,6 @@ void SceneBullet::SetupMeshes()
 	meshes.insert(std::make_pair("plank_2", plank_2));
 
 	Sphere* sphere = new Sphere();
-	sphere->Create();
 	meshes.insert(std::make_pair("sphere", sphere));
 }
 

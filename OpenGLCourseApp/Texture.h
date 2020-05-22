@@ -2,6 +2,8 @@
 
 #include <GL/glew.h>
 
+#include <string>
+
 #include "CommonValues.h"
 
 
@@ -22,6 +24,7 @@ public:
 	int getGreen(int x, int z);
 	int getBlue(int x, int z);
 	int getAlpha(int x, int z);
+	float GetFileSize(const char* filename);
 	~Texture();
 
 protected:

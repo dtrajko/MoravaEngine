@@ -40,7 +40,12 @@ uniform DirectionalLight directionalLight;
 uniform vec3 lightPositions[MAX_LIGHTS];
 uniform vec3 lightColors[MAX_LIGHTS];
 
+uniform float pointLightExponent;
+uniform float pointLightLinear;
+uniform float pointLightConstant;
+
 uniform vec3 cameraPosition;
+uniform float tilingFactor;
 
 const float PI = 3.14159265359;
 
@@ -51,12 +56,12 @@ const float PI = 3.14159265359;
 // technique somewhere later in the normal mapping tutorial.
 vec3 getNormalFromMap()
 {
-    vec3 tangentNormal = texture(normalMap, vTexCoords).xyz * 2.0 - 1.0;
+    vec3 tangentNormal = texture(normalMap, vTexCoords * tilingFactor).xyz * 2.0 - 1.0;
 
     vec3 Q1  = dFdx(vWorldPos);
     vec3 Q2  = dFdy(vWorldPos);
-    vec2 st1 = dFdx(vTexCoords);
-    vec2 st2 = dFdy(vTexCoords);
+    vec2 st1 = dFdx(vTexCoords * tilingFactor);
+    vec2 st2 = dFdy(vTexCoords * tilingFactor);
 
     vec3 N   = normalize(vNormal);
     vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
@@ -133,10 +138,10 @@ vec4 CalcLightByDirection(Light light, vec3 direction)
 void main()
 {
     // material properties
-    vec3 albedo = pow(texture(albedoMap, vTexCoords).rgb, vec3(2.2));
-    float metallic = texture(metallicMap, vTexCoords).r;
-    float roughness = texture(roughnessMap, vTexCoords).r;
-    float ao = texture(aoMap, vTexCoords).r;
+    vec3 albedo     = pow(texture(albedoMap, vTexCoords * tilingFactor).rgb, vec3(2.2));
+    float metallic  = texture(metallicMap,   vTexCoords * tilingFactor).r;
+    float roughness = texture(roughnessMap,  vTexCoords * tilingFactor).r;
+    float ao = texture(aoMap, vTexCoords * tilingFactor).r;
 
     // input lighting data
     vec3 N = getNormalFromMap();
@@ -156,7 +161,12 @@ void main()
         vec3 L = normalize(lightPositions[i] - vWorldPos);
         vec3 H = normalize(V + L);
         float distance = length(lightPositions[i] - vWorldPos);
-        float attenuation = 1.0 / (distance * distance);
+
+        // float attenuation = 1.0 / (distance * distance);
+        float attenuation =	pointLightExponent * distance * distance +
+					pointLightLinear * distance +
+					pointLightConstant;
+
         vec3 radiance = lightColors[i] * attenuation;
 
         // Cook-Torrance BRDF

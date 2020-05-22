@@ -19,14 +19,16 @@ public:
 	virtual void SetShaders();
 	virtual void Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix) = 0;
 
+	static void EnableCulling();
+	static void DisableCulling();
+	static void EnableTransparency();
+	static void DisableTransparency();
+
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
 	void RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window& mainWindow);
 	void SetDefaultFramebuffer(unsigned int width, unsigned int height);
-	void EnableCulling();
-	void DisableCulling();
-	void EnableTransparency();
-	void DisableTransparency();
 	void Cleanup();
+
 	virtual ~RendererBasic();
 
 protected:

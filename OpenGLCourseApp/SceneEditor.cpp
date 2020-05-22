@@ -11,6 +11,7 @@
 #include "Shader.h"
 #include "Math.h"
 #include "Timer.h"
+#include "RendererBasic.h"
 
 #include <vector>
 #include <map>
@@ -25,7 +26,7 @@ SceneEditor::SceneEditor()
 	sceneSettings.cameraStartYaw = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
-    sceneSettings.enableSkybox = true;
+    sceneSettings.enableSkybox = false;
     sceneSettings.enablePointLights = true;
     sceneSettings.enableSpotLights = true;
 
@@ -105,7 +106,7 @@ SceneEditor::SceneEditor()
 
     // Initialize the PBR/IBL Material Workflow component
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
-    m_MaterialWorkflowPBR->Init("Textures/HDR/Ice_Lake_Ref.hdr");
+    m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
 
     m_SelectedIndex = 0;
     m_CurrentMeshTypeInt = MESH_TYPE_CUBE;
@@ -119,14 +120,20 @@ SceneEditor::SceneEditor()
 
     m_Gizmo = new Gizmo();
 
-    m_PositionEdit     = new glm::vec3(0.0f);
-    m_RotationEdit     = new glm::vec3(0.0f);
-    m_ScaleEdit        = new glm::vec3(1.0f);
-    m_ColorEdit        = new glm::vec4(1.0f);
-    m_UseTextureEdit   = new bool(false);
-    m_TextureNameEdit  = new std::string;
-    m_TilingFactorEdit = new float(1.0f);
-    m_MaterialNameEdit = new std::string;
+    m_PositionEdit             = new glm::vec3(0.0f);
+    m_RotationEdit             = new glm::vec3(0.0f);
+    m_ScaleEdit                = new glm::vec3(1.0f);
+    m_ColorEdit                = new glm::vec4(1.0f);
+    m_UseTextureEdit           = new bool(false);
+    m_TextureNameEdit          = new std::string;
+    m_TilingFactorEdit         = new float(1.0f);
+    m_MaterialNameEdit         = new std::string;
+    m_TilingFactorMaterialEdit = new float(1.0f);
+
+    // attenuation - common values for all point/spot lights
+    m_PointLightExponent = new float(0.4f);
+    m_PointLightLinear   = new float(0.3f);
+    m_PointLightConstant = new float(0.2f);
 
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
@@ -246,14 +253,32 @@ void SceneEditor::SetupMaterials()
     textureInfoPlastic.ao           = "Textures/PBR/plastic/ao.png";
     materials.insert(std::make_pair("plastic", new Material(textureInfoPlastic)));
 
-    // grass
-    TextureInfo textureInfoGrass = {};
-    textureInfoGrass.albedo    = "Textures/PBR/grass/albedo.png";
-    textureInfoGrass.normal    = "Textures/PBR/grass/normal.png";
-    textureInfoGrass.metallic  = "Textures/PBR/grass/metallic.png";
-    textureInfoGrass.roughness = "Textures/PBR/grass/roughness.png";
-    textureInfoGrass.ao        = "Textures/PBR/grass/ao.png";
-    materials.insert(std::make_pair("grass", new Material(textureInfoGrass)));
+    // futuristic_panel_1
+    TextureInfo textureInfoFuturPanel = {};
+    textureInfoFuturPanel.albedo    = "Textures/PBR/futuristic_panel_1/futuristic-panels1-albedo.png";
+    textureInfoFuturPanel.normal    = "Textures/PBR/futuristic_panel_1/futuristic-panels1-normal-dx.png";
+    textureInfoFuturPanel.metallic  = "Textures/PBR/futuristic_panel_1/futuristic-panels1-metallic.png";
+    textureInfoFuturPanel.roughness = "Textures/PBR/futuristic_panel_1/futuristic-panels1-roughness.png";
+    textureInfoFuturPanel.ao        = "Textures/PBR/futuristic_panel_1/futuristic-panels1-ao.png";
+    materials.insert(std::make_pair("futur_panel_1", new Material(textureInfoFuturPanel)));
+
+    // dark tiles
+    TextureInfo textureInfoDarkTiles = {};
+    textureInfoDarkTiles.albedo    = "Textures/PBR/dark_tiles_1/darktiles1_basecolor.png";
+    textureInfoDarkTiles.normal    = "Textures/PBR/dark_tiles_1/darktiles1_normal-DX.png";
+    textureInfoDarkTiles.metallic  = "Textures/PBR/dark_tiles_1/darktiles1_metallic.png";
+    textureInfoDarkTiles.roughness = "Textures/PBR/dark_tiles_1/darktiles1_roughness.png";
+    textureInfoDarkTiles.ao        = "Textures/PBR/dark_tiles_1/darktiles1_AO.png";
+    materials.insert(std::make_pair("dark_tiles", new Material(textureInfoDarkTiles)));
+
+    // mahogany floor
+    TextureInfo textureInfoMahoganyFloor = {};
+    textureInfoMahoganyFloor.albedo    = "Textures/PBR/mahogany_floor/mahogfloor_basecolor.png";
+    textureInfoMahoganyFloor.normal    = "Textures/PBR/mahogany_floor/mahogfloor_normal.png";
+    textureInfoMahoganyFloor.metallic  = "Textures/PBR/mahogany_floor/mahogfloor_metalness.png";
+    textureInfoMahoganyFloor.roughness = "Textures/PBR/mahogany_floor/mahogfloor_roughness.png";
+    textureInfoMahoganyFloor.ao        = "Textures/PBR/mahogany_floor/mahogfloor_AO.png";
+    materials.insert(std::make_pair("mahogany_floor", new Material(textureInfoMahoganyFloor)));
 }
 
 void SceneEditor::SetupMeshes()
@@ -418,6 +443,7 @@ void SceneEditor::SaveScene()
         lines.push_back("IsSelected\t" + isSelected);
         lines.push_back("MeshType\t" + std::to_string(m_SceneObjects[i]->meshType));
         lines.push_back("MaterialName\t" + m_SceneObjects[i]->materialName);
+        lines.push_back("TilingFactorMaterial\t" + std::to_string(m_SceneObjects[i]->tilingFactorMaterial));
         lines.push_back("EndObject");
     }
 
@@ -515,6 +541,10 @@ void SceneEditor::LoadScene()
             sceneObject->materialName = tokens[1];
             // printf("UseTexture %s\n", sceneObject.textureName.c_str());
         }
+        else if (tokens.size() >= 2 && tokens[0] == "TilingFactorMaterial") {
+            sceneObject->tilingFactorMaterial = std::stof(tokens[1]);
+            // printf("UseTexture %s\n", sceneObject.textureName.c_str());
+        }
         else if (tokens.size() >= 1 && tokens[0] == "EndObject") {
             sceneObject->id = (int)m_SceneObjects.size();
             sceneObject->transform = Math::CreateTransform(sceneObject->position, sceneObject->rotation, sceneObject->scale);
@@ -562,14 +592,15 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
     {
-        m_PositionEdit =     &m_SceneObjects[m_SelectedIndex]->position;
-        m_RotationEdit =     &m_SceneObjects[m_SelectedIndex]->rotation;
-        m_ScaleEdit =        &m_SceneObjects[m_SelectedIndex]->scale;
-        m_ColorEdit =        &m_SceneObjects[m_SelectedIndex]->color;
-        m_UseTextureEdit =   &m_SceneObjects[m_SelectedIndex]->useTexture;
-        m_TextureNameEdit  = &m_SceneObjects[m_SelectedIndex]->textureName;
-        m_TilingFactorEdit = &m_SceneObjects[m_SelectedIndex]->tilingFactor;
-        m_MaterialNameEdit = &m_SceneObjects[m_SelectedIndex]->materialName;
+        m_PositionEdit             = &m_SceneObjects[m_SelectedIndex]->position;
+        m_RotationEdit             = &m_SceneObjects[m_SelectedIndex]->rotation;
+        m_ScaleEdit                = &m_SceneObjects[m_SelectedIndex]->scale;
+        m_ColorEdit                = &m_SceneObjects[m_SelectedIndex]->color;
+        m_UseTextureEdit           = &m_SceneObjects[m_SelectedIndex]->useTexture;
+        m_TextureNameEdit          = &m_SceneObjects[m_SelectedIndex]->textureName;
+        m_TilingFactorEdit         = &m_SceneObjects[m_SelectedIndex]->tilingFactor;
+        m_MaterialNameEdit         = &m_SceneObjects[m_SelectedIndex]->materialName;
+        m_TilingFactorMaterialEdit = &m_SceneObjects[m_SelectedIndex]->tilingFactorMaterial;
     }
 
     ImGui::Begin("Transform");
@@ -637,6 +668,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         ImGui::EndCombo();
     }
     // End MaterialName ImGui drop-down list
+
+    ImGui::SliderFloat("Material Tiling Factor", m_TilingFactorMaterialEdit, 0.0f, 10.0f);
 
     ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(m_SceneObjects.size() - 1));
 
@@ -724,6 +757,12 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     m_LightManager->directionalLight.SetAmbientIntensity(directionalLight.base.ambientIntensity);
     m_LightManager->directionalLight.SetDiffuseIntensity(directionalLight.base.diffuseIntensity);
     m_LightManager->directionalLight.SetDirection(directionalLight.direction);
+
+    ImGui::Separator();
+    ImGui::Text("Attenuation parameters (common for all point/spot lights)");
+    ImGui::SliderFloat("Exponent", m_PointLightExponent, 0.0f, 2.0f); // temp common values
+    ImGui::SliderFloat("Linear",   m_PointLightLinear,   0.0f, 2.0f); // temp common values
+    ImGui::SliderFloat("Constant", m_PointLightConstant, 0.0f, 2.0f); // temp common values
 
     // Point Lights
     ImGui::Separator();
@@ -837,9 +876,10 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
-    Shader* shaderEditor    = shaders["editor_object"];
-    Shader* shaderEditorPBR = shaders["editor_object_PBR"];
-    Shader* shaderBasic     = shaders["basic"];
+    Shader* shaderEditor     = shaders["editor_object"];
+    Shader* shaderEditorPBR  = shaders["editor_object_PBR"];
+    Shader* shaderBasic      = shaders["basic"];
+    Shader* shaderBackground = shaders["background"];
 
     // Init shaderEditorPBR
     // initialize static shader uniforms before rendering
@@ -863,6 +903,13 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     shaderEditorPBR->setFloat("directionalLight.base.ambientIntensity", m_LightManager->directionalLight.GetAmbientIntensity());
     shaderEditorPBR->setFloat("directionalLight.base.diffuseIntensity", m_LightManager->directionalLight.GetDiffuseIntensity());
     shaderEditorPBR->setVec3("directionalLight.direction", m_LightManager->directionalLight.GetDirection());
+
+    // Point/Spot Light Attenuation (temporary values for all point/spot lights)
+    shaderEditorPBR->setFloat("pointLightExponent", *m_PointLightExponent);
+    shaderEditorPBR->setFloat("pointLightLinear",   *m_PointLightLinear);
+    shaderEditorPBR->setFloat("pointLightConstant", *m_PointLightConstant);
+
+    // printf("Exponent = %.2ff Linear = %.2ff Constant = %.2ff\n", *m_PointLightExponent, *m_PointLightLinear, *m_PointLightConstant);
 
     // point lights
     unsigned int lightIndex = 0;
@@ -914,6 +961,7 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
             // Render with shaderEditorPBR
             shaderEditorPBR->Bind();
             shaderEditorPBR->setMat4("model", object->transform);
+            shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
             m_MaterialWorkflowPBR->BindTextures(0);
             materials[object->materialName]->BindTextures(3);
         }
@@ -986,6 +1034,25 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 
     m_Grid->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
     m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+
+    // Skybox shaderBackground
+    /* Begin backgroundShader */
+    {
+        RendererBasic::DisableCulling();
+        Shader* shaderBackground = shaders["background"];
+        // render skybox (render as last to prevent overdraw)
+        shaderBackground->Bind();
+        shaderBackground->setMat4("projection", projectionMatrix);
+        shaderBackground->setMat4("view", m_Camera->CalculateViewMatrix());
+        shaderBackground->setInt("environmentMap", 0);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap()); // display irradiance map
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap()); // display prefilter map
+        m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
+    }
+    /* End backgroundShader */
 }
 
 SceneObject* SceneEditor::CreateNewSceneObject()
@@ -1006,7 +1073,8 @@ SceneObject* SceneEditor::CreateNewSceneObject()
         new Pivot(glm::vec3(0.0f), glm::vec3(1.0f)),
         nullptr, // Mesh
         0,
-        ""
+        "",
+        1.0f,
     };
 
     return sceneObject;
@@ -1061,7 +1129,8 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
         new Pivot(oldSceneObject->position, oldSceneObject->scale),
         CreateNewPrimitive(oldSceneObject->meshType, oldSceneObject->mesh->GetScale()),
         m_CurrentMeshTypeInt,
-        oldSceneObject->materialName
+        oldSceneObject->materialName,
+        oldSceneObject->tilingFactorMaterial
     };
 
     sceneObjects->push_back(newSceneObject);

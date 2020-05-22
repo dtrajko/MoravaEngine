@@ -125,7 +125,6 @@ void ScenePBR::SetTextures()
 void ScenePBR::SetupModels()
 {
 	Sphere* sphere = new Sphere();
-	sphere->Create();
 	meshes.insert(std::make_pair("sphere", sphere));
 
 	if (m_CerberusEnabled)

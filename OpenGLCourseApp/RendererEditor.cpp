@@ -38,6 +38,10 @@ void RendererEditor::SetShaders()
     Shader* shaderFramebuffersScene = new Shader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
     shaders.insert(std::make_pair("framebuffers_scene", shaderFramebuffersScene));
     printf("RendererEditor: shaderFramebuffersScene compiled [programID=%d]\n", shaderFramebuffersScene->GetProgramID());
+
+    Shader* shaderBackground = new Shader("Shaders/learnopengl/2.2.2.background.vs", "Shaders/learnopengl/2.2.2.background.fs");
+    shaders.insert(std::make_pair("background", shaderBackground));
+    printf("RendererEditor: shaderBackground compiled [programID=%d]\n", shaderBackground->GetProgramID());
 }
 
 void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -52,6 +56,16 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 	// Clear the window
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // configure global opengl state
+    glEnable(GL_DEPTH_TEST);
+    // set depth function to less than AND equal for skybox depth trick.
+    glDepthFunc(GL_LEQUAL);
+    // enable seamless cubemap sampling for lower mip levels in the pre-filter map.
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+    // then before rendering, configure the viewport to the original framebuffer's screen dimensions
+    SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
 
     // Override the Projection matrix (update FOV)
     if (mainWindow.GetBufferWidth() > 0 && mainWindow.GetBufferHeight() > 0)
@@ -157,7 +171,7 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
         modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
         scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->CalculateViewMatrix(), projectionMatrix);
     }
-        
+
     std::string passType = "main";
     scene->Render(projectionMatrix, passType, shaders, uniforms);
 }

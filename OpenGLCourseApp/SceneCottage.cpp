@@ -84,16 +84,16 @@ void SceneCottage::SetSkybox()
 
 void SceneCottage::SetTextures()
 {
-	textures.insert(std::make_pair("brick", new Texture("Textures/brick.png")));
+	textures.insert(std::make_pair("brick",        new Texture("Textures/brick.png")));
 	textures.insert(std::make_pair("crateDiffuse", new Texture("Textures/crate.png")));
-	textures.insert(std::make_pair("crateNormal", new Texture("Textures/crateNormal.png")));
-	textures.insert(std::make_pair("grass", new Texture("Textures/grass.jpg")));
+	textures.insert(std::make_pair("crateNormal",  new Texture("Textures/crateNormal.png")));
+	textures.insert(std::make_pair("grass",        new Texture("Textures/grass.jpg")));
 	textures.insert(std::make_pair("sponzaFloorDiffuse", new Texture("Textures/sponza_floor_a_diff.tga")));
-	textures.insert(std::make_pair("sponzaFloorNormal", new Texture("Textures/sponza_floor_a_ddn.tga")));
-	textures.insert(std::make_pair("sponzaWallDiffuse", new Texture("Textures/sponza_bricks_a_diff.tga")));
-	textures.insert(std::make_pair("sponzaWallNormal", new Texture("Textures/sponza_bricks_a_ddn.tga")));
-	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
-	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
+	textures.insert(std::make_pair("sponzaFloorNormal",  new Texture("Textures/sponza_floor_a_ddn.tga")));
+	textures.insert(std::make_pair("sponzaWallDiffuse",  new Texture("Textures/sponza_bricks_a_diff.tga")));
+	textures.insert(std::make_pair("sponzaWallNormal",   new Texture("Textures/sponza_bricks_a_ddn.tga")));
+	textures.insert(std::make_pair("sponzaCeilDiffuse",  new Texture("Textures/sponza_ceiling_a_diff.tga")));
+	textures.insert(std::make_pair("sponzaCeilNormal",   new Texture("Textures/sponza_ceiling_a_ddn.tga")));
 }
 
 void SceneCottage::SetupMeshes()
