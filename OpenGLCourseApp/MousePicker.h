@@ -5,6 +5,10 @@
 #include "Terrain.h"
 
 
+/**
+ * A singleton class
+ *
+ */
 class MousePicker
 {
 public:

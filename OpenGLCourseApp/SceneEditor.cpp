@@ -10,6 +10,7 @@
 #include "Ring.h"
 #include "Shader.h"
 #include "Math.h"
+#include "Timer.h"
 
 #include <vector>
 #include <map>
@@ -674,6 +675,18 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     float FOV = GetFOV();
     ImGui::SliderFloat("FOV", &FOV, 1.0f, 120.0f);
     SetFOV(FOV);
+
+    ImGui::Separator();
+    ImGui::Text("Timer");
+
+    float realFPS = Timer::Get()->GetRealFPS();
+    std::string sRealFPS = "Real FPS: " + std::to_string(realFPS);
+
+    float deltaTimeMS = Timer::Get()->GetDeltaTime() * 1000.0f;
+    std::string sDeltaTimeMS = "Delta Time: " + std::to_string(deltaTimeMS) + " ms";
+
+    ImGui::Text(sRealFPS.c_str());
+    ImGui::Text(sDeltaTimeMS.c_str());
 
     ImGui::Separator();
     ImGui::Text("Lights");

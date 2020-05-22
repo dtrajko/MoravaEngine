@@ -14,6 +14,7 @@
 #include "WaterManager.h"
 #include "Profiler.h"
 #include "MousePicker.h"
+#include "Timer.h"
 
 #include "SceneCottage.h"
 #include "SceneEiffel.h"
@@ -72,15 +73,8 @@ enum class SceneName
 
 SceneName currentScene = SceneName::Editor;
 
-float deltaTime = 0.0f;
-float lastTimestamp = 0.0f;
-float lastUpdateTime = 0.0f;
-float updateInterval = 0.0416f; // 24 times per second
-bool shouldUpdate = false;
-
 // Key cooldown time (emulate onKeyReleased)
-float m_KeyCooldownTime = 0.2f;
-float m_LastKeyPressTime = 0.0f;
+EventCooldown keyPressCooldown = { 0.0f, 0.2f };
 
 // Profiler results
 std::map<const char*, float> profilerResults;
@@ -171,23 +165,18 @@ int main()
 
 	ImGuiWrapper::Init(&mainWindow);
 
+	float targetFPS = 60.0f;
+	float targetUpdateRate = 24.0f;
+	Timer timer(targetFPS, targetUpdateRate);
+
 	// Loop until window closed
 	while (!mainWindow.GetShouldClose())
 	{
-		float currentTimestamp = (float)glfwGetTime();
-		deltaTime = currentTimestamp - lastTimestamp;
-		lastTimestamp = currentTimestamp;
+		Timer::Get()->Update();
 
-		shouldUpdate = false;
-		if (currentTimestamp - lastUpdateTime > updateInterval)
-		{
-			shouldUpdate = true;
-			lastUpdateTime = currentTimestamp;
-		}
-
-		scene->GetCamera()->KeyControl(mainWindow.getKeys(), deltaTime);
+		scene->GetCamera()->KeyControl(mainWindow.getKeys(), Timer::Get()->GetDeltaTime());
 		scene->GetCamera()->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChangeReset(), mainWindow.getYChangeReset());
-		scene->GetCamera()->MouseScrollControl(mainWindow.getKeys(), deltaTime, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
+		scene->GetCamera()->MouseScrollControl(mainWindow.getKeys(), Timer::Get()->GetDeltaTime(), mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
 
 		MousePicker::Get()->Update(mainWindow.GetMouseX(), mainWindow.GetMouseY(),
 			(float)mainWindow.GetBufferWidth(), (float)mainWindow.GetBufferHeight(), projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
@@ -201,10 +190,10 @@ int main()
 		// Toggle wireframe mode
 		if (mainWindow.getKeys()[GLFW_KEY_R] && !mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL])
 		{
-			if (currentTimestamp - m_LastKeyPressTime > m_KeyCooldownTime)
+			if (Timer::Get()->GetCurrentTimestamp() - keyPressCooldown.lastTime > keyPressCooldown.cooldown)
 			{
 				scene->SetWireframeEnabled(!scene->IsWireframeEnabled());
-				m_LastKeyPressTime = currentTimestamp;
+				keyPressCooldown.lastTime = Timer::Get()->GetCurrentTimestamp();
 			}
 		}
 
@@ -217,17 +206,19 @@ int main()
 
 		{
 			Profiler profiler("Scene::Update");
-			scene->Update(currentTimestamp, mainWindow);
+			// if (Timer::Get()->CanUpdate())
+			scene->Update(Timer::Get()->GetCurrentTimestamp(), mainWindow); // TODO deltaTime obsolete
 			profilerResults.insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 		}
 
 		{
 			Profiler profiler("Renderer::Render");
-			renderer->Render(deltaTime, mainWindow, scene, projectionMatrix);
+			// if (Timer::Get()->CanRender())
+			renderer->Render(Timer::Get()->GetDeltaTime(), mainWindow, scene, projectionMatrix); // TODO deltaTime obsolete
 			profilerResults.insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 		}
 
-		scene->UpdateImGui(currentTimestamp, mainWindow, profilerResults);
+		scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), mainWindow, profilerResults);
 
 		profilerResults.clear();
 
