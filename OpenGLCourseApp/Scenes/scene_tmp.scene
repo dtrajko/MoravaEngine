@@ -1,0 +1,48 @@
+BeginObject	0
+Position	4.507013	5.004037	0.018000
+Rotation	0.000000	0.000000	0.000000
+Scale	3.006004	1.000000	2.992003
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	0
+TextureName	plain
+TilingFactor	1.000000
+IsSelected	0
+MeshType	0
+MaterialName	silver
+EndObject
+BeginObject	1
+Position	0.000000	2.000046	0.000000
+Rotation	0.000000	0.000000	0.000000
+Scale	3.002996	1.000000	3.005001
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	0
+TextureName	plain
+TilingFactor	1.000000
+IsSelected	0
+MeshType	0
+MaterialName	plastic
+EndObject
+BeginObject	2
+Position	1.503999	3.009017	0.011000
+Rotation	0.000000	0.000000	0.000000
+Scale	3.033000	1.000000	3.002000
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	0
+TextureName	plain
+TilingFactor	1.000000
+IsSelected	0
+MeshType	0
+MaterialName	gold
+EndObject
+BeginObject	3
+Position	3.019011	4.000029	0.010000
+Rotation	0.000000	0.000000	0.000000
+Scale	3.016001	1.000000	3.002001
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	0
+TextureName	plain
+TilingFactor	1.000000
+IsSelected	0
+MeshType	0
+MaterialName	rusted_iron
+EndObject

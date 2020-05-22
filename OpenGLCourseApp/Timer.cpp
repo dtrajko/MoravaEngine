@@ -49,8 +49,8 @@ void Timer::Update()
 		m_LastFrameTimestamp = m_CurrentTimestamp;
 	}
 
-	printf("Timer::Update m_RealFPS = %.2ff m_TargetFPS = %.2ff m_DeltaTime = %.2ff m_CanRender = %d\n",
-		m_RealFPS, m_TargetFPS, m_DeltaTime, m_CanRender);
+	// printf("Timer::Update m_RealFPS = %.2ff m_TargetFPS = %.2ff m_DeltaTime = %.2ff m_CanRender = %d\n",
+	// 	m_RealFPS, m_TargetFPS, m_DeltaTime, m_CanRender);
 
 	// Update
 	m_DeltaTimeUpdate = m_CurrentTimestamp - m_LastUpdateTimestamp;
@@ -61,8 +61,8 @@ void Timer::Update()
 		m_LastUpdateTimestamp = m_CurrentTimestamp;
 	}
 
-	printf("Timer::Update m_RealUpdateRate = %.2ff m_TargetUpdateRate = %.2ff m_DeltaTimeUpdate = %.2ff m_CanUpdate = %d\n",
-		m_RealUpdateRate, m_TargetUpdateRate, m_DeltaTimeUpdate, m_CanUpdate);
+	// printf("Timer::Update m_RealUpdateRate = %.2ff m_TargetUpdateRate = %.2ff m_DeltaTimeUpdate = %.2ff m_CanUpdate = %d\n",
+	// 	m_RealUpdateRate, m_TargetUpdateRate, m_DeltaTimeUpdate, m_CanUpdate);
 }
 
 Timer::~Timer()

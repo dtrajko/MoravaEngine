@@ -92,7 +92,7 @@ void Gizmo::OnMousePress(Window& mainWindow, std::vector<SceneObject*>* sceneObj
 	if (currentTimestamp - m_MousePress.lastTime < m_MousePress.cooldown) return;
 	m_MousePress.lastTime = currentTimestamp;
 
-	printf("Gizmo::OnMouseClick\n");
+	// printf("Gizmo::OnMouseClick\n");
 
 	if (sceneObjects->size() > 0 && sceneObjects->at(selectedIndex)->isSelected)
 	{
@@ -105,7 +105,7 @@ void Gizmo::OnMouseRelease(Window& mainWindow, std::vector<SceneObject*>* sceneO
 	if (currentTimestamp - m_MouseRelease.lastTime < m_MouseRelease.cooldown) return;
 	m_MouseRelease.lastTime = currentTimestamp;
 
-	printf("Gizmo::OnMouseRelease\n");
+	// printf("Gizmo::OnMouseRelease\n");
 
 	if (sceneObjects->size() > 0 && sceneObjects->at(selectedIndex)->isSelected)
 	{

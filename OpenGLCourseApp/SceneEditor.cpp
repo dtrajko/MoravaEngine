@@ -844,6 +844,7 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     // Init shaderEditorPBR
     // initialize static shader uniforms before rendering
     shaderEditorPBR->Bind();
+
     shaderEditorPBR->setInt("irradianceMap", 0);
     shaderEditorPBR->setInt("prefilterMap",  1);
     shaderEditorPBR->setInt("brdfLUT",       2);
@@ -854,23 +855,27 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     shaderEditorPBR->setInt("aoMap",         7);
     shaderEditorPBR->setMat4("projection", projectionMatrix);
     shaderEditorPBR->setMat4("view", m_Camera->CalculateViewMatrix());
-    shaderEditorPBR->setVec3("camPos", m_Camera->GetPosition());
+    shaderEditorPBR->setVec3("cameraPosition", m_Camera->GetPosition());
 
     // directional light
-    unsigned int lightIndex = 0;
-    shaderEditorPBR->setVec3("lightPositions[0]", m_LightManager->directionalLight.GetPosition());
-    shaderEditorPBR->setVec3("lightColors[0]", m_LightManager->directionalLight.GetColor());
+    shaderEditorPBR->setBool("directionalLight.base.enabled", m_LightManager->directionalLight.GetEnabled());
+    shaderEditorPBR->setVec3("directionalLight.base.color", m_LightManager->directionalLight.GetColor());
+    shaderEditorPBR->setFloat("directionalLight.base.ambientIntensity", m_LightManager->directionalLight.GetAmbientIntensity());
+    shaderEditorPBR->setFloat("directionalLight.base.diffuseIntensity", m_LightManager->directionalLight.GetDiffuseIntensity());
+    shaderEditorPBR->setVec3("directionalLight.direction", m_LightManager->directionalLight.GetDirection());
 
+    // point lights
+    unsigned int lightIndex = 0;
     for (unsigned int i = 0; i < m_LightManager->pointLightCount; ++i)
     {
-        lightIndex = i + 1; // offset for point lights
+        lightIndex = i + 0; // offset for point lights
         shaderEditorPBR->setVec3("lightPositions[" + std::to_string(lightIndex) + "]", m_LightManager->pointLights[i].GetPosition());
         shaderEditorPBR->setVec3("lightColors[" + std::to_string(lightIndex) + "]", m_LightManager->pointLights[i].GetColor());
     }
 
     for (unsigned int i = 0; i < m_LightManager->spotLightCount; ++i)
     {
-        lightIndex = i + 5; // offset for point lights
+        lightIndex = i + 4; // offset for point lights
         shaderEditorPBR->setVec3("lightPositions[" + std::to_string(lightIndex) + "]", m_LightManager->spotLights[i].GetBasePL()->GetPosition());
         shaderEditorPBR->setVec3("lightColors[" + std::to_string(lightIndex) + "]", m_LightManager->spotLights[i].GetBasePL()->GetColor());
     }

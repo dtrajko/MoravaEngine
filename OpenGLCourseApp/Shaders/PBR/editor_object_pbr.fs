@@ -1,11 +1,12 @@
 #version 330 core
 
-const int MAX_LIGHTS = 1 + 4 + 4;
+const int MAX_LIGHTS = 4 + 4;
 
 out vec4 FragColor;
-in vec2 TexCoords;
-in vec3 WorldPos;
-in vec3 Normal;
+
+in vec2 vTexCoords;
+in vec3 vNormal;
+in vec3 vWorldPos;
 
 // material parameters
 uniform sampler2D albedoMap;
@@ -20,12 +21,29 @@ uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
 
 // lights
+struct Light
+{
+	bool enabled;
+	vec3 color;
+	float ambientIntensity;
+	float diffuseIntensity;
+};
+
+struct DirectionalLight
+{
+	Light base;
+	vec3 direction;
+};
+
+uniform DirectionalLight directionalLight;
+
 uniform vec3 lightPositions[MAX_LIGHTS];
 uniform vec3 lightColors[MAX_LIGHTS];
 
-uniform vec3 camPos;
+uniform vec3 cameraPosition;
 
 const float PI = 3.14159265359;
+
 // ----------------------------------------------------------------------------
 // Easy trick to get tangent-normals to world-space to keep PBR code simplified.
 // Don't worry if you don't get what's going on; you generally want to do normal 
@@ -33,21 +51,21 @@ const float PI = 3.14159265359;
 // technique somewhere later in the normal mapping tutorial.
 vec3 getNormalFromMap()
 {
-    vec3 tangentNormal = texture(normalMap, TexCoords).xyz * 2.0 - 1.0;
+    vec3 tangentNormal = texture(normalMap, vTexCoords).xyz * 2.0 - 1.0;
 
-    vec3 Q1  = dFdx(WorldPos);
-    vec3 Q2  = dFdy(WorldPos);
-    vec2 st1 = dFdx(TexCoords);
-    vec2 st2 = dFdy(TexCoords);
+    vec3 Q1  = dFdx(vWorldPos);
+    vec3 Q2  = dFdy(vWorldPos);
+    vec2 st1 = dFdx(vTexCoords);
+    vec2 st2 = dFdy(vTexCoords);
 
-    vec3 N   = normalize(Normal);
+    vec3 N   = normalize(vNormal);
     vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
     vec3 B  = -normalize(cross(N, T));
     mat3 TBN = mat3(T, B, N);
 
     return normalize(TBN * tangentNormal);
 }
-// ----------------------------------------------------------------------------
+
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float a = roughness*roughness;
@@ -61,7 +79,7 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 
     return nom / denom;
 }
-// ----------------------------------------------------------------------------
+
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
     float r = (roughness + 1.0);
@@ -72,7 +90,7 @@ float GeometrySchlickGGX(float NdotV, float roughness)
 
     return nom / denom;
 }
-// ----------------------------------------------------------------------------
+
 float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 {
     float NdotV = max(dot(N, V), 0.0);
@@ -82,30 +100,47 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 
     return ggx1 * ggx2;
 }
-// ----------------------------------------------------------------------------
+
 vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
-// ----------------------------------------------------------------------------
+
 vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
-// ----------------------------------------------------------------------------
+
+vec4 CalcLightByDirection(Light light, vec3 direction)
+{
+	vec4 ambientColor = vec4(light.color, 1.0) * light.ambientIntensity;
+
+    float diffuseFactor = max(dot(normalize(vNormal), -normalize(direction)), 0.0);
+	vec4 diffuseColor = vec4(light.color, 1.0) * light.diffuseIntensity * diffuseFactor;
+
+	vec4 specularColor = vec4(0.0, 0.0, 0.0, 0.0);
+
+	if (diffuseFactor > 0.0)
+	{
+		vec3 fragToEye = normalize(cameraPosition - vWorldPos);
+		vec3 reflectedVertex = normalize(reflect(direction, normalize(vNormal)));
+	}
+
+	return ambientColor + diffuseColor;
+}
 
 
 void main()
 {
     // material properties
-    vec3 albedo = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
-    float metallic = texture(metallicMap, TexCoords).r;
-    float roughness = texture(roughnessMap, TexCoords).r;
-    float ao = texture(aoMap, TexCoords).r;
+    vec3 albedo = pow(texture(albedoMap, vTexCoords).rgb, vec3(2.2));
+    float metallic = texture(metallicMap, vTexCoords).r;
+    float roughness = texture(roughnessMap, vTexCoords).r;
+    float ao = texture(aoMap, vTexCoords).r;
 
     // input lighting data
     vec3 N = getNormalFromMap();
-    vec3 V = normalize(camPos - WorldPos);
+    vec3 V = normalize(cameraPosition - vWorldPos);
     vec3 R = reflect(-V, N); 
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0
@@ -118,9 +153,9 @@ void main()
     for(int i = 0; i < MAX_LIGHTS; ++i)
     {
         // calculate per-light radiance
-        vec3 L = normalize(lightPositions[i] - WorldPos);
+        vec3 L = normalize(lightPositions[i] - vWorldPos);
         vec3 H = normalize(V + L);
-        float distance = length(lightPositions[i] - WorldPos);
+        float distance = length(lightPositions[i] - vWorldPos);
         float attenuation = 1.0 / (distance * distance);
         vec3 radiance = lightColors[i] * attenuation;
 
@@ -174,7 +209,13 @@ void main()
     // HDR tonemapping
     color = color / (color + vec3(1.0));
     // gamma correct
-    color = pow(color, vec3(1.0/2.2)); 
+    color = pow(color, vec3(1.0/2.2));
+
+    if (directionalLight.base.enabled)
+    {
+        vec4 DirLight = CalcLightByDirection(directionalLight.base, directionalLight.direction);
+        color *= DirLight.xyz;
+    }
 
     FragColor = vec4(color , 1.0);
 }
