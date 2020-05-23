@@ -1,5 +1,7 @@
 #include "Material.h"
 
+#include "TextureLoader.h"
+
 #include <GL/glew.h>
 
 
@@ -24,16 +26,16 @@ Material::Material()
 	m_AmbientOcclusionMap = -1;
 	m_EmissionMap         = -1;
 
-	m_TexturePlaceholder = new Texture("Textures/plain.png");
+	m_TexturePlaceholder = TextureLoader::Get()->GetTexture("Textures/plain.png");
 }
 
 Material::Material(TextureInfo textureInfoGold) : Material()
 {
-	m_TextureAlbedo    = new Texture(textureInfoGold.albedo.c_str());
-	m_TextureNormal    = new Texture(textureInfoGold.normal.c_str());
-	m_TextureMetallic  = new Texture(textureInfoGold.metallic.c_str());
-	m_TextureRoughness = new Texture(textureInfoGold.roughness.c_str());
-	m_TextureAO        = new Texture(textureInfoGold.ao.c_str());
+	m_TextureAlbedo    = TextureLoader::Get()->GetTexture(textureInfoGold.albedo.c_str());
+	m_TextureNormal    = TextureLoader::Get()->GetTexture(textureInfoGold.normal.c_str());
+	m_TextureMetallic  = TextureLoader::Get()->GetTexture(textureInfoGold.metallic.c_str());
+	m_TextureRoughness = TextureLoader::Get()->GetTexture(textureInfoGold.roughness.c_str());
+	m_TextureAO        = TextureLoader::Get()->GetTexture(textureInfoGold.ao.c_str());
 }
 
 void Material::BindTextures(unsigned int slot)

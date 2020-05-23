@@ -9,7 +9,7 @@ TilingFactor	0.614000
 IsSelected	0
 MeshType	0
 MaterialName	mahogany_floor
-TilingFactorMaterial	0.214000
+TilingFactorMaterial	0.236000
 EndObject
 BeginObject	1
 Position	0.000000	0.000000	0.000000
@@ -22,7 +22,7 @@ TilingFactor	1.000000
 IsSelected	0
 MeshType	0
 MaterialName	dark_tiles
-TilingFactorMaterial	0.400000
+TilingFactorMaterial	0.157000
 EndObject
 BeginObject	2
 Position	-10.000000	0.000000	0.000000
@@ -61,7 +61,7 @@ TilingFactor	1.000000
 IsSelected	0
 MeshType	0
 MaterialName	gold
-TilingFactorMaterial	0.255000
+TilingFactorMaterial	0.551000
 EndObject
 BeginObject	5
 Position	0.000000	0.000000	10.000000
@@ -74,7 +74,7 @@ TilingFactor	1.000000
 IsSelected	0
 MeshType	0
 MaterialName	rusted_iron
-TilingFactorMaterial	0.140000
+TilingFactorMaterial	0.118000
 EndObject
 BeginObject	6
 Position	0.000000	0.000000	-10.000000

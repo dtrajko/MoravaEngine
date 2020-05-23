@@ -2,6 +2,7 @@
 
 #include "MeshData.h"
 #include "Tile2D.h"
+#include "TextureLoader.h"
 
 
 SceneSettings Scene::sceneSettings;
@@ -156,10 +157,10 @@ void Scene::SetTextureSlots()
 
 void Scene::SetupMaterials()
 {
-	materials.insert(std::make_pair("shiny", new Material(1.0f, 128.0f)));
-	materials.insert(std::make_pair("dull", new Material(1.0f, 64.0f)));
+	materials.insert(std::make_pair("shiny",      new Material(1.0f, 128.0f)));
+	materials.insert(std::make_pair("dull",       new Material(1.0f, 64.0f)));
 	materials.insert(std::make_pair("superShiny", new Material(1.0f, 1024.0f)));
-	materials.insert(std::make_pair("superDull", new Material(1.0f, 16.0f)));
+	materials.insert(std::make_pair("superDull",  new Material(1.0f, 16.0f)));
 }
 
 void Scene::SetupMeshes()
@@ -168,10 +169,10 @@ void Scene::SetupMeshes()
 
 void Scene::SetTextures()
 {
-	textures.insert(std::make_pair("normalMapDefault", new Texture("Textures/normal_map_default.png")));
-	textures.insert(std::make_pair("shadowMapDefault", new Texture("Textures/shadow_map_default.png")));
-	textures.insert(std::make_pair("waterDuDv", new Texture("Textures/water/waterDuDv.png")));
-	textures.insert(std::make_pair("waterNormal", new Texture("Textures/water/waterNormal.png")));
+	textures.insert(std::make_pair("normalMapDefault", TextureLoader::Get()->GetTexture("Textures/normal_map_default.png")));
+	textures.insert(std::make_pair("shadowMapDefault", TextureLoader::Get()->GetTexture("Textures/shadow_map_default.png")));
+	textures.insert(std::make_pair("waterDuDv",        TextureLoader::Get()->GetTexture("Textures/water/waterDuDv.png")));
+	textures.insert(std::make_pair("waterNormal",      TextureLoader::Get()->GetTexture("Textures/water/waterNormal.png")));
 }
 
 void Scene::SetCamera()

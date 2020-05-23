@@ -32,9 +32,9 @@ void SceneFramebuffers::SetSkybox()
 
 void SceneFramebuffers::SetTextures()
 {
-	textures.insert(std::make_pair("floor_metal", new Texture("Textures/metal.png")));
-	textures.insert(std::make_pair("cube_marble", new Texture("Textures/marble.jpg")));
-	textures.insert(std::make_pair("cube_wood", new Texture("Textures/container/container2.png")));	
+	textures.insert(std::make_pair("floor_metal", TextureLoader::Get()->GetTexture("Textures/metal.png")));
+	textures.insert(std::make_pair("cube_marble", TextureLoader::Get()->GetTexture("Textures/marble.jpg")));
+	textures.insert(std::make_pair("cube_wood",   TextureLoader::Get()->GetTexture("Textures/container/container2.png")));	
 }
 
 void SceneFramebuffers::SetupMeshes()

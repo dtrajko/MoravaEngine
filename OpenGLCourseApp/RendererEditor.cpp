@@ -97,6 +97,7 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
         char locBuff[100] = { '\0' };
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.enabled", i);
+        // printf("PointLight[%d] enabled: %d\n", i, scene->GetLightManager()->pointLights[i].GetEnabled());
         shaderEditor->setBool(locBuff, scene->GetLightManager()->pointLights[i].GetEnabled());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.color", i);

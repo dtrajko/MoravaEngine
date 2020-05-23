@@ -98,27 +98,27 @@ void ScenePBR::SetSkybox()
 void ScenePBR::SetTextures()
 {
 	// PBR sphere
-	textures.insert(std::make_pair("rustedIronAlbedo", new Texture("Textures/PBR/rusted_iron/albedo.png")));
-	textures.insert(std::make_pair("rustedIronNormal", new Texture("Textures/PBR/rusted_iron/normal.png")));
-	textures.insert(std::make_pair("rustedIronMetallic", new Texture("Textures/PBR/rusted_iron/metallic.png")));
-	textures.insert(std::make_pair("rustedIronRoughness", new Texture("Textures/PBR/rusted_iron/roughness.png")));
-	textures.insert(std::make_pair("rustedIronAmbientOcclusion", new Texture("Textures/PBR/rusted_iron/ao.png")));
+	textures.insert(std::make_pair("rustedIronAlbedo",           TextureLoader::Get()->GetTexture("Textures/PBR/rusted_iron/albedo.png")));
+	textures.insert(std::make_pair("rustedIronNormal",           TextureLoader::Get()->GetTexture("Textures/PBR/rusted_iron/normal.png")));
+	textures.insert(std::make_pair("rustedIronMetallic",         TextureLoader::Get()->GetTexture("Textures/PBR/rusted_iron/metallic.png")));
+	textures.insert(std::make_pair("rustedIronRoughness",        TextureLoader::Get()->GetTexture("Textures/PBR/rusted_iron/roughness.png")));
+	textures.insert(std::make_pair("rustedIronAmbientOcclusion", TextureLoader::Get()->GetTexture("Textures/PBR/rusted_iron/ao.png")));
 
 	// PBR gold
-	textures.insert(std::make_pair("goldAlbedo", new Texture("Textures/PBR/gold/albedo.png")));
-	textures.insert(std::make_pair("goldNormal", new Texture("Textures/PBR/gold/normal.png")));
-	textures.insert(std::make_pair("goldMetallic", new Texture("Textures/PBR/gold/metallic.png")));
-	textures.insert(std::make_pair("goldRoughness", new Texture("Textures/PBR/gold/roughness.png")));
-	textures.insert(std::make_pair("goldAmbientOcclusion", new Texture("Textures/PBR/gold/ao.png")));
+	textures.insert(std::make_pair("goldAlbedo",           TextureLoader::Get()->GetTexture("Textures/PBR/gold/albedo.png")));
+	textures.insert(std::make_pair("goldNormal",           TextureLoader::Get()->GetTexture("Textures/PBR/gold/normal.png")));
+	textures.insert(std::make_pair("goldMetallic",         TextureLoader::Get()->GetTexture("Textures/PBR/gold/metallic.png")));
+	textures.insert(std::make_pair("goldRoughness",        TextureLoader::Get()->GetTexture("Textures/PBR/gold/roughness.png")));
+	textures.insert(std::make_pair("goldAmbientOcclusion", TextureLoader::Get()->GetTexture("Textures/PBR/gold/ao.png")));
 
 	// PBR cerberus
 	if (m_CerberusEnabled)
 	{
-		textures.insert(std::make_pair("cerberusAlbedo", new Texture("Textures/PBR/Cerberus/Cerberus_A.tga")));
-		textures.insert(std::make_pair("cerberusNormal", new Texture("Textures/PBR/Cerberus/Cerberus_N.tga")));
-		textures.insert(std::make_pair("cerberusMetallic", new Texture("Textures/PBR/Cerberus/Cerberus_M.tga")));
-		textures.insert(std::make_pair("cerberusRoughness", new Texture("Textures/PBR/Cerberus/Cerberus_R.tga")));
-		textures.insert(std::make_pair("cerberusAmbOcclusion", new Texture("Textures/PBR/Cerberus/Cerberus_AO.tga")));
+		textures.insert(std::make_pair("cerberusAlbedo",       TextureLoader::Get()->GetTexture("Textures/PBR/Cerberus/Cerberus_A.tga")));
+		textures.insert(std::make_pair("cerberusNormal",       TextureLoader::Get()->GetTexture("Textures/PBR/Cerberus/Cerberus_N.tga")));
+		textures.insert(std::make_pair("cerberusMetallic",     TextureLoader::Get()->GetTexture("Textures/PBR/Cerberus/Cerberus_M.tga")));
+		textures.insert(std::make_pair("cerberusRoughness",    TextureLoader::Get()->GetTexture("Textures/PBR/Cerberus/Cerberus_R.tga")));
+		textures.insert(std::make_pair("cerberusAmbOcclusion", TextureLoader::Get()->GetTexture("Textures/PBR/Cerberus/Cerberus_AO.tga")));
 	}
 }
 

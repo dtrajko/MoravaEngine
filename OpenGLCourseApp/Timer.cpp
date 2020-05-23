@@ -5,8 +5,8 @@
 #include <stdio.h>
 
 
-Timer* Timer::s_Instance = nullptr;
 
+Timer* Timer::s_Instance = nullptr;
 
 Timer* Timer::Get()
 {

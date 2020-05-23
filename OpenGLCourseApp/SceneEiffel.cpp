@@ -59,10 +59,10 @@ void SceneEiffel::SetSkybox()
 
 void SceneEiffel::SetTextures()
 {
-	textures.insert(std::make_pair("sponzaCeilDiffuse", new Texture("Textures/sponza_ceiling_a_diff.tga")));
-	textures.insert(std::make_pair("sponzaCeilNormal", new Texture("Textures/sponza_ceiling_a_ddn.tga")));
-	textures.insert(std::make_pair("water", new Texture("Textures/water.png")));
-	textures.insert(std::make_pair("pyramid", new Texture("Textures/pyramid.png")));
+	textures.insert(std::make_pair("sponzaCeilDiffuse", TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_diff.tga")));
+	textures.insert(std::make_pair("sponzaCeilNormal",  TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_ddn.tga")));
+	textures.insert(std::make_pair("water",             TextureLoader::Get()->GetTexture("Textures/water.png")));
+	textures.insert(std::make_pair("pyramid",           TextureLoader::Get()->GetTexture("Textures/pyramid.png")));
 }
 
 void SceneEiffel::SetupMeshes()

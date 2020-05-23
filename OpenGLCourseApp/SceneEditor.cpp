@@ -12,6 +12,7 @@
 #include "Math.h"
 #include "Timer.h"
 #include "RendererBasic.h"
+#include "TextureLoader.h"
 
 #include <vector>
 #include <map>
@@ -146,6 +147,8 @@ SceneEditor::SceneEditor()
     m_MouseButton_1_Prev = false;
 
     m_UseCubeMaps = false;
+
+    TextureLoader::Get()->Print();
 }
 
 void SceneEditor::SetSkybox()
@@ -164,46 +167,46 @@ void SceneEditor::SetSkybox()
     m_SkyboxFacesNight.push_back("Textures/skybox_2/back.png");
     m_SkyboxFacesNight.push_back("Textures/skybox_2/front.png");
 
-    m_SkyboxDay = new Skybox(m_SkyboxFacesDay);
+    m_SkyboxDay   = new Skybox(m_SkyboxFacesDay);
     m_SkyboxNight = new Skybox(m_SkyboxFacesNight);
     m_Skybox = m_SkyboxDay;
 
-    m_TextureCubeMapDay = new TextureCubeMap(m_SkyboxFacesDay);
+    m_TextureCubeMapDay   = new TextureCubeMap(m_SkyboxFacesDay);
     m_TextureCubeMapNight = new TextureCubeMap(m_SkyboxFacesNight);
     m_TextureCubeMap = m_TextureCubeMapDay;
 }
 
 void SceneEditor::SetTextures()
 {
-    textures.insert(std::make_pair("plain", new Texture("Textures/plain.png")));
-    textures.insert(std::make_pair("semi_transparent", new Texture("Textures/semi_transparent.png")));
-    textures.insert(std::make_pair("texture_checker", new Texture("Textures/texture_checker.png")));
-    textures.insert(std::make_pair("wood", new Texture("Textures/wood.png")));
-    textures.insert(std::make_pair("plank", new Texture("Textures/texture_plank.png")));
-    textures.insert(std::make_pair("rock", new Texture("Textures/rock.png")));
-    textures.insert(std::make_pair("pyramid", new Texture("Textures/pyramid.png")));
-    textures.insert(std::make_pair("lego", new Texture("Textures/lego.png")));
-    textures.insert(std::make_pair("marble", new Texture("Textures/marble.jpg")));
-    textures.insert(std::make_pair("metal", new Texture("Textures/metal.png")));
-    textures.insert(std::make_pair("brick", new Texture("Textures/brick.png")));
-    textures.insert(std::make_pair("crate", new Texture("Textures/crate.png")));
-    textures.insert(std::make_pair("grass", new Texture("Textures/grass.jpg")));
-    textures.insert(std::make_pair("water", new Texture("Textures/water.png")));
-    textures.insert(std::make_pair("rock2", new Texture("Textures/rock/Rock-Texture-Surface.jpg")));
-    textures.insert(std::make_pair("planet", new Texture("Textures/planet/planet_Quom1200.png")));
-    textures.insert(std::make_pair("gold_albedo", new Texture("Textures/PBR/gold/albedo.png")));
-    textures.insert(std::make_pair("silver_albedo", new Texture("Textures/PBR/silver/albedo.png")));
-    textures.insert(std::make_pair("rusted_iron", new Texture("Textures/PBR/rusted_iron/albedo.png")));
-    textures.insert(std::make_pair("grass_albedo", new Texture("Textures/PBR/grass/albedo.png")));
-    textures.insert(std::make_pair("wall_albedo", new Texture("Textures/PBR/wall/albedo.png")));
-    textures.insert(std::make_pair("plastic_albedo", new Texture("Textures/PBR/plastic/albedo.png")));
+    textures.insert(std::make_pair("plain",            TextureLoader::Get()->GetTexture("Textures/plain.png")));
+    textures.insert(std::make_pair("semi_transparent", TextureLoader::Get()->GetTexture("Textures/semi_transparent.png")));
+    textures.insert(std::make_pair("texture_checker",  TextureLoader::Get()->GetTexture("Textures/texture_checker.png")));
+    textures.insert(std::make_pair("wood",             TextureLoader::Get()->GetTexture("Textures/wood.png")));
+    textures.insert(std::make_pair("plank",            TextureLoader::Get()->GetTexture("Textures/texture_plank.png")));
+    textures.insert(std::make_pair("rock",             TextureLoader::Get()->GetTexture("Textures/rock.png")));
+    textures.insert(std::make_pair("pyramid",          TextureLoader::Get()->GetTexture("Textures/pyramid.png")));
+    textures.insert(std::make_pair("lego",             TextureLoader::Get()->GetTexture("Textures/lego.png")));
+    textures.insert(std::make_pair("marble",           TextureLoader::Get()->GetTexture("Textures/marble.jpg")));
+    textures.insert(std::make_pair("metal",            TextureLoader::Get()->GetTexture("Textures/metal.png")));
+    textures.insert(std::make_pair("brick",            TextureLoader::Get()->GetTexture("Textures/brick.png")));
+    textures.insert(std::make_pair("crate",            TextureLoader::Get()->GetTexture("Textures/crate.png")));
+    textures.insert(std::make_pair("grass",            TextureLoader::Get()->GetTexture("Textures/grass.jpg")));
+    textures.insert(std::make_pair("water",            TextureLoader::Get()->GetTexture("Textures/water.png")));
+    textures.insert(std::make_pair("rock2",            TextureLoader::Get()->GetTexture("Textures/rock/Rock-Texture-Surface.jpg")));
+    textures.insert(std::make_pair("planet",           TextureLoader::Get()->GetTexture("Textures/planet/planet_Quom1200.png")));
+    textures.insert(std::make_pair("gold_albedo",      TextureLoader::Get()->GetTexture("Textures/PBR/gold/albedo.png")));
+    textures.insert(std::make_pair("silver_albedo",    TextureLoader::Get()->GetTexture("Textures/PBR/silver/albedo.png")));
+    textures.insert(std::make_pair("rusted_iron",      TextureLoader::Get()->GetTexture("Textures/PBR/rusted_iron/albedo.png")));
+    textures.insert(std::make_pair("grass_albedo",     TextureLoader::Get()->GetTexture("Textures/PBR/grass/albedo.png")));
+    textures.insert(std::make_pair("wall_albedo",      TextureLoader::Get()->GetTexture("Textures/PBR/wall/albedo.png")));
+    textures.insert(std::make_pair("plastic_albedo",   TextureLoader::Get()->GetTexture("Textures/PBR/plastic/albedo.png")));
 
     // PBR/IBL - gold material
-    textures.insert(std::make_pair("goldAlbedoMap", new Texture("Textures/PBR/gold/albedo.png")));
-    textures.insert(std::make_pair("goldNormalMap", new Texture("Textures/PBR/gold/normal.png")));
-    textures.insert(std::make_pair("goldMetallicMap", new Texture("Textures/PBR/gold/metallic.png")));
-    textures.insert(std::make_pair("goldRoughnessMap", new Texture("Textures/PBR/gold/roughness.png")));
-    textures.insert(std::make_pair("goldAOMap", new Texture("Textures/PBR/gold/ao.png")));
+    textures.insert(std::make_pair("goldAlbedoMap",    TextureLoader::Get()->GetTexture("Textures/PBR/gold/albedo.png")));
+    textures.insert(std::make_pair("goldNormalMap",    TextureLoader::Get()->GetTexture("Textures/PBR/gold/normal.png")));
+    textures.insert(std::make_pair("goldMetallicMap",  TextureLoader::Get()->GetTexture("Textures/PBR/gold/metallic.png")));
+    textures.insert(std::make_pair("goldRoughnessMap", TextureLoader::Get()->GetTexture("Textures/PBR/gold/roughness.png")));
+    textures.insert(std::make_pair("goldAOMap",        TextureLoader::Get()->GetTexture("Textures/PBR/gold/ao.png")));
 }
 
 void SceneEditor::SetupMaterials()
