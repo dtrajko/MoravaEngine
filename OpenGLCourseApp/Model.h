@@ -15,6 +15,7 @@ class Model
 {
 public:
 	Model();
+	Model(const std::string& fileName, const std::string& texturesPath = "Textures");
 	void LoadModel(const std::string& fileName, const std::string& texturesPath = "Textures");
 	inline const std::vector <Mesh*> GetMeshList() const { return meshList; };
 	void RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNormalMaps);

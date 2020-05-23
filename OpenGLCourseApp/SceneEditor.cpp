@@ -277,6 +277,15 @@ void SceneEditor::SetupMaterials()
     textureInfoMahoganyFloor.roughness = "Textures/PBR/mahogany_floor/mahogfloor_roughness.png";
     textureInfoMahoganyFloor.ao        = "Textures/PBR/mahogany_floor/mahogfloor_AO.png";
     materials.insert(std::make_pair("mahogany_floor", new Material(textureInfoMahoganyFloor)));
+
+    // Stone Carved
+    TextureInfo textureInfoStoneCarved = {};
+    textureInfoStoneCarved.albedo    = "Textures/PBR/Stone_Carved/Albedo.jpg";
+    textureInfoStoneCarved.normal    = "Textures/PBR/Stone_Carved/Normal_LOD0.jpg";
+    textureInfoStoneCarved.metallic  = "Textures/PBR/Stone_Carved/Metalness.jpg";
+    textureInfoStoneCarved.roughness = "Textures/PBR/Stone_Carved/Roughness.jpg";
+    textureInfoStoneCarved.ao        = "Textures/PBR/Stone_Carved/Displacement.jpg";
+    materials.insert(std::make_pair("stone_carved", new Material(textureInfoStoneCarved)));
 }
 
 void SceneEditor::SetupMeshes()
@@ -285,6 +294,9 @@ void SceneEditor::SetupMeshes()
 
 void SceneEditor::SetupModels()
 {
+    Model* stoneCarved = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");
+    models.insert(std::make_pair("stone_carved", stoneCarved));
+
     Sphere* sphere = new Sphere(glm::vec3(1.0f));
     meshes.insert(std::make_pair("sphere", sphere));
 }
@@ -968,11 +980,21 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
 
+    glm::mat4 model;
+
+    // Quixel Megascans model
+    shaderEditorPBR->Bind();
+    model = glm::mat4(1.0f);
+    model = glm::scale(model, glm::vec3(0.1f));
+    shaderEditorPBR->setMat4("model", model);
+    shaderEditorPBR->setFloat("tilingFactor", 1.0f);
+    m_MaterialWorkflowPBR->BindTextures(0);
+    materials["stone_carved"]->BindTextures(3);
+    models["stone_carved"]->RenderModelPBR();
+
     // Render spheres on light positions
     // Directional light (somewhere on pozitive Y axis, at X=0, Z=0)
     // Render Sphere (Light source)
-    glm::mat4 model;
-
     textures["plain"]->Bind(0);
     textures["plain"]->Bind(1);
     textures["plain"]->Bind(2);

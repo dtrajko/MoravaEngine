@@ -11,6 +11,11 @@ Model::Model()
 	m_TexturesPath = "Textures";
 }
 
+Model::Model(const std::string& fileName, const std::string& texturesPath)
+{
+	LoadModel(fileName, m_TexturesPath);
+}
+
 void Model::LoadModel(const std::string& fileName, const std::string& texturesPath)
 {
 	printf("Loading model '%s'. Textures path '%s'\n", fileName.c_str(), texturesPath.c_str());
@@ -248,7 +253,7 @@ void Model::ClearModel()
 	{
 		if (textureList[i] != nullptr)
 		{
-			delete textureList[i];
+			// delete textureList[i];
 			textureList[i] = nullptr;
 		}
 	}
