@@ -10,7 +10,6 @@ TextureLoader* TextureLoader::Get()
 	{
 		s_Instance = new TextureLoader();
 	}
-
 	return s_Instance;
 }
 
@@ -49,14 +48,17 @@ void TextureLoader::Print()
 	{
 		printf("TextureLoader ID %zu\t[ TextureID: %i Path: '%s' ]\n", id, (int)rit->second->GetID(), rit->first.c_str());
 		id++;
-
 	}
 }
 
-TextureLoader::~TextureLoader()
+void TextureLoader::Clean()
 {
 	for (auto& texture : m_Textures)
 	{
 		delete texture.second;
 	}
+}
+
+TextureLoader::~TextureLoader()
+{
 }

@@ -1,7 +1,7 @@
 #include "Terrain.h"
 #include "VertexTBN.h"
 #include "Mesh.h"
-#include "TextureLoader.h"
+#include "TextureSampler.h"
 
 
 Terrain::Terrain(const char* heightMapPath, float tilingFactor, const char* colorMapPath)
@@ -9,12 +9,12 @@ Terrain::Terrain(const char* heightMapPath, float tilingFactor, const char* colo
 	m_HeightMapPath = heightMapPath;
 	m_TilingFactor = tilingFactor;
 
-	m_TxHeightMap = TextureLoader::Get()->GetTexture(heightMapPath);
+	m_TxHeightMap = new TextureSampler(heightMapPath);
 	m_TxHeightMap->Load();
 
 	if (colorMapPath != nullptr)
 	{
-		m_TxColorMap = TextureLoader::Get()->GetTexture(colorMapPath);
+		m_TxColorMap = new TextureSampler(colorMapPath);
 		m_TxColorMap->Load();
 		printf("Color map texture width=%d height=%d\n", m_TxColorMap->GetWidth(), m_TxColorMap->GetHeight());
 	}

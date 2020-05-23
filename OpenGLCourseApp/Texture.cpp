@@ -11,6 +11,7 @@ Texture::Texture()
 	m_BitDepth = 0;
 	m_FileLocation = "";
 	m_Filter = GL_LINEAR;
+	m_IsSampler = false;
 }
 
 Texture::Texture(const char* fileLoc, bool flipVert)
@@ -18,6 +19,16 @@ Texture::Texture(const char* fileLoc, bool flipVert)
 {
 	m_FileLocation = fileLoc;
 	m_Filter = GL_LINEAR;
+
+	Load(flipVert);
+}
+
+Texture::Texture(const char* fileLoc, bool flipVert, bool isSampler)
+	: Texture()
+{
+	m_FileLocation = fileLoc;
+	m_Filter = GL_LINEAR;
+	m_IsSampler = isSampler;
 
 	Load(flipVert);
 }
@@ -82,6 +93,9 @@ bool Texture::Load(bool flipVert)
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	if (!m_IsSampler)
+		stbi_image_free(m_Buffer);
+
 	return true;
 }
 
@@ -127,7 +141,8 @@ float Texture::GetFileSize(const char* filename)
 
 void Texture::Clear()
 {
-	stbi_image_free(m_Buffer);
+	if (m_IsSampler)
+		stbi_image_free(m_Buffer);
 	glDeleteTextures(1, &m_TextureID);
 	m_TextureID = 0;
 	m_Width = 0;

@@ -254,6 +254,7 @@
     <ClCompile Include="TextureCubeMap.cpp" />
     <ClCompile Include="TextureCubemapLite.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
+    <ClCompile Include="TextureSampler.cpp" />
     <ClCompile Include="Tile2D.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="WaterManager.cpp" />
@@ -355,6 +356,7 @@
     <ClInclude Include="TextureCubeMap.h" />
     <ClInclude Include="TextureCubemapLite.h" />
     <ClInclude Include="TextureLoader.h" />
+    <ClInclude Include="TextureSampler.h" />
     <ClInclude Include="Tile2D.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="VertexInstanced.h" />

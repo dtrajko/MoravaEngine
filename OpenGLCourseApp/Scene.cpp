@@ -199,8 +199,11 @@ Scene::~Scene()
 	delete m_LightManager;
 	delete m_WaterManager;
 
-	for (auto& texture : textures)
-		delete texture.second;
+	//	for (auto& texture : textures) // TextureLoader is now responsible for deallocating
+	//		if (texture.second != nullptr)
+	//			delete texture.second;
+
+	TextureLoader::Get()->Clean();
 
 	for (auto& mesh : meshes)
 		delete mesh.second;

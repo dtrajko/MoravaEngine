@@ -112,18 +112,15 @@
     <Filter Include="Source Files\Components">
       <UniqueIdentifier>{bba0dda7-1d9c-41e2-a279-6725057d0ff8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Core">
+      <UniqueIdentifier>{fb7312d8-2310-4e81-88f4-9c3f9a8b66b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core">
+      <UniqueIdentifier>{74406e15-f47d-4bc2-9e88-da9b94bad14e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WaterManager.cpp">
@@ -324,14 +321,8 @@
     <ClCompile Include="TextureCubeMap.cpp">
       <Filter>Source Files\Texture</Filter>
     </ClCompile>
-    <ClCompile Include="MousePicker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MeshData.cpp">
       <Filter>Source Files\Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Raycast.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GeometryFactory.cpp">
       <Filter>Source Files\LearnOpenGL</Filter>
@@ -384,32 +375,38 @@
     <ClCompile Include="SceneParticles.cpp">
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Gizmo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MaterialWorkflowPBR.cpp">
       <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Timer.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TextureLoader.cpp">
       <Filter>Source Files\Texture</Filter>
     </ClCompile>
+    <ClCompile Include="TextureSampler.cpp">
+      <Filter>Source Files\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Skybox.cpp">
+      <Filter>Source Files\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Gizmo.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Raycast.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="MousePicker.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CommonValues.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Skybox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="WaterManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -632,12 +629,6 @@
     <ClInclude Include="TextureCubeMap.h">
       <Filter>Header Files\Texture</Filter>
     </ClInclude>
-    <ClInclude Include="MousePicker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Raycast.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GeometryFactory.h">
       <Filter>Header Files\LearnOpenGL</Filter>
     </ClInclude>
@@ -689,17 +680,38 @@
     <ClInclude Include="SceneParticles.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Gizmo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MaterialWorkflowPBR.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="Timer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TextureLoader.h">
       <Filter>Header Files\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Skybox.h">
+      <Filter>Header Files\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Gizmo.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="MousePicker.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Raycast.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureSampler.h">
+      <Filter>Header Files\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="CommonValues.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

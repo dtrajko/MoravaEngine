@@ -14,6 +14,7 @@ public:
 	Texture* GetTexture(const char* fileLoc, bool flipVert = false);
 	Texture* GetTexture(const char* fileLoc, bool flipVert, GLenum filter);
 	void Print();
+	void Clean();
 	~TextureLoader();
 
 private:

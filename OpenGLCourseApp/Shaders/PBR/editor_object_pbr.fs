@@ -1,6 +1,6 @@
 #version 330 core
 
-const int MAX_LIGHTS = 4 + 4;
+const int MAX_LIGHTS = 4 + 4; // 4 point lights + 4 spot lights
 
 out vec4 FragColor;
 
@@ -35,14 +35,18 @@ struct DirectionalLight
 	vec3 direction;
 };
 
+struct PointSpotLight
+{
+    bool enabled;
+    vec3 position;
+    vec3 color;
+    float exponent;
+    float linear;
+    float constant;
+};
+
 uniform DirectionalLight directionalLight;
-
-uniform vec3 lightPositions[MAX_LIGHTS];
-uniform vec3 lightColors[MAX_LIGHTS];
-
-uniform float pointLightExponent;
-uniform float pointLightLinear;
-uniform float pointLightConstant;
+uniform PointSpotLight pointSpotLights[MAX_LIGHTS];
 
 uniform vec3 cameraPosition;
 uniform float tilingFactor;
@@ -73,7 +77,7 @@ vec3 getNormalFromMap()
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
-    float a = roughness*roughness;
+    float a = roughness * roughness;
     float a2 = a*a;
     float NdotH = max(dot(N, H), 0.0);
     float NdotH2 = NdotH*NdotH;
@@ -88,7 +92,7 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
     float r = (roughness + 1.0);
-    float k = (r*r) / 8.0;
+    float k = (r * r) / 8.0;
 
     float nom   = NdotV;
     float denom = NdotV * (1.0 - k) + k;
@@ -131,7 +135,7 @@ vec4 CalcLightByDirection(Light light, vec3 direction)
 		vec3 reflectedVertex = normalize(reflect(direction, normalize(vNormal)));
 	}
 
-	return ambientColor + diffuseColor;
+	return ambientColor + diffuseColor + specularColor;
 }
 
 
@@ -157,17 +161,20 @@ void main()
     vec3 Lo = vec3(0.0);
     for(int i = 0; i < MAX_LIGHTS; ++i)
     {
+        // skip light calculation if light is not enabled
+        if (!pointSpotLights[i].enabled) continue;
+
         // calculate per-light radiance
-        vec3 L = normalize(lightPositions[i] - vWorldPos);
+        vec3 L = normalize(pointSpotLights[i].position - vWorldPos);
         vec3 H = normalize(V + L);
-        float distance = length(lightPositions[i] - vWorldPos);
+        float distance = length(pointSpotLights[i].position - vWorldPos);
 
         // float attenuation = 1.0 / (distance * distance);
-        float attenuation =	pointLightExponent * distance * distance +
-					pointLightLinear * distance +
-					pointLightConstant;
+        float attenuation =	pointSpotLights[i].exponent * distance * distance +
+					pointSpotLights[i].linear * distance +
+					pointSpotLights[i].constant;
 
-        vec3 radiance = lightColors[i] * attenuation;
+        vec3 radiance = pointSpotLights[i].color * attenuation;
 
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);

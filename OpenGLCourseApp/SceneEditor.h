@@ -15,9 +15,20 @@
 const int SKYBOX_DAY   = 0;
 const int SKYBOX_NIGHT = 1;
 
+
+struct PointSpotLight
+{
+	bool enabled;
+	glm::vec3 position;
+	glm::vec3 color;
+	float exponent;
+	float linear;
+	float constant;
+};
+
+
 class SceneEditor : public Scene
 {
-
 public:
 	SceneEditor();
 	virtual void Update(float timestep, Window& mainWindow) override;
@@ -67,9 +78,7 @@ private:
 	std::string* m_MaterialNameEdit;
 	float* m_TilingFactorMaterialEdit;
 
-	float* m_PointLightExponent; // temp common values
-	float* m_PointLightLinear;   // temp common values
-	float* m_PointLightConstant; // temp common values
+	std::vector<PointSpotLight*> m_PointSpotLights;
 
 	unsigned int m_SelectedIndex;
 	unsigned int m_ObjectInFocusPrev;

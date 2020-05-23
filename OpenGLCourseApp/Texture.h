@@ -13,6 +13,7 @@ public:
 	Texture();
 	Texture(const char* fileLoc, bool flipVert = false);
 	Texture(const char* fileLoc, bool flipVert, GLenum filter);
+	Texture(const char* fileLoc, bool flipVert, bool isSampler);
 	virtual bool Load(bool flipVert = false);
 	inline unsigned int GetID() const { return m_TextureID; };
 	virtual void Bind(unsigned int textureUnit = 0);
@@ -34,6 +35,7 @@ protected:
 	const char* m_FileLocation;
 	int m_BitDepth;
 	unsigned char* m_Buffer = nullptr;
+	bool m_IsSampler; // m_Buffer is required during object lifetime, so it must be deallocated in destructor
 	GLenum m_Filter = GL_LINEAR;
 
 };

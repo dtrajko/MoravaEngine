@@ -131,11 +131,6 @@ SceneEditor::SceneEditor()
     m_MaterialNameEdit         = new std::string;
     m_TilingFactorMaterialEdit = new float(1.0f);
 
-    // attenuation - common values for all point/spot lights
-    m_PointLightExponent = new float(0.4f);
-    m_PointLightLinear   = new float(0.3f);
-    m_PointLightConstant = new float(0.2f);
-
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
     m_DirLightColorPrev = sceneSettings.directionalLight.base.color;
@@ -761,12 +756,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     m_LightManager->directionalLight.SetDiffuseIntensity(directionalLight.base.diffuseIntensity);
     m_LightManager->directionalLight.SetDirection(directionalLight.direction);
 
-    ImGui::Separator();
-    ImGui::Text("Attenuation parameters (common for all point/spot lights)");
-    ImGui::SliderFloat("Exponent", m_PointLightExponent, 0.0f, 2.0f); // temp common values
-    ImGui::SliderFloat("Linear",   m_PointLightLinear,   0.0f, 2.0f); // temp common values
-    ImGui::SliderFloat("Constant", m_PointLightConstant, 0.0f, 2.0f); // temp common values
-
     // Point Lights
     ImGui::Separator();
     ImGui::Text("Point Lights");
@@ -907,27 +896,30 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     shaderEditorPBR->setFloat("directionalLight.base.diffuseIntensity", m_LightManager->directionalLight.GetDiffuseIntensity());
     shaderEditorPBR->setVec3("directionalLight.direction", m_LightManager->directionalLight.GetDirection());
 
-    // Point/Spot Light Attenuation (temporary values for all point/spot lights)
-    shaderEditorPBR->setFloat("pointLightExponent", *m_PointLightExponent);
-    shaderEditorPBR->setFloat("pointLightLinear",   *m_PointLightLinear);
-    shaderEditorPBR->setFloat("pointLightConstant", *m_PointLightConstant);
-
     // printf("Exponent = %.2ff Linear = %.2ff Constant = %.2ff\n", *m_PointLightExponent, *m_PointLightLinear, *m_PointLightConstant);
 
     // point lights
     unsigned int lightIndex = 0;
     for (unsigned int i = 0; i < m_LightManager->pointLightCount; ++i)
     {
-        lightIndex = i + 0; // offset for point lights
-        shaderEditorPBR->setVec3("lightPositions[" + std::to_string(lightIndex) + "]", m_LightManager->pointLights[i].GetPosition());
-        shaderEditorPBR->setVec3("lightColors[" + std::to_string(lightIndex) + "]", m_LightManager->pointLights[i].GetColor());
+        lightIndex = 0 + i; // offset for point lights
+        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].enabled",  m_LightManager->pointLights[i].GetEnabled());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position", m_LightManager->pointLights[i].GetPosition());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].color",    m_LightManager->pointLights[i].GetColor());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent", m_LightManager->pointLights[i].GetExponent());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear",   m_LightManager->pointLights[i].GetLinear());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant", m_LightManager->pointLights[i].GetConstant());
     }
 
     for (unsigned int i = 0; i < m_LightManager->spotLightCount; ++i)
     {
-        lightIndex = i + 4; // offset for point lights
-        shaderEditorPBR->setVec3("lightPositions[" + std::to_string(lightIndex) + "]", m_LightManager->spotLights[i].GetBasePL()->GetPosition());
-        shaderEditorPBR->setVec3("lightColors[" + std::to_string(lightIndex) + "]", m_LightManager->spotLights[i].GetBasePL()->GetColor());
+        lightIndex = 4 + i; // offset for point lights
+        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].enabled",  m_LightManager->spotLights[i].GetBasePL()->GetEnabled());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position", m_LightManager->spotLights[i].GetBasePL()->GetPosition());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].color",    m_LightManager->spotLights[i].GetBasePL()->GetColor());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent", m_LightManager->spotLights[i].GetBasePL()->GetExponent());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear",   m_LightManager->spotLights[i].GetBasePL()->GetLinear());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant", m_LightManager->spotLights[i].GetBasePL()->GetConstant());
     }
 
     for (auto& object : m_SceneObjects)
