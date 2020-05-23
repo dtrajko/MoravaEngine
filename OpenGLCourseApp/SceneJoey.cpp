@@ -98,7 +98,7 @@ void SceneJoey::SetupMaterials()
 	TextureInfo textureInfoGrass = {};
 	textureInfoGrass.albedo    = "Textures/PBR/grass/albedo.png";
 	textureInfoGrass.normal    = "Textures/PBR/grass/normal.png";
-	textureInfoGrass.metallic  = "Textures/PBR/grass/metallic.png";
+	textureInfoGrass.metallic  = "Textures/PBR/metalness.png";
 	textureInfoGrass.roughness = "Textures/PBR/grass/roughness.png";
 	textureInfoGrass.ao        = "Textures/PBR/grass/ao.png";
 	materials.insert(std::make_pair("grass", new Material(textureInfoGrass)));
@@ -116,7 +116,7 @@ void SceneJoey::SetupMaterials()
 	TextureInfo textureInfoWall = {};
 	textureInfoWall.albedo    = "Textures/PBR/wall/albedo.png";
 	textureInfoWall.normal    = "Textures/PBR/wall/normal.png";
-	textureInfoWall.metallic  = "Textures/PBR/wall/metallic.png";
+	textureInfoWall.metallic  = "Textures/PBR/metalness.png";
 	textureInfoWall.roughness = "Textures/PBR/wall/roughness.png";
 	textureInfoWall.ao        = "Textures/PBR/wall/ao.png";
 	materials.insert(std::make_pair("wall", new Material(textureInfoWall)));

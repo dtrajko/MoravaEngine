@@ -267,7 +267,7 @@ void SceneEditor::SetupMaterials()
     TextureInfo textureInfoDarkTiles = {};
     textureInfoDarkTiles.albedo    = "Textures/PBR/dark_tiles_1/darktiles1_basecolor.png";
     textureInfoDarkTiles.normal    = "Textures/PBR/dark_tiles_1/darktiles1_normal-DX.png";
-    textureInfoDarkTiles.metallic  = "Textures/PBR/dark_tiles_1/darktiles1_metallic.png";
+    textureInfoDarkTiles.metallic  = "Textures/PBR/metalness.png";
     textureInfoDarkTiles.roughness = "Textures/PBR/dark_tiles_1/darktiles1_roughness.png";
     textureInfoDarkTiles.ao        = "Textures/PBR/dark_tiles_1/darktiles1_AO.png";
     materials.insert(std::make_pair("dark_tiles", new Material(textureInfoDarkTiles)));
@@ -276,12 +276,30 @@ void SceneEditor::SetupMaterials()
     TextureInfo textureInfoMahoganyFloor = {};
     textureInfoMahoganyFloor.albedo    = "Textures/PBR/mahogany_floor/mahogfloor_basecolor.png";
     textureInfoMahoganyFloor.normal    = "Textures/PBR/mahogany_floor/mahogfloor_normal.png";
-    textureInfoMahoganyFloor.metallic  = "Textures/PBR/mahogany_floor/mahogfloor_metalness.png";
+    textureInfoMahoganyFloor.metallic  = "Textures/PBR/metalness.png";
     textureInfoMahoganyFloor.roughness = "Textures/PBR/mahogany_floor/mahogfloor_roughness.png";
     textureInfoMahoganyFloor.ao        = "Textures/PBR/mahogany_floor/mahogfloor_AO.png";
     materials.insert(std::make_pair("mahogany_floor", new Material(textureInfoMahoganyFloor)));
 
-    // Stone Carved
+    // aged planks
+    TextureInfo textureInfoAgedPlanks = {};
+    textureInfoAgedPlanks.albedo    = "Textures/PBR/aged_planks_1/agedplanks1-albedo.png";
+    textureInfoAgedPlanks.normal    = "Textures/PBR/aged_planks_1/agedplanks1-normal4-ue.png";
+    textureInfoAgedPlanks.metallic  = "Textures/PBR/aged_planks_1/agedplanks1-metalness.png";
+    textureInfoAgedPlanks.roughness = "Textures/PBR/aged_planks_1/agedplanks1-roughness.png";
+    textureInfoAgedPlanks.ao        = "Textures/PBR/aged_planks_1/agedplanks1-ao.png";
+    materials.insert(std::make_pair("aged_planks", new Material(textureInfoAgedPlanks)));
+
+    // harsh bricks
+    TextureInfo textureInfoHarshBricks = {};
+    textureInfoHarshBricks.albedo    = "Textures/PBR/harsh_bricks/harshbricks-albedo.png";
+    textureInfoHarshBricks.normal    = "Textures/PBR/harsh_bricks/harshbricks-normal.png";
+    textureInfoHarshBricks.metallic  = "Textures/PBR/metalness.png";
+    textureInfoHarshBricks.roughness = "Textures/PBR/harsh_bricks/harshbricks-roughness.png";
+    textureInfoHarshBricks.ao        = "Textures/PBR/harsh_bricks/harshbricks-ao2.png";
+    materials.insert(std::make_pair("harsh_bricks", new Material(textureInfoHarshBricks)));
+
+    // Stone Carved (Quixel Megascans)
     TextureInfo textureInfoStoneCarved = {};
     textureInfoStoneCarved.albedo    = "Textures/PBR/Stone_Carved/Albedo.jpg";
     textureInfoStoneCarved.normal    = "Textures/PBR/Stone_Carved/Normal_LOD0.jpg";
@@ -289,6 +307,15 @@ void SceneEditor::SetupMaterials()
     textureInfoStoneCarved.roughness = "Textures/PBR/Stone_Carved/Roughness.jpg";
     textureInfoStoneCarved.ao        = "Textures/PBR/Stone_Carved/Displacement.jpg";
     materials.insert(std::make_pair("stone_carved", new Material(textureInfoStoneCarved)));
+
+    // Old Stove (Quixel Megascans)
+    TextureInfo textureInfoOldStove = {};
+    textureInfoOldStove.albedo    = "Textures/PBR/Old_Stove/Albedo.jpg";
+    textureInfoOldStove.normal    = "Textures/PBR/Old_Stove/Normal_LOD0.jpg";
+    textureInfoOldStove.metallic  = "Textures/PBR/Old_Stove/Metalness.jpg";
+    textureInfoOldStove.roughness = "Textures/PBR/Old_Stove/Roughness.jpg";
+    textureInfoOldStove.ao        = "Textures/PBR/Old_Stove/Displacement.jpg";
+    materials.insert(std::make_pair("old_stove", new Material(textureInfoOldStove)));
 }
 
 void SceneEditor::SetupMeshes()
@@ -299,6 +326,9 @@ void SceneEditor::SetupModels()
 {
     Sphere* sphere = new Sphere(glm::vec3(1.0f));
     meshes.insert(std::make_pair("sphere", sphere));
+
+    Cone* cone = new Cone(glm::vec3(1.0f));
+    meshes.insert(std::make_pair("cone", cone));
 }
 
 void SceneEditor::SetGeometry()
@@ -727,7 +757,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::Separator();
     ImGui::Text("Select Model");
-    ImGui::RadioButton("Stone Carved", &m_CurrentModelID, 0);
+    ImGui::RadioButton("Stone Carved", &m_CurrentModelID, MODEL_STONE_CARVED);
+    ImGui::RadioButton("Old Stove",    &m_CurrentModelID, MODEL_OLD_STOVE);
 
     ImGui::Separator();
     ImGui::Text("Select Skybox");
@@ -1016,7 +1047,7 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
             shaderEditorPBR->setMat4("model", object->transform);
             shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
             m_MaterialWorkflowPBR->BindTextures(0);
-            materials["stone_carved"]->BindTextures(3);
+            materials[object->materialName]->BindTextures(3);
             object->model->RenderModelPBR();
         }
 
@@ -1037,12 +1068,17 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 
     shaderEditor->setVec4("tintColor", glm::vec4(1.0f));
 
+    // Directional Light
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().x), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().y), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().z), glm::vec3(0.0f, 0.0f, 1.0f));
+
     model = glm::scale(model, glm::vec3(0.5f));
     shaderEditor->setMat4("model", model);
     if (m_DisplayLightSources)
-        meshes["sphere"]->Render();
+        meshes["cone"]->Render();
 
     // Point lights
     for (unsigned int i = 0; i < m_LightManager->pointLightCount; i++)
@@ -1060,10 +1096,13 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     {
         model = glm::mat4(1.0f);
         model = glm::translate(model, m_LightManager->spotLights[i].GetBasePL()->GetPosition());
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().x), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().y), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().z), glm::vec3(0.0f, 0.0f, 1.0f));
         model = glm::scale(model, glm::vec3(0.25f));
         shaderEditor->setMat4("model", model);
         if (m_DisplayLightSources && m_LightManager->spotLights[i].GetBasePL()->GetEnabled())
-            meshes["sphere"]->Render();
+            meshes["cone"]->Render();
     }
 
     // Render gizmo on front of everything (depth mask enabled)w
@@ -1144,6 +1183,7 @@ void SceneEditor::AddSceneObject()
     Mesh* mesh = nullptr;
     Model* model = nullptr;
     std::string objectType = "";
+    std::string materialName = "";
 
     if (m_ActionAddType == ACTION_ADD_MESH) {
         mesh = CreateNewPrimitive(m_CurrentMeshTypeID, glm::vec3(1.0f));
@@ -1152,6 +1192,10 @@ void SceneEditor::AddSceneObject()
     else if (m_ActionAddType == ACTION_ADD_MODEL) {
         model = AddNewModel(m_CurrentModelID, glm::vec3(1.0f));
         objectType = "model";
+        if (m_CurrentModelID == MODEL_STONE_CARVED)
+            materialName = "stone_carved";
+        else if (m_CurrentModelID == MODEL_OLD_STOVE)
+            materialName = "old_stove";
     }
 
     // Add Scene Object here
@@ -1160,6 +1204,7 @@ void SceneEditor::AddSceneObject()
     sceneObject->mesh = mesh;
     sceneObject->meshType = m_CurrentMeshTypeID;
     sceneObject->model = model;
+    sceneObject->materialName = materialName;
 
     m_SceneObjects.push_back(sceneObject);
     m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
@@ -1281,8 +1326,11 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
     Model* model;
     switch (modelID)
     {
-    case 0:
+    case MODEL_STONE_CARVED:
         model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");
+        break;
+    case MODEL_OLD_STOVE:
+        model = new Model("Models/Old_Stove/udmheheqx_LOD0.fbx");
         break;
     default:
         model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");

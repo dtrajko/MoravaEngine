@@ -1,21 +1,21 @@
 BeginObject	0
-Position	10.644073	9.989964	-0.268000
-Rotation	0.040000	0.000000	0.000000
-Scale	1.430000	20.079130	19.401981
+Position	10.436996	5.403031	0.036000
+Rotation	0.000000	0.000000	0.000000
+Scale	1.042000	10.019000	20.000000
 Color	1.000000	1.000000	1.000000	1.000000
 UseTexture	0
 TextureName	plain
 TilingFactor	1.000000
-IsSelected	1
+IsSelected	0
 ObjectType	mesh
 MeshType	0
 MaterialName	harsh_bricks
 TilingFactorMaterial	0.232000
 EndObject
 BeginObject	1
-Position	-0.021000	10.012028	-10.485051
+Position	-0.021000	5.373009	-10.475051
 Rotation	0.000000	0.000000	0.000000
-Scale	19.944017	20.054064	1.001998
+Scale	19.944017	10.019000	1.001998
 Color	1.000000	1.000000	1.000000	1.000000
 UseTexture	0
 TextureName	plain
@@ -41,7 +41,7 @@ MaterialName	aged_planks
 TilingFactorMaterial	0.253000
 EndObject
 BeginObject	3
-Position	-10.000000	0.000000	10.000000
+Position	0.000000	0.000000	0.000000
 Rotation	0.000000	0.000000	0.000000
 Scale	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
@@ -55,23 +55,9 @@ MaterialName
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	4
-Position	8.994000	0.440000	0.755000
-Rotation	0.240002	90.814003	0.140000
+Position	7.240008	0.527002	-6.906013
+Rotation	1.340001	-20.839115	0.660000
 Scale	3.003009	3.009064	3.007006
-Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	model
-MeshType	0
-MaterialName	stone_carved
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	5
-Position	7.296000	0.503000	-6.352000
-Rotation	0.000000	-79.653999	0.000000
-Scale	4.042000	4.042000	4.042000
 Color	1.000000	1.000000	1.000000	1.000000
 UseTexture	0
 TextureName	plain

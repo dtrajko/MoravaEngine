@@ -18,6 +18,9 @@ const int SKYBOX_NIGHT = 1;
 const int ACTION_ADD_MESH  = 0;
 const int ACTION_ADD_MODEL = 1;
 
+const int MODEL_STONE_CARVED = 0;
+const int MODEL_OLD_STOVE    = 1;
+
 struct PointSpotLight
 {
 	bool enabled;
