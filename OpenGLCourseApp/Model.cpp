@@ -9,6 +9,7 @@
 Model::Model()
 {
 	m_TexturesPath = "Textures";
+	m_Scale = glm::vec3(1.0f);
 }
 
 Model::Model(const std::string& fileName, const std::string& texturesPath)
@@ -21,6 +22,7 @@ void Model::LoadModel(const std::string& fileName, const std::string& texturesPa
 	printf("Loading model '%s'. Textures path '%s'\n", fileName.c_str(), texturesPath.c_str());
 
 	m_TexturesPath = texturesPath;
+	m_Scale = glm::vec3(1.0f);
 
 	std::chrono::time_point<std::chrono::steady_clock> startTimepoint = std::chrono::high_resolution_clock::now();
 
@@ -125,6 +127,7 @@ void Model::LoadMesh(aiMesh* mesh, const aiScene* scene)
 
 	Mesh* newMesh = new Mesh();
 	newMesh->Create(&vertices[0], &indices[0], (unsigned int)vertices.size(), (unsigned int)indices.size());
+	newMesh->Update(m_Scale);
 	meshList.push_back(newMesh);
 	meshToTexture.push_back(mesh->mMaterialIndex);
 }
@@ -196,6 +199,18 @@ void Model::LoadMaterials(const aiScene* scene)
 		{
 			textureList[i] = TextureLoader::Get()->GetTexture("Textures/plain.png");
 		}
+	}
+}
+
+void Model::Update(glm::vec3 scale)
+{
+	if (scale != m_Scale)
+	{
+		for (size_t i = 0; i < meshList.size(); i++)
+		{
+			meshList[i]->Update(scale);
+		}
+		m_Scale = scale;
 	}
 }
 

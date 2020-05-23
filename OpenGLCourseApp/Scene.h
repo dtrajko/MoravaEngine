@@ -47,8 +47,10 @@ struct SceneObject
 	bool isSelected;
 	AABB* AABB;
 	Pivot* pivot;
+	std::string objectType;
 	Mesh* mesh;
 	int meshType;
+	Model* model;
 	std::string materialName;
 	float tilingFactorMaterial;
 };

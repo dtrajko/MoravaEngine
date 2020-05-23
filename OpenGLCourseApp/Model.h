@@ -17,6 +17,7 @@ public:
 	Model();
 	Model(const std::string& fileName, const std::string& texturesPath = "Textures");
 	void LoadModel(const std::string& fileName, const std::string& texturesPath = "Textures");
+	void Update(glm::vec3 scale);
 	inline const std::vector <Mesh*> GetMeshList() const { return meshList; };
 	void RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNormalMaps);
 	void RenderModelPBR();
@@ -35,5 +36,6 @@ private:
 	std::vector <unsigned int> meshToTexture;
 
 	std::string m_TexturesPath;
+	glm::vec3 m_Scale;
 
 };

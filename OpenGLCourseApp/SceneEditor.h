@@ -15,6 +15,8 @@
 const int SKYBOX_DAY   = 0;
 const int SKYBOX_NIGHT = 1;
 
+const int ACTION_ADD_MESH  = 0;
+const int ACTION_ADD_MODEL = 1;
 
 struct PointSpotLight
 {
@@ -48,6 +50,7 @@ public:
 	void LoadScene();
 	void ResetScene();
 	Mesh* CreateNewPrimitive(int meshTypeID, glm::vec3 scale);
+	Model* AddNewModel(int modelID, glm::vec3 scale);
 	virtual ~SceneEditor() override;
 
 private:
@@ -83,7 +86,9 @@ private:
 	unsigned int m_SelectedIndex;
 	unsigned int m_ObjectInFocusPrev;
 
-	int m_CurrentMeshTypeInt;
+	int m_ActionAddType;
+	int m_CurrentMeshTypeID; // Current Mesh ID
+	int m_CurrentModelID;    // Current Model ID
 
 	bool m_MouseButton_1_Prev; // previous state of GLFW_MOUSE_BUTTON_1
 

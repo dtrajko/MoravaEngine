@@ -110,7 +110,10 @@ SceneEditor::SceneEditor()
     m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
 
     m_SelectedIndex = 0;
-    m_CurrentMeshTypeInt = MESH_TYPE_CUBE;
+
+    m_ActionAddType = 0;
+    m_CurrentMeshTypeID = MESH_TYPE_CUBE;
+    m_CurrentModelID = 0;
 
     m_Raycast = new Raycast();
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
@@ -294,9 +297,6 @@ void SceneEditor::SetupMeshes()
 
 void SceneEditor::SetupModels()
 {
-    Model* stoneCarved = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");
-    models.insert(std::make_pair("stone_carved", stoneCarved));
-
     Sphere* sphere = new Sphere(glm::vec3(1.0f));
     meshes.insert(std::make_pair("sphere", sphere));
 }
@@ -316,7 +316,11 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     for (auto& object : m_SceneObjects) {
         object->isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             object->AABB->GetMin(), object->AABB->GetMax(), glm::vec2(0.0f));
-        object->mesh->Update(object->scale);
+
+        if (object->objectType == "mesh" && object->mesh != nullptr)
+            object->mesh->Update(object->scale);
+        else if (object->objectType == "model" && object->model != nullptr)
+            object->model->Update(object->scale);
     }
 
     if (m_CurrentSkyboxInt == SKYBOX_DAY) {
@@ -451,6 +455,7 @@ void SceneEditor::SaveScene()
         lines.push_back("TilingFactor\t" + std::to_string(m_SceneObjects[i]->tilingFactor));
         std::string isSelected = m_SceneObjects[i]->isSelected ? "1" : "0";
         lines.push_back("IsSelected\t" + isSelected);
+        lines.push_back("ObjectType\t" + m_SceneObjects[i]->objectType);
         lines.push_back("MeshType\t" + std::to_string(m_SceneObjects[i]->meshType));
         lines.push_back("MaterialName\t" + m_SceneObjects[i]->materialName);
         lines.push_back("TilingFactorMaterial\t" + std::to_string(m_SceneObjects[i]->tilingFactorMaterial));
@@ -543,6 +548,10 @@ void SceneEditor::LoadScene()
             if (sceneObject->isSelected) m_SelectedIndex = (unsigned int)m_SceneObjects.size();
             // printf("IsSelected %d\n", sceneObject.isSelected);
         }
+        else if (tokens.size() >= 2 && tokens[0] == "ObjectType") {
+            sceneObject->objectType = tokens[1];
+            // printf("UseTexture %s\n", sceneObject.textureName.c_str());
+        }
         else if (tokens.size() >= 2 && tokens[0] == "MeshType") {
             sceneObject->meshType = std::stoi(tokens[1]);
             // printf("MeshType %d\n", sceneObject.meshType);
@@ -560,7 +569,13 @@ void SceneEditor::LoadScene()
             sceneObject->transform = Math::CreateTransform(sceneObject->position, sceneObject->rotation, sceneObject->scale);
             sceneObject->AABB  = new AABB(sceneObject->position, sceneObject->rotation, sceneObject->scale);
             sceneObject->pivot = new Pivot(sceneObject->position, sceneObject->scale);
-            sceneObject->mesh  = CreateNewPrimitive(sceneObject->meshType, sceneObject->scale);
+            Mesh* mesh = nullptr;
+            Model* model = nullptr;
+            if (sceneObject->objectType == "mesh") {
+                sceneObject->mesh  = CreateNewPrimitive(sceneObject->meshType, sceneObject->scale);
+            }
+            else if (sceneObject->objectType == "model")
+                sceneObject->model = AddNewModel(m_CurrentModelID, glm::vec3(1.0f));
             m_SceneObjects.push_back(sceneObject);
             // printf("EndObject: New SceneObject added to m_SceneObjects...\n");
         }
@@ -697,13 +712,22 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Checkbox("Axis Z", &axesEnabled.z);
 
     ImGui::Separator();
+    ImGui::Text("Select Add Action Mode");
+    ImGui::RadioButton("Add Mesh Primitive", &m_ActionAddType, ACTION_ADD_MESH);
+    ImGui::RadioButton("Add Model",          &m_ActionAddType, ACTION_ADD_MODEL);
+
+    ImGui::Separator();
     ImGui::Text("Select Object Type");
-    ImGui::RadioButton("Cube",     &m_CurrentMeshTypeInt, MESH_TYPE_CUBE);
-    ImGui::RadioButton("Pyramid",  &m_CurrentMeshTypeInt, MESH_TYPE_PYRAMID);
-    ImGui::RadioButton("Sphere",   &m_CurrentMeshTypeInt, MESH_TYPE_SPHERE);
-    ImGui::RadioButton("Cylinder", &m_CurrentMeshTypeInt, MESH_TYPE_CYLINDER);
-    ImGui::RadioButton("Cone",     &m_CurrentMeshTypeInt, MESH_TYPE_CONE);
-    ImGui::RadioButton("Ring",     &m_CurrentMeshTypeInt, MESH_TYPE_RING);
+    ImGui::RadioButton("Cube",     &m_CurrentMeshTypeID, MESH_TYPE_CUBE);
+    ImGui::RadioButton("Pyramid",  &m_CurrentMeshTypeID, MESH_TYPE_PYRAMID);
+    ImGui::RadioButton("Sphere",   &m_CurrentMeshTypeID, MESH_TYPE_SPHERE);
+    ImGui::RadioButton("Cylinder", &m_CurrentMeshTypeID, MESH_TYPE_CYLINDER);
+    ImGui::RadioButton("Cone",     &m_CurrentMeshTypeID, MESH_TYPE_CONE);
+    ImGui::RadioButton("Ring",     &m_CurrentMeshTypeID, MESH_TYPE_RING);
+
+    ImGui::Separator();
+    ImGui::Text("Select Model");
+    ImGui::RadioButton("Stone Carved", &m_CurrentModelID, 0);
 
     ImGui::Separator();
     ImGui::Text("Select Skybox");
@@ -944,6 +968,12 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         if (object->meshType == MESH_TYPE_RING)
             object->transform = glm::scale(object->transform, object->scale);
 
+        // Quixel Megascans models should be downscaled to 10% of their original size
+        if (object->objectType == "model") {
+            object->transform = glm::scale(object->transform, object->scale);
+            object->transform = glm::scale(object->transform, glm::vec3(0.02f));
+        }
+
         shaderEditor->setMat4("model", object->transform);
         shaderEditor->setVec4("tintColor", object->color);
         shaderEditor->setBool("isSelected", object->isSelected);
@@ -960,41 +990,45 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         shaderEditor->setInt("cubeMap", 1);
         shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
 
-        if (object->materialName == "" || object->materialName == "none") {
-            // Render with shaderEditor
-            shaderEditor->Bind();
+        if (object->objectType == "mesh" && object->mesh != nullptr)
+        {
+            if (object->materialName == "" || object->materialName == "none") {
+                // Render with shaderEditor
+                shaderEditor->Bind();
+            }
+            else {
+                // Render with shaderEditorPBR
+                shaderEditorPBR->Bind();
+                shaderEditorPBR->setMat4("model", object->transform);
+                shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
+                m_MaterialWorkflowPBR->BindTextures(0);
+                materials[object->materialName]->BindTextures(3);
+            }
+
+            // Render by shaderEditor OR shaderEditorPBR
+            object->mesh->Render();
         }
-        else {
-            // Render with shaderEditorPBR
+
+        if (object->objectType == "model" && object->model != nullptr)
+        {
+            // Quixel Megascans model
             shaderEditorPBR->Bind();
             shaderEditorPBR->setMat4("model", object->transform);
             shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
             m_MaterialWorkflowPBR->BindTextures(0);
-            materials[object->materialName]->BindTextures(3);
+            materials["stone_carved"]->BindTextures(3);
+            object->model->RenderModelPBR();
         }
-
-        // Render by shaderEditor OR shaderEditorPBR
-        object->mesh->Render();
 
         object->AABB->Update(object->position, object->rotation, object->scale);
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
 
-    glm::mat4 model;
-
-    // Quixel Megascans model
-    shaderEditorPBR->Bind();
-    model = glm::mat4(1.0f);
-    model = glm::scale(model, glm::vec3(0.1f));
-    shaderEditorPBR->setMat4("model", model);
-    shaderEditorPBR->setFloat("tilingFactor", 1.0f);
-    m_MaterialWorkflowPBR->BindTextures(0);
-    materials["stone_carved"]->BindTextures(3);
-    models["stone_carved"]->RenderModelPBR();
-
     // Render spheres on light positions
     // Directional light (somewhere on pozitive Y axis, at X=0, Z=0)
     // Render Sphere (Light source)
+    glm::mat4 model;
+
     textures["plain"]->Bind(0);
     textures["plain"]->Bind(1);
     textures["plain"]->Bind(2);
@@ -1088,8 +1122,10 @@ SceneObject* SceneEditor::CreateNewSceneObject()
         true,
         new AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f)),
         new Pivot(glm::vec3(0.0f), glm::vec3(1.0f)),
+        "",      // Object Type
         nullptr, // Mesh
         0,
+        nullptr, // Model
         "",
         1.0f,
     };
@@ -1105,12 +1141,25 @@ void SceneEditor::AddSceneObject()
 
     m_Gizmo->SetActive(false);
 
-    Mesh* mesh = CreateNewPrimitive(m_CurrentMeshTypeInt, glm::vec3(1.0f));
+    Mesh* mesh = nullptr;
+    Model* model = nullptr;
+    std::string objectType = "";
+
+    if (m_ActionAddType == ACTION_ADD_MESH) {
+        mesh = CreateNewPrimitive(m_CurrentMeshTypeID, glm::vec3(1.0f));
+        objectType = "mesh";
+    }
+    else if (m_ActionAddType == ACTION_ADD_MODEL) {
+        model = AddNewModel(m_CurrentModelID, glm::vec3(1.0f));
+        objectType = "model";
+    }
 
     // Add Scene Object here
     SceneObject* sceneObject = CreateNewSceneObject();
+    sceneObject->objectType = objectType;
     sceneObject->mesh = mesh;
-    sceneObject->meshType = m_CurrentMeshTypeInt;
+    sceneObject->meshType = m_CurrentMeshTypeID;
+    sceneObject->model = model;
 
     m_SceneObjects.push_back(sceneObject);
     m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
@@ -1131,6 +1180,16 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
 
     if (oldSceneObject == nullptr) return;
 
+    Mesh* mesh = nullptr;
+    Model* model = nullptr;
+
+    if (oldSceneObject->objectType == "mesh" && oldSceneObject->mesh != nullptr) {
+        mesh = CreateNewPrimitive(oldSceneObject->meshType, oldSceneObject->mesh->GetScale());
+    }
+    else if (oldSceneObject->objectType == "model" && oldSceneObject->model != nullptr) {
+        model = AddNewModel(m_CurrentModelID, oldSceneObject->mesh->GetScale()); // TODO: m_CurrentModelID hard-coded, most be in SceneObject
+    }
+
     SceneObject* newSceneObject = new SceneObject{
         (int)sceneObjects->size(),
         oldSceneObject->transform,
@@ -1144,8 +1203,10 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
         true,
         new AABB(oldSceneObject->position, oldSceneObject->rotation, oldSceneObject->scale),
         new Pivot(oldSceneObject->position, oldSceneObject->scale),
-        CreateNewPrimitive(oldSceneObject->meshType, oldSceneObject->mesh->GetScale()),
-        m_CurrentMeshTypeInt,
+        oldSceneObject->objectType,
+        mesh,
+        m_CurrentMeshTypeID,
+        model,
         oldSceneObject->materialName,
         oldSceneObject->tilingFactorMaterial
     };
@@ -1163,7 +1224,10 @@ void SceneEditor::DeleteSceneObject(Window& mainWindow, std::vector<SceneObject*
 
     delete m_SceneObjects[m_SelectedIndex]->AABB;
     delete m_SceneObjects[m_SelectedIndex]->pivot;
-    delete m_SceneObjects[m_SelectedIndex]->mesh;
+    if (m_SceneObjects[m_SelectedIndex]->mesh != nullptr)
+        delete m_SceneObjects[m_SelectedIndex]->mesh;
+    if (m_SceneObjects[m_SelectedIndex]->model != nullptr)
+        delete m_SceneObjects[m_SelectedIndex]->model;
 
     if (m_SelectedIndex < m_SceneObjects.size())
         m_SceneObjects.erase(m_SceneObjects.begin() + m_SelectedIndex);
@@ -1210,6 +1274,21 @@ Mesh* SceneEditor::CreateNewPrimitive(int meshTypeID, glm::vec3 scale)
         break;
     }
     return mesh;
+}
+
+Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
+{
+    Model* model;
+    switch (modelID)
+    {
+    case 0:
+        model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");
+        break;
+    default:
+        model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");
+        break;
+    }
+    return model;
 }
 
 void SceneEditor::ResetScene()
