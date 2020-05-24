@@ -1,7 +1,7 @@
 BeginObject	0
-Position	0.011000	3.011998	4.488947
+Position	0.000000	0.000000	0.000000
 Rotation	0.000000	0.000000	0.000000
-Scale	10.017995	5.003995	1.017016
+Scale	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
 UseTexture	0
 TextureName	plain
@@ -10,47 +10,5 @@ IsSelected	0
 ObjectType	mesh
 MeshType	0
 MaterialName	dark_tiles
-TilingFactorMaterial	0.293000
-EndObject
-BeginObject	1
-Position	0.007000	6.039031	-0.008000
-Rotation	0.000000	0.000000	0.000000
-Scale	10.002995	1.000000	10.005076
-Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	mesh
-MeshType	0
-MaterialName	aged_planks
-TilingFactorMaterial	0.293000
-EndObject
-BeginObject	2
-Position	-0.004000	3.011998	-4.500053
-Rotation	0.000000	0.000000	0.000000
-Scale	10.017995	5.003995	1.017016
-Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	mesh
-MeshType	0
-MaterialName	dark_tiles
-TilingFactorMaterial	0.293000
-EndObject
-BeginObject	3
-Position	0.000000	0.061000	0.000000
-Rotation	0.000000	0.000000	0.000000
-Scale	10.002995	1.000000	10.005076
-Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	mesh
-MeshType	0
-MaterialName	aged_planks
-TilingFactorMaterial	0.293000
+TilingFactorMaterial	1.000000
 EndObject

@@ -27,7 +27,7 @@ void RendererEditor::SetShaders()
     shaders.insert(std::make_pair("editor_object", shaderEditorObject));
     printf("RendererEditor: shaderEditorObject compiled [programID=%d]\n", shaderEditorObject->GetProgramID());
 
-    Shader* shaderEditorObjectPBR = new Shader("Shaders/PBR/editor_object_pbr.vs", "Shaders/PBR/editor_object_pbr.fs");
+    Shader* shaderEditorObjectPBR = new Shader("Shaders/editor_object.vs", "Shaders/PBR/editor_object_pbr.fs");
     shaders.insert(std::make_pair("editor_object_pbr", shaderEditorObjectPBR));
     printf("RendererEditor: shaderEditorObjectPBR compiled [programID=%d]\n", shaderEditorObjectPBR->GetProgramID());
 
@@ -89,7 +89,6 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     EnableCulling();
 
     /**** Begin editor_object ****/
-
     Shader* shaderEditor = shaders["editor_object"];
 
     shaderEditor->Bind();
@@ -176,11 +175,9 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 
     // Eye position / camera direction
     shaderEditor->setVec3("eyePosition", scene->GetCamera()->GetPosition());
-
     /**** End editor_object ****/
 
     /**** Begin editor_object_pbr ****/
-
     Shader* shaderEditorPBR = shaders["editor_object_pbr"];
 
     // Init shaderEditorPBR
@@ -192,11 +189,11 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     shaderEditorPBR->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
 
     // directional light
-    shaderEditorPBR->setBool("directionalLight.base.enabled", scene->GetLightManager()->directionalLight.GetEnabled());
-    shaderEditorPBR->setVec3("directionalLight.base.color", scene->GetLightManager()->directionalLight.GetColor());
+    shaderEditorPBR->setBool( "directionalLight.base.enabled", scene->GetLightManager()->directionalLight.GetEnabled());
+    shaderEditorPBR->setVec3( "directionalLight.base.color", scene->GetLightManager()->directionalLight.GetColor());
     shaderEditorPBR->setFloat("directionalLight.base.ambientIntensity", scene->GetLightManager()->directionalLight.GetAmbientIntensity());
     shaderEditorPBR->setFloat("directionalLight.base.diffuseIntensity", scene->GetLightManager()->directionalLight.GetDiffuseIntensity());
-    shaderEditorPBR->setVec3("directionalLight.direction", scene->GetLightManager()->directionalLight.GetDirection());
+    shaderEditorPBR->setVec3( "directionalLight.direction", scene->GetLightManager()->directionalLight.GetDirection());
 
     // printf("Exponent = %.2ff Linear = %.2ff Constant = %.2ff\n", *m_PointLightExponent, *m_PointLightLinear, *m_PointLightConstant);
 
@@ -205,9 +202,9 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     for (unsigned int i = 0; i < scene->GetLightManager()->pointLightCount; ++i)
     {
         lightIndex = 0 + i; // offset for point lights
-        shaderEditorPBR->setBool("pointSpotLights[" + std::to_string(lightIndex) + "].enabled", scene->GetLightManager()->pointLights[i].GetEnabled());
-        shaderEditorPBR->setVec3("pointSpotLights[" + std::to_string(lightIndex) + "].position", scene->GetLightManager()->pointLights[i].GetPosition());
-        shaderEditorPBR->setVec3("pointSpotLights[" + std::to_string(lightIndex) + "].color", scene->GetLightManager()->pointLights[i].GetColor());
+        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].enabled", scene->GetLightManager()->pointLights[i].GetEnabled());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position", scene->GetLightManager()->pointLights[i].GetPosition());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].color", scene->GetLightManager()->pointLights[i].GetColor());
         shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent", scene->GetLightManager()->pointLights[i].GetExponent());
         shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear", scene->GetLightManager()->pointLights[i].GetLinear());
         shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant", scene->GetLightManager()->pointLights[i].GetConstant());
@@ -216,9 +213,9 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     for (unsigned int i = 0; i < scene->GetLightManager()->spotLightCount; ++i)
     {
         lightIndex = 4 + i; // offset for point lights
-        shaderEditorPBR->setBool("pointSpotLights[" + std::to_string(lightIndex) + "].enabled", scene->GetLightManager()->spotLights[i].GetBasePL()->GetEnabled());
-        shaderEditorPBR->setVec3("pointSpotLights[" + std::to_string(lightIndex) + "].position", scene->GetLightManager()->spotLights[i].GetBasePL()->GetPosition());
-        shaderEditorPBR->setVec3("pointSpotLights[" + std::to_string(lightIndex) + "].color", scene->GetLightManager()->spotLights[i].GetBasePL()->GetColor());
+        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].enabled", scene->GetLightManager()->spotLights[i].GetBasePL()->GetEnabled());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position", scene->GetLightManager()->spotLights[i].GetBasePL()->GetPosition());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].color", scene->GetLightManager()->spotLights[i].GetBasePL()->GetColor());
         shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent", scene->GetLightManager()->spotLights[i].GetBasePL()->GetExponent());
         shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear", scene->GetLightManager()->spotLights[i].GetBasePL()->GetLinear());
         shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant", scene->GetLightManager()->spotLights[i].GetBasePL()->GetConstant());
