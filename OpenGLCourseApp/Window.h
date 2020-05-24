@@ -26,6 +26,8 @@ public:
 	float getXMouseScrollOffset();
 	float getYMouseScrollOffset();
 	void SwapBuffers() { glfwSwapBuffers(glfwWindow); };
+	void SetVSync(bool enabled);
+	bool IsVSync() const;
 	~Window();
 
 private:
@@ -52,6 +54,8 @@ private:
 	float yMouseScrollOffset;
 	bool mouseFirstMoved;
 	bool mouseCursorAboveWindow;
+
+	bool m_VSync;
 
 	void CreateCallbacks();
 

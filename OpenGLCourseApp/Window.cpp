@@ -85,6 +85,8 @@ int Window::Initialize()
 
 	glfwSetWindowUserPointer(glfwWindow, this);
 
+	SetVSync(true);
+
 	printf("GLFW and GLEW initialized.\n");
 
 	return 0;
@@ -242,6 +244,21 @@ float Window::getYMouseScrollOffset()
 	float theOffset = yMouseScrollOffset;
 	yMouseScrollOffset = 0.0f;
 	return theOffset;
+}
+
+void Window::SetVSync(bool enabled)
+{
+	if (enabled)
+		glfwSwapInterval(1);
+	else
+		glfwSwapInterval(0);
+
+	m_VSync = enabled;
+}
+
+bool Window::IsVSync() const
+{
+	return m_VSync;
 }
 
 Window::~Window()

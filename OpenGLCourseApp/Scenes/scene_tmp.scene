@@ -1,19 +1,5 @@
 BeginObject	0
-Position	-0.001000	-0.002000	-0.001000
-Rotation	0.000000	0.000000	0.000000
-Scale	20.000000	1.000000	20.000000
-Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	1
-TextureName	crate
-TilingFactor	0.403000
-IsSelected	0
-ObjectType	mesh
-MeshType	0
-MaterialName	aged_planks
-TilingFactorMaterial	0.256000
-EndObject
-BeginObject	1
-Position	10.000000	0.886000	10.000000
+Position	-1.809999	3.600003	1.837999
 Rotation	0.000000	0.000000	0.000000
 Scale	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
