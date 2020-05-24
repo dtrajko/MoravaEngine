@@ -1,12 +1,16 @@
 #version 330 core
 
-const int MAX_LIGHTS = 4 + 4; // 4 point lights + 4 spot lights
+const int MAX_POINT_LIGHTS = 4;
+const int MAX_SPOT_LIGHTS = 4;
+
+const int MAX_LIGHTS = MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS;
+
+in vec2 vTexCoord;
+in vec3 vNormal;
+in vec3 vPosition;
+in vec3 vFragPos;
 
 out vec4 FragColor;
-
-in vec2 vTexCoords;
-in vec3 vNormal;
-in vec3 vWorldPos;
 
 // material parameters
 uniform sampler2D albedoMap;
@@ -60,12 +64,12 @@ const float PI = 3.14159265359;
 // technique somewhere later in the normal mapping tutorial.
 vec3 getNormalFromMap()
 {
-    vec3 tangentNormal = texture(normalMap, vTexCoords * tilingFactor).xyz * 2.0 - 1.0;
+    vec3 tangentNormal = texture(normalMap, vTexCoord * tilingFactor).xyz * 2.0 - 1.0;
 
-    vec3 Q1  = dFdx(vWorldPos);
-    vec3 Q2  = dFdy(vWorldPos);
-    vec2 st1 = dFdx(vTexCoords * tilingFactor);
-    vec2 st2 = dFdy(vTexCoords * tilingFactor);
+    vec3 Q1  = dFdx(vFragPos);
+    vec3 Q2  = dFdy(vFragPos);
+    vec2 st1 = dFdx(vTexCoord * tilingFactor);
+    vec2 st2 = dFdy(vTexCoord * tilingFactor);
 
     vec3 N   = normalize(vNormal);
     vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
@@ -131,7 +135,7 @@ vec4 CalcLightByDirection(Light light, vec3 direction)
 
 	if (diffuseFactor > 0.0)
 	{
-		vec3 fragToEye = normalize(cameraPosition - vWorldPos);
+		vec3 fragToEye = normalize(cameraPosition - vFragPos);
 		vec3 reflectedVertex = normalize(reflect(direction, normalize(vNormal)));
 	}
 
@@ -142,14 +146,14 @@ vec4 CalcLightByDirection(Light light, vec3 direction)
 void main()
 {
     // material properties
-    vec3 albedo     = pow(texture(albedoMap, vTexCoords * tilingFactor).rgb, vec3(2.2));
-    float metallic  = texture(metallicMap,   vTexCoords * tilingFactor).r;
-    float roughness = texture(roughnessMap,  vTexCoords * tilingFactor).r;
-    float ao = texture(aoMap, vTexCoords * tilingFactor).r;
+    vec3 albedo     = pow(texture(albedoMap, vTexCoord * tilingFactor).rgb, vec3(2.2));
+    float metallic  = texture(metallicMap,   vTexCoord * tilingFactor).r;
+    float roughness = texture(roughnessMap,  vTexCoord * tilingFactor).r;
+    float ao = texture(aoMap, vTexCoord * tilingFactor).r;
 
     // input lighting data
     vec3 N = getNormalFromMap();
-    vec3 V = normalize(cameraPosition - vWorldPos);
+    vec3 V = normalize(cameraPosition - vFragPos);
     vec3 R = reflect(-V, N); 
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0
@@ -165,9 +169,9 @@ void main()
         if (!pointSpotLights[i].enabled) continue;
 
         // calculate per-light radiance
-        vec3 L = normalize(pointSpotLights[i].position - vWorldPos);
+        vec3 L = normalize(pointSpotLights[i].position - vFragPos);
         vec3 H = normalize(V + L);
-        float distance = length(pointSpotLights[i].position - vWorldPos);
+        float distance = length(pointSpotLights[i].position - vFragPos);
 
         // float attenuation = 1.0 / (distance * distance);
         float attenuation =	pointSpotLights[i].exponent * distance * distance +
@@ -237,7 +241,7 @@ void main()
     FragColor = vec4(color , 1.0);
 
     // use a basic color to identify the shader
-	if (vWorldPos.x > 0.0 && vWorldPos.x < 0.1)
+	if (vFragPos.x > 0.0 && vFragPos.x < 0.1)
 	{
 		// FragColor = vec4(1.0, 0.0, 1.0, 1.0);
 	}

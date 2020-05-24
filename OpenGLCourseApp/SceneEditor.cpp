@@ -133,6 +133,7 @@ SceneEditor::SceneEditor()
     m_TilingFactorEdit         = new float(1.0f);
     m_MaterialNameEdit         = new std::string;
     m_TilingFactorMaterialEdit = new float(1.0f);
+    m_DrawScenePivot = true;
 
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
@@ -276,7 +277,7 @@ void SceneEditor::SetupMaterials()
     TextureInfo textureInfoMahoganyFloor = {};
     textureInfoMahoganyFloor.albedo    = "Textures/PBR/mahogany_floor/mahogfloor_basecolor.png";
     textureInfoMahoganyFloor.normal    = "Textures/PBR/mahogany_floor/mahogfloor_normal.png";
-    textureInfoMahoganyFloor.metallic  = "Textures/PBR/metalness.png";
+    textureInfoMahoganyFloor.metallic  = "Textures/PBR/mahogany_floor/mahogfloor_metalness.png";
     textureInfoMahoganyFloor.roughness = "Textures/PBR/mahogany_floor/mahogfloor_roughness.png";
     textureInfoMahoganyFloor.ao        = "Textures/PBR/mahogany_floor/mahogfloor_AO.png";
     materials.insert(std::make_pair("mahogany_floor", new Material(textureInfoMahoganyFloor)));
@@ -733,6 +734,11 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     Bool3 axesEnabled = m_Gizmo->GetAxesEnabled();
 
     ImGui::Separator();
+    ImGui::Text("Cube Maps");
+    ImGui::Checkbox("Use Cube Maps", &m_UseCubeMaps);
+    ImGui::Checkbox("Draw Scene Pivot", &m_DrawScenePivot);
+
+    ImGui::Separator();
     ImGui::Text("Transform Gizmo");
     ImGui::SliderInt("Scene Objects Count", &sceneObjectCount, 0, 100);
     ImGui::Checkbox("Gizmo Active", &gizmoActive);
@@ -764,10 +770,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Text("Select Skybox");
     ImGui::RadioButton("Day",   &m_CurrentSkyboxInt, SKYBOX_DAY);
     ImGui::RadioButton("Night", &m_CurrentSkyboxInt, SKYBOX_NIGHT);
-
-    ImGui::Separator();
-    ImGui::Text("Cube Maps");
-    ImGui::Checkbox("Use Cube Maps", &m_UseCubeMaps);
 
     ImGui::Separator();
     float FOV = GetFOV();
@@ -1267,7 +1269,8 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
     }
 
     m_Grid->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
-    m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+    if (m_DrawScenePivot)
+        m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
 
     // Skybox shaderBackground
     /* Begin backgroundShader */

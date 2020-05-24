@@ -74,6 +74,7 @@ private:
 
 	std::vector<SceneObject*> m_SceneObjects;
 
+	// ImGui variables
 	glm::vec3* m_PositionEdit;
 	glm::vec3* m_RotationEdit;
 	glm::vec3* m_ScaleEdit;
@@ -83,6 +84,7 @@ private:
 	std::string* m_TextureNameEdit;
 	std::string* m_MaterialNameEdit;
 	float* m_TilingFactorMaterialEdit;
+	bool m_DrawScenePivot;
 
 	std::vector<PointSpotLight*> m_PointSpotLights;
 

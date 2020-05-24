@@ -1,14 +1,16 @@
 #version 330 core
 
+const int MAX_POINT_LIGHTS = 4;
+const int MAX_SPOT_LIGHTS = 4;
+
+const int MAX_LIGHTS = MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS;
+
 in vec2 vTexCoord;
 in vec3 vNormal;
 in vec3 vPosition;
 in vec3 vFragPos;
 
 out vec4 FragColor;
-
-const int MAX_POINT_LIGHTS = 4;
-const int MAX_SPOT_LIGHTS = 4;
 
 struct Light
 {

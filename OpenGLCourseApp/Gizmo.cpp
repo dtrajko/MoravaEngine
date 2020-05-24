@@ -131,7 +131,7 @@ void Gizmo::OnMouseRelease(Window& mainWindow, std::vector<SceneObject*>* sceneO
 		{
 			SetActive(true);
 			SetSceneObject(sceneObject);
-			// ToggleMode();
+			ToggleMode();
 		}
 	}
 }
