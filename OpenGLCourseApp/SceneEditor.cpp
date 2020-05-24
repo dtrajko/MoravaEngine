@@ -368,13 +368,13 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     // Switching between scene objects that are currently in focus (mouse over)
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
-        SelectNextFromMultipleObjects(&m_SceneObjects, m_SelectedIndex);
         m_Gizmo->OnMousePress(mainWindow, &m_SceneObjects, m_SelectedIndex);
         m_MouseButton_1_Prev = true;
     }
 
     if (!mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1] && m_MouseButton_1_Prev)
     {
+        SelectNextFromMultipleObjects(&m_SceneObjects, m_SelectedIndex);
         m_Gizmo->OnMouseRelease(mainWindow, &m_SceneObjects, m_SelectedIndex);
         m_MouseButton_1_Prev = false;
     }

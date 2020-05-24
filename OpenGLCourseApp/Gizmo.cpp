@@ -231,7 +231,11 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
 			m_GizmoObjects[i]->so.AABB->m_Color = m_Color_Red;
 			m_GizmoObjects[i]->so.AABB->m_IsColliding = true;
 			intersectingObjectIndex = i;
-			m_AxesEnabled = m_GizmoObjects[i]->axes;
+
+			if (!mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1]) // don't change axes while dragging the gizmo
+			{
+				m_AxesEnabled = m_GizmoObjects[i]->axes;
+			}
 
 			// printf("m_AxesEnabled [ %d %d %d ]\n", m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z);
 			// isIntersectionFound = true;
