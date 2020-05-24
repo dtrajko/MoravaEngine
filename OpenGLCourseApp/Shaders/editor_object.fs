@@ -166,7 +166,11 @@ void main()
 	finalColor += CalcPointLights();
 	finalColor += CalcSpotLights();
 
-	finalColor = vec4(1.0, 1.0, 1.0, 1.0);
-
 	FragColor = texColor * finalColor * tintColor * CubeMapColor;
+
+	// use a basic color to identify the shader
+	if (vFragPos.x > 0.0 && vFragPos.x < 0.1)
+	{
+		// FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+	}
 }

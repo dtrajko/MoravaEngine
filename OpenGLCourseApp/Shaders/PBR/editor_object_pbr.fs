@@ -235,4 +235,10 @@ void main()
     }
 
     FragColor = vec4(color , 1.0);
+
+    // use a basic color to identify the shader
+	if (vWorldPos.x > 0.0 && vWorldPos.x < 0.1)
+	{
+		// FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+	}
 }

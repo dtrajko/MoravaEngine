@@ -932,219 +932,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::End();
 }
 
-void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
-{
-    Shader* shaderEditor     = shaders["editor_object"];
-    Shader* shaderEditorPBR  = shaders["editor_object_PBR"];
-    Shader* shaderBasic      = shaders["basic"];
-    Shader* shaderBackground = shaders["background"];
-
-    // Init shaderEditorPBR
-    // initialize static shader uniforms before rendering
-    shaderEditorPBR->Bind();
-
-    shaderEditorPBR->setInt("irradianceMap", 0);
-    shaderEditorPBR->setInt("prefilterMap",  1);
-    shaderEditorPBR->setInt("brdfLUT",       2);
-    shaderEditorPBR->setInt("albedoMap",     3);
-    shaderEditorPBR->setInt("normalMap",     4);
-    shaderEditorPBR->setInt("metallicMap",   5);
-    shaderEditorPBR->setInt("roughnessMap",  6);
-    shaderEditorPBR->setInt("aoMap",         7);
-    shaderEditorPBR->setMat4("projection", projectionMatrix);
-    shaderEditorPBR->setMat4("view", m_Camera->CalculateViewMatrix());
-    shaderEditorPBR->setVec3("cameraPosition", m_Camera->GetPosition());
-
-    // directional light
-    shaderEditorPBR->setBool("directionalLight.base.enabled", m_LightManager->directionalLight.GetEnabled());
-    shaderEditorPBR->setVec3("directionalLight.base.color", m_LightManager->directionalLight.GetColor());
-    shaderEditorPBR->setFloat("directionalLight.base.ambientIntensity", m_LightManager->directionalLight.GetAmbientIntensity());
-    shaderEditorPBR->setFloat("directionalLight.base.diffuseIntensity", m_LightManager->directionalLight.GetDiffuseIntensity());
-    shaderEditorPBR->setVec3("directionalLight.direction", m_LightManager->directionalLight.GetDirection());
-
-    // printf("Exponent = %.2ff Linear = %.2ff Constant = %.2ff\n", *m_PointLightExponent, *m_PointLightLinear, *m_PointLightConstant);
-
-    // point lights
-    unsigned int lightIndex = 0;
-    for (unsigned int i = 0; i < m_LightManager->pointLightCount; ++i)
-    {
-        lightIndex = 0 + i; // offset for point lights
-        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].enabled",  m_LightManager->pointLights[i].GetEnabled());
-        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position", m_LightManager->pointLights[i].GetPosition());
-        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].color",    m_LightManager->pointLights[i].GetColor());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent", m_LightManager->pointLights[i].GetExponent());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear",   m_LightManager->pointLights[i].GetLinear());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant", m_LightManager->pointLights[i].GetConstant());
-    }
-
-    for (unsigned int i = 0; i < m_LightManager->spotLightCount; ++i)
-    {
-        lightIndex = 4 + i; // offset for point lights
-        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].enabled",  m_LightManager->spotLights[i].GetBasePL()->GetEnabled());
-        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position", m_LightManager->spotLights[i].GetBasePL()->GetPosition());
-        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].color",    m_LightManager->spotLights[i].GetBasePL()->GetColor());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent", m_LightManager->spotLights[i].GetBasePL()->GetExponent());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear",   m_LightManager->spotLights[i].GetBasePL()->GetLinear());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant", m_LightManager->spotLights[i].GetBasePL()->GetConstant());
-    }
-
-    for (auto& object : m_SceneObjects)
-    {
-        shaderEditor->Bind();
-
-        object->transform = Math::CreateTransform(object->position, object->rotation, glm::vec3(1.0f));
-
-        // For meshes that can't be scaled on vertex level
-        if (object->meshType == MESH_TYPE_RING)
-            object->transform = glm::scale(object->transform, object->scale);
-
-        // Quixel Megascans models should be downscaled to 10% of their original size
-        if (object->objectType == "model") {
-            object->transform = glm::scale(object->transform, object->scale);
-            object->transform = glm::scale(object->transform, glm::vec3(0.02f));
-        }
-
-        shaderEditor->setMat4("model", object->transform);
-        shaderEditor->setVec4("tintColor", object->color);
-        shaderEditor->setBool("isSelected", object->isSelected);
-
-        if (object->useTexture && object->textureName != "")
-            textures[object->textureName]->Bind(0);
-        else
-            textures["plain"]->Bind(0);
-
-        shaderEditor->setInt("albedoMap", 0);
-        shaderEditor->setFloat("tilingFactor", object->tilingFactor);
-
-        m_TextureCubeMap->Bind(1);
-        shaderEditor->setInt("cubeMap", 1);
-        shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
-
-        if (object->objectType == "mesh" && object->mesh != nullptr)
-        {
-            if (object->materialName == "" || object->materialName == "none") {
-                // Render with shaderEditor
-                shaderEditor->Bind();
-            }
-            else {
-                // Render with shaderEditorPBR
-                shaderEditorPBR->Bind();
-                shaderEditorPBR->setMat4("model", object->transform);
-                shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
-                m_MaterialWorkflowPBR->BindTextures(0);
-                materials[object->materialName]->BindTextures(3);
-            }
-
-            // Render by shaderEditor OR shaderEditorPBR
-            object->mesh->Render();
-        }
-
-        if (object->objectType == "model" && object->model != nullptr)
-        {
-            // Quixel Megascans model
-            shaderEditorPBR->Bind();
-            shaderEditorPBR->setMat4("model", object->transform);
-            shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
-            m_MaterialWorkflowPBR->BindTextures(0);
-            materials[object->materialName]->BindTextures(3);
-            object->model->RenderModelPBR();
-        }
-
-        object->AABB->Update(object->position, object->rotation, object->scale);
-        object->pivot->Update(object->position, object->scale + 1.0f);
-    }
-
-    // Render spheres on light positions
-    // Directional light (somewhere on pozitive Y axis, at X=0, Z=0)
-    // Render Sphere (Light source)
-    glm::mat4 model;
-
-    textures["plain"]->Bind(0);
-    textures["plain"]->Bind(1);
-    textures["plain"]->Bind(2);
-
-    shaderEditor->Bind();
-
-    shaderEditor->setVec4("tintColor", glm::vec4(1.0f));
-
-    // Directional Light
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().x), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().y), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().z), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    model = glm::scale(model, glm::vec3(0.5f));
-    shaderEditor->setMat4("model", model);
-    if (m_DisplayLightSources)
-        meshes["cone"]->Render();
-
-    // Point lights
-    for (unsigned int i = 0; i < m_LightManager->pointLightCount; i++)
-    {
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, m_LightManager->pointLights[i].GetPosition());
-        model = glm::scale(model, glm::vec3(0.25f));
-        shaderEditor->setMat4("model", model);
-        if (m_DisplayLightSources && m_LightManager->pointLights[i].GetEnabled())
-            meshes["sphere"]->Render();
-    }
-
-    // Spot lights
-    for (unsigned int i = 0; i < m_LightManager->spotLightCount; i++)
-    {
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, m_LightManager->spotLights[i].GetBasePL()->GetPosition());
-        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().x), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().y), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().z), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::scale(model, glm::vec3(0.25f));
-        shaderEditor->setMat4("model", model);
-        if (m_DisplayLightSources && m_LightManager->spotLights[i].GetBasePL()->GetEnabled())
-            meshes["cone"]->Render();
-    }
-
-    // Render gizmo on front of everything (depth mask enabled)w
-    if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
-        m_Gizmo->Render(shaderEditor);
-    /* End of shaderEditor */
-
-    /* Begin of shaderBasic */
-    shaderBasic->Bind();
-    shaderBasic->setMat4("projection", projectionMatrix);
-    shaderBasic->setMat4("view", m_Camera->CalculateViewMatrix());
-
-    if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
-    {
-        shaderBasic->setMat4("model", glm::mat4(1.0f));
-        m_SceneObjects[m_SelectedIndex]->AABB->Draw();
-        m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
-    }
-
-    m_Grid->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
-    m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
-
-    // Skybox shaderBackground
-    /* Begin backgroundShader */
-    {
-        RendererBasic::DisableCulling();
-        Shader* shaderBackground = shaders["background"];
-        // render skybox (render as last to prevent overdraw)
-        shaderBackground->Bind();
-        shaderBackground->setMat4("projection", projectionMatrix);
-        shaderBackground->setMat4("view", m_Camera->CalculateViewMatrix());
-        shaderBackground->setInt("environmentMap", 0);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
-        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap()); // display irradiance map
-        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap()); // display prefilter map
-        m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
-    }
-    /* End backgroundShader */
-}
-
 SceneObject* SceneEditor::CreateNewSceneObject()
 {
     // Add Scene Object here
@@ -1337,6 +1124,169 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
         break;
     }
     return model;
+}
+
+void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
+    std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+{
+    Shader* shaderEditor     = shaders["editor_object"];
+    Shader* shaderEditorPBR  = shaders["editor_object_pbr"];
+    Shader* shaderBasic      = shaders["basic"];
+    Shader* shaderBackground = shaders["background"];
+
+    for (auto& object : m_SceneObjects)
+    {
+        object->transform = Math::CreateTransform(object->position, object->rotation, glm::vec3(1.0f));
+
+        // For meshes that can't be scaled on vertex level
+        if (object->meshType == MESH_TYPE_RING)
+            object->transform = glm::scale(object->transform, object->scale);
+
+        // Quixel Megascans models should be downscaled to 2% of their original size
+        if (object->objectType == "model") {
+            object->transform = glm::scale(object->transform, object->scale);
+            object->transform = glm::scale(object->transform, glm::vec3(0.02f));
+        }
+
+        shaderEditor->Bind();
+        shaderEditor->setMat4("model", object->transform);
+        shaderEditor->setVec4("tintColor", object->color);
+        shaderEditor->setBool("isSelected", object->isSelected);
+
+        if (object->useTexture && object->textureName != "")
+            textures[object->textureName]->Bind(0);
+        else
+            textures["plain"]->Bind(0);
+
+        shaderEditor->setInt("albedoMap", 0);
+        shaderEditor->setFloat("tilingFactor", object->tilingFactor);
+
+        m_TextureCubeMap->Bind(1);
+        shaderEditor->setInt("cubeMap", 1);
+        shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
+
+        if (object->objectType == "mesh" && object->mesh != nullptr)
+        {
+            if (object->materialName == "" || object->materialName == "none") {
+                // Render with shaderEditor
+                shaderEditor->Bind();
+            }
+            else {
+                // Render with shaderEditorPBR
+                shaderEditorPBR->Bind();
+                shaderEditorPBR->setMat4("model", object->transform);
+                shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
+                m_MaterialWorkflowPBR->BindTextures(0);
+                materials[object->materialName]->BindTextures(3);
+            }
+
+            // Render by shaderEditor OR shaderEditorPBR
+            object->mesh->Render();
+        }
+
+        if (object->objectType == "model" && object->model != nullptr)
+        {
+            // Quixel Megascans model
+            shaderEditorPBR->Bind();
+            shaderEditorPBR->setMat4("model", object->transform);
+            shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
+            m_MaterialWorkflowPBR->BindTextures(0);
+            materials[object->materialName]->BindTextures(3);
+            object->model->RenderModelPBR();
+        }
+
+        object->AABB->Update(object->position, object->rotation, object->scale);
+        object->pivot->Update(object->position, object->scale + 1.0f);
+    }
+
+    // Render spheres on light positions
+    // Directional light (somewhere on pozitive Y axis, at X=0, Z=0)
+    // Render Sphere (Light source)
+    glm::mat4 model;
+
+    textures["plain"]->Bind(0);
+    textures["plain"]->Bind(1);
+    textures["plain"]->Bind(2);
+
+    shaderEditor->Bind();
+
+    shaderEditor->setVec4("tintColor", glm::vec4(1.0f));
+
+    // Directional Light
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().x *  90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().y *  90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    model = glm::scale(model, glm::vec3(0.5f));
+    shaderEditor->setMat4("model", model);
+    if (m_DisplayLightSources)
+        meshes["cone"]->Render();
+
+    // Point lights
+    for (unsigned int i = 0; i < m_LightManager->pointLightCount; i++)
+    {
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, m_LightManager->pointLights[i].GetPosition());
+        model = glm::scale(model, glm::vec3(0.25f));
+        shaderEditor->setMat4("model", model);
+        if (m_DisplayLightSources && m_LightManager->pointLights[i].GetEnabled())
+            meshes["sphere"]->Render();
+    }
+
+    // Spot lights
+    for (unsigned int i = 0; i < m_LightManager->spotLightCount; i++)
+    {
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, m_LightManager->spotLights[i].GetBasePL()->GetPosition());
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().x *  90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().y *  90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.25f));
+        shaderEditor->setMat4("model", model);
+        if (m_DisplayLightSources && m_LightManager->spotLights[i].GetBasePL()->GetEnabled())
+            meshes["cone"]->Render();
+    }
+
+    // Render gizmo on front of everything (depth mask enabled)w
+    if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
+        m_Gizmo->Render(shaderEditor);
+    /* End of shaderEditor */
+
+    /* Begin of shaderBasic */
+    shaderBasic->Bind();
+    shaderBasic->setMat4("projection", projectionMatrix);
+    shaderBasic->setMat4("view", m_Camera->CalculateViewMatrix());
+
+    if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
+    {
+        shaderBasic->setMat4("model", glm::mat4(1.0f));
+        m_SceneObjects[m_SelectedIndex]->AABB->Draw();
+        m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+    }
+
+    m_Grid->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+    m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+
+    // Skybox shaderBackground
+    /* Begin backgroundShader */
+    {
+        RendererBasic::DisableCulling();
+        Shader* shaderBackground = shaders["background"];
+        // render skybox (render as last to prevent overdraw)
+        shaderBackground->Bind();
+        shaderBackground->setMat4("projection", projectionMatrix);
+        shaderBackground->setMat4("view", m_Camera->CalculateViewMatrix());
+        shaderBackground->setInt("environmentMap", 0);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap()); // display irradiance map
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap()); // display prefilter map
+        m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
+    }
+    /* End backgroundShader */
 }
 
 void SceneEditor::ResetScene()

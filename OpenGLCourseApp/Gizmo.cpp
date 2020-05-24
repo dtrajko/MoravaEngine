@@ -69,7 +69,7 @@ void Gizmo::SetActive(bool active)
 	}
 
 	if (active && !m_Active)
-		ChangeMode(GIZMO_MODE_NONE);
+		ChangeMode(GIZMO_MODE_TRANSLATE);
 
 	m_Active = active;
 
@@ -127,11 +127,11 @@ void Gizmo::OnMouseRelease(Window& mainWindow, std::vector<SceneObject*>* sceneO
 		if (m_SceneObject != nullptr && mainWindow.getKeys()[GLFW_KEY_TAB])
 			canToggleGizmo = true;
 
-		if (canToggleGizmo)
+		if (canToggleGizmo) // toggle gizmo disabled, only enable allowed
 		{
 			SetActive(true);
 			SetSceneObject(sceneObject);
-			ToggleMode();
+			// ToggleMode();
 		}
 	}
 }

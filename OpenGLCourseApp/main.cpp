@@ -47,6 +47,8 @@ const char* windowTitle = "3D Graphics Engine (C++ / OpenGL)";
 const GLint WIDTH = 1280;
 const GLint HEIGHT = 720;
 const float toRadians = 3.14159265f / 180.0f;
+const float M_PI = 3.14159265358979323846f;
+
 
 Window mainWindow;
 Scene* scene;

@@ -1,47 +1,19 @@
 BeginObject	0
-Position	10.644073	9.989964	-0.268000
-Rotation	0.040000	0.000000	0.000000
-Scale	1.430000	20.079130	19.401981
-Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	1
-ObjectType	mesh
-MeshType	0
-MaterialName	harsh_bricks
-TilingFactorMaterial	0.232000
-EndObject
-BeginObject	1
-Position	-0.021000	10.012028	-10.485051
-Rotation	0.000000	0.000000	0.000000
-Scale	19.944017	20.054064	1.001998
-Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	mesh
-MeshType	0
-MaterialName	harsh_bricks
-TilingFactorMaterial	0.232000
-EndObject
-BeginObject	2
-Position	-0.016000	0.021000	0.012000
+Position	-0.001000	-0.002000	-0.001000
 Rotation	0.000000	0.000000	0.000000
 Scale	20.000000	1.000000	20.000000
 Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
+UseTexture	1
+TextureName	crate
+TilingFactor	0.403000
 IsSelected	0
 ObjectType	mesh
 MeshType	0
 MaterialName	aged_planks
-TilingFactorMaterial	0.253000
+TilingFactorMaterial	0.256000
 EndObject
-BeginObject	3
-Position	-10.000000	0.000000	10.000000
+BeginObject	1
+Position	10.000000	0.886000	10.000000
 Rotation	0.000000	0.000000	0.000000
 Scale	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
@@ -52,33 +24,5 @@ IsSelected	0
 ObjectType	mesh
 MeshType	0
 MaterialName	
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	4
-Position	8.994000	0.440000	0.755000
-Rotation	0.240002	90.814003	0.140000
-Scale	3.003009	3.009064	3.007006
-Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	model
-MeshType	0
-MaterialName	stone_carved
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	5
-Position	7.296000	0.503000	-6.352000
-Rotation	0.000000	-79.653999	0.000000
-Scale	4.042000	4.042000	4.042000
-Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	model
-MeshType	0
-MaterialName	old_stove
 TilingFactorMaterial	1.000000
 EndObject
