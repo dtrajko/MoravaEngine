@@ -390,9 +390,6 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Gizmo.cpp">
-      <Filter>Source Files\Core</Filter>
-    </ClCompile>
     <ClCompile Include="Raycast.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
@@ -404,6 +401,9 @@
     </ClCompile>
     <ClCompile Include="Timer.cpp">
       <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Gizmo.cpp">
+      <Filter>Source Files\Editor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -692,9 +692,6 @@
     <ClInclude Include="Camera.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Gizmo.h">
-      <Filter>Header Files\Core</Filter>
-    </ClInclude>
     <ClInclude Include="MousePicker.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
@@ -712,6 +709,9 @@
     </ClInclude>
     <ClInclude Include="CommonValues.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Gizmo.h">
+      <Filter>Header Files\Editor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

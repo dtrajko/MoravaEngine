@@ -1250,27 +1250,7 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         if (m_DisplayLightSources && m_LightManager->spotLights[i].GetBasePL()->GetEnabled())
             meshes["cone"]->Render();
     }
-
-    // Render gizmo on front of everything (depth mask enabled)w
-    if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
-        m_Gizmo->Render(shaderEditor);
     /* End of shaderEditor */
-
-    /* Begin of shaderBasic */
-    shaderBasic->Bind();
-    shaderBasic->setMat4("projection", projectionMatrix);
-    shaderBasic->setMat4("view", m_Camera->CalculateViewMatrix());
-
-    if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
-    {
-        shaderBasic->setMat4("model", glm::mat4(1.0f));
-        m_SceneObjects[m_SelectedIndex]->AABB->Draw();
-        m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
-    }
-
-    m_Grid->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
-    if (m_DrawScenePivot)
-        m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
 
     // Skybox shaderBackground
     /* Begin backgroundShader */
@@ -1290,6 +1270,26 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
         m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
     }
     /* End backgroundShader */
+
+    /* Begin of shaderBasic */
+    shaderBasic->Bind();
+    shaderBasic->setMat4("projection", projectionMatrix);
+    shaderBasic->setMat4("view", m_Camera->CalculateViewMatrix());
+
+    if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
+    {
+        shaderBasic->setMat4("model", glm::mat4(1.0f));
+        m_SceneObjects[m_SelectedIndex]->AABB->Draw();
+        m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+    }
+
+    m_Grid->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+    if (m_DrawScenePivot)
+        m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+
+    // Render gizmo on front of everything (depth mask enabled)w
+    if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
+        m_Gizmo->Render(shaderEditor);
 }
 
 void SceneEditor::ResetScene()

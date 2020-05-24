@@ -23,6 +23,7 @@ public:
 	static void DisableCulling();
 	static void EnableTransparency();
 	static void DisableTransparency();
+	static void ClearDepthBuffer();
 
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
 	void RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window& mainWindow);

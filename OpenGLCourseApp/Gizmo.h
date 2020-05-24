@@ -60,6 +60,8 @@ private:
 	glm::vec3 m_Rotation;
 	glm::vec3 m_Scale;
 
+	const glm::vec3 m_ScaleGlobal = glm::vec3(0.5f);
+
 	EventCooldown m_MousePress;
 	EventCooldown m_MouseRelease;
 	EventCooldown m_PrintObjects;
