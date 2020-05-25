@@ -5,10 +5,13 @@ const int MAX_SPOT_LIGHTS = 4;
 
 const int MAX_LIGHTS = MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS;
 
+const float shadowIntensity = 0.6;
+
 in vec2 vTexCoord;
 in vec3 vNormal;
 in vec3 vPosition;
 in vec3 vFragPos;
+in vec4 vDirLightSpacePos;
 
 out vec4 FragColor;
 
@@ -23,6 +26,9 @@ uniform sampler2D aoMap;
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
+
+// Directional Light Shadows
+uniform sampler2D shadowMap;
 
 // lights
 struct Light
@@ -124,7 +130,46 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
-vec4 CalcLightByDirection(Light light, vec3 direction)
+float CalcDirectionalShadowFactor(DirectionalLight light)
+{
+	vec3 projCoords = vDirLightSpacePos.xyz / vDirLightSpacePos.w;
+	projCoords = (projCoords * 0.5) + 0.5;
+	
+	float closestDepth = texture(shadowMap, projCoords.xy).r;
+	float currentDepth = projCoords.z;
+
+	vec3 normal = normalize(vNormal);
+	vec3 lightDir = normalize(light.direction);
+
+	float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001);
+	
+	float shadow = 0.0;
+	shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+	// PCF method
+	if (true)
+	{
+		vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+		for (int x = -1; x <= 1; ++x)
+		{
+			for (int y = -1; y <= 1; ++y)
+			{
+				float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+				shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+			}
+		}
+		shadow /= 9.0;
+	}
+
+	if (projCoords.z > 1.0)
+	{
+		shadow = 0.0;
+	}
+
+	return shadow;
+}
+
+vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
 {
 	vec4 ambientColor = vec4(light.color, 1.0) * light.ambientIntensity;
 
@@ -139,7 +184,14 @@ vec4 CalcLightByDirection(Light light, vec3 direction)
 		vec3 reflectedVertex = normalize(reflect(direction, normalize(vNormal)));
 	}
 
-	return ambientColor + diffuseColor + specularColor;
+	return (ambientColor + (1.0 - shadowFactor) * (diffuseColor + specularColor));
+}
+
+vec4 CalcDirectionalLight()
+{
+	float shadowFactor = CalcDirectionalShadowFactor(directionalLight);
+	shadowFactor *= shadowIntensity;
+	return CalcLightByDirection(directionalLight.base, -directionalLight.direction, shadowFactor);
 }
 
 
@@ -234,7 +286,7 @@ void main()
 
     if (directionalLight.base.enabled)
     {
-        vec4 DirLight = CalcLightByDirection(directionalLight.base, directionalLight.direction);
+        vec4 DirLight = CalcDirectionalLight();
         color *= DirLight.xyz;
     }
 

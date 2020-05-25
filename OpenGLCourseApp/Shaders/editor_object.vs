@@ -8,10 +8,13 @@ out vec2 vTexCoord;
 out vec3 vNormal;
 out vec3 vPosition;
 out vec3 vFragPos;
+out vec4 vDirLightSpacePos;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+
+uniform mat4 dirLightTransform;
 
 void main()
 {
@@ -19,5 +22,6 @@ void main()
     vTexCoord = aTexCoord;
     vNormal = mat3(transpose(inverse(model))) * aNormal;
     vFragPos = (model * vec4(aPosition, 1.0)).xyz;
+	vDirLightSpacePos = dirLightTransform * model * vec4(aPosition, 1.0);
     gl_Position = projection * view * model * vec4(aPosition, 1.0);
 }

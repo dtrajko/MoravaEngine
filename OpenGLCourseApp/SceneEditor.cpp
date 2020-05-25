@@ -32,6 +32,8 @@ SceneEditor::SceneEditor()
     sceneSettings.enableSkybox = false;
     sceneSettings.enablePointLights = true;
     sceneSettings.enableSpotLights = true;
+    sceneSettings.enableShadows = true;
+    sceneSettings.enableOmniShadows = false;
 
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
@@ -1204,6 +1206,10 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         shaderEditor->setInt("cubeMap", 1);
         shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
 
+        // Shadows in shaderEditor
+        LightManager::directionalLight.GetShadowMap()->Read(2);
+        shaderEditor->setInt("shadowMap", 2);
+
         if (object->objectType == "mesh" && object->mesh != nullptr)
         {
             if (object->materialName == "" || object->materialName == "none") {
@@ -1217,6 +1223,10 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                 shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
                 m_MaterialWorkflowPBR->BindTextures(0);
                 materials[object->materialName]->BindTextures(3);
+
+                // Shadows in shaderEditorPBR
+                LightManager::directionalLight.GetShadowMap()->Read(8);
+                shaderEditorPBR->setInt("shadowMap", 8);
             }
 
             // Render by shaderEditor OR shaderEditorPBR
@@ -1231,6 +1241,11 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
             m_MaterialWorkflowPBR->BindTextures(0);
             materials[object->materialName]->BindTextures(3);
+
+            // Shadows in shaderEditorPBR
+            LightManager::directionalLight.GetShadowMap()->Read(8);
+            shaderEditorPBR->setInt("shadowMap", 8);
+
             object->model->RenderModelPBR();
         }
 

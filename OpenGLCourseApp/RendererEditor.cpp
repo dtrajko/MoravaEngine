@@ -24,13 +24,13 @@ void RendererEditor::SetUniforms()
 
 void RendererEditor::SetShaders()
 {
-    Shader* shaderEditorObject = new Shader("Shaders/editor_object.vs", "Shaders/editor_object.fs");
-    shaders.insert(std::make_pair("editor_object", shaderEditorObject));
-    printf("RendererEditor: shaderEditorObject compiled [programID=%d]\n", shaderEditorObject->GetProgramID());
+    Shader* shaderEditor = new Shader("Shaders/editor_object.vs", "Shaders/editor_object.fs");
+    shaders.insert(std::make_pair("editor_object", shaderEditor));
+    printf("RendererEditor: shaderEditorObject compiled [programID=%d]\n", shaderEditor->GetProgramID());
 
-    Shader* shaderEditorObjectPBR = new Shader("Shaders/editor_object.vs", "Shaders/PBR/editor_object_pbr.fs");
-    shaders.insert(std::make_pair("editor_object_pbr", shaderEditorObjectPBR));
-    printf("RendererEditor: shaderEditorObjectPBR compiled [programID=%d]\n", shaderEditorObjectPBR->GetProgramID());
+    Shader* shaderEditorPBR = new Shader("Shaders/editor_object.vs", "Shaders/PBR/editor_object_pbr.fs");
+    shaders.insert(std::make_pair("editor_object_pbr", shaderEditorPBR));
+    printf("RendererEditor: shaderEditorObjectPBR compiled [programID=%d]\n", shaderEditorPBR->GetProgramID());
 
     Shader* shaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
     shaders.insert(std::make_pair("basic", shaderBasic));
@@ -40,20 +40,60 @@ void RendererEditor::SetShaders()
     shaders.insert(std::make_pair("background", shaderBackground));
     printf("RendererEditor: shaderBackground compiled [programID=%d]\n", shaderBackground->GetProgramID());
 
-    shaderEditorObjectPBR->Bind();
-    shaderEditorObjectPBR->setInt("irradianceMap", 0);
-    shaderEditorObjectPBR->setInt("prefilterMap",  1);
-    shaderEditorObjectPBR->setInt("brdfLUT",       2);
-    shaderEditorObjectPBR->setInt("albedoMap",     3);
-    shaderEditorObjectPBR->setInt("normalMap",     4);
-    shaderEditorObjectPBR->setInt("metallicMap",   5);
-    shaderEditorObjectPBR->setInt("roughnessMap",  6);
-    shaderEditorObjectPBR->setInt("aoMap",         7);
+    Shader* shaderShadowMap = new Shader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+    shaders.insert(std::make_pair("shadow_map", shaderShadowMap));
+    printf("RendererEditor: shaderShadowMap compiled [programID=%d]\n", shaderShadowMap->GetProgramID());
+
+    Shader* shaderOmniShadowMap = new Shader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+    shaders.insert(std::make_pair("omni_shadow_map", shaderOmniShadowMap));
+    printf("RendererEditor: shaderOmniShadowMap compiled [programID=%d]\n", shaderOmniShadowMap->GetProgramID());
+
+    shaderEditor->Bind();
+    shaderEditor->setInt("albedoMap", 0);
+    shaderEditor->setInt("cubeMap",   1);
+    shaderEditor->setInt("shadowMap", 2);
+
+    shaderEditorPBR->Bind();
+    shaderEditorPBR->setInt("irradianceMap", 0);
+    shaderEditorPBR->setInt("prefilterMap",  1);
+    shaderEditorPBR->setInt("brdfLUT",       2);
+    shaderEditorPBR->setInt("albedoMap",     3);
+    shaderEditorPBR->setInt("normalMap",     4);
+    shaderEditorPBR->setInt("metallicMap",   5);
+    shaderEditorPBR->setInt("roughnessMap",  6);
+    shaderEditorPBR->setInt("aoMap",         7);
+    shaderEditorPBR->setInt("shadowMap",     8);
 }
 
 void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
+    RenderPassShadow(mainWindow, scene, projectionMatrix);
 	RenderPass(mainWindow, scene, projectionMatrix);
+}
+
+void RendererEditor::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+    if (!scene->GetSettings().enableShadows) return;
+
+    Shader* shaderShadowMap = shaders["shadow_map"];
+    shaderShadowMap->Bind();
+
+    DirectionalLight* light = &scene->GetLightManager()->directionalLight;
+    glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
+
+    light->GetShadowMap()->Write();
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_BLEND);
+
+    shaderShadowMap->setMat4("dirLightTransform", light->CalculateLightTransform());
+    shaderShadowMap->Validate();
+
+    DisableCulling();
+    std::string passType = "shadow";
+    scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)

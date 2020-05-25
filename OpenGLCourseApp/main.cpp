@@ -73,7 +73,7 @@ enum class SceneName
 	Editor,
 };
 
-SceneName currentScene = SceneName::Cottage;
+SceneName currentScene = SceneName::Editor;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -88,9 +88,9 @@ int main()
 	mainWindow.Initialize();
 
 	printf("OpenGL Info:\n");
-	printf("   Vendor: %s\n", glGetString(GL_VENDOR));
+	printf("   Vendor: %s\n",   glGetString(GL_VENDOR));
 	printf("   Renderer: %s\n", glGetString(GL_RENDERER));
-	printf("   Version: %s\n", glGetString(GL_VERSION));
+	printf("   Version: %s\n",  glGetString(GL_VERSION));
 
 	switch (currentScene)
 	{
