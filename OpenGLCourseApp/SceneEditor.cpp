@@ -1233,28 +1233,22 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                 }
             }
             else {
-                // Render with shaderEditorPBR
-                shaderEditorPBR->Bind();
-                shaderEditorPBR->setMat4("model", object->transform);
-
                 if (passType == "main")
                 {
-                    // Shadows in shaderEditorPBR
+                    // Render with shaderEditorPBR
                     shaderEditorPBR->Bind();
-
+                    shaderEditorPBR->setMat4("model", object->transform);
+                    shaderEditorPBR->setVec4("tintColor", object->color);
+                    shaderEditorPBR->setBool("isSelected", object->isSelected);
                     shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
+
                     m_MaterialWorkflowPBR->BindTextures(0);
                     materials[object->materialName]->BindTextures(3);
 
+                    // Shadows in shaderEditorPBR
                     LightManager::directionalLight.GetShadowMap()->Read(8);
                     shaderEditorPBR->setInt("shadowMap", 8);
                 }
-            }
-
-            if (passType == "shadow") {
-                shaderShadowMap->Bind();
-                shaderShadowMap->setMat4("model", object->transform);
-                shaderShadowMap->setMat4("dirLightTransform", m_LightManager->directionalLight.CalculateLightTransform());
             }
 
             // Render by shaderEditor OR shaderEditorPBR
@@ -1265,17 +1259,10 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         {
             // Quixel Megascans model
             shaderEditorPBR->Bind();
-            shaderEditorPBR->setMat4("model", object->transform);
             shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
             m_MaterialWorkflowPBR->BindTextures(0);
             materials[object->materialName]->BindTextures(3);
-
-            if (passType == "shadow") {
-                shaderShadowMap->Bind();
-                shaderShadowMap->setMat4("model", object->transform);
-                shaderShadowMap->setMat4("dirLightTransform", m_LightManager->directionalLight.CalculateLightTransform());
-            }
-
+                
             if (passType == "main")
             {
                 // Shadows in shaderEditorPBR
@@ -1283,7 +1270,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                 LightManager::directionalLight.GetShadowMap()->Read(8);
                 shaderEditorPBR->setInt("shadowMap", 8);
             }
-
+        
             object->model->RenderModelPBR();
         }
 
