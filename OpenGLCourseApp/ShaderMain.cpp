@@ -53,7 +53,7 @@ void ShaderMain::SetPointLights(PointLight* pointLights, unsigned int lightCount
 
 	setInt("pointLightCount", lightCount);
 
-	for (int i = 0; i < lightCount; i++)
+	for (int i = 0; i < (int)lightCount; i++)
 	{
 		pointLights[i].UseLight(
 			uniformPointLight[i].uniformEnabled,
@@ -77,7 +77,7 @@ void ShaderMain::SetSpotLights(SpotLight* spotLights, unsigned int lightCount, u
 
 	setInt("spotLightCount", lightCount);
 
-	for (int i = 0; i < lightCount; i++)
+	for (int i = 0; i < (int)lightCount; i++)
 	{
 		spotLights[i].UseLight(
 			uniformSpotLight[i].uniformEnabled,

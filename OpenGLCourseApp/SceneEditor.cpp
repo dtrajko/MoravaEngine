@@ -1193,6 +1193,15 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 
         shaderEditor->Bind();
         shaderEditor->setMat4("model", object->transform);
+        shaderEditor->setMat4("dirLightTransform", m_LightManager->directionalLight.CalculateLightTransform());
+
+        shaderEditorPBR->Bind();
+        shaderEditorPBR->setMat4("model", object->transform);
+        shaderEditorPBR->setMat4("dirLightTransform", m_LightManager->directionalLight.CalculateLightTransform());
+
+        shaderShadowMap->Bind();
+        shaderShadowMap->setMat4("model", object->transform);
+        shaderShadowMap->setMat4("dirLightTransform", m_LightManager->directionalLight.CalculateLightTransform());
 
         if (object->objectType == "mesh" && object->mesh != nullptr)
         {
@@ -1202,6 +1211,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                 {
                     // Render with shaderEditor
                     shaderEditor->Bind();
+                    shaderEditor->setMat4("model", object->transform);
                     shaderEditor->setVec4("tintColor", object->color);
                     shaderEditor->setBool("isSelected", object->isSelected);
 
