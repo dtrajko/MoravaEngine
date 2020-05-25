@@ -67,6 +67,25 @@ void RendererEditor::SetShaders()
 
 void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
+    // Override the Projection matrix (update FOV)
+    if (mainWindow.GetBufferWidth() > 0 && mainWindow.GetBufferHeight() > 0)
+    {
+        projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()),
+            (float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
+            scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+    }
+
+    Shader* shaderEditor = shaders["editor_object"];
+    shaderEditor->Bind();
+    shaderEditor->setMat4("projection", projectionMatrix);
+    shaderEditor->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+
+    Shader* shaderEditorPBR = shaders["editor_object_pbr"];
+    shaderEditorPBR->Bind();
+    shaderEditorPBR->setMat4("projection", projectionMatrix);
+    shaderEditorPBR->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    shaderEditorPBR->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
+
     RenderPassShadow(mainWindow, scene, projectionMatrix);
 	RenderPass(mainWindow, scene, projectionMatrix);
 }
@@ -114,14 +133,6 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     // then before rendering, configure the viewport to the original framebuffer's screen dimensions
     SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
 
-    // Override the Projection matrix (update FOV)
-    if (mainWindow.GetBufferWidth() > 0 && mainWindow.GetBufferHeight() > 0)
-    {
-        projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()),
-            (float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
-            scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
-    }
-
     EnableTransparency();
     EnableCulling();
 
@@ -129,8 +140,6 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     Shader* shaderEditor = shaders["editor_object"];
 
     shaderEditor->Bind();
-    shaderEditor->setMat4("projection", projectionMatrix);
-    shaderEditor->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
 
     // Directional Light
     shaderEditor->setBool( "directionalLight.base.enabled", scene->GetLightManager()->directionalLight.GetEnabled());
@@ -220,10 +229,6 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     // Init shaderEditorPBR
     // initialize static shader uniforms before rendering
     shaderEditorPBR->Bind();
-
-    shaderEditorPBR->setMat4("projection", projectionMatrix);
-    shaderEditorPBR->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
-    shaderEditorPBR->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
 
     // directional light
     shaderEditorPBR->setBool( "directionalLight.base.enabled", scene->GetLightManager()->directionalLight.GetEnabled());

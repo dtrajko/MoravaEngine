@@ -53,7 +53,7 @@ void ShaderMain::SetPointLights(PointLight* pointLights, unsigned int lightCount
 
 	setInt("pointLightCount", lightCount);
 
-	for (unsigned int i = 0; i < lightCount; i++)
+	for (int i = 0; i < lightCount; i++)
 	{
 		pointLights[i].UseLight(
 			uniformPointLight[i].uniformEnabled,
@@ -77,7 +77,7 @@ void ShaderMain::SetSpotLights(SpotLight* spotLights, unsigned int lightCount, u
 
 	setInt("spotLightCount", lightCount);
 
-	for (unsigned int i = 0; i < lightCount; i++)
+	for (int i = 0; i < lightCount; i++)
 	{
 		spotLights[i].UseLight(
 			uniformSpotLight[i].uniformEnabled,
@@ -120,7 +120,7 @@ void ShaderMain::GetUniformLocations()
 		char locBuff[100] = { '\0' };
 
 		snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.enabled", i);
-		uniformSpotLight[i].uniformColor = glGetUniformLocation(programID, locBuff);
+		uniformPointLight[i].uniformEnabled = glGetUniformLocation(programID, locBuff);
 
 		snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.color", i);
 		uniformPointLight[i].uniformColor = glGetUniformLocation(programID, locBuff);
@@ -149,7 +149,7 @@ void ShaderMain::GetUniformLocations()
 		char locBuff[100] = { '\0' };
 
 		snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.enabled", i);
-		uniformSpotLight[i].uniformColor = glGetUniformLocation(programID, locBuff);
+		uniformSpotLight[i].uniformEnabled = glGetUniformLocation(programID, locBuff);
 
 		snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.color", i);
 		uniformSpotLight[i].uniformColor = glGetUniformLocation(programID, locBuff);

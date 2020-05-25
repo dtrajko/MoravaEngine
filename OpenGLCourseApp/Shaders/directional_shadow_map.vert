@@ -1,12 +1,12 @@
 #version 330
 
-layout (location = 0) in vec3 pos;
+layout (location = 0) in vec3 aPosition;
 
 uniform mat4 model;
-uniform mat4 directionalLightTransform;
+uniform mat4 dirLightTransform;
 
 
 void main()
 {
-	gl_Position = directionalLightTransform * model * vec4(pos, 1.0);
+	gl_Position = dirLightTransform * model * vec4(aPosition, 1.0);
 }

@@ -22,7 +22,7 @@ void RendererPBR::SetUniforms()
 	uniforms.insert(std::make_pair("projection", 0));
 	uniforms.insert(std::make_pair("nearPlane", 0));
 	uniforms.insert(std::make_pair("farPlane", 0));
-	uniforms.insert(std::make_pair("directionalLightTransform", 0));
+	uniforms.insert(std::make_pair("dirLightTransform", 0));
 	uniforms.insert(std::make_pair("normalMap", 0));
 	uniforms.insert(std::make_pair("lightPosition", 0));
 
@@ -126,7 +126,7 @@ void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 project
 	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
 	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
 	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
-	shaderMain->setMat4("directionalLightTransform", LightManager::directionalLight.CalculateLightTransform());
+	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
 	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
 	shaderMain->setInt("theTexture", scene->GetTextureSlots()["diffuse"]);

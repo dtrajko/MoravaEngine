@@ -9,13 +9,13 @@ layout (location = 4) in vec3 aBitangent;
 out vec2 TexCoords;
 out vec3 Normal;
 out vec3 FragPos;
-out vec4 DirectionalLightSpacePos;
+out vec4 DirLightSpacePos;
 out mat3 TBN;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform mat4 directionalLightTransform;
+uniform mat4 dirLightTransform;
 uniform vec4 clipPlane;
 
 
@@ -28,7 +28,7 @@ void main()
 	vec4 WorldPosition = model * vec4(aPos, 1.0);
 	gl_ClipDistance[0] = dot(WorldPosition, clipPlane);
 
-	DirectionalLightSpacePos = directionalLightTransform * model * vec4(aPos, 1.0);
+	DirLightSpacePos = dirLightTransform * model * vec4(aPos, 1.0);
 	
 	mat3 modelVector = transpose(inverse(mat3(model)));
 

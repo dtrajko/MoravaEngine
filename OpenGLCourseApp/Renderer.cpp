@@ -24,7 +24,7 @@ void Renderer::SetUniforms()
 	uniforms.insert(std::make_pair("projection", 0));
 	uniforms.insert(std::make_pair("nearPlane", 0));
 	uniforms.insert(std::make_pair("farPlane", 0));
-	uniforms.insert(std::make_pair("directionalLightTransform", 0));
+	uniforms.insert(std::make_pair("dirLightTransform", 0));
 	uniforms.insert(std::make_pair("normalMap", 0));
 	uniforms.insert(std::make_pair("lightPosition", 0));
 
@@ -142,7 +142,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
 	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
 	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
-	shaderMain->setMat4("directionalLightTransform", LightManager::directionalLight.CalculateLightTransform());
+	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
 	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
 	shaderMain->setInt("theTexture", scene->GetTextureSlots()["diffuse"]);
@@ -223,7 +223,7 @@ void Renderer::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 proj
 	glDisable(GL_BLEND);
 
 	uniforms["model"] = shaders["directionalShadow"]->GetUniformLocation("model");
-	shaders["directionalShadow"]->setMat4("directionalLightTransform", light->CalculateLightTransform());
+	shaders["directionalShadow"]->setMat4("dirLightTransform", light->CalculateLightTransform());
 	shaders["directionalShadow"]->Validate();
 
 	DisableCulling();
@@ -326,7 +326,7 @@ void Renderer::RenderPassWaterReflection(Window& mainWindow, Scene* scene, glm::
 	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
 	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
 	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
-	shaderMain->setMat4("directionalLightTransform", LightManager::directionalLight.CalculateLightTransform());
+	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
 	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
 	shaderMain->setInt("theTexture", scene->GetTextureSlots()["diffuse"]);
@@ -371,7 +371,7 @@ void Renderer::RenderPassWaterRefraction(Window& mainWindow, Scene* scene, glm::
 	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
 	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
 	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
-	shaderMain->setMat4("directionalLightTransform", LightManager::directionalLight.CalculateLightTransform());
+	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
 	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
 	shaderMain->setInt("theTexture", scene->GetTextureSlots()["diffuse"]);
