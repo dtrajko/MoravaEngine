@@ -12,6 +12,12 @@ Shader::Shader(const char* vertexLocation, const char* fragmentLocation)
 	CreateFromFiles(vertexLocation, fragmentLocation);
 }
 
+Shader::Shader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation)
+	: Shader()
+{
+	CreateFromFiles(vertexLocation, geometryLocation, fragmentLocation);
+}
+
 void Shader::CreateFromString(const char* vertexCode, const char* fragmentCode)
 {
 	CompileShader(vertexCode, fragmentCode);

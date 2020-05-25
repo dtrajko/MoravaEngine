@@ -98,7 +98,7 @@ void SceneParticles::UpdateImGui(float timestep, Window& mainWindow, std::map<co
     // ImGui::End();
 }
 
-void SceneParticles::Render(glm::mat4 projectionMatrix, std::string passType,
+void SceneParticles::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
     Shader* shaderFBScene = shaders["framebuffers_scene"];

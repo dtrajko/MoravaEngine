@@ -73,7 +73,7 @@ void SceneAsteroids::UpdateImGui(float timestep, Window& mainWindow, std::map<co
 	ImGui::End();
 }
 
-void SceneAsteroids::Render(glm::mat4 projectionMatrix, std::string passType,
+void SceneAsteroids::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 }

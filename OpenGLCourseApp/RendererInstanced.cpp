@@ -115,7 +115,7 @@ void RendererInstanced::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	glBindVertexArray(0);
 
 	std::string passType = "main";
-	scene->Render(projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 }
 
 RendererInstanced::~RendererInstanced()

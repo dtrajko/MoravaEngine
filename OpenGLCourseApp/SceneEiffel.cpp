@@ -125,7 +125,7 @@ void SceneEiffel::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 	m_LightManager->directionalLight.SetColor(m_LightColor);
 }
 
-void SceneEiffel::Render(glm::mat4 projectionMatrix, std::string passType,
+void SceneEiffel::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];

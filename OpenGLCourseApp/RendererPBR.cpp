@@ -142,7 +142,7 @@ void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 project
 	std::string passType = "main";
 
 	EnableCulling();
-	scene->Render(projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 
 	shaderMain->Unbind();
 
@@ -203,7 +203,7 @@ void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 project
 	shaderPBR->setVec3("camPos", scene->GetCamera()->GetPosition());
 
 	DisableCulling();
-	scene->Render(projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 }
 
 RendererPBR::~RendererPBR()

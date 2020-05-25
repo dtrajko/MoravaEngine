@@ -203,7 +203,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     glDepthFunc(GL_LESS); // set depth function back to default
        
     std::string passType = "main";
-    scene->Render(projectionMatrix, passType, shaders, uniforms);
+    scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 }
 
 RendererCubemaps::~RendererCubemaps()

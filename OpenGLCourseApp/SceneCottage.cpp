@@ -239,7 +239,7 @@ void SceneCottage::UpdateImGui(float timestep, Window& mainWindow, std::map<cons
 	m_LightManager->pointLights[2].SetExponent(        pointLights[2].exponent);
 }
 
-void SceneCottage::Render(glm::mat4 projectionMatrix, std::string passType,
+void SceneCottage::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	glm::mat4 sceneOrigin = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));

@@ -243,7 +243,7 @@ void SceneJoey::UpdateImGui(float timestep, Window& mainWindow, std::map<const c
 	m_LightColors[3] = m_LightColorsNormal[3] * 255.0f;
 }
 
-void SceneJoey::Render(glm::mat4 projectionMatrix, std::string passType,
+void SceneJoey::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	glm::mat4 model;

@@ -77,7 +77,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
 
 	std::string passType = "main";
-	scene->Render(projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 }
 
 void RendererJoey::RenderPass()

@@ -144,7 +144,7 @@ void SceneSponza::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 	m_LightManager->pointLights[2].SetDiffuseIntensity(PL2_DiffIntensity);
 }
 
-void SceneSponza::Render(glm::mat4 projectionMatrix, std::string passType,
+void SceneSponza::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	/* Sponza scene */

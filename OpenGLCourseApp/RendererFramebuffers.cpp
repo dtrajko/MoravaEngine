@@ -87,7 +87,7 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 
 	{
 		std::string passType = "main";
-		scene->Render(projectionMatrix, passType, shaders, uniforms);
+		scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 	}
 
 	{

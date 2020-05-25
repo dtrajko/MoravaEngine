@@ -38,7 +38,7 @@ public:
 	SceneEditor();
 	virtual void Update(float timestep, Window& mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults) override;
-	virtual void Render(glm::mat4 projectionMatrix, std::string passType,
+	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
 	void SetGeometry();
 	void CleanupGeometry();
@@ -98,14 +98,18 @@ private:
 	bool m_MouseButton_1_Prev; // previous state of GLFW_MOUSE_BUTTON_1
 
 	// add object cooldown
-	float m_CurrentTimestamp = 0.0f;
-	EventCooldown m_ObjectSelect = { 0.0f, 0.2f };
-	EventCooldown m_ObjectAdd = { 0.0f, 1.0f };
-	EventCooldown m_ObjectCopy = { 0.0f, 1.0f };
-	EventCooldown m_ObjectDelete = { 0.0f, 1.0f };
-	EventCooldown m_SceneSave = { 0.0f, 1.0f };
-	EventCooldown m_SceneLoad = { 0.0f, 1.0f };
-	EventCooldown m_SceneReset = { 0.0f, 1.0f };
+	float m_CurrentTimestamp;
+
+	EventCooldown m_ObjectSelect;
+	EventCooldown m_ObjectAdd;
+	EventCooldown m_ObjectCopy;
+	EventCooldown m_ObjectDelete;
+	EventCooldown m_SceneSave;
+	EventCooldown m_SceneLoad;
+	EventCooldown m_SceneReset;
+	EventCooldown m_ProjectionChange;
+
+	bool m_OrthographicViewEnabled;
 
 	glm::vec3 defaultSpawnPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 	const char* m_SceneFilename = "Scenes/scene_tmp.scene";

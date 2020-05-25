@@ -112,7 +112,7 @@ void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 	sceneNanosuit->GetMeshesJoey()["cube"]->Draw(shaderNanosuit);
 
 	std::string passType = "main";
-	scene->Render(projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 }
 
 RendererNanosuit::~RendererNanosuit()

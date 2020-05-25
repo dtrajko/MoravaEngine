@@ -3,6 +3,7 @@
 #include "SceneParticles.h"
 #include "MousePicker.h"
 #include "GeometryFactory.h"
+#include "Timer.h"
 
 #include <stdexcept>
 
@@ -34,10 +35,6 @@ void RendererEditor::SetShaders()
     Shader* shaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
     shaders.insert(std::make_pair("basic", shaderBasic));
     printf("RendererEditor: shaderBasic compiled [programID=%d]\n", shaderBasic->GetProgramID());
-
-    Shader* shaderFramebuffersScene = new Shader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
-    shaders.insert(std::make_pair("framebuffers_scene", shaderFramebuffersScene));
-    printf("RendererEditor: shaderFramebuffersScene compiled [programID=%d]\n", shaderFramebuffersScene->GetProgramID());
 
     Shader* shaderBackground = new Shader("Shaders/learnopengl/2.2.2.background.vs", "Shaders/learnopengl/2.2.2.background.fs");
     shaders.insert(std::make_pair("background", shaderBackground));
@@ -232,7 +229,7 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     }
 
     std::string passType = "main";
-    scene->Render(projectionMatrix, passType, shaders, uniforms);
+    scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 }
 
 RendererEditor::~RendererEditor()

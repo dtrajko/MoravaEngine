@@ -1,5 +1,7 @@
 #include "SceneEditor.h"
 
+#include "glm/gtc/matrix_transform.hpp"
+
 #include "ImGuiWrapper.h"
 #include "MousePicker.h"
 #include "Block.h"
@@ -108,6 +110,19 @@ SceneEditor::SceneEditor()
     // Initialize the PBR/IBL Material Workflow component
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
     m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
+
+    m_CurrentTimestamp = 0.0f;
+
+    m_ObjectSelect     = { 0.0f, 0.2f };
+    m_ObjectAdd        = { 0.0f, 1.0f };
+    m_ObjectCopy       = { 0.0f, 1.0f };
+    m_ObjectDelete     = { 0.0f, 1.0f };
+    m_SceneSave        = { 0.0f, 1.0f };
+    m_SceneLoad        = { 0.0f, 1.0f };
+    m_SceneReset       = { 0.0f, 1.0f };
+    m_ProjectionChange = { 0.0f, 0.5f };
+
+    m_OrthographicViewEnabled = false;
 
     m_SelectedIndex = 0;
 
@@ -737,6 +752,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Text("Cube Maps");
     ImGui::Checkbox("Use Cube Maps", &m_UseCubeMaps);
     ImGui::Checkbox("Draw Scene Pivot", &m_DrawScenePivot);
+    ImGui::Checkbox("Orthographic View", &m_OrthographicViewEnabled);
 
     ImGui::Separator();
     ImGui::Text("Transform Gizmo");
@@ -1128,9 +1144,30 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
     return model;
 }
 
-void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
+void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
+    /**** Begin switch projection/orthographic view ****/
+    if (mainWindow.getKeys()[GLFW_KEY_O])
+    {
+        if (Timer::Get()->GetCurrentTimestamp() - m_ProjectionChange.lastTime > m_ProjectionChange.cooldown)
+        {
+            m_OrthographicViewEnabled = !m_OrthographicViewEnabled;
+            m_ProjectionChange.lastTime = Timer::Get()->GetCurrentTimestamp();
+        }
+    }
+
+    if (m_OrthographicViewEnabled)
+    {
+        float left   = -(float)mainWindow.GetBufferWidth()  / 2.0f / m_FOV;
+        float right  =  (float)mainWindow.GetBufferWidth()  / 2.0f / m_FOV;
+        float bottom = -(float)mainWindow.GetBufferHeight() / 2.0f / m_FOV;
+        float top    =  (float)mainWindow.GetBufferHeight() / 2.0f / m_FOV;
+
+        projectionMatrix = glm::ortho(left, right, bottom, top, sceneSettings.nearPlane, sceneSettings.farPlane);
+    }
+    /**** End switch projection/orthographic view ****/
+
     Shader* shaderEditor     = shaders["editor_object"];
     Shader* shaderEditorPBR  = shaders["editor_object_pbr"];
     Shader* shaderBasic      = shaders["basic"];
@@ -1289,7 +1326,9 @@ void SceneEditor::Render(glm::mat4 projectionMatrix, std::string passType,
 
     // Render gizmo on front of everything (depth mask enabled)w
     if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
+    {
         m_Gizmo->Render(shaderEditor);
+    }
 }
 
 void SceneEditor::ResetScene()

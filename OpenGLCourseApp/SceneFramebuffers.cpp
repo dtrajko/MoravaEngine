@@ -66,7 +66,7 @@ void SceneFramebuffers::UpdateImGui(float timestep, Window& mainWindow, std::map
 	ImGui::End();
 }
 
-void SceneFramebuffers::Render(glm::mat4 projectionMatrix, std::string passType,
+void SceneFramebuffers::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	shaders["framebuffers_scene"]->Bind();

@@ -173,7 +173,7 @@ void ScenePBR::UpdateImGui(float timestep, Window& mainWindow, std::map<const ch
 	m_LightColors[3] = m_LightColor_3 * 255.0f;
 }
 
-void ScenePBR::Render(glm::mat4 projectionMatrix, std::string passType,
+void ScenePBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(shaders["pbr"]);

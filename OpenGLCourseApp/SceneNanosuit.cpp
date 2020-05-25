@@ -128,7 +128,7 @@ void SceneNanosuit::UpdateImGui(float timestep, Window& mainWindow, std::map<con
 	ImGui::End();
 }
 
-void SceneNanosuit::Render(glm::mat4 projectionMatrix, std::string passType,
+void SceneNanosuit::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 }

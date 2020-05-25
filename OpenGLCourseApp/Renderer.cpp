@@ -100,9 +100,9 @@ void Renderer::SetShaders()
 
 void Renderer::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	RenderPassShadow(scene, projectionMatrix);
-	RenderOmniShadows(scene, projectionMatrix);
-	RenderWaterEffects(deltaTime, scene, projectionMatrix);
+	RenderPassShadow(mainWindow, scene, projectionMatrix);
+	RenderOmniShadows(mainWindow, scene, projectionMatrix);
+	RenderWaterEffects(deltaTime, mainWindow, scene, projectionMatrix);
 	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
@@ -159,7 +159,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	std::string passType = "main";
 
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
-	scene->Render(projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 
 	shaderMain->Unbind();
 
@@ -208,7 +208,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	shaderWater->Unbind();
 }
 
-void Renderer::RenderPassShadow(Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	if (!scene->GetSettings().enableShadows) return;
 
@@ -228,23 +228,23 @@ void Renderer::RenderPassShadow(Scene* scene, glm::mat4 projectionMatrix)
 
 	DisableCulling();
 	std::string passType = "shadow";
-	scene->Render(projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::RenderOmniShadows(Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	if (!scene->GetSettings().enableOmniShadows) return;
 
 	for (size_t i = 0; i < LightManager::pointLightCount; i++)
-		Renderer::RenderPassOmniShadow(&LightManager::pointLights[i], scene, projectionMatrix);
+		Renderer::RenderPassOmniShadow(&LightManager::pointLights[i], mainWindow, scene, projectionMatrix);
 
 	for (size_t i = 0; i < LightManager::spotLightCount; i++)
-		Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], scene, projectionMatrix);
+		Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], mainWindow, scene, projectionMatrix);
 }
 
-void Renderer::RenderPassOmniShadow(PointLight* light, Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderPassOmniShadow(PointLight* light, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	shaders["omniShadow"]->Bind();
 
@@ -266,12 +266,12 @@ void Renderer::RenderPassOmniShadow(PointLight* light, Scene* scene, glm::mat4 p
 
 	EnableCulling();
 	std::string passType = "shadow";
-	scene->Render(projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::RenderWaterEffects(float deltaTime, Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderWaterEffects(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	if (!scene->GetSettings().enableWaterEffects) return;
 
@@ -286,15 +286,15 @@ void Renderer::RenderWaterEffects(float deltaTime, Scene* scene, glm::mat4 proje
 	scene->GetCamera()->SetPosition(glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y - distance, scene->GetCamera()->GetPosition().z));
 	scene->GetCamera()->InvertPitch();
 
-	Renderer::RenderPassWaterReflection(scene, projectionMatrix);
+	Renderer::RenderPassWaterReflection(mainWindow, scene, projectionMatrix);
 
 	scene->GetCamera()->SetPosition(glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y + distance, scene->GetCamera()->GetPosition().z));
 	scene->GetCamera()->InvertPitch();
 
-	Renderer::RenderPassWaterRefraction(scene, projectionMatrix);
+	Renderer::RenderPassWaterRefraction(mainWindow, scene, projectionMatrix);
 }
 
-void Renderer::RenderPassWaterReflection(Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderPassWaterReflection(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glViewport(0, 0, scene->GetWaterManager()->GetFramebufferWidth(), scene->GetWaterManager()->GetFramebufferHeight());
 
@@ -337,12 +337,12 @@ void Renderer::RenderPassWaterReflection(Scene* scene, glm::mat4 projectionMatri
 
 	EnableCulling();
 	std::string passType ="water";
-	scene->Render(projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::RenderPassWaterRefraction(Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderPassWaterRefraction(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glViewport(0, 0, scene->GetWaterManager()->GetFramebufferWidth(), scene->GetWaterManager()->GetFramebufferHeight());
 
@@ -381,7 +381,7 @@ void Renderer::RenderPassWaterRefraction(Scene* scene, glm::mat4 projectionMatri
 	shaderMain->Validate();
 
 	std::string passType = "water";
-	scene->Render(projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

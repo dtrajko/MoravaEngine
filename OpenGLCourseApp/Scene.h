@@ -139,7 +139,7 @@ public:
 	Scene();
 	virtual void Update(float timestep, Window& mainWindow) = 0;
 	virtual void UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults) = 0;
-	virtual void Render(glm::mat4 projectionMatrix, std::string passType,
+	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) = 0;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) {};
@@ -177,6 +177,8 @@ private:
 protected:
 	static SceneSettings sceneSettings;
 
+	float m_FOV = 60.0f;
+
 	Camera* m_Camera;
 	Skybox* m_Skybox;
 	std::vector<std::string> skyboxFaces;
@@ -203,5 +205,4 @@ private:
 
 	bool m_WireframeEnabled;
 
-	float m_FOV = 60.0f;
 };

@@ -134,7 +134,7 @@ void SceneCubemaps::UpdateImGui(float timestep, Window& mainWindow, std::map<con
     // m_LightManager->directionalLight.SetColor(dirLightColor);
 }
 
-void SceneCubemaps::Render(glm::mat4 projectionMatrix, std::string passType,
+void SceneCubemaps::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
 }
