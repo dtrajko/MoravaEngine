@@ -1214,19 +1214,19 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                     shaderEditor->setMat4("model", object->transform);
                     shaderEditor->setVec4("tintColor", object->color);
                     shaderEditor->setBool("isSelected", object->isSelected);
-
+                    
                     if (object->useTexture && object->textureName != "")
                         textures[object->textureName]->Bind(0);
                     else
                         textures["plain"]->Bind(0);
-
+                    
                     shaderEditor->setInt("albedoMap", 0);
                     shaderEditor->setFloat("tilingFactor", object->tilingFactor);
-
+                    
                     m_TextureCubeMap->Bind(1);
                     shaderEditor->setInt("cubeMap", 1);
                     shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
-
+                    
                     // Shadows in shaderEditor
                     LightManager::directionalLight.GetShadowMap()->Read(2);
                     shaderEditor->setInt("shadowMap", 2);
@@ -1240,11 +1240,12 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                     shaderEditorPBR->setMat4("model", object->transform);
                     shaderEditorPBR->setVec4("tintColor", object->color);
                     shaderEditorPBR->setBool("isSelected", object->isSelected);
-                    shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
-
+                    shaderEditorPBR->setFloat("tilingFactor", 1.0f);
+                    // shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
+                    
                     m_MaterialWorkflowPBR->BindTextures(0);
                     materials[object->materialName]->BindTextures(3);
-
+                    
                     // Shadows in shaderEditorPBR
                     LightManager::directionalLight.GetShadowMap()->Read(8);
                     shaderEditorPBR->setInt("shadowMap", 8);
