@@ -66,7 +66,7 @@ uniform PointSpotLight pointSpotLights[MAX_LIGHTS];
 
 uniform Material material;
 
-uniform vec3 cameraPosition;
+uniform vec3 eyePosition; // same as cameraPosition
 uniform float tilingFactor;
 
 const float PI = 3.14159265359;
@@ -181,27 +181,33 @@ vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
 {
 	vec4 ambientColor = vec4(light.color, 1.0) * light.ambientIntensity;
 
-    float diffuseFactor = max(dot(normalize(vNormal), normalize(direction)), 0.0);
+	float diffuseFactor = max(dot(normalize(vNormal), normalize(direction)), 0.0);
 	vec4 diffuseColor = vec4(light.color, 1.0) * light.diffuseIntensity * diffuseFactor;
 
 	vec4 specularColor = vec4(0.0, 0.0, 0.0, 0.0);
 
 	if (diffuseFactor > 0.0)
 	{
-		vec3 fragToEye = normalize(cameraPosition - vFragPos);
+		vec3 fragToEye = normalize(eyePosition - vFragPos);
 		vec3 reflectedVertex = normalize(reflect(direction, normalize(vNormal)));
+
+		float specularFactor = dot(fragToEye, reflectedVertex);
+		if (specularFactor > 0.0)
+		{
+			specularFactor = pow(specularFactor, material.shininess);
+			specularColor = vec4(light.color * material.specularIntensity * specularFactor, 1.0f);
+		}
 	}
 
-	return (ambientColor + diffuseColor * (1.0 - shadowFactor));
+	return (ambientColor + (1.0 - shadowFactor) * (diffuseColor + specularColor));
 }
 
-vec4 CalcDirectionalLight()
+vec4 CalcDirectionalLight(vec4 color)
 {
 	float shadowFactor = CalcDirectionalShadowFactor(directionalLight);
 	shadowFactor *= shadowIntensity;
-	return CalcLightByDirection(directionalLight.base, -directionalLight.direction, shadowFactor);
+	return color * CalcLightByDirection(directionalLight.base, -directionalLight.direction, shadowFactor);
 }
-
 
 void main()
 {
@@ -213,7 +219,7 @@ void main()
 
     // input lighting data
     vec3 N = getNormalFromMap();
-    vec3 V = normalize(cameraPosition - vFragPos);
+    vec3 V = normalize(eyePosition - vFragPos);
     vec3 R = reflect(-V, N); 
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0
@@ -294,8 +300,7 @@ void main()
 
     if (directionalLight.base.enabled)
     {
-        vec4 DirLight = CalcDirectionalLight();
-        color *= DirLight.xyz;
+        color = CalcDirectionalLight(vec4(color, 1.0)).rgb;
     }
 
     FragColor = vec4(color , 1.0);

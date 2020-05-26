@@ -88,7 +88,7 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     shaderEditorPBR->Bind();
     shaderEditorPBR->setMat4("projection", projectionMatrix);
     shaderEditorPBR->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
-    shaderEditorPBR->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
+    shaderEditorPBR->setVec3("eyePosition", scene->GetCamera()->GetPosition());
 
     Shader* shaderGizmo = shaders["gizmo"];
     shaderGizmo->Bind();

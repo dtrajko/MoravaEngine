@@ -1262,16 +1262,23 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         if (object->objectType == "model" && object->model != nullptr)
         {
             // Quixel Megascans model
-            shaderEditorPBR->Bind();
-            shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
-            m_MaterialWorkflowPBR->BindTextures(0);
-            materials[object->materialName]->BindTextures(3);
-                
             if (passType == "main")
             {
-                // Shadows in shaderEditorPBR
                 shaderEditorPBR->Bind();
-                LightManager::directionalLight.GetShadowMap()->Read(8);
+
+                shaderEditorPBR->setMat4("model", object->transform);
+                shaderEditorPBR->setVec4("tintColor", object->color);
+                shaderEditorPBR->setBool("isSelected", object->isSelected);
+                shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
+
+                shaderEditorPBR->setFloat("material.specularIntensity", m_MaterialSpecular); // TODO - use material attribute
+                shaderEditorPBR->setFloat("material.shininess", m_MaterialShininess);        // TODO - use material attribute
+
+                m_MaterialWorkflowPBR->BindTextures(0);                 // texture slots 0, 1, 2
+                materials[object->materialName]->BindTextures(3);       // texture slots 3, 4, 5, 6, 7
+                
+                // Shadows in shaderEditorPBR
+                LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
                 shaderEditorPBR->setInt("shadowMap", 8);
             }
         
@@ -1375,9 +1382,9 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         shaderEditor->setMat4("model", model);
         LightManager::directionalLight.GetShadowMap()->Read(0);
         shaderEditor->setInt("shadowMap", 0);
-        m_Quad->Render();
+        // m_Quad->Render();
 
-        // Render gizmo on front of everything (depth mask enabled)w
+        // Render gizmo on front of everything (depth mask enabled)
         if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
         {
             m_Gizmo->Render(shaderGizmo);
