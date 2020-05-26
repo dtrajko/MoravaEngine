@@ -21,6 +21,11 @@ const int ACTION_ADD_MODEL = 1;
 const int MODEL_STONE_CARVED = 0;
 const int MODEL_OLD_STOVE    = 1;
 
+const int PBR_MAP_ENVIRONMENT = 0;
+const int PBR_MAP_IRRADIANCE  = 1;
+const int PBR_MAP_PREFILTER   = 2;
+
+
 struct PointSpotLight
 {
 	bool enabled;
@@ -85,6 +90,7 @@ private:
 	std::string* m_MaterialNameEdit;
 	float* m_TilingFactorMaterialEdit;
 	bool m_DrawScenePivot;
+	int m_PBR_Map_Edit;
 
 	float m_MaterialSpecular = 1.0f;
 	float m_MaterialShininess = 256.0f;

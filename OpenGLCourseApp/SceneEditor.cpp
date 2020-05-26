@@ -151,6 +151,7 @@ SceneEditor::SceneEditor()
     m_MaterialNameEdit         = new std::string;
     m_TilingFactorMaterialEdit = new float(1.0f);
     m_DrawScenePivot = true;
+    m_PBR_Map_Edit = 0;
 
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
@@ -793,6 +794,10 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Separator();
     ImGui::Text("Cube Maps");
     ImGui::Checkbox("Use Cube Maps", &m_UseCubeMaps);
+    ImGui::RadioButton("Environment Map", &m_PBR_Map_Edit, PBR_MAP_ENVIRONMENT);
+    ImGui::RadioButton("Irradiance Map", &m_PBR_Map_Edit, PBR_MAP_IRRADIANCE);
+    ImGui::RadioButton("Prefilter Map", &m_PBR_Map_Edit, PBR_MAP_PREFILTER);
+
     ImGui::Checkbox("Draw Scene Pivot", &m_DrawScenePivot);
     ImGui::Checkbox("Orthographic View", &m_OrthographicViewEnabled);
 
@@ -1263,10 +1268,17 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                     shaderEditor->setInt("albedoMap", 0);
                     shaderEditor->setFloat("tilingFactor", object->tilingFactor);
                     
-                    m_TextureCubeMap->Bind(1);
+                    // m_TextureCubeMap->Bind(1);
+                    glActiveTexture(GL_TEXTURE1);
+                    if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
+                        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
+                    else if (m_PBR_Map_Edit == PBR_MAP_IRRADIANCE)
+                        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap());
+                    else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
+                        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap());
                     shaderEditor->setInt("cubeMap", 1);
                     shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
-                    
+
                     // Shadows in shaderEditor
                     LightManager::directionalLight.GetShadowMap()->Read(2);
                     shaderEditor->setInt("shadowMap", 2);
