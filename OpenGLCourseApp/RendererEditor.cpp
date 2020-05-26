@@ -274,6 +274,17 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 
     /**** End editor_object_pbr ****/
 
+    /**** Beging gizmo shader ****/
+    Shader* shaderGizmo = shaders["gizmo"];
+    shaderGizmo->Bind();
+    // Directional Light
+    shaderGizmo->setBool( "directionalLight.base.enabled", scene->GetLightManager()->directionalLight.GetEnabled());
+    shaderGizmo->setVec3( "directionalLight.base.color", scene->GetLightManager()->directionalLight.GetColor());
+    shaderGizmo->setFloat("directionalLight.base.ambientIntensity", scene->GetLightManager()->directionalLight.GetAmbientIntensity());
+    shaderGizmo->setFloat("directionalLight.base.diffuseIntensity", scene->GetLightManager()->directionalLight.GetDiffuseIntensity());
+    shaderGizmo->setVec3( "directionalLight.direction", scene->GetLightManager()->directionalLight.GetDirection());
+    /**** End gizmo shader ****/
+
     if (scene->GetSettings().enableSkybox)
     {
         glm::mat4 modelMatrix = glm::mat4(1.0f);

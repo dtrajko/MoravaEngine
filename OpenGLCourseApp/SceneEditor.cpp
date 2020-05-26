@@ -38,7 +38,7 @@ SceneEditor::SceneEditor()
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
     sceneSettings.directionalLight.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
-    sceneSettings.directionalLight.direction = glm::vec3(0.6f, -0.6f, -0.6f);
+    sceneSettings.directionalLight.direction = glm::vec3(1.0f, 0.5f, -0.6f);
     sceneSettings.directionalLight.base.ambientIntensity = 0.75f;
     sceneSettings.directionalLight.base.diffuseIntensity = 0.4f;
     sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 40.0f);
@@ -72,7 +72,7 @@ SceneEditor::SceneEditor()
     sceneSettings.spotLights[0].base.base.enabled = false;
     sceneSettings.spotLights[0].base.base.color = glm::vec3(1.0f, 0.0f, 0.0f);
     sceneSettings.spotLights[0].base.position = glm::vec3(-5.0f, 1.0f, 0.0f);
-    sceneSettings.spotLights[0].direction = glm::vec3(1.0f, -1.0f, 0.0f);
+    sceneSettings.spotLights[0].direction = glm::vec3(1.0f, 0.0f, 0.0f);
     sceneSettings.spotLights[0].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[0].base.base.diffuseIntensity = 1.0f;
     sceneSettings.spotLights[0].edge = 0.5f;
@@ -80,7 +80,7 @@ SceneEditor::SceneEditor()
     sceneSettings.spotLights[1].base.base.enabled = false;
     sceneSettings.spotLights[1].base.base.color = glm::vec3(1.0f, 1.0f, 0.0f);
     sceneSettings.spotLights[1].base.position = glm::vec3(5.0f, 1.0f, 0.0f);
-    sceneSettings.spotLights[1].direction = glm::vec3(-1.0f, -1.0f, 0.0f);
+    sceneSettings.spotLights[1].direction = glm::vec3(-1.0f, 0.0f, 0.0f);
     sceneSettings.spotLights[1].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[1].base.base.diffuseIntensity = 1.0f;
     sceneSettings.spotLights[1].edge = 0.5f;
@@ -88,7 +88,7 @@ SceneEditor::SceneEditor()
     sceneSettings.spotLights[2].base.base.enabled = false;
     sceneSettings.spotLights[2].base.base.color = glm::vec3(0.0f, 1.0f, 0.0f);
     sceneSettings.spotLights[2].base.position = glm::vec3(0.0f, 1.0f, -5.0f);
-    sceneSettings.spotLights[2].direction = glm::vec3(0.0f, -1.0f, 1.0f);
+    sceneSettings.spotLights[2].direction = glm::vec3(0.0f, 0.0f, 1.0f);
     sceneSettings.spotLights[2].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[2].base.base.diffuseIntensity = 1.0f;
     sceneSettings.spotLights[2].edge = 0.5f;
@@ -96,7 +96,7 @@ SceneEditor::SceneEditor()
     sceneSettings.spotLights[3].base.base.enabled = false;
     sceneSettings.spotLights[3].base.base.color = glm::vec3(1.0f, 0.0f, 1.0f);
     sceneSettings.spotLights[3].base.position = glm::vec3(0.0f, 1.0f, 5.0f);
-    sceneSettings.spotLights[3].direction = glm::vec3(0.0f, -1.0f, -1.0f);
+    sceneSettings.spotLights[3].direction = glm::vec3(0.0f, 0.0f, -1.0f);
     sceneSettings.spotLights[3].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
     sceneSettings.spotLights[3].edge = 0.5f;
@@ -1351,18 +1351,18 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         textures["plain"]->Bind(1);
         textures["plain"]->Bind(2);
 
-        shaderEditor->Bind();
-        shaderEditor->setVec4("tintColor", glm::vec4(1.0f));
+        shaderGizmo->Bind();
 
         // Directional Light
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-20.0f, 20.0f, 20.0f));
+        model = glm::translate(model, glm::vec3(-10.0f, 10.0f, 10.0f));
         model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().x * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-        model = glm::scale(model, glm::vec3(0.5f));
-        shaderEditor->setMat4("model", model);
+        model = glm::scale(model, glm::vec3(1.0f));
+        shaderGizmo->setMat4("model", model);
+        shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->directionalLight.GetColor(), 1.0f));
         if (m_DisplayLightSources)
             meshes["cone"]->Render();
 
@@ -1372,7 +1372,8 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             model = glm::mat4(1.0f);
             model = glm::translate(model, m_LightManager->pointLights[i].GetPosition());
             model = glm::scale(model, glm::vec3(0.25f));
-            shaderEditor->setMat4("model", model);
+            shaderGizmo->setMat4("model", model);
+            shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->pointLights[i].GetColor(), 1.0f));
             if (m_DisplayLightSources && m_LightManager->pointLights[i].GetEnabled())
                 meshes["sphere"]->Render();
         }
@@ -1386,7 +1387,8 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
             model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
             model = glm::scale(model, glm::vec3(0.25f));
-            shaderEditor->setMat4("model", model);
+            shaderGizmo->setMat4("model", model);
+            shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->spotLights[i].GetBasePL()->GetColor(), 1.0f));
             if (m_DisplayLightSources && m_LightManager->spotLights[i].GetBasePL()->GetEnabled())
                 meshes["cone"]->Render();
         }

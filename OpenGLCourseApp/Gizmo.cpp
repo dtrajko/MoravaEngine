@@ -219,6 +219,11 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
 	bool isIntersecting = false;
 	int intersectingObjectIndex = -1;
 
+	if (!mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1]) // don't change axes while dragging the gizmo
+	{
+		m_AxesEnabled = { false, false, false };
+	}
+
 	for (int i = 0; i < m_GizmoObjects.size(); i++) {
 
 		m_GizmoObjects[i]->so.AABB->Update(m_Position + m_GizmoObjects[i]->so.position, m_GizmoObjects[i]->so.rotation, m_GizmoObjects[i]->so.scale);
