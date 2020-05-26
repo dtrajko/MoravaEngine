@@ -5,7 +5,7 @@ const int MAX_SPOT_LIGHTS = 4;
 
 const int MAX_LIGHTS = MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS;
 
-const float shadowIntensity = 0.6;
+const float shadowIntensity = 0.8;
 
 in vec2 vTexCoord;
 in vec3 vNormal;
@@ -135,11 +135,11 @@ vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
 	return (ambientColor + (1.0 - shadowFactor) * (diffuseColor + specularColor));
 }
 
-vec4 CalcDirectionalLight()
+vec4 CalcDirectionalLight(vec4 color)
 {
 	float shadowFactor = CalcDirectionalShadowFactor(directionalLight);
 	shadowFactor *= shadowIntensity;
-	return CalcLightByDirection(directionalLight.base, -directionalLight.direction, shadowFactor);
+	return color * CalcLightByDirection(directionalLight.base, -directionalLight.direction, shadowFactor);
 }
 
 vec4 CalcPointLight(PointLight pointLight)
@@ -213,11 +213,13 @@ void main()
 	if(texColor.a < 0.1) // enable alpha transparency
 		discard;
 
-	vec4 finalColor = CalcDirectionalLight();
+	vec4 finalColor = texColor * tintColor * CubeMapColor;
+	finalColor = CalcDirectionalLight(finalColor);
 	finalColor += CalcPointLights();
 	finalColor += CalcSpotLights();
 
-	FragColor = texColor * finalColor * tintColor * CubeMapColor;
+	// FragColor = texColor * finalColor * tintColor * CubeMapColor;
+	FragColor = finalColor;
 
 	// use a basic color to identify the shader
 	if (vFragPos.x > 0.0 && vFragPos.x < 0.1)

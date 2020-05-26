@@ -32,6 +32,10 @@ void RendererEditor::SetShaders()
     shaders.insert(std::make_pair("editor_object_pbr", shaderEditorPBR));
     printf("RendererEditor: shaderEditorObjectPBR compiled [programID=%d]\n", shaderEditorPBR->GetProgramID());
 
+    Shader* shaderGizmo = new Shader("Shaders/gizmo.vs", "Shaders/gizmo.fs");
+    shaders.insert(std::make_pair("gizmo", shaderGizmo));
+    printf("RendererEditor: shaderGizmo compiled [programID=%d]\n", shaderGizmo->GetProgramID());
+
     Shader* shaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
     shaders.insert(std::make_pair("basic", shaderBasic));
     printf("RendererEditor: shaderBasic compiled [programID=%d]\n", shaderBasic->GetProgramID());
@@ -85,6 +89,11 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     shaderEditorPBR->setMat4("projection", projectionMatrix);
     shaderEditorPBR->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
     shaderEditorPBR->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
+
+    Shader* shaderGizmo = shaders["gizmo"];
+    shaderGizmo->Bind();
+    shaderGizmo->setMat4("projection", projectionMatrix);
+    shaderGizmo->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
 
     RenderPassShadow(mainWindow, scene, projectionMatrix);
 	RenderPass(mainWindow, scene, projectionMatrix);

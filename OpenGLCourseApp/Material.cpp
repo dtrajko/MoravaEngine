@@ -29,13 +29,35 @@ Material::Material()
 	m_TexturePlaceholder = TextureLoader::Get()->GetTexture("Textures/plain.png");
 }
 
-Material::Material(TextureInfo textureInfoGold) : Material()
+Material::Material(TextureInfo textureInfoGold, float specularIntensity, float shininess) : Material(specularIntensity, shininess)
 {
 	m_TextureAlbedo    = TextureLoader::Get()->GetTexture(textureInfoGold.albedo.c_str());
 	m_TextureNormal    = TextureLoader::Get()->GetTexture(textureInfoGold.normal.c_str());
 	m_TextureMetallic  = TextureLoader::Get()->GetTexture(textureInfoGold.metallic.c_str());
 	m_TextureRoughness = TextureLoader::Get()->GetTexture(textureInfoGold.roughness.c_str());
 	m_TextureAO        = TextureLoader::Get()->GetTexture(textureInfoGold.ao.c_str());
+}
+
+Material::Material(float specularIntensity, float shininess) : Material()
+{
+	m_SpecularIntensity = specularIntensity;
+	m_Shininess = shininess;
+}
+
+Material::Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess) : Material()
+{
+	m_Ambient = ambient;
+	m_Diffuse = diffuse;
+	m_Specular = specular;
+	m_Shininess = shininess;
+}
+
+Material::Material(int txSlotAlbedo, int txSlotSpecular, int txSlotNormalMap, float shininess)
+{
+	m_AlbedoMap = txSlotAlbedo;
+	m_SpecularMap = txSlotSpecular;
+	m_NormalMap = txSlotNormalMap;
+	m_Shininess = shininess;
 }
 
 void Material::BindTextures(unsigned int slot)
@@ -79,28 +101,6 @@ void Material::BindTextures(unsigned int slot)
 	else {
 		glBindTexture(GL_TEXTURE_2D, m_TexturePlaceholder->GetID());
 	}
-}
-
-Material::Material(float specularIntensity, float shininess) : Material()
-{
-	m_SpecularIntensity = specularIntensity;
-	m_Shininess = shininess;
-}
-
-Material::Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess) : Material()
-{
-	m_Ambient = ambient;
-	m_Diffuse = diffuse;
-	m_Specular = specular;
-	m_Shininess = shininess;
-}
-
-Material::Material(int txSlotAlbedo, int txSlotSpecular, int txSlotNormalMap, float shininess)
-{
-	m_AlbedoMap   = txSlotAlbedo;
-	m_SpecularMap = txSlotSpecular;
-	m_NormalMap   = txSlotNormalMap;
-	m_Shininess   = shininess;
 }
 
 void Material::UseMaterial(int specularIntensityLocation, int shininessLocation)

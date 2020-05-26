@@ -74,7 +74,7 @@ void SceneJoey::SetupMaterials()
 	textureInfoRustedIron.metallic  = "Textures/PBR/rusted_iron/metallic.png";
 	textureInfoRustedIron.roughness = "Textures/PBR/rusted_iron/roughness.png";
 	textureInfoRustedIron.ao        = "Textures/PBR/rusted_iron/ao.png";
-	materials.insert(std::make_pair("rusted_iron", new Material(textureInfoRustedIron)));
+	materials.insert(std::make_pair("rusted_iron", new Material(textureInfoRustedIron, m_MaterialSpecular, m_MaterialShininess)));
 
 	// gold
 	TextureInfo textureInfoGold = {};
@@ -83,7 +83,7 @@ void SceneJoey::SetupMaterials()
 	textureInfoGold.metallic  = "Textures/PBR/gold/metallic.png";
 	textureInfoGold.roughness = "Textures/PBR/gold/roughness.png";
 	textureInfoGold.ao        = "Textures/PBR/gold/ao.png";
-	materials.insert(std::make_pair("gold", new Material(textureInfoGold)));
+	materials.insert(std::make_pair("gold", new Material(textureInfoGold, m_MaterialSpecular, m_MaterialShininess)));
 
 	// silver
 	TextureInfo textureInfoSilver = {};
@@ -92,7 +92,7 @@ void SceneJoey::SetupMaterials()
 	textureInfoSilver.metallic  = "Textures/PBR/silver/metallic.png";
 	textureInfoSilver.roughness = "Textures/PBR/silver/roughness.png";
 	textureInfoSilver.ao        = "Textures/PBR/silver/ao.png";
-	materials.insert(std::make_pair("silver", new Material(textureInfoSilver)));
+	materials.insert(std::make_pair("silver", new Material(textureInfoSilver, m_MaterialSpecular, m_MaterialShininess)));
 
 	// grass
 	TextureInfo textureInfoGrass = {};
@@ -101,7 +101,7 @@ void SceneJoey::SetupMaterials()
 	textureInfoGrass.metallic  = "Textures/PBR/metalness.png";
 	textureInfoGrass.roughness = "Textures/PBR/grass/roughness.png";
 	textureInfoGrass.ao        = "Textures/PBR/grass/ao.png";
-	materials.insert(std::make_pair("grass", new Material(textureInfoGrass)));
+	materials.insert(std::make_pair("grass", new Material(textureInfoGrass, m_MaterialSpecular, m_MaterialShininess)));
 
 	// plastic
 	TextureInfo textureInfoPlastic = {};
@@ -110,7 +110,7 @@ void SceneJoey::SetupMaterials()
 	textureInfoPlastic.metallic  = "Textures/PBR/plastic/metallic.png";
 	textureInfoPlastic.roughness = "Textures/PBR/plastic/roughness.png";
 	textureInfoPlastic.ao        = "Textures/PBR/plastic/ao.png";
-	materials.insert(std::make_pair("plastic", new Material(textureInfoPlastic)));
+	materials.insert(std::make_pair("plastic", new Material(textureInfoPlastic, m_MaterialSpecular, m_MaterialShininess)));
 
 	// wall
 	TextureInfo textureInfoWall = {};
@@ -119,7 +119,7 @@ void SceneJoey::SetupMaterials()
 	textureInfoWall.metallic  = "Textures/PBR/metalness.png";
 	textureInfoWall.roughness = "Textures/PBR/wall/roughness.png";
 	textureInfoWall.ao        = "Textures/PBR/wall/ao.png";
-	materials.insert(std::make_pair("wall", new Material(textureInfoWall)));
+	materials.insert(std::make_pair("wall", new Material(textureInfoWall, m_MaterialSpecular, m_MaterialShininess)));
 
 	// Cerberus model PBR textures
 	TextureInfo textureInfoCerberus = {};
@@ -128,7 +128,7 @@ void SceneJoey::SetupMaterials()
 	textureInfoCerberus.metallic  = "Textures/PBR/Cerberus/Cerberus_M.tga";
 	textureInfoCerberus.roughness = "Textures/PBR/Cerberus/Cerberus_R.tga";
 	textureInfoCerberus.ao        = "Textures/PBR/Cerberus/Cerberus_AO.tga";
-	materials.insert(std::make_pair("cerberus", new Material(textureInfoCerberus)));
+	materials.insert(std::make_pair("cerberus", new Material(textureInfoCerberus, m_MaterialSpecular, m_MaterialShininess)));
 
 	// Khronos DamagedHelmet model PBR textures
 	TextureInfo textureInfoDamagedHelmet = {};
@@ -137,7 +137,7 @@ void SceneJoey::SetupMaterials()
 	textureInfoDamagedHelmet.metallic  = "Textures/PBR/DamagedHelmet/Default_metalRoughness.jpg";
 	textureInfoDamagedHelmet.roughness = "Textures/PBR/DamagedHelmet/Default_emissive.jpg";
 	textureInfoDamagedHelmet.ao        = "Textures/PBR/DamagedHelmet/Default_AO.jpg";
-	materials.insert(std::make_pair("damaged_helmet", new Material(textureInfoDamagedHelmet)));
+	materials.insert(std::make_pair("damaged_helmet", new Material(textureInfoDamagedHelmet, m_MaterialSpecular, m_MaterialShininess)));
 
 	// Khronos SciFiHelmet model PBR textures
 	TextureInfo textureInfoSFHelmet = {};
@@ -146,7 +146,7 @@ void SceneJoey::SetupMaterials()
 	textureInfoSFHelmet.metallic  = "Textures/PBR/SciFiHelmet/SciFiHelmet_MetallicRoughness.png";
 	textureInfoSFHelmet.roughness = "Textures/PBR/SciFiHelmet/SciFiHelmet_Emissive.png";
 	textureInfoSFHelmet.ao        = "Textures/PBR/SciFiHelmet/SciFiHelmet_AmbientOcclusion.png";
-	materials.insert(std::make_pair("sf_helmet", new Material(textureInfoSFHelmet)));
+	materials.insert(std::make_pair("sf_helmet", new Material(textureInfoSFHelmet, m_MaterialSpecular, m_MaterialShininess)));
 }
 
 void SceneJoey::SetupModels()

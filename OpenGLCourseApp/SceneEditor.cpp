@@ -234,7 +234,7 @@ void SceneEditor::SetupMaterials()
     textureInfoNone.metallic  = "Textures/plain.png";
     textureInfoNone.roughness = "Textures/plain.png";
     textureInfoNone.ao        = "Textures/plain.png";
-    materials.insert(std::make_pair("none", new Material(textureInfoNone)));
+    materials.insert(std::make_pair("none", new Material(textureInfoNone, m_MaterialSpecular, m_MaterialShininess)));
 
     // gold
     TextureInfo textureInfoGold     = {};
@@ -243,7 +243,7 @@ void SceneEditor::SetupMaterials()
     textureInfoGold.metallic        = "Textures/PBR/gold/metallic.png";
     textureInfoGold.roughness       = "Textures/PBR/gold/roughness.png";
     textureInfoGold.ao              = "Textures/PBR/gold/ao.png";
-    materials.insert(std::make_pair("gold", new Material(textureInfoGold)));
+    materials.insert(std::make_pair("gold", new Material(textureInfoGold, m_MaterialSpecular, m_MaterialShininess)));
 
     // silver
     TextureInfo textureInfoSilver   = {};
@@ -252,7 +252,7 @@ void SceneEditor::SetupMaterials()
     textureInfoSilver.metallic      = "Textures/PBR/silver/metallic.png";
     textureInfoSilver.roughness     = "Textures/PBR/silver/roughness.png";
     textureInfoSilver.ao            = "Textures/PBR/silver/ao.png";
-    materials.insert(std::make_pair("silver", new Material(textureInfoSilver)));
+    materials.insert(std::make_pair("silver", new Material(textureInfoSilver, m_MaterialSpecular, m_MaterialShininess)));
 
     // rusted iron
     TextureInfo textureInfoRustedIron = {};
@@ -261,7 +261,7 @@ void SceneEditor::SetupMaterials()
     textureInfoRustedIron.metallic  = "Textures/PBR/rusted_iron/metallic.png";
     textureInfoRustedIron.roughness = "Textures/PBR/rusted_iron/roughness.png";
     textureInfoRustedIron.ao        = "Textures/PBR/rusted_iron/ao.png";
-    materials.insert(std::make_pair("rusted_iron", new Material(textureInfoRustedIron)));
+    materials.insert(std::make_pair("rusted_iron", new Material(textureInfoRustedIron, m_MaterialSpecular, m_MaterialShininess)));
 
     // plastic
     TextureInfo textureInfoPlastic  = {};
@@ -270,7 +270,7 @@ void SceneEditor::SetupMaterials()
     textureInfoPlastic.metallic     = "Textures/PBR/plastic/metallic.png";
     textureInfoPlastic.roughness    = "Textures/PBR/plastic/roughness.png";
     textureInfoPlastic.ao           = "Textures/PBR/plastic/ao.png";
-    materials.insert(std::make_pair("plastic", new Material(textureInfoPlastic)));
+    materials.insert(std::make_pair("plastic", new Material(textureInfoPlastic, m_MaterialSpecular, m_MaterialShininess)));
 
     // futuristic_panel_1
     TextureInfo textureInfoFuturPanel = {};
@@ -279,7 +279,7 @@ void SceneEditor::SetupMaterials()
     textureInfoFuturPanel.metallic  = "Textures/PBR/futuristic_panel_1/futuristic-panels1-metallic.png";
     textureInfoFuturPanel.roughness = "Textures/PBR/futuristic_panel_1/futuristic-panels1-roughness.png";
     textureInfoFuturPanel.ao        = "Textures/PBR/futuristic_panel_1/futuristic-panels1-ao.png";
-    materials.insert(std::make_pair("futur_panel_1", new Material(textureInfoFuturPanel)));
+    materials.insert(std::make_pair("futur_panel_1", new Material(textureInfoFuturPanel, m_MaterialSpecular, m_MaterialShininess)));
 
     // dark tiles
     TextureInfo textureInfoDarkTiles = {};
@@ -288,7 +288,7 @@ void SceneEditor::SetupMaterials()
     textureInfoDarkTiles.metallic  = "Textures/PBR/metalness.png";
     textureInfoDarkTiles.roughness = "Textures/PBR/dark_tiles_1/darktiles1_roughness.png";
     textureInfoDarkTiles.ao        = "Textures/PBR/dark_tiles_1/darktiles1_AO.png";
-    materials.insert(std::make_pair("dark_tiles", new Material(textureInfoDarkTiles)));
+    materials.insert(std::make_pair("dark_tiles", new Material(textureInfoDarkTiles, m_MaterialSpecular, m_MaterialShininess)));
 
     // mahogany floor
     TextureInfo textureInfoMahoganyFloor = {};
@@ -297,7 +297,7 @@ void SceneEditor::SetupMaterials()
     textureInfoMahoganyFloor.metallic  = "Textures/PBR/mahogany_floor/mahogfloor_metalness.png";
     textureInfoMahoganyFloor.roughness = "Textures/PBR/mahogany_floor/mahogfloor_roughness.png";
     textureInfoMahoganyFloor.ao        = "Textures/PBR/mahogany_floor/mahogfloor_AO.png";
-    materials.insert(std::make_pair("mahogany_floor", new Material(textureInfoMahoganyFloor)));
+    materials.insert(std::make_pair("mahogany_floor", new Material(textureInfoMahoganyFloor, m_MaterialSpecular, m_MaterialShininess)));
 
     // aged planks
     TextureInfo textureInfoAgedPlanks = {};
@@ -306,7 +306,7 @@ void SceneEditor::SetupMaterials()
     textureInfoAgedPlanks.metallic  = "Textures/PBR/aged_planks_1/agedplanks1-metalness.png";
     textureInfoAgedPlanks.roughness = "Textures/PBR/aged_planks_1/agedplanks1-roughness.png";
     textureInfoAgedPlanks.ao        = "Textures/PBR/aged_planks_1/agedplanks1-ao.png";
-    materials.insert(std::make_pair("aged_planks", new Material(textureInfoAgedPlanks)));
+    materials.insert(std::make_pair("aged_planks", new Material(textureInfoAgedPlanks, m_MaterialSpecular, m_MaterialShininess)));
 
     // harsh bricks
     TextureInfo textureInfoHarshBricks = {};
@@ -315,7 +315,7 @@ void SceneEditor::SetupMaterials()
     textureInfoHarshBricks.metallic  = "Textures/PBR/metalness.png";
     textureInfoHarshBricks.roughness = "Textures/PBR/harsh_bricks/harshbricks-roughness.png";
     textureInfoHarshBricks.ao        = "Textures/PBR/harsh_bricks/harshbricks-ao2.png";
-    materials.insert(std::make_pair("harsh_bricks", new Material(textureInfoHarshBricks)));
+    materials.insert(std::make_pair("harsh_bricks", new Material(textureInfoHarshBricks, m_MaterialSpecular, m_MaterialShininess)));
 
     // Stone Carved (Quixel Megascans)
     TextureInfo textureInfoStoneCarved = {};
@@ -324,7 +324,7 @@ void SceneEditor::SetupMaterials()
     textureInfoStoneCarved.metallic  = "Textures/PBR/Stone_Carved/Metalness.jpg";
     textureInfoStoneCarved.roughness = "Textures/PBR/Stone_Carved/Roughness.jpg";
     textureInfoStoneCarved.ao        = "Textures/PBR/Stone_Carved/Displacement.jpg";
-    materials.insert(std::make_pair("stone_carved", new Material(textureInfoStoneCarved)));
+    materials.insert(std::make_pair("stone_carved", new Material(textureInfoStoneCarved, m_MaterialSpecular, m_MaterialShininess)));
 
     // Old Stove (Quixel Megascans)
     TextureInfo textureInfoOldStove = {};
@@ -333,7 +333,7 @@ void SceneEditor::SetupMaterials()
     textureInfoOldStove.metallic  = "Textures/PBR/Old_Stove/Metalness.jpg";
     textureInfoOldStove.roughness = "Textures/PBR/Old_Stove/Roughness.jpg";
     textureInfoOldStove.ao        = "Textures/PBR/Old_Stove/Displacement.jpg";
-    materials.insert(std::make_pair("old_stove", new Material(textureInfoOldStove)));
+    materials.insert(std::make_pair("old_stove", new Material(textureInfoOldStove, m_MaterialSpecular, m_MaterialShininess)));
 }
 
 void SceneEditor::SetupMeshes()
@@ -1176,6 +1176,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
     Shader* shaderBasic      = shaders["basic"];
     Shader* shaderBackground = shaders["background"];
     Shader* shaderShadowMap  = shaders["shadow_map"];
+    Shader* shaderGizmo      = shaders["gizmo"];
 
     for (auto& object : m_SceneObjects)
     {
@@ -1240,14 +1241,16 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                     shaderEditorPBR->setMat4("model", object->transform);
                     shaderEditorPBR->setVec4("tintColor", object->color);
                     shaderEditorPBR->setBool("isSelected", object->isSelected);
-                    shaderEditorPBR->setFloat("tilingFactor", 1.0f);
-                    // shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
-                    
-                    m_MaterialWorkflowPBR->BindTextures(0);
-                    materials[object->materialName]->BindTextures(3);
-                    
+                    shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
+
+                    shaderEditorPBR->setFloat("material.specularIntensity", m_MaterialSpecular); // TODO - use material attribute
+                    shaderEditorPBR->setFloat("material.shininess", m_MaterialShininess);        // TODO - use material attribute
+
+                    m_MaterialWorkflowPBR->BindTextures(0);                 // texture slots 0, 1, 2
+                    materials[object->materialName]->BindTextures(3);       // texture slots 3, 4, 5, 6, 7
+
                     // Shadows in shaderEditorPBR
-                    LightManager::directionalLight.GetShadowMap()->Read(8);
+                    LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
                     shaderEditorPBR->setInt("shadowMap", 8);
                 }
             }
@@ -1364,12 +1367,6 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         if (m_DrawScenePivot)
             m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
 
-        // Render gizmo on front of everything (depth mask enabled)w
-        if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
-        {
-            m_Gizmo->Render(shaderEditor);
-        }
-
         // A quad for displaying a shadow map on it
         shaderEditor->Bind();
         model = glm::mat4(1.0f);
@@ -1379,6 +1376,12 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         LightManager::directionalLight.GetShadowMap()->Read(0);
         shaderEditor->setInt("shadowMap", 0);
         m_Quad->Render();
+
+        // Render gizmo on front of everything (depth mask enabled)w
+        if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
+        {
+            m_Gizmo->Render(shaderGizmo);
+        }
     }
 }
 

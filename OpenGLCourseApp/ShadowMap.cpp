@@ -58,6 +58,14 @@ void ShadowMap::Read(unsigned int textureUnit)
 	glBindTexture(GL_TEXTURE_2D, m_ID);
 }
 
+void ShadowMap::Unbind(unsigned int width, unsigned int height)
+{
+	// unbind custom framebuffer and make the default framebuffer active
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, width, height);
+}
+
 ShadowMap::~ShadowMap()
 {
 	if (FBO)

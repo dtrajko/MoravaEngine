@@ -43,7 +43,7 @@ public:
 	void AddMap(MapType mapType, int textureSlot);
 
 	// PBR/IBL Material Workflow
-	Material(TextureInfo textureInfoGold);
+	Material(TextureInfo textureInfoGold, float specularIntensity, float shininess);
 	void BindTextures(unsigned int slot);
 	inline const Texture* GetTextureAlbedo()    const { return m_TextureAlbedo;    };
 	inline const Texture* GetTextureNormal()    const { return m_TextureNormal;    };

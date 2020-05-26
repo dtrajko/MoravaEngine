@@ -5,7 +5,7 @@ const int MAX_SPOT_LIGHTS = 4;
 
 const int MAX_LIGHTS = MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS;
 
-const float shadowIntensity = 0.6;
+const float shadowIntensity = 0.8;
 
 in vec2 vTexCoord;
 in vec3 vNormal;
@@ -55,8 +55,16 @@ struct PointSpotLight
     float constant;
 };
 
+struct Material
+{
+	float specularIntensity;
+	float shininess;
+};
+
 uniform DirectionalLight directionalLight;
 uniform PointSpotLight pointSpotLights[MAX_LIGHTS];
+
+uniform Material material;
 
 uniform vec3 cameraPosition;
 uniform float tilingFactor;
@@ -173,7 +181,7 @@ vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
 {
 	vec4 ambientColor = vec4(light.color, 1.0) * light.ambientIntensity;
 
-    float diffuseFactor = max(dot(normalize(vNormal), -normalize(direction)), 0.0);
+    float diffuseFactor = max(dot(normalize(vNormal), normalize(direction)), 0.0);
 	vec4 diffuseColor = vec4(light.color, 1.0) * light.diffuseIntensity * diffuseFactor;
 
 	vec4 specularColor = vec4(0.0, 0.0, 0.0, 0.0);
@@ -184,7 +192,7 @@ vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
 		vec3 reflectedVertex = normalize(reflect(direction, normalize(vNormal)));
 	}
 
-	return (ambientColor + (1.0 - shadowFactor) * (diffuseColor + specularColor));
+	return (ambientColor + diffuseColor * (1.0 - shadowFactor));
 }
 
 vec4 CalcDirectionalLight()

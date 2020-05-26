@@ -1,7 +1,7 @@
 BeginObject	0
-Position	8.521974	3.035998	0.000000
+Position	14.504003	4.741007	-8.572010
 Rotation	0.000000	0.000000	0.000000
-Scale	1.000000	6.060002	11.992983
+Scale	1.000000	10.280002	19.800009
 Color	1.000000	1.000000	1.000000	1.000000
 UseTexture	0
 TextureName	plain
@@ -10,19 +10,19 @@ IsSelected	0
 ObjectType	mesh
 MeshType	0
 MaterialName	aged_planks
-TilingFactorMaterial	0.683000
+TilingFactorMaterial	0.302000
 EndObject
 BeginObject	1
-Position	5.532012	0.000000	0.000000
-Rotation	0.000000	-90.199768	0.000000
-Scale	2.219999	2.020000	2.032000
+Position	11.660017	5.908050	-5.094001
+Rotation	0.000000	0.000000	0.000000
+Scale	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
 UseTexture	0
 TextureName	plain
 TilingFactor	1.000000
 IsSelected	0
-ObjectType	model
+ObjectType	mesh
 MeshType	0
-MaterialName	old_stove
+MaterialName	
 TilingFactorMaterial	1.000000
 EndObject

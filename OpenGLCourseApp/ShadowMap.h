@@ -12,6 +12,7 @@ public:
 	virtual bool Init(GLuint width, GLuint height);
 	virtual void Write();
 	virtual void Read(unsigned int textureUnit);
+	virtual void Unbind(unsigned int width, unsigned int height);
 	GLuint GetShadowWidth() { return shadowWidth; };
 	GLuint GetShadowHeight() { return shadowHeight; };
 	~ShadowMap();

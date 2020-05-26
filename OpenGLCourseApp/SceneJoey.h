@@ -44,4 +44,7 @@ private:
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
 	SphereJoey* m_SphereJoey;
 	float m_Timestep = 0.0f;
+
+	float m_MaterialSpecular = 1.0f;
+	float m_MaterialShininess = 256.0f;
 };

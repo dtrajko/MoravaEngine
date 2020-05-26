@@ -86,6 +86,9 @@ private:
 	float* m_TilingFactorMaterialEdit;
 	bool m_DrawScenePivot;
 
+	float m_MaterialSpecular = 1.0f;
+	float m_MaterialShininess = 256.0f;
+
 	std::vector<PointSpotLight*> m_PointSpotLights;
 
 	unsigned int m_SelectedIndex;

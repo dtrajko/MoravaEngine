@@ -23,7 +23,6 @@ public:
 	inline const bool GetEnabled() const { return m_Enabled; };
 	inline void SetEnabled(bool enabled) { m_Enabled = enabled; }
 	void Toggle() { m_Enabled = !m_Enabled; };
-
 	~Light();
 
 protected:
