@@ -636,10 +636,23 @@ void SceneEditor::LoadScene()
 
 void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
 {
-    MousePicker* mp = MousePicker::Get();
 
 #if 0
-    ImGui::Begin("Mouse Picker Info");
+
+    // DockSpace
+    static ImGuiDockNodeFlags dockspace_flags =
+        ImGuiDockNodeFlags_PassthruCentralNode |
+        ImGuiDockNodeFlags_NoDockingInCentralNode;
+
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+    {
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        // ImGui::DockSpace(dockspace_id, ImVec2((float)mainWindow.GetBufferWidth(), (float)mainWindow.GetBufferWidth()), dockspace_flags);
+
+        ImGui::DockSpaceOverViewport();
+
+        ImGui::Begin("Mouse Picker Info");
 
         ImGui::Separator();
         std::string mouseCoords = "Mouse Coordinates: MouseX = " + std::to_string(mp->m_MouseX) +
@@ -647,33 +660,59 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         ImGui::Text(mouseCoords.c_str());
         ImGui::Separator();
         std::string normalizedCoords = "Normalized Coords: X = " + std::to_string(mp->m_NormalizedCoords.x) +
-                                                         " Y = " + std::to_string(mp->m_NormalizedCoords.y);
+            " Y = " + std::to_string(mp->m_NormalizedCoords.y);
         ImGui::Text(normalizedCoords.c_str());
         ImGui::Separator();
         std::string clipCoords = "Clip Coords: X = " + std::to_string(mp->m_ClipCoords.x) +
-                                             " Y = " + std::to_string(mp->m_ClipCoords.y);
+            " Y = " + std::to_string(mp->m_ClipCoords.y);
         ImGui::Text(clipCoords.c_str());
         ImGui::Separator();
         std::string eyeCoords = "Eye Coords: X = " + std::to_string(mp->m_EyeCoords.x) + " Y = " + std::to_string(mp->m_EyeCoords.y) +
-                                           " Z = " + std::to_string(mp->m_EyeCoords.z) + " W = " + std::to_string(mp->m_EyeCoords.w);
+            " Z = " + std::to_string(mp->m_EyeCoords.z) + " W = " + std::to_string(mp->m_EyeCoords.w);
         ImGui::Text(eyeCoords.c_str());
         ImGui::Separator();
         std::string worldRay = "World Ray: X = " + std::to_string(mp->m_WorldRay.x) +
-                                         " Y = " + std::to_string(mp->m_WorldRay.y) +
-                                         " Z = " + std::to_string(mp->m_WorldRay.z);
-    ImGui::End();
+            " Y = " + std::to_string(mp->m_WorldRay.y) +
+            " Z = " + std::to_string(mp->m_WorldRay.z);
+        ImGui::End();
+
+        ImGui::Begin("Left");
+        ImGui::Text("Left");
+        ImGui::End();
+        ImGui::Begin("Right");
+        ImGui::Text("Right");
+        ImGui::End();
+        ImGui::Begin("Top");
+        ImGui::Text("Top");
+        ImGui::End();
+        ImGui::Begin("Bottom");
+        ImGui::Text("Bottom");
+        ImGui::End();
+
+        ImGui::SetNextWindowBgAlpha(0.0f);
+        ImGui::Begin("Center");
+        ImGui::Text("Center");
+        ImGui::End();
+    }
+    else
+    {
+        printf("ERROR: ImGui Docking feature is disabled!\n");
+    }
+
 #endif
+
+    MousePicker* mp = MousePicker::Get();
 
     if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
     {
-        m_PositionEdit             = &m_SceneObjects[m_SelectedIndex]->position;
-        m_RotationEdit             = &m_SceneObjects[m_SelectedIndex]->rotation;
-        m_ScaleEdit                = &m_SceneObjects[m_SelectedIndex]->scale;
-        m_ColorEdit                = &m_SceneObjects[m_SelectedIndex]->color;
-        m_UseTextureEdit           = &m_SceneObjects[m_SelectedIndex]->useTexture;
-        m_TextureNameEdit          = &m_SceneObjects[m_SelectedIndex]->textureName;
-        m_TilingFactorEdit         = &m_SceneObjects[m_SelectedIndex]->tilingFactor;
-        m_MaterialNameEdit         = &m_SceneObjects[m_SelectedIndex]->materialName;
+        m_PositionEdit = &m_SceneObjects[m_SelectedIndex]->position;
+        m_RotationEdit = &m_SceneObjects[m_SelectedIndex]->rotation;
+        m_ScaleEdit = &m_SceneObjects[m_SelectedIndex]->scale;
+        m_ColorEdit = &m_SceneObjects[m_SelectedIndex]->color;
+        m_UseTextureEdit = &m_SceneObjects[m_SelectedIndex]->useTexture;
+        m_TextureNameEdit = &m_SceneObjects[m_SelectedIndex]->textureName;
+        m_TilingFactorEdit = &m_SceneObjects[m_SelectedIndex]->tilingFactor;
+        m_MaterialNameEdit = &m_SceneObjects[m_SelectedIndex]->materialName;
         m_TilingFactorMaterialEdit = &m_SceneObjects[m_SelectedIndex]->tilingFactorMaterial;
     }
 
@@ -769,25 +808,25 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Separator();
     ImGui::Text("Select Add Action Mode");
     ImGui::RadioButton("Add Mesh Primitive", &m_ActionAddType, ACTION_ADD_MESH);
-    ImGui::RadioButton("Add Model",          &m_ActionAddType, ACTION_ADD_MODEL);
+    ImGui::RadioButton("Add Model", &m_ActionAddType, ACTION_ADD_MODEL);
 
     ImGui::Separator();
     ImGui::Text("Select Object Type");
-    ImGui::RadioButton("Cube",     &m_CurrentMeshTypeID, MESH_TYPE_CUBE);
-    ImGui::RadioButton("Pyramid",  &m_CurrentMeshTypeID, MESH_TYPE_PYRAMID);
-    ImGui::RadioButton("Sphere",   &m_CurrentMeshTypeID, MESH_TYPE_SPHERE);
+    ImGui::RadioButton("Cube", &m_CurrentMeshTypeID, MESH_TYPE_CUBE);
+    ImGui::RadioButton("Pyramid", &m_CurrentMeshTypeID, MESH_TYPE_PYRAMID);
+    ImGui::RadioButton("Sphere", &m_CurrentMeshTypeID, MESH_TYPE_SPHERE);
     ImGui::RadioButton("Cylinder", &m_CurrentMeshTypeID, MESH_TYPE_CYLINDER);
-    ImGui::RadioButton("Cone",     &m_CurrentMeshTypeID, MESH_TYPE_CONE);
-    ImGui::RadioButton("Ring",     &m_CurrentMeshTypeID, MESH_TYPE_RING);
+    ImGui::RadioButton("Cone", &m_CurrentMeshTypeID, MESH_TYPE_CONE);
+    ImGui::RadioButton("Ring", &m_CurrentMeshTypeID, MESH_TYPE_RING);
 
     ImGui::Separator();
     ImGui::Text("Select Model");
     ImGui::RadioButton("Stone Carved", &m_CurrentModelID, MODEL_STONE_CARVED);
-    ImGui::RadioButton("Old Stove",    &m_CurrentModelID, MODEL_OLD_STOVE);
+    ImGui::RadioButton("Old Stove", &m_CurrentModelID, MODEL_OLD_STOVE);
 
     ImGui::Separator();
     ImGui::Text("Select Skybox");
-    ImGui::RadioButton("Day",   &m_CurrentSkyboxInt, SKYBOX_DAY);
+    ImGui::RadioButton("Day", &m_CurrentSkyboxInt, SKYBOX_DAY);
     ImGui::RadioButton("Night", &m_CurrentSkyboxInt, SKYBOX_NIGHT);
 
     ImGui::Separator();
@@ -813,19 +852,19 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     SDirectionalLight directionalLight;
 
-    directionalLight.base.enabled          = m_LightManager->directionalLight.GetEnabled();
-    directionalLight.base.color            = m_LightManager->directionalLight.GetColor();
+    directionalLight.base.enabled = m_LightManager->directionalLight.GetEnabled();
+    directionalLight.base.color = m_LightManager->directionalLight.GetColor();
     directionalLight.base.ambientIntensity = m_LightManager->directionalLight.GetAmbientIntensity();
     directionalLight.base.diffuseIntensity = m_LightManager->directionalLight.GetDiffuseIntensity();
-    directionalLight.direction             = m_LightManager->directionalLight.GetDirection();
+    directionalLight.direction = m_LightManager->directionalLight.GetDirection();
 
     ImGui::Separator();
     ImGui::Text("Directional Light");
-    ImGui::Checkbox(    "DL Enabled", &directionalLight.base.enabled);
-    ImGui::ColorEdit3(  "DL Color", glm::value_ptr(directionalLight.base.color));
+    ImGui::Checkbox("DL Enabled", &directionalLight.base.enabled);
+    ImGui::ColorEdit3("DL Color", glm::value_ptr(directionalLight.base.color));
     ImGui::SliderFloat3("DL Direction", glm::value_ptr(directionalLight.direction), -1.0f, 1.0f);
-    ImGui::SliderFloat( "DL Ambient Intensity", &directionalLight.base.ambientIntensity, 0.0f, 4.0f);
-    ImGui::SliderFloat( "DL Diffuse Intensity", &directionalLight.base.diffuseIntensity, 0.0f, 4.0f);
+    ImGui::SliderFloat("DL Ambient Intensity", &directionalLight.base.ambientIntensity, 0.0f, 4.0f);
+    ImGui::SliderFloat("DL Diffuse Intensity", &directionalLight.base.diffuseIntensity, 0.0f, 4.0f);
 
     // Shutdown directional light (it appears it's better to do it here than in shader
     if (directionalLight.base.enabled != m_DirLightEnabledPrev)
@@ -853,14 +892,14 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     char locBuff[100] = { '\0' };
     for (unsigned int pl = 0; pl < m_LightManager->pointLightCount; pl++)
     {
-        pointLights[pl].base.enabled          = m_LightManager->pointLights[pl].GetEnabled();
-        pointLights[pl].base.color            = m_LightManager->pointLights[pl].GetColor();
+        pointLights[pl].base.enabled = m_LightManager->pointLights[pl].GetEnabled();
+        pointLights[pl].base.color = m_LightManager->pointLights[pl].GetColor();
         pointLights[pl].base.ambientIntensity = m_LightManager->pointLights[pl].GetAmbientIntensity();
         pointLights[pl].base.diffuseIntensity = m_LightManager->pointLights[pl].GetDiffuseIntensity();
-        pointLights[pl].position              = m_LightManager->pointLights[pl].GetPosition();
-        pointLights[pl].constant              = m_LightManager->pointLights[pl].GetConstant();
-        pointLights[pl].linear                = m_LightManager->pointLights[pl].GetLinear();
-        pointLights[pl].exponent              = m_LightManager->pointLights[pl].GetExponent();
+        pointLights[pl].position = m_LightManager->pointLights[pl].GetPosition();
+        pointLights[pl].constant = m_LightManager->pointLights[pl].GetConstant();
+        pointLights[pl].linear = m_LightManager->pointLights[pl].GetLinear();
+        pointLights[pl].exponent = m_LightManager->pointLights[pl].GetExponent();
 
         snprintf(locBuff, sizeof(locBuff), "Point Light %i", pl);
         ImGui::Text(locBuff);
@@ -902,16 +941,16 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     for (unsigned int sl = 0; sl < m_LightManager->spotLightCount; sl++)
     {
-        spotLights[sl].base.base.enabled          = m_LightManager->spotLights[sl].GetBasePL()->GetEnabled();
-        spotLights[sl].base.base.color            = m_LightManager->spotLights[sl].GetBasePL()->GetColor();
+        spotLights[sl].base.base.enabled = m_LightManager->spotLights[sl].GetBasePL()->GetEnabled();
+        spotLights[sl].base.base.color = m_LightManager->spotLights[sl].GetBasePL()->GetColor();
         spotLights[sl].base.base.ambientIntensity = m_LightManager->spotLights[sl].GetBasePL()->GetAmbientIntensity();
         spotLights[sl].base.base.diffuseIntensity = m_LightManager->spotLights[sl].GetBasePL()->GetDiffuseIntensity();
-        spotLights[sl].base.position              = m_LightManager->spotLights[sl].GetBasePL()->GetPosition();
-        spotLights[sl].base.constant              = m_LightManager->spotLights[sl].GetBasePL()->GetConstant();
-        spotLights[sl].base.linear                = m_LightManager->spotLights[sl].GetBasePL()->GetLinear();
-        spotLights[sl].base.exponent              = m_LightManager->spotLights[sl].GetBasePL()->GetExponent();
-        spotLights[sl].direction                  = m_LightManager->spotLights[sl].GetDirection();
-        spotLights[sl].edge                       = m_LightManager->spotLights[sl].GetEdge();
+        spotLights[sl].base.position = m_LightManager->spotLights[sl].GetBasePL()->GetPosition();
+        spotLights[sl].base.constant = m_LightManager->spotLights[sl].GetBasePL()->GetConstant();
+        spotLights[sl].base.linear = m_LightManager->spotLights[sl].GetBasePL()->GetLinear();
+        spotLights[sl].base.exponent = m_LightManager->spotLights[sl].GetBasePL()->GetExponent();
+        spotLights[sl].direction = m_LightManager->spotLights[sl].GetDirection();
+        spotLights[sl].edge = m_LightManager->spotLights[sl].GetEdge();
 
         snprintf(locBuff, sizeof(locBuff), "Spot Light %i", sl);
         ImGui::Text(locBuff);
