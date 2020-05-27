@@ -559,7 +559,7 @@ void Gizmo::CreateObjects()
 		m_Ring_R_X->so.color = m_Color_Red;
 		m_Ring_R_X->so.position = glm::vec3(0.0f, 0.0f, 0.0f) * m_ScaleGlobal;
 		m_Ring_R_X->so.rotation = glm::vec3(0.0f, 0.0f, 90.0f);
-		m_Ring_R_X->so.scale = glm::vec3(6.0f, 0.2f, 6.0f) * m_ScaleGlobal;
+		m_Ring_R_X->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
 		m_Ring_R_X->so.mesh = new Ring(m_Ring_R_X->so.scale);
 		m_Ring_R_X->so.AABB = new AABB(m_Ring_R_X->so.position, m_Ring_R_X->so.rotation, m_Ring_R_X->so.scale);
 		m_Ring_R_X->axes = { true, false, false };
@@ -572,7 +572,7 @@ void Gizmo::CreateObjects()
 		m_Ring_R_Y->so.color = m_Color_Green;
 		m_Ring_R_Y->so.position = glm::vec3(0.0f, 0.0f, 0.0f) * m_ScaleGlobal;
 		m_Ring_R_Y->so.rotation = glm::vec3(0.0f, 1.0f, 0.0f);
-		m_Ring_R_Y->so.scale = glm::vec3(6.0f, 0.2f, 6.0f) * m_ScaleGlobal;
+		m_Ring_R_Y->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
 		m_Ring_R_Y->so.mesh = new Ring(m_Ring_R_Y->so.scale);
 		m_Ring_R_Y->so.AABB = new AABB(m_Ring_R_Y->so.position, m_Ring_R_Y->so.rotation, m_Ring_R_Y->so.scale);
 		m_Ring_R_Y->axes = { false, true, false };
@@ -585,7 +585,7 @@ void Gizmo::CreateObjects()
 		m_Ring_R_Z->so.color = m_Color_Blue;
 		m_Ring_R_Z->so.position = glm::vec3(0.0f, 0.0f, 0.0f) * m_ScaleGlobal;
 		m_Ring_R_Z->so.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
-		m_Ring_R_Z->so.scale = glm::vec3(6.0f, 0.2f, 6.0f) * m_ScaleGlobal;
+		m_Ring_R_Z->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
 		m_Ring_R_Z->so.mesh = new Ring(m_Ring_R_Z->so.scale);
 		m_Ring_R_Z->so.AABB = new AABB(m_Ring_R_Z->so.position, m_Ring_R_Z->so.rotation, m_Ring_R_Z->so.scale);
 		m_Ring_R_Z->axes = { false, false, true };
