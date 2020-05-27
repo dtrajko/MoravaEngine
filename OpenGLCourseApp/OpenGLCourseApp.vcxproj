@@ -224,6 +224,7 @@
     <ClCompile Include="RendererNanosuit.cpp" />
     <ClCompile Include="RendererPBR.cpp" />
     <ClCompile Include="Ring.cpp" />
+    <ClCompile Include="Ring90.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneAsteroids.cpp" />
     <ClCompile Include="SceneBullet.cpp" />
@@ -326,6 +327,7 @@
     <ClInclude Include="RendererNanosuit.h" />
     <ClInclude Include="RendererPBR.h" />
     <ClInclude Include="Ring.h" />
+    <ClInclude Include="Ring90.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneAsteroids.h" />
     <ClInclude Include="SceneBullet.h" />
