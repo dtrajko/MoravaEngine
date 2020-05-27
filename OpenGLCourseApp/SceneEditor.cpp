@@ -111,7 +111,6 @@ SceneEditor::SceneEditor()
 
     // Initialize the PBR/IBL Material Workflow component
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
-    m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
 
     m_CurrentTimestamp = 0.0f;
 
@@ -151,15 +150,15 @@ SceneEditor::SceneEditor()
     m_MaterialNameEdit         = new std::string;
     m_TilingFactorMaterialEdit = new float(1.0f);
     m_DrawScenePivot = true;
-    m_PBR_Map_Edit = 0;
+    m_PBR_Map_Edit = PBR_MAP_ENVIRONMENT;
+    m_HDRI_Edit = HDRI_GREENWICH_PARK;
+    m_HDRI_Edit_Prev = -1;
 
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
     m_DirLightColorPrev = sceneSettings.directionalLight.base.color;
 
     m_DisplayLightSources = true;
-
-    m_CurrentSkyboxInt = SKYBOX_DAY;
 
     m_MouseButton_1_Prev = false;
 
@@ -170,27 +169,6 @@ SceneEditor::SceneEditor()
 
 void SceneEditor::SetSkybox()
 {
-    m_SkyboxFacesDay.push_back("Textures/skybox_4/right.png");
-    m_SkyboxFacesDay.push_back("Textures/skybox_4/left.png");
-    m_SkyboxFacesDay.push_back("Textures/skybox_4/top.png");
-    m_SkyboxFacesDay.push_back("Textures/skybox_4/bottom.png");
-    m_SkyboxFacesDay.push_back("Textures/skybox_4/back.png");
-    m_SkyboxFacesDay.push_back("Textures/skybox_4/front.png");
-
-    m_SkyboxFacesNight.push_back("Textures/skybox_2/right.png");
-    m_SkyboxFacesNight.push_back("Textures/skybox_2/left.png");
-    m_SkyboxFacesNight.push_back("Textures/skybox_2/top.png");
-    m_SkyboxFacesNight.push_back("Textures/skybox_2/bottom.png");
-    m_SkyboxFacesNight.push_back("Textures/skybox_2/back.png");
-    m_SkyboxFacesNight.push_back("Textures/skybox_2/front.png");
-
-    m_SkyboxDay   = new Skybox(m_SkyboxFacesDay);
-    m_SkyboxNight = new Skybox(m_SkyboxFacesNight);
-    m_Skybox = m_SkyboxDay;
-
-    m_TextureCubeMapDay   = new TextureCubeMap(m_SkyboxFacesDay);
-    m_TextureCubeMapNight = new TextureCubeMap(m_SkyboxFacesNight);
-    m_TextureCubeMap = m_TextureCubeMapDay;
 }
 
 void SceneEditor::SetTextures()
@@ -373,13 +351,17 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
             object->model->Update(object->scale);
     }
 
-    if (m_CurrentSkyboxInt == SKYBOX_DAY) {
-        m_Skybox = m_SkyboxDay;
-        m_TextureCubeMap = m_TextureCubeMapDay;
-    }
-    else if (m_CurrentSkyboxInt == SKYBOX_NIGHT) {
-        m_Skybox = m_SkyboxNight;
-        m_TextureCubeMap = m_TextureCubeMapNight;
+    if (m_HDRI_Edit != m_HDRI_Edit_Prev)
+    {
+        if (m_HDRI_Edit == HDRI_GREENWICH_PARK)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
+        else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
+        else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr");
+        else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr");
+        m_HDRI_Edit_Prev = m_HDRI_Edit;
     }
 
     m_Gizmo->Update(m_Camera->GetPosition(), mainWindow);
@@ -787,9 +769,12 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(m_SceneObjects.size() - 1));
 
-    bool gizmoActive = m_Gizmo->GetActive();
-    int sceneObjectCount = (int)m_SceneObjects.size();
-    Bool3 axesEnabled = m_Gizmo->GetAxesEnabled();
+    ImGui::Separator();
+    ImGui::Text("Select HDRI");
+    ImGui::RadioButton("Greenwich Park",      &m_HDRI_Edit, HDRI_GREENWICH_PARK);
+    ImGui::RadioButton("San Giuseppe Bridge", &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
+    ImGui::RadioButton("Tropical Beach",      &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
+    ImGui::RadioButton("Vignaioli Night",     &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
 
     ImGui::Separator();
     ImGui::Text("Cube Maps");
@@ -800,6 +785,10 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::Checkbox("Draw Scene Pivot", &m_DrawScenePivot);
     ImGui::Checkbox("Orthographic View", &m_OrthographicViewEnabled);
+
+    bool gizmoActive = m_Gizmo->GetActive();
+    int sceneObjectCount = (int)m_SceneObjects.size();
+    Bool3 axesEnabled = m_Gizmo->GetAxesEnabled();
 
     ImGui::Separator();
     ImGui::Text("Transform Gizmo");
@@ -828,11 +817,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Text("Select Model");
     ImGui::RadioButton("Stone Carved", &m_CurrentModelID, MODEL_STONE_CARVED);
     ImGui::RadioButton("Old Stove", &m_CurrentModelID, MODEL_OLD_STOVE);
-
-    ImGui::Separator();
-    ImGui::Text("Select Skybox");
-    ImGui::RadioButton("Day", &m_CurrentSkyboxInt, SKYBOX_DAY);
-    ImGui::RadioButton("Night", &m_CurrentSkyboxInt, SKYBOX_NIGHT);
 
     ImGui::Separator();
     float FOV = GetFOV();
@@ -1476,7 +1460,6 @@ SceneEditor::~SceneEditor()
     delete m_Grid;
     delete m_Raycast;
     delete m_Gizmo;
-    delete m_TextureCubeMap;
 
     ResetScene();
 }

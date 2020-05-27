@@ -12,9 +12,6 @@
 #include "MaterialWorkflowPBR.h"
 
 
-const int SKYBOX_DAY   = 0;
-const int SKYBOX_NIGHT = 1;
-
 const int ACTION_ADD_MESH  = 0;
 const int ACTION_ADD_MODEL = 1;
 
@@ -24,6 +21,11 @@ const int MODEL_OLD_STOVE    = 1;
 const int PBR_MAP_ENVIRONMENT = 0;
 const int PBR_MAP_IRRADIANCE  = 1;
 const int PBR_MAP_PREFILTER   = 2;
+
+const int HDRI_GREENWICH_PARK      = 0;
+const int HDRI_SAN_GIUSEPPE_BRIDGE = 1;
+const int HDRI_TROPICAL_BEACH      = 2;
+const int HDRI_VIGNAIOLI_NIGHT     = 3;
 
 
 struct PointSpotLight
@@ -91,6 +93,8 @@ private:
 	float* m_TilingFactorMaterialEdit;
 	bool m_DrawScenePivot;
 	int m_PBR_Map_Edit;
+	int m_HDRI_Edit;
+	int m_HDRI_Edit_Prev;
 
 	float m_MaterialSpecular = 1.0f;
 	float m_MaterialShininess = 256.0f;
@@ -127,18 +131,6 @@ private:
 	glm::vec3 m_DirLightColorPrev;
 
 	bool m_DisplayLightSources;
-
-	std::vector<std::string> m_SkyboxFacesDay;
-	std::vector<std::string> m_SkyboxFacesNight;
-
-	Skybox* m_SkyboxDay;
-	Skybox* m_SkyboxNight;
-
-	int m_CurrentSkyboxInt;
-
-	TextureCubeMap* m_TextureCubeMap;
-	TextureCubeMap* m_TextureCubeMapDay;
-	TextureCubeMap* m_TextureCubeMapNight;
 
 	bool m_UseCubeMaps;
 

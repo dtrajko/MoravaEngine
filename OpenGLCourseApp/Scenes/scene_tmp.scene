@@ -1,5 +1,5 @@
 BeginObject	0
-Position	-0.173003	0.000000	0.054000
+Position	0.000000	3.079999	0.000000
 Rotation	0.000000	0.000000	0.000000
 Scale	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
@@ -8,7 +8,7 @@ TextureName	plain
 TilingFactor	1.000000
 IsSelected	0
 ObjectType	mesh
-MeshType	0
+MeshType	2
 MaterialName	
 TilingFactorMaterial	1.000000
 EndObject
