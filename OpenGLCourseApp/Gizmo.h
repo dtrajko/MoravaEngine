@@ -1,12 +1,12 @@
 #pragma once
 
+#include "Scene.h"
 #include "Shader.h"
 #include "Mesh.h"
 #include "Cylinder.h"
 #include "Cone.h"
 #include "Block.h"
 #include "Ring.h"
-#include "Scene.h"
 
 
 const int GIZMO_MODE_NONE      = 0;
