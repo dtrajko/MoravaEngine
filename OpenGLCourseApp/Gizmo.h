@@ -110,6 +110,6 @@ private:
 
 	float m_FactorTranslate = 0.001f;
 	float m_FactorScale = 0.001f;
-	float m_FactorRotate = 0.02f;
+	float m_FactorRotate = 0.04f;
 	float m_ShiftSpeed = 10.0f;
 };

@@ -1,6 +1,6 @@
 #version 330
 
-layout (location = 0) in vec3 aPos;
+layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec2 aTexCoords;
 layout (location = 2) in vec3 aNormal;
 layout (location = 3) in vec3 aTangent;
@@ -22,13 +22,13 @@ uniform vec4 clipPlane;
 void main()
 {
 
-	FragPos = (model * vec4(aPos, 1.0)).xyz;
+	FragPos = (model * vec4(aPosition, 1.0)).xyz;
 	TexCoords = aTexCoords;
 
-	vec4 WorldPosition = model * vec4(aPos, 1.0);
+	vec4 WorldPosition = model * vec4(aPosition, 1.0);
 	gl_ClipDistance[0] = dot(WorldPosition, clipPlane);
 
-	DirLightSpacePos = dirLightTransform * model * vec4(aPos, 1.0);
+	DirLightSpacePos = dirLightTransform * model * vec4(aPosition, 1.0);
 	
 	mat3 modelVector = transpose(inverse(mat3(model)));
 
