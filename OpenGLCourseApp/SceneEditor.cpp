@@ -23,6 +23,11 @@
 #include <iostream>
 
 
+std::mutex SceneEditor::s_MutexTextures;
+std::mutex SceneEditor::s_MutexMaterials;
+float SceneEditor::m_MaterialSpecular = 1.0f;
+float SceneEditor::m_MaterialShininess = 256.0f;
+
 SceneEditor::SceneEditor()
 {
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 2.0f, 12.0f);
@@ -171,37 +176,63 @@ void SceneEditor::SetSkybox()
 {
 }
 
+void SceneEditor::LoadTexture(std::map<std::string, Texture*>* textures, std::string name, std::string filePath)
+{
+    textures->insert(std::make_pair(name, TextureLoader::Get()->GetTexture(filePath.c_str())));
+}
+
+void SceneEditor::LoadTextureAsync(std::map<std::string, Texture*>* textures, std::string name, std::string filePath)
+{
+    std::lock_guard<std::mutex> lock(s_MutexTextures);
+    auto texture = TextureLoader::Get()->GetTexture(filePath.c_str());
+    textures->insert(std::make_pair(name, texture));
+}
+
+void SceneEditor::LoadMaterial(std::map<std::string, Material*>* materials, std::string name, TextureInfo textureInfo)
+{
+    materials->insert(std::make_pair(name, new Material(textureInfo, m_MaterialSpecular, m_MaterialShininess)));
+}
+
+void SceneEditor::LoadMaterialAsync(std::map<std::string, Material*>* materials, std::string name, TextureInfo textureInfo)
+{
+    std::lock_guard<std::mutex> lock(s_MutexMaterials);
+    auto material = new Material(textureInfo, m_MaterialSpecular, m_MaterialShininess);
+    materials->insert(std::make_pair(name, material));
+}
+
 void SceneEditor::SetTextures()
 {
-    textures.insert(std::make_pair("plain",            TextureLoader::Get()->GetTexture("Textures/plain.png")));
-    textures.insert(std::make_pair("semi_transparent", TextureLoader::Get()->GetTexture("Textures/semi_transparent.png")));
-    textures.insert(std::make_pair("texture_checker",  TextureLoader::Get()->GetTexture("Textures/texture_checker.png")));
-    textures.insert(std::make_pair("wood",             TextureLoader::Get()->GetTexture("Textures/wood.png")));
-    textures.insert(std::make_pair("plank",            TextureLoader::Get()->GetTexture("Textures/texture_plank.png")));
-    textures.insert(std::make_pair("rock",             TextureLoader::Get()->GetTexture("Textures/rock.png")));
-    textures.insert(std::make_pair("pyramid",          TextureLoader::Get()->GetTexture("Textures/pyramid.png")));
-    textures.insert(std::make_pair("lego",             TextureLoader::Get()->GetTexture("Textures/lego.png")));
-    textures.insert(std::make_pair("marble",           TextureLoader::Get()->GetTexture("Textures/marble.jpg")));
-    textures.insert(std::make_pair("metal",            TextureLoader::Get()->GetTexture("Textures/metal.png")));
-    textures.insert(std::make_pair("brick",            TextureLoader::Get()->GetTexture("Textures/brick.png")));
-    textures.insert(std::make_pair("crate",            TextureLoader::Get()->GetTexture("Textures/crate.png")));
-    textures.insert(std::make_pair("grass",            TextureLoader::Get()->GetTexture("Textures/grass.jpg")));
-    textures.insert(std::make_pair("water",            TextureLoader::Get()->GetTexture("Textures/water.png")));
-    textures.insert(std::make_pair("rock2",            TextureLoader::Get()->GetTexture("Textures/rock/Rock-Texture-Surface.jpg")));
-    textures.insert(std::make_pair("planet",           TextureLoader::Get()->GetTexture("Textures/planet/planet_Quom1200.png")));
-    textures.insert(std::make_pair("gold_albedo",      TextureLoader::Get()->GetTexture("Textures/PBR/gold/albedo.png")));
-    textures.insert(std::make_pair("silver_albedo",    TextureLoader::Get()->GetTexture("Textures/PBR/silver/albedo.png")));
-    textures.insert(std::make_pair("rusted_iron",      TextureLoader::Get()->GetTexture("Textures/PBR/rusted_iron/albedo.png")));
-    textures.insert(std::make_pair("grass_albedo",     TextureLoader::Get()->GetTexture("Textures/PBR/grass/albedo.png")));
-    textures.insert(std::make_pair("wall_albedo",      TextureLoader::Get()->GetTexture("Textures/PBR/wall/albedo.png")));
-    textures.insert(std::make_pair("plastic_albedo",   TextureLoader::Get()->GetTexture("Textures/PBR/plastic/albedo.png")));
+    m_TextureInfo.insert(std::make_pair("plain",            "Textures/plain.png"));
+    m_TextureInfo.insert(std::make_pair("semi_transparent", "Textures/semi_transparent.png"));
+    m_TextureInfo.insert(std::make_pair("texture_checker",  "Textures/texture_checker.png"));
+    m_TextureInfo.insert(std::make_pair("wood",             "Textures/wood.png"));
+    m_TextureInfo.insert(std::make_pair("plank",            "Textures/texture_plank.png"));
+    m_TextureInfo.insert(std::make_pair("rock",             "Textures/rock.png"));
+    m_TextureInfo.insert(std::make_pair("pyramid",          "Textures/pyramid.png"));
+    m_TextureInfo.insert(std::make_pair("lego",             "Textures/lego.png"));
+    m_TextureInfo.insert(std::make_pair("marble",           "Textures/marble.jpg"));
+    m_TextureInfo.insert(std::make_pair("metal",            "Textures/metal.png"));
+    m_TextureInfo.insert(std::make_pair("brick",            "Textures/brick.png"));
+    m_TextureInfo.insert(std::make_pair("crate",            "Textures/crate.png"));
+    m_TextureInfo.insert(std::make_pair("grass",            "Textures/grass.jpg"));
+    m_TextureInfo.insert(std::make_pair("water",            "Textures/water.png"));
+    m_TextureInfo.insert(std::make_pair("rock2",            "Textures/rock/Rock-Texture-Surface.jpg"));
+    m_TextureInfo.insert(std::make_pair("planet",           "Textures/planet/planet_Quom1200.png"));
+    m_TextureInfo.insert(std::make_pair("gold_albedo",      "Textures/PBR/gold/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("silver_albedo",    "Textures/PBR/silver/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("rusted_iron",      "Textures/PBR/rusted_iron/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("grass_albedo",     "Textures/PBR/grass/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("wall_albedo",      "Textures/PBR/wall/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("plastic_albedo",   "Textures/PBR/plastic/albedo.png"));
 
-    // PBR/IBL - gold material
-    textures.insert(std::make_pair("goldAlbedoMap",    TextureLoader::Get()->GetTexture("Textures/PBR/gold/albedo.png")));
-    textures.insert(std::make_pair("goldNormalMap",    TextureLoader::Get()->GetTexture("Textures/PBR/gold/normal.png")));
-    textures.insert(std::make_pair("goldMetallicMap",  TextureLoader::Get()->GetTexture("Textures/PBR/gold/metallic.png")));
-    textures.insert(std::make_pair("goldRoughnessMap", TextureLoader::Get()->GetTexture("Textures/PBR/gold/roughness.png")));
-    textures.insert(std::make_pair("goldAOMap",        TextureLoader::Get()->GetTexture("Textures/PBR/gold/ao.png")));
+#define ASYNC_LOAD_TEXTURES 0
+#if ASYNC_LOAD_TEXTURES
+    for (auto textureInfo : m_TextureInfo)
+        m_FuturesTextures.push_back(std::async(std::launch::async, LoadTextureAsync, &textures, textureInfo.first, textureInfo.second));
+#else
+    for (auto textureInfo : m_TextureInfo)
+        LoadTexture(&textures, textureInfo.first, textureInfo.second);
+#endif
 }
 
 void SceneEditor::SetupMaterials()
@@ -213,7 +244,7 @@ void SceneEditor::SetupMaterials()
     textureInfoNone.metallic  = "Textures/plain.png";
     textureInfoNone.roughness = "Textures/plain.png";
     textureInfoNone.ao        = "Textures/plain.png";
-    materials.insert(std::make_pair("none", new Material(textureInfoNone, m_MaterialSpecular, m_MaterialShininess)));
+    m_MaterialInfo.insert(std::make_pair("none", textureInfoNone));
 
     // gold
     TextureInfo textureInfoGold     = {};
@@ -222,7 +253,7 @@ void SceneEditor::SetupMaterials()
     textureInfoGold.metallic        = "Textures/PBR/gold/metallic.png";
     textureInfoGold.roughness       = "Textures/PBR/gold/roughness.png";
     textureInfoGold.ao              = "Textures/PBR/gold/ao.png";
-    materials.insert(std::make_pair("gold", new Material(textureInfoGold, m_MaterialSpecular, m_MaterialShininess)));
+    m_MaterialInfo.insert(std::make_pair("gold", textureInfoGold));
 
     // silver
     TextureInfo textureInfoSilver   = {};
@@ -231,7 +262,7 @@ void SceneEditor::SetupMaterials()
     textureInfoSilver.metallic      = "Textures/PBR/silver/metallic.png";
     textureInfoSilver.roughness     = "Textures/PBR/silver/roughness.png";
     textureInfoSilver.ao            = "Textures/PBR/silver/ao.png";
-    materials.insert(std::make_pair("silver", new Material(textureInfoSilver, m_MaterialSpecular, m_MaterialShininess)));
+    m_MaterialInfo.insert(std::make_pair("silver", textureInfoSilver));
 
     // rusted iron
     TextureInfo textureInfoRustedIron = {};
@@ -240,7 +271,7 @@ void SceneEditor::SetupMaterials()
     textureInfoRustedIron.metallic  = "Textures/PBR/rusted_iron/metallic.png";
     textureInfoRustedIron.roughness = "Textures/PBR/rusted_iron/roughness.png";
     textureInfoRustedIron.ao        = "Textures/PBR/rusted_iron/ao.png";
-    materials.insert(std::make_pair("rusted_iron", new Material(textureInfoRustedIron, m_MaterialSpecular, m_MaterialShininess)));
+    m_MaterialInfo.insert(std::make_pair("rusted_iron", textureInfoRustedIron));
 
     // plastic
     TextureInfo textureInfoPlastic  = {};
@@ -249,16 +280,16 @@ void SceneEditor::SetupMaterials()
     textureInfoPlastic.metallic     = "Textures/PBR/plastic/metallic.png";
     textureInfoPlastic.roughness    = "Textures/PBR/plastic/roughness.png";
     textureInfoPlastic.ao           = "Textures/PBR/plastic/ao.png";
-    materials.insert(std::make_pair("plastic", new Material(textureInfoPlastic, m_MaterialSpecular, m_MaterialShininess)));
+    m_MaterialInfo.insert(std::make_pair("plastic", textureInfoPlastic));
 
-    // futuristic_panel_1
+    // futur_panel
     TextureInfo textureInfoFuturPanel = {};
     textureInfoFuturPanel.albedo    = "Textures/PBR/futuristic_panel_1/futuristic-panels1-albedo.png";
     textureInfoFuturPanel.normal    = "Textures/PBR/futuristic_panel_1/futuristic-panels1-normal-dx.png";
     textureInfoFuturPanel.metallic  = "Textures/PBR/futuristic_panel_1/futuristic-panels1-metallic.png";
     textureInfoFuturPanel.roughness = "Textures/PBR/futuristic_panel_1/futuristic-panels1-roughness.png";
     textureInfoFuturPanel.ao        = "Textures/PBR/futuristic_panel_1/futuristic-panels1-ao.png";
-    materials.insert(std::make_pair("futur_panel_1", new Material(textureInfoFuturPanel, m_MaterialSpecular, m_MaterialShininess)));
+    m_MaterialInfo.insert(std::make_pair("futur_panel", textureInfoFuturPanel));
 
     // dark tiles
     TextureInfo textureInfoDarkTiles = {};
@@ -267,7 +298,7 @@ void SceneEditor::SetupMaterials()
     textureInfoDarkTiles.metallic  = "Textures/PBR/metalness.png";
     textureInfoDarkTiles.roughness = "Textures/PBR/dark_tiles_1/darktiles1_roughness.png";
     textureInfoDarkTiles.ao        = "Textures/PBR/dark_tiles_1/darktiles1_AO.png";
-    materials.insert(std::make_pair("dark_tiles", new Material(textureInfoDarkTiles, m_MaterialSpecular, m_MaterialShininess)));
+    m_MaterialInfo.insert(std::make_pair("dark_tiles", textureInfoDarkTiles));
 
     // mahogany floor
     TextureInfo textureInfoMahoganyFloor = {};
@@ -276,7 +307,7 @@ void SceneEditor::SetupMaterials()
     textureInfoMahoganyFloor.metallic  = "Textures/PBR/mahogany_floor/mahogfloor_metalness.png";
     textureInfoMahoganyFloor.roughness = "Textures/PBR/mahogany_floor/mahogfloor_roughness.png";
     textureInfoMahoganyFloor.ao        = "Textures/PBR/mahogany_floor/mahogfloor_AO.png";
-    materials.insert(std::make_pair("mahogany_floor", new Material(textureInfoMahoganyFloor, m_MaterialSpecular, m_MaterialShininess)));
+    m_MaterialInfo.insert(std::make_pair("mahogany_floor", textureInfoMahoganyFloor));
 
     // aged planks
     TextureInfo textureInfoAgedPlanks = {};
@@ -285,7 +316,7 @@ void SceneEditor::SetupMaterials()
     textureInfoAgedPlanks.metallic  = "Textures/PBR/aged_planks_1/agedplanks1-metalness.png";
     textureInfoAgedPlanks.roughness = "Textures/PBR/aged_planks_1/agedplanks1-roughness.png";
     textureInfoAgedPlanks.ao        = "Textures/PBR/aged_planks_1/agedplanks1-ao.png";
-    materials.insert(std::make_pair("aged_planks", new Material(textureInfoAgedPlanks, m_MaterialSpecular, m_MaterialShininess)));
+    m_MaterialInfo.insert(std::make_pair("aged_planks", textureInfoAgedPlanks));
 
     // harsh bricks
     TextureInfo textureInfoHarshBricks = {};
@@ -294,7 +325,7 @@ void SceneEditor::SetupMaterials()
     textureInfoHarshBricks.metallic  = "Textures/PBR/metalness.png";
     textureInfoHarshBricks.roughness = "Textures/PBR/harsh_bricks/harshbricks-roughness.png";
     textureInfoHarshBricks.ao        = "Textures/PBR/harsh_bricks/harshbricks-ao2.png";
-    materials.insert(std::make_pair("harsh_bricks", new Material(textureInfoHarshBricks, m_MaterialSpecular, m_MaterialShininess)));
+    m_MaterialInfo.insert(std::make_pair("aged_planks", textureInfoHarshBricks));
 
     // Stone Carved (Quixel Megascans)
     TextureInfo textureInfoStoneCarved = {};
@@ -303,7 +334,7 @@ void SceneEditor::SetupMaterials()
     textureInfoStoneCarved.metallic  = "Textures/PBR/Stone_Carved/Metalness.jpg";
     textureInfoStoneCarved.roughness = "Textures/PBR/Stone_Carved/Roughness.jpg";
     textureInfoStoneCarved.ao        = "Textures/PBR/Stone_Carved/Displacement.jpg";
-    materials.insert(std::make_pair("stone_carved", new Material(textureInfoStoneCarved, m_MaterialSpecular, m_MaterialShininess)));
+    m_MaterialInfo.insert(std::make_pair("stone_carved", textureInfoStoneCarved));
 
     // Old Stove (Quixel Megascans)
     TextureInfo textureInfoOldStove = {};
@@ -312,7 +343,16 @@ void SceneEditor::SetupMaterials()
     textureInfoOldStove.metallic  = "Textures/PBR/Old_Stove/Metalness.jpg";
     textureInfoOldStove.roughness = "Textures/PBR/Old_Stove/Roughness.jpg";
     textureInfoOldStove.ao        = "Textures/PBR/Old_Stove/Displacement.jpg";
-    materials.insert(std::make_pair("old_stove", new Material(textureInfoOldStove, m_MaterialSpecular, m_MaterialShininess)));
+    m_MaterialInfo.insert(std::make_pair("old_stove", textureInfoOldStove));
+
+#define ASYNC_LOAD_MATERIALS 0
+#if ASYNC_LOAD_MATERIALS
+    for (auto materialInfo : m_MaterialInfo)
+        m_FuturesMaterials.push_back(std::async(std::launch::async, LoadMaterialAsync, &materials, materialInfo.first, materialInfo.second));
+#else
+    for (auto materialInfo : m_MaterialInfo)
+        LoadMaterial(&materials, materialInfo.first, materialInfo.second);
+#endif
 }
 
 void SceneEditor::SetupMeshes()

@@ -11,6 +11,8 @@
 #include "TextureCubeMap.h"
 #include "MaterialWorkflowPBR.h"
 
+#include <future>
+
 
 const int ACTION_ADD_MESH  = 0;
 const int ACTION_ADD_MODEL = 1;
@@ -63,6 +65,12 @@ public:
 	Model* AddNewModel(int modelID, glm::vec3 scale);
 	virtual ~SceneEditor() override;
 
+	static void LoadTexture(std::map<std::string, Texture*>* textures, std::string name, std::string filePath);
+	static void LoadTextureAsync(std::map<std::string, Texture*>* textures, std::string name, std::string filePath);
+
+	static void LoadMaterial(std::map<std::string, Material*>* materials, std::string name, TextureInfo textureInfo);
+	static void LoadMaterialAsync(std::map<std::string, Material*>* materials, std::string name, TextureInfo textureInfo);
+
 private:
 	virtual void SetTextures()    override;
 	virtual void SetupMaterials() override;
@@ -81,6 +89,15 @@ private:
 
 	std::vector<SceneObject*> m_SceneObjects;
 
+	// Async loading of assets
+	std::map<std::string, std::string> m_TextureInfo;
+	std::vector<std::future<void>> m_FuturesTextures;
+	static std::mutex s_MutexTextures;
+
+	std::map<std::string, TextureInfo> m_MaterialInfo;
+	std::vector<std::future<void>> m_FuturesMaterials;
+	static std::mutex s_MutexMaterials;
+
 	// ImGui variables
 	glm::vec3* m_PositionEdit;
 	glm::vec3* m_RotationEdit;
@@ -96,8 +113,8 @@ private:
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;
 
-	float m_MaterialSpecular = 1.0f;
-	float m_MaterialShininess = 256.0f;
+	static float m_MaterialSpecular;
+	static float m_MaterialShininess;
 
 	std::vector<PointSpotLight*> m_PointSpotLights;
 
