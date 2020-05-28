@@ -65,11 +65,14 @@ public:
 	Model* AddNewModel(int modelID, glm::vec3 scale);
 	virtual ~SceneEditor() override;
 
-	static void LoadTexture(std::map<std::string, Texture*>* textures, std::string name, std::string filePath);
-	static void LoadTextureAsync(std::map<std::string, Texture*>* textures, std::string name, std::string filePath);
+	static void LoadTexture(std::map<std::string, Texture*>& textures, std::string name, std::string filePath);
+	static void LoadTextureAsync(std::map<std::string, Texture*>& textures, std::string name, std::string filePath);
 
-	static void LoadMaterial(std::map<std::string, Material*>* materials, std::string name, TextureInfo textureInfo);
-	static void LoadMaterialAsync(std::map<std::string, Material*>* materials, std::string name, TextureInfo textureInfo);
+	static void LoadMaterial(std::map<std::string, Material*>& materials, std::string name, TextureInfo textureInfo);
+	static void LoadMaterialAsync(std::map<std::string, Material*>& materials, std::string name, TextureInfo textureInfo);
+
+	Texture* HotLoadTexture(std::string textureName);
+	Material* HotLoadMaterial(std::string materialName);
 
 private:
 	virtual void SetTextures()    override;

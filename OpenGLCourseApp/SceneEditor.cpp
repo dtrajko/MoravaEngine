@@ -176,28 +176,72 @@ void SceneEditor::SetSkybox()
 {
 }
 
-void SceneEditor::LoadTexture(std::map<std::string, Texture*>* textures, std::string name, std::string filePath)
+void SceneEditor::LoadTexture(std::map<std::string, Texture*>& textures, std::string name, std::string filePath)
 {
-    textures->insert(std::make_pair(name, TextureLoader::Get()->GetTexture(filePath.c_str())));
+    textures.insert(std::make_pair(name, TextureLoader::Get()->GetTexture(filePath.c_str())));
 }
 
-void SceneEditor::LoadTextureAsync(std::map<std::string, Texture*>* textures, std::string name, std::string filePath)
+void SceneEditor::LoadTextureAsync(std::map<std::string, Texture*>& textures, std::string name, std::string filePath)
 {
     std::lock_guard<std::mutex> lock(s_MutexTextures);
     auto texture = TextureLoader::Get()->GetTexture(filePath.c_str());
-    textures->insert(std::make_pair(name, texture));
+    textures.insert(std::make_pair(name, texture));
 }
 
-void SceneEditor::LoadMaterial(std::map<std::string, Material*>* materials, std::string name, TextureInfo textureInfo)
+void SceneEditor::LoadMaterial(std::map<std::string, Material*>& materials, std::string name, TextureInfo textureInfo)
 {
-    materials->insert(std::make_pair(name, new Material(textureInfo, m_MaterialSpecular, m_MaterialShininess)));
+    materials.insert(std::make_pair(name, new Material(textureInfo, m_MaterialSpecular, m_MaterialShininess)));
 }
 
-void SceneEditor::LoadMaterialAsync(std::map<std::string, Material*>* materials, std::string name, TextureInfo textureInfo)
+void SceneEditor::LoadMaterialAsync(std::map<std::string, Material*>& materials, std::string name, TextureInfo textureInfo)
 {
     std::lock_guard<std::mutex> lock(s_MutexMaterials);
     auto material = new Material(textureInfo, m_MaterialSpecular, m_MaterialShininess);
-    materials->insert(std::make_pair(name, material));
+    materials.insert(std::make_pair(name, material));
+}
+
+Texture* SceneEditor::HotLoadTexture(std::string textureName)
+{
+    // Load texture if not available in textures map
+    auto textureInfoIterator = m_TextureInfo.find(textureName);
+    auto textureIterator = textures.find(textureName);
+
+    if (textureInfoIterator == m_TextureInfo.end())
+        return nullptr;
+
+    if (textureIterator != textures.end())
+        return textureIterator->second;
+
+    LoadTexture(std::ref(textures), textureName, textureInfoIterator->second);
+
+    textureIterator = textures.find(textureName);
+
+    if (textureIterator == textures.end())
+        return nullptr;
+
+    return textureIterator->second;
+}
+
+Material* SceneEditor::HotLoadMaterial(std::string materialName)
+{
+    // Load Material if not available in materials map
+    auto materialInfoIterator = m_MaterialInfo.find(materialName);
+    auto materialIterator = materials.find(materialName);
+
+    if (materialInfoIterator == m_MaterialInfo.end())
+        return nullptr;
+
+    if (materialIterator != materials.end())
+        return materialIterator->second;
+
+    LoadMaterial(std::ref(materials), materialInfoIterator->first, materialInfoIterator->second);
+
+    materialIterator = materials.find(materialName);
+
+    if (materialIterator == materials.end())
+        return nullptr;
+
+    return materialIterator->second;
 }
 
 void SceneEditor::SetTextures()
@@ -228,11 +272,13 @@ void SceneEditor::SetTextures()
 #define ASYNC_LOAD_TEXTURES 0
 #if ASYNC_LOAD_TEXTURES
     for (auto textureInfo : m_TextureInfo)
-        m_FuturesTextures.push_back(std::async(std::launch::async, LoadTextureAsync, &textures, textureInfo.first, textureInfo.second));
+        m_FuturesTextures.push_back(std::async(std::launch::async, LoadTextureAsync, std::ref(textures), textureInfo.first, textureInfo.second));
 #else
-    for (auto textureInfo : m_TextureInfo)
-        LoadTexture(&textures, textureInfo.first, textureInfo.second);
+    //  for (auto textureInfo : m_TextureInfo)
+    //      LoadTexture(std::ref(textures), textureInfo.first, textureInfo.second);
 #endif
+
+    LoadTexture(std::ref(textures), m_TextureInfo.find("plain")->first, m_TextureInfo.find("plain")->second);
 }
 
 void SceneEditor::SetupMaterials()
@@ -348,11 +394,13 @@ void SceneEditor::SetupMaterials()
 #define ASYNC_LOAD_MATERIALS 0
 #if ASYNC_LOAD_MATERIALS
     for (auto materialInfo : m_MaterialInfo)
-        m_FuturesMaterials.push_back(std::async(std::launch::async, LoadMaterialAsync, &materials, materialInfo.first, materialInfo.second));
+        m_FuturesMaterials.push_back(std::async(std::launch::async, LoadMaterialAsync, std::ref(materials), materialInfo.first, materialInfo.second));
 #else
-    for (auto materialInfo : m_MaterialInfo)
-        LoadMaterial(&materials, materialInfo.first, materialInfo.second);
+    //  for (auto materialInfo : m_MaterialInfo)
+    //      LoadMaterial(std::ref(materials), materialInfo.first, materialInfo.second);
 #endif
+
+    LoadMaterial(std::ref(materials), m_MaterialInfo.find("none")->first, m_MaterialInfo.find("none")->second);
 }
 
 void SceneEditor::SetupMeshes()
@@ -748,8 +796,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     // Begin TextureName ImGui drop-down list
     std::vector<const char*> itemsTexture;
-    std::map<std::string, Texture*>::iterator itTexture;
-    for (itTexture = textures.begin(); itTexture != textures.end(); itTexture++)
+    std::map<std::string, std::string>::iterator itTexture;
+    for (itTexture = m_TextureInfo.begin(); itTexture != m_TextureInfo.end(); itTexture++)
         itemsTexture.push_back(itTexture->first.c_str());
     static const char* currentItemTexture = m_TextureNameEdit->c_str();
 
@@ -779,8 +827,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     // Begin MaterialName ImGui drop-down list
     std::vector<const char*> itemsMaterial;
-    std::map<std::string, Material*>::iterator itMaterial;
-    for (itMaterial = materials.begin(); itMaterial != materials.end(); itMaterial++)
+    std::map<std::string, TextureInfo>::iterator itMaterial;
+    for (itMaterial = m_MaterialInfo.begin(); itMaterial != m_MaterialInfo.end(); itMaterial++)
         itemsMaterial.push_back(itMaterial->first.c_str());
     static const char* currentItemMaterial = m_MaterialNameEdit->c_str();
     if (ImGui::BeginCombo("Material Name", currentItemMaterial))
@@ -1283,12 +1331,14 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                     shaderEditor->setMat4("model", object->transform);
                     shaderEditor->setVec4("tintColor", object->color);
                     shaderEditor->setBool("isSelected", object->isSelected);
-                    
-                    if (object->useTexture && object->textureName != "")
-                        textures[object->textureName]->Bind(0);
+
+                    Texture* texture = HotLoadTexture(object->textureName);
+
+                    if (object->useTexture && object->textureName != "" && texture != nullptr)
+                        texture->Bind(0);
                     else
                         textures["plain"]->Bind(0);
-                    
+
                     shaderEditor->setInt("albedoMap", 0);
                     shaderEditor->setFloat("tilingFactor", object->tilingFactor);
                     
@@ -1322,7 +1372,8 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                     shaderEditorPBR->setFloat("material.shininess", m_MaterialShininess);        // TODO - use material attribute
 
                     m_MaterialWorkflowPBR->BindTextures(0);                 // texture slots 0, 1, 2
-                    materials[object->materialName]->BindTextures(3);       // texture slots 3, 4, 5, 6, 7
+                    // materials[object->materialName]->BindTextures(3);    // texture slots 3, 4, 5, 6, 7
+                    HotLoadMaterial(object->materialName)->BindTextures(3); // texture slots 3, 4, 5, 6, 7
 
                     // Shadows in shaderEditorPBR
                     LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
@@ -1350,13 +1401,13 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                 shaderEditorPBR->setFloat("material.shininess", m_MaterialShininess);        // TODO - use material attribute
 
                 m_MaterialWorkflowPBR->BindTextures(0);                 // texture slots 0, 1, 2
-                materials[object->materialName]->BindTextures(3);       // texture slots 3, 4, 5, 6, 7
-                
+                // materials[object->materialName]->BindTextures(3);    // texture slots 3, 4, 5, 6, 7
+                HotLoadMaterial(object->materialName)->BindTextures(3); // texture slots 3, 4, 5, 6, 7
                 // Shadows in shaderEditorPBR
                 LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
                 shaderEditorPBR->setInt("shadowMap", 8);
             }
-        
+
             object->model->RenderModelPBR();
         }
 
