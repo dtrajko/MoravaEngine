@@ -246,28 +246,28 @@ Material* SceneEditor::HotLoadMaterial(std::string materialName)
 
 void SceneEditor::SetTextures()
 {
-    m_TextureInfo.insert(std::make_pair("plain",            "Textures/plain.png"));
-    m_TextureInfo.insert(std::make_pair("semi_transparent", "Textures/semi_transparent.png"));
-    m_TextureInfo.insert(std::make_pair("texture_checker",  "Textures/texture_checker.png"));
-    m_TextureInfo.insert(std::make_pair("wood",             "Textures/wood.png"));
-    m_TextureInfo.insert(std::make_pair("plank",            "Textures/texture_plank.png"));
-    m_TextureInfo.insert(std::make_pair("rock",             "Textures/rock.png"));
-    m_TextureInfo.insert(std::make_pair("pyramid",          "Textures/pyramid.png"));
-    m_TextureInfo.insert(std::make_pair("lego",             "Textures/lego.png"));
-    m_TextureInfo.insert(std::make_pair("marble",           "Textures/marble.jpg"));
-    m_TextureInfo.insert(std::make_pair("metal",            "Textures/metal.png"));
-    m_TextureInfo.insert(std::make_pair("brick",            "Textures/brick.png"));
-    m_TextureInfo.insert(std::make_pair("crate",            "Textures/crate.png"));
-    m_TextureInfo.insert(std::make_pair("grass",            "Textures/grass.jpg"));
-    m_TextureInfo.insert(std::make_pair("water",            "Textures/water.png"));
-    m_TextureInfo.insert(std::make_pair("rock2",            "Textures/rock/Rock-Texture-Surface.jpg"));
-    m_TextureInfo.insert(std::make_pair("planet",           "Textures/planet/planet_Quom1200.png"));
-    m_TextureInfo.insert(std::make_pair("gold_albedo",      "Textures/PBR/gold/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("silver_albedo",    "Textures/PBR/silver/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("rusted_iron",      "Textures/PBR/rusted_iron/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("grass_albedo",     "Textures/PBR/grass/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("wall_albedo",      "Textures/PBR/wall/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("plastic_albedo",   "Textures/PBR/plastic/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("plain",              "Textures/plain.png"));
+    m_TextureInfo.insert(std::make_pair("semi_transparent",   "Textures/semi_transparent.png"));
+    m_TextureInfo.insert(std::make_pair("texture_checker",    "Textures/texture_checker.png"));
+    m_TextureInfo.insert(std::make_pair("wood",               "Textures/wood.png"));
+    m_TextureInfo.insert(std::make_pair("plank",              "Textures/texture_plank.png"));
+    m_TextureInfo.insert(std::make_pair("rock",               "Textures/rock.png"));
+    m_TextureInfo.insert(std::make_pair("pyramid",            "Textures/pyramid.png"));
+    m_TextureInfo.insert(std::make_pair("lego",               "Textures/lego.png"));
+    m_TextureInfo.insert(std::make_pair("marble",             "Textures/marble.jpg"));
+    m_TextureInfo.insert(std::make_pair("metal",              "Textures/metal.png"));
+    m_TextureInfo.insert(std::make_pair("brick",              "Textures/brick.png"));
+    m_TextureInfo.insert(std::make_pair("crate",              "Textures/crate.png"));
+    m_TextureInfo.insert(std::make_pair("grass",              "Textures/grass.jpg"));
+    m_TextureInfo.insert(std::make_pair("water",              "Textures/water.png"));
+    m_TextureInfo.insert(std::make_pair("rock2",              "Textures/rock/Rock-Texture-Surface.jpg"));
+    m_TextureInfo.insert(std::make_pair("planet",             "Textures/planet/planet_Quom1200.png"));
+    m_TextureInfo.insert(std::make_pair("gold_albedo",        "Textures/PBR/gold/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("silver_albedo",      "Textures/PBR/silver/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("rusted_iron",        "Textures/PBR/rusted_iron/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("grass_albedo",       "Textures/PBR/grass/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("wall_albedo",        "Textures/PBR/wall/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("plastic_albedo",     "Textures/PBR/plastic/albedo.png"));
 
 #define ASYNC_LOAD_TEXTURES 0
 #if ASYNC_LOAD_TEXTURES
@@ -390,6 +390,15 @@ void SceneEditor::SetupMaterials()
     textureInfoOldStove.roughness = "Textures/PBR/Old_Stove/Roughness.jpg";
     textureInfoOldStove.ao        = "Textures/PBR/Old_Stove/Displacement.jpg";
     m_MaterialInfo.insert(std::make_pair("old_stove", textureInfoOldStove));
+
+    // Animated Character (Sebastian Lague / ThinMatrix)
+    TextureInfo textureInfoAnimChar = {};
+    textureInfoAnimChar.albedo    = "Textures/AnimatedCharacterDiffuse.png";
+    textureInfoAnimChar.normal = "Textures/PBR/plastic/normal.png";
+    textureInfoAnimChar.metallic = "Textures/PBR/plastic/metallic.png";
+    textureInfoAnimChar.roughness = "Textures/PBR/plastic/roughness.png";
+    textureInfoAnimChar.ao = "Textures/PBR/plastic/ao.png";
+    m_MaterialInfo.insert(std::make_pair("animated_character", textureInfoAnimChar));
 
 #define ASYNC_LOAD_MATERIALS 0
 #if ASYNC_LOAD_MATERIALS
@@ -903,8 +912,9 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::Separator();
     ImGui::Text("Select Model");
-    ImGui::RadioButton("Stone Carved", &m_CurrentModelID, MODEL_STONE_CARVED);
-    ImGui::RadioButton("Old Stove", &m_CurrentModelID, MODEL_OLD_STOVE);
+    ImGui::RadioButton("Stone Carved",       &m_CurrentModelID, MODEL_STONE_CARVED);
+    ImGui::RadioButton("Old Stove",          &m_CurrentModelID, MODEL_OLD_STOVE);
+    ImGui::RadioButton("Animated Character", &m_CurrentModelID, MODEL_ANIMATED);
 
     ImGui::Separator();
     float FOV = GetFOV();
@@ -1120,6 +1130,8 @@ void SceneEditor::AddSceneObject()
             materialName = "stone_carved";
         else if (m_CurrentModelID == MODEL_OLD_STOVE)
             materialName = "old_stove";
+        else if (m_CurrentModelID == MODEL_ANIMATED)
+            materialName = "animated_character";
     }
 
     // Add Scene Object here
@@ -1255,6 +1267,9 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
         break;
     case MODEL_OLD_STOVE:
         model = new Model("Models/Old_Stove/udmheheqx_LOD0.fbx");
+        break;
+    case MODEL_ANIMATED:
+        model = new Model("Models/AnimatedCharacter.dae");
         break;
     default:
         model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");
