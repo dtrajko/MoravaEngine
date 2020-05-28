@@ -15,6 +15,7 @@ Gizmo::Gizmo()
 	m_MouseRelease = { 0.0f, 1.0f };
 	m_PrintObjects = { 0.0f, 1.0f };
 	m_ChangeActive = { 0.0f, 1.0f };
+	m_ChangeMode   = { 0.0f, 1.0f };
 
 	m_AxesEnabled = { false, false, false };
 
@@ -406,6 +407,10 @@ void Gizmo::OnMouseRelease(Window& mainWindow, std::vector<SceneObject*>* sceneO
 
 void Gizmo::ChangeMode(int mode)
 {
+	float currentTimestamp = (float)glfwGetTime();
+	if (currentTimestamp - m_ChangeMode.lastTime < m_ChangeMode.cooldown) return;
+	m_ChangeMode.lastTime = currentTimestamp;
+
 	m_Mode = mode;
 	UpdateTransformFromObject(m_SceneObject);
 	CreateObjects();

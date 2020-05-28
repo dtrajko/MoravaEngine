@@ -66,6 +66,7 @@ private:
 	EventCooldown m_MouseRelease;
 	EventCooldown m_PrintObjects;
 	EventCooldown m_ChangeActive;
+	EventCooldown m_ChangeMode;
 
 	std::vector<GizmoObject*> m_GizmoObjects;
 
