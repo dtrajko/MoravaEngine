@@ -14,6 +14,7 @@ Model::Model()
 
 Model::Model(const std::string& fileName, const std::string& texturesPath)
 {
+	m_TexturesPath = texturesPath;
 	LoadModel(fileName, m_TexturesPath);
 }
 

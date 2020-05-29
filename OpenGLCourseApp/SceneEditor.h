@@ -20,6 +20,9 @@ const int ACTION_ADD_MODEL = 1;
 const int MODEL_STONE_CARVED = 0;
 const int MODEL_OLD_STOVE    = 1;
 const int MODEL_ANIMATED     = 2;
+const int MODEL_BUDDHA       = 3;
+const int MODEL_HHELI        = 4;
+const int MODEL_JEEP         = 5;
 
 const int PBR_MAP_ENVIRONMENT = 0;
 const int PBR_MAP_IRRADIANCE  = 1;

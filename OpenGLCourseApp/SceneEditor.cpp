@@ -268,6 +268,11 @@ void SceneEditor::SetTextures()
     m_TextureInfo.insert(std::make_pair("grass_albedo",       "Textures/PBR/grass/albedo.png"));
     m_TextureInfo.insert(std::make_pair("wall_albedo",        "Textures/PBR/wall/albedo.png"));
     m_TextureInfo.insert(std::make_pair("plastic_albedo",     "Textures/PBR/plastic/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("wal67ar_small",      "Textures/OGLdev/buddha/wal67ar_small.jpg"));
+    m_TextureInfo.insert(std::make_pair("wal69ar_small",      "Textures/OGLdev/buddha/wal69ar_small.jpg"));
+    m_TextureInfo.insert(std::make_pair("hheli",              "Textures/OGLdev/hheli/hheli.bmp"));
+    m_TextureInfo.insert(std::make_pair("jeep_army",          "Textures/OGLdev/jeep/jeep_army.jpg"));
+    m_TextureInfo.insert(std::make_pair("jeep_rood",          "Textures/OGLdev/jeep/jeep_rood.jpg"));
 
 #define ASYNC_LOAD_TEXTURES 0
 #if ASYNC_LOAD_TEXTURES
@@ -399,6 +404,15 @@ void SceneEditor::SetupMaterials()
     textureInfoAnimChar.roughness = "Textures/PBR/plastic/roughness.png";
     textureInfoAnimChar.ao = "Textures/PBR/plastic/ao.png";
     m_MaterialInfo.insert(std::make_pair("animated_character", textureInfoAnimChar));
+
+    // Buddha
+    TextureInfo textureInfoBuddha = {};
+    textureInfoBuddha.albedo    = "Textures/OGLdev/buddha/wal67ar_small.jpg";
+    textureInfoBuddha.normal    = "Textures/PBR/silver/normal.png";
+    textureInfoBuddha.metallic  = "Textures/PBR/silver/metallic.png";
+    textureInfoBuddha.roughness = "Textures/PBR/silver/roughness.png";
+    textureInfoBuddha.ao        = "Textures/PBR/silver/ao.png";
+    m_MaterialInfo.insert(std::make_pair("buddha", textureInfoBuddha));
 
 #define ASYNC_LOAD_MATERIALS 0
 #if ASYNC_LOAD_MATERIALS
@@ -915,6 +929,9 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::RadioButton("Stone Carved",       &m_CurrentModelID, MODEL_STONE_CARVED);
     ImGui::RadioButton("Old Stove",          &m_CurrentModelID, MODEL_OLD_STOVE);
     ImGui::RadioButton("Animated Character", &m_CurrentModelID, MODEL_ANIMATED);
+    ImGui::RadioButton("Buddha",             &m_CurrentModelID, MODEL_BUDDHA);
+    ImGui::RadioButton("HHeli",              &m_CurrentModelID, MODEL_HHELI);
+    ImGui::RadioButton("Jeep",               &m_CurrentModelID, MODEL_JEEP);
 
     ImGui::Separator();
     float FOV = GetFOV();
@@ -1118,6 +1135,9 @@ void SceneEditor::AddSceneObject()
     Model* model = nullptr;
     std::string objectType = "";
     std::string materialName = "";
+    glm::vec3 rotation = glm::vec3(0.0f);
+    glm::vec3 scale = glm::vec3(1.0f);
+    glm::vec3 scaleAABB = glm::vec3(1.0f);
 
     if (m_ActionAddType == ACTION_ADD_MESH) {
         mesh = CreateNewPrimitive(m_CurrentMeshTypeID, glm::vec3(1.0f));
@@ -1126,21 +1146,51 @@ void SceneEditor::AddSceneObject()
     else if (m_ActionAddType == ACTION_ADD_MODEL) {
         model = AddNewModel(m_CurrentModelID, glm::vec3(1.0f));
         objectType = "model";
-        if (m_CurrentModelID == MODEL_STONE_CARVED)
+        if (m_CurrentModelID == MODEL_STONE_CARVED) {
             materialName = "stone_carved";
-        else if (m_CurrentModelID == MODEL_OLD_STOVE)
+            scale = glm::vec3(0.05f);
+            scaleAABB = glm::vec3(20.0f, 40.0f, 10.0f);
+        }
+        else if (m_CurrentModelID == MODEL_OLD_STOVE) {
             materialName = "old_stove";
-        else if (m_CurrentModelID == MODEL_ANIMATED)
+            scale = glm::vec3(0.08f);
+            scaleAABB = glm::vec3(20.0f, 40.0f, 10.0f);
+        }
+        else if (m_CurrentModelID == MODEL_ANIMATED) {
             materialName = "animated_character";
+            rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
+            scale = glm::vec3(0.8f);
+            scaleAABB = glm::vec3(1.0f);
+        }
+        else if (m_CurrentModelID == MODEL_BUDDHA) {
+            materialName = "none";
+            scale = glm::vec3(0.5f);
+            scaleAABB = glm::vec3(1.0f);
+        }
+        else if (m_CurrentModelID == MODEL_HHELI) {
+            materialName = "none";
+            rotation = glm::vec3(0.0f, 90.0f, 0.0f);
+            scale = glm::vec3(0.05f);
+            scaleAABB = glm::vec3(1.0f);
+        }
+        else if (m_CurrentModelID == MODEL_JEEP) {
+            materialName = "none";
+            rotation = glm::vec3(0.0f, -90.0f, 0.0f);
+            scale = glm::vec3(0.01f);
+            scaleAABB = glm::vec3(1.0f);
+        }
     }
 
     // Add Scene Object here
     SceneObject* sceneObject = CreateNewSceneObject();
     sceneObject->objectType = objectType;
+    sceneObject->rotation = rotation;
+    sceneObject->scale = scale;
     sceneObject->mesh = mesh;
     sceneObject->meshType = m_CurrentMeshTypeID;
     sceneObject->model = model;
     sceneObject->materialName = materialName;
+    sceneObject->AABB = new AABB(glm::vec3(0.0f), glm::vec3(0.0f), scaleAABB);
 
     m_SceneObjects.push_back(sceneObject);
     m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
@@ -1271,6 +1321,15 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
     case MODEL_ANIMATED:
         model = new Model("Models/AnimatedCharacter.dae");
         break;
+    case MODEL_BUDDHA:
+        model = new Model("Models/OGLdev/buddha/buddha.obj", "Textures/OGLdev/buddha");
+        break;
+    case MODEL_HHELI:
+        model = new Model("Models/OGLdev/hheli/hheli.obj", "Textures/OGLdev/hheli");
+        break;
+    case MODEL_JEEP:
+        model = new Model("Models/OGLdev/jeep/jeep.obj", "Textures/OGLdev/jeep");
+        break;
     default:
         model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");
         break;
@@ -1320,7 +1379,6 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         // Quixel Megascans models should be downscaled to 2% of their original size
         if (object->objectType == "model") {
             object->transform = glm::scale(object->transform, object->scale);
-            object->transform = glm::scale(object->transform, glm::vec3(0.02f));
         }
 
         shaderEditor->Bind();
@@ -1421,6 +1479,13 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                 // Shadows in shaderEditorPBR
                 LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
                 shaderEditorPBR->setInt("shadowMap", 8);
+
+                // Override albedo map from material with texture, if texture is available
+                if (object->useTexture && object->textureName != "") {
+                    Texture* texture = HotLoadTexture(object->textureName);
+                    texture->Bind(3); // Albedo is at slot 3
+                    shaderEditorPBR->setFloat("tilingFactor", object->tilingFactor);
+                }
             }
 
             object->model->RenderModelPBR();
