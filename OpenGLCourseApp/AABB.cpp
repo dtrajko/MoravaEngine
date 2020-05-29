@@ -38,7 +38,10 @@ AABB::AABB(glm::vec3 positionOrigin, glm::vec3 rotationOrigin, glm::vec3 scaleOr
 
     m_Position = positionOrigin;
     m_Rotation = rotationOrigin;
-    m_Scale = scaleOrigin;
+    m_Scale    = scaleOrigin;
+
+    // m_PositionOrigin = positionOrigin;
+    // m_ScaleOrigin = scaleOrigin;
 
     // printf("AABB::AABB::TransformBounds\n");
     TransformBounds(positionOrigin, rotationOrigin, scaleOrigin);
