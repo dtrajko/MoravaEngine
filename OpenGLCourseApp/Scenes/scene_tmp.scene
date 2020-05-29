@@ -1,42 +1,36 @@
 BeginObject	0
-Position	-4.939015	0.000000	0.000000
-Rotation	0.000000	-90.000000	0.000000
-Scale	0.010000	0.010000	0.010000
+Position	-8.160005	4.470000	0.000000
+Rotation	0.000000	0.000000	0.000000
+Scale	1.000000	1.000000	1.000000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	1
-TextureName	jeep_rood
+Name	
+UseTexture	0
+TextureName	plain
 TilingFactor	1.000000
 IsSelected	0
-ObjectType	model
+ObjectType	mesh
 MeshType	0
-MaterialName	none
+ModelType	0
+MaterialName	
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	1
-Position	4.817008	0.000000	0.000000
-Rotation	0.000000	-90.000000	0.000000
-Scale	0.010000	0.010000	0.010000
+Position	0.000000	0.000000	0.000000
+Rotation	-90.000000	0.000000	0.000000
+Scale	0.150000	0.150000	0.150000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	1
-TextureName	jeep_army
+Name	bob_lamp
+UseTexture	0
+TextureName	plain
 TilingFactor	1.000000
-IsSelected	0
+IsSelected	1
 ObjectType	model
 MeshType	0
-MaterialName	none
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	2
-Position	0.000000	7.810002	-6.550001
-Rotation	0.000000	90.000000	0.000000
-Scale	0.050000	0.050000	0.050000
-Color	1.000000	1.000000	1.000000	1.000000
-UseTexture	1
-TextureName	hheli
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	model
-MeshType	0
+ModelType	6
 MaterialName	none
 TilingFactorMaterial	1.000000
 EndObject

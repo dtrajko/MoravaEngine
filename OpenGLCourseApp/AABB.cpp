@@ -9,19 +9,19 @@ AABB::AABB() : AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f))
 {
 }
 
-AABB::AABB(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
+AABB::AABB(glm::vec3 positionOrigin, glm::vec3 rotationOrigin, glm::vec3 scaleOrigin)
 {
     m_IsColliding = false;
 
     m_BoundMin = glm::vec3(
-        -m_UnitSize,
-        -m_UnitSize,
-        -m_UnitSize);
+        positionOrigin.x - m_UnitSize * scaleOrigin.x,
+        positionOrigin.y - m_UnitSize * scaleOrigin.y,
+        positionOrigin.z - m_UnitSize * scaleOrigin.z);
 
     m_BoundMax = glm::vec3(
-        m_UnitSize,
-        m_UnitSize,
-        m_UnitSize);
+        positionOrigin.x + m_UnitSize * scaleOrigin.x,
+        positionOrigin.y + m_UnitSize * scaleOrigin.y,
+        positionOrigin.z + m_UnitSize * scaleOrigin.z);
 
     m_Vertices = {
         m_BoundMin.x, m_BoundMin.y, m_BoundMax.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 0 - MinX MinY MaxZ
@@ -36,26 +36,33 @@ AABB::AABB(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
 
     m_VerticesInitial = m_Vertices;
 
-    m_Position = position;
-    m_Rotation = rotation;
-    m_Scale = scale;
+    m_Position = positionOrigin;
+    m_Rotation = rotationOrigin;
+    m_Scale = scaleOrigin;
 
     // printf("AABB::AABB::TransformBounds\n");
-    TransformBounds(position, rotation, scale);
+    TransformBounds(positionOrigin, rotationOrigin, scaleOrigin);
 }
 
-void AABB::Update(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
+void AABB::UpdatePosition(glm::vec3 positionOrigin)
 {
-    if (position != m_Position || rotation != m_Rotation || scale != m_Scale)
+    m_PositionOrigin = positionOrigin;
+}
+
+void AABB::Update(glm::vec3 positionObject, glm::vec3 rotationObject, glm::vec3 scaleObject)
+{
+    // printf("AABB::Update scale [ %.2ff %.2ff %.2ff ]\n", scale.x, scale.y, scale.z);
+
+    if (positionObject != m_Position || rotationObject != m_Rotation || scaleObject != m_Scale)
     {
         // printf("AABB::Update::TransformBounds\n");
-        TransformBounds(position, rotation, scale);
+        TransformBounds(positionObject, rotationObject, scaleObject);
     }
 }
 
-void AABB::TransformBounds(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
+void AABB::TransformBounds(glm::vec3 positionObject, glm::vec3 rotationObject, glm::vec3 scaleObject)
 {
-    glm::mat4 transform = Math::CreateTransform(position, rotation, scale);
+    glm::mat4 transform = Math::CreateTransform(m_PositionOrigin + positionObject, rotationObject, m_ScaleOrigin * scaleObject);
 
     size_t vertexCount = m_Vertices.size() / m_VertexStride;
 
@@ -104,18 +111,13 @@ void AABB::TransformBounds(glm::vec3 position, glm::vec3 rotation, glm::vec3 sca
         m_BoundMin.x, m_BoundMax.y, m_BoundMin.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 7 - MinX MaxY MinZ
     };
 
-    m_Position = position;
-    m_Rotation = rotation;
-    m_Scale = scale;
+    m_Position = positionObject;
+    m_Rotation = rotationObject;
+    m_Scale = scaleObject;
 
     // printf("AABB::TransformBounds m_BoundMin [ %.2ff %.2ff %.2ff ]\n", m_BoundMin.x, m_BoundMin.y, m_BoundMin.z);
     // printf("AABB::TransformBounds m_BoundMax [ %.2ff %.2ff %.2ff ]\n", m_BoundMax.x, m_BoundMax.y, m_BoundMax.z);
     // printf("AABB::TransformBounds m_Scale [ %.2ff %.2ff %.2ff ]\n", m_Scale.x, m_Scale.y, m_Scale.z);
-}
-
-void AABB::UpdatePosition(glm::vec3 position)
-{
-    m_Position = position;
 }
 
 glm::vec3 AABB::GetMin() const
@@ -183,23 +185,23 @@ void AABB::Draw()
 bool AABB::Contains(glm::vec3 position, glm::vec3 scale)
 {
 	bool contains = !(
-		m_Position.x + m_Scale.x < position.x || position.x + scale.x < m_Position.x ||
-		m_Position.y + m_Scale.y < position.y || position.y + scale.y < m_Position.y ||
-		m_Position.z + m_Scale.z < position.z || position.z + scale.z < m_Position.z);
+		m_Position.x + (m_ScaleOrigin.x * m_Scale.x) < position.x || position.x + scale.x < m_Position.x ||
+		m_Position.y + (m_ScaleOrigin.y * m_Scale.y) < position.y || position.y + scale.y < m_Position.y ||
+		m_Position.z + (m_ScaleOrigin.z * m_Scale.z) < position.z || position.z + scale.z < m_Position.z);
 	return contains;
 }
 
 /*
-	* https://www.toptal.com/game/video-game-physics-part-ii-collision-detection-for-solid-objects
-	*/
+ * https://www.toptal.com/game/video-game-physics-part-ii-collision-detection-for-solid-objects
+ */
 bool AABB::TestAABBOverlap(AABB * a, AABB * b)
 {
-	float d1x = b->m_Position.x - a->m_Position.x + a->m_Scale.x;
-	float d1y = b->m_Position.y - a->m_Position.y + a->m_Scale.y;
-	float d1z = b->m_Position.z - a->m_Position.z + a->m_Scale.z;
-	float d2x = a->m_Position.x - b->m_Position.x + b->m_Scale.x;
-	float d2y = a->m_Position.y - b->m_Position.y + b->m_Scale.y;
-	float d2z = a->m_Position.z - b->m_Position.z + b->m_Scale.z;
+	float d1x = b->m_Position.x - a->m_Position.x + (a->m_ScaleOrigin.x * a->m_Scale.x);
+    float d1y = b->m_Position.y - a->m_Position.y + (a->m_ScaleOrigin.y * a->m_Scale.y);
+    float d1z = b->m_Position.z - a->m_Position.z + (a->m_ScaleOrigin.z * a->m_Scale.z);
+    float d2x = a->m_Position.x - b->m_Position.x + (b->m_ScaleOrigin.x * b->m_Scale.x);
+    float d2y = a->m_Position.y - b->m_Position.y + (b->m_ScaleOrigin.y * b->m_Scale.y);
+    float d2z = a->m_Position.z - b->m_Position.z + (b->m_ScaleOrigin.z * b->m_Scale.z);
 
 	if (d1x > 0.0f || d1y > 0.0f || d1z > 0.0f)
 		return false;

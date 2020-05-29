@@ -36,10 +36,13 @@ const int MESH_TYPE_RING     = 5;
 struct SceneObject
 {
 	int id;
+	std::string name;
 	glm::mat4 transform;
 	glm::vec3 position;
 	glm::vec3 rotation;
 	glm::vec3 scale;
+	glm::vec3 positionAABB;
+	glm::vec3 scaleAABB;
 	glm::vec4 color;
 	bool useTexture;
 	std::string textureName;
@@ -51,6 +54,7 @@ struct SceneObject
 	Mesh* mesh;
 	int meshType;
 	Model* model;
+	int modelType;
 	std::string materialName;
 	float tilingFactorMaterial;
 };

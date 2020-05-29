@@ -14,12 +14,12 @@ class AABB
 {
 public:
 	AABB();
-	AABB(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
+	AABB(glm::vec3 positionOrigin, glm::vec3 rotationOrigin, glm::vec3 scaleOrigin);
 	bool Contains(glm::vec3 position, glm::vec3 scale);
 	bool TestAABBOverlap(AABB* a, AABB* b);
-	void UpdatePosition(glm::vec3 position);
-	void Update(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
-	void TransformBounds(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
+	void UpdatePosition(glm::vec3 positionOrigin);
+	void Update(glm::vec3 positionObject, glm::vec3 rotationObject, glm::vec3 scaleObject);
+	void TransformBounds(glm::vec3 positionObject, glm::vec3 rotationObject, glm::vec3 scaleObject);
 	void Draw();
 	glm::vec3 GetMin() const;
 	glm::vec3 GetMax() const;
@@ -32,6 +32,9 @@ public:
 	glm::vec3 m_Rotation = glm::vec3(0.0f);
 	glm::vec3 m_Scale = glm::vec3(1.0f);
 	glm::vec4 m_Color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+
+	glm::vec3 m_ScaleOrigin = glm::vec3(1.0f);
+	glm::vec3 m_PositionOrigin = glm::vec3(0.0f);
 
 	glm::vec3 m_BoundMin;
 	glm::vec3 m_BoundMax;

@@ -587,11 +587,21 @@ void SceneEditor::SaveScene()
             std::to_string(m_SceneObjects[i]->scale.x) + "\t" +
             std::to_string(m_SceneObjects[i]->scale.y) + "\t" +
             std::to_string(m_SceneObjects[i]->scale.z));
+        lines.push_back("PositionAABB\t" +
+            std::to_string(m_SceneObjects[i]->AABB->m_PositionOrigin.x) + "\t" +
+            std::to_string(m_SceneObjects[i]->AABB->m_PositionOrigin.y) + "\t" +
+            std::to_string(m_SceneObjects[i]->AABB->m_PositionOrigin.z));
+        lines.push_back("ScaleAABB\t" +
+            std::to_string(m_SceneObjects[i]->AABB->m_ScaleOrigin.x) + "\t" +
+            std::to_string(m_SceneObjects[i]->AABB->m_ScaleOrigin.y) + "\t" +
+            std::to_string(m_SceneObjects[i]->AABB->m_ScaleOrigin.z));
         lines.push_back("Color\t" +
             std::to_string(m_SceneObjects[i]->color.r) + "\t" +
             std::to_string(m_SceneObjects[i]->color.g) + "\t" +
             std::to_string(m_SceneObjects[i]->color.b) + "\t" +
             std::to_string(m_SceneObjects[i]->color.a));
+
+        lines.push_back("Name\t" + m_SceneObjects[i]->name);
         std::string useTexture = m_SceneObjects[i]->useTexture ? "1" : "0";
         lines.push_back("UseTexture\t" + useTexture);
         lines.push_back("TextureName\t" + m_SceneObjects[i]->textureName);
@@ -600,6 +610,7 @@ void SceneEditor::SaveScene()
         lines.push_back("IsSelected\t" + isSelected);
         lines.push_back("ObjectType\t" + m_SceneObjects[i]->objectType);
         lines.push_back("MeshType\t" + std::to_string(m_SceneObjects[i]->meshType));
+        lines.push_back("ModelType\t" + std::to_string(m_SceneObjects[i]->modelType));
         lines.push_back("MaterialName\t" + m_SceneObjects[i]->materialName);
         lines.push_back("TilingFactorMaterial\t" + std::to_string(m_SceneObjects[i]->tilingFactorMaterial));
         lines.push_back("EndObject");
@@ -670,9 +681,21 @@ void SceneEditor::LoadScene()
             sceneObject->scale = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
             // printf("Scale %.2ff %.2ff %.2ff\n", sceneObject.scale.x, sceneObject.scale.y, sceneObject.scale.z);
         }
+        else if (tokens.size() >= 4 && tokens[0] == "PositionAABB") {
+            sceneObject->positionAABB = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
+            // printf("Position %.2ff %.2ff %.2ff\n", sceneObject.position.x, sceneObject.position.y, sceneObject.position.z);
+        }
+        else if (tokens.size() >= 4 && tokens[0] == "ScaleAABB") {
+            sceneObject->scaleAABB = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
+            // printf("Scale %.2ff %.2ff %.2ff\n", sceneObject.scale.x, sceneObject.scale.y, sceneObject.scale.z);
+        }
         else if (tokens.size() >= 5 && tokens[0] == "Color") {
             sceneObject->color = glm::vec4(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]), std::stof(tokens[4]));
             // printf("Color %.2ff %.2ff %.2ff %.2ff\n", sceneObject.color.r, sceneObject.color.g, sceneObject.color.b, sceneObject.color.a);
+        }
+        else if (tokens.size() >= 2 && tokens[0] == "Name") {
+            sceneObject->name = tokens[1];
+            // printf("sceneObject->name %d\n", sceneObject->name
         }
         else if (tokens.size() >= 2 && tokens[0] == "UseTexture") {
             sceneObject->useTexture = std::stoi(tokens[1]) == 1 ? true : false;
@@ -699,6 +722,10 @@ void SceneEditor::LoadScene()
             sceneObject->meshType = std::stoi(tokens[1]);
             // printf("MeshType %d\n", sceneObject.meshType);
         }
+        else if (tokens.size() >= 2 && tokens[0] == "ModelType") {
+            sceneObject->modelType = std::stoi(tokens[1]);
+            // printf("UseTexture %s\n", sceneObject.textureName.c_str());
+        }
         else if (tokens.size() >= 2 && tokens[0] == "MaterialName") {
             sceneObject->materialName = tokens[1];
             // printf("UseTexture %s\n", sceneObject.textureName.c_str());
@@ -710,7 +737,7 @@ void SceneEditor::LoadScene()
         else if (tokens.size() >= 1 && tokens[0] == "EndObject") {
             sceneObject->id = (int)m_SceneObjects.size();
             sceneObject->transform = Math::CreateTransform(sceneObject->position, sceneObject->rotation, sceneObject->scale);
-            sceneObject->AABB  = new AABB(sceneObject->position, sceneObject->rotation, sceneObject->scale);
+            sceneObject->AABB  = new AABB(sceneObject->positionAABB, sceneObject->rotation, sceneObject->scaleAABB);
             sceneObject->pivot = new Pivot(sceneObject->position, sceneObject->scale);
             Mesh* mesh = nullptr;
             Model* model = nullptr;
@@ -718,7 +745,7 @@ void SceneEditor::LoadScene()
                 sceneObject->mesh  = CreateNewPrimitive(sceneObject->meshType, sceneObject->scale);
             }
             else if (sceneObject->objectType == "model")
-                sceneObject->model = AddNewModel(m_CurrentModelID, glm::vec3(1.0f));
+                sceneObject->model = AddNewModel(sceneObject->modelType, sceneObject->scale);
             m_SceneObjects.push_back(sceneObject);
             // printf("EndObject: New SceneObject added to m_SceneObjects...\n");
         }
@@ -932,6 +959,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::RadioButton("Buddha",             &m_CurrentModelID, MODEL_BUDDHA);
     ImGui::RadioButton("HHeli",              &m_CurrentModelID, MODEL_HHELI);
     ImGui::RadioButton("Jeep",               &m_CurrentModelID, MODEL_JEEP);
+    ImGui::RadioButton("Bob Lamp",           &m_CurrentModelID, MODEL_BOB_LAMP);
 
     ImGui::Separator();
     float FOV = GetFOV();
@@ -1101,23 +1129,27 @@ SceneObject* SceneEditor::CreateNewSceneObject()
     // Add Scene Object here
     SceneObject* sceneObject = new SceneObject{
         (int)m_SceneObjects.size(),
-        glm::mat4(1.0f),
-        defaultSpawnPosition,
-        glm::vec3(0.0f),
-        glm::vec3(1.0f),
-        glm::vec4(1.0f),
+        "",                           // Name
+        glm::mat4(1.0f),              // Transform
+        defaultSpawnPosition,         // Position
+        glm::vec3(0.0f),              // Rotation
+        glm::vec3(1.0f),              // Scale
+        defaultSpawnPosition,         // PositionAABB
+        glm::vec3(1.0f),              // ScaleAABB
+        glm::vec4(1.0f),              // Color
         false,
         "plain",
         1.0f,
         true,
         new AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f)),
         new Pivot(glm::vec3(0.0f), glm::vec3(1.0f)),
-        "",      // Object Type
-        nullptr, // Mesh
-        0,
-        nullptr, // Model
-        "",
-        1.0f,
+        "",                           // Object Type
+        nullptr,                      // Mesh
+        -1,                           // meshType
+        nullptr,                      // Model
+        -1,                           // modelType
+        "",                           // materialName
+        1.0f,                         // tilingFactorMaterial
     };
 
     return sceneObject;
@@ -1133,11 +1165,13 @@ void SceneEditor::AddSceneObject()
 
     Mesh* mesh = nullptr;
     Model* model = nullptr;
+    std::string modelName = "";
     std::string objectType = "";
     std::string materialName = "";
     glm::vec3 rotation = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
     glm::vec3 scaleAABB = glm::vec3(1.0f);
+    glm::vec3 positionAABB = glm::vec3(0.0f);
 
     if (m_ActionAddType == ACTION_ADD_MESH) {
         mesh = CreateNewPrimitive(m_CurrentMeshTypeID, glm::vec3(1.0f));
@@ -1147,50 +1181,75 @@ void SceneEditor::AddSceneObject()
         model = AddNewModel(m_CurrentModelID, glm::vec3(1.0f));
         objectType = "model";
         if (m_CurrentModelID == MODEL_STONE_CARVED) {
+            modelName = "stone_carved";
             materialName = "stone_carved";
             scale = glm::vec3(0.05f);
-            scaleAABB = glm::vec3(20.0f, 40.0f, 10.0f);
+            positionAABB = glm::vec3(0.0f, 58.0f, 0.0f);
+            scaleAABB = glm::vec3(74.0f, 116.0f, 40.0f);    
         }
         else if (m_CurrentModelID == MODEL_OLD_STOVE) {
+            modelName = "old_stove";
             materialName = "old_stove";
             scale = glm::vec3(0.08f);
-            scaleAABB = glm::vec3(20.0f, 40.0f, 10.0f);
+            positionAABB = glm::vec3(0.0f, 42.0f, 0.0f);
+            scaleAABB = glm::vec3(30.0f, 84.0f, 30.0f);
         }
         else if (m_CurrentModelID == MODEL_ANIMATED) {
+            modelName = "animated_character";
             materialName = "animated_character";
             rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
             scale = glm::vec3(0.8f);
-            scaleAABB = glm::vec3(1.0f);
+            positionAABB = glm::vec3(0.0f, 0.0f, 5.0f);
+            scaleAABB = glm::vec3(2.0f, 2.0f, 10.0f);
         }
         else if (m_CurrentModelID == MODEL_BUDDHA) {
+            modelName = "buddha";
             materialName = "none";
-            scale = glm::vec3(0.5f);
-            scaleAABB = glm::vec3(1.0f);
+            scale = glm::vec3(1.0f);
+            positionAABB = glm::vec3(0.0f, 5.0f, 0.0f);
+            scaleAABB = glm::vec3(4.0f, 10.0f, 4.0f);
         }
         else if (m_CurrentModelID == MODEL_HHELI) {
+            modelName = "hheli";
             materialName = "none";
             rotation = glm::vec3(0.0f, 90.0f, 0.0f);
             scale = glm::vec3(0.05f);
-            scaleAABB = glm::vec3(1.0f);
+            positionAABB = glm::vec3(0.0f, 30.0f, -40.0f);
+            scaleAABB = glm::vec3(260.0f, 60.0f, 100.0f);
         }
         else if (m_CurrentModelID == MODEL_JEEP) {
+            modelName = "jeep";
             materialName = "none";
             rotation = glm::vec3(0.0f, -90.0f, 0.0f);
             scale = glm::vec3(0.01f);
-            scaleAABB = glm::vec3(1.0f);
+            positionAABB = glm::vec3(0.0f, 130.0f, -10.0f);
+            scaleAABB = glm::vec3(780.0f, 260.0f, 400.0f);
+        }
+        else if (m_CurrentModelID == MODEL_BOB_LAMP) {
+            modelName = "bob_lamp";
+            materialName = "none";
+            rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
+            scale = glm::vec3(0.15f);
+            positionAABB = glm::vec3(0.0f, 0.0f, 30.0f);
+            scaleAABB = glm::vec3(20.0f, 20.0f, 60.0f);
         }
     }
 
     // Add Scene Object here
     SceneObject* sceneObject = CreateNewSceneObject();
+    sceneObject->name = modelName;
     sceneObject->objectType = objectType;
     sceneObject->rotation = rotation;
     sceneObject->scale = scale;
     sceneObject->mesh = mesh;
     sceneObject->meshType = m_CurrentMeshTypeID;
     sceneObject->model = model;
+    sceneObject->modelType = m_CurrentModelID;
     sceneObject->materialName = materialName;
-    sceneObject->AABB = new AABB(glm::vec3(0.0f), glm::vec3(0.0f), scaleAABB);
+    sceneObject->AABB = new AABB(positionAABB, glm::vec3(0.0f), scaleAABB);
+
+    // printf("SceneEditor::AddSceneObject sceneObject->AABB->m_Scale [ %.2ff %.2ff %.2ff ]\n",
+    //     sceneObject->AABB->m_Scale.x, sceneObject->AABB->m_Scale.y, sceneObject->AABB->m_Scale.z);
 
     m_SceneObjects.push_back(sceneObject);
     m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
@@ -1202,7 +1261,7 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
     if (m_CurrentTimestamp - m_ObjectCopy.lastTime < m_ObjectCopy.cooldown) return;
     m_ObjectCopy.lastTime = m_CurrentTimestamp;
 
-    printf("SceneEditor::CopySceneObject sceneObjects = %zu selectedIndex = %i\n", sceneObjects->size(), selectedIndex);
+    // printf("SceneEditor::CopySceneObject sceneObjects = %zu selectedIndex = %i\n", sceneObjects->size(), selectedIndex);
 
     SceneObject* oldSceneObject = nullptr;
 
@@ -1223,10 +1282,13 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
 
     SceneObject* newSceneObject = new SceneObject{
         (int)sceneObjects->size(),
+        oldSceneObject->name,
         oldSceneObject->transform,
         oldSceneObject->position,
         oldSceneObject->rotation,
         oldSceneObject->scale,
+        oldSceneObject->positionAABB,
+        oldSceneObject->scaleAABB,
         oldSceneObject->color,
         oldSceneObject->useTexture,
         oldSceneObject->textureName,
@@ -1238,6 +1300,7 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
         mesh,
         m_CurrentMeshTypeID,
         model,
+        m_CurrentModelID,
         oldSceneObject->materialName,
         oldSceneObject->tilingFactorMaterial
     };
@@ -1329,6 +1392,9 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
         break;
     case MODEL_JEEP:
         model = new Model("Models/OGLdev/jeep/jeep.obj", "Textures/OGLdev/jeep");
+        break;
+    case MODEL_BOB_LAMP:
+        model = new Model("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Textures/OGLdev/BobLamp");
         break;
     default:
         model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");
@@ -1488,9 +1554,17 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                 }
             }
 
-            object->model->RenderModelPBR();
+            if (object->name == "bob_lamp" || object->name == "buddha")
+                object->model->RenderModel(3, 4, false);
+            else
+                object->model->RenderModelPBR();
         }
 
+        glm::vec3 scaleAABB = object->scale * object->AABB->m_Scale;
+        // printf("SceneEditor::Render object->scale [ %.2ff %.2ff %.2ff ] object->AABB->m_Scale [ %.2ff %.2ff %.2ff ] scaleAABB [ %.2ff %.2ff %.2ff ]\n",
+        //     object->scale.x, object->scale.y, object->scale.z,
+        //     object->AABB->m_Scale.x, object->AABB->m_Scale.y, object->AABB->m_Scale.z,
+        //     scaleAABB.x, scaleAABB.y, scaleAABB.z);
         object->AABB->Update(object->position, object->rotation, object->scale);
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
