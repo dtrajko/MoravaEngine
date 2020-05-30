@@ -52,6 +52,10 @@ void RendererEditor::SetShaders()
     shaders.insert(std::make_pair("omni_shadow_map", shaderOmniShadowMap));
     printf("RendererEditor: shaderOmniShadowMap compiled [programID=%d]\n", shaderOmniShadowMap->GetProgramID());
 
+    Shader* shaderSkinning = new Shader("Shaders/OGLdev/skinning.vs", "Shaders/OGLdev/skinning.fs");
+    shaders.insert(std::make_pair("skinning", shaderSkinning));
+    printf("RendererEditor: shaderSkinning compiled [programID=%d]\n", shaderSkinning->GetProgramID());
+
     shaderEditor->Bind();
     shaderEditor->setInt("albedoMap", 0);
     shaderEditor->setInt("cubeMap",   1);
@@ -94,6 +98,11 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     shaderGizmo->Bind();
     shaderGizmo->setMat4("projection", projectionMatrix);
     shaderGizmo->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+
+    Shader* shaderSkinning = shaders["skinning"];
+    shaderSkinning->Bind();
+    shaderSkinning->setMat4("projection", projectionMatrix);
+    shaderSkinning->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
 
     RenderPassShadow(mainWindow, scene, projectionMatrix);
 	RenderPass(mainWindow, scene, projectionMatrix);
@@ -273,6 +282,26 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     }
 
     /**** End editor_object_pbr ****/
+
+    /**** Begin skinning ****/
+    Shader* shaderSkinning = shaders["skinning"];
+    shaderSkinning->Bind();
+
+    shaderSkinning->setVec3("gEyeWorldPos", scene->GetCamera()->GetPosition());
+
+    // Directional Light
+    shaderSkinning->setVec3( "gDirectionalLight.Base.Color",            scene->GetLightManager()->directionalLight.GetColor());
+    shaderSkinning->setFloat("gDirectionalLight.Base.AmbientIntensity", scene->GetLightManager()->directionalLight.GetAmbientIntensity());
+    shaderSkinning->setFloat("gDirectionalLight.Base.DiffuseIntensity", scene->GetLightManager()->directionalLight.GetDiffuseIntensity());
+    shaderSkinning->setVec3( "gDirectionalLight.Direction",             scene->GetLightManager()->directionalLight.GetDirection());
+
+    // TODO: point lights
+    shaderSkinning->setInt("gNumPointLights", 0);
+
+    // TODO: spot lights
+    shaderSkinning->setInt("gNumSpotLights", 0);
+
+    /**** End skinning ****/
 
     /**** Beging gizmo shader ****/
     Shader* shaderGizmo = shaders["gizmo"];

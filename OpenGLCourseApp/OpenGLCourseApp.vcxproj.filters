@@ -118,6 +118,12 @@
     <Filter Include="Source Files\Core">
       <UniqueIdentifier>{74406e15-f47d-4bc2-9e88-da9b94bad14e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Animation">
+      <UniqueIdentifier>{f90e444a-bbff-42dd-afdc-cc9e4d953216}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Animation">
+      <UniqueIdentifier>{a66eceab-9cd7-4180-b4b3-cde1d3564d2c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -407,6 +413,9 @@
     </ClCompile>
     <ClCompile Include="Ring90.cpp">
       <Filter>Source Files\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SkinnedMesh.cpp">
+      <Filter>Source Files\Animation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -718,6 +727,9 @@
     </ClInclude>
     <ClInclude Include="Ring90.h">
       <Filter>Header Files\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinnedMesh.h">
+      <Filter>Header Files\Animation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

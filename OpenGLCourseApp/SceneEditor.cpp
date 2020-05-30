@@ -118,6 +118,7 @@ SceneEditor::SceneEditor()
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
 
     m_CurrentTimestamp = 0.0f;
+    m_StartTimestamp = (float)glfwGetTime();
 
     m_ObjectSelect     = { 0.0f, 0.2f };
     m_ObjectAdd        = { 0.0f, 1.0f };
@@ -429,6 +430,14 @@ void SceneEditor::SetupMaterials()
 void SceneEditor::SetupMeshes()
 {
     m_Quad = new Quad();
+
+    if (!m_SkinnedMeshBobLamp.LoadMesh("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Textures/OGLdev/BobLamp")) {
+        printf("Mesh load failed\n");
+    }
+
+    if (!m_SkinnedMeshAnimChar.LoadMesh("Models/AnimatedCharacter.dae", "Textures")) {
+        printf("Mesh load failed\n");
+    }
 }
 
 void SceneEditor::SetupModels()
@@ -1433,6 +1442,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
     Shader* shaderBackground = shaders["background"];
     Shader* shaderShadowMap  = shaders["shadow_map"];
     Shader* shaderGizmo      = shaders["gizmo"];
+    Shader* shaderSkinning   = shaders["skinning"];
 
     for (auto& object : m_SceneObjects)
     {
@@ -1568,6 +1578,52 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         object->AABB->Update(object->position, object->rotation, object->scale);
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
+
+    /**** Begin Skinning ****/
+    shaderSkinning->Bind();
+
+    shaderSkinning->setInt("gColorMap", 0);
+    shaderSkinning->setFloat("gMatSpecularIntensity", m_MaterialSpecular);
+    shaderSkinning->setFloat("gSpecularPower",        m_MaterialShininess);
+
+    float RunningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
+    m_SkinnedMeshBobLamp.BoneTransform(RunningTime, m_SkinningTransformsBobLamp);
+    m_SkinnedMeshAnimChar.BoneTransform(RunningTime, m_SkinningTransformsAnimChar);
+
+    { // Bob Lamp
+        char locBuff[100] = { '\0' };
+        for (unsigned int i = 0; i < m_SkinningTransformsBobLamp.size(); i++)
+        {
+            snprintf(locBuff, sizeof(locBuff), "gBones[%d]", i);
+            shaderSkinning->setMat4(locBuff, m_SkinningTransformsBobLamp[i]); // glm::mat4(1.0f)
+        }
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(0.1f));
+        shaderSkinning->setMat4("model", model);
+        m_SkinnedMeshBobLamp.Render();
+    }
+
+    { // Animated Character (ThinMatrix)
+        char locBuff[100] = { '\0' };
+        for (unsigned int i = 0; i < m_SkinningTransformsAnimChar.size(); i++)
+        {
+            snprintf(locBuff, sizeof(locBuff), "gBones[%d]", i);
+            shaderSkinning->setMat4(locBuff, m_SkinningTransformsAnimChar[i]); // glm::mat4(1.0f)
+        }
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(0.5f));
+        shaderSkinning->setMat4("model", model);
+        m_SkinnedMeshAnimChar.Render();
+    }
+    /**** End Skinning ****/
 
     if (passType == "main")
     {

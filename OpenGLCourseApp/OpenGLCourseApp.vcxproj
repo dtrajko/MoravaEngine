@@ -172,6 +172,7 @@
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="..\vendor\tinygizmo\tiny-gizmo.cpp" />
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="SkinnedMesh.cpp" />
     <ClCompile Include="Attachment.cpp" />
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="BulletDebugDrawer.cpp" />
@@ -274,6 +275,7 @@
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
     <ClInclude Include="..\vendor\tinygizmo\tiny-gizmo.hpp" />
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="SkinnedMesh.h" />
     <ClInclude Include="Attachment.h" />
     <ClInclude Include="Block.h" />
     <ClInclude Include="BulletDebugDrawer.h" />

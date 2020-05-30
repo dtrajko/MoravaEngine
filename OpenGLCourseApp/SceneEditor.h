@@ -10,6 +10,7 @@
 #include "Gizmo.h"
 #include "TextureCubeMap.h"
 #include "MaterialWorkflowPBR.h"
+#include "SkinnedMesh.h"
 
 #include <future>
 
@@ -137,6 +138,7 @@ private:
 
 	// add object cooldown
 	float m_CurrentTimestamp;
+	float m_StartTimestamp;
 
 	EventCooldown m_ObjectSelect;
 	EventCooldown m_ObjectAdd;
@@ -159,4 +161,9 @@ private:
 
 	bool m_UseCubeMaps;
 
+	SkinnedMesh m_SkinnedMeshBobLamp;
+	std::vector<glm::mat4> m_SkinningTransformsBobLamp;
+
+	SkinnedMesh m_SkinnedMeshAnimChar;
+	std::vector<glm::mat4> m_SkinningTransformsAnimChar;
 };
