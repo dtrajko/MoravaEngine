@@ -24,6 +24,8 @@ bool SkinnedMesh::LoadMesh(const std::string& Filename, const std::string& Textu
 
 	bool Ret = false;
 
+    printf("Loading a SkinnedMesh \t'%s'\n", Filename.c_str());
+
 	m_pScene = m_Importer.ReadFile(Filename.c_str(),
 		aiProcess_Triangulate |
 		aiProcess_GenSmoothNormals |

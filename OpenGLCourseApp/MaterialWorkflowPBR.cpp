@@ -38,6 +38,24 @@ void MaterialWorkflowPBR::BindTextures(unsigned int slot)
 	glBindTexture(GL_TEXTURE_2D, m_BRDF_LUT_Texture);
 }
 
+void MaterialWorkflowPBR::BindEnvironmentCubemap(unsigned int slot)
+{
+	glActiveTexture(GL_TEXTURE0 + slot);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemap);
+}
+
+void MaterialWorkflowPBR::BindIrradianceMap(unsigned int slot)
+{
+	glActiveTexture(GL_TEXTURE0 + slot);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceMap);
+}
+
+void MaterialWorkflowPBR::BindPrefilterMap(unsigned int slot)
+{
+	glActiveTexture(GL_TEXTURE0 + slot);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilterMap);
+}
+
 void MaterialWorkflowPBR::SetupShaders()
 {
 	m_ShaderEquirectangularToCubemap = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/equirectangular_to_cubemap.fs");

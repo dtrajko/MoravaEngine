@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
   <asset><contributor><author>Mixamo</author><authoring_tool>COLLADA Mixamo exporter</authoring_tool><comments></comments></contributor><created>2015-07-08T14:13:32Z</created><modified>2015-07-08T14:13:32Z</modified><revision></revision><title></title><unit meter="0.010000"/><up_axis>Y_UP</up_axis></asset>
+  <library_images>
+    <image id="file6-image" name="file6">
+      <init_from>piratevoid_diffuse.png</init_from>
+    </image>
+  </library_images>
+  <library_materials>
+    <material id="PirateVoid_MAT" name="PirateVoid_MAT">
+      <instance_effect url="#PirateVoid_MAT-fx"/>
+    </material>
+  </library_materials>
   <library_animations>
     <animation id="mixamorig_Hips-anim" name="mixamorig_Hips"><source id="mixamorig_Hips-Matrix-animation-input"><float_array id="mixamorig_Hips-Matrix-animation-input-array" count="251">
 

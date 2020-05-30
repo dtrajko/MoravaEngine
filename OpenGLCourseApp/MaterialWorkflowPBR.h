@@ -21,6 +21,9 @@ public:
 	inline const unsigned int GetBRDF_LUT_Texture() const { return m_BRDF_LUT_Texture; };
 	inline const unsigned int GetEnvironmentCubemap() const { return m_EnvironmentCubemap; };
 	inline Cube* GetSkyboxCube() const { return m_SkyboxCube; };
+	void BindEnvironmentCubemap(unsigned int slot);
+	void BindIrradianceMap(unsigned int slot);
+	void BindPrefilterMap(unsigned int slot);
 
 private:
 	void SetupShaders();

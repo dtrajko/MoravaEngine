@@ -432,11 +432,12 @@ void SceneEditor::SetupMeshes()
     m_Quad = new Quad();
 
     if (!m_SkinnedMeshBobLamp.LoadMesh("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Textures/OGLdev/BobLamp")) {
-        printf("Mesh load failed\n");
+        printf("ERROR: BobLamp mesh load failed\n");
     }
 
     if (!m_SkinnedMeshAnimChar.LoadMesh("Models/AnimatedCharacter.dae", "Textures")) {
-        printf("Mesh load failed\n");
+        printf("ERROR: AnimatedCharacter mesh load failed\n");
+
     }
 }
 
@@ -1495,14 +1496,13 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                     shaderEditor->setInt("albedoMap", 0);
                     shaderEditor->setFloat("tilingFactor", object->tilingFactor);
                     
-                    // m_TextureCubeMap->Bind(1);
-                    glActiveTexture(GL_TEXTURE1);
                     if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
-                        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
+                        m_MaterialWorkflowPBR->BindEnvironmentCubemap(1);
                     else if (m_PBR_Map_Edit == PBR_MAP_IRRADIANCE)
-                        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap());
+                        m_MaterialWorkflowPBR->BindIrradianceMap(1);
                     else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
-                        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap());
+                        m_MaterialWorkflowPBR->BindPrefilterMap(1);
+
                     shaderEditor->setInt("cubeMap", 1);
                     shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
 
@@ -1641,14 +1641,14 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         model = glm::scale(model, glm::vec3(0.05f));
         shaderGlass->setMat4("model", model);
-        
-        glActiveTexture(GL_TEXTURE1);
+
         if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
-            glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
+            m_MaterialWorkflowPBR->BindEnvironmentCubemap(1);
         else if (m_PBR_Map_Edit == PBR_MAP_IRRADIANCE)
-            glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap());
+            m_MaterialWorkflowPBR->BindIrradianceMap(1);
         else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
-            glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap());
+            m_MaterialWorkflowPBR->BindPrefilterMap(1);
+        
         shaderGlass->setInt("uCubemap", 1);
         
         m_GlassShaderModel->RenderPBR();
