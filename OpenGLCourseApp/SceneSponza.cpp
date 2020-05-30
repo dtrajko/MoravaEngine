@@ -156,7 +156,7 @@ void SceneSponza::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 	model = glm::scale(model, glm::vec3(0.008f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	models["sponza"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
+	models["sponza"]->Render(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
 	if (passType == "main")
 	{

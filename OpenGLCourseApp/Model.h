@@ -19,15 +19,15 @@ public:
 	void LoadModel(const std::string& fileName, const std::string& texturesPath = "Textures");
 	void Update(glm::vec3 scale);
 	inline const std::vector <Mesh*> GetMeshList() const { return meshList; };
-	void RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNormalMaps);
-	void RenderModelPBR();
-	void ClearModel();
+	void Render(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNormalMaps);
+	void RenderPBR();
 	~Model();
 
 private:
 	void LoadNode(aiNode* node, const aiScene* scene);
 	void LoadMesh(aiMesh* mesh, const aiScene* scene);
 	void LoadMaterials(const aiScene* scene);
+	void Clear();
 
 private:
 	std::vector <Mesh*> meshList;

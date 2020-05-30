@@ -219,7 +219,7 @@ void Model::Update(glm::vec3 scale)
  * Render Model by using only Diffuse (Albedo) and Normal textures
  * Texture binding done within the method
  */
-void Model::RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNormalMaps)
+void Model::Render(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNormalMaps)
 {
 	for (size_t i = 0; i < meshList.size(); i++)
 	{
@@ -246,7 +246,7 @@ void Model::RenderModel(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNorma
  * Renders meshes in a model after previously binding all PBR textures:
  * Albedo, Normal, Metalness/Roughness, Emissive, Ambient Occlusion
  */
-void Model::RenderModelPBR()
+void Model::RenderPBR()
 {
 	for (size_t i = 0; i < meshList.size(); i++)
 	{
@@ -254,7 +254,7 @@ void Model::RenderModelPBR()
 	}
 }
 
-void Model::ClearModel()
+void Model::Clear()
 {
 	for (size_t i = 0; i < meshList.size(); i++)
 	{
@@ -281,5 +281,5 @@ void Model::ClearModel()
 
 Model::~Model()
 {
-	ClearModel();
+	Clear();
 }

@@ -327,7 +327,7 @@ void SceneJoey::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::stri
 		model = glm::scale(model, glm::vec3(0.1f));
 		shaders["pbrShader"]->setMat4("model", model);
 		materials["cerberus"]->BindTextures(3);
-		models["cerberus"]->RenderModelPBR();
+		models["cerberus"]->RenderPBR();
 	}
 	/* End pbrShader */
 
@@ -360,7 +360,7 @@ void SceneJoey::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::stri
 		model = glm::scale(model, glm::vec3(5.0f));
 		shaders["pbrShaderMRE"]->setMat4("model", model);
 		materials["damaged_helmet"]->BindTextures(3);
-		models["damagedHelmet"]->RenderModelPBR();
+		models["damagedHelmet"]->RenderPBR();
 
 		/* Khronos SciFiHelmet model */
 		model = glm::mat4(1.0f);
@@ -371,7 +371,7 @@ void SceneJoey::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::stri
 		model = glm::scale(model, glm::vec3(5.0f));
 		shaders["pbrShaderMRE"]->setMat4("model", model);
 		materials["sf_helmet"]->BindTextures(3);
-		models["sfHelmet"]->RenderModelPBR();
+		models["sfHelmet"]->RenderPBR();
 	}
 	/* End pbrShaderMRE */
 

@@ -54,6 +54,7 @@ public:
 	bool LoadMesh(const std::string& Filename, const std::string& TexturesDir);
     virtual void Render() override;
     void BoneTransform(float TimeInSeconds, std::vector<glm::mat4>& Transforms);
+    void BindTextures();
 	~SkinnedMesh();
 
 private:

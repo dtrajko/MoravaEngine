@@ -56,6 +56,10 @@ void RendererEditor::SetShaders()
     shaders.insert(std::make_pair("skinning", shaderSkinning));
     printf("RendererEditor: shaderSkinning compiled [programID=%d]\n", shaderSkinning->GetProgramID());
 
+    Shader* shaderGlass = new Shader("Shaders/glass.vs", "Shaders/glass.fs");
+    shaders.insert(std::make_pair("glass", shaderGlass));
+    printf("RendererEditor: shaderGlass compiled [programID=%d]\n", shaderGlass->GetProgramID());
+
     shaderEditor->Bind();
     shaderEditor->setInt("albedoMap", 0);
     shaderEditor->setInt("cubeMap",   1);
@@ -103,6 +107,11 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     shaderSkinning->Bind();
     shaderSkinning->setMat4("projection", projectionMatrix);
     shaderSkinning->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+
+    Shader* shaderGlass = shaders["glass"];
+    shaderGlass->Bind();
+    shaderGlass->setMat4("projection", projectionMatrix);
+    shaderGlass->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
 
     RenderPassShadow(mainWindow, scene, projectionMatrix);
 	RenderPass(mainWindow, scene, projectionMatrix);
@@ -302,6 +311,19 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     shaderSkinning->setInt("gNumSpotLights", 0);
 
     /**** End skinning ****/
+
+    /**** Begin glass ****/
+    Shader* shaderGlass = shaders["glass"];
+    shaderGlass->Bind();
+    shaderGlass->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
+    /**** End glass ****/
+
+    /**** Begin Background shader ****/
+    Shader* shaderBackground = shaders["background"];
+    shaderBackground->Bind();
+    shaderBackground->setMat4("projection", projectionMatrix);
+    shaderBackground->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    /**** End Background shader ****/
 
     /**** Beging gizmo shader ****/
     Shader* shaderGizmo = shaders["gizmo"];

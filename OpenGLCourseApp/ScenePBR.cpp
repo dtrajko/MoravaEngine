@@ -266,7 +266,7 @@ void ScenePBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::strin
 		shaderPBR->setInt("roughnessMap", textureSlots["roughness"]);
 		shaderPBR->setInt("aoMap", textureSlots["ao"]);
 
-		models["cerberus"]->RenderModelPBR();
+		models["cerberus"]->RenderPBR();
 	}
 }
 

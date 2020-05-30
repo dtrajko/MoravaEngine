@@ -155,7 +155,7 @@ void SceneEiffel::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 	model = glm::scale(model, glm::vec3(0.0003f, 0.0003f, 0.0003f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	models["eiffel"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
+	models["eiffel"]->Render(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
 	/* Watchtower model */
 	model = glm::mat4(1.0f);
@@ -166,7 +166,7 @@ void SceneEiffel::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 	model = glm::scale(model, glm::vec3(0.5f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	models["watchtower"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
+	models["watchtower"]->Render(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
 	/* Cerberus model */
 	model = glm::mat4(1.0f);
@@ -177,7 +177,7 @@ void SceneEiffel::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 	model = glm::scale(model, glm::vec3(0.05f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	models["cerberus"]->RenderModel(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
+	models["cerberus"]->Render(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
 	/* Cube */
 	model = glm::mat4(1.0f);

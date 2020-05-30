@@ -444,6 +444,10 @@ void SkinnedMesh::BoneTransform(float TimeInSeconds, std::vector<glm::mat4>& Tra
     }
 }
 
+void SkinnedMesh::BindTextures()
+{
+}
+
 void SkinnedMesh::Clear()
 {
     for (unsigned int i = 0; i < m_Textures.size(); i++) {

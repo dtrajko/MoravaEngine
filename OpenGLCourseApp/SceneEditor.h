@@ -161,9 +161,14 @@ private:
 
 	bool m_UseCubeMaps;
 
+	// Skinning / Animation
 	SkinnedMesh m_SkinnedMeshBobLamp;
 	std::vector<glm::mat4> m_SkinningTransformsBobLamp;
 
 	SkinnedMesh m_SkinnedMeshAnimChar;
 	std::vector<glm::mat4> m_SkinningTransformsAnimChar;
+
+	// Model for the Glass shader
+	Model* m_GlassShaderModel;
+
 };
