@@ -55,6 +55,12 @@ public:
 	virtual void UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults) override;
 	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
+	void RenderSkinnedMeshes(Shader* shader);
+	void RenderLightSources(Shader* shader);
+	void RenderSkybox(Shader* shader);
+	void RenderLineElements(Shader* shader, glm::mat4 projectionMatrix);
+	void RenderFramebufferTextures(Shader* shader);
+	void RenderGlassObjects(Shader* shader);
 	void SetGeometry();
 	void CleanupGeometry();
 	inline Raycast* GetRaycast() const { return m_Raycast; };

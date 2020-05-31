@@ -1462,89 +1462,43 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             object->transform = glm::scale(object->transform, object->scale);
         }
 
-        shaderEditor->Bind();
-        shaderEditor->setMat4("model", object->transform);
-        shaderEditor->setMat4("dirLightTransform", m_LightManager->directionalLight.CalculateLightTransform());
-
-        shaderEditorPBR->Bind();
-        shaderEditorPBR->setMat4("model", object->transform);
-        shaderEditorPBR->setMat4("dirLightTransform", m_LightManager->directionalLight.CalculateLightTransform());
-
-        shaderShadowMap->Bind();
-        shaderShadowMap->setMat4("model", object->transform);
-        shaderShadowMap->setMat4("dirLightTransform", m_LightManager->directionalLight.CalculateLightTransform());
-
         if (object->objectType == "mesh" && object->mesh != nullptr)
         {
             if (object->materialName == "" || object->materialName == "none")
             {
-                if (passType == "main")
-                {
-                    // Render with shaderEditor
-                    shaderEditor->Bind();
-                    shaderEditor->setMat4("model", object->transform);
-                    shaderEditor->setVec4("tintColor", object->color);
-                    shaderEditor->setBool("isSelected", object->isSelected);
+                // Render with shaderEditor
+                shaderEditor->Bind();
+                shaderEditor->setMat4("model", object->transform);
+                shaderEditor->setVec4("tintColor", object->color);
+                shaderEditor->setBool("isSelected", object->isSelected);
 
-                    Texture* texture = HotLoadTexture(object->textureName);
+                Texture* texture = HotLoadTexture(object->textureName);
 
-                    if (object->useTexture && object->textureName != "" && texture != nullptr)
-                        texture->Bind(0);
-                    else
-                        textures["plain"]->Bind(0);
+                if (object->useTexture && object->textureName != "" && texture != nullptr)
+                    texture->Bind(0);
+                else
+                    textures["plain"]->Bind(0);
 
-                    shaderEditor->setInt("albedoMap", 0);
-                    shaderEditor->setFloat("tilingFactor", object->tilingFactor);
+                shaderEditor->setInt("albedoMap", 0);
+                shaderEditor->setFloat("tilingFactor", object->tilingFactor);
                     
-                    if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
-                        m_MaterialWorkflowPBR->BindEnvironmentCubemap(1);
-                    else if (m_PBR_Map_Edit == PBR_MAP_IRRADIANCE)
-                        m_MaterialWorkflowPBR->BindIrradianceMap(1);
-                    else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
-                        m_MaterialWorkflowPBR->BindPrefilterMap(1);
+                if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
+                    m_MaterialWorkflowPBR->BindEnvironmentCubemap(1);
+                else if (m_PBR_Map_Edit == PBR_MAP_IRRADIANCE)
+                    m_MaterialWorkflowPBR->BindIrradianceMap(1);
+                else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
+                    m_MaterialWorkflowPBR->BindPrefilterMap(1);
 
-                    shaderEditor->setInt("cubeMap", 1);
-                    shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
+                shaderEditor->setInt("cubeMap", 1);
+                shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
 
-                    // Shadows in shaderEditor
-                    LightManager::directionalLight.GetShadowMap()->Read(2);
-                    shaderEditor->setInt("shadowMap", 2);
-                }
+                // Shadows in shaderEditor
+                LightManager::directionalLight.GetShadowMap()->Read(2);
+                shaderEditor->setInt("shadowMap", 2);
             }
             else {
-                if (passType == "main")
-                {
-                    // Render with shaderEditorPBR
-                    shaderEditorPBR->Bind();
-                    shaderEditorPBR->setMat4("model", object->transform);
-                    shaderEditorPBR->setVec4("tintColor", object->color);
-                    shaderEditorPBR->setBool("isSelected", object->isSelected);
-                    shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
-
-                    shaderEditorPBR->setFloat("material.specularIntensity", m_MaterialSpecular); // TODO - use material attribute
-                    shaderEditorPBR->setFloat("material.shininess", m_MaterialShininess);        // TODO - use material attribute
-
-                    m_MaterialWorkflowPBR->BindTextures(0);                 // texture slots 0, 1, 2
-                    // materials[object->materialName]->BindTextures(3);    // texture slots 3, 4, 5, 6, 7
-                    HotLoadMaterial(object->materialName)->BindTextures(3); // texture slots 3, 4, 5, 6, 7
-
-                    // Shadows in shaderEditorPBR
-                    LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
-                    shaderEditorPBR->setInt("shadowMap", 8);
-                }
-            }
-
-            // Render by shaderEditor OR shaderEditorPBR
-            object->mesh->Render();
-        }
-
-        if (object->objectType == "model" && object->model != nullptr)
-        {
-            // Quixel Megascans model
-            if (passType == "main")
-            {
+                // Render with shaderEditorPBR
                 shaderEditorPBR->Bind();
-
                 shaderEditorPBR->setMat4("model", object->transform);
                 shaderEditorPBR->setVec4("tintColor", object->color);
                 shaderEditorPBR->setBool("isSelected", object->isSelected);
@@ -1556,16 +1510,41 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                 m_MaterialWorkflowPBR->BindTextures(0);                 // texture slots 0, 1, 2
                 // materials[object->materialName]->BindTextures(3);    // texture slots 3, 4, 5, 6, 7
                 HotLoadMaterial(object->materialName)->BindTextures(3); // texture slots 3, 4, 5, 6, 7
+
                 // Shadows in shaderEditorPBR
                 LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
                 shaderEditorPBR->setInt("shadowMap", 8);
+            }
 
-                // Override albedo map from material with texture, if texture is available
-                if (object->useTexture && object->textureName != "") {
-                    Texture* texture = HotLoadTexture(object->textureName);
-                    texture->Bind(3); // Albedo is at slot 3
-                    shaderEditorPBR->setFloat("tilingFactor", object->tilingFactor);
-                }
+            // Render by shaderEditor OR shaderEditorPBR
+            object->mesh->Render();
+        }
+
+        if (object->objectType == "model" && object->model != nullptr)
+        {
+            // Quixel Megascans model
+            shaderEditorPBR->Bind();
+
+            shaderEditorPBR->setMat4("model", object->transform);
+            shaderEditorPBR->setVec4("tintColor", object->color);
+            shaderEditorPBR->setBool("isSelected", object->isSelected);
+            shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
+
+            shaderEditorPBR->setFloat("material.specularIntensity", m_MaterialSpecular); // TODO - use material attribute
+            shaderEditorPBR->setFloat("material.shininess", m_MaterialShininess);        // TODO - use material attribute
+
+            m_MaterialWorkflowPBR->BindTextures(0);                 // texture slots 0, 1, 2
+            // materials[object->materialName]->BindTextures(3);    // texture slots 3, 4, 5, 6, 7
+            HotLoadMaterial(object->materialName)->BindTextures(3); // texture slots 3, 4, 5, 6, 7
+            // Shadows in shaderEditorPBR
+            LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
+            shaderEditorPBR->setInt("shadowMap", 8);
+
+            // Override albedo map from material with texture, if texture is available
+            if (object->useTexture && object->textureName != "") {
+                Texture* texture = HotLoadTexture(object->textureName);
+                texture->Bind(3); // Albedo is at slot 3
+                shaderEditorPBR->setFloat("tilingFactor", object->tilingFactor);
             }
 
             if (object->name == "bob_lamp" || object->name == "buddha")
@@ -1575,189 +1554,187 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         }
 
         glm::vec3 scaleAABB = object->scale * object->AABB->m_Scale;
-        // printf("SceneEditor::Render object->scale [ %.2ff %.2ff %.2ff ] object->AABB->m_Scale [ %.2ff %.2ff %.2ff ] scaleAABB [ %.2ff %.2ff %.2ff ]\n",
-        //     object->scale.x, object->scale.y, object->scale.z,
-        //     object->AABB->m_Scale.x, object->AABB->m_Scale.y, object->AABB->m_Scale.z,
-        //     scaleAABB.x, scaleAABB.y, scaleAABB.z);
         object->AABB->Update(object->position, object->rotation, object->scale);
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
 
-    /**** Begin Skinning ****/
+    RenderSkinnedMeshes(shaderSkinning);
+    RenderGlassObjects(shaderGlass);
+
+    if (passType == "main")
+    {
+        RenderLightSources(shaderGizmo);
+        RenderSkybox(shaderBackground);
+        RenderLineElements(shaderBasic, projectionMatrix);
+        RenderFramebufferTextures(shaderEditor);
+
+        // Render gizmo on front of everything (depth mask enabled)
+        if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
+            m_Gizmo->Render(shaderGizmo);
+    }
+}
+
+void SceneEditor::RenderSkinnedMeshes(Shader* shaderSkinning)
+{
+    shaderSkinning->Bind();
+    shaderSkinning->setInt("gColorMap", 0);
+    shaderSkinning->setFloat("gMatSpecularIntensity", m_MaterialSpecular);
+    shaderSkinning->setFloat("gSpecularPower", m_MaterialShininess);
+
     float RunningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
     m_SkinnedMeshBobLamp.BoneTransform(RunningTime, m_SkinningTransformsBobLamp);
     m_SkinnedMeshAnimChar.BoneTransform(RunningTime, m_SkinningTransformsAnimChar);
 
-    shaderSkinning->Bind();
-    shaderSkinning->setInt("gColorMap", 1);
-    shaderSkinning->setFloat("gMatSpecularIntensity", m_MaterialSpecular);
-    shaderSkinning->setFloat("gSpecularPower", m_MaterialShininess);
+    glm::mat4 model = glm::mat4(1.0f);
+    char locBuff[100] = { '\0' };
 
+    // Bob Lamp
+    for (unsigned int i = 0; i < m_SkinningTransformsBobLamp.size(); i++)
     {
-        // Bob Lamp
-        char locBuff[100] = { '\0' };
-        for (unsigned int i = 0; i < m_SkinningTransformsBobLamp.size(); i++)
-        {
-            snprintf(locBuff, sizeof(locBuff), "gBones[%d]", i);
-            shaderSkinning->setMat4(locBuff, m_SkinningTransformsBobLamp[i]); // glm::mat4(1.0f)
-        }
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::scale(model, glm::vec3(0.1f));
-        shaderSkinning->setMat4("model", model);
-        m_SkinnedMeshBobLamp.Render();
+        snprintf(locBuff, sizeof(locBuff), "gBones[%d]", i);
+        shaderSkinning->setMat4(locBuff, m_SkinningTransformsBobLamp[i]); // glm::mat4(1.0f)
     }
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(0.1f));
+    shaderSkinning->setMat4("model", model);
+    m_SkinnedMeshBobLamp.Render();
 
+    // Animated Character (ThinMatrix)
+    for (unsigned int i = 0; i < m_SkinningTransformsAnimChar.size(); i++)
     {
-        // Animated Character (ThinMatrix)
-        char locBuff[100] = { '\0' };
-        for (unsigned int i = 0; i < m_SkinningTransformsAnimChar.size(); i++)
-        {
-            snprintf(locBuff, sizeof(locBuff), "gBones[%d]", i);
-            shaderSkinning->setMat4(locBuff, m_SkinningTransformsAnimChar[i]); // glm::mat4(1.0f)
-        }
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::scale(model, glm::vec3(0.5f));
-        shaderSkinning->setMat4("model", model);
-        m_SkinnedMeshAnimChar.Render();
+        snprintf(locBuff, sizeof(locBuff), "gBones[%d]", i);
+        shaderSkinning->setMat4(locBuff, m_SkinningTransformsAnimChar[i]); // glm::mat4(1.0f)
     }
-    /**** End Skinning ****/
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(0.5f));
+    shaderSkinning->setMat4("model", model);
+    m_SkinnedMeshAnimChar.Render();
+}
 
-    /**** Begin Glass (Reflection/Refraction/Fresnel) ****/
+void SceneEditor::RenderLightSources(Shader* shaderGizmo)
+{
+    shaderGizmo->Bind();
+
+    textures["plain"]->Bind(0);
+    textures["plain"]->Bind(1);
+    textures["plain"]->Bind(2);
+
+    glm::mat4 model;
+
+    // Directional light (somewhere on pozitive Y axis, at X=0, Z=0)
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-10.0f, 10.0f, 10.0f));
+    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().x * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    model = glm::scale(model, glm::vec3(1.0f));
+    shaderGizmo->setMat4("model", model);
+    shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->directionalLight.GetColor(), 1.0f));
+    if (m_DisplayLightSources)
+        meshes["cone"]->Render();
+
+    // Point lights - render Sphere (Light source)
+    for (unsigned int i = 0; i < m_LightManager->pointLightCount; i++)
     {
-        shaderGlass->Bind();
-        
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, -10.0f));
-        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::scale(model, glm::vec3(0.05f));
-        shaderGlass->setMat4("model", model);
-
-        if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
-            m_MaterialWorkflowPBR->BindEnvironmentCubemap(1);
-        else if (m_PBR_Map_Edit == PBR_MAP_IRRADIANCE)
-            m_MaterialWorkflowPBR->BindIrradianceMap(1);
-        else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
-            m_MaterialWorkflowPBR->BindPrefilterMap(1);
-        
-        shaderGlass->setInt("uCubemap", 1);
-        
-        m_GlassShaderModel->RenderPBR();
-    }
-    /**** End Glass (Reflection/Refraction/Fresnel) ****/
-
-    if (passType == "main")
-    {
-        // Render spheres on light positions
-        // Directional light (somewhere on pozitive Y axis, at X=0, Z=0)
-        // Render Sphere (Light source)
-        glm::mat4 model;
-
-        textures["plain"]->Bind(0);
-        textures["plain"]->Bind(1);
-        textures["plain"]->Bind(2);
-
-        shaderGizmo->Bind();
-
-        // Directional Light
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-10.0f, 10.0f, 10.0f));
-        model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().x * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-        model = glm::scale(model, glm::vec3(1.0f));
+        model = glm::translate(model, m_LightManager->pointLights[i].GetPosition());
+        model = glm::scale(model, glm::vec3(0.25f));
         shaderGizmo->setMat4("model", model);
-        shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->directionalLight.GetColor(), 1.0f));
-        if (m_DisplayLightSources)
-            meshes["cone"]->Render();
-
-        // Point lights
-        for (unsigned int i = 0; i < m_LightManager->pointLightCount; i++)
-        {
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, m_LightManager->pointLights[i].GetPosition());
-            model = glm::scale(model, glm::vec3(0.25f));
-            shaderGizmo->setMat4("model", model);
-            shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->pointLights[i].GetColor(), 1.0f));
-            if (m_DisplayLightSources && m_LightManager->pointLights[i].GetEnabled())
-                meshes["sphere"]->Render();
-        }
-
-        // Spot lights
-        for (unsigned int i = 0; i < m_LightManager->spotLightCount; i++)
-        {
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, m_LightManager->spotLights[i].GetBasePL()->GetPosition());
-            model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().x * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-            model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-            model = glm::scale(model, glm::vec3(0.25f));
-            shaderGizmo->setMat4("model", model);
-            shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->spotLights[i].GetBasePL()->GetColor(), 1.0f));
-            if (m_DisplayLightSources && m_LightManager->spotLights[i].GetBasePL()->GetEnabled())
-                meshes["cone"]->Render();
-        }
-        /* End of shaderEditor */
-
-        // Skybox shaderBackground
-        /* Begin backgroundShader */
-        RendererBasic::DisableCulling();
-        Shader* shaderBackground = shaders["background"];
-        shaderBackground->Bind();
-        // render skybox (render as last to prevent overdraw)
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
-        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap()); // display irradiance map
-        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap()); // display prefilter map
-
-        shaderBackground->setInt("environmentMap", 0);
-
-        m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
-        /* End backgroundShader */
-
-        /* Begin of shaderBasic */
-        shaderBasic->Bind();
-        shaderBasic->setMat4("projection", projectionMatrix);
-        shaderBasic->setMat4("view", m_Camera->CalculateViewMatrix());
-
-        if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
-        {
-            shaderBasic->setMat4("model", glm::mat4(1.0f));
-            m_SceneObjects[m_SelectedIndex]->AABB->Draw();
-            m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
-        }
-
-        m_Grid->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
-        if (m_DrawScenePivot)
-            m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
-
-        // A quad for displaying a shadow map on it
-        shaderEditor->Bind();
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 10.0f, -20.0f));
-        model = glm::scale(model, glm::vec3(16.0f, 9.0f, 1.0f));
-        shaderEditor->setMat4("model", model);
-        LightManager::directionalLight.GetShadowMap()->Read(0);
-        shaderEditor->setInt("shadowMap", 0);
-        // m_Quad->Render();
-
-        // Render gizmo on front of everything (depth mask enabled)
-        if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
-        {
-            m_Gizmo->Render(shaderGizmo);
-        }
+        shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->pointLights[i].GetColor(), 1.0f));
+        if (m_DisplayLightSources && m_LightManager->pointLights[i].GetEnabled())
+            meshes["sphere"]->Render();
     }
+
+    // Spot lights - render cone
+    for (unsigned int i = 0; i < m_LightManager->spotLightCount; i++)
+    {
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, m_LightManager->spotLights[i].GetBasePL()->GetPosition());
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().x * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.25f));
+        shaderGizmo->setMat4("model", model);
+        shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->spotLights[i].GetBasePL()->GetColor(), 1.0f));
+        if (m_DisplayLightSources && m_LightManager->spotLights[i].GetBasePL()->GetEnabled())
+            meshes["cone"]->Render();
+    }
+}
+
+void SceneEditor::RenderSkybox(Shader* shaderBackground)
+{
+    // Skybox shaderBackground
+    RendererBasic::DisableCulling();
+    shaderBackground->Bind();
+    // render skybox (render as last to prevent overdraw)
+
+    m_MaterialWorkflowPBR->BindEnvironmentCubemap(0);
+    shaderBackground->setInt("environmentMap", 0);
+
+    m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
+}
+
+void SceneEditor::RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix)
+{
+    shaderBasic->Bind();
+    if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
+    {
+        shaderBasic->setMat4("model", glm::mat4(1.0f));
+        m_SceneObjects[m_SelectedIndex]->AABB->Draw();
+        m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+    }
+
+    m_Grid->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+    if (m_DrawScenePivot)
+        m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+
+}
+
+void SceneEditor::RenderFramebufferTextures(Shader* shaderEditor)
+{
+    // A quad for displaying a shadow map on it
+    shaderEditor->Bind();
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 10.0f, -20.0f));
+    model = glm::scale(model, glm::vec3(16.0f, 9.0f, 1.0f));
+    shaderEditor->setMat4("model", model);
+    LightManager::directionalLight.GetShadowMap()->Read(0);
+    shaderEditor->setInt("shadowMap", 0);
+    // m_Quad->Render();
+}
+
+void SceneEditor::RenderGlassObjects(Shader* shaderGlass)
+{
+    // Glass objects (Reflection/Refraction/Fresnel)
+    shaderGlass->Bind();
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, -10.0f));
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(0.05f));
+    shaderGlass->setMat4("model", model);
+
+    if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
+        m_MaterialWorkflowPBR->BindEnvironmentCubemap(1);
+    else if (m_PBR_Map_Edit == PBR_MAP_IRRADIANCE)
+        m_MaterialWorkflowPBR->BindIrradianceMap(1);
+    else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
+        m_MaterialWorkflowPBR->BindPrefilterMap(1);
+
+    shaderGlass->setInt("uCubemap", 1);
+
+    m_GlassShaderModel->RenderPBR();
 }
 
 void SceneEditor::ResetScene()

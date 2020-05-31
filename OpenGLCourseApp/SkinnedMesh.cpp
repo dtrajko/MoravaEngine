@@ -56,7 +56,7 @@ void SkinnedMesh::Render()
         assert(MaterialIndex < m_Textures.size());
 
         if (m_Textures[MaterialIndex]) {
-            m_Textures[MaterialIndex]->Bind(GL_TEXTURE1);
+            m_Textures[MaterialIndex]->Bind(0);
         }
 
         glDrawElementsBaseVertex(GL_TRIANGLES,

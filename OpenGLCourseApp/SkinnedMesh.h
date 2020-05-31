@@ -2,6 +2,7 @@
 
 #include "Mesh.h"
 #include "Texture.h"
+#include "Shader.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>

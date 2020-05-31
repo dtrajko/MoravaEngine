@@ -124,6 +124,8 @@ void RendererEditor::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat
     Shader* shaderShadowMap = shaders["shadow_map"];
     shaderShadowMap->Bind();
 
+    shaderShadowMap->setMat4("dirLightTransform", scene->GetLightManager()->directionalLight.CalculateLightTransform());
+
     DirectionalLight* light = &scene->GetLightManager()->directionalLight;
     glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
@@ -167,6 +169,8 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     Shader* shaderEditor = shaders["editor_object"];
 
     shaderEditor->Bind();
+
+    shaderEditor->setMat4("dirLightTransform", scene->GetLightManager()->directionalLight.CalculateLightTransform());
 
     // Directional Light
     shaderEditor->setBool( "directionalLight.base.enabled", scene->GetLightManager()->directionalLight.GetEnabled());
@@ -257,6 +261,8 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     // initialize static shader uniforms before rendering
     shaderEditorPBR->Bind();
 
+    shaderEditorPBR->setMat4("dirLightTransform", scene->GetLightManager()->directionalLight.CalculateLightTransform());
+
     // directional light
     shaderEditorPBR->setBool( "directionalLight.base.enabled", scene->GetLightManager()->directionalLight.GetEnabled());
     shaderEditorPBR->setVec3( "directionalLight.base.color", scene->GetLightManager()->directionalLight.GetColor());
@@ -289,13 +295,11 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
         shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear", scene->GetLightManager()->spotLights[i].GetBasePL()->GetLinear());
         shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant", scene->GetLightManager()->spotLights[i].GetBasePL()->GetConstant());
     }
-
     /**** End editor_object_pbr ****/
 
     /**** Begin skinning ****/
     Shader* shaderSkinning = shaders["skinning"];
     shaderSkinning->Bind();
-
     shaderSkinning->setVec3("gEyeWorldPos", scene->GetCamera()->GetPosition());
 
     // Directional Light
@@ -335,6 +339,13 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     shaderGizmo->setFloat("directionalLight.base.diffuseIntensity", scene->GetLightManager()->directionalLight.GetDiffuseIntensity());
     shaderGizmo->setVec3( "directionalLight.direction", scene->GetLightManager()->directionalLight.GetDirection());
     /**** End gizmo shader ****/
+
+    /**** Begin of shaderBasic ****/
+    Shader* shaderBasic = shaders["basic"];
+    shaderBasic->Bind();
+    shaderBasic->setMat4("projection", projectionMatrix);
+    shaderBasic->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    /**** End of shaderBasic ****/
 
     if (scene->GetSettings().enableSkybox)
     {
