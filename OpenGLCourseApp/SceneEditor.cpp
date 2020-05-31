@@ -544,6 +544,13 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     if (mainWindow.getKeys()[GLFW_KEY_4])
         m_Gizmo->ChangeMode(GIZMO_MODE_NONE);
+
+    for (auto& object : m_SceneObjects)
+    {
+        glm::vec3 scaleAABB = object->scale * object->AABB->m_Scale;
+        object->AABB->Update(object->position, object->rotation, object->scale);
+        object->pivot->Update(object->position, object->scale + 1.0f);
+    }
 }
 
 void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
@@ -1227,8 +1234,8 @@ void SceneEditor::AddSceneObject()
             materialName = "none";
             rotation = glm::vec3(0.0f, 90.0f, 0.0f);
             scale = glm::vec3(0.05f);
-            positionAABB = glm::vec3(0.0f, 30.0f, -40.0f);
-            scaleAABB = glm::vec3(260.0f, 60.0f, 100.0f);
+            positionAABB = glm::vec3(20.0f, 40.0f, 0.0f);
+            scaleAABB = glm::vec3(260.0f, 80.0f, 100.0f);
         }
         else if (m_CurrentModelID == MODEL_JEEP) {
             modelName = "jeep";
@@ -1552,10 +1559,6 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             else
                 object->model->RenderPBR();
         }
-
-        glm::vec3 scaleAABB = object->scale * object->AABB->m_Scale;
-        object->AABB->Update(object->position, object->rotation, object->scale);
-        object->pivot->Update(object->position, object->scale + 1.0f);
     }
 
     RenderSkinnedMeshes(shaderSkinning);
