@@ -10,6 +10,11 @@ SkinnedMesh::SkinnedMesh()
 {
 }
 
+SkinnedMesh::SkinnedMesh(const std::string& Filename, const std::string& TexturesDir) : SkinnedMesh()
+{
+    LoadMesh(Filename, TexturesDir);
+}
+
 bool SkinnedMesh::LoadMesh(const std::string& Filename, const std::string& TexturesDir)
 {
 	// Release the previously loaded mesh (if it exists)

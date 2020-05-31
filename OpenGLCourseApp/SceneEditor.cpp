@@ -430,15 +430,6 @@ void SceneEditor::SetupMaterials()
 void SceneEditor::SetupMeshes()
 {
     m_Quad = new Quad();
-
-    if (!m_SkinnedMeshBobLamp.LoadMesh("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Textures/OGLdev/BobLamp")) {
-        printf("ERROR: BobLamp mesh load failed\n");
-    }
-
-    if (!m_SkinnedMeshAnimChar.LoadMesh("Models/AnimatedCharacter.dae", "Textures")) {
-        printf("ERROR: AnimatedCharacter mesh load failed\n");
-
-    }
 }
 
 void SceneEditor::SetupModels()
@@ -959,27 +950,27 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::Separator();
     ImGui::Text("Select Add Action Mode");
-    ImGui::RadioButton("Add Mesh Primitive", &m_ActionAddType, ACTION_ADD_MESH);
+    ImGui::RadioButton("Add Mesh",  &m_ActionAddType, ACTION_ADD_MESH);
     ImGui::RadioButton("Add Model", &m_ActionAddType, ACTION_ADD_MODEL);
 
     ImGui::Separator();
-    ImGui::Text("Select Object Type");
-    ImGui::RadioButton("Cube", &m_CurrentMeshTypeID, MESH_TYPE_CUBE);
-    ImGui::RadioButton("Pyramid", &m_CurrentMeshTypeID, MESH_TYPE_PYRAMID);
-    ImGui::RadioButton("Sphere", &m_CurrentMeshTypeID, MESH_TYPE_SPHERE);
-    ImGui::RadioButton("Cylinder", &m_CurrentMeshTypeID, MESH_TYPE_CYLINDER);
-    ImGui::RadioButton("Cone", &m_CurrentMeshTypeID, MESH_TYPE_CONE);
-    ImGui::RadioButton("Ring", &m_CurrentMeshTypeID, MESH_TYPE_RING);
+    ImGui::Text("Select Mesh Type");
+    ImGui::RadioButton("Cube",               &m_CurrentMeshTypeID, MESH_TYPE_CUBE);
+    ImGui::RadioButton("Pyramid",            &m_CurrentMeshTypeID, MESH_TYPE_PYRAMID);
+    ImGui::RadioButton("Sphere",             &m_CurrentMeshTypeID, MESH_TYPE_SPHERE);
+    ImGui::RadioButton("Cylinder",           &m_CurrentMeshTypeID, MESH_TYPE_CYLINDER);
+    ImGui::RadioButton("Cone",               &m_CurrentMeshTypeID, MESH_TYPE_CONE);
+    ImGui::RadioButton("Ring",               &m_CurrentMeshTypeID, MESH_TYPE_RING);
+    ImGui::RadioButton("Bob Lamp",           &m_CurrentMeshTypeID, MESH_TYPE_BOB_LAMP);
+    ImGui::RadioButton("Animated Character", &m_CurrentMeshTypeID, MESH_TYPE_ANIM_CHAR);
 
     ImGui::Separator();
     ImGui::Text("Select Model");
     ImGui::RadioButton("Stone Carved",       &m_CurrentModelID, MODEL_STONE_CARVED);
     ImGui::RadioButton("Old Stove",          &m_CurrentModelID, MODEL_OLD_STOVE);
-    ImGui::RadioButton("Animated Character", &m_CurrentModelID, MODEL_ANIMATED);
     ImGui::RadioButton("Buddha",             &m_CurrentModelID, MODEL_BUDDHA);
     ImGui::RadioButton("HHeli",              &m_CurrentModelID, MODEL_HHELI);
     ImGui::RadioButton("Jeep",               &m_CurrentModelID, MODEL_JEEP);
-    ImGui::RadioButton("Bob Lamp",           &m_CurrentModelID, MODEL_BOB_LAMP);
 
     ImGui::Separator();
     float FOV = GetFOV();
@@ -1196,6 +1187,23 @@ void SceneEditor::AddSceneObject()
     if (m_ActionAddType == ACTION_ADD_MESH) {
         mesh = CreateNewPrimitive(m_CurrentMeshTypeID, glm::vec3(1.0f));
         objectType = "mesh";
+
+        if (m_CurrentMeshTypeID == MESH_TYPE_BOB_LAMP) {
+            modelName = "bob_lamp";
+            materialName = "none";
+            rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
+            scale = glm::vec3(0.1f);
+            positionAABB = glm::vec3(0.0f, 0.0f, 30.0f);
+            scaleAABB = glm::vec3(20.0f, 20.0f, 60.0f);
+        }
+        else if (m_CurrentMeshTypeID == MESH_TYPE_ANIM_CHAR) {
+            modelName = "animated_character";
+            materialName = "animated_character";
+            rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
+            scale = glm::vec3(0.5f);
+            positionAABB = glm::vec3(0.0f, 0.0f, 4.4f);
+            scaleAABB = glm::vec3(2.4f, 2.0f, 8.8f);
+        }
     }
     else if (m_ActionAddType == ACTION_ADD_MODEL) {
         model = AddNewModel(m_CurrentModelID, glm::vec3(1.0f));
@@ -1213,14 +1221,6 @@ void SceneEditor::AddSceneObject()
             scale = glm::vec3(0.08f);
             positionAABB = glm::vec3(0.0f, 42.0f, 0.0f);
             scaleAABB = glm::vec3(30.0f, 84.0f, 30.0f);
-        }
-        else if (m_CurrentModelID == MODEL_ANIMATED) {
-            modelName = "animated_character";
-            materialName = "animated_character";
-            rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
-            scale = glm::vec3(0.5f);
-            positionAABB = glm::vec3(0.0f, 0.0f, 4.4f);
-            scaleAABB = glm::vec3(2.4f, 2.0f, 8.8f);
         }
         else if (m_CurrentModelID == MODEL_BUDDHA) {
             modelName = "buddha";
@@ -1244,14 +1244,6 @@ void SceneEditor::AddSceneObject()
             scale = glm::vec3(0.01f);
             positionAABB = glm::vec3(0.0f, 130.0f, -10.0f);
             scaleAABB = glm::vec3(780.0f, 260.0f, 400.0f);
-        }
-        else if (m_CurrentModelID == MODEL_BOB_LAMP) {
-            modelName = "bob_lamp";
-            materialName = "none";
-            rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
-            scale = glm::vec3(0.15f);
-            positionAABB = glm::vec3(0.0f, 0.0f, 30.0f);
-            scaleAABB = glm::vec3(20.0f, 20.0f, 60.0f);
         }
     }
 
@@ -1383,6 +1375,12 @@ Mesh* SceneEditor::CreateNewPrimitive(int meshTypeID, glm::vec3 scale)
     case MESH_TYPE_RING:
         mesh = new Ring(scale);
         break;
+    case MESH_TYPE_BOB_LAMP:
+        mesh = new SkinnedMesh("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Textures/OGLdev/BobLamp");
+        break;
+    case MESH_TYPE_ANIM_CHAR:
+        mesh = new SkinnedMesh("Models/AnimatedCharacter.dae", "Textures");
+        break;
     default:
         mesh = new Block(scale);
         break;
@@ -1401,9 +1399,6 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
     case MODEL_OLD_STOVE:
         model = new Model("Models/Old_Stove/udmheheqx_LOD0.fbx");
         break;
-    case MODEL_ANIMATED:
-        model = new Model("Models/AnimatedCharacter.dae");
-        break;
     case MODEL_BUDDHA:
         model = new Model("Models/OGLdev/buddha/buddha.obj", "Textures/OGLdev/buddha");
         break;
@@ -1412,9 +1407,6 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
         break;
     case MODEL_JEEP:
         model = new Model("Models/OGLdev/jeep/jeep.obj", "Textures/OGLdev/jeep");
-        break;
-    case MODEL_BOB_LAMP:
-        model = new Model("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Textures/OGLdev/BobLamp");
         break;
     default:
         model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");
@@ -1442,7 +1434,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         object->transform = Math::CreateTransform(object->position, object->rotation, glm::vec3(1.0f));
 
         // For meshes that can't be scaled on vertex level
-        if (object->meshType == MESH_TYPE_RING)
+        if (object->meshType == MESH_TYPE_RING || m_SkinnedMeshes.find(object->meshType) != m_SkinnedMeshes.end())
             object->transform = glm::scale(object->transform, object->scale);
 
         // Quixel Megascans models should be downscaled to 2% of their original size
@@ -1457,7 +1449,12 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 
         if (object->objectType == "mesh" && object->mesh != nullptr)
         {
-            if (material) {
+            if (m_SkinnedMeshes.find(object->meshType) != m_SkinnedMeshes.end())
+            {
+                // Render with shaderSkinning
+                SetUniformsShaderSkinning(shaderSkinning, object);
+            }
+            else if (material) {
                 // Render with shaderEditorPBR
                 SetUniformsShaderEditorPBR(shaderEditorPBR, material, object);
             }
@@ -1481,15 +1478,11 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                 shaderEditorPBR->setFloat("tilingFactor", object->tilingFactor);
             }
 
-            if (object->name == "bob_lamp" || object->name == "buddha")
-                object->model->Render(3, 4, false);
-            else
-                object->model->RenderPBR();
+            object->model->RenderPBR();
         }
     }
 
-    RenderSkinnedMeshes(shaderSkinning);
-    RenderGlassObjects(shaderGlass);
+    // RenderGlassObjects(shaderGlass);
 
     if (passType == "main")
     {
@@ -1553,6 +1546,31 @@ void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture
     shaderEditor->setInt("shadowMap", 2);
 }
 
+void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject)
+{
+    RendererBasic::DisableCulling();
+
+    shaderSkinning->Bind();
+    shaderSkinning->setInt("gColorMap", 0);
+    shaderSkinning->setFloat("gMatSpecularIntensity", m_MaterialSpecular);
+    shaderSkinning->setFloat("gSpecularPower",        m_MaterialShininess);
+
+    SkinnedMesh* skinnedMesh = (SkinnedMesh*)sceneObject->mesh;
+
+    float RunningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
+    skinnedMesh->BoneTransform(RunningTime, m_SkinningTransforms[sceneObject->name]);
+
+    char locBuff[100] = { '\0' };
+
+    for (unsigned int i = 0; i < m_SkinningTransforms[sceneObject->name].size(); i++)
+    {
+        snprintf(locBuff, sizeof(locBuff), "gBones[%d]", i);
+        shaderSkinning->setMat4(locBuff, m_SkinningTransforms[sceneObject->name][i]);
+    }
+
+    shaderSkinning->setMat4("model", sceneObject->transform);
+}
+
 void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix)
 {
     if (mainWindow.getKeys()[GLFW_KEY_O])
@@ -1575,53 +1593,6 @@ void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projecti
     }
 }
 
-void SceneEditor::RenderSkinnedMeshes(Shader* shaderSkinning)
-{
-    RendererBasic::DisableCulling();
-
-    shaderSkinning->Bind();
-    shaderSkinning->setInt("gColorMap", 0);
-    shaderSkinning->setFloat("gMatSpecularIntensity", m_MaterialSpecular);
-    shaderSkinning->setFloat("gSpecularPower", m_MaterialShininess);
-
-    float RunningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
-    m_SkinnedMeshBobLamp.BoneTransform(RunningTime, m_SkinningTransformsBobLamp);
-    m_SkinnedMeshAnimChar.BoneTransform(RunningTime, m_SkinningTransformsAnimChar);
-
-    glm::mat4 model = glm::mat4(1.0f);
-    char locBuff[100] = { '\0' };
-
-    // Bob Lamp
-    for (unsigned int i = 0; i < m_SkinningTransformsBobLamp.size(); i++)
-    {
-        snprintf(locBuff, sizeof(locBuff), "gBones[%d]", i);
-        shaderSkinning->setMat4(locBuff, m_SkinningTransformsBobLamp[i]); // glm::mat4(1.0f)
-    }
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(-3.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::scale(model, glm::vec3(0.1f));
-    shaderSkinning->setMat4("model", model);
-    m_SkinnedMeshBobLamp.Render();
-
-    // Animated Character (ThinMatrix)
-    for (unsigned int i = 0; i < m_SkinningTransformsAnimChar.size(); i++)
-    {
-        snprintf(locBuff, sizeof(locBuff), "gBones[%d]", i);
-        shaderSkinning->setMat4(locBuff, m_SkinningTransformsAnimChar[i]); // glm::mat4(1.0f)
-    }
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(3.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::scale(model, glm::vec3(0.5f));
-    shaderSkinning->setMat4("model", model);
-    m_SkinnedMeshAnimChar.Render();
-}
-
 void SceneEditor::RenderLightSources(Shader* shaderGizmo)
 {
     shaderGizmo->Bind();
@@ -1635,8 +1606,8 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
     // Directional light (somewhere on pozitive Y axis, at X=0, Z=0)
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(-10.0f, 10.0f, 10.0f));
-    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().x * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().x *  90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().y *  90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
     model = glm::scale(model, glm::vec3(1.0f));
@@ -1662,8 +1633,8 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
     {
         model = glm::mat4(1.0f);
         model = glm::translate(model, m_LightManager->spotLights[i].GetBasePL()->GetPosition());
-        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().x * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().x *  90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().y *  90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         model = glm::scale(model, glm::vec3(0.25f));
         shaderGizmo->setMat4("model", model);

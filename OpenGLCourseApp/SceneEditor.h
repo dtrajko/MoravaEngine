@@ -13,6 +13,7 @@
 #include "SkinnedMesh.h"
 
 #include <future>
+#include <set>
 
 
 const int ACTION_ADD_MESH  = 0;
@@ -20,11 +21,9 @@ const int ACTION_ADD_MODEL = 1;
 
 const int MODEL_STONE_CARVED = 0;
 const int MODEL_OLD_STOVE    = 1;
-const int MODEL_ANIMATED     = 2;
-const int MODEL_BUDDHA       = 3;
-const int MODEL_HHELI        = 4;
-const int MODEL_JEEP         = 5;
-const int MODEL_BOB_LAMP     = 6;
+const int MODEL_BUDDHA       = 2;
+const int MODEL_HHELI        = 3;
+const int MODEL_JEEP         = 4;
 
 const int PBR_MAP_ENVIRONMENT = 0;
 const int PBR_MAP_IRRADIANCE  = 1;
@@ -64,7 +63,6 @@ private:
 	virtual void SetupModels()    override;
 	virtual void SetSkybox()      override;
 
-	void RenderSkinnedMeshes(Shader* shader);
 	void RenderLightSources(Shader* shader);
 	void RenderSkybox(Shader* shader);
 	void RenderLineElements(Shader* shader, glm::mat4 projectionMatrix);
@@ -96,6 +94,8 @@ private:
 
 	void SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Material* material, SceneObject* sceneObject);
 	void SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject);
+	void SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject);
+
 	void SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix);
 
 private:
@@ -172,12 +172,8 @@ private:
 
 	bool m_UseCubeMaps;
 
-	// Skinning / Animation
-	SkinnedMesh m_SkinnedMeshBobLamp;
-	std::vector<glm::mat4> m_SkinningTransformsBobLamp;
-
-	SkinnedMesh m_SkinnedMeshAnimChar;
-	std::vector<glm::mat4> m_SkinningTransformsAnimChar;
+	std::set<int> m_SkinnedMeshes = { MESH_TYPE_BOB_LAMP, MESH_TYPE_ANIM_CHAR };
+	std::map<std::string, std::vector<glm::mat4>> m_SkinningTransforms;
 
 	// Model for the Glass shader
 	Model* m_GlassShaderModel;
