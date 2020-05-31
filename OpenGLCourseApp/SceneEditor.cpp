@@ -1218,9 +1218,9 @@ void SceneEditor::AddSceneObject()
             modelName = "animated_character";
             materialName = "animated_character";
             rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
-            scale = glm::vec3(0.8f);
-            positionAABB = glm::vec3(0.0f, 0.0f, 5.0f);
-            scaleAABB = glm::vec3(2.0f, 2.0f, 10.0f);
+            scale = glm::vec3(0.5f);
+            positionAABB = glm::vec3(0.0f, 0.0f, 4.4f);
+            scaleAABB = glm::vec3(2.4f, 2.0f, 8.8f);
         }
         else if (m_CurrentModelID == MODEL_BUDDHA) {
             modelName = "buddha";
@@ -1516,8 +1516,8 @@ void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Material* 
     shaderEditorPBR->setFloat("material.specularIntensity", m_MaterialSpecular);  // TODO - use material attribute
     shaderEditorPBR->setFloat("material.shininess",         m_MaterialShininess); // TODO - use material attribute
 
-    m_MaterialWorkflowPBR->BindTextures(0);                 // texture slots 0, 1, 2
-    material->BindTextures(3);                               // texture slots 3, 4, 5, 6, 7
+    m_MaterialWorkflowPBR->BindTextures(0); // texture slots 0, 1, 2
+    material->BindTextures(3);              // texture slots 3, 4, 5, 6, 7
 
     // Shadows in shaderEditorPBR
     LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
@@ -1566,10 +1566,10 @@ void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projecti
 
     if (m_OrthographicViewEnabled)
     {
-        float left = -(float)mainWindow.GetBufferWidth() / 2.0f / m_FOV;
-        float right = (float)mainWindow.GetBufferWidth() / 2.0f / m_FOV;
+        float left   = -(float)mainWindow.GetBufferWidth() / 2.0f / m_FOV;
+        float right  = (float)mainWindow.GetBufferWidth() / 2.0f / m_FOV;
         float bottom = -(float)mainWindow.GetBufferHeight() / 2.0f / m_FOV;
-        float top = (float)mainWindow.GetBufferHeight() / 2.0f / m_FOV;
+        float top    = (float)mainWindow.GetBufferHeight() / 2.0f / m_FOV;
 
         projectionMatrix = glm::ortho(left, right, bottom, top, sceneSettings.nearPlane, sceneSettings.farPlane);
     }
@@ -1577,6 +1577,8 @@ void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projecti
 
 void SceneEditor::RenderSkinnedMeshes(Shader* shaderSkinning)
 {
+    RendererBasic::DisableCulling();
+
     shaderSkinning->Bind();
     shaderSkinning->setInt("gColorMap", 0);
     shaderSkinning->setFloat("gMatSpecularIntensity", m_MaterialSpecular);
@@ -1596,7 +1598,7 @@ void SceneEditor::RenderSkinnedMeshes(Shader* shaderSkinning)
         shaderSkinning->setMat4(locBuff, m_SkinningTransformsBobLamp[i]); // glm::mat4(1.0f)
     }
     model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
+    model = glm::translate(model, glm::vec3(-3.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -1611,7 +1613,7 @@ void SceneEditor::RenderSkinnedMeshes(Shader* shaderSkinning)
         shaderSkinning->setMat4(locBuff, m_SkinningTransformsAnimChar[i]); // glm::mat4(1.0f)
     }
     model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+    model = glm::translate(model, glm::vec3(3.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
