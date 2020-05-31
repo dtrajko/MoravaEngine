@@ -55,6 +55,15 @@ public:
 	virtual void UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults) override;
 	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
+	virtual ~SceneEditor() override;
+
+private:
+	virtual void SetTextures()    override;
+	virtual void SetupMaterials() override;
+	virtual void SetupMeshes()    override;
+	virtual void SetupModels()    override;
+	virtual void SetSkybox()      override;
+
 	void RenderSkinnedMeshes(Shader* shader);
 	void RenderLightSources(Shader* shader);
 	void RenderSkybox(Shader* shader);
@@ -75,7 +84,6 @@ public:
 	void ResetScene();
 	Mesh* CreateNewPrimitive(int meshTypeID, glm::vec3 scale);
 	Model* AddNewModel(int modelID, glm::vec3 scale);
-	virtual ~SceneEditor() override;
 
 	static void LoadTexture(std::map<std::string, Texture*>& textures, std::string name, std::string filePath);
 	static void LoadTextureAsync(std::map<std::string, Texture*>& textures, std::string name, std::string filePath);
@@ -86,12 +94,9 @@ public:
 	Texture* HotLoadTexture(std::string textureName);
 	Material* HotLoadMaterial(std::string materialName);
 
-private:
-	virtual void SetTextures()    override;
-	virtual void SetupMaterials() override;
-	virtual void SetupMeshes()    override;
-	virtual void SetupModels()    override;
-	virtual void SetSkybox()      override;
+	void SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Material* material, SceneObject* sceneObject);
+	void SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject);
+	void SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix);
 
 private:
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;

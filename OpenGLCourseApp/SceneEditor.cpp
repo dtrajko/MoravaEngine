@@ -1426,26 +1426,7 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
 void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
-    /**** Begin switch projection/orthographic view ****/
-    if (mainWindow.getKeys()[GLFW_KEY_O])
-    {
-        if (Timer::Get()->GetCurrentTimestamp() - m_ProjectionChange.lastTime > m_ProjectionChange.cooldown)
-        {
-            m_OrthographicViewEnabled = !m_OrthographicViewEnabled;
-            m_ProjectionChange.lastTime = Timer::Get()->GetCurrentTimestamp();
-        }
-    }
-
-    if (m_OrthographicViewEnabled)
-    {
-        float left   = -(float)mainWindow.GetBufferWidth()  / 2.0f / m_FOV;
-        float right  =  (float)mainWindow.GetBufferWidth()  / 2.0f / m_FOV;
-        float bottom = -(float)mainWindow.GetBufferHeight() / 2.0f / m_FOV;
-        float top    =  (float)mainWindow.GetBufferHeight() / 2.0f / m_FOV;
-
-        projectionMatrix = glm::ortho(left, right, bottom, top, sceneSettings.nearPlane, sceneSettings.farPlane);
-    }
-    /**** End switch projection/orthographic view ****/
+    SwitchOrthographicView(mainWindow, projectionMatrix);
 
     Shader* shaderEditor     = shaders["editor_object"];
     Shader* shaderEditorPBR  = shaders["editor_object_pbr"];
@@ -1469,58 +1450,20 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             object->transform = glm::scale(object->transform, object->scale);
         }
 
+        textures["plain"]->Bind(0); // Default fallback for Albedo texture
+
+        Texture* texture = HotLoadTexture(object->textureName);
+        Material* material = HotLoadMaterial(object->materialName);
+
         if (object->objectType == "mesh" && object->mesh != nullptr)
         {
-            if (object->materialName == "" || object->materialName == "none")
-            {
-                // Render with shaderEditor
-                shaderEditor->Bind();
-                shaderEditor->setMat4("model", object->transform);
-                shaderEditor->setVec4("tintColor", object->color);
-                shaderEditor->setBool("isSelected", object->isSelected);
-
-                Texture* texture = HotLoadTexture(object->textureName);
-
-                if (object->useTexture && object->textureName != "" && texture != nullptr)
-                    texture->Bind(0);
-                else
-                    textures["plain"]->Bind(0);
-
-                shaderEditor->setInt("albedoMap", 0);
-                shaderEditor->setFloat("tilingFactor", object->tilingFactor);
-                    
-                if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
-                    m_MaterialWorkflowPBR->BindEnvironmentCubemap(1);
-                else if (m_PBR_Map_Edit == PBR_MAP_IRRADIANCE)
-                    m_MaterialWorkflowPBR->BindIrradianceMap(1);
-                else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
-                    m_MaterialWorkflowPBR->BindPrefilterMap(1);
-
-                shaderEditor->setInt("cubeMap", 1);
-                shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
-
-                // Shadows in shaderEditor
-                LightManager::directionalLight.GetShadowMap()->Read(2);
-                shaderEditor->setInt("shadowMap", 2);
+            if (material) {
+                // Render with shaderEditorPBR
+                SetUniformsShaderEditorPBR(shaderEditorPBR, material, object);
             }
             else {
-                // Render with shaderEditorPBR
-                shaderEditorPBR->Bind();
-                shaderEditorPBR->setMat4("model", object->transform);
-                shaderEditorPBR->setVec4("tintColor", object->color);
-                shaderEditorPBR->setBool("isSelected", object->isSelected);
-                shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
-
-                shaderEditorPBR->setFloat("material.specularIntensity", m_MaterialSpecular); // TODO - use material attribute
-                shaderEditorPBR->setFloat("material.shininess", m_MaterialShininess);        // TODO - use material attribute
-
-                m_MaterialWorkflowPBR->BindTextures(0);                 // texture slots 0, 1, 2
-                // materials[object->materialName]->BindTextures(3);    // texture slots 3, 4, 5, 6, 7
-                HotLoadMaterial(object->materialName)->BindTextures(3); // texture slots 3, 4, 5, 6, 7
-
-                // Shadows in shaderEditorPBR
-                LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
-                shaderEditorPBR->setInt("shadowMap", 8);
+                // Render with shaderEditor
+                SetUniformsShaderEditor(shaderEditor, texture, object);
             }
 
             // Render by shaderEditor OR shaderEditorPBR
@@ -1530,26 +1473,10 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         if (object->objectType == "model" && object->model != nullptr)
         {
             // Quixel Megascans model
-            shaderEditorPBR->Bind();
-
-            shaderEditorPBR->setMat4("model", object->transform);
-            shaderEditorPBR->setVec4("tintColor", object->color);
-            shaderEditorPBR->setBool("isSelected", object->isSelected);
-            shaderEditorPBR->setFloat("tilingFactor", object->tilingFactorMaterial);
-
-            shaderEditorPBR->setFloat("material.specularIntensity", m_MaterialSpecular); // TODO - use material attribute
-            shaderEditorPBR->setFloat("material.shininess", m_MaterialShininess);        // TODO - use material attribute
-
-            m_MaterialWorkflowPBR->BindTextures(0);                 // texture slots 0, 1, 2
-            // materials[object->materialName]->BindTextures(3);    // texture slots 3, 4, 5, 6, 7
-            HotLoadMaterial(object->materialName)->BindTextures(3); // texture slots 3, 4, 5, 6, 7
-            // Shadows in shaderEditorPBR
-            LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
-            shaderEditorPBR->setInt("shadowMap", 8);
+            SetUniformsShaderEditorPBR(shaderEditorPBR, material, object);
 
             // Override albedo map from material with texture, if texture is available
             if (object->useTexture && object->textureName != "") {
-                Texture* texture = HotLoadTexture(object->textureName);
                 texture->Bind(3); // Albedo is at slot 3
                 shaderEditorPBR->setFloat("tilingFactor", object->tilingFactor);
             }
@@ -1574,6 +1501,77 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         // Render gizmo on front of everything (depth mask enabled)
         if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
             m_Gizmo->Render(shaderGizmo);
+    }
+}
+
+void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Material* material, SceneObject* sceneObject)
+{
+    shaderEditorPBR->Bind();
+
+    shaderEditorPBR->setMat4("model",         sceneObject->transform);
+    shaderEditorPBR->setVec4("tintColor",     sceneObject->color);
+    shaderEditorPBR->setBool("isSelected",    sceneObject->isSelected);
+    shaderEditorPBR->setFloat("tilingFactor", sceneObject->tilingFactorMaterial);
+
+    shaderEditorPBR->setFloat("material.specularIntensity", m_MaterialSpecular);  // TODO - use material attribute
+    shaderEditorPBR->setFloat("material.shininess",         m_MaterialShininess); // TODO - use material attribute
+
+    m_MaterialWorkflowPBR->BindTextures(0);                 // texture slots 0, 1, 2
+    material->BindTextures(3);                               // texture slots 3, 4, 5, 6, 7
+
+    // Shadows in shaderEditorPBR
+    LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
+    shaderEditorPBR->setInt("shadowMap", 8);
+}
+
+void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject)
+{
+    shaderEditor->Bind();
+
+    shaderEditor->setMat4("model",      sceneObject->transform);
+    shaderEditor->setVec4("tintColor",  sceneObject->color);
+    shaderEditor->setBool("isSelected", sceneObject->isSelected);
+
+    if (texture != nullptr)
+        texture->Bind(0);
+
+    shaderEditor->setInt("albedoMap", 0);
+    shaderEditor->setFloat("tilingFactor", sceneObject->tilingFactor);
+
+    if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
+        m_MaterialWorkflowPBR->BindEnvironmentCubemap(1);
+    else if (m_PBR_Map_Edit == PBR_MAP_IRRADIANCE)
+        m_MaterialWorkflowPBR->BindIrradianceMap(1);
+    else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
+        m_MaterialWorkflowPBR->BindPrefilterMap(1);
+
+    shaderEditor->setInt("cubeMap", 1);
+    shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
+
+    // Shadows in shaderEditor
+    LightManager::directionalLight.GetShadowMap()->Read(2);
+    shaderEditor->setInt("shadowMap", 2);
+}
+
+void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix)
+{
+    if (mainWindow.getKeys()[GLFW_KEY_O])
+    {
+        if (Timer::Get()->GetCurrentTimestamp() - m_ProjectionChange.lastTime > m_ProjectionChange.cooldown)
+        {
+            m_OrthographicViewEnabled = !m_OrthographicViewEnabled;
+            m_ProjectionChange.lastTime = Timer::Get()->GetCurrentTimestamp();
+        }
+    }
+
+    if (m_OrthographicViewEnabled)
+    {
+        float left = -(float)mainWindow.GetBufferWidth() / 2.0f / m_FOV;
+        float right = (float)mainWindow.GetBufferWidth() / 2.0f / m_FOV;
+        float bottom = -(float)mainWindow.GetBufferHeight() / 2.0f / m_FOV;
+        float top = (float)mainWindow.GetBufferHeight() / 2.0f / m_FOV;
+
+        projectionMatrix = glm::ortho(left, right, bottom, top, sceneSettings.nearPlane, sceneSettings.farPlane);
     }
 }
 
