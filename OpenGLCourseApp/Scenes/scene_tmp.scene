@@ -1,288 +1,68 @@
 BeginObject	0
-Position	4.419991	0.000000	3.776005
+Position	-6.723011	0.000000	0.000000
 Rotation	-90.000000	0.000000	0.000000
 Scale	0.500000	0.500000	0.500000
 PositionAABB	0.000000	0.000000	0.000000
 ScaleAABB	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
-Name	animated_character
-UseTexture	0
-TextureName	plain
+Name	anim_boy
+TextureName	none
 TilingFactor	1.000000
 IsSelected	0
 ObjectType	mesh
 MeshType	7
 ModelType	0
-MaterialName	animated_character
+MaterialName	anim_boy
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	1
-Position	4.710012	0.000000	0.000000
+Position	5.622013	0.000000	-2.090000
 Rotation	-90.000000	0.000000	0.000000
-Scale	0.500000	0.500000	0.500000
+Scale	0.100000	0.100000	0.100000
 PositionAABB	0.000000	0.000000	0.000000
 ScaleAABB	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
-Name	animated_character
-UseTexture	0
-TextureName	plain
+Name	bob_lamp
+TextureName	none
 TilingFactor	1.000000
 IsSelected	0
 ObjectType	mesh
-MeshType	7
+MeshType	6
 ModelType	0
-MaterialName	animated_character
+MaterialName	none
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	2
-Position	9.280005	0.000000	0.000000
-Rotation	-90.000000	0.000000	0.000000
-Scale	0.500000	0.500000	0.500000
+Position	0.000000	4.317014	-1.166999
+Rotation	0.000000	90.000000	0.000000
+Scale	0.031000	0.036000	0.029000
 PositionAABB	0.000000	0.000000	0.000000
 ScaleAABB	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
-Name	animated_character
-UseTexture	0
-TextureName	plain
+Name	hheli
+TextureName	hheli
 TilingFactor	1.000000
 IsSelected	0
-ObjectType	mesh
-MeshType	7
-ModelType	0
-MaterialName	animated_character
-TilingFactorMaterial	1.000000
+ObjectType	model
+MeshType	6
+ModelType	3
+MaterialName	rusted_iron
+TilingFactorMaterial	2.821000
 EndObject
 BeginObject	3
-Position	9.280005	0.000000	3.776005
-Rotation	-90.000000	0.000000	0.000000
-Scale	0.500000	0.500000	0.500000
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	animated_character
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	mesh
-MeshType	7
-ModelType	0
-MaterialName	animated_character
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	4
-Position	-6.629997	0.000000	0.000000
-Rotation	-90.000000	0.000000	0.000000
-Scale	0.100000	0.100000	0.100000
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	bob_lamp
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	mesh
-MeshType	7
-ModelType	0
-MaterialName	none
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	5
-Position	-16.493000	0.000000	-14.660016
-Rotation	-90.000000	0.000000	0.000000
-Scale	0.100000	0.100000	0.100000
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	bob_lamp
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	mesh
-MeshType	6
-ModelType	0
-MaterialName	none
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	6
-Position	-3.800002	0.000000	-10.788010
-Rotation	-90.000000	0.000000	0.000000
-Scale	0.100000	0.100000	0.100000
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	bob_lamp
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	mesh
-MeshType	6
-ModelType	0
-MaterialName	none
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	7
-Position	-15.867019	0.000000	-1.280000
-Rotation	-90.000000	0.000000	0.000000
-Scale	0.100000	0.100000	0.100000
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	bob_lamp
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	mesh
-MeshType	6
-ModelType	0
-MaterialName	none
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	8
-Position	-7.400001	0.000000	6.471006
-Rotation	-90.000000	0.000000	0.000000
-Scale	0.100000	0.100000	0.100000
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	bob_lamp
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	mesh
-MeshType	6
-ModelType	0
-MaterialName	none
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	9
-Position	-1.009010	0.000000	2.910019
-Rotation	-90.000000	0.000000	0.000000
-Scale	0.100000	0.100000	0.100000
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	bob_lamp
-UseTexture	0
-TextureName	plain
-TilingFactor	1.000000
-IsSelected	0
-ObjectType	mesh
-MeshType	6
-ModelType	0
-MaterialName	none
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	10
-Position	0.011002	-0.538000	0.000000
+Position	0.000000	2.182019	-1.950010
 Rotation	0.000000	0.000000	0.000000
-Scale	41.739971	-1.082998	41.159054
+Scale	3.990010	3.981000	8.961029
 PositionAABB	0.000000	0.000000	0.000000
 ScaleAABB	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
 Name	
-UseTexture	1
-TextureName	brick
-TilingFactor	1.000000
-IsSelected	1
-ObjectType	mesh
-MeshType	0
-ModelType	0
-MaterialName	aged_planks
-TilingFactorMaterial	0.183000
-EndObject
-BeginObject	11
-Position	0.558999	4.610005	-19.499012
-Rotation	0.000000	0.000000	0.000000
-Scale	42.859947	9.003997	1.005000
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	
-UseTexture	1
-TextureName	brick
-TilingFactor	0.244000
+TextureName	crate
+TilingFactor	0.503000
 IsSelected	0
 ObjectType	mesh
 MeshType	0
-ModelType	0
+ModelType	3
 MaterialName	
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	12
-Position	0.011002	9.234020	0.000000
-Rotation	0.000000	0.000000	0.000000
-Scale	41.739971	-0.351000	41.159054
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	
-UseTexture	0
-TextureName	plain
-TilingFactor	0.183000
-IsSelected	0
-ObjectType	mesh
-MeshType	0
-ModelType	0
-MaterialName	aged_planks
-TilingFactorMaterial	0.183000
-EndObject
-BeginObject	13
-Position	-20.654022	4.610005	0.781000
-Rotation	0.000000	0.000000	0.000000
-Scale	0.251001	9.003997	39.604908
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	
-UseTexture	1
-TextureName	brick
-TilingFactor	0.244000
-IsSelected	0
-ObjectType	mesh
-MeshType	0
-ModelType	0
-MaterialName	
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	14
-Position	20.627981	4.610005	0.781000
-Rotation	0.000000	0.000000	0.000000
-Scale	0.251001	9.003997	39.604908
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	
-UseTexture	1
-TextureName	brick
-TilingFactor	0.244000
-IsSelected	0
-ObjectType	mesh
-MeshType	0
-ModelType	0
-MaterialName	
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	15
-Position	0.000000	4.599998	0.000000
-Rotation	0.000000	0.000000	0.000000
-Scale	2.699999	9.207011	3.000000
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	
-UseTexture	1
-TextureName	brick
-TilingFactor	0.366000
-IsSelected	0
-ObjectType	mesh
-MeshType	0
-ModelType	0
-MaterialName	
-TilingFactorMaterial	1.000000
+TilingFactorMaterial	0.641000
 EndObject

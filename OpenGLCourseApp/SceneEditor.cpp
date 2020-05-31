@@ -150,7 +150,6 @@ SceneEditor::SceneEditor()
     m_RotationEdit             = new glm::vec3(0.0f);
     m_ScaleEdit                = new glm::vec3(1.0f);
     m_ColorEdit                = new glm::vec4(1.0f);
-    m_UseTextureEdit           = new bool(false);
     m_TextureNameEdit          = new std::string;
     m_TilingFactorEdit         = new float(1.0f);
     m_MaterialNameEdit         = new std::string;
@@ -247,7 +246,7 @@ Material* SceneEditor::HotLoadMaterial(std::string materialName)
 
 void SceneEditor::SetTextures()
 {
-    m_TextureInfo.insert(std::make_pair("plain",              "Textures/plain.png"));
+    m_TextureInfo.insert(std::make_pair("none",              "Textures/plain.png"));
     m_TextureInfo.insert(std::make_pair("semi_transparent",   "Textures/semi_transparent.png"));
     m_TextureInfo.insert(std::make_pair("texture_checker",    "Textures/texture_checker.png"));
     m_TextureInfo.insert(std::make_pair("wood",               "Textures/wood.png"));
@@ -284,7 +283,7 @@ void SceneEditor::SetTextures()
     //      LoadTexture(std::ref(textures), textureInfo.first, textureInfo.second);
 #endif
 
-    LoadTexture(std::ref(textures), m_TextureInfo.find("plain")->first, m_TextureInfo.find("plain")->second);
+    LoadTexture(std::ref(textures), m_TextureInfo.find("none")->first, m_TextureInfo.find("none")->second);
 }
 
 void SceneEditor::SetupMaterials()
@@ -300,20 +299,20 @@ void SceneEditor::SetupMaterials()
 
     // gold
     TextureInfo textureInfoGold     = {};
-    textureInfoGold.albedo          = "Textures/PBR/gold/albedo.png";
-    textureInfoGold.normal          = "Textures/PBR/gold/normal.png";
-    textureInfoGold.metallic        = "Textures/PBR/gold/metallic.png";
-    textureInfoGold.roughness       = "Textures/PBR/gold/roughness.png";
-    textureInfoGold.ao              = "Textures/PBR/gold/ao.png";
+    textureInfoGold.albedo    = "Textures/PBR/gold/albedo.png";
+    textureInfoGold.normal    = "Textures/PBR/gold/normal.png";
+    textureInfoGold.metallic  = "Textures/PBR/gold/metallic.png";
+    textureInfoGold.roughness = "Textures/PBR/gold/roughness.png";
+    textureInfoGold.ao        = "Textures/PBR/gold/ao.png";
     m_MaterialInfo.insert(std::make_pair("gold", textureInfoGold));
 
     // silver
     TextureInfo textureInfoSilver   = {};
-    textureInfoSilver.albedo        = "Textures/PBR/silver/albedo.png";
-    textureInfoSilver.normal        = "Textures/PBR/silver/normal.png";
-    textureInfoSilver.metallic      = "Textures/PBR/silver/metallic.png";
-    textureInfoSilver.roughness     = "Textures/PBR/silver/roughness.png";
-    textureInfoSilver.ao            = "Textures/PBR/silver/ao.png";
+    textureInfoSilver.albedo    = "Textures/PBR/silver/albedo.png";
+    textureInfoSilver.normal    = "Textures/PBR/silver/normal.png";
+    textureInfoSilver.metallic  = "Textures/PBR/silver/metallic.png";
+    textureInfoSilver.roughness = "Textures/PBR/silver/roughness.png";
+    textureInfoSilver.ao        = "Textures/PBR/silver/ao.png";
     m_MaterialInfo.insert(std::make_pair("silver", textureInfoSilver));
 
     // rusted iron
@@ -327,11 +326,11 @@ void SceneEditor::SetupMaterials()
 
     // plastic
     TextureInfo textureInfoPlastic  = {};
-    textureInfoPlastic.albedo       = "Textures/PBR/plastic/albedo.png";
-    textureInfoPlastic.normal       = "Textures/PBR/plastic/normal.png";
-    textureInfoPlastic.metallic     = "Textures/PBR/plastic/metallic.png";
-    textureInfoPlastic.roughness    = "Textures/PBR/plastic/roughness.png";
-    textureInfoPlastic.ao           = "Textures/PBR/plastic/ao.png";
+    textureInfoPlastic.albedo    = "Textures/PBR/plastic/albedo.png";
+    textureInfoPlastic.normal    = "Textures/PBR/plastic/normal.png";
+    textureInfoPlastic.metallic  = "Textures/PBR/plastic/metallic.png";
+    textureInfoPlastic.roughness = "Textures/PBR/plastic/roughness.png";
+    textureInfoPlastic.ao        = "Textures/PBR/plastic/ao.png";
     m_MaterialInfo.insert(std::make_pair("plastic", textureInfoPlastic));
 
     // futur_panel
@@ -398,13 +397,13 @@ void SceneEditor::SetupMaterials()
     m_MaterialInfo.insert(std::make_pair("old_stove", textureInfoOldStove));
 
     // Animated Character (Sebastian Lague / ThinMatrix)
-    TextureInfo textureInfoAnimChar = {};
-    textureInfoAnimChar.albedo    = "Textures/AnimatedCharacterDiffuse.png";
-    textureInfoAnimChar.normal = "Textures/PBR/plastic/normal.png";
-    textureInfoAnimChar.metallic = "Textures/PBR/plastic/metallic.png";
-    textureInfoAnimChar.roughness = "Textures/PBR/plastic/roughness.png";
-    textureInfoAnimChar.ao = "Textures/PBR/plastic/ao.png";
-    m_MaterialInfo.insert(std::make_pair("animated_character", textureInfoAnimChar));
+    TextureInfo textureInfoAnimBoy = {};
+    textureInfoAnimBoy.albedo    = "Textures/AnimatedCharacterDiffuse.png";
+    textureInfoAnimBoy.normal    = "Textures/PBR/plastic/normal.png";
+    textureInfoAnimBoy.metallic  = "Textures/PBR/plastic/metallic.png";
+    textureInfoAnimBoy.roughness = "Textures/PBR/plastic/roughness.png";
+    textureInfoAnimBoy.ao        = "Textures/PBR/plastic/ao.png";
+    m_MaterialInfo.insert(std::make_pair("anim_boy", textureInfoAnimBoy));
 
     // Buddha
     TextureInfo textureInfoBuddha = {};
@@ -613,8 +612,6 @@ void SceneEditor::SaveScene()
             std::to_string(m_SceneObjects[i]->color.a));
 
         lines.push_back("Name\t" + m_SceneObjects[i]->name);
-        std::string useTexture = m_SceneObjects[i]->useTexture ? "1" : "0";
-        lines.push_back("UseTexture\t" + useTexture);
         lines.push_back("TextureName\t" + m_SceneObjects[i]->textureName);
         lines.push_back("TilingFactor\t" + std::to_string(m_SceneObjects[i]->tilingFactor));
         std::string isSelected = m_SceneObjects[i]->isSelected ? "1" : "0";
@@ -708,13 +705,9 @@ void SceneEditor::LoadScene()
             sceneObject->name = tokens[1];
             // printf("sceneObject->name %d\n", sceneObject->name
         }
-        else if (tokens.size() >= 2 && tokens[0] == "UseTexture") {
-            sceneObject->useTexture = std::stoi(tokens[1]) == 1 ? true : false;
-            // printf("UseTexture %d\n", sceneObject.useTexture);
-        }
         else if (tokens.size() >= 2 && tokens[0] == "TextureName") {
             sceneObject->textureName = tokens[1];
-            // printf("UseTexture %s\n", sceneObject.textureName.c_str());
+            // printf("TextureName %s\n", sceneObject.textureName.c_str());
         }
         else if (tokens.size() >= 2 && tokens[0] == "TilingFactor") {
             sceneObject->tilingFactor = std::stof(tokens[1]);
@@ -727,7 +720,7 @@ void SceneEditor::LoadScene()
         }
         else if (tokens.size() >= 2 && tokens[0] == "ObjectType") {
             sceneObject->objectType = tokens[1];
-            // printf("UseTexture %s\n", sceneObject.textureName.c_str());
+            // printf("ObjectType %s\n", sceneObject.objectType.c_str());
         }
         else if (tokens.size() >= 2 && tokens[0] == "MeshType") {
             sceneObject->meshType = std::stoi(tokens[1]);
@@ -735,15 +728,15 @@ void SceneEditor::LoadScene()
         }
         else if (tokens.size() >= 2 && tokens[0] == "ModelType") {
             sceneObject->modelType = std::stoi(tokens[1]);
-            // printf("UseTexture %s\n", sceneObject.textureName.c_str());
+            // printf("ModelType %s\n", sceneObject.modelType.c_str());
         }
         else if (tokens.size() >= 2 && tokens[0] == "MaterialName") {
             sceneObject->materialName = tokens[1];
-            // printf("UseTexture %s\n", sceneObject.textureName.c_str());
+            // printf("MaterialName %s\n", sceneObject.materialName.c_str());
         }
         else if (tokens.size() >= 2 && tokens[0] == "TilingFactorMaterial") {
             sceneObject->tilingFactorMaterial = std::stof(tokens[1]);
-            // printf("UseTexture %s\n", sceneObject.textureName.c_str());
+            // printf("TilingFactorMaterial %s\n", sceneObject.tilingFactorMaterial.c_str());
         }
         else if (tokens.size() >= 1 && tokens[0] == "EndObject") {
             sceneObject->id = (int)m_SceneObjects.size();
@@ -841,7 +834,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         m_RotationEdit = &m_SceneObjects[m_SelectedIndex]->rotation;
         m_ScaleEdit = &m_SceneObjects[m_SelectedIndex]->scale;
         m_ColorEdit = &m_SceneObjects[m_SelectedIndex]->color;
-        m_UseTextureEdit = &m_SceneObjects[m_SelectedIndex]->useTexture;
         m_TextureNameEdit = &m_SceneObjects[m_SelectedIndex]->textureName;
         m_TilingFactorEdit = &m_SceneObjects[m_SelectedIndex]->tilingFactor;
         m_MaterialNameEdit = &m_SceneObjects[m_SelectedIndex]->materialName;
@@ -853,7 +845,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -179.0f, 180.0f);
     ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.1f, 20.0f);
     ImGui::ColorEdit4("Color", (float*)m_ColorEdit);
-    ImGui::Checkbox("Use Texture", m_UseTextureEdit);
 
     // Begin TextureName ImGui drop-down list
     std::vector<const char*> itemsTexture;
@@ -955,22 +946,22 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::Separator();
     ImGui::Text("Select Mesh Type");
-    ImGui::RadioButton("Cube",               &m_CurrentMeshTypeID, MESH_TYPE_CUBE);
-    ImGui::RadioButton("Pyramid",            &m_CurrentMeshTypeID, MESH_TYPE_PYRAMID);
-    ImGui::RadioButton("Sphere",             &m_CurrentMeshTypeID, MESH_TYPE_SPHERE);
-    ImGui::RadioButton("Cylinder",           &m_CurrentMeshTypeID, MESH_TYPE_CYLINDER);
-    ImGui::RadioButton("Cone",               &m_CurrentMeshTypeID, MESH_TYPE_CONE);
-    ImGui::RadioButton("Ring",               &m_CurrentMeshTypeID, MESH_TYPE_RING);
-    ImGui::RadioButton("Bob Lamp",           &m_CurrentMeshTypeID, MESH_TYPE_BOB_LAMP);
-    ImGui::RadioButton("Animated Character", &m_CurrentMeshTypeID, MESH_TYPE_ANIM_CHAR);
+    ImGui::RadioButton("Cube",     &m_CurrentMeshTypeID, MESH_TYPE_CUBE);
+    ImGui::RadioButton("Pyramid",  &m_CurrentMeshTypeID, MESH_TYPE_PYRAMID);
+    ImGui::RadioButton("Sphere",   &m_CurrentMeshTypeID, MESH_TYPE_SPHERE);
+    ImGui::RadioButton("Cylinder", &m_CurrentMeshTypeID, MESH_TYPE_CYLINDER);
+    ImGui::RadioButton("Cone",     &m_CurrentMeshTypeID, MESH_TYPE_CONE);
+    ImGui::RadioButton("Ring",     &m_CurrentMeshTypeID, MESH_TYPE_RING);
+    ImGui::RadioButton("Bob Lamp", &m_CurrentMeshTypeID, MESH_TYPE_BOB_LAMP);
+    ImGui::RadioButton("Anim Boy", &m_CurrentMeshTypeID, MESH_TYPE_ANIM_BOY);
 
     ImGui::Separator();
     ImGui::Text("Select Model");
-    ImGui::RadioButton("Stone Carved",       &m_CurrentModelID, MODEL_STONE_CARVED);
-    ImGui::RadioButton("Old Stove",          &m_CurrentModelID, MODEL_OLD_STOVE);
-    ImGui::RadioButton("Buddha",             &m_CurrentModelID, MODEL_BUDDHA);
-    ImGui::RadioButton("HHeli",              &m_CurrentModelID, MODEL_HHELI);
-    ImGui::RadioButton("Jeep",               &m_CurrentModelID, MODEL_JEEP);
+    ImGui::RadioButton("Stone Carved", &m_CurrentModelID, MODEL_STONE_CARVED);
+    ImGui::RadioButton("Old Stove",    &m_CurrentModelID, MODEL_OLD_STOVE);
+    ImGui::RadioButton("Buddha",       &m_CurrentModelID, MODEL_BUDDHA);
+    ImGui::RadioButton("HHeli",        &m_CurrentModelID, MODEL_HHELI);
+    ImGui::RadioButton("Jeep",         &m_CurrentModelID, MODEL_JEEP);
 
     ImGui::Separator();
     float FOV = GetFOV();
@@ -1148,8 +1139,7 @@ SceneObject* SceneEditor::CreateNewSceneObject()
         defaultSpawnPosition,         // PositionAABB
         glm::vec3(1.0f),              // ScaleAABB
         glm::vec4(1.0f),              // Color
-        false,
-        "plain",
+        "none",
         1.0f,
         true,
         new AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f)),
@@ -1196,9 +1186,9 @@ void SceneEditor::AddSceneObject()
             positionAABB = glm::vec3(0.0f, 0.0f, 30.0f);
             scaleAABB = glm::vec3(20.0f, 20.0f, 60.0f);
         }
-        else if (m_CurrentMeshTypeID == MESH_TYPE_ANIM_CHAR) {
-            modelName = "animated_character";
-            materialName = "animated_character";
+        else if (m_CurrentMeshTypeID == MESH_TYPE_ANIM_BOY) {
+            modelName = "anim_boy";
+            materialName = "anim_boy";
             rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
             scale = glm::vec3(0.5f);
             positionAABB = glm::vec3(0.0f, 0.0f, 4.4f);
@@ -1302,7 +1292,6 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
         oldSceneObject->positionAABB,
         oldSceneObject->scaleAABB,
         oldSceneObject->color,
-        oldSceneObject->useTexture,
         oldSceneObject->textureName,
         oldSceneObject->tilingFactor,
         true,
@@ -1378,7 +1367,7 @@ Mesh* SceneEditor::CreateNewPrimitive(int meshTypeID, glm::vec3 scale)
     case MESH_TYPE_BOB_LAMP:
         mesh = new SkinnedMesh("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Textures/OGLdev/BobLamp");
         break;
-    case MESH_TYPE_ANIM_CHAR:
+    case MESH_TYPE_ANIM_BOY:
         mesh = new SkinnedMesh("Models/AnimatedCharacter.dae", "Textures");
         break;
     default:
@@ -1415,102 +1404,28 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
     return model;
 }
 
-void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
-{
-    SwitchOrthographicView(mainWindow, projectionMatrix);
-
-    Shader* shaderEditor     = shaders["editor_object"];
-    Shader* shaderEditorPBR  = shaders["editor_object_pbr"];
-    Shader* shaderBasic      = shaders["basic"];
-    Shader* shaderBackground = shaders["background"];
-    Shader* shaderShadowMap  = shaders["shadow_map"];
-    Shader* shaderGizmo      = shaders["gizmo"];
-    Shader* shaderSkinning   = shaders["skinning"];
-    Shader* shaderGlass      = shaders["glass"];
-
-    for (auto& object : m_SceneObjects)
-    {
-        object->transform = Math::CreateTransform(object->position, object->rotation, glm::vec3(1.0f));
-
-        // For meshes that can't be scaled on vertex level
-        if (object->meshType == MESH_TYPE_RING || m_SkinnedMeshes.find(object->meshType) != m_SkinnedMeshes.end())
-            object->transform = glm::scale(object->transform, object->scale);
-
-        // Quixel Megascans models should be downscaled to 2% of their original size
-        if (object->objectType == "model") {
-            object->transform = glm::scale(object->transform, object->scale);
-        }
-
-        textures["plain"]->Bind(0); // Default fallback for Albedo texture
-
-        Texture* texture = HotLoadTexture(object->textureName);
-        Material* material = HotLoadMaterial(object->materialName);
-
-        if (object->objectType == "mesh" && object->mesh != nullptr)
-        {
-            if (m_SkinnedMeshes.find(object->meshType) != m_SkinnedMeshes.end())
-            {
-                // Render with shaderSkinning
-                SetUniformsShaderSkinning(shaderSkinning, object);
-            }
-            else if (material) {
-                // Render with shaderEditorPBR
-                SetUniformsShaderEditorPBR(shaderEditorPBR, material, object);
-            }
-            else {
-                // Render with shaderEditor
-                SetUniformsShaderEditor(shaderEditor, texture, object);
-            }
-
-            // Render by shaderEditor OR shaderEditorPBR
-            object->mesh->Render();
-        }
-
-        if (object->objectType == "model" && object->model != nullptr)
-        {
-            // Quixel Megascans model
-            SetUniformsShaderEditorPBR(shaderEditorPBR, material, object);
-
-            // Override albedo map from material with texture, if texture is available
-            if (object->useTexture && object->textureName != "") {
-                texture->Bind(3); // Albedo is at slot 3
-                shaderEditorPBR->setFloat("tilingFactor", object->tilingFactor);
-            }
-
-            object->model->RenderPBR();
-        }
-    }
-
-    // RenderGlassObjects(shaderGlass);
-
-    if (passType == "main")
-    {
-        RenderLightSources(shaderGizmo);
-        RenderSkybox(shaderBackground);
-        RenderLineElements(shaderBasic, projectionMatrix);
-        RenderFramebufferTextures(shaderEditor);
-
-        // Render gizmo on front of everything (depth mask enabled)
-        if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
-            m_Gizmo->Render(shaderGizmo);
-    }
-}
-
-void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Material* material, SceneObject* sceneObject)
+void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Material* material, SceneObject* sceneObject)
 {
     shaderEditorPBR->Bind();
 
     shaderEditorPBR->setMat4("model",         sceneObject->transform);
     shaderEditorPBR->setVec4("tintColor",     sceneObject->color);
     shaderEditorPBR->setBool("isSelected",    sceneObject->isSelected);
-    shaderEditorPBR->setFloat("tilingFactor", sceneObject->tilingFactorMaterial);
 
     shaderEditorPBR->setFloat("material.specularIntensity", m_MaterialSpecular);  // TODO - use material attribute
     shaderEditorPBR->setFloat("material.shininess",         m_MaterialShininess); // TODO - use material attribute
 
     m_MaterialWorkflowPBR->BindTextures(0); // texture slots 0, 1, 2
     material->BindTextures(3);              // texture slots 3, 4, 5, 6, 7
+
+    // Override albedo map from material with texture, if texture is available
+    if (sceneObject->textureName != "" && sceneObject->textureName != "none") {
+        texture->Bind(3); // Albedo is at slot 3
+        shaderEditorPBR->setFloat("tilingFactor", sceneObject->tilingFactor);
+    }
+    else {
+        shaderEditorPBR->setFloat("tilingFactor", sceneObject->tilingFactorMaterial);
+    }
 
     // Shadows in shaderEditorPBR
     LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
@@ -1593,13 +1508,29 @@ void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projecti
     }
 }
 
+glm::mat4 SceneEditor::CalculateRenderTransform(SceneObject* sceneObject)
+{
+    glm::vec3 renderScale = glm::vec3(1.0f);
+
+    // For meshes that can't be scaled on vertex level
+    if (sceneObject->meshType == MESH_TYPE_RING || m_SkinnedMeshes.find(sceneObject->meshType) != m_SkinnedMeshes.end())
+        renderScale = sceneObject->scale;
+
+    // Quixel Megascans models should be downscaled to 2% of their original size
+    if (sceneObject->objectType == "model") {
+        renderScale = sceneObject->scale;
+    }
+
+    return Math::CreateTransform(sceneObject->position, sceneObject->rotation, renderScale);
+}
+
 void SceneEditor::RenderLightSources(Shader* shaderGizmo)
 {
     shaderGizmo->Bind();
 
-    textures["plain"]->Bind(0);
-    textures["plain"]->Bind(1);
-    textures["plain"]->Bind(2);
+    textures["none"]->Bind(0);
+    textures["none"]->Bind(1);
+    textures["none"]->Bind(2);
 
     glm::mat4 model;
 
@@ -1709,6 +1640,61 @@ void SceneEditor::RenderGlassObjects(Shader* shaderGlass)
     shaderGlass->setInt("uCubemap", 1);
 
     m_GlassShaderModel->RenderPBR();
+}
+
+void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+    std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+{
+    SwitchOrthographicView(mainWindow, projectionMatrix);
+
+    for (auto& object : m_SceneObjects)
+    {
+        object->transform = CalculateRenderTransform(object);
+
+        textures["none"]->Bind(0); // Default fallback for Albedo texture
+
+        Texture* texture   = HotLoadTexture(object->textureName);
+        Material* material = HotLoadMaterial(object->materialName);
+
+        if (object->mesh && object->objectType == "mesh") // is it a mesh?
+        {
+            if (m_SkinnedMeshes.find(object->meshType) != m_SkinnedMeshes.end()) // is it a skinned mesh?
+            {
+                // Render with 'skinning'
+                SetUniformsShaderSkinning(shaders["skinning"], object);
+            }
+            else if (material && object->materialName != "none") { // is it using a material?
+                // Render with 'editor_object_pbr'
+                SetUniformsShaderEditorPBR(shaders["editor_object_pbr"], texture, material, object);
+            }
+            else { // defaults to a texture only
+                // Render with 'editor_object'
+                SetUniformsShaderEditor(shaders["editor_object"], texture, object);
+            }
+
+            // Render by 'editor_object' OR 'editor_object_pbr' OR 'skinning'
+            object->mesh->Render();
+        }
+        else if (object->model && object->objectType == "model") // is it a model?
+        {
+            // Quixel Megascans model
+            SetUniformsShaderEditorPBR(shaders["editor_object_pbr"], texture, material, object);
+
+            object->model->RenderPBR();
+        }
+    }
+
+    if (passType == "main")
+    {
+        RenderLightSources(shaders["gizmo"]);
+        RenderSkybox(shaders["background"]);
+        RenderLineElements(shaders["basic"], projectionMatrix);
+        RenderFramebufferTextures(shaders["editor_object"]);
+
+        // Render gizmo on front of everything (depth mask enabled)
+        if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
+            m_Gizmo->Render(shaders["gizmo"]);
+    }
 }
 
 void SceneEditor::ResetScene()

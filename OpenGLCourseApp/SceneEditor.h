@@ -92,11 +92,12 @@ private:
 	Texture* HotLoadTexture(std::string textureName);
 	Material* HotLoadMaterial(std::string materialName);
 
-	void SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Material* material, SceneObject* sceneObject);
+	void SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Material* material, SceneObject* sceneObject);
 	void SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject);
 	void SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject);
 
 	void SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix);
+	glm::mat4 CalculateRenderTransform(SceneObject* sceneObject);
 
 private:
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
@@ -123,7 +124,6 @@ private:
 	glm::vec3* m_RotationEdit;
 	glm::vec3* m_ScaleEdit;
 	glm::vec4* m_ColorEdit;
-	bool* m_UseTextureEdit;
 	float* m_TilingFactorEdit;
 	std::string* m_TextureNameEdit;
 	std::string* m_MaterialNameEdit;
@@ -172,7 +172,7 @@ private:
 
 	bool m_UseCubeMaps;
 
-	std::set<int> m_SkinnedMeshes = { MESH_TYPE_BOB_LAMP, MESH_TYPE_ANIM_CHAR };
+	std::set<int> m_SkinnedMeshes = { MESH_TYPE_BOB_LAMP, MESH_TYPE_ANIM_BOY };
 	std::map<std::string, std::vector<glm::mat4>> m_SkinningTransforms;
 
 	// Model for the Glass shader
