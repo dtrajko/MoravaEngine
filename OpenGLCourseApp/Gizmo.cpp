@@ -799,9 +799,7 @@ Gizmo::~Gizmo()
 
 	for (auto& object : m_GizmoObjects)
 	{
-		delete object->so.AABB;
-		delete object->so.pivot;
-		delete object->so.mesh;
+		delete object;
 	}
 
 	m_GizmoObjects.clear();

@@ -22,43 +22,8 @@
 #include "AABB.h"
 #include "Pivot.h"
 #include "TextureLoader.h"
+#include "SceneObject.h"
 
-
-
-const int MESH_TYPE_CUBE     = 0;
-const int MESH_TYPE_PYRAMID  = 1;
-const int MESH_TYPE_SPHERE   = 2;
-const int MESH_TYPE_CYLINDER = 3;
-const int MESH_TYPE_CONE     = 4;
-const int MESH_TYPE_RING     = 5;
-const int MESH_TYPE_BOB_LAMP = 6;
-const int MESH_TYPE_ANIM_BOY = 7;
-
-
-struct SceneObject
-{
-	int id;
-	std::string name;
-	glm::mat4 transform;
-	glm::vec3 position;
-	glm::vec3 rotation;
-	glm::vec3 scale;
-	glm::vec3 positionAABB;
-	glm::vec3 scaleAABB;
-	glm::vec4 color;
-	std::string textureName;
-	float tilingFactor;
-	bool isSelected;
-	AABB* AABB;
-	Pivot* pivot;
-	std::string objectType;
-	Mesh* mesh;
-	int meshType;
-	Model* model;
-	int modelType;
-	std::string materialName;
-	float tilingFactorMaterial;
-};
 
 struct EventCooldown
 {

@@ -620,7 +620,7 @@ void SceneEditor::SaveScene()
         lines.push_back("MeshType\t" + std::to_string(m_SceneObjects[i]->meshType));
         lines.push_back("ModelType\t" + std::to_string(m_SceneObjects[i]->modelType));
         lines.push_back("MaterialName\t" + m_SceneObjects[i]->materialName);
-        lines.push_back("TilingFactorMaterial\t" + std::to_string(m_SceneObjects[i]->tilingFactorMaterial));
+        lines.push_back("TilingFactorMaterial\t" + std::to_string(m_SceneObjects[i]->tilingFMaterial));
         lines.push_back("EndObject");
     }
 
@@ -735,7 +735,7 @@ void SceneEditor::LoadScene()
             // printf("MaterialName %s\n", sceneObject.materialName.c_str());
         }
         else if (tokens.size() >= 2 && tokens[0] == "TilingFactorMaterial") {
-            sceneObject->tilingFactorMaterial = std::stof(tokens[1]);
+            sceneObject->tilingFMaterial = std::stof(tokens[1]);
             // printf("TilingFactorMaterial %s\n", sceneObject.tilingFactorMaterial.c_str());
         }
         else if (tokens.size() >= 1 && tokens[0] == "EndObject") {
@@ -837,7 +837,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         m_TextureNameEdit = &m_SceneObjects[m_SelectedIndex]->textureName;
         m_TilingFactorEdit = &m_SceneObjects[m_SelectedIndex]->tilingFactor;
         m_MaterialNameEdit = &m_SceneObjects[m_SelectedIndex]->materialName;
-        m_TilingFactorMaterialEdit = &m_SceneObjects[m_SelectedIndex]->tilingFactorMaterial;
+        m_TilingFactorMaterialEdit = &m_SceneObjects[m_SelectedIndex]->tilingFMaterial;
     }
 
     ImGui::Begin("Transform");
@@ -1129,29 +1129,29 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 SceneObject* SceneEditor::CreateNewSceneObject()
 {
     // Add Scene Object here
-    SceneObject* sceneObject = new SceneObject{
-        (int)m_SceneObjects.size(),
-        "",                           // Name
-        glm::mat4(1.0f),              // Transform
-        defaultSpawnPosition,         // Position
-        glm::vec3(0.0f),              // Rotation
-        glm::vec3(1.0f),              // Scale
-        defaultSpawnPosition,         // PositionAABB
-        glm::vec3(1.0f),              // ScaleAABB
-        glm::vec4(1.0f),              // Color
-        "none",
-        1.0f,
-        true,
-        new AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f)),
-        new Pivot(glm::vec3(0.0f), glm::vec3(1.0f)),
-        "",                           // Object Type
-        nullptr,                      // Mesh
-        -1,                           // meshType
-        nullptr,                      // Model
-        -1,                           // modelType
-        "",                           // materialName
-        1.0f,                         // tilingFactorMaterial
-    };
+    SceneObject* sceneObject = new SceneObject();
+
+    sceneObject->id              = (int)m_SceneObjects.size();
+    sceneObject->name            = "";
+    sceneObject->transform       = glm::mat4(1.0f);
+    sceneObject->position        = defaultSpawnPosition;
+    sceneObject->rotation        = glm::vec3(0.0f);
+    sceneObject->scale           = glm::vec3(1.0f);
+    sceneObject->positionAABB    = defaultSpawnPosition;
+    sceneObject->scaleAABB       = glm::vec3(1.0f);
+    sceneObject->color           = glm::vec4(1.0f);
+    sceneObject->textureName     = "none";
+    sceneObject->tilingFactor    = 1.0f;
+    sceneObject->isSelected      = true;
+    sceneObject->AABB            = new AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+    sceneObject->pivot           = new Pivot(glm::vec3(0.0f), glm::vec3(1.0f));
+    sceneObject->objectType      = "";
+    sceneObject->mesh            = nullptr;
+    sceneObject->meshType        = -1;
+    sceneObject->model           = nullptr;
+    sceneObject->modelType       = -1;
+    sceneObject->materialName    = "";
+    sceneObject->tilingFMaterial = 1.0f;
 
     return sceneObject;
 }
@@ -1282,29 +1282,29 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
         model = AddNewModel(m_CurrentModelID, oldSceneObject->mesh->GetScale()); // TODO: m_CurrentModelID hard-coded, most be in SceneObject
     }
 
-    SceneObject* newSceneObject = new SceneObject{
-        (int)sceneObjects->size(),
-        oldSceneObject->name,
-        oldSceneObject->transform,
-        oldSceneObject->position,
-        oldSceneObject->rotation,
-        oldSceneObject->scale,
-        oldSceneObject->positionAABB,
-        oldSceneObject->scaleAABB,
-        oldSceneObject->color,
-        oldSceneObject->textureName,
-        oldSceneObject->tilingFactor,
-        true,
-        new AABB(oldSceneObject->position, oldSceneObject->rotation, oldSceneObject->scale),
-        new Pivot(oldSceneObject->position, oldSceneObject->scale),
-        oldSceneObject->objectType,
-        mesh,
-        m_CurrentMeshTypeID,
-        model,
-        m_CurrentModelID,
-        oldSceneObject->materialName,
-        oldSceneObject->tilingFactorMaterial
-    };
+    SceneObject* newSceneObject = new SceneObject();
+
+    newSceneObject->id              = (int)sceneObjects->size();
+    newSceneObject->name            = oldSceneObject->name;
+    newSceneObject->transform       = oldSceneObject->transform;
+    newSceneObject->position        = oldSceneObject->position;
+    newSceneObject->rotation        = oldSceneObject->rotation;
+    newSceneObject->scale           = oldSceneObject->scale;
+    newSceneObject->positionAABB    = oldSceneObject->positionAABB;
+    newSceneObject->scaleAABB       = oldSceneObject->scaleAABB;
+    newSceneObject->color           = oldSceneObject->color;
+    newSceneObject->textureName     = oldSceneObject->textureName;
+    newSceneObject->tilingFactor    = oldSceneObject->tilingFactor;
+    newSceneObject->isSelected      = true;
+    newSceneObject->AABB            = new AABB(oldSceneObject->position, oldSceneObject->rotation, oldSceneObject->scale);
+    newSceneObject->pivot           = new Pivot(oldSceneObject->position, oldSceneObject->scale);
+    newSceneObject->objectType      = oldSceneObject->objectType;
+    newSceneObject->mesh            = mesh;
+    newSceneObject->meshType        = m_CurrentMeshTypeID;
+    newSceneObject->model           = model;
+    newSceneObject->modelType       = m_CurrentModelID;
+    newSceneObject->materialName    = oldSceneObject->materialName;
+    newSceneObject->tilingFMaterial = oldSceneObject->tilingFMaterial;
 
     sceneObjects->push_back(newSceneObject);
 
@@ -1424,7 +1424,7 @@ void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* t
         shaderEditorPBR->setFloat("tilingFactor", sceneObject->tilingFactor);
     }
     else {
-        shaderEditorPBR->setFloat("tilingFactor", sceneObject->tilingFactorMaterial);
+        shaderEditorPBR->setFloat("tilingFactor", sceneObject->tilingFMaterial);
     }
 
     // Shadows in shaderEditorPBR
@@ -1671,17 +1671,14 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                 // Render with 'editor_object'
                 SetUniformsShaderEditor(shaders["editor_object"], texture, object);
             }
-
-            // Render by 'editor_object' OR 'editor_object_pbr' OR 'skinning'
-            object->mesh->Render();
         }
         else if (object->model && object->objectType == "model") // is it a model?
         {
             // Quixel Megascans model
             SetUniformsShaderEditorPBR(shaders["editor_object_pbr"], texture, material, object);
-
-            object->model->RenderPBR();
         }
+
+        object->Render();
     }
 
     if (passType == "main")

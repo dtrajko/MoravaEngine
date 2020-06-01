@@ -1,22 +1,22 @@
 BeginObject	0
-Position	-6.723011	0.000000	0.000000
-Rotation	-90.000000	0.000000	0.000000
-Scale	0.500000	0.500000	0.500000
+Position	-7.340004	0.000000	0.000000
+Rotation	0.000000	0.000000	0.000000
+Scale	1.000000	1.000000	1.000000
 PositionAABB	0.000000	0.000000	0.000000
 ScaleAABB	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
-Name	anim_boy
+Name	
 TextureName	none
 TilingFactor	1.000000
 IsSelected	0
 ObjectType	mesh
-MeshType	7
+MeshType	0
 ModelType	0
-MaterialName	anim_boy
+MaterialName	
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	1
-Position	5.622013	0.000000	-2.090000
+Position	9.630006	0.000000	0.000000
 Rotation	-90.000000	0.000000	0.000000
 Scale	0.100000	0.100000	0.100000
 PositionAABB	0.000000	0.000000	0.000000
@@ -33,36 +33,19 @@ MaterialName	none
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	2
-Position	0.000000	4.317014	-1.166999
+Position	0.000000	0.000000	-10.690009
 Rotation	0.000000	90.000000	0.000000
-Scale	0.031000	0.036000	0.029000
+Scale	0.050000	0.050000	0.050000
 PositionAABB	0.000000	0.000000	0.000000
 ScaleAABB	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
 Name	hheli
-TextureName	hheli
+TextureName	none
 TilingFactor	1.000000
 IsSelected	0
 ObjectType	model
 MeshType	6
 ModelType	3
-MaterialName	rusted_iron
-TilingFactorMaterial	2.821000
-EndObject
-BeginObject	3
-Position	0.000000	2.182019	-1.950010
-Rotation	0.000000	0.000000	0.000000
-Scale	3.990010	3.981000	8.961029
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	
-TextureName	crate
-TilingFactor	0.503000
-IsSelected	0
-ObjectType	mesh
-MeshType	0
-ModelType	3
-MaterialName	
-TilingFactorMaterial	0.641000
+MaterialName	none
+TilingFactorMaterial	1.000000
 EndObject

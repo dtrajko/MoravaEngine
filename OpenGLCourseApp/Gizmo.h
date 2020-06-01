@@ -7,6 +7,7 @@
 #include "Cone.h"
 #include "Block.h"
 #include "Ring.h"
+#include "SceneObject.h"
 
 
 const int GIZMO_MODE_NONE      = 0;

@@ -417,6 +417,9 @@
     <ClCompile Include="SkinnedMesh.cpp">
       <Filter>Source Files\Animation</Filter>
     </ClCompile>
+    <ClCompile Include="SceneObject.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WaterManager.h">
@@ -730,6 +733,9 @@
     </ClInclude>
     <ClInclude Include="SkinnedMesh.h">
       <Filter>Header Files\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneObject.h">
+      <Filter>Header Files\Editor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
