@@ -53,7 +53,7 @@ void Gizmo::CreateObjects()
 		m_Axis_T_X->so.rotation = glm::vec3(0.0f, 0.0f, -90.0f);
 		m_Axis_T_X->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_T_X->so.mesh = new Cylinder(m_Axis_T_X->so.scale);
-		m_Axis_T_X->so.AABB = new AABB(m_Axis_T_X->so.position, m_Axis_T_X->so.rotation, m_Axis_T_X->so.scale);
+		m_Axis_T_X->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_T_X->so.rotation, glm::vec3(1.0f));
 		m_Axis_T_X->axes = { true, false, false };
 		m_Axis_T_X->name = "m_Axis_T_X";
 		m_GizmoObjects.push_back(m_Axis_T_X);
@@ -66,7 +66,7 @@ void Gizmo::CreateObjects()
 		m_Axis_T_Y->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 		m_Axis_T_Y->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_T_Y->so.mesh = new Cylinder(m_Axis_T_Y->so.scale);
-		m_Axis_T_Y->so.AABB = new AABB(m_Axis_T_Y->so.position, m_Axis_T_Y->so.rotation, m_Axis_T_Y->so.scale);
+		m_Axis_T_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_T_Y->so.rotation, glm::vec3(1.0f));
 		m_Axis_T_Y->axes = { false, true, false };
 		m_Axis_T_Y->name = "m_Axis_T_Y";
 		m_GizmoObjects.push_back(m_Axis_T_Y);
@@ -79,7 +79,7 @@ void Gizmo::CreateObjects()
 		m_Axis_T_Z->so.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
 		m_Axis_T_Z->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_T_Z->so.mesh = new Cylinder(m_Axis_T_Z->so.scale);
-		m_Axis_T_Z->so.AABB = new AABB(m_Axis_T_Z->so.position, m_Axis_T_Z->so.rotation, m_Axis_T_Z->so.scale);
+		m_Axis_T_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_T_Z->so.rotation, glm::vec3(1.0f));
 		m_Axis_T_Z->axes = { false, false, true };
 		m_Axis_T_Z->name = "m_Axis_T_Z";
 		m_GizmoObjects.push_back(m_Axis_T_Z);
@@ -92,7 +92,7 @@ void Gizmo::CreateObjects()
 		m_Arrow_T_X->so.rotation = glm::vec3(0.0f, 0.0f, -90.0f);
 		m_Arrow_T_X->so.scale = glm::vec3(0.6f, 0.8f, 0.6f) * m_ScaleGlobal;
 		m_Arrow_T_X->so.mesh = new Cone(m_Arrow_T_X->so.scale);
-		m_Arrow_T_X->so.AABB = new AABB(m_Arrow_T_X->so.position, m_Arrow_T_X->so.rotation, m_Arrow_T_X->so.scale);
+		m_Arrow_T_X->so.AABB = new AABB(glm::vec3(0.0f), m_Arrow_T_X->so.rotation, glm::vec3(1.0f));
 		m_Arrow_T_X->axes = { true, false, false };
 		m_Arrow_T_X->name = "m_Arrow_T_X";
 		m_GizmoObjects.push_back(m_Arrow_T_X);
@@ -105,7 +105,7 @@ void Gizmo::CreateObjects()
 		m_Arrow_T_Y->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 		m_Arrow_T_Y->so.scale = glm::vec3(0.6f, 0.8f, 0.6f) * m_ScaleGlobal;
 		m_Arrow_T_Y->so.mesh = new Cone(m_Arrow_T_Y->so.scale);
-		m_Arrow_T_Y->so.AABB = new AABB(m_Arrow_T_Y->so.position, m_Arrow_T_Y->so.rotation, m_Arrow_T_Y->so.scale);
+		m_Arrow_T_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Arrow_T_Y->so.rotation, glm::vec3(1.0f));
 		m_Arrow_T_Y->axes = { false, true, false };
 		m_Arrow_T_Y->name = "m_Arrow_T_Y";
 		m_GizmoObjects.push_back(m_Arrow_T_Y);
@@ -118,7 +118,7 @@ void Gizmo::CreateObjects()
 		m_Arrow_T_Z->so.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
 		m_Arrow_T_Z->so.scale = glm::vec3(0.6f, 0.8f, 0.6f) * m_ScaleGlobal;
 		m_Arrow_T_Z->so.mesh = new Cone(m_Arrow_T_Z->so.scale);
-		m_Arrow_T_Z->so.AABB = new AABB(m_Arrow_T_Z->so.position, m_Arrow_T_Z->so.rotation, m_Arrow_T_Z->so.scale);
+		m_Arrow_T_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Arrow_T_Z->so.rotation, glm::vec3(1.0f));
 		m_Arrow_T_Z->axes = { false, false, true };
 		m_Arrow_T_Z->name = "m_Arrow_T_Z";
 		m_GizmoObjects.push_back(m_Arrow_T_Z);
@@ -131,7 +131,7 @@ void Gizmo::CreateObjects()
 		m_Square_T_YZ->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 		m_Square_T_YZ->so.scale = glm::vec3(0.15f, 1.5f, 1.5f) * m_ScaleGlobal;
 		m_Square_T_YZ->so.mesh = new Block(m_Square_T_YZ->so.scale);
-		m_Square_T_YZ->so.AABB = new AABB(m_Square_T_YZ->so.position, m_Square_T_YZ->so.rotation, m_Square_T_YZ->so.scale);
+		m_Square_T_YZ->so.AABB = new AABB(glm::vec3(0.0f), m_Square_T_YZ->so.rotation, glm::vec3(1.0f));
 		m_Square_T_YZ->axes = { false, true, true };
 		m_Square_T_YZ->name = "m_Square_T_YZ";
 		m_GizmoObjects.push_back(m_Square_T_YZ);
@@ -144,7 +144,7 @@ void Gizmo::CreateObjects()
 		m_Square_T_ZX->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 		m_Square_T_ZX->so.scale = glm::vec3(1.5f, 0.15f, 1.5f) * m_ScaleGlobal;
 		m_Square_T_ZX->so.mesh = new Block(m_Square_T_ZX->so.scale);
-		m_Square_T_ZX->so.AABB = new AABB(m_Square_T_ZX->so.position, m_Square_T_ZX->so.rotation, m_Square_T_ZX->so.scale);
+		m_Square_T_ZX->so.AABB = new AABB(glm::vec3(0.0f), m_Square_T_ZX->so.rotation, glm::vec3(1.0f));
 		m_Square_T_ZX->axes = { true, false, true };
 		m_Square_T_ZX->name = "m_Square_T_ZX";
 		m_GizmoObjects.push_back(m_Square_T_ZX);
@@ -157,7 +157,7 @@ void Gizmo::CreateObjects()
 		m_Square_T_XY->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 		m_Square_T_XY->so.scale = glm::vec3(1.5f, 1.5f, 0.15f) * m_ScaleGlobal;
 		m_Square_T_XY->so.mesh = new Block(m_Square_T_XY->so.scale);
-		m_Square_T_XY->so.AABB = new AABB(m_Square_T_XY->so.position, m_Square_T_XY->so.rotation, m_Square_T_XY->so.scale);
+		m_Square_T_XY->so.AABB = new AABB(glm::vec3(0.0f), m_Square_T_XY->so.rotation, glm::vec3(1.0f));
 		m_Square_T_XY->axes = { true, true, false };
 		m_Square_T_XY->name = "m_Square_T_XY";
 		m_GizmoObjects.push_back(m_Square_T_XY);
@@ -174,7 +174,7 @@ void Gizmo::CreateObjects()
 		m_Axis_S_X->so.rotation = glm::vec3(0.0f, 0.0f, -90.0f);
 		m_Axis_S_X->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_S_X->so.mesh = new Cylinder(m_Axis_S_X->so.scale);
-		m_Axis_S_X->so.AABB = new AABB(m_Axis_S_X->so.position, m_Axis_S_X->so.rotation, m_Axis_S_X->so.scale);
+		m_Axis_S_X->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_S_X->so.rotation, glm::vec3(1.0f));
 		m_Axis_S_X->axes = { true, false, false };
 		m_Axis_S_X->name = "m_Axis_S_X";
 		m_GizmoObjects.push_back(m_Axis_S_X);
@@ -187,7 +187,7 @@ void Gizmo::CreateObjects()
 		m_Axis_S_Y->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 		m_Axis_S_Y->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_S_Y->so.mesh = new Cylinder(m_Axis_S_Y->so.scale);
-		m_Axis_S_Y->so.AABB = new AABB(m_Axis_S_Y->so.position, m_Axis_S_Y->so.rotation, m_Axis_S_Y->so.scale);
+		m_Axis_S_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_S_Y->so.rotation, glm::vec3(1.0f));
 		m_Axis_S_Y->axes = { false, true, false };
 		m_Axis_S_Y->name = "m_Axis_S_Y";
 		m_GizmoObjects.push_back(m_Axis_S_Y);
@@ -200,7 +200,7 @@ void Gizmo::CreateObjects()
 		m_Axis_S_Z->so.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
 		m_Axis_S_Z->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_S_Z->so.mesh = new Cylinder(m_Axis_S_Z->so.scale);
-		m_Axis_S_Z->so.AABB = new AABB(m_Axis_S_Z->so.position, m_Axis_S_Z->so.rotation, m_Axis_S_Z->so.scale);
+		m_Axis_S_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_S_Z->so.rotation, glm::vec3(1.0f));
 		m_Axis_S_Z->axes = { false, false, true };
 		m_Axis_S_Z->name = "m_Axis_S_Z";
 		m_GizmoObjects.push_back(m_Axis_S_Z);
@@ -214,7 +214,7 @@ void Gizmo::CreateObjects()
 		m_Handle_S_X->so.rotation = glm::vec3(0.0f, 0.0f, -90.0f);
 		m_Handle_S_X->so.scale = glm::vec3(0.6f, 0.6f, 0.6f) * m_ScaleGlobal;
 		m_Handle_S_X->so.mesh = new Block(m_Handle_S_X->so.scale);
-		m_Handle_S_X->so.AABB = new AABB(m_Handle_S_X->so.position, m_Handle_S_X->so.rotation, m_Handle_S_X->so.scale);
+		m_Handle_S_X->so.AABB = new AABB(glm::vec3(0.0f), m_Handle_S_X->so.rotation, glm::vec3(1.0f));
 		m_Handle_S_X->axes = { true, false, false };
 		m_Handle_S_X->name = "m_Handle_S_X";
 		m_GizmoObjects.push_back(m_Handle_S_X);
@@ -227,7 +227,7 @@ void Gizmo::CreateObjects()
 		m_Handle_S_Y->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 		m_Handle_S_Y->so.scale = glm::vec3(0.6f, 0.6f, 0.6f) * m_ScaleGlobal;
 		m_Handle_S_Y->so.mesh = new Block(m_Handle_S_Y->so.scale);
-		m_Handle_S_Y->so.AABB = new AABB(m_Handle_S_Y->so.position, m_Handle_S_Y->so.rotation, m_Handle_S_Y->so.scale);
+		m_Handle_S_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Handle_S_Y->so.rotation, glm::vec3(1.0f));
 		m_Handle_S_Y->axes = { false, true, false };
 		m_Handle_S_Y->name = "m_Handle_S_Y";
 		m_GizmoObjects.push_back(m_Handle_S_Y);
@@ -240,7 +240,7 @@ void Gizmo::CreateObjects()
 		m_Handle_S_Z->so.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
 		m_Handle_S_Z->so.scale = glm::vec3(0.6f, 0.6f, 0.6f) * m_ScaleGlobal;
 		m_Handle_S_Z->so.mesh = new Block(m_Handle_S_Z->so.scale);
-		m_Handle_S_Z->so.AABB = new AABB(m_Handle_S_Z->so.position, m_Handle_S_Z->so.rotation, m_Handle_S_Z->so.scale);
+		m_Handle_S_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Handle_S_Z->so.rotation, glm::vec3(1.0f));
 		m_Handle_S_Z->axes = { false, false, true };
 		m_Handle_S_Z->name = "m_Handle_S_Z";
 		m_GizmoObjects.push_back(m_Handle_S_Z);
@@ -257,7 +257,7 @@ void Gizmo::CreateObjects()
 		m_Ring_R_X->so.rotation = glm::vec3(0.0f, 0.0f, 90.0f);
 		m_Ring_R_X->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
 		m_Ring_R_X->so.mesh = new Ring(m_Ring_R_X->so.scale);
-		m_Ring_R_X->so.AABB = new AABB(m_Ring_R_X->so.position, m_Ring_R_X->so.rotation, m_Ring_R_X->so.scale);
+		m_Ring_R_X->so.AABB = new AABB(glm::vec3(0.0f), m_Ring_R_X->so.rotation, glm::vec3(1.0f));
 		m_Ring_R_X->axes = { true, false, false };
 		m_Ring_R_X->name = "m_Ring_R_X";
 		m_GizmoObjects.push_back(m_Ring_R_X);
@@ -270,7 +270,7 @@ void Gizmo::CreateObjects()
 		m_Ring_R_Y->so.rotation = glm::vec3(0.0f, 1.0f, 0.0f);
 		m_Ring_R_Y->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
 		m_Ring_R_Y->so.mesh = new Ring(m_Ring_R_Y->so.scale);
-		m_Ring_R_Y->so.AABB = new AABB(m_Ring_R_Y->so.position, m_Ring_R_Y->so.rotation, m_Ring_R_Y->so.scale);
+		m_Ring_R_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Ring_R_Y->so.rotation, glm::vec3(1.0f));
 		m_Ring_R_Y->axes = { false, true, false };
 		m_Ring_R_Y->name = "m_Ring_R_Y";
 		m_GizmoObjects.push_back(m_Ring_R_Y);
@@ -283,7 +283,7 @@ void Gizmo::CreateObjects()
 		m_Ring_R_Z->so.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
 		m_Ring_R_Z->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
 		m_Ring_R_Z->so.mesh = new Ring(m_Ring_R_Z->so.scale);
-		m_Ring_R_Z->so.AABB = new AABB(m_Ring_R_Z->so.position, m_Ring_R_Z->so.rotation, m_Ring_R_Z->so.scale);
+		m_Ring_R_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Ring_R_Z->so.rotation, glm::vec3(1.0f));
 		m_Ring_R_Z->axes = { false, false, true };
 		m_Ring_R_Z->name = "m_Ring_R_Z";
 		m_GizmoObjects.push_back(m_Ring_R_Z);
@@ -528,9 +528,9 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
 			mouseDeltaY = mainWindow.getYChange();
 		}
 
-		float shiftSpeed = 1.0f;
+		float shiftSpeed = m_ShiftSpeed;
 		if (mainWindow.getKeys()[GLFW_KEY_LEFT_SHIFT])
-			shiftSpeed = m_ShiftSpeed;
+			shiftSpeed = 1.0f;
 
 		if (m_Mode == GIZMO_MODE_TRANSLATE)
 		{
