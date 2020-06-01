@@ -18,12 +18,10 @@ glm::mat4 Math::CreateTransform(glm::vec3 position, glm::vec3 rotation, glm::vec
 
 glm::mat4 Math::CreateTransform(glm::vec3 position, glm::quat rotation, glm::vec3 scale)
 {
-	glm::mat4 transform = glm::mat4(1.0f);
-	glm::mat4 TranslationMatrix = glm::translate(glm::mat4(1.0f), position);
-	glm::mat4 RotationMatrix = glm::toMat4(rotation);
-	glm::mat4 ScaleMatrix = glm::translate(glm::mat4(1.0f), scale);
-	transform = TranslationMatrix * RotationMatrix * ScaleMatrix;
-	return transform;
+	glm::mat4 translateMatrix = glm::translate(glm::mat4(1.0f), position);
+	glm::mat4 rotateMatrix    = glm::toMat4(rotation);
+	glm::mat4 scaleMatrix     = glm::scale(glm::mat4(1.0f), scale);
+	return translateMatrix * rotateMatrix * scaleMatrix;
 }
 
 glm::mat4 Math::aiMatrix4x4ToGlm(const aiMatrix4x4* from)

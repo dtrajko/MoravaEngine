@@ -20,7 +20,7 @@ Gizmo::Gizmo()
 	m_AxesEnabled = { false, false, false };
 
 	m_Position = glm::vec3(0.0f);
-	m_Rotation = glm::vec3(0.0f);
+	m_Rotation = glm::quat(glm::vec3(0.0f));
 	m_Scale = glm::vec3(1.0f);
 
 	// the scene object controlled by the Gizmo
