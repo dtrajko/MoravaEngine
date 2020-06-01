@@ -9,6 +9,9 @@
 #include "Ring.h"
 #include "SceneObject.h"
 
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 
 const int GIZMO_MODE_NONE      = 0;
 const int GIZMO_MODE_TRANSLATE = 1;
@@ -60,7 +63,7 @@ private:
 
 	SceneObject* m_SceneObject;
 	glm::vec3 m_Position;
-	glm::vec3 m_Rotation;
+	glm::quat m_Rotation;
 	glm::vec3 m_Scale;
 
 	const glm::vec3 m_ScaleGlobal = glm::vec3(0.5f);

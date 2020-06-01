@@ -590,9 +590,9 @@ void SceneEditor::SaveScene()
             std::to_string(m_SceneObjects[i]->position.y) + "\t" +
             std::to_string(m_SceneObjects[i]->position.z));
         lines.push_back("Rotation\t" +
-            std::to_string(m_SceneObjects[i]->rotation.x) + "\t" +
-            std::to_string(m_SceneObjects[i]->rotation.y) + "\t" +
-            std::to_string(m_SceneObjects[i]->rotation.z));
+            std::to_string(glm::eulerAngles(m_SceneObjects[i]->rotation).x) + "\t" +
+            std::to_string(glm::eulerAngles(m_SceneObjects[i]->rotation).y) + "\t" +
+            std::to_string(glm::eulerAngles(m_SceneObjects[i]->rotation).z));
         lines.push_back("Scale\t" +
             std::to_string(m_SceneObjects[i]->scale.x) + "\t" +
             std::to_string(m_SceneObjects[i]->scale.y) + "\t" +
@@ -682,7 +682,7 @@ void SceneEditor::LoadScene()
             // printf("Position %.2ff %.2ff %.2ff\n", sceneObject.position.x, sceneObject.position.y, sceneObject.position.z);
         }
         else if (tokens.size() >= 4 && tokens[0] == "Rotation") {
-            sceneObject->rotation = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
+            sceneObject->rotation = glm::quat(glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3])));
             // printf("Rotation %.2ff %.2ff %.2ff\n", sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z);
         }
         else if (tokens.size() >= 4 && tokens[0] == "Scale") {
@@ -831,7 +831,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
     {
         m_PositionEdit = &m_SceneObjects[m_SelectedIndex]->position;
-        m_RotationEdit = &m_SceneObjects[m_SelectedIndex]->rotation;
+        m_RotationEdit = &glm::eulerAngles(m_SceneObjects[m_SelectedIndex]->rotation);
         m_ScaleEdit = &m_SceneObjects[m_SelectedIndex]->scale;
         m_ColorEdit = &m_SceneObjects[m_SelectedIndex]->color;
         m_TextureNameEdit = &m_SceneObjects[m_SelectedIndex]->textureName;
@@ -1135,7 +1135,7 @@ SceneObject* SceneEditor::CreateNewSceneObject()
     sceneObject->name            = "";
     sceneObject->transform       = glm::mat4(1.0f);
     sceneObject->position        = defaultSpawnPosition;
-    sceneObject->rotation        = glm::vec3(0.0f);
+    sceneObject->rotation        = glm::quat(glm::vec3(0.0f));
     sceneObject->scale           = glm::vec3(1.0f);
     sceneObject->positionAABB    = defaultSpawnPosition;
     sceneObject->scaleAABB       = glm::vec3(1.0f);
@@ -1241,7 +1241,7 @@ void SceneEditor::AddSceneObject()
     SceneObject* sceneObject = CreateNewSceneObject();
     sceneObject->name = modelName;
     sceneObject->objectType = objectType;
-    sceneObject->rotation = rotation;
+    sceneObject->rotation = glm::quat(rotation);
     sceneObject->scale = scale;
     sceneObject->mesh = mesh;
     sceneObject->meshType = m_CurrentMeshTypeID;

@@ -50,7 +50,7 @@ void Gizmo::CreateObjects()
 		m_Axis_T_X->so.meshType = MESH_TYPE_CYLINDER;
 		m_Axis_T_X->so.color = m_Color_Red;
 		m_Axis_T_X->so.position = glm::vec3(2.0f, 0.0f, 0.0f) * m_ScaleGlobal;
-		m_Axis_T_X->so.rotation = glm::vec3(0.0f, 0.0f, -90.0f);
+		m_Axis_T_X->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, -90.0f));
 		m_Axis_T_X->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_T_X->so.mesh = new Cylinder(m_Axis_T_X->so.scale);
 		m_Axis_T_X->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_T_X->so.rotation, glm::vec3(1.0f));
@@ -63,7 +63,7 @@ void Gizmo::CreateObjects()
 		m_Axis_T_Y->so.meshType = MESH_TYPE_CYLINDER;
 		m_Axis_T_Y->so.color = m_Color_Green;
 		m_Axis_T_Y->so.position = glm::vec3(0.0f, 2.0f, 0.0f) * m_ScaleGlobal;
-		m_Axis_T_Y->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+		m_Axis_T_Y->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_Axis_T_Y->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_T_Y->so.mesh = new Cylinder(m_Axis_T_Y->so.scale);
 		m_Axis_T_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_T_Y->so.rotation, glm::vec3(1.0f));
@@ -76,7 +76,7 @@ void Gizmo::CreateObjects()
 		m_Axis_T_Z->so.meshType = MESH_TYPE_CYLINDER;
 		m_Axis_T_Z->so.color = m_Color_Blue;
 		m_Axis_T_Z->so.position = glm::vec3(0.0f, 0.0f, 2.0f) * m_ScaleGlobal;
-		m_Axis_T_Z->so.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
+		m_Axis_T_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f));
 		m_Axis_T_Z->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_T_Z->so.mesh = new Cylinder(m_Axis_T_Z->so.scale);
 		m_Axis_T_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_T_Z->so.rotation, glm::vec3(1.0f));
@@ -89,7 +89,7 @@ void Gizmo::CreateObjects()
 		m_Arrow_T_X->so.meshType = MESH_TYPE_CONE;
 		m_Arrow_T_X->so.color = m_Color_Red;
 		m_Arrow_T_X->so.position = glm::vec3(4.5f, 0.0f, 0.0f) * m_ScaleGlobal;
-		m_Arrow_T_X->so.rotation = glm::vec3(0.0f, 0.0f, -90.0f);
+		m_Arrow_T_X->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, -90.0f));
 		m_Arrow_T_X->so.scale = glm::vec3(0.6f, 0.8f, 0.6f) * m_ScaleGlobal;
 		m_Arrow_T_X->so.mesh = new Cone(m_Arrow_T_X->so.scale);
 		m_Arrow_T_X->so.AABB = new AABB(glm::vec3(0.0f), m_Arrow_T_X->so.rotation, glm::vec3(1.0f));
@@ -102,7 +102,7 @@ void Gizmo::CreateObjects()
 		m_Arrow_T_Y->so.meshType = MESH_TYPE_CONE;
 		m_Arrow_T_Y->so.color = m_Color_Green;
 		m_Arrow_T_Y->so.position = glm::vec3(0.0f, 4.5f, 0.0f) * m_ScaleGlobal;
-		m_Arrow_T_Y->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+		m_Arrow_T_Y->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_Arrow_T_Y->so.scale = glm::vec3(0.6f, 0.8f, 0.6f) * m_ScaleGlobal;
 		m_Arrow_T_Y->so.mesh = new Cone(m_Arrow_T_Y->so.scale);
 		m_Arrow_T_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Arrow_T_Y->so.rotation, glm::vec3(1.0f));
@@ -115,7 +115,7 @@ void Gizmo::CreateObjects()
 		m_Arrow_T_Z->so.meshType = MESH_TYPE_CONE;
 		m_Arrow_T_Z->so.color = m_Color_Blue;
 		m_Arrow_T_Z->so.position = glm::vec3(0.0f, 0.0f, 4.5f) * m_ScaleGlobal;
-		m_Arrow_T_Z->so.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
+		m_Arrow_T_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f));
 		m_Arrow_T_Z->so.scale = glm::vec3(0.6f, 0.8f, 0.6f) * m_ScaleGlobal;
 		m_Arrow_T_Z->so.mesh = new Cone(m_Arrow_T_Z->so.scale);
 		m_Arrow_T_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Arrow_T_Z->so.rotation, glm::vec3(1.0f));
@@ -128,7 +128,7 @@ void Gizmo::CreateObjects()
 		m_Square_T_YZ->so.meshType = MESH_TYPE_CUBE;
 		m_Square_T_YZ->so.color = m_Color_Cyan;
 		m_Square_T_YZ->so.position = glm::vec3(0.0f, 2.0f, 2.0f) * m_ScaleGlobal;
-		m_Square_T_YZ->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+		m_Square_T_YZ->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_Square_T_YZ->so.scale = glm::vec3(0.15f, 1.5f, 1.5f) * m_ScaleGlobal;
 		m_Square_T_YZ->so.mesh = new Block(m_Square_T_YZ->so.scale);
 		m_Square_T_YZ->so.AABB = new AABB(glm::vec3(0.0f), m_Square_T_YZ->so.rotation, glm::vec3(1.0f));
@@ -141,7 +141,7 @@ void Gizmo::CreateObjects()
 		m_Square_T_ZX->so.meshType = MESH_TYPE_CUBE;
 		m_Square_T_ZX->so.color = m_Color_Magenta;
 		m_Square_T_ZX->so.position = glm::vec3(2.0f, 0.0f, 2.0f) * m_ScaleGlobal;
-		m_Square_T_ZX->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+		m_Square_T_ZX->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_Square_T_ZX->so.scale = glm::vec3(1.5f, 0.15f, 1.5f) * m_ScaleGlobal;
 		m_Square_T_ZX->so.mesh = new Block(m_Square_T_ZX->so.scale);
 		m_Square_T_ZX->so.AABB = new AABB(glm::vec3(0.0f), m_Square_T_ZX->so.rotation, glm::vec3(1.0f));
@@ -154,7 +154,7 @@ void Gizmo::CreateObjects()
 		m_Square_T_XY->so.meshType = MESH_TYPE_CUBE;
 		m_Square_T_XY->so.color = m_Color_Yellow;
 		m_Square_T_XY->so.position = glm::vec3(2.0f, 2.0f, 0.0f) * m_ScaleGlobal;
-		m_Square_T_XY->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+		m_Square_T_XY->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_Square_T_XY->so.scale = glm::vec3(1.5f, 1.5f, 0.15f) * m_ScaleGlobal;
 		m_Square_T_XY->so.mesh = new Block(m_Square_T_XY->so.scale);
 		m_Square_T_XY->so.AABB = new AABB(glm::vec3(0.0f), m_Square_T_XY->so.rotation, glm::vec3(1.0f));
@@ -171,7 +171,7 @@ void Gizmo::CreateObjects()
 		m_Axis_S_X->so.meshType = MESH_TYPE_CYLINDER;
 		m_Axis_S_X->so.color = m_Color_Red;
 		m_Axis_S_X->so.position = glm::vec3(2.0f, 0.0f, 0.0f) * m_ScaleGlobal;
-		m_Axis_S_X->so.rotation = glm::vec3(0.0f, 0.0f, -90.0f);
+		m_Axis_S_X->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, -90.0f));
 		m_Axis_S_X->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_S_X->so.mesh = new Cylinder(m_Axis_S_X->so.scale);
 		m_Axis_S_X->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_S_X->so.rotation, glm::vec3(1.0f));
@@ -184,7 +184,7 @@ void Gizmo::CreateObjects()
 		m_Axis_S_Y->so.meshType = MESH_TYPE_CYLINDER;
 		m_Axis_S_Y->so.color = m_Color_Green;
 		m_Axis_S_Y->so.position = glm::vec3(0.0f, 2.0f, 0.0f) * m_ScaleGlobal;
-		m_Axis_S_Y->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+		m_Axis_S_Y->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_Axis_S_Y->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_S_Y->so.mesh = new Cylinder(m_Axis_S_Y->so.scale);
 		m_Axis_S_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_S_Y->so.rotation, glm::vec3(1.0f));
@@ -197,7 +197,7 @@ void Gizmo::CreateObjects()
 		m_Axis_S_Z->so.meshType = MESH_TYPE_CYLINDER;
 		m_Axis_S_Z->so.color = m_Color_Blue;
 		m_Axis_S_Z->so.position = glm::vec3(0.0f, 0.0f, 2.0f) * m_ScaleGlobal;
-		m_Axis_S_Z->so.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
+		m_Axis_S_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f));
 		m_Axis_S_Z->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_S_Z->so.mesh = new Cylinder(m_Axis_S_Z->so.scale);
 		m_Axis_S_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_S_Z->so.rotation, glm::vec3(1.0f));
@@ -211,7 +211,7 @@ void Gizmo::CreateObjects()
 		m_Handle_S_X->so.meshType = MESH_TYPE_CYLINDER;
 		m_Handle_S_X->so.color = m_Color_Red;
 		m_Handle_S_X->so.position = glm::vec3(4.4f, 0.0f, 0.0f) * m_ScaleGlobal;
-		m_Handle_S_X->so.rotation = glm::vec3(0.0f, 0.0f, -90.0f);
+		m_Handle_S_X->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, -90.0f));
 		m_Handle_S_X->so.scale = glm::vec3(0.6f, 0.6f, 0.6f) * m_ScaleGlobal;
 		m_Handle_S_X->so.mesh = new Block(m_Handle_S_X->so.scale);
 		m_Handle_S_X->so.AABB = new AABB(glm::vec3(0.0f), m_Handle_S_X->so.rotation, glm::vec3(1.0f));
@@ -224,7 +224,7 @@ void Gizmo::CreateObjects()
 		m_Handle_S_Y->so.meshType = MESH_TYPE_CYLINDER;
 		m_Handle_S_Y->so.color = m_Color_Green;
 		m_Handle_S_Y->so.position = glm::vec3(0.0f, 4.4f, 0.0f) * m_ScaleGlobal;
-		m_Handle_S_Y->so.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+		m_Handle_S_Y->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
 		m_Handle_S_Y->so.scale = glm::vec3(0.6f, 0.6f, 0.6f) * m_ScaleGlobal;
 		m_Handle_S_Y->so.mesh = new Block(m_Handle_S_Y->so.scale);
 		m_Handle_S_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Handle_S_Y->so.rotation, glm::vec3(1.0f));
@@ -237,7 +237,7 @@ void Gizmo::CreateObjects()
 		m_Handle_S_Z->so.meshType = MESH_TYPE_CYLINDER;
 		m_Handle_S_Z->so.color = m_Color_Blue;
 		m_Handle_S_Z->so.position = glm::vec3(0.0f, 0.0f, 4.4f) * m_ScaleGlobal;
-		m_Handle_S_Z->so.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
+		m_Handle_S_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f));
 		m_Handle_S_Z->so.scale = glm::vec3(0.6f, 0.6f, 0.6f) * m_ScaleGlobal;
 		m_Handle_S_Z->so.mesh = new Block(m_Handle_S_Z->so.scale);
 		m_Handle_S_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Handle_S_Z->so.rotation, glm::vec3(1.0f));
@@ -254,7 +254,7 @@ void Gizmo::CreateObjects()
 		m_Ring_R_X->so.meshType = MESH_TYPE_RING;
 		m_Ring_R_X->so.color = m_Color_Red;
 		m_Ring_R_X->so.position = glm::vec3(0.0f, 0.0f, 0.0f) * m_ScaleGlobal;
-		m_Ring_R_X->so.rotation = glm::vec3(0.0f, 0.0f, 90.0f);
+		m_Ring_R_X->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 90.0f));
 		m_Ring_R_X->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
 		m_Ring_R_X->so.mesh = new Ring(m_Ring_R_X->so.scale);
 		m_Ring_R_X->so.AABB = new AABB(glm::vec3(0.0f), m_Ring_R_X->so.rotation, glm::vec3(1.0f));
@@ -267,7 +267,7 @@ void Gizmo::CreateObjects()
 		m_Ring_R_Y->so.meshType = MESH_TYPE_RING;
 		m_Ring_R_Y->so.color = m_Color_Green;
 		m_Ring_R_Y->so.position = glm::vec3(0.0f, 0.0f, 0.0f) * m_ScaleGlobal;
-		m_Ring_R_Y->so.rotation = glm::vec3(0.0f, 1.0f, 0.0f);
+		m_Ring_R_Y->so.rotation = glm::quat(glm::vec3(0.0f, 1.0f, 0.0f));
 		m_Ring_R_Y->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
 		m_Ring_R_Y->so.mesh = new Ring(m_Ring_R_Y->so.scale);
 		m_Ring_R_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Ring_R_Y->so.rotation, glm::vec3(1.0f));
@@ -280,7 +280,7 @@ void Gizmo::CreateObjects()
 		m_Ring_R_Z->so.meshType = MESH_TYPE_RING;
 		m_Ring_R_Z->so.color = m_Color_Blue;
 		m_Ring_R_Z->so.position = glm::vec3(0.0f, 0.0f, 0.0f) * m_ScaleGlobal;
-		m_Ring_R_Z->so.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
+		m_Ring_R_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f));
 		m_Ring_R_Z->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
 		m_Ring_R_Z->so.mesh = new Ring(m_Ring_R_Z->so.scale);
 		m_Ring_R_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Ring_R_Z->so.rotation, glm::vec3(1.0f));
