@@ -598,13 +598,13 @@ void SceneEditor::SaveScene()
             std::to_string(m_SceneObjects[i]->scale.y) + "\t" +
             std::to_string(m_SceneObjects[i]->scale.z));
         lines.push_back("PositionAABB\t" +
-            std::to_string(m_SceneObjects[i]->AABB->m_PositionOrigin.x) + "\t" +
-            std::to_string(m_SceneObjects[i]->AABB->m_PositionOrigin.y) + "\t" +
-            std::to_string(m_SceneObjects[i]->AABB->m_PositionOrigin.z));
+            std::to_string(m_SceneObjects[i]->positionAABB.x) + "\t" +
+            std::to_string(m_SceneObjects[i]->positionAABB.y) + "\t" +
+            std::to_string(m_SceneObjects[i]->positionAABB.z));
         lines.push_back("ScaleAABB\t" +
-            std::to_string(m_SceneObjects[i]->AABB->m_ScaleOrigin.x) + "\t" +
-            std::to_string(m_SceneObjects[i]->AABB->m_ScaleOrigin.y) + "\t" +
-            std::to_string(m_SceneObjects[i]->AABB->m_ScaleOrigin.z));
+            std::to_string(m_SceneObjects[i]->scaleAABB.x) + "\t" +
+            std::to_string(m_SceneObjects[i]->scaleAABB.y) + "\t" +
+            std::to_string(m_SceneObjects[i]->scaleAABB.z));
         lines.push_back("Color\t" +
             std::to_string(m_SceneObjects[i]->color.r) + "\t" +
             std::to_string(m_SceneObjects[i]->color.g) + "\t" +
@@ -1248,6 +1248,8 @@ void SceneEditor::AddSceneObject()
     sceneObject->model = model;
     sceneObject->modelType = m_CurrentModelID;
     sceneObject->materialName = materialName;
+    sceneObject->positionAABB = positionAABB;
+    sceneObject->scaleAABB = scaleAABB;
     sceneObject->AABB = new AABB(positionAABB, glm::vec3(0.0f), scaleAABB);
 
     // printf("SceneEditor::AddSceneObject sceneObject->AABB->m_Scale [ %.2ff %.2ff %.2ff ]\n",
@@ -1279,7 +1281,7 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
         mesh = CreateNewPrimitive(oldSceneObject->meshType, oldSceneObject->mesh->GetScale());
     }
     else if (oldSceneObject->objectType == "model" && oldSceneObject->model != nullptr) {
-        model = AddNewModel(m_CurrentModelID, oldSceneObject->mesh->GetScale()); // TODO: m_CurrentModelID hard-coded, most be in SceneObject
+        model = AddNewModel(m_CurrentModelID, oldSceneObject->mesh->GetScale()); // TODO: m_CurrentModelID hard-coded, must be in SceneObject
     }
 
     SceneObject* newSceneObject = new SceneObject();
@@ -1296,8 +1298,8 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
     newSceneObject->textureName     = oldSceneObject->textureName;
     newSceneObject->tilingFactor    = oldSceneObject->tilingFactor;
     newSceneObject->isSelected      = true;
-    newSceneObject->AABB            = new AABB(oldSceneObject->position, oldSceneObject->rotation, oldSceneObject->scale);
-    newSceneObject->pivot           = new Pivot(oldSceneObject->position, oldSceneObject->scale);
+    newSceneObject->AABB            = new AABB(newSceneObject->positionAABB, newSceneObject->rotation, newSceneObject->scaleAABB);
+    newSceneObject->pivot           = new Pivot(newSceneObject->position, newSceneObject->scale);
     newSceneObject->objectType      = oldSceneObject->objectType;
     newSceneObject->mesh            = mesh;
     newSceneObject->meshType        = m_CurrentMeshTypeID;
