@@ -528,42 +528,42 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
 			mouseDeltaY = mainWindow.getYChange();
 		}
 
-		float shiftSpeed = m_ShiftSpeed;
-		if (mainWindow.getKeys()[GLFW_KEY_LEFT_SHIFT])
-			shiftSpeed = 1.0f;
+		float factorSpeed = m_FactorSpeed;
+		if (mainWindow.getKeys()[GLFW_KEY_TAB])
+			factorSpeed = 1.0f;
 
 		if (m_Mode == GIZMO_MODE_TRANSLATE)
 		{
 			if (m_AxesEnabled.x && !m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Position.x += (mouseDeltaX + mouseDeltaY) * m_FactorTranslate * shiftSpeed;
+				m_Position.x += (mouseDeltaX + mouseDeltaY) * m_FactorTranslate * factorSpeed;
 				// printf("Gizmo::UpdateActive m_AxesEnabled [ %d %d %d mouseDeltaX [ %.2ff %.2ff ]\n",
 				// 	m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z, mouseDeltaX, mouseDeltaY);
 			}
 			else if (!m_AxesEnabled.x && m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Position.y += (mouseDeltaX + mouseDeltaY) * m_FactorTranslate * shiftSpeed;
+				m_Position.y += (mouseDeltaX + mouseDeltaY) * m_FactorTranslate * factorSpeed;
 				// printf("Gizmo::UpdateActive m_AxesEnabled [ %d %d %d mouseDeltaX [ %.2ff %.2ff ]\n",
 				// 	m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z, mouseDeltaX, mouseDeltaY);
 			}
 			else if (!m_AxesEnabled.x && !m_AxesEnabled.y && m_AxesEnabled.z) {
-				m_Position.z -= (mouseDeltaX + mouseDeltaY) * m_FactorTranslate * shiftSpeed;
+				m_Position.z -= (mouseDeltaX + mouseDeltaY) * m_FactorTranslate * factorSpeed;
 				// printf("Gizmo::UpdateActive m_AxesEnabled [ %d %d %d mouseDeltaX [ %.2ff %.2ff ]\n",
 				// 	m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z, mouseDeltaX, mouseDeltaY);
 			}
 			else if (m_AxesEnabled.x && m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Position.x += mouseDeltaX * m_FactorTranslate * shiftSpeed;
-				m_Position.y += mouseDeltaY * m_FactorTranslate * shiftSpeed;
+				m_Position.x += mouseDeltaX * m_FactorTranslate * factorSpeed;
+				m_Position.y += mouseDeltaY * m_FactorTranslate * factorSpeed;
 				// printf("Gizmo::UpdateActive m_AxesEnabled [ %d %d %d mouseDeltaX [ %.2ff %.2ff ]\n",
 				// 	m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z, mouseDeltaX, mouseDeltaY);
 			}
 			else if (!m_AxesEnabled.x && m_AxesEnabled.y && m_AxesEnabled.z) {
-				m_Position.y += mouseDeltaY * m_FactorTranslate * shiftSpeed;
-				m_Position.z -= mouseDeltaX * m_FactorTranslate * shiftSpeed;
+				m_Position.y += mouseDeltaY * m_FactorTranslate * factorSpeed;
+				m_Position.z -= mouseDeltaX * m_FactorTranslate * factorSpeed;
 				// printf("Gizmo::UpdateActive m_AxesEnabled [ %d %d %d mouseDeltaX [ %.2ff %.2ff ]\n",
 				// 	m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z, mouseDeltaX, mouseDeltaY);
 			}
 			else if (m_AxesEnabled.x && !m_AxesEnabled.y && m_AxesEnabled.z) {
-				m_Position.z -= mouseDeltaY * m_FactorTranslate * shiftSpeed;
-				m_Position.x += mouseDeltaX * m_FactorTranslate * shiftSpeed;
+				m_Position.z -= mouseDeltaY * m_FactorTranslate * factorSpeed;
+				m_Position.x += mouseDeltaX * m_FactorTranslate * factorSpeed;
 				// printf("Gizmo::UpdateActive m_AxesEnabled [ %d %d %d mouseDeltaX [ %.2ff %.2ff ]\n",
 				// 	m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z, mouseDeltaX, mouseDeltaY);
 			}
@@ -572,26 +572,26 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
 		if (m_Mode == GIZMO_MODE_SCALE)
 		{
 			if (m_AxesEnabled.x && !m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Scale.x += (mouseDeltaX + mouseDeltaY) * m_FactorScale * shiftSpeed;
+				m_Scale.x += (mouseDeltaX + mouseDeltaY) * m_FactorScale * factorSpeed;
 			}
 			else if (!m_AxesEnabled.x && m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Scale.y += (mouseDeltaX + mouseDeltaY) * m_FactorScale * shiftSpeed;
+				m_Scale.y += (mouseDeltaX + mouseDeltaY) * m_FactorScale * factorSpeed;
 			}
 			else if (!m_AxesEnabled.x && !m_AxesEnabled.y && m_AxesEnabled.z) {
-				m_Scale.z -= (mouseDeltaX + mouseDeltaY) * m_FactorScale * shiftSpeed;
+				m_Scale.z -= (mouseDeltaX + mouseDeltaY) * m_FactorScale * factorSpeed;
 			}
 		}
 
 		if (m_Mode == GIZMO_MODE_ROTATE)
 		{
 			if (m_AxesEnabled.x && !m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Rotation.x += (mouseDeltaX + mouseDeltaY) * m_FactorRotate * shiftSpeed;
+				m_Rotation.x += (mouseDeltaX + mouseDeltaY) * m_FactorRotate * factorSpeed;
 			}
 			else if (!m_AxesEnabled.x && m_AxesEnabled.y && !m_AxesEnabled.z) {
-				m_Rotation.y += (mouseDeltaX + mouseDeltaY) * m_FactorRotate * shiftSpeed;
+				m_Rotation.y += (mouseDeltaX + mouseDeltaY) * m_FactorRotate * factorSpeed;
 			}
 			else if (!m_AxesEnabled.x && !m_AxesEnabled.y && m_AxesEnabled.z) {
-				m_Rotation.z += (mouseDeltaX + mouseDeltaY) * m_FactorRotate * shiftSpeed;
+				m_Rotation.z += (mouseDeltaX + mouseDeltaY) * m_FactorRotate * factorSpeed;
 			}
 		}
 
