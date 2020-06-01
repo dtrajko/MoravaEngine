@@ -16,12 +16,14 @@ AABB::AABB(glm::vec3 positionOrigin, glm::vec3 rotationOrigin, glm::vec3 scaleOr
     m_BoundMin = glm::vec3(
         positionOrigin.x - m_UnitSize * scaleOrigin.x,
         positionOrigin.y - m_UnitSize * scaleOrigin.y,
-        positionOrigin.z - m_UnitSize * scaleOrigin.z);
+        positionOrigin.z - m_UnitSize * scaleOrigin.z
+    );
 
     m_BoundMax = glm::vec3(
         positionOrigin.x + m_UnitSize * scaleOrigin.x,
         positionOrigin.y + m_UnitSize * scaleOrigin.y,
-        positionOrigin.z + m_UnitSize * scaleOrigin.z);
+        positionOrigin.z + m_UnitSize * scaleOrigin.z
+    );
 
     m_Vertices = {
         m_BoundMin.x, m_BoundMin.y, m_BoundMax.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 0 - MinX MinY MaxZ

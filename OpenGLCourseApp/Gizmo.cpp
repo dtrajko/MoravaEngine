@@ -8,8 +8,8 @@
 Gizmo::Gizmo()
 {
 	m_Mode = GIZMO_MODE_NONE;
-
 	m_Active = false;
+	m_DrawAABBs = true;
 
 	m_MousePress   = { 0.0f, 1.0f };
 	m_MouseRelease = { 0.0f, 1.0f };
@@ -623,7 +623,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Axis_T_X->so.AABB->m_Color);
-		// m_Axis_T_X->so.AABB->Draw();
+		if (m_DrawAABBs) m_Axis_T_X->so.AABB->Draw();
 
 		m_Axis_T_Y->so.transform = Math::CreateTransform(m_Position + m_Axis_T_Y->so.position, m_Axis_T_Y->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Axis_T_Y->so.transform);
@@ -632,7 +632,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Axis_T_Y->so.AABB->m_Color);
-		// m_Axis_T_Y->so.AABB->Draw();
+		if (m_DrawAABBs) m_Axis_T_Y->so.AABB->Draw();
 
 		m_Axis_T_Z->so.transform = Math::CreateTransform(m_Position + m_Axis_T_Z->so.position, m_Axis_T_Z->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Axis_T_Z->so.transform);
@@ -641,7 +641,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Axis_T_Z->so.AABB->m_Color);
-		// m_Axis_T_Z->so.AABB->Draw();
+		if (m_DrawAABBs) m_Axis_T_Z->so.AABB->Draw();
 
 		// Translation Gizmo - Arrows (Cones)
 		m_Arrow_T_X->so.transform = Math::CreateTransform(m_Position + m_Arrow_T_X->so.position, m_Arrow_T_X->so.rotation, glm::vec3(1.0f));
@@ -651,7 +651,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Arrow_T_X->so.AABB->m_Color);
-		// m_Arrow_T_X->so.AABB->Draw();
+		if (m_DrawAABBs) m_Arrow_T_X->so.AABB->Draw();
 
 		m_Arrow_T_Y->so.transform = Math::CreateTransform(m_Position + m_Arrow_T_Y->so.position, m_Arrow_T_Y->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Arrow_T_Y->so.transform);
@@ -660,7 +660,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Arrow_T_Y->so.AABB->m_Color);
-		// m_Arrow_T_Y->so.AABB->Draw();
+		if (m_DrawAABBs) m_Arrow_T_Y->so.AABB->Draw();
 
 		m_Arrow_T_Z->so.transform = Math::CreateTransform(m_Position + m_Arrow_T_Z->so.position, m_Arrow_T_Z->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Arrow_T_Z->so.transform);
@@ -669,7 +669,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Arrow_T_Z->so.AABB->m_Color);
-		// m_Arrow_T_Z->so.AABB->Draw();
+		if (m_DrawAABBs) m_Arrow_T_Z->so.AABB->Draw();
 
 		// Translation Gizmo - 2D squares
 		m_Square_T_YZ->so.transform = Math::CreateTransform(m_Position + m_Square_T_YZ->so.position, m_Square_T_YZ->so.rotation, glm::vec3(1.0f));
@@ -679,7 +679,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Square_T_YZ->so.AABB->m_Color);
-		// m_Square_T_YZ->so.AABB->Draw();
+		if (m_DrawAABBs) m_Square_T_YZ->so.AABB->Draw();
 
 		m_Square_T_ZX->so.transform = Math::CreateTransform(m_Position + m_Square_T_ZX->so.position, m_Square_T_ZX->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Square_T_ZX->so.transform);
@@ -688,7 +688,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Square_T_ZX->so.AABB->m_Color);
-		// m_Square_T_ZX->so.AABB->Draw();
+		if (m_DrawAABBs) m_Square_T_ZX->so.AABB->Draw();
 
 		m_Square_T_XY->so.transform = Math::CreateTransform(m_Position + m_Square_T_XY->so.position, m_Square_T_XY->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Square_T_XY->so.transform);
@@ -697,7 +697,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Square_T_XY->so.AABB->m_Color);
-		// m_Square_T_XY->so.AABB->Draw();
+		if (m_DrawAABBs) m_Square_T_XY->so.AABB->Draw();
 	}
 
 	// Render Scale Gizmo
@@ -711,7 +711,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Axis_S_X->so.AABB->m_Color);
-		// m_Axis_S_X->so.AABB->Draw();
+		if (m_DrawAABBs) m_Axis_S_X->so.AABB->Draw();
 
 		m_Axis_S_Y->so.transform = Math::CreateTransform(m_Position + m_Axis_S_Y->so.position, m_Axis_S_Y->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Axis_S_Y->so.transform);
@@ -720,7 +720,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Axis_S_Y->so.AABB->m_Color);
-		// m_Axis_S_Y->so.AABB->Draw();
+		if (m_DrawAABBs) m_Axis_S_Y->so.AABB->Draw();
 
 		m_Axis_S_Z->so.transform = Math::CreateTransform(m_Position + m_Axis_S_Z->so.position, m_Axis_S_Z->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Axis_S_Z->so.transform);
@@ -729,7 +729,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Axis_S_Z->so.AABB->m_Color);
-		// m_Axis_S_Z->so.AABB->Draw();
+		if (m_DrawAABBs) m_Axis_S_Z->so.AABB->Draw();
 
 		// Scale Gizmo - Handles
 		m_Handle_S_X->so.transform = Math::CreateTransform(m_Position + m_Handle_S_X->so.position, m_Handle_S_X->so.rotation, glm::vec3(1.0f));
@@ -739,7 +739,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Handle_S_X->so.AABB->m_Color);
-		// m_Handle_S_X->so.AABB->Draw();
+		if (m_DrawAABBs) m_Handle_S_X->so.AABB->Draw();
 
 		m_Handle_S_Y->so.transform = Math::CreateTransform(m_Position + m_Handle_S_Y->so.position, m_Handle_S_Y->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Handle_S_Y->so.transform);
@@ -748,7 +748,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Handle_S_Y->so.AABB->m_Color);
-		// m_Handle_S_Y->so.AABB->Draw();
+		if (m_DrawAABBs) m_Handle_S_Y->so.AABB->Draw();
 
 		m_Handle_S_Z->so.transform = Math::CreateTransform(m_Position + m_Handle_S_Z->so.position, m_Handle_S_Z->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Handle_S_Z->so.transform);
@@ -757,7 +757,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Handle_S_Z->so.AABB->m_Color);
-		// m_Handle_S_Z->so.AABB->Draw();
+		if (m_DrawAABBs) m_Handle_S_Z->so.AABB->Draw();
 	}
 
 	// Render Rotate Gizmo
@@ -770,7 +770,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Ring_R_X->so.AABB->m_Color);
-		// m_Ring_R_X->so.AABB->Draw();
+		if (m_DrawAABBs) m_Ring_R_X->so.AABB->Draw();
 
 		m_Ring_R_Y->so.transform = Math::CreateTransform(m_Position + m_Ring_R_Y->so.position, m_Ring_R_Y->so.rotation, m_Ring_R_Y->so.scale);
 		shader->setMat4("model", m_Ring_R_Y->so.transform);
@@ -779,7 +779,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Ring_R_Y->so.AABB->m_Color);
-		// m_Ring_R_Y->so.AABB->Draw();
+		if (m_DrawAABBs) m_Ring_R_Y->so.AABB->Draw();
 
 		m_Ring_R_Z->so.transform = Math::CreateTransform(m_Position + m_Ring_R_Z->so.position, m_Ring_R_Z->so.rotation, m_Ring_R_Z->so.scale);
 		shader->setMat4("model", m_Ring_R_Z->so.transform);
@@ -788,7 +788,7 @@ void Gizmo::Render(Shader* shader)
 
 		shader->setMat4("model", glm::mat4(1.0f));
 		shader->setVec4("tintColor", m_Ring_R_Z->so.AABB->m_Color);
-		// m_Ring_R_Z->so.AABB->Draw();
+		if (m_DrawAABBs) m_Ring_R_Z->so.AABB->Draw();
 	}
 }
 

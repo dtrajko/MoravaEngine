@@ -56,6 +56,8 @@ private:
 	Bool3 m_AxesEnabled;
 	bool m_Active;
 
+	bool m_DrawAABBs;
+
 	SceneObject* m_SceneObject;
 	glm::vec3 m_Position;
 	glm::vec3 m_Rotation;
