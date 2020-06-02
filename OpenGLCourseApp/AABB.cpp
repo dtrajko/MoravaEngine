@@ -9,7 +9,7 @@ AABB::AABB() : AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f))
 {
 }
 
-AABB::AABB(glm::vec3 positionOrigin, glm::vec3 rotationOrigin, glm::vec3 scaleOrigin)
+AABB::AABB(glm::vec3 positionOrigin, glm::quat rotationOrigin, glm::vec3 scaleOrigin)
 {
     m_IsColliding = false;
 
@@ -54,7 +54,7 @@ void AABB::UpdatePosition(glm::vec3 positionOrigin)
     m_PositionOrigin = positionOrigin;
 }
 
-void AABB::Update(glm::vec3 positionObject, glm::vec3 rotationObject, glm::vec3 scaleObject)
+void AABB::Update(glm::vec3 positionObject, glm::quat rotationObject, glm::vec3 scaleObject)
 {
     // printf("AABB::Update scale [ %.2ff %.2ff %.2ff ]\n", scale.x, scale.y, scale.z);
 
@@ -65,7 +65,7 @@ void AABB::Update(glm::vec3 positionObject, glm::vec3 rotationObject, glm::vec3 
     }
 }
 
-void AABB::TransformBounds(glm::vec3 positionObject, glm::vec3 rotationObject, glm::vec3 scaleObject)
+void AABB::TransformBounds(glm::vec3 positionObject, glm::quat rotationObject, glm::vec3 scaleObject)
 {
     glm::mat4 transform = Math::CreateTransform(m_PositionOrigin + positionObject, rotationObject, m_ScaleOrigin * scaleObject);
 

@@ -1,10 +1,11 @@
 #ifndef _AABB_H
 #define _AABB_H
 
-#include <iostream>
-#include <glm/glm.hpp>
-
 #include "Shader.h"
+#include <glm/glm.hpp>
+#include <glm/ext/quaternion_float.hpp>
+
+#include <iostream>
 
 
 /**
@@ -14,12 +15,12 @@ class AABB
 {
 public:
 	AABB();
-	AABB(glm::vec3 positionOrigin, glm::vec3 rotationOrigin, glm::vec3 scaleOrigin);
+	AABB(glm::vec3 positionOrigin, glm::quat rotationOrigin, glm::vec3 scaleOrigin);
 	bool Contains(glm::vec3 position, glm::vec3 scale);
 	bool TestAABBOverlap(AABB* a, AABB* b);
 	void UpdatePosition(glm::vec3 positionOrigin);
-	void Update(glm::vec3 positionObject, glm::vec3 rotationObject, glm::vec3 scaleObject);
-	void TransformBounds(glm::vec3 positionObject, glm::vec3 rotationObject, glm::vec3 scaleObject);
+	void Update(glm::vec3 positionObject, glm::quat rotationObject, glm::vec3 scaleObject);
+	void TransformBounds(glm::vec3 positionObject, glm::quat rotationObject, glm::vec3 scaleObject);
 	void Draw();
 	glm::vec3 GetMin() const;
 	glm::vec3 GetMax() const;
@@ -29,7 +30,7 @@ public:
 
 public:
 	glm::vec3 m_Position = glm::vec3(0.0f);
-	glm::vec3 m_Rotation = glm::vec3(0.0f);
+	glm::quat m_Rotation = glm::vec3(0.0f);
 	glm::vec3 m_Scale = glm::vec3(1.0f);
 	glm::vec4 m_Color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 

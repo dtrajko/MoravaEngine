@@ -1,6 +1,7 @@
 #include "Math.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 
 glm::mat4 Math::CreateTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
@@ -12,6 +13,14 @@ glm::mat4 Math::CreateTransform(glm::vec3 position, glm::vec3 rotation, glm::vec
 	transform *= glm::rotate(glm::mat4(1.0f), glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 	transform *= glm::scale(glm::mat4(1.0f), scale);
 	return transform;
+}
+
+glm::mat4 Math::CreateTransform(glm::vec3 position, glm::quat rotation, glm::vec3 scale)
+{
+	glm::mat4 translateMatrix = glm::translate(glm::mat4(1.0f), position);
+	glm::mat4 rotateMatrix    = glm::toMat4(rotation);
+	glm::mat4 scaleMatrix     = glm::scale(glm::mat4(1.0f), scale);
+	return translateMatrix * rotateMatrix * scaleMatrix;
 }
 
 glm::mat4 Math::aiMatrix4x4ToGlm(const aiMatrix4x4* from)

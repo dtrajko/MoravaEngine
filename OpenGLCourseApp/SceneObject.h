@@ -6,6 +6,7 @@
 #include "Pivot.h"
 
 #include <glm/glm.hpp>
+#include <glm/ext/quaternion_float.hpp>
 
 #include <string>
 
@@ -35,7 +36,7 @@ public:
 
 	glm::mat4 transform;
 	glm::vec3 position;
-	glm::vec3 rotation;
+	glm::quat rotation;
 	glm::vec3 scale;
 	glm::vec3 positionAABB;
 	glm::vec3 scaleAABB;
