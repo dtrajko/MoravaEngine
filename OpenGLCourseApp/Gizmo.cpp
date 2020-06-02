@@ -3,6 +3,7 @@
 #include "MousePicker.h"
 #include "Math.h"
 #include "RendererBasic.h"
+#include "Ring90.h"
 
 
 Gizmo::Gizmo()
@@ -254,10 +255,10 @@ void Gizmo::CreateObjects()
 		m_Ring_R_X->so.meshType = MESH_TYPE_RING;
 		m_Ring_R_X->so.color = m_Color_Red;
 		m_Ring_R_X->so.position = glm::vec3(0.0f, 0.0f, 0.0f) * m_ScaleGlobal;
-		m_Ring_R_X->so.rotation = glm::vec3(0.0f, 0.0f, 90.0f);
+		m_Ring_R_X->so.rotation = glm::vec3(180.0f, 0.0f, -90.0f);
 		m_Ring_R_X->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
-		m_Ring_R_X->so.mesh = new Ring(m_Ring_R_X->so.scale);
-		m_Ring_R_X->so.AABB = new AABB(glm::vec3(0.0f), m_Ring_R_X->so.rotation, glm::vec3(1.0f));
+		m_Ring_R_X->so.mesh = new Ring90(m_Ring_R_X->so.scale);
+		m_Ring_R_X->so.AABB = new AABB(glm::vec3(0.25f, 0.0f, -0.25f), m_Ring_R_X->so.rotation, glm::vec3(0.5f, 0.5f, 0.5f));
 		m_Ring_R_X->axes = { true, false, false };
 		m_Ring_R_X->name = "m_Ring_R_X";
 		m_GizmoObjects.push_back(m_Ring_R_X);
@@ -267,10 +268,10 @@ void Gizmo::CreateObjects()
 		m_Ring_R_Y->so.meshType = MESH_TYPE_RING;
 		m_Ring_R_Y->so.color = m_Color_Green;
 		m_Ring_R_Y->so.position = glm::vec3(0.0f, 0.0f, 0.0f) * m_ScaleGlobal;
-		m_Ring_R_Y->so.rotation = glm::vec3(0.0f, 1.0f, 0.0f);
+		m_Ring_R_Y->so.rotation = glm::vec3(0.0f, -90.0f, 0.0f);
 		m_Ring_R_Y->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
-		m_Ring_R_Y->so.mesh = new Ring(m_Ring_R_Y->so.scale);
-		m_Ring_R_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Ring_R_Y->so.rotation, glm::vec3(1.0f));
+		m_Ring_R_Y->so.mesh = new Ring90(m_Ring_R_Y->so.scale);
+		m_Ring_R_Y->so.AABB = new AABB(glm::vec3(0.25f, 0.0f, -0.25f), m_Ring_R_Y->so.rotation, glm::vec3(0.5f, 0.5f, 0.5f));
 		m_Ring_R_Y->axes = { false, true, false };
 		m_Ring_R_Y->name = "m_Ring_R_Y";
 		m_GizmoObjects.push_back(m_Ring_R_Y);
@@ -282,8 +283,8 @@ void Gizmo::CreateObjects()
 		m_Ring_R_Z->so.position = glm::vec3(0.0f, 0.0f, 0.0f) * m_ScaleGlobal;
 		m_Ring_R_Z->so.rotation = glm::vec3(90.0f, 0.0f, 0.0f);
 		m_Ring_R_Z->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
-		m_Ring_R_Z->so.mesh = new Ring(m_Ring_R_Z->so.scale);
-		m_Ring_R_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Ring_R_Z->so.rotation, glm::vec3(1.0f));
+		m_Ring_R_Z->so.mesh = new Ring90(m_Ring_R_Z->so.scale);
+		m_Ring_R_Z->so.AABB = new AABB(glm::vec3(0.25f, 0.0f, -0.25f), m_Ring_R_Z->so.rotation, glm::vec3(0.5f, 0.5f, 0.5f));
 		m_Ring_R_Z->axes = { false, false, true };
 		m_Ring_R_Z->name = "m_Ring_R_Z";
 		m_GizmoObjects.push_back(m_Ring_R_Z);
