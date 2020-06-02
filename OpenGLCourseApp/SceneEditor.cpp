@@ -830,8 +830,9 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
     {
+        glm::vec3 quatToVec3 = glm::eulerAngles(m_SceneObjects[m_SelectedIndex]->rotation) / toRadians;
         m_PositionEdit = &m_SceneObjects[m_SelectedIndex]->position;
-        m_RotationEdit = &glm::eulerAngles(m_SceneObjects[m_SelectedIndex]->rotation);
+        m_RotationEdit = &quatToVec3;
         m_ScaleEdit = &m_SceneObjects[m_SelectedIndex]->scale;
         m_ColorEdit = &m_SceneObjects[m_SelectedIndex]->color;
         m_TextureNameEdit = &m_SceneObjects[m_SelectedIndex]->textureName;
