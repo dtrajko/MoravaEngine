@@ -3,8 +3,7 @@
 
 #include "Shader.h"
 #include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include <glm/ext/quaternion_float.hpp>
 
 #include <iostream>
 
