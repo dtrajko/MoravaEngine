@@ -182,7 +182,7 @@ vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
 	float diffuseFactor = max(dot(normalize(vNormal), normalize(direction)), 0.0);
 	vec4 diffuseColor = vec4(light.color, 1.0) * light.diffuseIntensity * diffuseFactor;
 
-	vec4 specularColor = vec4(0.0, 0.0, 0.0, 0.0);
+	vec4 specularColor = vec4(0.0, 0.0, 0.0, 1.0);
 
 	if (diffuseFactor > 0.0)
 	{
