@@ -1617,7 +1617,7 @@ void SceneEditor::RenderFramebufferTextures(Shader* shaderEditor)
     shaderEditor->setMat4("model", model);
     LightManager::directionalLight.GetShadowMap()->Read(0);
     shaderEditor->setInt("shadowMap", 0);
-    // m_Quad->Render();
+    m_Quad->Render();
 }
 
 void SceneEditor::RenderGlassObjects(Shader* shaderGlass)

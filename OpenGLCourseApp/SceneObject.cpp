@@ -19,7 +19,7 @@ void SceneObject::Render()
 
 SceneObject::~SceneObject()
 {
-    delete mesh;
+    // delete mesh;
     // delete model;
     delete AABB;
     // delete pivot;

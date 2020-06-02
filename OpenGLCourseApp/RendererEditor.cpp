@@ -124,8 +124,6 @@ void RendererEditor::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat
     Shader* shaderShadowMap = shaders["shadow_map"];
     shaderShadowMap->Bind();
 
-    shaderShadowMap->setMat4("dirLightTransform", scene->GetLightManager()->directionalLight.CalculateLightTransform());
-
     DirectionalLight* light = &scene->GetLightManager()->directionalLight;
     glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
