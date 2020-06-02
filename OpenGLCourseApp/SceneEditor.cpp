@@ -1242,7 +1242,7 @@ void SceneEditor::AddSceneObject()
     SceneObject* sceneObject = CreateNewSceneObject();
     sceneObject->name = modelName;
     sceneObject->objectType = objectType;
-    sceneObject->rotation = glm::quat(rotation);
+    sceneObject->rotation = glm::quat(rotation * toRadians);
     sceneObject->scale = scale;
     sceneObject->mesh = mesh;
     sceneObject->meshType = m_CurrentMeshTypeID;
