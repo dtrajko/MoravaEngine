@@ -412,6 +412,33 @@ void SceneEditor::SetupMaterials()
     textureInfoBuddha.ao        = "Textures/PBR/silver/ao.png";
     m_MaterialInfo.insert(std::make_pair("buddha", textureInfoBuddha));
 
+    // Damaged Helmet glTF PBR
+    TextureInfo textureInfoDamagedHelmet = {};
+    textureInfoDamagedHelmet.albedo    = "Textures/PBR/DamagedHelmet/Default_albedo.jpg";
+    textureInfoDamagedHelmet.normal    = "Textures/PBR/DamagedHelmet/Default_normal.jpg";
+    textureInfoDamagedHelmet.metallic  = "Textures/PBR/DamagedHelmet/Default_metalRoughness.jpg";
+    textureInfoDamagedHelmet.roughness = "Textures/PBR/DamagedHelmet/Default_emissive.jpg";
+    textureInfoDamagedHelmet.ao        = "Textures/PBR/DamagedHelmet/Default_AO.jpg";
+    m_MaterialInfo.insert(std::make_pair("damaged_helmet", textureInfoDamagedHelmet));
+
+    // SF Helmet glTF PBR
+    TextureInfo textureInfoSFHelmet = {};
+    textureInfoSFHelmet.albedo    = "Textures/PBR/SciFiHelmet/SciFiHelmet_BaseColor.png";
+    textureInfoSFHelmet.normal    = "Textures/PBR/SciFiHelmet/SciFiHelmet_Normal.png";
+    textureInfoSFHelmet.metallic  = "Textures/PBR/SciFiHelmet/SciFiHelmet_MetallicRoughness.png";
+    textureInfoSFHelmet.roughness = "Textures/PBR/SciFiHelmet/SciFiHelmet_Emissive.png";
+    textureInfoSFHelmet.ao        = "Textures/PBR/SciFiHelmet/SciFiHelmet_AmbientOcclusion.png";
+    m_MaterialInfo.insert(std::make_pair("sf_helmet", textureInfoSFHelmet));
+
+    // Cerberus model PBR textures
+    TextureInfo textureInfoCerberus = {};
+    textureInfoCerberus.albedo    = "Textures/PBR/Cerberus/Cerberus_A.tga";
+    textureInfoCerberus.normal    = "Textures/PBR/Cerberus/Cerberus_N.tga";
+    textureInfoCerberus.metallic  = "Textures/PBR/Cerberus/Cerberus_M.tga";
+    textureInfoCerberus.roughness = "Textures/PBR/Cerberus/Cerberus_R.tga";
+    textureInfoCerberus.ao        = "Textures/PBR/Cerberus/Cerberus_AO.tga";
+    m_MaterialInfo.insert(std::make_pair("cerberus", textureInfoCerberus));
+
 #define ASYNC_LOAD_MATERIALS 0
 #if ASYNC_LOAD_MATERIALS
     for (auto materialInfo : m_MaterialInfo)
@@ -935,21 +962,24 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::Separator();
     ImGui::Text("Select a Mesh");
-    ImGui::RadioButton("Cube",         &m_CurrentObjectTypeID, MESH_TYPE_CUBE);
-    ImGui::RadioButton("Pyramid",      &m_CurrentObjectTypeID, MESH_TYPE_PYRAMID);
-    ImGui::RadioButton("Sphere",       &m_CurrentObjectTypeID, MESH_TYPE_SPHERE);
-    ImGui::RadioButton("Cylinder",     &m_CurrentObjectTypeID, MESH_TYPE_CYLINDER);
-    ImGui::RadioButton("Cone",         &m_CurrentObjectTypeID, MESH_TYPE_CONE);
-    ImGui::RadioButton("Ring",         &m_CurrentObjectTypeID, MESH_TYPE_RING);
-    ImGui::RadioButton("Bob Lamp",     &m_CurrentObjectTypeID, MESH_TYPE_BOB_LAMP);
-    ImGui::RadioButton("Anim Boy",     &m_CurrentObjectTypeID, MESH_TYPE_ANIM_BOY);
+    ImGui::RadioButton("Cube",           &m_CurrentObjectTypeID, MESH_TYPE_CUBE);
+    ImGui::RadioButton("Pyramid",        &m_CurrentObjectTypeID, MESH_TYPE_PYRAMID);
+    ImGui::RadioButton("Sphere",         &m_CurrentObjectTypeID, MESH_TYPE_SPHERE);
+    ImGui::RadioButton("Cylinder",       &m_CurrentObjectTypeID, MESH_TYPE_CYLINDER);
+    ImGui::RadioButton("Cone",           &m_CurrentObjectTypeID, MESH_TYPE_CONE);
+    ImGui::RadioButton("Ring",           &m_CurrentObjectTypeID, MESH_TYPE_RING);
+    ImGui::RadioButton("Bob Lamp",       &m_CurrentObjectTypeID, MESH_TYPE_BOB_LAMP);
+    ImGui::RadioButton("Anim Boy",       &m_CurrentObjectTypeID, MESH_TYPE_ANIM_BOY);
     ImGui::Separator();
     ImGui::Text("Select a Model");
-    ImGui::RadioButton("Stone Carved", &m_CurrentObjectTypeID, MODEL_STONE_CARVED);
-    ImGui::RadioButton("Old Stove",    &m_CurrentObjectTypeID, MODEL_OLD_STOVE);
-    ImGui::RadioButton("Buddha",       &m_CurrentObjectTypeID, MODEL_BUDDHA);
-    ImGui::RadioButton("HHeli",        &m_CurrentObjectTypeID, MODEL_HHELI);
-    ImGui::RadioButton("Jeep",         &m_CurrentObjectTypeID, MODEL_JEEP);
+    ImGui::RadioButton("Stone Carved",   &m_CurrentObjectTypeID, MODEL_STONE_CARVED);
+    ImGui::RadioButton("Old Stove",      &m_CurrentObjectTypeID, MODEL_OLD_STOVE);
+    ImGui::RadioButton("Buddha",         &m_CurrentObjectTypeID, MODEL_BUDDHA);
+    ImGui::RadioButton("HHeli",          &m_CurrentObjectTypeID, MODEL_HHELI);
+    ImGui::RadioButton("Jeep",           &m_CurrentObjectTypeID, MODEL_JEEP);
+    ImGui::RadioButton("Damaged Helmet", &m_CurrentObjectTypeID, MODEL_DAMAGED_HELMET);
+    ImGui::RadioButton("SF Helmet",      &m_CurrentObjectTypeID, MODEL_SF_HELMET);
+    ImGui::RadioButton("Cerberus",       &m_CurrentObjectTypeID, MODEL_CERBERUS);
 
     ImGui::Separator();
     float FOV = GetFOV();
@@ -1223,6 +1253,30 @@ void SceneEditor::AddSceneObject()
             positionAABB = glm::vec3(0.0f, 130.0f, -10.0f);
             scaleAABB = glm::vec3(780.0f, 260.0f, 400.0f);
         }
+        else if (m_CurrentObjectTypeID == MODEL_DAMAGED_HELMET) {
+            modelName = "damaged_helmet";
+            materialName = "damaged_helmet";
+            rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+            scale = glm::vec3(1.0f);
+            positionAABB = glm::vec3(0.0f, -0.2f, 0.0f);
+            scaleAABB = glm::vec3(1.6f, 2.0f, 1.6f);
+        }
+        else if (m_CurrentObjectTypeID == MODEL_SF_HELMET) {
+            modelName = "sf_helmet";
+            materialName = "sf_helmet";
+            rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+            scale = glm::vec3(1.0f);
+            positionAABB = glm::vec3(0.0f, 0.0f, 0.0f);
+            scaleAABB = glm::vec3(2.0f, 3.0f, 2.2f);
+        }
+        else if (m_CurrentObjectTypeID == MODEL_CERBERUS) {
+            modelName = "cerberus";
+            materialName = "cerberus";
+            rotation = glm::vec3(-90.0f, -180.0f, 0.0f);
+            scale = glm::vec3(0.01f);
+            positionAABB = glm::vec3(0.0f, -50.0f, -8.0f);
+            scaleAABB = glm::vec3(20.0f, 150.0f, 45.0f);
+        }
     }
 
     // Add Scene Object here
@@ -1384,6 +1438,15 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
         break;
     case MODEL_JEEP:
         model = new Model("Models/OGLdev/jeep/jeep.obj", "Textures/OGLdev/jeep");
+        break;
+    case MODEL_DAMAGED_HELMET:
+        model = new Model("Models/DamagedHelmet.gltf", "Textures/PBR/DamagedHelmet");
+        break;
+    case MODEL_SF_HELMET:
+        model = new Model("Models/SciFiHelmet.gltf", "Textures/PBR/SciFiHelmet");
+        break;
+    case MODEL_CERBERUS:
+        model = new Model("Models/Cerberus_LP.FBX", "Textures/PBR/Cerberus");
         break;
     default:
         model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");

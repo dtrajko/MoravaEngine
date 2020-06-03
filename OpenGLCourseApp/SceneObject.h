@@ -21,11 +21,14 @@ const int MESH_TYPE_BOB_LAMP = 6;
 const int MESH_TYPE_ANIM_BOY = 7;
 
 // Models start at 1000
-const int MODEL_STONE_CARVED = 1000;
-const int MODEL_OLD_STOVE    = 1001;
-const int MODEL_BUDDHA       = 1002;
-const int MODEL_HHELI        = 1003;
-const int MODEL_JEEP         = 1004;
+const int MODEL_STONE_CARVED   = 1000;
+const int MODEL_OLD_STOVE      = 1001;
+const int MODEL_BUDDHA         = 1002;
+const int MODEL_HHELI          = 1003;
+const int MODEL_JEEP           = 1004;
+const int MODEL_DAMAGED_HELMET = 1005;
+const int MODEL_SF_HELMET      = 1006;
+const int MODEL_CERBERUS       = 1007;
 
 
 class SceneObject

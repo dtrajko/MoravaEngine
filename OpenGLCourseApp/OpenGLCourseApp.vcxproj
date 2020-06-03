@@ -172,6 +172,7 @@
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="..\vendor\tinygizmo\tiny-gizmo.cpp" />
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="Noise.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="SkinnedMesh.cpp" />
     <ClCompile Include="Attachment.cpp" />
@@ -276,6 +277,7 @@
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
     <ClInclude Include="..\vendor\tinygizmo\tiny-gizmo.hpp" />
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="Noise.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="SkinnedMesh.h" />
     <ClInclude Include="Attachment.h" />
