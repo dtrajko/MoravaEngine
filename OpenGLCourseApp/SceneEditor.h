@@ -19,12 +19,6 @@
 const int ACTION_ADD_MESH  = 0;
 const int ACTION_ADD_MODEL = 1;
 
-const int MODEL_STONE_CARVED = 0;
-const int MODEL_OLD_STOVE    = 1;
-const int MODEL_BUDDHA       = 2;
-const int MODEL_HHELI        = 3;
-const int MODEL_JEEP         = 4;
-
 const int PBR_MAP_ENVIRONMENT = 0;
 const int PBR_MAP_IRRADIANCE  = 1;
 const int PBR_MAP_PREFILTER   = 2;
@@ -80,7 +74,7 @@ private:
 	void SaveScene();
 	void LoadScene();
 	void ResetScene();
-	Mesh* CreateNewPrimitive(int meshTypeID, glm::vec3 scale);
+	Mesh* CreateNewMesh(int meshTypeID, glm::vec3 scale);
 	Model* AddNewModel(int modelID, glm::vec3 scale);
 
 	static void LoadTexture(std::map<std::string, Texture*>& textures, std::string name, std::string filePath);
@@ -141,9 +135,7 @@ private:
 	unsigned int m_SelectedIndex;
 	unsigned int m_ObjectInFocusPrev;
 
-	int m_ActionAddType;
-	int m_CurrentMeshTypeID; // Current Mesh ID
-	int m_CurrentModelID;    // Current Model ID
+	int m_CurrentObjectTypeID; // Current Object ID (Mesh or Model)
 
 	bool m_MouseButton_1_Prev; // previous state of GLFW_MOUSE_BUTTON_1
 

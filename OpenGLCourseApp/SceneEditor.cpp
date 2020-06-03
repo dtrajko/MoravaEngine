@@ -133,9 +133,7 @@ SceneEditor::SceneEditor()
 
     m_SelectedIndex = 0;
 
-    m_ActionAddType = 0;
-    m_CurrentMeshTypeID = MESH_TYPE_CUBE;
-    m_CurrentModelID = 0;
+    m_CurrentObjectTypeID = MESH_TYPE_CUBE;
 
     m_Raycast = new Raycast();
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
@@ -459,9 +457,9 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         object->isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             object->AABB->GetMin(), object->AABB->GetMax(), glm::vec2(0.0f));
 
-        if (object->objectType == "mesh" && object->mesh != nullptr)
+        if (object->m_Type == "mesh" && object->mesh != nullptr)
             object->mesh->Update(object->scale);
-        else if (object->objectType == "model" && object->model != nullptr)
+        else if (object->m_Type == "model" && object->model != nullptr)
             object->model->Update(object->scale);
     }
 
@@ -616,9 +614,8 @@ void SceneEditor::SaveScene()
         lines.push_back("TilingFactor\t" + std::to_string(m_SceneObjects[i]->tilingFactor));
         std::string isSelected = m_SceneObjects[i]->isSelected ? "1" : "0";
         lines.push_back("IsSelected\t" + isSelected);
-        lines.push_back("ObjectType\t" + m_SceneObjects[i]->objectType);
-        lines.push_back("MeshType\t" + std::to_string(m_SceneObjects[i]->meshType));
-        lines.push_back("ModelType\t" + std::to_string(m_SceneObjects[i]->modelType));
+        lines.push_back("Type\t" + m_SceneObjects[i]->m_Type);
+        lines.push_back("TypeID\t" + std::to_string(m_SceneObjects[i]->m_TypeID));
         lines.push_back("MaterialName\t" + m_SceneObjects[i]->materialName);
         lines.push_back("TilingFactorMaterial\t" + std::to_string(m_SceneObjects[i]->tilingFMaterial));
         lines.push_back("EndObject");
@@ -718,17 +715,13 @@ void SceneEditor::LoadScene()
             if (sceneObject->isSelected) m_SelectedIndex = (unsigned int)m_SceneObjects.size();
             // printf("IsSelected %d\n", sceneObject.isSelected);
         }
-        else if (tokens.size() >= 2 && tokens[0] == "ObjectType") {
-            sceneObject->objectType = tokens[1];
+        else if (tokens.size() >= 2 && tokens[0] == "Type") {
+            sceneObject->m_Type = tokens[1];
             // printf("ObjectType %s\n", sceneObject.objectType.c_str());
         }
-        else if (tokens.size() >= 2 && tokens[0] == "MeshType") {
-            sceneObject->meshType = std::stoi(tokens[1]);
+        else if (tokens.size() >= 2 && tokens[0] == "TypeID") {
+            sceneObject->m_TypeID = std::stoi(tokens[1]);
             // printf("MeshType %d\n", sceneObject.meshType);
-        }
-        else if (tokens.size() >= 2 && tokens[0] == "ModelType") {
-            sceneObject->modelType = std::stoi(tokens[1]);
-            // printf("ModelType %s\n", sceneObject.modelType.c_str());
         }
         else if (tokens.size() >= 2 && tokens[0] == "MaterialName") {
             sceneObject->materialName = tokens[1];
@@ -745,11 +738,11 @@ void SceneEditor::LoadScene()
             sceneObject->pivot = new Pivot(sceneObject->position, sceneObject->scale);
             Mesh* mesh = nullptr;
             Model* model = nullptr;
-            if (sceneObject->objectType == "mesh") {
-                sceneObject->mesh  = CreateNewPrimitive(sceneObject->meshType, sceneObject->scale);
+            if (sceneObject->m_Type == "mesh") {
+                sceneObject->mesh  = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale);
             }
-            else if (sceneObject->objectType == "model")
-                sceneObject->model = AddNewModel(sceneObject->modelType, sceneObject->scale);
+            else if (sceneObject->m_Type == "model")
+                sceneObject->model = AddNewModel(sceneObject->m_TypeID, sceneObject->scale);
             m_SceneObjects.push_back(sceneObject);
             // printf("EndObject: New SceneObject added to m_SceneObjects...\n");
         }
@@ -941,28 +934,22 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::Checkbox("Axis Z", &axesEnabled.z);
 
     ImGui::Separator();
-    ImGui::Text("Select Add Action Mode");
-    ImGui::RadioButton("Add Mesh",  &m_ActionAddType, ACTION_ADD_MESH);
-    ImGui::RadioButton("Add Model", &m_ActionAddType, ACTION_ADD_MODEL);
-
+    ImGui::Text("Select a Mesh");
+    ImGui::RadioButton("Cube",         &m_CurrentObjectTypeID, MESH_TYPE_CUBE);
+    ImGui::RadioButton("Pyramid",      &m_CurrentObjectTypeID, MESH_TYPE_PYRAMID);
+    ImGui::RadioButton("Sphere",       &m_CurrentObjectTypeID, MESH_TYPE_SPHERE);
+    ImGui::RadioButton("Cylinder",     &m_CurrentObjectTypeID, MESH_TYPE_CYLINDER);
+    ImGui::RadioButton("Cone",         &m_CurrentObjectTypeID, MESH_TYPE_CONE);
+    ImGui::RadioButton("Ring",         &m_CurrentObjectTypeID, MESH_TYPE_RING);
+    ImGui::RadioButton("Bob Lamp",     &m_CurrentObjectTypeID, MESH_TYPE_BOB_LAMP);
+    ImGui::RadioButton("Anim Boy",     &m_CurrentObjectTypeID, MESH_TYPE_ANIM_BOY);
     ImGui::Separator();
-    ImGui::Text("Select Mesh Type");
-    ImGui::RadioButton("Cube",     &m_CurrentMeshTypeID, MESH_TYPE_CUBE);
-    ImGui::RadioButton("Pyramid",  &m_CurrentMeshTypeID, MESH_TYPE_PYRAMID);
-    ImGui::RadioButton("Sphere",   &m_CurrentMeshTypeID, MESH_TYPE_SPHERE);
-    ImGui::RadioButton("Cylinder", &m_CurrentMeshTypeID, MESH_TYPE_CYLINDER);
-    ImGui::RadioButton("Cone",     &m_CurrentMeshTypeID, MESH_TYPE_CONE);
-    ImGui::RadioButton("Ring",     &m_CurrentMeshTypeID, MESH_TYPE_RING);
-    ImGui::RadioButton("Bob Lamp", &m_CurrentMeshTypeID, MESH_TYPE_BOB_LAMP);
-    ImGui::RadioButton("Anim Boy", &m_CurrentMeshTypeID, MESH_TYPE_ANIM_BOY);
-
-    ImGui::Separator();
-    ImGui::Text("Select Model");
-    ImGui::RadioButton("Stone Carved", &m_CurrentModelID, MODEL_STONE_CARVED);
-    ImGui::RadioButton("Old Stove",    &m_CurrentModelID, MODEL_OLD_STOVE);
-    ImGui::RadioButton("Buddha",       &m_CurrentModelID, MODEL_BUDDHA);
-    ImGui::RadioButton("HHeli",        &m_CurrentModelID, MODEL_HHELI);
-    ImGui::RadioButton("Jeep",         &m_CurrentModelID, MODEL_JEEP);
+    ImGui::Text("Select a Model");
+    ImGui::RadioButton("Stone Carved", &m_CurrentObjectTypeID, MODEL_STONE_CARVED);
+    ImGui::RadioButton("Old Stove",    &m_CurrentObjectTypeID, MODEL_OLD_STOVE);
+    ImGui::RadioButton("Buddha",       &m_CurrentObjectTypeID, MODEL_BUDDHA);
+    ImGui::RadioButton("HHeli",        &m_CurrentObjectTypeID, MODEL_HHELI);
+    ImGui::RadioButton("Jeep",         &m_CurrentObjectTypeID, MODEL_JEEP);
 
     ImGui::Separator();
     float FOV = GetFOV();
@@ -1146,11 +1133,10 @@ SceneObject* SceneEditor::CreateNewSceneObject()
     sceneObject->isSelected      = true;
     sceneObject->AABB            = new AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
     sceneObject->pivot           = new Pivot(glm::vec3(0.0f), glm::vec3(1.0f));
-    sceneObject->objectType      = "";
+    sceneObject->m_Type      = "";
     sceneObject->mesh            = nullptr;
-    sceneObject->meshType        = -1;
+    sceneObject->m_TypeID        = -1;
     sceneObject->model           = nullptr;
-    sceneObject->modelType       = -1;
     sceneObject->materialName    = "";
     sceneObject->tilingFMaterial = 1.0f;
 
@@ -1175,11 +1161,12 @@ void SceneEditor::AddSceneObject()
     glm::vec3 scaleAABB = glm::vec3(1.0f);
     glm::vec3 positionAABB = glm::vec3(0.0f);
 
-    if (m_ActionAddType == ACTION_ADD_MESH) {
-        mesh = CreateNewPrimitive(m_CurrentMeshTypeID, glm::vec3(1.0f));
+    // Mesh - ID range 0-999
+    if (m_CurrentObjectTypeID < 1000) {
+        mesh = CreateNewMesh(m_CurrentObjectTypeID, glm::vec3(1.0f));
         objectType = "mesh";
 
-        if (m_CurrentMeshTypeID == MESH_TYPE_BOB_LAMP) {
+        if (m_CurrentObjectTypeID == MESH_TYPE_BOB_LAMP) {
             modelName = "bob_lamp";
             materialName = "none";
             rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
@@ -1187,7 +1174,7 @@ void SceneEditor::AddSceneObject()
             positionAABB = glm::vec3(0.0f, 0.0f, 30.0f);
             scaleAABB = glm::vec3(20.0f, 20.0f, 60.0f);
         }
-        else if (m_CurrentMeshTypeID == MESH_TYPE_ANIM_BOY) {
+        else if (m_CurrentObjectTypeID == MESH_TYPE_ANIM_BOY) {
             modelName = "anim_boy";
             materialName = "anim_boy";
             rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
@@ -1196,31 +1183,31 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(2.4f, 2.0f, 8.8f);
         }
     }
-    else if (m_ActionAddType == ACTION_ADD_MODEL) {
-        model = AddNewModel(m_CurrentModelID, glm::vec3(1.0f));
+    else if (m_CurrentObjectTypeID >= 1000) { // Model - ID range 1000+
+        model = AddNewModel(m_CurrentObjectTypeID, glm::vec3(1.0f));
         objectType = "model";
-        if (m_CurrentModelID == MODEL_STONE_CARVED) {
+        if (m_CurrentObjectTypeID == MODEL_STONE_CARVED) {
             modelName = "stone_carved";
             materialName = "stone_carved";
             scale = glm::vec3(0.05f);
             positionAABB = glm::vec3(0.0f, 58.0f, 0.0f);
             scaleAABB = glm::vec3(74.0f, 116.0f, 40.0f);    
         }
-        else if (m_CurrentModelID == MODEL_OLD_STOVE) {
+        else if (m_CurrentObjectTypeID == MODEL_OLD_STOVE) {
             modelName = "old_stove";
             materialName = "old_stove";
             scale = glm::vec3(0.08f);
             positionAABB = glm::vec3(0.0f, 42.0f, 0.0f);
             scaleAABB = glm::vec3(30.0f, 84.0f, 30.0f);
         }
-        else if (m_CurrentModelID == MODEL_BUDDHA) {
+        else if (m_CurrentObjectTypeID == MODEL_BUDDHA) {
             modelName = "buddha";
             materialName = "none";
             scale = glm::vec3(1.0f);
             positionAABB = glm::vec3(0.0f, 5.0f, 0.0f);
             scaleAABB = glm::vec3(4.0f, 10.0f, 4.0f);
         }
-        else if (m_CurrentModelID == MODEL_HHELI) {
+        else if (m_CurrentObjectTypeID == MODEL_HHELI) {
             modelName = "hheli";
             materialName = "none";
             rotation = glm::vec3(0.0f, 90.0f, 0.0f);
@@ -1228,7 +1215,7 @@ void SceneEditor::AddSceneObject()
             positionAABB = glm::vec3(20.0f, 40.0f, 0.0f);
             scaleAABB = glm::vec3(260.0f, 80.0f, 100.0f);
         }
-        else if (m_CurrentModelID == MODEL_JEEP) {
+        else if (m_CurrentObjectTypeID == MODEL_JEEP) {
             modelName = "jeep";
             materialName = "none";
             rotation = glm::vec3(0.0f, -90.0f, 0.0f);
@@ -1241,13 +1228,12 @@ void SceneEditor::AddSceneObject()
     // Add Scene Object here
     SceneObject* sceneObject = CreateNewSceneObject();
     sceneObject->name = modelName;
-    sceneObject->objectType = objectType;
+    sceneObject->m_Type = objectType;
     sceneObject->rotation = glm::quat(rotation * toRadians);
     sceneObject->scale = scale;
     sceneObject->mesh = mesh;
-    sceneObject->meshType = m_CurrentMeshTypeID;
+    sceneObject->m_TypeID = m_CurrentObjectTypeID;
     sceneObject->model = model;
-    sceneObject->modelType = m_CurrentModelID;
     sceneObject->materialName = materialName;
     sceneObject->positionAABB = positionAABB;
     sceneObject->scaleAABB = scaleAABB;
@@ -1278,11 +1264,11 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
     Mesh* mesh = nullptr;
     Model* model = nullptr;
 
-    if (oldSceneObject->objectType == "mesh" && oldSceneObject->mesh != nullptr) {
-        mesh = CreateNewPrimitive(oldSceneObject->meshType, oldSceneObject->mesh->GetScale());
+    if (oldSceneObject->m_Type == "mesh" && oldSceneObject->mesh != nullptr) {
+        mesh = CreateNewMesh(oldSceneObject->m_TypeID, oldSceneObject->mesh->GetScale());
     }
-    else if (oldSceneObject->objectType == "model" && oldSceneObject->model != nullptr) {
-        model = AddNewModel(m_CurrentModelID, oldSceneObject->mesh->GetScale()); // TODO: m_CurrentModelID hard-coded, must be in SceneObject
+    else if (oldSceneObject->m_Type == "model" && oldSceneObject->model != nullptr) {
+        model = AddNewModel(m_CurrentObjectTypeID, oldSceneObject->mesh->GetScale()); // TODO: m_CurrentModelID hard-coded, must be in SceneObject
     }
 
     SceneObject* newSceneObject = new SceneObject();
@@ -1301,11 +1287,10 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
     newSceneObject->isSelected      = true;
     newSceneObject->AABB            = new AABB(newSceneObject->positionAABB, newSceneObject->rotation, newSceneObject->scaleAABB);
     newSceneObject->pivot           = new Pivot(newSceneObject->position, newSceneObject->scale);
-    newSceneObject->objectType      = oldSceneObject->objectType;
+    newSceneObject->m_Type      = oldSceneObject->m_Type;
     newSceneObject->mesh            = mesh;
-    newSceneObject->meshType        = m_CurrentMeshTypeID;
+    newSceneObject->m_TypeID        = m_CurrentObjectTypeID;
     newSceneObject->model           = model;
-    newSceneObject->modelType       = m_CurrentModelID;
     newSceneObject->materialName    = oldSceneObject->materialName;
     newSceneObject->tilingFMaterial = oldSceneObject->tilingFMaterial;
 
@@ -1344,7 +1329,7 @@ void SceneEditor::DeleteSceneObject(Window& mainWindow, std::vector<SceneObject*
         m_Gizmo->SetActive(false);
 }
 
-Mesh* SceneEditor::CreateNewPrimitive(int meshTypeID, glm::vec3 scale)
+Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale)
 {
     Mesh* mesh;
     switch (meshTypeID)
@@ -1509,11 +1494,11 @@ glm::mat4 SceneEditor::CalculateRenderTransform(SceneObject* sceneObject)
     glm::vec3 renderScale = glm::vec3(1.0f);
 
     // For meshes that can't be scaled on vertex level
-    if (sceneObject->meshType == MESH_TYPE_RING || m_SkinnedMeshes.find(sceneObject->meshType) != m_SkinnedMeshes.end())
+    if (sceneObject->m_TypeID == MESH_TYPE_RING || m_SkinnedMeshes.find(sceneObject->m_TypeID) != m_SkinnedMeshes.end())
         renderScale = sceneObject->scale;
 
     // Quixel Megascans models should be downscaled to 2% of their original size
-    if (sceneObject->objectType == "model") {
+    if (sceneObject->m_Type == "model") {
         renderScale = sceneObject->scale;
     }
 
@@ -1663,9 +1648,9 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
 
-        if (object->mesh && object->objectType == "mesh") // is it a mesh?
+        if (object->mesh && object->m_Type == "mesh") // is it a mesh?
         {
-            if (m_SkinnedMeshes.find(object->meshType) != m_SkinnedMeshes.end()) // is it a skinned mesh?
+            if (m_SkinnedMeshes.find(object->m_TypeID) != m_SkinnedMeshes.end()) // is it a skinned mesh?
             {
                 // Render with 'skinning'
                 if (passType == "main")
@@ -1682,7 +1667,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                     SetUniformsShaderEditor(shaders["editor_object"], texture, object);
             }
         }
-        else if (object->model && object->objectType == "model") // is it a model?
+        else if (object->model && object->m_Type == "model") // is it a model?
         {
             // Quixel Megascans model
             if (passType == "main")

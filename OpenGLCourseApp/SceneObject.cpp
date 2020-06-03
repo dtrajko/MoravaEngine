@@ -7,11 +7,11 @@ SceneObject::SceneObject()
 
 void SceneObject::Render()
 {
-    if (mesh && objectType == "mesh") // is it a mesh?
+    if (mesh && m_Type == "mesh") // is it a mesh?
     {
         mesh->Render(); // Render by 'editor_object' OR 'editor_object_pbr' OR 'skinning'
     }
-    else if (model && objectType == "model") // is it a model?
+    else if (model && m_Type == "model") // is it a model?
     {
         model->RenderPBR();
     }

@@ -48,7 +48,7 @@ void Gizmo::CreateObjects()
 	{
 		m_Axis_T_X = new GizmoObject{};
 		m_Axis_T_X->so.id = (int)m_GizmoObjects.size();
-		m_Axis_T_X->so.meshType = MESH_TYPE_CYLINDER;
+		m_Axis_T_X->so.m_TypeID = MESH_TYPE_CYLINDER;
 		m_Axis_T_X->so.color = m_Color_Red;
 		m_Axis_T_X->so.position = glm::vec3(2.0f, 0.0f, 0.0f) * m_ScaleGlobal;
 		m_Axis_T_X->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, -90.0f) * toRadians);
@@ -61,7 +61,7 @@ void Gizmo::CreateObjects()
 
 		m_Axis_T_Y = new GizmoObject{};
 		m_Axis_T_Y->so.id = (int)m_GizmoObjects.size();
-		m_Axis_T_Y->so.meshType = MESH_TYPE_CYLINDER;
+		m_Axis_T_Y->so.m_TypeID = MESH_TYPE_CYLINDER;
 		m_Axis_T_Y->so.color = m_Color_Green;
 		m_Axis_T_Y->so.position = glm::vec3(0.0f, 2.0f, 0.0f) * m_ScaleGlobal;
 		m_Axis_T_Y->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
@@ -74,7 +74,7 @@ void Gizmo::CreateObjects()
 
 		m_Axis_T_Z = new GizmoObject{};
 		m_Axis_T_Z->so.id = (int)m_GizmoObjects.size();
-		m_Axis_T_Z->so.meshType = MESH_TYPE_CYLINDER;
+		m_Axis_T_Z->so.m_TypeID = MESH_TYPE_CYLINDER;
 		m_Axis_T_Z->so.color = m_Color_Blue;
 		m_Axis_T_Z->so.position = glm::vec3(0.0f, 0.0f, 2.0f) * m_ScaleGlobal;
 		m_Axis_T_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f) * toRadians);
@@ -87,7 +87,7 @@ void Gizmo::CreateObjects()
 
 		m_Arrow_T_X = new GizmoObject{};
 		m_Arrow_T_X->so.id = (int)m_GizmoObjects.size();
-		m_Arrow_T_X->so.meshType = MESH_TYPE_CONE;
+		m_Arrow_T_X->so.m_TypeID = MESH_TYPE_CONE;
 		m_Arrow_T_X->so.color = m_Color_Red;
 		m_Arrow_T_X->so.position = glm::vec3(4.5f, 0.0f, 0.0f) * m_ScaleGlobal;
 		m_Arrow_T_X->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, -90.0f) * toRadians);
@@ -100,7 +100,7 @@ void Gizmo::CreateObjects()
 
 		m_Arrow_T_Y = new GizmoObject{};
 		m_Arrow_T_Y->so.id = (int)m_GizmoObjects.size();
-		m_Arrow_T_Y->so.meshType = MESH_TYPE_CONE;
+		m_Arrow_T_Y->so.m_TypeID = MESH_TYPE_CONE;
 		m_Arrow_T_Y->so.color = m_Color_Green;
 		m_Arrow_T_Y->so.position = glm::vec3(0.0f, 4.5f, 0.0f) * m_ScaleGlobal;
 		m_Arrow_T_Y->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
@@ -113,7 +113,7 @@ void Gizmo::CreateObjects()
 
 		m_Arrow_T_Z = new GizmoObject{};
 		m_Arrow_T_Z->so.id = (int)m_GizmoObjects.size();
-		m_Arrow_T_Z->so.meshType = MESH_TYPE_CONE;
+		m_Arrow_T_Z->so.m_TypeID = MESH_TYPE_CONE;
 		m_Arrow_T_Z->so.color = m_Color_Blue;
 		m_Arrow_T_Z->so.position = glm::vec3(0.0f, 0.0f, 4.5f) * m_ScaleGlobal;
 		m_Arrow_T_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f) * toRadians);
@@ -126,7 +126,7 @@ void Gizmo::CreateObjects()
 
 		m_Square_T_YZ = new GizmoObject{};
 		m_Square_T_YZ->so.id = (int)m_GizmoObjects.size();
-		m_Square_T_YZ->so.meshType = MESH_TYPE_CUBE;
+		m_Square_T_YZ->so.m_TypeID = MESH_TYPE_CUBE;
 		m_Square_T_YZ->so.color = m_Color_Cyan;
 		m_Square_T_YZ->so.position = glm::vec3(0.0f, 2.0f, 2.0f) * m_ScaleGlobal;
 		m_Square_T_YZ->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
@@ -139,7 +139,7 @@ void Gizmo::CreateObjects()
 
 		m_Square_T_ZX = new GizmoObject{};
 		m_Square_T_ZX->so.id = (int)m_GizmoObjects.size();
-		m_Square_T_ZX->so.meshType = MESH_TYPE_CUBE;
+		m_Square_T_ZX->so.m_TypeID = MESH_TYPE_CUBE;
 		m_Square_T_ZX->so.color = m_Color_Magenta;
 		m_Square_T_ZX->so.position = glm::vec3(2.0f, 0.0f, 2.0f) * m_ScaleGlobal;
 		m_Square_T_ZX->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
@@ -152,7 +152,7 @@ void Gizmo::CreateObjects()
 
 		m_Square_T_XY = new GizmoObject{};
 		m_Square_T_XY->so.id = (int)m_GizmoObjects.size();
-		m_Square_T_XY->so.meshType = MESH_TYPE_CUBE;
+		m_Square_T_XY->so.m_TypeID = MESH_TYPE_CUBE;
 		m_Square_T_XY->so.color = m_Color_Yellow;
 		m_Square_T_XY->so.position = glm::vec3(2.0f, 2.0f, 0.0f) * m_ScaleGlobal;
 		m_Square_T_XY->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
@@ -169,7 +169,7 @@ void Gizmo::CreateObjects()
 	{
 		m_Axis_S_X = new GizmoObject{};
 		m_Axis_S_X->so.id = (int)m_GizmoObjects.size();
-		m_Axis_S_X->so.meshType = MESH_TYPE_CYLINDER;
+		m_Axis_S_X->so.m_TypeID = MESH_TYPE_CYLINDER;
 		m_Axis_S_X->so.color = m_Color_Red;
 		m_Axis_S_X->so.position = glm::vec3(2.0f, 0.0f, 0.0f) * m_ScaleGlobal;
 		m_Axis_S_X->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, -90.0f) * toRadians);
@@ -182,7 +182,7 @@ void Gizmo::CreateObjects()
 
 		m_Axis_S_Y = new GizmoObject{};
 		m_Axis_S_Y->so.id = (int)m_GizmoObjects.size();
-		m_Axis_S_Y->so.meshType = MESH_TYPE_CYLINDER;
+		m_Axis_S_Y->so.m_TypeID = MESH_TYPE_CYLINDER;
 		m_Axis_S_Y->so.color = m_Color_Green;
 		m_Axis_S_Y->so.position = glm::vec3(0.0f, 2.0f, 0.0f) * m_ScaleGlobal;
 		m_Axis_S_Y->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
@@ -195,7 +195,7 @@ void Gizmo::CreateObjects()
 
 		m_Axis_S_Z = new GizmoObject{};
 		m_Axis_S_Z->so.id = (int)m_GizmoObjects.size();
-		m_Axis_S_Z->so.meshType = MESH_TYPE_CYLINDER;
+		m_Axis_S_Z->so.m_TypeID = MESH_TYPE_CYLINDER;
 		m_Axis_S_Z->so.color = m_Color_Blue;
 		m_Axis_S_Z->so.position = glm::vec3(0.0f, 0.0f, 2.0f) * m_ScaleGlobal;
 		m_Axis_S_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f) * toRadians);
@@ -209,7 +209,7 @@ void Gizmo::CreateObjects()
 		// Initialize Scale Handles
 		m_Handle_S_X = new GizmoObject{};
 		m_Handle_S_X->so.id = (int)m_GizmoObjects.size();
-		m_Handle_S_X->so.meshType = MESH_TYPE_CYLINDER;
+		m_Handle_S_X->so.m_TypeID = MESH_TYPE_CYLINDER;
 		m_Handle_S_X->so.color = m_Color_Red;
 		m_Handle_S_X->so.position = glm::vec3(4.4f, 0.0f, 0.0f) * m_ScaleGlobal;
 		m_Handle_S_X->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, -90.0f) * toRadians);
@@ -222,7 +222,7 @@ void Gizmo::CreateObjects()
 
 		m_Handle_S_Y = new GizmoObject{};
 		m_Handle_S_Y->so.id = (int)m_GizmoObjects.size();
-		m_Handle_S_Y->so.meshType = MESH_TYPE_CYLINDER;
+		m_Handle_S_Y->so.m_TypeID = MESH_TYPE_CYLINDER;
 		m_Handle_S_Y->so.color = m_Color_Green;
 		m_Handle_S_Y->so.position = glm::vec3(0.0f, 4.4f, 0.0f) * m_ScaleGlobal;
 		m_Handle_S_Y->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
@@ -235,7 +235,7 @@ void Gizmo::CreateObjects()
 
 		m_Handle_S_Z = new GizmoObject{};
 		m_Handle_S_Z->so.id = (int)m_GizmoObjects.size();
-		m_Handle_S_Z->so.meshType = MESH_TYPE_CYLINDER;
+		m_Handle_S_Z->so.m_TypeID = MESH_TYPE_CYLINDER;
 		m_Handle_S_Z->so.color = m_Color_Blue;
 		m_Handle_S_Z->so.position = glm::vec3(0.0f, 0.0f, 4.4f) * m_ScaleGlobal;
 		m_Handle_S_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f) * toRadians);
@@ -252,7 +252,7 @@ void Gizmo::CreateObjects()
 	{
 		m_Ring_R_X = new GizmoObject{};
 		m_Ring_R_X->so.id = (int)m_GizmoObjects.size();
-		m_Ring_R_X->so.meshType = MESH_TYPE_RING;
+		m_Ring_R_X->so.m_TypeID = MESH_TYPE_RING;
 		m_Ring_R_X->so.color = m_Color_Red;
 		m_Ring_R_X->so.position = glm::vec3(0.0f, 0.0f, 0.0f) * m_ScaleGlobal;
 		m_Ring_R_X->so.rotation = glm::quat(glm::vec3(0.0f, -90.0f, 90.0f) * toRadians);
@@ -265,7 +265,7 @@ void Gizmo::CreateObjects()
 
 		m_Ring_R_Y = new GizmoObject{};
 		m_Ring_R_Y->so.id = (int)m_GizmoObjects.size();
-		m_Ring_R_Y->so.meshType = MESH_TYPE_RING;
+		m_Ring_R_Y->so.m_TypeID = MESH_TYPE_RING;
 		m_Ring_R_Y->so.color = m_Color_Green;
 		m_Ring_R_Y->so.position = glm::vec3(0.0f, 0.0f, 0.0f) * m_ScaleGlobal;
 		m_Ring_R_Y->so.rotation = glm::quat(glm::vec3(0.0f, -90.0f, 0.0f) * toRadians);
@@ -278,7 +278,7 @@ void Gizmo::CreateObjects()
 
 		m_Ring_R_Z = new GizmoObject{};
 		m_Ring_R_Z->so.id = (int)m_GizmoObjects.size();
-		m_Ring_R_Z->so.meshType = MESH_TYPE_RING;
+		m_Ring_R_Z->so.m_TypeID = MESH_TYPE_RING;
 		m_Ring_R_Z->so.color = m_Color_Blue;
 		m_Ring_R_Z->so.position = glm::vec3(0.0f, 0.0f, 0.0f) * m_ScaleGlobal;
 		m_Ring_R_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f) * toRadians);

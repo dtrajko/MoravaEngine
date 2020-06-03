@@ -10,15 +10,22 @@
 
 #include <string>
 
-
-const int MESH_TYPE_CUBE = 0;
-const int MESH_TYPE_PYRAMID = 1;
-const int MESH_TYPE_SPHERE = 2;
+// reserved ID range for meshes 0-999
+const int MESH_TYPE_CUBE     = 0;
+const int MESH_TYPE_PYRAMID  = 1;
+const int MESH_TYPE_SPHERE   = 2;
 const int MESH_TYPE_CYLINDER = 3;
-const int MESH_TYPE_CONE = 4;
-const int MESH_TYPE_RING = 5;
+const int MESH_TYPE_CONE     = 4;
+const int MESH_TYPE_RING     = 5;
 const int MESH_TYPE_BOB_LAMP = 6;
 const int MESH_TYPE_ANIM_BOY = 7;
+
+// Models start at 1000
+const int MODEL_STONE_CARVED = 1000;
+const int MODEL_OLD_STOVE    = 1001;
+const int MODEL_BUDDHA       = 1002;
+const int MODEL_HHELI        = 1003;
+const int MODEL_JEEP         = 1004;
 
 
 class SceneObject
@@ -43,15 +50,14 @@ public:
 
 	glm::vec4 color;
 
-	std::string objectType;
+	std::string m_Type;
 
 	Mesh* mesh;
 	Model* model;
 	AABB* AABB;
 	Pivot* pivot;
 
-	int meshType;
-	int modelType;
+	int m_TypeID;
 	std::string textureName;
 	std::string materialName;
 
