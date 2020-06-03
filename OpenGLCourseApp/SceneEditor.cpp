@@ -376,7 +376,7 @@ void SceneEditor::SetupMaterials()
     textureInfoHarshBricks.metallic  = "Textures/PBR/metalness.png";
     textureInfoHarshBricks.roughness = "Textures/PBR/harsh_bricks/harshbricks-roughness.png";
     textureInfoHarshBricks.ao        = "Textures/PBR/harsh_bricks/harshbricks-ao2.png";
-    m_MaterialInfo.insert(std::make_pair("aged_planks", textureInfoHarshBricks));
+    m_MaterialInfo.insert(std::make_pair("harsh_bricks", textureInfoHarshBricks));
 
     // Stone Carved (Quixel Megascans)
     TextureInfo textureInfoStoneCarved = {};
@@ -1697,7 +1697,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         RenderLightSources(shaders["gizmo"]);
         RenderSkybox(shaders["background"]);
         RenderLineElements(shaders["basic"], projectionMatrix);
-        RenderFramebufferTextures(shaders["editor_object"]);
+        // RenderFramebufferTextures(shaders["editor_object"]);
 
         // Render gizmo on front of everything (depth mask enabled)
         if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())

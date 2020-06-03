@@ -1,0 +1,238 @@
+BeginObject	0
+Position	1.531003	6.408036	0.000000
+Rotation	0.000000	-0.000000	0.000000
+Scale	16.410007	0.511001	19.955103
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	0
+ModelType	0
+MaterialName	mahogany_floor
+TilingFactorMaterial	0.163000
+EndObject
+BeginObject	1
+Position	-0.132098	12.893161	-10.255030
+Rotation	0.000000	-0.000000	0.000000
+Scale	20.794001	1.790261	0.504644
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	0
+ModelType	0
+MaterialName	harsh_bricks
+TilingFactorMaterial	0.489000
+EndObject
+BeginObject	2
+Position	-10.257086	6.771996	0.170000
+Rotation	0.000000	-0.000000	0.000000
+Scale	0.501006	14.038433	19.993641
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	0
+ModelType	0
+MaterialName	harsh_bricks
+TilingFactorMaterial	0.489000
+EndObject
+BeginObject	3
+Position	0.000000	-0.085002	0.032005
+Rotation	0.000000	-0.000000	0.000000
+Scale	30.073923	0.501002	30.000996
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	grass_albedo
+TilingFactor	0.435000
+IsSelected	0
+ObjectType	mesh
+MeshType	0
+ModelType	0
+MaterialName	none
+TilingFactorMaterial	1.033000
+EndObject
+BeginObject	4
+Position	1.531003	13.536090	0.000000
+Rotation	0.000000	-0.000000	0.000000
+Scale	16.410007	0.501003	19.955103
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	0
+ModelType	0
+MaterialName	mahogany_floor
+TilingFactorMaterial	0.163000
+EndObject
+BeginObject	5
+Position	-0.132098	1.455009	-10.255030
+Rotation	0.000000	-0.000000	0.000000
+Scale	20.794001	2.740253	0.504644
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	0
+ModelType	0
+MaterialName	harsh_bricks
+TilingFactorMaterial	0.489000
+EndObject
+BeginObject	6
+Position	-0.132098	6.786044	-10.255030
+Rotation	0.000000	-0.000000	0.000000
+Scale	20.794001	3.480258	0.504644
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	0
+ModelType	0
+MaterialName	harsh_bricks
+TilingFactorMaterial	0.489000
+EndObject
+BeginObject	7
+Position	-8.259100	6.750998	-10.255030
+Rotation	0.000000	-0.000000	0.000000
+Scale	4.634007	14.000292	0.504644
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	0
+ModelType	0
+MaterialName	harsh_bricks
+TilingFactorMaterial	0.489000
+EndObject
+BeginObject	8
+Position	10.002902	6.771996	0.147000
+Rotation	0.000000	-0.000000	0.000000
+Scale	0.501006	14.038433	19.993641
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	0
+ModelType	0
+MaterialName	harsh_bricks
+TilingFactorMaterial	0.489000
+EndObject
+BeginObject	9
+Position	8.690912	6.750998	-10.255030
+Rotation	0.000000	-0.000000	0.000000
+Scale	3.094004	14.000292	0.504644
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	0
+ModelType	0
+MaterialName	harsh_bricks
+TilingFactorMaterial	0.489000
+EndObject
+BeginObject	10
+Position	1.000914	6.788996	-10.255030
+Rotation	0.000000	-0.000000	0.000000
+Scale	3.094004	14.000292	0.504644
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	0
+ModelType	0
+MaterialName	harsh_bricks
+TilingFactorMaterial	0.489000
+EndObject
+BeginObject	11
+Position	6.629998	0.699001	-3.049998
+Rotation	-90.000000	0.000000	0.000000
+Scale	-0.061000	0.063000	0.062000
+PositionAABB	0.000000	0.000000	30.000000
+ScaleAABB	20.000000	20.000000	60.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	bob_lamp
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	6
+ModelType	0
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	12
+Position	0.000000	0.320998	0.179000
+Rotation	0.000000	-0.000000	0.000000
+Scale	20.079973	0.501002	19.955103
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	0
+ModelType	0
+MaterialName	mahogany_floor
+TilingFactorMaterial	0.163000
+EndObject
+BeginObject	13
+Position	4.600001	2.369999	3.991993
+Rotation	0.000000	-0.000000	0.000000
+Scale	1.000000	1.000000	1.000000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	0
+ModelType	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
