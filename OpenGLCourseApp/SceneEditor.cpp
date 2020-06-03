@@ -1464,29 +1464,22 @@ void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture
     shaderEditor->setInt("shadowMap", 2);
 }
 
-void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject)
+void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
-
     shaderSkinning->Bind();
+    SkinnedMesh* skinnedMesh = (SkinnedMesh*)sceneObject->mesh;
+    skinnedMesh->BoneTransform(runningTime, m_SkinningTransforms[sceneObject->name]);
+    shaderSkinning->setMat4("model", sceneObject->transform);
     shaderSkinning->setInt("gColorMap", 0);
     shaderSkinning->setFloat("gMatSpecularIntensity", m_MaterialSpecular);
-    shaderSkinning->setFloat("gSpecularPower",        m_MaterialShininess);
-
-    SkinnedMesh* skinnedMesh = (SkinnedMesh*)sceneObject->mesh;
-
-    float RunningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
-    skinnedMesh->BoneTransform(RunningTime, m_SkinningTransforms[sceneObject->name]);
-
+    shaderSkinning->setFloat("gSpecularPower", m_MaterialShininess);
     char locBuff[100] = { '\0' };
-
     for (unsigned int i = 0; i < m_SkinningTransforms[sceneObject->name].size(); i++)
     {
         snprintf(locBuff, sizeof(locBuff), "gBones[%d]", i);
         shaderSkinning->setMat4(locBuff, m_SkinningTransforms[sceneObject->name][i]);
     }
-
-    shaderSkinning->setMat4("model", sceneObject->transform);
 }
 
 void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix)
@@ -1659,26 +1652,41 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         Texture* texture   = HotLoadTexture(object->textureName);
         Material* material = HotLoadMaterial(object->materialName);
 
+        shaders["editor_object"]->Bind();
+        shaders["editor_object"]->setMat4("model", object->transform);
+        shaders["editor_object_pbr"]->Bind();
+        shaders["editor_object_pbr"]->setMat4("model", object->transform);
+        shaders["skinning"]->Bind();
+        shaders["skinning"]->setMat4("model", object->transform);
+        shaders["shadow_map"]->Bind();
+        shaders["shadow_map"]->setMat4("model", object->transform);
+
+        float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
+
         if (object->mesh && object->objectType == "mesh") // is it a mesh?
         {
             if (m_SkinnedMeshes.find(object->meshType) != m_SkinnedMeshes.end()) // is it a skinned mesh?
             {
                 // Render with 'skinning'
-                SetUniformsShaderSkinning(shaders["skinning"], object);
+                if (passType == "main")
+                    SetUniformsShaderSkinning(shaders["skinning"], object, runningTime);
             }
             else if (material && object->materialName != "none") { // is it using a material?
                 // Render with 'editor_object_pbr'
-                SetUniformsShaderEditorPBR(shaders["editor_object_pbr"], texture, material, object);
+                if (passType == "main")
+                    SetUniformsShaderEditorPBR(shaders["editor_object_pbr"], texture, material, object);
             }
             else { // defaults to a texture only
                 // Render with 'editor_object'
-                SetUniformsShaderEditor(shaders["editor_object"], texture, object);
+                if (passType == "main")
+                    SetUniformsShaderEditor(shaders["editor_object"], texture, object);
             }
         }
         else if (object->model && object->objectType == "model") // is it a model?
         {
             // Quixel Megascans model
-            SetUniformsShaderEditorPBR(shaders["editor_object_pbr"], texture, material, object);
+            if (passType == "main")
+                SetUniformsShaderEditorPBR(shaders["editor_object_pbr"], texture, material, object);
         }
 
         object->Render();
