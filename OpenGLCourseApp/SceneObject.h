@@ -19,6 +19,8 @@ const int MESH_TYPE_CONE     = 4;
 const int MESH_TYPE_RING     = 5;
 const int MESH_TYPE_BOB_LAMP = 6;
 const int MESH_TYPE_ANIM_BOY = 7;
+const int MESH_TYPE_TERRAIN  = 8;
+const int MESH_TYPE_WATER    = 9;
 
 // Models start at 1000
 const int MODEL_STONE_CARVED   = 1000;

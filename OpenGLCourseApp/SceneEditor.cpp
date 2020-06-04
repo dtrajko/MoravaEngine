@@ -15,6 +15,7 @@
 #include "Timer.h"
 #include "RendererBasic.h"
 #include "TextureLoader.h"
+#include "Tile2D.h"
 
 #include <vector>
 #include <map>
@@ -970,6 +971,9 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::RadioButton("Ring",           &m_CurrentObjectTypeID, MESH_TYPE_RING);
     ImGui::RadioButton("Bob Lamp",       &m_CurrentObjectTypeID, MESH_TYPE_BOB_LAMP);
     ImGui::RadioButton("Anim Boy",       &m_CurrentObjectTypeID, MESH_TYPE_ANIM_BOY);
+    ImGui::RadioButton("Terrain",        &m_CurrentObjectTypeID, MESH_TYPE_TERRAIN);
+    ImGui::RadioButton("Water",          &m_CurrentObjectTypeID, MESH_TYPE_WATER);
+
     ImGui::Separator();
     ImGui::Text("Select a Model");
     ImGui::RadioButton("Stone Carved",   &m_CurrentObjectTypeID, MODEL_STONE_CARVED);
@@ -1212,6 +1216,22 @@ void SceneEditor::AddSceneObject()
             positionAABB = glm::vec3(0.0f, 0.0f, 4.4f);
             scaleAABB = glm::vec3(2.4f, 2.0f, 8.8f);
         }
+        else if (m_CurrentObjectTypeID == MESH_TYPE_TERRAIN) {
+            modelName = "terrain";
+            materialName = "none";
+            rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+            scale = glm::vec3(1.0f);
+            positionAABB = glm::vec3(0.0f, 0.0f, 0.0f);
+            scaleAABB = glm::vec3(128.0f, 1.0f, 128.0f);
+        }
+        else if (m_CurrentObjectTypeID == MESH_TYPE_WATER) {
+            modelName = "water";
+            materialName = "none";
+            rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+            scale = glm::vec3(1.0f);
+            positionAABB = glm::vec3(0.0f, 0.0f, 0.0f);
+            scaleAABB = glm::vec3(1.0f, 1.0f, 1.0f);
+        }
     }
     else if (m_CurrentObjectTypeID >= 1000) { // Model - ID range 1000+
         model = AddNewModel(m_CurrentObjectTypeID, glm::vec3(1.0f));
@@ -1411,6 +1431,12 @@ Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale)
         break;
     case MESH_TYPE_ANIM_BOY:
         mesh = new SkinnedMesh("Models/AnimatedCharacter.dae", "Textures");
+        break;
+    case MESH_TYPE_TERRAIN:
+        mesh = new Terrain("Textures/island_flat.png", 4.0f, nullptr);
+        break;
+    case MESH_TYPE_WATER:
+        mesh = new Tile2D();
         break;
     default:
         mesh = new Block(scale);

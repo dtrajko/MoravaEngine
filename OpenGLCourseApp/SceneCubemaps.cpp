@@ -50,9 +50,7 @@ void SceneCubemaps::SetupModels()
     }
 
     m_Terrain = new Terrain("Textures/heightmap_16x16.png", 4.0f, nullptr);
-    Mesh* mesh = new Mesh();
-    mesh->Create(m_Terrain->GetVertices(), m_Terrain->GetIndices(), m_Terrain->GetVertexCount(), m_Terrain->GetIndexCount());
-    meshes.insert(std::make_pair("terrain", mesh));
+    meshes.insert(std::make_pair("terrain", m_Terrain));
 
     MousePicker::Get()->SetTerrain(m_Terrain);
 }

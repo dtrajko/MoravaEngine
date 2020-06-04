@@ -7,6 +7,11 @@ Tile2D::Tile2D()
 	m_VBO = 0;
 	m_IBO = 0;
 	m_IndexCount = 0;
+
+	float vertices[] = { -1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 1 };
+	unsigned int indices[] = { 0, 1, 2, 3, 4, 5 };
+
+	Create(&vertices[0], &indices[0], 12, 6);
 }
 
 void Tile2D::Create(GLfloat* vertices, unsigned int* indices, unsigned int numOfVertices, unsigned int numOfIndices)
