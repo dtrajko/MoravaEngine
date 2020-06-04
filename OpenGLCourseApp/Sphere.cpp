@@ -16,15 +16,19 @@ Sphere::Sphere(glm::vec3 scale) : Mesh()
 
 void Sphere::Generate(glm::vec3 scale)
 {
+	m_Scale = scale;
+
 	float maxScale = scale.x;
 	if (scale.y > maxScale) maxScale = scale.y;
 	if (scale.z > maxScale) maxScale = scale.z;
 
 	m_Radius = 0.5f * maxScale;
+	if (m_Radius == m_RadiusPrev) {
+		return;
+	}
+	m_RadiusPrev = m_Radius;
 
 	// printf("Sphere::Generate m_Radius = %.2ff\n", m_Radius);
-
-	m_Scale = scale;
 
 	const unsigned int sectorCount = 32;
 	const unsigned int stackCount = 32;
@@ -39,11 +43,11 @@ void Sphere::Generate(glm::vec3 scale)
 	float sectorAngle, stackAngle;
 
 	unsigned int vertexStride = (unsigned int)(sizeof(VertexTBN) / sizeof(float));
-	m_VertexCount = sizeof(VertexTBN) * (sectorCount + 1) * (stackCount + 1);
+	float m_VertexSize = sizeof(VertexTBN) * (sectorCount + 1) * (stackCount + 1);
 	m_IndexCount = 6 * sectorCount * (stackCount - 1);
 
-	vertices.resize(m_VertexCount);
-	indices.resize(m_IndexCount);
+	m_Vertices = new float[m_VertexSize];
+	m_Indices = new unsigned int[m_IndexCount];
 
 	unsigned int vertexPointer = 0;
 	for (int i = 0; i <= stackCount; ++i)
@@ -61,39 +65,41 @@ void Sphere::Generate(glm::vec3 scale)
 			// positions
 			x = xy * cosf(sectorAngle); // r * cos(u) * cos(v)
 			y = xy * sinf(sectorAngle); // r * cos(u) * sin(v)
-			vertices[vertexPointer + 0] = x;
-			vertices[vertexPointer + 1] = y;
-			vertices[vertexPointer + 2] = z;
+			m_Vertices[vertexPointer + 0] = x;
+			m_Vertices[vertexPointer + 1] = y;
+			m_Vertices[vertexPointer + 2] = z;
 
 			// printf("Vertex index=%d, X=%.2ff Y=%.2ff Z=%.2ff\n", vertexPointer, x, y, z);
 
 			// vertex tex coord (s, t) range between [0, 1]
 			s = (float)j / sectorCount;
 			t = (float)i / stackCount;
-			vertices[vertexPointer + 3] = s;
-			vertices[vertexPointer + 4] = t;
+			m_Vertices[vertexPointer + 3] = s;
+			m_Vertices[vertexPointer + 4] = t;
 
 			// normalized vertex normal (nx, ny, nz)
 			nx = x * lengthInv;
 			ny = y * lengthInv;
 			nz = z * lengthInv;
-			vertices[vertexPointer + 5] = nx;
-			vertices[vertexPointer + 6] = ny;
-			vertices[vertexPointer + 7] = nz;
+			m_Vertices[vertexPointer + 5] = nx;
+			m_Vertices[vertexPointer + 6] = ny;
+			m_Vertices[vertexPointer + 7] = nz;
 
 			// tangents
-			vertices[vertexPointer + 8] = 0.0f;
-			vertices[vertexPointer + 9] = 0.0f;
-			vertices[vertexPointer + 10] = 0.0f;
+			m_Vertices[vertexPointer + 8] = 0.0f;
+			m_Vertices[vertexPointer + 9] = 0.0f;
+			m_Vertices[vertexPointer + 10] = 0.0f;
 
 			// bi-tangents
-			vertices[vertexPointer + 11] = 0.0f;
-			vertices[vertexPointer + 12] = 0.0f;
-			vertices[vertexPointer + 13] = 0.0f;
+			m_Vertices[vertexPointer + 11] = 0.0f;
+			m_Vertices[vertexPointer + 12] = 0.0f;
+			m_Vertices[vertexPointer + 13] = 0.0f;
 
 			vertexPointer += vertexStride;
 		}
 	}
+
+	m_VertexCount = vertexPointer;
 
 	// generate CCW index list of sphere triangles
 	int k1, k2;
@@ -109,23 +115,20 @@ void Sphere::Generate(glm::vec3 scale)
 			// k1 => k2 => k1+1
 			if (i != 0)
 			{
-				indices[indexIndex++] = k1;
-				indices[indexIndex++] = k2;
-				indices[indexIndex++] = k1 + 1;
+				m_Indices[indexIndex++] = k1;
+				m_Indices[indexIndex++] = k2;
+				m_Indices[indexIndex++] = k1 + 1;
 			}
 
 			// k1+1 => k2 => k2+1
 			if (i != (stackCount - 1))
 			{
-				indices[indexIndex++] = k1 + 1;
-				indices[indexIndex++] = k2;
-				indices[indexIndex++] = k2 + 1;
+				m_Indices[indexIndex++] = k1 + 1;
+				m_Indices[indexIndex++] = k2;
+				m_Indices[indexIndex++] = k2 + 1;
 			}
 		}
 	}
-
-	m_Vertices = &vertices[0];
-	m_Indices = &indices[0];
 
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
@@ -158,14 +161,8 @@ void Sphere::Generate(glm::vec3 scale)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
 	glBindVertexArray(0);                     // Unbind VAO
 
-	vertices.clear();
-	indices.clear();
-
-	std::vector<float>().swap(vertices);
-	std::vector<unsigned int>().swap(indices);
-
-	m_Vertices = nullptr;
-	m_Indices = nullptr;
+	delete[] m_Vertices;
+	delete[] m_Indices;
 }
 
 Sphere::~Sphere()

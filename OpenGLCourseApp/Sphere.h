@@ -20,10 +20,8 @@ public:
 	virtual ~Sphere() override;
 
 private:
-	std::vector<float> vertices;
-	std::vector<unsigned int> indices;
-
 	float m_Radius;
+	float m_RadiusPrev;
 	unsigned int m_SectorCount;
 	unsigned int m_StackCount;
 	bool m_Smooth;
