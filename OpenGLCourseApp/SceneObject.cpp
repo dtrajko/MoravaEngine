@@ -21,6 +21,6 @@ SceneObject::~SceneObject()
 {
     // delete mesh;
     // delete model;
-    delete AABB;
+    // delete AABB;
     // delete pivot;
 }

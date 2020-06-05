@@ -27,6 +27,7 @@ const int HDRI_GREENWICH_PARK      = 0;
 const int HDRI_SAN_GIUSEPPE_BRIDGE = 1;
 const int HDRI_TROPICAL_BEACH      = 2;
 const int HDRI_VIGNAIOLI_NIGHT     = 3;
+const int HDRI_EARLY_EVE_WARM_SKY  = 4;
 
 
 struct PointSpotLight
@@ -165,6 +166,8 @@ private:
 	bool m_UseCubeMaps;
 
 	std::set<int> m_SkinnedMeshes = { MESH_TYPE_BOB_LAMP, MESH_TYPE_ANIM_BOY };
+	std::set<int> m_FixedVertexMeshes = { MESH_TYPE_RING, MESH_TYPE_SPHERE, MESH_TYPE_TERRAIN };
+
 	std::map<std::string, std::vector<glm::mat4>> m_SkinningTransforms;
 
 	// Model for the Glass shader

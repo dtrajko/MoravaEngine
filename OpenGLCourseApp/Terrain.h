@@ -18,6 +18,7 @@ public:
 	~Terrain();
 
 private:
+	glm::vec3 m_ScalePrev;
 
 	const char* m_HeightMapPath;
 	Texture* m_TxHeightMap = nullptr;

@@ -60,6 +60,10 @@ void RendererEditor::SetShaders()
     shaders.insert(std::make_pair("glass", shaderGlass));
     printf("RendererEditor: shaderGlass compiled [programID=%d]\n", shaderGlass->GetProgramID());
 
+    Shader* shaderWater = new Shader("Shaders/water.vert", "Shaders/water.frag");
+    shaders.insert(std::make_pair("water", shaderWater));
+    printf("RendererEditor: shaderWater compiled [programID=%d]\n", shaderWater->GetProgramID());
+
     shaderEditor->Bind();
     shaderEditor->setInt("albedoMap", 0);
     shaderEditor->setInt("cubeMap",   1);

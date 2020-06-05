@@ -1,0 +1,704 @@
+BeginObject	0
+Position	38.278984	0.119000	0.000000
+Rotation	0.000000	-0.000000	0.000000
+Scale	4.717979	0.080003	70.009010
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	0.823529	0.823521	0.823521	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	1
+Position	-40.001041	0.119000	0.000000
+Rotation	0.000000	-0.000000	0.000000
+Scale	4.717979	0.080003	70.009010
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	0.823529	0.823521	0.823521	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	2
+Position	11.829000	0.119000	-0.390014
+Rotation	0.000000	-0.000000	0.000000
+Scale	4.717979	0.080003	70.013008
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	0.823529	0.823521	0.823521	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	3
+Position	-14.310991	0.119000	0.000000
+Rotation	0.000000	-0.000000	0.000000
+Scale	4.717979	0.080003	70.009010
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	0.823529	0.823521	0.823521	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	4
+Position	-0.885041	0.125000	-36.270134
+Rotation	0.000000	-0.000000	0.000000
+Scale	82.947784	0.080003	5.179097
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	0.823529	0.823521	0.823521	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	5
+Position	-0.891041	0.119000	-11.579952
+Rotation	0.000000	-0.000000	0.000000
+Scale	82.947784	0.080003	5.179097
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	0.823529	0.823521	0.823521	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	6
+Position	-0.891041	0.119000	35.630066
+Rotation	0.000000	-0.000000	0.000000
+Scale	82.947784	0.080003	5.179097
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	0.823529	0.823521	0.823521	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	7
+Position	-0.891041	0.119000	11.910061
+Rotation	0.000000	-0.000000	0.000000
+Scale	82.947784	0.080003	5.179097
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	0.823529	0.823521	0.823521	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	8
+Position	12.999989	0.170003	29.059944
+Rotation	-180.000000	89.176704	-180.000000
+Scale	0.004000	0.003000	0.003000
+PositionAABB	0.000000	130.000000	-10.000000
+ScaleAABB	780.000000	260.000000	400.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	jeep
+TextureName	jeep_army
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1004
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	9
+Position	10.480001	0.250003	-20.660021
+Rotation	0.000000	-89.980217	0.000000
+Scale	0.004000	0.003000	0.003000
+PositionAABB	0.000000	130.000000	-10.000000
+ScaleAABB	780.000000	260.000000	400.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	jeep
+TextureName	jeep_rood
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1004
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	10
+Position	-0.840000	0.098000	0.000000
+Rotation	0.000000	-0.000000	0.000000
+Scale	1.137007	0.760003	1.000000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	128.000000	0.500000	128.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	terrain
+TextureName	grass_albedo
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	8
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	11
+Position	-41.219887	0.199000	0.000000
+Rotation	0.000000	-89.980217	0.000000
+Scale	0.004000	0.004000	0.004000
+PositionAABB	0.000000	130.000000	-10.000000
+ScaleAABB	780.000000	260.000000	400.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	jeep
+TextureName	jeep_army
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1004
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	12
+Position	0.000000	0.178998	-35.269840
+Rotation	0.000000	2.188934	0.000000
+Scale	0.004000	0.004000	0.004000
+PositionAABB	0.000000	130.000000	-10.000000
+ScaleAABB	780.000000	260.000000	400.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	jeep
+TextureName	jeep_rood
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1004
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	13
+Position	-15.302948	0.170999	0.000000
+Rotation	0.000000	-89.980217	0.000000
+Scale	0.004000	0.004000	0.004000
+PositionAABB	0.000000	130.000000	-10.000000
+ScaleAABB	780.000000	260.000000	400.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	jeep
+TextureName	jeep_rood
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1004
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	14
+Position	39.480003	0.163000	18.760017
+Rotation	78.766258	89.531448	78.766594
+Scale	0.004000	0.004000	0.004000
+PositionAABB	0.000000	130.000000	-10.000000
+ScaleAABB	780.000000	260.000000	400.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	jeep
+TextureName	jeep_army
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1004
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	15
+Position	43.680084	7.110019	-32.660046
+Rotation	0.000000	-0.000000	0.000000
+Scale	4.741983	14.230027	9.360022
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	marble
+TilingFactor	0.106000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	16
+Position	-6.510012	8.010000	4.889998
+Rotation	0.000000	-0.000000	0.000000
+Scale	8.578993	15.980000	6.866007
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	semi_transparent
+TilingFactor	0.585000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	plastic
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	17
+Position	5.850005	4.630008	-3.299999
+Rotation	0.000000	-0.000000	0.000000
+Scale	4.170000	9.949997	8.129998
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	gold_albedo
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	18
+Position	-7.549973	8.350008	19.439959
+Rotation	0.000000	-0.000000	0.000000
+Scale	6.100005	16.940018	8.129998
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	futur_panel
+TilingFactorMaterial	0.106000
+EndObject
+BeginObject	19
+Position	-47.089855	8.070018	-30.989906
+Rotation	0.000000	-0.000000	0.000000
+Scale	7.089993	16.160025	11.780005
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	marble
+TilingFactor	0.106000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	20
+Position	-9.009992	4.630008	-28.340038
+Rotation	0.000000	-0.000000	0.000000
+Scale	3.390000	9.949997	8.129998
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	21
+Position	-33.259903	4.630008	-29.040039
+Rotation	0.000000	-0.000000	0.000000
+Scale	6.660005	9.949997	7.019999
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	22
+Position	-32.350010	4.630008	20.030048
+Rotation	0.000000	-0.000000	0.000000
+Scale	8.000002	9.949997	8.009995
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	0.798000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	dark_tiles
+TilingFactorMaterial	0.213000
+EndObject
+BeginObject	23
+Position	-34.239956	4.630008	-19.350008
+Rotation	0.000000	-0.000000	0.000000
+Scale	4.590002	9.949997	8.129998
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	0.509896	0.495098	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	24
+Position	6.400018	8.350008	-28.340038
+Rotation	0.000000	-0.000000	0.000000
+Scale	4.437994	16.940018	8.129998
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	semi_transparent
+TilingFactor	0.638000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	silver
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	25
+Position	18.670048	8.350008	-3.310044
+Rotation	0.000000	-0.000000	0.000000
+Scale	6.530009	16.940018	8.916060
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	dark_tiles
+TilingFactorMaterial	0.213000
+EndObject
+BeginObject	26
+Position	-46.200089	6.060014	21.330027
+Rotation	0.000000	-0.000000	0.000000
+Scale	4.759995	12.860000	9.360010
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	gold_albedo
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	27
+Position	31.763990	4.642013	21.022036
+Rotation	0.000000	-0.000000	0.000000
+Scale	5.373003	9.949997	5.393002
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	semi_transparent
+TilingFactor	0.372000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	silver
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	28
+Position	17.260019	4.630008	-28.340038
+Rotation	0.000000	-0.000000	0.000000
+Scale	3.390000	9.949997	8.129998
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	silver
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	29
+Position	18.770006	17.147907	-3.179999
+Rotation	0.000000	-0.000000	-179.690247
+Scale	7.000008	2.056000	6.540003
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	0.999990	0.999990	1.000000
+Name	
+TextureName	metal
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	4
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	30
+Position	18.850019	18.300014	-2.339999
+Rotation	0.000000	89.980217	0.000000
+Scale	0.028000	0.027000	0.030000
+PositionAABB	20.000000	40.000000	0.000000
+ScaleAABB	260.000000	80.000000	100.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	hheli
+TextureName	hheli
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1003
+MaterialName	rusted_iron
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	31
+Position	-17.719999	0.074007	17.370020
+Rotation	-89.999527	83.887138	-0.056893
+Scale	0.031000	0.037000	0.034000
+PositionAABB	0.000000	0.000000	30.000000
+ScaleAABB	20.000000	20.000000	60.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	bob_lamp
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	6
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	32
+Position	27.728050	4.640009	27.689999
+Rotation	0.000000	-0.000000	0.000000
+Scale	13.436014	9.949997	8.061978
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	semi_transparent
+TilingFactor	0.372000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	silver
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	33
+Position	27.694059	14.958009	27.964014
+Rotation	0.000000	-0.000000	0.000000
+Scale	10.266043	10.793056	5.396968
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	semi_transparent
+TilingFactor	0.372000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	silver
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	34
+Position	27.728050	4.640009	27.689999
+Rotation	0.000000	-0.000000	0.000000
+Scale	13.436014	9.949997	8.061978
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	semi_transparent
+TilingFactor	0.372000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	silver
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	35
+Position	-6.502013	17.700100	4.957999
+Rotation	0.000000	-0.000000	0.000000
+Scale	7.252049	3.428952	5.619991
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	semi_transparent
+TilingFactor	0.638000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	plastic
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	36
+Position	-6.510012	23.647024	4.889997
+Rotation	0.000000	-0.000000	0.000000
+Scale	8.578993	8.575969	6.866007
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	semi_transparent
+TilingFactor	0.585000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	plastic
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	37
+Position	-21.500008	4.630008	-19.570013
+Rotation	0.000000	-0.000000	0.000000
+Scale	7.310001	9.949997	8.129998
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	gold_albedo
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	0
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	38
+Position	-31.660034	11.980040	-3.618028
+Rotation	0.000000	-0.000000	0.000000
+Scale	8.009992	23.699997	8.339978
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	2.181000
+IsSelected	0
+Type	mesh
+TypeID	3
+MaterialName	silver
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	39
+Position	21.252123	2.466016	-0.495043
+Rotation	0.000000	-0.000000	0.000000
+Scale	11.670016	5.189986	14.500004
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	3
+MaterialName	dark_tiles
+TilingFactorMaterial	0.213000
+EndObject
+BeginObject	40
+Position	-22.319975	11.980040	3.261970
+Rotation	0.000000	-0.000000	0.000000
+Scale	8.009992	23.699997	8.339978
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	2.181000
+IsSelected	0
+Type	mesh
+TypeID	3
+MaterialName	silver
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	41
+Position	-22.880003	4.630008	41.640064
+Rotation	0.000000	-0.000000	0.000000
+Scale	8.000002	9.949997	4.089993
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	none
+TilingFactor	0.798000
+IsSelected	0
+Type	mesh
+TypeID	3
+MaterialName	dark_tiles
+TilingFactorMaterial	0.213000
+EndObject
+BeginObject	42
+Position	-31.600016	24.057886	-3.699999
+Rotation	0.000000	-0.000000	-179.690247
+Scale	8.690009	2.056000	9.100008
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	0.999990	0.999990	1.000000
+Name	
+TextureName	metal
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	3
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	43
+Position	-30.429991	25.320015	-4.009998
+Rotation	180.000000	-10.267575	180.000000
+Scale	0.037000	0.037000	0.036000
+PositionAABB	20.000000	40.000000	0.000000
+ScaleAABB	260.000000	80.000000	100.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	hheli
+TextureName	hheli
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1003
+MaterialName	silver
+TilingFactorMaterial	1.000000
+EndObject

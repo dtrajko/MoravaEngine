@@ -501,6 +501,9 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
             m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr");
         else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT)
             m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr");
+        else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr");
+
         m_HDRI_Edit_Prev = m_HDRI_Edit;
     }
 
@@ -933,10 +936,11 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::Separator();
     ImGui::Text("Select HDRI");
-    ImGui::RadioButton("Greenwich Park",      &m_HDRI_Edit, HDRI_GREENWICH_PARK);
-    ImGui::RadioButton("San Giuseppe Bridge", &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
-    ImGui::RadioButton("Tropical Beach",      &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
-    ImGui::RadioButton("Vignaioli Night",     &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
+    ImGui::RadioButton("Greenwich Park",       &m_HDRI_Edit, HDRI_GREENWICH_PARK);
+    ImGui::RadioButton("San Giuseppe Bridge",  &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
+    ImGui::RadioButton("Tropical Beach",       &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
+    ImGui::RadioButton("Vignaioli Night",      &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
+    ImGui::RadioButton("Early Eve & Warm Sky", &m_HDRI_Edit, HDRI_EARLY_EVE_WARM_SKY);
 
     ImGui::Separator();
     ImGui::Text("Cube Maps");
@@ -1222,15 +1226,15 @@ void SceneEditor::AddSceneObject()
             rotation = glm::vec3(0.0f, 0.0f, 0.0f);
             scale = glm::vec3(1.0f);
             positionAABB = glm::vec3(0.0f, 0.0f, 0.0f);
-            scaleAABB = glm::vec3(128.0f, 1.0f, 128.0f);
+            scaleAABB = glm::vec3(128.0f, 0.5f, 128.0f);
         }
         else if (m_CurrentObjectTypeID == MESH_TYPE_WATER) {
             modelName = "water";
             materialName = "none";
-            rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+            rotation = glm::vec3(90.0f, 0.0f, 0.0f);
             scale = glm::vec3(1.0f);
             positionAABB = glm::vec3(0.0f, 0.0f, 0.0f);
-            scaleAABB = glm::vec3(1.0f, 1.0f, 1.0f);
+            scaleAABB = glm::vec3(2.0f, 2.0f, 0.5f);
         }
     }
     else if (m_CurrentObjectTypeID >= 1000) { // Model - ID range 1000+
@@ -1433,7 +1437,7 @@ Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale)
         mesh = new SkinnedMesh("Models/AnimatedCharacter.dae", "Textures");
         break;
     case MESH_TYPE_TERRAIN:
-        mesh = new Terrain("Textures/island_flat.png", 4.0f, nullptr);
+        mesh = new Terrain("Textures/horizon_mountains.png", 4.0f, nullptr);
         break;
     case MESH_TYPE_WATER:
         mesh = new Tile2D();
@@ -1583,7 +1587,8 @@ glm::mat4 SceneEditor::CalculateRenderTransform(SceneObject* sceneObject)
     glm::vec3 renderScale = glm::vec3(1.0f);
 
     // For meshes that can't be scaled on vertex level
-    if (sceneObject->m_TypeID == MESH_TYPE_RING || m_SkinnedMeshes.find(sceneObject->m_TypeID) != m_SkinnedMeshes.end())
+    if (m_FixedVertexMeshes.find(sceneObject->m_TypeID) != m_FixedVertexMeshes.end() ||
+        m_SkinnedMeshes.find(sceneObject->m_TypeID) != m_SkinnedMeshes.end())
         renderScale = sceneObject->scale;
 
     // Quixel Megascans models should be downscaled to 2% of their original size

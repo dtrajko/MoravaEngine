@@ -6,6 +6,12 @@
 
 Terrain::Terrain(const char* heightMapPath, float tilingFactor, const char* colorMapPath)
 {
+	m_VertexCount = 0;
+	m_IndexCount = 0;
+
+	m_Scale = glm::vec3(1.0f);
+	m_ScalePrev = glm::vec3(0.0f);
+
 	m_HeightMapPath = heightMapPath;
 	m_TilingFactor = tilingFactor;
 
@@ -19,7 +25,7 @@ Terrain::Terrain(const char* heightMapPath, float tilingFactor, const char* colo
 		printf("Color map texture width=%d height=%d\n", m_TxColorMap->GetWidth(), m_TxColorMap->GetHeight());
 	}
 
-	Generate(glm::vec3(1.0f));
+	Generate(m_Scale);
 
 	printf("Terrain constructor m_VertexCount = %i, m_IndexCount = %i\n", m_VertexCount, m_IndexCount);
 
@@ -28,7 +34,10 @@ Terrain::Terrain(const char* heightMapPath, float tilingFactor, const char* colo
 
 void Terrain::Generate(glm::vec3 scale)
 {
+	if (m_VertexCount > 0 || m_IndexCount > 0) return;
+
 	m_Scale = scale;
+	m_ScalePrev = m_Scale;
 
 	int hiMapWidth = m_TxHeightMap->GetWidth();
 	int hiMapHeight = m_TxHeightMap->GetHeight();
@@ -40,6 +49,9 @@ void Terrain::Generate(glm::vec3 scale)
 
 	printf("Generate terrain hiMapWidth=%d hiMapHeight=%d vertexStride=%d vertexBufferSize=%d indexCount=%d\n",
 		hiMapWidth, hiMapHeight, vertexStride, vertexBufferSize, m_IndexCount);
+
+	delete[] m_Vertices;
+	delete[] m_Indices;
 
 	m_Vertices = new float[vertexBufferSize];
 	m_Indices = new unsigned int[m_IndexCount];
@@ -134,6 +146,8 @@ void Terrain::Generate(glm::vec3 scale)
 				m_Vertices[i * vertexStride + 5], m_Vertices[i * vertexStride + 6], m_Vertices[i * vertexStride + 7]);
 		}
 	}
+
+	Create();
 
 	printf("GenerateTerrain pixelCount=%d vertexStride=%d\n", pixelCount, vertexStride);
 }

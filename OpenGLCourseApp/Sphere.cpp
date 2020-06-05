@@ -16,6 +16,8 @@ Sphere::Sphere(glm::vec3 scale) : Mesh()
 
 void Sphere::Generate(glm::vec3 scale)
 {
+	if (m_VertexCount > 0 || m_IndexCount > 0) return;
+
 	m_Scale = scale;
 
 	float maxScale = scale.x;
