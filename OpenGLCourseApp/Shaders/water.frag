@@ -10,8 +10,8 @@ layout (location = 1) out vec4 out_BrightColor;
 
 uniform sampler2D reflectionTexture;
 uniform sampler2D refractionTexture;
-uniform sampler2D dudvMap;
 uniform sampler2D normalMap;
+uniform sampler2D dudvMap;
 uniform sampler2D depthMap;
 uniform vec3 lightColor;
 uniform float moveFactor;

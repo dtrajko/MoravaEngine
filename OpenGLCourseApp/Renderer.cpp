@@ -286,12 +286,12 @@ void Renderer::RenderWaterEffects(float deltaTime, Window& mainWindow, Scene* sc
 	scene->GetCamera()->SetPosition(glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y - distance, scene->GetCamera()->GetPosition().z));
 	scene->GetCamera()->InvertPitch();
 
-	Renderer::RenderPassWaterReflection(mainWindow, scene, projectionMatrix);
+	RenderPassWaterReflection(mainWindow, scene, projectionMatrix);
 
 	scene->GetCamera()->SetPosition(glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y + distance, scene->GetCamera()->GetPosition().z));
 	scene->GetCamera()->InvertPitch();
 
-	Renderer::RenderPassWaterRefraction(mainWindow, scene, projectionMatrix);
+	RenderPassWaterRefraction(mainWindow, scene, projectionMatrix);
 }
 
 void Renderer::RenderPassWaterReflection(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)

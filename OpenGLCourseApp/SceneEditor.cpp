@@ -40,6 +40,7 @@ SceneEditor::SceneEditor()
     sceneSettings.enableSpotLights = true;
     sceneSettings.enableShadows = true;
     sceneSettings.enableOmniShadows = false;
+    sceneSettings.enableWaterEffects = true;
 
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
@@ -1231,10 +1232,10 @@ void SceneEditor::AddSceneObject()
         else if (m_CurrentObjectTypeID == MESH_TYPE_WATER) {
             modelName = "water";
             materialName = "none";
-            rotation = glm::vec3(90.0f, 0.0f, 0.0f);
+            rotation = glm::vec3(0.0f, 0.0f, 0.0f);
             scale = glm::vec3(1.0f);
             positionAABB = glm::vec3(0.0f, 0.0f, 0.0f);
-            scaleAABB = glm::vec3(2.0f, 2.0f, 0.5f);
+            scaleAABB = glm::vec3(2.0f, 0.5f, 2.0f);
         }
     }
     else if (m_CurrentObjectTypeID >= 1000) { // Model - ID range 1000+
@@ -1560,6 +1561,17 @@ void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject*
     }
 }
 
+void SceneEditor::SetUniformsShaderWater(Shader* shaderWater, SceneObject* sceneObject)
+{
+    m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(0);
+    m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(1);
+    textures["waterNormal"]->Bind(2);
+    textures["waterDuDv"]->Bind(3);
+    m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(4);
+    shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
+    shaderWater->setVec3("lightPosition", -(LightManager::directionalLight.GetDirection()));
+}
+
 void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix)
 {
     if (mainWindow.getKeys()[GLFW_KEY_O])
@@ -1739,24 +1751,31 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         shaders["skinning"]->setMat4("model", object->transform);
         shaders["shadow_map"]->Bind();
         shaders["shadow_map"]->setMat4("model", object->transform);
+        shaders["water"]->Bind();
+        shaders["water"]->setMat4("model", object->transform);
 
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
 
         if (object->mesh && object->m_Type == "mesh") // is it a mesh?
         {
-            if (m_SkinnedMeshes.find(object->m_TypeID) != m_SkinnedMeshes.end()) // is it a skinned mesh?
+            if (object->name == "water") { // is it a water tile
+                // Render with 'water' shader
+                if (passType == "main")
+                    SetUniformsShaderWater(shaders["water"], object);
+            }
+            else if (m_SkinnedMeshes.find(object->m_TypeID) != m_SkinnedMeshes.end()) // is it a skinned mesh?
             {
-                // Render with 'skinning'
+                // Render with 'skinning' shader
                 if (passType == "main")
                     SetUniformsShaderSkinning(shaders["skinning"], object, runningTime);
             }
             else if (material && object->materialName != "none") { // is it using a material?
-                // Render with 'editor_object_pbr'
+                // Render with 'editor_object_pbr' shader
                 if (passType == "main")
                     SetUniformsShaderEditorPBR(shaders["editor_object_pbr"], texture, material, object);
             }
             else { // defaults to a texture only
-                // Render with 'editor_object'
+                // Render with 'editor_object' shader
                 if (passType == "main")
                     SetUniformsShaderEditor(shaders["editor_object"], texture, object);
             }
