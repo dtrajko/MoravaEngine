@@ -35,11 +35,11 @@ SceneEditor::SceneEditor()
 	sceneSettings.cameraStartYaw = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
-    sceneSettings.enableSkybox = false;
-    sceneSettings.enablePointLights = true;
-    sceneSettings.enableSpotLights = true;
-    sceneSettings.enableShadows = true;
-    sceneSettings.enableOmniShadows = false;
+    sceneSettings.enableSkybox       = false;
+    sceneSettings.enablePointLights  = true;
+    sceneSettings.enableSpotLights   = true;
+    sceneSettings.enableShadows      = true;
+    sceneSettings.enableOmniShadows  = true;
     sceneSettings.enableWaterEffects = true;
 
     // directional light
@@ -132,18 +132,12 @@ SceneEditor::SceneEditor()
     m_ProjectionChange = { 0.0f, 0.5f };
 
     m_OrthographicViewEnabled = false;
-
     m_SelectedIndex = 0;
-
     m_CurrentObjectTypeID = MESH_TYPE_CUBE;
-
     m_Raycast = new Raycast();
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
-
     m_Grid = new Grid(20);
-
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
-
     m_Gizmo = new Gizmo();
 
     m_PositionEdit             = new glm::vec3(0.0f);
@@ -156,7 +150,7 @@ SceneEditor::SceneEditor()
     m_TilingFactorMaterialEdit = new float(1.0f);
     m_DrawScenePivot = true;
     m_PBR_Map_Edit = PBR_MAP_ENVIRONMENT;
-    m_HDRI_Edit = HDRI_GREENWICH_PARK;
+    m_HDRI_Edit = HDRI_EARLY_EVE_WARM_SKY;
     m_HDRI_Edit_Prev = -1;
 
     // required for directional light enable/disable feature
@@ -164,9 +158,7 @@ SceneEditor::SceneEditor()
     m_DirLightColorPrev = sceneSettings.directionalLight.base.color;
 
     m_DisplayLightSources = true;
-
     m_MouseButton_1_Prev = false;
-
     m_UseCubeMaps = false;
 
     TextureLoader::Get()->Print();
@@ -1611,6 +1603,14 @@ glm::mat4 SceneEditor::CalculateRenderTransform(SceneObject* sceneObject)
     return Math::CreateTransform(sceneObject->position, sceneObject->rotation, renderScale);
 }
 
+bool SceneEditor::IsWaterOnScene()
+{
+    for (auto& object : m_SceneObjects) {
+        if (object->name == "water") return true;
+    }
+    return false;
+}
+
 void SceneEditor::RenderLightSources(Shader* shaderGizmo)
 {
     shaderGizmo->Bind();
@@ -1732,6 +1732,8 @@ void SceneEditor::RenderGlassObjects(Shader* shaderGlass)
 void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
+    // printf("SceneEditor::Render passType = %s\n", passType.c_str());
+
     SwitchOrthographicView(mainWindow, projectionMatrix);
 
     for (auto& object : m_SceneObjects)

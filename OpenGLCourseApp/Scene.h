@@ -114,6 +114,7 @@ public:
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) {};
 	inline bool IsWireframeEnabled() { return m_WireframeEnabled; };
+	virtual inline bool IsWaterOnScene() { return false; };
 	virtual ~Scene();
 
 	// Getters
