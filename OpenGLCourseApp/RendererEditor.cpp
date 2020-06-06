@@ -68,6 +68,7 @@ void RendererEditor::SetShaders()
     shaderEditor->setInt("albedoMap", 0);
     shaderEditor->setInt("cubeMap",   1);
     shaderEditor->setInt("shadowMap", 2);
+    m_OmniShadowTxSlots.insert(std::make_pair("editor_object", 3)); // omniShadowMaps[i].shadowMap = 3
 
     shaderEditorPBR->Bind();
     shaderEditorPBR->setInt("irradianceMap", 0);
@@ -79,6 +80,7 @@ void RendererEditor::SetShaders()
     shaderEditorPBR->setInt("roughnessMap",  6);
     shaderEditorPBR->setInt("aoMap",         7);
     shaderEditorPBR->setInt("shadowMap",     8);
+    m_OmniShadowTxSlots.insert(std::make_pair("editor_object_pbr", 9)); // omniShadowMaps[i].shadowMap = 9
 
     shaderWater->Bind();
     shaderWater->setInt("reflectionTexture", 0);
@@ -124,9 +126,15 @@ void RendererEditor::RenderPassWaterReflection(Window& mainWindow, Scene* scene,
 
     Shader* shaderEditor = shaders["editor_object"];
     shaderEditor->Bind();
-
     shaderEditor->setVec3("eyePosition", scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
     shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderEditor->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
+
+    Shader* shaderEditorPBR = shaders["editor_object_pbr"];
+    shaderEditorPBR->Bind();
+    shaderEditorPBR->setVec3("eyePosition", scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
+    shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
 
     EnableCulling();
     std::string passType = "water_reflect";
@@ -249,8 +257,6 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 
     shaderEditor->Bind();
 
-    shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-
     // Directional Light
     shaderEditor->setBool( "directionalLight.base.enabled",          LightManager::directionalLight.GetEnabled());
     shaderEditor->setVec3( "directionalLight.base.color",            LightManager::directionalLight.GetColor());
@@ -287,9 +293,16 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].exponent", i);
         shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetExponent());
-    }
 
-    shaderEditor->setInt("pointLightCount", LightManager::pointLightCount);
+        // set uniforms for omni shadow maps
+        // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object.fs is 3
+        int textureSlotOffset = 0;
+        LightManager::pointLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
+        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
+        shaderEditor->setInt(locBuff, m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
+        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
+        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetFarPlane());
+    }
 
     // Spot Lights
     for (unsigned int i = 0; i < LightManager::spotLightCount; i++)
@@ -325,10 +338,21 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].edge", i);
         shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetEdge());
+
+        // set uniforms for omni shadow maps
+        // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object.fs is 3
+        int textureSlotOffset = LightManager::pointLightCount;
+        LightManager::spotLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
+        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
+        shaderEditor->setInt(locBuff, m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
+        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
+        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetFarPlane());
     }
 
+    shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderEditor->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+    shaderEditor->setInt("pointLightCount", LightManager::pointLightCount);
     shaderEditor->setInt("spotLightCount", LightManager::spotLightCount);
-
     // Eye position / camera direction
     shaderEditor->setVec3("eyePosition", scene->GetCamera()->GetPosition());
     /**** End editor_object ****/
@@ -339,8 +363,11 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     // Init shaderEditorPBR
     // initialize static shader uniforms before rendering
     shaderEditorPBR->Bind();
-
+    shaderEditorPBR->setVec3("eyePosition", scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
+
+    shaderEditorPBR->setInt("pointSpotLightCount", LightManager::pointLightCount + LightManager::spotLightCount);
 
     // directional light
     shaderEditorPBR->setBool( "directionalLight.base.enabled",          LightManager::directionalLight.GetEnabled());
@@ -352,27 +379,47 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     // printf("Exponent = %.2ff Linear = %.2ff Constant = %.2ff\n", *m_PointLightExponent, *m_PointLightLinear, *m_PointLightConstant);
 
     // point lights
+    char locBuff[100] = { '\0' };
+
     unsigned int lightIndex = 0;
     for (unsigned int i = 0; i < LightManager::pointLightCount; ++i)
     {
         lightIndex = 0 + i; // offset for point lights
-        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].enabled",  LightManager::pointLights[i].GetEnabled());
-        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position", LightManager::pointLights[i].GetPosition());
-        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].color",    LightManager::pointLights[i].GetColor());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent", LightManager::pointLights[i].GetExponent());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear",   LightManager::pointLights[i].GetLinear());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant", LightManager::pointLights[i].GetConstant());
+        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].base.enabled", LightManager::pointLights[i].GetEnabled());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].base.color",   LightManager::pointLights[i].GetColor());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position",     LightManager::pointLights[i].GetPosition());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent",     LightManager::pointLights[i].GetExponent());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear",       LightManager::pointLights[i].GetLinear());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant",     LightManager::pointLights[i].GetConstant());
+
+        // set uniforms for omni shadow maps
+        // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object_pbr.fs
+        int textureSlotOffset = 0;
+        LightManager::pointLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
+        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
+        shaderEditor->setInt(locBuff, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
+        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
+        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetFarPlane());
     }
 
     for (unsigned int i = 0; i < LightManager::spotLightCount; ++i)
     {
         lightIndex = 4 + i; // offset for point lights
-        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].enabled",  LightManager::spotLights[i].GetBasePL()->GetEnabled());
-        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position", LightManager::spotLights[i].GetBasePL()->GetPosition());
-        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].color",    LightManager::spotLights[i].GetBasePL()->GetColor());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent", LightManager::spotLights[i].GetBasePL()->GetExponent());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear",   LightManager::spotLights[i].GetBasePL()->GetLinear());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant", LightManager::spotLights[i].GetBasePL()->GetConstant());
+        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].base.enabled", LightManager::spotLights[i].GetBasePL()->GetEnabled());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].base.color",   LightManager::spotLights[i].GetBasePL()->GetColor());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position",     LightManager::spotLights[i].GetBasePL()->GetPosition());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent",     LightManager::spotLights[i].GetBasePL()->GetExponent());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear",       LightManager::spotLights[i].GetBasePL()->GetLinear());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant",     LightManager::spotLights[i].GetBasePL()->GetConstant());
+
+        // set uniforms for omni shadow maps
+        // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object_pbr.fs
+        int textureSlotOffset = LightManager::pointLightCount;
+        LightManager::spotLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
+        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
+        shaderEditor->setInt(locBuff, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
+        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
+        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetFarPlane());
     }
     /**** End editor_object_pbr ****/
 

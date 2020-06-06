@@ -25,4 +25,7 @@ public:
 	void RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 	~RendererEditor();
 
+private:
+	std::map<std::string, int> m_OmniShadowTxSlots;
+
 };

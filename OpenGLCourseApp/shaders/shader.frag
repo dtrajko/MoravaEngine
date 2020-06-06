@@ -170,7 +170,7 @@ vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
 	float diffuseFactor = max(dot(GetNormal(), -normalize(direction)), 0.0);
 	vec4 diffuseColor = vec4(light.color, 1.0) * light.diffuseIntensity * diffuseFactor;
 
-	vec4 specularColor = vec4(0.0, 0.0, 0.0, 0.0);
+	vec4 specularColor = vec4(0.0, 0.0, 0.0, 1.0);
 
 	if (diffuseFactor > 0.0)
 	{
@@ -197,7 +197,7 @@ vec4 CalcDirectionalLight()
 
 vec4 CalcPointLight(PointLight pointLight, int shadowIndex)
 {
-	if (!pointLight.base.enabled) return vec4(0.0, 0.0, 0.0, 0.0);
+	if (!pointLight.base.enabled) return vec4(0.0, 0.0, 0.0, 1.0);
 
 	vec3 direction = FragPos - pointLight.position;
 	float distance = length(direction);
@@ -228,14 +228,14 @@ vec4 CalcSpotLight(SpotLight spotLight, int shadowIndex)
 	}
 	else
 	{
-		return vec4(0, 0, 0, 0);
+		return vec4(0.0, 0.0, 0.0, 1.0);
 	}
 }
 
 vec4 CalcPointLights()
 {
-	vec4 totalColor = vec4(0, 0, 0, 0);
-	for (int i = 0; i < 2; i++)
+	vec4 totalColor = vec4(0.0, 0.0, 0.0, 1.0);
+	for (int i = 0; i < pointLightCount; i++)
 	{
 		totalColor += CalcPointLight(pointLights[i], i);
 	}
@@ -244,8 +244,8 @@ vec4 CalcPointLights()
 
 vec4 CalcSpotLights()
 {
-	vec4 totalColor = vec4(0, 0, 0, 0);
-	for (int i = 0; i < 0; i++)
+	vec4 totalColor = vec4(0.0, 0.0, 0.0, 1.0);
+	for (int i = 0; i < spotLightCount; i++)
 	{
 		totalColor += CalcSpotLight(spotLights[i], pointLightCount + i);
 	}

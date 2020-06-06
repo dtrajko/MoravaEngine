@@ -51,6 +51,12 @@ struct Material
 	float shininess;
 };
 
+struct OmniShadowMap
+{
+	samplerCube shadowMap;
+	float farPlane;
+};
+
 uniform int pointLightCount;
 uniform int spotLightCount;
 
@@ -70,6 +76,48 @@ uniform bool  useCubeMaps;
 
 uniform vec3 eyePosition; // same as cameraPosition
 
+uniform OmniShadowMap omniShadowMaps[MAX_LIGHTS];
+
+vec3 sampleOffsetDirections[20] = vec3[]
+(
+	vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1),
+	vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+	vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+	vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+	vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
+
+float CalcOmniShadowFactor(PointLight light, int shadowIndex)
+{
+	float shadow = 0.0;
+	float bias = 0.001;
+	float samples = 20.0;
+
+	float viewDistance = length(eyePosition - vFragPos);
+	float diskRadius = (1.0 + (viewDistance / omniShadowMaps[shadowIndex].farPlane)) / 25.0;
+
+	vec3 fragToLight = vFragPos - light.position;
+	float currentDepth = length(fragToLight);
+	float closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight).r;
+	closestDepth *= omniShadowMaps[shadowIndex].farPlane;
+	shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+	// PCF method
+	if (true)
+	{
+		for (int i = 0; i < samples; i++)
+		{
+			closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
+			closestDepth *= omniShadowMaps[shadowIndex].farPlane;
+			if (currentDepth - bias > closestDepth)
+			{
+				shadow += 1.0;
+			}		
+		}
+		shadow /= samples;
+	}
+	return shadow;
+}
 
 float CalcDirectionalShadowFactor(DirectionalLight light)
 {
@@ -142,7 +190,7 @@ vec4 CalcDirectionalLight(vec4 color)
 	return color * CalcLightByDirection(directionalLight.base, -directionalLight.direction, shadowFactor);
 }
 
-vec4 CalcPointLight(PointLight pointLight)
+vec4 CalcPointLight(PointLight pointLight, int shadowIndex)
 {
 	if (!pointLight.base.enabled) return vec4(0.0, 0.0, 0.0, 1.0);
 
@@ -150,8 +198,7 @@ vec4 CalcPointLight(PointLight pointLight)
 	float distance = length(direction);
 	direction = normalize(direction);
 
-	float shadowFactor = CalcDirectionalShadowFactor(directionalLight);
-	shadowFactor *= shadowIntensity;
+	float shadowFactor = CalcOmniShadowFactor(pointLight, shadowIndex);
 
 	vec4 color = CalcLightByDirection(pointLight.base, direction, shadowFactor);
 	float attenuation =	pointLight.exponent * distance * distance +
@@ -161,7 +208,7 @@ vec4 CalcPointLight(PointLight pointLight)
 	return (color / attenuation);
 }
 
-vec4 CalcSpotLight(SpotLight spotLight)
+vec4 CalcSpotLight(SpotLight spotLight, int shadowIndex)
 {
 	if (!spotLight.base.base.enabled) return vec4(0.0, 0.0, 0.0, 1.0);
 
@@ -170,7 +217,7 @@ vec4 CalcSpotLight(SpotLight spotLight)
 
 	if (spotLightFactor > spotLight.edge)
 	{
-		vec4 color = CalcPointLight(spotLight.base);
+		vec4 color = CalcPointLight(spotLight.base, shadowIndex);
 		color *= (1.0 - (1.0 - spotLightFactor) * (1.0 / (1.0 - spotLight.edge)));
 		return color;
 	}
@@ -185,7 +232,7 @@ vec4 CalcPointLights()
 	vec4 totalColor = vec4(0.0, 0.0, 0.0, 1.0);
 	for (int i = 0; i < pointLightCount; i++)
 	{
-		totalColor += CalcPointLight(pointLights[i]);
+		totalColor += CalcPointLight(pointLights[i], i);
 	}
 	return totalColor;
 }
@@ -195,7 +242,7 @@ vec4 CalcSpotLights()
 	vec4 totalColor = vec4(0.0, 0.0, 0.0, 1.0);
 	for (int i = 0; i < spotLightCount; i++)
 	{
-		totalColor += CalcSpotLight(spotLights[i]);
+		totalColor += CalcSpotLight(spotLights[i], i);
 	}
 	return totalColor;
 }

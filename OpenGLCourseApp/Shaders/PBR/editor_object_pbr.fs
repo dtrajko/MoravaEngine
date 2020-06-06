@@ -45,12 +45,17 @@ struct DirectionalLight
 
 struct PointSpotLight
 {
-    bool enabled;
+    Light base;
     vec3 position;
-    vec3 color;
     float exponent;
     float linear;
     float constant;
+};
+
+struct OmniShadowMap
+{
+	samplerCube shadowMap;
+	float farPlane;
 };
 
 struct Material
@@ -59,6 +64,8 @@ struct Material
 	float shininess;
 };
 
+uniform int pointSpotLightCount; // both point and spot lights
+
 uniform DirectionalLight directionalLight;
 uniform PointSpotLight pointSpotLights[MAX_LIGHTS];
 
@@ -66,6 +73,17 @@ uniform Material material;
 
 uniform vec3 eyePosition; // same as cameraPosition
 uniform float tilingFactor;
+
+uniform OmniShadowMap omniShadowMaps[MAX_LIGHTS];
+
+vec3 sampleOffsetDirections[20] = vec3[]
+(
+	vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1),
+	vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+	vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+	vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+	vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
 
 const float PI = 3.14159265359;
 
@@ -134,6 +152,38 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+float CalcOmniShadowFactor(PointSpotLight light, int shadowIndex)
+{
+	float shadow = 0.0;
+	float bias = 0.001;
+	float samples = 20.0;
+
+	float viewDistance = length(eyePosition - vFragPos);
+	float diskRadius = (1.0 + (viewDistance / omniShadowMaps[shadowIndex].farPlane)) / 25.0;
+
+	vec3 fragToLight = vFragPos - light.position;
+	float currentDepth = length(fragToLight);
+	float closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight).r;
+	closestDepth *= omniShadowMaps[shadowIndex].farPlane;
+	shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+	// PCF method
+	if (true)
+	{
+		for (int i = 0; i < samples; i++)
+		{
+			closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
+			closestDepth *= omniShadowMaps[shadowIndex].farPlane;
+			if (currentDepth - bias > closestDepth)
+			{
+				shadow += 1.0;
+			}		
+		}
+		shadow /= samples;
+	}
+	return shadow;
 }
 
 float CalcDirectionalShadowFactor(DirectionalLight light)
@@ -207,6 +257,34 @@ vec4 CalcDirectionalLight(vec4 color)
 	return color * CalcLightByDirection(directionalLight.base, -directionalLight.direction, shadowFactor);
 }
 
+vec4 CalcPointSpotLight(PointSpotLight pointSpotLight, int shadowIndex)
+{
+	if (!pointSpotLight.base.enabled) return vec4(0.0, 0.0, 0.0, 1.0);
+
+	vec3 direction = vFragPos - pointSpotLight.position;
+	float distance = length(direction);
+	direction = normalize(direction);
+
+	float shadowFactor = CalcOmniShadowFactor(pointSpotLight, shadowIndex);
+
+	vec4 color = CalcLightByDirection(pointSpotLight.base, direction, shadowFactor);
+	float attenuation =	pointSpotLight.exponent * distance * distance +
+						pointSpotLight.linear * distance +
+						pointSpotLight.constant;
+
+	return (color / attenuation);
+}
+
+vec4 CalcPointSpotLights()
+{
+	vec4 totalColor = vec4(0.0, 0.0, 0.0, 1.0);
+	for (int i = 0; i < pointSpotLightCount; i++)
+	{
+		totalColor += CalcPointSpotLight(pointSpotLights[i], i);
+	}
+	return totalColor;
+}
+
 void main()
 {
     // material properties
@@ -230,7 +308,7 @@ void main()
     for(int i = 0; i < MAX_LIGHTS; ++i)
     {
         // skip light calculation if light is not enabled
-        if (!pointSpotLights[i].enabled) continue;
+        if (!pointSpotLights[i].base.enabled) continue;
 
         // calculate per-light radiance
         vec3 L = normalize(pointSpotLights[i].position - vFragPos);
@@ -242,7 +320,7 @@ void main()
 					pointSpotLights[i].linear * distance +
 					pointSpotLights[i].constant;
 
-        vec3 radiance = pointSpotLights[i].color * attenuation;
+        vec3 radiance = pointSpotLights[i].base.color * attenuation;
 
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);
@@ -300,6 +378,8 @@ void main()
     {
         color = CalcDirectionalLight(vec4(color, 1.0)).rgb;
     }
+
+	color += CalcPointSpotLights().xyz;
 
     FragColor = vec4(color , 1.0);
 

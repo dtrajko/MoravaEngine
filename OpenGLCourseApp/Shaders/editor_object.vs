@@ -15,11 +15,16 @@ uniform mat4 view;
 uniform mat4 projection;
 
 uniform mat4 dirLightTransform;
+uniform vec4 clipPlane;
 
 void main()
 {
     vPosition = vec3(model * vec4(aPosition, 1.0));
     vTexCoord = aTexCoord;
+
+    vec4 WorldPosition = model * vec4(aPosition, 1.0);
+	gl_ClipDistance[0] = dot(WorldPosition, clipPlane);
+
     vNormal = mat3(transpose(inverse(model))) * aNormal;
     vFragPos = (model * vec4(aPosition, 1.0)).xyz;
 	vDirLightSpacePos = dirLightTransform * model * vec4(aPosition, 1.0);
