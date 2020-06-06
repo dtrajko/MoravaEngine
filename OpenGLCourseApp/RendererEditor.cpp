@@ -162,11 +162,12 @@ void RendererEditor::RenderPassWaterRefraction(Window& mainWindow, Scene* scene,
 void RendererEditor::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     if (!scene->GetSettings().enableShadows) return;
+    if (!LightManager::directionalLight.GetEnabled()) return;
 
     Shader* shaderShadowMap = shaders["shadow_map"];
     shaderShadowMap->Bind();
 
-    DirectionalLight* light = &scene->GetLightManager()->directionalLight;
+    DirectionalLight* light = &LightManager::directionalLight;
     glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
     light->GetShadowMap()->Write();
@@ -248,85 +249,85 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 
     shaderEditor->Bind();
 
-    shaderEditor->setMat4("dirLightTransform", scene->GetLightManager()->directionalLight.CalculateLightTransform());
+    shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
     // Directional Light
-    shaderEditor->setBool( "directionalLight.base.enabled", scene->GetLightManager()->directionalLight.GetEnabled());
-    shaderEditor->setVec3( "directionalLight.base.color", scene->GetLightManager()->directionalLight.GetColor());
-    shaderEditor->setFloat("directionalLight.base.ambientIntensity", scene->GetLightManager()->directionalLight.GetAmbientIntensity());
-    shaderEditor->setFloat("directionalLight.base.diffuseIntensity", scene->GetLightManager()->directionalLight.GetDiffuseIntensity());
-    shaderEditor->setVec3( "directionalLight.direction", scene->GetLightManager()->directionalLight.GetDirection());
+    shaderEditor->setBool( "directionalLight.base.enabled",          LightManager::directionalLight.GetEnabled());
+    shaderEditor->setVec3( "directionalLight.base.color",            LightManager::directionalLight.GetColor());
+    shaderEditor->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+    shaderEditor->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+    shaderEditor->setVec3( "directionalLight.direction",             LightManager::directionalLight.GetDirection());
 
     // Point Lights
-    for (unsigned int i = 0; i < scene->GetLightManager()->pointLightCount; i++)
+    for (unsigned int i = 0; i < LightManager::pointLightCount; i++)
     {
         char locBuff[100] = { '\0' };
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.enabled", i);
-        // printf("PointLight[%d] enabled: %d\n", i, scene->GetLightManager()->pointLights[i].GetEnabled());
-        shaderEditor->setBool(locBuff, scene->GetLightManager()->pointLights[i].GetEnabled());
+        // printf("PointLight[%d] enabled: %d\n", i, LightManager::pointLights[i].GetEnabled());
+        shaderEditor->setBool(locBuff, LightManager::pointLights[i].GetEnabled());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.color", i);
-        shaderEditor->setVec3(locBuff, scene->GetLightManager()->pointLights[i].GetColor());
+        shaderEditor->setVec3(locBuff, LightManager::pointLights[i].GetColor());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.ambientIntensity", i);
-        shaderEditor->setFloat(locBuff, scene->GetLightManager()->pointLights[i].GetAmbientIntensity());
+        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetAmbientIntensity());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.diffuseIntensity", i);
-        shaderEditor->setFloat(locBuff, scene->GetLightManager()->pointLights[i].GetDiffuseIntensity());
+        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetDiffuseIntensity());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].position", i);
-        shaderEditor->setVec3(locBuff, scene->GetLightManager()->pointLights[i].GetPosition());
+        shaderEditor->setVec3(locBuff, LightManager::pointLights[i].GetPosition());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].constant", i);
-        shaderEditor->setFloat(locBuff, scene->GetLightManager()->pointLights[i].GetConstant());
+        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetConstant());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].linear", i);
-        shaderEditor->setFloat(locBuff, scene->GetLightManager()->pointLights[i].GetLinear());
+        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetLinear());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].exponent", i);
-        shaderEditor->setFloat(locBuff, scene->GetLightManager()->pointLights[i].GetExponent());
+        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetExponent());
     }
 
-    shaderEditor->setInt("pointLightCount", scene->GetLightManager()->pointLightCount);
+    shaderEditor->setInt("pointLightCount", LightManager::pointLightCount);
 
     // Spot Lights
-    for (unsigned int i = 0; i < scene->GetLightManager()->spotLightCount; i++)
+    for (unsigned int i = 0; i < LightManager::spotLightCount; i++)
     {
         char locBuff[100] = { '\0' };
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.enabled", i);
-        shaderEditor->setBool(locBuff, scene->GetLightManager()->spotLights[i].GetBasePL()->GetEnabled());
+        shaderEditor->setBool(locBuff, LightManager::spotLights[i].GetBasePL()->GetEnabled());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.color", i);
-        shaderEditor->setVec3(locBuff, scene->GetLightManager()->spotLights[i].GetBasePL()->GetColor());
+        shaderEditor->setVec3(locBuff, LightManager::spotLights[i].GetBasePL()->GetColor());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.ambientIntensity", i);
-        shaderEditor->setFloat(locBuff, scene->GetLightManager()->spotLights[i].GetBasePL()->GetAmbientIntensity());
+        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetAmbientIntensity());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.diffuseIntensity", i);
-        shaderEditor->setFloat(locBuff, scene->GetLightManager()->spotLights[i].GetBasePL()->GetDiffuseIntensity());
+        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetDiffuseIntensity());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.position", i);
-        shaderEditor->setVec3(locBuff, scene->GetLightManager()->spotLights[i].GetBasePL()->GetPosition());
+        shaderEditor->setVec3(locBuff, LightManager::spotLights[i].GetBasePL()->GetPosition());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.constant", i);
-        shaderEditor->setFloat(locBuff, scene->GetLightManager()->spotLights[i].GetBasePL()->GetConstant());
+        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetConstant());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.linear", i);
-        shaderEditor->setFloat(locBuff, scene->GetLightManager()->spotLights[i].GetBasePL()->GetLinear());
+        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetLinear());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.exponent", i);
-        shaderEditor->setFloat(locBuff, scene->GetLightManager()->spotLights[i].GetBasePL()->GetExponent());
+        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetExponent());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].direction", i);
-        shaderEditor->setVec3(locBuff, scene->GetLightManager()->spotLights[i].GetDirection());
+        shaderEditor->setVec3(locBuff, LightManager::spotLights[i].GetDirection());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].edge", i);
-        shaderEditor->setFloat(locBuff, scene->GetLightManager()->spotLights[i].GetEdge());
+        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetEdge());
     }
 
-    shaderEditor->setInt("spotLightCount", scene->GetLightManager()->spotLightCount);
+    shaderEditor->setInt("spotLightCount", LightManager::spotLightCount);
 
     // Eye position / camera direction
     shaderEditor->setVec3("eyePosition", scene->GetCamera()->GetPosition());
@@ -339,39 +340,39 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     // initialize static shader uniforms before rendering
     shaderEditorPBR->Bind();
 
-    shaderEditorPBR->setMat4("dirLightTransform", scene->GetLightManager()->directionalLight.CalculateLightTransform());
+    shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
     // directional light
-    shaderEditorPBR->setBool( "directionalLight.base.enabled", scene->GetLightManager()->directionalLight.GetEnabled());
-    shaderEditorPBR->setVec3( "directionalLight.base.color", scene->GetLightManager()->directionalLight.GetColor());
-    shaderEditorPBR->setFloat("directionalLight.base.ambientIntensity", scene->GetLightManager()->directionalLight.GetAmbientIntensity());
-    shaderEditorPBR->setFloat("directionalLight.base.diffuseIntensity", scene->GetLightManager()->directionalLight.GetDiffuseIntensity());
-    shaderEditorPBR->setVec3( "directionalLight.direction", scene->GetLightManager()->directionalLight.GetDirection());
+    shaderEditorPBR->setBool( "directionalLight.base.enabled",          LightManager::directionalLight.GetEnabled());
+    shaderEditorPBR->setVec3( "directionalLight.base.color",            LightManager::directionalLight.GetColor());
+    shaderEditorPBR->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+    shaderEditorPBR->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+    shaderEditorPBR->setVec3( "directionalLight.direction",             LightManager::directionalLight.GetDirection());
 
     // printf("Exponent = %.2ff Linear = %.2ff Constant = %.2ff\n", *m_PointLightExponent, *m_PointLightLinear, *m_PointLightConstant);
 
     // point lights
     unsigned int lightIndex = 0;
-    for (unsigned int i = 0; i < scene->GetLightManager()->pointLightCount; ++i)
+    for (unsigned int i = 0; i < LightManager::pointLightCount; ++i)
     {
         lightIndex = 0 + i; // offset for point lights
-        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].enabled", scene->GetLightManager()->pointLights[i].GetEnabled());
-        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position", scene->GetLightManager()->pointLights[i].GetPosition());
-        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].color", scene->GetLightManager()->pointLights[i].GetColor());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent", scene->GetLightManager()->pointLights[i].GetExponent());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear", scene->GetLightManager()->pointLights[i].GetLinear());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant", scene->GetLightManager()->pointLights[i].GetConstant());
+        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].enabled",  LightManager::pointLights[i].GetEnabled());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position", LightManager::pointLights[i].GetPosition());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].color",    LightManager::pointLights[i].GetColor());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent", LightManager::pointLights[i].GetExponent());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear",   LightManager::pointLights[i].GetLinear());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant", LightManager::pointLights[i].GetConstant());
     }
 
-    for (unsigned int i = 0; i < scene->GetLightManager()->spotLightCount; ++i)
+    for (unsigned int i = 0; i < LightManager::spotLightCount; ++i)
     {
         lightIndex = 4 + i; // offset for point lights
-        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].enabled", scene->GetLightManager()->spotLights[i].GetBasePL()->GetEnabled());
-        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position", scene->GetLightManager()->spotLights[i].GetBasePL()->GetPosition());
-        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].color", scene->GetLightManager()->spotLights[i].GetBasePL()->GetColor());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent", scene->GetLightManager()->spotLights[i].GetBasePL()->GetExponent());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear", scene->GetLightManager()->spotLights[i].GetBasePL()->GetLinear());
-        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant", scene->GetLightManager()->spotLights[i].GetBasePL()->GetConstant());
+        shaderEditorPBR->setBool( "pointSpotLights[" + std::to_string(lightIndex) + "].enabled",  LightManager::spotLights[i].GetBasePL()->GetEnabled());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].position", LightManager::spotLights[i].GetBasePL()->GetPosition());
+        shaderEditorPBR->setVec3( "pointSpotLights[" + std::to_string(lightIndex) + "].color",    LightManager::spotLights[i].GetBasePL()->GetColor());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].exponent", LightManager::spotLights[i].GetBasePL()->GetExponent());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].linear",   LightManager::spotLights[i].GetBasePL()->GetLinear());
+        shaderEditorPBR->setFloat("pointSpotLights[" + std::to_string(lightIndex) + "].constant", LightManager::spotLights[i].GetBasePL()->GetConstant());
     }
     /**** End editor_object_pbr ****/
 
@@ -381,10 +382,10 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     shaderSkinning->setVec3("gEyeWorldPos", scene->GetCamera()->GetPosition());
 
     // Directional Light
-    shaderSkinning->setVec3( "gDirectionalLight.Base.Color",            scene->GetLightManager()->directionalLight.GetColor());
-    shaderSkinning->setFloat("gDirectionalLight.Base.AmbientIntensity", scene->GetLightManager()->directionalLight.GetAmbientIntensity());
-    shaderSkinning->setFloat("gDirectionalLight.Base.DiffuseIntensity", scene->GetLightManager()->directionalLight.GetDiffuseIntensity());
-    shaderSkinning->setVec3( "gDirectionalLight.Direction",             scene->GetLightManager()->directionalLight.GetDirection());
+    shaderSkinning->setVec3( "gDirectionalLight.Base.Color",            LightManager::directionalLight.GetColor());
+    shaderSkinning->setFloat("gDirectionalLight.Base.AmbientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+    shaderSkinning->setFloat("gDirectionalLight.Base.DiffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+    shaderSkinning->setVec3( "gDirectionalLight.Direction",             LightManager::directionalLight.GetDirection());
 
     // TODO: point lights
     shaderSkinning->setInt("gNumPointLights", 0);
@@ -411,11 +412,11 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     Shader* shaderGizmo = shaders["gizmo"];
     shaderGizmo->Bind();
     // Directional Light
-    shaderGizmo->setBool( "directionalLight.base.enabled", scene->GetLightManager()->directionalLight.GetEnabled());
-    shaderGizmo->setVec3( "directionalLight.base.color", scene->GetLightManager()->directionalLight.GetColor());
-    shaderGizmo->setFloat("directionalLight.base.ambientIntensity", scene->GetLightManager()->directionalLight.GetAmbientIntensity());
-    shaderGizmo->setFloat("directionalLight.base.diffuseIntensity", scene->GetLightManager()->directionalLight.GetDiffuseIntensity());
-    shaderGizmo->setVec3( "directionalLight.direction", scene->GetLightManager()->directionalLight.GetDirection());
+    shaderGizmo->setBool( "directionalLight.base.enabled",          LightManager::directionalLight.GetEnabled());
+    shaderGizmo->setVec3( "directionalLight.base.color",            LightManager::directionalLight.GetColor());
+    shaderGizmo->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+    shaderGizmo->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+    shaderGizmo->setVec3( "directionalLight.direction",             LightManager::directionalLight.GetDirection());
     /**** End gizmo shader ****/
 
     /**** Begin of shaderBasic ****/

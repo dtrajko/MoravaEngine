@@ -433,6 +433,24 @@ void SceneEditor::SetupMaterials()
     textureInfoCerberus.ao        = "Textures/PBR/Cerberus/Cerberus_AO.tga";
     m_MaterialInfo.insert(std::make_pair("cerberus", textureInfoCerberus));
 
+    // Concrete 3 Free PBR Materials freepbr.com
+    TextureInfo textureInfoConcrete = {};
+    textureInfoConcrete.albedo    = "Textures/PBR/concrete3/concrete3-albedo.png";
+    textureInfoConcrete.normal    = "Textures/PBR/concrete3/concrete3-Normal-dx.png";
+    textureInfoConcrete.metallic  = "Textures/PBR/concrete3/concrete3-Metallic.png";
+    textureInfoConcrete.roughness = "Textures/PBR/concrete3/concrete3-Roughness.png";
+    textureInfoConcrete.ao        = "Textures/PBR/concrete3/concrete3-ao.png";
+    m_MaterialInfo.insert(std::make_pair("concrete", textureInfoConcrete));
+
+    // Modern Brick Wall 1 Free PBR Materials freepbr.com
+    TextureInfo textureInfoModernBrickWall = {};
+    textureInfoModernBrickWall.albedo    = "Textures/PBR/modern_brick_1/modern-brick1_albedo.png";
+    textureInfoModernBrickWall.normal    = "Textures/PBR/modern_brick_1/modern-brick1_normal-dx.png";
+    textureInfoModernBrickWall.metallic  = "Textures/PBR/modern_brick_1/modern-brick1_metallic.png";
+    textureInfoModernBrickWall.roughness = "Textures/PBR/modern_brick_1/modern-brick1_roughness.png";
+    textureInfoModernBrickWall.ao        = "Textures/PBR/modern_brick_1/modern-brick1_ao.png";
+    m_MaterialInfo.insert(std::make_pair("modern_brick_wall", textureInfoModernBrickWall));
+
 #define ASYNC_LOAD_MATERIALS 0
 #if ASYNC_LOAD_MATERIALS
     for (auto materialInfo : m_MaterialInfo)
@@ -601,7 +619,7 @@ void SceneEditor::SaveScene()
     if (m_CurrentTimestamp - m_SceneSave.lastTime < m_SceneSave.cooldown) return;
     m_SceneSave.lastTime = m_CurrentTimestamp;
 
-    printf("SceneEditor::SaveScene: Saving %zu objects!\n", m_SceneObjects.size());
+    printf("SceneEditor::SaveScene: Saving %zu objects...\n", m_SceneObjects.size());
 
     std::vector<std::string> lines;
     for (int i = 0; i < m_SceneObjects.size(); i++)
@@ -998,6 +1016,14 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::Text(sRealFPS.c_str());
     ImGui::Text(sDeltaTimeMS.c_str());
+
+    ImGui::Separator();
+
+    ImGui::Text("Active Render Passes:");
+    for (auto& renderPassName : m_ActiveRenderPasses)
+        ImGui::Text(renderPassName.c_str());
+
+    m_ActiveRenderPasses.clear();
 
     ImGui::Separator();
     ImGui::Text("Lights");
@@ -1733,6 +1759,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
     std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
     // printf("SceneEditor::Render passType = %s\n", passType.c_str());
+    m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui
 
     SwitchOrthographicView(mainWindow, projectionMatrix);
 
@@ -1811,7 +1838,7 @@ void SceneEditor::ResetScene()
     if (m_CurrentTimestamp - m_SceneReset.lastTime < m_SceneReset.cooldown) return;
     m_SceneReset.lastTime = m_CurrentTimestamp;
 
-    printf("SceneEditor::ResetScene: Deleting %zu objects!\n", m_SceneObjects.size());
+    printf("SceneEditor::ResetScene: Deleting %zu objects...\n", m_SceneObjects.size());
 
     for (auto& object : m_SceneObjects)
     {

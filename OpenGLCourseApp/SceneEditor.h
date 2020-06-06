@@ -131,6 +131,8 @@ private:
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;
 
+	std::vector<std::string> m_ActiveRenderPasses;
+
 	static float m_MaterialSpecular;
 	static float m_MaterialShininess;
 
