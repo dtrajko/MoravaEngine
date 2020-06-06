@@ -1190,7 +1190,7 @@ SceneObject* SceneEditor::CreateNewSceneObject()
     sceneObject->isSelected      = true;
     sceneObject->AABB            = new AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
     sceneObject->pivot           = new Pivot(glm::vec3(0.0f), glm::vec3(1.0f));
-    sceneObject->m_Type      = "";
+    sceneObject->m_Type          = "";
     sceneObject->mesh            = nullptr;
     sceneObject->m_TypeID        = -1;
     sceneObject->model           = nullptr;
@@ -1782,6 +1782,8 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         shaders["shadow_map"]->setMat4("model", object->transform);
         shaders["water"]->Bind();
         shaders["water"]->setMat4("model", object->transform);
+        shaders["omni_shadow_map"]->Bind();
+        shaders["omni_shadow_map"]->setMat4("model", object->transform);
 
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
 
