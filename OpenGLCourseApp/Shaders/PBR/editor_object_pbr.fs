@@ -305,7 +305,7 @@ void main()
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
-    for(int i = 0; i < MAX_LIGHTS; ++i)
+    for(int i = 0; i < pointSpotLightCount; ++i)
     {
         // skip light calculation if light is not enabled
         if (!pointSpotLights[i].base.enabled) continue;
@@ -328,7 +328,7 @@ void main()
         vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);
 
         vec3 nominator    = NDF * G * F;
-        float denominator = MAX_LIGHTS * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001; // 0.001 to prevent divide by zero.
+        float denominator = pointSpotLightCount * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001; // 0.001 to prevent divide by zero.
         vec3 specular = nominator / denominator;
         
          // kS is equal to Fresnel
@@ -379,7 +379,7 @@ void main()
         color = CalcDirectionalLight(vec4(color, 1.0)).rgb;
     }
 
-	color += CalcPointSpotLights().xyz;
+	// color += CalcPointSpotLights().xyz;
 
     FragColor = vec4(color , 1.0);
 
