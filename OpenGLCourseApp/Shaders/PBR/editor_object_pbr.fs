@@ -154,7 +154,7 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
-float CalcOmniShadowFactor(PointSpotLight light, int shadowIndex)
+float CalcOmniShadowFactor(PointSpotLight pointSpotLight, int shadowIndex)
 {
 	float shadow = 0.0;
 	float bias = 0.001;
@@ -163,7 +163,7 @@ float CalcOmniShadowFactor(PointSpotLight light, int shadowIndex)
 	float viewDistance = length(eyePosition - vFragPos);
 	float diskRadius = (1.0 + (viewDistance / omniShadowMaps[shadowIndex].farPlane)) / 25.0;
 
-	vec3 fragToLight = vFragPos - light.position;
+	vec3 fragToLight = vFragPos - pointSpotLight.position;
 	float currentDepth = length(fragToLight);
 	float closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight).r;
 	closestDepth *= omniShadowMaps[shadowIndex].farPlane;
@@ -381,7 +381,7 @@ void main()
 
 	// color += CalcPointSpotLights().xyz;
 
-    FragColor = vec4(color , 1.0);
+    FragColor = vec4(color, 1.0);
 
     // use a basic color to identify the shader
 	if (vFragPos.x > 0.0 && vFragPos.x < 0.1)
