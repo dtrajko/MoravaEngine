@@ -15,6 +15,7 @@ public:
 	inline unsigned int GetBufferWidth() { return bufferWidth; };
 	inline unsigned int GetBufferHeight() { return bufferHeight; };
 	bool GetShouldClose() { return glfwWindowShouldClose(glfwWindow); };
+	void SetShouldClose(bool shouldClose);
 	bool* getKeys() { return keys; };
 	bool* getMouseButtons() { return buttons; };
 	float getXChange();

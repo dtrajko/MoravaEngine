@@ -47,6 +47,7 @@ public:
 	SceneEditor();
 	virtual void Update(float timestep, Window& mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults) override;
+	void ShowExampleAppDockSpace(bool* p_open, Window& mainWindow);
 	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
 	virtual ~SceneEditor() override;
@@ -126,7 +127,7 @@ private:
 	std::string* m_TextureNameEdit;
 	std::string* m_MaterialNameEdit;
 	float* m_TilingFactorMaterialEdit;
-	bool m_DrawScenePivot;
+	bool m_DrawGizmos;
 	int m_PBR_Map_Edit;
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;

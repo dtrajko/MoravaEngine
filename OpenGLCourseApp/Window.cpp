@@ -261,6 +261,11 @@ bool Window::IsVSync() const
 	return m_VSync;
 }
 
+void Window::SetShouldClose(bool shouldClose)
+{
+	glfwSetWindowShouldClose(glfwWindow, shouldClose);
+}
+
 Window::~Window()
 {
 	glfwDestroyWindow(glfwWindow);

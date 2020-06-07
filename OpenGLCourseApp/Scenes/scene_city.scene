@@ -128,7 +128,7 @@ TilingFactorMaterial	0.193000
 EndObject
 BeginObject	8
 Position	13.679994	0.170003	29.059944
-Rotation	180.000000	89.176704	180.000000
+Rotation	-180.000000	89.176704	-180.000000
 Scale	0.004000	0.003000	0.003000
 PositionAABB	0.000000	130.000000	-10.000000
 ScaleAABB	780.000000	260.000000	400.000000
@@ -139,7 +139,7 @@ TilingFactor	1.000000
 IsSelected	0
 Type	model
 TypeID	1004
-MaterialName	none
+MaterialName	rusted_iron
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	9
@@ -155,7 +155,7 @@ TilingFactor	1.000000
 IsSelected	0
 Type	model
 TypeID	1004
-MaterialName	none
+MaterialName	rusted_iron
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	10
@@ -171,7 +171,7 @@ TilingFactor	1.000000
 IsSelected	0
 Type	model
 TypeID	1004
-MaterialName	none
+MaterialName	rusted_iron
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	11
@@ -187,7 +187,7 @@ TilingFactor	1.000000
 IsSelected	0
 Type	model
 TypeID	1004
-MaterialName	none
+MaterialName	rusted_iron
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	12
@@ -203,12 +203,12 @@ TilingFactor	1.000000
 IsSelected	0
 Type	model
 TypeID	1004
-MaterialName	none
+MaterialName	rusted_iron
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	13
 Position	39.480003	0.163000	18.760017
-Rotation	78.767479	89.532280	78.766739
+Rotation	78.767525	89.532280	78.766693
 Scale	0.004000	0.004000	0.004000
 PositionAABB	0.000000	130.000000	-10.000000
 ScaleAABB	780.000000	260.000000	400.000000
@@ -255,7 +255,7 @@ MaterialName	plastic
 TilingFactorMaterial	0.608000
 EndObject
 BeginObject	16
-Position	3.597996	4.630008	-2.145999
+Position	3.597996	5.008997	-2.145999
 Rotation	0.000000	-0.000000	0.000000
 Scale	4.170000	9.949997	8.129998
 PositionAABB	0.000000	0.000000	0.000000
@@ -283,7 +283,7 @@ TilingFactor	1.000000
 IsSelected	0
 Type	mesh
 TypeID	0
-MaterialName	modern_brick_wall
+MaterialName	none
 TilingFactorMaterial	0.304000
 EndObject
 BeginObject	18
@@ -319,7 +319,7 @@ MaterialName	modern_brick_wall
 TilingFactorMaterial	0.552000
 EndObject
 BeginObject	20
-Position	-33.259903	4.630008	-29.430044
+Position	-33.259903	4.941016	-29.430044
 Rotation	0.000000	-0.000000	0.000000
 Scale	6.660005	9.949997	7.019999
 PositionAABB	0.000000	0.000000	0.000000
@@ -335,7 +335,7 @@ MaterialName	modern_brick_wall
 TilingFactorMaterial	0.110000
 EndObject
 BeginObject	21
-Position	-33.680073	4.630008	25.050047
+Position	-33.680073	4.900006	25.050047
 Rotation	0.000000	-0.000000	0.000000
 Scale	5.130000	9.949997	13.779985
 PositionAABB	0.000000	0.000000	0.000000
@@ -351,9 +351,9 @@ MaterialName	modern_brick_wall
 TilingFactorMaterial	0.213000
 EndObject
 BeginObject	22
-Position	-34.239956	8.380995	-20.310030
+Position	-34.239956	4.098982	-20.310030
 Rotation	0.000000	-0.000000	0.000000
-Scale	4.590002	16.699999	8.129998
+Scale	4.590002	8.210002	8.129998
 PositionAABB	0.000000	0.000000	0.000000
 ScaleAABB	1.000000	1.000000	1.000000
 Color	0.509896	0.495098	1.000000	1.000000
@@ -379,11 +379,11 @@ TilingFactor	0.377000
 IsSelected	0
 Type	mesh
 TypeID	0
-MaterialName	silver
+MaterialName	none
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	24
-Position	20.151909	13.350973	-2.356055
+Position	20.970934	13.350973	-2.356055
 Rotation	0.000000	-0.000000	0.000000
 Scale	6.530009	16.940018	8.916060
 PositionAABB	0.000000	0.000000	0.000000
@@ -399,7 +399,7 @@ MaterialName	dark_tiles
 TilingFactorMaterial	0.213000
 EndObject
 BeginObject	25
-Position	-46.200089	6.060014	21.330027
+Position	-46.200089	6.259034	21.330027
 Rotation	0.000000	-0.000000	0.000000
 Scale	4.759995	12.860000	9.360010
 PositionAABB	0.000000	0.000000	0.000000
@@ -427,7 +427,7 @@ TilingFactor	0.372000
 IsSelected	0
 Type	mesh
 TypeID	0
-MaterialName	silver
+MaterialName	none
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	27
@@ -447,7 +447,7 @@ MaterialName	modern_brick_wall
 TilingFactorMaterial	0.414000
 EndObject
 BeginObject	28
-Position	19.648966	21.945000	-2.685994
+Position	20.783997	21.945000	-2.685994
 Rotation	0.000000	-0.000000	-179.690247
 Scale	9.850054	2.056000	9.739009
 PositionAABB	0.000000	0.000000	0.000000
@@ -507,7 +507,7 @@ TilingFactor	0.372000
 IsSelected	0
 Type	mesh
 TypeID	0
-MaterialName	silver
+MaterialName	none
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	32
@@ -523,7 +523,7 @@ TilingFactor	0.263000
 IsSelected	0
 Type	mesh
 TypeID	0
-MaterialName	silver
+MaterialName	none
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	33
@@ -539,11 +539,11 @@ TilingFactor	0.254000
 IsSelected	0
 Type	mesh
 TypeID	0
-MaterialName	silver
+MaterialName	none
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	34
-Position	-21.500008	4.630008	-20.390032
+Position	-21.500008	4.972010	-20.390032
 Rotation	0.000000	-0.000000	0.000000
 Scale	7.310001	9.949997	8.129998
 PositionAABB	0.000000	0.000000	0.000000
@@ -571,7 +571,7 @@ TilingFactor	2.181000
 IsSelected	0
 Type	mesh
 TypeID	3
-MaterialName	silver
+MaterialName	dark_tiles
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	36
@@ -583,16 +583,16 @@ ScaleAABB	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
 Name	
 TextureName	none
-TilingFactor	2.181000
+TilingFactor	0.748000
 IsSelected	0
 Type	mesh
 TypeID	3
-MaterialName	silver
-TilingFactorMaterial	1.000000
+MaterialName	dark_tiles
+TilingFactorMaterial	0.748000
 EndObject
 BeginObject	37
 Position	-30.744989	23.998045	-2.808995
-Rotation	-180.000000	-10.267582	-180.000000
+Rotation	180.000000	-10.267583	180.000000
 Scale	0.037000	0.037000	0.036000
 PositionAABB	20.000000	40.000000	0.000000
 ScaleAABB	260.000000	80.000000	100.000000
@@ -603,7 +603,7 @@ TilingFactor	1.000000
 IsSelected	0
 Type	model
 TypeID	1003
-MaterialName	silver
+MaterialName	rusted_iron
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	38
@@ -1071,9 +1071,9 @@ MaterialName	modern_brick_wall
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	67
-Position	33.630039	3.419005	41.820065
+Position	33.630039	5.739006	41.820065
 Rotation	0.000000	-0.000000	0.000000
-Scale	11.469995	19.069998	4.429993
+Scale	11.469995	11.549994	4.429993
 PositionAABB	0.000000	0.000000	0.000000
 ScaleAABB	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
@@ -1199,9 +1199,9 @@ MaterialName
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	75
-Position	3.809994	3.240001	18.309998
+Position	3.809994	3.240001	18.279997
 Rotation	0.000000	-0.000000	0.000000
-Scale	1.969999	5.920005	2.209999
+Scale	2.599999	5.920005	2.749999
 PositionAABB	0.000000	0.000000	0.000000
 ScaleAABB	1.000000	1.000000	1.000000
 Color	1.000000	1.000000	1.000000	1.000000
@@ -1215,57 +1215,9 @@ MaterialName	concrete
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	76
-Position	-7.220006	3.240001	-4.690003
+Position	0.000000	0.019999	0.000000
 Rotation	0.000000	-0.000000	0.000000
-Scale	1.969999	5.920005	2.209999
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	
-TextureName	grass
-TilingFactor	1.000000
-IsSelected	0
-Type	mesh
-TypeID	0
-MaterialName	
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	77
-Position	-7.220006	3.240001	5.669999
-Rotation	0.000000	-0.000000	0.000000
-Scale	1.969999	5.920005	2.209999
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	
-TextureName	grass
-TilingFactor	1.000000
-IsSelected	0
-Type	mesh
-TypeID	0
-MaterialName	
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	78
-Position	31.830000	3.240001	5.360002
-Rotation	0.000000	-0.000000	0.000000
-Scale	1.969999	5.920005	2.209999
-PositionAABB	0.000000	0.000000	0.000000
-ScaleAABB	1.000000	1.000000	1.000000
-Color	1.000000	1.000000	1.000000	1.000000
-Name	
-TextureName	grass
-TilingFactor	1.000000
-IsSelected	0
-Type	mesh
-TypeID	0
-MaterialName	
-TilingFactorMaterial	1.000000
-EndObject
-BeginObject	79
-Position	0.000000	0.014999	0.000000
-Rotation	0.000000	-0.000000	0.000000
-Scale	1.156011	0.786006	1.033987
+Scale	1.156011	0.800006	1.033987
 PositionAABB	0.000000	0.000000	0.000000
 ScaleAABB	128.000000	0.500000	128.000000
 Color	1.000000	1.000000	1.000000	1.000000
@@ -1277,4 +1229,52 @@ Type	mesh
 TypeID	8
 MaterialName	none
 TilingFactorMaterial	0.884000
+EndObject
+BeginObject	77
+Position	-7.730005	3.370000	-20.449995
+Rotation	0.000000	-0.000000	0.000000
+Scale	3.139999	6.290007	2.980000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	grass
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	4
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	78
+Position	-7.539996	3.224998	-4.587004
+Rotation	0.000000	-0.000000	0.000000
+Scale	3.129999	6.039991	-3.139999
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	grass
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	4
+MaterialName	
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	79
+Position	-23.430000	3.000000	18.210009
+Rotation	0.000000	-0.000000	0.000000
+Scale	3.319999	5.690002	1.900000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	
+TextureName	grass
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	4
+MaterialName	
+TilingFactorMaterial	1.000000
 EndObject

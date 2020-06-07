@@ -51,13 +51,13 @@ public:
 	void PrintObjects();
 	void OnMousePress(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
 	void OnMouseRelease(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
+	inline void SetDrawAABBs(bool drawAABBs) { m_DrawAABBs = drawAABBs; };
 	~Gizmo();
 
 private:
 	int m_Mode;
 	Bool3 m_AxesEnabled;
 	bool m_Active;
-
 	bool m_DrawAABBs;
 
 	SceneObject* m_SceneObject;
