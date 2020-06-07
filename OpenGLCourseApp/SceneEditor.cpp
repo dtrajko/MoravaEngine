@@ -1901,35 +1901,26 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
 
-        if (object->mesh && object->m_Type == "mesh") // is it a mesh?
-        {
-            if (object->name == "water") { // is it a water tile
-                // Render with 'water' shader
-                if (passType == "main")
-                    SetUniformsShaderWater(shaders["water"], object);
-            }
-            else if (m_SkinnedMeshes.find(object->m_TypeID) != m_SkinnedMeshes.end()) // is it a skinned mesh?
-            {
-                // Render with 'skinning' shader
-                if (passType == "main")
-                    SetUniformsShaderSkinning(shaders["skinning"], object, runningTime);
-            }
-            else if (material && object->materialName != "none") { // is it using a material?
-                // Render with 'editor_object_pbr' shader
-                if (passType == "main")
-                    SetUniformsShaderEditorPBR(shaders["editor_object_pbr"], texture, material, object);
-            }
-            else { // defaults to a texture only
-                // Render with 'editor_object' shader
-                if (passType == "main")
-                    SetUniformsShaderEditor(shaders["editor_object"], texture, object);
-            }
+        if (object->name == "water") { // is it a water tile
+            // Render with 'water' shader
+            if (passType == "main")
+                SetUniformsShaderWater(shaders["water"], object);
         }
-        else if (object->model && object->m_Type == "model") // is it a model?
+        else if (m_SkinnedMeshes.find(object->m_TypeID) != m_SkinnedMeshes.end()) // is it a skinned mesh?
         {
-            // Quixel Megascans model
+            // Render with 'skinning' shader
+            if (passType == "main")
+                SetUniformsShaderSkinning(shaders["skinning"], object, runningTime);
+        }
+        else if (material && object->materialName != "none") { // is it using a material?
+            // Render with 'editor_object_pbr' shader
             if (passType == "main")
                 SetUniformsShaderEditorPBR(shaders["editor_object_pbr"], texture, material, object);
+        }
+        else { // defaults to a texture only
+            // Render with 'editor_object' shader
+            if (passType == "main")
+                SetUniformsShaderEditor(shaders["editor_object"], texture, object);
         }
 
         object->Render();

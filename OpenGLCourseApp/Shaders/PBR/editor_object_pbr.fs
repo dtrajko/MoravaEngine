@@ -374,12 +374,11 @@ void main()
     // gamma correct
     color = pow(color, vec3(1.0/2.2));
 
-    if (directionalLight.base.enabled)
-    {
-        color = CalcDirectionalLight(vec4(color, 1.0)).rgb;
-    }
-
-	// color += CalcPointSpotLights().xyz;
+    //  if (directionalLight.base.enabled)
+    //  {
+    //      color = CalcDirectionalLight(vec4(color, 1.0)).rgb;
+    //  }
+	//  color += CalcPointSpotLights().xyz;
 
     FragColor = vec4(color, 1.0);
 
