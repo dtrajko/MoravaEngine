@@ -90,8 +90,36 @@ void RendererEditor::SetShaders()
     shaderWater->setInt("depthMap",          4);
 }
 
+void RendererEditor::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+    if (!scene->GetSettings().enableShadows) return;
+    if (!LightManager::directionalLight.GetEnabled()) return;
+
+    Shader* shaderShadowMap = shaders["shadow_map"];
+    shaderShadowMap->Bind();
+
+    DirectionalLight* light = &LightManager::directionalLight;
+    glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
+
+    light->GetShadowMap()->Write();
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_BLEND);
+
+    shaderShadowMap->setMat4("dirLightTransform", light->CalculateLightTransform());
+    shaderShadowMap->Validate();
+
+    DisableCulling();
+    std::string passType = "shadow_dir";
+    scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void RendererEditor::RenderPassOmniShadow(PointLight* light, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
+    if (!scene->GetSettings().enableOmniShadows) return;
+
     Shader* shaderOmniShadow = shaders["omni_shadow_map"];
     shaderOmniShadow->Bind();
 
@@ -116,6 +144,8 @@ void RendererEditor::RenderPassOmniShadow(PointLight* light, Window& mainWindow,
 
 void RendererEditor::RenderPassWaterReflection(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
+    if (!scene->GetSettings().enableWaterEffects) return;
+
     glViewport(0, 0, scene->GetWaterManager()->GetFramebufferWidth(), scene->GetWaterManager()->GetFramebufferHeight());
 
     scene->GetWaterManager()->GetReflectionFramebuffer()->Bind();
@@ -145,6 +175,8 @@ void RendererEditor::RenderPassWaterReflection(Window& mainWindow, Scene* scene,
 
 void RendererEditor::RenderPassWaterRefraction(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
+    if (!scene->GetSettings().enableWaterEffects) return;
+
     glViewport(0, 0, scene->GetWaterManager()->GetFramebufferWidth(), scene->GetWaterManager()->GetFramebufferHeight());
 
     scene->GetWaterManager()->GetRefractionFramebuffer()->Bind();
@@ -167,32 +199,6 @@ void RendererEditor::RenderPassWaterRefraction(Window& mainWindow, Scene* scene,
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RendererEditor::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
-{
-    if (!scene->GetSettings().enableShadows) return;
-    if (!LightManager::directionalLight.GetEnabled()) return;
-
-    Shader* shaderShadowMap = shaders["shadow_map"];
-    shaderShadowMap->Bind();
-
-    DirectionalLight* light = &LightManager::directionalLight;
-    glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
-
-    light->GetShadowMap()->Write();
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_BLEND);
-
-    shaderShadowMap->setMat4("dirLightTransform", light->CalculateLightTransform());
-    shaderShadowMap->Validate();
-
-    DisableCulling();
-    std::string passType = "shadow_dir";
-    scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void RendererEditor::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     if (!scene->GetSettings().enableOmniShadows) return;
@@ -209,7 +215,6 @@ void RendererEditor::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::ma
 void RendererEditor::RenderWaterEffects(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     if (!scene->GetSettings().enableWaterEffects) return;
-
     if (!scene->IsWaterOnScene()) return;
 
     glEnable(GL_CLIP_DISTANCE0);
@@ -264,11 +269,11 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     shaderEditor->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
     shaderEditor->setVec3( "directionalLight.direction",             LightManager::directionalLight.GetDirection());
 
+    char locBuff[100] = { '\0' };
+
     // Point Lights
     for (unsigned int i = 0; i < LightManager::pointLightCount; i++)
     {
-        char locBuff[100] = { '\0' };
-
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.enabled", i);
         // printf("PointLight[%d] enabled: %d\n", i, LightManager::pointLights[i].GetEnabled());
         shaderEditor->setBool(locBuff, LightManager::pointLights[i].GetEnabled());
@@ -297,17 +302,18 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
         // set uniforms for omni shadow maps
         // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object.fs is 3
         int textureSlotOffset = 0;
-        LightManager::pointLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
+        if (scene->GetSettings().enableOmniShadows)
+            LightManager::pointLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
         shaderEditor->setInt(locBuff, m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
         shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetFarPlane());
+        // printf("editor_object pointLights omniShadowMaps[%d].shadowMap = %d\n", textureSlotOffset + i, m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
     }
 
     // Spot Lights
     for (unsigned int i = 0; i < LightManager::spotLightCount; i++)
     {
-        char locBuff[100] = { '\0' };
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.enabled", i);
         shaderEditor->setBool(locBuff, LightManager::spotLights[i].GetBasePL()->GetEnabled());
@@ -342,11 +348,13 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
         // set uniforms for omni shadow maps
         // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object.fs is 3
         int textureSlotOffset = LightManager::pointLightCount;
-        LightManager::spotLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
+        if (scene->GetSettings().enableOmniShadows)
+            LightManager::spotLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
         shaderEditor->setInt(locBuff, m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
         shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetFarPlane());
+        // printf("editor_object spotLights omniShadowMaps[%d].shadowMap = %d\n", textureSlotOffset + i, m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
     }
 
     shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
@@ -375,12 +383,9 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     shaderEditorPBR->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
     shaderEditorPBR->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
     shaderEditorPBR->setVec3( "directionalLight.direction",             LightManager::directionalLight.GetDirection());
-
     // printf("Exponent = %.2ff Linear = %.2ff Constant = %.2ff\n", *m_PointLightExponent, *m_PointLightLinear, *m_PointLightConstant);
 
     // point lights
-    char locBuff[100] = { '\0' };
-
     unsigned int lightIndex = 0;
     for (unsigned int i = 0; i < LightManager::pointLightCount; ++i)
     {
@@ -405,11 +410,13 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
         // set uniforms for omni shadow maps
         // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object_pbr.fs
         int textureSlotOffset = 0;
-        LightManager::pointLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
+        if (scene->GetSettings().enableOmniShadows)
+            LightManager::pointLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
-        shaderEditor->setInt(locBuff, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
+        shaderEditorPBR->setInt(locBuff, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
-        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetFarPlane());
+        shaderEditorPBR->setFloat(locBuff, LightManager::pointLights[i].GetFarPlane());
+        // printf("editor_object_pbr pointLights omniShadowMaps[%d].shadowMap = %d\n", textureSlotOffset + i, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
     }
 
     for (unsigned int i = 0; i < LightManager::spotLightCount; ++i)
@@ -436,11 +443,13 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
         // set uniforms for omni shadow maps
         // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object_pbr.fs
         int textureSlotOffset = LightManager::pointLightCount;
-        LightManager::spotLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
+        if (scene->GetSettings().enableOmniShadows)
+            LightManager::spotLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
-        shaderEditor->setInt(locBuff, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
+        shaderEditorPBR->setInt(locBuff, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
-        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetFarPlane());
+        shaderEditorPBR->setFloat(locBuff, LightManager::spotLights[i].GetFarPlane());
+        // printf("editor_object_pbr spotLights omniShadowMaps[%d].shadowMap = %d\n", textureSlotOffset + i, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
     }
     /**** End editor_object_pbr ****/
 
