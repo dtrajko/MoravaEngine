@@ -31,6 +31,8 @@ float SceneEditor::m_MaterialShininess = 256.0f;
 
 SceneEditor::SceneEditor()
 {
+    m_LightManager = nullptr;
+
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 2.0f, 12.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
@@ -115,6 +117,8 @@ SceneEditor::SceneEditor()
 	SetupMeshes();
 	SetupModels();
 	SetGeometry();
+    SetLightManager();
+    AddLightsToSceneObjects();
 
     // Initialize the PBR/IBL Material Workflow component
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
@@ -1751,6 +1755,119 @@ bool SceneEditor::IsWaterOnScene()
     return false;
 }
 
+void SceneEditor::AddLightsToSceneObjects()
+{
+    printf("SceneEditor::AddLightsToSceneObjects()\n");
+
+    // Directional Light - Cone Mesh
+    SceneObject* sceneObject = CreateNewSceneObject();
+
+    glm::vec3 position = glm::vec3(-10.0f, 10.0f, 10.0f);
+    glm::vec3 rotation = m_LightManager->directionalLight.GetDirection();
+    glm::vec3 scale = glm::vec3(1.0f);
+
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, position);
+    transform = glm::rotate(transform, glm::radians(m_LightManager->directionalLight.GetDirection().x * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    transform = glm::rotate(transform, glm::radians(m_LightManager->directionalLight.GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    transform = glm::rotate(transform, glm::radians(m_LightManager->directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    transform = glm::scale(transform, scale);
+
+    sceneObject->name = "Light.directional";
+    sceneObject->m_Type = "mesh";
+    sceneObject->position = position;
+    sceneObject->rotation = glm::quat(rotation * toRadians);
+    sceneObject->scale = scale;
+    sceneObject->transform = transform;
+    sceneObject->m_TypeID = MESH_TYPE_CONE;
+    if (sceneObject->m_Type == "mesh") {
+        sceneObject->mesh = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale);
+    }
+    sceneObject->model = nullptr;
+    sceneObject->materialName = "none";
+    sceneObject->positionAABB = glm::vec3(0.0f);
+    sceneObject->scaleAABB = sceneObject->scale;
+    sceneObject->AABB = new AABB(sceneObject->positionAABB, glm::vec3(0.0f), sceneObject->scaleAABB);
+    sceneObject->pivot = new Pivot(sceneObject->position, sceneObject->scale);
+
+    m_SceneObjects.push_back(sceneObject);
+
+    printf("SceneEditor::AddLightsToSceneObjects Add Directional Light m_SceneObjects[%i]\n", (int)m_SceneObjects.size() - 1);
+
+    for (unsigned int i = 0; i < m_LightManager->pointLightCount; i++)
+    {
+        // Point lights - Sphere mesh
+        SceneObject* sceneObject = CreateNewSceneObject();
+
+        glm::vec3 position = m_LightManager->pointLights[i].GetPosition();
+        glm::vec3 rotation = glm::vec3(0.0f);
+        glm::vec3 scale = glm::vec3(1.0f);
+
+        glm::mat4 transform = glm::mat4(1.0f);
+        transform = glm::translate(transform, position);
+        transform = glm::scale(transform, scale);
+
+        sceneObject->name = "Light.point." + std::to_string(i);
+        sceneObject->m_Type = "mesh";
+        sceneObject->position = position;
+        sceneObject->rotation = glm::quat(rotation * toRadians);
+        sceneObject->scale = scale;
+        sceneObject->transform = transform;
+        sceneObject->m_TypeID = MESH_TYPE_SPHERE;
+        if (sceneObject->m_Type == "mesh") {
+            sceneObject->mesh = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale);
+        }
+        sceneObject->model = nullptr;
+        sceneObject->materialName = "none";
+        sceneObject->positionAABB = glm::vec3(0.0f);
+        sceneObject->scaleAABB = sceneObject->scale;
+        sceneObject->AABB = new AABB(sceneObject->positionAABB, glm::vec3(0.0f), sceneObject->scaleAABB);
+        sceneObject->pivot = new Pivot(sceneObject->position, sceneObject->scale);
+
+        m_SceneObjects.push_back(sceneObject);
+
+        printf("SceneEditor::AddLightsToSceneObjects Add Point Light m_SceneObjects[%i]\n", (int)m_SceneObjects.size() - 1);
+    }
+
+    for (unsigned int i = 0; i < m_LightManager->spotLightCount; i++)
+    {
+        // Spot lights - Sphere mesh
+        SceneObject* sceneObject = CreateNewSceneObject();
+
+        glm::vec3 position = m_LightManager->pointLights[i].GetPosition();
+        glm::vec3 rotation = m_LightManager->spotLights[i].GetDirection();
+        glm::vec3 scale = glm::vec3(1.0f);
+
+        glm::mat4 transform = glm::mat4(1.0f);
+        transform = glm::translate(transform, position);
+        transform = glm::rotate(transform, glm::radians(m_LightManager->spotLights[i].GetDirection().x * 90.0f),  glm::vec3(0.0f, 0.0f, 1.0f));
+        transform = glm::rotate(transform, glm::radians(m_LightManager->spotLights[i].GetDirection().y * 90.0f),  glm::vec3(0.0f, 1.0f, 0.0f));
+        transform = glm::rotate(transform, glm::radians(m_LightManager->spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        transform = glm::scale(transform, scale);
+
+        sceneObject->name = "Light.spot." + std::to_string(i);
+        sceneObject->m_Type = "mesh";
+        sceneObject->position = position;
+        sceneObject->rotation = glm::quat(rotation * toRadians);
+        sceneObject->scale = scale;
+        sceneObject->transform = transform;
+        sceneObject->m_TypeID = MESH_TYPE_CONE;
+        if (sceneObject->m_Type == "mesh") {
+            sceneObject->mesh = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale);
+        }
+        sceneObject->model = nullptr;
+        sceneObject->materialName = "none";
+        sceneObject->positionAABB = glm::vec3(0.0f);
+        sceneObject->scaleAABB = sceneObject->scale;
+        sceneObject->AABB = new AABB(sceneObject->positionAABB, glm::vec3(0.0f), sceneObject->scaleAABB);
+        sceneObject->pivot = new Pivot(sceneObject->position, sceneObject->scale);
+
+        m_SceneObjects.push_back(sceneObject);
+
+        printf("SceneEditor::AddLightsToSceneObjects Add Spot Light m_SceneObjects[%i]\n", (int)m_SceneObjects.size() - 1);
+    }
+}
+
 void SceneEditor::RenderLightSources(Shader* shaderGizmo)
 {
     shaderGizmo->Bind();
@@ -1763,42 +1880,56 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
 
     // Directional light (somewhere on pozitive Y axis, at X=0, Z=0)
     model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(-10.0f, 10.0f, 10.0f));
+    model = glm::translate(model, m_SceneObjects[0]->position);
     model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().x *  90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().y *  90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
     model = glm::scale(model, glm::vec3(1.0f));
-    shaderGizmo->setMat4("model", model);
+
+    m_SceneObjects[0]->transform = model;
+    shaderGizmo->setMat4("model", m_SceneObjects[0]->transform);
     shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->directionalLight.GetColor(), 1.0f));
     if (m_DisplayLightSources && m_LightManager->directionalLight.GetEnabled())
-        meshes["cone"]->Render();
+        m_SceneObjects[0]->Render();
+    // printf("m_SceneObjects[0].name = '%s'\n", m_SceneObjects[0]->name.c_str());
 
     // Point lights - render Sphere (Light source)
+    unsigned int offsetPoint = 1;
     for (unsigned int i = 0; i < m_LightManager->pointLightCount; i++)
     {
+        m_LightManager->pointLights[i].SetPosition(m_SceneObjects[offsetPoint + i]->position);
+
         model = glm::mat4(1.0f);
-        model = glm::translate(model, m_LightManager->pointLights[i].GetPosition());
-        model = glm::scale(model, glm::vec3(0.25f));
+        model = glm::translate(model, m_SceneObjects[offsetPoint + i]->position);
+        model = glm::scale(model, glm::vec3(0.5f));
+        m_SceneObjects[offsetPoint + i]->transform = model;
         shaderGizmo->setMat4("model", model);
         shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->pointLights[i].GetColor(), 1.0f));
         if (m_DisplayLightSources && m_LightManager->pointLights[i].GetEnabled())
-            meshes["sphere"]->Render();
+            m_SceneObjects[offsetPoint + i]->Render();
     }
 
     // Spot lights - render cone
+    unsigned int offsetSpot = offsetPoint + m_LightManager->pointLightCount;
     for (unsigned int i = 0; i < m_LightManager->spotLightCount; i++)
     {
+        m_LightManager->spotLights[i].GetBasePL()->SetPosition(m_SceneObjects[offsetSpot + i]->position);
+        m_LightManager->spotLights[i].SetDirection(glm::vec3(
+            glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).x ,
+            glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).y,
+            glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).z));
+
         model = glm::mat4(1.0f);
-        model = glm::translate(model, m_LightManager->spotLights[i].GetBasePL()->GetPosition());
+        model = glm::translate(model, m_SceneObjects[offsetSpot + i]->position);
         model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().x *  90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().y *  90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.25f));
+        model = glm::scale(model, glm::vec3(0.5f));
+        m_SceneObjects[offsetPoint + i]->transform = model;
         shaderGizmo->setMat4("model", model);
         shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->spotLights[i].GetBasePL()->GetColor(), 1.0f));
         if (m_DisplayLightSources && m_LightManager->spotLights[i].GetBasePL()->GetEnabled())
-            meshes["cone"]->Render();
+            m_SceneObjects[offsetSpot + i]->Render();
     }
 }
 
@@ -1923,7 +2054,8 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                 SetUniformsShaderEditor(shaders["editor_object"], texture, object);
         }
 
-        object->Render();
+        if (object->name.substr(0, 6) != "Light.") // Don't render Lights (id = 0 to 8), it's done in RenderLightSources()
+            object->Render();
     }
 
     if (passType == "main")

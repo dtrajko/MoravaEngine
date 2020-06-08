@@ -602,6 +602,8 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
 			m_Rotation *= glm::quat(rotationDelta);
 		}
 
+		// printf("Gizmo::UpdateActive m_Position [ %.2ff %.2ff %.2ff ]\n", m_Position.x, m_Position.y, m_Position.z);
+
 		m_SceneObject->position = m_Position;
 		m_SceneObject->rotation = m_Rotation;
 		m_SceneObject->scale = m_Scale;

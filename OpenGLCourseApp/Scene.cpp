@@ -183,7 +183,8 @@ void Scene::SetCamera()
 
 void Scene::SetLightManager()
 {
-	m_LightManager = new LightManager(sceneSettings);
+	if (m_LightManager == nullptr)
+		m_LightManager = new LightManager(sceneSettings);
 }
 
 void Scene::SetWaterManager(int width, int height)

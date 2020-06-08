@@ -56,7 +56,7 @@ void AABB::UpdatePosition(glm::vec3 positionOrigin)
 
 void AABB::Update(glm::vec3 positionObject, glm::quat rotationObject, glm::vec3 scaleObject)
 {
-    // printf("AABB::Update scale [ %.2ff %.2ff %.2ff ]\n", scale.x, scale.y, scale.z);
+    // printf("AABB::Update scaleObject [ %.2ff %.2ff %.2ff ]\n", scaleObject.x, scaleObject.y, scaleObject.z);
 
     if (positionObject != m_Position || rotationObject != m_Rotation || scaleObject != m_Scale)
     {

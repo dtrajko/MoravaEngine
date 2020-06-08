@@ -58,6 +58,7 @@ private:
 	virtual void SetupMeshes()    override;
 	virtual void SetupModels()    override;
 	virtual void SetSkybox()      override;
+	void AddLightsToSceneObjects();
 
 	void RenderLightSources(Shader* shader);
 	void RenderSkybox(Shader* shader);
@@ -97,6 +98,7 @@ private:
 	glm::mat4 CalculateRenderTransform(SceneObject* sceneObject);
 
 	virtual bool IsWaterOnScene() override;
+
 
 private:
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
