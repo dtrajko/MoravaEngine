@@ -1004,28 +1004,28 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     {
         if (ImGui::CollapsingHeader("Add Mesh"))
         {
-            ImGui::RadioButton("Cube", &m_CurrentObjectTypeID, MESH_TYPE_CUBE);
-            ImGui::RadioButton("Pyramid", &m_CurrentObjectTypeID, MESH_TYPE_PYRAMID);
-            ImGui::RadioButton("Sphere", &m_CurrentObjectTypeID, MESH_TYPE_SPHERE);
+            ImGui::RadioButton("Cube",     &m_CurrentObjectTypeID, MESH_TYPE_CUBE);
+            ImGui::RadioButton("Pyramid",  &m_CurrentObjectTypeID, MESH_TYPE_PYRAMID);
+            ImGui::RadioButton("Sphere",   &m_CurrentObjectTypeID, MESH_TYPE_SPHERE);
             ImGui::RadioButton("Cylinder", &m_CurrentObjectTypeID, MESH_TYPE_CYLINDER);
-            ImGui::RadioButton("Cone", &m_CurrentObjectTypeID, MESH_TYPE_CONE);
-            ImGui::RadioButton("Ring", &m_CurrentObjectTypeID, MESH_TYPE_RING);
+            ImGui::RadioButton("Cone",     &m_CurrentObjectTypeID, MESH_TYPE_CONE);
+            ImGui::RadioButton("Ring",     &m_CurrentObjectTypeID, MESH_TYPE_RING);
             ImGui::RadioButton("Bob Lamp", &m_CurrentObjectTypeID, MESH_TYPE_BOB_LAMP);
             ImGui::RadioButton("Anim Boy", &m_CurrentObjectTypeID, MESH_TYPE_ANIM_BOY);
-            ImGui::RadioButton("Terrain", &m_CurrentObjectTypeID, MESH_TYPE_TERRAIN);
-            ImGui::RadioButton("Water", &m_CurrentObjectTypeID, MESH_TYPE_WATER);
+            ImGui::RadioButton("Terrain",  &m_CurrentObjectTypeID, MESH_TYPE_TERRAIN);
+            ImGui::RadioButton("Water",    &m_CurrentObjectTypeID, MESH_TYPE_WATER);
         }
 
         if (ImGui::CollapsingHeader("Add Model"))
         {
-            ImGui::RadioButton("Stone Carved", &m_CurrentObjectTypeID, MODEL_STONE_CARVED);
-            ImGui::RadioButton("Old Stove", &m_CurrentObjectTypeID, MODEL_OLD_STOVE);
-            ImGui::RadioButton("Buddha", &m_CurrentObjectTypeID, MODEL_BUDDHA);
-            ImGui::RadioButton("HHeli", &m_CurrentObjectTypeID, MODEL_HHELI);
-            ImGui::RadioButton("Jeep", &m_CurrentObjectTypeID, MODEL_JEEP);
+            ImGui::RadioButton("Stone Carved",   &m_CurrentObjectTypeID, MODEL_STONE_CARVED);
+            ImGui::RadioButton("Old Stove",      &m_CurrentObjectTypeID, MODEL_OLD_STOVE);
+            ImGui::RadioButton("Buddha",         &m_CurrentObjectTypeID, MODEL_BUDDHA);
+            ImGui::RadioButton("HHeli",          &m_CurrentObjectTypeID, MODEL_HHELI);
+            ImGui::RadioButton("Jeep",           &m_CurrentObjectTypeID, MODEL_JEEP);
             ImGui::RadioButton("Damaged Helmet", &m_CurrentObjectTypeID, MODEL_DAMAGED_HELMET);
-            ImGui::RadioButton("SF Helmet", &m_CurrentObjectTypeID, MODEL_SF_HELMET);
-            ImGui::RadioButton("Cerberus", &m_CurrentObjectTypeID, MODEL_CERBERUS);
+            ImGui::RadioButton("SF Helmet",      &m_CurrentObjectTypeID, MODEL_SF_HELMET);
+            ImGui::RadioButton("Cerberus",       &m_CurrentObjectTypeID, MODEL_CERBERUS);
         }
     }
     ImGui::End();
