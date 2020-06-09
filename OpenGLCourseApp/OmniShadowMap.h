@@ -13,5 +13,4 @@ public:
 	void Read(unsigned int textureUnit);
 
 	~OmniShadowMap();
-
 };

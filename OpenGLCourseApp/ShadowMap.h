@@ -7,6 +7,7 @@
 class ShadowMap
 {
 public:
+
 	ShadowMap();
 	virtual bool Init(GLuint width, GLuint height);
 	virtual void Write();
@@ -14,14 +15,15 @@ public:
 	virtual void Unbind(unsigned int width, unsigned int height);
 	GLuint GetShadowWidth() { return shadowWidth; };
 	GLuint GetShadowHeight() { return shadowHeight; };
-	inline const unsigned int GetFBO() const { return m_FBO; };
-	inline const unsigned int GetTextureID() const { return m_TextureID; };
+	inline const unsigned int GetID() const { return m_ID; };
 	~ShadowMap();
 
 protected:
+
 	GLuint m_FBO;
-	GLuint m_TextureID;
+	GLuint m_ID;
 	GLuint shadowWidth;
 	GLuint shadowHeight;
+
 
 };
