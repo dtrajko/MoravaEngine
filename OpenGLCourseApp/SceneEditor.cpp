@@ -1331,6 +1331,7 @@ void SceneEditor::AddSceneObject()
     std::string modelName = "";
     std::string objectType = "";
     std::string materialName = "";
+    glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 rotation = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
     glm::vec3 scaleAABB = glm::vec3(1.0f);
@@ -1433,8 +1434,9 @@ void SceneEditor::AddSceneObject()
         else if (m_CurrentObjectTypeID == MODEL_CERBERUS) {
             modelName = "cerberus";
             materialName = "cerberus";
+            position = glm::vec3(0.0f, 5.0f, 0.0f);
             rotation = glm::vec3(-90.0f, -180.0f, 0.0f);
-            scale = glm::vec3(0.01f);
+            scale = glm::vec3(0.1f);
             positionAABB = glm::vec3(0.0f, -50.0f, -8.0f);
             scaleAABB = glm::vec3(20.0f, 150.0f, 45.0f);
         }
@@ -1444,6 +1446,7 @@ void SceneEditor::AddSceneObject()
     SceneObject* sceneObject = CreateNewSceneObject();
     sceneObject->name = modelName;
     sceneObject->m_Type = objectType;
+    sceneObject->position = position;
     sceneObject->rotation = glm::quat(rotation * toRadians);
     sceneObject->scale = scale;
     sceneObject->mesh = mesh;
