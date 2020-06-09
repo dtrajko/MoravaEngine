@@ -15,6 +15,7 @@ public:
 	virtual void Unbind(unsigned int width, unsigned int height);
 	GLuint GetShadowWidth() { return shadowWidth; };
 	GLuint GetShadowHeight() { return shadowHeight; };
+	inline const unsigned int GetID() const { return m_ID; };
 	~ShadowMap();
 
 protected:

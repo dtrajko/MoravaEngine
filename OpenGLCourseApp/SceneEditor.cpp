@@ -944,6 +944,14 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     }
     ImGui::End();
 
+    ImGui::Begin("Renderer");
+    {
+        ImGui::Checkbox("Enable Shadows", &sceneSettings.enableShadows);
+        ImGui::Checkbox("Enable Omni Shadows", &sceneSettings.enableOmniShadows);
+        ImGui::Checkbox("Enable Water Effects", &sceneSettings.enableWaterEffects);
+    }
+    ImGui::End();
+
     ImGui::Begin("Profiler");
     {
         ImGui::Text("Timer");
@@ -968,24 +976,27 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     }
     ImGui::End();
 
-    ImGui::Begin("Mouse Picker Info");
+    ImGui::Begin("Mouse Picker");
     {
-        char buffer[100];
+        if (ImGui::CollapsingHeader("Debug Info"))
+        {
+            char buffer[100];
 
-        sprintf_s(buffer, "Mouse Coords [ X: %.2ff Y: %.2ff ]", mp->m_MouseX, mp->m_MouseY);
-        ImGui::Text(buffer);
-        ImGui::Separator();
-        sprintf_s(buffer, "Normalized Coords [ X: %.2ff Y: %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
-        ImGui::Text(buffer);
-        ImGui::Separator();
-        sprintf_s(buffer, "Clip Coords [ X: %.2ff Y: %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
-        ImGui::Text(buffer);
-        ImGui::Separator();
-        sprintf_s(buffer, "Eye Coords [ X: %.2ff Y: %.2ff Z: %.2ff W: %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
-        ImGui::Text(buffer);
-        ImGui::Separator();
-        sprintf_s(buffer, "World Ray [ X: %.2ff Y: %.2ff Z: %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
-        ImGui::Text(buffer);
+            sprintf_s(buffer, "Mouse Coords [ X: %.2ff Y: %.2ff ]", mp->m_MouseX, mp->m_MouseY);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+            sprintf_s(buffer, "Normalized Coords [ X: %.2ff Y: %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+            sprintf_s(buffer, "Clip Coords [ X: %.2ff Y: %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+            sprintf_s(buffer, "Eye Coords [ X: %.2ff Y: %.2ff Z: %.2ff W: %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+            sprintf_s(buffer, "World Ray [ X: %.2ff Y: %.2ff Z: %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
+            ImGui::Text(buffer);
+        }
     }
     ImGui::End();
 
@@ -1018,6 +1029,41 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         }
     }
     ImGui::End();
+
+    ImGui::Begin("Framebuffers");
+    {
+        if (ImGui::CollapsingHeader("Display Framebuffers"))
+        {
+            ImGui::Text("Shadow Map");
+            ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
+
+            ImGui::Text("Omni Map 0 (Point Light 0)");
+            LightManager::pointLights[0].GetShadowMap()->Read(0);
+            ImGui::Image((void*)(intptr_t)LightManager::pointLights[0].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
+            ImGui::Text("Omni Map 1 (Point Light 1)");
+            ImGui::Image((void*)(intptr_t)LightManager::pointLights[1].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
+            ImGui::Text("Omni Map 2 (Point Light 2)");
+            ImGui::Image((void*)(intptr_t)LightManager::pointLights[2].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
+            ImGui::Text("Omni Map 3 (Point Light 3)");
+            ImGui::Image((void*)(intptr_t)LightManager::pointLights[3].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
+
+            ImGui::Text("Omni Map 4 (Spot Light 0)");
+            ImGui::Image((void*)(intptr_t)LightManager::spotLights[0].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
+            ImGui::Text("Omni Map 5 (Spot Light 1)");
+            ImGui::Image((void*)(intptr_t)LightManager::spotLights[1].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
+            ImGui::Text("Omni Map 6 (Spot Light 2)");
+            ImGui::Image((void*)(intptr_t)LightManager::spotLights[2].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
+            ImGui::Text("Omni Map 7 (Spot Light 3)");
+            ImGui::Image((void*)(intptr_t)LightManager::spotLights[3].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
+
+            ImGui::Text("Water Reflection Color Attachment");
+            ImGui::Image((void*)(intptr_t)m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->GetID(), ImVec2(128.0f, 128.0f));
+            ImGui::Text("Water Refraction Color Attachment");
+            ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->GetID(), ImVec2(128.0f, 128.0f));
+            ImGui::Text("Water Refraction Depth Attachment");
+            ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), ImVec2(128.0f, 128.0f));
+        }
+    }
 
     ImGui::Begin("Lights");
     {
@@ -1957,8 +2003,25 @@ void SceneEditor::RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMa
     if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
     {
         shaderBasic->setMat4("model", glm::mat4(1.0f));
-        m_SceneObjects[m_SelectedIndex]->AABB->Draw();
-        m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+
+        // TODO: don't rely on hard coded array indices for lights (0 to 8) in m_SceneObjects
+        bool drawAABB = true;
+        if (m_SceneObjects[m_SelectedIndex]->name.substr(0, 6) == "Light.") {
+            // Directional light
+            if (m_SelectedIndex == 0)
+                drawAABB = LightManager::directionalLight.GetEnabled();
+            // Point Lights
+            else if (m_SelectedIndex >= 1 && m_SelectedIndex <= 4)
+                drawAABB = LightManager::pointLights[m_SelectedIndex].GetEnabled();
+            // Spot Lights
+            else if (m_SelectedIndex >= 5 && m_SelectedIndex <= 8)
+                drawAABB = LightManager::spotLights[m_SelectedIndex].GetBasePL()->GetEnabled();
+        }
+
+        if (drawAABB) {
+            m_SceneObjects[m_SelectedIndex]->AABB->Draw();
+            m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+        }
     }
 
     m_Grid->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
