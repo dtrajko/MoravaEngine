@@ -4,7 +4,7 @@
 
 ShadowMap::ShadowMap()
 {
-	FBO = 0;
+	m_FBO = 0;
 	m_ID = 0;
 }
 
@@ -13,7 +13,7 @@ bool ShadowMap::Init(GLuint width, GLuint height)
 	shadowWidth = width;
 	shadowHeight = height;
 
-	glGenFramebuffers(1, &FBO);
+	glGenFramebuffers(1, &m_FBO);
 	glGenTextures(1, &m_ID);
 	glBindTexture(GL_TEXTURE_2D, m_ID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowWidth, shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
@@ -25,7 +25,7 @@ bool ShadowMap::Init(GLuint width, GLuint height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_ID, 0);
 
 	glDrawBuffer(GL_NONE);
@@ -48,12 +48,12 @@ bool ShadowMap::Init(GLuint width, GLuint height)
 
 void ShadowMap::Write()
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 }
 
 void ShadowMap::Read(unsigned int textureUnit)
 {
-	// printf("ShadowMap::Read m_ID = %i\n", m_ID);
+	// printf("ShadowMap::Read textureUnit = %i m_ID = %i\n", (int)textureUnit, (int)m_ID);
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
 	glBindTexture(GL_TEXTURE_2D, m_ID);
 }
@@ -68,9 +68,9 @@ void ShadowMap::Unbind(unsigned int width, unsigned int height)
 
 ShadowMap::~ShadowMap()
 {
-	if (FBO)
+	if (m_FBO)
 	{
-		glDeleteFramebuffers(1, &FBO);
+		glDeleteFramebuffers(1, &m_FBO);
 	}
 
 	if (m_ID)

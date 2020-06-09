@@ -1034,33 +1034,45 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     {
         if (ImGui::CollapsingHeader("Display Framebuffers"))
         {
+            unsigned int txUnit = 0;
             ImGui::Text("Shadow Map");
+            LightManager::directionalLight.GetShadowMap()->Read(++txUnit);
             ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
 
             ImGui::Text("Omni Map 0 (Point Light 0)");
-            LightManager::pointLights[0].GetShadowMap()->Read(0);
+            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
             ImGui::Image((void*)(intptr_t)LightManager::pointLights[0].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
             ImGui::Text("Omni Map 1 (Point Light 1)");
+            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
             ImGui::Image((void*)(intptr_t)LightManager::pointLights[1].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
             ImGui::Text("Omni Map 2 (Point Light 2)");
+            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
             ImGui::Image((void*)(intptr_t)LightManager::pointLights[2].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
             ImGui::Text("Omni Map 3 (Point Light 3)");
+            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
             ImGui::Image((void*)(intptr_t)LightManager::pointLights[3].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
 
             ImGui::Text("Omni Map 4 (Spot Light 0)");
+            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
             ImGui::Image((void*)(intptr_t)LightManager::spotLights[0].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
             ImGui::Text("Omni Map 5 (Spot Light 1)");
+            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
             ImGui::Image((void*)(intptr_t)LightManager::spotLights[1].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
             ImGui::Text("Omni Map 6 (Spot Light 2)");
+            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
             ImGui::Image((void*)(intptr_t)LightManager::spotLights[2].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
             ImGui::Text("Omni Map 7 (Spot Light 3)");
+            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
             ImGui::Image((void*)(intptr_t)LightManager::spotLights[3].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
 
             ImGui::Text("Water Reflection Color Attachment");
+            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
             ImGui::Image((void*)(intptr_t)m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->GetID(), ImVec2(128.0f, 128.0f));
             ImGui::Text("Water Refraction Color Attachment");
+            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
             ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->GetID(), ImVec2(128.0f, 128.0f));
             ImGui::Text("Water Refraction Depth Attachment");
+            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
             ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), ImVec2(128.0f, 128.0f));
         }
     }

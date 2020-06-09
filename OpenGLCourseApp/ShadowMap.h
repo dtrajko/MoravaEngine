@@ -20,7 +20,7 @@ public:
 
 protected:
 
-	GLuint FBO;
+	GLuint m_FBO;
 	GLuint m_ID;
 	GLuint shadowWidth;
 	GLuint shadowHeight;
