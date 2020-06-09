@@ -978,7 +978,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 
     ImGui::Begin("Mouse Picker");
     {
-        if (ImGui::CollapsingHeader("Debug Info"))
+        if (ImGui::CollapsingHeader("Display Info"))
         {
             char buffer[100];
 
@@ -1004,76 +1004,83 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     {
         if (ImGui::CollapsingHeader("Add Mesh"))
         {
-            ImGui::RadioButton("Cube",     &m_CurrentObjectTypeID, MESH_TYPE_CUBE);
-            ImGui::RadioButton("Pyramid",  &m_CurrentObjectTypeID, MESH_TYPE_PYRAMID);
-            ImGui::RadioButton("Sphere",   &m_CurrentObjectTypeID, MESH_TYPE_SPHERE);
+            ImGui::RadioButton("Cube", &m_CurrentObjectTypeID, MESH_TYPE_CUBE);
+            ImGui::RadioButton("Pyramid", &m_CurrentObjectTypeID, MESH_TYPE_PYRAMID);
+            ImGui::RadioButton("Sphere", &m_CurrentObjectTypeID, MESH_TYPE_SPHERE);
             ImGui::RadioButton("Cylinder", &m_CurrentObjectTypeID, MESH_TYPE_CYLINDER);
-            ImGui::RadioButton("Cone",     &m_CurrentObjectTypeID, MESH_TYPE_CONE);
-            ImGui::RadioButton("Ring",     &m_CurrentObjectTypeID, MESH_TYPE_RING);
+            ImGui::RadioButton("Cone", &m_CurrentObjectTypeID, MESH_TYPE_CONE);
+            ImGui::RadioButton("Ring", &m_CurrentObjectTypeID, MESH_TYPE_RING);
             ImGui::RadioButton("Bob Lamp", &m_CurrentObjectTypeID, MESH_TYPE_BOB_LAMP);
             ImGui::RadioButton("Anim Boy", &m_CurrentObjectTypeID, MESH_TYPE_ANIM_BOY);
-            ImGui::RadioButton("Terrain",  &m_CurrentObjectTypeID, MESH_TYPE_TERRAIN);
-            ImGui::RadioButton("Water",    &m_CurrentObjectTypeID, MESH_TYPE_WATER);
+            ImGui::RadioButton("Terrain", &m_CurrentObjectTypeID, MESH_TYPE_TERRAIN);
+            ImGui::RadioButton("Water", &m_CurrentObjectTypeID, MESH_TYPE_WATER);
         }
 
         if (ImGui::CollapsingHeader("Add Model"))
         {
-            ImGui::RadioButton("Stone Carved",   &m_CurrentObjectTypeID, MODEL_STONE_CARVED);
-            ImGui::RadioButton("Old Stove",      &m_CurrentObjectTypeID, MODEL_OLD_STOVE);
-            ImGui::RadioButton("Buddha",         &m_CurrentObjectTypeID, MODEL_BUDDHA);
-            ImGui::RadioButton("HHeli",          &m_CurrentObjectTypeID, MODEL_HHELI);
-            ImGui::RadioButton("Jeep",           &m_CurrentObjectTypeID, MODEL_JEEP);
+            ImGui::RadioButton("Stone Carved", &m_CurrentObjectTypeID, MODEL_STONE_CARVED);
+            ImGui::RadioButton("Old Stove", &m_CurrentObjectTypeID, MODEL_OLD_STOVE);
+            ImGui::RadioButton("Buddha", &m_CurrentObjectTypeID, MODEL_BUDDHA);
+            ImGui::RadioButton("HHeli", &m_CurrentObjectTypeID, MODEL_HHELI);
+            ImGui::RadioButton("Jeep", &m_CurrentObjectTypeID, MODEL_JEEP);
             ImGui::RadioButton("Damaged Helmet", &m_CurrentObjectTypeID, MODEL_DAMAGED_HELMET);
-            ImGui::RadioButton("SF Helmet",      &m_CurrentObjectTypeID, MODEL_SF_HELMET);
-            ImGui::RadioButton("Cerberus",       &m_CurrentObjectTypeID, MODEL_CERBERUS);
+            ImGui::RadioButton("SF Helmet", &m_CurrentObjectTypeID, MODEL_SF_HELMET);
+            ImGui::RadioButton("Cerberus", &m_CurrentObjectTypeID, MODEL_CERBERUS);
         }
     }
     ImGui::End();
 
+    ImGui::Begin("Textures");
+    {
+        if (ImGui::CollapsingHeader("Display Info"))
+        {
+            ImVec2 imageSize(64.0f, 64.0f);
+
+            for (std::map<std::string, Texture*>::iterator it = textures.begin(); it != textures.end(); ++it)
+            {
+                ImGui::Text(it->first.c_str());
+                ImGui::Image((void*)(intptr_t)it->second->GetID(), imageSize);
+            }
+        }
+    }
+
     ImGui::Begin("Framebuffers");
     {
-        if (ImGui::CollapsingHeader("Display Framebuffers"))
+        if (ImGui::CollapsingHeader("Display Info"))
         {
-            unsigned int txUnit = 0;
+            ImVec2 imageSize(128.0f, 128.0f);
+
             ImGui::Text("Shadow Map");
-            LightManager::directionalLight.GetShadowMap()->Read(++txUnit);
-            ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
+            ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
 
-            ImGui::Text("Omni Map 0 (Point Light 0)");
-            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
-            ImGui::Image((void*)(intptr_t)LightManager::pointLights[0].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
-            ImGui::Text("Omni Map 1 (Point Light 1)");
-            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
-            ImGui::Image((void*)(intptr_t)LightManager::pointLights[1].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
-            ImGui::Text("Omni Map 2 (Point Light 2)");
-            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
-            ImGui::Image((void*)(intptr_t)LightManager::pointLights[2].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
-            ImGui::Text("Omni Map 3 (Point Light 3)");
-            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
-            ImGui::Image((void*)(intptr_t)LightManager::pointLights[3].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
 
-            ImGui::Text("Omni Map 4 (Spot Light 0)");
-            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
-            ImGui::Image((void*)(intptr_t)LightManager::spotLights[0].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
-            ImGui::Text("Omni Map 5 (Spot Light 1)");
-            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
-            ImGui::Image((void*)(intptr_t)LightManager::spotLights[1].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
-            ImGui::Text("Omni Map 6 (Spot Light 2)");
-            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
-            ImGui::Image((void*)(intptr_t)LightManager::spotLights[2].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
-            ImGui::Text("Omni Map 7 (Spot Light 3)");
-            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
-            ImGui::Image((void*)(intptr_t)LightManager::spotLights[3].GetShadowMap()->GetID(), ImVec2(128.0f, 128.0f));
+            if (ImGui::CollapsingHeader("Omni Shadow Maps"))
+            {
+                ImGui::Text("Omni Shadow Map 0\n(Point Light 0)");
+                ImGui::Image((void*)(intptr_t)LightManager::pointLights[0].GetShadowMap()->GetTextureID(), imageSize);
+                ImGui::Text("Omni Shadow Map 1\n(Point Light 1)");
+                ImGui::Image((void*)(intptr_t)LightManager::pointLights[1].GetShadowMap()->GetTextureID(), imageSize);
+                ImGui::Text("Omni Shadow Map 2\n(Point Light 2)");
+                ImGui::Image((void*)(intptr_t)LightManager::pointLights[2].GetShadowMap()->GetTextureID(), imageSize);
+                ImGui::Text("Omni Shadow Map 3\n(Point Light 3)");
+                ImGui::Image((void*)(intptr_t)LightManager::pointLights[3].GetShadowMap()->GetTextureID(), imageSize);
 
-            ImGui::Text("Water Reflection Color Attachment");
-            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
-            ImGui::Image((void*)(intptr_t)m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->GetID(), ImVec2(128.0f, 128.0f));
-            ImGui::Text("Water Refraction Color Attachment");
-            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
-            ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->GetID(), ImVec2(128.0f, 128.0f));
-            ImGui::Text("Water Refraction Depth Attachment");
-            LightManager::pointLights[0].GetShadowMap()->Read(++txUnit);
-            ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), ImVec2(128.0f, 128.0f));
+                ImGui::Text("Omni Shadow Map 4\n(Spot Light 0)");
+                ImGui::Image((void*)(intptr_t)LightManager::spotLights[0].GetShadowMap()->GetTextureID(), imageSize);
+                ImGui::Text("Omni Shadow Map 5\n(Spot Light 1)");
+                ImGui::Image((void*)(intptr_t)LightManager::spotLights[1].GetShadowMap()->GetTextureID(), imageSize);
+                ImGui::Text("Omni Shadow Map 6\n(Spot Light 2)");
+                ImGui::Image((void*)(intptr_t)LightManager::spotLights[2].GetShadowMap()->GetTextureID(), imageSize);
+                ImGui::Text("Omni Shadow Map 7\n(Spot Light 3)");
+                ImGui::Image((void*)(intptr_t)LightManager::spotLights[3].GetShadowMap()->GetTextureID(), imageSize);
+            }
+
+            ImGui::Text("Water Reflection\nColor Attachment");
+            ImGui::Image((void*)(intptr_t)m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
+            ImGui::Text("Water Refraction\nColor Attachment");
+            ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
+            ImGui::Text("Water Refraction\nDepth Attachment");
+            ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
         }
     }
 
@@ -1227,7 +1234,10 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         ImGui::End();
     }
     ImGui::End();
+
+    ImGui::ShowMetricsWindow();
 }
+
 
 // Demonstrate using DockSpace() to create an explicit docking node within an existing window.
 // Note that you already dock windows into each others _without_ a DockSpace() by just moving windows 
@@ -1709,6 +1719,9 @@ void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* t
     // Shadows in shaderEditorPBR
     LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
     shaderEditorPBR->setInt("shadowMap", 8);
+
+    // printf("SceneEditor::SetUniformsShaderEditorPBR READ from FBO = %i Texture ID = %i\n",
+    //     LightManager::directionalLight.GetShadowMap()->GetFBO(), LightManager::directionalLight.GetShadowMap()->GetTextureID());
 }
 
 void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject)
@@ -1738,6 +1751,9 @@ void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture
     // Shadows in shaderEditor
     LightManager::directionalLight.GetShadowMap()->Read(2);
     shaderEditor->setInt("shadowMap", 2);
+
+    // printf("SceneEditor::SetUniformsShaderEditor READ from FBO = %i Texture ID = %i\n",
+    //     LightManager::directionalLight.GetShadowMap()->GetFBO(), LightManager::directionalLight.GetShadowMap()->GetTextureID());
 }
 
 void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject, float runningTime)
@@ -2103,10 +2119,10 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         shaders["skinning"]->setMat4("model", object->transform);
         shaders["shadow_map"]->Bind();
         shaders["shadow_map"]->setMat4("model", object->transform);
-        shaders["water"]->Bind();
-        shaders["water"]->setMat4("model", object->transform);
         shaders["omni_shadow_map"]->Bind();
         shaders["omni_shadow_map"]->setMat4("model", object->transform);
+        shaders["water"]->Bind();
+        shaders["water"]->setMat4("model", object->transform);
 
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
 

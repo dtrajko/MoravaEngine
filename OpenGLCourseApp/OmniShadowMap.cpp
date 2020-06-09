@@ -10,8 +10,8 @@ bool OmniShadowMap::Init(GLuint width, GLuint height)
 
 	glGenFramebuffers(1, &m_FBO);
 
-	glGenTextures(1, &m_ID);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);
+	glGenTextures(1, &m_TextureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
 
 	for (unsigned int i = 0; i < 6; i++)
 	{
@@ -26,7 +26,7 @@ bool OmniShadowMap::Init(GLuint width, GLuint height)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_ID, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_TextureID, 0);
 
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
@@ -41,20 +41,15 @@ bool OmniShadowMap::Init(GLuint width, GLuint height)
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	printf("OmniShadowMap succesfully created! [m_ID=%i]\n", m_ID);
+	printf("OmniShadowMap succesfully created! [m_TextureID=%i]\n", m_TextureID);
 
 	return false;
-}
-
-void OmniShadowMap::Write()
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 }
 
 void OmniShadowMap::Read(unsigned int textureUnit)
 {
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
 }
 
 OmniShadowMap::~OmniShadowMap()
