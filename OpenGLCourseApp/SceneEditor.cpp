@@ -2106,25 +2106,29 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
     {
         object->transform = CalculateRenderTransform(object);
 
-        textures["none"]->Bind(0); // Default fallback for Albedo texture
-
-        Texture* texture   = HotLoadTexture(object->textureName);
-        Material* material = HotLoadMaterial(object->materialName);
-
-        shaders["editor_object"]->Bind();
-        shaders["editor_object"]->setMat4("model", object->transform);
-        shaders["editor_object_pbr"]->Bind();
-        shaders["editor_object_pbr"]->setMat4("model", object->transform);
-        shaders["skinning"]->Bind();
-        shaders["skinning"]->setMat4("model", object->transform);
-        shaders["shadow_map"]->Bind();
-        shaders["shadow_map"]->setMat4("model", object->transform);
-        shaders["omni_shadow_map"]->Bind();
-        shaders["omni_shadow_map"]->setMat4("model", object->transform);
-        shaders["water"]->Bind();
-        shaders["water"]->setMat4("model", object->transform);
+        if (passType == "shadow_dir") {
+            shaders["shadow_map"]->Bind();
+            shaders["shadow_map"]->setMat4("model", object->transform);
+        } else if (passType == "shadow_omni") {
+            shaders["omni_shadow_map"]->Bind();
+            shaders["omni_shadow_map"]->setMat4("model", object->transform);
+        } else if (passType == "water_reflect" || passType == "water_refract") {
+            shaders["water"]->Bind();
+            shaders["water"]->setMat4("model", object->transform);
+        } else if (passType == "main") {
+            textures["none"]->Bind(0); // Default fallback for Albedo texture
+            shaders["editor_object"]->Bind();
+            shaders["editor_object"]->setMat4("model", object->transform);
+            shaders["editor_object_pbr"]->Bind();
+            shaders["editor_object_pbr"]->setMat4("model", object->transform);
+            shaders["skinning"]->Bind();
+            shaders["skinning"]->setMat4("model", object->transform);
+        }
 
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
+
+        Texture* texture = HotLoadTexture(object->textureName);
+        Material* material = HotLoadMaterial(object->materialName);
 
         if (object->name == "water") { // is it a water tile
             // Render with 'water' shader
