@@ -2039,13 +2039,17 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
     if (passType == "main")
     {
         RenderLightSources(shaders["gizmo"]);
-        RenderSkybox(shaders["background"]);
         RenderLineElements(shaders["basic"], projectionMatrix);
         // RenderFramebufferTextures(shaders["editor_object"]);
 
         // Render gizmo on front of everything (depth mask enabled)
         if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
             m_Gizmo->Render(shaders["gizmo"]);
+    }
+
+    if (passType == "main" || passType == "water_reflect")
+    {
+        RenderSkybox(shaders["background"]);
     }
 }
 
