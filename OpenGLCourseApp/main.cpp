@@ -72,7 +72,7 @@ enum class SceneName
 	Editor,
 };
 
-SceneName currentScene = SceneName::Editor;
+SceneName currentScene = SceneName::Cottage;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };

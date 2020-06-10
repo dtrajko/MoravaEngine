@@ -41,6 +41,7 @@ public:
 	void setMat2(const std::string& name, const glm::mat2& mat);
 	void setMat3(const std::string& name, const glm::mat3& mat);
 	void setMat4(const std::string& name, const glm::mat4& mat);
+	void setLightMat4(std::vector<glm::mat4> lightMatrices);
 	GLint GetUniformLocation(const std::string& name);
 
 	void Unbind();

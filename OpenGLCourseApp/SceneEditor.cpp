@@ -1053,7 +1053,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
             ImGui::Text("Shadow Map");
             ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
 
-
             if (ImGui::CollapsingHeader("Omni Shadow Maps"))
             {
                 ImGui::Text("Omni Shadow Map 0\n(Point Light 0)");

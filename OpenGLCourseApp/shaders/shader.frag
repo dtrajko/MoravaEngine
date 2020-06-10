@@ -215,7 +215,7 @@ vec4 CalcPointLight(PointLight pointLight, int shadowIndex)
 
 vec4 CalcSpotLight(SpotLight spotLight, int shadowIndex)
 {
-	if (!spotLight.base.base.enabled) return vec4(0.0, 1.0, 1.0, 1.0);
+	if (!spotLight.base.base.enabled) return vec4(0.0, 0.0, 0.0, 1.0);
 
 	vec3 rayDirection = normalize(FragPos - spotLight.base.position);
 	float spotLightFactor = dot(rayDirection, spotLight.direction);

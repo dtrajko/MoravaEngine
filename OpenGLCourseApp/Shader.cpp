@@ -181,6 +181,15 @@ void Shader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
 	}
 }
 
+void Shader::setLightMat4(std::vector<glm::mat4> lightMatrices)
+{
+	for (GLuint i = 0; i < 6; i++)
+	{
+		std::string name = "lightMatrices[" + std::to_string(i) + "]";
+		setMat4(name, lightMatrices[i]);
+	}
+}
+
 void Shader::Bind()
 {
 	glUseProgram(programID);

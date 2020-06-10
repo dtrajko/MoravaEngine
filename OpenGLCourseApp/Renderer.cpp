@@ -106,108 +106,6 @@ void Renderer::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::ma
 	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
-void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
-{
-	glDisable(GL_CLIP_DISTANCE0);
-
-	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
-
-	// Clear the window
-	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	if (scene->GetSettings().enableSkybox)
-	{
-		glm::mat4 modelMatrix = glm::mat4(1.0f);
-		float angleRadians = glm::radians((GLfloat)glfwGetTime());
-		modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->CalculateViewMatrix(), projectionMatrix);
-	}
-
-	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
-	shaderMain->Bind();
-
-	uniforms["model"]       = shaderMain->GetUniformLocation("model");
-	uniforms["projection"]  = shaderMain->GetUniformLocation("projection");
-	uniforms["view"]        = shaderMain->GetUniformLocation("view");
-	uniforms["eyePosition"] = shaderMain->GetUniformLocation("eyePosition");
-	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
-	uniforms["shininess"]         = shaderMain->GetUniformLocationMaterialShininess();
-
-	shaderMain->setMat4("model", glm::mat4(1.0f));
-	shaderMain->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
-	shaderMain->setMat4("projection", projectionMatrix);
-	shaderMain->setVec3("eyePosition", scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
-
-	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
-	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
-	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
-	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-
-	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
-	shaderMain->setInt("theTexture", scene->GetTextureSlots()["diffuse"]);
-	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
-	shaderMain->setInt("directionalShadowMap", scene->GetTextureSlots()["shadow"]);
-	shaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
-	shaderMain->setFloat("tilingFactor", 1.0f);
-	shaderMain->Validate();
-
-	glm::vec3 lowerLight = scene->GetCamera()->GetPosition();
-	lowerLight.y -= 0.2f;
-	LightManager::spotLights[2].SetFlash(lowerLight, scene->GetCamera()->GetDirection());
-
-	std::string passType = "main";
-
-	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
-	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
-
-	shaderMain->Unbind();
-
-	EnableTransparency();
-
-	Shader* shaderWater = shaders["water"];
-	shaderWater->Bind();
-	uniforms["model"]      = shaderWater->GetUniformLocation("model");
-	uniforms["projection"] = shaderWater->GetUniformLocation("projection");
-	uniforms["view"]       = shaderWater->GetUniformLocation("view");
-	uniforms["reflectionTexture"] = shaderWater->GetUniformLocation("reflectionTexture");
-	uniforms["refractionTexture"] = shaderWater->GetUniformLocation("refractionTexture");
-	uniforms["dudvMap"]        = shaderWater->GetUniformLocation("dudvMap");
-	uniforms["normalMap"]      = shaderWater->GetUniformLocation("normalMap");
-	uniforms["depthMap"]       = shaderWater->GetUniformLocation("depthMap");
-	uniforms["moveFactor"]     = shaderWater->GetUniformLocation("moveFactor");
-	uniforms["cameraPosition"] = shaderWater->GetUniformLocation("cameraPosition");
-	uniforms["lightColor"]     = shaderWater->GetUniformLocation("lightColor");
-	uniforms["lightPosition"]  = shaderWater->GetUniformLocation("lightPosition");
-	uniforms["nearPlane"]      = shaderWater->GetUniformLocation("nearPlane");
-	uniforms["farPlane"]       = shaderWater->GetUniformLocation("farPlane");
-
-	shaderWater->setMat4("model",      glm::mat4(1.0f));
-	shaderWater->setMat4("view",       scene->GetCamera()->CalculateViewMatrix());
-	shaderWater->setMat4("projection", projectionMatrix);
-
-	scene->GetWaterManager()->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["depth"]);
-	scene->GetTextures()["waterDuDv"]->Bind(scene->GetTextureSlots()["DuDv"]);
-	shaderWater->setFloat("nearPlane", scene->GetSettings().nearPlane);
-	shaderWater->setFloat("farPlane", scene->GetSettings().farPlane);
-	shaderWater->setInt("reflectionTexture", scene->GetTextureSlots()["reflection"]);
-	shaderWater->setInt("refractionTexture", scene->GetTextureSlots()["refraction"]);
-	shaderWater->setInt("normalMap", scene->GetTextureSlots()["normal"]);
-	shaderWater->setInt("depthMap", scene->GetTextureSlots()["depth"]);
-	shaderWater->setInt("dudvMap", scene->GetTextureSlots()["DuDv"]);
-	shaderWater->setFloat("moveFactor", scene->GetWaterManager()->GetWaterMoveFactor());
-	shaderWater->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
-	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
-	shaderWater->setVec3("lightPosition", LightManager::directionalLight.GetPosition());
-	shaderWater->Validate();
-
-	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
-
-	passType = "main";
-	scene->RenderWater(projectionMatrix, passType, shaders, uniforms);
-	shaderWater->Unbind();
-}
-
 void Renderer::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	if (!scene->GetSettings().enableShadows) return;
@@ -259,7 +157,7 @@ void Renderer::RenderPassOmniShadow(PointLight* light, Window& mainWindow, Scene
 	uniforms["omniLightPos"] = shaders["omniShadow"]->GetUniformLocation("omniLightPos");
 	uniforms["farPlane"]     = shaders["omniShadow"]->GetUniformLocation("farPlane");
 
-	shaders["omniShadow"]->setVec3("omniLightPos", light->GetPosition());
+	shaders["omniShadow"]->setVec3("lightPosition", light->GetPosition());
 	shaders["omniShadow"]->setFloat("farPlane", light->GetFarPlane());
 	shaders["omniShadow"]->SetLightMatrices(light->CalculateLightTransform());
 	shaders["omniShadow"]->Validate();
@@ -384,6 +282,108 @@ void Renderer::RenderPassWaterRefraction(Window& mainWindow, Scene* scene, glm::
 	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	glDisable(GL_CLIP_DISTANCE0);
+
+	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+
+	// Clear the window
+	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if (scene->GetSettings().enableSkybox)
+	{
+		glm::mat4 modelMatrix = glm::mat4(1.0f);
+		float angleRadians = glm::radians((GLfloat)glfwGetTime());
+		modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->CalculateViewMatrix(), projectionMatrix);
+	}
+
+	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
+	shaderMain->Bind();
+
+	uniforms["model"] = shaderMain->GetUniformLocation("model");
+	uniforms["projection"] = shaderMain->GetUniformLocation("projection");
+	uniforms["view"] = shaderMain->GetUniformLocation("view");
+	uniforms["eyePosition"] = shaderMain->GetUniformLocation("eyePosition");
+	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
+	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
+
+	shaderMain->setMat4("model", glm::mat4(1.0f));
+	shaderMain->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+	shaderMain->setMat4("projection", projectionMatrix);
+	shaderMain->setVec3("eyePosition", scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
+
+	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
+	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
+	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
+	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+
+	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
+	shaderMain->setInt("theTexture", scene->GetTextureSlots()["diffuse"]);
+	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
+	shaderMain->setInt("directionalShadowMap", scene->GetTextureSlots()["shadow"]);
+	shaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+	shaderMain->setFloat("tilingFactor", 1.0f);
+	shaderMain->Validate();
+
+	glm::vec3 lowerLight = scene->GetCamera()->GetPosition();
+	lowerLight.y -= 0.2f;
+	LightManager::spotLights[2].SetFlash(lowerLight, scene->GetCamera()->GetDirection());
+
+	std::string passType = "main";
+
+	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+
+	shaderMain->Unbind();
+
+	EnableTransparency();
+
+	Shader* shaderWater = shaders["water"];
+	shaderWater->Bind();
+	uniforms["model"] = shaderWater->GetUniformLocation("model");
+	uniforms["projection"] = shaderWater->GetUniformLocation("projection");
+	uniforms["view"] = shaderWater->GetUniformLocation("view");
+	uniforms["reflectionTexture"] = shaderWater->GetUniformLocation("reflectionTexture");
+	uniforms["refractionTexture"] = shaderWater->GetUniformLocation("refractionTexture");
+	uniforms["dudvMap"] = shaderWater->GetUniformLocation("dudvMap");
+	uniforms["normalMap"] = shaderWater->GetUniformLocation("normalMap");
+	uniforms["depthMap"] = shaderWater->GetUniformLocation("depthMap");
+	uniforms["moveFactor"] = shaderWater->GetUniformLocation("moveFactor");
+	uniforms["cameraPosition"] = shaderWater->GetUniformLocation("cameraPosition");
+	uniforms["lightColor"] = shaderWater->GetUniformLocation("lightColor");
+	uniforms["lightPosition"] = shaderWater->GetUniformLocation("lightPosition");
+	uniforms["nearPlane"] = shaderWater->GetUniformLocation("nearPlane");
+	uniforms["farPlane"] = shaderWater->GetUniformLocation("farPlane");
+
+	shaderWater->setMat4("model", glm::mat4(1.0f));
+	shaderWater->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+	shaderWater->setMat4("projection", projectionMatrix);
+
+	scene->GetWaterManager()->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["depth"]);
+	scene->GetTextures()["waterDuDv"]->Bind(scene->GetTextureSlots()["DuDv"]);
+	shaderWater->setFloat("nearPlane", scene->GetSettings().nearPlane);
+	shaderWater->setFloat("farPlane", scene->GetSettings().farPlane);
+	shaderWater->setInt("reflectionTexture", scene->GetTextureSlots()["reflection"]);
+	shaderWater->setInt("refractionTexture", scene->GetTextureSlots()["refraction"]);
+	shaderWater->setInt("normalMap", scene->GetTextureSlots()["normal"]);
+	shaderWater->setInt("depthMap", scene->GetTextureSlots()["depth"]);
+	shaderWater->setInt("dudvMap", scene->GetTextureSlots()["DuDv"]);
+	shaderWater->setFloat("moveFactor", scene->GetWaterManager()->GetWaterMoveFactor());
+	shaderWater->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
+	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
+	shaderWater->setVec3("lightPosition", LightManager::directionalLight.GetPosition());
+	shaderWater->Validate();
+
+	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
+
+	passType = "main";
+	scene->RenderWater(projectionMatrix, passType, shaders, uniforms);
+	shaderWater->Unbind();
 }
 
 Renderer::~Renderer()
