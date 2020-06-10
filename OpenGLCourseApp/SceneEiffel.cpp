@@ -12,9 +12,9 @@
 SceneEiffel::SceneEiffel()
 {
 	sceneSettings.enableShadows      = true;
-	sceneSettings.enableOmniShadows  = false;
-	sceneSettings.enablePointLights  = false;
-	sceneSettings.enableSpotLights   = false;
+	sceneSettings.enableOmniShadows  = true;
+	sceneSettings.enablePointLights  = true;
+	sceneSettings.enableSpotLights   = true;
 	sceneSettings.enableWaterEffects = true;
 	sceneSettings.enableSkybox       = true;
 	sceneSettings.enableNormalMaps   = true;
@@ -25,12 +25,15 @@ SceneEiffel::SceneEiffel()
 	sceneSettings.directionalLight.base.diffuseIntensity = 0.8f;
 	sceneSettings.directionalLight.direction = glm::vec3(3.0f, -9.0f, -3.0f);
 	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
+	sceneSettings.pointLights[0].base.enabled = false;
 	sceneSettings.pointLights[0].base.color = glm::vec3(1.0f, 0.0f, 1.0f);
 	sceneSettings.pointLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
 	sceneSettings.pointLights[0].base.diffuseIntensity = 6.0f;
+	sceneSettings.pointLights[1].base.enabled = false;
 	sceneSettings.pointLights[1].base.color = glm::vec3(1.0f, 0.0f, 0.0f);
 	sceneSettings.pointLights[1].position = glm::vec3(-2.0f, 9.6f, 0.0f);
 	sceneSettings.pointLights[1].base.diffuseIntensity = 6.0f;
+	sceneSettings.pointLights[2].base.enabled = false;
 	sceneSettings.pointLights[2].base.color = glm::vec3(0.8f, 0.8f, 0.5f);
 	sceneSettings.pointLights[2].position = glm::vec3(-2.0f, 4.0f, 0.0f);
 	sceneSettings.pointLights[2].base.diffuseIntensity = 6.0f;
@@ -104,22 +107,70 @@ void SceneEiffel::Update(float timestep, Window& mainWindow)
 
 void SceneEiffel::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
 {
-	// Shadow rotation
-	m_LightDirection = sceneSettings.directionalLight.direction;
-	m_LightColor = m_LightManager->directionalLight.GetColor();
+	bool p_open = true;
+	ShowExampleAppDockSpace(&p_open, mainWindow);
 
-	float lightRadius = abs(m_LightDirection.x);
-	float lightAngle = timestep * sceneSettings.shadowSpeed;
-	m_LightDirection.x = (float)cos(lightAngle) * lightRadius;
-	m_LightDirection.z = (float)sin(lightAngle) * lightRadius;
+	ImGui::Begin("Shadow rotation");
+	{
+		// Shadow rotation
+		m_LightDirection = sceneSettings.directionalLight.direction;
+		m_LightColor = m_LightManager->directionalLight.GetColor();
 
-	ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, 0.0f, 20.0f);
-	ImGui::SliderFloat3("DirLight direction", glm::value_ptr(m_LightDirection), -100.0f, 100.0f);
-	ImGui::ColorEdit3("DirLight Color", glm::value_ptr(m_LightColor));
+		float lightRadius = abs(m_LightDirection.x);
+		float lightAngle = timestep * sceneSettings.shadowSpeed;
+		m_LightDirection.x = (float)cos(lightAngle) * lightRadius;
+		m_LightDirection.z = (float)sin(lightAngle) * lightRadius;
 
-	m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
-	m_LightManager->directionalLight.SetDirection(m_LightDirection);
-	m_LightManager->directionalLight.SetColor(m_LightColor);
+		if (ImGui::CollapsingHeader("Display Info"))
+		{
+			ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, 0.0f, 20.0f);
+			ImGui::SliderFloat3("DirLight direction", glm::value_ptr(m_LightDirection), -100.0f, 100.0f);
+			ImGui::ColorEdit3("DirLight Color", glm::value_ptr(m_LightColor));
+		}
+
+		m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
+		m_LightManager->directionalLight.SetDirection(m_LightDirection);
+		m_LightManager->directionalLight.SetColor(m_LightColor);
+	}
+
+	ImGui::Begin("Framebuffers");
+	{
+		if (ImGui::CollapsingHeader("Display Info"))
+		{
+			ImVec2 imageSize(128.0f, 128.0f);
+
+			ImGui::Text("Shadow Map");
+			ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
+
+			if (ImGui::CollapsingHeader("Omni Shadow Maps"))
+			{
+				ImGui::Text("Omni Shadow Map 0\n(Point Light 0)");
+				ImGui::Image((void*)(intptr_t)LightManager::pointLights[0].GetShadowMap()->GetTextureID(), imageSize);
+				ImGui::Text("Omni Shadow Map 1\n(Point Light 1)");
+				ImGui::Image((void*)(intptr_t)LightManager::pointLights[1].GetShadowMap()->GetTextureID(), imageSize);
+				ImGui::Text("Omni Shadow Map 2\n(Point Light 2)");
+				ImGui::Image((void*)(intptr_t)LightManager::pointLights[2].GetShadowMap()->GetTextureID(), imageSize);
+				ImGui::Text("Omni Shadow Map 3\n(Point Light 3)");
+				ImGui::Image((void*)(intptr_t)LightManager::pointLights[3].GetShadowMap()->GetTextureID(), imageSize);
+
+				ImGui::Text("Omni Shadow Map 4\n(Spot Light 0)");
+				ImGui::Image((void*)(intptr_t)LightManager::spotLights[0].GetShadowMap()->GetTextureID(), imageSize);
+				ImGui::Text("Omni Shadow Map 5\n(Spot Light 1)");
+				ImGui::Image((void*)(intptr_t)LightManager::spotLights[1].GetShadowMap()->GetTextureID(), imageSize);
+				ImGui::Text("Omni Shadow Map 6\n(Spot Light 2)");
+				ImGui::Image((void*)(intptr_t)LightManager::spotLights[2].GetShadowMap()->GetTextureID(), imageSize);
+				ImGui::Text("Omni Shadow Map 7\n(Spot Light 3)");
+				ImGui::Image((void*)(intptr_t)LightManager::spotLights[3].GetShadowMap()->GetTextureID(), imageSize);
+			}
+
+			ImGui::Text("Water Reflection\nColor Attachment");
+			ImGui::Image((void*)(intptr_t)m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
+			ImGui::Text("Water Refraction\nColor Attachment");
+			ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
+			ImGui::Text("Water Refraction\nDepth Attachment");
+			ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
+		}
+	}
 }
 
 void SceneEiffel::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,

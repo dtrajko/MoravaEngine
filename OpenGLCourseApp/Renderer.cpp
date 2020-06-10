@@ -136,10 +136,12 @@ void Renderer::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::mat4 pro
 	if (!scene->GetSettings().enableOmniShadows) return;
 
 	for (size_t i = 0; i < LightManager::pointLightCount; i++)
-		Renderer::RenderPassOmniShadow(&LightManager::pointLights[i], mainWindow, scene, projectionMatrix);
+		if (LightManager::pointLights[i].GetEnabled())
+			Renderer::RenderPassOmniShadow(&LightManager::pointLights[i], mainWindow, scene, projectionMatrix);
 
 	for (size_t i = 0; i < LightManager::spotLightCount; i++)
-		Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], mainWindow, scene, projectionMatrix);
+		if (LightManager::spotLights[i].GetBasePL()->GetEnabled())
+			Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], mainWindow, scene, projectionMatrix);
 }
 
 void Renderer::RenderPassOmniShadow(PointLight* light, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
