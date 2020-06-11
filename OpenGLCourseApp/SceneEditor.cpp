@@ -1656,13 +1656,28 @@ void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject*
 
 void SceneEditor::SetUniformsShaderWater(Shader* shaderWater, SceneObject* sceneObject)
 {
+    RendererBasic::EnableTransparency();
+
+    shaderWater->Bind();
+
+    shaderWater->Bind();
+    shaderWater->setInt("reflectionTexture", 0);
+    shaderWater->setInt("refractionTexture", 1);
+    shaderWater->setInt("normalMap",         2);
+    shaderWater->setInt("dudvMap",           3);
+    shaderWater->setInt("depthMap",          4);
+
+    shaderWater->setMat4("model", sceneObject->transform);
+
     m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(0);
-    m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(1);
-    textures["waterNormal"]->Bind(2);
-    textures["waterDuDv"]->Bind(3);
-    m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(4);
+    // m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(1);
+    // textures["waterNormal"]->Bind(2);
+    // textures["waterDuDv"]->Bind(3);
+    // m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(4);
+
     shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
     shaderWater->setVec3("lightPosition", -(LightManager::directionalLight.GetDirection()));
+    shaderWater->setVec3("cameraPosition", m_Camera->GetPosition());
 }
 
 void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix)
@@ -1989,13 +2004,24 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         if (passType == "shadow_dir") {
             shaders["shadow_map"]->Bind();
             shaders["shadow_map"]->setMat4("model", object->transform);
-        } else if (passType == "shadow_omni") {
+        }
+        else if (passType == "shadow_omni") {
             shaders["omni_shadow_map"]->Bind();
             shaders["omni_shadow_map"]->setMat4("model", object->transform);
-        } else if (passType == "water_reflect" || passType == "water_refract") {
+        }
+        else if (passType == "water_reflect") {
+            float angleRadians = glm::radians((GLfloat)glfwGetTime());
+            glm::mat4 transform = glm::rotate(object->transform, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+            shaders["water"]->setMat4("model", transform);
+            textures["none"]->Bind(0); // Default fallback for Albedo texture
+            shaders["water"]->Bind();
+        }
+        else if (passType == "water_refract") {
+            textures["none"]->Bind(0); // Default fallback for Albedo texture
             shaders["water"]->Bind();
             shaders["water"]->setMat4("model", object->transform);
-        } else if (passType == "main") {
+        }
+        else if (passType == "main") {
             textures["none"]->Bind(0); // Default fallback for Albedo texture
             shaders["editor_object"]->Bind();
             shaders["editor_object"]->setMat4("model", object->transform);
@@ -2040,6 +2066,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
     {
         RenderLightSources(shaders["gizmo"]);
         RenderLineElements(shaders["basic"], projectionMatrix);
+        RenderSkybox(shaders["background"]);
         // RenderFramebufferTextures(shaders["editor_object"]);
 
         // Render gizmo on front of everything (depth mask enabled)
@@ -2047,7 +2074,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             m_Gizmo->Render(shaders["gizmo"]);
     }
 
-    if (passType == "main" || passType == "water_reflect")
+    if (passType == "water_reflect")
     {
         RenderSkybox(shaders["background"]);
     }

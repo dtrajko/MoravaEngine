@@ -81,13 +81,6 @@ void RendererEditor::SetShaders()
     shaderEditorPBR->setInt("aoMap",         7);
     shaderEditorPBR->setInt("shadowMap",     8);
     m_OmniShadowTxSlots.insert(std::make_pair("editor_object_pbr", 9)); // omniShadowMaps[i].shadowMap = 9
-
-    shaderWater->Bind();
-    shaderWater->setInt("reflectionTexture", 0);
-    shaderWater->setInt("refractionTexture", 1);
-    shaderWater->setInt("normalMap",         2);
-    shaderWater->setInt("dudvMap",           3);
-    shaderWater->setInt("depthMap",          4);
 }
 
 void RendererEditor::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
