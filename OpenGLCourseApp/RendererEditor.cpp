@@ -236,11 +236,11 @@ void RendererEditor::RenderWaterEffects(float deltaTime, Window& mainWindow, Sce
 
 void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+    glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 
-	// Clear the window
-	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Clear the window
+    glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // configure global opengl state
     glEnable(GL_DEPTH_TEST);
