@@ -246,6 +246,7 @@ void SceneCottage::UpdateImGui(float timestep, Window& mainWindow, std::map<cons
 		m_LightManager->pointLights[2].SetLinear(pointLights[2].linear);
 		m_LightManager->pointLights[2].SetExponent(pointLights[2].exponent);
 	}
+	ImGui::End();
 
 	ImGui::Begin("Framebuffers");
 	{
@@ -285,6 +286,7 @@ void SceneCottage::UpdateImGui(float timestep, Window& mainWindow, std::map<cons
 			ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
 		}
 	}
+	ImGui::End();
 }
 
 void SceneCottage::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,

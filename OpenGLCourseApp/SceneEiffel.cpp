@@ -132,6 +132,7 @@ void SceneEiffel::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 		m_LightManager->directionalLight.SetDirection(m_LightDirection);
 		m_LightManager->directionalLight.SetColor(m_LightColor);
 	}
+	ImGui::End();
 
 	ImGui::Begin("Framebuffers");
 	{
@@ -171,6 +172,7 @@ void SceneEiffel::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 			ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
 		}
 	}
+	ImGui::End();
 }
 
 void SceneEiffel::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,

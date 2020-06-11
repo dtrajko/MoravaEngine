@@ -1043,6 +1043,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
             }
         }
     }
+    ImGui::End();
 
     ImGui::Begin("Framebuffers");
     {
@@ -1082,6 +1083,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
             ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
         }
     }
+    ImGui::End();
 
     ImGui::Begin("Lights");
     {
@@ -1230,7 +1232,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
             }
             ImGui::Unindent();
         }
-        ImGui::End();
     }
     ImGui::End();
 
