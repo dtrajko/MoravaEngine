@@ -15,19 +15,6 @@ in vec4 vDirLightSpacePos;
 
 out vec4 FragColor;
 
-// IBL
-uniform samplerCube irradianceMap; // slot 0
-uniform samplerCube prefilterMap;  // slot 1
-uniform sampler2D brdfLUT;         // slot 2
-// material parameters
-uniform sampler2D albedoMap;       // slot 3
-uniform sampler2D normalMap;       // slot 4
-uniform sampler2D metallicMap;     // slot 5
-uniform sampler2D roughnessMap;    // slot 6
-uniform sampler2D aoMap;           // slot 7
-// Directional Light Shadows
-uniform sampler2D shadowMap;       // slot 8
-
 // lights
 struct Light
 {
@@ -63,6 +50,21 @@ struct Material
 	float specularIntensity;
 	float shininess;
 };
+
+// IBL
+uniform samplerCube irradianceMap; // slot 0
+uniform samplerCube prefilterMap;  // slot 1
+uniform sampler2D brdfLUT;         // slot 2
+
+// material parameters
+uniform sampler2D albedoMap;       // slot 3
+uniform sampler2D normalMap;       // slot 4
+uniform sampler2D metallicMap;     // slot 5
+uniform sampler2D roughnessMap;    // slot 6
+uniform sampler2D aoMap;           // slot 7
+
+// Directional Light Shadows
+uniform sampler2D shadowMap;       // slot 8
 
 uniform int pointSpotLightCount; // both point and spot lights
 

@@ -32,17 +32,9 @@ void RendererEditor::SetShaders()
     shaders.insert(std::make_pair("editor_object_pbr", shaderEditorPBR));
     printf("RendererEditor: shaderEditorObjectPBR compiled [programID=%d]\n", shaderEditorPBR->GetProgramID());
 
-    Shader* shaderGizmo = new Shader("Shaders/gizmo.vs", "Shaders/gizmo.fs");
-    shaders.insert(std::make_pair("gizmo", shaderGizmo));
-    printf("RendererEditor: shaderGizmo compiled [programID=%d]\n", shaderGizmo->GetProgramID());
-
-    Shader* shaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
-    shaders.insert(std::make_pair("basic", shaderBasic));
-    printf("RendererEditor: shaderBasic compiled [programID=%d]\n", shaderBasic->GetProgramID());
-
-    Shader* shaderBackground = new Shader("Shaders/learnopengl/2.2.2.background.vs", "Shaders/learnopengl/2.2.2.background.fs");
-    shaders.insert(std::make_pair("background", shaderBackground));
-    printf("RendererEditor: shaderBackground compiled [programID=%d]\n", shaderBackground->GetProgramID());
+    Shader* shaderSkinning = new Shader("Shaders/OGLdev/skinning.vs", "Shaders/OGLdev/skinning.fs");
+    shaders.insert(std::make_pair("skinning", shaderSkinning));
+    printf("RendererEditor: shaderSkinning compiled [programID=%d]\n", shaderSkinning->GetProgramID());
 
     Shader* shaderShadowMap = new Shader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
     shaders.insert(std::make_pair("shadow_map", shaderShadowMap));
@@ -52,17 +44,25 @@ void RendererEditor::SetShaders()
     shaders.insert(std::make_pair("omni_shadow_map", shaderOmniShadowMap));
     printf("RendererEditor: shaderOmniShadowMap compiled [programID=%d]\n", shaderOmniShadowMap->GetProgramID());
 
-    Shader* shaderSkinning = new Shader("Shaders/OGLdev/skinning.vs", "Shaders/OGLdev/skinning.fs");
-    shaders.insert(std::make_pair("skinning", shaderSkinning));
-    printf("RendererEditor: shaderSkinning compiled [programID=%d]\n", shaderSkinning->GetProgramID());
+    Shader* shaderWater = new Shader("Shaders/water.vert", "Shaders/water.frag");
+    shaders.insert(std::make_pair("water", shaderWater));
+    printf("RendererEditor: shaderWater compiled [programID=%d]\n", shaderWater->GetProgramID());
+
+    Shader* shaderBackground = new Shader("Shaders/learnopengl/2.2.2.background.vs", "Shaders/learnopengl/2.2.2.background.fs");
+    shaders.insert(std::make_pair("background", shaderBackground));
+    printf("RendererEditor: shaderBackground compiled [programID=%d]\n", shaderBackground->GetProgramID());
+
+    Shader* shaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
+    shaders.insert(std::make_pair("basic", shaderBasic));
+    printf("RendererEditor: shaderBasic compiled [programID=%d]\n", shaderBasic->GetProgramID());
+
+    Shader* shaderGizmo = new Shader("Shaders/gizmo.vs", "Shaders/gizmo.fs");
+    shaders.insert(std::make_pair("gizmo", shaderGizmo));
+    printf("RendererEditor: shaderGizmo compiled [programID=%d]\n", shaderGizmo->GetProgramID());
 
     Shader* shaderGlass = new Shader("Shaders/glass.vs", "Shaders/glass.fs");
     shaders.insert(std::make_pair("glass", shaderGlass));
     printf("RendererEditor: shaderGlass compiled [programID=%d]\n", shaderGlass->GetProgramID());
-
-    Shader* shaderWater = new Shader("Shaders/water.vert", "Shaders/water.frag");
-    shaders.insert(std::make_pair("water", shaderWater));
-    printf("RendererEditor: shaderWater compiled [programID=%d]\n", shaderWater->GetProgramID());
 
     shaderEditor->Bind();
     shaderEditor->setInt("albedoMap", 0);

@@ -33,10 +33,11 @@ SceneEditor::SceneEditor()
 {
     m_LightManager = nullptr;
 
-    sceneSettings.cameraPosition = glm::vec3(0.0f, 2.0f, 12.0f);
-    sceneSettings.cameraStartYaw = -90.0f;
+    sceneSettings.cameraPosition   = glm::vec3(0.0f, 2.0f, 12.0f);
+    sceneSettings.cameraStartYaw   = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
-    sceneSettings.cameraMoveSpeed = 1.0f;
+    sceneSettings.cameraMoveSpeed  = 1.0f;
+    sceneSettings.waterHeight      = 0.0f;
     sceneSettings.enableSkybox       = false;
     sceneSettings.enablePointLights  = true;
     sceneSettings.enableSpotLights   = true;
@@ -1998,8 +1999,12 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 
     SwitchOrthographicView(mainWindow, projectionMatrix);
 
+    bool shouldRenderObject;
+
     for (auto& object : m_SceneObjects)
     {
+        shouldRenderObject = true;
+
         object->transform = CalculateRenderTransform(object);
 
         if (passType == "shadow_dir") {
@@ -2037,6 +2042,15 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         Texture* texture = HotLoadTexture(object->textureName);
         Material* material = HotLoadMaterial(object->materialName);
 
+        // Don't render Lights (id = 0 to 8), it's done in RenderLightSources()
+        if (object->name.substr(0, 6) == "Light.")
+            shouldRenderObject = false;
+
+        // Don't render Water tiles in Water Render Passes
+        if (object->name == "water" && (passType == "water_reflect" || passType == "water_refract"))
+            shouldRenderObject = false;
+
+        // Setup Shader Uniforms
         if (object->name == "water") { // is it a water tile
             // Render with 'water' shader
             if (passType == "main")
@@ -2059,7 +2073,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                 SetUniformsShaderEditor(shaders["editor_object"], texture, object);
         }
 
-        if (object->name.substr(0, 6) != "Light.") // Don't render Lights (id = 0 to 8), it's done in RenderLightSources()
+        if (shouldRenderObject)
             object->Render();
     }
 
