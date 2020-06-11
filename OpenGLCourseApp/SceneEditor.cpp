@@ -33,10 +33,10 @@ SceneEditor::SceneEditor()
 {
     m_LightManager = nullptr;
 
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 2.0f, 12.0f);
-	sceneSettings.cameraStartYaw = -90.0f;
+    sceneSettings.cameraPosition = glm::vec3(0.0f, 2.0f, 12.0f);
+    sceneSettings.cameraStartYaw = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
-	sceneSettings.cameraMoveSpeed = 1.0f;
+    sceneSettings.cameraMoveSpeed = 1.0f;
     sceneSettings.enableSkybox       = false;
     sceneSettings.enablePointLights  = true;
     sceneSettings.enableSpotLights   = true;
@@ -110,13 +110,13 @@ SceneEditor::SceneEditor()
     sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
     sceneSettings.spotLights[3].edge = 0.5f;
 
-	SetCamera();
-	SetSkybox();
-	SetTextures();
+    SetCamera();
+    SetSkybox();
+    SetTextures();
     SetupMaterials();
-	SetupMeshes();
-	SetupModels();
-	SetGeometry();
+    SetupMeshes();
+    SetupModels();
+    SetGeometry();
     SetLightManager();
     AddLightsToSceneObjects();
 
@@ -2106,7 +2106,7 @@ SceneEditor::~SceneEditor()
 {
     SaveScene();
 
-	CleanupGeometry();
+    CleanupGeometry();
 
     delete m_PivotScene;
     delete m_Grid;
