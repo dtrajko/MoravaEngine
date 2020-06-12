@@ -165,7 +165,7 @@ void RendererEditor::RenderPassWaterReflection(Window& mainWindow, Scene* scene,
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
 
-    EnableCulling();
+    DisableCulling();
     std::string passType = "water_reflect";
     scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 
@@ -202,6 +202,7 @@ void RendererEditor::RenderPassWaterRefraction(Window& mainWindow, Scene* scene,
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
 
+    DisableCulling();
     std::string passType = "water_refract";
     scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 

@@ -2017,18 +2017,20 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             shaders["shadow_map"]->Bind();
             shaders["shadow_map"]->setMat4("model", object->transform);
         }
-        else if (passType == "shadow_omni") {
+        if (passType == "shadow_omni") {
             shaders["omni_shadow_map"]->Bind();
             shaders["omni_shadow_map"]->setMat4("model", object->transform);
         }
-        else if (passType == "main" || passType == "water_reflect" || passType == "water_refract") {
-            textures["none"]->Bind(0); // Default fallback for Albedo texture
+        if (passType == "main" || passType == "water_reflect" || passType == "water_refract") {
             shaders["editor_object"]->Bind();
             shaders["editor_object"]->setMat4("model", object->transform);
             shaders["editor_object_pbr"]->Bind();
             shaders["editor_object_pbr"]->setMat4("model", object->transform);
             shaders["skinning"]->Bind();
             shaders["skinning"]->setMat4("model", object->transform);
+        }
+        if (passType == "main") {
+            textures["none"]->Bind(0); // Default fallback for Albedo texture
             shaders["water"]->Bind();
             shaders["water"]->setMat4("model", object->transform);
         }
@@ -2055,17 +2057,17 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         else if (m_SkinnedMeshes.find(object->m_TypeID) != m_SkinnedMeshes.end()) // is it a skinned mesh?
         {
             // Render with 'skinning' shader
-            if (passType == "main")
+            if (passType == "main" || passType == "water_reflect" || passType == "water_refract")
                 SetUniformsShaderSkinning(shaders["skinning"], object, runningTime);
         }
         else if (material && object->materialName != "none") { // is it using a material?
             // Render with 'editor_object_pbr' shader
-            if (passType == "main")
+            if (passType == "main" || passType == "water_reflect" || passType == "water_refract")
                 SetUniformsShaderEditorPBR(shaders["editor_object_pbr"], texture, material, object);
         }
         else { // defaults to a texture only
             // Render with 'editor_object' shader
-            if (passType == "main")
+            if (passType == "main" || passType == "water_reflect" || passType == "water_refract")
                 SetUniformsShaderEditor(shaders["editor_object"], texture, object);
         }
 
