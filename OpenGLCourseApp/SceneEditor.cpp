@@ -1658,6 +1658,7 @@ void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject*
     SkinnedMesh* skinnedMesh = (SkinnedMesh*)sceneObject->mesh;
     skinnedMesh->BoneTransform(runningTime, m_SkinningTransforms[sceneObject->name]);
     shaderSkinning->setMat4("model", sceneObject->transform);
+    shaderSkinning->setMat4("view", m_Camera->CalculateViewMatrix());
     shaderSkinning->setInt("gColorMap", 0);
     shaderSkinning->setVec3("gEyeWorldPos", m_Camera->GetPosition());
     shaderSkinning->setFloat("gMatSpecularIntensity", m_MaterialSpecular);
