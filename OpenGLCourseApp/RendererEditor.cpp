@@ -166,6 +166,12 @@ void RendererEditor::RenderPassWaterReflection(Window& mainWindow, Scene* scene,
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
 
+    Shader* shaderSkinning = shaders["skinning"];
+    shaderSkinning->Bind();
+    shaderSkinning->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    shaderSkinning->setMat4("projection", projectionMatrix);
+    shaderSkinning->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
+
     DisableCulling();
     std::string passType = "water_reflect";
     scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
@@ -202,6 +208,12 @@ void RendererEditor::RenderPassWaterRefraction(Window& mainWindow, Scene* scene,
     shaderEditorPBR->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
+
+    Shader* shaderSkinning = shaders["skinning"];
+    shaderSkinning->Bind();
+    shaderSkinning->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    shaderSkinning->setMat4("projection", projectionMatrix);
+    shaderSkinning->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
 
     DisableCulling();
     std::string passType = "water_refract";
@@ -423,7 +435,7 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     shaderEditorPBR->setMat4("projection", projectionMatrix);
     shaderEditorPBR->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-    // shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
+    shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
     shaderEditorPBR->setFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
     shaderEditorPBR->setVec4("waterColor", scene->GetWaterManager()->GetWaterColor());
 
@@ -511,8 +523,9 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     Shader* shaderSkinning = shaders["skinning"];
     shaderSkinning->Bind();
 
-    shaderSkinning->setMat4("projection", projectionMatrix);
     shaderSkinning->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    shaderSkinning->setMat4("projection", projectionMatrix);
+    shaderSkinning->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
     shaderSkinning->setVec3("gEyeWorldPos", scene->GetCamera()->GetPosition());
     shaderSkinning->setFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
     shaderSkinning->setVec4("waterColor", scene->GetWaterManager()->GetWaterColor());
