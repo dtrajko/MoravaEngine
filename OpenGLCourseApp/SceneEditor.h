@@ -98,7 +98,6 @@ private:
 
 	virtual bool IsWaterOnScene() override;
 
-
 private:
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
 

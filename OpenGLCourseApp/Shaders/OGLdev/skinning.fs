@@ -56,8 +56,10 @@ uniform SpotLight gSpotLights[MAX_SPOT_LIGHTS];
 uniform sampler2D gColorMap;                                                                
 uniform vec3 gEyeWorldPos;                                                                  
 uniform float gMatSpecularIntensity;                                                        
-uniform float gSpecularPower; 
+uniform float gSpecularPower;
 
+uniform float waterLevel;
+uniform vec4 waterColor;
 
 vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, VSOutput In)
 {                                                                                        
@@ -134,4 +136,10 @@ void main()
     }
 
     FragColor = texture(gColorMap, In.TexCoord.xy) * TotalLight;
+
+	// Add a blue tint under the water level
+    if (gEyeWorldPos.y < waterLevel)
+	{
+		FragColor = mix(FragColor, waterColor, 0.5);
+	}
 }

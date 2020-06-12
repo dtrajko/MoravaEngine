@@ -78,6 +78,9 @@ uniform vec3 eyePosition; // same as cameraPosition
 
 uniform OmniShadowMap omniShadowMaps[MAX_LIGHTS];
 
+uniform float waterLevel;
+uniform vec4 waterColor;
+
 vec3 sampleOffsetDirections[20] = vec3[]
 (
 	vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1),
@@ -267,6 +270,12 @@ void main()
 
 	// FragColor = texColor * finalColor * tintColor * CubeMapColor;
 	FragColor = finalColor;
+
+	// Add a blue tint under the water level
+	if (eyePosition.y < waterLevel)
+	{
+		FragColor = mix(FragColor, waterColor, 0.5);
+	}
 
 	// use a basic color to identify the shader
 	if (vFragPos.x > 0.0 && vFragPos.x < 0.1)

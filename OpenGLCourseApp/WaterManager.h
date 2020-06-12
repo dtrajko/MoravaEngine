@@ -1,5 +1,7 @@
 #pragma once
 
+#include "glm/glm.hpp"
+
 #include "FramebufferWater.h"
 
 
@@ -17,6 +19,8 @@ public:
 	inline void SetWaterHeight(float waterHeight) { m_WaterHeight = waterHeight; };
 	inline float GetWaterMoveFactor() const { return m_MoveFactor; };
 	inline void SetWaterMoveFactor(float moveFactor) { m_MoveFactor = moveFactor; };
+	inline glm::vec4 GetWaterColor() const { return m_WaterColor; };
+	inline void SetWaterColor(glm::vec4 waterColor) { m_WaterColor = waterColor; };
 	~WaterManager();
 
 public:
@@ -31,4 +35,7 @@ private:
 
 	float m_WaterHeight;
 	float m_MoveFactor;
+
+	glm::vec4 m_WaterColor;
+
 };

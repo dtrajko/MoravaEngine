@@ -4,6 +4,7 @@
 #include "MousePicker.h"
 #include "GeometryFactory.h"
 #include "Timer.h"
+#include "SceneEditor.h"
 
 #include <stdexcept>
 
@@ -236,6 +237,7 @@ void RendererEditor::RenderWaterEffects(float deltaTime, Window& mainWindow, Sce
     scene->GetWaterManager()->SetWaterMoveFactor(waterMoveFactor);
 
     float distance = 2.0f * (scene->GetCamera()->GetPosition().y - scene->GetWaterManager()->GetWaterHeight());
+
     scene->GetCamera()->SetPosition(glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y - distance, scene->GetCamera()->GetPosition().z));
     scene->GetCamera()->InvertPitch();
 
@@ -270,6 +272,8 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     EnableTransparency();
     EnableCulling();
 
+    SceneEditor* sceneEditor = (SceneEditor*)scene;
+
     /**** Begin editor_object ****/
     Shader* shaderEditor = shaders["editor_object"];
 
@@ -284,6 +288,8 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     shaderEditor->setInt("spotLightCount", LightManager::spotLightCount);
     // Eye position / camera direction
     shaderEditor->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
+    shaderEditor->setFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
+    shaderEditor->setVec4("waterColor", scene->GetWaterManager()->GetWaterColor());
 
     // Directional Light
     shaderEditor->setBool( "directionalLight.base.enabled",          LightManager::directionalLight.GetEnabled());
@@ -394,6 +400,8 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     shaderEditorPBR->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     // shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
+    shaderEditorPBR->setFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
+    shaderEditorPBR->setVec4("waterColor", scene->GetWaterManager()->GetWaterColor());
 
     shaderEditorPBR->setInt("pointSpotLightCount", LightManager::pointLightCount + LightManager::spotLightCount);
 
@@ -481,6 +489,8 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     shaderSkinning->setMat4("projection", projectionMatrix);
     shaderSkinning->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
     shaderSkinning->setVec3("gEyeWorldPos", scene->GetCamera()->GetPosition());
+    shaderSkinning->setFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
+    shaderSkinning->setVec4("waterColor", scene->GetWaterManager()->GetWaterColor());
 
     // Directional Light
     shaderSkinning->setVec3( "gDirectionalLight.Base.Color",            LightManager::directionalLight.GetColor());
@@ -493,8 +503,21 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 
     // TODO: spot lights
     shaderSkinning->setInt("gNumSpotLights", 0);
-
     /**** End skinning ****/
+
+    /**** Begin shaderWater ****/
+    Shader* shaderWater = shaders["water"];
+    shaderWater->Bind();
+    shaderWater->setMat4("projection", projectionMatrix);
+    shaderWater->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    shaderWater->setFloat("moveFactor", scene->GetWaterManager()->GetWaterMoveFactor());
+    shaderWater->setFloat("nearPlane", scene->GetSettings().nearPlane);
+    shaderWater->setFloat("farPlane", scene->GetSettings().farPlane);
+    shaderWater->setVec3("lightPosition", scene->GetLightManager()->directionalLight.GetPosition());
+    shaderWater->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
+    shaderWater->setFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
+    shaderWater->setVec4("waterColor", scene->GetWaterManager()->GetWaterColor());
+    /**** End shaderWater ****/
 
     /**** Begin glass ****/
     Shader* shaderGlass = shaders["glass"];
@@ -526,18 +549,6 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     shaderBasic->setMat4("projection", projectionMatrix);
     shaderBasic->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
     /**** End of shaderBasic ****/
-
-    /**** Begin shaderWater ****/
-    Shader* shaderWater = shaders["water"];
-    shaderWater->Bind();
-    shaderWater->setMat4("projection", projectionMatrix);
-    shaderWater->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
-    shaderWater->setFloat("moveFactor", scene->GetWaterManager()->GetWaterMoveFactor());
-    shaderWater->setFloat("nearPlane", scene->GetSettings().nearPlane);
-    shaderWater->setFloat("farPlane", scene->GetSettings().farPlane);
-    shaderWater->setVec3("lightPosition", scene->GetLightManager()->directionalLight.GetPosition());
-    shaderWater->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
-    /**** End shaderWater ****/
 
     if (scene->GetSettings().enableSkybox)
     {
@@ -579,6 +590,7 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     shaderSkinning->Bind();
     shaderSkinning->setMat4("projection", projectionMatrix);
     shaderSkinning->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    shaderSkinning->setVec3("gEyeWorldPos", scene->GetCamera()->GetPosition());
 
     Shader* shaderShadowMap = shaders["shadow_map"];
     shaderShadowMap->Bind();
@@ -598,6 +610,7 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     shaderWater->setFloat("moveFactor", scene->GetWaterManager()->GetWaterMoveFactor());
     shaderWater->setFloat("nearPlane", scene->GetSettings().nearPlane);
     shaderWater->setFloat("farPlane", scene->GetSettings().farPlane);
+    shaderWater->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
 
     Shader* shaderGizmo = shaders["gizmo"];
     shaderGizmo->Bind();

@@ -18,10 +18,15 @@ uniform float moveFactor;
 uniform float nearPlane;
 uniform float farPlane;
 
+uniform vec3 eyePosition; // same as cameraPosition
+
+uniform float waterLevel;
+uniform vec4 waterColor;
+
 const float waveStrength = 0.01;
 const float shineDamper = 20.0;
 const float reflectivity = 0.5;
-const vec3 waterColor = vec3(0.0, 0.3, 0.5);
+const vec3 waterColorTM = vec3(0.0, 0.3, 0.5);
 
 void main(void) {
 
@@ -60,14 +65,21 @@ void main(void) {
 	refractiveFactor = pow(refractiveFactor, 0.5);
 	refractiveFactor = clamp(refractiveFactor, 0.0, 0.8);
 
-	// vec3 reflectedLight = reflect(normalize(fromLightVector), normal);
-	// float specular = max(dot(reflectedLight, viewVector), 0.0);
-	// specular = pow(specular, shineDamper);
-	// vec3 specularHighlights = lightColor * specular * reflectivity * waterDepth;
+	vec3 reflectedLight = reflect(normalize(fromLightVector), normal);
+	float specular = max(dot(reflectedLight, viewVector), 0.0);
+	specular = pow(specular, shineDamper);
+	vec3 specularHighlights = lightColor * specular * reflectivity * waterDepth;
 
 	out_Color = mix(reflectColor, refractColor, refractiveFactor);
-	out_Color = mix(out_Color, vec4(waterColor, 1.0), 0.4);
-	// out_Color = mix(out_Color, vec4(waterColor, 1.0), 0.4) + vec4(specularHighlights, 0.0);
+	out_Color = mix(out_Color, vec4(waterColorTM, 1.0), 0.4);
+	out_Color = mix(out_Color, vec4(waterColorTM, 1.0), 0.4) + vec4(specularHighlights, 0.0);
+
+	// Add a blue tint under the water level
+    if (eyePosition.y < waterLevel)
+	{
+		out_Color = mix(out_Color, waterColor, 0.5);
+	}
+
 	out_Color.a = max(waterDepth, 0.5);
 
 	out_BrightColor = vec4(0.0, 0.0, 1.0, 1.0);

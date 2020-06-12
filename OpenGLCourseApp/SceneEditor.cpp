@@ -908,6 +908,10 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         ImGui::SliderFloat("FOV", &FOV, 1.0f, 120.0f);
         SetFOV(FOV);
 
+        glm::vec4 waterColor = m_WaterManager->GetWaterColor();
+        ImGui::ColorEdit4("Water Color", (float*)&waterColor);
+        m_WaterManager->SetWaterColor(waterColor);
+
         if (ImGui::CollapsingHeader("Select HDRI"))
         {
             ImGui::RadioButton("Greenwich Park", &m_HDRI_Edit, HDRI_GREENWICH_PARK);
@@ -1587,6 +1591,9 @@ void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture
     shaderEditor->setVec4("tintColor", sceneObject->color);
     shaderEditor->setBool("isSelected", sceneObject->isSelected);
 
+    shaderEditor->setFloat("material.specularIntensity", m_MaterialSpecular);  // TODO - use material attribute
+    shaderEditor->setFloat("material.shininess", m_MaterialShininess); // TODO - use material attribute
+
     if (texture != nullptr)
         texture->Bind(0);
 
@@ -1645,11 +1652,14 @@ void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* t
 void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
+
     shaderSkinning->Bind();
+
     SkinnedMesh* skinnedMesh = (SkinnedMesh*)sceneObject->mesh;
     skinnedMesh->BoneTransform(runningTime, m_SkinningTransforms[sceneObject->name]);
     shaderSkinning->setMat4("model", sceneObject->transform);
     shaderSkinning->setInt("gColorMap", 0);
+    shaderSkinning->setVec3("gEyeWorldPos", m_Camera->GetPosition());
     shaderSkinning->setFloat("gMatSpecularIntensity", m_MaterialSpecular);
     shaderSkinning->setFloat("gSpecularPower", m_MaterialShininess);
     char locBuff[100] = { '\0' };
@@ -1920,6 +1930,11 @@ void SceneEditor::RenderSkybox(Shader* shaderBackground)
     shaderBackground->Bind();
     // render skybox (render as last to prevent overdraw)
 
+    glm::mat4 transform = glm::mat4(1.0f);
+    float angleRadians = glm::radians((GLfloat)glfwGetTime());
+    transform = glm::rotate(transform, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+    shaderBackground->setMat4("model", transform);
+
     m_MaterialWorkflowPBR->BindEnvironmentCubemap(0);
     shaderBackground->setInt("environmentMap", 0);
 
@@ -2045,7 +2060,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             shouldRenderObject = false;
 
         // Don't render Water tiles in Water Render Passes
-        if (object->name == "water" && (passType == "water_reflect" || passType == "water_refract"))
+        if (object->name == "water" && passType != "main")
             shouldRenderObject = false;
 
         // Setup Shader Uniforms

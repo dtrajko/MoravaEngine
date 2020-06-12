@@ -21,6 +21,8 @@ WaterManager::WaterManager(int width, int height, float waterHeight, float waveS
 	m_WaveSpeed = waveSpeed;
 	m_MoveFactor = waveSpeed;
 
+	m_WaterColor = glm::vec4(0.0, 0.6, 1.0, 1.0);
+
 	reflectionFB = new FramebufferWater(m_Width, m_Height);
 
 	FramebufferTexture* reflectionTextureAttachment = new FramebufferTexture(m_Width, m_Height, AttachmentFormat::Color, 0);
