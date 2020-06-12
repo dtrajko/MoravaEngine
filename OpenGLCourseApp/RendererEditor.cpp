@@ -151,13 +151,13 @@ void RendererEditor::RenderPassWaterReflection(Window& mainWindow, Scene* scene,
 
     Shader* shaderEditor = shaders["editor_object"];
     shaderEditor->Bind();
-    shaderEditor->setVec3("eyePosition", scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
+    shaderEditor->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
     shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditor->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
-
+    
     Shader* shaderEditorPBR = shaders["editor_object_pbr"];
     shaderEditorPBR->Bind();
-    shaderEditorPBR->setVec3("eyePosition", scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
+    shaderEditorPBR->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
 
@@ -184,9 +184,15 @@ void RendererEditor::RenderPassWaterRefraction(Window& mainWindow, Scene* scene,
 
     Shader* shaderEditor = shaders["editor_object"];
     shaderEditor->Bind();
-
-    shaderEditor->setVec3("eyePosition", scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
+    shaderEditor->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
     shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderEditor->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
+
+    Shader* shaderEditorPBR = shaders["editor_object_pbr"];
+    shaderEditorPBR->Bind();
+    shaderEditorPBR->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
+    shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
 
     std::string passType = "water_refract";
     scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
@@ -361,7 +367,7 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     shaderEditor->setInt("pointLightCount", LightManager::pointLightCount);
     shaderEditor->setInt("spotLightCount", LightManager::spotLightCount);
     // Eye position / camera direction
-    shaderEditor->setVec3("eyePosition", scene->GetCamera()->GetPosition());
+    shaderEditor->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
     /**** End editor_object ****/
 
     /**** Begin editor_object_pbr ****/
@@ -370,9 +376,9 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     // Init shaderEditorPBR
     // initialize static shader uniforms before rendering
     shaderEditorPBR->Bind();
-    shaderEditorPBR->setVec3("eyePosition", scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
+    shaderEditorPBR->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-    shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
+    // shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
 
     shaderEditorPBR->setInt("pointSpotLightCount", LightManager::pointLightCount + LightManager::spotLightCount);
 
@@ -457,6 +463,8 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     /**** Begin skinning ****/
     Shader* shaderSkinning = shaders["skinning"];
     shaderSkinning->Bind();
+    shaderSkinning->setMat4("projection", projectionMatrix);
+    shaderSkinning->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
     shaderSkinning->setVec3("gEyeWorldPos", scene->GetCamera()->GetPosition());
 
     // Directional Light
@@ -512,6 +520,8 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     shaderWater->setFloat("moveFactor", scene->GetWaterManager()->GetWaterMoveFactor());
     shaderWater->setFloat("nearPlane", scene->GetSettings().nearPlane);
     shaderWater->setFloat("farPlane", scene->GetSettings().farPlane);
+    shaderWater->setVec3("lightPosition", scene->GetLightManager()->directionalLight.GetPosition());
+    shaderWater->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
     /**** End shaderWater ****/
 
     if (scene->GetSettings().enableSkybox)
@@ -522,6 +532,7 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
         scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->CalculateViewMatrix(), projectionMatrix);
     }
 
+    scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
     std::string passType = "main";
     scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 }
@@ -547,17 +558,36 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     shaderEditorPBR->Bind();
     shaderEditorPBR->setMat4("projection", projectionMatrix);
     shaderEditorPBR->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
-    shaderEditorPBR->setVec3("eyePosition", scene->GetCamera()->GetPosition());
-
-    Shader* shaderGizmo = shaders["gizmo"];
-    shaderGizmo->Bind();
-    shaderGizmo->setMat4("projection", projectionMatrix);
-    shaderGizmo->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    shaderEditorPBR->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
 
     Shader* shaderSkinning = shaders["skinning"];
     shaderSkinning->Bind();
     shaderSkinning->setMat4("projection", projectionMatrix);
     shaderSkinning->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+
+    Shader* shaderShadowMap = shaders["shadow_map"];
+    shaderShadowMap->Bind();
+    shaderShadowMap->setMat4("dirLightTransform", scene->GetLightManager()->directionalLight.CalculateLightTransform());
+
+    Shader* shaderOmniShadowMap = shaders["omni_shadow_map"];
+    shaderOmniShadowMap->Bind();
+    shaderOmniShadowMap->setVec3("lightPosition", scene->GetLightManager()->directionalLight.GetPosition());
+    shaderOmniShadowMap->setFloat("farPlane", scene->GetSettings().farPlane);
+
+    Shader* shaderWater = shaders["water"];
+    shaderWater->Bind();
+    shaderWater->setMat4("projection", projectionMatrix);
+    shaderWater->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    shaderWater->setVec3("lightPosition", scene->GetLightManager()->directionalLight.GetPosition());
+    shaderWater->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
+    shaderWater->setFloat("moveFactor", scene->GetWaterManager()->GetWaterMoveFactor());
+    shaderWater->setFloat("nearPlane", scene->GetSettings().nearPlane);
+    shaderWater->setFloat("farPlane", scene->GetSettings().farPlane);
+
+    Shader* shaderGizmo = shaders["gizmo"];
+    shaderGizmo->Bind();
+    shaderGizmo->setMat4("projection", projectionMatrix);
+    shaderGizmo->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
 
     Shader* shaderGlass = shaders["glass"];
     shaderGlass->Bind();

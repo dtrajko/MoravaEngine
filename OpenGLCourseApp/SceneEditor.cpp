@@ -38,6 +38,7 @@ SceneEditor::SceneEditor()
     sceneSettings.cameraStartPitch = 0.0f;
     sceneSettings.cameraMoveSpeed  = 1.0f;
     sceneSettings.waterHeight      = 0.0f;
+    sceneSettings.waterWaveSpeed   = 0.05f;
     sceneSettings.enableSkybox       = false;
     sceneSettings.enablePointLights  = true;
     sceneSettings.enableSpotLights   = true;
@@ -48,7 +49,7 @@ SceneEditor::SceneEditor()
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
     sceneSettings.directionalLight.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
-    sceneSettings.directionalLight.direction = glm::vec3(1.0f, 0.5f, -0.6f);
+    sceneSettings.directionalLight.direction = glm::vec3(0.6f, -0.5f, -0.6f);
     sceneSettings.directionalLight.base.ambientIntensity = 0.75f;
     sceneSettings.directionalLight.base.diffuseIntensity = 0.4f;
     sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 40.0f);
@@ -505,6 +506,9 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
             object->mesh->Update(object->scale);
         else if (object->m_Type == "model" && object->model != nullptr)
             object->model->Update(object->scale);
+
+        if (object->name == "water")
+            m_WaterManager->SetWaterHeight(object->position.y);
     }
 
     if (m_HDRI_Edit != m_HDRI_Edit_Prev)
@@ -1575,6 +1579,38 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
     return model;
 }
 
+void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject)
+{
+    shaderEditor->Bind();
+
+    shaderEditor->setMat4("model", sceneObject->transform);
+    shaderEditor->setVec4("tintColor", sceneObject->color);
+    shaderEditor->setBool("isSelected", sceneObject->isSelected);
+
+    if (texture != nullptr)
+        texture->Bind(0);
+
+    shaderEditor->setInt("albedoMap", 0);
+    shaderEditor->setFloat("tilingFactor", sceneObject->tilingFactor);
+
+    if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
+        m_MaterialWorkflowPBR->BindEnvironmentCubemap(1);
+    else if (m_PBR_Map_Edit == PBR_MAP_IRRADIANCE)
+        m_MaterialWorkflowPBR->BindIrradianceMap(1);
+    else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
+        m_MaterialWorkflowPBR->BindPrefilterMap(1);
+
+    shaderEditor->setInt("cubeMap", 1);
+    shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
+
+    // Shadows in shaderEditor
+    LightManager::directionalLight.GetShadowMap()->Read(2);
+    shaderEditor->setInt("shadowMap", 2);
+
+    // printf("SceneEditor::SetUniformsShaderEditor READ from FBO = %i Texture ID = %i\n",
+    //     LightManager::directionalLight.GetShadowMap()->GetFBO(), LightManager::directionalLight.GetShadowMap()->GetTextureID());
+}
+
 void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Material* material, SceneObject* sceneObject)
 {
     shaderEditorPBR->Bind();
@@ -1606,38 +1642,6 @@ void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* t
     //     LightManager::directionalLight.GetShadowMap()->GetFBO(), LightManager::directionalLight.GetShadowMap()->GetTextureID());
 }
 
-void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject)
-{
-    shaderEditor->Bind();
-
-    shaderEditor->setMat4("model",      sceneObject->transform);
-    shaderEditor->setVec4("tintColor",  sceneObject->color);
-    shaderEditor->setBool("isSelected", sceneObject->isSelected);
-
-    if (texture != nullptr)
-        texture->Bind(0);
-
-    shaderEditor->setInt("albedoMap", 0);
-    shaderEditor->setFloat("tilingFactor", sceneObject->tilingFactor);
-
-    if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
-        m_MaterialWorkflowPBR->BindEnvironmentCubemap(1);
-    else if (m_PBR_Map_Edit == PBR_MAP_IRRADIANCE)
-        m_MaterialWorkflowPBR->BindIrradianceMap(1);
-    else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
-        m_MaterialWorkflowPBR->BindPrefilterMap(1);
-
-    shaderEditor->setInt("cubeMap", 1);
-    shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
-
-    // Shadows in shaderEditor
-    LightManager::directionalLight.GetShadowMap()->Read(2);
-    shaderEditor->setInt("shadowMap", 2);
-
-    // printf("SceneEditor::SetUniformsShaderEditor READ from FBO = %i Texture ID = %i\n",
-    //     LightManager::directionalLight.GetShadowMap()->GetFBO(), LightManager::directionalLight.GetShadowMap()->GetTextureID());
-}
-
 void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
@@ -1656,11 +1660,9 @@ void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject*
     }
 }
 
-void SceneEditor::SetUniformsShaderWater(Shader* shaderWater, SceneObject* sceneObject)
+void SceneEditor::SetUniformsShaderWater(Shader* shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix)
 {
     RendererBasic::EnableTransparency();
-
-    shaderWater->Bind();
 
     shaderWater->Bind();
     shaderWater->setInt("reflectionTexture", 0);
@@ -1669,17 +1671,21 @@ void SceneEditor::SetUniformsShaderWater(Shader* shaderWater, SceneObject* scene
     shaderWater->setInt("dudvMap",           3);
     shaderWater->setInt("depthMap",          4);
 
-    shaderWater->setMat4("model", sceneObject->transform);
+    shaderWater->setMat4("model",          sceneObject->transform);
+    shaderWater->setMat4("view",           m_Camera->CalculateViewMatrix());
+    shaderWater->setMat4("projection",     projectionMatrix);
+    shaderWater->setVec3("lightPosition",  -(LightManager::directionalLight.GetDirection()));
+    shaderWater->setVec3("cameraPosition", m_Camera->GetPosition());
+    shaderWater->setVec3("lightColor",     LightManager::directionalLight.GetColor());
+    shaderWater->setFloat("moveFactor",    m_WaterManager->GetWaterMoveFactor());
+    shaderWater->setFloat("nearPlane",     sceneSettings.nearPlane);
+    shaderWater->setFloat("farPlane",      sceneSettings.farPlane);
 
     m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(0);
-    // m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(1);
-    // textures["waterNormal"]->Bind(2);
-    // textures["waterDuDv"]->Bind(3);
-    // m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(4);
-
-    shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
-    shaderWater->setVec3("lightPosition", -(LightManager::directionalLight.GetDirection()));
-    shaderWater->setVec3("cameraPosition", m_Camera->GetPosition());
+    m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(1);
+    textures["waterNormal"]->Bind(2);
+    textures["waterDuDv"]->Bind(3);
+    m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(4);
 }
 
 void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix)
@@ -2015,19 +2021,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             shaders["omni_shadow_map"]->Bind();
             shaders["omni_shadow_map"]->setMat4("model", object->transform);
         }
-        else if (passType == "water_reflect") {
-            float angleRadians = glm::radians((GLfloat)glfwGetTime());
-            glm::mat4 transform = glm::rotate(object->transform, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-            shaders["water"]->setMat4("model", transform);
-            textures["none"]->Bind(0); // Default fallback for Albedo texture
-            shaders["water"]->Bind();
-        }
-        else if (passType == "water_refract") {
-            textures["none"]->Bind(0); // Default fallback for Albedo texture
-            shaders["water"]->Bind();
-            shaders["water"]->setMat4("model", object->transform);
-        }
-        else if (passType == "main") {
+        else if (passType == "main" || passType == "water_reflect" || passType == "water_refract") {
             textures["none"]->Bind(0); // Default fallback for Albedo texture
             shaders["editor_object"]->Bind();
             shaders["editor_object"]->setMat4("model", object->transform);
@@ -2035,6 +2029,8 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             shaders["editor_object_pbr"]->setMat4("model", object->transform);
             shaders["skinning"]->Bind();
             shaders["skinning"]->setMat4("model", object->transform);
+            shaders["water"]->Bind();
+            shaders["water"]->setMat4("model", object->transform);
         }
 
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
@@ -2054,7 +2050,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         if (object->name == "water") { // is it a water tile
             // Render with 'water' shader
             if (passType == "main")
-                SetUniformsShaderWater(shaders["water"], object);
+                SetUniformsShaderWater(shaders["water"], object, projectionMatrix);
         }
         else if (m_SkinnedMeshes.find(object->m_TypeID) != m_SkinnedMeshes.end()) // is it a skinned mesh?
         {
@@ -2083,7 +2079,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         RenderLineElements(shaders["basic"], projectionMatrix);
         RenderSkybox(shaders["background"]);
         // RenderFramebufferTextures(shaders["editor_object"]);
-
+        
         // Render gizmo on front of everything (depth mask enabled)
         if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
             m_Gizmo->Render(shaders["gizmo"]);
