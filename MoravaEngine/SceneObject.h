@@ -11,16 +11,17 @@
 #include <string>
 
 // reserved ID range for meshes 0-999
-const int MESH_TYPE_CUBE     = 0;
-const int MESH_TYPE_PYRAMID  = 1;
-const int MESH_TYPE_SPHERE   = 2;
-const int MESH_TYPE_CYLINDER = 3;
-const int MESH_TYPE_CONE     = 4;
-const int MESH_TYPE_RING     = 5;
-const int MESH_TYPE_BOB_LAMP = 6;
-const int MESH_TYPE_ANIM_BOY = 7;
-const int MESH_TYPE_TERRAIN  = 8;
-const int MESH_TYPE_WATER    = 9;
+const int MESH_TYPE_CUBE     =  0;
+const int MESH_TYPE_PYRAMID  =  1;
+const int MESH_TYPE_SPHERE   =  2;
+const int MESH_TYPE_CYLINDER =  3;
+const int MESH_TYPE_CONE     =  4;
+const int MESH_TYPE_RING     =  5;
+const int MESH_TYPE_BOB_LAMP =  6;
+const int MESH_TYPE_ANIM_BOY =  7;
+const int MESH_TYPE_TERRAIN  =  8;
+const int MESH_TYPE_WATER    =  9;
+const int MESH_TYPE_DRONE    = 10;
 
 // Models start at 1000
 const int MODEL_STONE_CARVED   = 1000;

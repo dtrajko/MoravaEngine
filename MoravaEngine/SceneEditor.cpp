@@ -1015,16 +1015,17 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     {
         if (ImGui::CollapsingHeader("Add Mesh"))
         {
-            ImGui::RadioButton("Cube",     &m_CurrentObjectTypeID, MESH_TYPE_CUBE);
-            ImGui::RadioButton("Pyramid",  &m_CurrentObjectTypeID, MESH_TYPE_PYRAMID);
-            ImGui::RadioButton("Sphere",   &m_CurrentObjectTypeID, MESH_TYPE_SPHERE);
-            ImGui::RadioButton("Cylinder", &m_CurrentObjectTypeID, MESH_TYPE_CYLINDER);
-            ImGui::RadioButton("Cone",     &m_CurrentObjectTypeID, MESH_TYPE_CONE);
-            ImGui::RadioButton("Ring",     &m_CurrentObjectTypeID, MESH_TYPE_RING);
-            ImGui::RadioButton("Bob Lamp", &m_CurrentObjectTypeID, MESH_TYPE_BOB_LAMP);
-            ImGui::RadioButton("Anim Boy", &m_CurrentObjectTypeID, MESH_TYPE_ANIM_BOY);
-            ImGui::RadioButton("Terrain",  &m_CurrentObjectTypeID, MESH_TYPE_TERRAIN);
-            ImGui::RadioButton("Water",    &m_CurrentObjectTypeID, MESH_TYPE_WATER);
+            ImGui::RadioButton("Cube",         &m_CurrentObjectTypeID, MESH_TYPE_CUBE);
+            ImGui::RadioButton("Pyramid",      &m_CurrentObjectTypeID, MESH_TYPE_PYRAMID);
+            ImGui::RadioButton("Sphere",       &m_CurrentObjectTypeID, MESH_TYPE_SPHERE);
+            ImGui::RadioButton("Cylinder",     &m_CurrentObjectTypeID, MESH_TYPE_CYLINDER);
+            ImGui::RadioButton("Cone",         &m_CurrentObjectTypeID, MESH_TYPE_CONE);
+            ImGui::RadioButton("Ring",         &m_CurrentObjectTypeID, MESH_TYPE_RING);
+            ImGui::RadioButton("Bob Lamp",     &m_CurrentObjectTypeID, MESH_TYPE_BOB_LAMP);
+            ImGui::RadioButton("Anim Boy",     &m_CurrentObjectTypeID, MESH_TYPE_ANIM_BOY);
+            ImGui::RadioButton("Terrain",      &m_CurrentObjectTypeID, MESH_TYPE_TERRAIN);
+            ImGui::RadioButton("Water",        &m_CurrentObjectTypeID, MESH_TYPE_WATER);
+            ImGui::RadioButton("Buster Drone", &m_CurrentObjectTypeID, MESH_TYPE_DRONE);
         }
 
         if (ImGui::CollapsingHeader("Add Model"))
@@ -1250,6 +1251,51 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
     ImGui::ShowMetricsWindow();
 }
 
+Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale)
+{
+    Mesh* mesh;
+    switch (meshTypeID)
+    {
+    case MESH_TYPE_CUBE:
+        mesh = new Block(scale);
+        break;
+    case MESH_TYPE_PYRAMID:
+        mesh = new Pyramid(scale);
+        break;
+    case MESH_TYPE_SPHERE:
+        mesh = new Sphere(scale);
+        break;
+    case MESH_TYPE_CYLINDER:
+        mesh = new Cylinder(scale);
+        break;
+    case MESH_TYPE_CONE:
+        mesh = new Cone(scale);
+        break;
+    case MESH_TYPE_RING:
+        mesh = new Ring(scale);
+        break;
+    case MESH_TYPE_BOB_LAMP:
+        mesh = new SkinnedMesh("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Textures/OGLdev/BobLamp");
+        break;
+    case MESH_TYPE_ANIM_BOY:
+        mesh = new SkinnedMesh("Models/AnimatedCharacter.dae", "Textures");
+        break;
+    case MESH_TYPE_TERRAIN:
+        mesh = new Terrain("Textures/horizon_mountains.png", 4.0f, nullptr);
+        break;
+    case MESH_TYPE_WATER:
+        mesh = new Tile2D();
+        break;
+    case MESH_TYPE_DRONE:
+        mesh = new SkinnedMesh("Models/BusterDrone/busterDrone.gltf", "Textures/BusterDrone");
+        break;
+    default:
+        mesh = new Block(scale);
+        break;
+    }
+    return mesh;
+}
+
 SceneObject* SceneEditor::CreateNewSceneObject()
 {
     // Add Scene Object here
@@ -1334,6 +1380,14 @@ void SceneEditor::AddSceneObject()
             scale = glm::vec3(1.0f);
             positionAABB = glm::vec3(0.0f, 0.0f, 0.0f);
             scaleAABB = glm::vec3(2.0f, 0.5f, 2.0f);
+        }
+        else if (m_CurrentObjectTypeID == MESH_TYPE_DRONE) {
+            modelName = "buster_drone";
+            materialName = "buster_drone";
+            rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+            scale = glm::vec3(1.0f);
+            positionAABB = glm::vec3(0.0f, 0.0f, 0.0f);
+            scaleAABB = glm::vec3(1.0f, 1.0f, 1.0f);
         }
     }
     else if (m_CurrentObjectTypeID >= 1000) { // Model - ID range 1000+
@@ -1515,48 +1569,6 @@ void SceneEditor::DeleteSceneObject(Window& mainWindow, std::vector<SceneObject*
     // delete Gizmo if there's no objects
     if (m_SceneObjects.size() == 0)
         m_Gizmo->SetActive(false);
-}
-
-Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale)
-{
-    Mesh* mesh;
-    switch (meshTypeID)
-    {
-    case MESH_TYPE_CUBE:
-        mesh = new Block(scale);
-        break;
-    case MESH_TYPE_PYRAMID:
-        mesh = new Pyramid(scale);
-        break;
-    case MESH_TYPE_SPHERE:
-        mesh = new Sphere(scale);
-        break;
-    case MESH_TYPE_CYLINDER:
-        mesh = new Cylinder(scale);
-        break;
-    case MESH_TYPE_CONE:
-        mesh = new Cone(scale);
-        break;
-    case MESH_TYPE_RING:
-        mesh = new Ring(scale);
-        break;
-    case MESH_TYPE_BOB_LAMP:
-        mesh = new SkinnedMesh("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Textures/OGLdev/BobLamp");
-        break;
-    case MESH_TYPE_ANIM_BOY:
-        mesh = new SkinnedMesh("Models/AnimatedCharacter.dae", "Textures");
-        break;
-    case MESH_TYPE_TERRAIN:
-        mesh = new Terrain("Textures/horizon_mountains.png", 4.0f, nullptr);
-        break;
-    case MESH_TYPE_WATER:
-        mesh = new Tile2D();
-        break;
-    default:
-        mesh = new Block(scale);
-        break;
-    }
-    return mesh;
 }
 
 Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)

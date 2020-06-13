@@ -264,7 +264,7 @@ Color	1.000000	1.000000	1.000000	1.000000
 Name	pine
 TextureName	pine
 TilingFactor	1.000000
-IsSelected	0
+IsSelected	1
 Type	model
 TypeID	1008
 MaterialName	none
@@ -335,7 +335,7 @@ MaterialName
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	21
-Position	-6.810011	6.539000	-38.019993
+Position	-6.828014	6.539000	-37.019993
 Rotation	0.000000	-89.980217	0.000000
 Scale	0.010000	0.010000	0.010000
 PositionAABB	0.000000	130.000000	-10.000000
@@ -351,7 +351,7 @@ MaterialName	none
 TilingFactorMaterial	1.000000
 EndObject
 BeginObject	22
-Position	-15.200012	6.539000	-30.360003
+Position	-14.930013	6.539000	-30.360003
 Rotation	0.000000	-89.980217	0.000000
 Scale	0.010000	0.010000	0.010000
 PositionAABB	0.000000	130.000000	-10.000000
@@ -363,6 +363,38 @@ TilingFactor	1.000000
 IsSelected	0
 Type	model
 TypeID	1004
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	23
+Position	-32.629963	9.233001	51.539986
+Rotation	0.000000	-0.000000	0.000000
+Scale	1.000000	1.000000	1.000000
+PositionAABB	0.000000	9.000000	0.000000
+ScaleAABB	2.000000	18.000000	2.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	pine
+TextureName	pine
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1008
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	24
+Position	-52.359978	11.248011	21.339998
+Rotation	0.000000	-0.000000	0.000000
+Scale	1.000000	1.000000	1.000000
+PositionAABB	0.000000	9.000000	0.000000
+ScaleAABB	2.000000	18.000000	2.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	pine
+TextureName	pine
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1008
 MaterialName	none
 TilingFactorMaterial	1.000000
 EndObject
