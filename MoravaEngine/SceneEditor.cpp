@@ -33,7 +33,7 @@ SceneEditor::SceneEditor()
 {
     m_LightManager = nullptr;
 
-    sceneSettings.cameraPosition   = glm::vec3(0.0f, 2.0f, 12.0f);
+    sceneSettings.cameraPosition   = glm::vec3(0.0f, 5.0f, 20.0f);
     sceneSettings.cameraStartYaw   = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
     sceneSettings.cameraMoveSpeed  = 1.0f;
@@ -271,7 +271,8 @@ void SceneEditor::SetTextures()
     m_TextureInfo.insert(std::make_pair("hheli",              "Textures/OGLdev/hheli/hheli.bmp"));
     m_TextureInfo.insert(std::make_pair("jeep_army",          "Textures/OGLdev/jeep/jeep_army.jpg"));
     m_TextureInfo.insert(std::make_pair("jeep_rood",          "Textures/OGLdev/jeep/jeep_rood.jpg"));
-    m_TextureInfo.insert(std::make_pair("socuwan_tree",       "Textures/Socuwan/Trees/diffuse.png"));
+    m_TextureInfo.insert(std::make_pair("pine",               "Textures/ThinMatrix/pine.png"));
+    m_TextureInfo.insert(std::make_pair("terrain_ground",     "Textures/terrain_ground.jpg"));
 
 #define ASYNC_LOAD_TEXTURES 0
 #if ASYNC_LOAD_TEXTURES
@@ -1036,7 +1037,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
             ImGui::RadioButton("Damaged Helmet", &m_CurrentObjectTypeID, MODEL_DAMAGED_HELMET);
             ImGui::RadioButton("SF Helmet",      &m_CurrentObjectTypeID, MODEL_SF_HELMET);
             ImGui::RadioButton("Cerberus",       &m_CurrentObjectTypeID, MODEL_CERBERUS);
-            ImGui::RadioButton("Socuwan Tree",   &m_CurrentObjectTypeID, MODEL_SOCUWAN_TREE);
+            ImGui::RadioButton("Pine",           &m_CurrentObjectTypeID, MODEL_PINE);
         }
     }
     ImGui::End();
@@ -1400,14 +1401,14 @@ void SceneEditor::AddSceneObject()
             positionAABB = glm::vec3(0.0f, -50.0f, -8.0f);
             scaleAABB = glm::vec3(20.0f, 150.0f, 45.0f);
         }
-        else if (m_CurrentObjectTypeID == MODEL_SOCUWAN_TREE) {
-            modelName = "socuwan_tree";
+        else if (m_CurrentObjectTypeID == MODEL_PINE) {
+            modelName = "pine";
             materialName = "none";
             position = glm::vec3(0.0f, 0.0f, 0.0f);
             rotation = glm::vec3(0.0f, 0.0f, 0.0f);
             scale = glm::vec3(1.0f);
-            positionAABB = glm::vec3(0.0f, 0.0f, 0.0f);
-            scaleAABB = glm::vec3(1.0f, 1.0f, 1.0f);
+            positionAABB = glm::vec3(0.0f, 9.0f, 0.0f);
+            scaleAABB = glm::vec3(2.0f, 18.0f, 2.0f);
         }
     }
 
@@ -1455,7 +1456,7 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
         mesh = CreateNewMesh(oldSceneObject->m_TypeID, oldSceneObject->mesh->GetScale());
     }
     else if (oldSceneObject->m_Type == "model" && oldSceneObject->model != nullptr) {
-        model = AddNewModel(m_CurrentObjectTypeID, oldSceneObject->mesh->GetScale()); // TODO: m_CurrentModelID hard-coded, must be in SceneObject
+        model = AddNewModel(m_CurrentObjectTypeID, oldSceneObject->scale); // TODO: m_CurrentModelID hard-coded, must be in SceneObject
     }
 
     SceneObject* newSceneObject = new SceneObject();
@@ -1587,8 +1588,8 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
     case MODEL_CERBERUS:
         model = new Model("Models/Cerberus_LP.FBX", "Textures/PBR/Cerberus");
         break;
-    case MODEL_SOCUWAN_TREE:
-        model = new Model("Models/Socuwan/Trees/model.obj", "Textures/Socuwan/Trees");
+    case MODEL_PINE:
+        model = new Model("Models/ThinMatrix/pine.obj", "Textures\ThinMatrix");
         break;
     default:
         model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");
