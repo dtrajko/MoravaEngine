@@ -1,0 +1,306 @@
+# Blender MTL File: 'None'
+# Material Count: 25
+
+newmtl Material__25
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/lion.tga
+bump Sponza/lion_ddn.tga -bm 1
+map_Ka Sponza/lion.tga
+
+newmtl Material__298
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/background.tga
+bump Sponza/background_ddn.tga -bm 1
+map_Ka Sponza/background.tga
+
+newmtl Material__47
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+
+
+newmtl Material__57
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd Sponza/vase_plant.tga
+map_d Sponza/vase_plant_mask.tga
+map_Ka Sponza/vase_plant.tga
+
+newmtl arch
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_arch_diff.tga
+map_Ka Sponza/sponza_arch_diff.tga
+bump Sponza/sponza_arch_ddn.tga -bm 1
+
+newmtl bricks
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/spnza_bricks_a_diff.tga
+bump Sponza/spnza_bricks_a_ddn.tga -bm 1
+map_Ka Sponza/spnza_bricks_a_diff.tga
+
+newmtl ceiling
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_ceiling_a_diff.tga
+map_Ka Sponza/sponza_ceiling_a_diff.tga
+bump Sponza/sponza_ceiling_a_ddn.tga -bm 1
+
+newmtl chain
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd Sponza/chain_texture.tga
+map_d Sponza/chain_texture_mask.tga
+bump Sponza/chain_texture_ddn.tga -bm 1
+map_Ka Sponza/chain_texture.tga
+
+newmtl column_a
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_column_a_diff.tga
+bump Sponza/sponza_column_a_ddn.tga -bm 1
+map_Ka Sponza/sponza_column_a_diff.tga
+
+newmtl column_b
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_column_b_diff.tga
+bump Sponza/sponza_column_b_ddn.tga -bm 1
+map_Ka Sponza/sponza_column_b_diff.tga
+
+newmtl column_c
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_column_c_diff.tga
+bump Sponza/sponza_column_c_ddn.tga -bm 1
+map_Ka Sponza/sponza_column_c_diff.tga
+
+newmtl details
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_details_diff.tga
+map_Ka Sponza/sponza_details_diff.tga
+bump Sponza/sponza_details_ddn.tga -bm 1
+
+newmtl fabric_a
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_fabric_diff.tga
+map_Ka Sponza/sponza_fabric_diff.tga
+bump Sponza/sponza_fabric_ddn.tga -bm 1
+
+newmtl fabric_c
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_curtain_diff.png
+map_Ka Sponza/sponza_curtain_diff.png
+bump Sponza/sponza_curtain_ddn.png -bm 1
+
+
+newmtl fabric_d
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_fabric_blue_diff.tga
+map_Ka Sponza/sponza_fabric_blue_diff.tga
+bump Sponza/sponza_fabric_ddn.tga -bm 1
+
+
+newmtl fabric_e
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_fabric_green_diff.tga
+map_Ka Sponza/sponza_fabric_green_diff.tga
+bump Sponza/sponza_fabric_ddn.tga -bm 1
+
+
+newmtl fabric_f
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_curtain_green_diff.png
+map_Ka Sponza/sponza_curtain_green_diff.png
+bump Sponza/sponza_curtain_ddn.png -bm 1
+
+newmtl fabric_g
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_curtain_blue_diff.png
+map_Ka Sponza/sponza_curtain_blue_diff.png
+bump Sponza/sponza_curtain_ddn.png -bm 1
+
+
+newmtl flagpole
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_flagpole_diff.tga
+map_Ka Sponza/sponza_flagpole_diff.tga
+bump Sponza/sponza_flagpole_ddn.tga -bm 1
+
+newmtl floor
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_floor_a_diff.tga
+map_Ka Sponza/sponza_floor_a_diff.tga
+bump Sponza/sponza_floor_a_ddn.tga -bm 1
+
+newmtl leaf
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd Sponza/sponza_thorn_diff.tga
+map_d Sponza/sponza_thorn_mask.tga
+bump Sponza/sponza_thorn_ddn.tga -bm 1
+map_Ka Sponza/sponza_thorn_diff.tga
+
+newmtl roof
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/sponza_roof_diff.tga
+map_Ka Sponza/sponza_roof_diff.tga
+map_Ka Sponza/sponza_roof_ddn.tga -bm 1
+
+newmtl vase
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/vase_dif.tga
+map_Ka Sponza/vase_dif.tga
+bump Sponza/vase_ddn.tga -bm 1
+
+newmtl vase_hanging
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/vase_hanging.tga
+map_Ka Sponza/vase_hanging.tga
+bump Sponza/vase_hanging_ddn.tga -bm 1
+
+newmtl vase_round
+Ns 7.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.470400 0.470400 0.470400
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 0.000000
+illum 2
+map_Kd Sponza/vase_round.tga
+bump Sponza/vase_round_ddn.tga -bm 1
+map_Ka Sponza/vase_round.tga

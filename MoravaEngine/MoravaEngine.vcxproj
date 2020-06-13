@@ -1,0 +1,408 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{FABCD75E-496E-4408-B31C-D45E7D0DFC7A}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>OpenGLCourseApp</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>MoravaEngine</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)vendor\GLFW\lib-vc2019;$(SolutionDir)vendor\ASSIMP\lib;$(SolutionDir)vendor\GLEW\lib\Release\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)vendor\GLFW\lib-vc2019\x64;$(SolutionDir)vendor\ASSIMP\lib;$(SolutionDir)vendor\GLEW\lib\Release\x64;$(SolutionDir)vendor\bullet3\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)vendor\GLFW\lib-vc2019;$(SolutionDir)vendor\ASSIMP\lib;$(SolutionDir)vendor\GLEW\lib\Release\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\bullet3\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)vendor\GLFW\lib-vc2019\x64;$(SolutionDir)vendor\ASSIMP\lib;$(SolutionDir)vendor\GLEW\lib\Release\x64;$(SolutionDir)vendor\bullet3\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\vendor\ImGui\imgui.cpp" />
+    <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp" />
+    <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="..\vendor\ImGui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="..\vendor\tinygizmo\tiny-gizmo.cpp" />
+    <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="Noise.cpp" />
+    <ClCompile Include="SceneObject.cpp" />
+    <ClCompile Include="ShaderBackground.cpp" />
+    <ClCompile Include="ShaderBasic.cpp" />
+    <ClCompile Include="ShaderEditorObjects.cpp" />
+    <ClCompile Include="ShaderEditorObjectsPBR.cpp" />
+    <ClCompile Include="ShaderGizmo.cpp" />
+    <ClCompile Include="ShaderOmniShadowMap.cpp" />
+    <ClCompile Include="ShaderShadowMap.cpp" />
+    <ClCompile Include="ShaderSkinning.cpp" />
+    <ClCompile Include="ShaderWater.cpp" />
+    <ClCompile Include="SkinnedMesh.cpp" />
+    <ClCompile Include="Attachment.cpp" />
+    <ClCompile Include="Block.cpp" />
+    <ClCompile Include="BulletDebugDrawer.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Cone.cpp" />
+    <ClCompile Include="Cube.cpp" />
+    <ClCompile Include="Cubemap.cpp" />
+    <ClCompile Include="CubeNanosuit.cpp" />
+    <ClCompile Include="Cylinder.cpp" />
+    <ClCompile Include="DirectionalLight.cpp" />
+    <ClCompile Include="Framebuffer.cpp" />
+    <ClCompile Include="FramebufferWater.cpp" />
+    <ClCompile Include="FramebufferTexture.cpp" />
+    <ClCompile Include="GeometryFactory.cpp" />
+    <ClCompile Include="Gizmo.cpp" />
+    <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="ImGuiBuild.cpp" />
+    <ClCompile Include="ImGuiWrapper.cpp" />
+    <ClCompile Include="LearnOpenGL\MeshJoey.cpp" />
+    <ClCompile Include="LearnOpenGL\ModelJoey.cpp" />
+    <ClCompile Include="LearnOpenGL\SphereJoey.cpp" />
+    <ClCompile Include="learnopengl\TextureJoey.cpp" />
+    <ClCompile Include="Light.cpp" />
+    <ClCompile Include="LightManager.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="MaterialWorkflowPBR.cpp" />
+    <ClCompile Include="Math.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshData.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="MousePicker.cpp" />
+    <ClCompile Include="OmniShadowMap.cpp" />
+    <ClCompile Include="ParticleSystem.cpp" />
+    <ClCompile Include="Pivot.cpp" />
+    <ClCompile Include="PointLight.cpp" />
+    <ClCompile Include="Pyramid.cpp" />
+    <ClCompile Include="Quad.cpp" />
+    <ClCompile Include="RadianceHDR.cpp" />
+    <ClCompile Include="Raycast.cpp" />
+    <ClCompile Include="Renderbuffer.cpp" />
+    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="RendererAsteroids.cpp" />
+    <ClCompile Include="RendererBasic.cpp" />
+    <ClCompile Include="RendererCubemaps.cpp" />
+    <ClCompile Include="RendererEditor.cpp" />
+    <ClCompile Include="RendererFramebuffers.cpp" />
+    <ClCompile Include="RendererInstanced.cpp" />
+    <ClCompile Include="RendererJoey.cpp" />
+    <ClCompile Include="RendererNanosuit.cpp" />
+    <ClCompile Include="RendererPBR.cpp" />
+    <ClCompile Include="Ring.cpp" />
+    <ClCompile Include="Ring90.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneAsteroids.cpp" />
+    <ClCompile Include="SceneBullet.cpp" />
+    <ClCompile Include="SceneCubemaps.cpp" />
+    <ClCompile Include="SceneEditor.cpp" />
+    <ClCompile Include="SceneFramebuffers.cpp" />
+    <ClCompile Include="SceneInstanced.cpp" />
+    <ClCompile Include="SceneJoey.cpp" />
+    <ClCompile Include="SceneNanosuit.cpp" />
+    <ClCompile Include="SceneParticles.cpp" />
+    <ClCompile Include="ScenePBR.cpp" />
+    <ClCompile Include="SceneCottage.cpp" />
+    <ClCompile Include="SceneEiffel.cpp" />
+    <ClCompile Include="SceneTerrain.cpp" />
+    <ClCompile Include="SceneSponza.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShaderInstanced.cpp" />
+    <ClCompile Include="ShaderMain.cpp" />
+    <ClCompile Include="ShaderPBR.cpp" />
+    <ClCompile Include="ShadowMap.cpp" />
+    <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="SongHo\CylinderSongHo.cpp" />
+    <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="SpotLight.cpp" />
+    <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureAtlas.cpp" />
+    <ClCompile Include="TextureCubeMap.cpp" />
+    <ClCompile Include="TextureCubemapLite.cpp" />
+    <ClCompile Include="TextureLoader.cpp" />
+    <ClCompile Include="TextureSampler.cpp" />
+    <ClCompile Include="Tile2D.cpp" />
+    <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="WaterManager.cpp" />
+    <ClCompile Include="Window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\vendor\ImGui\imconfig.h" />
+    <ClInclude Include="..\vendor\ImGui\imgui.h" />
+    <ClInclude Include="..\vendor\ImGui\imgui_impl_dx11.h" />
+    <ClInclude Include="..\vendor\ImGui\imgui_impl_glfw.h" />
+    <ClInclude Include="..\vendor\ImGui\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\vendor\ImGui\imgui_impl_win32.h" />
+    <ClInclude Include="..\vendor\ImGui\imgui_internal.h" />
+    <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
+    <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
+    <ClInclude Include="..\vendor\tinygizmo\tiny-gizmo.hpp" />
+    <ClInclude Include="AABB.h" />
+    <ClInclude Include="Noise.h" />
+    <ClInclude Include="SceneObject.h" />
+    <ClInclude Include="ShaderBackground.h" />
+    <ClInclude Include="ShaderBasic.h" />
+    <ClInclude Include="ShaderEditorObjects.h" />
+    <ClInclude Include="ShaderEditorObjectsPBR.h" />
+    <ClInclude Include="ShaderGizmo.h" />
+    <ClInclude Include="ShaderOmniShadowMap.h" />
+    <ClInclude Include="ShaderShadowMap.h" />
+    <ClInclude Include="ShaderSkinning.h" />
+    <ClInclude Include="ShaderWater.h" />
+    <ClInclude Include="SkinnedMesh.h" />
+    <ClInclude Include="Attachment.h" />
+    <ClInclude Include="Block.h" />
+    <ClInclude Include="BulletDebugDrawer.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="CommonValues.h" />
+    <ClInclude Include="Cone.h" />
+    <ClInclude Include="Cube.h" />
+    <ClInclude Include="Cubemap.h" />
+    <ClInclude Include="CubeNanosuit.h" />
+    <ClInclude Include="Cylinder.h" />
+    <ClInclude Include="DirectionalLight.h" />
+    <ClInclude Include="Framebuffer.h" />
+    <ClInclude Include="FramebufferWater.h" />
+    <ClInclude Include="FramebufferTexture.h" />
+    <ClInclude Include="GeometryFactory.h" />
+    <ClInclude Include="Gizmo.h" />
+    <ClInclude Include="Grid.h" />
+    <ClInclude Include="ImGuiWrapper.h" />
+    <ClInclude Include="LearnOpenGL\Camera.h" />
+    <ClInclude Include="LearnOpenGL\MeshJoey.h" />
+    <ClInclude Include="LearnOpenGL\ModelJoey.h" />
+    <ClInclude Include="LearnOpenGL\SphereJoey.h" />
+    <ClInclude Include="learnopengl\TextureJoey.h" />
+    <ClInclude Include="Light.h" />
+    <ClInclude Include="LightManager.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="MaterialWorkflowPBR.h" />
+    <ClInclude Include="Math.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshData.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="MousePicker.h" />
+    <ClInclude Include="OmniShadowMap.h" />
+    <ClInclude Include="ParticleSystem.h" />
+    <ClInclude Include="Pivot.h" />
+    <ClInclude Include="PointLight.h" />
+    <ClInclude Include="Profiler.h" />
+    <ClInclude Include="Pyramid.h" />
+    <ClInclude Include="Quad.h" />
+    <ClInclude Include="RadianceHDR.h" />
+    <ClInclude Include="Raycast.h" />
+    <ClInclude Include="Renderbuffer.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RendererAsteroids.h" />
+    <ClInclude Include="RendererBasic.h" />
+    <ClInclude Include="RendererCubemaps.h" />
+    <ClInclude Include="RendererEditor.h" />
+    <ClInclude Include="RendererFramebuffers.h" />
+    <ClInclude Include="RendererInstanced.h" />
+    <ClInclude Include="RendererJoey.h" />
+    <ClInclude Include="RendererNanosuit.h" />
+    <ClInclude Include="RendererPBR.h" />
+    <ClInclude Include="Ring.h" />
+    <ClInclude Include="Ring90.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneAsteroids.h" />
+    <ClInclude Include="SceneBullet.h" />
+    <ClInclude Include="SceneCubemaps.h" />
+    <ClInclude Include="SceneEditor.h" />
+    <ClInclude Include="SceneFramebuffers.h" />
+    <ClInclude Include="SceneInstanced.h" />
+    <ClInclude Include="SceneJoey.h" />
+    <ClInclude Include="SceneNanosuit.h" />
+    <ClInclude Include="SceneParticles.h" />
+    <ClInclude Include="ScenePBR.h" />
+    <ClInclude Include="SceneCottage.h" />
+    <ClInclude Include="SceneEiffel.h" />
+    <ClInclude Include="SceneTerrain.h" />
+    <ClInclude Include="SceneSponza.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderInstanced.h" />
+    <ClInclude Include="ShaderMain.h" />
+    <ClInclude Include="ShaderPBR.h" />
+    <ClInclude Include="ShadowMap.h" />
+    <ClInclude Include="Skybox.h" />
+    <ClInclude Include="SongHo\CylinderSongHo.h" />
+    <ClInclude Include="Sphere.h" />
+    <ClInclude Include="SpotLight.h" />
+    <ClInclude Include="Terrain.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureAtlas.h" />
+    <ClInclude Include="TextureCubeMap.h" />
+    <ClInclude Include="TextureCubemapLite.h" />
+    <ClInclude Include="TextureLoader.h" />
+    <ClInclude Include="TextureSampler.h" />
+    <ClInclude Include="Tile2D.h" />
+    <ClInclude Include="Timer.h" />
+    <ClInclude Include="VertexInstanced.h" />
+    <ClInclude Include="VertexTBN.h" />
+    <ClInclude Include="WaterManager.h" />
+    <ClInclude Include="Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\vendor\bullet3\src\BulletCollision\BulletCollision.vcxproj">
+      <Project>{81acb07d-c787-3d07-b1b4-1d8b962a1176}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\vendor\bullet3\src\BulletDynamics\BulletDynamics.vcxproj">
+      <Project>{1b7d9736-b1d9-3a7a-bbf0-049f46f00fba}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\vendor\bullet3\src\LinearMath\LinearMath.vcxproj">
+      <Project>{409fe1f7-c852-31bb-a56a-bd4045dcca7c}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

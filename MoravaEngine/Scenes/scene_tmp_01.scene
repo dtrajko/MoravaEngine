@@ -1,0 +1,120 @@
+BeginObject	0
+Position	0.000000	4.015000	-1.927000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	10.050000	0.200000	10.672000	
+Color	1.000000	0.999990	0.999999	1.000000	
+UseTexture	1
+TextureName	rusted_iron
+TilingFactor	0.500000
+IsSelected	0
+EndObject
+BeginObject	1
+Position	-3.667000	2.000000	-1.875000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	1.000000	4.080000	7.044000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	wood
+TilingFactor	1.000000
+IsSelected	0
+EndObject
+BeginObject	2
+Position	0.833000	3.333000	-2.813000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	1.655000	6.526000	0.826000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	brick
+TilingFactor	1.000000
+IsSelected	0
+EndObject
+BeginObject	3
+Position	0.000000	-0.169000	0.000000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	20.000000	0.100000	20.000000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	water
+TilingFactor	0.500000
+IsSelected	0
+EndObject
+BeginObject	4
+Position	3.333000	2.000000	-1.875000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	1.000000	4.080000	7.044000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	wood
+TilingFactor	1.000000
+IsSelected	0
+EndObject
+BeginObject	5
+Position	-0.152000	2.000000	-5.938000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	8.015000	4.080000	1.079000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	wall_albedo
+TilingFactor	1.000000
+IsSelected	0
+EndObject
+BeginObject	6
+Position	0.729000	2.031000	1.354000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	4.194000	3.883000	0.100000	
+Color	0.000000	0.527964	0.975490	1.000000	
+UseTexture	0
+TextureName	lego
+TilingFactor	1.000000
+IsSelected	0
+EndObject
+BeginObject	7
+Position	-6.458000	0.990000	6.458000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	1.499000	0.204000	1.499000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	grass
+TilingFactor	0.488000
+IsSelected	0
+EndObject
+BeginObject	8
+Position	-6.458000	0.573000	6.458000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	2.017000	1.000000	2.069000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	rock2
+TilingFactor	0.488000
+IsSelected	0
+EndObject
+BeginObject	9
+Position	6.458000	0.573000	6.458000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	2.017000	1.000000	2.069000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	rock2
+TilingFactor	0.488000
+IsSelected	0
+EndObject
+BeginObject	10
+Position	6.458000	0.990000	6.458000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	1.499000	0.204000	1.499000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	grass
+TilingFactor	0.488000
+IsSelected	0
+EndObject
+BeginObject	11
+Position	0.000000	0.000000	0.000000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	16.010000	0.200000	16.010000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	marble
+TilingFactor	0.500000
+IsSelected	0
+EndObject

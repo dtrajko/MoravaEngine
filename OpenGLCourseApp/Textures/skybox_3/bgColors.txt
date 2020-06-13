@@ -1,3 +1,0 @@
-RED		0.832f
-GREEN	0.961f
-BLUE	0.996f

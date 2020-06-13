@@ -1,0 +1,72 @@
+Scene.h
+	DirectionalLight directionalLight;
+	PointLight pointLights[MAX_POINT_LIGHTS];
+	SpotLight spotLights[MAX_SPOT_LIGHTS];
+
+
+MAX_POINT_LIGHTS = 3
+MAX_SPOT_LIGHTS = 3
+
+
+uniformEyePosition
+uniformLightDirection
+
+
+Material.specularIntensity	"material.specularIntensity"
+Material.shininess			"material.shininess"
+
+Light.exponent
+
+SpotLight
+	PointLight base
+	direction
+	edge
+	
+directionalLight
+
+PointLight
+	ambientColor
+	ambientIntensity
+	diffuseIntensity
+	position
+	constant
+	linear
+	exponent
+
+PointLight(GLint ambientColorLocation, GLint ambientIntensityLocation, GLint diffuseIntensityLocation, GLint positionLocation, GLint constantLocation, GLint linearLocation, GLint exponentLocation);
+		
+SpotLight
+	color				"spotLights[%d].base.base.color"
+	ambientIntensity	"spotLights[%d].base.base.ambientIntensity"
+	diffuseIntensity	"spotLights[%d].base.base.diffuseIntensity"
+	position			"spotLights[%d].base.position"
+	direction			"spotLights[%d].direction"
+	constant			"spotLights[%d].base.constant"
+	linear				"spotLights[%d].base.linear"
+	exponent			"spotLights[%d].base.exponent"
+	edge				"spotLights[%d].edge"
+
+
+	for (size_t i = 0; i < MAX_SPOT_LIGHTS; i++)
+		char locBuff[100] = { '\0' };
+
+		snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.color", i);
+		uniformSpotLight[i].uniformColor = glGetUniformLocation(programID, locBuff);
+
+pointLight
+	position
+
+
+
+DirectionalLight
+	ambientColor			"directionalLight.color"
+	ambientIntensity		"directionalLight.ambientIntensity"	
+	diffuseIntensity		"directionalLight.diffuseIntensity"
+	direction				"directionalLight.direction"
+	
+	
+							"eyePosition"
+							"material.specularIntensity"
+							"material.shininess"
+
+

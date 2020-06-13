@@ -1,0 +1,70 @@
+BeginObject	0
+Position	9.249024	5.004973	0.639000
+Rotation	0.000000	-9.179989	90.000397
+Scale	10.006177	10.003983	10.003188
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	0
+TextureName	plain
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	5
+MaterialName	futur_panel_1
+TilingFactorMaterial	2.420000
+EndObject
+BeginObject	1
+Position	0.000000	5.004973	-0.046000
+Rotation	0.000000	0.000000	90.000397
+Scale	10.006177	10.003983	10.003188
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	0
+TextureName	plain
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	5
+MaterialName	futur_panel_1
+TilingFactorMaterial	2.420000
+EndObject
+BeginObject	2
+Position	-9.165992	5.004973	0.605003
+Rotation	0.000000	9.039993	90.000313
+Scale	10.006177	10.003983	10.003188
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	0
+TextureName	plain
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	5
+MaterialName	futur_panel_1
+TilingFactorMaterial	2.420000
+EndObject
+BeginObject	3
+Position	-18.111992	5.004973	2.721986
+Rotation	0.000000	18.060200	90.000313
+Scale	10.006177	10.003983	10.003188
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	0
+TextureName	plain
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	5
+MaterialName	futur_panel_1
+TilingFactorMaterial	2.420000
+EndObject
+BeginObject	4
+Position	18.180027	5.001979	2.725006
+Rotation	0.000000	-18.079992	90.000397
+Scale	10.006177	10.003983	10.003188
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	0
+TextureName	plain
+TilingFactor	1.000000
+IsSelected	0
+ObjectType	mesh
+MeshType	5
+MaterialName	futur_panel_1
+TilingFactorMaterial	2.420000
+EndObject

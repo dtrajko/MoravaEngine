@@ -74,7 +74,7 @@ StyleCopReport.xml
 *.ilk
 *.meta
 *.obj
-!OpenGLCourseApp/Models/*.obj
+!MoravaEngine/Models/*.obj
 *.iobj
 *.pch
 *.pdb
@@ -352,5 +352,5 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
-OpenGLCourseApp/imgui.ini
-OpenGLCourseApp/Scenes/scene_tmp.scene
+MoravaEngine/imgui.ini
+MoravaEngine/Scenes/scene_tmp.scene

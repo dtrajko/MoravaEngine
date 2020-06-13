@@ -1,0 +1,44 @@
+BeginObject	0
+Position	-3.481964	2.312987	-8.361051
+Rotation	0.000000	0.000000	0.000000
+Scale	5.508052	4.489996	6.008092
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	1
+TextureName	pyramid
+TilingFactor	0.389000
+IsSelected	0
+MeshType	1
+EndObject
+BeginObject	1
+Position	-1.726994	3.758013	1.029000
+Rotation	0.000000	-0.400000	0.000000
+Scale	7.899074	7.360031	9.401143
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	1
+TextureName	pyramid
+TilingFactor	0.389000
+IsSelected	0
+MeshType	1
+EndObject
+BeginObject	2
+Position	4.564005	2.173001	8.956011
+Rotation	0.000000	0.000000	0.000000
+Scale	5.848057	4.209977	6.143095
+Color	1.000000	1.000000	1.000000	1.000000
+UseTexture	1
+TextureName	pyramid
+TilingFactor	0.389000
+IsSelected	0
+MeshType	1
+EndObject
+BeginObject	3
+Position	0.000000	0.014000	0.000000
+Rotation	0.000000	0.000000	0.000000
+Scale	-23.626993	-0.138000	37.162033
+Color	1.000000	0.999996	0.000000	1.000000
+UseTexture	1
+TextureName	rock
+TilingFactor	0.444000
+IsSelected	1
+MeshType	0
+EndObject

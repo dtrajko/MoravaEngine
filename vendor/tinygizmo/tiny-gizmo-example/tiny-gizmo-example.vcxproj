@@ -119,6 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)vendor\tinygizmo\tiny-gizmo-example\third-party;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)vendor\GLEW\lib\Release\$(Platform);$(SolutionDir)vendor\GLFW\lib-vc2019\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

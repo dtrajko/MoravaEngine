@@ -1,0 +1,55 @@
+BeginObject	0
+Position	-3.929000	0.714000	-2.069000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	1.000000	1.000000	1.000000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	gold_albedo
+TilingFactor	1.000000
+IsSelected	0
+MeshType	0
+EndObject
+BeginObject	1
+Position	-2.143000	0.714000	-2.069000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	1.000000	1.000000	1.000000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	gold_albedo
+TilingFactor	1.000000
+IsSelected	0
+MeshType	1
+EndObject
+BeginObject	2
+Position	3.929000	0.714000	-2.069000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	1.000000	1.000000	1.000000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	gold_albedo
+TilingFactor	1.000000
+IsSelected	0
+MeshType	2
+EndObject
+BeginObject	3
+Position	2.143000	0.714000	-2.069000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	1.000000	1.000000	1.000000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	gold_albedo
+TilingFactor	1.000000
+IsSelected	0
+MeshType	3
+EndObject
+BeginObject	4
+Position	0.000000	0.714000	-2.069000	
+Rotation	0.000000	0.000000	0.000000	
+Scale	1.000000	1.000000	1.000000	
+Color	1.000000	1.000000	1.000000	1.000000	
+UseTexture	1
+TextureName	gold_albedo
+TilingFactor	1.000000
+IsSelected	0
+MeshType	4
+EndObject
