@@ -8,8 +8,10 @@ ParticleSystemThinMatrix::ParticleSystemThinMatrix()
 
 }
 
-ParticleSystemThinMatrix::ParticleSystemThinMatrix(float PPS, float speed, float gravityComplient, float lifeLength)
+ParticleSystemThinMatrix::ParticleSystemThinMatrix(ParticleTexture* texture, float PPS, float speed, float gravityComplient, float lifeLength)
 {
+	m_Texture = texture;
+
 	m_PPS = PPS;
 	m_Speed = speed;
 	m_GravityComplient = gravityComplient;
@@ -42,7 +44,7 @@ void ParticleSystemThinMatrix::EmitParticle(glm::vec3 center)
 	velocityNorm = glm::normalize(velocityNorm);
 	glm::vec3 velocity = velocityNorm * m_Speed;
 
-	new Particle(center, glm::vec3(0.0f), glm::vec3(1.0f), velocity, m_GravityComplient, m_LifeLength);
+	new Particle(m_Texture, center, glm::vec3(0.0f), glm::vec3(1.0f), velocity, m_GravityComplient, m_LifeLength);
 }
 
 ParticleSystemThinMatrix::~ParticleSystemThinMatrix()

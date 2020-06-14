@@ -172,7 +172,7 @@ SceneEditor::SceneEditor()
     TextureLoader::Get()->Print();
 
     ParticleMaster::Init();
-    m_ParticleSystemFire = new ParticleSystemThinMatrix(40.0f, 5.0f, 0.2f, 2.0f);
+    m_ParticleSystemFire = new ParticleSystemThinMatrix(new ParticleTexture(), 40.0f, 5.0f, 0.2f, 2.0f);
 }
 
 void SceneEditor::SetSkybox()

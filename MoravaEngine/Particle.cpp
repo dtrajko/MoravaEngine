@@ -8,6 +8,8 @@
 
 Particle::Particle()
 {
+	m_Texture = nullptr;
+
 	m_Position = glm::vec3(0.0f);
 	m_Rotation = glm::vec3(0.0f);
 	m_Scale = glm::vec3(1.0f);
@@ -19,9 +21,11 @@ Particle::Particle()
 	m_WorldGravity = -1.0f;
 }
 
-Particle::Particle(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 velocity, float gravity, float lifeLength)
+Particle::Particle(ParticleTexture* texture, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 velocity, float gravity, float lifeLength)
 	: Particle()
 {
+	m_Texture = texture;
+
 	m_Position = position;
 	m_Rotation = rotation;
 	m_Scale = scale;

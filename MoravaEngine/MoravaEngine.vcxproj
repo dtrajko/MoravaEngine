@@ -179,6 +179,7 @@
     <ClCompile Include="ParticleMaster.cpp" />
     <ClCompile Include="ParticleRenderer.cpp" />
     <ClCompile Include="ParticleSystemThinMatrix.cpp" />
+    <ClCompile Include="ParticleTexture.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="ShaderBackground.cpp" />
     <ClCompile Include="ShaderBasic.cpp" />
@@ -298,6 +299,8 @@
     <ClInclude Include="ParticleMaster.h" />
     <ClInclude Include="ParticleRenderer.h" />
     <ClInclude Include="ParticleSystemThinMatrix.h" />
+    <ClInclude Include="ParticleTexture.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="ShaderBackground.h" />
     <ClInclude Include="ShaderBasic.h" />
@@ -411,6 +414,9 @@
     <ProjectReference Include="..\vendor\bullet3\src\LinearMath\LinearMath.vcxproj">
       <Project>{409fe1f7-c852-31bb-a56a-bd4045dcca7c}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MoravaEngine.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

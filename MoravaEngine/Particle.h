@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ParticleTexture.h"
+
 #include "glm/glm.hpp"
 
 
@@ -7,14 +9,17 @@ class Particle
 {
 public:
 	Particle();
-	Particle(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 velocity, float gravity, float lifeLength);
+	Particle(ParticleTexture* texture, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 velocity, float gravity, float lifeLength);
 	inline const glm::vec3 GetPosition() const { return m_Position; };
 	inline const glm::vec3 GetRotation() const { return m_Rotation; };
 	inline const glm::vec3 GetScale() const { return m_Scale; };
+	inline const ParticleTexture* GetTexture() const { return m_Texture; };
 	bool Update();
 	~Particle();
 
 private:
+	ParticleTexture* m_Texture;
+
 	glm::vec3 m_Position;
 	glm::vec3 m_Rotation;
 	glm::vec3 m_Scale;

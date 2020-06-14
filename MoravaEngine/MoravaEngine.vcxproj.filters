@@ -338,6 +338,9 @@
     <ClCompile Include="ParticleSystemThinMatrix.cpp">
       <Filter>Particle</Filter>
     </ClCompile>
+    <ClCompile Include="ParticleTexture.cpp">
+      <Filter>Particle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -700,6 +703,10 @@
     <ClInclude Include="ParticleSystemThinMatrix.h">
       <Filter>Particle</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="ParticleTexture.h">
+      <Filter>Particle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -750,5 +757,8 @@
     <Filter Include="Editor">
       <UniqueIdentifier>{ca1a9e2f-c6d6-492e-8d60-e3af3cf4f1d1}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MoravaEngine.rc" />
   </ItemGroup>
 </Project>
