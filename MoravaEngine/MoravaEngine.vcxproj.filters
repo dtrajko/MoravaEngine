@@ -233,9 +233,6 @@
     <ClCompile Include="LightManager.cpp">
       <Filter>Light</Filter>
     </ClCompile>
-    <ClCompile Include="ParticleSystem.cpp">
-      <Filter>Particle</Filter>
-    </ClCompile>
     <ClCompile Include="Pyramid.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
@@ -334,6 +331,12 @@
     </ClCompile>
     <ClCompile Include="CubeSkybox.cpp">
       <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSystemCherno.cpp">
+      <Filter>Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSystemThinMatrix.cpp">
+      <Filter>Particle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -583,9 +586,6 @@
     <ClInclude Include="Light.h">
       <Filter>Light</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleSystem.h">
-      <Filter>Particle</Filter>
-    </ClInclude>
     <ClInclude Include="Pyramid.h">
       <Filter>Mesh</Filter>
     </ClInclude>
@@ -693,6 +693,12 @@
     </ClInclude>
     <ClInclude Include="CubeSkybox.h">
       <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSystemCherno.h">
+      <Filter>Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSystemThinMatrix.h">
+      <Filter>Particle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -16,11 +16,11 @@ struct ParticleProps
 	float LifeTime = 1.0f;
 };
 
-class ParticleSystem
+class ParticleSystemCherno
 {
 public:
-	ParticleSystem();
-	ParticleSystem(uint32_t maxParticles);
+	ParticleSystemCherno();
+	ParticleSystemCherno(uint32_t maxParticles);
 
 	void OnStart();
 	void OnUpdate(float ts);

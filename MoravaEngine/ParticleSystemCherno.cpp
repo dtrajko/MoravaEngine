@@ -1,4 +1,4 @@
-#include "ParticleSystem.h"
+#include "ParticleSystemCherno.h"
 
 #include <glm/gtc/constants.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -30,24 +30,24 @@ std::uniform_int_distribution<std::mt19937::result_type> Random::s_Distribution;
 
 
 
-ParticleSystem::ParticleSystem()
+ParticleSystemCherno::ParticleSystemCherno()
 {
 	m_PoolIndex = 999;
 	m_ParticlePool.resize(1000);
 }
 
-ParticleSystem::ParticleSystem(uint32_t maxParticles)
+ParticleSystemCherno::ParticleSystemCherno(uint32_t maxParticles)
 	: m_PoolIndex(maxParticles - 1)
 {
 	m_ParticlePool.resize(maxParticles);
 }
 
-void ParticleSystem::OnStart()
+void ParticleSystemCherno::OnStart()
 {
 	m_Quad = new Quad();
 }
 
-void ParticleSystem::OnUpdate(float ts)
+void ParticleSystemCherno::OnUpdate(float ts)
 {
 	for (auto& particle : m_ParticlePool)
 	{
@@ -66,7 +66,7 @@ void ParticleSystem::OnUpdate(float ts)
 	}
 }
 
-void ParticleSystem::OnRender(Camera* camera, Shader* shader)
+void ParticleSystemCherno::OnRender(Camera* camera, Shader* shader)
 {
 	for (auto& particle : m_ParticlePool)
 	{
@@ -84,7 +84,7 @@ void ParticleSystem::OnRender(Camera* camera, Shader* shader)
 	}
 }
 
-void ParticleSystem::DrawRotatedQuad(glm::vec3 position, glm::vec3 size, float rotation, glm::vec4 color, Shader* shader)
+void ParticleSystemCherno::DrawRotatedQuad(glm::vec3 position, glm::vec3 size, float rotation, glm::vec4 color, Shader* shader)
 {
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, position);
@@ -95,7 +95,7 @@ void ParticleSystem::DrawRotatedQuad(glm::vec3 position, glm::vec3 size, float r
 	m_Quad->Render();
 }
 
-void ParticleSystem::Emit(const ParticleProps& particleProps)
+void ParticleSystemCherno::Emit(const ParticleProps& particleProps)
 {
 	Particle& particle = m_ParticlePool[m_PoolIndex];
 	particle.Active = true;

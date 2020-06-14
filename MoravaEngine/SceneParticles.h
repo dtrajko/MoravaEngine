@@ -2,7 +2,7 @@
 
 #include "Scene.h"
 
-#include "ParticleSystem.h"
+#include "ParticleSystemCherno.h"
 #include "Grid.h"
 #include "Pivot.h"
 #include "MaterialWorkflowPBR.h"
@@ -32,7 +32,7 @@ private:
 	TextureCubeMap* m_TextureCubeMap;
 
 	// Particle System
-	ParticleSystem m_ParticleSystem;
+	ParticleSystemCherno m_ParticleSystem;
 	ParticleProps m_Particle;
 
 	Grid* m_Grid;

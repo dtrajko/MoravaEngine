@@ -178,6 +178,7 @@
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleMaster.cpp" />
     <ClCompile Include="ParticleRenderer.cpp" />
+    <ClCompile Include="ParticleSystemThinMatrix.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="ShaderBackground.cpp" />
     <ClCompile Include="ShaderBasic.cpp" />
@@ -222,7 +223,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="MousePicker.cpp" />
     <ClCompile Include="OmniShadowMap.cpp" />
-    <ClCompile Include="ParticleSystem.cpp" />
+    <ClCompile Include="ParticleSystemCherno.cpp" />
     <ClCompile Include="Pivot.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Pyramid.cpp" />
@@ -296,6 +297,7 @@
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleMaster.h" />
     <ClInclude Include="ParticleRenderer.h" />
+    <ClInclude Include="ParticleSystemThinMatrix.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="ShaderBackground.h" />
     <ClInclude Include="ShaderBasic.h" />
@@ -340,7 +342,7 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="MousePicker.h" />
     <ClInclude Include="OmniShadowMap.h" />
-    <ClInclude Include="ParticleSystem.h" />
+    <ClInclude Include="ParticleSystemCherno.h" />
     <ClInclude Include="Pivot.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="Profiler.h" />

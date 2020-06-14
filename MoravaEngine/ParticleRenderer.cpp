@@ -22,7 +22,7 @@ void ParticleRenderer::Render(std::vector<Particle*>* particles, Camera* camera)
 	/**** Begin RenderBegin ****/
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	// glDepthMask(GL_FALSE);
+	glDepthMask(GL_FALSE);
 	/**** End RenderBegin ****/
 
 	std::vector<Particle*>::iterator it;

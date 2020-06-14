@@ -159,6 +159,7 @@ SceneEditor::SceneEditor()
     m_PBR_Map_Edit = PBR_MAP_ENVIRONMENT;
     m_HDRI_Edit = HDRI_EARLY_EVE_WARM_SKY;
     m_HDRI_Edit_Prev = -1;
+    m_ParticleTextureNameEdit = "none";
 
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
@@ -171,6 +172,7 @@ SceneEditor::SceneEditor()
     TextureLoader::Get()->Print();
 
     ParticleMaster::Init();
+    m_ParticleSystemFire = new ParticleSystemThinMatrix(40.0f, 5.0f, 0.2f, 2.0f);
 }
 
 void SceneEditor::SetSkybox()
@@ -277,6 +279,8 @@ void SceneEditor::SetTextures()
     m_TextureInfo.insert(std::make_pair("pine",               "Textures/ThinMatrix/pine.png"));
     m_TextureInfo.insert(std::make_pair("terrain_ground",     "Textures/terrain_ground.jpg"));
     m_TextureInfo.insert(std::make_pair("boulder",            "Textures/ThinMatrix/boulder.png"));
+    m_TextureInfo.insert(std::make_pair("fire",               "Textures/Particles/fire.png"));
+    m_TextureInfo.insert(std::make_pair("fog",                "Textures/Particles/fog.png"));
 
 #define ASYNC_LOAD_TEXTURES 0
 #if ASYNC_LOAD_TEXTURES
@@ -288,7 +292,7 @@ void SceneEditor::SetTextures()
 #endif
 
     LoadTexture(std::ref(textures), m_TextureInfo.find("none")->first, m_TextureInfo.find("none")->second);
-    LoadTexture(std::ref(textures), m_TextureInfo.find("texture_checker")->first, m_TextureInfo.find("texture_checker")->second);
+    LoadTexture(std::ref(textures), m_TextureInfo.find("fire")->first, m_TextureInfo.find("fire")->second);
 }
 
 void SceneEditor::SetupMaterials()
@@ -511,7 +515,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     m_CurrentTimestamp = timestep;
 
     if (m_SelectedIndex >= m_SceneObjects.size())
-        m_SelectedIndex = m_SceneObjects.size() - 1;
+        m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
 
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
@@ -611,17 +615,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
 
-    struct ParticleSettings {
-        glm::vec3 position = glm::vec3(0.0f);
-        glm::vec3 rotation = glm::vec3(1.0f);
-        glm::vec3 scale = glm::vec3(1.0f);
-        glm::vec3 velocity = glm::vec3(1.0f, 2.0f, 1.0f);
-        float gravity = 1.5f;
-        float lifeLength = 4.0f;
-    } ps;
-    if (mainWindow.getKeys()[GLFW_KEY_P]) {
-        new Particle(ps.position, ps.rotation, ps.scale, ps.velocity, ps.gravity, ps.lifeLength);
-    }
+    m_ParticleSystemFire->GeneratePatricles(m_ParticleSystemCenter);
     ParticleMaster::Update();
 }
 
@@ -981,6 +975,41 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::Checkbox("Axis Y", &axesEnabled.y);
             ImGui::Checkbox("Axis Z", &axesEnabled.z);
             ImGui::Unindent();
+        }
+    }
+    ImGui::End();
+
+    ImGui::Begin("Particles");
+    {
+        if (ImGui::CollapsingHeader("Particle System Settings"))
+        {
+            ImGui::SliderFloat3("System Center", glm::value_ptr(m_ParticleSystemCenter), -20.0f, 20.0f);
+
+            // Begin ParticleTextureName ImGui drop-down list
+            std::vector<const char*> itemsTexture;
+            std::map<std::string, std::string>::iterator itTexture;
+            for (itTexture = m_TextureInfo.begin(); itTexture != m_TextureInfo.end(); itTexture++)
+                itemsTexture.push_back(itTexture->first.c_str());
+            static const char* currentItemTexture = m_ParticleTextureNameEdit.c_str();
+
+            if (ImGui::BeginCombo("Texture Name", currentItemTexture))
+            {
+                for (int n = 0; n < itemsTexture.size(); n++)
+                {
+                    bool isSelected = (currentItemTexture == itemsTexture[n]);
+                    if (ImGui::Selectable(itemsTexture[n], isSelected))
+                    {
+                        currentItemTexture = itemsTexture[n];
+                        m_ParticleTextureNameEdit = std::string(itemsTexture[n]);
+                    }
+                    if (isSelected)
+                    {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+            // End ParticleTextureName ImGui drop-down list
         }
     }
     ImGui::End();
@@ -2176,9 +2205,6 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             object->Render();
     }
 
-    textures["texture_checker"]->Bind(0);
-    ParticleMaster::Render(m_Camera);
-
     if (passType == "main")
     {
         RenderLightSources(shaders["gizmo"]);
@@ -2195,6 +2221,10 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
     {
         RenderSkybox(shaders["background"]);
     }
+
+    Texture* particleTexture = HotLoadTexture(m_ParticleTextureNameEdit);
+    particleTexture->Bind(0);
+    ParticleMaster::Render(m_Camera);
 }
 
 void SceneEditor::ResetScene()
