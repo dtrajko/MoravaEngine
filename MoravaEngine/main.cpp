@@ -179,7 +179,7 @@ int main()
 		scene->GetCamera()->MouseScrollControl(mainWindow.getKeys(), Timer::Get()->GetDeltaTime(), mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
 
 		MousePicker::Get()->Update(mainWindow.GetMouseX(), mainWindow.GetMouseY(),
-			(float)mainWindow.GetBufferWidth(), (float)mainWindow.GetBufferHeight(), projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+			(float)mainWindow.GetBufferWidth(), (float)mainWindow.GetBufferHeight(), RendererBasic::GetProjectionMatrix(), scene->GetCamera()->CalculateViewMatrix());
 
 		if (mainWindow.getKeys()[GLFW_KEY_F])
 		{
