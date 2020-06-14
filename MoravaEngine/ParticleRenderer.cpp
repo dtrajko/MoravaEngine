@@ -5,28 +5,24 @@
 
 ParticleRenderer::ParticleRenderer()
 {
-	m_Quad = new Quad();
-
 	m_ShaderParticle = new Shader("Shaders/ThinMatrix/particle.0.1.vs", "Shaders/ThinMatrix/particle.0.1.fs");
 	printf("ParticleRenderer: m_ShaderParticle compiled [programID=%d]\n", m_ShaderParticle->GetProgramID());
-}
 
-ParticleRenderer::ParticleRenderer(glm::mat4 projectionMatrix)
-	: ParticleRenderer()
-{
-	m_ShaderParticle->Bind();
-	m_ShaderParticle->setMat4("projection", projectionMatrix);
+	m_Quad = new Quad();
+	// TextureLoader::Get()->GetTexture("Textures/ThinMatrix/lensFlare/tex3.png");
 }
 
 void ParticleRenderer::Render(std::vector<Particle*>* particles, Camera* camera)
 {
 	glm::mat4 viewMatrix = camera->CalculateViewMatrix();
 	m_ShaderParticle->Bind();
+	m_ShaderParticle->setMat4("projection", RendererBasic::GetProjectionMatrix());
+	m_ShaderParticle->setInt("albedoMap", 0);
 
 	/**** Begin RenderBegin ****/
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDepthMask(GL_FALSE);
+	// glDepthMask(GL_FALSE);
 	/**** End RenderBegin ****/
 
 	std::vector<Particle*>::iterator it;

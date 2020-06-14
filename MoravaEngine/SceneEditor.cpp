@@ -16,6 +16,7 @@
 #include "RendererBasic.h"
 #include "TextureLoader.h"
 #include "Tile2D.h"
+#include "ParticleMaster.h"
 
 #include <vector>
 #include <map>
@@ -168,6 +169,8 @@ SceneEditor::SceneEditor()
     m_UseCubeMaps = false;
 
     TextureLoader::Get()->Print();
+
+    ParticleMaster::Init();
 }
 
 void SceneEditor::SetSkybox()
@@ -285,6 +288,7 @@ void SceneEditor::SetTextures()
 #endif
 
     LoadTexture(std::ref(textures), m_TextureInfo.find("none")->first, m_TextureInfo.find("none")->second);
+    LoadTexture(std::ref(textures), m_TextureInfo.find("texture_checker")->first, m_TextureInfo.find("texture_checker")->second);
 }
 
 void SceneEditor::SetupMaterials()
@@ -603,6 +607,19 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         object->AABB->Update(object->position, object->rotation, object->scale);
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
+
+    struct ParticleSettings {
+        glm::vec3 position = glm::vec3(0.0f);
+        glm::vec3 rotation = glm::vec3(1.0f);
+        glm::vec3 scale = glm::vec3(1.0f);
+        glm::vec3 velocity = glm::vec3(1.0f, 2.0f, 1.0f);
+        float gravity = 1.5f;
+        float lifeLength = 4.0f;
+    } ps;
+    if (mainWindow.getKeys()[GLFW_KEY_P]) {
+        new Particle(ps.position, ps.rotation, ps.scale, ps.velocity, ps.gravity, ps.lifeLength);
+    }
+    ParticleMaster::Update();
 }
 
 void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
@@ -2155,6 +2172,9 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         if (shouldRenderObject)
             object->Render();
     }
+
+    textures["texture_checker"]->Bind(0);
+    ParticleMaster::Render(m_Camera);
 
     if (passType == "main")
     {

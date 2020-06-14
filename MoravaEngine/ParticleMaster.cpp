@@ -8,23 +8,24 @@ ParticleMaster::ParticleMaster()
 {
 }
 
-void ParticleMaster::Init(glm::mat4 projectionMatrix)
+void ParticleMaster::Init()
 {
 	m_Particles = std::vector<Particle*>();
-	m_Renderer = new ParticleRenderer(projectionMatrix);
+	m_Renderer = new ParticleRenderer();
 }
 
 void ParticleMaster::Update()
 {
-	std::vector<Particle*>::iterator it = m_Particles.begin();
 	bool stillAlive = true;
 
-	for (it = m_Particles.begin(); it != m_Particles.end(); ++it)
+	int index = 0;
+	for (auto& particle : m_Particles)
 	{
-		stillAlive = (*it)->Update();
-		if (!stillAlive) {
-			// m_Particles.erase(it);
+		stillAlive = particle->Update();
+		if (!stillAlive && index < m_Particles.size()) {
+			m_Particles.erase(m_Particles.begin() + index);
 		}
+		index++;
 	}
 }
 

@@ -11,7 +11,7 @@ class ParticleMaster
 {
 public:
 	ParticleMaster();
-	static void Init(glm::mat4 projectionMatrix);
+	static void Init();
 	static void Update();
 	static void Render(Camera* camera);
 	static void CleanUp();

@@ -2,8 +2,11 @@
 
 out vec4 outColor;
 
+in vec2 vTexCoord;
+
+uniform sampler2D albedoMap;
 
 void main()
 {
-	outColor = vec4(0.0, 1.0, 1.0, 1.0);
+	outColor = texture(albedoMap, vTexCoord);
 }

@@ -1,7 +1,6 @@
 #include "RendererEditor.h"
 
 #include "SceneParticles.h"
-#include "MousePicker.h"
 #include "GeometryFactory.h"
 #include "Timer.h"
 #include "SceneEditor.h"
