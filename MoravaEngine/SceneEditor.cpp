@@ -273,6 +273,7 @@ void SceneEditor::SetTextures()
     m_TextureInfo.insert(std::make_pair("jeep_rood",          "Textures/OGLdev/jeep/jeep_rood.jpg"));
     m_TextureInfo.insert(std::make_pair("pine",               "Textures/ThinMatrix/pine.png"));
     m_TextureInfo.insert(std::make_pair("terrain_ground",     "Textures/terrain_ground.jpg"));
+    m_TextureInfo.insert(std::make_pair("boulder",            "Textures/ThinMatrix/boulder.png"));
 
 #define ASYNC_LOAD_TEXTURES 0
 #if ASYNC_LOAD_TEXTURES
@@ -458,6 +459,15 @@ void SceneEditor::SetupMaterials()
     textureInfoModernBrickWall.roughness = "Textures/PBR/modern_brick_1/modern-brick1_roughness.png";
     textureInfoModernBrickWall.ao        = "Textures/PBR/modern_brick_1/modern-brick1_ao.png";
     m_MaterialInfo.insert(std::make_pair("modern_brick_wall", textureInfoModernBrickWall));
+
+    // ThinMatrix Boulder
+    TextureInfo textureInfoBoulder = {};
+    textureInfoBoulder.albedo    = "Textures/ThinMatrix/boulder.png";
+    textureInfoBoulder.normal    = "Textures/ThinMatrix/boulderNormal.png";
+    textureInfoBoulder.metallic  = "Textures/metalness.png";
+    textureInfoBoulder.roughness = "Textures/plain.png";
+    textureInfoBoulder.ao        = "Textures/plain.png";
+    m_MaterialInfo.insert(std::make_pair("boulder", textureInfoBoulder));
 
 #define ASYNC_LOAD_MATERIALS 0
 #if ASYNC_LOAD_MATERIALS
@@ -1054,6 +1064,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::RadioButton("SF Helmet",      &m_CurrentObjectTypeID, MODEL_SF_HELMET);
             ImGui::RadioButton("Cerberus",       &m_CurrentObjectTypeID, MODEL_CERBERUS);
             ImGui::RadioButton("Pine",           &m_CurrentObjectTypeID, MODEL_PINE);
+            ImGui::RadioButton("Boulder",        &m_CurrentObjectTypeID, MODEL_BOULDER);
         }
     }
     ImGui::End();
@@ -1476,8 +1487,17 @@ void SceneEditor::AddSceneObject()
             position = glm::vec3(0.0f, 0.0f, 0.0f);
             rotation = glm::vec3(0.0f, 0.0f, 0.0f);
             scale = glm::vec3(1.0f);
-            positionAABB = glm::vec3(0.0f, 9.0f, 0.0f);
-            scaleAABB = glm::vec3(2.0f, 18.0f, 2.0f);
+            positionAABB = glm::vec3(0.0f, 10.0f, 0.0f);
+            scaleAABB = glm::vec3(2.0f, 20.0f, 2.0f);
+        }
+        else if (m_CurrentObjectTypeID == MODEL_BOULDER) {
+            modelName = "boulder";
+            materialName = "boulder";
+            position = glm::vec3(0.0f, 1.0f, 0.0f);
+            rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+            scale = glm::vec3(0.2f);
+            positionAABB = glm::vec3(0.0f, 4.0f, 0.0f);
+            scaleAABB = glm::vec3(10.0f, 20.0f, 10.0f);
         }
     }
 
@@ -1617,6 +1637,9 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
         break;
     case MODEL_PINE:
         model = new Model("Models/ThinMatrix/pine.obj", "Textures/ThinMatrix");
+        break;
+    case MODEL_BOULDER:
+        model = new Model("Models/ThinMatrix/boulder.obj", "Textures/ThinMatrix");
         break;
     default:
         model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");

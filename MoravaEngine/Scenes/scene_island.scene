@@ -1,0 +1,320 @@
+BeginObject	0
+Position	-10.000000	10.000000	10.000000
+Rotation	0.609208	-0.507673	-0.609208
+Scale	1.000000	1.000000	1.000000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	Light.directional
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	4
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	1
+Position	-5.000000	0.500000	5.000000
+Rotation	0.000000	-0.000000	0.000000
+Scale	1.000000	1.000000	1.000000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	Light.point.0
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	2
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	2
+Position	5.000000	0.500000	5.000000
+Rotation	0.000000	-0.000000	0.000000
+Scale	1.000000	1.000000	1.000000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	Light.point.1
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	2
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	3
+Position	-5.000000	0.500000	-5.000000
+Rotation	0.000000	-0.000000	0.000000
+Scale	1.000000	1.000000	1.000000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	Light.point.2
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	2
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	4
+Position	5.000000	0.500000	-5.000000
+Rotation	0.000000	-0.000000	0.000000
+Scale	1.000000	1.000000	1.000000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	Light.point.3
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	2
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	5
+Position	-5.000000	0.500000	5.000000
+Rotation	1.000000	-0.000000	0.000000
+Scale	1.000000	1.000000	1.000000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	Light.spot.0
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	4
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	6
+Position	5.000000	0.500000	5.000000
+Rotation	-1.000000	0.000000	0.000000
+Scale	1.000000	1.000000	1.000000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	Light.spot.1
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	4
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	7
+Position	-5.000000	0.500000	-5.000000
+Rotation	0.000000	-0.000000	1.000000
+Scale	1.000000	1.000000	1.000000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	Light.spot.2
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	4
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	8
+Position	5.000000	0.500000	-5.000000
+Rotation	0.000000	0.000000	-1.000000
+Scale	1.000000	1.000000	1.000000
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	1.000000	1.000000	1.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	Light.spot.3
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	4
+MaterialName	boulder
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	9
+Position	-0.880001	0.510000	0.000000
+Rotation	116.492554	70.282822	-137.035034
+Scale	0.200000	0.200000	0.200000
+PositionAABB	0.000000	4.000000	0.000000
+ScaleAABB	10.000000	20.000000	10.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	boulder
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1009
+MaterialName	boulder
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	10
+Position	1.700004	0.350001	-0.910000
+Rotation	-91.855797	-0.000000	0.000000
+Scale	0.330000	0.200000	0.300000
+PositionAABB	0.000000	4.000000	0.000000
+ScaleAABB	10.000000	20.000000	10.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	boulder
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1009
+MaterialName	boulder
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	11
+Position	-0.250000	0.150001	-0.999999
+Rotation	-88.610199	33.857624	11.150844
+Scale	0.200000	0.200000	0.200000
+PositionAABB	0.000000	4.000000	0.000000
+ScaleAABB	10.000000	20.000000	10.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	boulder
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1009
+MaterialName	boulder
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	12
+Position	0.000000	0.310001	2.450000
+Rotation	-80.389748	7.740191	8.922956
+Scale	0.200000	0.200000	0.200000
+PositionAABB	0.000000	4.000000	0.000000
+ScaleAABB	10.000000	20.000000	10.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	boulder
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1009
+MaterialName	boulder
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	13
+Position	1.360000	0.160000	1.700002
+Rotation	87.054504	-48.185390	177.924225
+Scale	0.350000	0.200000	0.200000
+PositionAABB	0.000000	4.000000	0.000000
+ScaleAABB	10.000000	20.000000	10.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	boulder
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1009
+MaterialName	boulder
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	14
+Position	4.319996	0.580000	0.689999
+Rotation	-98.350540	8.478727	-9.345849
+Scale	0.400000	0.252001	0.190000
+PositionAABB	0.000000	4.000000	0.000000
+ScaleAABB	10.000000	20.000000	10.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	boulder
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1009
+MaterialName	boulder
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	15
+Position	0.570003	0.667999	-0.230001
+Rotation	169.412964	-0.000000	0.000000
+Scale	0.629002	0.157000	0.480000
+PositionAABB	0.000000	4.000000	0.000000
+ScaleAABB	10.000000	20.000000	10.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	boulder
+TextureName	none
+TilingFactor	2.348000
+IsSelected	0
+Type	model
+TypeID	1009
+MaterialName	boulder
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	16
+Position	0.000000	0.106000	0.000000
+Rotation	0.000000	-0.000000	0.000000
+Scale	22.984018	1.000000	21.636047
+PositionAABB	0.000000	0.000000	0.000000
+ScaleAABB	2.000000	0.500000	2.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	water
+TextureName	none
+TilingFactor	1.000000
+IsSelected	0
+Type	mesh
+TypeID	9
+MaterialName	boulder
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	17
+Position	0.960000	1.350000	-1.660000
+Rotation	-180.000000	-48.792652	-180.000000
+Scale	0.233001	0.213000	0.230001
+PositionAABB	0.000000	10.000000	0.000000
+ScaleAABB	2.000000	20.000000	2.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	pine
+TextureName	pine
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1008
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	18
+Position	-1.440000	1.290000	-0.150000
+Rotation	-180.000000	-28.166153	-180.000000
+Scale	0.234001	0.231000	0.171001
+PositionAABB	0.000000	10.000000	0.000000
+ScaleAABB	2.000000	20.000000	2.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	pine
+TextureName	pine
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1008
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject
+BeginObject	19
+Position	-0.770000	0.770000	-1.670000
+Rotation	0.000000	-0.000000	0.000000
+Scale	0.248001	0.237001	0.198000
+PositionAABB	0.000000	10.000000	0.000000
+ScaleAABB	2.000000	20.000000	2.000000
+Color	1.000000	1.000000	1.000000	1.000000
+Name	pine
+TextureName	pine
+TilingFactor	1.000000
+IsSelected	0
+Type	model
+TypeID	1008
+MaterialName	none
+TilingFactorMaterial	1.000000
+EndObject

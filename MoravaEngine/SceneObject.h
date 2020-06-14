@@ -33,6 +33,7 @@ const int MODEL_DAMAGED_HELMET = 1005;
 const int MODEL_SF_HELMET      = 1006;
 const int MODEL_CERBERUS       = 1007;
 const int MODEL_PINE           = 1008;
+const int MODEL_BOULDER        = 1009;
 
 
 class SceneObject
