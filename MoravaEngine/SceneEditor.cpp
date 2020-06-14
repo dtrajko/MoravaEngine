@@ -510,6 +510,9 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 {
     m_CurrentTimestamp = timestep;
 
+    if (m_SelectedIndex >= m_SceneObjects.size())
+        m_SelectedIndex = m_SceneObjects.size() - 1;
+
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
     // printf("SceneEditor::Update m_SceneObjects.size = %zu\n", m_SceneObjects.size());
