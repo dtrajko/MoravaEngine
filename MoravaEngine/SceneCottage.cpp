@@ -126,7 +126,7 @@ void SceneCottage::Update(float timestep, Window& mainWindow)
 {
 }
 
-void SceneCottage::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
+void SceneCottage::UpdateImGui(float timestep, Window& mainWindow)
 {
 	bool p_open = true;
 	ShowExampleAppDockSpace(&p_open, mainWindow);

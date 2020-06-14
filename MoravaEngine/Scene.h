@@ -108,7 +108,7 @@ class Scene
 public:
 	Scene();
 	virtual void Update(float timestep, Window& mainWindow) = 0;
-	virtual void UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults) = 0;
+	virtual void UpdateImGui(float timestep, Window& mainWindow) = 0;
 	void ShowExampleAppDockSpace(bool* p_open, Window& mainWindow);
 	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) = 0;
@@ -130,6 +130,7 @@ public:
 	inline WaterManager* GetWaterManager() const { return m_WaterManager; };
 	inline Skybox* GetSkybox() const { return m_Skybox; };
 	inline float GetFOV() { return m_FOV; };
+	inline std::map<std::string, float>* GetProfilerResults() { return &m_ProfilerResults; };
 
 	// Setters
 	void SetCamera();
@@ -163,6 +164,8 @@ protected:
 	std::map<std::string, Mesh*> meshes;
 	std::map<std::string, Model*> models;
 	std::map<std::string, Material*> materials;
+
+	std::map<std::string, float> m_ProfilerResults;
 
 private:
 	DirectionalLight directionalLight;

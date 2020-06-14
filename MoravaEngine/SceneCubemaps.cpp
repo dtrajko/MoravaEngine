@@ -80,7 +80,7 @@ void SceneCubemaps::Update(float timestep, Window& mainWindow)
 {
 }
 
-void SceneCubemaps::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
+void SceneCubemaps::UpdateImGui(float timestep, Window& mainWindow)
 {
     MousePicker* mp = MousePicker::Get();
 

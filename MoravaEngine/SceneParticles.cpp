@@ -91,7 +91,7 @@ void SceneParticles::Update(float timestep, Window& mainWindow)
     m_ParticleSystem.OnUpdate(timestep * 0.01f);
 }
 
-void SceneParticles::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
+void SceneParticles::UpdateImGui(float timestep, Window& mainWindow)
 {
     // ImGui::Begin("Particles");
     // ImGui::SliderFloat("FOV", &m_FOV, 1.0f, 120.0f);

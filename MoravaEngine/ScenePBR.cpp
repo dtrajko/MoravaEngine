@@ -139,7 +139,7 @@ void ScenePBR::Update(float timestep, Window& mainWindow)
 {
 }
 
-void ScenePBR::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
+void ScenePBR::UpdateImGui(float timestep, Window& mainWindow)
 {
 	m_CameraPosition = m_Camera->GetPosition();
 

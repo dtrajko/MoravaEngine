@@ -105,7 +105,7 @@ void SceneEiffel::Update(float timestep, Window& mainWindow)
 {
 }
 
-void SceneEiffel::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
+void SceneEiffel::UpdateImGui(float timestep, Window& mainWindow)
 {
 	bool p_open = true;
 	ShowExampleAppDockSpace(&p_open, mainWindow);

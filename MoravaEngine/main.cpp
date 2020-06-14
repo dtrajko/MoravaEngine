@@ -77,9 +77,6 @@ SceneName currentScene = SceneName::Editor;
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
 
-// Profiler results
-std::map<const char*, float> profilerResults;
-
 
 int main()
 {
@@ -209,19 +206,19 @@ int main()
 			Profiler profiler("Scene::Update");
 			// if (Timer::Get()->CanUpdate())
 			scene->Update(Timer::Get()->GetCurrentTimestamp(), mainWindow); // TODO deltaTime obsolete
-			profilerResults.insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+			scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 		}
 
 		{
 			Profiler profiler("Renderer::Render");
 			// if (Timer::Get()->CanRender())
 			renderer->Render(Timer::Get()->GetDeltaTime(), mainWindow, scene, projectionMatrix); // TODO deltaTime obsolete
-			profilerResults.insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+			scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 		}
 
-		scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), mainWindow, profilerResults);
+		scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), mainWindow);
 
-		profilerResults.clear();
+		scene->GetProfilerResults()->clear();
 
 		ImGuiWrapper::End();
 

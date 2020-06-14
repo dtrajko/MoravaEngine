@@ -33,7 +33,7 @@ SceneEditor::SceneEditor()
 {
     m_LightManager = nullptr;
 
-    sceneSettings.cameraPosition   = glm::vec3(0.0f, 5.0f, 20.0f);
+    sceneSettings.cameraPosition   = glm::vec3(0.0f, 8.0f, 24.0f);
     sceneSettings.cameraStartYaw   = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
     sceneSettings.cameraMoveSpeed  = 1.0f;
@@ -806,7 +806,7 @@ void SceneEditor::LoadScene()
         m_Gizmo->SetSceneObject(m_SceneObjects[m_SceneObjects.size() - 1]);
 }
 
-void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
+void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -985,6 +985,21 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow, std::map<const
         ImGui::Unindent();
         m_ActiveRenderPasses.clear();
     }
+
+    // print profiler results
+    if (ImGui::CollapsingHeader("Profiler results:"))
+    {
+        // profiler results
+        for (auto& profilerResult : m_ProfilerResults)
+        {
+            char label[100];
+            strcpy_s(label, "%.2fms ");
+            strcat_s(label, profilerResult.first.c_str());
+            ImGui::Text(label, profilerResult.second);
+        }
+        m_ProfilerResults.clear();
+    }
+
     ImGui::End();
 
     ImGui::Begin("Mouse Picker");
@@ -1601,7 +1616,7 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
         model = new Model("Models/Cerberus_LP.FBX", "Textures/PBR/Cerberus");
         break;
     case MODEL_PINE:
-        model = new Model("Models/ThinMatrix/pine.obj", "Textures\ThinMatrix");
+        model = new Model("Models/ThinMatrix/pine.obj", "Textures/ThinMatrix");
         break;
     default:
         model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");
@@ -2150,7 +2165,9 @@ void SceneEditor::ResetScene()
         // delete object->pivot;
         // delete object->mesh;
     }
+ 
     m_SceneObjects.clear();
+    AddLightsToSceneObjects();
 }
 
 void SceneEditor::CleanupGeometry()

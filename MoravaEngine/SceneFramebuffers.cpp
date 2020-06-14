@@ -56,7 +56,7 @@ void SceneFramebuffers::Update(float timestep, Window& mainWindow)
 {
 }
 
-void SceneFramebuffers::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
+void SceneFramebuffers::UpdateImGui(float timestep, Window& mainWindow)
 {
 	ImGui::Begin("Effects");
 	ImGui::SliderInt("Effect Frame 0", &m_EffectFrame_0, 0, 5);

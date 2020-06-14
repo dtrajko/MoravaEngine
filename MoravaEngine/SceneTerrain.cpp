@@ -84,7 +84,7 @@ void SceneTerrain::Update(float timestep, Window& mainWindow)
 	m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
 }
 
-void SceneTerrain::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
+void SceneTerrain::UpdateImGui(float timestep, Window& mainWindow)
 {
 	bool p_open = true;
 	ShowExampleAppDockSpace(&p_open, mainWindow);

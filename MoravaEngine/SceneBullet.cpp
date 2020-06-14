@@ -274,7 +274,7 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 	}
 }
 
-void SceneBullet::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
+void SceneBullet::UpdateImGui(float timestep, Window& mainWindow)
 {
 	glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();
 
@@ -303,20 +303,11 @@ void SceneBullet::UpdateImGui(float timestep, Window& mainWindow, std::map<const
 	// print profiler results
 	ImGui::Separator();
 	ImGui::Text("Profiler results:");
-	// profiler results for main.cpp
-	for (auto& profilerResult : profilerResults)
-	{
-		char label[50];
-		strcpy(label, "%.2fms ");
-		strcat(label, profilerResult.first);
-		ImGui::Text(label, profilerResult.second);
-	}
-	// profiler results for SceneBullet
 	for (auto& profilerResult : m_ProfilerResults)
 	{
 		char label[50];
 		strcpy(label, "%.2fms ");
-		strcat(label, profilerResult.first);
+		strcat(label, profilerResult.first.c_str());
 		ImGui::Text(label, profilerResult.second);
 	}
 	m_ProfilerResults.clear();

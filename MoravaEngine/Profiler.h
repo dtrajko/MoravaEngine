@@ -6,7 +6,7 @@
 class Profiler
 {
 public:
-	Profiler(const char* name)
+	Profiler(std::string name)
 		: m_Name(name), m_Stopped(false)
 	{
 		m_StartTimepoint = std::chrono::high_resolution_clock::now();
@@ -31,13 +31,13 @@ public:
 		return duration;
 	}
 
-	const char* GetName()
+	std::string GetName()
 	{
 		return m_Name;
 	}
 
 private:
-	const char* m_Name;
+	std::string m_Name;
 	std::chrono::time_point<std::chrono::steady_clock> m_StartTimepoint;
 	bool m_Stopped;
 };

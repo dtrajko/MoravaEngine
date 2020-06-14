@@ -5,6 +5,7 @@
 #include "GeometryFactory.h"
 #include "Timer.h"
 #include "SceneEditor.h"
+#include "Profiler.h"
 
 #include <stdexcept>
 
@@ -226,13 +227,23 @@ void RendererEditor::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::ma
 {
     if (!scene->GetSettings().enableOmniShadows) return;
 
-    for (size_t i = 0; i < LightManager::pointLightCount; i++)
-        if (LightManager::pointLights[i].GetEnabled())
+    for (size_t i = 0; i < LightManager::pointLightCount; i++) {
+        if (LightManager::pointLights[i].GetEnabled()) {
+            std::string profilerTitle = "RE::RenderPassOmniShadow[PL_" + std::to_string(i) + ']';
+            Profiler profiler(profilerTitle);
             RenderPassOmniShadow(&LightManager::pointLights[i], mainWindow, scene, projectionMatrix);
+            scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+        }
+    }
 
-    for (size_t i = 0; i < LightManager::spotLightCount; i++)
-        if (LightManager::spotLights[i].GetBasePL()->GetEnabled())
+    for (size_t i = 0; i < LightManager::spotLightCount; i++) {
+        if (LightManager::spotLights[i].GetBasePL()->GetEnabled()) {
+            std::string profilerTitle = "RE::RenderPassOmniShadow[SL_" + std::to_string(i) + ']';
+            Profiler profiler(profilerTitle);
             RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], mainWindow, scene, projectionMatrix);
+            scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+        }
+    }
 }
 
 void RendererEditor::RenderWaterEffects(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -253,12 +264,20 @@ void RendererEditor::RenderWaterEffects(float deltaTime, Window& mainWindow, Sce
     scene->GetCamera()->SetPosition(glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y - distance, scene->GetCamera()->GetPosition().z));
     scene->GetCamera()->InvertPitch();
 
-    RenderPassWaterReflection(mainWindow, scene, projectionMatrix);
+    {
+        Profiler profiler("RE::RenderPassWaterReflection");
+        RenderPassWaterReflection(mainWindow, scene, projectionMatrix);
+        scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
 
     scene->GetCamera()->SetPosition(glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y + distance, scene->GetCamera()->GetPosition().z));
     scene->GetCamera()->InvertPitch();
 
-    RenderPassWaterRefraction(mainWindow, scene, projectionMatrix);
+    {
+        Profiler profiler("RE::RenderPassWaterRefraction");
+        RenderPassWaterRefraction(mainWindow, scene, projectionMatrix);
+        scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
 
     glDisable(GL_CLIP_DISTANCE0);
 }
@@ -608,10 +627,26 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     shaderGlass->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
     /**** End glass ****/
 
-    RenderPassShadow(mainWindow, scene, projectionMatrix);
-    RenderOmniShadows(mainWindow, scene, projectionMatrix);
-    RenderWaterEffects(deltaTime, mainWindow, scene, projectionMatrix);
-    RenderPass(mainWindow, scene, projectionMatrix);
+    {
+        Profiler profiler("RE::RenderPassShadow");
+        RenderPassShadow(mainWindow, scene, projectionMatrix);
+        scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
+    {
+        Profiler profiler("RE::RenderOmniShadows");
+        RenderOmniShadows(mainWindow, scene, projectionMatrix);
+        scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
+    {
+        Profiler profiler("RE::RenderWaterEffects");
+        RenderWaterEffects(deltaTime, mainWindow, scene, projectionMatrix);
+        scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
+    {
+        Profiler profiler("RE::RenderPass");
+        RenderPass(mainWindow, scene, projectionMatrix);
+        scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
 }
 
 RendererEditor::~RendererEditor()

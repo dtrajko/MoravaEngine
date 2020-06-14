@@ -40,7 +40,7 @@ void SceneInstanced::Update(float timestep, Window& mainWindow)
 {
 }
 
-void SceneInstanced::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
+void SceneInstanced::UpdateImGui(float timestep, Window& mainWindow)
 {
 }
 

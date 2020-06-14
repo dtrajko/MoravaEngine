@@ -93,7 +93,7 @@ void SceneNanosuit::Update(float timestep, Window& mainWindow)
 {
 }
 
-void SceneNanosuit::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
+void SceneNanosuit::UpdateImGui(float timestep, Window& mainWindow)
 {
 	ImGui::Begin("Nanosuit Shader Parameters:");
 

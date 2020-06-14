@@ -58,7 +58,7 @@ void SceneAsteroids::Update(float timestep, Window& mainWindow)
 {
 }
 
-void SceneAsteroids::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
+void SceneAsteroids::UpdateImGui(float timestep, Window& mainWindow)
 {
 	/**** Not in use, Phong lighting model not supported by shaders
 	glm::vec3 dirLightDirection = m_LightManager->directionalLight.GetDirection();

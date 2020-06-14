@@ -83,7 +83,7 @@ void SceneSponza::Update(float timestep, Window& mainWindow)
 {
 }
 
-void SceneSponza::UpdateImGui(float timestep, Window& mainWindow, std::map<const char*, float> profilerResults)
+void SceneSponza::UpdateImGui(float timestep, Window& mainWindow)
 {
 	// Shadow rotation
 	glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();
