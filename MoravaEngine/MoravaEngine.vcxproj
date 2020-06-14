@@ -173,6 +173,7 @@
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="..\vendor\tinygizmo\tiny-gizmo.cpp" />
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="Noise.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleMaster.cpp" />
@@ -290,6 +291,7 @@
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
     <ClInclude Include="..\vendor\tinygizmo\tiny-gizmo.hpp" />
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="Noise.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleMaster.h" />

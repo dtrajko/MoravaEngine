@@ -332,6 +332,9 @@
     <ClCompile Include="ParticleMaster.cpp">
       <Filter>Particle</Filter>
     </ClCompile>
+    <ClCompile Include="CubeSkybox.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -687,6 +690,9 @@
     </ClInclude>
     <ClInclude Include="ParticleMaster.h">
       <Filter>Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="CubeSkybox.h">
+      <Filter>Mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

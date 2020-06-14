@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Shader.h"
-#include "Cube.h"
 #include "Quad.h"
+#include "CubeSkybox.h"
 
 #include <string>
 
@@ -20,7 +20,7 @@ public:
 	inline const unsigned int GetPrefilterMap() const { return m_PrefilterMap; };
 	inline const unsigned int GetBRDF_LUT_Texture() const { return m_BRDF_LUT_Texture; };
 	inline const unsigned int GetEnvironmentCubemap() const { return m_EnvironmentCubemap; };
-	inline Cube* GetSkyboxCube() const { return m_SkyboxCube; };
+	inline CubeSkybox* GetSkyboxCube() const { return m_SkyboxCube; };
 	void BindEnvironmentCubemap(unsigned int slot);
 	void BindIrradianceMap(unsigned int slot);
 	void BindPrefilterMap(unsigned int slot);
@@ -46,7 +46,7 @@ private:
 	unsigned int m_CaptureRBO;
 	glm::mat4 m_CaptureViews[6];
 	unsigned int m_EnvironmentCubemap;
-	Cube* m_SkyboxCube;
+	CubeSkybox* m_SkyboxCube;
 	Quad* m_Quad;
 	unsigned int m_IrradianceMap;
 	unsigned int m_PrefilterMap;

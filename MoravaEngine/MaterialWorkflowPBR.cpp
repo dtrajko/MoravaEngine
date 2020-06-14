@@ -73,7 +73,7 @@ void MaterialWorkflowPBR::SetupShaders()
 
 void MaterialWorkflowPBR::SetupGeometry()
 {
-	m_SkyboxCube = new Cube();
+	m_SkyboxCube = new CubeSkybox();
 	m_Quad = new Quad();
 }
 
