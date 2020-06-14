@@ -494,8 +494,8 @@ void SceneEditor::SetupModels()
     Cone* cone = new Cone(glm::vec3(1.0f));
     meshes.insert(std::make_pair("cone", cone));
 
-    m_GlassShaderModel = new Model("Models/Old_Stove/udmheheqx_LOD0.fbx");
-    models.insert(std::make_pair("glass", m_GlassShaderModel));
+    // m_GlassShaderModel = new Model("Models/Old_Stove/udmheheqx_LOD0.fbx");
+    // models.insert(std::make_pair("glass", m_GlassShaderModel));
 }
 
 void SceneEditor::SetGeometry()
