@@ -326,6 +326,8 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
         projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()),
             (float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
             scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+
+        RendererBasic::SetProjectionMatrix(projectionMatrix);
     }
 
     SceneEditor* sceneEditor = (SceneEditor*)scene;

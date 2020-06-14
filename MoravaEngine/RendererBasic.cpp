@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 
+glm::mat4 RendererBasic::m_ProjectionMatrix;
 
 RendererBasic::RendererBasic()
 {

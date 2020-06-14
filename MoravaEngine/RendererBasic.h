@@ -24,6 +24,8 @@ public:
 	static void EnableTransparency();
 	static void DisableTransparency();
 	static void ClearDepthBuffer();
+	static inline glm::mat4 GetProjectionMatrix() { return m_ProjectionMatrix; };
+	static inline void SetProjectionMatrix(glm::mat4 projectionMatrix) { m_ProjectionMatrix = projectionMatrix; };
 
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
 	void RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window& mainWindow);
@@ -32,8 +34,13 @@ public:
 
 	virtual ~RendererBasic();
 
+private:
+	static glm::mat4 m_ProjectionMatrix;
+
 protected:
+
 	std::map<std::string, Shader*> shaders;
 	std::map<std::string, GLint> uniforms;
 	glm::vec4 bgColor;
+
 };

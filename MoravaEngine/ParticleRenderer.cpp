@@ -1,11 +1,13 @@
 #include "ParticleRenderer.h"
 
+#include "RendererBasic.h"
+
 
 ParticleRenderer::ParticleRenderer()
 {
 	m_Quad = new Quad();
 
-	m_ShaderParticle = new Shader("Shaders/ThinMatrix/particle.vs", "Shaders/ThinMatrix/particle.fs");
+	m_ShaderParticle = new Shader("Shaders/ThinMatrix/particle.0.1.vs", "Shaders/ThinMatrix/particle.0.1.fs");
 	printf("ParticleRenderer: m_ShaderParticle compiled [programID=%d]\n", m_ShaderParticle->GetProgramID());
 }
 
@@ -16,17 +18,10 @@ ParticleRenderer::ParticleRenderer(glm::mat4 projectionMatrix)
 	m_ShaderParticle->setMat4("projection", projectionMatrix);
 }
 
-void ParticleRenderer::CleanUp()
-{
-	delete m_Quad;
-	delete m_ShaderParticle;
-}
-
 void ParticleRenderer::Render(std::vector<Particle*>* particles, Camera* camera)
 {
 	glm::mat4 viewMatrix = camera->CalculateViewMatrix();
 	m_ShaderParticle->Bind();
-	m_ShaderParticle->setMat4("view", viewMatrix);
 
 	/**** Begin RenderBegin ****/
 	glEnable(GL_BLEND);
@@ -35,7 +30,7 @@ void ParticleRenderer::Render(std::vector<Particle*>* particles, Camera* camera)
 	/**** End RenderBegin ****/
 
 	std::vector<Particle*>::iterator it;
-	for (it = particles->begin(); it != particles->end(); ++it)
+	for (it = particles->begin(); it != particles->end(); it++)
 	{
 		UpdateModelViewMatrix((*it)->GetPosition(), (*it)->GetRotation(), (*it)->GetScale(), viewMatrix);
 		m_Quad->Render();
@@ -72,6 +67,12 @@ void ParticleRenderer::UpdateModelViewMatrix(glm::vec3 position, glm::vec3 rotat
 	glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
 
 	m_ShaderParticle->setMat4("modelView", modelViewMatrix);
+}
+
+void ParticleRenderer::CleanUp()
+{
+	delete m_Quad;
+	delete m_ShaderParticle;
 }
 
 ParticleRenderer::~ParticleRenderer()
