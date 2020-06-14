@@ -34,10 +34,10 @@ void ParticleRenderer::Render(std::vector<Particle*>* particles, Camera* camera)
 	glDepthMask(GL_FALSE);
 	/**** End RenderBegin ****/
 
-	for (int i = 0; i < particles->size(); i++)
+	std::vector<Particle*>::iterator it;
+	for (it = particles->begin(); it != particles->end(); ++it)
 	{
-		Particle* particle = particles->at(i);
-		UpdateModelViewMatrix(particle->GetPosition(), particle->GetRotation(), particle->GetScale(), viewMatrix);
+		UpdateModelViewMatrix((*it)->GetPosition(), (*it)->GetRotation(), (*it)->GetScale(), viewMatrix);
 		m_Quad->Render();
 	}
 

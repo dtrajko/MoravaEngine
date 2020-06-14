@@ -3,6 +3,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "Timer.h"
+#include "ParticleMaster.h"
 
 
 Particle::Particle()
@@ -28,6 +29,8 @@ Particle::Particle(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm:
 	m_Velocity = velocity;
 	m_Gravity = gravity;
 	m_LifeLength = lifeLength;
+
+	ParticleMaster::addParticle(this);
 }
 
 bool Particle::Update()
