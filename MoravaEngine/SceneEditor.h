@@ -133,6 +133,9 @@ private:
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;
 	std::string m_ParticleTextureNameEdit;
+	std::string m_ParticleTextureNamePrev;
+	int m_ParticleNumRowsEdit;
+	int m_ParticleNumRowsPrev;
 
 	std::vector<std::string> m_ActiveRenderPasses;
 

@@ -160,7 +160,9 @@ SceneEditor::SceneEditor()
     m_PBR_Map_Edit = PBR_MAP_ENVIRONMENT;
     m_HDRI_Edit = HDRI_EARLY_EVE_WARM_SKY;
     m_HDRI_Edit_Prev = -1;
-    m_ParticleTextureNameEdit = "none";
+    m_ParticleTextureNameEdit = "particle_atlas";
+    m_ParticleTextureNamePrev = "none";
+    m_ParticleNumRowsEdit = 4;
 
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
@@ -173,9 +175,6 @@ SceneEditor::SceneEditor()
     TextureLoader::Get()->Print();
 
     ParticleMaster::Init();
-    Texture* texture = HotLoadTexture("fire");
-    ParticleTexture* particleTexture = new ParticleTexture(texture->GetID(), 1);
-    m_ParticleSystemFire = new ParticleSystemThinMatrix(particleTexture, 40.0f, 5.0f, 0.2f, 2.0f);
 }
 
 void SceneEditor::SetSkybox()
@@ -284,6 +283,7 @@ void SceneEditor::SetTextures()
     m_TextureInfo.insert(std::make_pair("boulder",            "Textures/ThinMatrix/boulder.png"));
     m_TextureInfo.insert(std::make_pair("fire",               "Textures/Particles/fire.png"));
     m_TextureInfo.insert(std::make_pair("fog",                "Textures/Particles/fog.png"));
+    m_TextureInfo.insert(std::make_pair("particle_atlas",     "Textures/ThinMatrix/particles/particleAtlas.png"));
 
 #define ASYNC_LOAD_TEXTURES 0
 #if ASYNC_LOAD_TEXTURES
@@ -616,6 +616,15 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         glm::vec3 scaleAABB = object->scale * object->AABB->m_Scale;
         object->AABB->Update(object->position, object->rotation, object->scale);
         object->pivot->Update(object->position, object->scale + 1.0f);
+    }
+
+    // Particle System
+    if (m_ParticleTextureNameEdit != m_ParticleTextureNamePrev || m_ParticleNumRowsEdit != m_ParticleNumRowsPrev) {
+        Texture* texture = HotLoadTexture(m_ParticleTextureNameEdit);
+        ParticleTexture* particleTexture = new ParticleTexture(texture->GetID(), m_ParticleNumRowsEdit);
+        m_ParticleSystemFire = new ParticleSystemThinMatrix(particleTexture, 40.0f, 5.0f, 0.2f, 2.0f);
+        m_ParticleTextureNamePrev = m_ParticleTextureNameEdit;
+        m_ParticleNumRowsPrev = m_ParticleNumRowsEdit;
     }
 
     {
@@ -1022,6 +1031,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
                 ImGui::EndCombo();
             }
             // End ParticleTextureName ImGui drop-down list
+
+            ImGui::SliderInt("Number of Rows", &m_ParticleNumRowsEdit, 1, 10);
         }
     }
     ImGui::End();

@@ -23,7 +23,8 @@ void ParticleSystemThinMatrix::GeneratePatricles(glm::vec3 systemCenter)
 	float delta = Timer::Get()->GetDeltaTime();
 	float particlesToCreate = m_PPS * delta;
 	int count = (int)std::floor(particlesToCreate);
-	float partialParticle = (float)((int)particlesToCreate % 1);
+	float integerPart;
+	float partialParticle = modf(particlesToCreate, &integerPart);
 
 	for (int i = 0; i < count; i++) {
 		EmitParticle(systemCenter);

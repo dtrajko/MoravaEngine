@@ -10,6 +10,10 @@ Particle::Particle()
 {
 	m_Texture = nullptr;
 
+	m_TexOffset1 = glm::vec2(0.0f);
+	m_TexOffset2 = glm::vec2(0.0f);
+	m_Blend = 1.0f;
+
 	m_Position = glm::vec3(0.0f);
 	m_Rotation = glm::vec3(0.0f);
 	m_Scale = glm::vec3(1.0f);
@@ -43,12 +47,30 @@ bool Particle::Update()
 	glm::vec3 change = glm::vec3(m_Velocity);
 	change *= Timer::Get()->GetDeltaTime();
 	m_Position += change;
+	UpdateTextureCoordInfo();
 	m_ElapsedTime += Timer::Get()->GetDeltaTime();
-
-	// printf("Particle::Update() m_Velocity.y = %.2ff m_WorldGravity = %.2ff, m_Gravity = %.2ff deltaTime = %.2ff\n",
-	// 	m_Velocity.y, m_WorldGravity, m_Gravity, Timer::Get()->GetDeltaTime());
-
 	return m_ElapsedTime < m_LifeLength;
+}
+
+void Particle::UpdateTextureCoordInfo()
+{
+	float lifeFactor = m_ElapsedTime / m_LifeLength;
+	int stageCount = m_Texture->GetNumberOfRows() * m_Texture->GetNumberOfRows();
+	float atlasProgression = lifeFactor * stageCount;
+	int index1 = (int)floor(atlasProgression);
+	int index2 = index1 < stageCount - 1 ? index1 + 1 : index1;
+	float integerPart;
+	m_Blend  = modf(atlasProgression, &integerPart);
+	SetTextureOffset(&m_TexOffset1, index1);
+	SetTextureOffset(&m_TexOffset2, index2);
+}
+
+void Particle::SetTextureOffset(glm::vec2* offset, int index)
+{
+	int column = index % m_Texture->GetNumberOfRows();
+	int row = index / m_Texture->GetNumberOfRows();
+	offset->x = (float) column / m_Texture->GetNumberOfRows();
+	offset->y = (float)row / m_Texture->GetNumberOfRows();
 }
 
 Particle::~Particle()

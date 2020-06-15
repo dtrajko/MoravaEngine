@@ -56,7 +56,7 @@ void ParticleMaster::addParticle(Particle* particle)
 
 	particleVec->push_back(particle);
 
-	printf("ParticleMaster::addParticle particleVec = %zu\n", particleVec->size());
+	// printf("ParticleMaster::addParticle particleVec = %zu\n", particleVec->size());
 }
 
 void ParticleMaster::CleanUp()

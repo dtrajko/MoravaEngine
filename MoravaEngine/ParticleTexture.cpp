@@ -10,7 +10,7 @@ ParticleTexture::ParticleTexture()
 ParticleTexture::ParticleTexture(int textureID, int numberOfRows)
 {
 	m_TextureID = textureID;
-	m_NumberOfRows = numberOfRows;
+	m_NumberOfRows = numberOfRows <= 0 ? 1 : numberOfRows;
 }
 
 void ParticleTexture::Bind(unsigned int textureUnit)

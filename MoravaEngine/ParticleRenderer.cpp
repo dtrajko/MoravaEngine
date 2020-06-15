@@ -21,7 +21,7 @@ void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*
 
 	/**** Begin RenderBegin ****/
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // GL_ONE
 	glDepthMask(GL_FALSE);
 	/**** End RenderBegin ****/
 
@@ -31,6 +31,7 @@ void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*
 		for (auto particle : *it_map->second)
 		{
 			UpdateModelViewMatrix(particle->GetPosition(), particle->GetRotation(), particle->GetScale(), viewMatrix);
+			LoadTexCoordInfo(particle->GetTexOffset1(), particle->GetTexOffset2(), particle->GetTexture()->GetNumberOfRows(), particle->GetBlend());
 			m_Quad->Render();
 		}
 	}
@@ -66,6 +67,17 @@ void ParticleRenderer::UpdateModelViewMatrix(glm::vec3 position, glm::vec3 rotat
 	glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
 
 	m_ShaderParticle->setMat4("modelView", modelViewMatrix);
+}
+
+void ParticleRenderer::LoadTexCoordInfo(glm::vec2 texOffset1, glm::vec2 texOffset2, int numRows, float blendFactor)
+{
+	m_ShaderParticle->setVec2("texOffset1", texOffset1);
+	m_ShaderParticle->setVec2("texOffset2", texOffset2);
+	m_ShaderParticle->setFloat("texCoordInfo.numRows", (float)numRows);
+	m_ShaderParticle->setFloat("texCoordInfo.blendFactor", blendFactor);
+
+	// printf("texOffset1 [ %.2ff %.2ff ] texOffset2 [ %.2ff %.2ff ] numRows %i blendFactor %.2ff\n",
+	// 	texOffset1.x, texOffset1.y, texOffset2.x, texOffset2.y, numRows, blendFactor);
 }
 
 void ParticleRenderer::CleanUp()

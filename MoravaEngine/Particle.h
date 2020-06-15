@@ -14,11 +14,22 @@ public:
 	inline const glm::vec3 GetRotation() const { return m_Rotation; };
 	inline const glm::vec3 GetScale() const { return m_Scale; };
 	inline ParticleTexture* GetTexture() const { return m_Texture; };
+	inline const glm::vec2 GetTexOffset1() const { return m_TexOffset1; };
+	inline const glm::vec2 GetTexOffset2() const { return m_TexOffset2; };
+	inline const float GetBlend() const { return m_Blend; };
 	bool Update();
 	~Particle();
 
 private:
+	void UpdateTextureCoordInfo();
+	void SetTextureOffset(glm::vec2* offset, int index);
+
+private:
 	ParticleTexture* m_Texture;
+
+	glm::vec2 m_TexOffset1;
+	glm::vec2 m_TexOffset2;
+	float m_Blend;
 
 	glm::vec3 m_Position;
 	glm::vec3 m_Rotation;
