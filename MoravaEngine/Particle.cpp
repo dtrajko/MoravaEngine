@@ -41,12 +41,13 @@ Particle::Particle(ParticleTexture* texture, glm::vec3 position, glm::vec3 rotat
 	ParticleMaster::addParticle(this);
 }
 
-bool Particle::Update()
+bool Particle::Update(glm::vec3 cameraPosition)
 {
 	m_Velocity.y += (m_WorldGravity + m_Gravity) * Timer::Get()->GetDeltaTime();
 	glm::vec3 change = glm::vec3(m_Velocity);
 	change *= Timer::Get()->GetDeltaTime();
 	m_Position += change;
+	m_Distance = glm::distance(cameraPosition, m_Position);
 	UpdateTextureCoordInfo();
 	m_ElapsedTime += Timer::Get()->GetDeltaTime();
 	return m_ElapsedTime < m_LifeLength;

@@ -17,7 +17,8 @@ public:
 	inline const glm::vec2 GetTexOffset1() const { return m_TexOffset1; };
 	inline const glm::vec2 GetTexOffset2() const { return m_TexOffset2; };
 	inline const float GetBlend() const { return m_Blend; };
-	bool Update();
+	inline const float GetDistance() const { return m_Distance; };
+	bool Update(glm::vec3 cameraPosition);
 	~Particle();
 
 private:
@@ -40,5 +41,6 @@ private:
 	float m_WorldGravity;
 	float m_LifeLength;
 	float m_ElapsedTime = 0;
+	float m_Distance;
 
 };

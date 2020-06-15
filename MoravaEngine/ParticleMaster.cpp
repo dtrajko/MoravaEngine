@@ -1,4 +1,5 @@
 #include "ParticleMaster.h"
+#include "InsertionSort.h"
 
 
 std::map<ParticleTexture*, std::vector<Particle*>*> ParticleMaster::m_Particles;
@@ -14,7 +15,7 @@ void ParticleMaster::Init()
 	m_Renderer = new ParticleRenderer();
 }
 
-void ParticleMaster::Update()
+void ParticleMaster::Update(glm::vec3 cameraPosition)
 {
 	bool stillAlive = true;
 	for (auto it_map = m_Particles.begin(); it_map != m_Particles.end(); it_map++)
@@ -23,12 +24,13 @@ void ParticleMaster::Update()
 
 		for (int i = 0; i < it_map->second->size(); i++)
 		{
-			stillAlive = it_map->second->at(i)->Update();
+			stillAlive = it_map->second->at(i)->Update(cameraPosition);
 			if (stillAlive) {
 				secondVec->push_back(it_map->second->at(i));
 			}
 		}
 
+		InsertionSort::SortHighToLow(secondVec);
 		it_map->second->clear();
 		it_map->second = secondVec;
 	}

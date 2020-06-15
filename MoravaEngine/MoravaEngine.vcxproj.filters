@@ -341,6 +341,9 @@
     <ClCompile Include="ParticleTexture.cpp">
       <Filter>Particle</Filter>
     </ClCompile>
+    <ClCompile Include="InsertionSort.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -706,6 +709,9 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="ParticleTexture.h">
       <Filter>Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="InsertionSort.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

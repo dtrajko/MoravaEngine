@@ -635,7 +635,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     {
         Profiler profiler("SE::ParticleMaster::Update");
-        ParticleMaster::Update();
+        ParticleMaster::Update(m_Camera->GetPosition());
         GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
 }
