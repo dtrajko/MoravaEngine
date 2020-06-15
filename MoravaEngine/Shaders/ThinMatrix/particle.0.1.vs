@@ -10,10 +10,7 @@ out vec2 vTexCoord;
 
 void main()
 {
-	// vTexCoord = aTexCoord;
-
-	vTexCoord = aPosition + vec2(0.5, 0.5);
-	vTexCoord.y = 1.0 - vTexCoord.y;
+	vTexCoord = aTexCoord;
 
 	gl_Position = projection * modelView * vec4(aPosition, 1.0);
 }

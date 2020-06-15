@@ -25,23 +25,13 @@ void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*
 	glDepthMask(GL_FALSE);
 	/**** End RenderBegin ****/
 
-	// printf("ParticleRenderer::Render particleMap.size = %zu\n", particleMap->size());
-
-	std::map<ParticleTexture*, std::vector<Particle*>*>::iterator it_map;
-	for (it_map = particleMap->begin(); it_map != particleMap->end(); it_map++)
+	for (auto it_map = particleMap->begin(); it_map != particleMap->end(); it_map++)
 	{
-		ParticleTexture* particleTexture = it_map->first;
-		std::vector<Particle*>* particleVec = it_map->second;
-
-		// printf("ParticleRenderer::Render particleVec.size = %zu\n", particleVec.size());
-
-		std::vector<Particle*>::iterator it_vec;
-		particleTexture->Bind(0);
-		for (it_vec = particleVec->begin(); it_vec != particleVec->end(); it_vec++)
+		it_map->first->Bind(0);
+		for (auto particle : *it_map->second)
 		{
-			UpdateModelViewMatrix((*it_vec)->GetPosition(), (*it_vec)->GetRotation(), (*it_vec)->GetScale(), viewMatrix);
+			UpdateModelViewMatrix(particle->GetPosition(), particle->GetRotation(), particle->GetScale(), viewMatrix);
 			m_Quad->Render();
-			// printf("ParticleRenderer is rendering a Quad ;P particleMap.size = %zu particleList.size = %zu\n", particleMap->size(), particleVec.size());
 		}
 	}
 

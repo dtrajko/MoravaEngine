@@ -17,24 +17,20 @@ void ParticleMaster::Init()
 void ParticleMaster::Update()
 {
 	bool stillAlive = true;
-	for (auto it_map = m_Particles.cbegin(); it_map != m_Particles.cend(); ++it_map)
+	for (auto it_map = m_Particles.begin(); it_map != m_Particles.end(); it_map++)
 	{
-		for (auto it_vec = it_map->second->cbegin(); it_vec != it_map->second->cend();)
+		std::vector<Particle*>* secondVec = new std::vector<Particle*>();
+
+		for (int i = 0; i < it_map->second->size(); i++)
 		{
-			stillAlive = (*it_vec)->Update();
-			if (!stillAlive) {
-				it_map->second->erase(it_vec++);
+			stillAlive = it_map->second->at(i)->Update();
+			if (stillAlive) {
+				secondVec->push_back(it_map->second->at(i));
 			}
-			else {
-				++it_vec;
-			};
 		}
 
-		// if (it_map->second->empty()) {
-		// 	m_Particles.erase(it_map++);
-		// } else {
-		// 	++it_map;
-		// }
+		it_map->second->clear();
+		it_map->second = secondVec;
 	}
 }
 

@@ -620,7 +620,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     {
         Profiler profiler("SE::ParticleSystemTM::GeneratePatricles");
-        // m_ParticleSystemFire->GeneratePatricles(m_ParticleSystemCenter);
+        m_ParticleSystemFire->GeneratePatricles(m_ParticleSystemCenter);
         GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
 
