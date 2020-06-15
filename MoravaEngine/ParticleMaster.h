@@ -4,7 +4,7 @@
 #include "ParticleRenderer.h"
 #include "Camera.h"
 
-#include <vector>
+#include <map>
 
 
 class ParticleMaster
@@ -19,6 +19,6 @@ public:
 	~ParticleMaster();
 
 private:
-	static std::vector<Particle*> m_Particles;
+	static std::map<ParticleTexture*, std::vector<Particle*>*> m_Particles;
 	static ParticleRenderer* m_Renderer;
 };

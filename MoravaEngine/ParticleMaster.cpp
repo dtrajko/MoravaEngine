@@ -1,7 +1,7 @@
 #include "ParticleMaster.h"
 
 
-std::vector<Particle*> ParticleMaster::m_Particles;
+std::map<ParticleTexture*, std::vector<Particle*>*> ParticleMaster::m_Particles;
 ParticleRenderer* ParticleMaster::m_Renderer;
 
 ParticleMaster::ParticleMaster()
@@ -10,22 +10,31 @@ ParticleMaster::ParticleMaster()
 
 void ParticleMaster::Init()
 {
-	m_Particles = std::vector<Particle*>();
+	m_Particles = std::map<ParticleTexture*, std::vector<Particle*>*>();
 	m_Renderer = new ParticleRenderer();
 }
 
 void ParticleMaster::Update()
 {
 	bool stillAlive = true;
-
-	int index = 0;
-	for (auto& particle : m_Particles)
+	for (auto it_map = m_Particles.cbegin(); it_map != m_Particles.cend(); ++it_map)
 	{
-		stillAlive = particle->Update();
-		if (!stillAlive && index < m_Particles.size()) {
-			m_Particles.erase(m_Particles.begin() + index);
+		for (auto it_vec = it_map->second->cbegin(); it_vec != it_map->second->cend();)
+		{
+			stillAlive = (*it_vec)->Update();
+			if (!stillAlive) {
+				it_map->second->erase(it_vec++);
+			}
+			else {
+				++it_vec;
+			};
 		}
-		index++;
+
+		// if (it_map->second->empty()) {
+		// 	m_Particles.erase(it_map++);
+		// } else {
+		// 	++it_map;
+		// }
 	}
 }
 
@@ -36,7 +45,22 @@ void ParticleMaster::Render(Camera* camera)
 
 void ParticleMaster::addParticle(Particle* particle)
 {
-	m_Particles.push_back(particle);
+	std::vector<Particle*>* particleVec;
+	std::map<ParticleTexture*, std::vector<Particle*>*>::iterator particleIt;
+
+	particleIt = m_Particles.find(particle->GetTexture());
+
+	if (particleIt != m_Particles.end()) {
+		particleVec = particleIt->second;
+	}
+	else {
+		particleVec = new std::vector<Particle*>();
+		m_Particles.insert(std::make_pair(particle->GetTexture(), particleVec));
+	}
+
+	particleVec->push_back(particle);
+
+	printf("ParticleMaster::addParticle particleVec = %zu\n", particleVec->size());
 }
 
 void ParticleMaster::CleanUp()

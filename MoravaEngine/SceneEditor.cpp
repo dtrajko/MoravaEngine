@@ -172,7 +172,9 @@ SceneEditor::SceneEditor()
     TextureLoader::Get()->Print();
 
     ParticleMaster::Init();
-    m_ParticleSystemFire = new ParticleSystemThinMatrix(new ParticleTexture(), 40.0f, 5.0f, 0.2f, 2.0f);
+    Texture* texture = HotLoadTexture("fire");
+    ParticleTexture* particleTexture = new ParticleTexture(texture->GetID(), 1);
+    m_ParticleSystemFire = new ParticleSystemThinMatrix(particleTexture, 40.0f, 5.0f, 0.2f, 2.0f);
 }
 
 void SceneEditor::SetSkybox()
@@ -615,8 +617,8 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
 
-    m_ParticleSystemFire->GeneratePatricles(m_ParticleSystemCenter);
-    ParticleMaster::Update();
+    // m_ParticleSystemFire->GeneratePatricles(m_ParticleSystemCenter);
+    // ParticleMaster::Update();
 }
 
 void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
@@ -2222,9 +2224,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         RenderSkybox(shaders["background"]);
     }
 
-    Texture* particleTexture = HotLoadTexture(m_ParticleTextureNameEdit);
-    particleTexture->Bind(0);
-    ParticleMaster::Render(m_Camera);
+    // ParticleMaster::Render(m_Camera);
 }
 
 void SceneEditor::ResetScene()

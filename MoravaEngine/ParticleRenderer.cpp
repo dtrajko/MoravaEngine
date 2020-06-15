@@ -12,7 +12,7 @@ ParticleRenderer::ParticleRenderer()
 	// TextureLoader::Get()->GetTexture("Textures/ThinMatrix/lensFlare/tex3.png");
 }
 
-void ParticleRenderer::Render(std::vector<Particle*>* particles, Camera* camera)
+void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*>* particleMap, Camera* camera)
 {
 	glm::mat4 viewMatrix = camera->CalculateViewMatrix();
 	m_ShaderParticle->Bind();
@@ -25,11 +25,24 @@ void ParticleRenderer::Render(std::vector<Particle*>* particles, Camera* camera)
 	glDepthMask(GL_FALSE);
 	/**** End RenderBegin ****/
 
-	std::vector<Particle*>::iterator it;
-	for (it = particles->begin(); it != particles->end(); it++)
+	// printf("ParticleRenderer::Render particleMap.size = %zu\n", particleMap->size());
+
+	std::map<ParticleTexture*, std::vector<Particle*>*>::iterator it_map;
+	for (it_map = particleMap->begin(); it_map != particleMap->end(); it_map++)
 	{
-		UpdateModelViewMatrix((*it)->GetPosition(), (*it)->GetRotation(), (*it)->GetScale(), viewMatrix);
-		m_Quad->Render();
+		ParticleTexture* particleTexture = it_map->first;
+		std::vector<Particle*>* particleVec = it_map->second;
+
+		// printf("ParticleRenderer::Render particleVec.size = %zu\n", particleVec.size());
+
+		std::vector<Particle*>::iterator it_vec;
+		particleTexture->Bind(0);
+		for (it_vec = particleVec->begin(); it_vec != particleVec->end(); it_vec++)
+		{
+			UpdateModelViewMatrix((*it_vec)->GetPosition(), (*it_vec)->GetRotation(), (*it_vec)->GetScale(), viewMatrix);
+			m_Quad->Render();
+			// printf("ParticleRenderer is rendering a Quad ;P particleMap.size = %zu particleList.size = %zu\n", particleMap->size(), particleVec.size());
+		}
 	}
 
 	/**** Begin RenderEnd ****/

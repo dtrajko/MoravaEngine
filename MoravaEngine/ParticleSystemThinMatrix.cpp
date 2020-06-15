@@ -24,10 +24,13 @@ void ParticleSystemThinMatrix::GeneratePatricles(glm::vec3 systemCenter)
 	float particlesToCreate = m_PPS * delta;
 	int count = (int)std::floor(particlesToCreate);
 	float partialParticle = (float)((int)particlesToCreate % 1);
+
 	for (int i = 0; i < count; i++) {
 		EmitParticle(systemCenter);
 	}
-	if ((std::rand() / RAND_MAX) < partialParticle) {
+
+	float rand = (float)std::rand() / (float)RAND_MAX;
+	if (rand < partialParticle) {
 		EmitParticle(systemCenter);
 	}
 }

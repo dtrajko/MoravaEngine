@@ -13,7 +13,7 @@ public:
 	inline const glm::vec3 GetPosition() const { return m_Position; };
 	inline const glm::vec3 GetRotation() const { return m_Rotation; };
 	inline const glm::vec3 GetScale() const { return m_Scale; };
-	inline const ParticleTexture* GetTexture() const { return m_Texture; };
+	inline ParticleTexture* GetTexture() const { return m_Texture; };
 	bool Update();
 	~Particle();
 
