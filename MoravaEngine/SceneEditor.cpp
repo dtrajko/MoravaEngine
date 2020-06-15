@@ -17,6 +17,7 @@
 #include "TextureLoader.h"
 #include "Tile2D.h"
 #include "ParticleMaster.h"
+#include "Profiler.h"
 
 #include <vector>
 #include <map>
@@ -617,8 +618,17 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
 
-    // m_ParticleSystemFire->GeneratePatricles(m_ParticleSystemCenter);
-    // ParticleMaster::Update();
+    {
+        Profiler profiler("SE::ParticleSystemTM::GeneratePatricles");
+        // m_ParticleSystemFire->GeneratePatricles(m_ParticleSystemCenter);
+        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
+
+    {
+        Profiler profiler("SE::ParticleMaster::Update");
+        ParticleMaster::Update();
+        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
 }
 
 void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
@@ -2224,7 +2234,11 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         RenderSkybox(shaders["background"]);
     }
 
-    // ParticleMaster::Render(m_Camera);
+    {
+        Profiler profiler("SE::ParticleMaster::Render");
+        ParticleMaster::Render(m_Camera);
+        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
 }
 
 void SceneEditor::ResetScene()
