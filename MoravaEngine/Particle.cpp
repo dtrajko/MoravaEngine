@@ -22,7 +22,7 @@ Particle::Particle()
 	m_Gravity = 0.0f;
 	m_LifeLength = 0.0f;
 
-	m_WorldGravity = -1.0f;
+	m_WorldGravity = 0.0f;
 }
 
 Particle::Particle(ParticleTexture* texture, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 velocity, float gravity, float lifeLength)

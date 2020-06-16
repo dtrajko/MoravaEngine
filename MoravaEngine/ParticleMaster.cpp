@@ -30,7 +30,7 @@ void ParticleMaster::Update(glm::vec3 cameraPosition)
 			}
 		}
 
-		InsertionSort::SortHighToLow(secondVec);
+		// InsertionSort::SortHighToLow(secondVec);
 		it_map->second->clear();
 		it_map->second = secondVec;
 	}

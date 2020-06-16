@@ -160,9 +160,16 @@ SceneEditor::SceneEditor()
     m_PBR_Map_Edit = PBR_MAP_ENVIRONMENT;
     m_HDRI_Edit = HDRI_EARLY_EVE_WARM_SKY;
     m_HDRI_Edit_Prev = -1;
-    m_ParticleTextureNameEdit = "particle_atlas";
-    m_ParticleTextureNamePrev = "none";
-    m_ParticleNumRowsEdit = 4;
+
+    m_ParticleSettingsEdit.textureName      = "particle_atlas";
+    m_ParticleSettingsEdit.numRows          = 4;
+    m_ParticleSettingsEdit.PPS              = 40.0f;
+    m_ParticleSettingsEdit.speed            = 5.0f;
+    m_ParticleSettingsEdit.gravityComplient = 0.2f;
+    m_ParticleSettingsEdit.lifeLength       = 2.0f;
+
+    m_ParticleSettingsPrev = m_ParticleSettingsEdit;
+    m_ParticleSettingsPrev.textureName      = "none";
 
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
@@ -619,12 +626,16 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     }
 
     // Particle System
-    if (m_ParticleTextureNameEdit != m_ParticleTextureNamePrev || m_ParticleNumRowsEdit != m_ParticleNumRowsPrev) {
-        Texture* texture = HotLoadTexture(m_ParticleTextureNameEdit);
-        ParticleTexture* particleTexture = new ParticleTexture(texture->GetID(), m_ParticleNumRowsEdit);
-        m_ParticleSystemFire = new ParticleSystemThinMatrix(particleTexture, 40.0f, 5.0f, 0.2f, 2.0f);
-        m_ParticleTextureNamePrev = m_ParticleTextureNameEdit;
-        m_ParticleNumRowsPrev = m_ParticleNumRowsEdit;
+    if (m_ParticleSettingsEdit != m_ParticleSettingsPrev) {
+        Texture* texture = HotLoadTexture(m_ParticleSettingsEdit.textureName);
+        ParticleTexture* particleTexture = new ParticleTexture(texture->GetID(), m_ParticleSettingsEdit.numRows);
+        m_ParticleSystemFire = new ParticleSystemThinMatrix(particleTexture, m_ParticleSettingsEdit.PPS, m_ParticleSettingsEdit.speed,
+            m_ParticleSettingsEdit.gravityComplient, m_ParticleSettingsEdit.lifeLength);
+    
+        // printf("%i %.2ff %.2ff %.2ff %.2ff\n", particleTexture->GetTextureID(), m_ParticleSettingsEdit.PPS, m_ParticleSettingsEdit.speed,
+        //     m_ParticleSettingsEdit.gravityComplient, m_ParticleSettingsEdit.lifeLength);
+
+        m_ParticleSettingsPrev = m_ParticleSettingsEdit;
     }
 
     {
@@ -1011,7 +1022,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             std::map<std::string, std::string>::iterator itTexture;
             for (itTexture = m_TextureInfo.begin(); itTexture != m_TextureInfo.end(); itTexture++)
                 itemsTexture.push_back(itTexture->first.c_str());
-            static const char* currentItemTexture = m_ParticleTextureNameEdit.c_str();
+            static const char* currentItemTexture = m_ParticleSettingsEdit.textureName.c_str();
 
             if (ImGui::BeginCombo("Texture Name", currentItemTexture))
             {
@@ -1021,7 +1032,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
                     if (ImGui::Selectable(itemsTexture[n], isSelected))
                     {
                         currentItemTexture = itemsTexture[n];
-                        m_ParticleTextureNameEdit = std::string(itemsTexture[n]);
+                        m_ParticleSettingsEdit.textureName = std::string(itemsTexture[n]);
                     }
                     if (isSelected)
                     {
@@ -1032,7 +1043,11 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             }
             // End ParticleTextureName ImGui drop-down list
 
-            ImGui::SliderInt("Number of Rows", &m_ParticleNumRowsEdit, 1, 10);
+            ImGui::SliderInt(  "Number of Rows",       &m_ParticleSettingsEdit.numRows,           1, 10);
+            ImGui::SliderFloat("Particles Per Second", &m_ParticleSettingsEdit.PPS,               0.0f, 100.0f);
+            ImGui::SliderFloat("Speed",                &m_ParticleSettingsEdit.speed,            -20.0f, 20.0f);
+            ImGui::SliderFloat("Gravity Complient",    &m_ParticleSettingsEdit.gravityComplient, -20.0f, 20.0f);
+            ImGui::SliderFloat("Life Length",          &m_ParticleSettingsEdit.lifeLength,        0.0f, 20.0f);
         }
     }
     ImGui::End();

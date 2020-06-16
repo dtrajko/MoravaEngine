@@ -235,7 +235,7 @@ int main()
 
 	ImGuiWrapper::Cleanup();
 
-	delete scene;
+	// delete scene;
 	delete renderer;
 
 	return 0;

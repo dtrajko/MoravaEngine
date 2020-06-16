@@ -132,10 +132,28 @@ private:
 	int m_PBR_Map_Edit;
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;
-	std::string m_ParticleTextureNameEdit;
-	std::string m_ParticleTextureNamePrev;
-	int m_ParticleNumRowsEdit;
-	int m_ParticleNumRowsPrev;
+
+	struct ParticleSettings {
+		std::string textureName = "";
+		int numRows = 1;
+		float PPS = 0.0f;
+		float speed = 0.0f;
+		float gravityComplient = 0.0f;
+		float lifeLength = 0.0f;
+
+		inline bool operator!=(const ParticleSettings& other)
+		{
+			return textureName   != other.textureName      ||
+				numRows          != other.numRows          ||
+				PPS              != other.PPS              ||
+				speed            != other.speed            ||
+				gravityComplient != other.gravityComplient ||
+				lifeLength       != other.lifeLength;
+		}
+	};
+
+	ParticleSettings m_ParticleSettingsEdit;
+	ParticleSettings m_ParticleSettingsPrev;
 
 	std::vector<std::string> m_ActiveRenderPasses;
 
