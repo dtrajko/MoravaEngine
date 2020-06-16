@@ -137,23 +137,35 @@ private:
 		std::string textureName = "";
 		int numRows = 1;
 		float PPS = 0.0f;
-		float speed = 0.0f;
+		glm::vec3 direction = glm::vec3(0.0f);
+		float intensity = 5.0f;
 		float gravityComplient = 0.0f;
 		float lifeLength = 0.0f;
+		float diameter = 0.4f;
 
 		inline bool operator!=(const ParticleSettings& other)
 		{
 			return textureName   != other.textureName      ||
 				numRows          != other.numRows          ||
 				PPS              != other.PPS              ||
-				speed            != other.speed            ||
+				direction.x      != other.direction.x      ||
+				direction.y      != other.direction.y      ||
+				direction.z      != other.direction.z      ||
+				intensity        != other.intensity        ||
 				gravityComplient != other.gravityComplient ||
-				lifeLength       != other.lifeLength;
+				lifeLength       != other.lifeLength       ||
+				diameter         != other.diameter;
 		}
 	};
 
 	ParticleSettings m_ParticleSettingsEdit;
 	ParticleSettings m_ParticleSettingsPrev;
+
+	// Particle System ThinMatrix
+	ParticleSystemThinMatrix* m_ParticleSystem;
+	glm::vec3 m_ParticleSystemPosition;
+	glm::vec3 m_ParticleSystemScale;
+	AABB* m_ParticleSystemAABB;
 
 	std::vector<std::string> m_ActiveRenderPasses;
 
@@ -198,10 +210,6 @@ private:
 	std::set<int> m_FixedVertexMeshes = { MESH_TYPE_RING, MESH_TYPE_SPHERE, MESH_TYPE_TERRAIN, MESH_TYPE_WATER };
 
 	std::map<std::string, std::vector<glm::mat4>> m_SkinningTransforms;
-
-	// Particle System ThinMatrix
-	ParticleSystemThinMatrix* m_ParticleSystemFire;
-	glm::vec3 m_ParticleSystemCenter;
 
 	// Model for the Glass shader
 	Model* m_GlassShaderModel;

@@ -164,12 +164,17 @@ SceneEditor::SceneEditor()
     m_ParticleSettingsEdit.textureName      = "particle_atlas";
     m_ParticleSettingsEdit.numRows          = 4;
     m_ParticleSettingsEdit.PPS              = 40.0f;
-    m_ParticleSettingsEdit.speed            = 5.0f;
+    m_ParticleSettingsEdit.direction        = glm::vec3(0.0f, 1.0f, 0.0f);
+    m_ParticleSettingsEdit.intensity        = 5.0f;
+    m_ParticleSettingsEdit.diameter         = 0.4f;
     m_ParticleSettingsEdit.gravityComplient = 0.2f;
     m_ParticleSettingsEdit.lifeLength       = 2.0f;
 
     m_ParticleSettingsPrev = m_ParticleSettingsEdit;
     m_ParticleSettingsPrev.textureName      = "none";
+
+    m_ParticleSystemPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_ParticleSystemScale = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
@@ -258,39 +263,43 @@ Material* SceneEditor::HotLoadMaterial(std::string materialName)
 
 void SceneEditor::SetTextures()
 {
-    m_TextureInfo.insert(std::make_pair("none",               "Textures/plain.png"));
-    m_TextureInfo.insert(std::make_pair("semi_transparent",   "Textures/semi_transparent.png"));
-    m_TextureInfo.insert(std::make_pair("texture_checker",    "Textures/texture_checker.png"));
-    m_TextureInfo.insert(std::make_pair("wood",               "Textures/wood.png"));
-    m_TextureInfo.insert(std::make_pair("plank",              "Textures/texture_plank.png"));
-    m_TextureInfo.insert(std::make_pair("rock",               "Textures/rock.png"));
-    m_TextureInfo.insert(std::make_pair("pyramid",            "Textures/pyramid.png"));
-    m_TextureInfo.insert(std::make_pair("lego",               "Textures/lego.png"));
-    m_TextureInfo.insert(std::make_pair("marble",             "Textures/marble.jpg"));
-    m_TextureInfo.insert(std::make_pair("metal",              "Textures/metal.png"));
-    m_TextureInfo.insert(std::make_pair("brick",              "Textures/brick.png"));
-    m_TextureInfo.insert(std::make_pair("crate",              "Textures/crate.png"));
-    m_TextureInfo.insert(std::make_pair("grass",              "Textures/grass.jpg"));
-    m_TextureInfo.insert(std::make_pair("water",              "Textures/water.png"));
-    m_TextureInfo.insert(std::make_pair("rock2",              "Textures/rock/Rock-Texture-Surface.jpg"));
-    m_TextureInfo.insert(std::make_pair("planet",             "Textures/planet/planet_Quom1200.png"));
-    m_TextureInfo.insert(std::make_pair("gold_albedo",        "Textures/PBR/gold/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("silver_albedo",      "Textures/PBR/silver/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("rusted_iron",        "Textures/PBR/rusted_iron/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("grass_albedo",       "Textures/PBR/grass/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("wall_albedo",        "Textures/PBR/wall/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("plastic_albedo",     "Textures/PBR/plastic/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("wal67ar_small",      "Textures/OGLdev/buddha/wal67ar_small.jpg"));
-    m_TextureInfo.insert(std::make_pair("wal69ar_small",      "Textures/OGLdev/buddha/wal69ar_small.jpg"));
-    m_TextureInfo.insert(std::make_pair("hheli",              "Textures/OGLdev/hheli/hheli.bmp"));
-    m_TextureInfo.insert(std::make_pair("jeep_army",          "Textures/OGLdev/jeep/jeep_army.jpg"));
-    m_TextureInfo.insert(std::make_pair("jeep_rood",          "Textures/OGLdev/jeep/jeep_rood.jpg"));
-    m_TextureInfo.insert(std::make_pair("pine",               "Textures/ThinMatrix/pine.png"));
-    m_TextureInfo.insert(std::make_pair("terrain_ground",     "Textures/terrain_ground.jpg"));
-    m_TextureInfo.insert(std::make_pair("boulder",            "Textures/ThinMatrix/boulder.png"));
-    m_TextureInfo.insert(std::make_pair("fire",               "Textures/Particles/fire.png"));
-    m_TextureInfo.insert(std::make_pair("fog",                "Textures/Particles/fog.png"));
-    m_TextureInfo.insert(std::make_pair("particle_atlas",     "Textures/ThinMatrix/particles/particleAtlas.png"));
+    m_TextureInfo.insert(std::make_pair("none",                  "Textures/plain.png"));
+    m_TextureInfo.insert(std::make_pair("semi_transparent",      "Textures/semi_transparent.png"));
+    m_TextureInfo.insert(std::make_pair("texture_checker",       "Textures/texture_checker.png"));
+    m_TextureInfo.insert(std::make_pair("wood",                  "Textures/wood.png"));
+    m_TextureInfo.insert(std::make_pair("plank",                 "Textures/texture_plank.png"));
+    m_TextureInfo.insert(std::make_pair("rock",                  "Textures/rock.png"));
+    m_TextureInfo.insert(std::make_pair("pyramid",               "Textures/pyramid.png"));
+    m_TextureInfo.insert(std::make_pair("lego",                  "Textures/lego.png"));
+    m_TextureInfo.insert(std::make_pair("marble",                "Textures/marble.jpg"));
+    m_TextureInfo.insert(std::make_pair("metal",                 "Textures/metal.png"));
+    m_TextureInfo.insert(std::make_pair("brick",                 "Textures/brick.png"));
+    m_TextureInfo.insert(std::make_pair("crate",                 "Textures/crate.png"));
+    m_TextureInfo.insert(std::make_pair("grass",                 "Textures/grass.jpg"));
+    m_TextureInfo.insert(std::make_pair("water",                 "Textures/water.png"));
+    m_TextureInfo.insert(std::make_pair("rock2",                 "Textures/rock/Rock-Texture-Surface.jpg"));
+    m_TextureInfo.insert(std::make_pair("planet",                "Textures/planet/planet_Quom1200.png"));
+    m_TextureInfo.insert(std::make_pair("gold_albedo",           "Textures/PBR/gold/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("silver_albedo",         "Textures/PBR/silver/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("rusted_iron",           "Textures/PBR/rusted_iron/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("grass_albedo",          "Textures/PBR/grass/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("wall_albedo",           "Textures/PBR/wall/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("plastic_albedo",        "Textures/PBR/plastic/albedo.png"));
+    m_TextureInfo.insert(std::make_pair("wal67ar_small",         "Textures/OGLdev/buddha/wal67ar_small.jpg"));
+    m_TextureInfo.insert(std::make_pair("wal69ar_small",         "Textures/OGLdev/buddha/wal69ar_small.jpg"));
+    m_TextureInfo.insert(std::make_pair("hheli",                 "Textures/OGLdev/hheli/hheli.bmp"));
+    m_TextureInfo.insert(std::make_pair("jeep_army",             "Textures/OGLdev/jeep/jeep_army.jpg"));
+    m_TextureInfo.insert(std::make_pair("jeep_rood",             "Textures/OGLdev/jeep/jeep_rood.jpg"));
+    m_TextureInfo.insert(std::make_pair("pine",                  "Textures/ThinMatrix/pine.png"));
+    m_TextureInfo.insert(std::make_pair("terrain_ground",        "Textures/terrain_ground.jpg"));
+    m_TextureInfo.insert(std::make_pair("boulder",               "Textures/ThinMatrix/boulder.png"));
+    m_TextureInfo.insert(std::make_pair("fire",                  "Textures/Particles/fire.png"));
+    m_TextureInfo.insert(std::make_pair("fog",                   "Textures/Particles/fog.png"));
+    m_TextureInfo.insert(std::make_pair("snowflake",             "Textures/Particles/snowflake.png"));
+    m_TextureInfo.insert(std::make_pair("particle_atlas",        "Textures/ThinMatrix/particles/particleAtlas.png"));
+    m_TextureInfo.insert(std::make_pair("particle_atlas_cosmic", "Textures/ThinMatrix/particles/cosmic.png"));
+    m_TextureInfo.insert(std::make_pair("particle_atlas_fire",   "Textures/ThinMatrix/particles/fire.png"));
+    m_TextureInfo.insert(std::make_pair("particle_atlas_smoke",  "Textures/ThinMatrix/particles/smoke.png"));
 
 #define ASYNC_LOAD_TEXTURES 0
 #if ASYNC_LOAD_TEXTURES
@@ -627,20 +636,17 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     // Particle System
     if (m_ParticleSettingsEdit != m_ParticleSettingsPrev) {
+        printf("Settings changed, let's consume memory!!!\n");
         Texture* texture = HotLoadTexture(m_ParticleSettingsEdit.textureName);
         ParticleTexture* particleTexture = new ParticleTexture(texture->GetID(), m_ParticleSettingsEdit.numRows);
-        m_ParticleSystemFire = new ParticleSystemThinMatrix(particleTexture, m_ParticleSettingsEdit.PPS, m_ParticleSettingsEdit.speed,
-            m_ParticleSettingsEdit.gravityComplient, m_ParticleSettingsEdit.lifeLength);
-    
-        // printf("%i %.2ff %.2ff %.2ff %.2ff\n", particleTexture->GetTextureID(), m_ParticleSettingsEdit.PPS, m_ParticleSettingsEdit.speed,
-        //     m_ParticleSettingsEdit.gravityComplient, m_ParticleSettingsEdit.lifeLength);
-
+        m_ParticleSystem = new ParticleSystemThinMatrix(particleTexture, m_ParticleSettingsEdit.PPS, m_ParticleSettingsEdit.direction,
+            m_ParticleSettingsEdit.intensity, m_ParticleSettingsEdit.gravityComplient, m_ParticleSettingsEdit.lifeLength, m_ParticleSettingsEdit.diameter);
         m_ParticleSettingsPrev = m_ParticleSettingsEdit;
     }
 
     {
         Profiler profiler("SE::ParticleSystemTM::GeneratePatricles");
-        m_ParticleSystemFire->GeneratePatricles(m_ParticleSystemCenter);
+        m_ParticleSystem->GeneratePatricles(m_ParticleSystemPosition, m_ParticleSystemScale);
         GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
 
@@ -1015,7 +1021,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
     {
         if (ImGui::CollapsingHeader("Particle System Settings"))
         {
-            ImGui::SliderFloat3("System Center", glm::value_ptr(m_ParticleSystemCenter), -20.0f, 20.0f);
+            ImGui::SliderFloat3("Origin Area Position", glm::value_ptr(m_ParticleSystemPosition), -20.0f, 20.0f);
+            ImGui::SliderFloat3("Origin Area Scale", glm::value_ptr(m_ParticleSystemScale), 0.0f, 20.0f);
 
             // Begin ParticleTextureName ImGui drop-down list
             std::vector<const char*> itemsTexture;
@@ -1043,11 +1050,13 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             }
             // End ParticleTextureName ImGui drop-down list
 
-            ImGui::SliderInt(  "Number of Rows",       &m_ParticleSettingsEdit.numRows,           1, 10);
-            ImGui::SliderFloat("Particles Per Second", &m_ParticleSettingsEdit.PPS,               0.0f, 100.0f);
-            ImGui::SliderFloat("Speed",                &m_ParticleSettingsEdit.speed,            -20.0f, 20.0f);
-            ImGui::SliderFloat("Gravity Complient",    &m_ParticleSettingsEdit.gravityComplient, -20.0f, 20.0f);
-            ImGui::SliderFloat("Life Length",          &m_ParticleSettingsEdit.lifeLength,        0.0f, 20.0f);
+            ImGui::SliderInt(  "Number of Rows",       &m_ParticleSettingsEdit.numRows,                   1, 10);
+            ImGui::SliderFloat("Particles Per Second", &m_ParticleSettingsEdit.PPS,                       0.0f, 100.0f);
+            ImGui::SliderFloat3("Direction",           glm::value_ptr(m_ParticleSettingsEdit.direction), -1.0f, 1.0f);
+            ImGui::SliderFloat("Intensity",            &m_ParticleSettingsEdit.intensity,                 0.0f, 20.0f);
+            ImGui::SliderFloat("Gravity Complient",    &m_ParticleSettingsEdit.gravityComplient,         -20.0f, 20.0f);
+            ImGui::SliderFloat("Life Length",          &m_ParticleSettingsEdit.lifeLength,                0.0f, 20.0f);
+            ImGui::SliderFloat("Diameter",             &m_ParticleSettingsEdit.diameter,                  0.0f, 1.0f);
         }
     }
     ImGui::End();
