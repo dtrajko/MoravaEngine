@@ -72,6 +72,7 @@ struct SceneSettings
 	bool enableSkybox;
 	bool enableNormalMaps;
 	bool enableCulling;
+	bool enableParticles;
 
 	// camera
 	glm::vec3 cameraPosition;

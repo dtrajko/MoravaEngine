@@ -19,6 +19,7 @@ Scene::Scene()
 	sceneSettings.enableSkybox       = false;
 	sceneSettings.enableNormalMaps   = false;
 	sceneSettings.enableCulling      = false;
+	sceneSettings.enableParticles    = false;
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 20.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraStartPitch = 0.0f;

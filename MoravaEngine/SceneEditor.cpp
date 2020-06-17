@@ -47,6 +47,7 @@ SceneEditor::SceneEditor()
     sceneSettings.enableShadows      = true;
     sceneSettings.enableOmniShadows  = true;
     sceneSettings.enableWaterEffects = true;
+    sceneSettings.enableParticles    = true;
 
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
@@ -644,7 +645,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         m_ParticleSettingsPrev = m_ParticleSettingsEdit;
     }
 
-    {
+    if (sceneSettings.enableParticles) {
         Profiler profiler("SE::ParticleSystemTM::GeneratePatricles");
         m_ParticleSystem->GeneratePatricles(m_ParticleSystemPosition, m_ParticleSystemScale);
         GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
@@ -1066,46 +1067,48 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
         ImGui::Checkbox("Enable Shadows", &sceneSettings.enableShadows);
         ImGui::Checkbox("Enable Omni Shadows", &sceneSettings.enableOmniShadows);
         ImGui::Checkbox("Enable Water Effects", &sceneSettings.enableWaterEffects);
+        ImGui::Checkbox("Enable Particles", &sceneSettings.enableParticles);
     }
     ImGui::End();
 
     ImGui::Begin("Profiler");
     {
-        ImGui::Text("Timer");
-
         float realFPS = Timer::Get()->GetRealFPS();
         std::string sRealFPS = "Real FPS: " + std::to_string(realFPS);
 
         float deltaTimeMS = Timer::Get()->GetDeltaTime() * 1000.0f;
         std::string sDeltaTimeMS = "Delta Time: " + std::to_string(deltaTimeMS) + " ms";
 
-        ImGui::Text(sRealFPS.c_str());
-        ImGui::Text(sDeltaTimeMS.c_str());
-
-        ImGui::Separator();
-
-        ImGui::Text("Active Render Passes:");
-        ImGui::Indent();
-        for (auto& renderPassName : m_ActiveRenderPasses)
-            ImGui::Text(renderPassName.c_str());
-        ImGui::Unindent();
-        m_ActiveRenderPasses.clear();
-    }
-
-    // print profiler results
-    if (ImGui::CollapsingHeader("Profiler results:"))
-    {
-        // profiler results
-        for (auto& profilerResult : m_ProfilerResults)
+        if (ImGui::CollapsingHeader("Timer"))
         {
-            char label[100];
-            strcpy_s(label, "%.2fms ");
-            strcat_s(label, profilerResult.first.c_str());
-            ImGui::Text(label, profilerResult.second);
+            ImGui::Text(sRealFPS.c_str());
+            ImGui::Text(sDeltaTimeMS.c_str());
         }
-        m_ProfilerResults.clear();
-    }
 
+        if (ImGui::CollapsingHeader("Active Render Passes"))
+        {
+            ImGui::Indent();
+            for (auto& renderPassName : m_ActiveRenderPasses)
+                ImGui::Text(renderPassName.c_str());
+            ImGui::Unindent();
+        }
+
+        m_ActiveRenderPasses.clear();
+
+        // print profiler results
+        if (ImGui::CollapsingHeader("Profiler results:"))
+        {
+            // profiler results
+            for (auto& profilerResult : m_ProfilerResults)
+            {
+                char label[100];
+                strcpy_s(label, "%.2fms ");
+                strcat_s(label, profilerResult.first.c_str());
+                ImGui::Text(label, profilerResult.second);
+            }
+            m_ProfilerResults.clear();
+        }
+    }
     ImGui::End();
 
     ImGui::Begin("Mouse Picker");
@@ -1863,11 +1866,17 @@ void SceneEditor::SetUniformsShaderWater(Shader* shaderWater, SceneObject* scene
     shaderWater->setFloat("nearPlane",     sceneSettings.nearPlane);
     shaderWater->setFloat("farPlane",      sceneSettings.farPlane);
 
-    m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(0);
-    m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(1);
+    textures["none"]->Bind(0);
+    textures["none"]->Bind(1);
     textures["waterNormal"]->Bind(2);
     textures["waterDuDv"]->Bind(3);
-    m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(4);
+    textures["none"]->Bind(4);
+
+    if (sceneSettings.enableWaterEffects) {
+        m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(0);
+        m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(1);
+        m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(4);
+    }
 }
 
 void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix)
@@ -2279,10 +2288,10 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         RenderSkybox(shaders["background"]);
     }
 
-    {
+    if (sceneSettings.enableParticles && (passType == "main" || passType == "water_reflect")) {
         Profiler profiler("SE::ParticleMaster::Render");
         ParticleMaster::Render(m_Camera);
-        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));        
     }
 }
 
