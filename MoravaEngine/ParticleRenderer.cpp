@@ -5,11 +5,27 @@
 
 ParticleRenderer::ParticleRenderer()
 {
-	m_ShaderParticle = new Shader("Shaders/ThinMatrix/particle.0.1.vs", "Shaders/ThinMatrix/particle.0.1.fs");
+	m_ShaderParticle = new Shader("Shaders/ThinMatrix/particle.vs", "Shaders/ThinMatrix/particle.fs");
 	printf("ParticleRenderer: m_ShaderParticle compiled [programID=%d]\n", m_ShaderParticle->GetProgramID());
 
+	m_ShaderParticleInstanced = new Shader("Shaders/ThinMatrix/particle_instanced.vs", "Shaders/ThinMatrix/particle_instanced.fs");
+	printf("ParticleRenderer: m_ShaderParticleInstanced compiled [programID=%d]\n", m_ShaderParticleInstanced->GetProgramID());
+
 	m_Quad = new Quad();
-	// TextureLoader::Get()->GetTexture("Textures/ThinMatrix/lensFlare/tex3.png");
+	m_QuadInstanced = new QuadInstanced();
+}
+
+void ParticleRenderer::RenderBefore()
+{
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // GL_ONE
+	glDepthMask(GL_FALSE);
+}
+
+void ParticleRenderer::RenderAfter()
+{
+	glDepthMask(GL_TRUE);
+	glDisable(GL_BLEND);
 }
 
 void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*>* particleMap, Camera* camera)
@@ -19,15 +35,11 @@ void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*
 	m_ShaderParticle->setMat4("projection", RendererBasic::GetProjectionMatrix());
 	m_ShaderParticle->setInt("albedoMap", 0);
 
-	/**** Begin RenderBegin ****/
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // GL_ONE
-	glDepthMask(GL_FALSE);
-	/**** End RenderBegin ****/
+	RenderBefore();
 
 	for (auto it_map = particleMap->begin(); it_map != particleMap->end(); it_map++)
 	{
-		it_map->first->Bind(0);
+		BindTexture(it_map->first);
 		for (auto particle : *it_map->second)
 		{
 			UpdateModelViewMatrix(particle->GetPosition(), particle->GetRotation(), particle->GetScale(), viewMatrix);
@@ -36,12 +48,40 @@ void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*
 		}
 	}
 
-	/**** Begin RenderEnd ****/
-	glDepthMask(GL_TRUE);
-	glDisable(GL_BLEND);
-	/**** End RenderEnd ****/
+	RenderAfter();
 
 	m_ShaderParticle->Unbind();
+}
+
+void ParticleRenderer::RenderInstanced(std::map<ParticleTexture*, std::vector<Particle*>*>* particleMap, Camera* camera)
+{
+	glm::mat4 viewMatrix = camera->CalculateViewMatrix();
+	m_ShaderParticleInstanced->Bind();
+	m_ShaderParticleInstanced->setMat4("projection", RendererBasic::GetProjectionMatrix());
+	m_ShaderParticleInstanced->setInt("albedoMap", 0);
+
+	RenderBefore();
+
+	for (auto it_map = particleMap->begin(); it_map != particleMap->end(); it_map++)
+	{
+		BindTexture(it_map->first);
+		for (auto particle : *it_map->second)
+		{
+			UpdateModelViewMatrix(particle->GetPosition(), particle->GetRotation(), particle->GetScale(), viewMatrix);
+			glm::vec4 texOffsets = glm::vec4(0.0f); // TODO TexOffsets data
+			LoadTexCoordInfoInstanced(texOffsets, particle->GetTexture()->GetNumberOfRows());
+			m_QuadInstanced->Render();
+		}
+	}
+
+	RenderAfter();
+
+	m_ShaderParticleInstanced->Unbind();
+}
+
+void ParticleRenderer::BindTexture(ParticleTexture* particleTexture)
+{
+	particleTexture->Bind(0);
 }
 
 void ParticleRenderer::UpdateModelViewMatrix(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::mat4 viewMatrix)
@@ -75,9 +115,12 @@ void ParticleRenderer::LoadTexCoordInfo(glm::vec2 texOffset1, glm::vec2 texOffse
 	m_ShaderParticle->setVec2("texOffset2", texOffset2);
 	m_ShaderParticle->setFloat("texCoordInfo.numRows", (float)numRows);
 	m_ShaderParticle->setFloat("texCoordInfo.blendFactor", blendFactor);
+}
 
-	// printf("texOffset1 [ %.2ff %.2ff ] texOffset2 [ %.2ff %.2ff ] numRows %i blendFactor %.2ff\n",
-	// 	texOffset1.x, texOffset1.y, texOffset2.x, texOffset2.y, numRows, blendFactor);
+void ParticleRenderer::LoadTexCoordInfoInstanced(glm::vec4 texOffsets, int numberOfRows)
+{
+	m_ShaderParticleInstanced->setVec4("texOffsets", texOffsets);
+	m_ShaderParticleInstanced->setFloat("numberOfRows", (float)numberOfRows);
 }
 
 void ParticleRenderer::CleanUp()

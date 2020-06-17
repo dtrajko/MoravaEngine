@@ -181,6 +181,7 @@
     <ClCompile Include="ParticleRenderer.cpp" />
     <ClCompile Include="ParticleSystemThinMatrix.cpp" />
     <ClCompile Include="ParticleTexture.cpp" />
+    <ClCompile Include="QuadInstanced.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="ShaderBackground.cpp" />
     <ClCompile Include="ShaderBasic.cpp" />
@@ -303,6 +304,7 @@
     <ClInclude Include="ParticleRenderer.h" />
     <ClInclude Include="ParticleSystemThinMatrix.h" />
     <ClInclude Include="ParticleTexture.h" />
+    <ClInclude Include="QuadInstanced.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="ShaderBackground.h" />

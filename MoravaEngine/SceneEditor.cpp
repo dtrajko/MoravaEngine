@@ -637,7 +637,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     // Particle System
     if (m_ParticleSettingsEdit != m_ParticleSettingsPrev) {
-        printf("Settings changed, let's consume memory!!!\n");
+        printf("Particle Settings changed, rebuilding the Particle System...\n");
         Texture* texture = HotLoadTexture(m_ParticleSettingsEdit.textureName);
         ParticleTexture* particleTexture = new ParticleTexture(texture->GetID(), m_ParticleSettingsEdit.numRows);
         m_ParticleSystem = new ParticleSystemThinMatrix(particleTexture, m_ParticleSettingsEdit.PPS, m_ParticleSettingsEdit.direction,

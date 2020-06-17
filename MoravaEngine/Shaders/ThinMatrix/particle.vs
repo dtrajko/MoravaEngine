@@ -1,26 +1,32 @@
-#version 140
+#version 440
 
-in vec2 position;
-in mat4 modelViewMatrix;
-in vec4 texOffsets;
-in float blendFactor;
+layout (location = 0) in vec3 aPosition;
+layout (location = 1) in vec2 aTexCoord;
 
-out vec2 textureCoords1;
-out vec2 textureCoords2;
-out float blend;
+out vec2 vTexCoord1;
+out vec2 vTexCoord2;
+out float vBlendFactor;
 
-uniform mat4 projectionMatrix;
-uniform float numberOfRows;
+struct TexCoordInfo {
+	float numRows;
+	float blendFactor;
+};
 
-void main(void){
+uniform mat4 projection;
+uniform mat4 modelView;
 
-	vec2 textureCoords = position + vec2(0.5, 0.5);
-	textureCoords.y = 1.0 - textureCoords.y;
-	textureCoords /= numberOfRows;
-	textureCoords1 = textureCoords + texOffsets.xy;
-	textureCoords2 = textureCoords + texOffsets.zw;
-	blend = blendFactor;
+uniform vec2 texOffset1;
+uniform vec2 texOffset2;
+uniform TexCoordInfo texCoordInfo;
 
-	gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 0.0, 1.0);
+void main()
+{
+	vec2 texCoord = aPosition.xy + vec2(0.5, 0.5);
+	texCoord.y = 1.0 - texCoord.y;
+	texCoord /= texCoordInfo.numRows;
+	vTexCoord1 = texCoord + texOffset1;
+	vTexCoord2 = texCoord + texOffset2;
+	vBlendFactor = texCoordInfo.blendFactor;
 
+	gl_Position = projection * modelView * vec4(aPosition, 1.0);
 }
