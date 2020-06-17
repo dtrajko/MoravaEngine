@@ -9,15 +9,13 @@ class QuadInstanced : public Quad
 {
 public:
 	QuadInstanced();
-	void Render();
+	void Render(unsigned int instanceCount);
 	unsigned int CreateEmptyVBO(int floatCount);
 	void AddInstancedAttribute(int VAO, int VBO, int attribute, int dataSize, int instancedDataLength, int offset);
 	void LoadToVAO();
-	void StoreDataInAttributeList(int attributeNumber, int coordinateSize, float* data);
+	void StoreDataInAttributeList(int attributeNumber, int coordinateSize, std::vector<float>* data);
 	void UnbindVAO();
-	void UpdateVBO(unsigned int VBO, int floatCount, float* data);
-	// inline const unsigned int GetVBOInstanced() const { return m_VBO_Instanced; };
-	// inline void SetVBOInstanced(unsigned int VBO_Instanced) { m_VBO_Instanced = VBO_Instanced; };
+	void UpdateVBO(unsigned int VBO, unsigned int floatCount, std::vector<float>* data);
 	~QuadInstanced();
 
 private:

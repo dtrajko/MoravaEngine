@@ -10,6 +10,8 @@ ParticleRendererInstanced::ParticleRendererInstanced()
 
 	m_QuadInstanced = new QuadInstanced();
 
+	m_VBO_Data = new std::vector<float>();
+
 	m_VBO_Instanced = m_QuadInstanced->CreateEmptyVBO(INSTANCE_DATA_LENGTH * MAX_INSTANCES);
 	m_QuadInstanced->LoadToVAO();
 	m_QuadInstanced->AddInstancedAttribute(m_QuadInstanced->GetVAO(), m_VBO_Instanced, 1, 4, INSTANCE_DATA_LENGTH,  0);
@@ -70,17 +72,19 @@ void ParticleRendererInstanced::Render(std::map<ParticleTexture*, std::vector<Pa
 	for (auto it_map = particleMap->begin(); it_map != particleMap->end(); it_map++)
 	{
 		BindTexture(it_map->first);
+
 		m_Pointer = 0;
-		std::vector<Particle*> particleList = *it_map->second;
-		for (auto particle : particleList)
+		std::vector<Particle*> particleVector = *it_map->second;
+		m_VBO_Data->resize(particleVector.size() * INSTANCE_DATA_LENGTH);
+
+		for (auto particle : particleVector)
 		{
-			m_VBO_Data = new std::vector<float>();
-			m_VBO_Data->resize(particleList.size() * INSTANCE_DATA_LENGTH);
-			UpdateModelViewMatrix(particle->GetPosition(), particle->GetRotation(), particle->GetScale(), viewMatrix);
-			glm::vec4 texOffsets = glm::vec4(0.0f); // TODO TexOffsets data
-			LoadTexCoordInfo(texOffsets, particle->GetTexture()->GetNumberOfRows());
-			m_QuadInstanced->Render();
+			UpdateModelViewMatrix(particle->GetPosition(), particle->GetRotation(), particle->GetScale(), viewMatrix, m_VBO_Data);
+			UpdateTexCoordInfo(particle, m_VBO_Data);
 		}
+
+		m_QuadInstanced->UpdateVBO(m_VBO_Instanced, (unsigned int)m_VBO_Data->size(), m_VBO_Data);
+		m_QuadInstanced->Render(particleVector.size());
 	}
 
 	RenderAfter();
@@ -93,7 +97,7 @@ void ParticleRendererInstanced::BindTexture(ParticleTexture* particleTexture)
 	particleTexture->Bind(0);
 }
 
-void ParticleRendererInstanced::UpdateModelViewMatrix(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::mat4 viewMatrix)
+void ParticleRendererInstanced::UpdateModelViewMatrix(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::mat4 viewMatrix, std::vector<float>* vboData)
 {
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 	modelMatrix = glm::translate(modelMatrix, position);
@@ -115,16 +119,48 @@ void ParticleRendererInstanced::UpdateModelViewMatrix(glm::vec3 position, glm::v
 
 	glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
 
+	StoreMatrixData(modelViewMatrix, vboData);
+
 	m_ShaderParticleInstanced->setMat4("modelView", modelViewMatrix);
 }
 
-void ParticleRendererInstanced::LoadTexCoordInfo(glm::vec4 texOffsets, int numberOfRows)
+void ParticleRendererInstanced::StoreMatrixData(glm::mat4 matrix, std::vector<float>* vboData)
 {
-	m_ShaderParticleInstanced->setFloat("numberOfRows", (float)numberOfRows);
+	vboData->at(m_Pointer++) = matrix[0][0];
+	vboData->at(m_Pointer++) = matrix[0][1];
+	vboData->at(m_Pointer++) = matrix[0][2];
+	vboData->at(m_Pointer++) = matrix[0][3];
+
+	vboData->at(m_Pointer++) = matrix[1][0];
+	vboData->at(m_Pointer++) = matrix[1][1];
+	vboData->at(m_Pointer++) = matrix[1][2];
+	vboData->at(m_Pointer++) = matrix[1][3];
+
+	vboData->at(m_Pointer++) = matrix[2][0];
+	vboData->at(m_Pointer++) = matrix[2][1];
+	vboData->at(m_Pointer++) = matrix[2][2];
+	vboData->at(m_Pointer++) = matrix[2][3];
+
+	vboData->at(m_Pointer++) = matrix[3][0];
+	vboData->at(m_Pointer++) = matrix[3][1];
+	vboData->at(m_Pointer++) = matrix[3][2];
+	vboData->at(m_Pointer++) = matrix[3][3];
+}
+
+void ParticleRendererInstanced::UpdateTexCoordInfo(Particle* particle, std::vector<float>* vboData)
+{
+	vboData->at(m_Pointer++) = particle->GetTexOffset1().x;
+	vboData->at(m_Pointer++) = particle->GetTexOffset1().y;
+	vboData->at(m_Pointer++) = particle->GetTexOffset2().x;
+	vboData->at(m_Pointer++) = particle->GetTexOffset2().y;
+	vboData->at(m_Pointer++) = particle->GetBlend();
+
+	m_ShaderParticleInstanced->setFloat("numberOfRows", (float)particle->GetTexture()->GetNumberOfRows());
 }
 
 void ParticleRendererInstanced::CleanUp()
 {
+	delete m_VBO_Data;
 	delete m_QuadInstanced;
 	delete m_ShaderParticleInstanced;
 }

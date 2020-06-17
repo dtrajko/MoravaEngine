@@ -13,8 +13,9 @@ public:
 	void Render(std::map<ParticleTexture*, std::vector<Particle*>*>* particleMap, Camera* camera);
 	void RenderBefore();
 	void RenderAfter();
-	void UpdateModelViewMatrix(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::mat4 viewMatrix);
-	void LoadTexCoordInfo(glm::vec4 texOffsets, int numberOfRows);
+	void UpdateModelViewMatrix(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::mat4 viewMatrix, std::vector<float>* vboData);
+	void UpdateTexCoordInfo(Particle* particle, std::vector<float>* vboData);
+	void StoreMatrixData(glm::mat4 matrix, std::vector<float>* vboData);
 	void BindTexture(ParticleTexture* particleTexture);
 	void CleanUp();
 	~ParticleRendererInstanced();

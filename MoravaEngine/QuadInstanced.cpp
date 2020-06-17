@@ -21,20 +21,7 @@ QuadInstanced::QuadInstanced()
 		1.0f, 0.0f,   // top right
 	};
 
-	// setup plane VAO
-	// unsigned int m_VBO = 0;
-	// glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	// glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STREAM_DRAW);
-	// glBindBuffer(GL_ARRAY_BUFFER, 0);
-	// glGenVertexArrays(1, &m_VAO);
-	// glGenBuffers(1, &m_VBO);
-	// glBindVertexArray(m_VAO);
-	// glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	// glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-	// glEnableVertexAttribArray(0);
-	// glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	// glEnableVertexAttribArray(1);
-	// glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	m_VertexCount = 4;
 }
 
 unsigned int QuadInstanced::CreateEmptyVBO(int floatCount)
@@ -51,8 +38,8 @@ void QuadInstanced::LoadToVAO()
 {
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
-	StoreDataInAttributeList(0, 3, &m_Positions[0]);
-	StoreDataInAttributeList(1, 2, &m_TexCoord[0]);
+	StoreDataInAttributeList(0, 3, &m_Positions);
+	StoreDataInAttributeList(1, 2, &m_TexCoord);
 }
 
 void QuadInstanced::AddInstancedAttribute(int VAO, int VBO, int attribute, int dataSize, int instancedDataLength, int offset)
@@ -65,7 +52,7 @@ void QuadInstanced::AddInstancedAttribute(int VAO, int VBO, int attribute, int d
 	glBindVertexArray(0);
 }
 
-void QuadInstanced::StoreDataInAttributeList(int attributeNumber, int coordinateSize, float* data)
+void QuadInstanced::StoreDataInAttributeList(int attributeNumber, int coordinateSize, std::vector<float>* data)
 {
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
@@ -82,18 +69,18 @@ void QuadInstanced::UnbindVAO()
 	glBindVertexArray(0);
 }
 
-void QuadInstanced::UpdateVBO(unsigned int VBO, int floatCount, float* data)
+void QuadInstanced::UpdateVBO(unsigned int VBO, unsigned int floatCount, std::vector<float>* data)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, floatCount * 4, data, GL_STREAM_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, floatCount * 4, data);
+	glBufferData(GL_ARRAY_BUFFER, floatCount * sizeof(float), &data[0], GL_STREAM_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, floatCount * sizeof(float), &data[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void QuadInstanced::Render()
+void QuadInstanced::Render(unsigned int instanceCount)
 {
 	glBindVertexArray(m_VAO);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, (size_t)m_VertexCount, (size_t)instanceCount);
 	glBindVertexArray(0);
 }
 

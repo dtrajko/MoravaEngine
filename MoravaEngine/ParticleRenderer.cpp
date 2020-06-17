@@ -36,6 +36,7 @@ void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*
 	for (auto it_map = particleMap->begin(); it_map != particleMap->end(); it_map++)
 	{
 		BindTexture(it_map->first);
+
 		for (auto particle : *it_map->second)
 		{
 			UpdateModelViewMatrix(particle->GetPosition(), particle->GetRotation(), particle->GetScale(), viewMatrix);
