@@ -179,6 +179,7 @@
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleMaster.cpp" />
     <ClCompile Include="ParticleRenderer.cpp" />
+    <ClCompile Include="ParticleRendererInstanced.cpp" />
     <ClCompile Include="ParticleSystemThinMatrix.cpp" />
     <ClCompile Include="ParticleTexture.cpp" />
     <ClCompile Include="QuadInstanced.cpp" />
@@ -302,6 +303,7 @@
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleMaster.h" />
     <ClInclude Include="ParticleRenderer.h" />
+    <ClInclude Include="ParticleRendererInstanced.h" />
     <ClInclude Include="ParticleSystemThinMatrix.h" />
     <ClInclude Include="ParticleTexture.h" />
     <ClInclude Include="QuadInstanced.h" />

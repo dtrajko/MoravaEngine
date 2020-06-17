@@ -2,10 +2,9 @@
 
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec2 aTexCoord;
-
 layout (location = 2) in mat4 modelView;
-layout (location = 3) in vec4 texOffsets;
-layout (location = 4) in float blendFactor;
+layout (location = 6) in vec4 texOffsets;
+layout (location = 7) in float blendFactor;
 
 out vec2 vTexCoord1;
 out vec2 vTexCoord2;

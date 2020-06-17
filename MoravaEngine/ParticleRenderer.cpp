@@ -8,11 +8,7 @@ ParticleRenderer::ParticleRenderer()
 	m_ShaderParticle = new Shader("Shaders/ThinMatrix/particle.vs", "Shaders/ThinMatrix/particle.fs");
 	printf("ParticleRenderer: m_ShaderParticle compiled [programID=%d]\n", m_ShaderParticle->GetProgramID());
 
-	m_ShaderParticleInstanced = new Shader("Shaders/ThinMatrix/particle_instanced.vs", "Shaders/ThinMatrix/particle_instanced.fs");
-	printf("ParticleRenderer: m_ShaderParticleInstanced compiled [programID=%d]\n", m_ShaderParticleInstanced->GetProgramID());
-
 	m_Quad = new Quad();
-	m_QuadInstanced = new QuadInstanced();
 }
 
 void ParticleRenderer::RenderBefore()
@@ -53,32 +49,6 @@ void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*
 	m_ShaderParticle->Unbind();
 }
 
-void ParticleRenderer::RenderInstanced(std::map<ParticleTexture*, std::vector<Particle*>*>* particleMap, Camera* camera)
-{
-	glm::mat4 viewMatrix = camera->CalculateViewMatrix();
-	m_ShaderParticleInstanced->Bind();
-	m_ShaderParticleInstanced->setMat4("projection", RendererBasic::GetProjectionMatrix());
-	m_ShaderParticleInstanced->setInt("albedoMap", 0);
-
-	RenderBefore();
-
-	for (auto it_map = particleMap->begin(); it_map != particleMap->end(); it_map++)
-	{
-		BindTexture(it_map->first);
-		for (auto particle : *it_map->second)
-		{
-			UpdateModelViewMatrix(particle->GetPosition(), particle->GetRotation(), particle->GetScale(), viewMatrix);
-			glm::vec4 texOffsets = glm::vec4(0.0f); // TODO TexOffsets data
-			LoadTexCoordInfoInstanced(texOffsets, particle->GetTexture()->GetNumberOfRows());
-			m_QuadInstanced->Render();
-		}
-	}
-
-	RenderAfter();
-
-	m_ShaderParticleInstanced->Unbind();
-}
-
 void ParticleRenderer::BindTexture(ParticleTexture* particleTexture)
 {
 	particleTexture->Bind(0);
@@ -115,12 +85,6 @@ void ParticleRenderer::LoadTexCoordInfo(glm::vec2 texOffset1, glm::vec2 texOffse
 	m_ShaderParticle->setVec2("texOffset2", texOffset2);
 	m_ShaderParticle->setFloat("texCoordInfo.numRows", (float)numRows);
 	m_ShaderParticle->setFloat("texCoordInfo.blendFactor", blendFactor);
-}
-
-void ParticleRenderer::LoadTexCoordInfoInstanced(glm::vec4 texOffsets, int numberOfRows)
-{
-	m_ShaderParticleInstanced->setVec4("texOffsets", texOffsets);
-	m_ShaderParticleInstanced->setFloat("numberOfRows", (float)numberOfRows);
 }
 
 void ParticleRenderer::CleanUp()

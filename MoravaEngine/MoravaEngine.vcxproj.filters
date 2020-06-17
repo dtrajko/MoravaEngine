@@ -350,6 +350,9 @@
     <ClCompile Include="QuadInstanced.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="ParticleRendererInstanced.cpp">
+      <Filter>Particle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -724,6 +727,9 @@
     </ClInclude>
     <ClInclude Include="QuadInstanced.h">
       <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleRendererInstanced.h">
+      <Filter>Particle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
