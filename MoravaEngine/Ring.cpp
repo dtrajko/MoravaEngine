@@ -20,9 +20,9 @@ Ring::Ring(glm::vec3 scale) : Mesh(scale)
 	auto& meshList = m_Model->GetMeshList();
 	auto& mesh = meshList.at(0);
 
-	m_VAO = mesh->m_VAO;
-	m_IBO = mesh->m_IBO;
-	m_VBO = mesh->m_VBO;
+	m_VAO = mesh->GetVAO();
+	m_VBO = mesh->GetVBO();
+	m_IBO = mesh->GetIBO();
 	m_IndexCount = mesh->GetIndexCount();
 
 	Generate(scale);

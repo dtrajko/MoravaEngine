@@ -21,12 +21,16 @@ public:
 	inline const unsigned int GetVertexCount() const { return m_VertexCount; };
 	inline const unsigned int GetIndexCount() const { return m_IndexCount; };
 
+	inline const unsigned int GetVAO() const { return m_VAO; };
+	inline const unsigned int GetVBO() const { return m_VBO; };
+	inline const unsigned int GetIBO() const { return m_IBO; };
+
 	static void CalcAverageNormals(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount);
 	static void CalcTangentSpace(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount);
 
 	virtual ~Mesh();
 
-public:
+protected:
 	unsigned int m_VAO;
 	unsigned int m_VBO;
 	unsigned int m_IBO;
