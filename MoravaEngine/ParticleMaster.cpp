@@ -20,6 +20,7 @@ void ParticleMaster::Update(glm::vec3 cameraPosition)
 	bool stillAlive = true;
 	for (auto it_map = m_Particles.begin(); it_map != m_Particles.end(); it_map++)
 	{
+		// a secondary vector to copy only alive particles to
 		std::vector<Particle*>* secondVec = new std::vector<Particle*>();
 
 		for (int i = 0; i < it_map->second->size(); i++)
@@ -33,6 +34,17 @@ void ParticleMaster::Update(glm::vec3 cameraPosition)
 		// InsertionSort::SortHighToLow(secondVec);
 		it_map->second->clear();
 		it_map->second = secondVec;
+	}
+
+	// deallocate empty map elements
+	for (auto it_map = m_Particles.cbegin(); it_map != m_Particles.cend();)
+	{
+		if (it_map->second->size() == 0) {
+			m_Particles.erase(it_map++);
+		}
+		else {
+			++it_map;
+		}
 	}
 }
 

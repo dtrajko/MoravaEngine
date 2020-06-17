@@ -1371,6 +1371,16 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
     ImGui::End();
 
     ImGui::ShowMetricsWindow();
+
+    // TheCherno ImGui Viewport displaying the framebuffer content
+    ImGui::Begin("Viewport");
+    ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+    ImGui::Text("viewportPanelSize.x = %.2ff, viewportPanelSize.y = %.2ff", viewportPanelSize.x, viewportPanelSize.y);
+
+    m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+    // uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
+    // ImGui::Image((void*)textureID, ImVec2(1280, 720), ImVec2(0, 1), ImVec2(1, 0));
+    ImGui::End();
 }
 
 Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale)

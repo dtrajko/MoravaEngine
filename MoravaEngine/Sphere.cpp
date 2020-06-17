@@ -45,10 +45,10 @@ void Sphere::Generate(glm::vec3 scale)
 	float sectorAngle, stackAngle;
 
 	unsigned int vertexStride = (unsigned int)(sizeof(VertexTBN) / sizeof(float));
-	float m_VertexSize = sizeof(VertexTBN) * (sectorCount + 1) * (stackCount + 1);
+	unsigned int m_VertexCount = sizeof(VertexTBN) * (sectorCount + 1) * (stackCount + 1);
 	m_IndexCount = 6 * sectorCount * (stackCount - 1);
 
-	m_Vertices = new float[m_VertexSize];
+	m_Vertices = new float[m_VertexCount];
 	m_Indices = new unsigned int[m_IndexCount];
 
 	unsigned int vertexPointer = 0;

@@ -102,6 +102,8 @@ private:
 private:
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
 
+	glm::vec2 m_ViewportSize;
+
 	Raycast* m_Raycast;
 	Grid* m_Grid;
 	Quad* m_Quad;
