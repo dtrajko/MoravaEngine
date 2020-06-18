@@ -7,7 +7,7 @@ class Quad : public Mesh
 {
 public:
 	Quad();
-	void Render();
-	~Quad();
+	virtual void Render() override;
+	virtual ~Quad();
 
 };

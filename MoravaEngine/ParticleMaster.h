@@ -13,7 +13,7 @@ public:
 	ParticleMaster();
 	static void Init();
 	static void Update(glm::vec3 cameraPosition);
-	static void Render(Camera* camera);
+	static void Render(glm::mat4 viewMatrix);
 	static void CleanUp();
 	static void addParticle(Particle* particle);
 	~ParticleMaster();

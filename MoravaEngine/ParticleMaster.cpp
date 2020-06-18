@@ -1,5 +1,7 @@
 #include "ParticleMaster.h"
+
 #include "InsertionSort.h"
+#include "ParticleRendererInstanced.h"
 
 
 std::map<ParticleTexture*, std::vector<Particle*>*> ParticleMaster::m_Particles;
@@ -48,9 +50,9 @@ void ParticleMaster::Update(glm::vec3 cameraPosition)
 	}
 }
 
-void ParticleMaster::Render(Camera* camera)
+void ParticleMaster::Render(glm::mat4 viewMatrix)
 {
-	m_Renderer->Render(&m_Particles, camera);
+	m_Renderer->Render(&m_Particles, viewMatrix);
 }
 
 void ParticleMaster::addParticle(Particle* particle)

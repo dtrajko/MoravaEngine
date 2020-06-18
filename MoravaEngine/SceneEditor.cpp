@@ -2290,7 +2290,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 
     if (sceneSettings.enableParticles && (passType == "main" || passType == "water_reflect")) {
         Profiler profiler("SE::ParticleMaster::Render");
-        ParticleMaster::Render(m_Camera);
+        ParticleMaster::Render(m_Camera->CalculateViewMatrix());
         GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));        
     }
 }

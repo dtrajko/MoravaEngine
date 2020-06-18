@@ -5,10 +5,10 @@
 
 ParticleRenderer::ParticleRenderer()
 {
-	m_ShaderParticle = new Shader("Shaders/ThinMatrix/particle.vs", "Shaders/ThinMatrix/particle.fs");
-	printf("ParticleRenderer: m_ShaderParticle compiled [programID=%d]\n", m_ShaderParticle->GetProgramID());
+	m_Shader = new Shader("Shaders/ThinMatrix/particle.vs", "Shaders/ThinMatrix/particle.fs");
+	printf("ParticleRenderer: m_Shader compiled [programID=%d]\n", m_Shader->GetProgramID());
 
-	m_Quad = new Quad();
+	m_Mesh = new Quad();
 }
 
 void ParticleRenderer::RenderBefore()
@@ -24,12 +24,11 @@ void ParticleRenderer::RenderAfter()
 	glDisable(GL_BLEND);
 }
 
-void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*>* particleMap, Camera* camera)
+void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*>* particleMap, glm::mat4 viewMatrix)
 {
-	glm::mat4 viewMatrix = camera->CalculateViewMatrix();
-	m_ShaderParticle->Bind();
-	m_ShaderParticle->setMat4("projection", RendererBasic::GetProjectionMatrix());
-	m_ShaderParticle->setInt("albedoMap", 0);
+	m_Shader->Bind();
+	m_Shader->setMat4("projection", RendererBasic::GetProjectionMatrix());
+	m_Shader->setInt("albedoMap", 0);
 
 	RenderBefore();
 
@@ -41,13 +40,13 @@ void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*
 		{
 			UpdateModelViewMatrix(particle->GetPosition(), particle->GetRotation(), particle->GetScale(), viewMatrix);
 			LoadTexCoordInfo(particle->GetTexOffset1(), particle->GetTexOffset2(), particle->GetTexture()->GetNumberOfRows(), particle->GetBlend());
-			m_Quad->Render();
+			m_Mesh->Render();
 		}
 	}
 
 	RenderAfter();
 
-	m_ShaderParticle->Unbind();
+	m_Shader->Unbind();
 }
 
 void ParticleRenderer::BindTexture(ParticleTexture* particleTexture)
@@ -77,21 +76,21 @@ void ParticleRenderer::UpdateModelViewMatrix(glm::vec3 position, glm::vec3 rotat
 
 	glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
 
-	m_ShaderParticle->setMat4("modelView", modelViewMatrix);
+	m_Shader->setMat4("modelView", modelViewMatrix);
 }
 
 void ParticleRenderer::LoadTexCoordInfo(glm::vec2 texOffset1, glm::vec2 texOffset2, int numRows, float blendFactor)
 {
-	m_ShaderParticle->setVec2("texOffset1", texOffset1);
-	m_ShaderParticle->setVec2("texOffset2", texOffset2);
-	m_ShaderParticle->setFloat("texCoordInfo.numRows", (float)numRows);
-	m_ShaderParticle->setFloat("texCoordInfo.blendFactor", blendFactor);
+	m_Shader->setVec2("texOffset1", texOffset1);
+	m_Shader->setVec2("texOffset2", texOffset2);
+	m_Shader->setFloat("texCoordInfo.numRows", (float)numRows);
+	m_Shader->setFloat("texCoordInfo.blendFactor", blendFactor);
 }
 
 void ParticleRenderer::CleanUp()
 {
-	delete m_Quad;
-	delete m_ShaderParticle;
+	delete m_Mesh;
+	delete m_Shader;
 }
 
 ParticleRenderer::~ParticleRenderer()

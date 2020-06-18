@@ -16,7 +16,7 @@ public:
 	void StoreDataInAttributeList(int attributeNumber, int coordinateSize, std::vector<float>* data);
 	void UnbindVAO();
 	void UpdateVBO(unsigned int VBO, unsigned int floatCount, std::vector<float>* data);
-	~QuadInstanced();
+	virtual ~QuadInstanced();
 
 private:
 	std::vector<float> m_Positions;
