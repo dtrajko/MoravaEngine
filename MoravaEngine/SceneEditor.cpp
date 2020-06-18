@@ -177,6 +177,9 @@ SceneEditor::SceneEditor()
     m_ParticleSystemPosition = glm::vec3(0.0f, 0.0f, 0.0f);
     m_ParticleSystemScale = glm::vec3(0.0f, 0.0f, 0.0f);
 
+    m_ParticleRenderingInstanced = false;
+    m_ParticleRenderingInstancedPrev = m_ParticleRenderingInstanced;
+
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
     m_DirLightColorPrev = sceneSettings.directionalLight.base.color;
@@ -187,7 +190,7 @@ SceneEditor::SceneEditor()
 
     TextureLoader::Get()->Print();
 
-    ParticleMaster::Init();
+    ParticleMaster::Init(m_ParticleRenderingInstanced);
 }
 
 void SceneEditor::SetSkybox()
@@ -636,6 +639,12 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     }
 
     // Particle System
+    if (m_ParticleRenderingInstanced != m_ParticleRenderingInstancedPrev) {
+        ParticleMaster::CleanUp();
+        ParticleMaster::Init(m_ParticleRenderingInstanced);
+        m_ParticleRenderingInstancedPrev = m_ParticleRenderingInstanced;
+    }
+
     if (m_ParticleSettingsEdit != m_ParticleSettingsPrev) {
         printf("Particle Settings changed, rebuilding the Particle System...\n");
         Texture* texture = HotLoadTexture(m_ParticleSettingsEdit.textureName);
@@ -1058,6 +1067,9 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::SliderFloat("Gravity Complient",    &m_ParticleSettingsEdit.gravityComplient,         -20.0f, 20.0f);
             ImGui::SliderFloat("Life Length",          &m_ParticleSettingsEdit.lifeLength,                0.0f, 20.0f);
             ImGui::SliderFloat("Diameter",             &m_ParticleSettingsEdit.diameter,                  0.0f, 1.0f);
+
+            ImGui::Separator();
+            ImGui::Checkbox("Instanced Rendering", &m_ParticleRenderingInstanced);
         }
     }
     ImGui::End();
@@ -2323,6 +2335,8 @@ SceneEditor::~SceneEditor()
     SaveScene();
 
     CleanupGeometry();
+
+    ParticleMaster::CleanUp();
 
     delete m_PivotScene;
     delete m_Grid;

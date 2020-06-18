@@ -1,6 +1,7 @@
 #include "ParticleRendererInstanced.h"
 
 #include "RendererBasic.h"
+#include "Util.h"
 
 
 ParticleRendererInstanced::ParticleRendererInstanced()
@@ -10,35 +11,35 @@ ParticleRendererInstanced::ParticleRendererInstanced()
 
 	m_Mesh = new QuadInstanced();
 
+	// loading positions in VAO
+	static_cast<QuadInstanced*>(m_Mesh)->LoadToVAO();
+
 	m_VBO_Data = new std::vector<float>();
+	// static_cast<QuadInstanced*>(m_Mesh)->CreateEmptyVBO(INSTANCE_DATA_LENGTH * MAX_INSTANCES);
+	// unsigned int VBO_Instanced = static_cast<QuadInstanced*>(m_Mesh)->GetVBOInstanced();
 
-	// unsigned int VBO_Instanced = static_cast<QuadInstanced*>(m_Mesh)->CreateEmptyVBO(INSTANCE_DATA_LENGTH * MAX_INSTANCES);
-	// static_cast<QuadInstanced*>(m_Mesh)->SetVBOInstanced(VBO_Instanced);
-	// static_cast<QuadInstanced*>(m_Mesh)->LoadToVAO();
-	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 2, 4, INSTANCE_DATA_LENGTH,  0);
-	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 3, 4, INSTANCE_DATA_LENGTH,  4);
-	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 4, 4, INSTANCE_DATA_LENGTH,  8);
-	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 5, 4, INSTANCE_DATA_LENGTH, 12);
-	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 6, 4, INSTANCE_DATA_LENGTH, 16);
-	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 7, 1, INSTANCE_DATA_LENGTH, 20);
+	// model-view matrix in attribute slots 1 to 4
+	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 1, 4, INSTANCE_DATA_LENGTH,  0);
+	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 2, 4, INSTANCE_DATA_LENGTH,  4);
+	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 3, 4, INSTANCE_DATA_LENGTH,  8);
+	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 4, 4, INSTANCE_DATA_LENGTH, 12);
+	// texture offsets in attribute slot 5
+	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 5, 4, INSTANCE_DATA_LENGTH, 16);
+	// blend factor in attribute slot 6
+	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 6, 1, INSTANCE_DATA_LENGTH, 20);
 
-	glBindAttribLocation(m_Shader->GetProgramID(), 0, "aPosition");
-	glBindAttribLocation(m_Shader->GetProgramID(), 1, "modelView");
-	glBindAttribLocation(m_Shader->GetProgramID(), 5, "texOffsets");
-	glBindAttribLocation(m_Shader->GetProgramID(), 6, "blendFactor");
+	// glBindAttribLocation(m_Shader->GetProgramID(), 0, "aPosition");
+	// glBindAttribLocation(m_Shader->GetProgramID(), 1, "modelView");
+	// glBindAttribLocation(m_Shader->GetProgramID(), 5, "texOffsets");
+	// glBindAttribLocation(m_Shader->GetProgramID(), 6, "blendFactor");
+
+	printf("ParticleRendererInstanced::ParticleRendererInstanced m_VAO = %i\n",           static_cast<QuadInstanced*>(m_Mesh)->GetVAO());
+	printf("ParticleRendererInstanced::ParticleRendererInstanced m_VBO = %i\n",           static_cast<QuadInstanced*>(m_Mesh)->GetVBO());
+	printf("ParticleRendererInstanced::ParticleRendererInstanced m_VBO_Instanced = %i\n", static_cast<QuadInstanced*>(m_Mesh)->GetVBOInstanced());
 }
 
 void ParticleRendererInstanced::RenderBefore()
 {
-	m_Shader->Bind();
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	glEnableVertexAttribArray(3);
-	glEnableVertexAttribArray(4);
-	glEnableVertexAttribArray(5);
-	glEnableVertexAttribArray(6);
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // GL_ONE
 	glDepthMask(GL_FALSE);
@@ -48,14 +49,6 @@ void ParticleRendererInstanced::RenderAfter()
 {
 	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
-
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
-	glDisableVertexAttribArray(3);
-	glDisableVertexAttribArray(4);
-	glDisableVertexAttribArray(5);
-	glDisableVertexAttribArray(6);
 }
 
 void ParticleRendererInstanced::Render(std::map<ParticleTexture*, std::vector<Particle*>*>* particleMap, glm::mat4 viewMatrix)
@@ -68,7 +61,9 @@ void ParticleRendererInstanced::Render(std::map<ParticleTexture*, std::vector<Pa
 
 	for (auto it_map = particleMap->begin(); it_map != particleMap->end(); it_map++)
 	{
-		BindTexture(it_map->first);
+		ParticleTexture* particleTexture = it_map->first;
+		BindTexture(particleTexture);
+		m_Shader->setFloat("numberOfRows", (float)particleTexture->GetNumberOfRows());
 
 		m_Pointer = 0;
 		std::vector<Particle*> particleVector = *it_map->second;
@@ -78,10 +73,14 @@ void ParticleRendererInstanced::Render(std::map<ParticleTexture*, std::vector<Pa
 		{
 			UpdateModelViewMatrix(particle->GetPosition(), particle->GetRotation(), particle->GetScale(), viewMatrix, m_VBO_Data);
 			UpdateTexCoordInfo(particle, m_VBO_Data);
+
+			glBindVertexArray(static_cast<QuadInstanced*>(m_Mesh)->GetVAO());
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			glBindVertexArray(0);
 		}
 
 		static_cast<QuadInstanced*>(m_Mesh)->UpdateVBO(static_cast<QuadInstanced*>(m_Mesh)->GetVBOInstanced(), (unsigned int)m_VBO_Data->size(), m_VBO_Data);
-		static_cast<QuadInstanced*>(m_Mesh)->Render((unsigned int)particleVector.size());
+		// static_cast<QuadInstanced*>(m_Mesh)->Render((unsigned int)particleVector.size());
 	}
 
 	RenderAfter();
@@ -113,7 +112,17 @@ void ParticleRendererInstanced::UpdateModelViewMatrix(glm::vec3 position, glm::v
 
 	StoreMatrixData(modelViewMatrix, vboData);
 
+	m_Shader->Bind();
 	m_Shader->setMat4("modelView", modelViewMatrix);
+
+	// Debug uniforms
+	m_Shader->setMat4("uModelView", modelViewMatrix);
+	m_Shader->setVec4("uTexOffsets", glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+	m_Shader->setFloat("uBlendFactor", 0.5f);
+	m_Shader->setVec3("uPosition", position);
+
+	// printf("ParticleRendererInstanced::UpdateModelViewMatrix modelViewMatrix:\n");
+	// Util::printMatrix(modelViewMatrix);
 }
 
 void ParticleRendererInstanced::StoreMatrixData(glm::mat4 matrix, std::vector<float>* vboData)
@@ -147,14 +156,16 @@ void ParticleRendererInstanced::UpdateTexCoordInfo(Particle* particle, std::vect
 	vboData->at(m_Pointer++) = particle->GetTexOffset2().y;
 	vboData->at(m_Pointer++) = particle->GetBlend();
 
-	m_Shader->setFloat("numberOfRows", (float)particle->GetTexture()->GetNumberOfRows());
+	//	printf("\nvboData:\n");
+	//	for (int i = 0; i < vboData->size(); i++)
+	//		printf("[%i] %.2ff ", i, vboData->at(i));
 }
 
 void ParticleRendererInstanced::CleanUp()
 {
+	delete m_VBO_Data;
 	delete m_Mesh;
 	delete m_Shader;
-	delete m_VBO_Data;
 }
 
 ParticleRendererInstanced::~ParticleRendererInstanced()

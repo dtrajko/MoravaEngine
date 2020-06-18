@@ -353,6 +353,7 @@
     <ClCompile Include="ParticleRendererInstanced.cpp">
       <Filter>Particle</Filter>
     </ClCompile>
+    <ClCompile Include="Util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -731,6 +732,7 @@
     <ClInclude Include="ParticleRendererInstanced.h">
       <Filter>Particle</Filter>
     </ClInclude>
+    <ClInclude Include="Util.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
