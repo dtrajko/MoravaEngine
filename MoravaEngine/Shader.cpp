@@ -1,4 +1,5 @@
 #include "Shader.h"
+#include "Log.h"
 
 
 Shader::Shader()
@@ -50,7 +51,7 @@ std::string Shader::ReadFile(const char* fileLocation)
 
 	if (!fileStream.is_open())
 	{
-		printf("Failed to read %s! File doesn't exist.\n", fileLocation);
+		printf("Failed to read '{0}'! File doesn't exist.\n", fileLocation);
 		return "";
 	}
 
@@ -63,7 +64,8 @@ std::string Shader::ReadFile(const char* fileLocation)
 
 	fileStream.close();
 
-	printf("Content loaded from file '%s'\n", fileLocation);
+	// printf("Content loaded from file '%s'\n", fileLocation);
+	LOG_INFO("Content loaded from file '{0}'", fileLocation);
 
 	return content;
 }
@@ -80,11 +82,13 @@ void Shader::Validate()
 	if (!result)
 	{
 		glGetProgramInfoLog(programID, sizeof(eLog), NULL, eLog);
-		printf("Shader program [ID=%d] validation error: '%s'\n", programID, eLog);
+		// printf("Shader program [ID=%d] validation error: '%s'\n", programID, eLog);
+		LOG_ERROR("Shader program [ID={0}] validation error: '{1}'", programID, eLog);
 		return;
 	}
 
-	printf("Shader program [ID=%d] validation complete.\n", programID);
+	// printf("Shader program [ID=%d] validation complete.\n", programID);
+	LOG_INFO("Shader program [ID={0}] validation complete.", programID);
 
 	m_Validated = true;
 }
@@ -222,7 +226,8 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 
 	if (!programID)
 	{
-		printf("Error creating shader program!");
+		// printf("Error creating shader program!\n");
+		LOG_ERROR("Error creating shader program!");
 		return;
 	}
 
@@ -238,7 +243,8 @@ void Shader::CompileShader(const char* vertexCode, const char* geometryCode, con
 
 	if (!programID)
 	{
-		printf("Error creating shader program!");
+		// printf("Error creating shader program!\n");
+		LOG_ERROR("Error creating shader program!");
 		return;
 	}
 
@@ -283,11 +289,13 @@ void Shader::AddShader(GLuint programID, const char* shaderCode, GLenum shaderTy
 	if (!result)
 	{
 		glGetShaderInfoLog(shaderID, sizeof(eLog), NULL, eLog);
-		printf("%s shader compilation error: '%s'\n", shaderTypeName, eLog);
+		// printf("%s shader compilation error: '%s'\n", shaderTypeName, eLog);
+		LOG_ERROR("%s shader compilation error: '{0}'", shaderTypeName, eLog);
 		return;
 	}
 
-	printf("%s shader compiled.\n", shaderTypeName);
+	// printf("%s shader compiled.\n", shaderTypeName);
+	LOG_INFO("{0} shader compiled.", shaderTypeName);
 
 	glAttachShader(programID, shaderID);
 	return;
@@ -303,11 +311,14 @@ void Shader::CompileProgram()
 	if (!result)
 	{
 		glGetProgramInfoLog(programID, sizeof(eLog), NULL, eLog);
-		printf("Shader program linking error: '%s'\n", eLog);
+		// printf("Shader program linking error: '%s'\n", eLog);
+		LOG_ERROR("Shader program linking error: '{0}'", eLog);
+		
 		return;
 	}
 
-	printf("Shader program linking complete.\n");
+	// printf("Shader program linking complete.\n");
+	LOG_INFO("Shader program linking complete.");
 
 	GetUniformLocations();
 }

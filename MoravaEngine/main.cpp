@@ -15,6 +15,7 @@
 #include "Profiler.h"
 #include "MousePicker.h"
 #include "Timer.h"
+#include "Log.h"
 
 #include "SceneCottage.h"
 #include "SceneEiffel.h"
@@ -80,6 +81,8 @@ EventCooldown keyPressCooldown = { 0.0f, 0.2f };
 
 int main()
 {
+	Log::Init();
+
 	mainWindow = Window(WIDTH, HEIGHT, windowTitle);
 	mainWindow.Initialize();
 
@@ -90,10 +93,10 @@ int main()
 
 	RendererBasic::SetProjectionMatrix(projectionMatrix);
 
-	printf("OpenGL Info:\n");
-	printf("   Vendor: %s\n",   glGetString(GL_VENDOR));
-	printf("   Renderer: %s\n", glGetString(GL_RENDERER));
-	printf("   Version: %s\n",  glGetString(GL_VERSION));
+	LOG_INFO("OpenGL Info:");
+	LOG_INFO("   Vendor: {0}",   glGetString(GL_VENDOR));
+	LOG_INFO("   Renderer: {0}", glGetString(GL_RENDERER));
+	LOG_INFO("   Version: {0}",  glGetString(GL_VERSION));
 
 	switch (currentScene)
 	{
