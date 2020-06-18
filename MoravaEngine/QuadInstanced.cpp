@@ -13,14 +13,6 @@ QuadInstanced::QuadInstanced()
 		 0.5f,  0.5f, 0.0f, // top right
 	};
 
-	m_TexCoord = {
-		// texture Coords
-		0.0f, 1.0f,   // bottom left
-		1.0f, 1.0f,   // bottom right
-		0.0f, 0.0f,   // top left
-		1.0f, 0.0f,   // top right
-	};
-
 	m_VertexCount = 4;
 
 	/* CreateEmptyVBO(INSTANCE_DATA_LENGTH * MAX_INSTANCES); */
@@ -117,7 +109,6 @@ void QuadInstanced::LoadToVAO()
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
 	StoreDataInAttributeList(0, 3, &m_Positions);
-	StoreDataInAttributeList(1, 2, &m_TexCoord);
 }
 
 void QuadInstanced::AddInstancedAttribute(int VAO, int VBO, int attribute, int dataSize, int instancedDataLength, int offset)

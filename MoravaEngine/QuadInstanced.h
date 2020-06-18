@@ -22,7 +22,6 @@ public:
 
 private:
 	std::vector<float> m_Positions;
-	std::vector<float> m_TexCoord;
 
 	unsigned int m_VBO_Instanced; // a large VBO for instanced data
 	std::vector<unsigned int> m_VBOs;
