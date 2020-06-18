@@ -281,6 +281,7 @@
     <ClCompile Include="TextureSampler.cpp" />
     <ClCompile Include="Tile2D.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="Util.cpp" />
     <ClCompile Include="WaterManager.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -407,6 +408,7 @@
     <ClInclude Include="TextureSampler.h" />
     <ClInclude Include="Tile2D.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="Util.h" />
     <ClInclude Include="VertexInstanced.h" />
     <ClInclude Include="VertexTBN.h" />
     <ClInclude Include="WaterManager.h" />

@@ -11,7 +11,7 @@ class ParticleMaster
 {
 public:
 	ParticleMaster();
-	static void Init();
+	static void Init(bool instancedRendering);
 	static void Update(glm::vec3 cameraPosition);
 	static void Render(glm::mat4 viewMatrix);
 	static void CleanUp();

@@ -1,6 +1,7 @@
 #include "ParticleRenderer.h"
 
 #include "RendererBasic.h"
+#include "Util.h"
 
 
 ParticleRenderer::ParticleRenderer()
@@ -34,7 +35,8 @@ void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*
 
 	for (auto it_map = particleMap->begin(); it_map != particleMap->end(); it_map++)
 	{
-		BindTexture(it_map->first);
+		ParticleTexture* particleTexture = it_map->first;
+		BindTexture(particleTexture);
 
 		for (auto particle : *it_map->second)
 		{
@@ -77,6 +79,9 @@ void ParticleRenderer::UpdateModelViewMatrix(glm::vec3 position, glm::vec3 rotat
 	glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
 
 	m_Shader->setMat4("modelView", modelViewMatrix);
+
+	// printf("ParticleRenderer::UpdateModelViewMatrix modelViewMatrix:\n");
+	// Util::printMatrix(modelViewMatrix);
 }
 
 void ParticleRenderer::LoadTexCoordInfo(glm::vec2 texOffset1, glm::vec2 texOffset2, int numRows, float blendFactor)

@@ -11,10 +11,13 @@ ParticleMaster::ParticleMaster()
 {
 }
 
-void ParticleMaster::Init()
+void ParticleMaster::Init(bool instancedRendering)
 {
 	m_Particles = std::map<ParticleTexture*, std::vector<Particle*>*>();
-	m_Renderer = new ParticleRenderer();
+	if (instancedRendering)
+		m_Renderer = new ParticleRendererInstanced();
+	else
+		m_Renderer = new ParticleRenderer();
 }
 
 void ParticleMaster::Update(glm::vec3 cameraPosition)
@@ -77,7 +80,7 @@ void ParticleMaster::addParticle(Particle* particle)
 
 void ParticleMaster::CleanUp()
 {
-	m_Renderer->CleanUp();
+	delete m_Renderer;
 }
 
 ParticleMaster::~ParticleMaster()

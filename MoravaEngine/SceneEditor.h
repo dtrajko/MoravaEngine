@@ -163,6 +163,9 @@ private:
 	ParticleSettings m_ParticleSettingsEdit;
 	ParticleSettings m_ParticleSettingsPrev;
 
+	bool m_ParticleRenderingInstanced;
+	bool m_ParticleRenderingInstancedPrev;
+
 	// Particle System ThinMatrix
 	ParticleSystemThinMatrix* m_ParticleSystem;
 	glm::vec3 m_ParticleSystemPosition;
