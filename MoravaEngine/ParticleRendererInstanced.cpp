@@ -12,14 +12,15 @@ ParticleRendererInstanced::ParticleRendererInstanced()
 
 	m_VBO_Data = new std::vector<float>();
 
-	m_VBO_Instanced = static_cast<QuadInstanced*>(m_Mesh)->CreateEmptyVBO(INSTANCE_DATA_LENGTH * MAX_INSTANCES);
-	static_cast<QuadInstanced*>(m_Mesh)->LoadToVAO();
-	static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), m_VBO_Instanced, 1, 4, INSTANCE_DATA_LENGTH,  0);
-	static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), m_VBO_Instanced, 2, 4, INSTANCE_DATA_LENGTH,  4);
-	static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), m_VBO_Instanced, 3, 4, INSTANCE_DATA_LENGTH,  8);
-	static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), m_VBO_Instanced, 4, 4, INSTANCE_DATA_LENGTH, 12);
-	static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), m_VBO_Instanced, 5, 4, INSTANCE_DATA_LENGTH, 16);
-	static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), m_VBO_Instanced, 6, 1, INSTANCE_DATA_LENGTH, 20);
+	// unsigned int VBO_Instanced = static_cast<QuadInstanced*>(m_Mesh)->CreateEmptyVBO(INSTANCE_DATA_LENGTH * MAX_INSTANCES);
+	// static_cast<QuadInstanced*>(m_Mesh)->SetVBOInstanced(VBO_Instanced);
+	// static_cast<QuadInstanced*>(m_Mesh)->LoadToVAO();
+	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 2, 4, INSTANCE_DATA_LENGTH,  0);
+	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 3, 4, INSTANCE_DATA_LENGTH,  4);
+	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 4, 4, INSTANCE_DATA_LENGTH,  8);
+	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 5, 4, INSTANCE_DATA_LENGTH, 12);
+	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 6, 4, INSTANCE_DATA_LENGTH, 16);
+	// static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), VBO_Instanced, 7, 1, INSTANCE_DATA_LENGTH, 20);
 
 	glBindAttribLocation(m_Shader->GetProgramID(), 0, "aPosition");
 	glBindAttribLocation(m_Shader->GetProgramID(), 1, "aTexCoord");
@@ -82,7 +83,7 @@ void ParticleRendererInstanced::Render(std::map<ParticleTexture*, std::vector<Pa
 			UpdateTexCoordInfo(particle, m_VBO_Data);
 		}
 
-		static_cast<QuadInstanced*>(m_Mesh)->UpdateVBO(m_VBO_Instanced, (unsigned int)m_VBO_Data->size(), m_VBO_Data);
+		static_cast<QuadInstanced*>(m_Mesh)->UpdateVBO(static_cast<QuadInstanced*>(m_Mesh)->GetVBOInstanced(), (unsigned int)m_VBO_Data->size(), m_VBO_Data);
 		static_cast<QuadInstanced*>(m_Mesh)->Render((unsigned int)particleVector.size());
 	}
 

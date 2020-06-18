@@ -14,7 +14,7 @@ ParticleMaster::ParticleMaster()
 void ParticleMaster::Init()
 {
 	m_Particles = std::map<ParticleTexture*, std::vector<Particle*>*>();
-	m_Renderer = new ParticleRenderer();
+	m_Renderer = new ParticleRendererInstanced();
 }
 
 void ParticleMaster::Update(glm::vec3 cameraPosition)

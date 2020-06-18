@@ -24,7 +24,6 @@ private:
 	int MAX_INSTANCES = 10000;
 	int INSTANCE_DATA_LENGTH = 21; // 16F model view + 4F texOffsets + 1F blendFactor
 
-	unsigned int m_VBO_Instanced; // a large VBO for instanced data
 	std::vector<float>* m_VBO_Data;
 	unsigned int m_Pointer;
 

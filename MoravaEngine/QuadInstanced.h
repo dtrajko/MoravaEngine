@@ -16,11 +16,14 @@ public:
 	void StoreDataInAttributeList(int attributeNumber, int coordinateSize, std::vector<float>* data);
 	void UnbindVAO();
 	void UpdateVBO(unsigned int VBO, unsigned int floatCount, std::vector<float>* data);
+	inline const unsigned int GetVBOInstanced() const { return m_VBO_Instanced; };
+	inline void SetVBOInstanced(unsigned int VBO_Instanced) { m_VBO_Instanced = VBO_Instanced; };
 	virtual ~QuadInstanced();
 
 private:
 	std::vector<float> m_Positions;
 	std::vector<float> m_TexCoord;
 
+	unsigned int m_VBO_Instanced; // a large VBO for instanced data
 	std::vector<unsigned int> m_VBOs;
 };
