@@ -22,10 +22,9 @@ ParticleRendererInstanced::ParticleRendererInstanced()
 	static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(m_Mesh->GetVAO(), m_VBO_Instanced, 6, 1, INSTANCE_DATA_LENGTH, 20);
 
 	glBindAttribLocation(m_Shader->GetProgramID(), 0, "aPosition");
-	glBindAttribLocation(m_Shader->GetProgramID(), 1, "aTexCoord");
-	glBindAttribLocation(m_Shader->GetProgramID(), 2, "modelView");
-	glBindAttribLocation(m_Shader->GetProgramID(), 6, "texOffsets");
-	glBindAttribLocation(m_Shader->GetProgramID(), 7, "blendFactor");
+	glBindAttribLocation(m_Shader->GetProgramID(), 1, "modelView");
+	glBindAttribLocation(m_Shader->GetProgramID(), 5, "texOffsets");
+	glBindAttribLocation(m_Shader->GetProgramID(), 6, "blendFactor");
 }
 
 void ParticleRendererInstanced::RenderBefore()
@@ -38,7 +37,6 @@ void ParticleRendererInstanced::RenderBefore()
 	glEnableVertexAttribArray(4);
 	glEnableVertexAttribArray(5);
 	glEnableVertexAttribArray(6);
-	glEnableVertexAttribArray(7);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // GL_ONE
@@ -57,7 +55,6 @@ void ParticleRendererInstanced::RenderAfter()
 	glDisableVertexAttribArray(4);
 	glDisableVertexAttribArray(5);
 	glDisableVertexAttribArray(6);
-	glDisableVertexAttribArray(7);
 }
 
 void ParticleRendererInstanced::Render(std::map<ParticleTexture*, std::vector<Particle*>*>* particleMap, glm::mat4 viewMatrix)

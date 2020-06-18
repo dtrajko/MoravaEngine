@@ -20,7 +20,6 @@ public:
 
 private:
 	std::vector<float> m_Positions;
-	std::vector<float> m_TexCoord;
 
 	std::vector<unsigned int> m_VBOs;
 };
