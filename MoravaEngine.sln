@@ -13,8 +13,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletDynamics", "vendor\bu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "vendor\bullet3\src\BulletCollision\BulletCollision.vcxproj", "{81ACB07D-C787-3D07-B1B4-1D8B962A1176}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tiny-gizmo-example", "vendor\tinygizmo\tiny-gizmo-example\tiny-gizmo-example.vcxproj", "{E8595BE1-022E-46B2-9079-A12C655C5E4B}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MoravaEngine", "MoravaEngine\MoravaEngine.vcxproj", "{FABCD75E-496E-4408-B31C-D45E7D0DFC7A}"
 EndProject
 Global
@@ -93,22 +91,6 @@ Global
 		{81ACB07D-C787-3D07-B1B4-1D8B962A1176}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{81ACB07D-C787-3D07-B1B4-1D8B962A1176}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
 		{81ACB07D-C787-3D07-B1B4-1D8B962A1176}.RelWithDebInfo|x86.ActiveCfg = RelWithDebInfo|x64
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.Debug|x64.ActiveCfg = Debug|x64
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.Debug|x64.Build.0 = Debug|x64
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.Debug|x86.ActiveCfg = Debug|Win32
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.Debug|x86.Build.0 = Debug|Win32
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.MinSizeRel|x64.ActiveCfg = Release|x64
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.MinSizeRel|x64.Build.0 = Release|x64
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.MinSizeRel|x86.ActiveCfg = Release|Win32
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.MinSizeRel|x86.Build.0 = Release|Win32
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.Release|x64.ActiveCfg = Release|x64
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.Release|x64.Build.0 = Release|x64
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.Release|x86.ActiveCfg = Release|Win32
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.Release|x86.Build.0 = Release|Win32
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.RelWithDebInfo|x64.ActiveCfg = Release|x64
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.RelWithDebInfo|x64.Build.0 = Release|x64
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.RelWithDebInfo|x86.ActiveCfg = Release|Win32
-		{E8595BE1-022E-46B2-9079-A12C655C5E4B}.RelWithDebInfo|x86.Build.0 = Release|Win32
 		{FABCD75E-496E-4408-B31C-D45E7D0DFC7A}.Debug|x64.ActiveCfg = Debug|x64
 		{FABCD75E-496E-4408-B31C-D45E7D0DFC7A}.Debug|x64.Build.0 = Debug|x64
 		{FABCD75E-496E-4408-B31C-D45E7D0DFC7A}.Debug|x86.ActiveCfg = Debug|Win32

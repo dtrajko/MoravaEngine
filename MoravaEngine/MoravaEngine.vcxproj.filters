@@ -305,9 +305,6 @@
     <ClCompile Include="Noise.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\vendor\tinygizmo\tiny-gizmo.cpp">
-      <Filter>Misc</Filter>
-    </ClCompile>
     <ClCompile Include="BulletDebugDrawer.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
@@ -687,9 +684,6 @@
     </ClInclude>
     <ClInclude Include="Noise.h">
       <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\vendor\tinygizmo\tiny-gizmo.hpp">
-      <Filter>Misc</Filter>
     </ClInclude>
     <ClInclude Include="BulletDebugDrawer.h">
       <Filter>Misc</Filter>
