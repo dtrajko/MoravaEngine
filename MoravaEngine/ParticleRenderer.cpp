@@ -79,9 +79,6 @@ void ParticleRenderer::UpdateModelViewMatrix(glm::vec3 position, glm::vec3 rotat
 	glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
 
 	m_Shader->setMat4("modelView", modelViewMatrix);
-
-	// printf("ParticleRenderer::UpdateModelViewMatrix modelViewMatrix:\n");
-	// Util::printMatrix(modelViewMatrix);
 }
 
 void ParticleRenderer::LoadTexCoordInfo(glm::vec2 texOffset1, glm::vec2 texOffset2, int numRows, float blendFactor)

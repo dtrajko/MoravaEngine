@@ -15,7 +15,7 @@ public:
 	virtual void RenderBefore() override;
 	virtual void RenderAfter() override;
 	void UpdateModelViewMatrix(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::mat4 viewMatrix, std::vector<float>* vboData);
-	void UpdateTexCoordInfo(Particle* particle, std::vector<float>* vboData);
+	void LoadTexCoordInfo(Particle* particle, int numberOfRows, std::vector<float>* vboData);
 	virtual void StoreMatrixData(glm::mat4 matrix, std::vector<float>* vboData);
 	virtual void CleanUp() override;
 	~ParticleRendererInstanced();
