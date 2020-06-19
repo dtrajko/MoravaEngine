@@ -13,7 +13,7 @@ public:
 	const Texture* GetTexture() const { return m_Texture; };
 	const glm::vec2* GetTexCoords() const { return m_TexCoords; };
 
-	static SubTexture2D* CreateFromCoords(Texture* texture, const glm::vec2& coords, const glm::vec2& cellSize, const glm::vec2& spriteSize);
+	static SubTexture2D CreateFromCoords(Texture* texture, const glm::vec2& coords, const glm::vec2& cellSize, const glm::vec2& spriteSize);
 	virtual ~SubTexture2D();
 
 private:

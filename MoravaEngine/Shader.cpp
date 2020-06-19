@@ -51,7 +51,8 @@ std::string Shader::ReadFile(const char* fileLocation)
 
 	if (!fileStream.is_open())
 	{
-		printf("Failed to read '{0}'! File doesn't exist.\n", fileLocation);
+		// printf("Failed to read '%s'! File doesn't exist.\n", fileLocation);
+		LOG_ERROR("Failed to read '{0}'! File doesn't exist.", fileLocation);
 		return "";
 	}
 
@@ -290,7 +291,7 @@ void Shader::AddShader(GLuint programID, const char* shaderCode, GLenum shaderTy
 	{
 		glGetShaderInfoLog(shaderID, sizeof(eLog), NULL, eLog);
 		// printf("%s shader compilation error: '%s'\n", shaderTypeName, eLog);
-		LOG_ERROR("%s shader compilation error: '{0}'", shaderTypeName, eLog);
+		LOG_ERROR("{0} shader compilation error: '{1}'", shaderTypeName, eLog);
 		return;
 	}
 

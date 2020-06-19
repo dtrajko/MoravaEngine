@@ -1061,7 +1061,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             // End ParticleTextureName ImGui drop-down list
 
             ImGui::SliderInt(  "Number of Rows",       &m_ParticleSettingsEdit.numRows,                   1, 10);
-            ImGui::SliderFloat("Particles Per Second", &m_ParticleSettingsEdit.PPS,                       0.0f, 100.0f);
+            ImGui::SliderFloat("Particles Per Second", &m_ParticleSettingsEdit.PPS,                       0.0f, 2000.0f);
             ImGui::SliderFloat3("Direction",           glm::value_ptr(m_ParticleSettingsEdit.direction), -1.0f, 1.0f);
             ImGui::SliderFloat("Intensity",            &m_ParticleSettingsEdit.intensity,                 0.0f, 20.0f);
             ImGui::SliderFloat("Gravity Complient",    &m_ParticleSettingsEdit.gravityComplient,         -20.0f, 20.0f);

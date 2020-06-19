@@ -11,10 +11,10 @@ public:
 	QuadInstanced();
 	void Render(unsigned int instanceCount);
 	unsigned int CreateEmptyVBO(int floatCount);
-	void AddInstancedAttribute(int VAO, int VBO, int attribute, int dataSize, int instancedDataLength, int offset);
+	void AddInstancedAttribute(int attribute, int dataSize, int instancedDataLength, int offset);
 	unsigned int StoreDataInAttributeList(int attributeNumber, unsigned int floatCount, std::vector<float>* data);
 	void UnbindVAO();
-	void UpdateVBO(unsigned int VBO, unsigned int floatCount, std::vector<float>* data);
+	void UpdateVBO(unsigned int floatCount, float* data);
 	inline const unsigned int GetVBOInstanced() const { return m_VBO_Instanced; };
 	inline void SetVBOInstanced(unsigned int VBO_Instanced) { m_VBO_Instanced = VBO_Instanced; };
 	virtual void Clear() override;

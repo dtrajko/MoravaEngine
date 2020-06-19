@@ -53,6 +53,7 @@ void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*
 
 void ParticleRenderer::BindTexture(ParticleTexture* particleTexture)
 {
+	// printf("ParticleRenderer::BindTexture GetTextureID = %i\n", particleTexture->GetTextureID());
 	particleTexture->Bind(0);
 }
 

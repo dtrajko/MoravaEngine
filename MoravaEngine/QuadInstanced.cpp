@@ -38,10 +38,10 @@ unsigned int QuadInstanced::CreateEmptyVBO(int floatCount)
 	return m_VBO_Instanced;
 }
 
-void QuadInstanced::AddInstancedAttribute(int VAO, int VBO, int attribute, int dataSize, int instancedDataLength, int offset)
+void QuadInstanced::AddInstancedAttribute(int attribute, int dataSize, int instancedDataLength, int offset)
 {
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_Instanced);
+	glBindVertexArray(m_VAO);
 	glEnableVertexAttribArray(attribute);
 	glVertexAttribPointer(attribute, dataSize, GL_FLOAT, GL_FALSE, instancedDataLength * sizeof(float), (const void*)(offset * sizeof(float)));
 	glVertexAttribDivisor(attribute, 1);
@@ -66,24 +66,25 @@ void QuadInstanced::UnbindVAO()
 	glBindVertexArray(0);
 }
 
-void QuadInstanced::UpdateVBO(unsigned int VBO, unsigned int floatCount, std::vector<float>* data)
+void QuadInstanced::UpdateVBO(unsigned int floatCount, float* data)
 {
 	// printf("QuadInstanced::UpdateVBO buffer size: %zi\n", floatCount * sizeof(float));
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, floatCount * sizeof(float), &data[0], GL_STREAM_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, floatCount * sizeof(float), &data[0]);
+	glBindVertexArray(m_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_Instanced);
+	glBufferData(GL_ARRAY_BUFFER, floatCount * sizeof(float), data, GL_STREAM_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, floatCount * sizeof(float), data);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void QuadInstanced::Render(unsigned int instanceCount)
 {
+	// printf("QuadInstanced::Render m_VertexCount = %u instanceCount = %u m_VAO = %u\n", m_VertexCount, instanceCount, m_VAO);
 	glBindVertexArray(m_VAO);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, (size_t)m_VertexCount, (size_t)instanceCount);
 	glBindVertexArray(0);
 
-	// printf("QuadInstanced::Render m_VertexCount = %u instanceCount = %u m_VAO = %u\n", m_VertexCount, instanceCount, m_VAO);
 	// glBindVertexArray(m_VAO);
-	// glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, (size_t)m_VertexCount, (size_t)instanceCount);
+	// glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	// glBindVertexArray(0);
 }
 

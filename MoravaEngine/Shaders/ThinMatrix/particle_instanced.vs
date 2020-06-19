@@ -1,14 +1,14 @@
 #version 440
 
 layout (location = 0) in vec3 aPosition;
+layout (location = 1) in mat4 modelView;
+layout (location = 5) in vec4 texOffsets;
+layout (location = 6) in float blendFactor;
 
 out vec2 vTexCoord1;
 out vec2 vTexCoord2;
 out float vBlendFactor;
 
-uniform mat4 modelView;
-uniform vec4 texOffsets;
-uniform float blendFactor;
 
 uniform float numberOfRows;
 uniform mat4 projection;
