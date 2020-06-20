@@ -11,6 +11,7 @@ class ParticleRendererInstanced : public ParticleRenderer
 {
 public:
 	ParticleRendererInstanced();
+	ParticleRendererInstanced(int maxInstances);
 	virtual void Render(std::map<ParticleTexture*, std::vector<Particle*>*>* particleMap, glm::mat4 viewMatrix) override;
 	virtual void RenderBefore() override;
 	virtual void RenderAfter() override;
@@ -22,7 +23,7 @@ public:
 	~ParticleRendererInstanced();
 
 private:
-	int MAX_INSTANCES = 2000;
+	int m_MaxInstances;
 	int INSTANCE_DATA_LENGTH = 21; // 16F model view + 4F texOffsets + 1F blendFactor
 
 	float* m_VBO_Data;

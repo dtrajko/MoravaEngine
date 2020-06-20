@@ -11,11 +11,11 @@ ParticleMaster::ParticleMaster()
 {
 }
 
-void ParticleMaster::Init(bool instancedRendering)
+void ParticleMaster::Init(bool instancedRendering, int maxInstances)
 {
 	m_Particles = std::map<ParticleTexture*, std::vector<Particle*>*>();
 	if (instancedRendering)
-		m_Renderer = new ParticleRendererInstanced();
+		m_Renderer = new ParticleRendererInstanced(maxInstances);
 	else
 		m_Renderer = new ParticleRenderer();
 }
@@ -23,29 +23,23 @@ void ParticleMaster::Init(bool instancedRendering)
 void ParticleMaster::Update(glm::vec3 cameraPosition)
 {
 	bool stillAlive = true;
-	for (auto it_map = m_Particles.begin(); it_map != m_Particles.end(); it_map++)
+	std::map<ParticleTexture*, std::vector<Particle*>*>::const_iterator it_map;
+	for (it_map = m_Particles.cbegin(); it_map != m_Particles.cend();)
 	{
-		// a secondary vector to copy only alive particles to
-		std::vector<Particle*>* secondVec = new std::vector<Particle*>();
-
-		for (int i = 0; i < it_map->second->size(); i++)
-		{
-			stillAlive = it_map->second->at(i)->Update(cameraPosition);
-			if (stillAlive) {
-				secondVec->push_back(it_map->second->at(i));
+		std::vector<Particle*>* particleVector = it_map->second;
+		std::vector<Particle*>::const_iterator it_vec;
+		for (it_vec = particleVector->begin(); it_vec != particleVector->end(); ) {
+			stillAlive = (*it_vec)->Update(cameraPosition);
+			if (!stillAlive) {
+				it_vec = particleVector->erase(it_vec);
+			}
+			else {
+				++it_vec;
 			}
 		}
 
-		// InsertionSort::SortHighToLow(secondVec);
-		it_map->second->clear();
-		it_map->second = secondVec;
-	}
-
-	// deallocate empty map elements
-	for (auto it_map = m_Particles.cbegin(); it_map != m_Particles.cend();)
-	{
-		if (it_map->second->size() == 0) {
-			m_Particles.erase(it_map++);
+		if (particleVector->size() == 0) {
+			it_map = m_Particles.erase(it_map++);
 		}
 		else {
 			++it_map;

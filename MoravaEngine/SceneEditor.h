@@ -138,7 +138,7 @@ private:
 	struct ParticleSettings {
 		std::string textureName = "";
 		int numRows = 1;
-		float PPS = 0.0f;
+		int PPS = 0;
 		glm::vec3 direction = glm::vec3(0.0f);
 		float intensity = 5.0f;
 		float gravityComplient = 0.0f;
@@ -172,6 +172,8 @@ private:
 	glm::vec3 m_ParticleSystemPosition;
 	glm::vec3 m_ParticleSystemScale;
 	AABB* m_ParticleSystemAABB;
+
+	int m_MaxInstances = 10000;
 
 	std::vector<std::string> m_ActiveRenderPasses;
 

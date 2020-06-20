@@ -9,7 +9,7 @@ ParticleSystemThinMatrix::ParticleSystemThinMatrix()
 
 }
 
-ParticleSystemThinMatrix::ParticleSystemThinMatrix(ParticleTexture* texture, float PPS, glm::vec3 direction, float intensity, float gravityComplient, float lifeLength, float diameter)
+ParticleSystemThinMatrix::ParticleSystemThinMatrix(ParticleTexture* texture, int PPS, glm::vec3 direction, float intensity, float gravityComplient, float lifeLength, float diameter)
 {
 	m_Texture = texture;
 

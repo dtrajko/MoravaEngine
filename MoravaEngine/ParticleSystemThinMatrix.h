@@ -10,7 +10,7 @@ class ParticleSystemThinMatrix
 {
 public:
 	ParticleSystemThinMatrix();
-	ParticleSystemThinMatrix(ParticleTexture* texture, float PPS, glm::vec3 direction, float intensity, float gravityComplient, float lifeLength, float diameter);
+	ParticleSystemThinMatrix(ParticleTexture* texture, int PPS, glm::vec3 direction, float intensity, float gravityComplient, float lifeLength, float diameter);
 	void GeneratePatricles(glm::vec3 position, glm::vec3 scale);
 	void EmitParticle(glm::vec3 position);
 	glm::vec3 CalculateRandomAreaPosition(glm::vec3 position, glm::vec3 scale);
@@ -27,7 +27,7 @@ private:
 	glm::vec3 m_Direction;
 	float m_Intensity;
 	float m_Diameter;
-	float m_PPS;
+	int m_PPS;
 	float m_GravityComplient;
 	float m_LifeLength;
 

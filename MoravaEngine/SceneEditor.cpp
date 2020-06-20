@@ -164,7 +164,7 @@ SceneEditor::SceneEditor()
 
     m_ParticleSettingsEdit.textureName      = "particle_atlas";
     m_ParticleSettingsEdit.numRows          = 4;
-    m_ParticleSettingsEdit.PPS              = 40.0f;
+    m_ParticleSettingsEdit.PPS              = 40;
     m_ParticleSettingsEdit.direction        = glm::vec3(0.0f, 1.0f, 0.0f);
     m_ParticleSettingsEdit.intensity        = 5.0f;
     m_ParticleSettingsEdit.diameter         = 0.4f;
@@ -190,7 +190,7 @@ SceneEditor::SceneEditor()
 
     TextureLoader::Get()->Print();
 
-    ParticleMaster::Init(m_ParticleRenderingInstanced);
+    ParticleMaster::Init(m_ParticleRenderingInstanced, m_MaxInstances);
 }
 
 void SceneEditor::SetSkybox()
@@ -641,7 +641,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     // Particle System
     if (m_ParticleRenderingInstanced != m_ParticleRenderingInstancedPrev) {
         ParticleMaster::CleanUp();
-        ParticleMaster::Init(m_ParticleRenderingInstanced);
+        ParticleMaster::Init(m_ParticleRenderingInstanced, m_MaxInstances);
         m_ParticleRenderingInstancedPrev = m_ParticleRenderingInstanced;
     }
 
@@ -1061,7 +1061,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             // End ParticleTextureName ImGui drop-down list
 
             ImGui::SliderInt(  "Number of Rows",       &m_ParticleSettingsEdit.numRows,                   1, 10);
-            ImGui::SliderFloat("Particles Per Second", &m_ParticleSettingsEdit.PPS,                       0.0f, 2000.0f);
+            ImGui::SliderInt("Particles Per Second",   &m_ParticleSettingsEdit.PPS,                       0, m_MaxInstances);
             ImGui::SliderFloat3("Direction",           glm::value_ptr(m_ParticleSettingsEdit.direction), -1.0f, 1.0f);
             ImGui::SliderFloat("Intensity",            &m_ParticleSettingsEdit.intensity,                 0.0f, 20.0f);
             ImGui::SliderFloat("Gravity Complient",    &m_ParticleSettingsEdit.gravityComplient,         -20.0f, 20.0f);

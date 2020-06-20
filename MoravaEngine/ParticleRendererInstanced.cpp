@@ -5,14 +5,21 @@
 #include "Log.h"
 
 
-ParticleRendererInstanced::ParticleRendererInstanced()
+ParticleRendererInstanced::ParticleRendererInstanced() : ParticleRendererInstanced(10000)
 {
+
+}
+
+ParticleRendererInstanced::ParticleRendererInstanced(int maxInstances)
+{
+	m_MaxInstances = maxInstances;
+
 	m_Shader = new Shader("Shaders/ThinMatrix/particle_instanced.vs", "Shaders/ThinMatrix/particle_instanced.fs");
 	printf("ParticleRenderer: m_Shader compiled [programID=%d]\n", m_Shader->GetProgramID());
 
 	m_Mesh = new QuadInstanced();
 
-	static_cast<QuadInstanced*>(m_Mesh)->CreateEmptyVBO(INSTANCE_DATA_LENGTH * MAX_INSTANCES);
+	static_cast<QuadInstanced*>(m_Mesh)->CreateEmptyVBO(INSTANCE_DATA_LENGTH * m_MaxInstances);
 
 	// model-view matrix in attribute slots 1 to 4
 	static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(1, 4, INSTANCE_DATA_LENGTH,  0);
