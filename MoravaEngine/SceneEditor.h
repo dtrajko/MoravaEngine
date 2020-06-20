@@ -167,6 +167,7 @@ private:
 	bool m_ParticleRenderingInstancedPrev;
 
 	// Particle System ThinMatrix
+	ParticleTexture* m_ParticleTexture;
 	ParticleSystemThinMatrix* m_ParticleSystem;
 	glm::vec3 m_ParticleSystemPosition;
 	glm::vec3 m_ParticleSystemScale;

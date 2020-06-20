@@ -72,9 +72,7 @@ void ParticleRendererInstanced::Render(std::map<ParticleTexture*, std::vector<Pa
 
 		static_cast<QuadInstanced*>(m_Mesh)->Render((unsigned int)particleVector.size());
 
-		//	printf("\nm_VBO_Data\n");
-		//	for (unsigned int i = 0; i < floatCount; i++)
-		//		printf("[%i] %.2ff ", i, m_VBO_Data[i]);
+		delete[] m_VBO_Data;
 	}
 
 	RenderAfter();
