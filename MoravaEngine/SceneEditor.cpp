@@ -177,7 +177,7 @@ SceneEditor::SceneEditor()
     m_ParticleSystemPosition = glm::vec3(0.0f, 0.0f, 0.0f);
     m_ParticleSystemScale = glm::vec3(0.0f, 0.0f, 0.0f);
 
-    m_ParticleRenderingInstanced = false;
+    m_ParticleRenderingInstanced = true;
     m_ParticleRenderingInstancedPrev = m_ParticleRenderingInstanced;
 
     // required for directional light enable/disable feature
@@ -1070,6 +1070,12 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
 
             ImGui::Separator();
             ImGui::Checkbox("Instanced Rendering", &m_ParticleRenderingInstanced);
+            std::map<int, int> counts = ParticleMaster::GetCounts();
+            for (auto it = counts.begin(); it != counts.end(); it++) {
+                ImGui::Separator();
+                std::string textLine = "TextureID: " + std::to_string(it->first) + " Particles: " + std::to_string(it->second);
+                ImGui::Text(textLine.c_str());
+            }
         }
     }
     ImGui::End();

@@ -14,8 +14,9 @@ public:
 	static void Init(bool instancedRendering, int maxInstances);
 	static void Update(glm::vec3 cameraPosition);
 	static void Render(glm::mat4 viewMatrix);
-	static void CleanUp();
 	static void addParticle(Particle* particle);
+	static std::map<int, int> GetCounts();
+	static void CleanUp();
 	~ParticleMaster();
 
 private:
