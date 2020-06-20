@@ -31,6 +31,7 @@ void ParticleMaster::Update(glm::vec3 cameraPosition)
 		for (it_vec = particleVector->begin(); it_vec != particleVector->end(); ) {
 			stillAlive = (*it_vec)->Update(cameraPosition);
 			if (!stillAlive) {
+				delete *it_vec;
 				it_vec = particleVector->erase(it_vec);
 			}
 			else {
@@ -50,6 +51,7 @@ void ParticleMaster::Update(glm::vec3 cameraPosition)
 void ParticleMaster::Render(glm::mat4 viewMatrix)
 {
 	m_Renderer->Render(&m_Particles, viewMatrix);
+	// printf("ParticleMaster::Render particlesMap.size: %zu particlesVector.size: %zu\n", m_Particles.size(), m_Particles.begin()->second->size());
 }
 
 void ParticleMaster::addParticle(Particle* particle)
