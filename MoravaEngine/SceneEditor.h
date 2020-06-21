@@ -201,6 +201,7 @@ private:
 	EventCooldown m_SceneLoad;
 	EventCooldown m_SceneReset;
 	EventCooldown m_ProjectionChange;
+	EventCooldown m_ParticleSettings;
 
 	bool m_OrthographicViewEnabled;
 
