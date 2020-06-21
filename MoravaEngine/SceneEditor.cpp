@@ -132,14 +132,15 @@ SceneEditor::SceneEditor()
     m_CurrentTimestamp = 0.0f;
     m_StartTimestamp = (float)glfwGetTime();
 
-    m_ObjectSelect     = { 0.0f, 0.2f };
-    m_ObjectAdd        = { 0.0f, 1.0f };
-    m_ObjectCopy       = { 0.0f, 1.0f };
-    m_ObjectDelete     = { 0.0f, 1.0f };
-    m_SceneSave        = { 0.0f, 1.0f };
-    m_SceneLoad        = { 0.0f, 1.0f };
-    m_SceneReset       = { 0.0f, 1.0f };
-    m_ProjectionChange = { 0.0f, 0.5f };
+    m_ObjectSelect      = { 0.0f, 0.2f };
+    m_ObjectAdd         = { 0.0f, 1.0f };
+    m_ObjectCopy        = { 0.0f, 1.0f };
+    m_ObjectDelete      = { 0.0f, 1.0f };
+    m_SceneSave         = { 0.0f, 1.0f };
+    m_SceneLoad         = { 0.0f, 1.0f };
+    m_SceneReset        = { 0.0f, 1.0f };
+    m_ProjectionChange  = { 0.0f, 0.5f };
+    m_ParticlesGenerate = { -1.0f, 0.5f };
 
     m_OrthographicViewEnabled = false;
     m_SelectedIndex = 0;
@@ -167,19 +168,17 @@ SceneEditor::SceneEditor()
     m_ParticleSettingsEdit.numRows          = 4;
     m_ParticleSettingsEdit.PPS              = 40;
     m_ParticleSettingsEdit.direction        = glm::vec3(0.0f, 1.0f, 0.0f);
-    m_ParticleSettingsEdit.intensity        = 5.0f;
-    m_ParticleSettingsEdit.diameter         = 0.4f;
+    m_ParticleSettingsEdit.intensity        = 4.0f;
+    m_ParticleSettingsEdit.diameter         = 0.2f;
     m_ParticleSettingsEdit.gravityComplient = 0.2f;
     m_ParticleSettingsEdit.lifeLength       = 2.0f;
+    m_ParticleSettingsEdit.instanced        = true;
 
     m_ParticleSettingsPrev = m_ParticleSettingsEdit;
-    m_ParticleSettingsPrev.textureName      = "none";
+    m_ParticleSettingsPrev.textureName = "none";
 
     m_ParticleSystemPosition = glm::vec3(0.0f, 0.0f, 0.0f);
     m_ParticleSystemScale = glm::vec3(0.0f, 0.0f, 0.0f);
-
-    m_ParticleRenderingInstanced = true;
-    m_ParticleRenderingInstancedPrev = m_ParticleRenderingInstanced;
 
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
@@ -191,7 +190,7 @@ SceneEditor::SceneEditor()
 
     TextureLoader::Get()->Print();
 
-    ParticleMaster::Init(m_ParticleRenderingInstanced, m_MaxInstances);
+    ParticleMaster::Init(m_ParticleSettingsEdit.instanced, m_MaxInstances);
 }
 
 void SceneEditor::SetSkybox()
@@ -532,140 +531,6 @@ void SceneEditor::SetupModels()
 
 void SceneEditor::SetGeometry()
 {
-}
-
-void SceneEditor::Update(float timestep, Window& mainWindow)
-{
-    m_CurrentTimestamp = timestep;
-
-    if (m_SelectedIndex >= m_SceneObjects.size())
-        m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
-
-    MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
-
-    // printf("SceneEditor::Update m_SceneObjects.size = %zu\n", m_SceneObjects.size());
-
-    for (auto& object : m_SceneObjects) {
-        object->isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
-            object->AABB->GetMin(), object->AABB->GetMax(), glm::vec2(0.0f));
-
-        if (object->m_Type == "mesh" && object->mesh != nullptr)
-            object->mesh->Update(object->scale);
-        else if (object->m_Type == "model" && object->model != nullptr)
-            object->model->Update(object->scale);
-
-        if (object->name == "water")
-            m_WaterManager->SetWaterHeight(object->position.y);
-    }
-
-    if (m_HDRI_Edit != m_HDRI_Edit_Prev)
-    {
-        if (m_HDRI_Edit == HDRI_GREENWICH_PARK)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
-        else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
-        else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr");
-        else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr");
-        else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr");
-
-        m_HDRI_Edit_Prev = m_HDRI_Edit;
-    }
-
-    m_Gizmo->Update(m_Camera->GetPosition(), mainWindow);
-    m_Gizmo->SetDrawAABBs(m_DrawGizmos);
-
-    // Switching between scene objects that are currently in focus (mouse over)
-    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
-    {
-        m_Gizmo->OnMousePress(mainWindow, &m_SceneObjects, m_SelectedIndex);
-        m_MouseButton_1_Prev = true;
-    }
-
-    if (!mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1] && m_MouseButton_1_Prev)
-    {
-        SelectNextFromMultipleObjects(&m_SceneObjects, m_SelectedIndex);
-        m_Gizmo->OnMouseRelease(mainWindow, &m_SceneObjects, m_SelectedIndex);
-        m_MouseButton_1_Prev = false;
-    }
-
-    // Add new scene object with default settings
-    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1] && mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL])
-    {
-        AddSceneObject();
-    }
-
-    // Copy selected scene object
-    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_C])
-    {
-        CopySceneObject(mainWindow, &m_SceneObjects, m_SelectedIndex);
-        m_SceneObjects[m_SelectedIndex]->isSelected = false;
-    }
-
-    // Delete selected object
-    if (mainWindow.getKeys()[GLFW_KEY_DELETE])
-    {
-        DeleteSceneObject(mainWindow, &m_SceneObjects, m_SelectedIndex);
-    }
-
-    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_R])
-        ResetScene();
-
-    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_S])
-        SaveScene();
-
-    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_L])
-        LoadScene();
-
-    // Gizmo switching modes
-    if (mainWindow.getKeys()[GLFW_KEY_1])
-        m_Gizmo->ChangeMode(GIZMO_MODE_TRANSLATE);
-
-    if (mainWindow.getKeys()[GLFW_KEY_2])
-        m_Gizmo->ChangeMode(GIZMO_MODE_SCALE);
-
-    if (mainWindow.getKeys()[GLFW_KEY_3])
-        m_Gizmo->ChangeMode(GIZMO_MODE_ROTATE);
-
-    if (mainWindow.getKeys()[GLFW_KEY_4])
-        m_Gizmo->ChangeMode(GIZMO_MODE_NONE);
-
-    for (auto& object : m_SceneObjects)
-    {
-        glm::vec3 scaleAABB = object->scale * object->AABB->m_Scale;
-        object->AABB->Update(object->position, object->rotation, object->scale);
-        object->pivot->Update(object->position, object->scale + 1.0f);
-    }
-
-    // Particle System
-    if (m_ParticleRenderingInstanced != m_ParticleRenderingInstancedPrev) {
-        ParticleMaster::CleanUp();
-        ParticleMaster::Init(m_ParticleRenderingInstanced, m_MaxInstances);
-        m_ParticleRenderingInstancedPrev = m_ParticleRenderingInstanced;
-    }
-
-    if (m_ParticleSettingsEdit != m_ParticleSettingsPrev) {
-        LOG_INFO("Particle Settings changed, rebuilding the Particle System...");
-        Texture* texture = HotLoadTexture(m_ParticleSettingsEdit.textureName);
-        m_ParticleTexture = new ParticleTexture(texture->GetID(), m_ParticleSettingsEdit.numRows);
-        m_ParticleSystem = new ParticleSystemThinMatrix(m_ParticleTexture, m_ParticleSettingsEdit.PPS, m_ParticleSettingsEdit.direction,
-            m_ParticleSettingsEdit.intensity, m_ParticleSettingsEdit.gravityComplient, m_ParticleSettingsEdit.lifeLength, m_ParticleSettingsEdit.diameter);
-        m_ParticleSettingsPrev = m_ParticleSettingsEdit;
-    }
-
-    if (sceneSettings.enableParticles) {
-        Profiler profiler("SE::ParticleSystemTM::GeneratePatricles");
-        m_ParticleSystem->GeneratePatricles(m_ParticleSystemPosition, m_ParticleSystemScale);
-        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
-    }
-
-    {
-        Profiler profiler("SE::ParticleMaster::Update");
-        ParticleMaster::Update(m_Camera->GetPosition());
-        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
-    }
 }
 
 void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
@@ -1065,12 +930,12 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::SliderInt("Particles Per Second",   &m_ParticleSettingsEdit.PPS,                       0, m_MaxInstances);
             ImGui::SliderFloat3("Direction",           glm::value_ptr(m_ParticleSettingsEdit.direction), -1.0f, 1.0f);
             ImGui::SliderFloat("Intensity",            &m_ParticleSettingsEdit.intensity,                 0.0f, 20.0f);
-            ImGui::SliderFloat("Gravity Complient",    &m_ParticleSettingsEdit.gravityComplient,         -20.0f, 20.0f);
+            ImGui::SliderFloat("Gravity Complient",    &m_ParticleSettingsEdit.gravityComplient,         -40.0f, 40.0f);
             ImGui::SliderFloat("Life Length",          &m_ParticleSettingsEdit.lifeLength,                0.0f, 20.0f);
             ImGui::SliderFloat("Diameter",             &m_ParticleSettingsEdit.diameter,                  0.0f, 1.0f);
 
             ImGui::Separator();
-            ImGui::Checkbox("Instanced Rendering", &m_ParticleRenderingInstanced);
+            ImGui::Checkbox("Instanced Rendering", &m_ParticleSettingsEdit.instanced);
             std::map<int, int> counts = ParticleMaster::GetCounts();
             for (auto it = counts.begin(); it != counts.end(); it++) {
                 ImGui::Separator();
@@ -1403,6 +1268,149 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
     // uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
     // ImGui::Image((void*)textureID, ImVec2(1280, 720), ImVec2(0, 1), ImVec2(1, 0));
     ImGui::End();
+}
+
+void SceneEditor::Update(float timestep, Window& mainWindow)
+{
+    m_CurrentTimestamp = timestep;
+
+    if (m_SelectedIndex >= m_SceneObjects.size())
+        m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
+
+    MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
+
+    // printf("SceneEditor::Update m_SceneObjects.size = %zu\n", m_SceneObjects.size());
+
+    for (auto& object : m_SceneObjects) {
+        object->isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
+            object->AABB->GetMin(), object->AABB->GetMax(), glm::vec2(0.0f));
+
+        if (object->m_Type == "mesh" && object->mesh != nullptr)
+            object->mesh->Update(object->scale);
+        else if (object->m_Type == "model" && object->model != nullptr)
+            object->model->Update(object->scale);
+
+        if (object->name == "water")
+            m_WaterManager->SetWaterHeight(object->position.y);
+    }
+
+    if (m_HDRI_Edit != m_HDRI_Edit_Prev)
+    {
+        if (m_HDRI_Edit == HDRI_GREENWICH_PARK)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
+        else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
+        else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr");
+        else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr");
+        else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr");
+
+        m_HDRI_Edit_Prev = m_HDRI_Edit;
+    }
+
+    m_Gizmo->Update(m_Camera->GetPosition(), mainWindow);
+    m_Gizmo->SetDrawAABBs(m_DrawGizmos);
+
+    // Switching between scene objects that are currently in focus (mouse over)
+    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
+    {
+        m_Gizmo->OnMousePress(mainWindow, &m_SceneObjects, m_SelectedIndex);
+        m_MouseButton_1_Prev = true;
+    }
+
+    if (!mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1] && m_MouseButton_1_Prev)
+    {
+        SelectNextFromMultipleObjects(&m_SceneObjects, m_SelectedIndex);
+        m_Gizmo->OnMouseRelease(mainWindow, &m_SceneObjects, m_SelectedIndex);
+        m_MouseButton_1_Prev = false;
+    }
+
+    // Add new scene object with default settings
+    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1] && mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL])
+    {
+        AddSceneObject();
+    }
+
+    // Copy selected scene object
+    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_C])
+    {
+        CopySceneObject(mainWindow, &m_SceneObjects, m_SelectedIndex);
+        m_SceneObjects[m_SelectedIndex]->isSelected = false;
+    }
+
+    // Delete selected object
+    if (mainWindow.getKeys()[GLFW_KEY_DELETE])
+    {
+        DeleteSceneObject(mainWindow, &m_SceneObjects, m_SelectedIndex);
+    }
+
+    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_R])
+        ResetScene();
+
+    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_S])
+        SaveScene();
+
+    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_L])
+        LoadScene();
+
+    // Gizmo switching modes
+    if (mainWindow.getKeys()[GLFW_KEY_1])
+        m_Gizmo->ChangeMode(GIZMO_MODE_TRANSLATE);
+
+    if (mainWindow.getKeys()[GLFW_KEY_2])
+        m_Gizmo->ChangeMode(GIZMO_MODE_SCALE);
+
+    if (mainWindow.getKeys()[GLFW_KEY_3])
+        m_Gizmo->ChangeMode(GIZMO_MODE_ROTATE);
+
+    if (mainWindow.getKeys()[GLFW_KEY_4])
+        m_Gizmo->ChangeMode(GIZMO_MODE_NONE);
+
+    for (auto& object : m_SceneObjects)
+    {
+        glm::vec3 scaleAABB = object->scale * object->AABB->m_Scale;
+        object->AABB->Update(object->position, object->rotation, object->scale);
+        object->pivot->Update(object->position, object->scale + 1.0f);
+    }
+
+    // Re-generate Particle System
+    if (m_ParticleSettingsEdit != m_ParticleSettingsPrev) {
+        GenerateParticleSystem();
+        m_ParticleSettingsPrev = m_ParticleSettingsEdit;
+    }
+
+    if (sceneSettings.enableParticles && m_ParticleSystem != nullptr) {
+        Profiler profiler("SE::ParticleSystemTM::GeneratePatricles");
+        m_ParticleSystem->GeneratePatricles(m_ParticleSystemPosition, m_ParticleSystemScale);
+        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
+
+    {
+        Profiler profiler("SE::ParticleMaster::Update");
+        ParticleMaster::Update(m_Camera->GetPosition());
+        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
+}
+
+void SceneEditor::GenerateParticleSystem()
+{
+    // Cooldown
+    if (m_CurrentTimestamp - m_ParticlesGenerate.lastTime < m_ParticlesGenerate.cooldown) return;
+    m_ParticlesGenerate.lastTime = m_CurrentTimestamp;
+
+
+    LOG_INFO("Particle Settings changed, rebuilding the Particle System...");
+
+    ParticleMaster::CleanUp();
+    ParticleMaster::Init(m_ParticleSettingsEdit.instanced, m_MaxInstances);
+
+    Texture* texture = HotLoadTexture(m_ParticleSettingsEdit.textureName);
+    m_ParticleTexture = new ParticleTexture(texture->GetID(), m_ParticleSettingsEdit.numRows);
+    m_ParticleSystem = new ParticleSystemThinMatrix(m_ParticleTexture, m_ParticleSettingsEdit.PPS,
+        m_ParticleSettingsEdit.direction, m_ParticleSettingsEdit.intensity, m_ParticleSettingsEdit.gravityComplient,
+        m_ParticleSettingsEdit.lifeLength, m_ParticleSettingsEdit.diameter);
 }
 
 Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale)

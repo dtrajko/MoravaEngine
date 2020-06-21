@@ -6,7 +6,6 @@
 
 ParticleSystemThinMatrix::ParticleSystemThinMatrix()
 {
-
 }
 
 ParticleSystemThinMatrix::ParticleSystemThinMatrix(ParticleTexture* texture, int PPS, glm::vec3 direction, float intensity, float gravityComplient, float lifeLength, float diameter)
@@ -45,15 +44,17 @@ void ParticleSystemThinMatrix::GeneratePatricles(glm::vec3 position, glm::vec3 s
 
 void ParticleSystemThinMatrix::EmitParticle(glm::vec3 position)
 {
-	float randX = (float)std::rand() / (float)RAND_MAX;
-	float randY = (float)std::rand() / (float)RAND_MAX;
-	float randZ = (float)std::rand() / (float)RAND_MAX;
-	float dirX = randX * m_Diameter * m_Intensity; // * m_Direction.x;
-	float dirY = randY * m_Diameter * m_Intensity; // * m_Direction.y;
-	float dirZ = randZ * m_Diameter * m_Intensity; // * m_Direction.z;
+	float diameterMultiplier = 5.0f;
+	float randNormX = ((float)std::rand() / (float)RAND_MAX) * 2.0f - 1.0f;
+	float randNormY = ((float)std::rand() / (float)RAND_MAX) * 2.0f - 1.0f;
+	float randNormZ = ((float)std::rand() / (float)RAND_MAX) * 2.0f - 1.0f;
+	float randX = randNormX + m_Direction.x * m_Intensity;
+	float randY = randNormY + m_Direction.y * m_Intensity;
+	float randZ = randNormZ + m_Direction.z * m_Intensity;
+	float dirX = randX * m_Diameter * diameterMultiplier;
+	float dirY = randY * m_Diameter * diameterMultiplier;
+	float dirZ = randZ * m_Diameter * diameterMultiplier;
 	glm::vec3 velocity = glm::vec3(dirX, dirY, dirZ);
-	velocity *= m_Direction;
-	// printf("PSTM::Emit velocity [ %.2ff %.2ff %.2ff ]\n", velocity.x, velocity.y, velocity.z);
 	new Particle(m_Texture, position, glm::vec3(0.0f), glm::vec3(1.0f), velocity, m_GravityComplient, m_LifeLength);
 }
 

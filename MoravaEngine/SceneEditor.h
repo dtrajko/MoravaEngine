@@ -79,25 +79,20 @@ private:
 	void ResetScene();
 	Mesh* CreateNewMesh(int meshTypeID, glm::vec3 scale);
 	Model* AddNewModel(int modelID, glm::vec3 scale);
-
 	static void LoadTexture(std::map<std::string, Texture*>& textures, std::string name, std::string filePath);
 	static void LoadTextureAsync(std::map<std::string, Texture*>& textures, std::string name, std::string filePath);
-
 	static void LoadMaterial(std::map<std::string, Material*>& materials, std::string name, TextureInfo textureInfo);
 	static void LoadMaterialAsync(std::map<std::string, Material*>& materials, std::string name, TextureInfo textureInfo);
-
 	Texture* HotLoadTexture(std::string textureName);
 	Material* HotLoadMaterial(std::string materialName);
-
 	void SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Material* material, SceneObject* sceneObject);
 	void SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject);
 	void SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject, float runningTime);
 	void SetUniformsShaderWater(Shader* shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix);
-
 	void SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix);
 	glm::mat4 CalculateRenderTransform(SceneObject* sceneObject);
-
 	virtual bool IsWaterOnScene() override;
+	void GenerateParticleSystem();
 
 private:
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
@@ -136,14 +131,15 @@ private:
 	int m_HDRI_Edit_Prev;
 
 	struct ParticleSettings {
-		std::string textureName = "";
-		int numRows = 1;
-		int PPS = 0;
-		glm::vec3 direction = glm::vec3(0.0f);
-		float intensity = 5.0f;
-		float gravityComplient = 0.0f;
-		float lifeLength = 0.0f;
-		float diameter = 0.4f;
+		std::string textureName;
+		int numRows;
+		int PPS;
+		glm::vec3 direction;
+		float intensity;
+		float gravityComplient;
+		float lifeLength;
+		float diameter;
+		bool instanced;
 
 		inline bool operator!=(const ParticleSettings& other)
 		{
@@ -156,15 +152,13 @@ private:
 				intensity        != other.intensity        ||
 				gravityComplient != other.gravityComplient ||
 				lifeLength       != other.lifeLength       ||
-				diameter         != other.diameter;
+				diameter         != other.diameter         ||
+				instanced        != other.instanced;
 		}
 	};
 
 	ParticleSettings m_ParticleSettingsEdit;
 	ParticleSettings m_ParticleSettingsPrev;
-
-	bool m_ParticleRenderingInstanced;
-	bool m_ParticleRenderingInstancedPrev;
 
 	// Particle System ThinMatrix
 	ParticleTexture* m_ParticleTexture;
@@ -201,6 +195,7 @@ private:
 	EventCooldown m_SceneLoad;
 	EventCooldown m_SceneReset;
 	EventCooldown m_ProjectionChange;
+	EventCooldown m_ParticlesGenerate;
 
 	bool m_OrthographicViewEnabled;
 
