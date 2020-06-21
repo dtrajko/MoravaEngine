@@ -140,7 +140,6 @@ SceneEditor::SceneEditor()
     m_SceneLoad        = { 0.0f, 1.0f };
     m_SceneReset       = { 0.0f, 1.0f };
     m_ProjectionChange = { 0.0f, 0.5f };
-    m_ParticleSettings = { 0.0f, 0.5f };
 
     m_OrthographicViewEnabled = false;
     m_SelectedIndex = 0;
@@ -648,16 +647,12 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     }
 
     if (m_ParticleSettingsEdit != m_ParticleSettingsPrev) {
-        if (m_CurrentTimestamp - m_ParticleSettings.lastTime > m_ParticleSettings.cooldown) {
-            m_ParticleSettings.lastTime = m_CurrentTimestamp;
-
-            LOG_INFO("Particle Settings changed, rebuilding the Particle System...");
-            Texture* texture = HotLoadTexture(m_ParticleSettingsEdit.textureName);
-            m_ParticleTexture = new ParticleTexture(texture->GetID(), m_ParticleSettingsEdit.numRows);
-            m_ParticleSystem = new ParticleSystemThinMatrix(m_ParticleTexture, m_ParticleSettingsEdit.PPS, m_ParticleSettingsEdit.direction,
-                m_ParticleSettingsEdit.intensity, m_ParticleSettingsEdit.gravityComplient, m_ParticleSettingsEdit.lifeLength, m_ParticleSettingsEdit.diameter);
-            m_ParticleSettingsPrev = m_ParticleSettingsEdit;
-        };
+        LOG_INFO("Particle Settings changed, rebuilding the Particle System...");
+        Texture* texture = HotLoadTexture(m_ParticleSettingsEdit.textureName);
+        m_ParticleTexture = new ParticleTexture(texture->GetID(), m_ParticleSettingsEdit.numRows);
+        m_ParticleSystem = new ParticleSystemThinMatrix(m_ParticleTexture, m_ParticleSettingsEdit.PPS, m_ParticleSettingsEdit.direction,
+            m_ParticleSettingsEdit.intensity, m_ParticleSettingsEdit.gravityComplient, m_ParticleSettingsEdit.lifeLength, m_ParticleSettingsEdit.diameter);
+        m_ParticleSettingsPrev = m_ParticleSettingsEdit;
     }
 
     if (sceneSettings.enableParticles) {
