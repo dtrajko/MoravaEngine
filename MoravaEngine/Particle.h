@@ -43,4 +43,6 @@ private:
 	float m_ElapsedTime = 0;
 	float m_Distance;
 
+	glm::vec3 m_Change;
+
 };
