@@ -1,5 +1,7 @@
 #pragma once
 
+#include "PerlinNoise.h"
+
 #include <vector>
 
 
@@ -7,9 +9,10 @@ class Noise
 {
 public:
 	Noise();
-	std::vector<float> GenerateNoiseMap(int mapWidth, int mapHeight);
+	static std::vector<std::vector<float>> GenerateNoiseMap(int mapWidth, int mapHeight, float scale);
 	~Noise();
 
 private:
-
+	static int m_Seed;
+	static PerlinNoise* m_PerlinNoise;
 };

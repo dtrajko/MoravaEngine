@@ -172,6 +172,7 @@
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="InsertionSort.cpp" />
     <ClCompile Include="Log.cpp" />
+    <ClCompile Include="MapGenerator.cpp" />
     <ClCompile Include="Noise.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleMaster.cpp" />
@@ -179,6 +180,7 @@
     <ClCompile Include="ParticleRendererInstanced.cpp" />
     <ClCompile Include="ParticleSystemThinMatrix.cpp" />
     <ClCompile Include="ParticleTexture.cpp" />
+    <ClCompile Include="PerlinNoise.cpp" />
     <ClCompile Include="QuadInstanced.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="ShaderBackground.cpp" />
@@ -297,6 +299,7 @@
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="InsertionSort.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="MapGenerator.h" />
     <ClInclude Include="Noise.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleMaster.h" />
@@ -304,6 +307,7 @@
     <ClInclude Include="ParticleRendererInstanced.h" />
     <ClInclude Include="ParticleSystemThinMatrix.h" />
     <ClInclude Include="ParticleTexture.h" />
+    <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="QuadInstanced.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SceneObject.h" />

@@ -302,9 +302,6 @@
     <ClCompile Include="Skybox.cpp">
       <Filter>Skybox</Filter>
     </ClCompile>
-    <ClCompile Include="Noise.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="BulletDebugDrawer.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
@@ -355,6 +352,15 @@
     </ClCompile>
     <ClCompile Include="Log.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Noise.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="PerlinNoise.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="MapGenerator.cpp">
+      <Filter>Terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -682,9 +688,6 @@
     <ClInclude Include="Skybox.h">
       <Filter>Skybox</Filter>
     </ClInclude>
-    <ClInclude Include="Noise.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="BulletDebugDrawer.h">
       <Filter>Misc</Filter>
     </ClInclude>
@@ -737,6 +740,15 @@
     <ClInclude Include="Log.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="Noise.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="PerlinNoise.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="MapGenerator.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -786,6 +798,9 @@
     </Filter>
     <Filter Include="Editor">
       <UniqueIdentifier>{ca1a9e2f-c6d6-492e-8d60-e3af3cf4f1d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Terrain">
+      <UniqueIdentifier>{4981229f-a7f9-4b97-8a26-dbd492d51348}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
