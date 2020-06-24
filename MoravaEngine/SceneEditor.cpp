@@ -19,6 +19,7 @@
 #include "ParticleMaster.h"
 #include "Profiler.h"
 #include "Log.h"
+#include "Noise.h"
 
 #include <vector>
 #include <map>
@@ -191,6 +192,21 @@ SceneEditor::SceneEditor()
     TextureLoader::Get()->Print();
 
     ParticleMaster::Init(m_ParticleSettingsEdit.instanced, m_MaxInstances);
+
+    /* Begin Test */
+    int width = 8;
+    int height = 4;
+    Noise* noise = new Noise();
+    std::vector<std::vector<float>> heightMap = noise->GenerateNoiseMap(width, height, 1.0f);
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            if (x == 0) printf("\n");
+            printf("[ X=%i Y=%i] %.2ff\t", x, y, heightMap[x][y]);
+        }
+    }
+    printf("\n");
+    /* End Test */
 }
 
 void SceneEditor::SetSkybox()
