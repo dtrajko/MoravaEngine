@@ -123,6 +123,7 @@ SceneEditor::SceneEditor()
     SetupMaterials();
     SetupMeshes();
     SetupModels();
+    SetupParticles();
     SetGeometry();
     SetLightManager();
     AddLightsToSceneObjects();
@@ -164,22 +165,6 @@ SceneEditor::SceneEditor()
     m_PBR_Map_Edit = PBR_MAP_ENVIRONMENT;
     m_HDRI_Edit = HDRI_EARLY_EVE_WARM_SKY;
     m_HDRI_Edit_Prev = -1;
-
-    m_ParticleSettingsEdit.textureName      = "particle_atlas";
-    m_ParticleSettingsEdit.numRows          = 4;
-    m_ParticleSettingsEdit.PPS              = 40;
-    m_ParticleSettingsEdit.direction        = glm::vec3(0.0f, 1.0f, 0.0f);
-    m_ParticleSettingsEdit.intensity        = 4.0f;
-    m_ParticleSettingsEdit.diameter         = 0.2f;
-    m_ParticleSettingsEdit.gravityComplient = 0.2f;
-    m_ParticleSettingsEdit.lifeLength       = 2.0f;
-    m_ParticleSettingsEdit.instanced        = true;
-
-    m_ParticleSettingsPrev = m_ParticleSettingsEdit;
-    m_ParticleSettingsPrev.textureName = "none";
-
-    m_ParticleSystemPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-    m_ParticleSystemScale = glm::vec3(0.0f, 0.0f, 0.0f);
 
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
@@ -543,6 +528,25 @@ void SceneEditor::SetupModels()
 
     // m_GlassShaderModel = new Model("Models/Old_Stove/udmheheqx_LOD0.fbx");
     // models.insert(std::make_pair("glass", m_GlassShaderModel));
+}
+
+void SceneEditor::SetupParticles()
+{
+    m_ParticleSettingsEdit.textureName = "particle_atlas";
+    m_ParticleSettingsEdit.numRows = 4;
+    m_ParticleSettingsEdit.PPS = 40;
+    m_ParticleSettingsEdit.direction = glm::vec3(0.0f, 1.0f, 0.0f);
+    m_ParticleSettingsEdit.intensity = 4.0f;
+    m_ParticleSettingsEdit.diameter = 0.2f;
+    m_ParticleSettingsEdit.gravityComplient = 0.2f;
+    m_ParticleSettingsEdit.lifeLength = 2.0f;
+    m_ParticleSettingsEdit.instanced = true;
+
+    m_ParticleSettingsPrev = m_ParticleSettingsEdit;
+    m_ParticleSettingsPrev.textureName = "none";
+
+    m_ParticleSystemPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_ParticleSystemScale = glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
 void SceneEditor::SetGeometry()
@@ -961,6 +965,23 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
         }
     }
     ImGui::End();
+
+    ImGui::Begin("Help");
+    {
+        if (ImGui::CollapsingHeader("Show Details"))
+        {
+            ImGui::Text("* Add Mesh or Model: Left CTRL + Left Mouse Button");
+            ImGui::Text("* Camera Rotation: Right Mouse Button");
+            ImGui::Text("* Camera Movement: W) forward, A) left, S) back, D) right, Q) down, E) up");
+            ImGui::Text("* Fast Movement: Left SHIFT + W|A|S|D|Q|E");
+            ImGui::Text("* Enable Gizmo: TAB + Left Mouse Button");
+            ImGui::Text("* Toggle Gizmo Modes: 1) Translate, 2) Scale, 3) Rotate, 4) Disable");
+            ImGui::Text("* Scene Save: Left CTRL + S");
+            ImGui::Text("* Scene Reset: Left CTRL + R");
+            ImGui::Text("* Scene Load: Left CTRL + L");
+            ImGui::Text("* Toggle Wireframe Mode: R");
+        }
+    }
 
     ImGui::Begin("Renderer");
     {

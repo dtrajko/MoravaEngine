@@ -145,6 +145,7 @@ private:
 	virtual void SetTextureSlots();
 	virtual void SetupMaterials();
 	virtual void SetupMeshes();
+	virtual void SetupParticles();
 	virtual void SetupModels() = 0;
 	virtual void SetSkybox() = 0;
 

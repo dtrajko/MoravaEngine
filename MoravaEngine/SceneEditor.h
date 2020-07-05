@@ -57,6 +57,7 @@ private:
 	virtual void SetupMaterials() override;
 	virtual void SetupMeshes()    override;
 	virtual void SetupModels()    override;
+	virtual void SetupParticles() override;
 	virtual void SetSkybox()      override;
 	void AddLightsToSceneObjects();
 

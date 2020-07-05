@@ -170,6 +170,10 @@ void Scene::SetupMeshes()
 {
 }
 
+void Scene::SetupParticles()
+{
+}
+
 void Scene::SetTextures()
 {
 	textures.insert(std::make_pair("normalMapDefault", TextureLoader::Get()->GetTexture("Textures/normal_map_default.png")));
