@@ -43,7 +43,6 @@
 #include "RendererEditor.h"
 
 
-
 // Window dimensions
 const char* windowTitle = "3D Graphics Engine (C++ / OpenGL)";
 const int WIDTH = 1280;

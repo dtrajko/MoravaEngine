@@ -28,6 +28,9 @@ SceneParticles::SceneParticles()
     // Initialize the PBR/IBL Material Workflow component
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
     m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
+
+    m_ShaderFBScene = new Shader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
+    printf("SceneParticles: m_ShaderFBScene compiled [programID=%d]\n", m_ShaderFBScene->GetProgramID());
 }
 
 void SceneParticles::SetSkybox()
@@ -101,17 +104,15 @@ void SceneParticles::UpdateImGui(float timestep, Window& mainWindow)
 void SceneParticles::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
-    Shader* shaderFBScene = shaders["framebuffers_scene"];
-
-    shaderFBScene->Bind();
-    shaderFBScene->setMat4("projection", projectionMatrix);
-    shaderFBScene->setMat4("view", m_Camera->CalculateViewMatrix());
+    m_ShaderFBScene->Bind();
+    m_ShaderFBScene->setMat4("projection", projectionMatrix);
+    m_ShaderFBScene->setMat4("view", m_Camera->CalculateViewMatrix());
 
     textures["water"]->Bind(0);
-    shaderFBScene->setInt("texture1", 0);
+    m_ShaderFBScene->setInt("texture1", 0);
 
     // Render Particles
-    m_ParticleSystem.OnRender(m_Camera, shaderFBScene);
+    m_ParticleSystem.OnRender(m_Camera, m_ShaderFBScene);
 
     m_Grid->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
     m_PivotScene->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
@@ -135,7 +136,6 @@ void SceneParticles::Render(Window& mainWindow, glm::mat4 projectionMatrix, std:
     }
     /* End backgroundShader */
 }
-
 
 SceneParticles::~SceneParticles()
 {

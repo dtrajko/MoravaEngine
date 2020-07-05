@@ -37,4 +37,6 @@ private:
 
 	Grid* m_Grid;
 	Pivot* m_PivotScene;
+
+	Shader* m_ShaderFBScene;
 };
