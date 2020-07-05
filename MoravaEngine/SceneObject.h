@@ -10,6 +10,7 @@
 
 #include <string>
 
+
 // reserved ID range for meshes 0-999
 const int MESH_TYPE_CUBE     =  0;
 const int MESH_TYPE_PYRAMID  =  1;
@@ -35,12 +36,15 @@ const int MODEL_CERBERUS       = 1007;
 const int MODEL_PINE           = 1008;
 const int MODEL_BOULDER        = 1009;
 
+// Particle systems start at 2000
+const int PARTICLE_SYSTEM      = 2000;
+
 
 class SceneObject
 {
 public:
 	SceneObject();
-	void Render();
+	virtual void Render();
 	~SceneObject();
 
 public:

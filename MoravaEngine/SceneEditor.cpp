@@ -1086,6 +1086,10 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::RadioButton("Pine",           &m_CurrentObjectTypeID, MODEL_PINE);
             ImGui::RadioButton("Boulder",        &m_CurrentObjectTypeID, MODEL_BOULDER);
         }
+        if (ImGui::CollapsingHeader("Add Particle System"))
+        {
+            ImGui::RadioButton("Particle System", &m_CurrentObjectTypeID, PARTICLE_SYSTEM);
+        }
     }
     ImGui::End();
 
@@ -1412,6 +1416,11 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
 
+    UpdateParticleSystems();
+}
+
+void SceneEditor::UpdateParticleSystems()
+{
     // Re-generate Particle System
     if (m_ParticleSettingsEdit != m_ParticleSettingsPrev) {
         GenerateParticleSystem();
@@ -1534,6 +1543,8 @@ void SceneEditor::AddSceneObject()
 
     Mesh* mesh = nullptr;
     Model* model = nullptr;
+    SceneObjectParticleSystem* particle_system = nullptr;
+
     std::string modelName = "";
     std::string objectType = "";
     std::string materialName = "";
@@ -1589,7 +1600,7 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(1.0f, 1.0f, 1.0f);
         }
     }
-    else if (m_CurrentObjectTypeID >= 1000) { // Model - ID range 1000+
+    else if (m_CurrentObjectTypeID >= 1000 && m_CurrentObjectTypeID < 2000) { // Model - ID range 1000 - 2000
         model = AddNewModel(m_CurrentObjectTypeID, glm::vec3(1.0f));
         objectType = "model";
         if (m_CurrentObjectTypeID == MODEL_STONE_CARVED) {
@@ -1673,21 +1684,47 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(10.0f, 20.0f, 10.0f);
         }
     }
+    else if (m_CurrentObjectTypeID >= 2000) { // Model - ID range 2000+
+        objectType = "particle_system";
+        if (m_CurrentObjectTypeID == PARTICLE_SYSTEM) {
+            // TODO - needed in case of multiple types of particle systems
+        }
+    }
 
-    // Add Scene Object here
-    SceneObject* sceneObject = CreateNewSceneObject();
-    sceneObject->name = modelName;
-    sceneObject->m_Type = objectType;
-    sceneObject->position = position;
-    sceneObject->rotation = glm::quat(rotation * toRadians);
-    sceneObject->scale = scale;
-    sceneObject->mesh = mesh;
-    sceneObject->m_TypeID = m_CurrentObjectTypeID;
-    sceneObject->model = model;
-    sceneObject->materialName = materialName;
-    sceneObject->positionAABB = positionAABB;
-    sceneObject->scaleAABB = scaleAABB;
-    sceneObject->AABB = new AABB(positionAABB, glm::vec3(0.0f), scaleAABB);
+    SceneObject* sceneObject;
+    if (objectType == "mesh" || objectType == "model")
+    {
+        // Add Scene Object here
+        sceneObject = CreateNewSceneObject();
+        sceneObject->name = modelName;
+        sceneObject->m_Type = objectType;
+        sceneObject->position = position;
+        sceneObject->rotation = glm::quat(rotation * toRadians);
+        sceneObject->scale = scale;
+        sceneObject->mesh = mesh;
+        sceneObject->m_TypeID = m_CurrentObjectTypeID;
+        sceneObject->model = model;
+        sceneObject->materialName = materialName;
+        sceneObject->positionAABB = positionAABB;
+        sceneObject->scaleAABB = scaleAABB;
+        sceneObject->AABB = new AABB(positionAABB, glm::vec3(0.0f), scaleAABB);
+    }
+    else if (objectType == "particle_system")
+    {
+        sceneObject = AddNewSceneObjectParticleSystem(m_CurrentObjectTypeID, glm::vec3(1.0f));
+        sceneObject->name = "particle_system";
+        sceneObject->m_Type = "particle_system";
+        sceneObject->position = position;
+        sceneObject->rotation = glm::quat(rotation * toRadians);
+        sceneObject->scale = scale;
+        sceneObject->mesh = nullptr;
+        sceneObject->m_TypeID = m_CurrentObjectTypeID;
+        sceneObject->model = nullptr;
+        sceneObject->materialName = materialName;
+        sceneObject->positionAABB = positionAABB;
+        sceneObject->scaleAABB = scaleAABB;
+        sceneObject->AABB = new AABB(positionAABB, glm::vec3(0.0f), scaleAABB);
+    }
 
     // printf("SceneEditor::AddSceneObject sceneObject->AABB->m_Scale [ %.2ff %.2ff %.2ff ]\n",
     //     sceneObject->AABB->m_Scale.x, sceneObject->AABB->m_Scale.y, sceneObject->AABB->m_Scale.z);
@@ -1737,7 +1774,7 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
     newSceneObject->isSelected      = true;
     newSceneObject->AABB            = new AABB(newSceneObject->positionAABB, newSceneObject->rotation, newSceneObject->scaleAABB);
     newSceneObject->pivot           = new Pivot(newSceneObject->position, newSceneObject->scale);
-    newSceneObject->m_Type      = oldSceneObject->m_Type;
+    newSceneObject->m_Type          = oldSceneObject->m_Type;
     newSceneObject->mesh            = mesh;
     newSceneObject->m_TypeID        = m_CurrentObjectTypeID;
     newSceneObject->model           = model;
@@ -1819,6 +1856,13 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
         break;
     }
     return model;
+}
+
+SceneObjectParticleSystem* SceneEditor::AddNewSceneObjectParticleSystem(int objectTypeID, glm::vec3 scale)
+{
+    SceneObjectParticleSystem* particle_system = new SceneObjectParticleSystem();
+    // TODO
+    return particle_system;
 }
 
 void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject)
@@ -2355,7 +2399,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
     if (sceneSettings.enableParticles && (passType == "main" || passType == "water_reflect")) {
         Profiler profiler("SE::ParticleMaster::Render");
         ParticleMaster::Render(m_Camera->CalculateViewMatrix());
-        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));        
+        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
 }
 

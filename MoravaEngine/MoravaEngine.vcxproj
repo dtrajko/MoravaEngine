@@ -183,6 +183,7 @@
     <ClCompile Include="PerlinNoise.cpp" />
     <ClCompile Include="QuadInstanced.cpp" />
     <ClCompile Include="SceneObject.cpp" />
+    <ClCompile Include="SceneObjectParticleSystem.cpp" />
     <ClCompile Include="ShaderBackground.cpp" />
     <ClCompile Include="ShaderBasic.cpp" />
     <ClCompile Include="ShaderEditorObjects.cpp" />
@@ -305,12 +306,14 @@
     <ClInclude Include="ParticleMaster.h" />
     <ClInclude Include="ParticleRenderer.h" />
     <ClInclude Include="ParticleRendererInstanced.h" />
+    <ClInclude Include="ParticleSettings.h" />
     <ClInclude Include="ParticleSystemThinMatrix.h" />
     <ClInclude Include="ParticleTexture.h" />
     <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="QuadInstanced.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SceneObject.h" />
+    <ClInclude Include="SceneObjectParticleSystem.h" />
     <ClInclude Include="ShaderBackground.h" />
     <ClInclude Include="ShaderBasic.h" />
     <ClInclude Include="ShaderEditorObjects.h" />

@@ -11,7 +11,7 @@
 #include "TextureCubeMap.h"
 #include "MaterialWorkflowPBR.h"
 #include "SkinnedMesh.h"
-#include "ParticleSystemThinMatrix.h"
+#include "SceneObjectParticleSystem.h"
 
 #include <future>
 #include <set>
@@ -47,6 +47,7 @@ class SceneEditor : public Scene
 public:
 	SceneEditor();
 	virtual void Update(float timestep, Window& mainWindow) override;
+	void UpdateParticleSystems();
 	virtual void UpdateImGui(float timestep, Window& mainWindow) override;
 	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
@@ -80,6 +81,7 @@ private:
 	void ResetScene();
 	Mesh* CreateNewMesh(int meshTypeID, glm::vec3 scale);
 	Model* AddNewModel(int modelID, glm::vec3 scale);
+	SceneObjectParticleSystem* AddNewSceneObjectParticleSystem(int objectTypeID, glm::vec3 scale);
 	static void LoadTexture(std::map<std::string, Texture*>& textures, std::string name, std::string filePath);
 	static void LoadTextureAsync(std::map<std::string, Texture*>& textures, std::string name, std::string filePath);
 	static void LoadMaterial(std::map<std::string, Material*>& materials, std::string name, TextureInfo textureInfo);
@@ -130,33 +132,6 @@ private:
 	int m_PBR_Map_Edit;
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;
-
-	struct ParticleSettings {
-		std::string textureName;
-		int numRows;
-		int PPS;
-		glm::vec3 direction;
-		float intensity;
-		float gravityComplient;
-		float lifeLength;
-		float diameter;
-		bool instanced;
-
-		inline bool operator!=(const ParticleSettings& other)
-		{
-			return textureName   != other.textureName      ||
-				numRows          != other.numRows          ||
-				PPS              != other.PPS              ||
-				direction.x      != other.direction.x      ||
-				direction.y      != other.direction.y      ||
-				direction.z      != other.direction.z      ||
-				intensity        != other.intensity        ||
-				gravityComplient != other.gravityComplient ||
-				lifeLength       != other.lifeLength       ||
-				diameter         != other.diameter         ||
-				instanced        != other.instanced;
-		}
-	};
 
 	ParticleSettings m_ParticleSettingsEdit;
 	ParticleSettings m_ParticleSettingsPrev;

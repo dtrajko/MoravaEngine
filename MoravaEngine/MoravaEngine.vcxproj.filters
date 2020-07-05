@@ -362,6 +362,9 @@
     <ClCompile Include="MapGenerator.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="SceneObjectParticleSystem.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -748,6 +751,12 @@
     </ClInclude>
     <ClInclude Include="MapGenerator.h">
       <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSettings.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneObjectParticleSystem.h">
+      <Filter>Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
