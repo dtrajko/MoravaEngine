@@ -86,13 +86,6 @@ int main()
 	mainWindow = Window(WIDTH, HEIGHT, windowTitle);
 	mainWindow.Initialize();
 
-	// Projection matrix
-	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
-		(float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
-		scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
-
-	RendererBasic::SetProjectionMatrix(projectionMatrix);
-
 	LOG_INFO("OpenGL Info:");
 	LOG_INFO("   Vendor: {0}",   glGetString(GL_VENDOR));
 	LOG_INFO("   Renderer: {0}", glGetString(GL_RENDERER));
@@ -159,6 +152,13 @@ int main()
 	default:
 		throw std::runtime_error("Scene and Renderer could not be loaded!");
 	}
+
+	// Projection matrix
+	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
+		(float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
+		Scene::GetSettings().nearPlane, Scene::GetSettings().farPlane);
+
+	RendererBasic::SetProjectionMatrix(projectionMatrix);
 
 	scene->SetCamera();
 	scene->SetLightManager();
