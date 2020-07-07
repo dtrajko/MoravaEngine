@@ -13,13 +13,13 @@ class SceneObjectParticleSystem : public SceneObject
 public:
 	SceneObjectParticleSystem();
 	SceneObjectParticleSystem(bool instancedRendering, int maxInstances);
-	void Update(bool enabled, glm::vec3 cameraPosition, std::map<std::string, float>* profiler_results);
-	virtual void Render() override;
-	void Render(glm::mat4 viewMatrix, std::map<std::string, float>* profiler_results);
 	~SceneObjectParticleSystem();
 
-private:
+	void Update(bool enabled, glm::vec3 cameraPosition, std::map<std::string, float>* profiler_results);
+	virtual void Render() override;
+	void Render(glm::mat4 viewMatrix);
 	void Regenerate();
+	inline ParticleMaster* GetMaster() { return m_Master; };
 
 private:
 	ParticleSettings m_Settings;

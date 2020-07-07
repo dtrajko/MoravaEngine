@@ -58,7 +58,6 @@ private:
 	virtual void SetupMaterials() override;
 	virtual void SetupMeshes()    override;
 	virtual void SetupModels()    override;
-	virtual void SetupParticles() override;
 	virtual void SetSkybox()      override;
 	void AddLightsToSceneObjects();
 
@@ -136,14 +135,7 @@ private:
 	ParticleSettings m_ParticleSettingsEdit;
 	ParticleSettings m_ParticleSettingsPrev;
 
-	// Particle System ThinMatrix
-	ParticleTexture* m_ParticleTexture;
-	ParticleSystemThinMatrix* m_ParticleSystem;
-	glm::vec3 m_ParticleSystemPosition;
-	glm::vec3 m_ParticleSystemScale;
-	AABB* m_ParticleSystemAABB;
-
-	ParticleMaster* m_ParticleMaster;
+	SceneObjectParticleSystem* m_SceneObjectParticleSystem;
 
 	int m_MaxInstances = 10000;
 

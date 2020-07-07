@@ -70,11 +70,9 @@ void SceneObjectParticleSystem::Render()
 {
 }
 
-void SceneObjectParticleSystem::Render(glm::mat4 viewMatrix, std::map<std::string, float>* profiler_results)
+void SceneObjectParticleSystem::Render(glm::mat4 viewMatrix)
 {
-    Profiler profiler("SE::ParticleMaster::Render");
     m_Master->Render(viewMatrix);
-    profiler_results->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 }
 
 SceneObjectParticleSystem::~SceneObjectParticleSystem()
@@ -82,6 +80,7 @@ SceneObjectParticleSystem::~SceneObjectParticleSystem()
     delete m_Texture;
     delete m_ParticleTexture;
     delete m_System;
+    delete m_Master;
 }
 
 void SceneObjectParticleSystem::Regenerate()

@@ -123,7 +123,6 @@ SceneEditor::SceneEditor()
     SetupMaterials();
     SetupMeshes();
     SetupModels();
-    SetupParticles();
     SetGeometry();
     SetLightManager();
     AddLightsToSceneObjects();
@@ -176,7 +175,7 @@ SceneEditor::SceneEditor()
 
     TextureLoader::Get()->Print();
 
-    m_ParticleMaster = new ParticleMaster(m_ParticleSettingsEdit.instanced, m_MaxInstances);
+    m_SceneObjectParticleSystem = new SceneObjectParticleSystem(m_ParticleSettingsEdit.instanced, m_MaxInstances);
 
     /* Begin Test */
     int width = 8;
@@ -528,25 +527,6 @@ void SceneEditor::SetupModels()
 
     // m_GlassShaderModel = new Model("Models/Old_Stove/udmheheqx_LOD0.fbx");
     // models.insert(std::make_pair("glass", m_GlassShaderModel));
-}
-
-void SceneEditor::SetupParticles()
-{
-    m_ParticleSettingsEdit.textureName = "particle_atlas";
-    m_ParticleSettingsEdit.numRows = 4;
-    m_ParticleSettingsEdit.PPS = 40;
-    m_ParticleSettingsEdit.direction = glm::vec3(0.0f, 1.0f, 0.0f);
-    m_ParticleSettingsEdit.intensity = 4.0f;
-    m_ParticleSettingsEdit.diameter = 0.2f;
-    m_ParticleSettingsEdit.gravityComplient = 0.2f;
-    m_ParticleSettingsEdit.lifeLength = 2.0f;
-    m_ParticleSettingsEdit.instanced = true;
-
-    m_ParticleSettingsPrev = m_ParticleSettingsEdit;
-    m_ParticleSettingsPrev.textureName = "none";
-
-    m_ParticleSystemPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-    m_ParticleSystemScale = glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
 void SceneEditor::SetGeometry()
@@ -917,8 +897,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
     {
         if (ImGui::CollapsingHeader("Particle System Settings"))
         {
-            ImGui::SliderFloat3("Origin Area Position", glm::value_ptr(m_ParticleSystemPosition), -20.0f, 20.0f);
-            ImGui::SliderFloat3("Origin Area Scale", glm::value_ptr(m_ParticleSystemScale), 0.0f, 20.0f);
+            ImGui::SliderFloat3("Origin Area Position", glm::value_ptr(m_SceneObjectParticleSystem->position), -20.0f, 20.0f);
+            ImGui::SliderFloat3("Origin Area Scale", glm::value_ptr(m_SceneObjectParticleSystem->scale), 0.0f, 20.0f);
 
             // Begin ParticleTextureName ImGui drop-down list
             std::vector<const char*> itemsTexture;
@@ -956,7 +936,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
 
             ImGui::Separator();
             ImGui::Checkbox("Instanced Rendering", &m_ParticleSettingsEdit.instanced);
-            std::map<int, int> counts = m_ParticleMaster->GetCounts();
+            std::map<int, int> counts = m_SceneObjectParticleSystem->GetMaster()->GetCounts();
             for (auto it = counts.begin(); it != counts.end(); it++) {
                 ImGui::Separator();
                 std::string textLine = "TextureID: " + std::to_string(it->first) + " Particles: " + std::to_string(it->second);
@@ -1421,23 +1401,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
 void SceneEditor::UpdateParticleSystems()
 {
-    // Re-generate Particle System
-    if (m_ParticleSettingsEdit != m_ParticleSettingsPrev) {
-        GenerateParticleSystem();
-        m_ParticleSettingsPrev = m_ParticleSettingsEdit;
-    }
-
-    if (sceneSettings.enableParticles && m_ParticleSystem != nullptr) {
-        Profiler profiler("SE::ParticleSystemTM::GeneratePatricles");
-        m_ParticleSystem->GenerateParticles(m_ParticleSystemPosition, m_ParticleSystemScale, m_ParticleMaster);
-        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
-    }
-
-    {
-        Profiler profiler("SE::ParticleMaster::Update");
-        m_ParticleMaster->Update(m_Camera->GetPosition());
-        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
-    }
+    m_SceneObjectParticleSystem->Update(sceneSettings.enableParticles, m_Camera->GetPosition(), GetProfilerResults());
 }
 
 void SceneEditor::GenerateParticleSystem()
@@ -1446,17 +1410,9 @@ void SceneEditor::GenerateParticleSystem()
     if (m_CurrentTimestamp - m_ParticlesGenerate.lastTime < m_ParticlesGenerate.cooldown) return;
     m_ParticlesGenerate.lastTime = m_CurrentTimestamp;
 
-
     LOG_INFO("Particle Settings changed, rebuilding the Particle System...");
 
-    delete m_ParticleMaster;
-    m_ParticleMaster = new ParticleMaster(m_ParticleSettingsEdit.instanced, m_MaxInstances);
-
-    Texture* texture = HotLoadTexture(m_ParticleSettingsEdit.textureName);
-    m_ParticleTexture = new ParticleTexture(texture->GetID(), m_ParticleSettingsEdit.numRows);
-    m_ParticleSystem = new ParticleSystemThinMatrix(m_ParticleTexture, m_ParticleSettingsEdit.PPS,
-        m_ParticleSettingsEdit.direction, m_ParticleSettingsEdit.intensity, m_ParticleSettingsEdit.gravityComplient,
-        m_ParticleSettingsEdit.lifeLength, m_ParticleSettingsEdit.diameter);
+    m_SceneObjectParticleSystem->Regenerate();
 }
 
 Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale)
@@ -2396,9 +2352,10 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         RenderSkybox(shaders["background"]);
     }
 
-    if (sceneSettings.enableParticles && (passType == "main" || passType == "water_reflect")) {
-        Profiler profiler("SE::ParticleMaster::Render");
-        m_ParticleMaster->Render(m_Camera->CalculateViewMatrix());
+    if (sceneSettings.enableParticles && (passType == "main" || passType == "water_reflect"))
+    {
+        Profiler profiler("SE::SOPS::Render");
+        m_SceneObjectParticleSystem->Render(m_Camera->CalculateViewMatrix());
         GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
 }
@@ -2430,7 +2387,7 @@ SceneEditor::~SceneEditor()
 {
     SaveScene();
     CleanupGeometry();
-    delete m_ParticleMaster;
+    delete m_SceneObjectParticleSystem;
     delete m_PivotScene;
     delete m_Grid;
     delete m_Raycast;
