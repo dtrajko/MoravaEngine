@@ -2,6 +2,7 @@
 
 #include "ParticleTexture.h"
 #include "AABB.h"
+#include "ParticleMaster.h"
 
 #include <glm/glm.hpp>
 
@@ -11,8 +12,8 @@ class ParticleSystemThinMatrix
 public:
 	ParticleSystemThinMatrix();
 	ParticleSystemThinMatrix(ParticleTexture* texture, int PPS, glm::vec3 direction, float intensity, float gravityComplient, float lifeLength, float diameter);
-	void GeneratePatricles(glm::vec3 position, glm::vec3 scale);
-	void EmitParticle(glm::vec3 position);
+	void GenerateParticles(glm::vec3 position, glm::vec3 scale, ParticleMaster* particleMaster);
+	void EmitParticle(glm::vec3 position, ParticleMaster* particleMaster);
 	glm::vec3 CalculateRandomAreaPosition(glm::vec3 position, glm::vec3 scale);
 	~ParticleSystemThinMatrix();
 

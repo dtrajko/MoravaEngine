@@ -5,12 +5,14 @@
 #include "ParticleSettings.h"
 #include "ParticleTexture.h"
 #include "ParticleSystemThinMatrix.h"
+#include "ParticleMaster.h"
 
 
 class SceneObjectParticleSystem : public SceneObject
 {
 public:
 	SceneObjectParticleSystem();
+	SceneObjectParticleSystem(bool instancedRendering, int maxInstances);
 	void Update(bool enabled, glm::vec3 cameraPosition, std::map<std::string, float>* profiler_results);
 	virtual void Render() override;
 	void Render(glm::mat4 viewMatrix, std::map<std::string, float>* profiler_results);
@@ -27,8 +29,9 @@ private:
 	Texture* m_Texture;
 	ParticleTexture* m_ParticleTexture;
 	ParticleSystemThinMatrix* m_System;
+	ParticleMaster* m_Master;
 
 	EventCooldown m_Regenerate;
 
-	static int m_MaxInstances;
+	int m_MaxInstances;
 };

@@ -6,20 +6,22 @@
 
 #include <map>
 
+class Particle;
+class ParticleRenderer;
 
 class ParticleMaster
 {
 public:
 	ParticleMaster();
-	static void Init(bool instancedRendering, int maxInstances);
-	static void Update(glm::vec3 cameraPosition);
-	static void Render(glm::mat4 viewMatrix);
-	static void addParticle(Particle* particle);
-	static std::map<int, int> GetCounts();
-	static void CleanUp();
-	~ParticleMaster();
+	ParticleMaster(bool instancedRendering, int maxInstances);
+	virtual ~ParticleMaster();
+
+	void Update(glm::vec3 cameraPosition);
+	void Render(glm::mat4 viewMatrix);
+	void addParticle(Particle* particle);
+	std::map<int, int> GetCounts();
 
 private:
-	static std::map<ParticleTexture*, std::vector<Particle*>*> m_Particles;
-	static ParticleRenderer* m_Renderer;
+	std::map<ParticleTexture*, std::vector<Particle*>*>* m_Particles;
+	ParticleRenderer* m_Renderer;
 };

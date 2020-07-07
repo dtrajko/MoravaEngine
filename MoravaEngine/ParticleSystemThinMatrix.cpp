@@ -20,7 +20,7 @@ ParticleSystemThinMatrix::ParticleSystemThinMatrix(ParticleTexture* texture, int
 	m_LifeLength = lifeLength;
 }
 
-void ParticleSystemThinMatrix::GeneratePatricles(glm::vec3 position, glm::vec3 scale)
+void ParticleSystemThinMatrix::GenerateParticles(glm::vec3 position, glm::vec3 scale, ParticleMaster* particleMaster)
 {
 	glm::vec3 systemPosition = position;
 
@@ -32,17 +32,17 @@ void ParticleSystemThinMatrix::GeneratePatricles(glm::vec3 position, glm::vec3 s
 
 	for (int i = 0; i < count; i++) {
 		systemPosition = CalculateRandomAreaPosition(position, scale);
-		EmitParticle(systemPosition);
+		EmitParticle(systemPosition, particleMaster);
 	}
 
 	float rand = (float)std::rand() / (float)RAND_MAX;
 	if (rand < partialParticle) {
 		systemPosition = CalculateRandomAreaPosition(position, scale);
-		EmitParticle(systemPosition);
+		EmitParticle(systemPosition, particleMaster);
 	}
 }
 
-void ParticleSystemThinMatrix::EmitParticle(glm::vec3 position)
+void ParticleSystemThinMatrix::EmitParticle(glm::vec3 position, ParticleMaster* particleMaster)
 {
 	float diameterMultiplier = 5.0f;
 	float randNormX = ((float)std::rand() / (float)RAND_MAX) * 2.0f - 1.0f;
@@ -55,7 +55,7 @@ void ParticleSystemThinMatrix::EmitParticle(glm::vec3 position)
 	float dirY = randY * m_Diameter * diameterMultiplier;
 	float dirZ = randZ * m_Diameter * diameterMultiplier;
 	glm::vec3 velocity = glm::vec3(dirX, dirY, dirZ);
-	new Particle(m_Texture, position, glm::vec3(0.0f), glm::vec3(1.0f), velocity, m_GravityComplient, m_LifeLength);
+	new Particle(m_Texture, position, glm::vec3(0.0f), glm::vec3(1.0f), velocity, m_GravityComplient, m_LifeLength, particleMaster);
 }
 
 glm::vec3 ParticleSystemThinMatrix::CalculateRandomAreaPosition(glm::vec3 position, glm::vec3 scale)
@@ -71,9 +71,6 @@ glm::vec3 ParticleSystemThinMatrix::CalculateRandomAreaPosition(glm::vec3 positi
 	glm::vec3 randomScale = scale * randVec;
 
 	randomAreaPosition = randomPosition + randomScale;
-
-	// printf("PSTM: randomScale [ %.2ff %.2ff %.2ff ] randomAreaPosition [ %.2ff %.2ff %.2ff ]\n",
-	// 	randomScale.x, randomScale.y, randomScale.z, randomAreaPosition.x, randomAreaPosition.y, randomAreaPosition.z);
 
 	return randomAreaPosition;
 }

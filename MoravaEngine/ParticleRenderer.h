@@ -6,6 +6,8 @@
 #include "Camera.h"
 
 
+class Particle;
+
 class ParticleRenderer
 {
 public:

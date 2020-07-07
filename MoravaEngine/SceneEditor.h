@@ -143,6 +143,8 @@ private:
 	glm::vec3 m_ParticleSystemScale;
 	AABB* m_ParticleSystemAABB;
 
+	ParticleMaster* m_ParticleMaster;
+
 	int m_MaxInstances = 10000;
 
 	std::vector<std::string> m_ActiveRenderPasses;

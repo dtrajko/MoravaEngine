@@ -3,7 +3,6 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "Timer.h"
-#include "ParticleMaster.h"
 
 
 Particle::Particle()
@@ -25,7 +24,8 @@ Particle::Particle()
 	m_WorldGravity = 0.0f;
 }
 
-Particle::Particle(ParticleTexture* texture, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 velocity, float gravity, float lifeLength)
+Particle::Particle(ParticleTexture* texture, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, 
+	glm::vec3 velocity, float gravity, float lifeLength, ParticleMaster* particleMaster)
 	: Particle()
 {
 	m_Texture = texture;
@@ -38,7 +38,7 @@ Particle::Particle(ParticleTexture* texture, glm::vec3 position, glm::vec3 rotat
 	m_Gravity = gravity;
 	m_LifeLength = lifeLength;
 
-	ParticleMaster::addParticle(this);
+	particleMaster->addParticle(this);
 }
 
 bool Particle::Update(glm::vec3 cameraPosition)

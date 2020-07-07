@@ -5,9 +5,23 @@
 #include "Log.h"
 
 
-int SceneObjectParticleSystem::m_MaxInstances = 10000;
-
 SceneObjectParticleSystem::SceneObjectParticleSystem()
+{
+    m_Settings = {};
+
+    m_SettingsPrev = m_Settings;
+    m_SettingsPrev.textureName = "none";
+
+    position = glm::vec3(0.0f, 0.0f, 0.0f);
+    scale = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    pivot = new Pivot(position, scale);
+
+    m_MaxInstances = 10000;
+    m_Master = new ParticleMaster();
+}
+
+SceneObjectParticleSystem::SceneObjectParticleSystem(bool instancedRendering, int maxInstances)
 {
     m_Settings.textureName = "particle_atlas";
     m_Settings.numRows = 4;
@@ -26,6 +40,9 @@ SceneObjectParticleSystem::SceneObjectParticleSystem()
     scale = glm::vec3(0.0f, 0.0f, 0.0f);
 
     pivot = new Pivot(position, scale);
+
+    m_MaxInstances = maxInstances;
+    m_Master = new ParticleMaster(instancedRendering, maxInstances);
 }
 
 void SceneObjectParticleSystem::Update(bool enabled, glm::vec3 cameraPosition, std::map<std::string, float>* profiler_results)
@@ -38,13 +55,13 @@ void SceneObjectParticleSystem::Update(bool enabled, glm::vec3 cameraPosition, s
 
     if (enabled && m_System != nullptr) {
         Profiler profiler("SE::ParticleSystemTM::GeneratePatricles");
-        m_System->GeneratePatricles(position, scale);
+        m_System->GenerateParticles(position, scale, m_Master);
         profiler_results->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
 
     {
         Profiler profiler("SE::ParticleMaster::Update");
-        ParticleMaster::Update(cameraPosition);
+        m_Master->Update(cameraPosition);
         profiler_results->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
 }
@@ -56,7 +73,7 @@ void SceneObjectParticleSystem::Render()
 void SceneObjectParticleSystem::Render(glm::mat4 viewMatrix, std::map<std::string, float>* profiler_results)
 {
     Profiler profiler("SE::ParticleMaster::Render");
-    ParticleMaster::Render(viewMatrix);
+    m_Master->Render(viewMatrix);
     profiler_results->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 }
 
@@ -76,8 +93,8 @@ void SceneObjectParticleSystem::Regenerate()
 
     LOG_INFO("Particle Settings changed, rebuilding the Particle System...");
 
-    ParticleMaster::CleanUp();
-    ParticleMaster::Init(m_Settings.instanced, m_MaxInstances);
+    delete m_Master;
+    m_Master = new ParticleMaster(m_Settings.instanced, m_MaxInstances);
 
     Texture* m_Texture = new Texture(m_Settings.textureName.c_str());
     // TODO: Texture* texture = HotLoadTexture(m_Settings.textureName);

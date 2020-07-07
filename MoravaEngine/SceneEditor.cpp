@@ -176,7 +176,7 @@ SceneEditor::SceneEditor()
 
     TextureLoader::Get()->Print();
 
-    ParticleMaster::Init(m_ParticleSettingsEdit.instanced, m_MaxInstances);
+    m_ParticleMaster = new ParticleMaster(m_ParticleSettingsEdit.instanced, m_MaxInstances);
 
     /* Begin Test */
     int width = 8;
@@ -956,7 +956,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
 
             ImGui::Separator();
             ImGui::Checkbox("Instanced Rendering", &m_ParticleSettingsEdit.instanced);
-            std::map<int, int> counts = ParticleMaster::GetCounts();
+            std::map<int, int> counts = m_ParticleMaster->GetCounts();
             for (auto it = counts.begin(); it != counts.end(); it++) {
                 ImGui::Separator();
                 std::string textLine = "TextureID: " + std::to_string(it->first) + " Particles: " + std::to_string(it->second);
@@ -1429,13 +1429,13 @@ void SceneEditor::UpdateParticleSystems()
 
     if (sceneSettings.enableParticles && m_ParticleSystem != nullptr) {
         Profiler profiler("SE::ParticleSystemTM::GeneratePatricles");
-        m_ParticleSystem->GeneratePatricles(m_ParticleSystemPosition, m_ParticleSystemScale);
+        m_ParticleSystem->GenerateParticles(m_ParticleSystemPosition, m_ParticleSystemScale, m_ParticleMaster);
         GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
 
     {
         Profiler profiler("SE::ParticleMaster::Update");
-        ParticleMaster::Update(m_Camera->GetPosition());
+        m_ParticleMaster->Update(m_Camera->GetPosition());
         GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
 }
@@ -1449,8 +1449,8 @@ void SceneEditor::GenerateParticleSystem()
 
     LOG_INFO("Particle Settings changed, rebuilding the Particle System...");
 
-    ParticleMaster::CleanUp();
-    ParticleMaster::Init(m_ParticleSettingsEdit.instanced, m_MaxInstances);
+    delete m_ParticleMaster;
+    m_ParticleMaster = new ParticleMaster(m_ParticleSettingsEdit.instanced, m_MaxInstances);
 
     Texture* texture = HotLoadTexture(m_ParticleSettingsEdit.textureName);
     m_ParticleTexture = new ParticleTexture(texture->GetID(), m_ParticleSettingsEdit.numRows);
@@ -2398,7 +2398,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 
     if (sceneSettings.enableParticles && (passType == "main" || passType == "water_reflect")) {
         Profiler profiler("SE::ParticleMaster::Render");
-        ParticleMaster::Render(m_Camera->CalculateViewMatrix());
+        m_ParticleMaster->Render(m_Camera->CalculateViewMatrix());
         GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
 }
@@ -2429,15 +2429,11 @@ void SceneEditor::CleanupGeometry()
 SceneEditor::~SceneEditor()
 {
     SaveScene();
-
     CleanupGeometry();
-
-    ParticleMaster::CleanUp();
-
+    delete m_ParticleMaster;
     delete m_PivotScene;
     delete m_Grid;
     delete m_Raycast;
     delete m_Gizmo;
-
     ResetScene();
 }

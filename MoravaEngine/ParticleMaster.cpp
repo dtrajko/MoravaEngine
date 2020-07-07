@@ -4,16 +4,15 @@
 #include "ParticleRendererInstanced.h"
 
 
-std::map<ParticleTexture*, std::vector<Particle*>*> ParticleMaster::m_Particles;
-ParticleRenderer* ParticleMaster::m_Renderer;
-
 ParticleMaster::ParticleMaster()
 {
+	m_Renderer = nullptr;
+	m_Particles = new std::map<ParticleTexture*, std::vector<Particle*>*>();
 }
 
-void ParticleMaster::Init(bool instancedRendering, int maxInstances)
+ParticleMaster::ParticleMaster(bool instancedRendering, int maxInstances)
 {
-	m_Particles = std::map<ParticleTexture*, std::vector<Particle*>*>();
+	m_Particles = new std::map<ParticleTexture*, std::vector<Particle*>*>();
 	if (instancedRendering)
 		m_Renderer = new ParticleRendererInstanced(maxInstances);
 	else
@@ -24,7 +23,7 @@ void ParticleMaster::Update(glm::vec3 cameraPosition)
 {
 	bool stillAlive = true;
 	std::map<ParticleTexture*, std::vector<Particle*>*>::const_iterator it_map;
-	for (it_map = m_Particles.cbegin(); it_map != m_Particles.cend();)
+	for (it_map = m_Particles->cbegin(); it_map != m_Particles->cend();)
 	{
 		std::vector<Particle*>* particleVector = it_map->second;
 		std::vector<Particle*>::const_iterator it_vec;
@@ -40,7 +39,7 @@ void ParticleMaster::Update(glm::vec3 cameraPosition)
 		}
 
 		if (particleVector->size() == 0) {
-			it_map = m_Particles.erase(it_map++);
+			it_map = m_Particles->erase(it_map++);
 		}
 		else {
 			++it_map;
@@ -50,8 +49,7 @@ void ParticleMaster::Update(glm::vec3 cameraPosition)
 
 void ParticleMaster::Render(glm::mat4 viewMatrix)
 {
-	m_Renderer->Render(&m_Particles, viewMatrix);
-	// printf("ParticleMaster::Render particlesMap.size: %zu particlesVector.size: %zu\n", m_Particles.size(), m_Particles.begin()->second->size());
+	m_Renderer->Render(m_Particles, viewMatrix);
 }
 
 void ParticleMaster::addParticle(Particle* particle)
@@ -59,35 +57,30 @@ void ParticleMaster::addParticle(Particle* particle)
 	std::vector<Particle*>* particleVec;
 	std::map<ParticleTexture*, std::vector<Particle*>*>::iterator particleIt;
 
-	particleIt = m_Particles.find(particle->GetTexture());
+	particleIt = m_Particles->find(particle->GetTexture());
 
-	if (particleIt != m_Particles.end()) {
+	if (particleIt != m_Particles->end()) {
 		particleVec = particleIt->second;
 	}
 	else {
 		particleVec = new std::vector<Particle*>();
-		m_Particles.insert(std::make_pair(particle->GetTexture(), particleVec));
+		m_Particles->insert(std::make_pair(particle->GetTexture(), particleVec));
 	}
 
 	particleVec->push_back(particle);
-
-	// printf("ParticleMaster::addParticle particleVec = %zu\n", particleVec->size());
 }
 
 std::map<int, int> ParticleMaster::GetCounts()
 {
 	std::map<int, int> counts = std::map<int, int>();
-	for (auto it = m_Particles.begin(); it != m_Particles.end(); it++) {
+	for (auto it = m_Particles->begin(); it != m_Particles->end(); it++) {
 		counts.insert(std::make_pair(it->first->GetTextureID(), it->second->size()));
 	}
 	return counts;
 }
 
-void ParticleMaster::CleanUp()
-{
-	delete m_Renderer;
-}
-
 ParticleMaster::~ParticleMaster()
 {
+	delete m_Particles;
+	delete m_Renderer;
 }
