@@ -17,9 +17,11 @@ public:
 
 	void Update(bool enabled, std::map<std::string, float>* profiler_results);
 	virtual void Render() override;
-	void Regenerate();
 	inline ParticleMaster* GetMaster() { return m_Master; };
 	inline ParticleSettings* GetSettings() { return &m_Settings; };
+
+private:
+	void Regenerate();
 
 private:
 	ParticleSettings m_Settings;

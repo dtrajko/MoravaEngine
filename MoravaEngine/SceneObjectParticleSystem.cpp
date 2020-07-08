@@ -43,7 +43,7 @@ SceneObjectParticleSystem::SceneObjectParticleSystem(bool instancedRendering, in
 
     position = glm::vec3(0.0f);
     scale = glm::vec3(1.0f);
-    scaleAABB = glm::vec3(2.0f);
+    scaleAABB = glm::vec3(1.0f);
 
     pivot = new Pivot(position, scale);
 

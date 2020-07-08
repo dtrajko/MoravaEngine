@@ -45,9 +45,9 @@ void ParticleSystemThinMatrix::GenerateParticles(glm::vec3 position, glm::vec3 s
 void ParticleSystemThinMatrix::EmitParticle(glm::vec3 position, ParticleMaster* particleMaster)
 {
 	float diameterMultiplier = 5.0f;
-	float randNormX = ((float)std::rand() / (float)RAND_MAX) * 2.0f - 1.0f;
-	float randNormY = ((float)std::rand() / (float)RAND_MAX) * 2.0f - 1.0f;
-	float randNormZ = ((float)std::rand() / (float)RAND_MAX) * 2.0f - 1.0f;
+	float randNormX = ((float)std::rand() / (float)RAND_MAX) * 1.0f - 0.5f;
+	float randNormY = ((float)std::rand() / (float)RAND_MAX) * 1.0f - 0.5f;
+	float randNormZ = ((float)std::rand() / (float)RAND_MAX) * 1.0f - 0.5f;
 	float randX = randNormX + m_Direction.x * m_Intensity;
 	float randY = randNormY + m_Direction.y * m_Intensity;
 	float randZ = randNormZ + m_Direction.z * m_Intensity;
@@ -65,9 +65,9 @@ glm::vec3 ParticleSystemThinMatrix::CalculateRandomAreaPosition(glm::vec3 positi
 
 	// vector3 of random values -1 to 1
 	glm::vec3 randVec = glm::vec3(
-		((float)std::rand() / (float)RAND_MAX) * 2.0f - 1.0f,
-		((float)std::rand() / (float)RAND_MAX) * 2.0f - 1.0f,
-		((float)std::rand() / (float)RAND_MAX) * 2.0f - 1.0f);
+		((float)std::rand() / (float)RAND_MAX) * 1.0f - 0.5f,
+		((float)std::rand() / (float)RAND_MAX) * 1.0f - 0.5f,
+		((float)std::rand() / (float)RAND_MAX) * 1.0f - 0.5f);
 	glm::vec3 randomScale = scale * randVec;
 
 	randomAreaPosition = randomPosition + randomScale;

@@ -669,6 +669,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::Text("* Scene Reset: Left CTRL + R");
             ImGui::Text("* Scene Load: Left CTRL + L");
             ImGui::Text("* Toggle Wireframe Mode: R");
+            ImGui::Text("* Copy scene object: Left CTRL + C");
         }
     }
 
@@ -1347,7 +1348,6 @@ void SceneEditor::AddSceneObject()
     else if (m_CurrentObjectTypeID >= 2000) { // Model - ID range 2000+
         objectType = "particle_system";
         if (m_CurrentObjectTypeID == PARTICLE_SYSTEM) {
-            scaleAABB = glm::vec3(2.0f);
             // TODO - needed in case of multiple types of particle systems
         }
     }
