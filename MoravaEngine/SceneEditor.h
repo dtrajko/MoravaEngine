@@ -134,7 +134,6 @@ private:
 	ParticleSettings* m_ParticleSettingsEdit;
 	ParticleSettings* m_ParticleSettingsPrev;
 
-	// SceneObjectParticleSystem* m_SceneObjectParticleSystem;
 	SceneObjectParticleSystem* m_CurrentSOPS;
 
 	int m_MaxInstances = 10000;

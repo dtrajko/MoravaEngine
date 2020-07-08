@@ -1366,6 +1366,15 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         SelectNextFromMultipleObjects(&m_SceneObjects, m_SelectedIndex);
         m_Gizmo->OnMouseRelease(mainWindow, &m_SceneObjects, m_SelectedIndex);
         m_MouseButton_1_Prev = false;
+
+        // Connect "Particle System" ImGui to currently selected particle system
+        if (m_SceneObjects.at(m_SelectedIndex)->name == "particle_system") {
+            printf("Change Particle System ImGui\n");
+            SceneObjectParticleSystem* sops = (SceneObjectParticleSystem*)m_SceneObjects.at(m_SelectedIndex);
+            m_CurrentSOPS = sops;
+            m_ParticleSettingsEdit = sops->GetSettings();
+            m_ParticleSettingsPrev = sops->GetSettings();
+        }
     }
 
     // Add new scene object with default settings
@@ -1415,15 +1424,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         object->AABB->Update(object->position, object->rotation, object->scale);
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
-
-    // UpdateParticleSystems();
 }
-
-// void SceneEditor::UpdateParticleSystems()
-// {
-//     Texture* texture = HotLoadTexture(m_ParticleSettingsEdit->textureName);
-//     m_SceneObjectParticleSystem->Update(sceneSettings.enableParticles, GetProfilerResults(), texture);
-// }
 
 Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale)
 {
