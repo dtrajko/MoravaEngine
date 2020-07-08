@@ -175,7 +175,9 @@ SceneEditor::SceneEditor()
 
     TextureLoader::Get()->Print();
 
-    m_SceneObjectParticleSystem = new SceneObjectParticleSystem(m_ParticleSettingsEdit.instanced, m_MaxInstances);
+    m_ParticleSettingsEdit = new ParticleSettings;
+    m_ParticleSettingsEdit->textureName = "particle_atlas";
+    m_ParticleSettingsPrev = m_ParticleSettingsEdit;
 
     /* Begin Test */
     int width = 8;
@@ -897,15 +899,25 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
     {
         if (ImGui::CollapsingHeader("Particle System Settings"))
         {
-            ImGui::SliderFloat3("Origin Area Position", glm::value_ptr(m_SceneObjectParticleSystem->position), -20.0f, 20.0f);
-            ImGui::SliderFloat3("Origin Area Scale", glm::value_ptr(m_SceneObjectParticleSystem->scale), 0.0f, 20.0f);
+            glm::vec3 positionSOPS = glm::vec3(0.0f);
+            glm::vec3 scaleSOPS = glm::vec3(1.0f);
+            if (m_CurrentSOPS != nullptr) {
+                positionSOPS = m_CurrentSOPS->position;
+                scaleSOPS = m_CurrentSOPS->scale;
+            }
+            ImGui::SliderFloat3("Origin Area Position", glm::value_ptr(positionSOPS), -20.0f, 20.0f);
+            ImGui::SliderFloat3("Origin Area Scale", glm::value_ptr(scaleSOPS), 0.0f, 20.0f);
+            if (m_CurrentSOPS != nullptr) {
+                m_CurrentSOPS->position = positionSOPS;
+                m_CurrentSOPS->scale = scaleSOPS;
+            }
 
             // Begin ParticleTextureName ImGui drop-down list
             std::vector<const char*> itemsTexture;
             std::map<std::string, std::string>::iterator itTexture;
             for (itTexture = m_TextureInfo.begin(); itTexture != m_TextureInfo.end(); itTexture++)
                 itemsTexture.push_back(itTexture->first.c_str());
-            static const char* currentItemTexture = m_ParticleSettingsEdit.textureName.c_str();
+            static const char* currentItemTexture = m_ParticleSettingsEdit->textureName.c_str();
 
             if (ImGui::BeginCombo("Texture Name", currentItemTexture))
             {
@@ -915,7 +927,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
                     if (ImGui::Selectable(itemsTexture[n], isSelected))
                     {
                         currentItemTexture = itemsTexture[n];
-                        m_ParticleSettingsEdit.textureName = std::string(itemsTexture[n]);
+                        m_ParticleSettingsEdit->textureName = std::string(itemsTexture[n]);
                     }
                     if (isSelected)
                     {
@@ -926,17 +938,20 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             }
             // End ParticleTextureName ImGui drop-down list
 
-            ImGui::SliderInt(  "Number of Rows",       &m_ParticleSettingsEdit.numRows,                   1, 10);
-            ImGui::SliderInt("Particles Per Second",   &m_ParticleSettingsEdit.PPS,                       0, m_MaxInstances);
-            ImGui::SliderFloat3("Direction",           glm::value_ptr(m_ParticleSettingsEdit.direction), -1.0f, 1.0f);
-            ImGui::SliderFloat("Intensity",            &m_ParticleSettingsEdit.intensity,                 0.0f, 20.0f);
-            ImGui::SliderFloat("Gravity Complient",    &m_ParticleSettingsEdit.gravityComplient,         -40.0f, 40.0f);
-            ImGui::SliderFloat("Life Length",          &m_ParticleSettingsEdit.lifeLength,                0.0f, 20.0f);
-            ImGui::SliderFloat("Diameter",             &m_ParticleSettingsEdit.diameter,                  0.0f, 1.0f);
+            ImGui::SliderInt(  "Number of Rows",       &m_ParticleSettingsEdit->numRows,                   1, 10);
+            ImGui::SliderInt("Particles Per Second",   &m_ParticleSettingsEdit->PPS,                       0, m_MaxInstances);
+            ImGui::SliderFloat3("Direction",           glm::value_ptr(m_ParticleSettingsEdit->direction), -1.0f, 1.0f);
+            ImGui::SliderFloat("Intensity",            &m_ParticleSettingsEdit->intensity,                 0.0f, 20.0f);
+            ImGui::SliderFloat("Gravity Complient",    &m_ParticleSettingsEdit->gravityComplient,         -40.0f, 40.0f);
+            ImGui::SliderFloat("Life Length",          &m_ParticleSettingsEdit->lifeLength,                0.0f, 20.0f);
+            ImGui::SliderFloat("Diameter",             &m_ParticleSettingsEdit->diameter,                  0.0f, 1.0f);
 
             ImGui::Separator();
-            ImGui::Checkbox("Instanced Rendering", &m_ParticleSettingsEdit.instanced);
-            std::map<int, int> counts = m_SceneObjectParticleSystem->GetMaster()->GetCounts();
+            ImGui::Checkbox("Instanced Rendering", &m_ParticleSettingsEdit->instanced);
+            std::map<int, int> counts = std::map<int, int>();
+            if (m_CurrentSOPS != nullptr) {
+                counts = m_CurrentSOPS->GetMaster()->GetCounts();
+            }
             for (auto it = counts.begin(); it != counts.end(); it++) {
                 ImGui::Separator();
                 std::string textLine = "TextureID: " + std::to_string(it->first) + " Particles: " + std::to_string(it->second);
@@ -1313,6 +1328,11 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
         if (object->name == "water")
             m_WaterManager->SetWaterHeight(object->position.y);
+
+        if (object->name == "particle_system") {
+            Texture* texture = HotLoadTexture(m_ParticleSettingsEdit->textureName);
+            ((SceneObjectParticleSystem*)object)->Update(sceneSettings.enableParticles, GetProfilerResults(), texture);
+        }
     }
 
     if (m_HDRI_Edit != m_HDRI_Edit_Prev)
@@ -1396,24 +1416,14 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
 
-    UpdateParticleSystems();
+    // UpdateParticleSystems();
 }
 
-void SceneEditor::UpdateParticleSystems()
-{
-    m_SceneObjectParticleSystem->Update(sceneSettings.enableParticles, m_Camera->GetPosition(), GetProfilerResults());
-}
-
-void SceneEditor::GenerateParticleSystem()
-{
-    // Cooldown
-    if (m_CurrentTimestamp - m_ParticlesGenerate.lastTime < m_ParticlesGenerate.cooldown) return;
-    m_ParticlesGenerate.lastTime = m_CurrentTimestamp;
-
-    LOG_INFO("Particle Settings changed, rebuilding the Particle System...");
-
-    m_SceneObjectParticleSystem->Regenerate();
-}
+// void SceneEditor::UpdateParticleSystems()
+// {
+//     Texture* texture = HotLoadTexture(m_ParticleSettingsEdit->textureName);
+//     m_SceneObjectParticleSystem->Update(sceneSettings.enableParticles, GetProfilerResults(), texture);
+// }
 
 Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale)
 {
@@ -1816,8 +1826,12 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
 
 SceneObjectParticleSystem* SceneEditor::AddNewSceneObjectParticleSystem(int objectTypeID, glm::vec3 scale)
 {
-    SceneObjectParticleSystem* particle_system = new SceneObjectParticleSystem();
-    // TODO
+    SceneObjectParticleSystem* particle_system = new SceneObjectParticleSystem(true, m_MaxInstances, m_Camera);
+    m_ParticleSettingsEdit = particle_system->GetSettings();
+    m_ParticleSettingsPrev = m_ParticleSettingsEdit;
+
+    m_CurrentSOPS = particle_system;
+
     return particle_system;
 }
 
@@ -2325,6 +2339,9 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             if (passType == "main" || passType == "water_reflect" || passType == "water_refract")
                 SetUniformsShaderEditorPBR(shaders["editor_object_pbr"], texture, material, object);
         }
+        else if (object->name == "particle_system") {
+            shouldRenderObject = false;
+        }
         else { // defaults to a texture only
             // Render with 'editor_object' shader
             if (passType == "main" || passType == "water_reflect" || passType == "water_refract")
@@ -2354,9 +2371,15 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 
     if (sceneSettings.enableParticles && (passType == "main" || passType == "water_reflect"))
     {
-        Profiler profiler("SE::SOPS::Render");
-        m_SceneObjectParticleSystem->Render(m_Camera->CalculateViewMatrix());
-        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+        for (auto& object : m_SceneObjects)
+        {
+            if (object->name == "particle_system")
+            {
+                Profiler profiler("SE::SOPS::Render [SO_ID=" + std::to_string(object->id) + "]");
+                object->Render();
+                GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+            }
+        }
     }
 }
 
@@ -2387,7 +2410,9 @@ SceneEditor::~SceneEditor()
 {
     SaveScene();
     CleanupGeometry();
-    delete m_SceneObjectParticleSystem;
+    delete m_ParticleSettingsEdit;
+    delete m_ParticleSettingsPrev;
+    delete m_CurrentSOPS;
     delete m_PivotScene;
     delete m_Grid;
     delete m_Raycast;

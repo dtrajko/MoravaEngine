@@ -12,14 +12,14 @@ class SceneObjectParticleSystem : public SceneObject
 {
 public:
 	SceneObjectParticleSystem();
-	SceneObjectParticleSystem(bool instancedRendering, int maxInstances);
+	SceneObjectParticleSystem(bool instancedRendering, int maxInstances, Camera* camera);
 	~SceneObjectParticleSystem();
 
-	void Update(bool enabled, glm::vec3 cameraPosition, std::map<std::string, float>* profiler_results);
+	void Update(bool enabled, std::map<std::string, float>* profiler_results, Texture* texture);
 	virtual void Render() override;
-	void Render(glm::mat4 viewMatrix);
-	void Regenerate();
+	void Regenerate(Texture* texture);
 	inline ParticleMaster* GetMaster() { return m_Master; };
+	inline ParticleSettings* GetSettings() { return &m_Settings; };
 
 private:
 	ParticleSettings m_Settings;
@@ -30,8 +30,7 @@ private:
 	ParticleTexture* m_ParticleTexture;
 	ParticleSystemThinMatrix* m_System;
 	ParticleMaster* m_Master;
-
 	EventCooldown m_Regenerate;
-
 	int m_MaxInstances;
+	Camera* m_Camera;
 };

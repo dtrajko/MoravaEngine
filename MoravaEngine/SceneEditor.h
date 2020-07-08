@@ -47,7 +47,7 @@ class SceneEditor : public Scene
 public:
 	SceneEditor();
 	virtual void Update(float timestep, Window& mainWindow) override;
-	void UpdateParticleSystems();
+	// void UpdateParticleSystems();
 	virtual void UpdateImGui(float timestep, Window& mainWindow) override;
 	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
@@ -94,7 +94,6 @@ private:
 	void SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix);
 	glm::mat4 CalculateRenderTransform(SceneObject* sceneObject);
 	virtual bool IsWaterOnScene() override;
-	void GenerateParticleSystem();
 
 private:
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
@@ -132,10 +131,11 @@ private:
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;
 
-	ParticleSettings m_ParticleSettingsEdit;
-	ParticleSettings m_ParticleSettingsPrev;
+	ParticleSettings* m_ParticleSettingsEdit;
+	ParticleSettings* m_ParticleSettingsPrev;
 
-	SceneObjectParticleSystem* m_SceneObjectParticleSystem;
+	// SceneObjectParticleSystem* m_SceneObjectParticleSystem;
+	SceneObjectParticleSystem* m_CurrentSOPS;
 
 	int m_MaxInstances = 10000;
 
