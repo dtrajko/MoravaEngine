@@ -81,12 +81,6 @@ private:
 	Mesh* CreateNewMesh(int meshTypeID, glm::vec3 scale);
 	Model* AddNewModel(int modelID, glm::vec3 scale);
 	SceneObjectParticleSystem* AddNewSceneObjectParticleSystem(int objectTypeID, glm::vec3 scale);
-	static void LoadTexture(std::map<std::string, Texture*>& textures, std::string name, std::string filePath);
-	static void LoadTextureAsync(std::map<std::string, Texture*>& textures, std::string name, std::string filePath);
-	static void LoadMaterial(std::map<std::string, Material*>& materials, std::string name, TextureInfo textureInfo);
-	static void LoadMaterialAsync(std::map<std::string, Material*>& materials, std::string name, TextureInfo textureInfo);
-	Texture* HotLoadTexture(std::string textureName);
-	Material* HotLoadMaterial(std::string materialName);
 	void SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Material* material, SceneObject* sceneObject);
 	void SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject);
 	void SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject, float runningTime);
@@ -107,15 +101,6 @@ private:
 	Gizmo* m_Gizmo;
 
 	std::vector<SceneObject*> m_SceneObjects;
-
-	// Async loading of assets
-	std::map<std::string, std::string> m_TextureInfo;
-	std::vector<std::future<void>> m_FuturesTextures;
-	static std::mutex s_MutexTextures;
-
-	std::map<std::string, TextureInfo> m_MaterialInfo;
-	std::vector<std::future<void>> m_FuturesMaterials;
-	static std::mutex s_MutexMaterials;
 
 	// ImGui variables
 	glm::vec3* m_PositionEdit;
@@ -139,9 +124,6 @@ private:
 	int m_MaxInstances = 10000;
 
 	std::vector<std::string> m_ActiveRenderPasses;
-
-	static float m_MaterialSpecular;
-	static float m_MaterialShininess;
 
 	std::vector<PointSpotLight*> m_PointSpotLights;
 

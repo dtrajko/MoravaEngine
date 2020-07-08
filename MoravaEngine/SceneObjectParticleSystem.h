@@ -15,9 +15,9 @@ public:
 	SceneObjectParticleSystem(bool instancedRendering, int maxInstances, Camera* camera);
 	~SceneObjectParticleSystem();
 
-	void Update(bool enabled, std::map<std::string, float>* profiler_results, Texture* texture);
+	void Update(bool enabled, std::map<std::string, float>* profiler_results);
 	virtual void Render() override;
-	void Regenerate(Texture* texture);
+	void Regenerate();
 	inline ParticleMaster* GetMaster() { return m_Master; };
 	inline ParticleSettings* GetSettings() { return &m_Settings; };
 
@@ -26,7 +26,6 @@ private:
 	ParticleSettings m_SettingsPrev;
 
 	// Particle System ThinMatrix
-	Texture* m_Texture;
 	ParticleTexture* m_ParticleTexture;
 	ParticleSystemThinMatrix* m_System;
 	ParticleMaster* m_Master;

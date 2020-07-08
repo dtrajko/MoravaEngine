@@ -20,6 +20,7 @@
 #include "Profiler.h"
 #include "Log.h"
 #include "Noise.h"
+#include "ResourceManager.h"
 
 #include <vector>
 #include <map>
@@ -27,11 +28,6 @@
 #include <sstream>
 #include <iostream>
 
-
-std::mutex SceneEditor::s_MutexTextures;
-std::mutex SceneEditor::s_MutexMaterials;
-float SceneEditor::m_MaterialSpecular = 1.0f;
-float SceneEditor::m_MaterialShininess = 256.0f;
 
 SceneEditor::SceneEditor()
 {
@@ -117,6 +113,8 @@ SceneEditor::SceneEditor()
     sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
     sceneSettings.spotLights[3].edge = 0.5f;
 
+    ResourceManager::Init();
+
     SetCamera();
     SetSkybox();
     SetTextures();
@@ -199,319 +197,15 @@ void SceneEditor::SetSkybox()
 {
 }
 
-void SceneEditor::LoadTexture(std::map<std::string, Texture*>& textures, std::string name, std::string filePath)
-{
-    textures.insert(std::make_pair(name, TextureLoader::Get()->GetTexture(filePath.c_str())));
-}
-
-void SceneEditor::LoadTextureAsync(std::map<std::string, Texture*>& textures, std::string name, std::string filePath)
-{
-    std::lock_guard<std::mutex> lock(s_MutexTextures);
-    auto texture = TextureLoader::Get()->GetTexture(filePath.c_str());
-    textures.insert(std::make_pair(name, texture));
-}
-
-void SceneEditor::LoadMaterial(std::map<std::string, Material*>& materials, std::string name, TextureInfo textureInfo)
-{
-    materials.insert(std::make_pair(name, new Material(textureInfo, m_MaterialSpecular, m_MaterialShininess)));
-}
-
-void SceneEditor::LoadMaterialAsync(std::map<std::string, Material*>& materials, std::string name, TextureInfo textureInfo)
-{
-    std::lock_guard<std::mutex> lock(s_MutexMaterials);
-    auto material = new Material(textureInfo, m_MaterialSpecular, m_MaterialShininess);
-    materials.insert(std::make_pair(name, material));
-}
-
-Texture* SceneEditor::HotLoadTexture(std::string textureName)
-{
-    // Load texture if not available in textures map
-    auto textureInfoIterator = m_TextureInfo.find(textureName);
-    auto textureIterator = textures.find(textureName);
-
-    if (textureInfoIterator == m_TextureInfo.end())
-        return nullptr;
-
-    if (textureIterator != textures.end())
-        return textureIterator->second;
-
-    LoadTexture(std::ref(textures), textureName, textureInfoIterator->second);
-
-    textureIterator = textures.find(textureName);
-
-    if (textureIterator == textures.end())
-        return nullptr;
-
-    return textureIterator->second;
-}
-
-Material* SceneEditor::HotLoadMaterial(std::string materialName)
-{
-    // Load Material if not available in materials map
-    auto materialInfoIterator = m_MaterialInfo.find(materialName);
-    auto materialIterator = materials.find(materialName);
-
-    if (materialInfoIterator == m_MaterialInfo.end())
-        return nullptr;
-
-    if (materialIterator != materials.end())
-        return materialIterator->second;
-
-    LoadMaterial(std::ref(materials), materialInfoIterator->first, materialInfoIterator->second);
-
-    materialIterator = materials.find(materialName);
-
-    if (materialIterator == materials.end())
-        return nullptr;
-
-    return materialIterator->second;
-}
-
 void SceneEditor::SetTextures()
 {
-    m_TextureInfo.insert(std::make_pair("none",                  "Textures/plain.png"));
-    m_TextureInfo.insert(std::make_pair("semi_transparent",      "Textures/semi_transparent.png"));
-    m_TextureInfo.insert(std::make_pair("texture_checker",       "Textures/texture_checker.png"));
-    m_TextureInfo.insert(std::make_pair("wood",                  "Textures/wood.png"));
-    m_TextureInfo.insert(std::make_pair("plank",                 "Textures/texture_plank.png"));
-    m_TextureInfo.insert(std::make_pair("rock",                  "Textures/rock.png"));
-    m_TextureInfo.insert(std::make_pair("pyramid",               "Textures/pyramid.png"));
-    m_TextureInfo.insert(std::make_pair("lego",                  "Textures/lego.png"));
-    m_TextureInfo.insert(std::make_pair("marble",                "Textures/marble.jpg"));
-    m_TextureInfo.insert(std::make_pair("metal",                 "Textures/metal.png"));
-    m_TextureInfo.insert(std::make_pair("brick",                 "Textures/brick.png"));
-    m_TextureInfo.insert(std::make_pair("crate",                 "Textures/crate.png"));
-    m_TextureInfo.insert(std::make_pair("grass",                 "Textures/grass.jpg"));
-    m_TextureInfo.insert(std::make_pair("water",                 "Textures/water.png"));
-    m_TextureInfo.insert(std::make_pair("rock2",                 "Textures/rock/Rock-Texture-Surface.jpg"));
-    m_TextureInfo.insert(std::make_pair("planet",                "Textures/planet/planet_Quom1200.png"));
-    m_TextureInfo.insert(std::make_pair("gold_albedo",           "Textures/PBR/gold/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("silver_albedo",         "Textures/PBR/silver/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("rusted_iron",           "Textures/PBR/rusted_iron/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("grass_albedo",          "Textures/PBR/grass/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("wall_albedo",           "Textures/PBR/wall/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("plastic_albedo",        "Textures/PBR/plastic/albedo.png"));
-    m_TextureInfo.insert(std::make_pair("wal67ar_small",         "Textures/OGLdev/buddha/wal67ar_small.jpg"));
-    m_TextureInfo.insert(std::make_pair("wal69ar_small",         "Textures/OGLdev/buddha/wal69ar_small.jpg"));
-    m_TextureInfo.insert(std::make_pair("hheli",                 "Textures/OGLdev/hheli/hheli.bmp"));
-    m_TextureInfo.insert(std::make_pair("jeep_army",             "Textures/OGLdev/jeep/jeep_army.jpg"));
-    m_TextureInfo.insert(std::make_pair("jeep_rood",             "Textures/OGLdev/jeep/jeep_rood.jpg"));
-    m_TextureInfo.insert(std::make_pair("pine",                  "Textures/ThinMatrix/pine.png"));
-    m_TextureInfo.insert(std::make_pair("terrain_ground",        "Textures/terrain_ground.jpg"));
-    m_TextureInfo.insert(std::make_pair("boulder",               "Textures/ThinMatrix/boulder.png"));
-    m_TextureInfo.insert(std::make_pair("fire",                  "Textures/Particles/fire.png"));
-    m_TextureInfo.insert(std::make_pair("fog",                   "Textures/Particles/fog.png"));
-    m_TextureInfo.insert(std::make_pair("snowflake",             "Textures/Particles/snowflake.png"));
-    m_TextureInfo.insert(std::make_pair("particle_atlas",        "Textures/ThinMatrix/particles/particleAtlas.png"));
-    m_TextureInfo.insert(std::make_pair("particle_atlas_cosmic", "Textures/ThinMatrix/particles/cosmic.png"));
-    m_TextureInfo.insert(std::make_pair("particle_atlas_fire",   "Textures/ThinMatrix/particles/fire.png"));
-    m_TextureInfo.insert(std::make_pair("particle_atlas_smoke",  "Textures/ThinMatrix/particles/smoke.png"));
-
-#define ASYNC_LOAD_TEXTURES 0
-#if ASYNC_LOAD_TEXTURES
-    for (auto textureInfo : m_TextureInfo)
-        m_FuturesTextures.push_back(std::async(std::launch::async, LoadTextureAsync, std::ref(textures), textureInfo.first, textureInfo.second));
-#else
-    //  for (auto textureInfo : m_TextureInfo)
-    //      LoadTexture(std::ref(textures), textureInfo.first, textureInfo.second);
-#endif
-
-    LoadTexture(std::ref(textures), m_TextureInfo.find("none")->first, m_TextureInfo.find("none")->second);
-    LoadTexture(std::ref(textures), m_TextureInfo.find("fire")->first, m_TextureInfo.find("fire")->second);
+    ResourceManager::LoadTexture(ResourceManager::GetTextureInfo()->find("none")->first, ResourceManager::GetTextureInfo()->find("none")->second);
+    ResourceManager::LoadTexture(ResourceManager::GetTextureInfo()->find("fire")->first, ResourceManager::GetTextureInfo()->find("fire")->second);
 }
 
 void SceneEditor::SetupMaterials()
 {
-    // none (placeholder)
-    TextureInfo textureInfoNone = {};
-    textureInfoNone.albedo    = "Textures/plain.png";
-    textureInfoNone.normal    = "Textures/normal_map_default.png";
-    textureInfoNone.metallic  = "Textures/plain.png";
-    textureInfoNone.roughness = "Textures/plain.png";
-    textureInfoNone.ao        = "Textures/plain.png";
-    m_MaterialInfo.insert(std::make_pair("none", textureInfoNone));
-
-    // gold
-    TextureInfo textureInfoGold     = {};
-    textureInfoGold.albedo    = "Textures/PBR/gold/albedo.png";
-    textureInfoGold.normal    = "Textures/PBR/gold/normal.png";
-    textureInfoGold.metallic  = "Textures/PBR/gold/metallic.png";
-    textureInfoGold.roughness = "Textures/PBR/gold/roughness.png";
-    textureInfoGold.ao        = "Textures/PBR/gold/ao.png";
-    m_MaterialInfo.insert(std::make_pair("gold", textureInfoGold));
-
-    // silver
-    TextureInfo textureInfoSilver   = {};
-    textureInfoSilver.albedo    = "Textures/PBR/silver/albedo.png";
-    textureInfoSilver.normal    = "Textures/PBR/silver/normal.png";
-    textureInfoSilver.metallic  = "Textures/PBR/silver/metallic.png";
-    textureInfoSilver.roughness = "Textures/PBR/silver/roughness.png";
-    textureInfoSilver.ao        = "Textures/PBR/silver/ao.png";
-    m_MaterialInfo.insert(std::make_pair("silver", textureInfoSilver));
-
-    // rusted iron
-    TextureInfo textureInfoRustedIron = {};
-    textureInfoRustedIron.albedo    = "Textures/PBR/rusted_iron/albedo.png";
-    textureInfoRustedIron.normal    = "Textures/PBR/rusted_iron/normal.png";
-    textureInfoRustedIron.metallic  = "Textures/PBR/rusted_iron/metallic.png";
-    textureInfoRustedIron.roughness = "Textures/PBR/rusted_iron/roughness.png";
-    textureInfoRustedIron.ao        = "Textures/PBR/rusted_iron/ao.png";
-    m_MaterialInfo.insert(std::make_pair("rusted_iron", textureInfoRustedIron));
-
-    // plastic
-    TextureInfo textureInfoPlastic  = {};
-    textureInfoPlastic.albedo    = "Textures/PBR/plastic/albedo.png";
-    textureInfoPlastic.normal    = "Textures/PBR/plastic/normal.png";
-    textureInfoPlastic.metallic  = "Textures/PBR/plastic/metallic.png";
-    textureInfoPlastic.roughness = "Textures/PBR/plastic/roughness.png";
-    textureInfoPlastic.ao        = "Textures/PBR/plastic/ao.png";
-    m_MaterialInfo.insert(std::make_pair("plastic", textureInfoPlastic));
-
-    // futur_panel
-    TextureInfo textureInfoFuturPanel = {};
-    textureInfoFuturPanel.albedo    = "Textures/PBR/futuristic_panel_1/futuristic-panels1-albedo.png";
-    textureInfoFuturPanel.normal    = "Textures/PBR/futuristic_panel_1/futuristic-panels1-normal-dx.png";
-    textureInfoFuturPanel.metallic  = "Textures/PBR/futuristic_panel_1/futuristic-panels1-metallic.png";
-    textureInfoFuturPanel.roughness = "Textures/PBR/futuristic_panel_1/futuristic-panels1-roughness.png";
-    textureInfoFuturPanel.ao        = "Textures/PBR/futuristic_panel_1/futuristic-panels1-ao.png";
-    m_MaterialInfo.insert(std::make_pair("futur_panel", textureInfoFuturPanel));
-
-    // dark tiles
-    TextureInfo textureInfoDarkTiles = {};
-    textureInfoDarkTiles.albedo    = "Textures/PBR/dark_tiles_1/darktiles1_basecolor.png";
-    textureInfoDarkTiles.normal    = "Textures/PBR/dark_tiles_1/darktiles1_normal-DX.png";
-    textureInfoDarkTiles.metallic  = "Textures/PBR/metalness.png";
-    textureInfoDarkTiles.roughness = "Textures/PBR/dark_tiles_1/darktiles1_roughness.png";
-    textureInfoDarkTiles.ao        = "Textures/PBR/dark_tiles_1/darktiles1_AO.png";
-    m_MaterialInfo.insert(std::make_pair("dark_tiles", textureInfoDarkTiles));
-
-    // mahogany floor
-    TextureInfo textureInfoMahoganyFloor = {};
-    textureInfoMahoganyFloor.albedo    = "Textures/PBR/mahogany_floor/mahogfloor_basecolor.png";
-    textureInfoMahoganyFloor.normal    = "Textures/PBR/mahogany_floor/mahogfloor_normal.png";
-    textureInfoMahoganyFloor.metallic  = "Textures/PBR/mahogany_floor/mahogfloor_metalness.png";
-    textureInfoMahoganyFloor.roughness = "Textures/PBR/mahogany_floor/mahogfloor_roughness.png";
-    textureInfoMahoganyFloor.ao        = "Textures/PBR/mahogany_floor/mahogfloor_AO.png";
-    m_MaterialInfo.insert(std::make_pair("mahogany_floor", textureInfoMahoganyFloor));
-
-    // aged planks
-    TextureInfo textureInfoAgedPlanks = {};
-    textureInfoAgedPlanks.albedo    = "Textures/PBR/aged_planks_1/agedplanks1-albedo.png";
-    textureInfoAgedPlanks.normal    = "Textures/PBR/aged_planks_1/agedplanks1-normal4-ue.png";
-    textureInfoAgedPlanks.metallic  = "Textures/PBR/aged_planks_1/agedplanks1-metalness.png";
-    textureInfoAgedPlanks.roughness = "Textures/PBR/aged_planks_1/agedplanks1-roughness.png";
-    textureInfoAgedPlanks.ao        = "Textures/PBR/aged_planks_1/agedplanks1-ao.png";
-    m_MaterialInfo.insert(std::make_pair("aged_planks", textureInfoAgedPlanks));
-
-    // harsh bricks
-    TextureInfo textureInfoHarshBricks = {};
-    textureInfoHarshBricks.albedo    = "Textures/PBR/harsh_bricks/harshbricks-albedo.png";
-    textureInfoHarshBricks.normal    = "Textures/PBR/harsh_bricks/harshbricks-normal.png";
-    textureInfoHarshBricks.metallic  = "Textures/PBR/metalness.png";
-    textureInfoHarshBricks.roughness = "Textures/PBR/harsh_bricks/harshbricks-roughness.png";
-    textureInfoHarshBricks.ao        = "Textures/PBR/harsh_bricks/harshbricks-ao2.png";
-    m_MaterialInfo.insert(std::make_pair("harsh_bricks", textureInfoHarshBricks));
-
-    // Stone Carved (Quixel Megascans)
-    TextureInfo textureInfoStoneCarved = {};
-    textureInfoStoneCarved.albedo    = "Textures/PBR/Stone_Carved/Albedo.jpg";
-    textureInfoStoneCarved.normal    = "Textures/PBR/Stone_Carved/Normal_LOD0.jpg";
-    textureInfoStoneCarved.metallic  = "Textures/PBR/Stone_Carved/Metalness.jpg";
-    textureInfoStoneCarved.roughness = "Textures/PBR/Stone_Carved/Roughness.jpg";
-    textureInfoStoneCarved.ao        = "Textures/PBR/Stone_Carved/Displacement.jpg";
-    m_MaterialInfo.insert(std::make_pair("stone_carved", textureInfoStoneCarved));
-
-    // Old Stove (Quixel Megascans)
-    TextureInfo textureInfoOldStove = {};
-    textureInfoOldStove.albedo    = "Textures/PBR/Old_Stove/Albedo.jpg";
-    textureInfoOldStove.normal    = "Textures/PBR/Old_Stove/Normal_LOD0.jpg";
-    textureInfoOldStove.metallic  = "Textures/PBR/Old_Stove/Metalness.jpg";
-    textureInfoOldStove.roughness = "Textures/PBR/Old_Stove/Roughness.jpg";
-    textureInfoOldStove.ao        = "Textures/PBR/Old_Stove/Displacement.jpg";
-    m_MaterialInfo.insert(std::make_pair("old_stove", textureInfoOldStove));
-
-    // Animated Character (Sebastian Lague / ThinMatrix)
-    TextureInfo textureInfoAnimBoy = {};
-    textureInfoAnimBoy.albedo    = "Textures/AnimatedCharacterDiffuse.png";
-    textureInfoAnimBoy.normal    = "Textures/PBR/plastic/normal.png";
-    textureInfoAnimBoy.metallic  = "Textures/PBR/plastic/metallic.png";
-    textureInfoAnimBoy.roughness = "Textures/PBR/plastic/roughness.png";
-    textureInfoAnimBoy.ao        = "Textures/PBR/plastic/ao.png";
-    m_MaterialInfo.insert(std::make_pair("anim_boy", textureInfoAnimBoy));
-
-    // Buddha
-    TextureInfo textureInfoBuddha = {};
-    textureInfoBuddha.albedo    = "Textures/OGLdev/buddha/wal67ar_small.jpg";
-    textureInfoBuddha.normal    = "Textures/PBR/silver/normal.png";
-    textureInfoBuddha.metallic  = "Textures/PBR/silver/metallic.png";
-    textureInfoBuddha.roughness = "Textures/PBR/silver/roughness.png";
-    textureInfoBuddha.ao        = "Textures/PBR/silver/ao.png";
-    m_MaterialInfo.insert(std::make_pair("buddha", textureInfoBuddha));
-
-    // Damaged Helmet glTF PBR
-    TextureInfo textureInfoDamagedHelmet = {};
-    textureInfoDamagedHelmet.albedo    = "Textures/PBR/DamagedHelmet/Default_albedo.jpg";
-    textureInfoDamagedHelmet.normal    = "Textures/PBR/DamagedHelmet/Default_normal.jpg";
-    textureInfoDamagedHelmet.metallic  = "Textures/PBR/DamagedHelmet/Default_metalRoughness.jpg";
-    textureInfoDamagedHelmet.roughness = "Textures/PBR/DamagedHelmet/Default_emissive.jpg";
-    textureInfoDamagedHelmet.ao        = "Textures/PBR/DamagedHelmet/Default_AO.jpg";
-    m_MaterialInfo.insert(std::make_pair("damaged_helmet", textureInfoDamagedHelmet));
-
-    // SF Helmet glTF PBR
-    TextureInfo textureInfoSFHelmet = {};
-    textureInfoSFHelmet.albedo    = "Textures/PBR/SciFiHelmet/SciFiHelmet_BaseColor.png";
-    textureInfoSFHelmet.normal    = "Textures/PBR/SciFiHelmet/SciFiHelmet_Normal.png";
-    textureInfoSFHelmet.metallic  = "Textures/PBR/SciFiHelmet/SciFiHelmet_MetallicRoughness.png";
-    textureInfoSFHelmet.roughness = "Textures/PBR/SciFiHelmet/SciFiHelmet_Emissive.png";
-    textureInfoSFHelmet.ao        = "Textures/PBR/SciFiHelmet/SciFiHelmet_AmbientOcclusion.png";
-    m_MaterialInfo.insert(std::make_pair("sf_helmet", textureInfoSFHelmet));
-
-    // Cerberus model PBR textures
-    TextureInfo textureInfoCerberus = {};
-    textureInfoCerberus.albedo    = "Textures/PBR/Cerberus/Cerberus_A.tga";
-    textureInfoCerberus.normal    = "Textures/PBR/Cerberus/Cerberus_N.tga";
-    textureInfoCerberus.metallic  = "Textures/PBR/Cerberus/Cerberus_M.tga";
-    textureInfoCerberus.roughness = "Textures/PBR/Cerberus/Cerberus_R.tga";
-    textureInfoCerberus.ao        = "Textures/PBR/Cerberus/Cerberus_AO.tga";
-    m_MaterialInfo.insert(std::make_pair("cerberus", textureInfoCerberus));
-
-    // Concrete 3 Free PBR Materials freepbr.com
-    TextureInfo textureInfoConcrete = {};
-    textureInfoConcrete.albedo    = "Textures/PBR/concrete3/concrete3-albedo.png";
-    textureInfoConcrete.normal    = "Textures/PBR/concrete3/concrete3-Normal-dx.png";
-    textureInfoConcrete.metallic  = "Textures/PBR/concrete3/concrete3-Metallic.png";
-    textureInfoConcrete.roughness = "Textures/PBR/concrete3/concrete3-Roughness.png";
-    textureInfoConcrete.ao        = "Textures/PBR/concrete3/concrete3-ao.png";
-    m_MaterialInfo.insert(std::make_pair("concrete", textureInfoConcrete));
-
-    // Modern Brick Wall 1 Free PBR Materials freepbr.com
-    TextureInfo textureInfoModernBrickWall = {};
-    textureInfoModernBrickWall.albedo    = "Textures/PBR/modern_brick_1/modern-brick1_albedo.png";
-    textureInfoModernBrickWall.normal    = "Textures/PBR/modern_brick_1/modern-brick1_normal-dx.png";
-    textureInfoModernBrickWall.metallic  = "Textures/PBR/modern_brick_1/modern-brick1_metallic.png";
-    textureInfoModernBrickWall.roughness = "Textures/PBR/modern_brick_1/modern-brick1_roughness.png";
-    textureInfoModernBrickWall.ao        = "Textures/PBR/modern_brick_1/modern-brick1_ao.png";
-    m_MaterialInfo.insert(std::make_pair("modern_brick_wall", textureInfoModernBrickWall));
-
-    // ThinMatrix Boulder
-    TextureInfo textureInfoBoulder = {};
-    textureInfoBoulder.albedo    = "Textures/ThinMatrix/boulder.png";
-    textureInfoBoulder.normal    = "Textures/ThinMatrix/boulderNormal.png";
-    textureInfoBoulder.metallic  = "Textures/metalness.png";
-    textureInfoBoulder.roughness = "Textures/plain.png";
-    textureInfoBoulder.ao        = "Textures/plain.png";
-    m_MaterialInfo.insert(std::make_pair("boulder", textureInfoBoulder));
-
-#define ASYNC_LOAD_MATERIALS 0
-#if ASYNC_LOAD_MATERIALS
-    for (auto materialInfo : m_MaterialInfo)
-        m_FuturesMaterials.push_back(std::async(std::launch::async, LoadMaterialAsync, std::ref(materials), materialInfo.first, materialInfo.second));
-#else
-    //  for (auto materialInfo : m_MaterialInfo)
-    //      LoadMaterial(std::ref(materials), materialInfo.first, materialInfo.second);
-#endif
-
-    LoadMaterial(std::ref(materials), m_MaterialInfo.find("none")->first, m_MaterialInfo.find("none")->second);
+    ResourceManager::LoadMaterial(ResourceManager::GetMaterialInfo()->find("none")->first, ResourceManager::GetMaterialInfo()->find("none")->second);
 }
 
 void SceneEditor::SetupMeshes()
@@ -781,7 +475,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
         // Begin TextureName ImGui drop-down list
         std::vector<const char*> itemsTexture;
         std::map<std::string, std::string>::iterator itTexture;
-        for (itTexture = m_TextureInfo.begin(); itTexture != m_TextureInfo.end(); itTexture++)
+        for (itTexture = ResourceManager::GetTextureInfo()->begin(); itTexture != ResourceManager::GetTextureInfo()->end(); itTexture++)
             itemsTexture.push_back(itTexture->first.c_str());
         static const char* currentItemTexture = m_TextureNameEdit->c_str();
 
@@ -812,7 +506,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
         // Begin MaterialName ImGui drop-down list
         std::vector<const char*> itemsMaterial;
         std::map<std::string, TextureInfo>::iterator itMaterial;
-        for (itMaterial = m_MaterialInfo.begin(); itMaterial != m_MaterialInfo.end(); itMaterial++)
+        for (itMaterial = ResourceManager::GetMaterialInfo()->begin(); itMaterial != ResourceManager::GetMaterialInfo()->end(); itMaterial++)
             itemsMaterial.push_back(itMaterial->first.c_str());
         static const char* currentItemMaterial = m_MaterialNameEdit->c_str();
         if (ImGui::BeginCombo("Material Name", currentItemMaterial))
@@ -915,7 +609,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             // Begin ParticleTextureName ImGui drop-down list
             std::vector<const char*> itemsTexture;
             std::map<std::string, std::string>::iterator itTexture;
-            for (itTexture = m_TextureInfo.begin(); itTexture != m_TextureInfo.end(); itTexture++)
+            for (itTexture = ResourceManager::GetTextureInfo()->begin(); itTexture != ResourceManager::GetTextureInfo()->end(); itTexture++)
                 itemsTexture.push_back(itTexture->first.c_str());
             static const char* currentItemTexture = m_ParticleSettingsEdit->textureName.c_str();
 
@@ -1330,8 +1024,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
             m_WaterManager->SetWaterHeight(object->position.y);
 
         if (object->name == "particle_system") {
-            Texture* texture = HotLoadTexture(m_ParticleSettingsEdit->textureName);
-            ((SceneObjectParticleSystem*)object)->Update(sceneSettings.enableParticles, GetProfilerResults(), texture);
+            ((SceneObjectParticleSystem*)object)->Update(sceneSettings.enableParticles, GetProfilerResults());
         }
     }
 
@@ -1369,7 +1062,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
         // Connect "Particle System" ImGui to currently selected particle system
         if (m_SceneObjects.at(m_SelectedIndex)->name == "particle_system") {
-            printf("Change Particle System ImGui\n");
+            // printf("Change Particle System ImGui\n");
             SceneObjectParticleSystem* sops = (SceneObjectParticleSystem*)m_SceneObjects.at(m_SelectedIndex);
             m_CurrentSOPS = sops;
             m_ParticleSettingsEdit = sops->GetSettings();
@@ -1654,6 +1347,7 @@ void SceneEditor::AddSceneObject()
     else if (m_CurrentObjectTypeID >= 2000) { // Model - ID range 2000+
         objectType = "particle_system";
         if (m_CurrentObjectTypeID == PARTICLE_SYSTEM) {
+            scaleAABB = glm::vec3(2.0f);
             // TODO - needed in case of multiple types of particle systems
         }
     }
@@ -1692,9 +1386,6 @@ void SceneEditor::AddSceneObject()
         sceneObject->scaleAABB = scaleAABB;
         sceneObject->AABB = new AABB(positionAABB, glm::vec3(0.0f), scaleAABB);
     }
-
-    // printf("SceneEditor::AddSceneObject sceneObject->AABB->m_Scale [ %.2ff %.2ff %.2ff ]\n",
-    //     sceneObject->AABB->m_Scale.x, sceneObject->AABB->m_Scale.y, sceneObject->AABB->m_Scale.z);
 
     m_SceneObjects.push_back(sceneObject);
     m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
@@ -1844,8 +1535,8 @@ void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture
     shaderEditor->setVec4("tintColor", sceneObject->color);
     shaderEditor->setBool("isSelected", sceneObject->isSelected);
 
-    shaderEditor->setFloat("material.specularIntensity", m_MaterialSpecular);  // TODO - use material attribute
-    shaderEditor->setFloat("material.shininess", m_MaterialShininess); // TODO - use material attribute
+    shaderEditor->setFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
+    shaderEditor->setFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
 
     if (texture != nullptr)
         texture->Bind(0);
@@ -1879,8 +1570,8 @@ void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* t
     shaderEditorPBR->setVec4("tintColor",     sceneObject->color);
     shaderEditorPBR->setBool("isSelected",    sceneObject->isSelected);
 
-    shaderEditorPBR->setFloat("material.specularIntensity", m_MaterialSpecular);  // TODO - use material attribute
-    shaderEditorPBR->setFloat("material.shininess",         m_MaterialShininess); // TODO - use material attribute
+    shaderEditorPBR->setFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
+    shaderEditorPBR->setFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
 
     m_MaterialWorkflowPBR->BindTextures(0); // texture slots 0, 1, 2
     material->BindTextures(3);              // texture slots 3, 4, 5, 6, 7
@@ -1914,8 +1605,8 @@ void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject*
     shaderSkinning->setMat4("view", m_Camera->CalculateViewMatrix());
     shaderSkinning->setInt("gColorMap", 0);
     shaderSkinning->setVec3("gEyeWorldPos", m_Camera->GetPosition());
-    shaderSkinning->setFloat("gMatSpecularIntensity", m_MaterialSpecular);
-    shaderSkinning->setFloat("gSpecularPower", m_MaterialShininess);
+    shaderSkinning->setFloat("gMatSpecularIntensity", ResourceManager::s_MaterialSpecular);
+    shaderSkinning->setFloat("gSpecularPower", ResourceManager::s_MaterialShininess);
     char locBuff[100] = { '\0' };
     for (unsigned int i = 0; i < m_SkinningTransforms[sceneObject->name].size(); i++)
     {
@@ -1945,11 +1636,11 @@ void SceneEditor::SetUniformsShaderWater(Shader* shaderWater, SceneObject* scene
     shaderWater->setFloat("nearPlane",     sceneSettings.nearPlane);
     shaderWater->setFloat("farPlane",      sceneSettings.farPlane);
 
-    textures["none"]->Bind(0);
-    textures["none"]->Bind(1);
-    textures["waterNormal"]->Bind(2);
-    textures["waterDuDv"]->Bind(3);
-    textures["none"]->Bind(4);
+    ResourceManager::GetTexture("none")->Bind(0);
+    ResourceManager::GetTexture("none")->Bind(1);
+    ResourceManager::GetTexture("waterNormal")->Bind(2);
+    ResourceManager::GetTexture("waterDuDv")->Bind(3);
+    ResourceManager::GetTexture("none")->Bind(4);
 
     if (sceneSettings.enableWaterEffects) {
         m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(0);
@@ -2122,9 +1813,9 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
 {
     shaderGizmo->Bind();
 
-    textures["none"]->Bind(0);
-    textures["none"]->Bind(1);
-    textures["none"]->Bind(2);
+    ResourceManager::GetTexture("none")->Bind(0);
+    ResourceManager::GetTexture("none")->Bind(1);
+    ResourceManager::GetTexture("none")->Bind(2);
 
     glm::mat4 model;
 
@@ -2305,15 +1996,15 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             shaders["skinning"]->setMat4("model", object->transform);
         }
         if (passType == "main") {
-            textures["none"]->Bind(0); // Default fallback for Albedo texture
+            ResourceManager::GetTexture("none")->Bind(0); // Default fallback for Albedo texture
             shaders["water"]->Bind();
             shaders["water"]->setMat4("model", object->transform);
         }
 
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
 
-        Texture* texture = HotLoadTexture(object->textureName);
-        Material* material = HotLoadMaterial(object->materialName);
+        Texture* texture = ResourceManager::HotLoadTexture(object->textureName);
+        Material* material = ResourceManager::HotLoadMaterial(object->materialName);
 
         // Don't render Lights (id = 0 to 8), it's done in RenderLightSources()
         if (object->name.substr(0, 6) == "Light.")

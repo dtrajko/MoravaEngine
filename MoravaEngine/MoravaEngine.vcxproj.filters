@@ -365,6 +365,9 @@
     <ClCompile Include="SceneObjectParticleSystem.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -756,6 +759,9 @@
       <Filter>Editor</Filter>
     </ClInclude>
     <ClInclude Include="SceneObjectParticleSystem.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
       <Filter>Editor</Filter>
     </ClInclude>
   </ItemGroup>

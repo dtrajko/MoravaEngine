@@ -4,6 +4,7 @@
 #include "Timer.h"
 #include "Log.h"
 #include "AABB.h"
+#include "ResourceManager.h"
 
 
 SceneObjectParticleSystem::SceneObjectParticleSystem()
@@ -20,7 +21,6 @@ SceneObjectParticleSystem::SceneObjectParticleSystem()
 
     m_MaxInstances = 10000;
     m_Master = new ParticleMaster();
-    m_Texture = nullptr;
     m_Camera = nullptr;
 }
 
@@ -41,8 +41,9 @@ SceneObjectParticleSystem::SceneObjectParticleSystem(bool instancedRendering, in
     m_SettingsPrev = m_Settings;
     m_SettingsPrev.textureName = "none";
 
-    position = glm::vec3(0.0f, 0.0f, 0.0f);
-    scale = glm::vec3(0.0f, 0.0f, 0.0f);
+    position = glm::vec3(0.0f);
+    scale = glm::vec3(1.0f);
+    scaleAABB = glm::vec3(2.0f);
 
     pivot = new Pivot(position, scale);
 
@@ -50,15 +51,14 @@ SceneObjectParticleSystem::SceneObjectParticleSystem(bool instancedRendering, in
     m_Master = new ParticleMaster(instancedRendering, maxInstances);
 }
 
-void SceneObjectParticleSystem::Update(bool enabled, std::map<std::string, float>* profiler_results, Texture* texture)
+void SceneObjectParticleSystem::Update(bool enabled, std::map<std::string, float>* profiler_results)
 {
-    m_Texture = texture;
     glm::vec3 cameraPosition = m_Camera->GetPosition();
 
     // Re-generate Particle System
     if (m_Settings != m_SettingsPrev)
     {    
-        Regenerate(m_Texture);
+        Regenerate();
         m_SettingsPrev = m_Settings;
     }
 
@@ -83,13 +83,12 @@ void SceneObjectParticleSystem::Render()
 
 SceneObjectParticleSystem::~SceneObjectParticleSystem()
 {
-    delete m_Texture;
     delete m_ParticleTexture;
     delete m_System;
     delete m_Master;
 }
 
-void SceneObjectParticleSystem::Regenerate(Texture* texture)
+void SceneObjectParticleSystem::Regenerate()
 {
     // Cooldown
     float currentTimestamp = Timer::Get()->GetCurrentTimestamp();
@@ -101,9 +100,8 @@ void SceneObjectParticleSystem::Regenerate(Texture* texture)
     delete m_Master;
     m_Master = new ParticleMaster(m_Settings.instanced, m_MaxInstances);
 
-    m_Texture = texture;
-    // TODO: Texture* texture = HotLoadTexture(m_Settings.textureName);
-    m_ParticleTexture = new ParticleTexture(m_Texture->GetID(), m_Settings.numRows);
+    Texture* texture = ResourceManager::HotLoadTexture(m_Settings.textureName);
+    m_ParticleTexture = new ParticleTexture(texture->GetID(), m_Settings.numRows);
     m_System = new ParticleSystemThinMatrix(m_ParticleTexture, m_Settings.PPS,
         m_Settings.direction, m_Settings.intensity, m_Settings.gravityComplient,
         m_Settings.lifeLength, m_Settings.diameter);

@@ -182,6 +182,7 @@
     <ClCompile Include="ParticleTexture.cpp" />
     <ClCompile Include="PerlinNoise.cpp" />
     <ClCompile Include="QuadInstanced.cpp" />
+    <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="SceneObjectParticleSystem.cpp" />
     <ClCompile Include="ShaderBackground.cpp" />
@@ -312,6 +313,7 @@
     <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="QuadInstanced.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="SceneObjectParticleSystem.h" />
     <ClInclude Include="ShaderBackground.h" />
