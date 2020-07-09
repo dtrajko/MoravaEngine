@@ -368,6 +368,9 @@
     <ClCompile Include="ResourceManager.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
+    <ClCompile Include="SceneObjectLight.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -762,6 +765,9 @@
       <Filter>Editor</Filter>
     </ClInclude>
     <ClInclude Include="ResourceManager.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneObjectLight.h">
       <Filter>Editor</Filter>
     </ClInclude>
   </ItemGroup>

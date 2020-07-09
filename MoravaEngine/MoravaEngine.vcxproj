@@ -184,6 +184,7 @@
     <ClCompile Include="QuadInstanced.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SceneObject.cpp" />
+    <ClCompile Include="SceneObjectLight.cpp" />
     <ClCompile Include="SceneObjectParticleSystem.cpp" />
     <ClCompile Include="ShaderBackground.cpp" />
     <ClCompile Include="ShaderBasic.cpp" />
@@ -315,6 +316,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="SceneObject.h" />
+    <ClInclude Include="SceneObjectLight.h" />
     <ClInclude Include="SceneObjectParticleSystem.h" />
     <ClInclude Include="ShaderBackground.h" />
     <ClInclude Include="ShaderBasic.h" />

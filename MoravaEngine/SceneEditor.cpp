@@ -1050,6 +1050,17 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
         m_Gizmo->OnMousePress(mainWindow, &m_SceneObjects, m_SelectedIndex);
+
+        glm::vec3 direction = glm::vec3(-m_Gizmo->GetRotation().x, -m_Gizmo->GetRotation().y, -m_Gizmo->GetRotation().z);
+
+        if (m_SceneObjects[m_SelectedIndex]->name == "Light.directional") {
+            LightManager::directionalLight.SetDirection(direction);
+        }
+        else if (m_SceneObjects[m_SelectedIndex]->name.substr(0, 10) == "Light.spot") {
+            unsigned int spotLightIndex = m_SelectedIndex - 4 - 1; // minus 4 point lights, minus 1 directional light
+            assert(spotLightIndex >= 0 && spotLightIndex <= 3);
+            LightManager::spotLights[spotLightIndex].SetDirection(direction);
+        }
         m_MouseButton_1_Prev = true;
     }
 
@@ -1817,8 +1828,11 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
     model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::scale(model, glm::vec3(1.0f));
 
+    glm::vec3 dir = m_LightManager->directionalLight.GetDirection();
+    // printf("Render Dir Light Direction [ %.2ff %.2ff %.2ff ]\n", dir.x, dir.y, dir.z);
+
     m_SceneObjects[0]->transform = model;
-    shaderGizmo->setMat4("model", m_SceneObjects[0]->transform);
+    shaderGizmo->setMat4("model", model);
     shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->directionalLight.GetColor(), 1.0f));
     if (m_DisplayLightSources && m_LightManager->directionalLight.GetEnabled())
         m_SceneObjects[0]->Render();
