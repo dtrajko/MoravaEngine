@@ -199,13 +199,19 @@ void SceneEditor::SetSkybox()
 
 void SceneEditor::SetTextures()
 {
-    ResourceManager::LoadTexture(ResourceManager::GetTextureInfo()->find("none")->first, ResourceManager::GetTextureInfo()->find("none")->second);
-    ResourceManager::LoadTexture(ResourceManager::GetTextureInfo()->find("fire")->first, ResourceManager::GetTextureInfo()->find("fire")->second);
+    ResourceManager::LoadTexture(
+        ResourceManager::GetTextureInfo()->find("none")->first,
+        ResourceManager::GetTextureInfo()->find("none")->second);
+    ResourceManager::LoadTexture(
+        ResourceManager::GetTextureInfo()->find("fire")->first,
+        ResourceManager::GetTextureInfo()->find("fire")->second);
 }
 
 void SceneEditor::SetupMaterials()
 {
-    ResourceManager::LoadMaterial(ResourceManager::GetMaterialInfo()->find("none")->first, ResourceManager::GetMaterialInfo()->find("none")->second);
+    ResourceManager::LoadMaterial(
+        ResourceManager::GetMaterialInfo()->find("none")->first,
+        ResourceManager::GetMaterialInfo()->find("none")->second);
 }
 
 void SceneEditor::SetupMeshes()
@@ -220,9 +226,6 @@ void SceneEditor::SetupModels()
 
     Cone* cone = new Cone(glm::vec3(1.0f));
     meshes.insert(std::make_pair("cone", cone));
-
-    // m_GlassShaderModel = new Model("Models/Old_Stove/udmheheqx_LOD0.fbx");
-    // models.insert(std::make_pair("glass", m_GlassShaderModel));
 }
 
 void SceneEditor::SetGeometry()
@@ -331,8 +334,6 @@ void SceneEditor::LoadScene()
 
     std::string sceneFileContent = Shader::ReadFile(m_SceneFilename);
 
-    // printf(sceneFileContent.c_str());
-
     std::vector<std::string> lines;
     std::istringstream iss(sceneFileContent);
     std::string tmpLine;
@@ -353,9 +354,6 @@ void SceneEditor::LoadScene()
         while (std::getline(iss, tmpToken, '\t')) {
             tokens.push_back(tmpToken);
         }
-
-        // for (auto& token : tokens)
-        //     printf("%s\n", token.c_str());
         
         if (tokens.size() >= 2 && tokens[0] == "BeginObject") {
             objectId = (unsigned int)std::stoi(tokens[1]);
@@ -1397,8 +1395,6 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
     if (m_CurrentTimestamp - m_ObjectCopy.lastTime < m_ObjectCopy.cooldown) return;
     m_ObjectCopy.lastTime = m_CurrentTimestamp;
 
-    // printf("SceneEditor::CopySceneObject sceneObjects = %zu selectedIndex = %i\n", sceneObjects->size(), selectedIndex);
-
     SceneObject* oldSceneObject = nullptr;
 
     if (selectedIndex < (unsigned int)sceneObjects->size())
@@ -1557,9 +1553,6 @@ void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture
     // Shadows in shaderEditor
     LightManager::directionalLight.GetShadowMap()->Read(2);
     shaderEditor->setInt("shadowMap", 2);
-
-    // printf("SceneEditor::SetUniformsShaderEditor READ from FBO = %i Texture ID = %i\n",
-    //     LightManager::directionalLight.GetShadowMap()->GetFBO(), LightManager::directionalLight.GetShadowMap()->GetTextureID());
 }
 
 void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Material* material, SceneObject* sceneObject)
@@ -1588,9 +1581,6 @@ void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* t
     // Shadows in shaderEditorPBR
     LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
     shaderEditorPBR->setInt("shadowMap", 8);
-
-    // printf("SceneEditor::SetUniformsShaderEditorPBR READ from FBO = %i Texture ID = %i\n",
-    //     LightManager::directionalLight.GetShadowMap()->GetFBO(), LightManager::directionalLight.GetShadowMap()->GetTextureID());
 }
 
 void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject, float runningTime)
@@ -1832,7 +1822,6 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
     shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->directionalLight.GetColor(), 1.0f));
     if (m_DisplayLightSources && m_LightManager->directionalLight.GetEnabled())
         m_SceneObjects[0]->Render();
-    // printf("m_SceneObjects[0].name = '%s'\n", m_SceneObjects[0]->name.c_str());
 
     // Point lights - render Sphere (Light source)
     unsigned int offsetPoint = 1;
