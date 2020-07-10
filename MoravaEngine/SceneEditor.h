@@ -88,6 +88,7 @@ private:
 	void SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix);
 	glm::mat4 CalculateRenderTransform(SceneObject* sceneObject);
 	virtual bool IsWaterOnScene() override;
+	void UpdateLightDirection(std::vector<SceneObject*>* sceneObjects, unsigned int selectedIndex, glm::vec3 direction);
 
 private:
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
@@ -104,7 +105,7 @@ private:
 
 	// ImGui variables
 	glm::vec3* m_PositionEdit;
-	glm::vec3* m_RotationEdit;
+	glm::vec3 m_RotationEdit;
 	glm::vec3* m_ScaleEdit;
 	glm::vec4* m_ColorEdit;
 	float* m_TilingFactorEdit;

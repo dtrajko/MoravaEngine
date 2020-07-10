@@ -310,7 +310,9 @@ void Gizmo::UpdateTransformFromObject(SceneObject* sceneObject)
 	if (sceneObject != nullptr)
 	{
 		m_Position = sceneObject->position;
+		printf("UpdateTransformFromObject m_Rotation BEFORE [ %.2ff %.2ff %.2ff ]\n", m_Rotation.x, m_Rotation.y, m_Rotation.z);
 		m_Rotation = sceneObject->rotation;
+		printf("UpdateTransformFromObject m_Rotation AFTER [ %.2ff %.2ff %.2ff ]\n", m_Rotation.x, m_Rotation.y, m_Rotation.z);
 		m_Scale    = sceneObject->scale;
 	}
 }

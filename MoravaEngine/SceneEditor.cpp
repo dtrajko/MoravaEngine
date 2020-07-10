@@ -151,7 +151,7 @@ SceneEditor::SceneEditor()
     m_Gizmo = new Gizmo();
 
     m_PositionEdit             = new glm::vec3(0.0f);
-    m_RotationEdit             = new glm::vec3(0.0f);
+    m_RotationEdit             = glm::vec3(0.0f);
     m_ScaleEdit                = new glm::vec3(1.0f);
     m_ColorEdit                = new glm::vec4(1.0f);
     m_TextureNameEdit          = new std::string;
@@ -449,9 +449,10 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
     {
         if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
         {
-            glm::vec3 quatToVec3 = glm::eulerAngles(m_SceneObjects[m_SelectedIndex]->rotation) / toRadians;
             m_PositionEdit = &m_SceneObjects[m_SelectedIndex]->position;
-            m_RotationEdit = &quatToVec3;
+            glm::quat soRotation = m_SceneObjects[m_SelectedIndex]->rotation;
+            m_RotationEdit = glm::vec3(soRotation.x, soRotation.y, soRotation.z);
+            // printf("Transform m_RotationEdit: [ %.2ff %.2ff %.2ff ]\n", m_RotationEdit.x, m_RotationEdit.y, m_RotationEdit.z);
             m_ScaleEdit = &m_SceneObjects[m_SelectedIndex]->scale;
             m_ColorEdit = &m_SceneObjects[m_SelectedIndex]->color;
             m_TextureNameEdit = &m_SceneObjects[m_SelectedIndex]->textureName;
@@ -461,8 +462,16 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
         }
 
         ImGui::SliderFloat3("Position", (float*)m_PositionEdit, -10.0f, 10.0f);
-        ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -179.0f, 180.0f);
+        ImGui::SliderFloat3("Rotation", (float*)&m_RotationEdit, -1.0f, 1.0f);
         ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.1f, 20.0f);
+
+        if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
+        {
+            m_SceneObjects[m_SelectedIndex]->rotation = glm::quat(m_RotationEdit * toRadians);
+
+            // Update LightManager with ImGui rotation values
+            UpdateLightDirection(&m_SceneObjects, m_SelectedIndex, m_RotationEdit);
+        }
     }
     ImGui::End();
 
@@ -1050,17 +1059,6 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
         m_Gizmo->OnMousePress(mainWindow, &m_SceneObjects, m_SelectedIndex);
-
-        glm::vec3 direction = glm::vec3(-m_Gizmo->GetRotation().x, -m_Gizmo->GetRotation().y, -m_Gizmo->GetRotation().z);
-
-        if (m_SceneObjects[m_SelectedIndex]->name == "Light.directional") {
-            LightManager::directionalLight.SetDirection(direction);
-        }
-        else if (m_SceneObjects[m_SelectedIndex]->name.substr(0, 10) == "Light.spot") {
-            unsigned int spotLightIndex = m_SelectedIndex - 4 - 1; // minus 4 point lights, minus 1 directional light
-            assert(spotLightIndex >= 0 && spotLightIndex <= 3);
-            LightManager::spotLights[spotLightIndex].SetDirection(direction);
-        }
         m_MouseButton_1_Prev = true;
     }
 
@@ -1108,6 +1106,18 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_L])
         LoadScene();
 
+    for (auto& object : m_SceneObjects)
+    {
+        glm::vec3 scaleAABB = object->scale * object->AABB->m_Scale;
+        object->AABB->Update(object->position, object->rotation, object->scale);
+        object->pivot->Update(object->position, object->scale + 1.0f);
+    }
+
+    // Update LightManager with Gizmo rotation values
+    glm::quat soRotation = m_Gizmo->GetRotation();
+    glm::vec3 direction = glm::vec3(soRotation.x, soRotation.y, soRotation.z);
+    UpdateLightDirection(&m_SceneObjects, m_SelectedIndex, direction);
+
     // Gizmo switching modes
     if (mainWindow.getKeys()[GLFW_KEY_1])
         m_Gizmo->ChangeMode(GIZMO_MODE_TRANSLATE);
@@ -1120,12 +1130,19 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     if (mainWindow.getKeys()[GLFW_KEY_4])
         m_Gizmo->ChangeMode(GIZMO_MODE_NONE);
+}
 
-    for (auto& object : m_SceneObjects)
-    {
-        glm::vec3 scaleAABB = object->scale * object->AABB->m_Scale;
-        object->AABB->Update(object->position, object->rotation, object->scale);
-        object->pivot->Update(object->position, object->scale + 1.0f);
+void SceneEditor::UpdateLightDirection(std::vector<SceneObject*>* sceneObjects, unsigned int selectedIndex, glm::vec3 direction)
+{
+    sceneObjects->at(selectedIndex)->rotation = direction;
+
+    if (sceneObjects->at(selectedIndex)->name == "Light.directional") {
+        LightManager::directionalLight.SetDirection(direction);
+    }
+    else if (sceneObjects->at(selectedIndex)->name.substr(0, 10) == "Light.spot") {
+        unsigned int spotLightIndex = selectedIndex - 4 - 1; // minus 4 point lights, minus 1 directional light
+        assert(spotLightIndex >= 0 && spotLightIndex <= 3);
+        LightManager::spotLights[spotLightIndex].SetDirection(direction);
     }
 }
 
@@ -1858,17 +1875,10 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
     for (unsigned int i = 0; i < m_LightManager->spotLightCount; i++)
     {
         m_LightManager->spotLights[i].GetBasePL()->SetPosition(m_SceneObjects[offsetSpot + i]->position);
-        m_LightManager->spotLights[i].SetDirection(glm::vec3(
-            glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).x ,
-            glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).y,
-            glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).z));
-
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, m_SceneObjects[offsetSpot + i]->position);
-        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().x *  90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().y *  90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.5f));
+        glm::quat rotation = m_SceneObjects[offsetSpot + i]->rotation;
+        glm::vec3 direction = glm::vec3(rotation.x, rotation.y, rotation.z);
+        m_LightManager->spotLights[i].SetDirection(direction);
+        model = Math::CreateTransform(m_SceneObjects[offsetSpot + i]->position, m_SceneObjects[offsetSpot + i]->rotation, glm::vec3(1.0f));
         m_SceneObjects[offsetPoint + i]->transform = model;
         shaderGizmo->setMat4("model", model);
         shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->spotLights[i].GetBasePL()->GetColor(), 1.0f));
