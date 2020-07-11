@@ -467,10 +467,11 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
 
         if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
         {
-            m_SceneObjects[m_SelectedIndex]->rotation = glm::quat(m_RotationEdit * toRadians);
-
+            glm::quat rotation = glm::quat(m_RotationEdit * toRadians);
+            m_SceneObjects[m_SelectedIndex]->rotation = rotation;
             // Update LightManager with ImGui rotation values
-            UpdateLightDirection(&m_SceneObjects, m_SelectedIndex, m_RotationEdit);
+            printf("ImGui\n");
+            UpdateLightDirection(&m_SceneObjects, m_SelectedIndex, rotation);
         }
     }
     ImGui::End();
@@ -859,6 +860,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             directionalLight.base.diffuseIntensity = m_LightManager->directionalLight.GetDiffuseIntensity();
             directionalLight.direction = m_LightManager->directionalLight.GetDirection();
 
+            printf("Lights directionalLight.direction: [ %.2ff %.2ff %.2ff ]\n", directionalLight.direction.x, directionalLight.direction.y, directionalLight.direction.z);
+
             ImGui::Checkbox("DL Enabled", &directionalLight.base.enabled);
             ImGui::ColorEdit3("DL Color", glm::value_ptr(directionalLight.base.color));
             ImGui::SliderFloat3("DL Direction", glm::value_ptr(directionalLight.direction), -1.0f, 1.0f);
@@ -1113,10 +1116,10 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
 
+    m_SceneObjects[m_SelectedIndex]->rotation = m_Gizmo->GetRotation();
     // Update LightManager with Gizmo rotation values
-    glm::quat soRotation = m_Gizmo->GetRotation();
-    glm::vec3 direction = glm::vec3(soRotation.x, soRotation.y, soRotation.z);
-    UpdateLightDirection(&m_SceneObjects, m_SelectedIndex, direction);
+    printf("Update Gizmo\n");
+    UpdateLightDirection(&m_SceneObjects, m_SelectedIndex, m_Gizmo->GetRotation());
 
     // Gizmo switching modes
     if (mainWindow.getKeys()[GLFW_KEY_1])
@@ -1132,9 +1135,11 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         m_Gizmo->ChangeMode(GIZMO_MODE_NONE);
 }
 
-void SceneEditor::UpdateLightDirection(std::vector<SceneObject*>* sceneObjects, unsigned int selectedIndex, glm::vec3 direction)
+void SceneEditor::UpdateLightDirection(std::vector<SceneObject*>* sceneObjects, unsigned int selectedIndex, glm::quat rotation)
 {
-    sceneObjects->at(selectedIndex)->rotation = direction;
+    glm::vec3 direction = glm::vec3(rotation.x, rotation.y, rotation.z) / toRadians;
+
+    printf("UpdateLightDirection direction: [ %.2ff %.2ff %.2ff ]\n", direction.x, direction.y, direction.z);
 
     if (sceneObjects->at(selectedIndex)->name == "Light.directional") {
         LightManager::directionalLight.SetDirection(direction);
@@ -1845,9 +1850,6 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
     model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::scale(model, glm::vec3(1.0f));
 
-    glm::vec3 dir = m_LightManager->directionalLight.GetDirection();
-    // printf("Render Dir Light Direction [ %.2ff %.2ff %.2ff ]\n", dir.x, dir.y, dir.z);
-
     m_SceneObjects[0]->transform = model;
     shaderGizmo->setMat4("model", model);
     shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->directionalLight.GetColor(), 1.0f));
@@ -1875,10 +1877,14 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
     for (unsigned int i = 0; i < m_LightManager->spotLightCount; i++)
     {
         m_LightManager->spotLights[i].GetBasePL()->SetPosition(m_SceneObjects[offsetSpot + i]->position);
-        glm::quat rotation = m_SceneObjects[offsetSpot + i]->rotation;
-        glm::vec3 direction = glm::vec3(rotation.x, rotation.y, rotation.z);
-        m_LightManager->spotLights[i].SetDirection(direction);
-        model = Math::CreateTransform(m_SceneObjects[offsetSpot + i]->position, m_SceneObjects[offsetSpot + i]->rotation, glm::vec3(1.0f));
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, m_LightManager->spotLights[i].GetBasePL()->GetPosition());
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().x * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(1.0f));
+
         m_SceneObjects[offsetPoint + i]->transform = model;
         shaderGizmo->setMat4("model", model);
         shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->spotLights[i].GetBasePL()->GetColor(), 1.0f));
