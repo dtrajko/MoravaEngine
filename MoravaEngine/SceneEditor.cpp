@@ -1000,11 +1000,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
 
 void SceneEditor::Update(float timestep, Window& mainWindow)
 {
-    // printf("Directional Light Direction [ %.2ff %.2ff %.2ff ]\n", 
-    //     LightManager::directionalLight.GetDirection().x, 
-    //     LightManager::directionalLight.GetDirection().y, 
-    //     LightManager::directionalLight.GetDirection().z);
-
     m_CurrentTimestamp = timestep;
 
     if (m_SelectedIndex >= m_SceneObjects.size())
@@ -1054,7 +1049,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
         m_Gizmo->OnMousePress(mainWindow, &m_SceneObjects, m_SelectedIndex);
-        // UpdateLightDirection(&m_SceneObjects, m_SelectedIndex, m_Gizmo->GetRotation());
+        // UpdateLightDirection(m_Gizmo->GetRotation());
         m_MouseButton_1_Prev = true;
     }
 
@@ -1121,21 +1116,22 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         object->AABB->Update(object->position, object->rotation, object->scale);
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
+
+    UpdateLightDirection(m_Gizmo->GetRotation());
 }
 
-void SceneEditor::UpdateLightDirection(std::vector<SceneObject*>* sceneObjects, unsigned int selectedIndex, glm::quat rotation)
+void SceneEditor::UpdateLightDirection(glm::quat rotation)
 {
     if (rotation.x == 0.0f && rotation.y == 0.0f && rotation.z == 0.0f) return;
 
-    glm::vec3 direction = glm::vec3(rotation.x, rotation.y, rotation.z) / toRadians;
+    glm::vec3 direction = glm::normalize(glm::eulerAngles(rotation) / toRadians);
+    // printf("UpdateLightDirection direction: [ %.2ff %.2ff %.2ff ]\n", direction.x, direction.y, direction.z);
 
-    printf("UpdateLightDirection direction: [ %.2ff %.2ff %.2ff ]\n", direction.x, direction.y, direction.z);
-
-    if (sceneObjects->at(selectedIndex)->name == "Light.directional") {
+    if (m_SceneObjects[m_SelectedIndex]->name == "Light.directional") {
         LightManager::directionalLight.SetDirection(direction);
     }
-    else if (sceneObjects->at(selectedIndex)->name.substr(0, 10) == "Light.spot") {
-        unsigned int spotLightIndex = selectedIndex - 4 - 1; // minus 4 point lights, minus 1 directional light
+    else if (m_SceneObjects[m_SelectedIndex]->name.substr(0, 10) == "Light.spot") {
+        unsigned int spotLightIndex = m_SelectedIndex - 4 - 1; // minus 4 point lights, minus 1 directional light
         assert(spotLightIndex >= 0 && spotLightIndex <= 3);
         LightManager::spotLights[spotLightIndex].SetDirection(direction);
     }
