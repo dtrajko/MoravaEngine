@@ -13,8 +13,7 @@ class LightManager
 {
 
 public:
-	LightManager(SceneSettings sceneSettings);
-	~LightManager();
+	static void Init(SceneSettings sceneSettings);
 
 public:
 	static DirectionalLight directionalLight;

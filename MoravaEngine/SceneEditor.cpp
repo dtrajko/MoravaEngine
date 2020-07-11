@@ -31,8 +31,6 @@
 
 SceneEditor::SceneEditor()
 {
-    m_LightManager = nullptr;
-
     sceneSettings.cameraPosition   = glm::vec3(0.0f, 8.0f, 24.0f);
     sceneSettings.cameraStartYaw   = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
@@ -461,7 +459,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
         }
 
         ImGui::SliderFloat3("Position", (float*)m_PositionEdit, -10.0f, 10.0f);
-        ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -179.0f, 180.0f);
+        ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -360.0f, 360.0f);
         ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.1f, 20.0f);
     }
     ImGui::End();
@@ -670,6 +668,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::Text("* Copy scene object: Left CTRL + C");
         }
     }
+    ImGui::End();
 
     ImGui::Begin("Renderer");
     {
@@ -844,11 +843,11 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
         {
             // Directional Light
             SDirectionalLight directionalLight;
-            directionalLight.base.enabled = m_LightManager->directionalLight.GetEnabled();
-            directionalLight.base.color = m_LightManager->directionalLight.GetColor();
-            directionalLight.base.ambientIntensity = m_LightManager->directionalLight.GetAmbientIntensity();
-            directionalLight.base.diffuseIntensity = m_LightManager->directionalLight.GetDiffuseIntensity();
-            directionalLight.direction = m_LightManager->directionalLight.GetDirection();
+            directionalLight.base.enabled = LightManager::directionalLight.GetEnabled();
+            directionalLight.base.color = LightManager::directionalLight.GetColor();
+            directionalLight.base.ambientIntensity = LightManager::directionalLight.GetAmbientIntensity();
+            directionalLight.base.diffuseIntensity = LightManager::directionalLight.GetDiffuseIntensity();
+            directionalLight.direction = LightManager::directionalLight.GetDirection();
 
             ImGui::Checkbox("DL Enabled", &directionalLight.base.enabled);
             ImGui::ColorEdit3("DL Color", glm::value_ptr(directionalLight.base.color));
@@ -867,11 +866,11 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
                 m_DirLightEnabledPrev = directionalLight.base.enabled;
             }
 
-            m_LightManager->directionalLight.SetEnabled(directionalLight.base.enabled);
-            m_LightManager->directionalLight.SetColor(directionalLight.base.color);
-            m_LightManager->directionalLight.SetAmbientIntensity(directionalLight.base.ambientIntensity);
-            m_LightManager->directionalLight.SetDiffuseIntensity(directionalLight.base.diffuseIntensity);
-            m_LightManager->directionalLight.SetDirection(directionalLight.direction);
+            LightManager::directionalLight.SetEnabled(directionalLight.base.enabled);
+            LightManager::directionalLight.SetColor(directionalLight.base.color);
+            LightManager::directionalLight.SetAmbientIntensity(directionalLight.base.ambientIntensity);
+            LightManager::directionalLight.SetDiffuseIntensity(directionalLight.base.diffuseIntensity);
+            LightManager::directionalLight.SetDirection(directionalLight.direction);
         }
 
         if (ImGui::CollapsingHeader("Point Lights"))
@@ -881,16 +880,16 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             // Point Lights
             SPointLight pointLights[4];
             char locBuff[100] = { '\0' };
-            for (unsigned int pl = 0; pl < m_LightManager->pointLightCount; pl++)
+            for (unsigned int pl = 0; pl < LightManager::pointLightCount; pl++)
             {
-                pointLights[pl].base.enabled = m_LightManager->pointLights[pl].GetEnabled();
-                pointLights[pl].base.color = m_LightManager->pointLights[pl].GetColor();
-                pointLights[pl].base.ambientIntensity = m_LightManager->pointLights[pl].GetAmbientIntensity();
-                pointLights[pl].base.diffuseIntensity = m_LightManager->pointLights[pl].GetDiffuseIntensity();
-                pointLights[pl].position = m_LightManager->pointLights[pl].GetPosition();
-                pointLights[pl].constant = m_LightManager->pointLights[pl].GetConstant();
-                pointLights[pl].linear = m_LightManager->pointLights[pl].GetLinear();
-                pointLights[pl].exponent = m_LightManager->pointLights[pl].GetExponent();
+                pointLights[pl].base.enabled = LightManager::pointLights[pl].GetEnabled();
+                pointLights[pl].base.color = LightManager::pointLights[pl].GetColor();
+                pointLights[pl].base.ambientIntensity = LightManager::pointLights[pl].GetAmbientIntensity();
+                pointLights[pl].base.diffuseIntensity = LightManager::pointLights[pl].GetDiffuseIntensity();
+                pointLights[pl].position = LightManager::pointLights[pl].GetPosition();
+                pointLights[pl].constant = LightManager::pointLights[pl].GetConstant();
+                pointLights[pl].linear = LightManager::pointLights[pl].GetLinear();
+                pointLights[pl].exponent = LightManager::pointLights[pl].GetExponent();
 
                 snprintf(locBuff, sizeof(locBuff), "Point Light %i", pl);
                 if (ImGui::CollapsingHeader(locBuff))
@@ -913,14 +912,14 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
                     ImGui::SliderFloat(locBuff, &pointLights[pl].exponent, -2.0f, 2.0f);
                 }
 
-                m_LightManager->pointLights[pl].SetEnabled(pointLights[pl].base.enabled);
-                m_LightManager->pointLights[pl].SetColor(pointLights[pl].base.color);
-                m_LightManager->pointLights[pl].SetAmbientIntensity(pointLights[pl].base.ambientIntensity);
-                m_LightManager->pointLights[pl].SetDiffuseIntensity(pointLights[pl].base.diffuseIntensity);
-                m_LightManager->pointLights[pl].SetPosition(pointLights[pl].position);
-                m_LightManager->pointLights[pl].SetConstant(pointLights[pl].constant);
-                m_LightManager->pointLights[pl].SetLinear(pointLights[pl].linear);
-                m_LightManager->pointLights[pl].SetExponent(pointLights[pl].exponent);
+                LightManager::pointLights[pl].SetEnabled(pointLights[pl].base.enabled);
+                LightManager::pointLights[pl].SetColor(pointLights[pl].base.color);
+                LightManager::pointLights[pl].SetAmbientIntensity(pointLights[pl].base.ambientIntensity);
+                LightManager::pointLights[pl].SetDiffuseIntensity(pointLights[pl].base.diffuseIntensity);
+                LightManager::pointLights[pl].SetPosition(pointLights[pl].position);
+                LightManager::pointLights[pl].SetConstant(pointLights[pl].constant);
+                LightManager::pointLights[pl].SetLinear(pointLights[pl].linear);
+                LightManager::pointLights[pl].SetExponent(pointLights[pl].exponent);
             }
             ImGui::Unindent();
         }
@@ -932,18 +931,18 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             // Spot Lights
             SSpotLight spotLights[4];
             char locBuff[100] = { '\0' };
-            for (unsigned int sl = 0; sl < m_LightManager->spotLightCount; sl++)
+            for (unsigned int sl = 0; sl < LightManager::spotLightCount; sl++)
             {
-                spotLights[sl].base.base.enabled = m_LightManager->spotLights[sl].GetBasePL()->GetEnabled();
-                spotLights[sl].base.base.color = m_LightManager->spotLights[sl].GetBasePL()->GetColor();
-                spotLights[sl].base.base.ambientIntensity = m_LightManager->spotLights[sl].GetBasePL()->GetAmbientIntensity();
-                spotLights[sl].base.base.diffuseIntensity = m_LightManager->spotLights[sl].GetBasePL()->GetDiffuseIntensity();
-                spotLights[sl].base.position = m_LightManager->spotLights[sl].GetBasePL()->GetPosition();
-                spotLights[sl].base.constant = m_LightManager->spotLights[sl].GetBasePL()->GetConstant();
-                spotLights[sl].base.linear = m_LightManager->spotLights[sl].GetBasePL()->GetLinear();
-                spotLights[sl].base.exponent = m_LightManager->spotLights[sl].GetBasePL()->GetExponent();
-                spotLights[sl].direction = m_LightManager->spotLights[sl].GetDirection();
-                spotLights[sl].edge = m_LightManager->spotLights[sl].GetEdge();
+                spotLights[sl].base.base.enabled = LightManager::spotLights[sl].GetBasePL()->GetEnabled();
+                spotLights[sl].base.base.color = LightManager::spotLights[sl].GetBasePL()->GetColor();
+                spotLights[sl].base.base.ambientIntensity = LightManager::spotLights[sl].GetBasePL()->GetAmbientIntensity();
+                spotLights[sl].base.base.diffuseIntensity = LightManager::spotLights[sl].GetBasePL()->GetDiffuseIntensity();
+                spotLights[sl].base.position = LightManager::spotLights[sl].GetBasePL()->GetPosition();
+                spotLights[sl].base.constant = LightManager::spotLights[sl].GetBasePL()->GetConstant();
+                spotLights[sl].base.linear = LightManager::spotLights[sl].GetBasePL()->GetLinear();
+                spotLights[sl].base.exponent = LightManager::spotLights[sl].GetBasePL()->GetExponent();
+                spotLights[sl].direction = LightManager::spotLights[sl].GetDirection();
+                spotLights[sl].edge = LightManager::spotLights[sl].GetEdge();
 
                 snprintf(locBuff, sizeof(locBuff), "Spot Light %i", sl);
                 if (ImGui::CollapsingHeader(locBuff))
@@ -970,16 +969,16 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
                     ImGui::SliderFloat(locBuff, &spotLights[sl].base.exponent, -2.0f, 2.0f);
                 }
 
-                m_LightManager->spotLights[sl].GetBasePL()->SetEnabled(spotLights[sl].base.base.enabled);
-                m_LightManager->spotLights[sl].GetBasePL()->SetColor(spotLights[sl].base.base.color);
-                m_LightManager->spotLights[sl].GetBasePL()->SetAmbientIntensity(spotLights[sl].base.base.ambientIntensity);
-                m_LightManager->spotLights[sl].GetBasePL()->SetDiffuseIntensity(spotLights[sl].base.base.diffuseIntensity);
-                m_LightManager->spotLights[sl].GetBasePL()->SetPosition(spotLights[sl].base.position);
-                m_LightManager->spotLights[sl].GetBasePL()->SetConstant(spotLights[sl].base.constant);
-                m_LightManager->spotLights[sl].GetBasePL()->SetLinear(spotLights[sl].base.linear);
-                m_LightManager->spotLights[sl].GetBasePL()->SetExponent(spotLights[sl].base.exponent);
-                m_LightManager->spotLights[sl].SetDirection(spotLights[sl].direction);
-                m_LightManager->spotLights[sl].SetEdge(spotLights[sl].edge);
+                LightManager::spotLights[sl].GetBasePL()->SetEnabled(spotLights[sl].base.base.enabled);
+                LightManager::spotLights[sl].GetBasePL()->SetColor(spotLights[sl].base.base.color);
+                LightManager::spotLights[sl].GetBasePL()->SetAmbientIntensity(spotLights[sl].base.base.ambientIntensity);
+                LightManager::spotLights[sl].GetBasePL()->SetDiffuseIntensity(spotLights[sl].base.base.diffuseIntensity);
+                LightManager::spotLights[sl].GetBasePL()->SetPosition(spotLights[sl].base.position);
+                LightManager::spotLights[sl].GetBasePL()->SetConstant(spotLights[sl].base.constant);
+                LightManager::spotLights[sl].GetBasePL()->SetLinear(spotLights[sl].base.linear);
+                LightManager::spotLights[sl].GetBasePL()->SetExponent(spotLights[sl].base.exponent);
+                LightManager::spotLights[sl].SetDirection(spotLights[sl].direction);
+                LightManager::spotLights[sl].SetEdge(spotLights[sl].edge);
             }
             ImGui::Unindent();
         }
@@ -1001,6 +1000,11 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
 
 void SceneEditor::Update(float timestep, Window& mainWindow)
 {
+    // printf("Directional Light Direction [ %.2ff %.2ff %.2ff ]\n", 
+    //     LightManager::directionalLight.GetDirection().x, 
+    //     LightManager::directionalLight.GetDirection().y, 
+    //     LightManager::directionalLight.GetDirection().z);
+
     m_CurrentTimestamp = timestep;
 
     if (m_SelectedIndex >= m_SceneObjects.size())
@@ -1050,17 +1054,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
         m_Gizmo->OnMousePress(mainWindow, &m_SceneObjects, m_SelectedIndex);
-
-        glm::vec3 direction = glm::vec3(-m_Gizmo->GetRotation().x, -m_Gizmo->GetRotation().y, -m_Gizmo->GetRotation().z);
-
-        if (m_SceneObjects[m_SelectedIndex]->name == "Light.directional") {
-            LightManager::directionalLight.SetDirection(direction);
-        }
-        else if (m_SceneObjects[m_SelectedIndex]->name.substr(0, 10) == "Light.spot") {
-            unsigned int spotLightIndex = m_SelectedIndex - 4 - 1; // minus 4 point lights, minus 1 directional light
-            assert(spotLightIndex >= 0 && spotLightIndex <= 3);
-            LightManager::spotLights[spotLightIndex].SetDirection(direction);
-        }
+        // UpdateLightDirection(&m_SceneObjects, m_SelectedIndex, m_Gizmo->GetRotation());
         m_MouseButton_1_Prev = true;
     }
 
@@ -1126,6 +1120,24 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         glm::vec3 scaleAABB = object->scale * object->AABB->m_Scale;
         object->AABB->Update(object->position, object->rotation, object->scale);
         object->pivot->Update(object->position, object->scale + 1.0f);
+    }
+}
+
+void SceneEditor::UpdateLightDirection(std::vector<SceneObject*>* sceneObjects, unsigned int selectedIndex, glm::quat rotation)
+{
+    if (rotation.x == 0.0f && rotation.y == 0.0f && rotation.z == 0.0f) return;
+
+    glm::vec3 direction = glm::vec3(rotation.x, rotation.y, rotation.z) / toRadians;
+
+    printf("UpdateLightDirection direction: [ %.2ff %.2ff %.2ff ]\n", direction.x, direction.y, direction.z);
+
+    if (sceneObjects->at(selectedIndex)->name == "Light.directional") {
+        LightManager::directionalLight.SetDirection(direction);
+    }
+    else if (sceneObjects->at(selectedIndex)->name.substr(0, 10) == "Light.spot") {
+        unsigned int spotLightIndex = selectedIndex - 4 - 1; // minus 4 point lights, minus 1 directional light
+        assert(spotLightIndex >= 0 && spotLightIndex <= 3);
+        LightManager::spotLights[spotLightIndex].SetDirection(direction);
     }
 }
 
@@ -1705,14 +1717,14 @@ void SceneEditor::AddLightsToSceneObjects()
     SceneObject* sceneObject = CreateNewSceneObject();
 
     glm::vec3 position = glm::vec3(-10.0f, 10.0f, 10.0f);
-    glm::vec3 rotation = m_LightManager->directionalLight.GetDirection();
+    glm::vec3 rotation = LightManager::directionalLight.GetDirection();
     glm::vec3 scale = glm::vec3(1.0f);
 
     glm::mat4 transform = glm::mat4(1.0f);
     transform = glm::translate(transform, position);
-    transform = glm::rotate(transform, glm::radians(m_LightManager->directionalLight.GetDirection().x * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    transform = glm::rotate(transform, glm::radians(m_LightManager->directionalLight.GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    transform = glm::rotate(transform, glm::radians(m_LightManager->directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    transform = glm::rotate(transform, glm::radians(LightManager::directionalLight.GetDirection().x * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    transform = glm::rotate(transform, glm::radians(LightManager::directionalLight.GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    transform = glm::rotate(transform, glm::radians(LightManager::directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     transform = glm::scale(transform, scale);
 
     sceneObject->name = "Light.directional";
@@ -1736,12 +1748,12 @@ void SceneEditor::AddLightsToSceneObjects()
 
     printf("SceneEditor::AddLightsToSceneObjects Add Directional Light m_SceneObjects[%i]\n", (int)m_SceneObjects.size() - 1);
 
-    for (unsigned int i = 0; i < m_LightManager->pointLightCount; i++)
+    for (unsigned int i = 0; i < LightManager::pointLightCount; i++)
     {
         // Point lights - Sphere mesh
         SceneObject* sceneObject = CreateNewSceneObject();
 
-        glm::vec3 position = m_LightManager->pointLights[i].GetPosition();
+        glm::vec3 position = LightManager::pointLights[i].GetPosition();
         glm::vec3 rotation = glm::vec3(0.0f);
         glm::vec3 scale = glm::vec3(1.0f);
 
@@ -1771,20 +1783,20 @@ void SceneEditor::AddLightsToSceneObjects()
         printf("SceneEditor::AddLightsToSceneObjects Add Point Light m_SceneObjects[%i]\n", (int)m_SceneObjects.size() - 1);
     }
 
-    for (unsigned int i = 0; i < m_LightManager->spotLightCount; i++)
+    for (unsigned int i = 0; i < LightManager::spotLightCount; i++)
     {
         // Spot lights - Sphere mesh
         SceneObject* sceneObject = CreateNewSceneObject();
 
-        glm::vec3 position = m_LightManager->pointLights[i].GetPosition();
-        glm::vec3 rotation = m_LightManager->spotLights[i].GetDirection();
+        glm::vec3 position = LightManager::pointLights[i].GetPosition();
+        glm::vec3 rotation = LightManager::spotLights[i].GetDirection();
         glm::vec3 scale = glm::vec3(1.0f);
 
         glm::mat4 transform = glm::mat4(1.0f);
         transform = glm::translate(transform, position);
-        transform = glm::rotate(transform, glm::radians(m_LightManager->spotLights[i].GetDirection().x * 90.0f),  glm::vec3(0.0f, 0.0f, 1.0f));
-        transform = glm::rotate(transform, glm::radians(m_LightManager->spotLights[i].GetDirection().y * 90.0f),  glm::vec3(0.0f, 1.0f, 0.0f));
-        transform = glm::rotate(transform, glm::radians(m_LightManager->spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        transform = glm::rotate(transform, glm::radians(LightManager::spotLights[i].GetDirection().x * 90.0f),  glm::vec3(0.0f, 0.0f, 1.0f));
+        transform = glm::rotate(transform, glm::radians(LightManager::spotLights[i].GetDirection().y * 90.0f),  glm::vec3(0.0f, 1.0f, 0.0f));
+        transform = glm::rotate(transform, glm::radians(LightManager::spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         transform = glm::scale(transform, scale);
 
         sceneObject->name = "Light.spot." + std::to_string(i);
@@ -1823,56 +1835,56 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
     // Directional light (somewhere on pozitive Y axis, at X=0, Z=0)
     model = glm::mat4(1.0f);
     model = glm::translate(model, m_SceneObjects[0]->position);
-    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().x *  90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().y *  90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(m_LightManager->directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(LightManager::directionalLight.GetDirection().x *  90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(LightManager::directionalLight.GetDirection().y *  90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(LightManager::directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::scale(model, glm::vec3(1.0f));
 
-    glm::vec3 dir = m_LightManager->directionalLight.GetDirection();
+    glm::vec3 dir = LightManager::directionalLight.GetDirection();
     // printf("Render Dir Light Direction [ %.2ff %.2ff %.2ff ]\n", dir.x, dir.y, dir.z);
 
     m_SceneObjects[0]->transform = model;
     shaderGizmo->setMat4("model", model);
-    shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->directionalLight.GetColor(), 1.0f));
-    if (m_DisplayLightSources && m_LightManager->directionalLight.GetEnabled())
+    shaderGizmo->setVec4("tintColor", glm::vec4(LightManager::directionalLight.GetColor(), 1.0f));
+    if (m_DisplayLightSources && LightManager::directionalLight.GetEnabled())
         m_SceneObjects[0]->Render();
 
     // Point lights - render Sphere (Light source)
     unsigned int offsetPoint = 1;
-    for (unsigned int i = 0; i < m_LightManager->pointLightCount; i++)
+    for (unsigned int i = 0; i < LightManager::pointLightCount; i++)
     {
-        m_LightManager->pointLights[i].SetPosition(m_SceneObjects[offsetPoint + i]->position);
+        LightManager::pointLights[i].SetPosition(m_SceneObjects[offsetPoint + i]->position);
 
         model = glm::mat4(1.0f);
         model = glm::translate(model, m_SceneObjects[offsetPoint + i]->position);
         model = glm::scale(model, glm::vec3(0.5f));
         m_SceneObjects[offsetPoint + i]->transform = model;
         shaderGizmo->setMat4("model", model);
-        shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->pointLights[i].GetColor(), 1.0f));
-        if (m_DisplayLightSources && m_LightManager->pointLights[i].GetEnabled())
+        shaderGizmo->setVec4("tintColor", glm::vec4(LightManager::pointLights[i].GetColor(), 1.0f));
+        if (m_DisplayLightSources && LightManager::pointLights[i].GetEnabled())
             m_SceneObjects[offsetPoint + i]->Render();
     }
 
     // Spot lights - render cone
-    unsigned int offsetSpot = offsetPoint + m_LightManager->pointLightCount;
-    for (unsigned int i = 0; i < m_LightManager->spotLightCount; i++)
+    unsigned int offsetSpot = offsetPoint + LightManager::pointLightCount;
+    for (unsigned int i = 0; i < LightManager::spotLightCount; i++)
     {
-        m_LightManager->spotLights[i].GetBasePL()->SetPosition(m_SceneObjects[offsetSpot + i]->position);
-        m_LightManager->spotLights[i].SetDirection(glm::vec3(
-            glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).x ,
-            glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).y,
-            glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).z));
+        LightManager::spotLights[i].GetBasePL()->SetPosition(m_SceneObjects[offsetSpot + i]->position);
+        // LightManager::spotLights[i].SetDirection(glm::vec3(
+        //     glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).x ,
+        //     glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).y,
+        //     glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).z));
 
         model = glm::mat4(1.0f);
         model = glm::translate(model, m_SceneObjects[offsetSpot + i]->position);
-        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().x *  90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().y *  90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(m_LightManager->spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(LightManager::spotLights[i].GetDirection().x *  90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::rotate(model, glm::radians(LightManager::spotLights[i].GetDirection().y *  90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(LightManager::spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         model = glm::scale(model, glm::vec3(0.5f));
         m_SceneObjects[offsetPoint + i]->transform = model;
         shaderGizmo->setMat4("model", model);
-        shaderGizmo->setVec4("tintColor", glm::vec4(m_LightManager->spotLights[i].GetBasePL()->GetColor(), 1.0f));
-        if (m_DisplayLightSources && m_LightManager->spotLights[i].GetBasePL()->GetEnabled())
+        shaderGizmo->setVec4("tintColor", glm::vec4(LightManager::spotLights[i].GetBasePL()->GetColor(), 1.0f));
+        if (m_DisplayLightSources && LightManager::spotLights[i].GetBasePL()->GetEnabled())
             m_SceneObjects[offsetSpot + i]->Render();
     }
 }

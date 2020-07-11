@@ -88,6 +88,7 @@ private:
 	void SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix);
 	glm::mat4 CalculateRenderTransform(SceneObject* sceneObject);
 	virtual bool IsWaterOnScene() override;
+	void UpdateLightDirection(std::vector<SceneObject*>* sceneObjects, unsigned int selectedIndex, glm::quat rotation);
 
 private:
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;

@@ -127,7 +127,6 @@ public:
 	inline std::map<std::string, Material*> GetMaterials() const { return materials; };
 	inline std::map<std::string, Model*> GetModels() const { return models; };
 	inline std::map<std::string, Mesh*> GetMeshes() const { return meshes; };
-	inline LightManager* GetLightManager() const { return m_LightManager; };
 	inline WaterManager* GetWaterManager() const { return m_WaterManager; };
 	inline Skybox* GetSkybox() const { return m_Skybox; };
 	inline float GetFOV() { return m_FOV; };
@@ -158,7 +157,6 @@ protected:
 	Skybox* m_Skybox;
 	std::vector<std::string> skyboxFaces;
 
-	LightManager* m_LightManager;
 	WaterManager* m_WaterManager;
 
 	std::map<std::string, Texture*> textures;

@@ -33,6 +33,11 @@ void DirectionalLight::UseLight(GLint enabledLocation, GLint ambientColorLocatio
 	glUniform3f(directionLocation, m_Direction.x, m_Direction.y, m_Direction.z);
 }
 
+void DirectionalLight::SetDirection(glm::vec3 direction)
+{
+	m_Direction = direction;
+}
+
 glm::mat4 DirectionalLight::CalculateLightTransform()
 {
 	return m_LightProj * glm::lookAt(-m_Direction, glm::vec3(0.0f, -m_Direction.y * 0.75f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));

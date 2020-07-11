@@ -191,9 +191,9 @@ void Scene::SetCamera()
 void Scene::SetLightManager()
 {
 	// Skip if Light Manager already initialized
-	if (m_LightManager->pointLightCount > 0 || m_LightManager->spotLightCount > 0) return;
+	if (LightManager::pointLightCount > 0 || LightManager::spotLightCount > 0) return;
 
-	m_LightManager = new LightManager(sceneSettings);
+	LightManager::Init(sceneSettings);
 }
 
 void Scene::SetWaterManager(int width, int height)
@@ -324,7 +324,6 @@ Scene::~Scene()
 {
 	delete m_Skybox;
 	delete m_Camera;
-	delete m_LightManager;
 	delete m_WaterManager;
 
 	//	for (auto& texture : textures) // TextureLoader is now responsible for deallocating

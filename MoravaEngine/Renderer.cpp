@@ -112,7 +112,7 @@ void Renderer::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 proj
 
 	shaders["directionalShadow"]->Bind();
 
-	DirectionalLight* light = &scene->GetLightManager()->directionalLight;
+	DirectionalLight* light = &LightManager::directionalLight;
 	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
 	light->GetShadowMap()->Write();

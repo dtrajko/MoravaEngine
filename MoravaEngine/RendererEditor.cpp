@@ -566,13 +566,13 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     /**** Begin shadow_map ****/
     Shader* shaderShadowMap = shaders["shadow_map"];
     shaderShadowMap->Bind();
-    shaderShadowMap->setMat4("dirLightTransform", scene->GetLightManager()->directionalLight.CalculateLightTransform());
+    shaderShadowMap->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     /**** End shadow_map ****/
 
     /**** Begin omni_shadow_map ****/
     Shader* shaderOmniShadowMap = shaders["omni_shadow_map"];
     shaderOmniShadowMap->Bind();
-    shaderOmniShadowMap->setVec3("lightPosition", scene->GetLightManager()->directionalLight.GetPosition());
+    shaderOmniShadowMap->setVec3("lightPosition", LightManager::directionalLight.GetPosition());
     shaderOmniShadowMap->setFloat("farPlane", scene->GetSettings().farPlane);
     /**** End omni_shadow_map ****/
 
@@ -582,7 +582,7 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
 
     shaderWater->setMat4("projection", projectionMatrix);
     shaderWater->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
-    shaderWater->setVec3("lightPosition", scene->GetLightManager()->directionalLight.GetPosition());
+    shaderWater->setVec3("lightPosition", LightManager::directionalLight.GetPosition());
     shaderWater->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
     shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
     shaderWater->setFloat("moveFactor", scene->GetWaterManager()->GetWaterMoveFactor());

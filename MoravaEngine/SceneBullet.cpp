@@ -55,8 +55,8 @@ void SceneBullet::SetLightManager()
 {
 	Scene::SetLightManager();
 
-	m_LightManager->pointLights[0].SetAmbientIntensity(2.0f);
-	m_LightManager->pointLights[0].SetDiffuseIntensity(1.0f);
+	LightManager::pointLights[0].SetAmbientIntensity(2.0f);
+	LightManager::pointLights[0].SetDiffuseIntensity(1.0f);
 }
 
 void SceneBullet::SetSkybox()
@@ -262,7 +262,7 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 			bulletTransform.getOrigin().getY(),
 			bulletTransform.getOrigin().getZ()
 		);
-		m_LightManager->pointLights[0].SetPosition(bulletPosition);
+		LightManager::pointLights[0].SetPosition(bulletPosition);
 	}
 
 	dynamicsWorld->setGravity(btVector3(0, btScalar(m_GravityIntensity), 0));
@@ -276,13 +276,13 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 
 void SceneBullet::UpdateImGui(float timestep, Window& mainWindow)
 {
-	glm::vec3 lightDirection = m_LightManager->directionalLight.GetDirection();
+	glm::vec3 lightDirection = LightManager::directionalLight.GetDirection();
 
 	// Point light for sphere bullet
-	glm::vec3 PL0_Position = m_LightManager->pointLights[0].GetPosition();
-	glm::vec3 PL0_Color = m_LightManager->pointLights[0].GetColor();
-	float PL0_AmbIntensity = m_LightManager->pointLights[0].GetAmbientIntensity();
-	float PL0_DiffIntensity = m_LightManager->pointLights[0].GetDiffuseIntensity();
+	glm::vec3 PL0_Position = LightManager::pointLights[0].GetPosition();
+	glm::vec3 PL0_Color = LightManager::pointLights[0].GetColor();
+	float PL0_AmbIntensity = LightManager::pointLights[0].GetAmbientIntensity();
+	float PL0_DiffIntensity = LightManager::pointLights[0].GetDiffuseIntensity();
 
 	ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(lightDirection), -1.0f, 1.0f);
 	ImGui::ColorEdit3("PL0 Color", glm::value_ptr(PL0_Color));
@@ -312,11 +312,11 @@ void SceneBullet::UpdateImGui(float timestep, Window& mainWindow)
 	}
 	m_ProfilerResults.clear();
 
-	m_LightManager->directionalLight.SetDirection(lightDirection);
+	LightManager::directionalLight.SetDirection(lightDirection);
 
-	m_LightManager->pointLights[0].SetColor(PL0_Color);
-	m_LightManager->pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
-	m_LightManager->pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
+	LightManager::pointLights[0].SetColor(PL0_Color);
+	LightManager::pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
+	LightManager::pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
 }
 
 void SceneBullet::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,

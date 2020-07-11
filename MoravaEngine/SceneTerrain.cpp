@@ -89,8 +89,8 @@ void SceneTerrain::UpdateImGui(float timestep, Window& mainWindow)
 	bool p_open = true;
 	ShowExampleAppDockSpace(&p_open, mainWindow);
 
-	glm::vec3 dirLightDirection = m_LightManager->directionalLight.GetDirection();
-	glm::vec3 dirLightColor = m_LightManager->directionalLight.GetColor();
+	glm::vec3 dirLightDirection = LightManager::directionalLight.GetDirection();
+	glm::vec3 dirLightColor = LightManager::directionalLight.GetColor();
 
 	ImGui::Begin("Scene Settings");
 	{
@@ -103,8 +103,8 @@ void SceneTerrain::UpdateImGui(float timestep, Window& mainWindow)
 	}
 	ImGui::End();
 
-	m_LightManager->directionalLight.SetDirection(dirLightDirection);
-	m_LightManager->directionalLight.SetColor(dirLightColor);
+	LightManager::directionalLight.SetDirection(dirLightDirection);
+	LightManager::directionalLight.SetColor(dirLightColor);
 
 	ImGui::Begin("Framebuffers");
 	{

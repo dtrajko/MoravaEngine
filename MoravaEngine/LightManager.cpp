@@ -10,7 +10,7 @@ unsigned int LightManager::pointLightCount = 0;
 unsigned int LightManager::spotLightCount = 0;
 
 
-LightManager::LightManager(SceneSettings sceneSettings)
+void LightManager::Init(SceneSettings sceneSettings)
 {
 	LightManager::directionalLight = DirectionalLight(sceneSettings.shadowMapWidth, sceneSettings.shadowMapHeight,
 		sceneSettings.directionalLight.base.enabled, sceneSettings.directionalLight.base.color,
@@ -53,8 +53,4 @@ LightManager::LightManager(SceneSettings sceneSettings)
 			LightManager::spotLightCount++;
 		}
 	}
-}
-
-LightManager::~LightManager()
-{
 }

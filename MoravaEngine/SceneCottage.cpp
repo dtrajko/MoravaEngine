@@ -136,11 +136,11 @@ void SceneCottage::UpdateImGui(float timestep, Window& mainWindow)
 		SDirectionalLight directionalLight;
 		SPointLight pointLights[4];
 
-		directionalLight.base.enabled = m_LightManager->directionalLight.GetEnabled();
-		directionalLight.direction = m_LightManager->directionalLight.GetDirection();
-		directionalLight.base.color = m_LightManager->directionalLight.GetColor();
-		directionalLight.base.ambientIntensity = m_LightManager->directionalLight.GetAmbientIntensity();
-		directionalLight.base.diffuseIntensity = m_LightManager->directionalLight.GetDiffuseIntensity();
+		directionalLight.base.enabled = LightManager::directionalLight.GetEnabled();
+		directionalLight.direction = LightManager::directionalLight.GetDirection();
+		directionalLight.base.color = LightManager::directionalLight.GetColor();
+		directionalLight.base.ambientIntensity = LightManager::directionalLight.GetAmbientIntensity();
+		directionalLight.base.diffuseIntensity = LightManager::directionalLight.GetDiffuseIntensity();
 
 		pointLights[0].position = sceneSettings.pointLights[0].position;
 		float lightRadius = 6.0;
@@ -148,34 +148,34 @@ void SceneCottage::UpdateImGui(float timestep, Window& mainWindow)
 		pointLights[0].position.x += (float)cos(lightAngle) * lightRadius;
 		pointLights[0].position.z += (float)sin(lightAngle) * lightRadius;
 		pointLights[0].position.y += (float)cos(lightAngle * 0.5) * lightRadius * 0.5f;
-		m_LightManager->pointLights[0].SetPosition(pointLights[0].position);
+		LightManager::pointLights[0].SetPosition(pointLights[0].position);
 
-		pointLights[0].base.enabled = m_LightManager->pointLights[0].GetEnabled();
-		pointLights[0].position = m_LightManager->pointLights[0].GetPosition();
-		pointLights[0].base.color = m_LightManager->pointLights[0].GetColor();
-		pointLights[0].base.ambientIntensity = m_LightManager->pointLights[0].GetAmbientIntensity();
-		pointLights[0].base.diffuseIntensity = m_LightManager->pointLights[0].GetDiffuseIntensity();
-		pointLights[0].constant = m_LightManager->pointLights[0].GetConstant();
-		pointLights[0].linear = m_LightManager->pointLights[0].GetLinear();
-		pointLights[0].exponent = m_LightManager->pointLights[0].GetExponent();
+		pointLights[0].base.enabled = LightManager::pointLights[0].GetEnabled();
+		pointLights[0].position = LightManager::pointLights[0].GetPosition();
+		pointLights[0].base.color = LightManager::pointLights[0].GetColor();
+		pointLights[0].base.ambientIntensity = LightManager::pointLights[0].GetAmbientIntensity();
+		pointLights[0].base.diffuseIntensity = LightManager::pointLights[0].GetDiffuseIntensity();
+		pointLights[0].constant = LightManager::pointLights[0].GetConstant();
+		pointLights[0].linear = LightManager::pointLights[0].GetLinear();
+		pointLights[0].exponent = LightManager::pointLights[0].GetExponent();
 
-		pointLights[1].base.enabled = m_LightManager->pointLights[1].GetEnabled();
-		pointLights[1].position = m_LightManager->pointLights[1].GetPosition();
-		pointLights[1].base.color = m_LightManager->pointLights[1].GetColor();
-		pointLights[1].base.ambientIntensity = m_LightManager->pointLights[1].GetAmbientIntensity();
-		pointLights[1].base.diffuseIntensity = m_LightManager->pointLights[1].GetDiffuseIntensity();
-		pointLights[1].constant = m_LightManager->pointLights[1].GetConstant();
-		pointLights[1].linear = m_LightManager->pointLights[1].GetLinear();
-		pointLights[1].exponent = m_LightManager->pointLights[1].GetExponent();
+		pointLights[1].base.enabled = LightManager::pointLights[1].GetEnabled();
+		pointLights[1].position = LightManager::pointLights[1].GetPosition();
+		pointLights[1].base.color = LightManager::pointLights[1].GetColor();
+		pointLights[1].base.ambientIntensity = LightManager::pointLights[1].GetAmbientIntensity();
+		pointLights[1].base.diffuseIntensity = LightManager::pointLights[1].GetDiffuseIntensity();
+		pointLights[1].constant = LightManager::pointLights[1].GetConstant();
+		pointLights[1].linear = LightManager::pointLights[1].GetLinear();
+		pointLights[1].exponent = LightManager::pointLights[1].GetExponent();
 
-		pointLights[2].base.enabled = m_LightManager->pointLights[2].GetEnabled();
-		pointLights[2].position = m_LightManager->pointLights[2].GetPosition();
-		pointLights[2].base.color = m_LightManager->pointLights[2].GetColor();
-		pointLights[2].base.ambientIntensity = m_LightManager->pointLights[2].GetAmbientIntensity();
-		pointLights[2].base.diffuseIntensity = m_LightManager->pointLights[2].GetDiffuseIntensity();
-		pointLights[2].constant = m_LightManager->pointLights[2].GetConstant();
-		pointLights[2].linear = m_LightManager->pointLights[2].GetLinear();
-		pointLights[2].exponent = m_LightManager->pointLights[2].GetExponent();
+		pointLights[2].base.enabled = LightManager::pointLights[2].GetEnabled();
+		pointLights[2].position = LightManager::pointLights[2].GetPosition();
+		pointLights[2].base.color = LightManager::pointLights[2].GetColor();
+		pointLights[2].base.ambientIntensity = LightManager::pointLights[2].GetAmbientIntensity();
+		pointLights[2].base.diffuseIntensity = LightManager::pointLights[2].GetDiffuseIntensity();
+		pointLights[2].constant = LightManager::pointLights[2].GetConstant();
+		pointLights[2].linear = LightManager::pointLights[2].GetLinear();
+		pointLights[2].exponent = LightManager::pointLights[2].GetExponent();
 
 		if (ImGui::CollapsingHeader("Display Info"))
 		{
@@ -213,38 +213,38 @@ void SceneCottage::UpdateImGui(float timestep, Window& mainWindow)
 			ImGui::SliderFloat("PL 2 Exponent",          &pointLights[2].exponent, -2.0f, 2.0f);
 		}
 
-		m_LightManager->directionalLight.SetEnabled(directionalLight.base.enabled);
-		m_LightManager->directionalLight.SetDirection(directionalLight.direction);
-		m_LightManager->directionalLight.SetColor(directionalLight.base.color);
-		m_LightManager->directionalLight.SetAmbientIntensity(directionalLight.base.ambientIntensity);
-		m_LightManager->directionalLight.SetDiffuseIntensity(directionalLight.base.diffuseIntensity);
+		LightManager::directionalLight.SetEnabled(directionalLight.base.enabled);
+		LightManager::directionalLight.SetDirection(directionalLight.direction);
+		LightManager::directionalLight.SetColor(directionalLight.base.color);
+		LightManager::directionalLight.SetAmbientIntensity(directionalLight.base.ambientIntensity);
+		LightManager::directionalLight.SetDiffuseIntensity(directionalLight.base.diffuseIntensity);
 
-		m_LightManager->pointLights[0].SetEnabled(pointLights[0].base.enabled);
-		m_LightManager->pointLights[0].SetPosition(pointLights[0].position);
-		m_LightManager->pointLights[0].SetColor(pointLights[0].base.color);
-		m_LightManager->pointLights[0].SetAmbientIntensity(pointLights[0].base.ambientIntensity);
-		m_LightManager->pointLights[0].SetDiffuseIntensity(pointLights[0].base.diffuseIntensity);
-		m_LightManager->pointLights[0].SetConstant(pointLights[0].constant);
-		m_LightManager->pointLights[0].SetLinear(pointLights[0].linear);
-		m_LightManager->pointLights[0].SetExponent(pointLights[0].exponent);
+		LightManager::pointLights[0].SetEnabled(pointLights[0].base.enabled);
+		LightManager::pointLights[0].SetPosition(pointLights[0].position);
+		LightManager::pointLights[0].SetColor(pointLights[0].base.color);
+		LightManager::pointLights[0].SetAmbientIntensity(pointLights[0].base.ambientIntensity);
+		LightManager::pointLights[0].SetDiffuseIntensity(pointLights[0].base.diffuseIntensity);
+		LightManager::pointLights[0].SetConstant(pointLights[0].constant);
+		LightManager::pointLights[0].SetLinear(pointLights[0].linear);
+		LightManager::pointLights[0].SetExponent(pointLights[0].exponent);
 
-		m_LightManager->pointLights[1].SetEnabled(pointLights[1].base.enabled);
-		m_LightManager->pointLights[1].SetPosition(pointLights[1].position);
-		m_LightManager->pointLights[1].SetColor(pointLights[1].base.color);
-		m_LightManager->pointLights[1].SetAmbientIntensity(pointLights[1].base.ambientIntensity);
-		m_LightManager->pointLights[1].SetDiffuseIntensity(pointLights[1].base.diffuseIntensity);
-		m_LightManager->pointLights[1].SetConstant(pointLights[1].constant);
-		m_LightManager->pointLights[1].SetLinear(pointLights[1].linear);
-		m_LightManager->pointLights[1].SetExponent(pointLights[1].exponent);
+		LightManager::pointLights[1].SetEnabled(pointLights[1].base.enabled);
+		LightManager::pointLights[1].SetPosition(pointLights[1].position);
+		LightManager::pointLights[1].SetColor(pointLights[1].base.color);
+		LightManager::pointLights[1].SetAmbientIntensity(pointLights[1].base.ambientIntensity);
+		LightManager::pointLights[1].SetDiffuseIntensity(pointLights[1].base.diffuseIntensity);
+		LightManager::pointLights[1].SetConstant(pointLights[1].constant);
+		LightManager::pointLights[1].SetLinear(pointLights[1].linear);
+		LightManager::pointLights[1].SetExponent(pointLights[1].exponent);
 
-		m_LightManager->pointLights[2].SetEnabled(pointLights[2].base.enabled);
-		m_LightManager->pointLights[2].SetPosition(pointLights[2].position);
-		m_LightManager->pointLights[2].SetColor(pointLights[2].base.color);
-		m_LightManager->pointLights[2].SetAmbientIntensity(pointLights[2].base.ambientIntensity);
-		m_LightManager->pointLights[2].SetDiffuseIntensity(pointLights[2].base.diffuseIntensity);
-		m_LightManager->pointLights[2].SetConstant(pointLights[2].constant);
-		m_LightManager->pointLights[2].SetLinear(pointLights[2].linear);
-		m_LightManager->pointLights[2].SetExponent(pointLights[2].exponent);
+		LightManager::pointLights[2].SetEnabled(pointLights[2].base.enabled);
+		LightManager::pointLights[2].SetPosition(pointLights[2].position);
+		LightManager::pointLights[2].SetColor(pointLights[2].base.color);
+		LightManager::pointLights[2].SetAmbientIntensity(pointLights[2].base.ambientIntensity);
+		LightManager::pointLights[2].SetDiffuseIntensity(pointLights[2].base.diffuseIntensity);
+		LightManager::pointLights[2].SetConstant(pointLights[2].constant);
+		LightManager::pointLights[2].SetLinear(pointLights[2].linear);
+		LightManager::pointLights[2].SetExponent(pointLights[2].exponent);
 	}
 	ImGui::End();
 

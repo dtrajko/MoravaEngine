@@ -114,7 +114,7 @@ void SceneEiffel::UpdateImGui(float timestep, Window& mainWindow)
 	{
 		// Shadow rotation
 		m_LightDirection = sceneSettings.directionalLight.direction;
-		m_LightColor = m_LightManager->directionalLight.GetColor();
+		m_LightColor = LightManager::directionalLight.GetColor();
 
 		float lightRadius = abs(m_LightDirection.x);
 		float lightAngle = timestep * sceneSettings.shadowSpeed;
@@ -129,8 +129,8 @@ void SceneEiffel::UpdateImGui(float timestep, Window& mainWindow)
 		}
 
 		m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
-		m_LightManager->directionalLight.SetDirection(m_LightDirection);
-		m_LightManager->directionalLight.SetColor(m_LightColor);
+		LightManager::directionalLight.SetDirection(m_LightDirection);
+		LightManager::directionalLight.SetColor(m_LightColor);
 	}
 	ImGui::End();
 
