@@ -50,6 +50,7 @@ void OmniShadowMap::Read(unsigned int textureUnit)
 {
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
+	// printf("OmniShadowMap::Read Bind texture ID %i to Slot %i\n", m_TextureID, textureUnit);
 }
 
 OmniShadowMap::~OmniShadowMap()

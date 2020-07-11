@@ -7,8 +7,8 @@ class OmniShadowMap : public ShadowMap
 {
 public:
 	OmniShadowMap();
+	virtual ~OmniShadowMap();
 
-	bool Init(GLuint width, GLuint height);
-	void Read(unsigned int textureUnit);
-	~OmniShadowMap();
+	virtual bool Init(GLuint width, GLuint height) override;
+	virtual void Read(unsigned int textureUnit) override;
 };

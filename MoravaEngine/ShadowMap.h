@@ -16,7 +16,7 @@ public:
 	GLuint GetShadowHeight() { return shadowHeight; };
 	inline const unsigned int GetFBO() const { return m_FBO; };
 	inline const unsigned int GetTextureID() const { return m_TextureID; };
-	~ShadowMap();
+	virtual ~ShadowMap();
 
 protected:
 	GLuint m_FBO;

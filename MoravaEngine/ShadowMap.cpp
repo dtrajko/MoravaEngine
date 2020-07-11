@@ -56,6 +56,7 @@ void ShadowMap::Read(unsigned int textureUnit)
 	// printf("ShadowMap::Read textureUnit = %i m_TextureID = %i\n", (int)textureUnit, (int)m_TextureID);
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
 	glBindTexture(GL_TEXTURE_2D, m_TextureID);
+	// printf("ShadowMap::Read Bind texture ID %i to Slot %i\n", m_TextureID, textureUnit);
 }
 
 void ShadowMap::Unbind(unsigned int width, unsigned int height)
