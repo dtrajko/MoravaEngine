@@ -2051,8 +2051,9 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
                 SetUniformsShaderEditor(shaders["editor_object"], texture, object);
         }
 
-        if (shouldRenderObject)
+        if (shouldRenderObject) {
             object->Render();
+        }
     }
 
     if (passType == "main")
