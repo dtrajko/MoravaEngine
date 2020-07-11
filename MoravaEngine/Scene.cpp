@@ -174,6 +174,14 @@ void Scene::SetupParticles()
 {
 }
 
+void Scene::SetupModels()
+{
+}
+
+void Scene::SetSkybox()
+{
+}
+
 void Scene::SetTextures()
 {
 	textures.insert(std::make_pair("normalMapDefault", TextureLoader::Get()->GetTexture("Textures/normal_map_default.png")));

@@ -145,8 +145,8 @@ private:
 	virtual void SetupMaterials();
 	virtual void SetupMeshes();
 	virtual void SetupParticles();
-	virtual void SetupModels() = 0;
-	virtual void SetSkybox() = 0;
+	virtual void SetupModels();
+	virtual void SetSkybox();
 
 protected:
 	static SceneSettings sceneSettings;

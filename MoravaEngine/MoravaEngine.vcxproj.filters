@@ -371,6 +371,12 @@
     <ClCompile Include="SceneObjectLight.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
+    <ClCompile Include="RendererOmniShadows.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneOmniShadows.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -769,6 +775,12 @@
     </ClInclude>
     <ClInclude Include="SceneObjectLight.h">
       <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererOmniShadows.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneOmniShadows.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

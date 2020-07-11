@@ -30,6 +30,7 @@
 #include "SceneFramebuffers.h"
 #include "SceneCubemaps.h"
 #include "SceneParticles.h"
+#include "SceneOmniShadows.h"
 #include "SceneEditor.h"
 
 #include "Renderer.h"
@@ -40,6 +41,7 @@
 #include "RendererNanosuit.h"
 #include "RendererFramebuffers.h"
 #include "RendererCubemaps.h"
+#include "RendererOmniShadows.h"
 #include "RendererEditor.h"
 
 
@@ -69,10 +71,11 @@ enum class SceneName
 	Framebuffers,
 	Cubemaps,
 	Particles,
+	OmniShadows,
 	Editor,
 };
 
-SceneName currentScene = SceneName::Editor;
+SceneName currentScene = SceneName::OmniShadows;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -143,6 +146,10 @@ int main()
 	case SceneName::Particles:
 		scene = new SceneParticles();
 		renderer = static_cast<RendererBasic*>(new RendererEditor());
+		break;
+	case SceneName::OmniShadows:
+		scene = new SceneOmniShadows();
+		renderer = static_cast<RendererBasic*>(new RendererOmniShadows());
 		break;
 	case SceneName::Editor:
 		scene = new SceneEditor();

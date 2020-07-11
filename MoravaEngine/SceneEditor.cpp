@@ -1990,6 +1990,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 
     SwitchOrthographicView(mainWindow, projectionMatrix);
 
+    /**
     shaders["editor_object"]->Bind();
     unsigned int offsetSlot = 3;
     unsigned int offsetMap = 0;
@@ -2020,6 +2021,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
     shaders["editor_object"]->setVec3("eyePosition", m_Camera->GetPosition());
     shaders["editor_object"]->setInt("pointLightCount", LightManager::pointLightCount);
     shaders["editor_object"]->setInt("spotLightCount", LightManager::spotLightCount);
+    **/
 
     bool shouldRenderObject;
 

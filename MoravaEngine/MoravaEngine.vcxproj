@@ -182,10 +182,12 @@
     <ClCompile Include="ParticleTexture.cpp" />
     <ClCompile Include="PerlinNoise.cpp" />
     <ClCompile Include="QuadInstanced.cpp" />
+    <ClCompile Include="RendererOmniShadows.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="SceneObjectLight.cpp" />
     <ClCompile Include="SceneObjectParticleSystem.cpp" />
+    <ClCompile Include="SceneOmniShadows.cpp" />
     <ClCompile Include="ShaderBackground.cpp" />
     <ClCompile Include="ShaderBasic.cpp" />
     <ClCompile Include="ShaderEditorObjects.cpp" />
@@ -313,11 +315,13 @@
     <ClInclude Include="ParticleTexture.h" />
     <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="QuadInstanced.h" />
+    <ClInclude Include="RendererOmniShadows.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="SceneObjectLight.h" />
     <ClInclude Include="SceneObjectParticleSystem.h" />
+    <ClInclude Include="SceneOmniShadows.h" />
     <ClInclude Include="ShaderBackground.h" />
     <ClInclude Include="ShaderBasic.h" />
     <ClInclude Include="ShaderEditorObjects.h" />
