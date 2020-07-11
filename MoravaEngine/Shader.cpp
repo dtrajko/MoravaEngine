@@ -108,11 +108,13 @@ void Shader::setBool(const std::string& name, bool value)
 void Shader::setInt(const std::string& name, int value)
 {
 	glUniform1i(GetUniformLocation(name), value);
+	// printf("Shader setInt name = '%s' value = %i\n", name.c_str(), value);
 }
 
 void Shader::setFloat(const std::string& name, float value)
 {
 	glUniform1f(GetUniformLocation(name), value);
+	// printf("Shader setInt name = '%s' value = %.2ff\n", name.c_str(), value);
 }
 
 void Shader::setVec2(const std::string& name, const glm::vec2& value)

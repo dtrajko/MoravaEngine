@@ -14,9 +14,14 @@ DirectionalLight::DirectionalLight()
 }
 
 DirectionalLight::DirectionalLight(GLuint shadowWidth, GLuint shadowHeight,
-	bool enabled, glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity, glm::vec3 direction)
+	bool enabled, glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity, glm::vec3 direction, bool createShadowMap)
 	: Light(shadowWidth, shadowHeight, color, ambientIntensity, diffuseIntensity)
 {
+	if (createShadowMap) {
+		m_ShadowMap = new ShadowMap();
+		m_ShadowMap->Init(shadowWidth, shadowHeight);
+	}
+
 	m_Direction = glm::normalize(direction);
 	m_LightProj = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
 

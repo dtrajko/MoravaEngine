@@ -128,7 +128,7 @@ Scene::Scene()
 
 	m_WireframeEnabled = false;
 
-	SetLightManager();
+	// SetLightManager();
 	SetTextures();
 	SetTextureSlots();
 	SetupMaterials();
@@ -192,7 +192,6 @@ void Scene::SetLightManager()
 {
 	// Skip if Light Manager already initialized
 	if (LightManager::pointLightCount > 0 || LightManager::spotLightCount > 0) return;
-
 	LightManager::Init(sceneSettings);
 }
 

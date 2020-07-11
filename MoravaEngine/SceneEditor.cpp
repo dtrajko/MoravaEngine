@@ -183,12 +183,19 @@ SceneEditor::SceneEditor()
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            if (x == 0) printf("\n");
-            printf("[ X=%i Y=%i] %.2ff\t", x, y, heightMap[x][y]);
+            // if (x == 0) printf("\n");
+            // printf("[ X=%i Y=%i] %.2ff\t", x, y, heightMap[x][y]);
         }
     }
-    printf("\n");
+    // printf("\n");
     /* End Test */
+}
+
+void SceneEditor::SetLightManager()
+{
+    // Skip if Light Manager already initialized
+    if (LightManager::pointLightCount > 0 || LightManager::spotLightCount > 0) return;
+    LightManager::Init(sceneSettings);
 }
 
 void SceneEditor::SetSkybox()
@@ -1570,7 +1577,8 @@ void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture
     shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
 
     // Shadows in shaderEditor
-    LightManager::directionalLight.GetShadowMap()->Read(2);
+    if (LightManager::directionalLight.GetShadowMap() != nullptr)
+        LightManager::directionalLight.GetShadowMap()->Read(2);
     shaderEditor->setInt("shadowMap", 2);
 }
 
@@ -1981,6 +1989,37 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
     m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui
 
     SwitchOrthographicView(mainWindow, projectionMatrix);
+
+    shaders["editor_object"]->Bind();
+    unsigned int offsetSlot = 3;
+    unsigned int offsetMap = 0;
+    char locBuff[100] = { '\0' };
+
+    for (unsigned int i = 0; i < LightManager::pointLightCount; i++) {
+        // if (LightManager::pointLights[0].GetShadowMap() != nullptr)
+        LightManager::pointLights[i].GetShadowMap()->Read(offsetSlot + i);
+        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", offsetMap + i);
+        shaders["editor_object"]->setInt(locBuff, offsetSlot + i);
+        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", offsetMap + i);
+        shaders["editor_object"]->setFloat(locBuff, LightManager::pointLights[i].GetFarPlane());
+        // printf("Set uniforms Point Light %i index %i texture slot %i\n", i, offsetMap + i, offsetSlot + i);
+    }
+
+    offsetSlot += LightManager::pointLightCount;
+    offsetMap += LightManager::pointLightCount;
+    for (unsigned int i = 0; i < LightManager::spotLightCount; i++) {
+        // if (LightManager::spotLights[0].GetShadowMap() != nullptr)
+        LightManager::spotLights[i].GetShadowMap()->Read(offsetSlot + i);
+        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", offsetMap + i);
+        shaders["editor_object"]->setInt(locBuff, offsetSlot + i);
+        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", offsetMap + i);
+        shaders["editor_object"]->setFloat(locBuff, LightManager::spotLights[i].GetFarPlane());
+        // printf("Set uniforms Spot Light %i index %i texture slot %i\n", i, offsetMap + i, offsetSlot + i);
+    }
+
+    shaders["editor_object"]->setVec3("eyePosition", m_Camera->GetPosition());
+    shaders["editor_object"]->setInt("pointLightCount", LightManager::pointLightCount);
+    shaders["editor_object"]->setInt("spotLightCount", LightManager::spotLightCount);
 
     bool shouldRenderObject;
 

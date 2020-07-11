@@ -10,7 +10,7 @@ public:
 	DirectionalLight();
 
 	DirectionalLight(GLuint shadowWidth, GLuint shadowHeight,
-		bool enabled, glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity, glm::vec3 direction);
+		bool enabled, glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity, glm::vec3 direction, bool createShadowMap);
 	void UseLight(GLint enabledLocation, GLint ambientColorLocation, GLint ambientIntensityLocation,
 		GLint diffuseIntensityLocation, GLint directionLocation);
 	inline glm::vec3 GetDirection() const { return m_Direction; };

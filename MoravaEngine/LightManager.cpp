@@ -15,7 +15,7 @@ void LightManager::Init(SceneSettings sceneSettings)
 	LightManager::directionalLight = DirectionalLight(sceneSettings.shadowMapWidth, sceneSettings.shadowMapHeight,
 		sceneSettings.directionalLight.base.enabled, sceneSettings.directionalLight.base.color,
 		sceneSettings.directionalLight.base.ambientIntensity, sceneSettings.directionalLight.base.diffuseIntensity,
-		sceneSettings.directionalLight.direction);
+		sceneSettings.directionalLight.direction, true);
 	LightManager::directionalLight.SetLightProjection(sceneSettings.lightProjectionMatrix);
 
 	if (sceneSettings.enablePointLights)

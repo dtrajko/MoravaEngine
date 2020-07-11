@@ -54,11 +54,12 @@ public:
 	virtual ~SceneEditor() override;
 
 private:
-	virtual void SetTextures()    override;
-	virtual void SetupMaterials() override;
-	virtual void SetupMeshes()    override;
-	virtual void SetupModels()    override;
-	virtual void SetSkybox()      override;
+	virtual void SetTextures()     override;
+	virtual void SetupMaterials()  override;
+	virtual void SetupMeshes()     override;
+	virtual void SetupModels()     override;
+	virtual void SetSkybox()       override;
+	virtual void SetLightManager() override;
 	void AddLightsToSceneObjects();
 
 	void RenderLightSources(Shader* shader);

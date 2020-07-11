@@ -14,7 +14,7 @@ SpotLight::SpotLight(GLuint shadowWidth, GLuint shadowHeight, GLfloat nearPlane,
 	bool enabled, glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity,
 	glm::vec3 position, glm::vec3 direction,
 	GLfloat constant, GLfloat linear, GLfloat exponent, GLfloat edge)
-	: DirectionalLight(shadowWidth, shadowHeight, enabled, color, ambientIntensity, diffuseIntensity, direction),
+	: DirectionalLight(shadowWidth, shadowHeight, enabled, color, ambientIntensity, diffuseIntensity, direction, false),
 	PointLight(shadowWidth, shadowHeight, nearPlane, farPlane, enabled, color, ambientIntensity, diffuseIntensity,
 		position, constant, linear, exponent)
 {
