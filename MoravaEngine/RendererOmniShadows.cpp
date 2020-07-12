@@ -12,13 +12,13 @@ void RendererOmniShadows::Init(Scene* scene)
 
 void RendererOmniShadows::SetShaders()
 {
-	Shader* shaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
-	shaders.insert(std::make_pair("main", shaderMain));
-	printf("RendererOmniShadows: shaderMain compiled [programID=%d]\n", shaderMain->GetProgramID());
-
 	Shader* shaderOmniShadow = new Shader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
 	shaders.insert(std::make_pair("omniShadow", shaderOmniShadow));
 	printf("RendererOmniShadows: shaderOmniShadow compiled [programID=%d]\n", shaderOmniShadow->GetProgramID());
+
+	Shader* shaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
+	shaders.insert(std::make_pair("main", shaderMain));
+	printf("RendererOmniShadows: shaderMain compiled [programID=%d]\n", shaderMain->GetProgramID());
 }
 
 void RendererOmniShadows::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -83,11 +83,11 @@ void RendererOmniShadows::RenderPass(Window& mainWindow, Scene* scene, glm::mat4
 	shaderMain->setVec3("eyePosition", scene->GetCamera()->GetPosition());
 
 	// Directional Light
-	shaderMain->setInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
-	shaderMain->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
-	shaderMain->setFloat("directionalLight.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
-	shaderMain->setFloat("directionalLight.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-	shaderMain->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
+	shaderMain->setInt(  "directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
+	shaderMain->setVec3( "directionalLight.base.color", LightManager::directionalLight.GetColor());
+	shaderMain->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+	shaderMain->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+	shaderMain->setVec3( "directionalLight.direction", LightManager::directionalLight.GetDirection());
 
 	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
