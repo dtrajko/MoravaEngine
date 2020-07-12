@@ -19,7 +19,7 @@ SceneAsteroids::SceneAsteroids()
 	sceneSettings.farPlane = 500.0f;
 
 	SetSkybox();
-	SetTextures();
+	SetupTextures();
 	SetupMeshes();
 	SetupModels();
 
@@ -38,7 +38,7 @@ void SceneAsteroids::SetSkybox()
 	m_Skybox = new Skybox(skyboxFaces);
 }
 
-void SceneAsteroids::SetTextures()
+void SceneAsteroids::SetupTextures()
 {
 }
 

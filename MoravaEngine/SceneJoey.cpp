@@ -51,7 +51,7 @@ SceneJoey::SceneJoey()
 	sceneSettings.waterHeight = 0.0f; // 1.0f 5.0f
 	sceneSettings.waterWaveSpeed = 0.1f;
 
-	SetTextures();
+	SetupTextures();
 	SetupMaterials();
 	SetupModels();
 	SetupGeometry();
@@ -61,7 +61,7 @@ SceneJoey::SceneJoey()
 	m_MaterialWorkflowPBR->Init("Textures/HDR/Ice_Lake_Ref.hdr");
 }
 
-void SceneJoey::SetTextures()
+void SceneJoey::SetupTextures()
 {
 }
 

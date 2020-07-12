@@ -20,7 +20,7 @@ SceneFramebuffers::SceneFramebuffers()
 
 	SetCamera();
 	SetSkybox();
-	SetTextures();
+	SetupTextures();
 	SetupMeshes();
 	SetupModels();
 	SetGeometry();
@@ -30,7 +30,7 @@ void SceneFramebuffers::SetSkybox()
 {
 }
 
-void SceneFramebuffers::SetTextures()
+void SceneFramebuffers::SetupTextures()
 {
 	textures.insert(std::make_pair("floor_metal", TextureLoader::Get()->GetTexture("Textures/metal.png")));
 	textures.insert(std::make_pair("cube_marble", TextureLoader::Get()->GetTexture("Textures/marble.jpg")));

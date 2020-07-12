@@ -46,7 +46,7 @@ SceneBullet::SceneBullet()
 	BulletSetup();
 	SetLightManager();
 	SetSkybox();
-	SetTextures();
+	SetupTextures();
 	SetupMeshes();
 	SetupModels();
 }
@@ -70,7 +70,7 @@ void SceneBullet::SetSkybox()
 	m_Skybox = new Skybox(skyboxFaces);
 }
 
-void SceneBullet::SetTextures()
+void SceneBullet::SetupTextures()
 {
 	textures.insert(std::make_pair("pyramid",             TextureLoader::Get()->GetTexture("Textures/pyramid.png")));
 	textures.insert(std::make_pair("texture_gray",        TextureLoader::Get()->GetTexture("Textures/texture_gray.png")));

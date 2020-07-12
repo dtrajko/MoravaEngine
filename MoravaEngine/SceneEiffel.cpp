@@ -44,7 +44,7 @@ SceneEiffel::SceneEiffel()
 	sceneSettings.waterWaveSpeed = 0.05f;
 
 	SetSkybox();
-	SetTextures();
+	SetupTextures();
 	SetupMeshes();
 	SetupModels();
 }
@@ -60,7 +60,7 @@ void SceneEiffel::SetSkybox()
 	m_Skybox = new Skybox(skyboxFaces);
 }
 
-void SceneEiffel::SetTextures()
+void SceneEiffel::SetupTextures()
 {
 	textures.insert(std::make_pair("sponzaCeilDiffuse", TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_diff.tga")));
 	textures.insert(std::make_pair("sponzaCeilNormal",  TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_ddn.tga")));

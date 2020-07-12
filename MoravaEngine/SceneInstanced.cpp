@@ -15,7 +15,7 @@ SceneInstanced::SceneInstanced()
 	sceneSettings.directionalLight.direction = glm::vec3(3.0f, -9.0f, -3.0f);
 
 	SetSkybox();
-	SetTextures();
+	SetupTextures();
 	SetupMeshes();
 	SetupModels();
 }
@@ -24,7 +24,7 @@ void SceneInstanced::SetSkybox()
 {
 }
 
-void SceneInstanced::SetTextures()
+void SceneInstanced::SetupTextures()
 {
 }
 

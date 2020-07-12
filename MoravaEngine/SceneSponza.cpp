@@ -39,7 +39,7 @@ SceneSponza::SceneSponza()
 	sceneSettings.waterWaveSpeed = 0.02f;
 
 	SetSkybox();
-	SetTextures();
+	SetupTextures();
 	SetupMeshes();
 	SetupModels();
 }
@@ -55,7 +55,7 @@ void SceneSponza::SetSkybox()
 	m_Skybox = new Skybox(skyboxFaces);
 }
 
-void SceneSponza::SetTextures()
+void SceneSponza::SetupTextures()
 {
 }
 

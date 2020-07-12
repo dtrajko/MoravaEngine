@@ -52,7 +52,7 @@ ScenePBR::ScenePBR()
 	sceneSettings.waterWaveSpeed = 0.1f;
 
 	SetSkybox();
-	SetTextures();
+	SetupTextures();
 	SetupModels();
 
 	m_CameraPosition = glm::vec3(-9.0f, 24.0f, 6.0f);
@@ -95,7 +95,7 @@ void ScenePBR::SetSkybox()
 	m_Skybox = new Skybox(skyboxFaces);
 }
 
-void ScenePBR::SetTextures()
+void ScenePBR::SetupTextures()
 {
 	// PBR sphere
 	textures.insert(std::make_pair("rustedIronAlbedo",           TextureLoader::Get()->GetTexture("Textures/PBR/rusted_iron/albedo.png")));

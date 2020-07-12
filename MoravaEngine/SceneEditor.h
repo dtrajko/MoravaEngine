@@ -54,7 +54,7 @@ public:
 	virtual ~SceneEditor() override;
 
 private:
-	virtual void SetTextures()     override;
+	virtual void SetupTextures()     override;
 	virtual void SetupMaterials()  override;
 	virtual void SetupMeshes()     override;
 	virtual void SetupModels()     override;

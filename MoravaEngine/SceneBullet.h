@@ -22,7 +22,7 @@ private:
 	void BulletSimulation(float timestep);
 	void BulletCleanup();
 	virtual void SetSkybox() override;
-	virtual void SetTextures() override;
+	virtual void SetupTextures() override;
 	virtual void SetupMeshes() override;
 	virtual void SetupModels() override;
 	void Fire();

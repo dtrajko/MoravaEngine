@@ -129,13 +129,13 @@ Scene::Scene()
 	m_WireframeEnabled = false;
 
 	// SetLightManager();
-	SetTextures();
-	SetTextureSlots();
+	SetupTextures();
+	SetupTextureSlots();
 	SetupMaterials();
 	SetupMeshes();
 }
 
-void Scene::SetTextureSlots()
+void Scene::SetupTextureSlots()
 {
 	textureSlots.insert(std::make_pair("diffuse",    1));
 	textureSlots.insert(std::make_pair("normal",     2));
@@ -182,7 +182,7 @@ void Scene::SetSkybox()
 {
 }
 
-void Scene::SetTextures()
+void Scene::SetupTextures()
 {
 	textures.insert(std::make_pair("normalMapDefault", TextureLoader::Get()->GetTexture("Textures/normal_map_default.png")));
 	textures.insert(std::make_pair("shadowMapDefault", TextureLoader::Get()->GetTexture("Textures/shadow_map_default.png")));

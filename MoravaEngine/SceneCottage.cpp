@@ -66,7 +66,7 @@ SceneCottage::SceneCottage()
 	sceneSettings.waterWaveSpeed = 0.01f;
 
 	SetSkybox();
-	SetTextures();
+	SetupTextures();
 	SetupMeshes();
 	SetupModels();
 }
@@ -82,7 +82,7 @@ void SceneCottage::SetSkybox()
 	m_Skybox = new Skybox(skyboxFaces);
 }
 
-void SceneCottage::SetTextures()
+void SceneCottage::SetupTextures()
 {
 	textures.insert(std::make_pair("brick",              TextureLoader::Get()->GetTexture("Textures/brick.png")));
 	textures.insert(std::make_pair("crateDiffuse",       TextureLoader::Get()->GetTexture("Textures/crate.png")));

@@ -46,7 +46,7 @@ SceneTerrain::SceneTerrain()
 	sceneSettings.waterWaveSpeed = 0.1f;
 
 	SetSkybox();
-	SetTextures();
+	SetupTextures();
 	SetupMeshes();
 	SetupModels();
 }
@@ -62,7 +62,7 @@ void SceneTerrain::SetSkybox()
 	m_Skybox = new Skybox(skyboxFaces);
 }
 
-void SceneTerrain::SetTextures()
+void SceneTerrain::SetupTextures()
 {
 	textures.insert(std::make_pair("rock", TextureLoader::Get()->GetTexture("Textures/rock.png")));
 }

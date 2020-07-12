@@ -140,8 +140,8 @@ public:
 	inline void SetFOV(float FOV) { m_FOV = FOV; };
 
 private:
-	virtual void SetTextures();
-	virtual void SetTextureSlots();
+	virtual void SetupTextures();
+	virtual void SetupTextureSlots();
 	virtual void SetupMaterials();
 	virtual void SetupMeshes();
 	virtual void SetupParticles();

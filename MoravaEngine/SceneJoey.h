@@ -20,7 +20,7 @@ public:
 	virtual ~SceneJoey() override;
 
 private:
-	virtual void SetTextures() override;
+	virtual void SetupTextures() override;
 	virtual void SetupMaterials() override;
 	virtual void SetupModels() override;
 	void SetupGeometry();

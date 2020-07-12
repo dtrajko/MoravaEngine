@@ -115,7 +115,7 @@ SceneEditor::SceneEditor()
 
     SetCamera();
     SetSkybox();
-    SetTextures();
+    SetupTextures();
     SetupMaterials();
     SetupMeshes();
     SetupModels();
@@ -202,7 +202,7 @@ void SceneEditor::SetSkybox()
 {
 }
 
-void SceneEditor::SetTextures()
+void SceneEditor::SetupTextures()
 {
     ResourceManager::LoadTexture(
         ResourceManager::GetTextureInfo()->find("none")->first,

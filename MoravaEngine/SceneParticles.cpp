@@ -17,7 +17,7 @@ SceneParticles::SceneParticles()
 
 	SetCamera();
 	SetSkybox();
-	SetTextures();
+	SetupTextures();
 	SetupMeshes();
 	SetupModels();
     SetupParticles();
@@ -46,7 +46,7 @@ void SceneParticles::SetSkybox()
     m_TextureCubeMap = new TextureCubeMap(skyboxFaces);
 }
 
-void SceneParticles::SetTextures()
+void SceneParticles::SetupTextures()
 {
     textures.insert(std::make_pair("water", TextureLoader::Get()->GetTexture("Textures/water.png")));
 }

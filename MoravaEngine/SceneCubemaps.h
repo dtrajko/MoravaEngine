@@ -39,7 +39,7 @@ public:
 
 private:
 	virtual void SetSkybox() override;
-	virtual void SetTextures() override;
+	virtual void SetupTextures() override;
 	virtual void SetupMeshes() override;
 	virtual void SetupModels() override;
 

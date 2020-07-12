@@ -19,7 +19,7 @@ SceneNanosuit::SceneNanosuit()
 
 	SetCamera();
 	SetSkybox();
-	SetTextures();
+	SetupTextures();
 	SetupMeshes();
 	SetupModels();
 
@@ -67,7 +67,7 @@ void SceneNanosuit::SetSkybox()
 {
 }
 
-void SceneNanosuit::SetTextures()
+void SceneNanosuit::SetupTextures()
 {
 	textures.insert(std::make_pair("plain", TextureLoader::Get()->GetTexture("Textures/plain.png")));
 }
