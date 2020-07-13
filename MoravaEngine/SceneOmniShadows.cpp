@@ -120,7 +120,7 @@ void SceneOmniShadows::SetupMeshes()
     Block* floor = new Block(glm::vec3(16.0f, 0.5f, 16.0f));
     meshes.insert(std::make_pair("floor", floor));
 
-    Block* cube = new Block(glm::vec3(1.0f, 2.0f, 1.0f));
+    Block* cube = new Block(glm::vec3(1.0f, 1.0f, 1.0f));
     meshes.insert(std::make_pair("cube", cube));
 }
 
@@ -295,7 +295,7 @@ void SceneOmniShadows::Render(Window& mainWindow, glm::mat4 projectionMatrix, st
     }
 
     model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0f));
+    model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
     shaderMain->setMat4("model", model);
     shaderOmniShadow->setMat4("model", model);
     ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);

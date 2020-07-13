@@ -5,13 +5,14 @@ const int MAX_SPOT_LIGHTS = 4;
 
 const int MAX_LIGHTS = MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS;
 
-const float shadowIntensity = 0.8;
+const float shadowIntensity = 0.6;
 
 in vec2 vTexCoord;
 in vec3 vNormal;
 in vec3 vPosition;
 in vec3 vFragPos;
 in vec4 vDirLightSpacePos;
+in mat3 vTBN;
 
 out vec4 FragColor;
 
@@ -67,6 +68,7 @@ uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 uniform samplerCube cubeMap;
 uniform sampler2D albedoMap;
 uniform sampler2D shadowMap;
+uniform sampler2D normalMap;
 uniform vec4  tintColor;
 uniform float tilingFactor;
 uniform bool  isSelected;
@@ -88,36 +90,15 @@ vec3 sampleOffsetDirections[20] = vec3[]
 	vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
 );
 
-float CalcOmniShadowFactor(PointLight light, int shadowIndex)
+vec3 GetNormal()
 {
-	float shadow = 0.0;
-	float bias = 0.001;
-	float samples = 20.0;
+	vec3 normal = normalize(vNormal);
+	// return normal;
 
-	float viewDistance = length(eyePosition - vFragPos);
-	float diskRadius = (1.0 + (viewDistance / omniShadowMaps[shadowIndex].farPlane)) / 25.0;
-
-	vec3 fragToLight = vFragPos - light.position;
-	float currentDepth = length(fragToLight);
-	float closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight).r;
-	closestDepth *= omniShadowMaps[shadowIndex].farPlane;
-	shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
-
-	// PCF method
-	if (true)
-	{
-		for (int i = 0; i < samples; i++)
-		{
-			closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
-			closestDepth *= omniShadowMaps[shadowIndex].farPlane;
-			if (currentDepth - bias > closestDepth)
-			{
-				shadow += 1.0;
-			}		
-		}
-		shadow /= samples;
-	}
-	return shadow;
+	normal = texture(normalMap, vTexCoord * tilingFactor).rgb;
+	normal = normal * 2.0 - 1.0;
+	normal = normalize(vTBN * normal);
+	return normal;
 }
 
 float CalcDirectionalShadowFactor(DirectionalLight light)
@@ -159,11 +140,43 @@ float CalcDirectionalShadowFactor(DirectionalLight light)
 	return shadow;
 }
 
+float CalcOmniShadowFactor(PointLight light, int shadowIndex)
+{
+	float shadow = 0.0;
+	float bias = 0.001;
+	float samples = 20.0;
+
+	float viewDistance = length(eyePosition - vFragPos);
+	float diskRadius = (1.0 + (viewDistance / omniShadowMaps[shadowIndex].farPlane)) / 25.0;
+
+	vec3 fragToLight = vFragPos - light.position;
+	float currentDepth = length(fragToLight);
+	float closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight).r;
+	closestDepth *= omniShadowMaps[shadowIndex].farPlane;
+	shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+	// PCF method
+	if (true)
+	{
+		for (int i = 0; i < samples; i++)
+		{
+			closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
+			closestDepth *= omniShadowMaps[shadowIndex].farPlane;
+			if (currentDepth - bias > closestDepth)
+			{
+				shadow += 1.0;
+			}		
+		}
+		shadow /= samples;
+	}
+	return shadow;
+}
+
 vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
 {
 	vec4 ambientColor = vec4(light.color, 1.0) * light.ambientIntensity;
 
-	float diffuseFactor = max(dot(normalize(vNormal), normalize(direction)), 0.0);
+	float diffuseFactor = max(dot(normalize(vNormal), -normalize(direction)), 0.0);
 	vec4 diffuseColor = vec4(light.color, 1.0) * light.diffuseIntensity * diffuseFactor;
 
 	vec4 specularColor = vec4(0.0, 0.0, 0.0, 1.0);
@@ -188,7 +201,7 @@ vec4 CalcDirectionalLight(vec4 color)
 {
 	float shadowFactor = CalcDirectionalShadowFactor(directionalLight);
 	shadowFactor *= shadowIntensity;
-	return color * CalcLightByDirection(directionalLight.base, -directionalLight.direction, shadowFactor);
+	return color * CalcLightByDirection(directionalLight.base, directionalLight.direction, shadowFactor);
 }
 
 vec4 CalcPointLight(PointLight pointLight, int shadowIndex)
@@ -266,8 +279,7 @@ void main()
 	finalColor += CalcPointLights();
 	finalColor += CalcSpotLights();
 
-	// FragColor = texColor * finalColor * tintColor * CubeMapColor;
-	FragColor = finalColor;
+	FragColor = texColor * finalColor * tintColor * CubeMapColor;
 
 	// Add a blue tint under the water level
 	if (eyePosition.y < waterLevel)

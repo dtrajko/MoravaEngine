@@ -1,4 +1,4 @@
-#version 330
+#version 330 core
 
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec2 aTexCoord;
@@ -8,6 +8,7 @@ layout (location = 4) in vec3 aBitangent;
 
 out vec2 vTexCoord;
 out vec3 vNormal;
+out vec3 vPosition;
 out vec3 vFragPos;
 out vec4 vDirLightSpacePos;
 out mat3 vTBN;
@@ -22,27 +23,27 @@ uniform vec4 clipPlane;
 
 void main()
 {
-	vFragPos = (model * vec4(aPosition, 1.0)).xyz;
-	vTexCoord = aTexCoord;
+    vPosition = vec3(model * vec4(aPosition, 1.0));
+    vTexCoord = aTexCoord;
+    vFragPos = (model * vec4(aPosition, 1.0)).xyz;
 
-	vec4 WorldPosition = model * vec4(aPosition, 1.0);
+    vec4 WorldPosition = model * vec4(aPosition, 1.0);
 	gl_ClipDistance[0] = dot(WorldPosition, clipPlane);
 
 	vDirLightSpacePos = dirLightTransform * model * vec4(aPosition, 1.0);
-	
-	mat3 modelVector = transpose(inverse(mat3(model)));
 
-	vec3 T = normalize(modelVector * aTangent);
-	vec3 B = normalize(modelVector * aBitangent);
-	vec3 N = normalize(modelVector * aNormal);
+    mat3 modelVector = transpose(inverse(mat3(model)));
 
-	// Gram-Schmidt process
-	T = normalize(T - dot(T, N) * N);
-	B = cross(N, T);
+    vec3 T = normalize(modelVector * aTangent);
+    vec3 B = normalize(modelVector * aBitangent);
+    vec3 N = normalize(modelVector * aNormal);
 
-	vTBN = mat3(T, B, N);
+    // Gram-Schmidt process
+    T = normalize(T - dot(T, N) * N);
+    B = cross(N, T);
 
-	vNormal = normalize(modelVector * aNormal);
+    vTBN = mat3(T, B, N);
 
-	gl_Position = projection * view * vec4(vFragPos, 1.0);
+    vNormal = normalize(modelVector * aNormal);
+    gl_Position = projection * view * model * vec4(aPosition, 1.0);
 }

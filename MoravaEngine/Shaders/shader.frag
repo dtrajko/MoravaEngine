@@ -6,8 +6,10 @@ const int MAX_SPOT_LIGHTS = 4;
 const int MAX_LIGHTS = MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS;
 
 const float shadowIntensity = 0.6;
+
 in vec2 vTexCoord;
 in vec3 vNormal;
+in vec3 vPosition;
 in vec3 vFragPos;
 in vec4 vDirLightSpacePos;
 in mat3 vTBN;
@@ -63,14 +65,21 @@ uniform DirectionalLight directionalLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 
+uniform samplerCube cubeMap;
 uniform sampler2D albedoMap;
 uniform sampler2D shadowMap;
 uniform sampler2D normalMap;
+uniform vec4  tintColor;
 uniform float tilingFactor;
+uniform bool  isSelected;
+uniform bool  useCubeMaps;
 uniform OmniShadowMap omniShadowMaps[MAX_LIGHTS];
 
 uniform Material material;
 uniform vec3 eyePosition; // same as cameraPosition
+
+uniform float waterLevel;
+uniform vec4 waterColor;
 
 vec3 sampleOffsetDirections[20] = vec3[]
 (
@@ -188,11 +197,11 @@ vec4 CalcLightByDirection(Light light, vec3 direction, float shadowFactor)
 	return (ambientColor + (1.0 - shadowFactor) * (diffuseColor + specularColor));
 }
 
-vec4 CalcDirectionalLight()
+vec4 CalcDirectionalLight(vec4 color)
 {
 	float shadowFactor = CalcDirectionalShadowFactor(directionalLight);
 	shadowFactor *= shadowIntensity;
-	return CalcLightByDirection(directionalLight.base, directionalLight.direction, shadowFactor);
+	return color * CalcLightByDirection(directionalLight.base, directionalLight.direction, shadowFactor);
 }
 
 vec4 CalcPointLight(PointLight pointLight, int shadowIndex)
@@ -255,7 +264,8 @@ vec4 CalcSpotLights()
 
 void main()
 {
-	vec4 finalColor = CalcDirectionalLight();
+	vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);
+	finalColor = CalcDirectionalLight(finalColor);
 	finalColor += CalcPointLights();
 	finalColor += CalcSpotLights();
 

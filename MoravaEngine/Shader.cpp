@@ -328,8 +328,6 @@ void Shader::CompileProgram()
 
 void Shader::GetUniformLocations()
 {
-	printf("Shader::GetUniformLocations\n");
-
 	for (unsigned int i = 0; i < 6; i++)
 	{
 		char locBuff[100] = { '\0' };
