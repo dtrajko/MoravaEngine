@@ -45,16 +45,16 @@ struct SpotLight
 	float edge;
 };
 
-struct Material
-{
-	float specularIntensity;
-	float shininess;
-};
-
 struct OmniShadowMap
 {
 	samplerCube shadowMap;
 	float farPlane;
+};
+
+struct Material
+{
+	float specularIntensity;
+	float shininess;
 };
 
 uniform int pointLightCount;
@@ -64,19 +64,17 @@ uniform DirectionalLight directionalLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 
-uniform Material material;
-
 uniform samplerCube cubeMap;
-uniform sampler2D   albedoMap;
-uniform sampler2D   shadowMap;
+uniform sampler2D albedoMap;
+uniform sampler2D shadowMap;
 uniform vec4  tintColor;
 uniform float tilingFactor;
 uniform bool  isSelected;
 uniform bool  useCubeMaps;
-
-uniform vec3 eyePosition; // same as cameraPosition
-
 uniform OmniShadowMap omniShadowMaps[MAX_LIGHTS];
+
+uniform Material material;
+uniform vec3 eyePosition; // same as cameraPosition
 
 uniform float waterLevel;
 uniform vec4 waterColor;

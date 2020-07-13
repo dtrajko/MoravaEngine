@@ -252,7 +252,7 @@ void SceneEiffel::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(-5.0f, 1.0f, 5.0f * (9.0f / 16.0f)));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		shaderMain->setInt("theTexture", textureSlots["shadow"]);
+		shaderMain->setInt("albedoMap", textureSlots["shadow"]);
 		shaderMain->setInt("normalMap", textureSlots["shadow"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->Render();
@@ -265,7 +265,7 @@ void SceneEiffel::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(-5.0f, 1.0f, 5.0f * (9.0f / 16.0f)));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		shaderMain->setInt("theTexture", textureSlots["diffuse"]);
+		shaderMain->setInt("albedoMap", textureSlots["diffuse"]);
 		shaderMain->setInt("normalMap", textureSlots["normal"]);
 		m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
@@ -280,7 +280,7 @@ void SceneEiffel::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(-5.0f, 1.0f, 5.0f * (9.0f / 16.0f)));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		shaderMain->setInt("theTexture", textureSlots["diffuse"]);
+		shaderMain->setInt("albedoMap", textureSlots["diffuse"]);
 		shaderMain->setInt("normalMap", textureSlots["normal"]);
 		m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["diffuse"]);
 		m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["normal"]);
@@ -312,7 +312,7 @@ void SceneEiffel::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
 	textures["waterNormal"]->Bind(textureSlots["normal"]);
-	shaderWater->setInt("theTexture", textureSlots["reflection"]);
+	shaderWater->setInt("reflectionTexture", textureSlots["reflection"]);
 	shaderWater->setInt("normalMap", textureSlots["normal"]);
 	shaderWater->setInt("depthMap", textureSlots["depth"]);
 	shaderWater->setInt("dudvMap", textureSlots["DuDv"]);

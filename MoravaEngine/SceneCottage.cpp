@@ -461,7 +461,7 @@ void SceneCottage::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
 			* glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f))
 			* glm::scale(glm::mat4(1.0f), glm::vec3(2.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		shaderMain->setInt("theTexture", textureSlots["shadow"]);
+		shaderMain->setInt("albedoMap", textureSlots["shadow"]);
 		shaderMain->setInt("normalMap", textureSlots["shadow"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->Render();

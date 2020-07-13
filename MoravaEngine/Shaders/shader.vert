@@ -1,34 +1,34 @@
 #version 330
 
 layout (location = 0) in vec3 aPosition;
-layout (location = 1) in vec2 aTexCoords;
+layout (location = 1) in vec2 aTexCoord;
 layout (location = 2) in vec3 aNormal;
 layout (location = 3) in vec3 aTangent;
 layout (location = 4) in vec3 aBitangent;
 
-out vec2 TexCoords;
-out vec3 Normal;
-out vec3 FragPos;
-out vec4 DirLightSpacePos;
-out mat3 TBN;
+out vec2 vTexCoord;
+out vec3 vNormal;
+out vec3 vFragPos;
+out vec4 vDirLightSpacePos;
+out mat3 vTBN;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+
 uniform mat4 dirLightTransform;
 uniform vec4 clipPlane;
 
 
 void main()
 {
-
-	FragPos = (model * vec4(aPosition, 1.0)).xyz;
-	TexCoords = aTexCoords;
+	vFragPos = (model * vec4(aPosition, 1.0)).xyz;
+	vTexCoord = aTexCoord;
 
 	vec4 WorldPosition = model * vec4(aPosition, 1.0);
 	gl_ClipDistance[0] = dot(WorldPosition, clipPlane);
 
-	DirLightSpacePos = dirLightTransform * model * vec4(aPosition, 1.0);
+	vDirLightSpacePos = dirLightTransform * model * vec4(aPosition, 1.0);
 	
 	mat3 modelVector = transpose(inverse(mat3(model)));
 
@@ -40,9 +40,9 @@ void main()
 	T = normalize(T - dot(T, N) * N);
 	B = cross(N, T);
 
-	TBN = mat3(T, B, N);
+	vTBN = mat3(T, B, N);
 
-	Normal = normalize(modelVector * aNormal);
+	vNormal = normalize(modelVector * aNormal);
 
-	gl_Position = projection * view * vec4(FragPos, 1.0);
+	gl_Position = projection * view * vec4(vFragPos, 1.0);
 }

@@ -75,7 +75,7 @@ enum class SceneName
 	Editor,
 };
 
-SceneName currentScene = SceneName::OmniShadows;
+SceneName currentScene = SceneName::Editor;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };

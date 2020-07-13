@@ -169,7 +169,7 @@ void SceneSponza::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 		model = glm::scale(model, glm::vec3(1.2f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 
-		shaders["main"]->setInt("theTexture", textureSlots["shadow"]);
+		shaders["main"]->setInt("albedoMap", textureSlots["shadow"]);
 		shaders["main"]->setInt("normalMap", textureSlots["shadow"]);
 
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);

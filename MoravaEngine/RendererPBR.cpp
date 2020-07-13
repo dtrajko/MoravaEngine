@@ -129,9 +129,9 @@ void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 project
 	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
 	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
-	shaderMain->setInt("theTexture", scene->GetTextureSlots()["diffuse"]);
+	shaderMain->setInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
-	shaderMain->setInt("directionalShadowMap", scene->GetTextureSlots()["shadow"]);
+	shaderMain->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);
 	shaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
 	shaderMain->Validate();
 

@@ -17,6 +17,7 @@ uniform mat4 projection;
 uniform mat4 dirLightTransform;
 uniform vec4 clipPlane;
 
+
 void main()
 {
     vPosition = vec3(model * vec4(aPosition, 1.0));
