@@ -58,7 +58,7 @@ SceneJoey::SceneJoey()
 	SetupLights();
 
 	m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
-	m_MaterialWorkflowPBR->Init("Textures/HDR/Ice_Lake_Ref.hdr");
+	m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
 }
 
 void SceneJoey::SetupTextures()
@@ -379,14 +379,25 @@ void SceneJoey::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::stri
 	{
 		// render skybox (render as last to prevent overdraw)
 		shaders["backgroundShader"]->Bind();
+
+		// Skybox shaderBackground
+		RendererBasic::DisableCulling();
+		// render skybox (render as last to prevent overdraw)
+
+		glm::mat4 transform = glm::mat4(1.0f);
+		float angleRadians = glm::radians((GLfloat)glfwGetTime());
+		transform = glm::rotate(transform, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		shaders["backgroundShader"]->setMat4("model", transform);
 		shaders["backgroundShader"]->setMat4("projection", projectionMatrix);
 		shaders["backgroundShader"]->setMat4("view", m_Camera->CalculateViewMatrix());
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
-		// glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap()); // display irradiance map
-		// glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap()); // display prefilter map
+		m_MaterialWorkflowPBR->BindEnvironmentCubemap(0);
+		// m_MaterialWorkflowPBR->BindIrradianceMap(0); // display irradiance map
+		// m_MaterialWorkflowPBR->BindPrefilterMap(0); // display prefilter map
+		shaders["backgroundShader"]->setInt("environmentMap", 0);
+
 		m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
+
 	}
 	/* End backgroundShader */
 }
