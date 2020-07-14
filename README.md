@@ -2,6 +2,8 @@
 Graphics engine based on C++ and OpenGL ES 2.0
 
 
+Keyboard and Mouse shortcuts:  
+
 * Add Mesh or Model: Left CTRL + Left Mouse Button  
 * Camera Rotation: Right Mouse Button  
 * Camera Movement: W) forward, A) left, S) back, D) right, Q) down, E) up  
