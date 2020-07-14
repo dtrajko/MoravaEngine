@@ -1,6 +1,7 @@
 #include "SkinnedMesh.h"
 
 #include "Math.h"
+#include "Log.h"
 
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -376,7 +377,7 @@ bool SkinnedMesh::InitMaterials(const aiScene* pScene, const std::string& Filena
 void SkinnedMesh::VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
 {
     for (unsigned int i = 0; i < ARRAY_SIZE_IN_ELEMENTS(IDs); i++) {
-        if (Weights[i] == 0.0) {
+        if (Weights[i] == 0.0f) {
             IDs[i] = BoneID;
             Weights[i] = Weight;
             return;
@@ -384,7 +385,8 @@ void SkinnedMesh::VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
     }
 
     // should never get here - more bones than we have space for
-    assert(0);
+    Log::GetLogger()->error("SkinnedMesh: should never get here - more bones than we have space for.");
+    // assert(0);
 }
 
 void SkinnedMesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform)
