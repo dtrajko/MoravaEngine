@@ -76,4 +76,7 @@ public:
 	float tilingFactor;
 	float tilingFMaterial;
 
+	bool castShadow;
+	bool receiveShadows;
+
 };

@@ -3,6 +3,8 @@
 
 SceneObject::SceneObject()
 {
+    castShadow = true;
+    receiveShadows = true;
 }
 
 void SceneObject::Render()

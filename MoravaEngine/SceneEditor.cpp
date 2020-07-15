@@ -430,7 +430,8 @@ void SceneEditor::LoadScene()
             Mesh* mesh = nullptr;
             Model* model = nullptr;
             if (sceneObject->m_Type == "mesh") {
-                sceneObject->mesh  = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale);
+                std::string objectName;
+                sceneObject->mesh  = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale, &objectName);
             }
             else if (sceneObject->m_Type == "model")
                 sceneObject->model = AddNewModel(sceneObject->m_TypeID, sceneObject->scale);
@@ -468,6 +469,21 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
         ImGui::SliderFloat3("Position", (float*)m_PositionEdit, -10.0f, 10.0f);
         ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -360.0f, 360.0f);
         ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.1f, 20.0f);
+    }
+    ImGui::End();
+
+    ImGui::Begin("Object Properties");
+    {
+        if (ImGui::CollapsingHeader("Show Details"))
+        {
+            if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
+            {
+                std::string objectName = "Name: " + m_SceneObjects[m_SelectedIndex]->name;
+                ImGui::Text(objectName.c_str());
+                ImGui::Checkbox("Cast Shadow", &m_SceneObjects[m_SelectedIndex]->castShadow);
+                ImGui::Checkbox("Receive Shadows", &m_SceneObjects[m_SelectedIndex]->receiveShadows);
+            }
+        }
     }
     ImGui::End();
 
@@ -1144,46 +1160,58 @@ void SceneEditor::UpdateLightDirection(glm::quat rotation)
     }
 }
 
-Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale)
+Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* name)
 {
     Mesh* mesh;
     switch (meshTypeID)
     {
     case MESH_TYPE_CUBE:
         mesh = new Block(scale);
+        *name = "cube";
         break;
     case MESH_TYPE_PYRAMID:
         mesh = new Pyramid(scale);
+        *name = "pyramid";
         break;
     case MESH_TYPE_SPHERE:
         mesh = new Sphere(scale);
+        *name = "sphere";
         break;
     case MESH_TYPE_CYLINDER:
         mesh = new Cylinder(scale);
+        *name = "cylinder";
         break;
     case MESH_TYPE_CONE:
         mesh = new Cone(scale);
+        *name = "cone";
         break;
     case MESH_TYPE_RING:
         mesh = new Ring(scale);
+        *name = "ring";
         break;
     case MESH_TYPE_BOB_LAMP:
         mesh = new SkinnedMesh("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Textures/OGLdev/BobLamp");
+        *name = "bob_lamp";
         break;
     case MESH_TYPE_ANIM_BOY:
         mesh = new SkinnedMesh("Models/AnimatedCharacter.dae", "Textures");
+        *name = "anim_boy";
         break;
     case MESH_TYPE_TERRAIN:
         mesh = new Terrain("Textures/horizon_mountains.png", 4.0f, nullptr);
+        *name = "terrain";
         break;
     case MESH_TYPE_WATER:
         mesh = new Tile2D();
+        *name = "water";
         break;
     case MESH_TYPE_DRONE:
         mesh = new SkinnedMesh("Models/BusterDrone/busterDrone.gltf", "Textures/BusterDrone");
+        *name = "drone";
         break;
     default:
         mesh = new Block(scale);
+        *name = "cube";
         break;
     }
     return mesh;
@@ -1230,7 +1258,7 @@ void SceneEditor::AddSceneObject()
     Model* model = nullptr;
     SceneObjectParticleSystem* particle_system = nullptr;
 
-    std::string modelName = "";
+    std::string objectName = "";
     std::string objectType = "";
     std::string materialName = "";
     glm::vec3 position = glm::vec3(0.0f);
@@ -1241,11 +1269,12 @@ void SceneEditor::AddSceneObject()
 
     // Mesh - ID range 0-999
     if (m_CurrentObjectTypeID < 1000) {
-        mesh = CreateNewMesh(m_CurrentObjectTypeID, glm::vec3(1.0f));
+        mesh = CreateNewMesh(m_CurrentObjectTypeID, glm::vec3(1.0f), &objectName);
+        objectName += "_" + std::to_string(m_SceneObjects.size());
         objectType = "mesh";
 
         if (m_CurrentObjectTypeID == MESH_TYPE_BOB_LAMP) {
-            modelName = "bob_lamp";
+            objectName = "bob_lamp";
             materialName = "none";
             rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
             scale = glm::vec3(0.1f);
@@ -1253,7 +1282,7 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(20.0f, 20.0f, 60.0f);
         }
         else if (m_CurrentObjectTypeID == MESH_TYPE_ANIM_BOY) {
-            modelName = "anim_boy";
+            objectName = "anim_boy";
             materialName = "anim_boy";
             rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
             scale = glm::vec3(0.5f);
@@ -1261,7 +1290,7 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(2.4f, 2.0f, 8.8f);
         }
         else if (m_CurrentObjectTypeID == MESH_TYPE_TERRAIN) {
-            modelName = "terrain";
+            objectName = "terrain";
             materialName = "none";
             rotation = glm::vec3(0.0f, 0.0f, 0.0f);
             scale = glm::vec3(1.0f);
@@ -1269,7 +1298,7 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(128.0f, 0.5f, 128.0f);
         }
         else if (m_CurrentObjectTypeID == MESH_TYPE_WATER) {
-            modelName = "water";
+            objectName = "water";
             materialName = "none";
             rotation = glm::vec3(0.0f, 0.0f, 0.0f);
             scale = glm::vec3(1.0f);
@@ -1277,7 +1306,7 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(2.0f, 0.5f, 2.0f);
         }
         else if (m_CurrentObjectTypeID == MESH_TYPE_DRONE) {
-            modelName = "buster_drone";
+            objectName = "buster_drone";
             materialName = "buster_drone";
             rotation = glm::vec3(0.0f, 0.0f, 0.0f);
             scale = glm::vec3(1.0f);
@@ -1289,28 +1318,28 @@ void SceneEditor::AddSceneObject()
         model = AddNewModel(m_CurrentObjectTypeID, glm::vec3(1.0f));
         objectType = "model";
         if (m_CurrentObjectTypeID == MODEL_STONE_CARVED) {
-            modelName = "stone_carved";
+            objectName = "stone_carved";
             materialName = "stone_carved";
             scale = glm::vec3(0.05f);
             positionAABB = glm::vec3(0.0f, 58.0f, 0.0f);
             scaleAABB = glm::vec3(74.0f, 116.0f, 40.0f);    
         }
         else if (m_CurrentObjectTypeID == MODEL_OLD_STOVE) {
-            modelName = "old_stove";
+            objectName = "old_stove";
             materialName = "old_stove";
             scale = glm::vec3(0.08f);
             positionAABB = glm::vec3(0.0f, 42.0f, 0.0f);
             scaleAABB = glm::vec3(30.0f, 84.0f, 30.0f);
         }
         else if (m_CurrentObjectTypeID == MODEL_BUDDHA) {
-            modelName = "buddha";
+            objectName = "buddha";
             materialName = "none";
             scale = glm::vec3(1.0f);
             positionAABB = glm::vec3(0.0f, 5.0f, 0.0f);
             scaleAABB = glm::vec3(4.0f, 10.0f, 4.0f);
         }
         else if (m_CurrentObjectTypeID == MODEL_HHELI) {
-            modelName = "hheli";
+            objectName = "hheli";
             materialName = "none";
             rotation = glm::vec3(0.0f, 90.0f, 0.0f);
             scale = glm::vec3(0.05f);
@@ -1318,7 +1347,7 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(260.0f, 80.0f, 100.0f);
         }
         else if (m_CurrentObjectTypeID == MODEL_JEEP) {
-            modelName = "jeep";
+            objectName = "jeep";
             materialName = "none";
             rotation = glm::vec3(0.0f, -90.0f, 0.0f);
             scale = glm::vec3(0.01f);
@@ -1326,7 +1355,7 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(780.0f, 260.0f, 400.0f);
         }
         else if (m_CurrentObjectTypeID == MODEL_DAMAGED_HELMET) {
-            modelName = "damaged_helmet";
+            objectName = "damaged_helmet";
             materialName = "damaged_helmet";
             rotation = glm::vec3(0.0f, 0.0f, 0.0f);
             scale = glm::vec3(1.0f);
@@ -1334,7 +1363,7 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(1.6f, 2.0f, 1.6f);
         }
         else if (m_CurrentObjectTypeID == MODEL_SF_HELMET) {
-            modelName = "sf_helmet";
+            objectName = "sf_helmet";
             materialName = "sf_helmet";
             rotation = glm::vec3(0.0f, 0.0f, 0.0f);
             scale = glm::vec3(1.0f);
@@ -1342,7 +1371,7 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(2.0f, 3.0f, 2.2f);
         }
         else if (m_CurrentObjectTypeID == MODEL_CERBERUS) {
-            modelName = "cerberus";
+            objectName = "cerberus";
             materialName = "cerberus";
             position = glm::vec3(0.0f, 5.0f, 0.0f);
             rotation = glm::vec3(-90.0f, -180.0f, 0.0f);
@@ -1351,7 +1380,7 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(20.0f, 150.0f, 45.0f);
         }
         else if (m_CurrentObjectTypeID == MODEL_PINE) {
-            modelName = "pine";
+            objectName = "pine";
             materialName = "none";
             position = glm::vec3(0.0f, 0.0f, 0.0f);
             rotation = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -1360,7 +1389,7 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(2.0f, 20.0f, 2.0f);
         }
         else if (m_CurrentObjectTypeID == MODEL_BOULDER) {
-            modelName = "boulder";
+            objectName = "boulder";
             materialName = "boulder";
             position = glm::vec3(0.0f, 1.0f, 0.0f);
             rotation = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -1381,7 +1410,7 @@ void SceneEditor::AddSceneObject()
     {
         // Add Scene Object here
         sceneObject = CreateNewSceneObject();
-        sceneObject->name = modelName;
+        sceneObject->name = objectName;
         sceneObject->m_Type = objectType;
         sceneObject->position = position;
         sceneObject->rotation = glm::quat(rotation * toRadians);
@@ -1430,9 +1459,10 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
 
     Mesh* mesh = nullptr;
     Model* model = nullptr;
+    std::string objectName = oldSceneObject->name;
 
     if (oldSceneObject->m_Type == "mesh" && oldSceneObject->mesh != nullptr) {
-        mesh = CreateNewMesh(oldSceneObject->m_TypeID, oldSceneObject->mesh->GetScale());
+        mesh = CreateNewMesh(oldSceneObject->m_TypeID, oldSceneObject->mesh->GetScale(), &objectName);
     }
     else if (oldSceneObject->m_Type == "model" && oldSceneObject->model != nullptr) {
         model = AddNewModel(m_CurrentObjectTypeID, oldSceneObject->scale); // TODO: m_CurrentModelID hard-coded, must be in SceneObject
@@ -1441,7 +1471,7 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
     SceneObject* newSceneObject = new SceneObject();
 
     newSceneObject->id              = (int)sceneObjects->size();
-    newSceneObject->name            = oldSceneObject->name;
+    newSceneObject->name            = objectName;
     newSceneObject->transform       = oldSceneObject->transform;
     newSceneObject->position        = oldSceneObject->position;
     newSceneObject->rotation        = oldSceneObject->rotation;
@@ -1739,7 +1769,8 @@ void SceneEditor::AddLightsToSceneObjects()
     sceneObject->transform = transform;
     sceneObject->m_TypeID = MESH_TYPE_CONE;
     if (sceneObject->m_Type == "mesh") {
-        sceneObject->mesh = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale);
+        std::string objectNameVoid = "";
+        sceneObject->mesh = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale, &objectNameVoid);
     }
     sceneObject->model = nullptr;
     sceneObject->materialName = "none";
@@ -1773,7 +1804,8 @@ void SceneEditor::AddLightsToSceneObjects()
         sceneObject->transform = transform;
         sceneObject->m_TypeID = MESH_TYPE_SPHERE;
         if (sceneObject->m_Type == "mesh") {
-            sceneObject->mesh = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale);
+            std::string objectNameVoid = "";
+            sceneObject->mesh = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale, &objectNameVoid);
         }
         sceneObject->model = nullptr;
         sceneObject->materialName = "none";
@@ -1811,7 +1843,8 @@ void SceneEditor::AddLightsToSceneObjects()
         sceneObject->transform = transform;
         sceneObject->m_TypeID = MESH_TYPE_CONE;
         if (sceneObject->m_Type == "mesh") {
-            sceneObject->mesh = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale);
+            std::string objectNameVoid = "";
+            sceneObject->mesh = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale, &objectNameVoid);
         }
         sceneObject->model = nullptr;
         sceneObject->materialName = "none";
@@ -1990,39 +2023,6 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 
     SwitchOrthographicView(mainWindow, projectionMatrix);
 
-    /**
-    shaders["editor_object"]->Bind();
-    unsigned int offsetSlot = 3;
-    unsigned int offsetMap = 0;
-    char locBuff[100] = { '\0' };
-
-    for (unsigned int i = 0; i < LightManager::pointLightCount; i++) {
-        // if (LightManager::pointLights[0].GetShadowMap() != nullptr)
-        LightManager::pointLights[i].GetShadowMap()->Read(offsetSlot + i);
-        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", offsetMap + i);
-        shaders["editor_object"]->setInt(locBuff, offsetSlot + i);
-        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", offsetMap + i);
-        shaders["editor_object"]->setFloat(locBuff, LightManager::pointLights[i].GetFarPlane());
-        // printf("Set uniforms Point Light %i index %i texture slot %i\n", i, offsetMap + i, offsetSlot + i);
-    }
-
-    offsetSlot += LightManager::pointLightCount;
-    offsetMap += LightManager::pointLightCount;
-    for (unsigned int i = 0; i < LightManager::spotLightCount; i++) {
-        // if (LightManager::spotLights[0].GetShadowMap() != nullptr)
-        LightManager::spotLights[i].GetShadowMap()->Read(offsetSlot + i);
-        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", offsetMap + i);
-        shaders["editor_object"]->setInt(locBuff, offsetSlot + i);
-        snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", offsetMap + i);
-        shaders["editor_object"]->setFloat(locBuff, LightManager::spotLights[i].GetFarPlane());
-        // printf("Set uniforms Spot Light %i index %i texture slot %i\n", i, offsetMap + i, offsetSlot + i);
-    }
-
-    shaders["editor_object"]->setVec3("eyePosition", m_Camera->GetPosition());
-    shaders["editor_object"]->setInt("pointLightCount", LightManager::pointLightCount);
-    shaders["editor_object"]->setInt("spotLightCount", LightManager::spotLightCount);
-    **/
-
     bool shouldRenderObject;
 
     for (auto& object : m_SceneObjects)
@@ -2034,10 +2034,16 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         if (passType == "shadow_dir") {
             shaders["shadow_map"]->Bind();
             shaders["shadow_map"]->setMat4("model", object->transform);
+
+            if (!object->castShadow)
+                shouldRenderObject = false;
         }
         if (passType == "shadow_omni") {
             shaders["omni_shadow_map"]->Bind();
             shaders["omni_shadow_map"]->setMat4("model", object->transform);
+
+            if (!object->castShadow)
+                shouldRenderObject = false;
         }
         if (passType == "main" || passType == "water_reflect" || passType == "water_refract") {
             shaders["editor_object"]->Bind();

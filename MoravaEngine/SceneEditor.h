@@ -78,7 +78,7 @@ private:
 	void SaveScene();
 	void LoadScene();
 	void ResetScene();
-	Mesh* CreateNewMesh(int meshTypeID, glm::vec3 scale);
+	Mesh* CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* name);
 	Model* AddNewModel(int modelID, glm::vec3 scale);
 	SceneObjectParticleSystem* AddNewSceneObjectParticleSystem(int objectTypeID, glm::vec3 scale);
 	void SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Material* material, SceneObject* sceneObject);
