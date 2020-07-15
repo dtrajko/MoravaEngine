@@ -19,8 +19,9 @@
 #include "ParticleMaster.h"
 #include "Profiler.h"
 #include "Log.h"
-#include "Noise.h"
 #include "ResourceManager.h"
+#include "Terrain3D.h"
+#include "PerlinNoise/PerlinNoise.hpp"
 
 #include <vector>
 #include <map>
@@ -174,21 +175,6 @@ SceneEditor::SceneEditor()
     m_ParticleSettingsEdit = new ParticleSettings;
     m_ParticleSettingsEdit->textureName = "particle_atlas";
     m_ParticleSettingsPrev = m_ParticleSettingsEdit;
-
-    /* Begin Test */
-    int width = 8;
-    int height = 4;
-    Noise* noise = new Noise();
-    std::vector<std::vector<float>> heightMap = noise->GenerateNoiseMap(width, height, 1.0f);
-
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            // if (x == 0) printf("\n");
-            // printf("[ X=%i Y=%i] %.2ff\t", x, y, heightMap[x][y]);
-        }
-    }
-    // printf("\n");
-    /* End Test */
 }
 
 void SceneEditor::SetLightManager()
@@ -480,6 +466,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             {
                 std::string objectName = "Name: " + m_SceneObjects[m_SelectedIndex]->name;
                 ImGui::Text(objectName.c_str());
+                ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(m_SceneObjects.size() - 1));
                 ImGui::Checkbox("Cast Shadow", &m_SceneObjects[m_SelectedIndex]->castShadow);
                 ImGui::Checkbox("Receive Shadows", &m_SceneObjects[m_SelectedIndex]->receiveShadows);
             }
@@ -556,9 +543,6 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
 
     ImGui::Begin("Scene Settings");
     {
-        ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(m_SceneObjects.size() - 1));
-
-        ImGui::Separator();
         float FOV = GetFOV();
         ImGui::SliderFloat("FOV", &FOV, 1.0f, 120.0f);
         SetFOV(FOV);

@@ -353,15 +353,6 @@
     <ClCompile Include="Log.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Noise.cpp">
-      <Filter>Terrain</Filter>
-    </ClCompile>
-    <ClCompile Include="PerlinNoise.cpp">
-      <Filter>Terrain</Filter>
-    </ClCompile>
-    <ClCompile Include="MapGenerator.cpp">
-      <Filter>Terrain</Filter>
-    </ClCompile>
     <ClCompile Include="SceneObjectParticleSystem.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
@@ -376,6 +367,9 @@
     </ClCompile>
     <ClCompile Include="SceneOmniShadows.cpp">
       <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain3D.cpp">
+      <Filter>Terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -755,15 +749,6 @@
     <ClInclude Include="Log.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Noise.h">
-      <Filter>Terrain</Filter>
-    </ClInclude>
-    <ClInclude Include="PerlinNoise.h">
-      <Filter>Terrain</Filter>
-    </ClInclude>
-    <ClInclude Include="MapGenerator.h">
-      <Filter>Terrain</Filter>
-    </ClInclude>
     <ClInclude Include="ParticleSettings.h">
       <Filter>Editor</Filter>
     </ClInclude>
@@ -781,6 +766,12 @@
     </ClInclude>
     <ClInclude Include="SceneOmniShadows.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Terrain3D.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="PerlinNoise\PerlinNoise.hpp">
+      <Filter>PerlinNoise</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -834,6 +825,9 @@
     </Filter>
     <Filter Include="Terrain">
       <UniqueIdentifier>{4981229f-a7f9-4b97-8a26-dbd492d51348}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PerlinNoise">
+      <UniqueIdentifier>{dbfdba99-a8bc-4267-ad45-40ae3edc4c3b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -89,6 +89,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -108,6 +109,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,6 +130,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,6 +154,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -172,15 +176,12 @@
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="InsertionSort.cpp" />
     <ClCompile Include="Log.cpp" />
-    <ClCompile Include="MapGenerator.cpp" />
-    <ClCompile Include="Noise.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleMaster.cpp" />
     <ClCompile Include="ParticleRenderer.cpp" />
     <ClCompile Include="ParticleRendererInstanced.cpp" />
     <ClCompile Include="ParticleSystemThinMatrix.cpp" />
     <ClCompile Include="ParticleTexture.cpp" />
-    <ClCompile Include="PerlinNoise.cpp" />
     <ClCompile Include="QuadInstanced.cpp" />
     <ClCompile Include="RendererOmniShadows.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
@@ -277,6 +278,7 @@
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="SubTexture2D.cpp" />
     <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="Terrain3D.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureAtlas.cpp" />
     <ClCompile Include="TextureCubeMap.cpp" />
@@ -304,8 +306,6 @@
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="InsertionSort.h" />
     <ClInclude Include="Log.h" />
-    <ClInclude Include="MapGenerator.h" />
-    <ClInclude Include="Noise.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleMaster.h" />
     <ClInclude Include="ParticleRenderer.h" />
@@ -313,7 +313,7 @@
     <ClInclude Include="ParticleSettings.h" />
     <ClInclude Include="ParticleSystemThinMatrix.h" />
     <ClInclude Include="ParticleTexture.h" />
-    <ClInclude Include="PerlinNoise.h" />
+    <ClInclude Include="PerlinNoise\PerlinNoise.hpp" />
     <ClInclude Include="QuadInstanced.h" />
     <ClInclude Include="RendererOmniShadows.h" />
     <ClInclude Include="resource.h" />
@@ -412,6 +412,7 @@
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="SubTexture2D.h" />
     <ClInclude Include="Terrain.h" />
+    <ClInclude Include="Terrain3D.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureAtlas.h" />
     <ClInclude Include="TextureCubeMap.h" />
