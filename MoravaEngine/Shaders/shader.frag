@@ -273,5 +273,5 @@ void main()
 	if(texColor.a < 0.1)
         discard;
 
-	FragColor = texColor * finalColor;
+	FragColor = texColor * tintColor * finalColor;
 }

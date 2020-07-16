@@ -141,6 +141,7 @@ void RendererOmniShadows::RenderPass(Window& mainWindow, Scene* scene, glm::mat4
 	shaderMain->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);
 	shaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
 	shaderMain->setFloat("tilingFactor", 1.0f);
+	shaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	shaderMain->Validate();
 
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();

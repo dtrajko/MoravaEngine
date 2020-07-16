@@ -102,8 +102,8 @@ SceneVoxelTerrain::SceneVoxelTerrain()
 
 void SceneVoxelTerrain::SetupTextures()
 {
-    ResourceManager::LoadTexture("diffuse", "Textures/PBR/gold/albedo.png");
-    ResourceManager::LoadTexture("normal",  "Textures/PBR/gold/normal.png");
+    ResourceManager::LoadTexture("diffuse", "Textures/plain.png");
+    ResourceManager::LoadTexture("normal",  "Textures/normal_map_default.png");
 }
 
 void SceneVoxelTerrain::SetupTextureSlots()
@@ -291,12 +291,32 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
     ResourceManager::GetTexture("diffuse")->Bind(textureSlots["diffuse"]);
     ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
 
+    glm::vec4 tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
     for (glm::vec3 voxelPosition : m_Terrain3D->m_Positions)
     {
+        // printf("voxelPosition [ %.2ff %.2ff %.2ff ]\n", voxelPosition.x, voxelPosition.y, voxelPosition.z);
+
+        if (voxelPosition.y >= 0.0f && voxelPosition.y < 1.0f)
+            tintColor = glm::vec4(0.0f, 0.4f, 0.8f, 1.0f);
+        else if (voxelPosition.y >= 1.0f && voxelPosition.y < 2.0f)
+            tintColor = glm::vec4(255.0f / 255.0f, 204.0f / 255.0f, 153.0f / 255.0f, 1.0f); // ground  255, 204, 153
+        else if (voxelPosition.y >= 2.0f && voxelPosition.y < 3.0f)
+            tintColor = glm::vec4(187.0f / 255.0f, 153.0f / 255.0f, 102.0f / 255.0f, 1.0f); // ground  187, 153, 102
+        else if (voxelPosition.y >= 3.0f && voxelPosition.y < 4.0f)
+            tintColor = glm::vec4(153.0f / 255.0f, 102.0f / 255.0f, 51.0f / 255.0f, 1.0f);  // ground  153, 102, 51
+        else if (voxelPosition.y >= 4.0f && voxelPosition.y < 5.0f)
+            tintColor = glm::vec4(102.0f / 255.0f, 51.0f / 255.0f, 0.0f / 255.0f, 1.0f);    // ground  102, 51, 0
+        else if (voxelPosition.y >= 5.0f && voxelPosition.y < 1000.0f)
+            tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); // white (snow)
+
         // printf("SceneVoxelTerrain::Render ");
         m_Transform = glm::mat4(1.0f);
         m_Transform = glm::translate(m_Transform, voxelPosition);
         shaderMain->setMat4("model", m_Transform);
+
+        shaderMain->setVec4("tintColor", tintColor);
+
         meshes["cube"]->Render();
     }
 }

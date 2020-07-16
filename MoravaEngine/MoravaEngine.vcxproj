@@ -185,6 +185,7 @@
     <ClCompile Include="QuadInstanced.cpp" />
     <ClCompile Include="RendererOmniShadows.cpp" />
     <ClCompile Include="RendererVoxelTerrain.cpp" />
+    <ClCompile Include="RenderInstanced.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="SceneObjectLight.cpp" />
@@ -319,6 +320,7 @@
     <ClInclude Include="QuadInstanced.h" />
     <ClInclude Include="RendererOmniShadows.h" />
     <ClInclude Include="RendererVoxelTerrain.h" />
+    <ClInclude Include="RenderInstanced.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="SceneObject.h" />

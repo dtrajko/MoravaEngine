@@ -233,6 +233,7 @@ void Renderer::RenderPassWaterReflection(Window& mainWindow, Scene* scene, glm::
 	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderMain->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);
 	shaderMain->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
+	shaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	shaderMain->Validate();
 
 	EnableCulling();
@@ -278,6 +279,7 @@ void Renderer::RenderPassWaterRefraction(Window& mainWindow, Scene* scene, glm::
 	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderMain->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);
 	shaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
+	shaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	shaderMain->Validate();
 
 	std::string passType = "water";
@@ -330,6 +332,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	shaderMain->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);
 	shaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
 	shaderMain->setFloat("tilingFactor", 1.0f);
+	shaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	shaderMain->Validate();
 
 	glm::vec3 lowerLight = scene->GetCamera()->GetPosition();

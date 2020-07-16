@@ -377,6 +377,9 @@
     <ClCompile Include="SceneVoxelTerrain.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="RenderInstanced.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -784,6 +787,9 @@
     </ClInclude>
     <ClInclude Include="SceneVoxelTerrain.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderInstanced.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
