@@ -12,10 +12,13 @@ public:
 	~Terrain3D();
 
 	float Perlin3D(float x, float y, float z);
-	inline std::vector<glm::vec3>* GetPositions() { return &m_Positions; };
+	void Generate();
 
-private:
+public:
+	glm::vec3 m_Scale;
 	std::vector<glm::vec3> m_Positions;
-	float m_NoiseScale;
 	siv::PerlinNoise* m_PerlinNoise;
+	float m_NoiseFactor;
+	float m_NoiseThreshold;
+
 };

@@ -371,6 +371,12 @@
     <ClCompile Include="Terrain3D.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="RendererVoxelTerrain.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneVoxelTerrain.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -772,6 +778,12 @@
     </ClInclude>
     <ClInclude Include="PerlinNoise\PerlinNoise.hpp">
       <Filter>PerlinNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererVoxelTerrain.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneVoxelTerrain.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -3,14 +3,21 @@
 
 Terrain3D::Terrain3D()
 {
+	m_Scale = glm::vec3(20, 20, 20);
 	m_PerlinNoise = new siv::PerlinNoise();
-	m_NoiseScale = 0.2f;
+	m_NoiseFactor = 0.4f;
+	m_NoiseThreshold = 0.05f;
 
-	for (int x = 0; x < 20; x++) {
-		for (int y = 0; y < 20; y++) {
-			for (int z = 0; z < 20; z++) {
-				if (Perlin3D(x * m_NoiseScale, y * m_NoiseScale, z * m_NoiseScale) >= 0.5f) {
-					printf("Terrain3D::Terrain3D Voxel position [ %i %i %i ]\n", x, y, z);
+	Generate();
+}
+
+void Terrain3D::Generate()
+{
+	for (int x = 0; x < m_Scale.x; x++) {
+		for (int y = 0; y < m_Scale.y; y++) {
+			for (int z = 0; z < m_Scale.z; z++) {
+				if (Perlin3D(x * m_NoiseFactor, y * m_NoiseFactor, z * m_NoiseFactor) >= m_NoiseThreshold) {
+					m_Positions.push_back(glm::vec3(x, y, z));
 				}
 			}
 		}
