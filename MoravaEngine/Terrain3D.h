@@ -13,6 +13,7 @@ public:
 
 	float Perlin3D(float x, float y, float z);
 	void Generate();
+	unsigned int GetCellCount();
 
 public:
 	glm::vec3 m_Scale;

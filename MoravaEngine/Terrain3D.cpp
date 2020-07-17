@@ -3,7 +3,7 @@
 
 Terrain3D::Terrain3D()
 {
-	m_Scale = glm::vec3(60, 12, 60);
+	m_Scale = glm::vec3(60, 24, 60);
 	m_PerlinNoise = new siv::PerlinNoise();
 	m_NoiseFactor = 0.1f;
 	m_NoiseThreshold = 0.0f;
@@ -22,6 +22,11 @@ void Terrain3D::Generate()
 			}
 		}
 	}
+}
+
+unsigned int Terrain3D::GetCellCount()
+{
+	return (unsigned int)m_Scale.x * (unsigned int)m_Scale.y * (unsigned int)m_Scale.z;
 }
 
 Terrain3D::~Terrain3D()

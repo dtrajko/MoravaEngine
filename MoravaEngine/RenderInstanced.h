@@ -11,6 +11,7 @@ class RenderInstanced
 {
 public:
 	RenderInstanced();
+	RenderInstanced(unsigned int instanceCount);
 	void CreateVertexAttributes(std::vector<glm::vec3> positions);
 	void SetMesh(Texture* texture, Mesh* mesh);
 	~RenderInstanced();

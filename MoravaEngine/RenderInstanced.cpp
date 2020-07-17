@@ -7,8 +7,12 @@
 
 RenderInstanced::RenderInstanced()
 {
+}
+
+RenderInstanced::RenderInstanced(unsigned int instanceCount)
+{
 	m_ModelMatrix = glm::mat4(1.0f);
-	m_InstanceCount = 0;
+	m_InstanceCount = instanceCount;
 	m_ModelMatrices = new glm::mat4[m_InstanceCount];
 }
 

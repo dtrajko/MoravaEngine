@@ -8,15 +8,15 @@
 
 SceneVoxelTerrain::SceneVoxelTerrain()
 {
-    sceneSettings.cameraPosition = glm::vec3(25.0f, 20.0f, 100.0f);
+    sceneSettings.cameraPosition = glm::vec3(0.0f, 8.0f, 24.0f);
     sceneSettings.cameraStartYaw = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
     sceneSettings.cameraMoveSpeed = 1.0f;
     sceneSettings.waterHeight = 0.0f;
     sceneSettings.waterWaveSpeed = 0.05f;
-    sceneSettings.enablePointLights  = false;
-    sceneSettings.enableSpotLights   = false;
-    sceneSettings.enableOmniShadows  = false;
+    sceneSettings.enablePointLights  = true;
+    sceneSettings.enableSpotLights   = true;
+    sceneSettings.enableOmniShadows  = true;
     sceneSettings.enableSkybox       = false;
     sceneSettings.enableShadows      = false;
     sceneSettings.enableWaterEffects = false;
@@ -99,8 +99,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_Terrain3D = new Terrain3D();
     m_Transform = glm::mat4(1.0f);
 
-    m_RenderInstanced = new RenderInstanced();
-    m_RenderInstanced->m_InstanceCount = (unsigned int)(m_Terrain3D->m_Scale.x * m_Terrain3D->m_Scale.y * m_Terrain3D->m_Scale.z);
+    m_RenderInstanced = new RenderInstanced(m_Terrain3D->GetCellCount());
     m_RenderInstanced->SetMesh(ResourceManager::GetTexture("diffuse"), meshes["cube"]);
     m_RenderInstanced->CreateVertexAttributes(m_Terrain3D->m_Positions);
 }
@@ -297,45 +296,14 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
     ResourceManager::GetTexture("diffuse")->Bind(textureSlots["diffuse"]);
     ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
 
-    glm::vec4 tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-    float heightTerrain = m_Terrain3D->m_Scale.y;
-    float levelHeight = heightTerrain / 6.0f;
-
-    /*
-    for (glm::vec3 voxelPosition : m_Terrain3D->m_Positions)
-    {
-        // printf("voxelPosition [ %.2ff %.2ff %.2ff ]\n", voxelPosition.x, voxelPosition.y, voxelPosition.z);
-
-        if (voxelPosition.y >= 0.0f && voxelPosition.y < levelHeight * 1.0f)
-            tintColor = glm::vec4(0.0f, 0.4f, 0.8f, 1.0f);
-        else if (voxelPosition.y >= levelHeight * 1.0f && voxelPosition.y < levelHeight * 2.0f)
-            tintColor = glm::vec4(255.0f / 255.0f, 204.0f / 255.0f, 153.0f / 255.0f, 1.0f); // ground  255, 204, 153
-        else if (voxelPosition.y >= levelHeight * 2.0f && voxelPosition.y < levelHeight * 3.0f)
-            tintColor = glm::vec4(187.0f / 255.0f, 153.0f / 255.0f, 102.0f / 255.0f, 1.0f); // ground  187, 153, 102
-        else if (voxelPosition.y >= levelHeight * 3.0f && voxelPosition.y < levelHeight * 4.0f)
-            tintColor = glm::vec4(153.0f / 255.0f, 102.0f / 255.0f, 51.0f / 255.0f, 1.0f);  // ground  153, 102, 51
-        else if (voxelPosition.y >= levelHeight * 4.0f && voxelPosition.y < levelHeight * 5.0f)
-            tintColor = glm::vec4(102.0f / 255.0f, 51.0f / 255.0f, 0.0f / 255.0f, 1.0f);    // ground  102, 51, 0
-        else if (voxelPosition.y >= levelHeight * 5.0f && voxelPosition.y < 1000.0f)
-            tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); // white (snow)
-
-        // printf("SceneVoxelTerrain::Render ");
-        m_Transform = glm::mat4(1.0f);
-        m_Transform = glm::translate(m_Transform, voxelPosition);
-        shaderMain->setMat4("model", m_Transform);
-
-        shaderMain->setVec4("tintColor", tintColor);
-
-        meshes["cube"]->Render();
-    }
-    */
+    glm::vec4 tintColor = glm::vec4(0.0f, 0.4f, 0.8f, 1.0f);
 
     shaderRenderInstanced->Bind();
+
     shaderRenderInstanced->setMat4("projection", projectionMatrix);
     shaderRenderInstanced->setMat4("view", m_Camera->CalculateViewMatrix());
     shaderRenderInstanced->setInt("albedoMap", 0);
-    shaderRenderInstanced->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+    shaderRenderInstanced->setVec4("tintColor", tintColor);
 
     m_RenderInstanced->m_Texture->Bind(0);
     m_RenderInstanced->Render();
