@@ -31,9 +31,9 @@ ParticleRendererInstanced::ParticleRendererInstanced(int maxInstances)
 	// blend factor in attribute slot 6
 	static_cast<QuadInstanced*>(m_Mesh)->AddInstancedAttribute(6, 1, INSTANCE_DATA_LENGTH, 20);
 
-	printf("ParticleRendererInstanced::ParticleRendererInstanced m_VAO = %i\n",           static_cast<QuadInstanced*>(m_Mesh)->GetVAO());
-	printf("ParticleRendererInstanced::ParticleRendererInstanced m_VBO = %i\n",           static_cast<QuadInstanced*>(m_Mesh)->GetVBO());
-	printf("ParticleRendererInstanced::ParticleRendererInstanced m_VBO_Instanced = %i\n", static_cast<QuadInstanced*>(m_Mesh)->GetVBOInstanced());
+	Log::GetLogger()->info("ParticleRendererInstanced::ParticleRendererInstanced m_VAO = {0}",           static_cast<QuadInstanced*>(m_Mesh)->GetVAO());
+	Log::GetLogger()->info("ParticleRendererInstanced::ParticleRendererInstanced m_VBO = {0}",           static_cast<QuadInstanced*>(m_Mesh)->GetVBO());
+	Log::GetLogger()->info("ParticleRendererInstanced::ParticleRendererInstanced m_VBO_Instanced = {0}", static_cast<QuadInstanced*>(m_Mesh)->GetVBOInstanced());
 }
 
 void ParticleRendererInstanced::RenderBefore()

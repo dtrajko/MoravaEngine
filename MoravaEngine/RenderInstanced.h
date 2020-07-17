@@ -12,9 +12,15 @@ class RenderInstanced
 public:
 	RenderInstanced();
 	void CreateVertexAttributes(std::vector<glm::vec3> positions);
+	void SetMesh(Texture* texture, Mesh* mesh);
 	~RenderInstanced();
 
 	void Render();
+
+public:
+	unsigned int m_InstanceCount;
+	Texture* m_Texture;
+	Mesh* m_Mesh;
 
 private:
 	struct Matrix
@@ -30,13 +36,10 @@ private:
 		Matrix model; // 16F
 	};
 
-	std::map<Texture*, std::vector<Mesh*>*> m_Map; // TODO: Material->Texture
-	std::vector<Mesh*> meshVector;
-	unsigned int m_VAO; // it actually belongs to mesh
+	// std::map<Texture*, std::vector<Mesh*>> m_Map; // TODO: Material->Texture
 	unsigned int m_VBO_Instanced;
 	float* m_VBO_Data;
 	unsigned int m_InstanceDataLength; // 16F model view + 4F texOffsets + 1F blendFactor = 21F
-	unsigned int m_InstanceCount = 50000;
 	glm::mat4 m_ModelMatrix;
 	glm::mat4* m_ModelMatrices;
 

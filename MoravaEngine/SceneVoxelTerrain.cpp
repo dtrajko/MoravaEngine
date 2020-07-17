@@ -14,9 +14,9 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     sceneSettings.cameraMoveSpeed = 1.0f;
     sceneSettings.waterHeight = 0.0f;
     sceneSettings.waterWaveSpeed = 0.05f;
-    sceneSettings.enablePointLights  = true;
-    sceneSettings.enableSpotLights   = true;
-    sceneSettings.enableOmniShadows  = true;
+    sceneSettings.enablePointLights  = false;
+    sceneSettings.enableSpotLights   = false;
+    sceneSettings.enableOmniShadows  = false;
     sceneSettings.enableSkybox       = false;
     sceneSettings.enableShadows      = false;
     sceneSettings.enableWaterEffects = false;
@@ -31,7 +31,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 40.0f);
 
     // point lights
-    sceneSettings.pointLights[0].base.enabled = true;
+    sceneSettings.pointLights[0].base.enabled = false;
     sceneSettings.pointLights[0].base.color = glm::vec3(1.0f, 1.0f, 0.0f);
     sceneSettings.pointLights[0].position = glm::vec3(-1.0f, 4.0f, 1.0f);
     sceneSettings.pointLights[0].base.ambientIntensity = 1.0f;
@@ -43,7 +43,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     sceneSettings.pointLights[1].base.ambientIntensity = 1.0f;
     sceneSettings.pointLights[1].base.diffuseIntensity = 1.0f;
 
-    sceneSettings.pointLights[2].base.enabled = true;
+    sceneSettings.pointLights[2].base.enabled = false;
     sceneSettings.pointLights[2].base.color = glm::vec3(0.0f, 1.0f, 1.0f);
     sceneSettings.pointLights[2].position = glm::vec3(-2.0f, 4.0f, -2.0f);
     sceneSettings.pointLights[2].base.ambientIntensity = 1.0f;
@@ -100,6 +100,8 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_Transform = glm::mat4(1.0f);
 
     m_RenderInstanced = new RenderInstanced();
+    m_RenderInstanced->m_InstanceCount = (unsigned int)(m_Terrain3D->m_Scale.x * m_Terrain3D->m_Scale.y * m_Terrain3D->m_Scale.z);
+    m_RenderInstanced->SetMesh(ResourceManager::GetTexture("diffuse"), meshes["cube"]);
     m_RenderInstanced->CreateVertexAttributes(m_Terrain3D->m_Positions);
 }
 
@@ -279,6 +281,7 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
 {
     Shader* shaderMain = shaders["main"];
     Shader* shaderOmniShadow = shaders["omniShadow"];
+    Shader* shaderRenderInstanced = shaders["render_instanced"];
 
     if (passType == "shadow_omni") {
         shaderOmniShadow->Bind();
@@ -299,6 +302,7 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
     float heightTerrain = m_Terrain3D->m_Scale.y;
     float levelHeight = heightTerrain / 6.0f;
 
+    /*
     for (glm::vec3 voxelPosition : m_Terrain3D->m_Positions)
     {
         // printf("voxelPosition [ %.2ff %.2ff %.2ff ]\n", voxelPosition.x, voxelPosition.y, voxelPosition.z);
@@ -325,6 +329,16 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
 
         meshes["cube"]->Render();
     }
+    */
+
+    shaderRenderInstanced->Bind();
+    shaderRenderInstanced->setMat4("projection", projectionMatrix);
+    shaderRenderInstanced->setMat4("view", m_Camera->CalculateViewMatrix());
+    shaderRenderInstanced->setInt("albedoMap", 0);
+    shaderRenderInstanced->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+
+    m_RenderInstanced->m_Texture->Bind(0);
+    m_RenderInstanced->Render();
 }
 
 SceneVoxelTerrain::~SceneVoxelTerrain()

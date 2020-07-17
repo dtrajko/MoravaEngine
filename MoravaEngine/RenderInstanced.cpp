@@ -8,7 +8,15 @@
 RenderInstanced::RenderInstanced()
 {
 	m_ModelMatrix = glm::mat4(1.0f);
-	m_ModelMatrices = new glm::mat4[m_InstanceCount]; // asteroids
+	m_InstanceCount = 0;
+	m_ModelMatrices = new glm::mat4[m_InstanceCount];
+}
+
+void RenderInstanced::SetMesh(Texture* texture, Mesh* mesh)
+{
+	m_Texture = texture;
+	m_Mesh = mesh;
+	// TODO: improve it to work with multiple Textures and multiple Meshes
 }
 
 void RenderInstanced::CreateVertexAttributes(std::vector<glm::vec3> positions)
@@ -17,6 +25,7 @@ void RenderInstanced::CreateVertexAttributes(std::vector<glm::vec3> positions)
 
 	for (unsigned int i = 0; i < positions.size(); i++)
 	{
+		m_ModelMatrix = glm::mat4(1.0f);
 		m_ModelMatrix = glm::translate(m_ModelMatrix, positions[i]);
 		m_ModelMatrices[i] = m_ModelMatrix;
 	}
@@ -25,25 +34,25 @@ void RenderInstanced::CreateVertexAttributes(std::vector<glm::vec3> positions)
 
 	// configure instanced array
 	glGenBuffers(1, &m_VBO_Instanced);
-	glBindVertexArray(m_VAO);
+	glBindVertexArray(m_Mesh->GetVAO());
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO_Instanced);
 	glBufferData(GL_ARRAY_BUFFER, bufferSize, &m_ModelMatrices[0], GL_STATIC_DRAW);
 
 	// model-view matrix in attribute slots 1 to 4 / set attribute pointers for matrix (4 times vec4)
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, sizeof(Matrix::row_0), GL_FLOAT, GL_FALSE, sizeof(Matrix), (const void*)offsetof(Matrix, Matrix::row_0));
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Matrix), (const void*)offsetof(Matrix, Matrix::row_0));
 	glVertexAttribDivisor(2, 1);
 
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, sizeof(Matrix::row_1), GL_FLOAT, GL_FALSE, sizeof(Matrix), (const void*)offsetof(Matrix, Matrix::row_1));
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(Matrix), (const void*)offsetof(Matrix, Matrix::row_1));
 	glVertexAttribDivisor(3, 1);
 
 	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, sizeof(Matrix::row_2), GL_FLOAT, GL_FALSE, sizeof(Matrix), (const void*)offsetof(Matrix, Matrix::row_2));
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Matrix), (const void*)offsetof(Matrix, Matrix::row_2));
 	glVertexAttribDivisor(4, 1);
 
 	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(5, sizeof(Matrix::row_3), GL_FLOAT, GL_FALSE, sizeof(Matrix), (const void*)offsetof(Matrix, Matrix::row_3));
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Matrix), (const void*)offsetof(Matrix, Matrix::row_3));
 	glVertexAttribDivisor(5, 1);
 
 	glBindVertexArray(0);
@@ -58,23 +67,9 @@ RenderInstanced::~RenderInstanced()
 
 void RenderInstanced::Render()
 {
-	size_t m_MeshIndicesSize = 0;
-	size_t m_VertexCount = 0;
-	size_t m_InstanceCount = 0;
-
-	for (auto it_map = m_Map.begin(); it_map != m_Map.end(); it_map++)
-	{
-		Texture* texture = it_map->first;
-		std::vector<Mesh*> meshVector = *it_map->second;
-
-		for (auto mesh : meshVector)
-		{
-
-		}
-
-		glBindVertexArray(m_VAO);
-		glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)m_MeshIndicesSize, GL_UNSIGNED_INT, 0, (GLsizei)m_InstanceCount);
-		// glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, (GLsizei)m_VertexCount, (GLsizei)m_InstanceCount); // alternative method
-		glBindVertexArray(0);
-	}
+	glBindVertexArray(m_Mesh->GetVAO());
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Mesh->GetIBO());
+	glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)m_Mesh->GetIndexCount(), GL_UNSIGNED_INT, 0, (GLsizei)m_InstanceCount);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
+	glBindVertexArray(0);
 }

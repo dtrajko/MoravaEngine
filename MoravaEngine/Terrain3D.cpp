@@ -5,7 +5,7 @@ Terrain3D::Terrain3D()
 {
 	m_Scale = glm::vec3(60, 12, 60);
 	m_PerlinNoise = new siv::PerlinNoise();
-	m_NoiseFactor = 0.05f;
+	m_NoiseFactor = 0.1f;
 	m_NoiseThreshold = 0.0f;
 
 	Generate();
