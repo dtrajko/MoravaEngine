@@ -76,10 +76,6 @@ void RendererInstanced::Init(Scene* scene)
 	}
 }
 
-void RendererInstanced::SetUniforms()
-{
-}
-
 void RendererInstanced::SetShaders()
 {
 	static const char* vertShader = "Shaders/instanced.vert";

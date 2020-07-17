@@ -98,6 +98,9 @@ SceneVoxelTerrain::SceneVoxelTerrain()
 
     m_Terrain3D = new Terrain3D();
     m_Transform = glm::mat4(1.0f);
+
+    m_RenderInstanced = new RenderInstanced();
+    m_RenderInstanced->CreateVertexAttributes(m_Terrain3D->m_Positions);
 }
 
 void SceneVoxelTerrain::SetupTextures()
@@ -323,6 +326,7 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
 
 SceneVoxelTerrain::~SceneVoxelTerrain()
 {
+    delete m_RenderInstanced;
     delete m_Terrain3D;
     delete meshes["cube"];
 }

@@ -3,6 +3,7 @@
 #include "Scene.h"
 
 #include "Terrain3D.h"
+#include "RenderInstanced.h"
 
 
 class SceneVoxelTerrain : public Scene
@@ -24,5 +25,6 @@ private:
 
 	Terrain3D* m_Terrain3D;
 	glm::mat4 m_Transform;
+	RenderInstanced* m_RenderInstanced;
 
 };

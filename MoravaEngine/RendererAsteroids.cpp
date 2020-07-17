@@ -12,7 +12,6 @@ RendererAsteroids::RendererAsteroids()
 
 void RendererAsteroids::Init(Scene* scene)
 {
-	SetUniforms();
 	SetShaders();
 
 	models = ((SceneAsteroids*)scene)->GetModels();
@@ -74,10 +73,8 @@ void RendererAsteroids::Init(Scene* scene)
 
 		glBindVertexArray(0);
 	}
-}
 
-void RendererAsteroids::SetUniforms()
-{
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RendererAsteroids::SetShaders()
