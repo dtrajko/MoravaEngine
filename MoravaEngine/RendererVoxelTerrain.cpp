@@ -1,5 +1,7 @@
 #include "RendererVoxelTerrain.h"
 
+#include "ResourceManager.h"
+
 
 RendererVoxelTerrain::RendererVoxelTerrain()
 {
@@ -147,11 +149,33 @@ void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	shaderMain->setFloat("tilingFactor", 1.0f);
 	shaderMain->Validate();
 
+
+	Shader* shaderRenderInstanced = (Shader*)shaders["render_instanced"];
+	shaderRenderInstanced->Bind();
+
+	shaderRenderInstanced->setMat4("projection", projectionMatrix);
+	shaderRenderInstanced->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+	shaderRenderInstanced->setVec3("eyePosition", scene->GetCamera()->GetPosition());
+
+	// Directional Light
+	shaderRenderInstanced->setInt(  "directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
+	shaderRenderInstanced->setVec3( "directionalLight.base.color", LightManager::directionalLight.GetColor());
+	shaderRenderInstanced->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+	shaderRenderInstanced->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+	shaderRenderInstanced->setVec3( "directionalLight.direction", LightManager::directionalLight.GetDirection());
+
+	shaderRenderInstanced->setFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
+	shaderRenderInstanced->setFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
+
+	shaderRenderInstanced->Validate();
+
+
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
 	std::string passType = "main";
 	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 
 	shaderMain->Unbind();
+	shaderRenderInstanced->Unbind();
 }
 
 RendererVoxelTerrain::~RendererVoxelTerrain()
