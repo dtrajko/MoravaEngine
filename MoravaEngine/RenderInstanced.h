@@ -14,13 +14,14 @@ public:
 	RenderInstanced();
 	RenderInstanced(Terrain3D* terrain, Texture* texture, Mesh* mesh);
 	void Update();
+	void Release();
 	~RenderInstanced();
 
 	void Render();
 
 private:
-	void CreateVertexData(std::vector<glm::vec3> positions);
-	void CreateDataStructure(std::vector<glm::vec3> positions);
+	void CreateVertexData();
+	void CreateDataStructure();
 	void CreateVertexArray();
 
 public:

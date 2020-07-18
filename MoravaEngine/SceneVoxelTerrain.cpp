@@ -8,7 +8,7 @@
 
 SceneVoxelTerrain::SceneVoxelTerrain()
 {
-    sceneSettings.cameraPosition = glm::vec3(0.0f, 8.0f, 24.0f);
+    sceneSettings.cameraPosition = glm::vec3(0.0f, 32.0f, 64.0f);
     sceneSettings.cameraStartYaw = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
     sceneSettings.cameraMoveSpeed = 1.0f;
@@ -96,9 +96,14 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     SetupTextures();
     SetupMeshes();
 
-    m_Terrain3D = new Terrain3D();
-    m_Transform = glm::mat4(1.0f);
 
+    m_Transform = glm::mat4(1.0f);
+    m_UpdateCooldown = { 0.0f, 1.0f };
+
+    m_TerrainScale = glm::vec3(60, 24, 60);
+    m_TerrainNoiseFactor = 0.0f;
+
+    m_Terrain3D = new Terrain3D(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
     m_RenderInstanced = new RenderInstanced(m_Terrain3D, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
 }
 
@@ -124,11 +129,6 @@ void SceneVoxelTerrain::SetupMeshes()
 {
     Block* cube = new Block(glm::vec3(1.0f, 1.0f, 1.0f));
     meshes.insert(std::make_pair("cube", cube));
-}
-
-void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
-{
-    m_RenderInstanced->Update();
 }
 
 void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
@@ -272,6 +272,35 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
         }
     }
     ImGui::End();
+
+    ImGui::Begin("Terrain Parameters");
+    {
+        if (ImGui::CollapsingHeader("Show Details"))
+        {
+            std::string terrainPositionsSize = "Terrain Positions Size: " + std::to_string(m_Terrain3D->GetPositionsSize());
+            ImGui::Text(terrainPositionsSize.c_str());
+            ImGui::SliderFloat3("Terrain Scale", glm::value_ptr(m_TerrainScale), 0.0f, 200.0f);
+            ImGui::SliderFloat("Terrain Noise Factor", &m_TerrainNoiseFactor, -0.2f, 0.2f);
+        }
+    }
+    ImGui::End();
+}
+
+void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
+{
+    UpdateCooldown(timestep, mainWindow);
+}
+
+void SceneVoxelTerrain::UpdateCooldown(float timestep, Window& mainWindow)
+{
+    // Cooldown
+    if (timestep - m_UpdateCooldown.lastTime < m_UpdateCooldown.cooldown) return;
+    m_UpdateCooldown.lastTime = timestep;
+
+    Release();
+    m_Terrain3D = new Terrain3D(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
+    m_RenderInstanced = new RenderInstanced(m_Terrain3D, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
+    m_RenderInstanced->Update();
 }
 
 void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
@@ -308,9 +337,15 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
     m_RenderInstanced->Render();
 }
 
+void SceneVoxelTerrain::Release()
+{
+    if (m_Terrain3D) delete m_Terrain3D;
+    if (m_RenderInstanced) delete m_RenderInstanced;
+}
+
+
 SceneVoxelTerrain::~SceneVoxelTerrain()
 {
-    delete m_RenderInstanced;
-    delete m_Terrain3D;
+    Release();
     delete meshes["cube"];
 }

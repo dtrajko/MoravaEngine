@@ -17,26 +17,34 @@ RenderInstanced::RenderInstanced(Terrain3D* terrain, Texture* texture, Mesh* mes
 	m_ModelMatrix = glm::mat4(1.0f);
 	m_InstanceColor = glm::vec4(1.0f);
 
-	m_InstanceCount = m_Terrain->GetCellCount();
-	m_InstanceDataArray = new InstanceData[m_InstanceCount];
-
-	CreateVertexData(m_Terrain->m_Positions);
+	CreateVertexData();
 }
 
-void RenderInstanced::CreateVertexData(std::vector<glm::vec3> positions)
+void RenderInstanced::CreateVertexData()
 {
-	CreateDataStructure(positions);
+	Release();
+	CreateDataStructure();
 	CreateVertexArray();
 }
 
-void RenderInstanced::CreateDataStructure(std::vector<glm::vec3> positions)
+void RenderInstanced::CreateDataStructure()
 {
-	for (unsigned int i = 0; i < positions.size(); i++)
+	m_InstanceCount = (unsigned int)m_Terrain->m_Positions.size();
+	m_InstanceDataArray = new InstanceData[m_InstanceCount];
+
+	for (unsigned int i = 0; i < m_Terrain->m_Positions.size(); i++)
 	{
-		float color = positions[i].y / m_Terrain->m_Scale.y;
+		float colorR = m_Terrain->m_Positions[i].x / m_Terrain->m_Scale.x;
+		float colorG = m_Terrain->m_Positions[i].y / m_Terrain->m_Scale.y;
+		float colorB = m_Terrain->m_Positions[i].z / m_Terrain->m_Scale.z;
+
 		m_ModelMatrix = glm::mat4(1.0f);
-		m_InstanceColor = glm::vec4(color, color, 1.0f, 1.0f);
-		m_ModelMatrix = glm::translate(m_ModelMatrix, positions[i]);
+		m_InstanceColor = glm::vec4(1.0f - colorR, 1.0f - colorG, 1.0f - colorB, 1.0f);
+		m_ModelMatrix = glm::translate(m_ModelMatrix, m_Terrain->m_Positions[i]);
+
+		if (i >= m_InstanceCount)
+			printf("m_InstanceCount = %u, i = %u\n", m_InstanceCount, i);
+
 		m_InstanceDataArray[i].model = m_ModelMatrix;
 		m_InstanceDataArray[i].color = m_InstanceColor;
 	}
@@ -82,11 +90,20 @@ void RenderInstanced::CreateVertexArray()
 
 void RenderInstanced::Update()
 {
+	Release();
+	CreateDataStructure();
+	CreateVertexArray();
+}
+
+void RenderInstanced::Release()
+{
+	delete m_InstanceDataArray;
+	glDeleteBuffers(1, &m_VBO_Instanced);
 }
 
 RenderInstanced::~RenderInstanced()
 {
-	delete m_InstanceDataArray;
+	Release();
 }
 
 void RenderInstanced::Render()

@@ -9,11 +9,12 @@ class Terrain3D
 {
 public:
 	Terrain3D();
-	~Terrain3D();
+	Terrain3D(glm::vec3 scale, float noiseFactor, float threshold);
+	virtual ~Terrain3D();
 
 	float Perlin3D(float x, float y, float z);
 	void Generate();
-	unsigned int GetCellCount();
+	unsigned int GetPositionsSize();
 
 public:
 	glm::vec3 m_Scale;

@@ -3,10 +3,20 @@
 
 Terrain3D::Terrain3D()
 {
-	m_Scale = glm::vec3(120, 24, 120);
-	m_PerlinNoise = new siv::PerlinNoise();
+	m_Scale = glm::vec3(60, 24, 60);
 	m_NoiseFactor = 0.05f;
 	m_NoiseThreshold = 0.0f;
+	m_PerlinNoise = new siv::PerlinNoise();
+
+	Generate();
+}
+
+Terrain3D::Terrain3D(glm::vec3 scale, float noiseFactor, float threshold)
+{
+	m_Scale = scale;
+	m_NoiseFactor = noiseFactor;
+	m_NoiseThreshold = threshold;
+	m_PerlinNoise = new siv::PerlinNoise();
 
 	Generate();
 }
@@ -17,20 +27,21 @@ void Terrain3D::Generate()
 		for (int y = 0; y < m_Scale.y; y++) {
 			for (int z = 0; z < m_Scale.z; z++) {
 				if (Perlin3D(x * m_NoiseFactor, y * m_NoiseFactor, z * m_NoiseFactor) >= m_NoiseThreshold) {
-					m_Positions.push_back(glm::vec3(x, y, z));
+					m_Positions.push_back(glm::vec3(x - m_Scale.x / 2.0f, y, z - m_Scale.z / 2.0f));
 				}
 			}
 		}
 	}
 }
 
-unsigned int Terrain3D::GetCellCount()
+unsigned int Terrain3D::GetPositionsSize()
 {
-	return (unsigned int)m_Scale.x * (unsigned int)m_Scale.y * (unsigned int)m_Scale.z;
+	return (unsigned int)m_Positions.size();
 }
 
 Terrain3D::~Terrain3D()
 {
+	delete m_PerlinNoise;
 }
 
 float Terrain3D::Perlin3D(float x, float y, float z)
