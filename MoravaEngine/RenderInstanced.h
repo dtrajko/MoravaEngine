@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Terrain3D.h"
 #include "Texture.h"
 #include "Mesh.h"
 
@@ -11,17 +12,22 @@ class RenderInstanced
 {
 public:
 	RenderInstanced();
-	RenderInstanced(unsigned int instanceCount);
-	void CreateVertexAttributes(std::vector<glm::vec3> positions);
-	void SetMesh(Texture* texture, Mesh* mesh);
+	RenderInstanced(Terrain3D* terrain, Texture* texture, Mesh* mesh);
+	void Update();
 	~RenderInstanced();
 
 	void Render();
 
+private:
+	void CreateVertexData(std::vector<glm::vec3> positions);
+	void CreateDataStructure(std::vector<glm::vec3> positions);
+	void CreateVertexArray();
+
 public:
-	unsigned int m_InstanceCount;
+	Terrain3D* m_Terrain;
 	Texture* m_Texture;
 	Mesh* m_Mesh;
+	unsigned int m_InstanceCount;
 
 private:
 	struct Matrix
@@ -34,14 +40,18 @@ private:
 
 	struct InstanceData
 	{
-		Matrix model; // 16F
+		glm::mat4 model; // 16F
+		glm::vec4 color; // 4F
 	};
 
 	// std::map<Texture*, std::vector<Mesh*>> m_Map; // TODO: Material->Texture
 	unsigned int m_VBO_Instanced;
 	float* m_VBO_Data;
 	unsigned int m_InstanceDataLength; // 16F model view + 4F texOffsets + 1F blendFactor = 21F
+	InstanceData* m_InstanceDataArray;
+	unsigned int m_BufferSize;
+
 	glm::mat4 m_ModelMatrix;
-	glm::mat4* m_ModelMatrices;
+	glm::vec4 m_InstanceColor;
 
 };

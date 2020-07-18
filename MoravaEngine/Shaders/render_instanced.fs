@@ -5,6 +5,7 @@ out vec4 FragColor;
 in vec2 vTexCoord;
 in vec3 vNormal;
 in vec3 vFragPos;
+in vec4 vColor;
 
 struct Light
 {
@@ -71,5 +72,5 @@ void main()
     finalColor = CalcDirectionalLight(finalColor);
     vec4 texColor = texture(albedoMap, vTexCoord);
 
-	FragColor = texColor * finalColor * tintColor;
+	FragColor = texColor * finalColor * tintColor * vColor;
 }

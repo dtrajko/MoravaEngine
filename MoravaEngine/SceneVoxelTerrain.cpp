@@ -99,9 +99,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_Terrain3D = new Terrain3D();
     m_Transform = glm::mat4(1.0f);
 
-    m_RenderInstanced = new RenderInstanced(m_Terrain3D->GetCellCount());
-    m_RenderInstanced->SetMesh(ResourceManager::GetTexture("diffuse"), meshes["cube"]);
-    m_RenderInstanced->CreateVertexAttributes(m_Terrain3D->m_Positions);
+    m_RenderInstanced = new RenderInstanced(m_Terrain3D, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
 }
 
 void SceneVoxelTerrain::SetupTextures()
@@ -130,6 +128,7 @@ void SceneVoxelTerrain::SetupMeshes()
 
 void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
 {
+    m_RenderInstanced->Update();
 }
 
 void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
@@ -296,7 +295,7 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
     ResourceManager::GetTexture("diffuse")->Bind(textureSlots["diffuse"]);
     ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
 
-    glm::vec4 tintColor = glm::vec4(0.0f, 0.4f, 0.8f, 1.0f);
+    glm::vec4 tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     shaderRenderInstanced->Bind();
 
