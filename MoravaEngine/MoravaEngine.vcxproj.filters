@@ -380,6 +380,9 @@
     <ClCompile Include="RenderInstanced.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -791,6 +794,9 @@
     <ClInclude Include="RenderInstanced.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -846,6 +852,9 @@
     </Filter>
     <Filter Include="PerlinNoise">
       <UniqueIdentifier>{dbfdba99-a8bc-4267-ad45-40ae3edc4c3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{fb0a842c-53dc-4783-a0fc-01377b4abfa1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -2,6 +2,7 @@
 
 #include "ResourceManager.h"
 #include "Block.h"
+#include "Cylinder.h"
 
 #include "ImGuiWrapper.h"
 
@@ -105,6 +106,9 @@ SceneVoxelTerrain::SceneVoxelTerrain()
 
     m_Terrain3D = new Terrain3D(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
     m_RenderInstanced = new RenderInstanced(m_Terrain3D, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
+
+    Mesh* mesh = new Cylinder();
+    m_Player = new Player(glm::vec3(0.0f, 24.0f, 0.0f), mesh, m_Camera);
 }
 
 void SceneVoxelTerrain::SetupTextures()
@@ -335,6 +339,19 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
 
     m_RenderInstanced->m_Texture->Bind(0);
     m_RenderInstanced->Render();
+
+
+    shaderMain->Bind();
+    shaderMain->setMat4("projection", projectionMatrix);
+    shaderMain->setMat4("view", m_Camera->CalculateViewMatrix());
+    shaderMain->setInt("albedoMap", 0);
+    shaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, m_Player->GetPosition());
+    shaderMain->setMat4("model", model);
+
+    m_Player->Render();
 }
 
 void SceneVoxelTerrain::Release()
@@ -348,4 +365,5 @@ SceneVoxelTerrain::~SceneVoxelTerrain()
 {
     Release();
     delete meshes["cube"];
+    delete m_Player;
 }
