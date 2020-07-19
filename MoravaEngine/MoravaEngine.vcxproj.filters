@@ -389,6 +389,9 @@
     <ClCompile Include="PlayerController.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="CameraControllerVoxelTerrain.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -808,6 +811,9 @@
     </ClInclude>
     <ClInclude Include="PlayerController.h">
       <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraControllerVoxelTerrain.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

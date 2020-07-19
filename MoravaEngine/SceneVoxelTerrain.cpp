@@ -3,6 +3,7 @@
 #include "ResourceManager.h"
 #include "Block.h"
 #include "Cylinder.h"
+#include "CameraControllerVoxelTerrain.h"
 
 #include "ImGuiWrapper.h"
 
@@ -97,7 +98,6 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     SetupTextures();
     SetupMeshes();
 
-
     m_Transform = glm::mat4(1.0f);
     m_UpdateCooldown = { 0.0f, 1.0f };
 
@@ -110,6 +110,14 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     Mesh* mesh = new Cylinder();
     m_Player = new Player(glm::vec3(0.0f, m_TerrainScale.y, 0.0f), mesh, m_Camera);
     m_PlayerController = new PlayerController(m_Player);
+}
+
+void SceneVoxelTerrain::SetCamera()
+{
+    m_Camera = new Camera(sceneSettings.cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f),
+        sceneSettings.cameraStartYaw, sceneSettings.cameraStartPitch);
+
+	m_CameraController = new CameraControllerVoxelTerrain(m_Camera, m_Player, sceneSettings.cameraMoveSpeed, 0.1f);
 }
 
 void SceneVoxelTerrain::SetupTextures()
@@ -295,6 +303,7 @@ void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
 {
     UpdateCooldown(timestep, mainWindow);
     m_PlayerController->KeyControl(mainWindow.getKeys(), timestep);
+    m_CameraController->Update();
     m_RenderInstanced->Update();
 }
 

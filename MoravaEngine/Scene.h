@@ -135,7 +135,7 @@ public:
 	inline std::map<std::string, float>* GetProfilerResults() { return &m_ProfilerResults; };
 
 	// Setters
-	void SetCamera();
+	virtual void SetCamera();
 	virtual void SetLightManager();
 	void SetWaterManager(int width, int height);
 	inline void SetWireframeEnabled(bool wireframeEnabled) { m_WireframeEnabled = wireframeEnabled; };

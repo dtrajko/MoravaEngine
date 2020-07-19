@@ -23,6 +23,7 @@ public:
 	void Release();
 
 private:
+	virtual void SetCamera() override;
 	virtual void SetupTextures() override;
 	virtual void SetupTextureSlots() override;
 	virtual void SetupMeshes() override;

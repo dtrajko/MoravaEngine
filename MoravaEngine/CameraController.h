@@ -12,17 +12,15 @@ class CameraController
 public:
 	CameraController();
 	CameraController(Camera* camera, float moveSpeed, float turnSpeed);
-	~CameraController();
+	virtual ~CameraController();
 
-	void KeyControl(bool* keys, float deltaTime);
-	void MouseControl(bool* buttons, float xChange, float yChange);
-	void MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset);
+	virtual void KeyControl(bool* keys, float deltaTime);
+	virtual void MouseControl(bool* buttons, float xChange, float yChange);
+	virtual void MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset);
+	virtual void Update();
 	inline Camera* GetCamera() { return m_Camera; };
 
-private:
-	void Update();
-
-private:
+protected:
 	Camera* m_Camera;
 
 	float m_MoveSpeed;
