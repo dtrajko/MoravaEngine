@@ -110,6 +110,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     Mesh* mesh = new Cylinder();
     m_Player = new Player(glm::vec3(0.0f, m_TerrainScale.y, 0.0f), mesh, m_Camera);
     m_PlayerController = new PlayerController(m_Player);
+    m_PlayerController->SetTerrain(m_Terrain3D);
 }
 
 void SceneVoxelTerrain::SetCamera()
@@ -317,6 +318,7 @@ void SceneVoxelTerrain::UpdateCooldown(float timestep, Window& mainWindow)
 
     Release();
     m_Terrain3D = new Terrain3D(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
+    m_PlayerController->SetTerrain(m_Terrain3D);
     m_RenderInstanced = new RenderInstanced(m_Terrain3D, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
     m_RenderInstanced->CreateVertexData();
 }
