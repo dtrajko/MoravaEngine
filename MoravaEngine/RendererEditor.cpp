@@ -5,6 +5,7 @@
 #include "Timer.h"
 #include "SceneEditor.h"
 #include "Profiler.h"
+#include "Log.h"
 
 #include <stdexcept>
 
@@ -27,43 +28,43 @@ void RendererEditor::SetShaders()
 {
     Shader* shaderEditor = new Shader("Shaders/editor_object.vs", "Shaders/editor_object.fs");
     shaders.insert(std::make_pair("editor_object", shaderEditor));
-    printf("RendererEditor: shaderEditorObject compiled [programID=%d]\n", shaderEditor->GetProgramID());
+    Log::GetLogger()->info("RendererEditor: shaderEditor compiled [programID={0}]", shaderEditor->GetProgramID());
 
     Shader* shaderEditorPBR = new Shader("Shaders/editor_object.vs", "Shaders/PBR/editor_object_pbr.fs");
     shaders.insert(std::make_pair("editor_object_pbr", shaderEditorPBR));
-    printf("RendererEditor: shaderEditorObjectPBR compiled [programID=%d]\n", shaderEditorPBR->GetProgramID());
+    Log::GetLogger()->info("RendererEditor: shaderEditorPBR compiled [programID={0}]", shaderEditorPBR->GetProgramID());
 
     Shader* shaderSkinning = new Shader("Shaders/OGLdev/skinning.vs", "Shaders/OGLdev/skinning.fs");
     shaders.insert(std::make_pair("skinning", shaderSkinning));
-    printf("RendererEditor: shaderSkinning compiled [programID=%d]\n", shaderSkinning->GetProgramID());
+    Log::GetLogger()->info("RendererEditor: shaderSkinning compiled [programID={0}]", shaderSkinning->GetProgramID());
 
     Shader* shaderShadowMap = new Shader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
     shaders.insert(std::make_pair("shadow_map", shaderShadowMap));
-    printf("RendererEditor: shaderShadowMap compiled [programID=%d]\n", shaderShadowMap->GetProgramID());
+    Log::GetLogger()->info("RendererEditor: shaderShadowMap compiled [programID={0}]", shaderShadowMap->GetProgramID());
 
     Shader* shaderOmniShadowMap = new Shader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
     shaders.insert(std::make_pair("omni_shadow_map", shaderOmniShadowMap));
-    printf("RendererEditor: shaderOmniShadowMap compiled [programID=%d]\n", shaderOmniShadowMap->GetProgramID());
+    Log::GetLogger()->info("RendererEditor: shaderOmniShadowMap compiled [programID={0}]", shaderOmniShadowMap->GetProgramID());
 
     Shader* shaderWater = new Shader("Shaders/water.vert", "Shaders/water.frag");
     shaders.insert(std::make_pair("water", shaderWater));
-    printf("RendererEditor: shaderWater compiled [programID=%d]\n", shaderWater->GetProgramID());
+    Log::GetLogger()->info("RendererEditor: shaderWater compiled [programID={0}]", shaderWater->GetProgramID());
 
     Shader* shaderBackground = new Shader("Shaders/learnopengl/2.2.2.background.vs", "Shaders/learnopengl/2.2.2.background.fs");
     shaders.insert(std::make_pair("background", shaderBackground));
-    printf("RendererEditor: shaderBackground compiled [programID=%d]\n", shaderBackground->GetProgramID());
+    Log::GetLogger()->info("RendererEditor: shaderBackground compiled [programID={0}]", shaderBackground->GetProgramID());
 
     Shader* shaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
     shaders.insert(std::make_pair("basic", shaderBasic));
-    printf("RendererEditor: shaderBasic compiled [programID=%d]\n", shaderBasic->GetProgramID());
+    Log::GetLogger()->info("RendererEditor: shaderBasic compiled [programID={0}]", shaderBasic->GetProgramID());
 
     Shader* shaderGizmo = new Shader("Shaders/gizmo.vs", "Shaders/gizmo.fs");
     shaders.insert(std::make_pair("gizmo", shaderGizmo));
-    printf("RendererEditor: shaderGizmo compiled [programID=%d]\n", shaderGizmo->GetProgramID());
+    Log::GetLogger()->info("RendererEditor: shaderGizmo compiled [programID={0}]", shaderGizmo->GetProgramID());
 
     Shader* shaderGlass = new Shader("Shaders/glass.vs", "Shaders/glass.fs");
     shaders.insert(std::make_pair("glass", shaderGlass));
-    printf("RendererEditor: shaderGlass compiled [programID=%d]\n", shaderGlass->GetProgramID());
+    Log::GetLogger()->info("RendererEditor: shaderGlass compiled [programID={0}]", shaderGlass->GetProgramID());
 
     shaderEditor->Bind();
     shaderEditor->setInt("albedoMap", 0);

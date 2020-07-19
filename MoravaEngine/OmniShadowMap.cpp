@@ -1,4 +1,5 @@
 #include "OmniShadowMap.h"
+#include "Log.h"
 
 
 OmniShadowMap::OmniShadowMap() : ShadowMap() {}
@@ -35,13 +36,13 @@ bool OmniShadowMap::Init(GLuint width, GLuint height)
 
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 	{
-		printf("Framebuffer Error: %i\n", status);
+		Log::GetLogger()->error("Framebuffer Error: {0}", status);
 		return false;
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	printf("OmniShadowMap succesfully created! [m_TextureID=%i]\n", m_TextureID);
+	Log::GetLogger()->info("OmniShadowMap succesfully created! [m_TextureID={0}]", m_TextureID);
 
 	return false;
 }
@@ -50,7 +51,6 @@ void OmniShadowMap::Read(unsigned int textureUnit)
 {
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
-	// printf("OmniShadowMap::Read Bind texture ID %i to Slot %i\n", m_TextureID, textureUnit);
 }
 
 OmniShadowMap::~OmniShadowMap()

@@ -24,6 +24,8 @@ private:
 	void Regenerate();
 
 private:
+	Camera* m_Camera;
+
 	ParticleSettings m_Settings;
 	ParticleSettings m_SettingsPrev;
 
@@ -33,5 +35,4 @@ private:
 	ParticleMaster* m_Master;
 	EventCooldown m_Regenerate;
 	int m_MaxInstances;
-	Camera* m_Camera;
 };

@@ -101,14 +101,14 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_Transform = glm::mat4(1.0f);
     m_UpdateCooldown = { 0.0f, 1.0f };
 
-    m_TerrainScale = glm::vec3(60, 24, 60);
+    m_TerrainScale = glm::vec3(60.0f, 24.0f, 60.0f);
     m_TerrainNoiseFactor = 0.0f;
 
     m_Terrain3D = new Terrain3D(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
     m_RenderInstanced = new RenderInstanced(m_Terrain3D, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
 
     Mesh* mesh = new Cylinder();
-    m_Player = new Player(glm::vec3(0.0f, 24.0f, 0.0f), mesh, m_Camera);
+    m_Player = new Player(glm::vec3(0.0f, m_TerrainScale.y, 0.0f), mesh, m_Camera);
 }
 
 void SceneVoxelTerrain::SetupTextures()
@@ -284,7 +284,7 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
             std::string terrainPositionsSize = "Terrain Positions Size: " + std::to_string(m_Terrain3D->GetPositionsSize());
             ImGui::Text(terrainPositionsSize.c_str());
             ImGui::SliderFloat3("Terrain Scale", glm::value_ptr(m_TerrainScale), 0.0f, 200.0f);
-            ImGui::SliderFloat("Terrain Noise Factor", &m_TerrainNoiseFactor, -0.2f, 0.2f);
+            ImGui::SliderFloat("Terrain Noise Factor", &m_TerrainNoiseFactor, -0.5f, 0.5f);
         }
     }
     ImGui::End();
@@ -293,6 +293,7 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
 void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
 {
     UpdateCooldown(timestep, mainWindow);
+    m_RenderInstanced->Update();
 }
 
 void SceneVoxelTerrain::UpdateCooldown(float timestep, Window& mainWindow)
@@ -301,10 +302,23 @@ void SceneVoxelTerrain::UpdateCooldown(float timestep, Window& mainWindow)
     if (timestep - m_UpdateCooldown.lastTime < m_UpdateCooldown.cooldown) return;
     m_UpdateCooldown.lastTime = timestep;
 
+    if (!IsTerrainConfigChanged()) return;
+
     Release();
     m_Terrain3D = new Terrain3D(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
     m_RenderInstanced = new RenderInstanced(m_Terrain3D, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
-    m_RenderInstanced->Update();
+    m_RenderInstanced->CreateVertexData();
+}
+
+bool SceneVoxelTerrain::IsTerrainConfigChanged()
+{
+    bool terrainConfigChanged = false;
+    if (m_TerrainScale != m_TerrainScalePrev || m_TerrainNoiseFactor != m_TerrainNoiseFactorPrev) {
+        terrainConfigChanged = true;
+        m_TerrainScalePrev = m_TerrainScale;
+        m_TerrainNoiseFactorPrev = m_TerrainNoiseFactor;
+    }
+    return terrainConfigChanged;
 }
 
 void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,

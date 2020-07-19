@@ -158,9 +158,6 @@
     <ClCompile Include="Block.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Cone.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
@@ -383,6 +380,12 @@
     <ClCompile Include="Player.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="CameraController.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -552,9 +555,6 @@
     </ClInclude>
     <ClInclude Include="Block.h">
       <Filter>Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="CommonValues.h">
       <Filter>Core</Filter>
@@ -796,6 +796,12 @@
     </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraController.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

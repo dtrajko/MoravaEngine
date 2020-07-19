@@ -13,6 +13,7 @@ class RenderInstanced
 public:
 	RenderInstanced();
 	RenderInstanced(Terrain3D* terrain, Texture* texture, Mesh* mesh);
+	void CreateVertexData();
 	void Update();
 	void Release();
 	~RenderInstanced();
@@ -20,7 +21,6 @@ public:
 	void Render();
 
 private:
-	void CreateVertexData();
 	void CreateDataStructure();
 	void CreateVertexArray();
 

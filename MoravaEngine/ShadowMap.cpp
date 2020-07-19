@@ -1,5 +1,5 @@
 #include "ShadowMap.h"
-
+#include "Log.h"
 
 
 ShadowMap::ShadowMap()
@@ -35,13 +35,13 @@ bool ShadowMap::Init(GLuint width, GLuint height)
 
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 	{
-		printf("Framebuffer Error: %i\n", status);
+		Log::GetLogger()->error("Framebuffer Error: {0}", status);
 		return false;
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	printf("ShadowMap succesfully created! [m_TextureID=%i]\n", m_TextureID);
+	Log::GetLogger()->info("ShadowMap succesfully created! [m_TextureID={0}]", m_TextureID);
 
 	return true;
 }
@@ -53,10 +53,8 @@ void ShadowMap::Write()
 
 void ShadowMap::Read(unsigned int textureUnit)
 {
-	// printf("ShadowMap::Read textureUnit = %i m_TextureID = %i\n", (int)textureUnit, (int)m_TextureID);
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
 	glBindTexture(GL_TEXTURE_2D, m_TextureID);
-	// printf("ShadowMap::Read Bind texture ID %i to Slot %i\n", m_TextureID, textureUnit);
 }
 
 void ShadowMap::Unbind(unsigned int width, unsigned int height)

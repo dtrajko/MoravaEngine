@@ -1,5 +1,7 @@
 #include "FramebufferWater.h"
 
+#include "Log.h"
+
 #include "GL/glew.h"
 
 #include <cstdio>
@@ -28,7 +30,8 @@ FramebufferWater::FramebufferWater(unsigned int width, unsigned int height)
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-	printf("Framebuffer fbo=%d, m_Width=%d, m_Height=%d\n", fbo, m_Width, m_Height);
+	Log::GetLogger()->info("FramebufferWater FBO={0}, m_Width={1}, m_Height={2}", fbo, m_Width, m_Height);
+
 }
 
 void FramebufferWater::AddColorAttachment(FramebufferTexture* colorAttachment)

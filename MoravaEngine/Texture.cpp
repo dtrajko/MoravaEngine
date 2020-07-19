@@ -1,4 +1,5 @@
 #include "Texture.h"
+#include "Log.h"
 
 #include <fstream>
 
@@ -46,7 +47,7 @@ bool Texture::Load(bool flipVert)
 {
 	if (m_Buffer)
 	{
-		printf("Texture '%s' already loaded. Skipping...\n", m_FileLocation);
+		Log::GetLogger()->info("Texture '{0}' already loaded. Skipping...", m_FileLocation);
 		return true;
 	}
 
@@ -54,7 +55,7 @@ bool Texture::Load(bool flipVert)
 	m_Buffer = stbi_load(m_FileLocation, (int*)&m_Width, (int*)&m_Height, &m_BitDepth, 0);
 	if (!m_Buffer)
 	{
-		printf("ERROR: Texture failed to load '%s'\n", m_FileLocation);
+		Log::GetLogger()->error("ERROR: Texture failed to load '{0}'", m_FileLocation);
 		return false;
 	}
 
@@ -89,7 +90,7 @@ bool Texture::Load(bool flipVert)
 
 	float fileSize = GetFileSize(m_FileLocation) / (1024.0f * 1024.0f);
 
-	printf("Loading texture '%s' [ ID=%d, size=%.2f MB ]\n", m_FileLocation, m_TextureID, fileSize);
+	Log::GetLogger()->info("Loading texture '{0}' [ ID={1}, size={2} MB ]", m_FileLocation, m_TextureID, fileSize);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 

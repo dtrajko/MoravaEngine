@@ -9,7 +9,7 @@
 #include "CommonValues.h"
 #include "ImGuiWrapper.h"
 #include "Window.h"
-#include "Camera.h"
+#include "CameraController.h"
 #include "LightManager.h"
 #include "WaterManager.h"
 #include "Profiler.h"
@@ -190,9 +190,9 @@ int main()
 	{
 		Timer::Get()->Update();
 
-		scene->GetCamera()->KeyControl(mainWindow.getKeys(), Timer::Get()->GetDeltaTime());
-		scene->GetCamera()->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChangeReset(), mainWindow.getYChangeReset());
-		scene->GetCamera()->MouseScrollControl(mainWindow.getKeys(), Timer::Get()->GetDeltaTime(), mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
+		scene->GetCameraController()->KeyControl(mainWindow.getKeys(), Timer::Get()->GetDeltaTime());
+		scene->GetCameraController()->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChangeReset(), mainWindow.getYChangeReset());
+		scene->GetCameraController()->MouseScrollControl(mainWindow.getKeys(), Timer::Get()->GetDeltaTime(), mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
 
 		MousePicker::Get()->Update(mainWindow.GetMouseX(), mainWindow.GetMouseY(),
 			(float)mainWindow.GetBufferWidth(), (float)mainWindow.GetBufferHeight(), RendererBasic::GetProjectionMatrix(), scene->GetCamera()->CalculateViewMatrix());

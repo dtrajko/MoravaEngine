@@ -193,7 +193,9 @@ void Scene::SetupTextures()
 void Scene::SetCamera()
 {
 	m_Camera = new Camera(sceneSettings.cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f),
-		sceneSettings.cameraStartYaw, sceneSettings.cameraStartPitch, sceneSettings.cameraMoveSpeed, 0.1f);
+		sceneSettings.cameraStartYaw, sceneSettings.cameraStartPitch);
+	
+	m_CameraController = new CameraController(m_Camera, sceneSettings.cameraMoveSpeed, 0.1f);
 }
 
 void Scene::SetLightManager()
@@ -330,6 +332,7 @@ void Scene::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
 Scene::~Scene()
 {
 	delete m_Skybox;
+	delete m_CameraController;
 	delete m_Camera;
 	delete m_WaterManager;
 

@@ -1,6 +1,7 @@
 #include "RendererVoxelTerrain.h"
 
 #include "ResourceManager.h"
+#include "Log.h"
 
 
 RendererVoxelTerrain::RendererVoxelTerrain()
@@ -16,15 +17,15 @@ void RendererVoxelTerrain::SetShaders()
 {
 	Shader* shaderOmniShadow = new Shader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
 	shaders.insert(std::make_pair("omniShadow", shaderOmniShadow));
-	printf("RendererVoxelTerrain: shaderOmniShadow compiled [programID=%d]\n", shaderOmniShadow->GetProgramID());
+	Log::GetLogger()->info("RendererVoxelTerrain: shaderOmniShadow compiled [programID={0}]", shaderOmniShadow->GetProgramID());
 
 	Shader* shaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
 	shaders.insert(std::make_pair("main", shaderMain));
-	printf("RendererVoxelTerrain: shaderMain compiled [programID=%d]\n", shaderMain->GetProgramID());
+	Log::GetLogger()->info("RendererVoxelTerrain: shaderMain compiled [programID={0}]", shaderMain->GetProgramID());
 
 	Shader* shaderRenderInstanced  = new Shader("Shaders/render_instanced.vs", "Shaders/render_instanced.fs");
 	shaders.insert(std::make_pair("render_instanced", shaderRenderInstanced));
-	printf("RendererVoxelTerrain: shaderRenderInstanced compiled [programID=%d]\n", shaderRenderInstanced->GetProgramID());
+	Log::GetLogger()->info("RendererVoxelTerrain: shaderRenderInstanced compiled [programID={0}]", shaderRenderInstanced->GetProgramID());
 }
 
 void RendererVoxelTerrain::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)

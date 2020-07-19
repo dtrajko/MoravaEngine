@@ -20,6 +20,10 @@ RenderInstanced::RenderInstanced(Terrain3D* terrain, Texture* texture, Mesh* mes
 	CreateVertexData();
 }
 
+void RenderInstanced::Update()
+{
+}
+
 void RenderInstanced::CreateVertexData()
 {
 	Release();
@@ -39,7 +43,7 @@ void RenderInstanced::CreateDataStructure()
 		float colorB = m_Terrain->m_Positions[i].z / m_Terrain->m_Scale.z;
 
 		m_ModelMatrix = glm::mat4(1.0f);
-		m_InstanceColor = glm::vec4(1.0f - colorR, 1.0f - colorG, 1.0f - colorB, 1.0f);
+		m_InstanceColor = glm::vec4(1.0f - colorR, colorG, 1.0f - colorB, 1.0f);
 		m_ModelMatrix = glm::translate(m_ModelMatrix, m_Terrain->m_Positions[i]);
 
 		if (i >= m_InstanceCount)
@@ -86,13 +90,6 @@ void RenderInstanced::CreateVertexArray()
 	glBindVertexArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void RenderInstanced::Update()
-{
-	Release();
-	CreateDataStructure();
-	CreateVertexArray();
 }
 
 void RenderInstanced::Release()

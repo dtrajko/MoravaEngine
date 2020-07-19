@@ -25,16 +25,17 @@ private:
 	virtual void SetupTextures() override;
 	virtual void SetupTextureSlots() override;
 	virtual void SetupMeshes() override;
+	bool IsTerrainConfigChanged();
 
 	Terrain3D* m_Terrain3D;
 	glm::mat4 m_Transform;
 	RenderInstanced* m_RenderInstanced;
-
 	glm::vec3 m_TerrainScale;
+	glm::vec3 m_TerrainScalePrev;
 	float m_TerrainNoiseFactor;
-
+	float m_TerrainNoiseFactorPrev;
 	EventCooldown m_UpdateCooldown;
-
 	Player* m_Player;
+	bool m_TerrainSettingsChanged;
 
 };

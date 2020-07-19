@@ -4,7 +4,7 @@
 #include "QuadInstanced.h"
 #include "Shader.h"
 #include "Particle.h"
-#include "Camera.h"
+#include "CameraController.h"
 
 
 class ParticleRendererInstanced : public ParticleRenderer

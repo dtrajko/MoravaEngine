@@ -1,4 +1,5 @@
 #include "RendererOmniShadows.h"
+#include "Log.h"
 
 
 RendererOmniShadows::RendererOmniShadows()
@@ -14,11 +15,11 @@ void RendererOmniShadows::SetShaders()
 {
 	Shader* shaderOmniShadow = new Shader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
 	shaders.insert(std::make_pair("omniShadow", shaderOmniShadow));
-	printf("RendererOmniShadows: shaderOmniShadow compiled [programID=%d]\n", shaderOmniShadow->GetProgramID());
+	Log::GetLogger()->info("RendererOmniShadows: shaderOmniShadow compiled [programID={0}]", shaderOmniShadow->GetProgramID());
 
 	Shader* shaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
 	shaders.insert(std::make_pair("main", shaderMain));
-	printf("RendererOmniShadows: shaderMain compiled [programID=%d]\n", shaderMain->GetProgramID());
+	Log::GetLogger()->info("RendererOmniShadows: shaderMain compiled [programID={0}]", shaderMain->GetProgramID());
 }
 
 void RendererOmniShadows::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)

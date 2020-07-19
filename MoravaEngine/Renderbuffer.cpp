@@ -1,5 +1,7 @@
 #include "Renderbuffer.h"
 
+#include "Log.h"
+
 #include <stdio.h>
 #include <stdexcept>
 
@@ -45,7 +47,7 @@ Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, AttachmentFo
 	// Attach the renderbuffer object
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, m_ID);
 	Unbind();
-	printf("Renderbuffer ID=%d, m_Width=%d, m_Height=%d\n", m_ID, m_Width, m_Height);
+	Log::GetLogger()->info("Renderbuffer ID={0}, m_Width={1}, m_Height={2}", m_ID, m_Width, m_Height);
 }
 
 void Renderbuffer::Bind(unsigned int slot)

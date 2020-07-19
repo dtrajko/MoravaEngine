@@ -8,6 +8,7 @@
 
 #include "CommonValues.h"
 #include "Camera.h"
+#include "CameraController.h"
 #include "Mesh.h"
 #include "Texture.h"
 #include "Material.h"
@@ -121,6 +122,7 @@ public:
 
 	// Getters
 	inline Camera* GetCamera() const { return m_Camera; };
+	inline CameraController* GetCameraController() const { return m_CameraController; };
 	static inline SceneSettings GetSettings() { return sceneSettings; };
 	std::map<std::string, Texture*> GetTextures() const { return textures; };
 	std::map<std::string, GLuint> GetTextureSlots() const { return textureSlots; };
@@ -154,6 +156,8 @@ protected:
 	float m_FOV = 60.0f;
 
 	Camera* m_Camera;
+	CameraController* m_CameraController;
+
 	Skybox* m_Skybox;
 	std::vector<std::string> skyboxFaces;
 

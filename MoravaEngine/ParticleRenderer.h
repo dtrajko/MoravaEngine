@@ -3,7 +3,7 @@
 #include "Quad.h"
 #include "Shader.h"
 #include "Particle.h"
-#include "Camera.h"
+#include "CameraController.h"
 
 
 class Particle;

@@ -173,6 +173,7 @@
     <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="InsertionSort.cpp" />
     <ClCompile Include="Log.cpp" />
@@ -206,7 +207,7 @@
     <ClCompile Include="Attachment.cpp" />
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="BulletDebugDrawer.cpp" />
-    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="Cone.cpp" />
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="Cubemap.cpp" />
@@ -307,6 +308,7 @@
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="InsertionSort.h" />
     <ClInclude Include="Log.h" />
@@ -343,7 +345,7 @@
     <ClInclude Include="Attachment.h" />
     <ClInclude Include="Block.h" />
     <ClInclude Include="BulletDebugDrawer.h" />
-    <ClInclude Include="Camera.h" />
+    <ClInclude Include="CameraController.h" />
     <ClInclude Include="CommonValues.h" />
     <ClInclude Include="Cone.h" />
     <ClInclude Include="Cube.h" />
