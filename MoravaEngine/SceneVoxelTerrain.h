@@ -5,6 +5,7 @@
 #include "Terrain3D.h"
 #include "RenderInstanced.h"
 #include "Player.h"
+#include "PlayerController.h"
 
 
 class SceneVoxelTerrain : public Scene
@@ -36,6 +37,7 @@ private:
 	float m_TerrainNoiseFactorPrev;
 	EventCooldown m_UpdateCooldown;
 	Player* m_Player;
+	PlayerController* m_PlayerController;
 	bool m_TerrainSettingsChanged;
 
 };

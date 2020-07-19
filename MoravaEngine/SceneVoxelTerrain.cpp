@@ -9,7 +9,7 @@
 
 SceneVoxelTerrain::SceneVoxelTerrain()
 {
-    sceneSettings.cameraPosition = glm::vec3(0.0f, 32.0f, 64.0f);
+    sceneSettings.cameraPosition = glm::vec3(0.0f, 28.0f, 10.0f);
     sceneSettings.cameraStartYaw = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
     sceneSettings.cameraMoveSpeed = 1.0f;
@@ -109,6 +109,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
 
     Mesh* mesh = new Cylinder();
     m_Player = new Player(glm::vec3(0.0f, m_TerrainScale.y, 0.0f), mesh, m_Camera);
+    m_PlayerController = new PlayerController(m_Player);
 }
 
 void SceneVoxelTerrain::SetupTextures()
@@ -293,6 +294,7 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
 void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
 {
     UpdateCooldown(timestep, mainWindow);
+    m_PlayerController->KeyControl(mainWindow.getKeys(), timestep);
     m_RenderInstanced->Update();
 }
 
@@ -359,7 +361,7 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
     shaderMain->setMat4("projection", projectionMatrix);
     shaderMain->setMat4("view", m_Camera->CalculateViewMatrix());
     shaderMain->setInt("albedoMap", 0);
-    shaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+    shaderMain->setVec4("tintColor", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, m_Player->GetPosition());

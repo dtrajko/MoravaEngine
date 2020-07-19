@@ -13,7 +13,12 @@ public:
 	Player(glm::vec3 position, Mesh* mesh, Camera* camera);
 	~Player();
 
+	// getters
 	inline glm::vec3 GetPosition() { return m_Position; };
+
+	// setters
+	inline void SetPosition(glm::vec3 position) { m_Position = position; };
+
 	void Update();
 	void Render();
 

@@ -2,10 +2,8 @@
 
 #include "Camera.h"
 
-#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <GLFW/glfw3.h>
 
 
 class CameraController
@@ -14,11 +12,12 @@ class CameraController
 public:
 	CameraController();
 	CameraController(Camera* camera, float moveSpeed, float turnSpeed);
-	void KeyControl(bool* keys, GLfloat deltaTime);
-	void MouseControl(bool* buttons, GLfloat xChange, GLfloat yChange);
-	void MouseScrollControl(bool* keys, GLfloat deltaTime, float xOffset, float yOffset);
-	inline Camera* GetCamera() { return m_Camera; };
 	~CameraController();
+
+	void KeyControl(bool* keys, float deltaTime);
+	void MouseControl(bool* buttons, float xChange, float yChange);
+	void MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset);
+	inline Camera* GetCamera() { return m_Camera; };
 
 private:
 	void Update();
@@ -26,9 +25,9 @@ private:
 private:
 	Camera* m_Camera;
 
-	GLfloat m_MoveSpeed;
-	GLfloat m_TurnSpeed;
-	GLfloat m_SpeedBoost = 4.0f;
+	float m_MoveSpeed;
+	float m_TurnSpeed;
+	float m_SpeedBoost = 4.0f;
 
 	float m_MouseDeltaX = 0.0f;
 	float m_MouseDeltaY = 0.0f;

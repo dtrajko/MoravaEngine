@@ -1,5 +1,7 @@
 #include "CameraController.h"
 
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include "glm/glm.hpp"
 #include "glm/gtx/compatibility.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -20,7 +22,7 @@ CameraController::CameraController(Camera* camera, float moveSpeed, float turnSp
 	Update();
 }
 
-void CameraController::KeyControl(bool* keys, GLfloat deltaTime)
+void CameraController::KeyControl(bool* keys, float deltaTime)
 {
 	// Don't move camera when using Ctrl+S or Ctrl+D in Editor
 	if (keys[GLFW_KEY_LEFT_CONTROL]) return;
@@ -64,7 +66,7 @@ void CameraController::KeyControl(bool* keys, GLfloat deltaTime)
 	}
 }
 
-void CameraController::MouseControl(bool* buttons, GLfloat xChange, GLfloat yChange)
+void CameraController::MouseControl(bool* buttons, float xChange, float yChange)
 {
 	if (buttons[GLFW_MOUSE_BUTTON_RIGHT])
 	{
@@ -75,7 +77,7 @@ void CameraController::MouseControl(bool* buttons, GLfloat xChange, GLfloat yCha
 	}
 }
 
-void CameraController::MouseScrollControl(bool* keys, GLfloat deltaTime, float xOffset, float yOffset)
+void CameraController::MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset)
 {
 	if (abs(yOffset) < 0.1f || abs(yOffset) > 10.0f)
 		return;
