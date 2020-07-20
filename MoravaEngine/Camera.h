@@ -31,7 +31,7 @@ public:
 	glm::mat4 CalculateViewMatrix();
 
 private:
-	void SetFront();
+	void CalculateFront();
 
 private:
 	glm::vec3 m_Position;

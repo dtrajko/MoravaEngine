@@ -10,7 +10,7 @@
 SceneVoxelTerrain::SceneVoxelTerrain()
 {
     sceneSettings.cameraPosition = glm::vec3(0.0f, 28.0f, 10.0f);
-    sceneSettings.cameraStartYaw = -90.0f;
+    sceneSettings.cameraStartYaw = 0.0f;
     sceneSettings.cameraStartPitch = 0.0f;
     sceneSettings.cameraMoveSpeed = 1.0f;
     sceneSettings.waterHeight = 0.0f;
@@ -305,6 +305,7 @@ void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
     m_PlayerController->KeyControl(mainWindow.getKeys(), timestep);
     m_PlayerController->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
     m_PlayerController->MouseScrollControl(mainWindow.getKeys(), timestep, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
+    m_Player->Update();
     m_CameraController->Update();
     m_RenderInstanced->Update();
 }
@@ -377,9 +378,9 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, m_Player->GetPosition());
-    model = glm::rotate(model, glm::radians(m_Player->GetRotation().x * 90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(m_Player->GetRotation().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(m_Player->GetRotation().z * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(m_Player->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_Player->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_Player->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
     shaderMain->setMat4("model", model);
 
     m_Player->Render();

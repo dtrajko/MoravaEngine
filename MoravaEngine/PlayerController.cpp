@@ -39,33 +39,33 @@ void PlayerController::KeyControl(bool* keys, float deltaTime)
 
 	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
 	{
-		newPosition += glm::vec3(0.0f, 0.0f, -1.0f) * m_MoveSpeed;
-		m_MoveDirection = glm::vec3(0.0f, 0.0f, -1.0f);
+		newPosition += m_Player->GetFront() * m_MoveSpeed;
+		m_MoveDirection = m_Player->GetFront();
 	}
 	if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN])
 	{
-		newPosition += glm::vec3(0.0f, 0.0f, 1.0f) * m_MoveSpeed;
-		m_MoveDirection = glm::vec3(0.0f, 0.0f, 1.0f);
+		newPosition -= m_Player->GetFront() * m_MoveSpeed;
+		m_MoveDirection = -m_Player->GetFront();
 	}
 	if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT])
 	{
-		newPosition += glm::vec3(-1.0f, 0.0f, 0.0f) * m_MoveSpeed;
-		m_MoveDirection = glm::vec3(-1.0f, 0.0f, 0.0f);
+		newPosition -= m_Player->GetRight() * m_MoveSpeed;
+		m_MoveDirection = -m_Player->GetRight();
 	}
 	if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT])
 	{
-		newPosition += glm::vec3(1.0f, 0.0f, 0.0f) * m_MoveSpeed;
-		m_MoveDirection = glm::vec3(1.0f, 0.0f, 0.0f);
+		newPosition += m_Player->GetRight() * m_MoveSpeed;
+		m_MoveDirection = m_Player->GetRight();
 	}
 	if (keys[GLFW_KEY_Q])
 	{
-		newPosition += glm::vec3(0.0f, -1.0f, 0.0f) * m_MoveSpeed;
-		m_MoveDirection = glm::vec3(0.0f, -1.0f, 0.0f);
+		newPosition -= m_Player->GetUp() * m_MoveSpeed;
+		m_MoveDirection = -m_Player->GetUp();
 	}
 	if (keys[GLFW_KEY_E] || keys[GLFW_KEY_SPACE])
 	{
-		newPosition += glm::vec3(0.0f, 1.0f, 0.0f) * m_JumpSpeed;
-		m_MoveDirection = glm::vec3(0.0f, 1.0f, 0.0f);
+		newPosition += m_Player->GetUp() * m_JumpSpeed;
+		m_MoveDirection = m_Player->GetUp();
 	}
 
 	bool bColliding = IsColliding(newPosition);
@@ -137,12 +137,14 @@ bool PlayerController::IsColliding(glm::vec3 position)
 void PlayerController::MouseControl(bool* buttons, float xChange, float yChange)
 {
 	if (buttons[GLFW_MOUSE_BUTTON_RIGHT]) {
-		glm::vec3 oldRotationVec = glm::eulerAngles(m_Player->GetRotation() / toRadians);
-		glm::vec3 newRotationVec = glm::vec3(oldRotationVec.x, oldRotationVec.y + xChange, oldRotationVec.z);
-		// printf("PlayerController::MouseControl oldRotationVec [%.2ff %.2ff %.2ff] newRotationVec [ %.2ff %.2ff %.2ff ]\n", 
-		// 	oldRotationVec.x, oldRotationVec.y, oldRotationVec.z, newRotationVec.x, newRotationVec.y, newRotationVec.z);
-		glm::quat newRotation = glm::quat(newRotationVec * toRadians);
+		glm::vec3 oldRotation = m_Player->GetRotation();
+		// glm::vec3 newRotationVec = glm::vec3(oldRotation.x - yChange * m_TurnSpeed, oldRotation.y + xChange * m_TurnSpeed, oldRotation.z);
+		glm::vec3 newRotation = glm::vec3(oldRotation.x, oldRotation.y - xChange * m_TurnSpeed, oldRotation.z);
+		printf("PlayerController::MouseControl oldRotationVec [%.2ff %.2ff %.2ff] newRotationVec [ %.2ff %.2ff %.2ff ]\n", 
+			oldRotation.x, oldRotation.y, oldRotation.z, newRotation.x, newRotation.y, newRotation.z);
 		m_Player->SetRotation(newRotation);
+
+		Update();
 	}
 }
 

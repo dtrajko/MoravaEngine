@@ -35,7 +35,7 @@ glm::mat4 Camera::CalculateViewMatrix()
 	return viewMatrix;
 }
 
-void Camera::SetFront()
+void Camera::CalculateFront()
 {
 	m_Front.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
 	m_Front.y = sin(glm::radians(m_Pitch));
@@ -45,7 +45,7 @@ void Camera::SetFront()
 
 void Camera::Update()
 {
-	SetFront();
+	CalculateFront();
 	m_Right = glm::normalize(glm::cross(m_Front, m_WorldUp));
 	m_Up = glm::normalize(glm::cross(m_Right, m_Front));
 }

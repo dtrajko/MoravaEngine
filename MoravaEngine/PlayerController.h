@@ -27,6 +27,7 @@ private:
 	float m_Gravity = 0.05f;
 	float m_MoveSpeed = 0.1f;
 	float m_JumpSpeed = 0.4f;
+	float m_TurnSpeed = 0.1f;
 
 	glm::vec3 m_MoveDirection;
 	glm::vec3 m_MoveDirectionLast;

@@ -78,7 +78,7 @@ enum class SceneName
 	Editor,
 };
 
-SceneName currentScene = SceneName::Editor;
+SceneName currentScene = SceneName::VoxelTerrain;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };

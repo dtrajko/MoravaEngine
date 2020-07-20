@@ -19,5 +19,6 @@ public:
 
 private:
 	Player* m_Player;
+	glm::vec3 m_CameraRig;
 
 };

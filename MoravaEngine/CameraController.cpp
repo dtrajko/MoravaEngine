@@ -33,7 +33,6 @@ void CameraController::KeyControl(bool* keys, float deltaTime)
 	{
 		velocity *= m_SpeedBoost;
 	}
-
 	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetFront() * velocity);
@@ -61,8 +60,10 @@ void CameraController::KeyControl(bool* keys, float deltaTime)
 
 	if (keys[GLFW_KEY_L])
 	{
-		printf("CameraController::KeyControl Position [ %.2ff, %.2ff, %.2ff ]\n", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
-		printf("CameraController::KeyControl Front    [ %.2ff, %.2ff, %.2ff ]\n", m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
+		printf("CameraController::KeyControl Position [ %.2ff, %.2ff, %.2ff ]\n",
+			m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
+		printf("CameraController::KeyControl Front    [ %.2ff, %.2ff, %.2ff ]\n",
+			m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
 	}
 }
 
