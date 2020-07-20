@@ -72,13 +72,13 @@ void PlayerController::KeyControl(bool* keys, float deltaTime)
 	// printf("PlayerController newPosition [ %.2ff %.2ff %.2ff ] minDistance = %.2ff\n", newPosition.x, newPosition.y, newPosition.z, minDistance);
 
 	// Check the collision
-	if (bColliding && m_MoveDirection == glm::vec3(0.0f, -1.0f, 0.0f)) {
+	if (bColliding) {
 		// Collision detected
 		if (m_MoveDirection != m_MoveDirectionLast) {
 			newPosition = glm::vec3(std::round(oldPosition.x), std::round(oldPosition.y), std::round(oldPosition.z));
 			m_Player->SetPosition(newPosition);
+			m_MoveDirectionLast = m_MoveDirection;
 		}
-		m_MoveDirectionLast = m_MoveDirection;
 
 		// printf("PlayerController COLLISION DETECTED Position: [ %.2ff %.2ff %.2ff ] m_MoveDirectionLast [ %.2ff %.2ff %.2ff ]\n",
 		// 	oldPosition.x, oldPosition.y, oldPosition.z, m_MoveDirectionLast.x, m_MoveDirectionLast.y, m_MoveDirectionLast.z);

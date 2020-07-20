@@ -21,4 +21,6 @@ private:
 	Player* m_Player;
 	glm::vec3 m_CameraRig;
 
+	float m_CameraPitchSpeed = 0.2f;
+
 };

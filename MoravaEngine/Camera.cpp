@@ -50,13 +50,6 @@ void Camera::Update()
 	m_Up = glm::normalize(glm::cross(m_Right, m_Front));
 }
 
-void Camera::SetDirection(glm::vec3 direction)
-{
-	m_Pitch = asin(-direction.y) / glm::radians(1.0f);
-	m_Yaw = atan2(direction.x, direction.z) / glm::radians(1.0f);
-	m_Front = glm::normalize(direction);
-}
-
 Camera::~Camera()
 {
 }
