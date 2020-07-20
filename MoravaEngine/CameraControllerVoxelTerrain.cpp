@@ -1,6 +1,9 @@
 #include "CameraControllerVoxelTerrain.h"
 
+#include "CommonValues.h"
+
 #include <GLFW/glfw3.h>
+#include <glm/gtc/quaternion.hpp>
 
 
 CameraControllerVoxelTerrain::CameraControllerVoxelTerrain()
@@ -36,6 +39,9 @@ void CameraControllerVoxelTerrain::MouseScrollControl(bool* keys, float deltaTim
 void CameraControllerVoxelTerrain::Update()
 {
 	CameraController::Update();
+
+	// glm::vec3 playerDirection = glm::eulerAngles(m_Player->GetRotation() / toRadians);
+	// m_Camera->SetDirection(playerDirection);
 	m_Camera->SetPosition(m_Player->GetPosition() + glm::vec3(0.0f, 2.0f, 10.0f));
 }
 

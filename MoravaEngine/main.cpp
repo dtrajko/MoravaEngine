@@ -78,7 +78,7 @@ enum class SceneName
 	Editor,
 };
 
-SceneName currentScene = SceneName::VoxelTerrain;
+SceneName currentScene = SceneName::Editor;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -191,7 +191,7 @@ int main()
 		Timer::Get()->Update();
 
 		scene->GetCameraController()->KeyControl(mainWindow.getKeys(), Timer::Get()->GetDeltaTime());
-		scene->GetCameraController()->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChangeReset(), mainWindow.getYChangeReset());
+		scene->GetCameraController()->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
 		scene->GetCameraController()->MouseScrollControl(mainWindow.getKeys(), Timer::Get()->GetDeltaTime(), mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
 
 		MousePicker::Get()->Update(mainWindow.GetMouseX(), mainWindow.GetMouseY(),

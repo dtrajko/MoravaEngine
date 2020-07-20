@@ -2,7 +2,6 @@
 
 #include "ResourceManager.h"
 #include "Block.h"
-#include "Cylinder.h"
 #include "CameraControllerVoxelTerrain.h"
 
 #include "ImGuiWrapper.h"
@@ -107,7 +106,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_Terrain3D = new Terrain3D(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
     m_RenderInstanced = new RenderInstanced(m_Terrain3D, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
 
-    Mesh* mesh = new Cylinder();
+    Mesh* mesh = new Block();
     m_Player = new Player(glm::vec3(0.0f, m_TerrainScale.y, 0.0f), mesh, m_Camera);
     m_PlayerController = new PlayerController(m_Player);
     m_PlayerController->SetTerrain(m_Terrain3D);
@@ -304,6 +303,8 @@ void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
 {
     UpdateCooldown(timestep, mainWindow);
     m_PlayerController->KeyControl(mainWindow.getKeys(), timestep);
+    m_PlayerController->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
+    m_PlayerController->MouseScrollControl(mainWindow.getKeys(), timestep, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
     m_CameraController->Update();
     m_RenderInstanced->Update();
 }
@@ -376,6 +377,9 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, m_Player->GetPosition());
+    model = glm::rotate(model, glm::radians(m_Player->GetRotation().x * 90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_Player->GetRotation().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_Player->GetRotation().z * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     shaderMain->setMat4("model", model);
 
     m_Player->Render();

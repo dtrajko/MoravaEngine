@@ -15,9 +15,11 @@ public:
 
 	// getters
 	inline glm::vec3 GetPosition() { return m_Position; };
+	inline glm::quat GetRotation() { return m_Rotation; };
 
 	// setters
 	inline void SetPosition(glm::vec3 position) { m_Position = position; };
+	inline void SetRotation(glm::quat rotation) { m_Rotation = rotation; };
 
 	void Update();
 	void Render();

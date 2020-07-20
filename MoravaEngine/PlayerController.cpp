@@ -1,8 +1,10 @@
 #include "PlayerController.h"
 
 #include "Log.h"
+#include "CommonValues.h"
 
 #include <GLFW/glfw3.h>
+#include <glm/gtc/quaternion.hpp>
 
 
 PlayerController::PlayerController()
@@ -30,6 +32,10 @@ void PlayerController::KeyControl(bool* keys, float deltaTime)
 {
 	glm::vec3 newPosition = m_Player->GetPosition();
 	glm::vec3 oldPosition = newPosition;
+
+	// Set gravity
+	newPosition += glm::vec3(0.0f, -1.0f, 0.0f) * m_Gravity;
+	m_MoveDirection = glm::vec3(0.0f, -1.0f, 0.0f);
 
 	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
 	{
@@ -62,17 +68,15 @@ void PlayerController::KeyControl(bool* keys, float deltaTime)
 		m_MoveDirection = glm::vec3(0.0f, 1.0f, 0.0f);
 	}
 
-	// Set gravity
-	newPosition += glm::vec3(0.0f, -1.0f, 0.0f) * m_Gravity;
-
-	float minDistance = IsColliding(newPosition);
+	bool bColliding = IsColliding(newPosition);
 	// printf("PlayerController newPosition [ %.2ff %.2ff %.2ff ] minDistance = %.2ff\n", newPosition.x, newPosition.y, newPosition.z, minDistance);
 
 	// Check the collision
-	if (IsColliding(newPosition)) {
+	if (bColliding && m_MoveDirection == glm::vec3(0.0f, -1.0f, 0.0f)) {
 		// Collision detected
 		if (m_MoveDirection != m_MoveDirectionLast) {
-			m_Player->SetPosition(oldPosition);
+			newPosition = glm::vec3(std::round(oldPosition.x), std::round(oldPosition.y), std::round(oldPosition.z));
+			m_Player->SetPosition(newPosition);
 		}
 		m_MoveDirectionLast = m_MoveDirection;
 
@@ -132,6 +136,14 @@ bool PlayerController::IsColliding(glm::vec3 position)
 
 void PlayerController::MouseControl(bool* buttons, float xChange, float yChange)
 {
+	if (buttons[GLFW_MOUSE_BUTTON_RIGHT]) {
+		glm::vec3 oldRotationVec = glm::eulerAngles(m_Player->GetRotation() / toRadians);
+		glm::vec3 newRotationVec = glm::vec3(oldRotationVec.x, oldRotationVec.y + xChange, oldRotationVec.z);
+		// printf("PlayerController::MouseControl oldRotationVec [%.2ff %.2ff %.2ff] newRotationVec [ %.2ff %.2ff %.2ff ]\n", 
+		// 	oldRotationVec.x, oldRotationVec.y, oldRotationVec.z, newRotationVec.x, newRotationVec.y, newRotationVec.z);
+		glm::quat newRotation = glm::quat(newRotationVec * toRadians);
+		m_Player->SetRotation(newRotation);
+	}
 }
 
 void PlayerController::MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset)
