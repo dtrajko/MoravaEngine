@@ -18,9 +18,42 @@ public:
 	virtual void Update() override;
 
 private:
-	Player* m_Player;
-	glm::vec3 m_CameraRig;
+	// ThinMatrix methods for 3rd person camera
+	void CalculateZoom(float yOffset);
+	void CalculatePitch(bool* buttons, float yChange);
+	void CalculateAngleAroundPlayer(bool* buttons, float xChange);
+	float CalculateHorizontalDistance();
+	float CalculateVerticalDistance();
+	void CalculateCameraPosition(float horizontalDistance, float verticalDistance);
 
-	float m_CameraPitchSpeed = 0.2f;
+	void UpdateDebugInfo();
+
+private:
+	Player* m_Player;
+
+	float m_CameraPlayerDistance;
+	float m_AngleAroundPlayer;
+
+	float m_PitchChangeSpeed = 0.01f;
+	float m_YawChangeSpeed = 0.03f;
+	float m_ZoomLevel;
+
+	// KeyControl
+	bool* m_Keys;
+	// MouseControl(bool* buttons, float xChange, float yChange)
+	bool* m_Buttons;
+	float m_xChange;
+	float m_yChange;
+	// MouseScrollControl
+	float m_xOffset;
+	float m_yOffset;
+
+public:
+	glm::vec3 m_DebugPlayerPosition;
+	glm::vec3 m_DebugCameraPosition;
+	glm::vec3 m_DebugPlayerFront;
+	glm::vec3 m_DebugCameraFront;
+	float m_DebugCameraPitch;
+	float m_DebugCameraYaw;
 
 };

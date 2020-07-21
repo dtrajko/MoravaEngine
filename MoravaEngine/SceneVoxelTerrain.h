@@ -41,4 +41,7 @@ private:
 	PlayerController* m_PlayerController;
 	bool m_TerrainSettingsChanged;
 
+	bool m_DrawGizmos;
+	Pivot* m_PivotScene;
+
 };

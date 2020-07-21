@@ -15,7 +15,8 @@ CameraControllerVoxelTerrain::CameraControllerVoxelTerrain(Camera* camera, Playe
 	: CameraController(camera, moveSpeed, turnSpeed)
 {
 	m_Player = player;
-	m_CameraRig = glm::vec3(-8.0f, 2.0f, 0.0f);
+	m_CameraPlayerDistance = 10.0f;
+	m_AngleAroundPlayer = 0.0f;
 }
 
 void CameraControllerVoxelTerrain::KeyControl(bool* keys, float deltaTime)
@@ -31,46 +32,103 @@ void CameraControllerVoxelTerrain::KeyControl(bool* keys, float deltaTime)
 
 void CameraControllerVoxelTerrain::MouseControl(bool* buttons, float xChange, float yChange)
 {
-	if (buttons[GLFW_MOUSE_BUTTON_RIGHT])
-	{
-		// float oldPitch = m_Camera->GetPitch();
-		// float newPitch = oldPitch - yChange * m_CameraPitchSpeed;
-		// m_CameraRig.x -= (oldPitch - newPitch) * m_CameraPitchSpeed;
-		// m_CameraRig.y -= (oldPitch - newPitch) * m_CameraPitchSpeed;
-		// m_Camera->SetPitch(newPitch);
-		// m_Camera->Update();
-	}
+	m_Buttons = buttons;
+	m_xChange = xChange;
+	m_yChange = yChange;
 }
 
 void CameraControllerVoxelTerrain::MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset)
 {
-	// CameraController::MouseScrollControl(keys, deltaTime, xOffset, yOffset);
+	m_Keys = keys;
+	m_xOffset = xOffset;
+	m_yOffset = yOffset;
 }
 
 void CameraControllerVoxelTerrain::Update()
 {
-	m_Camera->SetYaw(-m_Player->GetRotation().y);
-	// m_Camera->SetPitch(m_Player->GetRotation().x);
+	CalculateZoom(m_yOffset);
+	CalculatePitch(m_Buttons, m_yChange);
+	CalculateAngleAroundPlayer(m_Buttons, m_xChange);
 
-	glm::vec3 newCameraPosition = m_Player->GetPosition() + (m_Player->GetFront() * m_CameraRig.x) + glm::vec3(0.0f, m_CameraRig.y, 0.0f);
-	m_Camera->SetPosition(newCameraPosition);
+	float horizontalDistance = CalculateHorizontalDistance();
+	float verticalDistance = CalculateVerticalDistance();
 
-	printf("CameraControllerVoxelTerrain::Update PlayerFront [ %.2ff %.2ff %.2ff ] Player Position [ %.2ff %.2ff %.2ff ]\n",
-		m_Player->GetFront().x, m_Player->GetFront().y, m_Player->GetFront().z,
-		m_Player->GetPosition().x, m_Player->GetPosition().y, m_Player->GetPosition().z);
+	CalculateCameraPosition(horizontalDistance, verticalDistance);
 
-	printf("CameraControllerVoxelTerrain::Update Camera Front [ %.2ff %.2ff %.2ff ] Camera Position [ %.2ff %.2ff %.2ff ]\n",
-		m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z,
-		m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
-
-	printf("CameraControllerVoxelTerrain::Update Camera Pitch [ %.2ff ] Camera Yaw [ %.2ff ]\n",
-		m_Camera->GetPitch(), m_Camera->GetYaw());
-
-	printf("CameraControllerVoxelTerrain::Update CameraRig [ %.2ff %.2ff %.2ff ] newCameraPosition [ %.2ff %.2ff %.2ff ]\n",
-		m_CameraRig.x, m_CameraRig.y, m_CameraRig.z,
-		newCameraPosition.x, newCameraPosition.y, newCameraPosition.z);
+	float yaw = 180.0f - (m_Player->GetRotation().y + m_AngleAroundPlayer);
+	m_Camera->SetYaw(yaw);
 
 	m_Camera->Update();
+
+	UpdateDebugInfo();
+}
+
+void CameraControllerVoxelTerrain::CalculateZoom(float yOffset)
+{
+	if (abs(m_yOffset) < 0.1f || abs(m_yOffset) > 10.0f)
+		return;
+
+	m_ZoomLevel = yOffset;
+	m_CameraPlayerDistance += m_ZoomLevel;
+}
+
+void CameraControllerVoxelTerrain::CalculatePitch(bool* buttons, float yChange)
+{
+	if (buttons[GLFW_MOUSE_BUTTON_RIGHT])
+	{
+		float pitchChange = yChange * m_PitchChangeSpeed;
+		float pitch = m_Camera->GetPitch();
+		pitch -= pitchChange;
+		m_Camera->SetPitch(pitch);
+	}
+}
+
+void CameraControllerVoxelTerrain::CalculateAngleAroundPlayer(bool* buttons, float xChange)
+{
+	if (buttons[GLFW_MOUSE_BUTTON_LEFT])
+	{
+		float angleChange = xChange * m_YawChangeSpeed;
+		m_AngleAroundPlayer -= angleChange;
+	}
+}
+
+float CameraControllerVoxelTerrain::CalculateHorizontalDistance()
+{
+	float pitch = m_Camera->GetPitch();
+	return m_CameraPlayerDistance * std::cos(glm::radians(pitch));
+}
+
+float CameraControllerVoxelTerrain::CalculateVerticalDistance()
+{
+	float pitch = m_Camera->GetPitch();
+	return m_CameraPlayerDistance * std::sin(glm::radians(pitch));
+}
+
+void CameraControllerVoxelTerrain::CalculateCameraPosition(float horizontalDistance, float verticalDistance)
+{
+	float theta = m_Player->GetRotation().y + m_AngleAroundPlayer;
+	float offsetX = horizontalDistance * std::sin(glm::radians(theta));
+	float offsetZ = horizontalDistance * std::cos(glm::radians(theta));
+
+	glm::vec3 playerPosition = m_Player->GetPosition();
+	glm::vec3 cameraPosition = m_Camera->GetPosition();
+
+	glm::vec3 newCameraPosition = glm::vec3(cameraPosition);
+	newCameraPosition.x = playerPosition.x - offsetX;
+	newCameraPosition.z = playerPosition.z - offsetZ;
+	newCameraPosition.y = playerPosition.y + verticalDistance;
+
+	m_Camera->SetPosition(newCameraPosition);
+}
+
+void CameraControllerVoxelTerrain::UpdateDebugInfo()
+{
+	m_DebugPlayerPosition = m_Player->GetPosition();
+	m_DebugCameraPosition = m_Camera->GetPosition();
+	m_DebugPlayerFront = m_Player->GetFront();
+	m_DebugCameraFront = m_Camera->GetFront();
+	m_DebugCameraPitch = m_Camera->GetPitch();
+	m_DebugCameraYaw = m_Camera->GetYaw();
 }
 
 CameraControllerVoxelTerrain::~CameraControllerVoxelTerrain()

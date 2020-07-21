@@ -26,6 +26,10 @@ void RendererVoxelTerrain::SetShaders()
 	Shader* shaderRenderInstanced  = new Shader("Shaders/render_instanced.vs", "Shaders/render_instanced.fs");
 	shaders.insert(std::make_pair("render_instanced", shaderRenderInstanced));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderRenderInstanced compiled [programID={0}]", shaderRenderInstanced->GetProgramID());
+
+	Shader* shaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
+	shaders.insert(std::make_pair("basic", shaderBasic));
+	Log::GetLogger()->info("RendererVoxelTerrain: shaderBasic compiled [programID={0}]", shaderBasic->GetProgramID());
 }
 
 void RendererVoxelTerrain::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -81,6 +85,7 @@ void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	/**** BEGIN shaderMain ****/
 	Shader* shaderMain = (Shader*)shaders["main"];
 	shaderMain->Bind();
 
@@ -149,8 +154,9 @@ void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	shaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
 	shaderMain->setFloat("tilingFactor", 1.0f);
 	shaderMain->Validate();
+	/**** END shaderMain ****/
 
-
+	/**** BEGIN shaderRenderInstanced ****/
 	Shader* shaderRenderInstanced = (Shader*)shaders["render_instanced"];
 	shaderRenderInstanced->Bind();
 
@@ -167,9 +173,16 @@ void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 
 	shaderRenderInstanced->setFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
 	shaderRenderInstanced->setFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
-
 	shaderRenderInstanced->Validate();
+	/**** END shaderRenderInstanced ****/
 
+	/**** BEGIN shaderBasic ****/
+	Shader* shaderBasic = shaders["basic"];
+	shaderBasic->Bind();
+	shaderBasic->setMat4("projection", projectionMatrix);
+	shaderBasic->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+	shaderBasic->Validate();
+	/**** END shaderBasic ****/
 
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
 	std::string passType = "main";

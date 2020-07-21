@@ -9,7 +9,7 @@
 
 SceneVoxelTerrain::SceneVoxelTerrain()
 {
-    sceneSettings.cameraPosition = glm::vec3(0.0f, 28.0f, 10.0f);
+    sceneSettings.cameraPosition = glm::vec3(10.0f, 24.0f, 0.0f);
     sceneSettings.cameraStartYaw = 0.0f;
     sceneSettings.cameraStartPitch = 0.0f;
     sceneSettings.cameraMoveSpeed = 1.0f;
@@ -110,6 +110,9 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_Player = new Player(glm::vec3(0.0f, m_TerrainScale.y, 0.0f), mesh, m_Camera);
     m_PlayerController = new PlayerController(m_Player);
     m_PlayerController->SetTerrain(m_Terrain3D);
+
+    m_DrawGizmos = true;
+    m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(250.0f, 250.0f, 250.0f));
 }
 
 void SceneVoxelTerrain::SetCamera()
@@ -297,6 +300,21 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
         }
     }
     ImGui::End();
+
+    ImGui::Begin("Debug");
+    {
+        if (ImGui::CollapsingHeader("Show Details"))
+        {
+            CameraControllerVoxelTerrain* cameraController = (CameraControllerVoxelTerrain*)m_CameraController;
+            ImGui::SliderFloat3("Player Position", glm::value_ptr(cameraController->m_DebugPlayerPosition), -200.0f, 200.0f);
+            ImGui::SliderFloat3("Camera Position", glm::value_ptr(cameraController->m_DebugCameraPosition), -200.0f, 200.0f);
+            ImGui::SliderFloat3("Player Front", glm::value_ptr(cameraController->m_DebugPlayerFront), -200.0f, 200.0f);
+            ImGui::SliderFloat3("Camera Front", glm::value_ptr(cameraController->m_DebugCameraFront), -200.0f, 200.0f);
+            ImGui::SliderFloat("Camera Pitch", &cameraController->m_DebugCameraPitch, -1000.0f, 1000.0f);
+            ImGui::SliderFloat("Camera Yaw", &cameraController->m_DebugCameraYaw, -1000.0f, 1000.0f);
+        }
+    }
+    ImGui::End();
 }
 
 void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
@@ -342,6 +360,7 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
     Shader* shaderMain = shaders["main"];
     Shader* shaderOmniShadow = shaders["omniShadow"];
     Shader* shaderRenderInstanced = shaders["render_instanced"];
+    Shader* shaderBasic = shaders["basic"];
 
     if (passType == "shadow_omni") {
         shaderOmniShadow->Bind();
@@ -349,8 +368,13 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
 
     if (passType == "main")
     {
-        shaderMain->Bind();
+        if (m_DrawGizmos) {
+            shaderBasic->Bind();
+            shaderBasic->setMat4("model", glm::mat4(1.0f));
+            m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+        }
 
+        shaderMain->Bind();
         // Render main pass only
     }
 

@@ -138,13 +138,12 @@ void PlayerController::MouseControl(bool* buttons, float xChange, float yChange)
 {
 	if (buttons[GLFW_MOUSE_BUTTON_RIGHT]) {
 		glm::vec3 oldRotation = m_Player->GetRotation();
-		// glm::vec3 newRotationVec = glm::vec3(oldRotation.x - yChange * m_TurnSpeed, oldRotation.y + xChange * m_TurnSpeed, oldRotation.z);
 		glm::vec3 newRotation = glm::vec3(oldRotation.x, oldRotation.y - xChange * m_TurnSpeed, oldRotation.z);
-		printf("PlayerController::MouseControl oldRotationVec [%.2ff %.2ff %.2ff] newRotationVec [ %.2ff %.2ff %.2ff ]\n", 
-			oldRotation.x, oldRotation.y, oldRotation.z, newRotation.x, newRotation.y, newRotation.z);
+		// printf("PlayerController::MouseControl oldRotationVec [%.2ff %.2ff %.2ff] newRotationVec [ %.2ff %.2ff %.2ff ]\n", 
+		// 	oldRotation.x, oldRotation.y, oldRotation.z, newRotation.x, newRotation.y, newRotation.z);
 		m_Player->SetRotation(newRotation);
 
-		Update();
+		m_Player->Update();
 	}
 }
 
