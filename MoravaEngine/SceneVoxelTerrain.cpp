@@ -116,7 +116,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_DrawGizmos = true;
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(250.0f, 250.0f, 250.0f));
 
-    m_DigDistance = 2.0f;
+    m_DigDistance = 1.6f;
 }
 
 void SceneVoxelTerrain::SetCamera()
