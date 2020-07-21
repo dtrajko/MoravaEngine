@@ -21,6 +21,7 @@ public:
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
 	void UpdateCooldown(float timestep, Window& mainWindow);
 	void Release();
+	void Dig(bool* keys, float timestep);
 
 private:
 	virtual void SetCamera() override;
@@ -37,11 +38,12 @@ private:
 	float m_TerrainNoiseFactor;
 	float m_TerrainNoiseFactorPrev;
 	EventCooldown m_UpdateCooldown;
+	EventCooldown m_DigCooldown;
 	Player* m_Player;
 	PlayerController* m_PlayerController;
 	bool m_TerrainSettingsChanged;
-
 	bool m_DrawGizmos;
 	Pivot* m_PivotScene;
+	float m_DigDistance;
 
 };

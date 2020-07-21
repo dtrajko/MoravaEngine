@@ -43,7 +43,7 @@ void RenderInstanced::CreateDataStructure()
 		float colorB = m_Terrain->m_Positions[i].z / m_Terrain->m_Scale.z;
 
 		m_ModelMatrix = glm::mat4(1.0f);
-		m_InstanceColor = glm::vec4(1.0f - colorR, colorG, 1.0f - colorB, 1.0f);
+		m_InstanceColor = glm::vec4(1.0f - colorR, colorG, 1.0f - colorB, 0.6f);
 		m_ModelMatrix = glm::translate(m_ModelMatrix, m_Terrain->m_Positions[i]);
 
 		if (i >= m_InstanceCount)

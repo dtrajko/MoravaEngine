@@ -3,6 +3,7 @@
 #include "ResourceManager.h"
 #include "Block.h"
 #include "CameraControllerVoxelTerrain.h"
+#include "RendererBasic.h"
 
 #include "ImGuiWrapper.h"
 
@@ -99,6 +100,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
 
     m_Transform = glm::mat4(1.0f);
     m_UpdateCooldown = { 0.0f, 1.0f };
+    m_DigCooldown = { 0.0f, 0.2f };
 
     m_TerrainScale = glm::vec3(60.0f, 24.0f, 60.0f);
     m_TerrainNoiseFactor = 0.0f;
@@ -113,6 +115,8 @@ SceneVoxelTerrain::SceneVoxelTerrain()
 
     m_DrawGizmos = true;
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(250.0f, 250.0f, 250.0f));
+
+    m_DigDistance = 2.0f;
 }
 
 void SceneVoxelTerrain::SetCamera()
@@ -321,6 +325,7 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
 
 void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
 {
+    Dig(mainWindow.getKeys(), timestep);
     UpdateCooldown(timestep, mainWindow);
     m_PlayerController->KeyControl(mainWindow.getKeys(), timestep);
     m_PlayerController->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
@@ -364,6 +369,8 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
     Shader* shaderRenderInstanced = shaders["render_instanced"];
     Shader* shaderBasic = shaders["basic"];
 
+    RendererBasic::EnableTransparency();
+
     if (passType == "shadow_omni") {
         shaderOmniShadow->Bind();
     }
@@ -380,22 +387,7 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
         // Render main pass only
     }
 
-    ResourceManager::GetTexture("diffuse")->Bind(textureSlots["diffuse"]);
-    ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
-
-    glm::vec4 tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-    shaderRenderInstanced->Bind();
-
-    shaderRenderInstanced->setMat4("projection", projectionMatrix);
-    shaderRenderInstanced->setMat4("view", m_CameraController->CalculateViewMatrix());
-    shaderRenderInstanced->setInt("albedoMap", 0);
-    shaderRenderInstanced->setVec4("tintColor", tintColor);
-
-    m_RenderInstanced->m_Texture->Bind(0);
-    m_RenderInstanced->Render();
-
-
+    /**** BEGIN render Player ****/
     shaderMain->Bind();
     shaderMain->setMat4("projection", projectionMatrix);
     shaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
@@ -410,6 +402,27 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
     shaderMain->setMat4("model", model);
 
     m_Player->Render();
+
+    /**** END render Player ****/
+
+    /**** BEGIN render Terrain ****/
+
+    ResourceManager::GetTexture("diffuse")->Bind(textureSlots["diffuse"]);
+    ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
+
+    glm::vec4 tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 0.8f);
+
+    shaderRenderInstanced->Bind();
+
+    shaderRenderInstanced->setMat4("projection", projectionMatrix);
+    shaderRenderInstanced->setMat4("view", m_CameraController->CalculateViewMatrix());
+    shaderRenderInstanced->setInt("albedoMap", 0);
+    shaderRenderInstanced->setVec4("tintColor", tintColor);
+
+    m_RenderInstanced->m_Texture->Bind(0);
+    m_RenderInstanced->Render();
+
+    /**** END render Terrain ****/
 }
 
 void SceneVoxelTerrain::Release()
@@ -418,6 +431,31 @@ void SceneVoxelTerrain::Release()
     if (m_RenderInstanced) delete m_RenderInstanced;
 }
 
+void SceneVoxelTerrain::Dig(bool* keys, float timestep)
+{
+    // Cooldown
+    if (timestep - m_DigCooldown.lastTime < m_DigCooldown.cooldown) return;
+    m_DigCooldown.lastTime = timestep;
+
+    if (keys[GLFW_KEY_F]) {
+        // printf("SceneVoxelTerrain::Dig\n");
+
+        size_t positionsSize = m_Terrain3D->m_Positions.size();
+        glm::vec3 position;
+        for (size_t i = 0; i < positionsSize; i++)
+        {
+            position = m_Terrain3D->m_Positions[i];
+            if (glm::distance(m_Player->GetPosition(), position) < m_DigDistance)
+            {
+                m_Terrain3D->m_Positions.erase(m_Terrain3D->m_Positions.begin() + i);
+                // printf("Position to Dig [ %.2ff %.2ff %.2ff ]\n", position.x, position.y, position.z);
+            }
+        }
+        if (positionsSize != m_Terrain3D->m_Positions.size()) {
+            m_RenderInstanced->CreateVertexData();
+        }
+    }
+}
 
 SceneVoxelTerrain::~SceneVoxelTerrain()
 {

@@ -10,7 +10,7 @@ public:
 	PlayerController();
 	PlayerController(Player* player);
 	void SetTerrain(Terrain3D* terrain);
-	bool IsColliding(glm::vec3 position);
+	bool IsColliding(glm::vec3 position, float distanceAllowed);
 	~PlayerController();
 
 	void KeyControl(bool* keys, float deltaTime);

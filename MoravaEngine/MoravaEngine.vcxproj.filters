@@ -377,12 +377,6 @@
     <ClCompile Include="RenderInstanced.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerController.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Camera</Filter>
     </ClCompile>
@@ -391,6 +385,12 @@
     </ClCompile>
     <ClCompile Include="CameraControllerVoxelTerrain.cpp">
       <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerController.cpp">
+      <Filter>Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -800,12 +800,6 @@
     <ClInclude Include="RenderInstanced.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerController.h">
-      <Filter>Game</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Camera</Filter>
     </ClInclude>
@@ -814,6 +808,12 @@
     </ClInclude>
     <ClInclude Include="CameraControllerVoxelTerrain.h">
       <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerController.h">
+      <Filter>Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -871,11 +871,11 @@
     <Filter Include="PerlinNoise">
       <UniqueIdentifier>{dbfdba99-a8bc-4267-ad45-40ae3edc4c3b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game">
-      <UniqueIdentifier>{fb0a842c-53dc-4783-a0fc-01377b4abfa1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Camera">
       <UniqueIdentifier>{fafafe81-ebab-49de-a8f8-f6765a565f6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Player">
+      <UniqueIdentifier>{e038b3e3-f988-4252-b109-ef5684319fd8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

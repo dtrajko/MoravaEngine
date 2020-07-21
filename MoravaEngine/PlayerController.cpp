@@ -34,41 +34,41 @@ void PlayerController::KeyControl(bool* keys, float deltaTime)
 	glm::vec3 oldPosition = newPosition;
 
 	// Set gravity
-	newPosition += glm::vec3(0.0f, -1.0f, 0.0f) * m_Gravity;
-	m_MoveDirection = glm::vec3(0.0f, -1.0f, 0.0f);
+	newPosition = oldPosition + glm::vec3(0.0f, -1.0f, 0.0f) * m_Gravity;
+	m_MoveDirection = -m_Player->GetUp();
 
 	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
 	{
-		newPosition += m_Player->GetFront() * m_MoveSpeed;
+		newPosition = oldPosition + m_Player->GetFront() * m_MoveSpeed;
 		m_MoveDirection = m_Player->GetFront();
 	}
 	if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN])
 	{
-		newPosition -= m_Player->GetFront() * m_MoveSpeed;
+		newPosition = oldPosition - m_Player->GetFront() * m_MoveSpeed;
 		m_MoveDirection = -m_Player->GetFront();
 	}
 	if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT])
 	{
-		newPosition -= m_Player->GetRight() * m_MoveSpeed;
+		newPosition = oldPosition - m_Player->GetRight() * m_MoveSpeed;
 		m_MoveDirection = -m_Player->GetRight();
 	}
 	if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT])
 	{
-		newPosition += m_Player->GetRight() * m_MoveSpeed;
+		newPosition = oldPosition + m_Player->GetRight() * m_MoveSpeed;
 		m_MoveDirection = m_Player->GetRight();
 	}
 	if (keys[GLFW_KEY_Q])
 	{
-		newPosition -= m_Player->GetUp() * m_MoveSpeed;
+		newPosition = oldPosition - m_Player->GetUp() * m_MoveSpeed;
 		m_MoveDirection = -m_Player->GetUp();
 	}
 	if (keys[GLFW_KEY_E] || keys[GLFW_KEY_SPACE])
 	{
-		newPosition += m_Player->GetUp() * m_JumpSpeed;
+		newPosition = oldPosition + m_Player->GetUp() * m_JumpSpeed;
 		m_MoveDirection = m_Player->GetUp();
 	}
 
-	bool bColliding = IsColliding(newPosition);
+	bool bColliding = IsColliding(newPosition, m_DistanceAllowed);
 	// printf("PlayerController newPosition [ %.2ff %.2ff %.2ff ] minDistance = %.2ff\n", newPosition.x, newPosition.y, newPosition.z, minDistance);
 
 	// Check the collision
@@ -90,7 +90,7 @@ void PlayerController::KeyControl(bool* keys, float deltaTime)
 	}
 }
 
-bool PlayerController::IsColliding(glm::vec3 position)
+bool PlayerController::IsColliding(glm::vec3 position, float distanceAllowed)
 {
 	bool isColliding = false;
 
@@ -112,7 +112,7 @@ bool PlayerController::IsColliding(glm::vec3 position)
 		//	printf("GetTerrainMinimumDistance position [ %.2ff %.2ff %.2ff ] terrainPosition [ %.2ff %.2ff %.2ff ] tempDistance = %.2ff\n",
 		//		position.x, position.y, position.z, terrainPosition.x, terrainPosition.y, terrainPosition.z, tempDistance);
 
-		if (tempDistance <= m_DistanceAllowed) {
+		if (tempDistance <= distanceAllowed) {
 			minDistance = tempDistance;
 			collidingPosition = terrainPosition;
 			break;
@@ -124,7 +124,7 @@ bool PlayerController::IsColliding(glm::vec3 position)
 		}
 	}
 
-	if (minDistance <= m_DistanceAllowed) {
+	if (minDistance <= distanceAllowed) {
 		isColliding = true;
 
 		// printf("Player position [ %.2ff %.2ff %.2ff ] collidingPosition [ %.2ff %.2ff %.2ff ]\n",
@@ -139,10 +139,7 @@ void PlayerController::MouseControl(bool* buttons, float xChange, float yChange)
 	if (buttons[GLFW_MOUSE_BUTTON_RIGHT]) {
 		glm::vec3 oldRotation = m_Player->GetRotation();
 		glm::vec3 newRotation = glm::vec3(oldRotation.x, oldRotation.y - xChange * m_TurnSpeed, oldRotation.z);
-		// printf("PlayerController::MouseControl oldRotationVec [%.2ff %.2ff %.2ff] newRotationVec [ %.2ff %.2ff %.2ff ]\n", 
-		// 	oldRotation.x, oldRotation.y, oldRotation.z, newRotation.x, newRotation.y, newRotation.z);
 		m_Player->SetRotation(newRotation);
-
 		m_Player->Update();
 	}
 }
