@@ -23,29 +23,8 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
 	Update();
 }
 
-void Camera::InvertPitch()
-{
-	m_Pitch = -m_Pitch;
-	Update();
-}
-
-glm::mat4 Camera::CalculateViewMatrix()
-{
-	glm::mat4 viewMatrix = glm::lookAt(m_Position, m_Position + glm::normalize(m_Front), m_Up);
-	return viewMatrix;
-}
-
-void Camera::CalculateFront()
-{
-	m_Front.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
-	m_Front.y = sin(glm::radians(m_Pitch));
-	m_Front.z = sin(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
-	m_Front = glm::normalize(m_Front);
-}
-
 void Camera::Update()
 {
-	CalculateFront();
 	m_Right = glm::normalize(glm::cross(m_Front, m_WorldUp));
 	m_Up = glm::normalize(glm::cross(m_Right, m_Front));
 }

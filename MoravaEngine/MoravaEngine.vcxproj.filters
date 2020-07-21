@@ -380,17 +380,17 @@
     <ClCompile Include="Player.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="CameraController.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="PlayerController.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraController.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
     <ClCompile Include="CameraControllerVoxelTerrain.cpp">
-      <Filter>Core</Filter>
+      <Filter>Camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -803,17 +803,17 @@
     <ClInclude Include="Player.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="CameraController.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="PlayerController.h">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraController.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
     <ClInclude Include="CameraControllerVoxelTerrain.h">
-      <Filter>Core</Filter>
+      <Filter>Camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -873,6 +873,9 @@
     </Filter>
     <Filter Include="Game">
       <UniqueIdentifier>{fb0a842c-53dc-4783-a0fc-01377b4abfa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera">
+      <UniqueIdentifier>{fafafe81-ebab-49de-a8f8-f6765a565f6d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

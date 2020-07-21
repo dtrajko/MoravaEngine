@@ -79,11 +79,11 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     Raycast* raycast = sceneCubemaps->GetRaycast();
     raycast->m_Hit = mp->m_Hit;
     raycast->Draw(mp->m_RayStartPoint + scene->GetCamera()->GetFront() * 0.1f, mp->GetCurrentRay() * mp->m_RayRange, raycast->m_Color,
-        shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+        shaders["basic"], projectionMatrix, scene->GetCameraController()->CalculateViewMatrix());
 
     shaders["cubemaps"]->Bind();
     shaders["cubemaps"]->setMat4("projection", projectionMatrix);
-    shaders["cubemaps"]->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    shaders["cubemaps"]->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     shaders["cubemaps"]->setVec3("cameraPos", scene->GetCamera()->GetPosition());
 
     glm::mat4 model = glm::mat4(1.0f);
@@ -141,15 +141,15 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     
     shaders["basic"]->Bind();
     shaders["basic"]->setMat4("model", glm::mat4(1.0f));
-    shaders["basic"]->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    shaders["basic"]->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     shaders["basic"]->setMat4("projection", projectionMatrix);
 
     if (sceneCubemaps->m_AABBEnabled)
         m_CubeAABB->Draw();
 
-    m_PivotCube->Draw(shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+    m_PivotCube->Draw(shaders["basic"], projectionMatrix, scene->GetCameraController()->CalculateViewMatrix());
 
-    m_PivotScene->Draw(shaders["basic"], projectionMatrix, scene->GetCamera()->CalculateViewMatrix());
+    m_PivotScene->Draw(shaders["basic"], projectionMatrix, scene->GetCameraController()->CalculateViewMatrix());
 
     // Draw the Nanosuit model
     shaders["cubemaps"]->Bind();
@@ -165,7 +165,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 
     shaders["framebuffers_scene"]->Bind();
     shaders["framebuffers_scene"]->setMat4("projection", projectionMatrix);
-    shaders["framebuffers_scene"]->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+    shaders["framebuffers_scene"]->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
 
     /* Floor */
     model = glm::mat4(1.0f);
@@ -190,7 +190,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     // draw skybox as last
     glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth buffer's content
     shaders["skybox"]->Bind();
-    shaders["skybox"]->setMat4("view", glm::mat4(glm::mat3(scene->GetCamera()->CalculateViewMatrix()))); // remove translation from the view matrix
+    shaders["skybox"]->setMat4("view", glm::mat4(glm::mat3(scene->GetCameraController()->CalculateViewMatrix()))); // remove translation from the view matrix
     shaders["skybox"]->setMat4("projection", projectionMatrix);
 
     // skybox cube

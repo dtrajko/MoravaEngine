@@ -79,7 +79,7 @@ void RendererOmniShadows::RenderPass(Window& mainWindow, Scene* scene, glm::mat4
 	shaderMain->Bind();
 
 	shaderMain->setMat4("model", glm::mat4(1.0f));
-	shaderMain->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+	shaderMain->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
 	shaderMain->setMat4("projection", projectionMatrix);
 	shaderMain->setVec3("eyePosition", scene->GetCamera()->GetPosition());
 

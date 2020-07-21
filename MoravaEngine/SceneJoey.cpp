@@ -253,7 +253,7 @@ void SceneJoey::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::stri
 		// initialize static shader uniforms before rendering
 		shaders["pbrShader"]->Bind();
 		shaders["pbrShader"]->setMat4("projection", projectionMatrix);
-		shaders["pbrShader"]->setMat4("view", m_Camera->CalculateViewMatrix());
+		shaders["pbrShader"]->setMat4("view", m_CameraController->CalculateViewMatrix());
 		shaders["pbrShader"]->setVec3("camPos", m_Camera->GetPosition());
 
 		// render scene, supplying the convoluted irradiance map to the final shader.
@@ -337,7 +337,7 @@ void SceneJoey::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::stri
 
 		shaders["pbrShaderMRE"]->Bind();
 		shaders["pbrShaderMRE"]->setMat4("projection", projectionMatrix);
-		shaders["pbrShaderMRE"]->setMat4("view", m_Camera->CalculateViewMatrix());
+		shaders["pbrShaderMRE"]->setMat4("view", m_CameraController->CalculateViewMatrix());
 		shaders["pbrShaderMRE"]->setVec3("camPos", m_Camera->GetPosition());
 		shaders["pbrShaderMRE"]->setFloat("emissiveFactor",  m_EmissiveFactor);
 		shaders["pbrShaderMRE"]->setFloat("metalnessFactor", m_MetalnessFactor);
@@ -389,7 +389,7 @@ void SceneJoey::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::stri
 		transform = glm::rotate(transform, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		shaders["backgroundShader"]->setMat4("model", transform);
 		shaders["backgroundShader"]->setMat4("projection", projectionMatrix);
-		shaders["backgroundShader"]->setMat4("view", m_Camera->CalculateViewMatrix());
+		shaders["backgroundShader"]->setMat4("view", m_CameraController->CalculateViewMatrix());
 
 		m_MaterialWorkflowPBR->BindEnvironmentCubemap(0);
 		// m_MaterialWorkflowPBR->BindIrradianceMap(0); // display irradiance map

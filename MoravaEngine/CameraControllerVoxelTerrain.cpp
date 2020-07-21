@@ -16,7 +16,7 @@ CameraControllerVoxelTerrain::CameraControllerVoxelTerrain(Camera* camera, Playe
 {
 	m_Player = player;
 	m_CameraPlayerDistance = 10.0f;
-	m_AngleAroundPlayer = 0.0f;
+	m_AngleAroundPlayer = 180.0f;
 }
 
 void CameraControllerVoxelTerrain::KeyControl(bool* keys, float deltaTime)
@@ -58,6 +58,7 @@ void CameraControllerVoxelTerrain::Update()
 	float yaw = 180.0f - (m_Player->GetRotation().y + m_AngleAroundPlayer);
 	m_Camera->SetYaw(yaw);
 
+	CalculateFront();
 	m_Camera->Update();
 
 	UpdateDebugInfo();
@@ -106,9 +107,9 @@ float CameraControllerVoxelTerrain::CalculateVerticalDistance()
 
 void CameraControllerVoxelTerrain::CalculateCameraPosition(float horizontalDistance, float verticalDistance)
 {
-	float theta = m_Player->GetRotation().y + m_AngleAroundPlayer;
-	float offsetX = horizontalDistance * std::sin(glm::radians(theta));
-	float offsetZ = horizontalDistance * std::cos(glm::radians(theta));
+	m_Theta = m_Player->GetRotation().y + m_AngleAroundPlayer;
+	float offsetX = horizontalDistance * -std::cos(glm::radians(m_Theta));
+	float offsetZ = horizontalDistance * std::sin(glm::radians(m_Theta));
 
 	glm::vec3 playerPosition = m_Player->GetPosition();
 	glm::vec3 cameraPosition = m_Camera->GetPosition();
@@ -129,6 +130,36 @@ void CameraControllerVoxelTerrain::UpdateDebugInfo()
 	m_DebugCameraFront = m_Camera->GetFront();
 	m_DebugCameraPitch = m_Camera->GetPitch();
 	m_DebugCameraYaw = m_Camera->GetYaw();
+	m_DebugAngleAroundPlayer = m_AngleAroundPlayer;
+	m_DebugTheta = m_Theta;
+}
+
+void CameraControllerVoxelTerrain::InvertPitch()
+{
+	float pitch = m_Camera->GetPitch();
+	m_Camera->SetPitch(-pitch);
+	Update();
+}
+
+glm::mat4 CameraControllerVoxelTerrain::CalculateViewMatrix()
+{
+	glm::vec3 position = m_Camera->GetPosition();
+	glm::vec3 front = m_Camera->GetFront();
+	glm::vec3 up = m_Camera->GetUp();
+	glm::mat4 viewMatrix = glm::lookAt(position, position + glm::normalize(front), up);
+	return viewMatrix;
+}
+
+void CameraControllerVoxelTerrain::CalculateFront()
+{
+	float pitch = m_Camera->GetPitch();
+	float yaw = m_Camera->GetYaw();
+	glm::vec3 front = glm::vec3(0.0f);
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = -sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front = glm::normalize(front);
+	m_Camera->SetFront(front);
 }
 
 CameraControllerVoxelTerrain::~CameraControllerVoxelTerrain()

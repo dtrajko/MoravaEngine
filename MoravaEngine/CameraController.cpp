@@ -72,7 +72,7 @@ void CameraController::MouseControl(bool* buttons, float xChange, float yChange)
 	if (buttons[GLFW_MOUSE_BUTTON_RIGHT])
 	{
 		m_Camera->SetYaw(m_Camera->GetYaw() + xChange * m_TurnSpeed);
-		m_Camera->SetPitch(m_Camera->GetPitch() + yChange * m_TurnSpeed);
+		m_Camera->SetPitch(m_Camera->GetPitch() - yChange * m_TurnSpeed);
 
 		Update();
 	}
@@ -95,7 +95,36 @@ void CameraController::MouseScrollControl(bool* keys, float deltaTime, float xOf
 
 void CameraController::Update()
 {
+	CalculateFront();
 	m_Camera->Update();
+}
+
+void CameraController::InvertPitch()
+{
+	float pitch = m_Camera->GetPitch();
+	m_Camera->SetPitch(-pitch);
+	Update();
+}
+
+glm::mat4 CameraController::CalculateViewMatrix()
+{
+	glm::vec3 position = m_Camera->GetPosition();
+	glm::vec3 front = m_Camera->GetFront();
+	glm::vec3 up = m_Camera->GetUp();
+	glm::mat4 viewMatrix = glm::lookAt(position, position + glm::normalize(front), up);
+	return viewMatrix;
+}
+
+void CameraController::CalculateFront()
+{
+	float pitch = m_Camera->GetPitch();
+	float yaw = m_Camera->GetYaw();
+	glm::vec3 front = glm::vec3(0.0f);
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = -sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front = glm::normalize(front);
+	m_Camera->SetFront(front);
 }
 
 CameraController::~CameraController()

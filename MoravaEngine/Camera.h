@@ -24,13 +24,9 @@ public:
 
 	// setters
 	inline void SetPosition(glm::vec3 position) { m_Position = position; };
+	inline void SetFront(glm::vec3 front) { m_Front = front; };
 	inline void SetYaw(float yaw) { m_Yaw = yaw; };
 	inline void SetPitch(float pitch) { m_Pitch = pitch; };
-	void InvertPitch();
-	glm::mat4 CalculateViewMatrix();
-
-private:
-	void CalculateFront();
 
 private:
 	glm::vec3 m_Position;

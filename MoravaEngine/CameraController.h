@@ -19,6 +19,11 @@ public:
 	virtual void MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset);
 	virtual void Update();
 	inline Camera* GetCamera() { return m_Camera; };
+	void InvertPitch();
+	glm::mat4 CalculateViewMatrix();
+
+private:
+	void CalculateFront();
 
 protected:
 	Camera* m_Camera;

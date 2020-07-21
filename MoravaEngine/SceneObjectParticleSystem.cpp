@@ -21,12 +21,12 @@ SceneObjectParticleSystem::SceneObjectParticleSystem()
 
     m_MaxInstances = 10000;
     m_Master = new ParticleMaster();
-    m_Camera = nullptr;
+    m_CameraController = nullptr;
 }
 
-SceneObjectParticleSystem::SceneObjectParticleSystem(bool instancedRendering, int maxInstances, Camera* camera) : SceneObject()
+SceneObjectParticleSystem::SceneObjectParticleSystem(bool instancedRendering, int maxInstances, CameraController* cameraController) : SceneObject()
 {
-    m_Camera = camera;
+    m_CameraController = cameraController;
 
     m_Settings.textureName = "particle_atlas";
     m_Settings.numRows = 4;
@@ -53,7 +53,7 @@ SceneObjectParticleSystem::SceneObjectParticleSystem(bool instancedRendering, in
 
 void SceneObjectParticleSystem::Update(bool enabled, std::map<std::string, float>* profiler_results)
 {
-    glm::vec3 cameraPosition = m_Camera->GetPosition();
+    glm::vec3 cameraPosition = m_CameraController->GetCamera()->GetPosition();
 
     // Re-generate Particle System
     if (m_Settings != m_SettingsPrev)
@@ -77,7 +77,7 @@ void SceneObjectParticleSystem::Update(bool enabled, std::map<std::string, float
 
 void SceneObjectParticleSystem::Render()
 {
-    glm::mat4 viewMatrix = m_Camera->CalculateViewMatrix();
+    glm::mat4 viewMatrix = m_CameraController->CalculateViewMatrix();
     m_Master->Render(viewMatrix);
 }
 

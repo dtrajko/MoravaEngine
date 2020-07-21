@@ -106,7 +106,7 @@ void SceneParticles::Render(Window& mainWindow, glm::mat4 projectionMatrix, std:
 {
     m_ShaderFBScene->Bind();
     m_ShaderFBScene->setMat4("projection", projectionMatrix);
-    m_ShaderFBScene->setMat4("view", m_Camera->CalculateViewMatrix());
+    m_ShaderFBScene->setMat4("view", m_CameraController->CalculateViewMatrix());
 
     textures["water"]->Bind(0);
     m_ShaderFBScene->setInt("texture1", 0);
@@ -114,8 +114,8 @@ void SceneParticles::Render(Window& mainWindow, glm::mat4 projectionMatrix, std:
     // Render Particles
     m_ParticleSystem.OnRender(m_Camera, m_ShaderFBScene);
 
-    m_Grid->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
-    m_PivotScene->Draw(shaders["basic"], projectionMatrix, m_Camera->CalculateViewMatrix());
+    m_Grid->Draw(shaders["basic"], projectionMatrix, m_CameraController->CalculateViewMatrix());
+    m_PivotScene->Draw(shaders["basic"], projectionMatrix, m_CameraController->CalculateViewMatrix());
 
     // Skybox shaderBackground
     /* Begin backgroundShader */
@@ -125,7 +125,7 @@ void SceneParticles::Render(Window& mainWindow, glm::mat4 projectionMatrix, std:
         // render skybox (render as last to prevent overdraw)
         shaderBackground->Bind();
         shaderBackground->setMat4("projection", projectionMatrix);
-        shaderBackground->setMat4("view", m_Camera->CalculateViewMatrix());
+        shaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
         shaderBackground->setInt("environmentMap", 0);
 
         glActiveTexture(GL_TEXTURE0);

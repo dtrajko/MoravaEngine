@@ -312,6 +312,8 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::SliderFloat3("Camera Front", glm::value_ptr(cameraController->m_DebugCameraFront), -200.0f, 200.0f);
             ImGui::SliderFloat("Camera Pitch", &cameraController->m_DebugCameraPitch, -1000.0f, 1000.0f);
             ImGui::SliderFloat("Camera Yaw", &cameraController->m_DebugCameraYaw, -1000.0f, 1000.0f);
+            ImGui::SliderFloat("Camera Angle Around Player", &cameraController->m_DebugAngleAroundPlayer, -1000.0f, 1000.0f);
+            ImGui::SliderFloat("Theta Horizontal", &cameraController->m_DebugTheta, -1000.0f, 1000.0f);
         }
     }
     ImGui::End();
@@ -371,7 +373,7 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
         if (m_DrawGizmos) {
             shaderBasic->Bind();
             shaderBasic->setMat4("model", glm::mat4(1.0f));
-            m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+            m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
         }
 
         shaderMain->Bind();
@@ -386,7 +388,7 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
     shaderRenderInstanced->Bind();
 
     shaderRenderInstanced->setMat4("projection", projectionMatrix);
-    shaderRenderInstanced->setMat4("view", m_Camera->CalculateViewMatrix());
+    shaderRenderInstanced->setMat4("view", m_CameraController->CalculateViewMatrix());
     shaderRenderInstanced->setInt("albedoMap", 0);
     shaderRenderInstanced->setVec4("tintColor", tintColor);
 
@@ -396,7 +398,7 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
 
     shaderMain->Bind();
     shaderMain->setMat4("projection", projectionMatrix);
-    shaderMain->setMat4("view", m_Camera->CalculateViewMatrix());
+    shaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
     shaderMain->setInt("albedoMap", 0);
     shaderMain->setVec4("tintColor", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 

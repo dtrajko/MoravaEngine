@@ -103,7 +103,7 @@ void RendererInstanced::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	shaderInstanced->Bind();
 
 	shaderInstanced->setMat4("projection", projectionMatrix);
-	shaderInstanced->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+	shaderInstanced->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
 	shaderInstanced->setMat4("model", glm::mat4(1.0f));
 
 	glBindVertexArray(quadVAO);

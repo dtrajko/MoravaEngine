@@ -72,7 +72,7 @@ void SceneFramebuffers::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
 	shaders["framebuffers_scene"]->Bind();
 
 	glm::mat4 model = glm::mat4(1.0f);
-	shaders["framebuffers_scene"]->setMat4("view", m_Camera->CalculateViewMatrix());
+	shaders["framebuffers_scene"]->setMat4("view", m_CameraController->CalculateViewMatrix());
 	shaders["framebuffers_scene"]->setMat4("projection", projectionMatrix);
 
 	// -- cubes

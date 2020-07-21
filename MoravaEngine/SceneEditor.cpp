@@ -1554,7 +1554,7 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
 
 SceneObjectParticleSystem* SceneEditor::AddNewSceneObjectParticleSystem(int objectTypeID, glm::vec3 scale)
 {
-    SceneObjectParticleSystem* particle_system = new SceneObjectParticleSystem(true, m_MaxInstances, m_Camera);
+    SceneObjectParticleSystem* particle_system = new SceneObjectParticleSystem(true, m_MaxInstances, m_CameraController);
     m_ParticleSettingsEdit = particle_system->GetSettings();
     m_ParticleSettingsPrev = m_ParticleSettingsEdit;
 
@@ -1633,7 +1633,7 @@ void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject*
     SkinnedMesh* skinnedMesh = (SkinnedMesh*)sceneObject->mesh;
     skinnedMesh->BoneTransform(runningTime, m_SkinningTransforms[sceneObject->name]);
     shaderSkinning->setMat4("model", sceneObject->transform);
-    shaderSkinning->setMat4("view", m_Camera->CalculateViewMatrix());
+    shaderSkinning->setMat4("view", m_CameraController->CalculateViewMatrix());
     shaderSkinning->setInt("gColorMap", 0);
     shaderSkinning->setVec3("gEyeWorldPos", m_Camera->GetPosition());
     shaderSkinning->setFloat("gMatSpecularIntensity", ResourceManager::s_MaterialSpecular);
@@ -1658,7 +1658,7 @@ void SceneEditor::SetUniformsShaderWater(Shader* shaderWater, SceneObject* scene
     shaderWater->setInt("depthMap",          4);
 
     shaderWater->setMat4("model",          sceneObject->transform);
-    shaderWater->setMat4("view",           m_Camera->CalculateViewMatrix());
+    shaderWater->setMat4("view",           m_CameraController->CalculateViewMatrix());
     shaderWater->setMat4("projection",     projectionMatrix);
     shaderWater->setVec3("lightPosition",  -(LightManager::directionalLight.GetDirection()));
     shaderWater->setVec3("cameraPosition", m_Camera->GetPosition());
@@ -1953,12 +1953,12 @@ void SceneEditor::RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMa
 
         if (drawAABB) {
             m_SceneObjects[m_SelectedIndex]->AABB->Draw();
-            m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+            m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
         }
     }
 
-    m_Grid->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
-    m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->CalculateViewMatrix());
+    m_Grid->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
+    m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
 }
 
 void SceneEditor::RenderFramebufferTextures(Shader* shaderEditor)

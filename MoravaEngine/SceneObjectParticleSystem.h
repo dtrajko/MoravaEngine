@@ -12,7 +12,7 @@ class SceneObjectParticleSystem : public SceneObject
 {
 public:
 	SceneObjectParticleSystem();
-	SceneObjectParticleSystem(bool instancedRendering, int maxInstances, Camera* camera);
+	SceneObjectParticleSystem(bool instancedRendering, int maxInstances, CameraController* cameraController);
 	~SceneObjectParticleSystem();
 
 	void Update(bool enabled, std::map<std::string, float>* profiler_results);
@@ -24,7 +24,7 @@ private:
 	void Regenerate();
 
 private:
-	Camera* m_Camera;
+	CameraController* m_CameraController;
 
 	ParticleSettings m_Settings;
 	ParticleSettings m_SettingsPrev;

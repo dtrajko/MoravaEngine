@@ -119,10 +119,10 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		float angleRadians = glm::radians((GLfloat)glfwGetTime());
 		modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->CalculateViewMatrix(), projectionMatrix);
+		scene->GetSkybox()->Draw(modelMatrix, scene->GetCameraController()->CalculateViewMatrix(), projectionMatrix);
 	}
 
-	glm::mat4 view = scene->GetCamera()->CalculateViewMatrix();
+	glm::mat4 view = scene->GetCameraController()->CalculateViewMatrix();
 
 	// configure transformation matrices
 	shaders["planet"]->Bind();

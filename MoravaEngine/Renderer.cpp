@@ -184,12 +184,12 @@ void Renderer::RenderWaterEffects(float deltaTime, Window& mainWindow, Scene* sc
 
 	float distance = 2.0f * (scene->GetCamera()->GetPosition().y - scene->GetWaterManager()->GetWaterHeight());
 	scene->GetCamera()->SetPosition(glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y - distance, scene->GetCamera()->GetPosition().z));
-	scene->GetCamera()->InvertPitch();
+	scene->GetCameraController()->InvertPitch();
 
 	RenderPassWaterReflection(mainWindow, scene, projectionMatrix);
 
 	scene->GetCamera()->SetPosition(glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y + distance, scene->GetCamera()->GetPosition().z));
-	scene->GetCamera()->InvertPitch();
+	scene->GetCameraController()->InvertPitch();
 
 	RenderPassWaterRefraction(mainWindow, scene, projectionMatrix);
 }
@@ -207,7 +207,7 @@ void Renderer::RenderPassWaterReflection(Window& mainWindow, Scene* scene, glm::
 	glm::mat4 modelMatrixSkybox = glm::mat4(1.0f);
 	float angleRadians = glm::radians((GLfloat)glfwGetTime());
 	modelMatrixSkybox = glm::rotate(modelMatrixSkybox, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-	scene->GetSkybox()->Draw(modelMatrixSkybox, scene->GetCamera()->CalculateViewMatrix(), projectionMatrix);
+	scene->GetSkybox()->Draw(modelMatrixSkybox, scene->GetCameraController()->CalculateViewMatrix(), projectionMatrix);
 
 	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
 	shaderMain->Bind();
@@ -219,7 +219,7 @@ void Renderer::RenderPassWaterReflection(Window& mainWindow, Scene* scene, glm::
 	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
 	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 
-	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(scene->GetCamera()->CalculateViewMatrix()));
+	glUniformMatrix4fv(uniforms["view"], 1, GL_FALSE, glm::value_ptr(scene->GetCameraController()->CalculateViewMatrix()));
 	glUniformMatrix4fv(uniforms["projection"], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 	glUniform3f(uniforms["eyePosition"], scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
 
@@ -265,7 +265,7 @@ void Renderer::RenderPassWaterRefraction(Window& mainWindow, Scene* scene, glm::
 	uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
 	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 
-	shaderMain->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+	shaderMain->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
 	shaderMain->setMat4("projection", projectionMatrix);
 	shaderMain->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
 
@@ -303,7 +303,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		float angleRadians = glm::radians((GLfloat)glfwGetTime());
 		modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->CalculateViewMatrix(), projectionMatrix);
+		scene->GetSkybox()->Draw(modelMatrix, scene->GetCameraController()->CalculateViewMatrix(), projectionMatrix);
 	}
 
 	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
@@ -317,7 +317,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	uniforms["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 
 	shaderMain->setMat4("model", glm::mat4(1.0f));
-	shaderMain->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+	shaderMain->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
 	shaderMain->setMat4("projection", projectionMatrix);
 	shaderMain->setVec3("eyePosition", scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z);
 
@@ -366,7 +366,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	uniforms["farPlane"] = shaderWater->GetUniformLocation("farPlane");
 
 	shaderWater->setMat4("model", glm::mat4(1.0f));
-	shaderWater->setMat4("view", scene->GetCamera()->CalculateViewMatrix());
+	shaderWater->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
 	shaderWater->setMat4("projection", projectionMatrix);
 
 	scene->GetWaterManager()->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["depth"]);
