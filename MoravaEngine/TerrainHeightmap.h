@@ -1,21 +1,21 @@
 #pragma once
 
 #include "Texture.h"
-#include "Mesh.h"
+#include "TerrainBase.h"
 
 #include <string>
 
 
-class Terrain : public Mesh
+class TerrainHeightMap : public TerrainBase
 {
 
 public:
-	Terrain(const char* heightMapPath, float tilingFactor, const char* colorMapPath);
+	TerrainHeightMap(const char* heightMapPath, float tilingFactor, const char* colorMapPath);
 	virtual void Generate(glm::vec3 scale) override;
 	inline Texture* GetHeightMap() const { return m_TxHeightMap; };
 	inline Texture* GetColorMap() const { return m_TxColorMap; };
-	float GetHeight(int x, int z);
-	~Terrain();
+	virtual float GetMaxY(int x, int z) override;
+	~TerrainHeightMap();
 
 private:
 	glm::vec3 m_ScalePrev;

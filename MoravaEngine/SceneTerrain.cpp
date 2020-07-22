@@ -3,7 +3,7 @@
 #include "ImGuiWrapper.h"
 
 #include "Tile2D.h"
-#include "Terrain.h"
+#include "TerrainHeightMap.h"
 #include "Renderer.h"
 
 
@@ -75,7 +75,7 @@ void SceneTerrain::SetupMeshes()
 
 void SceneTerrain::SetupModels()
 {
-	Terrain* terrain = new Terrain("Textures/island_flat.png", 4.0f, nullptr); // heightmap_island_8x6.png
+	TerrainHeightMap* terrain = new TerrainHeightMap("Textures/island_flat.png", 4.0f, nullptr); // heightmap_island_8x6.png
 	meshes.insert(std::make_pair("terrain", terrain));
 }
 

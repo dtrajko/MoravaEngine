@@ -2,10 +2,11 @@
 
 #include "Scene.h"
 
-#include "Terrain3D.h"
+#include "TerrainVoxel.h"
 #include "RenderInstanced.h"
 #include "Player.h"
 #include "PlayerController.h"
+#include "Raycast.h"
 
 
 class SceneVoxelTerrain : public Scene
@@ -22,6 +23,7 @@ public:
 	void UpdateCooldown(float timestep, Window& mainWindow);
 	void Release();
 	void Dig(bool* keys, float timestep);
+	inline Raycast* GetRaycast() const { return m_Raycast; };
 
 private:
 	virtual void SetCamera() override;
@@ -30,7 +32,7 @@ private:
 	virtual void SetupMeshes() override;
 	bool IsTerrainConfigChanged();
 
-	Terrain3D* m_Terrain3D;
+	TerrainVoxel* m_TerrainVoxel;
 	glm::mat4 m_Transform;
 	RenderInstanced* m_RenderInstanced;
 	glm::vec3 m_TerrainScale;
@@ -45,5 +47,6 @@ private:
 	bool m_DrawGizmos;
 	Pivot* m_PivotScene;
 	float m_DigDistance;
+	Raycast* m_Raycast;
 
 };

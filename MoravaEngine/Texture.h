@@ -20,7 +20,7 @@ public:
 	void Unbind();
 	void Clear();
 	inline unsigned int GetWidth() const { return m_Width; };
-	inline unsigned int GetHeight() const { return m_Height; };
+	inline unsigned int GetMaxY() const { return m_Height; };
 	int getRed(int x, int z);
 	int getGreen(int x, int z);
 	int getBlue(int x, int z);

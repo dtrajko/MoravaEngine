@@ -4,6 +4,7 @@
 #include "Block.h"
 #include "CameraControllerVoxelTerrain.h"
 #include "RendererBasic.h"
+#include "MousePicker.h"
 
 #include "ImGuiWrapper.h"
 
@@ -99,24 +100,29 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     SetupMeshes();
 
     m_Transform = glm::mat4(1.0f);
-    m_UpdateCooldown = { 0.0f, 1.0f };
-    m_DigCooldown = { 0.0f, 0.2f };
+    m_UpdateCooldown = { 0.0f, 0.5f };
+    m_DigCooldown = { 0.0f, 0.1f };
 
     m_TerrainScale = glm::vec3(60.0f, 24.0f, 60.0f);
     m_TerrainNoiseFactor = 0.0f;
 
-    m_Terrain3D = new Terrain3D(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
-    m_RenderInstanced = new RenderInstanced(m_Terrain3D, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
+    m_TerrainVoxel = new TerrainVoxel(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
+    m_RenderInstanced = new RenderInstanced(m_TerrainVoxel, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
 
     Mesh* mesh = new Block();
     m_Player = new Player(glm::vec3(0.0f, m_TerrainScale.y, 0.0f), mesh, m_Camera);
     m_PlayerController = new PlayerController(m_Player);
-    m_PlayerController->SetTerrain(m_Terrain3D);
+    m_PlayerController->SetTerrain(m_TerrainVoxel);
 
     m_DrawGizmos = true;
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(250.0f, 250.0f, 250.0f));
 
     m_DigDistance = 1.6f;
+
+    m_Raycast = new Raycast();
+    m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
+
+    MousePicker::Get()->SetTerrain(m_TerrainVoxel);
 }
 
 void SceneVoxelTerrain::SetCamera()
@@ -297,7 +303,7 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
     {
         if (ImGui::CollapsingHeader("Show Details"))
         {
-            std::string terrainPositionsSize = "Terrain Positions Size: " + std::to_string(m_Terrain3D->GetPositionsSize());
+            std::string terrainPositionsSize = "Terrain Positions Size: " + std::to_string(m_TerrainVoxel->GetPositionsSize());
             ImGui::Text(terrainPositionsSize.c_str());
             ImGui::SliderFloat3("Terrain Scale", glm::value_ptr(m_TerrainScale), 0.0f, 200.0f);
             ImGui::SliderFloat("Terrain Noise Factor", &m_TerrainNoiseFactor, -0.5f, 0.5f);
@@ -344,9 +350,10 @@ void SceneVoxelTerrain::UpdateCooldown(float timestep, Window& mainWindow)
     if (!IsTerrainConfigChanged()) return;
 
     Release();
-    m_Terrain3D = new Terrain3D(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
-    m_PlayerController->SetTerrain(m_Terrain3D);
-    m_RenderInstanced = new RenderInstanced(m_Terrain3D, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
+    m_TerrainVoxel = new TerrainVoxel(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
+    m_PlayerController->SetTerrain(m_TerrainVoxel);
+    MousePicker::Get()->SetTerrain(m_TerrainVoxel);
+    m_RenderInstanced = new RenderInstanced(m_TerrainVoxel, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
     m_RenderInstanced->CreateVertexData();
 }
 
@@ -427,7 +434,7 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
 
 void SceneVoxelTerrain::Release()
 {
-    if (m_Terrain3D) delete m_Terrain3D;
+    if (m_TerrainVoxel) delete m_TerrainVoxel;
     if (m_RenderInstanced) delete m_RenderInstanced;
 }
 
@@ -438,20 +445,19 @@ void SceneVoxelTerrain::Dig(bool* keys, float timestep)
     m_DigCooldown.lastTime = timestep;
 
     if (keys[GLFW_KEY_F]) {
-        // printf("SceneVoxelTerrain::Dig\n");
+        bool vectorModified = false;
 
-        size_t positionsSize = m_Terrain3D->m_Positions.size();
-        glm::vec3 position;
-        for (size_t i = 0; i < positionsSize; i++)
-        {
-            position = m_Terrain3D->m_Positions[i];
-            if (glm::distance(m_Player->GetPosition(), position) < m_DigDistance)
+        for (auto it = m_TerrainVoxel->m_Positions.cbegin(); it != m_TerrainVoxel->m_Positions.cend(); ) {
+            if (glm::distance(m_Player->GetPosition(), *it) < m_DigDistance)
             {
-                m_Terrain3D->m_Positions.erase(m_Terrain3D->m_Positions.begin() + i);
-                // printf("Position to Dig [ %.2ff %.2ff %.2ff ]\n", position.x, position.y, position.z);
+                m_TerrainVoxel->m_Positions.erase(it++);
+                vectorModified = true;
+            }
+            else {
+                ++it;
             }
         }
-        if (positionsSize != m_Terrain3D->m_Positions.size()) {
+        if (vectorModified) {
             m_RenderInstanced->CreateVertexData();
         }
     }

@@ -19,9 +19,9 @@ PlayerController::PlayerController(Player* player)
 	m_Terrain = nullptr;
 }
 
-void PlayerController::SetTerrain(Terrain3D* terrain)
+void PlayerController::SetTerrain(TerrainBase* terrain)
 {
-	m_Terrain = terrain;
+	m_Terrain = (TerrainVoxel*)terrain;
 }
 
 PlayerController::~PlayerController()
@@ -37,29 +37,34 @@ void PlayerController::KeyControl(bool* keys, float deltaTime)
 	newPosition = oldPosition + glm::vec3(0.0f, -1.0f, 0.0f) * m_Gravity;
 	m_MoveDirection = -m_Player->GetUp();
 
+	float moveSpeed = m_MoveSpeed;
+	if (keys[GLFW_KEY_LEFT_SHIFT]) {
+		moveSpeed = m_MoveSpeed * m_MoveFastFactor;
+	}
+
 	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
 	{
-		newPosition = oldPosition + m_Player->GetFront() * m_MoveSpeed;
+		newPosition = oldPosition + m_Player->GetFront() * moveSpeed;
 		m_MoveDirection = m_Player->GetFront();
 	}
 	if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN])
 	{
-		newPosition = oldPosition - m_Player->GetFront() * m_MoveSpeed;
+		newPosition = oldPosition - m_Player->GetFront() * moveSpeed;
 		m_MoveDirection = -m_Player->GetFront();
 	}
 	if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT])
 	{
-		newPosition = oldPosition - m_Player->GetRight() * m_MoveSpeed;
+		newPosition = oldPosition - m_Player->GetRight() * moveSpeed;
 		m_MoveDirection = -m_Player->GetRight();
 	}
 	if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT])
 	{
-		newPosition = oldPosition + m_Player->GetRight() * m_MoveSpeed;
+		newPosition = oldPosition + m_Player->GetRight() * moveSpeed;
 		m_MoveDirection = m_Player->GetRight();
 	}
 	if (keys[GLFW_KEY_Q])
 	{
-		newPosition = oldPosition - m_Player->GetUp() * m_MoveSpeed;
+		newPosition = oldPosition - m_Player->GetUp() * moveSpeed;
 		m_MoveDirection = -m_Player->GetUp();
 	}
 	if (keys[GLFW_KEY_E] || keys[GLFW_KEY_SPACE])
@@ -98,7 +103,7 @@ bool PlayerController::IsColliding(glm::vec3 position, float distanceAllowed)
 	float minDistance = maxFloatValue;
 
 	if (m_Terrain == nullptr) {
-		Log::GetLogger()->error("Missing reference to Terrain3D!");
+		Log::GetLogger()->error("Missing reference to TerrainVoxel!");
 		return isColliding;
 	}
 

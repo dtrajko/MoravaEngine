@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Player.h"
-#include "Terrain3D.h"
+#include "TerrainVoxel.h"
 
 
 class PlayerController
@@ -9,7 +9,7 @@ class PlayerController
 public:
 	PlayerController();
 	PlayerController(Player* player);
-	void SetTerrain(Terrain3D* terrain);
+	void SetTerrain(TerrainBase* terrain);
 	bool IsColliding(glm::vec3 position, float distanceAllowed);
 	~PlayerController();
 
@@ -22,12 +22,13 @@ public:
 
 private:
 	Player* m_Player;
-	Terrain3D* m_Terrain;
+	TerrainVoxel* m_Terrain;
 
 	float m_Gravity = 0.05f;
 	float m_MoveSpeed = 0.1f;
 	float m_JumpSpeed = 0.4f;
 	float m_TurnSpeed = 0.1f;
+	float m_MoveFastFactor = 4.0f;
 
 	glm::vec3 m_MoveDirection;
 	glm::vec3 m_MoveDirectionLast;

@@ -111,7 +111,7 @@ bool MousePicker::IntersectionInRange(glm::vec3 rayStartPoint, glm::vec3 ray, fl
 {
 	glm::vec3 startPoint = GetPointOnRay(rayStartPoint, ray, startDistance);
 	glm::vec3 endPoint = GetPointOnRay(rayStartPoint, ray, finishDistance);
-	if (IsAboveGround(startPoint) && !IsAboveGround(endPoint))
+	if (IsOutsideVolume(startPoint) && !IsOutsideVolume(endPoint))
 	{
 		m_Hit = true;
 		return true;
@@ -123,14 +123,14 @@ bool MousePicker::IntersectionInRange(glm::vec3 rayStartPoint, glm::vec3 ray, fl
 	}
 }
 
-bool MousePicker::IsAboveGround(glm::vec3 testPoint)
+bool MousePicker::IsOutsideVolume(glm::vec3 testPoint)
 {
 	m_TestPoint = glm::vec3((int)testPoint.x, (int)testPoint.y, (int)testPoint.z);
 
 	m_TerrainHeight = 0;
 	if (m_Terrain != nullptr)
 	{
-		m_TerrainHeight = (int)m_Terrain->GetHeight((int)m_TestPoint.x, (int)m_TestPoint.y);
+		m_TerrainHeight = (int)m_Terrain->GetMaxY((int)m_TestPoint.x, (int)m_TestPoint.y);
 	}
 
 	if ((int)testPoint.y > m_TerrainHeight)

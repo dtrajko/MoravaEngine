@@ -1,10 +1,10 @@
-#include "Terrain.h"
+#include "TerrainHeightMap.h"
 #include "VertexTBN.h"
 #include "Mesh.h"
 #include "TextureSampler.h"
 
 
-Terrain::Terrain(const char* heightMapPath, float tilingFactor, const char* colorMapPath)
+TerrainHeightMap::TerrainHeightMap(const char* heightMapPath, float tilingFactor, const char* colorMapPath)
 {
 	m_VertexCount = 0;
 	m_IndexCount = 0;
@@ -22,7 +22,7 @@ Terrain::Terrain(const char* heightMapPath, float tilingFactor, const char* colo
 	{
 		m_TxColorMap = new TextureSampler(colorMapPath);
 		m_TxColorMap->Load();
-		printf("Color map texture width=%d height=%d\n", m_TxColorMap->GetWidth(), m_TxColorMap->GetHeight());
+		printf("Color map texture width=%d height=%d\n", m_TxColorMap->GetWidth(), m_TxColorMap->GetMaxY());
 	}
 
 	Generate(m_Scale);
@@ -32,7 +32,7 @@ Terrain::Terrain(const char* heightMapPath, float tilingFactor, const char* colo
 	Create();
 }
 
-void Terrain::Generate(glm::vec3 scale)
+void TerrainHeightMap::Generate(glm::vec3 scale)
 {
 	if (m_VertexCount > 0 || m_IndexCount > 0) return;
 
@@ -40,7 +40,7 @@ void Terrain::Generate(glm::vec3 scale)
 	m_ScalePrev = m_Scale;
 
 	int hiMapWidth = m_TxHeightMap->GetWidth();
-	int hiMapHeight = m_TxHeightMap->GetHeight();
+	int hiMapHeight = m_TxHeightMap->GetMaxY();
 	unsigned int pixelCount = hiMapWidth * hiMapHeight;
 	unsigned int vertexStride = (unsigned int)(sizeof(VertexTBN) / sizeof(float));
 
@@ -68,15 +68,15 @@ void Terrain::Generate(glm::vec3 scale)
 		{
 			// vertex
 			m_Vertices[vertexPointer + 0] = (float)x;
-			m_Vertices[vertexPointer + 1] = GetHeight(x, z);
+			m_Vertices[vertexPointer + 1] = GetMaxY(x, z);
 			m_Vertices[vertexPointer + 2] = (float)z;
 
 			// texture coords
 			if (m_TxColorMap != nullptr)
 			{
 				// use texture coords for color map
-				m_Vertices[vertexPointer + 3] = 1.0f - GetHeight(x, z) * (1.0f / (float)m_TxColorMap->GetHeight());
-				m_Vertices[vertexPointer + 4] = 1.0f - GetHeight(x, z) * (1.0f / (float)m_TxColorMap->GetHeight());
+				m_Vertices[vertexPointer + 3] = 1.0f - GetMaxY(x, z) * (1.0f / (float)m_TxColorMap->GetMaxY());
+				m_Vertices[vertexPointer + 4] = 1.0f - GetMaxY(x, z) * (1.0f / (float)m_TxColorMap->GetMaxY());
 			}
 			else
 			{
@@ -152,17 +152,17 @@ void Terrain::Generate(glm::vec3 scale)
 	printf("GenerateTerrain pixelCount=%d vertexStride=%d\n", pixelCount, vertexStride);
 }
 
-float Terrain::GetHeight(int x, int z)
+float TerrainHeightMap::GetMaxY(int x, int z)
 {
 	x += (int)m_TxHeightMap->GetWidth() / 2;
-	z += (int)m_TxHeightMap->GetHeight() / 2;
+	z += (int)m_TxHeightMap->GetMaxY() / 2;
 
-	if (x < 0 || x >= (int)m_TxHeightMap->GetWidth() || z < 0 || z >= (int)m_TxHeightMap->GetHeight())
+	if (x < 0 || x >= (int)m_TxHeightMap->GetWidth() || z < 0 || z >= (int)m_TxHeightMap->GetMaxY())
 	{
 		return 0.0f;
 	}
 
-	float heightRatio = ((float)(m_TxHeightMap->GetWidth() + m_TxHeightMap->GetHeight()) / 2.0f) / (float)m_MaxPixelColor;
+	float heightRatio = ((float)(m_TxHeightMap->GetWidth() + m_TxHeightMap->GetMaxY()) / 2.0f) / (float)m_MaxPixelColor;
 	heightRatio /= 4.0f;
 
 	int red   = m_TxHeightMap->getRed(x, z);
@@ -179,7 +179,7 @@ float Terrain::GetHeight(int x, int z)
 	return height;
 }
 
-Terrain::~Terrain()
+TerrainHeightMap::~TerrainHeightMap()
 {
 	delete m_TxHeightMap;
 	delete m_TxColorMap;

@@ -8,9 +8,9 @@ RenderInstanced::RenderInstanced()
 {
 }
 
-RenderInstanced::RenderInstanced(Terrain3D* terrain, Texture* texture, Mesh* mesh)
+RenderInstanced::RenderInstanced(TerrainBase* terrain, Texture* texture, Mesh* mesh)
 {
-	m_Terrain = terrain;
+	m_Terrain = (TerrainVoxel*)terrain;
 	m_Texture = texture;
 	m_Mesh = mesh;
 

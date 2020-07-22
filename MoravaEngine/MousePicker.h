@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "Terrain.h"
+#include "TerrainBase.h"
 
 
 /**
@@ -16,7 +16,7 @@ public:
 	static MousePicker* Get();
 	glm::vec3 GetCurrentRay();
 	void Update(float mouseX, float mouseY, float displayWidth, float displayHeight, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
-	inline void SetTerrain(Terrain* terrain) { m_Terrain = terrain; };
+	inline void SetTerrain(TerrainBase* terrain) { m_Terrain = terrain; };
 	glm::vec3 CalculateMouseRay();
 	glm::vec2 GetNormalizedDeviceCoords();
 	glm::vec4 ToEyeCoords(glm::vec4 clipCoords);
@@ -24,7 +24,7 @@ public:
 	glm::vec3 GetPointOnRay(glm::vec3 rayStartPoint, glm::vec3 ray, float distance);
 	glm::vec3 BinarySearch(glm::vec3 rayStartPoint, glm::vec3 ray, float startDistance, float finishDistance, int count);
 	bool IntersectionInRange(glm::vec3 rayStartPoint, glm::vec3 ray, float startDistance, float finishDistance);
-	bool IsAboveGround(glm::vec3 testPoint);
+	bool IsOutsideVolume(glm::vec3 testPoint);
 	~MousePicker();
 
 public:
@@ -51,7 +51,7 @@ public:
 	int m_RecursionCount = 20;
 	float m_RayRange = 600.0f;
 
-	Terrain* m_Terrain = nullptr;
+	TerrainBase* m_Terrain = nullptr;
 
 	glm::vec3 m_TestPoint = glm::vec3(0.0f);
 	int m_TerrainHeight = 0;

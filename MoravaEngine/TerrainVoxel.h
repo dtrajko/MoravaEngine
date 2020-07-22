@@ -1,16 +1,17 @@
 #pragma once
 
 #include "PerlinNoise/PerlinNoise.hpp"
+#include "TerrainBase.h"
 
 #include <glm/glm.hpp>
 
 
-class Terrain3D
+class TerrainVoxel : public TerrainBase
 {
 public:
-	Terrain3D();
-	Terrain3D(glm::vec3 scale, float noiseFactor, float threshold);
-	virtual ~Terrain3D();
+	TerrainVoxel();
+	TerrainVoxel(glm::vec3 scale, float noiseFactor, float threshold);
+	virtual ~TerrainVoxel();
 
 	float Perlin3D(float x, float y, float z);
 	void Generate();

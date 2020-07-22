@@ -284,8 +284,9 @@
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="SubTexture2D.cpp" />
-    <ClCompile Include="Terrain.cpp" />
-    <ClCompile Include="Terrain3D.cpp" />
+    <ClCompile Include="TerrainBase.cpp" />
+    <ClCompile Include="TerrainHeightmap.cpp" />
+    <ClCompile Include="TerrainVoxel.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureAtlas.cpp" />
     <ClCompile Include="TextureCubeMap.cpp" />
@@ -425,8 +426,9 @@
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="SubTexture2D.h" />
-    <ClInclude Include="Terrain.h" />
-    <ClInclude Include="Terrain3D.h" />
+    <ClInclude Include="TerrainBase.h" />
+    <ClInclude Include="TerrainHeightmap.h" />
+    <ClInclude Include="TerrainVoxel.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureAtlas.h" />
     <ClInclude Include="TextureCubeMap.h" />

@@ -1,7 +1,7 @@
-#include "Terrain3D.h"
+#include "TerrainVoxel.h"
 
 
-Terrain3D::Terrain3D()
+TerrainVoxel::TerrainVoxel()
 {
 	m_Scale = glm::vec3(60, 24, 60);
 	m_NoiseFactor = 0.05f;
@@ -11,7 +11,7 @@ Terrain3D::Terrain3D()
 	Generate();
 }
 
-Terrain3D::Terrain3D(glm::vec3 scale, float noiseFactor, float threshold)
+TerrainVoxel::TerrainVoxel(glm::vec3 scale, float noiseFactor, float threshold)
 {
 	m_Scale = scale;
 	m_NoiseFactor = noiseFactor;
@@ -21,7 +21,7 @@ Terrain3D::Terrain3D(glm::vec3 scale, float noiseFactor, float threshold)
 	Generate();
 }
 
-void Terrain3D::Generate()
+void TerrainVoxel::Generate()
 {
 	for (int x = 0; x < m_Scale.x; x++) {
 		for (int y = 0; y < m_Scale.y; y++) {
@@ -34,17 +34,17 @@ void Terrain3D::Generate()
 	}
 }
 
-unsigned int Terrain3D::GetPositionsSize()
+unsigned int TerrainVoxel::GetPositionsSize()
 {
 	return (unsigned int)m_Positions.size();
 }
 
-Terrain3D::~Terrain3D()
+TerrainVoxel::~TerrainVoxel()
 {
 	delete m_PerlinNoise;
 }
 
-float Terrain3D::Perlin3D(float x, float y, float z)
+float TerrainVoxel::Perlin3D(float x, float y, float z)
 {
 	float ab = (float)m_PerlinNoise->noise2D(x, y);
 	float bc = (float)m_PerlinNoise->noise2D(y, z);

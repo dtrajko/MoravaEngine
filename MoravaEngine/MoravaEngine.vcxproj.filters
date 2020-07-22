@@ -281,9 +281,6 @@
     <ClCompile Include="LearnOpenGL\SphereJoey.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="Terrain.cpp">
-      <Filter>Mesh</Filter>
-    </ClCompile>
     <ClCompile Include="Tile2D.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
@@ -365,9 +362,6 @@
     <ClCompile Include="SceneOmniShadows.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Terrain3D.cpp">
-      <Filter>Terrain</Filter>
-    </ClCompile>
     <ClCompile Include="RendererVoxelTerrain.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
@@ -391,6 +385,15 @@
     </ClCompile>
     <ClCompile Include="PlayerController.cpp">
       <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainHeightmap.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainVoxel.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainBase.cpp">
+      <Filter>Terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -688,9 +691,6 @@
     <ClInclude Include="LearnOpenGL\SphereJoey.h">
       <Filter>Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="Terrain.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
     <ClInclude Include="Tile2D.h">
       <Filter>Mesh</Filter>
     </ClInclude>
@@ -785,9 +785,6 @@
     <ClInclude Include="SceneOmniShadows.h">
       <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Terrain3D.h">
-      <Filter>Terrain</Filter>
-    </ClInclude>
     <ClInclude Include="PerlinNoise\PerlinNoise.hpp">
       <Filter>PerlinNoise</Filter>
     </ClInclude>
@@ -814,6 +811,15 @@
     </ClInclude>
     <ClInclude Include="PlayerController.h">
       <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainHeightmap.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainVoxel.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainBase.h">
+      <Filter>Terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

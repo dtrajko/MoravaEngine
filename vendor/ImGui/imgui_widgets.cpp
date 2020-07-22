@@ -833,7 +833,7 @@ bool ImGui::ScrollbarEx(const ImRect& bb_frame, ImGuiID id, ImGuiAxis axis, floa
         return false;
 
     const float bb_frame_width = bb_frame.GetWidth();
-    const float bb_frame_height = bb_frame.GetHeight();
+    const float bb_frame_height = bb_frame.GetMaxY();
     if (bb_frame_width <= 0.0f || bb_frame_height <= 0.0f)
         return false;
 
@@ -852,7 +852,7 @@ bool ImGui::ScrollbarEx(const ImRect& bb_frame, ImGuiID id, ImGuiAxis axis, floa
     bb.Expand(ImVec2(-ImClamp(IM_FLOOR((bb_frame_width - 2.0f) * 0.5f), 0.0f, 3.0f), -ImClamp(IM_FLOOR((bb_frame_height - 2.0f) * 0.5f), 0.0f, 3.0f)));
 
     // V denote the main, longer axis of the scrollbar (= height for a vertical scrollbar)
-    const float scrollbar_size_v = horizontal ? bb.GetWidth() : bb.GetHeight();
+    const float scrollbar_size_v = horizontal ? bb.GetWidth() : bb.GetMaxY();
 
     // Calculate the height of our grabbable box. It generally represent the amount visible (vs the total scrollable amount)
     // But we maintain a minimum size in pixel to allow for the user to still aim inside.
@@ -6596,7 +6596,7 @@ bool    ImGui::BeginTabBarEx(ImGuiTabBar* tab_bar, const ImRect& tab_bar_bb, ImG
     tab_bar->FramePadding = g.Style.FramePadding;
 
     // Layout
-    ItemSize(ImVec2(tab_bar->OffsetMaxIdeal, tab_bar->BarRect.GetHeight()), tab_bar->FramePadding.y);
+    ItemSize(ImVec2(tab_bar->OffsetMaxIdeal, tab_bar->BarRect.GetMaxY()), tab_bar->FramePadding.y);
     window->DC.CursorPos.x = tab_bar->BarRect.Min.x;
 
     // Draw separator

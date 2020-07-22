@@ -49,7 +49,7 @@ void SceneCubemaps::SetupModels()
         models.insert(std::make_pair("nanosuit", nanosuit));
     }
 
-    m_Terrain = new Terrain("Textures/heightmap_16x16.png", 4.0f, nullptr);
+    m_Terrain = new TerrainHeightMap("Textures/heightmap_16x16.png", 4.0f, nullptr);
     meshes.insert(std::make_pair("terrain", m_Terrain));
 
     MousePicker::Get()->SetTerrain(m_Terrain);

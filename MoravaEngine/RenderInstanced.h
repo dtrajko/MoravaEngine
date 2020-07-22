@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Terrain3D.h"
+#include "TerrainVoxel.h"
 #include "Texture.h"
 #include "Mesh.h"
 
@@ -12,7 +12,7 @@ class RenderInstanced
 {
 public:
 	RenderInstanced();
-	RenderInstanced(Terrain3D* terrain, Texture* texture, Mesh* mesh);
+	RenderInstanced(TerrainBase* terrain, Texture* texture, Mesh* mesh);
 	void CreateVertexData();
 	void Update();
 	void Release();
@@ -25,7 +25,7 @@ private:
 	void CreateVertexArray();
 
 public:
-	Terrain3D* m_Terrain;
+	TerrainVoxel* m_Terrain;
 	Texture* m_Texture;
 	Mesh* m_Mesh;
 	unsigned int m_InstanceCount;

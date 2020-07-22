@@ -89,7 +89,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     glm::mat4 model = glm::mat4(1.0f);
  
     int terrainWidth = sceneCubemaps->GetTerrain()->GetHeightMap()->GetWidth();
-    int terrainHeight = sceneCubemaps->GetTerrain()->GetHeightMap()->GetHeight();
+    int terrainHeight = sceneCubemaps->GetTerrain()->GetHeightMap()->GetMaxY();
 
     // Draw cube terrain
     if (sceneCubemaps->m_CubeTerrainEnabled)
@@ -99,7 +99,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
             for (int tw = -(terrainWidth / 2) + 1; tw < (terrainWidth / 2); tw++)
             {
                 model = glm::mat4(1.0f);
-                model = glm::translate(model, glm::vec3(tw, (int)sceneCubemaps->GetTerrain()->GetHeight(tw, th), th));
+                model = glm::translate(model, glm::vec3(tw, (int)sceneCubemaps->GetTerrain()->GetMaxY(tw, th), th));
                 model = glm::scale(model, glm::vec3(1.0f));
                 shaders["cubemaps"]->setMat4("model", model);
                 shaders["cubemaps"]->setVec4("tintColor", glm::vec4(1.0f, 0.6f, 0.4f, 0.9f));

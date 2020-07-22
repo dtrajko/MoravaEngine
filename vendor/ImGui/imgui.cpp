@@ -3755,7 +3755,7 @@ void ImGui::UpdateMouseWheel()
             window = window->ParentWindow;
         if (!(window->Flags & ImGuiWindowFlags_NoScrollWithMouse) && !(window->Flags & ImGuiWindowFlags_NoMouseInputs))
         {
-            float max_step = window->InnerRect.GetHeight() * 0.67f;
+            float max_step = window->InnerRect.GetMaxY() * 0.67f;
             float scroll_step = ImFloor(ImMin(5 * window->CalcFontSize(), max_step));
             SetScrollY(window, window->Scroll.y - wheel_y * scroll_step);
         }
@@ -6295,7 +6295,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         if (!window_pos_set_by_api && !(flags & ImGuiWindowFlags_ChildWindow) && window->AutoFitFramesX <= 0 && window->AutoFitFramesY <= 0)
         {
             ImVec2 clamp_padding = ImMax(style.DisplayWindowPadding, style.DisplaySafeAreaPadding);
-            if (!window->ViewportOwned && viewport_rect.GetWidth() > 0 && viewport_rect.GetHeight() > 0.0f)
+            if (!window->ViewportOwned && viewport_rect.GetWidth() > 0 && viewport_rect.GetMaxY() > 0.0f)
             {
                 ClampWindowRect(window, window->Viewport->GetWorkRect(), clamp_padding);
             }
@@ -6431,7 +6431,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         // The value of ScrollMax are ahead from ScrollbarX/ScrollbarY which is intentionally using InnerRect from previous rect in order to accommodate
         // for right/bottom aligned items without creating a scrollbar.
         window->ScrollMax.x = ImMax(0.0f, window->ContentSize.x + window->WindowPadding.x * 2.0f - window->InnerRect.GetWidth());
-        window->ScrollMax.y = ImMax(0.0f, window->ContentSize.y + window->WindowPadding.y * 2.0f - window->InnerRect.GetHeight());
+        window->ScrollMax.y = ImMax(0.0f, window->ContentSize.y + window->WindowPadding.y * 2.0f - window->InnerRect.GetMaxY());
 
         // Apply scrolling
         window->Scroll = CalcNextScrollFromScrollTargetAndClamp(window, true);
@@ -8608,7 +8608,7 @@ ImRect ImGui::GetWindowAllowedExtentRect(ImGuiWindow* window)
         r_screen.Max = window->Viewport->Pos + window->Viewport->Size;
     }
     ImVec2 padding = g.Style.DisplaySafeAreaPadding;
-    r_screen.Expand(ImVec2((r_screen.GetWidth() > padding.x * 2) ? -padding.x : 0.0f, (r_screen.GetHeight() > padding.y * 2) ? -padding.y : 0.0f));
+    r_screen.Expand(ImVec2((r_screen.GetWidth() > padding.x * 2) ? -padding.x : 0.0f, (r_screen.GetMaxY() > padding.y * 2) ? -padding.y : 0.0f));
     return r_screen;
 }
 
@@ -8977,13 +8977,13 @@ void ImGui::NavMoveRequestTryWrapping(ImGuiWindow* window, ImGuiNavMoveFlags mov
     if (g.NavMoveDir == ImGuiDir_Left && (move_flags & (ImGuiNavMoveFlags_WrapX | ImGuiNavMoveFlags_LoopX)))
     {
         bb_rel.Min.x = bb_rel.Max.x = ImMax(window->SizeFull.x, window->ContentSize.x + window->WindowPadding.x * 2.0f) - window->Scroll.x;
-        if (move_flags & ImGuiNavMoveFlags_WrapX) { bb_rel.TranslateY(-bb_rel.GetHeight()); clip_dir = ImGuiDir_Up; }
+        if (move_flags & ImGuiNavMoveFlags_WrapX) { bb_rel.TranslateY(-bb_rel.GetMaxY()); clip_dir = ImGuiDir_Up; }
         NavMoveRequestForward(g.NavMoveDir, clip_dir, bb_rel, move_flags);
     }
     if (g.NavMoveDir == ImGuiDir_Right && (move_flags & (ImGuiNavMoveFlags_WrapX | ImGuiNavMoveFlags_LoopX)))
     {
         bb_rel.Min.x = bb_rel.Max.x = -window->Scroll.x;
-        if (move_flags & ImGuiNavMoveFlags_WrapX) { bb_rel.TranslateY(+bb_rel.GetHeight()); clip_dir = ImGuiDir_Down; }
+        if (move_flags & ImGuiNavMoveFlags_WrapX) { bb_rel.TranslateY(+bb_rel.GetMaxY()); clip_dir = ImGuiDir_Down; }
         NavMoveRequestForward(g.NavMoveDir, clip_dir, bb_rel, move_flags);
     }
     if (g.NavMoveDir == ImGuiDir_Up && (move_flags & (ImGuiNavMoveFlags_WrapY | ImGuiNavMoveFlags_LoopY)))
@@ -9084,7 +9084,7 @@ static ImVec2 ImGui::NavCalcPreferredRefPos()
     {
         // When navigation is active and mouse is disabled, decide on an arbitrary position around the bottom left of the currently navigated item.
         const ImRect& rect_rel = g.NavWindow->NavRectRel[g.NavLayer];
-        ImVec2 pos = g.NavWindow->Pos + ImVec2(rect_rel.Min.x + ImMin(g.Style.FramePadding.x * 4, rect_rel.GetWidth()), rect_rel.Max.y - ImMin(g.Style.FramePadding.y, rect_rel.GetHeight()));
+        ImVec2 pos = g.NavWindow->Pos + ImVec2(rect_rel.Min.x + ImMin(g.Style.FramePadding.x * 4, rect_rel.GetWidth()), rect_rel.Max.y - ImMin(g.Style.FramePadding.y, rect_rel.GetMaxY()));
         ImRect visible_rect = g.NavWindow->Viewport->GetMainRect();
         return ImFloor(ImClamp(pos, visible_rect.Min, visible_rect.Max));   // ImFloor() is important because non-integer mouse position application in back-end might be lossy and result in undesirable non-zero delta.
     }
@@ -9383,7 +9383,7 @@ static void ImGui::NavUpdate()
         if (!window_rect_rel.Contains(window->NavRectRel[g.NavLayer]))
         {
             float pad = window->CalcFontSize() * 0.5f;
-            window_rect_rel.Expand(ImVec2(-ImMin(window_rect_rel.GetWidth(), pad), -ImMin(window_rect_rel.GetHeight(), pad))); // Terrible approximation for the intent of starting navigation from first fully visible item
+            window_rect_rel.Expand(ImVec2(-ImMin(window_rect_rel.GetWidth(), pad), -ImMin(window_rect_rel.GetMaxY(), pad))); // Terrible approximation for the intent of starting navigation from first fully visible item
             window->NavRectRel[g.NavLayer].ClipWith(window_rect_rel);
             g.NavId = g.NavFocusScopeId = 0;
         }
@@ -9492,9 +9492,9 @@ static float ImGui::NavUpdatePageUpPageDown()
         {
             // Fallback manual-scroll when window has no navigable item
             if (IsKeyPressed(g.IO.KeyMap[ImGuiKey_PageUp], true))
-                SetScrollY(window, window->Scroll.y - window->InnerRect.GetHeight());
+                SetScrollY(window, window->Scroll.y - window->InnerRect.GetMaxY());
             else if (IsKeyPressed(g.IO.KeyMap[ImGuiKey_PageDown], true))
-                SetScrollY(window, window->Scroll.y + window->InnerRect.GetHeight());
+                SetScrollY(window, window->Scroll.y + window->InnerRect.GetMaxY());
             else if (home_pressed)
                 SetScrollY(window, 0.0f);
             else if (end_pressed)
@@ -9503,7 +9503,7 @@ static float ImGui::NavUpdatePageUpPageDown()
         else
         {
             ImRect& nav_rect_rel = window->NavRectRel[g.NavLayer];
-            const float page_offset_y = ImMax(0.0f, window->InnerRect.GetHeight() - window->CalcFontSize() * 1.0f + nav_rect_rel.GetHeight());
+            const float page_offset_y = ImMax(0.0f, window->InnerRect.GetMaxY() - window->CalcFontSize() * 1.0f + nav_rect_rel.GetMaxY());
             float nav_scoring_rect_offset_y = 0.0f;
             if (IsKeyPressed(g.IO.KeyMap[ImGuiKey_PageUp], true))
             {
@@ -10026,7 +10026,7 @@ const ImGuiPayload* ImGui::AcceptDragDropPayload(const char* type, ImGuiDragDrop
     // NB: We currently accept NULL id as target. However, overlapping targets requires a unique ID to function!
     const bool was_accepted_previously = (g.DragDropAcceptIdPrev == g.DragDropTargetId);
     ImRect r = g.DragDropTargetRect;
-    float r_surface = r.GetWidth() * r.GetHeight();
+    float r_surface = r.GetWidth() * r.GetMaxY();
     if (r_surface < g.DragDropAcceptIdCurrRectSurface)
     {
         g.DragDropAcceptFlags = flags;
@@ -11314,7 +11314,7 @@ static int ImGui::FindPlatformMonitorForRect(const ImRect& rect)
 
     // Use a minimum threshold of 1.0f so a zero-sized rect won't false positive, and will still find the correct monitor given its position.
     // This is necessary for tooltips which always resize down to zero at first.
-    const float surface_threshold = ImMax(rect.GetWidth() * rect.GetHeight() * 0.5f, 1.0f);
+    const float surface_threshold = ImMax(rect.GetWidth() * rect.GetMaxY() * 0.5f, 1.0f);
     int best_monitor_n = -1;
     float best_monitor_surface = 0.001f;
 
@@ -11326,7 +11326,7 @@ static int ImGui::FindPlatformMonitorForRect(const ImRect& rect)
             return monitor_n;
         ImRect overlapping_rect = rect;
         overlapping_rect.ClipWithFull(monitor_rect);
-        float overlapping_surface = overlapping_rect.GetWidth() * overlapping_rect.GetHeight();
+        float overlapping_surface = overlapping_rect.GetWidth() * overlapping_rect.GetMaxY();
         if (overlapping_surface < best_monitor_surface)
             continue;
         best_monitor_surface = overlapping_surface;
@@ -13241,7 +13241,7 @@ bool ImGui::DockNodeCalcDropRectsAndTestMousePos(const ImRect& parent, ImGuiDir 
 {
     ImGuiContext& g = *GImGui;
 
-    const float parent_smaller_axis = ImMin(parent.GetWidth(), parent.GetHeight());
+    const float parent_smaller_axis = ImMin(parent.GetWidth(), parent.GetMaxY());
     const float hs_for_central_nodes = ImMin(g.FontSize * 1.5f, ImMax(g.FontSize * 0.5f, parent_smaller_axis / 8.0f));
     float hs_w; // Half-size, longer axis
     float hs_h; // Half-size, smaller axis
@@ -13253,7 +13253,7 @@ bool ImGui::DockNodeCalcDropRectsAndTestMousePos(const ImRect& parent, ImGuiDir 
         //off = ImVec2(ImFloor(parent.GetWidth() * 0.5f - GetFrameHeightWithSpacing() * 1.4f - hs_h), ImFloor(parent.GetHeight() * 0.5f - GetFrameHeightWithSpacing() * 1.4f - hs_h));
         hs_w = ImFloor(hs_for_central_nodes * 1.50f);
         hs_h = ImFloor(hs_for_central_nodes * 0.80f);
-        off = ImVec2(ImFloor(parent.GetWidth() * 0.5f - hs_h), ImFloor(parent.GetHeight() * 0.5f - hs_h));
+        off = ImVec2(ImFloor(parent.GetWidth() * 0.5f - hs_h), ImFloor(parent.GetMaxY() * 0.5f - hs_h));
     }
     else
     {
@@ -15594,7 +15594,7 @@ void ImGui::ShowMetricsWindow(bool* p_open)
             for (int rect_n = 0; rect_n < WRT_Count; rect_n++)
             {
                 ImRect r = Funcs::GetWindowRect(g.NavWindow, rect_n);
-                ImGui::Text("(%6.1f,%6.1f) (%6.1f,%6.1f) Size (%6.1f,%6.1f) %s", r.Min.x, r.Min.y, r.Max.x, r.Max.y, r.GetWidth(), r.GetHeight(), wrt_rects_names[rect_n]);
+                ImGui::Text("(%6.1f,%6.1f) (%6.1f,%6.1f) Size (%6.1f,%6.1f) %s", r.Min.x, r.Min.y, r.Max.x, r.Max.y, r.GetWidth(), r.GetMaxY(), wrt_rects_names[rect_n]);
             }
             ImGui::Unindent();
         }

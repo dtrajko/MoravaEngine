@@ -70,7 +70,7 @@ void CameraControllerVoxelTerrain::CalculateZoom(float yOffset)
 		return;
 
 	m_ZoomLevel = yOffset;
-	m_CameraPlayerDistance += m_ZoomLevel;
+	m_CameraPlayerDistance -= m_ZoomLevel;
 }
 
 void CameraControllerVoxelTerrain::CalculatePitch(bool* buttons, float yChange)

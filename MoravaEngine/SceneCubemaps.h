@@ -6,7 +6,7 @@
 #include "LearnOpenGL/ModelJoey.h"
 #include "Quad.h"
 #include "Raycast.h"
-#include "Terrain.h"
+#include "TerrainHeightMap.h"
 
 
 class SceneCubemaps : public Scene
@@ -25,7 +25,7 @@ public:
 
 	inline unsigned int GetCubemapTextureID() const { return m_TextureCubeMapID; };
 	inline Raycast* GetRaycast() const { return m_Raycast; };
-	inline Terrain* GetTerrain() const { return m_Terrain; };
+	inline TerrainHeightMap* GetTerrain() const { return m_Terrain; };
 
 	virtual ~SceneCubemaps() override;
 
@@ -50,6 +50,6 @@ private:
 
 	Quad* m_Quad;
 	Raycast* m_Raycast;
-	Terrain* m_Terrain;
+	TerrainHeightMap* m_Terrain;
 
 };

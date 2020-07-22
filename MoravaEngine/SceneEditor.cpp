@@ -20,7 +20,7 @@
 #include "Profiler.h"
 #include "Log.h"
 #include "ResourceManager.h"
-#include "Terrain3D.h"
+#include "TerrainHeightMap.h"
 #include "PerlinNoise/PerlinNoise.hpp"
 
 #include <vector>
@@ -1182,7 +1182,7 @@ Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* n
         *name = "anim_boy";
         break;
     case MESH_TYPE_TERRAIN:
-        mesh = new Terrain("Textures/horizon_mountains.png", 4.0f, nullptr);
+        mesh = new TerrainHeightMap("Textures/horizon_mountains.png", 4.0f, nullptr);
         *name = "terrain";
         break;
     case MESH_TYPE_WATER:

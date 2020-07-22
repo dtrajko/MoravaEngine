@@ -1,5 +1,5 @@
 #include "ScenePBR.h"
-#include "Terrain.h"
+#include "TerrainHeightMap.h"
 #include "ShaderMain.h"
 #include "ShaderPBR.h"
 #include "Renderer.h"
