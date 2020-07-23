@@ -126,6 +126,8 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
 
     MousePicker::Get()->SetTerrain(m_TerrainVoxel);
+
+    m_TestAABB = new AABB(glm::vec3(0.0f, 3.0f, 0.0f), glm::quat(glm::vec3(0.0f)), glm::vec3(1.0f));
 }
 
 void SceneVoxelTerrain::SetCamera()
@@ -339,23 +341,23 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
 
             char buffer[50];
 
-            sprintf_s(buffer, "Mouse Coords: MouseX = %.0f MouseY = %.0f", mp->m_MouseX, mp->m_MouseY);
+            sprintf_s(buffer, "Mouse Coord: MouseX = %.0f MouseY = %.0f", mp->m_MouseX, mp->m_MouseY);
             ImGui::Text(buffer);
             ImGui::Separator();
 
-            sprintf_s(buffer, "Normalized Coords: [ %.4f %.4f ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
+            sprintf_s(buffer, "Normalized Coord: [ %.3f %.3f ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
             ImGui::Text(buffer);
             ImGui::Separator();
 
-            sprintf_s(buffer, "Clip Coords: [ %.4f %.4f ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
+            sprintf_s(buffer, "Clip Coord: [ %.3f %.3f ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
             ImGui::Text(buffer);
             ImGui::Separator();
 
-            sprintf_s(buffer, "Eye Coords: [ %.4f %.4f %.4f %.4f ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
+            sprintf_s(buffer, "Eye Coord: [ %.3f %.3f %.3f %.3f ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
             ImGui::Text(buffer);
             ImGui::Separator();
 
-            sprintf_s(buffer, "World Ray: [ %.4f, %.4f %.4f ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
+            sprintf_s(buffer, "World Ray: [ %.3f, %.3f %.3f ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
             ImGui::Text(buffer);
             ImGui::Separator();
 
@@ -378,6 +380,10 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
 
 void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
 {
+    MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
+    bool objectSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
+        m_TestAABB->GetMin(), m_TestAABB->GetMax(), glm::vec2(0.0f));
+
     Dig(mainWindow.getKeys(), timestep);
     UpdateCooldown(timestep, mainWindow);
     m_PlayerController->KeyControl(mainWindow.getKeys(), timestep);
@@ -445,6 +451,8 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
             shaderBasic->Bind();
             shaderBasic->setMat4("model", glm::mat4(1.0f));
             m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
+
+            m_TestAABB->Draw();
         }
 
         shaderMain->Bind();
@@ -523,6 +531,9 @@ void SceneVoxelTerrain::Dig(bool* keys, float timestep)
 SceneVoxelTerrain::~SceneVoxelTerrain()
 {
     Release();
-    delete meshes["cube"];
+    delete m_TestAABB;
+    delete m_Raycast;
     delete m_Player;
+    for (auto mesh : meshes)
+        delete &mesh;
 }
