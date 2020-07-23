@@ -10,6 +10,8 @@ class Window
 public:
 	Window();
 	Window(GLint windowWidth, GLint windowHeight, const char* windowTitle);
+	~Window();
+
 	int Initialize();
 	inline GLFWwindow* GetHandler() { return glfwWindow; };
 	inline unsigned int GetBufferWidth() { return bufferWidth; };
@@ -29,7 +31,8 @@ public:
 	void SwapBuffers() { glfwSwapBuffers(glfwWindow); };
 	void SetVSync(bool enabled);
 	bool IsVSync() const;
-	~Window();
+	void SetCursorDisabled();
+	void SetCursorNormal();
 
 private:
 	GLFWwindow* glfwWindow;

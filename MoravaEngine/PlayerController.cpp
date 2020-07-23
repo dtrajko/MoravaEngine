@@ -95,6 +95,20 @@ void PlayerController::KeyControl(bool* keys, float deltaTime)
 	}
 }
 
+void PlayerController::MouseControl(bool* buttons, float xChange, float yChange)
+{
+	if (m_UnlockRotation || buttons[GLFW_MOUSE_BUTTON_RIGHT]) {
+		glm::vec3 oldRotation = m_Player->GetRotation();
+		glm::vec3 newRotation = glm::vec3(oldRotation.x, oldRotation.y - xChange * m_TurnSpeed, oldRotation.z);
+		m_Player->SetRotation(newRotation);
+		m_Player->Update();
+	}
+}
+
+void PlayerController::MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset)
+{
+}
+
 bool PlayerController::IsColliding(glm::vec3 position, float distanceAllowed)
 {
 	bool isColliding = false;
@@ -137,20 +151,6 @@ bool PlayerController::IsColliding(glm::vec3 position, float distanceAllowed)
 	}
 
 	return isColliding;
-}
-
-void PlayerController::MouseControl(bool* buttons, float xChange, float yChange)
-{
-	if (buttons[GLFW_MOUSE_BUTTON_RIGHT]) {
-		glm::vec3 oldRotation = m_Player->GetRotation();
-		glm::vec3 newRotation = glm::vec3(oldRotation.x, oldRotation.y - xChange * m_TurnSpeed, oldRotation.z);
-		m_Player->SetRotation(newRotation);
-		m_Player->Update();
-	}
-}
-
-void PlayerController::MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset)
-{
 }
 
 void PlayerController::Update()

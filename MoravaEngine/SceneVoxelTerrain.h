@@ -44,9 +44,13 @@ private:
 	Player* m_Player;
 	PlayerController* m_PlayerController;
 	bool m_TerrainSettingsChanged;
-	bool m_DrawGizmos;
 	Pivot* m_PivotScene;
 	float m_DigDistance;
 	Raycast* m_Raycast;
+
+	// Scene settings
+	bool m_DrawGizmos;
+	bool m_UnlockRotation;
+	bool m_UnlockRotationPrev;
 
 };

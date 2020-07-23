@@ -21,6 +21,7 @@ public:
 	inline Camera* GetCamera() { return m_Camera; };
 	void InvertPitch();
 	glm::mat4 CalculateViewMatrix();
+	inline void SetUnlockRotation(bool unlockRotation) { m_UnlockRotation = unlockRotation; };
 
 private:
 	void CalculateFront();
@@ -34,5 +35,7 @@ protected:
 
 	float m_MouseDeltaX = 0.0f;
 	float m_MouseDeltaY = 0.0f;
+
+	bool m_UnlockRotation; // Left SHIFT for mouse rotation
 
 };

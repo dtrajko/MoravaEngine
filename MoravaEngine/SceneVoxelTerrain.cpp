@@ -115,6 +115,9 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_PlayerController->SetTerrain(m_TerrainVoxel);
 
     m_DrawGizmos = true;
+    m_UnlockRotation = false;
+    m_UnlockRotationPrev = m_UnlockRotation;
+
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(250.0f, 250.0f, 250.0f));
 
     m_DigDistance = 1.6f;
@@ -327,6 +330,50 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
         }
     }
     ImGui::End();
+
+    ImGui::Begin("Ray Casting");
+    {
+        if (ImGui::CollapsingHeader("Show Details"))
+        {
+            MousePicker* mp = MousePicker::Get();
+
+            char buffer[50];
+
+            sprintf_s(buffer, "Mouse Coords: MouseX = %.0f MouseY = %.0f", mp->m_MouseX, mp->m_MouseY);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf_s(buffer, "Normalized Coords: [ %.4f %.4f ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf_s(buffer, "Clip Coords: [ %.4f %.4f ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf_s(buffer, "Eye Coords: [ %.4f %.4f %.4f %.4f ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf_s(buffer, "World Ray: [ %.4f, %.4f %.4f ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            ImGui::SliderFloat3("Test Point", glm::value_ptr(mp->m_TestPoint), -20.0f, 20.0f);
+            ImGui::SliderFloat3("Ray Start", glm::value_ptr(m_Raycast->m_LineStart), -10.0f, 10.0f);
+            ImGui::SliderFloat3("Ray End", glm::value_ptr(m_Raycast->m_LineEnd), -10.0f, 10.0f);
+            ImGui::ColorEdit4("Ray Color", glm::value_ptr(m_Raycast->m_Color));
+            ImGui::Separator();
+            ImGui::SliderFloat3("Intersection point", glm::value_ptr(mp->m_IntersectionPoint), -10.0f, 10.0f);
+        }
+    }
+    ImGui::End();
+
+    ImGui::Begin("Scene Settings");
+    {
+        ImGui::Checkbox("Draw Gizmos", &m_DrawGizmos);
+        ImGui::Checkbox("Unlock Rotation", &m_UnlockRotation);
+    }
 }
 
 void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
@@ -336,9 +383,19 @@ void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
     m_PlayerController->KeyControl(mainWindow.getKeys(), timestep);
     m_PlayerController->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
     m_PlayerController->MouseScrollControl(mainWindow.getKeys(), timestep, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
+    m_PlayerController->SetUnlockRotation(m_UnlockRotation);
     m_Player->Update();
     m_CameraController->Update();
+    m_CameraController->SetUnlockRotation(m_UnlockRotation);
     m_RenderInstanced->Update();
+
+    if (m_UnlockRotation != m_UnlockRotationPrev) {
+        if (m_UnlockRotation)
+            mainWindow.SetCursorDisabled();
+        else
+            mainWindow.SetCursorNormal();
+        m_UnlockRotationPrev = m_UnlockRotation;
+    }
 }
 
 void SceneVoxelTerrain::UpdateCooldown(float timestep, Window& mainWindow)

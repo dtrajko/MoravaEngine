@@ -17,6 +17,7 @@ public:
 	void MouseControl(bool* buttons, float xChange, float yChange);
 	void MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset);
 	inline Player* GetPlayer() { return m_Player; };
+	inline void SetUnlockRotation(bool unlockRotation) { m_UnlockRotation = unlockRotation; };
 
 	void Update();
 
@@ -29,6 +30,7 @@ private:
 	float m_JumpSpeed = 0.4f;
 	float m_TurnSpeed = 0.1f;
 	float m_MoveFastFactor = 4.0f;
+	bool m_UnlockRotation;
 
 	glm::vec3 m_MoveDirection;
 	glm::vec3 m_MoveDirectionLast;

@@ -65,7 +65,7 @@ int Window::Initialize()
 
 	// Handle Key and Mouse input
 	CreateCallbacks();
-	// glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// SetCursorDisabled();
 
 	// Allow modern extension features
 	glewExperimental = GL_TRUE;
@@ -109,7 +109,7 @@ void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int m
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		// glfwSetWindowShouldClose(window, GL_TRUE);
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		theWindow->SetCursorNormal();
 	}
 
 	if (key >= 0 && key < 1024)
@@ -174,7 +174,7 @@ void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
 
 	if (theWindow->buttons[GLFW_MOUSE_BUTTON_MIDDLE] && theWindow->mouseCursorAboveWindow)
 	{
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		theWindow->SetCursorDisabled();
 	}
 }
 
@@ -259,6 +259,16 @@ void Window::SetVSync(bool enabled)
 bool Window::IsVSync() const
 {
 	return m_VSync;
+}
+
+void Window::SetCursorDisabled()
+{
+	glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void Window::SetCursorNormal()
+{
+	glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
 void Window::SetShouldClose(bool shouldClose)

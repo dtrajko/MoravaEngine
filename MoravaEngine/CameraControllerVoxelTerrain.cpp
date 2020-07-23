@@ -75,7 +75,7 @@ void CameraControllerVoxelTerrain::CalculateZoom(float yOffset)
 
 void CameraControllerVoxelTerrain::CalculatePitch(bool* buttons, float yChange)
 {
-	if (buttons[GLFW_MOUSE_BUTTON_RIGHT])
+	if (m_UnlockRotation || buttons[GLFW_MOUSE_BUTTON_RIGHT])
 	{
 		float pitchChange = yChange * m_PitchChangeSpeed;
 		float pitch = m_Camera->GetPitch();
