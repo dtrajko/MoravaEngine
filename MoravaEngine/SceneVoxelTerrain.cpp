@@ -127,7 +127,10 @@ SceneVoxelTerrain::SceneVoxelTerrain()
 
     MousePicker::Get()->SetTerrain(m_TerrainVoxel);
 
-    m_TestAABB = new AABB(glm::vec3(0.0f, 3.0f, 0.0f), glm::quat(glm::vec3(0.0f)), glm::vec3(1.0f));
+    m_TestAABB_00 = new AABB(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f)), glm::vec3(1.0f));
+    m_TestAABB_01 = new AABB(glm::vec3(0.0f, 1.0f, 0.0f), glm::quat(glm::vec3(0.0f)), glm::vec3(1.0f));
+    m_TestAABB_02 = new AABB(glm::vec3(0.0f, 2.0f, 0.0f), glm::quat(glm::vec3(0.0f)), glm::vec3(1.0f));
+    m_TestAABB_03 = new AABB(glm::vec3(0.0f, 3.0f, 0.0f), glm::quat(glm::vec3(0.0f)), glm::vec3(1.0f));
 }
 
 void SceneVoxelTerrain::SetCamera()
@@ -382,7 +385,7 @@ void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
 {
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
     bool objectSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
-        m_TestAABB->GetMin(), m_TestAABB->GetMax(), glm::vec2(0.0f));
+        m_TestAABB_00->GetMin(), m_TestAABB_00->GetMax(), glm::vec2(0.0f));
 
     Dig(mainWindow.getKeys(), timestep);
     UpdateCooldown(timestep, mainWindow);
@@ -452,7 +455,10 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
             shaderBasic->setMat4("model", glm::mat4(1.0f));
             m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
 
-            m_TestAABB->Draw();
+            m_TestAABB_00->Draw();
+            m_TestAABB_01->Draw();
+            m_TestAABB_02->Draw();
+            m_TestAABB_03->Draw();
         }
 
         shaderMain->Bind();
@@ -531,9 +537,15 @@ void SceneVoxelTerrain::Dig(bool* keys, float timestep)
 SceneVoxelTerrain::~SceneVoxelTerrain()
 {
     Release();
-    delete m_TestAABB;
+
+    delete m_TestAABB_00;
+    delete m_TestAABB_01;
+    delete m_TestAABB_02;
+    delete m_TestAABB_03;
+
     delete m_Raycast;
     delete m_Player;
+
     for (auto mesh : meshes)
         delete &mesh;
 }

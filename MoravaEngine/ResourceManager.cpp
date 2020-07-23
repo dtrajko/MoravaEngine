@@ -53,6 +53,8 @@ void ResourceManager::Init()
     s_TextureInfo.insert(std::make_pair("particle_atlas_cosmic", "Textures/ThinMatrix/particles/cosmic.png"));
     s_TextureInfo.insert(std::make_pair("particle_atlas_fire", "Textures/ThinMatrix/particles/fire.png"));
     s_TextureInfo.insert(std::make_pair("particle_atlas_smoke", "Textures/ThinMatrix/particles/smoke.png"));
+    s_TextureInfo.insert(std::make_pair("waterNormal", "Textures/water/waterNormal.png"));
+    s_TextureInfo.insert(std::make_pair("waterDuDv", "Textures/water/waterDuDv.png"));
 
     // Setup Materials
 

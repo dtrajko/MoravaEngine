@@ -25,6 +25,12 @@ AABB::AABB(glm::vec3 positionOrigin, glm::quat rotationOrigin, glm::vec3 scaleOr
         positionOrigin.z + m_UnitSize * scaleOrigin.z
     );
 
+    //  printf("AABB::AABB positionOrigin [ %.2ff %.2ff %.2ff ] scaleOrigin [ %.2ff %.2ff %.2ff ]\n",
+    //      positionOrigin.x, positionOrigin.y, positionOrigin.z, scaleOrigin.x, scaleOrigin.y, scaleOrigin.z);
+    //  printf("AABB::AABB m_UnitSize [ %.2ff ]\n", m_UnitSize);
+    //  printf("AABB::AABB m_BoundMin [ %.2ff %.2ff %.2ff ] m_BoundMax [ %.2ff %.2ff %.2ff ]\n",
+    //      m_BoundMin.x, m_BoundMin.y, m_BoundMin.z, m_BoundMax.x, m_BoundMax.y, m_BoundMax.z);
+
     m_Vertices = {
         m_BoundMin.x, m_BoundMin.y, m_BoundMax.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 0 - MinX MinY MaxZ
         m_BoundMax.x, m_BoundMin.y, m_BoundMax.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 1 - MaxX MinY MaxZ
@@ -46,7 +52,7 @@ AABB::AABB(glm::vec3 positionOrigin, glm::quat rotationOrigin, glm::vec3 scaleOr
     // m_ScaleOrigin = scaleOrigin;
 
     // printf("AABB::AABB::TransformBounds\n");
-    TransformBounds(positionOrigin, rotationOrigin, scaleOrigin);
+    TransformBounds(glm::vec3(0.0f), glm::quat(glm::vec3(0.0f)), glm::vec3(1.0f));
 }
 
 void AABB::UpdatePosition(glm::vec3 positionOrigin)
@@ -67,7 +73,18 @@ void AABB::Update(glm::vec3 positionObject, glm::quat rotationObject, glm::vec3 
 
 void AABB::TransformBounds(glm::vec3 positionObject, glm::quat rotationObject, glm::vec3 scaleObject)
 {
-    glm::mat4 transform = Math::CreateTransform(m_PositionOrigin + positionObject, rotationObject, m_ScaleOrigin * scaleObject);
+    glm::vec3 transformPosition = m_PositionOrigin + positionObject;
+    glm::vec3 transformScale = m_ScaleOrigin * scaleObject;
+    glm::mat4 transform = Math::CreateTransform(transformPosition, rotationObject, transformScale);
+
+    //  printf("AABB::TransformBounds m_PositionOrigin [ %.2ff %.2ff %.2ff ] positionObject [ %.2ff %.2ff %.2ff ]\n",
+    //      m_PositionOrigin.x, m_PositionOrigin.y, m_PositionOrigin.z, positionObject.x, positionObject.y, positionObject.z);
+    //  
+    //  printf("AABB::TransformBounds m_ScaleOrigin [ %.2ff %.2ff %.2ff ] scaleObject [ %.2ff %.2ff %.2ff ]\n",
+    //      m_ScaleOrigin.x, m_ScaleOrigin.y, m_ScaleOrigin.z, scaleObject.x, scaleObject.y, scaleObject.z);
+    //  
+    //  printf("AABB::TransformBounds transformPosition [ %.2ff %.2ff %.2ff ] transformPosition [ %.2ff %.2ff %.2ff ]\n",
+    //      transformPosition.x, transformPosition.y, transformPosition.z, transformScale.x, transformScale.y, transformScale.z);
 
     size_t vertexCount = m_Vertices.size() / m_VertexStride;
 
@@ -83,8 +100,8 @@ void AABB::TransformBounds(glm::vec3 positionObject, glm::quat rotationObject, g
 
         glm::vec4 newVertex = transform * originVertex;
 
-        // printf("AABB::TransformBounds originVertex [ %.2ff %.2ff %.2ff ]\n", originVertex.x, originVertex.y, originVertex.z);
-        // printf("AABB::TransformBounds newVertex [ %.2ff %.2ff %.2ff ]\n", newVertex.x, newVertex.y, newVertex.z);
+        // printf("AABB::TransformBounds [%zu] originVertex [ %.2ff %.2ff %.2ff ]\n", i, originVertex.x, originVertex.y, originVertex.z);
+        // printf("AABB::TransformBounds [%zu] newVertex [ %.2ff %.2ff %.2ff ]\n", i, newVertex.x, newVertex.y, newVertex.z);
 
         if (i == 0) {
             m_BoundMin = glm::vec3(
@@ -105,6 +122,9 @@ void AABB::TransformBounds(glm::vec3 positionObject, glm::quat rotationObject, g
         if (newVertex.z > m_BoundMax.z) m_BoundMax.z = newVertex.z + m_Offset;
     }
 
+    // printf("AABB::TransformBounds m_BoundMin [ %.2ff %.2ff %.2ff ]\n", m_BoundMin.x, m_BoundMin.y, m_BoundMin.z);
+    // printf("AABB::TransformBounds m_BoundMax [ %.2ff %.2ff %.2ff ]\n", m_BoundMax.x, m_BoundMax.y, m_BoundMax.z);
+
     m_Vertices = {
         m_BoundMin.x, m_BoundMin.y, m_BoundMax.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 0 - MinX MinY MaxZ
         m_BoundMax.x, m_BoundMin.y, m_BoundMax.z,    m_Color.r, m_Color.g, m_Color.b, m_Color.a,    // 1 - MaxX MinY MaxZ
@@ -120,8 +140,6 @@ void AABB::TransformBounds(glm::vec3 positionObject, glm::quat rotationObject, g
     m_Rotation = rotationObject;
     m_Scale = scaleObject;
 
-    // printf("AABB::TransformBounds m_BoundMin [ %.2ff %.2ff %.2ff ]\n", m_BoundMin.x, m_BoundMin.y, m_BoundMin.z);
-    // printf("AABB::TransformBounds m_BoundMax [ %.2ff %.2ff %.2ff ]\n", m_BoundMax.x, m_BoundMax.y, m_BoundMax.z);
     // printf("AABB::TransformBounds m_Scale [ %.2ff %.2ff %.2ff ]\n", m_Scale.x, m_Scale.y, m_Scale.z);
 }
 

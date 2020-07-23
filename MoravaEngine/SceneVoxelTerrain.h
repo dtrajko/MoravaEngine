@@ -54,6 +54,9 @@ private:
 	bool m_UnlockRotationPrev;
 
 	// Mouse Picker / Ray caster
-	AABB* m_TestAABB;
+	AABB* m_TestAABB_00;
+	AABB* m_TestAABB_01;
+	AABB* m_TestAABB_02;
+	AABB* m_TestAABB_03;
 
 };
