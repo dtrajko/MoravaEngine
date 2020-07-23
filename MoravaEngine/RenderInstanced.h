@@ -16,6 +16,7 @@ public:
 	void CreateVertexData();
 	void Update();
 	void Release();
+	void SetMouseCursorIntersectPosition(glm::vec3* intersectPosition);
 	~RenderInstanced();
 
 	void Render();
@@ -54,5 +55,7 @@ private:
 
 	glm::mat4 m_ModelMatrix;
 	glm::vec4 m_InstanceColor;
+
+	glm::vec3* m_MouseCursorIntersectPosition;
 
 };

@@ -102,6 +102,8 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_Transform = glm::mat4(1.0f);
     m_UpdateCooldown = { 0.0f, 0.5f };
     m_DigCooldown = { 0.0f, 0.1f };
+    m_RayIntersectCooldown = { 0.0f, 0.1f };
+    m_RayCastCooldown = { 0.0f, 0.1f };
 
     m_TerrainScale = glm::vec3(60.0f, 24.0f, 60.0f);
     m_TerrainNoiseFactor = 0.0f;
@@ -126,11 +128,6 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
 
     MousePicker::Get()->SetTerrain(m_TerrainVoxel);
-
-    m_TestAABB_00 = new AABB(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f)), glm::vec3(1.0f));
-    m_TestAABB_01 = new AABB(glm::vec3(0.0f, 1.0f, 0.0f), glm::quat(glm::vec3(0.0f)), glm::vec3(1.0f));
-    m_TestAABB_02 = new AABB(glm::vec3(0.0f, 2.0f, 0.0f), glm::quat(glm::vec3(0.0f)), glm::vec3(1.0f));
-    m_TestAABB_03 = new AABB(glm::vec3(0.0f, 3.0f, 0.0f), glm::quat(glm::vec3(0.0f)), glm::vec3(1.0f));
 }
 
 void SceneVoxelTerrain::SetCamera()
@@ -364,12 +361,12 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::Text(buffer);
             ImGui::Separator();
 
-            ImGui::SliderFloat3("Test Point", glm::value_ptr(mp->m_TestPoint), -20.0f, 20.0f);
-            ImGui::SliderFloat3("Ray Start", glm::value_ptr(m_Raycast->m_LineStart), -10.0f, 10.0f);
-            ImGui::SliderFloat3("Ray End", glm::value_ptr(m_Raycast->m_LineEnd), -10.0f, 10.0f);
+            ImGui::SliderFloat3("Test Point", glm::value_ptr(mp->m_TestPoint), -200.0f, 200.0f);
+            ImGui::SliderFloat3("Ray Start", glm::value_ptr(m_Raycast->m_LineStart), -200.0f, 200.0f);
+            ImGui::SliderFloat3("Ray End", glm::value_ptr(m_Raycast->m_LineEnd), -200.0f, 200.0f);
             ImGui::ColorEdit4("Ray Color", glm::value_ptr(m_Raycast->m_Color));
             ImGui::Separator();
-            ImGui::SliderFloat3("Intersection point", glm::value_ptr(mp->m_IntersectionPoint), -10.0f, 10.0f);
+            ImGui::SliderFloat3("Intersection point", glm::value_ptr(mp->m_IntersectionPoint), -200.0f, 200.0f);
         }
     }
     ImGui::End();
@@ -384,10 +381,9 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
 void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
 {
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
-    bool objectSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
-        m_TestAABB_00->GetMin(), m_TestAABB_00->GetMax(), glm::vec2(0.0f));
 
     Dig(mainWindow.getKeys(), timestep);
+    CastRay(mainWindow.getKeys(), mainWindow.getMouseButtons(), timestep);
     UpdateCooldown(timestep, mainWindow);
     m_PlayerController->KeyControl(mainWindow.getKeys(), timestep);
     m_PlayerController->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
@@ -397,6 +393,7 @@ void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
     m_CameraController->Update();
     m_CameraController->SetUnlockRotation(m_UnlockRotation);
     m_RenderInstanced->Update();
+    m_RenderInstanced->SetMouseCursorIntersectPosition(&m_MouseCursorIntersectPosition);
 
     if (m_UnlockRotation != m_UnlockRotationPrev) {
         if (m_UnlockRotation)
@@ -454,11 +451,6 @@ void SceneVoxelTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
             shaderBasic->Bind();
             shaderBasic->setMat4("model", glm::mat4(1.0f));
             m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
-
-            m_TestAABB_00->Draw();
-            m_TestAABB_01->Draw();
-            m_TestAABB_02->Draw();
-            m_TestAABB_03->Draw();
         }
 
         shaderMain->Bind();
@@ -534,14 +526,64 @@ void SceneVoxelTerrain::Dig(bool* keys, float timestep)
     }
 }
 
+void SceneVoxelTerrain::CastRay(bool* keys, bool* buttons, float timestep)
+{
+    // Cooldown
+    if (timestep - m_RayCastCooldown.lastTime < m_RayCastCooldown.cooldown) return;
+    m_RayCastCooldown.lastTime = timestep;
+
+    if (keys[GLFW_KEY_C] || buttons[GLFW_MOUSE_BUTTON_1])
+    {
+        m_MouseCursorIntersectPositionVector = GetRayIntersectPositions(timestep, m_Camera, &m_MouseCursorIntersectPosition);
+        if (m_MouseCursorIntersectPositionVector.size() > 0) {
+            m_RenderInstanced->CreateVertexData();
+        }
+    }
+}
+
+std::vector<glm::vec3> SceneVoxelTerrain::GetRayIntersectPositions(float timestep, Camera* camera, glm::vec3* nearestPosition)
+{
+    std::vector<glm::vec3> rayIntersectPositions = std::vector<glm::vec3>();
+
+    // Cooldown
+    if (timestep - m_RayIntersectCooldown.lastTime < m_RayIntersectCooldown.cooldown) return rayIntersectPositions;
+    m_RayIntersectCooldown.lastTime = timestep;
+
+    constexpr float maxFloatValue = std::numeric_limits<float>::max();
+    float minimalDistance = maxFloatValue;
+    float distance;
+
+    for (auto position : m_TerrainVoxel->m_Positions) {
+        bool isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
+            position - glm::vec3(0.5f, 0.5f, 0.5f), position + glm::vec3(0.5f, 0.5f, 0.5f), glm::vec2(0.0f));
+        if (isSelected) {
+            rayIntersectPositions.push_back(position);
+        
+            // find position nearest to camera
+            distance = glm::distance(position, camera->GetPosition());
+            if (distance < minimalDistance) {
+                minimalDistance = distance;
+                *nearestPosition = position;
+            }
+        }
+    }
+
+    return rayIntersectPositions;
+}
+
+bool SceneVoxelTerrain::IsRayIntersectPosition(glm::vec3 position)
+{
+    for (auto rayIntersectPosition : m_MouseCursorIntersectPositionVector) {
+        if (position == rayIntersectPosition) {
+            return true;
+        }
+    }
+    return false;
+}
+
 SceneVoxelTerrain::~SceneVoxelTerrain()
 {
     Release();
-
-    delete m_TestAABB_00;
-    delete m_TestAABB_01;
-    delete m_TestAABB_02;
-    delete m_TestAABB_03;
 
     delete m_Raycast;
     delete m_Player;

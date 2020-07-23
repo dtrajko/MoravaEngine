@@ -22,8 +22,11 @@ public:
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
 	void UpdateCooldown(float timestep, Window& mainWindow);
 	void Release();
-	void Dig(bool* keys, float timestep);
 	inline Raycast* GetRaycast() const { return m_Raycast; };
+	std::vector<glm::vec3> GetRayIntersectPositions(float timestep, Camera* camera, glm::vec3* nearestPosition);
+	void Dig(bool* keys, float timestep);
+	void CastRay(bool* keys, bool* buttons, float timestep);
+	bool IsRayIntersectPosition(glm::vec3 position);
 
 private:
 	virtual void SetCamera() override;
@@ -39,8 +42,12 @@ private:
 	glm::vec3 m_TerrainScalePrev;
 	float m_TerrainNoiseFactor;
 	float m_TerrainNoiseFactorPrev;
+
 	EventCooldown m_UpdateCooldown;
 	EventCooldown m_DigCooldown;
+	EventCooldown m_RayIntersectCooldown;
+	EventCooldown m_RayCastCooldown;
+
 	Player* m_Player;
 	PlayerController* m_PlayerController;
 	bool m_TerrainSettingsChanged;
@@ -53,10 +60,8 @@ private:
 	bool m_UnlockRotation;
 	bool m_UnlockRotationPrev;
 
-	// Mouse Picker / Ray caster
-	AABB* m_TestAABB_00;
-	AABB* m_TestAABB_01;
-	AABB* m_TestAABB_02;
-	AABB* m_TestAABB_03;
+	// mouse cursor intersection
+	std::vector<glm::vec3> m_MouseCursorIntersectPositionVector;
+	glm::vec3 m_MouseCursorIntersectPosition;
 
 };

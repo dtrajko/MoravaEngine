@@ -17,6 +17,8 @@ RenderInstanced::RenderInstanced(TerrainBase* terrain, Texture* texture, Mesh* m
 	m_ModelMatrix = glm::mat4(1.0f);
 	m_InstanceColor = glm::vec4(1.0f);
 
+	m_MouseCursorIntersectPosition = nullptr;
+
 	CreateVertexData();
 }
 
@@ -44,6 +46,11 @@ void RenderInstanced::CreateDataStructure()
 
 		m_ModelMatrix = glm::mat4(1.0f);
 		m_InstanceColor = glm::vec4(1.0f - colorR, colorG, 1.0f - colorB, 0.6f);
+
+		if (m_MouseCursorIntersectPosition != nullptr && m_Terrain->m_Positions[i] == *m_MouseCursorIntersectPosition) {
+			m_InstanceColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+		}
+
 		m_ModelMatrix = glm::translate(m_ModelMatrix, m_Terrain->m_Positions[i]);
 
 		if (i >= m_InstanceCount)
@@ -96,6 +103,11 @@ void RenderInstanced::Release()
 {
 	delete m_InstanceDataArray;
 	glDeleteBuffers(1, &m_VBO_Instanced);
+}
+
+void RenderInstanced::SetMouseCursorIntersectPosition(glm::vec3* intersectPosition)
+{
+	m_MouseCursorIntersectPosition = intersectPosition;
 }
 
 RenderInstanced::~RenderInstanced()
