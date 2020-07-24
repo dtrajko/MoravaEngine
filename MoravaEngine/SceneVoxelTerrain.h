@@ -23,10 +23,12 @@ public:
 	void UpdateCooldown(float timestep, Window& mainWindow);
 	void Release();
 	inline Raycast* GetRaycast() const { return m_Raycast; };
-	std::vector<glm::vec3> GetRayIntersectPositions(float timestep, Camera* camera, glm::vec3* nearestPosition);
+	std::vector<glm::vec3> GetRayIntersectPositions(float timestep, Camera* camera);
 	void Dig(bool* keys, float timestep);
 	void CastRay(bool* keys, bool* buttons, float timestep);
 	bool IsRayIntersectPosition(glm::vec3 position);
+	void OnClick(bool* keys, bool* buttons, float timestep);
+	bool IsPositionVacant(glm::vec3 queryPosition);
 
 private:
 	virtual void SetCamera() override;
@@ -47,6 +49,7 @@ private:
 	EventCooldown m_DigCooldown;
 	EventCooldown m_RayIntersectCooldown;
 	EventCooldown m_RayCastCooldown;
+	EventCooldown m_OnClickCooldown;
 
 	Player* m_Player;
 	PlayerController* m_PlayerController;
@@ -61,7 +64,8 @@ private:
 	bool m_UnlockRotationPrev;
 
 	// mouse cursor intersection
-	std::vector<glm::vec3> m_MouseCursorIntersectPositionVector;
-	glm::vec3 m_MouseCursorIntersectPosition;
+	std::vector<glm::vec3> m_IntersectPositionVector;
+	glm::vec3 m_IntersectPosition;
+	int m_IntersectPositionIndex;
 
 };

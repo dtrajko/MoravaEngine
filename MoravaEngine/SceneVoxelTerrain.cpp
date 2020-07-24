@@ -5,6 +5,7 @@
 #include "CameraControllerVoxelTerrain.h"
 #include "RendererBasic.h"
 #include "MousePicker.h"
+#include "Log.h"
 
 #include "ImGuiWrapper.h"
 
@@ -104,6 +105,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_DigCooldown = { 0.0f, 0.1f };
     m_RayIntersectCooldown = { 0.0f, 0.1f };
     m_RayCastCooldown = { 0.0f, 0.1f };
+    m_OnClickCooldown = { 0.0f, 0.1f };
 
     m_TerrainScale = glm::vec3(60.0f, 24.0f, 60.0f);
     m_TerrainNoiseFactor = 0.0f;
@@ -128,6 +130,9 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
 
     MousePicker::Get()->SetTerrain(m_TerrainVoxel);
+
+    m_IntersectPosition = glm::vec3();
+    m_IntersectPositionIndex = -1;
 }
 
 void SceneVoxelTerrain::SetCamera()
@@ -376,6 +381,14 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
         ImGui::Checkbox("Draw Gizmos", &m_DrawGizmos);
         ImGui::Checkbox("Unlock Rotation", &m_UnlockRotation);
     }
+    ImGui::End();
+
+    ImGui::Begin("Help");
+    {
+        ImGui::Text("* Add voxel - Mouse Left Button");
+        ImGui::Text("* Remove Voxel - Mouse Left Button + TAB");
+    }
+    ImGui::End();
 }
 
 void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
@@ -384,6 +397,7 @@ void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
 
     Dig(mainWindow.getKeys(), timestep);
     CastRay(mainWindow.getKeys(), mainWindow.getMouseButtons(), timestep);
+    OnClick(mainWindow.getKeys(), mainWindow.getMouseButtons(), timestep);
     UpdateCooldown(timestep, mainWindow);
     m_PlayerController->KeyControl(mainWindow.getKeys(), timestep);
     m_PlayerController->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
@@ -393,7 +407,7 @@ void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
     m_CameraController->Update();
     m_CameraController->SetUnlockRotation(m_UnlockRotation);
     m_RenderInstanced->Update();
-    m_RenderInstanced->SetMouseCursorIntersectPosition(&m_MouseCursorIntersectPosition);
+    m_RenderInstanced->SetMouseCursorIntersectPosition(&m_IntersectPosition);
 
     if (m_UnlockRotation != m_UnlockRotationPrev) {
         if (m_UnlockRotation)
@@ -513,7 +527,7 @@ void SceneVoxelTerrain::Dig(bool* keys, float timestep)
         for (auto it = m_TerrainVoxel->m_Positions.cbegin(); it != m_TerrainVoxel->m_Positions.cend(); ) {
             if (glm::distance(m_Player->GetPosition(), *it) < m_DigDistance)
             {
-                m_TerrainVoxel->m_Positions.erase(it++);
+                it = m_TerrainVoxel->m_Positions.erase(it++);
                 vectorModified = true;
             }
             else {
@@ -532,16 +546,16 @@ void SceneVoxelTerrain::CastRay(bool* keys, bool* buttons, float timestep)
     if (timestep - m_RayCastCooldown.lastTime < m_RayCastCooldown.cooldown) return;
     m_RayCastCooldown.lastTime = timestep;
 
-    if (keys[GLFW_KEY_C] || buttons[GLFW_MOUSE_BUTTON_1])
+    if (true || keys[GLFW_KEY_C] || buttons[GLFW_MOUSE_BUTTON_1])
     {
-        m_MouseCursorIntersectPositionVector = GetRayIntersectPositions(timestep, m_Camera, &m_MouseCursorIntersectPosition);
-        if (m_MouseCursorIntersectPositionVector.size() > 0) {
+        m_IntersectPositionVector = GetRayIntersectPositions(timestep, m_Camera);
+        if (m_IntersectPositionVector.size() > 0) {
             m_RenderInstanced->CreateVertexData();
         }
     }
 }
 
-std::vector<glm::vec3> SceneVoxelTerrain::GetRayIntersectPositions(float timestep, Camera* camera, glm::vec3* nearestPosition)
+std::vector<glm::vec3> SceneVoxelTerrain::GetRayIntersectPositions(float timestep, Camera* camera)
 {
     std::vector<glm::vec3> rayIntersectPositions = std::vector<glm::vec3>();
 
@@ -552,8 +566,10 @@ std::vector<glm::vec3> SceneVoxelTerrain::GetRayIntersectPositions(float timeste
     constexpr float maxFloatValue = std::numeric_limits<float>::max();
     float minimalDistance = maxFloatValue;
     float distance;
+    glm::vec3 position;
 
-    for (auto position : m_TerrainVoxel->m_Positions) {
+    for (size_t i = 0; i < m_TerrainVoxel->m_Positions.size(); i++) {
+        position = m_TerrainVoxel->m_Positions[i];
         bool isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             position - glm::vec3(0.5f, 0.5f, 0.5f), position + glm::vec3(0.5f, 0.5f, 0.5f), glm::vec2(0.0f));
         if (isSelected) {
@@ -563,7 +579,8 @@ std::vector<glm::vec3> SceneVoxelTerrain::GetRayIntersectPositions(float timeste
             distance = glm::distance(position, camera->GetPosition());
             if (distance < minimalDistance) {
                 minimalDistance = distance;
-                *nearestPosition = position;
+                m_IntersectPosition = position;
+                m_IntersectPositionIndex = (int)i;
             }
         }
     }
@@ -573,12 +590,57 @@ std::vector<glm::vec3> SceneVoxelTerrain::GetRayIntersectPositions(float timeste
 
 bool SceneVoxelTerrain::IsRayIntersectPosition(glm::vec3 position)
 {
-    for (auto rayIntersectPosition : m_MouseCursorIntersectPositionVector) {
+    for (auto rayIntersectPosition : m_IntersectPositionVector) {
         if (position == rayIntersectPosition) {
             return true;
         }
     }
     return false;
+}
+
+void SceneVoxelTerrain::OnClick(bool* keys, bool* buttons, float timestep)
+{
+    // Cooldown
+    if (timestep - m_OnClickCooldown.lastTime < m_OnClickCooldown.cooldown) return;
+    m_OnClickCooldown.lastTime = timestep;
+
+    if (buttons[GLFW_MOUSE_BUTTON_1]) {
+
+        // Remove current voxel
+        if (keys[GLFW_KEY_TAB]) {
+            if (m_IntersectPositionIndex >= 0) {
+                glm::vec3 removePosition = m_TerrainVoxel->m_Positions.at(m_IntersectPositionIndex);
+                m_TerrainVoxel->m_Positions.erase(m_TerrainVoxel->m_Positions.begin() + m_IntersectPositionIndex);
+                m_IntersectPositionIndex = -1;
+                m_RenderInstanced->CreateVertexData();
+                Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] removed!", removePosition.x, removePosition.y, removePosition.z);
+            }
+        }
+        else {
+            // Add new voxel
+            glm::vec3 addPositionFloat = m_IntersectPosition - m_Camera->GetFront();
+            glm::vec3 addPositionInt = glm::vec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
+
+            if (IsPositionVacant(addPositionInt)) {
+                m_TerrainVoxel->m_Positions.push_back(addPositionInt);
+                m_IntersectPositionIndex = (int)m_TerrainVoxel->m_Positions.size() - 1;
+                m_RenderInstanced->CreateVertexData();
+                Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
+            }
+            else {
+                Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
+            }
+        }
+    }
+}
+
+bool SceneVoxelTerrain::IsPositionVacant(glm::vec3 queryPosition)
+{
+    for (auto position : m_TerrainVoxel->m_Positions) {
+        if (position == queryPosition)
+            return false;
+    }
+    return true;
 }
 
 SceneVoxelTerrain::~SceneVoxelTerrain()

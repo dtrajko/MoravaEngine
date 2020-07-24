@@ -56,6 +56,6 @@ private:
 	glm::mat4 m_ModelMatrix;
 	glm::vec4 m_InstanceColor;
 
-	glm::vec3* m_MouseCursorIntersectPosition;
+	glm::vec3* m_IntersectPosition;
 
 };
