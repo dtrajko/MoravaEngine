@@ -27,7 +27,10 @@ void TerrainVoxel::Generate()
 		for (int y = 0; y < m_Scale.y; y++) {
 			for (int z = 0; z < m_Scale.z; z++) {
 				if (Perlin3D(x * m_NoiseFactor, y * m_NoiseFactor, z * m_NoiseFactor) >= m_NoiseThreshold) {
-					m_Positions.push_back(glm::vec3(x - m_Scale.x / 2.0f, y, z - m_Scale.z / 2.0f));
+					Voxel voxel;
+					voxel.position = glm::vec3(x - m_Scale.x / 2.0f, y, z - m_Scale.z / 2.0f);
+					voxel.color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
+					m_Voxels.push_back(voxel);
 				}
 			}
 		}
@@ -36,7 +39,7 @@ void TerrainVoxel::Generate()
 
 unsigned int TerrainVoxel::GetPositionsSize()
 {
-	return (unsigned int)m_Positions.size();
+	return (unsigned int)m_Voxels.size();
 }
 
 TerrainVoxel::~TerrainVoxel()

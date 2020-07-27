@@ -6,6 +6,7 @@
 #include "RendererBasic.h"
 #include "MousePicker.h"
 #include "Log.h"
+#include "TerrainVoxel.h"
 
 #include "ImGuiWrapper.h"
 
@@ -133,6 +134,8 @@ SceneVoxelTerrain::SceneVoxelTerrain()
 
     m_IntersectPosition = glm::vec3();
     m_IntersectPositionIndex = -1;
+
+    m_CubeColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void SceneVoxelTerrain::SetCamera()
@@ -380,6 +383,7 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
     {
         ImGui::Checkbox("Draw Gizmos", &m_DrawGizmos);
         ImGui::Checkbox("Unlock Rotation", &m_UnlockRotation);
+        ImGui::ColorEdit4("Cube Color", glm::value_ptr(m_CubeColor));
     }
     ImGui::End();
 
@@ -387,6 +391,7 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
     {
         ImGui::Text("* Add voxel - Mouse Left Button");
         ImGui::Text("* Remove Voxel - Mouse Left Button + TAB");
+        ImGui::Text("* Dig - F");
     }
     ImGui::End();
 }
@@ -524,10 +529,10 @@ void SceneVoxelTerrain::Dig(bool* keys, float timestep)
     if (keys[GLFW_KEY_F]) {
         bool vectorModified = false;
 
-        for (auto it = m_TerrainVoxel->m_Positions.cbegin(); it != m_TerrainVoxel->m_Positions.cend(); ) {
-            if (glm::distance(m_Player->GetPosition(), *it) < m_DigDistance)
+        for (auto it = m_TerrainVoxel->m_Voxels.cbegin(); it != m_TerrainVoxel->m_Voxels.cend(); ) { 
+            if (glm::distance(m_Player->GetPosition(), it->position) < m_DigDistance)
             {
-                it = m_TerrainVoxel->m_Positions.erase(it++);
+                it = m_TerrainVoxel->m_Voxels.erase(it++);
                 vectorModified = true;
             }
             else {
@@ -568,8 +573,8 @@ std::vector<glm::vec3> SceneVoxelTerrain::GetRayIntersectPositions(float timeste
     float distance;
     glm::vec3 position;
 
-    for (size_t i = 0; i < m_TerrainVoxel->m_Positions.size(); i++) {
-        position = m_TerrainVoxel->m_Positions[i];
+    for (size_t i = 0; i < m_TerrainVoxel->m_Voxels.size(); i++) {
+        position = m_TerrainVoxel->m_Voxels[i].position;
         bool isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             position - glm::vec3(0.5f, 0.5f, 0.5f), position + glm::vec3(0.5f, 0.5f, 0.5f), glm::vec2(0.0f));
         if (isSelected) {
@@ -608,36 +613,49 @@ void SceneVoxelTerrain::OnClick(bool* keys, bool* buttons, float timestep)
 
         // Remove current voxel
         if (keys[GLFW_KEY_TAB]) {
-            if (m_IntersectPositionIndex >= 0) {
-                glm::vec3 removePosition = m_TerrainVoxel->m_Positions.at(m_IntersectPositionIndex);
-                m_TerrainVoxel->m_Positions.erase(m_TerrainVoxel->m_Positions.begin() + m_IntersectPositionIndex);
-                m_IntersectPositionIndex = -1;
-                m_RenderInstanced->CreateVertexData();
-                Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] removed!", removePosition.x, removePosition.y, removePosition.z);
-            }
+            DeleteVoxel();
         }
         else {
-            // Add new voxel
-            glm::vec3 addPositionFloat = m_IntersectPosition - m_Camera->GetFront();
-            glm::vec3 addPositionInt = glm::vec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
-
-            if (IsPositionVacant(addPositionInt)) {
-                m_TerrainVoxel->m_Positions.push_back(addPositionInt);
-                m_IntersectPositionIndex = (int)m_TerrainVoxel->m_Positions.size() - 1;
-                m_RenderInstanced->CreateVertexData();
-                Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
-            }
-            else {
-                Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
-            }
+            AddVoxel();
         }
     }
 }
 
+void SceneVoxelTerrain::AddVoxel()
+{
+    // Add new voxel
+    glm::vec3 addPositionFloat = m_IntersectPosition - m_Camera->GetFront();
+    glm::vec3 addPositionInt = glm::vec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
+
+    if (IsPositionVacant(addPositionInt)) {
+        TerrainVoxel::Voxel voxel;
+        voxel.position = addPositionInt;
+        voxel.color = m_CubeColor;
+        m_TerrainVoxel->m_Voxels.push_back(voxel);
+        m_IntersectPositionIndex = (int)m_TerrainVoxel->m_Voxels.size() - 1;
+        m_RenderInstanced->CreateVertexData();
+        Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
+    }
+    else {
+        Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
+    }
+}
+
+void SceneVoxelTerrain::DeleteVoxel()
+{
+    if (m_IntersectPositionIndex < 0) return;
+
+    glm::vec3 removePosition = m_TerrainVoxel->m_Voxels.at(m_IntersectPositionIndex).position;
+    m_TerrainVoxel->m_Voxels.erase(m_TerrainVoxel->m_Voxels.begin() + m_IntersectPositionIndex);
+    m_IntersectPositionIndex = -1;
+    m_RenderInstanced->CreateVertexData();
+    Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] removed!", removePosition.x, removePosition.y, removePosition.z);
+}
+
 bool SceneVoxelTerrain::IsPositionVacant(glm::vec3 queryPosition)
 {
-    for (auto position : m_TerrainVoxel->m_Positions) {
-        if (position == queryPosition)
+    for (auto voxel : m_TerrainVoxel->m_Voxels) {
+        if (voxel.position == queryPosition)
             return false;
     }
     return true;

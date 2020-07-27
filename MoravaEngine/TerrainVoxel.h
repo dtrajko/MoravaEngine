@@ -18,8 +18,14 @@ public:
 	unsigned int GetPositionsSize();
 
 public:
+	struct Voxel {
+		glm::vec3 position;
+		glm::vec4 color;
+		int textureID;
+	};
+
 	glm::vec3 m_Scale;
-	std::vector<glm::vec3> m_Positions;
+	std::vector<Voxel> m_Voxels;
 	siv::PerlinNoise* m_PerlinNoise;
 	float m_NoiseFactor;
 	float m_NoiseThreshold;

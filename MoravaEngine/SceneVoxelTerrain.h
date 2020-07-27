@@ -29,6 +29,8 @@ public:
 	bool IsRayIntersectPosition(glm::vec3 position);
 	void OnClick(bool* keys, bool* buttons, float timestep);
 	bool IsPositionVacant(glm::vec3 queryPosition);
+	void AddVoxel();
+	void DeleteVoxel();
 
 private:
 	virtual void SetCamera() override;
@@ -67,5 +69,7 @@ private:
 	std::vector<glm::vec3> m_IntersectPositionVector;
 	glm::vec3 m_IntersectPosition;
 	int m_IntersectPositionIndex;
+
+	glm::vec4 m_CubeColor;
 
 };
