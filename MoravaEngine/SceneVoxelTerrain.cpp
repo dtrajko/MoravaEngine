@@ -136,6 +136,8 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_IntersectPositionIndex = -1;
 
     m_CubeColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    m_DeleteVoxelCodeGLFW = GLFW_KEY_TAB;
 }
 
 void SceneVoxelTerrain::SetCamera()
@@ -318,7 +320,7 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
         {
             std::string terrainPositionsSize = "Terrain Positions Size: " + std::to_string(m_TerrainVoxel->GetPositionsSize());
             ImGui::Text(terrainPositionsSize.c_str());
-            ImGui::SliderFloat3("Terrain Scale", glm::value_ptr(m_TerrainScale), 0.0f, 200.0f);
+            ImGui::SliderInt3("Terrain Scale", glm::value_ptr(m_TerrainScale), 1, 100);
             ImGui::SliderFloat("Terrain Noise Factor", &m_TerrainNoiseFactor, -0.5f, 0.5f);
         }
     }
@@ -390,8 +392,9 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
     ImGui::Begin("Help");
     {
         ImGui::Text("* Add voxel - Mouse Left Button");
-        ImGui::Text("* Remove Voxel - Mouse Left Button + TAB");
-        ImGui::Text("* Dig - F");
+        ImGui::Text("* Remove Voxel - Mouse Left Button + Key TAB");
+        ImGui::Text("* Rotate Camera around Player: Mouse Left Button + Key C");
+        ImGui::Text("* Dig - Key F");
     }
     ImGui::End();
 }
@@ -412,7 +415,9 @@ void SceneVoxelTerrain::Update(float timestep, Window& mainWindow)
     m_CameraController->Update();
     m_CameraController->SetUnlockRotation(m_UnlockRotation);
     m_RenderInstanced->Update();
-    m_RenderInstanced->SetMouseCursorIntersectPosition(&m_IntersectPosition);
+    m_RenderInstanced->SetIntersectPosition(&m_IntersectPosition);
+    m_DeleteMode = mainWindow.getKeys()[m_DeleteVoxelCodeGLFW];
+    m_RenderInstanced->SetDeleteMode(&m_DeleteMode);
 
     if (m_UnlockRotation != m_UnlockRotationPrev) {
         if (m_UnlockRotation)
@@ -611,8 +616,8 @@ void SceneVoxelTerrain::OnClick(bool* keys, bool* buttons, float timestep)
 
     if (buttons[GLFW_MOUSE_BUTTON_1]) {
 
-        // Remove current voxel
-        if (keys[GLFW_KEY_TAB]) {
+        // Delete current voxel
+        if (keys[m_DeleteVoxelCodeGLFW]) {
             DeleteVoxel();
         }
         else {
@@ -630,7 +635,7 @@ void SceneVoxelTerrain::AddVoxel()
     if (IsPositionVacant(addPositionInt)) {
         TerrainVoxel::Voxel voxel;
         voxel.position = addPositionInt;
-        voxel.color = m_CubeColor;
+        voxel.color = glm::vec4(m_CubeColor);
         m_TerrainVoxel->m_Voxels.push_back(voxel);
         m_IntersectPositionIndex = (int)m_TerrainVoxel->m_Voxels.size() - 1;
         m_RenderInstanced->CreateVertexData();

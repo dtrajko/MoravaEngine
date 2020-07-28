@@ -48,7 +48,7 @@ void CameraControllerVoxelTerrain::Update()
 {
 	CalculateZoom(m_yOffset);
 	CalculatePitch(m_Buttons, m_yChange);
-	CalculateAngleAroundPlayer(m_Buttons, m_xChange);
+	CalculateAngleAroundPlayer(m_Keys, m_Buttons, m_xChange);
 
 	float horizontalDistance = CalculateHorizontalDistance();
 	float verticalDistance = CalculateVerticalDistance();
@@ -84,9 +84,9 @@ void CameraControllerVoxelTerrain::CalculatePitch(bool* buttons, float yChange)
 	}
 }
 
-void CameraControllerVoxelTerrain::CalculateAngleAroundPlayer(bool* buttons, float xChange)
+void CameraControllerVoxelTerrain::CalculateAngleAroundPlayer(bool* keys, bool* buttons, float xChange)
 {
-	if (buttons[GLFW_MOUSE_BUTTON_LEFT])
+	if (buttons[GLFW_MOUSE_BUTTON_LEFT] && keys[GLFW_KEY_C])
 	{
 		float angleChange = xChange * m_YawChangeSpeed;
 		m_AngleAroundPlayer -= angleChange;

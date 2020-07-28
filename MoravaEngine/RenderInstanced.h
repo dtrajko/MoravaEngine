@@ -16,7 +16,8 @@ public:
 	void CreateVertexData();
 	void Update();
 	void Release();
-	void SetMouseCursorIntersectPosition(glm::vec3* intersectPosition);
+	void SetIntersectPosition(glm::vec3* intersectPosition);
+	void SetDeleteMode(bool* deleteMode);
 	~RenderInstanced();
 
 	void Render();
@@ -57,5 +58,6 @@ private:
 	glm::vec4 m_InstanceColor;
 
 	glm::vec3* m_IntersectPosition;
+	bool* m_DeleteMode; // add or delete
 
 };

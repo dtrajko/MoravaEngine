@@ -42,8 +42,8 @@ private:
 	TerrainVoxel* m_TerrainVoxel;
 	glm::mat4 m_Transform;
 	RenderInstanced* m_RenderInstanced;
-	glm::vec3 m_TerrainScale;
-	glm::vec3 m_TerrainScalePrev;
+	glm::i32vec3 m_TerrainScale;
+	glm::i32vec3 m_TerrainScalePrev;
 	float m_TerrainNoiseFactor;
 	float m_TerrainNoiseFactorPrev;
 
@@ -68,8 +68,10 @@ private:
 	// mouse cursor intersection
 	std::vector<glm::vec3> m_IntersectPositionVector;
 	glm::vec3 m_IntersectPosition;
+	bool m_DeleteMode; // add or delete
 	int m_IntersectPositionIndex;
 
 	glm::vec4 m_CubeColor;
+	unsigned int m_DeleteVoxelCodeGLFW;
 
 };

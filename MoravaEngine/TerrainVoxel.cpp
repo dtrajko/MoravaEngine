@@ -29,7 +29,11 @@ void TerrainVoxel::Generate()
 				if (Perlin3D(x * m_NoiseFactor, y * m_NoiseFactor, z * m_NoiseFactor) >= m_NoiseThreshold) {
 					Voxel voxel;
 					voxel.position = glm::vec3(x - m_Scale.x / 2.0f, y, z - m_Scale.z / 2.0f);
-					voxel.color = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
+					float colorR = voxel.position.x / m_Scale.x;
+					float colorG = voxel.position.y / m_Scale.y;
+					float colorB = voxel.position.z / m_Scale.z;
+					voxel.color = glm::vec4(1.0f - colorR, colorG, 1.0f - colorB, 0.6f);
+					voxel.textureID = -1; // no texture
 					m_Voxels.push_back(voxel);
 				}
 			}

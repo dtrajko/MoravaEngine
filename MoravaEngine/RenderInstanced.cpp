@@ -1,5 +1,7 @@
 #include "RenderInstanced.h"
 
+#include "Log.h"
+
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -18,6 +20,7 @@ RenderInstanced::RenderInstanced(TerrainBase* terrain, Texture* texture, Mesh* m
 	m_InstanceColor = glm::vec4(1.0f);
 
 	m_IntersectPosition = nullptr;
+	m_DeleteMode = nullptr;
 
 	CreateVertexData();
 }
@@ -42,15 +45,13 @@ void RenderInstanced::CreateDataStructure()
 	{
 		m_ModelMatrix = glm::mat4(1.0f);
 
-		float colorR = m_Terrain->m_Voxels[i].position.x / m_Terrain->m_Scale.x;
-		float colorG = m_Terrain->m_Voxels[i].position.y / m_Terrain->m_Scale.y;
-		float colorB = m_Terrain->m_Voxels[i].position.z / m_Terrain->m_Scale.z;
-
-		// m_InstanceColor = glm::vec4(1.0f - colorR, colorG, 1.0f - colorB, 0.6f);
 		m_InstanceColor = m_Terrain->m_Voxels[i].color;
 
 		if (m_IntersectPosition != nullptr && m_Terrain->m_Voxels[i].position == *m_IntersectPosition) {
-			m_InstanceColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+			if (*m_DeleteMode)
+				m_InstanceColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+			else
+				m_InstanceColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 		}
 
 		m_ModelMatrix = glm::translate(m_ModelMatrix, m_Terrain->m_Voxels[i].position);
@@ -107,9 +108,14 @@ void RenderInstanced::Release()
 	glDeleteBuffers(1, &m_VBO_Instanced);
 }
 
-void RenderInstanced::SetMouseCursorIntersectPosition(glm::vec3* intersectPosition)
+void RenderInstanced::SetIntersectPosition(glm::vec3* intersectPosition)
 {
 	m_IntersectPosition = intersectPosition;
+}
+
+void RenderInstanced::SetDeleteMode(bool* deleteMode)
+{
+	m_DeleteMode = deleteMode;
 }
 
 RenderInstanced::~RenderInstanced()

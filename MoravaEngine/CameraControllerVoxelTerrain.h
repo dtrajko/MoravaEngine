@@ -26,7 +26,7 @@ private:
 	// ThinMatrix methods for 3rd person camera
 	void CalculateZoom(float yOffset);
 	void CalculatePitch(bool* buttons, float yChange);
-	void CalculateAngleAroundPlayer(bool* buttons, float xChange);
+	void CalculateAngleAroundPlayer(bool* keys, bool* buttons, float xChange);
 	float CalculateHorizontalDistance();
 	float CalculateVerticalDistance();
 	void CalculateCameraPosition(float horizontalDistance, float verticalDistance);
