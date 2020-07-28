@@ -392,9 +392,9 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
     ImGui::Begin("Help");
     {
         ImGui::Text("* Add voxel - Mouse Left Button");
-        ImGui::Text("* Remove Voxel - Mouse Left Button + Key TAB");
-        ImGui::Text("* Rotate Camera around Player: Mouse Left Button + Key C");
-        ImGui::Text("* Dig - Key F");
+        ImGui::Text("* Delete Voxel - Mouse Left Button + [TAB]");
+        ImGui::Text("* Rotate Camera around Player: Mouse Left Button + [C]");
+        ImGui::Text("* Dig - [F]");
     }
     ImGui::End();
 }
@@ -650,11 +650,11 @@ void SceneVoxelTerrain::DeleteVoxel()
 {
     if (m_IntersectPositionIndex < 0) return;
 
-    glm::vec3 removePosition = m_TerrainVoxel->m_Voxels.at(m_IntersectPositionIndex).position;
+    glm::vec3 deletePosition = m_TerrainVoxel->m_Voxels.at(m_IntersectPositionIndex).position;
     m_TerrainVoxel->m_Voxels.erase(m_TerrainVoxel->m_Voxels.begin() + m_IntersectPositionIndex);
     m_IntersectPositionIndex = -1;
     m_RenderInstanced->CreateVertexData();
-    Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] removed!", removePosition.x, removePosition.y, removePosition.z);
+    Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
 }
 
 bool SceneVoxelTerrain::IsPositionVacant(glm::vec3 queryPosition)
