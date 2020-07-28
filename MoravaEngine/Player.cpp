@@ -2,6 +2,7 @@
 
 
 Player::Player()
+	: Player(glm::vec3(0.0f, 0.0f, 0.0f), nullptr, nullptr)
 {
 }
 
@@ -14,6 +15,8 @@ Player::Player(glm::vec3 position, Mesh* mesh, Camera* camera)
 
 	m_Mesh = mesh;
 	m_Camera = camera;
+
+	m_Color = glm::vec4(1.0f, 0.4f, 0.0f, 1.0f);
 
 	Update();
 }

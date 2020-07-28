@@ -19,6 +19,7 @@ public:
 	inline glm::vec3 GetFront() const { return m_Front; };
 	inline glm::vec3 GetUp() const { return m_Up; };
 	inline glm::vec3 GetRight() const { return m_Right; };
+	inline glm::vec4 GetColor() const { return m_Color; };
 
 	// setters
 	inline void SetPosition(glm::vec3 position) { m_Position = position; };
@@ -41,5 +42,7 @@ private:
 
 	Mesh* m_Mesh;
 	Camera* m_Camera;
+
+	glm::vec4 m_Color;
 
 };
