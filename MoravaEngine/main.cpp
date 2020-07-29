@@ -64,7 +64,7 @@ enum class SceneName
 	Cottage,
 	Eiffel,
 	Sponza,
-	TerrainHeightMap,
+	Terrain,
 	PBR,
 	LearnOpenGL,
 	Bullet,
@@ -111,7 +111,7 @@ int main()
 		scene = new SceneSponza();
 		renderer = static_cast<RendererBasic*>(new Renderer());
 		break;
-	case SceneName::TerrainHeightMap:
+	case SceneName::Terrain:
 		scene = new SceneTerrain();
 		renderer = static_cast<RendererBasic*>(new Renderer());
 		break;

@@ -142,9 +142,9 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_DeleteVoxelCodeGLFW = GLFW_KEY_TAB;
 
     MapGenerator mapGenerator;
-    mapGenerator.m_MapWidth = 256;
-    mapGenerator.m_MapHeight = 256;
-    mapGenerator.m_NoiseScale = 30.0f;
+    mapGenerator.m_MapWidth = 128;
+    mapGenerator.m_MapHeight = 128;
+    mapGenerator.m_NoiseScale = 20.0f;
     mapGenerator.GenerateMap();
 }
 

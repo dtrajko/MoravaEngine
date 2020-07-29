@@ -75,7 +75,7 @@ void SceneTerrain::SetupMeshes()
 
 void SceneTerrain::SetupModels()
 {
-	TerrainHeightMap* terrain = new TerrainHeightMap("Textures/island_flat.png", 4.0f, nullptr); // heightmap_island_8x6.png
+	TerrainHeightMap* terrain = new TerrainHeightMap("Textures/Noise/noise_001.png", 4.0f, nullptr); // heightmap_island_8x6.png
 	meshes.insert(std::make_pair("terrain", terrain));
 }
 
