@@ -34,6 +34,20 @@ Texture::Texture(const char* fileLoc, bool flipVert, bool isSampler)
 	Load(flipVert);
 }
 
+Texture::Texture(const char* fileLoc, unsigned int width, unsigned int height, bool isSampler)
+{
+	m_FileLocation = fileLoc;
+	m_Width = width;
+	m_Height = height;
+	m_IsSampler = isSampler;
+	m_BitDepth = 4;
+
+	m_Buffer = new unsigned char[m_Width * m_Height * m_BitDepth];
+
+	if (!m_IsSampler)
+		stbi_image_free(m_Buffer);
+}
+
 Texture::Texture(const char* fileLoc, bool flipVert, GLenum filter)
 	: Texture()
 {
@@ -59,6 +73,19 @@ bool Texture::Load(bool flipVert)
 		return false;
 	}
 
+	OpenGLCreate();
+
+	float fileSize = GetFileSize(m_FileLocation) / (1024.0f * 1024.0f);
+	Log::GetLogger()->info("Loading texture '{0}' [ ID={1}, size={2} MB ]", m_FileLocation, m_TextureID, fileSize);
+
+	if (!m_IsSampler)
+		stbi_image_free(m_Buffer);
+
+	return true;
+}
+
+void Texture::OpenGLCreate()
+{
 	GLenum internalFormat = 0;
 	GLenum dataFormat = 0;
 	if (m_BitDepth == 1)
@@ -88,37 +115,62 @@ bool Texture::Load(bool flipVert)
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, dataFormat, GL_UNSIGNED_BYTE, m_Buffer);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	float fileSize = GetFileSize(m_FileLocation) / (1024.0f * 1024.0f);
-
-	Log::GetLogger()->info("Loading texture '{0}' [ ID={1}, size={2} MB ]", m_FileLocation, m_TextureID, fileSize);
-
 	glBindTexture(GL_TEXTURE_2D, 0);
-
-	if (!m_IsSampler)
-		stbi_image_free(m_Buffer);
-
-	return true;
 }
 
-int Texture::getRed(int x, int z)
+void Texture::Save()
+{
+	OpenGLCreate();
+	stbi_write_png(m_FileLocation, m_Width, m_Height, m_BitDepth, m_Buffer, m_Width * m_BitDepth);
+}
+
+int Texture::GetRed(int x, int z)
 {
 	return (int)m_Buffer[((z * m_Width + x) * m_BitDepth) + 0];
 }
 
-int Texture::getGreen(int x, int z)
+int Texture::GetGreen(int x, int z)
 {
 	return (int)m_Buffer[((z * m_Width + x) * m_BitDepth) + 1];
 }
 
-int Texture::getBlue(int x, int z)
+int Texture::GetBlue(int x, int z)
 {
 	return (int)m_Buffer[((z * m_Width + x) * m_BitDepth) + 2];
 
 }
 
-int Texture::getAlpha(int x, int z)
+int Texture::GetAlpha(int x, int z)
 {
 	return (int)m_Buffer[((z * m_Width + x) * m_BitDepth) + 3];
+}
+
+void Texture::SetPixel(int x, int z, glm::ivec4 pixel)
+{
+	SetRed(  x, z, pixel.x);
+	SetGreen(x, z, pixel.y);
+	SetBlue( x, z, pixel.z);
+	SetAlpha(x, z, pixel.w);
+}
+
+void Texture::SetRed(int x, int z, int value)
+{
+	m_Buffer[((z * m_Width + x) * m_BitDepth) + 0] = value;
+}
+
+void Texture::SetGreen(int x, int z, int value)
+{
+	m_Buffer[((z * m_Width + x) * m_BitDepth) + 1] = value;
+}
+
+void Texture::SetBlue(int x, int z, int value)
+{
+	m_Buffer[((z * m_Width + x) * m_BitDepth) + 2] = value;
+}
+
+void Texture::SetAlpha(int x, int z, int value)
+{
+	m_Buffer[((z * m_Width + x) * m_BitDepth) + 3] = value;
 }
 
 void Texture::Bind(unsigned int textureUnit)

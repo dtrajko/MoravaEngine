@@ -5,6 +5,7 @@
 #endif // !COMMONVALS
 
 #include "stb_image.h"
+#include "stb_image_write.h"
 
 const float M_PI = 3.14159265358979323846f;
 const float toRadians = M_PI / 180.0f;

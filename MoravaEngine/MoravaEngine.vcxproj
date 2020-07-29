@@ -178,6 +178,8 @@
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="InsertionSort.cpp" />
     <ClCompile Include="Log.cpp" />
+    <ClCompile Include="MapGenerator.cpp" />
+    <ClCompile Include="NoiseSL.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleMaster.cpp" />
     <ClCompile Include="ParticleRenderer.cpp" />
@@ -286,6 +288,7 @@
     <ClCompile Include="SubTexture2D.cpp" />
     <ClCompile Include="TerrainBase.cpp" />
     <ClCompile Include="TerrainHeightmap.cpp" />
+    <ClCompile Include="TerrainSL.cpp" />
     <ClCompile Include="TerrainVoxel.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureAtlas.cpp" />
@@ -316,6 +319,8 @@
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="InsertionSort.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="MapGenerator.h" />
+    <ClInclude Include="NoiseSL.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleMaster.h" />
     <ClInclude Include="ParticleRenderer.h" />
@@ -428,6 +433,7 @@
     <ClInclude Include="SubTexture2D.h" />
     <ClInclude Include="TerrainBase.h" />
     <ClInclude Include="TerrainHeightmap.h" />
+    <ClInclude Include="TerrainSL.h" />
     <ClInclude Include="TerrainVoxel.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureAtlas.h" />

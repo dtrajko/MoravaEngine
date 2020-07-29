@@ -165,10 +165,10 @@ float TerrainHeightMap::GetMaxY(int x, int z)
 	float heightRatio = ((float)(m_TxHeightMap->GetWidth() + m_TxHeightMap->GetMaxY()) / 2.0f) / (float)m_MaxPixelColor;
 	heightRatio /= 4.0f;
 
-	int red   = m_TxHeightMap->getRed(x, z);
-	int green = m_TxHeightMap->getGreen(x, z);
-	int blue  = m_TxHeightMap->getBlue(x, z);
-	int alpha = m_TxHeightMap->getAlpha(x, z);
+	int red   = m_TxHeightMap->GetRed(x, z);
+	int green = m_TxHeightMap->GetGreen(x, z);
+	int blue  = m_TxHeightMap->GetBlue(x, z);
+	int alpha = m_TxHeightMap->GetAlpha(x, z);
 
 	// printf("HeightMap color R=%d G=%d B=%d A=%d\n", red, green, blue, alpha);
 

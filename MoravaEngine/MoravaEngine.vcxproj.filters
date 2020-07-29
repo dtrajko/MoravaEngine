@@ -395,6 +395,15 @@
     <ClCompile Include="RenderInstanced.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="TerrainSL.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="NoiseSL.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="MapGenerator.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -820,6 +829,15 @@
     </ClInclude>
     <ClInclude Include="RenderInstanced.h">
       <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainSL.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="NoiseSL.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="MapGenerator.h">
+      <Filter>Terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

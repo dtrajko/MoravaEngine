@@ -7,6 +7,7 @@
 #include "MousePicker.h"
 #include "Log.h"
 #include "TerrainVoxel.h"
+#include "MapGenerator.h"
 
 #include "ImGuiWrapper.h"
 
@@ -108,8 +109,9 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_RayCastCooldown = { 0.0f, 0.1f };
     m_OnClickCooldown = { 0.0f, 0.1f };
 
-    m_TerrainScale = glm::vec3(60.0f, 24.0f, 60.0f);
-    m_TerrainNoiseFactor = 0.0f;
+    // m_TerrainScale = glm::vec3(60.0f, 24.0f, 60.0f); // Release
+    m_TerrainScale = glm::vec3(40.0f, 10.0f, 40.0f); // Debug
+    m_TerrainNoiseFactor = 0.08f;
 
     m_TerrainVoxel = new TerrainVoxel(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
     m_RenderInstanced = new RenderInstanced(m_TerrainVoxel, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
@@ -138,6 +140,12 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_CubeColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     m_DeleteVoxelCodeGLFW = GLFW_KEY_TAB;
+
+    MapGenerator mapGenerator;
+    mapGenerator.m_MapWidth = 256;
+    mapGenerator.m_MapHeight = 256;
+    mapGenerator.m_NoiseScale = 30.0f;
+    mapGenerator.GenerateMap();
 }
 
 void SceneVoxelTerrain::SetCamera()
