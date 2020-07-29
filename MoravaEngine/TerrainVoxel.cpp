@@ -26,7 +26,7 @@ void TerrainVoxel::Generate()
 	for (int x = 0; x < m_Scale.x; x++) {
 		for (int y = 0; y < m_Scale.y; y++) {
 			for (int z = 0; z < m_Scale.z; z++) {
-				if (Perlin3D(x * m_NoiseFactor, y * m_NoiseFactor, z * m_NoiseFactor) >= m_NoiseThreshold) {
+				if (m_PerlinNoise->noise3D(x * m_NoiseFactor, y * m_NoiseFactor, z * m_NoiseFactor) >= m_NoiseThreshold) {
 					Voxel voxel;
 					voxel.position = glm::vec3(x - m_Scale.x / 2.0f, y, z - m_Scale.z / 2.0f);
 					float colorR = voxel.position.x / m_Scale.x;
