@@ -9,6 +9,7 @@ public:
 	TerrainBase();
 	virtual ~TerrainBase();
 
+	virtual void Generate();
 	virtual float GetMaxY(int x, int z);
 
 };

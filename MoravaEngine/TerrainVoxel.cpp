@@ -41,7 +41,7 @@ void TerrainVoxel::Generate()
 	}
 }
 
-unsigned int TerrainVoxel::GetPositionsSize()
+unsigned int TerrainVoxel::GetVoxelCount()
 {
 	return (unsigned int)m_Voxels.size();
 }

@@ -7,7 +7,7 @@
 #include "MousePicker.h"
 #include "Log.h"
 #include "TerrainVoxel.h"
-#include "MapGenerator.h"
+#include "TerrainSL.h"
 
 #include "ImGuiWrapper.h"
 
@@ -141,11 +141,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
 
     m_DeleteVoxelCodeGLFW = GLFW_KEY_TAB;
 
-    MapGenerator mapGenerator;
-    mapGenerator.m_MapWidth = 128;
-    mapGenerator.m_MapHeight = 128;
-    mapGenerator.m_NoiseScale = 20.0f;
-    mapGenerator.GenerateMap();
+    m_TerrainSL = new TerrainSL("Textures/Noise/noise_002.png", 128, 128, 20.0f);
 }
 
 void SceneVoxelTerrain::SetCamera()
@@ -326,7 +322,7 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
     {
         if (ImGui::CollapsingHeader("Show Details"))
         {
-            std::string terrainPositionsSize = "Terrain Positions Size: " + std::to_string(m_TerrainVoxel->GetPositionsSize());
+            std::string terrainPositionsSize = "Terrain Positions Size: " + std::to_string(m_TerrainVoxel->GetVoxelCount());
             ImGui::Text(terrainPositionsSize.c_str());
             ImGui::SliderInt3("Terrain Scale", glm::value_ptr(m_TerrainScale), 1, 100);
             ImGui::SliderFloat("Terrain Noise Factor", &m_TerrainNoiseFactor, -0.5f, 0.5f);

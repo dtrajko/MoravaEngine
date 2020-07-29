@@ -42,10 +42,13 @@ private:
 	TerrainVoxel* m_TerrainVoxel;
 	glm::mat4 m_Transform;
 	RenderInstanced* m_RenderInstanced;
-	glm::i32vec3 m_TerrainScale;
-	glm::i32vec3 m_TerrainScalePrev;
+	glm::ivec3 m_TerrainScale;
+	glm::ivec3 m_TerrainScalePrev;
 	float m_TerrainNoiseFactor;
 	float m_TerrainNoiseFactorPrev;
+
+	TerrainVoxel* m_TerrainSL;
+	RenderInstanced* m_RenderInstancedSL;
 
 	EventCooldown m_UpdateCooldown;
 	EventCooldown m_DigCooldown;
