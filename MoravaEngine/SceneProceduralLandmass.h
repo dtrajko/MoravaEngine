@@ -2,19 +2,19 @@
 
 #include "Scene.h"
 
-#include "TerrainVoxel.h"
+#include "TerrainSL.h"
 #include "RenderInstanced.h"
 #include "Player.h"
 #include "PlayerController.h"
 #include "Raycast.h"
 
 
-class SceneVoxelTerrain : public Scene
+class SceneProceduralLandmass : public Scene
 {
 
 public:
-	SceneVoxelTerrain();
-	virtual ~SceneVoxelTerrain() override;
+	SceneProceduralLandmass();
+	virtual ~SceneProceduralLandmass() override;
 
 	virtual void Update(float timestep, Window& mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window& mainWindow) override;
@@ -39,7 +39,7 @@ private:
 	virtual void SetupMeshes() override;
 	bool IsTerrainConfigChanged();
 
-	TerrainVoxel* m_TerrainVoxel;
+	TerrainSL* m_TerrainSL;
 	glm::mat4 m_Transform;
 	RenderInstanced* m_RenderInstanced;
 	glm::ivec3 m_TerrainScale;
@@ -62,6 +62,9 @@ private:
 
 	// Scene settings
 	bool m_DrawGizmos;
+	bool m_RenderPlayer;
+	bool m_RenderTerrain;
+
 	bool m_UnlockRotation;
 	bool m_UnlockRotationPrev;
 
@@ -73,5 +76,12 @@ private:
 
 	glm::vec4 m_CubeColor;
 	unsigned int m_DeleteVoxelCodeGLFW;
+
+	const char* m_TerrainMapFileLocation;
+	unsigned int m_TerrainMapWidth;
+	unsigned int m_TerrainMapHeight;
+	float m_TerrainMapNoiseScale;
+
+	float m_FloorSize = 100.0f;
 
 };

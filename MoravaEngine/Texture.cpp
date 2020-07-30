@@ -34,12 +34,13 @@ Texture::Texture(const char* fileLoc, bool flipVert, bool isSampler)
 	Load(flipVert);
 }
 
-Texture::Texture(const char* fileLoc, unsigned int width, unsigned int height, bool isSampler)
+Texture::Texture(const char* fileLoc, unsigned int width, unsigned int height, bool isSampler, GLenum filter)
 {
 	m_FileLocation = fileLoc;
 	m_Width = width;
 	m_Height = height;
 	m_IsSampler = isSampler;
+	m_Filter = filter;
 	m_BitDepth = 4;
 
 	m_Buffer = new unsigned char[m_Width * m_Height * m_BitDepth];

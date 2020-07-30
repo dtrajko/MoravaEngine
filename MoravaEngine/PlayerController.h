@@ -18,6 +18,7 @@ public:
 	void MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset);
 	inline Player* GetPlayer() { return m_Player; };
 	inline void SetUnlockRotation(bool unlockRotation) { m_UnlockRotation = unlockRotation; };
+	inline void SetGravity(float gravity) { m_Gravity = gravity; };
 
 	void Update();
 

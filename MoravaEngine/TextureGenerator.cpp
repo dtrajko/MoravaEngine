@@ -6,13 +6,7 @@
 
 Texture* TextureGenerator::TextureFromHeightMap(float** noiseMap, const char* fileLocation, int width, int height)
 {
-	Texture* texture = new Texture(fileLocation, width, height, true);
-
-	constexpr float constValueFloatMin = std::numeric_limits<float>::min();
-	constexpr float constValueFloatMax = std::numeric_limits<float>::max();
-
-	float valueFloatNormMin = constValueFloatMax;
-	float valueFloatNormMax = constValueFloatMin;
+	printf("TextureGenerator::TextureFromHeightMap\n");
 
 	glm::vec4* colorMap = new glm::vec4[width * height];
 
@@ -21,21 +15,15 @@ Texture* TextureGenerator::TextureFromHeightMap(float** noiseMap, const char* fi
 		for (int x = 0; x < width; x++)
 		{
 			colorMap[y * width + x] = glm::vec4(noiseMap[x][y], noiseMap[x][y], noiseMap[x][y], 1.0f);
-
-			if (noiseMap[x][y] < valueFloatNormMin) valueFloatNormMin = noiseMap[x][y];
-			if (noiseMap[x][y] > valueFloatNormMax) valueFloatNormMax = noiseMap[x][y];
 		}
 	}
-
-	printf("TextureGenerator::TextureFromHeightMap Value Range [%.4ff-%.4ff]\n", NoiseSL::s_NoiseHeightMin, NoiseSL::s_NoiseHeightMax);
-	printf("TextureGenerator::TextureFromHeightMap Value Range Normalized [%.4ff-%.4ff]\n", valueFloatNormMin, valueFloatNormMax);
 
 	return TextureFromColorMap(colorMap, fileLocation, width, height);
 }
 
 Texture* TextureGenerator::TextureFromColorMap(glm::vec4* colorMap, const char* fileLocation, int width, int height)
 {
-	Texture* texture = new Texture(fileLocation, width, height, true);
+	Texture* texture = new Texture(fileLocation, width, height, true, GL_LINEAR);
 
 	constexpr int constValueIntMin = std::numeric_limits<int>::min();
 	constexpr int constValueIntMax = std::numeric_limits<int>::max();

@@ -198,6 +198,7 @@
     <ClCompile Include="SceneObjectLight.cpp" />
     <ClCompile Include="SceneObjectParticleSystem.cpp" />
     <ClCompile Include="SceneOmniShadows.cpp" />
+    <ClCompile Include="SceneProceduralLandmass.cpp" />
     <ClCompile Include="SceneVoxelTerrain.cpp" />
     <ClCompile Include="ShaderBackground.cpp" />
     <ClCompile Include="ShaderBasic.cpp" />
@@ -344,6 +345,7 @@
     <ClInclude Include="SceneObjectLight.h" />
     <ClInclude Include="SceneObjectParticleSystem.h" />
     <ClInclude Include="SceneOmniShadows.h" />
+    <ClInclude Include="SceneProceduralLandmass.h" />
     <ClInclude Include="SceneVoxelTerrain.h" />
     <ClInclude Include="ShaderBackground.h" />
     <ClInclude Include="ShaderBasic.h" />

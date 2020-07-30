@@ -34,6 +34,7 @@
 #include "SceneOmniShadows.h"
 #include "SceneVoxelTerrain.h"
 #include "SceneEditor.h"
+#include "SceneProceduralLandmass.h"
 
 #include "Renderer.h"
 #include "RendererPBR.h"
@@ -76,10 +77,11 @@ enum class SceneName
 	Particles,
 	OmniShadows,
 	VoxelTerrain,
+	ProceduralLandmass,
 	Editor,
 };
 
-SceneName currentScene = SceneName::VoxelTerrain;
+SceneName currentScene = SceneName::ProceduralLandmass;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -155,13 +157,17 @@ int main()
 		scene = new SceneOmniShadows();
 		renderer = static_cast<RendererBasic*>(new RendererOmniShadows());
 		break;
+	case SceneName::Editor:
+		scene = new SceneEditor();
+		renderer = static_cast<RendererBasic*>(new RendererEditor());
+		break;
 	case SceneName::VoxelTerrain:
 		scene = new SceneVoxelTerrain();
 		renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
 		break;
-	case SceneName::Editor:
-		scene = new SceneEditor();
-		renderer = static_cast<RendererBasic*>(new RendererEditor());
+	case SceneName::ProceduralLandmass:
+		scene = new SceneProceduralLandmass();
+		renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
 		break;
 	default:
 		throw std::runtime_error("Scene and Renderer could not be loaded!");

@@ -3,7 +3,6 @@
 
 TerrainSL::TerrainSL()
 {
-	Generate();
 }
 
 TerrainSL::TerrainSL(const char* fileLocation, unsigned int width, unsigned int height, float noiseScale)

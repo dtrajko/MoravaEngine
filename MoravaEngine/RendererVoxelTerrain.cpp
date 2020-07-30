@@ -53,6 +53,8 @@ void RendererVoxelTerrain::RenderOmniShadows(Window& mainWindow, Scene* scene, g
 
 void RendererVoxelTerrain::RenderPassOmniShadow(PointLight* light, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
+	if (!scene->GetSettings().enableOmniShadows) return;
+
 	shaders["omniShadow"]->Bind();
 
 	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
@@ -150,7 +152,8 @@ void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
 	shaderMain->setInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
-	shaderMain->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);
+	if (scene->GetSettings().enableShadows)
+		shaderMain->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);
 	shaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
 	shaderMain->setFloat("tilingFactor", 1.0f);
 	shaderMain->Validate();

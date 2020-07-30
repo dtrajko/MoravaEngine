@@ -410,6 +410,9 @@
     <ClCompile Include="TextureGenerator.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="SceneProceduralLandmass.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -850,6 +853,9 @@
     </ClInclude>
     <ClInclude Include="TextureGenerator.h">
       <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneProceduralLandmass.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
