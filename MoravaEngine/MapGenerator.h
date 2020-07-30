@@ -7,7 +7,7 @@ class MapGenerator
 {
 public:
 	MapGenerator();
-	MapGenerator(const char* fileLocation, unsigned int width, unsigned int height, float noiseScale);
+	MapGenerator(const char* fileLocation, unsigned int width, unsigned int height, int seed, float noiseScale);
 	~MapGenerator();
 
 private:
@@ -16,6 +16,7 @@ private:
 private:
 	int m_MapWidth;
 	int m_MapHeight;
+	int m_Seed;
 	float m_NoiseScale;
 
 	float** m_NoiseMap;

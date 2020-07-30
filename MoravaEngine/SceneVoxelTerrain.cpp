@@ -141,7 +141,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
 
     m_DeleteVoxelCodeGLFW = GLFW_KEY_TAB;
 
-    m_TerrainSL = new TerrainSL("Textures/Noise/noise_002.png", 128, 128, 20.0f);
+    m_TerrainSL = new TerrainSL("Textures/Noise/noise_002.png", 256, 256, 25.0f);
 }
 
 void SceneVoxelTerrain::SetCamera()

@@ -17,6 +17,7 @@ public:
 private:
 	unsigned int m_Width;
 	unsigned int m_Height;
+	int m_Seed;
 	float m_NoiseScale;
 
 	MapGenerator* m_MapGenerator;

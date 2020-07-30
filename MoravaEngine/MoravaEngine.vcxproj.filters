@@ -404,6 +404,9 @@
     <ClCompile Include="MapGenerator.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="Random.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -838,6 +841,9 @@
     </ClInclude>
     <ClInclude Include="MapGenerator.h">
       <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="Random.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

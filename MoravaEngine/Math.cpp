@@ -3,6 +3,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include <time.h>
+
+
+bool Math::s_IsRandomInit = false;
 
 glm::mat4 Math::CreateTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
 {
@@ -33,4 +37,17 @@ glm::mat4 Math::aiMatrix4x4ToGlm(const aiMatrix4x4* from)
     to[3][0] = (float)from->a4; to[3][1] = (float)from->b4;  to[3][2] = (float)from->c4; to[3][3] = (float)from->d4;
 
     return to;
+}
+
+/**
+ * Convert an arbitrary range to [0-1] range
+ */
+float Math::InverseLerp(float xx, float yy, float value)
+{
+	return (value - xx) / (yy - xx);
+}
+
+float Math::ConvertRangeFloat(float value, float oldMin, float oldMax, float newMin, float newMax)
+{
+	return (((value - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin;
 }

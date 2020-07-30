@@ -189,6 +189,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerController.cpp" />
     <ClCompile Include="QuadInstanced.cpp" />
+    <ClCompile Include="Random.cpp" />
     <ClCompile Include="RendererOmniShadows.cpp" />
     <ClCompile Include="RendererVoxelTerrain.cpp" />
     <ClCompile Include="RenderInstanced.cpp" />
@@ -332,6 +333,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerController.h" />
     <ClInclude Include="QuadInstanced.h" />
+    <ClInclude Include="Random.h" />
     <ClInclude Include="RendererOmniShadows.h" />
     <ClInclude Include="RendererVoxelTerrain.h" />
     <ClInclude Include="RenderInstanced.h" />
