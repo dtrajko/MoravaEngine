@@ -295,6 +295,7 @@
     <ClCompile Include="TextureAtlas.cpp" />
     <ClCompile Include="TextureCubeMap.cpp" />
     <ClCompile Include="TextureCubemapLite.cpp" />
+    <ClCompile Include="TextureGenerator.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
     <ClCompile Include="TextureSampler.cpp" />
     <ClCompile Include="Tile2D.cpp" />
@@ -441,6 +442,7 @@
     <ClInclude Include="TextureAtlas.h" />
     <ClInclude Include="TextureCubeMap.h" />
     <ClInclude Include="TextureCubemapLite.h" />
+    <ClInclude Include="TextureGenerator.h" />
     <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="TextureSampler.h" />
     <ClInclude Include="Tile2D.h" />

@@ -1,26 +1,46 @@
 #include "MapGenerator.h"
 
 #include "Log.h"
-
+#include "Math.h"
 #include "NoiseSL.h"
+#include "Util.h"
+#include "TextureGenerator.h"
 
 
 MapGenerator::MapGenerator()
 {
 }
 
-MapGenerator::MapGenerator(const char* fileLocation, unsigned int width, unsigned int height, int seed, float noiseScale)
+MapGenerator::MapGenerator(const char* fileLocation, unsigned int width, unsigned int height, int seed, float noiseScale, glm::vec2 offset)
 {
 	m_FileLocation = fileLocation;
 	m_MapWidth = width;
 	m_MapHeight = height;
-	m_Seed = seed;
 	m_NoiseScale = noiseScale;
 
 	m_Octaves = 3;
 	m_Persistance = 1.0f;
 	m_Lacunarity = 1.0f;
 
+	m_Seed = seed;
+	m_Offset = offset;
+
+	m_Regions = std::vector<TerrainTypes>();
+
+	TerrainTypes water;
+	water.name = "Water";
+	water.height = 0.4f;
+	water.color = glm::vec4(70.0f / 255.0f, 114.0f / 255.0f, 210.0f / 255.0f, 1.0f);
+	m_Regions.push_back(water);
+
+	TerrainTypes land;
+	land.name = "Land";
+	land.height = 1.0f;
+	land.color = glm::vec4(86.0f / 255.0f, 151.0f / 255.0f, 22.0f / 255.0f, 1.0f);
+
+	m_Regions.push_back(land);
+
+	m_DrawMode = DrawMode::ColorMap;
 
 	GenerateMap();
 }
@@ -31,31 +51,49 @@ MapGenerator::~MapGenerator()
 
 void MapGenerator::GenerateMap()
 {
-	m_NoiseMap = NoiseSL::GenerateNoiseMap(m_MapWidth, m_MapHeight, m_Seed, m_NoiseScale, m_Octaves, m_Persistance, m_Lacunarity);
+	Validate();
 
-	m_Texture = new Texture(m_FileLocation, m_MapWidth, m_MapHeight, true);
-
-	constexpr int constValueIntMin = std::numeric_limits<int>::min();
-	constexpr int constValueIntMax = std::numeric_limits<int>::max();
-
-	int valueIntNormMin = constValueIntMax;
-	int valueIntNormMax = constValueIntMin;
+	m_NoiseMap = NoiseSL::GenerateNoiseMap(m_MapWidth, m_MapHeight, m_Seed, m_NoiseScale, m_Octaves, m_Persistance, m_Lacunarity, m_Offset);
+	m_ColorMap = new glm::vec4[m_MapWidth * m_MapHeight];
 
 	for (int y = 0; y < m_MapHeight; y++) {
 		for (int x = 0; x < m_MapWidth; x++) {
-			// Convert values from [-1...1] to [0-255] range
-			int normValue = (int)((((m_NoiseMap[x][y] - NoiseSL::s_NoiseHeightMin) * (255.0f - 0.0f)) /
-				(NoiseSL::s_NoiseHeightMax - NoiseSL::s_NoiseHeightMin)) + 0.0f);
-
-			if (normValue < valueIntNormMin) valueIntNormMin = normValue;
-			if (normValue > valueIntNormMax) valueIntNormMax = normValue;
-
-			m_Texture->SetPixel(x, y, glm::ivec4(normValue, normValue, normValue, 255));
+			float currentHeight = m_NoiseMap[x][y];
+			for (int i = 0; i < m_Regions.size(); i++) {
+				if (currentHeight <= m_Regions[i].height) {
+					m_ColorMap[y * m_MapWidth + x] = m_Regions[i].color;
+					break;
+				}
+			}
 		}
 	}
 
-	printf("MapGenerator::GenerateMap NoiseMap Value Range [%.4ff-%.4ff]\n", NoiseSL::s_NoiseHeightMin, NoiseSL::s_NoiseHeightMax);
-	printf("MapGenerator::GenerateMap NoiseMap Value Range Normalized [%i-%i]\n", valueIntNormMin, valueIntNormMax);
+	if (m_DrawMode == DrawMode::NoiseMap) {
+		m_Texture = TextureGenerator::TextureFromHeightMap(m_NoiseMap, m_FileLocation, m_MapWidth, m_MapHeight);
+	}
+	else if (m_DrawMode == DrawMode::ColorMap) {
+		m_Texture = TextureGenerator::TextureFromColorMap(m_ColorMap, m_FileLocation, m_MapWidth, m_MapHeight);
+	}
+}
 
-	m_Texture->Save();
+void MapGenerator::Validate()
+{
+	if (m_MapWidth < 1) {
+		m_MapWidth = 1;
+	}
+	if (m_MapHeight < 1) {
+		m_MapHeight = 1;
+	}
+	if (m_Lacunarity < 1.0f) {
+		m_Lacunarity = 1.0f;
+	}
+	if (m_Octaves < 0) {
+		m_Octaves = 0;
+	}
+	if (m_Persistance < 0.0f) {
+		m_Persistance = 0.0f;
+	}
+	if (m_Persistance > 1.0f) {
+		m_Persistance = 1.0f;
+	}
 }

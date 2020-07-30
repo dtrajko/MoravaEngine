@@ -5,6 +5,9 @@
 #include "MapGenerator.h"
 
 
+/**
+ * Based on Procedural Landmass Generation series by Sebastian Lague
+ */
 class TerrainSL : public TerrainVoxel
 {
 public:
@@ -17,7 +20,6 @@ public:
 private:
 	unsigned int m_Width;
 	unsigned int m_Height;
-	int m_Seed;
 	float m_NoiseScale;
 
 	MapGenerator* m_MapGenerator;
@@ -29,4 +31,8 @@ private:
 
 	float m_Frequency;
 	float m_Amplitude;
+
+	int m_Seed;
+	glm::vec2 m_Offset;
+
 };

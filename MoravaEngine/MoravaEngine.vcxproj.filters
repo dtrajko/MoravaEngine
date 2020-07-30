@@ -407,6 +407,9 @@
     <ClCompile Include="Random.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="TextureGenerator.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -844,6 +847,9 @@
     </ClInclude>
     <ClInclude Include="Random.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureGenerator.h">
+      <Filter>Terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

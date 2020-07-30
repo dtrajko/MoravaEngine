@@ -2,16 +2,21 @@
 
 #include "PerlinNoise/PerlinNoise.hpp"
 
+#include <glm/glm.hpp>
+
 #include <vector>
 
 
+/**
+ * Based on Procedural Landmass Generation series by Sebastian Lague
+ */
 class NoiseSL
 {
 public:
 	NoiseSL();
 	~NoiseSL();
 
-	static float** GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistance, float lacunarity);
+	static float** GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistance, float lacunarity, glm::vec2 offset);
 
 public:
 	static siv::PerlinNoise s_PerlinNoise;

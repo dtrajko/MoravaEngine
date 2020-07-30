@@ -76,7 +76,7 @@ bool Texture::Load(bool flipVert)
 	OpenGLCreate();
 
 	float fileSize = GetFileSize(m_FileLocation) / (1024.0f * 1024.0f);
-	Log::GetLogger()->info("Loading texture '{0}' [ ID={1}, size={2} MB ]", m_FileLocation, m_TextureID, fileSize);
+	Log::GetLogger()->info("Loading texture '{0}' [ID={1}, size={2} MB]", m_FileLocation, m_TextureID, fileSize);
 
 	if (!m_IsSampler)
 		stbi_image_free(m_Buffer);

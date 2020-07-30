@@ -21,7 +21,7 @@ NoiseSL::~NoiseSL()
 {
 }
 
-float** NoiseSL::GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistance, float lacunarity)
+float** NoiseSL::GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistance, float lacunarity, glm::vec2 offset)
 {
     srand((unsigned int)time(nullptr));
     int randSeed = rand() % seed;
@@ -34,8 +34,8 @@ float** NoiseSL::GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float s
 
     glm::vec2** octaveOffsets = new glm::vec2*[octaves];
     for (int i = 0; i < octaves; i++) {
-        float offsetX = Math::ConvertRangeFloat((float)rand(), 0.0f, (float)RAND_MAX, -100000.0f, 100000.0f);
-        float offsetY = Math::ConvertRangeFloat((float)rand(), 0.0f, (float)RAND_MAX, -100000.0f, 100000.0f);
+        float offsetX = Math::ConvertRangeFloat((float)rand(), 0.0f, (float)RAND_MAX, -100000.0f, 100000.0f) + offset.x;
+        float offsetY = Math::ConvertRangeFloat((float)rand(), 0.0f, (float)RAND_MAX, -100000.0f, 100000.0f) + offset.y;
         octaveOffsets[i] = new glm::vec2(offsetX, offsetY);
         printf("NoiseSL::GenerateNoiseMap octaveOffsets[%i] = [%.2ff, %.2ff]\n", i, octaveOffsets[i]->x, octaveOffsets[i]->y);
     }
@@ -49,6 +49,9 @@ float** NoiseSL::GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float s
     s_NoiseHeightTempMin = valueFloatMax;
     s_NoiseHeightTempMax = valueFloatMin;
 
+    float halfWidth = mapWidth / 2.0f;
+    float halfHeight = mapHeight / 2.0f;
+
     for (int y = 0; y < mapHeight; y++) {
         for (int x = 0; x < mapWidth; x++) {
 
@@ -57,8 +60,8 @@ float** NoiseSL::GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float s
             float noiseHeight = 0.0f;
 
             for (int i = 0; i < octaves; i++) {
-                float sampleX = (float)x / scale * frequency;
-                float sampleY = (float)y / scale * frequency;
+                float sampleX = (x - halfWidth) / scale * frequency + octaveOffsets[i]->x;
+                float sampleY = (y - halfHeight) / scale * frequency + octaveOffsets[i]->y;
 
                 float perlinValue = (float)s_PerlinNoise.noise2D(sampleX, sampleY);
                 noiseHeight += perlinValue * amplitude;
