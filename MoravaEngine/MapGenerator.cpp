@@ -27,18 +27,53 @@ MapGenerator::MapGenerator(const char* fileLocation, unsigned int width, unsigne
 
 	m_Regions = std::vector<TerrainTypes>();
 
-	TerrainTypes water;
-	water.name = "Water";
-	water.height = 0.4f;
-	water.color = glm::vec4(70.0f / 255.0f, 114.0f / 255.0f, 210.0f / 255.0f, 1.0f);
-	m_Regions.push_back(water);
+	TerrainTypes waterDeep;
+	waterDeep.name = "Water Deep";
+	waterDeep.height = 0.3f;
+	waterDeep.color = glm::vec4(40.0f / 255.0f, 74.0f / 255.0f, 140.0f / 255.0f, 1.0f);
+	m_Regions.push_back(waterDeep);
 
-	TerrainTypes land;
-	land.name = "Land";
-	land.height = 1.0f;
-	land.color = glm::vec4(86.0f / 255.0f, 151.0f / 255.0f, 22.0f / 255.0f, 1.0f);
+	TerrainTypes waterShallow;
+	waterShallow.name = "Water Shallow";
+	waterShallow.height = 0.6f;
+	waterShallow.color = glm::vec4(54.0f / 255.0f, 102.0f / 255.0f, 197.0f / 255.0f, 1.0f);
+	m_Regions.push_back(waterShallow);
 
-	m_Regions.push_back(land);
+	TerrainTypes sand;
+	sand.name = "Sand";
+	sand.height = 0.7f;
+	sand.color = glm::vec4(207.0f / 255.0f, 209.0f / 255.0f, 127.0f / 255.0f, 1.0f);
+	m_Regions.push_back(sand);
+
+	TerrainTypes grass;
+	grass.name = "Grass";
+	grass.height = 0.8f;
+	grass.color = glm::vec4(87.0f / 255.0f, 151.0f / 255.0f, 22.0f / 255.0f, 1.0f);
+	m_Regions.push_back(grass);
+
+	TerrainTypes grass2;
+	grass2.name = "Grass 2";
+	grass2.height = 0.85f;
+	grass2.color = glm::vec4(62.0f / 255.0f, 107.0f / 255.0f, 20.0f / 255.0f, 1.0f);
+	m_Regions.push_back(grass2);
+
+	TerrainTypes rock;
+	rock.name = "Rock";
+	rock.height = 0.9f;
+	rock.color = glm::vec4(92.0f / 255.0f, 69.0f / 255.0f, 63.0f / 255.0f, 1.0f);
+	m_Regions.push_back(rock);
+
+	TerrainTypes rock2;
+	rock2.name = "Rock 2";
+	rock2.height = 0.95f;
+	rock2.color = glm::vec4(75.0f / 255.0f, 60.0f / 255.0f, 57.0f / 255.0f, 1.0f);
+	m_Regions.push_back(rock2);
+
+	TerrainTypes snow;
+	snow.name = "Snow";
+	snow.height = 1.0f;
+	snow.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	m_Regions.push_back(snow);
 
 	m_DrawMode = DrawMode::ColorMap;
 
@@ -54,6 +89,7 @@ void MapGenerator::GenerateMap()
 	Validate();
 
 	m_NoiseMap = NoiseSL::GenerateNoiseMap(m_MapWidth, m_MapHeight, m_Seed, m_NoiseScale, m_Octaves, m_Persistance, m_Lacunarity, m_Offset);
+
 	m_ColorMap = new glm::vec4[m_MapWidth * m_MapHeight];
 
 	for (int y = 0; y < m_MapHeight; y++) {
