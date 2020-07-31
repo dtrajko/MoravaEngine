@@ -28,14 +28,17 @@ public:
 	static void CalcAverageNormals(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount);
 	static void CalcTangentSpace(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount);
 
+
 	virtual ~Mesh();
+
+public:
+	float* m_Vertices;
+	unsigned int* m_Indices;
 
 protected:
 	unsigned int m_VAO;
 	unsigned int m_VBO;
 	unsigned int m_IBO;
-	float* m_Vertices;
-	unsigned int* m_Indices;
 	unsigned int m_VertexCount;
 	unsigned int m_IndexCount;
 
