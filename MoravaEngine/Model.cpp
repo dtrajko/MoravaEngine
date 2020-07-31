@@ -159,7 +159,7 @@ void Model::LoadMaterials(const aiScene* scene)
 
 				printf("Texture loaded '%s'\n", texPath.c_str());
 
-				textureList[i] = TextureLoader::Get()->GetTexture(texPath.c_str());
+				textureList[i] = TextureLoader::Get()->GetTexture(texPath.c_str(), false, false);
 
 				if (!textureList[i])
 				{
@@ -185,7 +185,7 @@ void Model::LoadMaterials(const aiScene* scene)
 
 				printf("Normal Map Texture loaded at '%s'\n", texPath.c_str());
 
-				normalMapList[i] = TextureLoader::Get()->GetTexture(texPath.c_str());
+				normalMapList[i] = TextureLoader::Get()->GetTexture(texPath.c_str(), false, false);
 
 				if (!normalMapList[i])
 				{
@@ -198,7 +198,7 @@ void Model::LoadMaterials(const aiScene* scene)
 
 		if (!textureList[i])
 		{
-			textureList[i] = TextureLoader::Get()->GetTexture("Textures/plain.png");
+			textureList[i] = TextureLoader::Get()->GetTexture("Textures/plain.png", false, false);
 		}
 	}
 }

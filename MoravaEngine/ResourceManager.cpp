@@ -239,9 +239,17 @@ void ResourceManager::Init()
     s_MaterialInfo.insert(std::make_pair("boulder", textureInfoBoulder));
 }
 
-void ResourceManager::LoadTexture(std::string name, std::string filePath)
+void ResourceManager::LoadTexture(std::string name, std::string filePath, bool force)
 {
-    s_Textures.insert(std::make_pair(name, TextureLoader::Get()->GetTexture(filePath.c_str())));
+    if (force) {
+        // remove previous entry from the map
+        auto it = s_Textures.find(name);
+        if (it != s_Textures.end()) {
+            s_Textures.erase(it);
+        }
+    }
+
+    s_Textures.insert(std::make_pair(name, TextureLoader::Get()->GetTexture(filePath.c_str(), false, force)));
 }
 
 void ResourceManager::LoadMaterial(std::string name, TextureInfo textureInfo)
@@ -261,7 +269,7 @@ Texture* ResourceManager::HotLoadTexture(std::string textureName)
     if (textureIterator != s_Textures.end())
         return textureIterator->second;
 
-    LoadTexture(textureName, textureInfoIterator->second);
+    LoadTexture(textureName, textureInfoIterator->second, false);
 
     textureIterator = s_Textures.find(textureName);
 

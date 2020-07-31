@@ -179,6 +179,7 @@
     <ClCompile Include="InsertionSort.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MapGenerator.cpp" />
+    <ClCompile Include="MeshGenerator.cpp" />
     <ClCompile Include="NoiseSL.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleMaster.cpp" />
@@ -323,6 +324,7 @@
     <ClInclude Include="InsertionSort.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MapGenerator.h" />
+    <ClInclude Include="MeshGenerator.h" />
     <ClInclude Include="NoiseSL.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleMaster.h" />

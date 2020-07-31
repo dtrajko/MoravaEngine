@@ -350,9 +350,6 @@
     <ClCompile Include="SceneObjectParticleSystem.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
-    <ClCompile Include="ResourceManager.cpp">
-      <Filter>Editor</Filter>
-    </ClCompile>
     <ClCompile Include="SceneObjectLight.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
@@ -412,6 +409,12 @@
     </ClCompile>
     <ClCompile Include="SceneProceduralLandmass.cpp">
       <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshGenerator.cpp">
+      <Filter>Terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -791,9 +794,6 @@
     <ClInclude Include="SceneObjectParticleSystem.h">
       <Filter>Editor</Filter>
     </ClInclude>
-    <ClInclude Include="ResourceManager.h">
-      <Filter>Editor</Filter>
-    </ClInclude>
     <ClInclude Include="SceneObjectLight.h">
       <Filter>Editor</Filter>
     </ClInclude>
@@ -856,6 +856,12 @@
     </ClInclude>
     <ClInclude Include="SceneProceduralLandmass.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshGenerator.h">
+      <Filter>Terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

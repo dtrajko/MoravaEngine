@@ -32,7 +32,7 @@ void SceneCubemaps::SetSkybox()
 
 void SceneCubemaps::SetupTextures()
 {
-    textures.insert(std::make_pair("semi_transparent", TextureLoader::Get()->GetTexture("Textures/semi_transparent.png")));
+    textures.insert(std::make_pair("semi_transparent", TextureLoader::Get()->GetTexture("Textures/semi_transparent.png", false, false)));
 }
 
 void SceneCubemaps::SetupMeshes()

@@ -184,10 +184,10 @@ void Scene::SetSkybox()
 
 void Scene::SetupTextures()
 {
-	textures.insert(std::make_pair("normalMapDefault", TextureLoader::Get()->GetTexture("Textures/normal_map_default.png")));
-	textures.insert(std::make_pair("shadowMapDefault", TextureLoader::Get()->GetTexture("Textures/shadow_map_default.png")));
-	textures.insert(std::make_pair("waterDuDv",        TextureLoader::Get()->GetTexture("Textures/water/waterDuDv.png")));
-	textures.insert(std::make_pair("waterNormal",      TextureLoader::Get()->GetTexture("Textures/water/waterNormal.png")));
+	textures.insert(std::make_pair("normalMapDefault", TextureLoader::Get()->GetTexture("Textures/normal_map_default.png", false, false)));
+	textures.insert(std::make_pair("shadowMapDefault", TextureLoader::Get()->GetTexture("Textures/shadow_map_default.png", false, false)));
+	textures.insert(std::make_pair("waterDuDv",        TextureLoader::Get()->GetTexture("Textures/water/waterDuDv.png", false, false)));
+	textures.insert(std::make_pair("waterNormal",      TextureLoader::Get()->GetTexture("Textures/water/waterNormal.png", false, false)));
 }
 
 void Scene::SetCamera()

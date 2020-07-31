@@ -84,16 +84,16 @@ void SceneCottage::SetSkybox()
 
 void SceneCottage::SetupTextures()
 {
-	textures.insert(std::make_pair("brick",              TextureLoader::Get()->GetTexture("Textures/brick.png")));
-	textures.insert(std::make_pair("crateDiffuse",       TextureLoader::Get()->GetTexture("Textures/crate.png")));
-	textures.insert(std::make_pair("crateNormal",        TextureLoader::Get()->GetTexture("Textures/crateNormal.png")));
-	textures.insert(std::make_pair("grass",              TextureLoader::Get()->GetTexture("Textures/grass.jpg")));
-	textures.insert(std::make_pair("sponzaFloorDiffuse", TextureLoader::Get()->GetTexture("Textures/sponza_floor_a_diff.tga")));
-	textures.insert(std::make_pair("sponzaFloorNormal",  TextureLoader::Get()->GetTexture("Textures/sponza_floor_a_ddn.tga")));
-	textures.insert(std::make_pair("sponzaWallDiffuse",  TextureLoader::Get()->GetTexture("Textures/sponza_bricks_a_diff.tga")));
-	textures.insert(std::make_pair("sponzaWallNormal",   TextureLoader::Get()->GetTexture("Textures/sponza_bricks_a_ddn.tga")));
-	textures.insert(std::make_pair("sponzaCeilDiffuse",  TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_diff.tga")));
-	textures.insert(std::make_pair("sponzaCeilNormal",   TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_ddn.tga")));
+	textures.insert(std::make_pair("brick",              TextureLoader::Get()->GetTexture("Textures/brick.png", false, false)));
+	textures.insert(std::make_pair("crateDiffuse",       TextureLoader::Get()->GetTexture("Textures/crate.png", false, false)));
+	textures.insert(std::make_pair("crateNormal",        TextureLoader::Get()->GetTexture("Textures/crateNormal.png", false, false)));
+	textures.insert(std::make_pair("grass",              TextureLoader::Get()->GetTexture("Textures/grass.jpg", false, false)));
+	textures.insert(std::make_pair("sponzaFloorDiffuse", TextureLoader::Get()->GetTexture("Textures/sponza_floor_a_diff.tga", false, false)));
+	textures.insert(std::make_pair("sponzaFloorNormal",  TextureLoader::Get()->GetTexture("Textures/sponza_floor_a_ddn.tga", false, false)));
+	textures.insert(std::make_pair("sponzaWallDiffuse",  TextureLoader::Get()->GetTexture("Textures/sponza_bricks_a_diff.tga", false, false)));
+	textures.insert(std::make_pair("sponzaWallNormal",   TextureLoader::Get()->GetTexture("Textures/sponza_bricks_a_ddn.tga", false, false)));
+	textures.insert(std::make_pair("sponzaCeilDiffuse",  TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_diff.tga", false, false)));
+	textures.insert(std::make_pair("sponzaCeilNormal",   TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_ddn.tga", false, false)));
 }
 
 void SceneCottage::SetupMeshes()

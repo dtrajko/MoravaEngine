@@ -36,5 +36,5 @@ void TerrainSL::Generate()
     else if (m_DrawMode == MapGenerator::DrawMode::NoiseMap)
         mapFilePath = m_HeightMapFilePath;
 
-    m_MapGenerator = new MapGenerator(mapFilePath, m_Width, m_Height, m_Seed, m_NoiseScale, m_Offset);
+    m_MapGenerator = new MapGenerator(mapFilePath, m_Width, m_Height, m_Seed, m_NoiseScale, m_Offset, m_DrawMode);
 }

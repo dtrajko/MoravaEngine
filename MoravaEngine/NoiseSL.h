@@ -16,6 +16,7 @@ public:
 	NoiseSL();
 	~NoiseSL();
 
+	static void Init(int seed);
 	static float** GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistance, float lacunarity, glm::vec2 offset);
 
 public:
@@ -26,4 +27,7 @@ public:
 
 	static float s_NoiseHeightMax;
 	static float s_NoiseHeightMin;
+
+	static int s_RandSeed;
+
 };

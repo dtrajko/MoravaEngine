@@ -152,8 +152,8 @@ void SceneVoxelTerrain::SetCamera()
 
 void SceneVoxelTerrain::SetupTextures()
 {
-    ResourceManager::LoadTexture("diffuse", "Textures/plain.png");
-    ResourceManager::LoadTexture("normal",  "Textures/normal_map_default.png");
+    ResourceManager::LoadTexture("diffuse", "Textures/plain.png", false);
+    ResourceManager::LoadTexture("normal",  "Textures/normal_map_default.png", false);
 }
 
 void SceneVoxelTerrain::SetupTextureSlots()

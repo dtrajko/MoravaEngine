@@ -12,6 +12,7 @@ float NoiseSL::s_NoiseHeightTempMax;
 float NoiseSL::s_NoiseHeightTempMin;
 float NoiseSL::s_NoiseHeightMax;
 float NoiseSL::s_NoiseHeightMin;
+int NoiseSL::s_RandSeed;
 
 NoiseSL::NoiseSL()
 {
@@ -21,21 +22,24 @@ NoiseSL::~NoiseSL()
 {
 }
 
+void NoiseSL::Init(int seed)
+{
+    // srand((unsigned int)time(nullptr));
+    s_RandSeed = rand() % seed;
+    // s_PerlinNoise.reseed(randSeed);
+    printf("NoiseSL::Init s_RandSeed = %i\n", s_RandSeed);
+}
+
 float** NoiseSL::GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistance, float lacunarity, glm::vec2 offset)
 {
-    srand((unsigned int)time(nullptr));
-    int randSeed = rand() % seed;
-    s_PerlinNoise.reseed(randSeed);
-    printf("NoiseSL::GenerateNoiseMap randSeed = %i\n", randSeed);
-
     float** noiseMap = new float*[mapWidth];
     for (size_t i = 0; i < mapWidth; i++)
         noiseMap[i] = new float[mapHeight];
 
     glm::vec2** octaveOffsets = new glm::vec2*[octaves];
     for (int i = 0; i < octaves; i++) {
-        float offsetX = Math::ConvertRangeFloat((float)rand(), 0.0f, (float)RAND_MAX, -100000.0f, 100000.0f) + offset.x;
-        float offsetY = Math::ConvertRangeFloat((float)rand(), 0.0f, (float)RAND_MAX, -100000.0f, 100000.0f) + offset.y;
+        float offsetX = offset.x; // Math::ConvertRangeFloat((float)rand(), 0.0f, (float)RAND_MAX, -100000.0f, 100000.0f) + offset.x;
+        float offsetY = offset.y; // Math::ConvertRangeFloat((float)rand(), 0.0f, (float)RAND_MAX, -100000.0f, 100000.0f) + offset.y;
         octaveOffsets[i] = new glm::vec2(offsetX, offsetY);
         printf("NoiseSL::GenerateNoiseMap octaveOffsets[%i] = [%.2ff, %.2ff]\n", i, octaveOffsets[i]->x, octaveOffsets[i]->y);
     }

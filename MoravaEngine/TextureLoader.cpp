@@ -17,20 +17,22 @@ TextureLoader::TextureLoader()
 {
 }
 
-Texture* TextureLoader::GetTexture(const char* fileLoc, bool flipVert)
+Texture* TextureLoader::GetTexture(const char* fileLoc, bool flipVert, bool force)
 {
-	return GetTexture(fileLoc, flipVert, GL_LINEAR);
+	return GetTexture(fileLoc, flipVert, GL_LINEAR, force);
 }
 
-Texture* TextureLoader::GetTexture(const char* fileLoc, bool flipVert, GLenum filter)
+Texture* TextureLoader::GetTexture(const char* fileLoc, bool flipVert, GLenum filter, bool force)
 {
-	std::map<std::string, Texture*>::iterator it;
-	it = m_Textures.find(fileLoc);
-
-	if (it != m_Textures.end())
-	{
-		Log::GetLogger()->info("TextureLoader HIT - Texture '{0}' already loaded [m_Textures.size={1}]", fileLoc, m_Textures.size());
-		return m_Textures[fileLoc];
+	if (!force) {
+		std::map<std::string, Texture*>::iterator it;
+		it = m_Textures.find(fileLoc);
+	
+		if (it != m_Textures.end())
+		{
+			Log::GetLogger()->info("TextureLoader HIT - Texture '{0}' already loaded [m_Textures.size={1}]", fileLoc, m_Textures.size());
+			return m_Textures[fileLoc];
+		}
 	}
 
 	Texture* texture = new Texture(fileLoc);

@@ -11,8 +11,14 @@
 class MapGenerator
 {
 public:
+	enum class DrawMode {
+		NoiseMap,
+		ColorMap,
+	};
+
+public:
 	MapGenerator();
-	MapGenerator(const char* fileLocation, unsigned int width, unsigned int height, int seed, float noiseScale, glm::vec2 offset);
+	MapGenerator(const char* fileLocation, unsigned int width, unsigned int height, int seed, float noiseScale, glm::vec2 offset, DrawMode drawMode);
 	~MapGenerator();
 
 private:
@@ -24,12 +30,6 @@ public:
 		float height;
 		glm::vec4 color;
 		const char* name;
-	};
-
-	enum class DrawMode
-	{
-		NoiseMap,
-		ColorMap,
 	};
 
 	struct MapGenConf {

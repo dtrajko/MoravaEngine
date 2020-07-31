@@ -10,7 +10,7 @@ class ResourceManager
 {
 public:
 	static void Init();
-	static void LoadTexture(std::string name, std::string filePath);
+	static void LoadTexture(std::string name, std::string filePath, bool force);
 	static void LoadMaterial(std::string name, TextureInfo textureInfo);
 	static Texture* HotLoadTexture(std::string textureName);
 	static Material* HotLoadMaterial(std::string materialName);

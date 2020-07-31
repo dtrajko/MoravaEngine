@@ -11,8 +11,8 @@ class TextureLoader
 public:
 	TextureLoader();
 	static TextureLoader* Get();
-	Texture* GetTexture(const char* fileLoc, bool flipVert = false);
-	Texture* GetTexture(const char* fileLoc, bool flipVert, GLenum filter);
+	Texture* GetTexture(const char* fileLoc, bool flipVert, bool force);
+	Texture* GetTexture(const char* fileLoc, bool flipVert, GLenum filter, bool force);
 	void Print();
 	void Clean();
 	~TextureLoader();

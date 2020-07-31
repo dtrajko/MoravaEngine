@@ -11,10 +11,11 @@ MapGenerator::MapGenerator()
 {
 }
 
-MapGenerator::MapGenerator(const char* fileLocation, unsigned int width, unsigned int height, int seed, float noiseScale, glm::vec2 offset)
+MapGenerator::MapGenerator(const char* fileLocation, unsigned int width, unsigned int height, int seed, float noiseScale, glm::vec2 offset, DrawMode drawMode)
 {
 	m_MapGenConf.heightMapFilePath = fileLocation;
 	m_MapGenConf.colorMapFilePath = fileLocation;
+	m_MapGenConf.drawMode = drawMode;
 	m_MapGenConf.mapWidth = width;
 	m_MapGenConf.mapHeight = height;
 	m_MapGenConf.noiseScale = noiseScale;
@@ -30,43 +31,43 @@ MapGenerator::MapGenerator(const char* fileLocation, unsigned int width, unsigne
 
 	TerrainTypes waterDeep;
 	waterDeep.name = "Water Deep";
-	waterDeep.height = 0.3f;
+	waterDeep.height = 0.4f;
 	waterDeep.color = glm::vec4(40.0f / 255.0f, 74.0f / 255.0f, 140.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(waterDeep);
 
 	TerrainTypes waterShallow;
 	waterShallow.name = "Water Shallow";
-	waterShallow.height = 0.6f;
+	waterShallow.height = 0.5f;
 	waterShallow.color = glm::vec4(54.0f / 255.0f, 102.0f / 255.0f, 197.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(waterShallow);
 
 	TerrainTypes sand;
 	sand.name = "Sand";
-	sand.height = 0.7f;
+	sand.height = 0.55f;
 	sand.color = glm::vec4(207.0f / 255.0f, 209.0f / 255.0f, 127.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(sand);
 
 	TerrainTypes grass;
 	grass.name = "Grass";
-	grass.height = 0.8f;
+	grass.height = 0.6f;
 	grass.color = glm::vec4(87.0f / 255.0f, 151.0f / 255.0f, 22.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(grass);
 
 	TerrainTypes grass2;
 	grass2.name = "Grass 2";
-	grass2.height = 0.85f;
+	grass2.height = 0.7f;
 	grass2.color = glm::vec4(62.0f / 255.0f, 107.0f / 255.0f, 20.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(grass2);
 
 	TerrainTypes rock;
 	rock.name = "Rock";
-	rock.height = 0.9f;
+	rock.height = 0.8f;
 	rock.color = glm::vec4(92.0f / 255.0f, 69.0f / 255.0f, 63.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(rock);
 
 	TerrainTypes rock2;
 	rock2.name = "Rock 2";
-	rock2.height = 0.95f;
+	rock2.height = 0.9f;
 	rock2.color = glm::vec4(75.0f / 255.0f, 60.0f / 255.0f, 57.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(rock2);
 
@@ -75,8 +76,6 @@ MapGenerator::MapGenerator(const char* fileLocation, unsigned int width, unsigne
 	snow.height = 1.0f;
 	snow.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	m_MapGenConf.regions.push_back(snow);
-
-	m_MapGenConf.drawMode = DrawMode::ColorMap;
 
 	GenerateMap();
 }
