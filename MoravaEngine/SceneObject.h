@@ -44,8 +44,9 @@ class SceneObject
 {
 public:
 	SceneObject();
-	virtual void Render();
 	~SceneObject();
+
+	virtual void Render();
 
 public:
 

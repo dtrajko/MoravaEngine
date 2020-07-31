@@ -26,32 +26,49 @@ public:
 		const char* name;
 	};
 
-	std::vector<TerrainTypes> m_Regions;
-
 	enum class DrawMode
 	{
 		NoiseMap,
 		ColorMap,
 	};
 
-	DrawMode m_DrawMode;
+	struct MapGenConf {
+		const char* heightMapFilePath;
+		const char* colorMapFilePath;
+		MapGenerator::DrawMode drawMode;
+		int mapWidth;
+		int mapHeight;
+		float noiseScale;
+		int octaves;
+		float persistance;
+		float lacunarity;
+		int seed;
+		glm::vec2 offset;
+		bool autoUpdate;
+		std::vector<MapGenerator::TerrainTypes> regions;
+
+		inline bool operator!=(const MapGenConf& other)
+		{
+			return
+				mapWidth != other.mapWidth ||
+				mapHeight != other.mapHeight ||
+				noiseScale != other.noiseScale ||
+				octaves != other.octaves ||
+				persistance != other.persistance ||
+				lacunarity != other.lacunarity ||
+				seed != other.seed ||
+				offset.x != other.offset.x ||
+				offset.y != other.offset.y ||
+				autoUpdate != other.autoUpdate ||
+				regions.size() != other.regions.size();
+		}
+	};
 
 private:
-	int m_MapWidth;
-	int m_MapHeight;
-	float m_NoiseScale;
+	MapGenConf m_MapGenConf;
 
 	float** m_NoiseMap;
 	glm::vec4* m_ColorMap;
-
 	Texture* m_Texture;
-	const char* m_FileLocation;
-
-	unsigned int m_Octaves;
-	float m_Persistance;
-	float m_Lacunarity;
-
-	int m_Seed;
-	glm::vec2 m_Offset;
 
 };

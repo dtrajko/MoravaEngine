@@ -77,11 +77,9 @@ private:
 	glm::vec4 m_CubeColor;
 	unsigned int m_DeleteVoxelCodeGLFW;
 
-	const char* m_TerrainMapFileLocation;
-	unsigned int m_TerrainMapWidth;
-	unsigned int m_TerrainMapHeight;
-	float m_TerrainMapNoiseScale;
-
 	float m_FloorSize = 100.0f;
+
+	MapGenerator::MapGenConf m_MapGenConf;
+	MapGenerator::MapGenConf m_MapGenConfPrev;
 
 };
