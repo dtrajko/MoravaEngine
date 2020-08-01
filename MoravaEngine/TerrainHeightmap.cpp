@@ -44,16 +44,16 @@ void TerrainHeightMap::Generate(glm::vec3 scale)
 	unsigned int pixelCount = hiMapWidth * hiMapHeight;
 	unsigned int vertexStride = (unsigned int)(sizeof(VertexTBN) / sizeof(float));
 
-	unsigned int vertexBufferSize = sizeof(VertexTBN) * pixelCount;
+	m_VertexCount = sizeof(VertexTBN) * pixelCount;
 	m_IndexCount = 6 * (hiMapWidth - 1) * (hiMapHeight - 1);
 
-	printf("Generate terrain hiMapWidth=%d hiMapHeight=%d vertexStride=%d vertexBufferSize=%d indexCount=%d\n",
-		hiMapWidth, hiMapHeight, vertexStride, vertexBufferSize, m_IndexCount);
+	printf("Generate terrain hiMapWidth=%d hiMapHeight=%d vertexStride=%d m_VertexCount=%d indexCount=%d\n",
+		hiMapWidth, hiMapHeight, vertexStride, m_VertexCount, m_IndexCount);
 
 	delete[] m_Vertices;
 	delete[] m_Indices;
 
-	m_Vertices = new float[vertexBufferSize];
+	m_Vertices = new float[m_VertexCount];
 	m_Indices = new unsigned int[m_IndexCount];
 
 	printf("Generate terrain vertices...\n");
@@ -133,8 +133,8 @@ void TerrainHeightMap::Generate(glm::vec3 scale)
 	m_VertexCount = vertexPointer;
 	m_IndexCount = indexPointer;
 
-	Mesh::CalcAverageNormals(m_Vertices, vertexBufferSize, m_Indices, m_IndexCount);
-	Mesh::CalcTangentSpace(m_Vertices, vertexBufferSize, m_Indices, m_IndexCount);
+	RecalculateNormals();
+	RecalculateTangentSpace();
 
 	for (unsigned int i = 0; i < pixelCount; i++)
 	{

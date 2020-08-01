@@ -416,6 +416,9 @@
     <ClCompile Include="MeshGenerator.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="MeshUnity.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -862,6 +865,9 @@
     </ClInclude>
     <ClInclude Include="MeshGenerator.h">
       <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshUnity.h">
+      <Filter>Mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

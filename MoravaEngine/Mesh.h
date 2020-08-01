@@ -25,9 +25,8 @@ public:
 	inline const unsigned int GetVBO() const { return m_VBO; };
 	inline const unsigned int GetIBO() const { return m_IBO; };
 
-	static void CalcAverageNormals(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount);
-	static void CalcTangentSpace(float* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount);
-
+	virtual void RecalculateNormals();
+	virtual void RecalculateTangentSpace();
 
 	virtual ~Mesh();
 

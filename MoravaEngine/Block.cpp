@@ -29,7 +29,9 @@ void Block::Generate(glm::vec3 scale)
 
 	float tilingFactor = 0.5f;
 
-	float vertices[] = {
+	m_VertexCount = 14 * 4 * 6;
+
+	m_Vertices = new float[m_VertexCount] {
 		//   X       Y       Z         U      V         NX     NY     NZ        TX     TY     TZ        BX     BY     BZ
 		-sizeX,  sizeY, -sizeZ,    txCoX,  0.0f,     -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,
 		-sizeX, -sizeY, -sizeZ,    txCoX, txCoY,     -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,
@@ -59,13 +61,12 @@ void Block::Generate(glm::vec3 scale)
 		-sizeX, -sizeY,  sizeZ,    txCoX,  0.0f,      0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,
 		-sizeX, -sizeY, -sizeZ,    txCoX, txCoZ,      0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,
 		 sizeX, -sizeY, -sizeZ,     0.0f, txCoZ,      0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,
-		 sizeX, -sizeY,  sizeZ,     0.0f,  0.0f,      0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,
+		 sizeX, -sizeY,  sizeZ,     0.0f,  0.0f,      0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f,     0.0f, -1.0f,  0.0f
 	};
 
-	unsigned int vertexCount = 14 * 4 * 6;
+	m_IndexCount = 6 * 6;
 
-	unsigned int indices[] =
-	{
+	m_Indices = new unsigned int[m_IndexCount] {
 		 0,  3,  1,
 		 3,  2,  1,
 		 4,  5,  7,
@@ -80,21 +81,19 @@ void Block::Generate(glm::vec3 scale)
 		20, 21, 23, // bottom
 	};
 
-	m_IndexCount = 6 * 6;
-
-	CalcAverageNormals(vertices, vertexCount, indices, m_IndexCount);
-	CalcTangentSpace(vertices, vertexCount, indices, m_IndexCount);
+	RecalculateNormals();
+	RecalculateTangentSpace();
 
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
 
 	glGenBuffers(1, &m_IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * m_IndexCount, indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_Indices[0]) * m_IndexCount, m_Indices, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &m_VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * vertexCount, vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(m_Vertices[0]) * m_VertexCount, m_Vertices, GL_STATIC_DRAW);
 
 	// position
 	glEnableVertexAttribArray(0);

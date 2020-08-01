@@ -1,11 +1,13 @@
 #pragma once
 
-#include "Mesh.h"
+#include "MeshUnity.h"
 
 #include <glm/glm.hpp>
 
 #include <vector>
 
+
+class MeshData;
 
 /**
  * Based on Procedural Landmass Generation series by Sebastian Lague
@@ -16,7 +18,7 @@ public:
 	MeshGenerator();
 	~MeshGenerator();
 
-	static void GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height);
+	static MeshData* GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height);
 
 };
 
@@ -27,7 +29,7 @@ public:
 	~MeshData();
 
 	void AddTriangle(int a, int b, int c);
-	Mesh* CreateMesh();
+	MeshUnity* CreateMesh();
 
 public:
 	std::vector<glm::vec3>* m_Vertices;

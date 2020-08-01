@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Texture.h"
+#include "MeshUnity.h"
+#include "MeshGenerator.h"
 
 #include <vector>
 
@@ -14,6 +16,7 @@ public:
 	enum class DrawMode {
 		NoiseMap,
 		ColorMap,
+		Mesh,
 	};
 
 public:
@@ -70,5 +73,6 @@ private:
 	float** m_NoiseMap;
 	glm::vec4* m_ColorMap;
 	Texture* m_Texture;
+	MeshData* m_MeshData;
 
 };

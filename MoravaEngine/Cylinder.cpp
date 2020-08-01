@@ -103,9 +103,6 @@ void Cylinder::Generate(glm::vec3 scale)
 	m_VertexCount = vertexCountSH;
 	m_IndexCount = indexCountSH;
 
-	// CalcAverageNormals(vertices.data(), m_VertexCount, m_CylinderSH->indices.data(), m_IndexCount);
-	// CalcTangentSpace(vertices.data(), m_VertexCount, m_CylinderSH->indices.data(), m_IndexCount);
-
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
 

@@ -9,7 +9,7 @@ MeshGenerator::~MeshGenerator()
 {
 }
 
-void MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height)
+MeshData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height)
 {
 	float topLeftX = (width - 1) / 2.0f;
 	float topLeftZ = (height - 1) / 2.0f;
@@ -31,6 +31,8 @@ void MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int width, u
 			vertexIndex++;
 		}
 	}
+
+	return meshData;
 }
 
 MeshData::MeshData(unsigned int meshWidth, unsigned int meshHeight)
@@ -40,7 +42,7 @@ MeshData::MeshData(unsigned int meshWidth, unsigned int meshHeight)
 	m_Vertices->resize(m_VerticeIndex);
 
 	m_UVs = new std::vector<glm::vec2>();
-	m_UVs->resize(meshWidth * meshHeight);
+	m_UVs->resize(m_VerticeIndex);
 
 
 	m_TriangleIndex = (meshWidth - 1) * (meshHeight - 1) * 6;
@@ -62,12 +64,12 @@ void MeshData::AddTriangle(int a, int b, int c)
 	m_TriangleIndex += 3;
 }
 
-Mesh* MeshData::CreateMesh()
+MeshUnity* MeshData::CreateMesh()
 {
-	Mesh* mesh = new Mesh();
-	// mesh->vertices = m_Vertices;
-	// mesh->triangles = m_Triangles;
-	// mesh->uv = m_UVs;
-	// mesh->CalcAverageNormals();
+	MeshUnity* mesh = new MeshUnity();
+	mesh->vertices = m_Vertices;
+	mesh->triangles = m_Triangles;
+	mesh->uv = m_UVs;
+	mesh->RecalculateNormals();
 	return mesh;
 }

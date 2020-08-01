@@ -1,0 +1,22 @@
+#pragma once
+
+#include "Mesh.h"
+
+#include <vector>
+
+
+class MeshUnity : public Mesh
+{
+public:
+	MeshUnity();
+	~MeshUnity();
+
+	virtual void RecalculateNormals() override;
+
+public:
+	std::vector<glm::vec3>* vertices;
+	std::vector<int>* triangles;
+	std::vector<glm::vec2>* uv;
+	std::vector<glm::vec3>* normals;
+
+};

@@ -386,7 +386,7 @@ void SceneJoey::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::stri
 
 		glm::mat4 transform = glm::mat4(1.0f);
 		float angleRadians = glm::radians((GLfloat)glfwGetTime());
-		transform = glm::rotate(transform, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		// transform = glm::rotate(transform, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		shaders["backgroundShader"]->setMat4("model", transform);
 		shaders["backgroundShader"]->setMat4("projection", projectionMatrix);
 		shaders["backgroundShader"]->setMat4("view", m_CameraController->CalculateViewMatrix());
