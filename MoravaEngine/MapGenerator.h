@@ -14,14 +14,15 @@ class MapGenerator
 {
 public:
 	enum class DrawMode {
-		NoiseMap,
+		HeightMap,
 		ColorMap,
 		Mesh,
 	};
 
 public:
 	MapGenerator();
-	MapGenerator(const char* fileLocation, unsigned int width, unsigned int height, int seed, float noiseScale, glm::vec2 offset, DrawMode drawMode);
+	MapGenerator(const char* heightMapFilePath, const char* colorMapFilePath, unsigned int width, unsigned int height,
+		int seed, float noiseScale, glm::vec2 offset, DrawMode drawMode);
 	~MapGenerator();
 
 	inline MeshUnity* GetMesh() { return m_Mesh; };
@@ -74,7 +75,8 @@ private:
 
 	float** m_NoiseMap;
 	glm::vec4* m_ColorMap;
-	Texture* m_Texture;
+	Texture* m_TextureColorMap;
+	Texture* m_TextureHeightMap;
 	MeshData* m_MeshData;
 	MeshUnity* m_Mesh;
 

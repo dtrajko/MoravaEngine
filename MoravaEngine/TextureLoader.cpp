@@ -19,7 +19,7 @@ TextureLoader::TextureLoader()
 
 Texture* TextureLoader::GetTexture(const char* fileLoc, bool flipVert, bool force)
 {
-	return GetTexture(fileLoc, flipVert, GL_LINEAR, force);
+	return GetTexture(fileLoc, flipVert, GL_NEAREST, force);
 }
 
 Texture* TextureLoader::GetTexture(const char* fileLoc, bool flipVert, GLenum filter, bool force)
@@ -35,7 +35,7 @@ Texture* TextureLoader::GetTexture(const char* fileLoc, bool flipVert, GLenum fi
 		}
 	}
 
-	Texture* texture = new Texture(fileLoc);
+	Texture* texture = new Texture(fileLoc, false, true, filter);
 	m_Textures.insert(std::make_pair(fileLoc, texture));
 	Log::GetLogger()->info("TextureLoader MISS - New texture '{0}' loaded [m_Textures.size={1}]", fileLoc, m_Textures.size());
 	return texture;

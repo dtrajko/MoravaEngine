@@ -239,7 +239,12 @@ void ResourceManager::Init()
     s_MaterialInfo.insert(std::make_pair("boulder", textureInfoBoulder));
 }
 
-void ResourceManager::LoadTexture(std::string name, std::string filePath, bool force)
+void ResourceManager::LoadTexture(std::string name, std::string filePath)
+{
+    LoadTexture(name, filePath, GL_LINEAR, false);
+}
+
+void ResourceManager::LoadTexture(std::string name, std::string filePath, GLenum filter, bool force)
 {
     if (force) {
         // remove previous entry from the map
@@ -249,7 +254,7 @@ void ResourceManager::LoadTexture(std::string name, std::string filePath, bool f
         }
     }
 
-    s_Textures.insert(std::make_pair(name, TextureLoader::Get()->GetTexture(filePath.c_str(), false, force)));
+    s_Textures.insert(std::make_pair(name, TextureLoader::Get()->GetTexture(filePath.c_str(), false, filter, force)));
 }
 
 void ResourceManager::LoadMaterial(std::string name, TextureInfo textureInfo)
@@ -269,7 +274,7 @@ Texture* ResourceManager::HotLoadTexture(std::string textureName)
     if (textureIterator != s_Textures.end())
         return textureIterator->second;
 
-    LoadTexture(textureName, textureInfoIterator->second, false);
+    LoadTexture(textureName, textureInfoIterator->second);
 
     textureIterator = s_Textures.find(textureName);
 

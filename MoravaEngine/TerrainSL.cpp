@@ -29,14 +29,5 @@ TerrainSL::~TerrainSL()
 
 void TerrainSL::Generate()
 {
-    const char* mapFilePath = m_HeightMapFilePath;
-
-    if (m_DrawMode == MapGenerator::DrawMode::NoiseMap)
-        mapFilePath = m_HeightMapFilePath;
-    else if (m_DrawMode == MapGenerator::DrawMode::ColorMap)
-        mapFilePath = m_ColorMapFilePath;
-    else if (m_DrawMode == MapGenerator::DrawMode::Mesh)
-        mapFilePath = m_ColorMapFilePath;
-
-    m_MapGenerator = new MapGenerator(mapFilePath, m_Width, m_Height, m_Seed, m_NoiseScale, m_Offset, m_DrawMode);
+    m_MapGenerator = new MapGenerator(m_HeightMapFilePath, m_ColorMapFilePath, m_Width, m_Height, m_Seed, m_NoiseScale, m_Offset, m_DrawMode);
 }

@@ -49,10 +49,11 @@ Texture::Texture(const char* fileLoc, unsigned int width, unsigned int height, b
 		stbi_image_free(m_Buffer);
 }
 
-Texture::Texture(const char* fileLoc, bool flipVert, GLenum filter)
+Texture::Texture(const char* fileLoc, bool flipVert, bool isSampler, GLenum filter)
 	: Texture()
 {
 	m_FileLocation = fileLoc;
+	m_IsSampler = isSampler;
 	m_Filter = filter;
 
 	Load(flipVert);

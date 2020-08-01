@@ -13,8 +13,8 @@ class Texture
 public:
 	Texture();
 	Texture(const char* fileLoc, bool flipVert = false);
-	Texture(const char* fileLoc, bool flipVert, GLenum filter);
 	Texture(const char* fileLoc, bool flipVert, bool isSampler);
+	Texture(const char* fileLoc, bool flipVert, bool isSampler, GLenum filter);
 	Texture(const char* fileLoc, unsigned int width, unsigned int height, bool isSampler, GLenum filter);
 	virtual bool Load(bool flipVert = false);
 	virtual void OpenGLCreate();

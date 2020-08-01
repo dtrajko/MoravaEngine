@@ -99,8 +99,8 @@ SceneOmniShadows::SceneOmniShadows()
 
 void SceneOmniShadows::SetupTextures()
 {
-    ResourceManager::LoadTexture("crate",       "Textures/crate.png", false);
-    ResourceManager::LoadTexture("crateNormal", "Textures/crateNormal.png", false);
+    ResourceManager::LoadTexture("crate",       "Textures/crate.png");
+    ResourceManager::LoadTexture("crateNormal", "Textures/crateNormal.png");
 }
 
 void SceneOmniShadows::SetupTextureSlots()

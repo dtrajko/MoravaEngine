@@ -192,16 +192,16 @@ void SceneEditor::SetupTextures()
 {
     ResourceManager::LoadTexture(
         ResourceManager::GetTextureInfo()->find("none")->first,
-        ResourceManager::GetTextureInfo()->find("none")->second, false);
+        ResourceManager::GetTextureInfo()->find("none")->second);
     ResourceManager::LoadTexture(
         ResourceManager::GetTextureInfo()->find("fire")->first,
-        ResourceManager::GetTextureInfo()->find("fire")->second, false);
+        ResourceManager::GetTextureInfo()->find("fire")->second);
     ResourceManager::LoadTexture(
         ResourceManager::GetTextureInfo()->find("waterNormal")->first,
-        ResourceManager::GetTextureInfo()->find("waterNormal")->second, false);
+        ResourceManager::GetTextureInfo()->find("waterNormal")->second);
     ResourceManager::LoadTexture(
         ResourceManager::GetTextureInfo()->find("waterDuDv")->first,
-        ResourceManager::GetTextureInfo()->find("waterDuDv")->second, false);
+        ResourceManager::GetTextureInfo()->find("waterDuDv")->second);
 }
 
 void SceneEditor::SetupMaterials()
