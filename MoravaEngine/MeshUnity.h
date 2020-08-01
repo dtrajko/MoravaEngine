@@ -11,6 +11,7 @@ public:
 	MeshUnity();
 	~MeshUnity();
 
+	virtual void Generate(glm::vec3 scale) override;
 	virtual void RecalculateNormals() override;
 
 public:

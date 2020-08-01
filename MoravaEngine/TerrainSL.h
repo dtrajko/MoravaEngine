@@ -16,6 +16,7 @@ public:
 	~TerrainSL();
 
 	virtual void Generate() override;
+	inline MapGenerator* GetMapGenerator() { return m_MapGenerator; };
 
 private:
 	const char* m_HeightMapFilePath;
@@ -34,4 +35,5 @@ private:
 	float m_Frequency;
 	float m_Amplitude;
 	MapGenerator* m_MapGenerator;
+
 };

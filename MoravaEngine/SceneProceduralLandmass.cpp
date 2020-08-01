@@ -427,7 +427,7 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
         if (ImGui::CollapsingHeader("Show Details"))
         {
             // Begin DrawMode ImGui drop-down list
-            static const char* items[] { "NoiseMap", "ColorMap" };
+            static const char* items[] { "NoiseMap", "ColorMap", "Mesh" };
             static int selectedItem = (int)m_MapGenConf.drawMode;
             ImGui::Combo("Draw Mode", &selectedItem, items, IM_ARRAYSIZE(items));
             m_MapGenConf.drawMode = (MapGenerator::DrawMode)selectedItem;
@@ -542,7 +542,16 @@ void SceneProceduralLandmass::Render(Window& mainWindow, glm::mat4 projectionMat
             // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
         }
         ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
-        meshes["floor_height"]->Render();
+
+        if (m_MapGenConf.drawMode == MapGenerator::DrawMode::NoiseMap ||
+            m_MapGenConf.drawMode == MapGenerator::DrawMode::ColorMap) {
+            meshes["floor_height"]->Render();
+        }
+        else if (m_MapGenConf.drawMode == MapGenerator::DrawMode::Mesh) {
+            if (m_TerrainSL->GetMapGenerator()->GetMesh() != nullptr) {
+                m_TerrainSL->GetMapGenerator()->GetMesh()->Render();
+            }
+        }
     }
 
     /**** BEGIN render Player ****/

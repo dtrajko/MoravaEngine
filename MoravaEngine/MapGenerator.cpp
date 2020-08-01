@@ -114,6 +114,7 @@ void MapGenerator::GenerateMap()
 	else if (m_MapGenConf.drawMode == DrawMode::Mesh) {
 		m_Texture = TextureGenerator::TextureFromColorMap(m_ColorMap, m_MapGenConf.colorMapFilePath, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight);
 		m_MeshData = MeshGenerator::GenerateTerrainMesh(m_NoiseMap, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight);
+		m_Mesh = m_MeshData->CreateMesh();
 	}
 }
 

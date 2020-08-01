@@ -32,9 +32,10 @@ public:
 	MeshUnity* CreateMesh();
 
 public:
-	std::vector<glm::vec3>* m_Vertices;
-	std::vector<int>* m_Triangles;
-	std::vector<glm::vec2>* m_UVs;
+	std::vector<glm::vec3> m_Vertices;
+	std::vector<int> m_Triangles;
+	std::vector<glm::vec2> m_UVs;
+	std::vector<glm::vec3> m_Normals;
 
 	unsigned int m_VerticeIndex;
 	unsigned int m_TriangleIndex;

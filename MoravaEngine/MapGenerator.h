@@ -24,6 +24,8 @@ public:
 	MapGenerator(const char* fileLocation, unsigned int width, unsigned int height, int seed, float noiseScale, glm::vec2 offset, DrawMode drawMode);
 	~MapGenerator();
 
+	inline MeshUnity* GetMesh() { return m_Mesh; };
+
 private:
 	void GenerateMap();
 	void Validate();
@@ -74,5 +76,6 @@ private:
 	glm::vec4* m_ColorMap;
 	Texture* m_Texture;
 	MeshData* m_MeshData;
+	MeshUnity* m_Mesh;
 
 };
