@@ -37,7 +37,7 @@ private:
 	virtual void SetupTextures() override;
 	virtual void SetupTextureSlots() override;
 	virtual void SetupMeshes() override;
-	bool IsTerrainConfigChanged();
+	void CheckMapRebuildRequirements();
 
 	TerrainSL* m_TerrainSL;
 	glm::mat4 m_Transform;
@@ -84,5 +84,8 @@ private:
 
 	float m_HeightMapMultiplier;
 	float m_HeightMapMultiplierPrev;
+
+	bool m_IsRequiredMapUpdate;
+	bool m_IsRequiredMapRebuild;
 
 };

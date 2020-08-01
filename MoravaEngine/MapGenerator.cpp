@@ -11,24 +11,10 @@ MapGenerator::MapGenerator()
 {
 }
 
-MapGenerator::MapGenerator(const char* heightMapFilePath, const char* colorMapFilePath, unsigned int width, unsigned int height,
-	int seed, float noiseScale, glm::vec2 offset, DrawMode drawMode, float heightMapMultiplier)
+MapGenerator::MapGenerator(const char* heightMapFilePath, const char* colorMapFilePath)
 {
 	m_MapGenConf.heightMapFilePath = heightMapFilePath;
 	m_MapGenConf.colorMapFilePath = colorMapFilePath;
-	m_MapGenConf.drawMode = drawMode;
-	m_MapGenConf.mapWidth = width;
-	m_MapGenConf.mapHeight = height;
-	m_MapGenConf.noiseScale = noiseScale;
-
-	m_MapGenConf.octaves = 3;
-	m_MapGenConf.persistance = 1.0f;
-	m_MapGenConf.lacunarity = 1.0f;
-
-	m_MapGenConf.seed = seed;
-	m_MapGenConf.offset = offset;
-
-	m_HeightMapMultiplier = heightMapMultiplier;
 
 	m_MapGenConf.regions = std::vector<TerrainTypes>();
 
@@ -79,37 +65,57 @@ MapGenerator::MapGenerator(const char* heightMapFilePath, const char* colorMapFi
 	snow.height = 1.0f;
 	snow.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	m_MapGenConf.regions.push_back(snow);
-
-	GenerateMap();
 }
 
 MapGenerator::~MapGenerator()
 {
 }
 
+void MapGenerator::Generate(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild)
+{
+	m_MapGenConf.drawMode = mapGenConf.drawMode;
+	m_MapGenConf.mapWidth = mapGenConf.mapWidth;
+	m_MapGenConf.mapHeight = mapGenConf.mapHeight;
+	m_MapGenConf.noiseScale = mapGenConf.noiseScale;
+	m_MapGenConf.octaves = mapGenConf.octaves;
+	m_MapGenConf.persistance = mapGenConf.persistance;
+	m_MapGenConf.lacunarity = mapGenConf.lacunarity;
+
+	m_MapGenConf.seed = mapGenConf.seed;
+	m_MapGenConf.offset = mapGenConf.offset;
+
+	m_HeightMapMultiplier = heightMapMultiplier;
+	m_IsRequiredMapRebuild = isRequiredMapRebuild;
+
+	GenerateMap();
+}
+
 void MapGenerator::GenerateMap()
 {
 	Validate();
 
-	m_NoiseMap = NoiseSL::GenerateNoiseMap(m_MapGenConf.mapWidth, m_MapGenConf.mapHeight, m_MapGenConf.seed, m_MapGenConf.noiseScale,
-		m_MapGenConf.octaves, m_MapGenConf.persistance, m_MapGenConf.lacunarity, m_MapGenConf.offset);
+	if (m_IsRequiredMapRebuild) {
+		m_NoiseMap = NoiseSL::GenerateNoiseMap(m_MapGenConf.mapWidth, m_MapGenConf.mapHeight, m_MapGenConf.seed, m_MapGenConf.noiseScale,
+			m_MapGenConf.octaves, m_MapGenConf.persistance, m_MapGenConf.lacunarity, m_MapGenConf.offset);
 
-	m_ColorMap = new glm::vec4[m_MapGenConf.mapWidth * m_MapGenConf.mapHeight];
+		m_ColorMap = new glm::vec4[m_MapGenConf.mapWidth * m_MapGenConf.mapHeight];
 
-	for (int y = 0; y < m_MapGenConf.mapHeight; y++) {
-		for (int x = 0; x < m_MapGenConf.mapWidth; x++) {
-			float currentHeight = m_NoiseMap[x][y];
-			for (int i = 0; i < m_MapGenConf.regions.size(); i++) {
-				if (currentHeight <= m_MapGenConf.regions[i].height) {
-					m_ColorMap[y * m_MapGenConf.mapWidth + x] = m_MapGenConf.regions[i].color;
-					break;
+		for (int y = 0; y < m_MapGenConf.mapHeight; y++) {
+			for (int x = 0; x < m_MapGenConf.mapWidth; x++) {
+				float currentHeight = m_NoiseMap[x][y];
+				for (int i = 0; i < m_MapGenConf.regions.size(); i++) {
+					if (currentHeight <= m_MapGenConf.regions[i].height) {
+						m_ColorMap[y * m_MapGenConf.mapWidth + x] = m_MapGenConf.regions[i].color;
+						break;
+					}
 				}
 			}
 		}
+
+		m_TextureHeightMap = TextureGenerator::TextureFromHeightMap(m_NoiseMap, m_MapGenConf.heightMapFilePath, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight);
+		m_TextureColorMap = TextureGenerator::TextureFromColorMap(m_ColorMap, m_MapGenConf.colorMapFilePath, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight);
 	}
 
-	m_TextureHeightMap = TextureGenerator::TextureFromHeightMap(m_NoiseMap, m_MapGenConf.heightMapFilePath, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight);
-	m_TextureColorMap = TextureGenerator::TextureFromColorMap(m_ColorMap, m_MapGenConf.colorMapFilePath, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight);
 	MeshData* meshData = MeshGenerator::GenerateTerrainMesh(m_NoiseMap, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight, m_HeightMapMultiplier);
 	m_Mesh = meshData->CreateMesh();
 }

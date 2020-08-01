@@ -19,11 +19,14 @@ public:
 		Mesh,
 	};
 
+	struct MapGenConf;
+
 public:
 	MapGenerator();
-	MapGenerator(const char* heightMapFilePath, const char* colorMapFilePath, unsigned int width, unsigned int height,
-		int seed, float noiseScale, glm::vec2 offset, DrawMode drawMode, float heightMapMultiplier);
+	MapGenerator(const char* heightMapFilePath, const char* colorMapFilePath);
 	~MapGenerator();
+
+	void Generate(MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild);
 
 	inline MeshUnity* GetMesh() { return m_Mesh; };
 
@@ -72,6 +75,7 @@ public:
 
 private:
 	MapGenConf m_MapGenConf;
+	MapGenConf m_MapGenConfPrev;
 
 	float** m_NoiseMap;
 	glm::vec4* m_ColorMap;
@@ -80,5 +84,6 @@ private:
 	MeshUnity* m_Mesh;
 
 	float m_HeightMapMultiplier;
+	bool m_IsRequiredMapRebuild;
 
 };

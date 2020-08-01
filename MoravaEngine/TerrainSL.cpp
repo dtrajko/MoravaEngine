@@ -5,32 +5,24 @@ TerrainSL::TerrainSL()
 {
 }
 
-TerrainSL::TerrainSL(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier)
+TerrainSL::TerrainSL(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild)
 {
-    m_HeightMapFilePath = mapGenConf.heightMapFilePath;
-    m_ColorMapFilePath = mapGenConf.colorMapFilePath;
-	m_DrawMode    = mapGenConf.drawMode;
-    m_Width       = mapGenConf.mapWidth;
-    m_Height      = mapGenConf.mapHeight;
-    m_NoiseScale  = mapGenConf.noiseScale;
-    m_Octaves     = mapGenConf.octaves;
-    m_Persistance = mapGenConf.persistance;
-    m_Lacunarity  = mapGenConf.lacunarity;
-    m_Seed        = mapGenConf.seed;
-    m_Offset      = mapGenConf.offset;
-    m_Regions     = mapGenConf.regions;
-
     m_HeightMapMultiplier = heightMapMultiplier;
+    m_IsRequiredMapRebuild = isRequiredMapRebuild;
 
-    Generate();
+    m_MapGenerator = new MapGenerator(mapGenConf.heightMapFilePath, mapGenConf.colorMapFilePath);
+    m_MapGenerator->Generate(mapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild);
 }
 
 TerrainSL::~TerrainSL()
 {
+    delete m_MapGenerator;
 }
 
-void TerrainSL::Generate()
+void TerrainSL::Update(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild)
 {
-    m_MapGenerator = new MapGenerator(m_HeightMapFilePath, m_ColorMapFilePath, m_Width, m_Height,
-        m_Seed, m_NoiseScale, m_Offset, m_DrawMode, m_HeightMapMultiplier);
+    m_HeightMapMultiplier = heightMapMultiplier;
+    m_IsRequiredMapRebuild = isRequiredMapRebuild;
+
+    m_MapGenerator->Generate(mapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild);
 }

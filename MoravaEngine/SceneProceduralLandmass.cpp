@@ -27,6 +27,7 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     sceneSettings.enableShadows      = false;
     sceneSettings.enableWaterEffects = false;
     sceneSettings.enableParticles    = false;
+    sceneSettings.farPlane = 500.0f;
 
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
@@ -121,8 +122,11 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     SetupTextures();
     SetupMeshes();
 
+    m_IsRequiredMapUpdate = true;
+    m_IsRequiredMapRebuild = true;
+
     NoiseSL::Init(m_MapGenConf.seed);
-    m_TerrainSL = new TerrainSL(m_MapGenConf, m_HeightMapMultiplier);
+    m_TerrainSL = new TerrainSL(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild);
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
@@ -130,7 +134,7 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_RenderInstanced = new RenderInstanced(m_TerrainSL, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
 
     m_Transform = glm::mat4(1.0f);
-    m_UpdateCooldown = { 0.0f, 0.5f };
+    m_UpdateCooldown = { 0.0f, 0.2f };
     m_DigCooldown = { 0.0f, 0.1f };
     m_RayIntersectCooldown = { 0.0f, 0.1f };
     m_RayCastCooldown = { 0.0f, 0.1f };
@@ -435,14 +439,14 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
             m_MapGenConf.drawMode = (MapGenerator::DrawMode)selectedItem;
             // End DrawMode ImGui drop-down list
 
-            ImGui::SliderInt("Map Width", &m_MapGenConf.mapWidth,   1, 1024);
-            ImGui::SliderInt("Map Height", &m_MapGenConf.mapHeight, 1, 1024);
+            ImGui::SliderInt("Map Width", &m_MapGenConf.mapWidth,   1, 512);
+            ImGui::SliderInt("Map Height", &m_MapGenConf.mapHeight, 1, 512);
             ImGui::SliderFloat("Noise Scale", &m_MapGenConf.noiseScale, 1.0f, 100.0f);
             ImGui::SliderInt("Octaves", &m_MapGenConf.octaves, 1, 10);
             ImGui::SliderFloat("Persistance", &m_MapGenConf.persistance, 0.0f, 1.0f);
-            ImGui::SliderFloat("Lacunarity", &m_MapGenConf.lacunarity, 1.0f, 10.0f);
+            ImGui::SliderFloat("Lacunarity", &m_MapGenConf.lacunarity, 1.0f, 5.0f);
             ImGui::SliderInt("Seed", &m_MapGenConf.seed, 0, 100000);
-            ImGui::SliderFloat2("Offset", glm::value_ptr(m_MapGenConf.offset), -20.0f, 20.0f);
+            ImGui::SliderFloat2("Offset", glm::value_ptr(m_MapGenConf.offset), -10.0f, 10.0f);
             ImGui::Checkbox("Auto Update", &m_MapGenConf.autoUpdate);
 
             ImGui::SliderFloat("Height Map Multiplier", &m_HeightMapMultiplier, -10.0f, 40.0f);
@@ -486,38 +490,40 @@ void SceneProceduralLandmass::UpdateCooldown(float timestep, Window& mainWindow)
     if (timestep - m_UpdateCooldown.lastTime < m_UpdateCooldown.cooldown) return;
     m_UpdateCooldown.lastTime = timestep;
 
-    if (!IsTerrainConfigChanged()) return;
+    CheckMapRebuildRequirements();
 
-    Release();
-    m_TerrainSL = new TerrainSL(m_MapGenConf, m_HeightMapMultiplier);
-    m_PlayerController->SetTerrain(m_TerrainSL);
-    MousePicker::Get()->SetTerrain(m_TerrainSL);
-    m_RenderInstanced = new RenderInstanced(m_TerrainSL, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
-    m_RenderInstanced->CreateVertexData();
+    if (!m_IsRequiredMapUpdate) return;
+
+    // Release();
+    m_TerrainSL->Update(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild);
+    // m_RenderInstanced->CreateVertexData();
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
 }
 
-bool SceneProceduralLandmass::IsTerrainConfigChanged()
+void SceneProceduralLandmass::CheckMapRebuildRequirements()
 {
+    m_IsRequiredMapUpdate = false;
+    m_IsRequiredMapRebuild = false;
+
     if (m_MapGenConf != m_MapGenConfPrev) {
+        m_IsRequiredMapUpdate = true;
+        m_IsRequiredMapRebuild = true;
         m_MapGenConfPrev = m_MapGenConf;
-        return true;
     }
 
     if (m_HeightMapMultiplier != m_HeightMapMultiplierPrev) {
+        m_IsRequiredMapUpdate = true;
+        m_IsRequiredMapRebuild = false;
         m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
-        return true;
     }
-
-    return false;
 }
 
 void SceneProceduralLandmass::Release()
 {
-    if (m_TerrainSL) delete m_TerrainSL;
-    if (m_RenderInstanced) delete m_RenderInstanced;
+    // if (m_TerrainSL) delete m_TerrainSL;
+    // if (m_RenderInstanced) delete m_RenderInstanced;
 }
 
 void SceneProceduralLandmass::Dig(bool* keys, float timestep)
