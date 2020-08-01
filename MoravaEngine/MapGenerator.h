@@ -22,7 +22,7 @@ public:
 public:
 	MapGenerator();
 	MapGenerator(const char* heightMapFilePath, const char* colorMapFilePath, unsigned int width, unsigned int height,
-		int seed, float noiseScale, glm::vec2 offset, DrawMode drawMode);
+		int seed, float noiseScale, glm::vec2 offset, DrawMode drawMode, float heightMapMultiplier);
 	~MapGenerator();
 
 	inline MeshUnity* GetMesh() { return m_Mesh; };
@@ -77,7 +77,8 @@ private:
 	glm::vec4* m_ColorMap;
 	Texture* m_TextureColorMap;
 	Texture* m_TextureHeightMap;
-	MeshData* m_MeshData;
 	MeshUnity* m_Mesh;
+
+	float m_HeightMapMultiplier;
 
 };

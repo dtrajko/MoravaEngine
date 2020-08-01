@@ -5,7 +5,7 @@ TerrainSL::TerrainSL()
 {
 }
 
-TerrainSL::TerrainSL(MapGenerator::MapGenConf mapGenConf)
+TerrainSL::TerrainSL(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier)
 {
     m_HeightMapFilePath = mapGenConf.heightMapFilePath;
     m_ColorMapFilePath = mapGenConf.colorMapFilePath;
@@ -20,6 +20,8 @@ TerrainSL::TerrainSL(MapGenerator::MapGenConf mapGenConf)
     m_Offset      = mapGenConf.offset;
     m_Regions     = mapGenConf.regions;
 
+    m_HeightMapMultiplier = heightMapMultiplier;
+
     Generate();
 }
 
@@ -29,5 +31,6 @@ TerrainSL::~TerrainSL()
 
 void TerrainSL::Generate()
 {
-    m_MapGenerator = new MapGenerator(m_HeightMapFilePath, m_ColorMapFilePath, m_Width, m_Height, m_Seed, m_NoiseScale, m_Offset, m_DrawMode);
+    m_MapGenerator = new MapGenerator(m_HeightMapFilePath, m_ColorMapFilePath, m_Width, m_Height,
+        m_Seed, m_NoiseScale, m_Offset, m_DrawMode, m_HeightMapMultiplier);
 }

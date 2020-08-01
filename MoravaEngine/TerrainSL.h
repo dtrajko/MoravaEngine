@@ -12,7 +12,7 @@ class TerrainSL : public TerrainVoxel
 {
 public:
 	TerrainSL();
-	TerrainSL(MapGenerator::MapGenConf mapGenConf);
+	TerrainSL(MapGenerator::MapGenConf mapGenConf, float m_HeightMapMultiplier);
 	~TerrainSL();
 
 	virtual void Generate() override;
@@ -35,5 +35,7 @@ private:
 	float m_Frequency;
 	float m_Amplitude;
 	MapGenerator* m_MapGenerator;
+
+	float m_HeightMapMultiplier;
 
 };

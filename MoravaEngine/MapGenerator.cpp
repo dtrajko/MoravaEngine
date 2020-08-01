@@ -12,7 +12,7 @@ MapGenerator::MapGenerator()
 }
 
 MapGenerator::MapGenerator(const char* heightMapFilePath, const char* colorMapFilePath, unsigned int width, unsigned int height,
-	int seed, float noiseScale, glm::vec2 offset, DrawMode drawMode)
+	int seed, float noiseScale, glm::vec2 offset, DrawMode drawMode, float heightMapMultiplier)
 {
 	m_MapGenConf.heightMapFilePath = heightMapFilePath;
 	m_MapGenConf.colorMapFilePath = colorMapFilePath;
@@ -27,6 +27,8 @@ MapGenerator::MapGenerator(const char* heightMapFilePath, const char* colorMapFi
 
 	m_MapGenConf.seed = seed;
 	m_MapGenConf.offset = offset;
+
+	m_HeightMapMultiplier = heightMapMultiplier;
 
 	m_MapGenConf.regions = std::vector<TerrainTypes>();
 
@@ -108,13 +110,8 @@ void MapGenerator::GenerateMap()
 
 	m_TextureHeightMap = TextureGenerator::TextureFromHeightMap(m_NoiseMap, m_MapGenConf.heightMapFilePath, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight);
 	m_TextureColorMap = TextureGenerator::TextureFromColorMap(m_ColorMap, m_MapGenConf.colorMapFilePath, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight);
-
-	if (m_MapGenConf.drawMode == DrawMode::HeightMap) {}
-	else if (m_MapGenConf.drawMode == DrawMode::ColorMap) {}
-	else if (m_MapGenConf.drawMode == DrawMode::Mesh) {
-		m_MeshData = MeshGenerator::GenerateTerrainMesh(m_NoiseMap, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight);
-		m_Mesh = m_MeshData->CreateMesh();
-	}
+	MeshData* meshData = MeshGenerator::GenerateTerrainMesh(m_NoiseMap, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight, m_HeightMapMultiplier);
+	m_Mesh = meshData->CreateMesh();
 }
 
 void MapGenerator::Validate()

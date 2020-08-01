@@ -18,7 +18,7 @@ public:
 	MeshGenerator();
 	~MeshGenerator();
 
-	static MeshData* GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height);
+	static MeshData* GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height, float heightMapMultiplier);
 
 };
 
@@ -36,6 +36,9 @@ public:
 	std::vector<int> m_Triangles;
 	std::vector<glm::vec2> m_UVs;
 	std::vector<glm::vec3> m_Normals;
+
+	// for debug reasons
+	std::vector<glm::vec2> m_XY;
 
 	unsigned int m_VerticeIndex;
 	unsigned int m_TriangleIndex;

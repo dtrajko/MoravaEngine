@@ -96,18 +96,12 @@ SceneProceduralLandmass::SceneProceduralLandmass()
 
     ResourceManager::Init();
 
-    SetCamera();
-    SetLightManager();
-    SetupTextureSlots();
-    SetupTextures();
-    SetupMeshes();
-
     /**** Configure Map Generator ***/
     m_MapGenConf.heightMapFilePath = "Textures/Noise/heightMap.png";
-    m_MapGenConf.colorMapFilePath  = "Textures/Noise/colorMap.png";
-    m_MapGenConf.drawMode = MapGenerator::DrawMode::ColorMap;
-    m_MapGenConf.mapWidth = 8;
-    m_MapGenConf.mapHeight = 8;
+    m_MapGenConf.colorMapFilePath = "Textures/Noise/colorMap.png";
+    m_MapGenConf.drawMode = MapGenerator::DrawMode::Mesh;
+    m_MapGenConf.mapWidth = 64;
+    m_MapGenConf.mapHeight = 64;
     m_MapGenConf.noiseScale = 25.0f;
     m_MapGenConf.octaves = 3;
     m_MapGenConf.persistance = 0.5f;
@@ -117,9 +111,18 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_MapGenConf.autoUpdate = true;
     m_MapGenConf.regions = std::vector<MapGenerator::TerrainTypes>();
 
+    m_FloorSize = (float)m_MapGenConf.mapWidth; // used in SetupMeshes
+    m_HeightMapMultiplier = 1.0f;
+    m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
+
+    SetCamera();
+    SetLightManager();
+    SetupTextureSlots();
+    SetupTextures();
+    SetupMeshes();
 
     NoiseSL::Init(m_MapGenConf.seed);
-    m_TerrainSL = new TerrainSL(m_MapGenConf);
+    m_TerrainSL = new TerrainSL(m_MapGenConf, m_HeightMapMultiplier);
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
@@ -441,6 +444,8 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::SliderInt("Seed", &m_MapGenConf.seed, 0, 100000);
             ImGui::SliderFloat2("Offset", glm::value_ptr(m_MapGenConf.offset), -20.0f, 20.0f);
             ImGui::Checkbox("Auto Update", &m_MapGenConf.autoUpdate);
+
+            ImGui::SliderFloat("Height Map Multiplier", &m_HeightMapMultiplier, -20.0f, 20.0f);
         }
     }
     ImGui::End();
@@ -484,7 +489,7 @@ void SceneProceduralLandmass::UpdateCooldown(float timestep, Window& mainWindow)
     if (!IsTerrainConfigChanged()) return;
 
     Release();
-    m_TerrainSL = new TerrainSL(m_MapGenConf);
+    m_TerrainSL = new TerrainSL(m_MapGenConf, m_HeightMapMultiplier);
     m_PlayerController->SetTerrain(m_TerrainSL);
     MousePicker::Get()->SetTerrain(m_TerrainSL);
     m_RenderInstanced = new RenderInstanced(m_TerrainSL, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
@@ -500,6 +505,12 @@ bool SceneProceduralLandmass::IsTerrainConfigChanged()
         m_MapGenConfPrev = m_MapGenConf;
         return true;
     }
+
+    if (m_HeightMapMultiplier != m_HeightMapMultiplierPrev) {
+        m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
+        return true;
+    }
+
     return false;
 }
 
@@ -678,25 +689,28 @@ void SceneProceduralLandmass::Render(Window& mainWindow, glm::mat4 projectionMat
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         shaderMain->setMat4("model", model);
         shaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-        shaderMain->setFloat("tilingFactor", 1.0f / m_FloorSize);
-        if (m_MapGenConf.drawMode == MapGenerator::DrawMode::HeightMap) {
-            ResourceManager::GetTexture("heightMap")->Bind(textureSlots["diffuse"]);
-            // Log::GetLogger()->info("SceneProceduralLandmass::Render heightMap ID = {0}", ResourceManager::GetTexture("heightMap")->GetID());
-        }
-        if (m_MapGenConf.drawMode == MapGenerator::DrawMode::ColorMap) {
-            ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
-            // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
-        }
         ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
 
-        if (m_MapGenConf.drawMode == MapGenerator::DrawMode::HeightMap ||
-            m_MapGenConf.drawMode == MapGenerator::DrawMode::ColorMap) {
+        switch (m_MapGenConf.drawMode) {
+        case MapGenerator::DrawMode::HeightMap:
+            ResourceManager::GetTexture("heightMap")->Bind(textureSlots["diffuse"]);
+            shaderMain->setFloat("tilingFactor", 1.0f / m_FloorSize);
+            // Log::GetLogger()->info("SceneProceduralLandmass::Render heightMap ID = {0}", ResourceManager::GetTexture("heightMap")->GetID());
             meshes["floor_height"]->Render();
-        }
-        else if (m_MapGenConf.drawMode == MapGenerator::DrawMode::Mesh) {
-            if (m_TerrainSL->GetMapGenerator()->GetMesh() != nullptr) {
+            break;
+        case MapGenerator::DrawMode::ColorMap:
+            ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
+            shaderMain->setFloat("tilingFactor", 1.0f / m_FloorSize);
+            // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
+            meshes["floor_height"]->Render();
+            break;
+        case MapGenerator::DrawMode::Mesh:
+            ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
+            shaderMain->setFloat("tilingFactor", 1.0f);
+            // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
+            if (m_TerrainSL->GetMapGenerator()->GetMesh() != nullptr)
                 m_TerrainSL->GetMapGenerator()->GetMesh()->Render();
-            }
+            break;
         }
     }
 

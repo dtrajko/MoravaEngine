@@ -9,20 +9,27 @@ MeshGenerator::~MeshGenerator()
 {
 }
 
-MeshData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height)
+MeshData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height, float heightMapMultiplier)
 {
-	float topLeftX = (width - 1) / 2.0f;
+	float topLeftX = (width - 1) / -2.0f;
 	float topLeftZ = (height - 1) / 2.0f;
 
 	MeshData* meshData = new MeshData(width, height);
 	unsigned int vertexIndex = 0;
 
+	// printf("MeshGenerator::GenerateTerrainMesh heightMapMultiplier = %.2ff\n", heightMapMultiplier);
+
 	for (unsigned int y = 0; y < height; y++) {
 		for (unsigned int x = 0; x < width; x++) {
 
-			meshData->m_Vertices.push_back(glm::vec3(topLeftX + x, *heightMap[x, y], topLeftZ - y));
-			meshData->m_UVs.push_back(glm::vec2(x / (float)width, y / (float)height));
-			meshData->m_Normals.push_back(glm::vec3(0.0f));
+			glm::vec3 vertex = glm::vec3(topLeftX + x, heightMap[x][y] * heightMapMultiplier, topLeftZ - y);
+			glm::vec2 uv = glm::vec2(x / (float)width, y / (float)height);
+			meshData->m_Vertices.push_back(vertex);
+			meshData->m_UVs.push_back(uv);
+			meshData->m_Normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+
+			// for debug purposes
+			meshData->m_XY.push_back(glm::vec2(x, y));
 
 			if (x < width - 1 && y < height - 1) {
 				meshData->AddTriangle(vertexIndex, vertexIndex + width + 1, vertexIndex + width);
@@ -32,6 +39,22 @@ MeshData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int wid
 			vertexIndex++;
 		}
 	}
+
+	//	debug
+	//	for (unsigned int i = 0; i < meshData->m_Vertices.size(); i++) {
+	//		auto vertex = meshData->m_Vertices[i];
+	//		auto uv = meshData->m_UVs[i];
+	//		auto xy = meshData->m_XY[i];
+	//		printf("MeshGenerator [ X=%i Y=%i ] vertex [ %.2ff %.2ff %.2ff ] uv [ %.2ff %.2ff ]\n", (int)xy.x, (int)xy.y, vertex.x, vertex.y, vertex.z, uv.x, uv.y);
+	//	}
+	//	
+	//	for (unsigned int i = 0; i < meshData->m_Triangles.size(); i += 3) {
+	//		auto triangle_0 = meshData->m_Triangles[i + 0];
+	//		auto triangle_1 = meshData->m_Triangles[i + 1];
+	//		auto triangle_2 = meshData->m_Triangles[i + 2];
+	//	
+	//		printf("MeshData::AddTriangle [ %i %i %i ]\n", triangle_0, triangle_1, triangle_2);
+	//	}
 
 	return meshData;
 }

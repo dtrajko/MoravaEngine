@@ -77,9 +77,12 @@ private:
 	glm::vec4 m_CubeColor;
 	unsigned int m_DeleteVoxelCodeGLFW;
 
-	float m_FloorSize = 100.0f;
+	float m_FloorSize;
 
 	MapGenerator::MapGenConf m_MapGenConf;
 	MapGenerator::MapGenConf m_MapGenConfPrev;
+
+	float m_HeightMapMultiplier;
+	float m_HeightMapMultiplierPrev;
 
 };

@@ -15,9 +15,10 @@ MeshUnity::~MeshUnity()
 
 void MeshUnity::Generate(glm::vec3 scale)
 {
-	m_VertexCount = (unsigned int)(vertices->size() * (sizeof(VertexTBN) / sizeof(float)));
-
-	printf("MeshUnity::Generate vertices->size: %zu vertex stripe size: %zu\n", vertices->size(), sizeof(VertexTBN) / sizeof(float));
+	unsigned int vertexStripe = sizeof(VertexTBN) / sizeof(float);
+	m_VertexCount = (unsigned int)(vertices->size() * vertexStripe);
+ 
+	printf("MeshUnity::Generate vertices->size: %zu vertex stripe size: %u\n", vertices->size(), vertexStripe);
 
 	m_Vertices = new float[m_VertexCount];
 
@@ -27,28 +28,28 @@ void MeshUnity::Generate(glm::vec3 scale)
 	for (unsigned int i = 0; i < vertices->size(); i++) {
 
 		// vertex positions
-		m_Vertices[i + 0] = vertices->at(i).x;
-		m_Vertices[i + 1] = vertices->at(i).y;
-		m_Vertices[i + 2] = vertices->at(i).z;
+		m_Vertices[i * vertexStripe +  0] = vertices->at(i).x * scale.x;
+		m_Vertices[i * vertexStripe +  1] = vertices->at(i).y * scale.y;
+		m_Vertices[i * vertexStripe +  2] = vertices->at(i).z * scale.z;
 
 		// texture coords
-		m_Vertices[i + 3] = uv->at(i).x;
-		m_Vertices[i + 4] = uv->at(i).y;
+		m_Vertices[i * vertexStripe +  3] = uv->at(i).x;
+		m_Vertices[i * vertexStripe +  4] = uv->at(i).y;
 
 		// normals
-		m_Vertices[i + 5] = normals->at(i).x;
-		m_Vertices[i + 6] = normals->at(i).y;
-		m_Vertices[i + 7] = normals->at(i).z;
+		m_Vertices[i * vertexStripe +  5] = normals->at(i).x;
+		m_Vertices[i * vertexStripe +  6] = normals->at(i).y;
+		m_Vertices[i * vertexStripe +  7] = normals->at(i).z;
 
 		// tangents
-		m_Vertices[i + 8] = 0.0f;
-		m_Vertices[i + 9] = 0.0f;
-		m_Vertices[i + 10] = 0.0f;
+		m_Vertices[i * vertexStripe +  8] = 0.0f;
+		m_Vertices[i * vertexStripe +  9] = 0.0f;
+		m_Vertices[i * vertexStripe + 10] = 0.0f;
 
 		// bitangents
-		m_Vertices[i + 11] = 0.0f;
-		m_Vertices[i + 12] = 0.0f;
-		m_Vertices[i + 13] = 0.0f;
+		m_Vertices[i * vertexStripe + 11] = 0.0f;
+		m_Vertices[i * vertexStripe + 12] = 0.0f;
+		m_Vertices[i * vertexStripe + 13] = 0.0f;
 	}
 
 	m_IndexCount = (unsigned int)triangles->size();
@@ -58,6 +59,22 @@ void MeshUnity::Generate(glm::vec3 scale)
 	for (unsigned int i = 0; i < triangles->size(); i++) {
 		m_Indices[i] = triangles->at(i);
 	}
+
+	//	debug
+	//	for (unsigned int i = 0; i < m_VertexCount; i += 14) {
+	//		printf("MeshUnity::Generate m_Vertices [ %.2ff %.2ff %.2ff ] [ %.2ff %.2ff ] [ %.2ff %.2ff %.2ff ]\n",
+	//			m_Vertices[i +  0], m_Vertices[i +  1], m_Vertices[i +  2],
+	//			m_Vertices[i +  3], m_Vertices[i +  4],
+	//			m_Vertices[i +  5], m_Vertices[i +  6], m_Vertices[i +  7]
+	//			// m_Vertices[i +  8], m_Vertices[i +  9], m_Vertices[i + 10],
+	//			// m_Vertices[i + 11], m_Vertices[i + 12], m_Vertices[i + 13]
+	//		);
+	//	}
+	//	
+	//	for (unsigned int i = 0; i < m_IndexCount; i += 3) {
+	//		printf("MeshUnity::Generate m_Indices [ %u %u %u ]\n",
+	//			m_Indices[i + 0], m_Indices[i + 1], m_Indices[i + 2]);
+	//	}
 
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
