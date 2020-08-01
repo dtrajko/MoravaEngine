@@ -18,7 +18,7 @@ public:
 	MeshGenerator();
 	~MeshGenerator();
 
-	static MeshData* GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height, float heightMapMultiplier);
+	static MeshData* GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height, float heightMapMultiplier, float waterLevel = 0.5f);
 
 };
 

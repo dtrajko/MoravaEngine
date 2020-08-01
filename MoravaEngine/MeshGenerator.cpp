@@ -9,7 +9,7 @@ MeshGenerator::~MeshGenerator()
 {
 }
 
-MeshData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height, float heightMapMultiplier)
+MeshData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height, float heightMapMultiplier, float waterLevel)
 {
 	float topLeftX = (width - 1) / -2.0f;
 	float topLeftZ = (height - 1) / 2.0f;
@@ -21,6 +21,10 @@ MeshData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int wid
 
 	for (unsigned int y = 0; y < height; y++) {
 		for (unsigned int x = 0; x < width; x++) {
+
+			if (heightMap[x][y] <= waterLevel) {
+				heightMap[x][y] = waterLevel;
+			}
 
 			glm::vec3 vertex = glm::vec3(topLeftX + x, heightMap[x][y] * heightMapMultiplier, topLeftZ - y);
 			glm::vec2 uv = glm::vec2(x / (float)width, y / (float)height);

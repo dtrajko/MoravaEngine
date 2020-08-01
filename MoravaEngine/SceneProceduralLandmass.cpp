@@ -112,7 +112,7 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_MapGenConf.regions = std::vector<MapGenerator::TerrainTypes>();
 
     m_FloorSize = (float)m_MapGenConf.mapWidth; // used in SetupMeshes
-    m_HeightMapMultiplier = 1.0f;
+    m_HeightMapMultiplier = 10.0f;
     m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
 
     SetCamera();
@@ -445,7 +445,7 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::SliderFloat2("Offset", glm::value_ptr(m_MapGenConf.offset), -20.0f, 20.0f);
             ImGui::Checkbox("Auto Update", &m_MapGenConf.autoUpdate);
 
-            ImGui::SliderFloat("Height Map Multiplier", &m_HeightMapMultiplier, -20.0f, 20.0f);
+            ImGui::SliderFloat("Height Map Multiplier", &m_HeightMapMultiplier, -10.0f, 40.0f);
         }
     }
     ImGui::End();
@@ -686,25 +686,30 @@ void SceneProceduralLandmass::Render(Window& mainWindow, glm::mat4 projectionMat
         shaderMain->Bind();
 
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        shaderMain->setMat4("model", model);
         shaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
         ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
 
         switch (m_MapGenConf.drawMode) {
         case MapGenerator::DrawMode::HeightMap:
+            model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            shaderMain->setMat4("model", model);
             ResourceManager::GetTexture("heightMap")->Bind(textureSlots["diffuse"]);
             shaderMain->setFloat("tilingFactor", 1.0f / m_FloorSize);
             // Log::GetLogger()->info("SceneProceduralLandmass::Render heightMap ID = {0}", ResourceManager::GetTexture("heightMap")->GetID());
             meshes["floor_height"]->Render();
             break;
         case MapGenerator::DrawMode::ColorMap:
+            model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            shaderMain->setMat4("model", model);
             ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
             shaderMain->setFloat("tilingFactor", 1.0f / m_FloorSize);
             // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
             meshes["floor_height"]->Render();
             break;
         case MapGenerator::DrawMode::Mesh:
+            model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::scale(model, glm::vec3(-1.0f, 1.0f, 1.0f));
+            shaderMain->setMat4("model", model);
             ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
             shaderMain->setFloat("tilingFactor", 1.0f);
             // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
