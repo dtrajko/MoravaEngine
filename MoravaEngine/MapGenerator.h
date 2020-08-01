@@ -26,7 +26,7 @@ public:
 	MapGenerator(const char* heightMapFilePath, const char* colorMapFilePath);
 	~MapGenerator();
 
-	void Generate(MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild);
+	void Generate(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel);
 
 	inline MeshUnity* GetMesh() { return m_Mesh; };
 
@@ -85,5 +85,6 @@ private:
 
 	float m_HeightMapMultiplier;
 	bool m_IsRequiredMapRebuild;
+	float m_SeaLevel;
 
 };

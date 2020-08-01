@@ -115,6 +115,8 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_FloorSize = (float)m_MapGenConf.mapWidth; // used in SetupMeshes
     m_HeightMapMultiplier = 10.0f;
     m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
+    m_SeaLevel = 0.0f;
+    m_SeaLevelPrev = m_SeaLevel;
 
     SetCamera();
     SetLightManager();
@@ -126,7 +128,7 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_IsRequiredMapRebuild = true;
 
     NoiseSL::Init(m_MapGenConf.seed);
-    m_TerrainSL = new TerrainSL(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild);
+    m_TerrainSL = new TerrainSL(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel);
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
@@ -446,10 +448,11 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::SliderFloat("Persistance", &m_MapGenConf.persistance, 0.0f, 1.0f);
             ImGui::SliderFloat("Lacunarity", &m_MapGenConf.lacunarity, 1.0f, 5.0f);
             ImGui::SliderInt("Seed", &m_MapGenConf.seed, 0, 100000);
-            ImGui::SliderFloat2("Offset", glm::value_ptr(m_MapGenConf.offset), -10.0f, 10.0f);
+            ImGui::SliderFloat2("Offset", glm::value_ptr(m_MapGenConf.offset), -1.0f, 1.0f);
             ImGui::Checkbox("Auto Update", &m_MapGenConf.autoUpdate);
 
-            ImGui::SliderFloat("Height Map Multiplier", &m_HeightMapMultiplier, -10.0f, 40.0f);
+            ImGui::SliderFloat("Height Map Multiplier", &m_HeightMapMultiplier, -40.0f, 40.0f);
+            ImGui::SliderFloat("Sea Level", &m_SeaLevel, -20.0f, 20.0f);
         }
     }
     ImGui::End();
@@ -495,7 +498,7 @@ void SceneProceduralLandmass::UpdateCooldown(float timestep, Window& mainWindow)
     if (!m_IsRequiredMapUpdate) return;
 
     // Release();
-    m_TerrainSL->Update(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild);
+    m_TerrainSL->Update(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel);
     // m_RenderInstanced->CreateVertexData();
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
@@ -513,10 +516,11 @@ void SceneProceduralLandmass::CheckMapRebuildRequirements()
         m_MapGenConfPrev = m_MapGenConf;
     }
 
-    if (m_HeightMapMultiplier != m_HeightMapMultiplierPrev) {
+    if (m_HeightMapMultiplier != m_HeightMapMultiplierPrev || m_SeaLevel != m_SeaLevelPrev) {
         m_IsRequiredMapUpdate = true;
         m_IsRequiredMapRebuild = false;
         m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
+        m_SeaLevelPrev = m_SeaLevel;
     }
 }
 

@@ -85,6 +85,9 @@ private:
 	float m_HeightMapMultiplier;
 	float m_HeightMapMultiplierPrev;
 
+	float m_SeaLevel;
+	float m_SeaLevelPrev;
+
 	bool m_IsRequiredMapUpdate;
 	bool m_IsRequiredMapRebuild;
 
