@@ -74,8 +74,9 @@ MapGenerator::~MapGenerator()
 void MapGenerator::Generate(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail)
 {
 	m_MapGenConf.drawMode = mapGenConf.drawMode;
-	m_MapGenConf.mapWidth = mapGenConf.mapWidth;
-	m_MapGenConf.mapHeight = mapGenConf.mapHeight;
+	m_MapGenConf.mapChunkSize = mapGenConf.mapChunkSize;
+	// m_MapGenConf.mapWidth = mapGenConf.mapWidth;
+	// m_MapGenConf.mapHeight = mapGenConf.mapHeight;
 	m_MapGenConf.noiseScale = mapGenConf.noiseScale;
 	m_MapGenConf.octaves = mapGenConf.octaves;
 	m_MapGenConf.persistance = mapGenConf.persistance;
@@ -97,39 +98,39 @@ void MapGenerator::GenerateMap()
 	Validate();
 
 	if (m_IsRequiredMapRebuild) {
-		m_NoiseMap = NoiseSL::GenerateNoiseMap(m_MapGenConf.mapWidth, m_MapGenConf.mapHeight, m_MapGenConf.seed, m_MapGenConf.noiseScale,
+		m_NoiseMap = NoiseSL::GenerateNoiseMap(m_MapGenConf.mapChunkSize, m_MapGenConf.mapChunkSize, m_MapGenConf.seed, m_MapGenConf.noiseScale,
 			m_MapGenConf.octaves, m_MapGenConf.persistance, m_MapGenConf.lacunarity, m_MapGenConf.offset);
 
-		m_ColorMap = new glm::vec4[m_MapGenConf.mapWidth * m_MapGenConf.mapHeight];
+		m_ColorMap = new glm::vec4[m_MapGenConf.mapChunkSize * m_MapGenConf.mapChunkSize];
 
-		for (int y = 0; y < m_MapGenConf.mapHeight; y++) {
-			for (int x = 0; x < m_MapGenConf.mapWidth; x++) {
+		for (int y = 0; y < m_MapGenConf.mapChunkSize; y++) {
+			for (int x = 0; x < m_MapGenConf.mapChunkSize; x++) {
 				float currentHeight = m_NoiseMap[x][y];
 				for (int i = 0; i < m_MapGenConf.regions.size(); i++) {
 					if (currentHeight <= m_MapGenConf.regions[i].height) {
-						m_ColorMap[y * m_MapGenConf.mapWidth + x] = m_MapGenConf.regions[i].color;
+						m_ColorMap[y * m_MapGenConf.mapChunkSize + x] = m_MapGenConf.regions[i].color;
 						break;
 					}
 				}
 			}
 		}
 
-		m_TextureHeightMap = TextureGenerator::TextureFromHeightMap(m_NoiseMap, m_MapGenConf.heightMapFilePath, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight);
-		m_TextureColorMap = TextureGenerator::TextureFromColorMap(m_ColorMap, m_MapGenConf.colorMapFilePath, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight);
+		m_TextureHeightMap = TextureGenerator::TextureFromHeightMap(m_NoiseMap, m_MapGenConf.heightMapFilePath, m_MapGenConf.mapChunkSize, m_MapGenConf.mapChunkSize);
+		m_TextureColorMap = TextureGenerator::TextureFromColorMap(m_ColorMap, m_MapGenConf.colorMapFilePath, m_MapGenConf.mapChunkSize, m_MapGenConf.mapChunkSize);
 	}
 
-	MeshData* meshData = MeshGenerator::GenerateTerrainMesh(m_NoiseMap, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight, m_HeightMapMultiplier, m_SeaLevel, m_LevelOfDetail);
+	MeshData* meshData = MeshGenerator::GenerateTerrainMesh(m_NoiseMap, m_MapGenConf.mapChunkSize, m_MapGenConf.mapChunkSize, m_HeightMapMultiplier, m_SeaLevel, m_LevelOfDetail);
 	m_Mesh = meshData->CreateMesh();
 }
 
 void MapGenerator::Validate()
 {
-	if (m_MapGenConf.mapWidth < 1) {
-		m_MapGenConf.mapWidth = 1;
-	}
-	if (m_MapGenConf.mapHeight < 1) {
-		m_MapGenConf.mapHeight = 1;
-	}
+	//	if (m_MapGenConf.mapWidth < 1) {
+	//		m_MapGenConf.mapWidth = 1;
+	//	}
+	//	if (m_MapGenConf.mapHeight < 1) {
+	//		m_MapGenConf.mapHeight = 1;
+	//	}
 	if (m_MapGenConf.lacunarity < 1.0f) {
 		m_MapGenConf.lacunarity = 1.0f;
 	}

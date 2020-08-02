@@ -419,6 +419,7 @@
     <ClCompile Include="MeshUnity.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="EndlessTerrain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -869,6 +870,7 @@
     <ClInclude Include="MeshUnity.h">
       <Filter>Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="EndlessTerrain.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

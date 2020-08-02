@@ -101,8 +101,9 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_MapGenConf.heightMapFilePath = "Textures/Noise/heightMap.png";
     m_MapGenConf.colorMapFilePath = "Textures/Noise/colorMap.png";
     m_MapGenConf.drawMode = MapGenerator::DrawMode::Mesh;
-    m_MapGenConf.mapWidth = 241;
-    m_MapGenConf.mapHeight = 241;
+    m_MapGenConf.mapChunkSize = 241;
+    // m_MapGenConf.mapWidth = 241;
+    // m_MapGenConf.mapHeight = 241;
     m_MapGenConf.noiseScale = 25.0f;
     m_MapGenConf.octaves = 3;
     m_MapGenConf.persistance = 0.5f;
@@ -113,7 +114,7 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_MapGenConf.autoUpdate = true;
     m_MapGenConf.regions = std::vector<MapGenerator::TerrainTypes>();
 
-    m_FloorSize = (float)m_MapGenConf.mapWidth; // used in SetupMeshes
+    m_FloorSize = (float)m_MapGenConf.mapChunkSize; // used in SetupMeshes
     m_HeightMapMultiplier = 10.0f;
     m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
     m_SeaLevel = 0.0f;
@@ -444,8 +445,10 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
             m_MapGenConf.drawMode = (MapGenerator::DrawMode)selectedItem;
             // End DrawMode ImGui drop-down list
 
-            ImGui::SliderInt("Map Width", &m_MapGenConf.mapWidth,   1, 512);
-            ImGui::SliderInt("Map Height", &m_MapGenConf.mapHeight, 1, 512);
+            std::string mapChunkSize = "Map Chunk Size: " + std::to_string(m_MapGenConf.mapChunkSize);
+            ImGui::Text(mapChunkSize.c_str());
+            // ImGui::SliderInt("Map Width", &m_MapGenConf.mapWidth,   1, 512);
+            // ImGui::SliderInt("Map Height", &m_MapGenConf.mapHeight, 1, 512);
 
             ImGui::SliderInt("Level Of Detail", &m_LevelOfDetail, 0, 6);
             ImGui::SliderFloat("Noise Scale", &m_MapGenConf.noiseScale, 1.0f, 100.0f);

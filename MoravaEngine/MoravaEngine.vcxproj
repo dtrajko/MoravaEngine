@@ -176,6 +176,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraControllerVoxelTerrain.cpp" />
     <ClCompile Include="CubeSkybox.cpp" />
+    <ClCompile Include="EndlessTerrain.cpp" />
     <ClCompile Include="InsertionSort.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MapGenerator.cpp" />
@@ -322,6 +323,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraControllerVoxelTerrain.h" />
     <ClInclude Include="CubeSkybox.h" />
+    <ClInclude Include="EndlessTerrain.h" />
     <ClInclude Include="InsertionSort.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MapGenerator.h" />

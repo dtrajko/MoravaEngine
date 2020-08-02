@@ -45,8 +45,9 @@ public:
 		const char* heightMapFilePath;
 		const char* colorMapFilePath;
 		MapGenerator::DrawMode drawMode;
-		int mapWidth;
-		int mapHeight;
+		int mapChunkSize;
+		// int mapWidth;
+		// int mapHeight;
 		float noiseScale;
 		int octaves;
 		float persistance;
@@ -59,8 +60,9 @@ public:
 		inline bool operator!=(const MapGenConf& other)
 		{
 			return
-				mapWidth      != other.mapWidth      ||
-				mapHeight     != other.mapHeight     ||
+				mapChunkSize  != other.mapChunkSize  ||
+				// mapWidth      != other.mapWidth      ||
+				// mapHeight     != other.mapHeight     ||
 				noiseScale    != other.noiseScale    ||
 				octaves       != other.octaves       ||
 				persistance   != other.persistance   ||
