@@ -101,14 +101,15 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_MapGenConf.heightMapFilePath = "Textures/Noise/heightMap.png";
     m_MapGenConf.colorMapFilePath = "Textures/Noise/colorMap.png";
     m_MapGenConf.drawMode = MapGenerator::DrawMode::Mesh;
-    m_MapGenConf.mapWidth = 64;
-    m_MapGenConf.mapHeight = 64;
+    m_MapGenConf.mapWidth = 241;
+    m_MapGenConf.mapHeight = 241;
     m_MapGenConf.noiseScale = 25.0f;
     m_MapGenConf.octaves = 3;
     m_MapGenConf.persistance = 0.5f;
     m_MapGenConf.lacunarity = 2.0f;
     m_MapGenConf.seed = 123456;
     m_MapGenConf.offset = glm::vec2(0.0f, 0.0f);
+
     m_MapGenConf.autoUpdate = true;
     m_MapGenConf.regions = std::vector<MapGenerator::TerrainTypes>();
 
@@ -117,6 +118,8 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
     m_SeaLevel = 0.0f;
     m_SeaLevelPrev = m_SeaLevel;
+    m_LevelOfDetail = 0;
+    m_LevelOfDetailPrev = m_LevelOfDetail;
 
     SetCamera();
     SetLightManager();
@@ -128,7 +131,7 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_IsRequiredMapRebuild = true;
 
     NoiseSL::Init(m_MapGenConf.seed);
-    m_TerrainSL = new TerrainSL(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel);
+    m_TerrainSL = new TerrainSL(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
@@ -443,6 +446,8 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
 
             ImGui::SliderInt("Map Width", &m_MapGenConf.mapWidth,   1, 512);
             ImGui::SliderInt("Map Height", &m_MapGenConf.mapHeight, 1, 512);
+
+            ImGui::SliderInt("Level Of Detail", &m_LevelOfDetail, 0, 6);
             ImGui::SliderFloat("Noise Scale", &m_MapGenConf.noiseScale, 1.0f, 100.0f);
             ImGui::SliderInt("Octaves", &m_MapGenConf.octaves, 1, 10);
             ImGui::SliderFloat("Persistance", &m_MapGenConf.persistance, 0.0f, 1.0f);
@@ -498,7 +503,7 @@ void SceneProceduralLandmass::UpdateCooldown(float timestep, Window& mainWindow)
     if (!m_IsRequiredMapUpdate) return;
 
     // Release();
-    m_TerrainSL->Update(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel);
+    m_TerrainSL->Update(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
     // m_RenderInstanced->CreateVertexData();
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
@@ -516,11 +521,14 @@ void SceneProceduralLandmass::CheckMapRebuildRequirements()
         m_MapGenConfPrev = m_MapGenConf;
     }
 
-    if (m_HeightMapMultiplier != m_HeightMapMultiplierPrev || m_SeaLevel != m_SeaLevelPrev) {
+    if (m_HeightMapMultiplier != m_HeightMapMultiplierPrev ||
+        m_SeaLevel != m_SeaLevelPrev ||
+        m_LevelOfDetail != m_LevelOfDetailPrev) {
         m_IsRequiredMapUpdate = true;
         m_IsRequiredMapRebuild = false;
         m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
         m_SeaLevelPrev = m_SeaLevel;
+        m_LevelOfDetailPrev = m_LevelOfDetail;
     }
 }
 

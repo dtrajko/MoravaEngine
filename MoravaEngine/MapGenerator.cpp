@@ -71,7 +71,7 @@ MapGenerator::~MapGenerator()
 {
 }
 
-void MapGenerator::Generate(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel)
+void MapGenerator::Generate(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail)
 {
 	m_MapGenConf.drawMode = mapGenConf.drawMode;
 	m_MapGenConf.mapWidth = mapGenConf.mapWidth;
@@ -87,6 +87,7 @@ void MapGenerator::Generate(MapGenerator::MapGenConf mapGenConf, float heightMap
 	m_HeightMapMultiplier = heightMapMultiplier;
 	m_IsRequiredMapRebuild = isRequiredMapRebuild;
 	m_SeaLevel = seaLevel;
+	m_LevelOfDetail = levelOfDetail;
 
 	GenerateMap();
 }
@@ -117,7 +118,7 @@ void MapGenerator::GenerateMap()
 		m_TextureColorMap = TextureGenerator::TextureFromColorMap(m_ColorMap, m_MapGenConf.colorMapFilePath, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight);
 	}
 
-	MeshData* meshData = MeshGenerator::GenerateTerrainMesh(m_NoiseMap, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight, m_HeightMapMultiplier, m_SeaLevel);
+	MeshData* meshData = MeshGenerator::GenerateTerrainMesh(m_NoiseMap, m_MapGenConf.mapWidth, m_MapGenConf.mapHeight, m_HeightMapMultiplier, m_SeaLevel, m_LevelOfDetail);
 	m_Mesh = meshData->CreateMesh();
 }
 

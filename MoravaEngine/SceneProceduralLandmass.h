@@ -88,6 +88,9 @@ private:
 	float m_SeaLevel;
 	float m_SeaLevelPrev;
 
+	int m_LevelOfDetail;
+	int m_LevelOfDetailPrev;
+
 	bool m_IsRequiredMapUpdate;
 	bool m_IsRequiredMapRebuild;
 

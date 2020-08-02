@@ -12,10 +12,10 @@ class TerrainSL : public TerrainVoxel
 {
 public:
 	TerrainSL();
-	TerrainSL(MapGenerator::MapGenConf mapGenConf, float m_HeightMapMultiplier, bool isRequiredMapRebuild, float seaLevel);
+	TerrainSL(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail);
 	~TerrainSL();
 
-	void Update(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel);
+	void Update(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail);
 	inline MapGenerator* GetMapGenerator() { return m_MapGenerator; };
 
 private:
