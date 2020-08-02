@@ -11,8 +11,9 @@ public:
 	MeshUnity();
 	~MeshUnity();
 
+	void GenerateVertexData(glm::vec3 scale);
 	virtual void Generate(glm::vec3 scale) override;
-	virtual void RecalculateNormals() override;
+	// virtual void RecalculateNormals() override;
 
 public:
 	std::vector<glm::vec3>* vertices;

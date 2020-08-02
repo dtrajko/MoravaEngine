@@ -102,7 +102,9 @@ MeshUnity* MeshData::CreateMesh()
 	mesh->triangles = &m_Triangles;
 	mesh->uv = &m_UVs;
 	mesh->normals = &m_Normals;
+	mesh->GenerateVertexData(glm::vec3(1.0f));
 	mesh->RecalculateNormals();
+	mesh->RecalculateTangentSpace();
 	mesh->Generate(glm::vec3(1.0f));
 	return mesh;
 }

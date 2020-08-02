@@ -13,11 +13,11 @@ MeshUnity::~MeshUnity()
 {
 }
 
-void MeshUnity::Generate(glm::vec3 scale)
+void MeshUnity::GenerateVertexData(glm::vec3 scale)
 {
 	unsigned int vertexStripe = sizeof(VertexTBN) / sizeof(float);
 	m_VertexCount = (unsigned int)(vertices->size() * vertexStripe);
- 
+
 	printf("MeshUnity::Generate vertices->size: %zu vertex stripe size: %u\n", vertices->size(), vertexStripe);
 
 	m_Vertices = new float[m_VertexCount];
@@ -28,22 +28,22 @@ void MeshUnity::Generate(glm::vec3 scale)
 	for (unsigned int i = 0; i < vertices->size(); i++) {
 
 		// vertex positions
-		m_Vertices[i * vertexStripe +  0] = vertices->at(i).x * scale.x;
-		m_Vertices[i * vertexStripe +  1] = vertices->at(i).y * scale.y;
-		m_Vertices[i * vertexStripe +  2] = vertices->at(i).z * scale.z;
+		m_Vertices[i * vertexStripe + 0] = vertices->at(i).x * scale.x;
+		m_Vertices[i * vertexStripe + 1] = vertices->at(i).y * scale.y;
+		m_Vertices[i * vertexStripe + 2] = vertices->at(i).z * scale.z;
 
 		// texture coords
-		m_Vertices[i * vertexStripe +  3] = uv->at(i).x;
-		m_Vertices[i * vertexStripe +  4] = uv->at(i).y;
+		m_Vertices[i * vertexStripe + 3] = uv->at(i).x;
+		m_Vertices[i * vertexStripe + 4] = uv->at(i).y;
 
 		// normals
-		m_Vertices[i * vertexStripe +  5] = normals->at(i).x;
-		m_Vertices[i * vertexStripe +  6] = normals->at(i).y;
-		m_Vertices[i * vertexStripe +  7] = normals->at(i).z;
+		m_Vertices[i * vertexStripe + 5] = normals->at(i).x;
+		m_Vertices[i * vertexStripe + 6] = normals->at(i).y;
+		m_Vertices[i * vertexStripe + 7] = normals->at(i).z;
 
 		// tangents
-		m_Vertices[i * vertexStripe +  8] = 0.0f;
-		m_Vertices[i * vertexStripe +  9] = 0.0f;
+		m_Vertices[i * vertexStripe + 8] = 0.0f;
+		m_Vertices[i * vertexStripe + 9] = 0.0f;
 		m_Vertices[i * vertexStripe + 10] = 0.0f;
 
 		// bitangents
@@ -75,7 +75,10 @@ void MeshUnity::Generate(glm::vec3 scale)
 	//		printf("MeshUnity::Generate m_Indices [ %u %u %u ]\n",
 	//			m_Indices[i + 0], m_Indices[i + 1], m_Indices[i + 2]);
 	//	}
+}
 
+void MeshUnity::Generate(glm::vec3 scale)
+{
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
 
@@ -108,34 +111,36 @@ void MeshUnity::Generate(glm::vec3 scale)
 	glBindVertexArray(0);                     // Unbind VAO
 }
 
+/**
 void MeshUnity::RecalculateNormals()
 {
 	// The Phong shading approach
-	//	for (size_t i = 0; i < triangles->size(); i++)
-	//	{
-	//		glm::vec3 v1(vertices->at(i + 1).x - vertices->at(i + 0).x, vertices->at(i + 1).y - vertices->at(i + 0).y, vertices->at(i + 1).z - vertices->at(i + 0).z);
-	//		glm::vec3 v2(vertices->at(i + 2).x - vertices->at(i + 0).x, vertices->at(i + 2).y - vertices->at(i + 0).y, vertices->at(i + 2).z - vertices->at(i + 0).z);
-	//		glm::vec3 normal = glm::cross(v1, v2);
-	//		normal = glm::normalize(normal);
-	//	
-	//		normals->at(i + 0).x += normal.x;
-	//		normals->at(i + 0).y += normal.y;
-	//		normals->at(i + 0).z += normal.z;
-	//	
-	//		normals->at(i + 1).x += normal.x;
-	//		normals->at(i + 1).y += normal.y;
-	//		normals->at(i + 1).z += normal.z;
-	//	
-	//		normals->at(i + 2).x += normal.x;
-	//		normals->at(i + 2).y += normal.y;
-	//		normals->at(i + 2).z += normal.z;
-	//	}
-	//	
-	//	for (unsigned int i = 0; i < normals->size(); i++)
-	//	{
-	//		glm::vec3 normal = glm::normalize(normals->at(i));
-	//		normals->at(i).x = normal.x;
-	//		normals->at(i).y = normal.y;
-	//		normals->at(i).z = normal.z;
-	//	}
+	for (size_t i = 0; i < triangles->size(); i++)
+	{
+		glm::vec3 v1(vertices->at(i + 1).x - vertices->at(i + 0).x, vertices->at(i + 1).y - vertices->at(i + 0).y, vertices->at(i + 1).z - vertices->at(i + 0).z);
+		glm::vec3 v2(vertices->at(i + 2).x - vertices->at(i + 0).x, vertices->at(i + 2).y - vertices->at(i + 0).y, vertices->at(i + 2).z - vertices->at(i + 0).z);
+		glm::vec3 normal = glm::cross(v1, v2);
+		normal = glm::normalize(normal);
+
+		normals->at(i + 0).x += normal.x;
+		normals->at(i + 0).y += normal.y;
+		normals->at(i + 0).z += normal.z;
+
+		normals->at(i + 1).x += normal.x;
+		normals->at(i + 1).y += normal.y;
+		normals->at(i + 1).z += normal.z;
+
+		normals->at(i + 2).x += normal.x;
+		normals->at(i + 2).y += normal.y;
+		normals->at(i + 2).z += normal.z;
+	}
+
+	for (unsigned int i = 0; i < normals->size(); i++)
+	{
+		glm::vec3 normal = glm::normalize(normals->at(i));
+		normals->at(i).x = normal.x;
+		normals->at(i).y = normal.y;
+		normals->at(i).z = normal.z;
+	}
 }
+*/
