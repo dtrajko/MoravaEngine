@@ -40,7 +40,6 @@ private:
 	bool IsTerrainConfigChanged();
 
 	TerrainVoxel* m_TerrainVoxel;
-	glm::mat4 m_Transform;
 	RenderInstanced* m_RenderInstanced;
 	glm::ivec3 m_TerrainScale;
 	glm::ivec3 m_TerrainScalePrev;

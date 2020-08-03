@@ -28,6 +28,7 @@ SceneVoxelTerrainSL::SceneVoxelTerrainSL()
     sceneSettings.enableShadows      = false;
     sceneSettings.enableWaterEffects = false;
     sceneSettings.enableParticles    = false;
+    sceneSettings.farPlane = 500.0f;
 
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
@@ -127,24 +128,11 @@ SceneVoxelTerrainSL::SceneVoxelTerrainSL()
     SetupTextures();
     SetupMeshes();
 
-    m_Transform = glm::mat4(1.0f);
     m_UpdateCooldown = { 0.0f, 0.5f };
     m_DigCooldown = { 0.0f, 0.1f };
     m_RayIntersectCooldown = { 0.0f, 0.1f };
     m_RayCastCooldown = { 0.0f, 0.1f };
     m_OnClickCooldown = { 0.0f, 0.1f };
-
-    /**** BEGIN Original Voxel Terrain ****/
-
-    // m_TerrainScale = glm::vec3(60.0f, 24.0f, 60.0f); // Release
-    // m_TerrainScale = glm::vec3(40.0f, 10.0f, 40.0f); // Debug
-    m_TerrainScale = glm::vec3(1.0f, 1.0f, 1.0f); // Temp
-    m_TerrainNoiseFactor = 0.08f;
-
-    m_TerrainVoxel = new TerrainVoxel(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
-    m_RenderInstanced = new RenderInstanced(m_TerrainVoxel, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
-
-    /**** END Original Voxel Terrain ****/
 
     /**** BEGIN Procedural Landmass Generation Terrain ****/
     m_IsRequiredMapUpdate = true;
@@ -156,14 +144,15 @@ SceneVoxelTerrainSL::SceneVoxelTerrainSL()
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
 
-    m_RenderInstancedSL = new RenderInstanced(m_TerrainSL, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
+    m_RenderInstanced = new RenderInstanced(m_TerrainSL, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
 
     /**** END Procedural Landmass Generation Terrain ****/
 
     Mesh* mesh = new Block();
-    m_Player = new Player(glm::vec3(0.0f, m_TerrainScale.y, 0.0f), mesh, m_Camera);
+    m_Player = new Player(glm::vec3(0.0f, 20.0f, 0.0f), mesh, m_Camera);
     m_PlayerController = new PlayerController(m_Player);
-    m_PlayerController->SetTerrain(m_TerrainVoxel);
+    m_PlayerController->SetTerrain(m_TerrainSL);
+    m_PlayerController->SetGravity(0.0f);
 
     m_DrawGizmos = true;
     m_UnlockRotation = false;
@@ -176,7 +165,7 @@ SceneVoxelTerrainSL::SceneVoxelTerrainSL()
     m_Raycast = new Raycast();
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
 
-    MousePicker::Get()->SetTerrain(m_TerrainVoxel);
+    MousePicker::Get()->SetTerrain(m_TerrainSL);
 
     m_IntersectPosition = glm::vec3();
     m_IntersectPositionIndex = -1;
@@ -364,7 +353,7 @@ void SceneVoxelTerrainSL::UpdateImGui(float timestep, Window& mainWindow)
     {
         if (ImGui::CollapsingHeader("Show Details"))
         {
-            std::string terrainPositionsSize = "Terrain Positions Size: " + std::to_string(m_TerrainVoxel->GetVoxelCount());
+            std::string terrainPositionsSize = "Terrain Positions Size: " + std::to_string(m_TerrainSL->GetVoxelCount());
             ImGui::Text(terrainPositionsSize.c_str());
             ImGui::SliderInt3("Terrain Scale", glm::value_ptr(m_TerrainScale), 1, 100);
             ImGui::SliderFloat("Terrain Noise Factor", &m_TerrainNoiseFactor, -0.5f, 0.5f);
@@ -498,10 +487,6 @@ void SceneVoxelTerrainSL::Update(float timestep, Window& mainWindow)
     m_RenderInstanced->SetIntersectPosition(&m_IntersectPosition);
     m_RenderInstanced->SetDeleteMode(&m_DeleteMode);
 
-    m_RenderInstancedSL->Update();
-    m_RenderInstancedSL->SetIntersectPosition(&m_IntersectPosition);
-    m_RenderInstancedSL->SetDeleteMode(&m_DeleteMode);
-
     if (m_UnlockRotation != m_UnlockRotationPrev) {
         if (m_UnlockRotation)
             mainWindow.SetCursorDisabled();
@@ -516,19 +501,6 @@ void SceneVoxelTerrainSL::UpdateCooldown(float timestep, Window& mainWindow)
     // Cooldown
     if (timestep - m_UpdateCooldown.lastTime < m_UpdateCooldown.cooldown) return;
     m_UpdateCooldown.lastTime = timestep;
-
-    /**** BEGIN UpdateCooldown Original Voxel Terrain ****/
-
-    if (!IsTerrainConfigChanged()) return;
-
-    Release();
-    m_TerrainVoxel = new TerrainVoxel(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
-    m_PlayerController->SetTerrain(m_TerrainVoxel);
-    MousePicker::Get()->SetTerrain(m_TerrainVoxel);
-    m_RenderInstanced = new RenderInstanced(m_TerrainVoxel, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
-    m_RenderInstanced->CreateVertexData();
-
-    /**** END UpdateCooldown Original Voxel Terrain ****/
 
     /**** BEGIN UpdateCooldown Procedural Landmass Generation Terrain ****/
 
@@ -577,97 +549,6 @@ void SceneVoxelTerrainSL::CheckMapRebuildRequirements()
     }
 }
 
-void SceneVoxelTerrainSL::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
-{
-    Shader* shaderMain = shaders["main"];
-    Shader* shaderOmniShadow = shaders["omniShadow"];
-    Shader* shaderRenderInstanced = shaders["render_instanced"];
-    Shader* shaderBasic = shaders["basic"];
-
-    RendererBasic::EnableTransparency();
-
-    if (passType == "shadow_omni") {
-        shaderOmniShadow->Bind();
-    }
-
-    if (passType == "main")
-    {
-        if (m_DrawGizmos) {
-            shaderBasic->Bind();
-            shaderBasic->setMat4("model", glm::mat4(1.0f));
-            m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
-        }
-
-        shaderMain->Bind();
-        // Render main pass only
-    }
-
-    /**** BEGIN render Player ****/
-    shaderMain->Bind();
-    shaderMain->setMat4("projection", projectionMatrix);
-    shaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
-    shaderMain->setInt("albedoMap", 0);
-    shaderMain->setVec4("tintColor", m_Player->GetColor());
-
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, m_Player->GetPosition());
-    model = glm::rotate(model, glm::radians(m_Player->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(m_Player->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(m_Player->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
-    shaderMain->setMat4("model", model);
-
-    m_Player->Render();
-
-    /**** END render Player ****/
-
-    glm::vec4 tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-    /**** BEGIN Render Original Voxel Terrain ****/
-
-    shaderRenderInstanced->Bind();
-
-    ResourceManager::GetTexture("diffuse")->Bind(textureSlots["diffuse"]);
-    ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
-
-   tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 0.8f);
-
-    shaderRenderInstanced->setMat4("projection", projectionMatrix);
-    shaderRenderInstanced->setMat4("view", m_CameraController->CalculateViewMatrix());
-    shaderRenderInstanced->setInt("albedoMap", 0);
-    shaderRenderInstanced->setVec4("tintColor", tintColor);
-
-    m_RenderInstanced->m_Texture->Bind(0);
-    m_RenderInstanced->Render();
-
-    /**** END Render Original Voxel Terrain ****/
-
-    /**** BEGIN Render Procedural Landmass Generation Terrain ****/
-
-    shaderRenderInstanced->Bind();
-
-    ResourceManager::GetTexture("diffuse")->Bind(textureSlots["diffuse"]);
-    ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
-
-    tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-    shaderRenderInstanced->setMat4("projection", projectionMatrix);
-    shaderRenderInstanced->setMat4("view", m_CameraController->CalculateViewMatrix());
-    shaderRenderInstanced->setInt("albedoMap", 0);
-    shaderRenderInstanced->setVec4("tintColor", tintColor);
-
-    m_RenderInstancedSL->m_Texture->Bind(0);
-    m_RenderInstancedSL->Render();
-
-    /**** END Render Procedural Landmass Generation Terrain ****/
-}
-
-void SceneVoxelTerrainSL::Release()
-{
-    if (m_TerrainVoxel) delete m_TerrainVoxel;
-    if (m_RenderInstanced) delete m_RenderInstanced;
-}
-
 void SceneVoxelTerrainSL::Dig(bool* keys, float timestep)
 {
     // Cooldown
@@ -677,10 +558,10 @@ void SceneVoxelTerrainSL::Dig(bool* keys, float timestep)
     if (keys[GLFW_KEY_F]) {
         bool vectorModified = false;
 
-        for (auto it = m_TerrainVoxel->m_Voxels.cbegin(); it != m_TerrainVoxel->m_Voxels.cend(); ) { 
+        for (auto it = m_TerrainSL->m_Voxels.cbegin(); it != m_TerrainSL->m_Voxels.cend(); ) {
             if (glm::distance(m_Player->GetPosition(), it->position) < m_DigDistance)
             {
-                it = m_TerrainVoxel->m_Voxels.erase(it++);
+                it = m_TerrainSL->m_Voxels.erase(it++);
                 vectorModified = true;
             }
             else {
@@ -721,8 +602,8 @@ std::vector<glm::vec3> SceneVoxelTerrainSL::GetRayIntersectPositions(float times
     float distance;
     glm::vec3 position;
 
-    for (size_t i = 0; i < m_TerrainVoxel->m_Voxels.size(); i++) {
-        position = m_TerrainVoxel->m_Voxels[i].position;
+    for (size_t i = 0; i < m_TerrainSL->m_Voxels.size(); i++) {
+        position = m_TerrainSL->m_Voxels[i].position;
         bool isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             position - glm::vec3(0.5f, 0.5f, 0.5f), position + glm::vec3(0.5f, 0.5f, 0.5f), glm::vec2(0.0f));
         if (isSelected) {
@@ -779,8 +660,8 @@ void SceneVoxelTerrainSL::AddVoxel()
         TerrainVoxel::Voxel voxel;
         voxel.position = addPositionInt;
         voxel.color = glm::vec4(m_CubeColor);
-        m_TerrainVoxel->m_Voxels.push_back(voxel);
-        m_IntersectPositionIndex = (int)m_TerrainVoxel->m_Voxels.size() - 1;
+        m_TerrainSL->m_Voxels.push_back(voxel);
+        m_IntersectPositionIndex = (int)m_TerrainSL->m_Voxels.size() - 1;
         m_RenderInstanced->CreateVertexData();
         Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
     }
@@ -793,8 +674,8 @@ void SceneVoxelTerrainSL::DeleteVoxel()
 {
     if (m_IntersectPositionIndex < 0) return;
 
-    glm::vec3 deletePosition = m_TerrainVoxel->m_Voxels.at(m_IntersectPositionIndex).position;
-    m_TerrainVoxel->m_Voxels.erase(m_TerrainVoxel->m_Voxels.begin() + m_IntersectPositionIndex);
+    glm::vec3 deletePosition = m_TerrainSL->m_Voxels.at(m_IntersectPositionIndex).position;
+    m_TerrainSL->m_Voxels.erase(m_TerrainSL->m_Voxels.begin() + m_IntersectPositionIndex);
     m_IntersectPositionIndex = -1;
     m_RenderInstanced->CreateVertexData();
     Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
@@ -802,11 +683,83 @@ void SceneVoxelTerrainSL::DeleteVoxel()
 
 bool SceneVoxelTerrainSL::IsPositionVacant(glm::vec3 queryPosition)
 {
-    for (auto voxel : m_TerrainVoxel->m_Voxels) {
+    for (auto voxel : m_TerrainSL->m_Voxels) {
         if (voxel.position == queryPosition)
             return false;
     }
     return true;
+}
+
+void SceneVoxelTerrainSL::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+    std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+{
+    Shader* shaderMain = shaders["main"];
+    Shader* shaderOmniShadow = shaders["omniShadow"];
+    Shader* shaderRenderInstanced = shaders["render_instanced"];
+    Shader* shaderBasic = shaders["basic"];
+
+    RendererBasic::EnableTransparency();
+
+    if (passType == "shadow_omni") {
+        shaderOmniShadow->Bind();
+    }
+
+    if (passType == "main")
+    {
+        if (m_DrawGizmos) {
+            shaderBasic->Bind();
+            shaderBasic->setMat4("model", glm::mat4(1.0f));
+            m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
+        }
+
+        shaderMain->Bind();
+        // Render main pass only
+    }
+
+    /**** BEGIN render Player ****/
+    shaderMain->Bind();
+    shaderMain->setMat4("projection", projectionMatrix);
+    shaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
+    shaderMain->setInt("albedoMap", 0);
+    shaderMain->setVec4("tintColor", m_Player->GetColor());
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, m_Player->GetPosition());
+    model = glm::rotate(model, glm::radians(m_Player->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_Player->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_Player->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+    shaderMain->setMat4("model", model);
+
+    m_Player->Render();
+
+    /**** END render Player ****/
+
+    glm::vec4 tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    /**** BEGIN Render Procedural Landmass Generation Terrain ****/
+
+    shaderRenderInstanced->Bind();
+
+    ResourceManager::GetTexture("diffuse")->Bind(textureSlots["diffuse"]);
+    ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
+
+    tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    shaderRenderInstanced->setMat4("projection", projectionMatrix);
+    shaderRenderInstanced->setMat4("view", m_CameraController->CalculateViewMatrix());
+    shaderRenderInstanced->setInt("albedoMap", 0);
+    shaderRenderInstanced->setVec4("tintColor", tintColor);
+
+    m_RenderInstanced->m_Texture->Bind(0);
+    m_RenderInstanced->Render();
+
+    /**** END Render Procedural Landmass Generation Terrain ****/
+}
+
+void SceneVoxelTerrainSL::Release()
+{
+    // if (m_TerrainSL) delete m_TerrainSL;
+    // if (m_RenderInstanced) delete m_RenderInstanced;
 }
 
 SceneVoxelTerrainSL::~SceneVoxelTerrainSL()

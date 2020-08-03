@@ -42,8 +42,6 @@ private:
 	bool IsTerrainConfigChanged();
 	void CheckMapRebuildRequirements();
 
-	TerrainVoxel* m_TerrainVoxel;
-	glm::mat4 m_Transform;
 	RenderInstanced* m_RenderInstanced;
 	glm::ivec3 m_TerrainScale;
 	glm::ivec3 m_TerrainScalePrev;
@@ -93,7 +91,5 @@ private:
 
 	bool m_IsRequiredMapUpdate;
 	bool m_IsRequiredMapRebuild;
-
-	RenderInstanced* m_RenderInstancedSL;
 
 };
