@@ -2,19 +2,21 @@
 
 #include "Scene.h"
 
-#include "TerrainSL.h"
 #include "RenderInstanced.h"
 #include "Player.h"
 #include "PlayerController.h"
 #include "Raycast.h"
+#include "MapGenerator.h"
+#include "TerrainVoxel.h"
+#include "TerrainSL.h"
 
 
-class SceneProceduralLandmass : public Scene
+class SceneVoxelTerrainSL : public Scene
 {
 
 public:
-	SceneProceduralLandmass();
-	virtual ~SceneProceduralLandmass() override;
+	SceneVoxelTerrainSL();
+	virtual ~SceneVoxelTerrainSL() override;
 
 	virtual void Update(float timestep, Window& mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window& mainWindow) override;
@@ -37,9 +39,10 @@ private:
 	virtual void SetupTextures() override;
 	virtual void SetupTextureSlots() override;
 	virtual void SetupMeshes() override;
+	bool IsTerrainConfigChanged();
 	void CheckMapRebuildRequirements();
 
-	TerrainSL* m_TerrainSL;
+	TerrainVoxel* m_TerrainVoxel;
 	glm::mat4 m_Transform;
 	RenderInstanced* m_RenderInstanced;
 	glm::ivec3 m_TerrainScale;
@@ -62,9 +65,6 @@ private:
 
 	// Scene settings
 	bool m_DrawGizmos;
-	bool m_RenderPlayer;
-	bool m_RenderTerrain;
-
 	bool m_UnlockRotation;
 	bool m_UnlockRotationPrev;
 
@@ -76,6 +76,8 @@ private:
 
 	glm::vec4 m_CubeColor;
 	unsigned int m_DeleteVoxelCodeGLFW;
+
+	TerrainSL* m_TerrainSL;
 
 	MapGenerator::MapGenConf m_MapGenConf;
 	MapGenerator::MapGenConf m_MapGenConfPrev;
@@ -91,5 +93,7 @@ private:
 
 	bool m_IsRequiredMapUpdate;
 	bool m_IsRequiredMapRebuild;
+
+	RenderInstanced* m_RenderInstancedSL;
 
 };

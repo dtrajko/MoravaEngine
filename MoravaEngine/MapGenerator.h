@@ -75,12 +75,14 @@ public:
 		}
 	};
 
-private:
-	MapGenConf m_MapGenConf;
-	MapGenConf m_MapGenConfPrev;
-
+public:
 	float** m_NoiseMap;
 	glm::vec4* m_ColorMap;
+	MapGenConf m_MapGenConf;
+
+private:
+	MapGenConf m_MapGenConfPrev;
+
 	Texture* m_TextureColorMap;
 	Texture* m_TextureHeightMap;
 	MeshUnity* m_Mesh;

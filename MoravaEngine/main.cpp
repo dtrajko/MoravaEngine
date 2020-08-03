@@ -32,9 +32,10 @@
 #include "SceneCubemaps.h"
 #include "SceneParticles.h"
 #include "SceneOmniShadows.h"
-#include "SceneVoxelTerrain.h"
 #include "SceneEditor.h"
 #include "SceneProceduralLandmass.h"
+#include "SceneVoxelTerrain.h"
+#include "SceneVoxelTerrainSL.h"
 
 #include "Renderer.h"
 #include "RendererPBR.h"
@@ -76,12 +77,13 @@ enum class SceneName
 	Cubemaps,
 	Particles,
 	OmniShadows,
-	VoxelTerrain,
-	ProceduralLandmass,
 	Editor,
+	ProceduralLandmass,
+	VoxelTerrain,
+	VoxelTerrainSL,
 };
 
-SceneName currentScene = SceneName::ProceduralLandmass;
+SceneName currentScene = SceneName::VoxelTerrainSL;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -163,6 +165,10 @@ int main()
 		break;
 	case SceneName::VoxelTerrain:
 		scene = new SceneVoxelTerrain();
+		renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
+		break;
+	case SceneName::VoxelTerrainSL:
+		scene = new SceneVoxelTerrainSL();
 		renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
 		break;
 	case SceneName::ProceduralLandmass:

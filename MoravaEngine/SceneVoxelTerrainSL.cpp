@@ -1,4 +1,4 @@
-#include "SceneProceduralLandmass.h"
+#include "SceneVoxelTerrainSL.h"
 
 #include "ResourceManager.h"
 #include "Block.h"
@@ -6,13 +6,14 @@
 #include "RendererBasic.h"
 #include "MousePicker.h"
 #include "Log.h"
+#include "TerrainVoxel.h"
 #include "TerrainSL.h"
 #include "NoiseSL.h"
 
 #include "ImGuiWrapper.h"
 
 
-SceneProceduralLandmass::SceneProceduralLandmass()
+SceneVoxelTerrainSL::SceneVoxelTerrainSL()
 {
     sceneSettings.cameraPosition = glm::vec3(10.0f, 24.0f, 0.0f);
     sceneSettings.cameraStartYaw = 0.0f;
@@ -22,12 +23,11 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     sceneSettings.waterWaveSpeed = 0.05f;
     sceneSettings.enablePointLights  = true;
     sceneSettings.enableSpotLights   = true;
-    sceneSettings.enableOmniShadows  = false;
+    sceneSettings.enableOmniShadows  = true;
     sceneSettings.enableSkybox       = false;
     sceneSettings.enableShadows      = false;
     sceneSettings.enableWaterEffects = false;
     sceneSettings.enableParticles    = false;
-    sceneSettings.farPlane = 500.0f;
 
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
@@ -110,10 +110,10 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_MapGenConf.lacunarity = 2.0f;
     m_MapGenConf.seed = 123456;
     m_MapGenConf.offset = glm::vec2(0.0f, 0.0f);
-
+    
     m_MapGenConf.autoUpdate = true;
     m_MapGenConf.regions = std::vector<MapGenerator::TerrainTypes>();
-
+    
     m_HeightMapMultiplier = 10.0f;
     m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
     m_SeaLevel = 0.0f;
@@ -127,6 +127,26 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     SetupTextures();
     SetupMeshes();
 
+    m_Transform = glm::mat4(1.0f);
+    m_UpdateCooldown = { 0.0f, 0.5f };
+    m_DigCooldown = { 0.0f, 0.1f };
+    m_RayIntersectCooldown = { 0.0f, 0.1f };
+    m_RayCastCooldown = { 0.0f, 0.1f };
+    m_OnClickCooldown = { 0.0f, 0.1f };
+
+    /**** BEGIN Original Voxel Terrain ****/
+
+    // m_TerrainScale = glm::vec3(60.0f, 24.0f, 60.0f); // Release
+    // m_TerrainScale = glm::vec3(40.0f, 10.0f, 40.0f); // Debug
+    m_TerrainScale = glm::vec3(1.0f, 1.0f, 1.0f); // Temp
+    m_TerrainNoiseFactor = 0.08f;
+
+    m_TerrainVoxel = new TerrainVoxel(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
+    m_RenderInstanced = new RenderInstanced(m_TerrainVoxel, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
+
+    /**** END Original Voxel Terrain ****/
+
+    /**** BEGIN Procedural Landmass Generation Terrain ****/
     m_IsRequiredMapUpdate = true;
     m_IsRequiredMapRebuild = true;
 
@@ -136,28 +156,16 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
 
-    m_RenderInstanced = new RenderInstanced(m_TerrainSL, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
+    m_RenderInstancedSL = new RenderInstanced(m_TerrainSL, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
 
-    m_Transform = glm::mat4(1.0f);
-    m_UpdateCooldown = { 0.0f, 0.2f };
-    m_DigCooldown = { 0.0f, 0.1f };
-    m_RayIntersectCooldown = { 0.0f, 0.1f };
-    m_RayCastCooldown = { 0.0f, 0.1f };
-    m_OnClickCooldown = { 0.0f, 0.1f };
-
-    m_TerrainScale = glm::vec3(40.0f, 10.0f, 40.0f); // Debug
-    m_TerrainNoiseFactor = 0.08f;
+    /**** END Procedural Landmass Generation Terrain ****/
 
     Mesh* mesh = new Block();
-    m_Player = new Player(glm::vec3(-100.0f, 20.0f, 0.0f), mesh, m_Camera);
+    m_Player = new Player(glm::vec3(0.0f, m_TerrainScale.y, 0.0f), mesh, m_Camera);
     m_PlayerController = new PlayerController(m_Player);
-    m_PlayerController->SetTerrain(m_TerrainSL);
-    m_PlayerController->SetGravity(0.0f);
+    m_PlayerController->SetTerrain(m_TerrainVoxel);
 
-    m_DrawGizmos = false;
-    m_RenderPlayer = false;
-    m_RenderTerrain = false;
-
+    m_DrawGizmos = true;
     m_UnlockRotation = false;
     m_UnlockRotationPrev = m_UnlockRotation;
 
@@ -168,7 +176,7 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_Raycast = new Raycast();
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
 
-    MousePicker::Get()->SetTerrain(m_TerrainSL);
+    MousePicker::Get()->SetTerrain(m_TerrainVoxel);
 
     m_IntersectPosition = glm::vec3();
     m_IntersectPositionIndex = -1;
@@ -176,10 +184,9 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_CubeColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     m_DeleteVoxelCodeGLFW = GLFW_KEY_TAB;
-
 }
 
-void SceneProceduralLandmass::SetCamera()
+void SceneVoxelTerrainSL::SetCamera()
 {
     m_Camera = new Camera(sceneSettings.cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f),
         sceneSettings.cameraStartYaw, sceneSettings.cameraStartPitch);
@@ -187,13 +194,13 @@ void SceneProceduralLandmass::SetCamera()
 	m_CameraController = new CameraControllerVoxelTerrain(m_Camera, m_Player, sceneSettings.cameraMoveSpeed, 0.1f);
 }
 
-void SceneProceduralLandmass::SetupTextures()
+void SceneVoxelTerrainSL::SetupTextures()
 {
     ResourceManager::LoadTexture("diffuse", "Textures/plain.png");
-    ResourceManager::LoadTexture("normal", "Textures/normal_map_default.png");
+    ResourceManager::LoadTexture("normal",  "Textures/normal_map_default.png");
 }
 
-void SceneProceduralLandmass::SetupTextureSlots()
+void SceneVoxelTerrainSL::SetupTextureSlots()
 {
     textureSlots.insert(std::make_pair("diffuse",    1));
     textureSlots.insert(std::make_pair("normal",     2));
@@ -205,19 +212,13 @@ void SceneProceduralLandmass::SetupTextureSlots()
     textureSlots.insert(std::make_pair("DuDv",       8));
 }
 
-void SceneProceduralLandmass::SetupMeshes()
+void SceneVoxelTerrainSL::SetupMeshes()
 {
     Block* cube = new Block(glm::vec3(1.0f, 1.0f, 1.0f));
     meshes.insert(std::make_pair("cube", cube));
-
-    Block* floor_height = new Block(glm::vec3(m_MapGenConf.mapChunkSize, 0.1f, m_MapGenConf.mapChunkSize));
-    meshes.insert(std::make_pair("floor_height", floor_height));
-
-    Block* floor_color = new Block(glm::vec3(m_MapGenConf.mapChunkSize, 0.1f, m_MapGenConf.mapChunkSize));
-    meshes.insert(std::make_pair("floor_color", floor_color));
 }
 
-void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
+void SceneVoxelTerrainSL::UpdateImGui(float timestep, Window& mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -359,6 +360,18 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
     }
     ImGui::End();
 
+    ImGui::Begin("Terrain Parameters");
+    {
+        if (ImGui::CollapsingHeader("Show Details"))
+        {
+            std::string terrainPositionsSize = "Terrain Positions Size: " + std::to_string(m_TerrainVoxel->GetVoxelCount());
+            ImGui::Text(terrainPositionsSize.c_str());
+            ImGui::SliderInt3("Terrain Scale", glm::value_ptr(m_TerrainScale), 1, 100);
+            ImGui::SliderFloat("Terrain Noise Factor", &m_TerrainNoiseFactor, -0.5f, 0.5f);
+        }
+    }
+    ImGui::End();
+
     ImGui::Begin("Debug");
     {
         if (ImGui::CollapsingHeader("Show Details"))
@@ -417,8 +430,6 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
     ImGui::Begin("Scene Settings");
     {
         ImGui::Checkbox("Draw Gizmos", &m_DrawGizmos);
-        ImGui::Checkbox("Render Player", &m_RenderPlayer);
-        ImGui::Checkbox("Render Terrain", &m_RenderTerrain);
         ImGui::Checkbox("Unlock Rotation", &m_UnlockRotation);
         ImGui::ColorEdit4("Cube Color", glm::value_ptr(m_CubeColor));
     }
@@ -438,7 +449,7 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
         if (ImGui::CollapsingHeader("Show Details"))
         {
             // Begin DrawMode ImGui drop-down list
-            static const char* items[] { "HeightMap", "ColorMap", "Mesh" };
+            static const char* items[]{ "HeightMap", "ColorMap", "Mesh" };
             static int selectedItem = (int)m_MapGenConf.drawMode;
             ImGui::Combo("Draw Mode", &selectedItem, items, IM_ARRAYSIZE(items));
             m_MapGenConf.drawMode = (MapGenerator::DrawMode)selectedItem;
@@ -465,13 +476,13 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
     ImGui::End();
 }
 
-void SceneProceduralLandmass::Update(float timestep, Window& mainWindow)
+void SceneVoxelTerrainSL::Update(float timestep, Window& mainWindow)
 {
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
     Dig(mainWindow.getKeys(), timestep);
     CastRay(mainWindow.getKeys(), mainWindow.getMouseButtons(), timestep);
-    // OnClick(mainWindow.getKeys(), mainWindow.getMouseButtons(), timestep);
+    OnClick(mainWindow.getKeys(), mainWindow.getMouseButtons(), timestep);
     UpdateCooldown(timestep, mainWindow);
     m_PlayerController->KeyControl(mainWindow.getKeys(), timestep);
     m_PlayerController->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
@@ -480,10 +491,16 @@ void SceneProceduralLandmass::Update(float timestep, Window& mainWindow)
     m_Player->Update();
     m_CameraController->Update();
     m_CameraController->SetUnlockRotation(m_UnlockRotation);
+
+    m_DeleteMode = mainWindow.getKeys()[m_DeleteVoxelCodeGLFW];
+
     m_RenderInstanced->Update();
     m_RenderInstanced->SetIntersectPosition(&m_IntersectPosition);
-    m_DeleteMode = mainWindow.getKeys()[m_DeleteVoxelCodeGLFW];
     m_RenderInstanced->SetDeleteMode(&m_DeleteMode);
+
+    m_RenderInstancedSL->Update();
+    m_RenderInstancedSL->SetIntersectPosition(&m_IntersectPosition);
+    m_RenderInstancedSL->SetDeleteMode(&m_DeleteMode);
 
     if (m_UnlockRotation != m_UnlockRotationPrev) {
         if (m_UnlockRotation)
@@ -494,25 +511,51 @@ void SceneProceduralLandmass::Update(float timestep, Window& mainWindow)
     }
 }
 
-void SceneProceduralLandmass::UpdateCooldown(float timestep, Window& mainWindow)
+void SceneVoxelTerrainSL::UpdateCooldown(float timestep, Window& mainWindow)
 {
     // Cooldown
     if (timestep - m_UpdateCooldown.lastTime < m_UpdateCooldown.cooldown) return;
     m_UpdateCooldown.lastTime = timestep;
 
+    /**** BEGIN UpdateCooldown Original Voxel Terrain ****/
+
+    if (!IsTerrainConfigChanged()) return;
+
+    Release();
+    m_TerrainVoxel = new TerrainVoxel(m_TerrainScale, m_TerrainNoiseFactor, 0.0f);
+    m_PlayerController->SetTerrain(m_TerrainVoxel);
+    MousePicker::Get()->SetTerrain(m_TerrainVoxel);
+    m_RenderInstanced = new RenderInstanced(m_TerrainVoxel, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
+    m_RenderInstanced->CreateVertexData();
+
+    /**** END UpdateCooldown Original Voxel Terrain ****/
+
+    /**** BEGIN UpdateCooldown Procedural Landmass Generation Terrain ****/
+
     CheckMapRebuildRequirements();
 
     if (!m_IsRequiredMapUpdate) return;
 
-    // Release();
     m_TerrainSL->Update(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
-    // m_RenderInstanced->CreateVertexData();
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
+
+    /**** END UpdateCooldown Procedural Landmass Generation Terrain ****/
 }
 
-void SceneProceduralLandmass::CheckMapRebuildRequirements()
+bool SceneVoxelTerrainSL::IsTerrainConfigChanged()
+{
+    bool terrainConfigChanged = false;
+    if (m_TerrainScale != m_TerrainScalePrev || m_TerrainNoiseFactor != m_TerrainNoiseFactorPrev) {
+        terrainConfigChanged = true;
+        m_TerrainScalePrev = m_TerrainScale;
+        m_TerrainNoiseFactorPrev = m_TerrainNoiseFactor;
+    }
+    return terrainConfigChanged;
+}
+
+void SceneVoxelTerrainSL::CheckMapRebuildRequirements()
 {
     m_IsRequiredMapUpdate = false;
     m_IsRequiredMapRebuild = false;
@@ -534,155 +577,8 @@ void SceneProceduralLandmass::CheckMapRebuildRequirements()
     }
 }
 
-void SceneProceduralLandmass::Release()
-{
-    // if (m_TerrainSL) delete m_TerrainSL;
-    // if (m_RenderInstanced) delete m_RenderInstanced;
-}
-
-void SceneProceduralLandmass::Dig(bool* keys, float timestep)
-{
-    // Cooldown
-    if (timestep - m_DigCooldown.lastTime < m_DigCooldown.cooldown) return;
-    m_DigCooldown.lastTime = timestep;
-
-    if (keys[GLFW_KEY_F]) {
-        bool vectorModified = false;
-
-        for (auto it = m_TerrainSL->m_Voxels.cbegin(); it != m_TerrainSL->m_Voxels.cend(); ) {
-            if (glm::distance(m_Player->GetPosition(), it->position) < m_DigDistance)
-            {
-                it = m_TerrainSL->m_Voxels.erase(it++);
-                vectorModified = true;
-            }
-            else {
-                ++it;
-            }
-        }
-        if (vectorModified) {
-            m_RenderInstanced->CreateVertexData();
-        }
-    }
-}
-
-void SceneProceduralLandmass::CastRay(bool* keys, bool* buttons, float timestep)
-{
-    // Cooldown
-    if (timestep - m_RayCastCooldown.lastTime < m_RayCastCooldown.cooldown) return;
-    m_RayCastCooldown.lastTime = timestep;
-
-    if (true || keys[GLFW_KEY_C] || buttons[GLFW_MOUSE_BUTTON_1])
-    {
-        m_IntersectPositionVector = GetRayIntersectPositions(timestep, m_Camera);
-        if (m_IntersectPositionVector.size() > 0) {
-            m_RenderInstanced->CreateVertexData();
-        }
-    }
-}
-
-std::vector<glm::vec3> SceneProceduralLandmass::GetRayIntersectPositions(float timestep, Camera* camera)
-{
-    std::vector<glm::vec3> rayIntersectPositions = std::vector<glm::vec3>();
-
-    // Cooldown
-    if (timestep - m_RayIntersectCooldown.lastTime < m_RayIntersectCooldown.cooldown) return rayIntersectPositions;
-    m_RayIntersectCooldown.lastTime = timestep;
-
-    constexpr float maxFloatValue = std::numeric_limits<float>::max();
-    float minimalDistance = maxFloatValue;
-    float distance;
-    glm::vec3 position;
-
-    for (size_t i = 0; i < m_TerrainSL->m_Voxels.size(); i++) {
-        position = m_TerrainSL->m_Voxels[i].position;
-        bool isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
-            position - glm::vec3(0.5f, 0.5f, 0.5f), position + glm::vec3(0.5f, 0.5f, 0.5f), glm::vec2(0.0f));
-        if (isSelected) {
-            rayIntersectPositions.push_back(position);
-        
-            // find position nearest to camera
-            distance = glm::distance(position, camera->GetPosition());
-            if (distance < minimalDistance) {
-                minimalDistance = distance;
-                m_IntersectPosition = position;
-                m_IntersectPositionIndex = (int)i;
-            }
-        }
-    }
-
-    return rayIntersectPositions;
-}
-
-bool SceneProceduralLandmass::IsRayIntersectPosition(glm::vec3 position)
-{
-    for (auto rayIntersectPosition : m_IntersectPositionVector) {
-        if (position == rayIntersectPosition) {
-            return true;
-        }
-    }
-    return false;
-}
-
-void SceneProceduralLandmass::OnClick(bool* keys, bool* buttons, float timestep)
-{
-    // Cooldown
-    if (timestep - m_OnClickCooldown.lastTime < m_OnClickCooldown.cooldown) return;
-    m_OnClickCooldown.lastTime = timestep;
-
-    if (buttons[GLFW_MOUSE_BUTTON_1]) {
-
-        // Delete current voxel
-        if (keys[m_DeleteVoxelCodeGLFW]) {
-            DeleteVoxel();
-        }
-        else {
-            AddVoxel();
-        }
-    }
-}
-
-void SceneProceduralLandmass::AddVoxel()
-{
-    // Add new voxel
-    glm::vec3 addPositionFloat = m_IntersectPosition - m_Camera->GetFront();
-    glm::vec3 addPositionInt = glm::vec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
-
-    if (IsPositionVacant(addPositionInt)) {
-        TerrainVoxel::Voxel voxel;
-        voxel.position = addPositionInt;
-        voxel.color = glm::vec4(m_CubeColor);
-        m_TerrainSL->m_Voxels.push_back(voxel);
-        m_IntersectPositionIndex = (int)m_TerrainSL->m_Voxels.size() - 1;
-        m_RenderInstanced->CreateVertexData();
-        Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
-    }
-    else {
-        Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
-    }
-}
-
-void SceneProceduralLandmass::DeleteVoxel()
-{
-    if (m_IntersectPositionIndex < 0) return;
-
-    glm::vec3 deletePosition = m_TerrainSL->m_Voxels.at(m_IntersectPositionIndex).position;
-    m_TerrainSL->m_Voxels.erase(m_TerrainSL->m_Voxels.begin() + m_IntersectPositionIndex);
-    m_IntersectPositionIndex = -1;
-    m_RenderInstanced->CreateVertexData();
-    Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
-}
-
-bool SceneProceduralLandmass::IsPositionVacant(glm::vec3 queryPosition)
-{
-    for (auto voxel : m_TerrainSL->m_Voxels) {
-        if (voxel.position == queryPosition)
-            return false;
-    }
-    return true;
-}
-
-void SceneProceduralLandmass::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+void SceneVoxelTerrainSL::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
     Shader* shaderMain = shaders["main"];
     Shader* shaderOmniShadow = shaders["omniShadow"];
@@ -704,39 +600,7 @@ void SceneProceduralLandmass::Render(Window& mainWindow, glm::mat4 projectionMat
         }
 
         shaderMain->Bind();
-
-        glm::mat4 model = glm::mat4(1.0f);
-        shaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-        ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
-
-        switch (m_MapGenConf.drawMode) {
-        case MapGenerator::DrawMode::HeightMap:
-            model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            shaderMain->setMat4("model", model);
-            ResourceManager::GetTexture("heightMap")->Bind(textureSlots["diffuse"]);
-            shaderMain->setFloat("tilingFactor", 1.0f / m_MapGenConf.mapChunkSize);
-            // Log::GetLogger()->info("SceneProceduralLandmass::Render heightMap ID = {0}", ResourceManager::GetTexture("heightMap")->GetID());
-            meshes["floor_height"]->Render();
-            break;
-        case MapGenerator::DrawMode::ColorMap:
-            model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            shaderMain->setMat4("model", model);
-            ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
-            shaderMain->setFloat("tilingFactor", 1.0f / m_MapGenConf.mapChunkSize);
-            // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
-            meshes["floor_height"]->Render();
-            break;
-        case MapGenerator::DrawMode::Mesh:
-            model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            model = glm::scale(model, glm::vec3(-1.0f, 1.0f, 1.0f));
-            shaderMain->setMat4("model", model);
-            ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
-            shaderMain->setFloat("tilingFactor", 1.0f);
-            // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
-            if (m_TerrainSL->GetMapGenerator()->GetMesh() != nullptr)
-                m_TerrainSL->GetMapGenerator()->GetMesh()->Render();
-            break;
-        }
+        // Render main pass only
     }
 
     /**** BEGIN render Player ****/
@@ -753,19 +617,20 @@ void SceneProceduralLandmass::Render(Window& mainWindow, glm::mat4 projectionMat
     model = glm::rotate(model, glm::radians(m_Player->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
     shaderMain->setMat4("model", model);
 
-    if (m_RenderPlayer)
-        m_Player->Render();
+    m_Player->Render();
 
     /**** END render Player ****/
 
-    /**** BEGIN render Terrain ****/
+    glm::vec4 tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    /**** BEGIN Render Original Voxel Terrain ****/
+
+    shaderRenderInstanced->Bind();
 
     ResourceManager::GetTexture("diffuse")->Bind(textureSlots["diffuse"]);
     ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
 
-    glm::vec4 tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 0.8f);
-
-    shaderRenderInstanced->Bind();
+   tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 0.8f);
 
     shaderRenderInstanced->setMat4("projection", projectionMatrix);
     shaderRenderInstanced->setMat4("view", m_CameraController->CalculateViewMatrix());
@@ -773,14 +638,178 @@ void SceneProceduralLandmass::Render(Window& mainWindow, glm::mat4 projectionMat
     shaderRenderInstanced->setVec4("tintColor", tintColor);
 
     m_RenderInstanced->m_Texture->Bind(0);
+    m_RenderInstanced->Render();
 
-    if (m_RenderTerrain)
-        m_RenderInstanced->Render();
+    /**** END Render Original Voxel Terrain ****/
 
-    /**** END render Terrain ****/
+    /**** BEGIN Render Procedural Landmass Generation Terrain ****/
+
+    shaderRenderInstanced->Bind();
+
+    ResourceManager::GetTexture("diffuse")->Bind(textureSlots["diffuse"]);
+    ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
+
+    tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    shaderRenderInstanced->setMat4("projection", projectionMatrix);
+    shaderRenderInstanced->setMat4("view", m_CameraController->CalculateViewMatrix());
+    shaderRenderInstanced->setInt("albedoMap", 0);
+    shaderRenderInstanced->setVec4("tintColor", tintColor);
+
+    m_RenderInstancedSL->m_Texture->Bind(0);
+    m_RenderInstancedSL->Render();
+
+    /**** END Render Procedural Landmass Generation Terrain ****/
 }
 
-SceneProceduralLandmass::~SceneProceduralLandmass()
+void SceneVoxelTerrainSL::Release()
+{
+    if (m_TerrainVoxel) delete m_TerrainVoxel;
+    if (m_RenderInstanced) delete m_RenderInstanced;
+}
+
+void SceneVoxelTerrainSL::Dig(bool* keys, float timestep)
+{
+    // Cooldown
+    if (timestep - m_DigCooldown.lastTime < m_DigCooldown.cooldown) return;
+    m_DigCooldown.lastTime = timestep;
+
+    if (keys[GLFW_KEY_F]) {
+        bool vectorModified = false;
+
+        for (auto it = m_TerrainVoxel->m_Voxels.cbegin(); it != m_TerrainVoxel->m_Voxels.cend(); ) { 
+            if (glm::distance(m_Player->GetPosition(), it->position) < m_DigDistance)
+            {
+                it = m_TerrainVoxel->m_Voxels.erase(it++);
+                vectorModified = true;
+            }
+            else {
+                ++it;
+            }
+        }
+        if (vectorModified) {
+            m_RenderInstanced->CreateVertexData();
+        }
+    }
+}
+
+void SceneVoxelTerrainSL::CastRay(bool* keys, bool* buttons, float timestep)
+{
+    // Cooldown
+    if (timestep - m_RayCastCooldown.lastTime < m_RayCastCooldown.cooldown) return;
+    m_RayCastCooldown.lastTime = timestep;
+
+    if (true || keys[GLFW_KEY_C] || buttons[GLFW_MOUSE_BUTTON_1])
+    {
+        m_IntersectPositionVector = GetRayIntersectPositions(timestep, m_Camera);
+        if (m_IntersectPositionVector.size() > 0) {
+            m_RenderInstanced->CreateVertexData();
+        }
+    }
+}
+
+std::vector<glm::vec3> SceneVoxelTerrainSL::GetRayIntersectPositions(float timestep, Camera* camera)
+{
+    std::vector<glm::vec3> rayIntersectPositions = std::vector<glm::vec3>();
+
+    // Cooldown
+    if (timestep - m_RayIntersectCooldown.lastTime < m_RayIntersectCooldown.cooldown) return rayIntersectPositions;
+    m_RayIntersectCooldown.lastTime = timestep;
+
+    constexpr float maxFloatValue = std::numeric_limits<float>::max();
+    float minimalDistance = maxFloatValue;
+    float distance;
+    glm::vec3 position;
+
+    for (size_t i = 0; i < m_TerrainVoxel->m_Voxels.size(); i++) {
+        position = m_TerrainVoxel->m_Voxels[i].position;
+        bool isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
+            position - glm::vec3(0.5f, 0.5f, 0.5f), position + glm::vec3(0.5f, 0.5f, 0.5f), glm::vec2(0.0f));
+        if (isSelected) {
+            rayIntersectPositions.push_back(position);
+        
+            // find position nearest to camera
+            distance = glm::distance(position, camera->GetPosition());
+            if (distance < minimalDistance) {
+                minimalDistance = distance;
+                m_IntersectPosition = position;
+                m_IntersectPositionIndex = (int)i;
+            }
+        }
+    }
+
+    return rayIntersectPositions;
+}
+
+bool SceneVoxelTerrainSL::IsRayIntersectPosition(glm::vec3 position)
+{
+    for (auto rayIntersectPosition : m_IntersectPositionVector) {
+        if (position == rayIntersectPosition) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void SceneVoxelTerrainSL::OnClick(bool* keys, bool* buttons, float timestep)
+{
+    // Cooldown
+    if (timestep - m_OnClickCooldown.lastTime < m_OnClickCooldown.cooldown) return;
+    m_OnClickCooldown.lastTime = timestep;
+
+    if (buttons[GLFW_MOUSE_BUTTON_1]) {
+
+        // Delete current voxel
+        if (keys[m_DeleteVoxelCodeGLFW]) {
+            DeleteVoxel();
+        }
+        else {
+            AddVoxel();
+        }
+    }
+}
+
+void SceneVoxelTerrainSL::AddVoxel()
+{
+    // Add new voxel
+    glm::vec3 addPositionFloat = m_IntersectPosition - m_Camera->GetFront();
+    glm::vec3 addPositionInt = glm::vec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
+
+    if (IsPositionVacant(addPositionInt)) {
+        TerrainVoxel::Voxel voxel;
+        voxel.position = addPositionInt;
+        voxel.color = glm::vec4(m_CubeColor);
+        m_TerrainVoxel->m_Voxels.push_back(voxel);
+        m_IntersectPositionIndex = (int)m_TerrainVoxel->m_Voxels.size() - 1;
+        m_RenderInstanced->CreateVertexData();
+        Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
+    }
+    else {
+        Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
+    }
+}
+
+void SceneVoxelTerrainSL::DeleteVoxel()
+{
+    if (m_IntersectPositionIndex < 0) return;
+
+    glm::vec3 deletePosition = m_TerrainVoxel->m_Voxels.at(m_IntersectPositionIndex).position;
+    m_TerrainVoxel->m_Voxels.erase(m_TerrainVoxel->m_Voxels.begin() + m_IntersectPositionIndex);
+    m_IntersectPositionIndex = -1;
+    m_RenderInstanced->CreateVertexData();
+    Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
+}
+
+bool SceneVoxelTerrainSL::IsPositionVacant(glm::vec3 queryPosition)
+{
+    for (auto voxel : m_TerrainVoxel->m_Voxels) {
+        if (voxel.position == queryPosition)
+            return false;
+    }
+    return true;
+}
+
+SceneVoxelTerrainSL::~SceneVoxelTerrainSL()
 {
     Release();
 
