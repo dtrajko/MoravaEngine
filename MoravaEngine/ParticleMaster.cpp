@@ -74,7 +74,7 @@ std::map<int, int> ParticleMaster::GetCounts()
 {
 	std::map<int, int> counts = std::map<int, int>();
 	for (auto it = m_Particles->begin(); it != m_Particles->end(); it++) {
-		counts.insert(std::make_pair(it->first->GetTextureID(), it->second->size()));
+		counts.insert(std::make_pair(it->first->GetTextureID(), (int)it->second->size()));
 	}
 	return counts;
 }

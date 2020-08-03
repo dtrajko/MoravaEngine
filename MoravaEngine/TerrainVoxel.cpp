@@ -7,6 +7,7 @@ TerrainVoxel::TerrainVoxel()
 	m_NoiseFactor = 0.05f;
 	m_NoiseThreshold = 0.0f;
 	m_PerlinNoise = new siv::PerlinNoise();
+	m_Voxels = std::vector<Voxel>();
 }
 
 TerrainVoxel::TerrainVoxel(glm::vec3 scale, float noiseFactor, float threshold)
@@ -15,6 +16,7 @@ TerrainVoxel::TerrainVoxel(glm::vec3 scale, float noiseFactor, float threshold)
 	m_NoiseFactor = noiseFactor;
 	m_NoiseThreshold = threshold;
 	m_PerlinNoise = new siv::PerlinNoise();
+	m_Voxels = std::vector<Voxel>();
 
 	Generate();
 }

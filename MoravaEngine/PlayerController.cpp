@@ -124,6 +124,8 @@ bool PlayerController::IsColliding(glm::vec3 position, float distanceAllowed)
 	float tempDistance;
 	glm::vec3 collidingPosition;
 
+	// printf("PlayerController::IsColliding m_Voxels.size = %zu\n", m_Terrain->m_Voxels.size());
+
 	for (TerrainVoxel::Voxel voxel : m_Terrain->m_Voxels)
 	{
 		tempDistance = glm::distance(position, voxel.position);

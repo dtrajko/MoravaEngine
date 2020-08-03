@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Mesh.h"
+
 #include <glm/glm.hpp>
 
 #include <map>
@@ -9,7 +11,15 @@ class TerrainChunk
 {
 public:
 	TerrainChunk();
+	TerrainChunk(glm::vec2 coord, int size);
 	~TerrainChunk();
+
+	void Update();
+
+public:
+	glm::vec2 position;
+	Mesh* m_Mesh;
+
 };
 
 class EndlessTerrain

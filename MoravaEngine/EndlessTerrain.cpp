@@ -1,12 +1,27 @@
 #include "EndlessTerrain.h"
 
+#include "Quad.h"
 
 
 TerrainChunk::TerrainChunk()
 {
 }
 
+TerrainChunk::TerrainChunk(glm::vec2 coord, int size)
+{
+	position = coord * glm::vec2((float)size);
+	glm::vec3 positionV3 = glm::vec3(position.x, 0, position.y);
+
+	m_Mesh = new Quad();
+	m_Mesh->m_Transform->m_Position = positionV3;
+	m_Mesh->m_Transform->m_Scale = glm::vec3(size / 10.0f);
+}
+
 TerrainChunk::~TerrainChunk()
+{
+}
+
+void TerrainChunk::Update()
 {
 }
 
@@ -34,13 +49,13 @@ void EndlessTerrain::UpdateVisibleChunks()
 
 	for (int yOffset = -chunksVisibleInViewDst; yOffset <= chunksVisibleInViewDst; yOffset++) {
 		for (int xOffset = -chunksVisibleInViewDst; xOffset <= chunksVisibleInViewDst; xOffset++) {
-			glm::vec2* viewedChunkCoord = new glm::vec2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
+			glm::vec2 viewedChunkCoord = glm::vec2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
 			
-			if (terrainChunkDictionary->find(viewedChunkCoord) != terrainChunkDictionary->end()) {
+			if (terrainChunkDictionary->find(&viewedChunkCoord) != terrainChunkDictionary->end()) {
 			
 			}
 			else {
-				// terrainChunkDictionary->insert(std::make_pair(viewedChunkCoord, new TerrainChunk()));
+				terrainChunkDictionary->insert(std::make_pair(&viewedChunkCoord, new TerrainChunk()));
 			}
 		}
 	}

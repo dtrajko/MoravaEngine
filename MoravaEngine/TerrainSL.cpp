@@ -1,11 +1,11 @@
 #include "TerrainSL.h"
 
 
-TerrainSL::TerrainSL()
+TerrainSL::TerrainSL() : TerrainVoxel()
 {
 }
 
-TerrainSL::TerrainSL(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail)
+TerrainSL::TerrainSL(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail) : TerrainVoxel()
 {
     m_HeightMapMultiplier = heightMapMultiplier;
     m_IsRequiredMapRebuild = isRequiredMapRebuild;
