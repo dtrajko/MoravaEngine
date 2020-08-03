@@ -43,7 +43,7 @@ void TerrainSL::Generate()
 				}
 				
 				Voxel voxel;
-				voxel.position = glm::vec3(x - m_Scale.x / 2.0f, heightFinal, z - m_Scale.z / 2.0f);
+				voxel.position = glm::vec3(x - m_Scale.x / 2.0f + 0.5f, heightFinal, z - m_Scale.z / 2.0f + 0.5f);
 				voxel.color = m_MapGenerator->m_ColorMap[z * m_MapGenerator->m_MapGenConf.mapChunkSize + x];
 				voxel.textureID = -1; // no texture
 				m_Voxels.push_back(voxel);
