@@ -29,6 +29,7 @@ public:
 	void Generate(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail);
 
 	inline MeshUnity* GetMesh() { return m_Mesh; };
+	glm::vec4 GetRegionColor(float height);
 
 private:
 	void GenerateMap();

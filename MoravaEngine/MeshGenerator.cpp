@@ -20,8 +20,6 @@ MeshData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int wid
 	MeshData* meshData = new MeshData(verticesPerLine, verticesPerLine);
 	unsigned int vertexIndex = 0;
 
-	// printf("MeshGenerator::GenerateTerrainMesh heightMapMultiplier = %.2ff\n", heightMapMultiplier);
-
 	for (unsigned int y = 0; y < height; y += meshSimplificationIncrement) {
 		for (unsigned int x = 0; x < width; x += meshSimplificationIncrement) {
 
@@ -50,22 +48,6 @@ MeshData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int wid
 		}
 	}
 
-	//	debug
-	//	for (unsigned int i = 0; i < meshData->m_Vertices.size(); i++) {
-	//		auto vertex = meshData->m_Vertices[i];
-	//		auto uv = meshData->m_UVs[i];
-	//		auto xy = meshData->m_XY[i];
-	//		printf("MeshGenerator [ X=%i Y=%i ] vertex [ %.2ff %.2ff %.2ff ] uv [ %.2ff %.2ff ]\n", (int)xy.x, (int)xy.y, vertex.x, vertex.y, vertex.z, uv.x, uv.y);
-	//	}
-	//	
-	//	for (unsigned int i = 0; i < meshData->m_Triangles.size(); i += 3) {
-	//		auto triangle_0 = meshData->m_Triangles[i + 0];
-	//		auto triangle_1 = meshData->m_Triangles[i + 1];
-	//		auto triangle_2 = meshData->m_Triangles[i + 2];
-	//	
-	//		printf("MeshData::AddTriangle [ %i %i %i ]\n", triangle_0, triangle_1, triangle_2);
-	//	}
-
 	return meshData;
 }
 
@@ -73,14 +55,11 @@ MeshData::MeshData(unsigned int meshWidth, unsigned int meshHeight)
 {
 	m_VerticeIndex = meshWidth * meshHeight;
 	m_Vertices = std::vector<glm::vec3>();
-	// m_Vertices->resize(m_VerticeIndex);
 
 	m_UVs = std::vector<glm::vec2>();
-	// m_UVs->resize(m_VerticeIndex);
 
 	m_TriangleIndex = (meshWidth - 1) * (meshHeight - 1) * 6;
 	m_Triangles = std::vector<int>();
-	// m_Triangles->resize(m_TriangleIndex);
 }
 
 MeshData::~MeshData()

@@ -93,6 +93,16 @@ void MapGenerator::Generate(MapGenerator::MapGenConf mapGenConf, float heightMap
 	GenerateMap();
 }
 
+glm::vec4 MapGenerator::GetRegionColor(float height)
+{
+	glm::vec4 color = m_MapGenConf.regions[0].color;
+	for (MapGenerator::TerrainTypes region : m_MapGenConf.regions) {
+		color = region.color;
+		if (region.height >= height) break;
+	}
+	return color;
+}
+
 void MapGenerator::GenerateMap()
 {
 	Validate();

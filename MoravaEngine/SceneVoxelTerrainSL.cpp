@@ -117,7 +117,7 @@ SceneVoxelTerrainSL::SceneVoxelTerrainSL()
     
     m_HeightMapMultiplier = 10.0f;
     m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
-    m_SeaLevel = 0.0f;
+    m_SeaLevel = 0.5f;
     m_SeaLevelPrev = m_SeaLevel;
     m_LevelOfDetail = 0;
     m_LevelOfDetailPrev = m_LevelOfDetail;
@@ -152,13 +152,15 @@ SceneVoxelTerrainSL::SceneVoxelTerrainSL()
     m_Player = new Player(glm::vec3(0.0f, 20.0f, 0.0f), mesh, m_Camera);
     m_PlayerController = new PlayerController(m_Player);
     m_PlayerController->SetTerrain(m_TerrainSL);
-    m_PlayerController->SetGravity(0.1f);
+    m_PlayerController->SetGravity(0.0f);
+    m_PlayerController->SetMoveSpeed(0.5f);
+    m_PlayerController->SetMoveFastFactor(4.0f);
 
     m_DrawGizmos = true;
     m_UnlockRotation = false;
     m_UnlockRotationPrev = m_UnlockRotation;
 
-    m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(250.0f, 250.0f, 250.0f));
+    m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(300.0f, 300.0f, 300.0f));
 
     m_DigDistance = 1.6f;
 
@@ -459,7 +461,7 @@ void SceneVoxelTerrainSL::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::Checkbox("Auto Update", &m_MapGenConf.autoUpdate);
 
             ImGui::SliderFloat("Height Map Multiplier", &m_HeightMapMultiplier, -40.0f, 40.0f);
-            ImGui::SliderFloat("Sea Level", &m_SeaLevel, -20.0f, 20.0f);
+            ImGui::SliderFloat("Sea Level", &m_SeaLevel, 0.0f, 1.0f);
         }
     }
     ImGui::End();

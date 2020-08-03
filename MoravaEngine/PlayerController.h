@@ -19,6 +19,8 @@ public:
 	inline Player* GetPlayer() { return m_Player; };
 	inline void SetUnlockRotation(bool unlockRotation) { m_UnlockRotation = unlockRotation; };
 	inline void SetGravity(float gravity) { m_Gravity = gravity; };
+	inline void SetMoveSpeed(float moveSpeed) { m_MoveSpeed = moveSpeed; };
+	inline void SetMoveFastFactor(float moveFastFactor) { m_MoveFastFactor = moveFastFactor; };
 
 	void Update();
 
