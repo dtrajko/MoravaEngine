@@ -549,8 +549,8 @@ void SceneProceduralLandmass::Dig(bool* keys, float timestep)
     if (keys[GLFW_KEY_F]) {
         bool vectorModified = false;
 
-        for (auto it = m_TerrainSL->m_Voxels.cbegin(); it != m_TerrainSL->m_Voxels.cend(); ) {
-            if (glm::distance(m_Player->GetPosition(), it->position) < m_DigDistance)
+        for (auto it = m_TerrainSL->m_Voxels.begin(); it != m_TerrainSL->m_Voxels.end(); ) {
+            if (glm::distance(m_Player->GetPosition(), (*it)->position) < m_DigDistance)
             {
                 it = m_TerrainSL->m_Voxels.erase(it++);
                 vectorModified = true;
@@ -594,7 +594,7 @@ std::vector<glm::vec3> SceneProceduralLandmass::GetRayIntersectPositions(float t
     glm::vec3 position;
 
     for (size_t i = 0; i < m_TerrainSL->m_Voxels.size(); i++) {
-        position = m_TerrainSL->m_Voxels[i].position;
+        position = m_TerrainSL->m_Voxels[i]->position;
         bool isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             position - glm::vec3(0.5f, 0.5f, 0.5f), position + glm::vec3(0.5f, 0.5f, 0.5f), glm::vec2(0.0f));
         if (isSelected) {
@@ -648,9 +648,9 @@ void SceneProceduralLandmass::AddVoxel()
     glm::vec3 addPositionInt = glm::vec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
 
     if (IsPositionVacant(addPositionInt)) {
-        TerrainVoxel::Voxel voxel;
-        voxel.position = addPositionInt;
-        voxel.color = glm::vec4(m_CubeColor);
+        TerrainVoxel::Voxel* voxel = new TerrainVoxel::Voxel();
+        voxel->position = addPositionInt;
+        voxel->color = glm::vec4(m_CubeColor);
         m_TerrainSL->m_Voxels.push_back(voxel);
         m_IntersectPositionIndex = (int)m_TerrainSL->m_Voxels.size() - 1;
         m_RenderInstanced->CreateVertexData();
@@ -665,7 +665,7 @@ void SceneProceduralLandmass::DeleteVoxel()
 {
     if (m_IntersectPositionIndex < 0) return;
 
-    glm::vec3 deletePosition = m_TerrainSL->m_Voxels.at(m_IntersectPositionIndex).position;
+    glm::vec3 deletePosition = m_TerrainSL->m_Voxels.at(m_IntersectPositionIndex)->position;
     m_TerrainSL->m_Voxels.erase(m_TerrainSL->m_Voxels.begin() + m_IntersectPositionIndex);
     m_IntersectPositionIndex = -1;
     m_RenderInstanced->CreateVertexData();
@@ -675,7 +675,7 @@ void SceneProceduralLandmass::DeleteVoxel()
 bool SceneProceduralLandmass::IsPositionVacant(glm::vec3 queryPosition)
 {
     for (auto voxel : m_TerrainSL->m_Voxels) {
-        if (voxel.position == queryPosition)
+        if (voxel->position == queryPosition)
             return false;
     }
     return true;

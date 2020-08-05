@@ -14,13 +14,13 @@ float NoiseSL::s_NoiseHeightMax;
 float NoiseSL::s_NoiseHeightMin;
 int NoiseSL::s_RandSeed;
 
-NoiseSL::NoiseSL()
-{
-}
+int NoiseSL::s_MapWidth;
+int NoiseSL::s_MapHeight;
+int NoiseSL::s_Octaves;
 
-NoiseSL::~NoiseSL()
-{
-}
+float** NoiseSL::s_NoiseMap;
+glm::vec2** NoiseSL::s_OctaveOffsets;
+
 
 void NoiseSL::Init(int seed)
 {
@@ -32,16 +32,20 @@ void NoiseSL::Init(int seed)
 
 float** NoiseSL::GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistance, float lacunarity, glm::vec2 offset)
 {
-    float** noiseMap = new float*[mapWidth];
-    for (size_t i = 0; i < mapWidth; i++)
-        noiseMap[i] = new float[mapHeight];
+    s_MapWidth = mapWidth;
+    s_MapHeight = mapHeight;
+    s_Octaves = octaves;
 
-    glm::vec2** octaveOffsets = new glm::vec2*[octaves];
+    s_NoiseMap = new float*[mapWidth];
+    for (size_t i = 0; i < mapWidth; i++)
+        s_NoiseMap[i] = new float[mapHeight];
+
+    s_OctaveOffsets = new glm::vec2*[octaves];
     for (int i = 0; i < octaves; i++) {
         float offsetX = Math::ConvertRangeFloat((float)rand(), 0.0f, (float)RAND_MAX, -100000.0f, 100000.0f) + offset.x;
         float offsetY = Math::ConvertRangeFloat((float)rand(), 0.0f, (float)RAND_MAX, -100000.0f, 100000.0f) + offset.y;
-        octaveOffsets[i] = new glm::vec2(offsetX, offsetY);
-        printf("NoiseSL::GenerateNoiseMap octaveOffsets[%i] = [%.2ff, %.2ff]\n", i, octaveOffsets[i]->x, octaveOffsets[i]->y);
+        s_OctaveOffsets[i] = new glm::vec2(offsetX, offsetY);
+        printf("NoiseSL::GenerateNoiseMap octaveOffsets[%i] = [%.2ff, %.2ff]\n", i, s_OctaveOffsets[i]->x, s_OctaveOffsets[i]->y);
     }
 
     if (scale <= 0.0f)
@@ -64,8 +68,8 @@ float** NoiseSL::GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float s
             float noiseHeight = 0.0f;
 
             for (int i = 0; i < octaves; i++) {
-                float sampleX = (x - halfWidth) / scale * frequency + octaveOffsets[i]->x;
-                float sampleY = (y - halfHeight) / scale * frequency + octaveOffsets[i]->y;
+                float sampleX = (x - halfWidth) / scale * frequency + s_OctaveOffsets[i]->x;
+                float sampleY = (y - halfHeight) / scale * frequency + s_OctaveOffsets[i]->y;
 
                 float perlinValue = (float)s_PerlinNoise.noise2D(sampleX, sampleY);
                 noiseHeight += perlinValue * amplitude;
@@ -81,7 +85,7 @@ float** NoiseSL::GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float s
                 s_NoiseHeightTempMin = noiseHeight;
             }
 
-            noiseMap[x][y] = noiseHeight;
+            s_NoiseMap[x][y] = noiseHeight;
         }
     }
 
@@ -90,12 +94,12 @@ float** NoiseSL::GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float s
     s_NoiseHeightMin = valueFloatMax;
     for (int y = 0; y < mapHeight; y++) {
         for (int x = 0; x < mapWidth; x++) {
-            noiseMap[x][y] = Math::InverseLerp(s_NoiseHeightTempMin, s_NoiseHeightTempMax, noiseMap[x][y]);
-            if (noiseMap[x][y] > s_NoiseHeightMax) {
-                s_NoiseHeightMax = noiseMap[x][y];
+            s_NoiseMap[x][y] = Math::InverseLerp(s_NoiseHeightTempMin, s_NoiseHeightTempMax, s_NoiseMap[x][y]);
+            if (s_NoiseMap[x][y] > s_NoiseHeightMax) {
+                s_NoiseHeightMax = s_NoiseMap[x][y];
             }
-            else if (noiseMap[x][y] < s_NoiseHeightMin) {
-                s_NoiseHeightMin = noiseMap[x][y];
+            else if (s_NoiseMap[x][y] < s_NoiseHeightMin) {
+                s_NoiseHeightMin = s_NoiseMap[x][y];
             }
         }
     }
@@ -103,5 +107,19 @@ float** NoiseSL::GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float s
     printf("NoiseSL::GenerateNoiseMap Value Range [%.4ff-%.4ff]\n", s_NoiseHeightTempMin, s_NoiseHeightTempMax);
     printf("NoiseSL::GenerateNoiseMap Value Range Normalized [%.4ff-%.4ff]\n", s_NoiseHeightMin, s_NoiseHeightMax);
 
-    return noiseMap;
+    return s_NoiseMap;
+}
+
+void NoiseSL::Release()
+{
+    for (size_t x = 0; x < s_MapWidth; x++) {
+        delete[] s_NoiseMap[x];
+    }
+    delete[] s_NoiseMap;
+
+    for (size_t x = 0; x < s_Octaves; x++) {
+        delete[] s_OctaveOffsets[x];
+    }
+    delete[] s_OctaveOffsets;
+
 }

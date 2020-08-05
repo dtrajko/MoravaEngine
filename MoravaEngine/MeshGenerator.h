@@ -30,6 +30,7 @@ public:
 
 	void AddTriangle(int a, int b, int c);
 	MeshUnity* CreateMesh();
+	void Release();
 
 public:
 	std::vector<glm::vec3> m_Vertices;
@@ -43,4 +44,5 @@ public:
 	unsigned int m_VerticeIndex;
 	unsigned int m_TriangleIndex;
 
+	MeshUnity* m_Mesh;
 };

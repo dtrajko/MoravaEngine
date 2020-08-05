@@ -45,16 +45,16 @@ void RenderInstanced::CreateDataStructure()
 	{
 		m_ModelMatrix = glm::mat4(1.0f);
 
-		m_InstanceColor = m_Terrain->m_Voxels[i].color;
+		m_InstanceColor = m_Terrain->m_Voxels[i]->color;
 
-		if (m_IntersectPosition != nullptr && m_Terrain->m_Voxels[i].position == *m_IntersectPosition) {
+		if (m_IntersectPosition != nullptr && m_Terrain->m_Voxels[i]->position == *m_IntersectPosition) {
 			if (*m_DeleteMode)
 				m_InstanceColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 			else
 				m_InstanceColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 		}
 
-		m_ModelMatrix = glm::translate(m_ModelMatrix, m_Terrain->m_Voxels[i].position);
+		m_ModelMatrix = glm::translate(m_ModelMatrix, m_Terrain->m_Voxels[i]->position);
 
 		if (i >= m_InstanceCount)
 			printf("m_InstanceCount = %u, i = %u\n", m_InstanceCount, i);

@@ -7,7 +7,7 @@ TerrainVoxel::TerrainVoxel()
 	m_NoiseFactor = 0.05f;
 	m_NoiseThreshold = 0.0f;
 	m_PerlinNoise = new siv::PerlinNoise();
-	m_Voxels = std::vector<Voxel>();
+	m_Voxels = std::vector<Voxel*>();
 }
 
 TerrainVoxel::TerrainVoxel(glm::vec3 scale, float noiseFactor, float threshold)
@@ -16,29 +16,39 @@ TerrainVoxel::TerrainVoxel(glm::vec3 scale, float noiseFactor, float threshold)
 	m_NoiseFactor = noiseFactor;
 	m_NoiseThreshold = threshold;
 	m_PerlinNoise = new siv::PerlinNoise();
-	m_Voxels = std::vector<Voxel>();
+	m_Voxels = std::vector<Voxel*>();
 
 	Generate();
 }
 
-void TerrainVoxel::Generate()
+void TerrainVoxel::Generate(glm::vec3 scale)
 {
+	Release();
+
 	for (int x = 0; x < m_Scale.x; x++) {
 		for (int y = 0; y < m_Scale.y; y++) {
 			for (int z = 0; z < m_Scale.z; z++) {
 				if (m_PerlinNoise->noise3D(x * m_NoiseFactor, y * m_NoiseFactor, z * m_NoiseFactor) >= m_NoiseThreshold) {
-					Voxel voxel;
-					voxel.position = glm::vec3(x - m_Scale.x / 2.0f, y, z - m_Scale.z / 2.0f);
-					float colorR = voxel.position.x / m_Scale.x;
-					float colorG = voxel.position.y / m_Scale.y;
-					float colorB = voxel.position.z / m_Scale.z;
-					voxel.color = glm::vec4(1.0f - colorR, colorG, 1.0f - colorB, 0.6f);
-					voxel.textureID = -1; // no texture
+					Voxel* voxel = new Voxel();
+					voxel->position = glm::vec3(x - m_Scale.x / 2.0f, y, z - m_Scale.z / 2.0f);
+					float colorR = voxel->position.x / m_Scale.x;
+					float colorG = voxel->position.y / m_Scale.y;
+					float colorB = voxel->position.z / m_Scale.z;
+					voxel->color = glm::vec4(1.0f - colorR, colorG, 1.0f - colorB, 0.6f);
+					voxel->textureID = -1; // no texture
 					m_Voxels.push_back(voxel);
 				}
 			}
 		}
 	}
+}
+
+void TerrainVoxel::Release()
+{
+	for (TerrainVoxel::Voxel* voxel : m_Voxels)
+		delete voxel;
+
+	m_Voxels.clear();
 }
 
 unsigned int TerrainVoxel::GetVoxelCount()
@@ -48,6 +58,7 @@ unsigned int TerrainVoxel::GetVoxelCount()
 
 TerrainVoxel::~TerrainVoxel()
 {
+	Release();
 	delete m_PerlinNoise;
 }
 

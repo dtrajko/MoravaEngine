@@ -9,7 +9,8 @@ public:
 	TerrainBase();
 	virtual ~TerrainBase();
 
-	virtual void Generate();
+	inline virtual void Generate(glm::vec3 scale = glm::vec3(1.0f)) {};
+	inline virtual void Release() {};
 	virtual float GetMaxY(int x, int z);
 
 };

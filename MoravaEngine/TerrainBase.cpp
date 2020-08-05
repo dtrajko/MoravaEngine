@@ -1,14 +1,11 @@
 #include "TerrainBase.h"
 
+
 TerrainBase::TerrainBase()
 {
 }
 
 TerrainBase::~TerrainBase()
-{
-}
-
-void TerrainBase::Generate()
 {
 }
 

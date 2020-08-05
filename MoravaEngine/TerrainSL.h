@@ -15,7 +15,7 @@ public:
 	TerrainSL(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail);
 	~TerrainSL();
 
-	virtual void Generate() override;
+	virtual void Generate(glm::vec3 scale = glm::vec3(1.0f)) override;
 
 	void Update(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail);
 	inline MapGenerator* GetMapGenerator() { return m_MapGenerator; };

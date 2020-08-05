@@ -19,17 +19,18 @@ TerrainSL::TerrainSL(MapGenerator::MapGenConf mapGenConf, float heightMapMultipl
 	m_Scale.y = m_HeightMapMultiplier;
 	m_Scale.z = (float)mapGenConf.mapChunkSize;
 
-    Generate();
+    Generate(glm::vec3(1.0f));
 }
 
 TerrainSL::~TerrainSL()
 {
+	Release();
     delete m_MapGenerator;
 }
 
-void TerrainSL::Generate()
+void TerrainSL::Generate(glm::vec3 scale)
 {
-	m_Voxels.clear();
+	Release();
 
 	for (int x = 0; x < m_Scale.x; x++) {
 		for (int y = (int)(m_SeaLevel * m_HeightMapMultiplier); y < (int)m_Scale.y; y++) {
@@ -44,11 +45,11 @@ void TerrainSL::Generate()
 				}
 
 				if (heightFinal >= isoSurfaceHeight) {
-					Voxel voxel;
-					voxel.position = glm::vec3(x - m_Scale.x / 2.0f + 0.5f, isoSurfaceHeight * m_HeightMapMultiplier, z - m_Scale.z / 2.0f + 0.5f);
+					Voxel* voxel = new Voxel();
+					voxel->position = glm::vec3(x - m_Scale.x / 2.0f + 0.5f, isoSurfaceHeight * m_HeightMapMultiplier, z - m_Scale.z / 2.0f + 0.5f);
 					// voxel.color = m_MapGenerator->m_ColorMap[z * m_MapGenerator->m_MapGenConf.mapChunkSize + x];
-					voxel.color = isoSurfaceColor;
-					voxel.textureID = -1; // no texture
+					voxel->color = isoSurfaceColor;
+					voxel->textureID = -1; // no texture
 					m_Voxels.push_back(voxel);
 				}
 			}

@@ -63,6 +63,8 @@ private:
 
 	// Scene settings
 	bool m_DrawGizmos;
+	bool m_RenderPlayer;
+
 	bool m_UnlockRotation;
 	bool m_UnlockRotationPrev;
 

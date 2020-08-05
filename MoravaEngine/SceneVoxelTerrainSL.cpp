@@ -157,6 +157,7 @@ SceneVoxelTerrainSL::SceneVoxelTerrainSL()
     m_PlayerController->SetMoveFastFactor(4.0f);
 
     m_DrawGizmos = true;
+    m_RenderPlayer = true;
     m_UnlockRotation = false;
     m_UnlockRotationPrev = m_UnlockRotation;
 
@@ -421,6 +422,7 @@ void SceneVoxelTerrainSL::UpdateImGui(float timestep, Window& mainWindow)
     ImGui::Begin("Scene Settings");
     {
         ImGui::Checkbox("Draw Gizmos", &m_DrawGizmos);
+        ImGui::Checkbox("Render Player", &m_RenderPlayer);
         ImGui::Checkbox("Unlock Rotation", &m_UnlockRotation);
         ImGui::ColorEdit4("Cube Color", glm::value_ptr(m_CubeColor));
     }
@@ -560,8 +562,8 @@ void SceneVoxelTerrainSL::Dig(bool* keys, float timestep)
     if (keys[GLFW_KEY_F]) {
         bool vectorModified = false;
 
-        for (auto it = m_TerrainSL->m_Voxels.cbegin(); it != m_TerrainSL->m_Voxels.cend(); ) {
-            if (glm::distance(m_Player->GetPosition(), it->position) < m_DigDistance)
+        for (auto it = m_TerrainSL->m_Voxels.begin(); it != m_TerrainSL->m_Voxels.end(); ) {
+            if (glm::distance(m_Player->GetPosition(), (*it)->position) < m_DigDistance)
             {
                 it = m_TerrainSL->m_Voxels.erase(it++);
                 vectorModified = true;
@@ -605,7 +607,7 @@ std::vector<glm::vec3> SceneVoxelTerrainSL::GetRayIntersectPositions(float times
     glm::vec3 position;
 
     for (size_t i = 0; i < m_TerrainSL->m_Voxels.size(); i++) {
-        position = m_TerrainSL->m_Voxels[i].position;
+        position = m_TerrainSL->m_Voxels[i]->position;
         bool isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             position - glm::vec3(0.5f, 0.5f, 0.5f), position + glm::vec3(0.5f, 0.5f, 0.5f), glm::vec2(0.0f));
         if (isSelected) {
@@ -659,9 +661,9 @@ void SceneVoxelTerrainSL::AddVoxel()
     glm::vec3 addPositionInt = glm::vec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
 
     if (IsPositionVacant(addPositionInt)) {
-        TerrainVoxel::Voxel voxel;
-        voxel.position = addPositionInt;
-        voxel.color = glm::vec4(m_CubeColor);
+        TerrainVoxel::Voxel* voxel = new TerrainVoxel::Voxel();
+        voxel->position = addPositionInt;
+        voxel->color = glm::vec4(m_CubeColor);
         m_TerrainSL->m_Voxels.push_back(voxel);
         m_IntersectPositionIndex = (int)m_TerrainSL->m_Voxels.size() - 1;
         m_RenderInstanced->CreateVertexData();
@@ -676,7 +678,7 @@ void SceneVoxelTerrainSL::DeleteVoxel()
 {
     if (m_IntersectPositionIndex < 0) return;
 
-    glm::vec3 deletePosition = m_TerrainSL->m_Voxels.at(m_IntersectPositionIndex).position;
+    glm::vec3 deletePosition = m_TerrainSL->m_Voxels.at(m_IntersectPositionIndex)->position;
     m_TerrainSL->m_Voxels.erase(m_TerrainSL->m_Voxels.begin() + m_IntersectPositionIndex);
     m_IntersectPositionIndex = -1;
     m_RenderInstanced->CreateVertexData();
@@ -686,7 +688,7 @@ void SceneVoxelTerrainSL::DeleteVoxel()
 bool SceneVoxelTerrainSL::IsPositionVacant(glm::vec3 queryPosition)
 {
     for (auto voxel : m_TerrainSL->m_Voxels) {
-        if (voxel.position == queryPosition)
+        if (voxel->position == queryPosition)
             return false;
     }
     return true;
@@ -732,7 +734,8 @@ void SceneVoxelTerrainSL::Render(Window& mainWindow, glm::mat4 projectionMatrix,
     model = glm::rotate(model, glm::radians(m_Player->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
     shaderMain->setMat4("model", model);
 
-    m_Player->Render();
+    if (m_RenderPlayer)
+        m_Player->Render();
 
     /**** END render Player ****/
 

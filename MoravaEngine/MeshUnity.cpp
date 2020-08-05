@@ -11,6 +11,7 @@ MeshUnity::MeshUnity()
 
 MeshUnity::~MeshUnity()
 {
+	Clear();
 }
 
 void MeshUnity::GenerateVertexData(glm::vec3 scale)

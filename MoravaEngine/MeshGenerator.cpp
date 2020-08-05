@@ -53,6 +53,8 @@ MeshData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int wid
 
 MeshData::MeshData(unsigned int meshWidth, unsigned int meshHeight)
 {
+	m_Mesh = nullptr;
+
 	m_VerticeIndex = meshWidth * meshHeight;
 	m_Vertices = std::vector<glm::vec3>();
 
@@ -64,6 +66,7 @@ MeshData::MeshData(unsigned int meshWidth, unsigned int meshHeight)
 
 MeshData::~MeshData()
 {
+	Release();
 }
 
 void MeshData::AddTriangle(int a, int b, int c)
@@ -76,14 +79,24 @@ void MeshData::AddTriangle(int a, int b, int c)
 
 MeshUnity* MeshData::CreateMesh()
 {
-	MeshUnity* mesh = new MeshUnity();
-	mesh->vertices = &m_Vertices;
-	mesh->triangles = &m_Triangles;
-	mesh->uv = &m_UVs;
-	mesh->normals = &m_Normals;
-	mesh->GenerateVertexData(glm::vec3(1.0f));
-	mesh->RecalculateNormals();
-	mesh->RecalculateTangentSpace();
-	mesh->Generate(glm::vec3(1.0f));
-	return mesh;
+	Release();
+
+	m_Mesh = new MeshUnity();
+	m_Mesh->vertices = &m_Vertices;
+	m_Mesh->triangles = &m_Triangles;
+	m_Mesh->uv = &m_UVs;
+	m_Mesh->normals = &m_Normals;
+	m_Mesh->GenerateVertexData(glm::vec3(1.0f));
+	m_Mesh->RecalculateNormals();
+	m_Mesh->RecalculateTangentSpace();
+	m_Mesh->Generate(glm::vec3(1.0f));
+	return m_Mesh;
+}
+
+void MeshData::Release()
+{
+	if (m_Mesh != nullptr) {
+		delete m_Mesh;
+		m_Mesh = nullptr;
+	}
 }

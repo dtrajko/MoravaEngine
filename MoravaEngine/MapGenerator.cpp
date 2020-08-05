@@ -108,6 +108,7 @@ void MapGenerator::GenerateMap()
 	Validate();
 
 	if (m_IsRequiredMapRebuild) {
+		NoiseSL::Release();
 		m_NoiseMap = NoiseSL::GenerateNoiseMap(m_MapGenConf.mapChunkSize, m_MapGenConf.mapChunkSize, m_MapGenConf.seed, m_MapGenConf.noiseScale,
 			m_MapGenConf.octaves, m_MapGenConf.persistance, m_MapGenConf.lacunarity, m_MapGenConf.offset);
 

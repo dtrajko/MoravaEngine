@@ -11,11 +11,13 @@ class TerrainHeightMap : public TerrainBase
 
 public:
 	TerrainHeightMap(const char* heightMapPath, float tilingFactor, const char* colorMapPath);
+	~TerrainHeightMap();
+
 	virtual void Generate(glm::vec3 scale) override;
+
 	inline Texture* GetHeightMap() const { return m_TxHeightMap; };
 	inline Texture* GetColorMap() const { return m_TxColorMap; };
 	virtual float GetMaxY(int x, int z) override;
-	~TerrainHeightMap();
 
 private:
 	glm::vec3 m_ScalePrev;
