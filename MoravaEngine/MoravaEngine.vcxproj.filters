@@ -426,6 +426,12 @@
     <ClCompile Include="SceneVoxelTerrainSL.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="TerrainMarchingCubes.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneMarchingCubes.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -881,6 +887,12 @@
     </ClInclude>
     <ClInclude Include="Transform.h" />
     <ClInclude Include="SceneVoxelTerrainSL.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainMarchingCubes.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneMarchingCubes.h">
       <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
