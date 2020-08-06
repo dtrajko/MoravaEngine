@@ -7,8 +7,7 @@
 #include "PlayerController.h"
 #include "Raycast.h"
 #include "MapGenerator.h"
-#include "TerrainVoxel.h"
-#include "TerrainSL.h"
+#include "TerrainMarchingCubes.h"
 
 
 class SceneMarchingCubes : public Scene
@@ -39,14 +38,9 @@ private:
 	virtual void SetupTextures() override;
 	virtual void SetupTextureSlots() override;
 	virtual void SetupMeshes() override;
-	bool IsTerrainConfigChanged();
 	void CheckMapRebuildRequirements();
 
 	RenderInstanced* m_RenderInstanced;
-	glm::ivec3 m_TerrainScale;
-	glm::ivec3 m_TerrainScalePrev;
-	float m_TerrainNoiseFactor;
-	float m_TerrainNoiseFactorPrev;
 
 	EventCooldown m_UpdateCooldown;
 	EventCooldown m_DigCooldown;
@@ -77,7 +71,7 @@ private:
 	glm::vec4 m_CubeColor;
 	unsigned int m_DeleteVoxelCodeGLFW;
 
-	TerrainSL* m_TerrainSL;
+	TerrainMarchingCubes* m_TerrainMarchingCubes;
 
 	MapGenerator::MapGenConf m_MapGenConf;
 	MapGenerator::MapGenConf m_MapGenConfPrev;

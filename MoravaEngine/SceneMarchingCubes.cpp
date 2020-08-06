@@ -6,9 +6,8 @@
 #include "RendererBasic.h"
 #include "MousePicker.h"
 #include "Log.h"
-#include "TerrainVoxel.h"
-#include "TerrainSL.h"
 #include "NoiseSL.h"
+#include "TerrainMarchingCubes.h"
 
 #include "ImGuiWrapper.h"
 
@@ -17,7 +16,7 @@ SceneMarchingCubes::SceneMarchingCubes()
 {
     sceneSettings.cameraPosition = glm::vec3(10.0f, 24.0f, 0.0f);
     sceneSettings.cameraStartYaw = 0.0f;
-    sceneSettings.cameraStartPitch = 0.0f;
+    sceneSettings.cameraStartPitch = 20.0f;
     sceneSettings.cameraMoveSpeed = 1.0f;
     sceneSettings.waterHeight = 0.0f;
     sceneSettings.waterWaveSpeed = 0.05f;
@@ -102,7 +101,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_MapGenConf.heightMapFilePath = "Textures/Noise/heightMap.png";
     m_MapGenConf.colorMapFilePath = "Textures/Noise/colorMap.png";
     m_MapGenConf.drawMode = MapGenerator::DrawMode::Mesh;
-    m_MapGenConf.mapChunkSize = 13;
+    m_MapGenConf.mapChunkSize = 4;
     // m_MapGenConf.mapWidth = 241;
     // m_MapGenConf.mapHeight = 241;
     m_MapGenConf.noiseScale = 25.0f;
@@ -115,9 +114,9 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_MapGenConf.autoUpdate = true;
     m_MapGenConf.regions = std::vector<MapGenerator::TerrainTypes>();
     
-    m_HeightMapMultiplier = 10.0f;
+    m_HeightMapMultiplier = 4.0f;
     m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
-    m_SeaLevel = 0.5f;
+    m_SeaLevel = 0.0f;
     m_SeaLevelPrev = m_SeaLevel;
     m_LevelOfDetail = 0;
     m_LevelOfDetailPrev = m_LevelOfDetail;
@@ -139,19 +138,19 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_IsRequiredMapRebuild = true;
 
     NoiseSL::Init(m_MapGenConf.seed);
-    m_TerrainSL = new TerrainSL(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
+    m_TerrainMarchingCubes = new TerrainMarchingCubes(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
 
-    m_RenderInstanced = new RenderInstanced(m_TerrainSL, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
+    m_RenderInstanced = new RenderInstanced(m_TerrainMarchingCubes, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
 
     /**** END Procedural Landmass Generation Terrain ****/
 
     Mesh* mesh = new Block();
-    m_Player = new Player(glm::vec3(0.0f, 20.0f, 0.0f), mesh, m_Camera);
+    m_Player = new Player(glm::vec3(-20.0f, 10.0f, 0.0f), mesh, m_Camera);
     m_PlayerController = new PlayerController(m_Player);
-    m_PlayerController->SetTerrain(m_TerrainSL);
+    m_PlayerController->SetTerrain(m_TerrainMarchingCubes);
     m_PlayerController->SetGravity(0.0f);
     m_PlayerController->SetMoveSpeed(0.5f);
     m_PlayerController->SetMoveFastFactor(4.0f);
@@ -168,7 +167,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_Raycast = new Raycast();
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
 
-    MousePicker::Get()->SetTerrain(m_TerrainSL);
+    MousePicker::Get()->SetTerrain(m_TerrainMarchingCubes);
 
     m_IntersectPosition = glm::vec3();
     m_IntersectPositionIndex = -1;
@@ -352,18 +351,6 @@ void SceneMarchingCubes::UpdateImGui(float timestep, Window& mainWindow)
     }
     ImGui::End();
 
-    ImGui::Begin("Terrain Parameters");
-    {
-        if (ImGui::CollapsingHeader("Show Details"))
-        {
-            std::string terrainPositionsSize = "Terrain Positions Size: " + std::to_string(m_TerrainSL->GetVoxelCount());
-            ImGui::Text(terrainPositionsSize.c_str());
-            ImGui::SliderInt3("Terrain Scale", glm::value_ptr(m_TerrainScale), 1, 100);
-            ImGui::SliderFloat("Terrain Noise Factor", &m_TerrainNoiseFactor, -0.5f, 0.5f);
-        }
-    }
-    ImGui::End();
-
     ImGui::Begin("Debug");
     {
         if (ImGui::CollapsingHeader("Show Details"))
@@ -512,23 +499,12 @@ void SceneMarchingCubes::UpdateCooldown(float timestep, Window& mainWindow)
 
     if (!m_IsRequiredMapUpdate) return;
 
-    m_TerrainSL->Update(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
+    m_TerrainMarchingCubes->Update(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
 
     /**** END UpdateCooldown Procedural Landmass Generation Terrain ****/
-}
-
-bool SceneMarchingCubes::IsTerrainConfigChanged()
-{
-    bool terrainConfigChanged = false;
-    if (m_TerrainScale != m_TerrainScalePrev || m_TerrainNoiseFactor != m_TerrainNoiseFactorPrev) {
-        terrainConfigChanged = true;
-        m_TerrainScalePrev = m_TerrainScale;
-        m_TerrainNoiseFactorPrev = m_TerrainNoiseFactor;
-    }
-    return terrainConfigChanged;
 }
 
 void SceneMarchingCubes::CheckMapRebuildRequirements()
@@ -562,10 +538,10 @@ void SceneMarchingCubes::Dig(bool* keys, float timestep)
     if (keys[GLFW_KEY_F]) {
         bool vectorModified = false;
 
-        for (auto it = m_TerrainSL->m_Voxels.begin(); it != m_TerrainSL->m_Voxels.end(); ) {
+        for (auto it = m_TerrainMarchingCubes->m_Voxels.begin(); it != m_TerrainMarchingCubes->m_Voxels.end(); ) {
             if (glm::distance(m_Player->GetPosition(), (*it)->position) < m_DigDistance)
             {
-                it = m_TerrainSL->m_Voxels.erase(it++);
+                it = m_TerrainMarchingCubes->m_Voxels.erase(it++);
                 vectorModified = true;
             }
             else {
@@ -606,8 +582,8 @@ std::vector<glm::vec3> SceneMarchingCubes::GetRayIntersectPositions(float timest
     float distance;
     glm::vec3 position;
 
-    for (size_t i = 0; i < m_TerrainSL->m_Voxels.size(); i++) {
-        position = m_TerrainSL->m_Voxels[i]->position;
+    for (size_t i = 0; i < m_TerrainMarchingCubes->m_Voxels.size(); i++) {
+        position = m_TerrainMarchingCubes->m_Voxels[i]->position;
         bool isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             position - glm::vec3(0.5f, 0.5f, 0.5f), position + glm::vec3(0.5f, 0.5f, 0.5f), glm::vec2(0.0f));
         if (isSelected) {
@@ -664,8 +640,8 @@ void SceneMarchingCubes::AddVoxel()
         TerrainVoxel::Voxel* voxel = new TerrainVoxel::Voxel();
         voxel->position = addPositionInt;
         voxel->color = glm::vec4(m_CubeColor);
-        m_TerrainSL->m_Voxels.push_back(voxel);
-        m_IntersectPositionIndex = (int)m_TerrainSL->m_Voxels.size() - 1;
+        m_TerrainMarchingCubes->m_Voxels.push_back(voxel);
+        m_IntersectPositionIndex = (int)m_TerrainMarchingCubes->m_Voxels.size() - 1;
         m_RenderInstanced->CreateVertexData();
         Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
     }
@@ -678,8 +654,8 @@ void SceneMarchingCubes::DeleteVoxel()
 {
     if (m_IntersectPositionIndex < 0) return;
 
-    glm::vec3 deletePosition = m_TerrainSL->m_Voxels.at(m_IntersectPositionIndex)->position;
-    m_TerrainSL->m_Voxels.erase(m_TerrainSL->m_Voxels.begin() + m_IntersectPositionIndex);
+    glm::vec3 deletePosition = m_TerrainMarchingCubes->m_Voxels.at(m_IntersectPositionIndex)->position;
+    m_TerrainMarchingCubes->m_Voxels.erase(m_TerrainMarchingCubes->m_Voxels.begin() + m_IntersectPositionIndex);
     m_IntersectPositionIndex = -1;
     m_RenderInstanced->CreateVertexData();
     Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
@@ -687,7 +663,7 @@ void SceneMarchingCubes::DeleteVoxel()
 
 bool SceneMarchingCubes::IsPositionVacant(glm::vec3 queryPosition)
 {
-    for (auto voxel : m_TerrainSL->m_Voxels) {
+    for (auto voxel : m_TerrainMarchingCubes->m_Voxels) {
         if (voxel->position == queryPosition)
             return false;
     }

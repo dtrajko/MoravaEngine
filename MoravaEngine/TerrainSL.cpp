@@ -19,7 +19,7 @@ TerrainSL::TerrainSL(MapGenerator::MapGenConf mapGenConf, float heightMapMultipl
 	m_Scale.y = m_HeightMapMultiplier;
 	m_Scale.z = (float)mapGenConf.mapChunkSize;
 
-    Generate(glm::vec3(1.0f));
+    Generate();
 }
 
 TerrainSL::~TerrainSL()
