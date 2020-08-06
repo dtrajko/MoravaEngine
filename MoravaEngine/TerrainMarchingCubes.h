@@ -4,6 +4,8 @@
 
 #include "MapGenerator.h"
 
+#include <map>
+
 
 /**
  * Implementation of the marching cubes algorythm for generating voxel terrains
@@ -20,11 +22,24 @@ public:
 	void Update(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail);
 	inline MapGenerator* GetMapGenerator() { return m_MapGenerator; };
 
+	void MarchingCubes();
+
+private:
+	struct Range {
+		float min;
+		float max;
+	};
+	std::map<std::string, Range> m_Ranges;
+	void CalculateRanges(int x, int y, int z, float isoSurfaceHeight, float heightFinal, float voxelPositionX, float voxelPositionY, float voxelPositionZ);
+
 private:
 	MapGenerator* m_MapGenerator;
 
 	float m_HeightMapMultiplier;
 	bool m_IsRequiredMapRebuild;
 	float m_SeaLevel;
+
+	glm::vec3 m_VoxelRangeMin;
+	glm::vec3 m_VoxelRangeMax;
 
 };
