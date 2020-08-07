@@ -536,7 +536,7 @@ void SceneVoxelTerrain::Dig(bool* keys, float timestep)
         bool vectorModified = false;
 
         for (auto it = m_TerrainVoxel->m_Voxels.begin(); it != m_TerrainVoxel->m_Voxels.end(); ) { 
-            if (glm::distance(m_Player->GetPosition(), (*it)->position) < m_DigDistance)
+            if (glm::distance(m_Player->GetPosition(), (glm::vec3)(*it)->position) < m_DigDistance)
             {
                 it = m_TerrainVoxel->m_Voxels.erase(it++);
                 vectorModified = true;
@@ -631,7 +631,7 @@ void SceneVoxelTerrain::AddVoxel()
 {
     // Add new voxel
     glm::vec3 addPositionFloat = m_IntersectPosition - m_Camera->GetFront();
-    glm::vec3 addPositionInt = glm::vec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
+    glm::ivec3 addPositionInt = glm::ivec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
 
     if (IsPositionVacant(addPositionInt)) {
         TerrainVoxel::Voxel* voxel = new TerrainVoxel::Voxel();
@@ -658,7 +658,7 @@ void SceneVoxelTerrain::DeleteVoxel()
     Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
 }
 
-bool SceneVoxelTerrain::IsPositionVacant(glm::vec3 queryPosition)
+bool SceneVoxelTerrain::IsPositionVacant(glm::ivec3 queryPosition)
 {
     for (auto voxel : m_TerrainVoxel->m_Voxels) {
         if (voxel->position == queryPosition)

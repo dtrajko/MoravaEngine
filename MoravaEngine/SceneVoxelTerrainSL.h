@@ -30,7 +30,7 @@ public:
 	void CastRay(bool* keys, bool* buttons, float timestep);
 	bool IsRayIntersectPosition(glm::vec3 position);
 	void OnClick(bool* keys, bool* buttons, float timestep);
-	bool IsPositionVacant(glm::vec3 queryPosition);
+	bool IsPositionVacant(glm::ivec3 queryPosition);
 	void AddVoxel();
 	void DeleteVoxel();
 

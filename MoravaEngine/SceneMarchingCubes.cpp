@@ -115,7 +115,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_MapGenConf.autoUpdate = true;
     m_MapGenConf.regions = std::vector<MapGenerator::TerrainTypes>();
     
-    m_HeightMapMultiplier = 4.0f;
+    m_HeightMapMultiplier = 4;
     m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
     m_SeaLevel = 0.5f;
     m_SeaLevelPrev = m_SeaLevel;
@@ -452,7 +452,7 @@ void SceneMarchingCubes::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::SliderFloat2("Offset", glm::value_ptr(m_MapGenConf.offset), -1.0f, 1.0f);
             ImGui::Checkbox("Auto Update", &m_MapGenConf.autoUpdate);
 
-            ImGui::SliderFloat("Height Map Multiplier", &m_HeightMapMultiplier, 0.0f, 40.0f);
+            ImGui::SliderInt("Height Map Multiplier", &m_HeightMapMultiplier, 0, 40);
             ImGui::SliderFloat("Sea Level", &m_SeaLevel, 0.0f, 1.0f);
         }
     }
@@ -542,7 +542,7 @@ void SceneMarchingCubes::Dig(bool* keys, float timestep)
         bool vectorModified = false;
 
         for (auto it = m_TerrainMarchingCubes->m_Voxels.begin(); it != m_TerrainMarchingCubes->m_Voxels.end(); ) {
-            if (glm::distance(m_Player->GetPosition(), (*it)->position) < m_DigDistance)
+            if (glm::distance(m_Player->GetPosition(), (glm::vec3)(*it)->position) < m_DigDistance)
             {
                 it = m_TerrainMarchingCubes->m_Voxels.erase(it++);
                 vectorModified = true;
@@ -637,7 +637,7 @@ void SceneMarchingCubes::AddVoxel()
 {
     // Add new voxel
     glm::vec3 addPositionFloat = m_IntersectPosition - m_Camera->GetFront();
-    glm::vec3 addPositionInt = glm::vec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
+    glm::ivec3 addPositionInt = glm::ivec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
 
     if (IsPositionVacant(addPositionInt)) {
         TerrainVoxel::Voxel* voxel = new TerrainVoxel::Voxel();
@@ -668,7 +668,7 @@ void SceneMarchingCubes::DeleteVoxel()
     m_TerrainMarchingCubes->MarchingCubes();
 }
 
-bool SceneMarchingCubes::IsPositionVacant(glm::vec3 queryPosition)
+bool SceneMarchingCubes::IsPositionVacant(glm::ivec3 queryPosition)
 {
     for (auto voxel : m_TerrainMarchingCubes->m_Voxels) {
         if (voxel->position == queryPosition)
@@ -727,25 +727,31 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
     shaderMain->setInt("albedoMap", 0);
 
     for (auto vertexPosition : m_TerrainMarchingCubes->m_VertexPositions) {
-        model = Math::CreateTransform(vertexPosition->position, glm::quat(), glm::vec3(0.2f));
-        // model = glm::translate(model, vertexPosition);
-        // model = glm::scale(model, glm::vec3(0.5f));
+        model = glm::mat4(1.0f);
+        glm::vec3 scale;
+        glm::vec4 tintColor;
+        if (vertexPosition->inVolume) {
+            scale = glm::vec3(0.2f);
+            tintColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+        }
+        else {
+            scale = glm::vec3(0.2f);
+            tintColor = glm::vec4(0.2f, 0.2f, 0.5f, 1.0f);
+        }
+        shaderMain->setVec4("tintColor", tintColor);
+        model = Math::CreateTransform(vertexPosition->position, glm::quat(), scale);
         shaderMain->setMat4("model", model);
-        if (vertexPosition->inVolume)
-            shaderMain->setVec4("tintColor", glm::vec4(1.0f, 0.6f, 0.8f, 1.0f));
-        else
-            shaderMain->setVec4("tintColor", glm::vec4(0.2f, 0.2f, 0.5f, 1.0f));
         meshes["cube"]->Render();
     }
 
     for (auto edgePosition : m_TerrainMarchingCubes->m_EdgePositions) {
         model = Math::CreateTransform(edgePosition, glm::quat(), glm::vec3(0.1f));
-        // model = glm::translate(model, vertexPosition);
-        // model = glm::scale(model, glm::vec3(0.5f));
         shaderMain->setMat4("model", model);
-        shaderMain->setVec4("tintColor", glm::vec4(0.6f, 0.4f, 0.0f, 1.0f));
+        shaderMain->setVec4("tintColor", glm::vec4(0.3f, 0.3f, 0.6f, 1.0f));
         meshes["cube"]->Render();
     }
+
+    m_TerrainMarchingCubes->Render();
 
     /**** END Render Marching Cubes ****/
 

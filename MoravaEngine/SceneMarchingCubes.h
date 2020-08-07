@@ -29,7 +29,7 @@ public:
 	void CastRay(bool* keys, bool* buttons, float timestep);
 	bool IsRayIntersectPosition(glm::vec3 position);
 	void OnClick(bool* keys, bool* buttons, float timestep);
-	bool IsPositionVacant(glm::vec3 queryPosition);
+	bool IsPositionVacant(glm::ivec3 queryPosition);
 	void AddVoxel();
 	void DeleteVoxel();
 
@@ -77,8 +77,8 @@ private:
 	MapGenerator::MapGenConf m_MapGenConf;
 	MapGenerator::MapGenConf m_MapGenConfPrev;
 
-	float m_HeightMapMultiplier;
-	float m_HeightMapMultiplierPrev;
+	int m_HeightMapMultiplier;
+	int m_HeightMapMultiplierPrev;
 
 	float m_SeaLevel;
 	float m_SeaLevelPrev;

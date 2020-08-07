@@ -128,7 +128,7 @@ bool PlayerController::IsColliding(glm::vec3 position, float distanceAllowed)
 
 	for (TerrainVoxel::Voxel* voxel : m_Terrain->m_Voxels)
 	{
-		tempDistance = glm::distance(position, voxel->position);
+		tempDistance = glm::distance(position, (glm::vec3)voxel->position);
 
 		//	printf("GetTerrainMinimumDistance position [ %.2ff %.2ff %.2ff ] terrainPosition [ %.2ff %.2ff %.2ff ] tempDistance = %.2ff\n",
 		//		position.x, position.y, position.z, terrainPosition.x, terrainPosition.y, terrainPosition.z, tempDistance);

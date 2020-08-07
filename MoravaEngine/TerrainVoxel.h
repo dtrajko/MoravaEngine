@@ -10,7 +10,7 @@ class TerrainVoxel : public TerrainBase
 {
 public:
 	struct Voxel {
-		glm::vec3 position;
+		glm::ivec3 position;
 		glm::vec4 color;
 		int textureID;
 	};
