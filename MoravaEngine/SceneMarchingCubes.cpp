@@ -8,6 +8,7 @@
 #include "Log.h"
 #include "NoiseSL.h"
 #include "TerrainMarchingCubes.h"
+#include "Math.h"
 
 #include "ImGuiWrapper.h"
 
@@ -101,7 +102,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_MapGenConf.heightMapFilePath = "Textures/Noise/heightMap.png";
     m_MapGenConf.colorMapFilePath = "Textures/Noise/colorMap.png";
     m_MapGenConf.drawMode = MapGenerator::DrawMode::Mesh;
-    m_MapGenConf.mapChunkSize = 5;
+    m_MapGenConf.mapChunkSize = 9;
     // m_MapGenConf.mapWidth = 241;
     // m_MapGenConf.mapHeight = 241;
     m_MapGenConf.noiseScale = 25.0f;
@@ -157,6 +158,7 @@ SceneMarchingCubes::SceneMarchingCubes()
 
     m_DrawGizmos = true;
     m_RenderPlayer = true;
+    m_RenderVoxelTerrain = true;
     m_UnlockRotation = false;
     m_UnlockRotationPrev = m_UnlockRotation;
 
@@ -410,6 +412,7 @@ void SceneMarchingCubes::UpdateImGui(float timestep, Window& mainWindow)
     {
         ImGui::Checkbox("Draw Gizmos", &m_DrawGizmos);
         ImGui::Checkbox("Render Player", &m_RenderPlayer);
+        ImGui::Checkbox("Render Voxel Terrain", &m_RenderVoxelTerrain);
         ImGui::Checkbox("Unlock Rotation", &m_UnlockRotation);
         ImGui::ColorEdit4("Cube Color", glm::value_ptr(m_CubeColor));
     }
@@ -648,6 +651,8 @@ void SceneMarchingCubes::AddVoxel()
     else {
         Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
     }
+
+    m_TerrainMarchingCubes->MarchingCubes();
 }
 
 void SceneMarchingCubes::DeleteVoxel()
@@ -659,6 +664,8 @@ void SceneMarchingCubes::DeleteVoxel()
     m_IntersectPositionIndex = -1;
     m_RenderInstanced->CreateVertexData();
     Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
+
+    m_TerrainMarchingCubes->MarchingCubes();
 }
 
 bool SceneMarchingCubes::IsPositionVacant(glm::vec3 queryPosition)
@@ -684,17 +691,14 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
         shaderOmniShadow->Bind();
     }
 
-    if (passType == "main")
-    {
-        if (m_DrawGizmos) {
-            shaderBasic->Bind();
-            shaderBasic->setMat4("model", glm::mat4(1.0f));
-            m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
-        }
-
-        shaderMain->Bind();
-        // Render main pass only
+    if (m_DrawGizmos) {
+        shaderBasic->Bind();
+        shaderBasic->setMat4("model", glm::mat4(1.0f));
+        m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
     }
+
+    ResourceManager::GetTexture("diffuse")->Bind(textureSlots["diffuse"]);
+    ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
 
     /**** BEGIN render Player ****/
     shaderMain->Bind();
@@ -715,14 +719,32 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
 
     /**** END render Player ****/
 
+    /**** BEGIN Render Marching Cubes ****/
+
+    shaderMain->Bind();
+    shaderMain->setMat4("projection", projectionMatrix);
+    shaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
+    shaderMain->setInt("albedoMap", 0);
+
+    for (auto vertexPosition : m_TerrainMarchingCubes->m_VertexPositions) {
+        model = Math::CreateTransform(vertexPosition->position, glm::quat(), glm::vec3(0.2f));
+        // model = glm::translate(model, vertexPosition);
+        // model = glm::scale(model, glm::vec3(0.5f));
+        shaderMain->setMat4("model", model);
+        if (vertexPosition->inVolume)
+            shaderMain->setVec4("tintColor", glm::vec4(0.0f, 0.4f, 0.8f, 1.0f));
+        else
+            shaderMain->setVec4("tintColor", glm::vec4(0.0f, 0.1f, 0.2f, 1.0f));
+        meshes["cube"]->Render();
+    }
+
+    /**** END Render Marching Cubes ****/
+
     glm::vec4 tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     /**** BEGIN Render Procedural Landmass Generation Terrain ****/
 
     shaderRenderInstanced->Bind();
-
-    ResourceManager::GetTexture("diffuse")->Bind(textureSlots["diffuse"]);
-    ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
 
     tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -732,7 +754,8 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
     shaderRenderInstanced->setVec4("tintColor", tintColor);
 
     m_RenderInstanced->m_Texture->Bind(0);
-    m_RenderInstanced->Render();
+    if (m_RenderVoxelTerrain)
+        m_RenderInstanced->Render();
 
     /**** END Render Procedural Landmass Generation Terrain ****/
 }

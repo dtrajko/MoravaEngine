@@ -102,27 +102,72 @@ void TerrainMarchingCubes::MarchingCubes()
 		if (voxel->position.z < m_VoxelRangeMin.z) m_VoxelRangeMin.z = voxel->position.z;
 	}
 
-	printf("TerrainMarchingCubes::MarchingCubes voxelRangeMin [ %.2ff %.2ff %.2ff ] voxelRangeMax [ %.2ff %.2ff %.2ff ]\n",
-		m_VoxelRangeMin.x, m_VoxelRangeMin.y, m_VoxelRangeMin.z, m_VoxelRangeMax.x, m_VoxelRangeMax.y, m_VoxelRangeMax.z);
+	// printf("TerrainMarchingCubes::MarchingCubes voxelRangeMin [ %.2ff %.2ff %.2ff ] voxelRangeMax [ %.2ff %.2ff %.2ff ]\n",
+	// 	m_VoxelRangeMin.x, m_VoxelRangeMin.y, m_VoxelRangeMin.z, m_VoxelRangeMax.x, m_VoxelRangeMax.y, m_VoxelRangeMax.z);
+
+	for (auto vertexPosition : m_VertexPositions)
+		delete vertexPosition;
+	m_VertexPositions.clear();
 
 	// calculate cube parameters for all XYZ positions
 	for (int x = (int)m_VoxelRangeMin.x - 1; x < (int)m_VoxelRangeMax.x + 1; x+= cubeSize) {
 		for (int y = (int)m_VoxelRangeMin.y - 1; y < (int)m_VoxelRangeMax.y + 1; y += cubeSize) {
 			for (int z = (int)m_VoxelRangeMin.z - 1; z < (int)m_VoxelRangeMax.z + 1; z += cubeSize) {
-				printf("TerrainMarchingCubes::MarchingCubes Cube position Min [ %i %i %i ] Max [ %i %i %i ]\n", 
-					x, y, z, x + cubeSize, y + cubeSize, z + cubeSize);
+				//	printf("TerrainMarchingCubes::MarchingCubes Cube position Min [ %i %i %i ] Max [ %i %i %i ]\n", 
+				//		x, y, z, x + cubeSize, y + cubeSize, z + cubeSize);
 
 				// TODO - calculate parameters for the current marching cube
+				m_CubeVertices.clear();
+				m_CubeVertices.push_back(glm::vec3(x, y, z + cubeSize));
+				m_CubeVertices.push_back(glm::vec3(x + cubeSize, y, z + cubeSize));
+				m_CubeVertices.push_back(glm::vec3(x + cubeSize, y, z));
+				m_CubeVertices.push_back(glm::vec3(x, y, z));
+				m_CubeVertices.push_back(glm::vec3(x, y + cubeSize, z + cubeSize));
+				m_CubeVertices.push_back(glm::vec3(x + cubeSize, y + cubeSize, z + cubeSize));
+				m_CubeVertices.push_back(glm::vec3(x + cubeSize, y + cubeSize, z));
+				m_CubeVertices.push_back(glm::vec3(x, y + cubeSize, z));
+
+				//	for (unsigned int i = 0; i < 8; i++)
+				//		printf("Vertex %i [ %.2ff %.2ff %.2ff ] IsVertexAvailable? %s\n",
+				//			i, m_CubeVertices[i].x, m_CubeVertices[i].y, m_CubeVertices[i].z, IsVertexAvailable(m_CubeVertices[i]) ? "YES" : "NO");
+
+				for (unsigned int i = 0; i < 8; i++)
+					m_VertexPositions.push_back(new VertexMC{ m_CubeVertices[i], IsVertexAvailable(m_CubeVertices[i]) });
 			}
 		}
 	}
+}
+
+int TerrainMarchingCubes::CalculateCubeIndex()
+{
+	struct Cube {
+		int* values;
+	};
+	Cube cube;
+	int surfaceLevel;
+
+	int cubeIndex = 0;
+	for (int i = 0; i < 8; i++) {
+		if (cube.values[i] < surfaceLevel) {
+			cubeIndex = 1 << i;
+		}
+	}
+	return cubeIndex;
+}
+
+bool TerrainMarchingCubes::IsVertexAvailable(glm::vec3 position)
+{
+	for (auto voxel : m_Voxels) {
+		if (voxel->position == position)
+			return true;
+	}
+	return false;
 }
 
 void TerrainMarchingCubes::CalculateRanges(int x, int y, int z, float isoSurfaceHeight, float heightFinal, float voxelPositionX, float voxelPositionY, float voxelPositionZ)
 {
 	auto floatMin = std::numeric_limits<float>::min();
 	auto floatMax = std::numeric_limits<float>::max();
-
 
 	if (m_Ranges.size() == 0) {
 		m_Ranges.insert(std::make_pair("x", Range{ floatMax, floatMin }));

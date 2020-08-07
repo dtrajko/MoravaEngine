@@ -58,6 +58,7 @@ private:
 	// Scene settings
 	bool m_DrawGizmos;
 	bool m_RenderPlayer;
+	bool m_RenderVoxelTerrain;
 
 	bool m_UnlockRotation;
 	bool m_UnlockRotationPrev;
@@ -87,5 +88,6 @@ private:
 
 	bool m_IsRequiredMapUpdate;
 	bool m_IsRequiredMapRebuild;
+
 
 };
