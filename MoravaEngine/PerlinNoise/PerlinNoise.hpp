@@ -41,11 +41,13 @@
 
 namespace siv
 {
-# ifdef __cpp_lib_concepts
-	template <std::floating_point Float>
-# else
+//	# ifdef __cpp_lib_concepts
+//		template <std::floating_point Float>
+//	# else
+//		template <class Float>
+//	# endif
+
 	template <class Float>
-# endif
 	class BasicPerlinNoise
 	{
 	public:

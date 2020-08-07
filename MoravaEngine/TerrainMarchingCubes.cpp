@@ -144,7 +144,8 @@ int TerrainMarchingCubes::CalculateCubeIndex()
 		int* values;
 	};
 	Cube cube;
-	int surfaceLevel;
+	cube.values = new int[0];
+	int surfaceLevel = 0;
 
 	int cubeIndex = 0;
 	for (int i = 0; i < 8; i++) {
