@@ -108,6 +108,7 @@ void TerrainMarchingCubes::MarchingCubes()
 	for (auto vertexPosition : m_VertexPositions)
 		delete vertexPosition;
 	m_VertexPositions.clear();
+	m_EdgePositions.clear();
 
 	// calculate cube parameters for all XYZ positions
 	for (int x = (int)m_VoxelRangeMin.x - 1; x < (int)m_VoxelRangeMax.x + 1; x+= cubeSize) {
@@ -118,14 +119,28 @@ void TerrainMarchingCubes::MarchingCubes()
 
 				// TODO - calculate parameters for the current marching cube
 				m_CubeVertices.clear();
-				m_CubeVertices.push_back(glm::vec3(x, y, z + cubeSize));
-				m_CubeVertices.push_back(glm::vec3(x + cubeSize, y, z + cubeSize));
-				m_CubeVertices.push_back(glm::vec3(x + cubeSize, y, z));
-				m_CubeVertices.push_back(glm::vec3(x, y, z));
-				m_CubeVertices.push_back(glm::vec3(x, y + cubeSize, z + cubeSize));
-				m_CubeVertices.push_back(glm::vec3(x + cubeSize, y + cubeSize, z + cubeSize));
-				m_CubeVertices.push_back(glm::vec3(x + cubeSize, y + cubeSize, z));
-				m_CubeVertices.push_back(glm::vec3(x, y + cubeSize, z));
+				m_CubeVertices.push_back(glm::vec3(x,            y,            z + cubeSize)); // 0
+				m_CubeVertices.push_back(glm::vec3(x + cubeSize, y,            z + cubeSize)); // 1
+				m_CubeVertices.push_back(glm::vec3(x + cubeSize, y,            z           )); // 2
+				m_CubeVertices.push_back(glm::vec3(x,            y,            z           )); // 3
+				m_CubeVertices.push_back(glm::vec3(x,            y + cubeSize, z + cubeSize)); // 4
+				m_CubeVertices.push_back(glm::vec3(x + cubeSize, y + cubeSize, z + cubeSize)); // 5
+				m_CubeVertices.push_back(glm::vec3(x + cubeSize, y + cubeSize, z           )); // 6
+				m_CubeVertices.push_back(glm::vec3(x,            y + cubeSize, z           )); // 7
+
+				m_CubeEdges.clear();
+				m_CubeEdges.push_back(glm::vec3(x + cubeSize / 2, y,                z + cubeSize    )); //  0
+				m_CubeEdges.push_back(glm::vec3(x + cubeSize,     y,                z + cubeSize / 2)); //  1
+				m_CubeEdges.push_back(glm::vec3(x + cubeSize / 2, y,                z               )); //  2
+				m_CubeEdges.push_back(glm::vec3(x,                y,                z + cubeSize / 2)); //  3
+				m_CubeEdges.push_back(glm::vec3(x + cubeSize / 2, y + cubeSize,     z + cubeSize    )); //  4
+				m_CubeEdges.push_back(glm::vec3(x + cubeSize,     y + cubeSize,     z + cubeSize / 2)); //  5
+				m_CubeEdges.push_back(glm::vec3(x + cubeSize / 2, y + cubeSize,     z               )); //  6
+				m_CubeEdges.push_back(glm::vec3(x,                y + cubeSize,     z + cubeSize / 2)); //  7
+				m_CubeEdges.push_back(glm::vec3(x,                y + cubeSize / 2, z + cubeSize    )); //  8
+				m_CubeEdges.push_back(glm::vec3(x + cubeSize,     y + cubeSize / 2, z + cubeSize    )); //  9
+				m_CubeEdges.push_back(glm::vec3(x + cubeSize,     y + cubeSize / 2, z               )); // 10
+				m_CubeEdges.push_back(glm::vec3(x,                y + cubeSize / 2, z               )); // 11
 
 				//	for (unsigned int i = 0; i < 8; i++)
 				//		printf("Vertex %i [ %.2ff %.2ff %.2ff ] IsVertexAvailable? %s\n",
@@ -133,6 +148,10 @@ void TerrainMarchingCubes::MarchingCubes()
 
 				for (unsigned int i = 0; i < 8; i++)
 					m_VertexPositions.push_back(new VertexMC{ m_CubeVertices[i], IsVertexAvailable(m_CubeVertices[i]) });
+
+				for (unsigned int i = 0; i < 12; i++)
+					m_EdgePositions.push_back(m_CubeEdges[i]);
+
 			}
 		}
 	}

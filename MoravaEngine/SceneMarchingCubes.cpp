@@ -732,9 +732,18 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
         // model = glm::scale(model, glm::vec3(0.5f));
         shaderMain->setMat4("model", model);
         if (vertexPosition->inVolume)
-            shaderMain->setVec4("tintColor", glm::vec4(0.0f, 0.4f, 0.8f, 1.0f));
+            shaderMain->setVec4("tintColor", glm::vec4(1.0f, 0.6f, 0.8f, 1.0f));
         else
-            shaderMain->setVec4("tintColor", glm::vec4(0.0f, 0.1f, 0.2f, 1.0f));
+            shaderMain->setVec4("tintColor", glm::vec4(0.2f, 0.2f, 0.5f, 1.0f));
+        meshes["cube"]->Render();
+    }
+
+    for (auto edgePosition : m_TerrainMarchingCubes->m_EdgePositions) {
+        model = Math::CreateTransform(edgePosition, glm::quat(), glm::vec3(0.1f));
+        // model = glm::translate(model, vertexPosition);
+        // model = glm::scale(model, glm::vec3(0.5f));
+        shaderMain->setMat4("model", model);
+        shaderMain->setVec4("tintColor", glm::vec4(0.6f, 0.4f, 0.0f, 1.0f));
         meshes["cube"]->Render();
     }
 

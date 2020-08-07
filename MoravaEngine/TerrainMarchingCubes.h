@@ -32,6 +32,7 @@ public:
 		bool inVolume;
 	};
 	std::vector<VertexMC*> m_VertexPositions;
+	std::vector<glm::vec3> m_EdgePositions;
 
 private:
 	struct Range {
@@ -51,5 +52,6 @@ private:
 	glm::vec3 m_VoxelRangeMax;
 
 	std::vector<glm::vec3> m_CubeVertices;
+	std::vector<glm::vec3> m_CubeEdges;
 
 };
