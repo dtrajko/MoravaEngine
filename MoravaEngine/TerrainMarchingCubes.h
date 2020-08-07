@@ -23,7 +23,7 @@ public:
 	inline MapGenerator* GetMapGenerator() { return m_MapGenerator; };
 
 	void MarchingCubes();
-	void ComputeSingleCube(int x, int y, int z, int cubeSize);
+	void ComputeSingleCube(glm::ivec3 position, int cubeSize);
 	int CalculateCubeIndex(); // Sebastian Lague
 	bool IsVertexAvailable(glm::ivec3 position);
 

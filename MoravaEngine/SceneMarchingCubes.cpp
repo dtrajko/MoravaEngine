@@ -102,7 +102,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_MapGenConf.heightMapFilePath = "Textures/Noise/heightMap.png";
     m_MapGenConf.colorMapFilePath = "Textures/Noise/colorMap.png";
     m_MapGenConf.drawMode = MapGenerator::DrawMode::Mesh;
-    m_MapGenConf.mapChunkSize = 9;
+    m_MapGenConf.mapChunkSize = 2;
     // m_MapGenConf.mapWidth = 241;
     // m_MapGenConf.mapHeight = 241;
     m_MapGenConf.noiseScale = 25.0f;
@@ -115,7 +115,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_MapGenConf.autoUpdate = true;
     m_MapGenConf.regions = std::vector<MapGenerator::TerrainTypes>();
     
-    m_HeightMapMultiplier = 4;
+    m_HeightMapMultiplier = 2;
     m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
     m_SeaLevel = 0.5f;
     m_SeaLevelPrev = m_SeaLevel;
@@ -751,7 +751,17 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
         meshes["cube"]->Render();
     }
 
+    shaderMain->Bind();
+    shaderMain->setMat4("projection", projectionMatrix);
+    shaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
+    shaderMain->setInt("albedoMap", 0);
+    shaderMain->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 0.6f));
+    shaderMain->setMat4("model", glm::mat4(1.0f));
+
     m_TerrainMarchingCubes->Render();
+
+    //  printf("TerrainMarchingCubes VAO = %i IBO = %i m_IndexCount = %i\n",
+    //      m_TerrainMarchingCubes->GetVAO(), m_TerrainMarchingCubes->GetIBO(), m_TerrainMarchingCubes->GetIndexCount());
 
     /**** END Render Marching Cubes ****/
 
