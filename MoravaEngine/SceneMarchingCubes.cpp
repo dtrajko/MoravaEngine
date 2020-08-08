@@ -9,6 +9,8 @@
 #include "NoiseSL.h"
 #include "TerrainMarchingCubes.h"
 #include "Math.h"
+#include "Timer.h"
+#include "Profiler.h"
 
 #include "ImGuiWrapper.h"
 
@@ -121,6 +123,8 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_SeaLevelPrev = m_SeaLevel;
     m_LevelOfDetail = 0;
     m_LevelOfDetailPrev = m_LevelOfDetail;
+    m_VoxelsModified = false;
+    m_VoxelsModifiedPrev = m_VoxelsModified;
 
     m_DrawGizmos = true;
     m_RenderPlayer = true;
@@ -135,7 +139,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     SetupTextures();
     SetupMeshes();
 
-    m_UpdateCooldown = { 0.0f, 0.5f };
+    m_UpdateCooldown = { 0.0f, 0.1f };
     m_DigCooldown = { 0.0f, 0.1f };
     m_RayIntersectCooldown = { 0.0f, 0.1f };
     m_RayCastCooldown = { 0.0f, 0.1f };
@@ -457,6 +461,46 @@ void SceneMarchingCubes::UpdateImGui(float timestep, Window& mainWindow)
         }
     }
     ImGui::End();
+
+    ImGui::Begin("Profiler");
+    {
+        float realFPS = Timer::Get()->GetRealFPS();
+        std::string sRealFPS = "Real FPS: " + std::to_string(realFPS);
+
+        float deltaTimeMS = Timer::Get()->GetDeltaTime() * 1000.0f;
+        std::string sDeltaTimeMS = "Delta Time: " + std::to_string(deltaTimeMS) + " ms";
+
+        if (ImGui::CollapsingHeader("Timer"))
+        {
+            ImGui::Text(sRealFPS.c_str());
+            ImGui::Text(sDeltaTimeMS.c_str());
+        }
+
+        if (ImGui::CollapsingHeader("Active Render Passes"))
+        {
+            ImGui::Indent();
+            for (auto& renderPassName : m_ActiveRenderPasses)
+                ImGui::Text(renderPassName.c_str());
+            ImGui::Unindent();
+        }
+
+        m_ActiveRenderPasses.clear();
+
+        // print profiler results
+        if (ImGui::CollapsingHeader("Profiler results:"))
+        {
+            // profiler results
+            for (auto& profilerResult : m_ProfilerResults)
+            {
+                char label[100];
+                strcpy_s(label, "%.2fms ");
+                strcat_s(label, profilerResult.first.c_str());
+                ImGui::Text(label, profilerResult.second);
+            }
+            m_ProfilerResults.clear();
+        }
+    }
+    ImGui::End();
 }
 
 void SceneMarchingCubes::Update(float timestep, Window& mainWindow)
@@ -466,7 +510,13 @@ void SceneMarchingCubes::Update(float timestep, Window& mainWindow)
     Dig(mainWindow.getKeys(), timestep);
     CastRay(mainWindow.getKeys(), mainWindow.getMouseButtons(), timestep);
     OnClick(mainWindow.getKeys(), mainWindow.getMouseButtons(), timestep);
-    UpdateCooldown(timestep, mainWindow);
+
+    {
+        Profiler profiler("SMC::UpdateCooldown");
+        UpdateCooldown(timestep, mainWindow);
+        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
+
     m_PlayerController->KeyControl(mainWindow.getKeys(), timestep);
     m_PlayerController->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
     m_PlayerController->MouseScrollControl(mainWindow.getKeys(), timestep, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
@@ -502,7 +552,15 @@ void SceneMarchingCubes::UpdateCooldown(float timestep, Window& mainWindow)
 
     if (!m_IsRequiredMapUpdate) return;
 
-    m_TerrainMarchingCubes->Update(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
+    {
+        Profiler profiler("SMC::TerrainMarchingCubes::Update");
+        printf("SceneMarchingCubes::UpdateCooldown m_TerrainMarchingCubes->Update\n");
+        m_TerrainMarchingCubes->Update(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
+        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
+
+    m_VoxelsModified = false;
+    m_VoxelsModifiedPrev = false;
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
@@ -621,14 +679,19 @@ void SceneMarchingCubes::OnClick(bool* keys, bool* buttons, float timestep)
     if (timestep - m_OnClickCooldown.lastTime < m_OnClickCooldown.cooldown) return;
     m_OnClickCooldown.lastTime = timestep;
 
+
     if (buttons[GLFW_MOUSE_BUTTON_1]) {
 
         // Delete current voxel
         if (keys[m_DeleteVoxelCodeGLFW]) {
+            Profiler profiler("SMC::DeleteVoxel");
             DeleteVoxel();
+            GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
         }
         else {
+            Profiler profiler("SMC::AddVoxel");
             AddVoxel();
+            GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
         }
     }
 }
@@ -639,56 +702,33 @@ void SceneMarchingCubes::AddVoxel()
     glm::vec3 addPositionFloat = m_IntersectPosition - m_Camera->GetFront();
     glm::ivec3 addPositionInt = glm::ivec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
 
-    bool terrainModified = false;
-    for (int x = addPositionInt.x - 1; x < addPositionInt.x + 1; x++) {
-        for (int y = addPositionInt.y - 1; y < addPositionInt.y + 1; y++) {
-            for (int z = addPositionInt.z - 1; z < addPositionInt.z + 1; z++) {
-                glm::ivec3 subPositionInt = glm::ivec3(x, y, z);
-                if (IsPositionVacant(subPositionInt)) {
-                    TerrainVoxel::Voxel* voxel = new TerrainVoxel::Voxel();
-                    voxel->position = subPositionInt;
-                    voxel->color = glm::vec4(m_CubeColor);
-                    m_TerrainMarchingCubes->m_Voxels.push_back(voxel);
-                    m_IntersectPositionIndex = (int)m_TerrainMarchingCubes->m_Voxels.size() - 1;
-                    terrainModified = true;
-                    // Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", subPositionInt.x, subPositionInt.y, subPositionInt.z);
-                }
-                else {
-                    // Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", subPositionInt.x, subPositionInt.y, subPositionInt.z);
-                }
-            }
-        }
+    if (IsPositionVacant(addPositionInt)) {
+        TerrainVoxel::Voxel* voxel = new TerrainVoxel::Voxel();
+        voxel->position = addPositionInt;
+        voxel->color = glm::vec4(m_CubeColor);
+        m_TerrainMarchingCubes->m_Voxels.push_back(voxel);
+        m_IntersectPositionIndex = (int)m_TerrainMarchingCubes->m_Voxels.size() - 1;
+        m_RenderInstanced->CreateVertexData();
+        Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
+    }
+    else {
+        Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
     }
 
-    if (terrainModified) {
-        m_RenderInstanced->CreateVertexData();
-        m_TerrainMarchingCubes->MarchingCubes();
-    }
+    m_TerrainMarchingCubes->MarchingCubes();
 }
 
 void SceneMarchingCubes::DeleteVoxel()
 {
     if (m_IntersectPositionIndex < 0) return;
 
-    glm::ivec3 deletePosition = m_TerrainMarchingCubes->m_Voxels.at(m_IntersectPositionIndex)->position;
+    glm::vec3 deletePosition = m_TerrainMarchingCubes->m_Voxels.at(m_IntersectPositionIndex)->position;
+    m_TerrainMarchingCubes->m_Voxels.erase(m_TerrainMarchingCubes->m_Voxels.begin() + m_IntersectPositionIndex);
+    m_IntersectPositionIndex = -1;
+    m_RenderInstanced->CreateVertexData();
+    Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
 
-    bool terrainModified = false;
-    for (int x = deletePosition.x - 1; x < deletePosition.x + 1; x++) {
-        for (int y = deletePosition.y - 1; y < deletePosition.y + 1; y++) {
-            for (int z = deletePosition.z - 1; z < deletePosition.z + 1; z++) {
-                bool voxelDeleted = m_TerrainMarchingCubes->DeleteVoxel(glm::ivec3(x, y, z));
-                if (voxelDeleted && !terrainModified)
-                    terrainModified = true;
-                m_IntersectPositionIndex = -1;
-                // Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
-            }
-        }
-    }
-
-    if (terrainModified) {
-        m_RenderInstanced->CreateVertexData();
-        m_TerrainMarchingCubes->MarchingCubes();
-    }
+    m_TerrainMarchingCubes->MarchingCubes();
 }
 
 bool SceneMarchingCubes::IsPositionVacant(glm::ivec3 queryPosition)
@@ -703,6 +743,8 @@ bool SceneMarchingCubes::IsPositionVacant(glm::ivec3 queryPosition)
 void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
+    m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui
+
     Shader* shaderMain = shaders["main"];
     Shader* shaderOmniShadow = shaders["omniShadow"];
     Shader* shaderRenderInstanced = shaders["render_instanced"];

@@ -381,7 +381,7 @@ int main()
 	{
 		// per-frame time logic
 		// --------------------
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -578,16 +578,16 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastY = (float)ypos;
+		lastX = (float)xpos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	float xoffset = (float)xpos - (float)lastX;
+	float yoffset = (float)lastY - (float)ypos; // reversed since y-coordinates go from bottom to top
 
-	lastX = xpos;
-	lastY = ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
@@ -596,7 +596,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(yoffset);
+	camera.ProcessMouseScroll((float)yoffset);
 }
 
 // renders (and builds at first invocation) a sphere
@@ -620,7 +620,7 @@ void renderSphere()
 
 		const unsigned int X_SEGMENTS = 64;
 		const unsigned int Y_SEGMENTS = 64;
-		const float PI = 3.14159265359;
+		const float PI = 3.14159265359f;
 		for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
 		{
 			for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
@@ -658,7 +658,7 @@ void renderSphere()
 			}
 			oddRow = !oddRow;
 		}
-		indexCount = indices.size();
+		indexCount = (unsigned int)indices.size();
 
 		std::vector<float> data;
 		for (int i = 0; i < positions.size(); ++i)
@@ -685,11 +685,11 @@ void renderSphere()
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 		float stride = (3 + 2 + 3) * sizeof(float);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, (GLsizei)stride, (void*)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, (GLsizei)stride, (void*)(3 * sizeof(float)));
 		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*)(5 * sizeof(float)));
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, (GLsizei)stride, (void*)(5 * sizeof(float)));
 	}
 
 	glBindVertexArray(sphereVAO);

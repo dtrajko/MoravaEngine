@@ -87,8 +87,12 @@ private:
 	int m_LevelOfDetail;
 	int m_LevelOfDetailPrev;
 
+	int m_VoxelsModified;
+	int m_VoxelsModifiedPrev;
+
 	bool m_IsRequiredMapUpdate;
 	bool m_IsRequiredMapRebuild;
 
+	std::vector<std::string> m_ActiveRenderPasses;
 
 };
