@@ -546,21 +546,35 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 	//	}
 
 	// Create the triangle
-	int nTriang = 0;
+	int triangleIndex = 0;
 	for (int i = 0; triangleTable[cubeIndex][i] != -1; i += 3)
 	{
 		Triangle triangle;
-		triangle.vertices[0] = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 0]];
-		triangle.vertices[1] = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 1]];
-		triangle.vertices[2] = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 2]];
+		triangle.vertices[0].position = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 0]];
+		triangle.vertices[1].position = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 1]];
+		triangle.vertices[2].position = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 2]];
 
-		glm::vec3 edgeU21 = triangle.vertices[2] - triangle.vertices[1];
-		glm::vec3 edgeV31 = triangle.vertices[3] - triangle.vertices[1];
+		glm::vec3 edgeU;
+		glm::vec3 edgeV;
+		if (triangleIndex % 2 == 0) {
+			edgeU = triangle.vertices[2].position - triangle.vertices[1].position;
+			edgeV = triangle.vertices[3].position - triangle.vertices[1].position;
+		}
+		else {
+			edgeU = triangle.vertices[3].position - triangle.vertices[1].position;
+			edgeV = triangle.vertices[2].position - triangle.vertices[1].position;
+		}
 
-		triangle.normal.x = edgeU21.y * edgeV31.z - edgeU21.z * edgeV31.y;
-		triangle.normal.y = edgeU21.z * edgeV31.x - edgeU21.x * edgeV31.z;
-		triangle.normal.z = edgeU21.x * edgeV31.y - edgeU21.y * edgeV31.x;
+		triangle.normal.x = edgeU.y * edgeV.z - edgeU.z * edgeV.y;
+		triangle.normal.y = edgeU.z * edgeV.x - edgeU.x * edgeV.z;
+		triangle.normal.z = edgeU.x * edgeV.y - edgeU.y * edgeV.x;
 		triangle.normal = glm::normalize(triangle.normal);
+
+		for (int i = 0; i < 3; i++) {
+			float isoSurfaceHeight = triangle.vertices[i].position.y / (float)m_HeightMapMultiplier;
+			glm::vec4 vertexColor = m_MapGenerator->GetRegionColor(isoSurfaceHeight + 0.5f);
+			triangle.vertices[i].color = vertexColor;
+		}
 
 		// triangle.normal = m_CubeNormals[triangleTable[cubeIndex][i + 0]];
 
@@ -569,6 +583,8 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 		//	printf("TMC::ComputeSingleCube triangle.point[2] [ %i %i %i ]\n", triangle.point[2].x, triangle.point[2].y, triangle.point[2].z);
 
 		m_Triangles.push_back(triangle);
+
+		triangleIndex++;
 	}
 
 	//	for (auto triangle : m_Triangles) {
@@ -581,7 +597,7 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 
 void TerrainMarchingCubes::GenerateVertexData()
 {
-	unsigned int vertexStride = (unsigned int)(sizeof(VertexTBN) / sizeof(float));
+	unsigned int vertexStride = (unsigned int)(sizeof(VertexTBNColor) / sizeof(float));
 
 	m_IndexCount = (unsigned int)m_Triangles.size() * 3;
 	m_VertexCount = m_IndexCount * vertexStride;
@@ -592,8 +608,8 @@ void TerrainMarchingCubes::GenerateVertexData()
 	//	printf("Generate terrain vertices and indices...\n");
 	//	printf("Number of vertices: %d Number of indices: %d\n", m_VertexCount, m_IndexCount);
 
-	// position   tex coords   normal       tangent      bitangent
-	// X  Y  Z    U  V         NX  NY  NZ   TX  TY  TZ   BX  BY  BZ
+	// position   tex coords   normal       tangent      bitangent     color
+	// X  Y  Z    U  V         NX  NY  NZ   TX  TY  TZ   BX  BY  BZ    R  G  B  A
 	int vertexPointer = 0;
 	int indexPointer = 0;
 
@@ -601,9 +617,9 @@ void TerrainMarchingCubes::GenerateVertexData()
 		for (auto vertex : triangle.vertices) {
 
 			// vertex
-			m_Vertices[vertexPointer + 0] = (float)vertex.x;
-			m_Vertices[vertexPointer + 1] = (float)vertex.y;
-			m_Vertices[vertexPointer + 2] = (float)vertex.z;
+			m_Vertices[vertexPointer + 0] = (float)vertex.position.x;
+			m_Vertices[vertexPointer + 1] = (float)vertex.position.y;
+			m_Vertices[vertexPointer + 2] = (float)vertex.position.z;
 
 			// texture coords
 			m_Vertices[vertexPointer + 3] = 0.0f;
@@ -623,6 +639,12 @@ void TerrainMarchingCubes::GenerateVertexData()
 			m_Vertices[vertexPointer + 11] = 0.0f;
 			m_Vertices[vertexPointer + 12] = 0.0f;
 			m_Vertices[vertexPointer + 13] = 0.0f;
+
+			// color
+			m_Vertices[vertexPointer + 14] = vertex.color.r;
+			m_Vertices[vertexPointer + 15] = vertex.color.g;
+			m_Vertices[vertexPointer + 16] = vertex.color.b;
+			m_Vertices[vertexPointer + 17] = vertex.color.a;
 
 			vertexPointer += vertexStride;
 
@@ -651,7 +673,7 @@ void TerrainMarchingCubes::GenerateVertexData()
 		//	printf("%i, %i, %i,\n", m_Indices[i + 0], m_Indices[i + 1], m_Indices[i + 2]);
 	}
 
-	// RecalculateNormals();
+	RecalculateNormals();
 	// RecalculateTangentSpace();
 }
 
@@ -670,19 +692,22 @@ void TerrainMarchingCubes::GenerateDataOpenGL()
 
 	// position
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Position));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBNColor), (const void*)offsetof(VertexTBNColor, Position));
 	// tex coord
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, TexCoord));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTBNColor), (const void*)offsetof(VertexTBNColor, TexCoord));
 	// normal
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Normal));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBNColor), (const void*)offsetof(VertexTBNColor, Normal));
 	// tangent
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Tangent));
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBNColor), (const void*)offsetof(VertexTBNColor, Tangent));
 	// bitangent
 	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Bitangent));
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBNColor), (const void*)offsetof(VertexTBNColor, Bitangent));
+	// color
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(VertexTBNColor), (const void*)offsetof(VertexTBNColor, Color));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
@@ -771,4 +796,38 @@ void TerrainMarchingCubes::Update(MapGenerator::MapGenConf mapGenConf, int heigh
 	m_Scale.z = (float)mapGenConf.mapChunkSize;
 
 	Generate();
+}
+
+void TerrainMarchingCubes::RecalculateNormals()
+{
+	unsigned int vLength = sizeof(VertexTBNColor) / sizeof(float);
+	unsigned int normalOffset = offsetof(VertexTBNColor, Normal) / sizeof(float);
+
+	// The Phong shading approach
+	for (size_t i = 0; i < m_IndexCount; i += 3)
+	{
+		unsigned int in0 = m_Indices[i + 0] * vLength;
+		unsigned int in1 = m_Indices[i + 1] * vLength;
+		unsigned int in2 = m_Indices[i + 2] * vLength;
+		glm::vec3 v1(m_Vertices[in1 + 0] - m_Vertices[in0 + 0], m_Vertices[in1 + 1] - m_Vertices[in0 + 1], m_Vertices[in1 + 2] - m_Vertices[in0 + 2]);
+		glm::vec3 v2(m_Vertices[in2 + 0] - m_Vertices[in0 + 0], m_Vertices[in2 + 1] - m_Vertices[in0 + 1], m_Vertices[in2 + 2] - m_Vertices[in0 + 2]);
+		glm::vec3 normal = glm::cross(v1, v2);
+		normal = glm::normalize(normal);
+
+		in0 += normalOffset;
+		in1 += normalOffset;
+		in2 += normalOffset;
+
+		m_Vertices[in0 + 0] += normal.x; m_Vertices[in0 + 1] += normal.y; m_Vertices[in0 + 2] += normal.z;
+		m_Vertices[in1 + 0] += normal.x; m_Vertices[in1 + 1] += normal.y; m_Vertices[in1 + 2] += normal.z;
+		m_Vertices[in2 + 0] += normal.x; m_Vertices[in2 + 1] += normal.y; m_Vertices[in2 + 2] += normal.z;
+	}
+
+	for (unsigned int i = 0; i < m_VertexCount / vLength; i++)
+	{
+		unsigned int nOffset = i * vLength + normalOffset;
+		glm::vec3 vec(m_Vertices[nOffset + 0], m_Vertices[nOffset + 1], m_Vertices[nOffset + 2]);
+		vec = glm::normalize(vec);
+		m_Vertices[nOffset + 0] = vec.x; m_Vertices[nOffset + 1] = vec.y; m_Vertices[nOffset + 2] = vec.z;
+	}
 }

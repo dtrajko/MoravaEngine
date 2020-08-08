@@ -707,6 +707,7 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
     Shader* shaderOmniShadow = shaders["omniShadow"];
     Shader* shaderRenderInstanced = shaders["render_instanced"];
     Shader* shaderBasic = shaders["basic"];
+    Shader* shaderMarchingCubes = shaders["marching_cubes"];
 
     RendererBasic::EnableTransparency();
 
@@ -776,12 +777,12 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
     }
     ****/
 
-    shaderMain->Bind();
-    shaderMain->setMat4("projection", projectionMatrix);
-    shaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
-    shaderMain->setInt("albedoMap", 0);
-    shaderMain->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 0.6f));
-    shaderMain->setMat4("model", glm::mat4(1.0f));
+    shaderMarchingCubes->Bind();
+    shaderMarchingCubes->setMat4("projection", projectionMatrix);
+    shaderMarchingCubes->setMat4("view", m_CameraController->CalculateViewMatrix());
+    shaderMarchingCubes->setInt("albedoMap", 0);
+    shaderMarchingCubes->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    shaderMarchingCubes->setMat4("model", glm::mat4(1.0f));
 
     if (m_RenderTerrainMarchingCubes)
         m_TerrainMarchingCubes->Render();

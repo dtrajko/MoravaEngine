@@ -18,6 +18,7 @@ public:
 	~TerrainMarchingCubes();
 
 	virtual void Generate(glm::vec3 scale = glm::vec3(1.0f)) override;
+	virtual void RecalculateNormals() override;
 
 	void Update(MapGenerator::MapGenConf mapGenConf, int heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail);
 	inline MapGenerator* GetMapGenerator() { return m_MapGenerator; };
@@ -47,8 +48,12 @@ private:
 	std::map<std::string, Range> m_Ranges;
 	void CalculateRanges(int x, int y, int z, float isoSurfaceHeight, float heightFinal, int voxelPositionX, int voxelPositionY, int voxelPositionZ);
 
+	struct TriangleVertex {
+		glm::ivec3 position;
+		glm::vec4 color;
+	};
 	struct Triangle {
-		glm::ivec3 vertices[3];
+		TriangleVertex vertices[3];
 		glm::vec3 normal;
 	};
 
