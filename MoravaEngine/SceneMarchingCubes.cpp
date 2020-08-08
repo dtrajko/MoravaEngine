@@ -123,8 +123,6 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_SeaLevelPrev = m_SeaLevel;
     m_LevelOfDetail = 0;
     m_LevelOfDetailPrev = m_LevelOfDetail;
-    m_VoxelsModified = false;
-    m_VoxelsModifiedPrev = m_VoxelsModified;
 
     m_DrawGizmos = true;
     m_RenderPlayer = true;
@@ -558,9 +556,6 @@ void SceneMarchingCubes::UpdateCooldown(float timestep, Window& mainWindow)
         m_TerrainMarchingCubes->Update(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
         GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
-
-    m_VoxelsModified = false;
-    m_VoxelsModifiedPrev = false;
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
