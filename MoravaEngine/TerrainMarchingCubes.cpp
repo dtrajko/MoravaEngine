@@ -50,20 +50,20 @@ void TerrainMarchingCubes::Generate(glm::vec3 scale)
 
 				if (heightFinal >= isoSurfaceHeight + 0.5f) {
 					Voxel* voxel = new Voxel();
-					int voxelPositionX = x - (int)m_Scale.x / 2;
+					int voxelPositionX = x - ((int)m_Scale.x + 1) / 2;
 					if ((int)m_Scale.x % 2 != 0) voxelPositionX += 1;
-					int voxelPositionZ = z - (int)m_Scale.z / 2;
+					int voxelPositionZ = z - ((int)m_Scale.z + 1) / 2;
 					if ((int)m_Scale.z % 2 != 0) voxelPositionZ += 1;
 
 					int voxelPositionY = (int)(isoSurfaceHeight * m_HeightMapMultiplier);
-					//	printf("TerrainMarchingCubes::Generate voxelPositionY = %i isoSurfaceHeight = %.2ff m_HeightMapMultiplier = %i\n",
-					//		voxelPositionY, isoSurfaceHeight, m_HeightMapMultiplier);
-
 					voxel->position = glm::ivec3(voxelPositionX, voxelPositionY, voxelPositionZ);
 					// voxel.color = m_MapGenerator->m_ColorMap[z * m_MapGenerator->m_MapGenConf.mapChunkSize + x];
 					voxel->color = isoSurfaceColor;
 					voxel->textureID = -1; // no texture
 					m_Voxels.push_back(voxel);
+
+					//	printf("TMC::Generate XYZ [ %i %i %i ] voxel->position = [ %i %i %i ] isoSurfaceHeight = %.2ff m_HeightMapMultiplier = %i\n",
+					//		x, y, z, voxel->position.x, voxel->position.y, voxel->position.z, isoSurfaceHeight, m_HeightMapMultiplier);
 
 					CalculateRanges(x, y, z, isoSurfaceHeight, heightFinal, voxelPositionX, voxelPositionY, voxelPositionZ);
 
@@ -77,7 +77,7 @@ void TerrainMarchingCubes::Generate(glm::vec3 scale)
 	}
 
 	for (auto range : m_Ranges) {
-		printf("Variable: %s\tMin: %.2ff\tMax: %.2ff\n", range.first.c_str(), range.second.min, range.second.max);
+		printf("TMC::Generate Variable: %s\tMin: %.2ff\tMax: %.2ff\n", range.first.c_str(), range.second.min, range.second.max);
 	}
 
 	MarchingCubes();
@@ -106,8 +106,8 @@ void TerrainMarchingCubes::MarchingCubes()
 		if (voxel->position.z < m_VoxelRangeMin.z) m_VoxelRangeMin.z = voxel->position.z;
 	}
 
-	// printf("TerrainMarchingCubes::MarchingCubes voxelRangeMin [ %.2ff %.2ff %.2ff ] voxelRangeMax [ %.2ff %.2ff %.2ff ]\n",
-	// 	m_VoxelRangeMin.x, m_VoxelRangeMin.y, m_VoxelRangeMin.z, m_VoxelRangeMax.x, m_VoxelRangeMax.y, m_VoxelRangeMax.z);
+	//	printf("TMC::MarchingCubes voxelRangeMin [ %i %i %i ] voxelRangeMax [ %i %i %i ]\n",
+	//		m_VoxelRangeMin.x, m_VoxelRangeMin.y, m_VoxelRangeMin.z, m_VoxelRangeMax.x, m_VoxelRangeMax.y, m_VoxelRangeMax.z);
 
 	for (auto vertexPosition : m_VertexPositions)
 		delete vertexPosition;
@@ -126,147 +126,70 @@ void TerrainMarchingCubes::MarchingCubes()
 		}
 	}
 
-	unsigned int vertexStride = (unsigned int)(sizeof(VertexTBN) / sizeof(float));
-
-	m_IndexCount = (unsigned int)m_Triangles.size() * 3;
-	m_VertexCount = m_IndexCount * vertexStride;
-	
-	m_Vertices = new float[m_VertexCount];
-	m_Indices = new unsigned int[m_IndexCount];
-
-	printf("Generate terrain vertices and indices...\n");
-	printf("Number of vertices: %d Number of indices: %d\n", m_VertexCount, m_IndexCount);
-
-	// position   tex coords   normal       tangent      bitangent
-	// X  Y  Z    U  V         NX  NY  NZ   TX  TY  TZ   BX  BY  BZ
-	int vertexPointer = 0;
-	int indexPointer = 0;
-
-	for (auto triangle : m_Triangles) {
-		for (auto point : triangle.point) {
-
-			// vertex
-			m_Vertices[vertexPointer + 0] = (float)point.x;
-			m_Vertices[vertexPointer + 1] = (float)point.y;
-			m_Vertices[vertexPointer + 2] = (float)point.z;
-
-			// texture coords
-			m_Vertices[vertexPointer + 3] = 0.0f;
-			m_Vertices[vertexPointer + 4] = 1.0f;
-
-			// normals
-			m_Vertices[vertexPointer + 5] = 0.0f;
-			m_Vertices[vertexPointer + 6] = 0.0f;
-			m_Vertices[vertexPointer + 7] = 0.0f;
-
-			// tangents
-			m_Vertices[vertexPointer + 8] = 0.0f;
-			m_Vertices[vertexPointer + 9] = 0.0f;
-			m_Vertices[vertexPointer + 10] = 0.0f;
-
-			// bitangents
-			m_Vertices[vertexPointer + 11] = 0.0f;
-			m_Vertices[vertexPointer + 12] = 0.0f;
-			m_Vertices[vertexPointer + 13] = 0.0f;
-
-			vertexPointer += vertexStride;
-
-			// Generate terrain indices
-			m_Indices[indexPointer] = indexPointer;
-			indexPointer++;
-		}
-	}
-
-	printf("Final value of indexPointer: %d\n", indexPointer);
-
-	unsigned int vertexIndex = 0;
-	for (unsigned int i = 0; i < m_VertexCount; i+= vertexStride) {
-		//	printf("Vertex [%u] [ %.2ff %.2ff %.2ff ] [ %.2ff %.2ff ] [ %.2ff %.2ff %.2ff ] [ %.2ff %.2ff %.2ff ] [ %.2ff %.2ff %.2ff ]\n", vertexIndex,
-		//		m_Vertices[i + 0], m_Vertices[i + 1], m_Vertices[i + 2],
-		//		m_Vertices[i + 3], m_Vertices[i + 4],
-		//		m_Vertices[i + 5], m_Vertices[i + 6], m_Vertices[i + 7],
-		//		m_Vertices[i + 8], m_Vertices[i + 9], m_Vertices[i + 10],
-		//		m_Vertices[i + 11], m_Vertices[i + 12], m_Vertices[i + 13]);
-		vertexIndex++;
-	}
-
-	//	printf("Indices:\n");
-	unsigned int indexIndex = 0;
-	for (unsigned int i = 0; i < m_IndexCount; i += 3) {
-		//	printf("%i, %i, %i,\n", m_Indices[i + 0], m_Indices[i + 1], m_Indices[i + 2]);
-	}
-
-	RecalculateNormals();
-	RecalculateTangentSpace();
-
-	glGenVertexArrays(1, &m_VAO);
-	glBindVertexArray(m_VAO);
-
-	glGenBuffers(1, &m_IBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_Indices[0]) * m_IndexCount, m_Indices, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &m_VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(m_Vertices[0]) * m_VertexCount, m_Vertices, GL_STATIC_DRAW);
-
-	// position
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Position));
-	// tex coord
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, TexCoord));
-	// normal
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Normal));
-	// tangent
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Tangent));
-	// bitangent
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Bitangent));
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
-	glBindVertexArray(0);                     // Unbind VAO
+	GenerateVertexData();
+	GenerateDataOpenGL();
 }
 
 void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 {
 	// TODO - calculate parameters for the current marching cube
 	m_CubeVertices.clear();
-	m_CubeVertices.push_back(glm::ivec3(position.x,            position.y,            position.z + cubeSize)); // 0
-	m_CubeVertices.push_back(glm::ivec3(position.x + cubeSize, position.y,            position.z + cubeSize)); // 1
-	m_CubeVertices.push_back(glm::ivec3(position.x + cubeSize, position.y,            position.z           )); // 2
-	m_CubeVertices.push_back(glm::ivec3(position.x,            position.y,            position.z           )); // 3
-	m_CubeVertices.push_back(glm::ivec3(position.x,            position.y + cubeSize, position.z + cubeSize)); // 4
-	m_CubeVertices.push_back(glm::ivec3(position.x + cubeSize, position.y + cubeSize, position.z + cubeSize)); // 5
-	m_CubeVertices.push_back(glm::ivec3(position.x + cubeSize, position.y + cubeSize, position.z           )); // 6
-	m_CubeVertices.push_back(glm::ivec3(position.x,            position.y + cubeSize, position.z           )); // 7
+	m_CubeVertices.resize(8);
+	m_CubeVertices[0] = glm::ivec3(position.x,            position.y,            position.z + cubeSize); // 0
+	m_CubeVertices[1] = glm::ivec3(position.x + cubeSize, position.y,            position.z + cubeSize); // 1
+	m_CubeVertices[2] = glm::ivec3(position.x + cubeSize, position.y,            position.z           ); // 2
+	m_CubeVertices[3] = glm::ivec3(position.x,            position.y,            position.z           ); // 3
+	m_CubeVertices[4] = glm::ivec3(position.x,            position.y + cubeSize, position.z + cubeSize); // 4
+	m_CubeVertices[5] = glm::ivec3(position.x + cubeSize, position.y + cubeSize, position.z + cubeSize); // 5
+	m_CubeVertices[6] = glm::ivec3(position.x + cubeSize, position.y + cubeSize, position.z           ); // 6
+	m_CubeVertices[7] = glm::ivec3(position.x,            position.y + cubeSize, position.z           ); // 7
 
 	m_CubeEdges.clear();
-	m_CubeEdges.push_back(glm::ivec3(position.x + cubeSize / 2, position.y,                position.z + cubeSize    )); //  0
-	m_CubeEdges.push_back(glm::ivec3(position.x + cubeSize,     position.y,                position.z + cubeSize / 2)); //  1
-	m_CubeEdges.push_back(glm::ivec3(position.x + cubeSize / 2, position.y,                position.z               )); //  2
-	m_CubeEdges.push_back(glm::ivec3(position.x,                position.y,                position.z + cubeSize / 2)); //  3
-	m_CubeEdges.push_back(glm::ivec3(position.x + cubeSize / 2, position.y + cubeSize,     position.z + cubeSize    )); //  4
-	m_CubeEdges.push_back(glm::ivec3(position.x + cubeSize,     position.y + cubeSize,     position.z + cubeSize / 2)); //  5
-	m_CubeEdges.push_back(glm::ivec3(position.x + cubeSize / 2, position.y + cubeSize,     position.z               )); //  6
-	m_CubeEdges.push_back(glm::ivec3(position.x,                position.y + cubeSize,     position.z + cubeSize / 2)); //  7
-	m_CubeEdges.push_back(glm::ivec3(position.x,                position.y + cubeSize / 2, position.z + cubeSize    )); //  8
-	m_CubeEdges.push_back(glm::ivec3(position.x + cubeSize,     position.y + cubeSize / 2, position.z + cubeSize    )); //  9
-	m_CubeEdges.push_back(glm::ivec3(position.x + cubeSize,     position.y + cubeSize / 2, position.z               )); // 10
-	m_CubeEdges.push_back(glm::ivec3(position.x,                position.y + cubeSize / 2, position.z               )); // 11
+	m_CubeEdges.resize(12);
+	m_CubeEdges[0]  = glm::ivec3(position.x + cubeSize / 2, position.y,                position.z + cubeSize    ); //  0
+	m_CubeEdges[1]  = glm::ivec3(position.x + cubeSize,     position.y,                position.z + cubeSize / 2); //  1
+	m_CubeEdges[2]  = glm::ivec3(position.x + cubeSize / 2, position.y,                position.z               ); //  2
+	m_CubeEdges[3]  = glm::ivec3(position.x,                position.y,                position.z + cubeSize / 2); //  3
+	m_CubeEdges[4]  = glm::ivec3(position.x + cubeSize / 2, position.y + cubeSize,     position.z + cubeSize    ); //  4
+	m_CubeEdges[5]  = glm::ivec3(position.x + cubeSize,     position.y + cubeSize,     position.z + cubeSize / 2); //  5
+	m_CubeEdges[6]  = glm::ivec3(position.x + cubeSize / 2, position.y + cubeSize,     position.z               ); //  6
+	m_CubeEdges[7]  = glm::ivec3(position.x,                position.y + cubeSize,     position.z + cubeSize / 2); //  7
+	m_CubeEdges[8]  = glm::ivec3(position.x,                position.y + cubeSize / 2, position.z + cubeSize    ); //  8
+	m_CubeEdges[9]  = glm::ivec3(position.x + cubeSize,     position.y + cubeSize / 2, position.z + cubeSize    ); //  9
+	m_CubeEdges[10] = glm::ivec3(position.x + cubeSize,     position.y + cubeSize / 2, position.z               ); // 10
+	m_CubeEdges[11] = glm::ivec3(position.x,                position.y + cubeSize / 2, position.z               ); // 11
 
-	//	for (unsigned int i = 0; i < 8; i++)
-	//		printf("Vertex %i [ %.2ff %.2ff %.2ff ] IsVertexAvailable? %s\n",
-	//			i, m_CubeVertices[i].x, m_CubeVertices[i].y, m_CubeVertices[i].z, IsVertexAvailable(m_CubeVertices[i]) ? "YES" : "NO");
+	m_CubeNormals.clear();
+	m_CubeNormals.resize(12);
+	m_CubeNormals[0]  = glm::normalize(glm::vec3( 0.0f, -1.0f,  1.0f));
+	m_CubeNormals[1]  = glm::normalize(glm::vec3( 1.0f, -1.0f,  0.0f));
+	m_CubeNormals[2]  = glm::normalize(glm::vec3( 0.0f, -1.0f, -1.0f));
+	m_CubeNormals[3]  = glm::normalize(glm::vec3(-1.0f, -1.0f,  0.0f));
+	m_CubeNormals[4]  = glm::normalize(glm::vec3( 0.0f,  1.0f,  1.0f));
+	m_CubeNormals[5]  = glm::normalize(glm::vec3( 1.0f,  1.0f,  0.0f));
+	m_CubeNormals[6]  = glm::normalize(glm::vec3( 0.0f,  1.0f, -1.0f));
+	m_CubeNormals[7]  = glm::normalize(glm::vec3(-1.0f,  1.0f,  0.0f));
+	m_CubeNormals[8]  = glm::normalize(glm::vec3(-1.0f,  0.0f,  1.0f));
+	m_CubeNormals[9]  = glm::normalize(glm::vec3( 1.0f,  0.0f,  1.0f));
+	m_CubeNormals[10] = glm::normalize(glm::vec3( 1.0f,  0.0f, -1.0f));
+	m_CubeNormals[11] = glm::normalize(glm::vec3(-1.0f,  0.0f, -1.0f));
 
 	for (unsigned int i = 0; i < 8; i++)
 		m_VertexPositions.push_back(new VertexMC{ m_CubeVertices[i], IsVertexAvailable(m_CubeVertices[i]) });
 
 	for (unsigned int i = 0; i < 12; i++)
 		m_EdgePositions.push_back(m_CubeEdges[i]);
+
+	// printf("TMC::ComputeSingleCube position [ %i %i %i ]\n", position.x, position.y, position.z);
+
+	//	for (auto vertexPosition : m_VertexPositions) {
+	//		printf("TMC::ComputeSingleCube vertexPosition.position [ %i %i %i ] vertexPosition.inVolume = %i\n",
+	//			vertexPosition->position.x, vertexPosition->position.y, vertexPosition->position.z, vertexPosition->inVolume);
+	//	}
+
+	//	for (auto edgePosition : m_EdgePositions) {
+	//		printf("TMC::ComputeSingleCube edgePosition [ %i %i %i ]\n", edgePosition.x, edgePosition.y, edgePosition.z);
+	//	}
 
 	int edgeTable[256] = {
 		0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
@@ -562,6 +485,8 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 		{ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 }
 	};
 
+	// int cubeIndex = CalculateCubeIndex(m_CubeVertices);
+
 	int cubeIndex = 0;
 	if (IsVertexAvailable(m_CubeVertices[0])) cubeIndex |= 1;
 	if (IsVertexAvailable(m_CubeVertices[1])) cubeIndex |= 2;
@@ -572,42 +497,69 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 	if (IsVertexAvailable(m_CubeVertices[6])) cubeIndex |= 64;
 	if (IsVertexAvailable(m_CubeVertices[7])) cubeIndex |= 128;
 
-	m_VertexList.clear();
-	m_VertexList.resize(12);
+	m_CubeEdgeIntersections.clear();
+	m_CubeEdgeIntersections.resize(12);
 
 	// Cube is entirely in/out of the surface
-	if (edgeTable[cubeIndex] == 0) return;
+	// if (edgeTable[cubeIndex] == 0) return;
 
 	// Find the vertices where the surface intersects the cube
-	if (edgeTable[cubeIndex] &    1) m_VertexList[0]  = m_EdgePositions[0];
-	if (edgeTable[cubeIndex] &    2) m_VertexList[1]  = m_EdgePositions[1];
-	if (edgeTable[cubeIndex] &    4) m_VertexList[2]  = m_EdgePositions[2];
-	if (edgeTable[cubeIndex] &    8) m_VertexList[3]  = m_EdgePositions[3];
-	if (edgeTable[cubeIndex] &   16) m_VertexList[4]  = m_EdgePositions[4];
-	if (edgeTable[cubeIndex] &   32) m_VertexList[5]  = m_EdgePositions[5];
-	if (edgeTable[cubeIndex] &   64) m_VertexList[6]  = m_EdgePositions[6];
-	if (edgeTable[cubeIndex] &  128) m_VertexList[7]  = m_EdgePositions[7];
-	if (edgeTable[cubeIndex] &  256) m_VertexList[8]  = m_EdgePositions[8];
-	if (edgeTable[cubeIndex] &  512) m_VertexList[9]  = m_EdgePositions[9];
-	if (edgeTable[cubeIndex] & 1024) m_VertexList[10] = m_EdgePositions[10];
-	if (edgeTable[cubeIndex] & 2048) m_VertexList[11] = m_EdgePositions[11];
+	if (edgeTable[cubeIndex] &    1) {
+		m_CubeEdgeIntersections[0]  = m_CubeEdges[0];
+	}
+	if (edgeTable[cubeIndex] &    2) {
+		m_CubeEdgeIntersections[1]  = m_CubeEdges[1];
+	}
+	if (edgeTable[cubeIndex] &    4) {
+		m_CubeEdgeIntersections[2]  = m_CubeEdges[2];
+	}
+	if (edgeTable[cubeIndex] &    8) {
+		m_CubeEdgeIntersections[3]  = m_CubeEdges[3];
+	}
+	if (edgeTable[cubeIndex] &   16) {
+		m_CubeEdgeIntersections[4]  = m_CubeEdges[4];
+	}
+	if (edgeTable[cubeIndex] &   32) {
+		m_CubeEdgeIntersections[5]  = m_CubeEdges[5];
+	}
+	if (edgeTable[cubeIndex] &   64) {
+		m_CubeEdgeIntersections[6]  = m_CubeEdges[6];
+	}
+	if (edgeTable[cubeIndex] &  128) {
+		m_CubeEdgeIntersections[7]  = m_CubeEdges[7];
+	}
+	if (edgeTable[cubeIndex] &  256) {
+		m_CubeEdgeIntersections[8]  = m_CubeEdges[8];
+	}
+	if (edgeTable[cubeIndex] &  512) {
+		m_CubeEdgeIntersections[9] = m_CubeEdges[9];
+	}
+	if (edgeTable[cubeIndex] & 1024) {
+		m_CubeEdgeIntersections[10] = m_CubeEdges[10];
+	}
+	if (edgeTable[cubeIndex] & 2048) {
+		m_CubeEdgeIntersections[11] = m_CubeEdges[11];
+	}
+
+	//	for (auto intersectionVertex : m_CubeEdgeIntersections) {
+	//		printf("TMC::ComputeSingleCube intersectionVertex [ %i %i %i ]\n", intersectionVertex.x, intersectionVertex.y, intersectionVertex.z);
+	//	}
 
 	// Create the triangle
 	int nTriang = 0;
-	for (int i = 0; triangleTable[cubeIndex][i] != -1; i += 3) {
+	for (int i = 0; triangleTable[cubeIndex][i] != -1; i += 3)
+	{
 		Triangle triangle;
+		triangle.vertices[0] = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 0]];
+		triangle.vertices[1] = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 1]];
+		triangle.vertices[2] = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 2]];
 
-		glm::ivec3 vertex_0 = m_VertexList[triangleTable[cubeIndex][i + 0]];
-		glm::ivec3 vertex_1 = m_VertexList[triangleTable[cubeIndex][i + 1]];
-		glm::ivec3 vertex_2 = m_VertexList[triangleTable[cubeIndex][i + 2]];
+		triangle.normal = m_CubeNormals[triangleTable[cubeIndex][i + 0]];
 
-		//	printf("ComputeSingleCube vertex_0 [ %i %i %i ]\n", vertex_0.x, vertex_0.y, vertex_0.z);
-		//	printf("ComputeSingleCube vertex_1 [ %i %i %i ]\n", vertex_1.x, vertex_1.y, vertex_1.z);
-		//	printf("ComputeSingleCube vertex_2 [ %i %i %i ]\n", vertex_2.x, vertex_2.y, vertex_2.z);
+		//	printf("TMC::ComputeSingleCube triangle.point[0] [ %i %i %i ]\n", triangle.point[0].x, triangle.point[0].y, triangle.point[0].z);
+		//	printf("TMC::ComputeSingleCube triangle.point[1] [ %i %i %i ]\n", triangle.point[1].x, triangle.point[1].y, triangle.point[1].z);
+		//	printf("TMC::ComputeSingleCube triangle.point[2] [ %i %i %i ]\n", triangle.point[2].x, triangle.point[2].y, triangle.point[2].z);
 
-		triangle.point[0] = position + vertex_0;
-		triangle.point[1] = position + vertex_1;
-		triangle.point[2] = position + vertex_2;
 		m_Triangles.push_back(triangle);
 	}
 
@@ -619,21 +571,127 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 	//	};
 }
 
-int TerrainMarchingCubes::CalculateCubeIndex()
+void TerrainMarchingCubes::GenerateVertexData()
 {
-	struct Cube {
-		int* values;
-	};
-	Cube cube;
-	cube.values = new int[0];
-	int surfaceLevel = 0;
+	unsigned int vertexStride = (unsigned int)(sizeof(VertexTBN) / sizeof(float));
 
+	m_IndexCount = (unsigned int)m_Triangles.size() * 3;
+	m_VertexCount = m_IndexCount * vertexStride;
+
+	m_Vertices = new float[m_VertexCount];
+	m_Indices = new unsigned int[m_IndexCount];
+
+	//	printf("Generate terrain vertices and indices...\n");
+	//	printf("Number of vertices: %d Number of indices: %d\n", m_VertexCount, m_IndexCount);
+
+	// position   tex coords   normal       tangent      bitangent
+	// X  Y  Z    U  V         NX  NY  NZ   TX  TY  TZ   BX  BY  BZ
+	int vertexPointer = 0;
+	int indexPointer = 0;
+
+	for (auto triangle : m_Triangles) {
+		for (auto vertex : triangle.vertices) {
+
+			// vertex
+			m_Vertices[vertexPointer + 0] = (float)vertex.x;
+			m_Vertices[vertexPointer + 1] = (float)vertex.y;
+			m_Vertices[vertexPointer + 2] = (float)vertex.z;
+
+			// texture coords
+			m_Vertices[vertexPointer + 3] = 0.0f;
+			m_Vertices[vertexPointer + 4] = 0.0f;
+
+			// normals
+			m_Vertices[vertexPointer + 5] = triangle.normal.x;
+			m_Vertices[vertexPointer + 6] = triangle.normal.y;
+			m_Vertices[vertexPointer + 7] = triangle.normal.z;
+
+			// tangents
+			m_Vertices[vertexPointer + 8] = 0.0f;
+			m_Vertices[vertexPointer + 9] = 0.0f;
+			m_Vertices[vertexPointer + 10] = 0.0f;
+
+			// bitangents
+			m_Vertices[vertexPointer + 11] = 0.0f;
+			m_Vertices[vertexPointer + 12] = 0.0f;
+			m_Vertices[vertexPointer + 13] = 0.0f;
+
+			vertexPointer += vertexStride;
+
+			// Generate terrain indices
+			m_Indices[indexPointer] = indexPointer;
+			indexPointer++;
+		}
+	}
+
+	//	printf("Final value of indexPointer: %d\n", indexPointer);
+
+	//	unsigned int vertexIndex = 0;
+	//	for (unsigned int i = 0; i < m_VertexCount; i += vertexStride) {
+	//		printf("Vertex [%u] [ %.2ff %.2ff %.2ff ] [ %.2ff %.2ff ] [ %.2ff %.2ff %.2ff ] [ %.2ff %.2ff %.2ff ] [ %.2ff %.2ff %.2ff ]\n", vertexIndex,
+	//			m_Vertices[i + 0], m_Vertices[i + 1], m_Vertices[i + 2],
+	//			m_Vertices[i + 3], m_Vertices[i + 4],
+	//			m_Vertices[i + 5], m_Vertices[i + 6], m_Vertices[i + 7],
+	//			m_Vertices[i + 8], m_Vertices[i + 9], m_Vertices[i + 10],
+	//			m_Vertices[i + 11], m_Vertices[i + 12], m_Vertices[i + 13]);
+	//		vertexIndex++;
+	//	}
+
+	//	printf("Indices:\n");
+	unsigned int indexIndex = 0;
+	for (unsigned int i = 0; i < m_IndexCount; i += 3) {
+		//	printf("%i, %i, %i,\n", m_Indices[i + 0], m_Indices[i + 1], m_Indices[i + 2]);
+	}
+
+	// RecalculateNormals();
+	// RecalculateTangentSpace();
+}
+
+void TerrainMarchingCubes::GenerateDataOpenGL()
+{
+	glGenVertexArrays(1, &m_VAO);
+	glBindVertexArray(m_VAO);
+
+	glGenBuffers(1, &m_IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_Indices[0]) * m_IndexCount, m_Indices, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &m_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(m_Vertices[0]) * m_VertexCount, m_Vertices, GL_STATIC_DRAW);
+
+	// position
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Position));
+	// tex coord
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, TexCoord));
+	// normal
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Normal));
+	// tangent
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Tangent));
+	// bitangent
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTBN), (const void*)offsetof(VertexTBN, Bitangent));
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
+	glBindVertexArray(0);                     // Unbind VAO
+}
+
+int TerrainMarchingCubes::CalculateCubeIndex(std::vector<glm::ivec3> cubeVertices)
+{
 	int cubeIndex = 0;
-	for (int i = 0; i < 8; i++) {
-		if (cube.values[i] < surfaceLevel) {
+	for (int i = 0; i < m_CubeVertices.size(); i++) {
+		if (IsVertexAvailable(m_CubeVertices[i])) {
 			cubeIndex = 1 << i;
 		}
 	}
+
+	printf("TMC::CalculateCubeIndex m_CubeVertices.size = %zu cubeIndex = %i\n", m_CubeVertices.size(), cubeIndex);
+
 	return cubeIndex;
 }
 

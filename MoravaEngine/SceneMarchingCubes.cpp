@@ -102,7 +102,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_MapGenConf.heightMapFilePath = "Textures/Noise/heightMap.png";
     m_MapGenConf.colorMapFilePath = "Textures/Noise/colorMap.png";
     m_MapGenConf.drawMode = MapGenerator::DrawMode::Mesh;
-    m_MapGenConf.mapChunkSize = 2;
+    m_MapGenConf.mapChunkSize = 31;
     // m_MapGenConf.mapWidth = 241;
     // m_MapGenConf.mapHeight = 241;
     m_MapGenConf.noiseScale = 25.0f;
@@ -115,12 +115,19 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_MapGenConf.autoUpdate = true;
     m_MapGenConf.regions = std::vector<MapGenerator::TerrainTypes>();
     
-    m_HeightMapMultiplier = 2;
+    m_HeightMapMultiplier = 10;
     m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
-    m_SeaLevel = 0.5f;
+    m_SeaLevel = 0.0f;
     m_SeaLevelPrev = m_SeaLevel;
     m_LevelOfDetail = 0;
     m_LevelOfDetailPrev = m_LevelOfDetail;
+
+    m_DrawGizmos = true;
+    m_RenderPlayer = true;
+    m_RenderTerrainVoxels = false;
+    m_RenderTerrainMarchingCubes = true;
+    m_UnlockRotation = false;
+    m_UnlockRotationPrev = m_UnlockRotation;
 
     SetCamera();
     SetLightManager();
@@ -132,7 +139,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_DigCooldown = { 0.0f, 0.1f };
     m_RayIntersectCooldown = { 0.0f, 0.1f };
     m_RayCastCooldown = { 0.0f, 0.1f };
-    m_OnClickCooldown = { 0.0f, 0.1f };
+    m_OnClickCooldown = { 0.0f, 0.05f };
 
     /**** BEGIN Procedural Landmass Generation Terrain ****/
     m_IsRequiredMapUpdate = true;
@@ -155,12 +162,6 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_PlayerController->SetGravity(0.0f);
     m_PlayerController->SetMoveSpeed(0.5f);
     m_PlayerController->SetMoveFastFactor(4.0f);
-
-    m_DrawGizmos = true;
-    m_RenderPlayer = true;
-    m_RenderVoxelTerrain = true;
-    m_UnlockRotation = false;
-    m_UnlockRotationPrev = m_UnlockRotation;
 
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(300.0f, 300.0f, 300.0f));
 
@@ -412,7 +413,8 @@ void SceneMarchingCubes::UpdateImGui(float timestep, Window& mainWindow)
     {
         ImGui::Checkbox("Draw Gizmos", &m_DrawGizmos);
         ImGui::Checkbox("Render Player", &m_RenderPlayer);
-        ImGui::Checkbox("Render Voxel Terrain", &m_RenderVoxelTerrain);
+        ImGui::Checkbox("Render Voxel Terrain", &m_RenderTerrainVoxels);
+        ImGui::Checkbox("Render Marching Cubes Terrain", &m_RenderTerrainMarchingCubes);
         ImGui::Checkbox("Unlock Rotation", &m_UnlockRotation);
         ImGui::ColorEdit4("Cube Color", glm::value_ptr(m_CubeColor));
     }
@@ -438,11 +440,9 @@ void SceneMarchingCubes::UpdateImGui(float timestep, Window& mainWindow)
             m_MapGenConf.drawMode = (MapGenerator::DrawMode)selectedItem;
             // End DrawMode ImGui drop-down list
 
-            std::string mapChunkSize = "Map Chunk Size: " + std::to_string(m_MapGenConf.mapChunkSize);
-            ImGui::Text(mapChunkSize.c_str());
             // ImGui::SliderInt("Map Width", &m_MapGenConf.mapWidth,   1, 512);
             // ImGui::SliderInt("Map Height", &m_MapGenConf.mapHeight, 1, 512);
-
+            ImGui::SliderInt("Map Chunk Size", &m_MapGenConf.mapChunkSize, 0, 512);
             ImGui::SliderInt("Level Of Detail", &m_LevelOfDetail, 0, 6);
             ImGui::SliderFloat("Noise Scale", &m_MapGenConf.noiseScale, 1.0f, 100.0f);
             ImGui::SliderInt("Octaves", &m_MapGenConf.octaves, 1, 10);
@@ -646,10 +646,10 @@ void SceneMarchingCubes::AddVoxel()
         m_TerrainMarchingCubes->m_Voxels.push_back(voxel);
         m_IntersectPositionIndex = (int)m_TerrainMarchingCubes->m_Voxels.size() - 1;
         m_RenderInstanced->CreateVertexData();
-        Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
+        // Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
     }
     else {
-        Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
+        // Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
     }
 
     m_TerrainMarchingCubes->MarchingCubes();
@@ -663,7 +663,7 @@ void SceneMarchingCubes::DeleteVoxel()
     m_TerrainMarchingCubes->m_Voxels.erase(m_TerrainMarchingCubes->m_Voxels.begin() + m_IntersectPositionIndex);
     m_IntersectPositionIndex = -1;
     m_RenderInstanced->CreateVertexData();
-    Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
+    // Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
 
     m_TerrainMarchingCubes->MarchingCubes();
 }
@@ -721,6 +721,7 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
 
     /**** BEGIN Render Marching Cubes ****/
 
+    /****
     shaderMain->Bind();
     shaderMain->setMat4("projection", projectionMatrix);
     shaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
@@ -750,6 +751,7 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
         shaderMain->setVec4("tintColor", glm::vec4(0.3f, 0.3f, 0.6f, 1.0f));
         meshes["cube"]->Render();
     }
+    ****/
 
     shaderMain->Bind();
     shaderMain->setMat4("projection", projectionMatrix);
@@ -758,7 +760,8 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
     shaderMain->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 0.6f));
     shaderMain->setMat4("model", glm::mat4(1.0f));
 
-    m_TerrainMarchingCubes->Render();
+    if (m_RenderTerrainMarchingCubes)
+        m_TerrainMarchingCubes->Render();
 
     //  printf("TerrainMarchingCubes VAO = %i IBO = %i m_IndexCount = %i\n",
     //      m_TerrainMarchingCubes->GetVAO(), m_TerrainMarchingCubes->GetIBO(), m_TerrainMarchingCubes->GetIndexCount());
@@ -779,7 +782,7 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
     shaderRenderInstanced->setVec4("tintColor", tintColor);
 
     m_RenderInstanced->m_Texture->Bind(0);
-    if (m_RenderVoxelTerrain)
+    if (m_RenderTerrainVoxels)
         m_RenderInstanced->Render();
 
     /**** END Render Procedural Landmass Generation Terrain ****/

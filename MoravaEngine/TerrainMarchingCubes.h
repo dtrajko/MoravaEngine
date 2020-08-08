@@ -23,9 +23,13 @@ public:
 	inline MapGenerator* GetMapGenerator() { return m_MapGenerator; };
 
 	void MarchingCubes();
-	void ComputeSingleCube(glm::ivec3 position, int cubeSize);
-	int CalculateCubeIndex(); // Sebastian Lague
 	bool IsVertexAvailable(glm::ivec3 position);
+
+private:
+	void ComputeSingleCube(glm::ivec3 position, int cubeSize);
+	void GenerateVertexData();
+	void GenerateDataOpenGL();
+	int CalculateCubeIndex(std::vector<glm::ivec3> cubeVertices); // Sebastian Lague
 
 public:
 	struct VertexMC {
@@ -44,7 +48,8 @@ private:
 	void CalculateRanges(int x, int y, int z, float isoSurfaceHeight, float heightFinal, int voxelPositionX, int voxelPositionY, int voxelPositionZ);
 
 	struct Triangle {
-		glm::ivec3 point[3];
+		glm::ivec3 vertices[3];
+		glm::vec3 normal;
 	};
 
 	std::vector<Triangle> m_Triangles;
@@ -60,7 +65,8 @@ private:
 
 	std::vector<glm::ivec3> m_CubeVertices;
 	std::vector<glm::ivec3> m_CubeEdges;
+	std::vector<glm::vec3> m_CubeNormals;
 
-	std::vector<glm::ivec3> m_VertexList;
+	std::vector<glm::ivec3> m_CubeEdgeIntersections;
 
 };
