@@ -651,10 +651,10 @@ void SceneMarchingCubes::AddVoxel()
                     m_TerrainMarchingCubes->m_Voxels.push_back(voxel);
                     m_IntersectPositionIndex = (int)m_TerrainMarchingCubes->m_Voxels.size() - 1;
                     terrainModified = true;
-                    Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", subPositionInt.x, subPositionInt.y, subPositionInt.z);
+                    // Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", subPositionInt.x, subPositionInt.y, subPositionInt.z);
                 }
                 else {
-                    Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", subPositionInt.x, subPositionInt.y, subPositionInt.z);
+                    // Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", subPositionInt.x, subPositionInt.y, subPositionInt.z);
                 }
             }
         }

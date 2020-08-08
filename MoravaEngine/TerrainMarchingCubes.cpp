@@ -554,7 +554,15 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 		triangle.vertices[1] = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 1]];
 		triangle.vertices[2] = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 2]];
 
-		triangle.normal = m_CubeNormals[triangleTable[cubeIndex][i + 0]];
+		glm::vec3 edgeU21 = triangle.vertices[2] - triangle.vertices[1];
+		glm::vec3 edgeV31 = triangle.vertices[3] - triangle.vertices[1];
+
+		triangle.normal.x = edgeU21.y * edgeV31.z - edgeU21.z * edgeV31.y;
+		triangle.normal.y = edgeU21.z * edgeV31.x - edgeU21.x * edgeV31.z;
+		triangle.normal.z = edgeU21.x * edgeV31.y - edgeU21.y * edgeV31.x;
+		triangle.normal = glm::normalize(triangle.normal);
+
+		// triangle.normal = m_CubeNormals[triangleTable[cubeIndex][i + 0]];
 
 		//	printf("TMC::ComputeSingleCube triangle.point[0] [ %i %i %i ]\n", triangle.point[0].x, triangle.point[0].y, triangle.point[0].z);
 		//	printf("TMC::ComputeSingleCube triangle.point[1] [ %i %i %i ]\n", triangle.point[1].x, triangle.point[1].y, triangle.point[1].z);
