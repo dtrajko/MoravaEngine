@@ -51,6 +51,17 @@ void TerrainVoxel::Release()
 	m_Voxels.clear();
 }
 
+bool TerrainVoxel::DeleteVoxel(glm::ivec3 position)
+{
+	for (auto it = m_Voxels.cbegin(); it != m_Voxels.cend(); it++) {
+		if ((*it)->position == position) {
+			it = m_Voxels.erase(it);
+			return true;
+		}
+	}
+	return false;
+}
+
 unsigned int TerrainVoxel::GetVoxelCount()
 {
 	return (unsigned int)m_Voxels.size();

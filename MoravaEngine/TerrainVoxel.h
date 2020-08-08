@@ -21,6 +21,7 @@ public:
 
 	virtual void Generate(glm::vec3 scale = glm::vec3(1.0f)) override;
 	virtual void Release() override;
+	bool DeleteVoxel(glm::ivec3 position);
 
 	float Perlin3D(float x, float y, float z);
 	unsigned int GetVoxelCount();

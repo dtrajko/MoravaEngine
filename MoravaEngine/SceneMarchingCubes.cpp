@@ -639,33 +639,56 @@ void SceneMarchingCubes::AddVoxel()
     glm::vec3 addPositionFloat = m_IntersectPosition - m_Camera->GetFront();
     glm::ivec3 addPositionInt = glm::ivec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
 
-    if (IsPositionVacant(addPositionInt)) {
-        TerrainVoxel::Voxel* voxel = new TerrainVoxel::Voxel();
-        voxel->position = addPositionInt;
-        voxel->color = glm::vec4(m_CubeColor);
-        m_TerrainMarchingCubes->m_Voxels.push_back(voxel);
-        m_IntersectPositionIndex = (int)m_TerrainMarchingCubes->m_Voxels.size() - 1;
-        m_RenderInstanced->CreateVertexData();
-        // Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
-    }
-    else {
-        // Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
+    bool terrainModified = false;
+    for (int x = addPositionInt.x - 1; x < addPositionInt.x + 1; x++) {
+        for (int y = addPositionInt.y - 1; y < addPositionInt.y + 1; y++) {
+            for (int z = addPositionInt.z - 1; z < addPositionInt.z + 1; z++) {
+                glm::ivec3 subPositionInt = glm::ivec3(x, y, z);
+                if (IsPositionVacant(subPositionInt)) {
+                    TerrainVoxel::Voxel* voxel = new TerrainVoxel::Voxel();
+                    voxel->position = subPositionInt;
+                    voxel->color = glm::vec4(m_CubeColor);
+                    m_TerrainMarchingCubes->m_Voxels.push_back(voxel);
+                    m_IntersectPositionIndex = (int)m_TerrainMarchingCubes->m_Voxels.size() - 1;
+                    terrainModified = true;
+                    Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", subPositionInt.x, subPositionInt.y, subPositionInt.z);
+                }
+                else {
+                    Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", subPositionInt.x, subPositionInt.y, subPositionInt.z);
+                }
+            }
+        }
     }
 
-    m_TerrainMarchingCubes->MarchingCubes();
+    if (terrainModified) {
+        m_RenderInstanced->CreateVertexData();
+        m_TerrainMarchingCubes->MarchingCubes();
+    }
 }
 
 void SceneMarchingCubes::DeleteVoxel()
 {
     if (m_IntersectPositionIndex < 0) return;
 
-    glm::vec3 deletePosition = m_TerrainMarchingCubes->m_Voxels.at(m_IntersectPositionIndex)->position;
-    m_TerrainMarchingCubes->m_Voxels.erase(m_TerrainMarchingCubes->m_Voxels.begin() + m_IntersectPositionIndex);
-    m_IntersectPositionIndex = -1;
-    m_RenderInstanced->CreateVertexData();
-    // Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
+    glm::ivec3 deletePosition = m_TerrainMarchingCubes->m_Voxels.at(m_IntersectPositionIndex)->position;
 
-    m_TerrainMarchingCubes->MarchingCubes();
+    bool terrainModified = false;
+    for (int x = deletePosition.x - 1; x < deletePosition.x + 1; x++) {
+        for (int y = deletePosition.y - 1; y < deletePosition.y + 1; y++) {
+            for (int z = deletePosition.z - 1; z < deletePosition.z + 1; z++) {
+                bool voxelDeleted = m_TerrainMarchingCubes->DeleteVoxel(glm::ivec3(x, y, z));
+                if (voxelDeleted && !terrainModified)
+                    terrainModified = true;
+                m_IntersectPositionIndex = -1;
+                // Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
+            }
+        }
+    }
+
+    if (terrainModified) {
+        m_RenderInstanced->CreateVertexData();
+        m_TerrainMarchingCubes->MarchingCubes();
+    }
 }
 
 bool SceneMarchingCubes::IsPositionVacant(glm::ivec3 queryPosition)
