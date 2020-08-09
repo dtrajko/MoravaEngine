@@ -107,8 +107,19 @@ void TerrainMarchingCubes::MarchingCubes()
 		if (voxel->position.z < m_VoxelRangeMin.z) m_VoxelRangeMin.z = voxel->position.z;
 	}
 
-	//	printf("TMC::MarchingCubes voxelRangeMin [ %i %i %i ] voxelRangeMax [ %i %i %i ]\n",
-	//		m_VoxelRangeMin.x, m_VoxelRangeMin.y, m_VoxelRangeMin.z, m_VoxelRangeMax.x, m_VoxelRangeMax.y, m_VoxelRangeMax.z);
+	printf("TMC::MarchingCubes BEFORE voxelRangeMin [ %i %i %i ] voxelRangeMax [ %i %i %i ]\n",
+		m_VoxelRangeMin.x, m_VoxelRangeMin.y, m_VoxelRangeMin.z, m_VoxelRangeMax.x, m_VoxelRangeMax.y, m_VoxelRangeMax.z);
+
+	// Make min and max limits dividable by cubeSize
+	m_VoxelRangeMin.x = (m_VoxelRangeMin.x / cubeSize) * cubeSize - cubeSize / 2;
+	m_VoxelRangeMin.y = (m_VoxelRangeMin.y / cubeSize) * cubeSize - cubeSize / 2;
+	m_VoxelRangeMin.z = (m_VoxelRangeMin.z / cubeSize) * cubeSize - cubeSize / 2;
+	m_VoxelRangeMax.x = (m_VoxelRangeMax.x / cubeSize) * cubeSize + cubeSize / 2;
+	m_VoxelRangeMax.y = (m_VoxelRangeMax.y / cubeSize) * cubeSize + cubeSize / 2;
+	m_VoxelRangeMax.z = (m_VoxelRangeMax.z / cubeSize) * cubeSize + cubeSize / 2;
+
+	printf("TMC::MarchingCubes AFTER voxelRangeMin [ %i %i %i ] voxelRangeMax [ %i %i %i ]\n",
+		m_VoxelRangeMin.x, m_VoxelRangeMin.y, m_VoxelRangeMin.z, m_VoxelRangeMax.x, m_VoxelRangeMax.y, m_VoxelRangeMax.z);
 
 	for (auto vertexPosition : m_VertexPositions)
 		delete vertexPosition;

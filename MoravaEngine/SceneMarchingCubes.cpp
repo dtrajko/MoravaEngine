@@ -124,6 +124,8 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_LevelOfDetail = 0;
     m_LevelOfDetailPrev = m_LevelOfDetail;
 
+    m_VoxelsModified = false;
+
     m_DrawGizmos = true;
     m_RenderPlayer = true;
     m_RenderTerrainVoxels = false;
@@ -538,31 +540,6 @@ void SceneMarchingCubes::Update(float timestep, Window& mainWindow)
     }
 }
 
-void SceneMarchingCubes::UpdateCooldown(float timestep, Window& mainWindow)
-{
-    // Cooldown
-    if (timestep - m_UpdateCooldown.lastTime < m_UpdateCooldown.cooldown) return;
-    m_UpdateCooldown.lastTime = timestep;
-
-    /**** BEGIN UpdateCooldown Procedural Landmass Generation Terrain ****/
-
-    CheckMapRebuildRequirements();
-
-    if (!m_IsRequiredMapUpdate) return;
-
-    {
-        Profiler profiler("SMC::TerrainMarchingCubes::Update");
-        printf("SceneMarchingCubes::UpdateCooldown m_TerrainMarchingCubes->Update\n");
-        m_TerrainMarchingCubes->Update(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
-        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
-    }
-
-    ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
-    ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
-
-    /**** END UpdateCooldown Procedural Landmass Generation Terrain ****/
-}
-
 void SceneMarchingCubes::CheckMapRebuildRequirements()
 {
     m_IsRequiredMapUpdate = false;
@@ -585,29 +562,36 @@ void SceneMarchingCubes::CheckMapRebuildRequirements()
     }
 }
 
-void SceneMarchingCubes::Dig(bool* keys, float timestep)
+void SceneMarchingCubes::UpdateCooldown(float timestep, Window& mainWindow)
 {
     // Cooldown
-    if (timestep - m_DigCooldown.lastTime < m_DigCooldown.cooldown) return;
-    m_DigCooldown.lastTime = timestep;
+    if (timestep - m_UpdateCooldown.lastTime < m_UpdateCooldown.cooldown) return;
+    m_UpdateCooldown.lastTime = timestep;
 
-    if (keys[GLFW_KEY_F]) {
-        bool vectorModified = false;
+    /**** BEGIN UpdateCooldown Procedural Landmass Generation Terrain ****/
 
-        for (auto it = m_TerrainMarchingCubes->m_Voxels.begin(); it != m_TerrainMarchingCubes->m_Voxels.end(); ) {
-            if (glm::distance(m_Player->GetPosition(), (glm::vec3)(*it)->position) < m_DigDistance)
-            {
-                it = m_TerrainMarchingCubes->m_Voxels.erase(it++);
-                vectorModified = true;
-            }
-            else {
-                ++it;
-            }
-        }
-        if (vectorModified) {
-            m_RenderInstanced->CreateVertexData();
-        }
+    if (m_VoxelsModified) {
+        m_RenderInstanced->CreateVertexData();
+        m_TerrainMarchingCubes->MarchingCubes();
+        m_VoxelsModified = false;
     }
+
+    CheckMapRebuildRequirements();
+
+    if (!m_IsRequiredMapUpdate) return;
+
+    printf("SceneMarchingCubes::UpdateCooldown m_VoxelsModified = %i\n", m_VoxelsModified);
+
+    {
+        Profiler profiler("SMC::TerrainMarchingCubes::Update");
+        m_TerrainMarchingCubes->Update(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
+        GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+    }
+
+    ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
+    ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
+
+    /**** END UpdateCooldown Procedural Landmass Generation Terrain ****/
 }
 
 void SceneMarchingCubes::CastRay(bool* keys, bool* buttons, float timestep)
@@ -703,14 +687,12 @@ void SceneMarchingCubes::AddVoxel()
         voxel->color = glm::vec4(m_CubeColor);
         m_TerrainMarchingCubes->m_Voxels.push_back(voxel);
         m_IntersectPositionIndex = (int)m_TerrainMarchingCubes->m_Voxels.size() - 1;
-        m_RenderInstanced->CreateVertexData();
+        m_VoxelsModified = true;
         Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
     }
     else {
         Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
     }
-
-    m_TerrainMarchingCubes->MarchingCubes();
 }
 
 void SceneMarchingCubes::DeleteVoxel()
@@ -719,11 +701,9 @@ void SceneMarchingCubes::DeleteVoxel()
 
     glm::vec3 deletePosition = m_TerrainMarchingCubes->m_Voxels.at(m_IntersectPositionIndex)->position;
     m_TerrainMarchingCubes->m_Voxels.erase(m_TerrainMarchingCubes->m_Voxels.begin() + m_IntersectPositionIndex);
+    m_VoxelsModified = true;
     m_IntersectPositionIndex = -1;
-    m_RenderInstanced->CreateVertexData();
     Log::GetLogger()->info("Voxel at position [ {0} {1} {2} ] deleted!", deletePosition.x, deletePosition.y, deletePosition.z);
-
-    m_TerrainMarchingCubes->MarchingCubes();
 }
 
 bool SceneMarchingCubes::IsPositionVacant(glm::ivec3 queryPosition)
@@ -733,6 +713,31 @@ bool SceneMarchingCubes::IsPositionVacant(glm::ivec3 queryPosition)
             return false;
     }
     return true;
+}
+
+void SceneMarchingCubes::Dig(bool* keys, float timestep)
+{
+    // Cooldown
+    if (timestep - m_DigCooldown.lastTime < m_DigCooldown.cooldown) return;
+    m_DigCooldown.lastTime = timestep;
+
+    if (keys[GLFW_KEY_F]) {
+        bool vectorModified = false;
+
+        for (auto it = m_TerrainMarchingCubes->m_Voxels.begin(); it != m_TerrainMarchingCubes->m_Voxels.end(); ) {
+            if (glm::distance(m_Player->GetPosition(), (glm::vec3)(*it)->position) < m_DigDistance)
+            {
+                it = m_TerrainMarchingCubes->m_Voxels.erase(it++);
+                vectorModified = true;
+            }
+            else {
+                ++it;
+            }
+        }
+        if (vectorModified) {
+            m_RenderInstanced->CreateVertexData();
+        }
+    }
 }
 
 void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
