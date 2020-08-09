@@ -104,7 +104,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_MapGenConf.heightMapFilePath = "Textures/Noise/heightMap.png";
     m_MapGenConf.colorMapFilePath = "Textures/Noise/colorMap.png";
     m_MapGenConf.drawMode = MapGenerator::DrawMode::Mesh;
-    m_MapGenConf.mapChunkSize = 31;
+    m_MapGenConf.mapChunkSize = 24;
     // m_MapGenConf.mapWidth = 241;
     // m_MapGenConf.mapHeight = 241;
     m_MapGenConf.noiseScale = 25.0f;
@@ -189,7 +189,7 @@ void SceneMarchingCubes::SetCamera()
     m_Camera = new Camera(sceneSettings.cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f),
         sceneSettings.cameraStartYaw, sceneSettings.cameraStartPitch);
 
-	m_CameraController = new CameraControllerVoxelTerrain(m_Camera, m_Player, sceneSettings.cameraMoveSpeed, 0.1f);
+	m_CameraController = new CameraControllerVoxelTerrain(m_Camera, m_Player, sceneSettings.cameraMoveSpeed, 0.1f, -0.7f);
 }
 
 void SceneMarchingCubes::SetupTextures()
@@ -446,7 +446,7 @@ void SceneMarchingCubes::UpdateImGui(float timestep, Window& mainWindow)
 
             // ImGui::SliderInt("Map Width", &m_MapGenConf.mapWidth,   1, 512);
             // ImGui::SliderInt("Map Height", &m_MapGenConf.mapHeight, 1, 512);
-            ImGui::SliderInt("Map Chunk Size", &m_MapGenConf.mapChunkSize, 0, 512);
+            ImGui::SliderInt("Map Chunk Size", &m_MapGenConf.mapChunkSize, 0, 48);
             ImGui::SliderInt("Level Of Detail", &m_LevelOfDetail, 0, 6);
             ImGui::SliderFloat("Noise Scale", &m_MapGenConf.noiseScale, 1.0f, 100.0f);
             ImGui::SliderInt("Octaves", &m_MapGenConf.octaves, 1, 10);
@@ -456,7 +456,7 @@ void SceneMarchingCubes::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::SliderFloat2("Offset", glm::value_ptr(m_MapGenConf.offset), -1.0f, 1.0f);
             ImGui::Checkbox("Auto Update", &m_MapGenConf.autoUpdate);
 
-            ImGui::SliderInt("Height Map Multiplier", &m_HeightMapMultiplier, 0, 40);
+            ImGui::SliderInt("Height Map Multiplier", &m_HeightMapMultiplier, 0, 32);
             ImGui::SliderFloat("Sea Level", &m_SeaLevel, 0.0f, 1.0f);
         }
     }

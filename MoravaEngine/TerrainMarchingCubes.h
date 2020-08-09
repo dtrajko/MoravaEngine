@@ -24,7 +24,7 @@ public:
 	inline MapGenerator* GetMapGenerator() { return m_MapGenerator; };
 
 	void MarchingCubes();
-	bool IsVertexAvailable(glm::ivec3 position);
+	bool DoesVoxelExists(glm::ivec3 position);
 
 private:
 	void ComputeSingleCube(glm::ivec3 position, int cubeSize);

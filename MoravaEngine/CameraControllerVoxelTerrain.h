@@ -9,7 +9,7 @@ class CameraControllerVoxelTerrain : public CameraController
 
 public:
 	CameraControllerVoxelTerrain();
-	CameraControllerVoxelTerrain(Camera* camera, Player* player, float moveSpeed, float turnSpeed);
+	CameraControllerVoxelTerrain(Camera* camera, Player* player, float moveSpeed, float turnSpeed, float cameraPlayerDistance);
 	~CameraControllerVoxelTerrain();
 
 	virtual void KeyControl(bool* keys, float deltaTime) override;
@@ -37,8 +37,8 @@ private:
 	float m_CameraPlayerDistance;
 	float m_AngleAroundPlayer;
 
-	float m_PitchChangeSpeed = 0.1f;
-	float m_YawChangeSpeed = 0.03f;
+	float m_PitchChangeSpeed;
+	float m_YawChangeSpeed;
 	float m_ZoomLevel;
 
 	// KeyControl

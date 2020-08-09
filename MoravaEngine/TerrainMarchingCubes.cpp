@@ -187,7 +187,7 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 	m_CubeNormals[11] = glm::normalize(glm::vec3(-1.0f,  0.0f, -1.0f));
 
 	for (unsigned int i = 0; i < 8; i++)
-		m_VertexPositions.push_back(new VertexMC{ m_CubeVertices[i], IsVertexAvailable(m_CubeVertices[i]) });
+		m_VertexPositions.push_back(new VertexMC{ m_CubeVertices[i], DoesVoxelExists(m_CubeVertices[i]) });
 
 	for (unsigned int i = 0; i < 12; i++)
 		m_EdgePositions.push_back(m_CubeEdges[i]);
@@ -500,14 +500,14 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 	// int cubeIndex = CalculateCubeIndex(m_CubeVertices);
 
 	int cubeIndex = 0;
-	if (IsVertexAvailable(m_CubeVertices[0])) cubeIndex |= 1;
-	if (IsVertexAvailable(m_CubeVertices[1])) cubeIndex |= 2;
-	if (IsVertexAvailable(m_CubeVertices[2])) cubeIndex |= 4;
-	if (IsVertexAvailable(m_CubeVertices[3])) cubeIndex |= 8;
-	if (IsVertexAvailable(m_CubeVertices[4])) cubeIndex |= 16;
-	if (IsVertexAvailable(m_CubeVertices[5])) cubeIndex |= 32;
-	if (IsVertexAvailable(m_CubeVertices[6])) cubeIndex |= 64;
-	if (IsVertexAvailable(m_CubeVertices[7])) cubeIndex |= 128;
+	if (DoesVoxelExists(m_CubeVertices[0])) cubeIndex |= 1;
+	if (DoesVoxelExists(m_CubeVertices[1])) cubeIndex |= 2;
+	if (DoesVoxelExists(m_CubeVertices[2])) cubeIndex |= 4;
+	if (DoesVoxelExists(m_CubeVertices[3])) cubeIndex |= 8;
+	if (DoesVoxelExists(m_CubeVertices[4])) cubeIndex |= 16;
+	if (DoesVoxelExists(m_CubeVertices[5])) cubeIndex |= 32;
+	if (DoesVoxelExists(m_CubeVertices[6])) cubeIndex |= 64;
+	if (DoesVoxelExists(m_CubeVertices[7])) cubeIndex |= 128;
 
 	m_CubeEdgeIntersections.clear();
 	m_CubeEdgeIntersections.resize(12);
@@ -730,7 +730,7 @@ int TerrainMarchingCubes::CalculateCubeIndex(std::vector<glm::ivec3> cubeVertice
 {
 	int cubeIndex = 0;
 	for (int i = 0; i < m_CubeVertices.size(); i++) {
-		if (IsVertexAvailable(m_CubeVertices[i])) {
+		if (DoesVoxelExists(m_CubeVertices[i])) {
 			cubeIndex = 1 << i;
 		}
 	}
@@ -740,16 +740,16 @@ int TerrainMarchingCubes::CalculateCubeIndex(std::vector<glm::ivec3> cubeVertice
 	return cubeIndex;
 }
 
-bool TerrainMarchingCubes::IsVertexAvailable(glm::ivec3 position)
+bool TerrainMarchingCubes::DoesVoxelExists(glm::ivec3 position)
 {
 	for (auto voxel : m_Voxels) {
-		// printf("TerrainMarchingCubes::IsVertexAvailable voxel->position [ %i %i %i ]\n", voxel->position.x, voxel->position.y, voxel->position.z);
+		// printf("TerrainMarchingCubes::DoesVoxelExists voxel->position [ %i %i %i ]\n", voxel->position.x, voxel->position.y, voxel->position.z);
 		if (voxel->position == position) {
-			// printf("TerrainMarchingCubes::IsVertexAvailable TRUE [ %i %i %i ]\n", position.x, position.y, position.z);
+			// printf("TerrainMarchingCubes::DoesVoxelExists TRUE [ %i %i %i ]\n", position.x, position.y, position.z);
 			return true;
 		}
 	}
-	// printf("TerrainMarchingCubes::IsVertexAvailable FALSE [ %i %i %i ]\n", position.x, position.y, position.z);
+	// printf("TerrainMarchingCubes::DoesVoxelExists FALSE [ %i %i %i ]\n", position.x, position.y, position.z);
 	return false;
 }
 
