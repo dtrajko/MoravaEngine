@@ -7,7 +7,7 @@ TerrainVoxel::TerrainVoxel()
 	m_NoiseFactor = 0.05f;
 	m_NoiseThreshold = 0.0f;
 	m_PerlinNoise = new siv::PerlinNoise();
-	m_Voxels = std::vector<Voxel*>();
+	m_Voxels = std::map<std::string, Voxel*>();
 }
 
 TerrainVoxel::TerrainVoxel(glm::vec3 scale, float noiseFactor, float threshold)
@@ -16,7 +16,7 @@ TerrainVoxel::TerrainVoxel(glm::vec3 scale, float noiseFactor, float threshold)
 	m_NoiseFactor = noiseFactor;
 	m_NoiseThreshold = threshold;
 	m_PerlinNoise = new siv::PerlinNoise();
-	m_Voxels = std::vector<Voxel*>();
+	m_Voxels = std::map<std::string, Voxel*>();
 
 	Generate();
 }
@@ -36,7 +36,7 @@ void TerrainVoxel::Generate(glm::vec3 scale)
 					float colorB = voxel->position.z / m_Scale.z;
 					voxel->color = glm::vec4(1.0f - colorR, colorG, 1.0f - colorB, 0.6f);
 					voxel->textureID = -1; // no texture
-					m_Voxels.push_back(voxel);
+					m_Voxels.insert(std::make_pair(GetVoxelMapKey(voxel->position), voxel));
 				}
 			}
 		}
@@ -45,21 +45,26 @@ void TerrainVoxel::Generate(glm::vec3 scale)
 
 void TerrainVoxel::Release()
 {
-	for (TerrainVoxel::Voxel* voxel : m_Voxels)
-		delete voxel;
+	for (auto voxel : m_Voxels)
+		delete voxel.second;
 
 	m_Voxels.clear();
 }
 
 bool TerrainVoxel::DeleteVoxel(glm::ivec3 position)
 {
-	for (auto it = m_Voxels.cbegin(); it != m_Voxels.cend(); it++) {
-		if ((*it)->position == position) {
+	for (auto it = m_Voxels.begin(); it != m_Voxels.end(); it++) {
+		if ((*it).second->position == position) {
 			it = m_Voxels.erase(it);
 			return true;
 		}
 	}
 	return false;
+}
+
+std::string TerrainVoxel::GetVoxelMapKey(glm::ivec3 position)
+{
+	return std::to_string(position.x) + "_" + std::to_string(position.y) + "_" + std::to_string(position.z);
 }
 
 unsigned int TerrainVoxel::GetVoxelCount()

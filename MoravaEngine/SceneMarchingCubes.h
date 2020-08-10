@@ -66,9 +66,9 @@ private:
 
 	// mouse cursor intersection
 	std::vector<glm::vec3> m_IntersectPositionVector;
-	glm::vec3 m_IntersectPosition;
 	bool m_DeleteMode; // add or delete
-	int m_IntersectPositionIndex;
+
+	glm::ivec3 m_IntersectPosition;
 
 	glm::vec4 m_CubeColor;
 	unsigned int m_DeleteVoxelCodeGLFW;

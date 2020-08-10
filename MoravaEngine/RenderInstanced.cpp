@@ -19,7 +19,7 @@ RenderInstanced::RenderInstanced(TerrainBase* terrain, Texture* texture, Mesh* m
 	m_ModelMatrix = glm::mat4(1.0f);
 	m_InstanceColor = glm::vec4(1.0f);
 
-	m_IntersectPosition = nullptr;
+	m_IntersectPosition = glm::ivec3(0);
 	m_DeleteMode = nullptr;
 
 	CreateVertexData();
@@ -41,26 +41,26 @@ void RenderInstanced::CreateDataStructure()
 	m_InstanceCount = (unsigned int)m_Terrain->m_Voxels.size();
 	m_InstanceDataArray = new InstanceData[m_InstanceCount];
 
-	for (unsigned int i = 0; i < m_Terrain->m_Voxels.size(); i++)
+	int voxelIndex = 0;
+	for (auto it = m_Terrain->m_Voxels.begin(); it != m_Terrain->m_Voxels.end(); it++)
 	{
 		m_ModelMatrix = glm::mat4(1.0f);
 
-		m_InstanceColor = m_Terrain->m_Voxels[i]->color;
+		m_InstanceColor = (*it).second->color;
 
-		if (m_IntersectPosition != nullptr && (glm::vec3)m_Terrain->m_Voxels[i]->position == *m_IntersectPosition) {
-			if (*m_DeleteMode)
+		if ((*it).second->position == m_IntersectPosition) {
+			if (m_DeleteMode != nullptr && *m_DeleteMode == true)
 				m_InstanceColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 			else
 				m_InstanceColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 		}
 
-		m_ModelMatrix = glm::translate(m_ModelMatrix, (glm::vec3)m_Terrain->m_Voxels[i]->position);
+		m_ModelMatrix = glm::translate(m_ModelMatrix, (glm::vec3)(*it).second->position);
 
-		if (i >= m_InstanceCount)
-			printf("m_InstanceCount = %u, i = %u\n", m_InstanceCount, i);
-
-		m_InstanceDataArray[i].model = m_ModelMatrix;
-		m_InstanceDataArray[i].color = m_InstanceColor;
+		m_InstanceDataArray[voxelIndex].model = m_ModelMatrix;
+		m_InstanceDataArray[voxelIndex].color = m_InstanceColor;
+	
+		voxelIndex++;
 	}
 }
 
@@ -108,7 +108,7 @@ void RenderInstanced::Release()
 	glDeleteBuffers(1, &m_VBO_Instanced);
 }
 
-void RenderInstanced::SetIntersectPosition(glm::vec3* intersectPosition)
+void RenderInstanced::SetIntersectPosition(glm::ivec3 intersectPosition)
 {
 	m_IntersectPosition = intersectPosition;
 }

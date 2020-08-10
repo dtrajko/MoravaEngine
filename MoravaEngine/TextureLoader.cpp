@@ -19,7 +19,7 @@ TextureLoader::TextureLoader()
 
 Texture* TextureLoader::GetTexture(const char* fileLoc, bool flipVert, bool force)
 {
-	return GetTexture(fileLoc, flipVert, GL_NEAREST, force);
+	return GetTexture(fileLoc, flipVert, GL_LINEAR, force);
 }
 
 Texture* TextureLoader::GetTexture(const char* fileLoc, bool flipVert, GLenum filter, bool force)

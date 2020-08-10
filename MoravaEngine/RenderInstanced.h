@@ -16,7 +16,7 @@ public:
 	void CreateVertexData();
 	void Update();
 	void Release();
-	void SetIntersectPosition(glm::vec3* intersectPosition);
+	void SetIntersectPosition(glm::ivec3 intersectPosition);
 	void SetDeleteMode(bool* deleteMode);
 	~RenderInstanced();
 
@@ -57,7 +57,7 @@ private:
 	glm::mat4 m_ModelMatrix;
 	glm::vec4 m_InstanceColor;
 
-	glm::vec3* m_IntersectPosition;
+	glm::ivec3 m_IntersectPosition;
 	bool* m_DeleteMode; // add or delete
 
 };

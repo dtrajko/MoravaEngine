@@ -50,7 +50,7 @@ void TerrainSL::Generate(glm::vec3 scale)
 					// voxel.color = m_MapGenerator->m_ColorMap[z * m_MapGenerator->m_MapGenConf.mapChunkSize + x];
 					voxel->color = isoSurfaceColor;
 					voxel->textureID = -1; // no texture
-					m_Voxels.push_back(voxel);
+					m_Voxels.insert(std::make_pair(GetVoxelMapKey(voxel->position), voxel));
 				}
 			}
 		}

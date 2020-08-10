@@ -63,16 +63,17 @@ private:
 	// Scene settings
 	bool m_DrawGizmos;
 	bool m_RenderPlayer;
-	bool m_RenderTerrain;
+	bool m_RenderTerrainMesh;
+	bool m_RenderTerrainVoxel;
 
 	bool m_UnlockRotation;
 	bool m_UnlockRotationPrev;
 
 	// mouse cursor intersection
 	std::vector<glm::vec3> m_IntersectPositionVector;
-	glm::vec3 m_IntersectPosition;
 	bool m_DeleteMode; // add or delete
-	int m_IntersectPositionIndex;
+
+	glm::ivec3 m_IntersectPosition;
 
 	glm::vec4 m_CubeColor;
 	unsigned int m_DeleteVoxelCodeGLFW;

@@ -422,7 +422,6 @@
     <ClCompile Include="EndlessTerrain.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="Transform.cpp" />
     <ClCompile Include="SceneVoxelTerrainSL.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
@@ -431,6 +430,9 @@
     </ClCompile>
     <ClCompile Include="SceneMarchingCubes.cpp">
       <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -885,7 +887,6 @@
     <ClInclude Include="EndlessTerrain.h">
       <Filter>Terrain</Filter>
     </ClInclude>
-    <ClInclude Include="Transform.h" />
     <ClInclude Include="SceneVoxelTerrainSL.h">
       <Filter>Scene</Filter>
     </ClInclude>
@@ -894,6 +895,9 @@
     </ClInclude>
     <ClInclude Include="SceneMarchingCubes.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

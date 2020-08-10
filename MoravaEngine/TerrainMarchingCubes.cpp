@@ -61,7 +61,7 @@ void TerrainMarchingCubes::Generate(glm::vec3 scale)
 					// voxel.color = m_MapGenerator->m_ColorMap[z * m_MapGenerator->m_MapGenConf.mapChunkSize + x];
 					voxel->color = isoSurfaceColor;
 					voxel->textureID = -1; // no texture
-					m_Voxels.push_back(voxel);
+					m_Voxels.insert(std::make_pair(GetVoxelMapKey(voxel->position), voxel));
 
 					//	printf("TMC::Generate XYZ [ %i %i %i ] voxel->position = [ %i %i %i ] isoSurfaceHeight = %.2ff m_HeightMapMultiplier = %i\n",
 					//		x, y, z, voxel->position.x, voxel->position.y, voxel->position.z, isoSurfaceHeight, m_HeightMapMultiplier);
@@ -97,14 +97,14 @@ void TerrainMarchingCubes::MarchingCubes()
 	// calculate minimum and maximum ranges for all voxels
 	for (auto voxel : m_Voxels)
 	{
-		if (voxel->position.x > m_VoxelRangeMax.x) m_VoxelRangeMax.x = voxel->position.x;
-		if (voxel->position.x < m_VoxelRangeMin.x) m_VoxelRangeMin.x = voxel->position.x;
+		if (voxel.second->position.x > m_VoxelRangeMax.x) m_VoxelRangeMax.x = voxel.second->position.x;
+		if (voxel.second->position.x < m_VoxelRangeMin.x) m_VoxelRangeMin.x = voxel.second->position.x;
 
-		if (voxel->position.y > m_VoxelRangeMax.y) m_VoxelRangeMax.y = voxel->position.y;
-		if (voxel->position.y < m_VoxelRangeMin.y) m_VoxelRangeMin.y = voxel->position.y;
+		if (voxel.second->position.y > m_VoxelRangeMax.y) m_VoxelRangeMax.y = voxel.second->position.y;
+		if (voxel.second->position.y < m_VoxelRangeMin.y) m_VoxelRangeMin.y = voxel.second->position.y;
 
-		if (voxel->position.z > m_VoxelRangeMax.z) m_VoxelRangeMax.z = voxel->position.z;
-		if (voxel->position.z < m_VoxelRangeMin.z) m_VoxelRangeMin.z = voxel->position.z;
+		if (voxel.second->position.z > m_VoxelRangeMax.z) m_VoxelRangeMax.z = voxel.second->position.z;
+		if (voxel.second->position.z < m_VoxelRangeMin.z) m_VoxelRangeMin.z = voxel.second->position.z;
 	}
 
 	printf("TMC::MarchingCubes BEFORE voxelRangeMin [ %i %i %i ] voxelRangeMax [ %i %i %i ]\n",
@@ -742,14 +742,8 @@ int TerrainMarchingCubes::CalculateCubeIndex(std::vector<glm::ivec3> cubeVertice
 
 bool TerrainMarchingCubes::DoesVoxelExists(glm::ivec3 position)
 {
-	for (auto voxel : m_Voxels) {
-		// printf("TerrainMarchingCubes::DoesVoxelExists voxel->position [ %i %i %i ]\n", voxel->position.x, voxel->position.y, voxel->position.z);
-		if (voxel->position == position) {
-			// printf("TerrainMarchingCubes::DoesVoxelExists TRUE [ %i %i %i ]\n", position.x, position.y, position.z);
-			return true;
-		}
-	}
-	// printf("TerrainMarchingCubes::DoesVoxelExists FALSE [ %i %i %i ]\n", position.x, position.y, position.z);
+	if (m_Voxels.find(GetVoxelMapKey(position)) != m_Voxels.end())
+		return true;
 	return false;
 }
 
