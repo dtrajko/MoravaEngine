@@ -147,44 +147,46 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 	// TODO - calculate parameters for the current marching cube
 	m_CubeVertices.clear();
 	m_CubeVertices.resize(8);
-	m_CubeVertices[0] = glm::ivec3(position.x,            position.y,            position.z + cubeSize); // 0
-	m_CubeVertices[1] = glm::ivec3(position.x + cubeSize, position.y,            position.z + cubeSize); // 1
-	m_CubeVertices[2] = glm::ivec3(position.x + cubeSize, position.y,            position.z           ); // 2
-	m_CubeVertices[3] = glm::ivec3(position.x,            position.y,            position.z           ); // 3
-	m_CubeVertices[4] = glm::ivec3(position.x,            position.y + cubeSize, position.z + cubeSize); // 4
-	m_CubeVertices[5] = glm::ivec3(position.x + cubeSize, position.y + cubeSize, position.z + cubeSize); // 5
-	m_CubeVertices[6] = glm::ivec3(position.x + cubeSize, position.y + cubeSize, position.z           ); // 6
-	m_CubeVertices[7] = glm::ivec3(position.x,            position.y + cubeSize, position.z           ); // 7
+	m_CubeVertices[3] = glm::ivec3(position.x,            position.y,            position.z           ); // 0
+	m_CubeVertices[2] = glm::ivec3(position.x + cubeSize, position.y,            position.z           ); // 1
+	m_CubeVertices[1] = glm::ivec3(position.x + cubeSize, position.y,            position.z + cubeSize); // 2
+	m_CubeVertices[0] = glm::ivec3(position.x,            position.y,            position.z + cubeSize); // 3
+	m_CubeVertices[7] = glm::ivec3(position.x,            position.y + cubeSize, position.z           ); // 4
+	m_CubeVertices[6] = glm::ivec3(position.x + cubeSize, position.y + cubeSize, position.z           ); // 5
+	m_CubeVertices[5] = glm::ivec3(position.x + cubeSize, position.y + cubeSize, position.z + cubeSize); // 6
+	m_CubeVertices[4] = glm::ivec3(position.x,            position.y + cubeSize, position.z + cubeSize); // 7
 
 	m_CubeEdges.clear();
 	m_CubeEdges.resize(12);
-	m_CubeEdges[0]  = glm::ivec3(position.x + cubeSize / 2, position.y,                position.z + cubeSize    ); //  0
+	m_CubeEdges[2]  = glm::ivec3(position.x + cubeSize / 2, position.y,                position.z               ); //  0
 	m_CubeEdges[1]  = glm::ivec3(position.x + cubeSize,     position.y,                position.z + cubeSize / 2); //  1
-	m_CubeEdges[2]  = glm::ivec3(position.x + cubeSize / 2, position.y,                position.z               ); //  2
+	m_CubeEdges[0]  = glm::ivec3(position.x + cubeSize / 2, position.y,                position.z + cubeSize    ); //  2
 	m_CubeEdges[3]  = glm::ivec3(position.x,                position.y,                position.z + cubeSize / 2); //  3
-	m_CubeEdges[4]  = glm::ivec3(position.x + cubeSize / 2, position.y + cubeSize,     position.z + cubeSize    ); //  4
+
+	m_CubeEdges[6]  = glm::ivec3(position.x + cubeSize / 2, position.y + cubeSize,     position.z               ); //  4
 	m_CubeEdges[5]  = glm::ivec3(position.x + cubeSize,     position.y + cubeSize,     position.z + cubeSize / 2); //  5
-	m_CubeEdges[6]  = glm::ivec3(position.x + cubeSize / 2, position.y + cubeSize,     position.z               ); //  6
+	m_CubeEdges[4]  = glm::ivec3(position.x + cubeSize / 2, position.y + cubeSize,     position.z + cubeSize    ); //  6
 	m_CubeEdges[7]  = glm::ivec3(position.x,                position.y + cubeSize,     position.z + cubeSize / 2); //  7
-	m_CubeEdges[8]  = glm::ivec3(position.x,                position.y + cubeSize / 2, position.z + cubeSize    ); //  8
-	m_CubeEdges[9]  = glm::ivec3(position.x + cubeSize,     position.y + cubeSize / 2, position.z + cubeSize    ); //  9
-	m_CubeEdges[10] = glm::ivec3(position.x + cubeSize,     position.y + cubeSize / 2, position.z               ); // 10
-	m_CubeEdges[11] = glm::ivec3(position.x,                position.y + cubeSize / 2, position.z               ); // 11
+
+	m_CubeEdges[11] = glm::ivec3(position.x,                position.y + cubeSize / 2, position.z               ); //  8
+	m_CubeEdges[10] = glm::ivec3(position.x + cubeSize,     position.y + cubeSize / 2, position.z               ); //  9
+	m_CubeEdges[9]  = glm::ivec3(position.x + cubeSize,     position.y + cubeSize / 2, position.z + cubeSize    ); // 10
+	m_CubeEdges[8]  = glm::ivec3(position.x,                position.y + cubeSize / 2, position.z + cubeSize    ); // 11
 
 	m_CubeNormals.clear();
 	m_CubeNormals.resize(12);
-	m_CubeNormals[0]  = glm::normalize(glm::vec3( 0.0f, -1.0f,  1.0f));
-	m_CubeNormals[1]  = glm::normalize(glm::vec3( 1.0f, -1.0f,  0.0f));
-	m_CubeNormals[2]  = glm::normalize(glm::vec3( 0.0f, -1.0f, -1.0f));
-	m_CubeNormals[3]  = glm::normalize(glm::vec3(-1.0f, -1.0f,  0.0f));
-	m_CubeNormals[4]  = glm::normalize(glm::vec3( 0.0f,  1.0f,  1.0f));
-	m_CubeNormals[5]  = glm::normalize(glm::vec3( 1.0f,  1.0f,  0.0f));
-	m_CubeNormals[6]  = glm::normalize(glm::vec3( 0.0f,  1.0f, -1.0f));
-	m_CubeNormals[7]  = glm::normalize(glm::vec3(-1.0f,  1.0f,  0.0f));
-	m_CubeNormals[8]  = glm::normalize(glm::vec3(-1.0f,  0.0f,  1.0f));
-	m_CubeNormals[9]  = glm::normalize(glm::vec3( 1.0f,  0.0f,  1.0f));
-	m_CubeNormals[10] = glm::normalize(glm::vec3( 1.0f,  0.0f, -1.0f));
-	m_CubeNormals[11] = glm::normalize(glm::vec3(-1.0f,  0.0f, -1.0f));
+	m_CubeNormals[0]  = glm::normalize(glm::vec3( 0.0f,  0.0f, -1.0f));
+	m_CubeNormals[1]  = glm::normalize(glm::vec3( 1.0f,  0.0f,  0.0f));
+	m_CubeNormals[2]  = glm::normalize(glm::vec3( 0.0f,  0.0f,  1.0f));
+	m_CubeNormals[3]  = glm::normalize(glm::vec3(-1.0f,  0.0f,  0.0f));
+	m_CubeNormals[4]  = glm::normalize(glm::vec3( 0.0f,  0.0f, -1.0f));
+	m_CubeNormals[5]  = glm::normalize(glm::vec3( 1.0f,  0.0f,  0.0f));
+	m_CubeNormals[6]  = glm::normalize(glm::vec3( 0.0f,  0.0f,  1.0f));
+	m_CubeNormals[7]  = glm::normalize(glm::vec3(-1.0f,  0.0f,  0.0f));
+	m_CubeNormals[8]  = glm::normalize(glm::vec3( 0.0f,  0.0f, -1.0f));
+	m_CubeNormals[9]  = glm::normalize(glm::vec3( 0.0f,  0.0f, -1.0f));
+	m_CubeNormals[10] = glm::normalize(glm::vec3( 0.0f,  0.0f,  1.0f));
+	m_CubeNormals[11] = glm::normalize(glm::vec3( 0.0f,  0.0f,  1.0f));
 
 	for (unsigned int i = 0; i < 8; i++)
 		m_VertexPositions.push_back(new VertexMC{ m_CubeVertices[i], DoesVoxelExists(m_CubeVertices[i]) });
@@ -566,16 +568,8 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 		triangle.vertices[1].position = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 1]];
 		triangle.vertices[2].position = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 2]];
 
-		glm::vec3 edgeU;
-		glm::vec3 edgeV;
-		if (triangleIndex % 2 == 0) {
-			edgeU = triangle.vertices[2].position - triangle.vertices[1].position;
-			edgeV = triangle.vertices[3].position - triangle.vertices[1].position;
-		}
-		else {
-			edgeU = triangle.vertices[3].position - triangle.vertices[1].position;
-			edgeV = triangle.vertices[2].position - triangle.vertices[1].position;
-		}
+		glm::vec3 edgeU = triangle.vertices[2].position - triangle.vertices[1].position;
+		glm::vec3 edgeV = triangle.vertices[3].position - triangle.vertices[1].position;
 
 		triangle.normal.x = edgeU.y * edgeV.z - edgeU.z * edgeV.y;
 		triangle.normal.y = edgeU.z * edgeV.x - edgeU.x * edgeV.z;
@@ -685,7 +679,7 @@ void TerrainMarchingCubes::GenerateVertexData()
 		//	printf("%i, %i, %i,\n", m_Indices[i + 0], m_Indices[i + 1], m_Indices[i + 2]);
 	}
 
-	RecalculateNormals();
+	// RecalculateNormals();
 	// RecalculateTangentSpace();
 }
 
