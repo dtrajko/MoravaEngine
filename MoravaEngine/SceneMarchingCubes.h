@@ -74,6 +74,7 @@ private:
 	unsigned int m_DeleteVoxelCodeGLFW;
 
 	TerrainMarchingCubes* m_TerrainMarchingCubes;
+	unsigned int m_TotalVoxelNumber;
 
 	MapGenerator::MapGenConf m_MapGenConf;
 	MapGenerator::MapGenConf m_MapGenConfPrev;
