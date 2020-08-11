@@ -25,12 +25,12 @@ SceneMarchingCubes::SceneMarchingCubes()
     sceneSettings.waterWaveSpeed = 0.05f;
     sceneSettings.enablePointLights  = true;
     sceneSettings.enableSpotLights   = true;
-    sceneSettings.enableOmniShadows  = true;
+    sceneSettings.enableOmniShadows  = false;
     sceneSettings.enableSkybox       = false;
-    sceneSettings.enableShadows      = false;
+    sceneSettings.enableShadows      = true;
     sceneSettings.enableWaterEffects = false;
     sceneSettings.enableParticles    = false;
-    sceneSettings.farPlane = 500.0f;
+    sceneSettings.farPlane = 200.0f;
 
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
@@ -163,7 +163,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     /**** END Procedural Landmass Generation Terrain ****/
 
     Mesh* mesh = new Block();
-    m_Player = new Player(glm::vec3(-20.0f, 10.0f, 0.0f), mesh, m_Camera);
+    m_Player = new Player(glm::vec3(-40.0f, 20.0f, 0.0f), mesh, m_Camera);
     m_PlayerController = new PlayerController(m_Player);
     m_PlayerController->SetTerrain(m_TerrainMarchingCubes);
     m_PlayerController->SetGravity(0.0f);
@@ -514,6 +514,18 @@ void SceneMarchingCubes::UpdateImGui(float timestep, Window& mainWindow)
         }
     }
     ImGui::End();
+
+    ImGui::Begin("Framebuffers");
+    {
+        if (ImGui::CollapsingHeader("Display Info"))
+        {
+            ImVec2 imageSize(128.0f, 128.0f);
+
+            ImGui::Text("Shadow Map");
+            ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
+        }
+    }
+    ImGui::End();
 }
 
 void SceneMarchingCubes::Update(float timestep, Window& mainWindow)
@@ -778,6 +790,7 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
     m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui
 
     Shader* shaderMain = shaders["main"];
+    Shader* shaderShadowMap = shaders["shadow_map"];
     Shader* shaderOmniShadow = shaders["omniShadow"];
     Shader* shaderRenderInstanced = shaders["render_instanced"];
     Shader* shaderBasic = shaders["basic"];
@@ -785,9 +798,27 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
 
     RendererBasic::EnableTransparency();
 
+    if (passType == "shadow_dir") {
+        shaderShadowMap->Bind();
+        shaderShadowMap->setMat4("model", glm::mat4(1.0f));
+    }
+
     if (passType == "shadow_omni") {
         shaderOmniShadow->Bind();
     }
+
+    if (passType == "main") {
+    }
+
+    shaderMain->Bind();
+    if (LightManager::directionalLight.GetShadowMap() != nullptr)
+        LightManager::directionalLight.GetShadowMap()->Read(GetTextureSlots()["shadow"]);
+    shaderMain->setInt("shadowMap", GetTextureSlots()["shadow"]);
+
+    shaderMarchingCubes->Bind();
+    if (LightManager::directionalLight.GetShadowMap() != nullptr)
+        LightManager::directionalLight.GetShadowMap()->Read(GetTextureSlots()["shadow"]);
+    shaderMarchingCubes->setInt("shadowMap", GetTextureSlots()["shadow"]);
 
     if (m_DrawGizmos) {
         shaderBasic->Bind();
@@ -857,6 +888,11 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
     shaderMarchingCubes->setInt("albedoMap", 0);
     shaderMarchingCubes->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     shaderMarchingCubes->setMat4("model", glm::mat4(1.0f));
+
+    // Shadows in shaderMarchingCubes
+    if (LightManager::directionalLight.GetShadowMap() != nullptr)
+        LightManager::directionalLight.GetShadowMap()->Read(GetTextureSlots()["shadow"]);
+    shaderMarchingCubes->setInt("shadowMap", GetTextureSlots()["shadow"]);
 
     if (m_RenderTerrainMarchingCubes)
         m_TerrainMarchingCubes->Render();

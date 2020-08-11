@@ -2,6 +2,7 @@
 
 #include "ResourceManager.h"
 #include "Log.h"
+#include "Profiler.h"
 
 
 RendererVoxelTerrain::RendererVoxelTerrain()
@@ -15,10 +16,6 @@ void RendererVoxelTerrain::Init(Scene* scene)
 
 void RendererVoxelTerrain::SetShaders()
 {
-	Shader* shaderOmniShadow = new Shader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
-	shaders.insert(std::make_pair("omniShadow", shaderOmniShadow));
-	Log::GetLogger()->info("RendererVoxelTerrain: shaderOmniShadow compiled [programID={0}]", shaderOmniShadow->GetProgramID());
-
 	Shader* shaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
 	shaders.insert(std::make_pair("main", shaderMain));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderMain compiled [programID={0}]", shaderMain->GetProgramID());
@@ -34,12 +31,41 @@ void RendererVoxelTerrain::SetShaders()
 	Shader* shaderMarchingCubes = new Shader("Shaders/marching_cubes.vs", "Shaders/marching_cubes.fs");
 	shaders.insert(std::make_pair("marching_cubes", shaderMarchingCubes));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderMarchingCubes compiled [programID={0}]", shaderMarchingCubes->GetProgramID());
+
+	Shader* shaderShadowMap = new Shader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+	shaders.insert(std::make_pair("shadow_map", shaderShadowMap));
+	Log::GetLogger()->info("RendererEditor: shaderShadowMap compiled [programID={0}]", shaderShadowMap->GetProgramID());
+
+	Shader* shaderOmniShadow = new Shader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+	shaders.insert(std::make_pair("omniShadow", shaderOmniShadow));
+	Log::GetLogger()->info("RendererVoxelTerrain: shaderOmniShadow compiled [programID={0}]", shaderOmniShadow->GetProgramID());
 }
 
-void RendererVoxelTerrain::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererVoxelTerrain::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	// RenderOmniShadows(mainWindow, scene, projectionMatrix);
-	RenderPass(mainWindow, scene, projectionMatrix);
+	if (!scene->GetSettings().enableShadows) return;
+	if (!LightManager::directionalLight.GetEnabled()) return;
+	if (LightManager::directionalLight.GetShadowMap() == nullptr) return;
+
+	Shader* shaderShadowMap = shaders["shadow_map"];
+	shaderShadowMap->Bind();
+
+	DirectionalLight* light = &LightManager::directionalLight;
+	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
+
+	light->GetShadowMap()->Write();
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_BLEND);
+
+	shaderShadowMap->setMat4("dirLightTransform", light->CalculateLightTransform());
+	shaderShadowMap->Validate();
+
+	DisableCulling();
+	std::string passType = "shadow_dir";
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RendererVoxelTerrain::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -91,9 +117,19 @@ void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	unsigned int textureUnit;
-	unsigned int offset;
+	// then before rendering, configure the viewport to the original framebuffer's screen dimensions
+	SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
 
+	EnableTransparency();
+	EnableCulling();
+
+	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
+	std::string passType = "main";
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+}
+
+void RendererVoxelTerrain::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
 	/**** BEGIN shaderMain ****/
 	Shader* shaderMain = (Shader*)shaders["main"];
 	shaderMain->Bind();
@@ -104,13 +140,16 @@ void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	shaderMain->setVec3("eyePosition", scene->GetCamera()->GetPosition());
 
 	// Directional Light
-	shaderMain->setInt(  "directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
-	shaderMain->setVec3( "directionalLight.base.color", LightManager::directionalLight.GetColor());
+	shaderMain->setInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
+	shaderMain->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
 	shaderMain->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
 	shaderMain->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-	shaderMain->setVec3( "directionalLight.direction", LightManager::directionalLight.GetDirection());
+	shaderMain->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
 
 	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+
+	unsigned int textureUnit;
+	unsigned int offset;
 
 	// Point Lights
 	textureUnit = scene->GetTextureSlots()["omniShadow"];
@@ -119,17 +158,17 @@ void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 
 	for (int i = 0; i < (int)LightManager::pointLightCount; i++)
 	{
-		shaderMain->setInt(  "pointLights[" + std::to_string(i) + "].base.enabled", LightManager::pointLights[i].GetEnabled());
-		shaderMain->setVec3( "pointLights[" + std::to_string(i) + "].base.color", LightManager::pointLights[i].GetColor());
+		shaderMain->setInt("pointLights[" + std::to_string(i) + "].base.enabled", LightManager::pointLights[i].GetEnabled());
+		shaderMain->setVec3("pointLights[" + std::to_string(i) + "].base.color", LightManager::pointLights[i].GetColor());
 		shaderMain->setFloat("pointLights[" + std::to_string(i) + "].base.ambientIntensity", LightManager::pointLights[i].GetAmbientIntensity());
 		shaderMain->setFloat("pointLights[" + std::to_string(i) + "].base.diffuseIntensity", LightManager::pointLights[i].GetDiffuseIntensity());
-		shaderMain->setVec3( "pointLights[" + std::to_string(i) + "].position", LightManager::pointLights[i].GetPosition());
+		shaderMain->setVec3("pointLights[" + std::to_string(i) + "].position", LightManager::pointLights[i].GetPosition());
 		shaderMain->setFloat("pointLights[" + std::to_string(i) + "].constant", LightManager::pointLights[i].GetConstant());
 		shaderMain->setFloat("pointLights[" + std::to_string(i) + "].linear", LightManager::pointLights[i].GetLinear());
 		shaderMain->setFloat("pointLights[" + std::to_string(i) + "].exponent", LightManager::pointLights[i].GetExponent());
 
 		LightManager::pointLights[i].GetShadowMap()->Read(textureUnit + offset + i);
-		shaderMain->setInt(  "omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
+		shaderMain->setInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
 		shaderMain->setFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::pointLights[i].GetFarPlane());
 	}
 
@@ -140,19 +179,19 @@ void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 
 	for (int i = 0; i < (int)LightManager::spotLightCount; i++)
 	{
-		shaderMain->setInt(  "spotLights[" + std::to_string(i) + "].base.base.enabled", LightManager::spotLights[i].GetBasePL()->GetEnabled());
-		shaderMain->setVec3( "spotLights[" + std::to_string(i) + "].base.base.color", LightManager::spotLights[i].GetBasePL()->GetColor());
+		shaderMain->setInt("spotLights[" + std::to_string(i) + "].base.base.enabled", LightManager::spotLights[i].GetBasePL()->GetEnabled());
+		shaderMain->setVec3("spotLights[" + std::to_string(i) + "].base.base.color", LightManager::spotLights[i].GetBasePL()->GetColor());
 		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].base.base.ambientIntensity", LightManager::spotLights[i].GetBasePL()->GetAmbientIntensity());
 		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].base.base.diffuseIntensity", LightManager::spotLights[i].GetBasePL()->GetDiffuseIntensity());
-		shaderMain->setVec3( "spotLights[" + std::to_string(i) + "].base.position", LightManager::spotLights[i].GetBasePL()->GetPosition());
+		shaderMain->setVec3("spotLights[" + std::to_string(i) + "].base.position", LightManager::spotLights[i].GetBasePL()->GetPosition());
 		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].base.constant", LightManager::spotLights[i].GetBasePL()->GetConstant());
-		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].base.linear",   LightManager::spotLights[i].GetBasePL()->GetLinear());
+		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].base.linear", LightManager::spotLights[i].GetBasePL()->GetLinear());
 		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].base.exponent", LightManager::spotLights[i].GetBasePL()->GetExponent());
-		shaderMain->setVec3( "spotLights[" + std::to_string(i) + "].direction", LightManager::spotLights[i].GetDirection());
+		shaderMain->setVec3("spotLights[" + std::to_string(i) + "].direction", LightManager::spotLights[i].GetDirection());
 		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].edge", LightManager::spotLights[i].GetEdge());
 
 		LightManager::spotLights[i].GetShadowMap()->Read(textureUnit + offset + i);
-		shaderMain->setInt(  "omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
+		shaderMain->setInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
 		shaderMain->setFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::spotLights[i].GetFarPlane());
 	}
 
@@ -247,11 +286,11 @@ void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	shaderRenderInstanced->setVec3("eyePosition", scene->GetCamera()->GetPosition());
 
 	// Directional Light
-	shaderRenderInstanced->setInt(  "directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
-	shaderRenderInstanced->setVec3( "directionalLight.base.color", LightManager::directionalLight.GetColor());
+	shaderRenderInstanced->setInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
+	shaderRenderInstanced->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
 	shaderRenderInstanced->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
 	shaderRenderInstanced->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-	shaderRenderInstanced->setVec3( "directionalLight.direction", LightManager::directionalLight.GetDirection());
+	shaderRenderInstanced->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
 
 	shaderRenderInstanced->setFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
 	shaderRenderInstanced->setFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
@@ -266,13 +305,25 @@ void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	shaderBasic->Validate();
 	/**** END shaderBasic ****/
 
-	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
-	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+	/**** BEGIN shadow_map ****/
+	Shader* shaderShadowMap = shaders["shadow_map"];
+	shaderShadowMap->Bind();
+	shaderShadowMap->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+	/**** END shadow_map ****/
 
-	shaderMain->Unbind();
-	shaderRenderInstanced->Unbind();
-	shaderMarchingCubes->Unbind();
+	{
+		Profiler profiler("RVT::RenderPassShadow");
+		RenderPassShadow(mainWindow, scene, projectionMatrix);
+		scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+	}
+
+	// RenderOmniShadows(mainWindow, scene, projectionMatrix);
+
+	{
+		Profiler profiler("RVT::RenderPass");
+		RenderPass(mainWindow, scene, projectionMatrix);
+		scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+	}
 }
 
 RendererVoxelTerrain::~RendererVoxelTerrain()
