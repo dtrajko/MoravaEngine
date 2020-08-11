@@ -5,7 +5,7 @@ TerrainSL::TerrainSL() : TerrainVoxel()
 {
 }
 
-TerrainSL::TerrainSL(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail) : TerrainVoxel()
+TerrainSL::TerrainSL(MapGenerator::MapGenConf mapGenConf, int heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail) : TerrainVoxel()
 {
     m_HeightMapMultiplier = heightMapMultiplier;
     m_IsRequiredMapRebuild = isRequiredMapRebuild;
@@ -13,10 +13,10 @@ TerrainSL::TerrainSL(MapGenerator::MapGenConf mapGenConf, float heightMapMultipl
 	m_SeaLevel = seaLevel;
 
     m_MapGenerator = new MapGenerator(mapGenConf.heightMapFilePath, mapGenConf.colorMapFilePath);
-    m_MapGenerator->Generate(mapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, seaLevel, levelOfDetail);
+    m_MapGenerator->Generate(mapGenConf, (float)m_HeightMapMultiplier, m_IsRequiredMapRebuild, seaLevel, levelOfDetail);
 
 	m_Scale.x = (float)mapGenConf.mapChunkSize;
-	m_Scale.y = m_HeightMapMultiplier;
+	m_Scale.y = (float)m_HeightMapMultiplier;
 	m_Scale.z = (float)mapGenConf.mapChunkSize;
 
     Generate();
@@ -32,22 +32,27 @@ void TerrainSL::Generate(glm::vec3 scale)
 {
 	Release();
 
-	for (int x = 0; x < m_Scale.x; x++) {
-		for (int y = (int)(m_SeaLevel * m_HeightMapMultiplier); y < (int)m_Scale.y; y++) {
-			for (int z = 0; z < m_Scale.z; z++) {
+	for (int x = 0; x < (int)m_Scale.x; x++) {
+		for (int y = -(int)(m_HeightMapMultiplier / 2); y < (int)(m_HeightMapMultiplier / 2 + 1); y++) {
+			for (int z = 0; z < (int)m_Scale.z; z++) {
 
 				float isoSurfaceHeight = y * (1.0f / m_Scale.y);
-				glm::vec4 isoSurfaceColor = m_MapGenerator->GetRegionColor(isoSurfaceHeight);
+				glm::vec4 isoSurfaceColor = m_MapGenerator->GetRegionColor(isoSurfaceHeight + 0.5f);
 				float heightFinal = m_MapGenerator->m_NoiseMap[x][z];
 
 				if (heightFinal <= m_SeaLevel) {
 					heightFinal = m_SeaLevel;
 				}
 
-				if (heightFinal >= isoSurfaceHeight) {
+				if (heightFinal >= isoSurfaceHeight + 0.5f) {
 					Voxel* voxel = new Voxel();
-					voxel->position = glm::vec3(x - m_Scale.x / 2.0f + 0.5f, isoSurfaceHeight * m_HeightMapMultiplier, z - m_Scale.z / 2.0f + 0.5f);
-					// voxel.color = m_MapGenerator->m_ColorMap[z * m_MapGenerator->m_MapGenConf.mapChunkSize + x];
+					int voxelPositionX = x - ((int)m_Scale.x + 1) / 2;
+					if ((int)m_Scale.x % 2 != 0) voxelPositionX += 1;
+					int voxelPositionZ = z - ((int)m_Scale.z + 1) / 2;
+					if ((int)m_Scale.z % 2 != 0) voxelPositionZ += 1;
+
+					int voxelPositionY = (int)(isoSurfaceHeight * m_HeightMapMultiplier);
+					voxel->position = glm::ivec3(voxelPositionX, voxelPositionY, voxelPositionZ);
 					voxel->color = isoSurfaceColor;
 					voxel->textureID = -1; // no texture
 					m_Voxels.insert(std::make_pair(GetVoxelMapKey(voxel->position), voxel));
@@ -57,17 +62,17 @@ void TerrainSL::Generate(glm::vec3 scale)
 	}
 }
 
-void TerrainSL::Update(MapGenerator::MapGenConf mapGenConf, float heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail)
+void TerrainSL::Update(MapGenerator::MapGenConf mapGenConf, int heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail)
 {
     m_HeightMapMultiplier = heightMapMultiplier;
     m_IsRequiredMapRebuild = isRequiredMapRebuild;
 
 	m_SeaLevel = seaLevel;
 
-    m_MapGenerator->Generate(mapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, seaLevel, levelOfDetail);
+    m_MapGenerator->Generate(mapGenConf, (float)m_HeightMapMultiplier, m_IsRequiredMapRebuild, seaLevel, levelOfDetail);
 
 	m_Scale.x = (float)mapGenConf.mapChunkSize;
-	m_Scale.y = m_HeightMapMultiplier;
+	m_Scale.y = (float)m_HeightMapMultiplier;
 	m_Scale.z = (float)mapGenConf.mapChunkSize;
 
 	Generate();

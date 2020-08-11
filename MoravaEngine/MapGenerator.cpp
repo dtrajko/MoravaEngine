@@ -62,7 +62,7 @@ MapGenerator::MapGenerator(const char* heightMapFilePath, const char* colorMapFi
 
 	TerrainTypes snow;
 	snow.name = "Snow";
-	snow.height = 0.9f;
+	snow.height = 1.0f;
 	snow.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	m_MapGenConf.regions.push_back(snow);
 }

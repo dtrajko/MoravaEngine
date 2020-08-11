@@ -117,9 +117,9 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_MapGenConf.autoUpdate = true;
     m_MapGenConf.regions = std::vector<MapGenerator::TerrainTypes>();
     
-    m_HeightMapMultiplier = 10;
+    m_HeightMapMultiplier = 12;
     m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
-    m_SeaLevel = 0.0f;
+    m_SeaLevel = 0.2f;
     m_SeaLevelPrev = m_SeaLevel;
     m_LevelOfDetail = 0;
     m_LevelOfDetailPrev = m_LevelOfDetail;
@@ -153,7 +153,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_TerrainMarchingCubes = new TerrainMarchingCubes(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
     m_TotalVoxelNumber = (unsigned int)m_TerrainMarchingCubes->m_Voxels.size();
 
-    m_TerrainEditMode = true;
+    m_TerrainEditMode = false;
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);

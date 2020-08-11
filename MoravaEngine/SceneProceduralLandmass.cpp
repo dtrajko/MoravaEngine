@@ -114,9 +114,9 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_MapGenConf.autoUpdate = true;
     m_MapGenConf.regions = std::vector<MapGenerator::TerrainTypes>();
 
-    m_HeightMapMultiplier = 10.0f;
+    m_HeightMapMultiplier = 10;
     m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
-    m_SeaLevel = 0.0f;
+    m_SeaLevel = 0.2f;
     m_SeaLevelPrev = m_SeaLevel;
     m_LevelOfDetail = 0;
     m_LevelOfDetailPrev = m_LevelOfDetail;
@@ -459,8 +459,8 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::SliderFloat2("Offset", glm::value_ptr(m_MapGenConf.offset), -1.0f, 1.0f);
             ImGui::Checkbox("Auto Update", &m_MapGenConf.autoUpdate);
 
-            ImGui::SliderFloat("Height Map Multiplier", &m_HeightMapMultiplier, -40.0f, 40.0f);
-            ImGui::SliderFloat("Sea Level", &m_SeaLevel, -20.0f, 20.0f);
+            ImGui::SliderInt("Height Map Multiplier", &m_HeightMapMultiplier, 0, 20);
+            ImGui::SliderFloat("Sea Level", &m_SeaLevel, -10.0f, 10.0f);
         }
     }
     ImGui::End();

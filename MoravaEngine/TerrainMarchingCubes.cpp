@@ -58,20 +58,11 @@ void TerrainMarchingCubes::Generate(glm::vec3 scale)
 
 					int voxelPositionY = (int)(isoSurfaceHeight * m_HeightMapMultiplier);
 					voxel->position = glm::ivec3(voxelPositionX, voxelPositionY, voxelPositionZ);
-					// voxel.color = m_MapGenerator->m_ColorMap[z * m_MapGenerator->m_MapGenConf.mapChunkSize + x];
 					voxel->color = isoSurfaceColor;
 					voxel->textureID = -1; // no texture
 					m_Voxels.insert(std::make_pair(GetVoxelMapKey(voxel->position), voxel));
 
-					//	printf("TMC::Generate XYZ [ %i %i %i ] voxel->position = [ %i %i %i ] isoSurfaceHeight = %.2ff m_HeightMapMultiplier = %i\n",
-					//		x, y, z, voxel->position.x, voxel->position.y, voxel->position.z, isoSurfaceHeight, m_HeightMapMultiplier);
-
 					CalculateRanges(x, y, z, isoSurfaceHeight, heightFinal, voxelPositionX, voxelPositionY, voxelPositionZ);
-
-					//	printf("TerrainMarchingCubes::Generate y = %i  heightFinal = %.2ff  m_SeaLevel = %.2ff  isoSurfaceHeight = %.2ff  isoSurfaceColor [ %.2ff %.2ff %.2ff ]\n",
-					//		y, heightFinal, m_SeaLevel, isoSurfaceHeight, isoSurfaceColor.r, isoSurfaceColor.g, isoSurfaceColor.b);
-					//	printf("m_MapGenerator->m_NoiseMap[%i][%i] = %.2ff\n", x, z, m_MapGenerator->m_NoiseMap[x][z]);
-					//	printf("voxel->position = [ %.2ff %.2ff %.2ff ]\n", voxel->position.x, voxel->position.y, voxel->position.z);
 				}
 			}
 		}
@@ -560,6 +551,7 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 	//	}
 
 	// Create the triangle
+	auto intMin = std::numeric_limits<int>::min();
 	int triangleIndex = 0;
 	for (int i = 0; triangleTable[cubeIndex][i] != -1; i += 3)
 	{
@@ -578,11 +570,20 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 		// triangle.normal.z = tangentA.x * tangentB.y - tangentA.y * tangentB.x;
 		// triangle.normal = glm::normalize(triangle.normal);
 
+		// calculate minimal vertex height in the triangle
+		int maxVertexHeight = intMin;
 		for (int i = 0; i < 3; i++) {
-			float isoSurfaceHeight = triangle.vertices[i].position.y / (float)m_HeightMapMultiplier;
-			glm::vec4 vertexColor = m_MapGenerator->GetRegionColor(isoSurfaceHeight + 0.5f);
-			triangle.vertices[i].color = vertexColor;
+			if (triangle.vertices[i].position.y > maxVertexHeight) {
+				maxVertexHeight = triangle.vertices[i].position.y;
+			}
 		}
+
+		float isoSurfaceHeight = maxVertexHeight / (float)m_HeightMapMultiplier;
+		glm::vec4 vertexColor = m_MapGenerator->GetRegionColor(isoSurfaceHeight + 0.5f);
+
+		triangle.vertices[0].color = vertexColor;
+		triangle.vertices[1].color = vertexColor;
+		triangle.vertices[2].color = vertexColor;
 
 		// triangle.normal = m_CubeNormals[triangleTable[cubeIndex][i + 0]];
 
