@@ -19,6 +19,7 @@ public:
 
 	virtual void Generate(glm::vec3 scale = glm::vec3(1.0f)) override;
 	virtual void RecalculateNormals() override;
+	virtual void RecalculateTangentSpace() override;
 
 	void Update(MapGenerator::MapGenConf mapGenConf, int heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail);
 	inline MapGenerator* GetMapGenerator() { return m_MapGenerator; };
@@ -70,7 +71,7 @@ private:
 
 	std::vector<glm::ivec3> m_CubeVertices;
 	std::vector<glm::ivec3> m_CubeEdges;
-	std::vector<glm::vec3> m_CubeNormals;
+	// std::vector<glm::vec3> m_CubeNormals;
 
 	std::vector<glm::ivec3> m_CubeEdgeIntersections;
 

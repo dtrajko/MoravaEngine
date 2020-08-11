@@ -153,6 +153,8 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_TerrainMarchingCubes = new TerrainMarchingCubes(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
     m_TotalVoxelNumber = (unsigned int)m_TerrainMarchingCubes->m_Voxels.size();
 
+    m_TerrainEditMode = true;
+
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
 
@@ -419,6 +421,7 @@ void SceneMarchingCubes::UpdateImGui(float timestep, Window& mainWindow)
         ImGui::Checkbox("Render Player", &m_RenderPlayer);
         ImGui::Checkbox("Render Voxel Terrain", &m_RenderTerrainVoxels);
         ImGui::Checkbox("Render Marching Cubes Terrain", &m_RenderTerrainMarchingCubes);
+        ImGui::Checkbox("Terrain Edit Mode", &m_TerrainEditMode);
         ImGui::Checkbox("Unlock Rotation", &m_UnlockRotation);
         ImGui::ColorEdit4("Cube Color", glm::value_ptr(m_CubeColor));
     }
@@ -668,6 +671,8 @@ void SceneMarchingCubes::OnClick(bool* keys, bool* buttons, float timestep)
     // Cooldown
     if (timestep - m_OnClickCooldown.lastTime < m_OnClickCooldown.cooldown) return;
     m_OnClickCooldown.lastTime = timestep;
+
+    if (!m_TerrainEditMode) return;
 
     if (buttons[GLFW_MOUSE_BUTTON_1])
     {

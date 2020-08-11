@@ -94,7 +94,7 @@ vec3 sampleOffsetDirections[20] = vec3[]
 vec3 GetNormal()
 {
 	vec3 normal = normalize(vNormal);
-	// return normal;
+	return normal;
 
 	normal = texture(normalMap, vTexCoord * tilingFactor).rgb;
 	normal = normal * 2.0 - 1.0;

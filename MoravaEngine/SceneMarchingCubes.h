@@ -94,4 +94,7 @@ private:
 	std::vector<std::string> m_ActiveRenderPasses;
 
 	int m_VoxelsModified;
+
+	bool m_TerrainEditMode;
+
 };

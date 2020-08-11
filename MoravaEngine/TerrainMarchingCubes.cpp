@@ -173,20 +173,20 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 	m_CubeEdges[9]  = glm::ivec3(position.x + cubeSize,     position.y + cubeSize / 2, position.z + cubeSize    ); // 10
 	m_CubeEdges[8]  = glm::ivec3(position.x,                position.y + cubeSize / 2, position.z + cubeSize    ); // 11
 
-	m_CubeNormals.clear();
-	m_CubeNormals.resize(12);
-	m_CubeNormals[0]  = glm::normalize(glm::vec3( 0.0f,  0.0f, -1.0f));
-	m_CubeNormals[1]  = glm::normalize(glm::vec3( 1.0f,  0.0f,  0.0f));
-	m_CubeNormals[2]  = glm::normalize(glm::vec3( 0.0f,  0.0f,  1.0f));
-	m_CubeNormals[3]  = glm::normalize(glm::vec3(-1.0f,  0.0f,  0.0f));
-	m_CubeNormals[4]  = glm::normalize(glm::vec3( 0.0f,  0.0f, -1.0f));
-	m_CubeNormals[5]  = glm::normalize(glm::vec3( 1.0f,  0.0f,  0.0f));
-	m_CubeNormals[6]  = glm::normalize(glm::vec3( 0.0f,  0.0f,  1.0f));
-	m_CubeNormals[7]  = glm::normalize(glm::vec3(-1.0f,  0.0f,  0.0f));
-	m_CubeNormals[8]  = glm::normalize(glm::vec3( 0.0f,  0.0f, -1.0f));
-	m_CubeNormals[9]  = glm::normalize(glm::vec3( 0.0f,  0.0f, -1.0f));
-	m_CubeNormals[10] = glm::normalize(glm::vec3( 0.0f,  0.0f,  1.0f));
-	m_CubeNormals[11] = glm::normalize(glm::vec3( 0.0f,  0.0f,  1.0f));
+	//	m_CubeNormals.clear();
+	//	m_CubeNormals.resize(12);
+	//	m_CubeNormals[0]  = glm::normalize(glm::vec3( 0.0f,  0.0f, -1.0f));
+	//	m_CubeNormals[1]  = glm::normalize(glm::vec3( 1.0f,  0.0f,  0.0f));
+	//	m_CubeNormals[2]  = glm::normalize(glm::vec3( 0.0f,  0.0f,  1.0f));
+	//	m_CubeNormals[3]  = glm::normalize(glm::vec3(-1.0f,  0.0f,  0.0f));
+	//	m_CubeNormals[4]  = glm::normalize(glm::vec3( 0.0f,  0.0f, -1.0f));
+	//	m_CubeNormals[5]  = glm::normalize(glm::vec3( 1.0f,  0.0f,  0.0f));
+	//	m_CubeNormals[6]  = glm::normalize(glm::vec3( 0.0f,  0.0f,  1.0f));
+	//	m_CubeNormals[7]  = glm::normalize(glm::vec3(-1.0f,  0.0f,  0.0f));
+	//	m_CubeNormals[8]  = glm::normalize(glm::vec3( 0.0f,  0.0f, -1.0f));
+	//	m_CubeNormals[9]  = glm::normalize(glm::vec3( 0.0f,  0.0f, -1.0f));
+	//	m_CubeNormals[10] = glm::normalize(glm::vec3( 0.0f,  0.0f,  1.0f));
+	//	m_CubeNormals[11] = glm::normalize(glm::vec3( 0.0f,  0.0f,  1.0f));
 
 	for (unsigned int i = 0; i < 8; i++)
 		m_VertexPositions.push_back(new VertexMC{ m_CubeVertices[i], DoesVoxelExists(m_CubeVertices[i]) });
@@ -679,8 +679,8 @@ void TerrainMarchingCubes::GenerateVertexData()
 		//	printf("%i, %i, %i,\n", m_Indices[i + 0], m_Indices[i + 1], m_Indices[i + 2]);
 	}
 
-	// RecalculateNormals();
-	// RecalculateTangentSpace();
+	RecalculateNormals();
+	RecalculateTangentSpace();
 }
 
 void TerrainMarchingCubes::GenerateDataOpenGL()
@@ -829,5 +829,46 @@ void TerrainMarchingCubes::RecalculateNormals()
 		glm::vec3 vec(m_Vertices[nOffset + 0], m_Vertices[nOffset + 1], m_Vertices[nOffset + 2]);
 		vec = glm::normalize(vec);
 		m_Vertices[nOffset + 0] = vec.x; m_Vertices[nOffset + 1] = vec.y; m_Vertices[nOffset + 2] = vec.z;
+	}
+}
+
+void TerrainMarchingCubes::RecalculateTangentSpace()
+{
+	unsigned int vLength = sizeof(VertexTBNColor) / sizeof(float);
+
+	for (size_t i = 0; i < m_IndexCount; i += 3)
+	{
+		unsigned int in0 = m_Indices[i + 0] * vLength;
+		unsigned int in1 = m_Indices[i + 1] * vLength;
+		unsigned int in2 = m_Indices[i + 2] * vLength;
+		glm::vec3 v0(m_Vertices[in0 + 0], m_Vertices[in0 + 1], m_Vertices[in0 + 2]);
+		glm::vec3 v1(m_Vertices[in1 + 0], m_Vertices[in1 + 1], m_Vertices[in1 + 2]);
+		glm::vec3 v2(m_Vertices[in0 + 2], m_Vertices[in2 + 1], m_Vertices[in2 + 2]);
+
+		glm::vec2 uv0(m_Vertices[in0 + 3], m_Vertices[in0 + 4]);
+		glm::vec2 uv1(m_Vertices[in1 + 3], m_Vertices[in1 + 4]);
+		glm::vec2 uv2(m_Vertices[in2 + 3], m_Vertices[in2 + 4]);
+
+		// Edges of the triangle : position delta
+		glm::vec3 deltaPos1 = v1 - v0;
+		glm::vec3 deltaPos2 = v2 - v1;
+
+		// UV delta
+		glm::vec2 deltaUV1 = uv1 - uv0;
+		glm::vec2 deltaUV2 = uv2 - uv0;
+
+		float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+		glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+		glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+
+		// write tangents
+		m_Vertices[in0 + 8] = tangent.x; m_Vertices[in0 + 9] = tangent.y; m_Vertices[in0 + 10] = tangent.z;
+		m_Vertices[in1 + 8] = tangent.x; m_Vertices[in1 + 9] = tangent.y; m_Vertices[in1 + 10] = tangent.z;
+		m_Vertices[in2 + 8] = tangent.x; m_Vertices[in2 + 9] = tangent.y; m_Vertices[in2 + 10] = tangent.z;
+
+		// write bitangents
+		m_Vertices[in0 + 11] = bitangent.x; m_Vertices[in0 + 12] = bitangent.y; m_Vertices[in0 + 13] = bitangent.z;
+		m_Vertices[in1 + 11] = bitangent.x; m_Vertices[in1 + 12] = bitangent.y; m_Vertices[in1 + 13] = bitangent.z;
+		m_Vertices[in2 + 11] = bitangent.x; m_Vertices[in2 + 12] = bitangent.y; m_Vertices[in2 + 13] = bitangent.z;
 	}
 }
