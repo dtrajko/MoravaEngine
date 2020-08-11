@@ -568,13 +568,15 @@ void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)
 		triangle.vertices[1].position = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 1]];
 		triangle.vertices[2].position = m_CubeEdgeIntersections[triangleTable[cubeIndex][i + 2]];
 
-		glm::vec3 edgeU = triangle.vertices[2].position - triangle.vertices[1].position;
-		glm::vec3 edgeV = triangle.vertices[3].position - triangle.vertices[1].position;
+		glm::vec3 tangentA = triangle.vertices[1].position - triangle.vertices[0].position;
+		glm::vec3 tangentB = triangle.vertices[2].position - triangle.vertices[0].position;
 
-		triangle.normal.x = edgeU.y * edgeV.z - edgeU.z * edgeV.y;
-		triangle.normal.y = edgeU.z * edgeV.x - edgeU.x * edgeV.z;
-		triangle.normal.z = edgeU.x * edgeV.y - edgeU.y * edgeV.x;
-		triangle.normal = glm::normalize(triangle.normal);
+		triangle.normal = glm::normalize(glm::cross(tangentA, tangentB));
+
+		// triangle.normal.x = tangentA.y * tangentB.z - tangentA.z * tangentB.y;
+		// triangle.normal.y = tangentA.z * tangentB.x - tangentA.x * tangentB.z;
+		// triangle.normal.z = tangentA.x * tangentB.y - tangentA.y * tangentB.x;
+		// triangle.normal = glm::normalize(triangle.normal);
 
 		for (int i = 0; i < 3; i++) {
 			float isoSurfaceHeight = triangle.vertices[i].position.y / (float)m_HeightMapMultiplier;

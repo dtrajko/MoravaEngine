@@ -20,49 +20,49 @@ MapGenerator::MapGenerator(const char* heightMapFilePath, const char* colorMapFi
 
 	TerrainTypes waterDeep;
 	waterDeep.name = "Water Deep";
-	waterDeep.height = 0.4f;
+	waterDeep.height = 0.2f;
 	waterDeep.color = glm::vec4(48.0f / 255.0f, 90.0f / 255.0f, 174.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(waterDeep);
 
 	TerrainTypes waterShallow;
 	waterShallow.name = "Water Shallow";
-	waterShallow.height = 0.5f;
+	waterShallow.height = 0.3f;
 	waterShallow.color = glm::vec4(54.0f / 255.0f, 102.0f / 255.0f, 196.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(waterShallow);
 
 	TerrainTypes sand;
 	sand.name = "Sand";
-	sand.height = 0.55f;
+	sand.height = 0.4f;
 	sand.color = glm::vec4(208.0f / 255.0f, 210.0f / 255.0f, 128.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(sand);
 
 	TerrainTypes grass;
 	grass.name = "Grass";
-	grass.height = 0.6f;
+	grass.height = 0.5f;
 	grass.color = glm::vec4(86.0f / 255.0f, 150.0f / 255.0f, 22.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(grass);
 
 	TerrainTypes grass2;
 	grass2.name = "Grass 2";
-	grass2.height = 0.7f;
+	grass2.height = 0.6f;
 	grass2.color = glm::vec4(62.0f / 255.0f, 108.0f / 255.0f, 20.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(grass2);
 
 	TerrainTypes rock;
 	rock.name = "Rock";
-	rock.height = 0.8f;
+	rock.height = 0.7f;
 	rock.color = glm::vec4(92.0f / 255.0f, 70.0f / 255.0f, 64.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(rock);
 
 	TerrainTypes rock2;
 	rock2.name = "Rock 2";
-	rock2.height = 0.9f;
+	rock2.height = 0.8f;
 	rock2.color = glm::vec4(75.0f / 255.0f, 60.0f / 255.0f, 58.0f / 255.0f, 1.0f);
 	m_MapGenConf.regions.push_back(rock2);
 
 	TerrainTypes snow;
 	snow.name = "Snow";
-	snow.height = 1.0f;
+	snow.height = 0.9f;
 	snow.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	m_MapGenConf.regions.push_back(snow);
 }

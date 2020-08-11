@@ -35,7 +35,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
     sceneSettings.directionalLight.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
-    sceneSettings.directionalLight.direction = glm::vec3(0.6f, -0.5f, -0.6f);
+    sceneSettings.directionalLight.direction = glm::vec3(0.5f, 0.5f, 0.5f);
     sceneSettings.directionalLight.base.ambientIntensity = 0.75f;
     sceneSettings.directionalLight.base.diffuseIntensity = 0.4f;
     sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 40.0f);
