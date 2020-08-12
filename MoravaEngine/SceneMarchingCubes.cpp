@@ -25,11 +25,11 @@ SceneMarchingCubes::SceneMarchingCubes()
     sceneSettings.waterWaveSpeed = 0.05f;
     sceneSettings.enablePointLights  = true;
     sceneSettings.enableSpotLights   = true;
+    sceneSettings.enableShadows      = false;
     sceneSettings.enableOmniShadows  = false;
-    sceneSettings.enableSkybox       = false;
-    sceneSettings.enableShadows      = true;
     sceneSettings.enableWaterEffects = false;
     sceneSettings.enableParticles    = false;
+    sceneSettings.enableSkybox       = false;
     sceneSettings.farPlane = 200.0f;
 
     // directional light
@@ -423,6 +423,7 @@ void SceneMarchingCubes::UpdateImGui(float timestep, Window& mainWindow)
         ImGui::Checkbox("Render Marching Cubes Terrain", &m_RenderTerrainMarchingCubes);
         ImGui::Checkbox("Terrain Edit Mode", &m_TerrainEditMode);
         ImGui::Checkbox("Unlock Rotation", &m_UnlockRotation);
+        ImGui::Checkbox("Enable Shadows", &sceneSettings.enableShadows);
         ImGui::ColorEdit4("Cube Color", glm::value_ptr(m_CubeColor));
     }
     ImGui::End();
@@ -798,128 +799,82 @@ void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, 
 
     RendererBasic::EnableTransparency();
 
-    if (passType == "shadow_dir") {
-        shaderShadowMap->Bind();
-        shaderShadowMap->setMat4("model", glm::mat4(1.0f));
-    }
-
-    if (passType == "shadow_omni") {
-        shaderOmniShadow->Bind();
-    }
-
-    if (passType == "main") {
-    }
-
-    shaderMain->Bind();
-    if (LightManager::directionalLight.GetShadowMap() != nullptr)
-        LightManager::directionalLight.GetShadowMap()->Read(GetTextureSlots()["shadow"]);
-    shaderMain->setInt("shadowMap", GetTextureSlots()["shadow"]);
-
-    shaderMarchingCubes->Bind();
-    if (LightManager::directionalLight.GetShadowMap() != nullptr)
-        LightManager::directionalLight.GetShadowMap()->Read(GetTextureSlots()["shadow"]);
-    shaderMarchingCubes->setInt("shadowMap", GetTextureSlots()["shadow"]);
-
-    if (m_DrawGizmos) {
-        shaderBasic->Bind();
-        shaderBasic->setMat4("model", glm::mat4(1.0f));
-        m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
-    }
-
     ResourceManager::GetTexture("diffuse")->Bind(textureSlots["diffuse"]);
     ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
 
-    /**** BEGIN render Player ****/
-    shaderMain->Bind();
-    shaderMain->setMat4("projection", projectionMatrix);
-    shaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
-    shaderMain->setInt("albedoMap", 0);
-    shaderMain->setVec4("tintColor", m_Player->GetColor());
-
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, m_Player->GetPosition());
-    model = glm::rotate(model, glm::radians(m_Player->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(m_Player->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(m_Player->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
-    shaderMain->setMat4("model", model);
-
-    if (m_RenderPlayer)
-        m_Player->Render();
-
-    /**** END render Player ****/
-
-    /**** BEGIN Render Marching Cubes ****/
-
-    /****
-    shaderMain->Bind();
-    shaderMain->setMat4("projection", projectionMatrix);
-    shaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
-    shaderMain->setInt("albedoMap", 0);
-
-    for (auto vertexPosition : m_TerrainMarchingCubes->m_VertexPositions) {
-        model = glm::mat4(1.0f);
-        glm::vec3 scale;
-        glm::vec4 tintColor;
-        if (vertexPosition->inVolume) {
-            scale = glm::vec3(0.2f);
-            tintColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-        }
-        else {
-            scale = glm::vec3(0.2f);
-            tintColor = glm::vec4(0.2f, 0.2f, 0.5f, 1.0f);
-        }
-        shaderMain->setVec4("tintColor", tintColor);
-        model = Math::CreateTransform(vertexPosition->position, glm::quat(), scale);
-        shaderMain->setMat4("model", model);
-        meshes["cube"]->Render();
-    }
-
-    for (auto edgePosition : m_TerrainMarchingCubes->m_EdgePositions) {
-        model = Math::CreateTransform(edgePosition, glm::quat(), glm::vec3(0.1f));
-        shaderMain->setMat4("model", model);
-        shaderMain->setVec4("tintColor", glm::vec4(0.3f, 0.3f, 0.6f, 1.0f));
-        meshes["cube"]->Render();
-    }
-    ****/
-
-    shaderMarchingCubes->Bind();
-    shaderMarchingCubes->setMat4("projection", projectionMatrix);
-    shaderMarchingCubes->setMat4("view", m_CameraController->CalculateViewMatrix());
-    shaderMarchingCubes->setInt("albedoMap", 0);
-    shaderMarchingCubes->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    shaderMarchingCubes->setMat4("model", glm::mat4(1.0f));
-
-    // Shadows in shaderMarchingCubes
-    if (LightManager::directionalLight.GetShadowMap() != nullptr)
+    if (sceneSettings.enableShadows && LightManager::directionalLight.GetShadowMap() != nullptr)
         LightManager::directionalLight.GetShadowMap()->Read(GetTextureSlots()["shadow"]);
-    shaderMarchingCubes->setInt("shadowMap", GetTextureSlots()["shadow"]);
-
-    if (m_RenderTerrainMarchingCubes)
-        m_TerrainMarchingCubes->Render();
-
-    //  printf("TerrainMarchingCubes VAO = %i IBO = %i m_IndexCount = %i\n",
-    //      m_TerrainMarchingCubes->GetVAO(), m_TerrainMarchingCubes->GetIBO(), m_TerrainMarchingCubes->GetIndexCount());
-
-    /**** END Render Marching Cubes ****/
-
-    glm::vec4 tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-    /**** BEGIN Render Procedural Landmass Generation Terrain ****/
-
-    shaderRenderInstanced->Bind();
-
-    tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-    shaderRenderInstanced->setMat4("projection", projectionMatrix);
-    shaderRenderInstanced->setMat4("view", m_CameraController->CalculateViewMatrix());
-    shaderRenderInstanced->setInt("albedoMap", 0);
-    shaderRenderInstanced->setVec4("tintColor", tintColor);
 
     m_RenderInstanced->m_Texture->Bind(0);
-    if (m_RenderTerrainVoxels)
-        m_RenderInstanced->Render();
 
-    /**** END Render Procedural Landmass Generation Terrain ****/
+    if (m_DrawGizmos) {
+        if (passType == "main") {
+            shaderBasic->Bind();
+            shaderBasic->setMat4("model", glm::mat4(1.0f));
+            m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
+        }
+    }
+
+    if (m_RenderPlayer)
+    {
+        /**** BEGIN render Player ****/
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, m_Player->GetPosition());
+        model = glm::rotate(model, glm::radians(m_Player->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(m_Player->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(m_Player->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        if (passType == "shadow_dir") {
+            shaderShadowMap->Bind();
+            shaderShadowMap->setMat4("model", model);
+            shaderShadowMap->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+        }
+        else {
+            shaderMain->Bind();
+            shaderMain->setMat4("projection", projectionMatrix);
+            shaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
+            shaderMain->setMat4("model", model);
+            shaderMain->setVec4("tintColor", m_Player->GetColor());
+            shaderMain->setInt("albedoMap", 0);
+            shaderMain->setInt("shadowMap", GetTextureSlots()["shadow"]);
+        }
+        m_Player->Render();
+        /**** END render Player ****/
+    }
+
+    if (m_RenderTerrainMarchingCubes)
+    {
+        /**** BEGIN Render Marching Cubes ****/
+        if (passType == "shadow_dir") {
+            shaderShadowMap->Bind();
+            shaderShadowMap->setMat4("model", glm::mat4(1.0f));
+            shaderShadowMap->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+        }
+        else {
+            shaderMarchingCubes->Bind();
+            shaderMarchingCubes->setMat4("projection", projectionMatrix);
+            shaderMarchingCubes->setMat4("view", m_CameraController->CalculateViewMatrix());
+            shaderMarchingCubes->setMat4("model", glm::mat4(1.0f));
+            shaderMarchingCubes->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            shaderMarchingCubes->setInt("albedoMap", 0);
+            if (sceneSettings.enableShadows) {
+                shaderMarchingCubes->setInt("shadowMap", GetTextureSlots()["shadow"]);
+            }
+        }
+        m_TerrainMarchingCubes->Render();
+        /**** END Render Marching Cubes ****/
+    }
+
+    if (m_RenderTerrainVoxels) {
+        /**** BEGIN Render Procedural Landmass Generation Terrain ****/
+        shaderRenderInstanced->Bind();
+        shaderRenderInstanced->setMat4("projection", projectionMatrix);
+        shaderRenderInstanced->setMat4("view", m_CameraController->CalculateViewMatrix());
+        shaderRenderInstanced->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        shaderRenderInstanced->setInt("albedoMap", 0);
+        m_RenderInstanced->Render();
+        /**** END Render Procedural Landmass Generation Terrain ****/
+    }
 }
 
 void SceneMarchingCubes::Release()

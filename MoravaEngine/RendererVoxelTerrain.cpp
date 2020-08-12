@@ -58,8 +58,10 @@ void RendererVoxelTerrain::RenderPassShadow(Window& mainWindow, Scene* scene, gl
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_BLEND);
 
-	shaderShadowMap->setMat4("dirLightTransform", light->CalculateLightTransform());
+	/**** BEGIN shadow_map ****/
+	shaderShadowMap->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 	shaderShadowMap->Validate();
+	/**** END shadow_map ****/
 
 	DisableCulling();
 	std::string passType = "shadow_dir";
@@ -117,19 +119,6 @@ void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// then before rendering, configure the viewport to the original framebuffer's screen dimensions
-	SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
-
-	EnableTransparency();
-	EnableCulling();
-
-	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
-	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
-}
-
-void RendererVoxelTerrain::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
-{
 	/**** BEGIN shaderMain ****/
 	Shader* shaderMain = (Shader*)shaders["main"];
 	shaderMain->Bind();
@@ -305,12 +294,13 @@ void RendererVoxelTerrain::Render(float deltaTime, Window& mainWindow, Scene* sc
 	shaderBasic->Validate();
 	/**** END shaderBasic ****/
 
-	/**** BEGIN shadow_map ****/
-	Shader* shaderShadowMap = shaders["shadow_map"];
-	shaderShadowMap->Bind();
-	shaderShadowMap->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-	/**** END shadow_map ****/
+	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
+	std::string passType = "main";
+	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+}
 
+void RendererVoxelTerrain::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
 	{
 		Profiler profiler("RVT::RenderPassShadow");
 		RenderPassShadow(mainWindow, scene, projectionMatrix);
