@@ -82,8 +82,8 @@ private:
 	MapGenerator::MapGenConf m_MapGenConf;
 	MapGenerator::MapGenConf m_MapGenConfPrev;
 
-	float m_HeightMapMultiplier;
-	float m_HeightMapMultiplierPrev;
+	int m_HeightMapMultiplier;
+	int m_HeightMapMultiplierPrev;
 
 	float m_SeaLevel;
 	float m_SeaLevelPrev;
@@ -93,5 +93,7 @@ private:
 
 	bool m_IsRequiredMapUpdate;
 	bool m_IsRequiredMapRebuild;
+
+	bool m_TerrainEditMode;
 
 };

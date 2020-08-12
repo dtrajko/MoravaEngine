@@ -183,6 +183,7 @@
     <ClCompile Include="MeshGenerator.cpp" />
     <ClCompile Include="MeshUnity.cpp" />
     <ClCompile Include="NoiseSL.cpp" />
+    <ClCompile Include="Octree.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleMaster.cpp" />
     <ClCompile Include="ParticleRenderer.cpp" />
@@ -192,6 +193,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerController.cpp" />
     <ClCompile Include="QuadInstanced.cpp" />
+    <ClCompile Include="Quadtree.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="RendererOmniShadows.cpp" />
     <ClCompile Include="RendererVoxelTerrain.cpp" />
@@ -334,6 +336,7 @@
     <ClInclude Include="MeshGenerator.h" />
     <ClInclude Include="MeshUnity.h" />
     <ClInclude Include="NoiseSL.h" />
+    <ClInclude Include="Octree.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleMaster.h" />
     <ClInclude Include="ParticleRenderer.h" />
@@ -345,6 +348,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerController.h" />
     <ClInclude Include="QuadInstanced.h" />
+    <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="RendererOmniShadows.h" />
     <ClInclude Include="RendererVoxelTerrain.h" />

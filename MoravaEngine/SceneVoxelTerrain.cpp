@@ -27,6 +27,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     sceneSettings.enableShadows      = false;
     sceneSettings.enableWaterEffects = false;
     sceneSettings.enableParticles    = false;
+    sceneSettings.farPlane = 600.0f;
 
     // directional light
     sceneSettings.directionalLight.base.enabled = true;

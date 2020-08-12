@@ -434,6 +434,12 @@
     <ClCompile Include="Transform.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Octree.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="Quadtree.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -784,7 +790,6 @@
     <ClInclude Include="ParticleSystemThinMatrix.h">
       <Filter>Particle</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="ParticleTexture.h">
       <Filter>Particle</Filter>
     </ClInclude>
@@ -899,6 +904,15 @@
     <ClInclude Include="Transform.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Octree.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Quadtree.h">
+      <Filter>Data</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -960,6 +974,9 @@
     </Filter>
     <Filter Include="Player">
       <UniqueIdentifier>{e038b3e3-f988-4252-b109-ef5684319fd8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{c1ea4d8e-74b2-4a75-bf05-1c6abc7214e6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -114,10 +114,12 @@ SceneVoxelTerrainSL::SceneVoxelTerrainSL()
     
     m_MapGenConf.autoUpdate = true;
     m_MapGenConf.regions = std::vector<MapGenerator::TerrainTypes>();
-    
-    m_HeightMapMultiplier = 10.0f;
+
+    m_MapGenConfPrev = m_MapGenConf;
+ 
+    m_HeightMapMultiplier = 10;
     m_HeightMapMultiplierPrev = m_HeightMapMultiplier;
-    m_SeaLevel = 0.5f;
+    m_SeaLevel = 0.3f;
     m_SeaLevelPrev = m_SeaLevel;
     m_LevelOfDetail = 0;
     m_LevelOfDetailPrev = m_LevelOfDetail;
@@ -140,6 +142,8 @@ SceneVoxelTerrainSL::SceneVoxelTerrainSL()
 
     NoiseSL::Init(m_MapGenConf.seed);
     m_TerrainSL = new TerrainSL(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
+
+    m_TerrainEditMode = false;
 
     ResourceManager::LoadTexture("heightMap", m_MapGenConf.heightMapFilePath, GL_NEAREST, true);
     ResourceManager::LoadTexture("colorMap", m_MapGenConf.colorMapFilePath, GL_NEAREST, true);
@@ -423,6 +427,7 @@ void SceneVoxelTerrainSL::UpdateImGui(float timestep, Window& mainWindow)
         ImGui::Checkbox("Draw Gizmos", &m_DrawGizmos);
         ImGui::Checkbox("Render Player", &m_RenderPlayer);
         ImGui::Checkbox("Unlock Rotation", &m_UnlockRotation);
+        ImGui::Checkbox("Terrain Edit Mode", &m_TerrainEditMode);
         ImGui::ColorEdit4("Cube Color", glm::value_ptr(m_CubeColor));
     }
     ImGui::End();
@@ -461,7 +466,7 @@ void SceneVoxelTerrainSL::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::SliderFloat2("Offset", glm::value_ptr(m_MapGenConf.offset), -1.0f, 1.0f);
             ImGui::Checkbox("Auto Update", &m_MapGenConf.autoUpdate);
 
-            ImGui::SliderFloat("Height Map Multiplier", &m_HeightMapMultiplier, -40.0f, 40.0f);
+            ImGui::SliderInt("Height Map Multiplier", &m_HeightMapMultiplier, -40, 40);
             ImGui::SliderFloat("Sea Level", &m_SeaLevel, 0.0f, 1.0f);
         }
     }
@@ -639,6 +644,8 @@ void SceneVoxelTerrainSL::OnClick(bool* keys, bool* buttons, float timestep)
     // Cooldown
     if (timestep - m_OnClickCooldown.lastTime < m_OnClickCooldown.cooldown) return;
     m_OnClickCooldown.lastTime = timestep;
+
+    if (!m_TerrainEditMode) return;
 
     if (buttons[GLFW_MOUSE_BUTTON_1]) {
 
