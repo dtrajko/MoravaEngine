@@ -24,9 +24,9 @@ glm::vec2** NoiseSL::s_OctaveOffsets;
 
 void NoiseSL::Init(int seed)
 {
-    srand((unsigned int)time(nullptr));
-    s_RandSeed = rand() % seed;
-    s_PerlinNoise.reseed(s_RandSeed);
+    // srand((unsigned int)time(nullptr));
+    s_RandSeed = 0; // rand() % seed;
+    // s_PerlinNoise.reseed(s_RandSeed);
     printf("NoiseSL::Init s_RandSeed = %i\n", s_RandSeed);
 }
 

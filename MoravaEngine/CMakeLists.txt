@@ -1,13 +1,32 @@
 cmake_minimum_required(VERSION 3.16)
+
+set(MSVC_INCREMENTAL_DEFAULT ON)
+
 project("MoravaEngine" VERSION 0.0.1)
 
-add_executable("MoravaEngine" "main.cpp")
+option(USE_MSVC_INCREMENTAL_LINKING "Use MSVC Incremental Linking" OFF)
+
+file(GLOB SOURCES
+	./*.h
+	./*.cpp
+	PerlinNoise/PerlinNoise.hpp
+	LearnOpenGL/*.h
+	LearnOpenGL/*.cpp
+	SongHo/*.h
+	SongHo/*.cpp
+	../vendor/ImGui/*.h
+	../vendor/ImGui/*.cpp
+)
+
+add_executable("MoravaEngine" "${SOURCES}")
 
 set(CMAKE_GENERATOR_PLATFORM, x64)
 
 if(MSVC)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG:incremental")
 endif()
+
+unset(CMAKE_IMPORT_LIBRARY_SUFFIX)
 
 include_directories(
 	../vendor/GLFW/include
