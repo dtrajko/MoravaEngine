@@ -1,11 +1,11 @@
 #include "SceneBullet.h"
 
-#include "MeshData.h"
-#include "LearnOpenGL/SphereJoey.h"
-#include "Sphere.h"
-#include "Block.h"
-#include "ImGuiWrapper.h"
-#include "Profiler.h"
+#include "../MeshData.h"
+#include "../LearnOpenGL/SphereJoey.h"
+#include "../Sphere.h"
+#include "../Block.h"
+#include "../ImGuiWrapper.h"
+#include "../Profiler.h"
 
 #include <string>
 

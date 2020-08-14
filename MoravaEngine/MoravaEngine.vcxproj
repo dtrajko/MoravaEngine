@@ -272,7 +272,6 @@
     <ClCompile Include="Ring90.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneAsteroids.cpp" />
-    <ClCompile Include="SceneBullet.cpp" />
     <ClCompile Include="SceneCubemaps.cpp" />
     <ClCompile Include="SceneEditor.cpp" />
     <ClCompile Include="SceneFramebuffers.cpp" />
@@ -292,6 +291,7 @@
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="SongHo\CylinderSongHo.cpp" />
+    <ClCompile Include="SourceConditional\SceneBullet.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="SubTexture2D.cpp" />
@@ -429,7 +429,6 @@
     <ClInclude Include="Ring90.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneAsteroids.h" />
-    <ClInclude Include="SceneBullet.h" />
     <ClInclude Include="SceneCubemaps.h" />
     <ClInclude Include="SceneEditor.h" />
     <ClInclude Include="SceneFramebuffers.h" />
@@ -449,6 +448,7 @@
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="SongHo\CylinderSongHo.h" />
+    <ClInclude Include="SourceConditional\SceneBullet.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="SubTexture2D.h" />

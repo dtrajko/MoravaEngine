@@ -30,7 +30,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     sceneSettings.enableWaterEffects = false;
     sceneSettings.enableParticles    = false;
     sceneSettings.enableSkybox       = false;
-    sceneSettings.farPlane = 200.0f;
+    sceneSettings.farPlane = 400.0f;
 
     // directional light
     sceneSettings.directionalLight.base.enabled = true;

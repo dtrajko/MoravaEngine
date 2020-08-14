@@ -71,9 +71,6 @@
     <ClCompile Include="SceneAsteroids.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="SceneBullet.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="SceneCottage.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
@@ -440,6 +437,9 @@
     <ClCompile Include="Quadtree.cpp">
       <Filter>Data</Filter>
     </ClCompile>
+    <ClCompile Include="SourceConditional\SceneBullet.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -518,9 +518,6 @@
       <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="SceneAsteroids.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneBullet.h">
       <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="SceneCottage.h">
@@ -912,6 +909,9 @@
     </ClInclude>
     <ClInclude Include="Quadtree.h">
       <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceConditional\SceneBullet.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

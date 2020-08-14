@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Scene.h"
+#include "../Scene.h"
 
 #include "btBulletDynamicsCommon.h"
-#include "BulletDebugDrawer.h"
+#include "../BulletDebugDrawer.h"
+
 
 class SceneBullet : public Scene
 {

@@ -1,6 +1,16 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
+#ifndef  NOMINMAX
+#define NOMINMAX
+#endif // !NOMINMAX
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#define APIENTRY
+#endif // !_WIN32
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -24,7 +34,7 @@
 #include "SceneTerrain.h"
 #include "ScenePBR.h"
 #include "SceneJoey.h"
-#include "SceneBullet.h"
+#include "SourceConditional/SceneBullet.h"
 #include "SceneInstanced.h"
 #include "SceneAsteroids.h"
 #include "SceneNanosuit.h"
@@ -85,7 +95,7 @@ enum class SceneName
 	MarchingCubes,
 };
 
-SceneName currentScene = SceneName::VoxelTerrainSL;
+SceneName currentScene = SceneName::MarchingCubes;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
