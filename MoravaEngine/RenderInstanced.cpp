@@ -1,9 +1,7 @@
 #include "RenderInstanced.h"
 
+#include "CommonValues.h"
 #include "Log.h"
-
-#include <GL/glew.h>
-#include <glm/gtc/matrix_transform.hpp>
 
 
 RenderInstanced::RenderInstanced()

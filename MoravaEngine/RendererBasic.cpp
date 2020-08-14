@@ -1,8 +1,6 @@
 #include "RendererBasic.h"
 
-#include "GL/glew.h"
-#include "glm/gtc/matrix_transform.hpp"
-#include <GLFW/glfw3.h>
+#include "CommonValues.h"
 
 
 glm::mat4 RendererBasic::m_ProjectionMatrix;

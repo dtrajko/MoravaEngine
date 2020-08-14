@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CommonValues.h"
+
 #include <stdio.h>
 #include <string>
 #include <iostream>
@@ -7,12 +9,6 @@
 #include <vector>
 #include <map>
 
-#include <GL/glew.h>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include "CommonValues.h"
 
 
 class Shader

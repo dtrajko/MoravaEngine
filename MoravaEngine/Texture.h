@@ -1,11 +1,8 @@
 #pragma once
 
-#include <GL/glew.h>
-#include <glm/glm.hpp>
+#include "CommonValues.h"
 
 #include <string>
-
-#include "CommonValues.h"
 
 
 class Texture

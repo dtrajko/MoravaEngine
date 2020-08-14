@@ -1,9 +1,7 @@
 #include "MaterialWorkflowPBR.h"
 
+#include "CommonValues.h"
 #include "Log.h"
-
-#include <GL/glew.h>
-#include "stb_image.h"
 
 #include <iostream>
 
