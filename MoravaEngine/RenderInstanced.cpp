@@ -6,6 +6,8 @@
 
 RenderInstanced::RenderInstanced()
 {
+	m_VBO_Instanced = -1;
+	m_InstanceCount = -1;
 }
 
 RenderInstanced::RenderInstanced(TerrainBase* terrain, Texture* texture, Mesh* mesh)
@@ -19,6 +21,9 @@ RenderInstanced::RenderInstanced(TerrainBase* terrain, Texture* texture, Mesh* m
 
 	m_IntersectPosition = glm::ivec3(0);
 	m_DeleteMode = nullptr;
+
+	m_VBO_Instanced = -1;
+	m_InstanceCount = -1;
 
 	CreateVertexData();
 }
@@ -102,8 +107,14 @@ void RenderInstanced::CreateVertexArray()
 
 void RenderInstanced::Release()
 {
-	delete m_InstanceDataArray;
-	glDeleteBuffers(1, &m_VBO_Instanced);
+	if (m_InstanceCount != -1) {
+		delete m_InstanceDataArray;
+		m_InstanceCount = -1;
+	}
+	if (m_VBO_Instanced != -1) {
+		glDeleteBuffers(1, &m_VBO_Instanced);
+		m_VBO_Instanced = -1;
+	}
 }
 
 void RenderInstanced::SetIntersectPosition(glm::ivec3 intersectPosition)
