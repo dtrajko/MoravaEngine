@@ -10,8 +10,17 @@ Its current purpose is experimenting with various computer graphics concepts and
 * Image based lighting (IBL)
 * Particle systems
 * Instanced rendering
+* Surface reflection and refraction
+* Framebuffers
+* Post-processing
+* Level of detail
+* Scene editor
+* Perlin noise generator
+* Procedural landmass generation
 * Voxel based volumes
+* Marching cubes algorithm
 * Physics simulations
+* Skeletal animation
 
 ## Installation
 Build automation based on CMake (in progress)
