@@ -10,7 +10,7 @@ TerrainMarchingCubes::TerrainMarchingCubes() : TerrainVoxel()
 {
 }
 
-TerrainMarchingCubes::TerrainMarchingCubes(MapGenerator::MapGenConf mapGenConf, int heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail) : TerrainVoxel()
+TerrainMarchingCubes::TerrainMarchingCubes(MapGenerator::MapGenConf mapGenConf, int heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail, Scene* scene) : TerrainVoxel()
 {
 	m_HeightMapMultiplier = heightMapMultiplier;
 	m_IsRequiredMapRebuild = isRequiredMapRebuild;
@@ -23,6 +23,8 @@ TerrainMarchingCubes::TerrainMarchingCubes(MapGenerator::MapGenConf mapGenConf, 
 	m_Scale.x = (float)mapGenConf.mapChunkSize;
 	m_Scale.y = (float)m_HeightMapMultiplier;
 	m_Scale.z = (float)mapGenConf.mapChunkSize;
+
+	m_Scene = scene;
 
 	Generate();
 }
@@ -77,8 +79,40 @@ void TerrainMarchingCubes::Generate(glm::vec3 scale)
 
 void TerrainMarchingCubes::MarchingCubes()
 {
-	int cubeSize = 2; // 2 x 2 x 2 voxels
+	m_CubeSize = 2; // 2 x 2 x 2 voxels
 
+	{
+		Profiler profiler("TerrainMarchingCubes::CalculateVoxelRanges");
+		CalculateVoxelRanges();
+		m_Scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+	}
+
+	for (auto vertexPosition : m_VertexPositions) {
+		delete vertexPosition;
+	}
+	m_VertexPositions.clear();
+	m_EdgePositions.clear();
+	m_Triangles.clear();
+
+	{
+		Profiler profiler("TerrainMarchingCubes::CalculateVoxelParameters");
+		CalculateVoxelParameters();
+		m_Scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+	}
+	{
+		Profiler profiler("TerrainMarchingCubes::GenerateVertexData");
+		GenerateVertexData();
+		m_Scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+	}
+	{
+		Profiler profiler("TerrainMarchingCubes::GenerateDataOpenGL");
+		GenerateDataOpenGL();
+		m_Scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+	}
+}
+
+void TerrainMarchingCubes::CalculateVoxelRanges()
+{
 	auto intMin = std::numeric_limits<int>::min();
 	auto intMax = std::numeric_limits<int>::max();
 
@@ -98,39 +132,32 @@ void TerrainMarchingCubes::MarchingCubes()
 		if (voxel.second->position.z < m_VoxelRangeMin.z) m_VoxelRangeMin.z = voxel.second->position.z;
 	}
 
-	printf("TMC::MarchingCubes BEFORE voxelRangeMin [ %i %i %i ] voxelRangeMax [ %i %i %i ]\n",
-		m_VoxelRangeMin.x, m_VoxelRangeMin.y, m_VoxelRangeMin.z, m_VoxelRangeMax.x, m_VoxelRangeMax.y, m_VoxelRangeMax.z);
+	//	printf("TMC::MarchingCubes BEFORE voxelRangeMin [ %i %i %i ] voxelRangeMax [ %i %i %i ]\n",
+	//		m_VoxelRangeMin.x, m_VoxelRangeMin.y, m_VoxelRangeMin.z, m_VoxelRangeMax.x, m_VoxelRangeMax.y, m_VoxelRangeMax.z);
 
 	// Make min and max limits dividable by cubeSize
-	m_VoxelRangeMin.x = (m_VoxelRangeMin.x / cubeSize) * cubeSize - cubeSize / 2;
-	m_VoxelRangeMin.y = (m_VoxelRangeMin.y / cubeSize) * cubeSize - cubeSize / 2;
-	m_VoxelRangeMin.z = (m_VoxelRangeMin.z / cubeSize) * cubeSize - cubeSize / 2;
-	m_VoxelRangeMax.x = (m_VoxelRangeMax.x / cubeSize) * cubeSize + cubeSize / 2;
-	m_VoxelRangeMax.y = (m_VoxelRangeMax.y / cubeSize) * cubeSize + cubeSize / 2;
-	m_VoxelRangeMax.z = (m_VoxelRangeMax.z / cubeSize) * cubeSize + cubeSize / 2;
+	m_VoxelRangeMin.x = (m_VoxelRangeMin.x / m_CubeSize) * m_CubeSize - m_CubeSize / 2;
+	m_VoxelRangeMin.y = (m_VoxelRangeMin.y / m_CubeSize) * m_CubeSize - m_CubeSize / 2;
+	m_VoxelRangeMin.z = (m_VoxelRangeMin.z / m_CubeSize) * m_CubeSize - m_CubeSize / 2;
+	m_VoxelRangeMax.x = (m_VoxelRangeMax.x / m_CubeSize) * m_CubeSize + m_CubeSize / 2;
+	m_VoxelRangeMax.y = (m_VoxelRangeMax.y / m_CubeSize) * m_CubeSize + m_CubeSize / 2;
+	m_VoxelRangeMax.z = (m_VoxelRangeMax.z / m_CubeSize) * m_CubeSize + m_CubeSize / 2;
 
-	printf("TMC::MarchingCubes AFTER voxelRangeMin [ %i %i %i ] voxelRangeMax [ %i %i %i ]\n",
-		m_VoxelRangeMin.x, m_VoxelRangeMin.y, m_VoxelRangeMin.z, m_VoxelRangeMax.x, m_VoxelRangeMax.y, m_VoxelRangeMax.z);
+	//	printf("TMC::MarchingCubes AFTER voxelRangeMin [ %i %i %i ] voxelRangeMax [ %i %i %i ]\n",
+	//		m_VoxelRangeMin.x, m_VoxelRangeMin.y, m_VoxelRangeMin.z, m_VoxelRangeMax.x, m_VoxelRangeMax.y, m_VoxelRangeMax.z);
+}
 
-	for (auto vertexPosition : m_VertexPositions)
-		delete vertexPosition;
-	m_VertexPositions.clear();
-	m_EdgePositions.clear();
-
-	m_Triangles.clear();
-
+void TerrainMarchingCubes::CalculateVoxelParameters()
+{
 	// calculate cube parameters for all XYZ positions
-	for (int x = (int)m_VoxelRangeMin.x - 1; x < (int)m_VoxelRangeMax.x + 1; x+= cubeSize) {
-		for (int y = (int)m_VoxelRangeMin.y - 1; y < (int)m_VoxelRangeMax.y + 1; y += cubeSize) {
-			for (int z = (int)m_VoxelRangeMin.z - 1; z < (int)m_VoxelRangeMax.z + 1; z += cubeSize) {
+	for (int x = (int)m_VoxelRangeMin.x - 1; x < (int)m_VoxelRangeMax.x + 1; x += m_CubeSize) {
+		for (int y = (int)m_VoxelRangeMin.y - 1; y < (int)m_VoxelRangeMax.y + 1; y += m_CubeSize) {
+			for (int z = (int)m_VoxelRangeMin.z - 1; z < (int)m_VoxelRangeMax.z + 1; z += m_CubeSize) {
 
-				ComputeSingleCube(glm::ivec3(x, y, z), cubeSize);
+				ComputeSingleCube(glm::ivec3(x, y, z), m_CubeSize);
 			}
 		}
 	}
-
-	GenerateVertexData();
-	GenerateDataOpenGL();
 }
 
 void TerrainMarchingCubes::ComputeSingleCube(glm::ivec3 position, int cubeSize)

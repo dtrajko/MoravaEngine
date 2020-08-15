@@ -1,8 +1,8 @@
 #pragma once
 
 #include "TerrainVoxel.h"
-
 #include "MapGenerator.h"
+#include "Scene.h"
 
 #include <map>
 
@@ -14,7 +14,7 @@ class TerrainMarchingCubes : public TerrainVoxel
 {
 public:
 	TerrainMarchingCubes();
-	TerrainMarchingCubes(MapGenerator::MapGenConf mapGenConf, int heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail);
+	TerrainMarchingCubes(MapGenerator::MapGenConf mapGenConf, int heightMapMultiplier, bool isRequiredMapRebuild, float seaLevel, int levelOfDetail, Scene* scene);
 	~TerrainMarchingCubes();
 
 	virtual void Generate(glm::vec3 scale = glm::vec3(1.0f)) override;
@@ -28,6 +28,8 @@ public:
 	bool DoesVoxelExists(glm::ivec3 position);
 
 private:
+	void CalculateVoxelRanges();
+	void CalculateVoxelParameters();
 	void ComputeSingleCube(glm::ivec3 position, int cubeSize);
 	void GenerateVertexData();
 	void GenerateDataOpenGL();
@@ -74,5 +76,8 @@ private:
 	// std::vector<glm::vec3> m_CubeNormals;
 
 	std::vector<glm::ivec3> m_CubeEdgeIntersections;
+
+	Scene* m_Scene;
+	int m_CubeSize;
 
 };

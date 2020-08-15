@@ -150,7 +150,7 @@ SceneMarchingCubes::SceneMarchingCubes()
     m_IsRequiredMapRebuild = true;
 
     NoiseSL::Init(m_MapGenConf.seed);
-    m_TerrainMarchingCubes = new TerrainMarchingCubes(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail);
+    m_TerrainMarchingCubes = new TerrainMarchingCubes(m_MapGenConf, m_HeightMapMultiplier, m_IsRequiredMapRebuild, m_SeaLevel, m_LevelOfDetail, this);
     m_TotalVoxelNumber = (unsigned int)m_TerrainMarchingCubes->m_Voxels.size();
 
     m_TerrainEditMode = false;
@@ -597,8 +597,17 @@ void SceneMarchingCubes::UpdateCooldown(float timestep, Window& mainWindow)
     /**** BEGIN UpdateCooldown Procedural Landmass Generation Terrain ****/
 
     if (m_VoxelsModified) {
-        m_RenderInstanced->CreateVertexData();
-        m_TerrainMarchingCubes->MarchingCubes();
+        {
+            Profiler profiler("SMC: m_RenderInstanced->CreateVertexData");
+            m_RenderInstanced->CreateVertexData();
+            GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+
+        }
+        {
+            Profiler profiler("SMC: m_TerrainMarchingCubes->MarchingCubes");
+            m_TerrainMarchingCubes->MarchingCubes();
+            GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+        }
         m_VoxelsModified = false;
     }
 
@@ -606,7 +615,7 @@ void SceneMarchingCubes::UpdateCooldown(float timestep, Window& mainWindow)
 
     if (!m_IsRequiredMapUpdate) return;
 
-    printf("SceneMarchingCubes::UpdateCooldown m_VoxelsModified = %i\n", m_VoxelsModified);
+    // printf("SceneMarchingCubes::UpdateCooldown m_VoxelsModified = %i\n", m_VoxelsModified);
 
     {
         Profiler profiler("SMC::TerrainMarchingCubes::Update");
