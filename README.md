@@ -1,8 +1,7 @@
 # MoravaEngine
 Graphics engine based on C++ and OpenGL ES 2.0
 
-
-Keyboard and Mouse shortcuts:  
+## Keyboard and Mouse shortcuts
 
 * Add Mesh or Model: Left CTRL + Left Mouse Button  
 * Camera Rotation: Right Mouse Button  
@@ -15,3 +14,7 @@ Keyboard and Mouse shortcuts:
 * Scene Load: Left CTRL + L  
 * Toggle Wireframe Mode: R  
 * Copy scene object: Left CTRL + C  
+
+##Images
+
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-08-12_16-53-48.png)
