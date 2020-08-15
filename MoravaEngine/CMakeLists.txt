@@ -3,10 +3,10 @@ cmake_minimum_required(VERSION 3.16)
 set(MSVC_INCREMENTAL_DEFAULT ON)
 
 
-set(BULLET_VERSION, 2.85)
-project("BulletCollision" VERSION "${BULLET_VERSION}")
-project("BulletDynamics"  VERSION "${BULLET_VERSION}")
-project("LinearMath"      VERSION "${BULLET_VERSION}")
+# set(BULLET_VERSION, 2.85)
+# project("BulletCollision" VERSION "${BULLET_VERSION}")
+# project("BulletDynamics"  VERSION "${BULLET_VERSION}")
+# project("LinearMath"      VERSION "${BULLET_VERSION}")
 
 
 project("MoravaEngine" VERSION 0.0.1)
@@ -82,6 +82,16 @@ file(COPY ./Models DESTINATION ../build)
 file(COPY ./Shaders DESTINATION ../build)
 file(COPY ./Textures DESTINATION ../build)
 
+
+# set(BULLET_ROOT, ../vendor/bullet3)
+# set(BULLET_DYNAMICS_LIBRARY, ../vendor/bullet3/src/BulletDynamics)
+# set(BULLET_COLLISION_LIBRARY, ../vendor/bullet3/src/BulletCollision)
+# set(BULLET_MATH_LIBRARY, ../vendor/bullet3/src/LinearMath)
+# set(BULLET_SOFTBODY_LIBRARY, ../vendor/bullet3/src/BulletSoftBody)
+# set(BULLET_INCLUDE_DIR, ../vendor/bullet3/src)
+# find_package(Bullet REQUIRED)
+
+# set(BULLET_VERSION, 2.85)
 # include(../vendor/bullet3/src/CMakeLists.txt)
 # include(../vendor/bullet3/src/BulletCollision/CMakeLists.txt)
 # include(../vendor/bullet3/src/BulletDynamics/CMakeLists.txt)
