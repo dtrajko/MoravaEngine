@@ -1,5 +1,20 @@
 # MoravaEngine
-Graphics engine based on C++ and OpenGL ES 2.0
+
+## About
+2D/3D graphics engine based on C++ and OpenGL ES 2.0.
+Its current purpose is experimenting with various computer graphics concepts and techniques:
+
+* Phong lighting model
+* Shadows (directional light, omni-directional shadows)
+* Physically based rendering (PBR)
+* Image based lighting (IBL)
+* Particle systems
+* Instanced rendering
+* Voxel based volumes
+* Physics simulations
+
+## Installation
+Build automation based on CMake (in progress)
 
 ## Keyboard and Mouse shortcuts
 
