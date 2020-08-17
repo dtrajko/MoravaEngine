@@ -4,7 +4,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 # dtrajko custom
-vendor/bullet3/
+# vendor/bullet3/ # promote to a submodule
 
 # User-specific files
 *.rsuser

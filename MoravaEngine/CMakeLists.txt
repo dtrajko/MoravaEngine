@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
 
+set(CMAKE_BUILD_TYPE, Release)
+
 set(MSVC_INCREMENTAL_DEFAULT ON)
 
 project("MoravaEngine" VERSION 0.0.1)
 
-option(USE_MSVC_INCREMENTAL_LINKING "Use MSVC Incremental Linking" OFF)
-
+if (WIN32)
 file(GLOB SOURCES
 	./*.h
 	./*.cpp
@@ -31,31 +32,31 @@ file(GLOB SOURCES
 	../vendor/ImGui/imstb_textedit.h
 	../vendor/ImGui/imstb_truetype.h
 )
+endif (WIN32)
 
-add_executable("MoravaEngine" "${SOURCES}")
-
-set(CMAKE_GENERATOR_PLATFORM, x64)
-
-unset(CMAKE_IMPORT_LIBRARY_SUFFIX)
-
-include_directories(
-	../vendor/GLFW/include
-	../vendor/GLEW/include
-	../vendor/ASSIMP/include
-	../vendor/ImGui
-	../vendor/GLM
-	../vendor/bullet3/src
-	../vendor/tinyobjloader
-	../vendor/spdlog/include
+if (UNIX)
+file(GLOB SOURCES
+	./*.h
+	./*.cpp
+	PerlinNoise/PerlinNoise.hpp
+	LearnOpenGL/*.h
+	LearnOpenGL/*.cpp
+	SongHo/*.h
+	SongHo/*.cpp
+	../vendor/ImGui/imconfig.h
+	../vendor/ImGui/imgui.cpp
+	../vendor/ImGui/imgui.h
+	../vendor/ImGui/imgui_demo.cpp
+	../vendor/ImGui/imgui_draw.cpp
+	../vendor/ImGui/imgui_impl_glfw.h
+	../vendor/ImGui/imgui_impl_opengl3.h
+	../vendor/ImGui/imgui_internal.h
+	../vendor/ImGui/imgui_widgets.cpp
+	../vendor/ImGui/imstb_rectpack.h
+	../vendor/ImGui/imstb_textedit.h
+	../vendor/ImGui/imstb_truetype.h
 )
-
-target_link_directories(
-	"MoravaEngine" PUBLIC
-	../vendor/GLFW/lib-vc2019
-	../vendor/ASSIMP/lib
-	../vendor/GLEW/lib
-	../vendor/bullet3/lib
-)
+endif (UNIX)
 
 SET(BulletDynamics_SRCS
 	../vendor/bullet3/src/BulletDynamics/Character/btKinematicCharacterController.cpp
@@ -219,9 +220,65 @@ SET(LinearMath_SRCS
 	../vendor/bullet3/src/LinearMath/TaskScheduler/btThreadSupportWin32.cpp
 )
 
+option(USE_MSVC_INCREMENTAL_LINKING "Use MSVC Incremental Linking" OFF)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../build) # save executable in root directory
+
+set(CMAKE_GENERATOR_PLATFORM, x64)
+
+unset(CMAKE_IMPORT_LIBRARY_SUFFIX)
+
 add_library(BulletDynamics  STATIC "${BulletDynamics_SRCS}")
 add_library(BulletCollision STATIC "${BulletCollision_SRCS}")
 add_library(LinearMath      STATIC "${LinearMath_SRCS}")
+
+add_executable("${PROJECT_NAME}" "${SOURCES}")
+
+add_dependencies("${PROJECT_NAME}" BulletDynamics)
+add_dependencies("${PROJECT_NAME}" BulletCollision)
+add_dependencies("${PROJECT_NAME}" LinearMath)
+
+set_target_properties(BulletDynamics    PROPERTIES LIBRARY_OUTPUT_DIRECTORY .)
+set_target_properties(BulletCollision   PROPERTIES LIBRARY_OUTPUT_DIRECTORY .)
+set_target_properties(LinearMath        PROPERTIES LIBRARY_OUTPUT_DIRECTORY .)
+set_target_properties("${PROJECT_NAME}" PROPERTIES LIBRARY_OUTPUT_DIRECTORY .)
+
+include_directories(
+	"${PROJECT_NAME}" PUBLIC
+	../vendor/GLFW/include
+	../vendor/GLEW/include
+	../vendor/ASSIMP/include
+	../vendor/ImGui
+	../vendor/GLM
+	../vendor/bullet3/src
+	../vendor/tinyobjloader
+	../vendor/spdlog/include
+)
+
+# target_include_directories(BulletDynamics  PUBLIC ../vendor/bullet3/src)
+# target_include_directories(BulletCollision PUBLIC ../vendor/bullet3/src)
+# target_include_directories(LinearMath      PUBLIC ../vendor/bullet3/src)
+
+target_link_directories(
+	"${PROJECT_NAME}" PUBLIC
+	../vendor/GLFW/lib-vc2019
+	../vendor/ASSIMP/lib
+	../vendor/GLEW/lib
+	../vendor/bullet3/lib
+	../build/Release
+	../build/Debug
+)
+
+target_link_libraries(
+	"${PROJECT_NAME}"
+	opengl32.lib
+	glew32.lib
+	glfw3.lib
+	assimp-vc140-mt.lib
+	BulletDynamics.lib
+	BulletCollision.lib
+	LinearMath.lib
+)
 
 file(COPY ./assimp-vc140-mt.dll DESTINATION ../build)
 file(COPY ./glew32.dll          DESTINATION ../build)
@@ -229,13 +286,5 @@ file(COPY ./Models              DESTINATION ../build)
 file(COPY ./Shaders             DESTINATION ../build)
 file(COPY ./Textures            DESTINATION ../build)
 
-target_link_libraries(
-	"MoravaEngine"
-	opengl32.lib
-	glew32.lib
-	glfw3.lib
-	assimp-vc140-mt.lib
-	../vendor/bullet3/lib/Release/BulletDynamics
-	../vendor/bullet3/lib/Release/BulletCollision
-	../vendor/bullet3/lib/Release/LinearMath
-)
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
+

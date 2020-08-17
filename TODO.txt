@@ -1,0 +1,27 @@
+git submodule add bullet https://github.com/bulletphysics/bullet3.git
+
+---------------------
+
+Scanning dependencies of target MoravaEngine
+[ 51%] Building CXX object CMakeFiles/MoravaEngine.dir/home/pilot/MoravaEngine/vendor/ImGui/imgui.cpp.o
+[ 52%] Building CXX object CMakeFiles/MoravaEngine.dir/home/pilot/MoravaEngine/vendor/ImGui/imgui_demo.cpp.o
+[ 52%] Building CXX object CMakeFiles/MoravaEngine.dir/home/pilot/MoravaEngine/vendor/ImGui/imgui_draw.cpp.o
+[ 52%] Building CXX object CMakeFiles/MoravaEngine.dir/home/pilot/MoravaEngine/vendor/ImGui/imgui_widgets.cpp.o
+[ 53%] Building CXX object CMakeFiles/MoravaEngine.dir/AABB.cpp.o
+In file included from /home/pilot/MoravaEngine/MoravaEngine/CommonValues.h:13,
+                 from /home/pilot/MoravaEngine/MoravaEngine/Shader.h:3,
+                 from /home/pilot/MoravaEngine/MoravaEngine/AABB.h:4,
+                 from /home/pilot/MoravaEngine/MoravaEngine/AABB.cpp:1:
+/home/pilot/MoravaEngine/MoravaEngine/../vendor/GLEW/include/GL/glew.h:1205:14: fatal error: GL/glu.h: No such file or directory
+ 1205 | #    include <GL/glu.h>
+      |              ^~~~~~~~~~
+compilation terminated.
+gmake[2]: *** [CMakeFiles/MoravaEngine.dir/build.make:135: CMakeFiles/MoravaEngine.dir/AABB.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:131: CMakeFiles/MoravaEngine.dir/all] Error 2
+gmake: *** [Makefile:104: all] Error 2
+[pilot@pilot-vm-f31 build]$
+
+---------------------
+
+New hashtags: glTF, assimp
+
