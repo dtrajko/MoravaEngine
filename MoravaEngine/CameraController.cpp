@@ -6,6 +6,8 @@
 #include "glm/gtx/compatibility.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+#include <cstdio>
+
 
 CameraController::CameraController()
 	: CameraController(nullptr, 2.0f, 0.1f)

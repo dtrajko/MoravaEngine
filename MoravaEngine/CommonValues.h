@@ -23,8 +23,8 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
-const float M_PI = 3.14159265358979323846f;
-const float toRadians = M_PI / 180.0f;
+const float numPI = 3.14159265358979323846f;
+const float toRadians = numPI / 180.0f;
 
 const int MAX_POINT_LIGHTS = 4;
 const int MAX_SPOT_LIGHTS = 4;
