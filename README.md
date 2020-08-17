@@ -26,11 +26,11 @@ Its current purpose is experimenting with various CGI concepts and techniques:
 Build automation based on CMake (in progress)
 
 ```
-$ git clone --recurse-submodules https://github.com/dtrajko/MoravaEngine.git  
-$ mkdir MoravaEngine/build  
-$ cd MoravaEngine/build  
-$ cmake ../MoravaEngine  
-$ cmake --build .  
+$ git clone --recurse-submodules https://github.com/dtrajko/MoravaEngine.git
+$ mkdir MoravaEngine/build
+$ cd MoravaEngine/build
+$ cmake ../MoravaEngine
+$ cmake --build .
 ```
 
 ## Keyboard and Mouse shortcuts
