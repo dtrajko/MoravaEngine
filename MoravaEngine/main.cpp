@@ -95,7 +95,7 @@ enum class SceneName
 	MarchingCubes,
 };
 
-SceneName currentScene = SceneName::MarchingCubes;
+SceneName currentScene = SceneName::Editor;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };

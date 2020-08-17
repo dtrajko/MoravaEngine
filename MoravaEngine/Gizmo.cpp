@@ -30,7 +30,7 @@ Gizmo::Gizmo()
 	m_SceneObject->position = m_Position;
 	m_SceneObject->rotation = m_Rotation;
 	m_SceneObject->scale = m_Scale;
-	m_SceneObject->AABB = new AABB(m_Position, m_Rotation, m_Scale);
+	m_SceneObject->SetAABB(new AABB(m_Position, m_Rotation, m_Scale));
 	m_SceneObject->pivot = new Pivot(m_Position, m_Scale);
 	m_SceneObject->color = glm::vec4(1.0f);
 
@@ -54,7 +54,7 @@ void Gizmo::CreateObjects()
 		m_Axis_T_X->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, -90.0f) * toRadians);
 		m_Axis_T_X->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_T_X->so.mesh = new Cylinder(m_Axis_T_X->so.scale);
-		m_Axis_T_X->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_T_X->so.rotation, glm::vec3(1.0f));
+		m_Axis_T_X->so.SetAABB(new AABB(glm::vec3(0.0f), m_Axis_T_X->so.rotation, glm::vec3(1.0f)));
 		m_Axis_T_X->axes = { true, false, false };
 		m_Axis_T_X->name = "m_Axis_T_X";
 		m_GizmoObjects.push_back(m_Axis_T_X);
@@ -67,7 +67,7 @@ void Gizmo::CreateObjects()
 		m_Axis_T_Y->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
 		m_Axis_T_Y->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_T_Y->so.mesh = new Cylinder(m_Axis_T_Y->so.scale);
-		m_Axis_T_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_T_Y->so.rotation, glm::vec3(1.0f));
+		m_Axis_T_Y->so.SetAABB(new AABB(glm::vec3(0.0f), m_Axis_T_Y->so.rotation, glm::vec3(1.0f)));
 		m_Axis_T_Y->axes = { false, true, false };
 		m_Axis_T_Y->name = "m_Axis_T_Y";
 		m_GizmoObjects.push_back(m_Axis_T_Y);
@@ -80,7 +80,7 @@ void Gizmo::CreateObjects()
 		m_Axis_T_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f) * toRadians);
 		m_Axis_T_Z->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_T_Z->so.mesh = new Cylinder(m_Axis_T_Z->so.scale);
-		m_Axis_T_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_T_Z->so.rotation, glm::vec3(1.0f));
+		m_Axis_T_Z->so.SetAABB(new AABB(glm::vec3(0.0f), m_Axis_T_Z->so.rotation, glm::vec3(1.0f)));
 		m_Axis_T_Z->axes = { false, false, true };
 		m_Axis_T_Z->name = "m_Axis_T_Z";
 		m_GizmoObjects.push_back(m_Axis_T_Z);
@@ -93,7 +93,7 @@ void Gizmo::CreateObjects()
 		m_Arrow_T_X->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, -90.0f) * toRadians);
 		m_Arrow_T_X->so.scale = glm::vec3(0.6f, 0.8f, 0.6f) * m_ScaleGlobal;
 		m_Arrow_T_X->so.mesh = new Cone(m_Arrow_T_X->so.scale);
-		m_Arrow_T_X->so.AABB = new AABB(glm::vec3(0.0f), m_Arrow_T_X->so.rotation, glm::vec3(1.0f));
+		m_Arrow_T_X->so.SetAABB(new AABB(glm::vec3(0.0f), m_Arrow_T_X->so.rotation, glm::vec3(1.0f)));
 		m_Arrow_T_X->axes = { true, false, false };
 		m_Arrow_T_X->name = "m_Arrow_T_X";
 		m_GizmoObjects.push_back(m_Arrow_T_X);
@@ -106,7 +106,7 @@ void Gizmo::CreateObjects()
 		m_Arrow_T_Y->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
 		m_Arrow_T_Y->so.scale = glm::vec3(0.6f, 0.8f, 0.6f) * m_ScaleGlobal;
 		m_Arrow_T_Y->so.mesh = new Cone(m_Arrow_T_Y->so.scale);
-		m_Arrow_T_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Arrow_T_Y->so.rotation, glm::vec3(1.0f));
+		m_Arrow_T_Y->so.SetAABB(new AABB(glm::vec3(0.0f), m_Arrow_T_Y->so.rotation, glm::vec3(1.0f)));
 		m_Arrow_T_Y->axes = { false, true, false };
 		m_Arrow_T_Y->name = "m_Arrow_T_Y";
 		m_GizmoObjects.push_back(m_Arrow_T_Y);
@@ -119,7 +119,7 @@ void Gizmo::CreateObjects()
 		m_Arrow_T_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f) * toRadians);
 		m_Arrow_T_Z->so.scale = glm::vec3(0.6f, 0.8f, 0.6f) * m_ScaleGlobal;
 		m_Arrow_T_Z->so.mesh = new Cone(m_Arrow_T_Z->so.scale);
-		m_Arrow_T_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Arrow_T_Z->so.rotation, glm::vec3(1.0f));
+		m_Arrow_T_Z->so.SetAABB(new AABB(glm::vec3(0.0f), m_Arrow_T_Z->so.rotation, glm::vec3(1.0f)));
 		m_Arrow_T_Z->axes = { false, false, true };
 		m_Arrow_T_Z->name = "m_Arrow_T_Z";
 		m_GizmoObjects.push_back(m_Arrow_T_Z);
@@ -132,7 +132,7 @@ void Gizmo::CreateObjects()
 		m_Square_T_YZ->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
 		m_Square_T_YZ->so.scale = glm::vec3(0.15f, 1.5f, 1.5f) * m_ScaleGlobal;
 		m_Square_T_YZ->so.mesh = new Block(m_Square_T_YZ->so.scale);
-		m_Square_T_YZ->so.AABB = new AABB(glm::vec3(0.0f), m_Square_T_YZ->so.rotation, glm::vec3(1.0f));
+		m_Square_T_YZ->so.SetAABB(new AABB(glm::vec3(0.0f), m_Square_T_YZ->so.rotation, glm::vec3(1.0f)));
 		m_Square_T_YZ->axes = { false, true, true };
 		m_Square_T_YZ->name = "m_Square_T_YZ";
 		m_GizmoObjects.push_back(m_Square_T_YZ);
@@ -145,7 +145,7 @@ void Gizmo::CreateObjects()
 		m_Square_T_ZX->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
 		m_Square_T_ZX->so.scale = glm::vec3(1.5f, 0.15f, 1.5f) * m_ScaleGlobal;
 		m_Square_T_ZX->so.mesh = new Block(m_Square_T_ZX->so.scale);
-		m_Square_T_ZX->so.AABB = new AABB(glm::vec3(0.0f), m_Square_T_ZX->so.rotation, glm::vec3(1.0f));
+		m_Square_T_ZX->so.SetAABB(new AABB(glm::vec3(0.0f), m_Square_T_ZX->so.rotation, glm::vec3(1.0f)));
 		m_Square_T_ZX->axes = { true, false, true };
 		m_Square_T_ZX->name = "m_Square_T_ZX";
 		m_GizmoObjects.push_back(m_Square_T_ZX);
@@ -158,7 +158,7 @@ void Gizmo::CreateObjects()
 		m_Square_T_XY->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
 		m_Square_T_XY->so.scale = glm::vec3(1.5f, 1.5f, 0.15f) * m_ScaleGlobal;
 		m_Square_T_XY->so.mesh = new Block(m_Square_T_XY->so.scale);
-		m_Square_T_XY->so.AABB = new AABB(glm::vec3(0.0f), m_Square_T_XY->so.rotation, glm::vec3(1.0f));
+		m_Square_T_XY->so.SetAABB(new AABB(glm::vec3(0.0f), m_Square_T_XY->so.rotation, glm::vec3(1.0f)));
 		m_Square_T_XY->axes = { true, true, false };
 		m_Square_T_XY->name = "m_Square_T_XY";
 		m_GizmoObjects.push_back(m_Square_T_XY);
@@ -175,7 +175,7 @@ void Gizmo::CreateObjects()
 		m_Axis_S_X->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, -90.0f) * toRadians);
 		m_Axis_S_X->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_S_X->so.mesh = new Cylinder(m_Axis_S_X->so.scale);
-		m_Axis_S_X->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_S_X->so.rotation, glm::vec3(1.0f));
+		m_Axis_S_X->so.SetAABB(new AABB(glm::vec3(0.0f), m_Axis_S_X->so.rotation, glm::vec3(1.0f)));
 		m_Axis_S_X->axes = { true, false, false };
 		m_Axis_S_X->name = "m_Axis_S_X";
 		m_GizmoObjects.push_back(m_Axis_S_X);
@@ -188,7 +188,7 @@ void Gizmo::CreateObjects()
 		m_Axis_S_Y->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
 		m_Axis_S_Y->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_S_Y->so.mesh = new Cylinder(m_Axis_S_Y->so.scale);
-		m_Axis_S_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_S_Y->so.rotation, glm::vec3(1.0f));
+		m_Axis_S_Y->so.SetAABB(new AABB(glm::vec3(0.0f), m_Axis_S_Y->so.rotation, glm::vec3(1.0f)));
 		m_Axis_S_Y->axes = { false, true, false };
 		m_Axis_S_Y->name = "m_Axis_S_Y";
 		m_GizmoObjects.push_back(m_Axis_S_Y);
@@ -201,7 +201,7 @@ void Gizmo::CreateObjects()
 		m_Axis_S_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f) * toRadians);
 		m_Axis_S_Z->so.scale = glm::vec3(0.2f, 4.2f, 0.2f) * m_ScaleGlobal;
 		m_Axis_S_Z->so.mesh = new Cylinder(m_Axis_S_Z->so.scale);
-		m_Axis_S_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Axis_S_Z->so.rotation, glm::vec3(1.0f));
+		m_Axis_S_Z->so.SetAABB(new AABB(glm::vec3(0.0f), m_Axis_S_Z->so.rotation, glm::vec3(1.0f)));
 		m_Axis_S_Z->axes = { false, false, true };
 		m_Axis_S_Z->name = "m_Axis_S_Z";
 		m_GizmoObjects.push_back(m_Axis_S_Z);
@@ -215,7 +215,7 @@ void Gizmo::CreateObjects()
 		m_Handle_S_X->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, -90.0f) * toRadians);
 		m_Handle_S_X->so.scale = glm::vec3(0.6f, 0.6f, 0.6f) * m_ScaleGlobal;
 		m_Handle_S_X->so.mesh = new Block(m_Handle_S_X->so.scale);
-		m_Handle_S_X->so.AABB = new AABB(glm::vec3(0.0f), m_Handle_S_X->so.rotation, glm::vec3(1.0f));
+		m_Handle_S_X->so.SetAABB(new AABB(glm::vec3(0.0f), m_Handle_S_X->so.rotation, glm::vec3(1.0f)));
 		m_Handle_S_X->axes = { true, false, false };
 		m_Handle_S_X->name = "m_Handle_S_X";
 		m_GizmoObjects.push_back(m_Handle_S_X);
@@ -228,7 +228,7 @@ void Gizmo::CreateObjects()
 		m_Handle_S_Y->so.rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f) * toRadians);
 		m_Handle_S_Y->so.scale = glm::vec3(0.6f, 0.6f, 0.6f) * m_ScaleGlobal;
 		m_Handle_S_Y->so.mesh = new Block(m_Handle_S_Y->so.scale);
-		m_Handle_S_Y->so.AABB = new AABB(glm::vec3(0.0f), m_Handle_S_Y->so.rotation, glm::vec3(1.0f));
+		m_Handle_S_Y->so.SetAABB(new AABB(glm::vec3(0.0f), m_Handle_S_Y->so.rotation, glm::vec3(1.0f)));
 		m_Handle_S_Y->axes = { false, true, false };
 		m_Handle_S_Y->name = "m_Handle_S_Y";
 		m_GizmoObjects.push_back(m_Handle_S_Y);
@@ -241,7 +241,7 @@ void Gizmo::CreateObjects()
 		m_Handle_S_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f) * toRadians);
 		m_Handle_S_Z->so.scale = glm::vec3(0.6f, 0.6f, 0.6f) * m_ScaleGlobal;
 		m_Handle_S_Z->so.mesh = new Block(m_Handle_S_Z->so.scale);
-		m_Handle_S_Z->so.AABB = new AABB(glm::vec3(0.0f), m_Handle_S_Z->so.rotation, glm::vec3(1.0f));
+		m_Handle_S_Z->so.SetAABB(new AABB(glm::vec3(0.0f), m_Handle_S_Z->so.rotation, glm::vec3(1.0f)));
 		m_Handle_S_Z->axes = { false, false, true };
 		m_Handle_S_Z->name = "m_Handle_S_Z";
 		m_GizmoObjects.push_back(m_Handle_S_Z);
@@ -258,7 +258,7 @@ void Gizmo::CreateObjects()
 		m_Ring_R_X->so.rotation = glm::quat(glm::vec3(0.0f, -90.0f, 90.0f) * toRadians);
 		m_Ring_R_X->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
 		m_Ring_R_X->so.mesh = new Ring90(m_Ring_R_X->so.scale);
-		m_Ring_R_X->so.AABB = new AABB(glm::vec3(0.25f, 0.0f, -0.25f), m_Ring_R_X->so.rotation, glm::vec3(0.5f, 0.5f, 0.5f));
+		m_Ring_R_X->so.SetAABB(new AABB(glm::vec3(0.25f, 0.0f, -0.25f), m_Ring_R_X->so.rotation, glm::vec3(0.5f, 0.5f, 0.5f)));
 		m_Ring_R_X->axes = { true, false, false };
 		m_Ring_R_X->name = "m_Ring_R_X";
 		m_GizmoObjects.push_back(m_Ring_R_X);
@@ -271,7 +271,7 @@ void Gizmo::CreateObjects()
 		m_Ring_R_Y->so.rotation = glm::quat(glm::vec3(0.0f, -90.0f, 0.0f) * toRadians);
 		m_Ring_R_Y->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
 		m_Ring_R_Y->so.mesh = new Ring90(m_Ring_R_Y->so.scale);
-		m_Ring_R_Y->so.AABB = new AABB(glm::vec3(0.25f, 0.0f, -0.25f), m_Ring_R_Y->so.rotation, glm::vec3(0.5f, 0.5f, 0.5f));
+		m_Ring_R_Y->so.SetAABB(new AABB(glm::vec3(0.25f, 0.0f, -0.25f), m_Ring_R_Y->so.rotation, glm::vec3(0.5f, 0.5f, 0.5f)));
 		m_Ring_R_Y->axes = { false, true, false };
 		m_Ring_R_Y->name = "m_Ring_R_Y";
 		m_GizmoObjects.push_back(m_Ring_R_Y);
@@ -284,7 +284,7 @@ void Gizmo::CreateObjects()
 		m_Ring_R_Z->so.rotation = glm::quat(glm::vec3(90.0f, 0.0f, 0.0f) * toRadians);
 		m_Ring_R_Z->so.scale = glm::vec3(6.0f, 0.1f, 6.0f) * m_ScaleGlobal;
 		m_Ring_R_Z->so.mesh = new Ring90(m_Ring_R_Z->so.scale);
-		m_Ring_R_Z->so.AABB = new AABB(glm::vec3(0.25f, 0.0f, -0.25f), m_Ring_R_Z->so.rotation, glm::vec3(0.5f, 0.5f, 0.5f));
+		m_Ring_R_Z->so.SetAABB(new AABB(glm::vec3(0.25f, 0.0f, -0.25f), m_Ring_R_Z->so.rotation, glm::vec3(0.5f, 0.5f, 0.5f)));
 		m_Ring_R_Z->axes = { false, false, true };
 		m_Ring_R_Z->name = "m_Ring_R_Z";
 		m_GizmoObjects.push_back(m_Ring_R_Z);
@@ -492,15 +492,15 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
 
 	for (int i = 0; i < m_GizmoObjects.size(); i++) {
 
-		m_GizmoObjects[i]->so.AABB->Update(m_Position + m_GizmoObjects[i]->so.position, m_GizmoObjects[i]->so.rotation, m_GizmoObjects[i]->so.scale);
+		m_GizmoObjects[i]->so.GetAABB()->Update(m_Position + m_GizmoObjects[i]->so.position, m_GizmoObjects[i]->so.rotation, m_GizmoObjects[i]->so.scale);
 
 		isIntersecting = AABB::IntersectRayAab(cameraPosition, currentRay,
-			m_GizmoObjects[i]->so.AABB->GetMin(), m_GizmoObjects[i]->so.AABB->GetMax(), glm::vec2(0.0f));
+			m_GizmoObjects[i]->so.GetAABB()->GetMin(), m_GizmoObjects[i]->so.GetAABB()->GetMax(), glm::vec2(0.0f));
 
 		if (isIntersecting && !isIntersectionFound) {
 			// printf("Gizmo::Update CurrentRay [ %.2ff %.2ff %.2ff ]\n", currentRay.x, currentRay.y, currentRay.z);
-			m_GizmoObjects[i]->so.AABB->m_Color = m_Color_Red;
-			m_GizmoObjects[i]->so.AABB->m_IsColliding = true;
+			m_GizmoObjects[i]->so.GetAABB()->m_Color = m_Color_Red;
+			m_GizmoObjects[i]->so.GetAABB()->m_IsColliding = true;
 			intersectingObjectIndex = i;
 
 			if (!mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1]) // don't change axes while dragging the gizmo
@@ -512,8 +512,8 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
 			// isIntersectionFound = true;
 		}
 		else {
-			m_GizmoObjects[i]->so.AABB->m_Color = m_Color_Green;
-			m_GizmoObjects[i]->so.AABB->m_IsColliding = false;
+			m_GizmoObjects[i]->so.GetAABB()->m_Color = m_Color_Green;
+			m_GizmoObjects[i]->so.GetAABB()->m_IsColliding = false;
 		}
 	}
 
@@ -633,8 +633,8 @@ void Gizmo::Render(Shader* shader)
 		m_Axis_T_X->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Axis_T_X->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Axis_T_X->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Axis_T_X->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Axis_T_X->so.GetAABB()->Draw();
 
 		m_Axis_T_Y->so.transform = Math::CreateTransform(m_Position + m_Axis_T_Y->so.position, m_Axis_T_Y->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Axis_T_Y->so.transform);
@@ -642,8 +642,8 @@ void Gizmo::Render(Shader* shader)
 		m_Axis_T_Y->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Axis_T_Y->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Axis_T_Y->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Axis_T_Y->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Axis_T_Y->so.GetAABB()->Draw();
 
 		m_Axis_T_Z->so.transform = Math::CreateTransform(m_Position + m_Axis_T_Z->so.position, m_Axis_T_Z->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Axis_T_Z->so.transform);
@@ -651,8 +651,8 @@ void Gizmo::Render(Shader* shader)
 		m_Axis_T_Z->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Axis_T_Z->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Axis_T_Z->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Axis_T_Z->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Axis_T_Z->so.GetAABB()->Draw();
 
 		// Translation Gizmo - Arrows (Cones)
 		m_Arrow_T_X->so.transform = Math::CreateTransform(m_Position + m_Arrow_T_X->so.position, m_Arrow_T_X->so.rotation, glm::vec3(1.0f));
@@ -661,8 +661,8 @@ void Gizmo::Render(Shader* shader)
 		m_Arrow_T_X->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Arrow_T_X->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Arrow_T_X->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Arrow_T_X->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Arrow_T_X->so.GetAABB()->Draw();
 
 		m_Arrow_T_Y->so.transform = Math::CreateTransform(m_Position + m_Arrow_T_Y->so.position, m_Arrow_T_Y->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Arrow_T_Y->so.transform);
@@ -670,8 +670,8 @@ void Gizmo::Render(Shader* shader)
 		m_Arrow_T_Y->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Arrow_T_Y->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Arrow_T_Y->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Arrow_T_Y->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Arrow_T_Y->so.GetAABB()->Draw();
 
 		m_Arrow_T_Z->so.transform = Math::CreateTransform(m_Position + m_Arrow_T_Z->so.position, m_Arrow_T_Z->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Arrow_T_Z->so.transform);
@@ -679,8 +679,8 @@ void Gizmo::Render(Shader* shader)
 		m_Arrow_T_Z->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Arrow_T_Z->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Arrow_T_Z->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Arrow_T_Z->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Arrow_T_Z->so.GetAABB()->Draw();
 
 		// Translation Gizmo - 2D squares
 		m_Square_T_YZ->so.transform = Math::CreateTransform(m_Position + m_Square_T_YZ->so.position, m_Square_T_YZ->so.rotation, glm::vec3(1.0f));
@@ -689,8 +689,8 @@ void Gizmo::Render(Shader* shader)
 		m_Square_T_YZ->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Square_T_YZ->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Square_T_YZ->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Square_T_YZ->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Square_T_YZ->so.GetAABB()->Draw();
 
 		m_Square_T_ZX->so.transform = Math::CreateTransform(m_Position + m_Square_T_ZX->so.position, m_Square_T_ZX->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Square_T_ZX->so.transform);
@@ -698,8 +698,8 @@ void Gizmo::Render(Shader* shader)
 		m_Square_T_ZX->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Square_T_ZX->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Square_T_ZX->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Square_T_ZX->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Square_T_ZX->so.GetAABB()->Draw();
 
 		m_Square_T_XY->so.transform = Math::CreateTransform(m_Position + m_Square_T_XY->so.position, m_Square_T_XY->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Square_T_XY->so.transform);
@@ -707,8 +707,8 @@ void Gizmo::Render(Shader* shader)
 		m_Square_T_XY->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Square_T_XY->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Square_T_XY->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Square_T_XY->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Square_T_XY->so.GetAABB()->Draw();
 	}
 
 	// Render Scale Gizmo
@@ -717,58 +717,64 @@ void Gizmo::Render(Shader* shader)
 		// Scale Gizmo - Axes
 		m_Axis_S_X->so.transform = Math::CreateTransform(m_Position + m_Axis_S_X->so.position, m_Axis_S_X->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Axis_S_X->so.transform);
-		shader->setVec4("tintColor", m_Axis_S_X->so.AABB->m_IsColliding || m_Handle_S_X->so.AABB->m_IsColliding ? m_Color_Selected : m_Axis_S_X->so.color);
+		shader->setVec4("tintColor", m_Axis_S_X->so.GetAABB()->m_IsColliding ||
+			m_Handle_S_X->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Axis_S_X->so.color);
 		m_Axis_S_X->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Axis_S_X->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Axis_S_X->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Axis_S_X->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Axis_S_X->so.GetAABB()->Draw();
 
 		m_Axis_S_Y->so.transform = Math::CreateTransform(m_Position + m_Axis_S_Y->so.position, m_Axis_S_Y->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Axis_S_Y->so.transform);
-		shader->setVec4("tintColor", m_Axis_S_Y->so.AABB->m_IsColliding || m_Handle_S_Y->so.AABB->m_IsColliding ? m_Color_Selected : m_Axis_S_Y->so.color);
+		shader->setVec4("tintColor", m_Axis_S_Y->so.GetAABB()->m_IsColliding ||
+			m_Handle_S_Y->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Axis_S_Y->so.color);
 		m_Axis_S_Y->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Axis_S_Y->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Axis_S_Y->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Axis_S_Y->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Axis_S_Y->so.GetAABB()->Draw();
 
 		m_Axis_S_Z->so.transform = Math::CreateTransform(m_Position + m_Axis_S_Z->so.position, m_Axis_S_Z->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Axis_S_Z->so.transform);
-		shader->setVec4("tintColor", m_Axis_S_Z->so.AABB->m_IsColliding || m_Handle_S_Z->so.AABB->m_IsColliding ? m_Color_Selected : m_Axis_S_Z->so.color);
+		shader->setVec4("tintColor", m_Axis_S_Z->so.GetAABB()->m_IsColliding ||
+			m_Handle_S_Z->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Axis_S_Z->so.color);
 		m_Axis_S_Z->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Axis_S_Z->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Axis_S_Z->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Axis_S_Z->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Axis_S_Z->so.GetAABB()->Draw();
 
 		// Scale Gizmo - Handles
 		m_Handle_S_X->so.transform = Math::CreateTransform(m_Position + m_Handle_S_X->so.position, m_Handle_S_X->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Handle_S_X->so.transform);
-		shader->setVec4("tintColor", m_Axis_S_X->so.AABB->m_IsColliding || m_Handle_S_X->so.AABB->m_IsColliding ? m_Color_Selected : m_Handle_S_X->so.color);
+		shader->setVec4("tintColor", m_Axis_S_X->so.GetAABB()->m_IsColliding ||
+			m_Handle_S_X->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Handle_S_X->so.color);
 		m_Handle_S_X->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Handle_S_X->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Handle_S_X->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Handle_S_X->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Handle_S_X->so.GetAABB()->Draw();
 
 		m_Handle_S_Y->so.transform = Math::CreateTransform(m_Position + m_Handle_S_Y->so.position, m_Handle_S_Y->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Handle_S_Y->so.transform);
-		shader->setVec4("tintColor", m_Axis_S_Y->so.AABB->m_IsColliding || m_Handle_S_Y->so.AABB->m_IsColliding ? m_Color_Selected : m_Handle_S_Y->so.color);
+		shader->setVec4("tintColor", m_Axis_S_Y->so.GetAABB()->m_IsColliding ||
+			m_Handle_S_Y->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Handle_S_Y->so.color);
 		m_Handle_S_Y->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Handle_S_Y->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Handle_S_Y->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Handle_S_Y->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Handle_S_Y->so.GetAABB()->Draw();
 
 		m_Handle_S_Z->so.transform = Math::CreateTransform(m_Position + m_Handle_S_Z->so.position, m_Handle_S_Z->so.rotation, glm::vec3(1.0f));
 		shader->setMat4("model", m_Handle_S_Z->so.transform);
-		shader->setVec4("tintColor", m_Axis_S_Z->so.AABB->m_IsColliding || m_Handle_S_Z->so.AABB->m_IsColliding ? m_Color_Selected : m_Handle_S_Z->so.color);
+		shader->setVec4("tintColor", m_Axis_S_Z->so.GetAABB()->m_IsColliding ||
+			m_Handle_S_Z->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Handle_S_Z->so.color);
 		m_Handle_S_Z->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Handle_S_Z->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Handle_S_Z->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Handle_S_Z->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Handle_S_Z->so.GetAABB()->Draw();
 	}
 
 	// Render Rotate Gizmo
@@ -776,30 +782,30 @@ void Gizmo::Render(Shader* shader)
 	{
 		m_Ring_R_X->so.transform = Math::CreateTransform(m_Position + m_Ring_R_X->so.position, m_Ring_R_X->so.rotation, m_Ring_R_X->so.scale);
 		shader->setMat4("model", m_Ring_R_X->so.transform);
-		shader->setVec4("tintColor", m_Ring_R_X->so.AABB->m_IsColliding ? m_Color_Selected : m_Ring_R_X->so.color);
+		shader->setVec4("tintColor", m_Ring_R_X->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Ring_R_X->so.color);
 		m_Ring_R_X->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Ring_R_X->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Ring_R_X->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Ring_R_X->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Ring_R_X->so.GetAABB()->Draw();
 
 		m_Ring_R_Y->so.transform = Math::CreateTransform(m_Position + m_Ring_R_Y->so.position, m_Ring_R_Y->so.rotation, m_Ring_R_Y->so.scale);
 		shader->setMat4("model", m_Ring_R_Y->so.transform);
-		shader->setVec4("tintColor", m_Ring_R_Y->so.AABB->m_IsColliding ? m_Color_Selected : m_Ring_R_Y->so.color);
+		shader->setVec4("tintColor", m_Ring_R_Y->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Ring_R_Y->so.color);
 		m_Ring_R_Y->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Ring_R_Y->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Ring_R_Y->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Ring_R_Y->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Ring_R_Y->so.GetAABB()->Draw();
 
 		m_Ring_R_Z->so.transform = Math::CreateTransform(m_Position + m_Ring_R_Z->so.position, m_Ring_R_Z->so.rotation, m_Ring_R_Z->so.scale);
 		shader->setMat4("model", m_Ring_R_Z->so.transform);
-		shader->setVec4("tintColor", m_Ring_R_Z->so.AABB->m_IsColliding ? m_Color_Selected : m_Ring_R_Z->so.color);
+		shader->setVec4("tintColor", m_Ring_R_Z->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Ring_R_Z->so.color);
 		m_Ring_R_Z->so.mesh->Render();
 
 		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Ring_R_Z->so.AABB->m_Color);
-		if (m_DrawAABBs) m_Ring_R_Z->so.AABB->Draw();
+		shader->setVec4("tintColor", m_Ring_R_Z->so.GetAABB()->m_Color);
+		if (m_DrawAABBs) m_Ring_R_Z->so.GetAABB()->Draw();
 	}
 }
 

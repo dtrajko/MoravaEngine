@@ -417,7 +417,7 @@ void SceneEditor::LoadScene()
         else if (tokens.size() >= 1 && tokens[0] == "EndObject") {
             sceneObject->id = (int)m_SceneObjects.size();
             sceneObject->transform = Math::CreateTransform(sceneObject->position, sceneObject->rotation, sceneObject->scale);
-            sceneObject->AABB  = new AABB(sceneObject->positionAABB, sceneObject->rotation, sceneObject->scaleAABB);
+            sceneObject->SetAABB(new AABB(sceneObject->positionAABB, sceneObject->rotation, sceneObject->scaleAABB));
             sceneObject->pivot = new Pivot(sceneObject->position, sceneObject->scale);
             Mesh* mesh = nullptr;
             Model* model = nullptr;
@@ -1024,7 +1024,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     for (auto& object : m_SceneObjects) {
         object->isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
-            object->AABB->GetMin(), object->AABB->GetMax(), glm::vec2(0.0f));
+            object->GetAABB()->GetMin(), object->GetAABB()->GetMax(), glm::vec2(0.0f));
 
         if (object->m_Type == "mesh" && object->mesh != nullptr)
             object->mesh->Update(object->scale);
@@ -1125,8 +1125,8 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     for (auto& object : m_SceneObjects)
     {
-        glm::vec3 scaleAABB = object->scale * object->AABB->m_Scale;
-        object->AABB->Update(object->position, object->rotation, object->scale);
+        glm::vec3 scaleAABB = object->scale * object->GetAABB()->m_Scale;
+        object->GetAABB()->Update(object->position, object->rotation, object->scale);
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
 
@@ -1224,7 +1224,7 @@ SceneObject* SceneEditor::CreateNewSceneObject()
     sceneObject->textureName     = "none";
     sceneObject->tilingFactor    = 1.0f;
     sceneObject->isSelected      = true;
-    sceneObject->AABB            = new AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+    sceneObject->SetAABB(new AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f)));
     sceneObject->pivot           = new Pivot(glm::vec3(0.0f), glm::vec3(1.0f));
     sceneObject->m_Type          = "";
     sceneObject->mesh            = nullptr;
@@ -1411,7 +1411,7 @@ void SceneEditor::AddSceneObject()
         sceneObject->materialName = materialName;
         sceneObject->positionAABB = positionAABB;
         sceneObject->scaleAABB = scaleAABB;
-        sceneObject->AABB = new AABB(positionAABB, glm::vec3(0.0f), scaleAABB);
+        sceneObject->SetAABB(new AABB(positionAABB, glm::vec3(0.0f), scaleAABB));
     }
     else if (objectType == "particle_system")
     {
@@ -1427,7 +1427,7 @@ void SceneEditor::AddSceneObject()
         sceneObject->materialName = materialName;
         sceneObject->positionAABB = positionAABB;
         sceneObject->scaleAABB = scaleAABB;
-        sceneObject->AABB = new AABB(positionAABB, glm::vec3(0.0f), scaleAABB);
+        sceneObject->SetAABB(new AABB(positionAABB, glm::vec3(0.0f), scaleAABB));
     }
 
     m_SceneObjects.push_back(sceneObject);
@@ -1472,7 +1472,7 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
     newSceneObject->textureName     = oldSceneObject->textureName;
     newSceneObject->tilingFactor    = oldSceneObject->tilingFactor;
     newSceneObject->isSelected      = true;
-    newSceneObject->AABB            = new AABB(newSceneObject->positionAABB, newSceneObject->rotation, newSceneObject->scaleAABB);
+    newSceneObject->SetAABB(new AABB(newSceneObject->positionAABB, newSceneObject->rotation, newSceneObject->scaleAABB));
     newSceneObject->pivot           = new Pivot(newSceneObject->position, newSceneObject->scale);
     newSceneObject->m_Type          = oldSceneObject->m_Type;
     newSceneObject->mesh            = mesh;
@@ -1492,12 +1492,7 @@ void SceneEditor::DeleteSceneObject(Window& mainWindow, std::vector<SceneObject*
     if (m_CurrentTimestamp - m_ObjectDelete.lastTime < m_ObjectDelete.cooldown) return;
     m_ObjectDelete.lastTime = m_CurrentTimestamp;
 
-    delete m_SceneObjects[m_SelectedIndex]->AABB;
-    delete m_SceneObjects[m_SelectedIndex]->pivot;
-    if (m_SceneObjects[m_SelectedIndex]->mesh != nullptr)
-        delete m_SceneObjects[m_SelectedIndex]->mesh;
-    if (m_SceneObjects[m_SelectedIndex]->model != nullptr)
-        delete m_SceneObjects[m_SelectedIndex]->model;
+    delete m_SceneObjects[m_SelectedIndex];
 
     if (m_SelectedIndex < m_SceneObjects.size())
         m_SceneObjects.erase(m_SceneObjects.begin() + m_SelectedIndex);
@@ -1766,7 +1761,7 @@ void SceneEditor::AddLightsToSceneObjects()
     sceneObject->materialName = "none";
     sceneObject->positionAABB = glm::vec3(0.0f);
     sceneObject->scaleAABB = sceneObject->scale;
-    sceneObject->AABB = new AABB(sceneObject->positionAABB, glm::vec3(0.0f), sceneObject->scaleAABB);
+    sceneObject->SetAABB(new AABB(sceneObject->positionAABB, glm::vec3(0.0f), sceneObject->scaleAABB));
     sceneObject->pivot = new Pivot(sceneObject->position, sceneObject->scale);
 
     m_SceneObjects.push_back(sceneObject);
@@ -1801,7 +1796,7 @@ void SceneEditor::AddLightsToSceneObjects()
         sceneObject->materialName = "none";
         sceneObject->positionAABB = glm::vec3(0.0f);
         sceneObject->scaleAABB = sceneObject->scale;
-        sceneObject->AABB = new AABB(sceneObject->positionAABB, glm::vec3(0.0f), sceneObject->scaleAABB);
+        sceneObject->SetAABB(new AABB(sceneObject->positionAABB, glm::vec3(0.0f), sceneObject->scaleAABB));
         sceneObject->pivot = new Pivot(sceneObject->position, sceneObject->scale);
 
         m_SceneObjects.push_back(sceneObject);
@@ -1840,7 +1835,7 @@ void SceneEditor::AddLightsToSceneObjects()
         sceneObject->materialName = "none";
         sceneObject->positionAABB = glm::vec3(0.0f);
         sceneObject->scaleAABB = sceneObject->scale;
-        sceneObject->AABB = new AABB(sceneObject->positionAABB, glm::vec3(0.0f), sceneObject->scaleAABB);
+        sceneObject->SetAABB(new AABB(sceneObject->positionAABB, glm::vec3(0.0f), sceneObject->scaleAABB));
         sceneObject->pivot = new Pivot(sceneObject->position, sceneObject->scale);
 
         m_SceneObjects.push_back(sceneObject);
@@ -1958,7 +1953,7 @@ void SceneEditor::RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMa
         }
 
         if (drawAABB) {
-            m_SceneObjects[m_SelectedIndex]->AABB->Draw();
+            m_SceneObjects[m_SelectedIndex]->GetAABB()->Draw();
             m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
         }
     }

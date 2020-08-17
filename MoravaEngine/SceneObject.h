@@ -48,8 +48,10 @@ public:
 
 	virtual void Render();
 
-public:
+	inline AABB* const GetAABB() const { return m_AABB; };
+	inline void SetAABB(AABB* inAABB) { m_AABB = inAABB; };
 
+public:
 	int id;
 	std::string name;
 	bool isSelected;
@@ -67,7 +69,6 @@ public:
 
 	Mesh* mesh;
 	Model* model;
-	AABB* AABB;
 	Pivot* pivot;
 
 	int m_TypeID;
@@ -79,5 +80,8 @@ public:
 
 	bool castShadow;
 	bool receiveShadows;
+
+private:
+	AABB* m_AABB;
 
 };
