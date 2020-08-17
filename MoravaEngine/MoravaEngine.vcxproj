@@ -199,6 +199,7 @@
     <ClCompile Include="RendererVoxelTerrain.cpp" />
     <ClCompile Include="RenderInstanced.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="SceneBullet.cpp" />
     <ClCompile Include="SceneMarchingCubes.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="SceneObjectLight.cpp" />
@@ -291,7 +292,6 @@
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="SongHo\CylinderSongHo.cpp" />
-    <ClCompile Include="SourceConditional\SceneBullet.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="SubTexture2D.cpp" />
@@ -355,6 +355,7 @@
     <ClInclude Include="RenderInstanced.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="SceneBullet.h" />
     <ClInclude Include="SceneMarchingCubes.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="SceneObjectLight.h" />
@@ -448,7 +449,6 @@
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="SongHo\CylinderSongHo.h" />
-    <ClInclude Include="SourceConditional\SceneBullet.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="SubTexture2D.h" />

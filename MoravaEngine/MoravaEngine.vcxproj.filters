@@ -437,7 +437,7 @@
     <ClCompile Include="Quadtree.cpp">
       <Filter>Data</Filter>
     </ClCompile>
-    <ClCompile Include="SourceConditional\SceneBullet.cpp">
+    <ClCompile Include="SceneBullet.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
   </ItemGroup>
@@ -910,7 +910,7 @@
     <ClInclude Include="Quadtree.h">
       <Filter>Data</Filter>
     </ClInclude>
-    <ClInclude Include="SourceConditional\SceneBullet.h">
+    <ClInclude Include="SceneBullet.h">
       <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
