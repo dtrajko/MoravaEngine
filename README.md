@@ -25,6 +25,14 @@ Its current purpose is experimenting with various CGI concepts and techniques:
 ## Installation
 Build automation based on CMake (in progress)
 
+```
+$ git clone --recurse-submodules https://github.com/dtrajko/MoravaEngine.git  
+$ mkdir MoravaEngine/build  
+$ cd MoravaEngine/build  
+$ cmake ../MoravaEngine  
+$ cmake --build .  
+```
+
 ## Keyboard and Mouse shortcuts
 
 * Add Mesh or Model: Left CTRL + Left Mouse Button  
