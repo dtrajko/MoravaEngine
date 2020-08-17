@@ -34,7 +34,7 @@
 #include "SceneTerrain.h"
 #include "ScenePBR.h"
 #include "SceneJoey.h"
-// #include "SourceConditional/SceneBullet.h"
+#include "SourceConditional/SceneBullet.h"
 #include "SceneInstanced.h"
 #include "SceneAsteroids.h"
 #include "SceneNanosuit.h"
@@ -140,8 +140,8 @@ int main()
 		renderer = static_cast<RendererBasic*>(new RendererJoey());
 		break;
 	case SceneName::Bullet:
-		// scene = new SceneBullet();
-		// renderer = static_cast<RendererBasic*>(new Renderer());
+		scene = new SceneBullet();
+		renderer = static_cast<RendererBasic*>(new Renderer());
 		break;
 	case SceneName::Instanced:
 		scene = new SceneInstanced();
