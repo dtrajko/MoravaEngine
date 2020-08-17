@@ -238,10 +238,10 @@ add_dependencies("${PROJECT_NAME}" BulletDynamics)
 add_dependencies("${PROJECT_NAME}" BulletCollision)
 add_dependencies("${PROJECT_NAME}" LinearMath)
 
-set_target_properties(BulletDynamics    PROPERTIES LIBRARY_OUTPUT_DIRECTORY .)
-set_target_properties(BulletCollision   PROPERTIES LIBRARY_OUTPUT_DIRECTORY .)
-set_target_properties(LinearMath        PROPERTIES LIBRARY_OUTPUT_DIRECTORY .)
-set_target_properties("${PROJECT_NAME}" PROPERTIES LIBRARY_OUTPUT_DIRECTORY .)
+set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+set_target_properties(BulletDynamics  PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+set_target_properties(BulletCollision PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+set_target_properties(LinearMath      PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
 
 include_directories(
 	"${PROJECT_NAME}" PUBLIC
@@ -254,10 +254,6 @@ include_directories(
 	../vendor/tinyobjloader
 	../vendor/spdlog/include
 )
-
-# target_include_directories(BulletDynamics  PUBLIC ../vendor/bullet3/src)
-# target_include_directories(BulletCollision PUBLIC ../vendor/bullet3/src)
-# target_include_directories(LinearMath      PUBLIC ../vendor/bullet3/src)
 
 target_link_directories(
 	"${PROJECT_NAME}" PUBLIC
@@ -287,4 +283,3 @@ file(COPY ./Shaders             DESTINATION ../build)
 file(COPY ./Textures            DESTINATION ../build)
 
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
-
