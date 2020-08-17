@@ -25,6 +25,12 @@ Its current purpose is experimenting with various CGI concepts and techniques:
 ## Installation
 Build automation based on CMake (in progress)
 
+### Linux requirements:
+```
+sudo dnf install mesa-libGL-devel mesa-libGLU-devel
+```
+
+### Project setup:
 ```
 $ git clone --recurse-submodules https://github.com/dtrajko/MoravaEngine.git
 $ mkdir MoravaEngine/build
