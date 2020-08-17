@@ -2,13 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 
 set(MSVC_INCREMENTAL_DEFAULT ON)
 
-
-# set(BULLET_VERSION, 2.85)
-# project("BulletCollision" VERSION "${BULLET_VERSION}")
-# project("BulletDynamics"  VERSION "${BULLET_VERSION}")
-# project("LinearMath"      VERSION "${BULLET_VERSION}")
-
-
 project("MoravaEngine" VERSION 0.0.1)
 
 option(USE_MSVC_INCREMENTAL_LINKING "Use MSVC Incremental Linking" OFF)
@@ -42,10 +35,6 @@ file(GLOB SOURCES
 add_executable("MoravaEngine" "${SOURCES}")
 
 set(CMAKE_GENERATOR_PLATFORM, x64)
-
-# if(MSVC)
-# 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG:incremental")
-# endif()
 
 unset(CMAKE_IMPORT_LIBRARY_SUFFIX)
 
@@ -230,15 +219,15 @@ SET(LinearMath_SRCS
 	../vendor/bullet3/src/LinearMath/TaskScheduler/btThreadSupportWin32.cpp
 )
 
-add_library(BulletDynamics STATIC "${BulletDynamics_SRCS}")
+add_library(BulletDynamics  STATIC "${BulletDynamics_SRCS}")
 add_library(BulletCollision STATIC "${BulletCollision_SRCS}")
-add_library(LinearMath STATIC "${LinearMath_SRCS}")
+add_library(LinearMath      STATIC "${LinearMath_SRCS}")
 
 file(COPY ./assimp-vc140-mt.dll DESTINATION ../build)
-file(COPY ./glew32.dll DESTINATION ../build)
-file(COPY ./Models DESTINATION ../build)
-file(COPY ./Shaders DESTINATION ../build)
-file(COPY ./Textures DESTINATION ../build)
+file(COPY ./glew32.dll          DESTINATION ../build)
+file(COPY ./Models              DESTINATION ../build)
+file(COPY ./Shaders             DESTINATION ../build)
+file(COPY ./Textures            DESTINATION ../build)
 
 target_link_libraries(
 	"MoravaEngine"
@@ -250,32 +239,3 @@ target_link_libraries(
 	../vendor/bullet3/lib/Release/BulletCollision
 	../vendor/bullet3/lib/Release/LinearMath
 )
-
-
-# set(BULLET_ROOT, ../vendor/bullet3)
-# set(BULLET_DYNAMICS_LIBRARY, ../vendor/bullet3/src/BulletDynamics)
-# set(BULLET_COLLISION_LIBRARY, ../vendor/bullet3/src/BulletCollision)
-# set(BULLET_MATH_LIBRARY, ../vendor/bullet3/src/LinearMath)
-# set(BULLET_SOFTBODY_LIBRARY, ../vendor/bullet3/src/BulletSoftBody)
-# set(BULLET_INCLUDE_DIR, ../vendor/bullet3/src)
-# find_package(Bullet REQUIRED)
-
-# set(BULLET_VERSION, 2.85)
-# include(../vendor/bullet3/src/CMakeLists.txt)
-# include(../vendor/bullet3/src/BulletCollision/CMakeLists.txt)
-# include(../vendor/bullet3/src/BulletDynamics/CMakeLists.txt)
-# include(../vendor/bullet3/src/LinearMath/CMakeLists.txt)
-
-
-# copy files and directories to build folder
-# cp MoravaEngine/assimp-vc140-mt.dll build/assimp-vc140-mt.dll
-# cp MoravaEngine/glew32.dll build/glew32.dll
-# cp MoravaEngine/Models build/Models
-# cp MoravaEngine/glew32.dll build/Shaders
-# cp MoravaEngine/Textures build/Textures
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++latest")
-
-# Add Bullet projects
-# BulletCollision  vendor/bullet3/src/BulletCollision
-# BulletDynamic    vendor/bullet3/src/BulletDynamics
-# LinearMath       vendor/bullet3/src/LinearMath

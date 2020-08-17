@@ -34,7 +34,7 @@
 #include "SceneTerrain.h"
 #include "ScenePBR.h"
 #include "SceneJoey.h"
-#include "SourceConditional/SceneBullet.h"
+#include "SceneBullet.h"
 #include "SceneInstanced.h"
 #include "SceneAsteroids.h"
 #include "SceneNanosuit.h"
@@ -95,7 +95,7 @@ enum class SceneName
 	MarchingCubes,
 };
 
-SceneName currentScene = SceneName::MarchingCubes;
+SceneName currentScene = SceneName::Bullet;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
