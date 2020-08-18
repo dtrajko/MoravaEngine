@@ -6,7 +6,7 @@
 #include "Grid.h"
 #include "Pivot.h"
 #include "MaterialWorkflowPBR.h"
-#include "TextureCubemap.h"
+#include "TextureCubeMap.h"
 
 
 class SceneParticles : public Scene

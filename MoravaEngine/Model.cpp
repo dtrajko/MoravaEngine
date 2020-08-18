@@ -25,7 +25,7 @@ void Model::LoadModel(const std::string& fileName, const std::string& texturesPa
 	m_TexturesPath = texturesPath;
 	m_Scale = glm::vec3(1.0f);
 
-	std::chrono::time_point<std::chrono::steady_clock> startTimepoint = std::chrono::high_resolution_clock::now();
+	std::chrono::time_point<std::chrono::high_resolution_clock> startTimepoint = std::chrono::high_resolution_clock::now();
 
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(fileName, 

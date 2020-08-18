@@ -4,6 +4,8 @@
 
 #include "VertexTBN.h"
 
+#include <cstdio>
+
 
 Mesh::Mesh()
 {

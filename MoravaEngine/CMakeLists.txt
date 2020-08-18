@@ -238,10 +238,17 @@ add_dependencies("${PROJECT_NAME}" BulletDynamics)
 add_dependencies("${PROJECT_NAME}" BulletCollision)
 add_dependencies("${PROJECT_NAME}" LinearMath)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+set_target_properties("${PROJECT_NAME}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
 set_target_properties(BulletDynamics  PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
 set_target_properties(BulletCollision PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
 set_target_properties(LinearMath      PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+
+# set_property(TARGET "${PROJECT_NAME}" PROPERTY CXX_STANDARD 14)
+# set_property(TARGET BulletDynamics    PROPERTY CXX_STANDARD 14)
+# set_property(TARGET BulletCollision   PROPERTY CXX_STANDARD 14)
+# set_property(TARGET LinearMath        PROPERTY CXX_STANDARD 14)
+
+target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_17)
 
 include_directories(
 	"${PROJECT_NAME}" PUBLIC

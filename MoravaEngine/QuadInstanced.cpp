@@ -2,6 +2,8 @@
 
 #include "GL/glew.h"
 
+#include <cstdio>
+
 
 QuadInstanced::QuadInstanced()
 {

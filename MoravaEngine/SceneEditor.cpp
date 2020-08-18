@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "SceneEditor.h"
 
 #include "glm/gtc/matrix_transform.hpp"
@@ -723,8 +725,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             for (auto& profilerResult : m_ProfilerResults)
             {
                 char label[100];
-                strcpy_s(label, "%.2fms ");
-                strcat_s(label, profilerResult.first.c_str());
+                strcpy(label, "%.2fms ");
+                strcat(label, profilerResult.first.c_str());
                 ImGui::Text(label, profilerResult.second);
             }
             m_ProfilerResults.clear();
@@ -738,19 +740,19 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
         {
             char buffer[100];
 
-            sprintf_s(buffer, "Mouse Coords [ X: %.2ff Y: %.2ff ]", mp->m_MouseX, mp->m_MouseY);
+            sprintf(buffer, "Mouse Coords [ X: %.2ff Y: %.2ff ]", mp->m_MouseX, mp->m_MouseY);
             ImGui::Text(buffer);
             ImGui::Separator();
-            sprintf_s(buffer, "Normalized Coords [ X: %.2ff Y: %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
+            sprintf(buffer, "Normalized Coords [ X: %.2ff Y: %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
             ImGui::Text(buffer);
             ImGui::Separator();
-            sprintf_s(buffer, "Clip Coords [ X: %.2ff Y: %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
+            sprintf(buffer, "Clip Coords [ X: %.2ff Y: %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
             ImGui::Text(buffer);
             ImGui::Separator();
-            sprintf_s(buffer, "Eye Coords [ X: %.2ff Y: %.2ff Z: %.2ff W: %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
+            sprintf(buffer, "Eye Coords [ X: %.2ff Y: %.2ff Z: %.2ff W: %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
             ImGui::Text(buffer);
             ImGui::Separator();
-            sprintf_s(buffer, "World Ray [ X: %.2ff Y: %.2ff Z: %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
+            sprintf(buffer, "World Ray [ X: %.2ff Y: %.2ff Z: %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
             ImGui::Text(buffer);
         }
     }

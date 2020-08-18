@@ -2,7 +2,7 @@
 
 #include "RendererBasic.h"
 
-#include "learnopengl/ModelJoey.h"
+#include "LearnOpenGL/ModelJoey.h"
 #include "AABB.h"
 
 

@@ -410,7 +410,8 @@ void SkinnedMesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, co
         // Interpolate rotation and generate rotation transformation matrix
         aiQuaternion RotationQ;
         CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-        glm::mat4 RotationM = Math::aiMatrix4x4ToGlm(&aiMatrix4x4(RotationQ.GetMatrix()));
+        aiMatrix4x4 rotQ4x4 = aiMatrix4x4(RotationQ.GetMatrix());
+        glm::mat4 RotationM = Math::aiMatrix4x4ToGlm(&rotQ4x4);
 
         // Interpolate translation and generate translation transformation matrix
         aiVector3D Translation;

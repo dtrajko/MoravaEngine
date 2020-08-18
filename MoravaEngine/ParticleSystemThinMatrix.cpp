@@ -28,7 +28,7 @@ void ParticleSystemThinMatrix::GenerateParticles(glm::vec3 position, glm::vec3 s
 	float particlesToCreate = m_PPS * delta;
 	int count = (int)std::floor(particlesToCreate);
 	float integerPart;
-	float partialParticle = modf(particlesToCreate, &integerPart);
+	float partialParticle = (float)modf(particlesToCreate, (double*)&integerPart);
 
 	for (int i = 0; i < count; i++) {
 		systemPosition = CalculateRandomAreaPosition(position, scale);
