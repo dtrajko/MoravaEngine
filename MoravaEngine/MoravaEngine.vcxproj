@@ -107,14 +107,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)vendor\GLFW\lib-vc2019;$(SolutionDir)vendor\ASSIMP\lib;$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\bullet3\lib\Debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)vendor\GLFW\lib-vc2019;$(SolutionDir)vendor\ASSIMP\lib;$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\build\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -152,7 +152,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\GLFW\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\ASSIMP\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
@@ -161,7 +161,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)vendor\GLFW\lib-vc2019;$(SolutionDir)vendor\ASSIMP\lib;$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\bullet3\lib\Debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)vendor\GLFW\lib-vc2019;$(SolutionDir)vendor\ASSIMP\lib;$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\build\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -474,18 +474,18 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\vendor\bullet3\src\BulletCollision\BulletCollision.vcxproj">
-      <Project>{81acb07d-c787-3d07-b1b4-1d8b962a1176}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\vendor\bullet3\src\BulletDynamics\BulletDynamics.vcxproj">
-      <Project>{1b7d9736-b1d9-3a7a-bbf0-049f46f00fba}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\vendor\bullet3\src\LinearMath\LinearMath.vcxproj">
-      <Project>{409fe1f7-c852-31bb-a56a-bd4045dcca7c}</Project>
-    </ProjectReference>
+    <ResourceCompile Include="MoravaEngine.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="MoravaEngine.rc" />
+    <ProjectReference Include="..\build\BulletCollision.vcxproj">
+      <Project>{cdf09cc6-71e4-36f1-8cde-ae339552d4de}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\build\BulletDynamics.vcxproj">
+      <Project>{2cab7ccd-d59a-302a-b23c-e7e71d8f6b83}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\build\LinearMath.vcxproj">
+      <Project>{c85fc939-5725-378f-bee6-59bf38923780}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
