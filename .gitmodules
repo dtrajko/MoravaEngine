@@ -1,3 +1,15 @@
-[submodule "vendor/bullet3"]
-	path = vendor/bullet3
+[submodule "vendor/cross-platform/bullet3"]
+	path = vendor/cross-platform/bullet3
 	url = https://github.com/bulletphysics/bullet3.git
+[submodule "vendor/cross-platform/glew"]
+	path = vendor/cross-platform/glew
+	url = https://github.com/nigels-com/glew.git
+[submodule "vendor/cross-platform/glfw"]
+	path = vendor/cross-platform/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "vendor/cross-platform/glm"]
+	path = vendor/cross-platform/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "vendor/cross-platform/assimp"]
+	path = vendor/cross-platform/assimp
+	url = https://github.com/assimp/assimp.git

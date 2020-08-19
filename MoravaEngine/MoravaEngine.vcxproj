@@ -296,7 +296,7 @@
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="SubTexture2D.cpp" />
     <ClCompile Include="TerrainBase.cpp" />
-    <ClCompile Include="TerrainHeightmap.cpp" />
+    <ClCompile Include="TerrainHeightMap.cpp" />
     <ClCompile Include="TerrainMarchingCubes.cpp" />
     <ClCompile Include="TerrainSL.cpp" />
     <ClCompile Include="TerrainVoxel.cpp" />
@@ -453,7 +453,7 @@
     <ClInclude Include="SpotLight.h" />
     <ClInclude Include="SubTexture2D.h" />
     <ClInclude Include="TerrainBase.h" />
-    <ClInclude Include="TerrainHeightmap.h" />
+    <ClInclude Include="TerrainHeightMap.h" />
     <ClInclude Include="TerrainMarchingCubes.h" />
     <ClInclude Include="TerrainSL.h" />
     <ClInclude Include="TerrainVoxel.h" />

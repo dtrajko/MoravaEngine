@@ -5,13 +5,13 @@ VisualStudioVersion = 16.0.29403.142
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LearnOpenGL", "LearnOpenGL\LearnOpenGL.vcxproj", "{73BA9155-652B-4DB8-B9D7-47AAC149EFE2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "vendor\bullet3\src\LinearMath\LinearMath.vcxproj", "{409FE1F7-C852-31BB-A56A-BD4045DCCA7C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "vendor\cross-platform\bullet3\src\LinearMath\LinearMath.vcxproj", "{409FE1F7-C852-31BB-A56A-BD4045DCCA7C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "App_HelloWorld", "vendor\bullet3\examples\HelloWorld\App_HelloWorld.vcxproj", "{86BD9E60-8D4D-3664-B6EB-AAA2DB5DFA72}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "App_HelloWorld", "vendor\cross-platform\bullet3\examples\HelloWorld\App_HelloWorld.vcxproj", "{86BD9E60-8D4D-3664-B6EB-AAA2DB5DFA72}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletDynamics", "vendor\bullet3\src\BulletDynamics\BulletDynamics.vcxproj", "{1B7D9736-B1D9-3A7A-BBF0-049F46F00FBA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletDynamics", "vendor\cross-platform\bullet3\src\BulletDynamics\BulletDynamics.vcxproj", "{1B7D9736-B1D9-3A7A-BBF0-049F46F00FBA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "vendor\bullet3\src\BulletCollision\BulletCollision.vcxproj", "{81ACB07D-C787-3D07-B1B4-1D8B962A1176}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "vendor\cross-platform\bullet3\src\BulletCollision\BulletCollision.vcxproj", "{81ACB07D-C787-3D07-B1B4-1D8B962A1176}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MoravaEngine", "MoravaEngine\MoravaEngine.vcxproj", "{FABCD75E-496E-4408-B31C-D45E7D0DFC7A}"
 EndProject

@@ -377,9 +377,6 @@
     <ClCompile Include="PlayerController.cpp">
       <Filter>Player</Filter>
     </ClCompile>
-    <ClCompile Include="TerrainHeightmap.cpp">
-      <Filter>Terrain</Filter>
-    </ClCompile>
     <ClCompile Include="TerrainVoxel.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
@@ -439,6 +436,9 @@
     </ClCompile>
     <ClCompile Include="SceneBullet.cpp">
       <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainHeightMap.cpp">
+      <Filter>Terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -847,9 +847,6 @@
     <ClInclude Include="PlayerController.h">
       <Filter>Player</Filter>
     </ClInclude>
-    <ClInclude Include="TerrainHeightmap.h">
-      <Filter>Terrain</Filter>
-    </ClInclude>
     <ClInclude Include="TerrainVoxel.h">
       <Filter>Terrain</Filter>
     </ClInclude>
@@ -912,6 +909,9 @@
     </ClInclude>
     <ClInclude Include="SceneBullet.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainHeightMap.h">
+      <Filter>Terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
