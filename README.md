@@ -39,6 +39,11 @@ $ cmake ../MoravaEngine
 $ cmake --build .
 ```
 
+### Fetching submodules for the projected cloned without submodules:
+```
+git submodule update --init --recursive
+```
+
 ## Keyboard and Mouse shortcuts
 
 * Add Mesh or Model: Left CTRL + Left Mouse Button  
