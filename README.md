@@ -39,7 +39,7 @@ $ cmake ../MoravaEngine
 $ cmake --build .
 ```
 
-### Fetching submodules for the projected cloned without submodules:
+### Fetching submodules for the main project cloned without submodules:
 ```
 git submodule update --init --recursive
 ```
