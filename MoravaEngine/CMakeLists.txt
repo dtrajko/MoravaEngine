@@ -288,7 +288,10 @@ endif (WIN32)
 if (UNIX)
 target_link_libraries(
 	"${PROJECT_NAME}"
-	glew32.lib
+	libGLEW.so # -lGLEW
+	libGLU.so  # -lGLU
+	libGL.so   # -lGL
+
 	glfw3.lib
 	assimp-vc140-mt.lib
 	BulletDynamics.lib
