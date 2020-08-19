@@ -270,6 +270,7 @@ target_link_directories(
 	../vendor/cross-platform/bullet3/lib
 	../build/Release
 	../build/Debug
+	../vendor/cross-platform/glew/build/lib/libGLEW.so
 )
 
 if (WIN32)

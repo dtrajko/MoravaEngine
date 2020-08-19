@@ -26,8 +26,14 @@ Its current purpose is experimenting with various CGI concepts and techniques:
 Build automation based on CMake (in progress)
 
 ### Linux requirements:
+
+GLFW:
 ```
 sudo dnf install mesa-libGL-devel mesa-libGLU-devel
+```
+GLEW:
+```
+sudo dnf install libXmu-devel libXi-devel libGL-devel cmake git
 ```
 
 ### Project setup:
