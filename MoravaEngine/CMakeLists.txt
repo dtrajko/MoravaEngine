@@ -639,9 +639,9 @@ SET(assimp_SRCS
     ../vendor/cross-platform/assimp/contrib/unzip/ioapi.h
     ../vendor/cross-platform/assimp/contrib/unzip/unzip.c
     ../vendor/cross-platform/assimp/contrib/unzip/unzip.h
-    ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/Common/shapes.cc
-    ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/Common/shapes.h
-    ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/Common/utils.h
+    ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/common/shapes.cc
+    ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/common/shapes.h
+    ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/common/utils.h
     ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/sweep/advancing_front.h
     ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/sweep/advancing_front.cc
     ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/sweep/cdt.cc
@@ -941,11 +941,13 @@ target_link_libraries(
 )
 endif (UNIX)
 
-# file(COPY ../vendor/cross-platform/assimp/bin/Debug/assimp-vc142-mt.dll DESTINATION ../build)
-file(COPY ../vendor/cross-platform/assimp/bin/Release/assimp-vc142-mt.dll DESTINATION ../build)
+if(EXISTS "${ROOT}/configuration/${customer}/configuration.${project_name}.xml")
+  file(COPY ../vendor/cross-platform/assimp/bin/Release/assimp-vc142-mt.dll DESTINATION ../build)
+endif()
 file(COPY ./glew32.dll          DESTINATION ../build)
 file(COPY ./Models              DESTINATION ../build)
 file(COPY ./Shaders             DESTINATION ../build)
 file(COPY ./Textures            DESTINATION ../build)
 
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
+
