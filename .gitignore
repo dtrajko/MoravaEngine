@@ -355,3 +355,8 @@ MigrationBackup/
 MoravaEngine/imgui.ini
 MoravaEngine/Scenes/scene_tmp.scene
 build/
+
+vendor/cross-platform/bullet3/*.*
+vendor/cross-platform/glew/*.*
+vendor/cross-platform/glfw/*.*
+
