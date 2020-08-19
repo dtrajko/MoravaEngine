@@ -1,3 +1,6 @@
+[submodule "vendor/cross-platform/assimp"]
+	path = vendor/cross-platform/assimp
+	url = https://github.com/assimp/assimp.git
 [submodule "vendor/cross-platform/bullet3"]
 	path = vendor/cross-platform/bullet3
 	url = https://github.com/bulletphysics/bullet3.git
@@ -10,6 +13,3 @@
 [submodule "vendor/cross-platform/glm"]
 	path = vendor/cross-platform/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "vendor/cross-platform/assimp"]
-	path = vendor/cross-platform/assimp
-	url = https://github.com/assimp/assimp.git
