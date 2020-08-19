@@ -32,9 +32,7 @@ file(GLOB SOURCES
 	../vendor/ImGui/imstb_textedit.h
 	../vendor/ImGui/imstb_truetype.h
 )
-endif (WIN32)
-
-if (UNIX)
+elseif (UNIX)
 file(GLOB SOURCES
 	./*.h
 	./*.cpp
@@ -56,7 +54,7 @@ file(GLOB SOURCES
 	../vendor/ImGui/imstb_textedit.h
 	../vendor/ImGui/imstb_truetype.h
 )
-endif (UNIX)
+endif ()
 
 SET(BulletDynamics_SRCS
 	../vendor/cross-platform/bullet3/src/BulletDynamics/Character/btKinematicCharacterController.cpp
@@ -766,6 +764,7 @@ SET(assimp_SRCS
     ../vendor/cross-platform/assimp/include/assimp/Compiler/pstdint.h
 )
 
+if (WIN32)
 SET(glfw3_SRCS
     ../vendor/cross-platform/glfw/src/glfw_config.h
     ../vendor/cross-platform/glfw/include/GLFW/glfw3.h
@@ -793,6 +792,34 @@ SET(glfw3_SRCS
     ../vendor/cross-platform/glfw/src/egl_context.c
     ../vendor/cross-platform/glfw/src/osmesa_context.c
 )
+elseif (UNIX)
+SET(glfw3_SRCS
+    ../vendor/cross-platform/glfw/src/glfw_config.h
+    ../vendor/cross-platform/glfw/include/GLFW/glfw3.h
+    ../vendor/cross-platform/glfw/include/GLFW/glfw3native.h
+    ../vendor/cross-platform/glfw/src/internal.h
+    ../vendor/cross-platform/glfw/src/mappings.h
+    ../vendor/cross-platform/glfw/src/context.c
+    ../vendor/cross-platform/glfw/src/init.c
+    ../vendor/cross-platform/glfw/src/input.c
+    ../vendor/cross-platform/glfw/src/monitor.c
+    ../vendor/cross-platform/glfw/src/vulkan.c
+    ../vendor/cross-platform/glfw/src/window.c
+    ../vendor/cross-platform/glfw/src/win32_platform.h
+    ../vendor/cross-platform/glfw/src/win32_joystick.h
+    ../vendor/cross-platform/glfw/src/wgl_context.h
+    ../vendor/cross-platform/glfw/src/egl_context.h
+    ../vendor/cross-platform/glfw/src/osmesa_context.h
+    ../vendor/cross-platform/glfw/src/win32_joystick.c
+    ../vendor/cross-platform/glfw/src/win32_monitor.c
+    ../vendor/cross-platform/glfw/src/win32_time.c
+    ../vendor/cross-platform/glfw/src/win32_thread.c
+    ../vendor/cross-platform/glfw/src/win32_window.c
+    ../vendor/cross-platform/glfw/src/wgl_context.c
+    ../vendor/cross-platform/glfw/src/egl_context.c
+    ../vendor/cross-platform/glfw/src/osmesa_context.c
+)
+endif()
 
 SET(irrXML_SRCS
     ../vendor/cross-platform/assimp/contrib/irrXML/CXMLReaderImpl.h
@@ -914,6 +941,15 @@ include_directories(
 	../vendor/spdlog/include
 )
 
+target_link_directories(
+	"${PROJECT_NAME}" PUBLIC
+	../vendor/cross-platform/bullet3/lib
+	../vendor/cross-platform/glew/build/lib
+	../build/Release
+	../build/Debug
+	../vendor/GLEW/lib
+)
+
 if (WIN32)
 target_link_libraries(
 	"${PROJECT_NAME}"
@@ -925,9 +961,7 @@ target_link_libraries(
 	BulletCollision.lib
 	LinearMath.lib
 )
-endif (WIN32)
-
-if (UNIX)
+elseif (UNIX)
 target_link_libraries(
 	"${PROJECT_NAME}"
 	libGLEW.so # -lGLEW
@@ -939,7 +973,7 @@ target_link_libraries(
 	libBulletCollision.so
 	libLinearMath.so
 )
-endif (UNIX)
+endif ()
 
 if(EXISTS "${ROOT}/configuration/${customer}/configuration.${project_name}.xml")
   file(COPY ../vendor/cross-platform/assimp/bin/Release/assimp-vc142-mt.dll DESTINATION ../build)
