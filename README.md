@@ -29,7 +29,7 @@ Build automation based on CMake (in progress)
 
 GLFW:
 ```
-sudo dnf install mesa-libGL-devel mesa-libGLU-devel libXrandr-devel libXinerama-devel libXcursor-devel
+sudo dnf install mesa-libGL-devel mesa-libGLU-devel libXrandr-devel libXinerama-devel libXcursor-devel doxygen
 ```
 
 GLEW:
