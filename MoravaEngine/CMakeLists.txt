@@ -248,6 +248,11 @@ set_target_properties(LinearMath      PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG 
 # set_property(TARGET BulletCollision   PROPERTY CXX_STANDARD 14)
 # set_property(TARGET LinearMath        PROPERTY CXX_STANDARD 14)
 
+# add_subdirectory(../vendor/cross-platform/glfw)
+# include_directories(../vendor/cross-platform/glfw/include)
+# target_link_libraries("${PROJECT_NAME}" glfw "${GLFW_LIBRARIES}")
+# target_link_libraries("${PROJECT_NAME}" glfw "${OPENGL_glu_LIBRARY}" "${GLFW_LIBRARIES}")
+
 target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_17)
 
 include_directories(
@@ -260,6 +265,7 @@ include_directories(
 	../vendor/cross-platform/bullet3/src
 	../vendor/tinyobjloader
 	../vendor/spdlog/include
+	../vendor/cross-platform/glfw/include
 )
 
 target_link_directories(
@@ -270,7 +276,7 @@ target_link_directories(
 	../vendor/cross-platform/bullet3/lib
 	../build/Release
 	../build/Debug
-	../vendor/cross-platform/glew/build/lib/libGLEW.so
+	../vendor/cross-platform/glew/build/lib
 )
 
 if (WIN32)
@@ -292,12 +298,12 @@ target_link_libraries(
 	libGLEW.so # -lGLEW
 	libGLU.so  # -lGLU
 	libGL.so   # -lGL
-
-	glfw3.lib
-	assimp-vc140-mt.lib
-	BulletDynamics.lib
-	BulletCollision.lib
-	LinearMath.lib
+        glfw
+	# glfw3.lib
+	# assimp-vc140-mt.lib
+	# BulletDynamics.lib
+	# BulletCollision.lib
+	# LinearMath.lib
 )
 endif (UNIX)
 
@@ -308,3 +314,4 @@ file(COPY ./Shaders             DESTINATION ../build)
 file(COPY ./Textures            DESTINATION ../build)
 
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
+

@@ -29,8 +29,9 @@ Build automation based on CMake (in progress)
 
 GLFW:
 ```
-sudo dnf install mesa-libGL-devel mesa-libGLU-devel
+sudo dnf install mesa-libGL-devel mesa-libGLU-devel libXrandr-devel libXinerama-devel libXcursor-devel
 ```
+
 GLEW:
 ```
 sudo dnf install libXmu-devel libXi-devel libGL-devel cmake git
@@ -43,6 +44,12 @@ $ mkdir MoravaEngine/build
 $ cd MoravaEngine/build
 $ cmake ../MoravaEngine
 $ cmake --build .
+```
+
+### Include directories for dependencies:
+GLFW:
+```
+MoravaEngine/vendor/cross-platform/glfw/include
 ```
 
 ### Fetching submodules for the main project cloned without submodules:
