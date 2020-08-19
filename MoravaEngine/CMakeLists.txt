@@ -248,6 +248,9 @@ set_target_properties(LinearMath      PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG 
 # set_property(TARGET BulletCollision   PROPERTY CXX_STANDARD 14)
 # set_property(TARGET LinearMath        PROPERTY CXX_STANDARD 14)
 
+# set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+# set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+# set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 # add_subdirectory(../vendor/cross-platform/glfw)
 # include_directories(../vendor/cross-platform/glfw/include)
 # target_link_libraries("${PROJECT_NAME}" glfw "${GLFW_LIBRARIES}")
@@ -298,7 +301,6 @@ target_link_libraries(
 	libGLEW.so # -lGLEW
 	libGLU.so  # -lGLU
 	libGL.so   # -lGL
-        glfw
 	# glfw3.lib
 	# assimp-vc140-mt.lib
 	# BulletDynamics.lib
