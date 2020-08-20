@@ -945,8 +945,10 @@ target_link_directories(
 	"${PROJECT_NAME}" PUBLIC
 	../vendor/cross-platform/bullet3/lib
 	../vendor/cross-platform/glew/build/lib
-	../build/Release
+	../vendor/cross-platform/assimp/lib/Debug
+	../vendor/cross-platform/assimp/lib/Release
 	../build/Debug
+	../build/Release
 	../vendor/GLEW/lib
 )
 
@@ -975,7 +977,7 @@ target_link_libraries(
 )
 endif ()
 
-if(EXISTS "${ROOT}/configuration/${customer}/configuration.${project_name}.xml")
+if(EXISTS ../vendor/cross-platform/assimp/bin/Release/assimp-vc142-mt.dll)
   file(COPY ../vendor/cross-platform/assimp/bin/Release/assimp-vc142-mt.dll DESTINATION ../build)
 endif()
 file(COPY ./glew32.dll          DESTINATION ../build)
