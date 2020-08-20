@@ -981,7 +981,7 @@ target_link_libraries(
 	libBulletCollision.a
 	libLinearMath.a
 )
-target_link_libraries("${PROJECT_NAME}" libglfw3.a dl)
+target_link_libraries("${PROJECT_NAME}" libglfw3.a dl pthread)
 endif ()
 
 
