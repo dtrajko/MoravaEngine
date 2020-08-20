@@ -944,10 +944,15 @@ include_directories(
 
 target_link_directories(
 	"${PROJECT_NAME}" PUBLIC
-	../vendor/cross-platform/bullet3/lib
+	../vendor/cross-platform/bullet3/lib                 # Win32
+	../vendor/cross-platform/bullet3/src/BulletDynamics  # Linux
+	../vendor/cross-platform/bullet3/src/BulletCollision # Linux
+	../vendor/cross-platform/bullet3/src/LinearMath      # Linux
 	../vendor/cross-platform/glew/build/lib
-	../vendor/cross-platform/assimp/lib/Debug
-	../vendor/cross-platform/assimp/lib/Release
+	../vendor/cross-platform/assimp/lib/Debug   # Win32
+	../vendor/cross-platform/assimp/lib/Release # Win32
+	../vendor/cross-platform/assimp/bin         # Linux
+	../vendor/cross-platform/glfw/src
 	../build/Debug
 	../build/Release
 	../vendor/GLEW/lib
@@ -970,11 +975,11 @@ target_link_libraries(
 	libGLEW.so # -lGLEW
 	libGLU.so  # -lGLU
 	libGL.so   # -lGL
-	libglfw3.so
+	libglfw3.a
 	libassimp.so
-	libBulletDynamics.so
-	libBulletCollision.so
-	libLinearMath.so
+	libBulletDynamics.a
+	libBulletCollision.a
+	libLinearMath.a
 )
 endif ()
 
