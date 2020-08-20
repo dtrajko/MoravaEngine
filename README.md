@@ -46,12 +46,6 @@ $ cmake ../MoravaEngine
 $ cmake --build .
 ```
 
-### Include directories for dependencies:
-GLFW:
-```
-MoravaEngine/vendor/cross-platform/glfw/include
-```
-
 ### Fetching submodules for the main project cloned without submodules:
 ```
 git submodule update --init --recursive
