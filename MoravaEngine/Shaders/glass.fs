@@ -1,4 +1,4 @@
-#version 440
+#version 330
 
 in vec3  vReflection;
 in vec3  vRefraction;
