@@ -877,10 +877,10 @@ add_library(glfw3           STATIC "${glfw3_SRCS}")
 add_library(irrXML          STATIC "${irrXML_SRCS}")
 add_library(zlibstatic      STATIC "${zlibstatic_SRCS}")
 
-add_executable("${PROJECT_NAME}" "${SOURCES}")
-
 add_dependencies(assimp irrXML)
 add_dependencies(assimp zlibstatic)
+
+add_executable("${PROJECT_NAME}" "${SOURCES}")
 
 add_dependencies("${PROJECT_NAME}" BulletDynamics)
 add_dependencies("${PROJECT_NAME}" BulletCollision)
