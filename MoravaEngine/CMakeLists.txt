@@ -975,13 +975,15 @@ target_link_libraries(
 	libGLEW.so # -lGLEW
 	libGLU.so  # -lGLU
 	libGL.so   # -lGL
-	libglfw3.a
+	#libglfw3.a
 	libassimp.so
 	libBulletDynamics.a
 	libBulletCollision.a
 	libLinearMath.a
 )
+target_link_libraries("${PROJECT_NAME}" libglfw3.a dl)
 endif ()
+
 
 if(EXISTS ../vendor/cross-platform/assimp/bin/Release/assimp-vc142-mt.dll)
   file(COPY ../vendor/cross-platform/assimp/bin/Release/assimp-vc142-mt.dll DESTINATION ../build)
