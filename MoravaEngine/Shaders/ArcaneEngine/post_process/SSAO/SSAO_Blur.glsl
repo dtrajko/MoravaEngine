@@ -1,5 +1,5 @@
 #shader-type vertex
-#version 430 core
+#version 330 core
 
 layout (location = 0) in vec3 position;
 layout (location = 2) in vec2 texCoords;
@@ -16,7 +16,7 @@ void main()
 
 
 #shader-type fragment
-#version 430 core
+#version 330 core
 
 in vec2 TexCoords;
 

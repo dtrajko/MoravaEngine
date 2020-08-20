@@ -27,14 +27,8 @@ Build automation based on CMake (in progress)
 
 ### Linux requirements:
 
-GLFW:
 ```
-sudo dnf install mesa-libGL-devel mesa-libGLU-devel libXrandr-devel libXinerama-devel libXcursor-devel doxygen
-```
-
-GLEW:
-```
-sudo dnf install libXmu-devel libXi-devel libGL-devel cmake git
+sudo dnf install git cmake make libXmu-devel libXi-devel libGL-devel mesa-libGL-devel mesa-libGLU-devel libXrandr-devel libXinerama-devel libXcursor-devel doxygen
 ```
 
 ### Project setup:
