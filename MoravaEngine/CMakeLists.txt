@@ -810,6 +810,13 @@ SET(glfw3_SRCS
     ../vendor/cross-platform/glfw/src/wgl_context.h
     ../vendor/cross-platform/glfw/src/egl_context.h
     ../vendor/cross-platform/glfw/src/osmesa_context.h
+    #../vendor/cross-platform/glfw/src/win32_init.c
+    #../vendor/cross-platform/glfw/src/win32_joystick.c
+    #../vendor/cross-platform/glfw/src/win32_monitor.c
+    #../vendor/cross-platform/glfw/src/win32_time.c
+    #../vendor/cross-platform/glfw/src/win32_thread.c
+    #../vendor/cross-platform/glfw/src/win32_window.c
+    #../vendor/cross-platform/glfw/src/wgl_context.c
     ../vendor/cross-platform/glfw/src/egl_context.c
     ../vendor/cross-platform/glfw/src/osmesa_context.c
 )
