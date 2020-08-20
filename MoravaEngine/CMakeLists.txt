@@ -954,9 +954,9 @@ target_link_directories(
 	../vendor/cross-platform/assimp/lib/Release # Win32
 	../vendor/cross-platform/assimp/bin         # Linux
 	../vendor/cross-platform/glfw/src
-	../build/Debug
-	../build/Release
 	../vendor/GLEW/lib
+	../${PROJECT_NAME}/build/Debug
+	../${PROJECT_NAME}/build/Release
 )
 
 if (WIN32)
@@ -985,14 +985,16 @@ target_link_libraries(
 target_link_libraries("${PROJECT_NAME}" libglfw3.a dl pthread)
 endif ()
 
-
 if(EXISTS ../vendor/cross-platform/assimp/bin/Release/assimp-vc142-mt.dll)
   file(COPY ../vendor/cross-platform/assimp/bin/Release/assimp-vc142-mt.dll DESTINATION ../build)
 endif()
+if(EXISTS ../vendor/cross-platform/assimp/bin/Debug/assimp-vc142-mt.dll)
+  file(COPY ../vendor/cross-platform/assimp/bin/Debug/assimp-vc142-mt.dll DESTINATION ../build)
+endif()
+
 file(COPY ./glew32.dll          DESTINATION ../build)
 file(COPY ./Models              DESTINATION ../build)
 file(COPY ./Shaders             DESTINATION ../build)
 file(COPY ./Textures            DESTINATION ../build)
 
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
-

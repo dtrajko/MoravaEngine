@@ -34,9 +34,9 @@ sudo dnf install git cmake make libXmu-devel libXi-devel libGL-devel mesa-libGL-
 ### Project setup:
 ```
 $ git clone --recurse-submodules https://github.com/dtrajko/MoravaEngine.git
-$ mkdir MoravaEngine/build
-$ cd MoravaEngine/build
-$ cmake ../MoravaEngine
+$ mkdir MoravaEngine/MoravaEngine/build
+$ cd MoravaEngine/MoravaEngine/build
+$ cmake ..
 $ cmake --build .
 ```
 
