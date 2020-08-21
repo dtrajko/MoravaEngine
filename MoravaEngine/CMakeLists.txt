@@ -869,6 +869,14 @@ set(CMAKE_GENERATOR_PLATFORM, x64)
 
 unset(CMAKE_IMPORT_LIBRARY_SUFFIX)
 
+find_package(OpenGL REQUIRED)
+
+set(ZLIB_LIBRARIES zlibstatic)
+set(ENABLE_BOOST_WORKAROUND ON)
+set(BUILD_STATIC_LIB ON)
+set(BUILD_ASSIMP_TOOLS ON)
+set(ASSIMP_BUILD_STATIC_LIB ON)
+
 add_library(BulletDynamics  STATIC "${BulletDynamics_SRCS}")
 add_library(BulletCollision STATIC "${BulletCollision_SRCS}")
 add_library(LinearMath      STATIC "${LinearMath_SRCS}")
