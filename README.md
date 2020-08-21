@@ -25,6 +25,12 @@ Its current purpose is experimenting with various CGI concepts and techniques:
 ## Installation
 Build automation based on CMake (in progress)
 
+### Mac OS requirements
+
+```
+brew install cmake gcc git
+```
+
 ### Linux requirements:
 
 ```
@@ -35,6 +41,23 @@ sudo dnf install git cmake make libXmu-devel libXi-devel libGL-devel mesa-libGL-
 ```
 $ git clone --recurse-submodules https://github.com/dtrajko/MoravaEngine.git
 $ mkdir MoravaEngine/MoravaEngine/build
+
+$ cd MoravaEngine/vendor/cross-platform/assimp/contrib/zlib
+$ cmake .
+$ make
+
+$ cd MoravaEngine/vendor/cross-platform/assimp
+$ cmake .
+$ make
+
+$ cd MoravaEngine/vendor/cross-platform/bullet3
+$ cmake .
+$ make
+
+$ cd MoravaEngine/vendor/cross-platform/glfw
+$ cmake .
+$ make
+
 $ cd MoravaEngine/MoravaEngine/build
 $ cmake ..
 $ cmake --build .
