@@ -28,7 +28,7 @@ Build automation based on CMake (in progress)
 ### Mac OS requirements
 
 ```
-brew install cmake gcc git
+brew install cmake gcc git doxygen
 ```
 
 ### Linux requirements:
@@ -50,11 +50,11 @@ $ cd MoravaEngine/vendor/cross-platform/assimp
 $ cmake .
 $ make
 
-$ cd MoravaEngine/vendor/cross-platform/bullet3
+$ cd MoravaEngine/vendor/cross-platform/glfw
 $ cmake .
 $ make
 
-$ cd MoravaEngine/vendor/cross-platform/glfw
+$ cd MoravaEngine/vendor/cross-platform/bullet3
 $ cmake .
 $ make
 
