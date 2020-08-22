@@ -869,13 +869,6 @@ set(CMAKE_GENERATOR_PLATFORM, x64)
 
 unset(CMAKE_IMPORT_LIBRARY_SUFFIX)
 
-#find_package(OpenGL REQUIRED)
-#set(ZLIB_LIBRARIES zlibstatic)
-#set(ENABLE_BOOST_WORKAROUND ON)
-#set(BUILD_STATIC_LIB ON)
-#set(BUILD_ASSIMP_TOOLS ON)
-#set(ASSIMP_BUILD_STATIC_LIB ON)
-
 add_library(BulletDynamics  STATIC "${BulletDynamics_SRCS}")
 add_library(BulletCollision STATIC "${BulletCollision_SRCS}")
 add_library(LinearMath      STATIC "${LinearMath_SRCS}")
@@ -904,34 +897,23 @@ set_target_properties(glfw3             PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBU
 
 target_compile_definitions(glfw3 PRIVATE _GLFW_USE_CONFIG_H)
 
-# find_package(glfw3 3.3 REQUIRED)
-# target_link_libraries("${PROJECT_NAME}" glfw)
-# find_package(OpenGL REQUIRED)
-# target_link_libraries("${PROJECT_NAME}" OpenGL::GL)
-
-# set_property(TARGET "${PROJECT_NAME}" PROPERTY CXX_STANDARD 14)
-# set_property(TARGET BulletDynamics    PROPERTY CXX_STANDARD 14)
-# set_property(TARGET BulletCollision   PROPERTY CXX_STANDARD 14)
-# set_property(TARGET LinearMath        PROPERTY CXX_STANDARD 14)
-
-# set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-# set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-# set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-# add_subdirectory(../vendor/cross-platform/glfw)
-# include_directories(../vendor/cross-platform/glfw/include)
-# target_link_libraries("${PROJECT_NAME}" glfw "${GLFW_LIBRARIES}")
-# target_link_libraries("${PROJECT_NAME}" glfw "${OPENGL_glu_LIBRARY}" "${GLFW_LIBRARIES}")
-
-# add_subdirectory(../vendor/cross-platform/assimp)
-# target_link_libraries("${PROJECT_NAME}" assimp)
 
 target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_17)
 target_compile_features(assimp            PRIVATE cxx_std_17)
 
-include_directories(
-	"${PROJECT_NAME}" PUBLIC
-	#../vendor/GLFW/include
-	#../vendor/ASSIMP/include
+target_include_directories(
+	zlibstatic PUBLIC
+	../vendor/cross-platform/assimp/contrib/zlib
+)
+
+target_link_directories(
+	zlibstatic PUBLIC
+	../vendor/cross-platform/assimp/contrib/zlib/Debug
+	../vendor/cross-platform/assimp/contrib/zlib/Release
+)
+
+target_include_directories(
+	assimp PUBLIC
 	../vendor/cross-platform/assimp
 	../vendor/cross-platform/assimp/code
 	../vendor/cross-platform/assimp/include
@@ -940,6 +922,65 @@ include_directories(
 	../vendor/cross-platform/assimp/contrib/unzip
 	../vendor/cross-platform/assimp/contrib/openddlparser/include
 	../vendor/cross-platform/assimp/contrib/rapidjson/include
+)
+
+target_link_directories(
+	assimp PUBLIC
+	../vendor/cross-platform/assimp/lib/Debug   # Win32
+	../vendor/cross-platform/assimp/lib/Release # Win32
+	../vendor/cross-platform/assimp/bin         # Linux
+)
+
+target_include_directories(
+	glfw3 PUBLIC
+	../vendor/cross-platform/glfw/include
+	../vendor/cross-platform/glfw/src
+)
+
+target_link_directories(
+	glfw3 PUBLIC
+	../vendor/cross-platform/glfw/src
+)
+
+target_include_directories(
+	BulletDynamics PUBLIC
+	../vendor/cross-platform/bullet3/src
+	../vendor/cross-platform/bullet3/examples/ThirdPartyLibs/zlib
+)
+
+target_link_directories(
+	BulletDynamics PUBLIC
+	../vendor/cross-platform/bullet3/lib                # Win32
+	../vendor/cross-platform/bullet3/src/BulletDynamics # Linux
+)
+
+target_include_directories(
+	BulletCollision PUBLIC
+	../vendor/cross-platform/bullet3/src
+	../vendor/cross-platform/bullet3/examples/ThirdPartyLibs/zlib
+)
+
+target_link_directories(
+	BulletCollision PUBLIC
+	../vendor/cross-platform/bullet3/lib                 # Win32
+	../vendor/cross-platform/bullet3/src/BulletCollision # Linux
+)
+
+target_include_directories(
+	LinearMath PUBLIC
+	../vendor/cross-platform/bullet3/src
+	../vendor/cross-platform/bullet3/examples/ThirdPartyLibs/zlib
+)
+
+target_link_directories(
+	LinearMath PUBLIC
+	../vendor/cross-platform/bullet3/lib            # Win32
+	../vendor/cross-platform/bullet3/src/LinearMath # Linux
+)
+
+target_include_directories(
+	"${PROJECT_NAME}" PUBLIC
+	../vendor/cross-platform/assimp/include
 	../vendor/cross-platform/glfw/include
 	../vendor/cross-platform/glfw/src
 	../vendor/cross-platform/bullet3/src
@@ -993,13 +1034,7 @@ target_link_libraries(
 target_link_libraries("${PROJECT_NAME}" libglfw3.a dl pthread)
 endif ()
 
-if(EXISTS ../vendor/cross-platform/assimp/bin/Release/assimp-vc142-mt.dll)
-  file(COPY ../vendor/cross-platform/assimp/bin/Release/assimp-vc142-mt.dll DESTINATION ../build)
-endif()
-if(EXISTS ../vendor/cross-platform/assimp/bin/Debug/assimp-vc142-mt.dll)
-  file(COPY ../vendor/cross-platform/assimp/bin/Debug/assimp-vc142-mt.dll DESTINATION ../build)
-endif()
-
+file(COPY ./assimp-vc142-mt.dll DESTINATION ../build)
 file(COPY ./glew32.dll          DESTINATION ../build)
 file(COPY ./Models              DESTINATION ../build)
 file(COPY ./Shaders             DESTINATION ../build)
