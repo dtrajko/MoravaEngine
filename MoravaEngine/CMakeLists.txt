@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(CMAKE_BUILD_TYPE, Release)
+set(ENV{MORAVA_BUILD_TYPE} Release)
 
 set(MSVC_INCREMENTAL_DEFAULT ON)
 
@@ -861,6 +861,8 @@ SET(zlibstatic_SRCS
 	../vendor/cross-platform/assimp/contrib/zlib/zutil.h
 )
 
+message("Environment variable 'MORAVA_BUILD_TYPE' = '" $ENV{MORAVA_BUILD_TYPE} "'")
+
 option(USE_MSVC_INCREMENTAL_LINKING "Use MSVC Incremental Linking" OFF)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../build) # save executable in root directory
@@ -908,8 +910,7 @@ target_include_directories(
 
 target_link_directories(
 	zlibstatic PUBLIC
-	../vendor/cross-platform/assimp/contrib/zlib/Debug
-	../vendor/cross-platform/assimp/contrib/zlib/Release
+	../vendor/cross-platform/assimp/contrib/zlib/$ENV{MORAVA_BUILD_TYPE}
 )
 
 target_include_directories(
@@ -926,9 +927,8 @@ target_include_directories(
 
 target_link_directories(
 	assimp PUBLIC
-	../vendor/cross-platform/assimp/lib/Debug   # Win32
-	../vendor/cross-platform/assimp/lib/Release # Win32
-	../vendor/cross-platform/assimp/bin         # Linux
+	../vendor/cross-platform/assimp/lib/$ENV{MORAVA_BUILD_TYPE} # Win32
+	../vendor/cross-platform/assimp/bin                         # Linux
 )
 
 target_include_directories(
@@ -999,13 +999,11 @@ target_link_directories(
 	../vendor/cross-platform/bullet3/src/BulletCollision # Linux
 	../vendor/cross-platform/bullet3/src/LinearMath      # Linux
 	../vendor/cross-platform/glew/build/lib
-	../vendor/cross-platform/assimp/lib/Debug   # Win32
-	../vendor/cross-platform/assimp/lib/Release # Win32
-	../vendor/cross-platform/assimp/bin         # Linux
+	../vendor/cross-platform/assimp/lib/$ENV{MORAVA_BUILD_TYPE} # Win32
+	../vendor/cross-platform/assimp/bin                         # Linux
 	../vendor/cross-platform/glfw/src
 	../vendor/GLEW/lib
-	../${PROJECT_NAME}/build/Debug
-	../${PROJECT_NAME}/build/Release
+	../${PROJECT_NAME}/build/$ENV{MORAVA_BUILD_TYPE}
 )
 
 if (WIN32)
