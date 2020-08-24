@@ -177,6 +177,8 @@
     <ClCompile Include="CameraControllerVoxelTerrain.cpp" />
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="EndlessTerrain.cpp" />
+    <ClCompile Include="Hazel\Windows\WindowsInput.cpp" />
+    <ClCompile Include="Hazel\Windows\WindowsWindow.cpp" />
     <ClCompile Include="InsertionSort.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MapGenerator.cpp" />
@@ -330,6 +332,15 @@
     <ClInclude Include="CameraControllerVoxelTerrain.h" />
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="EndlessTerrain.h" />
+    <ClInclude Include="Hazel\Core\Base.h" />
+    <ClInclude Include="Hazel\Core\Input.h" />
+    <ClInclude Include="Hazel\Core\HazelWindow.h" />
+    <ClInclude Include="Hazel\Events\ApplicationEvent.h" />
+    <ClInclude Include="Hazel\Events\Event.h" />
+    <ClInclude Include="Hazel\Events\KeyEvent.h" />
+    <ClInclude Include="Hazel\Events\MouseEvent.h" />
+    <ClInclude Include="Hazel\Windows\WindowsInput.h" />
+    <ClInclude Include="Hazel\Windows\WindowsWindow.h" />
     <ClInclude Include="InsertionSort.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MapGenerator.h" />
