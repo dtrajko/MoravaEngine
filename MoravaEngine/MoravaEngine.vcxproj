@@ -337,11 +337,12 @@
     <ClInclude Include="Hazel\Core\Base.h" />
     <ClInclude Include="Hazel\Core\HazelWindow.h" />
     <ClInclude Include="Hazel\Core\Input.h" />
+    <ClInclude Include="Hazel\Core\KeyCodes.h" />
+    <ClInclude Include="Hazel\Core\MouseCodes.h" />
     <ClInclude Include="Hazel\Events\ApplicationEvent.h" />
     <ClInclude Include="Hazel\Events\Event.h" />
     <ClInclude Include="Hazel\Events\KeyEvent.h" />
     <ClInclude Include="Hazel\Events\MouseEvent.h" />
-    <ClInclude Include="Hazel\Windows\WindowsInput.h" />
     <ClInclude Include="Hazel\Windows\WindowsWindow.h" />
     <ClInclude Include="InsertionSort.h" />
     <ClInclude Include="Log.h" />

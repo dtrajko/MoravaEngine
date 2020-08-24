@@ -6,11 +6,22 @@
 #include <vector>
 
 
+struct FramebufferSpecification
+{
+	uint32_t Width, Height;
+	// FramebufferFormat Format = 
+	uint32_t Samples = 1;
+
+	bool SwapChainTarget = false;
+};
+
 class Framebuffer
 {
 public:
 	Framebuffer();
 	Framebuffer(unsigned int width, unsigned int height);
+	~Framebuffer();
+
 	void Bind(unsigned int width, unsigned int height);
 	void Unbind(unsigned int width, unsigned int height);
 	bool CheckStatus();
@@ -27,9 +38,14 @@ public:
 
 	void Clear();
 
-	~Framebuffer();
+	// TODO
+	void Invalidate();
+	void Resize(uint32_t width, uint32_t height);
 
 private:
+	uint32_t m_Width;
+	uint32_t m_Height;
+
 	unsigned int m_FBO;
 
 	std::vector<FramebufferTexture*> m_TextureAttachmentsColor;

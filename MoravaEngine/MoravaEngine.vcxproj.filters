@@ -934,9 +934,6 @@
     <ClInclude Include="Hazel\Events\MouseEvent.h">
       <Filter>Hazel\Events</Filter>
     </ClInclude>
-    <ClInclude Include="Hazel\Windows\WindowsInput.h">
-      <Filter>Hazel\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="Hazel\Windows\WindowsWindow.h">
       <Filter>Hazel\Windows</Filter>
     </ClInclude>
@@ -950,6 +947,12 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Core\HazelWindow.h">
+      <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Core\KeyCodes.h">
+      <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Core\MouseCodes.h">
       <Filter>Hazel\Core</Filter>
     </ClInclude>
   </ItemGroup>

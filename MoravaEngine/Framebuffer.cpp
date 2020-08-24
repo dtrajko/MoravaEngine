@@ -1,9 +1,12 @@
 #include "Framebuffer.h"
+#include "Log.h"
 
 #include <GL/glew.h>
 
 #include <stdexcept>
 
+
+static const uint32_t s_MaxFramebufferSize = 8192;
 
 Framebuffer::Framebuffer()
 {
@@ -16,23 +19,32 @@ Framebuffer::Framebuffer()
 Framebuffer::Framebuffer(unsigned int width, unsigned int height)
 	: Framebuffer()
 {
+	m_Width = width;
+	m_Height = height;
+
 	glGenFramebuffers(1, &m_FBO);
-	Bind(width, height);
+	Bind(m_Width, m_Height);
 }
 
 void Framebuffer::Bind(unsigned int width, unsigned int height)
 {
+	m_Width = width;
+	m_Height = height;
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, m_Width, m_Height);
 }
 
 void Framebuffer::Unbind(unsigned int width, unsigned int height)
 {
+	m_Width = width;
+	m_Height = height;
+
 	// unbind custom framebuffer and make the default framebuffer active
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, m_Width, m_Height);
 }
 
 bool Framebuffer::CheckStatus()
@@ -113,6 +125,24 @@ Attachment* Framebuffer::GetAttachmentDepthAndStencil()
 void Framebuffer::Clear()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+}
+
+void Framebuffer::Invalidate()
+{
+}
+
+void Framebuffer::Resize(uint32_t width, uint32_t height)
+{
+	if (width  < 0 || width > s_MaxFramebufferSize || height < 0 || height > s_MaxFramebufferSize)
+	{
+		Log::GetLogger()->warn("Attempted to resize framebuffer to {0}, {1}", width, height);
+		return;
+	}
+
+	m_Width = width;
+	m_Height = height;
+
+	Invalidate();
 }
 
 Framebuffer::~Framebuffer()
