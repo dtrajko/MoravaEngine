@@ -10,6 +10,7 @@ Window::Window()
 	yChange = 0.0f;
 	xChangeReset = 0.0f;
 	yChangeReset = 0.0f;
+	m_CursorIgnoreLimit = 2.0f;
 }
 
 Window::Window(GLint windowWidth, GLint windowHeight, const char* windowTitle)
@@ -19,6 +20,7 @@ Window::Window(GLint windowWidth, GLint windowHeight, const char* windowTitle)
 	yChange = 0.0f;
 	xChangeReset = 0.0f;
 	yChangeReset = 0.0f;
+	m_CursorIgnoreLimit = 2.0f;
 
 	for (size_t i = 0; i < 1024; i++)
 		keys[i] = false;
@@ -208,27 +210,17 @@ void Window::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOff
 
 GLfloat Window::getXChange()
 {
-	float theChange = xChange;
+	float theChange = 0.0f;
+	if (std::abs(xChange) > m_CursorIgnoreLimit)
+		theChange = xChange;
 	return theChange;
 }
 
 GLfloat Window::getYChange()
 {
-	float theChange = yChange;
-	return theChange;
-}
-
-float Window::getXChangeReset()
-{
-	float theChange = xChangeReset;
-	xChangeReset = 0.0f;
-	return theChange;
-}
-
-float Window::getYChangeReset()
-{
-	float theChange = yChangeReset;
-	yChangeReset = 0.0f;
+	float theChange = 0.0f;
+	if (std::abs(yChange) > m_CursorIgnoreLimit)
+		theChange = yChange;
 	return theChange;
 }
 

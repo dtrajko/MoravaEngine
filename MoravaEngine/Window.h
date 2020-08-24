@@ -58,8 +58,8 @@ private:
 	float yMouseScrollOffset;
 	bool mouseFirstMoved;
 	bool mouseCursorAboveWindow;
-
 	bool m_VSync;
+	float m_CursorIgnoreLimit;
 
 	void CreateCallbacks();
 
