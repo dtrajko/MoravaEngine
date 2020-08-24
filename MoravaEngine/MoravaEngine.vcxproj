@@ -173,6 +173,7 @@
     <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="Application.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraControllerVoxelTerrain.cpp" />
     <ClCompile Include="CubeSkybox.cpp" />
@@ -328,13 +329,14 @@
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="Application.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraControllerVoxelTerrain.h" />
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="EndlessTerrain.h" />
     <ClInclude Include="Hazel\Core\Base.h" />
-    <ClInclude Include="Hazel\Core\Input.h" />
     <ClInclude Include="Hazel\Core\HazelWindow.h" />
+    <ClInclude Include="Hazel\Core\Input.h" />
     <ClInclude Include="Hazel\Events\ApplicationEvent.h" />
     <ClInclude Include="Hazel\Events\Event.h" />
     <ClInclude Include="Hazel\Events\KeyEvent.h" />

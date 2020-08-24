@@ -17,6 +17,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Application.h"
 #include "CommonValues.h"
 #include "ImGuiWrapper.h"
 #include "Window.h"
@@ -107,6 +108,8 @@ int main()
 
 	mainWindow = Window(WIDTH, HEIGHT, windowTitle);
 	mainWindow.Initialize();
+
+	Application::Get()->SetWindow(&mainWindow);
 
 	LOG_INFO("OpenGL Info:");
 	LOG_INFO("   Vendor: {0}",   glGetString(GL_VENDOR));

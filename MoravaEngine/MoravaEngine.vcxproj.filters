@@ -446,6 +446,9 @@
     <ClCompile Include="Hazel\Windows\WindowsWindow.cpp">
       <Filter>Hazel\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="Application.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -942,6 +945,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\Base.h">
       <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Application.h">
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Core\HazelWindow.h">
       <Filter>Hazel\Core</Filter>
