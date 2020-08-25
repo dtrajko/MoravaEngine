@@ -56,7 +56,7 @@ void ImGuiWrapper::Init(Window* window)
 
 	// Setup Platform/Renderer bindings
 	ImGui_ImplGlfw_InitForOpenGL(window->GetHandler(), true);
-	ImGui_ImplOpenGL3_Init("#version 410");
+	ImGui_ImplOpenGL3_Init("#version 330");
 }
 
 void ImGuiWrapper::Begin()

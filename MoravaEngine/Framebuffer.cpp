@@ -1,5 +1,6 @@
 #include "Framebuffer.h"
 #include "Log.h"
+#include "Application.h"
 
 #include <GL/glew.h>
 
@@ -10,6 +11,9 @@ static const uint32_t s_MaxFramebufferSize = 8192;
 
 Framebuffer::Framebuffer()
 {
+	m_Width = Application::Get()->GetWindow()->GetBufferWidth();
+	m_Height = Application::Get()->GetWindow()->GetBufferHeight();
+
 	m_TextureAttachmentsColor = std::vector<FramebufferTexture*>();
 	m_AttachmentDepth = nullptr;
 	m_AttachmentStencil = nullptr;
@@ -24,6 +28,16 @@ Framebuffer::Framebuffer(unsigned int width, unsigned int height)
 
 	glGenFramebuffers(1, &m_FBO);
 	Bind(m_Width, m_Height);
+}
+
+void Framebuffer::Bind()
+{
+	Bind(m_Width, m_Height);
+}
+
+void Framebuffer::Unbind()
+{
+	Unbind(m_Width, m_Height);
 }
 
 void Framebuffer::Bind(unsigned int width, unsigned int height)

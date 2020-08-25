@@ -117,6 +117,11 @@ glm::mat4 CameraController::CalculateViewMatrix()
 	return viewMatrix;
 }
 
+void CameraController::OnResize(float width, float height)
+{
+	// TODO (void Hazel::OrthographicCameraController::OnResize(float width, float height))
+}
+
 void CameraController::CalculateFront()
 {
 	float pitch = m_Camera->GetPitch();

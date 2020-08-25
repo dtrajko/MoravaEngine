@@ -22,6 +22,9 @@ public:
 	Framebuffer(unsigned int width, unsigned int height);
 	~Framebuffer();
 
+	void Bind();
+	void Unbind();
+
 	void Bind(unsigned int width, unsigned int height);
 	void Unbind(unsigned int width, unsigned int height);
 	bool CheckStatus();
@@ -35,6 +38,9 @@ public:
 	Attachment* GetAttachmentDepth();
 	Attachment* GetAttachmentStencil();
 	Attachment* GetAttachmentDepthAndStencil();
+
+	inline const uint32_t GetWidth() const { return m_Width; };
+	inline const uint32_t GetHeight() const { return m_Height; };
 
 	void Clear();
 

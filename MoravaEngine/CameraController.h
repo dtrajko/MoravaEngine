@@ -23,6 +23,8 @@ public:
 	glm::mat4 CalculateViewMatrix();
 	inline void SetUnlockRotation(bool unlockRotation) { m_UnlockRotation = unlockRotation; };
 
+	void OnResize(float width, float height);
+
 private:
 	void CalculateFront();
 

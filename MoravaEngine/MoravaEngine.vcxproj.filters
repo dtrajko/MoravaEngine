@@ -449,6 +449,12 @@
     <ClCompile Include="Application.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="RendererEditorFramebuffer.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneEditorFramebuffer.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -954,6 +960,12 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\MouseCodes.h">
       <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererEditorFramebuffer.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneEditorFramebuffer.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
