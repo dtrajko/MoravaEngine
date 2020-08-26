@@ -324,15 +324,17 @@ void RendererEditorFramebuffer::Render(float deltaTime, Window& mainWindow, Scen
 {
     // printf("RendererEditorFramebuffer::Render\n");
 
-    // Override the Projection matrix (update FOV)
-    if (mainWindow.GetBufferWidth() > 0 && mainWindow.GetBufferHeight() > 0)
-    {
-        projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()),
-            (float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
-            scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+    //  if (mainWindow.GetBufferWidth() > 0 && mainWindow.GetBufferHeight() > 0)
+    //      float aspectRatio = (float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight();
 
-        RendererBasic::SetProjectionMatrix(projectionMatrix);
-    }
+    float aspectRatio = scene->GetCameraController()->GetAspectRatio();
+    // Log::GetLogger()->info("RendererEditorFramebuffer::Render aspectRatio = {0}", aspectRatio);
+
+    // Override the Projection matrix (update FOV)
+    projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio,
+        scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+
+    RendererBasic::SetProjectionMatrix(projectionMatrix);
 
     /**** Begin editor_object ****/
     Shader* shaderEditor = shaders["editor_object"];

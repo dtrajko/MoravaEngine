@@ -193,7 +193,7 @@ void SceneMarchingCubes::SetCamera()
     m_Camera = new Camera(sceneSettings.cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f),
         sceneSettings.cameraStartYaw, sceneSettings.cameraStartPitch);
 
-	m_CameraController = new CameraControllerVoxelTerrain(m_Camera, m_Player, sceneSettings.cameraMoveSpeed, 0.1f, -0.7f);
+	m_CameraController = new CameraControllerVoxelTerrain(m_Camera, m_Player, m_AspectRatio, sceneSettings.cameraMoveSpeed, 0.1f, -0.7f);
 }
 
 void SceneMarchingCubes::SetupTextures()

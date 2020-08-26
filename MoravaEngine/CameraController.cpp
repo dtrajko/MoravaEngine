@@ -10,14 +10,14 @@
 
 
 CameraController::CameraController()
-	: CameraController(nullptr, 2.0f, 0.1f)
+	: CameraController(nullptr, 16 / 9.0f, 2.0f, 0.1f)
 {
 }
 
-CameraController::CameraController(Camera* camera, float moveSpeed, float turnSpeed)
+CameraController::CameraController(Camera* camera, float aspectRatio, float moveSpeed, float turnSpeed)
 {
 	m_Camera = camera;
-
+	m_AspectRatio = aspectRatio;
 	m_MoveSpeed = moveSpeed;
 	m_TurnSpeed = turnSpeed;
 
@@ -120,6 +120,7 @@ glm::mat4 CameraController::CalculateViewMatrix()
 void CameraController::OnResize(float width, float height)
 {
 	// TODO (void Hazel::OrthographicCameraController::OnResize(float width, float height))
+	m_AspectRatio = width / height;
 }
 
 void CameraController::CalculateFront()

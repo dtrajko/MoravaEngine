@@ -7,17 +7,16 @@
 
 
 CameraControllerVoxelTerrain::CameraControllerVoxelTerrain()
-	: CameraControllerVoxelTerrain(nullptr, nullptr, 2.0f, 0.1f, 10.0f)
+	: CameraControllerVoxelTerrain(nullptr, nullptr, 16 / 9.0f, 2.0f, 0.1f, 10.0f)
 {
 }
 
-CameraControllerVoxelTerrain::CameraControllerVoxelTerrain(Camera* camera, Player* player, float moveSpeed, float turnSpeed, float cameraPlayerDistance)
-	: CameraController(camera, moveSpeed, turnSpeed)
+CameraControllerVoxelTerrain::CameraControllerVoxelTerrain(Camera* camera, Player* player, float aspectRatio, float moveSpeed, float turnSpeed, float cameraPlayerDistance)
+	: CameraController(camera, aspectRatio, moveSpeed, turnSpeed)
 {
 	m_Player = player;
 	m_CameraPlayerDistance = cameraPlayerDistance;
 	m_AngleAroundPlayer = 180.0f;
-
 	m_PitchChangeSpeed = 0.1f;
 	m_YawChangeSpeed = 0.03f;
 }

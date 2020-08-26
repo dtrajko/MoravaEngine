@@ -153,7 +153,8 @@ private:
 protected:
 	static SceneSettings sceneSettings;
 
-	float m_FOV = 60.0f;
+	float m_FOV;
+	float m_AspectRatio;
 
 	Camera* m_Camera;
 	CameraController* m_CameraController;

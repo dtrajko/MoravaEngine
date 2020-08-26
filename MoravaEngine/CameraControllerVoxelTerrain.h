@@ -9,7 +9,7 @@ class CameraControllerVoxelTerrain : public CameraController
 
 public:
 	CameraControllerVoxelTerrain();
-	CameraControllerVoxelTerrain(Camera* camera, Player* player, float moveSpeed, float turnSpeed, float cameraPlayerDistance);
+	CameraControllerVoxelTerrain(Camera* camera, Player* player, float aspectRatio, float moveSpeed, float turnSpeed, float cameraPlayerDistance);
 	~CameraControllerVoxelTerrain();
 
 	virtual void KeyControl(bool* keys, float deltaTime) override;

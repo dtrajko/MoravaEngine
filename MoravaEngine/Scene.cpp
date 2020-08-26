@@ -123,6 +123,9 @@ Scene::Scene()
 	sceneSettings.waterHeight = 1.6f;
 	sceneSettings.waterWaveSpeed = 0.005f;
 
+	m_FOV = 60.0f;
+	m_AspectRatio = 16 / 9.0f;
+
 	shadowMapWidth = 1024;
 	shadowMapHeight = 1024;
 
@@ -195,7 +198,7 @@ void Scene::SetCamera()
 	m_Camera = new Camera(sceneSettings.cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f),
 		sceneSettings.cameraStartYaw, sceneSettings.cameraStartPitch);
 	
-	m_CameraController = new CameraController(m_Camera, sceneSettings.cameraMoveSpeed, 0.1f);
+	m_CameraController = new CameraController(m_Camera, m_AspectRatio, sceneSettings.cameraMoveSpeed, 0.1f);
 }
 
 void Scene::SetLightManager()

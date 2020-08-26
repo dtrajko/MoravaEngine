@@ -11,7 +11,7 @@ class CameraController
 
 public:
 	CameraController();
-	CameraController(Camera* camera, float moveSpeed, float turnSpeed);
+	CameraController(Camera* camera, float aspectRatio, float moveSpeed, float turnSpeed);
 	virtual ~CameraController();
 
 	virtual void KeyControl(bool* keys, float deltaTime);
@@ -25,10 +25,17 @@ public:
 
 	void OnResize(float width, float height);
 
+	inline void SetZoomLevel(float zoomLevel) { m_ZoomLevel = zoomLevel; }
+	inline float GetZoomLevel() const { return m_ZoomLevel; }
+	inline float GetAspectRatio() const { return m_AspectRatio; }
+
 private:
 	void CalculateFront();
 
 protected:
+	float m_AspectRatio;
+	float m_ZoomLevel = 1.0f;
+
 	Camera* m_Camera;
 
 	float m_MoveSpeed;
