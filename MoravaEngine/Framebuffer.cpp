@@ -11,6 +11,8 @@ static const uint32_t s_MaxFramebufferSize = 8192;
 
 Framebuffer::Framebuffer()
 {
+	m_FBO = 0;
+
 	m_Width = Application::Get()->GetWindow()->GetBufferWidth();
 	m_Height = Application::Get()->GetWindow()->GetBufferHeight();
 
@@ -25,9 +27,106 @@ Framebuffer::Framebuffer(unsigned int width, unsigned int height)
 {
 	m_Width = width;
 	m_Height = height;
+}
+
+void Framebuffer::AddAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
+{
+	FramebufferSpecification fbSpecs;
+	fbSpecs.Width = width;
+	fbSpecs.Height = height;
+	fbSpecs.attachmentType = attachmentType;
+	fbSpecs.attachmentFormat = attachmentFormat;
+	m_AttachmentSpecs.push_back(fbSpecs);
+}
+
+void Framebuffer::Generate(unsigned int width, unsigned int height)
+{
+	if (m_FBO) {
+		Release();
+	}
 
 	glGenFramebuffers(1, &m_FBO);
 	Bind(m_Width, m_Height);
+
+	for (FramebufferSpecification attachmentSpecs : m_AttachmentSpecs) {
+		// m_Width = attachmentSpecs.Width;
+		// m_Height = attachmentSpecs.Height;
+
+		switch (attachmentSpecs.attachmentFormat)
+		{
+		case AttachmentFormat::Color:
+			CreateTextureAttachmentColor(m_Width, m_Height, attachmentSpecs.attachmentFormat);
+			break;
+		case AttachmentFormat::Depth:
+			CreateAttachmentDepth(m_Width, m_Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			break;
+		case AttachmentFormat::Stencil:
+			CreateAttachmentStencil(m_Width, m_Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			break;
+		case AttachmentFormat::Depth_24_Stencil_8:
+			CreateAttachmentDepthAndStencil(m_Width, m_Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			break;
+		default:
+			Log::GetLogger()->error("Attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);
+			break;
+		}
+	}
+}
+
+void Framebuffer::Release()
+{
+	// Log::GetLogger()->info("Framebuffer::Release");
+
+	for (auto& textureAttachment : m_TextureAttachmentsColor)
+		delete textureAttachment;
+
+	m_TextureAttachmentsColor.clear();
+
+	delete m_AttachmentDepth;
+	delete m_AttachmentStencil;
+	delete m_AttachmentDepthAndStencil;
+
+	glDeleteFramebuffers(1, &m_FBO);
+
+	m_FBO = 0;
+}
+
+void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat)
+{
+	// Log::GetLogger()->info("Framebuffer::CreateTextureAttachmentColor [width={0}, height={1}]", width, height);
+
+	FramebufferTexture* texture = new FramebufferTexture(width, height, attachmentFormat, (unsigned int)m_TextureAttachmentsColor.size());
+	m_TextureAttachmentsColor.push_back(texture);
+}
+
+void Framebuffer::CreateAttachmentDepth(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
+{
+	// Log::GetLogger()->info("Framebuffer::CreateAttachmentDepth [width={0}, height={1}]", width, height);
+
+	if (attachmentType == AttachmentType::Texture)
+		m_AttachmentDepth = new FramebufferTexture(width, height, attachmentFormat, 0);
+	else if (attachmentType == AttachmentType::Renderbuffer)
+		m_AttachmentDepth = new Renderbuffer(width, height, attachmentFormat, 0);
+}
+
+void Framebuffer::CreateAttachmentStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
+{
+	// Log::GetLogger()->info("Framebuffer::CreateAttachmentStencil [width={0}, height={1}]", width, height);
+
+	if (attachmentType == AttachmentType::Texture)
+		m_AttachmentStencil = new FramebufferTexture(width, height, attachmentFormat, 0);
+	else if (attachmentType == AttachmentType::Renderbuffer)
+		m_AttachmentStencil = new Renderbuffer(width, height, attachmentFormat, 0);
+}
+
+void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
+{
+	// Log::GetLogger()->info("Framebuffer::CreateAttachmentDepthAndStencil [width={0}, height={1}]", width, height);
+
+	if (attachmentType == AttachmentType::Texture)
+		m_AttachmentDepthAndStencil = new FramebufferTexture(width, height, attachmentFormat, 0);
+	else if (attachmentType == AttachmentType::Renderbuffer)
+		m_AttachmentDepthAndStencil = new Renderbuffer(width, height, attachmentFormat, 0);
 }
 
 void Framebuffer::Bind()
@@ -64,36 +163,6 @@ void Framebuffer::Unbind(unsigned int width, unsigned int height)
 bool Framebuffer::CheckStatus()
 {
 	return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
-}
-
-void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat)
-{
-	FramebufferTexture* texture = new FramebufferTexture(width, height, attachmentFormat, (unsigned int)m_TextureAttachmentsColor.size());
-	m_TextureAttachmentsColor.push_back(texture);
-}
-
-void Framebuffer::CreateAttachmentDepth(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
-{
-	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentDepth = new FramebufferTexture(width, height, attachmentFormat, 0);
-	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentDepth = new Renderbuffer(width, height, attachmentFormat, 0);
-}
-
-void Framebuffer::CreateAttachmentStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
-{
-	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentStencil = new FramebufferTexture(width, height, attachmentFormat, 0);
-	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentStencil = new Renderbuffer(width, height, attachmentFormat, 0);
-}
-
-void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
-{
-	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentDepthAndStencil = new FramebufferTexture(width, height, attachmentFormat, 0);
-	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentDepthAndStencil = new Renderbuffer(width, height, attachmentFormat, 0);
 }
 
 FramebufferTexture* Framebuffer::GetTextureAttachmentColor(unsigned int orderID)
@@ -141,10 +210,6 @@ void Framebuffer::Clear()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void Framebuffer::Invalidate()
-{
-}
-
 void Framebuffer::Resize(uint32_t width, uint32_t height)
 {
 	if (width  < 0 || width > s_MaxFramebufferSize || height < 0 || height > s_MaxFramebufferSize)
@@ -156,19 +221,11 @@ void Framebuffer::Resize(uint32_t width, uint32_t height)
 	m_Width = width;
 	m_Height = height;
 
-	Invalidate();
+	Generate(m_Width, m_Height);
 }
 
 Framebuffer::~Framebuffer()
 {
-	for (auto& textureAttachment : m_TextureAttachmentsColor)
-		delete textureAttachment;
-
-	m_TextureAttachmentsColor.clear();
-
-	delete m_AttachmentDepth;
-	delete m_AttachmentStencil;
-	delete m_AttachmentDepthAndStencil;
-
-	glDeleteFramebuffers(1, &m_FBO);
+	Release();
+	m_AttachmentSpecs.clear();
 }

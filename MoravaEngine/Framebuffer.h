@@ -13,6 +13,9 @@ struct FramebufferSpecification
 	uint32_t Samples = 1;
 
 	bool SwapChainTarget = false;
+
+	AttachmentType attachmentType;
+	AttachmentFormat attachmentFormat;
 };
 
 class Framebuffer
@@ -29,6 +32,8 @@ public:
 	void Unbind(unsigned int width, unsigned int height);
 	bool CheckStatus();
 
+	void AddAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat);
+
 	void CreateTextureAttachmentColor(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat = AttachmentFormat::Color);
 	void CreateAttachmentDepth(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth);
 	void CreateAttachmentStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Stencil);
@@ -44,13 +49,15 @@ public:
 
 	void Clear();
 
-	// TODO
-	void Invalidate();
+	void Release();
+	void Generate(unsigned int width, unsigned int height); // Invalidate() in Hazel
 	void Resize(uint32_t width, uint32_t height);
 
 private:
 	uint32_t m_Width;
 	uint32_t m_Height;
+
+	std::vector<FramebufferSpecification> m_AttachmentSpecs;
 
 	unsigned int m_FBO;
 

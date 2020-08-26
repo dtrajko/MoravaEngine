@@ -1,5 +1,7 @@
 #include "FramebufferTexture.h"
 
+#include "Log.h"
+
 #include <GL/glew.h>
 
 #include <stdexcept>
@@ -77,5 +79,7 @@ void FramebufferTexture::Unbind()
 
 FramebufferTexture::~FramebufferTexture()
 {
+	// Log::GetLogger()->info("FramebufferTexture Destructor");
+
 	glDeleteTextures(1, &m_ID);
 }

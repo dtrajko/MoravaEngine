@@ -12,6 +12,6 @@ public:
 	Renderbuffer(unsigned int width, unsigned int height, AttachmentFormat attachmentType, unsigned int orderID);
 	virtual void Bind(unsigned int slot = 0) override;
 	virtual void Unbind() override;
-	~Renderbuffer();
+	virtual ~Renderbuffer() override;
 
 };

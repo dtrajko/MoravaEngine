@@ -26,10 +26,15 @@ class Attachment
 public:
 	Attachment();
 	Attachment(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat, unsigned int orderID);
+	virtual ~Attachment();
+
 	inline unsigned int GetID() const { return m_ID; };
+	inline const unsigned int GetWidth() const { return m_Width; };
+	inline const unsigned int GetHeight() const { return m_Height; };
+
 	virtual void Bind(unsigned int slot) = 0;
 	virtual void Unbind() = 0;
-	~Attachment();
+
 
 protected:
 	unsigned int m_ID;

@@ -26,6 +26,7 @@ public:
 
 	virtual void Update(float timestep, Window& mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window& mainWindow) override;
+	virtual void ShowExampleAppDockSpace(bool* p_open, Window& mainWindow) override;
 	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
 	inline Framebuffer* GetRenderFramebuffer() { return m_RenderFramebuffer; };
@@ -68,6 +69,7 @@ private:
 	glm::mat4 CalculateRenderTransform(SceneObject* sceneObject);
 	virtual bool IsWaterOnScene() override;
 	void UpdateLightDirection(glm::quat rotation);
+	void ResizeViewport(glm::vec2 viewportPanelSize);
 
 private:
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
@@ -127,6 +129,7 @@ private:
 	EventCooldown m_SceneReset;
 	EventCooldown m_ProjectionChange;
 	EventCooldown m_ParticlesGenerate;
+	EventCooldown m_ResizeViewport;
 
 	bool m_OrthographicViewEnabled;
 
