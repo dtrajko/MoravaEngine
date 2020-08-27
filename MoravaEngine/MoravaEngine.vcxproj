@@ -200,6 +200,7 @@
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="RendererEditorFramebuffer.cpp" />
     <ClCompile Include="RendererOmniShadows.cpp" />
+    <ClCompile Include="RendererSSAO.cpp" />
     <ClCompile Include="RendererVoxelTerrain.cpp" />
     <ClCompile Include="RenderInstanced.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
@@ -211,6 +212,7 @@
     <ClCompile Include="SceneObjectParticleSystem.cpp" />
     <ClCompile Include="SceneOmniShadows.cpp" />
     <ClCompile Include="SceneProceduralLandmass.cpp" />
+    <ClCompile Include="SceneSSAO.cpp" />
     <ClCompile Include="SceneVoxelTerrain.cpp" />
     <ClCompile Include="SceneVoxelTerrainSL.cpp" />
     <ClCompile Include="ShaderBackground.cpp" />
@@ -368,6 +370,7 @@
     <ClInclude Include="Random.h" />
     <ClInclude Include="RendererEditorFramebuffer.h" />
     <ClInclude Include="RendererOmniShadows.h" />
+    <ClInclude Include="RendererSSAO.h" />
     <ClInclude Include="RendererVoxelTerrain.h" />
     <ClInclude Include="RenderInstanced.h" />
     <ClInclude Include="resource.h" />
@@ -380,6 +383,7 @@
     <ClInclude Include="SceneObjectParticleSystem.h" />
     <ClInclude Include="SceneOmniShadows.h" />
     <ClInclude Include="SceneProceduralLandmass.h" />
+    <ClInclude Include="SceneSSAO.h" />
     <ClInclude Include="SceneVoxelTerrain.h" />
     <ClInclude Include="SceneVoxelTerrainSL.h" />
     <ClInclude Include="ShaderBackground.h" />

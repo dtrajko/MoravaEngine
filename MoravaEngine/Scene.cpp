@@ -131,7 +131,8 @@ Scene::Scene()
 
 	m_WireframeEnabled = false;
 
-	// SetLightManager();
+	SetLightManager();
+	SetupFramebuffers();
 	SetupTextures();
 	SetupTextureSlots();
 	SetupMaterials();
@@ -177,6 +178,10 @@ void Scene::SetupParticles()
 {
 }
 
+void Scene::SetupFramebuffers()
+{
+}
+
 void Scene::SetupModels()
 {
 }
@@ -203,9 +208,9 @@ void Scene::SetCamera()
 
 void Scene::SetLightManager()
 {
-	// Skip if Light Manager already initialized
-	if (LightManager::pointLightCount > 0 || LightManager::spotLightCount > 0) return;
-	LightManager::Init(sceneSettings);
+	// // Skip if Light Manager already initialized
+	// if (LightManager::pointLightCount > 0 || LightManager::spotLightCount > 0) return;
+	// LightManager::Init(sceneSettings);
 }
 
 void Scene::SetWaterManager(int width, int height)

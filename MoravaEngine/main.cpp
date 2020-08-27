@@ -43,6 +43,7 @@
 #include "SceneVoxelTerrainSL.h"
 #include "SceneMarchingCubes.h"
 #include "SceneEditorFramebuffer.h"
+#include "SceneSSAO.h"
 
 #include "Renderer.h"
 #include "RendererPBR.h"
@@ -56,6 +57,7 @@
 #include "RendererVoxelTerrain.h"
 #include "RendererEditor.h"
 #include "RendererEditorFramebuffer.h"
+#include "RendererSSAO.h"
 
 
 // Window dimensions
@@ -91,9 +93,10 @@ enum class SceneName
 	VoxelTerrainSL,
 	MarchingCubes,
 	EditorFramebuffer,
+	SSAO,
 };
 
-SceneName currentScene = SceneName::EditorFramebuffer;
+SceneName currentScene = SceneName::SSAO;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -194,6 +197,10 @@ int main()
 	case SceneName::EditorFramebuffer:
 		scene = new SceneEditorFramebuffer();
 		renderer = static_cast<RendererBasic*>(new RendererEditorFramebuffer());
+		break;
+	case SceneName::SSAO:
+		scene = new SceneSSAO();
+		renderer = static_cast<RendererBasic*>(new RendererSSAO());
 		break;
 	default:
 		throw std::runtime_error("Scene and Renderer could not be loaded!");

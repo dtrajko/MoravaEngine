@@ -455,6 +455,12 @@
     <ClCompile Include="SceneEditorFramebuffer.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="RendererSSAO.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneSSAO.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -965,6 +971,12 @@
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="SceneEditorFramebuffer.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererSSAO.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneSSAO.h">
       <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
