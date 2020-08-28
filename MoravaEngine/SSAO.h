@@ -51,7 +51,7 @@ public:
 	glm::vec3 lightPos;
 	glm::vec3 lightColor;
 
-	int kernelSize;
+	unsigned int kernelSize;
 	float radius;
 	float bias;
 

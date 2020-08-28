@@ -86,13 +86,7 @@ MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
         vector.x = mesh->mVertices[i].x;
         vector.y = mesh->mVertices[i].y;
         vector.z = mesh->mVertices[i].z;
-        vertex.base.Position = vector;
-
-        // normals
-        vector.x = mesh->mNormals[i].x;
-        vector.y = mesh->mNormals[i].y;
-        vector.z = mesh->mNormals[i].z;
-        vertex.base.Normal = vector;
+        vertex.Position = vector;
 
         // texture coordinates
         if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
@@ -102,10 +96,16 @@ MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
             // use models where a vertex can have multiple texture coordinates so we always take the first set (0).
             vec.x = mesh->mTextureCoords[0][i].x;
             vec.y = mesh->mTextureCoords[0][i].y;
-            vertex.base.TexCoords = vec;
+            vertex.TexCoord = vec;
         }
         else
-            vertex.base.TexCoords = glm::vec2(0.0f, 0.0f);
+            vertex.TexCoord = glm::vec2(0.0f, 0.0f);
+
+        // normals
+        vector.x = mesh->mNormals[i].x;
+        vector.y = mesh->mNormals[i].y;
+        vector.z = mesh->mNormals[i].z;
+        vertex.Normal = vector;
 
         // tangent
         vector.x = mesh->mTangents[i].x;

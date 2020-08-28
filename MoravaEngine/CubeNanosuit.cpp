@@ -15,36 +15,37 @@ CubeNanosuit::CubeNanosuit(std::string const& textureDirectory)
 {
     m_TextureDirectory = textureDirectory;
 
-    //                       X      Y      Z          NX     NY     NZ        U     V        TX     TY     TZ        BX     BY     BZ
-    m_Vertices.push_back({ -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    1.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f });
-    m_Vertices.push_back({ -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    1.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,    0.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,    0.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f });
-
-    m_Vertices.push_back({ -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    0.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f });
-    m_Vertices.push_back({ -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f });
-    m_Vertices.push_back({  0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,    1.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f });
-    m_Vertices.push_back({  0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,    1.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f });
-
-    m_Vertices.push_back({  0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,    1.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,    0.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f });
-    m_Vertices.push_back({  0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f });
-
-    m_Vertices.push_back({ -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f });
-    m_Vertices.push_back({ -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f });
-    m_Vertices.push_back({ -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    1.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f });
-    m_Vertices.push_back({ -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f });
-
-    m_Vertices.push_back({ -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f });
-    m_Vertices.push_back({ -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    1.0f, 0.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,    0.0f, 0.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f });
-
-    m_Vertices.push_back({ -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    0.0f, 1.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f });
-    m_Vertices.push_back({ -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,    1.0f, 1.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f });
+    //                      Position               TexCoord        Normal                  Tangent                 Bitangent
+    //                        X      Y      Z        U     V        NX     NY     NZ        TX     TY     TZ        BX     BY     BZ
+    m_Vertices.push_back({ -0.5f,  0.5f, -0.5f,    1.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f });
+    m_Vertices.push_back({ -0.5f, -0.5f, -0.5f,    1.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f, -0.5f, -0.5f,    0.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f,  0.5f, -0.5f,    0.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f });
+                                                                  
+    m_Vertices.push_back({ -0.5f,  0.5f,  0.5f,    0.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f });
+    m_Vertices.push_back({ -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f });
+    m_Vertices.push_back({  0.5f, -0.5f,  0.5f,    1.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f });
+    m_Vertices.push_back({  0.5f,  0.5f,  0.5f,    1.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f });
+                                                                  
+    m_Vertices.push_back({  0.5f,  0.5f, -0.5f,    1.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f, -0.5f,  0.5f,    0.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f });
+    m_Vertices.push_back({  0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f });
+                                                                  
+    m_Vertices.push_back({ -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f });
+    m_Vertices.push_back({ -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f });
+    m_Vertices.push_back({ -0.5f, -0.5f,  0.5f,    1.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f });
+    m_Vertices.push_back({ -0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f });
+                                                                  
+    m_Vertices.push_back({ -0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f });
+    m_Vertices.push_back({ -0.5f,  0.5f, -0.5f,    1.0f, 0.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f,  0.5f, -0.5f,    0.0f, 0.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f });
+                                                                  
+    m_Vertices.push_back({ -0.5f, -0.5f,  0.5f,    0.0f, 1.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f });
+    m_Vertices.push_back({ -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f, -0.5f,  0.5f,    1.0f, 1.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f });
 
     m_Indices =
     {
@@ -92,13 +93,7 @@ MeshJoey* CubeNanosuit::processMesh()
         vector.x = m_Vertices[i][0];
         vector.y = m_Vertices[i][1];
         vector.z = m_Vertices[i][2];
-        vertex.base.Position = vector;
-
-        // normals
-        vector.x = m_Vertices[i][3];
-        vector.y = m_Vertices[i][4];
-        vector.z = m_Vertices[i][5];
-        vertex.base.Normal = vector;
+        vertex.Position = vector;
 
         // texture coordinates
         if (m_Vertices[i][3]) // does the mesh contain texture coordinates?
@@ -106,12 +101,18 @@ MeshJoey* CubeNanosuit::processMesh()
             glm::vec2 vec;
             // a vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't 
             // use models where a vertex can have multiple texture coordinates so we always take the first set (0).
-            vec.x = m_Vertices[i][6];
-            vec.y = m_Vertices[i][7];
-            vertex.base.TexCoords = vec;
+            vec.x = m_Vertices[i][3];
+            vec.y = m_Vertices[i][4];
+            vertex.TexCoord = vec;
         }
         else
-            vertex.base.TexCoords = glm::vec2(0.0f, 0.0f);
+            vertex.TexCoord = glm::vec2(0.0f, 0.0f);
+
+        // normals
+        vector.x = m_Vertices[i][5];
+        vector.y = m_Vertices[i][6];
+        vector.z = m_Vertices[i][7];
+        vertex.Normal = vector;
 
         // tangent
         vector.x = m_Vertices[i][8];

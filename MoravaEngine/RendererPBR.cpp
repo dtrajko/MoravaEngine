@@ -2,6 +2,7 @@
 
 #include "ShaderMain.h"
 #include "ShaderPBR.h"
+#include "Application.h"
 
 
 RendererPBR::RendererPBR()
@@ -85,11 +86,6 @@ void RendererPBR::SetShaders()
 	shaderPBR->CreateFromFiles("Shaders/PBR.vert", "Shaders/PBR.frag");
 	shaders.insert(std::make_pair("pbr", shaderPBR));
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
-}
-
-void RendererPBR::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
-{
-	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
 void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -204,6 +200,13 @@ void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 project
 
 	DisableCulling();
 	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+}
+
+void RendererPBR::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
+
+	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
 RendererPBR::~RendererPBR()

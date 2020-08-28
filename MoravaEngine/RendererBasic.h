@@ -13,6 +13,7 @@ class RendererBasic
 public:
 
 	RendererBasic();
+	virtual ~RendererBasic();
 
 	virtual void Init(Scene* scene); // Scene param here could be a mistake
 	virtual void SetUniforms();
@@ -24,18 +25,19 @@ public:
 	static void EnableTransparency();
 	static void DisableTransparency();
 	static void ClearDepthBuffer();
-	static inline glm::mat4 GetProjectionMatrix() { return m_ProjectionMatrix; };
-	static inline void SetProjectionMatrix(glm::mat4 projectionMatrix) { m_ProjectionMatrix = projectionMatrix; };
+	static inline glm::mat4 GetProjectionMatrix() { return s_ProjectionMatrix; };
+	static inline void SetProjectionMatrix(glm::mat4 projectionMatrix) { s_ProjectionMatrix = projectionMatrix; };
 
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
 	void RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window& mainWindow);
 	void SetDefaultFramebuffer(unsigned int width, unsigned int height);
 	void Cleanup();
 
-	virtual ~RendererBasic();
+protected:
+	static void UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene);
 
 private:
-	static glm::mat4 m_ProjectionMatrix;
+	static glm::mat4 s_ProjectionMatrix;
 
 protected:
 

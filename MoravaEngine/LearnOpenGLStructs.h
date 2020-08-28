@@ -2,6 +2,8 @@
 
 #include "glm/glm.hpp"
 
+#include <string>
+
 
 struct VertexSSAO
 {
@@ -12,9 +14,12 @@ struct VertexSSAO
 
 struct VertexTangents
 {
-    VertexSSAO base;
+    glm::vec3 Position;
+    glm::vec2 TexCoord;
+    glm::vec3 Normal;
     glm::vec3 Tangent;
     glm::vec3 Bitangent;
+
 };
 
 struct TextureData

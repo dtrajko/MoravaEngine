@@ -11,7 +11,7 @@ MeshJoey::MeshJoey()
 MeshJoey::MeshJoey(std::vector<VertexTangents> vertices, std::vector<unsigned int> indices, std::vector<TextureData> textures)
 {
     this->vertices = vertices;
-    this->indices = indices;
+    this->indices  = indices;
     this->textures = textures;
 
     // now that we have all the required data, set the vertex buffers and its attribute pointers.
@@ -40,13 +40,13 @@ void MeshJoey::setupMesh()
     // set the vertex attribute pointers
     // vertex Positions
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTangents), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTangents), (void*)offsetof(VertexTangents, Position));
     // vertex normals
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTangents), (void*)offsetof(VertexTangents, base.Normal));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTangents), (void*)offsetof(VertexTangents, TexCoord));
     // vertex texture coords
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTangents), (void*)offsetof(VertexTangents, base.TexCoords));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTangents), (void*)offsetof(VertexTangents, Normal));
     // vertex tangent
     glEnableVertexAttribArray(3);
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexTangents), (void*)offsetof(VertexTangents, Tangent));
@@ -61,10 +61,10 @@ void MeshJoey::setupMesh()
 void MeshJoey::Draw(Shader* shader)
 {
     // bind appropriate textures
-    unsigned int diffuseNr = 1;
+    unsigned int diffuseNr  = 1;
     unsigned int specularNr = 1;
-    unsigned int normalNr = 1;
-    unsigned int heightNr = 1;
+    unsigned int normalNr   = 1;
+    unsigned int heightNr   = 1;
     for (unsigned int i = 0; i < textures.size(); i++)
     {
         glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding

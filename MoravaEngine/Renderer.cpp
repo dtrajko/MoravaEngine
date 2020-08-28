@@ -2,8 +2,8 @@
 
 #include "ShaderMain.h"
 #include "ShaderPBR.h"
-
 #include "WaterManager.h"
+#include "Application.h"
 
 
 Renderer::Renderer()
@@ -96,14 +96,6 @@ void Renderer::SetShaders()
 	shaderPBR->CreateFromFiles(vertPBRShader, fragPBRShader);
 	shaders.insert(std::make_pair("pbr", shaderPBR));
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
-}
-
-void Renderer::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
-{
-	RenderPassShadow(mainWindow, scene, projectionMatrix);
-	RenderOmniShadows(mainWindow, scene, projectionMatrix);
-	RenderWaterEffects(deltaTime, mainWindow, scene, projectionMatrix);
-	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
 void Renderer::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -389,6 +381,16 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	passType = "main";
 	scene->RenderWater(projectionMatrix, passType, shaders, uniforms);
 	shaderWater->Unbind();
+}
+
+void Renderer::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
+
+	RenderPassShadow(mainWindow, scene, projectionMatrix);
+	RenderOmniShadows(mainWindow, scene, projectionMatrix);
+	RenderWaterEffects(deltaTime, mainWindow, scene, projectionMatrix);
+	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
 Renderer::~Renderer()

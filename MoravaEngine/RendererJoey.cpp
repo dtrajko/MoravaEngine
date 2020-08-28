@@ -62,6 +62,8 @@ void RendererJoey::SetShaders()
 
 void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
+	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
+
 	// Clear the window
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -322,18 +322,9 @@ void RendererEditorFramebuffer::RenderPass(Window& mainWindow, Scene* scene, glm
 
 void RendererEditorFramebuffer::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-    // printf("RendererEditorFramebuffer::Render\n");
-
-    //  if (mainWindow.GetBufferWidth() > 0 && mainWindow.GetBufferHeight() > 0)
-    //      float aspectRatio = (float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight();
-
     float aspectRatio = scene->GetCameraController()->GetAspectRatio();
-    // Log::GetLogger()->info("RendererEditorFramebuffer::Render aspectRatio = {0}", aspectRatio);
-
-    // Override the Projection matrix (update FOV)
     projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio,
         scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
-
     RendererBasic::SetProjectionMatrix(projectionMatrix);
 
     /**** Begin editor_object ****/

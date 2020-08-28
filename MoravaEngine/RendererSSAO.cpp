@@ -27,24 +27,6 @@ void RendererSSAO::SetupSSAO()
 	m_SSAO->Init();
 }
 
-void RendererSSAO::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
-{
-	uint32_t width = Application::Get()->GetWindow()->GetBufferWidth();
-	uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
-
-	scene->GetCameraController()->OnResize((float)width, (float)height);
-
-	// Override the Projection matrix
-	float aspectRatio = scene->GetCameraController()->GetAspectRatio();
-	projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio,
-		scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
-
-	RendererBasic::SetProjectionMatrix(projectionMatrix);
-
-	RenderOmniShadows(mainWindow, scene, projectionMatrix);
-	RenderPass(mainWindow, scene, projectionMatrix);
-}
-
 void RendererSSAO::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 }
@@ -67,6 +49,14 @@ void RendererSSAO::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projec
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
 	std::string passType = "main";
 	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+}
+
+void RendererSSAO::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
+
+	RenderOmniShadows(mainWindow, scene, projectionMatrix);
+	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
 RendererSSAO::~RendererSSAO()

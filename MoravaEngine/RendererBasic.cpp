@@ -1,9 +1,9 @@
 #include "RendererBasic.h"
-
 #include "CommonValues.h"
+#include "Application.h"
 
 
-glm::mat4 RendererBasic::m_ProjectionMatrix;
+glm::mat4 RendererBasic::s_ProjectionMatrix;
 
 RendererBasic::RendererBasic()
 {
@@ -87,6 +87,20 @@ void RendererBasic::Cleanup()
 
 	shaders.clear();
 	uniforms.clear();
+}
+
+void RendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene)
+{
+	uint32_t width = Application::Get()->GetWindow()->GetBufferWidth();
+	uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
+	scene->GetCameraController()->OnResize((float)width, (float)height);
+
+	// Override the Projection matrix
+	float aspectRatio = scene->GetCameraController()->GetAspectRatio();
+	*projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio,
+		scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+
+	RendererBasic::SetProjectionMatrix(*projectionMatrix);
 }
 
 RendererBasic::~RendererBasic()
