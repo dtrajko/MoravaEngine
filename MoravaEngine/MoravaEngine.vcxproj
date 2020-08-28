@@ -304,6 +304,7 @@
     <ClCompile Include="SongHo\CylinderSongHo.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="SpotLight.cpp" />
+    <ClCompile Include="SSAO.cpp" />
     <ClCompile Include="SubTexture2D.cpp" />
     <ClCompile Include="TerrainBase.cpp" />
     <ClCompile Include="TerrainHeightMap.cpp" />
@@ -351,6 +352,7 @@
     <ClInclude Include="Hazel\Events\KeyEvent.h" />
     <ClInclude Include="Hazel\Events\MouseEvent.h" />
     <ClInclude Include="Hazel\Windows\WindowsWindow.h" />
+    <ClInclude Include="CommonStructs.h" />
     <ClInclude Include="InsertionSort.h" />
     <ClInclude Include="LearnOpenGLStructs.h" />
     <ClInclude Include="LearnOpenGL\MeshSSAO.h" />
@@ -480,6 +482,7 @@
     <ClInclude Include="SongHo\CylinderSongHo.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="SpotLight.h" />
+    <ClInclude Include="SSAO.h" />
     <ClInclude Include="SubTexture2D.h" />
     <ClInclude Include="TerrainBase.h" />
     <ClInclude Include="TerrainHeightMap.h" />

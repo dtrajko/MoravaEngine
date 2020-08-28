@@ -470,6 +470,9 @@
     <ClCompile Include="LearnOpenGL\ModelSSAO.cpp">
       <Filter>LearnOpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="SSAO.cpp">
+      <Filter>Light</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -999,6 +1002,12 @@
     </ClInclude>
     <ClInclude Include="LearnOpenGLStructs.h">
       <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="SSAO.h">
+      <Filter>Light</Filter>
+    </ClInclude>
+    <ClInclude Include="CommonStructs.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

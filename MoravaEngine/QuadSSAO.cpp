@@ -6,11 +6,11 @@
 QuadSSAO::QuadSSAO()
 {
 	float vertices[] = {
-		// positions           // normals           // texture Coords
-		-1.0f, -1.0f, 0.0f,    0.0f, 0.0f, 1.0f,    0.0f, 1.0f,   // bottom left
-		 1.0f, -1.0f, 0.0f,    0.0f, 0.0f, 1.0f,    1.0f, 1.0f,   // bottom right
-		-1.0f,  1.0f, 0.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // top left
-		 1.0f,  1.0f, 0.0f,    0.0f, 0.0f, 1.0f,    1.0f, 0.0f,   // top right
+		// Positions           // TexCoords
+		-1.0f,  1.0f, 0.0f,    0.0f, 1.0f,    // bottom left
+		-1.0f, -1.0f, 0.0f,    0.0f, 0.0f,    // bottom right
+		 1.0f,  1.0f, 0.0f,    1.0f, 1.0f,    // top left
+		 1.0f, -1.0f, 0.0f,    1.0f, 0.0f,    // top right
 	};
 
 	// setup plane VAO
@@ -28,15 +28,11 @@ QuadSSAO::QuadSSAO()
 
 	// layout (location = 0) in vec3 aPos;
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 
-	// layout (location = 1) in vec3 aNormal;
+	// layout(location = 1) in vec2 aTexCoords;
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-
-	// layout(location = 2) in vec2 aTexCoords;
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 }
 
 void QuadSSAO::Render()

@@ -11,7 +11,7 @@
 
 SceneSSAO::SceneSSAO()
 {
-    sceneSettings.cameraPosition = glm::vec3(0.0f, 2.0f, 0.0f);
+    sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 8.0f);
     sceneSettings.cameraStartYaw = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
     sceneSettings.cameraMoveSpeed = 1.0f;
@@ -106,13 +106,6 @@ void SceneSSAO::SetupTextures()
 {
     ResourceManager::LoadTexture("crate",       "Textures/crate.png");
     ResourceManager::LoadTexture("crateNormal", "Textures/crateNormal.png");
-
-    // m_GPositionTexture = new Texture("Textures/texture_checker.png");
-    // m_GNormalTexture = new Texture("Textures/texture_checker.png");
-    // m_NoiseTexture = new Texture("Textures/texture_checker.png");
-    // m_SSAOColorBufferTexture = new Texture("Textures/texture_checker.png");
-    // m_AlbedoTexture = new Texture("Textures/texture_checker.png");
-    // m_SSAOColorBufferBlurTexture = new Texture("Textures/texture_checker.png");
 }
 
 void SceneSSAO::SetupTextureSlots()
@@ -129,24 +122,21 @@ void SceneSSAO::SetupTextureSlots()
 
 void SceneSSAO::SetupMeshes()
 {
-    Block* floor = new Block(glm::vec3(16.0f, 0.5f, 16.0f));
-    meshes.insert(std::make_pair("floor", floor));
-
-    Block* block = new Block(glm::vec3(1.0f, 1.0f, 1.0f));
-    meshes.insert(std::make_pair("block", block));
-
     // SSAO meshes
     Cube* cube = new Cube();
     meshes.insert(std::make_pair("cube", cube));
+
     QuadSSAO* quadSSAO = new QuadSSAO();
     meshes.insert(std::make_pair("quad_ssao", quadSSAO));
-
 }
 
 void SceneSSAO::SetupModels()
 {
     ModelSSAO* backpack = new ModelSSAO("Models/backpack/backpack.obj", "Models/backpack");
-    modelsSSAO.insert(std::make_pair("backpack", backpack));   
+    modelsSSAO.insert(std::make_pair("backpack", backpack));
+
+    ModelSSAO* nanosuit = new ModelSSAO("Models/nanosuit.obj", "Textures/nanosuit");
+    modelsSSAO.insert(std::make_pair("nanosuit", nanosuit));
 }
 
 void SceneSSAO::SetupFramebuffers()
@@ -158,18 +148,11 @@ void SceneSSAO::SetupFramebuffers()
     // m_GBuffer->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
     // m_GBuffer->AddAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
     // m_GBuffer->Generate(width, height);
-    // 
-    // m_SSAO_FBO = new Framebuffer(width, height);
-    // m_SSAO_FBO->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
-    // m_SSAO_FBO->Generate(width, height);
-    // 
-    // m_SSAO_BlurFBO = new Framebuffer(width, height);
-    // m_SSAO_BlurFBO->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
-    // m_SSAO_BlurFBO->Generate(width, height);
 }
 
 void SceneSSAO::Update(float timestep, Window& mainWindow)
 {
+    m_SSAO->Update(timestep);
 }
 
 void SceneSSAO::UpdateImGui(float timestep, Window& mainWindow)
@@ -319,32 +302,38 @@ void SceneSSAO::UpdateImGui(float timestep, Window& mainWindow)
         ImVec2 imageSize(128.0f, 128.0f);
 
         ImGui::Text("gPosition");
-        ImGui::Image((void*)(intptr_t)gPosition, imageSize);
-        ImGui::SliderInt("", (int*)gPosition, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO->gPosition, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO->gPosition, 0, 128);
 
         ImGui::Text("gNormal");
-        ImGui::Image((void*)(intptr_t)gNormal, imageSize);
-        ImGui::SliderInt("", (int*)gNormal, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO->gNormal, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO->gNormal, 0, 128);
 
         ImGui::Text("gAlbedo");
-        ImGui::Image((void*)(intptr_t)gAlbedo, imageSize);
-        ImGui::SliderInt("", (int*)gAlbedo, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO->gAlbedo, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO->gAlbedo, 0, 128);
 
         ImGui::Text("ssaoColorBuffer");
-        ImGui::Image((void*)(intptr_t)ssaoColorBuffer, imageSize);
-        ImGui::SliderInt("", (int*)ssaoColorBuffer, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO->ssaoColorBuffer, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO->ssaoColorBuffer, 0, 128);
 
         ImGui::Text("ssaoColorBufferBlur");
-        ImGui::Image((void*)(intptr_t)ssaoColorBufferBlur, imageSize);
-        ImGui::SliderInt("", (int*)ssaoColorBufferBlur, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO->ssaoColorBufferBlur, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO->ssaoColorBufferBlur, 0, 128);
 
         ImGui::Text("gBuffer");
-        ImGui::Image((void*)(intptr_t)gBuffer, imageSize);
-        ImGui::SliderInt("", (int*)gBuffer, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO->gBuffer, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO->gBuffer, 0, 128);
 
         ImGui::Text("noiseTexture");
-        ImGui::Image((void*)(intptr_t)noiseTexture, imageSize);
-        ImGui::SliderInt("", (int*)noiseTexture, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO->noiseTexture, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO->noiseTexture, 0, 128);
+    }
+    ImGui::End();
+
+    ImGui::Begin("SSAO Settings");
+    {
+        ImGui::SliderFloat3("Light Position", glm::value_ptr(m_SSAO->lightPos), -10.0f, 10.0f);
     }
     ImGui::End();
 }

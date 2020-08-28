@@ -5,6 +5,7 @@
 #include "LearnOpenGL/ModelSSAO.h"
 #include "LearnOpenGL/ModelJoey.h"
 #include "Framebuffer.h"
+#include "SSAO.h"
 
 
 class SceneSSAO : public Scene
@@ -27,32 +28,9 @@ private:
 	virtual void SetupFramebuffers() override;
 
 public:
-	// Framebuffer* m_GBuffer;
-	// Framebuffer* m_SSAO_FBO;
-	// Framebuffer* m_SSAO_BlurFBO;
-
-	// Texture* m_GPositionTexture;
-	// Texture* m_GNormalTexture;
-	// Texture* m_NoiseTexture;
-	// Texture* m_SSAOColorBufferTexture;
-	// Texture* m_AlbedoTexture;
-	// Texture* m_SSAOColorBufferBlurTexture;
+	SSAO* m_SSAO;
 
 	std::map<std::string, ModelSSAO*> modelsSSAO;
 	std::map<std::string, ModelJoey*> modelsJoey;
-
-	uint32_t* gPosition;
-	uint32_t* gNormal;
-	uint32_t* gAlbedo;
-	uint32_t* rboDepth;
-
-	// SSAO processing stage
-	uint32_t* ssaoFBO;
-	uint32_t* ssaoBlurFBO;
-	uint32_t* ssaoColorBuffer;
-	uint32_t* ssaoColorBufferBlur;
-
-	uint32_t* gBuffer;
-	uint32_t* noiseTexture;
 
 };

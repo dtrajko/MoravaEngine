@@ -17,7 +17,8 @@ public:
 	inline const float GetRealFPS() const { return m_RealFPS; };
 	inline const float GetRealUpdateRate() const { return m_RealUpdateRate; };
 	inline const float GetDeltaTime() const { return m_DeltaTime; };
-	inline const float GetCurrentTimestamp() const { return m_CurrentTimestamp; };
+	// inline const float GetCurrentTimestamp() const { return m_CurrentTimestamp; };
+	inline float GetCurrentTimestamp() { return m_CurrentTimestamp; };
 	void Update();
 	bool CanRender() { return m_CanRender; };
 	bool CanUpdate() { return m_CanUpdate; };
