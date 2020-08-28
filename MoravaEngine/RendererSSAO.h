@@ -23,6 +23,8 @@ public:
 
 private:
 	float Lerp(float a, float b, float f);
+	void RenderQuad();
+	void RenderCube();
 
 private:
 	uint32_t gPosition;
@@ -42,4 +44,11 @@ private:
 	glm::vec3 lightPos;
 	glm::vec3 lightColor;
 
+	std::vector<glm::vec3> ssaoKernel;
+
+	uint32_t quadVAO = 0;
+	uint32_t quadVBO = 0;
+
+	uint32_t cubeVAO = 0;
+	uint32_t cubeVBO = 0;
 };

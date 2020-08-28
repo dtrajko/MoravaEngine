@@ -141,13 +141,12 @@ void RendererSSAO::SetupSSAO()
 	// ----------------------
 	std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0); // generates random floats between 0.0 and 1.0
 	std::default_random_engine generator;
-	std::vector<glm::vec3> ssaoKernel;
 	for (unsigned int i = 0; i < 64; ++i)
 	{
 		glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, randomFloats(generator) * 2.0 - 1.0, randomFloats(generator));
 		sample = glm::normalize(sample);
 		sample *= randomFloats(generator);
-		float scale = float(i) / 64.0;
+		float scale = float(i) / 64.0f;
 
 		// scale samples s.t. they're more aligned to center of kernel
 		scale = Lerp(0.1f, 1.0f, scale * scale);
@@ -285,11 +284,12 @@ void RendererSSAO::RenderPassOmniShadow(PointLight* light, Window& mainWindow, S
 
 void RendererSSAO::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+	// glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 
 	// Clear the window
 	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
 	/* BEGIN SSAO Rendering */
 	SceneSSAO* sceneSSAO = (SceneSSAO*)scene;
@@ -298,9 +298,6 @@ void RendererSSAO::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projec
 	Shader* shaderLightingPass = shaders["lighting_pass"];
 	Shader* shaderSSAO = shaders["ssao"];
 	Shader* shaderSSAOBlur = shaders["ssao_blur"];
-
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// 1. geometry pass: render scene's geometry/color data into gbuffer
 	// -----------------------------------------------------------------
@@ -312,19 +309,20 @@ void RendererSSAO::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projec
 	shaderGeometryPass->Bind();
 	shaderGeometryPass->setMat4("projection", projection);
 	shaderGeometryPass->setMat4("view", view);
+
 	// room cube
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 7.0f, 0.0f));
+	model = glm::translate(model, glm::vec3(0.0, 7.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(7.5f, 7.5f, 7.5f));
 	shaderGeometryPass->setMat4("model", model);
 	shaderGeometryPass->setInt("invertedNormals", 1); // invert normals as we're inside the cube
-	scene->GetMeshes()["cube"]->Render();
+	RenderCube();
 	shaderGeometryPass->setInt("invertedNormals", 0);
 	// backpack model on the floor
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
-	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::scale(model, glm::vec3(0.0f));
+	model = glm::translate(model, glm::vec3(0.0f, 0.5f, 0.0));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
+	model = glm::scale(model, glm::vec3(1.0f));
 	shaderGeometryPass->setMat4("model", model);
 	sceneSSAO->modelsSSAO["backpack"]->Draw(shaderGeometryPass);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -334,6 +332,9 @@ void RendererSSAO::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projec
 	glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 	shaderSSAO->Bind();
+	// Send kernel + rotation 
+	for (unsigned int i = 0; i < 64; ++i)
+		shaderSSAO->setVec3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
 	shaderSSAO->setMat4("projection", projection);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, gPosition);
@@ -341,8 +342,9 @@ void RendererSSAO::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projec
 	glBindTexture(GL_TEXTURE_2D, gNormal);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, noiseTexture);
-	scene->GetMeshes()["quad_ssao"]->Render();
+	RenderQuad();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
 	// 3. blur SSAO texture to remove noise
 	// ------------------------------------
@@ -351,8 +353,9 @@ void RendererSSAO::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projec
 	shaderSSAOBlur->Bind();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
-	scene->GetMeshes()["quad_ssao"]->Render();
+	RenderQuad();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
 	// 4. lighting pass: traditional deferred Blinn-Phong lighting with added screen-space ambient occlusion
 	// -----------------------------------------------------------------------------------------------------
@@ -363,7 +366,6 @@ void RendererSSAO::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projec
 	shaderLightingPass->setVec3("light.Position", lightPosView);
 	shaderLightingPass->setVec3("light.Color", lightColor);
 	// Update attenuation parameters
-	const float constant = 1.0f; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
 	const float linear = 0.09f;
 	const float quadratic = 0.032f;
 	shaderLightingPass->setFloat("light.Linear", linear);
@@ -376,7 +378,7 @@ void RendererSSAO::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projec
 	glBindTexture(GL_TEXTURE_2D, gAlbedo);
 	glActiveTexture(GL_TEXTURE3); // add extra SSAO texture to lighting pass
 	glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
-	scene->GetMeshes()["quad_ssao"]->Render();
+	RenderQuad();
 
 	/* END SSAO Rendering */
 
@@ -388,6 +390,108 @@ void RendererSSAO::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projec
 float RendererSSAO::Lerp(float a, float b, float f)
 {
 	return a + f * (b - a);
+}
+
+// RenderQuad() renders a 1x1 XY quad in NDC
+// -----------------------------------------
+void RendererSSAO::RenderQuad()
+{
+	if (quadVAO == 0)
+	{
+		float quadVertices[] = {
+			// positions        // texture Coords
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		};
+		// setup plane VAO
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	}
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+}
+
+// renderCube() renders a 1x1 3D cube in NDC.
+// -------------------------------------------------
+void RendererSSAO::RenderCube()
+{
+	// initialize (if necessary)
+	if (cubeVAO == 0)
+	{
+		float vertices[] = {
+			// back face
+			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+			 1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+			-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+			// front face
+			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+			 1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+			-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+			// left face
+			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+			-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+			-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+			// right face
+			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+			 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+			 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+			// bottom face
+			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+			 1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+			-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+			// top face
+			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+			 1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+			 1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+			-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+		};
+		glGenVertexArrays(1, &cubeVAO);
+		glGenBuffers(1, &cubeVBO);
+		// fill buffer
+		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		// link vertex attributes
+		glBindVertexArray(cubeVAO);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+	// render Cube
+	glBindVertexArray(cubeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
 }
 
 RendererSSAO::~RendererSSAO()
