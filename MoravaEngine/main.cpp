@@ -206,6 +206,9 @@ int main()
 		throw std::runtime_error("Scene and Renderer could not be loaded!");
 	}
 
+	Application::Get()->SetScene(scene);
+	Application::Get()->SetRenderer(renderer);
+
 	// Projection matrix
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
 		(float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),

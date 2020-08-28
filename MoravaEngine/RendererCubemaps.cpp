@@ -32,11 +32,11 @@ void RendererCubemaps::SetUniforms()
 
 void RendererCubemaps::SetShaders()
 {
-	Shader* shaderCubemaps = new Shader("Shaders/learnopengl/6.2.cubemaps.vs", "Shaders/learnopengl/6.2.cubemaps.fs");
+	Shader* shaderCubemaps = new Shader("Shaders/LearnOpenGL/6.2.cubemaps.vs", "Shaders/LearnOpenGL/6.2.cubemaps.fs");
 	shaders.insert(std::make_pair("cubemaps", shaderCubemaps));
 	printf("RendererCubemaps: shaderCubemaps compiled [programID=%d]\n", shaderCubemaps->GetProgramID());
 
-	Shader* shaderSkybox = new Shader("Shaders/learnopengl/6.2.skybox.vs", "Shaders/learnopengl/6.2.skybox.fs");
+	Shader* shaderSkybox = new Shader("Shaders/LearnOpenGL/6.2.skybox.vs", "Shaders/LearnOpenGL/6.2.skybox.fs");
 	shaders.insert(std::make_pair("skybox", shaderSkybox));
 	printf("RendererCubemaps: shaderSkybox compiled [programID=%d]\n", shaderSkybox->GetProgramID());
 

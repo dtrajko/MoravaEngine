@@ -78,13 +78,13 @@ void CubeNanosuit::Draw(Shader* shader)
 MeshJoey* CubeNanosuit::processMesh()
 {
     // data to fill
-    std::vector<Vertex> vertices;
+    std::vector<VertexTangents> vertices;
     std::vector<TextureData> textures;
 
     // Walk through each of the mesh's vertices
     for (unsigned int i = 0; i < (unsigned int)m_Vertices.size(); i++)
     {
-        Vertex vertex;
+        VertexTangents vertex;
         glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class 
         // that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
 
@@ -92,13 +92,13 @@ MeshJoey* CubeNanosuit::processMesh()
         vector.x = m_Vertices[i][0];
         vector.y = m_Vertices[i][1];
         vector.z = m_Vertices[i][2];
-        vertex.Position = vector;
+        vertex.base.Position = vector;
 
         // normals
         vector.x = m_Vertices[i][3];
         vector.y = m_Vertices[i][4];
         vector.z = m_Vertices[i][5];
-        vertex.Normal = vector;
+        vertex.base.Normal = vector;
 
         // texture coordinates
         if (m_Vertices[i][3]) // does the mesh contain texture coordinates?
@@ -108,10 +108,10 @@ MeshJoey* CubeNanosuit::processMesh()
             // use models where a vertex can have multiple texture coordinates so we always take the first set (0).
             vec.x = m_Vertices[i][6];
             vec.y = m_Vertices[i][7];
-            vertex.TexCoords = vec;
+            vertex.base.TexCoords = vec;
         }
         else
-            vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+            vertex.base.TexCoords = glm::vec2(0.0f, 0.0f);
 
         // tangent
         vector.x = m_Vertices[i][8];
@@ -124,6 +124,7 @@ MeshJoey* CubeNanosuit::processMesh()
         vector.y = m_Vertices[i][12];
         vector.z = m_Vertices[i][13];
         vertex.Bitangent = vector;
+
         vertices.push_back(vertex);
     }
 

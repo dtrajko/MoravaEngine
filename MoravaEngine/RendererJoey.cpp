@@ -24,15 +24,15 @@ void RendererJoey::SetUniforms()
 
 void RendererJoey::SetShaders()
 {
-	Shader* pbrShader = new Shader("Shaders/learnopengl/2.2.2.pbr.vs", "Shaders/learnopengl/2.2.2.pbr.fs");
+	Shader* pbrShader = new Shader("Shaders/LearnOpenGL/2.2.2.pbr.vs", "Shaders/LearnOpenGL/2.2.2.pbr.fs");
 	shaders.insert(std::make_pair("pbrShader", pbrShader));
 	printf("RendererJoey: pbrShader compiled [programID=%d]\n", pbrShader->GetProgramID());
 
-	Shader* pbrShaderMRE = new Shader("Shaders/learnopengl/2.2.2.pbr.vs", "Shaders/learnopengl/2.2.3.pbr.fs");
+	Shader* pbrShaderMRE = new Shader("Shaders/LearnOpenGL/2.2.2.pbr.vs", "Shaders/LearnOpenGL/2.2.3.pbr.fs");
 	shaders.insert(std::make_pair("pbrShaderMRE", pbrShaderMRE));
 	printf("RendererJoey: pbrShaderMRE compiled [programID=%d]\n", pbrShaderMRE->GetProgramID());
 
-	Shader* backgroundShader = new Shader("Shaders/learnopengl/2.2.2.background.vs", "Shaders/learnopengl/2.2.2.background.fs");
+	Shader* backgroundShader = new Shader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
 	shaders.insert(std::make_pair("backgroundShader", backgroundShader));
 	printf("RendererJoey: backgroundShader compiled [programID=%d]\n", backgroundShader->GetProgramID());
 

@@ -1,17 +1,28 @@
 #pragma once
 
 #include "Window.h"
+#include "RendererBasic.h"
 
 
 class Application
 {
 public:
 	static Application* Get();
-	static Window* GetWindow();
-	static void SetWindow(Window* window);
+
+	// getters
+	Window* GetWindow();
+	Scene* GetScene();
+	RendererBasic* GetRenderer();
+
+	// setters
+	void SetWindow(Window* window);
+	void SetScene(Scene* scene);
+	void SetRenderer(RendererBasic* renderer);
 
 private:
 	static Application* s_Instance;
-	static Window* s_Window;
+	Window* m_Window;
+	Scene* m_Scene;
+	RendererBasic* m_Renderer;
 
 };

@@ -181,6 +181,8 @@
     <ClCompile Include="Hazel\Windows\WindowsInput.cpp" />
     <ClCompile Include="Hazel\Windows\WindowsWindow.cpp" />
     <ClCompile Include="InsertionSort.cpp" />
+    <ClCompile Include="LearnOpenGL\MeshSSAO.cpp" />
+    <ClCompile Include="LearnOpenGL\ModelSSAO.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MapGenerator.cpp" />
     <ClCompile Include="MeshGenerator.cpp" />
@@ -196,6 +198,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerController.cpp" />
     <ClCompile Include="QuadInstanced.cpp" />
+    <ClCompile Include="QuadSSAO.cpp" />
     <ClCompile Include="Quadtree.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="RendererEditorFramebuffer.cpp" />
@@ -349,6 +352,9 @@
     <ClInclude Include="Hazel\Events\MouseEvent.h" />
     <ClInclude Include="Hazel\Windows\WindowsWindow.h" />
     <ClInclude Include="InsertionSort.h" />
+    <ClInclude Include="LearnOpenGLStructs.h" />
+    <ClInclude Include="LearnOpenGL\MeshSSAO.h" />
+    <ClInclude Include="LearnOpenGL\ModelSSAO.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MapGenerator.h" />
     <ClInclude Include="MeshGenerator.h" />
@@ -366,6 +372,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerController.h" />
     <ClInclude Include="QuadInstanced.h" />
+    <ClInclude Include="QuadSSAO.h" />
     <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="RendererEditorFramebuffer.h" />

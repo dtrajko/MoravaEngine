@@ -51,7 +51,7 @@ void RendererEditorFramebuffer::SetShaders()
     shaders.insert(std::make_pair("water", shaderWater));
     Log::GetLogger()->info("RendererEditorFramebuffer: shaderWater compiled [programID={0}]", shaderWater->GetProgramID());
 
-    Shader* shaderBackground = new Shader("Shaders/learnopengl/2.2.2.background.vs", "Shaders/learnopengl/2.2.2.background.fs");
+    Shader* shaderBackground = new Shader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
     shaders.insert(std::make_pair("background", shaderBackground));
     Log::GetLogger()->info("RendererEditorFramebuffer: shaderBackground compiled [programID={0}]", shaderBackground->GetProgramID());
 

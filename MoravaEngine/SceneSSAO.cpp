@@ -4,13 +4,14 @@
 #include "Block.h"
 #include "Cube.h"
 #include "Application.h"
+#include "QuadSSAO.h"
 
 #include "ImGuiWrapper.h"
 
 
 SceneSSAO::SceneSSAO()
 {
-    sceneSettings.cameraPosition = glm::vec3(0.0f, 8.0f, 24.0f);
+    sceneSettings.cameraPosition = glm::vec3(0.0f, 2.0f, 0.0f);
     sceneSettings.cameraStartYaw = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
     sceneSettings.cameraMoveSpeed = 1.0f;
@@ -94,9 +95,9 @@ SceneSSAO::SceneSSAO()
 
     SetCamera();
     SetLightManager();
-    SetupFramebuffers();
     SetupTextureSlots();
     SetupTextures();
+    SetupFramebuffers();
     SetupMeshes();
     SetupModels();
 }
@@ -105,6 +106,13 @@ void SceneSSAO::SetupTextures()
 {
     ResourceManager::LoadTexture("crate",       "Textures/crate.png");
     ResourceManager::LoadTexture("crateNormal", "Textures/crateNormal.png");
+
+    // m_GPositionTexture = new Texture("Textures/texture_checker.png");
+    // m_GNormalTexture = new Texture("Textures/texture_checker.png");
+    // m_NoiseTexture = new Texture("Textures/texture_checker.png");
+    // m_SSAOColorBufferTexture = new Texture("Textures/texture_checker.png");
+    // m_AlbedoTexture = new Texture("Textures/texture_checker.png");
+    // m_SSAOColorBufferBlurTexture = new Texture("Textures/texture_checker.png");
 }
 
 void SceneSSAO::SetupTextureSlots()
@@ -130,12 +138,15 @@ void SceneSSAO::SetupMeshes()
     // SSAO meshes
     Cube* cube = new Cube();
     meshes.insert(std::make_pair("cube", cube));
+    QuadSSAO* quadSSAO = new QuadSSAO();
+    meshes.insert(std::make_pair("quad_ssao", quadSSAO));
+
 }
 
 void SceneSSAO::SetupModels()
 {
-    ModelJoey* nanosuit = new ModelJoey("Models/nanosuit.obj", "Textures/nanosuit");
-    models.insert(std::make_pair("nanosuit", nanosuit));
+    ModelSSAO* backpack = new ModelSSAO("Models/backpack/backpack.obj", "Models/backpack");
+    modelsSSAO.insert(std::make_pair("backpack", backpack));   
 }
 
 void SceneSSAO::SetupFramebuffers()
@@ -143,9 +154,18 @@ void SceneSSAO::SetupFramebuffers()
     uint32_t width  = Application::Get()->GetWindow()->GetBufferWidth();
     uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
 
-    m_GBuffer = new Framebuffer(width, height);
-    m_GBuffer->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
-    m_GBuffer->Generate(width, height);
+    // m_GBuffer = new Framebuffer(width, height);
+    // m_GBuffer->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
+    // m_GBuffer->AddAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
+    // m_GBuffer->Generate(width, height);
+    // 
+    // m_SSAO_FBO = new Framebuffer(width, height);
+    // m_SSAO_FBO->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
+    // m_SSAO_FBO->Generate(width, height);
+    // 
+    // m_SSAO_BlurFBO = new Framebuffer(width, height);
+    // m_SSAO_BlurFBO->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
+    // m_SSAO_BlurFBO->Generate(width, height);
 }
 
 void SceneSSAO::Update(float timestep, Window& mainWindow)
@@ -298,8 +318,33 @@ void SceneSSAO::UpdateImGui(float timestep, Window& mainWindow)
     {
         ImVec2 imageSize(128.0f, 128.0f);
 
-        ImGui::Text("G-Buffer");
-        ImGui::Image((void*)(intptr_t)m_GBuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+        ImGui::Text("gPosition");
+        ImGui::Image((void*)(intptr_t)gPosition, imageSize);
+        ImGui::SliderInt("", (int*)gPosition, 0, 128);
+
+        ImGui::Text("gNormal");
+        ImGui::Image((void*)(intptr_t)gNormal, imageSize);
+        ImGui::SliderInt("", (int*)gNormal, 0, 128);
+
+        ImGui::Text("gAlbedo");
+        ImGui::Image((void*)(intptr_t)gAlbedo, imageSize);
+        ImGui::SliderInt("", (int*)gAlbedo, 0, 128);
+
+        ImGui::Text("ssaoColorBuffer");
+        ImGui::Image((void*)(intptr_t)ssaoColorBuffer, imageSize);
+        ImGui::SliderInt("", (int*)ssaoColorBuffer, 0, 128);
+
+        ImGui::Text("ssaoColorBufferBlur");
+        ImGui::Image((void*)(intptr_t)ssaoColorBufferBlur, imageSize);
+        ImGui::SliderInt("", (int*)ssaoColorBufferBlur, 0, 128);
+
+        ImGui::Text("gBuffer");
+        ImGui::Image((void*)(intptr_t)gBuffer, imageSize);
+        ImGui::SliderInt("", (int*)gBuffer, 0, 128);
+
+        ImGui::Text("noiseTexture");
+        ImGui::Image((void*)(intptr_t)noiseTexture, imageSize);
+        ImGui::SliderInt("", (int*)noiseTexture, 0, 128);
     }
     ImGui::End();
 }
@@ -307,51 +352,13 @@ void SceneSSAO::UpdateImGui(float timestep, Window& mainWindow)
 void SceneSSAO::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
+    /************************************************************************
     Shader* shaderMain = shaders["main"];
-    Shader* shaderGeometryPass = shaders["ssao_geometry"];
-
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // 1. geometry pass: render scene's geometry/color data into gbuffer
-    // -----------------------------------------------------------------
-    uint32_t gBuffer = m_GBuffer->GetTextureAttachmentColor()->GetID();
-    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glm::mat4 projection = projectionMatrix;
-    glm::mat4 view = m_CameraController->CalculateViewMatrix();
-    glm::mat4 model = glm::mat4(1.0f);
-    shaderGeometryPass->Bind();
-    shaderGeometryPass->setMat4("projection", projection);
-    shaderGeometryPass->setMat4("view", view);
-    // room cube
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 7.0f, 0.0f));
-    model = glm::scale(model, glm::vec3(7.5f, 7.5f, 7.5f));
-    shaderGeometryPass->setMat4("model", model);
-    shaderGeometryPass->setInt("invertedNormals", 1); // invert normals as we're inside the cube
-    meshes["cube"]->Render();
-    shaderGeometryPass->setInt("invertedNormals", 0);
-    // nanosuit model on the floor
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
-    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::scale(model, glm::vec3(0.0f));
-    shaderGeometryPass->setMat4("model", model);
-    models["nanosuit"]->Draw(shaderGeometryPass);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // 2. generate SSAO texture
-    // glBindFramebuffer
-
-
-
-
 
     // Render anything just to be sure that the pipeline works
     shaderMain->Bind();
 
-    model = glm::mat4(1.0f);
+    glm::mat4 model = glm::mat4(1.0f);
     shaderMain->setMat4("model", model);
     ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
     ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
@@ -363,6 +370,7 @@ void SceneSSAO::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::stri
     ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
     ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
     meshes["block"]->Render();
+    ************************************************************************/
 }
 
 SceneSSAO::~SceneSSAO()
@@ -370,4 +378,5 @@ SceneSSAO::~SceneSSAO()
     delete meshes["block"];
     delete meshes["floor"];
     delete meshes["cube"];
+    delete modelsSSAO["backpack"];
 }

@@ -71,14 +71,14 @@ void ModelJoey::processNode(aiNode* node, const aiScene* scene)
 MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
 {
     // data to fill
-    std::vector<Vertex> vertices;
+    std::vector<VertexTangents> vertices;
     std::vector<unsigned int> indices;
     std::vector<TextureData> textures;
 
     // Walk through each of the mesh's vertices
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
-        Vertex vertex;
+        VertexTangents vertex;
         glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class 
         // that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
 
@@ -86,13 +86,13 @@ MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
         vector.x = mesh->mVertices[i].x;
         vector.y = mesh->mVertices[i].y;
         vector.z = mesh->mVertices[i].z;
-        vertex.Position = vector;
+        vertex.base.Position = vector;
 
         // normals
         vector.x = mesh->mNormals[i].x;
         vector.y = mesh->mNormals[i].y;
         vector.z = mesh->mNormals[i].z;
-        vertex.Normal = vector;
+        vertex.base.Normal = vector;
 
         // texture coordinates
         if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
@@ -102,10 +102,10 @@ MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
             // use models where a vertex can have multiple texture coordinates so we always take the first set (0).
             vec.x = mesh->mTextureCoords[0][i].x;
             vec.y = mesh->mTextureCoords[0][i].y;
-            vertex.TexCoords = vec;
+            vertex.base.TexCoords = vec;
         }
         else
-            vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+            vertex.base.TexCoords = glm::vec2(0.0f, 0.0f);
 
         // tangent
         vector.x = mesh->mTangents[i].x;
@@ -118,6 +118,7 @@ MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
         vector.y = mesh->mBitangents[i].y;
         vector.z = mesh->mBitangents[i].z;
         vertex.Bitangent = vector;
+
         vertices.push_back(vertex);
     }
 

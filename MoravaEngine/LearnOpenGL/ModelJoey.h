@@ -7,7 +7,6 @@
 
 class ModelJoey
 {
-
 public:
     ModelJoey(std::string const& path, std::string const& textureDirectory = "", bool gamma = false);
     void Draw(Shader* shader);
@@ -21,8 +20,8 @@ private:
     std::vector<TextureData> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
 
 private:
-    std::vector<TextureData> textures_loaded; // stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
     std::vector<MeshJoey> meshes;
+    std::vector<TextureData> textures_loaded; // stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
     std::string m_ModelDirectory;
     std::string m_TextureDirectory;
     bool gammaCorrection;

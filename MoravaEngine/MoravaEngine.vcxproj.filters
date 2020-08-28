@@ -194,13 +194,7 @@
     <ClCompile Include="MeshData.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="LearnOpenGL\MeshJoey.cpp">
-      <Filter>Mesh</Filter>
-    </ClCompile>
     <ClCompile Include="Model.cpp">
-      <Filter>Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="LearnOpenGL\ModelJoey.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
     <ClCompile Include="MousePicker.cpp">
@@ -273,9 +267,6 @@
       <Filter>Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Sphere.cpp">
-      <Filter>Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="LearnOpenGL\SphereJoey.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Tile2D.cpp">
@@ -460,6 +451,24 @@
     </ClCompile>
     <ClCompile Include="SceneSSAO.cpp">
       <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="QuadSSAO.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="LearnOpenGL\MeshJoey.cpp">
+      <Filter>LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="LearnOpenGL\ModelJoey.cpp">
+      <Filter>LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="LearnOpenGL\SphereJoey.cpp">
+      <Filter>LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="LearnOpenGL\MeshSSAO.cpp">
+      <Filter>LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="LearnOpenGL\ModelSSAO.cpp">
+      <Filter>LearnOpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -670,13 +679,7 @@
     <ClInclude Include="MeshData.h">
       <Filter>Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="LearnOpenGL\MeshJoey.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
     <ClInclude Include="Model.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="LearnOpenGL\ModelJoey.h">
       <Filter>Mesh</Filter>
     </ClInclude>
     <ClInclude Include="MousePicker.h">
@@ -749,9 +752,6 @@
       <Filter>Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Sphere.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="LearnOpenGL\SphereJoey.h">
       <Filter>Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Tile2D.h">
@@ -978,6 +978,27 @@
     </ClInclude>
     <ClInclude Include="SceneSSAO.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="QuadSSAO.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\MeshJoey.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\ModelJoey.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\SphereJoey.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\MeshSSAO.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGL\ModelSSAO.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="LearnOpenGLStructs.h">
+      <Filter>LearnOpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
