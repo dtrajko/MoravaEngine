@@ -334,6 +334,9 @@ void SceneSSAO::UpdateImGui(float timestep, Window& mainWindow)
     ImGui::Begin("SSAO Settings");
     {
         ImGui::SliderFloat3("Light Position", glm::value_ptr(m_SSAO->lightPos), -10.0f, 10.0f);
+        ImGui::SliderInt("kernelSize", &m_SSAO->kernelSize, 0, 128);
+        ImGui::SliderFloat("radius", &m_SSAO->radius, 0.0f, 10.0f);
+        ImGui::SliderFloat("bias", &m_SSAO->bias, -1.0f, 1.0f);
     }
     ImGui::End();
 }

@@ -15,10 +15,14 @@ uniform float screenHeight;
 
 uniform mat4 projection;
 
+uniform int kernelSize;
+uniform float radius;
+uniform float bias;
+
 // parameters (you'd probably want to use them as uniforms to more easily tweak the effects)
-int kernelSize = 64;
-float radius = 0.5;
-float bias = 0.025;
+// int kernelSize = 64;
+// float radius = 0.5;
+// float bias = 0.025;
 
 void main()
 {

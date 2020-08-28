@@ -13,6 +13,10 @@ SSAO::SSAO()
 	ResetHandlers();
 
 	m_UpdateCooldown = { 0.0f, 0.2f };
+
+	kernelSize = 64;
+	radius = 0.5f;
+	bias = 0.025f;
 }
 
 void SSAO::SetupShaders()
@@ -302,8 +306,13 @@ void SSAO::Render(glm::mat4 projectionMatrix, glm::mat4 viewMatrix,
 	glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 	shaderSSAO->Bind();
+
+	shaderSSAO->setInt("kernelSize", kernelSize);
+	shaderSSAO->setFloat("radius", radius);
+	shaderSSAO->setFloat("bias", bias);
+
 	// Send kernel + rotation 
-	for (unsigned int i = 0; i < 64; ++i)
+	for (unsigned int i = 0; i < kernelSize; ++i)
 		shaderSSAO->setVec3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
 	shaderSSAO->setMat4("projection", projection);
 	glActiveTexture(GL_TEXTURE0);

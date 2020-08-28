@@ -51,6 +51,10 @@ public:
 	glm::vec3 lightPos;
 	glm::vec3 lightColor;
 
+	int kernelSize;
+	float radius;
+	float bias;
+
 private:
 	std::vector<glm::vec3> ssaoKernel;
 
