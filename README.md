@@ -8,6 +8,7 @@ Its current purpose is experimenting with various CGI concepts and techniques:
 * Shadows (directional light, omni-directional shadows)
 * Physically based rendering (PBR)
 * Image based lighting (IBL)
+* Screen-space ambient occlusion (SSAO)
 * Particle systems
 * Instanced rendering
 * Surface reflection and refraction
