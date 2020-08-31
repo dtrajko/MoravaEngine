@@ -31,6 +31,5 @@ public:
 	SSAO* m_SSAO;
 
 	std::map<std::string, ModelSSAO*> modelsSSAO;
-	std::map<std::string, ModelJoey*> modelsJoey;
 
 };

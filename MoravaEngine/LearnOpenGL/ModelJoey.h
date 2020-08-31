@@ -3,11 +3,13 @@
 #include <assimp/scene.h>
 
 #include "MeshJoey.h"
+#include "ModelSSAO.h"
 
 
 /**
  * Model class compatible with LearnOpenGL code / shaders
  * Vertex buffer structure as follows:
+ *
  * layout (location = 0) in vec3 aPosition;
  * layout (location = 1) in vec2 aTexCoord;
  * layout (location = 2) in vec3 aNormal;
@@ -18,6 +20,8 @@ class ModelJoey
 {
 public:
     ModelJoey(std::string const& path, std::string const& textureDirectory = "", bool gamma = false);
+    virtual ~ModelJoey();
+
     void Draw(Shader* shader);
     inline std::vector<TextureData> GetTextures() { return textures_loaded; };
     inline std::vector<MeshJoey> GetMeshes() { return meshes; };

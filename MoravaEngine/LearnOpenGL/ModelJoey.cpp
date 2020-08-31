@@ -18,6 +18,10 @@ ModelJoey::ModelJoey(std::string const& path, std::string const& textureDirector
     loadModel(path);
 }
 
+ModelJoey::~ModelJoey()
+{
+}
+
 // draws the model, and thus all its meshes
 void ModelJoey::Draw(Shader* shader)
 {
@@ -60,12 +64,12 @@ void ModelJoey::processNode(aiNode* node, const aiScene* scene)
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
         meshes.push_back(processMesh(mesh, scene));
     }
+
     // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
         processNode(node->mChildren[i], scene);
     }
-
 }
 
 MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)

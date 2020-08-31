@@ -16,51 +16,51 @@ CubeNanosuit::CubeNanosuit(std::string const& textureDirectory)
     m_TextureDirectory = textureDirectory;
 
     //                      Position               TexCoord        Normal                  Tangent                 Bitangent
-    //                        X      Y      Z        U     V        NX     NY     NZ        TX     TY     TZ        BX     BY     BZ
-    m_Vertices.push_back({ -0.5f,  0.5f, -0.5f,    1.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f });
-    m_Vertices.push_back({ -0.5f, -0.5f, -0.5f,    1.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f, -0.5f, -0.5f,    0.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f,  0.5f, -0.5f,    0.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f });
-                                                                  
-    m_Vertices.push_back({ -0.5f,  0.5f,  0.5f,    0.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f });
-    m_Vertices.push_back({ -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f });
-    m_Vertices.push_back({  0.5f, -0.5f,  0.5f,    1.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f });
-    m_Vertices.push_back({  0.5f,  0.5f,  0.5f,    1.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f });
-                                                                  
-    m_Vertices.push_back({  0.5f,  0.5f, -0.5f,    1.0f, 1.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f, -0.5f,  0.5f,    0.0f, 0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f });
-    m_Vertices.push_back({  0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f });
-                                                                  
-    m_Vertices.push_back({ -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f });
-    m_Vertices.push_back({ -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f });
-    m_Vertices.push_back({ -0.5f, -0.5f,  0.5f,    1.0f, 0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f });
-    m_Vertices.push_back({ -0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f });
-                                                                  
-    m_Vertices.push_back({ -0.5f,  0.5f,  0.5f,    1.0f, 1.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f });
+    //                     // X      Y      Z        U      V       NX     NY     NZ        TX     TY     TZ        BX     BY     BZ
     m_Vertices.push_back({ -0.5f,  0.5f, -0.5f,    1.0f, 0.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f });
+    m_Vertices.push_back({ -0.5f, -0.5f, -0.5f,    1.0f, 1.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f, -0.5f, -0.5f,    0.0f, 1.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f });
     m_Vertices.push_back({  0.5f,  0.5f, -0.5f,    0.0f, 0.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f });
-                                                                  
+
+    m_Vertices.push_back({ -0.5f,  0.5f,  0.5f,    0.0f, 0.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f });
     m_Vertices.push_back({ -0.5f, -0.5f,  0.5f,    0.0f, 1.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f });
-    m_Vertices.push_back({ -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f });
-    m_Vertices.push_back({  0.5f, -0.5f, -0.5f,    1.0f, 0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f });
     m_Vertices.push_back({  0.5f, -0.5f,  0.5f,    1.0f, 1.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f });
+    m_Vertices.push_back({  0.5f,  0.5f,  0.5f,    1.0f, 0.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f });
+
+    m_Vertices.push_back({  0.5f,  0.5f, -0.5f,    1.0f, 0.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f, -0.5f, -0.5f,    1.0f, 1.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f, -0.5f,  0.5f,    0.0f, 1.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f });
+    m_Vertices.push_back({  0.5f,  0.5f,  0.5f,    0.0f, 0.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f });
+
+    m_Vertices.push_back({ -0.5f,  0.5f, -0.5f,    0.0f, 0.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f });
+    m_Vertices.push_back({ -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f });
+    m_Vertices.push_back({ -0.5f, -0.5f,  0.5f,    1.0f, 1.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f });
+    m_Vertices.push_back({ -0.5f,  0.5f,  0.5f,    1.0f, 0.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f });
+
+    m_Vertices.push_back({ -0.5f,  0.5f,  0.5f,    0.0f, 1.0f,     0.0f,  1.0f,  0.0f,    -0.5f,  0.5f,  0.5f,    -0.5f,  0.5f,  0.5f });
+    m_Vertices.push_back({ -0.5f,  0.5f, -0.5f,    0.0f, 0.0f,     0.0f,  1.0f,  0.0f,    -0.5f,  0.5f, -0.5f,    -0.5f,  0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f,  0.5f, -0.5f,    1.0f, 0.0f,     0.0f,  1.0f,  0.0f,     0.5f,  0.5f, -0.5f,     0.5f,  0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f,  0.5f,  0.5f,    1.0f, 1.0f,     0.0f,  1.0f,  0.0f,     0.5f,  0.5f,  0.5f,     0.5f,  0.5f,  0.5f });
+
+    m_Vertices.push_back({ -0.5f, -0.5f,  0.5f,    1.0f, 0.0f,     0.0f, -1.0f,  0.0f,    -0.5f, -0.5f,  0.5f,    -0.5f, -0.5f,  0.5f });
+    m_Vertices.push_back({ -0.5f, -0.5f, -0.5f,    1.0f, 1.0f,     0.0f, -1.0f,  0.0f,    -0.5f, -0.5f, -0.5f,    -0.5f, -0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f, -0.5f, -0.5f,    0.0f, 1.0f,     0.0f, -1.0f,  0.0f,     0.5f, -0.5f, -0.5f,     0.5f, -0.5f, -0.5f });
+    m_Vertices.push_back({  0.5f, -0.5f,  0.5f,    0.0f, 0.0f,     0.0f, -1.0f,  0.0f,     0.5f, -0.5f,  0.5f,     0.5f, -0.5f,  0.5f });
 
     m_Indices =
     {
-        0, 3, 1,
-        3, 2, 1,
-        4, 5, 7,
-        7, 5, 6,
-        8, 11, 9,
-        11, 10, 9,
+         0,  3,  1,
+         3,  2,  1,
+         4,  5,  7,
+         7,  5,  6,
+         8, 11,  9,
+        11, 10,  9,
         12, 13, 15,
         15, 13, 14,
-        16, 19, 17,
-        19, 18, 17,
-        20, 21, 23,
-        23, 21, 22,
+        16, 19, 17, // top
+        19, 18, 17, // top
+        21, 22, 23, // bottom
+        20, 21, 23, // bottom
     };
 
     m_Mesh = processMesh();
