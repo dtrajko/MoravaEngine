@@ -16,27 +16,15 @@
  * layout (location = 3) in vec3 aTangent;
  * layout (location = 4) in vec3 aBitangent;
  */
-class ModelJoey
+class ModelJoey : public ModelSSAO
 {
 public:
+    ModelJoey();
     ModelJoey(std::string const& path, std::string const& textureDirectory = "", bool gamma = false);
     virtual ~ModelJoey();
 
-    void Draw(Shader* shader);
-    inline std::vector<TextureData> GetTextures() { return textures_loaded; };
-    inline std::vector<MeshJoey> GetMeshes() { return meshes; };
-
-private:
-    void loadModel(std::string const& path);
-    void processNode(aiNode* node, const aiScene* scene);
-    MeshJoey processMesh(aiMesh* mesh, const aiScene* scene);
-    std::vector<TextureData> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
-
-private:
-    std::vector<MeshJoey> meshes;
-    std::vector<TextureData> textures_loaded; // stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
-    std::string m_ModelDirectory;
-    std::string m_TextureDirectory;
-    bool gammaCorrection;
+    virtual void loadModel(std::string const& path) override;
+    virtual MeshSSAO processMesh(aiMesh* mesh, const aiScene* scene) override;
+    virtual void processNode(aiNode* node, const aiScene* scene) override;
 
 };

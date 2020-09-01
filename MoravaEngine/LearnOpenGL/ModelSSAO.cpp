@@ -10,10 +10,16 @@
 #include <string>
 
 
+ModelSSAO::ModelSSAO()
+{
+}
+
 // constructor, expects a filepath to a 3D model.
 ModelSSAO::ModelSSAO(std::string const& path, std::string const& textureDirectory, bool gamma)
-    : gammaCorrection(gamma), m_TextureDirectory(textureDirectory)
 {
+    gammaCorrection = gamma;
+    m_TextureDirectory = textureDirectory;
+
     loadModel(path);
 }
 
@@ -31,6 +37,8 @@ void ModelSSAO::Draw(Shader* shader)
 // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
 void ModelSSAO::loadModel(std::string const& path)
 {
+    printf("ModelSSAO::loadModel\n");
+
     // read file via ASSIMP
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path,
@@ -55,6 +63,8 @@ void ModelSSAO::loadModel(std::string const& path)
 // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
 void ModelSSAO::processNode(aiNode* node, const aiScene* scene)
 {
+    printf("ModelSSAO::processNode\n");
+
     // process each mesh located at the current node
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {

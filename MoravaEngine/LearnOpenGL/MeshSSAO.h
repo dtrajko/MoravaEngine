@@ -23,14 +23,17 @@ public:
     inline unsigned int GetVAO() const { return VAO; };
     inline std::vector<unsigned int> GetIndices() const { return indices; };
 
-private:
-    void setupMesh();
+protected:
+    virtual void setupMesh();
 
-private:
-    std::vector<VertexSSAO> vertices;
+protected:
     std::vector<unsigned int> indices;
     std::vector<TextureData> textures;
     unsigned int VAO;
     unsigned int VBO;
     unsigned int EBO;
+
+private:
+    std::vector<VertexSSAO> vertices;
+
 };

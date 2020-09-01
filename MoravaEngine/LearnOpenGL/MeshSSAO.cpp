@@ -21,6 +21,8 @@ MeshSSAO::MeshSSAO(std::vector<VertexSSAO> vertices, std::vector<unsigned int> i
 // initializes all the buffer objects/arrays
 void MeshSSAO::setupMesh()
 {
+    printf("MeshSSAO::setupMesh\n");
+
     // create buffers/arrays
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -40,7 +42,7 @@ void MeshSSAO::setupMesh()
     // set the vertex attribute pointers
     // vertex Positions
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSSAO), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSSAO), (void*)offsetof(VertexSSAO, Position));
     // vertex normals
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexSSAO), (void*)offsetof(VertexSSAO, Normal));

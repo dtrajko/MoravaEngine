@@ -11,22 +11,21 @@
 #include <string>
 
 
+ModelJoey::ModelJoey()
+{
+}
+
 // constructor, expects a filepath to a 3D model.
 ModelJoey::ModelJoey(std::string const& path, std::string const& textureDirectory, bool gamma)
-    : gammaCorrection(gamma), m_TextureDirectory(textureDirectory)
 {
+    gammaCorrection = gamma;
+    m_TextureDirectory = textureDirectory;
+
     loadModel(path);
 }
 
 ModelJoey::~ModelJoey()
 {
-}
-
-// draws the model, and thus all its meshes
-void ModelJoey::Draw(Shader* shader)
-{
-    for (unsigned int i = 0; i < meshes.size(); i++)
-        meshes[i].Draw(shader);
 }
 
 // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
@@ -72,7 +71,7 @@ void ModelJoey::processNode(aiNode* node, const aiScene* scene)
     }
 }
 
-MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
+MeshSSAO ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
 {
     // data to fill
     std::vector<VertexTangents> vertices;
@@ -111,13 +110,13 @@ MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
         vector.z = mesh->mNormals[i].z;
         vertex.Normal = vector;
 
-        // tangent
+        // tangents
         vector.x = mesh->mTangents[i].x;
         vector.y = mesh->mTangents[i].y;
         vector.z = mesh->mTangents[i].z;
         vertex.Tangent = vector;
 
-        // bitangent
+        // bitangents
         vector.x = mesh->mBitangents[i].x;
         vector.y = mesh->mBitangents[i].y;
         vector.z = mesh->mBitangents[i].z;
@@ -159,42 +158,4 @@ MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
 
     // return a mesh object created from the extracted mesh data
     return MeshJoey(vertices, indices, textures);
-}
-
-// checks all material textures of a given type and loads the textures if they're not loaded yet.
-// the required info is returned as a Texture struct.
-std::vector<TextureData> ModelJoey::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
-{
-    std::vector<TextureData> textures;
-
-    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
-    {
-        aiString str;
-        mat->GetTexture(type, i, &str);
-        // check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
-        bool skip = false;
-        for (unsigned int j = 0; j < textures_loaded.size(); j++)
-        {
-            if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
-            {
-                textures.push_back(textures_loaded[j]);
-                skip = true; // a texture with the same filepath has already been loaded, continue to next one. (optimization)
-                break;
-            }
-        }
-        if (!skip)
-        {
-            // if texture hasn't been loaded already, load it
-            std::string textureDirectory = m_TextureDirectory.length() > 0 ? m_TextureDirectory : this->m_ModelDirectory;
-            TextureJoey texture(str.C_Str(), textureDirectory, gammaCorrection);
-
-            TextureData textureData;
-            textureData.id = texture.GetTextureID();
-            textureData.type = typeName;
-            textureData.path = str.C_Str();
-            textures.push_back(textureData);
-            textures_loaded.push_back(textureData); // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
-        }
-    }
-    return textures;
 }

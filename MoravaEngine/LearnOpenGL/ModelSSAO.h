@@ -15,8 +15,8 @@
  */
 class ModelSSAO
 {
-
 public:
+    ModelSSAO();
     ModelSSAO(std::string const& path, std::string const& textureDirectory = "", bool gamma = false);
     virtual ~ModelSSAO();
 
@@ -24,10 +24,11 @@ public:
     inline std::vector<TextureData> GetTextures() { return textures_loaded; };
     inline std::vector<MeshSSAO> GetMeshes() { return meshes; };
 
-private:
-    void loadModel(std::string const& path);
-    void processNode(aiNode* node, const aiScene* scene);
-    MeshSSAO processMesh(aiMesh* mesh, const aiScene* scene);
+protected:
+    virtual void loadModel(std::string const& path);
+    virtual MeshSSAO processMesh(aiMesh* mesh, const aiScene* scene);
+    virtual void processNode(aiNode* node, const aiScene* scene);
+
     std::vector<TextureData> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
 
 protected:
