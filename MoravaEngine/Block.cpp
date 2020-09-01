@@ -27,8 +27,6 @@ void Block::Generate(glm::vec3 scale)
 	float txCoY = 1.0f * scale.y;
 	float txCoZ = 1.0f * scale.z;
 
-	float tilingFactor = 0.5f;
-
 	m_VertexCount = 14 * 4 * 6;
 
 	m_Vertices = new float[m_VertexCount] {

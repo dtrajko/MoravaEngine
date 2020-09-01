@@ -76,7 +76,6 @@ void MeshSSAO::Draw(Shader* shader)
         else if (name == "texture_height")
             number = std::to_string(heightNr++); // transfer unsigned int to stream
 
-
         // now set the sampler to the correct texture unit
         glUniform1i(glGetUniformLocation(shader->GetProgramID(), (name + number).c_str()), i);
         // option 2: shader->setFloat(("material." + name + number), i);

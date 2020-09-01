@@ -20,22 +20,24 @@ public:
     ModelSSAO(std::string const& path, std::string const& textureDirectory = "", bool gamma = false);
     virtual ~ModelSSAO();
 
-    void Draw(Shader* shader);
+    virtual void Draw(Shader* shader);
     inline std::vector<TextureData> GetTextures() { return textures_loaded; };
     inline std::vector<MeshSSAO> GetMeshes() { return meshes; };
 
 protected:
     virtual void loadModel(std::string const& path);
-    virtual MeshSSAO processMesh(aiMesh* mesh, const aiScene* scene);
     virtual void processNode(aiNode* node, const aiScene* scene);
 
+    MeshSSAO processMesh(aiMesh* mesh, const aiScene* scene);
     std::vector<TextureData> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
 
 protected:
     std::vector<TextureData> textures_loaded; // stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
-    std::vector<MeshSSAO> meshes;
     std::string m_ModelDirectory;
     std::string m_TextureDirectory;
     bool gammaCorrection;
+
+private:
+    std::vector<MeshSSAO> meshes;
 
 };

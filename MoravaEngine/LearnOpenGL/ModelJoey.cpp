@@ -28,6 +28,13 @@ ModelJoey::~ModelJoey()
 {
 }
 
+// draws the model, and thus all its meshes
+void ModelJoey::Draw(Shader* shader)
+{
+    for (unsigned int i = 0; i < meshes.size(); i++)
+        meshes[i].Draw(shader);
+}
+
 // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
 void ModelJoey::loadModel(std::string const& path)
 {
@@ -71,7 +78,7 @@ void ModelJoey::processNode(aiNode* node, const aiScene* scene)
     }
 }
 
-MeshSSAO ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
+MeshJoey ModelJoey::processMesh(aiMesh* mesh, const aiScene* scene)
 {
     // data to fill
     std::vector<VertexTangents> vertices;

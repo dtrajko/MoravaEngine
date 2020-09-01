@@ -96,7 +96,7 @@ enum class SceneName
 	SSAO,
 };
 
-SceneName currentScene = SceneName::Cubemaps;
+SceneName currentScene = SceneName::SSAO;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };

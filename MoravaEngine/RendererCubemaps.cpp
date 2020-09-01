@@ -36,6 +36,10 @@ void RendererCubemaps::SetShaders()
 	shaders.insert(std::make_pair("cubemaps", shaderCubemaps));
 	printf("RendererCubemaps: shaderCubemaps compiled [programID=%d]\n", shaderCubemaps->GetProgramID());
 
+    Shader* shaderCubemapsNanosuit = new Shader("Shaders/LearnOpenGL/6.2.cubemaps_nanosuit.vs", "Shaders/LearnOpenGL/6.2.cubemaps.fs");
+    shaders.insert(std::make_pair("cubemaps_nanosuit", shaderCubemapsNanosuit));
+    printf("RendererCubemaps: shaderCubemapsNanosuit compiled [programID=%d]\n", shaderCubemapsNanosuit->GetProgramID());
+
 	Shader* shaderSkybox = new Shader("Shaders/LearnOpenGL/6.2.skybox.vs", "Shaders/LearnOpenGL/6.2.skybox.fs");
 	shaders.insert(std::make_pair("skybox", shaderSkybox));
 	printf("RendererCubemaps: shaderSkybox compiled [programID=%d]\n", shaderSkybox->GetProgramID());
@@ -51,6 +55,9 @@ void RendererCubemaps::SetShaders()
 	// shader configuration
 	shaders["cubemaps"]->Bind();
 	shaders["cubemaps"]->setInt("skybox", 0);
+
+    shaders["cubemaps_nanosuit"]->Bind();
+    shaders["cubemaps_nanosuit"]->setInt("skybox", 0);
 
 	shaders["skybox"]->Bind();
 	shaders["skybox"]->setInt("skybox", 0);
@@ -86,10 +93,17 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     shaders["cubemaps"]->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     shaders["cubemaps"]->setVec3("cameraPos", scene->GetCamera()->GetPosition());
 
+    shaders["cubemaps_nanosuit"]->Bind();
+    shaders["cubemaps_nanosuit"]->setMat4("projection", projectionMatrix);
+    shaders["cubemaps_nanosuit"]->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
+    shaders["cubemaps_nanosuit"]->setVec3("cameraPos", scene->GetCamera()->GetPosition());
+
     glm::mat4 model = glm::mat4(1.0f);
  
     int terrainWidth = sceneCubemaps->GetTerrain()->GetHeightMap()->GetWidth();
     int terrainHeight = sceneCubemaps->GetTerrain()->GetHeightMap()->GetMaxY();
+
+    shaders["cubemaps"]->Bind();
 
     // Draw cube terrain
     if (sceneCubemaps->m_CubeTerrainEnabled)
@@ -148,20 +162,19 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
         m_CubeAABB->Draw();
 
     m_PivotCube->Draw(shaders["basic"], projectionMatrix, scene->GetCameraController()->CalculateViewMatrix());
-
     m_PivotScene->Draw(shaders["basic"], projectionMatrix, scene->GetCameraController()->CalculateViewMatrix());
 
     // Draw the Nanosuit model
-    shaders["cubemaps"]->Bind();
+    shaders["cubemaps_nanosuit"]->Bind();
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
     model = glm::scale(model, glm::vec3(0.2f));
-    shaders["cubemaps"]->setMat4("model", model);
+    shaders["cubemaps_nanosuit"]->setMat4("model", model);
     // shaders["cubemaps"]->setVec4("tintColor", glm::vec4(0.8281f, 0.6836f, 0.2148f, 0.9f)); // Gold color
-    shaders["cubemaps"]->setVec4("tintColor", glm::vec4(0.7529f, 0.7529f, 0.7529f, 0.9f)); // Silver color
+    shaders["cubemaps_nanosuit"]->setVec4("tintColor", glm::vec4(0.7529f, 0.7529f, 0.7529f, 0.9f)); // Silver color
 
     if (sceneCubemaps->m_NanosuitModelEnabled)
-        models["nanosuit"]->Draw(shaders["cubemaps"]);
+        models["nanosuit"]->Draw(shaders["cubemaps_nanosuit"]);
 
     shaders["framebuffers_scene"]->Bind();
     shaders["framebuffers_scene"]->setMat4("projection", projectionMatrix);

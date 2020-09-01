@@ -23,8 +23,16 @@ public:
     ModelJoey(std::string const& path, std::string const& textureDirectory = "", bool gamma = false);
     virtual ~ModelJoey();
 
+    virtual void Draw(Shader* shader) override;
+    inline std::vector<MeshJoey> GetMeshes() { return meshes; };
+
+protected:
     virtual void loadModel(std::string const& path) override;
-    virtual MeshSSAO processMesh(aiMesh* mesh, const aiScene* scene) override;
     virtual void processNode(aiNode* node, const aiScene* scene) override;
+
+    MeshJoey processMesh(aiMesh* mesh, const aiScene* scene);
+
+private:
+    std::vector<MeshJoey> meshes;
 
 };
