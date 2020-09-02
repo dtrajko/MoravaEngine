@@ -66,6 +66,9 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 		case AttachmentFormat::Depth_24_Stencil_8:
 			CreateAttachmentDepthAndStencil(m_Width, m_Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
 			break;
+		case AttachmentFormat::RGBA16F:
+			CreateAttachmentRGBA16F(m_Width, m_Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			break;
 		default:
 			Log::GetLogger()->error("Attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);
 			break;
@@ -127,6 +130,18 @@ void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned i
 		m_AttachmentDepthAndStencil = new FramebufferTexture(width, height, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
 		m_AttachmentDepthAndStencil = new Renderbuffer(width, height, attachmentFormat, 0);
+}
+
+void Framebuffer::CreateAttachmentRGBA16F(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
+{
+	FramebufferTexture* texture = new FramebufferTexture(width, height, attachmentFormat, (unsigned int)m_TextureAttachmentsColor.size());
+	m_TextureAttachmentsColor.push_back(texture);
+}
+
+void Framebuffer::CreateAttachmentRGBA8(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
+{
+	FramebufferTexture* texture = new FramebufferTexture(width, height, attachmentFormat, (unsigned int)m_TextureAttachmentsColor.size());
+	m_TextureAttachmentsColor.push_back(texture);
 }
 
 void Framebuffer::Bind()

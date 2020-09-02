@@ -9,7 +9,7 @@
 struct FramebufferSpecification
 {
 	uint32_t Width, Height;
-	// FramebufferFormat Format = 
+	// FramebufferFormat Format; same as AttachmentFormat
 	uint32_t Samples = 1;
 
 	bool SwapChainTarget = false;
@@ -38,6 +38,8 @@ public:
 	void CreateAttachmentDepth(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth);
 	void CreateAttachmentStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Stencil);
 	void CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth_24_Stencil_8);
+	void CreateAttachmentRGBA16F(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::RGBA16F);
+	void CreateAttachmentRGBA8(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::RGBA8);
 
 	FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0);
 	Attachment* GetAttachmentDepth();

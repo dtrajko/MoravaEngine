@@ -28,6 +28,18 @@ FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, 
 		format = GL_RGB;
 		type = GL_UNSIGNED_BYTE;
 		break;
+	case AttachmentFormat::RGBA16F:
+		attachment = GL_COLOR_ATTACHMENT0 + orderID;
+		internalFormat = GL_RGBA;
+		format = GL_RGBA;
+		type = GL_RGBA16F;
+		break;
+	case AttachmentFormat::RGBA8:
+		attachment = GL_COLOR_ATTACHMENT0 + orderID;
+		internalFormat = GL_RGBA;
+		format = GL_RGBA;
+		type = GL_RGBA8;
+		break;
 	case AttachmentFormat::Depth:
 		attachment = GL_DEPTH_ATTACHMENT;
 		internalFormat = GL_DEPTH_COMPONENT32;
