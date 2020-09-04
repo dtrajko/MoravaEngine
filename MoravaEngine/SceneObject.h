@@ -23,6 +23,7 @@ const int MESH_TYPE_ANIM_BOY =  7;
 const int MESH_TYPE_TERRAIN  =  8;
 const int MESH_TYPE_WATER    =  9;
 const int MESH_TYPE_DRONE    = 10;
+const int MESH_TYPE_M1911    = 11;
 
 // Models start at 1000
 const int MODEL_STONE_CARVED   = 1000;

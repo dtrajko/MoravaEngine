@@ -96,7 +96,7 @@ enum class SceneName
 	SSAO,
 };
 
-SceneName currentScene = SceneName::Eiffel;
+SceneName currentScene = SceneName::Editor;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };

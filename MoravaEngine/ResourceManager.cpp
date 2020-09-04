@@ -237,6 +237,15 @@ void ResourceManager::Init()
     textureInfoBoulder.roughness = "Textures/plain.png";
     textureInfoBoulder.ao = "Textures/plain.png";
     s_MaterialInfo.insert(std::make_pair("boulder", textureInfoBoulder));
+
+    // M1911
+    TextureInfo textureInfoM1911 = {};
+    textureInfoM1911.albedo = "Models/m1911/m1911_color.png";
+    textureInfoM1911.normal = "Models/m1911/m1911_normal.png";
+    textureInfoM1911.metallic = "Models/m1911/m1911_metalness.png";
+    textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
+    textureInfoM1911.ao = "Textures/plain.png";
+    s_MaterialInfo.insert(std::make_pair("M1911", textureInfoM1911));
 }
 
 void ResourceManager::LoadTexture(std::string name, std::string filePath)

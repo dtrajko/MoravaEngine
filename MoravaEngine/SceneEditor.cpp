@@ -566,6 +566,10 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::RadioButton("Tropical Beach", &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
             ImGui::RadioButton("Vignaioli Night", &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
             ImGui::RadioButton("Early Eve & Warm Sky", &m_HDRI_Edit, HDRI_EARLY_EVE_WARM_SKY);
+            ImGui::RadioButton("Birchwood", &m_HDRI_Edit, HDRI_BIRCHWOOD);
+            ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
+            ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
+            ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
         }
 
         if (ImGui::CollapsingHeader("Cube Maps"))
@@ -773,6 +777,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::RadioButton("Terrain",      &m_CurrentObjectTypeID, MESH_TYPE_TERRAIN);
             ImGui::RadioButton("Water",        &m_CurrentObjectTypeID, MESH_TYPE_WATER);
             ImGui::RadioButton("Buster Drone", &m_CurrentObjectTypeID, MESH_TYPE_DRONE);
+            ImGui::RadioButton("M1911 Pistol", &m_CurrentObjectTypeID, MESH_TYPE_M1911);
         }
 
         if (ImGui::CollapsingHeader("Add Model"))
@@ -1044,6 +1049,15 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY)
             m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr");
 
+        else if (m_HDRI_Edit == HDRI_BIRCHWOOD)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr");
+        else if (m_HDRI_Edit == HDRI_PINK_SUNRISE)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/pink_sunrise_4k.hdr");
+        else if (m_HDRI_Edit == HDRI_ROOITOU_PARK)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr");
+        else if (m_HDRI_Edit == HDRI_VENICE_DAWN)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr");
+
         m_HDRI_Edit_Prev = m_HDRI_Edit;
     }
 
@@ -1191,6 +1205,10 @@ Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* n
         mesh = new SkinnedMesh("Models/BusterDrone/busterDrone.gltf", "Textures/BusterDrone");
         *name = "drone";
         break;
+    case MESH_TYPE_M1911:
+        mesh = new SkinnedMesh("Models/m1911/m1911.fbx", "Models/m1911");
+        *name = "m1911";
+        break;
     default:
         mesh = new Block(scale);
         *name = "cube";
@@ -1294,6 +1312,14 @@ void SceneEditor::AddSceneObject()
             scale = glm::vec3(1.0f);
             positionAABB = glm::vec3(0.0f, 0.0f, 0.0f);
             scaleAABB = glm::vec3(1.0f, 1.0f, 1.0f);
+        }
+        else if (m_CurrentObjectTypeID == MESH_TYPE_M1911) {
+            objectName = "m1911";
+            materialName = "m1911";
+            rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+            scale = glm::vec3(1.0f);
+            positionAABB = glm::vec3(0.0f, 0.0f, 0.0f);
+            scaleAABB = glm::vec3(24.0f, 14.0f, 3.0f);
         }
     }
     else if (m_CurrentObjectTypeID >= 1000 && m_CurrentObjectTypeID < 2000) { // Model - ID range 1000 - 2000
