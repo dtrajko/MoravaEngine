@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\GLM;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -107,7 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
@@ -166,6 +166,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp" />
@@ -202,6 +203,7 @@
     <ClCompile Include="Quadtree.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="RendererEditorFramebuffer.cpp" />
+    <ClCompile Include="RendererImGuizmo.cpp" />
     <ClCompile Include="RendererOmniShadows.cpp" />
     <ClCompile Include="RendererSSAO.cpp" />
     <ClCompile Include="RendererVoxelTerrain.cpp" />
@@ -209,6 +211,7 @@
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SceneBullet.cpp" />
     <ClCompile Include="SceneEditorFramebuffer.cpp" />
+    <ClCompile Include="SceneImGuizmo.cpp" />
     <ClCompile Include="SceneMarchingCubes.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="SceneObjectLight.cpp" />
@@ -326,6 +329,7 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="..\vendor\ImGui\imconfig.h" />
     <ClInclude Include="..\vendor\ImGui\imgui.h" />
     <ClInclude Include="..\vendor\ImGui\imgui_impl_dx11.h" />
@@ -378,6 +382,7 @@
     <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="RendererEditorFramebuffer.h" />
+    <ClInclude Include="RendererImGuizmo.h" />
     <ClInclude Include="RendererOmniShadows.h" />
     <ClInclude Include="RendererSSAO.h" />
     <ClInclude Include="RendererVoxelTerrain.h" />
@@ -386,6 +391,7 @@
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="SceneBullet.h" />
     <ClInclude Include="SceneEditorFramebuffer.h" />
+    <ClInclude Include="SceneImGuizmo.h" />
     <ClInclude Include="SceneMarchingCubes.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="SceneObjectLight.h" />

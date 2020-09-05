@@ -18,6 +18,20 @@ SkinnedMesh::SkinnedMesh(const std::string& Filename, const std::string& Texture
 
 bool SkinnedMesh::LoadMesh(const std::string& Filename, const std::string& TexturesDir)
 {
+    uint32_t s_MeshImportFlags =
+        // -- assimp import flags from Hazel-dev
+        //  aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
+        //  aiProcess_Triangulate |             // Make sure we're triangles
+        //  aiProcess_SortByPType |             // Split meshes by primitive type
+        //  aiProcess_GenNormals |              // Make sure we have legit normals
+        //  aiProcess_GenUVCoords |             // Convert UVs if required 
+        //  aiProcess_OptimizeMeshes |          // Batch draws where possible
+        //  aiProcess_ValidateDataStructure;    // Validation
+        // -- original assimp import flags
+        aiProcess_Triangulate |
+        aiProcess_GenSmoothNormals |
+        aiProcess_FlipUVs;
+
 	// Release the previously loaded mesh (if it exists)
 	Clear();
 
@@ -32,10 +46,7 @@ bool SkinnedMesh::LoadMesh(const std::string& Filename, const std::string& Textu
 
     printf("Loading a SkinnedMesh \t'%s'\n", Filename.c_str());
 
-	m_pScene = m_Importer.ReadFile(Filename.c_str(),
-		aiProcess_Triangulate |
-		aiProcess_GenSmoothNormals |
-		aiProcess_FlipUVs);
+	m_pScene = m_Importer.ReadFile(Filename.c_str(), s_MeshImportFlags);
 
 	if (m_pScene) {
 		m_GlobalInverseTransform = Math::aiMatrix4x4ToGlm(&m_pScene->mRootNode->mTransformation);

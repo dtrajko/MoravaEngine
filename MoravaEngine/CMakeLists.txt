@@ -985,6 +985,7 @@ target_include_directories(
 	../vendor/cross-platform/glfw/src
 	../vendor/cross-platform/bullet3/src
 	../vendor/cross-platform/bullet3/examples/ThirdPartyLibs/zlib
+	../vendor/cross-platform/ImGuizmo
 	../vendor/GLEW/include
 	../vendor/ImGui
 	../vendor/GLM

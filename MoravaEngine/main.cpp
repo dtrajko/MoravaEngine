@@ -44,6 +44,7 @@
 #include "SceneMarchingCubes.h"
 #include "SceneEditorFramebuffer.h"
 #include "SceneSSAO.h"
+#include "SceneImGuizmo.h"
 
 #include "Renderer.h"
 #include "RendererPBR.h"
@@ -58,6 +59,7 @@
 #include "RendererEditor.h"
 #include "RendererEditorFramebuffer.h"
 #include "RendererSSAO.h"
+#include "RendererImGuizmo.h"
 
 
 // Window dimensions
@@ -94,6 +96,7 @@ enum class SceneName
 	MarchingCubes,
 	EditorFramebuffer,
 	SSAO,
+	ImGuizmo,
 };
 
 SceneName currentScene = SceneName::Editor;
@@ -201,6 +204,10 @@ int main()
 	case SceneName::SSAO:
 		scene = new SceneSSAO();
 		renderer = static_cast<RendererBasic*>(new RendererSSAO());
+		break;
+	case SceneName::ImGuizmo:
+		scene = new SceneImGuizmo();
+		renderer = static_cast<RendererBasic*>(new RendererImGuizmo());
 		break;
 	default:
 		throw std::runtime_error("Scene and Renderer could not be loaded!");

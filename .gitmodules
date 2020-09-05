@@ -13,3 +13,6 @@
 [submodule "vendor/cross-platform/glm"]
 	path = vendor/cross-platform/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "vendor/cross-platform/ImGuizmo"]
+	path = vendor/cross-platform/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git

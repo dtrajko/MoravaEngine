@@ -21,8 +21,6 @@ MeshSSAO::MeshSSAO(std::vector<VertexSSAO> vertices, std::vector<unsigned int> i
 // initializes all the buffer objects/arrays
 void MeshSSAO::setupMesh()
 {
-    printf("MeshSSAO::setupMesh\n");
-
     // create buffers/arrays
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);

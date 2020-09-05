@@ -473,6 +473,15 @@
     <ClCompile Include="SSAO.cpp">
       <Filter>Light</Filter>
     </ClCompile>
+    <ClCompile Include="RendererImGuizmo.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneImGuizmo.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1008,6 +1017,15 @@
     </ClInclude>
     <ClInclude Include="CommonStructs.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererImGuizmo.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneImGuizmo.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h">
+      <Filter>ImGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
