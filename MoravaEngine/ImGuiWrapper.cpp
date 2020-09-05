@@ -1,5 +1,7 @@
 #include "ImGuiWrapper.h"
 
+#include "../vendor/cross-platform/ImGuizmo/ImGuizmo.h"
+
 
 Window* ImGuiWrapper::m_Window;
 float ImGuiWrapper::m_Time;
@@ -71,6 +73,8 @@ void ImGuiWrapper::Begin()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+
+	ImGuizmo::BeginFrame();
 }
 
 void ImGuiWrapper::End()

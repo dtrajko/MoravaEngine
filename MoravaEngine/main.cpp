@@ -99,7 +99,7 @@ enum class SceneName
 	ImGuizmo,
 };
 
-SceneName currentScene = SceneName::Editor;
+SceneName currentScene = SceneName::ImGuizmo;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
