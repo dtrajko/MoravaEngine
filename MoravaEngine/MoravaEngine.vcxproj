@@ -179,6 +179,9 @@
     <ClCompile Include="CameraControllerVoxelTerrain.cpp" />
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="EndlessTerrain.cpp" />
+    <ClCompile Include="Hazel\Renderer\Buffer.cpp" />
+    <ClCompile Include="Hazel\Renderer\OpenGLBuffer.cpp" />
+    <ClCompile Include="Hazel\Renderer\OpenGLVertexArray.cpp" />
     <ClCompile Include="Hazel\Windows\WindowsInput.cpp" />
     <ClCompile Include="Hazel\Windows\WindowsWindow.cpp" />
     <ClCompile Include="InsertionSort.cpp" />
@@ -347,6 +350,7 @@
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="EndlessTerrain.h" />
     <ClInclude Include="Hazel\Core\Base.h" />
+    <ClInclude Include="Hazel\Core\Buffer.h" />
     <ClInclude Include="Hazel\Core\HazelWindow.h" />
     <ClInclude Include="Hazel\Core\Input.h" />
     <ClInclude Include="Hazel\Core\KeyCodes.h" />
@@ -355,6 +359,9 @@
     <ClInclude Include="Hazel\Events\Event.h" />
     <ClInclude Include="Hazel\Events\KeyEvent.h" />
     <ClInclude Include="Hazel\Events\MouseEvent.h" />
+    <ClInclude Include="Hazel\Renderer\Buffer.h" />
+    <ClInclude Include="Hazel\Renderer\OpenGLBuffer.h" />
+    <ClInclude Include="Hazel\Renderer\OpenGLVertexArray.h" />
     <ClInclude Include="Hazel\Windows\WindowsWindow.h" />
     <ClInclude Include="CommonStructs.h" />
     <ClInclude Include="InsertionSort.h" />

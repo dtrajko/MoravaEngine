@@ -482,6 +482,15 @@
     <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Renderer\OpenGLBuffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Renderer\OpenGLVertexArray.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Renderer\Buffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1027,6 +1036,18 @@
     <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h">
       <Filter>ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="Hazel\Renderer\OpenGLBuffer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\OpenGLVertexArray.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Core\Buffer.h">
+      <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\Buffer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1103,6 +1124,9 @@
     </Filter>
     <Filter Include="Hazel\Core">
       <UniqueIdentifier>{e053c5c1-9585-4c6a-82e8-6a391773a618}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Renderer">
+      <UniqueIdentifier>{aa5ede13-8d0a-4deb-bd4b-c3087818310b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
