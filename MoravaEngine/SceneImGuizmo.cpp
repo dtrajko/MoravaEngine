@@ -127,6 +127,27 @@ void SceneImGuizmo::SetupMeshes()
 
     Block* cube = new Block(glm::vec3(1.0f, 1.0f, 1.0f));
     meshes.insert(std::make_pair("cube", cube));
+
+    Log::GetLogger()->info("-- BEGIN loading the animated PBR model M1911 --");
+
+    Shader* shaderHazelAnimPBR = new Shader("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR_Anim.fs");
+    Log::GetLogger()->info("Hazel::Mesh: shaderHazelPBR_Anim compiled [programID={0}]", shaderHazelAnimPBR->GetProgramID());
+
+    // M1911
+    TextureInfo textureInfoM1911 = {};
+    textureInfoM1911.albedo    = "Models/m1911/m1911_color.png";
+    textureInfoM1911.normal    = "Models/m1911/m1911_normal.png";
+    textureInfoM1911.metallic  = "Models/m1911/m1911_metalness.png";
+    textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
+    textureInfoM1911.ao        = "Textures/plain.png";
+
+    float materialSpecular  = 1.0f;
+    float materialShininess = 256.0f;
+
+    Material* baseMaterial = new Material(textureInfoM1911, materialSpecular, materialShininess);
+    m_MeshAnimPBR = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", shaderHazelAnimPBR, baseMaterial);
+
+    Log::GetLogger()->info("-- END loading the animated PBR model M1911 --");
 }
 
 void SceneImGuizmo::SetupModels()
@@ -139,6 +160,26 @@ void SceneImGuizmo::SetupFramebuffers()
 
 void SceneImGuizmo::Update(float timestep, Window& mainWindow)
 {
+    //  m_MeshMaterial->Set("u_AlbedoColor", m_AlbedoInput.Color);
+    //  m_MeshMaterial->Set("u_Metalness", m_MetalnessInput.Value);
+    //  m_MeshMaterial->Set("u_Roughness", m_RoughnessInput.Value);
+    //  m_MeshMaterial->Set("lights", m_Light);
+    //  m_MeshMaterial->Set("u_AlbedoTexToggle", m_AlbedoInput.UseTexture ? 1.0f : 0.0f);
+    //  m_MeshMaterial->Set("u_NormalTexToggle", m_NormalInput.UseTexture ? 1.0f : 0.0f);
+    //  m_MeshMaterial->Set("u_MetalnessTexToggle", m_MetalnessInput.UseTexture ? 1.0f : 0.0f);
+    //  m_MeshMaterial->Set("u_RoughnessTexToggle", m_RoughnessInput.UseTexture ? 1.0f : 0.0f);
+    //  m_MeshMaterial->Set("u_EnvMapRotation", m_EnvMapRotation);
+    //  
+    //  if (m_AlbedoInput.TextureMap)
+    //      m_MeshMaterial->Set("u_AlbedoTexture", m_AlbedoInput.TextureMap);
+    //  if (m_NormalInput.TextureMap)
+    //      m_MeshMaterial->Set("u_NormalTexture", m_NormalInput.TextureMap);
+    //  if (m_MetalnessInput.TextureMap)
+    //      m_MeshMaterial->Set("u_MetalnessTexture", m_MetalnessInput.TextureMap);
+    //  if (m_RoughnessInput.TextureMap)
+    //      m_MeshMaterial->Set("u_RoughnessTexture", m_RoughnessInput.TextureMap);
+
+    m_MeshAnimPBR->OnUpdate(timestep);
 }
 
 void SceneImGuizmo::UpdateImGui(float timestep, Window& mainWindow)

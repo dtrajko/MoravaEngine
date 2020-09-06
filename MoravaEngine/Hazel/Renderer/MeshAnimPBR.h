@@ -114,7 +114,7 @@ namespace Hazel {
 			: V0(v0), V1(v1), V2(v2) {}
 	};
 
-	class Submesh
+	class Submesh : public Mesh
 	{
 	public:
 		uint32_t BaseVertex;
@@ -130,7 +130,7 @@ namespace Hazel {
 	class MeshAnimPBR : public Mesh
 	{
 	public:
-		MeshAnimPBR(const std::string& filename);
+		// MeshAnimPBR(const std::string& filename);
 		MeshAnimPBR(const std::string& filename, Shader* shader, Material* material);
 		~MeshAnimPBR();
 
@@ -169,8 +169,9 @@ namespace Hazel {
 		std::vector<BoneInfo> m_BoneInfo;
 
 		OpenGLVertexArray* m_VertexArray;
+		OpenGLVertexBuffer* m_VertexBuffer;
+		OpenGLIndexBuffer* m_IndexBuffer;
 
-		std::vector<Vertex> m_StaticVertices;
 		std::vector<AnimatedVertex> m_AnimatedVertices;
 		std::vector<Index> m_Indices;
 		std::unordered_map<std::string, uint32_t> m_BoneMapping;

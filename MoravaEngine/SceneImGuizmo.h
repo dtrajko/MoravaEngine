@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Scene.h"
+#include "Hazel/Renderer/MeshAnimPBR.h"
 
 
 class SceneImGuizmo : public Scene
@@ -29,5 +30,7 @@ private:
 
 	glm::mat4 m_CubeTransform;
 	int m_GizmoType;
+
+	Hazel::MeshAnimPBR* m_MeshAnimPBR;
 
 };

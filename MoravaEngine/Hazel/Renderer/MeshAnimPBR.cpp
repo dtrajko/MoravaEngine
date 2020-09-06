@@ -66,17 +66,17 @@ namespace Hazel {
 		Create();
 	}
 
-	MeshAnimPBR::MeshAnimPBR(const std::string& filename)
-		: m_FilePath(filename)
-	{
-		Create();
-	}
+	//	MeshAnimPBR::MeshAnimPBR(const std::string& filename)
+	//		: m_FilePath(filename)
+	//	{
+	//		Create();
+	//	}
 
 	void MeshAnimPBR::Create()
 	{
 		LogStream::Initialize();
 
-		Log::GetLogger()->info("Loading mesh: {0}", m_FilePath.c_str());
+		Log::GetLogger()->info("Hazel::MeshAnimPBR: Loading mesh: {0}", m_FilePath.c_str());
 
 		m_Importer = std::make_unique<Assimp::Importer>();
 
@@ -86,18 +86,16 @@ namespace Hazel {
 
 		m_Scene = scene;
 
-		Shader* shaderHazelPBR_Anim = new Shader("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR_Anim.fs");
-		Log::GetLogger()->info("Hazel::Mesh: shaderHazelPBR_Anim compiled [programID={0}]", shaderHazelPBR_Anim->GetProgramID());
-
-		m_MeshShader = shaderHazelPBR_Anim;
-		m_BaseMaterial = new Material(); // m_MeshShader
 		// m_MaterialInstance = std::make_shared<MaterialInstance>(m_BaseMaterial);
 		m_InverseTransform = glm::inverse(Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
 
 		uint32_t vertexCount = 0;
 		uint32_t indexCount = 0;
 
+		Log::GetLogger()->info("Hazel::MeshAnimPBR: Master mesh contains {0} submeshes.", scene->mNumMeshes);
+
 		m_Submeshes.reserve(scene->mNumMeshes);
+
 		for (size_t m = 0; m < scene->mNumMeshes; m++)
 		{
 			aiMesh* mesh = scene->mMeshes[m];
@@ -146,8 +144,6 @@ namespace Hazel {
 				Index index = { mesh->mFaces[i].mIndices[0], mesh->mFaces[i].mIndices[1], mesh->mFaces[i].mIndices[2] };
 				m_Indices.push_back(index);
 			}
-
-
 		}
 
 		TraverseNodes(scene->mRootNode);
@@ -434,9 +430,14 @@ namespace Hazel {
 			Log::GetLogger()->info("------------------------");
 		}
 
+		Log::GetLogger()->info("Hazel::MeshAnimPBR: Creating a Vertex Array...");
+
 		m_VertexArray = new OpenGLVertexArray();
-		auto vb = new OpenGLVertexBuffer(m_AnimatedVertices.data(), (uint32_t)m_AnimatedVertices.size() * sizeof(AnimatedVertex));
-		vb->SetLayout({
+
+		Log::GetLogger()->info("Hazel::MeshAnimPBR: Creating a Vertex Buffer...");
+
+		m_VertexBuffer = new OpenGLVertexBuffer(m_AnimatedVertices.data(), (uint32_t)m_AnimatedVertices.size() * sizeof(AnimatedVertex));
+		m_VertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float3, "a_Normal" },
 			{ ShaderDataType::Float3, "a_Tangent" },
@@ -445,14 +446,27 @@ namespace Hazel {
 			{ ShaderDataType::Int4, "a_BoneIDs" },
 			{ ShaderDataType::Float4, "a_BoneWeights" },
 			});
-		m_VertexArray->AddVertexBuffer(vb);
+		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 
-		auto ib = new OpenGLIndexBuffer(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
-		m_VertexArray->SetIndexBuffer(ib);
+		Log::GetLogger()->info("Hazel::MeshAnimPBR: Creating an Index Buffer...");
+
+		m_IndexBuffer = new OpenGLIndexBuffer(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
+		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
+
+		Log::GetLogger()->info("Hazel::MeshAnimPBR: Total vertices: {0}", m_AnimatedVertices.size());
+		Log::GetLogger()->info("Hazel::MeshAnimPBR: Total indices: {0}", m_Indices.size());
 	}
 
 	MeshAnimPBR::~MeshAnimPBR()
 	{
+		for (Material* material : m_Materials)
+			delete material;
+
+		for (Texture* texture : m_Textures)
+			delete texture;
+
+		delete m_VertexArray;
+
 	}
 
 	void MeshAnimPBR::OnUpdate(float ts)
@@ -692,12 +706,12 @@ namespace Hazel {
 		for (size_t i = 0; i < m_AnimatedVertices.size(); i++)
 		{
 			auto& vertex = m_AnimatedVertices[i];
-			Log::GetLogger()->info("Vertex: {0}", i);
+			Log::GetLogger()->info("Vertex:   {0}", i);
 			Log::GetLogger()->info("Position: {0}, {1}, {2}", vertex.Position.x, vertex.Position.y, vertex.Position.z);
-			Log::GetLogger()->info("Normal: {0}, {1}, {2}", vertex.Normal.x, vertex.Normal.y, vertex.Normal.z);
+			Log::GetLogger()->info("Normal:   {0}, {1}, {2}", vertex.Normal.x,   vertex.Normal.y,   vertex.Normal.z);
 			Log::GetLogger()->info("Binormal: {0}, {1}, {2}", vertex.Binormal.x, vertex.Binormal.y, vertex.Binormal.z);
-			Log::GetLogger()->info("Tangent: {0}, {1}, {2}", vertex.Tangent.x, vertex.Tangent.y, vertex.Tangent.z);
-			Log::GetLogger()->info("TexCoord: {0}, {1}", vertex.Texcoord.x, vertex.Texcoord.y);
+			Log::GetLogger()->info("Tangent:  {0}, {1}, {2}", vertex.Tangent.x,  vertex.Tangent.y,  vertex.Tangent.z);
+			Log::GetLogger()->info("TexCoord: {0}, {1}",      vertex.Texcoord.x, vertex.Texcoord.y);
 			Log::GetLogger()->info("--");
 		}
 		Log::GetLogger()->info("------------------------------------------------------");
