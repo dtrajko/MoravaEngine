@@ -491,6 +491,9 @@
     <ClCompile Include="Hazel\Renderer\Buffer.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Renderer\MeshAnimPBR.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1046,6 +1049,9 @@
       <Filter>Hazel\Core</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\Buffer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\MeshAnimPBR.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>

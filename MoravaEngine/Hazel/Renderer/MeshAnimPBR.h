@@ -3,11 +3,17 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include "Hazel/Renderer/VertexArray.h"
-#include "Hazel/Renderer/Buffer.h"
-#include "Hazel/Renderer/Material.h"
-#include "../../Log.h"
+#include "../Core/Base.h"
+#include "OpenGLBuffer.h"
+#include "OpenGLVertexArray.h"
 
+#include "../../Log.h"
+#include "../../Shader.h"
+#include "../../Texture.h"
+#include "../../Material.h"
+#include "../../Mesh.h"
+
+#include <string>
 
 struct aiNode;
 struct aiAnimation;
@@ -121,11 +127,14 @@ namespace Hazel {
 		std::string NodeName, MeshName;
 	};
 
-	class Mesh
+	class MeshAnimPBR : public Mesh
 	{
 	public:
-		Mesh(const std::string& filename);
-		~Mesh();
+		MeshAnimPBR(const std::string& filename);
+		MeshAnimPBR(const std::string& filename, Shader* shader, Material* material);
+		~MeshAnimPBR();
+
+		virtual void Create() override;
 
 		void OnUpdate(float ts);
 		void DumpVertexBuffer();
@@ -133,10 +142,7 @@ namespace Hazel {
 		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
 		const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
 
-		Ref<Shader> GetMeshShader() { return m_MeshShader; }
-		Ref<Material> GetMaterial() { return m_BaseMaterial; }
-		std::vector<Ref<MaterialInstance>> GetMaterials() { return m_Materials; }
-		const std::vector<Ref<Texture2D>>& GetTextures() const { return m_Textures; }
+		const std::vector<Texture*>& GetTextures() const { return m_Textures; }
 		const std::string& GetFilePath() const { return m_FilePath; }
 
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
@@ -162,7 +168,7 @@ namespace Hazel {
 		uint32_t m_BoneCount = 0;
 		std::vector<BoneInfo> m_BoneInfo;
 
-		Ref<VertexArray> m_VertexArray;
+		OpenGLVertexArray* m_VertexArray;
 
 		std::vector<Vertex> m_StaticVertices;
 		std::vector<AnimatedVertex> m_AnimatedVertices;
@@ -172,16 +178,15 @@ namespace Hazel {
 		const aiScene* m_Scene;
 
 		// Materials
-		Ref<Shader> m_MeshShader;
-		Ref<Material> m_BaseMaterial;
-		std::vector<Ref<Texture2D>> m_Textures;
-		std::vector<Ref<Texture2D>> m_NormalMaps;
-		std::vector<Ref<MaterialInstance>> m_Materials;
+		Shader* m_MeshShader;
+		Material* m_BaseMaterial;
+		std::vector<Texture*> m_Textures;
+		std::vector<Texture*> m_NormalMaps;
+		std::vector<Material*> m_Materials;
 
 		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
 
 		// Animation
-		bool m_IsAnimated = false;
 		float m_AnimationTime = 0.0f;
 		float m_WorldTime = 0.0f;
 		float m_TimeMultiplier = 1.0f;

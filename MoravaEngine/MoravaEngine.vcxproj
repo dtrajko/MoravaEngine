@@ -180,6 +180,7 @@
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="EndlessTerrain.cpp" />
     <ClCompile Include="Hazel\Renderer\Buffer.cpp" />
+    <ClCompile Include="Hazel\Renderer\MeshAnimPBR.cpp" />
     <ClCompile Include="Hazel\Renderer\OpenGLBuffer.cpp" />
     <ClCompile Include="Hazel\Renderer\OpenGLVertexArray.cpp" />
     <ClCompile Include="Hazel\Windows\WindowsInput.cpp" />
@@ -360,6 +361,7 @@
     <ClInclude Include="Hazel\Events\KeyEvent.h" />
     <ClInclude Include="Hazel\Events\MouseEvent.h" />
     <ClInclude Include="Hazel\Renderer\Buffer.h" />
+    <ClInclude Include="Hazel\Renderer\MeshAnimPBR.h" />
     <ClInclude Include="Hazel\Renderer\OpenGLBuffer.h" />
     <ClInclude Include="Hazel\Renderer\OpenGLVertexArray.h" />
     <ClInclude Include="Hazel\Windows\WindowsWindow.h" />

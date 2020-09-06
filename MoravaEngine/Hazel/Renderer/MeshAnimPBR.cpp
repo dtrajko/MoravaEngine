@@ -1,7 +1,6 @@
-#include "hzpch.h" 
-#include "Mesh.h"
+#include "MeshAnimPBR.h"
 
-#include <glad/glad.h>
+#include <GL/glew.h>
 
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -16,20 +15,12 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
-#include "imgui/imgui.h"
-
-#include "Hazel/Renderer/Renderer.h"
+#include "imgui.h"
 
 #include <filesystem>
 
 namespace Hazel {
 
-#define MESH_DEBUG_LOG 1
-#if MESH_DEBUG_LOG
-#define HZ_MESH_LOG(...) HZ_CORE_TRACE(__VA_ARGS__)
-#else
-#define HZ_MESH_LOG(...)
-#endif
 
 	glm::mat4 Mat4FromAssimpMat4(const aiMatrix4x4& matrix)
 	{
@@ -64,28 +55,42 @@ namespace Hazel {
 
 		virtual void write(const char* message) override
 		{
-			HZ_CORE_ERROR("Assimp error: {0}", message);
+			Log::GetLogger()->error("Assimp error: {0}", message);
 		}
 	};
 
-	Mesh::Mesh(const std::string& filename)
+
+	MeshAnimPBR::MeshAnimPBR(const std::string& filename, Shader* shader, Material* material)
+		: m_MeshShader(shader), m_BaseMaterial(material), m_FilePath(filename)
+	{
+		Create();
+	}
+
+	MeshAnimPBR::MeshAnimPBR(const std::string& filename)
 		: m_FilePath(filename)
+	{
+		Create();
+	}
+
+	void MeshAnimPBR::Create()
 	{
 		LogStream::Initialize();
 
-		HZ_CORE_INFO("Loading mesh: {0}", filename.c_str());
-		
+		Log::GetLogger()->info("Loading mesh: {0}", m_FilePath.c_str());
+
 		m_Importer = std::make_unique<Assimp::Importer>();
 
-		const aiScene* scene = m_Importer->ReadFile(filename, s_MeshImportFlags);
+		const aiScene* scene = m_Importer->ReadFile(m_FilePath, s_MeshImportFlags);
 		if (!scene || !scene->HasMeshes())
-			HZ_CORE_ERROR("Failed to load mesh file: {0}", filename);
+			Log::GetLogger()->error("Failed to load mesh file: {0}", m_FilePath);
 
 		m_Scene = scene;
 
-		m_IsAnimated = scene->mAnimations != nullptr;
-		m_MeshShader = m_IsAnimated ? Renderer::GetShaderLibrary()->Get("HazelPBR_Anim") : Renderer::GetShaderLibrary()->Get("HazelPBR_Static");
-		m_BaseMaterial = CreateRef<Material>(m_MeshShader);
+		Shader* shaderHazelPBR_Anim = new Shader("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR_Anim.fs");
+		Log::GetLogger()->info("Hazel::Mesh: shaderHazelPBR_Anim compiled [programID={0}]", shaderHazelPBR_Anim->GetProgramID());
+
+		m_MeshShader = shaderHazelPBR_Anim;
+		m_BaseMaterial = new Material(); // m_MeshShader
 		// m_MaterialInstance = std::make_shared<MaterialInstance>(m_BaseMaterial);
 		m_InverseTransform = glm::inverse(Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
 
@@ -107,112 +112,79 @@ namespace Hazel {
 			vertexCount += mesh->mNumVertices;
 			indexCount += submesh.IndexCount;
 
-			HZ_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions.");
-			HZ_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals.");
+			if (!mesh->HasPositions())
+				Log::GetLogger()->error("Meshes require positions.");
+
+			if (!mesh->HasNormals())
+				Log::GetLogger()->error("Meshes require normals.");
 
 			// Vertices
-			if (m_IsAnimated)
+			for (size_t i = 0; i < mesh->mNumVertices; i++)
 			{
-				for (size_t i = 0; i < mesh->mNumVertices; i++)
+				AnimatedVertex vertex;
+				vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+				vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+
+				if (mesh->HasTangentsAndBitangents())
 				{
-					AnimatedVertex vertex;
-					vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
-					vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-
-					if (mesh->HasTangentsAndBitangents())
-					{
-						vertex.Tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
-						vertex.Binormal = { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z };
-					}
-
-					if (mesh->HasTextureCoords(0))
-						vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
-
-					m_AnimatedVertices.push_back(vertex);
+					vertex.Tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
+					vertex.Binormal = { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z };
 				}
-			}
-			else
-			{
-				auto& aabb = submesh.BoundingBox;
-				aabb.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
-				aabb.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-				for (size_t i = 0; i < mesh->mNumVertices; i++)
-				{
-					Vertex vertex;
-					vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
-					vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-					aabb.Min.x = glm::min(vertex.Position.x, aabb.Min.x);
-					aabb.Min.y = glm::min(vertex.Position.y, aabb.Min.y);
-					aabb.Min.z = glm::min(vertex.Position.z, aabb.Min.z);
-					aabb.Max.x = glm::max(vertex.Position.x, aabb.Max.x);
-					aabb.Max.y = glm::max(vertex.Position.y, aabb.Max.y);
-					aabb.Max.z = glm::max(vertex.Position.z, aabb.Max.z);
 
-					if (mesh->HasTangentsAndBitangents())
-					{
-						vertex.Tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
-						vertex.Binormal = { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z };
-					}
+				if (mesh->HasTextureCoords(0))
+					vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
 
-					if (mesh->HasTextureCoords(0))
-						vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
-
-					m_StaticVertices.push_back(vertex);
-				}
+				m_AnimatedVertices.push_back(vertex);
 			}
 
 			// Indices
 			for (size_t i = 0; i < mesh->mNumFaces; i++)
 			{
-				HZ_CORE_ASSERT(mesh->mFaces[i].mNumIndices == 3, "Must have 3 indices.");
+				if (mesh->mFaces[i].mNumIndices != 3)
+					Log::GetLogger()->error("Must have 3 indices.");
+
 				Index index = { mesh->mFaces[i].mIndices[0], mesh->mFaces[i].mIndices[1], mesh->mFaces[i].mIndices[2] };
 				m_Indices.push_back(index);
-
-				if (!m_IsAnimated)
-					m_TriangleCache[m].emplace_back(m_StaticVertices[index.V1 + submesh.BaseVertex], m_StaticVertices[index.V2 + submesh.BaseVertex], m_StaticVertices[index.V3 + submesh.BaseVertex]);
 			}
 
-			
+
 		}
 
 		TraverseNodes(scene->mRootNode);
 
 		// Bones
-		if (m_IsAnimated)
+		for (size_t m = 0; m < scene->mNumMeshes; m++)
 		{
-			for (size_t m = 0; m < scene->mNumMeshes; m++)
+			aiMesh* mesh = scene->mMeshes[m];
+			Submesh& submesh = m_Submeshes[m];
+
+			for (size_t i = 0; i < mesh->mNumBones; i++)
 			{
-				aiMesh* mesh = scene->mMeshes[m];
-				Submesh& submesh = m_Submeshes[m];
+				aiBone* bone = mesh->mBones[i];
+				std::string boneName(bone->mName.data);
+				int boneIndex = 0;
 
-				for (size_t i = 0; i < mesh->mNumBones; i++)
+				if (m_BoneMapping.find(boneName) == m_BoneMapping.end())
 				{
-					aiBone* bone = mesh->mBones[i];
-					std::string boneName(bone->mName.data);
-					int boneIndex = 0;
+					// Allocate an index for a new bone
+					boneIndex = m_BoneCount;
+					m_BoneCount++;
+					BoneInfo bi;
+					m_BoneInfo.push_back(bi);
+					m_BoneInfo[boneIndex].BoneOffset = Mat4FromAssimpMat4(bone->mOffsetMatrix);
+					m_BoneMapping[boneName] = boneIndex;
+				}
+				else
+				{
+					Log::GetLogger()->info("Found existing bone in map");
+					boneIndex = m_BoneMapping[boneName];
+				}
 
-					if (m_BoneMapping.find(boneName) == m_BoneMapping.end())
-					{
-						// Allocate an index for a new bone
-						boneIndex = m_BoneCount;
-						m_BoneCount++;
-						BoneInfo bi;
-						m_BoneInfo.push_back(bi);
-						m_BoneInfo[boneIndex].BoneOffset = Mat4FromAssimpMat4(bone->mOffsetMatrix);
-						m_BoneMapping[boneName] = boneIndex;
-					}
-					else
-					{
-						HZ_MESH_LOG("Found existing bone in map");
-						boneIndex = m_BoneMapping[boneName];
-					}
-
-					for (size_t j = 0; j < bone->mNumWeights; j++)
-					{
-						int VertexID = submesh.BaseVertex + bone->mWeights[j].mVertexId;
-						float Weight = bone->mWeights[j].mWeight;
-						m_AnimatedVertices[VertexID].AddBoneData(boneIndex, Weight);
-					}
+				for (size_t j = 0; j < bone->mNumWeights; j++)
+				{
+					int VertexID = submesh.BaseVertex + bone->mWeights[j].mVertexId;
+					float Weight = bone->mWeights[j].mWeight;
+					m_AnimatedVertices[VertexID].AddBoneData(boneIndex, Weight);
 				}
 			}
 		}
@@ -220,7 +192,7 @@ namespace Hazel {
 		// Materials
 		if (scene->HasMaterials())
 		{
-			HZ_MESH_LOG("---- Materials - {0} ----", filename);
+			Log::GetLogger()->info("---- Materials - {0} ----", m_FilePath);
 
 			m_Textures.resize(scene->mNumMaterials);
 			m_Materials.resize(scene->mNumMaterials);
@@ -229,13 +201,13 @@ namespace Hazel {
 				auto aiMaterial = scene->mMaterials[i];
 				auto aiMaterialName = aiMaterial->GetName();
 
-				auto mi = CreateRef<MaterialInstance>(m_BaseMaterial);
+				auto mi = new Material(); // m_BaseMaterial
 				m_Materials[i] = mi;
 
-				HZ_MESH_LOG("  {0} (Index = {1})", aiMaterialName.data, i);
+				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
 				aiString aiTexPath;
 				uint32_t textureCount = aiMaterial->GetTextureCount(aiTextureType_DIFFUSE);
-				HZ_MESH_LOG("    TextureCount = {0}", textureCount);
+				Log::GetLogger()->info("    TextureCount = {0}", textureCount);
 
 				aiColor3D aiColor;
 				aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor);
@@ -247,89 +219,89 @@ namespace Hazel {
 				// float roughness = 1.0f - shininess * 0.01f;
 				// roughness *= roughness;
 				float roughness = 1.0f - glm::sqrt(shininess / 100.0f);
-				HZ_MESH_LOG("    COLOR = {0}, {1}, {2}", aiColor.r, aiColor.g, aiColor.b);
-				HZ_MESH_LOG("    ROUGHNESS = {0}", roughness);
+				Log::GetLogger()->info("    COLOR = {0}, {1}, {2}", aiColor.r, aiColor.g, aiColor.b);
+				Log::GetLogger()->info("    ROUGHNESS = {0}", roughness);
 				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
 				if (hasAlbedoMap)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
-					std::filesystem::path path = filename;
+					std::filesystem::path path = m_FilePath;
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					HZ_MESH_LOG("    Albedo map path = {0}", texturePath);
-					auto texture = Texture2D::Create(texturePath, true);
-					if (texture->Loaded())
+					Log::GetLogger()->info("    Albedo map path = {0}", texturePath);
+					auto texture = new Texture(texturePath.c_str(), false);
+					if (texture->IsLoaded())
 					{
 						m_Textures[i] = texture;
-						mi->Set("u_AlbedoTexture", m_Textures[i]);
-						mi->Set("u_AlbedoTexToggle", 1.0f);
+						m_MeshShader->setInt("u_AlbedoTexture", m_Textures[i]->GetID());
+						m_MeshShader->setFloat("u_AlbedoTexToggle", 1.0f);
 					}
 					else
 					{
-						HZ_CORE_ERROR("Could not load texture: {0}", texturePath);
+						Log::GetLogger()->error("Could not load texture: {0}", texturePath);
 						// Fallback to albedo color
-						mi->Set("u_AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
+						m_MeshShader->setVec3("u_AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
 					}
 				}
 				else
 				{
-					mi->Set("u_AlbedoColor", glm::vec3 { aiColor.r, aiColor.g, aiColor.b });
-					HZ_MESH_LOG("    No albedo map");
+					m_MeshShader->setVec3("u_AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
+					Log::GetLogger()->info("    No albedo map");
 				}
 
 				// Normal maps
-				mi->Set("u_NormalTexToggle", 0.0f);
+				m_MeshShader->setFloat("u_NormalTexToggle", 0.0f);
 				if (aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &aiTexPath) == AI_SUCCESS)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
-					std::filesystem::path path = filename;
+					std::filesystem::path path = m_FilePath;
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					HZ_MESH_LOG("    Normal map path = {0}", texturePath);
-					auto texture = Texture2D::Create(texturePath);
-					if (texture->Loaded())
+					Log::GetLogger()->info("    Normal map path = {0}", texturePath);
+					auto texture = new Texture(texturePath.c_str(), false);
+					if (texture->IsLoaded())
 					{
-						mi->Set("u_NormalTexture", texture);
-						mi->Set("u_NormalTexToggle", 1.0f);
+						m_MeshShader->setInt("u_NormalTexture", texture->GetID());
+						m_MeshShader->setFloat("u_NormalTexToggle", 1.0f);
 					}
 					else
 					{
-						HZ_CORE_ERROR("    Could not load texture: {0}", texturePath);
+						Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
 					}
 				}
 				else
 				{
-					HZ_MESH_LOG("    No normal map");
+					Log::GetLogger()->info("    No normal map");
 				}
 
 				// Roughness map
-				// mi->Set("u_Roughness", 1.0f);
-				// mi->Set("u_RoughnessTexToggle", 0.0f);
+				// m_MeshShader->setFloat("u_Roughness", 1.0f);
+				// m_MeshShader->setFloat("u_RoughnessTexToggle", 0.0f);
 				if (aiMaterial->GetTexture(aiTextureType_SHININESS, 0, &aiTexPath) == AI_SUCCESS)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
-					std::filesystem::path path = filename;
+					std::filesystem::path path = m_FilePath;
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					HZ_MESH_LOG("    Roughness map path = {0}", texturePath);
-					auto texture = Texture2D::Create(texturePath);
-					if (texture->Loaded())
+					Log::GetLogger()->info("    Roughness map path = {0}", texturePath);
+					auto texture = new Texture(texturePath.c_str(), false);
+					if (texture->IsLoaded())
 					{
-						mi->Set("u_RoughnessTexture", texture);
-						mi->Set("u_RoughnessTexToggle", 1.0f);
+						m_MeshShader->setInt("u_RoughnessTexture", texture->GetID());
+						m_MeshShader->setFloat("u_RoughnessTexToggle", 1.0f);
 					}
 					else
 					{
-						HZ_CORE_ERROR("    Could not load texture: {0}", texturePath);
+						Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
 					}
 				}
 				else
 				{
-					HZ_MESH_LOG("    No roughness map");
-					mi->Set("u_Roughness", roughness);
+					Log::GetLogger()->info("    No roughness map");
+					m_MeshShader->setFloat("u_Roughness", roughness);
 				}
 
 #if 0
@@ -345,18 +317,18 @@ namespace Hazel {
 					auto texture = Texture2D::Create(texturePath);
 					if (texture->Loaded())
 					{
-						HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
+						Log::GetLogger()->info("    Metalness map path = {0}", texturePath);
 						mi->Set("u_MetalnessTexture", texture);
-						mi->Set("u_MetalnessTexToggle", 1.0f);
+						m_MeshShader->setFloat("u_MetalnessTexToggle", 1.0f);
 					}
 					else
 					{
-						HZ_CORE_ERROR("Could not load texture: {0}", texturePath);
+						Log::GetLogger()->error("Could not load texture: {0}", texturePath);
 					}
 				}
 				else
 				{
-					HZ_MESH_LOG("    No metalness texture");
+					Log::GetLogger()->info("    No metalness texture");
 					mi->Set("u_Metalness", metalness);
 				}
 #endif
@@ -367,53 +339,53 @@ namespace Hazel {
 					auto prop = aiMaterial->mProperties[i];
 
 #if DEBUG_PRINT_ALL_PROPS
-					HZ_MESH_LOG("Material Property:");
-					HZ_MESH_LOG("  Name = {0}", prop->mKey.data);
-					// HZ_MESH_LOG("  Type = {0}", prop->mType);
-					// HZ_MESH_LOG("  Size = {0}", prop->mDataLength);
+					Log::GetLogger()->info("Material Property:");
+					Log::GetLogger()->info("  Name = {0}", prop->mKey.data);
+					// Log::GetLogger()->info("  Type = {0}", prop->mType);
+					// Log::GetLogger()->info("  Size = {0}", prop->mDataLength);
 					float data = *(float*)prop->mData;
-					HZ_MESH_LOG("  Value = {0}", data);
+					Log::GetLogger()->info("  Value = {0}", data);
 
 					switch (prop->mSemantic)
 					{
 					case aiTextureType_NONE:
-						HZ_MESH_LOG("  Semantic = aiTextureType_NONE");
+						Log::GetLogger()->info("  Semantic = aiTextureType_NONE");
 						break;
 					case aiTextureType_DIFFUSE:
-						HZ_MESH_LOG("  Semantic = aiTextureType_DIFFUSE");
+						Log::GetLogger()->info("  Semantic = aiTextureType_DIFFUSE");
 						break;
 					case aiTextureType_SPECULAR:
-						HZ_MESH_LOG("  Semantic = aiTextureType_SPECULAR");
+						Log::GetLogger()->info("  Semantic = aiTextureType_SPECULAR");
 						break;
 					case aiTextureType_AMBIENT:
-						HZ_MESH_LOG("  Semantic = aiTextureType_AMBIENT");
+						Log::GetLogger()->info("  Semantic = aiTextureType_AMBIENT");
 						break;
 					case aiTextureType_EMISSIVE:
-						HZ_MESH_LOG("  Semantic = aiTextureType_EMISSIVE");
+						Log::GetLogger()->info("  Semantic = aiTextureType_EMISSIVE");
 						break;
 					case aiTextureType_HEIGHT:
-						HZ_MESH_LOG("  Semantic = aiTextureType_HEIGHT");
+						Log::GetLogger()->info("  Semantic = aiTextureType_HEIGHT");
 						break;
 					case aiTextureType_NORMALS:
-						HZ_MESH_LOG("  Semantic = aiTextureType_NORMALS");
+						Log::GetLogger()->info("  Semantic = aiTextureType_NORMALS");
 						break;
 					case aiTextureType_SHININESS:
-						HZ_MESH_LOG("  Semantic = aiTextureType_SHININESS");
+						Log::GetLogger()->info("  Semantic = aiTextureType_SHININESS");
 						break;
 					case aiTextureType_OPACITY:
-						HZ_MESH_LOG("  Semantic = aiTextureType_OPACITY");
+						Log::GetLogger()->info("  Semantic = aiTextureType_OPACITY");
 						break;
 					case aiTextureType_DISPLACEMENT:
-						HZ_MESH_LOG("  Semantic = aiTextureType_DISPLACEMENT");
+						Log::GetLogger()->info("  Semantic = aiTextureType_DISPLACEMENT");
 						break;
 					case aiTextureType_LIGHTMAP:
-						HZ_MESH_LOG("  Semantic = aiTextureType_LIGHTMAP");
+						Log::GetLogger()->info("  Semantic = aiTextureType_LIGHTMAP");
 						break;
 					case aiTextureType_REFLECTION:
-						HZ_MESH_LOG("  Semantic = aiTextureType_REFLECTION");
+						Log::GetLogger()->info("  Semantic = aiTextureType_REFLECTION");
 						break;
 					case aiTextureType_UNKNOWN:
-						HZ_MESH_LOG("  Semantic = aiTextureType_UNKNOWN");
+						Log::GetLogger()->info("  Semantic = aiTextureType_UNKNOWN");
 						break;
 					}
 #endif
@@ -429,22 +401,22 @@ namespace Hazel {
 							metalnessTextureFound = true;
 
 							// TODO: Temp - this should be handled by Hazel's filesystem
-							std::filesystem::path path = filename;
+							std::filesystem::path path = m_FilePath;
 							auto parentPath = path.parent_path();
 							parentPath /= str;
 							std::string texturePath = parentPath.string();
-							HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
-							auto texture = Texture2D::Create(texturePath);
-							if (texture->Loaded())
+							Log::GetLogger()->info("    Metalness map path = {0}", texturePath);
+							auto texture = new Texture(texturePath.c_str(), false);
+							if (texture->IsLoaded())
 							{
-								mi->Set("u_MetalnessTexture", texture);
-								mi->Set("u_MetalnessTexToggle", 1.0f);
+								m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
+								m_MeshShader->setFloat("u_MetalnessTexToggle", 1.0f);
 							}
 							else
 							{
-								HZ_CORE_ERROR("    Could not load texture: {0}", texturePath);
-								mi->Set("u_Metalness", metalness);
-								mi->Set("u_MetalnessTexToggle", 0.0f);
+								Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
+								m_MeshShader->setFloat("u_Metalness", metalness);
+								m_MeshShader->setFloat("u_MetalnessTexToggle", 0.0f);
 							}
 							break;
 						}
@@ -453,67 +425,49 @@ namespace Hazel {
 
 				if (!metalnessTextureFound)
 				{
-					HZ_MESH_LOG("    No metalness map");
+					Log::GetLogger()->info("    No metalness map");
 
-					mi->Set("u_Metalness", metalness);
-					mi->Set("u_MetalnessTexToggle", 0.0f);
+					m_MeshShader->setFloat("u_Metalness", metalness);
+					m_MeshShader->setFloat("u_MetalnessTexToggle", 0.0f);
 				}
 			}
-			HZ_MESH_LOG("------------------------");
+			Log::GetLogger()->info("------------------------");
 		}
 
-		m_VertexArray = VertexArray::Create();
-		if (m_IsAnimated)
-		{
-			auto vb = VertexBuffer::Create(m_AnimatedVertices.data(), m_AnimatedVertices.size() * sizeof(AnimatedVertex));
-			vb->SetLayout({
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float3, "a_Normal" },
-				{ ShaderDataType::Float3, "a_Tangent" },
-				{ ShaderDataType::Float3, "a_Binormal" },
-				{ ShaderDataType::Float2, "a_TexCoord" },
-				{ ShaderDataType::Int4, "a_BoneIDs" },
-				{ ShaderDataType::Float4, "a_BoneWeights" },
+		m_VertexArray = new OpenGLVertexArray();
+		auto vb = new OpenGLVertexBuffer(m_AnimatedVertices.data(), (uint32_t)m_AnimatedVertices.size() * sizeof(AnimatedVertex));
+		vb->SetLayout({
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float3, "a_Normal" },
+			{ ShaderDataType::Float3, "a_Tangent" },
+			{ ShaderDataType::Float3, "a_Binormal" },
+			{ ShaderDataType::Float2, "a_TexCoord" },
+			{ ShaderDataType::Int4, "a_BoneIDs" },
+			{ ShaderDataType::Float4, "a_BoneWeights" },
 			});
-			m_VertexArray->AddVertexBuffer(vb);
-		}
-		else
-		{
-			auto vb = VertexBuffer::Create(m_StaticVertices.data(), m_StaticVertices.size() * sizeof(Vertex));
-			vb->SetLayout({
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float3, "a_Normal" },
-				{ ShaderDataType::Float3, "a_Tangent" },
-				{ ShaderDataType::Float3, "a_Binormal" },
-				{ ShaderDataType::Float2, "a_TexCoord" },
-			});
-			m_VertexArray->AddVertexBuffer(vb);
-		}
+		m_VertexArray->AddVertexBuffer(vb);
 
-		auto ib = IndexBuffer::Create(m_Indices.data(), m_Indices.size() * sizeof(Index));
+		auto ib = new OpenGLIndexBuffer(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
 		m_VertexArray->SetIndexBuffer(ib);
 	}
 
-	Mesh::~Mesh()
+	MeshAnimPBR::~MeshAnimPBR()
 	{
 	}
 
-	void Mesh::OnUpdate(Timestep ts)
+	void MeshAnimPBR::OnUpdate(float ts)
 	{
-		if (m_IsAnimated)
+		if (m_AnimationPlaying)
 		{
-			if (m_AnimationPlaying)
-			{
-				m_WorldTime += ts;
+			m_WorldTime += ts;
 
-				float ticksPerSecond = (float)(m_Scene->mAnimations[0]->mTicksPerSecond != 0 ? m_Scene->mAnimations[0]->mTicksPerSecond : 25.0f) * m_TimeMultiplier;
-				m_AnimationTime += ts * ticksPerSecond;
-				m_AnimationTime = fmod(m_AnimationTime, (float)m_Scene->mAnimations[0]->mDuration);
-			}
-
-			// TODO: We only need to recalc bones if rendering has been requested at the current animation frame
-			BoneTransform(m_AnimationTime);
+			float ticksPerSecond = (float)(m_Scene->mAnimations[0]->mTicksPerSecond != 0 ? m_Scene->mAnimations[0]->mTicksPerSecond : 25.0f) * m_TimeMultiplier;
+			m_AnimationTime += ts * ticksPerSecond;
+			m_AnimationTime = fmod(m_AnimationTime, (float)m_Scene->mAnimations[0]->mDuration);
 		}
+
+		// TODO: We only need to recalc bones if rendering has been requested at the current animation frame
+		BoneTransform(m_AnimationTime);
 	}
 
 	static std::string LevelToSpaces(uint32_t level)
@@ -524,7 +478,7 @@ namespace Hazel {
 		return result;
 	}
 
-	void Mesh::TraverseNodes(aiNode* node, const glm::mat4& parentTransform, uint32_t level)
+	void MeshAnimPBR::TraverseNodes(aiNode* node, const glm::mat4& parentTransform, uint32_t level)
 	{
 		glm::mat4 transform = parentTransform * Mat4FromAssimpMat4(node->mTransformation);
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
@@ -535,13 +489,13 @@ namespace Hazel {
 			submesh.Transform = transform;
 		}
 
-		// HZ_MESH_LOG("{0} {1}", LevelToSpaces(level), node->mName.C_Str());
+		// Log::GetLogger()->info("{0} {1}", LevelToSpaces(level), node->mName.C_Str());
 
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
 			TraverseNodes(node->mChildren[i], transform, level + 1);
 	}
 
-	uint32_t Mesh::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
+	uint32_t MeshAnimPBR::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
 		for (uint32_t i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
 		{
@@ -553,9 +507,10 @@ namespace Hazel {
 	}
 
 
-	uint32_t Mesh::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
+	uint32_t MeshAnimPBR::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
-		HZ_CORE_ASSERT(pNodeAnim->mNumRotationKeys > 0);
+		if (pNodeAnim->mNumRotationKeys <= 0)
+			Log::GetLogger()->error("pNodeAnim->mNumRotationKeys <= 0");
 
 		for (uint32_t i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++)
 		{
@@ -567,9 +522,10 @@ namespace Hazel {
 	}
 
 
-	uint32_t Mesh::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
+	uint32_t MeshAnimPBR::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
-		HZ_CORE_ASSERT(pNodeAnim->mNumScalingKeys > 0);
+		if (pNodeAnim->mNumScalingKeys <= 0)
+			Log::GetLogger()->error("pNodeAnim->mNumScalingKeys <= 0");
 
 		for (uint32_t i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++)
 		{
@@ -581,7 +537,7 @@ namespace Hazel {
 	}
 
 
-	glm::vec3 Mesh::InterpolateTranslation(float animationTime, const aiNodeAnim* nodeAnim)
+	glm::vec3 MeshAnimPBR::InterpolateTranslation(float animationTime, const aiNodeAnim* nodeAnim)
 	{
 		if (nodeAnim->mNumPositionKeys == 1)
 		{
@@ -592,12 +548,18 @@ namespace Hazel {
 
 		uint32_t PositionIndex = FindPosition(animationTime, nodeAnim);
 		uint32_t NextPositionIndex = (PositionIndex + 1);
-		HZ_CORE_ASSERT(NextPositionIndex < nodeAnim->mNumPositionKeys);
+
+		if (NextPositionIndex >= nodeAnim->mNumPositionKeys)
+			Log::GetLogger()->error("NextPositionIndex >= nodeAnim->mNumPositionKeys");
+
 		float DeltaTime = (float)(nodeAnim->mPositionKeys[NextPositionIndex].mTime - nodeAnim->mPositionKeys[PositionIndex].mTime);
 		float Factor = (animationTime - (float)nodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
 		if (Factor < 0.0f)
 			Factor = 0.0f;
-		HZ_CORE_ASSERT(Factor <= 1.0f, "Factor must be below 1.0f");
+
+		if (Factor > 1.0f)
+			Log::GetLogger()->error("Factor must be below 1.0f");
+
 		const aiVector3D& Start = nodeAnim->mPositionKeys[PositionIndex].mValue;
 		const aiVector3D& End = nodeAnim->mPositionKeys[NextPositionIndex].mValue;
 		aiVector3D Delta = End - Start;
@@ -606,7 +568,7 @@ namespace Hazel {
 	}
 
 
-	glm::quat Mesh::InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim)
+	glm::quat MeshAnimPBR::InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim)
 	{
 		if (nodeAnim->mNumRotationKeys == 1)
 		{
@@ -617,12 +579,19 @@ namespace Hazel {
 
 		uint32_t RotationIndex = FindRotation(animationTime, nodeAnim);
 		uint32_t NextRotationIndex = (RotationIndex + 1);
-		HZ_CORE_ASSERT(NextRotationIndex < nodeAnim->mNumRotationKeys);
+
+		if (NextRotationIndex >= nodeAnim->mNumRotationKeys)
+			Log::GetLogger()->error("NextRotationIndex >= nodeAnim->mNumRotationKeys");
+
+
 		float DeltaTime = (float)(nodeAnim->mRotationKeys[NextRotationIndex].mTime - nodeAnim->mRotationKeys[RotationIndex].mTime);
 		float Factor = (animationTime - (float)nodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
 		if (Factor < 0.0f)
 			Factor = 0.0f;
-		HZ_CORE_ASSERT(Factor <= 1.0f, "Factor must be below 1.0f");
+
+		if (Factor > 1.0f)
+			Log::GetLogger()->error("Factor must be below 1.0f");
+
 		const aiQuaternion& StartRotationQ = nodeAnim->mRotationKeys[RotationIndex].mValue;
 		const aiQuaternion& EndRotationQ = nodeAnim->mRotationKeys[NextRotationIndex].mValue;
 		auto q = aiQuaternion();
@@ -632,7 +601,7 @@ namespace Hazel {
 	}
 
 
-	glm::vec3 Mesh::InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim)
+	glm::vec3 MeshAnimPBR::InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim)
 	{
 		if (nodeAnim->mNumScalingKeys == 1)
 		{
@@ -643,12 +612,18 @@ namespace Hazel {
 
 		uint32_t index = FindScaling(animationTime, nodeAnim);
 		uint32_t nextIndex = (index + 1);
-		HZ_CORE_ASSERT(nextIndex < nodeAnim->mNumScalingKeys);
+
+		if (nextIndex >= nodeAnim->mNumScalingKeys)
+			Log::GetLogger()->error("nextIndex >= nodeAnim->mNumScalingKeys");
+
 		float deltaTime = (float)(nodeAnim->mScalingKeys[nextIndex].mTime - nodeAnim->mScalingKeys[index].mTime);
 		float factor = (animationTime - (float)nodeAnim->mScalingKeys[index].mTime) / deltaTime;
 		if (factor < 0.0f)
 			factor = 0.0f;
-		HZ_CORE_ASSERT(factor <= 1.0f, "Factor must be below 1.0f");
+
+		if (factor > 1.0f)
+			Log::GetLogger()->error("Factor must be below 1.0f");
+
 		const auto& start = nodeAnim->mScalingKeys[index].mValue;
 		const auto& end = nodeAnim->mScalingKeys[nextIndex].mValue;
 		auto delta = end - start;
@@ -656,7 +631,7 @@ namespace Hazel {
 		return { aiVec.x, aiVec.y, aiVec.z };
 	}
 
-	void Mesh::ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& parentTransform)
+	void MeshAnimPBR::ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& parentTransform)
 	{
 		std::string name(pNode->mName.data);
 		const aiAnimation* animation = m_Scene->mAnimations[0];
@@ -689,7 +664,7 @@ namespace Hazel {
 			ReadNodeHierarchy(AnimationTime, pNode->mChildren[i], transform);
 	}
 
-	const aiNodeAnim* Mesh::FindNodeAnim(const aiAnimation* animation, const std::string& nodeName)
+	const aiNodeAnim* MeshAnimPBR::FindNodeAnim(const aiAnimation* animation, const std::string& nodeName)
 	{
 		for (uint32_t i = 0; i < animation->mNumChannels; i++)
 		{
@@ -700,7 +675,7 @@ namespace Hazel {
 		return nullptr;
 	} 
 
-	void Mesh::BoneTransform(float time)
+	void MeshAnimPBR::BoneTransform(float time)
 	{
 		ReadNodeHierarchy(time, m_Scene->mRootNode, glm::mat4(1.0f));
 		m_BoneTransforms.resize(m_BoneCount);
@@ -708,41 +683,24 @@ namespace Hazel {
 			m_BoneTransforms[i] = m_BoneInfo[i].FinalTransformation;
 	}
 
-	void Mesh::DumpVertexBuffer()
+	void MeshAnimPBR::DumpVertexBuffer()
 	{
 		// TODO: Convert to ImGui
-		HZ_MESH_LOG("------------------------------------------------------");
-		HZ_MESH_LOG("Vertex Buffer Dump");
-		HZ_MESH_LOG("Mesh: {0}", m_FilePath);
-		if (m_IsAnimated)
+		Log::GetLogger()->info("------------------------------------------------------");
+		Log::GetLogger()->info("Vertex Buffer Dump");
+		Log::GetLogger()->info("Mesh: {0}", m_FilePath);
+		for (size_t i = 0; i < m_AnimatedVertices.size(); i++)
 		{
-			for (size_t i = 0; i < m_AnimatedVertices.size(); i++)
-			{
-				auto& vertex = m_AnimatedVertices[i];
-				HZ_MESH_LOG("Vertex: {0}", i);
-				HZ_MESH_LOG("Position: {0}, {1}, {2}", vertex.Position.x, vertex.Position.y, vertex.Position.z);
-				HZ_MESH_LOG("Normal: {0}, {1}, {2}", vertex.Normal.x, vertex.Normal.y, vertex.Normal.z);
-				HZ_MESH_LOG("Binormal: {0}, {1}, {2}", vertex.Binormal.x, vertex.Binormal.y, vertex.Binormal.z);
-				HZ_MESH_LOG("Tangent: {0}, {1}, {2}", vertex.Tangent.x, vertex.Tangent.y, vertex.Tangent.z);
-				HZ_MESH_LOG("TexCoord: {0}, {1}", vertex.Texcoord.x, vertex.Texcoord.y);
-				HZ_MESH_LOG("--");
-			}
+			auto& vertex = m_AnimatedVertices[i];
+			Log::GetLogger()->info("Vertex: {0}", i);
+			Log::GetLogger()->info("Position: {0}, {1}, {2}", vertex.Position.x, vertex.Position.y, vertex.Position.z);
+			Log::GetLogger()->info("Normal: {0}, {1}, {2}", vertex.Normal.x, vertex.Normal.y, vertex.Normal.z);
+			Log::GetLogger()->info("Binormal: {0}, {1}, {2}", vertex.Binormal.x, vertex.Binormal.y, vertex.Binormal.z);
+			Log::GetLogger()->info("Tangent: {0}, {1}, {2}", vertex.Tangent.x, vertex.Tangent.y, vertex.Tangent.z);
+			Log::GetLogger()->info("TexCoord: {0}, {1}", vertex.Texcoord.x, vertex.Texcoord.y);
+			Log::GetLogger()->info("--");
 		}
-		else
-		{
-			for (size_t i = 0; i < m_StaticVertices.size(); i++)
-			{
-				auto& vertex = m_StaticVertices[i];
-				HZ_MESH_LOG("Vertex: {0}", i);
-				HZ_MESH_LOG("Position: {0}, {1}, {2}", vertex.Position.x, vertex.Position.y, vertex.Position.z);
-				HZ_MESH_LOG("Normal: {0}, {1}, {2}", vertex.Normal.x, vertex.Normal.y, vertex.Normal.z);
-				HZ_MESH_LOG("Binormal: {0}, {1}, {2}", vertex.Binormal.x, vertex.Binormal.y, vertex.Binormal.z);
-				HZ_MESH_LOG("Tangent: {0}, {1}, {2}", vertex.Tangent.x, vertex.Tangent.y, vertex.Tangent.z);
-				HZ_MESH_LOG("TexCoord: {0}, {1}", vertex.Texcoord.x, vertex.Texcoord.y);
-				HZ_MESH_LOG("--");
-			}
-		}
-		HZ_MESH_LOG("------------------------------------------------------");
+		Log::GetLogger()->info("------------------------------------------------------");
 	}
 
 }

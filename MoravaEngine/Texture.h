@@ -22,6 +22,7 @@ public:
 	void Clear();
 	inline unsigned int GetWidth() const { return m_Width; };
 	inline unsigned int GetMaxY() const { return m_Height; };
+	inline bool IsLoaded() const { return m_Buffer ? true : false; }; // used in Hazel::Mesh
 
 	// Getters
 	int GetRed(int x, int z);
