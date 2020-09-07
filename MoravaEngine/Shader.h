@@ -17,9 +17,11 @@ public:
 	Shader();
 	Shader(const char* vertexLocation, const char* fragmentLocation);
 	Shader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation);
+	Shader(const char* computeLocation);
 	void CreateFromString(const char* vertexCode, const char* fragmentCode);
 	void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);
 	void CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation);
+	void CreateFromFileCompute(const char* computeLocation);
 	static std::string ReadFile(const char* fileLocation);
 	void Validate();
 	void Bind();
@@ -56,6 +58,7 @@ protected:
 private:
 	void CompileShader(const char* vertexCode, const char* fragmentCode);
 	void CompileShader(const char* vertexCode, const char* geometryCode, const char* fragmentCode);
+	void CompileComputeShader(const char* computeCode);
 	void AddShader(GLuint programID, const char* shaderCode, GLenum shaderType);
 
 	const char* GetShaderTypeNameFromEnum(const GLenum shaderType);

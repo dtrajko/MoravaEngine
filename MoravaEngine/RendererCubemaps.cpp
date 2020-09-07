@@ -101,7 +101,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     glm::mat4 model = glm::mat4(1.0f);
  
     int terrainWidth = sceneCubemaps->GetTerrain()->GetHeightMap()->GetWidth();
-    int terrainHeight = sceneCubemaps->GetTerrain()->GetHeightMap()->GetMaxY();
+    int terrainHeight = sceneCubemaps->GetTerrain()->GetHeightMap()->GetHeight();
 
     shaders["cubemaps"]->Bind();
 

@@ -29,13 +29,13 @@ Material::Material()
 	m_TexturePlaceholder = TextureLoader::Get()->GetTexture("Textures/plain.png", false, false);
 }
 
-Material::Material(TextureInfo textureInfoGold, float specularIntensity, float shininess) : Material(specularIntensity, shininess)
+Material::Material(TextureInfo textureInfo, float specularIntensity, float shininess) : Material(specularIntensity, shininess)
 {
-	m_TextureAlbedo    = TextureLoader::Get()->GetTexture(textureInfoGold.albedo.c_str(), false, false);
-	m_TextureNormal    = TextureLoader::Get()->GetTexture(textureInfoGold.normal.c_str(), false, false);
-	m_TextureMetallic  = TextureLoader::Get()->GetTexture(textureInfoGold.metallic.c_str(), false, false);
-	m_TextureRoughness = TextureLoader::Get()->GetTexture(textureInfoGold.roughness.c_str(), false, false);
-	m_TextureAO        = TextureLoader::Get()->GetTexture(textureInfoGold.ao.c_str(), false, false);
+	m_TextureAlbedo    = TextureLoader::Get()->GetTexture(textureInfo.albedo.c_str(), false, false);
+	m_TextureNormal    = TextureLoader::Get()->GetTexture(textureInfo.normal.c_str(), false, false);
+	m_TextureMetallic  = TextureLoader::Get()->GetTexture(textureInfo.metallic.c_str(), false, false);
+	m_TextureRoughness = TextureLoader::Get()->GetTexture(textureInfo.roughness.c_str(), false, false);
+	m_TextureAO        = TextureLoader::Get()->GetTexture(textureInfo.ao.c_str(), false, false);
 }
 
 Material::Material(float specularIntensity, float shininess) : Material()

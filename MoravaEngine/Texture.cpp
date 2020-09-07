@@ -206,6 +206,20 @@ void Texture::Clear()
 	m_FileLocation = "";
 }
 
+unsigned int Texture::CalculateMipMapCount(unsigned int width, unsigned int height)
+{
+	unsigned int levels = 1;
+	while ((width | height) >> levels)
+		levels++;
+
+	return levels;
+}
+
+unsigned int Texture::GetMipLevelCount()
+{
+	return CalculateMipMapCount(m_Width, m_Height);
+}
+
 Texture::~Texture()
 {
 	Clear();

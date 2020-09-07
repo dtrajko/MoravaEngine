@@ -45,11 +45,11 @@ public:
 	// PBR/IBL Material Workflow
 	Material(TextureInfo textureInfoGold, float specularIntensity, float shininess);
 	void BindTextures(unsigned int slot);
-	inline const Texture* GetTextureAlbedo()    const { return m_TextureAlbedo;    };
-	inline const Texture* GetTextureNormal()    const { return m_TextureNormal;    };
-	inline const Texture* GetTextureMetallic()  const { return m_TextureMetallic;  };
-	inline const Texture* GetTextureRoughness() const { return m_TextureRoughness; };
-	inline const Texture* GetTextureAO()        const { return m_TextureAO;        };
+	inline Texture* GetTextureAlbedo()    const { return m_TextureAlbedo;    };
+	inline Texture* GetTextureNormal()    const { return m_TextureNormal;    };
+	inline Texture* GetTextureMetallic()  const { return m_TextureMetallic;  };
+	inline Texture* GetTextureRoughness() const { return m_TextureRoughness; };
+	inline Texture* GetTextureAO()        const { return m_TextureAO;        };
 
 public:
 	int m_AlbedoMap;      // sampler2D, texture slot - diffuse/albedo

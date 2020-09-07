@@ -22,7 +22,7 @@ TerrainHeightMap::TerrainHeightMap(const char* heightMapPath, float tilingFactor
 	{
 		m_TxColorMap = new TextureSampler(colorMapPath);
 		m_TxColorMap->Load();
-		printf("Color map texture width=%d height=%d\n", m_TxColorMap->GetWidth(), m_TxColorMap->GetMaxY());
+		printf("Color map texture width=%d height=%d\n", m_TxColorMap->GetWidth(), m_TxColorMap->GetHeight());
 	}
 
 	Generate(m_Scale);
@@ -40,7 +40,7 @@ void TerrainHeightMap::Generate(glm::vec3 scale)
 	m_ScalePrev = m_Scale;
 
 	int hiMapWidth = m_TxHeightMap->GetWidth();
-	int hiMapHeight = m_TxHeightMap->GetMaxY();
+	int hiMapHeight = m_TxHeightMap->GetHeight();
 	unsigned int pixelCount = hiMapWidth * hiMapHeight;
 	unsigned int vertexStride = (unsigned int)(sizeof(VertexTBN) / sizeof(float));
 
@@ -75,8 +75,8 @@ void TerrainHeightMap::Generate(glm::vec3 scale)
 			if (m_TxColorMap != nullptr)
 			{
 				// use texture coords for color map
-				m_Vertices[vertexPointer + 3] = 1.0f - GetMaxY(x, z) * (1.0f / (float)m_TxColorMap->GetMaxY());
-				m_Vertices[vertexPointer + 4] = 1.0f - GetMaxY(x, z) * (1.0f / (float)m_TxColorMap->GetMaxY());
+				m_Vertices[vertexPointer + 3] = 1.0f - GetMaxY(x, z) * (1.0f / (float)m_TxColorMap->GetHeight());
+				m_Vertices[vertexPointer + 4] = 1.0f - GetMaxY(x, z) * (1.0f / (float)m_TxColorMap->GetHeight());
 			}
 			else
 			{
@@ -155,14 +155,14 @@ void TerrainHeightMap::Generate(glm::vec3 scale)
 float TerrainHeightMap::GetMaxY(int x, int z)
 {
 	x += (int)m_TxHeightMap->GetWidth() / 2;
-	z += (int)m_TxHeightMap->GetMaxY() / 2;
+	z += (int)m_TxHeightMap->GetHeight() / 2;
 
-	if (x < 0 || x >= (int)m_TxHeightMap->GetWidth() || z < 0 || z >= (int)m_TxHeightMap->GetMaxY())
+	if (x < 0 || x >= (int)m_TxHeightMap->GetWidth() || z < 0 || z >= (int)m_TxHeightMap->GetHeight())
 	{
 		return 0.0f;
 	}
 
-	float heightRatio = ((float)(m_TxHeightMap->GetWidth() + m_TxHeightMap->GetMaxY()) / 2.0f) / (float)m_MaxPixelColor;
+	float heightRatio = ((float)(m_TxHeightMap->GetWidth() + m_TxHeightMap->GetHeight()) / 2.0f) / (float)m_MaxPixelColor;
 	heightRatio /= 4.0f;
 
 	int red   = m_TxHeightMap->GetRed(x, z);

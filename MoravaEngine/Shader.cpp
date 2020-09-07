@@ -19,6 +19,11 @@ Shader::Shader(const char* vertexLocation, const char* geometryLocation, const c
 	CreateFromFiles(vertexLocation, geometryLocation, fragmentLocation);
 }
 
+Shader::Shader(const char* computeLocation)
+{
+	CreateFromFileCompute(computeLocation);
+}
+
 void Shader::CreateFromString(const char* vertexCode, const char* fragmentCode)
 {
 	CompileShader(vertexCode, fragmentCode);
@@ -44,6 +49,13 @@ void Shader::CreateFromFiles(const char* vertexLocation, const char* geometryLoc
 	CompileShader(vertexCode, geometryCode, fragmentCode);
 }
 
+void Shader::CreateFromFileCompute(const char* computeLocation)
+{
+	std::string computeString = ReadFile(computeLocation);
+	const char* computeCode = computeString.c_str();
+	CompileComputeShader(computeCode);
+}
+
 std::string Shader::ReadFile(const char* fileLocation)
 {
 	std::string content;
@@ -51,7 +63,6 @@ std::string Shader::ReadFile(const char* fileLocation)
 
 	if (!fileStream.is_open())
 	{
-		// printf("Failed to read '%s'! File doesn't exist.\n", fileLocation);
 		LOG_ERROR("Failed to read '{0}'! File doesn't exist.", fileLocation);
 		return "";
 	}
@@ -65,7 +76,6 @@ std::string Shader::ReadFile(const char* fileLocation)
 
 	fileStream.close();
 
-	// printf("Content loaded from file '%s'\n", fileLocation);
 	LOG_INFO("Content loaded from file '{0}'", fileLocation);
 
 	return content;
@@ -83,12 +93,10 @@ void Shader::Validate()
 	if (!result)
 	{
 		glGetProgramInfoLog(programID, sizeof(eLog), NULL, eLog);
-		// printf("Shader program [ID=%d] validation error: '%s'\n", programID, eLog);
 		LOG_ERROR("Shader program [ID={0}] validation error: '{1}'", programID, eLog);
 		return;
 	}
 
-	// printf("Shader program [ID=%d] validation complete.\n", programID);
 	LOG_INFO("Shader program [ID={0}] validation complete.", programID);
 
 	m_Validated = true;
@@ -108,13 +116,11 @@ void Shader::setBool(const std::string& name, bool value)
 void Shader::setInt(const std::string& name, int value)
 {
 	glUniform1i(GetUniformLocation(name), value);
-	// printf("Shader setInt '%s' => %i\n", name.c_str(), value);
 }
 
 void Shader::setFloat(const std::string& name, float value)
 {
 	glUniform1f(GetUniformLocation(name), value);
-	// printf("Shader setFloat '%s' => %.2ff\n", name.c_str(), value);
 }
 
 void Shader::setVec2(const std::string& name, const glm::vec2& value)
@@ -168,14 +174,12 @@ GLint Shader::GetUniformLocation(const std::string& name)
 
 	if (it != m_UniformLocations.end())
 	{
-		// printf("GetUniformLocation CACHE HIT [name: %s, value: %d]\n", name.c_str(), it->second);
 		return it->second;
 	}
 	else
 	{
 		int uniformLocation = glGetUniformLocation(programID, name.c_str());
 		m_UniformLocations.insert(std::make_pair(name, uniformLocation));
-		// printf("GetUniformLocation CACHE MISS [name: %s, value: %d]\n", name.c_str(), uniformLocation);
 		return uniformLocation;
 	}
 }
@@ -229,7 +233,6 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 
 	if (!programID)
 	{
-		// printf("Error creating shader program!\n");
 		LOG_ERROR("Error creating shader program!");
 		return;
 	}
@@ -246,14 +249,28 @@ void Shader::CompileShader(const char* vertexCode, const char* geometryCode, con
 
 	if (!programID)
 	{
-		// printf("Error creating shader program!\n");
 		LOG_ERROR("Error creating shader program!");
 		return;
 	}
 
-	AddShader(programID, vertexCode, GL_VERTEX_SHADER);
+	AddShader(programID, vertexCode,   GL_VERTEX_SHADER);
 	AddShader(programID, geometryCode, GL_GEOMETRY_SHADER);
 	AddShader(programID, fragmentCode, GL_FRAGMENT_SHADER);
+
+	CompileProgram();
+}
+
+void Shader::CompileComputeShader(const char* computeCode)
+{
+	programID = glCreateProgram();
+
+	if (!programID)
+	{
+		LOG_ERROR("Error creating shader program!");
+		return;
+	}
+
+	AddShader(programID, computeCode, GL_COMPUTE_SHADER);
 
 	CompileProgram();
 }
@@ -285,6 +302,10 @@ void Shader::AddShader(GLuint programID, const char* shaderCode, GLenum shaderTy
 	glShaderSource(shaderID, 1, theCode, codeLength);
 	glCompileShader(shaderID);
 
+	// Log::GetLogger()->info("-- BEGIN shader code --");
+	// Log::GetLogger()->info("{0}", shaderCode);
+	// Log::GetLogger()->info("-- END shader code --");
+
 	GLint result = 0;
 	GLchar eLog[1024] = { 0 };
 
@@ -292,12 +313,10 @@ void Shader::AddShader(GLuint programID, const char* shaderCode, GLenum shaderTy
 	if (!result)
 	{
 		glGetShaderInfoLog(shaderID, sizeof(eLog), NULL, eLog);
-		// printf("%s shader compilation error: '%s'\n", shaderTypeName, eLog);
 		LOG_ERROR("{0} shader compilation error: '{1}'", shaderTypeName, eLog);
 		return;
 	}
 
-	// printf("%s shader compiled.\n", shaderTypeName);
 	LOG_INFO("{0} shader compiled.", shaderTypeName);
 
 	glAttachShader(programID, shaderID);
@@ -314,13 +333,11 @@ void Shader::CompileProgram()
 	if (!result)
 	{
 		glGetProgramInfoLog(programID, sizeof(eLog), NULL, eLog);
-		// printf("Shader program linking error: '%s'\n", eLog);
 		LOG_ERROR("Shader program linking error: '{0}'", eLog);
 		
 		return;
 	}
 
-	// printf("Shader program linking complete.\n");
 	LOG_INFO("Shader program linking complete.");
 
 	GetUniformLocations();

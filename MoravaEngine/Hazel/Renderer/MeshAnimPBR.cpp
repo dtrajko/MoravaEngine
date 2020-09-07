@@ -100,15 +100,16 @@ namespace Hazel {
 		{
 			aiMesh* mesh = scene->mMeshes[m];
 
-			Submesh& submesh = m_Submeshes.emplace_back();
-			submesh.BaseVertex = vertexCount;
-			submesh.BaseIndex = indexCount;
-			submesh.MaterialIndex = mesh->mMaterialIndex;
-			submesh.IndexCount = mesh->mNumFaces * 3;
-			submesh.MeshName = mesh->mName.C_Str();
+			Submesh* submesh = new Submesh();
+			submesh->BaseVertex = vertexCount;
+			submesh->BaseIndex = indexCount;
+			submesh->MaterialIndex = mesh->mMaterialIndex;
+			submesh->IndexCount = mesh->mNumFaces * 3;
+			submesh->MeshName = mesh->mName.C_Str();
+			m_Submeshes.push_back(submesh);
 
 			vertexCount += mesh->mNumVertices;
-			indexCount += submesh.IndexCount;
+			indexCount += submesh->IndexCount;
 
 			if (!mesh->HasPositions())
 				Log::GetLogger()->error("Meshes require positions.");
@@ -152,7 +153,7 @@ namespace Hazel {
 		for (size_t m = 0; m < scene->mNumMeshes; m++)
 		{
 			aiMesh* mesh = scene->mMeshes[m];
-			Submesh& submesh = m_Submeshes[m];
+			Submesh* submesh = m_Submeshes[m];
 
 			for (size_t i = 0; i < mesh->mNumBones; i++)
 			{
@@ -178,7 +179,7 @@ namespace Hazel {
 
 				for (size_t j = 0; j < bone->mNumWeights; j++)
 				{
-					int VertexID = submesh.BaseVertex + bone->mWeights[j].mVertexId;
+					int VertexID = submesh->BaseVertex + bone->mWeights[j].mVertexId;
 					float Weight = bone->mWeights[j].mWeight;
 					m_AnimatedVertices[VertexID].AddBoneData(boneIndex, Weight);
 				}
@@ -465,6 +466,11 @@ namespace Hazel {
 		for (Texture* texture : m_Textures)
 			delete texture;
 
+		for (Submesh* submesh : m_Submeshes)
+			delete submesh;
+
+		delete m_IndexBuffer;
+		delete m_VertexBuffer;
 		delete m_VertexArray;
 
 	}
@@ -498,9 +504,9 @@ namespace Hazel {
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t mesh = node->mMeshes[i];
-			auto& submesh = m_Submeshes[mesh];
-			submesh.NodeName = node->mName.C_Str();
-			submesh.Transform = transform;
+			Submesh* submesh = m_Submeshes[mesh];
+			submesh->NodeName = node->mName.C_Str();
+			submesh->Transform = transform;
 		}
 
 		// Log::GetLogger()->info("{0} {1}", LevelToSpaces(level), node->mName.C_Str());

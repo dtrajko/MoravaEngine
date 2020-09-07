@@ -2,6 +2,7 @@
 
 #include "Scene.h"
 #include "Hazel/Renderer/MeshAnimPBR.h"
+#include "TextureCubemapLite.h"
 
 
 class SceneImGuizmo : public Scene
@@ -25,6 +26,8 @@ private:
 	virtual void SetupModels() override;
 	virtual void SetupFramebuffers() override;
 
+	std::pair<TextureCubemapLite*, TextureCubemapLite*> CreateEnvironmentMap(const std::string& filepath);
+
 	// ImGuizmo
 	float GetSnapValue();
 
@@ -32,5 +35,33 @@ private:
 	int m_GizmoType;
 
 	Hazel::MeshAnimPBR* m_MeshAnimPBR;
+
+	Shader* m_ShaderHazelAnimPBR;
+	Shader* m_ShaderHDR;
+	Shader* m_ShaderEquirectangularConversion;
+	Shader* m_ShaderEnvFiltering;
+	Shader* m_ShaderEnvIrradiance;
+
+	Material* m_BaseMaterial;
+
+	Texture* m_HDR;
+	std::pair<TextureCubemapLite*, TextureCubemapLite*> m_TextureCubemaps;
+
+	bool m_AlbedoTexToggle    = true;
+	bool m_NormalTexToggle    = true;
+	bool m_MetalnessTexToggle = true;
+	bool m_RoughnessTexToggle = true;
+
+	float m_EnvMapRotation = 0.0f;
+	glm::mat4 m_M1911_Transform;
+
+	std::map<std::string, unsigned int> m_SamplerSlots;
+
+	TextureCubemapLite* m_EnvUnfiltered;
+	Texture* m_EnvEquirect;
+	TextureCubemapLite* m_EnvFiltered;
+	TextureCubemapLite* m_IrradianceMap;
+
+	Texture* m_BRDF_LUT;
 
 };

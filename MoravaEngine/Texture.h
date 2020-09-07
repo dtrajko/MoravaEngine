@@ -21,8 +21,10 @@ public:
 	void Unbind();
 	void Clear();
 	inline unsigned int GetWidth() const { return m_Width; };
-	inline unsigned int GetMaxY() const { return m_Height; };
+	inline unsigned int GetHeight() const { return m_Height; };
 	inline bool IsLoaded() const { return m_Buffer ? true : false; }; // used in Hazel::Mesh
+	unsigned int CalculateMipMapCount(unsigned int width, unsigned int height); // used in Hazel::SceneRenderer
+	unsigned int GetMipLevelCount();
 
 	// Getters
 	int GetRed(int x, int z);

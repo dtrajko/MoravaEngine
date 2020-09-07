@@ -132,16 +132,15 @@ namespace Hazel {
 	public:
 		// MeshAnimPBR(const std::string& filename);
 		MeshAnimPBR(const std::string& filename, Shader* shader, Material* material);
-		~MeshAnimPBR();
+		virtual ~MeshAnimPBR() override;
 
 		virtual void Create() override;
 
 		void OnUpdate(float ts);
 		void DumpVertexBuffer();
 
-		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
-		const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
-
+		const std::vector<Submesh*>& GetSubmeshes() const { return m_Submeshes; }
+		const std::vector<Material*>& GetMaterials() const { return m_Materials; }
 		const std::vector<Texture*>& GetTextures() const { return m_Textures; }
 		const std::string& GetFilePath() const { return m_FilePath; }
 
@@ -158,9 +157,16 @@ namespace Hazel {
 		glm::vec3 InterpolateTranslation(float animationTime, const aiNodeAnim* nodeAnim);
 		glm::quat InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim);
 		glm::vec3 InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim);
+
+	public:
+		OpenGLVertexArray* m_VertexArray;
+		OpenGLVertexBuffer* m_VertexBuffer;
+		OpenGLIndexBuffer* m_IndexBuffer;
+		std::vector<glm::mat4> m_BoneTransforms;
+
 	private:
-		std::vector<Submesh> m_Submeshes;
-		
+		std::vector<Submesh*> m_Submeshes;
+
 		std::unique_ptr<Assimp::Importer> m_Importer;
 
 		glm::mat4 m_InverseTransform;
@@ -168,14 +174,9 @@ namespace Hazel {
 		uint32_t m_BoneCount = 0;
 		std::vector<BoneInfo> m_BoneInfo;
 
-		OpenGLVertexArray* m_VertexArray;
-		OpenGLVertexBuffer* m_VertexBuffer;
-		OpenGLIndexBuffer* m_IndexBuffer;
-
 		std::vector<AnimatedVertex> m_AnimatedVertices;
 		std::vector<Index> m_Indices;
 		std::unordered_map<std::string, uint32_t> m_BoneMapping;
-		std::vector<glm::mat4> m_BoneTransforms;
 		const aiScene* m_Scene;
 
 		// Materials
@@ -197,5 +198,6 @@ namespace Hazel {
 
 		friend class Renderer;
 		friend class SceneHierarchyPanel;
+
 	};
 }
