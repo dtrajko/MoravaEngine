@@ -19,8 +19,8 @@
 
 #include <filesystem>
 
-namespace Hazel {
 
+namespace Hazel {
 
 	glm::mat4 Mat4FromAssimpMat4(const aiMatrix4x4& matrix)
 	{
@@ -475,7 +475,7 @@ namespace Hazel {
 
 	}
 
-	void MeshAnimPBR::OnUpdate(float ts)
+	void MeshAnimPBR::OnUpdate(float ts, bool debug)
 	{
 		if (m_AnimationPlaying)
 		{
@@ -484,6 +484,11 @@ namespace Hazel {
 			float ticksPerSecond = (float)(m_Scene->mAnimations[0]->mTicksPerSecond != 0 ? m_Scene->mAnimations[0]->mTicksPerSecond : 25.0f) * m_TimeMultiplier;
 			m_AnimationTime += ts * ticksPerSecond;
 			m_AnimationTime = fmod(m_AnimationTime, (float)m_Scene->mAnimations[0]->mDuration);
+
+			//	if (debug) {
+			//		Log::GetLogger()->info("MeshAnimPBR::OnUpdate ts: {0} m_AnimationTime: {1} mDuration {2} ticksPerSecond {3}",
+			//			ts, m_AnimationTime, m_Scene->mAnimations[0]->mDuration, ticksPerSecond);
+			//	}
 		}
 
 		// TODO: We only need to recalc bones if rendering has been requested at the current animation frame

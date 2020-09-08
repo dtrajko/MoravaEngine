@@ -3,6 +3,8 @@
 #include "Scene.h"
 #include "Hazel/Renderer/MeshAnimPBR.h"
 #include "TextureCubemapLite.h"
+#include "CubeSkybox.h"
+#include "MaterialWorkflowPBR.h"
 
 
 class SceneImGuizmo : public Scene
@@ -26,23 +28,36 @@ private:
 	virtual void SetupModels() override;
 	virtual void SetupFramebuffers() override;
 
+	void SetupShaders(); // Usually in Renderer* classes
+
 	std::pair<TextureCubemapLite*, TextureCubemapLite*> CreateEnvironmentMap(const std::string& filepath);
 
 	// ImGuizmo
 	float GetSnapValue();
 
+private:
 	glm::mat4 m_CubeTransform;
 	int m_GizmoType;
 
-	Hazel::MeshAnimPBR* m_MeshAnimPBR;
-
+	Shader* m_ShaderMain;
+	Shader* m_ShaderBackground;
 	Shader* m_ShaderHazelAnimPBR;
 	Shader* m_ShaderHDR;
 	Shader* m_ShaderEquirectangularConversion;
 	Shader* m_ShaderEnvFiltering;
 	Shader* m_ShaderEnvIrradiance;
 
-	Material* m_BaseMaterial;
+	Hazel::MeshAnimPBR* m_MeshAnimPBRM1911;
+	Hazel::MeshAnimPBR* m_MeshAnimPBRBob;
+	Hazel::MeshAnimPBR* m_MeshAnimPBRBoy;
+
+	Material* m_BaseMaterialM1911;
+	Material* m_BaseMaterialBob;
+	Material* m_BaseMaterialBoy;
+
+	glm::mat4 m_Transform_M1911;
+	glm::mat4 m_Transform_BobLamp;
+	glm::mat4 m_Transform_Boy;
 
 	Texture* m_HDR;
 	std::pair<TextureCubemapLite*, TextureCubemapLite*> m_TextureCubemaps;
@@ -53,7 +68,6 @@ private:
 	bool m_RoughnessTexToggle = true;
 
 	float m_EnvMapRotation = 0.0f;
-	glm::mat4 m_M1911_Transform;
 
 	std::map<std::string, unsigned int> m_SamplerSlots;
 
@@ -63,5 +77,7 @@ private:
 	TextureCubemapLite* m_IrradianceMap;
 
 	Texture* m_BRDF_LUT;
+
+	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
 
 };

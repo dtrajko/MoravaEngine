@@ -168,11 +168,11 @@ void ResourceManager::Init()
 
     // Animated Character (Sebastian Lague / ThinMatrix)
     TextureInfo textureInfoAnimBoy = {};
-    textureInfoAnimBoy.albedo = "Textures/AnimatedCharacterDiffuse.png";
-    textureInfoAnimBoy.normal = "Textures/PBR/plastic/normal.png";
-    textureInfoAnimBoy.metallic = "Textures/PBR/plastic/metallic.png";
+    textureInfoAnimBoy.albedo    = "Models/ThinMatrix/AnimatedCharacter/AnimatedCharacterDiffuse.png";
+    textureInfoAnimBoy.normal    = "Textures/PBR/plastic/normal.png";
+    textureInfoAnimBoy.metallic  = "Textures/PBR/plastic/metallic.png";
     textureInfoAnimBoy.roughness = "Textures/PBR/plastic/roughness.png";
-    textureInfoAnimBoy.ao = "Textures/PBR/plastic/ao.png";
+    textureInfoAnimBoy.ao        = "Textures/PBR/plastic/ao.png";
     s_MaterialInfo.insert(std::make_pair("anim_boy", textureInfoAnimBoy));
 
     // Buddha

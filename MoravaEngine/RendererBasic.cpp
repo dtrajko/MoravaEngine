@@ -75,6 +75,16 @@ void RendererBasic::DisableTransparency()
 	glDisable(GL_BLEND);
 }
 
+void RendererBasic::EnableDepthBuffer()
+{
+	glEnable(GL_DEPTH);
+}
+
+void RendererBasic::DisableDepthBuffer()
+{
+	glDisable(GL_DEPTH);
+}
+
 void RendererBasic::ClearDepthBuffer()
 {
 	glClear(GL_DEPTH_BUFFER_BIT);

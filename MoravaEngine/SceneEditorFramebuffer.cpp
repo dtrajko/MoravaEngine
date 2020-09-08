@@ -1370,11 +1370,11 @@ Mesh* SceneEditorFramebuffer::CreateNewMesh(int meshTypeID, glm::vec3 scale, std
         *name = "ring";
         break;
     case MESH_TYPE_BOB_LAMP:
-        mesh = new SkinnedMesh("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Textures/OGLdev/BobLamp");
+        mesh = new SkinnedMesh("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Models/OGLdev/BobLamp");
         *name = "bob_lamp";
         break;
     case MESH_TYPE_ANIM_BOY:
-        mesh = new SkinnedMesh("Models/AnimatedCharacter.dae", "Textures");
+        mesh = new SkinnedMesh("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", "Textures");
         *name = "anim_boy";
         break;
     case MESH_TYPE_TERRAIN:

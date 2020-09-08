@@ -136,15 +136,17 @@ namespace Hazel {
 
 		virtual void Create() override;
 
-		void OnUpdate(float ts);
+		void OnUpdate(float ts, bool debug);
 		void DumpVertexBuffer();
 
 		const std::vector<Submesh*>& GetSubmeshes() const { return m_Submeshes; }
 		const std::vector<Material*>& GetMaterials() const { return m_Materials; }
 		const std::vector<Texture*>& GetTextures() const { return m_Textures; }
 		const std::string& GetFilePath() const { return m_FilePath; }
-
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
+
+		void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
+
 	private:
 		void BoneTransform(float time);
 		void ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);

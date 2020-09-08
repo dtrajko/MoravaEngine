@@ -24,6 +24,8 @@ public:
 	static void DisableCulling();
 	static void EnableTransparency();
 	static void DisableTransparency();
+	static void EnableDepthBuffer();
+	static void DisableDepthBuffer();
 	static void ClearDepthBuffer();
 	static inline glm::mat4 GetProjectionMatrix() { return s_ProjectionMatrix; };
 	static inline void SetProjectionMatrix(glm::mat4 projectionMatrix) { s_ProjectionMatrix = projectionMatrix; };

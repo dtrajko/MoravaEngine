@@ -19,6 +19,10 @@ void RendererImGuizmo::SetShaders()
 	Shader* shaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
 	shaders.insert(std::make_pair("main", shaderMain));
 	Log::GetLogger()->info("RendererImGuizmo: shaderMain compiled [programID={0}]", shaderMain->GetProgramID());
+
+	Shader* shaderBackground = new Shader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+	shaders.insert(std::make_pair("background", shaderBackground));
+	Log::GetLogger()->info("RendererImGuizmo: shaderBackground compiled [programID={0}]", shaderBackground->GetProgramID());
 }
 
 void RendererImGuizmo::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -34,9 +38,10 @@ void RendererImGuizmo::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 	
 	// Clear the window
-	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+	// glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	/**** Begin Main shader ****/
 	Shader* shaderMain = (Shader*)shaders["main"];
 	shaderMain->Bind();
 
@@ -67,6 +72,15 @@ void RendererImGuizmo::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
 
 	shaderMain->Unbind();
+	/**** End Main shader ****/
+
+	/**** Begin Background shader ****/
+	//	Shader* shaderBackground = shaders["background"];
+	//	shaderBackground->Bind();
+	//	shaderBackground->setMat4("projection", projectionMatrix);
+	//	shaderBackground->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
+	//	shaderBackground->Unbind();
+	/**** End Background shader ****/
 }
 
 void RendererImGuizmo::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
