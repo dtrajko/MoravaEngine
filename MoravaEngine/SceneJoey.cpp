@@ -59,6 +59,9 @@ SceneJoey::SceneJoey()
 
 	m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
 	m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
+
+	m_HDRI_Edit = HDRI_SAN_GIUSEPPE_BRIDGE;
+	m_HDRI_Edit_Prev = m_HDRI_Edit;
 }
 
 void SceneJoey::SetupTextures()
@@ -207,40 +210,102 @@ void SceneJoey::SetSkybox()
 
 void SceneJoey::Update(float timestep, Window& mainWindow)
 {
+	if (m_HDRI_Edit != m_HDRI_Edit_Prev)
+	{
+		if (m_HDRI_Edit == HDRI_GREENWICH_PARK)
+			m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
+		else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE)
+			m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
+		else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH)
+			m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr");
+		else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT)
+			m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr");
+		else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY)
+			m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr");
+		else if (m_HDRI_Edit == HDRI_BIRCHWOOD)
+			m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr");
+		else if (m_HDRI_Edit == HDRI_PINK_SUNRISE)
+			m_MaterialWorkflowPBR->Init("Textures/HDR/pink_sunrise_4k.hdr");
+		else if (m_HDRI_Edit == HDRI_ROOITOU_PARK)
+			m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr");
+		else if (m_HDRI_Edit == HDRI_VENICE_DAWN)
+			m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr");
+
+		m_HDRI_Edit_Prev = m_HDRI_Edit;
+	}
 }
 
 void SceneJoey::UpdateImGui(float timestep, Window& mainWindow)
 {
-	m_CameraPosition = m_Camera->GetPosition();
+	bool p_open = true;
+	ShowExampleAppDockSpace(&p_open, mainWindow);
 
-	ImGui::ColorEdit3("Light Color 0", glm::value_ptr(m_LightColorsNormal[0]));
-	ImGui::SliderFloat3("Light Pos Offset 0", glm::value_ptr(m_LightPositionOffset[0]), -60.0f, 60.0f);
+	ImGui::Begin("Settings");
+	{
+		m_CameraPosition = m_Camera->GetPosition();
 
-	ImGui::ColorEdit3("Light Color 1", glm::value_ptr(m_LightColorsNormal[1]));
-	ImGui::SliderFloat3("Light Pos Offset 1", glm::value_ptr(m_LightPositionOffset[1]), -60.0f, 60.0f);
+		ImGui::ColorEdit3("Light Color 0", glm::value_ptr(m_LightColorsNormal[0]));
+		ImGui::SliderFloat3("Light Pos Offset 0", glm::value_ptr(m_LightPositionOffset[0]), -60.0f, 60.0f);
 
-	ImGui::ColorEdit3("Light Color 2", glm::value_ptr(m_LightColorsNormal[2]));
-	ImGui::SliderFloat3("Light Pos Offset 2", glm::value_ptr(m_LightPositionOffset[2]), -60.0f, 60.0f);
+		ImGui::ColorEdit3("Light Color 1", glm::value_ptr(m_LightColorsNormal[1]));
+		ImGui::SliderFloat3("Light Pos Offset 1", glm::value_ptr(m_LightPositionOffset[1]), -60.0f, 60.0f);
 
-	ImGui::ColorEdit3("Light Color 3", glm::value_ptr(m_LightColorsNormal[3]));
-	ImGui::SliderFloat3("Light Pos Offset 3", glm::value_ptr(m_LightPositionOffset[3]), -60.0f, 60.0f);
+		ImGui::ColorEdit3("Light Color 2", glm::value_ptr(m_LightColorsNormal[2]));
+		ImGui::SliderFloat3("Light Pos Offset 2", glm::value_ptr(m_LightPositionOffset[2]), -60.0f, 60.0f);
 
-	ImGui::SliderFloat("Emissive Factor", &m_EmissiveFactor, 0.0f, 10.0f);
-	ImGui::SliderFloat("Metalness Factor", &m_MetalnessFactor, 0.0f, 1.0f);
-	ImGui::SliderFloat("Roughness Factor", &m_RoughnessFactor, 0.0f, 1.0f);
+		ImGui::ColorEdit3("Light Color 3", glm::value_ptr(m_LightColorsNormal[3]));
+		ImGui::SliderFloat3("Light Pos Offset 3", glm::value_ptr(m_LightPositionOffset[3]), -60.0f, 60.0f);
 
-	ImGui::Checkbox("Is Rotating?", &m_IsRotating);
-	ImGui::SliderFloat("Rotation Factor", &m_RotationFactor, 0.0f, 10.0f);
+		ImGui::SliderFloat("Emissive Factor", &m_EmissiveFactor, 0.0f, 10.0f);
+		ImGui::SliderFloat("Metalness Factor", &m_MetalnessFactor, 0.0f, 1.0f);
+		ImGui::SliderFloat("Roughness Factor", &m_RoughnessFactor, 0.0f, 1.0f);
 
-	m_LightPositions[0] = m_LightPositionOffset[0]; // m_CameraPosition + m_LightPositionOffset[0];
-	m_LightPositions[1] = m_LightPositionOffset[1]; // m_CameraPosition + m_LightPositionOffset[1];
-	m_LightPositions[2] = m_LightPositionOffset[2]; // m_CameraPosition + m_LightPositionOffset[2];
-	m_LightPositions[3] = m_LightPositionOffset[3]; // m_CameraPosition + m_LightPositionOffset[3];
+		ImGui::Checkbox("Is Rotating?", &m_IsRotating);
+		ImGui::SliderFloat("Rotation Factor", &m_RotationFactor, 0.0f, 10.0f);
 
-	m_LightColors[0] = m_LightColorsNormal[0] * 255.0f;
-	m_LightColors[1] = m_LightColorsNormal[1] * 255.0f;
-	m_LightColors[2] = m_LightColorsNormal[2] * 255.0f;
-	m_LightColors[3] = m_LightColorsNormal[3] * 255.0f;
+		m_LightPositions[0] = m_LightPositionOffset[0]; // m_CameraPosition + m_LightPositionOffset[0];
+		m_LightPositions[1] = m_LightPositionOffset[1]; // m_CameraPosition + m_LightPositionOffset[1];
+		m_LightPositions[2] = m_LightPositionOffset[2]; // m_CameraPosition + m_LightPositionOffset[2];
+		m_LightPositions[3] = m_LightPositionOffset[3]; // m_CameraPosition + m_LightPositionOffset[3];
+
+		m_LightColors[0] = m_LightColorsNormal[0] * 255.0f;
+		m_LightColors[1] = m_LightColorsNormal[1] * 255.0f;
+		m_LightColors[2] = m_LightColorsNormal[2] * 255.0f;
+		m_LightColors[3] = m_LightColorsNormal[3] * 255.0f;
+	}
+	ImGui::End();
+
+	ImGui::Begin("Textures");
+	{
+		ImVec2 imageSize(128.0f, 128.0f);
+
+		ImGui::Text("Environment Cubemap");
+		ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetEnvironmentCubemap(), imageSize);
+
+		ImGui::Text("Irradiance Map");
+		ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetIrradianceMap(), imageSize);
+
+		ImGui::Text("Prefilter Map");
+		ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetPrefilterMap(), imageSize);
+
+		ImGui::Text("BRDF LUT");
+		ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetBRDF_LUT_Texture(), imageSize);
+	}
+	ImGui::End();
+
+	ImGui::Begin("Select HDRI");
+	{
+		ImGui::RadioButton("Greenwich Park", &m_HDRI_Edit, HDRI_GREENWICH_PARK);
+		ImGui::RadioButton("San Giuseppe Bridge", &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
+		ImGui::RadioButton("Tropical Beach", &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
+		ImGui::RadioButton("Vignaioli Night", &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
+		ImGui::RadioButton("Early Eve & Warm Sky", &m_HDRI_Edit, HDRI_EARLY_EVE_WARM_SKY);
+		ImGui::RadioButton("Birchwood", &m_HDRI_Edit, HDRI_BIRCHWOOD);
+		ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
+		ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
+		ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
+	}
+	ImGui::End();
 }
 
 void SceneJoey::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,

@@ -27,7 +27,6 @@ uniform float roughnessFactor;
 
 const float PI = 3.14159265359;
 
-
 // Easy trick to get tangent-normals to world-space to keep PBR code simplified.
 // Don't worry if you don't get what's going on; you generally want to do normal 
 // mapping the usual way for performance anways; I do plan make a note of this 
@@ -104,7 +103,7 @@ void main()
 {		
     // material properties
     vec3 albedo = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
-    vec3 metallicRoughness = texture(metalRoughMap, TexCoords).rgb;
+	vec3 metallicRoughness = texture(metalRoughMap, TexCoords).rgb;
 	float metallic  = metallicRoughness.b * metalnessFactor;
 	float roughness = metallicRoughness.g * roughnessFactor;
 	vec3 emission = SRGBtoLINEAR(texture(emissiveMap, TexCoords)).rgb;
@@ -112,7 +111,7 @@ void main()
 
     // float roughness = texture(emissiveMap, TexCoords).r;
     float ao = texture(aoMap, TexCoords).r;
-	
+
     // input lighting data
     vec3 N = getNormalFromMap();
     vec3 V = normalize(camPos - WorldPos);
@@ -178,7 +177,7 @@ void main()
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
     vec3 ambient = (kD * diffuse + specular) * ao;
-  
+
     vec3 color = ambient + Lo;
 
 	color += emission;

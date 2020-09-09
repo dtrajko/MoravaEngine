@@ -47,4 +47,8 @@ private:
 
 	float m_MaterialSpecular = 1.0f;
 	float m_MaterialShininess = 256.0f;
+
+	int m_HDRI_Edit;
+	int m_HDRI_Edit_Prev;
+
 };
