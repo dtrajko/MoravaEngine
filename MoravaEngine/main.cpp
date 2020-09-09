@@ -44,7 +44,7 @@
 #include "SceneMarchingCubes.h"
 #include "SceneEditorFramebuffer.h"
 #include "SceneSSAO.h"
-#include "SceneImGuizmo.h"
+#include "SceneAnimPBR.h"
 
 #include "Renderer.h"
 #include "RendererPBR.h"
@@ -59,7 +59,7 @@
 #include "RendererEditor.h"
 #include "RendererEditorFramebuffer.h"
 #include "RendererSSAO.h"
-#include "RendererImGuizmo.h"
+#include "RendererTrivial.h"
 
 
 // Window dimensions
@@ -96,10 +96,10 @@ enum class SceneName
 	MarchingCubes,
 	EditorFramebuffer,
 	SSAO,
-	ImGuizmo,
+	AnimPBR,
 };
 
-SceneName currentScene = SceneName::ImGuizmo;
+SceneName currentScene = SceneName::AnimPBR;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -205,9 +205,9 @@ int main()
 		scene = new SceneSSAO();
 		renderer = static_cast<RendererBasic*>(new RendererSSAO());
 		break;
-	case SceneName::ImGuizmo:
-		scene = new SceneImGuizmo();
-		renderer = static_cast<RendererBasic*>(new RendererImGuizmo());
+	case SceneName::AnimPBR:
+		scene = new SceneAnimPBR();
+		renderer = static_cast<RendererBasic*>(new RendererTrivial());
 		break;
 	default:
 		throw std::runtime_error("Scene and Renderer could not be loaded!");

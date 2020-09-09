@@ -3,12 +3,12 @@
 #include "RendererBasic.h"
 
 
-class RendererImGuizmo : public RendererBasic
+class RendererTrivial : public RendererBasic
 {
 
 public:
-	RendererImGuizmo();
-	~RendererImGuizmo();
+	RendererTrivial();
+	~RendererTrivial();
 
 	virtual void Init(Scene* scene) override;
 	virtual void SetShaders() override;

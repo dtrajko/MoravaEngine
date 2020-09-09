@@ -207,7 +207,7 @@
     <ClCompile Include="Quadtree.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="RendererEditorFramebuffer.cpp" />
-    <ClCompile Include="RendererImGuizmo.cpp" />
+    <ClCompile Include="RendererTrivial.cpp" />
     <ClCompile Include="RendererOmniShadows.cpp" />
     <ClCompile Include="RendererSSAO.cpp" />
     <ClCompile Include="RendererVoxelTerrain.cpp" />
@@ -215,7 +215,7 @@
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SceneBullet.cpp" />
     <ClCompile Include="SceneEditorFramebuffer.cpp" />
-    <ClCompile Include="SceneImGuizmo.cpp" />
+    <ClCompile Include="SceneAnimPBR.cpp" />
     <ClCompile Include="SceneMarchingCubes.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="SceneObjectLight.cpp" />
@@ -391,7 +391,7 @@
     <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="RendererEditorFramebuffer.h" />
-    <ClInclude Include="RendererImGuizmo.h" />
+    <ClInclude Include="RendererTrivial.h" />
     <ClInclude Include="RendererOmniShadows.h" />
     <ClInclude Include="RendererSSAO.h" />
     <ClInclude Include="RendererVoxelTerrain.h" />
@@ -400,7 +400,7 @@
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="SceneBullet.h" />
     <ClInclude Include="SceneEditorFramebuffer.h" />
-    <ClInclude Include="SceneImGuizmo.h" />
+    <ClInclude Include="SceneAnimPBR.h" />
     <ClInclude Include="SceneMarchingCubes.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="SceneObjectLight.h" />

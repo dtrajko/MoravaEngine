@@ -1,4 +1,4 @@
-#include "SceneImGuizmo.h"
+#include "SceneAnimPBR.h"
 #include "ImGuiWrapper.h"
 #include "../cross-platform/ImGuizmo/ImGuizmo.h"
 #include "RendererBasic.h"
@@ -10,7 +10,7 @@
 #include "Timer.h"
 
 
-SceneImGuizmo::SceneImGuizmo()
+SceneAnimPBR::SceneAnimPBR()
 {
     sceneSettings.cameraPosition = glm::vec3(0.0f, 8.0f, 20.0f);
     sceneSettings.cameraStartYaw = -90.0f;
@@ -123,35 +123,41 @@ SceneImGuizmo::SceneImGuizmo()
     m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr");
 }
 
-void SceneImGuizmo::SetupTextures()
+void SceneAnimPBR::SetupTextures()
 {
     ResourceManager::LoadTexture("crate", "Textures/crate.png");
     ResourceManager::LoadTexture("crateNormal", "Textures/crateNormal.png");
 }
 
-void SceneImGuizmo::SetupTextureSlots()
+void SceneAnimPBR::SetupTextureSlots()
 {
 }
 
-void SceneImGuizmo::SetupShaders()
+void SceneAnimPBR::SetupShaders()
 {
+    m_ShaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
+    Log::GetLogger()->info("SceneAnimPBR: m_ShaderMain compiled [programID={0}]", m_ShaderMain->GetProgramID());
+
+    m_ShaderBackground = new Shader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    Log::GetLogger()->info("SceneAnimPBR: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
+
     m_ShaderHazelAnimPBR = new Shader("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR_Anim.fs");
-    Log::GetLogger()->info("SceneImGuizmo: m_ShaderHazelAnimPBR compiled [programID={0}]", m_ShaderHazelAnimPBR->GetProgramID());
+    Log::GetLogger()->info("SceneAnimPBR: m_ShaderHazelAnimPBR compiled [programID={0}]", m_ShaderHazelAnimPBR->GetProgramID());
 
     m_ShaderHDR = new Shader("Shaders/Hazel/HDR.vs", "Shaders/Hazel/HDR.fs");
-    Log::GetLogger()->info("SceneImGuizmo: m_ShaderHDR compiled [programID={0}]", m_ShaderHDR->GetProgramID());
+    Log::GetLogger()->info("SceneAnimPBR: m_ShaderHDR compiled [programID={0}]", m_ShaderHDR->GetProgramID());
 
     m_ShaderEquirectangularConversion = new Shader("Shaders/Hazel/EquirectangularToCubeMap.cs");
-    Log::GetLogger()->info("SceneImGuizmo: m_ShaderEquirectangularConversion compiled [programID={0}]", m_ShaderEquirectangularConversion->GetProgramID());
+    Log::GetLogger()->info("SceneAnimPBR: m_ShaderEquirectangularConversion compiled [programID={0}]", m_ShaderEquirectangularConversion->GetProgramID());
 
     m_ShaderEnvFiltering = new Shader("Shaders/Hazel/EnvironmentMipFilter.cs");
-    Log::GetLogger()->info("SceneImGuizmo: m_ShaderEnvFiltering compiled [programID={0}]", m_ShaderEnvFiltering->GetProgramID());
+    Log::GetLogger()->info("SceneAnimPBR: m_ShaderEnvFiltering compiled [programID={0}]", m_ShaderEnvFiltering->GetProgramID());
 
     m_ShaderEnvIrradiance = new Shader("Shaders/Hazel/EnvironmentIrradiance.cs");
-    Log::GetLogger()->info("SceneImGuizmo: m_ShaderEnvIrradiance compiled [programID={0}]", m_ShaderEnvIrradiance->GetProgramID());
+    Log::GetLogger()->info("SceneAnimPBR: m_ShaderEnvIrradiance compiled [programID={0}]", m_ShaderEnvIrradiance->GetProgramID());
 }
 
-void SceneImGuizmo::SetupMeshes()
+void SceneAnimPBR::SetupMeshes()
 {
     Block* floor = new Block(glm::vec3(30.0f, 5.0f, 30.0f));
     meshes.insert(std::make_pair("floor", floor));
@@ -217,15 +223,15 @@ void SceneImGuizmo::SetupMeshes()
     Log::GetLogger()->info("-- END loading the animated PBR model Animated Boy --");
 }
 
-void SceneImGuizmo::SetupModels()
+void SceneAnimPBR::SetupModels()
 {
 }
 
-void SceneImGuizmo::SetupFramebuffers()
+void SceneAnimPBR::SetupFramebuffers()
 {
 }
 
-void SceneImGuizmo::Update(float timestep, Window& mainWindow)
+void SceneAnimPBR::Update(float timestep, Window& mainWindow)
 {
     glm::vec3 u_AlbedoColor = glm::vec3(1.0f, 1.0f, 1.0f);
     float u_Roughness = 0.5f;
@@ -244,8 +250,8 @@ void SceneImGuizmo::Update(float timestep, Window& mainWindow)
     m_ShaderHazelAnimPBR->setVec3("lights.Radiance", lights.Radiance);
     m_ShaderHazelAnimPBR->setFloat("lights.Multiplier", lights.Multiplier);
 
-    m_ShaderHazelAnimPBR->setFloat("u_AlbedoTexToggle",    m_AlbedoTexToggle ? 1.0f : 0.0f);
-    m_ShaderHazelAnimPBR->setFloat("u_NormalTexToggle",    m_NormalTexToggle ? 1.0f : 0.0f);
+    m_ShaderHazelAnimPBR->setFloat("u_AlbedoTexToggle",    m_AlbedoTexToggle    ? 1.0f : 0.0f);
+    m_ShaderHazelAnimPBR->setFloat("u_NormalTexToggle",    m_NormalTexToggle    ? 1.0f : 0.0f);
     m_ShaderHazelAnimPBR->setFloat("u_MetalnessTexToggle", m_MetalnessTexToggle ? 1.0f : 0.0f);
     m_ShaderHazelAnimPBR->setFloat("u_RoughnessTexToggle", m_RoughnessTexToggle ? 1.0f : 0.0f);
     m_ShaderHazelAnimPBR->setFloat("u_EnvMapRotation", m_EnvMapRotation);
@@ -253,17 +259,13 @@ void SceneImGuizmo::Update(float timestep, Window& mainWindow)
     m_ShaderHazelAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
     m_ShaderHazelAnimPBR->setVec3("u_CameraPosition", m_Camera->GetPosition());
 
-    m_ShaderHazelAnimPBR->setInt("u_EnvRadianceTex",   0 /* s_Data.SceneData.SceneEnvironment.RadianceMap */);
-    m_ShaderHazelAnimPBR->setInt("u_EnvIrradianceTex", 0 /* s_Data.SceneData.SceneEnvironment.IrradianceMap */);
-    m_ShaderHazelAnimPBR->setInt("u_BRDFLUTTexture",   0 /* s_Data.BRDFLUT */ );
-
     float deltaTime = Timer::Get()->GetDeltaTime();
     m_MeshAnimPBRM1911->OnUpdate(deltaTime, false);
     m_MeshAnimPBRBob->OnUpdate(deltaTime, false);
     m_MeshAnimPBRBoy->OnUpdate(deltaTime, false);
 }
 
-std::pair<TextureCubemapLite*, TextureCubemapLite*> SceneImGuizmo::CreateEnvironmentMap(const std::string& filepath)
+std::pair<TextureCubemapLite*, TextureCubemapLite*> SceneAnimPBR::CreateEnvironmentMap(const std::string& filepath)
 {
     const uint32_t cubemapSize = 2048;
     const uint32_t irradianceMapSize = 32;
@@ -307,7 +309,7 @@ std::pair<TextureCubemapLite*, TextureCubemapLite*> SceneImGuizmo::CreateEnviron
     return { m_EnvFiltered, m_IrradianceMap };
 }
 
-void SceneImGuizmo::UpdateImGui(float timestep, Window& mainWindow)
+void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
 {
     glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
     bool editTransformDecomposition = true;
@@ -317,7 +319,7 @@ void SceneImGuizmo::UpdateImGui(float timestep, Window& mainWindow)
         glm::value_ptr(m_CubeTransform), editTransformDecomposition);
 }
 
-void SceneImGuizmo::EditTransform(const float* cameraView, float* cameraProjection, float* matrix, bool editTransformDecomposition)
+void SceneAnimPBR::EditTransform(const float* cameraView, float* cameraProjection, float* matrix, bool editTransformDecomposition)
 {
     static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
     static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
@@ -396,7 +398,7 @@ void SceneImGuizmo::EditTransform(const float* cameraView, float* cameraProjecti
     ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
 }
 
-float SceneImGuizmo::GetSnapValue()
+float SceneAnimPBR::GetSnapValue()
 {
     if (m_GizmoType == ImGuizmo::OPERATION::TRANSLATE) return 0.5f;
     else if (m_GizmoType == ImGuizmo::OPERATION::ROTATE) return 45.0f;
@@ -404,11 +406,10 @@ float SceneImGuizmo::GetSnapValue()
     else return 0.0f;
 }
 
-void SceneImGuizmo::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
 {
-    m_ShaderMain = shaders["main"];
-    m_ShaderBackground = shaders["background"];
+    SetupUniforms();
 
     glm::mat4 model = glm::mat4(1.0f);
 
@@ -416,7 +417,6 @@ void SceneImGuizmo::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
     RendererBasic::DisableCulling();
     RendererBasic::DisableDepthBuffer();
     m_ShaderBackground->Bind();
-
     m_ShaderBackground->setMat4("projection", projectionMatrix);
     m_ShaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
 
@@ -447,35 +447,24 @@ void SceneImGuizmo::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
     /**** BEGIN Animated PBR models ****/
     m_ShaderHazelAnimPBR->Bind();
 
-    // Toggles
-    m_ShaderHazelAnimPBR->setFloat("u_RadiancePrefilter",  1.0f);
-    m_ShaderHazelAnimPBR->setFloat("u_AlbedoTexToggle",    1.0f);
-    m_ShaderHazelAnimPBR->setFloat("u_NormalTexToggle",    1.0f);
-    m_ShaderHazelAnimPBR->setFloat("u_MetalnessTexToggle", 1.0f);
-    m_ShaderHazelAnimPBR->setFloat("u_RoughnessTexToggle", 1.0f);
+    m_ShaderHazelAnimPBR->setInt("u_AlbedoTexture",    m_SamplerSlots["albedo"]);
+    m_ShaderHazelAnimPBR->setInt("u_NormalTexture",    m_SamplerSlots["normal"]);
+    m_ShaderHazelAnimPBR->setInt("u_MetalnessTexture", m_SamplerSlots["metalness"]);
+    m_ShaderHazelAnimPBR->setInt("u_RoughnessTexture", m_SamplerSlots["roughness"]);
+    m_ShaderHazelAnimPBR->setInt("u_EnvRadianceTex",   m_SamplerSlots["env_radiance"]);
+    m_ShaderHazelAnimPBR->setInt("u_EnvIrradianceTex", m_SamplerSlots["env_irradiance"]);
+    m_ShaderHazelAnimPBR->setInt("u_BRDFLUTTexture",   m_SamplerSlots["BRDF_LUT"]);
 
     m_EnvFiltered->Bind(m_SamplerSlots["env_radiance"]);
-    m_ShaderHazelAnimPBR->setInt("u_EnvRadianceTex", m_SamplerSlots["env_radiance"]);
-
     m_IrradianceMap->Bind(m_SamplerSlots["env_irradiance"]);
-    m_ShaderHazelAnimPBR->setInt("u_EnvIrradianceTex", m_SamplerSlots["env_irradiance"]);
-
     m_BRDF_LUT->Bind(m_SamplerSlots["BRDF_LUT"]);
-    m_ShaderHazelAnimPBR->setInt("u_BRDFLUTTexture", m_SamplerSlots["BRDF_LUT"]);
 
     // BEGIN rendering the animated PBR model M1911
     {
         m_BaseMaterialM1911->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
-        m_ShaderHazelAnimPBR->setInt("u_AlbedoTexture", m_SamplerSlots["albedo"]);
-
         m_BaseMaterialM1911->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
-        m_ShaderHazelAnimPBR->setInt("u_NormalTexture", m_SamplerSlots["normal"]);
-
         m_BaseMaterialM1911->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
-        m_ShaderHazelAnimPBR->setInt("u_MetalnessTexture", m_SamplerSlots["metalness"]);
-
         m_BaseMaterialM1911->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
-        m_ShaderHazelAnimPBR->setInt("u_RoughnessTexture", m_SamplerSlots["roughness"]);
 
         m_MeshAnimPBRM1911->m_VertexArray->Bind();
         auto& materials = m_MeshAnimPBRM1911->GetMaterials();
@@ -487,12 +476,6 @@ void SceneImGuizmo::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
             auto material = materials[submesh->MaterialIndex];
             m_ShaderHazelAnimPBR->Bind();
 
-            m_ShaderHazelAnimPBR->setInt("u_AlbedoTexture", m_SamplerSlots["albedo"]);
-            //  m_ShaderHazelAnimPBR->setFloat("u_AlbedoTexToggle",    1.0f);
-            //  m_ShaderHazelAnimPBR->setFloat("u_NormalTexToggle",    1.0f);
-            //  m_ShaderHazelAnimPBR->setFloat("u_RoughnessTexToggle", 1.0f);
-            //  m_ShaderHazelAnimPBR->setFloat("u_MetalnessTexToggle", 1.0f);
-
             for (size_t i = 0; i < m_MeshAnimPBRM1911->m_BoneTransforms.size(); i++)
             {
                 std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
@@ -502,11 +485,9 @@ void SceneImGuizmo::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
             glm::mat4 transform = m_Transform_M1911 * submesh->Transform;
             transform = glm::translate(transform, glm::vec3(0.0f, 40.0f, 50.0f));
             transform = glm::scale(transform, glm::vec3(40.0f));
-
             m_ShaderHazelAnimPBR->setMat4("u_Transform", transform);
 
             glEnable(GL_DEPTH_TEST);
-
             glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 
             submeshIndex++;
@@ -517,17 +498,10 @@ void SceneImGuizmo::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
     // BEGIN rendering the animated PBR model BobLamp
     {
         m_BaseMaterialBob->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
-        m_ShaderHazelAnimPBR->setInt("u_AlbedoTexture", m_SamplerSlots["albedo"]);
-
         m_BaseMaterialBob->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
-        m_ShaderHazelAnimPBR->setInt("u_NormalTexture", m_SamplerSlots["normal"]);
-
         m_BaseMaterialBob->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
-        m_ShaderHazelAnimPBR->setInt("u_MetalnessTexture", m_SamplerSlots["metalness"]);
-
         m_BaseMaterialBob->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
-        m_ShaderHazelAnimPBR->setInt("u_RoughnessTexture", m_SamplerSlots["roughness"]);
-
+ 
         m_MeshAnimPBRBob->m_VertexArray->Bind();
         auto& materials = m_MeshAnimPBRBob->GetMaterials();
 
@@ -539,13 +513,6 @@ void SceneImGuizmo::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
             m_ShaderHazelAnimPBR->Bind();
 
             m_MeshAnimPBRBob->GetTextures()[submeshIndex]->Bind(m_SamplerSlots["albedo"]);
-            // Log::GetLogger()->info("BobLamp submesh texture ID {0}", m_MeshAnimPBRBob->GetTextures()[submeshIndex]->GetID());
-
-            m_ShaderHazelAnimPBR->setInt("u_AlbedoTexture", m_SamplerSlots["albedo"]);
-            //  m_ShaderHazelAnimPBR->setFloat("u_AlbedoTexToggle",    1.0f);
-            //  m_ShaderHazelAnimPBR->setFloat("u_NormalTexToggle",    1.0f);
-            //  m_ShaderHazelAnimPBR->setFloat("u_RoughnessTexToggle", 1.0f);
-            //  m_ShaderHazelAnimPBR->setFloat("u_MetalnessTexToggle", 1.0f);
 
             for (size_t i = 0; i < m_MeshAnimPBRBob->m_BoneTransforms.size(); i++)
             {
@@ -556,11 +523,9 @@ void SceneImGuizmo::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
             glm::mat4 transform = m_Transform_BobLamp * submesh->Transform;
             transform = glm::translate(transform, glm::vec3(5.0f, 5.0f, 0.0f));
             transform = glm::scale(transform, glm::vec3(0.2f));
-
             m_ShaderHazelAnimPBR->setMat4("u_Transform", transform);
 
             glEnable(GL_DEPTH_TEST);
-
             glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 
             submeshIndex++;
@@ -571,16 +536,9 @@ void SceneImGuizmo::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
     // BEGIN rendering the animated PBR model Animated Boy
     {
         m_BaseMaterialBoy->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
-        m_ShaderHazelAnimPBR->setInt("u_AlbedoTexture", m_SamplerSlots["albedo"]);
-
         m_BaseMaterialBoy->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
-        m_ShaderHazelAnimPBR->setInt("u_NormalTexture", m_SamplerSlots["normal"]);
-
         m_BaseMaterialBoy->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
-        m_ShaderHazelAnimPBR->setInt("u_MetalnessTexture", m_SamplerSlots["metalness"]);
-
         m_BaseMaterialBoy->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
-        m_ShaderHazelAnimPBR->setInt("u_RoughnessTexture", m_SamplerSlots["roughness"]);
 
         m_MeshAnimPBRBoy->m_VertexArray->Bind();
         auto& materials = m_MeshAnimPBRBoy->GetMaterials();
@@ -592,12 +550,6 @@ void SceneImGuizmo::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
             auto material = materials[submesh->MaterialIndex];
             m_ShaderHazelAnimPBR->Bind();
 
-            m_ShaderHazelAnimPBR->setInt("u_AlbedoTexture", m_SamplerSlots["albedo"]);
-            //  m_ShaderHazelAnimPBR->setFloat("u_AlbedoTexToggle",    1.0f);
-            //  m_ShaderHazelAnimPBR->setFloat("u_NormalTexToggle",    1.0f);
-            //  m_ShaderHazelAnimPBR->setFloat("u_RoughnessTexToggle", 1.0f);
-            //  m_ShaderHazelAnimPBR->setFloat("u_MetalnessTexToggle", 1.0f);
-
             for (size_t i = 0; i < m_MeshAnimPBRBoy->m_BoneTransforms.size(); i++)
             {
                 std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
@@ -607,11 +559,9 @@ void SceneImGuizmo::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
             glm::mat4 transform = m_Transform_Boy * submesh->Transform;
             transform = glm::translate(transform, glm::vec3(-5.0f, 5.0f, 0.0f));
             transform = glm::scale(transform, glm::vec3(0.8f));
-
             m_ShaderHazelAnimPBR->setMat4("u_Transform", transform);
 
             glEnable(GL_DEPTH_TEST);
-
             glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 
             submeshIndex++;
@@ -620,7 +570,38 @@ void SceneImGuizmo::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
     // END rendering the animated PBR model Animated Boy
 }
 
-SceneImGuizmo::~SceneImGuizmo()
+void SceneAnimPBR::SetupUniforms()
+{
+    /**** BEGIN m_ShaderMain ****/
+    m_ShaderMain->Bind();
+
+    m_ShaderMain->setMat4("model", glm::mat4(1.0f));
+    m_ShaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
+    m_ShaderMain->setMat4("projection", RendererBasic::GetProjectionMatrix());
+    m_ShaderMain->setVec3("eyePosition", m_Camera->GetPosition());
+
+    // Directional Light
+    m_ShaderMain->setInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
+    m_ShaderMain->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
+    m_ShaderMain->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+    m_ShaderMain->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+    m_ShaderMain->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
+
+    m_ShaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+
+    m_ShaderMain->setInt("albedoMap", textureSlots["diffuse"]);
+    m_ShaderMain->setInt("normalMap", textureSlots["normal"]);
+    m_ShaderMain->setInt("shadowMap", textureSlots["shadow"]);
+    m_ShaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000.0f));
+    m_ShaderMain->setFloat("tilingFactor", 1.0f);
+    m_ShaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    m_ShaderMain->Validate();
+    /**** BEGIN m_ShaderMain ****/
+
+
+}
+
+SceneAnimPBR::~SceneAnimPBR()
 {
     delete m_EnvUnfiltered;
     delete m_EnvEquirect;
