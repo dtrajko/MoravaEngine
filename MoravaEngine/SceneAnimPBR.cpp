@@ -121,6 +121,13 @@ SceneAnimPBR::SceneAnimPBR()
 
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
     m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr");
+
+    m_AlbedoColor = LightManager::directionalLight.GetColor();
+    m_Roughness = 0.5f;
+
+    m_Light.Direction = LightManager::directionalLight.GetDirection();
+    m_Light.Radiance = 0.5f;
+    m_Light.Multiplier = 1.0f;
 }
 
 void SceneAnimPBR::SetupTextures()
@@ -233,22 +240,12 @@ void SceneAnimPBR::SetupFramebuffers()
 
 void SceneAnimPBR::Update(float timestep, Window& mainWindow)
 {
-    glm::vec3 u_AlbedoColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    float u_Roughness = 0.5f;
-
-    struct Light
-    {
-        glm::vec3 Direction = LightManager::directionalLight.GetDirection();
-        glm::vec3 Radiance = glm::vec3(1.0f, 1.0f, 1.0f);
-        float Multiplier = 1.0f;
-    } lights;
-
     m_ShaderHazelAnimPBR->Bind();
-    m_ShaderHazelAnimPBR->setVec3("u_AlbedoColor", u_AlbedoColor);
-    m_ShaderHazelAnimPBR->setFloat("u_Roughness", u_Roughness);
-    m_ShaderHazelAnimPBR->setVec3("lights.Direction", lights.Direction);
-    m_ShaderHazelAnimPBR->setVec3("lights.Radiance", lights.Radiance);
-    m_ShaderHazelAnimPBR->setFloat("lights.Multiplier", lights.Multiplier);
+    m_ShaderHazelAnimPBR->setVec3("u_AlbedoColor", m_AlbedoColor);
+    m_ShaderHazelAnimPBR->setFloat("u_Roughness", m_Roughness);
+    m_ShaderHazelAnimPBR->setVec3("lights.Direction", m_Light.Direction);
+    m_ShaderHazelAnimPBR->setVec3("lights.Radiance", glm::vec3(m_Light.Radiance));
+    m_ShaderHazelAnimPBR->setFloat("lights.Multiplier", m_Light.Multiplier);
 
     m_ShaderHazelAnimPBR->setFloat("u_AlbedoTexToggle",    m_AlbedoTexToggle    ? 1.0f : 0.0f);
     m_ShaderHazelAnimPBR->setFloat("u_NormalTexToggle",    m_NormalTexToggle    ? 1.0f : 0.0f);
@@ -311,6 +308,20 @@ std::pair<TextureCubemapLite*, TextureCubemapLite*> SceneAnimPBR::CreateEnvironm
 
 void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
 {
+    bool p_open = true;
+    ShowExampleAppDockSpace(&p_open, mainWindow);
+
+    ImGui::Begin("Light");
+    {
+        ImGui::ColorEdit3("Albedo Color", glm::value_ptr(m_AlbedoColor));
+        ImGui::SliderFloat("Roughness", &m_Roughness, -1.0f, 1.0f);
+
+        ImGui::SliderFloat3("Light Direction", glm::value_ptr(m_Light.Direction), -1.0f, 1.0f);
+        ImGui::SliderFloat("Light Radiance", &m_Light.Radiance, -1.0f, 2.0f);
+        ImGui::SliderFloat("Light Multiplier", &m_Light.Multiplier, 0.0f, 2.0f);
+    }
+    ImGui::End();
+
     glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
     bool editTransformDecomposition = true;
 
@@ -411,23 +422,35 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
 {
     SetupUniforms();
 
+    m_MaterialWorkflowPBR->SetGlobalRenderState();
+
     glm::mat4 model = glm::mat4(1.0f);
 
-    /**** BEGIN Render Skybox shaderBackground ***/
-    RendererBasic::DisableCulling();
-    RendererBasic::DisableDepthBuffer();
-    m_ShaderBackground->Bind();
-    m_ShaderBackground->setMat4("projection", projectionMatrix);
-    m_ShaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
+    // BEGIN Skybox backgroundShader
+    {
+        // render skybox (render as last to prevent overdraw)
+        m_ShaderBackground->Bind();
 
-    model = glm::mat4(1.0f);
-    float angleRadians = glm::radians((GLfloat)glfwGetTime());
-    m_ShaderBackground->setMat4("model", model);
+        // Skybox shaderBackground
+        RendererBasic::DisableCulling();
+        // render skybox (render as last to prevent overdraw)
 
-    m_MaterialWorkflowPBR->BindEnvironmentCubemap(1);
-    m_ShaderBackground->setInt("environmentMap", 1);
-    m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
-    /**** END Render Skybox shaderBackground ***/
+        model = glm::mat4(1.0f);
+        float angleRadians = glm::radians((GLfloat)glfwGetTime());
+        // model = glm::rotate(model, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+        m_ShaderBackground->setMat4("model", model);
+        m_ShaderBackground->setMat4("projection", projectionMatrix);
+        m_ShaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
+
+        m_MaterialWorkflowPBR->BindEnvironmentCubemap(0);
+        // m_MaterialWorkflowPBR->BindIrradianceMap(0); // display irradiance map
+        // m_MaterialWorkflowPBR->BindPrefilterMap(0); // display prefilter map
+        m_ShaderBackground->setInt("environmentMap", 0);
+
+        m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
+    }
+    // END Skybox backgroundShader
+
 
     m_ShaderMain->Bind();
     model = glm::mat4(1.0f);
@@ -455,9 +478,7 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
     m_ShaderHazelAnimPBR->setInt("u_EnvIrradianceTex", m_SamplerSlots["env_irradiance"]);
     m_ShaderHazelAnimPBR->setInt("u_BRDFLUTTexture",   m_SamplerSlots["BRDF_LUT"]);
 
-    m_EnvFiltered->Bind(m_SamplerSlots["env_radiance"]);
-    m_IrradianceMap->Bind(m_SamplerSlots["env_irradiance"]);
-    m_BRDF_LUT->Bind(m_SamplerSlots["BRDF_LUT"]);
+    m_MaterialWorkflowPBR->BindTextures(m_SamplerSlots["env_radiance"]);
 
     // BEGIN rendering the animated PBR model M1911
     {

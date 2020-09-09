@@ -29,10 +29,10 @@ public:
 	static void ClearDepthBuffer();
 	static inline glm::mat4 GetProjectionMatrix() { return s_ProjectionMatrix; };
 	static inline void SetProjectionMatrix(glm::mat4 projectionMatrix) { s_ProjectionMatrix = projectionMatrix; };
+	static void SetDefaultFramebuffer(unsigned int width, unsigned int height);
 
 	std::map<std::string, Shader*> GetShaders() { return shaders; };
 	void RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window& mainWindow);
-	void SetDefaultFramebuffer(unsigned int width, unsigned int height);
 	void Cleanup();
 
 protected:

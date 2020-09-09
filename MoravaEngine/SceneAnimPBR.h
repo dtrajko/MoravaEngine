@@ -37,6 +37,16 @@ private:
 	float GetSnapValue();
 
 private:
+	struct Light
+	{
+		glm::vec3 Direction;
+		float Radiance;
+		float Multiplier;
+	} m_Light;
+
+	glm::vec3 m_AlbedoColor;
+	float m_Roughness;
+
 	glm::mat4 m_CubeTransform;
 	int m_GizmoType;
 
@@ -60,7 +70,6 @@ private:
 	glm::mat4 m_Transform_BobLamp;
 	glm::mat4 m_Transform_Boy;
 
-	Texture* m_HDR;
 	std::pair<TextureCubemapLite*, TextureCubemapLite*> m_TextureCubemaps;
 
 	bool m_AlbedoTexToggle    = true;

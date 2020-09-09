@@ -24,6 +24,7 @@ public:
 	void BindEnvironmentCubemap(unsigned int slot);
 	void BindIrradianceMap(unsigned int slot);
 	void BindPrefilterMap(unsigned int slot);
+	void SetGlobalRenderState();
 
 private:
 	void SetupShaders();

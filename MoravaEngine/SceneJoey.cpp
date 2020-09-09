@@ -16,7 +16,7 @@ SceneJoey::SceneJoey()
 	sceneSettings.enableWaterEffects = false;
 	sceneSettings.enableSkybox       = false;
 	sceneSettings.enableNormalMaps   = true;
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 0.0f, 10.0f);
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 8.0f, 30.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
 	sceneSettings.nearPlane = 0.01f;
@@ -320,7 +320,7 @@ void SceneJoey::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::stri
 		/* Cerberus model */
 		// glBindTexture(GL_TEXTURE_2D, sceneJoey->materials["gold"]->GetTextureAO()->GetID()); // textures["goldAOMap"]->GetID()
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, -10.0f, 25.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 5.0f, 20.0f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));

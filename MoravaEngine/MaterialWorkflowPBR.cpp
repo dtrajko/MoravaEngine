@@ -56,6 +56,16 @@ void MaterialWorkflowPBR::BindPrefilterMap(unsigned int slot)
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilterMap);
 }
 
+void MaterialWorkflowPBR::SetGlobalRenderState()
+{
+	// configure global opengl state
+	glEnable(GL_DEPTH_TEST);
+	// set depth function to less than AND equal for skybox depth trick.
+	glDepthFunc(GL_LEQUAL);
+	// enable seamless cubemap sampling for lower mip levels in the pre-filter map.
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+}
+
 void MaterialWorkflowPBR::SetupShaders()
 {
 	m_ShaderEquirectangularToCubemap = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/equirectangular_to_cubemap.fs");
