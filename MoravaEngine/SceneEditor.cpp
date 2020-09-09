@@ -1048,7 +1048,6 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
             m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr");
         else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY)
             m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr");
-
         else if (m_HDRI_Edit == HDRI_BIRCHWOOD)
             m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr");
         else if (m_HDRI_Edit == HDRI_PINK_SUNRISE)

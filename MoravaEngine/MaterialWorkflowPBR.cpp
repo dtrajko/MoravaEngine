@@ -8,6 +8,9 @@
 
 MaterialWorkflowPBR::MaterialWorkflowPBR()
 {
+	m_CaptureSize       = 512;
+	m_PrefilterMapSize  = 128;
+	m_IrradianceMapSize = 32;
 }
 
 void MaterialWorkflowPBR::Init(std::string envMapHDR)
@@ -95,7 +98,7 @@ void MaterialWorkflowPBR::SetupFramebuffers()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, m_CaptureSize, m_CaptureSize);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_CaptureRBO);
 }
 
@@ -131,7 +134,7 @@ void MaterialWorkflowPBR::SetupCubemap()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemap);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, m_CaptureSize, m_CaptureSize, 0, GL_RGB, GL_FLOAT, nullptr);
 	}
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -162,7 +165,7 @@ void MaterialWorkflowPBR::ConvertHDREquirectangularToCubemap()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_HDRTexture);
 
-	glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
+	glViewport(0, 0, m_CaptureSize, m_CaptureSize); // don't forget to configure the viewport to the capture dimensions.
 	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
@@ -185,7 +188,7 @@ void MaterialWorkflowPBR::CreateIrradianceCubemap()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_IrradianceMap);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, m_IrradianceMapSize, m_IrradianceMapSize, 0, GL_RGB, GL_FLOAT, nullptr);
 	}
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -195,7 +198,7 @@ void MaterialWorkflowPBR::CreateIrradianceCubemap()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, m_IrradianceMapSize, m_IrradianceMapSize);
 }
 
 void MaterialWorkflowPBR::SolveDiffuseIntegralByConvolution()
@@ -207,7 +210,7 @@ void MaterialWorkflowPBR::SolveDiffuseIntegralByConvolution()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemap);
 
-	glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
+	glViewport(0, 0, m_IrradianceMapSize, m_IrradianceMapSize); // don't forget to configure the viewport to the capture dimensions.
 	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
@@ -226,7 +229,7 @@ void MaterialWorkflowPBR::CreatePreFilterCubemap()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_PrefilterMap);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 128, 128, 0, GL_RGB, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, m_PrefilterMapSize, m_PrefilterMapSize, 0, GL_RGB, GL_FLOAT, nullptr);
 	}
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -251,8 +254,8 @@ void MaterialWorkflowPBR::RunQuasiMonteCarloSimulation()
 	for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
 	{
 		// resize framebuffer according to mip-level size.
-		unsigned int mipWidth = (unsigned int)(128 * std::pow(0.5, mip));
-		unsigned int mipHeight = (unsigned int)(128 * std::pow(0.5, mip));
+		unsigned int mipWidth = (unsigned int)(m_PrefilterMapSize * std::pow(0.5, mip));
+		unsigned int mipHeight = (unsigned int)(m_PrefilterMapSize * std::pow(0.5, mip));
 		glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRBO);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
 		glViewport(0, 0, mipWidth, mipHeight);
@@ -278,7 +281,7 @@ void MaterialWorkflowPBR::Generate2DLUTFromBRDF()
 
 	// pre-allocate enough memory for the LUT texture.
 	glBindTexture(GL_TEXTURE_2D, m_BRDF_LUT_Texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, m_CaptureSize, m_CaptureSize, 0, GL_RG, GL_FLOAT, 0);
 	// be sure to set wrapping mode to GL_CLAMP_TO_EDGE
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -288,10 +291,10 @@ void MaterialWorkflowPBR::Generate2DLUTFromBRDF()
 	// then re-configure capture framebuffer object and render screen-space quad with BRDF shader.
 	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, m_CaptureRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, m_CaptureSize, m_CaptureSize);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_BRDF_LUT_Texture, 0);
 
-	glViewport(0, 0, 512, 512);
+	glViewport(0, 0, m_CaptureSize, m_CaptureSize);
 
 	m_ShaderBRDF->Bind();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -40,6 +40,11 @@ private:
 	void RunQuasiMonteCarloSimulation();
 	void Generate2DLUTFromBRDF();
 
+public:
+	int m_CaptureSize;
+	int m_PrefilterMapSize;
+	int m_IrradianceMapSize;
+
 private:
 	unsigned int m_HDRTexture;
 	glm::mat4 m_CaptureProjection;

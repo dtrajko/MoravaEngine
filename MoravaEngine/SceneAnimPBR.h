@@ -70,8 +70,7 @@ private:
 	glm::mat4 m_Transform_BobLamp;
 	glm::mat4 m_Transform_Boy;
 
-	std::pair<TextureCubemapLite*, TextureCubemapLite*> m_TextureCubemaps;
-
+	bool m_RadiancePrefilter  = true;
 	bool m_AlbedoTexToggle    = true;
 	bool m_NormalTexToggle    = true;
 	bool m_MetalnessTexToggle = true;
@@ -81,13 +80,16 @@ private:
 
 	std::map<std::string, unsigned int> m_SamplerSlots;
 
-	TextureCubemapLite* m_EnvUnfiltered;
-	Texture* m_EnvEquirect;
-	TextureCubemapLite* m_EnvFiltered;
-	TextureCubemapLite* m_IrradianceMap;
-
-	Texture* m_BRDF_LUT;
-
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
+
+	int m_HDRI_Edit;
+	int m_HDRI_Edit_Prev;
+
+	// TextureCubemapLite* m_EnvUnfiltered;
+	// Texture* m_EnvEquirect;
+	// TextureCubemapLite* m_EnvFiltered;
+	// TextureCubemapLite* m_IrradianceMap;
+	// Texture* m_BRDF_LUT;
+	// std::pair<TextureCubemapLite*, TextureCubemapLite*> m_TextureCubemaps;
 
 };

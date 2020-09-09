@@ -143,11 +143,6 @@ void SceneSSAO::SetupFramebuffers()
 {
     uint32_t width  = Application::Get()->GetWindow()->GetBufferWidth();
     uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
-
-    // m_GBuffer = new Framebuffer(width, height);
-    // m_GBuffer->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
-    // m_GBuffer->AddAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
-    // m_GBuffer->Generate(width, height);
 }
 
 void SceneSSAO::Update(float timestep, Window& mainWindow)

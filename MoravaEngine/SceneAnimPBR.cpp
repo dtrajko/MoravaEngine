@@ -116,17 +116,20 @@ SceneAnimPBR::SceneAnimPBR()
     m_SamplerSlots.insert(std::make_pair("BRDF_LUT"      , 7)); // uniform sampler2D u_BRDFLUTTexture
 
     // HDR / Environment map
-    m_TextureCubemaps = CreateEnvironmentMap("Textures/HDR/birchwood_4k.hdr");
-    m_BRDF_LUT = new Texture("Textures/Hazel/BRDF_LUT.tga");
+    //  m_TextureCubemaps = CreateEnvironmentMap("Textures/HDR/birchwood_4k.hdr");
+    //  m_BRDF_LUT = new Texture("Textures/Hazel/BRDF_LUT.tga");
 
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
-    m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr");
+    m_MaterialWorkflowPBR->m_CaptureSize       = 512; // 512
+    m_MaterialWorkflowPBR->m_PrefilterMapSize  = 128; // 128
+    m_MaterialWorkflowPBR->m_IrradianceMapSize = 32;  //  32
+    m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr");
 
     m_AlbedoColor = LightManager::directionalLight.GetColor();
     m_Roughness = 0.5f;
 
     m_Light.Direction = LightManager::directionalLight.GetDirection();
-    m_Light.Radiance = 0.5f;
+    m_Light.Radiance = 1.5f;
     m_Light.Multiplier = 1.0f;
 }
 
@@ -247,6 +250,7 @@ void SceneAnimPBR::Update(float timestep, Window& mainWindow)
     m_ShaderHazelAnimPBR->setVec3("lights.Radiance", glm::vec3(m_Light.Radiance));
     m_ShaderHazelAnimPBR->setFloat("lights.Multiplier", m_Light.Multiplier);
 
+    m_ShaderHazelAnimPBR->setFloat("u_RadiancePrefilter",  m_RadiancePrefilter  ? 1.0f : 0.0f);
     m_ShaderHazelAnimPBR->setFloat("u_AlbedoTexToggle",    m_AlbedoTexToggle    ? 1.0f : 0.0f);
     m_ShaderHazelAnimPBR->setFloat("u_NormalTexToggle",    m_NormalTexToggle    ? 1.0f : 0.0f);
     m_ShaderHazelAnimPBR->setFloat("u_MetalnessTexToggle", m_MetalnessTexToggle ? 1.0f : 0.0f);
@@ -260,51 +264,75 @@ void SceneAnimPBR::Update(float timestep, Window& mainWindow)
     m_MeshAnimPBRM1911->OnUpdate(deltaTime, false);
     m_MeshAnimPBRBob->OnUpdate(deltaTime, false);
     m_MeshAnimPBRBoy->OnUpdate(deltaTime, false);
+
+    if (m_HDRI_Edit != m_HDRI_Edit_Prev)
+    {
+        if (m_HDRI_Edit == HDRI_GREENWICH_PARK)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
+        else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
+        else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr");
+        else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr");
+        else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr");
+        else if (m_HDRI_Edit == HDRI_BIRCHWOOD)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr");
+        else if (m_HDRI_Edit == HDRI_PINK_SUNRISE)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/pink_sunrise_4k.hdr");
+        else if (m_HDRI_Edit == HDRI_ROOITOU_PARK)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr");
+        else if (m_HDRI_Edit == HDRI_VENICE_DAWN)
+            m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr");
+
+        m_HDRI_Edit_Prev = m_HDRI_Edit;
+    }
 }
 
 std::pair<TextureCubemapLite*, TextureCubemapLite*> SceneAnimPBR::CreateEnvironmentMap(const std::string& filepath)
 {
-    const uint32_t cubemapSize = 2048;
-    const uint32_t irradianceMapSize = 32;
-
-    m_EnvUnfiltered = new TextureCubemapLite(cubemapSize, cubemapSize);
-    m_EnvEquirect = new Texture(filepath.c_str(), false);
-
-    // HZ_CORE_ASSERT(envEquirect->GetFormat() == TextureFormat::Float16, "Texture is not HDR!");
-
-    m_ShaderEquirectangularConversion->Bind();
-    m_EnvEquirect->Bind();
-    glBindImageTexture(0, m_EnvUnfiltered->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-    glDispatchCompute(cubemapSize / 32, cubemapSize / 32, 6);
-    glGenerateTextureMipmap(m_EnvUnfiltered->GetID());
-
-    m_EnvFiltered = new TextureCubemapLite(cubemapSize, cubemapSize);
-
-    glCopyImageSubData(m_EnvFiltered->GetID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
-        m_EnvFiltered->GetID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
-        m_EnvFiltered->GetWidth(), m_EnvFiltered->GetHeight(), 6);
-
-    m_ShaderEnvFiltering->Bind();
-    m_EnvFiltered->Bind(0);
-
-    const float deltaRoughness = 1.0f / glm::max((float)(m_EnvFiltered->GetMipLevelCount() - 1.0f), 1.0f);
-    for (unsigned int level = 1, size = cubemapSize / 2; level < m_EnvFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
-    {
-        const GLuint numGroups = glm::max((unsigned int)1, size / 32);
-        glBindImageTexture(0, m_EnvFiltered->GetID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-        glProgramUniform1f(m_ShaderEnvFiltering->GetProgramID(), 0, level * deltaRoughness);
-        glDispatchCompute(numGroups, numGroups, 6);
-    }
-
-    m_IrradianceMap = new TextureCubemapLite(irradianceMapSize, irradianceMapSize);
-    m_ShaderEnvIrradiance->Bind();
-    m_EnvFiltered->Bind(0);
-    glBindImageTexture(0, m_IrradianceMap->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-    glDispatchCompute(m_IrradianceMap->GetWidth() / 32, m_IrradianceMap->GetHeight() / 32, 6);
-    glGenerateTextureMipmap(m_IrradianceMap->GetID());
-
-    return { m_EnvFiltered, m_IrradianceMap };
-}
+    //  const uint32_t cubemapSize = 2048;
+    //  const uint32_t irradianceMapSize = 32;
+    //  
+    //  m_EnvUnfiltered = new TextureCubemapLite(cubemapSize, cubemapSize);
+    //  m_EnvEquirect = new Texture(filepath.c_str(), false);
+    //  
+    //  // HZ_CORE_ASSERT(envEquirect->GetFormat() == TextureFormat::Float16, "Texture is not HDR!");
+    //  
+    //  m_ShaderEquirectangularConversion->Bind();
+    //  m_EnvEquirect->Bind();
+    //  glBindImageTexture(0, m_EnvUnfiltered->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+    //  glDispatchCompute(cubemapSize / 32, cubemapSize / 32, 6);
+    //  glGenerateTextureMipmap(m_EnvUnfiltered->GetID());
+    //  
+    //  m_EnvFiltered = new TextureCubemapLite(cubemapSize, cubemapSize);
+    //  
+    //  glCopyImageSubData(m_EnvFiltered->GetID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
+    //      m_EnvFiltered->GetID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
+    //      m_EnvFiltered->GetWidth(), m_EnvFiltered->GetHeight(), 6);
+    //  
+    //  m_ShaderEnvFiltering->Bind();
+    //  m_EnvFiltered->Bind(0);
+    //  
+    //  const float deltaRoughness = 1.0f / glm::max((float)(m_EnvFiltered->GetMipLevelCount() - 1.0f), 1.0f);
+    //  for (unsigned int level = 1, size = cubemapSize / 2; level < m_EnvFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
+    //  {
+    //      const GLuint numGroups = glm::max((unsigned int)1, size / 32);
+    //      glBindImageTexture(0, m_EnvFiltered->GetID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+    //      glProgramUniform1f(m_ShaderEnvFiltering->GetProgramID(), 0, level * deltaRoughness);
+    //      glDispatchCompute(numGroups, numGroups, 6);
+    //  }
+    //  
+    //  m_IrradianceMap = new TextureCubemapLite(irradianceMapSize, irradianceMapSize);
+    //  m_ShaderEnvIrradiance->Bind();
+    //  m_EnvFiltered->Bind(0);
+    //  glBindImageTexture(0, m_IrradianceMap->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+    //  glDispatchCompute(m_IrradianceMap->GetWidth() / 32, m_IrradianceMap->GetHeight() / 32, 6);
+    //  glGenerateTextureMipmap(m_IrradianceMap->GetID());
+    //  
+    //  return { m_EnvFiltered, m_IrradianceMap };
+}   //  
 
 void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
 {
@@ -317,8 +345,40 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
         ImGui::SliderFloat("Roughness", &m_Roughness, -1.0f, 1.0f);
 
         ImGui::SliderFloat3("Light Direction", glm::value_ptr(m_Light.Direction), -1.0f, 1.0f);
-        ImGui::SliderFloat("Light Radiance", &m_Light.Radiance, -1.0f, 2.0f);
+        ImGui::SliderFloat("Light Radiance", &m_Light.Radiance, 0.0f, 10.0f);
         ImGui::SliderFloat("Light Multiplier", &m_Light.Multiplier, 0.0f, 2.0f);
+    }
+    ImGui::End();
+
+    ImGui::Begin("Textures");
+    {
+        ImVec2 imageSize(128.0f, 128.0f);
+
+        ImGui::Text("Environment Cubemap");
+        ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetEnvironmentCubemap(), imageSize);
+
+        ImGui::Text("Irradiance Map");
+        ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetIrradianceMap(), imageSize);
+
+        ImGui::Text("Prefilter Map");
+        ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetPrefilterMap(), imageSize);
+
+        ImGui::Text("BRDF LUT");
+        ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetBRDF_LUT_Texture(), imageSize);
+    }
+    ImGui::End();
+
+    ImGui::Begin("Select HDRI");
+    {
+        ImGui::RadioButton("Greenwich Park", &m_HDRI_Edit, HDRI_GREENWICH_PARK);
+        ImGui::RadioButton("San Giuseppe Bridge", &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
+        ImGui::RadioButton("Tropical Beach", &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
+        ImGui::RadioButton("Vignaioli Night", &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
+        ImGui::RadioButton("Early Eve & Warm Sky", &m_HDRI_Edit, HDRI_EARLY_EVE_WARM_SKY);
+        ImGui::RadioButton("Birchwood", &m_HDRI_Edit, HDRI_BIRCHWOOD);
+        ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
+        ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
+        ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
     }
     ImGui::End();
 
@@ -451,22 +511,6 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
     }
     // END Skybox backgroundShader
 
-
-    m_ShaderMain->Bind();
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, -2.5f, 0.0f));
-    m_ShaderMain->setMat4("model", model);
-    ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
-    ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
-    m_ShaderMain->setFloat("tilingFactor", 0.1f);
-    meshes["floor"]->Render();
-
-    m_ShaderMain->setMat4("model", m_CubeTransform);
-    ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
-    ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
-    m_ShaderMain->setFloat("tilingFactor", 1.0f);
-    meshes["cube"]->Render();
-
     /**** BEGIN Animated PBR models ****/
     m_ShaderHazelAnimPBR->Bind();
 
@@ -589,6 +633,23 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
         }
     }
     // END rendering the animated PBR model Animated Boy
+
+    // BEGIN main shader rendering
+    m_ShaderMain->Bind();
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, -2.5f, 0.0f));
+    m_ShaderMain->setMat4("model", model);
+    ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
+    ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
+    m_ShaderMain->setFloat("tilingFactor", 0.1f);
+    meshes["floor"]->Render();
+
+    m_ShaderMain->setMat4("model", m_CubeTransform);
+    ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
+    ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
+    m_ShaderMain->setFloat("tilingFactor", 1.0f);
+    meshes["cube"]->Render();
+    // END main shader rendering
 }
 
 void SceneAnimPBR::SetupUniforms()
@@ -624,9 +685,9 @@ void SceneAnimPBR::SetupUniforms()
 
 SceneAnimPBR::~SceneAnimPBR()
 {
-    delete m_EnvUnfiltered;
-    delete m_EnvEquirect;
-    delete m_EnvFiltered;
-    delete m_IrradianceMap;
-    delete m_BRDF_LUT;
+    //  delete m_EnvUnfiltered;
+    //  delete m_EnvEquirect;
+    //  delete m_EnvFiltered;
+    //  delete m_IrradianceMap;
+    //  delete m_BRDF_LUT;
 }

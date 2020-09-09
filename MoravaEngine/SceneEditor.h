@@ -24,16 +24,6 @@ const int PBR_MAP_ENVIRONMENT = 0;
 const int PBR_MAP_IRRADIANCE  = 1;
 const int PBR_MAP_PREFILTER   = 2;
 
-const int HDRI_GREENWICH_PARK      = 0;
-const int HDRI_SAN_GIUSEPPE_BRIDGE = 1;
-const int HDRI_TROPICAL_BEACH      = 2;
-const int HDRI_VIGNAIOLI_NIGHT     = 3;
-const int HDRI_EARLY_EVE_WARM_SKY  = 4;
-const int HDRI_BIRCHWOOD           = 5;
-const int HDRI_PINK_SUNRISE        = 6;
-const int HDRI_ROOITOU_PARK        = 7;
-const int HDRI_VENICE_DAWN         = 8;
-
 struct PointSpotLight
 {
 	bool enabled;
