@@ -145,7 +145,7 @@ void SceneSponza::UpdateImGui(float timestep, Window& mainWindow)
 }
 
 void SceneSponza::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
 	/* Sponza scene */
 	glm::mat4 model = glm::mat4(1.0f);
@@ -178,7 +178,7 @@ void SceneSponza::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
 }
 
 void SceneSponza::RenderWater(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
 	if (!sceneSettings.enableWaterEffects) return;
 

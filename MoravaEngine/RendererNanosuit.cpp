@@ -22,7 +22,7 @@ void RendererNanosuit::SetUniforms()
 void RendererNanosuit::SetShaders()
 {
 	Shader* shaderNanosuit = new Shader("Shaders/nanosuit.vs", "Shaders/nanosuit.fs");
-	shaders.insert(std::make_pair("nanosuit", shaderNanosuit));
+	s_Shaders.insert(std::make_pair("nanosuit", shaderNanosuit));
 	printf("RendererNanosuit: shaderNanosuit compiled [programID=%d]\n", shaderNanosuit->GetProgramID());
 }
 
@@ -38,11 +38,11 @@ void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 {
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 
-	Shader* shaderNanosuit = shaders["nanosuit"];
+	Shader* shaderNanosuit = s_Shaders["nanosuit"];
 	SceneNanosuit* sceneNanosuit = (SceneNanosuit*)scene;
 
 	// Clear the window
-	glClearColor(sceneNanosuit->m_BgColor.r, sceneNanosuit->m_BgColor.g, sceneNanosuit->m_BgColor.b, bgColor.a);
+	glClearColor(sceneNanosuit->m_BgColor.r, sceneNanosuit->m_BgColor.g, sceneNanosuit->m_BgColor.b, s_BgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	EnableTransparency();
@@ -112,7 +112,7 @@ void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
 	sceneNanosuit->GetMeshesJoey()["cube"]->Draw(shaderNanosuit);
 
 	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 }
 
 RendererNanosuit::~RendererNanosuit()

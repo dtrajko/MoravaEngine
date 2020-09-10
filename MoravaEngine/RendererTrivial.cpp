@@ -6,7 +6,7 @@
 
 RendererTrivial::RendererTrivial()
 {
-	bgColor = glm::vec4(204 / 255.0f, 255 / 255.0f, 204 / 255.0f, 1.0f);
+	s_BgColor = glm::vec4(204 / 255.0f, 255 / 255.0f, 204 / 255.0f, 1.0f);
 }
 
 void RendererTrivial::Init(Scene* scene)
@@ -31,7 +31,7 @@ void RendererTrivial::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pro
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 	
 	// Clear the window
-	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
@@ -39,7 +39,7 @@ void RendererTrivial::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pro
 
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
 	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 }
 
 void RendererTrivial::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)

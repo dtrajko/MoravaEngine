@@ -24,19 +24,19 @@ void RendererFramebuffers::SetUniforms()
 void RendererFramebuffers::SetShaders()
 {
 	Shader* shaderFramebuffersScene = new Shader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
-	shaders.insert(std::make_pair("framebuffers_scene", shaderFramebuffersScene));
+	s_Shaders.insert(std::make_pair("framebuffers_scene", shaderFramebuffersScene));
 	printf("RendererFramebuffers: shaderFramebuffersScene compiled [programID=%d]\n", shaderFramebuffersScene->GetProgramID());
 
 	Shader* shaderFramebuffersScreen = new Shader("Shaders/framebuffers_screen.vs", "Shaders/framebuffers_screen.fs");
-	shaders.insert(std::make_pair("framebuffers_screen", shaderFramebuffersScreen));
+	s_Shaders.insert(std::make_pair("framebuffers_screen", shaderFramebuffersScreen));
 	printf("RendererFramebuffers: shaderFramebuffersScreen compiled [programID=%d]\n", shaderFramebuffersScreen->GetProgramID());
 
 	// shader configuration
-	shaders["framebuffers_scene"]->Bind();
-	shaders["framebuffers_scene"]->setInt("texture1", 0);
+	s_Shaders["framebuffers_scene"]->Bind();
+	s_Shaders["framebuffers_scene"]->setInt("texture1", 0);
 
-	shaders["framebuffers_screen"]->Bind();
-	shaders["framebuffers_screen"]->setInt("screenTexture", 0);
+	s_Shaders["framebuffers_screen"]->Bind();
+	s_Shaders["framebuffers_screen"]->setInt("screenTexture", 0);
 }
 
 void RendererFramebuffers::SetFramebuffers()
@@ -71,7 +71,7 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 
 	// Clear the window
-	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	{
@@ -87,7 +87,7 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 
 	{
 		std::string passType = "main";
-		scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+		scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 	}
 
 	{
@@ -102,7 +102,7 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		shaders["framebuffers_screen"]->Bind();
+		s_Shaders["framebuffers_screen"]->Bind();
 		SceneFramebuffers* sceneFramebuffers = (SceneFramebuffers*)scene;
 		glBindVertexArray(GeometryFactory::Quad::GetVAO());
 
@@ -113,26 +113,26 @@ void RendererFramebuffers::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 		
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.5f));
-		shaders["framebuffers_screen"]->setMat4("model", model);
-		shaders["framebuffers_screen"]->setInt("effect", sceneFramebuffers->GetEffectForFrame(0)); // diffuse (default)
+		s_Shaders["framebuffers_screen"]->setMat4("model", model);
+		s_Shaders["framebuffers_screen"]->setInt("effect", sceneFramebuffers->GetEffectForFrame(0)); // diffuse (default)
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.5f));
-		shaders["framebuffers_screen"]->setMat4("model", model);
-		shaders["framebuffers_screen"]->setInt("effect", sceneFramebuffers->GetEffectForFrame(1)); // inverse color
+		s_Shaders["framebuffers_screen"]->setMat4("model", model);
+		s_Shaders["framebuffers_screen"]->setInt("effect", sceneFramebuffers->GetEffectForFrame(1)); // inverse color
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.5f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.5f));
-		shaders["framebuffers_screen"]->setMat4("model", model);
-		shaders["framebuffers_screen"]->setInt("effect", sceneFramebuffers->GetEffectForFrame(2)); // nightvision
+		s_Shaders["framebuffers_screen"]->setMat4("model", model);
+		s_Shaders["framebuffers_screen"]->setInt("effect", sceneFramebuffers->GetEffectForFrame(2)); // nightvision
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -0.5f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.5f));
-		shaders["framebuffers_screen"]->setMat4("model", model);
-		shaders["framebuffers_screen"]->setInt("effect", sceneFramebuffers->GetEffectForFrame(3)); // kernel sharp
+		s_Shaders["framebuffers_screen"]->setMat4("model", model);
+		s_Shaders["framebuffers_screen"]->setInt("effect", sceneFramebuffers->GetEffectForFrame(3)); // kernel sharp
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 }

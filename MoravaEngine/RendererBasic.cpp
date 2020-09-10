@@ -4,6 +4,9 @@
 
 
 glm::mat4 RendererBasic::s_ProjectionMatrix;
+std::map<std::string, Shader*> RendererBasic::s_Shaders;
+std::map<std::string, int> RendererBasic::s_Uniforms;
+glm::vec4 RendererBasic::s_BgColor;
 
 RendererBasic::RendererBasic()
 {
@@ -14,19 +17,19 @@ void RendererBasic::Init(Scene* scene)
 	SetUniforms();
 	SetShaders();
 
-	bgColor = glm::vec4(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
+	s_BgColor = glm::vec4(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
 }
 
 void RendererBasic::SetUniforms()
 {
 	// common
-	uniforms.insert(std::make_pair("model", 0));
-	uniforms.insert(std::make_pair("view", 0));
-	uniforms.insert(std::make_pair("projection", 0));
-	uniforms.insert(std::make_pair("nearPlane", 0));
-	uniforms.insert(std::make_pair("farPlane", 0));
-	uniforms.insert(std::make_pair("normalMap", 0));
-	uniforms.insert(std::make_pair("lightPosition", 0));
+	s_Uniforms.insert(std::make_pair("model", 0));
+	s_Uniforms.insert(std::make_pair("view", 0));
+	s_Uniforms.insert(std::make_pair("projection", 0));
+	s_Uniforms.insert(std::make_pair("nearPlane", 0));
+	s_Uniforms.insert(std::make_pair("farPlane", 0));
+	s_Uniforms.insert(std::make_pair("normalMap", 0));
+	s_Uniforms.insert(std::make_pair("lightPosition", 0));
 
 }
 
@@ -41,7 +44,7 @@ void RendererBasic::RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window&
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 
 	// Clear the window
-	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Rendering here
@@ -92,11 +95,11 @@ void RendererBasic::ClearDepthBuffer()
 
 void RendererBasic::Cleanup()
 {
-	for (auto& shader : shaders)
+	for (auto& shader : s_Shaders)
 		delete shader.second;
 
-	shaders.clear();
-	uniforms.clear();
+	s_Shaders.clear();
+	s_Uniforms.clear();
 }
 
 void RendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene)

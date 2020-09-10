@@ -68,7 +68,7 @@ void RendererInstanced::Init(Scene* scene)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
 
-	ShaderInstanced* shaderInstanced = static_cast<ShaderInstanced*>(shaders["instanced"]);
+	ShaderInstanced* shaderInstanced = static_cast<ShaderInstanced*>(s_Shaders["instanced"]);
 	shaderInstanced->Bind();
 	for (unsigned int i = 0; i < 100; i++)
 	{
@@ -82,7 +82,7 @@ void RendererInstanced::SetShaders()
 	static const char* fragShader = "Shaders/instanced.frag";
 	ShaderInstanced* shaderInstanced = new ShaderInstanced();
 	shaderInstanced->CreateFromFiles(vertShader, fragShader);
-	shaders.insert(std::make_pair("instanced", shaderInstanced));
+	s_Shaders.insert(std::make_pair("instanced", shaderInstanced));
 	printf("Renderer: Main shader compiled [programID=%d]\n", shaderInstanced->GetProgramID());
 }
 
@@ -96,10 +96,10 @@ void RendererInstanced::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 
 	// Clear the window
-	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	ShaderInstanced* shaderInstanced = static_cast<ShaderInstanced*>(shaders["instanced"]);
+	ShaderInstanced* shaderInstanced = static_cast<ShaderInstanced*>(s_Shaders["instanced"]);
 	shaderInstanced->Bind();
 
 	shaderInstanced->setMat4("projection", projectionMatrix);
@@ -111,7 +111,7 @@ void RendererInstanced::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	glBindVertexArray(0);
 
 	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 }
 
 RendererInstanced::~RendererInstanced()

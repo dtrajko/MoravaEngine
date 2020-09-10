@@ -23,7 +23,6 @@ public:
 	void RenderPassWaterReflection(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 	void RenderPassWaterRefraction(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 	virtual void Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
-	std::map<std::string, Shader*> GetShaders() { return shaders; };
 	void RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 
 private:

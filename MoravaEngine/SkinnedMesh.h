@@ -57,6 +57,7 @@ public:
     virtual void Render() override;
     void BoneTransform(float TimeInSeconds, std::vector<glm::mat4>& Transforms);
     void BindTextures();
+    inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
 	~SkinnedMesh();
 
 private:
@@ -124,4 +125,7 @@ private:
 
     const aiScene* m_pScene;
     Assimp::Importer m_Importer;
+
+    float m_TimeMultiplier = 1.0f;
+
 };

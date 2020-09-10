@@ -145,7 +145,7 @@ namespace Hazel {
 		const std::string& GetFilePath() const { return m_FilePath; }
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
 
-		void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
+		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
 
 	private:
 		void BoneTransform(float time);

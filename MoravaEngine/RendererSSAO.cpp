@@ -40,7 +40,7 @@ void RendererSSAO::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projec
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 	
 	// Clear the window
-	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	SceneSSAO* sceneSSAO = (SceneSSAO*)scene;
@@ -48,7 +48,7 @@ void RendererSSAO::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projec
 
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
 	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 }
 
 void RendererSSAO::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)

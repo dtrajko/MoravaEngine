@@ -797,7 +797,7 @@ void SceneMarchingCubes::Dig(bool* keys, float timestep)
 }
 
 void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+    std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui
 

@@ -28,43 +28,43 @@ void RendererEditorFramebuffer::SetUniforms()
 void RendererEditorFramebuffer::SetShaders()
 {
     Shader* shaderEditor = new Shader("Shaders/editor_object.vs", "Shaders/editor_object.fs");
-    shaders.insert(std::make_pair("editor_object", shaderEditor));
+    s_Shaders.insert(std::make_pair("editor_object", shaderEditor));
     Log::GetLogger()->info("RendererEditorFramebuffer: shaderEditor compiled [programID={0}]", shaderEditor->GetProgramID());
 
     Shader* shaderEditorPBR = new Shader("Shaders/editor_object.vs", "Shaders/PBR/editor_object_pbr.fs");
-    shaders.insert(std::make_pair("editor_object_pbr", shaderEditorPBR));
+    s_Shaders.insert(std::make_pair("editor_object_pbr", shaderEditorPBR));
     Log::GetLogger()->info("RendererEditorFramebuffer: shaderEditorPBR compiled [programID={0}]", shaderEditorPBR->GetProgramID());
 
     Shader* shaderSkinning = new Shader("Shaders/OGLdev/skinning.vs", "Shaders/OGLdev/skinning.fs");
-    shaders.insert(std::make_pair("skinning", shaderSkinning));
+    s_Shaders.insert(std::make_pair("skinning", shaderSkinning));
     Log::GetLogger()->info("RendererEditorFramebuffer: shaderSkinning compiled [programID={0}]", shaderSkinning->GetProgramID());
 
     Shader* shaderShadowMap = new Shader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
-    shaders.insert(std::make_pair("shadow_map", shaderShadowMap));
+    s_Shaders.insert(std::make_pair("shadow_map", shaderShadowMap));
     Log::GetLogger()->info("RendererEditorFramebuffer: shaderShadowMap compiled [programID={0}]", shaderShadowMap->GetProgramID());
 
     Shader* shaderOmniShadowMap = new Shader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
-    shaders.insert(std::make_pair("omni_shadow_map", shaderOmniShadowMap));
+    s_Shaders.insert(std::make_pair("omni_shadow_map", shaderOmniShadowMap));
     Log::GetLogger()->info("RendererEditorFramebuffer: shaderOmniShadowMap compiled [programID={0}]", shaderOmniShadowMap->GetProgramID());
 
     Shader* shaderWater = new Shader("Shaders/water.vert", "Shaders/water.frag");
-    shaders.insert(std::make_pair("water", shaderWater));
+    s_Shaders.insert(std::make_pair("water", shaderWater));
     Log::GetLogger()->info("RendererEditorFramebuffer: shaderWater compiled [programID={0}]", shaderWater->GetProgramID());
 
     Shader* shaderBackground = new Shader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
-    shaders.insert(std::make_pair("background", shaderBackground));
+    s_Shaders.insert(std::make_pair("background", shaderBackground));
     Log::GetLogger()->info("RendererEditorFramebuffer: shaderBackground compiled [programID={0}]", shaderBackground->GetProgramID());
 
     Shader* shaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
-    shaders.insert(std::make_pair("basic", shaderBasic));
+    s_Shaders.insert(std::make_pair("basic", shaderBasic));
     Log::GetLogger()->info("RendererEditorFramebuffer: shaderBasic compiled [programID={0}]", shaderBasic->GetProgramID());
 
     Shader* shaderGizmo = new Shader("Shaders/gizmo.vs", "Shaders/gizmo.fs");
-    shaders.insert(std::make_pair("gizmo", shaderGizmo));
+    s_Shaders.insert(std::make_pair("gizmo", shaderGizmo));
     Log::GetLogger()->info("RendererEditorFramebuffer: shaderGizmo compiled [programID={0}]", shaderGizmo->GetProgramID());
 
     Shader* shaderGlass = new Shader("Shaders/glass.vs", "Shaders/glass.fs");
-    shaders.insert(std::make_pair("glass", shaderGlass));
+    s_Shaders.insert(std::make_pair("glass", shaderGlass));
     Log::GetLogger()->info("RendererEditorFramebuffer: shaderGlass compiled [programID={0}]", shaderGlass->GetProgramID());
 
     shaderEditor->Bind();
@@ -92,7 +92,7 @@ void RendererEditorFramebuffer::RenderPassShadow(Window& mainWindow, Scene* scen
     if (!LightManager::directionalLight.GetEnabled()) return;
     if (LightManager::directionalLight.GetShadowMap() == nullptr) return;
 
-    Shader* shaderShadowMap = shaders["shadow_map"];
+    Shader* shaderShadowMap = s_Shaders["shadow_map"];
     shaderShadowMap->Bind();
 
     DirectionalLight* light = &LightManager::directionalLight;
@@ -109,7 +109,7 @@ void RendererEditorFramebuffer::RenderPassShadow(Window& mainWindow, Scene* scen
 
     DisableCulling();
     std::string passType = "shadow_dir";
-    scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+    scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -118,7 +118,7 @@ void RendererEditorFramebuffer::RenderPassOmniShadow(PointLight* light, Window& 
 {
     if (!scene->GetSettings().enableOmniShadows) return;
 
-    Shader* shaderOmniShadow = shaders["omni_shadow_map"];
+    Shader* shaderOmniShadow = s_Shaders["omni_shadow_map"];
     shaderOmniShadow->Bind();
 
     glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
@@ -136,7 +136,7 @@ void RendererEditorFramebuffer::RenderPassOmniShadow(PointLight* light, Window& 
 
     EnableCulling();
     std::string passType = "shadow_omni";
-    scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+    scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -150,10 +150,10 @@ void RendererEditorFramebuffer::RenderPassWaterReflection(Window& mainWindow, Sc
     scene->GetWaterManager()->GetReflectionFramebuffer()->Bind();
 
     // Clear the window
-    glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+    glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    Shader* shaderEditor = shaders["editor_object"];
+    Shader* shaderEditor = s_Shaders["editor_object"];
     shaderEditor->Bind();
     shaderEditor->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     shaderEditor->setMat4("projection", projectionMatrix);
@@ -161,7 +161,7 @@ void RendererEditorFramebuffer::RenderPassWaterReflection(Window& mainWindow, Sc
     shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditor->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
     
-    Shader* shaderEditorPBR = shaders["editor_object_pbr"];
+    Shader* shaderEditorPBR = s_Shaders["editor_object_pbr"];
     shaderEditorPBR->Bind();
     shaderEditorPBR->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     shaderEditorPBR->setMat4("projection", projectionMatrix);
@@ -169,7 +169,7 @@ void RendererEditorFramebuffer::RenderPassWaterReflection(Window& mainWindow, Sc
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
 
-    Shader* shaderSkinning = shaders["skinning"];
+    Shader* shaderSkinning = s_Shaders["skinning"];
     shaderSkinning->Bind();
     shaderSkinning->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     shaderSkinning->setMat4("projection", projectionMatrix);
@@ -177,7 +177,7 @@ void RendererEditorFramebuffer::RenderPassWaterReflection(Window& mainWindow, Sc
 
     DisableCulling();
     std::string passType = "water_reflect";
-    scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+    scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -193,10 +193,10 @@ void RendererEditorFramebuffer::RenderPassWaterRefraction(Window& mainWindow, Sc
     scene->GetWaterManager()->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["depth"]);
 
     // Clear the window
-    glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+    glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    Shader* shaderEditor = shaders["editor_object"];
+    Shader* shaderEditor = s_Shaders["editor_object"];
     shaderEditor->Bind();
     shaderEditor->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     shaderEditor->setMat4("projection", projectionMatrix);
@@ -204,7 +204,7 @@ void RendererEditorFramebuffer::RenderPassWaterRefraction(Window& mainWindow, Sc
     shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditor->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
 
-    Shader* shaderEditorPBR = shaders["editor_object_pbr"];
+    Shader* shaderEditorPBR = s_Shaders["editor_object_pbr"];
     shaderEditorPBR->Bind();
     shaderEditorPBR->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     shaderEditorPBR->setMat4("projection", projectionMatrix);
@@ -212,7 +212,7 @@ void RendererEditorFramebuffer::RenderPassWaterRefraction(Window& mainWindow, Sc
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
 
-    Shader* shaderSkinning = shaders["skinning"];
+    Shader* shaderSkinning = s_Shaders["skinning"];
     shaderSkinning->Bind();
     shaderSkinning->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     shaderSkinning->setMat4("projection", projectionMatrix);
@@ -220,7 +220,7 @@ void RendererEditorFramebuffer::RenderPassWaterRefraction(Window& mainWindow, Sc
 
     DisableCulling();
     std::string passType = "water_refract";
-    scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+    scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -315,7 +315,7 @@ void RendererEditorFramebuffer::RenderPass(Window& mainWindow, Scene* scene, glm
 
     scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
     std::string passType = "main";
-    scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+    scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 
     renderFramebuffer->Unbind();
 }
@@ -328,7 +328,7 @@ void RendererEditorFramebuffer::Render(float deltaTime, Window& mainWindow, Scen
     RendererBasic::SetProjectionMatrix(projectionMatrix);
 
     /**** Begin editor_object ****/
-    Shader* shaderEditor = shaders["editor_object"];
+    Shader* shaderEditor = s_Shaders["editor_object"];
     shaderEditor->Bind();
 
     shaderEditor->setMat4("model", glm::mat4(1.0f));
@@ -436,7 +436,7 @@ void RendererEditorFramebuffer::Render(float deltaTime, Window& mainWindow, Scen
 
     /**** Begin editor_object_pbr ****/
     // Init shaderEditorPBR
-    Shader* shaderEditorPBR = shaders["editor_object_pbr"];
+    Shader* shaderEditorPBR = s_Shaders["editor_object_pbr"];
     shaderEditorPBR->Bind();
 
     // initialize static shader uniforms before rendering
@@ -524,7 +524,7 @@ void RendererEditorFramebuffer::Render(float deltaTime, Window& mainWindow, Scen
     /**** End editor_object_pbr ****/
 
     /**** Begin skinning ****/
-    Shader* shaderSkinning = shaders["skinning"];
+    Shader* shaderSkinning = s_Shaders["skinning"];
     shaderSkinning->Bind();
 
     shaderSkinning->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
@@ -548,20 +548,20 @@ void RendererEditorFramebuffer::Render(float deltaTime, Window& mainWindow, Scen
     /**** End skinning ****/
 
     /**** Begin shadow_map ****/
-    Shader* shaderShadowMap = shaders["shadow_map"];
+    Shader* shaderShadowMap = s_Shaders["shadow_map"];
     shaderShadowMap->Bind();
     shaderShadowMap->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     /**** End shadow_map ****/
 
     /**** Begin omni_shadow_map ****/
-    Shader* shaderOmniShadowMap = shaders["omni_shadow_map"];
+    Shader* shaderOmniShadowMap = s_Shaders["omni_shadow_map"];
     shaderOmniShadowMap->Bind();
     shaderOmniShadowMap->setVec3("lightPosition", LightManager::directionalLight.GetPosition());
     shaderOmniShadowMap->setFloat("farPlane", scene->GetSettings().farPlane);
     /**** End omni_shadow_map ****/
 
     /**** Begin shaderWater ****/
-    Shader* shaderWater = shaders["water"];
+    Shader* shaderWater = s_Shaders["water"];
     shaderWater->Bind();
 
     shaderWater->setMat4("projection", projectionMatrix);
@@ -578,21 +578,21 @@ void RendererEditorFramebuffer::Render(float deltaTime, Window& mainWindow, Scen
     /**** End shaderWater ****/
 
     /**** Begin Background shader ****/
-    Shader* shaderBackground = shaders["background"];
+    Shader* shaderBackground = s_Shaders["background"];
     shaderBackground->Bind();
     shaderBackground->setMat4("projection", projectionMatrix);
     shaderBackground->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     /**** End Background shader ****/
 
     /**** Begin of shaderBasic ****/
-    Shader* shaderBasic = shaders["basic"];
+    Shader* shaderBasic = s_Shaders["basic"];
     shaderBasic->Bind();
     shaderBasic->setMat4("projection", projectionMatrix);
     shaderBasic->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     /**** End of shaderBasic ****/
 
     /**** Begin gizmo shader ****/
-    Shader* shaderGizmo = shaders["gizmo"];
+    Shader* shaderGizmo = s_Shaders["gizmo"];
     shaderGizmo->Bind();
     shaderGizmo->setMat4("projection", projectionMatrix);
     shaderGizmo->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
@@ -605,7 +605,7 @@ void RendererEditorFramebuffer::Render(float deltaTime, Window& mainWindow, Scen
     /**** End gizmo shader ****/
 
     /**** Begin glass ****/
-    Shader* shaderGlass = shaders["glass"];
+    Shader* shaderGlass = s_Shaders["glass"];
     shaderGlass->Bind();
     shaderGlass->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     shaderGlass->setMat4("projection", projectionMatrix);

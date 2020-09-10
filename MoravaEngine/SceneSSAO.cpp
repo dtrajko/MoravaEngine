@@ -337,7 +337,7 @@ void SceneSSAO::UpdateImGui(float timestep, Window& mainWindow)
 }
 
 void SceneSSAO::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     /************************************************************************
     Shader* shaderMain = shaders["main"];

@@ -17,47 +17,47 @@ void RendererJoey::Init(Scene* scene)
 
 void RendererJoey::SetUniforms()
 {
-	uniforms.insert(std::make_pair("projection", 0));
-	uniforms.insert(std::make_pair("model", 0));
-	uniforms.insert(std::make_pair("view", 0));
+	s_Uniforms.insert(std::make_pair("projection", 0));
+	s_Uniforms.insert(std::make_pair("model", 0));
+	s_Uniforms.insert(std::make_pair("view", 0));
 }
 
 void RendererJoey::SetShaders()
 {
 	Shader* pbrShader = new Shader("Shaders/LearnOpenGL/2.2.2.pbr.vs", "Shaders/LearnOpenGL/2.2.2.pbr.fs");
-	shaders.insert(std::make_pair("pbrShader", pbrShader));
+	s_Shaders.insert(std::make_pair("pbrShader", pbrShader));
 	printf("RendererJoey: pbrShader compiled [programID=%d]\n", pbrShader->GetProgramID());
 
 	Shader* pbrShaderMRE = new Shader("Shaders/LearnOpenGL/2.2.2.pbr.vs", "Shaders/LearnOpenGL/2.2.3.pbr.fs");
-	shaders.insert(std::make_pair("pbrShaderMRE", pbrShaderMRE));
+	s_Shaders.insert(std::make_pair("pbrShaderMRE", pbrShaderMRE));
 	printf("RendererJoey: pbrShaderMRE compiled [programID=%d]\n", pbrShaderMRE->GetProgramID());
 
 	Shader* backgroundShader = new Shader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
-	shaders.insert(std::make_pair("backgroundShader", backgroundShader));
+	s_Shaders.insert(std::make_pair("backgroundShader", backgroundShader));
 	printf("RendererJoey: backgroundShader compiled [programID=%d]\n", backgroundShader->GetProgramID());
 
-	shaders["pbrShader"]->Bind();
-	shaders["pbrShader"]->setInt("irradianceMap", 0);
-	shaders["pbrShader"]->setInt("prefilterMap",  1);
-	shaders["pbrShader"]->setInt("brdfLUT",       2);
-	shaders["pbrShader"]->setInt("albedoMap",     3);
-	shaders["pbrShader"]->setInt("normalMap",     4);
-	shaders["pbrShader"]->setInt("metallicMap",   5);
-	shaders["pbrShader"]->setInt("roughnessMap",  6);
-	shaders["pbrShader"]->setInt("aoMap",         7);
+	s_Shaders["pbrShader"]->Bind();
+	s_Shaders["pbrShader"]->setInt("irradianceMap", 0);
+	s_Shaders["pbrShader"]->setInt("prefilterMap",  1);
+	s_Shaders["pbrShader"]->setInt("brdfLUT",       2);
+	s_Shaders["pbrShader"]->setInt("albedoMap",     3);
+	s_Shaders["pbrShader"]->setInt("normalMap",     4);
+	s_Shaders["pbrShader"]->setInt("metallicMap",   5);
+	s_Shaders["pbrShader"]->setInt("roughnessMap",  6);
+	s_Shaders["pbrShader"]->setInt("aoMap",         7);
 
-	shaders["pbrShaderMRE"]->Bind();
-	shaders["pbrShaderMRE"]->setInt("irradianceMap", 0);
-	shaders["pbrShaderMRE"]->setInt("prefilterMap",  1);
-	shaders["pbrShaderMRE"]->setInt("brdfLUT",       2);
-	shaders["pbrShaderMRE"]->setInt("albedoMap",     3);
-	shaders["pbrShaderMRE"]->setInt("normalMap",     4);
-	shaders["pbrShaderMRE"]->setInt("metalRoughMap", 5);
-	shaders["pbrShaderMRE"]->setInt("emissiveMap",   6);
-	shaders["pbrShaderMRE"]->setInt("aoMap",         7);
+	s_Shaders["pbrShaderMRE"]->Bind();
+	s_Shaders["pbrShaderMRE"]->setInt("irradianceMap", 0);
+	s_Shaders["pbrShaderMRE"]->setInt("prefilterMap",  1);
+	s_Shaders["pbrShaderMRE"]->setInt("brdfLUT",       2);
+	s_Shaders["pbrShaderMRE"]->setInt("albedoMap",     3);
+	s_Shaders["pbrShaderMRE"]->setInt("normalMap",     4);
+	s_Shaders["pbrShaderMRE"]->setInt("metalRoughMap", 5);
+	s_Shaders["pbrShaderMRE"]->setInt("emissiveMap",   6);
+	s_Shaders["pbrShaderMRE"]->setInt("aoMap",         7);
 
-	shaders["backgroundShader"]->Bind();
-	shaders["backgroundShader"]->setInt("environmentMap", 0);
+	s_Shaders["backgroundShader"]->Bind();
+	s_Shaders["backgroundShader"]->setInt("environmentMap", 0);
 }
 
 void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -65,7 +65,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
 	// Clear the window
-	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// configure global opengl state
@@ -79,7 +79,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
 
 	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 }
 
 void RendererJoey::RenderPass()

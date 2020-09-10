@@ -97,6 +97,7 @@ SceneAnimPBR::SceneAnimPBR()
     SetupShaders();
     SetupTextureSlots();
     SetupTextures();
+    SetupMaterials();
     SetupFramebuffers();
     SetupMeshes();
     SetupModels();
@@ -132,6 +133,10 @@ void SceneAnimPBR::SetupTextures()
 }
 
 void SceneAnimPBR::SetupTextureSlots()
+{
+}
+
+void SceneAnimPBR::SetupMaterials()
 {
 }
 
@@ -190,10 +195,10 @@ void SceneAnimPBR::SetupMeshes()
     // BobLamp
     TextureInfo textureInfoBobLamp = {};
     textureInfoBobLamp.albedo    = "Textures/plain.png";
-    textureInfoBobLamp.normal    = "Textures/PBR/plastic/normal.png";
-    textureInfoBobLamp.metallic  = "Textures/PBR/plastic/metallic.png";
-    textureInfoBobLamp.roughness = "Textures/PBR/plastic/roughness.png";
-    textureInfoBobLamp.ao        = "Textures/PBR/plastic/ao.png";
+    textureInfoBobLamp.normal    = "Textures/PBR/non_reflective/normal.png";
+    textureInfoBobLamp.metallic  = "Textures/PBR/non_reflective/metallic.png";
+    textureInfoBobLamp.roughness = "Textures/PBR/non_reflective/roughness.png";
+    textureInfoBobLamp.ao        = "Textures/PBR/non_reflective/ao.png";
 
     m_BaseMaterialBob = new Material(textureInfoBobLamp, materialSpecular, materialShininess);
     m_MeshAnimPBRBob = new Hazel::MeshAnimPBR("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterialBob);
@@ -208,10 +213,10 @@ void SceneAnimPBR::SetupMeshes()
     // Animated Boy
     TextureInfo textureInfoAnimBoy = {};
     textureInfoAnimBoy.albedo    = "Models/ThinMatrix/AnimatedCharacter/AnimatedCharacterDiffuse.png";
-    textureInfoAnimBoy.normal    = "Textures/PBR/plastic/normal.png";
-    textureInfoAnimBoy.metallic  = "Textures/PBR/plastic/metallic.png";
-    textureInfoAnimBoy.roughness = "Textures/PBR/plastic/roughness.png";
-    textureInfoAnimBoy.ao        = "Textures/PBR/plastic/ao.png";
+    textureInfoAnimBoy.normal    = "Textures/PBR/non_reflective/normal.png";
+    textureInfoAnimBoy.metallic  = "Textures/PBR/non_reflective/metallic.png";
+    textureInfoAnimBoy.roughness = "Textures/PBR/non_reflective/roughness.png";
+    textureInfoAnimBoy.ao        = "Textures/PBR/non_reflective/ao.png";
 
     m_BaseMaterialBoy = new Material(textureInfoAnimBoy, materialSpecular, materialShininess);
     m_MeshAnimPBRBoy = new Hazel::MeshAnimPBR("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterialBoy);
@@ -463,7 +468,7 @@ float SceneAnimPBR::GetSnapValue()
 }
 
 void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     SetupUniforms();
 

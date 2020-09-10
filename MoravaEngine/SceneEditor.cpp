@@ -1186,10 +1186,12 @@ Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* n
         break;
     case MESH_TYPE_BOB_LAMP:
         mesh = new SkinnedMesh("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Models/OGLdev/BobLamp");
+        ((SkinnedMesh*)mesh)->SetTimeMultiplier(1.0f);
         *name = "bob_lamp";
         break;
     case MESH_TYPE_ANIM_BOY:
         mesh = new SkinnedMesh("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", "Textures");
+        ((SkinnedMesh*)mesh)->SetTimeMultiplier(600.0f);
         *name = "anim_boy";
         break;
     case MESH_TYPE_TERRAIN:
@@ -2018,7 +2020,7 @@ void SceneEditor::RenderGlassObjects(Shader* shaderGlass)
 }
 
 void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+    std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     // printf("SceneEditor::Render passType = %s\n", passType.c_str());
     m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui

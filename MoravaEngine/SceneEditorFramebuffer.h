@@ -28,7 +28,7 @@ public:
 	virtual void UpdateImGui(float timestep, Window& mainWindow) override;
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window& mainWindow) override;
 	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms) override;
+		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
 	inline Framebuffer* GetRenderFramebuffer() { return m_RenderFramebuffer; };
 
 private:

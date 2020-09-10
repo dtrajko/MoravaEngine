@@ -31,7 +31,9 @@ public:
 	static inline void SetProjectionMatrix(glm::mat4 projectionMatrix) { s_ProjectionMatrix = projectionMatrix; };
 	static void SetDefaultFramebuffer(unsigned int width, unsigned int height);
 
-	std::map<std::string, Shader*> GetShaders() { return shaders; };
+	static std::map<std::string, Shader*>& GetShaders() { return s_Shaders; };
+	static std::map<std::string, int>& GetUniforms() { return s_Uniforms; };
+
 	void RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window& mainWindow);
 	void Cleanup();
 
@@ -42,9 +44,8 @@ private:
 	static glm::mat4 s_ProjectionMatrix;
 
 protected:
-
-	std::map<std::string, Shader*> shaders;
-	std::map<std::string, GLint> uniforms;
-	glm::vec4 bgColor;
+	static std::map<std::string, Shader*> s_Shaders;
+	static std::map<std::string, int> s_Uniforms;
+	static glm::vec4 s_BgColor;
 
 };

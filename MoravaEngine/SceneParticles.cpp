@@ -102,7 +102,7 @@ void SceneParticles::UpdateImGui(float timestep, Window& mainWindow)
 }
 
 void SceneParticles::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     m_ShaderFBScene->Bind();
     m_ShaderFBScene->setMat4("projection", projectionMatrix);

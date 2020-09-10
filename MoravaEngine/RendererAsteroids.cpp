@@ -83,14 +83,14 @@ void RendererAsteroids::SetShaders()
 	static const char* asteroidsFrag = "Shaders/asteroids.fs";
 	ShaderInstanced* shaderAsteroids = new ShaderInstanced();
 	shaderAsteroids->CreateFromFiles(asteroidsVert, asteroidsFrag);
-	shaders.insert(std::make_pair("asteroids", shaderAsteroids));
+	s_Shaders.insert(std::make_pair("asteroids", shaderAsteroids));
 	printf("Renderer: shaderAsteroids shader compiled [programID=%d]\n", shaderAsteroids->GetProgramID());
 
 	static const char* planetVert = "Shaders/asteroids_planet.vs";
 	static const char* planetFrag = "Shaders/asteroids.fs";
 	ShaderInstanced* shaderPlanet = new ShaderInstanced();
 	shaderPlanet->CreateFromFiles(planetVert, planetFrag);
-	shaders.insert(std::make_pair("planet", shaderPlanet));
+	s_Shaders.insert(std::make_pair("planet", shaderPlanet));
 	printf("Renderer: shaderPlanet shader compiled [programID=%d]\n", shaderPlanet->GetProgramID());
 }
 
@@ -106,7 +106,7 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 
 	// Clear the window
-	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Override the Projection matrix (update FOV)
@@ -125,23 +125,23 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	glm::mat4 view = scene->GetCameraController()->CalculateViewMatrix();
 
 	// configure transformation matrices
-	shaders["planet"]->Bind();
-	shaders["planet"]->setMat4("projection", projectionMatrix);
-	shaders["planet"]->setMat4("view", view);
+	s_Shaders["planet"]->Bind();
+	s_Shaders["planet"]->setMat4("projection", projectionMatrix);
+	s_Shaders["planet"]->setMat4("view", view);
 
 	// draw planet
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, -20.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(planetRotationY), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(20.0f));
-	shaders["planet"]->setMat4("model", model);
-	models["planet"]->Draw(shaders["planet"]);
+	s_Shaders["planet"]->setMat4("model", model);
+	models["planet"]->Draw(s_Shaders["planet"]);
 
 	// draw meteorites
-	shaders["asteroids"]->Bind();
-	shaders["asteroids"]->setMat4("projection", projectionMatrix);
-	shaders["asteroids"]->setMat4("view", view);
-	shaders["asteroids"]->setInt("texture_diffuse1", 0);
+	s_Shaders["asteroids"]->Bind();
+	s_Shaders["asteroids"]->setMat4("projection", projectionMatrix);
+	s_Shaders["asteroids"]->setMat4("view", view);
+	s_Shaders["asteroids"]->setInt("texture_diffuse1", 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, models["rock"]->GetTextures()[0].id); // note: we also made the textures_loaded vector public (instead of private) from the model class.
 	for (unsigned int i = 0; i < models["rock"]->GetMeshes().size(); i++)
@@ -152,7 +152,7 @@ void RendererAsteroids::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 p
 	}
 
 	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 }
 
 RendererAsteroids::~RendererAsteroids()

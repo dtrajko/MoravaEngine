@@ -14,11 +14,11 @@ void RendererOmniShadows::Init(Scene* scene)
 void RendererOmniShadows::SetShaders()
 {
 	Shader* shaderOmniShadow = new Shader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
-	shaders.insert(std::make_pair("omniShadow", shaderOmniShadow));
+	s_Shaders.insert(std::make_pair("omniShadow", shaderOmniShadow));
 	Log::GetLogger()->info("RendererOmniShadows: shaderOmniShadow compiled [programID={0}]", shaderOmniShadow->GetProgramID());
 
 	Shader* shaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
-	shaders.insert(std::make_pair("main", shaderMain));
+	s_Shaders.insert(std::make_pair("main", shaderMain));
 	Log::GetLogger()->info("RendererOmniShadows: shaderMain compiled [programID={0}]", shaderMain->GetProgramID());
 }
 
@@ -43,7 +43,7 @@ void RendererOmniShadows::RenderOmniShadows(Window& mainWindow, Scene* scene, gl
 
 void RendererOmniShadows::RenderPassOmniShadow(PointLight* light, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	shaders["omniShadow"]->Bind();
+	s_Shaders["omniShadow"]->Bind();
 
 	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
@@ -52,17 +52,17 @@ void RendererOmniShadows::RenderPassOmniShadow(PointLight* light, Window& mainWi
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_BLEND);
 
-	shaders["omniShadow"]->setVec3("lightPosition", light->GetPosition());
-	shaders["omniShadow"]->setFloat("farPlane", light->GetFarPlane());
+	s_Shaders["omniShadow"]->setVec3("lightPosition", light->GetPosition());
+	s_Shaders["omniShadow"]->setFloat("farPlane", light->GetFarPlane());
 	std::vector<glm::mat4> lightMatrices = light->CalculateLightTransform();
 	for (unsigned int i = 0; i < lightMatrices.size(); i++) {
-		shaders["omniShadow"]->setMat4("lightMatrices[" + std::to_string(i) + "]", lightMatrices[i]);
+		s_Shaders["omniShadow"]->setMat4("lightMatrices[" + std::to_string(i) + "]", lightMatrices[i]);
 	}
-	shaders["omniShadow"]->Validate();
+	s_Shaders["omniShadow"]->Validate();
 
 	EnableCulling();
 	std::string passType = "shadow_omni";
-	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -72,10 +72,10 @@ void RendererOmniShadows::RenderPass(Window& mainWindow, Scene* scene, glm::mat4
 	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
 
 	// Clear the window
-	glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	Shader* shaderMain = (Shader*)shaders["main"];
+	Shader* shaderMain = (Shader*)s_Shaders["main"];
 	shaderMain->Bind();
 
 	shaderMain->setMat4("model", glm::mat4(1.0f));
@@ -147,7 +147,7 @@ void RendererOmniShadows::RenderPass(Window& mainWindow, Scene* scene, glm::mat4
 
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
 	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 
 	shaderMain->Unbind();
 }

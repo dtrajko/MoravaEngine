@@ -706,7 +706,7 @@ bool SceneVoxelTerrainSL::IsPositionVacant(glm::ivec3 queryPosition)
 }
 
 void SceneVoxelTerrainSL::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+    std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     Shader* shaderMain = shaders["main"];
     Shader* shaderOmniShadow = shaders["omniShadow"];

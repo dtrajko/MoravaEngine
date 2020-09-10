@@ -130,7 +130,7 @@ void ScenePBR::SetupModels()
 	if (m_CerberusEnabled)
 	{
 		Model* cerberus = new Model();
-		cerberus->LoadModel("Models/Cerberus_LP.FBX");
+		cerberus->LoadModel("Models/Cerberus_LP.FBX", "Textures/PBR/Cerberus");
 		models.insert(std::make_pair("cerberus", cerberus));
 	}
 }
@@ -174,7 +174,7 @@ void ScenePBR::UpdateImGui(float timestep, Window& mainWindow)
 }
 
 void ScenePBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
 	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(shaders["pbr"]);
 
@@ -186,13 +186,13 @@ void ScenePBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::strin
 	// Model matrix
 	glm::mat4 model;
 
-	for (int v = 0; v <= 5; ++v)
+	for (int v = -2; v <= 2; ++v)
 	{
-		for (int h = 0; h <= 5; ++h)
+		for (int h = -2; h <= 2; ++h)
 		{
-			float x = ((float)h - 2.0f) * 2.5f;
-			float y = ((float)v - 2.0f) * 2.5f + 8.0f;
-			float z = ((float)v - 2.0f) * 2.5f;
+			float x = (float)h * 2.5f;
+			float y = (float)v * 2.5f + 8.0f;
+			float z = (float)v * 2.5f;
 
 			/* Sphere model */
 			model = glm::mat4(1.0f);
@@ -241,7 +241,7 @@ void ScenePBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::strin
 	if (m_CerberusEnabled)
 	{
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 20.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 10.0f, 2.5f));
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -271,7 +271,7 @@ void ScenePBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::strin
 }
 
 void ScenePBR::RenderWater(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, GLint> uniforms)
+	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
 	if (!sceneSettings.enableWaterEffects) return;
 
