@@ -52,7 +52,8 @@ private:
 
 	Shader* m_ShaderMain;
 	Shader* m_ShaderBackground;
-	Shader* m_ShaderHazelAnimPBR;
+	// Shader* m_ShaderHazelAnimPBR;
+	Shader* m_ShaderHybridAnimPBR;
 	Shader* m_ShaderHDR;
 	Shader* m_ShaderEquirectangularConversion;
 	Shader* m_ShaderEnvFiltering;
