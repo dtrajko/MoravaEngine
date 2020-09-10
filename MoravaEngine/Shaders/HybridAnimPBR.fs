@@ -1,5 +1,7 @@
 #version 330 core
 
+const int MAX_LIGHTS = 4 + 4; // (4 x point lights) + (4 x spot lights)
+
 out vec4 FragColor;
 
 in VertexOutput
@@ -24,8 +26,8 @@ uniform samplerCube u_PrefilterMap;
 uniform sampler2D u_BRDFLUT;
 
 // lights
-uniform vec3 lightPositions[4];
-uniform vec3 lightColors[4];
+uniform vec3 lightPositions[MAX_LIGHTS];
+uniform vec3 lightColors[MAX_LIGHTS];
 
 uniform vec3 u_CameraPosition;
 
@@ -123,7 +125,7 @@ void main()
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
-    for(int i = 0; i < 4; ++i) 
+    for(int i = 0; i < MAX_LIGHTS; ++i) 
     {
         // calculate per-light radiance
         vec3 L = normalize(lightPositions[i] - vs_Input.WorldPosition);

@@ -7,6 +7,8 @@
 #include "MaterialWorkflowPBR.h"
 
 
+const int MAX_LIGHTS = 4 + 4; // (4 x point lights) + (4 x spot lights)
+
 class SceneAnimPBR : public Scene
 {
 
@@ -37,16 +39,6 @@ private:
 	float GetSnapValue();
 
 private:
-	struct Light
-	{
-		glm::vec3 Direction;
-		float Radiance;
-		float Multiplier;
-	} m_Light;
-
-	glm::vec3 m_AlbedoColor;
-	float m_Roughness;
-
 	glm::mat4 m_CubeTransform;
 	int m_GizmoType;
 
@@ -86,11 +78,7 @@ private:
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;
 
-	// TextureCubemapLite* m_EnvUnfiltered;
-	// Texture* m_EnvEquirect;
-	// TextureCubemapLite* m_EnvFiltered;
-	// TextureCubemapLite* m_IrradianceMap;
-	// Texture* m_BRDF_LUT;
-	// std::pair<TextureCubemapLite*, TextureCubemapLite*> m_TextureCubemaps;
+	glm::vec3 m_LightPosition;
+	glm::vec3 m_LightColor;
 
 };

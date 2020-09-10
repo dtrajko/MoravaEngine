@@ -121,12 +121,8 @@ SceneAnimPBR::SceneAnimPBR()
     m_MaterialWorkflowPBR->m_IrradianceMapSize = 32;  //  32
     m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr");
 
-    m_AlbedoColor = LightManager::directionalLight.GetColor();
-    m_Roughness = 0.5f;
-
-    m_Light.Direction = LightManager::directionalLight.GetDirection();
-    m_Light.Radiance = 1.5f;
-    m_Light.Multiplier = 1.0f;
+    m_LightPosition = glm::vec3(20.0f, 20.0f, 20.0f);
+    m_LightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 }
 
 void SceneAnimPBR::SetupTextures()
@@ -238,12 +234,12 @@ void SceneAnimPBR::Update(float timestep, Window& mainWindow)
 {
     m_ShaderHybridAnimPBR->Bind();
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < MAX_LIGHTS; i++)
     {
         std::string uniformName = std::string("lightPositions[") + std::to_string(i) + std::string("]");
-        m_ShaderHybridAnimPBR->setVec3(uniformName, LightManager::directionalLight.GetPosition());
+        m_ShaderHybridAnimPBR->setVec3(uniformName, m_LightPosition);
         uniformName = std::string("lightColors[") + std::to_string(i) + std::string("]");
-        m_ShaderHybridAnimPBR->setVec3(uniformName, LightManager::directionalLight.GetColor());
+        m_ShaderHybridAnimPBR->setVec3(uniformName, m_LightColor);
     }
 
     m_ShaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
@@ -330,12 +326,8 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
 
     ImGui::Begin("Light");
     {
-        ImGui::ColorEdit3("Albedo Color", glm::value_ptr(m_AlbedoColor));
-        ImGui::SliderFloat("Roughness", &m_Roughness, -1.0f, 1.0f);
-
-        ImGui::SliderFloat3("Light Direction", glm::value_ptr(m_Light.Direction), -1.0f, 1.0f);
-        ImGui::SliderFloat("Light Radiance", &m_Light.Radiance, 0.0f, 10.0f);
-        ImGui::SliderFloat("Light Multiplier", &m_Light.Multiplier, 0.0f, 2.0f);
+        ImGui::SliderFloat3("Light Position", glm::value_ptr(m_LightPosition), -100.0f, 100.0f);
+        ImGui::ColorEdit3("Light Color", glm::value_ptr(m_LightColor));
     }
     ImGui::End();
 
