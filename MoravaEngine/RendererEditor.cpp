@@ -38,6 +38,10 @@ void RendererEditor::SetShaders()
     shaders.insert(std::make_pair("skinning", shaderSkinning));
     Log::GetLogger()->info("RendererEditor: shaderSkinning compiled [programID={0}]", shaderSkinning->GetProgramID());
 
+    Shader* shaderHybridAnimPBR = new Shader("Shaders/HybridAnimPBR.vs", "Shaders/HybridAnimPBR.fs");
+    shaders.insert(std::make_pair("hybrid_anim_pbr", shaderHybridAnimPBR));
+    Log::GetLogger()->info("RendererEditor: shaderHybridAnimPBR compiled [programID={0}]", shaderHybridAnimPBR->GetProgramID());
+
     Shader* shaderShadowMap = new Shader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
     shaders.insert(std::make_pair("shadow_map", shaderShadowMap));
     Log::GetLogger()->info("RendererEditor: shaderShadowMap compiled [programID={0}]", shaderShadowMap->GetProgramID());
@@ -83,6 +87,15 @@ void RendererEditor::SetShaders()
     shaderEditorPBR->setInt("aoMap",         7);
     shaderEditorPBR->setInt("shadowMap",     8);
     m_OmniShadowTxSlots.insert(std::make_pair("editor_object_pbr", 9)); // omniShadowMaps[i].shadowMap = 9
+
+    shaderHybridAnimPBR->Bind();
+    shaderHybridAnimPBR->setInt("u_AlbedoTexture",    1);
+    shaderHybridAnimPBR->setInt("u_NormalTexture",    2);
+    shaderHybridAnimPBR->setInt("u_MetalnessTexture", 3);
+    shaderHybridAnimPBR->setInt("u_RoughnessTexture", 4);
+    shaderHybridAnimPBR->setInt("u_EnvRadianceTex",   5);
+    shaderHybridAnimPBR->setInt("u_PrefilterMap",     6);
+    shaderHybridAnimPBR->setInt("u_BRDFLUT",          7);
 }
 
 void RendererEditor::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -174,6 +187,10 @@ void RendererEditor::RenderPassWaterReflection(Window& mainWindow, Scene* scene,
     shaderSkinning->setMat4("projection", projectionMatrix);
     shaderSkinning->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
 
+    Shader* shaderHybridAnimPBR = shaders["hybrid_anim_pbr"];
+    shaderHybridAnimPBR->Bind();
+    shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", projectionMatrix * scene->GetCameraController()->CalculateViewMatrix());
+
     DisableCulling();
     std::string passType = "water_reflect";
     scene->Render(mainWindow, projectionMatrix, passType, shaders, uniforms);
@@ -216,6 +233,10 @@ void RendererEditor::RenderPassWaterRefraction(Window& mainWindow, Scene* scene,
     shaderSkinning->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     shaderSkinning->setMat4("projection", projectionMatrix);
     shaderSkinning->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
+
+    Shader* shaderHybridAnimPBR = shaders["hybrid_anim_pbr"];
+    shaderHybridAnimPBR->Bind();
+    shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", projectionMatrix * scene->GetCameraController()->CalculateViewMatrix());
 
     DisableCulling();
     std::string passType = "water_refract";
@@ -499,7 +520,7 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
 
     for (unsigned int i = 0; i < LightManager::spotLightCount; ++i)
     {
-        lightIndex = LightManager::pointLightCount + i; // offset for point lights
+        lightIndex = LightManager::pointLightCount + i; // offset for spot lights
 
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].base.enabled", lightIndex);
         shaderEditorPBR->setBool(locBuff, LightManager::spotLights[i].GetBasePL()->GetEnabled());
@@ -552,6 +573,35 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     // TODO: spot lights
     shaderSkinning->setInt("gNumSpotLights", 0);
     /**** End skinning ****/
+
+    /**** Begin Hybrid Anim PBR ****/
+    Shader* shaderHybridAnimPBR = shaders["hybrid_anim_pbr"];
+    shaderHybridAnimPBR->Bind();
+    shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", projectionMatrix * scene->GetCameraController()->CalculateViewMatrix());
+    shaderHybridAnimPBR->setVec3("u_CameraPosition", scene->GetCamera()->GetPosition());
+
+    // point lights
+    lightIndex = 0;
+    for (unsigned int i = 0; i < LightManager::pointLightCount; ++i)
+    {
+        lightIndex = 0 + i; // offset for point lights
+
+        std::string uniformName = std::string("lightPositions[") + std::to_string(lightIndex) + std::string("]");
+        shaderHybridAnimPBR->setVec3(uniformName, LightManager::pointLights[i].GetPosition());
+        uniformName = std::string("lightColors[") + std::to_string(lightIndex) + std::string("]");
+        shaderHybridAnimPBR->setVec3(uniformName, LightManager::pointLights[i].GetColor());
+    }
+
+    for (unsigned int i = 0; i < LightManager::spotLightCount; ++i)
+    {
+        lightIndex = LightManager::pointLightCount + i; // offset for spot lights
+
+        std::string uniformName = std::string("lightPositions[") + std::to_string(lightIndex) + std::string("]");
+        shaderHybridAnimPBR->setVec3(uniformName, LightManager::spotLights[i].GetBasePL()->GetPosition());
+        uniformName = std::string("lightColors[") + std::to_string(lightIndex) + std::string("]");
+        shaderHybridAnimPBR->setVec3(uniformName, LightManager::spotLights[i].GetBasePL()->GetColor());
+    }
+    /**** End Hybrid Anim PBR ****/
 
     /**** Begin shadow_map ****/
     Shader* shaderShadowMap = shaders["shadow_map"];
