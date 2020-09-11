@@ -110,11 +110,12 @@ SceneAnimPBR::SceneAnimPBR()
     m_SamplerSlots.insert(std::make_pair("normal",     2)); // uniform sampler2D u_NormalTexture
     m_SamplerSlots.insert(std::make_pair("metalness",  3)); // uniform sampler2D u_MetalnessTexture
     m_SamplerSlots.insert(std::make_pair("roughness",  4)); // uniform sampler2D u_RoughnessTexture
+    m_SamplerSlots.insert(std::make_pair("ao",         5)); // uniform sampler2D u_AOTexture
     // Environment maps
-    m_SamplerSlots.insert(std::make_pair("irradiance", 5)); // uniform samplerCube u_IrradianceMap
-    m_SamplerSlots.insert(std::make_pair("prefilter",  6)); // uniform samplerCube u_PrefilterMap
+    m_SamplerSlots.insert(std::make_pair("irradiance", 6)); // uniform samplerCube u_IrradianceMap
+    m_SamplerSlots.insert(std::make_pair("prefilter",  7)); // uniform samplerCube u_PrefilterMap
     // BRDF LUT
-    m_SamplerSlots.insert(std::make_pair("BRDF_LUT",   7)); // uniform sampler2D u_BRDFLUT
+    m_SamplerSlots.insert(std::make_pair("BRDF_LUT",   8)); // uniform sampler2D u_BRDFLUT
 
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
     m_MaterialWorkflowPBR->m_CaptureSize       = 512; // 512
@@ -177,10 +178,15 @@ void SceneAnimPBR::SetupMeshes()
     // M1911
     TextureInfo textureInfoM1911 = {};
     textureInfoM1911.albedo    = "Models/m1911/m1911_color.png";
-    textureInfoM1911.normal    = "Models/m1911/m1911_normal.png";
-    textureInfoM1911.metallic  = "Models/m1911/m1911_metalness.png";
+    textureInfoM1911.normal = "Models/m1911/m1911_normal.png";
+    textureInfoM1911.metallic = "Models/m1911/m1911_metalness.png";
     textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
-    textureInfoM1911.ao        = "Textures/plain.png";
+    textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
+    // textureInfoM1911.albedo    = "Textures/PBR/gold/albedo.png";
+    // textureInfoM1911.normal    = "Textures/PBR/gold/normal.png";
+    // textureInfoM1911.metallic  = "Textures/PBR/gold/metallic.png";
+    // textureInfoM1911.roughness = "Textures/PBR/gold/roughness.png";
+    // textureInfoM1911.ao        = "Textures/PBR/gold/ao.png";
 
     m_BaseMaterialM1911 = new Material(textureInfoM1911, materialSpecular, materialShininess);
     m_MeshAnimPBRM1911 = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterialM1911);
@@ -508,6 +514,7 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
     m_ShaderHybridAnimPBR->setInt("u_NormalTexture",    m_SamplerSlots["normal"]);
     m_ShaderHybridAnimPBR->setInt("u_MetalnessTexture", m_SamplerSlots["metalness"]);
     m_ShaderHybridAnimPBR->setInt("u_RoughnessTexture", m_SamplerSlots["roughness"]);
+    m_ShaderHybridAnimPBR->setInt("u_AOTexture",        m_SamplerSlots["ao"]);
     m_ShaderHybridAnimPBR->setInt("u_EnvRadianceTex",   m_SamplerSlots["irradiance"]);
     m_ShaderHybridAnimPBR->setInt("u_PrefilterMap",     m_SamplerSlots["prefilter"]);
     m_ShaderHybridAnimPBR->setInt("u_BRDFLUT",          m_SamplerSlots["BRDF_LUT"]);
@@ -520,6 +527,7 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
         m_BaseMaterialM1911->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
         m_BaseMaterialM1911->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
         m_BaseMaterialM1911->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
+        m_BaseMaterialM1911->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
 
         m_MeshAnimPBRM1911->m_VertexArray->Bind();
         auto& materials = m_MeshAnimPBRM1911->GetMaterials();
@@ -556,6 +564,7 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
         m_BaseMaterialBob->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
         m_BaseMaterialBob->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
         m_BaseMaterialBob->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
+        m_BaseMaterialBob->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
  
         m_MeshAnimPBRBob->m_VertexArray->Bind();
         auto& materials = m_MeshAnimPBRBob->GetMaterials();
@@ -594,6 +603,7 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
         m_BaseMaterialBoy->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
         m_BaseMaterialBoy->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
         m_BaseMaterialBoy->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
+        m_BaseMaterialBoy->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
 
         m_MeshAnimPBRBoy->m_VertexArray->Bind();
         auto& materials = m_MeshAnimPBRBoy->GetMaterials();

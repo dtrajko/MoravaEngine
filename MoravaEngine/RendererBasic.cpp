@@ -17,7 +17,7 @@ void RendererBasic::Init(Scene* scene)
 	SetUniforms();
 	SetShaders();
 
-	s_BgColor = glm::vec4(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
+	s_BgColor = glm::vec4(0.0, 0.0, 0.0, 1.0);
 }
 
 void RendererBasic::SetUniforms()

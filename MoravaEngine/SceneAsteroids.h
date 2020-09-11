@@ -19,9 +19,21 @@ public:
 
 private:
 	virtual void SetSkybox() override;
-	virtual void SetupTextures() override;
-	virtual void SetupMeshes() override;
 	virtual void SetupModels() override;
+
+	void SetupShaders();
+	void SetupGeometry();
+
+private:
+	Shader* m_ShaderAsteroids;
+	Shader* m_ShaderPlanet;
+
+	unsigned int quadVAO;
+	unsigned int quadVBO;
+
+	// Asteroid field
+	unsigned int amount = 50000;
+	glm::mat4* modelMatrices;
 
 	std::map<std::string, ModelJoey*> models;
 

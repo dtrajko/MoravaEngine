@@ -9,7 +9,7 @@ SceneParticles::SceneParticles()
 {
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 2.0f, 12.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
-    sceneSettings.cameraStartPitch = 0.0f;
+    sceneSettings.cameraStartPitch = 10.0f;
 	sceneSettings.cameraMoveSpeed = 1.0f;
     sceneSettings.enableSkybox = false;
     sceneSettings.enablePointLights = false;
@@ -78,14 +78,15 @@ void SceneParticles::Update(float timestep, Window& mainWindow)
     // Update Particle System
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
-        float normalizedMouseX = -1.0f + 2.0f * mainWindow.GetMouseX() / mainWindow.GetBufferWidth();
-        float normalizedMouseY =  1.0f - 2.0f * mainWindow.GetMouseY() / mainWindow.GetBufferHeight();
+        m_MouseX = mainWindow.GetMouseX();
+        m_MouseY = mainWindow.GetMouseY();
+
+        m_NormalizedMouseX = -1.0f + 2.0f * m_MouseX / mainWindow.GetBufferWidth();
+        m_NormalizedMouseY =  1.0f - 2.0f * m_MouseY / mainWindow.GetBufferHeight();
 
         glm::vec3 particlePosition = m_Camera->GetPosition() + m_Camera->GetFront() * 5.0f;
 
-        m_Particle.Position = { particlePosition.x * normalizedMouseX, particlePosition.y * normalizedMouseY};
-
-        // printf("SceneEditor::Update MouseCoords [ %.2ff %.2ff ] Particle Position [ %.2ff %.2ff ]\n", normalizedMouseX, normalizedMouseY, particlePosition.x, particlePosition.y);
+        m_Particle.Position = { particlePosition.x * m_NormalizedMouseX * 10.0f, particlePosition.y * m_NormalizedMouseY * 6.0f };
 
         for (int i = 0; i < 10; i++)
             m_ParticleSystem.Emit(m_Particle);
@@ -96,9 +97,19 @@ void SceneParticles::Update(float timestep, Window& mainWindow)
 
 void SceneParticles::UpdateImGui(float timestep, Window& mainWindow)
 {
-    // ImGui::Begin("Particles");
-    // ImGui::SliderFloat("FOV", &m_FOV, 1.0f, 120.0f);
-    // ImGui::End();
+    bool p_open = true;
+    ShowExampleAppDockSpace(&p_open, mainWindow);
+
+    ImGui::Begin("Particles");
+    {
+        ImGui::SliderFloat("Mouse X", &m_MouseX, -1000.0f, 1000.0f);
+        ImGui::SliderFloat("Mouse Y", &m_MouseY, -1000.0f, 1000.0f);
+        ImGui::SliderFloat("Normalized X", &m_NormalizedMouseX, -10.0f, 10.0f);
+        ImGui::SliderFloat("Normalized Y", &m_NormalizedMouseY, -10.0f, 10.0f);
+        ImGui::SliderFloat("Particle position X", &m_Particle.Position.x, -1000.0f, 1000.0f);
+        ImGui::SliderFloat("Particle position Y", &m_Particle.Position.y, -1000.0f, 1000.0f);
+    }
+    ImGui::End();
 }
 
 void SceneParticles::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,

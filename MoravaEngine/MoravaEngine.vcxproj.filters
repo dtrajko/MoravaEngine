@@ -38,9 +38,6 @@
     <ClCompile Include="Renderer.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RendererAsteroids.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="RendererBasic.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
@@ -48,9 +45,6 @@
       <Filter>Renderer</Filter>
     </ClCompile>
     <ClCompile Include="RendererEditor.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="RendererInstanced.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
     <ClCompile Include="RendererJoey.cpp">
@@ -538,9 +532,6 @@
     <ClInclude Include="Renderer.h">
       <Filter>Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="RendererAsteroids.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="RendererBasic.h">
       <Filter>Renderer</Filter>
     </ClInclude>
@@ -548,9 +539,6 @@
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="RendererEditor.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="RendererInstanced.h">
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="RendererJoey.h">

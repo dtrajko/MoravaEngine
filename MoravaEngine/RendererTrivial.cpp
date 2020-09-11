@@ -6,7 +6,6 @@
 
 RendererTrivial::RendererTrivial()
 {
-	s_BgColor = glm::vec4(204 / 255.0f, 255 / 255.0f, 204 / 255.0f, 1.0f);
 }
 
 void RendererTrivial::Init(Scene* scene)

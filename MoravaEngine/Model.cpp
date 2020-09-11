@@ -1,6 +1,7 @@
 #include "Model.h"
 
 #include "TextureLoader.h"
+#include "Log.h"
 
 #include <chrono>
 
@@ -20,7 +21,7 @@ Model::Model(const std::string& fileName, const std::string& texturesPath)
 
 void Model::LoadModel(const std::string& fileName, const std::string& texturesPath)
 {
-	printf("Loading model '%s'. Textures path '%s'\n", fileName.c_str(), texturesPath.c_str());
+	Log::GetLogger()->info("Loading model '{0}'. Textures path '{1}", fileName, texturesPath);
 
 	m_TexturesPath = texturesPath;
 	m_Scale = glm::vec3(1.0f);
@@ -37,7 +38,7 @@ void Model::LoadModel(const std::string& fileName, const std::string& texturesPa
 
 	if (!scene)
 	{
-		printf("Model '%s' failed to load: '%s'\n", fileName.c_str(), importer.GetErrorString());
+		Log::GetLogger()->error("Model '{0}' failed to load: '{1}'", fileName, importer.GetErrorString());
 		return;
 	}
 
@@ -45,13 +46,13 @@ void Model::LoadModel(const std::string& fileName, const std::string& texturesPa
 	long long start = std::chrono::time_point_cast<std::chrono::microseconds>(startTimepoint).time_since_epoch().count();
 	long long end = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch().count();
 	float duration = (end - start) * 0.000001f;
-	printf("Model loaded in %.2f seconds.\n", duration);
+	Log::GetLogger()->info("Model loaded in {0} seconds.", duration);
 
-	printf("Loading meshes...\n");
+	Log::GetLogger()->info("Loading meshes...");
 
 	LoadNode(scene->mRootNode, scene);
 
-	printf("Loading materials...\n");
+	Log::GetLogger()->info("Loading materials...");
 
 	LoadMaterials(scene);
 }
@@ -157,13 +158,13 @@ void Model::LoadMaterials(const aiScene* scene)
 
 				std::string texPath = m_TexturesPath + std::string("/") + filename;
 
-				printf("Texture loaded '%s'\n", texPath.c_str());
+				Log::GetLogger()->info("Texture loaded '{0}'", texPath);
 
 				textureList[i] = TextureLoader::Get()->GetTexture(texPath.c_str(), false, false);
 
 				if (!textureList[i])
 				{
-					printf("Failed to load texture at '%s'\n", texPath.c_str());
+					Log::GetLogger()->error("Failed to load texture at '{0}'", texPath);
 					delete textureList[i];
 					textureList[i] = nullptr;
 				}
@@ -183,13 +184,13 @@ void Model::LoadMaterials(const aiScene* scene)
 
 				std::string texPath = m_TexturesPath + std::string("/") + filename;
 
-				printf("Normal Map Texture loaded at '%s'\n", texPath.c_str());
+				Log::GetLogger()->info("Normal Map Texture loaded at '{0}'", texPath);
 
 				normalMapList[i] = TextureLoader::Get()->GetTexture(texPath.c_str(), false, false);
 
 				if (!normalMapList[i])
 				{
-					printf("Failed to load normal map at '%s'\n", texPath.c_str());
+					Log::GetLogger()->error("Failed to load normal map at '{0}'", texPath);
 					delete normalMapList[i];
 					normalMapList[i] = nullptr;
 				}

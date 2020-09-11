@@ -49,8 +49,6 @@
 #include "Renderer.h"
 #include "RendererPBR.h"
 #include "RendererJoey.h"
-#include "RendererInstanced.h"
-#include "RendererAsteroids.h"
 #include "RendererNanosuit.h"
 #include "RendererCubemaps.h"
 #include "RendererOmniShadows.h"
@@ -98,7 +96,7 @@ enum class SceneName
 	AnimPBR,
 };
 
-SceneName currentScene = SceneName::Framebuffers;
+SceneName currentScene = SceneName::AnimPBR;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -150,11 +148,11 @@ int main()
 		break;
 	case SceneName::Instanced:
 		scene = new SceneInstanced();
-		renderer = static_cast<RendererBasic*>(new RendererInstanced());
+		renderer = static_cast<RendererBasic*>(new RendererTrivial());
 		break;
 	case SceneName::Asteroids:
 		scene = new SceneAsteroids();
-		renderer = static_cast<RendererBasic*>(new RendererAsteroids());
+		renderer = static_cast<RendererBasic*>(new RendererTrivial());
 		break;
 	case SceneName::Nanosuit:
 		scene = new SceneNanosuit();

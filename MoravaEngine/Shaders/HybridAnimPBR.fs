@@ -18,7 +18,7 @@ uniform sampler2D u_AlbedoTexture;
 uniform sampler2D u_NormalTexture;
 uniform sampler2D u_MetalnessTexture;
 uniform sampler2D u_RoughnessTexture;
-// uniform sampler2D aoMap;
+uniform sampler2D u_AOTexture;
 
 // IBL
 uniform samplerCube u_IrradianceMap;
@@ -47,7 +47,7 @@ vec3 getNormalFromMap()
     vec2 st2 = dFdy(vs_Input.TexCoord);
 
     vec3 N   = normalize(vs_Input.Normal);
-    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
+    vec3 T  = normalize(Q1 * st2.t - Q2 * st1.t);
     vec3 B  = -normalize(cross(N, T));
     mat3 TBN = mat3(T, B, N);
 
@@ -56,10 +56,10 @@ vec3 getNormalFromMap()
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
-    float a = roughness*roughness;
-    float a2 = a*a;
+    float a = roughness * roughness;
+    float a2 = a * a;
     float NdotH = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH*NdotH;
+    float NdotH2 = NdotH * NdotH;
 
     float nom   = a2;
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
@@ -71,7 +71,7 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
     float r = (roughness + 1.0);
-    float k = (r*r) / 8.0;
+    float k = (r * r) / 8.0;
 
     float nom   = NdotV;
     float denom = NdotV * (1.0 - k) + k;
@@ -111,7 +111,7 @@ void main()
     vec3 albedo = pow(texture(u_AlbedoTexture, vs_Input.TexCoord).rgb, vec3(2.2));
     float metallic = texture(u_MetalnessTexture, vs_Input.TexCoord).r;
     float roughness = texture(u_RoughnessTexture, vs_Input.TexCoord).r;
-    float ao = 1.0; // texture(aoMap, vs_Input.TexCoord).r;
+    float ao = texture(u_AOTexture, vs_Input.TexCoord).r;
 
     // input lighting data
     vec3 N = getNormalFromMap();
@@ -169,12 +169,12 @@ void main()
     kD *= 1.0 - metallic;
     
     vec3 irradiance = texture(u_IrradianceMap, N).rgb;
-    vec3 diffuse      = irradiance * albedo;
+    vec3 diffuse = irradiance * albedo;
     
     // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
     const float MAX_REFLECTION_LOD = 4.0;
     vec3 prefilteredColor = textureLod(u_PrefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;    
-    vec2 brdf  = texture(u_BRDFLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+    vec2 brdf = texture(u_BRDFLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
     vec3 ambient = (kD * diffuse + specular) * ao;

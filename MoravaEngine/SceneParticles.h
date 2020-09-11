@@ -39,4 +39,11 @@ private:
 	Pivot* m_PivotScene;
 
 	Shader* m_ShaderFBScene;
+
+	float m_MouseX;
+	float m_MouseY;
+
+	float m_NormalizedMouseX;
+	float m_NormalizedMouseY;
+
 };

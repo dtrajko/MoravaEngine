@@ -277,11 +277,9 @@
     <ClCompile Include="Raycast.cpp" />
     <ClCompile Include="Renderbuffer.cpp" />
     <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="RendererAsteroids.cpp" />
     <ClCompile Include="RendererBasic.cpp" />
     <ClCompile Include="RendererCubemaps.cpp" />
     <ClCompile Include="RendererEditor.cpp" />
-    <ClCompile Include="RendererInstanced.cpp" />
     <ClCompile Include="RendererJoey.cpp" />
     <ClCompile Include="RendererNanosuit.cpp" />
     <ClCompile Include="RendererPBR.cpp" />
@@ -462,11 +460,9 @@
     <ClInclude Include="Raycast.h" />
     <ClInclude Include="Renderbuffer.h" />
     <ClInclude Include="Renderer.h" />
-    <ClInclude Include="RendererAsteroids.h" />
     <ClInclude Include="RendererBasic.h" />
     <ClInclude Include="RendererCubemaps.h" />
     <ClInclude Include="RendererEditor.h" />
-    <ClInclude Include="RendererInstanced.h" />
     <ClInclude Include="RendererJoey.h" />
     <ClInclude Include="RendererNanosuit.h" />
     <ClInclude Include="RendererPBR.h" />
