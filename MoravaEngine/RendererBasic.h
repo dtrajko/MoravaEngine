@@ -43,7 +43,7 @@ protected:
 private:
 	static glm::mat4 s_ProjectionMatrix;
 
-protected:
+public:
 	static std::map<std::string, Shader*> s_Shaders;
 	static std::map<std::string, int> s_Uniforms;
 	static glm::vec4 s_BgColor;

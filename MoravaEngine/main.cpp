@@ -52,7 +52,6 @@
 #include "RendererInstanced.h"
 #include "RendererAsteroids.h"
 #include "RendererNanosuit.h"
-#include "RendererFramebuffers.h"
 #include "RendererCubemaps.h"
 #include "RendererOmniShadows.h"
 #include "RendererVoxelTerrain.h"
@@ -99,7 +98,7 @@ enum class SceneName
 	AnimPBR,
 };
 
-SceneName currentScene = SceneName::AnimPBR;
+SceneName currentScene = SceneName::Framebuffers;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -163,7 +162,7 @@ int main()
 		break;
 	case SceneName::Framebuffers:
 		scene = new SceneFramebuffers();
-		renderer = static_cast<RendererBasic*>(new RendererFramebuffers());
+		renderer = static_cast<RendererBasic*>(new RendererTrivial());
 		break;
 	case SceneName::Cubemaps:
 		scene = new SceneCubemaps();

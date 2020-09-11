@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Scene.h"
+#include "Framebuffer.h"
 
 
 class SceneFramebuffers : public Scene
@@ -8,6 +9,8 @@ class SceneFramebuffers : public Scene
 
 public:
 	SceneFramebuffers();
+	virtual ~SceneFramebuffers() override;
+
 	virtual void Update(float timestep, Window& mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window& mainWindow) override;
 	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
@@ -17,16 +20,27 @@ public:
 	void CleanupGeometry();
 	int GetEffectForFrame(int frameID);
 
-	virtual ~SceneFramebuffers() override;
 
 private:
-	virtual void SetSkybox() override;
 	virtual void SetupTextures() override;
 	virtual void SetupMeshes() override;
 	virtual void SetupModels() override;
+	virtual void SetupFramebuffers() override;
+
+	void SetupShaders();
 
 	int m_EffectFrame_0;
 	int m_EffectFrame_1;
 	int m_EffectFrame_2;
 	int m_EffectFrame_3;
+
+public:
+	unsigned int SCR_WIDTH = 1280;
+	unsigned int SCR_HEIGHT = 720;
+
+	Framebuffer* m_Framebuffer;
+
+	Shader* m_ShaderFramebuffersScene;
+	Shader* m_ShaderFramebuffersScreen;
+
 };

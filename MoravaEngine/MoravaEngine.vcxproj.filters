@@ -50,9 +50,6 @@
     <ClCompile Include="RendererEditor.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RendererFramebuffers.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="RendererInstanced.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
@@ -551,9 +548,6 @@
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="RendererEditor.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="RendererFramebuffers.h">
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="RendererInstanced.h">
