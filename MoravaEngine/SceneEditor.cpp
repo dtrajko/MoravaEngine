@@ -25,6 +25,7 @@
 #include "TerrainHeightMap.h"
 #include "PerlinNoise/PerlinNoise.hpp"
 #include "Application.h"
+#include "Hazel/Renderer/MeshAnimPBR.h"
 
 #include <vector>
 #include <map>
@@ -185,6 +186,18 @@ SceneEditor::SceneEditor()
 
     m_ViewportFocused = false;
     m_ViewportHovered = false;
+
+    //  // PBR texture inputs
+    m_SamplerSlots.insert(std::make_pair("albedo",     1)); // uniform sampler2D u_AlbedoTexture
+    m_SamplerSlots.insert(std::make_pair("normal",     2)); // uniform sampler2D u_NormalTexture
+    m_SamplerSlots.insert(std::make_pair("metalness",  3)); // uniform sampler2D u_MetalnessTexture
+    m_SamplerSlots.insert(std::make_pair("roughness",  4)); // uniform sampler2D u_RoughnessTexture
+    m_SamplerSlots.insert(std::make_pair("ao",         5)); // uniform sampler2D u_AOTexture
+    // Environment maps
+    m_SamplerSlots.insert(std::make_pair("irradiance", 6)); // uniform samplerCube u_IrradianceMap
+    m_SamplerSlots.insert(std::make_pair("prefilter",  7)); // uniform samplerCube u_PrefilterMap
+    // BRDF LUT
+    m_SamplerSlots.insert(std::make_pair("BRDF_LUT",   8)); // uniform sampler2D u_BRDFLUT
 }
 
 void SceneEditor::SetLightManager()
@@ -233,6 +246,9 @@ void SceneEditor::SetupMaterials()
     ResourceManager::LoadMaterial(
         ResourceManager::GetMaterialInfo()->find("none")->first,
         ResourceManager::GetMaterialInfo()->find("none")->second);
+    ResourceManager::LoadMaterial(
+        ResourceManager::GetMaterialInfo()->find("M1911")->first,
+        ResourceManager::GetMaterialInfo()->find("M1911")->second);
 }
 
 void SceneEditor::SetupMeshes()
@@ -1415,8 +1431,8 @@ Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* n
         *name = "drone";
         break;
     case MESH_TYPE_M1911:
-        mesh = new SkinnedMesh("Models/m1911/m1911.fbx", "Models/m1911");
-        *name = "m1911";
+        mesh = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", RendererBasic::s_Shaders["hybrid_anim_pbr"], (*ResourceManager::GetMaterials())["M1911"]);
+        *name = "M1911";
         break;
     default:
         mesh = new Block(scale);
@@ -1523,10 +1539,10 @@ void SceneEditor::AddSceneObject()
             scaleAABB = glm::vec3(1.0f, 1.0f, 1.0f);
         }
         else if (m_CurrentObjectTypeID == MESH_TYPE_M1911) {
-            objectName = "m1911";
-            materialName = "m1911";
+            objectName = "M1911";
+            materialName = "M1911";
             rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-            scale = glm::vec3(1.0f);
+            scale = glm::vec3(40.0f);
             positionAABB = glm::vec3(0.0f, 0.0f, 0.0f);
             scaleAABB = glm::vec3(24.0f, 14.0f, 3.0f);
         }
@@ -1871,6 +1887,67 @@ void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject*
     {
         snprintf(locBuff, sizeof(locBuff), "gBones[%d]", i);
         shaderSkinning->setMat4(locBuff, m_SkinningTransforms[sceneObject->name][i]);
+    }
+}
+
+void SceneEditor::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, SceneObject* sceneObject, float runningTime)
+{
+    RendererBasic::DisableCulling();
+
+    shaderHybridAnimPBR->Bind();
+
+    shaderHybridAnimPBR->setInt("u_AlbedoTexture",    m_SamplerSlots["albedo"]);
+    shaderHybridAnimPBR->setInt("u_NormalTexture",    m_SamplerSlots["normal"]);
+    shaderHybridAnimPBR->setInt("u_MetalnessTexture", m_SamplerSlots["metalness"]);
+    shaderHybridAnimPBR->setInt("u_RoughnessTexture", m_SamplerSlots["roughness"]);
+    shaderHybridAnimPBR->setInt("u_AOTexture",        m_SamplerSlots["ao"]);
+    shaderHybridAnimPBR->setInt("u_EnvRadianceTex",   m_SamplerSlots["irradiance"]);
+    shaderHybridAnimPBR->setInt("u_PrefilterMap",     m_SamplerSlots["prefilter"]);
+    shaderHybridAnimPBR->setInt("u_BRDFLUT",          m_SamplerSlots["BRDF_LUT"]);
+
+    shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
+    shaderHybridAnimPBR->setVec3("u_CameraPosition", m_Camera->GetPosition());
+
+    m_MaterialWorkflowPBR->BindTextures(m_SamplerSlots["irradiance"]);
+
+    Material* baseMaterial = ResourceManager::HotLoadMaterial(sceneObject->materialName);
+
+    baseMaterial->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
+    baseMaterial->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
+    baseMaterial->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
+    baseMaterial->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
+    baseMaterial->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
+
+    Hazel::MeshAnimPBR* meshAnimPBR = (Hazel::MeshAnimPBR*)sceneObject->mesh;
+
+    float deltaTime = Timer::Get()->GetDeltaTime();
+    meshAnimPBR->OnUpdate(deltaTime, false);
+
+    meshAnimPBR->m_VertexArray->Bind();
+    auto& materials = meshAnimPBR->GetMaterials();
+
+    int submeshIndex = 0;
+    for (Hazel::Submesh* submesh : meshAnimPBR->GetSubmeshes())
+    {
+        // Material
+        auto material = materials[submesh->MaterialIndex];
+
+        for (size_t i = 0; i < meshAnimPBR->m_BoneTransforms.size(); i++)
+        {
+            std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+            shaderHybridAnimPBR->setMat4(uniformName, meshAnimPBR->m_BoneTransforms[i]);
+        }
+
+        glm::mat4 transform = sceneObject->transform * submesh->Transform;
+        transform = glm::scale(transform, sceneObject->scale);
+        shaderHybridAnimPBR->setMat4("u_Transform", transform);
+        shaderHybridAnimPBR->Validate();
+
+        // TODO move to virtual MeshAnimPBR::Render() method
+        glEnable(GL_DEPTH_TEST);
+        glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
+
+        submeshIndex++;
     }
 }
 
@@ -2296,6 +2373,12 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
             // Render with 'skinning' shader
             if (passType == "main" || passType == "water_reflect" || passType == "water_refract")
                 SetUniformsShaderSkinning(shaders["skinning"], object, runningTime);
+        }
+        else if (m_AnimPBRMeshes.find(object->m_TypeID) != m_AnimPBRMeshes.end()) // is it a animated PBR mesh?
+        {
+            // Render with 'skinning' shader
+            if (passType == "main" || passType == "water_reflect" || passType == "water_refract")
+                SetUniformsShaderHybridAnimPBR(shaders["hybrid_anim_pbr"], object, runningTime);
         }
         else if (material && object->materialName != "none") { // is it using a material?
             // Render with 'editor_object_pbr' shader
