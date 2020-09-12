@@ -328,7 +328,9 @@ std::pair<TextureCubemapLite*, TextureCubemapLite*> SceneAnimPBR::CreateEnvironm
     //  glGenerateTextureMipmap(m_IrradianceMap->GetID());
     //  
     //  return { m_EnvFiltered, m_IrradianceMap };
-}   //  
+
+    return std::pair<TextureCubemapLite*, TextureCubemapLite*>();
+}
 
 void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
 {
