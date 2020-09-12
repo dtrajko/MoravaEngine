@@ -31,6 +31,8 @@ uniform vec3 lightColors[MAX_LIGHTS];
 
 uniform vec3 u_CameraPosition;
 
+uniform float tilingFactor;
+
 const float PI = 3.14159265359;
 
 // Easy trick to get tangent-normals to world-space to keep PBR code simplified.
@@ -39,12 +41,12 @@ const float PI = 3.14159265359;
 // technique somewhere later in the normal mapping tutorial.
 vec3 getNormalFromMap()
 {
-    vec3 tangentNormal = texture(u_NormalTexture, vs_Input.TexCoord).xyz * 2.0 - 1.0;
+    vec3 tangentNormal = texture(u_NormalTexture, vs_Input.TexCoord * tilingFactor).xyz * 2.0 - 1.0;
 
     vec3 Q1  = dFdx(vs_Input.WorldPosition);
     vec3 Q2  = dFdy(vs_Input.WorldPosition);
-    vec2 st1 = dFdx(vs_Input.TexCoord);
-    vec2 st2 = dFdy(vs_Input.TexCoord);
+    vec2 st1 = dFdx(vs_Input.TexCoord * tilingFactor);
+    vec2 st2 = dFdy(vs_Input.TexCoord * tilingFactor);
 
     vec3 N   = normalize(vs_Input.Normal);
     vec3 T  = normalize(Q1 * st2.t - Q2 * st1.t);
@@ -108,10 +110,10 @@ vec4 SRGBtoLINEAR(vec4 srgbIn)
 void main()
 {		
     // material properties
-    vec3 albedo = pow(texture(u_AlbedoTexture, vs_Input.TexCoord).rgb, vec3(2.2));
-    float metallic = texture(u_MetalnessTexture, vs_Input.TexCoord).r;
-    float roughness = texture(u_RoughnessTexture, vs_Input.TexCoord).r;
-    float ao = texture(u_AOTexture, vs_Input.TexCoord).r;
+    vec3 albedo = pow(texture(u_AlbedoTexture, vs_Input.TexCoord * tilingFactor).rgb, vec3(2.2));
+    float metallic = texture(u_MetalnessTexture, vs_Input.TexCoord * tilingFactor).r;
+    float roughness = texture(u_RoughnessTexture, vs_Input.TexCoord * tilingFactor).r;
+    float ao = texture(u_AOTexture, vs_Input.TexCoord * tilingFactor).r;
 
     // input lighting data
     vec3 N = getNormalFromMap();

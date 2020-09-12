@@ -116,7 +116,7 @@ SceneEditor::SceneEditor()
     sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
     sceneSettings.spotLights[3].edge = 0.5f;
 
-    m_IsViewportEnabled = false;
+    m_IsViewportEnabled = true;
 
     ResourceManager::Init();
 
@@ -1890,7 +1890,7 @@ void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject*
     }
 }
 
-void SceneEditor::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, SceneObject* sceneObject, float runningTime)
+void SceneEditor::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Texture* texture, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
 
@@ -1908,8 +1908,6 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Sc
     shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
     shaderHybridAnimPBR->setVec3("u_CameraPosition", m_Camera->GetPosition());
 
-    m_MaterialWorkflowPBR->BindTextures(m_SamplerSlots["irradiance"]);
-
     Material* baseMaterial = ResourceManager::HotLoadMaterial(sceneObject->materialName);
 
     baseMaterial->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
@@ -1917,6 +1915,17 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Sc
     baseMaterial->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
     baseMaterial->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
     baseMaterial->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
+
+    // Override albedo map from material with texture, if texture is available
+    if (sceneObject->textureName != "" && sceneObject->textureName != "none") {
+        texture->Bind(m_SamplerSlots["albedo"]); // Albedo is at slot 3
+        shaderHybridAnimPBR->setFloat("tilingFactor", sceneObject->tilingFactor);
+    }
+    else {
+        shaderHybridAnimPBR->setFloat("tilingFactor", sceneObject->tilingFMaterial);
+    }
+
+    m_MaterialWorkflowPBR->BindTextures(m_SamplerSlots["irradiance"]);
 
     Hazel::MeshAnimPBR* meshAnimPBR = (Hazel::MeshAnimPBR*)sceneObject->mesh;
 
@@ -2378,7 +2387,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         {
             // Render with 'skinning' shader
             if (passType == "main" || passType == "water_reflect" || passType == "water_refract")
-                SetUniformsShaderHybridAnimPBR(shaders["hybrid_anim_pbr"], object, runningTime);
+                SetUniformsShaderHybridAnimPBR(shaders["hybrid_anim_pbr"], texture, object, runningTime);
         }
         else if (material && object->materialName != "none") { // is it using a material?
             // Render with 'editor_object_pbr' shader
