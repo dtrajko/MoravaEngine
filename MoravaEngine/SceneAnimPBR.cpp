@@ -228,7 +228,7 @@ void SceneAnimPBR::SetupMeshes()
     m_MeshAnimPBRBoy = new Hazel::MeshAnimPBR("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterialBoy);
     m_Transform_Boy = glm::mat4(1.0f);
 
-    m_MeshAnimPBRBoy->SetTimeMultiplier(600.0f);
+    m_MeshAnimPBRBoy->SetTimeMultiplier(800.0f);
 
     Log::GetLogger()->info("-- END loading the animated PBR model Animated Boy --");
 }
