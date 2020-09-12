@@ -12,6 +12,8 @@ public:
 
 	Mesh();
 	Mesh(glm::vec3 scale);
+	virtual ~Mesh();
+
 	virtual void Create();
 	virtual void Create(float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indexCount);
 	virtual void Generate(glm::vec3 scale);
@@ -29,8 +31,6 @@ public:
 
 	virtual void RecalculateNormals();
 	virtual void RecalculateTangentSpace();
-
-	virtual ~Mesh();
 
 public:
 	float* m_Vertices;

@@ -3,9 +3,11 @@
 #include "SceneParticles.h"
 #include "GeometryFactory.h"
 #include "Timer.h"
-#include "SceneEditor.h"
 #include "Profiler.h"
 #include "Log.h"
+#include "Framebuffer.h"
+#include "SceneEditor.h"
+#include "Application.h"
 
 #include <stdexcept>
 
@@ -16,6 +18,8 @@ RendererEditor::RendererEditor()
 
 void RendererEditor::Init(Scene* scene)
 {
+    m_IsViewportEnabled = ((SceneEditor*)scene)->m_IsViewportEnabled;
+
 	SetUniforms();
 	SetShaders();
 }
@@ -306,7 +310,19 @@ void RendererEditor::RenderWaterEffects(float deltaTime, Window& mainWindow, Sce
 
 void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-    glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+    SceneEditor* sceneEditor = (SceneEditor*)scene;
+    Framebuffer* renderFramebuffer = nullptr;
+
+    if (m_IsViewportEnabled)
+    {
+        renderFramebuffer = sceneEditor->GetRenderFramebuffer();
+        renderFramebuffer->Bind();
+        renderFramebuffer->Clear(); // Clear the window
+    }
+    else
+    {
+        glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+    }
 
     // Clear the window
     glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
@@ -320,7 +336,8 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     // then before rendering, configure the viewport to the original framebuffer's screen dimensions
-    SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
+    if (!m_IsViewportEnabled)
+        SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
 
     EnableTransparency();
     EnableCulling();
@@ -336,23 +353,19 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
     std::string passType = "main";
     scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+
+    if (m_IsViewportEnabled)
+    {
+        renderFramebuffer->Unbind();
+    }
 }
 
 void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-    // printf("RendererEditor::Render\n");
-
-    // Override the Projection matrix (update FOV)
-    if (mainWindow.GetBufferWidth() > 0 && mainWindow.GetBufferHeight() > 0)
-    {
-        projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()),
-            (float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
-            scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
-
-        RendererBasic::SetProjectionMatrix(projectionMatrix);
-    }
-
-    SceneEditor* sceneEditor = (SceneEditor*)scene;
+    float aspectRatio = scene->GetCameraController()->GetAspectRatio();
+    projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio,
+        scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+    RendererBasic::SetProjectionMatrix(projectionMatrix);
 
     /**** Begin editor_object ****/
     Shader* shaderEditor = s_Shaders["editor_object"];

@@ -11,6 +11,8 @@ class RendererEditor : public RendererBasic
 
 public:
 	RendererEditor();
+	~RendererEditor();
+
 	virtual void Init(Scene* scene) override;
 	virtual void SetUniforms() override;
 	virtual void SetShaders() override;
@@ -22,9 +24,10 @@ public:
 	void RenderPassWaterRefraction(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 	virtual void Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
 	void RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix);
-	~RendererEditor();
 
 private:
 	std::map<std::string, int> m_OmniShadowTxSlots;
+
+	bool m_IsViewportEnabled;
 
 };

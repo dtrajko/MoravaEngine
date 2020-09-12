@@ -71,7 +71,6 @@ class LightManager;
 
 class Scene
 {
-
 public:
 	Scene();
 	virtual void Update(float timestep, Window& mainWindow) = 0;

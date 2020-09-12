@@ -35,3 +35,13 @@ struct SSpotLight
 	glm::vec3 direction;
 	float edge;
 };
+
+struct PointSpotLight
+{
+	bool enabled;
+	glm::vec3 position;
+	glm::vec3 color;
+	float exponent;
+	float linear;
+	float constant;
+};

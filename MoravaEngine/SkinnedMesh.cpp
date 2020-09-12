@@ -365,18 +365,18 @@ bool SkinnedMesh::InitMaterials(const aiScene* pScene, const std::string& Filena
 
                 std::string FullPath = Dir + "/" + p;
 
-                printf("SkinnedMesh::InitMaterials FullPath = '%s'\n", FullPath.c_str());
+                Log::GetLogger()->info("SkinnedMesh::InitMaterials FullPath = '{0}'", FullPath);
 
                 m_Textures[i] = new Texture(FullPath.c_str());
 
                 if (!m_Textures[i]->Load()) {
-                    printf("Error loading texture '%s'\n", FullPath.c_str());
+                    Log::GetLogger()->error("Error loading texture '{0}'", FullPath);
                     delete m_Textures[i];
                     m_Textures[i] = NULL;
                     Ret = false;
                 }
                 else {
-                    printf("%d - loaded texture '%s'\n", i, FullPath.c_str());
+                    Log::GetLogger()->info("{0} - loaded texture '{1}'", i, FullPath);
                 }
             }
         }
@@ -396,7 +396,7 @@ void SkinnedMesh::VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
     }
 
     // should never get here - more bones than we have space for
-    Log::GetLogger()->error("SkinnedMesh: should never get here - more bones than we have space for.");
+    Log::GetLogger()->warn("SkinnedMesh: should never get here - more bones than we have space for.");
     // assert(0);
 }
 

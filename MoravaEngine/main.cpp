@@ -42,7 +42,6 @@
 #include "SceneVoxelTerrain.h"
 #include "SceneVoxelTerrainSL.h"
 #include "SceneMarchingCubes.h"
-#include "SceneEditorFramebuffer.h"
 #include "SceneSSAO.h"
 #include "SceneAnimPBR.h"
 
@@ -54,7 +53,6 @@
 #include "RendererOmniShadows.h"
 #include "RendererVoxelTerrain.h"
 #include "RendererEditor.h"
-#include "RendererEditorFramebuffer.h"
 #include "RendererSSAO.h"
 #include "RendererTrivial.h"
 
@@ -91,12 +89,11 @@ enum class SceneName
 	ProceduralLandmass,
 	VoxelTerrainSL,
 	MarchingCubes,
-	EditorFramebuffer,
 	SSAO,
 	AnimPBR,
 };
 
-SceneName currentScene = SceneName::AnimPBR;
+SceneName currentScene = SceneName::Editor;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -193,10 +190,6 @@ int main()
 	case SceneName::MarchingCubes:
 		scene = new SceneMarchingCubes();
 		renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
-		break;
-	case SceneName::EditorFramebuffer:
-		scene = new SceneEditorFramebuffer();
-		renderer = static_cast<RendererBasic*>(new RendererEditorFramebuffer());
 		break;
 	case SceneName::SSAO:
 		scene = new SceneSSAO();

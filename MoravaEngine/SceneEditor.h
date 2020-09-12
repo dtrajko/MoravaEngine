@@ -12,38 +12,24 @@
 #include "MaterialWorkflowPBR.h"
 #include "SkinnedMesh.h"
 #include "SceneObjectParticleSystem.h"
+#include "Framebuffer.h"
 
 #include <future>
 #include <set>
-
-
-const int ACTION_ADD_MESH  = 0;
-const int ACTION_ADD_MODEL = 1;
-
-const int PBR_MAP_ENVIRONMENT = 0;
-const int PBR_MAP_IRRADIANCE  = 1;
-const int PBR_MAP_PREFILTER   = 2;
-
-struct PointSpotLight
-{
-	bool enabled;
-	glm::vec3 position;
-	glm::vec3 color;
-	float exponent;
-	float linear;
-	float constant;
-};
 
 
 class SceneEditor : public Scene
 {
 public:
 	SceneEditor();
+    virtual ~SceneEditor() override;
+
 	virtual void Update(float timestep, Window& mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window& mainWindow) override;
+	virtual void ShowExampleAppDockSpace(bool* p_open, Window& mainWindow) override;
 	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
-	virtual ~SceneEditor() override;
+    inline Framebuffer* GetRenderFramebuffer() { return m_RenderFramebuffer; };
 
 private:
 	virtual void SetupTextures()     override;
@@ -52,6 +38,7 @@ private:
 	virtual void SetupModels()     override;
 	virtual void SetSkybox()       override;
 	virtual void SetLightManager() override;
+    void SetupRenderFramebuffer();
 	void AddLightsToSceneObjects();
 
 	void RenderLightSources(Shader* shader);
@@ -82,6 +69,10 @@ private:
 	glm::mat4 CalculateRenderTransform(SceneObject* sceneObject);
 	virtual bool IsWaterOnScene() override;
 	void UpdateLightDirection(glm::quat rotation);
+    void ResizeViewport(glm::vec2 viewportPanelSize);
+
+public:
+	bool m_IsViewportEnabled;
 
 private:
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
@@ -141,6 +132,7 @@ private:
 	EventCooldown m_SceneReset;
 	EventCooldown m_ProjectionChange;
 	EventCooldown m_ParticlesGenerate;
+    EventCooldown m_ResizeViewport;
 
 	bool m_OrthographicViewEnabled;
 
@@ -161,5 +153,10 @@ private:
 
 	// Model for the Glass shader
 	Model* m_GlassShaderModel;
+
+	bool m_ViewportFocused;
+	bool m_ViewportHovered;
+
+	Framebuffer* m_RenderFramebuffer;
 
 };

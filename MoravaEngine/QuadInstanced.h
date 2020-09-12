@@ -9,6 +9,8 @@ class QuadInstanced : public Quad
 {
 public:
 	QuadInstanced();
+	virtual ~QuadInstanced() override;
+
 	void Render(unsigned int instanceCount);
 	unsigned int CreateEmptyVBO(int floatCount);
 	void AddInstancedAttribute(int attribute, int dataSize, int instancedDataLength, int offset);
@@ -18,7 +20,6 @@ public:
 	inline const unsigned int GetVBOInstanced() const { return m_VBO_Instanced; };
 	inline void SetVBOInstanced(unsigned int VBO_Instanced) { m_VBO_Instanced = VBO_Instanced; };
 	virtual void Clear() override;
-	virtual ~QuadInstanced();
 
 private:
 	std::vector<float> m_Positions;
