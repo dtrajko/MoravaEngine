@@ -11,10 +11,14 @@ MaterialWorkflowPBR::MaterialWorkflowPBR()
 	m_CaptureSize       = 512;
 	m_PrefilterMapSize  = 128;
 	m_IrradianceMapSize = 32;
+
+	m_BlurLevel = 0;
 }
 
-void MaterialWorkflowPBR::Init(std::string envMapHDR)
+void MaterialWorkflowPBR::Init(std::string envMapHDR, uint32_t blurLevel)
 {
+	m_BlurLevel = blurLevel;
+
 	SetupShaders();                       // Line 26
 	SetupGeometry();                      // Line 32
 	SetupFramebuffers();                  // Line 37
@@ -162,6 +166,9 @@ void MaterialWorkflowPBR::ConvertHDREquirectangularToCubemap()
 	m_ShaderEquirectangularToCubemap->Bind();
 	m_ShaderEquirectangularToCubemap->setInt("equirectangularMap", 0);
 	m_ShaderEquirectangularToCubemap->setMat4("projection", m_CaptureProjection);
+	m_ShaderEquirectangularToCubemap->setFloat("blurLevel", (float)m_BlurLevel);
+	Log::GetLogger()->info("MaterialWorkflowPBR set Blur Level to {0}", m_BlurLevel);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_HDRTexture);
 

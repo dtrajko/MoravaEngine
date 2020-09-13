@@ -13,7 +13,7 @@ public:
 	MaterialWorkflowPBR();
 	~MaterialWorkflowPBR();
 
-	void Init(std::string envMapHDR);
+	void Init(std::string envMapHDR, uint32_t blurLevel = 0);
 	void BindTextures(unsigned int slot);
 	inline const unsigned int GetHDRTexture() const { return m_HDRTexture; };
 	inline const unsigned int GetIrradianceMap() const { return m_IrradianceMap; };
@@ -63,5 +63,7 @@ private:
 	Shader* m_ShaderIrradiance;
 	Shader* m_ShaderPrefilter;
 	Shader* m_ShaderBRDF;
+
+	uint32_t m_BlurLevel;
 
 };

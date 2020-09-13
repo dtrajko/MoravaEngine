@@ -133,6 +133,8 @@ SceneEditor::SceneEditor()
 
     // Initialize the PBR/IBL Material Workflow component
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
+    m_BlurLevel = 0;
+    m_BlurLevelPrev = m_BlurLevel;
 
     m_CurrentTimestamp = 0.0f;
     m_StartTimestamp = (float)glfwGetTime();
@@ -609,6 +611,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
             ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
         }
+
+        ImGui::SliderInt("Blur Level", &m_BlurLevel, 0, 10);
 
         if (ImGui::CollapsingHeader("Cube Maps"))
         {
@@ -1260,28 +1264,29 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
         }
     }
 
-    if (m_HDRI_Edit != m_HDRI_Edit_Prev)
+    if (m_HDRI_Edit != m_HDRI_Edit_Prev || m_BlurLevel != m_BlurLevelPrev)
     {
         if (m_HDRI_Edit == HDRI_GREENWICH_PARK)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
+            m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr", m_BlurLevel);
         else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
+            m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr", m_BlurLevel);
         else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr");
+            m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr", m_BlurLevel);
         else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr");
+            m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr", m_BlurLevel);
         else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr");
+            m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr", m_BlurLevel);
         else if (m_HDRI_Edit == HDRI_BIRCHWOOD)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr");
+            m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr", m_BlurLevel);
         else if (m_HDRI_Edit == HDRI_PINK_SUNRISE)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/pink_sunrise_4k.hdr");
+            m_MaterialWorkflowPBR->Init("Textures/HDR/pink_sunrise_4k.hdr", m_BlurLevel);
         else if (m_HDRI_Edit == HDRI_ROOITOU_PARK)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr");
+            m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr", m_BlurLevel);
         else if (m_HDRI_Edit == HDRI_VENICE_DAWN)
-            m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr");
+            m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr", m_BlurLevel);
 
         m_HDRI_Edit_Prev = m_HDRI_Edit;
+        m_BlurLevelPrev = m_BlurLevel;
     }
 
     m_Gizmo->Update(m_Camera->GetPosition(), mainWindow);

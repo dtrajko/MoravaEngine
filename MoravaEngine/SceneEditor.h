@@ -101,6 +101,8 @@ private:
 	int m_PBR_Map_Edit;
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;
+	int m_BlurLevel;
+	int m_BlurLevelPrev;
 
 	ParticleSettings* m_ParticleSettingsEdit;
 	ParticleSettings* m_ParticleSettingsPrev;
