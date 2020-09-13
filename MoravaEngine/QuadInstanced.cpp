@@ -5,7 +5,7 @@
 #include <cstdio>
 
 
-QuadInstanced::QuadInstanced()
+QuadInstanced::QuadInstanced() : Quad()
 {
 	m_Positions = {
 		// positions

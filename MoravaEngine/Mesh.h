@@ -36,7 +36,7 @@ public:
 	float* m_Vertices;
 	unsigned int* m_Indices;
 
-	Transform* m_Transform;
+	Transform m_Transform;
 
 protected:
 	unsigned int m_VAO;

@@ -18,7 +18,7 @@ Mesh::Mesh()
 	m_VertexCount = 0;
 	m_IndexCount = 0;
 	m_Scale = glm::vec3(1.0f); // obsolete, needs to be removed
-	m_Transform = new Transform(glm::vec3(0.0f), glm::vec3(0.0f), m_Scale);
+	m_Transform = Transform(glm::vec3(0.0f), glm::vec3(0.0f), m_Scale);
 }
 
 Mesh::Mesh(glm::vec3 scale)
@@ -98,8 +98,6 @@ void Mesh::Clear()
 
 	m_IndexCount = 0;
 	m_VertexCount = 0;
-
-	delete m_Transform;
 
 	if (m_IBO != 0)
 	{

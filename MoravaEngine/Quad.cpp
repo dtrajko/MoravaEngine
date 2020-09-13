@@ -3,7 +3,7 @@
 #include "GL/glew.h"
 
 
-Quad::Quad()
+Quad::Quad() : Mesh()
 {
 	float quadVertices[] = {
 		// positions           // texture Coords

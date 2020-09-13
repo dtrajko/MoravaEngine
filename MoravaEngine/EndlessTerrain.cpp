@@ -13,8 +13,8 @@ TerrainChunk::TerrainChunk(glm::vec2 coord, int size)
 	glm::vec3 positionV3 = glm::vec3(position.x, 0, position.y);
 
 	m_Mesh = new Quad();
-	m_Mesh->m_Transform->m_Position = positionV3;
-	m_Mesh->m_Transform->m_Scale = glm::vec3(size / 10.0f);
+	m_Mesh->m_Transform.m_Position = positionV3;
+	m_Mesh->m_Transform.m_Scale = glm::vec3(size / 10.0f);
 }
 
 TerrainChunk::~TerrainChunk()
