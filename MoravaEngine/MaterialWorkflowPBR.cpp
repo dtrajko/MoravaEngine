@@ -2,6 +2,7 @@
 
 #include "CommonValues.h"
 #include "Log.h"
+#include "Application.h"
 
 #include <iostream>
 
@@ -39,7 +40,6 @@ void MaterialWorkflowPBR::Init(std::string envMapHDR, uint32_t blurLevel)
 	SetupMatrices();                      // Line 90
 	ConvertHDREquirectangularToCubemap(); // Line 102
 	CreateIrradianceCubemap();            // Line 128
-	ApplyBlurToCubemap();
 	SolveDiffuseIntegralByConvolution();  // Line 148
 	CreatePreFilterCubemap();             // Line 177
 	RunQuasiMonteCarloSimulation();       // Line 195
@@ -228,11 +228,11 @@ void MaterialWorkflowPBR::ApplyBlurToCubemap()
 
 	m_ShaderHorizontalBlur->Bind();
 	m_ShaderHorizontalBlur->setInt("originalTexture", m_EnvironmentCubemap);
-	m_ShaderHorizontalBlur->setFloat("targetWidth", (float)m_BlurLevel);
+	m_ShaderHorizontalBlur->setFloat("targetWidth", (float)m_CaptureSize);
 
 	m_ShaderVerticalBlur->Bind();
 	m_ShaderVerticalBlur->setInt("originalTexture", m_EnvironmentCubemap);
-	m_ShaderVerticalBlur->setFloat("targetHeight", (float)m_BlurLevel);
+	m_ShaderVerticalBlur->setFloat("targetHeight", (float)m_CaptureSize);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemap);
