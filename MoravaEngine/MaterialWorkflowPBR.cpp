@@ -18,6 +18,8 @@ MaterialWorkflowPBR::MaterialWorkflowPBR()
 	m_ShaderIrradiance = nullptr;
 	m_ShaderPrefilter = nullptr;
 	m_ShaderBRDF = nullptr;
+	m_ShaderHorizontalBlur = nullptr;
+	m_ShaderVerticalBlur = nullptr;
 	m_SkyboxCube = nullptr;
 	m_Quad = nullptr;
 
@@ -37,6 +39,7 @@ void MaterialWorkflowPBR::Init(std::string envMapHDR, uint32_t blurLevel)
 	SetupMatrices();                      // Line 90
 	ConvertHDREquirectangularToCubemap(); // Line 102
 	CreateIrradianceCubemap();            // Line 128
+	ApplyBlurToCubemap();
 	SolveDiffuseIntegralByConvolution();  // Line 148
 	CreatePreFilterCubemap();             // Line 177
 	RunQuasiMonteCarloSimulation();       // Line 195
@@ -103,6 +106,16 @@ void MaterialWorkflowPBR::SetupShaders()
 	if (!m_ShaderBRDF) {
 		m_ShaderBRDF = new Shader("Shaders/PBR/brdf.vs", "Shaders/PBR/brdf.fs");
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderBRDF compiled [programID={0}]", m_ShaderBRDF->GetProgramID());
+	}
+
+	if (!m_ShaderHorizontalBlur) {
+		m_ShaderHorizontalBlur = new Shader("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs");
+		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderHorizontalBlur compiled [programID={0}]", m_ShaderHorizontalBlur->GetProgramID());
+	}
+
+	if (!m_ShaderVerticalBlur) {
+		m_ShaderVerticalBlur = new Shader("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs");
+		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderVerticalBlur compiled [programID={0}]", m_ShaderVerticalBlur->GetProgramID());
 	}
 }
 
@@ -207,6 +220,35 @@ void MaterialWorkflowPBR::ConvertHDREquirectangularToCubemap()
 	// then let OpenGL generate mipmaps from first mip face (combatting visible dots artifact)
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemap);
 	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+}
+
+void MaterialWorkflowPBR::ApplyBlurToCubemap()
+{
+	return;
+
+	m_ShaderHorizontalBlur->Bind();
+	m_ShaderHorizontalBlur->setInt("originalTexture", m_EnvironmentCubemap);
+	m_ShaderHorizontalBlur->setFloat("targetWidth", (float)m_BlurLevel);
+
+	m_ShaderVerticalBlur->Bind();
+	m_ShaderVerticalBlur->setInt("originalTexture", m_EnvironmentCubemap);
+	m_ShaderVerticalBlur->setFloat("targetHeight", (float)m_BlurLevel);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemap);
+
+	glViewport(0, 0, m_IrradianceMapSize, m_IrradianceMapSize); // don't forget to configure the viewport to the capture dimensions.
+	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
+
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		m_ShaderIrradiance->setMat4("view", m_CaptureViews[i]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_IrradianceMap, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		m_SkyboxCube->Render();
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void MaterialWorkflowPBR::CreateIrradianceCubemap()
@@ -372,6 +414,8 @@ MaterialWorkflowPBR::~MaterialWorkflowPBR()
 	if (m_ShaderIrradiance) delete m_ShaderIrradiance;
 	if (m_ShaderPrefilter) delete m_ShaderPrefilter;
 	if (m_ShaderBRDF) delete m_ShaderBRDF;
+	if (m_ShaderHorizontalBlur) delete m_ShaderHorizontalBlur;
+	if (m_ShaderVerticalBlur) delete m_ShaderVerticalBlur;
 	if (m_SkyboxCube) delete m_SkyboxCube;
 	if (m_Quad) delete m_Quad;
 }

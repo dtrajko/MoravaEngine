@@ -116,7 +116,7 @@ SceneEditor::SceneEditor()
     sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
     sceneSettings.spotLights[3].edge = 0.5f;
 
-    m_IsViewportEnabled = true;
+    m_IsViewportEnabled = false;
 
     ResourceManager::Init();
 

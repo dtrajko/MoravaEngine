@@ -35,6 +35,7 @@ private:
 	void SetupCubemap();
 	void SetupMatrices();
 	void ConvertHDREquirectangularToCubemap();
+	void ApplyBlurToCubemap();
 	void CreateIrradianceCubemap();
 	void SolveDiffuseIntegralByConvolution();
 	void CreatePreFilterCubemap();
@@ -65,6 +66,8 @@ private:
 	Shader* m_ShaderIrradiance;
 	Shader* m_ShaderPrefilter;
 	Shader* m_ShaderBRDF;
+	Shader* m_ShaderHorizontalBlur;
+	Shader* m_ShaderVerticalBlur;
 
 	uint32_t m_BlurLevel;
 
