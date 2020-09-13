@@ -25,6 +25,7 @@ public:
 	void BindIrradianceMap(unsigned int slot);
 	void BindPrefilterMap(unsigned int slot);
 	void SetGlobalRenderState();
+	void Cleanup();
 
 private:
 	void SetupShaders();
@@ -39,6 +40,7 @@ private:
 	void CreatePreFilterCubemap();
 	void RunQuasiMonteCarloSimulation();
 	void Generate2DLUTFromBRDF();
+	void ResetResourceIDs();
 
 public:
 	int m_CaptureSize;

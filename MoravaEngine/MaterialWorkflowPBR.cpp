@@ -13,12 +13,22 @@ MaterialWorkflowPBR::MaterialWorkflowPBR()
 	m_IrradianceMapSize = 32;
 
 	m_BlurLevel = 0;
+
+	m_ShaderEquirectangularToCubemap = nullptr;
+	m_ShaderIrradiance = nullptr;
+	m_ShaderPrefilter = nullptr;
+	m_ShaderBRDF = nullptr;
+	m_SkyboxCube = nullptr;
+	m_Quad = nullptr;
+
+	ResetResourceIDs();
 }
 
 void MaterialWorkflowPBR::Init(std::string envMapHDR, uint32_t blurLevel)
 {
 	m_BlurLevel = blurLevel;
 
+	Cleanup();
 	SetupShaders();                       // Line 26
 	SetupGeometry();                      // Line 32
 	SetupFramebuffers();                  // Line 37
@@ -75,23 +85,34 @@ void MaterialWorkflowPBR::SetGlobalRenderState()
 
 void MaterialWorkflowPBR::SetupShaders()
 {
-	m_ShaderEquirectangularToCubemap = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/equirectangular_to_cubemap.fs");
-	Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderEquirectangularToCubemap compiled [programID={0}]", m_ShaderEquirectangularToCubemap->GetProgramID());
+	if (!m_ShaderEquirectangularToCubemap) {
+		m_ShaderEquirectangularToCubemap = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/equirectangular_to_cubemap.fs");
+		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderEquirectangularToCubemap compiled [programID={0}]", m_ShaderEquirectangularToCubemap->GetProgramID());
+	}
 
-	m_ShaderIrradiance = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/irradiance_convolution.fs");
-	Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderIrradiance compiled [programID={0}]", m_ShaderIrradiance->GetProgramID());
+	if (!m_ShaderIrradiance) {
+		m_ShaderIrradiance = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/irradiance_convolution.fs");
+		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderIrradiance compiled [programID={0}]", m_ShaderIrradiance->GetProgramID());
+	}
 
-	m_ShaderPrefilter = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/prefilter.fs");
-	Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderPrefilter compiled [programID={0}]", m_ShaderPrefilter->GetProgramID());
+	if (!m_ShaderPrefilter) {
+		m_ShaderPrefilter = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/prefilter.fs");
+		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderPrefilter compiled [programID={0}]", m_ShaderPrefilter->GetProgramID());
+	}
 
-	m_ShaderBRDF = new Shader("Shaders/PBR/brdf.vs", "Shaders/PBR/brdf.fs");
-	Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderBRDF compiled [programID={0}]", m_ShaderBRDF->GetProgramID());
+	if (!m_ShaderBRDF) {
+		m_ShaderBRDF = new Shader("Shaders/PBR/brdf.vs", "Shaders/PBR/brdf.fs");
+		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderBRDF compiled [programID={0}]", m_ShaderBRDF->GetProgramID());
+	}
 }
 
 void MaterialWorkflowPBR::SetupGeometry()
 {
-	m_SkyboxCube = new CubeSkybox();
-	m_Quad = new Quad();
+	if (!m_SkyboxCube)
+		m_SkyboxCube = new CubeSkybox();
+
+	if (!m_Quad)
+		m_Quad = new Quad();
 }
 
 void MaterialWorkflowPBR::SetupFramebuffers()
@@ -310,6 +331,47 @@ void MaterialWorkflowPBR::Generate2DLUTFromBRDF()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void MaterialWorkflowPBR::ResetResourceIDs()
+{
+	m_EnvironmentCubemap = 0;
+	m_IrradianceMap = 0;
+	m_PrefilterMap = 0;
+	m_HDRTexture = 0;
+	m_BRDF_LUT_Texture = 0;
+
+	m_CaptureFBO = 0;
+	m_CaptureRBO = 0;
+}
+
+void MaterialWorkflowPBR::Cleanup()
+{
+	if (m_EnvironmentCubemap)
+		glDeleteTextures(1, &m_EnvironmentCubemap);
+	if (m_IrradianceMap)
+		glDeleteTextures(1, &m_IrradianceMap);
+	if (m_PrefilterMap)
+		glDeleteTextures(1, &m_PrefilterMap);
+	if (m_HDRTexture)
+		glDeleteTextures(1, &m_HDRTexture);
+	if (m_BRDF_LUT_Texture)
+		glDeleteTextures(1, &m_BRDF_LUT_Texture);
+
+	if (m_CaptureFBO)
+		glDeleteFramebuffers(1, &m_CaptureFBO);
+	if (m_CaptureRBO)
+		glDeleteFramebuffers(1, &m_CaptureRBO);
+
+	ResetResourceIDs();
+}
+
 MaterialWorkflowPBR::~MaterialWorkflowPBR()
 {
+	Cleanup();
+
+	if (m_ShaderEquirectangularToCubemap) delete m_ShaderEquirectangularToCubemap;
+	if (m_ShaderIrradiance) delete m_ShaderIrradiance;
+	if (m_ShaderPrefilter) delete m_ShaderPrefilter;
+	if (m_ShaderBRDF) delete m_ShaderBRDF;
+	if (m_SkyboxCube) delete m_SkyboxCube;
+	if (m_Quad) delete m_Quad;
 }
