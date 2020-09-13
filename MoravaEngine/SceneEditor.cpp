@@ -133,8 +133,6 @@ SceneEditor::SceneEditor()
 
     // Initialize the PBR/IBL Material Workflow component
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
-    m_BlurLevel = 0;
-    m_BlurLevelPrev = m_BlurLevel;
 
     m_CurrentTimestamp = 0.0f;
     m_StartTimestamp = (float)glfwGetTime();
@@ -171,6 +169,8 @@ SceneEditor::SceneEditor()
     m_PBR_Map_Edit = PBR_MAP_ENVIRONMENT;
     m_HDRI_Edit = HDRI_EARLY_EVE_WARM_SKY;
     m_HDRI_Edit_Prev = -1;
+    m_BlurLevel = 0;
+    m_BlurLevelPrev = m_BlurLevel;
 
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
@@ -610,9 +610,9 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
             ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
             ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
-        }
 
-        ImGui::SliderInt("Blur Level", &m_BlurLevel, 0, 10);
+            ImGui::SliderInt("Blur Level", &m_BlurLevel, 0, 10);
+        }
 
         if (ImGui::CollapsingHeader("Cube Maps"))
         {

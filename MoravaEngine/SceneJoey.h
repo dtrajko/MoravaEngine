@@ -50,5 +50,7 @@ private:
 
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;
+	int m_BlurLevel;
+	int m_BlurLevelPrev;
 
 };
