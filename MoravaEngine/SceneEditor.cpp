@@ -2239,7 +2239,13 @@ void SceneEditor::RenderSkybox(Shader* shaderBackground)
     transform = glm::rotate(transform, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
     shaderBackground->setMat4("model", transform);
 
-    m_MaterialWorkflowPBR->BindEnvironmentCubemap(0);
+    if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
+        m_MaterialWorkflowPBR->BindEnvironmentCubemap(0);
+    else if (m_PBR_Map_Edit == PBR_MAP_IRRADIANCE)
+        m_MaterialWorkflowPBR->BindIrradianceMap(0);
+    else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
+        m_MaterialWorkflowPBR->BindPrefilterMap(0);
+
     shaderBackground->setInt("environmentMap", 0);
 
     m_MaterialWorkflowPBR->GetSkyboxCube()->Render();

@@ -62,7 +62,7 @@ void main()
     vec3 color;
 
     if (blurLevel > 0.0) {
-        offset = 1.0 / (3000.0 / blurLevel);
+        offset = 1.0 / (5000.0 / blurLevel);
         color = Kernel(kernel_blur, equirectangularMap, uv, offset).rgb;
     } else {
         color = texture(equirectangularMap, uv).rgb;

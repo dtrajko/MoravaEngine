@@ -45,6 +45,7 @@ private:
 
 public:
 	int m_CaptureSize;
+	int m_CaptureSizeBlur;
 	int m_PrefilterMapSize;
 	int m_IrradianceMapSize;
 
