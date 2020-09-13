@@ -36,6 +36,14 @@ void RendererJoey::SetShaders()
 	s_Shaders.insert(std::make_pair("backgroundShader", backgroundShader));
 	printf("RendererJoey: backgroundShader compiled [programID=%d]\n", backgroundShader->GetProgramID());
 
+	Shader* shaderBlurHorizontal = new Shader("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs");
+	s_Shaders.insert(std::make_pair("shaderBlurHorizontal", shaderBlurHorizontal));
+	printf("RendererJoey: shaderBlurHorizontal compiled [programID=%d]\n", shaderBlurHorizontal->GetProgramID());
+
+	Shader* shaderBlurVertical = new Shader("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs");
+	s_Shaders.insert(std::make_pair("shaderBlurVertical", shaderBlurVertical));
+	printf("RendererJoey: shaderBlurVertical compiled [programID=%d]\n", shaderBlurVertical->GetProgramID());
+
 	s_Shaders["pbrShader"]->Bind();
 	s_Shaders["pbrShader"]->setInt("irradianceMap", 0);
 	s_Shaders["pbrShader"]->setInt("prefilterMap",  1);
