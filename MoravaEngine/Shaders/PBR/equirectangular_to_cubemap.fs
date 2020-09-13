@@ -4,7 +4,8 @@ in vec3 WorldPos;
 
 uniform sampler2D equirectangularMap;
 
-uniform float blurLevel = 0.0;
+uniform float blurLevel;
+uniform float textureSize;
 
 const vec2 invAtan = vec2(0.1591, 0.3183);
 vec2 SampleSphericalMap(vec3 v)
@@ -17,7 +18,7 @@ vec2 SampleSphericalMap(vec3 v)
 
 // -- BEGIN Kernel Blur effect
 // kernel calculation
-float offset = 1.0 / 300.0;
+float offset = 1.0 / textureSize / 4.0;
 
 // blur    
 float kernel_blur[9] = float[]
@@ -62,7 +63,6 @@ void main()
     vec3 color;
 
     if (blurLevel > 0.0) {
-        offset = 1.0 / (5000.0 / blurLevel);
         color = Kernel(kernel_blur, equirectangularMap, uv, offset).rgb;
     } else {
         color = texture(equirectangularMap, uv).rgb;

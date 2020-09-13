@@ -14,6 +14,7 @@ MaterialWorkflowPBR::MaterialWorkflowPBR()
 
 	m_BlurLevel = 0;
 	m_CaptureSizeBlur = m_CaptureSize;
+	m_MinFramebufferSize = 128;
 
 	m_ShaderEquirectangularToCubemap = nullptr;
 	m_ShaderIrradiance = nullptr;
@@ -33,7 +34,8 @@ void MaterialWorkflowPBR::Init(std::string envMapHDR, uint32_t blurLevel)
 
 	m_CaptureSizeBlur = m_CaptureSize;
 	if (blurLevel > 0) {
-		m_CaptureSizeBlur = (m_CaptureSize / (int)blurLevel) * 2;
+		m_CaptureSizeBlur = (int)((float)m_CaptureSize * std::lerp(1.0f, 0.4f, blurLevel * 0.1f));
+		// m_CaptureSizeBlur = (int)(std::lerp((float)m_CaptureSize, (float)m_MinFramebufferSize, blurLevel * 0.1f));
 	}
 
 	Cleanup();
@@ -149,13 +151,13 @@ void MaterialWorkflowPBR::LoadHDREnvironmentMap(std::string envMapHDR)
 {
 	// PBR: load the HDR environment map
 	stbi_set_flip_vertically_on_load(true);
-	int width, height, nrComponents;
-	float* data = stbi_loadf(envMapHDR.c_str(), &width, &height, &nrComponents, 0); // newport_loft.hdr
+	int nrComponents;
+	float* data = stbi_loadf(envMapHDR.c_str(), &m_HDR_Map_Width, &m_HDR_Map_Height, &nrComponents, 0); // newport_loft.hdr
 	if (data)
 	{
 		glGenTextures(1, &m_HDRTexture);
 		glBindTexture(GL_TEXTURE_2D, m_HDRTexture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data); // note how we specify the texture's data value to be float
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, m_HDR_Map_Width, m_HDR_Map_Height, 0, GL_RGB, GL_FLOAT, data); // note how we specify the texture's data value to be float
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -206,6 +208,7 @@ void MaterialWorkflowPBR::ConvertHDREquirectangularToCubemap()
 	m_ShaderEquirectangularToCubemap->setInt("equirectangularMap", 0);
 	m_ShaderEquirectangularToCubemap->setMat4("projection", m_CaptureProjection);
 	m_ShaderEquirectangularToCubemap->setFloat("blurLevel", (float)m_BlurLevel);
+	m_ShaderEquirectangularToCubemap->setFloat("textureSize", (float)m_CaptureSizeBlur);
 
 	Log::GetLogger()->info("MaterialWorkflowPBR BlurLevel: {0}, CaptureSize: {1}", m_BlurLevel, m_CaptureSizeBlur);
 

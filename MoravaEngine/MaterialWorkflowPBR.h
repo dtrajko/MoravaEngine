@@ -71,5 +71,9 @@ private:
 	Shader* m_ShaderVerticalBlur;
 
 	uint32_t m_BlurLevel;
+	int m_HDR_Map_Width;
+	int m_HDR_Map_Height;
+
+	int m_MinFramebufferSize;
 
 };
