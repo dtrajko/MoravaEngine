@@ -19,6 +19,8 @@ public:
 	void SetScene(Scene* scene);
 	void SetRenderer(RendererBasic* renderer);
 
+	std::string OpenFile(const std::string& filter) const;
+
 private:
 	static Application* s_Instance;
 	Window* m_Window;

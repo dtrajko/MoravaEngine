@@ -170,4 +170,10 @@ private:
 
 	float m_SkyboxRotationSpeed;
 
+	// experimental section (OpenFile dialog)
+	std::string m_LoadedFile;
+	Texture* m_LoadedTexture;
+	std::string m_LoadedTextureFilepath;
+	bool m_UseLoadedTexture;
+
 };

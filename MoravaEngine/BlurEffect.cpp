@@ -17,11 +17,13 @@ BlurEffect::BlurEffect()
 
 	m_ShaderHorizontalBlur = nullptr;
 	m_ShaderVerticalBlur = nullptr;
+
+	m_OriginalTextureSlot = 1;
 }
 
 void BlurEffect::Init(int width, int height, int textureID)
 {
-	Log::GetLogger()->info("-- BEGIN BlurEffect::Init --");
+	Log::GetLogger()->info("-- BEGIN BlurEffect::Init [width={0}, height={1}, textureID={2}]", width, height, textureID);
 
 	m_Width = width;
 	m_Height = height;
@@ -35,7 +37,7 @@ void BlurEffect::Init(int width, int height, int textureID)
 
 	Generate(m_Width, m_Height);
 
-	Log::GetLogger()->info("-- END BlurEffect::Init --");
+	Log::GetLogger()->info("-- END BlurEffect::Init");
 }
 
 void BlurEffect::SetupShaders()
@@ -91,16 +93,12 @@ void BlurEffect::HorizontalBlurSetup(int width, int height)
 
 	m_HorizontalFBO = new Framebuffer(m_Width, m_Height);
 	m_HorizontalFBO->AddAttachmentSpecification(m_Width, m_Height, AttachmentType::Texture, AttachmentFormat::Color);
-	m_HorizontalFBO->Generate(m_Width, m_Height);
+	// m_HorizontalFBO->Generate(m_Width, m_Height);
 
 	if (!m_HorizontalFBO->CheckStatus())
 		Log::GetLogger()->error("ERROR: BlurEffect Horizontal blur FBO is not complete!");
 
 	Log::GetLogger()->info("Horizontal Blur FBO created successfully.");
-
-	m_ShaderHorizontalBlur->Bind();
-	m_ShaderHorizontalBlur->setFloat("targetWidth", (float)m_Width);
-	m_ShaderHorizontalBlur->Unbind();
 
 	// -- Unbind the framebuffer / back to default framebuffer
 	m_HorizontalFBO->Unbind(Application::Get()->GetWindow()->GetBufferWidth(), Application::Get()->GetWindow()->GetBufferHeight());
@@ -113,47 +111,65 @@ void BlurEffect::VerticalBlurSetup(int width, int height)
 
 	m_VerticalFBO = new Framebuffer(m_Width, m_Height);
 	m_VerticalFBO->AddAttachmentSpecification(m_Width, m_Height, AttachmentType::Texture, AttachmentFormat::Color);
-	m_VerticalFBO->Generate(m_Width, m_Height);
+	// m_VerticalFBO->Generate(m_Width, m_Height);
 
 	if (!m_VerticalFBO->CheckStatus())
 		Log::GetLogger()->error("ERROR: BlurEffect Vertical blur FBO is not complete!");
 
 	Log::GetLogger()->info("Vertical Blur FBO created successfully.");
 
-	m_ShaderVerticalBlur->Bind();
-	m_ShaderVerticalBlur->setFloat("targetHeight", (float)m_Height);
-	m_ShaderVerticalBlur->Unbind();
-
 	// -- Unbind the framebuffer / back to default framebuffer
 	m_VerticalFBO->Unbind(Application::Get()->GetWindow()->GetBufferWidth(), Application::Get()->GetWindow()->GetBufferHeight());
 }
 
+void BlurEffect::Render()
+{
+	// Log::GetLogger()->info("-- BEGIN BlurEffect::Render --");
+
+	RenderHorizontal(m_TextureID);
+	RenderVertical((int)GetHorizontalOutputTexture()->GetID());
+
+	// Log::GetLogger()->info("-- END BlurEffect::Render --");
+}
+
 void BlurEffect::RenderHorizontal(int textureHorizontal)
 {
-	glViewport(0, 0, m_HorizontalFBO->GetWidth(), m_HorizontalFBO->GetHeight());
-
 	m_HorizontalFBO->Bind();
 	m_ShaderHorizontalBlur->Bind();
 
+	glViewport(0, 0, m_Width, m_Height);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glActiveTexture(GL_TEXTURE0 + m_OriginalTextureSlot);
 	glBindTexture(GL_TEXTURE_2D, textureHorizontal);
-	m_ShaderHorizontalBlur->setInt("originalTexture", textureHorizontal);
+	m_ShaderHorizontalBlur->setInt("originalTexture", m_OriginalTextureSlot);
+	m_ShaderHorizontalBlur->setFloat("targetWidth", (float)m_Width);
+	// Log::GetLogger()->debug("-- BlurEffect::RenderHorizontal originalTexture: {0} targetHeight: {1}", textureHorizontal, (float)m_Height);
+
 	RenderQuadHorizontal();
 
 	m_ShaderHorizontalBlur->Unbind();
+	m_HorizontalFBO->Unbind(Application::Get()->GetWindow()->GetBufferWidth(), Application::Get()->GetWindow()->GetBufferHeight());
 }
 
 void BlurEffect::RenderVertical(int textureVertical)
 {
-	glViewport(0, 0, m_VerticalFBO->GetWidth(), m_VerticalFBO->GetHeight());
-
 	m_VerticalFBO->Bind();
 	m_ShaderVerticalBlur->Bind();
 
+	glViewport(0, 0, m_Width, m_Height);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glActiveTexture(GL_TEXTURE0 + m_OriginalTextureSlot);
 	glBindTexture(GL_TEXTURE_2D, textureVertical);
-	m_ShaderVerticalBlur->setInt("originalTexture", textureVertical);
+	m_ShaderVerticalBlur->setInt("originalTexture", m_OriginalTextureSlot);
+	m_ShaderVerticalBlur->setFloat("targetHeight", (float)m_Height);
+	// Log::GetLogger()->debug("-- BlurEffect::RenderVertical originalTexture: {0} targetWidth: {1}", textureVertical, (float)m_Width);
+
 	RenderQuadVertical();
 
 	m_ShaderVerticalBlur->Unbind();
+	m_VerticalFBO->Unbind(Application::Get()->GetWindow()->GetBufferWidth(), Application::Get()->GetWindow()->GetBufferHeight());
 }
 
 void BlurEffect::RenderQuadHorizontal()
@@ -190,16 +206,6 @@ BlurEffect::~BlurEffect()
 
 void BlurEffect::Release()
 {
-}
-
-void BlurEffect::Render(int inputTexture)
-{
-	// Log::GetLogger()->info("-- BEGIN BlurEffect::Render --");
-
-	RenderHorizontal(inputTexture);
-	RenderVertical((int)GetHorizontalOutputTexture()->GetID());
-
-	// Log::GetLogger()->info("-- END BlurEffect::Render --");
 }
 
 FramebufferTexture* BlurEffect::GetHorizontalOutputTexture()

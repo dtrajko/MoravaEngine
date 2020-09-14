@@ -26,6 +26,9 @@ public:
 	void RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 
 private:
+	void RenderStageSetUniforms(Scene* scene, glm::mat4* projectionMatrix);
+
+private:
 	std::map<std::string, int> m_OmniShadowTxSlots;
 
 	bool m_IsViewportEnabled;

@@ -535,6 +535,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
         std::map<std::string, std::string>::iterator itTexture;
         for (itTexture = ResourceManager::GetTextureInfo()->begin(); itTexture != ResourceManager::GetTextureInfo()->end(); itTexture++)
             itemsTexture.push_back(itTexture->first.c_str());
+
         static const char* currentItemTexture = m_TextureNameEdit->c_str();
 
         if (ImGui::BeginCombo("Texture Name", currentItemTexture))
@@ -906,9 +907,9 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::Text("Water Refraction\nDepth Attachment");
             ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
 
-            ImGui::Text("Blue Effect Horizontal Texture");
+            ImGui::Text("Blur Effect Horizontal");
             ImGui::Image((void*)(intptr_t)m_BlurEffect->GetHorizontalOutputTexture()->GetID(), imageSize);
-            ImGui::Text("Blue Effect Vertical Texture");
+            ImGui::Text("Blur Effect Vertical");
             ImGui::Image((void*)(intptr_t)m_BlurEffect->GetVerticalOutputTexture()->GetID(), imageSize);
         }
     }
@@ -1081,6 +1082,52 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
     }
     ImGui::End();
 
+    ImGui::Begin("Experimental Section");
+    {
+        ImGui::Text("File");
+        std::string fullpath = (m_LoadedFile != "") ? m_LoadedFile : "None";
+        size_t found = fullpath.find_last_of("/\\");
+        std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
+        ImGui::Text(path.c_str()); ImGui::SameLine();
+
+        if (ImGui::Button("...##Mesh"))
+        {
+            m_LoadedFile = Application::Get()->OpenFile("");
+            if (m_LoadedFile != "")
+            {
+                Log::GetLogger()->info("ImGui OpenFile - filename: '{0}'", m_LoadedFile);
+            }
+        }
+    }
+
+    if (ImGui::CollapsingHeader("Normals", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+        ImGui::Image(m_LoadedTexture ? (void*)(intptr_t)m_LoadedTexture->GetID() : (void*)(intptr_t)ResourceManager::HotLoadTexture("Checkerboard")->GetID(), ImVec2(64, 64));
+        ImGui::PopStyleVar();
+        if (ImGui::IsItemHovered())
+        {
+            if (m_LoadedTexture)
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::TextUnformatted(m_LoadedTextureFilepath.c_str());
+                ImGui::PopTextWrapPos();
+                ImGui::Image((void*)(intptr_t)m_LoadedTexture->GetID(), ImVec2(384, 384));
+                ImGui::EndTooltip();
+            }
+            if (ImGui::IsItemClicked())
+            {
+                std::string filename = Application::Get()->OpenFile("");
+                if (filename != "")
+                    m_LoadedTexture = new Texture(filename.c_str(), false);
+            }
+        }
+        ImGui::SameLine();
+        ImGui::Checkbox("Use##NormalMap", &m_UseLoadedTexture);
+    }
+    ImGui::End();
+
     ImGui::ShowMetricsWindow();
 
     if (m_IsViewportEnabled)
@@ -1101,9 +1148,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
 
             ResizeViewport(viewportPanelSize);
 
-            // m_RenderFramebuffer->GetTextureAttachmentColor()->Bind();
             uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
-            // uint64_t textureID = LightManager::directionalLight.GetShadowMap()->GetTextureID();
+            // uint64_t textureID = m_BlurEffect->GetVerticalOutputTexture()->GetID();
             ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
         }
         ImGui::End();
@@ -1245,7 +1291,6 @@ void SceneEditor::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
 
         ImGui::EndMenuBar();
     }
-
     ImGui::End();
 }
 
@@ -1305,7 +1350,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
             m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr", m_BlurLevel);
         }
 
-        m_BlurEffect->Init(m_MaterialWorkflowPBR->m_CaptureSize, m_MaterialWorkflowPBR->m_CaptureSize, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
+        m_BlurEffect->Init(m_MaterialWorkflowPBR->m_CaptureSize, m_MaterialWorkflowPBR->m_CaptureSize, ResourceManager::HotLoadTexture("crate")->GetID());
 
         m_HDRI_Edit_Prev = m_HDRI_Edit;
         m_BlurLevelPrev = m_BlurLevel;
@@ -2251,8 +2296,16 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
 
 void SceneEditor::RenderSkybox(Shader* shaderBackground)
 {
-    m_BlurEffect->Render(m_MaterialWorkflowPBR->GetEnvironmentCubemap());
-    m_BlurEffect->Unbind((int)Application::Get()->GetWindow()->GetBufferWidth(), (int)Application::Get()->GetWindow()->GetBufferHeight());
+    m_BlurEffect->Render();
+
+    if (m_IsViewportEnabled) {
+        m_RenderFramebuffer->Bind();
+    }
+    else {
+        RendererBasic::SetDefaultFramebuffer(Application::Get()->GetWindow()->GetBufferWidth(), Application::Get()->GetWindow()->GetBufferHeight());
+    }
+
+    int environmentMapSlot = 0;
 
     // Skybox shaderBackground
     RendererBasic::DisableCulling();
@@ -2264,16 +2317,17 @@ void SceneEditor::RenderSkybox(Shader* shaderBackground)
     transform = glm::rotate(transform, angleRadians * m_SkyboxRotationSpeed, glm::vec3(0.0f, 1.0f, 0.0f));
     shaderBackground->setMat4("model", transform);
 
-    shaderBackground->setInt("environmentMap", 0);
+    shaderBackground->setInt("environmentMap", environmentMapSlot);
 
     if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
-        m_MaterialWorkflowPBR->BindEnvironmentCubemap(0);
+        m_MaterialWorkflowPBR->BindEnvironmentCubemap(environmentMapSlot);
     else if (m_PBR_Map_Edit == PBR_MAP_IRRADIANCE)
-        m_MaterialWorkflowPBR->BindIrradianceMap(0);
+        m_MaterialWorkflowPBR->BindIrradianceMap(environmentMapSlot);
     else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
-        m_MaterialWorkflowPBR->BindPrefilterMap(0);
+        m_MaterialWorkflowPBR->BindPrefilterMap(environmentMapSlot);
 
-    m_BlurEffect->GetHorizontalOutputTexture()->Bind(0);
+    // m_BlurEffect->GetVerticalFBO()->GetTextureAttachmentColor()->Bind(environmentMapSlot);
+
     m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
 }
 
@@ -2441,6 +2495,7 @@ void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::st
         }
 
         if (shouldRenderObject) {
+            // m_BlurEffect->GetVerticalFBO()->GetTextureAttachmentColor()->Bind(0);
             object->Render();
         }
     }

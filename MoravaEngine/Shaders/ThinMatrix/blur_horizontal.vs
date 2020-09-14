@@ -1,18 +1,21 @@
 #version 330
 
-in vec2 position;
+in vec2 aPosition;
 
 out vec2 blurTextureCoords[11];
+out vec2 vPosition;
 
 uniform float targetWidth;
 
 void main(void){
 
-	gl_Position = vec4(position, 0.0, 1.0);
-	vec2 centerTexCoords = position * 0.5 + 0.5;
+	gl_Position = vec4(aPosition, 0.0, 1.0);
+	vec2 centerTexCoords = aPosition * 0.5 + 0.5;
 	float pixelSize = 1.0 / targetWidth;
 	
 	for (int i = -5; i <= 5; i++) {
 		blurTextureCoords[i+5] = centerTexCoords + vec2(pixelSize * i, 0.0);
 	}
+
+	vPosition = aPosition;
 }

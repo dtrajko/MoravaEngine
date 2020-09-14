@@ -55,6 +55,7 @@ void ResourceManager::Init()
     s_TextureInfo.insert(std::make_pair("particle_atlas_smoke", "Textures/ThinMatrix/particles/smoke.png"));
     s_TextureInfo.insert(std::make_pair("waterNormal", "Textures/water/waterNormal.png"));
     s_TextureInfo.insert(std::make_pair("waterDuDv", "Textures/water/waterDuDv.png"));
+    s_TextureInfo.insert(std::make_pair("Checkerboard", "Textures/Hazel/Checkerboard.tga"));
 
     // Setup Materials
 

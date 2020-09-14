@@ -45,6 +45,9 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 		Release();
 	}
 
+	m_Width = width;
+	m_Height = height;
+
 	glGenFramebuffers(1, &m_FBO);
 	Bind(m_Width, m_Height);
 
@@ -99,16 +102,15 @@ void Framebuffer::Release()
 
 void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat)
 {
-	// Log::GetLogger()->info("Framebuffer::CreateTextureAttachmentColor [width={0}, height={1}]", width, height);
-
 	FramebufferTexture* texture = new FramebufferTexture(width, height, attachmentFormat, (unsigned int)m_TextureAttachmentsColor.size());
 	m_TextureAttachmentsColor.push_back(texture);
+
+	Log::GetLogger()->info("Framebuffer::CreateTextureAttachmentColor [ID={0}, {1}x{2}]",
+		texture->GetID(), texture->GetWidth(), texture->GetHeight());
 }
 
 void Framebuffer::CreateAttachmentDepth(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
-	// Log::GetLogger()->info("Framebuffer::CreateAttachmentDepth [width={0}, height={1}]", width, height);
-
 	if (attachmentType == AttachmentType::Texture)
 		m_AttachmentDepth = new FramebufferTexture(width, height, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
@@ -117,8 +119,6 @@ void Framebuffer::CreateAttachmentDepth(unsigned int width, unsigned int height,
 
 void Framebuffer::CreateAttachmentStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
-	// Log::GetLogger()->info("Framebuffer::CreateAttachmentStencil [width={0}, height={1}]", width, height);
-
 	if (attachmentType == AttachmentType::Texture)
 		m_AttachmentStencil = new FramebufferTexture(width, height, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
@@ -127,8 +127,6 @@ void Framebuffer::CreateAttachmentStencil(unsigned int width, unsigned int heigh
 
 void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
-	// Log::GetLogger()->info("Framebuffer::CreateAttachmentDepthAndStencil [width={0}, height={1}]", width, height);
-
 	if (attachmentType == AttachmentType::Texture)
 		m_AttachmentDepthAndStencil = new FramebufferTexture(width, height, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)

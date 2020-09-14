@@ -13,7 +13,7 @@ public:
 
 	void Init(int width, int height, int textureID);
 	void Generate(int width, int height);
-	void Render(int inputTexture);
+	void Render();
 	FramebufferTexture* GetHorizontalOutputTexture();
 	FramebufferTexture* GetVerticalOutputTexture();
 	void Unbind(int width, int height);
@@ -44,5 +44,7 @@ private:
 
 	Shader* m_ShaderHorizontalBlur;
 	Shader* m_ShaderVerticalBlur;
+
+	int m_OriginalTextureSlot;
 
 };

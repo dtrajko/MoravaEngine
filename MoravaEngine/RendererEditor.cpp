@@ -360,20 +360,15 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     }
 }
 
-void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionMatrix)
 {
-    float aspectRatio = scene->GetCameraController()->GetAspectRatio();
-    projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio,
-        scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
-    RendererBasic::SetProjectionMatrix(projectionMatrix);
-
     /**** Begin editor_object ****/
     Shader* shaderEditor = s_Shaders["editor_object"];
     shaderEditor->Bind();
 
     shaderEditor->setMat4("model", glm::mat4(1.0f));
     shaderEditor->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
-    shaderEditor->setMat4("projection", projectionMatrix);
+    shaderEditor->setMat4("projection", *projectionMatrix);
     shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditor->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
     shaderEditor->setInt("pointLightCount", LightManager::pointLightCount);
@@ -482,7 +477,7 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     // initialize static shader uniforms before rendering
     shaderEditorPBR->setMat4("model", glm::mat4(1.0f));
     shaderEditorPBR->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
-    shaderEditorPBR->setMat4("projection", projectionMatrix);
+    shaderEditorPBR->setMat4("projection", *projectionMatrix);
     shaderEditorPBR->setVec3("eyePosition", scene->GetCamera()->GetPosition());
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
@@ -568,7 +563,7 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     shaderSkinning->Bind();
 
     shaderSkinning->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
-    shaderSkinning->setMat4("projection", projectionMatrix);
+    shaderSkinning->setMat4("projection", *projectionMatrix);
     shaderSkinning->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
     shaderSkinning->setVec3("gEyeWorldPos", scene->GetCamera()->GetPosition());
     shaderSkinning->setFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
@@ -590,7 +585,7 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     /**** Begin Hybrid Anim PBR ****/
     Shader* shaderHybridAnimPBR = s_Shaders["hybrid_anim_pbr"];
     shaderHybridAnimPBR->Bind();
-    shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", projectionMatrix * scene->GetCameraController()->CalculateViewMatrix());
+    shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", *projectionMatrix * scene->GetCameraController()->CalculateViewMatrix());
     shaderHybridAnimPBR->setVec3("u_CameraPosition", scene->GetCamera()->GetPosition());
 
     // point lights
@@ -633,7 +628,7 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     Shader* shaderWater = s_Shaders["water"];
     shaderWater->Bind();
 
-    shaderWater->setMat4("projection", projectionMatrix);
+    shaderWater->setMat4("projection", *projectionMatrix);
     shaderWater->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     shaderWater->setVec3("lightPosition", LightManager::directionalLight.GetPosition());
     shaderWater->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
@@ -649,21 +644,21 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     /**** Begin Background shader ****/
     Shader* shaderBackground = s_Shaders["background"];
     shaderBackground->Bind();
-    shaderBackground->setMat4("projection", projectionMatrix);
+    shaderBackground->setMat4("projection", *projectionMatrix);
     shaderBackground->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     /**** End Background shader ****/
 
     /**** Begin of shaderBasic ****/
     Shader* shaderBasic = s_Shaders["basic"];
     shaderBasic->Bind();
-    shaderBasic->setMat4("projection", projectionMatrix);
+    shaderBasic->setMat4("projection", *projectionMatrix);
     shaderBasic->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     /**** End of shaderBasic ****/
 
     /**** Begin gizmo shader ****/
     Shader* shaderGizmo = s_Shaders["gizmo"];
     shaderGizmo->Bind();
-    shaderGizmo->setMat4("projection", projectionMatrix);
+    shaderGizmo->setMat4("projection", *projectionMatrix);
     shaderGizmo->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
     // Directional Light
     shaderGizmo->setBool("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
@@ -677,9 +672,19 @@ void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, g
     Shader* shaderGlass = s_Shaders["glass"];
     shaderGlass->Bind();
     shaderGlass->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
-    shaderGlass->setMat4("projection", projectionMatrix);
+    shaderGlass->setMat4("projection", *projectionMatrix);
     shaderGlass->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
     /**** End glass ****/
+}
+
+void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+    float aspectRatio = scene->GetCameraController()->GetAspectRatio();
+    projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio,
+        scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+    RendererBasic::SetProjectionMatrix(projectionMatrix);
+
+    RenderStageSetUniforms(scene, &projectionMatrix);
 
     {
         Profiler profiler("RE::RenderPassShadow");
