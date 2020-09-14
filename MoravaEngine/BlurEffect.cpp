@@ -21,6 +21,8 @@ BlurEffect::BlurEffect()
 
 void BlurEffect::Init(int width, int height, int textureID)
 {
+	Log::GetLogger()->info("-- BEGIN BlurEffect::Init --");
+
 	m_Width = width;
 	m_Height = height;
 	m_TextureID = textureID;
@@ -32,6 +34,8 @@ void BlurEffect::Init(int width, int height, int textureID)
 	VerticalBlurSetup(m_Width, m_Height);
 
 	Generate(m_Width, m_Height);
+
+	Log::GetLogger()->info("-- END BlurEffect::Init --");
 }
 
 void BlurEffect::SetupShaders()
@@ -126,32 +130,36 @@ void BlurEffect::VerticalBlurSetup(int width, int height)
 
 void BlurEffect::RenderHorizontal(int textureHorizontal)
 {
-	if (m_HorizontalFBO)
-		m_HorizontalFBO->Bind();
+	glViewport(0, 0, m_HorizontalFBO->GetWidth(), m_HorizontalFBO->GetHeight());
 
+	m_HorizontalFBO->Bind();
 	m_ShaderHorizontalBlur->Bind();
+
 	glBindTexture(GL_TEXTURE_2D, textureHorizontal);
 	m_ShaderHorizontalBlur->setInt("originalTexture", textureHorizontal);
 	RenderQuadHorizontal();
+
 	m_ShaderHorizontalBlur->Unbind();
 }
 
 void BlurEffect::RenderVertical(int textureVertical)
 {
-	if (m_VerticalFBO)
-		m_VerticalFBO->Bind();
+	glViewport(0, 0, m_VerticalFBO->GetWidth(), m_VerticalFBO->GetHeight());
 
+	m_VerticalFBO->Bind();
 	m_ShaderVerticalBlur->Bind();
+
 	glBindTexture(GL_TEXTURE_2D, textureVertical);
 	m_ShaderVerticalBlur->setInt("originalTexture", textureVertical);
 	RenderQuadVertical();
+
 	m_ShaderVerticalBlur->Unbind();
 }
 
 void BlurEffect::RenderQuadHorizontal()
 {
 	m_ShaderHorizontalBlur->Bind();
-	m_HorizontalFBO->GetTextureAttachmentColor()->Bind(0);
+	// m_HorizontalFBO->GetTextureAttachmentColor()->Bind(0);
 
 	glBindVertexArray(m_QuadVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -160,7 +168,7 @@ void BlurEffect::RenderQuadHorizontal()
 void BlurEffect::RenderQuadVertical()
 {
 	m_ShaderVerticalBlur->Bind();
-	m_VerticalFBO->GetTextureAttachmentColor()->Bind(0);
+	// m_VerticalFBO->GetTextureAttachmentColor()->Bind(0);
 
 	glBindVertexArray(m_QuadVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -186,8 +194,12 @@ void BlurEffect::Release()
 
 void BlurEffect::Render(int inputTexture)
 {
+	// Log::GetLogger()->info("-- BEGIN BlurEffect::Render --");
+
 	RenderHorizontal(inputTexture);
 	RenderVertical((int)GetHorizontalOutputTexture()->GetID());
+
+	// Log::GetLogger()->info("-- END BlurEffect::Render --");
 }
 
 FramebufferTexture* BlurEffect::GetHorizontalOutputTexture()

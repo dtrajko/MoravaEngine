@@ -2252,6 +2252,7 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
 void SceneEditor::RenderSkybox(Shader* shaderBackground)
 {
     m_BlurEffect->Render(m_MaterialWorkflowPBR->GetEnvironmentCubemap());
+    m_BlurEffect->Unbind((int)Application::Get()->GetWindow()->GetBufferWidth(), (int)Application::Get()->GetWindow()->GetBufferHeight());
 
     // Skybox shaderBackground
     RendererBasic::DisableCulling();
@@ -2272,9 +2273,7 @@ void SceneEditor::RenderSkybox(Shader* shaderBackground)
     else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
         m_MaterialWorkflowPBR->BindPrefilterMap(0);
 
-    m_BlurEffect->GetVerticalOutputTexture()->Bind(0);
-    m_BlurEffect->Unbind((int)Application::Get()->GetWindow()->GetBufferWidth(), (int)Application::Get()->GetWindow()->GetBufferHeight());
-
+    m_BlurEffect->GetHorizontalOutputTexture()->Bind(0);
     m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
 }
 
