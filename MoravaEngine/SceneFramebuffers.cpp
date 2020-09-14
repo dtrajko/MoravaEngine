@@ -135,10 +135,6 @@ void SceneFramebuffers::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
 
 		glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
 
-		// -- make sure we clear the framebuffer's content
-		// glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		// m_Framebuffer->Clear(); // we're not using the stencil buffer now
-
 		m_ShaderFramebuffersScene->Bind();
 
 		glm::mat4 model = glm::mat4(1.0f);

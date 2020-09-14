@@ -479,6 +479,9 @@
     <ClCompile Include="SceneAnimPBR.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="BlurEffect.cpp">
+      <Filter>PostProcessing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1024,6 +1027,9 @@
     <ClInclude Include="SceneAnimPBR.h">
       <Filter>Scene</Filter>
     </ClInclude>
+    <ClInclude Include="BlurEffect.h">
+      <Filter>PostProcessing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1103,6 +1109,9 @@
     </Filter>
     <Filter Include="Hazel\Renderer">
       <UniqueIdentifier>{aa5ede13-8d0a-4deb-bd4b-c3087818310b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PostProcessing">
+      <UniqueIdentifier>{29da581e-1ade-4f5d-9017-46c95e57f366}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

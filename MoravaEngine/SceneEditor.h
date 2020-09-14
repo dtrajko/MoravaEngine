@@ -13,6 +13,7 @@
 #include "SkinnedMesh.h"
 #include "SceneObjectParticleSystem.h"
 #include "Framebuffer.h"
+#include "BlurEffect.h"
 
 #include <future>
 #include <set>
@@ -164,5 +165,9 @@ private:
 	Framebuffer* m_RenderFramebuffer;
 
 	std::map<std::string, unsigned int> m_SamplerSlots;
+
+	BlurEffect* m_BlurEffect;
+
+	float m_SkyboxRotationSpeed;
 
 };

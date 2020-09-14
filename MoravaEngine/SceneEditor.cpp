@@ -134,6 +134,8 @@ SceneEditor::SceneEditor()
     // Initialize the PBR/IBL Material Workflow component
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
 
+    m_BlurEffect = new BlurEffect();
+
     m_CurrentTimestamp = 0.0f;
     m_StartTimestamp = (float)glfwGetTime();
 
@@ -200,6 +202,8 @@ SceneEditor::SceneEditor()
     m_SamplerSlots.insert(std::make_pair("prefilter",  7)); // uniform samplerCube u_PrefilterMap
     // BRDF LUT
     m_SamplerSlots.insert(std::make_pair("BRDF_LUT",   8)); // uniform sampler2D u_BRDFLUT
+
+    m_SkyboxRotationSpeed = 0.0f;
 }
 
 void SceneEditor::SetLightManager()
@@ -612,6 +616,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
 
             ImGui::SliderInt("Blur Level", &m_BlurLevel, 0, 10);
+            ImGui::SliderFloat("Skybox Rotation Speed", &m_SkyboxRotationSpeed, -20.0f, 20.0f);
+            
         }
 
         if (ImGui::CollapsingHeader("Cube Maps"))
@@ -899,6 +905,11 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
             ImGui::Text("Water Refraction\nDepth Attachment");
             ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
+
+            ImGui::Text("Blue Effect Horizontal Texture");
+            ImGui::Image((void*)(intptr_t)m_BlurEffect->GetHorizontalOutputTexture()->GetID(), imageSize);
+            ImGui::Text("Blue Effect Vertical Texture");
+            ImGui::Image((void*)(intptr_t)m_BlurEffect->GetVerticalOutputTexture()->GetID(), imageSize);
         }
     }
     ImGui::End();
@@ -1266,24 +1277,35 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     if (m_HDRI_Edit != m_HDRI_Edit_Prev || m_BlurLevel != m_BlurLevelPrev)
     {
-        if (m_HDRI_Edit == HDRI_GREENWICH_PARK)
+        if (m_HDRI_Edit == HDRI_GREENWICH_PARK) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr", m_BlurLevel);
-        else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE)
+        }
+        else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr", m_BlurLevel);
-        else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH)
+        }
+        else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr", m_BlurLevel);
-        else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT)
+        }
+        else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr", m_BlurLevel);
-        else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY)
+        }
+        else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr", m_BlurLevel);
-        else if (m_HDRI_Edit == HDRI_BIRCHWOOD)
+        }
+        else if (m_HDRI_Edit == HDRI_BIRCHWOOD) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr", m_BlurLevel);
-        else if (m_HDRI_Edit == HDRI_PINK_SUNRISE)
+        }
+        else if (m_HDRI_Edit == HDRI_PINK_SUNRISE) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/pink_sunrise_4k.hdr", m_BlurLevel);
-        else if (m_HDRI_Edit == HDRI_ROOITOU_PARK)
+        }
+        else if (m_HDRI_Edit == HDRI_ROOITOU_PARK) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr", m_BlurLevel);
-        else if (m_HDRI_Edit == HDRI_VENICE_DAWN)
+        }
+        else if (m_HDRI_Edit == HDRI_VENICE_DAWN) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr", m_BlurLevel);
+        }
+
+        m_BlurEffect->Init(m_MaterialWorkflowPBR->m_CaptureSize, m_MaterialWorkflowPBR->m_CaptureSize, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
 
         m_HDRI_Edit_Prev = m_HDRI_Edit;
         m_BlurLevelPrev = m_BlurLevel;
@@ -2229,6 +2251,8 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
 
 void SceneEditor::RenderSkybox(Shader* shaderBackground)
 {
+    m_BlurEffect->Render(m_MaterialWorkflowPBR->GetEnvironmentCubemap());
+
     // Skybox shaderBackground
     RendererBasic::DisableCulling();
     shaderBackground->Bind();
@@ -2236,8 +2260,10 @@ void SceneEditor::RenderSkybox(Shader* shaderBackground)
 
     glm::mat4 transform = glm::mat4(1.0f);
     float angleRadians = glm::radians((GLfloat)glfwGetTime());
-    transform = glm::rotate(transform, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+    transform = glm::rotate(transform, angleRadians * m_SkyboxRotationSpeed, glm::vec3(0.0f, 1.0f, 0.0f));
     shaderBackground->setMat4("model", transform);
+
+    shaderBackground->setInt("environmentMap", 0);
 
     if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
         m_MaterialWorkflowPBR->BindEnvironmentCubemap(0);
@@ -2246,7 +2272,8 @@ void SceneEditor::RenderSkybox(Shader* shaderBackground)
     else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
         m_MaterialWorkflowPBR->BindPrefilterMap(0);
 
-    shaderBackground->setInt("environmentMap", 0);
+    m_BlurEffect->GetVerticalOutputTexture()->Bind(0);
+    m_BlurEffect->Unbind((int)Application::Get()->GetWindow()->GetBufferWidth(), (int)Application::Get()->GetWindow()->GetBufferHeight());
 
     m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
 }
