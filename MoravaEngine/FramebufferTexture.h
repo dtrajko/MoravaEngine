@@ -11,8 +11,13 @@ class FramebufferTexture : public Attachment
 public:
 	FramebufferTexture();
 	FramebufferTexture(unsigned int width, unsigned int height, AttachmentFormat attachmentType, unsigned int orderID);
+	virtual ~FramebufferTexture() override;
+
 	virtual void Bind(unsigned int slot = 0) override;
 	virtual void Unbind() override;
-	virtual ~FramebufferTexture() override;
+
+private:
+	int m_Level;
+	int m_Border;
 
 };

@@ -1,4 +1,4 @@
-#include "FramebufferTexture.h"
+#include "FramebufferTextureCubemap.h"
 
 #include "Log.h"
 
@@ -7,14 +7,14 @@
 #include <stdexcept>
 
 
-FramebufferTexture::FramebufferTexture()
+FramebufferTextureCubemap::FramebufferTextureCubemap()
 	: Attachment()
 {
 	m_Level = 0;
 	m_Border = 0;
 }
 
-FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat, unsigned int orderID)
+FramebufferTextureCubemap::FramebufferTextureCubemap(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat, unsigned int orderID)
 	: Attachment(width, height, AttachmentType::Texture, attachmentFormat, orderID)
 {
 	m_Level = 0;
@@ -69,34 +69,37 @@ FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, 
 	}
 
 	glGenTextures(1, &m_ID);
-	glBindTexture(GL_TEXTURE_2D, m_ID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);
 
-	glTexImage2D(GL_TEXTURE_2D, m_Level, internalFormat, m_Width, m_Height, m_Border, format, type, nullptr);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_Level, internalFormat, m_Width, m_Height, m_Border, format, type, nullptr);
+	}
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_REPEAT); // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_REPEAT); // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_REPEAT); // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
-
-	glFramebufferTexture(GL_FRAMEBUFFER, attachment, m_ID, 0);
-	// glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, m_ID, 0);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_ID, 0);
+	}
 }
 
-void FramebufferTexture::Bind(unsigned int slot)
+void FramebufferTextureCubemap::Bind(unsigned int slot)
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
-	glBindTexture(GL_TEXTURE_2D, m_ID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);
 }
 
-void FramebufferTexture::Unbind()
+void FramebufferTextureCubemap::Unbind()
 {
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
-FramebufferTexture::~FramebufferTexture()
+FramebufferTextureCubemap::~FramebufferTextureCubemap()
 {
-	// Log::GetLogger()->info("FramebufferTexture Destructor");
-
 	glDeleteTextures(1, &m_ID);
 }

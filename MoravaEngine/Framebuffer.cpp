@@ -63,6 +63,9 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 		case AttachmentFormat::Depth:
 			CreateAttachmentDepth(m_Width, m_Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
 			break;
+		case AttachmentFormat::Depth_24:
+			CreateAttachmentDepth(m_Width, m_Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			break;
 		case AttachmentFormat::Stencil:
 			CreateAttachmentStencil(m_Width, m_Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
 			break;
