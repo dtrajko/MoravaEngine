@@ -180,6 +180,7 @@
     <ClCompile Include="CameraControllerVoxelTerrain.cpp" />
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="EndlessTerrain.cpp" />
+    <ClCompile Include="FramebufferTextureCubemap.cpp" />
     <ClCompile Include="Hazel\Renderer\Buffer.cpp" />
     <ClCompile Include="Hazel\Renderer\MeshAnimPBR.cpp" />
     <ClCompile Include="Hazel\Renderer\OpenGLBuffer.cpp" />
@@ -347,6 +348,7 @@
     <ClInclude Include="CameraControllerVoxelTerrain.h" />
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="EndlessTerrain.h" />
+    <ClInclude Include="FramebufferTextureCubemap.h" />
     <ClInclude Include="Hazel\Core\Base.h" />
     <ClInclude Include="Hazel\Core\Buffer.h" />
     <ClInclude Include="Hazel\Core\HazelWindow.h" />

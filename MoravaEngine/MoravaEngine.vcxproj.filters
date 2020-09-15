@@ -482,6 +482,9 @@
     <ClCompile Include="BlurEffect.cpp">
       <Filter>PostProcessing</Filter>
     </ClCompile>
+    <ClCompile Include="FramebufferTextureCubemap.cpp">
+      <Filter>Framebuffer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1029,6 +1032,9 @@
     </ClInclude>
     <ClInclude Include="BlurEffect.h">
       <Filter>PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="FramebufferTextureCubemap.h">
+      <Filter>Framebuffer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
