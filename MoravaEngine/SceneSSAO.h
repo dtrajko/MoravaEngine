@@ -26,10 +26,10 @@ private:
 	virtual void SetupMeshes() override;
 	virtual void SetupModels() override;
 	virtual void SetupFramebuffers() override;
+	void SetupSSAO();
 
-public:
+private:
 	SSAO* m_SSAO;
-
 	std::map<std::string, ModelSSAO*> modelsSSAO;
 
 };

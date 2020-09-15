@@ -431,9 +431,6 @@
     <ClCompile Include="Application.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="RendererSSAO.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="SceneSSAO.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
@@ -972,9 +969,6 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\MouseCodes.h">
       <Filter>Hazel\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="RendererSSAO.h">
-      <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="SceneSSAO.h">
       <Filter>Scene</Filter>

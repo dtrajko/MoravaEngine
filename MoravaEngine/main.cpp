@@ -53,7 +53,6 @@
 #include "RendererOmniShadows.h"
 #include "RendererVoxelTerrain.h"
 #include "RendererEditor.h"
-#include "RendererSSAO.h"
 #include "RendererTrivial.h"
 
 
@@ -93,7 +92,7 @@ enum class SceneName
 	AnimPBR,
 };
 
-SceneName currentScene = SceneName::Editor;
+SceneName currentScene = SceneName::SSAO;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -193,7 +192,7 @@ int main()
 		break;
 	case SceneName::SSAO:
 		scene = new SceneSSAO();
-		renderer = static_cast<RendererBasic*>(new RendererSSAO());
+		renderer = static_cast<RendererBasic*>(new RendererTrivial());
 		break;
 	case SceneName::AnimPBR:
 		scene = new SceneAnimPBR();

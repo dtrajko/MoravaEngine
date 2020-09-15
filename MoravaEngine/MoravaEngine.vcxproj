@@ -210,7 +210,6 @@
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="RendererTrivial.cpp" />
     <ClCompile Include="RendererOmniShadows.cpp" />
-    <ClCompile Include="RendererSSAO.cpp" />
     <ClCompile Include="RendererVoxelTerrain.cpp" />
     <ClCompile Include="RenderInstanced.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
@@ -391,7 +390,6 @@
     <ClInclude Include="Random.h" />
     <ClInclude Include="RendererTrivial.h" />
     <ClInclude Include="RendererOmniShadows.h" />
-    <ClInclude Include="RendererSSAO.h" />
     <ClInclude Include="RendererVoxelTerrain.h" />
     <ClInclude Include="RenderInstanced.h" />
     <ClInclude Include="resource.h" />

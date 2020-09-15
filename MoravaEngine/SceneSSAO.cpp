@@ -100,6 +100,7 @@ SceneSSAO::SceneSSAO()
     SetupFramebuffers();
     SetupMeshes();
     SetupModels();
+    SetupSSAO();
 }
 
 void SceneSSAO::SetupTextures()
@@ -143,6 +144,12 @@ void SceneSSAO::SetupFramebuffers()
 {
     uint32_t width  = Application::Get()->GetWindow()->GetBufferWidth();
     uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
+}
+
+void SceneSSAO::SetupSSAO()
+{
+    m_SSAO = new SSAO();
+    m_SSAO->Init();
 }
 
 void SceneSSAO::Update(float timestep, Window& mainWindow)
@@ -339,25 +346,7 @@ void SceneSSAO::UpdateImGui(float timestep, Window& mainWindow)
 void SceneSSAO::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
-    /************************************************************************
-    Shader* shaderMain = shaders["main"];
-
-    // Render anything just to be sure that the pipeline works
-    shaderMain->Bind();
-
-    glm::mat4 model = glm::mat4(1.0f);
-    shaderMain->setMat4("model", model);
-    ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
-    ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
-    meshes["floor"]->Render();
-
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
-    shaderMain->setMat4("model", model);
-    ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
-    ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
-    meshes["block"]->Render();
-    ************************************************************************/
+    m_SSAO->Render(projectionMatrix, m_CameraController->CalculateViewMatrix(), meshes, &modelsSSAO);
 }
 
 SceneSSAO::~SceneSSAO()
@@ -366,4 +355,6 @@ SceneSSAO::~SceneSSAO()
     delete meshes["floor"];
     delete meshes["cube"];
     delete modelsSSAO["backpack"];
+
+    delete m_SSAO;
 }
