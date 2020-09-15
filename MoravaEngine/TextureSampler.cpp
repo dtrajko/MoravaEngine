@@ -3,7 +3,7 @@
 
 TextureSampler::TextureSampler() : Texture()
 {
-	m_IsSampler = true;
+	m_Spec.IsSampler = true;
 }
 
 TextureSampler::TextureSampler(const char* fileLoc) : Texture(fileLoc, false, true)

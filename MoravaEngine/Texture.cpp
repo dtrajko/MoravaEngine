@@ -6,57 +6,95 @@
 
 Texture::Texture()
 {
+	m_Spec.Width = 0;
+	m_Spec.Height = 0;
+	m_Spec.BitDepth = 0;
+	m_Spec.InternalFormat = 0;
+	m_Spec.DataFormat = 0;
+	m_Spec.FlipVertically = false;
+	m_Spec.IsSampler = false;
+	m_Spec.Texture_Wrap_S = GL_REPEAT;
+	m_Spec.Texture_Wrap_T = GL_REPEAT;
+	m_Spec.Texture_Min_Filter = GL_LINEAR;
+	m_Spec.Texture_Mag_Filter = GL_LINEAR;
+	m_Spec.MipLevel = 0;
+
 	m_TextureID = 0;
-	m_Width = 0;
-	m_Height = 0;
-	m_BitDepth = 0;
 	m_FileLocation = "";
-	m_Filter = GL_LINEAR;
-	m_IsSampler = false;
+	m_Buffer = nullptr;
 }
 
 Texture::Texture(const char* fileLoc, bool flipVert)
 	: Texture()
 {
 	m_FileLocation = fileLoc;
-	m_Filter = GL_LINEAR;
+	m_Spec.FlipVertically = flipVert;
 
-	Load(flipVert);
+	Load(m_Spec.FlipVertically);
 }
 
 Texture::Texture(const char* fileLoc, bool flipVert, bool isSampler)
 	: Texture()
 {
-	m_FileLocation = fileLoc;
-	m_Filter = GL_LINEAR;
-	m_IsSampler = isSampler;
+	m_Spec.IsSampler = isSampler;
+	m_Spec.FlipVertically = flipVert;
 
-	Load(flipVert);
+	m_FileLocation = fileLoc;
+
+	Load(m_Spec.FlipVertically);
 }
 
-Texture::Texture(const char* fileLoc, unsigned int width, unsigned int height, bool isSampler, GLenum filter)
-{
-	m_FileLocation = fileLoc;
-	m_Width = width;
-	m_Height = height;
-	m_IsSampler = isSampler;
-	m_Filter = filter;
-	m_BitDepth = 4;
-
-	m_Buffer = new unsigned char[m_Width * m_Height * m_BitDepth];
-
-	if (!m_IsSampler)
-		stbi_image_free(m_Buffer);
-}
-
-Texture::Texture(const char* fileLoc, bool flipVert, bool isSampler, GLenum filter)
+Texture::Texture(const char* fileLoc, unsigned int width, unsigned int height, bool isSampler, int filter)
 	: Texture()
 {
 	m_FileLocation = fileLoc;
-	m_IsSampler = isSampler;
-	m_Filter = filter;
+	m_Spec.Width = width;
+	m_Spec.Height = height;
+	m_Spec.IsSampler = isSampler;
+	m_Spec.BitDepth = 4;
+	m_Spec.Texture_Min_Filter = filter;
+	m_Spec.Texture_Mag_Filter = filter;
 
-	Load(flipVert);
+	m_Buffer = new unsigned char[m_Spec.Width * m_Spec.Height * m_Spec.BitDepth];
+
+	if (!m_Spec.IsSampler)
+		stbi_image_free(m_Buffer);
+}
+
+/**
+* Constructor for a fully customizable 2D texture
+*/
+Texture::Texture(const char* fileLoc, Specification spec)
+	: Texture()
+{
+	m_FileLocation = fileLoc;
+
+	m_Spec.Width              = spec.Width;
+	m_Spec.Height             = spec.Height;
+	m_Spec.FlipVertically     = spec.FlipVertically;
+	m_Spec.BitDepth           = spec.BitDepth;
+	m_Spec.IsSampler          = spec.IsSampler;
+	m_Spec.InternalFormat     = spec.InternalFormat;
+	m_Spec.DataFormat         = spec.DataFormat;
+	m_Spec.Texture_Wrap_S     = spec.Texture_Wrap_S;
+	m_Spec.Texture_Wrap_T     = spec.Texture_Wrap_T;
+	m_Spec.Texture_Min_Filter = spec.Texture_Min_Filter;
+	m_Spec.Texture_Mag_Filter = spec.Texture_Mag_Filter;
+	m_Spec.MipLevel           = spec.MipLevel;
+
+	Load(m_Spec.FlipVertically);
+}
+
+Texture::Texture(const char* fileLoc, bool flipVert, bool isSampler, int filter)
+	: Texture()
+{
+	m_FileLocation = fileLoc;
+	m_Spec.IsSampler = isSampler;
+	m_Spec.FlipVertically = flipVert;
+	m_Spec.Texture_Min_Filter = filter;
+	m_Spec.Texture_Mag_Filter = filter;
+
+	Load(m_Spec.FlipVertically);
 }
 
 bool Texture::Load(bool flipVert)
@@ -68,7 +106,7 @@ bool Texture::Load(bool flipVert)
 	}
 
 	stbi_set_flip_vertically_on_load(flipVert ? 1 : 0);
-	m_Buffer = stbi_load(m_FileLocation, (int*)&m_Width, (int*)&m_Height, &m_BitDepth, 0);
+	m_Buffer = stbi_load(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
 	if (!m_Buffer)
 	{
 		Log::GetLogger()->error("ERROR: Texture failed to load '{0}'", m_FileLocation);
@@ -80,7 +118,7 @@ bool Texture::Load(bool flipVert)
 	float fileSize = GetFileSize(m_FileLocation) / (1024.0f * 1024.0f);
 	Log::GetLogger()->info("Loading texture '{0}' [ID={1}, size={2} MB]", m_FileLocation, m_TextureID, fileSize);
 
-	if (!m_IsSampler)
+	if (!m_Spec.IsSampler)
 		stbi_image_free(m_Buffer);
 
 	return true;
@@ -88,33 +126,35 @@ bool Texture::Load(bool flipVert)
 
 void Texture::OpenGLCreate()
 {
-	GLenum internalFormat = 0;
-	GLenum dataFormat = 0;
-	if (m_BitDepth == 1)
+	// if InternalFormat and DataFormat not explicitly specified, deduce from the BitDepth value
+	if ((!m_Spec.InternalFormat || !m_Spec.DataFormat) && m_Spec.BitDepth)
 	{
-		internalFormat = GL_RED;
-		dataFormat = GL_RED;
-	}
-	else if (m_BitDepth == 3)
-	{
-		internalFormat = GL_RGB8;
-		dataFormat = GL_RGB;
-	}
-	else if (m_BitDepth == 4)
-	{
-		internalFormat = GL_RGBA8;
-		dataFormat = GL_RGBA;
+		switch (m_Spec.BitDepth)
+		{
+		case 1:
+			m_Spec.InternalFormat = GL_RED;
+			m_Spec.DataFormat = GL_RED;
+			break;
+		case 3:
+			m_Spec.InternalFormat = GL_RGB8;
+			m_Spec.DataFormat = GL_RGB;
+			break;
+		case 4:
+			m_Spec.InternalFormat = GL_RGBA8;
+			m_Spec.DataFormat = GL_RGBA;
+			break;
+		}
 	}
 
 	glGenTextures(1, &m_TextureID);
 	glBindTexture(GL_TEXTURE_2D, m_TextureID);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_Filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_Filter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_Spec.Texture_Wrap_S);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_Spec.Texture_Wrap_T);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_Spec.Texture_Min_Filter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_Spec.Texture_Mag_Filter);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, dataFormat, GL_UNSIGNED_BYTE, m_Buffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, m_Spec.InternalFormat, m_Spec.Width, m_Spec.Height, 0, m_Spec.DataFormat, GL_UNSIGNED_BYTE, m_Buffer);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -123,28 +163,28 @@ void Texture::OpenGLCreate()
 void Texture::Save()
 {
 	OpenGLCreate();
-	stbi_write_png(m_FileLocation, m_Width, m_Height, m_BitDepth, m_Buffer, m_Width * m_BitDepth);
+	stbi_write_png(m_FileLocation, m_Spec.Width, m_Spec.Height, m_Spec.BitDepth, m_Buffer, m_Spec.Width * m_Spec.BitDepth);
 }
 
 int Texture::GetRed(int x, int z)
 {
-	return (int)m_Buffer[((z * m_Width + x) * m_BitDepth) + 0];
+	return (int)m_Buffer[((z * m_Spec.Width + x) * m_Spec.BitDepth) + 0];
 }
 
 int Texture::GetGreen(int x, int z)
 {
-	return (int)m_Buffer[((z * m_Width + x) * m_BitDepth) + 1];
+	return (int)m_Buffer[((z * m_Spec.Width + x) * m_Spec.BitDepth) + 1];
 }
 
 int Texture::GetBlue(int x, int z)
 {
-	return (int)m_Buffer[((z * m_Width + x) * m_BitDepth) + 2];
+	return (int)m_Buffer[((z * m_Spec.Width + x) * m_Spec.BitDepth) + 2];
 
 }
 
 int Texture::GetAlpha(int x, int z)
 {
-	return (int)m_Buffer[((z * m_Width + x) * m_BitDepth) + 3];
+	return (int)m_Buffer[((z * m_Spec.Width + x) * m_Spec.BitDepth) + 3];
 }
 
 void Texture::SetPixel(int x, int z, glm::ivec4 pixel)
@@ -157,29 +197,28 @@ void Texture::SetPixel(int x, int z, glm::ivec4 pixel)
 
 void Texture::SetRed(int x, int z, int value)
 {
-	m_Buffer[((z * m_Width + x) * m_BitDepth) + 0] = value;
+	m_Buffer[((z * m_Spec.Width + x) * m_Spec.BitDepth) + 0] = value;
 }
 
 void Texture::SetGreen(int x, int z, int value)
 {
-	m_Buffer[((z * m_Width + x) * m_BitDepth) + 1] = value;
+	m_Buffer[((z * m_Spec.Width + x) * m_Spec.BitDepth) + 1] = value;
 }
 
 void Texture::SetBlue(int x, int z, int value)
 {
-	m_Buffer[((z * m_Width + x) * m_BitDepth) + 2] = value;
+	m_Buffer[((z * m_Spec.Width + x) * m_Spec.BitDepth) + 2] = value;
 }
 
 void Texture::SetAlpha(int x, int z, int value)
 {
-	m_Buffer[((z * m_Width + x) * m_BitDepth) + 3] = value;
+	m_Buffer[((z * m_Spec.Width + x) * m_Spec.BitDepth) + 3] = value;
 }
 
 void Texture::Bind(unsigned int textureUnit)
 {
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
 	glBindTexture(GL_TEXTURE_2D, m_TextureID);
-	// printf("Texture: bind texture ID=%d to slot=%d\n", m_TextureID, textureUnit);
 }
 
 void Texture::Unbind()
@@ -196,13 +235,13 @@ float Texture::GetFileSize(const char* filename)
 
 void Texture::Clear()
 {
-	if (m_IsSampler)
+	if (m_Spec.IsSampler)
 		stbi_image_free(m_Buffer);
 	glDeleteTextures(1, &m_TextureID);
 	m_TextureID = 0;
-	m_Width = 0;
-	m_Height = 0;
-	m_BitDepth = 0;
+	m_Spec.Width = 0;
+	m_Spec.Height = 0;
+	m_Spec.BitDepth = 0;
 	m_FileLocation = "";
 }
 
@@ -217,7 +256,7 @@ unsigned int Texture::CalculateMipMapCount(unsigned int width, unsigned int heig
 
 unsigned int Texture::GetMipLevelCount()
 {
-	return CalculateMipMapCount(m_Width, m_Height);
+	return CalculateMipMapCount(m_Spec.Width, m_Spec.Height);
 }
 
 Texture::~Texture()

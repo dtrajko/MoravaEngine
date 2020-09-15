@@ -178,8 +178,8 @@ void SceneAnimPBR::SetupMeshes()
     // M1911
     TextureInfo textureInfoM1911 = {};
     textureInfoM1911.albedo    = "Models/m1911/m1911_color.png";
-    textureInfoM1911.normal = "Models/m1911/m1911_normal.png";
-    textureInfoM1911.metallic = "Models/m1911/m1911_metalness.png";
+    textureInfoM1911.normal    = "Models/m1911/m1911_normal.png";
+    textureInfoM1911.metallic  = "Models/m1911/m1911_metalness.png";
     textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
     textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
     // textureInfoM1911.albedo    = "Textures/PBR/gold/albedo.png";
@@ -255,6 +255,7 @@ void SceneAnimPBR::Update(float timestep, Window& mainWindow)
 
     m_ShaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
     m_ShaderHybridAnimPBR->setVec3("u_CameraPosition", m_Camera->GetPosition());
+    m_ShaderHybridAnimPBR->setFloat("u_TilingFactor", 1.0f);
 
     float deltaTime = Timer::Get()->GetDeltaTime();
     m_MeshAnimPBRM1911->OnUpdate(deltaTime, false);
@@ -284,52 +285,6 @@ void SceneAnimPBR::Update(float timestep, Window& mainWindow)
 
         m_HDRI_Edit_Prev = m_HDRI_Edit;
     }
-}
-
-std::pair<TextureCubemapLite*, TextureCubemapLite*> SceneAnimPBR::CreateEnvironmentMap(const std::string& filepath)
-{
-    //  const uint32_t cubemapSize = 2048;
-    //  const uint32_t irradianceMapSize = 32;
-    //  
-    //  m_EnvUnfiltered = new TextureCubemapLite(cubemapSize, cubemapSize);
-    //  m_EnvEquirect = new Texture(filepath.c_str(), false);
-    //  
-    //  // HZ_CORE_ASSERT(envEquirect->GetFormat() == TextureFormat::Float16, "Texture is not HDR!");
-    //  
-    //  m_ShaderEquirectangularConversion->Bind();
-    //  m_EnvEquirect->Bind();
-    //  glBindImageTexture(0, m_EnvUnfiltered->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-    //  glDispatchCompute(cubemapSize / 32, cubemapSize / 32, 6);
-    //  glGenerateTextureMipmap(m_EnvUnfiltered->GetID());
-    //  
-    //  m_EnvFiltered = new TextureCubemapLite(cubemapSize, cubemapSize);
-    //  
-    //  glCopyImageSubData(m_EnvFiltered->GetID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
-    //      m_EnvFiltered->GetID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
-    //      m_EnvFiltered->GetWidth(), m_EnvFiltered->GetHeight(), 6);
-    //  
-    //  m_ShaderEnvFiltering->Bind();
-    //  m_EnvFiltered->Bind(0);
-    //  
-    //  const float deltaRoughness = 1.0f / glm::max((float)(m_EnvFiltered->GetMipLevelCount() - 1.0f), 1.0f);
-    //  for (unsigned int level = 1, size = cubemapSize / 2; level < m_EnvFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
-    //  {
-    //      const GLuint numGroups = glm::max((unsigned int)1, size / 32);
-    //      glBindImageTexture(0, m_EnvFiltered->GetID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-    //      glProgramUniform1f(m_ShaderEnvFiltering->GetProgramID(), 0, level * deltaRoughness);
-    //      glDispatchCompute(numGroups, numGroups, 6);
-    //  }
-    //  
-    //  m_IrradianceMap = new TextureCubemapLite(irradianceMapSize, irradianceMapSize);
-    //  m_ShaderEnvIrradiance->Bind();
-    //  m_EnvFiltered->Bind(0);
-    //  glBindImageTexture(0, m_IrradianceMap->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-    //  glDispatchCompute(m_IrradianceMap->GetWidth() / 32, m_IrradianceMap->GetHeight() / 32, 6);
-    //  glGenerateTextureMipmap(m_IrradianceMap->GetID());
-    //  
-    //  return { m_EnvFiltered, m_IrradianceMap };
-
-    return std::pair<TextureCubemapLite*, TextureCubemapLite*>();
 }
 
 void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
@@ -685,9 +640,4 @@ void SceneAnimPBR::SetupUniforms()
 
 SceneAnimPBR::~SceneAnimPBR()
 {
-    //  delete m_EnvUnfiltered;
-    //  delete m_EnvEquirect;
-    //  delete m_EnvFiltered;
-    //  delete m_IrradianceMap;
-    //  delete m_BRDF_LUT;
 }

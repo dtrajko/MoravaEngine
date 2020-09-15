@@ -13,8 +13,8 @@ TextureCubemapLite::TextureCubemapLite()
 
 TextureCubemapLite::TextureCubemapLite(unsigned int width, unsigned int height)
 {
-	m_Width = width;
-	m_Height = height;
+	m_Spec.Width = width;
+	m_Spec.Height = height;
 
 	glGenTextures(1, &m_TextureID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
@@ -22,7 +22,7 @@ TextureCubemapLite::TextureCubemapLite(unsigned int width, unsigned int height)
 	for (unsigned int i = 0; i < 6; ++i)
 	{
 		// note that we store each face with 16-bit floating point values
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, m_Width, m_Height, 0, GL_RGB, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, m_Spec.Width, m_Spec.Height, 0, GL_RGB, GL_FLOAT, nullptr);
 	}
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

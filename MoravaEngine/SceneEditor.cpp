@@ -1991,10 +1991,10 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Te
     // Override albedo map from material with texture, if texture is available
     if (sceneObject->textureName != "" && sceneObject->textureName != "none") {
         texture->Bind(m_SamplerSlots["albedo"]); // Albedo is at slot 3
-        shaderHybridAnimPBR->setFloat("tilingFactor", sceneObject->tilingFactor);
+        shaderHybridAnimPBR->setFloat("u_TilingFactor", sceneObject->tilingFactor);
     }
     else {
-        shaderHybridAnimPBR->setFloat("tilingFactor", sceneObject->tilingFMaterial);
+        shaderHybridAnimPBR->setFloat("u_TilingFactor", sceneObject->tilingFMaterial);
     }
 
     m_MaterialWorkflowPBR->BindTextures(m_SamplerSlots["irradiance"]);

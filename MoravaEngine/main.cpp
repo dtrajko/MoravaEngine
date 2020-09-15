@@ -95,7 +95,7 @@ enum class SceneName
 	Deferred,
 };
 
-SceneName currentScene = SceneName::Deferred;
+SceneName currentScene = SceneName::Editor;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
