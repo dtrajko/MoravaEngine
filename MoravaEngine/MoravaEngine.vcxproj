@@ -208,6 +208,7 @@
     <ClCompile Include="QuadSSAO.cpp" />
     <ClCompile Include="Quadtree.cpp" />
     <ClCompile Include="Random.cpp" />
+    <ClCompile Include="RendererDeferred.cpp" />
     <ClCompile Include="RendererTrivial.cpp" />
     <ClCompile Include="RendererOmniShadows.cpp" />
     <ClCompile Include="RendererVoxelTerrain.cpp" />
@@ -215,6 +216,7 @@
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SceneBullet.cpp" />
     <ClCompile Include="SceneAnimPBR.cpp" />
+    <ClCompile Include="SceneDeferred.cpp" />
     <ClCompile Include="SceneMarchingCubes.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="SceneObjectLight.cpp" />
@@ -388,6 +390,7 @@
     <ClInclude Include="QuadSSAO.h" />
     <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Random.h" />
+    <ClInclude Include="RendererDeferred.h" />
     <ClInclude Include="RendererTrivial.h" />
     <ClInclude Include="RendererOmniShadows.h" />
     <ClInclude Include="RendererVoxelTerrain.h" />
@@ -396,6 +399,7 @@
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="SceneBullet.h" />
     <ClInclude Include="SceneAnimPBR.h" />
+    <ClInclude Include="SceneDeferred.h" />
     <ClInclude Include="SceneMarchingCubes.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="SceneObjectLight.h" />

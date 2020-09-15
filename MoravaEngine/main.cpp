@@ -44,8 +44,10 @@
 #include "SceneMarchingCubes.h"
 #include "SceneSSAO.h"
 #include "SceneAnimPBR.h"
+#include "SceneDeferred.h"
 
 #include "Renderer.h"
+#include "RendererTrivial.h"
 #include "RendererPBR.h"
 #include "RendererJoey.h"
 #include "RendererNanosuit.h"
@@ -53,7 +55,7 @@
 #include "RendererOmniShadows.h"
 #include "RendererVoxelTerrain.h"
 #include "RendererEditor.h"
-#include "RendererTrivial.h"
+#include "RendererDeferred.h"
 
 
 // Window dimensions
@@ -90,9 +92,10 @@ enum class SceneName
 	MarchingCubes,
 	SSAO,
 	AnimPBR,
+	Deferred,
 };
 
-SceneName currentScene = SceneName::SSAO;
+SceneName currentScene = SceneName::Deferred;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -197,6 +200,10 @@ int main()
 	case SceneName::AnimPBR:
 		scene = new SceneAnimPBR();
 		renderer = static_cast<RendererBasic*>(new RendererTrivial());
+		break;
+	case SceneName::Deferred:
+		scene = new SceneDeferred();
+		renderer = static_cast<RendererBasic*>(new RendererDeferred());
 		break;
 	default:
 		throw std::runtime_error("Scene and Renderer could not be loaded!");

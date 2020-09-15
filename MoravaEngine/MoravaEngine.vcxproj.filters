@@ -482,6 +482,12 @@
     <ClCompile Include="FramebufferTextureCubemap.cpp">
       <Filter>Framebuffer</Filter>
     </ClCompile>
+    <ClCompile Include="RendererDeferred.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneDeferred.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1029,6 +1035,12 @@
     </ClInclude>
     <ClInclude Include="FramebufferTextureCubemap.h">
       <Filter>Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererDeferred.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneDeferred.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
