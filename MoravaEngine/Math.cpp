@@ -51,3 +51,8 @@ float Math::ConvertRangeFloat(float value, float oldMin, float oldMax, float new
 {
 	return (((value - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin;
 }
+
+float Math::Lerp(float a, float b, float f)
+{
+	return a + f * (b - a);
+}

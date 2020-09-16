@@ -128,6 +128,7 @@ void SceneParticles::Render(Window& mainWindow, glm::mat4 projectionMatrix, std:
         m_ShaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
         m_ShaderBackground->setMat4("model", glm::mat4(1.0f));
         m_ShaderBackground->setInt("environmentMap", 0);
+        m_ShaderBackground->setFloat("u_TextureLOD", 0.0f);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetEnvironmentCubemap());

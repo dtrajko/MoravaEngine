@@ -25,7 +25,6 @@ private:
 	void Generate(unsigned int width, unsigned int height);
 	void Release();
 	void ResetHandlers();
-	float Lerp(float a, float b, float f);
 
 public:
 	// Shaders

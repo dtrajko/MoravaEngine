@@ -4,6 +4,7 @@
 #include "LearnOpenGL/ModelSSAO.h"
 #include "Mesh.h"
 #include "Timer.h"
+#include "Math.h"
 
 #include <random>
 
@@ -175,7 +176,7 @@ void SSAO::Generate(unsigned int width, unsigned int height)
 		float scale = float(i) / 64.0f;
 
 		// scale samples s.t. they're more aligned to center of kernel
-		scale = Lerp(0.1f, 1.0f, scale * scale);
+		scale = Math::Lerp(0.1f, 1.0f, scale * scale);
 		sample *= scale;
 		ssaoKernel.push_back(sample);
 	}
@@ -362,11 +363,6 @@ void SSAO::Render(glm::mat4 projectionMatrix, glm::mat4 viewMatrix,
 
 	// -----------------------------------------------------------------
 	// END SSAO Rendering
-}
-
-float SSAO::Lerp(float a, float b, float f)
-{
-	return a + f * (b - a);
 }
 
 SSAO::~SSAO()

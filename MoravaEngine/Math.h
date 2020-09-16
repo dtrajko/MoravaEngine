@@ -14,6 +14,7 @@ public:
     static glm::mat4 aiMatrix4x4ToGlm(const aiMatrix4x4* from);
 	static float InverseLerp(float xx, float yy, float value);
 	static float ConvertRangeFloat(float value, float oldMin, float oldMax, float newMin, float newMax);
+	static float Lerp(float a, float b, float f);
 
 private:
 	static bool s_IsRandomInit;

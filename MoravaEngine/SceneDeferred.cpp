@@ -197,39 +197,33 @@ void SceneDeferred::UpdateImGui(float timestep, Window& mainWindow)
     {
         ImVec2 imageSize(192.0f, 192.0f);
 
-        ImGui::Text("gPosition");
+        std::string gPositionText = std::string("gPosition [TextureID=") + std::to_string(gPosition) + std::string("]");
+        ImGui::Text(gPositionText.c_str());
         ImGui::Image((void*)(intptr_t)gPosition, imageSize);
-        ImGui::SliderInt("", (int*)&gPosition, 0, 128);
 
-        ImGui::Text("gNormal");
+        std::string gNormalText = std::string("gNormal [TextureID=") + std::to_string(gNormal) + std::string("]");
+        ImGui::Text(gNormalText.c_str());
         ImGui::Image((void*)(intptr_t)gNormal, imageSize);
-        ImGui::SliderInt("", (int*)&gNormal, 0, 128);
 
-        ImGui::Text("gAlbedoSpec");
+        std::string gAlbedoSpecText = std::string("gAlbedoSpec [TextureID=") + std::to_string(gAlbedoSpec) + std::string("]");
+        ImGui::Text(gAlbedoSpecText.c_str());
         ImGui::Image((void*)(intptr_t)gAlbedoSpec, imageSize);
-        ImGui::SliderInt("", (int*)&gAlbedoSpec, 0, 128);
     }
     ImGui::End();
 }
 
-void SceneDeferred::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+void SceneDeferred::RenderPassGeometry(glm::mat4 projectionMatrix)
 {
-    m_Width = (int)Application::Get()->GetWindow()->GetBufferWidth();
-    m_Height = (int)Application::Get()->GetWindow()->GetBufferHeight();
-
-    glEnable(GL_DEPTH_TEST);
-
     // 1. geometry pass: render scene's geometry/color data into gbuffer
         // -----------------------------------------------------------------
     glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glm::mat4 projection = projectionMatrix;
-    glm::mat4 view = m_CameraController->CalculateViewMatrix();
-    glm::mat4 model = glm::mat4(1.0f);
+
     m_ShaderGeometryPass->Bind();
-    m_ShaderGeometryPass->setMat4("projection", projection);
-    m_ShaderGeometryPass->setMat4("view", view);
+    m_ShaderGeometryPass->setMat4("projection", projectionMatrix);
+    m_ShaderGeometryPass->setMat4("view", m_CameraController->CalculateViewMatrix());
+
+    glm::mat4 model = glm::mat4(1.0f);
     for (unsigned int i = 0; i < m_ObjectPositions.size(); i++)
     {
         model = glm::mat4(1.0f);
@@ -239,7 +233,10 @@ void SceneDeferred::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
         m_Backpack->Draw(m_ShaderGeometryPass);
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
+void SceneDeferred::RenderPassLighting()
+{
     // 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
     // -----------------------------------------------------------------------------------------------------------------------
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -257,8 +254,8 @@ void SceneDeferred::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
         m_ShaderLightingPass->setVec3("lights[" + std::to_string(i) + "].Position", m_LightPositions[i]);
         m_ShaderLightingPass->setVec3("lights[" + std::to_string(i) + "].Color", m_LightColors[i]);
         // update attenuation parameters and calculate radius
-        const float constant  = 1.0f; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
-        const float linear    = 0.7f;
+        const float constant = 1.0f; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
+        const float linear = 0.7f;
         const float quadratic = 1.8f;
         m_ShaderLightingPass->setFloat("lights[" + std::to_string(i) + "].Linear", linear);
         m_ShaderLightingPass->setFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
@@ -271,7 +268,10 @@ void SceneDeferred::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
 
     // finally render quad
     m_Quad->Render();
+}
 
+void SceneDeferred::RenderPassForward(glm::mat4 projectionMatrix)
+{
     // 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
     // ----------------------------------------------------------------------------------
     glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer);
@@ -285,8 +285,9 @@ void SceneDeferred::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
     // 3. render lights on top of scene
     // --------------------------------
     m_ShaderLightBox->Bind();
-    m_ShaderLightBox->setMat4("projection", projection);
-    m_ShaderLightBox->setMat4("view", view);
+    m_ShaderLightBox->setMat4("projection", projectionMatrix);
+    m_ShaderLightBox->setMat4("view", m_CameraController->CalculateViewMatrix());
+    glm::mat4 model = glm::mat4(1.0f);
     for (unsigned int i = 0; i < m_LightPositions.size(); i++)
     {
         model = glm::mat4(1.0f);
@@ -296,6 +297,19 @@ void SceneDeferred::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::
         m_ShaderLightBox->setVec3("lightColor", m_LightColors[i]);
         m_Cube->Render();
     }
+}
+
+void SceneDeferred::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+{
+    m_Width = (int)Application::Get()->GetWindow()->GetBufferWidth();
+    m_Height = (int)Application::Get()->GetWindow()->GetBufferHeight();
+
+    glEnable(GL_DEPTH_TEST);
+
+    RenderPassGeometry(projectionMatrix);
+    RenderPassLighting();
+    RenderPassForward(projectionMatrix);
 }
 
 SceneDeferred::~SceneDeferred()

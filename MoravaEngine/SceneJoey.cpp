@@ -64,6 +64,7 @@ SceneJoey::SceneJoey()
 	m_HDRI_Edit_Prev = m_HDRI_Edit;
 	m_BlurLevel = 0;
 	m_BlurLevelPrev = m_BlurLevel;
+	m_SkyboxLOD = 0.0f;
 }
 
 void SceneJoey::SetupTextures()
@@ -278,7 +279,7 @@ void SceneJoey::UpdateImGui(float timestep, Window& mainWindow)
 	}
 	ImGui::End();
 
-	ImGui::Begin("Textures");
+	ImGui::Begin("Framebuffers");
 	{
 		ImVec2 imageSize(128.0f, 128.0f);
 
@@ -309,6 +310,7 @@ void SceneJoey::UpdateImGui(float timestep, Window& mainWindow)
 		ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
 
 		ImGui::SliderInt("Blur Level", &m_BlurLevel, 0, 10);
+		ImGui::SliderFloat("Skybox LOD", &m_SkyboxLOD, 0.0f, 6.0f);
 	}
 	ImGui::End();
 }
@@ -465,6 +467,7 @@ void SceneJoey::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::stri
 		// m_MaterialWorkflowPBR->BindIrradianceMap(0); // display irradiance map
 		// m_MaterialWorkflowPBR->BindPrefilterMap(0); // display prefilter map
 		shaders["backgroundShader"]->setInt("environmentMap", 0);
+		shaders["backgroundShader"]->setFloat("u_TextureLOD", m_SkyboxLOD);
 
 		m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
 

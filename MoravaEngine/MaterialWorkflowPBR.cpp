@@ -2,6 +2,7 @@
 
 #include "CommonValues.h"
 #include "Log.h"
+#include "Math.h"
 
 #include <iostream>
 
@@ -34,8 +35,8 @@ void MaterialWorkflowPBR::Init(std::string envMapHDR, uint32_t blurLevel)
 
 	m_CaptureSizeBlur = m_CaptureSize;
 	if (blurLevel > 0) {
-		m_CaptureSizeBlur = (int)((float)m_CaptureSize * std::lerp(1.0f, 0.4f, blurLevel * 0.1f));
-		// m_CaptureSizeBlur = (int)(std::lerp((float)m_CaptureSize, (float)m_MinFramebufferSize, blurLevel * 0.1f));
+		m_CaptureSizeBlur = (int)((float)m_CaptureSize * Math::Lerp(1.0f, 0.4f, blurLevel * 0.1f));
+		// m_CaptureSizeBlur = (int)(Math::Lerp((float)m_CaptureSize, (float)m_MinFramebufferSize, blurLevel * 0.1f));
 	}
 
 	Cleanup();

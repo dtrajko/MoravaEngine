@@ -79,4 +79,6 @@ private:
 	glm::vec3 m_LightPosition;
 	glm::vec3 m_LightColor;
 
+	float m_SkyboxLOD;
+
 };

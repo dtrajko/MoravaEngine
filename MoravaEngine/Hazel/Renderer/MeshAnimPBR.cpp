@@ -61,7 +61,7 @@ namespace Hazel {
 
 
 	MeshAnimPBR::MeshAnimPBR(const std::string& filename, Shader* shader, Material* material)
-		: m_MeshShader(shader), m_BaseMaterial(material), m_FilePath(filename)
+		: m_MeshShader(shader), m_BaseMaterial(material), m_FilePath(filename), m_IsAnimated(true)
 	{
 		Create();
 	}
@@ -514,10 +514,29 @@ namespace Hazel {
 			submesh->Transform = transform;
 		}
 
-		// Log::GetLogger()->info("{0} {1}", LevelToSpaces(level), node->mName.C_Str());
+		Log::GetLogger()->info("{0} {1}", LevelToSpaces(level), node->mName.C_Str());
 
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
 			TraverseNodes(node->mChildren[i], transform, level + 1);
+	}
+
+	void MeshAnimPBR::ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform, uint32_t level)
+	{
+		glm::mat4 transform = parentTransform * Mat4FromAssimpMat4(node->mTransformation);
+		for (uint32_t i = 0; i < node->mNumMeshes; i++)
+		{
+			uint32_t mesh = node->mMeshes[i];
+			m_Submeshes[mesh]->NodeName = node->mName.C_Str();
+			m_Submeshes[mesh]->Transform = transform;
+		}
+
+		if (ImGui::TreeNode(node->mName.C_Str()))
+		{
+			for (uint32_t i = 0; i < node->mNumChildren; i++)
+				ImGuiNodeHierarchy(node->mChildren[i], transform, level + 1);
+
+			ImGui::TreePop();
+		}
 	}
 
 	uint32_t MeshAnimPBR::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
@@ -654,6 +673,31 @@ namespace Hazel {
 		auto delta = end - start;
 		auto aiVec = start + factor * delta;
 		return { aiVec.x, aiVec.y, aiVec.z };
+	}
+
+	void MeshAnimPBR::OnImGuiRender()
+	{
+		// Mesh Hierarchy
+		ImGui::Begin("Mesh Hierarchy");
+		ImGuiNodeHierarchy(m_Scene->mRootNode, glm::mat4(1.0f), 0);
+		ImGui::End();
+
+		ImGui::Begin("Mesh Debug");
+		if (ImGui::CollapsingHeader(m_FilePath.c_str()))
+		{
+			if (m_IsAnimated)
+			{
+				if (ImGui::CollapsingHeader("Animation"))
+				{
+					if (ImGui::Button(m_AnimationPlaying ? "Pause" : "Play"))
+						m_AnimationPlaying = !m_AnimationPlaying;
+
+					ImGui::SliderFloat("##AnimationTime", &m_AnimationTime, 0.0f, (float)m_Scene->mAnimations[0]->mDuration);
+					ImGui::DragFloat("Time Scale", &m_TimeMultiplier, 0.05f, 0.0f, 10.0f);
+				}
+			}
+		}
+		ImGui::End();
 	}
 
 	void MeshAnimPBR::ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& parentTransform)

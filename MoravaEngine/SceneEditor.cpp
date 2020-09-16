@@ -173,6 +173,7 @@ SceneEditor::SceneEditor()
     m_HDRI_Edit_Prev = -1;
     m_BlurLevel = 0;
     m_BlurLevelPrev = m_BlurLevel;
+    m_SkyboxLOD = 0.0f;
 
     // required for directional light enable/disable feature
     m_DirLightEnabledPrev = sceneSettings.directionalLight.base.enabled;
@@ -617,8 +618,8 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
             ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
 
             ImGui::SliderInt("Blur Level", &m_BlurLevel, 0, 10);
-            ImGui::SliderFloat("Skybox Rotation Speed", &m_SkyboxRotationSpeed, -20.0f, 20.0f);
-            
+            ImGui::SliderFloat("Skybox LOD", &m_SkyboxLOD, 0.0f, 6.0f);
+            ImGui::SliderFloat("Skybox Rotation Speed", &m_SkyboxRotationSpeed, -20.0f, 20.0f);            
         }
 
         if (ImGui::CollapsingHeader("Cube Maps"))
@@ -1614,9 +1615,9 @@ void SceneEditor::AddSceneObject()
             objectName = "M1911";
             materialName = "M1911";
             rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-            scale = glm::vec3(40.0f);
+            scale = glm::vec3(20.0f);
             positionAABB = glm::vec3(0.0f, 0.0f, 0.0f);
-            scaleAABB = glm::vec3(24.0f, 14.0f, 3.0f);
+            scaleAABB = glm::vec3(0.24f, 0.14f, 0.03f);
         }
     }
     else if (m_CurrentObjectTypeID >= 1000 && m_CurrentObjectTypeID < 2000) { // Model - ID range 1000 - 2000
@@ -1679,8 +1680,8 @@ void SceneEditor::AddSceneObject()
             objectName = "cerberus";
             materialName = "cerberus";
             position = glm::vec3(0.0f, 5.0f, 0.0f);
-            rotation = glm::vec3(-90.0f, -180.0f, 0.0f);
-            scale = glm::vec3(0.1f);
+            rotation = glm::vec3(-90.0f, 90.0f, 0.0f);
+            scale = glm::vec3(0.05f);
             positionAABB = glm::vec3(0.0f, -50.0f, -8.0f);
             scaleAABB = glm::vec3(20.0f, 150.0f, 45.0f);
         }
@@ -2318,6 +2319,7 @@ void SceneEditor::RenderSkybox(Shader* shaderBackground)
     shaderBackground->setMat4("model", transform);
 
     shaderBackground->setInt("environmentMap", environmentMapSlot);
+    shaderBackground->setFloat("u_TextureLOD", m_SkyboxLOD);
 
     if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
         m_MaterialWorkflowPBR->BindEnvironmentCubemap(environmentMapSlot);

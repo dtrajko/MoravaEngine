@@ -105,6 +105,8 @@ private:
 	int m_BlurLevel;
 	int m_BlurLevelPrev;
 
+	float m_SkyboxLOD;
+
 	ParticleSettings* m_ParticleSettingsEdit;
 	ParticleSettings* m_ParticleSettingsPrev;
 

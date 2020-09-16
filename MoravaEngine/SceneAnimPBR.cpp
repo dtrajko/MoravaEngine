@@ -125,6 +125,8 @@ SceneAnimPBR::SceneAnimPBR()
 
     m_LightPosition = glm::vec3(20.0f, 20.0f, 20.0f);
     m_LightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+
+    m_SkyboxLOD = 0.0f;
 }
 
 void SceneAnimPBR::SetupTextures()
@@ -299,7 +301,7 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
     }
     ImGui::End();
 
-    ImGui::Begin("Textures");
+    ImGui::Begin("Framebuffers");
     {
         ImVec2 imageSize(128.0f, 128.0f);
 
@@ -328,6 +330,9 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
         ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
         ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
         ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
+
+        ImGui::Separator();
+        ImGui::SliderFloat("Skybox LOD", &m_SkyboxLOD, 0.0f, 6.0f);
     }
     ImGui::End();
 
@@ -341,6 +346,10 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
             glm::value_ptr(m_CubeTransform), editTransformDecomposition);
     }
     ImGui::End();
+
+    m_MeshAnimPBRM1911->OnImGuiRender();
+    m_MeshAnimPBRBob->OnImGuiRender();
+    m_MeshAnimPBRBoy->OnImGuiRender();
 }
 
 void SceneAnimPBR::EditTransform(const float* cameraView, float* cameraProjection, float* matrix, bool editTransformDecomposition)
@@ -459,6 +468,7 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
         // m_MaterialWorkflowPBR->BindIrradianceMap(0); // display irradiance map
         // m_MaterialWorkflowPBR->BindPrefilterMap(0); // display prefilter map
         m_ShaderBackground->setInt("environmentMap", 0);
+        m_ShaderBackground->setFloat("u_TextureLOD", m_SkyboxLOD);
 
         m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
     }

@@ -66,6 +66,7 @@ void RendererJoey::SetShaders()
 
 	s_Shaders["backgroundShader"]->Bind();
 	s_Shaders["backgroundShader"]->setInt("environmentMap", 0);
+	s_Shaders["backgroundShader"]->setFloat("u_TextureLOD", 0.0f);
 }
 
 void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
