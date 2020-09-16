@@ -2,6 +2,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include <time.h>
 
@@ -55,4 +56,15 @@ float Math::ConvertRangeFloat(float value, float oldMin, float oldMax, float new
 float Math::Lerp(float a, float b, float f)
 {
 	return a + f * (b - a);
+}
+
+std::tuple<glm::vec3, glm::quat, glm::vec3> Math::GetTransformDecomposition(const glm::mat4& transform)
+{
+	glm::vec3 scale, translation, skew;
+	glm::vec4 perspective;
+	glm::quat orientation;
+
+	glm::decompose(transform, scale, orientation, translation, skew, perspective);
+
+	return { translation, orientation, scale };
 }

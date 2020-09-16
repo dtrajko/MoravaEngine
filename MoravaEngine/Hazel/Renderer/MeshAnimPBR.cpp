@@ -15,6 +15,8 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
+#include "../../Math.h"
+
 #include "imgui.h"
 
 #include <filesystem>
@@ -520,9 +522,21 @@ namespace Hazel {
 			TraverseNodes(node->mChildren[i], transform, level + 1);
 	}
 
+	std::tuple<glm::vec3, glm::quat, glm::vec3> MeshAnimPBR::GetTransformDecomposition(const glm::mat4& transform)
+	{
+		glm::vec3 scale, translation, skew;
+		glm::vec4 perspective;
+		glm::quat orientation;
+
+		glm::decompose(transform, scale, orientation, translation, skew, perspective);
+
+		return { translation, orientation, scale };
+	}
+
 	void MeshAnimPBR::ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform, uint32_t level)
 	{
-		glm::mat4 transform = parentTransform * Mat4FromAssimpMat4(node->mTransformation);
+		glm::mat4 localTransform = Mat4FromAssimpMat4(node->mTransformation);
+		glm::mat4 transform = parentTransform * localTransform;
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t mesh = node->mMeshes[i];
@@ -532,6 +546,21 @@ namespace Hazel {
 
 		if (ImGui::TreeNode(node->mName.C_Str()))
 		{
+			{
+				auto [translation, rotation, scale] = GetTransformDecomposition(transform);
+				ImGui::Text("World Transform");
+				ImGui::Text("  Translation: %.2f %.2f %.2f", translation.x, translation.y, translation.z);
+				ImGui::Text("  Rotation: %.2f %.2f %.2f", rotation.x, rotation.y, rotation.z);
+				ImGui::Text("  Scale: %.2f %.2f %.2f", scale.x, scale.y, scale.z);
+			}
+			{
+				auto [translation, rotation, scale] = GetTransformDecomposition(localTransform);
+				ImGui::Text("Local Transform");
+				ImGui::Text("  Translation: %.2f %.2f %.2f", translation.x, translation.y, translation.z);
+				ImGui::Text("  Rotation: %.2f %.2f %.2f", rotation.x, rotation.y, rotation.z);
+				ImGui::Text("  Scale: %.2f %.2f %.2f", scale.x, scale.y, scale.z);
+			}
+
 			for (uint32_t i = 0; i < node->mNumChildren; i++)
 				ImGuiNodeHierarchy(node->mChildren[i], transform, level + 1);
 

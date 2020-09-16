@@ -15,6 +15,7 @@ public:
 	static float InverseLerp(float xx, float yy, float value);
 	static float ConvertRangeFloat(float value, float oldMin, float oldMax, float newMin, float newMax);
 	static float Lerp(float a, float b, float f);
+	static std::tuple<glm::vec3, glm::quat, glm::vec3> GetTransformDecomposition(const glm::mat4& transform);
 
 private:
 	static bool s_IsRandomInit;

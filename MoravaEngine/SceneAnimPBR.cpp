@@ -343,7 +343,7 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
 
         EditTransform(glm::value_ptr(m_CameraController->CalculateViewMatrix()),
             glm::value_ptr(projectionMatrix),
-            glm::value_ptr(m_CubeTransform), editTransformDecomposition);
+            glm::value_ptr(m_Transform_M1911), editTransformDecomposition);
     }
     ImGui::End();
 
