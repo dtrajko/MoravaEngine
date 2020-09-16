@@ -3,8 +3,9 @@
 #include "Scene.h"
 
 #include "LearnOpenGL/ModelSSAO.h"
-#include "LearnOpenGL/ModelJoey.h"
 #include "Framebuffer.h"
+#include "QuadSSAO.h"
+#include "Cube.h"
 
 
 class SceneDeferred : public Scene
@@ -20,10 +21,46 @@ public:
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
 
 private:
-	virtual void SetupTextures() override;
-	virtual void SetupTextureSlots() override;
 	virtual void SetupMeshes() override;
 	virtual void SetupModels() override;
 	virtual void SetupFramebuffers() override;
+
+	void SetupShaders();
+	void SetupLights();
+
+	// Managing screen resize
+	void UpdateCooldown(float timestep);
+	void ResetHandlers();
+	void GenerateFramebuffers(int width, int height);
+
+private:
+	int m_Width;
+	int m_Height;
+
+	int m_WidthPrev;
+	int m_HeightPrev;
+
+	Shader* m_ShaderGeometryPass;
+	Shader* m_ShaderLightingPass;
+	Shader* m_ShaderLightBox;
+
+	ModelSSAO* m_Backpack;
+	std::vector<glm::vec3> m_ObjectPositions;
+
+	unsigned int gBuffer;
+	unsigned int gPosition;
+	unsigned int gNormal;
+	unsigned int gAlbedoSpec;
+	std::vector<unsigned int> attachments;
+	unsigned int rboDepth;
+
+	const unsigned int NR_LIGHTS = 32;
+	std::vector<glm::vec3> m_LightPositions;
+	std::vector<glm::vec3> m_LightColors;
+
+	QuadSSAO* m_Quad;
+	Cube* m_Cube;
+
+	EventCooldown m_UpdateCooldown;
 
 };

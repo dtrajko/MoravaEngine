@@ -208,7 +208,6 @@
     <ClCompile Include="QuadSSAO.cpp" />
     <ClCompile Include="Quadtree.cpp" />
     <ClCompile Include="Random.cpp" />
-    <ClCompile Include="RendererDeferred.cpp" />
     <ClCompile Include="RendererTrivial.cpp" />
     <ClCompile Include="RendererOmniShadows.cpp" />
     <ClCompile Include="RendererVoxelTerrain.cpp" />
@@ -390,7 +389,6 @@
     <ClInclude Include="QuadSSAO.h" />
     <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Random.h" />
-    <ClInclude Include="RendererDeferred.h" />
     <ClInclude Include="RendererTrivial.h" />
     <ClInclude Include="RendererOmniShadows.h" />
     <ClInclude Include="RendererVoxelTerrain.h" />

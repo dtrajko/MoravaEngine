@@ -4,138 +4,188 @@
 #include "Block.h"
 #include "Cube.h"
 #include "Application.h"
-#include "QuadSSAO.h"
+#include "Log.h"
 
 #include "ImGuiWrapper.h"
 
 
 SceneDeferred::SceneDeferred()
 {
-    sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 8.0f);
+    sceneSettings.cameraPosition = glm::vec3(0.0f, 0.0f, 8.0f);
     sceneSettings.cameraStartYaw = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
     sceneSettings.cameraMoveSpeed = 1.0f;
-    sceneSettings.waterHeight = 0.0f;
-    sceneSettings.waterWaveSpeed = 0.05f;
-    sceneSettings.enablePointLights  = true;
-    sceneSettings.enableSpotLights   = true;
+    sceneSettings.enablePointLights  = false;
+    sceneSettings.enableSpotLights   = false;
     sceneSettings.enableOmniShadows  = false;
     sceneSettings.enableSkybox       = false;
     sceneSettings.enableShadows      = false;
     sceneSettings.enableWaterEffects = false;
     sceneSettings.enableParticles    = false;
 
-    // directional light
-    sceneSettings.directionalLight.base.enabled = true;
-    sceneSettings.directionalLight.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
-    sceneSettings.directionalLight.direction = glm::vec3(0.6f, -0.5f, -0.6f);
-    sceneSettings.directionalLight.base.ambientIntensity = 0.75f;
-    sceneSettings.directionalLight.base.diffuseIntensity = 0.4f;
-    sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 40.0f);
-
-    // point lights
-    sceneSettings.pointLights[0].base.enabled = true;
-    sceneSettings.pointLights[0].base.color = glm::vec3(1.0f, 1.0f, 0.0f);
-    sceneSettings.pointLights[0].position = glm::vec3(-1.0f, 4.0f, 1.0f);
-    sceneSettings.pointLights[0].base.ambientIntensity = 1.0f;
-    sceneSettings.pointLights[0].base.diffuseIntensity = 1.0f;
-
-    sceneSettings.pointLights[1].base.enabled = false;
-    sceneSettings.pointLights[1].base.color = glm::vec3(1.0f, 1.0f, 1.0f);
-    sceneSettings.pointLights[1].position = glm::vec3(5.0f, 2.0f, 5.0f);
-    sceneSettings.pointLights[1].base.ambientIntensity = 1.0f;
-    sceneSettings.pointLights[1].base.diffuseIntensity = 1.0f;
-
-    sceneSettings.pointLights[2].base.enabled = true;
-    sceneSettings.pointLights[2].base.color = glm::vec3(0.0f, 1.0f, 1.0f);
-    sceneSettings.pointLights[2].position = glm::vec3(-2.0f, 4.0f, -2.0f);
-    sceneSettings.pointLights[2].base.ambientIntensity = 1.0f;
-    sceneSettings.pointLights[2].base.diffuseIntensity = 1.0f;
-
-    sceneSettings.pointLights[3].base.enabled = false;
-    sceneSettings.pointLights[3].base.color = glm::vec3(0.0f, 1.0f, 0.0f);
-    sceneSettings.pointLights[3].position = glm::vec3(5.0f, 2.0f, -5.0f);
-    sceneSettings.pointLights[3].base.ambientIntensity = 1.0f;
-    sceneSettings.pointLights[3].base.diffuseIntensity = 1.0f;
-
-    // spot lights
-    sceneSettings.spotLights[0].base.base.enabled = false;
-    sceneSettings.spotLights[0].base.base.color = glm::vec3(1.0f, 0.0f, 0.0f);
-    sceneSettings.spotLights[0].base.position = glm::vec3(-5.0f, 2.0f, 0.0f);
-    sceneSettings.spotLights[0].direction = glm::vec3(1.0f, 0.0f, 0.0f);
-    sceneSettings.spotLights[0].base.base.ambientIntensity = 2.0f;
-    sceneSettings.spotLights[0].base.base.diffuseIntensity = 1.0f;
-    sceneSettings.spotLights[0].edge = 0.5f;
-
-    sceneSettings.spotLights[1].base.base.enabled = false;
-    sceneSettings.spotLights[1].base.base.color = glm::vec3(1.0f, 1.0f, 0.0f);
-    sceneSettings.spotLights[1].base.position = glm::vec3(5.0f, 2.0f, 0.0f);
-    sceneSettings.spotLights[1].direction = glm::vec3(-1.0f, 0.0f, 0.0f);
-    sceneSettings.spotLights[1].base.base.ambientIntensity = 2.0f;
-    sceneSettings.spotLights[1].base.base.diffuseIntensity = 1.0f;
-    sceneSettings.spotLights[1].edge = 0.5f;
-
-    sceneSettings.spotLights[2].base.base.enabled = false;
-    sceneSettings.spotLights[2].base.base.color = glm::vec3(0.0f, 1.0f, 0.0f);
-    sceneSettings.spotLights[2].base.position = glm::vec3(0.0f, 2.0f, -5.0f);
-    sceneSettings.spotLights[2].direction = glm::vec3(0.0f, 0.0f, 1.0f);
-    sceneSettings.spotLights[2].base.base.ambientIntensity = 2.0f;
-    sceneSettings.spotLights[2].base.base.diffuseIntensity = 1.0f;
-    sceneSettings.spotLights[2].edge = 0.5f;
-
-    sceneSettings.spotLights[3].base.base.enabled = false;
-    sceneSettings.spotLights[3].base.base.color = glm::vec3(1.0f, 0.0f, 1.0f);
-    sceneSettings.spotLights[3].base.position = glm::vec3(0.0f, 2.0f, 5.0f);
-    sceneSettings.spotLights[3].direction = glm::vec3(0.0f, 0.0f, -1.0f);
-    sceneSettings.spotLights[3].base.base.ambientIntensity = 2.0f;
-    sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
-    sceneSettings.spotLights[3].edge = 0.5f;
-
     ResourceManager::Init();
 
     SetCamera();
-    SetLightManager();
-    SetupTextureSlots();
-    SetupTextures();
-    SetupFramebuffers();
+    SetupShaders();
     SetupMeshes();
     SetupModels();
-}
+    SetupFramebuffers();
+    SetupLights();
 
-void SceneDeferred::SetupTextures()
-{
-    ResourceManager::LoadTexture("crate",       "Textures/crate.png");
-    ResourceManager::LoadTexture("crateNormal", "Textures/crateNormal.png");
-}
-
-void SceneDeferred::SetupTextureSlots()
-{
-    textureSlots.insert(std::make_pair("diffuse",    1));
-    textureSlots.insert(std::make_pair("normal",     2));
-    textureSlots.insert(std::make_pair("shadow",     3));
-    textureSlots.insert(std::make_pair("omniShadow", 4));
-    textureSlots.insert(std::make_pair("reflection", 5));
-    textureSlots.insert(std::make_pair("refraction", 6));
-    textureSlots.insert(std::make_pair("depth",      7));
-    textureSlots.insert(std::make_pair("DuDv",       8));
+    m_UpdateCooldown = { 0.0f, 0.2f };
 }
 
 void SceneDeferred::SetupMeshes()
 {
+    m_Quad = new QuadSSAO();
+    m_Cube = new Cube();
 }
 
 void SceneDeferred::SetupModels()
 {
+    stbi_set_flip_vertically_on_load(true);
+
+    m_Backpack = new ModelSSAO("Models/backpack/backpack.obj", "Models/backpack");
+
+    m_ObjectPositions.push_back(glm::vec3(-3.0f, -0.5f, -3.0f));
+    m_ObjectPositions.push_back(glm::vec3( 0.0f, -0.5f, -3.0f));
+    m_ObjectPositions.push_back(glm::vec3( 3.0f, -0.5f, -3.0f));
+    m_ObjectPositions.push_back(glm::vec3(-3.0f, -0.5f,  0.0f));
+    m_ObjectPositions.push_back(glm::vec3( 0.0f, -0.5f,  0.0f));
+    m_ObjectPositions.push_back(glm::vec3( 3.0f, -0.5f,  0.0f));
+    m_ObjectPositions.push_back(glm::vec3(-3.0f, -0.5f,  3.0f));
+    m_ObjectPositions.push_back(glm::vec3( 0.0f, -0.5f,  3.0f));
+    m_ObjectPositions.push_back(glm::vec3( 3.0f, -0.5f,  3.0f));
 }
 
 void SceneDeferred::SetupFramebuffers()
 {
-    uint32_t width  = Application::Get()->GetWindow()->GetBufferWidth();
-    uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
+    m_Width = (int)Application::Get()->GetWindow()->GetBufferWidth();
+    m_Height = (int)Application::Get()->GetWindow()->GetBufferHeight();
+
+    GenerateFramebuffers(m_Width, m_Height);
+}
+
+void SceneDeferred::SetupShaders()
+{
+    m_ShaderGeometryPass = new Shader("Shaders/LearnOpenGL/8.2.g_buffer.vs", "Shaders/LearnOpenGL/8.2.g_buffer.fs");
+    Log::GetLogger()->info("SceneDeferred: m_ShaderGeometryPass compiled [programID={0}]", m_ShaderGeometryPass->GetProgramID());
+
+    m_ShaderLightingPass = new Shader("Shaders/LearnOpenGL/8.2.deferred_shading.vs", "Shaders/LearnOpenGL/8.2.deferred_shading.fs");
+    Log::GetLogger()->info("SceneDeferred: m_ShaderLightingPass compiled [programID={0}]", m_ShaderLightingPass->GetProgramID());
+
+    m_ShaderLightBox = new Shader("Shaders/LearnOpenGL/8.2.deferred_light_box.vs", "Shaders/LearnOpenGL/8.2.deferred_light_box.fs");
+    Log::GetLogger()->info("SceneDeferred: m_ShaderLightBox compiled [programID={0}]", m_ShaderLightBox->GetProgramID());
+
+    m_ShaderLightingPass->Bind();
+    m_ShaderLightingPass->setInt("gPosition",   0);
+    m_ShaderLightingPass->setInt("gNormal",     1);
+    m_ShaderLightingPass->setInt("gAlbedoSpec", 2);
+}
+
+void SceneDeferred::SetupLights()
+{
+    // lighting info
+    // -------------
+    srand(13);
+    for (unsigned int i = 0; i < NR_LIGHTS; i++)
+    {
+        // calculate slightly random offsets
+        float xPos = ((rand() % 100) / 100.0f) * 6.0f - 3.0f;
+        float yPos = ((rand() % 100) / 100.0f) * 6.0f - 4.0f;
+        float zPos = ((rand() % 100) / 100.0f) * 6.0f - 3.0f;
+        m_LightPositions.push_back(glm::vec3(xPos, yPos, zPos));
+        // also calculate random color
+        float rColor = ((rand() % 100) / 200.0f) + 0.5f; // between 0.5 and 1.0
+        float gColor = ((rand() % 100) / 200.0f) + 0.5f; // between 0.5 and 1.0
+        float bColor = ((rand() % 100) / 200.0f) + 0.5f; // between 0.5 and 1.0
+        m_LightColors.push_back(glm::vec3(rColor, gColor, bColor));
+    }
 }
 
 void SceneDeferred::Update(float timestep, Window& mainWindow)
 {
+    UpdateCooldown(timestep);
+}
+
+void SceneDeferred::UpdateCooldown(float timestep)
+{
+    // Cooldown
+    if (timestep - m_UpdateCooldown.lastTime < m_UpdateCooldown.cooldown) return;
+    m_UpdateCooldown.lastTime = timestep;
+
+    m_Width = Application::Get()->GetWindow()->GetBufferWidth();
+    m_Height = Application::Get()->GetWindow()->GetBufferHeight();
+
+    if (m_Width != m_WidthPrev || m_Height != m_HeightPrev)
+    {
+        ResetHandlers();
+        GenerateFramebuffers(m_Width, m_Height);
+
+        m_WidthPrev = m_Width;
+        m_HeightPrev = m_Height;
+    }
+}
+
+void SceneDeferred::ResetHandlers()
+{
+    // Framebuffers
+    gBuffer = 0;
+
+    // textures / framebuffer attachments
+    gPosition = 0;
+    gNormal = 0;
+    gAlbedoSpec = 0;
+    rboDepth = 0;    
+}
+
+void SceneDeferred::GenerateFramebuffers(int width, int height)
+{
+    ResetHandlers();
+
+    // configure g-buffer framebuffer
+    // ------------------------------
+    glGenFramebuffers(1, &gBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+
+    // position color buffer
+    glGenTextures(1, &gPosition);
+    glBindTexture(GL_TEXTURE_2D, gPosition);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_Width, m_Height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+
+    // normal color buffer
+    glGenTextures(1, &gNormal);
+    glBindTexture(GL_TEXTURE_2D, gNormal);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_Width, m_Height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+
+    // color + specular color buffer
+    glGenTextures(1, &gAlbedoSpec);
+    glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
+
+    // tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+    attachments = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+    glDrawBuffers(3, attachments.data());
+
+    // create and attach depth buffer (renderbuffer)
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_Width, m_Height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+
+    // finally check if framebuffer is complete
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "Framebuffer not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void SceneDeferred::UpdateImGui(float timestep, Window& mainWindow)
@@ -143,147 +193,21 @@ void SceneDeferred::UpdateImGui(float timestep, Window& mainWindow)
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
 
-    ImGui::Begin("Lights");
-    {
-        if (ImGui::CollapsingHeader("Directional Light"))
-        {
-            // Directional Light
-            SDirectionalLight directionalLight;
-            directionalLight.base.enabled = LightManager::directionalLight.GetEnabled();
-            directionalLight.base.color = LightManager::directionalLight.GetColor();
-            directionalLight.base.ambientIntensity = LightManager::directionalLight.GetAmbientIntensity();
-            directionalLight.base.diffuseIntensity = LightManager::directionalLight.GetDiffuseIntensity();
-            directionalLight.direction = LightManager::directionalLight.GetDirection();
-
-            ImGui::Checkbox("DL Enabled", &directionalLight.base.enabled);
-            ImGui::ColorEdit3("DL Color", glm::value_ptr(directionalLight.base.color));
-            ImGui::SliderFloat3("DL Direction", glm::value_ptr(directionalLight.direction), -1.0f, 1.0f);
-            ImGui::SliderFloat("DL Ambient Intensity", &directionalLight.base.ambientIntensity, 0.0f, 4.0f);
-            ImGui::SliderFloat("DL Diffuse Intensity", &directionalLight.base.diffuseIntensity, 0.0f, 4.0f);
-
-            LightManager::directionalLight.SetEnabled(directionalLight.base.enabled);
-            LightManager::directionalLight.SetColor(directionalLight.base.color);
-            LightManager::directionalLight.SetAmbientIntensity(directionalLight.base.ambientIntensity);
-            LightManager::directionalLight.SetDiffuseIntensity(directionalLight.base.diffuseIntensity);
-            LightManager::directionalLight.SetDirection(directionalLight.direction);
-        }
-
-        if (ImGui::CollapsingHeader("Point Lights"))
-        {
-            ImGui::Indent();
-
-            // Point Lights
-            SPointLight pointLights[4];
-            char locBuff[100] = { '\0' };
-            for (unsigned int pl = 0; pl < LightManager::pointLightCount; pl++)
-            {
-                pointLights[pl].base.enabled = LightManager::pointLights[pl].GetEnabled();
-                pointLights[pl].base.color = LightManager::pointLights[pl].GetColor();
-                pointLights[pl].base.ambientIntensity = LightManager::pointLights[pl].GetAmbientIntensity();
-                pointLights[pl].base.diffuseIntensity = LightManager::pointLights[pl].GetDiffuseIntensity();
-                pointLights[pl].position = LightManager::pointLights[pl].GetPosition();
-                pointLights[pl].constant = LightManager::pointLights[pl].GetConstant();
-                pointLights[pl].linear = LightManager::pointLights[pl].GetLinear();
-                pointLights[pl].exponent = LightManager::pointLights[pl].GetExponent();
-
-                snprintf(locBuff, sizeof(locBuff), "Point Light %i", pl);
-                if (ImGui::CollapsingHeader(locBuff))
-                {
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Enabled", pl);
-                    ImGui::Checkbox(locBuff, &pointLights[pl].base.enabled);
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Color", pl);
-                    ImGui::ColorEdit3(locBuff, glm::value_ptr(pointLights[pl].base.color));
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Position", pl);
-                    ImGui::SliderFloat3(locBuff, glm::value_ptr(pointLights[pl].position), -20.0f, 20.0f);
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Ambient Intensity", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].base.ambientIntensity, -2.0f, 2.0f);
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Diffuse Intensity", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].base.diffuseIntensity, -2.0f, 2.0f);
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Constant", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].constant, -2.0f, 2.0f);
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Linear", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].linear, -2.0f, 2.0f);
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Exponent", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].exponent, -2.0f, 2.0f);
-                }
-
-                LightManager::pointLights[pl].SetEnabled(pointLights[pl].base.enabled);
-                LightManager::pointLights[pl].SetColor(pointLights[pl].base.color);
-                LightManager::pointLights[pl].SetAmbientIntensity(pointLights[pl].base.ambientIntensity);
-                LightManager::pointLights[pl].SetDiffuseIntensity(pointLights[pl].base.diffuseIntensity);
-                LightManager::pointLights[pl].SetPosition(pointLights[pl].position);
-                LightManager::pointLights[pl].SetConstant(pointLights[pl].constant);
-                LightManager::pointLights[pl].SetLinear(pointLights[pl].linear);
-                LightManager::pointLights[pl].SetExponent(pointLights[pl].exponent);
-            }
-            ImGui::Unindent();
-        }
-
-        if (ImGui::CollapsingHeader("Spot Lights"))
-        {
-            ImGui::Indent();
-
-            // Spot Lights
-            SSpotLight spotLights[4];
-            char locBuff[100] = { '\0' };
-            for (unsigned int sl = 0; sl < LightManager::spotLightCount; sl++)
-            {
-                spotLights[sl].base.base.enabled = LightManager::spotLights[sl].GetBasePL()->GetEnabled();
-                spotLights[sl].base.base.color = LightManager::spotLights[sl].GetBasePL()->GetColor();
-                spotLights[sl].base.base.ambientIntensity = LightManager::spotLights[sl].GetBasePL()->GetAmbientIntensity();
-                spotLights[sl].base.base.diffuseIntensity = LightManager::spotLights[sl].GetBasePL()->GetDiffuseIntensity();
-                spotLights[sl].base.position = LightManager::spotLights[sl].GetBasePL()->GetPosition();
-                spotLights[sl].base.constant = LightManager::spotLights[sl].GetBasePL()->GetConstant();
-                spotLights[sl].base.linear = LightManager::spotLights[sl].GetBasePL()->GetLinear();
-                spotLights[sl].base.exponent = LightManager::spotLights[sl].GetBasePL()->GetExponent();
-                spotLights[sl].direction = LightManager::spotLights[sl].GetDirection();
-                spotLights[sl].edge = LightManager::spotLights[sl].GetEdge();
-
-                snprintf(locBuff, sizeof(locBuff), "Spot Light %i", sl);
-                if (ImGui::CollapsingHeader(locBuff))
-                {
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Enabled", sl);
-                    ImGui::Checkbox(locBuff, &spotLights[sl].base.base.enabled);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Color", sl);
-                    ImGui::ColorEdit3(locBuff, glm::value_ptr(spotLights[sl].base.base.color));
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Position", sl);
-                    ImGui::SliderFloat3(locBuff, glm::value_ptr(spotLights[sl].base.position), -20.0f, 20.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Direction", sl);
-                    ImGui::SliderFloat3(locBuff, glm::value_ptr(spotLights[sl].direction), -1.0f, 1.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Edge", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].edge, -100.0f, 100.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Ambient Intensity", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.base.ambientIntensity, -2.0f, 2.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Diffuse Intensity", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.base.diffuseIntensity, -2.0f, 2.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Constant", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.constant, -2.0f, 2.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Linear", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.linear, -2.0f, 2.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Exponent", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.exponent, -2.0f, 2.0f);
-                }
-
-                LightManager::spotLights[sl].GetBasePL()->SetEnabled(spotLights[sl].base.base.enabled);
-                LightManager::spotLights[sl].GetBasePL()->SetColor(spotLights[sl].base.base.color);
-                LightManager::spotLights[sl].GetBasePL()->SetAmbientIntensity(spotLights[sl].base.base.ambientIntensity);
-                LightManager::spotLights[sl].GetBasePL()->SetDiffuseIntensity(spotLights[sl].base.base.diffuseIntensity);
-                LightManager::spotLights[sl].GetBasePL()->SetPosition(spotLights[sl].base.position);
-                LightManager::spotLights[sl].GetBasePL()->SetConstant(spotLights[sl].base.constant);
-                LightManager::spotLights[sl].GetBasePL()->SetLinear(spotLights[sl].base.linear);
-                LightManager::spotLights[sl].GetBasePL()->SetExponent(spotLights[sl].base.exponent);
-                LightManager::spotLights[sl].SetDirection(spotLights[sl].direction);
-                LightManager::spotLights[sl].SetEdge(spotLights[sl].edge);
-            }
-            ImGui::Unindent();
-        }
-    }
-    ImGui::End();
-
     ImGui::Begin("Framebuffers");
     {
-        ImVec2 imageSize(128.0f, 128.0f);
+        ImVec2 imageSize(192.0f, 192.0f);
 
+        ImGui::Text("gPosition");
+        ImGui::Image((void*)(intptr_t)gPosition, imageSize);
+        ImGui::SliderInt("", (int*)&gPosition, 0, 128);
+
+        ImGui::Text("gNormal");
+        ImGui::Image((void*)(intptr_t)gNormal, imageSize);
+        ImGui::SliderInt("", (int*)&gNormal, 0, 128);
+
+        ImGui::Text("gAlbedoSpec");
+        ImGui::Image((void*)(intptr_t)gAlbedoSpec, imageSize);
+        ImGui::SliderInt("", (int*)&gAlbedoSpec, 0, 128);
     }
     ImGui::End();
 }
@@ -291,8 +215,96 @@ void SceneDeferred::UpdateImGui(float timestep, Window& mainWindow)
 void SceneDeferred::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
+    m_Width = (int)Application::Get()->GetWindow()->GetBufferWidth();
+    m_Height = (int)Application::Get()->GetWindow()->GetBufferHeight();
+
+    glEnable(GL_DEPTH_TEST);
+
+    // 1. geometry pass: render scene's geometry/color data into gbuffer
+        // -----------------------------------------------------------------
+    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glm::mat4 projection = projectionMatrix;
+    glm::mat4 view = m_CameraController->CalculateViewMatrix();
+    glm::mat4 model = glm::mat4(1.0f);
+    m_ShaderGeometryPass->Bind();
+    m_ShaderGeometryPass->setMat4("projection", projection);
+    m_ShaderGeometryPass->setMat4("view", view);
+    for (unsigned int i = 0; i < m_ObjectPositions.size(); i++)
+    {
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, m_ObjectPositions[i]);
+        model = glm::scale(model, glm::vec3(0.25f));
+        m_ShaderGeometryPass->setMat4("model", model);
+        m_Backpack->Draw(m_ShaderGeometryPass);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
+    // -----------------------------------------------------------------------------------------------------------------------
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    m_ShaderLightingPass->Bind();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, gPosition);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, gNormal);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+
+    // send light relevant uniforms
+    for (unsigned int i = 0; i < m_LightPositions.size(); i++)
+    {
+        m_ShaderLightingPass->setVec3("lights[" + std::to_string(i) + "].Position", m_LightPositions[i]);
+        m_ShaderLightingPass->setVec3("lights[" + std::to_string(i) + "].Color", m_LightColors[i]);
+        // update attenuation parameters and calculate radius
+        const float constant  = 1.0f; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
+        const float linear    = 0.7f;
+        const float quadratic = 1.8f;
+        m_ShaderLightingPass->setFloat("lights[" + std::to_string(i) + "].Linear", linear);
+        m_ShaderLightingPass->setFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
+        // then calculate radius of light volume/sphere
+        const float maxBrightness = std::fmaxf(std::fmaxf(m_LightColors[i].r, m_LightColors[i].g), m_LightColors[i].b);
+        float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+        m_ShaderLightingPass->setFloat("lights[" + std::to_string(i) + "].Radius", radius);
+    }
+    m_ShaderLightingPass->setVec3("viewPos", m_Camera->GetPosition());
+
+    // finally render quad
+    m_Quad->Render();
+
+    // 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
+    // ----------------------------------------------------------------------------------
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
+    // blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
+    // the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the 		
+    // depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
+    glBlitFramebuffer(0, 0, m_Width, m_Height, 0, 0, m_Width, m_Height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // 3. render lights on top of scene
+    // --------------------------------
+    m_ShaderLightBox->Bind();
+    m_ShaderLightBox->setMat4("projection", projection);
+    m_ShaderLightBox->setMat4("view", view);
+    for (unsigned int i = 0; i < m_LightPositions.size(); i++)
+    {
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, m_LightPositions[i]);
+        model = glm::scale(model, glm::vec3(0.125f));
+        m_ShaderLightBox->setMat4("model", model);
+        m_ShaderLightBox->setVec3("lightColor", m_LightColors[i]);
+        m_Cube->Render();
+    }
 }
 
 SceneDeferred::~SceneDeferred()
 {
+    delete m_Quad;
+    delete m_Cube;
+    delete m_Backpack;
+
+    delete m_ShaderGeometryPass;
+    delete m_ShaderLightingPass;
+    delete m_ShaderLightBox;
 }

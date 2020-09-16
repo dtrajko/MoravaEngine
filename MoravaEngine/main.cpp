@@ -55,7 +55,6 @@
 #include "RendererOmniShadows.h"
 #include "RendererVoxelTerrain.h"
 #include "RendererEditor.h"
-#include "RendererDeferred.h"
 
 
 // Window dimensions
@@ -203,7 +202,7 @@ int main()
 		break;
 	case SceneName::Deferred:
 		scene = new SceneDeferred();
-		renderer = static_cast<RendererBasic*>(new RendererDeferred());
+		renderer = static_cast<RendererBasic*>(new RendererTrivial());
 		break;
 	default:
 		throw std::runtime_error("Scene and Renderer could not be loaded!");

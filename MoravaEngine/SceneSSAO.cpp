@@ -142,8 +142,6 @@ void SceneSSAO::SetupModels()
 
 void SceneSSAO::SetupFramebuffers()
 {
-    uint32_t width  = Application::Get()->GetWindow()->GetBufferWidth();
-    uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
 }
 
 void SceneSSAO::SetupSSAO()
