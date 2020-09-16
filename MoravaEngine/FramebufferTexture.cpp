@@ -11,76 +11,116 @@ FramebufferTexture::FramebufferTexture()
 	: Attachment()
 {
 	m_Level = 0;
-	m_Border = 0;
+	InitSpecification();
+}
+
+FramebufferTexture::FramebufferTexture(Texture::Specification spec, unsigned int orderID)
+	: FramebufferTexture()
+{
+	m_Spec.InternalFormat = spec.InternalFormat;
+	m_Spec.Width = spec.Width;
+	m_Spec.Height = spec.Height;
+	m_Spec.Border = spec.Border;
+	m_Spec.Format = spec.Format;
+	m_Spec.Type = spec.Type;
+	m_Spec.Texture_Wrap_S = spec.Texture_Wrap_S;
+	m_Spec.Texture_Wrap_T = spec.Texture_Wrap_T;
+	m_Spec.Texture_Min_Filter = spec.Texture_Min_Filter;
+	m_Spec.Texture_Mag_Filter = spec.Texture_Mag_Filter;
+	m_Spec.MipLevel = spec.MipLevel;
+	m_Spec.FlipVertically = spec.FlipVertically;
+	m_Spec.BitDepth = spec.BitDepth;
+	m_Spec.IsSampler = spec.IsSampler;
+
+	OpenGLCreate();
 }
 
 FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat, unsigned int orderID)
 	: Attachment(width, height, AttachmentType::Texture, attachmentFormat, orderID)
 {
 	m_Level = 0;
-	m_Border = 0;
-
-	GLenum attachment;
-	GLint internalFormat;
-	GLenum format;
-	GLenum type;
+	InitSpecification();
 
 	switch (attachmentFormat)
 	{
 	case AttachmentFormat::Color:
-		attachment = GL_COLOR_ATTACHMENT0 + orderID;
-		internalFormat = GL_RGB;
-		format = GL_RGB;
-		type = GL_UNSIGNED_BYTE;
+		m_Attachment = GL_COLOR_ATTACHMENT0 + orderID;
+		m_Spec.InternalFormat = GL_RGB;
+		m_Spec.Format = GL_RGB;
+		m_Spec.Type = GL_UNSIGNED_BYTE;
 		break;
 	case AttachmentFormat::RGBA16F:
-		attachment = GL_COLOR_ATTACHMENT0 + orderID;
-		internalFormat = GL_RGBA;
-		format = GL_RGBA;
-		type = GL_RGBA16F;
+		m_Attachment = GL_COLOR_ATTACHMENT0 + orderID;
+		m_Spec.InternalFormat = GL_RGBA;
+		m_Spec.Format = GL_RGBA;
+		m_Spec.Type = GL_RGBA16F;
 		break;
 	case AttachmentFormat::RGBA8:
-		attachment = GL_COLOR_ATTACHMENT0 + orderID;
-		internalFormat = GL_RGBA;
-		format = GL_RGBA;
-		type = GL_RGBA8;
+		m_Attachment = GL_COLOR_ATTACHMENT0 + orderID;
+		m_Spec.InternalFormat = GL_RGBA;
+		m_Spec.Format = GL_RGBA;
+		m_Spec.Type = GL_RGBA8;
 		break;
 	case AttachmentFormat::Depth:
-		attachment = GL_DEPTH_ATTACHMENT;
-		internalFormat = GL_DEPTH_COMPONENT32;
-		format = GL_DEPTH_COMPONENT;
-		type = GL_FLOAT;
+		m_Attachment = GL_DEPTH_ATTACHMENT;
+		m_Spec.InternalFormat = GL_DEPTH_COMPONENT32;
+		m_Spec.Format = GL_DEPTH_COMPONENT;
+		m_Spec.Type = GL_FLOAT;
 		break;
 	case AttachmentFormat::Stencil:
-		attachment = GL_STENCIL_ATTACHMENT;
-		internalFormat = GL_STENCIL_INDEX;
-		format = GL_STENCIL_INDEX;
-		type = GL_FLOAT;
+		m_Attachment = GL_STENCIL_ATTACHMENT;
+		m_Spec.InternalFormat = GL_STENCIL_INDEX;
+		m_Spec.Format = GL_STENCIL_INDEX;
+		m_Spec.Type = GL_FLOAT;
 		break;
 	case AttachmentFormat::DepthStencil:
-		attachment = GL_DEPTH_STENCIL_ATTACHMENT;
-		internalFormat = GL_DEPTH24_STENCIL8;
-		format = GL_DEPTH_STENCIL;
-		type = GL_UNSIGNED_INT_24_8;
+		m_Attachment = GL_DEPTH_STENCIL_ATTACHMENT;
+		m_Spec.InternalFormat = GL_DEPTH24_STENCIL8;
+		m_Spec.Format = GL_DEPTH_STENCIL;
+		m_Spec.Type = GL_UNSIGNED_INT_24_8;
 		break;
 	default:
 		throw std::runtime_error("AttachmentFormat not supported!");
 		return;
 	}
 
+	OpenGLCreate();
+}
+
+FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat, unsigned int orderID)
+	: Attachment(width, height, attachmentType, attachmentFormat, orderID)
+{
+	m_Level = 0;
+	InitSpecification();
+
+	OpenGLCreate();
+}
+
+void FramebufferTexture::InitSpecification()
+{
+	m_Spec.Border = 0;
+
+	m_Spec.Texture_Min_Filter = GL_LINEAR;
+	m_Spec.Texture_Mag_Filter = GL_LINEAR;
+
+	m_Spec.Texture_Wrap_S = GL_REPEAT; // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
+	m_Spec.Texture_Wrap_T = GL_REPEAT; // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
+}
+
+void FramebufferTexture::OpenGLCreate()
+{
 	glGenTextures(1, &m_ID);
 	glBindTexture(GL_TEXTURE_2D, m_ID);
 
-	glTexImage2D(GL_TEXTURE_2D, m_Level, internalFormat, m_Width, m_Height, m_Border, format, type, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, m_Level, m_Spec.InternalFormat, m_Width, m_Height, m_Spec.Border, m_Spec.Format, m_Spec.Type, nullptr);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_Spec.Texture_Min_Filter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_Spec.Texture_Mag_Filter);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_Spec.Texture_Wrap_S); // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_Spec.Texture_Wrap_T); // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
 
-	glFramebufferTexture(GL_FRAMEBUFFER, attachment, m_ID, 0);
-	// glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, m_ID, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, m_Attachment, m_ID, 0);
 }
 
 void FramebufferTexture::Bind(unsigned int slot)
@@ -96,7 +136,5 @@ void FramebufferTexture::Unbind()
 
 FramebufferTexture::~FramebufferTexture()
 {
-	// Log::GetLogger()->info("FramebufferTexture Destructor");
-
 	glDeleteTextures(1, &m_ID);
 }

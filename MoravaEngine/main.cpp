@@ -95,7 +95,7 @@ enum class SceneName
 	Deferred,
 };
 
-SceneName currentScene = SceneName::Editor;
+SceneName currentScene = SceneName::Deferred;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -167,7 +167,7 @@ int main()
 		break;
 	case SceneName::Particles:
 		scene = new SceneParticles();
-		renderer = static_cast<RendererBasic*>(new RendererEditor());
+		renderer = static_cast<RendererBasic*>(new RendererTrivial());
 		break;
 	case SceneName::OmniShadows:
 		scene = new SceneOmniShadows();

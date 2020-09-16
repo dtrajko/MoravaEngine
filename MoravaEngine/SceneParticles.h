@@ -35,10 +35,8 @@ private:
 	ParticleSystemCherno m_ParticleSystem;
 	ParticleProps m_Particle;
 
-	Grid* m_Grid;
-	Pivot* m_PivotScene;
-
 	Shader* m_ShaderFBScene;
+	Shader* m_ShaderBackground;
 
 	float m_MouseX;
 	float m_MouseY;

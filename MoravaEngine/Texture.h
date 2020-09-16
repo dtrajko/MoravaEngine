@@ -10,18 +10,21 @@ class Texture
 public:
 	struct Specification
 	{
+		int InternalFormat;
 		unsigned int Width;
 		unsigned int Height;
-		bool FlipVertically;
-		int BitDepth;
-		bool IsSampler; // m_Buffer is required during object lifetime, so it must be deallocated in destructor
-		int InternalFormat;
-		unsigned int DataFormat;
+		int Border;
+		unsigned int Format;
+		unsigned int Type;
 		int Texture_Wrap_S;
 		int Texture_Wrap_T;
+		int Texture_Wrap_R;
 		int Texture_Min_Filter;
 		int Texture_Mag_Filter;
 		int MipLevel;
+		bool FlipVertically;
+		int BitDepth;
+		bool IsSampler; // m_Buffer is required during object lifetime, so it must be deallocated in destructor
 	} m_Spec;
 
 public:
@@ -65,5 +68,6 @@ protected:
 	unsigned int m_TextureID;
 	const char* m_FileLocation;
 	unsigned char* m_Buffer;
+	int m_Level;
 
 };

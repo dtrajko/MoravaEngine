@@ -277,13 +277,6 @@ void SceneCottage::UpdateImGui(float timestep, Window& mainWindow)
 				ImGui::Text("Omni Shadow Map 7\n(Spot Light 3)");
 				ImGui::Image((void*)(intptr_t)LightManager::spotLights[3].GetShadowMap()->GetTextureID(), imageSize);
 			}
-
-			ImGui::Text("Water Reflection\nColor Attachment");
-			ImGui::Image((void*)(intptr_t)m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
-			ImGui::Text("Water Refraction\nColor Attachment");
-			ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
-			ImGui::Text("Water Refraction\nDepth Attachment");
-			ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
 		}
 	}
 	ImGui::End();

@@ -1,6 +1,7 @@
 #include "SceneParticles.h"
 
 #include "RendererBasic.h"
+#include "Log.h"
 
 #include "ImGuiWrapper.h"
 
@@ -22,15 +23,15 @@ SceneParticles::SceneParticles()
 	SetupModels();
     SetupParticles();
 
-    m_Grid = new Grid(10);
-    m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(40.0f, 40.0f, 40.0f));
-
     // Initialize the PBR/IBL Material Workflow component
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
     m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
 
     m_ShaderFBScene = new Shader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
     printf("SceneParticles: m_ShaderFBScene compiled [programID=%d]\n", m_ShaderFBScene->GetProgramID());
+
+    m_ShaderBackground = new Shader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    Log::GetLogger()->info("SceneParticles: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
 }
 
 void SceneParticles::SetSkybox()
@@ -115,6 +116,27 @@ void SceneParticles::UpdateImGui(float timestep, Window& mainWindow)
 void SceneParticles::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
+    // Skybox shaderBackground
+/* Begin backgroundShader */
+    {
+        m_MaterialWorkflowPBR->SetGlobalRenderState();
+
+        RendererBasic::DisableCulling();
+        // render skybox (render as last to prevent overdraw)
+        m_ShaderBackground->Bind();
+        m_ShaderBackground->setMat4("projection", projectionMatrix);
+        m_ShaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
+        m_ShaderBackground->setMat4("model", glm::mat4(1.0f));
+        m_ShaderBackground->setInt("environmentMap", 0);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap()); // display irradiance map
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap()); // display prefilter map
+        m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
+    }
+    /* End backgroundShader */
+
     m_ShaderFBScene->Bind();
     m_ShaderFBScene->setMat4("projection", projectionMatrix);
     m_ShaderFBScene->setMat4("view", m_CameraController->CalculateViewMatrix());
@@ -124,32 +146,8 @@ void SceneParticles::Render(Window& mainWindow, glm::mat4 projectionMatrix, std:
 
     // Render Particles
     m_ParticleSystem.OnRender(m_Camera, m_ShaderFBScene);
-
-    m_Grid->Draw(shaders["basic"], projectionMatrix, m_CameraController->CalculateViewMatrix());
-    m_PivotScene->Draw(shaders["basic"], projectionMatrix, m_CameraController->CalculateViewMatrix());
-
-    // Skybox shaderBackground
-    /* Begin backgroundShader */
-    {
-        RendererBasic::DisableCulling();
-        Shader* shaderBackground = shaders["background"];
-        // render skybox (render as last to prevent overdraw)
-        shaderBackground->Bind();
-        shaderBackground->setMat4("projection", projectionMatrix);
-        shaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
-        shaderBackground->setInt("environmentMap", 0);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetEnvironmentCubemap());
-        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetIrradianceMap()); // display irradiance map
-        // glBindTexture(GL_TEXTURE_CUBE_MAP, m_MaterialWorkflowPBR->GetPrefilterMap()); // display prefilter map
-        m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
-    }
-    /* End backgroundShader */
 }
 
 SceneParticles::~SceneParticles()
 {
-    delete m_PivotScene;
-    delete m_Grid;
 }

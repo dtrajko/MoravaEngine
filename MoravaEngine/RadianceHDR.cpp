@@ -26,12 +26,12 @@ bool RadianceHDR::Load()
 	}
 
 	m_Spec.InternalFormat = GL_RGB16F;
-	m_Spec.DataFormat = GL_RGB;
+	m_Spec.Format = GL_RGB;
 
 	glGenTextures(1, &m_TextureID);
 	glBindTexture(GL_TEXTURE_2D, m_TextureID);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, m_Spec.InternalFormat, m_Spec.Width, m_Spec.Height, 0, m_Spec.DataFormat, GL_FLOAT, m_Buffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, m_Spec.InternalFormat, m_Spec.Width, m_Spec.Height, 0, m_Spec.Format, GL_FLOAT, m_Buffer);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
