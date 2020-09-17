@@ -548,16 +548,18 @@ namespace Hazel {
 		{
 			{
 				auto [translation, rotation, scale] = GetTransformDecomposition(transform);
+				glm::vec3 rotationVec3 = glm::eulerAngles(rotation) / toRadians;
 				ImGui::Text("World Transform");
 				ImGui::Text("  Translation: %.2f %.2f %.2f", translation.x, translation.y, translation.z);
-				ImGui::Text("  Rotation: %.2f %.2f %.2f", rotation.x, rotation.y, rotation.z);
+				ImGui::Text("  Rotation: %.2f %.2f %.2f", rotationVec3.x, rotationVec3.y, rotationVec3.z);
 				ImGui::Text("  Scale: %.2f %.2f %.2f", scale.x, scale.y, scale.z);
 			}
 			{
 				auto [translation, rotation, scale] = GetTransformDecomposition(localTransform);
+				glm::vec3 rotationVec3 = glm::eulerAngles(rotation) / toRadians;
 				ImGui::Text("Local Transform");
 				ImGui::Text("  Translation: %.2f %.2f %.2f", translation.x, translation.y, translation.z);
-				ImGui::Text("  Rotation: %.2f %.2f %.2f", rotation.x, rotation.y, rotation.z);
+				ImGui::Text("  Rotation: %.2f %.2f %.2f", rotationVec3.x, rotationVec3.y, rotationVec3.z);
 				ImGui::Text("  Scale: %.2f %.2f %.2f", scale.x, scale.y, scale.z);
 			}
 
