@@ -225,11 +225,14 @@ void SceneAnimPBR::SetupMeshes()
 
     // Setup transform matrix and AABB for the cube mesh
     m_Transform_Cube = glm::mat4(1.0f);
-    m_Position_Cube = glm::vec3(-18.0f, 4.0f, -18.0f);
-    m_Scale_Cube = glm::vec3(4.0f);
+    m_Position_Cube = glm::vec3(0.0f, 5.0f, -20.0f);
+    m_Scale_Cube = glm::vec3(10.0f);
     m_Transform_Cube = glm::translate(m_Transform_Cube, m_Position_Cube);
     m_Transform_Cube = glm::scale(m_Transform_Cube, m_Scale_Cube);
-    m_AABB_Cube = new AABB(m_Position_Cube, glm::quat(glm::vec3(0.0f)), m_Scale_Cube);
+
+    m_AABB_Position_Cube = m_Position_Cube;
+    m_AABB_Scale_Cube = m_Scale_Cube;
+    m_AABB_Cube = new AABB(m_AABB_Position_Cube, glm::quat(glm::vec3(0.0f)), m_AABB_Scale_Cube);
 
     Log::GetLogger()->info("-- BEGIN loading the Cube mesh --");
 
@@ -245,14 +248,17 @@ void SceneAnimPBR::SetupMeshes()
 
     m_BaseMaterial_M1911 = new Material(textureInfoM1911, materialSpecular, materialShininess);
     m_MeshAnimPBR_M1911 = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911);
+    m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
 
-    m_Position_M1911 = glm::vec3(0.0f, 10.0f, 10.0f);
-    m_Scale_M1911 = glm::vec3(2.0f);
+    m_Position_M1911 = glm::vec3(0.0f, 5.0f, 5.0f);
+    m_Scale_M1911 = glm::vec3(20.0f);
     m_Transform_M1911 = glm::mat4(1.0f);
     m_Transform_M1911 = glm::translate(m_Transform_M1911, m_Position_M1911);
     m_Transform_M1911 = glm::scale(m_Transform_M1911, m_Scale_M1911);
-    m_AABB_M1911 = new AABB(m_Position_M1911, glm::quat(glm::vec3(0.0f)), glm::vec3(0.24f, 0.14f, 0.03f));
-    m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
+
+    m_AABB_Position_M1911 = m_Position_M1911;
+    m_AABB_Scale_M1911 = m_Scale_M1911 * glm::vec3(0.24f, 0.14f, 0.03f);
+    m_AABB_M1911 = new AABB(m_AABB_Position_M1911, glm::quat(glm::vec3(0.0f)), m_AABB_Scale_M1911);
 
     Log::GetLogger()->info("-- END loading the animated PBR model M1911 --");
 
@@ -268,11 +274,17 @@ void SceneAnimPBR::SetupMeshes()
 
     m_BaseMaterial_BobLamp = new Material(textureInfoBobLamp, materialSpecular, materialShininess);
     m_MeshAnimPBR_BobLamp = new Hazel::MeshAnimPBR("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp);
-    m_Transform_BobLamp = glm::mat4(1.0f);
-    m_Position_BobLamp = glm::vec3(5.0f, 5.0f, 0.0f);
-    m_Scale_BobLamp = glm::vec3(0.2f);
-    m_AABB_BobLamp = new AABB(m_Position_BobLamp, glm::quat(glm::vec3(0.0f)), m_Scale_BobLamp);
     m_MeshAnimPBR_BobLamp->SetTimeMultiplier(1.0f);
+
+    m_Position_BobLamp = glm::vec3(5.0f, 0.0f, -5.0f);
+    m_Scale_BobLamp = glm::vec3(0.1f);
+    m_Transform_BobLamp = glm::mat4(1.0f);
+    m_Transform_BobLamp = glm::translate(m_Transform_BobLamp, m_Position_BobLamp);
+    m_Transform_BobLamp = glm::scale(m_Transform_BobLamp, m_Scale_BobLamp);
+
+    m_AABB_Position_BobLamp = m_Position_BobLamp + glm::vec3(0.0f, 3.0f, 0.0f);
+    m_AABB_Scale_BobLamp = m_Scale_BobLamp * glm::vec3(20.0f, 60.0f, 20.0f);
+    m_AABB_BobLamp = new AABB(m_AABB_Position_BobLamp, glm::quat(glm::vec3(0.0f)), m_AABB_Scale_BobLamp);
 
     Log::GetLogger()->info("-- END loading the animated PBR model BobLamp --");
 
@@ -288,11 +300,17 @@ void SceneAnimPBR::SetupMeshes()
 
     m_BaseMaterial_AnimBoy = new Material(textureInfoAnimBoy, materialSpecular, materialShininess);
     m_MeshAnimPBR_AnimBoy = new Hazel::MeshAnimPBR("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy);
-    m_Transform_AnimBoy = glm::mat4(1.0f);
-    m_Position_AnimBoy = glm::vec3(-5.0f, 5.0f, 0.0f);
-    m_Scale_AnimBoy = glm::vec3(0.8f);
-    m_AABB_AnimBoy = new AABB(m_Position_AnimBoy, glm::quat(glm::vec3(0.0f)), m_Scale_AnimBoy);
     m_MeshAnimPBR_AnimBoy->SetTimeMultiplier(800.0f);
+
+    m_Position_AnimBoy = glm::vec3(-5.0f, 0.0f, -5.0f);
+    m_Scale_AnimBoy = glm::vec3(0.6f);
+    m_Transform_AnimBoy = glm::mat4(1.0f);
+    m_Transform_AnimBoy = glm::translate(m_Transform_AnimBoy, m_Position_AnimBoy);
+    m_Transform_AnimBoy = glm::scale(m_Transform_AnimBoy, m_Scale_AnimBoy);
+
+    m_AABB_Position_AnimBoy = m_Position_AnimBoy + glm::vec3(0.0f, 2.6f, 0.0f);
+    m_AABB_Scale_AnimBoy = m_Scale_AnimBoy * glm::vec3(2.4f, 8.8f, 2.0f);
+    m_AABB_AnimBoy = new AABB(m_AABB_Position_AnimBoy, glm::quat(glm::vec3(0.0f)), m_AABB_Scale_AnimBoy);
 
     Log::GetLogger()->info("-- END loading the animated PBR model Animated Boy --");
 
@@ -756,10 +774,7 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
                 m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBR_M1911->m_BoneTransforms[i]);
             }
 
-            glm::mat4 transform = m_Transform_M1911 * submesh->Transform;
-            transform = glm::scale(transform, m_Scale_M1911);
-
-            m_ShaderHybridAnimPBR->setMat4("u_Transform", transform);
+            m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Transform_M1911 * submesh->Transform);
 
             glEnable(GL_DEPTH_TEST);
             glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
@@ -795,11 +810,7 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
                 m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBR_BobLamp->m_BoneTransforms[i]);
             }
 
-            m_Transform_BobLamp = submesh->Transform;
-            m_Transform_BobLamp = glm::translate(m_Transform_BobLamp, m_Position_BobLamp);
-            m_Transform_BobLamp = glm::scale(m_Transform_BobLamp, m_Scale_BobLamp);
-
-            m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Transform_BobLamp);
+            m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Transform_BobLamp * submesh->Transform);
 
             glEnable(GL_DEPTH_TEST);
             glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
@@ -833,11 +844,7 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
                 m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBR_AnimBoy->m_BoneTransforms[i]);
             }
 
-            m_Transform_AnimBoy = submesh->Transform;
-            m_Transform_AnimBoy = glm::translate(m_Transform_AnimBoy, m_Position_AnimBoy);
-            m_Transform_AnimBoy = glm::scale(m_Transform_AnimBoy, m_Scale_AnimBoy);
-
-            m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Transform_AnimBoy);
+            m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Transform_AnimBoy * submesh->Transform);
 
             glEnable(GL_DEPTH_TEST);
             glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);

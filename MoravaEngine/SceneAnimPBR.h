@@ -68,15 +68,25 @@ private:
 	glm::vec3 m_Scale_AnimBoy;
 	glm::vec3 m_Scale_Cube;
 
-	AABB* m_AABB_M1911;
-	AABB* m_AABB_BobLamp;
-	AABB* m_AABB_AnimBoy;
-	AABB* m_AABB_Cube;
-
 	glm::mat4 m_Transform_M1911;
 	glm::mat4 m_Transform_BobLamp;
 	glm::mat4 m_Transform_AnimBoy;
 	glm::mat4 m_Transform_Cube;
+
+	glm::vec3 m_AABB_Position_M1911;
+	glm::vec3 m_AABB_Position_BobLamp;
+	glm::vec3 m_AABB_Position_AnimBoy;
+	glm::vec3 m_AABB_Position_Cube;
+
+	glm::vec3 m_AABB_Scale_M1911;
+	glm::vec3 m_AABB_Scale_BobLamp;
+	glm::vec3 m_AABB_Scale_AnimBoy;
+	glm::vec3 m_AABB_Scale_Cube;
+
+	AABB* m_AABB_M1911;
+	AABB* m_AABB_BobLamp;
+	AABB* m_AABB_AnimBoy;
+	AABB* m_AABB_Cube;
 
 	glm::mat4 m_Transform_Gizmo;
 
