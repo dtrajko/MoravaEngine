@@ -33,7 +33,7 @@ public:
     inline Framebuffer* GetRenderFramebuffer() { return m_RenderFramebuffer; };
 
 private:
-	virtual void SetupTextures()     override;
+	virtual void SetupTextures()   override;
 	virtual void SetupMaterials()  override;
 	virtual void SetupMeshes()     override;
 	virtual void SetupModels()     override;

@@ -104,16 +104,9 @@ void RendererBasic::Cleanup()
 
 void RendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene)
 {
-	uint32_t width = Application::Get()->GetWindow()->GetBufferWidth();
-	uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
-	scene->GetCameraController()->OnResize((float)width, (float)height);
-
-	// Override the Projection matrix
 	float aspectRatio = scene->GetCameraController()->GetAspectRatio();
-	*projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio,
-		scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
-
-	RendererBasic::SetProjectionMatrix(*projectionMatrix);
+	*projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio, scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+	s_ProjectionMatrix = *projectionMatrix;
 }
 
 RendererBasic::~RendererBasic()

@@ -92,6 +92,10 @@ SceneAnimPBR::SceneAnimPBR()
     sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
     sceneSettings.spotLights[3].edge = 0.5f;
 
+    m_IsViewportEnabled = true;
+    m_ViewportFocused = false;
+    m_ViewportHovered = false;
+
     SetCamera();
     SetLightManager();
     SetupShaders();
@@ -101,9 +105,11 @@ SceneAnimPBR::SceneAnimPBR()
     SetupFramebuffers();
     SetupMeshes();
     SetupModels();
+    SetupRenderFramebuffer();
 
     m_CubeTransform = glm::mat4(1.0f);
-    m_CubeTransform = glm::translate(m_CubeTransform, glm::vec3(-6.0f, 2.0f, 6.0f));
+    m_CubeTransform = glm::translate(m_CubeTransform, glm::vec3(-18.0f, 4.0f, -18.0f));
+    m_CubeTransform = glm::scale(m_CubeTransform, glm::vec3(4.0f));
     
     //  // PBR texture inputs
     m_SamplerSlots.insert(std::make_pair("albedo",     1)); // uniform sampler2D u_AlbedoTexture
@@ -127,6 +133,44 @@ SceneAnimPBR::SceneAnimPBR()
     m_LightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
     m_SkyboxLOD = 0.0f;
+
+    m_Transform_Gizmo = glm::mat4(1.0f);
+}
+
+void SceneAnimPBR::SetLightManager()
+{
+}
+
+void SceneAnimPBR::SetupRenderFramebuffer()
+{
+    if (!m_IsViewportEnabled) return;
+
+    uint32_t width = Application::Get()->GetWindow()->GetBufferWidth();
+    uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
+    m_RenderFramebuffer = new Framebuffer(width, height);
+
+    m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
+    m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
+
+    m_RenderFramebuffer->Generate(width, height);
+}
+
+void SceneAnimPBR::ResizeViewport(glm::vec2 viewportPanelSize)
+{
+    // Cooldown
+    if (m_CurrentTimestamp - m_ResizeViewport.lastTime < m_ResizeViewport.cooldown) return;
+    m_ResizeViewport.lastTime = m_CurrentTimestamp;
+
+    if (viewportPanelSize != m_ViewportSize && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
+    {
+        m_RenderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+        m_ViewportSize = glm::vec2(viewportPanelSize.x, viewportPanelSize.y);
+
+        m_CameraController->OnResize(viewportPanelSize.x, viewportPanelSize.y);
+
+        //  Log::GetLogger()->info("SceneAnimPBR::ResizeViewport Viewport Width: {0} Viewport Height: {1}, AspectRatio: {2}",
+        //      viewportPanelSize.x, viewportPanelSize.y, m_CameraController->GetAspectRatio());
+    }
 }
 
 void SceneAnimPBR::SetupTextures()
@@ -184,17 +228,15 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoM1911.metallic  = "Models/m1911/m1911_metalness.png";
     textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
     textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
-    // textureInfoM1911.albedo    = "Textures/PBR/gold/albedo.png";
-    // textureInfoM1911.normal    = "Textures/PBR/gold/normal.png";
-    // textureInfoM1911.metallic  = "Textures/PBR/gold/metallic.png";
-    // textureInfoM1911.roughness = "Textures/PBR/gold/roughness.png";
-    // textureInfoM1911.ao        = "Textures/PBR/gold/ao.png";
 
-    m_BaseMaterialM1911 = new Material(textureInfoM1911, materialSpecular, materialShininess);
-    m_MeshAnimPBRM1911 = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterialM1911);
-    m_Transform_M1911 = glm::mat4(1.0f);
+    m_BaseMaterial_M1911 = new Material(textureInfoM1911, materialSpecular, materialShininess);
+    m_MeshAnimPBR_M1911 = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911);
 
-    m_MeshAnimPBRM1911->SetTimeMultiplier(1.0f);
+    m_Position_M1911 = glm::vec3(0.0f, 40.0f, 50.0f);
+    m_Scale_M1911 = glm::vec3(40.0f);
+
+    m_AABB_M1911 = new AABB(m_Position_M1911, glm::quat(glm::vec3(0.0f)), m_Scale_M1911);
+    m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
 
     Log::GetLogger()->info("-- END loading the animated PBR model M1911 --");
 
@@ -208,11 +250,13 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoBobLamp.roughness = "Textures/PBR/non_reflective/roughness.png";
     textureInfoBobLamp.ao        = "Textures/PBR/non_reflective/ao.png";
 
-    m_BaseMaterialBob = new Material(textureInfoBobLamp, materialSpecular, materialShininess);
-    m_MeshAnimPBRBob = new Hazel::MeshAnimPBR("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterialBob);
+    m_BaseMaterial_BobLamp = new Material(textureInfoBobLamp, materialSpecular, materialShininess);
+    m_MeshAnimPBR_BobLamp = new Hazel::MeshAnimPBR("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp);
     m_Transform_BobLamp = glm::mat4(1.0f);
-
-    m_MeshAnimPBRBob->SetTimeMultiplier(1.0f);
+    m_Position_BobLamp = glm::vec3(5.0f, 5.0f, 0.0f);
+    m_Scale_BobLamp = glm::vec3(0.2f);
+    m_AABB_BobLamp = new AABB(m_Position_BobLamp, glm::quat(glm::vec3(0.0f)), m_Scale_BobLamp);
+    m_MeshAnimPBR_BobLamp->SetTimeMultiplier(1.0f);
 
     Log::GetLogger()->info("-- END loading the animated PBR model BobLamp --");
 
@@ -226,13 +270,17 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoAnimBoy.roughness = "Textures/PBR/non_reflective/roughness.png";
     textureInfoAnimBoy.ao        = "Textures/PBR/non_reflective/ao.png";
 
-    m_BaseMaterialBoy = new Material(textureInfoAnimBoy, materialSpecular, materialShininess);
-    m_MeshAnimPBRBoy = new Hazel::MeshAnimPBR("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterialBoy);
-    m_Transform_Boy = glm::mat4(1.0f);
-
-    m_MeshAnimPBRBoy->SetTimeMultiplier(800.0f);
+    m_BaseMaterial_AnimBoy = new Material(textureInfoAnimBoy, materialSpecular, materialShininess);
+    m_MeshAnimPBR_AnimBoy = new Hazel::MeshAnimPBR("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy);
+    m_Transform_AnimBoy = glm::mat4(1.0f);
+    m_Position_AnimBoy = glm::vec3(-5.0f, 5.0f, 0.0f);
+    m_Scale_AnimBoy = glm::vec3(0.8f);
+    m_AABB_AnimBoy = new AABB(m_Position_AnimBoy, glm::quat(glm::vec3(0.0f)), m_Scale_AnimBoy);
+    m_MeshAnimPBR_AnimBoy->SetTimeMultiplier(800.0f);
 
     Log::GetLogger()->info("-- END loading the animated PBR model Animated Boy --");
+
+    m_Transform_Gizmo = glm::translate(m_Transform_Gizmo, m_Position_M1911);
 }
 
 void SceneAnimPBR::SetupModels()
@@ -245,6 +293,8 @@ void SceneAnimPBR::SetupFramebuffers()
 
 void SceneAnimPBR::Update(float timestep, Window& mainWindow)
 {
+    m_CurrentTimestamp = timestep;
+
     m_ShaderHybridAnimPBR->Bind();
 
     for (int i = 0; i < MAX_LIGHTS; i++)
@@ -260,9 +310,9 @@ void SceneAnimPBR::Update(float timestep, Window& mainWindow)
     m_ShaderHybridAnimPBR->setFloat("u_TilingFactor", 1.0f);
 
     float deltaTime = Timer::Get()->GetDeltaTime();
-    m_MeshAnimPBRM1911->OnUpdate(deltaTime, false);
-    m_MeshAnimPBRBob->OnUpdate(deltaTime, false);
-    m_MeshAnimPBRBoy->OnUpdate(deltaTime, false);
+    m_MeshAnimPBR_M1911->OnUpdate(deltaTime, false);
+    m_MeshAnimPBR_BobLamp->OnUpdate(deltaTime, false);
+    m_MeshAnimPBR_AnimBoy->OnUpdate(deltaTime, false);
 
     if (m_HDRI_Edit != m_HDRI_Edit_Prev)
     {
@@ -294,6 +344,51 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
 
+    // ImGui Colors
+    ImVec4* colors = ImGui::GetStyle().Colors;
+    colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    colors[ImGuiCol_TextDisabled] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+    colors[ImGuiCol_WindowBg] = ImVec4(0.18f, 0.18f, 0.18f, 1.0f); // Window background
+    colors[ImGuiCol_ChildBg] = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
+    colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
+    colors[ImGuiCol_Border] = ImVec4(0.43f, 0.43f, 0.50f, 0.5f);
+    colors[ImGuiCol_BorderShadow] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+    colors[ImGuiCol_FrameBg] = ImVec4(0.3f, 0.3f, 0.3f, 0.5f); // Widget backgrounds
+    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.4f, 0.4f, 0.4f, 0.4f);
+    colors[ImGuiCol_FrameBgActive] = ImVec4(0.4f, 0.4f, 0.4f, 0.6f);
+    colors[ImGuiCol_TitleBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.0f);
+    colors[ImGuiCol_TitleBgActive] = ImVec4(0.29f, 0.29f, 0.29f, 1.0f);
+    colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.0f, 0.0f, 0.0f, 0.51f);
+    colors[ImGuiCol_MenuBarBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.0f);
+    colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
+    colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.31f, 0.31f, 0.31f, 1.0f);
+    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.41f, 0.41f, 0.41f, 1.0f);
+    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.0f);
+    colors[ImGuiCol_CheckMark] = ImVec4(0.94f, 0.94f, 0.94f, 1.0f);
+    colors[ImGuiCol_SliderGrab] = ImVec4(0.51f, 0.51f, 0.51f, 0.7f);
+    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.66f, 0.66f, 0.66f, 1.0f);
+    colors[ImGuiCol_Button] = ImVec4(0.44f, 0.44f, 0.44f, 0.4f);
+    colors[ImGuiCol_ButtonHovered] = ImVec4(0.46f, 0.47f, 0.48f, 1.0f);
+    colors[ImGuiCol_ButtonActive] = ImVec4(0.42f, 0.42f, 0.42f, 1.0f);
+    colors[ImGuiCol_Header] = ImVec4(0.7f, 0.7f, 0.7f, 0.31f);
+    colors[ImGuiCol_HeaderHovered] = ImVec4(0.7f, 0.7f, 0.7f, 0.8f);
+    colors[ImGuiCol_HeaderActive] = ImVec4(0.48f, 0.5f, 0.52f, 1.0f);
+    colors[ImGuiCol_Separator] = ImVec4(0.43f, 0.43f, 0.5f, 0.5f);
+    colors[ImGuiCol_SeparatorHovered] = ImVec4(0.72f, 0.72f, 0.72f, 0.78f);
+    colors[ImGuiCol_SeparatorActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.0f);
+    colors[ImGuiCol_ResizeGrip] = ImVec4(0.91f, 0.91f, 0.91f, 0.25f);
+    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.81f, 0.81f, 0.81f, 0.67f);
+    colors[ImGuiCol_ResizeGripActive] = ImVec4(0.46f, 0.46f, 0.46f, 0.95f);
+    colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.0f);
+    colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.0f, 0.43f, 0.35f, 1.0f);
+    colors[ImGuiCol_PlotHistogram] = ImVec4(0.73f, 0.6f, 0.15f, 1.0f);
+    colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.0f, 0.6f, 0.0f, 1.0f);
+    colors[ImGuiCol_TextSelectedBg] = ImVec4(0.87f, 0.87f, 0.87f, 0.35f);
+    colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.8f, 0.8f, 0.8f, 0.35f);
+    colors[ImGuiCol_DragDropTarget] = ImVec4(1.0f, 1.0f, 0.0f, 0.9f);
+    colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.6f, 0.6f, 1.0f);
+    colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
+
     ImGui::Begin("Light");
     {
         ImGui::SliderFloat3("Light Position", glm::value_ptr(m_LightPosition), -100.0f, 100.0f);
@@ -305,19 +400,30 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
     {
         ImVec2 imageSize(128.0f, 128.0f);
 
-        ImGui::Text("Environment Cubemap");
-        ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetEnvironmentCubemap(), imageSize);
-
-        ImGui::Text("Irradiance Map");
-        ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetIrradianceMap(), imageSize);
-
-        ImGui::Text("Prefilter Map");
-        ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetPrefilterMap(), imageSize);
-
-        ImGui::Text("BRDF LUT");
-        ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetBRDF_LUT_Texture(), imageSize);
+        if (m_IsViewportEnabled)
+        {
+            ImGui::Text("Viewport");
+            ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+        }
     }
     ImGui::End();
+
+    if (m_IsViewportEnabled)
+    {
+        ImGui::Begin("Viewport Info");
+        {
+            glm::ivec2 colorAttachmentSize = glm::ivec2(
+                m_RenderFramebuffer->GetTextureAttachmentColor()->GetWidth(),
+                m_RenderFramebuffer->GetTextureAttachmentColor()->GetHeight());
+            glm::ivec2 depthAttachmentSize = glm::ivec2(
+                m_RenderFramebuffer->GetAttachmentDepth()->GetWidth(),
+                m_RenderFramebuffer->GetAttachmentDepth()->GetHeight());
+
+            ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
+            ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
+        }
+        ImGui::End();
+    }
 
     ImGui::Begin("Select HDRI");
     {
@@ -336,112 +442,228 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
     }
     ImGui::End();
 
-    ImGui::Begin("ImGuizmo");
+    if (!m_IsViewportEnabled)
     {
-        glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
-        bool editTransformDecomposition = true;
+        ImGui::Begin("ImGuizmo");
+        {
+            UpdateImGuizmo(mainWindow);
+        }
+        ImGui::End();
+    }
 
-        EditTransform(glm::value_ptr(m_CameraController->CalculateViewMatrix()),
-            glm::value_ptr(projectionMatrix),
-            glm::value_ptr(m_Transform_M1911), editTransformDecomposition);
+    if (m_IsViewportEnabled)
+    {
+        // TheCherno ImGui Viewport displaying the framebuffer content
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+        ImGui::Begin("Viewport");
+        {
+            // HZ_CORE_WARN("Focused: {0}", ImGui::IsWindowFocused());
+            // HZ_CORE_WARN("Hovered: {0}", ImGui::IsWindowHovered());
+
+            m_ViewportFocused = ImGui::IsWindowFocused();
+            m_ViewportHovered = ImGui::IsWindowHovered();
+            // Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
+
+            ImVec2 viewportPanelSizeImGui = ImGui::GetContentRegionAvail();
+            glm::vec2 viewportPanelSize = glm::vec2(viewportPanelSizeImGui.x, viewportPanelSizeImGui.y);
+
+            ResizeViewport(viewportPanelSize);
+
+            uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
+            // uint64_t textureID = m_BlurEffect->GetVerticalOutputTexture()->GetID();
+            ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+            UpdateImGuizmo(mainWindow);
+        }
+        ImGui::End();
+        ImGui::PopStyleVar();
+    }
+
+    m_MeshAnimPBR_M1911->OnImGuiRender();
+    m_MeshAnimPBR_BobLamp->OnImGuiRender();
+    m_MeshAnimPBR_AnimBoy->OnImGuiRender();
+}
+
+void SceneAnimPBR::UpdateImGuizmo(Window& mainWindow)
+{
+    // BEGIN ImGuizmo
+
+    // ImGizmo switching modes
+    if (mainWindow.getKeys()[GLFW_KEY_1])
+        m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+    if (mainWindow.getKeys()[GLFW_KEY_2])
+        m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+
+    if (mainWindow.getKeys()[GLFW_KEY_3])
+        m_GizmoType = ImGuizmo::OPERATION::SCALE;
+
+    if (mainWindow.getKeys()[GLFW_KEY_4])
+        m_GizmoType = -1;
+
+    // Gizmo
+    if (m_GizmoType != -1)
+    {
+        float rw = (float)ImGui::GetWindowWidth();
+        float rh = (float)ImGui::GetWindowHeight();
+        ImGuizmo::SetOrthographic(false);
+        ImGuizmo::SetDrawlist();
+        ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
+
+        ImGuizmo::Manipulate(
+            glm::value_ptr(m_CameraController->CalculateViewMatrix()),
+            glm::value_ptr(RendererBasic::GetProjectionMatrix()), 
+            (ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(m_Transform_Gizmo));
+    }
+
+    glm::vec3 translation;
+    glm::vec3 rotation;
+    glm::vec3 scale;
+    ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(m_Transform_Gizmo), glm::value_ptr(translation), glm::value_ptr(rotation), glm::value_ptr(scale));
+    // Log::GetLogger()->info("EditTransform Translation {0} {1} {2}", translation.x, translation.y, translation.z);
+    // Log::GetLogger()->info("EditTransform Rotation {0} {1} {2}", rotation.x, rotation.y, rotation.z);
+    // Log::GetLogger()->info("EditTransform Scale {0} {1} {2}", scale.x, scale.y, scale.z);
+
+    // END ImGuizmo
+}
+
+// Demonstrate using DockSpace() to create an explicit docking node within an existing window.
+// Note that you already dock windows into each others _without_ a DockSpace() by just moving windows 
+// from their title bar (or by holding SHIFT if io.ConfigDockingWithShift is set).
+// DockSpace() is only useful to construct to a central location for your application.
+void SceneAnimPBR::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
+{
+    if (!m_IsViewportEnabled) {
+        Scene::ShowExampleAppDockSpace(p_open, mainWindow);
+        return;
+    }
+
+    static bool opt_fullscreen_persistant = true;
+    bool opt_fullscreen = opt_fullscreen_persistant;
+    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+    // ImGuiDockNodeFlags_None |
+    // ImGuiDockNodeFlags_PassthruCentralNode |
+    // ImGuiDockNodeFlags_NoDockingInCentralNode;
+
+    // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+    // because it would be confusing to have two docking targets within each others.
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+    if (opt_fullscreen)
+    {
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->Pos);
+        ImGui::SetNextWindowSize(viewport->Size);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+    }
+
+    // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+    if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+        window_flags |= ImGuiWindowFlags_NoBackground;
+
+    // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+    // This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 
+    // all active windows docked into it will lose their parent and become undocked.
+    // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise 
+    // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::Begin("DockSpace Demo", p_open, window_flags);
+    ImGui::PopStyleVar();
+
+    if (opt_fullscreen)
+        ImGui::PopStyleVar(2);
+
+    // DockSpace
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+    {
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+    }
+    else
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::Text("ERROR: Docking is not enabled! See Demo > Configuration.");
+        ImGui::Text("Set io.ConfigFlags |= ImGuiConfigFlags_DockingEnable in your code, or ");
+        ImGui::SameLine(0.0f, 0.0f);
+        if (ImGui::SmallButton("click here"))
+            io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    }
+
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("Exit")) mainWindow.SetShouldClose(true);
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Edit"))
+        {
+            ImGui::MenuItem("Undo");
+            ImGui::MenuItem("Redo");
+            ImGui::MenuItem("Cut");
+            ImGui::MenuItem("Copy");
+            ImGui::MenuItem("Paste");
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Docking"))
+        {
+            // Disabling fullscreen would allow the window to be moved to the front of other windows, 
+            // which we can't undo at the moment without finer window depth/z control.
+            //ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
+
+            if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))                 dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
+            if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
+            if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
+            if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))     dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
+            if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
+            ImGui::EndMenu();
+        }
+
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted("When docking is enabled, you can ALWAYS dock MOST window into another! Try it now!" "\n\n"
+                " > if io.ConfigDockingWithShift==false (default):" "\n"
+                "   drag windows from title bar to dock" "\n"
+                " > if io.ConfigDockingWithShift==true:" "\n"
+                "   drag windows from anywhere and hold Shift to dock" "\n\n"
+                "This demo app has nothing to do with it!" "\n\n"
+                "This demo app only demonstrate the use of ImGui::DockSpace() which allows you to manually create a docking node _within_ another window. This is useful so you can decorate your main application window (e.g. with a menu bar)." "\n\n"
+                "ImGui::DockSpace() comes with one hard constraint: it needs to be submitted _before_ any window which may be docked into it. Therefore, if you use a dock spot as the central point of your application, you'll probably want it to be part of the very first window you are submitting to imgui every frame." "\n\n"
+                "(NB: because of this constraint, the implicit \"Debug\" window can not be docked into an explicit DockSpace() node, because that window is submitted as part of the NewFrame() call. An easy workaround is that you can create your own implicit \"Debug##2\" window after calling DockSpace() and leave it in the window stack for anyone to use.)");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+
+        ImGui::EndMenuBar();
     }
     ImGui::End();
-
-    m_MeshAnimPBRM1911->OnImGuiRender();
-    m_MeshAnimPBRBob->OnImGuiRender();
-    m_MeshAnimPBRBoy->OnImGuiRender();
-}
-
-void SceneAnimPBR::EditTransform(const float* cameraView, float* cameraProjection, float* matrix, bool editTransformDecomposition)
-{
-    static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
-    static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
-    static bool useSnap = false;
-    static float snap[3] = { 1.f, 1.f, 1.f };
-    static float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
-    static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
-    static bool boundSizing = false;
-    static bool boundSizingSnap = false;
-
-    if (editTransformDecomposition)
-    {
-        if (ImGui::IsKeyPressed(90))
-            mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-        if (ImGui::IsKeyPressed(69))
-            mCurrentGizmoOperation = ImGuizmo::ROTATE;
-        if (ImGui::IsKeyPressed(82)) // r Key
-            mCurrentGizmoOperation = ImGuizmo::SCALE;
-        if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
-            mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-        ImGui::SameLine();
-        if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
-            mCurrentGizmoOperation = ImGuizmo::ROTATE;
-        ImGui::SameLine();
-        if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
-            mCurrentGizmoOperation = ImGuizmo::SCALE;
-        float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-        ImGuizmo::DecomposeMatrixToComponents(matrix, matrixTranslation, matrixRotation, matrixScale);
-        ImGui::InputFloat3("Tr", matrixTranslation, 3);
-        ImGui::InputFloat3("Rt", matrixRotation, 3);
-        ImGui::InputFloat3("Sc", matrixScale, 3);
-        ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, matrix);
-
-        if (mCurrentGizmoOperation != ImGuizmo::SCALE)
-        {
-            if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
-                mCurrentGizmoMode = ImGuizmo::LOCAL;
-            ImGui::SameLine();
-            if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
-                mCurrentGizmoMode = ImGuizmo::WORLD;
-        }
-        if (ImGui::IsKeyPressed(83))
-            useSnap = !useSnap;
-        ImGui::Checkbox("", &useSnap);
-        ImGui::SameLine();
-
-        switch (mCurrentGizmoOperation)
-        {
-        case ImGuizmo::TRANSLATE:
-            ImGui::InputFloat3("Snap", &snap[0]);
-            break;
-        case ImGuizmo::ROTATE:
-            ImGui::InputFloat("Angle Snap", &snap[0]);
-            break;
-        case ImGuizmo::SCALE:
-            ImGui::InputFloat("Scale Snap", &snap[0]);
-            break;
-        }
-        ImGui::Checkbox("Bound Sizing", &boundSizing);
-        if (boundSizing)
-        {
-            ImGui::PushID(3);
-            ImGui::Checkbox("", &boundSizingSnap);
-            ImGui::SameLine();
-            ImGui::InputFloat3("Snap", boundsSnap);
-            ImGui::PopID();
-        }
-    }
-    ImGuiIO& io = ImGui::GetIO();
-    ImGuizmo::SetRect(
-        ImGui::GetWindowPos().x,
-        ImGui::GetWindowPos().y,
-        (float)Application::Get()->GetWindow()->GetBufferWidth(),
-        (float)Application::Get()->GetWindow()->GetBufferHeight()
-    );
-    ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
-}
-
-float SceneAnimPBR::GetSnapValue()
-{
-    if (m_GizmoType == ImGuizmo::OPERATION::TRANSLATE) return 0.5f;
-    else if (m_GizmoType == ImGuizmo::OPERATION::ROTATE) return 45.0f;
-    else if (m_GizmoType == ImGuizmo::OPERATION::SCALE) return 0.5f;
-    else return 0.0f;
 }
 
 void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
+    if (m_IsViewportEnabled)
+    {
+        m_RenderFramebuffer->Bind();
+        m_RenderFramebuffer->Clear(); // Clear the window
+    }
+    else
+    {
+        // configure the viewport to the original framebuffer's screen dimensions
+        glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+        RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
+    }
+
     SetupUniforms();
 
     m_MaterialWorkflowPBR->SetGlobalRenderState();
@@ -490,32 +712,33 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
 
     // BEGIN rendering the animated PBR model M1911
     {
-        m_BaseMaterialM1911->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
-        m_BaseMaterialM1911->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
-        m_BaseMaterialM1911->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
-        m_BaseMaterialM1911->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
-        m_BaseMaterialM1911->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
+        m_BaseMaterial_M1911->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
+        m_BaseMaterial_M1911->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
+        m_BaseMaterial_M1911->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
+        m_BaseMaterial_M1911->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
+        m_BaseMaterial_M1911->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
 
-        m_MeshAnimPBRM1911->m_VertexArray->Bind();
-        auto& materials = m_MeshAnimPBRM1911->GetMaterials();
+        m_MeshAnimPBR_M1911->m_VertexArray->Bind();
+        auto& materials = m_MeshAnimPBR_M1911->GetMaterials();
 
         int submeshIndex = 0;
-        for (Hazel::Submesh* submesh : m_MeshAnimPBRM1911->GetSubmeshes())
+        for (Hazel::Submesh* submesh : m_MeshAnimPBR_M1911->GetSubmeshes())
         {
             // Material
             auto material = materials[submesh->MaterialIndex];
             m_ShaderHybridAnimPBR->Bind();
 
-            for (size_t i = 0; i < m_MeshAnimPBRM1911->m_BoneTransforms.size(); i++)
+            for (size_t i = 0; i < m_MeshAnimPBR_M1911->m_BoneTransforms.size(); i++)
             {
                 std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-                m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBRM1911->m_BoneTransforms[i]);
+                m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBR_M1911->m_BoneTransforms[i]);
             }
 
-            glm::mat4 transform = m_Transform_M1911 * submesh->Transform;
-            transform = glm::translate(transform, glm::vec3(0.0f, 40.0f, 50.0f));
-            transform = glm::scale(transform, glm::vec3(40.0f));
-            m_ShaderHybridAnimPBR->setMat4("u_Transform", transform);
+            m_Transform_M1911 = submesh->Transform;
+            m_Transform_M1911 = glm::translate(m_Transform_M1911, m_Position_M1911);
+            m_Transform_M1911 = glm::scale(m_Transform_M1911, m_Scale_M1911);
+
+            m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Transform_M1911);
 
             glEnable(GL_DEPTH_TEST);
             glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
@@ -527,34 +750,35 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
 
     // BEGIN rendering the animated PBR model BobLamp
     {
-        m_BaseMaterialBob->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
-        m_BaseMaterialBob->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
-        m_BaseMaterialBob->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
-        m_BaseMaterialBob->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
-        m_BaseMaterialBob->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
+        m_BaseMaterial_BobLamp->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
+        m_BaseMaterial_BobLamp->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
+        m_BaseMaterial_BobLamp->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
+        m_BaseMaterial_BobLamp->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
+        m_BaseMaterial_BobLamp->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
  
-        m_MeshAnimPBRBob->m_VertexArray->Bind();
-        auto& materials = m_MeshAnimPBRBob->GetMaterials();
+        m_MeshAnimPBR_BobLamp->m_VertexArray->Bind();
+        auto& materials = m_MeshAnimPBR_BobLamp->GetMaterials();
 
         int submeshIndex = 0;
-        for (Hazel::Submesh* submesh : m_MeshAnimPBRBob->GetSubmeshes())
+        for (Hazel::Submesh* submesh : m_MeshAnimPBR_BobLamp->GetSubmeshes())
         {
             // Material
             auto material = materials[submesh->MaterialIndex];
             m_ShaderHybridAnimPBR->Bind();
 
-            m_MeshAnimPBRBob->GetTextures()[submeshIndex]->Bind(m_SamplerSlots["albedo"]);
+            m_MeshAnimPBR_BobLamp->GetTextures()[submeshIndex]->Bind(m_SamplerSlots["albedo"]);
 
-            for (size_t i = 0; i < m_MeshAnimPBRBob->m_BoneTransforms.size(); i++)
+            for (size_t i = 0; i < m_MeshAnimPBR_BobLamp->m_BoneTransforms.size(); i++)
             {
                 std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-                m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBRBob->m_BoneTransforms[i]);
+                m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBR_BobLamp->m_BoneTransforms[i]);
             }
 
-            glm::mat4 transform = m_Transform_BobLamp * submesh->Transform;
-            transform = glm::translate(transform, glm::vec3(5.0f, 5.0f, 0.0f));
-            transform = glm::scale(transform, glm::vec3(0.2f));
-            m_ShaderHybridAnimPBR->setMat4("u_Transform", transform);
+            m_Transform_BobLamp = submesh->Transform;
+            m_Transform_BobLamp = glm::translate(m_Transform_BobLamp, m_Position_BobLamp);
+            m_Transform_BobLamp = glm::scale(m_Transform_BobLamp, m_Scale_BobLamp);
+
+            m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Transform_BobLamp);
 
             glEnable(GL_DEPTH_TEST);
             glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
@@ -566,32 +790,33 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
 
     // BEGIN rendering the animated PBR model Animated Boy
     {
-        m_BaseMaterialBoy->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
-        m_BaseMaterialBoy->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
-        m_BaseMaterialBoy->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
-        m_BaseMaterialBoy->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
-        m_BaseMaterialBoy->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
+        m_BaseMaterial_AnimBoy->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
+        m_BaseMaterial_AnimBoy->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
+        m_BaseMaterial_AnimBoy->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
+        m_BaseMaterial_AnimBoy->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
+        m_BaseMaterial_AnimBoy->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
 
-        m_MeshAnimPBRBoy->m_VertexArray->Bind();
-        auto& materials = m_MeshAnimPBRBoy->GetMaterials();
+        m_MeshAnimPBR_AnimBoy->m_VertexArray->Bind();
+        auto& materials = m_MeshAnimPBR_AnimBoy->GetMaterials();
 
         int submeshIndex = 0;
-        for (Hazel::Submesh* submesh : m_MeshAnimPBRBoy->GetSubmeshes())
+        for (Hazel::Submesh* submesh : m_MeshAnimPBR_AnimBoy->GetSubmeshes())
         {
             // Material
             auto material = materials[submesh->MaterialIndex];
             m_ShaderHybridAnimPBR->Bind();
 
-            for (size_t i = 0; i < m_MeshAnimPBRBoy->m_BoneTransforms.size(); i++)
+            for (size_t i = 0; i < m_MeshAnimPBR_AnimBoy->m_BoneTransforms.size(); i++)
             {
                 std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-                m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBRBoy->m_BoneTransforms[i]);
+                m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBR_AnimBoy->m_BoneTransforms[i]);
             }
 
-            glm::mat4 transform = m_Transform_Boy * submesh->Transform;
-            transform = glm::translate(transform, glm::vec3(-5.0f, 5.0f, 0.0f));
-            transform = glm::scale(transform, glm::vec3(0.8f));
-            m_ShaderHybridAnimPBR->setMat4("u_Transform", transform);
+            m_Transform_AnimBoy = submesh->Transform;
+            m_Transform_AnimBoy = glm::translate(m_Transform_AnimBoy, m_Position_AnimBoy);
+            m_Transform_AnimBoy = glm::scale(m_Transform_AnimBoy, m_Scale_AnimBoy);
+
+            m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Transform_AnimBoy);
 
             glEnable(GL_DEPTH_TEST);
             glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
@@ -617,6 +842,11 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
     m_ShaderMain->setFloat("tilingFactor", 1.0f);
     meshes["cube"]->Render();
     // END main shader rendering
+
+    if (m_IsViewportEnabled)
+    {
+        m_RenderFramebuffer->Unbind();
+    }
 }
 
 void SceneAnimPBR::SetupUniforms()

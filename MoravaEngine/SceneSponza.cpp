@@ -85,63 +85,67 @@ void SceneSponza::Update(float timestep, Window& mainWindow)
 
 void SceneSponza::UpdateImGui(float timestep, Window& mainWindow)
 {
-	// Shadow rotation
-	glm::vec3 lightDirection = LightManager::directionalLight.GetDirection();
-	glm::vec3 lightColor = LightManager::directionalLight.GetColor();
-	float lightRadius = abs(lightDirection.x);
-	float lightAngle = timestep * sceneSettings.shadowSpeed;
-	lightDirection.x = (float)cos(lightAngle) * lightRadius;
-	lightDirection.z = (float)sin(lightAngle) * lightRadius;
-	LightManager::directionalLight.SetDirection(lightDirection);
+	ImGui::Begin("Settings");
+	{
+		// Shadow rotation
+		glm::vec3 lightDirection = LightManager::directionalLight.GetDirection();
+		glm::vec3 lightColor = LightManager::directionalLight.GetColor();
+		float lightRadius = abs(lightDirection.x);
+		float lightAngle = timestep * sceneSettings.shadowSpeed;
+		lightDirection.x = (float)cos(lightAngle) * lightRadius;
+		lightDirection.z = (float)sin(lightAngle) * lightRadius;
+		LightManager::directionalLight.SetDirection(lightDirection);
 
-	glm::vec3 PL0_Position = LightManager::pointLights[0].GetPosition();
-	glm::vec3 PL0_Color = LightManager::pointLights[0].GetColor();
-	float PL0_AmbIntensity = LightManager::pointLights[0].GetAmbientIntensity();
-	float PL0_DiffIntensity = LightManager::pointLights[0].GetDiffuseIntensity();
-	glm::vec3 PL1_Position = LightManager::pointLights[1].GetPosition();
-	glm::vec3 PL1_Color = LightManager::pointLights[1].GetColor();
-	float PL1_AmbIntensity = LightManager::pointLights[1].GetAmbientIntensity();
-	float PL1_DiffIntensity = LightManager::pointLights[1].GetDiffuseIntensity();
-	glm::vec3 PL2_Position = LightManager::pointLights[2].GetPosition();
-	glm::vec3 PL2_Color = LightManager::pointLights[2].GetColor();
-	float PL2_AmbIntensity = LightManager::pointLights[2].GetAmbientIntensity();
-	float PL2_DiffIntensity = LightManager::pointLights[2].GetDiffuseIntensity();
+		glm::vec3 PL0_Position = LightManager::pointLights[0].GetPosition();
+		glm::vec3 PL0_Color = LightManager::pointLights[0].GetColor();
+		float PL0_AmbIntensity = LightManager::pointLights[0].GetAmbientIntensity();
+		float PL0_DiffIntensity = LightManager::pointLights[0].GetDiffuseIntensity();
+		glm::vec3 PL1_Position = LightManager::pointLights[1].GetPosition();
+		glm::vec3 PL1_Color = LightManager::pointLights[1].GetColor();
+		float PL1_AmbIntensity = LightManager::pointLights[1].GetAmbientIntensity();
+		float PL1_DiffIntensity = LightManager::pointLights[1].GetDiffuseIntensity();
+		glm::vec3 PL2_Position = LightManager::pointLights[2].GetPosition();
+		glm::vec3 PL2_Color = LightManager::pointLights[2].GetColor();
+		float PL2_AmbIntensity = LightManager::pointLights[2].GetAmbientIntensity();
+		float PL2_DiffIntensity = LightManager::pointLights[2].GetDiffuseIntensity();
 
-	ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, 0.0f, 20.0f);
+		ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, 0.0f, 20.0f);
 
-	ImGui::ColorEdit3("DirLight Color", glm::value_ptr(lightColor));
-	ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(lightDirection), -100.0f, 100.0f);
+		ImGui::ColorEdit3("DirLight Color", glm::value_ptr(lightColor));
+		ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(lightDirection), -100.0f, 100.0f);
 
-	ImGui::ColorEdit3("PL0 Color", glm::value_ptr(PL0_Color));
-	ImGui::SliderFloat3("PL0 Position", glm::value_ptr(PL0_Position), -20.0f, 20.0f);
-	ImGui::SliderFloat("PL0 Amb Intensity", &PL0_AmbIntensity, -20.0f, 20.0f);
-	ImGui::SliderFloat("PL0 Diff Intensity", &PL0_DiffIntensity, -20.0f, 20.0f);
+		ImGui::ColorEdit3("PL0 Color", glm::value_ptr(PL0_Color));
+		ImGui::SliderFloat3("PL0 Position", glm::value_ptr(PL0_Position), -20.0f, 20.0f);
+		ImGui::SliderFloat("PL0 Amb Intensity", &PL0_AmbIntensity, -20.0f, 20.0f);
+		ImGui::SliderFloat("PL0 Diff Intensity", &PL0_DiffIntensity, -20.0f, 20.0f);
 
-	ImGui::ColorEdit3("PL1 Color", glm::value_ptr(PL1_Color));
-	ImGui::SliderFloat3("PL1 Position", glm::value_ptr(PL1_Position), -20.0f, 20.0f);
-	ImGui::SliderFloat("PL1 Amb Intensity", &PL1_AmbIntensity, -20.0f, 20.0f);
-	ImGui::SliderFloat("PL1 Diff Intensity", &PL1_DiffIntensity, -20.0f, 20.0f);
+		ImGui::ColorEdit3("PL1 Color", glm::value_ptr(PL1_Color));
+		ImGui::SliderFloat3("PL1 Position", glm::value_ptr(PL1_Position), -20.0f, 20.0f);
+		ImGui::SliderFloat("PL1 Amb Intensity", &PL1_AmbIntensity, -20.0f, 20.0f);
+		ImGui::SliderFloat("PL1 Diff Intensity", &PL1_DiffIntensity, -20.0f, 20.0f);
 
-	ImGui::ColorEdit3("PL2 Color", glm::value_ptr(PL2_Color));
-	ImGui::SliderFloat3("PL2 Position", glm::value_ptr(PL2_Position), -20.0f, 20.0f);
-	ImGui::SliderFloat("PL2 Amb Intensity", &PL2_AmbIntensity, -20.0f, 20.0f);
-	ImGui::SliderFloat("PL2 Diff Intensity", &PL2_DiffIntensity, -20.0f, 20.0f);
+		ImGui::ColorEdit3("PL2 Color", glm::value_ptr(PL2_Color));
+		ImGui::SliderFloat3("PL2 Position", glm::value_ptr(PL2_Position), -20.0f, 20.0f);
+		ImGui::SliderFloat("PL2 Amb Intensity", &PL2_AmbIntensity, -20.0f, 20.0f);
+		ImGui::SliderFloat("PL2 Diff Intensity", &PL2_DiffIntensity, -20.0f, 20.0f);
 
-	m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
-	LightManager::directionalLight.SetDirection(lightDirection);
-	LightManager::directionalLight.SetColor(lightColor);
-	LightManager::pointLights[0].SetPosition(PL0_Position);
-	LightManager::pointLights[0].SetColor(PL0_Color);
-	LightManager::pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
-	LightManager::pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
-	LightManager::pointLights[1].SetPosition(PL1_Position);
-	LightManager::pointLights[1].SetColor(PL1_Color);
-	LightManager::pointLights[1].SetAmbientIntensity(PL1_AmbIntensity);
-	LightManager::pointLights[1].SetDiffuseIntensity(PL1_DiffIntensity);
-	LightManager::pointLights[2].SetPosition(PL2_Position);
-	LightManager::pointLights[2].SetColor(PL2_Color);
-	LightManager::pointLights[2].SetAmbientIntensity(PL2_AmbIntensity);
-	LightManager::pointLights[2].SetDiffuseIntensity(PL2_DiffIntensity);
+		m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
+		LightManager::directionalLight.SetDirection(lightDirection);
+		LightManager::directionalLight.SetColor(lightColor);
+		LightManager::pointLights[0].SetPosition(PL0_Position);
+		LightManager::pointLights[0].SetColor(PL0_Color);
+		LightManager::pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
+		LightManager::pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
+		LightManager::pointLights[1].SetPosition(PL1_Position);
+		LightManager::pointLights[1].SetColor(PL1_Color);
+		LightManager::pointLights[1].SetAmbientIntensity(PL1_AmbIntensity);
+		LightManager::pointLights[1].SetDiffuseIntensity(PL1_DiffIntensity);
+		LightManager::pointLights[2].SetPosition(PL2_Position);
+		LightManager::pointLights[2].SetColor(PL2_Color);
+		LightManager::pointLights[2].SetAmbientIntensity(PL2_AmbIntensity);
+		LightManager::pointLights[2].SetDiffuseIntensity(PL2_DiffIntensity);
+	}
+	ImGui::End();
 }
 
 void SceneSponza::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,

@@ -141,36 +141,40 @@ void ScenePBR::Update(float timestep, Window& mainWindow)
 
 void ScenePBR::UpdateImGui(float timestep, Window& mainWindow)
 {
-	m_CameraPosition = m_Camera->GetPosition();
+	ImGui::Begin("Settings");
+	{
+		m_CameraPosition = m_Camera->GetPosition();
 
-	ImGui::ColorEdit3("Albedo", glm::value_ptr(m_Albedo));
-	ImGui::SliderFloat("Metallic", &m_Metallic, 0.0f, 1.0f);
-	ImGui::SliderFloat("Roughness", &m_Roughness, 0.0f, 1.0f);
-	ImGui::SliderFloat("Ambient Occlusion", &m_AmbientOcclusion, 0.0f, 5.0f);
+		ImGui::ColorEdit3("Albedo", glm::value_ptr(m_Albedo));
+		ImGui::SliderFloat("Metallic", &m_Metallic, 0.0f, 1.0f);
+		ImGui::SliderFloat("Roughness", &m_Roughness, 0.0f, 1.0f);
+		ImGui::SliderFloat("Ambient Occlusion", &m_AmbientOcclusion, 0.0f, 5.0f);
 
-	ImGui::SliderFloat("Ambient Intensity", &m_AmbientIntensity, 0.0f, 1.0f);
+		ImGui::SliderFloat("Ambient Intensity", &m_AmbientIntensity, 0.0f, 1.0f);
 
-	ImGui::ColorEdit3("Light Color 0", glm::value_ptr(m_LightColor_0));
-	ImGui::SliderFloat3("Light Pos Offset 0", glm::value_ptr(m_LightPosOffset_0), -60.0f, 60.0f);
+		ImGui::ColorEdit3("Light Color 0", glm::value_ptr(m_LightColor_0));
+		ImGui::SliderFloat3("Light Pos Offset 0", glm::value_ptr(m_LightPosOffset_0), -60.0f, 60.0f);
 
-	ImGui::ColorEdit3("Light Color 1", glm::value_ptr(m_LightColor_1));
-	ImGui::SliderFloat3("Light Pos Offset 1", glm::value_ptr(m_LightPosOffset_1), -60.0f, 60.0f);
+		ImGui::ColorEdit3("Light Color 1", glm::value_ptr(m_LightColor_1));
+		ImGui::SliderFloat3("Light Pos Offset 1", glm::value_ptr(m_LightPosOffset_1), -60.0f, 60.0f);
 
-	ImGui::ColorEdit3("Light Color 2", glm::value_ptr(m_LightColor_2));
-	ImGui::SliderFloat3("Light Pos Offset 2", glm::value_ptr(m_LightPosOffset_2), -60.0f, 60.0f);
+		ImGui::ColorEdit3("Light Color 2", glm::value_ptr(m_LightColor_2));
+		ImGui::SliderFloat3("Light Pos Offset 2", glm::value_ptr(m_LightPosOffset_2), -60.0f, 60.0f);
 
-	ImGui::ColorEdit3("Light Color 3", glm::value_ptr(m_LightColor_3));
-	ImGui::SliderFloat3("Light Pos Offset 3", glm::value_ptr(m_LightPosOffset_3), -60.0f, 60.0f);
+		ImGui::ColorEdit3("Light Color 3", glm::value_ptr(m_LightColor_3));
+		ImGui::SliderFloat3("Light Pos Offset 3", glm::value_ptr(m_LightPosOffset_3), -60.0f, 60.0f);
 
-	m_LightPositions[0] = m_CameraPosition + m_LightPosOffset_0;
-	m_LightPositions[1] = m_CameraPosition + m_LightPosOffset_1;
-	m_LightPositions[2] = m_CameraPosition + m_LightPosOffset_2;
-	m_LightPositions[3] = m_CameraPosition + m_LightPosOffset_3;
+		m_LightPositions[0] = m_CameraPosition + m_LightPosOffset_0;
+		m_LightPositions[1] = m_CameraPosition + m_LightPosOffset_1;
+		m_LightPositions[2] = m_CameraPosition + m_LightPosOffset_2;
+		m_LightPositions[3] = m_CameraPosition + m_LightPosOffset_3;
 
-	m_LightColors[0] = m_LightColor_0 * 255.0f;
-	m_LightColors[1] = m_LightColor_1 * 255.0f;
-	m_LightColors[2] = m_LightColor_2 * 255.0f;
-	m_LightColors[3] = m_LightColor_3 * 255.0f;
+		m_LightColors[0] = m_LightColor_0 * 255.0f;
+		m_LightColors[1] = m_LightColor_1 * 255.0f;
+		m_LightColors[2] = m_LightColor_2 * 255.0f;
+		m_LightColors[3] = m_LightColor_3 * 255.0f;
+	}
+	ImGui::End();
 }
 
 void ScenePBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,

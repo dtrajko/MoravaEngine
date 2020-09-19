@@ -546,6 +546,7 @@ namespace Hazel {
 
 		if (ImGui::TreeNode(node->mName.C_Str()))
 		{
+			//	/****
 			{
 				auto [translation, rotation, scale] = GetTransformDecomposition(transform);
 				glm::vec3 rotationVec3 = glm::degrees(glm::eulerAngles(rotation));
@@ -562,6 +563,7 @@ namespace Hazel {
 				ImGui::Text("  Rotation: %.2f %.2f %.2f", rotationVec3.x, rotationVec3.y, rotationVec3.z);
 				ImGui::Text("  Scale: %.2f %.2f %.2f", scale.x, scale.y, scale.z);
 			}
+			//	****/
 
 			for (uint32_t i = 0; i < node->mNumChildren; i++)
 				ImGuiNodeHierarchy(node->mChildren[i], transform, level + 1);

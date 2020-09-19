@@ -90,8 +90,8 @@ enum class SceneName
 	VoxelTerrainSL,
 	MarchingCubes,
 	SSAO,
-	AnimPBR,
 	Deferred,
+	AnimPBR,
 };
 
 SceneName currentScene = SceneName::AnimPBR;

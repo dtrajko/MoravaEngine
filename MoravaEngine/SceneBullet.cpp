@@ -276,47 +276,51 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 
 void SceneBullet::UpdateImGui(float timestep, Window& mainWindow)
 {
-	glm::vec3 lightDirection = LightManager::directionalLight.GetDirection();
-
-	// Point light for sphere bullet
-	glm::vec3 PL0_Position = LightManager::pointLights[0].GetPosition();
-	glm::vec3 PL0_Color = LightManager::pointLights[0].GetColor();
-	float PL0_AmbIntensity = LightManager::pointLights[0].GetAmbientIntensity();
-	float PL0_DiffIntensity = LightManager::pointLights[0].GetDiffuseIntensity();
-
-	ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(lightDirection), -1.0f, 1.0f);
-	ImGui::ColorEdit3("PL0 Color", glm::value_ptr(PL0_Color));
-	ImGui::SliderFloat3("PL0 Position", glm::value_ptr(PL0_Position), -20.0f, 20.0f);
-	ImGui::SliderFloat("PL0 Amb Intensity", &PL0_AmbIntensity, -20.0f, 20.0f);
-	ImGui::SliderFloat("PL0 Diff Intensity", &PL0_DiffIntensity, -20.0f, 20.0f);
-	ImGui::SliderInt("Gravity Intensity", &m_GravityIntensity, -10, 10);
-	ImGui::SliderFloat("Bouncincess", &m_Bounciness, 0.0f, 2.0f);
-	ImGui::Checkbox("Fire Enabled", &m_FireEnabled);
-	ImGui::SliderFloat("Fire Intensity", &m_FireIntensity, 0.0f, m_FireIntensityMax);
-	ImGui::SliderFloat("Tiling Factor", &m_TilingFactor, 0.0f, 2.0f);
-	std::string bulletsText = "Bullets: " + std::to_string(m_SphereCount) + "/" + std::to_string(m_SphereCountMax);
-	ImGui::Text(bulletsText.c_str());
-	bool wireframeEnabled = IsWireframeEnabled();
-	ImGui::Checkbox("Wireframe Enabled [R]", &wireframeEnabled);
-	SetWireframeEnabled(wireframeEnabled);
-
-	// print profiler results
-	ImGui::Separator();
-	ImGui::Text("Profiler results:");
-	for (auto& profilerResult : m_ProfilerResults)
+	ImGui::Begin("Settings");
 	{
-		char label[50];
-		strcpy(label, "%.2fms ");
-		strcat(label, profilerResult.first.c_str());
-		ImGui::Text(label, profilerResult.second);
+		glm::vec3 lightDirection = LightManager::directionalLight.GetDirection();
+
+		// Point light for sphere bullet
+		glm::vec3 PL0_Position = LightManager::pointLights[0].GetPosition();
+		glm::vec3 PL0_Color = LightManager::pointLights[0].GetColor();
+		float PL0_AmbIntensity = LightManager::pointLights[0].GetAmbientIntensity();
+		float PL0_DiffIntensity = LightManager::pointLights[0].GetDiffuseIntensity();
+
+		ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(lightDirection), -1.0f, 1.0f);
+		ImGui::ColorEdit3("PL0 Color", glm::value_ptr(PL0_Color));
+		ImGui::SliderFloat3("PL0 Position", glm::value_ptr(PL0_Position), -20.0f, 20.0f);
+		ImGui::SliderFloat("PL0 Amb Intensity", &PL0_AmbIntensity, -20.0f, 20.0f);
+		ImGui::SliderFloat("PL0 Diff Intensity", &PL0_DiffIntensity, -20.0f, 20.0f);
+		ImGui::SliderInt("Gravity Intensity", &m_GravityIntensity, -10, 10);
+		ImGui::SliderFloat("Bouncincess", &m_Bounciness, 0.0f, 2.0f);
+		ImGui::Checkbox("Fire Enabled", &m_FireEnabled);
+		ImGui::SliderFloat("Fire Intensity", &m_FireIntensity, 0.0f, m_FireIntensityMax);
+		ImGui::SliderFloat("Tiling Factor", &m_TilingFactor, 0.0f, 2.0f);
+		std::string bulletsText = "Bullets: " + std::to_string(m_SphereCount) + "/" + std::to_string(m_SphereCountMax);
+		ImGui::Text(bulletsText.c_str());
+		bool wireframeEnabled = IsWireframeEnabled();
+		ImGui::Checkbox("Wireframe Enabled [R]", &wireframeEnabled);
+		SetWireframeEnabled(wireframeEnabled);
+
+		// print profiler results
+		ImGui::Separator();
+		ImGui::Text("Profiler results:");
+		for (auto& profilerResult : m_ProfilerResults)
+		{
+			char label[50];
+			strcpy(label, "%.2fms ");
+			strcat(label, profilerResult.first.c_str());
+			ImGui::Text(label, profilerResult.second);
+		}
+		m_ProfilerResults.clear();
+
+		LightManager::directionalLight.SetDirection(lightDirection);
+
+		LightManager::pointLights[0].SetColor(PL0_Color);
+		LightManager::pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
+		LightManager::pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
 	}
-	m_ProfilerResults.clear();
-
-	LightManager::directionalLight.SetDirection(lightDirection);
-
-	LightManager::pointLights[0].SetColor(PL0_Color);
-	LightManager::pointLights[0].SetAmbientIntensity(PL0_AmbIntensity);
-	LightManager::pointLights[0].SetDiffuseIntensity(PL0_DiffIntensity);
+	ImGui::End();
 }
 
 void SceneBullet::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,

@@ -5,6 +5,8 @@
 #include "TextureCubemapLite.h"
 #include "CubeSkybox.h"
 #include "MaterialWorkflowPBR.h"
+#include "AABB.h"
+#include "Framebuffer.h"
 
 
 const int MAX_LIGHTS = 4 + 4; // (4 x point lights) + (4 x spot lights)
@@ -18,13 +20,14 @@ public:
 
 	virtual void Update(float timestep, Window& mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window& mainWindow) override;
+	void UpdateImGuizmo(Window& mainWindow);
+	virtual void ShowExampleAppDockSpace(bool* p_open, Window& mainWindow) override;
 	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
 	void SetupUniforms();
 
-	void EditTransform(const float* cameraView, float* cameraProjection, float* matrix, bool editTransformDecomposition);
-
 private:
+	virtual void SetLightManager() override;
 	virtual void SetupTextures() override;
 	virtual void SetupTextureSlots() override;
 	virtual void SetupMaterials() override;
@@ -34,12 +37,11 @@ private:
 
 	void SetupShaders(); // Usually in Renderer* classes
 
-	// ImGuizmo
-	float GetSnapValue();
+	void SetupRenderFramebuffer();
+	void ResizeViewport(glm::vec2 viewportPanelSize);
 
 private:
 	glm::mat4 m_CubeTransform;
-	int m_GizmoType;
 
 	Shader* m_ShaderMain;
 	Shader* m_ShaderBackground;
@@ -49,17 +51,31 @@ private:
 	Shader* m_ShaderEnvFiltering;
 	Shader* m_ShaderEnvIrradiance;
 
-	Hazel::MeshAnimPBR* m_MeshAnimPBRM1911;
-	Hazel::MeshAnimPBR* m_MeshAnimPBRBob;
-	Hazel::MeshAnimPBR* m_MeshAnimPBRBoy;
+	Hazel::MeshAnimPBR* m_MeshAnimPBR_M1911;
+	Hazel::MeshAnimPBR* m_MeshAnimPBR_BobLamp;
+	Hazel::MeshAnimPBR* m_MeshAnimPBR_AnimBoy;
 
-	Material* m_BaseMaterialM1911;
-	Material* m_BaseMaterialBob;
-	Material* m_BaseMaterialBoy;
+	Material* m_BaseMaterial_M1911;
+	Material* m_BaseMaterial_BobLamp;
+	Material* m_BaseMaterial_AnimBoy;
+
+	glm::mat4 m_Transform_Gizmo;
 
 	glm::mat4 m_Transform_M1911;
 	glm::mat4 m_Transform_BobLamp;
-	glm::mat4 m_Transform_Boy;
+	glm::mat4 m_Transform_AnimBoy;
+
+	glm::vec3 m_Position_M1911;
+	glm::vec3 m_Position_BobLamp;
+	glm::vec3 m_Position_AnimBoy;
+
+	glm::vec3 m_Scale_M1911;
+	glm::vec3 m_Scale_BobLamp;
+	glm::vec3 m_Scale_AnimBoy;
+
+	AABB* m_AABB_M1911;
+	AABB* m_AABB_BobLamp;
+	AABB* m_AABB_AnimBoy;
 
 	bool m_RadiancePrefilter  = true;
 	bool m_AlbedoTexToggle    = true;
@@ -80,5 +96,16 @@ private:
 	glm::vec3 m_LightColor;
 
 	float m_SkyboxLOD;
+
+	int m_GizmoType = -1; // -1 = no gizmo
+
+	// viewport
+	bool m_IsViewportEnabled;
+	bool m_ViewportFocused;
+	bool m_ViewportHovered;
+	glm::vec2 m_ViewportSize;
+	Framebuffer* m_RenderFramebuffer;
+	float m_CurrentTimestamp;
+	EventCooldown m_ResizeViewport;
 
 };
