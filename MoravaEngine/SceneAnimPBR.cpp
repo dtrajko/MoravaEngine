@@ -8,6 +8,7 @@
 #include "Shader.h"
 #include "Hazel/Renderer/MeshAnimPBR.h"
 #include "Timer.h"
+#include "MousePicker.h"
 
 
 SceneAnimPBR::SceneAnimPBR()
@@ -130,7 +131,7 @@ SceneAnimPBR::SceneAnimPBR()
 
     m_SkyboxLOD = 0.0f;
 
-    m_Transform_Gizmo = glm::mat4(1.0f);
+    m_Transform_Gizmo = nullptr;
 
     m_VisibleAABBs = true;
 }
@@ -313,8 +314,6 @@ void SceneAnimPBR::SetupMeshes()
     m_AABB_AnimBoy = new AABB(m_AABB_Position_AnimBoy, glm::quat(glm::vec3(0.0f)), m_AABB_Scale_AnimBoy);
 
     Log::GetLogger()->info("-- END loading the animated PBR model Animated Boy --");
-
-    m_Transform_Gizmo = glm::translate(m_Transform_Gizmo, m_Position_M1911);
 }
 
 void SceneAnimPBR::SetupModels()
@@ -328,6 +327,13 @@ void SceneAnimPBR::SetupFramebuffers()
 void SceneAnimPBR::Update(float timestep, Window& mainWindow)
 {
     m_CurrentTimestamp = timestep;
+
+    //  m_AABB_M1911->Update(m_Position_M1911, glm::quat(glm::vec3(0.0f)), m_Scale_M1911 * glm::vec3(0.24f, 0.14f, 0.03f));
+    //  m_AABB_BobLamp->Update(m_Position_BobLamp, glm::quat(glm::vec3(0.0f)), m_Scale_BobLamp);
+    //  m_AABB_AnimBoy->Update(m_Position_AnimBoy, glm::quat(glm::vec3(0.0f)), m_Scale_AnimBoy);
+    //  m_AABB_Cube->Update(m_Position_Cube, glm::quat(glm::vec3(0.0f)), m_Scale_Cube);
+
+    CheckIntersection(mainWindow);
 
     m_ShaderHybridAnimPBR->Bind();
 
@@ -370,6 +376,52 @@ void SceneAnimPBR::Update(float timestep, Window& mainWindow)
             m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr");
 
         m_HDRI_Edit_Prev = m_HDRI_Edit;
+    }
+}
+
+void SceneAnimPBR::CheckIntersection(Window& mainWindow)
+{
+    // glm::vec3 viewportOffset = glm::vec3(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, 0.0f);
+    glm::vec3 viewportOffset = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    // MousePicker::Get()->Update(mainWindow.GetMouseX(), mainWindow.GetMouseY(), (float)ImGui::GetWindowWidth(), (float)ImGui::GetWindowHeight(),
+    //     RendererBasic::GetProjectionMatrix(), m_CameraController->CalculateViewMatrix());
+    MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition() - viewportOffset, MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
+
+    m_IsIntersecting_M1911 = AABB::IntersectRayAab(m_Camera->GetPosition() - viewportOffset, MousePicker::Get()->GetCurrentRay(),
+        m_AABB_M1911->GetMin(), m_AABB_M1911->GetMax(), glm::vec2(0.0f));
+
+    m_IsIntersecting_BobLamp = AABB::IntersectRayAab(m_Camera->GetPosition() - viewportOffset, MousePicker::Get()->GetCurrentRay(),
+        m_AABB_BobLamp->GetMin(), m_AABB_BobLamp->GetMax(), glm::vec2(0.0f));
+
+    m_IsIntersecting_AnimBoy = AABB::IntersectRayAab(m_Camera->GetPosition() - viewportOffset, MousePicker::Get()->GetCurrentRay(),
+        m_AABB_AnimBoy->GetMin(), m_AABB_AnimBoy->GetMax(), glm::vec2(0.0f));
+
+    m_IsIntersecting_Cube = AABB::IntersectRayAab(m_Camera->GetPosition() - viewportOffset, MousePicker::Get()->GetCurrentRay(),
+        m_AABB_Cube->GetMin(), m_AABB_Cube->GetMax(), glm::vec2(0.0f));
+
+    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
+    {
+        if (m_IsIntersecting_M1911) {
+            m_Position_Gizmo = m_Position_M1911;
+            // m_Transform_M1911 = glm::translate(glm::mat4(1.0f), m_Position_Gizmo);
+            m_Transform_Gizmo = &m_Transform_M1911;
+        }
+        if (m_IsIntersecting_BobLamp) {
+            m_Position_Gizmo = m_Position_BobLamp;
+            // m_Transform_BobLamp = glm::translate(glm::mat4(1.0f), m_Position_BobLamp);
+            m_Transform_Gizmo = &m_Transform_BobLamp;
+        }
+        if (m_IsIntersecting_AnimBoy) {
+            m_Position_Gizmo = m_Position_AnimBoy;
+            // m_Transform_AnimBoy = glm::translate(glm::mat4(1.0f), m_Position_AnimBoy);
+            m_Transform_Gizmo = &m_Transform_AnimBoy;
+        }
+        if (m_IsIntersecting_Cube) {
+            m_Position_Gizmo = m_Position_Cube;
+            // m_Transform_Cube = glm::translate(glm::mat4(1.0f), m_Position_Cube);
+            m_Transform_Gizmo = &m_Transform_Cube;
+        }
     }
 }
 
@@ -478,7 +530,11 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
 
     ImGui::Begin("Settings");
     {
-        ImGui::Checkbox("Display Bounding Boxes", &m_VisibleAABBs);
+        ImGui::Checkbox("Display Bounding Boxes",   &m_VisibleAABBs);
+        ImGui::Checkbox("m_IsIntersecting_M1911",   &m_IsIntersecting_M1911);
+        ImGui::Checkbox("m_IsIntersecting_BobLamp", &m_IsIntersecting_BobLamp);
+        ImGui::Checkbox("m_IsIntersecting_AnimBoy", &m_IsIntersecting_AnimBoy);
+        ImGui::Checkbox("m_IsIntersecting_Cube",    &m_IsIntersecting_Cube);
     }
     ImGui::End();
 
@@ -550,19 +606,23 @@ void SceneAnimPBR::UpdateImGuizmo(Window& mainWindow)
         ImGuizmo::SetDrawlist();
         ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
 
-        ImGuizmo::Manipulate(
-            glm::value_ptr(m_CameraController->CalculateViewMatrix()),
-            glm::value_ptr(RendererBasic::GetProjectionMatrix()), 
-            (ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(m_Transform_Gizmo));
+        if (m_Transform_Gizmo != nullptr) {
+            ImGuizmo::Manipulate(
+                glm::value_ptr(m_CameraController->CalculateViewMatrix()),
+                glm::value_ptr(RendererBasic::GetProjectionMatrix()),
+                (ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(*m_Transform_Gizmo));
+        }
     }
 
     glm::vec3 translation;
     glm::vec3 rotation;
     glm::vec3 scale;
-    ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(m_Transform_Gizmo), glm::value_ptr(translation), glm::value_ptr(rotation), glm::value_ptr(scale));
-    // Log::GetLogger()->info("EditTransform Translation {0} {1} {2}", translation.x, translation.y, translation.z);
-    // Log::GetLogger()->info("EditTransform Rotation {0} {1} {2}", rotation.x, rotation.y, rotation.z);
-    // Log::GetLogger()->info("EditTransform Scale {0} {1} {2}", scale.x, scale.y, scale.z);
+    if (m_Transform_Gizmo != nullptr) {
+        ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(*m_Transform_Gizmo), glm::value_ptr(translation), glm::value_ptr(rotation), glm::value_ptr(scale));
+        // Log::GetLogger()->info("EditTransform Translation {0} {1} {2}", translation.x, translation.y, translation.z);
+        // Log::GetLogger()->info("EditTransform Rotation {0} {1} {2}", rotation.x, rotation.y, rotation.z);
+        // Log::GetLogger()->info("EditTransform Scale {0} {1} {2}", scale.x, scale.y, scale.z);
+    }
 
     // END ImGuizmo
 }
@@ -878,10 +938,14 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
         m_ShaderBasic->setMat4("view", m_CameraController->CalculateViewMatrix());
         m_ShaderBasic->setMat4("model", glm::mat4(1.0f));
 
-        m_AABB_M1911->Draw();
-        m_AABB_BobLamp->Draw();
-        m_AABB_AnimBoy->Draw();
-        m_AABB_Cube->Draw();
+        if (m_IsIntersecting_M1911)
+            m_AABB_M1911->Draw();
+        if (m_IsIntersecting_BobLamp)
+            m_AABB_BobLamp->Draw();
+        if (m_IsIntersecting_AnimBoy)
+            m_AABB_AnimBoy->Draw();
+        if (m_IsIntersecting_Cube)
+            m_AABB_Cube->Draw();
     }
 
     if (m_IsViewportEnabled)

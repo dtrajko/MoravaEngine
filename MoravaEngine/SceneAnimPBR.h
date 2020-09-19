@@ -39,6 +39,7 @@ private:
 
 	void SetupRenderFramebuffer();
 	void ResizeViewport(glm::vec2 viewportPanelSize);
+	void CheckIntersection(Window& mainWindow);
 
 private:
 	Shader* m_ShaderMain;
@@ -88,7 +89,13 @@ private:
 	AABB* m_AABB_AnimBoy;
 	AABB* m_AABB_Cube;
 
-	glm::mat4 m_Transform_Gizmo;
+	bool m_IsIntersecting_M1911;
+	bool m_IsIntersecting_BobLamp;
+	bool m_IsIntersecting_AnimBoy;
+	bool m_IsIntersecting_Cube;
+
+	glm::vec3 m_Position_Gizmo;
+	glm::mat4* m_Transform_Gizmo;
 
 	bool m_RadiancePrefilter  = true;
 	bool m_AlbedoTexToggle    = true;
