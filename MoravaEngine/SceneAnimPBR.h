@@ -41,8 +41,6 @@ private:
 	void ResizeViewport(glm::vec2 viewportPanelSize);
 
 private:
-	glm::mat4 m_CubeTransform;
-
 	Shader* m_ShaderMain;
 	Shader* m_ShaderBackground;
 	Shader* m_ShaderHybridAnimPBR;
@@ -50,6 +48,7 @@ private:
 	Shader* m_ShaderEquirectangularConversion;
 	Shader* m_ShaderEnvFiltering;
 	Shader* m_ShaderEnvIrradiance;
+	Shader* m_ShaderBasic;
 
 	Hazel::MeshAnimPBR* m_MeshAnimPBR_M1911;
 	Hazel::MeshAnimPBR* m_MeshAnimPBR_BobLamp;
@@ -59,23 +58,27 @@ private:
 	Material* m_BaseMaterial_BobLamp;
 	Material* m_BaseMaterial_AnimBoy;
 
-	glm::mat4 m_Transform_Gizmo;
-
-	glm::mat4 m_Transform_M1911;
-	glm::mat4 m_Transform_BobLamp;
-	glm::mat4 m_Transform_AnimBoy;
-
 	glm::vec3 m_Position_M1911;
 	glm::vec3 m_Position_BobLamp;
 	glm::vec3 m_Position_AnimBoy;
+	glm::vec3 m_Position_Cube;
 
 	glm::vec3 m_Scale_M1911;
 	glm::vec3 m_Scale_BobLamp;
 	glm::vec3 m_Scale_AnimBoy;
+	glm::vec3 m_Scale_Cube;
 
 	AABB* m_AABB_M1911;
 	AABB* m_AABB_BobLamp;
 	AABB* m_AABB_AnimBoy;
+	AABB* m_AABB_Cube;
+
+	glm::mat4 m_Transform_M1911;
+	glm::mat4 m_Transform_BobLamp;
+	glm::mat4 m_Transform_AnimBoy;
+	glm::mat4 m_Transform_Cube;
+
+	glm::mat4 m_Transform_Gizmo;
 
 	bool m_RadiancePrefilter  = true;
 	bool m_AlbedoTexToggle    = true;
@@ -107,5 +110,7 @@ private:
 	Framebuffer* m_RenderFramebuffer;
 	float m_CurrentTimestamp;
 	EventCooldown m_ResizeViewport;
+
+	bool m_VisibleAABBs;
 
 };

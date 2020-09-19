@@ -106,10 +106,6 @@ SceneAnimPBR::SceneAnimPBR()
     SetupMeshes();
     SetupModels();
     SetupRenderFramebuffer();
-
-    m_CubeTransform = glm::mat4(1.0f);
-    m_CubeTransform = glm::translate(m_CubeTransform, glm::vec3(-18.0f, 4.0f, -18.0f));
-    m_CubeTransform = glm::scale(m_CubeTransform, glm::vec3(4.0f));
     
     //  // PBR texture inputs
     m_SamplerSlots.insert(std::make_pair("albedo",     1)); // uniform sampler2D u_AlbedoTexture
@@ -135,6 +131,8 @@ SceneAnimPBR::SceneAnimPBR()
     m_SkyboxLOD = 0.0f;
 
     m_Transform_Gizmo = glm::mat4(1.0f);
+
+    m_VisibleAABBs = true;
 }
 
 void SceneAnimPBR::SetLightManager()
@@ -206,18 +204,34 @@ void SceneAnimPBR::SetupShaders()
 
     m_ShaderEnvIrradiance = new Shader("Shaders/Hazel/EnvironmentIrradiance.cs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderEnvIrradiance compiled [programID={0}]", m_ShaderEnvIrradiance->GetProgramID());
+
+    m_ShaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
+    Log::GetLogger()->info("SceneAnimPBR: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
 }
 
 void SceneAnimPBR::SetupMeshes()
 {
+    float materialSpecular = 0.0f;
+    float materialShininess = 0.0f;
+
     Block* floor = new Block(glm::vec3(30.0f, 5.0f, 30.0f));
     meshes.insert(std::make_pair("floor", floor));
+
+
+    Log::GetLogger()->info("-- BEGIN loading the Cube mesh --");
 
     Block* cube = new Block(glm::vec3(1.0f, 1.0f, 1.0f));
     meshes.insert(std::make_pair("cube", cube));
 
-    float materialSpecular = 0.0f;
-    float materialShininess = 0.0f;
+    // Setup transform matrix and AABB for the cube mesh
+    m_Transform_Cube = glm::mat4(1.0f);
+    m_Position_Cube = glm::vec3(-18.0f, 4.0f, -18.0f);
+    m_Scale_Cube = glm::vec3(4.0f);
+    m_Transform_Cube = glm::translate(m_Transform_Cube, m_Position_Cube);
+    m_Transform_Cube = glm::scale(m_Transform_Cube, m_Scale_Cube);
+    m_AABB_Cube = new AABB(m_Position_Cube, glm::quat(glm::vec3(0.0f)), m_Scale_Cube);
+
+    Log::GetLogger()->info("-- BEGIN loading the Cube mesh --");
 
     Log::GetLogger()->info("-- BEGIN loading the animated PBR model M1911 --");
 
@@ -232,10 +246,12 @@ void SceneAnimPBR::SetupMeshes()
     m_BaseMaterial_M1911 = new Material(textureInfoM1911, materialSpecular, materialShininess);
     m_MeshAnimPBR_M1911 = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911);
 
-    m_Position_M1911 = glm::vec3(0.0f, 40.0f, 50.0f);
-    m_Scale_M1911 = glm::vec3(40.0f);
-
-    m_AABB_M1911 = new AABB(m_Position_M1911, glm::quat(glm::vec3(0.0f)), m_Scale_M1911);
+    m_Position_M1911 = glm::vec3(0.0f, 10.0f, 10.0f);
+    m_Scale_M1911 = glm::vec3(2.0f);
+    m_Transform_M1911 = glm::mat4(1.0f);
+    m_Transform_M1911 = glm::translate(m_Transform_M1911, m_Position_M1911);
+    m_Transform_M1911 = glm::scale(m_Transform_M1911, m_Scale_M1911);
+    m_AABB_M1911 = new AABB(m_Position_M1911, glm::quat(glm::vec3(0.0f)), glm::vec3(0.24f, 0.14f, 0.03f));
     m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
 
     Log::GetLogger()->info("-- END loading the animated PBR model M1911 --");
@@ -439,6 +455,12 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
 
         ImGui::Separator();
         ImGui::SliderFloat("Skybox LOD", &m_SkyboxLOD, 0.0f, 6.0f);
+    }
+    ImGui::End();
+
+    ImGui::Begin("Settings");
+    {
+        ImGui::Checkbox("Display Bounding Boxes", &m_VisibleAABBs);
     }
     ImGui::End();
 
@@ -734,11 +756,10 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
                 m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBR_M1911->m_BoneTransforms[i]);
             }
 
-            m_Transform_M1911 = submesh->Transform;
-            m_Transform_M1911 = glm::translate(m_Transform_M1911, m_Position_M1911);
-            m_Transform_M1911 = glm::scale(m_Transform_M1911, m_Scale_M1911);
+            glm::mat4 transform = m_Transform_M1911 * submesh->Transform;
+            transform = glm::scale(transform, m_Scale_M1911);
 
-            m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Transform_M1911);
+            m_ShaderHybridAnimPBR->setMat4("u_Transform", transform);
 
             glEnable(GL_DEPTH_TEST);
             glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
@@ -836,12 +857,25 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
     m_ShaderMain->setFloat("tilingFactor", 0.1f);
     meshes["floor"]->Render();
 
-    m_ShaderMain->setMat4("model", m_CubeTransform);
+    m_ShaderMain->setMat4("model", m_Transform_Cube);
     ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
     ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
     m_ShaderMain->setFloat("tilingFactor", 1.0f);
     meshes["cube"]->Render();
     // END main shader rendering
+
+    if (m_VisibleAABBs)
+    {
+        m_ShaderBasic->Bind();
+        m_ShaderBasic->setMat4("projection", projectionMatrix);
+        m_ShaderBasic->setMat4("view", m_CameraController->CalculateViewMatrix());
+        m_ShaderBasic->setMat4("model", glm::mat4(1.0f));
+
+        m_AABB_M1911->Draw();
+        m_AABB_BobLamp->Draw();
+        m_AABB_AnimBoy->Draw();
+        m_AABB_Cube->Draw();
+    }
 
     if (m_IsViewportEnabled)
     {
