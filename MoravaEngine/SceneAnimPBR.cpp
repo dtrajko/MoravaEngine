@@ -518,6 +518,27 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
     colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.6f, 0.6f, 1.0f);
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
 
+    ImGui::Begin("Transform");
+    {
+        if (m_Transform_Gizmo != nullptr)
+        {
+            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_Gizmo);
+            glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
+
+            char buffer[100];
+
+            sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
+            ImGui::Text(buffer);
+
+            sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
+            ImGui::Text(buffer);
+
+            sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
+            ImGui::Text(buffer);
+        }
+    }
+    ImGui::End();
+
     ImGui::Begin("Light");
     {
         ImGui::SliderFloat3("Light Position", glm::value_ptr(m_LightPosition), -100.0f, 100.0f);

@@ -162,7 +162,6 @@ namespace Hazel {
 		glm::vec3 InterpolateTranslation(float animationTime, const aiNodeAnim* nodeAnim);
 		glm::quat InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim);
 		glm::vec3 InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim);
-		std::tuple<glm::vec3, glm::quat, glm::vec3> GetTransformDecomposition(const glm::mat4& transform);
 
 	public:
 		OpenGLVertexArray* m_VertexArray;
