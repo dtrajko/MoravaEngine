@@ -72,10 +72,30 @@ private:
 	Material* m_BaseMaterial_BobLamp;
 	Material* m_BaseMaterial_AnimBoy;
 
-	glm::vec3 m_Position_M1911;
-	glm::vec3 m_Position_BobLamp;
-	glm::vec3 m_Position_AnimBoy;
-	glm::vec3 m_Position_Cube;
+	glm::vec3 m_Init_Scale_M1911;
+	glm::vec3 m_Init_Scale_BobLamp;
+	glm::vec3 m_Init_Scale_AnimBoy;
+	glm::vec3 m_Init_Scale_Cube;
+
+	glm::vec3 m_Init_AABB_Scale_M1911;
+	glm::vec3 m_Init_AABB_Scale_BobLamp;
+	glm::vec3 m_Init_AABB_Scale_AnimBoy;
+	glm::vec3 m_Init_AABB_Scale_Cube;
+
+	glm::vec3 m_Origin_Offset_M1911;
+	glm::vec3 m_Origin_Offset_BobLamp;
+	glm::vec3 m_Origin_Offset_AnimBoy;
+	glm::vec3 m_Origin_Offset_Cube;
+
+	glm::vec3 m_Translation_M1911;
+	glm::vec3 m_Translation_BobLamp;
+	glm::vec3 m_Translation_AnimBoy;
+	glm::vec3 m_Translation_Cube;
+
+	glm::quat m_Rotation_M1911;
+	glm::quat m_Rotation_BobLamp;
+	glm::quat m_Rotation_AnimBoy;
+	glm::quat m_Rotation_Cube;
 
 	glm::vec3 m_Scale_M1911;
 	glm::vec3 m_Scale_BobLamp;
@@ -87,16 +107,6 @@ private:
 	glm::mat4 m_Transform_AnimBoy;
 	glm::mat4 m_Transform_Cube;
 
-	glm::vec3 m_AABB_Position_M1911;
-	glm::vec3 m_AABB_Position_BobLamp;
-	glm::vec3 m_AABB_Position_AnimBoy;
-	glm::vec3 m_AABB_Position_Cube;
-
-	glm::vec3 m_AABB_Scale_M1911;
-	glm::vec3 m_AABB_Scale_BobLamp;
-	glm::vec3 m_AABB_Scale_AnimBoy;
-	glm::vec3 m_AABB_Scale_Cube;
-
 	AABB* m_AABB_M1911;
 	AABB* m_AABB_BobLamp;
 	AABB* m_AABB_AnimBoy;
@@ -107,7 +117,7 @@ private:
 	bool m_IsIntersecting_AnimBoy;
 	bool m_IsIntersecting_Cube;
 
-	glm::vec3 m_Position_Gizmo;
+	glm::vec3 m_Translation_Gizmo;
 	glm::mat4* m_Transform_Gizmo;
 
 	bool m_RadiancePrefilter  = true;

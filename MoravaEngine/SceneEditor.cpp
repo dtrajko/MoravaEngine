@@ -1465,7 +1465,6 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     for (auto& object : m_SceneObjects)
     {
-        glm::vec3 scaleAABB = object->scale * object->GetAABB()->m_Scale;
         object->GetAABB()->Update(object->position, object->rotation, object->scale);
         object->pivot->Update(object->position, object->scale + 1.0f);
     }

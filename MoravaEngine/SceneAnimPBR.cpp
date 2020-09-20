@@ -11,6 +11,10 @@
 #include "Hazel/Renderer/MeshAnimPBR.h"
 #include "Timer.h"
 #include "MousePicker.h"
+#include "Math.h"
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/matrix_decompose.hpp>
 
 
 SceneAnimPBR::SceneAnimPBR()
@@ -221,6 +225,26 @@ void SceneAnimPBR::SetupMeshes()
     meshes.insert(std::make_pair("floor", floor));
 
 
+    m_Rotation_M1911   = glm::quat(glm::vec3(0.0f));
+    m_Rotation_BobLamp = glm::quat(glm::vec3(0.0f));
+    m_Rotation_AnimBoy = glm::quat(glm::vec3(0.0f));
+    m_Rotation_Cube    = glm::quat(glm::vec3(0.0f));
+
+    m_Init_Scale_M1911   = glm::vec3(20.0f);
+    m_Init_Scale_BobLamp = glm::vec3(0.1f);
+    m_Init_Scale_AnimBoy = glm::vec3(0.6f);
+    m_Init_Scale_Cube    = glm::vec3(10.0f);
+
+    m_Init_AABB_Scale_M1911   = glm::vec3(0.24f, 0.14f, 0.03f);
+    m_Init_AABB_Scale_BobLamp = glm::vec3(20.0f, 60.0f, 20.0f);
+    m_Init_AABB_Scale_AnimBoy = glm::vec3(2.4f, 8.8f, 2.0f);
+    m_Init_AABB_Scale_Cube    = glm::vec3(1.0f);
+
+    m_Origin_Offset_M1911   = glm::vec3(0.0f);
+    m_Origin_Offset_BobLamp = glm::vec3(0.0f, 3.0f, 0.0f);
+    m_Origin_Offset_AnimBoy = glm::vec3(0.0f, 2.6f, 0.0f);
+    m_Origin_Offset_Cube    = glm::vec3(0.0f);
+
     Log::GetLogger()->info("-- BEGIN loading the Cube mesh --");
 
     Block* cube = new Block(glm::vec3(1.0f, 1.0f, 1.0f));
@@ -228,14 +252,12 @@ void SceneAnimPBR::SetupMeshes()
 
     // Setup transform matrix and AABB for the cube mesh
     m_Transform_Cube = glm::mat4(1.0f);
-    m_Position_Cube = glm::vec3(0.0f, 5.0f, -20.0f);
-    m_Scale_Cube = glm::vec3(10.0f);
-    m_Transform_Cube = glm::translate(m_Transform_Cube, m_Position_Cube);
+    m_Translation_Cube = glm::vec3(0.0f, 5.0f, -20.0f);
+    m_Scale_Cube = m_Init_Scale_Cube;
+    m_Transform_Cube = glm::translate(m_Transform_Cube, m_Translation_Cube);
     m_Transform_Cube = glm::scale(m_Transform_Cube, m_Scale_Cube);
 
-    m_AABB_Position_Cube = m_Position_Cube;
-    m_AABB_Scale_Cube = m_Scale_Cube;
-    m_AABB_Cube = new AABB(m_AABB_Position_Cube, glm::quat(glm::vec3(0.0f)), m_AABB_Scale_Cube);
+    m_AABB_Cube = new AABB(glm::vec3(0.0f), m_Rotation_Cube, m_Init_AABB_Scale_Cube);
 
     Log::GetLogger()->info("-- BEGIN loading the Cube mesh --");
 
@@ -253,15 +275,13 @@ void SceneAnimPBR::SetupMeshes()
     m_MeshAnimPBR_M1911 = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911);
     m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
 
-    m_Position_M1911 = glm::vec3(0.0f, 5.0f, 5.0f);
-    m_Scale_M1911 = glm::vec3(20.0f);
+    m_Translation_M1911 = glm::vec3(0.0f, 5.0f, 5.0f);
+    m_Scale_M1911 = m_Init_Scale_M1911;
     m_Transform_M1911 = glm::mat4(1.0f);
-    m_Transform_M1911 = glm::translate(m_Transform_M1911, m_Position_M1911);
+    m_Transform_M1911 = glm::translate(m_Transform_M1911, m_Translation_M1911);
     m_Transform_M1911 = glm::scale(m_Transform_M1911, m_Scale_M1911);
 
-    m_AABB_Position_M1911 = m_Position_M1911;
-    m_AABB_Scale_M1911 = m_Scale_M1911 * glm::vec3(0.24f, 0.14f, 0.03f);
-    m_AABB_M1911 = new AABB(m_AABB_Position_M1911, glm::quat(glm::vec3(0.0f)), m_AABB_Scale_M1911);
+    m_AABB_M1911 = new AABB(glm::vec3(0.0f), m_Rotation_M1911, m_Init_AABB_Scale_M1911);
 
     Log::GetLogger()->info("-- END loading the animated PBR model M1911 --");
 
@@ -279,15 +299,13 @@ void SceneAnimPBR::SetupMeshes()
     m_MeshAnimPBR_BobLamp = new Hazel::MeshAnimPBR("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp);
     m_MeshAnimPBR_BobLamp->SetTimeMultiplier(1.0f);
 
-    m_Position_BobLamp = glm::vec3(5.0f, 0.0f, -5.0f);
-    m_Scale_BobLamp = glm::vec3(0.1f);
+    m_Translation_BobLamp = glm::vec3(5.0f, 0.0f, -5.0f);
+    m_Scale_BobLamp = m_Init_Scale_BobLamp;
     m_Transform_BobLamp = glm::mat4(1.0f);
-    m_Transform_BobLamp = glm::translate(m_Transform_BobLamp, m_Position_BobLamp);
+    m_Transform_BobLamp = glm::translate(m_Transform_BobLamp, m_Translation_BobLamp);
     m_Transform_BobLamp = glm::scale(m_Transform_BobLamp, m_Scale_BobLamp);
 
-    m_AABB_Position_BobLamp = m_Position_BobLamp + glm::vec3(0.0f, 3.0f, 0.0f);
-    m_AABB_Scale_BobLamp = m_Scale_BobLamp * glm::vec3(20.0f, 60.0f, 20.0f);
-    m_AABB_BobLamp = new AABB(m_AABB_Position_BobLamp, glm::quat(glm::vec3(0.0f)), m_AABB_Scale_BobLamp);
+    m_AABB_BobLamp = new AABB(glm::vec3(0.0f), m_Rotation_BobLamp, m_Init_AABB_Scale_BobLamp);
 
     Log::GetLogger()->info("-- END loading the animated PBR model BobLamp --");
 
@@ -305,15 +323,13 @@ void SceneAnimPBR::SetupMeshes()
     m_MeshAnimPBR_AnimBoy = new Hazel::MeshAnimPBR("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy);
     m_MeshAnimPBR_AnimBoy->SetTimeMultiplier(800.0f);
 
-    m_Position_AnimBoy = glm::vec3(-5.0f, 0.0f, -5.0f);
-    m_Scale_AnimBoy = glm::vec3(0.6f);
+    m_Translation_AnimBoy = glm::vec3(-5.0f, 0.0f, -5.0f);
+    m_Scale_AnimBoy = m_Init_Scale_AnimBoy;
     m_Transform_AnimBoy = glm::mat4(1.0f);
-    m_Transform_AnimBoy = glm::translate(m_Transform_AnimBoy, m_Position_AnimBoy);
+    m_Transform_AnimBoy = glm::translate(m_Transform_AnimBoy, m_Translation_AnimBoy);
     m_Transform_AnimBoy = glm::scale(m_Transform_AnimBoy, m_Scale_AnimBoy);
 
-    m_AABB_Position_AnimBoy = m_Position_AnimBoy + glm::vec3(0.0f, 2.6f, 0.0f);
-    m_AABB_Scale_AnimBoy = m_Scale_AnimBoy * glm::vec3(2.4f, 8.8f, 2.0f);
-    m_AABB_AnimBoy = new AABB(m_AABB_Position_AnimBoy, glm::quat(glm::vec3(0.0f)), m_AABB_Scale_AnimBoy);
+    m_AABB_AnimBoy = new AABB(glm::vec3(0.0f), m_Rotation_AnimBoy, m_Init_AABB_Scale_AnimBoy);
 
     Log::GetLogger()->info("-- END loading the animated PBR model Animated Boy --");
 }
@@ -330,10 +346,15 @@ void SceneAnimPBR::Update(float timestep, Window& mainWindow)
 {
     m_CurrentTimestamp = timestep;
 
-    //  m_AABB_M1911->Update(m_Position_M1911, glm::quat(glm::vec3(0.0f)), m_Scale_M1911 * glm::vec3(0.24f, 0.14f, 0.03f));
-    //  m_AABB_BobLamp->Update(m_Position_BobLamp, glm::quat(glm::vec3(0.0f)), m_Scale_BobLamp);
-    //  m_AABB_AnimBoy->Update(m_Position_AnimBoy, glm::quat(glm::vec3(0.0f)), m_Scale_AnimBoy);
-    //  m_AABB_Cube->Update(m_Position_Cube, glm::quat(glm::vec3(0.0f)), m_Scale_Cube);
+    auto [ m_Translation_M1911,   m_Rotation_M1911,   m_Scale_M1911 ]   = Math::GetTransformDecomposition(m_Transform_M1911);
+    auto [ m_Translation_BobLamp, m_Rotation_BobLamp, m_Scale_BobLamp ] = Math::GetTransformDecomposition(m_Transform_BobLamp);
+    auto [ m_Translation_AnimBoy, m_Rotation_AnimBoy, m_Scale_AnimBoy ] = Math::GetTransformDecomposition(m_Transform_AnimBoy);
+    auto [ m_Translation_Cube,    m_Rotation_Cube,    m_Scale_Cube ]    = Math::GetTransformDecomposition(m_Transform_Cube);
+
+    m_AABB_M1911->Update(m_Translation_M1911 + m_Origin_Offset_M1911, m_Rotation_M1911, m_Scale_M1911);
+    m_AABB_BobLamp->Update(m_Translation_BobLamp + m_Origin_Offset_BobLamp, m_Rotation_BobLamp, m_Scale_BobLamp);
+    m_AABB_AnimBoy->Update(m_Translation_AnimBoy + m_Origin_Offset_AnimBoy, m_Rotation_AnimBoy, m_Scale_AnimBoy);
+    m_AABB_Cube->Update(m_Translation_Cube + m_Origin_Offset_Cube, m_Rotation_Cube, m_Scale_Cube);
 
     CheckIntersection(mainWindow);
 
@@ -405,24 +426,39 @@ void SceneAnimPBR::CheckIntersection(Window& mainWindow)
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
         if (m_IsIntersecting_M1911) {
-            m_Position_Gizmo = m_Position_M1911;
-            // m_Transform_M1911 = glm::translate(glm::mat4(1.0f), m_Position_Gizmo);
+            m_Translation_Gizmo = m_Translation_M1911;
+            // m_Transform_M1911 = glm::translate(glm::mat4(1.0f), m_Translation_Gizmo);
             m_Transform_Gizmo = &m_Transform_M1911;
+            if (m_GizmoType == -1) {
+                m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+            }
         }
+
         if (m_IsIntersecting_BobLamp) {
-            m_Position_Gizmo = m_Position_BobLamp;
-            // m_Transform_BobLamp = glm::translate(glm::mat4(1.0f), m_Position_BobLamp);
+            m_Translation_Gizmo = m_Translation_BobLamp;
+            // m_Transform_BobLamp = glm::translate(glm::mat4(1.0f), m_Translation_BobLamp);
             m_Transform_Gizmo = &m_Transform_BobLamp;
+            if (m_GizmoType == -1) {
+                m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+            }
         }
+
         if (m_IsIntersecting_AnimBoy) {
-            m_Position_Gizmo = m_Position_AnimBoy;
-            // m_Transform_AnimBoy = glm::translate(glm::mat4(1.0f), m_Position_AnimBoy);
+            m_Translation_Gizmo = m_Translation_AnimBoy;
+            // m_Transform_AnimBoy = glm::translate(glm::mat4(1.0f), m_Translation_AnimBoy);
             m_Transform_Gizmo = &m_Transform_AnimBoy;
+            if (m_GizmoType == -1) {
+                m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+            }
         }
+
         if (m_IsIntersecting_Cube) {
-            m_Position_Gizmo = m_Position_Cube;
-            // m_Transform_Cube = glm::translate(glm::mat4(1.0f), m_Position_Cube);
+            m_Translation_Gizmo = m_Translation_Cube;
+            // m_Transform_Cube = glm::translate(glm::mat4(1.0f), m_Translation_Cube);
             m_Transform_Gizmo = &m_Transform_Cube;
+            if (m_GizmoType == -1) {
+                m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+            }
         }
     }
 }
@@ -983,21 +1019,35 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
     meshes["cube"]->Render();
     // END main shader rendering
 
-    if (m_VisibleAABBs)
-    {
-        m_ShaderBasic->Bind();
-        m_ShaderBasic->setMat4("projection", projectionMatrix);
-        m_ShaderBasic->setMat4("view", m_CameraController->CalculateViewMatrix());
-        m_ShaderBasic->setMat4("model", glm::mat4(1.0f));
+    m_ShaderBasic->Bind();
+    m_ShaderBasic->setMat4("projection", projectionMatrix);
+    m_ShaderBasic->setMat4("view", m_CameraController->CalculateViewMatrix());
 
-        if (m_IsIntersecting_M1911)
-            m_AABB_M1911->Draw();
-        if (m_IsIntersecting_BobLamp)
-            m_AABB_BobLamp->Draw();
-        if (m_IsIntersecting_AnimBoy)
-            m_AABB_AnimBoy->Draw();
-        if (m_IsIntersecting_Cube)
-            m_AABB_Cube->Draw();
+    glm::mat4 AABB_Transform = Math::CreateTransform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+
+    //  if (m_IsIntersecting_M1911)
+    {
+        m_ShaderBasic->setMat4("model", AABB_Transform);
+        m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+        if (m_VisibleAABBs) m_AABB_M1911->Draw();
+    }
+    //  if (m_IsIntersecting_BobLamp)
+    {
+        m_ShaderBasic->setMat4("model", AABB_Transform);
+        m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+        if (m_VisibleAABBs) m_AABB_BobLamp->Draw();
+    }
+    //  if (m_IsIntersecting_AnimBoy)
+    {
+        m_ShaderBasic->setMat4("model", AABB_Transform);
+        m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+        if (m_VisibleAABBs) m_AABB_AnimBoy->Draw();
+    }
+    //  if (m_IsIntersecting_Cube)
+    {
+        m_ShaderBasic->setMat4("model", AABB_Transform);
+        m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+        if (m_VisibleAABBs) m_AABB_Cube->Draw();
     }
 
     if (m_IsViewportEnabled)
