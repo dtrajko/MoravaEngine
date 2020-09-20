@@ -8,6 +8,9 @@
 #include "AABB.h"
 #include "Framebuffer.h"
 
+#include <map>
+#include <string>
+
 
 const int MAX_LIGHTS = 4 + 4; // (4 x point lights) + (4 x spot lights)
 
@@ -72,50 +75,31 @@ private:
 	Material* m_BaseMaterial_BobLamp;
 	Material* m_BaseMaterial_AnimBoy;
 
-	glm::vec3 m_Init_Scale_M1911;
-	glm::vec3 m_Init_Scale_BobLamp;
-	glm::vec3 m_Init_Scale_AnimBoy;
-	glm::vec3 m_Init_Scale_Cube;
+	struct Entity {
+		struct Transform {
+			glm::vec3 Translation;
+			glm::quat Rotation;
+			glm::vec3 Scale;
+			glm::mat4 Transform;
+		} Transform;
+		struct Init {
+			struct Transform {
+				glm::vec3 Scale;
+			} Transform;
+			struct AABBTransform {
+				struct Transform {
+					glm::vec3 Scale;
+				} Transform;
+			} AABB;
+		} Init;
 
-	glm::vec3 m_Init_AABB_Scale_M1911;
-	glm::vec3 m_Init_AABB_Scale_BobLamp;
-	glm::vec3 m_Init_AABB_Scale_AnimBoy;
-	glm::vec3 m_Init_AABB_Scale_Cube;
+		glm::vec3 OriginOffset;
+		AABB AABB;
+		bool IsIntersecting;
 
-	glm::vec3 m_Origin_Offset_M1911;
-	glm::vec3 m_Origin_Offset_BobLamp;
-	glm::vec3 m_Origin_Offset_AnimBoy;
-	glm::vec3 m_Origin_Offset_Cube;
+	};
 
-	glm::vec3 m_Translation_M1911;
-	glm::vec3 m_Translation_BobLamp;
-	glm::vec3 m_Translation_AnimBoy;
-	glm::vec3 m_Translation_Cube;
-
-	glm::quat m_Rotation_M1911;
-	glm::quat m_Rotation_BobLamp;
-	glm::quat m_Rotation_AnimBoy;
-	glm::quat m_Rotation_Cube;
-
-	glm::vec3 m_Scale_M1911;
-	glm::vec3 m_Scale_BobLamp;
-	glm::vec3 m_Scale_AnimBoy;
-	glm::vec3 m_Scale_Cube;
-
-	glm::mat4 m_Transform_M1911;
-	glm::mat4 m_Transform_BobLamp;
-	glm::mat4 m_Transform_AnimBoy;
-	glm::mat4 m_Transform_Cube;
-
-	AABB* m_AABB_M1911;
-	AABB* m_AABB_BobLamp;
-	AABB* m_AABB_AnimBoy;
-	AABB* m_AABB_Cube;
-
-	bool m_IsIntersecting_M1911;
-	bool m_IsIntersecting_BobLamp;
-	bool m_IsIntersecting_AnimBoy;
-	bool m_IsIntersecting_Cube;
+	std::map<std::string, Entity> m_Entities;
 
 	glm::vec3 m_Translation_Gizmo;
 	glm::mat4* m_Transform_Gizmo;
