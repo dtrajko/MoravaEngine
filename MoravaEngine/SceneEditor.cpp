@@ -116,7 +116,7 @@ SceneEditor::SceneEditor()
     sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
     sceneSettings.spotLights[3].edge = 0.5f;
 
-    m_IsViewportEnabled = false;
+    m_IsViewportEnabled = true;
 
     ResourceManager::Init();
 
@@ -488,6 +488,9 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
 
+    m_ImGuiMainViewportX = (int)ImGui::GetMainViewport()->GetWorkPos().x;
+    m_ImGuiMainViewportY = (int)ImGui::GetMainViewport()->GetWorkPos().y;
+
     MousePicker* mp = MousePicker::Get();
 
     ImGui::Begin("Transform");
@@ -794,19 +797,35 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
         {
             char buffer[100];
 
-            sprintf(buffer, "Mouse Coords [ X: %.2ff Y: %.2ff ]", mp->m_MouseX, mp->m_MouseY);
+            sprintf(buffer, "Main Window [ X %i Y %i ]", m_ImGuiMainViewportX, m_ImGuiMainViewportY);
             ImGui::Text(buffer);
             ImGui::Separator();
-            sprintf(buffer, "Normalized Coords [ X: %.2ff Y: %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
+
+            sprintf(buffer, "Viewport [ X %i Y %i W %i H %i ]", mp->m_Viewport.X, mp->m_Viewport.Y, mp->m_Viewport.Width, mp->m_Viewport.Height);
             ImGui::Text(buffer);
             ImGui::Separator();
-            sprintf(buffer, "Clip Coords [ X: %.2ff Y: %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
+
+            sprintf(buffer, "Screen Mouse [ %i %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
             ImGui::Text(buffer);
             ImGui::Separator();
-            sprintf(buffer, "Eye Coords [ X: %.2ff Y: %.2ff Z: %.2ff W: %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
+
+            sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
             ImGui::Text(buffer);
             ImGui::Separator();
-            sprintf(buffer, "World Ray [ X: %.2ff Y: %.2ff Z: %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
+
+            sprintf(buffer, "Normalized Coords [ %.2ff %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Clip Coords [ %.2ff %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Eye Coords [ %.2ff %.2ff %.2ff %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "World Ray [ %.2ff %.2ff %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
             ImGui::Text(buffer);
         }
     }
@@ -1137,12 +1156,15 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
         ImGui::Begin("Viewport");
         {
-            // HZ_CORE_WARN("Focused: {0}", ImGui::IsWindowFocused());
-            // HZ_CORE_WARN("Hovered: {0}", ImGui::IsWindowHovered());
+            m_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - m_ImGuiMainViewportX);
+            m_ImGuiViewport.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiMainViewportY);
+            m_ImGuiViewport.Width = (int)ImGui::GetWindowWidth();
+            m_ImGuiViewport.Height = (int)ImGui::GetWindowHeight();
+            m_ImGuiViewport.MouseX = (int)ImGui::GetMousePos().x;
+            m_ImGuiViewport.MouseY = (int)ImGui::GetMousePos().y;
 
             m_ViewportFocused = ImGui::IsWindowFocused();
             m_ViewportHovered = ImGui::IsWindowHovered();
-            // Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
 
             ImVec2 viewportPanelSizeImGui = ImGui::GetContentRegionAvail();
             glm::vec2 viewportPanelSize = glm::vec2(viewportPanelSizeImGui.x, viewportPanelSizeImGui.y);
@@ -1301,6 +1323,22 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     if (m_SelectedIndex >= m_SceneObjects.size())
         m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
+
+    int viewportX = 0;
+    int viewportY = 0;
+    int viewportWidth = (int)mainWindow.GetBufferWidth();
+    int viewportHeight = (int)mainWindow.GetBufferHeight();
+    if (m_IsViewportEnabled) {
+        viewportX = (int)m_ImGuiViewport.X;
+        viewportY = (int)m_ImGuiViewport.Y;
+        viewportWidth = m_ImGuiViewport.Width;
+        viewportHeight = m_ImGuiViewport.Height;
+    }
+
+    MousePicker::Get()->Update(
+        (int)mainWindow.GetMouseX(), (int)mainWindow.GetMouseY(),
+        viewportX, viewportY, viewportWidth, viewportHeight,
+        RendererBasic::GetProjectionMatrix(), m_CameraController->CalculateViewMatrix());
 
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 

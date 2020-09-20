@@ -15,7 +15,7 @@ public:
 	MousePicker();
 	static MousePicker* Get();
 	glm::vec3 GetCurrentRay();
-	void Update(float mouseX, float mouseY, float displayWidth, float displayHeight, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
+	void Update(int screenMouseX, int screenMouseY, int viewportX, int viewportY, int viewportWidth, int viewportHeight, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 	inline void SetTerrain(TerrainBase* terrain) { m_Terrain = terrain; };
 	glm::vec3 CalculateMouseRay();
 	glm::vec2 GetNormalizedDeviceCoords();
@@ -25,17 +25,26 @@ public:
 	glm::vec3 BinarySearch(glm::vec3 rayStartPoint, glm::vec3 ray, float startDistance, float finishDistance, int count);
 	bool IntersectionInRange(glm::vec3 rayStartPoint, glm::vec3 ray, float startDistance, float finishDistance);
 	bool IsOutsideVolume(glm::vec3 testPoint);
+	void SetViewport(int viewportX, int viewportY, int viewportWidth, int viewportHeight);
 	~MousePicker();
 
 public:
+	struct Viewport
+	{
+		int X;
+		int Y;
+		int Width;
+		int Height;
+		int MouseX;
+		int MouseY;
+	} m_Viewport;
+
 	static MousePicker* s_Instance;
 	glm::vec3 m_CurrentRay;
 	glm::mat4 m_ProjectionMatrix;
 	glm::mat4 m_ViewMatrix;
-	float m_MouseX;
-	float m_MouseY;
-	float m_DisplayWidth;
-	float m_DisplayHeight;
+	int m_ScreenMouseX;
+	int m_ScreenMouseY;
 
 	glm::vec2 m_NormalizedCoords;
 	glm::vec4 m_ClipCoords;

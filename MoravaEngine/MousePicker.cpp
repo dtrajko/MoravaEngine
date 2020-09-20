@@ -18,10 +18,16 @@ MousePicker::MousePicker()
 	m_CurrentRay = glm::vec3(1.0f);
 	m_ProjectionMatrix = glm::mat4(1.0f);
 	m_ViewMatrix = glm::mat4(1.0f);
-	m_MouseX = 0.0f;
-	m_MouseY = 0.0f;
-	m_DisplayWidth = 0.0f;
-	m_DisplayHeight = 0.0f;
+
+	m_ScreenMouseX = 0;
+	m_ScreenMouseY = 0;
+
+	m_Viewport.X = 0;
+	m_Viewport.Y = 0;
+	m_Viewport.Width = 0;
+	m_Viewport.Height = 0;
+	m_Viewport.MouseX = 0;
+	m_Viewport.MouseY = 0;
 
 	m_NormalizedCoords = glm::vec2(0.0f);
 	m_ClipCoords = glm::vec4(0.0f);
@@ -35,12 +41,18 @@ glm::vec3 MousePicker::GetCurrentRay()
 	return m_CurrentRay;
 }
 
-void MousePicker::Update(float mouseX, float mouseY, float displayWidth, float displayHeight, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
+void MousePicker::Update(int screenMouseX, int screenMouseY, int viewportX, int viewportY, int viewportWidth, int viewportHeight, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 {
-	m_MouseX = mouseX;
-	m_MouseY = mouseY;
-	m_DisplayWidth = displayWidth;
-	m_DisplayHeight = displayHeight;
+	m_ScreenMouseX = screenMouseX;
+	m_ScreenMouseY = screenMouseY;
+
+	m_Viewport.X = viewportX;
+	m_Viewport.Y = viewportY;
+	m_Viewport.Width = (int)viewportWidth;
+	m_Viewport.Height = (int)viewportHeight;
+	m_Viewport.MouseX = m_ScreenMouseX - m_Viewport.X;
+	m_Viewport.MouseY = m_ScreenMouseY - m_Viewport.Y;
+
 	m_ProjectionMatrix = projectionMatrix;
 	m_ViewMatrix = viewMatrix;
 	m_CurrentRay = CalculateMouseRay();
@@ -62,8 +74,8 @@ glm::vec3 MousePicker::CalculateMouseRay()
 
 glm::vec2 MousePicker::GetNormalizedDeviceCoords()
 {
-	float x = (m_MouseX * 2.0f) / m_DisplayWidth - 1.0f;
-	float y = 1.0f - (m_MouseY * 2.0f) / m_DisplayHeight;
+	float x = (m_Viewport.MouseX * 2.0f) / m_Viewport.Width - 1.0f;
+	float y = 1.0f - (m_Viewport.MouseY * 2.0f) / m_Viewport.Height;
 	return glm::vec2(x, y); // it may happen to be { x, -y }
 }
 
@@ -137,6 +149,14 @@ bool MousePicker::IsOutsideVolume(glm::vec3 testPoint)
 		return true;
 	else
 		return false;
+}
+
+void MousePicker::SetViewport(int viewportX, int viewportY, int viewportWidth, int viewportHeight)
+{
+	m_Viewport.X = viewportX;
+	m_Viewport.Y = viewportY;
+	m_Viewport.Width = viewportWidth;
+	m_Viewport.Height = viewportHeight;
 }
 
 MousePicker::~MousePicker()

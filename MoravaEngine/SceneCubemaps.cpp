@@ -89,10 +89,17 @@ void SceneCubemaps::UpdateImGui(float timestep, Window& mainWindow)
     // glm::vec3 dirLightColor = m_LightManager->directionalLight.GetColor();
 
     ImGui::Begin("Ray Casting");
+
     ImGui::Separator();
-    std::string mouseCoords = "Mouse Coordinates: MouseX = " + std::to_string(mp->m_MouseX) +
-        " MouseY = " + std::to_string(mp->m_MouseY);
-    ImGui::Text(mouseCoords.c_str());
+    std::string screenMouseCoords = "Screen Mouse Coord: MouseX = " + std::to_string(mp->m_ScreenMouseX) +
+        " MouseY = " + std::to_string(mp->m_ScreenMouseY);
+    ImGui::Text(screenMouseCoords.c_str());
+
+    ImGui::Separator();
+    std::string viewportMouseCoords = "Viewport Mouse Coord: MouseX = " + std::to_string(mp->m_Viewport.MouseX) +
+        " MouseY = " + std::to_string(mp->m_Viewport.MouseY);
+    ImGui::Text(viewportMouseCoords.c_str());
+
     ImGui::Separator();
     std::string normalizedCoords = "Normalized Coords: X = " + std::to_string(mp->m_NormalizedCoords.x) +
                                                      " Y = " + std::to_string(mp->m_NormalizedCoords.y);

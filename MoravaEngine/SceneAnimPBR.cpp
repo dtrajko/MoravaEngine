@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "SceneAnimPBR.h"
 #include "ImGuiWrapper.h"
 #include "../cross-platform/ImGuizmo/ImGuizmo.h"
@@ -381,23 +383,23 @@ void SceneAnimPBR::Update(float timestep, Window& mainWindow)
 
 void SceneAnimPBR::CheckIntersection(Window& mainWindow)
 {
-    // glm::vec3 viewportOffset = glm::vec3(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, 0.0f);
-    glm::vec3 viewportOffset = glm::vec3(0.0f, 0.0f, 0.0f);
+    MousePicker::Get()->Update(
+        (int)mainWindow.GetMouseX(), (int)mainWindow.GetMouseY(),
+        m_ImGuiViewport.X, m_ImGuiViewport.Y, m_ImGuiViewport.Width, m_ImGuiViewport.Height,
+        RendererBasic::GetProjectionMatrix(), m_CameraController->CalculateViewMatrix());
 
-    // MousePicker::Get()->Update(mainWindow.GetMouseX(), mainWindow.GetMouseY(), (float)ImGui::GetWindowWidth(), (float)ImGui::GetWindowHeight(),
-    //     RendererBasic::GetProjectionMatrix(), m_CameraController->CalculateViewMatrix());
-    MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition() - viewportOffset, MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
+    MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
-    m_IsIntersecting_M1911 = AABB::IntersectRayAab(m_Camera->GetPosition() - viewportOffset, MousePicker::Get()->GetCurrentRay(),
+    m_IsIntersecting_M1911 = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
         m_AABB_M1911->GetMin(), m_AABB_M1911->GetMax(), glm::vec2(0.0f));
 
-    m_IsIntersecting_BobLamp = AABB::IntersectRayAab(m_Camera->GetPosition() - viewportOffset, MousePicker::Get()->GetCurrentRay(),
+    m_IsIntersecting_BobLamp = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
         m_AABB_BobLamp->GetMin(), m_AABB_BobLamp->GetMax(), glm::vec2(0.0f));
 
-    m_IsIntersecting_AnimBoy = AABB::IntersectRayAab(m_Camera->GetPosition() - viewportOffset, MousePicker::Get()->GetCurrentRay(),
+    m_IsIntersecting_AnimBoy = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
         m_AABB_AnimBoy->GetMin(), m_AABB_AnimBoy->GetMax(), glm::vec2(0.0f));
 
-    m_IsIntersecting_Cube = AABB::IntersectRayAab(m_Camera->GetPosition() - viewportOffset, MousePicker::Get()->GetCurrentRay(),
+    m_IsIntersecting_Cube = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
         m_AABB_Cube->GetMin(), m_AABB_Cube->GetMax(), glm::vec2(0.0f));
 
     if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
@@ -429,6 +431,11 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
+
+    m_ImGuiMainViewportX = (int)ImGui::GetMainViewport()->GetWorkPos().x;
+    m_ImGuiMainViewportY = (int)ImGui::GetMainViewport()->GetWorkPos().y;
+
+    MousePicker* mp = MousePicker::Get();
 
     // ImGui Colors
     ImVec4* colors = ImGui::GetStyle().Colors;
@@ -538,6 +545,46 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
     }
     ImGui::End();
 
+    ImGui::Begin("Mouse Picker");
+    {
+        if (ImGui::CollapsingHeader("Display Info"))
+        {
+            char buffer[100];
+
+            sprintf(buffer, "Main Window [ X %i Y %i ]", m_ImGuiMainViewportX, m_ImGuiMainViewportY);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Viewport [ X %i Y %i W %i H %i ]", mp->m_Viewport.X, mp->m_Viewport.Y, mp->m_Viewport.Width, mp->m_Viewport.Height);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Screen Mouse [ %i %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Normalized Coords [ %.2ff %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Clip Coords [ %.2ff %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Eye Coords [ %.2ff %.2ff %.2ff %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "World Ray [ %.2ff %.2ff %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
+            ImGui::Text(buffer);
+        }
+    }
+    ImGui::End();
+
     if (!m_IsViewportEnabled)
     {
         ImGui::Begin("ImGuizmo");
@@ -553,12 +600,15 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
         ImGui::Begin("Viewport");
         {
-            // HZ_CORE_WARN("Focused: {0}", ImGui::IsWindowFocused());
-            // HZ_CORE_WARN("Hovered: {0}", ImGui::IsWindowHovered());
+            m_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - m_ImGuiMainViewportX);
+            m_ImGuiViewport.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiMainViewportY);
+            m_ImGuiViewport.Width = (int)ImGui::GetWindowWidth();
+            m_ImGuiViewport.Height = (int)ImGui::GetWindowHeight();
+            m_ImGuiViewport.MouseX = (int)ImGui::GetMousePos().x;
+            m_ImGuiViewport.MouseY = (int)ImGui::GetMousePos().y;
 
             m_ViewportFocused = ImGui::IsWindowFocused();
             m_ViewportHovered = ImGui::IsWindowHovered();
-            // Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
 
             ImVec2 viewportPanelSizeImGui = ImGui::GetContentRegionAvail();
             glm::vec2 viewportPanelSize = glm::vec2(viewportPanelSizeImGui.x, viewportPanelSizeImGui.y);
@@ -574,6 +624,8 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
         ImGui::End();
         ImGui::PopStyleVar();
     }
+
+    ImGui::ShowMetricsWindow();
 
     m_MeshAnimPBR_M1911->OnImGuiRender();
     m_MeshAnimPBR_BobLamp->OnImGuiRender();

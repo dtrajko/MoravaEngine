@@ -42,6 +42,19 @@ private:
 	void CheckIntersection(Window& mainWindow);
 
 private:
+	int m_ImGuiMainViewportX;
+	int m_ImGuiMainViewportY;
+
+	struct Viewport
+	{
+		int X;
+		int Y;
+		int Width;
+		int Height;
+		int MouseX;
+		int MouseY;
+	} m_ImGuiViewport;
+
 	Shader* m_ShaderMain;
 	Shader* m_ShaderBackground;
 	Shader* m_ShaderHybridAnimPBR;

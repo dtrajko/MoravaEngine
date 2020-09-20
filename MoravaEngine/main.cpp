@@ -94,7 +94,7 @@ enum class SceneName
 	AnimPBR,
 };
 
-SceneName currentScene = SceneName::AnimPBR;
+SceneName currentScene = SceneName::VoxelTerrainSL;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -239,8 +239,10 @@ int main()
 		scene->GetCameraController()->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
 		scene->GetCameraController()->MouseScrollControl(mainWindow.getKeys(), Timer::Get()->GetDeltaTime(), mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
 
-		MousePicker::Get()->Update(mainWindow.GetMouseX(), mainWindow.GetMouseY(),
-			(float)mainWindow.GetBufferWidth(), (float)mainWindow.GetBufferHeight(),
+		MousePicker::Get()->Update(
+			(int)mainWindow.GetMouseX(), (int)mainWindow.GetMouseY(),
+			0, 0,
+			(int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight(),
 			RendererBasic::GetProjectionMatrix(), scene->GetCameraController()->CalculateViewMatrix());
 
 		if (mainWindow.getKeys()[GLFW_KEY_F])

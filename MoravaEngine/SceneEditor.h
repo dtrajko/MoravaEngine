@@ -77,6 +77,19 @@ public:
 	bool m_IsViewportEnabled;
 
 private:
+	int m_ImGuiMainViewportX;
+	int m_ImGuiMainViewportY;
+
+	struct Viewport
+	{
+		int X;
+		int Y;
+		int Width;
+		int Height;
+		int MouseX;
+		int MouseY;
+	} m_ImGuiViewport;
+
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
 
 	glm::vec2 m_ViewportSize;

@@ -354,7 +354,11 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window& mainWindow)
 
             char buffer[50];
 
-            sprintf(buffer, "Mouse Coord: MouseX = %.0f MouseY = %.0f", mp->m_MouseX, mp->m_MouseY);
+            sprintf(buffer, "Screen Mouse Coord: [ %i, %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Viewport Mouse Coord: [ %i, %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
             ImGui::Text(buffer);
             ImGui::Separator();
 
