@@ -92,11 +92,17 @@ private:
 				} Transform;
 			} AABB;
 		} Init;
+		struct AABBTransform {
+			glm::vec3 Translation;
+			glm::quat Rotation;
+			glm::vec3 Scale;
+			glm::mat4 Transform;
+		} AABBTransform;
 
-		glm::vec3 OriginOffset;
 		AABB AABB;
-		bool IsIntersecting;
-
+		glm::vec3 OriginOffset;
+		bool Intersecting;
+		bool Enabled;
 	};
 
 	std::map<std::string, Entity> m_Entities;
