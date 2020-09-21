@@ -3,6 +3,8 @@
 #include <cmath>
 
 
+int Window::m_ActionPrev;
+
 Window::Window()
 	: Window(1280, 720, "Window Title Undefined")
 {
@@ -22,11 +24,15 @@ Window::Window(GLint windowWidth, GLint windowHeight, const char* windowTitle)
 	yChangeReset = 0.0f;
 	m_CursorIgnoreLimit = 2.0f;
 
-	for (size_t i = 0; i < 1024; i++)
+	for (size_t i = 0; i < 1024; i++) {
 		keys[i] = false;
+		keys_prev[i] = false;
+	}
 
-	for (size_t i = 0; i < 32; i++)
+	for (size_t i = 0; i < 32; i++) {
 		buttons[i] = false;
+		buttons_prev[i] = false;
+	}
 
 	mouseFirstMoved = true;
 	mouseCursorAboveWindow = false;
@@ -118,11 +124,13 @@ void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int m
 	{
 		if (action == GLFW_PRESS)
 		{
+			theWindow->keys_prev[key] = theWindow->keys[key];
 			theWindow->keys[key] = true;
 			// printf("Key pressed: %d\n", key);
 		}
 		else if (action == GLFW_RELEASE)
 		{
+			theWindow->keys_prev[key] = theWindow->keys[key];
 			theWindow->keys[key] = false;
 		}
 	}
@@ -164,11 +172,21 @@ void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
 	{
 		if (action == GLFW_PRESS)
 		{
+			if (action != m_ActionPrev) {
+				theWindow->buttons_prev[button] = theWindow->buttons[button];
+				m_ActionPrev = action;
+			}
+
 			theWindow->buttons[button] = true;
 			// printf("Mouse button pressed: %d\n", button);
 		}
 		else if (action == GLFW_RELEASE)
 		{
+			if (action != m_ActionPrev) {
+				theWindow->buttons_prev[button] = theWindow->buttons[button];
+				m_ActionPrev = action;
+			}
+
 			theWindow->buttons[button] = false;
 			// printf("Mouse button released: %d\n", button);
 		}
@@ -261,6 +279,20 @@ void Window::SetCursorDisabled()
 void Window::SetCursorNormal()
 {
 	glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+bool Window::IsMouseButtonClicked(int mouseButton)
+{
+	bool isClicked = buttons[mouseButton] && !buttons_prev[mouseButton];
+	buttons_prev[mouseButton] = buttons[mouseButton];
+	return isClicked;
+}
+
+bool Window::IsMouseButtonReleased(int mouseButton)
+{
+	bool isReleased = !buttons[mouseButton] && buttons_prev[mouseButton];
+	buttons_prev[mouseButton] = buttons[mouseButton];
+	return isReleased;
 }
 
 void Window::SetShouldClose(bool shouldClose)

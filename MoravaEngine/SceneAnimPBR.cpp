@@ -465,7 +465,7 @@ void SceneAnimPBR::CheckIntersection(Window& mainWindow)
         AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             m_Entities["Cube"].AABB.GetMin(), m_Entities["Cube"].AABB.GetMax(), glm::vec2(0.0f));
 
-    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
+    if (mainWindow.IsMouseButtonClicked(GLFW_MOUSE_BUTTON_1))
     {
         if (m_Entities["M1911"].Intersecting) {
             m_Translation_Gizmo = m_Entities["M1911"].Transform.Translation;
@@ -770,17 +770,6 @@ void SceneAnimPBR::UpdateImGuizmo(Window& mainWindow)
                 (ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(*m_Transform_Gizmo));
         }
     }
-
-    glm::vec3 translation;
-    glm::vec3 rotation;
-    glm::vec3 scale;
-    if (m_Transform_Gizmo != nullptr) {
-        ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(*m_Transform_Gizmo), glm::value_ptr(translation), glm::value_ptr(rotation), glm::value_ptr(scale));
-        // Log::GetLogger()->info("EditTransform Translation {0} {1} {2}", translation.x, translation.y, translation.z);
-        // Log::GetLogger()->info("EditTransform Rotation {0} {1} {2}", rotation.x, rotation.y, rotation.z);
-        // Log::GetLogger()->info("EditTransform Scale {0} {1} {2}", scale.x, scale.y, scale.z);
-    }
-
     // END ImGuizmo
 }
 

@@ -20,10 +20,10 @@ public:
 	void SetShouldClose(bool shouldClose);
 	bool* getKeys() { return keys; };
 	bool* getMouseButtons() { return buttons; };
+	bool* getKeysPrev() { return keys_prev; }; // previous states of keys
+	bool* getMouseButtonsPrev() { return buttons_prev; }; // previos states of mouse buttons
 	float getXChange();
 	float getYChange();
-	float getXChangeReset();
-	float getYChangeReset();
 	inline float GetMouseX() const { return m_MouseX; };
 	inline float GetMouseY() const { return m_MouseY; };
 	float getXMouseScrollOffset();
@@ -33,6 +33,9 @@ public:
 	bool IsVSync() const;
 	void SetCursorDisabled();
 	void SetCursorNormal();
+
+	bool IsMouseButtonClicked(int mouseButton);
+	bool IsMouseButtonReleased(int mouseButton);
 
 private:
 	GLFWwindow* glfwWindow;
@@ -45,6 +48,11 @@ private:
 
 	bool keys[1024];
 	bool buttons[32];
+
+	bool keys_prev[1024];
+	bool buttons_prev[32];
+
+	static int m_ActionPrev;
 
 	float m_MouseX;
 	float m_MouseY;
