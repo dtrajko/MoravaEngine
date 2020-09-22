@@ -16,7 +16,7 @@ SceneTerrain::SceneTerrain()
 	sceneSettings.enableWaterEffects = true;
 	sceneSettings.enableSkybox       = true;
 	sceneSettings.enableNormalMaps   = true;
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 25.0f, 200.0f);
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 125.0f, 300.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
 	sceneSettings.cameraMoveSpeed = 8.0f;
 	sceneSettings.nearPlane = 0.01f;
@@ -39,16 +39,20 @@ SceneTerrain::SceneTerrain()
 	sceneSettings.pointLights[2].position = glm::vec3(10.0f, 2.0f, 10.0f);
 	sceneSettings.pointLights[2].base.diffuseIntensity = 2.0f;
 
-	sceneSettings.shadowMapWidth = 2048;
-	sceneSettings.shadowMapHeight = 2048;
+	sceneSettings.shadowMapWidth = 1024;
+	sceneSettings.shadowMapHeight = 1024;
 	sceneSettings.shadowSpeed = 0.1f;
-	sceneSettings.waterHeight = 1.0f; // 1.0f 5.0f
-	sceneSettings.waterWaveSpeed = 0.1f;
+	sceneSettings.waterHeight = 50.0f;
+	sceneSettings.waterWaveSpeed = 0.2f;
+
 
 	SetSkybox();
 	SetupTextures();
 	SetupMeshes();
 	SetupModels();
+
+	m_TerrainScale = glm::vec3(4.0f, 2.5f, 4.0f);
+	m_Tiling_Factor = 1.0f;
 }
 
 void SceneTerrain::SetSkybox()

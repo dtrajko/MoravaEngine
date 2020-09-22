@@ -94,7 +94,7 @@ enum class SceneName
 	AnimPBR,
 };
 
-SceneName currentScene = SceneName::Sponza;
+SceneName currentScene = SceneName::PBR;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };

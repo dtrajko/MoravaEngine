@@ -3,6 +3,8 @@
 #include "Scene.h"
 
 
+const unsigned int SCENE_PBR_LIGHT_COUNT = 4;
+
 class ScenePBR : public Scene
 {
 
@@ -20,6 +22,7 @@ public:
 private:
 	virtual void SetSkybox() override;
 	virtual void SetupTextures() override;
+	virtual void SetupMaterials() override;
 	virtual void SetupModels() override;
 
 private:

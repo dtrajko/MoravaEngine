@@ -23,7 +23,7 @@ private:
 	virtual void SetupMeshes() override;
 	virtual void SetupModels() override;
 
-	glm::vec3 m_TerrainScale = glm::vec3(3.0f, 0.5f, 3.0f);
-	float m_Tiling_Factor = 1.0f;
+	glm::vec3 m_TerrainScale;
+	float m_Tiling_Factor;
 
 };

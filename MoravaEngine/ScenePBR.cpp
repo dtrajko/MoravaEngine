@@ -53,6 +53,7 @@ ScenePBR::ScenePBR()
 
 	SetSkybox();
 	SetupTextures();
+	SetupMaterials();
 	SetupModels();
 
 	m_CameraPosition = glm::vec3(-9.0f, 24.0f, 6.0f);
@@ -122,6 +123,22 @@ void ScenePBR::SetupTextures()
 	}
 }
 
+void ScenePBR::SetupMaterials()
+{
+	float materialSpecular = 1.0f;
+	float materialShininess = 256.0f;
+
+	// silver
+	TextureInfo textureInfoSilver = {};
+	textureInfoSilver.albedo = "Textures/PBR/silver/albedo.png";
+	textureInfoSilver.normal = "Textures/PBR/silver/normal.png";
+	textureInfoSilver.metallic = "Textures/PBR/silver/metallic.png";
+	textureInfoSilver.roughness = "Textures/PBR/silver/roughness.png";
+	textureInfoSilver.ao = "Textures/PBR/silver/ao.png";
+
+	materials.insert(std::make_pair("silver", new Material(textureInfoSilver, materialSpecular, materialShininess)));
+}
+
 void ScenePBR::SetupModels()
 {
 	Sphere* sphere = new Sphere();
@@ -141,6 +158,9 @@ void ScenePBR::Update(float timestep, Window& mainWindow)
 
 void ScenePBR::UpdateImGui(float timestep, Window& mainWindow)
 {
+	bool p_open = true;
+	ShowExampleAppDockSpace(&p_open, mainWindow);
+
 	ImGui::Begin("Settings");
 	{
 		m_CameraPosition = m_Camera->GetPosition();
@@ -190,6 +210,7 @@ void ScenePBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::strin
 	// Model matrix
 	glm::mat4 model;
 
+	// Render spheres in 5 x 5 setup
 	for (int v = -2; v <= 2; ++v)
 	{
 		for (int h = -2; h <= 2; ++h)
@@ -237,8 +258,24 @@ void ScenePBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::strin
 			shaderPBR->setInt("aoMap", textureSlots["ao"]);
 
 			meshes["sphere"]->Render();
-
 		}
+	}
+
+	// render light source (simply re-render sphere at light positions)
+	// this looks a bit off as we use the same shader, but it'll make their positions obvious and 
+	// keeps the codeprint small.
+	for (unsigned int i = 0; i < SCENE_PBR_LIGHT_COUNT; ++i)
+	{
+		glm::vec3 newPos = m_LightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+		newPos = m_LightPositions[i];
+		shaderPBR->setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+		shaderPBR->setVec3("lightColors[" + std::to_string(i) + "]", m_LightColors[i]);
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, newPos);
+		model = glm::scale(model, glm::vec3(0.5f));
+		shaderPBR->setMat4("model", model);
+		materials["silver"]->BindTextures(textureSlots["albedo"]);
+		meshes["sphere"]->Render();
 	}
 
 	/* Cerberus model */
@@ -250,7 +287,8 @@ void ScenePBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::strin
 		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.05f));
-		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+
+		shaderPBR->setMat4("model", model);
 
 		shaderPBR->setVec3("albedo", m_Albedo);
 		shaderPBR->setFloat("metallic", m_Metallic);
