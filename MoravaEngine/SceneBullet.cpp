@@ -276,6 +276,9 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 
 void SceneBullet::UpdateImGui(float timestep, Window& mainWindow)
 {
+	bool p_open = true;
+	ShowExampleAppDockSpace(&p_open, mainWindow);
+
 	ImGui::Begin("Settings");
 	{
 		glm::vec3 lightDirection = LightManager::directionalLight.GetDirection();
