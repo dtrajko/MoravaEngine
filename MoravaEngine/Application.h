@@ -10,14 +10,14 @@ public:
 	static Application* Get();
 
 	// getters
-	Window* GetWindow();
-	Scene* GetScene();
-	RendererBasic* GetRenderer();
+	inline Window* GetWindow() { return m_Window; }
+	inline Scene* GetScene() { return m_Scene; }
+	inline RendererBasic* GetRenderer() { return m_Renderer; }
 
 	// setters
-	void SetWindow(Window* window);
-	void SetScene(Scene* scene);
-	void SetRenderer(RendererBasic* renderer);
+	inline void SetWindow(Window* window) { m_Window = window; }
+	inline void SetScene(Scene* scene) { m_Scene = scene; }
+	inline void SetRenderer(RendererBasic* renderer) { m_Renderer = renderer; }
 
 	std::string OpenFile(const std::string& filter) const;
 
