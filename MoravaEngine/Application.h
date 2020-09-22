@@ -2,12 +2,16 @@
 
 #include "Window.h"
 #include "RendererBasic.h"
+#include "Hazel/Events/Event.h"
+#include "Hazel/Events/ApplicationEvent.h"
+#include "Log.h"
 
 
 class Application
 {
 public:
 	static Application* Get();
+	static void Run();
 
 	// getters
 	inline Window* GetWindow() { return m_Window; }

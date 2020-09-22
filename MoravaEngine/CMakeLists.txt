@@ -980,6 +980,7 @@ target_link_directories(
 
 target_include_directories(
 	"${PROJECT_NAME}" PUBLIC
+	.
 	../vendor/cross-platform/assimp/include
 	../vendor/cross-platform/glfw/include
 	../vendor/cross-platform/glfw/src

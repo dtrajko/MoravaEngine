@@ -20,6 +20,22 @@ Application* Application::Get()
 	return s_Instance;
 }
 
+void Application::Run()
+{
+	WindowResizeEvent e(1280, 720);
+	Log::GetLogger()->debug(e);
+
+	if (e.IsInCategory(EventCategoryApplication))
+	{
+		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryApplication'");
+	}
+
+	if (e.IsInCategory(EventCategoryInput))
+	{
+		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryInput'");
+	}
+}
+
 std::string Application::OpenFile(const std::string& filter) const
 {
 	OPENFILENAMEA ofn;        // common dialog box structure
