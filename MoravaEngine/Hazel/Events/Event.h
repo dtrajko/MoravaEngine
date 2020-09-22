@@ -21,6 +21,9 @@ enum class EventType
 	MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 };
 
+/**
+ * The purpose of EventCategory is event filtering
+ */
 enum EventCategory
 {
 	None = 0,
@@ -37,6 +40,9 @@ enum EventCategory
 
 #define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
 
+/**
+ * Event - the base class for events
+ */
 class Event
 {
 	friend class EventDispatcher;
@@ -55,6 +61,9 @@ public:
 	}
 };
 
+/**
+ * EventDispatcher
+ */
 class EventDispatcher
 {
 	template<typename T>

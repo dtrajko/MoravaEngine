@@ -3,6 +3,9 @@
 #include "Event.h"
 
 
+/**
+ * KeyEvent base class 
+ */
 class KeyEvent : public Event
 {
 public:

@@ -241,8 +241,7 @@ int main()
 
 		MousePicker::Get()->Update(
 			(int)mainWindow.GetMouseX(), (int)mainWindow.GetMouseY(),
-			0, 0,
-			(int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight(),
+			0, 0, (int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight(),
 			RendererBasic::GetProjectionMatrix(), scene->GetCameraController()->CalculateViewMatrix());
 
 		if (mainWindow.getKeys()[GLFW_KEY_F])
