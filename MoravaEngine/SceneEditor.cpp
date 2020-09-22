@@ -968,7 +968,7 @@ void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
 
             ImGui::Checkbox("DL Enabled", &directionalLight.base.enabled);
             ImGui::ColorEdit3("DL Color", glm::value_ptr(directionalLight.base.color));
-            ImGui::SliderFloat3("DL Direction", glm::value_ptr(directionalLight.direction), -1.0f, 1.0f);
+            ImGui::SliderFloat3("DL Direction", glm::value_ptr(directionalLight.direction), -100.0f, 100.0f);
             ImGui::SliderFloat("DL Ambient Intensity", &directionalLight.base.ambientIntensity, 0.0f, 4.0f);
             ImGui::SliderFloat("DL Diffuse Intensity", &directionalLight.base.diffuseIntensity, 0.0f, 4.0f);
 
