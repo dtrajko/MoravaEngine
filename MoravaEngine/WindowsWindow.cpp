@@ -1,12 +1,27 @@
-#include "Window.h"
+#include "WindowsWindow.h"
+
+#include "Hazel/Events/KeyEvent.h"
+#include "Hazel/Events/MouseEvent.h"
+#include "Hazel/Events/ApplicationEvent.h"
+
+#include "Log.h"
 
 #include <cmath>
 
 
-int Window::m_ActionPrev;
+/**** BEGIN Hazel properties and methods ****/
+static bool s_GLFWInitialized = false;
 
-Window::Window()
-	: Window(1280, 720, "Window Title Undefined")
+static void GLFWErrorCallback(int error, const char* description)
+{
+	Log::GetLogger()->error("GLFW Error ({0}) : {1}", error, description);
+}
+/**** END Hazel properties and methods ****/
+
+int WindowsWindow::m_ActionPrev;
+
+WindowsWindow::WindowsWindow()
+	: WindowsWindow(1280, 720, "Window Title Undefined")
 {
 	xChange = 0.0f;
 	yChange = 0.0f;
@@ -15,7 +30,7 @@ Window::Window()
 	m_CursorIgnoreLimit = 2.0f;
 }
 
-Window::Window(GLint windowWidth, GLint windowHeight, const char* windowTitle)
+WindowsWindow::WindowsWindow(GLint windowWidth, GLint windowHeight, const char* windowTitle)
 	: width(windowWidth), height(windowHeight), m_Title(windowTitle)
 {
 	xChange = 0.0f;
@@ -38,7 +53,136 @@ Window::Window(GLint windowWidth, GLint windowHeight, const char* windowTitle)
 	mouseCursorAboveWindow = false;
 }
 
-int Window::Initialize()
+void WindowsWindow::Init(const WindowProps& props)
+{
+	m_Data.Title = props.Title;
+	m_Data.Width = props.Width;
+	m_Data.Height = props.Height;
+
+	Log::GetLogger()->info("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
+
+	if (!s_GLFWInitialized)
+	{
+		// TODO: glfwTerminate on system shutdown
+		int success = glfwInit();
+		Log::GetLogger()->error("Could not initialize GLFW!");
+		glfwSetErrorCallback(GLFWErrorCallback);
+		s_GLFWInitialized = true;
+	}
+
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
+	glfwWindow = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+
+	glfwSetWindowUserPointer(glfwWindow, &m_Data);
+	SetVSync(true);
+
+	// Set GLFW callbacks
+	glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* window, int width, int height)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data.Width = width;
+			data.Height = height;
+			WindowResizeEvent event(width, height);
+			data.EventCallback(event);
+		});
+
+	glfwSetWindowCloseCallback(glfwWindow, [](GLFWwindow* window)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowCloseEvent event;
+			data.EventCallback(event);
+		});
+
+	glfwSetKeyCallback(glfwWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			switch (action)
+			{
+			case GLFW_PRESS:
+			{
+				KeyPressedEvent event(key, 0);
+				data.EventCallback(event);
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				KeyReleasedEvent event(key);
+				data.EventCallback(event);
+				break;
+			}
+			case GLFW_REPEAT:
+			{
+				KeyPressedEvent event(key, 1);
+				data.EventCallback(event);
+				break;
+			}
+			}
+		});
+
+	glfwSetCharCallback(glfwWindow, [](GLFWwindow* window, unsigned int keycode)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			KeyTypedEvent event(keycode);
+			data.EventCallback(event);
+		});
+
+	glfwSetMouseButtonCallback(glfwWindow, [](GLFWwindow* window, int button, int action, int modes)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			switch (action)
+			{
+			case GLFW_PRESS:
+			{
+				MouseButtonPressedEvent event(button);
+				data.EventCallback(event);
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				MouseButtonReleasedEvent event(button);
+				data.EventCallback(event);
+				break;
+			}
+			}
+		});
+
+	glfwSetScrollCallback(glfwWindow, [](GLFWwindow* window, double xOffset, double yOffset)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			MouseScrolledEvent event((float)xOffset, (float)yOffset);
+			data.EventCallback(event);
+		});
+
+	glfwSetCursorPosCallback(glfwWindow, [](GLFWwindow* window, double xPos, double yPos)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			MouseMovedEvent event((float)xPos, (float)yPos);
+			data.EventCallback(event);
+		});
+
+	glfwSetCursorEnterCallback(glfwWindow, [](GLFWwindow* window, int entered)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			// TODO
+		});
+}
+
+void WindowsWindow::OnUpdate()
+{
+}
+
+void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)
+{
+}
+
+int WindowsWindow::Initialize()
 {
 	// Initialize GLFW
 	if (!glfwInit())
@@ -100,7 +244,7 @@ int Window::Initialize()
 	return 0;
 }
 
-void Window::CreateCallbacks()
+void WindowsWindow::CreateCallbacks()
 {
 	glfwSetKeyCallback(glfwWindow, handleKeys);
 	glfwSetCursorPosCallback(glfwWindow, handleMouse);
@@ -110,9 +254,9 @@ void Window::CreateCallbacks()
 	glfwSetScrollCallback(glfwWindow, mouseScrollCallback);
 }
 
-void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
+void WindowsWindow::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
 {
-	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
 
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
@@ -136,9 +280,9 @@ void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int m
 	}
 }
 
-void Window::handleMouse(GLFWwindow* window, double xPos, double yPos)
+void WindowsWindow::handleMouse(GLFWwindow* window, double xPos, double yPos)
 {
-	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
 
 	theWindow->m_MouseX = (float)xPos;
 	theWindow->m_MouseY = (float)yPos;
@@ -164,9 +308,9 @@ void Window::handleMouse(GLFWwindow* window, double xPos, double yPos)
 	// printf("x:%.2f, y:%.2f\n", theWindow->xChange, theWindow->yChange);
 }
 
-void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+void WindowsWindow::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
-	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
 
 	if (button >= 0 && button < 32)
 	{
@@ -198,9 +342,9 @@ void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
 	}
 }
 
-void Window::cursorEnterCallback(GLFWwindow* window, int entered)
+void WindowsWindow::cursorEnterCallback(GLFWwindow* window, int entered)
 {
-	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
 
 	if (entered)
 		theWindow->mouseCursorAboveWindow = true;
@@ -208,9 +352,9 @@ void Window::cursorEnterCallback(GLFWwindow* window, int entered)
 		theWindow->mouseCursorAboveWindow = false;
 }
 
-void Window::windowSizeCallback(GLFWwindow* window, int width, int height)
+void WindowsWindow::windowSizeCallback(GLFWwindow* window, int width, int height)
 {
-	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
 
 	theWindow->width = width;
 	theWindow->height = height;
@@ -218,15 +362,15 @@ void Window::windowSizeCallback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, theWindow->bufferWidth, theWindow->bufferHeight);
 }
 
-void Window::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset)
+void WindowsWindow::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset)
 {
-	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
+	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
 
 	theWindow->xMouseScrollOffset = (float)xOffset;
 	theWindow->yMouseScrollOffset = (float)yOffset;
 }
 
-GLfloat Window::getXChange()
+GLfloat WindowsWindow::getXChange()
 {
 	float theChange = 0.0f;
 	if (std::abs(xChange) > m_CursorIgnoreLimit)
@@ -234,7 +378,7 @@ GLfloat Window::getXChange()
 	return theChange;
 }
 
-GLfloat Window::getYChange()
+GLfloat WindowsWindow::getYChange()
 {
 	float theChange = 0.0f;
 	if (std::abs(yChange) > m_CursorIgnoreLimit)
@@ -242,21 +386,21 @@ GLfloat Window::getYChange()
 	return theChange;
 }
 
-float Window::getXMouseScrollOffset()
+float WindowsWindow::getXMouseScrollOffset()
 {
 	float theOffset = xMouseScrollOffset;
 	xMouseScrollOffset = 0.0f;
 	return theOffset;
 }
 
-float Window::getYMouseScrollOffset()
+float WindowsWindow::getYMouseScrollOffset()
 {
 	float theOffset = yMouseScrollOffset;
 	yMouseScrollOffset = 0.0f;
 	return theOffset;
 }
 
-void Window::SetVSync(bool enabled)
+void WindowsWindow::SetVSync(bool enabled)
 {
 	if (enabled)
 		glfwSwapInterval(1);
@@ -266,42 +410,47 @@ void Window::SetVSync(bool enabled)
 	m_VSync = enabled;
 }
 
-bool Window::IsVSync() const
+bool WindowsWindow::IsVSync() const
 {
 	return m_VSync;
 }
 
-void Window::SetCursorDisabled()
+void WindowsWindow::SetCursorDisabled()
 {
 	glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
-void Window::SetCursorNormal()
+void WindowsWindow::SetCursorNormal()
 {
 	glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-bool Window::IsMouseButtonClicked(int mouseButton)
+bool WindowsWindow::IsMouseButtonClicked(int mouseButton)
 {
 	bool isClicked = buttons[mouseButton] && !buttons_prev[mouseButton];
 	buttons_prev[mouseButton] = buttons[mouseButton];
 	return isClicked;
 }
 
-bool Window::IsMouseButtonReleased(int mouseButton)
+bool WindowsWindow::IsMouseButtonReleased(int mouseButton)
 {
 	bool isReleased = !buttons[mouseButton] && buttons_prev[mouseButton];
 	buttons_prev[mouseButton] = buttons[mouseButton];
 	return isReleased;
 }
 
-void Window::SetShouldClose(bool shouldClose)
+void WindowsWindow::SetShouldClose(bool shouldClose)
 {
 	glfwSetWindowShouldClose(glfwWindow, shouldClose);
 }
 
-Window::~Window()
+void WindowsWindow::Shutdown()
 {
 	glfwDestroyWindow(glfwWindow);
 	glfwTerminate();
+}
+
+WindowsWindow::~WindowsWindow()
+{
+	Shutdown();
 }

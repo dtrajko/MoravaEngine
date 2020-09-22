@@ -81,7 +81,7 @@ void ImGuiWrapper::End()
 {
 	// ImGui Rendering
 	ImGuiIO& io = ImGui::GetIO();
-	io.DisplaySize = ImVec2((float)m_Window->GetBufferWidth(), (float)m_Window->GetBufferHeight());
+	io.DisplaySize = ImVec2((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
 
 	// Rendering
 	ImGui::Render();

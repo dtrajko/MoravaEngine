@@ -284,7 +284,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 {
 	glDisable(GL_CLIP_DISTANCE0);
 
-	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+	glViewport(0, 0, (GLsizei)mainWindow.GetWidth(), (GLsizei)mainWindow.GetHeight());
 
 	// Clear the window
 	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);

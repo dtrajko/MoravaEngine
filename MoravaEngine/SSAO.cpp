@@ -223,8 +223,8 @@ void SSAO::Init()
 {
 	SetupShaders();
 
-	uint32_t width = Application::Get()->GetWindow()->GetBufferWidth();
-	uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
+	uint32_t width = Application::Get()->GetWindow()->GetWidth();
+	uint32_t height = Application::Get()->GetWindow()->GetHeight();
 
 	m_WidthPrev = width;
 	m_HeightPrev = height;
@@ -243,8 +243,8 @@ void SSAO::UpdateCooldown(float timestep)
 	if (timestep - m_UpdateCooldown.lastTime < m_UpdateCooldown.cooldown) return;
 	m_UpdateCooldown.lastTime = timestep;
 
-	uint32_t width = Application::Get()->GetWindow()->GetBufferWidth();
-	uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
+	uint32_t width = Application::Get()->GetWindow()->GetWidth();
+	uint32_t height = Application::Get()->GetWindow()->GetHeight();
 
 	if (width != m_WidthPrev || height != m_HeightPrev)
 	{

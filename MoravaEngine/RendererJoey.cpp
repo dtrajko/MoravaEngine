@@ -85,7 +85,7 @@ void RendererJoey::Render(float deltaTime, Window& mainWindow, Scene* scene, glm
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	// then before rendering, configure the viewport to the original framebuffer's screen dimensions
-	SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
+	SetDefaultFramebuffer((unsigned int)mainWindow.GetWidth(), (unsigned int)mainWindow.GetHeight());
 
 	std::string passType = "main";
 	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);

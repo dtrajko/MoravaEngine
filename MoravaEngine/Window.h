@@ -1,81 +1,61 @@
 #pragma once
 
 #include "CommonValues.h"
+#include "Hazel/Events/Event.h"
 
 #include <stdio.h>
+#include <functional>
 
+
+struct WindowProps
+{
+	std::string Title;
+	uint32_t Width;
+	uint32_t Height;
+
+	WindowProps(const std::string& title = "3D Graphics Engine (C++ / OpenGL)",
+		uint32_t width = 1280,
+		uint32_t height = 720)
+		: Title(title), Width(width), Height(height)
+	{
+	}
+};
 
 class Window
 {
+	/**** BEGIN Window Hazel version - a platform independent Window interface ****/
 public:
-	Window();
-	Window(GLint windowWidth, GLint windowHeight, const char* windowTitle);
-	~Window();
+	using EventCallbackFn = std::function<void(Event&)>;
 
-	int Initialize();
-	inline GLFWwindow* GetHandler() { return glfwWindow; };
-	inline unsigned int GetBufferWidth() { return bufferWidth; };
-	inline unsigned int GetBufferHeight() { return bufferHeight; };
-	bool GetShouldClose() { return glfwWindowShouldClose(glfwWindow); };
-	void SetShouldClose(bool shouldClose);
-	bool* getKeys() { return keys; };
-	bool* getMouseButtons() { return buttons; };
-	bool* getKeysPrev() { return keys_prev; }; // previous states of keys
-	bool* getMouseButtonsPrev() { return buttons_prev; }; // previos states of mouse buttons
-	float getXChange();
-	float getYChange();
-	inline float GetMouseX() const { return m_MouseX; };
-	inline float GetMouseY() const { return m_MouseY; };
-	float getXMouseScrollOffset();
-	float getYMouseScrollOffset();
-	void SwapBuffers() { glfwSwapBuffers(glfwWindow); };
-	void SetVSync(bool enabled);
-	bool IsVSync() const;
-	void SetCursorDisabled();
-	void SetCursorNormal();
+	virtual ~Window() {};
 
-	bool IsMouseButtonClicked(int mouseButton);
-	bool IsMouseButtonReleased(int mouseButton);
+	virtual void OnUpdate() = 0;
 
-private:
-	GLFWwindow* glfwWindow;
+	virtual uint32_t GetWidth() const = 0;
+	virtual uint32_t GetHeight() const = 0;
 
-	const char* m_Title;
-	GLint width;
-	GLint height;
-	unsigned int bufferWidth;
-	unsigned int bufferHeight;
+	// Window attributes
+	virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
+	virtual void SetVSync(bool enabled) = 0;
+	virtual bool IsVSync() const = 0;
 
-	bool keys[1024];
-	bool buttons[32];
+	static Window* Create(const WindowProps& props = WindowProps()) {};
 
-	bool keys_prev[1024];
-	bool buttons_prev[32];
+	/**** END Window Hazel version - a platform independent Window interface ****/
 
-	static int m_ActionPrev;
-
-	float m_MouseX;
-	float m_MouseY;
-	GLfloat lastX;
-	GLfloat lastY;
-	float xChange;
-	float yChange;
-	float xChangeReset;
-	float yChangeReset;
-	float xMouseScrollOffset;
-	float yMouseScrollOffset;
-	bool mouseFirstMoved;
-	bool mouseCursorAboveWindow;
-	bool m_VSync;
-	float m_CursorIgnoreLimit;
-
-	void CreateCallbacks();
-
-	static void handleKeys(GLFWwindow* window, int key, int code, int action, int mode);
-	static void handleMouse(GLFWwindow* window, double xPos, double yPos);
-	static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-	static void cursorEnterCallback(GLFWwindow* window, int entered);
-	static void windowSizeCallback(GLFWwindow* window, int width, int height);
-	static void mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
+	// Methods used by MoravaEngine classes
+	virtual GLFWwindow* GetHandler() { return nullptr; };
+	virtual bool* getKeys() { return nullptr; };
+	virtual bool* getMouseButtons() { return nullptr; };
+	virtual bool IsMouseButtonClicked(int mouseButton) { return false; };
+	virtual float GetMouseX() const { return 0.0f; };
+	virtual float GetMouseY() const { return 0.0f; };
+	virtual float getXChange() { return 0.0f; };
+	virtual float getYChange() { return 0.0f; };
+	virtual float getXMouseScrollOffset() { return 0.0f; };
+	virtual float getYMouseScrollOffset() { return 0.0f; };
+	virtual void SetShouldClose(bool shouldClose) {};
+	virtual void SetCursorDisabled() {};
+	virtual void SetCursorNormal() {};
 
 };

@@ -133,7 +133,7 @@ void SceneAsteroids::Render(Window& mainWindow, glm::mat4 projectionMatrix, std:
 {
 	// Override the Projection matrix (update FOV)
 	projectionMatrix = glm::perspective(glm::radians(m_FOV),
-		(float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
+		(float)mainWindow.GetWidth() / (float)mainWindow.GetHeight(),
 		sceneSettings.nearPlane, sceneSettings.farPlane);
 
 	RendererBasic::SetProjectionMatrix(projectionMatrix);

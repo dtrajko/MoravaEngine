@@ -36,7 +36,7 @@ void RendererNanosuit::Render(float deltaTime, Window& mainWindow, Scene* scene,
 
 void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+	glViewport(0, 0, (GLsizei)mainWindow.GetWidth(), (GLsizei)mainWindow.GetHeight());
 
 	Shader* shaderNanosuit = s_Shaders["nanosuit"];
 	SceneNanosuit* sceneNanosuit = (SceneNanosuit*)scene;

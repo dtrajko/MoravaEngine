@@ -14,7 +14,7 @@
 #include "CommonValues.h"
 #include "Application.h"
 #include "ImGuiWrapper.h"
-#include "Window.h"
+#include "WindowsWindow.h"
 #include "CameraController.h"
 #include "LightManager.h"
 #include "WaterManager.h"
@@ -63,7 +63,7 @@ const int WIDTH = 1280;
 const int HEIGHT = 720;
 
 
-Window mainWindow;
+WindowsWindow mainWindow;
 Scene* scene;
 RendererBasic* renderer;
 
@@ -104,7 +104,7 @@ int main()
 {
 	Log::Init();
 
-	mainWindow = Window(WIDTH, HEIGHT, windowTitle);
+	mainWindow = WindowsWindow(WIDTH, HEIGHT, windowTitle);
 	mainWindow.Initialize();
 
 	Application::Get()->SetWindow(&mainWindow);
@@ -216,14 +216,14 @@ int main()
 
 	// Projection matrix
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
-		(float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
+		(float)mainWindow.GetWidth() / (float)mainWindow.GetHeight(),
 		Scene::GetSettings().nearPlane, Scene::GetSettings().farPlane);
 
 	RendererBasic::SetProjectionMatrix(projectionMatrix);
 
 	scene->SetCamera();
 	scene->SetLightManager();
-	scene->SetWaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight());
+	scene->SetWaterManager((int)mainWindow.GetWidth(), (int)mainWindow.GetHeight());
 
 	renderer->Init(scene);
 
@@ -244,7 +244,7 @@ int main()
 
 		MousePicker::Get()->Update(
 			(int)mainWindow.GetMouseX(), (int)mainWindow.GetMouseY(),
-			0, 0, (int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight(),
+			0, 0, (int)mainWindow.GetWidth(), (int)mainWindow.GetHeight(),
 			RendererBasic::GetProjectionMatrix(), scene->GetCameraController()->CalculateViewMatrix());
 
 		if (mainWindow.getKeys()[GLFW_KEY_F])

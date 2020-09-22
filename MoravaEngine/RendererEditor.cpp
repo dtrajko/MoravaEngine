@@ -321,7 +321,7 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     }
     else
     {
-        glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+        glViewport(0, 0, (GLsizei)mainWindow.GetWidth(), (GLsizei)mainWindow.GetHeight());
     }
 
     // Clear the window
@@ -337,7 +337,7 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 
     // then before rendering, configure the viewport to the original framebuffer's screen dimensions
     if (!m_IsViewportEnabled)
-        SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
+        SetDefaultFramebuffer((unsigned int)mainWindow.GetWidth(), (unsigned int)mainWindow.GetHeight());
 
     EnableTransparency();
     EnableCulling();

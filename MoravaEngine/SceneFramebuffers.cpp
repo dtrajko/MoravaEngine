@@ -170,7 +170,7 @@ void SceneFramebuffers::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
 	// -- BEGIN Second Render Pass render target default framebuffer
 	{
 		// -- now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
-		m_Framebuffer->Unbind((GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+		m_Framebuffer->Unbind((GLsizei)mainWindow.GetWidth(), (GLsizei)mainWindow.GetHeight());
 
 		// -- clear all relevant buffers
 		// -- set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)

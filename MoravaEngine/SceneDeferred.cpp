@@ -60,8 +60,8 @@ void SceneDeferred::SetupModels()
 
 void SceneDeferred::SetupFramebuffers()
 {
-    m_Width = (int)Application::Get()->GetWindow()->GetBufferWidth();
-    m_Height = (int)Application::Get()->GetWindow()->GetBufferHeight();
+    m_Width = (int)Application::Get()->GetWindow()->GetWidth();
+    m_Height = (int)Application::Get()->GetWindow()->GetHeight();
 
     GenerateFramebuffers(m_Width, m_Height);
 }
@@ -114,8 +114,8 @@ void SceneDeferred::UpdateCooldown(float timestep)
     if (timestep - m_UpdateCooldown.lastTime < m_UpdateCooldown.cooldown) return;
     m_UpdateCooldown.lastTime = timestep;
 
-    m_Width = Application::Get()->GetWindow()->GetBufferWidth();
-    m_Height = Application::Get()->GetWindow()->GetBufferHeight();
+    m_Width = Application::Get()->GetWindow()->GetWidth();
+    m_Height = Application::Get()->GetWindow()->GetHeight();
 
     if (m_Width != m_WidthPrev || m_Height != m_HeightPrev)
     {
@@ -302,8 +302,8 @@ void SceneDeferred::RenderPassForward(glm::mat4 projectionMatrix)
 void SceneDeferred::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
-    m_Width = (int)Application::Get()->GetWindow()->GetBufferWidth();
-    m_Height = (int)Application::Get()->GetWindow()->GetBufferHeight();
+    m_Width = (int)Application::Get()->GetWindow()->GetWidth();
+    m_Height = (int)Application::Get()->GetWindow()->GetHeight();
 
     glEnable(GL_DEPTH_TEST);
 

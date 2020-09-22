@@ -218,8 +218,8 @@ void SceneEditor::SetupRenderFramebuffer()
 {
     if (!m_IsViewportEnabled) return;
 
-    uint32_t width = Application::Get()->GetWindow()->GetBufferWidth();
-    uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
+    uint32_t width = Application::Get()->GetWindow()->GetWidth();
+    uint32_t height = Application::Get()->GetWindow()->GetHeight();
     m_RenderFramebuffer = new Framebuffer(width, height);
 
     m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
@@ -1326,8 +1326,8 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     int viewportX = 0;
     int viewportY = 0;
-    int viewportWidth = (int)mainWindow.GetBufferWidth();
-    int viewportHeight = (int)mainWindow.GetBufferHeight();
+    int viewportWidth = (int)mainWindow.GetWidth();
+    int viewportHeight = (int)mainWindow.GetHeight();
     if (m_IsViewportEnabled) {
         viewportX = (int)m_ImGuiViewport.X;
         viewportY = (int)m_ImGuiViewport.Y;
@@ -2117,10 +2117,10 @@ void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projecti
 
     if (m_OrthographicViewEnabled)
     {
-        float left   = -(float)mainWindow.GetBufferWidth() / 2.0f / m_FOV;
-        float right  = (float)mainWindow.GetBufferWidth() / 2.0f / m_FOV;
-        float bottom = -(float)mainWindow.GetBufferHeight() / 2.0f / m_FOV;
-        float top    = (float)mainWindow.GetBufferHeight() / 2.0f / m_FOV;
+        float left   = -(float)mainWindow.GetWidth() / 2.0f / m_FOV;
+        float right  = (float)mainWindow.GetWidth() / 2.0f / m_FOV;
+        float bottom = -(float)mainWindow.GetHeight() / 2.0f / m_FOV;
+        float top    = (float)mainWindow.GetHeight() / 2.0f / m_FOV;
 
         projectionMatrix = glm::ortho(left, right, bottom, top, sceneSettings.nearPlane, sceneSettings.farPlane);
     }
@@ -2340,7 +2340,7 @@ void SceneEditor::RenderSkybox(Shader* shaderBackground)
         m_RenderFramebuffer->Bind();
     }
     else {
-        RendererBasic::SetDefaultFramebuffer(Application::Get()->GetWindow()->GetBufferWidth(), Application::Get()->GetWindow()->GetBufferHeight());
+        RendererBasic::SetDefaultFramebuffer(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
     }
 
     int environmentMapSlot = 0;

@@ -82,8 +82,8 @@ void SceneParticles::Update(float timestep, Window& mainWindow)
         m_MouseX = mainWindow.GetMouseX();
         m_MouseY = mainWindow.GetMouseY();
 
-        m_NormalizedMouseX = -1.0f + 2.0f * m_MouseX / mainWindow.GetBufferWidth();
-        m_NormalizedMouseY =  1.0f - 2.0f * m_MouseY / mainWindow.GetBufferHeight();
+        m_NormalizedMouseX = -1.0f + 2.0f * m_MouseX / mainWindow.GetWidth();
+        m_NormalizedMouseY =  1.0f - 2.0f * m_MouseY / mainWindow.GetHeight();
 
         glm::vec3 particlePosition = m_Camera->GetPosition() + m_Camera->GetFront() * 5.0f;
 

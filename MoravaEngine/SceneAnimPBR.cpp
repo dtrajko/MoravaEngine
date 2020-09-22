@@ -150,8 +150,8 @@ void SceneAnimPBR::SetupRenderFramebuffer()
 {
     if (!m_IsViewportEnabled) return;
 
-    uint32_t width = Application::Get()->GetWindow()->GetBufferWidth();
-    uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
+    uint32_t width = Application::Get()->GetWindow()->GetWidth();
+    uint32_t height = Application::Get()->GetWindow()->GetHeight();
     m_RenderFramebuffer = new Framebuffer(width, height);
 
     m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
@@ -906,8 +906,8 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
     else
     {
         // configure the viewport to the original framebuffer's screen dimensions
-        glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
-        RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
+        glViewport(0, 0, (GLsizei)mainWindow.GetWidth(), (GLsizei)mainWindow.GetHeight());
+        RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow.GetWidth(), (unsigned int)mainWindow.GetHeight());
     }
 
     SetupUniforms();

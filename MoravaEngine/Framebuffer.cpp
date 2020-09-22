@@ -13,8 +13,8 @@ Framebuffer::Framebuffer()
 {
 	m_FBO = 0;
 
-	m_Width = Application::Get()->GetWindow()->GetBufferWidth();
-	m_Height = Application::Get()->GetWindow()->GetBufferHeight();
+	m_Width = Application::Get()->GetWindow()->GetWidth();
+	m_Height = Application::Get()->GetWindow()->GetHeight();
 
 	m_TextureAttachmentsColor = std::vector<FramebufferTexture*>();
 	m_AttachmentDepth = nullptr;

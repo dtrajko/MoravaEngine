@@ -181,12 +181,12 @@
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="EndlessTerrain.cpp" />
     <ClCompile Include="FramebufferTextureCubemap.cpp" />
+    <ClCompile Include="Hazel\Core\Layer.cpp" />
+    <ClCompile Include="Hazel\Core\LayerStack.cpp" />
     <ClCompile Include="Hazel\Renderer\Buffer.cpp" />
     <ClCompile Include="Hazel\Renderer\MeshAnimPBR.cpp" />
     <ClCompile Include="Hazel\Renderer\OpenGLBuffer.cpp" />
     <ClCompile Include="Hazel\Renderer\OpenGLVertexArray.cpp" />
-    <ClCompile Include="Hazel\Windows\WindowsInput.cpp" />
-    <ClCompile Include="Hazel\Windows\WindowsWindow.cpp" />
     <ClCompile Include="InsertionSort.cpp" />
     <ClCompile Include="LearnOpenGL\MeshSSAO.cpp" />
     <ClCompile Include="LearnOpenGL\ModelSSAO.cpp" />
@@ -327,7 +327,7 @@
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="WaterManager.cpp" />
-    <ClCompile Include="Window.cpp" />
+    <ClCompile Include="WindowsWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h" />
@@ -354,6 +354,8 @@
     <ClInclude Include="Hazel\Core\HazelWindow.h" />
     <ClInclude Include="Hazel\Core\Input.h" />
     <ClInclude Include="Hazel\Core\KeyCodes.h" />
+    <ClInclude Include="Hazel\Core\Layer.h" />
+    <ClInclude Include="Hazel\Core\LayerStack.h" />
     <ClInclude Include="Hazel\Core\MouseCodes.h" />
     <ClInclude Include="Hazel\Events\ApplicationEvent.h" />
     <ClInclude Include="Hazel\Events\Event.h" />
@@ -363,7 +365,6 @@
     <ClInclude Include="Hazel\Renderer\MeshAnimPBR.h" />
     <ClInclude Include="Hazel\Renderer\OpenGLBuffer.h" />
     <ClInclude Include="Hazel\Renderer\OpenGLVertexArray.h" />
-    <ClInclude Include="Hazel\Windows\WindowsWindow.h" />
     <ClInclude Include="CommonStructs.h" />
     <ClInclude Include="InsertionSort.h" />
     <ClInclude Include="LearnOpenGLStructs.h" />
@@ -513,6 +514,7 @@
     <ClInclude Include="VertexTBN.h" />
     <ClInclude Include="WaterManager.h" />
     <ClInclude Include="Window.h" />
+    <ClInclude Include="WindowsWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MoravaEngine.rc" />
