@@ -82,6 +82,17 @@ void CameraController::KeyControl(bool* keys, float deltaTime)
 
 void CameraController::MouseControl(bool* buttons, float xChange, float yChange)
 {
+	if (buttons[GLFW_MOUSE_BUTTON_RIGHT])
+	{
+		m_Camera->SetYaw(m_Camera->GetYaw() + xChange * m_TurnSpeed);
+		m_Camera->SetPitch(m_Camera->GetPitch() - yChange * m_TurnSpeed);
+
+		Update();
+	}
+}
+
+void CameraController::MouseControlHazelDev()
+{
 	// Based on Hazel-dev Camera::MouseRotate
 	if (Input::IsMouseButtonPressed(MORAVA_MOUSE_BUTTON_RIGHT))
 	{
@@ -92,7 +103,7 @@ void CameraController::MouseControl(bool* buttons, float xChange, float yChange)
 		delta *= (float)glfwGetTime();
 
 		// Orientation
-		glm::quat orientation = glm::quat(glm::vec3(m_Pitch, m_Yaw, 0.0f));
+		glm::quat orientation = glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f));
 		// up direction
 		glm::vec3 up = glm::rotate(orientation, glm::vec3(0.0f, 1.0f, 0.0f));
 
