@@ -7,6 +7,7 @@
 #include "Log.h"
 
 #include <cmath>
+#include <exception>
 
 
 /**** BEGIN Hazel properties and methods ****/
@@ -16,23 +17,28 @@ static void GLFWErrorCallback(int error, const char* description)
 {
 	Log::GetLogger()->error("GLFW Error ({0}) : {1}", error, description);
 }
-/**** END Hazel properties and methods ****/
 
-int WindowsWindow::m_ActionPrev;
-
-WindowsWindow::WindowsWindow()
-	: WindowsWindow(1280, 720, "Window Title Undefined")
+Window* Window::Create(const WindowProps& props)
 {
-	xChange = 0.0f;
-	yChange = 0.0f;
-	xChangeReset = 0.0f;
-	yChangeReset = 0.0f;
-	m_CursorIgnoreLimit = 2.0f;
+	return new WindowsWindow(props);
 }
 
-WindowsWindow::WindowsWindow(GLint windowWidth, GLint windowHeight, const char* windowTitle)
-	: width(windowWidth), height(windowHeight), m_Title(windowTitle)
+WindowsWindow::WindowsWindow(const WindowProps& props)
 {
+	Init(props);
+}
+
+WindowsWindow::~WindowsWindow()
+{
+	Shutdown();
+}
+
+void WindowsWindow::Init(const WindowProps& props)
+{
+	m_Data.Title = props.Title;
+	m_Data.Width = props.Width;
+	m_Data.Height = props.Height;
+
 	xChange = 0.0f;
 	yChange = 0.0f;
 	xChangeReset = 0.0f;
@@ -51,33 +57,68 @@ WindowsWindow::WindowsWindow(GLint windowWidth, GLint windowHeight, const char* 
 
 	mouseFirstMoved = true;
 	mouseCursorAboveWindow = false;
-}
-
-void WindowsWindow::Init(const WindowProps& props)
-{
-	m_Data.Title = props.Title;
-	m_Data.Width = props.Width;
-	m_Data.Height = props.Height;
 
 	Log::GetLogger()->info("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 
+	// Initialize GLFW
 	if (!s_GLFWInitialized)
 	{
 		// TODO: glfwTerminate on system shutdown
-		int success = glfwInit();
-		Log::GetLogger()->error("Could not initialize GLFW!");
+
+		// Initialize GLFW
+		if (!glfwInit())
+		{
+			glfwTerminate();
+			throw std::runtime_error("GLFW initialization failed!");
+		}
+
 		glfwSetErrorCallback(GLFWErrorCallback);
 		s_GLFWInitialized = true;
+
+		Log::GetLogger()->info("GLFW initialized.");
 	}
 
+	// Setup GLFW window properties
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-	glfwWindow = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+	// OpenGL version
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	// Core profile = No backwards compatibility
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	// Allow forward compatibility
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
+	glfwWindow = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
+	if (!glfwWindow)
+	{
+		glfwTerminate();
+		throw std::runtime_error("GLFW Window creation failed!");
+	}
+
+	// Set context for GLEW to use
+	glfwMakeContextCurrent(glfwWindow);
 	glfwSetWindowUserPointer(glfwWindow, &m_Data);
 	SetVSync(true);
 
-	// Set GLFW callbacks
+	// Allow modern extension features
+	glewExperimental = GL_TRUE;
+
+	if (glewInit() != GLEW_OK)
+	{
+		glfwDestroyWindow(glfwWindow);
+		glfwTerminate();
+		throw std::runtime_error("GLEW initialization failed!");
+	}
+
+	Log::GetLogger()->info("GLEW initialized.");
+
+	glEnable(GL_DEPTH_TEST);
+
+	// Setup Viewport size
+	glViewport(0, 0, m_Data.Width, m_Data.Height);
+
+	// Set GLFW callbacks (Handle Key and Mouse input)
 	glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* window, int width, int height)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -174,85 +215,43 @@ void WindowsWindow::Init(const WindowProps& props)
 		});
 }
 
+void WindowsWindow::Shutdown()
+{
+	glfwDestroyWindow(glfwWindow);
+	glfwTerminate();
+}
+
 void WindowsWindow::OnUpdate()
 {
+	// Get and handle user input events
+	glfwPollEvents();
+
+	// Swap buffers
+	glfwSwapBuffers(glfwWindow);
 }
 
 void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)
 {
+	m_Data.EventCallback = callback;
 }
 
-int WindowsWindow::Initialize()
+void WindowsWindow::SetVSync(bool enabled)
 {
-	// Initialize GLFW
-	if (!glfwInit())
-	{
-		printf("GLFW initialization failed!\n");
-		glfwTerminate();
-		return 1;
-	}
+	if (enabled)
+		glfwSwapInterval(1);
+	else
+		glfwSwapInterval(0);
 
-	// Setup GLFW window properties
-	// OpenGL version
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	// Core profile = No backwards compatibility
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	// Allow forward compatibility
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
-	glfwWindow = glfwCreateWindow(width, height, m_Title, NULL, NULL);
-	if (!glfwWindow)
-	{
-		printf("GLFW Window creation failed!\n");
-		glfwTerminate();
-		return 1;
-	}
-
-	// Get Buffer size information
-	glfwGetFramebufferSize(glfwWindow, (int*)&bufferWidth, (int*)&bufferHeight);
-
-	// Set context for GLEW to use
-	glfwMakeContextCurrent(glfwWindow);
-
-	// Handle Key and Mouse input
-	CreateCallbacks();
-	// SetCursorDisabled();
-
-	// Allow modern extension features
-	glewExperimental = GL_TRUE;
-
-	if (glewInit() != GLEW_OK)
-	{
-		printf("GLEW initialization failed!\n");
-		glfwDestroyWindow(glfwWindow);
-		glfwTerminate();
-		return 1;
-	}
-
-	glEnable(GL_DEPTH_TEST);
-
-	// Setup Viewport size
-	glViewport(0, 0, bufferWidth, bufferHeight);
-
-	glfwSetWindowUserPointer(glfwWindow, this);
-
-	SetVSync(true);
-
-	printf("GLFW and GLEW initialized.\n");
-
-	return 0;
+	m_Data.VSync = enabled;
 }
 
-void WindowsWindow::CreateCallbacks()
+bool WindowsWindow::IsVSync() const
 {
-	glfwSetKeyCallback(glfwWindow, handleKeys);
-	glfwSetCursorPosCallback(glfwWindow, handleMouse);
-	glfwSetMouseButtonCallback(glfwWindow, mouseButtonCallback);
-	glfwSetCursorEnterCallback(glfwWindow, cursorEnterCallback);
-	glfwSetWindowSizeCallback(glfwWindow, windowSizeCallback);
-	glfwSetScrollCallback(glfwWindow, mouseScrollCallback);
+	return m_Data.VSync;
 }
+/**** END Hazel properties and methods ****/
+
+int WindowsWindow::m_ActionPrev;
 
 void WindowsWindow::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
 {
@@ -356,10 +355,9 @@ void WindowsWindow::windowSizeCallback(GLFWwindow* window, int width, int height
 {
 	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
 
-	theWindow->width = width;
-	theWindow->height = height;
-	glfwGetFramebufferSize(window, (int*)&theWindow->bufferWidth, (int*)&theWindow->bufferHeight);
-	glViewport(0, 0, theWindow->bufferWidth, theWindow->bufferHeight);
+	theWindow->m_Data.Width = width;
+	theWindow->m_Data.Height = height;
+	glViewport(0, 0, width, height);
 }
 
 void WindowsWindow::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset)
@@ -400,21 +398,6 @@ float WindowsWindow::getYMouseScrollOffset()
 	return theOffset;
 }
 
-void WindowsWindow::SetVSync(bool enabled)
-{
-	if (enabled)
-		glfwSwapInterval(1);
-	else
-		glfwSwapInterval(0);
-
-	m_VSync = enabled;
-}
-
-bool WindowsWindow::IsVSync() const
-{
-	return m_VSync;
-}
-
 void WindowsWindow::SetCursorDisabled()
 {
 	glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -427,16 +410,16 @@ void WindowsWindow::SetCursorNormal()
 
 bool WindowsWindow::IsMouseButtonClicked(int mouseButton)
 {
-	bool isClicked = buttons[mouseButton] && !buttons_prev[mouseButton];
+	bool result = buttons[mouseButton] && !buttons_prev[mouseButton];
 	buttons_prev[mouseButton] = buttons[mouseButton];
-	return isClicked;
+	return result;
 }
 
 bool WindowsWindow::IsMouseButtonReleased(int mouseButton)
 {
-	bool isReleased = !buttons[mouseButton] && buttons_prev[mouseButton];
+	bool result = !buttons[mouseButton] && buttons_prev[mouseButton];
 	buttons_prev[mouseButton] = buttons[mouseButton];
-	return isReleased;
+	return result;
 }
 
 void WindowsWindow::SetShouldClose(bool shouldClose)
@@ -444,13 +427,10 @@ void WindowsWindow::SetShouldClose(bool shouldClose)
 	glfwSetWindowShouldClose(glfwWindow, shouldClose);
 }
 
-void WindowsWindow::Shutdown()
+void WindowsWindow::SetInputMode(bool cursorEnabled)
 {
-	glfwDestroyWindow(glfwWindow);
-	glfwTerminate();
-}
-
-WindowsWindow::~WindowsWindow()
-{
-	Shutdown();
+	if (cursorEnabled)
+		glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	else
+		glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }

@@ -152,11 +152,11 @@ void ScenePBR::SetupModels()
 	}
 }
 
-void ScenePBR::Update(float timestep, Window& mainWindow)
+void ScenePBR::Update(float timestep, Window* mainWindow)
 {
 }
 
-void ScenePBR::UpdateImGui(float timestep, Window& mainWindow)
+void ScenePBR::UpdateImGui(float timestep, Window* mainWindow)
 {
 	bool p_open = true;
 	ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -197,7 +197,7 @@ void ScenePBR::UpdateImGui(float timestep, Window& mainWindow)
 	ImGui::End();
 }
 
-void ScenePBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void ScenePBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
 	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(shaders["pbr"]);

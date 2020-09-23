@@ -327,6 +327,7 @@
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="WaterManager.cpp" />
+    <ClCompile Include="WindowsInput.cpp" />
     <ClCompile Include="WindowsWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -366,6 +367,7 @@
     <ClInclude Include="Hazel\Renderer\OpenGLBuffer.h" />
     <ClInclude Include="Hazel\Renderer\OpenGLVertexArray.h" />
     <ClInclude Include="CommonStructs.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="InsertionSort.h" />
     <ClInclude Include="LearnOpenGLStructs.h" />
     <ClInclude Include="LearnOpenGL\MeshSSAO.h" />

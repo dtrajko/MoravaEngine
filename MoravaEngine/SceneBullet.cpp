@@ -242,9 +242,9 @@ void SceneBullet::BulletSimulation(float timestep)
 	dynamicsWorld->stepSimulation(timestep, 2);
 }
 
-void SceneBullet::Update(float timestep, Window& mainWindow)
+void SceneBullet::Update(float timestep, Window* mainWindow)
 {
-	if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_LEFT])
+	if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_LEFT])
 	{
 		if (timestep - m_LastTimestep > m_FireCooldown)
 		{
@@ -274,7 +274,7 @@ void SceneBullet::Update(float timestep, Window& mainWindow)
 	}
 }
 
-void SceneBullet::UpdateImGui(float timestep, Window& mainWindow)
+void SceneBullet::UpdateImGui(float timestep, Window* mainWindow)
 {
 	bool p_open = true;
 	ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -326,7 +326,7 @@ void SceneBullet::UpdateImGui(float timestep, Window& mainWindow)
 	ImGui::End();
 }
 
-void SceneBullet::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneBullet::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
 	glm::mat4 model;

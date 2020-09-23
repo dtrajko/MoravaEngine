@@ -103,7 +103,7 @@ void SceneDeferred::SetupLights()
     }
 }
 
-void SceneDeferred::Update(float timestep, Window& mainWindow)
+void SceneDeferred::Update(float timestep, Window* mainWindow)
 {
     UpdateCooldown(timestep);
 }
@@ -188,7 +188,7 @@ void SceneDeferred::GenerateFramebuffers(int width, int height)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void SceneDeferred::UpdateImGui(float timestep, Window& mainWindow)
+void SceneDeferred::UpdateImGui(float timestep, Window* mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -299,7 +299,7 @@ void SceneDeferred::RenderPassForward(glm::mat4 projectionMatrix)
     }
 }
 
-void SceneDeferred::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneDeferred::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     m_Width = (int)Application::Get()->GetWindow()->GetWidth();

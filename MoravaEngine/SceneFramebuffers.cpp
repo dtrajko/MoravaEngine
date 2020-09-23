@@ -90,11 +90,11 @@ void SceneFramebuffers::SetGeometry()
 	GeometryFactory::Quad::Create();
 }
 
-void SceneFramebuffers::Update(float timestep, Window& mainWindow)
+void SceneFramebuffers::Update(float timestep, Window* mainWindow)
 {
 }
 
-void SceneFramebuffers::UpdateImGui(float timestep, Window& mainWindow)
+void SceneFramebuffers::UpdateImGui(float timestep, Window* mainWindow)
 {
 	bool p_open = true;
 	ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -121,7 +121,7 @@ void SceneFramebuffers::UpdateImGui(float timestep, Window& mainWindow)
 	ImGui::End();
 }
 
-void SceneFramebuffers::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneFramebuffers::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
 	{
@@ -170,7 +170,7 @@ void SceneFramebuffers::Render(Window& mainWindow, glm::mat4 projectionMatrix, s
 	// -- BEGIN Second Render Pass render target default framebuffer
 	{
 		// -- now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
-		m_Framebuffer->Unbind((GLsizei)mainWindow.GetWidth(), (GLsizei)mainWindow.GetHeight());
+		m_Framebuffer->Unbind((GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 
 		// -- clear all relevant buffers
 		// -- set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)

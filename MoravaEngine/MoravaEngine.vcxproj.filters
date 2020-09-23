@@ -485,6 +485,9 @@
     <ClCompile Include="Hazel\Core\LayerStack.cpp">
       <Filter>Hazel\Core</Filter>
     </ClCompile>
+    <ClCompile Include="WindowsInput.cpp">
+      <Filter>Platform\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1041,6 +1044,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\LayerStack.h">
       <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

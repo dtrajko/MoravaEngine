@@ -21,11 +21,11 @@ public:
 	SceneAnimPBR();
 	virtual ~SceneAnimPBR() override;
 
-	virtual void Update(float timestep, Window& mainWindow) override;
-	virtual void UpdateImGui(float timestep, Window& mainWindow) override;
-	void UpdateImGuizmo(Window& mainWindow);
-	virtual void ShowExampleAppDockSpace(bool* p_open, Window& mainWindow) override;
-	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+	virtual void Update(float timestep, Window* mainWindow) override;
+	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
+	void UpdateImGuizmo(Window* mainWindow);
+	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
+	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
 	void SetupUniforms();
 
@@ -42,7 +42,7 @@ private:
 
 	void SetupRenderFramebuffer();
 	void ResizeViewport(glm::vec2 viewportPanelSize);
-	void CheckIntersection(Window& mainWindow);
+	void CheckIntersection(Window* mainWindow);
 
 private:
 	int m_ImGuiMainViewportX;

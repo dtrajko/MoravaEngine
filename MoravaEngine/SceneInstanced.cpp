@@ -86,15 +86,15 @@ void SceneInstanced::SetupGeometry()
 	}
 }
 
-void SceneInstanced::Update(float timestep, Window& mainWindow)
+void SceneInstanced::Update(float timestep, Window* mainWindow)
 {
 }
 
-void SceneInstanced::UpdateImGui(float timestep, Window& mainWindow)
+void SceneInstanced::UpdateImGui(float timestep, Window* mainWindow)
 {
 }
 
-void SceneInstanced::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneInstanced::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
 	m_ShaderInstanced->Bind();

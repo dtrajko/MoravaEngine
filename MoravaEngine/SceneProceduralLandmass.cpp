@@ -219,7 +219,7 @@ void SceneProceduralLandmass::SetupMeshes()
     meshes.insert(std::make_pair("floor_color", floor_color));
 }
 
-void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
+void SceneProceduralLandmass::UpdateImGui(float timestep, Window* mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -472,36 +472,36 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window& mainWindow)
     ImGui::End();
 }
 
-void SceneProceduralLandmass::Update(float timestep, Window& mainWindow)
+void SceneProceduralLandmass::Update(float timestep, Window* mainWindow)
 {
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
-    Dig(mainWindow.getKeys(), timestep);
-    CastRay(mainWindow.getKeys(), mainWindow.getMouseButtons(), timestep);
-    // OnClick(mainWindow.getKeys(), mainWindow.getMouseButtons(), timestep);
+    Dig(mainWindow->getKeys(), timestep);
+    CastRay(mainWindow->getKeys(), mainWindow->getMouseButtons(), timestep);
+    // OnClick(mainWindow->getKeys(), mainWindow->getMouseButtons(), timestep);
     UpdateCooldown(timestep, mainWindow);
-    m_PlayerController->KeyControl(mainWindow.getKeys(), timestep);
-    m_PlayerController->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
-    m_PlayerController->MouseScrollControl(mainWindow.getKeys(), timestep, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
+    m_PlayerController->KeyControl(mainWindow->getKeys(), timestep);
+    m_PlayerController->MouseControl(mainWindow->getMouseButtons(), mainWindow->getXChange(), mainWindow->getYChange());
+    m_PlayerController->MouseScrollControl(mainWindow->getKeys(), timestep, mainWindow->getXMouseScrollOffset(), mainWindow->getYMouseScrollOffset());
     m_PlayerController->SetUnlockRotation(m_UnlockRotation);
     m_Player->Update();
     m_CameraController->Update();
     m_CameraController->SetUnlockRotation(m_UnlockRotation);
     m_RenderInstanced->Update();
     m_RenderInstanced->SetIntersectPosition(m_IntersectPosition);
-    m_DeleteMode = mainWindow.getKeys()[m_DeleteVoxelCodeGLFW];
+    m_DeleteMode = mainWindow->getKeys()[m_DeleteVoxelCodeGLFW];
     m_RenderInstanced->SetDeleteMode(&m_DeleteMode);
 
     if (m_UnlockRotation != m_UnlockRotationPrev) {
         if (m_UnlockRotation)
-            mainWindow.SetCursorDisabled();
+            mainWindow->SetCursorDisabled();
         else
-            mainWindow.SetCursorNormal();
+            mainWindow->SetCursorNormal();
         m_UnlockRotationPrev = m_UnlockRotation;
     }
 }
 
-void SceneProceduralLandmass::UpdateCooldown(float timestep, Window& mainWindow)
+void SceneProceduralLandmass::UpdateCooldown(float timestep, Window* mainWindow)
 {
     // Cooldown
     if (timestep - m_UpdateCooldown.lastTime < m_UpdateCooldown.cooldown) return;
@@ -690,7 +690,7 @@ bool SceneProceduralLandmass::IsPositionVacant(glm::ivec3 queryPosition)
     return true;
 }
 
-void SceneProceduralLandmass::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     Shader* shaderMain = shaders["main"];

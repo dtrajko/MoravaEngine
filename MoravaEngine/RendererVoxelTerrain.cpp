@@ -41,7 +41,7 @@ void RendererVoxelTerrain::SetShaders()
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderOmniShadow compiled [programID={0}]", shaderOmniShadow->GetProgramID());
 }
 
-void RendererVoxelTerrain::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererVoxelTerrain::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	if (!scene->GetSettings().enableShadows) return;
 	if (!LightManager::directionalLight.GetEnabled()) return;
@@ -70,7 +70,7 @@ void RendererVoxelTerrain::RenderPassShadow(Window& mainWindow, Scene* scene, gl
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RendererVoxelTerrain::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererVoxelTerrain::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	if (!scene->GetSettings().enableOmniShadows) return;
 
@@ -83,7 +83,7 @@ void RendererVoxelTerrain::RenderOmniShadows(Window& mainWindow, Scene* scene, g
 			RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], mainWindow, scene, projectionMatrix);
 }
 
-void RendererVoxelTerrain::RenderPassOmniShadow(PointLight* light, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererVoxelTerrain::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	if (!scene->GetSettings().enableOmniShadows) return;
 
@@ -111,9 +111,9 @@ void RendererVoxelTerrain::RenderPassOmniShadow(PointLight* light, Window& mainW
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererVoxelTerrain::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	glViewport(0, 0, (GLsizei)mainWindow.GetWidth(), (GLsizei)mainWindow.GetHeight());
+	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 
 	// Clear the window
 	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
@@ -299,7 +299,7 @@ void RendererVoxelTerrain::RenderPass(Window& mainWindow, Scene* scene, glm::mat
 	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 }
 
-void RendererVoxelTerrain::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererVoxelTerrain::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	{
 		Profiler profiler("RVT::RenderPassShadow");

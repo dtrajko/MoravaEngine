@@ -122,11 +122,11 @@ void SceneCottage::SetupModels()
 	meshes.insert(std::make_pair("sphere", sphere));
 }
 
-void SceneCottage::Update(float timestep, Window& mainWindow)
+void SceneCottage::Update(float timestep, Window* mainWindow)
 {
 }
 
-void SceneCottage::UpdateImGui(float timestep, Window& mainWindow)
+void SceneCottage::UpdateImGui(float timestep, Window* mainWindow)
 {
 	bool p_open = true;
 	ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -282,7 +282,7 @@ void SceneCottage::UpdateImGui(float timestep, Window& mainWindow)
 	ImGui::End();
 }
 
-void SceneCottage::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
 	glm::mat4 sceneOrigin = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));

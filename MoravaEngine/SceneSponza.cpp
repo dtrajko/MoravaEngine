@@ -78,11 +78,11 @@ void SceneSponza::SetupModels()
 	models.insert(std::make_pair("sponza", sponza));
 }
 
-void SceneSponza::Update(float timestep, Window& mainWindow)
+void SceneSponza::Update(float timestep, Window* mainWindow)
 {
 }
 
-void SceneSponza::UpdateImGui(float timestep, Window& mainWindow)
+void SceneSponza::UpdateImGui(float timestep, Window* mainWindow)
 {
 	bool p_open = true;
 	ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -240,7 +240,7 @@ void SceneSponza::UpdateImGui(float timestep, Window& mainWindow)
     ImGui::End();
 }
 
-void SceneSponza::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneSponza::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
 	/* Sponza scene */

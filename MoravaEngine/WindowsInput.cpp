@@ -1,6 +1,5 @@
-#include "../Core/Input.h"
-
-#include "../../Application.h"
+#include "Input.h"
+#include "Application.h"
 
 #include <GLFW/glfw3.h>
 

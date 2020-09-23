@@ -22,13 +22,13 @@ void RendererOmniShadows::SetShaders()
 	Log::GetLogger()->info("RendererOmniShadows: shaderMain compiled [programID={0}]", shaderMain->GetProgramID());
 }
 
-void RendererOmniShadows::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererOmniShadows::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	RenderOmniShadows(mainWindow, scene, projectionMatrix);
 	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
-void RendererOmniShadows::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererOmniShadows::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	if (!scene->GetSettings().enableOmniShadows) return;
 
@@ -41,7 +41,7 @@ void RendererOmniShadows::RenderOmniShadows(Window& mainWindow, Scene* scene, gl
 			RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], mainWindow, scene, projectionMatrix);
 }
 
-void RendererOmniShadows::RenderPassOmniShadow(PointLight* light, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererOmniShadows::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	s_Shaders["omniShadow"]->Bind();
 
@@ -67,9 +67,9 @@ void RendererOmniShadows::RenderPassOmniShadow(PointLight* light, Window& mainWi
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RendererOmniShadows::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererOmniShadows::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	glViewport(0, 0, (GLsizei)mainWindow.GetWidth(), (GLsizei)mainWindow.GetHeight());
+	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 
 	// Clear the window
 	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);

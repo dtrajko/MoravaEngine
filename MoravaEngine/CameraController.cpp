@@ -1,10 +1,19 @@
 #include "CameraController.h"
 
+#include "CommonValues.h"
+
+#include "Input.h"
+#include "Log.h"
+#include "Timer.h"
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "glm/glm.hpp"
 #include "glm/gtx/compatibility.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
 
 #include <cstdio>
 
@@ -12,6 +21,7 @@
 CameraController::CameraController()
 	: CameraController(nullptr, 16 / 9.0f, 2.0f, 0.1f)
 {
+	m_InitialMousePosition = { Input::GetMouseX(), Input::GetMouseY() };
 }
 
 CameraController::CameraController(Camera* camera, float aspectRatio, float moveSpeed, float turnSpeed)
@@ -27,40 +37,41 @@ CameraController::CameraController(Camera* camera, float aspectRatio, float move
 void CameraController::KeyControl(bool* keys, float deltaTime)
 {
 	// Don't move camera when using Ctrl+S or Ctrl+D in Editor
-	if (keys[GLFW_KEY_LEFT_CONTROL]) return;
+	
+	if (Input::IsKeyPressed(MORAVA_KEY_LEFT_CONTROL)) return;
 
 	float velocity = m_MoveSpeed * deltaTime;
 
-	if (keys[GLFW_KEY_LEFT_SHIFT])
+	if (Input::IsKeyPressed(MORAVA_KEY_LEFT_SHIFT))
 	{
 		velocity *= m_SpeedBoost;
 	}
-	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
+	if (Input::IsKeyPressed(MORAVA_KEY_W) || Input::IsKeyPressed(MORAVA_KEY_UP))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetFront() * velocity);
 	}
-	if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN])
+	if (Input::IsKeyPressed(MORAVA_KEY_S) || Input::IsKeyPressed(MORAVA_KEY_DOWN))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetFront() * velocity);
 	}
-	if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT])
+	if (Input::IsKeyPressed(MORAVA_KEY_A) || Input::IsKeyPressed(MORAVA_KEY_LEFT))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetRight() * velocity);
 	}
-	if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT])
+	if (Input::IsKeyPressed(MORAVA_KEY_D) || Input::IsKeyPressed(MORAVA_KEY_RIGHT))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetRight() * velocity);
 	}
-	if (keys[GLFW_KEY_Q])
+	if (Input::IsKeyPressed(MORAVA_KEY_Q))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetUp() * velocity);
 	}
-	if (keys[GLFW_KEY_E] || keys[GLFW_KEY_SPACE])
+	if (Input::IsKeyPressed(MORAVA_KEY_E) || Input::IsKeyPressed(MORAVA_KEY_SPACE))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetUp() * velocity);
 	}
 
-	if (keys[GLFW_KEY_L])
+	if (Input::IsKeyPressed(MORAVA_KEY_L))
 	{
 		printf("CameraController::KeyControl Position [ %.2ff, %.2ff, %.2ff ]\n",
 			m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
@@ -71,10 +82,26 @@ void CameraController::KeyControl(bool* keys, float deltaTime)
 
 void CameraController::MouseControl(bool* buttons, float xChange, float yChange)
 {
-	if (buttons[GLFW_MOUSE_BUTTON_RIGHT])
+	// Based on Hazel-dev Camera::MouseRotate
+	if (Input::IsMouseButtonPressed(MORAVA_MOUSE_BUTTON_RIGHT))
 	{
-		m_Camera->SetYaw(m_Camera->GetYaw() + xChange * m_TurnSpeed);
-		m_Camera->SetPitch(m_Camera->GetPitch() - yChange * m_TurnSpeed);
+		const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
+		glm::vec2 delta = mouse - m_InitialMousePosition;
+		m_InitialMousePosition = mouse;
+
+		delta *= (float)glfwGetTime();
+
+		// Orientation
+		glm::quat orientation = glm::quat(glm::vec3(m_Pitch, m_Yaw, 0.0f));
+		// up direction
+		glm::vec3 up = glm::rotate(orientation, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		m_YawSign = up.y < 0.0f ? -1.0f : 1.0f;
+		m_Yaw += m_YawSign * delta.x * m_RotationSpeed;
+		m_Pitch += delta.y * m_RotationSpeed;
+
+		m_Camera->SetYaw(m_Yaw);
+		m_Camera->SetPitch(m_Pitch);
 
 		Update();
 	}
@@ -87,7 +114,7 @@ void CameraController::MouseScrollControl(bool* keys, float deltaTime, float xOf
 
 	GLfloat velocity = m_MoveSpeed * yOffset;
 
-	if (keys[GLFW_KEY_LEFT_SHIFT])
+	if (Input::IsKeyPressed(MORAVA_KEY_LEFT_SHIFT))
 	{
 		velocity *= m_SpeedBoost;
 	}

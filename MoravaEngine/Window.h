@@ -38,8 +38,9 @@ public:
 	virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 	virtual void SetVSync(bool enabled) = 0;
 	virtual bool IsVSync() const = 0;
+	virtual void SetInputMode(bool cursorEnabled) = 0;
 
-	static Window* Create(const WindowProps& props = WindowProps()) {};
+	static Window* Create(const WindowProps& props = WindowProps());
 
 	/**** END Window Hazel version - a platform independent Window interface ****/
 
@@ -57,5 +58,6 @@ public:
 	virtual void SetShouldClose(bool shouldClose) {};
 	virtual void SetCursorDisabled() {};
 	virtual void SetCursorNormal() {};
+	virtual bool GetShouldClose() { return false; };
 
 };

@@ -7,26 +7,25 @@ class WindowsWindow : public Window
 {
 	/**** BEGIN Window Hazel version - a platform independent Window interface ****/
 public:
-	using EventCallbackFn = std::function<void(Event&)>;
+	WindowsWindow(const WindowProps& props);
+	virtual ~WindowsWindow();
 
-	virtual ~WindowsWindow() override;
+	void OnUpdate() override;
 
-	virtual void OnUpdate() override;
-
-	virtual uint32_t GetWidth() const { return bufferWidth; };
-	virtual uint32_t GetHeight() const { return bufferHeight; };
+	inline uint32_t GetWidth() const override { return m_Data.Width; };
+	inline uint32_t GetHeight() const override { return m_Data.Height; };
 
 	// Window attributes
-	virtual void SetEventCallback(const EventCallbackFn& callback) override;
-	//	virtual void SetVSync(bool enabled) = 0;
-	//	virtual bool IsVSync() const = 0;
-	virtual void SetVSync(bool enabled);
-	virtual bool IsVSync() const;
+	void SetEventCallback(const EventCallbackFn& callback) override;
+	void SetVSync(bool enabled) override;
+	bool IsVSync() const override;
+	void SetInputMode(bool cursorEnabled) override;
 
-	static Window* Create(const WindowProps& props = WindowProps()) {};
-
+private:
 	virtual void Init(const WindowProps& props);
 	virtual void Shutdown();
+
+	static Window* Create(const WindowProps& props = WindowProps()) {};
 
 private:
 	// GLFWwindow* m_Window;
@@ -43,9 +42,6 @@ private:
 	/**** END Window Hazel version - a platform independent Window interface ****/
 
 public:
-	WindowsWindow();
-	WindowsWindow(GLint windowWidth, GLint windowHeight, const char* windowTitle);
-
 	virtual inline GLFWwindow* GetHandler() override { return glfwWindow; };
 	virtual bool* getKeys() override { return keys; };
 	virtual bool* getMouseButtons() override { return buttons; };
@@ -59,18 +55,15 @@ public:
 	virtual void SetShouldClose(bool shouldClose) override;
 	virtual void SetCursorDisabled() override;
 	virtual void SetCursorNormal() override;
+	virtual bool GetShouldClose() override { return glfwWindowShouldClose(glfwWindow); };
 
-	int Initialize();
-	inline unsigned int GetBufferWidth() { return bufferWidth; };
-	inline unsigned int GetBufferHeight() { return bufferHeight; };
-	bool GetShouldClose() { return glfwWindowShouldClose(glfwWindow); };
+	inline unsigned int GetBufferWidth() { return m_Data.Width; };
+	inline unsigned int GetBufferHeight() { return m_Data.Height; };
 	bool* getKeysPrev() { return keys_prev; }; // previous states of keys
 	bool* getMouseButtonsPrev() { return buttons_prev; }; // previos states of mouse buttons
-	void SwapBuffers() { glfwSwapBuffers(glfwWindow); };
+	// void SwapBuffers();
 
 	bool IsMouseButtonReleased(int mouseButton);
-
-	void CreateCallbacks();
 
 	static void handleKeys(GLFWwindow* window, int key, int code, int action, int mode);
 	static void handleMouse(GLFWwindow* window, double xPos, double yPos);
@@ -82,12 +75,6 @@ public:
 private:
 	GLFWwindow* glfwWindow;
 
-	const char* m_Title;
-	GLint width;
-	GLint height;
-	unsigned int bufferWidth;
-	unsigned int bufferHeight;
-
 	bool keys[1024];
 	bool buttons[32];
 
@@ -98,8 +85,8 @@ private:
 
 	float m_MouseX;
 	float m_MouseY;
-	GLfloat lastX;
-	GLfloat lastY;
+	float lastX;
+	float lastY;
 	float xChange;
 	float yChange;
 	float xChangeReset;
@@ -108,7 +95,6 @@ private:
 	float yMouseScrollOffset;
 	bool mouseFirstMoved;
 	bool mouseCursorAboveWindow;
-	bool m_VSync;
 	float m_CursorIgnoreLimit;
 
 };

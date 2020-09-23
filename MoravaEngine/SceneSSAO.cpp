@@ -150,12 +150,12 @@ void SceneSSAO::SetupSSAO()
     m_SSAO->Init();
 }
 
-void SceneSSAO::Update(float timestep, Window& mainWindow)
+void SceneSSAO::Update(float timestep, Window* mainWindow)
 {
     m_SSAO->Update(timestep);
 }
 
-void SceneSSAO::UpdateImGui(float timestep, Window& mainWindow)
+void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -341,7 +341,7 @@ void SceneSSAO::UpdateImGui(float timestep, Window& mainWindow)
     ImGui::End();
 }
 
-void SceneSSAO::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneSSAO::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     m_SSAO->Render(projectionMatrix, m_CameraController->CalculateViewMatrix(), meshes, &modelsSSAO);

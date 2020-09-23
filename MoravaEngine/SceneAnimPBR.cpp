@@ -12,6 +12,8 @@
 #include "Timer.h"
 #include "MousePicker.h"
 #include "Math.h"
+#include "Input.h"
+#include "Hazel/Core/MouseCodes.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
@@ -357,7 +359,7 @@ void SceneAnimPBR::SetupFramebuffers()
 {
 }
 
-void SceneAnimPBR::Update(float timestep, Window& mainWindow)
+void SceneAnimPBR::Update(float timestep, Window* mainWindow)
 {
     m_CurrentTimestamp = timestep;
 
@@ -440,10 +442,10 @@ void SceneAnimPBR::Update(float timestep, Window& mainWindow)
     }
 }
 
-void SceneAnimPBR::CheckIntersection(Window& mainWindow)
+void SceneAnimPBR::CheckIntersection(Window* mainWindow)
 {
     MousePicker::Get()->Update(
-        (int)mainWindow.GetMouseX(), (int)mainWindow.GetMouseY(),
+        (int)Input::GetMouseX(), (int)Input::GetMouseY(),
         m_ImGuiViewport.X, m_ImGuiViewport.Y, m_ImGuiViewport.Width, m_ImGuiViewport.Height,
         RendererBasic::GetProjectionMatrix(), m_CameraController->CalculateViewMatrix());
 
@@ -465,7 +467,7 @@ void SceneAnimPBR::CheckIntersection(Window& mainWindow)
         AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             m_Entities["Cube"].AABB.GetMin(), m_Entities["Cube"].AABB.GetMax(), glm::vec2(0.0f));
 
-    if (mainWindow.IsMouseButtonClicked(GLFW_MOUSE_BUTTON_1))
+    if (Input::IsMouseButtonPressed(MORAVA_MOUSE_BUTTON_1))
     {
         if (m_Entities["M1911"].Intersecting) {
             m_Translation_Gizmo = m_Entities["M1911"].Transform.Translation;
@@ -505,7 +507,7 @@ void SceneAnimPBR::CheckIntersection(Window& mainWindow)
     }
 }
 
-void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
+void SceneAnimPBR::UpdateImGui(float timestep, Window* mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -737,21 +739,21 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window& mainWindow)
     m_MeshAnimPBR_AnimBoy->OnImGuiRender();
 }
 
-void SceneAnimPBR::UpdateImGuizmo(Window& mainWindow)
+void SceneAnimPBR::UpdateImGuizmo(Window* mainWindow)
 {
     // BEGIN ImGuizmo
 
     // ImGizmo switching modes
-    if (mainWindow.getKeys()[GLFW_KEY_1])
+    if (Input::IsKeyPressed(MORAVA_KEY_1))
         m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
-    if (mainWindow.getKeys()[GLFW_KEY_2])
+    if (Input::IsKeyPressed(MORAVA_KEY_2))
         m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 
-    if (mainWindow.getKeys()[GLFW_KEY_3])
+    if (Input::IsKeyPressed(MORAVA_KEY_3))
         m_GizmoType = ImGuizmo::OPERATION::SCALE;
 
-    if (mainWindow.getKeys()[GLFW_KEY_4])
+    if (Input::IsKeyPressed(MORAVA_KEY_4))
         m_GizmoType = -1;
 
     // Gizmo
@@ -777,7 +779,7 @@ void SceneAnimPBR::UpdateImGuizmo(Window& mainWindow)
 // Note that you already dock windows into each others _without_ a DockSpace() by just moving windows 
 // from their title bar (or by holding SHIFT if io.ConfigDockingWithShift is set).
 // DockSpace() is only useful to construct to a central location for your application.
-void SceneAnimPBR::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
+void SceneAnimPBR::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
     if (!m_IsViewportEnabled) {
         Scene::ShowExampleAppDockSpace(p_open, mainWindow);
@@ -844,7 +846,7 @@ void SceneAnimPBR::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Exit")) mainWindow.SetShouldClose(true);
+            if (ImGui::MenuItem("Exit")) mainWindow->SetShouldClose(true);
             ImGui::EndMenu();
         }
 
@@ -864,11 +866,16 @@ void SceneAnimPBR::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
             // which we can't undo at the moment without finer window depth/z control.
             //ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
 
-            if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))                 dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
-            if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
-            if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
-            if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))     dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
-            if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
+            if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))
+                dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
+            if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))
+                dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
+            if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))
+                dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
+            if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))
+                dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
+            if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))
+                dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
             ImGui::EndMenu();
         }
 
@@ -895,7 +902,7 @@ void SceneAnimPBR::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
     ImGui::End();
 }
 
-void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     if (m_IsViewportEnabled)
@@ -906,8 +913,8 @@ void SceneAnimPBR::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
     else
     {
         // configure the viewport to the original framebuffer's screen dimensions
-        glViewport(0, 0, (GLsizei)mainWindow.GetWidth(), (GLsizei)mainWindow.GetHeight());
-        RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow.GetWidth(), (unsigned int)mainWindow.GetHeight());
+        glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
+        RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
     }
 
     SetupUniforms();

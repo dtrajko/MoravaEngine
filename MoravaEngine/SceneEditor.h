@@ -25,10 +25,10 @@ public:
 	SceneEditor();
     virtual ~SceneEditor() override;
 
-	virtual void Update(float timestep, Window& mainWindow) override;
-	virtual void UpdateImGui(float timestep, Window& mainWindow) override;
-	virtual void ShowExampleAppDockSpace(bool* p_open, Window& mainWindow) override;
-	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+	virtual void Update(float timestep, Window* mainWindow) override;
+	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
+	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
+	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
     inline Framebuffer* GetRenderFramebuffer() { return m_RenderFramebuffer; };
 
@@ -52,8 +52,8 @@ private:
 	inline Raycast* GetRaycast() const { return m_Raycast; };
 	SceneObject* CreateNewSceneObject();
 	void AddSceneObject();
-	void CopySceneObject(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
-	void DeleteSceneObject(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
+	void CopySceneObject(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
+	void DeleteSceneObject(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
 	void SelectNextFromMultipleObjects(std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
 	bool IsObjectSelected(unsigned int objectIndex);
 	void SaveScene();
@@ -67,7 +67,7 @@ private:
 	void SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject, float runningTime);
 	void SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Texture* texture, SceneObject* sceneObject, float runningTime);
 	void SetUniformsShaderWater(Shader* shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix);
-	void SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix);
+	void SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix);
 	glm::mat4 CalculateRenderTransform(SceneObject* sceneObject);
 	virtual bool IsWaterOnScene() override;
 	void UpdateLightDirection(glm::quat rotation);

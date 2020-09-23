@@ -203,7 +203,7 @@ void Scene::SetCamera()
 	m_Camera = new Camera(sceneSettings.cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f),
 		sceneSettings.cameraStartYaw, sceneSettings.cameraStartPitch);
 	
-	m_CameraController = new CameraController(m_Camera, m_AspectRatio, sceneSettings.cameraMoveSpeed, 0.1f);
+	m_CameraController = new CameraController(m_Camera, m_AspectRatio, sceneSettings.cameraMoveSpeed, 0.001f);
 }
 
 void Scene::SetLightManager()
@@ -223,7 +223,7 @@ void Scene::SetWaterManager(int width, int height)
 // Note that you already dock windows into each others _without_ a DockSpace() by just moving windows 
 // from their title bar (or by holding SHIFT if io.ConfigDockingWithShift is set).
 // DockSpace() is only useful to construct to a central location for your application.
-void Scene::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
+void Scene::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
 	static bool opt_fullscreen_persistant = true;
 	bool opt_fullscreen = opt_fullscreen_persistant;
@@ -285,7 +285,7 @@ void Scene::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Exit")) mainWindow.SetShouldClose(true);
+			if (ImGui::MenuItem("Exit")) mainWindow->SetShouldClose(true);
 			ImGui::EndMenu();
 		}
 

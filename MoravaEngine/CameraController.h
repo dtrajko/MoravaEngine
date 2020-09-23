@@ -47,4 +47,11 @@ protected:
 
 	bool m_UnlockRotation; // Left SHIFT for mouse rotation
 
+	// Hazel-dev Camera::MouseRotate
+	glm::vec2 m_InitialMousePosition;
+	float m_Yaw = 0.0f;
+	float m_Pitch = 0.0f;
+	float m_YawSign = 0.0f;
+	float m_RotationSpeed = 0.01f;
+
 };
