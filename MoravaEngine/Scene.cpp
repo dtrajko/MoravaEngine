@@ -203,7 +203,7 @@ void Scene::SetCamera()
 	m_Camera = new Camera(sceneSettings.cameraPosition, glm::vec3(0.0f, 1.0f, 0.0f),
 		sceneSettings.cameraStartYaw, sceneSettings.cameraStartPitch);
 	
-	m_CameraController = new CameraController(m_Camera, m_AspectRatio, sceneSettings.cameraMoveSpeed, 0.001f);
+	m_CameraController = new CameraController(m_Camera, m_AspectRatio, sceneSettings.cameraMoveSpeed, 0.1f);
 }
 
 void Scene::SetLightManager()
