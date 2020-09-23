@@ -1191,7 +1191,7 @@ void SceneEditor::ResizeViewport(glm::vec2 viewportPanelSize)
         m_RenderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
         m_ViewportSize = glm::vec2(viewportPanelSize.x, viewportPanelSize.y);
 
-        m_CameraController->OnResize(viewportPanelSize.x, viewportPanelSize.y);
+        m_CameraController->OnResize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
     }
 }
 

@@ -119,10 +119,10 @@ glm::mat4 CameraController::CalculateViewMatrix()
 	return viewMatrix;
 }
 
-void CameraController::OnResize(float width, float height)
+void CameraController::OnResize(uint32_t width, uint32_t height)
 {
 	// TODO (void Hazel::OrthographicCameraController::OnResize(float width, float height))
-	m_AspectRatio = width / height;
+	m_AspectRatio = (float)width / (float)height;
 }
 
 void CameraController::CalculateFront()

@@ -142,7 +142,7 @@ Scene::Scene()
 
 void Scene::OnWindowResize(WindowResizeEvent& e)
 {
-	m_CameraController->OnResize(e.GetWidth(), e.GetHeight());
+	m_CameraController->OnResize((uint32_t)e.GetWidth(), (uint32_t)e.GetHeight());
 }
 
 void Scene::SetupTextureSlots()
