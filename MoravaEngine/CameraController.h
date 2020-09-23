@@ -23,7 +23,7 @@ public:
 	glm::mat4 CalculateViewMatrix();
 	inline void SetUnlockRotation(bool unlockRotation) { m_UnlockRotation = unlockRotation; };
 
-	void OnResize(float width, float height);
+	void OnResize(uint32_t width, uint32_t height);
 
 	inline void SetZoomLevel(float zoomLevel) { m_ZoomLevel = zoomLevel; }
 	inline float GetZoomLevel() const { return m_ZoomLevel; }
