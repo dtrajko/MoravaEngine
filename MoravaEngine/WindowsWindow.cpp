@@ -118,6 +118,10 @@ void WindowsWindow::Init(const WindowProps& props)
 	// Setup Viewport size
 	glViewport(0, 0, m_Data.Width, m_Data.Height);
 
+	// The old MoravaEngine method of handling events
+	// not working with the new Hazel-dev GLFW callbacks
+	// CreateCallbacks();
+
 	// Set GLFW callbacks (Handle Key and Mouse input)
 	glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* window, int width, int height)
 		{
@@ -126,6 +130,9 @@ void WindowsWindow::Init(const WindowProps& props)
 			data.Height = height;
 			WindowResizeEvent event(width, height);
 			data.EventCallback(event);
+
+			// The old MoravaEngine method of handling events
+			windowSizeCallback(window, width, height);
 		});
 
 	glfwSetWindowCloseCallback(glfwWindow, [](GLFWwindow* window)
@@ -133,6 +140,9 @@ void WindowsWindow::Init(const WindowProps& props)
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			WindowCloseEvent event;
 			data.EventCallback(event);
+
+			// The old MoravaEngine method of handling events
+			windowCloseCallback(window);
 		});
 
 	glfwSetKeyCallback(glfwWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -160,6 +170,9 @@ void WindowsWindow::Init(const WindowProps& props)
 				break;
 			}
 			}
+
+			// The old MoravaEngine method of handling events
+			handleKeys(window, key, scancode, action, mods);
 		});
 
 	glfwSetCharCallback(glfwWindow, [](GLFWwindow* window, unsigned int keycode)
@@ -168,6 +181,9 @@ void WindowsWindow::Init(const WindowProps& props)
 
 			KeyTypedEvent event(keycode);
 			data.EventCallback(event);
+
+			// The old MoravaEngine method of handling events
+			handleChars(window, keycode);
 		});
 
 	glfwSetMouseButtonCallback(glfwWindow, [](GLFWwindow* window, int button, int action, int modes)
@@ -189,6 +205,9 @@ void WindowsWindow::Init(const WindowProps& props)
 				break;
 			}
 			}
+
+			// The old MoravaEngine method of handling events
+			mouseButtonCallback(window, button, action, modes);
 		});
 
 	glfwSetScrollCallback(glfwWindow, [](GLFWwindow* window, double xOffset, double yOffset)
@@ -197,6 +216,9 @@ void WindowsWindow::Init(const WindowProps& props)
 
 			MouseScrolledEvent event((float)xOffset, (float)yOffset);
 			data.EventCallback(event);
+
+			// The old MoravaEngine method of handling events
+			mouseScrollCallback(window, xOffset, yOffset);
 		});
 
 	glfwSetCursorPosCallback(glfwWindow, [](GLFWwindow* window, double xPos, double yPos)
@@ -205,13 +227,19 @@ void WindowsWindow::Init(const WindowProps& props)
 
 			MouseMovedEvent event((float)xPos, (float)yPos);
 			data.EventCallback(event);
+
+			// The old MoravaEngine method of handling events
+			handleMouse(window, xPos, yPos);
 		});
 
 	glfwSetCursorEnterCallback(glfwWindow, [](GLFWwindow* window, int entered)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-			// TODO
+			// TODO Hazel-dev
+
+			// The old MoravaEngine method of handling events
+			cursorEnterCallback(window, entered);
 		});
 }
 
@@ -253,6 +281,18 @@ bool WindowsWindow::IsVSync() const
 
 int WindowsWindow::m_ActionPrev;
 
+void WindowsWindow::CreateCallbacks()
+{
+	glfwSetKeyCallback(glfwWindow, handleKeys);
+	glfwSetCharCallback(glfwWindow, handleChars);
+	glfwSetCursorPosCallback(glfwWindow, handleMouse);
+	glfwSetMouseButtonCallback(glfwWindow, mouseButtonCallback);
+	glfwSetCursorEnterCallback(glfwWindow, cursorEnterCallback);
+	glfwSetWindowSizeCallback(glfwWindow, windowSizeCallback);
+	glfwSetWindowCloseCallback(glfwWindow, windowCloseCallback);
+	glfwSetScrollCallback(glfwWindow, mouseScrollCallback);
+}
+
 void WindowsWindow::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
 {
 	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
@@ -277,6 +317,11 @@ void WindowsWindow::handleKeys(GLFWwindow* window, int key, int code, int action
 			theWindow->keys[key] = false;
 		}
 	}
+}
+
+void WindowsWindow::handleChars(GLFWwindow* window, unsigned int keycode)
+{
+	// not implemented/used in old MoravaEngine method of handling events
 }
 
 void WindowsWindow::handleMouse(GLFWwindow* window, double xPos, double yPos)
@@ -358,6 +403,11 @@ void WindowsWindow::windowSizeCallback(GLFWwindow* window, int width, int height
 	theWindow->m_Data.Width = width;
 	theWindow->m_Data.Height = height;
 	glViewport(0, 0, width, height);
+}
+
+void WindowsWindow::windowCloseCallback(GLFWwindow* window)
+{
+	// not implemented/used in old MoravaEngine method of handling events
 }
 
 void WindowsWindow::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset)

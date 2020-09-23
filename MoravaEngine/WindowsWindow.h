@@ -65,11 +65,14 @@ public:
 
 	bool IsMouseButtonReleased(int mouseButton);
 
+	void CreateCallbacks();
 	static void handleKeys(GLFWwindow* window, int key, int code, int action, int mode);
 	static void handleMouse(GLFWwindow* window, double xPos, double yPos);
+	static void handleChars(GLFWwindow* window, unsigned int keycode);
 	static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 	static void cursorEnterCallback(GLFWwindow* window, int entered);
 	static void windowSizeCallback(GLFWwindow* window, int width, int height);
+	static void windowCloseCallback(GLFWwindow* window);
 	static void mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 
 private:
