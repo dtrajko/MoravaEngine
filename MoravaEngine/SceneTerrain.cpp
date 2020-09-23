@@ -163,7 +163,7 @@ void SceneTerrain::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(m_TerrainScale));
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	shaders["main"]->setMat4("model", model);
 	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	textures["rock"]->Bind(textureSlots["diffuse"]);
 	// textures["colorMap"]->Bind(textureSlots["diffuse"]);
@@ -188,7 +188,7 @@ void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(256.0f, 1.0f, 256.0f));
 
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	shaderWater->setMat4("model", model);
 	m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
