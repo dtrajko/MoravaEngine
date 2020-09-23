@@ -57,7 +57,7 @@ void ImGuiWrapper::Init(Window* window)
 	}
 
 	// Setup Platform/Renderer bindings
-	ImGui_ImplGlfw_InitForOpenGL(window->GetHandler(), true);
+	ImGui_ImplGlfw_InitForOpenGL(window->GetHandle(), true);
 	ImGui_ImplOpenGL3_Init("#version 330");
 }
 
@@ -81,7 +81,7 @@ void ImGuiWrapper::End()
 {
 	// ImGui Rendering
 	ImGuiIO& io = ImGui::GetIO();
-	io.DisplaySize = ImVec2((float)m_Window->GetBufferWidth(), (float)m_Window->GetBufferHeight());
+	io.DisplaySize = ImVec2((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
 
 	// Rendering
 	ImGui::Render();

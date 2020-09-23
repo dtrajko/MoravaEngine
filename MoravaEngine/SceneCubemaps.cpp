@@ -76,11 +76,11 @@ void SceneCubemaps::SetGeometry()
     m_TextureCubeMapID = m_TextureCubeMap->GetID();
 }
 
-void SceneCubemaps::Update(float timestep, Window& mainWindow)
+void SceneCubemaps::Update(float timestep, Window* mainWindow)
 {
 }
 
-void SceneCubemaps::UpdateImGui(float timestep, Window& mainWindow)
+void SceneCubemaps::UpdateImGui(float timestep, Window* mainWindow)
 {
     MousePicker* mp = MousePicker::Get();
 
@@ -139,7 +139,7 @@ void SceneCubemaps::UpdateImGui(float timestep, Window& mainWindow)
     // m_LightManager->directionalLight.SetColor(dirLightColor);
 }
 
-void SceneCubemaps::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneCubemaps::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
 }

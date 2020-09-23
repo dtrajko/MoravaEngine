@@ -36,9 +36,9 @@ class SceneNanosuit : public Scene
 
 public:
 	SceneNanosuit();
-	virtual void Update(float timestep, Window& mainWindow) override;
-	virtual void UpdateImGui(float timestep, Window& mainWindow) override;
-	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+	virtual void Update(float timestep, Window* mainWindow) override;
+	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
+	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
 	inline std::map<std::string, ModelJoey*> GetModels() const { return models; };
 	inline std::map<std::string, MeshJoey*> GetMeshesJoey() const { return meshesJoey; };

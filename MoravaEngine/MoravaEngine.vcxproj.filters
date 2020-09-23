@@ -242,9 +242,6 @@
     <ClCompile Include="TextureSampler.cpp">
       <Filter>Texture</Filter>
     </ClCompile>
-    <ClCompile Include="Window.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Timer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -422,12 +419,6 @@
     <ClCompile Include="TerrainHeightMap.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="Hazel\Windows\WindowsInput.cpp">
-      <Filter>Hazel\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Hazel\Windows\WindowsWindow.cpp">
-      <Filter>Hazel\Windows</Filter>
-    </ClCompile>
     <ClCompile Include="Application.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -484,6 +475,18 @@
     </ClCompile>
     <ClCompile Include="SceneDeferred.cpp">
       <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowsWindow.cpp">
+      <Filter>Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Core\Layer.cpp">
+      <Filter>Hazel\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Core\LayerStack.cpp">
+      <Filter>Hazel\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowsInput.cpp">
+      <Filter>Platform\Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -952,9 +955,6 @@
     <ClInclude Include="Hazel\Events\MouseEvent.h">
       <Filter>Hazel\Events</Filter>
     </ClInclude>
-    <ClInclude Include="Hazel\Windows\WindowsWindow.h">
-      <Filter>Hazel\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="Hazel\Core\Input.h">
       <Filter>Hazel\Core</Filter>
     </ClInclude>
@@ -1035,6 +1035,18 @@
     </ClInclude>
     <ClInclude Include="SceneDeferred.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsWindow.h">
+      <Filter>Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Core\Layer.h">
+      <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Core\LayerStack.h">
+      <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1118,6 +1130,12 @@
     </Filter>
     <Filter Include="PostProcessing">
       <UniqueIdentifier>{29da581e-1ade-4f5d-9017-46c95e57f366}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{42db03f0-bce2-49ee-9e26-41ea8b165e57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\Windows">
+      <UniqueIdentifier>{3852b832-d027-483b-bbcd-6019fd477d75}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

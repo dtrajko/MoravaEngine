@@ -11,7 +11,7 @@ public:
 	virtual void Init(Scene* scene) override;
 	virtual void SetUniforms() override;
 	virtual void SetShaders() override;
-	virtual void Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
+	virtual void Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
 	void RenderPass();
 	virtual ~RendererJoey() override;
 

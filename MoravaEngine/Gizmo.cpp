@@ -347,7 +347,7 @@ std::string Gizmo::GetModeDescriptive(int modeID)
 	return "Undefined";
 }
 
-void Gizmo::OnMousePress(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
+void Gizmo::OnMousePress(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
 {
 	float currentTimestamp = (float)glfwGetTime();
 	if (currentTimestamp - m_MousePress.lastTime < m_MousePress.cooldown) return;
@@ -360,7 +360,7 @@ void Gizmo::OnMousePress(Window& mainWindow, std::vector<SceneObject*>* sceneObj
 	}
 }
 
-void Gizmo::OnMouseRelease(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
+void Gizmo::OnMouseRelease(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
 {
 	float currentTimestamp = (float)glfwGetTime();
 	if (currentTimestamp - m_MouseRelease.lastTime < m_MouseRelease.cooldown) return;
@@ -385,7 +385,7 @@ void Gizmo::OnMouseRelease(Window& mainWindow, std::vector<SceneObject*>* sceneO
 		if (sceneObjects->size() == 1)
 			canToggleGizmo = true;
 
-		if (m_SceneObject != nullptr && mainWindow.getKeys()[GLFW_KEY_TAB])
+		if (m_SceneObject != nullptr && mainWindow->getKeys()[GLFW_KEY_TAB])
 			canToggleGizmo = true;
 
 		if (canToggleGizmo) // toggle gizmo disabled, only enable allowed
@@ -464,7 +464,7 @@ void Gizmo::PrintObjects()
 	}
 }
 
-void Gizmo::Update(glm::vec3 cameraPosition, Window& mainWindow)
+void Gizmo::Update(glm::vec3 cameraPosition, Window* mainWindow)
 {
 	// Update Gizmo if in Active status (visible)
 	if (m_Active)
@@ -472,11 +472,11 @@ void Gizmo::Update(glm::vec3 cameraPosition, Window& mainWindow)
 
 	// Update Gizmo if not in Active status (invisible)
 
-	if (mainWindow.getKeys()[GLFW_KEY_P])
+	if (mainWindow->getKeys()[GLFW_KEY_P])
 		PrintObjects();
 }
 
-void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
+void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window* mainWindow)
 {
 	MousePicker::Get()->GetPointOnRay(cameraPosition, MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
@@ -485,7 +485,7 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
 	bool isIntersecting = false;
 	int intersectingObjectIndex = -1;
 
-	if (!mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1]) // don't change axes while dragging the gizmo
+	if (!mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1]) // don't change axes while dragging the gizmo
 	{
 		m_AxesEnabled = { false, false, false };
 	}
@@ -503,7 +503,7 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
 			m_GizmoObjects[i]->so.GetAABB()->m_IsColliding = true;
 			intersectingObjectIndex = i;
 
-			if (!mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1]) // don't change axes while dragging the gizmo
+			if (!mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1]) // don't change axes while dragging the gizmo
 			{
 				m_AxesEnabled = m_GizmoObjects[i]->axes;
 			}
@@ -520,21 +520,21 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window& mainWindow)
 	// printf("m_AxesEnabled [ %d %d %d ] intersectingObjectIndex = %i m_GizmoObjects.size = %zu\n",
 	// 	m_AxesEnabled.x, m_AxesEnabled.y, m_AxesEnabled.z, intersectingObjectIndex, m_GizmoObjects.size());
 
-	if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1]) //  && isIntersectionFound
+	if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1]) //  && isIntersectionFound
 	{
 		// Move objects based on mouse input
 		float mouseDeltaX = 0.0f;
 		float mouseDeltaY = 0.0f;
 
-		if (std::abs(mainWindow.getXChange()) > 0.1f) {
-			mouseDeltaX = mainWindow.getXChange();
+		if (std::abs(mainWindow->getXChange()) > 0.1f) {
+			mouseDeltaX = mainWindow->getXChange();
 		}
-		if (std::abs(mainWindow.getYChange()) > 0.1f) {
-			mouseDeltaY = mainWindow.getYChange();
+		if (std::abs(mainWindow->getYChange()) > 0.1f) {
+			mouseDeltaY = mainWindow->getYChange();
 		}
 
 		float factorSpeed = m_FactorSpeed;
-		if (mainWindow.getKeys()[GLFW_KEY_TAB])
+		if (mainWindow->getKeys()[GLFW_KEY_TAB])
 			factorSpeed = 1.0f;
 
 		if (m_Mode == GIZMO_MODE_TRANSLATE)

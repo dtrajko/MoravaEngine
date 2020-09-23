@@ -220,7 +220,7 @@ void SceneMarchingCubes::SetupMeshes()
     meshes.insert(std::make_pair("cube", cube));
 }
 
-void SceneMarchingCubes::UpdateImGui(float timestep, Window& mainWindow)
+void SceneMarchingCubes::UpdateImGui(float timestep, Window* mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -535,13 +535,13 @@ void SceneMarchingCubes::UpdateImGui(float timestep, Window& mainWindow)
     ImGui::End();
 }
 
-void SceneMarchingCubes::Update(float timestep, Window& mainWindow)
+void SceneMarchingCubes::Update(float timestep, Window* mainWindow)
 {
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
-    Dig(mainWindow.getKeys(), timestep);
-    CastRay(mainWindow.getKeys(), mainWindow.getMouseButtons(), timestep);
-    OnClick(mainWindow.getKeys(), mainWindow.getMouseButtons(), timestep);
+    Dig(mainWindow->getKeys(), timestep);
+    CastRay(mainWindow->getKeys(), mainWindow->getMouseButtons(), timestep);
+    OnClick(mainWindow->getKeys(), mainWindow->getMouseButtons(), timestep);
 
     {
         Profiler profiler("SMC::UpdateCooldown");
@@ -549,15 +549,15 @@ void SceneMarchingCubes::Update(float timestep, Window& mainWindow)
         GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
 
-    m_PlayerController->KeyControl(mainWindow.getKeys(), timestep);
-    m_PlayerController->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
-    m_PlayerController->MouseScrollControl(mainWindow.getKeys(), timestep, mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
+    m_PlayerController->KeyControl(mainWindow->getKeys(), timestep);
+    m_PlayerController->MouseControl(mainWindow->getMouseButtons(), mainWindow->getXChange(), mainWindow->getYChange());
+    m_PlayerController->MouseScrollControl(mainWindow->getKeys(), timestep, mainWindow->getXMouseScrollOffset(), mainWindow->getYMouseScrollOffset());
     m_PlayerController->SetUnlockRotation(m_UnlockRotation);
     m_Player->Update();
     m_CameraController->Update();
     m_CameraController->SetUnlockRotation(m_UnlockRotation);
 
-    m_DeleteMode = mainWindow.getKeys()[m_DeleteVoxelCodeGLFW];
+    m_DeleteMode = mainWindow->getKeys()[m_DeleteVoxelCodeGLFW];
 
     m_RenderInstanced->Update();
     m_RenderInstanced->SetIntersectPosition(m_IntersectPosition);
@@ -565,9 +565,9 @@ void SceneMarchingCubes::Update(float timestep, Window& mainWindow)
 
     if (m_UnlockRotation != m_UnlockRotationPrev) {
         if (m_UnlockRotation)
-            mainWindow.SetCursorDisabled();
+            mainWindow->SetCursorDisabled();
         else
-            mainWindow.SetCursorNormal();
+            mainWindow->SetCursorNormal();
         m_UnlockRotationPrev = m_UnlockRotation;
     }
 }
@@ -594,7 +594,7 @@ void SceneMarchingCubes::CheckMapRebuildRequirements()
     }
 }
 
-void SceneMarchingCubes::UpdateCooldown(float timestep, Window& mainWindow)
+void SceneMarchingCubes::UpdateCooldown(float timestep, Window* mainWindow)
 {
     // Cooldown
     if (timestep - m_UpdateCooldown.lastTime < m_UpdateCooldown.cooldown) return;
@@ -800,7 +800,7 @@ void SceneMarchingCubes::Dig(bool* keys, float timestep)
     }
 }
 
-void SceneMarchingCubes::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneMarchingCubes::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui

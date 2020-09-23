@@ -36,8 +36,8 @@ class Gizmo
 {
 public:
 	Gizmo();
-	void Update(glm::vec3 cameraPosition, Window& mainWindow);
-	void UpdateActive(glm::vec3 cameraPosition, Window& mainWindow);
+	void Update(glm::vec3 cameraPosition, Window* mainWindow);
+	void UpdateActive(glm::vec3 cameraPosition, Window* mainWindow);
 	void Render(Shader* shader);
 	void CreateObjects();
 	void ChangeMode(int mode);
@@ -49,8 +49,8 @@ public:
 	inline Bool3 GetAxesEnabled() { return m_AxesEnabled; };
 	std::string GetModeDescriptive(int modeID = -1);
 	void PrintObjects();
-	void OnMousePress(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
-	void OnMouseRelease(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
+	void OnMousePress(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
+	void OnMouseRelease(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
 	inline void SetDrawAABBs(bool drawAABBs) { m_DrawAABBs = drawAABBs; };
 	inline glm::quat GetRotation() { return m_Rotation; };
 	~Gizmo();

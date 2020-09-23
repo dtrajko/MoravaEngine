@@ -5,7 +5,24 @@
 #include <Windows.h>
 
 
+#define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
+
 Application* Application::s_Instance = nullptr;
+
+Application::Application()
+{
+}
+
+void Application::InitWindow(const WindowProps& props)
+{
+	m_Window = Window::Create(props);
+	m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
+}
+
+Application::~Application()
+{
+	delete m_Window;
+}
 
 Application* Application::Get()
 {
@@ -18,6 +35,20 @@ Application* Application::Get()
 	}
 
 	return s_Instance;
+}
+
+void Application::OnEvent(Event& e)
+{
+	EventDispatcher dispatcher(e);
+	dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(OnWindowClose));
+	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
+
+	for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
+	{
+		(*--it)->OnEvent(e);
+		if (e.Handled)
+			break;
+	}
 }
 
 void Application::Run()
@@ -44,7 +75,7 @@ std::string Application::OpenFile(const std::string& filter) const
 	// Initialize OPENFILENAME
 	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandler());
+	ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandle());
 	ofn.lpstrFile = szFile;
 	ofn.nMaxFile = sizeof(szFile);
 	ofn.lpstrFilter = "All\0*.*\0";
@@ -59,4 +90,25 @@ std::string Application::OpenFile(const std::string& filter) const
 		return ofn.lpstrFile;
 	}
 	return std::string();
+}
+
+bool Application::OnWindowClose(WindowCloseEvent& e)
+{
+	m_Running = false;
+	return true;
+}
+
+bool Application::OnWindowResize(WindowResizeEvent& e)
+{
+	if (e.GetWidth() == 0 || e.GetHeight() == 0)
+	{
+		m_Minimized = true;
+		return false;
+	}
+
+	m_Minimized = false;
+
+	m_Scene->OnWindowResize(e);
+
+	return false;
 }

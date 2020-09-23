@@ -101,7 +101,7 @@ void BlurEffect::HorizontalBlurSetup(int width, int height)
 	Log::GetLogger()->info("Horizontal Blur FBO created successfully.");
 
 	// -- Unbind the framebuffer / back to default framebuffer
-	m_HorizontalFBO->Unbind(Application::Get()->GetWindow()->GetBufferWidth(), Application::Get()->GetWindow()->GetBufferHeight());
+	m_HorizontalFBO->Unbind(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 }
 
 void BlurEffect::VerticalBlurSetup(int width, int height)
@@ -119,7 +119,7 @@ void BlurEffect::VerticalBlurSetup(int width, int height)
 	Log::GetLogger()->info("Vertical Blur FBO created successfully.");
 
 	// -- Unbind the framebuffer / back to default framebuffer
-	m_VerticalFBO->Unbind(Application::Get()->GetWindow()->GetBufferWidth(), Application::Get()->GetWindow()->GetBufferHeight());
+	m_VerticalFBO->Unbind(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 }
 
 void BlurEffect::Render()
@@ -149,7 +149,7 @@ void BlurEffect::RenderHorizontal(int textureHorizontal)
 	RenderQuadHorizontal();
 
 	m_ShaderHorizontalBlur->Unbind();
-	m_HorizontalFBO->Unbind(Application::Get()->GetWindow()->GetBufferWidth(), Application::Get()->GetWindow()->GetBufferHeight());
+	m_HorizontalFBO->Unbind(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 }
 
 void BlurEffect::RenderVertical(int textureVertical)
@@ -169,7 +169,7 @@ void BlurEffect::RenderVertical(int textureVertical)
 	RenderQuadVertical();
 
 	m_ShaderVerticalBlur->Unbind();
-	m_VerticalFBO->Unbind(Application::Get()->GetWindow()->GetBufferWidth(), Application::Get()->GetWindow()->GetBufferHeight());
+	m_VerticalFBO->Unbind(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 }
 
 void BlurEffect::RenderQuadHorizontal()

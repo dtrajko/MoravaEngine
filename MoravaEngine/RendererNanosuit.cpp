@@ -26,7 +26,7 @@ void RendererNanosuit::SetShaders()
 	printf("RendererNanosuit: shaderNanosuit compiled [programID=%d]\n", shaderNanosuit->GetProgramID());
 }
 
-void RendererNanosuit::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererNanosuit::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	SceneNanosuit* sceneNanosuit = (SceneNanosuit*)scene;
 	m_ModelRotationY = sceneNanosuit->m_IsRotating ? m_ModelRotationY + sceneNanosuit->m_RotationSpeed * deltaTime : 0.0f;
@@ -34,9 +34,9 @@ void RendererNanosuit::Render(float deltaTime, Window& mainWindow, Scene* scene,
 	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
-void RendererNanosuit::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererNanosuit::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 
 	Shader* shaderNanosuit = s_Shaders["nanosuit"];
 	SceneNanosuit* sceneNanosuit = (SceneNanosuit*)scene;

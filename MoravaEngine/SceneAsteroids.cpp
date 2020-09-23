@@ -117,23 +117,23 @@ void SceneAsteroids::SetupModels()
 	models.insert(std::make_pair("planet", planet));
 }
 
-void SceneAsteroids::Update(float timestep, Window& mainWindow)
+void SceneAsteroids::Update(float timestep, Window* mainWindow)
 {
 }
 
-void SceneAsteroids::UpdateImGui(float timestep, Window& mainWindow)
+void SceneAsteroids::UpdateImGui(float timestep, Window* mainWindow)
 {
 	ImGui::Begin("Settings");
 	ImGui::SliderFloat("FOV", &m_FOV, -60.0f, 180.0f);
 	ImGui::End();
 }
 
-void SceneAsteroids::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneAsteroids::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
 	// Override the Projection matrix (update FOV)
 	projectionMatrix = glm::perspective(glm::radians(m_FOV),
-		(float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
+		(float)mainWindow->GetWidth() / (float)mainWindow->GetHeight(),
 		sceneSettings.nearPlane, sceneSettings.farPlane);
 
 	RendererBasic::SetProjectionMatrix(projectionMatrix);

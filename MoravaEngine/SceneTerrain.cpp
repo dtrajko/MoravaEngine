@@ -83,12 +83,12 @@ void SceneTerrain::SetupModels()
 	meshes.insert(std::make_pair("terrain", terrain));
 }
 
-void SceneTerrain::Update(float timestep, Window& mainWindow)
+void SceneTerrain::Update(float timestep, Window* mainWindow)
 {
 	m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
 }
 
-void SceneTerrain::UpdateImGui(float timestep, Window& mainWindow)
+void SceneTerrain::UpdateImGui(float timestep, Window* mainWindow)
 {
 	bool p_open = true;
 	ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -151,7 +151,7 @@ void SceneTerrain::UpdateImGui(float timestep, Window& mainWindow)
 	ImGui::End();
 }
 
-void SceneTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneTerrain::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
 	if (passType == "shadow") return;
@@ -163,7 +163,7 @@ void SceneTerrain::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::s
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(m_TerrainScale));
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	shaders["main"]->setMat4("model", model);
 	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	textures["rock"]->Bind(textureSlots["diffuse"]);
 	// textures["colorMap"]->Bind(textureSlots["diffuse"]);
@@ -188,7 +188,7 @@ void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(256.0f, 1.0f, 256.0f));
 
-	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	shaderWater->setMat4("model", model);
 	m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);

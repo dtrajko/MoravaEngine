@@ -102,7 +102,7 @@ void RendererEditor::SetShaders()
     shaderHybridAnimPBR->setInt("u_BRDFLUT",          7);
 }
 
-void RendererEditor::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererEditor::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     if (!scene->GetSettings().enableShadows) return;
     if (!LightManager::directionalLight.GetEnabled()) return;
@@ -130,7 +130,7 @@ void RendererEditor::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RendererEditor::RenderPassOmniShadow(PointLight* light, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererEditor::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     if (!scene->GetSettings().enableOmniShadows) return;
 
@@ -157,7 +157,7 @@ void RendererEditor::RenderPassOmniShadow(PointLight* light, Window& mainWindow,
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RendererEditor::RenderPassWaterReflection(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererEditor::RenderPassWaterReflection(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     if (!scene->GetSettings().enableWaterEffects) return;
 
@@ -202,7 +202,7 @@ void RendererEditor::RenderPassWaterReflection(Window& mainWindow, Scene* scene,
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RendererEditor::RenderPassWaterRefraction(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererEditor::RenderPassWaterRefraction(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     if (!scene->GetSettings().enableWaterEffects) return;
 
@@ -249,7 +249,7 @@ void RendererEditor::RenderPassWaterRefraction(Window& mainWindow, Scene* scene,
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RendererEditor::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererEditor::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     if (!scene->GetSettings().enableOmniShadows) return;
 
@@ -272,7 +272,7 @@ void RendererEditor::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::ma
     }
 }
 
-void RendererEditor::RenderWaterEffects(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererEditor::RenderWaterEffects(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     if (!scene->GetSettings().enableWaterEffects) return;
     if (!scene->IsWaterOnScene()) return;
@@ -308,7 +308,7 @@ void RendererEditor::RenderWaterEffects(float deltaTime, Window& mainWindow, Sce
     glDisable(GL_CLIP_DISTANCE0);
 }
 
-void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererEditor::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     SceneEditor* sceneEditor = (SceneEditor*)scene;
     Framebuffer* renderFramebuffer = nullptr;
@@ -321,7 +321,7 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
     }
     else
     {
-        glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+        glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
     }
 
     // Clear the window
@@ -337,7 +337,7 @@ void RendererEditor::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 proj
 
     // then before rendering, configure the viewport to the original framebuffer's screen dimensions
     if (!m_IsViewportEnabled)
-        SetDefaultFramebuffer((unsigned int)mainWindow.GetBufferWidth(), (unsigned int)mainWindow.GetBufferHeight());
+        SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
 
     EnableTransparency();
     EnableCulling();
@@ -677,7 +677,7 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     /**** End glass ****/
 }
 
-void RendererEditor::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererEditor::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     float aspectRatio = scene->GetCameraController()->GetAspectRatio();
     projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio,

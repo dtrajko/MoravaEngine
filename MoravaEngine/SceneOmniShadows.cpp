@@ -124,11 +124,11 @@ void SceneOmniShadows::SetupMeshes()
     meshes.insert(std::make_pair("cube", cube));
 }
 
-void SceneOmniShadows::Update(float timestep, Window& mainWindow)
+void SceneOmniShadows::Update(float timestep, Window* mainWindow)
 {
 }
 
-void SceneOmniShadows::UpdateImGui(float timestep, Window& mainWindow)
+void SceneOmniShadows::UpdateImGui(float timestep, Window* mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -271,7 +271,7 @@ void SceneOmniShadows::UpdateImGui(float timestep, Window& mainWindow)
     ImGui::End();
 }
 
-void SceneOmniShadows::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneOmniShadows::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     Shader* shaderMain = shaders["main"];

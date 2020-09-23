@@ -98,7 +98,7 @@ void Renderer::SetShaders()
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
 }
 
-void Renderer::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	if (!scene->GetSettings().enableShadows) return;
 
@@ -123,7 +123,7 @@ void Renderer::RenderPassShadow(Window& mainWindow, Scene* scene, glm::mat4 proj
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	if (!scene->GetSettings().enableOmniShadows) return;
 
@@ -136,7 +136,7 @@ void Renderer::RenderOmniShadows(Window& mainWindow, Scene* scene, glm::mat4 pro
 			Renderer::RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], mainWindow, scene, projectionMatrix);
 }
 
-void Renderer::RenderPassOmniShadow(PointLight* light, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	s_Shaders["omniShadow"]->Bind();
 
@@ -163,7 +163,7 @@ void Renderer::RenderPassOmniShadow(PointLight* light, Window& mainWindow, Scene
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::RenderWaterEffects(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderWaterEffects(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	if (!scene->GetSettings().enableWaterEffects) return;
 
@@ -186,7 +186,7 @@ void Renderer::RenderWaterEffects(float deltaTime, Window& mainWindow, Scene* sc
 	RenderPassWaterRefraction(mainWindow, scene, projectionMatrix);
 }
 
-void Renderer::RenderPassWaterReflection(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderPassWaterReflection(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glViewport(0, 0, scene->GetWaterManager()->GetFramebufferWidth(), scene->GetWaterManager()->GetFramebufferHeight());
 
@@ -235,7 +235,7 @@ void Renderer::RenderPassWaterReflection(Window& mainWindow, Scene* scene, glm::
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::RenderPassWaterRefraction(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderPassWaterRefraction(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glViewport(0, 0, scene->GetWaterManager()->GetFramebufferWidth(), scene->GetWaterManager()->GetFramebufferHeight());
 
@@ -280,11 +280,11 @@ void Renderer::RenderPassWaterRefraction(Window& mainWindow, Scene* scene, glm::
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glDisable(GL_CLIP_DISTANCE0);
 
-	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 
 	// Clear the window
 	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
@@ -383,7 +383,7 @@ void Renderer::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projection
 	shaderWater->Unbind();
 }
 
-void Renderer::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 

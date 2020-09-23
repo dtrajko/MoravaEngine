@@ -63,14 +63,14 @@ void RendererCubemaps::SetShaders()
     s_Shaders["skybox"]->setInt("skybox", 0);
 }
 
-void RendererCubemaps::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererCubemaps::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	RenderPass(mainWindow, scene, projectionMatrix);
 }
 
-void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererCubemaps::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 
 	// Clear the window
 	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
@@ -127,7 +127,7 @@ void RendererCubemaps::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 pr
     }
 
     // cube
-    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
+    if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
         if (mp->m_TestPoint.x > -(terrainWidth / 2) && mp->m_TestPoint.x <= (terrainWidth / 2) &&
             mp->m_TestPoint.z > -(terrainHeight / 2) && mp->m_TestPoint.z <= (terrainHeight / 2))

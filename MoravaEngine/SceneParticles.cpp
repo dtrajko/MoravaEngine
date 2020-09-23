@@ -74,16 +74,16 @@ void SceneParticles::SetupParticles()
     m_ParticleSystem.OnStart();
 }
 
-void SceneParticles::Update(float timestep, Window& mainWindow)
+void SceneParticles::Update(float timestep, Window* mainWindow)
 {
     // Update Particle System
-    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
+    if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
-        m_MouseX = mainWindow.GetMouseX();
-        m_MouseY = mainWindow.GetMouseY();
+        m_MouseX = mainWindow->GetMouseX();
+        m_MouseY = mainWindow->GetMouseY();
 
-        m_NormalizedMouseX = -1.0f + 2.0f * m_MouseX / mainWindow.GetBufferWidth();
-        m_NormalizedMouseY =  1.0f - 2.0f * m_MouseY / mainWindow.GetBufferHeight();
+        m_NormalizedMouseX = -1.0f + 2.0f * m_MouseX / mainWindow->GetWidth();
+        m_NormalizedMouseY =  1.0f - 2.0f * m_MouseY / mainWindow->GetHeight();
 
         glm::vec3 particlePosition = m_Camera->GetPosition() + m_Camera->GetFront() * 5.0f;
 
@@ -96,7 +96,7 @@ void SceneParticles::Update(float timestep, Window& mainWindow)
     m_ParticleSystem.OnUpdate(timestep * 0.01f);
 }
 
-void SceneParticles::UpdateImGui(float timestep, Window& mainWindow)
+void SceneParticles::UpdateImGui(float timestep, Window* mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -113,7 +113,7 @@ void SceneParticles::UpdateImGui(float timestep, Window& mainWindow)
     ImGui::End();
 }
 
-void SceneParticles::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneParticles::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     // Skybox shaderBackground

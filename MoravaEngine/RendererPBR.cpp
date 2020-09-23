@@ -88,11 +88,11 @@ void RendererPBR::SetShaders()
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
 }
 
-void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererPBR::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glDisable(GL_CLIP_DISTANCE0);
 
-	glViewport(0, 0, (GLsizei)mainWindow.GetBufferWidth(), (GLsizei)mainWindow.GetBufferHeight());
+	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 
 	// Clear the window
 	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
@@ -202,7 +202,7 @@ void RendererPBR::RenderPass(Window& mainWindow, Scene* scene, glm::mat4 project
 	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 }
 
-void RendererPBR::Render(float deltaTime, Window& mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererPBR::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 

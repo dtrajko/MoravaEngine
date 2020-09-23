@@ -218,8 +218,8 @@ void SceneEditor::SetupRenderFramebuffer()
 {
     if (!m_IsViewportEnabled) return;
 
-    uint32_t width = Application::Get()->GetWindow()->GetBufferWidth();
-    uint32_t height = Application::Get()->GetWindow()->GetBufferHeight();
+    uint32_t width = Application::Get()->GetWindow()->GetWidth();
+    uint32_t height = Application::Get()->GetWindow()->GetHeight();
     m_RenderFramebuffer = new Framebuffer(width, height);
 
     m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
@@ -483,7 +483,7 @@ void SceneEditor::LoadScene()
         m_Gizmo->SetSceneObject(m_SceneObjects[m_SceneObjects.size() - 1]);
 }
 
-void SceneEditor::UpdateImGui(float timestep, Window& mainWindow)
+void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -1199,7 +1199,7 @@ void SceneEditor::ResizeViewport(glm::vec2 viewportPanelSize)
 // Note that you already dock windows into each others _without_ a DockSpace() by just moving windows 
 // from their title bar (or by holding SHIFT if io.ConfigDockingWithShift is set).
 // DockSpace() is only useful to construct to a central location for your application.
-void SceneEditor::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
+void SceneEditor::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
     if (!m_IsViewportEnabled) {
         Scene::ShowExampleAppDockSpace(p_open, mainWindow);
@@ -1266,7 +1266,7 @@ void SceneEditor::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Exit")) mainWindow.SetShouldClose(true);
+            if (ImGui::MenuItem("Exit")) mainWindow->SetShouldClose(true);
             ImGui::EndMenu();
         }
 
@@ -1317,7 +1317,7 @@ void SceneEditor::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
     ImGui::End();
 }
 
-void SceneEditor::Update(float timestep, Window& mainWindow)
+void SceneEditor::Update(float timestep, Window* mainWindow)
 {
     m_CurrentTimestamp = timestep;
 
@@ -1326,8 +1326,8 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
 
     int viewportX = 0;
     int viewportY = 0;
-    int viewportWidth = (int)mainWindow.GetBufferWidth();
-    int viewportHeight = (int)mainWindow.GetBufferHeight();
+    int viewportWidth = (int)mainWindow->GetWidth();
+    int viewportHeight = (int)mainWindow->GetHeight();
     if (m_IsViewportEnabled) {
         viewportX = (int)m_ImGuiViewport.X;
         viewportY = (int)m_ImGuiViewport.Y;
@@ -1336,7 +1336,7 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     }
 
     MousePicker::Get()->Update(
-        (int)mainWindow.GetMouseX(), (int)mainWindow.GetMouseY(),
+        (int)mainWindow->GetMouseX(), (int)mainWindow->GetMouseY(),
         viewportX, viewportY, viewportWidth, viewportHeight,
         RendererBasic::GetProjectionMatrix(), m_CameraController->CalculateViewMatrix());
 
@@ -1399,14 +1399,14 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     m_Gizmo->SetDrawAABBs(m_DrawGizmos);
 
     // Switching between scene objects that are currently in focus (mouse over)
-    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1])
+    if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
         m_Gizmo->OnMousePress(mainWindow, &m_SceneObjects, m_SelectedIndex);
         // UpdateLightDirection(m_Gizmo->GetRotation());
         m_MouseButton_1_Prev = true;
     }
 
-    if (!mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1] && m_MouseButton_1_Prev)
+    if (!mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1] && m_MouseButton_1_Prev)
     {
         SelectNextFromMultipleObjects(&m_SceneObjects, m_SelectedIndex);
         m_Gizmo->OnMouseRelease(mainWindow, &m_SceneObjects, m_SelectedIndex);
@@ -1423,44 +1423,44 @@ void SceneEditor::Update(float timestep, Window& mainWindow)
     }
 
     // Add new scene object with default settings
-    if (mainWindow.getMouseButtons()[GLFW_MOUSE_BUTTON_1] && mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL])
+    if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1] && mainWindow->getKeys()[GLFW_KEY_LEFT_CONTROL])
     {
         AddSceneObject();
     }
 
     // Copy selected scene object
-    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_C])
+    if (mainWindow->getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow->getKeys()[GLFW_KEY_C])
     {
         CopySceneObject(mainWindow, &m_SceneObjects, m_SelectedIndex);
         m_SceneObjects[m_SelectedIndex]->isSelected = false;
     }
 
     // Delete selected object
-    if (mainWindow.getKeys()[GLFW_KEY_DELETE])
+    if (mainWindow->getKeys()[GLFW_KEY_DELETE])
     {
         DeleteSceneObject(mainWindow, &m_SceneObjects, m_SelectedIndex);
     }
 
-    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_R])
+    if (mainWindow->getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow->getKeys()[GLFW_KEY_R])
         ResetScene();
 
-    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_S])
+    if (mainWindow->getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow->getKeys()[GLFW_KEY_S])
         SaveScene();
 
-    if (mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow.getKeys()[GLFW_KEY_L])
+    if (mainWindow->getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow->getKeys()[GLFW_KEY_L])
         LoadScene();
 
     // Gizmo switching modes
-    if (mainWindow.getKeys()[GLFW_KEY_1])
+    if (mainWindow->getKeys()[GLFW_KEY_1])
         m_Gizmo->ChangeMode(GIZMO_MODE_TRANSLATE);
 
-    if (mainWindow.getKeys()[GLFW_KEY_2])
+    if (mainWindow->getKeys()[GLFW_KEY_2])
         m_Gizmo->ChangeMode(GIZMO_MODE_SCALE);
 
-    if (mainWindow.getKeys()[GLFW_KEY_3])
+    if (mainWindow->getKeys()[GLFW_KEY_3])
         m_Gizmo->ChangeMode(GIZMO_MODE_ROTATE);
 
-    if (mainWindow.getKeys()[GLFW_KEY_4])
+    if (mainWindow->getKeys()[GLFW_KEY_4])
         m_Gizmo->ChangeMode(GIZMO_MODE_NONE);
 
     for (auto& object : m_SceneObjects)
@@ -1787,7 +1787,7 @@ void SceneEditor::AddSceneObject()
     m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
 }
 
-void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
+void SceneEditor::CopySceneObject(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
 {
     // Cooldown
     if (m_CurrentTimestamp - m_ObjectCopy.lastTime < m_ObjectCopy.cooldown) return;
@@ -1839,7 +1839,7 @@ void SceneEditor::CopySceneObject(Window& mainWindow, std::vector<SceneObject*>*
     m_Gizmo->OnMouseRelease(mainWindow, sceneObjects, selectedIndex);
 }
 
-void SceneEditor::DeleteSceneObject(Window& mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
+void SceneEditor::DeleteSceneObject(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
 {
     // Cooldown
     if (m_CurrentTimestamp - m_ObjectDelete.lastTime < m_ObjectDelete.cooldown) return;
@@ -2104,9 +2104,9 @@ void SceneEditor::SetUniformsShaderWater(Shader* shaderWater, SceneObject* scene
     }
 }
 
-void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projectionMatrix)
+void SceneEditor::SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix)
 {
-    if (mainWindow.getKeys()[GLFW_KEY_O])
+    if (mainWindow->getKeys()[GLFW_KEY_O])
     {
         if (Timer::Get()->GetCurrentTimestamp() - m_ProjectionChange.lastTime > m_ProjectionChange.cooldown)
         {
@@ -2117,10 +2117,10 @@ void SceneEditor::SwitchOrthographicView(Window& mainWindow, glm::mat4& projecti
 
     if (m_OrthographicViewEnabled)
     {
-        float left   = -(float)mainWindow.GetBufferWidth() / 2.0f / m_FOV;
-        float right  = (float)mainWindow.GetBufferWidth() / 2.0f / m_FOV;
-        float bottom = -(float)mainWindow.GetBufferHeight() / 2.0f / m_FOV;
-        float top    = (float)mainWindow.GetBufferHeight() / 2.0f / m_FOV;
+        float left   = -(float)mainWindow->GetWidth() / 2.0f / m_FOV;
+        float right  = (float)mainWindow->GetWidth() / 2.0f / m_FOV;
+        float bottom = -(float)mainWindow->GetHeight() / 2.0f / m_FOV;
+        float top    = (float)mainWindow->GetHeight() / 2.0f / m_FOV;
 
         projectionMatrix = glm::ortho(left, right, bottom, top, sceneSettings.nearPlane, sceneSettings.farPlane);
     }
@@ -2340,7 +2340,7 @@ void SceneEditor::RenderSkybox(Shader* shaderBackground)
         m_RenderFramebuffer->Bind();
     }
     else {
-        RendererBasic::SetDefaultFramebuffer(Application::Get()->GetWindow()->GetBufferWidth(), Application::Get()->GetWindow()->GetBufferHeight());
+        RendererBasic::SetDefaultFramebuffer(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
     }
 
     int environmentMapSlot = 0;
@@ -2441,7 +2441,7 @@ void SceneEditor::RenderGlassObjects(Shader* shaderGlass)
     m_GlassShaderModel->RenderPBR();
 }
 
-void SceneEditor::Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneEditor::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui

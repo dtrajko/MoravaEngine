@@ -12,9 +12,11 @@
 #endif // !_WIN32
 
 #include "CommonValues.h"
+#include "Hazel/Core/Base.h"
+#include "Hazel/Events/Event.h"
 #include "Application.h"
 #include "ImGuiWrapper.h"
-#include "Window.h"
+#include "WindowsWindow.h"
 #include "CameraController.h"
 #include "LightManager.h"
 #include "WaterManager.h"
@@ -22,6 +24,7 @@
 #include "MousePicker.h"
 #include "Timer.h"
 #include "Log.h"
+#include "Input.h"
 
 #include "SceneCottage.h"
 #include "SceneEiffel.h"
@@ -56,17 +59,16 @@
 #include "RendererVoxelTerrain.h"
 #include "RendererEditor.h"
 
+#include <memory>
+
 
 // Window dimensions
 const char* windowTitle = "3D Graphics Engine (C++ / OpenGL)";
 const int WIDTH = 1280;
 const int HEIGHT = 720;
 
-
-Window mainWindow;
 Scene* scene;
 RendererBasic* renderer;
-
 
 enum class SceneName
 {
@@ -94,7 +96,7 @@ enum class SceneName
 	AnimPBR,
 };
 
-SceneName currentScene = SceneName::AnimPBR;
+SceneName currentScene = SceneName::Deferred;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -104,10 +106,7 @@ int main()
 {
 	Log::Init();
 
-	mainWindow = Window(WIDTH, HEIGHT, windowTitle);
-	mainWindow.Initialize();
-
-	Application::Get()->SetWindow(&mainWindow);
+	Application::Get()->InitWindow(WindowProps({ windowTitle, WIDTH, HEIGHT }));
 
 	LOG_INFO("OpenGL Info:");
 	LOG_INFO("   Vendor: {0}",   glGetString(GL_VENDOR));
@@ -216,45 +215,51 @@ int main()
 
 	// Projection matrix
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
-		(float)mainWindow.GetBufferWidth() / (float)mainWindow.GetBufferHeight(),
+		(float)Application::Get()->GetWindow()->GetWidth() / (float)Application::Get()->GetWindow()->GetHeight(),
 		Scene::GetSettings().nearPlane, Scene::GetSettings().farPlane);
 
 	RendererBasic::SetProjectionMatrix(projectionMatrix);
 
 	scene->SetCamera();
 	scene->SetLightManager();
-	scene->SetWaterManager((int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight());
+	scene->SetWaterManager((int)Application::Get()->GetWindow()->GetWidth(), (int)Application::Get()->GetWindow()->GetHeight());
 
 	renderer->Init(scene);
 
-	ImGuiWrapper::Init(&mainWindow);
+	ImGuiWrapper::Init(Application::Get()->GetWindow());
 
 	float targetFPS = 60.0f;
 	float targetUpdateRate = 24.0f;
 	Timer timer(targetFPS, targetUpdateRate);
 
 	// Loop until window closed
-	while (!mainWindow.GetShouldClose())
+	while (!Application::Get()->GetWindow()->GetShouldClose())
 	{
 		Timer::Get()->Update();
 
-		scene->GetCameraController()->KeyControl(mainWindow.getKeys(), Timer::Get()->GetDeltaTime());
-		scene->GetCameraController()->MouseControl(mainWindow.getMouseButtons(), mainWindow.getXChange(), mainWindow.getYChange());
-		scene->GetCameraController()->MouseScrollControl(mainWindow.getKeys(), Timer::Get()->GetDeltaTime(), mainWindow.getXMouseScrollOffset(), mainWindow.getYMouseScrollOffset());
+		scene->GetCameraController()->KeyControl(Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime());
+		scene->GetCameraController()->MouseControl(
+			Application::Get()->GetWindow()->getMouseButtons(),
+			Application::Get()->GetWindow()->getXChange(),
+			Application::Get()->GetWindow()->getYChange());
+		scene->GetCameraController()->MouseScrollControl(
+			Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime(),
+			Application::Get()->GetWindow()->getXMouseScrollOffset(),
+			Application::Get()->GetWindow()->getYMouseScrollOffset());
 
 		MousePicker::Get()->Update(
-			(int)mainWindow.GetMouseX(), (int)mainWindow.GetMouseY(),
-			0, 0, (int)mainWindow.GetBufferWidth(), (int)mainWindow.GetBufferHeight(),
+			(int)Application::Get()->GetWindow()->GetMouseX(), (int)Application::Get()->GetWindow()->GetMouseY(),
+			0, 0, (int)Application::Get()->GetWindow()->GetWidth(), (int)Application::Get()->GetWindow()->GetHeight(),
 			RendererBasic::GetProjectionMatrix(), scene->GetCameraController()->CalculateViewMatrix());
 
-		if (mainWindow.getKeys()[GLFW_KEY_F])
+		if (Input::IsKeyPressed(Key::F))
 		{
 			LightManager::spotLights[2].GetBasePL()->Toggle();
-			mainWindow.getKeys()[GLFW_KEY_L] = false;
+			// Application::Get()->GetWindow()->getKeys()[GLFW_KEY_L] = false;
 		}
 
 		// Toggle wireframe mode
-		if (mainWindow.getKeys()[GLFW_KEY_R] && !mainWindow.getKeys()[GLFW_KEY_LEFT_CONTROL])
+		if (Input::IsKeyPressed(Key::R) && !Input::IsKeyPressed(Key::LeftControl))
 		{
 			if (Timer::Get()->GetCurrentTimestamp() - keyPressCooldown.lastTime > keyPressCooldown.cooldown)
 			{
@@ -273,18 +278,18 @@ int main()
 		{
 			Profiler profiler("Scene::Update");
 			// if (Timer::Get()->CanUpdate())
-			scene->Update(Timer::Get()->GetCurrentTimestamp(), mainWindow); // TODO deltaTime obsolete
+			scene->Update(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow()); // TODO deltaTime obsolete
 			scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 		}
 
 		{
 			Profiler profiler("Renderer::Render");
 			// if (Timer::Get()->CanRender())
-			renderer->Render(Timer::Get()->GetDeltaTime(), mainWindow, scene, projectionMatrix); // TODO deltaTime obsolete
+			renderer->Render(Timer::Get()->GetDeltaTime(), Application::Get()->GetWindow(), scene, projectionMatrix); // TODO deltaTime obsolete
 			scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 		}
 
-		scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), mainWindow);
+		scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow());
 
 		scene->GetProfilerResults()->clear();
 
@@ -292,11 +297,8 @@ int main()
 
 		glDisable(GL_BLEND);
 
-		// Swap buffers
-		mainWindow.SwapBuffers();
-
-		// Get and handle user input events
-		glfwPollEvents();
+		// Swap buffers and poll events
+		Application::Get()->GetWindow()->OnUpdate();
 	}
 
 	ImGuiWrapper::Cleanup();

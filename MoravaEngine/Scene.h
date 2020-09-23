@@ -25,6 +25,7 @@
 #include "TextureLoader.h"
 #include "SceneObject.h"
 #include "CommonStructs.h"
+#include "Hazel/Events/ApplicationEvent.h"
 
 
 struct SceneSettings
@@ -73,10 +74,11 @@ class Scene
 {
 public:
 	Scene();
-	virtual void Update(float timestep, Window& mainWindow) = 0;
-	virtual void UpdateImGui(float timestep, Window& mainWindow) = 0;
-	virtual void ShowExampleAppDockSpace(bool* p_open, Window& mainWindow);
-	virtual void Render(Window& mainWindow, glm::mat4 projectionMatrix, std::string passType,
+	virtual void Update(float timestep, Window* mainWindow) = 0;
+	virtual void OnWindowResize(WindowResizeEvent& e);
+	virtual void UpdateImGui(float timestep, Window* mainWindow) = 0;
+	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
+	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) = 0;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) {};

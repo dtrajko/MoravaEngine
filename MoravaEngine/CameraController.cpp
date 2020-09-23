@@ -1,5 +1,8 @@
 #include "CameraController.h"
 
+#include "Log.h"
+#include "Input.h"
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "glm/glm.hpp"
@@ -27,51 +30,50 @@ CameraController::CameraController(Camera* camera, float aspectRatio, float move
 void CameraController::KeyControl(bool* keys, float deltaTime)
 {
 	// Don't move camera when using Ctrl+S or Ctrl+D in Editor
-	if (keys[GLFW_KEY_LEFT_CONTROL]) return;
+	if (Input::IsKeyPressed(Key::LeftControl)) return;
 
 	float velocity = m_MoveSpeed * deltaTime;
 
-	if (keys[GLFW_KEY_LEFT_SHIFT])
+	if (Input::IsKeyPressed(Key::LeftShift))
 	{
 		velocity *= m_SpeedBoost;
 	}
-	if (keys[GLFW_KEY_W] || keys[GLFW_KEY_UP])
+	if (Input::IsKeyPressed(Key::W) || Input::IsKeyPressed(Key::Up))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetFront() * velocity);
 	}
-	if (keys[GLFW_KEY_S] || keys[GLFW_KEY_DOWN])
+	if (Input::IsKeyPressed(Key::S) || Input::IsKeyPressed(Key::Down))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetFront() * velocity);
 	}
-	if (keys[GLFW_KEY_A] || keys[GLFW_KEY_LEFT])
+	if (Input::IsKeyPressed(Key::A) || Input::IsKeyPressed(Key::Left))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetRight() * velocity);
 	}
-	if (keys[GLFW_KEY_D] || keys[GLFW_KEY_RIGHT])
+	if (Input::IsKeyPressed(Key::D) || Input::IsKeyPressed(Key::Right))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetRight() * velocity);
 	}
-	if (keys[GLFW_KEY_Q])
+	if (Input::IsKeyPressed(Key::Q))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetUp() * velocity);
 	}
-	if (keys[GLFW_KEY_E] || keys[GLFW_KEY_SPACE])
+	if (Input::IsKeyPressed(Key::E) || Input::IsKeyPressed(Key::Space))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetUp() * velocity);
 	}
 
-	if (keys[GLFW_KEY_L])
+	if (Input::IsKeyPressed(Key::L))
 	{
-		printf("CameraController::KeyControl Position [ %.2ff, %.2ff, %.2ff ]\n",
-			m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
-		printf("CameraController::KeyControl Front    [ %.2ff, %.2ff, %.2ff ]\n",
-			m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
+		Log::GetLogger()->debug("CameraController GLFW_KEY_L {0}, keys[GLFW_KEY_L] {1}", GLFW_KEY_L, keys[GLFW_KEY_L]);
+		Log::GetLogger()->debug("CameraController::KeyControl Position [ {0}, {1}, {2} ]", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
+		Log::GetLogger()->debug("CameraController::KeyControl Front    [ {0}, {1}, {2} ]", m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
 	}
 }
 
 void CameraController::MouseControl(bool* buttons, float xChange, float yChange)
 {
-	if (buttons[GLFW_MOUSE_BUTTON_RIGHT])
+	if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 	{
 		m_Camera->SetYaw(m_Camera->GetYaw() + xChange * m_TurnSpeed);
 		m_Camera->SetPitch(m_Camera->GetPitch() - yChange * m_TurnSpeed);
@@ -87,7 +89,7 @@ void CameraController::MouseScrollControl(bool* keys, float deltaTime, float xOf
 
 	GLfloat velocity = m_MoveSpeed * yOffset;
 
-	if (keys[GLFW_KEY_LEFT_SHIFT])
+	if (Input::IsKeyPressed(Key::LeftShift))
 	{
 		velocity *= m_SpeedBoost;
 	}

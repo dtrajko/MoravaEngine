@@ -5,6 +5,7 @@
 #include "MeshData.h"
 #include "Tile2D.h"
 #include "TextureLoader.h"
+#include "Hazel/Events/ApplicationEvent.h"
 
 
 SceneSettings Scene::sceneSettings;
@@ -139,6 +140,11 @@ Scene::Scene()
 	SetupMeshes();
 }
 
+void Scene::OnWindowResize(WindowResizeEvent& e)
+{
+	m_CameraController->OnResize(e.GetWidth(), e.GetHeight());
+}
+
 void Scene::SetupTextureSlots()
 {
 	textureSlots.insert(std::make_pair("diffuse",    1));
@@ -223,7 +229,7 @@ void Scene::SetWaterManager(int width, int height)
 // Note that you already dock windows into each others _without_ a DockSpace() by just moving windows 
 // from their title bar (or by holding SHIFT if io.ConfigDockingWithShift is set).
 // DockSpace() is only useful to construct to a central location for your application.
-void Scene::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
+void Scene::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
 	static bool opt_fullscreen_persistant = true;
 	bool opt_fullscreen = opt_fullscreen_persistant;
@@ -285,7 +291,7 @@ void Scene::ShowExampleAppDockSpace(bool* p_open, Window& mainWindow)
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Exit")) mainWindow.SetShouldClose(true);
+			if (ImGui::MenuItem("Exit")) mainWindow->SetShouldClose(true);
 			ImGui::EndMenu();
 		}
 
