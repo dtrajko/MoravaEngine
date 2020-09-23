@@ -29,6 +29,15 @@ void Camera::Update()
 	m_Up = glm::normalize(glm::cross(m_Right, m_Front));
 }
 
+void Camera::SetPitch(float pitch)
+{
+	// preventing the invertion of orientation
+	if (pitch > 89.0f) pitch = 89.0f;
+	if (pitch <= -89.0f) pitch = -89.0f;
+
+	m_Pitch = pitch;
+}
+
 Camera::~Camera()
 {
 }
