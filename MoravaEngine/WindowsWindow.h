@@ -57,15 +57,13 @@ public:
 	virtual void SetCursorNormal() override;
 	virtual bool GetShouldClose() override { return glfwWindowShouldClose(glfwWindow); };
 
-	inline unsigned int GetBufferWidth() { return m_Data.Width; };
-	inline unsigned int GetBufferHeight() { return m_Data.Height; };
 	bool* getKeysPrev() { return keys_prev; }; // previous states of keys
 	bool* getMouseButtonsPrev() { return buttons_prev; }; // previos states of mouse buttons
 	// void SwapBuffers();
 
 	bool IsMouseButtonReleased(int mouseButton);
 
-	void CreateCallbacks();
+	// void CreateCallbacks(); // Obsolete after adding GLFW callbacks to Init() method
 	static void handleKeys(GLFWwindow* window, int key, int code, int action, int mode);
 	static void handleMouse(GLFWwindow* window, double xPos, double yPos);
 	static void handleChars(GLFWwindow* window, unsigned int keycode);

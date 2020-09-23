@@ -125,28 +125,37 @@ void WindowsWindow::Init(const WindowProps& props)
 	// Set GLFW callbacks (Handle Key and Mouse input)
 	glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* window, int width, int height)
 		{
+			// The old MoravaEngine method of handling events
+			windowSizeCallback(window, width, height);
+
+			return; // disable EventCallback
+
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data.Width = width;
 			data.Height = height;
 			WindowResizeEvent event(width, height);
 			data.EventCallback(event);
-
-			// The old MoravaEngine method of handling events
-			windowSizeCallback(window, width, height);
 		});
 
 	glfwSetWindowCloseCallback(glfwWindow, [](GLFWwindow* window)
 		{
+			// The old MoravaEngine method of handling events
+			windowCloseCallback(window);
+
+			return; // disable EventCallback
+
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			WindowCloseEvent event;
 			data.EventCallback(event);
-
-			// The old MoravaEngine method of handling events
-			windowCloseCallback(window);
 		});
 
 	glfwSetKeyCallback(glfwWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
+			// The old MoravaEngine method of handling events
+			handleKeys(window, key, scancode, action, mods);
+
+			return; // disable EventCallback
+
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			switch (action)
@@ -170,24 +179,28 @@ void WindowsWindow::Init(const WindowProps& props)
 				break;
 			}
 			}
-
-			// The old MoravaEngine method of handling events
-			handleKeys(window, key, scancode, action, mods);
 		});
 
 	glfwSetCharCallback(glfwWindow, [](GLFWwindow* window, unsigned int keycode)
-		{
+		{		
+			// The old MoravaEngine method of handling events
+			handleChars(window, keycode);
+
+			return; // disable EventCallback
+
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			KeyTypedEvent event(keycode);
 			data.EventCallback(event);
-
-			// The old MoravaEngine method of handling events
-			handleChars(window, keycode);
 		});
 
 	glfwSetMouseButtonCallback(glfwWindow, [](GLFWwindow* window, int button, int action, int modes)
 		{
+			// The old MoravaEngine method of handling events
+			mouseButtonCallback(window, button, action, modes);
+
+			return; // disable EventCallback
+
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			switch (action)
@@ -205,41 +218,44 @@ void WindowsWindow::Init(const WindowProps& props)
 				break;
 			}
 			}
-
-			// The old MoravaEngine method of handling events
-			mouseButtonCallback(window, button, action, modes);
 		});
 
 	glfwSetScrollCallback(glfwWindow, [](GLFWwindow* window, double xOffset, double yOffset)
 		{
+			// The old MoravaEngine method of handling events
+			mouseScrollCallback(window, xOffset, yOffset);
+
+			return; // disable EventCallback
+
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			MouseScrolledEvent event((float)xOffset, (float)yOffset);
 			data.EventCallback(event);
-
-			// The old MoravaEngine method of handling events
-			mouseScrollCallback(window, xOffset, yOffset);
 		});
 
 	glfwSetCursorPosCallback(glfwWindow, [](GLFWwindow* window, double xPos, double yPos)
 		{
+			// The old MoravaEngine method of handling events
+			handleMouse(window, xPos, yPos);
+
+			return; // disable EventCallback
+
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			MouseMovedEvent event((float)xPos, (float)yPos);
 			data.EventCallback(event);
-
-			// The old MoravaEngine method of handling events
-			handleMouse(window, xPos, yPos);
 		});
 
 	glfwSetCursorEnterCallback(glfwWindow, [](GLFWwindow* window, int entered)
 		{
+			// The old MoravaEngine method of handling events
+			cursorEnterCallback(window, entered);
+
+			return; // disable EventCallback
+
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			// TODO Hazel-dev
-
-			// The old MoravaEngine method of handling events
-			cursorEnterCallback(window, entered);
 		});
 }
 
@@ -281,20 +297,10 @@ bool WindowsWindow::IsVSync() const
 
 int WindowsWindow::m_ActionPrev;
 
-void WindowsWindow::CreateCallbacks()
-{
-	glfwSetKeyCallback(glfwWindow, handleKeys);
-	glfwSetCharCallback(glfwWindow, handleChars);
-	glfwSetCursorPosCallback(glfwWindow, handleMouse);
-	glfwSetMouseButtonCallback(glfwWindow, mouseButtonCallback);
-	glfwSetCursorEnterCallback(glfwWindow, cursorEnterCallback);
-	glfwSetWindowSizeCallback(glfwWindow, windowSizeCallback);
-	glfwSetWindowCloseCallback(glfwWindow, windowCloseCallback);
-	glfwSetScrollCallback(glfwWindow, mouseScrollCallback);
-}
-
 void WindowsWindow::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
 {
+	Log::GetLogger()->debug("WindowsWindow::handleKeys(key {0}, code {1}, action {2}, mode {3})", key, code, action, mode);
+
 	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
 
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -326,6 +332,8 @@ void WindowsWindow::handleChars(GLFWwindow* window, unsigned int keycode)
 
 void WindowsWindow::handleMouse(GLFWwindow* window, double xPos, double yPos)
 {
+	Log::GetLogger()->debug("WindowsWindow::handleMouse(xPos {0}, yPos {1})", xPos, yPos);
+
 	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
 
 	theWindow->m_MouseX = (float)xPos;
@@ -354,6 +362,8 @@ void WindowsWindow::handleMouse(GLFWwindow* window, double xPos, double yPos)
 
 void WindowsWindow::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
+	Log::GetLogger()->debug("WindowsWindow::mouseButtonCallback(button {0}, action {1}, mods {2})", button, action, mods);
+
 	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
 
 	if (button >= 0 && button < 32)
@@ -388,6 +398,8 @@ void WindowsWindow::mouseButtonCallback(GLFWwindow* window, int button, int acti
 
 void WindowsWindow::cursorEnterCallback(GLFWwindow* window, int entered)
 {
+	Log::GetLogger()->debug("WindowsWindow::cursorEnterCallback(entered {0})", entered);
+
 	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
 
 	if (entered)
@@ -484,3 +496,19 @@ void WindowsWindow::SetInputMode(bool cursorEnabled)
 	else
 		glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
+
+/**
+ * Obsolete after adding GLFW callbacks to Init() method
+ *
+void WindowsWindow::CreateCallbacks()
+{
+	glfwSetKeyCallback(glfwWindow, handleKeys);
+	glfwSetCharCallback(glfwWindow, handleChars);
+	glfwSetCursorPosCallback(glfwWindow, handleMouse);
+	glfwSetMouseButtonCallback(glfwWindow, mouseButtonCallback);
+	glfwSetCursorEnterCallback(glfwWindow, cursorEnterCallback);
+	glfwSetWindowSizeCallback(glfwWindow, windowSizeCallback);
+	glfwSetWindowCloseCallback(glfwWindow, windowCloseCallback);
+	glfwSetScrollCallback(glfwWindow, mouseScrollCallback);
+}
+*/

@@ -17,9 +17,6 @@ public:
 	virtual void KeyControl(bool* keys, float deltaTime);
 	virtual void MouseControl(bool* buttons, float xChange, float yChange);
 	virtual void MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset);
-
-	void MouseControlHazelDev();
-
 	virtual void Update();
 	inline Camera* GetCamera() { return m_Camera; };
 	void InvertPitch();

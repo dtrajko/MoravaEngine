@@ -4,21 +4,21 @@
 #include <GLFW/glfw3.h>
 
 
-bool Input::IsKeyPressed(KeyCode key)
+bool Input::IsKeyPressed(int key)
 {
 	auto window = static_cast<GLFWwindow*>(Application::Get()->GetWindow()->GetHandler());
 	auto state = glfwGetKey(window, static_cast<int32_t>(key));
 	return state == GLFW_PRESS || state == GLFW_REPEAT;
 }
 
-bool Input::IsMouseButtonPressed(MouseCode button)
+bool Input::IsMouseButtonPressed(int button)
 {
 	auto window = static_cast<GLFWwindow*>(Application::Get()->GetWindow()->GetHandler());
 	auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
 	return state == GLFW_PRESS;
 }
 
-bool Input::IsMouseButtonReleased(MouseCode button)
+bool Input::IsMouseButtonReleased(int button)
 {
 	auto window = static_cast<GLFWwindow*>(Application::Get()->GetWindow()->GetHandler());
 	auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));

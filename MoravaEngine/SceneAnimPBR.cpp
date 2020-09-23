@@ -12,8 +12,6 @@
 #include "Timer.h"
 #include "MousePicker.h"
 #include "Math.h"
-#include "Input.h"
-#include "Hazel/Core/MouseCodes.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
@@ -445,7 +443,7 @@ void SceneAnimPBR::Update(float timestep, Window* mainWindow)
 void SceneAnimPBR::CheckIntersection(Window* mainWindow)
 {
     MousePicker::Get()->Update(
-        (int)Input::GetMouseX(), (int)Input::GetMouseY(),
+        (int)mainWindow->GetMouseX(), (int)mainWindow->GetMouseY(),
         m_ImGuiViewport.X, m_ImGuiViewport.Y, m_ImGuiViewport.Width, m_ImGuiViewport.Height,
         RendererBasic::GetProjectionMatrix(), m_CameraController->CalculateViewMatrix());
 
@@ -467,7 +465,7 @@ void SceneAnimPBR::CheckIntersection(Window* mainWindow)
         AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             m_Entities["Cube"].AABB.GetMin(), m_Entities["Cube"].AABB.GetMax(), glm::vec2(0.0f));
 
-    if (Input::IsMouseButtonPressed(MORAVA_MOUSE_BUTTON_1))
+    if (mainWindow->IsMouseButtonClicked(GLFW_MOUSE_BUTTON_1))
     {
         if (m_Entities["M1911"].Intersecting) {
             m_Translation_Gizmo = m_Entities["M1911"].Transform.Translation;
@@ -744,16 +742,16 @@ void SceneAnimPBR::UpdateImGuizmo(Window* mainWindow)
     // BEGIN ImGuizmo
 
     // ImGizmo switching modes
-    if (Input::IsKeyPressed(MORAVA_KEY_1))
+    if (mainWindow->getKeys()[GLFW_KEY_1])
         m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
-    if (Input::IsKeyPressed(MORAVA_KEY_2))
+    if (mainWindow->getKeys()[GLFW_KEY_2])
         m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 
-    if (Input::IsKeyPressed(MORAVA_KEY_3))
+    if (mainWindow->getKeys()[GLFW_KEY_3])
         m_GizmoType = ImGuizmo::OPERATION::SCALE;
 
-    if (Input::IsKeyPressed(MORAVA_KEY_4))
+    if (mainWindow->getKeys()[GLFW_KEY_4])
         m_GizmoType = -1;
 
     // Gizmo
