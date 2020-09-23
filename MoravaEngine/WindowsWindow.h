@@ -42,7 +42,7 @@ private:
 	/**** END Window Hazel version - a platform independent Window interface ****/
 
 public:
-	virtual inline GLFWwindow* GetHandler() override { return glfwWindow; };
+	virtual inline GLFWwindow* GetHandle() override { return glfwWindow; };
 	virtual bool* getKeys() override { return keys; };
 	virtual bool* getMouseButtons() override { return buttons; };
 	virtual bool IsMouseButtonClicked(int mouseButton) override;
@@ -63,15 +63,20 @@ public:
 
 	bool IsMouseButtonReleased(int mouseButton);
 
-	// void CreateCallbacks(); // Obsolete after adding GLFW callbacks to Init() method
-	static void handleKeys(GLFWwindow* window, int key, int code, int action, int mode);
-	static void handleMouse(GLFWwindow* window, double xPos, double yPos);
-	static void handleChars(GLFWwindow* window, unsigned int keycode);
-	static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-	static void cursorEnterCallback(GLFWwindow* window, int entered);
-	static void windowSizeCallback(GLFWwindow* window, int width, int height);
-	static void windowCloseCallback(GLFWwindow* window);
-	static void mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
+	static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	static void CursorPosCallback(GLFWwindow* window, double xpos, double ypos);
+	static void CharCallback(GLFWwindow* window, unsigned int codepoint);
+	static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+	static void CursorEnterCallback(GLFWwindow* window, int entered);
+	static void WindowSizeCallback(GLFWwindow* window, int width, int height);
+	static void WindowCloseCallback(GLFWwindow* window);
+	static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+
+	void SetCallbacks(); // Obsolete after adding GLFW callbacks to Init() method
+	void SetCallbacksHazelDev();
+
+	virtual inline void SetEventLogging(bool enabled) override { m_EventLoggingEnabled = enabled; }
+	virtual inline const bool GetEventLogging() const override { return m_EventLoggingEnabled; }
 
 private:
 	GLFWwindow* glfwWindow;
@@ -97,5 +102,7 @@ private:
 	bool mouseFirstMoved;
 	bool mouseCursorAboveWindow;
 	float m_CursorIgnoreLimit;
+
+	bool m_EventLoggingEnabled;
 
 };
