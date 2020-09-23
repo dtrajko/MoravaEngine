@@ -24,6 +24,7 @@
 #include "MousePicker.h"
 #include "Timer.h"
 #include "Log.h"
+#include "Input.h"
 
 #include "SceneCottage.h"
 #include "SceneEiffel.h"
@@ -95,7 +96,7 @@ enum class SceneName
 	AnimPBR,
 };
 
-SceneName currentScene = SceneName::AnimPBR;
+SceneName currentScene = SceneName::Deferred;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -251,14 +252,14 @@ int main()
 			0, 0, (int)Application::Get()->GetWindow()->GetWidth(), (int)Application::Get()->GetWindow()->GetHeight(),
 			RendererBasic::GetProjectionMatrix(), scene->GetCameraController()->CalculateViewMatrix());
 
-		if (Application::Get()->GetWindow()->getKeys()[GLFW_KEY_F])
+		if (Input::IsKeyPressed(Key::F))
 		{
 			LightManager::spotLights[2].GetBasePL()->Toggle();
-			Application::Get()->GetWindow()->getKeys()[GLFW_KEY_L] = false;
+			// Application::Get()->GetWindow()->getKeys()[GLFW_KEY_L] = false;
 		}
 
 		// Toggle wireframe mode
-		if (Application::Get()->GetWindow()->getKeys()[GLFW_KEY_R] && !Application::Get()->GetWindow()->getKeys()[GLFW_KEY_LEFT_CONTROL])
+		if (Input::IsKeyPressed(Key::R) && !Input::IsKeyPressed(Key::LeftControl))
 		{
 			if (Timer::Get()->GetCurrentTimestamp() - keyPressCooldown.lastTime > keyPressCooldown.cooldown)
 			{

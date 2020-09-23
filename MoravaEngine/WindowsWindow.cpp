@@ -5,6 +5,7 @@
 #include "Hazel/Events/ApplicationEvent.h"
 
 #include "Log.h"
+#include "Application.h"
 
 #include <cmath>
 #include <exception>
@@ -25,6 +26,8 @@ Window* Window::Create(const WindowProps& props)
 
 WindowsWindow::WindowsWindow(const WindowProps& props)
 {
+	m_EventLoggingEnabled = false;
+
 	Init(props);
 }
 
@@ -120,143 +123,9 @@ void WindowsWindow::Init(const WindowProps& props)
 
 	// The old MoravaEngine method of handling events
 	// not working with the new Hazel-dev GLFW callbacks
-	// CreateCallbacks();
 
-	// Set GLFW callbacks (Handle Key and Mouse input)
-	glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* window, int width, int height)
-		{
-			// The old MoravaEngine method of handling events
-			windowSizeCallback(window, width, height);
-
-			return; // disable EventCallback
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.Width = width;
-			data.Height = height;
-			WindowResizeEvent event(width, height);
-			data.EventCallback(event);
-		});
-
-	glfwSetWindowCloseCallback(glfwWindow, [](GLFWwindow* window)
-		{
-			// The old MoravaEngine method of handling events
-			windowCloseCallback(window);
-
-			return; // disable EventCallback
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			WindowCloseEvent event;
-			data.EventCallback(event);
-		});
-
-	glfwSetKeyCallback(glfwWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
-		{
-			// The old MoravaEngine method of handling events
-			handleKeys(window, key, scancode, action, mods);
-
-			return; // disable EventCallback
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-			switch (action)
-			{
-			case GLFW_PRESS:
-			{
-				KeyPressedEvent event(key, 0);
-				data.EventCallback(event);
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				KeyReleasedEvent event(key);
-				data.EventCallback(event);
-				break;
-			}
-			case GLFW_REPEAT:
-			{
-				KeyPressedEvent event(key, 1);
-				data.EventCallback(event);
-				break;
-			}
-			}
-		});
-
-	glfwSetCharCallback(glfwWindow, [](GLFWwindow* window, unsigned int keycode)
-		{		
-			// The old MoravaEngine method of handling events
-			handleChars(window, keycode);
-
-			return; // disable EventCallback
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-			KeyTypedEvent event(keycode);
-			data.EventCallback(event);
-		});
-
-	glfwSetMouseButtonCallback(glfwWindow, [](GLFWwindow* window, int button, int action, int modes)
-		{
-			// The old MoravaEngine method of handling events
-			mouseButtonCallback(window, button, action, modes);
-
-			return; // disable EventCallback
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-			switch (action)
-			{
-			case GLFW_PRESS:
-			{
-				MouseButtonPressedEvent event(button);
-				data.EventCallback(event);
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				MouseButtonReleasedEvent event(button);
-				data.EventCallback(event);
-				break;
-			}
-			}
-		});
-
-	glfwSetScrollCallback(glfwWindow, [](GLFWwindow* window, double xOffset, double yOffset)
-		{
-			// The old MoravaEngine method of handling events
-			mouseScrollCallback(window, xOffset, yOffset);
-
-			return; // disable EventCallback
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-			MouseScrolledEvent event((float)xOffset, (float)yOffset);
-			data.EventCallback(event);
-		});
-
-	glfwSetCursorPosCallback(glfwWindow, [](GLFWwindow* window, double xPos, double yPos)
-		{
-			// The old MoravaEngine method of handling events
-			handleMouse(window, xPos, yPos);
-
-			return; // disable EventCallback
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-			MouseMovedEvent event((float)xPos, (float)yPos);
-			data.EventCallback(event);
-		});
-
-	glfwSetCursorEnterCallback(glfwWindow, [](GLFWwindow* window, int entered)
-		{
-			// The old MoravaEngine method of handling events
-			cursorEnterCallback(window, entered);
-
-			return; // disable EventCallback
-
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-			// TODO Hazel-dev
-		});
+	// SetCallbacks();
+	SetCallbacksHazelDev();
 }
 
 void WindowsWindow::Shutdown()
@@ -296,139 +165,6 @@ bool WindowsWindow::IsVSync() const
 /**** END Hazel properties and methods ****/
 
 int WindowsWindow::m_ActionPrev;
-
-void WindowsWindow::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
-{
-	Log::GetLogger()->debug("WindowsWindow::handleKeys(key {0}, code {1}, action {2}, mode {3})", key, code, action, mode);
-
-	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
-
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-	{
-		// glfwSetWindowShouldClose(window, GL_TRUE);
-		theWindow->SetCursorNormal();
-	}
-
-	if (key >= 0 && key < 1024)
-	{
-		if (action == GLFW_PRESS)
-		{
-			theWindow->keys_prev[key] = theWindow->keys[key];
-			theWindow->keys[key] = true;
-			// printf("Key pressed: %d\n", key);
-		}
-		else if (action == GLFW_RELEASE)
-		{
-			theWindow->keys_prev[key] = theWindow->keys[key];
-			theWindow->keys[key] = false;
-		}
-	}
-}
-
-void WindowsWindow::handleChars(GLFWwindow* window, unsigned int keycode)
-{
-	// not implemented/used in old MoravaEngine method of handling events
-}
-
-void WindowsWindow::handleMouse(GLFWwindow* window, double xPos, double yPos)
-{
-	Log::GetLogger()->debug("WindowsWindow::handleMouse(xPos {0}, yPos {1})", xPos, yPos);
-
-	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
-
-	theWindow->m_MouseX = (float)xPos;
-	theWindow->m_MouseY = (float)yPos;
-
-	if (theWindow->mouseFirstMoved)
-	{
-		theWindow->lastX = (GLfloat)xPos;
-		theWindow->lastY = (GLfloat)yPos;
-		theWindow->mouseFirstMoved = false;
-	}
-
-	theWindow->xChange = (GLfloat)xPos - theWindow->lastX;
-	theWindow->yChange = theWindow->lastY - (GLfloat)yPos;
-
-	theWindow->xChangeReset = theWindow->xChange;
-	theWindow->yChangeReset = theWindow->yChange;
-
-	// printf("theWindow->xChange [%.2f] theWindow->yChange [%.2f]\n", theWindow->xChange, theWindow->yChange);
-
-	theWindow->lastX = (GLfloat)xPos;
-	theWindow->lastY = (GLfloat)yPos;
-
-	// printf("x:%.2f, y:%.2f\n", theWindow->xChange, theWindow->yChange);
-}
-
-void WindowsWindow::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
-{
-	Log::GetLogger()->debug("WindowsWindow::mouseButtonCallback(button {0}, action {1}, mods {2})", button, action, mods);
-
-	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
-
-	if (button >= 0 && button < 32)
-	{
-		if (action == GLFW_PRESS)
-		{
-			if (action != m_ActionPrev) {
-				theWindow->buttons_prev[button] = theWindow->buttons[button];
-				m_ActionPrev = action;
-			}
-
-			theWindow->buttons[button] = true;
-			// printf("Mouse button pressed: %d\n", button);
-		}
-		else if (action == GLFW_RELEASE)
-		{
-			if (action != m_ActionPrev) {
-				theWindow->buttons_prev[button] = theWindow->buttons[button];
-				m_ActionPrev = action;
-			}
-
-			theWindow->buttons[button] = false;
-			// printf("Mouse button released: %d\n", button);
-		}
-	}
-
-	if (theWindow->buttons[GLFW_MOUSE_BUTTON_MIDDLE] && theWindow->mouseCursorAboveWindow)
-	{
-		theWindow->SetCursorDisabled();
-	}
-}
-
-void WindowsWindow::cursorEnterCallback(GLFWwindow* window, int entered)
-{
-	Log::GetLogger()->debug("WindowsWindow::cursorEnterCallback(entered {0})", entered);
-
-	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
-
-	if (entered)
-		theWindow->mouseCursorAboveWindow = true;
-	else
-		theWindow->mouseCursorAboveWindow = false;
-}
-
-void WindowsWindow::windowSizeCallback(GLFWwindow* window, int width, int height)
-{
-	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
-
-	theWindow->m_Data.Width = width;
-	theWindow->m_Data.Height = height;
-	glViewport(0, 0, width, height);
-}
-
-void WindowsWindow::windowCloseCallback(GLFWwindow* window)
-{
-	// not implemented/used in old MoravaEngine method of handling events
-}
-
-void WindowsWindow::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset)
-{
-	WindowsWindow* theWindow = static_cast<WindowsWindow*>(glfwGetWindowUserPointer(window));
-
-	theWindow->xMouseScrollOffset = (float)xOffset;
-	theWindow->yMouseScrollOffset = (float)yOffset;
-}
 
 GLfloat WindowsWindow::getXChange()
 {
@@ -499,16 +235,285 @@ void WindowsWindow::SetInputMode(bool cursorEnabled)
 
 /**
  * Obsolete after adding GLFW callbacks to Init() method
- *
-void WindowsWindow::CreateCallbacks()
+ */
+void WindowsWindow::SetCallbacks()
 {
-	glfwSetKeyCallback(glfwWindow, handleKeys);
-	glfwSetCharCallback(glfwWindow, handleChars);
-	glfwSetCursorPosCallback(glfwWindow, handleMouse);
-	glfwSetMouseButtonCallback(glfwWindow, mouseButtonCallback);
-	glfwSetCursorEnterCallback(glfwWindow, cursorEnterCallback);
-	glfwSetWindowSizeCallback(glfwWindow, windowSizeCallback);
-	glfwSetWindowCloseCallback(glfwWindow, windowCloseCallback);
-	glfwSetScrollCallback(glfwWindow, mouseScrollCallback);
+	glfwSetKeyCallback(glfwWindow, KeyCallback);
+	glfwSetCharCallback(glfwWindow, CharCallback);
+	glfwSetCursorPosCallback(glfwWindow, CursorPosCallback);
+	glfwSetMouseButtonCallback(glfwWindow, MouseButtonCallback);
+	glfwSetCursorEnterCallback(glfwWindow, CursorEnterCallback);
+	glfwSetWindowSizeCallback(glfwWindow, WindowSizeCallback);
+	glfwSetWindowCloseCallback(glfwWindow, WindowCloseCallback);
+	glfwSetScrollCallback(glfwWindow, ScrollCallback);
 }
-*/
+
+void WindowsWindow::SetCallbacksHazelDev()
+{
+	// Set GLFW callbacks (Handle Key and Mouse input)
+	glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* window, int width, int height)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data.Width = width;
+			data.Height = height;
+			WindowResizeEvent event(width, height);
+			data.EventCallback(event);
+
+			// Support for the old way of handling events
+			WindowSizeCallback(window, width, height);
+		});
+
+	glfwSetWindowCloseCallback(glfwWindow, [](GLFWwindow* window)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowCloseEvent event;
+			data.EventCallback(event);
+
+			// Support for the old way of handling events
+			WindowCloseCallback(window);
+		});
+
+	glfwSetKeyCallback(glfwWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			switch (action)
+			{
+				case GLFW_PRESS:
+				{
+					KeyPressedEvent event(key, 0);
+					data.EventCallback(event);
+					break;
+				}
+				case GLFW_RELEASE:
+				{
+					KeyReleasedEvent event(key);
+					data.EventCallback(event);
+					break;
+				}
+				case GLFW_REPEAT:
+				{
+					KeyPressedEvent event(key, 1);
+					data.EventCallback(event);
+					break;
+				}
+			}
+
+			// Support for the old way of handling events
+			KeyCallback(window, key, scancode, action, mods);
+		});
+
+	glfwSetCharCallback(glfwWindow, [](GLFWwindow* window, unsigned int codepoint)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			KeyTypedEvent event(codepoint);
+			data.EventCallback(event);
+
+			// Support for the old way of handling events
+			CharCallback(window, codepoint);
+		});
+
+	glfwSetMouseButtonCallback(glfwWindow, [](GLFWwindow* window, int button, int action, int mods)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			switch (action)
+			{
+				case GLFW_PRESS:
+				{
+					MouseButtonPressedEvent event(button);
+					data.EventCallback(event);
+					break;
+				}
+				case GLFW_RELEASE:
+				{
+					MouseButtonReleasedEvent event(button);
+					data.EventCallback(event);
+					break;
+				}
+			}
+
+			// Support for the old way of handling events
+			MouseButtonCallback(window, button, action, mods);
+		});
+
+	glfwSetScrollCallback(glfwWindow, [](GLFWwindow* window, double xoffset, double yoffset)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			MouseScrolledEvent event((float)xoffset, (float)yoffset);
+			data.EventCallback(event);
+
+			// Support for the old way of handling events
+			ScrollCallback(window, xoffset, yoffset);
+		});
+
+	glfwSetCursorPosCallback(glfwWindow, [](GLFWwindow* window, double xpos, double ypos)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			MouseMovedEvent event((float)xpos, (float)ypos);
+			data.EventCallback(event);
+
+			// Support for the old way of handling events
+			CursorPosCallback(window, xpos, ypos);
+		});
+
+	glfwSetCursorEnterCallback(glfwWindow, [](GLFWwindow* window, int entered)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+			// TODO Hazel-dev
+
+			// Support for the old way of handling events
+			CursorEnterCallback(window, entered);
+		});
+}
+
+void WindowsWindow::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+
+	if (theWindow->m_EventLoggingEnabled) {
+		Log::GetLogger()->debug("WindowsWindow::KeyCallback(key {0}, scancode {1}, action {2}, mods {3})", key, scancode, action, mods);
+	}
+
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	{
+		// glfwSetWindowShouldClose(window, GL_TRUE);
+		theWindow->SetCursorNormal();
+	}
+
+	if (key >= 0 && key < 1024)
+	{
+		if (action == GLFW_PRESS)
+		{
+			theWindow->keys_prev[key] = theWindow->keys[key];
+			theWindow->keys[key] = true;
+			// printf("Key pressed: %d\n", key);
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			theWindow->keys_prev[key] = theWindow->keys[key];
+			theWindow->keys[key] = false;
+		}
+	}
+}
+
+void WindowsWindow::CharCallback(GLFWwindow* window, unsigned int codepoint)
+{
+	// not implemented/used in old MoravaEngine method of handling events
+}
+
+void WindowsWindow::CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
+{
+	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+
+	if (theWindow->m_EventLoggingEnabled) {
+		Log::GetLogger()->debug("WindowsWindow::CursorPosCallback(xpos {0}, ypos {1})", xpos, ypos);
+	}
+
+	theWindow->m_MouseX = (float)xpos;
+	theWindow->m_MouseY = (float)ypos;
+
+	if (theWindow->mouseFirstMoved)
+	{
+		theWindow->lastX = (GLfloat)xpos;
+		theWindow->lastY = (GLfloat)ypos;
+		theWindow->mouseFirstMoved = false;
+	}
+
+	theWindow->xChange = (GLfloat)xpos - theWindow->lastX;
+	theWindow->yChange = theWindow->lastY - (GLfloat)ypos;
+
+	theWindow->xChangeReset = theWindow->xChange;
+	theWindow->yChangeReset = theWindow->yChange;
+
+	// printf("theWindow->xChange [%.2f] theWindow->yChange [%.2f]\n", theWindow->xChange, theWindow->yChange);
+
+	theWindow->lastX = (GLfloat)xpos;
+	theWindow->lastY = (GLfloat)ypos;
+
+	// printf("x:%.2f, y:%.2f\n", theWindow->xChange, theWindow->yChange);
+}
+
+void WindowsWindow::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+
+	if (theWindow->m_EventLoggingEnabled) {
+		Log::GetLogger()->debug("WindowsWindow::MouseButtonCallback(button {0}, action {1}, mods {2})", button, action, mods);
+	}
+
+	if (button >= 0 && button < 32)
+	{
+		if (action == GLFW_PRESS)
+		{
+			if (action != m_ActionPrev) {
+				theWindow->buttons_prev[button] = theWindow->buttons[button];
+				m_ActionPrev = action;
+			}
+
+			theWindow->buttons[button] = true;
+			// printf("Mouse button pressed: %d\n", button);
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			if (action != m_ActionPrev) {
+				theWindow->buttons_prev[button] = theWindow->buttons[button];
+				m_ActionPrev = action;
+			}
+
+			theWindow->buttons[button] = false;
+			// printf("Mouse button released: %d\n", button);
+		}
+	}
+
+	if (theWindow->buttons[GLFW_MOUSE_BUTTON_MIDDLE] && theWindow->mouseCursorAboveWindow)
+	{
+		theWindow->SetCursorDisabled();
+	}
+}
+
+void WindowsWindow::CursorEnterCallback(GLFWwindow* window, int entered)
+{
+	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+
+	if (theWindow->m_EventLoggingEnabled) {
+		Log::GetLogger()->debug("WindowsWindow::CursorEnterCallback(entered {0})", entered);
+	}
+
+	if (entered)
+		theWindow->mouseCursorAboveWindow = true;
+	else
+		theWindow->mouseCursorAboveWindow = false;
+}
+
+void WindowsWindow::WindowSizeCallback(GLFWwindow* window, int width, int height)
+{
+	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+
+	if (theWindow->m_EventLoggingEnabled) {
+		Log::GetLogger()->debug("WindowsWindow::WindowSizeCallback(width {0}, height {1})", width, height);
+	}
+
+	theWindow->m_Data.Width = width;
+	theWindow->m_Data.Height = height;
+	glViewport(0, 0, width, height);
+}
+
+void WindowsWindow::WindowCloseCallback(GLFWwindow* window)
+{
+	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+
+	// not implemented/used in old MoravaEngine method of handling events
+}
+
+void WindowsWindow::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+
+	theWindow->xMouseScrollOffset = (float)xoffset;
+	theWindow->yMouseScrollOffset = (float)yoffset;
+}

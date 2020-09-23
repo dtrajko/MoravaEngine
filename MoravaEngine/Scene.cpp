@@ -5,6 +5,7 @@
 #include "MeshData.h"
 #include "Tile2D.h"
 #include "TextureLoader.h"
+#include "Hazel/Events/ApplicationEvent.h"
 
 
 SceneSettings Scene::sceneSettings;
@@ -137,6 +138,11 @@ Scene::Scene()
 	SetupTextureSlots();
 	SetupMaterials();
 	SetupMeshes();
+}
+
+void Scene::OnWindowResize(WindowResizeEvent& e)
+{
+	m_CameraController->OnResize(e.GetWidth(), e.GetHeight());
 }
 
 void Scene::SetupTextureSlots()

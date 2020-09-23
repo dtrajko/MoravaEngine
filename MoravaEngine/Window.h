@@ -45,7 +45,7 @@ public:
 	/**** END Window Hazel version - a platform independent Window interface ****/
 
 	// Methods used by MoravaEngine classes
-	virtual GLFWwindow* GetHandler() { return nullptr; };
+	virtual GLFWwindow* GetHandle() { return nullptr; };
 	virtual bool* getKeys() { return nullptr; };
 	virtual bool* getMouseButtons() { return nullptr; };
 	virtual bool IsMouseButtonClicked(int mouseButton) { return false; };
@@ -59,5 +59,8 @@ public:
 	virtual void SetCursorDisabled() {};
 	virtual void SetCursorNormal() {};
 	virtual bool GetShouldClose() { return false; };
+
+	virtual void SetEventLogging(bool enabled) = 0;
+	virtual const bool GetEventLogging() const = 0;
 
 };
