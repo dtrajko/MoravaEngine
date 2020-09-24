@@ -98,9 +98,6 @@ enum class SceneName
 
 SceneName currentScene = SceneName::AnimPBR;
 
-// Key cooldown time (emulate onKeyReleased)
-EventCooldown keyPressCooldown = { 0.0f, 0.2f };
-
 
 int main()
 {
@@ -210,9 +207,6 @@ int main()
 	Application::Get()->SetScene(scene);
 	Application::Get()->SetRenderer(renderer);
 
-	// experimental, testing Hazel event system
-	Application::Run();
-
 	// Projection matrix
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
 		(float)Application::Get()->GetWindow()->GetWidth() / (float)Application::Get()->GetWindow()->GetHeight(),
@@ -233,73 +227,7 @@ int main()
 	Timer timer(targetFPS, targetUpdateRate);
 
 	// Loop until window closed
-	while (!Application::Get()->GetWindow()->GetShouldClose())
-	{
-		Timer::Get()->Update();
-
-		scene->GetCameraController()->KeyControl(Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime());
-		scene->GetCameraController()->MouseControl(
-			Application::Get()->GetWindow()->getMouseButtons(),
-			Application::Get()->GetWindow()->getXChange(),
-			Application::Get()->GetWindow()->getYChange());
-		scene->GetCameraController()->MouseScrollControl(
-			Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime(),
-			Application::Get()->GetWindow()->getXMouseScrollOffset(),
-			Application::Get()->GetWindow()->getYMouseScrollOffset());
-
-		MousePicker::Get()->Update(
-			(int)Application::Get()->GetWindow()->GetMouseX(), (int)Application::Get()->GetWindow()->GetMouseY(),
-			0, 0, (int)Application::Get()->GetWindow()->GetWidth(), (int)Application::Get()->GetWindow()->GetHeight(),
-			RendererBasic::GetProjectionMatrix(), scene->GetCameraController()->CalculateViewMatrix());
-
-		if (Input::IsKeyPressed(Key::F))
-		{
-			LightManager::spotLights[2].GetBasePL()->Toggle();
-			// Application::Get()->GetWindow()->getKeys()[GLFW_KEY_L] = false;
-		}
-
-		// Toggle wireframe mode
-		if (Input::IsKeyPressed(Key::R) && !Input::IsKeyPressed(Key::LeftControl))
-		{
-			if (Timer::Get()->GetCurrentTimestamp() - keyPressCooldown.lastTime > keyPressCooldown.cooldown)
-			{
-				scene->SetWireframeEnabled(!scene->IsWireframeEnabled());
-				keyPressCooldown.lastTime = Timer::Get()->GetCurrentTimestamp();
-			}
-		}
-
-		if (scene->IsWireframeEnabled())
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		else
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-		ImGuiWrapper::Begin();
-
-		{
-			Profiler profiler("Scene::Update");
-			// if (Timer::Get()->CanUpdate())
-			scene->Update(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow()); // TODO deltaTime obsolete
-			scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
-		}
-
-		{
-			Profiler profiler("Renderer::Render");
-			// if (Timer::Get()->CanRender())
-			renderer->Render(Timer::Get()->GetDeltaTime(), Application::Get()->GetWindow(), scene, projectionMatrix); // TODO deltaTime obsolete
-			scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
-		}
-
-		scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow());
-
-		scene->GetProfilerResults()->clear();
-
-		ImGuiWrapper::End();
-
-		glDisable(GL_BLEND);
-
-		// Swap buffers and poll events
-		Application::Get()->GetWindow()->OnUpdate();
-	}
+	Application::Get()->Run();
 
 	ImGuiWrapper::Cleanup();
 

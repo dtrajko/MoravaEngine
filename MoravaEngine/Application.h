@@ -20,7 +20,7 @@ public:
 
 	void InitWindow(const WindowProps& props);
 
-	static void Run();
+	void Run();
 
 	void OnEvent(Event& e);
 
@@ -49,5 +49,8 @@ private:
 	bool m_Running = true;
 	bool m_Minimized = false;
 	LayerStack m_LayerStack;
+
+	// Key cooldown time (emulate onKeyReleased)
+	EventCooldown m_KeyPressCooldown = { 0.0f, 0.2f };
 
 };

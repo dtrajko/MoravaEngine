@@ -1,5 +1,11 @@
 #include "Application.h"
 
+#include "Timer.h"
+#include "MousePicker.h"
+#include "Input.h"
+#include "ImGuiWrapper.h"
+#include "Profiler.h"
+
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include <Windows.h>
@@ -64,6 +70,68 @@ void Application::Run()
 	if (e.IsInCategory(EventCategoryInput))
 	{
 		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryInput'");
+	}
+
+	// Loop until window closed
+	while (m_Running)
+	{
+		Timer::Get()->Update();
+
+		m_Scene->GetCameraController()->KeyControl(m_Window->getKeys(), Timer::Get()->GetDeltaTime());
+		m_Scene->GetCameraController()->MouseControl(m_Window->getMouseButtons(), m_Window->getXChange(), m_Window->getYChange());
+		m_Scene->GetCameraController()->MouseScrollControl(m_Window->getKeys(), Timer::Get()->GetDeltaTime(), m_Window->getXMouseScrollOffset(), m_Window->getYMouseScrollOffset());
+
+		MousePicker::Get()->Update(
+			(int)m_Window->GetMouseX(), (int)m_Window->GetMouseY(),
+			0, 0, (int)m_Window->GetWidth(), (int)m_Window->GetHeight(),
+			RendererBasic::GetProjectionMatrix(), m_Scene->GetCameraController()->CalculateViewMatrix());
+
+		if (Input::IsKeyPressed(Key::F))
+		{
+			LightManager::spotLights[2].GetBasePL()->Toggle();
+		}
+
+		// Toggle wireframe mode
+		if (Input::IsKeyPressed(Key::R) && !Input::IsKeyPressed(Key::LeftControl))
+		{
+			if (Timer::Get()->GetCurrentTimestamp() - m_KeyPressCooldown.lastTime > m_KeyPressCooldown.cooldown)
+			{
+				m_Scene->SetWireframeEnabled(!m_Scene->IsWireframeEnabled());
+				m_KeyPressCooldown.lastTime = Timer::Get()->GetCurrentTimestamp();
+			}
+		}
+
+		if (m_Scene->IsWireframeEnabled())
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		ImGuiWrapper::Begin();
+
+		{
+			Profiler profiler("Scene::Update");
+			// if (Timer::Get()->CanUpdate())
+			m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), m_Window); // TODO deltaTime obsolete
+			m_Scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+		}
+
+		{
+			Profiler profiler("Renderer::Render");
+			// if (Timer::Get()->CanRender())
+			m_Renderer->Render(Timer::Get()->GetDeltaTime(), m_Window, m_Scene, RendererBasic::GetProjectionMatrix()); // TODO deltaTime obsolete
+			m_Scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+		}
+
+		m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
+
+		m_Scene->GetProfilerResults()->clear();
+
+		ImGuiWrapper::End();
+
+		glDisable(GL_BLEND);
+
+		// Swap buffers and poll events
+		m_Window->OnUpdate();
 	}
 }
 
