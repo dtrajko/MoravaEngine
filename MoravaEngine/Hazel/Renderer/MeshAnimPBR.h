@@ -140,6 +140,8 @@ namespace Hazel {
 		void OnImGuiRender();
 		void DumpVertexBuffer();
 
+		void Render(uint32_t samplerSlot, const glm::mat4& entityTransform);
+
 		const std::vector<Submesh*>& GetSubmeshes() const { return m_Submeshes; }
 		const std::vector<Material*>& GetMaterials() const { return m_Materials; }
 		const std::vector<Texture*>& GetTextures() const { return m_Textures; }

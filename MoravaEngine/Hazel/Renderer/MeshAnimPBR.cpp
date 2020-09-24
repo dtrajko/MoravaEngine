@@ -794,4 +794,36 @@ namespace Hazel {
 		Log::GetLogger()->info("------------------------------------------------------");
 	}
 
+	void MeshAnimPBR::Render(uint32_t samplerSlot, const glm::mat4& entityTransform)
+	{
+		m_BaseMaterial->GetTextureAlbedo()->Bind(   samplerSlot + 0);
+		m_BaseMaterial->GetTextureNormal()->Bind(   samplerSlot + 1);
+		m_BaseMaterial->GetTextureMetallic()->Bind( samplerSlot + 2);
+		m_BaseMaterial->GetTextureRoughness()->Bind(samplerSlot + 3);
+		m_BaseMaterial->GetTextureAO()->Bind(       samplerSlot + 4);
+
+		m_VertexArray->Bind();
+
+		int submeshIndex = 0;
+		for (Submesh* submesh : m_Submeshes)
+		{
+			// Material
+			auto material = m_Materials[submesh->MaterialIndex];
+			m_MeshShader->Bind();
+
+			for (size_t i = 0; i < m_BoneTransforms.size(); i++)
+			{
+				std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+				m_MeshShader->setMat4(uniformName, m_BoneTransforms[i]);
+			}
+
+			m_MeshShader->setMat4("u_Transform", entityTransform * submesh->Transform);
+
+			glEnable(GL_DEPTH_TEST);
+			glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
+
+			submeshIndex++;
+		}
+	}
+
 }
