@@ -107,9 +107,6 @@ private:
 
 	std::map<std::string, Entity> m_Entities;
 
-	glm::vec3 m_Translation_Gizmo;
-	glm::mat4* m_Transform_Gizmo;
-
 	bool m_RadiancePrefilter  = true;
 	bool m_AlbedoTexToggle    = true;
 	bool m_NormalTexToggle    = true;
@@ -130,8 +127,6 @@ private:
 
 	float m_SkyboxLOD;
 
-	int m_GizmoType = -1; // -1 = no gizmo
-
 	// viewport
 	bool m_IsViewportEnabled;
 	bool m_ViewportFocused;
@@ -142,5 +137,10 @@ private:
 	EventCooldown m_ResizeViewport;
 
 	bool m_VisibleAABBs;
+
+	int m_ImGuizmoType = -1; // -1 = no gizmo
+
+	glm::vec3 m_Translation_ImGuizmo;
+	glm::mat4* m_Transform_ImGuizmo;
 
 };

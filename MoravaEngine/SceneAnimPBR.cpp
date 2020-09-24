@@ -138,7 +138,8 @@ SceneAnimPBR::SceneAnimPBR()
 
     m_SkyboxLOD = 0.0f;
 
-    m_Transform_Gizmo = nullptr;
+    m_Translation_ImGuizmo = glm::vec3(0.0f);
+    m_Transform_ImGuizmo = nullptr;
 
     m_VisibleAABBs = true;
 }
@@ -221,7 +222,6 @@ void SceneAnimPBR::SetupMeshes()
 
     Block* floor = new Block(glm::vec3(30.0f, 5.0f, 30.0f));
     meshes.insert(std::make_pair("floor", floor));
-
 
     m_Entities.insert(std::make_pair("M1911", Entity()));
     m_Entities.insert(std::make_pair("BobLamp", Entity()));
@@ -428,10 +428,10 @@ void SceneAnimPBR::CheckIntersection(Window* mainWindow)
         for (auto& entity : m_Entities)
         {
             if (entity.second.Intersecting) {
-                m_Translation_Gizmo = entity.second.Transform.Translation;
-                m_Transform_Gizmo = &entity.second.Transform.Transform;
-                if (m_GizmoType == -1) {
-                    m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+                m_Translation_ImGuizmo = entity.second.Transform.Translation;
+                m_Transform_ImGuizmo = &entity.second.Transform.Transform;
+                if (m_ImGuizmoType == -1) {
+                    m_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
                 }
             }
         }
@@ -495,9 +495,9 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Transform");
     {
-        if (m_Transform_Gizmo != nullptr)
+        if (m_Transform_ImGuizmo != nullptr)
         {
-            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_Gizmo);
+            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
             glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
 
             char buffer[100];
@@ -711,19 +711,19 @@ void SceneAnimPBR::UpdateImGuizmo(Window* mainWindow)
 
     // ImGizmo switching modes
     if (Input::IsKeyPressed(MORAVA_KEY_1))
-        m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+        m_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
     if (Input::IsKeyPressed(MORAVA_KEY_2))
-        m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+        m_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
 
     if (Input::IsKeyPressed(MORAVA_KEY_3))
-        m_GizmoType = ImGuizmo::OPERATION::SCALE;
+        m_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
 
     if (Input::IsKeyPressed(MORAVA_KEY_4))
-        m_GizmoType = -1;
+        m_ImGuizmoType = -1;
 
-    // Gizmo
-    if (m_GizmoType != -1)
+    // ImGuizmo
+    if (m_ImGuizmoType != -1)
     {
         float rw = (float)ImGui::GetWindowWidth();
         float rh = (float)ImGui::GetWindowHeight();
@@ -731,11 +731,11 @@ void SceneAnimPBR::UpdateImGuizmo(Window* mainWindow)
         ImGuizmo::SetDrawlist();
         ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
 
-        if (m_Transform_Gizmo != nullptr) {
+        if (m_Transform_ImGuizmo != nullptr) {
             ImGuizmo::Manipulate(
                 glm::value_ptr(m_CameraController->CalculateViewMatrix()),
                 glm::value_ptr(RendererBasic::GetProjectionMatrix()),
-                (ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(*m_Transform_Gizmo));
+                (ImGuizmo::OPERATION)m_ImGuizmoType, ImGuizmo::LOCAL, glm::value_ptr(*m_Transform_ImGuizmo));
         }
     }
     // END ImGuizmo
