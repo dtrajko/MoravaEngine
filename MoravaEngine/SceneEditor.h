@@ -27,6 +27,7 @@ public:
 
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
+	void UpdateImGuizmo(Window* mainWindow);
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
@@ -70,7 +71,7 @@ private:
 	void SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix);
 	glm::mat4 CalculateRenderTransform(SceneObject* sceneObject);
 	virtual bool IsWaterOnScene() override;
-	void UpdateLightDirection(glm::quat rotation);
+	void UpdateLightDirection();
     void ResizeViewport(glm::vec2 viewportPanelSize);
 
 public:
@@ -98,7 +99,7 @@ private:
 	Grid* m_Grid;
 	Quad* m_Quad;
 	Pivot* m_PivotScene;
-	Gizmo* m_Gizmo;
+	Gizmo* m_ClassicGizmo;
 
 	std::vector<SceneObject*> m_SceneObjects;
 
@@ -111,7 +112,7 @@ private:
 	std::string* m_TextureNameEdit;
 	std::string* m_MaterialNameEdit;
 	float* m_TilingFactorMaterialEdit;
-	bool m_DrawGizmos;
+	bool m_AuxiliaryElements;
 	int m_PBR_Map_Edit;
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;
@@ -190,5 +191,12 @@ private:
 	Texture* m_LoadedTexture;
 	std::string m_LoadedTextureFilepath;
 	bool m_UseLoadedTexture;
+
+	// ImGuizmo
+	int m_ImGizmoType = -1; // -1 = no gizmo
+	glm::vec3 m_Translation_ImGuizmo;
+	glm::mat4* m_Transform_ImGuizmo;
+
+	bool m_IsEnabledImGuizmo;
 
 };

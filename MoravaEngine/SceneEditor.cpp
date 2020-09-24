@@ -1,10 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "SceneEditor.h"
-
-#include "glm/gtc/matrix_transform.hpp"
-
 #include "ImGuiWrapper.h"
+#include "../cross-platform/ImGuizmo/ImGuizmo.h"
 #include "MousePicker.h"
 #include "Block.h"
 #include "Sphere.h"
@@ -26,6 +24,11 @@
 #include "PerlinNoise/PerlinNoise.hpp"
 #include "Application.h"
 #include "Hazel/Renderer/MeshAnimPBR.h"
+#include "Input.h"
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtc/matrix_transform.hpp"
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include <vector>
 #include <map>
@@ -157,7 +160,7 @@ SceneEditor::SceneEditor()
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
     m_Grid = new Grid(20);
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
-    m_Gizmo = new Gizmo();
+    m_ClassicGizmo = new Gizmo();
 
     m_PositionEdit             = new glm::vec3(0.0f);
     m_RotationEdit             = new glm::vec3(0.0f);
@@ -167,7 +170,7 @@ SceneEditor::SceneEditor()
     m_TilingFactorEdit         = new float(1.0f);
     m_MaterialNameEdit         = new std::string;
     m_TilingFactorMaterialEdit = new float(1.0f);
-    m_DrawGizmos = true;
+    m_AuxiliaryElements = true;
     m_PBR_Map_Edit = PBR_MAP_ENVIRONMENT;
     m_HDRI_Edit = HDRI_EARLY_EVE_WARM_SKY;
     m_HDRI_Edit_Prev = -1;
@@ -205,6 +208,11 @@ SceneEditor::SceneEditor()
     m_SamplerSlots.insert(std::make_pair("BRDF_LUT",   8)); // uniform sampler2D u_BRDFLUT
 
     m_SkyboxRotationSpeed = 0.0f;
+
+    m_Translation_ImGuizmo = glm::vec3(0.0f);
+    m_Transform_ImGuizmo = nullptr;
+
+    m_IsEnabledImGuizmo = true;
 }
 
 void SceneEditor::SetLightManager()
@@ -480,7 +488,7 @@ void SceneEditor::LoadScene()
     }
 
     if (m_SceneObjects.size() > 0)
-        m_Gizmo->SetSceneObject(m_SceneObjects[m_SceneObjects.size() - 1]);
+        m_ClassicGizmo->SetSceneObject(m_SceneObjects[m_SceneObjects.size() - 1]);
 }
 
 void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
@@ -511,6 +519,27 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::SliderFloat3("Position", (float*)m_PositionEdit, -10.0f, 10.0f);
         ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -360.0f, 360.0f);
         ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.1f, 20.0f);
+    }
+    ImGui::End();
+
+    ImGui::Begin("Transform ImGuizmo");
+    {
+        if (m_Transform_ImGuizmo != nullptr)
+        {
+            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+            glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
+
+            char buffer[100];
+
+            sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
+            ImGui::Text(buffer);
+
+            sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
+            ImGui::Text(buffer);
+
+            sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
+            ImGui::Text(buffer);
+        }
     }
     ImGui::End();
 
@@ -635,18 +664,25 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
 
         if (ImGui::CollapsingHeader("Gizmos"))
         {
-            ImGui::Checkbox("Draw Gizmos", &m_DrawGizmos);
-            ImGui::Checkbox("Orthographic View", &m_OrthographicViewEnabled);
-
-            bool gizmoActive = m_Gizmo->GetActive();
-            int sceneObjectCount = (int)m_SceneObjects.size();
-            Bool3 axesEnabled = m_Gizmo->GetAxesEnabled();
+            ImGui::Checkbox("Is Enabled ImGizmo", &m_IsEnabledImGuizmo);
 
             ImGui::Separator();
+
+            ImGui::Checkbox("Draw Auxiliary Elements", &m_AuxiliaryElements);
+            ImGui::Checkbox("Orthographic View", &m_OrthographicViewEnabled);
+
+            bool gizmoActive = m_ClassicGizmo->GetActive();
+            int sceneObjectCount = (int)m_SceneObjects.size();
+            Bool3 axesEnabled = m_ClassicGizmo->GetAxesEnabled();
+
+            ImGui::Separator();
+
             ImGui::Text("Transform Gizmo");
             ImGui::SliderInt("Scene Objects Count", &sceneObjectCount, 0, 100);
             ImGui::Checkbox("Gizmo Active", &gizmoActive);
+
             ImGui::Separator();
+
             ImGui::Text("Axes Enabled");
             ImGui::Indent();
             ImGui::Checkbox("Axis X", &axesEnabled.x);
@@ -1148,7 +1184,14 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
     }
     ImGui::End();
 
-    ImGui::ShowMetricsWindow();
+    if (!m_IsViewportEnabled)
+    {
+        ImGui::Begin("ImGuizmo");
+        {
+            UpdateImGuizmo(mainWindow);
+        }
+        ImGui::End();
+    }
 
     if (m_IsViewportEnabled)
     {
@@ -1174,10 +1217,50 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
             uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
             // uint64_t textureID = m_BlurEffect->GetVerticalOutputTexture()->GetID();
             ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+            UpdateImGuizmo(mainWindow);
         }
         ImGui::End();
         ImGui::PopStyleVar();
     }
+
+    ImGui::ShowMetricsWindow();
+}
+
+void SceneEditor::UpdateImGuizmo(Window* mainWindow)
+{
+    /**** BEGIN ImGuizmo ****/
+
+    // ImGizmo switching modes
+    if (Input::IsKeyPressed(MORAVA_KEY_1))
+        m_ImGizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+    if (Input::IsKeyPressed(MORAVA_KEY_2))
+        m_ImGizmoType = ImGuizmo::OPERATION::ROTATE;
+
+    if (Input::IsKeyPressed(MORAVA_KEY_3))
+        m_ImGizmoType = ImGuizmo::OPERATION::SCALE;
+
+    if (Input::IsKeyPressed(MORAVA_KEY_4))
+        m_ImGizmoType = -1;
+
+    // Gizmo
+    if (m_IsEnabledImGuizmo && m_ImGizmoType != -1)
+    {
+        float rw = (float)ImGui::GetWindowWidth();
+        float rh = (float)ImGui::GetWindowHeight();
+        ImGuizmo::SetOrthographic(false);
+        ImGuizmo::SetDrawlist();
+        ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
+
+        if (m_Transform_ImGuizmo != nullptr) {
+            ImGuizmo::Manipulate(
+                glm::value_ptr(m_CameraController->CalculateViewMatrix()),
+                glm::value_ptr(RendererBasic::GetProjectionMatrix()),
+                (ImGuizmo::OPERATION)m_ImGizmoType, ImGuizmo::LOCAL, glm::value_ptr(*m_Transform_ImGuizmo));
+        }
+    }
+    /**** END ImGuizmo ****/
 }
 
 void SceneEditor::ResizeViewport(glm::vec2 viewportPanelSize)
@@ -1395,33 +1478,6 @@ void SceneEditor::Update(float timestep, Window* mainWindow)
         m_BlurLevelPrev = m_BlurLevel;
     }
 
-    m_Gizmo->Update(m_Camera->GetPosition(), mainWindow);
-    m_Gizmo->SetDrawAABBs(m_DrawGizmos);
-
-    // Switching between scene objects that are currently in focus (mouse over)
-    if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1])
-    {
-        m_Gizmo->OnMousePress(mainWindow, &m_SceneObjects, m_SelectedIndex);
-        // UpdateLightDirection(m_Gizmo->GetRotation());
-        m_MouseButton_1_Prev = true;
-    }
-
-    if (!mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1] && m_MouseButton_1_Prev)
-    {
-        SelectNextFromMultipleObjects(&m_SceneObjects, m_SelectedIndex);
-        m_Gizmo->OnMouseRelease(mainWindow, &m_SceneObjects, m_SelectedIndex);
-        m_MouseButton_1_Prev = false;
-
-        // Connect "Particle System" ImGui to currently selected particle system
-        if (m_SceneObjects.at(m_SelectedIndex)->name == "particle_system") {
-            // printf("Change Particle System ImGui\n");
-            SceneObjectParticleSystem* sops = (SceneObjectParticleSystem*)m_SceneObjects.at(m_SelectedIndex);
-            m_CurrentSOPS = sops;
-            m_ParticleSettingsEdit = sops->GetSettings();
-            m_ParticleSettingsPrev = sops->GetSettings();
-        }
-    }
-
     // Add new scene object with default settings
     if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1] && mainWindow->getKeys()[GLFW_KEY_LEFT_CONTROL])
     {
@@ -1450,34 +1506,93 @@ void SceneEditor::Update(float timestep, Window* mainWindow)
     if (mainWindow->getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow->getKeys()[GLFW_KEY_L])
         LoadScene();
 
-    // Gizmo switching modes
-    if (mainWindow->getKeys()[GLFW_KEY_1])
-        m_Gizmo->ChangeMode(GIZMO_MODE_TRANSLATE);
-
-    if (mainWindow->getKeys()[GLFW_KEY_2])
-        m_Gizmo->ChangeMode(GIZMO_MODE_SCALE);
-
-    if (mainWindow->getKeys()[GLFW_KEY_3])
-        m_Gizmo->ChangeMode(GIZMO_MODE_ROTATE);
-
-    if (mainWindow->getKeys()[GLFW_KEY_4])
-        m_Gizmo->ChangeMode(GIZMO_MODE_NONE);
-
     for (auto& object : m_SceneObjects)
     {
+        /**** BEGIN ImGuizmo decompose transform matrix to translate, rotate and scale components ****/
+        {
+            auto [translation, rotation, scale] = Math::GetTransformDecomposition(object->transform);
+            object->position = translation;
+            object->rotation = rotation;
+            object->scale = scale;
+        }
+        /**** END ImGuizmo decompose transform matrix to translate, rotate and scale components ****/
+
         object->GetAABB()->Update(object->position, object->rotation, object->scale);
         object->pivot->Update(object->position, object->scale + 1.0f);
     }
 
-    UpdateLightDirection(m_Gizmo->GetRotation());
+    /**** BEGIN the original Gizmo ****/
+    m_ClassicGizmo->Update(m_Camera->GetPosition(), mainWindow);
+    m_ClassicGizmo->SetDrawAABBs(m_AuxiliaryElements);
+
+    // Switching between scene objects that are currently in focus (mouse over)
+    if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1])
+    {
+        m_ClassicGizmo->OnMousePress(mainWindow, &m_SceneObjects, m_SelectedIndex);
+        // UpdateLightDirection(m_ClassicGizmo->GetRotation());
+        m_MouseButton_1_Prev = true;
+    }
+
+    if (!mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1] && m_MouseButton_1_Prev)
+    {
+        SelectNextFromMultipleObjects(&m_SceneObjects, m_SelectedIndex);
+        m_ClassicGizmo->OnMouseRelease(mainWindow, &m_SceneObjects, m_SelectedIndex);
+        m_MouseButton_1_Prev = false;
+
+        // Connect "Particle System" ImGui to currently selected particle system
+        if (m_SceneObjects.at(m_SelectedIndex)->name == "particle_system") {
+            // printf("Change Particle System ImGui\n");
+            SceneObjectParticleSystem* sops = (SceneObjectParticleSystem*)m_SceneObjects.at(m_SelectedIndex);
+            m_CurrentSOPS = sops;
+            m_ParticleSettingsEdit = sops->GetSettings();
+            m_ParticleSettingsPrev = sops->GetSettings();
+        }
+    }
+
+    // Gizmo switching modes
+    if (mainWindow->getKeys()[GLFW_KEY_1])
+        m_ClassicGizmo->ChangeMode(GIZMO_MODE_TRANSLATE);
+
+    if (mainWindow->getKeys()[GLFW_KEY_2])
+        m_ClassicGizmo->ChangeMode(GIZMO_MODE_SCALE);
+
+    if (mainWindow->getKeys()[GLFW_KEY_3])
+        m_ClassicGizmo->ChangeMode(GIZMO_MODE_ROTATE);
+
+    if (mainWindow->getKeys()[GLFW_KEY_4])
+        m_ClassicGizmo->ChangeMode(GIZMO_MODE_NONE);
+
+    /**** END the original Gizmo ****/
+
+    /**** BEGIN Update ImGizmo ****/
+    // Make sure that ImGuizmo transform is not null
+    if (m_Transform_ImGuizmo == nullptr) {
+        m_Transform_ImGuizmo = &m_SceneObjects[m_SelectedIndex]->transform;
+    }
+
+    if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft))
+    {
+        m_Transform_ImGuizmo = &m_SceneObjects[m_SelectedIndex]->transform;
+        if (m_ImGizmoType == -1) {
+            m_ImGizmoType = ImGuizmo::OPERATION::TRANSLATE;
+        }
+    }
+    /**** END Update ImGizmo ****/
+
+    UpdateLightDirection();
 }
 
-void SceneEditor::UpdateLightDirection(glm::quat rotation)
+void SceneEditor::UpdateLightDirection()
 {
-    if (rotation.x == 0.0f && rotation.y == 0.0f && rotation.z == 0.0f) return;
+    glm::vec3 direction = glm::vec3(0.0f);
 
-    glm::vec3 direction = glm::normalize(glm::eulerAngles(rotation) / toRadians);
-    // printf("UpdateLightDirection direction: [ %.2ff %.2ff %.2ff ]\n", direction.x, direction.y, direction.z);
+    if (m_IsEnabledImGuizmo) {
+        auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+        glm::vec3 direction = glm::degrees(glm::eulerAngles(Rotation));
+    }
+    else {
+        glm::vec3 direction = glm::degrees(glm::eulerAngles(m_ClassicGizmo->GetRotation()));
+    }
 
     if (m_SceneObjects[m_SelectedIndex]->name == "Light.directional") {
         LightManager::directionalLight.SetDirection(direction);
@@ -1587,7 +1702,7 @@ void SceneEditor::AddSceneObject()
     if (m_CurrentTimestamp - m_ObjectAdd.lastTime < m_ObjectAdd.cooldown) return;
     m_ObjectAdd.lastTime = m_CurrentTimestamp;
 
-    m_Gizmo->SetActive(false);
+    m_ClassicGizmo->SetActive(false);
 
     Mesh* mesh = nullptr;
     Model* model = nullptr;
@@ -1836,7 +1951,7 @@ void SceneEditor::CopySceneObject(Window* mainWindow, std::vector<SceneObject*>*
 
     sceneObjects->push_back(newSceneObject);
 
-    m_Gizmo->OnMouseRelease(mainWindow, sceneObjects, selectedIndex);
+    m_ClassicGizmo->OnMouseRelease(mainWindow, sceneObjects, selectedIndex);
 }
 
 void SceneEditor::DeleteSceneObject(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
@@ -1852,7 +1967,7 @@ void SceneEditor::DeleteSceneObject(Window* mainWindow, std::vector<SceneObject*
 
     if (m_SceneObjects.size() > 0) {
         m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
-        m_Gizmo->OnMousePress(mainWindow, sceneObjects, selectedIndex);
+        m_ClassicGizmo->OnMousePress(mainWindow, sceneObjects, selectedIndex);
     }
 
     // refresh scene object IDs
@@ -1861,7 +1976,7 @@ void SceneEditor::DeleteSceneObject(Window* mainWindow, std::vector<SceneObject*
 
     // delete Gizmo if there's no objects
     if (m_SceneObjects.size() == 0)
-        m_Gizmo->SetActive(false);
+        m_ClassicGizmo->SetActive(false);
 }
 
 Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
@@ -2372,7 +2487,7 @@ void SceneEditor::RenderSkybox(Shader* shaderBackground)
 
 void SceneEditor::RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix)
 {
-    if (!m_DrawGizmos) return;
+    if (!m_AuxiliaryElements) return;
 
     shaderBasic->Bind();
     if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
@@ -2534,7 +2649,6 @@ void SceneEditor::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
         }
 
         if (shouldRenderObject) {
-            // m_BlurEffect->GetVerticalFBO()->GetTextureAttachmentColor()->Bind(0);
             object->Render();
         }
     }
@@ -2547,8 +2661,11 @@ void SceneEditor::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
         // RenderFramebufferTextures(shaders["editor_object"]);
         
         // Render gizmo on front of everything (depth mask enabled)
-        if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
-            m_Gizmo->Render(shaders["gizmo"]);
+        if (!m_IsEnabledImGuizmo) {
+            if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size()) {
+                m_ClassicGizmo->Render(shaders["gizmo"]);
+            }
+        }
     }
 
     if (passType == "water_reflect")
@@ -2603,6 +2720,7 @@ SceneEditor::~SceneEditor()
     delete m_PivotScene;
     delete m_Grid;
     delete m_Raycast;
-    delete m_Gizmo;
+    delete m_ClassicGizmo;
+    delete m_Transform_ImGuizmo;
     ResetScene();
 }
