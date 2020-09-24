@@ -1119,9 +1119,6 @@
     <Filter Include="Hazel\Events">
       <UniqueIdentifier>{92fc41f3-3866-4005-97c0-e6b95883217b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Hazel\Windows">
-      <UniqueIdentifier>{2d75a5a3-615f-467d-9bff-5e77a64ab146}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Hazel\Core">
       <UniqueIdentifier>{e053c5c1-9585-4c6a-82e8-6a391773a618}</UniqueIdentifier>
     </Filter>

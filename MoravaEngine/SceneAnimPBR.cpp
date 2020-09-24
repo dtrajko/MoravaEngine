@@ -233,20 +233,12 @@ void SceneAnimPBR::SetupMeshes()
     m_Entities["AnimBoy"].Enabled = true;
     m_Entities["Cube"].Enabled    = false;
 
-    m_Entities["M1911"].Transform.Translation   = glm::vec3(0.0f);
-    m_Entities["BobLamp"].Transform.Translation = glm::vec3(0.0f);
-    m_Entities["AnimBoy"].Transform.Translation = glm::vec3(0.0f);
-    m_Entities["Cube"].Transform.Translation    = glm::vec3(0.0f);
-
-    m_Entities["M1911"].Transform.Rotation   = glm::quat(glm::vec3(0.0f));
-    m_Entities["BobLamp"].Transform.Rotation = glm::quat(glm::vec3(0.0f));
-    m_Entities["AnimBoy"].Transform.Rotation = glm::quat(glm::vec3(0.0f));
-    m_Entities["Cube"].Transform.Rotation    = glm::quat(glm::vec3(0.0f));
-
-    m_Entities["M1911"].Init.Transform.Scale   = glm::vec3(1.0f);
-    m_Entities["BobLamp"].Init.Transform.Scale = glm::vec3(1.0f);
-    m_Entities["AnimBoy"].Init.Transform.Scale = glm::vec3(1.0f);
-    m_Entities["Cube"].Init.Transform.Scale    = glm::vec3(1.0f);
+    for (auto& entity : m_Entities)
+    {
+        entity.second.Transform.Translation = glm::vec3(0.0f);
+        entity.second.Transform.Rotation = glm::quat(glm::vec3(0.0f));
+        entity.second.Init.Transform.Scale = glm::vec3(1.0f);
+    }
 
     m_Entities["M1911"].Init.AABB.Transform.Scale   = glm::vec3(0.24f, 0.14f, 0.03f);
     m_Entities["BobLamp"].Init.AABB.Transform.Scale = glm::vec3(20.0f, 62.0f, 20.0f);
@@ -359,38 +351,15 @@ void SceneAnimPBR::Update(float timestep, Window* mainWindow)
 {
     m_CurrentTimestamp = timestep;
 
+    for (auto& entity : m_Entities)
     {
-        auto [ translation, rotation, scale ] = Math::GetTransformDecomposition(m_Entities["M1911"].Transform.Transform);
-        m_Entities["M1911"].Transform.Translation = translation;
-        m_Entities["M1911"].Transform.Rotation = rotation;
-        m_Entities["M1911"].Transform.Scale = scale;
-    }
+        auto [translation, rotation, scale] = Math::GetTransformDecomposition(entity.second.Transform.Transform);
+        entity.second.Transform.Translation = translation;
+        entity.second.Transform.Rotation = rotation;
+        entity.second.Transform.Scale = scale;
 
-    {
-        auto [translation, rotation, scale] = Math::GetTransformDecomposition(m_Entities["BobLamp"].Transform.Transform);
-        m_Entities["BobLamp"].Transform.Translation = translation;
-        m_Entities["BobLamp"].Transform.Rotation = rotation;
-        m_Entities["BobLamp"].Transform.Scale = scale;
+        entity.second.AABB.Update(entity.second.Transform.Translation, entity.second.Transform.Rotation, entity.second.Transform.Scale);
     }
-
-    {
-        auto [translation, rotation, scale] = Math::GetTransformDecomposition(m_Entities["AnimBoy"].Transform.Transform);
-        m_Entities["AnimBoy"].Transform.Translation = translation;
-        m_Entities["AnimBoy"].Transform.Rotation = rotation;
-        m_Entities["AnimBoy"].Transform.Scale = scale;
-    }
-
-    {
-        auto [translation, rotation, scale] = Math::GetTransformDecomposition(m_Entities["Cube"].Transform.Transform);
-        m_Entities["Cube"].Transform.Translation = translation;
-        m_Entities["Cube"].Transform.Rotation = rotation;
-        m_Entities["Cube"].Transform.Scale = scale;
-    }
-
-    m_Entities["M1911"].AABB.Update(m_Entities["M1911"].Transform.Translation, m_Entities["M1911"].Transform.Rotation, m_Entities["M1911"].Transform.Scale);
-    m_Entities["BobLamp"].AABB.Update(m_Entities["BobLamp"].Transform.Translation, m_Entities["BobLamp"].Transform.Rotation, m_Entities["BobLamp"].Transform.Scale);
-    m_Entities["AnimBoy"].AABB.Update(m_Entities["AnimBoy"].Transform.Translation, m_Entities["AnimBoy"].Transform.Rotation, m_Entities["AnimBoy"].Transform.Scale);
-    m_Entities["Cube"].AABB.Update(m_Entities["Cube"].Transform.Translation, m_Entities["Cube"].Transform.Rotation, m_Entities["Cube"].Transform.Scale);
 
     CheckIntersection(mainWindow);
 
@@ -447,57 +416,23 @@ void SceneAnimPBR::CheckIntersection(Window* mainWindow)
 
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
-    m_Entities["M1911"].Intersecting = m_Entities["M1911"].Enabled &&
-        AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
-            m_Entities["M1911"].AABB.GetMin(), m_Entities["M1911"].AABB.GetMax(), glm::vec2(0.0f));
-
-    m_Entities["BobLamp"].Intersecting = m_Entities["BobLamp"].Enabled &&
-        AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
-            m_Entities["BobLamp"].AABB.GetMin(), m_Entities["BobLamp"].AABB.GetMax(), glm::vec2(0.0f));
-
-    m_Entities["AnimBoy"].Intersecting = m_Entities["AnimBoy"].Enabled &&
-        AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
-            m_Entities["AnimBoy"].AABB.GetMin(), m_Entities["AnimBoy"].AABB.GetMax(), glm::vec2(0.0f));
-
-    m_Entities["Cube"].Intersecting = m_Entities["Cube"].Enabled &&
-        AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
-            m_Entities["Cube"].AABB.GetMin(), m_Entities["Cube"].AABB.GetMax(), glm::vec2(0.0f));
-
-    if (Input::IsMouseButtonReleased(Mouse::ButtonLeft))
+    for (auto& entity : m_Entities)
     {
-        if (m_Entities["M1911"].Intersecting) {
-            m_Translation_Gizmo = m_Entities["M1911"].Transform.Translation;
-            // m_Entities["M1911"].Transform.Transform = glm::translate(glm::mat4(1.0f), m_Translation_Gizmo);
-            m_Transform_Gizmo = &m_Entities["M1911"].Transform.Transform;
-            if (m_GizmoType == -1) {
-                m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
-            }
-        }
+        entity.second.Intersecting = entity.second.Enabled &&
+            AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
+                entity.second.AABB.GetMin(), entity.second.AABB.GetMax(), glm::vec2(0.0f));
+    }
 
-        if (m_Entities["BobLamp"].Intersecting) {
-            m_Translation_Gizmo = m_Entities["BobLamp"].Transform.Translation;
-            // m_Entities["BobLamp"].Transform.Transform = glm::translate(glm::mat4(1.0f), m_Entities["BobLamp"].Transform.Translation);
-            m_Transform_Gizmo = &m_Entities["BobLamp"].Transform.Transform;
-            if (m_GizmoType == -1) {
-                m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
-            }
-        }
-
-        if (m_Entities["AnimBoy"].Intersecting) {
-            m_Translation_Gizmo = m_Entities["AnimBoy"].Transform.Translation;
-            // m_Entities["AnimBoy"].Transform.Transform = glm::translate(glm::mat4(1.0f), m_Entities["AnimBoy"].Transform.Translation);
-            m_Transform_Gizmo = &m_Entities["AnimBoy"].Transform.Transform;
-            if (m_GizmoType == -1) {
-                m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
-            }
-        }
-
-        if (m_Entities["Cube"].Intersecting) {
-            m_Translation_Gizmo = m_Entities["Cube"].Transform.Translation;
-            // m_Entities["Cube"].Transform.Transform = glm::translate(glm::mat4(1.0f), m_Translation_Cube);
-            m_Transform_Gizmo = &m_Entities["Cube"].Transform.Transform;
-            if (m_GizmoType == -1) {
-                m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+    if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft))
+    {
+        for (auto& entity : m_Entities)
+        {
+            if (entity.second.Intersecting) {
+                m_Translation_Gizmo = entity.second.Transform.Translation;
+                m_Transform_Gizmo = &entity.second.Transform.Transform;
+                if (m_GizmoType == -1) {
+                    m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+                }
             }
         }
     }
@@ -664,15 +599,17 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window* mainWindow)
     {
         ImGui::Checkbox("Display Bounding Boxes", &m_VisibleAABBs);
         ImGui::Separator();
-        ImGui::Checkbox("Is Enabled M1911",   &m_Entities["M1911"].Enabled);
-        ImGui::Checkbox("Is Enabled BobLamp", &m_Entities["BobLamp"].Enabled);
-        ImGui::Checkbox("Is Enabled AnimBoy", &m_Entities["AnimBoy"].Enabled);
-        ImGui::Checkbox("Is Enabled Cube",    &m_Entities["Cube"].Enabled);
+        for (auto& entity : m_Entities)
+        {
+            std::string isEnabled = std::string("Is Enabled ") + entity.first;
+            ImGui::Checkbox(isEnabled.c_str(), &entity.second.Enabled);
+        }
         ImGui::Separator();
-        ImGui::Checkbox("Is Intersecting M1911", &m_Entities["M1911"].Intersecting);
-        ImGui::Checkbox("Is Intersecting BobLamp", &m_Entities["BobLamp"].Intersecting);
-        ImGui::Checkbox("Is Intersecting AnimBoy", &m_Entities["AnimBoy"].Intersecting);
-        ImGui::Checkbox("Is Intersecting Cube", &m_Entities["Cube"].Intersecting);
+        for (auto& entity : m_Entities)
+        {
+            std::string isIntersecting = std::string("Is Intersecting ") + entity.first;
+            ImGui::Checkbox(isIntersecting.c_str(), &entity.second.Intersecting);
+        }
         ImGui::Separator();
         bool eventLoggingEnabled = Application::Get()->GetWindow()->GetEventLogging();
         if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
@@ -992,43 +929,17 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 
     m_MaterialWorkflowPBR->BindTextures(m_SamplerSlots["irradiance"]);
 
-    // BEGIN rendering the animated PBR model M1911
+    if (m_Entities["M1911"].Enabled)
     {
-        m_BaseMaterial_M1911->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
-        m_BaseMaterial_M1911->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
-        m_BaseMaterial_M1911->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
-        m_BaseMaterial_M1911->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
-        m_BaseMaterial_M1911->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
-
-        m_MeshAnimPBR_M1911->m_VertexArray->Bind();
-        auto& materials = m_MeshAnimPBR_M1911->GetMaterials();
-
-        int submeshIndex = 0;
-        for (Hazel::Submesh* submesh : m_MeshAnimPBR_M1911->GetSubmeshes())
-        {
-            // Material
-            auto material = materials[submesh->MaterialIndex];
-            m_ShaderHybridAnimPBR->Bind();
-
-            for (size_t i = 0; i < m_MeshAnimPBR_M1911->m_BoneTransforms.size(); i++)
-            {
-                std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-                m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBR_M1911->m_BoneTransforms[i]);
-            }
-
-            m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Entities["M1911"].Transform.Transform * submesh->Transform);
-
-            glEnable(GL_DEPTH_TEST);
-            if (m_Entities["M1911"].Enabled) {
-                glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
-            }
-
-            submeshIndex++;
-        }
+        m_MeshAnimPBR_M1911->Render(m_SamplerSlots["albedo"], m_Entities["M1911"].Transform.Transform);
     }
-    // END rendering the animated PBR model M1911
 
-    // BEGIN rendering the animated PBR model BobLamp
+    if (m_Entities["AnimBoy"].Enabled)
+    {
+        m_MeshAnimPBR_AnimBoy->Render(m_SamplerSlots["albedo"], m_Entities["AnimBoy"].Transform.Transform);
+    }
+
+    if (m_Entities["BobLamp"].Enabled)
     {
         m_BaseMaterial_BobLamp->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
         m_BaseMaterial_BobLamp->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
@@ -1057,50 +968,11 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
             m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Entities["BobLamp"].Transform.Transform * submesh->Transform);
 
             glEnable(GL_DEPTH_TEST);
-            if (m_Entities["BobLamp"].Enabled) {
-                glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
-            }
+            glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 
             submeshIndex++;
         }
     }
-    // END rendering the animated PBR model BobLamp
-
-    // BEGIN rendering the animated PBR model Animated Boy
-    {
-        m_BaseMaterial_AnimBoy->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
-        m_BaseMaterial_AnimBoy->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
-        m_BaseMaterial_AnimBoy->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
-        m_BaseMaterial_AnimBoy->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
-        m_BaseMaterial_AnimBoy->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
-
-        m_MeshAnimPBR_AnimBoy->m_VertexArray->Bind();
-        auto& materials = m_MeshAnimPBR_AnimBoy->GetMaterials();
-
-        int submeshIndex = 0;
-        for (Hazel::Submesh* submesh : m_MeshAnimPBR_AnimBoy->GetSubmeshes())
-        {
-            // Material
-            auto material = materials[submesh->MaterialIndex];
-            m_ShaderHybridAnimPBR->Bind();
-
-            for (size_t i = 0; i < m_MeshAnimPBR_AnimBoy->m_BoneTransforms.size(); i++)
-            {
-                std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-                m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBR_AnimBoy->m_BoneTransforms[i]);
-            }
-
-            m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Entities["AnimBoy"].Transform.Transform * submesh->Transform);
-
-            glEnable(GL_DEPTH_TEST);
-            if (m_Entities["AnimBoy"].Enabled) {
-                glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
-            }
-
-            submeshIndex++;
-        }
-    }
-    // END rendering the animated PBR model Animated Boy
 
     // BEGIN main shader rendering
     m_ShaderMain->Bind();
@@ -1128,29 +1000,14 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 
     glm::mat4 AABB_Transform = Math::CreateTransform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
 
-    if (m_Entities["M1911"].Enabled)
+    for (auto& entity : m_Entities)
     {
-        m_ShaderBasic->setMat4("model", AABB_Transform);
-        m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-        if (m_VisibleAABBs) m_Entities["M1911"].AABB.Draw();
-    }
-    if (m_Entities["BobLamp"].Enabled)
-    {
-        m_ShaderBasic->setMat4("model", AABB_Transform);
-        m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-        if (m_VisibleAABBs) m_Entities["BobLamp"].AABB.Draw();
-    }
-    if (m_Entities["AnimBoy"].Enabled)
-    {
-        m_ShaderBasic->setMat4("model", AABB_Transform);
-        m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-        if (m_VisibleAABBs) m_Entities["AnimBoy"].AABB.Draw();
-    }
-    if (m_Entities["Cube"].Enabled)
-    {
-        m_ShaderBasic->setMat4("model", AABB_Transform);
-        m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-        if (m_VisibleAABBs) m_Entities["Cube"].AABB.Draw();
+        if (entity.second.Enabled)
+        {
+            m_ShaderBasic->setMat4("model", AABB_Transform);
+            m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+            if (m_VisibleAABBs) entity.second.AABB.Draw();
+        }
     }
 
     if (m_IsViewportEnabled)
