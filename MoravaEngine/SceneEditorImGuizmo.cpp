@@ -26,10 +26,16 @@
 #include "Application.h"
 #include "Hazel/Renderer/MeshAnimPBR.h"
 #include "Input.h"
+#include "Scene.h"
+#include "Mesh.h"
+#include "SceneObject.h"
+#include "Ring90.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtc/matrix_transform.hpp"
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/ext/quaternion_float.hpp>
+
 
 #include <vector>
 #include <map>

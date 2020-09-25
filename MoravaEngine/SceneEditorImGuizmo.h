@@ -1,16 +1,20 @@
 #pragma once
 
 #include "Scene.h"
-
 #include "Quad.h"
 #include "Raycast.h"
 #include "Pivot.h"
 #include "Grid.h"
-#include "Gizmo.h"
 #include "MaterialWorkflowPBR.h"
 #include "SceneObjectParticleSystem.h"
 #include "Framebuffer.h"
 #include "BlurEffect.h"
+#include "Mesh.h"
+#include "SceneObject.h"
+#include "Ring90.h"
+#include "Gizmo.h"
+
+#include <glm/ext/quaternion_float.hpp>
 
 #include <future>
 #include <set>
