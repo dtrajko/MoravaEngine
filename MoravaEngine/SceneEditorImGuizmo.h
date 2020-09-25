@@ -46,8 +46,6 @@ private:
 	void RenderLightSources(Shader* shader);
 	void RenderSkybox(Shader* shader);
 	void RenderLineElements(Shader* shader, glm::mat4 projectionMatrix);
-	void RenderFramebufferTextures(Shader* shader);
-	void RenderGlassObjects(Shader* shader);
 	void SetGeometry();
 	void CleanupGeometry();
 	inline Raycast* GetRaycast() const { return m_Raycast; };
@@ -69,7 +67,6 @@ private:
 	void SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Texture* texture, SceneObject* sceneObject, float runningTime);
 	void SetUniformsShaderWater(Shader* shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix);
 	void SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix);
-	glm::mat4 CalculateRenderTransform(SceneObject* sceneObject);
 	virtual bool IsWaterOnScene() override;
 	void UpdateLightDirection();
     void ResizeViewport(glm::vec2 viewportPanelSize);
