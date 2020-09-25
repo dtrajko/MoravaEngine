@@ -1,10 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "SceneEditorImGuizmo.h"
-
-#include "glm/gtc/matrix_transform.hpp"
-
 #include "ImGuiWrapper.h"
+#include "../cross-platform/ImGuizmo/ImGuizmo.h"
 #include "MousePicker.h"
 #include "Block.h"
 #include "Sphere.h"
@@ -26,6 +24,11 @@
 #include "PerlinNoise/PerlinNoise.hpp"
 #include "Application.h"
 #include "Hazel/Renderer/MeshAnimPBR.h"
+#include "Input.h"
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtc/matrix_transform.hpp"
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include <vector>
 #include <map>
@@ -205,6 +208,9 @@ SceneEditorImGuizmo::SceneEditorImGuizmo()
     m_SamplerSlots.insert(std::make_pair("BRDF_LUT",   8)); // uniform sampler2D u_BRDFLUT
 
     m_SkyboxRotationSpeed = 0.0f;
+
+    m_Translation_ImGuizmo = glm::vec3(0.0f);
+    m_Transform_ImGuizmo = nullptr;
 }
 
 void SceneEditorImGuizmo::SetLightManager()
@@ -495,22 +501,35 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Transform");
     {
-        if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
         {
-            glm::vec3 quatToVec3 = glm::eulerAngles(m_SceneObjects[m_SelectedIndex]->rotation) / toRadians;
-            m_PositionEdit = &m_SceneObjects[m_SelectedIndex]->position;
-            m_RotationEdit = &quatToVec3;
-            m_ScaleEdit = &m_SceneObjects[m_SelectedIndex]->scale;
-            m_ColorEdit = &m_SceneObjects[m_SelectedIndex]->color;
-            m_TextureNameEdit = &m_SceneObjects[m_SelectedIndex]->textureName;
-            m_TilingFactorEdit = &m_SceneObjects[m_SelectedIndex]->tilingFactor;
-            m_MaterialNameEdit = &m_SceneObjects[m_SelectedIndex]->materialName;
-            m_TilingFactorMaterialEdit = &m_SceneObjects[m_SelectedIndex]->tilingFMaterial;
+            ImGui::Separator();
+            ImGui::Text("Selected Object Transform");
+            ImGui::Separator();
+            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(m_SceneObjects[m_SelectedIndex]->transform);
+            glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
+            char buffer[100];
+            sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
+            ImGui::Text(buffer);
+            sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
+            ImGui::Text(buffer);
+            sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
+            ImGui::Text(buffer);
         }
-
-        ImGui::SliderFloat3("Position", (float*)m_PositionEdit, -10.0f, 10.0f);
-        ImGui::SliderFloat3("Rotation", (float*)m_RotationEdit, -360.0f, 360.0f);
-        ImGui::SliderFloat3("Scale", (float*)m_ScaleEdit, 0.1f, 20.0f);
+        ImGui::NewLine();
+        {
+            ImGui::Separator();
+            ImGui::Text("ImGuizmo Transform");
+            ImGui::Separator();
+            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+            glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
+            char buffer[100];
+            sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
+            ImGui::Text(buffer);
+            sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
+            ImGui::Text(buffer);
+            sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
+            ImGui::Text(buffer);
+        }
     }
     ImGui::End();
 
@@ -532,6 +551,7 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Material");
     {
+        m_ColorEdit = &m_SceneObjects[m_SelectedIndex]->color;
         ImGui::ColorEdit4("Color", (float*)m_ColorEdit);
 
         // Begin TextureName ImGui drop-down list
@@ -540,6 +560,7 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
         for (itTexture = ResourceManager::GetTextureInfo()->begin(); itTexture != ResourceManager::GetTextureInfo()->end(); itTexture++)
             itemsTexture.push_back(itTexture->first.c_str());
 
+        m_TextureNameEdit = &m_SceneObjects[m_SelectedIndex]->textureName;
         static const char* currentItemTexture = m_TextureNameEdit->c_str();
 
         if (ImGui::BeginCombo("Texture Name", currentItemTexture))
@@ -563,6 +584,9 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
             ImGui::EndCombo();
         }
         // End TextureName ImGui drop-down list
+
+        m_TilingFactorEdit = &m_SceneObjects[m_SelectedIndex]->tilingFactor;
+        m_MaterialNameEdit = &m_SceneObjects[m_SelectedIndex]->materialName;
 
         ImGui::SliderFloat("Tiling Factor", m_TilingFactorEdit, 0.0f, 10.0f);
 
@@ -594,6 +618,7 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
         }
         // End MaterialName ImGui drop-down list
 
+        m_TilingFactorMaterialEdit = &m_SceneObjects[m_SelectedIndex]->tilingFMaterial;
         ImGui::SliderFloat("Material Tiling Factor", m_TilingFactorMaterialEdit, 0.0f, 10.0f);
     }
     ImGui::End();
@@ -1104,51 +1129,58 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Experimental Section");
     {
-        ImGui::Text("File");
-        std::string fullpath = (m_LoadedFile != "") ? m_LoadedFile : "None";
-        size_t found = fullpath.find_last_of("/\\");
-        std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
-        ImGui::Text(path.c_str()); ImGui::SameLine();
-
-        if (ImGui::Button("...##Mesh"))
+        if (ImGui::CollapsingHeader("Details", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
         {
-            m_LoadedFile = Application::Get()->OpenFile("");
-            if (m_LoadedFile != "")
-            {
-                Log::GetLogger()->info("ImGui OpenFile - filename: '{0}'", m_LoadedFile);
-            }
-        }
-    }
+            ImGui::Text("File");
+            std::string fullpath = (m_LoadedFile != "") ? m_LoadedFile : "None";
+            size_t found = fullpath.find_last_of("/\\");
+            std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
+            ImGui::Text(path.c_str()); ImGui::SameLine();
 
-    if (ImGui::CollapsingHeader("Normals", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-    {
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-        ImGui::Image(m_LoadedTexture ? (void*)(intptr_t)m_LoadedTexture->GetID() : (void*)(intptr_t)ResourceManager::HotLoadTexture("Checkerboard")->GetID(), ImVec2(64, 64));
-        ImGui::PopStyleVar();
-        if (ImGui::IsItemHovered())
-        {
-            if (m_LoadedTexture)
+            if (ImGui::Button("...##Mesh"))
             {
-                ImGui::BeginTooltip();
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                ImGui::TextUnformatted(m_LoadedTextureFilepath.c_str());
-                ImGui::PopTextWrapPos();
-                ImGui::Image((void*)(intptr_t)m_LoadedTexture->GetID(), ImVec2(384, 384));
-                ImGui::EndTooltip();
+                m_LoadedFile = Application::Get()->OpenFile("");
+                if (m_LoadedFile != "")
+                {
+                    Log::GetLogger()->info("ImGui OpenFile - filename: '{0}'", m_LoadedFile);
+                }
             }
-            if (ImGui::IsItemClicked())
+
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+            ImGui::Image(m_LoadedTexture ? (void*)(intptr_t)m_LoadedTexture->GetID() : (void*)(intptr_t)ResourceManager::HotLoadTexture("Checkerboard")->GetID(), ImVec2(64, 64));
+            ImGui::PopStyleVar();
+            if (ImGui::IsItemHovered())
             {
-                std::string filename = Application::Get()->OpenFile("");
-                if (filename != "")
-                    m_LoadedTexture = new Texture(filename.c_str(), false);
+                if (m_LoadedTexture)
+                {
+                    ImGui::BeginTooltip();
+                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                    ImGui::TextUnformatted(m_LoadedTextureFilepath.c_str());
+                    ImGui::PopTextWrapPos();
+                    ImGui::Image((void*)(intptr_t)m_LoadedTexture->GetID(), ImVec2(384, 384));
+                    ImGui::EndTooltip();
+                }
+                if (ImGui::IsItemClicked())
+                {
+                    std::string filename = Application::Get()->OpenFile("");
+                    if (filename != "")
+                        m_LoadedTexture = new Texture(filename.c_str(), false);
+                }
             }
+            ImGui::SameLine();
+            ImGui::Checkbox("Use##NormalMap", &m_UseLoadedTexture);
         }
-        ImGui::SameLine();
-        ImGui::Checkbox("Use##NormalMap", &m_UseLoadedTexture);
     }
     ImGui::End();
 
-    ImGui::ShowMetricsWindow();
+    if (!m_IsViewportEnabled)
+    {
+        ImGui::Begin("ImGuizmo");
+        {
+            UpdateImGuizmo(mainWindow);
+        }
+        ImGui::End();
+    }
 
     if (m_IsViewportEnabled)
     {
@@ -1174,10 +1206,50 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
             uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
             // uint64_t textureID = m_BlurEffect->GetVerticalOutputTexture()->GetID();
             ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+            UpdateImGuizmo(mainWindow);
         }
         ImGui::End();
         ImGui::PopStyleVar();
     }
+
+    ImGui::ShowMetricsWindow();
+}
+
+void SceneEditorImGuizmo::UpdateImGuizmo(Window* mainWindow)
+{
+    /**** BEGIN ImGuizmo ****/
+
+    // ImGizmo switching modes
+    if (Input::IsKeyPressed(MORAVA_KEY_1))
+        m_ImGizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+    if (Input::IsKeyPressed(MORAVA_KEY_2))
+        m_ImGizmoType = ImGuizmo::OPERATION::ROTATE;
+
+    if (Input::IsKeyPressed(MORAVA_KEY_3))
+        m_ImGizmoType = ImGuizmo::OPERATION::SCALE;
+
+    if (Input::IsKeyPressed(MORAVA_KEY_4))
+        m_ImGizmoType = -1;
+
+    // Gizmo
+    if (m_ImGizmoType != -1)
+    {
+        float rw = (float)ImGui::GetWindowWidth();
+        float rh = (float)ImGui::GetWindowHeight();
+        ImGuizmo::SetOrthographic(false);
+        ImGuizmo::SetDrawlist();
+        ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
+
+        if (m_Transform_ImGuizmo != nullptr) {
+            ImGuizmo::Manipulate(
+                glm::value_ptr(m_CameraController->CalculateViewMatrix()),
+                glm::value_ptr(RendererBasic::GetProjectionMatrix()),
+                (ImGuizmo::OPERATION)m_ImGizmoType, ImGuizmo::LOCAL, glm::value_ptr(*m_Transform_ImGuizmo));
+        }
+    }
+    /**** END ImGuizmo ****/
 }
 
 void SceneEditorImGuizmo::ResizeViewport(glm::vec2 viewportPanelSize)
@@ -1402,7 +1474,6 @@ void SceneEditorImGuizmo::Update(float timestep, Window* mainWindow)
     if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1])
     {
         m_Gizmo->OnMousePress(mainWindow, &m_SceneObjects, m_SelectedIndex);
-        // UpdateLightDirection(m_Gizmo->GetRotation());
         m_MouseButton_1_Prev = true;
     }
 
@@ -1450,6 +1521,20 @@ void SceneEditorImGuizmo::Update(float timestep, Window* mainWindow)
     if (mainWindow->getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow->getKeys()[GLFW_KEY_L])
         LoadScene();
 
+    for (auto& object : m_SceneObjects)
+    {
+        /**** BEGIN ImGuizmo decompose transform matrix to translate, rotate and scale components ****/
+        {
+            auto [translation, rotation, scale] = Math::GetTransformDecomposition(object->transform);
+            object->position = translation;
+            object->rotation = rotation;
+            object->scale = scale;
+        }
+        /**** END ImGuizmo decompose transform matrix to translate, rotate and scale components ****/
+
+        object->GetAABB()->Update(object->position, object->rotation, object->scale);
+        object->pivot->Update(object->position, object->scale + 1.0f);
+    }
     // Gizmo switching modes
     if (mainWindow->getKeys()[GLFW_KEY_1])
         m_Gizmo->ChangeMode(GIZMO_MODE_TRANSLATE);
@@ -1463,21 +1548,28 @@ void SceneEditorImGuizmo::Update(float timestep, Window* mainWindow)
     if (mainWindow->getKeys()[GLFW_KEY_4])
         m_Gizmo->ChangeMode(GIZMO_MODE_NONE);
 
-    for (auto& object : m_SceneObjects)
-    {
-        object->GetAABB()->Update(object->position, object->rotation, object->scale);
-        object->pivot->Update(object->position, object->scale + 1.0f);
+    /**** BEGIN Update ImGizmo ****/
+    // Make sure that ImGuizmo transform is not null
+    if (m_Transform_ImGuizmo == nullptr) {
+        m_Transform_ImGuizmo = &m_SceneObjects[m_SelectedIndex]->transform;
     }
 
-    UpdateLightDirection(m_Gizmo->GetRotation());
+    if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft))
+    {
+        m_Transform_ImGuizmo = &m_SceneObjects[m_SelectedIndex]->transform;
+        if (m_ImGizmoType == -1) {
+            m_ImGizmoType = ImGuizmo::OPERATION::TRANSLATE;
+        }
+    }
+    /**** END Update ImGizmo ****/
+
+    UpdateLightDirection();
 }
 
-void SceneEditorImGuizmo::UpdateLightDirection(glm::quat rotation)
+void SceneEditorImGuizmo::UpdateLightDirection()
 {
-    if (rotation.x == 0.0f && rotation.y == 0.0f && rotation.z == 0.0f) return;
-
-    glm::vec3 direction = glm::normalize(glm::eulerAngles(rotation) / toRadians);
-    // printf("UpdateLightDirection direction: [ %.2ff %.2ff %.2ff ]\n", direction.x, direction.y, direction.z);
+    auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+    glm::vec3 direction = glm::degrees(glm::eulerAngles(Rotation));
 
     if (m_SceneObjects[m_SelectedIndex]->name == "Light.directional") {
         LightManager::directionalLight.SetDirection(direction);
@@ -2156,23 +2248,8 @@ void SceneEditorImGuizmo::AddLightsToSceneObjects()
     // Directional Light - Cone Mesh
     SceneObject* sceneObject = CreateNewSceneObject();
 
-    glm::vec3 position = glm::vec3(-10.0f, 10.0f, 10.0f);
-    glm::vec3 rotation = LightManager::directionalLight.GetDirection();
-    glm::vec3 scale = glm::vec3(1.0f);
-
-    glm::mat4 transform = glm::mat4(1.0f);
-    transform = glm::translate(transform, position);
-    transform = glm::rotate(transform, glm::radians(LightManager::directionalLight.GetDirection().x * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    transform = glm::rotate(transform, glm::radians(LightManager::directionalLight.GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    transform = glm::rotate(transform, glm::radians(LightManager::directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    transform = glm::scale(transform, scale);
-
     sceneObject->name = "Light.directional";
     sceneObject->m_Type = "mesh";
-    sceneObject->position = position;
-    sceneObject->rotation = glm::quat(rotation * toRadians);
-    sceneObject->scale = scale;
-    sceneObject->transform = transform;
     sceneObject->m_TypeID = MESH_TYPE_CONE;
     if (sceneObject->m_Type == "mesh") {
         std::string objectNameVoid = "";
@@ -2273,22 +2350,9 @@ void SceneEditorImGuizmo::RenderLightSources(Shader* shaderGizmo)
     ResourceManager::GetTexture("none")->Bind(1);
     ResourceManager::GetTexture("none")->Bind(2);
 
-    glm::mat4 model;
-
-    // Directional light (somewhere on pozitive Y axis, at X=0, Z=0)
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, m_SceneObjects[0]->position);
-    model = glm::rotate(model, glm::radians(LightManager::directionalLight.GetDirection().x *  90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::rotate(model, glm::radians(LightManager::directionalLight.GetDirection().y *  90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(LightManager::directionalLight.GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::scale(model, glm::vec3(1.0f));
-
-    glm::vec3 dir = LightManager::directionalLight.GetDirection();
-    // printf("Render Dir Light Direction [ %.2ff %.2ff %.2ff ]\n", dir.x, dir.y, dir.z);
-
-    m_SceneObjects[0]->transform = model;
-    shaderGizmo->setMat4("model", model);
-    shaderGizmo->setVec4("tintColor", glm::vec4(LightManager::directionalLight.GetColor(), 1.0f));
+    shaderGizmo->setMat4("model", m_SceneObjects[0]->transform);
+    glm::vec3 lightColor = LightManager::directionalLight.GetColor();
+    shaderGizmo->setVec4("tintColor", glm::vec4(lightColor, 1.0f));
     if (m_DisplayLightSources && LightManager::directionalLight.GetEnabled())
         m_SceneObjects[0]->Render();
 
@@ -2298,11 +2362,7 @@ void SceneEditorImGuizmo::RenderLightSources(Shader* shaderGizmo)
     {
         LightManager::pointLights[i].SetPosition(m_SceneObjects[offsetPoint + i]->position);
 
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, m_SceneObjects[offsetPoint + i]->position);
-        model = glm::scale(model, glm::vec3(0.5f));
-        m_SceneObjects[offsetPoint + i]->transform = model;
-        shaderGizmo->setMat4("model", model);
+        shaderGizmo->setMat4("model", m_SceneObjects[offsetPoint + i]->transform);
         shaderGizmo->setVec4("tintColor", glm::vec4(LightManager::pointLights[i].GetColor(), 1.0f));
         if (m_DisplayLightSources && LightManager::pointLights[i].GetEnabled())
             m_SceneObjects[offsetPoint + i]->Render();
@@ -2313,19 +2373,8 @@ void SceneEditorImGuizmo::RenderLightSources(Shader* shaderGizmo)
     for (unsigned int i = 0; i < LightManager::spotLightCount; i++)
     {
         LightManager::spotLights[i].GetBasePL()->SetPosition(m_SceneObjects[offsetSpot + i]->position);
-        // LightManager::spotLights[i].SetDirection(glm::vec3(
-        //     glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).x ,
-        //     glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).y,
-        //     glm::eulerAngles(m_SceneObjects[offsetSpot + i]->rotation / toRadians).z));
 
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, m_SceneObjects[offsetSpot + i]->position);
-        model = glm::rotate(model, glm::radians(LightManager::spotLights[i].GetDirection().x *  90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::rotate(model, glm::radians(LightManager::spotLights[i].GetDirection().y *  90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(LightManager::spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.5f));
-        m_SceneObjects[offsetPoint + i]->transform = model;
-        shaderGizmo->setMat4("model", model);
+        shaderGizmo->setMat4("model", m_SceneObjects[offsetPoint + i]->transform);
         shaderGizmo->setVec4("tintColor", glm::vec4(LightManager::spotLights[i].GetBasePL()->GetColor(), 1.0f));
         if (m_DisplayLightSources && LightManager::spotLights[i].GetBasePL()->GetEnabled())
             m_SceneObjects[offsetSpot + i]->Render();
@@ -2534,7 +2583,6 @@ void SceneEditorImGuizmo::Render(Window* mainWindow, glm::mat4 projectionMatrix,
         }
 
         if (shouldRenderObject) {
-            // m_BlurEffect->GetVerticalFBO()->GetTextureAttachmentColor()->Bind(0);
             object->Render();
         }
     }
