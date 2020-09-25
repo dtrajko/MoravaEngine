@@ -19,11 +19,11 @@
 #include <set>
 
 
-class SceneEditor : public Scene
+class SceneEditorImGuizmo : public Scene
 {
 public:
-	SceneEditor();
-    virtual ~SceneEditor() override;
+	SceneEditorImGuizmo();
+    virtual ~SceneEditorImGuizmo() override;
 
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
@@ -111,7 +111,7 @@ private:
 	std::string* m_TextureNameEdit;
 	std::string* m_MaterialNameEdit;
 	float* m_TilingFactorMaterialEdit;
-	bool m_DrawGizmos;
+	bool m_DisplayLineElements;
 	int m_PBR_Map_Edit;
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;

@@ -488,6 +488,9 @@
     <ClCompile Include="WindowsInput.cpp">
       <Filter>Platform\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="SceneEditorImGuizmo.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1047,6 +1050,9 @@
     </ClInclude>
     <ClInclude Include="Input.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneEditorImGuizmo.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

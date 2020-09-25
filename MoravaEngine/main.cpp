@@ -40,7 +40,6 @@
 #include "SceneCubemaps.h"
 #include "SceneParticles.h"
 #include "SceneOmniShadows.h"
-#include "SceneEditor.h"
 #include "SceneProceduralLandmass.h"
 #include "SceneVoxelTerrain.h"
 #include "SceneVoxelTerrainSL.h"
@@ -48,6 +47,8 @@
 #include "SceneSSAO.h"
 #include "SceneAnimPBR.h"
 #include "SceneDeferred.h"
+#include "SceneEditor.h"
+#include "SceneEditorImGuizmo.h"
 
 #include "Renderer.h"
 #include "RendererTrivial.h"
@@ -86,7 +87,6 @@ enum class SceneName
 	Cubemaps,
 	Particles,
 	OmniShadows,
-	Editor,
 	VoxelTerrain,
 	ProceduralLandmass,
 	VoxelTerrainSL,
@@ -94,9 +94,11 @@ enum class SceneName
 	SSAO,
 	Deferred,
 	AnimPBR,
+	Editor,
+	EditorImGuizmo,
 };
 
-SceneName currentScene = SceneName::AnimPBR;
+SceneName currentScene = SceneName::EditorImGuizmo;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -171,10 +173,6 @@ int main()
 		scene = new SceneOmniShadows();
 		renderer = static_cast<RendererBasic*>(new RendererOmniShadows());
 		break;
-	case SceneName::Editor:
-		scene = new SceneEditor();
-		renderer = static_cast<RendererBasic*>(new RendererEditor());
-		break;
 	case SceneName::ProceduralLandmass:
 		scene = new SceneProceduralLandmass();
 		renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
@@ -202,6 +200,14 @@ int main()
 	case SceneName::Deferred:
 		scene = new SceneDeferred();
 		renderer = static_cast<RendererBasic*>(new RendererTrivial());
+		break;
+	case SceneName::Editor:
+		scene = new SceneEditor();
+		renderer = static_cast<RendererBasic*>(new RendererEditor());
+		break;
+	case SceneName::EditorImGuizmo:
+		scene = new SceneEditorImGuizmo();
+		renderer = static_cast<RendererBasic*>(new RendererEditor());
 		break;
 	default:
 		throw std::runtime_error("Scene and Renderer could not be loaded!");

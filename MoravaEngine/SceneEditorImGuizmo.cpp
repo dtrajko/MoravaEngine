@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "SceneEditor.h"
+#include "SceneEditorImGuizmo.h"
 
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -34,7 +34,7 @@
 #include <iostream>
 
 
-SceneEditor::SceneEditor()
+SceneEditorImGuizmo::SceneEditorImGuizmo()
 {
     sceneSettings.cameraPosition   = glm::vec3(0.0f, 8.0f, 24.0f);
     sceneSettings.cameraStartYaw   = -90.0f;
@@ -167,7 +167,7 @@ SceneEditor::SceneEditor()
     m_TilingFactorEdit         = new float(1.0f);
     m_MaterialNameEdit         = new std::string;
     m_TilingFactorMaterialEdit = new float(1.0f);
-    m_DrawGizmos = true;
+    m_DisplayLineElements      = true;
     m_PBR_Map_Edit = PBR_MAP_ENVIRONMENT;
     m_HDRI_Edit = HDRI_EARLY_EVE_WARM_SKY;
     m_HDRI_Edit_Prev = -1;
@@ -207,14 +207,14 @@ SceneEditor::SceneEditor()
     m_SkyboxRotationSpeed = 0.0f;
 }
 
-void SceneEditor::SetLightManager()
+void SceneEditorImGuizmo::SetLightManager()
 {
     // Skip if Light Manager already initialized
     if (LightManager::pointLightCount > 0 || LightManager::spotLightCount > 0) return;
     LightManager::Init(sceneSettings);
 }
 
-void SceneEditor::SetupRenderFramebuffer()
+void SceneEditorImGuizmo::SetupRenderFramebuffer()
 {
     if (!m_IsViewportEnabled) return;
 
@@ -228,11 +228,11 @@ void SceneEditor::SetupRenderFramebuffer()
     m_RenderFramebuffer->Generate(width, height);
 }
 
-void SceneEditor::SetSkybox()
+void SceneEditorImGuizmo::SetSkybox()
 {
 }
 
-void SceneEditor::SetupTextures()
+void SceneEditorImGuizmo::SetupTextures()
 {
     ResourceManager::LoadTexture(
         ResourceManager::GetTextureInfo()->find("none")->first,
@@ -248,7 +248,7 @@ void SceneEditor::SetupTextures()
         ResourceManager::GetTextureInfo()->find("waterDuDv")->second);
 }
 
-void SceneEditor::SetupMaterials()
+void SceneEditorImGuizmo::SetupMaterials()
 {
     ResourceManager::LoadMaterial(
         ResourceManager::GetMaterialInfo()->find("none")->first,
@@ -258,12 +258,12 @@ void SceneEditor::SetupMaterials()
         ResourceManager::GetMaterialInfo()->find("M1911")->second);
 }
 
-void SceneEditor::SetupMeshes()
+void SceneEditorImGuizmo::SetupMeshes()
 {
     m_Quad = new Quad();
 }
 
-void SceneEditor::SetupModels()
+void SceneEditorImGuizmo::SetupModels()
 {
     Sphere* sphere = new Sphere(glm::vec3(1.0f));
     meshes.insert(std::make_pair("sphere", sphere));
@@ -272,11 +272,11 @@ void SceneEditor::SetupModels()
     meshes.insert(std::make_pair("cone", cone));
 }
 
-void SceneEditor::SetGeometry()
+void SceneEditorImGuizmo::SetGeometry()
 {
 }
 
-void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
+void SceneEditorImGuizmo::SelectNextFromMultipleObjects(std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
 {
     // Cooldown
     if (m_CurrentTimestamp - m_ObjectSelect.lastTime < m_ObjectSelect.cooldown) return;
@@ -301,12 +301,12 @@ void SceneEditor::SelectNextFromMultipleObjects(std::vector<SceneObject*>* scene
     selectedIndex = sceneObjectsInFocusIndices[m_ObjectInFocusPrev];
 }
 
-bool SceneEditor::IsObjectSelected(unsigned int objectIndex)
+bool SceneEditorImGuizmo::IsObjectSelected(unsigned int objectIndex)
 {
     return objectIndex = m_SelectedIndex;
 }
 
-void SceneEditor::SaveScene()
+void SceneEditorImGuizmo::SaveScene()
 {
     // Cooldown
     if (m_CurrentTimestamp - m_SceneSave.lastTime < m_SceneSave.cooldown) return;
@@ -368,7 +368,7 @@ void SceneEditor::SaveScene()
     printf("SaveScene: Content saved to file '%s'\n", m_SceneFilename);
 }
 
-void SceneEditor::LoadScene()
+void SceneEditorImGuizmo::LoadScene()
 {
     // Cooldown
     if (m_CurrentTimestamp - m_SceneLoad.lastTime < m_SceneLoad.cooldown) return;
@@ -483,7 +483,7 @@ void SceneEditor::LoadScene()
         m_Gizmo->SetSceneObject(m_SceneObjects[m_SceneObjects.size() - 1]);
 }
 
-void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
+void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -635,7 +635,7 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
 
         if (ImGui::CollapsingHeader("Gizmos"))
         {
-            ImGui::Checkbox("Draw Gizmos", &m_DrawGizmos);
+            ImGui::Checkbox(" Display Line Elements", &m_DisplayLineElements);
             ImGui::Checkbox("Orthographic View", &m_OrthographicViewEnabled);
 
             bool gizmoActive = m_Gizmo->GetActive();
@@ -1180,7 +1180,7 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
     }
 }
 
-void SceneEditor::ResizeViewport(glm::vec2 viewportPanelSize)
+void SceneEditorImGuizmo::ResizeViewport(glm::vec2 viewportPanelSize)
 {
     // Cooldown
     if (m_CurrentTimestamp - m_ResizeViewport.lastTime < m_ResizeViewport.cooldown) return;
@@ -1199,7 +1199,7 @@ void SceneEditor::ResizeViewport(glm::vec2 viewportPanelSize)
 // Note that you already dock windows into each others _without_ a DockSpace() by just moving windows 
 // from their title bar (or by holding SHIFT if io.ConfigDockingWithShift is set).
 // DockSpace() is only useful to construct to a central location for your application.
-void SceneEditor::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
+void SceneEditorImGuizmo::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
     if (!m_IsViewportEnabled) {
         Scene::ShowExampleAppDockSpace(p_open, mainWindow);
@@ -1317,7 +1317,7 @@ void SceneEditor::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
     ImGui::End();
 }
 
-void SceneEditor::Update(float timestep, Window* mainWindow)
+void SceneEditorImGuizmo::Update(float timestep, Window* mainWindow)
 {
     m_CurrentTimestamp = timestep;
 
@@ -1396,7 +1396,7 @@ void SceneEditor::Update(float timestep, Window* mainWindow)
     }
 
     m_Gizmo->Update(m_Camera->GetPosition(), mainWindow);
-    m_Gizmo->SetDrawAABBs(m_DrawGizmos);
+    m_Gizmo->SetDrawAABBs(m_DisplayLineElements);
 
     // Switching between scene objects that are currently in focus (mouse over)
     if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1])
@@ -1472,7 +1472,7 @@ void SceneEditor::Update(float timestep, Window* mainWindow)
     UpdateLightDirection(m_Gizmo->GetRotation());
 }
 
-void SceneEditor::UpdateLightDirection(glm::quat rotation)
+void SceneEditorImGuizmo::UpdateLightDirection(glm::quat rotation)
 {
     if (rotation.x == 0.0f && rotation.y == 0.0f && rotation.z == 0.0f) return;
 
@@ -1489,7 +1489,7 @@ void SceneEditor::UpdateLightDirection(glm::quat rotation)
     }
 }
 
-Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* name)
+Mesh* SceneEditorImGuizmo::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* name)
 {
     Mesh* mesh;
     switch (meshTypeID)
@@ -1552,7 +1552,7 @@ Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* n
     return mesh;
 }
 
-SceneObject* SceneEditor::CreateNewSceneObject()
+SceneObject* SceneEditorImGuizmo::CreateNewSceneObject()
 {
     // Add Scene Object here
     SceneObject* sceneObject = new SceneObject();
@@ -1581,7 +1581,7 @@ SceneObject* SceneEditor::CreateNewSceneObject()
     return sceneObject;
 }
 
-void SceneEditor::AddSceneObject()
+void SceneEditorImGuizmo::AddSceneObject()
 {
     // Cooldown
     if (m_CurrentTimestamp - m_ObjectAdd.lastTime < m_ObjectAdd.cooldown) return;
@@ -1787,7 +1787,7 @@ void SceneEditor::AddSceneObject()
     m_SelectedIndex = (unsigned int)m_SceneObjects.size() - 1;
 }
 
-void SceneEditor::CopySceneObject(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
+void SceneEditorImGuizmo::CopySceneObject(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
 {
     // Cooldown
     if (m_CurrentTimestamp - m_ObjectCopy.lastTime < m_ObjectCopy.cooldown) return;
@@ -1839,7 +1839,7 @@ void SceneEditor::CopySceneObject(Window* mainWindow, std::vector<SceneObject*>*
     m_Gizmo->OnMouseRelease(mainWindow, sceneObjects, selectedIndex);
 }
 
-void SceneEditor::DeleteSceneObject(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
+void SceneEditorImGuizmo::DeleteSceneObject(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex)
 {
     // Cooldown
     if (m_CurrentTimestamp - m_ObjectDelete.lastTime < m_ObjectDelete.cooldown) return;
@@ -1864,7 +1864,7 @@ void SceneEditor::DeleteSceneObject(Window* mainWindow, std::vector<SceneObject*
         m_Gizmo->SetActive(false);
 }
 
-Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
+Model* SceneEditorImGuizmo::AddNewModel(int modelID, glm::vec3 scale)
 {
     Model* model;
     switch (modelID)
@@ -1906,7 +1906,7 @@ Model* SceneEditor::AddNewModel(int modelID, glm::vec3 scale)
     return model;
 }
 
-SceneObjectParticleSystem* SceneEditor::AddNewSceneObjectParticleSystem(int objectTypeID, glm::vec3 scale)
+SceneObjectParticleSystem* SceneEditorImGuizmo::AddNewSceneObjectParticleSystem(int objectTypeID, glm::vec3 scale)
 {
     SceneObjectParticleSystem* particle_system = new SceneObjectParticleSystem(true, m_MaxInstances, m_CameraController);
     m_ParticleSettingsEdit = particle_system->GetSettings();
@@ -1917,7 +1917,7 @@ SceneObjectParticleSystem* SceneEditor::AddNewSceneObjectParticleSystem(int obje
     return particle_system;
 }
 
-void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject)
+void SceneEditorImGuizmo::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject)
 {
     shaderEditor->Bind();
 
@@ -1950,7 +1950,7 @@ void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture
     shaderEditor->setInt("shadowMap", 2);
 }
 
-void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Material* material, SceneObject* sceneObject)
+void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Material* material, SceneObject* sceneObject)
 {
     shaderEditorPBR->Bind();
 
@@ -1978,7 +1978,7 @@ void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* t
     shaderEditorPBR->setInt("shadowMap", 8);
 }
 
-void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject, float runningTime)
+void SceneEditorImGuizmo::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
 
@@ -2000,7 +2000,7 @@ void SceneEditor::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject*
     }
 }
 
-void SceneEditor::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Texture* texture, SceneObject* sceneObject, float runningTime)
+void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Texture* texture, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
 
@@ -2070,7 +2070,7 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Te
     }
 }
 
-void SceneEditor::SetUniformsShaderWater(Shader* shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix)
+void SceneEditorImGuizmo::SetUniformsShaderWater(Shader* shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix)
 {
     RendererBasic::EnableTransparency();
 
@@ -2104,7 +2104,7 @@ void SceneEditor::SetUniformsShaderWater(Shader* shaderWater, SceneObject* scene
     }
 }
 
-void SceneEditor::SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix)
+void SceneEditorImGuizmo::SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix)
 {
     if (mainWindow->getKeys()[GLFW_KEY_O])
     {
@@ -2126,7 +2126,7 @@ void SceneEditor::SwitchOrthographicView(Window* mainWindow, glm::mat4& projecti
     }
 }
 
-glm::mat4 SceneEditor::CalculateRenderTransform(SceneObject* sceneObject)
+glm::mat4 SceneEditorImGuizmo::CalculateRenderTransform(SceneObject* sceneObject)
 {
     glm::vec3 renderScale = glm::vec3(1.0f);
 
@@ -2143,7 +2143,7 @@ glm::mat4 SceneEditor::CalculateRenderTransform(SceneObject* sceneObject)
     return Math::CreateTransform(sceneObject->position, sceneObject->rotation, renderScale);
 }
 
-bool SceneEditor::IsWaterOnScene()
+bool SceneEditorImGuizmo::IsWaterOnScene()
 {
     for (auto& object : m_SceneObjects) {
         if (object->name == "water") return true;
@@ -2151,7 +2151,7 @@ bool SceneEditor::IsWaterOnScene()
     return false;
 }
 
-void SceneEditor::AddLightsToSceneObjects()
+void SceneEditorImGuizmo::AddLightsToSceneObjects()
 {
     // Directional Light - Cone Mesh
     SceneObject* sceneObject = CreateNewSceneObject();
@@ -2265,7 +2265,7 @@ void SceneEditor::AddLightsToSceneObjects()
     }
 }
 
-void SceneEditor::RenderLightSources(Shader* shaderGizmo)
+void SceneEditorImGuizmo::RenderLightSources(Shader* shaderGizmo)
 {
     shaderGizmo->Bind();
 
@@ -2332,7 +2332,7 @@ void SceneEditor::RenderLightSources(Shader* shaderGizmo)
     }
 }
 
-void SceneEditor::RenderSkybox(Shader* shaderBackground)
+void SceneEditorImGuizmo::RenderSkybox(Shader* shaderBackground)
 {
     m_BlurEffect->Render();
 
@@ -2370,9 +2370,9 @@ void SceneEditor::RenderSkybox(Shader* shaderBackground)
     m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
 }
 
-void SceneEditor::RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix)
+void SceneEditorImGuizmo::RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix)
 {
-    if (!m_DrawGizmos) return;
+    if (!m_DisplayLineElements) return;
 
     shaderBasic->Bind();
     if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
@@ -2403,7 +2403,7 @@ void SceneEditor::RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMa
     m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
 }
 
-void SceneEditor::RenderFramebufferTextures(Shader* shaderEditor)
+void SceneEditorImGuizmo::RenderFramebufferTextures(Shader* shaderEditor)
 {
     // A quad for displaying a shadow map on it
     shaderEditor->Bind();
@@ -2416,7 +2416,7 @@ void SceneEditor::RenderFramebufferTextures(Shader* shaderEditor)
     m_Quad->Render();
 }
 
-void SceneEditor::RenderGlassObjects(Shader* shaderGlass)
+void SceneEditorImGuizmo::RenderGlassObjects(Shader* shaderGlass)
 {
     // Glass objects (Reflection/Refraction/Fresnel)
     shaderGlass->Bind();
@@ -2441,7 +2441,7 @@ void SceneEditor::RenderGlassObjects(Shader* shaderGlass)
     m_GlassShaderModel->RenderPBR();
 }
 
-void SceneEditor::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneEditorImGuizmo::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui
@@ -2570,7 +2570,7 @@ void SceneEditor::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
     }
 }
 
-void SceneEditor::ResetScene()
+void SceneEditorImGuizmo::ResetScene()
 {
     // Cooldown
     if (m_CurrentTimestamp - m_SceneReset.lastTime < m_SceneReset.cooldown) return;
@@ -2589,11 +2589,11 @@ void SceneEditor::ResetScene()
     AddLightsToSceneObjects();
 }
 
-void SceneEditor::CleanupGeometry()
+void SceneEditorImGuizmo::CleanupGeometry()
 {
 }
 
-SceneEditor::~SceneEditor()
+SceneEditorImGuizmo::~SceneEditorImGuizmo()
 {
     SaveScene();
     CleanupGeometry();
