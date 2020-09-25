@@ -216,6 +216,7 @@
     <ClCompile Include="SceneBullet.cpp" />
     <ClCompile Include="SceneAnimPBR.cpp" />
     <ClCompile Include="SceneDeferred.cpp" />
+    <ClCompile Include="SceneEditorImGuizmo.cpp" />
     <ClCompile Include="SceneMarchingCubes.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="SceneObjectLight.cpp" />
@@ -401,6 +402,7 @@
     <ClInclude Include="SceneBullet.h" />
     <ClInclude Include="SceneAnimPBR.h" />
     <ClInclude Include="SceneDeferred.h" />
+    <ClInclude Include="SceneEditorImGuizmo.h" />
     <ClInclude Include="SceneMarchingCubes.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="SceneObjectLight.h" />
