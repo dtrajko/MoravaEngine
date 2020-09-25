@@ -27,6 +27,7 @@ public:
 
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
+	void UpdateImGuizmo(Window* mainWindow);
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
@@ -70,7 +71,7 @@ private:
 	void SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix);
 	glm::mat4 CalculateRenderTransform(SceneObject* sceneObject);
 	virtual bool IsWaterOnScene() override;
-	void UpdateLightDirection(glm::quat rotation);
+	void UpdateLightDirection();
     void ResizeViewport(glm::vec2 viewportPanelSize);
 
 public:
@@ -190,5 +191,10 @@ private:
 	Texture* m_LoadedTexture;
 	std::string m_LoadedTextureFilepath;
 	bool m_UseLoadedTexture;
+
+	// ImGuizmo
+	glm::vec3 m_Translation_ImGuizmo;
+	glm::mat4* m_Transform_ImGuizmo;
+	int m_ImGizmoType = -1;
 
 };
