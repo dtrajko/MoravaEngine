@@ -13,15 +13,14 @@ public:
 		bool enabled, glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity, glm::vec3 direction, bool createShadowMap);
 	void UseLight(GLint enabledLocation, GLint ambientColorLocation, GLint ambientIntensityLocation,
 		GLint diffuseIntensityLocation, GLint directionLocation);
-	inline glm::vec3 GetDirection() const { return m_Direction; };
-	inline glm::vec3 GetPosition() const { return -m_Direction; };
+	inline glm::vec3 GetDirection() const { return glm::normalize(m_Direction); };
+	inline glm::vec3 GetPosition() const { return -glm::normalize(m_Direction); };
 	void SetDirection(glm::vec3 direction);
 	glm::mat4 CalculateLightTransform();
 
 	~DirectionalLight();
 
-protected:
+private:
 	glm::vec3 m_Direction;
-
 
 };

@@ -34,7 +34,7 @@ void SpotLight::UseLight(GLint enabledLocation, GLint ambientColorLocation, GLin
 	glUniform1f(ambientIntensityLocation, PointLight::m_Enabled ? PointLight::m_AmbientIntensity : 0.0f);
 	glUniform1f(diffuseIntensityLocation, PointLight::m_Enabled ? PointLight::m_DiffuseIntensity : 0.0f);
 	glUniform3f(positionLocation, m_Position.x, m_Position.y, m_Position.z);
-	glUniform3f(directionLocation, m_Direction.x, m_Direction.y, m_Direction.z);
+	glUniform3f(directionLocation, GetDirection().x, GetDirection().y, GetDirection().z);
 	glUniform1f(constantLocation, m_Constant);
 	glUniform1f(linearLocation, m_Linear);
 	glUniform1f(exponentLocation, m_Exponent);
@@ -44,7 +44,7 @@ void SpotLight::UseLight(GLint enabledLocation, GLint ambientColorLocation, GLin
 void SpotLight::SetFlash(glm::vec3 position, glm::vec3 direction)
 {
 	m_Position = position;
-	m_Direction = direction;
+	SetDirection(direction);
 }
 
 void SpotLight::SetEdge(float edge)
