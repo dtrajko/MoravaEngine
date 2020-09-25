@@ -65,7 +65,7 @@ private:
 	void SetUniformsShaderWater(Shader* shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix);
 	void SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix);
 	virtual bool IsWaterOnScene() override;
-	void UpdateLightDirection();
+	void UpdateLightManager();
     void ResizeViewport(glm::vec2 viewportPanelSize);
 
 public:
@@ -190,5 +190,8 @@ private:
 	glm::vec3 m_Translation_ImGuizmo;
 	glm::mat4* m_Transform_ImGuizmo;
 	int m_ImGizmoType = -1;
+
+	glm::vec3 m_DirectionDirLight;
+	std::vector<glm::vec3> m_DirectionsSpotLight;
 
 };

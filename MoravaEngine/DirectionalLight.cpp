@@ -7,7 +7,7 @@
 DirectionalLight::DirectionalLight()
 	: Light()
 {
-	m_Direction = glm::vec3(0.0f, -1.0f, 0.0f);
+	m_Direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
 	m_LightProj = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
 
 	m_Enabled = true;
@@ -40,7 +40,7 @@ void DirectionalLight::UseLight(GLint enabledLocation, GLint ambientColorLocatio
 
 void DirectionalLight::SetDirection(glm::vec3 direction)
 {
-	m_Direction = direction;
+	m_Direction = glm::normalize(direction);
 }
 
 glm::mat4 DirectionalLight::CalculateLightTransform()

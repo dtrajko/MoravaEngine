@@ -57,7 +57,7 @@ SceneEditorImGuizmo::SceneEditorImGuizmo()
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
     sceneSettings.directionalLight.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
-    sceneSettings.directionalLight.direction = glm::vec3(0.6f, -0.5f, -0.6f);
+    sceneSettings.directionalLight.direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
     sceneSettings.directionalLight.base.ambientIntensity = 0.75f;
     sceneSettings.directionalLight.base.diffuseIntensity = 0.4f;
     sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 40.0f);
@@ -65,60 +65,81 @@ SceneEditorImGuizmo::SceneEditorImGuizmo()
     // point lights
     sceneSettings.pointLights[0].base.enabled = false;
     sceneSettings.pointLights[0].base.color = glm::vec3(1.0f, 1.0f, 0.0f);
-    sceneSettings.pointLights[0].position = glm::vec3(-5.0f, 0.5f, 5.0f);
-    sceneSettings.pointLights[0].base.ambientIntensity = 1.0f;
+    sceneSettings.pointLights[0].position = glm::vec3(-10.0f, 4.0f, 10.0f);
+    sceneSettings.pointLights[0].base.ambientIntensity = 2.0f;
     sceneSettings.pointLights[0].base.diffuseIntensity = 1.0f;
+    sceneSettings.pointLights[0].constant = 4.0f;
+    sceneSettings.pointLights[0].linear   = 2.0f;
+    sceneSettings.pointLights[0].exponent = 1.0f;
 
     sceneSettings.pointLights[1].base.enabled = false;
     sceneSettings.pointLights[1].base.color = glm::vec3(1.0f, 1.0f, 1.0f);
-    sceneSettings.pointLights[1].position = glm::vec3(5.0f, 0.5f, 5.0f);
-    sceneSettings.pointLights[1].base.ambientIntensity = 1.0f;
+    sceneSettings.pointLights[1].position = glm::vec3(10.0f, 4.0f, 10.0f);
+    sceneSettings.pointLights[1].base.ambientIntensity = 2.0f;
     sceneSettings.pointLights[1].base.diffuseIntensity = 1.0f;
+    sceneSettings.pointLights[1].constant = 4.0f;
+    sceneSettings.pointLights[1].linear   = 2.0f;
+    sceneSettings.pointLights[1].exponent = 1.0f;
 
     sceneSettings.pointLights[2].base.enabled = false;
     sceneSettings.pointLights[2].base.color = glm::vec3(0.0f, 1.0f, 1.0f);
-    sceneSettings.pointLights[2].position = glm::vec3(-5.0f, 0.5f, -5.0f);
-    sceneSettings.pointLights[2].base.ambientIntensity = 1.0f;
+    sceneSettings.pointLights[2].position = glm::vec3(-10.0f, 4.0f, -10.0f);
+    sceneSettings.pointLights[2].base.ambientIntensity = 2.0f;
     sceneSettings.pointLights[2].base.diffuseIntensity = 1.0f;
 
     sceneSettings.pointLights[3].base.enabled = false;
     sceneSettings.pointLights[3].base.color = glm::vec3(0.0f, 1.0f, 0.0f);
-    sceneSettings.pointLights[3].position = glm::vec3(5.0f, 0.5f, -5.0f);
-    sceneSettings.pointLights[3].base.ambientIntensity = 1.0f;
+    sceneSettings.pointLights[3].position = glm::vec3(10.0f, 4.0f, -10.0f);
+    sceneSettings.pointLights[3].base.ambientIntensity = 2.0f;
     sceneSettings.pointLights[3].base.diffuseIntensity = 1.0f;
+    sceneSettings.pointLights[3].constant = 4.0f;
+    sceneSettings.pointLights[3].linear   = 2.0f;
+    sceneSettings.pointLights[3].exponent = 1.0f;
 
     // spot lights
     sceneSettings.spotLights[0].base.base.enabled = false;
     sceneSettings.spotLights[0].base.base.color = glm::vec3(1.0f, 0.0f, 0.0f);
-    sceneSettings.spotLights[0].base.position = glm::vec3(-5.0f, 1.0f, 0.0f);
-    sceneSettings.spotLights[0].direction = glm::vec3(1.0f, 0.0f, 0.0f);
     sceneSettings.spotLights[0].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[0].base.base.diffuseIntensity = 1.0f;
-    sceneSettings.spotLights[0].edge = 0.5f;
+    sceneSettings.spotLights[0].base.position = glm::vec3(-2.0f, 1.0f, 0.0f);
+    sceneSettings.spotLights[0].base.constant = 4.0f;
+    sceneSettings.spotLights[0].base.linear   = 2.0f;
+    sceneSettings.spotLights[0].base.exponent = 1.0f;
+    sceneSettings.spotLights[0].direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
+    sceneSettings.spotLights[0].edge = 0.0f;
 
     sceneSettings.spotLights[1].base.base.enabled = false;
     sceneSettings.spotLights[1].base.base.color = glm::vec3(1.0f, 1.0f, 0.0f);
-    sceneSettings.spotLights[1].base.position = glm::vec3(5.0f, 1.0f, 0.0f);
-    sceneSettings.spotLights[1].direction = glm::vec3(-1.0f, 0.0f, 0.0f);
     sceneSettings.spotLights[1].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[1].base.base.diffuseIntensity = 1.0f;
-    sceneSettings.spotLights[1].edge = 0.5f;
+    sceneSettings.spotLights[1].base.position = glm::vec3(2.0f, 1.0f, 0.0f);
+    sceneSettings.spotLights[1].base.constant = 4.0f;
+    sceneSettings.spotLights[1].base.linear   = 2.0f;
+    sceneSettings.spotLights[1].base.exponent = 1.0f;
+    sceneSettings.spotLights[1].direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
+    sceneSettings.spotLights[1].edge = 0.0f;
 
     sceneSettings.spotLights[2].base.base.enabled = false;
     sceneSettings.spotLights[2].base.base.color = glm::vec3(0.0f, 1.0f, 0.0f);
-    sceneSettings.spotLights[2].base.position = glm::vec3(0.0f, 1.0f, -5.0f);
-    sceneSettings.spotLights[2].direction = glm::vec3(0.0f, 0.0f, 1.0f);
     sceneSettings.spotLights[2].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[2].base.base.diffuseIntensity = 1.0f;
-    sceneSettings.spotLights[2].edge = 0.5f;
+    sceneSettings.spotLights[2].base.position = glm::vec3(0.0f, 1.0f, -2.0f);
+    sceneSettings.spotLights[2].base.constant = 4.0f;
+    sceneSettings.spotLights[2].base.linear   = 2.0f;
+    sceneSettings.spotLights[2].base.exponent = 1.0f;
+    sceneSettings.spotLights[2].direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
+    sceneSettings.spotLights[2].edge = 0.0f;
 
     sceneSettings.spotLights[3].base.base.enabled = false;
     sceneSettings.spotLights[3].base.base.color = glm::vec3(1.0f, 0.0f, 1.0f);
-    sceneSettings.spotLights[3].base.position = glm::vec3(0.0f, 1.0f, 5.0f);
-    sceneSettings.spotLights[3].direction = glm::vec3(0.0f, 0.0f, -1.0f);
     sceneSettings.spotLights[3].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
-    sceneSettings.spotLights[3].edge = 0.5f;
+    sceneSettings.spotLights[3].base.position = glm::vec3(0.0f, 1.0f, 2.0f);
+    sceneSettings.spotLights[3].base.constant = 4.0f;
+    sceneSettings.spotLights[3].base.linear   = 2.0f;
+    sceneSettings.spotLights[3].base.exponent = 1.0f;
+    sceneSettings.spotLights[3].direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
+    sceneSettings.spotLights[3].edge = 0.0f;
 
     m_IsViewportEnabled = true;
 
@@ -211,6 +232,11 @@ SceneEditorImGuizmo::SceneEditorImGuizmo()
 
     m_Translation_ImGuizmo = glm::vec3(0.0f);
     m_Transform_ImGuizmo = nullptr;
+
+    m_DirectionDirLight = glm::vec3(0.0f);
+    m_DirectionsSpotLight.resize(4);
+    for (int i = 0; i < 4; i++)
+        m_DirectionsSpotLight[i] = glm::vec3(0.0f);
 }
 
 void SceneEditorImGuizmo::SetLightManager()
@@ -965,6 +991,23 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
     {
         ImGui::Checkbox("Display Light Sources", &m_DisplayLightSources);
 
+        ImGui::NewLine();
+        {
+            ImGui::Separator();
+            ImGui::Text("Light Directions");
+            ImGui::Separator();
+
+            char buffer[100];
+            sprintf(buffer, "DL:   X %.2f Y %.2f Z %.2f", m_DirectionDirLight.x, m_DirectionDirLight.y, m_DirectionDirLight.z);
+            ImGui::Text(buffer);
+
+            for (int i = 0; i < m_DirectionsSpotLight.size(); i++) {
+                sprintf(buffer, "SL %i: X %.2f Y %.2f Z %.2f", i, m_DirectionsSpotLight[i].x, m_DirectionsSpotLight[i].y, m_DirectionsSpotLight[i].z);
+                ImGui::Text(buffer);
+            }
+            ImGui::Separator();
+        }
+
         if (ImGui::CollapsingHeader("Directional Light"))
         {
             // Directional Light
@@ -977,9 +1020,9 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
 
             ImGui::Checkbox("DL Enabled", &directionalLight.base.enabled);
             ImGui::ColorEdit3("DL Color", glm::value_ptr(directionalLight.base.color));
-            ImGui::SliderFloat3("DL Direction", glm::value_ptr(directionalLight.direction), -100.0f, 100.0f);
-            ImGui::SliderFloat("DL Ambient Intensity", &directionalLight.base.ambientIntensity, 0.0f, 4.0f);
-            ImGui::SliderFloat("DL Diffuse Intensity", &directionalLight.base.diffuseIntensity, 0.0f, 4.0f);
+            ImGui::SliderFloat3("DL Direction", glm::value_ptr(directionalLight.direction), -1.0f, 1.0f);
+            ImGui::SliderFloat("DL Ambient Intensity", &directionalLight.base.ambientIntensity, -5.0f, 5.0f);
+            ImGui::SliderFloat("DL Diffuse Intensity", &directionalLight.base.diffuseIntensity, -5.0f, 5.0f);
 
             // Shutdown directional light (it appears it's better to do it here than in shader
             if (directionalLight.base.enabled != m_DirLightEnabledPrev)
@@ -1025,17 +1068,17 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
                     snprintf(locBuff, sizeof(locBuff), "PL %i Color", pl);
                     ImGui::ColorEdit3(locBuff, glm::value_ptr(pointLights[pl].base.color));
                     snprintf(locBuff, sizeof(locBuff), "PL %i Position", pl);
-                    ImGui::SliderFloat3(locBuff, glm::value_ptr(pointLights[pl].position), -20.0f, 20.0f);
+                    ImGui::SliderFloat3(locBuff, glm::value_ptr(pointLights[pl].position), -100.0f, 100.0f);
                     snprintf(locBuff, sizeof(locBuff), "PL %i Ambient Intensity", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].base.ambientIntensity, -2.0f, 2.0f);
+                    ImGui::SliderFloat(locBuff, &pointLights[pl].base.ambientIntensity, -5.0f, 5.0f);
                     snprintf(locBuff, sizeof(locBuff), "PL %i Diffuse Intensity", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].base.diffuseIntensity, -2.0f, 2.0f);
+                    ImGui::SliderFloat(locBuff, &pointLights[pl].base.diffuseIntensity, -5.0f, 5.0f);
                     snprintf(locBuff, sizeof(locBuff), "PL %i Constant", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].constant, -2.0f, 2.0f);
+                    ImGui::SliderFloat(locBuff, &pointLights[pl].constant, -1.0f, 6.0f);
                     snprintf(locBuff, sizeof(locBuff), "PL %i Linear", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].linear, -2.0f, 2.0f);
+                    ImGui::SliderFloat(locBuff, &pointLights[pl].linear,   -1.0f, 6.0f);
                     snprintf(locBuff, sizeof(locBuff), "PL %i Exponent", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].exponent, -2.0f, 2.0f);
+                    ImGui::SliderFloat(locBuff, &pointLights[pl].exponent, -1.0f, 6.0f);
                 }
 
                 LightManager::pointLights[pl].SetEnabled(pointLights[pl].base.enabled);
@@ -1078,21 +1121,21 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
                     snprintf(locBuff, sizeof(locBuff), "SL %i Color", sl);
                     ImGui::ColorEdit3(locBuff, glm::value_ptr(spotLights[sl].base.base.color));
                     snprintf(locBuff, sizeof(locBuff), "SL %i Position", sl);
-                    ImGui::SliderFloat3(locBuff, glm::value_ptr(spotLights[sl].base.position), -20.0f, 20.0f);
+                    ImGui::SliderFloat3(locBuff, glm::value_ptr(spotLights[sl].base.position), -100.0f, 100.0f);
                     snprintf(locBuff, sizeof(locBuff), "SL %i Direction", sl);
                     ImGui::SliderFloat3(locBuff, glm::value_ptr(spotLights[sl].direction), -1.0f, 1.0f);
                     snprintf(locBuff, sizeof(locBuff), "SL %i Edge", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].edge, -100.0f, 100.0f);
+                    ImGui::SliderFloat(locBuff, &spotLights[sl].edge, -2.0f, 2.0f);
                     snprintf(locBuff, sizeof(locBuff), "SL %i Ambient Intensity", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.base.ambientIntensity, -2.0f, 2.0f);
+                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.base.ambientIntensity, -5.0f, 5.0f);
                     snprintf(locBuff, sizeof(locBuff), "SL %i Diffuse Intensity", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.base.diffuseIntensity, -2.0f, 2.0f);
+                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.base.diffuseIntensity, -5.0f, 5.0f);
                     snprintf(locBuff, sizeof(locBuff), "SL %i Constant", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.constant, -2.0f, 2.0f);
+                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.constant, -1.0f, 6.0f);
                     snprintf(locBuff, sizeof(locBuff), "SL %i Linear", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.linear, -2.0f, 2.0f);
+                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.linear,   -1.0f, 6.0f);
                     snprintf(locBuff, sizeof(locBuff), "SL %i Exponent", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.exponent, -2.0f, 2.0f);
+                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.exponent, -1.0f, 6.0f);
                 }
 
                 LightManager::spotLights[sl].GetBasePL()->SetEnabled(spotLights[sl].base.base.enabled);
@@ -1230,7 +1273,7 @@ void SceneEditorImGuizmo::UpdateImGuizmo(Window* mainWindow)
             ImGuizmo::Manipulate(
                 glm::value_ptr(m_CameraController->CalculateViewMatrix()),
                 glm::value_ptr(RendererBasic::GetProjectionMatrix()),
-                (ImGuizmo::OPERATION)m_ImGizmoType, ImGuizmo::LOCAL, glm::value_ptr(*m_Transform_ImGuizmo));
+                (ImGuizmo::OPERATION)m_ImGizmoType, ImGuizmo::WORLD, glm::value_ptr(*m_Transform_ImGuizmo));
         }
     }
     /**** END ImGuizmo ****/
@@ -1517,21 +1560,39 @@ void SceneEditorImGuizmo::Update(float timestep, Window* mainWindow)
     }
     /**** END Update ImGizmo ****/
 
-    UpdateLightDirection();
+    UpdateLightManager();
 }
 
-void SceneEditorImGuizmo::UpdateLightDirection()
+void SceneEditorImGuizmo::UpdateLightManager()
 {
-    auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
-    glm::vec3 direction = glm::degrees(glm::eulerAngles(Rotation));
+    uint32_t objectIndex = 0;
 
-    if (m_SceneObjects[m_SelectedIndex]->name == "Light.directional") {
-        LightManager::directionalLight.SetDirection(direction);
-    }
-    else if (m_SceneObjects[m_SelectedIndex]->name.substr(0, 10) == "Light.spot") {
-        unsigned int spotLightIndex = m_SelectedIndex - 4 - 1; // minus 4 point lights, minus 1 directional light
-        assert(spotLightIndex >= 0 && spotLightIndex <= 3);
-        LightManager::spotLights[spotLightIndex].SetDirection(direction);
+    for (auto& sceneObject : m_SceneObjects)
+    {
+        auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(sceneObject->transform);
+        glm::vec3 Direction = glm::normalize(glm::degrees(glm::eulerAngles(Rotation)));
+
+        if (sceneObject->name == "Light.directional") {
+            m_DirectionDirLight = Direction;
+            LightManager::directionalLight.SetDirection(m_DirectionDirLight);
+        }
+        else if (sceneObject->name.substr(0, 11) == "Light.point") {
+            unsigned int pointLightIndex = objectIndex - 1; // minus 1 directional light
+            assert(pointLightIndex >= 0 && pointLightIndex <= 3);
+
+            LightManager::pointLights[pointLightIndex].SetPosition(Location);
+        }
+        else if (sceneObject->name.substr(0, 10) == "Light.spot") {
+            unsigned int spotLightIndex = objectIndex - 4 - 1; // minus 4 point lights, minus 1 directional light
+            assert(spotLightIndex >= 0 && spotLightIndex <= 3);
+
+            LightManager::spotLights[spotLightIndex].GetBasePL()->SetPosition(Location);
+
+            m_DirectionsSpotLight[spotLightIndex] = Direction;
+            LightManager::spotLights[spotLightIndex].SetDirection(m_DirectionsSpotLight[spotLightIndex]);
+        }
+
+        objectIndex++;
     }
 }
 
@@ -2183,6 +2244,18 @@ void SceneEditorImGuizmo::AddLightsToSceneObjects()
         std::string objectNameVoid = "";
         sceneObject->mesh = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale, &objectNameVoid);
     }
+
+    glm::vec3 rotation = LightManager::directionalLight.GetDirection();
+    sceneObject->position = glm::vec3(0.0f);
+    sceneObject->rotation = glm::quat(rotation * toRadians);
+    sceneObject->scale = glm::vec3(1.0f);
+
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::rotate(transform, glm::radians(LightManager::directionalLight.GetDirection().x * 90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    transform = glm::rotate(transform, glm::radians(LightManager::directionalLight.GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    transform = glm::rotate(transform, glm::radians(LightManager::directionalLight.GetDirection().z * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    sceneObject->transform = transform;
+
     sceneObject->model = nullptr;
     sceneObject->materialName = "none";
     sceneObject->positionAABB = glm::vec3(0.0f);
@@ -2235,15 +2308,15 @@ void SceneEditorImGuizmo::AddLightsToSceneObjects()
         // Spot lights - Sphere mesh
         SceneObject* sceneObject = CreateNewSceneObject();
 
-        glm::vec3 position = LightManager::pointLights[i].GetPosition();
+        glm::vec3 position = LightManager::spotLights[i].GetBasePL()->GetPosition();
         glm::vec3 rotation = LightManager::spotLights[i].GetDirection();
         glm::vec3 scale = glm::vec3(1.0f);
 
         glm::mat4 transform = glm::mat4(1.0f);
         transform = glm::translate(transform, position);
-        transform = glm::rotate(transform, glm::radians(LightManager::spotLights[i].GetDirection().x * 90.0f),  glm::vec3(0.0f, 0.0f, 1.0f));
-        transform = glm::rotate(transform, glm::radians(LightManager::spotLights[i].GetDirection().y * 90.0f),  glm::vec3(0.0f, 1.0f, 0.0f));
-        transform = glm::rotate(transform, glm::radians(LightManager::spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        transform = glm::rotate(transform, glm::radians(LightManager::spotLights[i].GetDirection().x * 90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        transform = glm::rotate(transform, glm::radians(LightManager::spotLights[i].GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        transform = glm::rotate(transform, glm::radians(LightManager::spotLights[i].GetDirection().z * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         transform = glm::scale(transform, scale);
 
         sceneObject->name = "Light.spot." + std::to_string(i);
@@ -2278,7 +2351,10 @@ void SceneEditorImGuizmo::RenderLightSources(Shader* shaderGizmo)
     ResourceManager::GetTexture("none")->Bind(1);
     ResourceManager::GetTexture("none")->Bind(2);
 
-    shaderGizmo->setMat4("model", m_SceneObjects[0]->transform);
+    glm::mat4 transform = glm::mat4(1.0f);
+
+    transform = m_SceneObjects[0]->transform;
+    shaderGizmo->setMat4("model", transform);
     glm::vec3 lightColor = LightManager::directionalLight.GetColor();
     shaderGizmo->setVec4("tintColor", glm::vec4(lightColor, 1.0f));
     if (m_DisplayLightSources && LightManager::directionalLight.GetEnabled())
@@ -2288,9 +2364,8 @@ void SceneEditorImGuizmo::RenderLightSources(Shader* shaderGizmo)
     unsigned int offsetPoint = 1;
     for (unsigned int i = 0; i < LightManager::pointLightCount; i++)
     {
-        LightManager::pointLights[i].SetPosition(m_SceneObjects[offsetPoint + i]->position);
-
-        shaderGizmo->setMat4("model", m_SceneObjects[offsetPoint + i]->transform);
+        transform = m_SceneObjects[offsetPoint + i]->transform;
+        shaderGizmo->setMat4("model", transform);
         shaderGizmo->setVec4("tintColor", glm::vec4(LightManager::pointLights[i].GetColor(), 1.0f));
         if (m_DisplayLightSources && LightManager::pointLights[i].GetEnabled())
             m_SceneObjects[offsetPoint + i]->Render();
@@ -2300,9 +2375,8 @@ void SceneEditorImGuizmo::RenderLightSources(Shader* shaderGizmo)
     unsigned int offsetSpot = offsetPoint + LightManager::pointLightCount;
     for (unsigned int i = 0; i < LightManager::spotLightCount; i++)
     {
-        LightManager::spotLights[i].GetBasePL()->SetPosition(m_SceneObjects[offsetSpot + i]->position);
-
-        shaderGizmo->setMat4("model", m_SceneObjects[offsetPoint + i]->transform);
+        transform = m_SceneObjects[offsetSpot + i]->transform;
+        shaderGizmo->setMat4("model", transform);
         shaderGizmo->setVec4("tintColor", glm::vec4(LightManager::spotLights[i].GetBasePL()->GetColor(), 1.0f));
         if (m_DisplayLightSources && LightManager::spotLights[i].GetBasePL()->GetEnabled())
             m_SceneObjects[offsetSpot + i]->Render();
