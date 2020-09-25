@@ -10,12 +10,13 @@
 #include "Cylinder.h"
 #include "Cone.h"
 #include "Ring.h"
+#include "Tile2D.h"
+#include "SkinnedMesh.h"
 #include "Shader.h"
 #include "Math.h"
 #include "Timer.h"
 #include "RendererBasic.h"
 #include "TextureLoader.h"
-#include "Tile2D.h"
 #include "ParticleMaster.h"
 #include "Profiler.h"
 #include "Log.h"
@@ -160,7 +161,6 @@ SceneEditorImGuizmo::SceneEditorImGuizmo()
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
     m_Grid = new Grid(20);
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
-    m_Gizmo = new Gizmo();
 
     m_PositionEdit             = new glm::vec3(0.0f);
     m_RotationEdit             = new glm::vec3(0.0f);
@@ -655,7 +655,7 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
             ImGui::RadioButton("Prefilter Map", &m_PBR_Map_Edit, PBR_MAP_PREFILTER);
         }
 
-        if (ImGui::CollapsingHeader("Gizmos"))
+        if (ImGui::CollapsingHeader("Editor Elements"))
         {
             ImGui::Checkbox(" Display Line Elements", &m_DisplayLineElements);
             ImGui::Checkbox("Orthographic View", &m_OrthographicViewEnabled);
@@ -1655,10 +1655,10 @@ void SceneEditorImGuizmo::AddSceneObject()
         if (m_CurrentObjectTypeID == MESH_TYPE_BOB_LAMP) {
             objectName = "bob_lamp";
             materialName = "none";
-            rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
-            scale = glm::vec3(0.1f);
-            positionAABB = glm::vec3(0.0f, 0.0f, 30.0f);
-            scaleAABB = glm::vec3(20.0f, 20.0f, 60.0f);
+            rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+            scale = glm::vec3(1.0f);
+            positionAABB = glm::vec3(0.0f, 30.0f, 0.0f);
+            scaleAABB = glm::vec3(20.0f, 60.0f, 20.0f);
         }
         else if (m_CurrentObjectTypeID == MESH_TYPE_ANIM_BOY) {
             objectName = "anim_boy";
