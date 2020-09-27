@@ -198,4 +198,6 @@ private:
 	glm::vec3 m_DirectionDirLight;
 	std::vector<glm::vec3> m_DirectionsSpotLight;
 
+	glm::vec3 m_DirLightSourcePosition;
+
 };
