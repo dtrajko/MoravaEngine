@@ -1140,6 +1140,9 @@
     <Filter Include="Platform\Windows">
       <UniqueIdentifier>{3852b832-d027-483b-bbcd-6019fd477d75}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Hazel\Scene">
+      <UniqueIdentifier>{e165e3e5-7964-4fb5-b138-f5088f5674d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MoravaEngine.rc" />

@@ -148,6 +148,7 @@ SceneEditorImGuizmo::SceneEditorImGuizmo()
     sceneSettings.spotLights[3].edge = 0.0f;
 
     m_IsViewportEnabled = true;
+    m_DirLightSourcePosition = glm::vec3(0.0f, 10.0f, 0.0f);
 
     ResourceManager::Init();
 
@@ -2246,21 +2247,24 @@ void SceneEditorImGuizmo::AddLightsToSceneObjects()
     sceneObject->name = "Light.directional";
     sceneObject->m_Type = "mesh";
     sceneObject->m_TypeID = MESH_TYPE_CONE;
+
+    sceneObject->scale = glm::vec3(1.0f);
+
     if (sceneObject->m_Type == "mesh") {
         std::string objectNameVoid = "";
         sceneObject->mesh = CreateNewMesh(sceneObject->m_TypeID, sceneObject->scale, &objectNameVoid);
     }
 
-    glm::vec3 rotation = LightManager::directionalLight.GetDirection();
-    sceneObject->position = glm::vec3(0.0f);
-    sceneObject->rotation = glm::quat(rotation * toRadians);
-    sceneObject->scale = glm::vec3(1.0f);
-
     glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, m_DirLightSourcePosition);
     transform = glm::rotate(transform, glm::radians(LightManager::directionalLight.GetDirection().x * 90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     transform = glm::rotate(transform, glm::radians(LightManager::directionalLight.GetDirection().y * 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     transform = glm::rotate(transform, glm::radians(LightManager::directionalLight.GetDirection().z * 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     sceneObject->transform = transform;
+
+    glm::vec3 rotation = LightManager::directionalLight.GetDirection();
+    sceneObject->position = m_DirLightSourcePosition;
+    sceneObject->rotation = glm::quat(rotation * toRadians);
 
     sceneObject->model = nullptr;
     sceneObject->materialName = "none";

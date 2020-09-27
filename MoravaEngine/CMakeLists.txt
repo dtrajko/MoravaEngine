@@ -899,7 +899,6 @@ set_target_properties(glfw3             PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBU
 
 target_compile_definitions(glfw3 PRIVATE _GLFW_USE_CONFIG_H)
 
-
 target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_17)
 target_compile_features(assimp            PRIVATE cxx_std_17)
 
@@ -992,6 +991,7 @@ target_include_directories(
 	../vendor/GLM
 	../vendor/tinyobjloader
 	../vendor/spdlog/include
+    ../vendor/entt/include
 )
 
 target_link_directories(
