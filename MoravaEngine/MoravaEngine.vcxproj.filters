@@ -491,6 +491,18 @@
     <ClCompile Include="SceneEditorImGuizmo.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Scene\Entity.cpp">
+      <Filter>Hazel\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Scene\SceneCamera.cpp">
+      <Filter>Hazel\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Scene\HazelScene.cpp">
+      <Filter>Hazel\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Panels\SceneHierarchyPanel.cpp">
+      <Filter>Hazel\Panels</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1054,6 +1066,24 @@
     <ClInclude Include="SceneEditorImGuizmo.h">
       <Filter>Scene</Filter>
     </ClInclude>
+    <ClInclude Include="Hazel\Scene\ScriptableEntity.h">
+      <Filter>Hazel\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Scene\Entity.h">
+      <Filter>Hazel\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Scene\Components.h">
+      <Filter>Hazel\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Scene\SceneCamera.h">
+      <Filter>Hazel\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Scene\HazelScene.h">
+      <Filter>Hazel\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Panels\SceneHierarchyPanel.h">
+      <Filter>Hazel\Panels</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1142,6 +1172,9 @@
     </Filter>
     <Filter Include="Hazel\Scene">
       <UniqueIdentifier>{e165e3e5-7964-4fb5-b138-f5088f5674d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Panels">
+      <UniqueIdentifier>{24fdaa4e-10bf-4bdc-900d-881f430035e5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

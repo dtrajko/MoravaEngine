@@ -30,6 +30,8 @@
 #include "Mesh.h"
 #include "SceneObject.h"
 #include "Ring90.h"
+#include "Hazel/Panels/SceneHierarchyPanel.h"
+#include "Hazel/Scene/Components.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtc/matrix_transform.hpp"
@@ -266,6 +268,62 @@ void SceneEditorImGuizmo::SetupRenderFramebuffer()
 
     m_RenderFramebuffer->Generate(width, height);
 }
+
+/****
+void SceneEditorImGuizmo::SetupECS()
+{
+    // Entity
+    Hazel::Entity squareA = CreateEntity("Square A");
+    Hazel::Entity squareB = CreateEntity("Square B");
+
+    Hazel::Entity cameraEntityA = CreateEntity("Camera A");
+    cameraEntityA.AddComponent<Hazel::CameraComponent>();
+
+    Hazel::Entity cameraEntityB = CreateEntity("Camera B");
+    Hazel::CameraComponent& cameraComponentB = cameraEntityB.AddComponent<Hazel::CameraComponent>();
+    cameraComponentB.Primary = false;
+
+    class CameraController : public Hazel::ScriptableEntity
+    {
+    public:
+        void OnCreate()
+        {
+            std::cout << "CameraController::OnCreate!" << std::endl;
+
+            // two cameras on different locations
+            auto& transform = GetComponent<Hazel::TransformComponent>().Transform;
+            transform[3][0] = rand() % 10 - 5.0f;
+        }
+
+        void OnDestroy()
+        {
+            std::cout << "CameraController::OnDestroy!" << std::endl;
+        }
+
+        void OnUpdate(float ts)
+        {
+            // std::cout << "CameraController::Timestep: " << ts << std::endl;
+
+            auto& transform = GetComponent<Hazel::TransformComponent>().Transform;
+            float speed = 5.0f;
+
+            if (Input::IsKeyPressed(KeyCode::A))
+                transform[3][0] -= speed * ts;
+            if (Input::IsKeyPressed(KeyCode::D))
+                transform[3][0] += speed * ts;
+            if (Input::IsKeyPressed(KeyCode::W))
+                transform[3][1] += speed * ts;
+            if (Input::IsKeyPressed(KeyCode::S))
+                transform[3][1] -= speed * ts;
+        }
+    };
+
+    cameraEntityA.AddComponent<Hazel::NativeScriptComponent>().Bind<CameraController>();
+    cameraEntityB.AddComponent<Hazel::NativeScriptComponent>().Bind<CameraController>();
+
+    m_SceneHierarchyPanel.SetContext(std::shared_ptr<Scene>(this));
+}
+****/
 
 void SceneEditorImGuizmo::SetSkybox()
 {
@@ -1206,6 +1264,8 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
         }
     }
     ImGui::End();
+
+    //  m_SceneHierarchyPanel.OnImGuiRender();
 
     if (!m_IsViewportEnabled)
     {
