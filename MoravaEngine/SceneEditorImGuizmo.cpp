@@ -1502,31 +1502,31 @@ void SceneEditorImGuizmo::Update(float timestep, Window* mainWindow)
     }
 
     // Add new scene object with default settings
-    if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1] && mainWindow->getKeys()[GLFW_KEY_LEFT_CONTROL])
+    if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && Input::IsKeyPressed(Key::LeftControl))
     {
         AddSceneObject();
     }
 
     // Copy selected scene object
-    if (mainWindow->getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow->getKeys()[GLFW_KEY_C])
+    if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::C))
     {
         CopySceneObject(mainWindow, &m_SceneObjects, m_SelectedIndex);
         m_SceneObjects[m_SelectedIndex]->isSelected = false;
     }
 
     // Delete selected object
-    if (mainWindow->getKeys()[GLFW_KEY_DELETE])
+    if (Input::IsKeyPressed(Key::Delete))
     {
         DeleteSceneObject(mainWindow, &m_SceneObjects, m_SelectedIndex);
     }
 
-    if (mainWindow->getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow->getKeys()[GLFW_KEY_R])
+    if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::R))
         ResetScene();
 
-    if (mainWindow->getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow->getKeys()[GLFW_KEY_S])
+    if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::S))
         SaveScene();
 
-    if (mainWindow->getKeys()[GLFW_KEY_LEFT_CONTROL] && mainWindow->getKeys()[GLFW_KEY_L])
+    if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::L))
         LoadScene();
 
     for (auto& object : m_SceneObjects)
@@ -2097,6 +2097,7 @@ void SceneEditorImGuizmo::SetUniformsShaderSkinning(Shader* shaderSkinning, Scen
     shaderSkinning->setVec3("gEyeWorldPos", m_Camera->GetPosition());
     shaderSkinning->setFloat("gMatSpecularIntensity", ResourceManager::s_MaterialSpecular);
     shaderSkinning->setFloat("gSpecularPower", ResourceManager::s_MaterialShininess);
+
     char locBuff[100] = { '\0' };
     for (unsigned int i = 0; i < m_SkinningTransforms[sceneObject->name].size(); i++)
     {
@@ -2211,7 +2212,7 @@ void SceneEditorImGuizmo::SetUniformsShaderWater(Shader* shaderWater, SceneObjec
 
 void SceneEditorImGuizmo::SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix)
 {
-    if (mainWindow->getKeys()[GLFW_KEY_O])
+    if (Input::IsKeyPressed(Key::O))
     {
         if (Timer::Get()->GetCurrentTimestamp() - m_ProjectionChange.lastTime > m_ProjectionChange.cooldown)
         {
