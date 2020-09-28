@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../Scene.h"
 #include "Entity.h"
 
 #include "entt.hpp"
@@ -11,7 +12,8 @@ namespace Hazel {
 
 	class Entity;
 
-	class HazelScene {
+	class HazelScene : public Scene
+	{
 
 	public:
 		HazelScene();
@@ -23,7 +25,6 @@ namespace Hazel {
 		void OnViewportResize(uint32_t width, uint32_t height);
 
 	private:
-		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
 

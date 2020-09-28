@@ -1,11 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <map>
-#include <string>
-
-#include <glm/glm.hpp>
-
 #include "CommonValues.h"
 #include "Camera.h"
 #include "CameraController.h"
@@ -26,6 +20,13 @@
 #include "SceneObject.h"
 #include "CommonStructs.h"
 #include "Hazel/Events/ApplicationEvent.h"
+
+#include <glm/glm.hpp>
+#include <entt.hpp>
+
+#include <vector>
+#include <map>
+#include <string>
 
 
 struct SceneSettings
@@ -74,6 +75,8 @@ class Scene
 {
 public:
 	Scene();
+	virtual ~Scene();
+
 	virtual void Update(float timestep, Window* mainWindow) = 0;
 	virtual void OnWindowResize(WindowResizeEvent& e);
 	virtual void UpdateImGui(float timestep, Window* mainWindow) = 0;
@@ -84,7 +87,7 @@ public:
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) {};
 	inline bool IsWireframeEnabled() { return m_WireframeEnabled; };
 	virtual inline bool IsWaterOnScene() { return false; };
-	virtual ~Scene();
+	// Hazel::Entity CreateEntity(const std::string& name);
 
 	// Getters
 	inline Camera* GetCamera() const { return m_Camera; };
@@ -99,6 +102,7 @@ public:
 	inline Skybox* GetSkybox() const { return m_Skybox; };
 	inline float GetFOV() { return m_FOV; };
 	inline std::map<std::string, float>* GetProfilerResults() { return &m_ProfilerResults; };
+	inline entt::registry* GetRegistry() { return &m_Registry; };
 
 	// Setters
 	virtual void SetCamera();
@@ -138,6 +142,8 @@ protected:
 	std::map<std::string, Material*> materials;
 
 	std::map<std::string, float> m_ProfilerResults;
+
+	entt::registry m_Registry;
 
 private:
 	DirectionalLight directionalLight;

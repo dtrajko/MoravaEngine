@@ -13,6 +13,7 @@
 #include "SceneObject.h"
 #include "Ring90.h"
 #include "Gizmo.h"
+#include "Hazel/Panels/SceneHierarchyPanel.h"
 
 #include <glm/ext/quaternion_float.hpp>
 
@@ -42,8 +43,9 @@ private:
 	virtual void SetSkybox()       override;
 	virtual void SetLightManager() override;
     void SetupRenderFramebuffer();
-	void AddLightsToSceneObjects();
+	// void SetupECS();
 
+	void AddLightsToSceneObjects();
 	void RenderLightSources(Shader* shader);
 	void RenderSkybox(Shader* shader);
 	void RenderLineElements(Shader* shader, glm::mat4 projectionMatrix);
@@ -199,5 +201,8 @@ private:
 	std::vector<glm::vec3> m_DirectionsSpotLight;
 
 	glm::vec3 m_DirLightSourcePosition;
+
+	// Panels
+	Hazel::SceneHierarchyPanel m_SceneHierarchyPanel;
 
 };

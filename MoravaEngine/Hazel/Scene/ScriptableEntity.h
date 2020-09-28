@@ -20,12 +20,13 @@ namespace Hazel
 	protected:
 		virtual void OnCreate() {}
 		virtual void OnDestroy() {}
-		virtual void OnUpdate(Timestep ts) {}
+		virtual void OnUpdate(float ts) {}
 
 	private:
 		Entity m_Entity;
 
 		friend class Scene;
+		friend class HazelScene; // only temporary
 
 	};
 }

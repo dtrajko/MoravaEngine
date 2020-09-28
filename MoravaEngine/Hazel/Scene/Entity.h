@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Scene.h"
-#include "Log.h"
+#include "../../Scene.h"
+#include "../../Log.h"
 
 #include "entt.hpp"
 
@@ -20,10 +20,10 @@ namespace Hazel {
 		{
 			if (HasComponent<T>())
 			{
-				Log::getLogger()->error("Entity already has component!");
+				Log::GetLogger()->error("Entity already has component!");
 			}
 
-			return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
+			return m_Scene->GetRegistry()->emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 		}
 
 		template<typename T>
@@ -31,16 +31,16 @@ namespace Hazel {
 		{
 			if (!HasComponent<T>())
 			{
-				Log::getLogger()->error("Entity does not have component!");
+				Log::GetLogger()->error("Entity does not have component!");
 			}
 
-			return m_Scene->m_Registry.get<T>(m_EntityHandle);
+			return m_Scene->GetRegistry()->get<T>(m_EntityHandle);
 		}
 
 		template<typename T>
 		bool HasComponent()
 		{
-			return m_Scene->m_Registry.has<T>(m_EntityHandle);
+			return m_Scene->GetRegistry()->has<T>(m_EntityHandle);
 		}
 
 		template<typename T>
@@ -48,10 +48,10 @@ namespace Hazel {
 		{
 			if (!HasComponent<T>())
 			{
-				Log::getLogger()->error("Entity does not have component!");
+				Log::GetLogger()->error("Entity does not have component!");
 			}
 
-			m_Scene->m_Registry.remove<T>(m_EntityHandle);
+			m_Scene->GetRegistry()->remove<T>(m_EntityHandle);
 		}
 
 		operator bool() const { return m_EntityHandle != entt::null; }

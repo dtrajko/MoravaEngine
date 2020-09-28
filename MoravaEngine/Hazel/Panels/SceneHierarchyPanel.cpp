@@ -1,7 +1,7 @@
 #include "SceneHierarchyPanel.h"
-#include "Hazel/Scene/Components.h"
+#include "../Scene/Components.h"
 
-#include <imgui/imgui.h>
+#include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 
 
@@ -26,7 +26,7 @@ namespace Hazel
 	{
 		ImGui::Begin("Scene Hierarchy");
 
-		m_Context->m_Registry.each([&](auto entityID)
+		m_Context->GetRegistry()->each([&](auto entityID)
 		{
 			Entity entity{ entityID, m_Context.get() };
 			DrawEntityNode(entity);

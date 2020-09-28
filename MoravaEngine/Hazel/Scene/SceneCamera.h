@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Hazel/Renderer/Camera.h"
+#include "../Renderer/Camera.h"
 
 #include <glm/glm.hpp>
 
