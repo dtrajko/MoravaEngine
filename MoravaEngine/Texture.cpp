@@ -2,6 +2,8 @@
 #include "Log.h"
 
 #include <fstream>
+#include <exception>
+#include <string>
 
 
 Texture::Texture()
@@ -117,8 +119,8 @@ bool Texture::Load(bool flipVert)
 	m_Buffer = stbi_load(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
 	if (!m_Buffer)
 	{
-		Log::GetLogger()->error("ERROR: Texture failed to load '{0}'", m_FileLocation);
-		return false;
+		std::string message = "ERROR: Texture failed to load '" + std::string(m_FileLocation) + "'";
+		throw std::runtime_error(message.c_str());
 	}
 
 	OpenGLCreate();
