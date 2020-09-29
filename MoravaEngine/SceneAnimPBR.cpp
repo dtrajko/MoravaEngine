@@ -186,7 +186,7 @@ void SceneAnimPBR::SetupTextures()
     try {
         ResourceManager::LoadTexture("Vespa_BaseColor", textureFilepath);
     }
-    catch (const std::runtime_error& e)
+    catch (...)
     {
         Log::GetLogger()->error("Failed to load texture '{0}'", textureFilepath);
     }
