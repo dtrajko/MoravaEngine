@@ -217,6 +217,7 @@
     <ClCompile Include="RendererVoxelTerrain.cpp" />
     <ClCompile Include="RenderInstanced.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="SceneBistro.cpp" />
     <ClCompile Include="SceneBullet.cpp" />
     <ClCompile Include="SceneAnimPBR.cpp" />
     <ClCompile Include="SceneDeferred.cpp" />
@@ -409,6 +410,7 @@
     <ClInclude Include="RenderInstanced.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="SceneBistro.h" />
     <ClInclude Include="SceneBullet.h" />
     <ClInclude Include="SceneAnimPBR.h" />
     <ClInclude Include="SceneDeferred.h" />

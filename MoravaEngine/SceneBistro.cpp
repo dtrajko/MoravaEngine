@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "SceneAnimPBR.h"
+#include "SceneBistro.h"
 #include "ImGuiWrapper.h"
 #include "../cross-platform/ImGuizmo/ImGuizmo.h"
 #include "RendererBasic.h"
@@ -8,7 +8,6 @@
 #include "Block.h"
 #include "Application.h"
 #include "Shader.h"
-#include "Hazel/Renderer/MeshAnimPBR.h"
 #include "Timer.h"
 #include "MousePicker.h"
 #include "Math.h"
@@ -18,7 +17,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 
-SceneAnimPBR::SceneAnimPBR()
+SceneBistro::SceneBistro()
 {
     sceneSettings.cameraPosition     = glm::vec3(0.0f, 8.0f, 20.0f);
     sceneSettings.cameraStartYaw     = -90.0f;
@@ -131,7 +130,7 @@ SceneAnimPBR::SceneAnimPBR()
     m_MaterialWorkflowPBR->m_CaptureSize       = 512; // 512
     m_MaterialWorkflowPBR->m_PrefilterMapSize  = 128; // 128
     m_MaterialWorkflowPBR->m_IrradianceMapSize = 32;  //  32
-    m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr");
+    m_MaterialWorkflowPBR->Init("Models/Bistro_v5_1/san_giuseppe_bridge_4k.hdr");
 
     m_LightPosition = glm::vec3(20.0f, 20.0f, 20.0f);
     m_LightColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -144,11 +143,11 @@ SceneAnimPBR::SceneAnimPBR()
     m_VisibleAABBs = true;
 }
 
-void SceneAnimPBR::SetLightManager()
+void SceneBistro::SetLightManager()
 {
 }
 
-void SceneAnimPBR::SetupRenderFramebuffer()
+void SceneBistro::SetupRenderFramebuffer()
 {
     if (!m_IsViewportEnabled) return;
 
@@ -162,7 +161,7 @@ void SceneAnimPBR::SetupRenderFramebuffer()
     m_RenderFramebuffer->Generate(width, height);
 }
 
-void SceneAnimPBR::ResizeViewport(glm::vec2 viewportPanelSize)
+void SceneBistro::ResizeViewport(glm::vec2 viewportPanelSize)
 {
     // Cooldown
     if (m_CurrentTimestamp - m_ResizeViewport.lastTime < m_ResizeViewport.cooldown) return;
@@ -177,61 +176,50 @@ void SceneAnimPBR::ResizeViewport(glm::vec2 viewportPanelSize)
     }
 }
 
-void SceneAnimPBR::SetupTextures()
-{
-    ResourceManager::LoadTexture("crate", "Textures/crate.png");
-    ResourceManager::LoadTexture("crateNormal", "Textures/crateNormal.png");
-}
-
-void SceneAnimPBR::SetupTextureSlots()
+void SceneBistro::SetupTextures()
 {
 }
 
-void SceneAnimPBR::SetupMaterials()
+void SceneBistro::SetupTextureSlots()
 {
 }
 
-void SceneAnimPBR::SetupShaders()
+void SceneBistro::SetupMaterials()
+{
+}
+
+void SceneBistro::SetupShaders()
 {
     m_ShaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
-    Log::GetLogger()->info("SceneAnimPBR: m_ShaderMain compiled [programID={0}]", m_ShaderMain->GetProgramID());
+    Log::GetLogger()->info("SceneBistro: m_ShaderMain compiled [programID={0}]", m_ShaderMain->GetProgramID());
 
     m_ShaderBackground = new Shader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
-    Log::GetLogger()->info("SceneAnimPBR: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
+    Log::GetLogger()->info("SceneBistro: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
 
     m_ShaderHybridAnimPBR = new Shader("Shaders/HybridAnimPBR.vs", "Shaders/HybridAnimPBR.fs");
-    Log::GetLogger()->info("SceneAnimPBR: m_ShaderHybridAnimPBR compiled [programID={0}]", m_ShaderHybridAnimPBR->GetProgramID());
+    Log::GetLogger()->info("SceneBistro: m_ShaderHybridAnimPBR compiled [programID={0}]", m_ShaderHybridAnimPBR->GetProgramID());
 
     m_ShaderEquirectangularConversion = new Shader("Shaders/Hazel/EquirectangularToCubeMap.cs");
-    Log::GetLogger()->info("SceneAnimPBR: m_ShaderEquirectangularConversion compiled [programID={0}]", m_ShaderEquirectangularConversion->GetProgramID());
+    Log::GetLogger()->info("SceneBistro: m_ShaderEquirectangularConversion compiled [programID={0}]", m_ShaderEquirectangularConversion->GetProgramID());
 
     m_ShaderEnvFiltering = new Shader("Shaders/Hazel/EnvironmentMipFilter.cs");
-    Log::GetLogger()->info("SceneAnimPBR: m_ShaderEnvFiltering compiled [programID={0}]", m_ShaderEnvFiltering->GetProgramID());
+    Log::GetLogger()->info("SceneBistro: m_ShaderEnvFiltering compiled [programID={0}]", m_ShaderEnvFiltering->GetProgramID());
 
     m_ShaderEnvIrradiance = new Shader("Shaders/Hazel/EnvironmentIrradiance.cs");
-    Log::GetLogger()->info("SceneAnimPBR: m_ShaderEnvIrradiance compiled [programID={0}]", m_ShaderEnvIrradiance->GetProgramID());
+    Log::GetLogger()->info("SceneBistro: m_ShaderEnvIrradiance compiled [programID={0}]", m_ShaderEnvIrradiance->GetProgramID());
 
     m_ShaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
-    Log::GetLogger()->info("SceneAnimPBR: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
+    Log::GetLogger()->info("SceneBistro: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
 }
 
-void SceneAnimPBR::SetupMeshes()
+void SceneBistro::SetupMeshes()
 {
     float materialSpecular = 0.0f;
     float materialShininess = 0.0f;
 
-    Block* floor = new Block(glm::vec3(30.0f, 5.0f, 30.0f));
-    meshes.insert(std::make_pair("floor", floor));
+    m_Entities.insert(std::make_pair("BistroExterior", Entity()));
 
-    m_Entities.insert(std::make_pair("M1911", Entity()));
-    m_Entities.insert(std::make_pair("BobLamp", Entity()));
-    m_Entities.insert(std::make_pair("AnimBoy", Entity()));
-    m_Entities.insert(std::make_pair("Cube", Entity()));
-
-    m_Entities["M1911"].Enabled   = false;
-    m_Entities["BobLamp"].Enabled = false;
-    m_Entities["AnimBoy"].Enabled = true;
-    m_Entities["Cube"].Enabled    = false;
+    m_Entities["BistroExterior"].Enabled = true;
 
     for (auto& entity : m_Entities)
     {
@@ -240,114 +228,43 @@ void SceneAnimPBR::SetupMeshes()
         entity.second.Init.Transform.Scale = glm::vec3(1.0f);
     }
 
-    m_Entities["M1911"].Init.AABB.Transform.Scale   = glm::vec3(0.24f, 0.14f, 0.03f);
-    m_Entities["BobLamp"].Init.AABB.Transform.Scale = glm::vec3(20.0f, 62.0f, 20.0f);
-    m_Entities["AnimBoy"].Init.AABB.Transform.Scale = glm::vec3(2.4f, 8.8f, 2.0f);
-    m_Entities["Cube"].Init.AABB.Transform.Scale    = glm::vec3(1.0f);
+    m_Entities["BistroExterior"].Init.AABB.Transform.Scale   = glm::vec3(1.0f, 1.0f, 1.0f);
+    m_Entities["BistroExterior"].OriginOffset   = glm::vec3(0.0f);
 
-    m_Entities["M1911"].OriginOffset   = glm::vec3(0.0f);
-    m_Entities["BobLamp"].OriginOffset = glm::vec3(0.0f, 31.0f, 0.0f);
-    m_Entities["AnimBoy"].OriginOffset = glm::vec3(0.0f, 4.4f, 0.0f);
-    m_Entities["Cube"].OriginOffset    = glm::vec3(0.0f);
+    Log::GetLogger()->info("-- BEGIN loading BistroExterior FBX --");
 
-    Log::GetLogger()->info("-- BEGIN loading the Cube mesh --");
+    // BistroExterior
+    TextureInfo textureInfoBistroExterior = {};
+    textureInfoBistroExterior.albedo    = "Textures/PBR/silver/albedo.png";
+    textureInfoBistroExterior.normal    = "Textures/PBR/silver/normal.png";
+    textureInfoBistroExterior.metallic  = "Textures/PBR/silver/metallic.png";
+    textureInfoBistroExterior.roughness = "Textures/PBR/silver/roughness.png";
+    textureInfoBistroExterior.ao        = "Textures/PBR/silver/ao.png";
 
-    Block* cube = new Block(glm::vec3(1.0f, 1.0f, 1.0f));
-    meshes.insert(std::make_pair("cube", cube));
+    m_BaseMaterial_BistroExterior = new Material(textureInfoBistroExterior, materialSpecular, materialShininess);
+    m_MeshAnimPBR_BistroExterior = new Hazel::MeshAnimPBR("Models/Bistro_v5_1/BistroExterior.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_BistroExterior);
+    m_MeshAnimPBR_BistroExterior->SetTimeMultiplier(1.0f);
 
-    // Setup transform matrix and AABB for the cube mesh
-    m_Entities["Cube"].Transform.Transform = glm::mat4(1.0f);
-    m_Entities["Cube"].Transform.Scale = m_Entities["Cube"].Init.Transform.Scale;
-    m_Entities["Cube"].Transform.Transform = glm::translate(m_Entities["Cube"].Transform.Transform, m_Entities["Cube"].Transform.Translation);
-    m_Entities["Cube"].Transform.Transform = glm::scale(m_Entities["Cube"].Transform.Transform, m_Entities["Cube"].Transform.Scale);
+    m_Entities["BistroExterior"].Transform.Scale = m_Entities["BistroExterior"].Init.Transform.Scale;
+    m_Entities["BistroExterior"].Transform.Transform = glm::mat4(1.0f);
+    m_Entities["BistroExterior"].Transform.Transform = glm::translate(m_Entities["BistroExterior"].Transform.Transform, m_Entities["BistroExterior"].Transform.Translation);
+    m_Entities["BistroExterior"].Transform.Transform = glm::scale(m_Entities["BistroExterior"].Transform.Transform, m_Entities["BistroExterior"].Transform.Scale);
 
-    m_Entities["Cube"].AABB = AABB(m_Entities["Cube"].Transform.Translation + m_Entities["Cube"].OriginOffset,
-        m_Entities["Cube"].Transform.Rotation, m_Entities["Cube"].Init.AABB.Transform.Scale);
+    m_Entities["BistroExterior"].AABB = AABB(m_Entities["BistroExterior"].Transform.Translation + m_Entities["BistroExterior"].OriginOffset,
+        m_Entities["BistroExterior"].Transform.Rotation, m_Entities["BistroExterior"].Init.AABB.Transform.Scale);
 
-    Log::GetLogger()->info("-- END loading the Cube mesh --");
-
-    Log::GetLogger()->info("-- BEGIN loading the animated PBR model M1911 --");
-
-    // M1911
-    TextureInfo textureInfoM1911 = {};
-    textureInfoM1911.albedo    = "Models/m1911/m1911_color.png";
-    textureInfoM1911.normal    = "Models/m1911/m1911_normal.png";
-    textureInfoM1911.metallic  = "Models/m1911/m1911_metalness.png";
-    textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
-    textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
-
-    m_BaseMaterial_M1911 = new Material(textureInfoM1911, materialSpecular, materialShininess);
-    m_MeshAnimPBR_M1911 = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911);
-    m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
-
-    m_Entities["M1911"].Transform.Scale = m_Entities["M1911"].Init.Transform.Scale;
-    m_Entities["M1911"].Transform.Transform = glm::mat4(1.0f);
-    m_Entities["M1911"].Transform.Transform = glm::translate(m_Entities["M1911"].Transform.Transform, m_Entities["M1911"].Transform.Translation);
-    m_Entities["M1911"].Transform.Transform = glm::scale(m_Entities["M1911"].Transform.Transform, m_Entities["M1911"].Transform.Scale);
-
-    m_Entities["M1911"].AABB = AABB(m_Entities["M1911"].Transform.Translation + m_Entities["M1911"].OriginOffset,
-        m_Entities["M1911"].Transform.Rotation, m_Entities["M1911"].Init.AABB.Transform.Scale);
-
-    Log::GetLogger()->info("-- END loading the animated PBR model M1911 --");
-
-    Log::GetLogger()->info("-- BEGIN loading the animated PBR model BobLamp --");
-
-    // BobLamp
-    TextureInfo textureInfoBobLamp = {};
-    textureInfoBobLamp.albedo    = "Textures/plain.png";
-    textureInfoBobLamp.normal    = "Textures/PBR/non_reflective/normal.png";
-    textureInfoBobLamp.metallic  = "Textures/PBR/non_reflective/metallic.png";
-    textureInfoBobLamp.roughness = "Textures/PBR/non_reflective/roughness.png";
-    textureInfoBobLamp.ao        = "Textures/PBR/non_reflective/ao.png";
-
-    m_BaseMaterial_BobLamp = new Material(textureInfoBobLamp, materialSpecular, materialShininess);
-    m_MeshAnimPBR_BobLamp = new Hazel::MeshAnimPBR("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp);
-    m_MeshAnimPBR_BobLamp->SetTimeMultiplier(1.0f);
-
-    m_Entities["BobLamp"].Transform.Scale = m_Entities["BobLamp"].Init.Transform.Scale;
-    m_Entities["BobLamp"].Transform.Transform = glm::mat4(1.0f);
-    m_Entities["BobLamp"].Transform.Transform = glm::translate(m_Entities["BobLamp"].Transform.Transform, m_Entities["BobLamp"].Transform.Translation);
-    m_Entities["BobLamp"].Transform.Transform = glm::scale(m_Entities["BobLamp"].Transform.Transform, m_Entities["BobLamp"].Transform.Scale);
-
-    m_Entities["BobLamp"].AABB = AABB(m_Entities["BobLamp"].Transform.Translation + m_Entities["BobLamp"].OriginOffset,
-        m_Entities["BobLamp"].Transform.Rotation, m_Entities["BobLamp"].Init.AABB.Transform.Scale);
-
-    Log::GetLogger()->info("-- END loading the animated PBR model BobLamp --");
-
-    Log::GetLogger()->info("-- BEGIN loading the animated PBR model Animated Boy --");
-
-    // Animated Boy
-    TextureInfo textureInfoAnimBoy = {};
-    textureInfoAnimBoy.albedo    = "Models/ThinMatrix/AnimatedCharacter/AnimatedCharacterDiffuse.png";
-    textureInfoAnimBoy.normal    = "Textures/PBR/non_reflective/normal.png";
-    textureInfoAnimBoy.metallic  = "Textures/PBR/non_reflective/metallic.png";
-    textureInfoAnimBoy.roughness = "Textures/PBR/non_reflective/roughness.png";
-    textureInfoAnimBoy.ao        = "Textures/PBR/non_reflective/ao.png";
-
-    m_BaseMaterial_AnimBoy = new Material(textureInfoAnimBoy, materialSpecular, materialShininess);
-    m_MeshAnimPBR_AnimBoy = new Hazel::MeshAnimPBR("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy);
-    m_MeshAnimPBR_AnimBoy->SetTimeMultiplier(800.0f);
-
-    m_Entities["AnimBoy"].Transform.Scale = m_Entities["AnimBoy"].Init.Transform.Scale;
-    m_Entities["AnimBoy"].Transform.Transform = glm::mat4(1.0f);
-    m_Entities["AnimBoy"].Transform.Transform = glm::translate(m_Entities["AnimBoy"].Transform.Transform, m_Entities["AnimBoy"].Transform.Translation);
-    m_Entities["AnimBoy"].Transform.Transform = glm::scale(m_Entities["AnimBoy"].Transform.Transform, m_Entities["AnimBoy"].Transform.Scale);
-
-    m_Entities["AnimBoy"].AABB = AABB(m_Entities["AnimBoy"].Transform.Translation + m_Entities["AnimBoy"].OriginOffset,
-        m_Entities["AnimBoy"].Transform.Rotation, m_Entities["AnimBoy"].Init.AABB.Transform.Scale);
-
-    Log::GetLogger()->info("-- END loading the animated PBR model Animated Boy --");
+    Log::GetLogger()->info("-- END loading BistroExterior FBX --");
 }
 
-void SceneAnimPBR::SetupModels()
+void SceneBistro::SetupModels()
 {
 }
 
-void SceneAnimPBR::SetupFramebuffers()
+void SceneBistro::SetupFramebuffers()
 {
 }
 
-void SceneAnimPBR::Update(float timestep, Window* mainWindow)
+void SceneBistro::Update(float timestep, Window* mainWindow)
 {
     m_CurrentTimestamp = timestep;
 
@@ -365,7 +282,7 @@ void SceneAnimPBR::Update(float timestep, Window* mainWindow)
 
     m_ShaderHybridAnimPBR->Bind();
 
-    for (int i = 0; i < MAX_LIGHTS; i++)
+    for (int i = 0; i < MAX_LIGHTS_BISTRO; i++)
     {
         std::string uniformName = std::string("lightPositions[") + std::to_string(i) + std::string("]");
         m_ShaderHybridAnimPBR->setVec3(uniformName, m_LightPosition);
@@ -378,9 +295,7 @@ void SceneAnimPBR::Update(float timestep, Window* mainWindow)
     m_ShaderHybridAnimPBR->setFloat("u_TilingFactor", 1.0f);
 
     float deltaTime = Timer::Get()->GetDeltaTime();
-    m_MeshAnimPBR_M1911->OnUpdate(deltaTime, false);
-    m_MeshAnimPBR_BobLamp->OnUpdate(deltaTime, false);
-    m_MeshAnimPBR_AnimBoy->OnUpdate(deltaTime, false);
+    m_MeshAnimPBR_BistroExterior->OnUpdate(deltaTime, false);
 
     if (m_HDRI_Edit != m_HDRI_Edit_Prev)
     {
@@ -407,7 +322,7 @@ void SceneAnimPBR::Update(float timestep, Window* mainWindow)
     }
 }
 
-void SceneAnimPBR::CheckIntersection(Window* mainWindow)
+void SceneBistro::CheckIntersection(Window* mainWindow)
 {
     MousePicker::Get()->Update(
         (int)mainWindow->GetMouseX(), (int)mainWindow->GetMouseY(),
@@ -438,7 +353,7 @@ void SceneAnimPBR::CheckIntersection(Window* mainWindow)
     }
 }
 
-void SceneAnimPBR::UpdateImGui(float timestep, Window* mainWindow)
+void SceneBistro::UpdateImGui(float timestep, Window* mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -700,12 +615,10 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::ShowMetricsWindow();
 
-    m_MeshAnimPBR_M1911->OnImGuiRender();
-    m_MeshAnimPBR_BobLamp->OnImGuiRender();
-    m_MeshAnimPBR_AnimBoy->OnImGuiRender();
+    m_MeshAnimPBR_BistroExterior->OnImGuiRender();
 }
 
-void SceneAnimPBR::UpdateImGuizmo(Window* mainWindow)
+void SceneBistro::UpdateImGuizmo(Window* mainWindow)
 {
     // BEGIN ImGuizmo
 
@@ -745,7 +658,7 @@ void SceneAnimPBR::UpdateImGuizmo(Window* mainWindow)
 // Note that you already dock windows into each others _without_ a DockSpace() by just moving windows 
 // from their title bar (or by holding SHIFT if io.ConfigDockingWithShift is set).
 // DockSpace() is only useful to construct to a central location for your application.
-void SceneAnimPBR::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
+void SceneBistro::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
     if (!m_IsViewportEnabled) {
         Scene::ShowExampleAppDockSpace(p_open, mainWindow);
@@ -868,7 +781,7 @@ void SceneAnimPBR::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
     ImGui::End();
 }
 
-void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneBistro::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     if (m_IsViewportEnabled)
@@ -929,70 +842,10 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 
     m_MaterialWorkflowPBR->BindTextures(m_SamplerSlots["irradiance"]);
 
-    if (m_Entities["M1911"].Enabled)
+    if (m_Entities["BistroExterior"].Enabled)
     {
-        m_MeshAnimPBR_M1911->Render(m_SamplerSlots["albedo"], m_Entities["M1911"].Transform.Transform);
+        m_MeshAnimPBR_BistroExterior->Render(m_SamplerSlots["albedo"], m_Entities["BistroExterior"].Transform.Transform);
     }
-
-    if (m_Entities["AnimBoy"].Enabled)
-    {
-        m_MeshAnimPBR_AnimBoy->Render(m_SamplerSlots["albedo"], m_Entities["AnimBoy"].Transform.Transform);
-    }
-
-    if (m_Entities["BobLamp"].Enabled)
-    {
-        m_BaseMaterial_BobLamp->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
-        m_BaseMaterial_BobLamp->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
-        m_BaseMaterial_BobLamp->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
-        m_BaseMaterial_BobLamp->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
-        m_BaseMaterial_BobLamp->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
- 
-        m_MeshAnimPBR_BobLamp->m_VertexArray->Bind();
-        auto& materials = m_MeshAnimPBR_BobLamp->GetMaterials();
-
-        int submeshIndex = 0;
-        for (Hazel::Submesh* submesh : m_MeshAnimPBR_BobLamp->GetSubmeshes())
-        {
-            // Material
-            auto material = materials[submesh->MaterialIndex];
-            m_ShaderHybridAnimPBR->Bind();
-
-            m_MeshAnimPBR_BobLamp->GetTextures()[submeshIndex]->Bind(m_SamplerSlots["albedo"]);
-
-            for (size_t i = 0; i < m_MeshAnimPBR_BobLamp->m_BoneTransforms.size(); i++)
-            {
-                std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-                m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBR_BobLamp->m_BoneTransforms[i]);
-            }
-
-            m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Entities["BobLamp"].Transform.Transform * submesh->Transform);
-
-            glEnable(GL_DEPTH_TEST);
-            glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
-
-            submeshIndex++;
-        }
-    }
-
-    // BEGIN main shader rendering
-    m_ShaderMain->Bind();
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, -2.5f, 0.0f));
-    m_ShaderMain->setMat4("model", model);
-    ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
-    ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
-    m_ShaderMain->setFloat("tilingFactor", 0.1f);
-    meshes["floor"]->Render();
-
-    m_ShaderMain->setMat4("model", m_Entities["Cube"].Transform.Transform);
-    ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
-    ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
-    m_ShaderMain->setFloat("tilingFactor", 1.0f);
-
-    if (m_Entities["Cube"].Enabled) {
-        meshes["cube"]->Render();
-    }
-    // END main shader rendering
 
     m_ShaderBasic->Bind();
     m_ShaderBasic->setMat4("projection", projectionMatrix);
@@ -1016,7 +869,7 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
     }
 }
 
-void SceneAnimPBR::SetupUniforms()
+void SceneBistro::SetupUniforms()
 {
     /**** BEGIN m_ShaderMain ****/
     m_ShaderMain->Bind();
@@ -1045,6 +898,6 @@ void SceneAnimPBR::SetupUniforms()
     /**** END m_ShaderMain ****/
 }
 
-SceneAnimPBR::~SceneAnimPBR()
+SceneBistro::~SceneBistro()
 {
 }
