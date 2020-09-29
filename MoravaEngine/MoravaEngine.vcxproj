@@ -284,7 +284,6 @@
     <ClCompile Include="Renderbuffer.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RendererBasic.cpp" />
-    <ClCompile Include="RendererCubemaps.cpp" />
     <ClCompile Include="RendererEditor.cpp" />
     <ClCompile Include="RendererJoey.cpp" />
     <ClCompile Include="RendererNanosuit.cpp" />
@@ -478,7 +477,6 @@
     <ClInclude Include="Renderbuffer.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RendererBasic.h" />
-    <ClInclude Include="RendererCubemaps.h" />
     <ClInclude Include="RendererEditor.h" />
     <ClInclude Include="RendererJoey.h" />
     <ClInclude Include="RendererNanosuit.h" />

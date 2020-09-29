@@ -56,7 +56,6 @@
 #include "RendererPBR.h"
 #include "RendererJoey.h"
 #include "RendererNanosuit.h"
-#include "RendererCubemaps.h"
 #include "RendererOmniShadows.h"
 #include "RendererVoxelTerrain.h"
 #include "RendererEditor.h"
@@ -100,7 +99,7 @@ enum class SceneName
 	Bistro,
 };
 
-SceneName currentScene = SceneName::AnimPBR;
+SceneName currentScene = SceneName::Cubemaps;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -165,7 +164,7 @@ int main()
 		break;
 	case SceneName::Cubemaps:
 		scene = new SceneCubemaps();
-		renderer = static_cast<RendererBasic*>(new RendererCubemaps());
+		renderer = static_cast<RendererBasic*>(new RendererTrivial());
 		break;
 	case SceneName::Particles:
 		scene = new SceneParticles();

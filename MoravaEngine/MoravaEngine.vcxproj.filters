@@ -41,9 +41,6 @@
     <ClCompile Include="RendererBasic.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RendererCubemaps.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="RendererEditor.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
@@ -554,9 +551,6 @@
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="RendererBasic.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="RendererCubemaps.h">
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="RendererEditor.h">
