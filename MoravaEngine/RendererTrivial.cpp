@@ -1,5 +1,4 @@
 #include "RendererTrivial.h"
-#include "SceneAnimPBR.h"
 #include "Log.h"
 #include "Application.h"
 

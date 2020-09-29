@@ -49,6 +49,7 @@
 #include "SceneDeferred.h"
 #include "SceneEditor.h"
 #include "SceneEditorImGuizmo.h"
+#include "SceneBistro.h"
 
 #include "Renderer.h"
 #include "RendererTrivial.h"
@@ -96,6 +97,7 @@ enum class SceneName
 	AnimPBR,
 	Editor,
 	EditorImGuizmo,
+	Bistro,
 };
 
 SceneName currentScene = SceneName::EditorImGuizmo;
@@ -208,6 +210,10 @@ int main()
 	case SceneName::EditorImGuizmo:
 		scene = new SceneEditorImGuizmo();
 		renderer = static_cast<RendererBasic*>(new RendererEditor());
+		break;
+	case SceneName::Bistro:
+		scene = new SceneBistro();
+		renderer = static_cast<RendererBasic*>(new RendererTrivial());
 		break;
 	default:
 		throw std::runtime_error("Scene and Renderer could not be loaded!");

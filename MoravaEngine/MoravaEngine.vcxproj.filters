@@ -503,6 +503,9 @@
     <ClCompile Include="Hazel\Panels\SceneHierarchyPanel.cpp">
       <Filter>Hazel\Panels</Filter>
     </ClCompile>
+    <ClCompile Include="SceneBistro.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1083,6 +1086,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\Panels\SceneHierarchyPanel.h">
       <Filter>Hazel\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneBistro.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
