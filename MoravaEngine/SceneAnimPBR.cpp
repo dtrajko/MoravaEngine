@@ -181,6 +181,15 @@ void SceneAnimPBR::SetupTextures()
 {
     ResourceManager::LoadTexture("crate", "Textures/crate.png");
     ResourceManager::LoadTexture("crateNormal", "Textures/crateNormal.png");
+
+    std::string textureFilepath = "Textures/dds/Vespa_BaseColor.dds";
+    try {
+        ResourceManager::LoadTexture("Vespa_BaseColor", textureFilepath);
+    }
+    catch (const std::runtime_error& e)
+    {
+        Log::GetLogger()->error("Failed to load texture '{0}'", textureFilepath);
+    }
 }
 
 void SceneAnimPBR::SetupTextureSlots()
