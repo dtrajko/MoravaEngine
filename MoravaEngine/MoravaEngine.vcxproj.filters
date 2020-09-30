@@ -503,6 +503,9 @@
     <ClCompile Include="SceneBistro.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Renderer\RenderCommandQueue.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1083,6 +1086,9 @@
     </ClInclude>
     <ClInclude Include="SceneBistro.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\RenderCommandQueue.h">
+      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
