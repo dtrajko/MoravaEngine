@@ -535,24 +535,24 @@ namespace Hazel {
 
 		if (ImGui::TreeNode(node->mName.C_Str()))
 		{
-			//	/****
+			/****
 			{
 				auto [translation, rotation, scale] = Math::GetTransformDecomposition(transform);
 				glm::vec3 rotationVec3 = glm::degrees(glm::eulerAngles(rotation));
 				ImGui::Text("World Transform");
 				ImGui::Text("  Translation: %.2f %.2f %.2f", translation.x, translation.y, translation.z);
-				ImGui::Text("  Rotation: %.2f %.2f %.2f", rotationVec3.x, rotationVec3.y, rotationVec3.z);
-				ImGui::Text("  Scale: %.2f %.2f %.2f", scale.x, scale.y, scale.z);
+				ImGui::Text("  Rotation:    %.2f %.2f %.2f", rotationVec3.x, rotationVec3.y, rotationVec3.z);
+				ImGui::Text("  Scale:       %.2f %.2f %.2f", scale.x, scale.y, scale.z);
 			}
 			{
 				auto [translation, rotation, scale] = Math::GetTransformDecomposition(localTransform);
 				glm::vec3 rotationVec3 = glm::degrees(glm::eulerAngles(rotation));
 				ImGui::Text("Local Transform");
 				ImGui::Text("  Translation: %.2f %.2f %.2f", translation.x, translation.y, translation.z);
-				ImGui::Text("  Rotation: %.2f %.2f %.2f", rotationVec3.x, rotationVec3.y, rotationVec3.z);
-				ImGui::Text("  Scale: %.2f %.2f %.2f", scale.x, scale.y, scale.z);
+				ImGui::Text("  Rotation:    %.2f %.2f %.2f", rotationVec3.x, rotationVec3.y, rotationVec3.z);
+				ImGui::Text("  Scale:       %.2f %.2f %.2f", scale.x, scale.y, scale.z);
 			}
-			//	****/
+			****/
 
 			for (uint32_t i = 0; i < node->mNumChildren; i++)
 				ImGuiNodeHierarchy(node->mChildren[i], transform, level + 1);

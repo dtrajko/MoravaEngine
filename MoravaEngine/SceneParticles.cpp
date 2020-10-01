@@ -44,7 +44,7 @@ void SceneParticles::SetSkybox()
     skyboxFaces.push_back("Textures/skybox_4/front.png");
     // m_Skybox = new Skybox(skyboxFaces);
 
-    m_TextureCubeMap = new TextureCubeMap(skyboxFaces);
+    m_TextureCubeMap = new TextureCubemapFaces(skyboxFaces);
 }
 
 void SceneParticles::SetupTextures()

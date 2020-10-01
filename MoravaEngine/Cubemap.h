@@ -2,7 +2,7 @@
 
 #include "FramebufferWater.h"
 #include "Renderbuffer.h"
-#include "TextureCubemapLite.h"
+#include "TextureCubemap.h"
 
 
 class Cubemap
@@ -10,7 +10,7 @@ class Cubemap
 public:
 	Cubemap();
 	Cubemap(int width, int height);
-	inline TextureCubemapLite* GetTextureCubemap() { return m_TextureCubemap; };
+	inline TextureCubemap* GetTextureCubemap() { return m_TextureCubemap; };
 	inline FramebufferWater* GetCaptureFBO() { return m_CaptureFBO; };
 	inline Renderbuffer* GetCaptureRBO() { return m_CaptureRBO; };
 	~Cubemap();
@@ -21,6 +21,6 @@ private:
 
 	FramebufferWater* m_CaptureFBO;
 	Renderbuffer* m_CaptureRBO;
-	TextureCubemapLite* m_TextureCubemap;
+	TextureCubemap* m_TextureCubemap;
 
 };

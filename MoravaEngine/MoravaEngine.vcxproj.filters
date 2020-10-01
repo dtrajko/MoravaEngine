@@ -224,12 +224,6 @@
     <ClCompile Include="TextureAtlas.cpp">
       <Filter>Texture</Filter>
     </ClCompile>
-    <ClCompile Include="TextureCubeMap.cpp">
-      <Filter>Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureCubemapLite.cpp">
-      <Filter>Texture</Filter>
-    </ClCompile>
     <ClCompile Include="learnopengl\TextureJoey.cpp">
       <Filter>Texture</Filter>
     </ClCompile>
@@ -500,11 +494,20 @@
     <ClCompile Include="Hazel\Panels\SceneHierarchyPanel.cpp">
       <Filter>Hazel\Panels</Filter>
     </ClCompile>
-    <ClCompile Include="SceneBistro.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Hazel\Renderer\RenderCommandQueue.cpp">
       <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneHazelEnvMap.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="EnvironmentMap.cpp">
+      <Filter>Material</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureCubemapFaces.cpp">
+      <Filter>Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureCubemap.cpp">
+      <Filter>Texture</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -743,12 +746,6 @@
       <Filter>Texture</Filter>
     </ClInclude>
     <ClInclude Include="TextureAtlas.h">
-      <Filter>Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureCubeMap.h">
-      <Filter>Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureCubemapLite.h">
       <Filter>Texture</Filter>
     </ClInclude>
     <ClInclude Include="learnopengl\TextureJoey.h">
@@ -1084,11 +1081,20 @@
     <ClInclude Include="Hazel\Panels\SceneHierarchyPanel.h">
       <Filter>Hazel\Panels</Filter>
     </ClInclude>
-    <ClInclude Include="SceneBistro.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
     <ClInclude Include="Hazel\Renderer\RenderCommandQueue.h">
       <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneHazelEnvMap.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="EnvironmentMap.h">
+      <Filter>Material</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureCubemapFaces.h">
+      <Filter>Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureCubemap.h">
+      <Filter>Texture</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

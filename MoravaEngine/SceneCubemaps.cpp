@@ -108,7 +108,7 @@ void SceneCubemaps::SetGeometry()
         "Textures/skybox_cubemaps/back.jpg",
     };
 
-    m_TextureCubeMap = new TextureCubeMap(faces);
+    m_TextureCubeMap = new TextureCubemapFaces(faces);
     m_TextureCubeMapID = m_TextureCubeMap->GetID();
 }
 

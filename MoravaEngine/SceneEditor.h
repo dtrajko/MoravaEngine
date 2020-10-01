@@ -8,7 +8,7 @@
 #include "Pivot.h"
 #include "Grid.h"
 #include "Gizmo.h"
-#include "TextureCubeMap.h"
+#include "TextureCubemapFaces.h"
 #include "MaterialWorkflowPBR.h"
 #include "SkinnedMesh.h"
 #include "SceneObjectParticleSystem.h"

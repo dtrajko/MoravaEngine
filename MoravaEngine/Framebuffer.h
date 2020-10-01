@@ -10,12 +10,14 @@ struct FramebufferSpecification
 {
 	uint32_t Width, Height;
 	// FramebufferFormat Format; same as AttachmentFormat
-	uint32_t Samples = 1;
-
-	bool SwapChainTarget = false;
 
 	AttachmentType attachmentType;
 	AttachmentFormat attachmentFormat;
+
+	uint32_t Samples = 1;
+
+	// SwapChainTarget = screen buffer (i.e. no framebuffer)
+	bool SwapChainTarget = false;
 };
 
 class Framebuffer

@@ -1104,47 +1104,50 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Experimental Section");
     {
-        ImGui::Text("File");
-        std::string fullpath = (m_LoadedFile != "") ? m_LoadedFile : "None";
-        size_t found = fullpath.find_last_of("/\\");
-        std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
-        ImGui::Text(path.c_str()); ImGui::SameLine();
-
-        if (ImGui::Button("...##Mesh"))
+        if (ImGui::CollapsingHeader("Details"))
         {
-            m_LoadedFile = Application::Get()->OpenFile("");
-            if (m_LoadedFile != "")
+            ImGui::Text("File");
+            std::string fullpath = (m_LoadedFile != "") ? m_LoadedFile : "None";
+            size_t found = fullpath.find_last_of("/\\");
+            std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
+            ImGui::Text(path.c_str()); ImGui::SameLine();
+
+            if (ImGui::Button("...##Mesh"))
             {
-                Log::GetLogger()->info("ImGui OpenFile - filename: '{0}'", m_LoadedFile);
+                m_LoadedFile = Application::Get()->OpenFile("");
+                if (m_LoadedFile != "")
+                {
+                    Log::GetLogger()->info("ImGui OpenFile - filename: '{0}'", m_LoadedFile);
+                }
+            }
+
+            if (ImGui::CollapsingHeader("Normals", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+                ImGui::Image(m_LoadedTexture ? (void*)(intptr_t)m_LoadedTexture->GetID() : (void*)(intptr_t)ResourceManager::HotLoadTexture("Checkerboard")->GetID(), ImVec2(64, 64));
+                ImGui::PopStyleVar();
+                if (ImGui::IsItemHovered())
+                {
+                    if (m_LoadedTexture)
+                    {
+                        ImGui::BeginTooltip();
+                        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                        ImGui::TextUnformatted(m_LoadedTextureFilepath.c_str());
+                        ImGui::PopTextWrapPos();
+                        ImGui::Image((void*)(intptr_t)m_LoadedTexture->GetID(), ImVec2(384, 384));
+                        ImGui::EndTooltip();
+                    }
+                    if (ImGui::IsItemClicked())
+                    {
+                        std::string filename = Application::Get()->OpenFile("");
+                        if (filename != "")
+                            m_LoadedTexture = new Texture(filename.c_str(), false);
+                    }
+                }
+                ImGui::SameLine();
+                ImGui::Checkbox("Use##NormalMap", &m_UseLoadedTexture);
             }
         }
-    }
-
-    if (ImGui::CollapsingHeader("Normals", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-    {
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-        ImGui::Image(m_LoadedTexture ? (void*)(intptr_t)m_LoadedTexture->GetID() : (void*)(intptr_t)ResourceManager::HotLoadTexture("Checkerboard")->GetID(), ImVec2(64, 64));
-        ImGui::PopStyleVar();
-        if (ImGui::IsItemHovered())
-        {
-            if (m_LoadedTexture)
-            {
-                ImGui::BeginTooltip();
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                ImGui::TextUnformatted(m_LoadedTextureFilepath.c_str());
-                ImGui::PopTextWrapPos();
-                ImGui::Image((void*)(intptr_t)m_LoadedTexture->GetID(), ImVec2(384, 384));
-                ImGui::EndTooltip();
-            }
-            if (ImGui::IsItemClicked())
-            {
-                std::string filename = Application::Get()->OpenFile("");
-                if (filename != "")
-                    m_LoadedTexture = new Texture(filename.c_str(), false);
-            }
-        }
-        ImGui::SameLine();
-        ImGui::Checkbox("Use##NormalMap", &m_UseLoadedTexture);
     }
     ImGui::End();
 
