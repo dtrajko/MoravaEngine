@@ -509,6 +509,12 @@
     <ClCompile Include="TextureCubemap.cpp">
       <Filter>Texture</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLTexture.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Renderer\HazelTexture.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1096,6 +1102,12 @@
     <ClInclude Include="TextureCubemap.h">
       <Filter>Texture</Filter>
     </ClInclude>
+    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLTexture.h">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\HazelTexture.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1187,6 +1199,12 @@
     </Filter>
     <Filter Include="Hazel\Panels">
       <UniqueIdentifier>{24fdaa4e-10bf-4bdc-900d-881f430035e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Platform">
+      <UniqueIdentifier>{dbda6cda-1a09-4cea-93be-39f556584c6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Platform\OpenGL">
+      <UniqueIdentifier>{baeaae74-6311-4e23-b857-93ce0dcabd26}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
