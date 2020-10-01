@@ -707,7 +707,7 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::PopStyleVar();
     }
 
-    ImGui::ShowMetricsWindow();
+    // ImGui::ShowMetricsWindow();
 
     m_MeshAnimPBR_M1911->OnImGuiRender();
     m_MeshAnimPBR_BobLamp->OnImGuiRender();

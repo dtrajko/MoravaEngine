@@ -49,7 +49,7 @@
 #include "SceneDeferred.h"
 #include "SceneEditor.h"
 #include "SceneEditorImGuizmo.h"
-#include "SceneBistro.h"
+#include "SceneHazelEnvMap.h"
 
 #include "Renderer.h"
 #include "RendererTrivial.h"
@@ -93,13 +93,13 @@ enum class SceneName
 	MarchingCubes,
 	SSAO,
 	Deferred,
-	AnimPBR,
 	Editor,
 	EditorImGuizmo,
-	Bistro,
+	AnimPBR,
+	HazelEnvMap,
 };
 
-SceneName currentScene = SceneName::Cubemaps;
+SceneName currentScene = SceneName::HazelEnvMap;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -210,8 +210,8 @@ int main()
 		scene = new SceneEditorImGuizmo();
 		renderer = static_cast<RendererBasic*>(new RendererEditor());
 		break;
-	case SceneName::Bistro:
-		scene = new SceneBistro();
+	case SceneName::HazelEnvMap:
+		scene = new SceneHazelEnvMap();
 		renderer = static_cast<RendererBasic*>(new RendererTrivial());
 		break;
 	default:

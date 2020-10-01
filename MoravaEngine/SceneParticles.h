@@ -6,7 +6,7 @@
 #include "Grid.h"
 #include "Pivot.h"
 #include "MaterialWorkflowPBR.h"
-#include "TextureCubeMap.h"
+#include "TextureCubemapFaces.h"
 
 
 class SceneParticles : public Scene
@@ -29,7 +29,7 @@ private:
 
 	MaterialWorkflowPBR* m_MaterialWorkflowPBR;
 
-	TextureCubeMap* m_TextureCubeMap;
+	TextureCubemapFaces* m_TextureCubeMap;
 
 	// Particle System
 	ParticleSystemCherno m_ParticleSystem;

@@ -2,7 +2,7 @@
 
 #include "Scene.h"
 #include "Hazel/Renderer/MeshAnimPBR.h"
-#include "TextureCubemapLite.h"
+#include "TextureCubemap.h"
 #include "CubeSkybox.h"
 #include "MaterialWorkflowPBR.h"
 #include "AABB.h"
@@ -106,14 +106,6 @@ private:
 	};
 
 	std::map<std::string, Entity> m_Entities;
-
-	bool m_RadiancePrefilter  = true;
-	bool m_AlbedoTexToggle    = true;
-	bool m_NormalTexToggle    = true;
-	bool m_MetalnessTexToggle = true;
-	bool m_RoughnessTexToggle = true;
-
-	float m_EnvMapRotation = 0.0f;
 
 	std::map<std::string, unsigned int> m_SamplerSlots;
 

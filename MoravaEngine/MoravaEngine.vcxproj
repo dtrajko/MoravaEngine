@@ -180,6 +180,7 @@
     <ClCompile Include="CameraControllerVoxelTerrain.cpp" />
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="EndlessTerrain.cpp" />
+    <ClCompile Include="EnvironmentMap.cpp" />
     <ClCompile Include="FramebufferTextureCubemap.cpp" />
     <ClCompile Include="Hazel\Core\Layer.cpp" />
     <ClCompile Include="Hazel\Core\LayerStack.cpp" />
@@ -218,11 +219,11 @@
     <ClCompile Include="RendererVoxelTerrain.cpp" />
     <ClCompile Include="RenderInstanced.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="SceneBistro.cpp" />
     <ClCompile Include="SceneBullet.cpp" />
     <ClCompile Include="SceneAnimPBR.cpp" />
     <ClCompile Include="SceneDeferred.cpp" />
     <ClCompile Include="SceneEditorImGuizmo.cpp" />
+    <ClCompile Include="SceneHazelEnvMap.cpp" />
     <ClCompile Include="SceneMarchingCubes.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="SceneObjectLight.cpp" />
@@ -323,8 +324,8 @@
     <ClCompile Include="TerrainVoxel.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureAtlas.cpp" />
-    <ClCompile Include="TextureCubeMap.cpp" />
-    <ClCompile Include="TextureCubemapLite.cpp" />
+    <ClCompile Include="TextureCubemapFaces.cpp" />
+    <ClCompile Include="TextureCubemap.cpp" />
     <ClCompile Include="TextureGenerator.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
     <ClCompile Include="TextureSampler.cpp" />
@@ -355,6 +356,7 @@
     <ClInclude Include="CameraControllerVoxelTerrain.h" />
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="EndlessTerrain.h" />
+    <ClInclude Include="EnvironmentMap.h" />
     <ClInclude Include="FramebufferTextureCubemap.h" />
     <ClInclude Include="Hazel\Core\Base.h" />
     <ClInclude Include="Hazel\Core\Buffer.h" />
@@ -411,11 +413,11 @@
     <ClInclude Include="RenderInstanced.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceManager.h" />
-    <ClInclude Include="SceneBistro.h" />
     <ClInclude Include="SceneBullet.h" />
     <ClInclude Include="SceneAnimPBR.h" />
     <ClInclude Include="SceneDeferred.h" />
     <ClInclude Include="SceneEditorImGuizmo.h" />
+    <ClInclude Include="SceneHazelEnvMap.h" />
     <ClInclude Include="SceneMarchingCubes.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="SceneObjectLight.h" />
@@ -517,8 +519,8 @@
     <ClInclude Include="TerrainVoxel.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureAtlas.h" />
-    <ClInclude Include="TextureCubeMap.h" />
-    <ClInclude Include="TextureCubemapLite.h" />
+    <ClInclude Include="TextureCubemapFaces.h" />
+    <ClInclude Include="TextureCubemap.h" />
     <ClInclude Include="TextureGenerator.h" />
     <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="TextureSampler.h" />

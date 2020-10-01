@@ -26,14 +26,14 @@ vec3 GetCubeMapTexCoord()
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 void main()
 {
-    vec3 cubeTC = GetCubeMapTexCoord();
+	vec3 cubeTC = GetCubeMapTexCoord();
 
     // Calculate sampling coords for equirectangular texture
-    // https://en.wikipedia.org/wiki/Spherical_coordinate_system#Cartesian_coordinates
-    float phi = atan(cubeTC.z, cubeTC.x);
-    float theta = acos(cubeTC.y);
+	// https://en.wikipedia.org/wiki/Spherical_coordinate_system#Cartesian_coordinates
+	float phi = atan(cubeTC.z, cubeTC.x);
+	float theta = acos(cubeTC.y);
     vec2 uv = vec2(phi / (2.0 * PI) + 0.5, theta / PI);
 
-    vec4 color = texture(u_EquirectangularTex, uv);
-    imageStore(o_CubeMap, ivec3(gl_GlobalInvocationID), color);
+	vec4 color = texture(u_EquirectangularTex, uv);
+	imageStore(o_CubeMap, ivec3(gl_GlobalInvocationID), color);
 }

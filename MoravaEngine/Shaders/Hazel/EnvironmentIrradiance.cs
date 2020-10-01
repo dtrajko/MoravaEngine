@@ -20,18 +20,18 @@ layout(binding=0, rgba16f) restrict writeonly uniform imageCube outputTexture;
 // See: http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
 float radicalInverse_VdC(uint bits)
 {
-    bits = (bits << 16u) | (bits >> 16u);
-    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
-    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
-    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
-    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-    return float(bits) * 2.3283064365386963e-10; // / 0x100000000
+	bits = (bits << 16u) | (bits >> 16u);
+	bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+	bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+	bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+	bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+	return float(bits) * 2.3283064365386963e-10; // / 0x100000000
 }
 
 // Sample i-th point from Hammersley point set of NumSamples points total.
 vec2 sampleHammersley(uint i)
 {
-    return vec2(i * InvNumSamples, radicalInverse_VdC(i));
+	return vec2(i * InvNumSamples, radicalInverse_VdC(i));
 }
 
 // Uniformly sample point on a hemisphere.
@@ -40,8 +40,8 @@ vec2 sampleHammersley(uint i)
 // See: "Physically Based Rendering" 2nd ed., section 13.6.1.
 vec3 sampleHemisphere(float u1, float u2)
 {
-    const float u1p = sqrt(max(0.0, 1.0 - u1*u1));
-    return vec3(cos(TwoPI*u2) * u1p, sin(TwoPI*u2) * u1p, u1);
+	const float u1p = sqrt(max(0.0, 1.0 - u1*u1));
+	return vec3(cos(TwoPI*u2) * u1p, sin(TwoPI*u2) * u1p, u1);
 }
 
 vec3 GetCubeMapTexCoord()
@@ -62,42 +62,42 @@ vec3 GetCubeMapTexCoord()
 // Compute orthonormal basis for converting from tanget/shading space to world space.
 void computeBasisVectors(const vec3 N, out vec3 S, out vec3 T)
 {
-    // Branchless select non-degenerate T.
-    T = cross(N, vec3(0.0, 1.0, 0.0));
-    T = mix(cross(N, vec3(1.0, 0.0, 0.0)), T, step(Epsilon, dot(T, T)));
+	// Branchless select non-degenerate T.
+	T = cross(N, vec3(0.0, 1.0, 0.0));
+	T = mix(cross(N, vec3(1.0, 0.0, 0.0)), T, step(Epsilon, dot(T, T)));
 
-    T = normalize(T);
-    S = normalize(cross(N, T));
+	T = normalize(T);
+	S = normalize(cross(N, T));
 }
 
 // Convert point from tangent/shading space to world space.
 vec3 tangentToWorld(const vec3 v, const vec3 N, const vec3 S, const vec3 T)
 {
-    return S * v.x + T * v.y + N * v.z;
+	return S * v.x + T * v.y + N * v.z;
 }
 
 layout(local_size_x=32, local_size_y=32, local_size_z=1) in;
 void main(void)
 {
-    vec3 N = GetCubeMapTexCoord();
-    
-    vec3 S, T;
-    computeBasisVectors(N, S, T);
+	vec3 N = GetCubeMapTexCoord();
+	
+	vec3 S, T;
+	computeBasisVectors(N, S, T);
 
-    // Monte Carlo integration of hemispherical irradiance.
-    // As a small optimization this also includes Lambertian BRDF assuming perfectly white surface (albedo of 1.0)
-    // so we don't need to normalize in PBR fragment shader (so technically it encodes exitant radiance rather than irradiance).
-    vec3 irradiance = vec3(0);
-    for(uint i = 0; i < NumSamples; i++)
-    {
-        vec2 u  = sampleHammersley(i);
-        vec3 Li = tangentToWorld(sampleHemisphere(u.x, u.y), N, S, T);
-        float cosTheta = max(0.0, dot(Li, N));
+	// Monte Carlo integration of hemispherical irradiance.
+	// As a small optimization this also includes Lambertian BRDF assuming perfectly white surface (albedo of 1.0)
+	// so we don't need to normalize in PBR fragment shader (so technically it encodes exitant radiance rather than irradiance).
+	vec3 irradiance = vec3(0);
+	for(uint i = 0; i < NumSamples; i++)
+	{
+		vec2 u  = sampleHammersley(i);
+		vec3 Li = tangentToWorld(sampleHemisphere(u.x, u.y), N, S, T);
+		float cosTheta = max(0.0, dot(Li, N));
 
-        // PIs here cancel out because of division by pdf.
-        irradiance += 2.0 * textureLod(inputTexture, Li, 0).rgb * cosTheta;
-    }
-    irradiance /= vec3(NumSamples);
+		// PIs here cancel out because of division by pdf.
+		irradiance += 2.0 * textureLod(inputTexture, Li, 0).rgb * cosTheta;
+	}
+	irradiance /= vec3(NumSamples);
 
-    imageStore(outputTexture, ivec3(gl_GlobalInvocationID), vec4(irradiance, 1.0));
+	imageStore(outputTexture, ivec3(gl_GlobalInvocationID), vec4(irradiance, 1.0));
 }

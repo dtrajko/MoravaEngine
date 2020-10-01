@@ -2,7 +2,7 @@
 
 #include "Scene.h"
 
-#include "TextureCubeMap.h"
+#include "TextureCubemapFaces.h"
 #include "LearnOpenGL/ModelJoey.h"
 #include "Quad.h"
 #include "Raycast.h"
@@ -42,7 +42,7 @@ private:
 	bool m_NanosuitModelEnabled = true;
 	bool m_AABBEnabled          = true;
 
-	TextureCubeMap* m_TextureCubeMap;
+	TextureCubemapFaces* m_TextureCubeMap;
 	unsigned int m_TextureCubeMapID;
 
 	Quad* m_Quad;

@@ -1,20 +1,20 @@
 #pragma once
 
-#include <vector>
-#include <string>
+#include "Texture.h"
 
 
-class TextureCubeMap
+class TextureCubemap : public Texture
 {
 public:
-	TextureCubeMap();
-	TextureCubeMap(std::vector<std::string> faces);
-	~TextureCubeMap();
+	TextureCubemap();
+	TextureCubemap(Texture::Specification spec); // constructor for fully customizable texture cubemap
+	TextureCubemap(unsigned int width, unsigned int height);
+	~TextureCubemap();
 
-	inline unsigned int GetID() const { return m_ID; };
-	void Bind(unsigned int slot);
+	virtual void OpenGLCreate() override;
+	virtual void Bind(unsigned int textureUnit) override;
 
 private:
-	unsigned int m_ID;
+	int m_Level;
 
 };
