@@ -9,9 +9,6 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
 
     m_CheckerboardTex = new Texture("Textures/Hazel/Checkerboard.tga", false, false, GL_LINEAR);
 
-    // TextureCubemap* environmentRadianceMap = new TextureCubemap("Textures/Hazel/Environments/Arches_E_PineTree_Radiance.tga");
-    // TextureCubemap* environmentIrradianceMap = new TextureCubemap("Textures/Hazel/Environments/Arches_E_PineTree_Irradiance.tga");
-
     // Set lights
     m_Lights.Direction = { -0.5f, -0.5f, 1.0f };
     m_Lights.Radiance = { 1.0f, 1.0f, 1.0f };
@@ -27,6 +24,11 @@ void EnvironmentMap::SetEnvironment(Environment* environment)
 {
     m_Environment = environment;
     SetSkybox(environment->RadianceMap);
+}
+
+std::pair<TextureCubemap*, TextureCubemap*> EnvironmentMap::CreateEnvironmentMap(const std::string& filepath)
+{
+    return std::pair<TextureCubemap*, TextureCubemap*>();
 }
 
 void EnvironmentMap::SetSkybox(TextureCubemap* skybox)
@@ -68,9 +70,4 @@ void EnvironmentMap::SetupShaders()
     m_ShaderHazelAnimPBR->setFloat("u_RoughnessTexToggle", m_RoughnessInput.UseTexture ? 1.0f : 0.0f);
     m_ShaderHazelAnimPBR->setFloat("u_EnvMapRotation", m_EnvMapRotation);
 
-}
-
-std::pair<TextureCubemap*, TextureCubemap*> EnvironmentMap::CreateEnvironmentMap(const std::string& filepath)
-{
-	return std::pair<TextureCubemap*, TextureCubemap*>();
 }
