@@ -37,7 +37,7 @@ private:
 	TextureCubemap* m_SkyboxTexture;
 	Material* m_SkyboxMaterial;
 
-	/**** BEGIN properties from Hazel-dev EditorLayer ****/
+	/**** BEGIN properties EditorLayer ****/
 	struct AlbedoInput
 	{
 		glm::vec3 Color = { 0.972f, 0.96f, 0.915f }; // Silver, from https://docs.unrealengine.com/en-us/Engine/Rendering/Materials/PhysicallyBased
@@ -80,9 +80,9 @@ private:
 
 	glm::vec2 m_ViewportBounds[2];
 	int m_GizmoType = -1; // -1 = no gizmo
-	/**** END properties from Hazel-dev EditorLayer ****/
+	/**** END properties EditorLayer ****/
 
-	/**** BEGIN properties from Hazel-dev Scene ****/
+	/**** BEGIN properties Scene ****/
 	struct Light
 	{
 		glm::vec3 Direction;
@@ -91,6 +91,6 @@ private:
 		float Multiplier = 1.0f;
 	};
 	Light m_Lights;
-	/**** END properties from Hazel-dev Scene ****/
+	/**** END properties Scene ****/
 
 };
