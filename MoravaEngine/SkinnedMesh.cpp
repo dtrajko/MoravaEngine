@@ -19,7 +19,7 @@ SkinnedMesh::SkinnedMesh(const std::string& Filename, const std::string& Texture
 bool SkinnedMesh::LoadMesh(const std::string& Filename, const std::string& TexturesDir)
 {
     uint32_t s_MeshImportFlags =
-        // -- assimp import flags from Hazel-dev
+        // -- assimp import flags from Hazel
         //  aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
         //  aiProcess_Triangulate |             // Make sure we're triangles
         //  aiProcess_SortByPType |             // Split meshes by primitive type

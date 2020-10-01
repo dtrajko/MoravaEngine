@@ -122,7 +122,7 @@ void WindowsWindow::Init(const WindowProps& props)
 	glViewport(0, 0, m_Data.Width, m_Data.Height);
 
 	// The old MoravaEngine method of handling events
-	// not working with the new Hazel-dev GLFW callbacks
+	// not working with the new Hazel GLFW callbacks
 
 	// SetCallbacks();
 	SetCallbacksHazelDev();
@@ -364,7 +364,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-			// TODO Hazel-dev
+			// TODO
 
 			// Support for the old way of handling events
 			CursorEnterCallback(window, entered);
