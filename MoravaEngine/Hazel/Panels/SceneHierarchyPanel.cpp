@@ -8,7 +8,7 @@
 namespace Hazel
 {
 
-	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context)
+	SceneHierarchyPanel::SceneHierarchyPanel(Scene* context)
 	{
 		SetContext(context);
 	}
@@ -17,7 +17,7 @@ namespace Hazel
 	{
 	}
 
-	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
+	void SceneHierarchyPanel::SetContext(Scene* context)
 	{
 		m_Context = context;
 	}
@@ -28,7 +28,7 @@ namespace Hazel
 
 		m_Context->GetRegistry()->each([&](auto entityID)
 		{
-			Entity entity{ entityID, m_Context.get() };
+			Entity entity{ entityID, m_Context };
 			DrawEntityNode(entity);
 		});
 

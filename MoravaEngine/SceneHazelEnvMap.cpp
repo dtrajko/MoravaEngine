@@ -110,21 +110,12 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupTextures();
     SetupMaterials();
     SetupFramebuffers();
-    SetupMeshes();
-    SetupModels();
     SetupRenderFramebuffer();
 
-    //  // PBR texture inputs
-    m_SamplerSlots.insert(std::make_pair("albedo",     1)); // uniform sampler2D u_AlbedoTexture
-    m_SamplerSlots.insert(std::make_pair("normal",     2)); // uniform sampler2D u_NormalTexture
-    m_SamplerSlots.insert(std::make_pair("metalness",  3)); // uniform sampler2D u_MetalnessTexture
-    m_SamplerSlots.insert(std::make_pair("roughness",  4)); // uniform sampler2D u_RoughnessTexture
-    m_SamplerSlots.insert(std::make_pair("ao",         5)); // uniform sampler2D u_AOTexture
-    // Environment maps
-    m_SamplerSlots.insert(std::make_pair("irradiance", 6)); // uniform samplerCube u_IrradianceMap
-    m_SamplerSlots.insert(std::make_pair("prefilter",  7)); // uniform samplerCube u_PrefilterMap
-    // BRDF LUT
-    m_SamplerSlots.insert(std::make_pair("BRDF_LUT",   8)); // uniform sampler2D u_BRDFLUT
+    m_EnvironmentMap = new EnvironmentMap("Textures/HDR/birchwood_4k.hdr");
+
+    SetupMeshes();
+    SetupModels();
 
     m_LightPosition = glm::vec3(20.0f, 20.0f, 20.0f);
     m_LightColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -136,7 +127,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
 
     m_VisibleAABBs = true;
 
-    m_EnvironmentMap = new EnvironmentMap("Textures/HDR/birchwood_4k.hdr");
+    m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel((Scene*)this);
 }
 
 void SceneHazelEnvMap::SetLightManager()
@@ -192,9 +183,6 @@ void SceneHazelEnvMap::SetupShaders()
     m_ShaderBackground = new Shader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
     Log::GetLogger()->info("SceneHazelEnvMap: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
 
-    m_ShaderHybridAnimPBR = new Shader("Shaders/HybridAnimPBR.vs", "Shaders/HybridAnimPBR.fs");
-    Log::GetLogger()->info("SceneHazelEnvMap: m_ShaderHybridAnimPBR compiled [programID={0}]", m_ShaderHybridAnimPBR->GetProgramID());
-
     m_ShaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
     Log::GetLogger()->info("SceneHazelEnvMap: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
 }
@@ -229,7 +217,7 @@ void SceneHazelEnvMap::SetupMeshes()
     textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
 
     m_BaseMaterial_M1911 = new Material(textureInfoM1911, materialSpecular, materialShininess);
-    m_MeshAnimPBR_M1911 = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911);
+    m_MeshAnimPBR_M1911 = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_EnvironmentMap->GetPBRShader(), m_BaseMaterial_M1911);
     m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
 
     m_Entities["M1911"].Transform.Scale = m_Entities["M1911"].Init.Transform.Scale;
@@ -267,19 +255,12 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 
     CheckIntersection(mainWindow);
 
-    m_ShaderHybridAnimPBR->Bind();
+    m_EnvironmentMap->GetPBRShader()->Bind();
 
-    for (int i = 0; i < MAX_LIGHTS_ENV_MAP; i++)
-    {
-        std::string uniformName = std::string("lightPositions[") + std::to_string(i) + std::string("]");
-        m_ShaderHybridAnimPBR->setVec3(uniformName, m_LightPosition);
-        uniformName = std::string("lightColors[") + std::to_string(i) + std::string("]");
-        m_ShaderHybridAnimPBR->setVec3(uniformName, m_LightColor);
-    }
 
-    m_ShaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
-    m_ShaderHybridAnimPBR->setVec3("u_CameraPosition", m_Camera->GetPosition());
-    m_ShaderHybridAnimPBR->setFloat("u_TilingFactor", 1.0f);
+    m_EnvironmentMap->GetPBRShader()->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
+    m_EnvironmentMap->GetPBRShader()->setVec3("u_CameraPosition", m_Camera->GetPosition());
+    // m_EnvironmentMap->GetPBRShader()->setFloat("u_TilingFactor", 1.0f);
 
     float deltaTime = Timer::Get()->GetDeltaTime();
     m_MeshAnimPBR_M1911->OnUpdate(deltaTime, false);
@@ -569,6 +550,8 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     }
     ImGui::End();
 
+    m_SceneHierarchyPanel->OnImGuiRender();
+
     if (!m_IsViewportEnabled)
     {
         ImGui::Begin("ImGuizmo");
@@ -818,20 +801,9 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
     // END Skybox backgroundShader
 
     /**** BEGIN Animated PBR models ****/
-    m_ShaderHybridAnimPBR->Bind();
-
-    m_ShaderHybridAnimPBR->setInt("u_AlbedoTexture",    m_SamplerSlots["albedo"]);
-    m_ShaderHybridAnimPBR->setInt("u_NormalTexture",    m_SamplerSlots["normal"]);
-    m_ShaderHybridAnimPBR->setInt("u_MetalnessTexture", m_SamplerSlots["metalness"]);
-    m_ShaderHybridAnimPBR->setInt("u_RoughnessTexture", m_SamplerSlots["roughness"]);
-    m_ShaderHybridAnimPBR->setInt("u_AOTexture",        m_SamplerSlots["ao"]);
-    m_ShaderHybridAnimPBR->setInt("u_EnvRadianceTex",   m_SamplerSlots["irradiance"]);
-    m_ShaderHybridAnimPBR->setInt("u_PrefilterMap",     m_SamplerSlots["prefilter"]);
-    m_ShaderHybridAnimPBR->setInt("u_BRDFLUT",          m_SamplerSlots["BRDF_LUT"]);
-
     if (m_Entities["M1911"].Enabled)
     {
-        m_MeshAnimPBR_M1911->Render(m_SamplerSlots["albedo"], m_Entities["M1911"].Transform.Transform);
+        m_MeshAnimPBR_M1911->Render(m_EnvironmentMap->GetSamplerSlots()->at("albedo"), m_Entities["M1911"].Transform.Transform);
     }
 
     m_ShaderBasic->Bind();
