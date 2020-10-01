@@ -25,7 +25,7 @@ uniform mat4 u_ViewProjectionMatrix;
 uniform mat4 u_Transform;
 
 const int MAX_BONES = 100;
-uniform mat4 u_BoneTransforms[100];
+uniform mat4 u_BoneTransforms[MAX_BONES];
 
 out VertexOutput
 {

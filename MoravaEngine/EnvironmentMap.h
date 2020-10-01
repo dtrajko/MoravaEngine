@@ -19,11 +19,16 @@ public:
 	EnvironmentMap(const std::string& filepath);
 	~EnvironmentMap();
 
+	void Update();
+	inline Shader* GetPBRShader() { return m_ShaderHazelAnimPBR; };
+	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
+
 private:
 	void SetupShaders();
+	void UpdateUniforms();
 	Environment Load(const std::string& filepath);
 	std::pair<TextureCubemap*, TextureCubemap*> CreateEnvironmentMap(const std::string& filepath);
-	void SetEnvironment(Environment* environment);
+	void SetEnvironment(Environment environment);
 	void SetSkybox(TextureCubemap* skybox);
 
 private:
@@ -33,9 +38,11 @@ private:
 	Shader* m_ShaderSkybox;
 	Shader* m_ShaderHazelAnimPBR;
 
-	Environment* m_Environment;
+	Environment m_Environment;
 	TextureCubemap* m_SkyboxTexture;
 	Material* m_SkyboxMaterial;
+
+	std::map<std::string, unsigned int>* m_SamplerSlots;
 
 	/**** BEGIN properties EditorLayer ****/
 	struct AlbedoInput

@@ -5,6 +5,7 @@
 #include "Hazel/Renderer/MeshAnimPBR.h"
 #include "Framebuffer.h"
 #include "Texture.h"
+#include "Hazel/Panels/SceneHierarchyPanel.h"
 
 #include <map>
 #include <string>
@@ -60,7 +61,6 @@ private:
 
 	Shader* m_ShaderMain;
 	Shader* m_ShaderBackground;
-	Shader* m_ShaderHybridAnimPBR;
 	Shader* m_ShaderBasic;
 
 	Hazel::MeshAnimPBR* m_MeshAnimPBR_M1911;
@@ -99,8 +99,6 @@ private:
 
 	std::map<std::string, Entity> m_Entities;
 
-	std::map<std::string, unsigned int> m_SamplerSlots;
-
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;
 
@@ -124,5 +122,7 @@ private:
 
 	glm::vec3 m_Translation_ImGuizmo;
 	glm::mat4* m_Transform_ImGuizmo;
+
+	Hazel::SceneHierarchyPanel* m_SceneHierarchyPanel;
 
 };
