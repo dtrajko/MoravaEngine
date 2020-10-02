@@ -129,6 +129,10 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_VisibleAABBs = true;
 
     m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel((Scene*)this);
+
+    m_DisplayLineElements = true;
+    m_Grid = new Grid(20);
+    m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 }
 
 SceneHazelEnvMap::~SceneHazelEnvMap()
@@ -495,6 +499,8 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     ImGui::Begin("Settings");
     {
         ImGui::Checkbox("Display Bounding Boxes", &m_VisibleAABBs);
+        ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
+
         ImGui::Separator();
         for (auto& entity : m_Entities)
         {
@@ -954,6 +960,31 @@ void SceneHazelEnvMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
     ImGui::End();
 }
 
+void SceneHazelEnvMap::RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix)
+{
+    if (!m_DisplayLineElements) return;
+
+    m_ShaderBasic->Bind();
+    m_ShaderBasic->setMat4("projection", projectionMatrix);
+    m_ShaderBasic->setMat4("view", m_CameraController->CalculateViewMatrix());
+
+    // Draw AABBs
+    glm::mat4 AABB_Transform = Math::CreateTransform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+
+    for (auto& entity : m_Entities)
+    {
+        if (entity.second.Enabled)
+        {
+            m_ShaderBasic->setMat4("model", AABB_Transform);
+            m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+            if (m_VisibleAABBs) entity.second.AABB.Draw();
+        }
+    }
+
+    m_Grid->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
+    m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
+}
+
 void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
@@ -1000,21 +1031,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
         m_MeshAnimPBR->Render(m_EnvironmentMap->GetSamplerSlots()->at("albedo"), m_Entities["M1911"].Transform.Transform);
     }
 
-    m_ShaderBasic->Bind();
-    m_ShaderBasic->setMat4("projection", projectionMatrix);
-    m_ShaderBasic->setMat4("view", m_CameraController->CalculateViewMatrix());
-
-    glm::mat4 AABB_Transform = Math::CreateTransform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
-
-    for (auto& entity : m_Entities)
-    {
-        if (entity.second.Enabled)
-        {
-            m_ShaderBasic->setMat4("model", AABB_Transform);
-            m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-            if (m_VisibleAABBs) entity.second.AABB.Draw();
-        }
-    }
+    RenderLineElements(m_ShaderBasic, projectionMatrix);
 
     if (m_IsViewportEnabled)
     {

@@ -1,4 +1,6 @@
 #include "EnvironmentMap.h"
+#include "Hazel/Renderer/RenderPass.h"
+#include "Framebuffer.h"
 #include "Log.h"
 
 
@@ -18,6 +20,7 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     // BRDF LUT
     m_SamplerSlots->insert(std::make_pair("BRDF_LUT",   7)); // uniform sampler2D u_BRDFLUTTexture
 
+    Init();
     SetupShaders();
 
     m_Environment = Load(filepath);
@@ -54,6 +57,32 @@ void EnvironmentMap::SetSkybox(TextureCubemap* skybox)
 
 EnvironmentMap::~EnvironmentMap()
 {
+}
+
+void EnvironmentMap::Init()
+{
+    FramebufferSpecification geoFramebufferSpec;
+    geoFramebufferSpec.Width = 1280;
+    geoFramebufferSpec.Height = 720;
+    geoFramebufferSpec.attachmentFormat = AttachmentFormat::RGBA16F;
+    geoFramebufferSpec.Samples = 8;
+    geoFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+
+    Hazel::RenderPassSpecification geoRenderPassSpec;
+    geoRenderPassSpec.TargetFramebuffer = new Framebuffer(geoFramebufferSpec);
+    m_RenderPassGeo = Hazel::RenderPass::Create(geoRenderPassSpec);
+
+    FramebufferSpecification compFramebufferSpec;
+    compFramebufferSpec.Width = 1280;
+    compFramebufferSpec.Height = 720;
+    compFramebufferSpec.attachmentFormat = AttachmentFormat::RGBA8;
+    compFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+
+    Hazel::RenderPassSpecification compRenderPassSpec;
+    compRenderPassSpec.TargetFramebuffer = new Framebuffer(compFramebufferSpec);
+    m_RenderPassComposite = Hazel::RenderPass::Create(compRenderPassSpec);
+
+    m_BRDF_LUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
 }
 
 void EnvironmentMap::SetupShaders()

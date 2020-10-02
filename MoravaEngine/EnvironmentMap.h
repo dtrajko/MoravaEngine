@@ -45,6 +45,7 @@ public:
 	RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; };
 
 private:
+	void Init();
 	void SetupShaders();
 	void UpdateUniforms();
 	std::pair<TextureCubemap*, TextureCubemap*> CreateEnvironmentMap(const std::string& filepath);

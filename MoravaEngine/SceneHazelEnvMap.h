@@ -7,6 +7,8 @@
 #include "Texture.h"
 #include "Hazel/Panels/SceneHierarchyPanel.h"
 #include "Hazel/Scene/Entity.h"
+#include "Grid.h"
+#include "Pivot.h"
 
 #include <map>
 #include <string>
@@ -48,6 +50,7 @@ private:
 	void SetupRenderFramebuffer();
 	void ResizeViewport(glm::vec2 viewportPanelSize);
 	void CheckIntersection(Window* mainWindow);
+	void RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix);
 
 	// ImGui UI helpers TODO: move it somewhere else to make it reusable
 	bool Property(const std::string& name, bool& value);
@@ -141,5 +144,9 @@ private:
 	glm::mat4* m_Transform_ImGuizmo;
 
 	Hazel::SceneHierarchyPanel* m_SceneHierarchyPanel;
+
+	bool m_DisplayLineElements;
+	Grid* m_Grid;
+	Pivot* m_PivotScene;
 
 };
