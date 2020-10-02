@@ -4,6 +4,7 @@
 #include "TextureCubemap.h"
 #include "Material.h"
 #include "Hazel/Renderer/HazelTexture.h"
+#include "Hazel/Renderer/RenderPass.h"
 
 
 struct Environment
@@ -54,12 +55,33 @@ private:
 	Shader* m_ShaderEnvIrradiance;
 	Shader* m_ShaderSkybox;
 	Shader* m_ShaderHazelAnimPBR;
+	Shader* m_ShaderComposite;
 
 	Environment m_Environment;
 	TextureCubemap* m_SkyboxTexture;
 	Material* m_SkyboxMaterial;
 
 	std::map<std::string, unsigned int>* m_SamplerSlots;
+
+	/**** BEGIN properties Scene ****/
+	struct Light
+	{
+		glm::vec3 Direction;
+		glm::vec3 Radiance;
+
+		float Multiplier = 1.0f;
+	};
+	Light m_Light;
+
+	float m_SkyboxLod = 1.0f;
+	/**** END properties Scene ****/
+
+	/**** BEGIN properties SceneRenderer ****/
+	Hazel::HazelTexture2D* m_BRDF_LUT;
+
+	Hazel::RenderPass* m_RenderPassGeo;
+	Hazel::RenderPass* m_RenderPassComposite;
+	/**** BEGIN properties SceneRenderer ****/
 
 	/**** BEGIN properties EditorLayer ****/
 	struct AlbedoInput
@@ -105,18 +127,5 @@ private:
 	glm::vec2 m_ViewportBounds[2];
 	int m_GizmoType = -1; // -1 = no gizmo
 	/**** END properties EditorLayer ****/
-
-	/**** BEGIN properties Scene ****/
-	struct Light
-	{
-		glm::vec3 Direction;
-		glm::vec3 Radiance;
-
-		float Multiplier = 1.0f;
-	};
-	Light m_Light;
-
-	float m_SkyboxLod = 1.0f;
-	/**** END properties Scene ****/
 
 };
