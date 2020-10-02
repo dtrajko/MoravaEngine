@@ -12,6 +12,7 @@
 #include "MousePicker.h"
 #include "Math.h"
 #include "Input.h"
+#include "Hazel/Renderer/HazelTexture.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
@@ -130,6 +131,10 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel((Scene*)this);
 }
 
+SceneHazelEnvMap::~SceneHazelEnvMap()
+{
+}
+
 void SceneHazelEnvMap::SetLightManager()
 {
 }
@@ -216,9 +221,9 @@ void SceneHazelEnvMap::SetupMeshes()
     textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
     textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
 
-    m_BaseMaterial_M1911 = new Material(textureInfoM1911, materialSpecular, materialShininess);
-    m_MeshAnimPBR_M1911 = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_EnvironmentMap->GetPBRShader(), m_BaseMaterial_M1911);
-    m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
+    m_MeshBaseMaterial = new Material(textureInfoM1911, materialSpecular, materialShininess);
+    m_MeshAnimPBR = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_EnvironmentMap->GetPBRShader(), m_MeshBaseMaterial);
+    m_MeshAnimPBR->SetTimeMultiplier(1.0f);
 
     m_Entities["M1911"].Transform.Scale = m_Entities["M1911"].Init.Transform.Scale;
     m_Entities["M1911"].Transform.Transform = glm::mat4(1.0f);
@@ -263,7 +268,7 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
     // m_EnvironmentMap->GetPBRShader()->setFloat("u_TilingFactor", 1.0f);
 
     float deltaTime = Timer::Get()->GetDeltaTime();
-    m_MeshAnimPBR_M1911->OnUpdate(deltaTime, false);
+    m_MeshAnimPBR->OnUpdate(deltaTime, false);
 
     if (m_HDRI_Edit != m_HDRI_Edit_Prev)
     {
@@ -552,6 +557,195 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
     m_SceneHierarchyPanel->OnImGuiRender();
 
+    /**** BEGIN Environment Map Scene Settings ****/
+    ImGui::Begin("Environment Map Scene Settings");
+    {
+        {
+            if (ImGui::Button("Load Environment Map"))
+            {
+                std::string filename = Application::Get()->OpenFile("*.hdr");
+                if (filename != "")
+                    m_EnvironmentMap->SetEnvironment(m_EnvironmentMap->Load(filename));
+            }
+
+            ImGui::SliderFloat("Skybox LOD", &m_EnvironmentMap->GetSkyboxLod(), 0.0f, 11.0f);
+
+            ImGui::Columns(2);
+            ImGui::AlignTextToFramePadding();
+
+            auto& light = m_EnvironmentMap->GetLight();
+            Property("Light Direction", light.Direction);
+            Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
+            Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
+            Property("Exposure", m_Camera->GetExposure(), 0.0f, 5.0f);
+
+            Property("Radiance Prefiltering", m_EnvironmentMap->GetRadiancePrefilter());
+            Property("Env Map Rotation", m_EnvironmentMap->GetEnvMapRotation(), -360.0f, 360.0f);
+
+            ImGui::Columns(1);
+        }
+
+        ImGui::Separator();
+
+        {
+            ImGui::Text("Mesh");
+            auto mesh = m_MeshAnimPBR;
+            std::string fullpath = mesh ? mesh->GetFilePath() : "None";
+            size_t found = fullpath.find_last_of("/\\");
+            std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
+            ImGui::Text(path.c_str()); ImGui::SameLine();
+            if (ImGui::Button("...##Mesh"))
+            {
+                std::string filename = Application::Get()->OpenFile("");
+                if (filename != "")
+                {
+                    auto newMesh = new Hazel::MeshAnimPBR(filename, m_EnvironmentMap->GetPBRShader(), m_MeshBaseMaterial);
+                    m_EntityMesh->SetMesh(newMesh);
+                }
+            }
+        }
+
+        ImGui::Separator();
+
+        // Albedo
+        if (ImGui::CollapsingHeader("Albedo", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+            ImGui::Image(m_EnvironmentMap->GetAlbedoInput().TextureMap ? 
+                (void*)(uint64_t*)m_EnvironmentMap->GetAlbedoInput().TextureMap->GetID() :
+                (void*)(uint64_t*)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
+            ImGui::PopStyleVar();
+            if (ImGui::IsItemHovered())
+            {
+                if (m_EnvironmentMap->GetAlbedoInput().TextureMap)
+                {
+                    ImGui::BeginTooltip();
+                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                    ImGui::TextUnformatted(m_EnvironmentMap->GetAlbedoInput().TextureMap->GetPath().c_str());
+                    ImGui::PopTextWrapPos();
+                    ImGui::Image((void*)(uint64_t*)m_EnvironmentMap->GetAlbedoInput().TextureMap->GetID(), ImVec2(384, 384));
+                    ImGui::EndTooltip();
+                }
+                if (ImGui::IsItemClicked())
+                {
+                    std::string filename = Application::Get()->OpenFile("");
+                    if (filename != "")
+                        m_EnvironmentMap->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, m_EnvironmentMap->GetAlbedoInput().SRGB);
+                }
+            }
+            ImGui::SameLine();
+            ImGui::BeginGroup();
+            ImGui::Checkbox("Use##AlbedoMap", &m_EnvironmentMap->GetAlbedoInput().UseTexture);
+            if (ImGui::Checkbox("sRGB##AlbedoMap", &m_EnvironmentMap->GetAlbedoInput().SRGB))
+            {
+                if (m_EnvironmentMap->GetAlbedoInput().TextureMap)
+                    m_EnvironmentMap->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(m_EnvironmentMap->GetAlbedoInput().TextureMap->GetPath(), m_EnvironmentMap->GetAlbedoInput().SRGB);
+            }
+            ImGui::EndGroup();
+            ImGui::SameLine();
+            ImGui::ColorEdit3("Color##Albedo", glm::value_ptr(m_EnvironmentMap->GetAlbedoInput().Color), ImGuiColorEditFlags_NoInputs);
+        }
+    }
+    {
+        // Normals
+        if (ImGui::CollapsingHeader("Normals", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+            ImGui::Image(m_EnvironmentMap->GetNormalInput().TextureMap ?
+                (void*)(uint64_t*)m_EnvironmentMap->GetNormalInput().TextureMap->GetID() :
+                (void*)(uint64_t*)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
+            ImGui::PopStyleVar();
+            if (ImGui::IsItemHovered())
+            {
+                if (m_EnvironmentMap->GetNormalInput().TextureMap)
+                {
+                    ImGui::BeginTooltip();
+                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                    ImGui::TextUnformatted(m_EnvironmentMap->GetNormalInput().TextureMap->GetPath().c_str());
+                    ImGui::PopTextWrapPos();
+                    ImGui::Image((void*)(uint64_t*)m_EnvironmentMap->GetNormalInput().TextureMap->GetID(), ImVec2(384, 384));
+                    ImGui::EndTooltip();
+                }
+                if (ImGui::IsItemClicked())
+                {
+                    std::string filename = Application::Get()->OpenFile("");
+                    if (filename != "")
+                        m_EnvironmentMap->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                }
+            }
+            ImGui::SameLine();
+            ImGui::Checkbox("Use##NormalMap", &m_EnvironmentMap->GetNormalInput().UseTexture);
+        }
+    }
+    {
+        // Metalness
+        if (ImGui::CollapsingHeader("Metalness", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+            ImGui::Image(m_EnvironmentMap->GetMetalnessInput().TextureMap ?
+                (void*)(uint64_t*)m_EnvironmentMap->GetMetalnessInput().TextureMap->GetID() :
+                (void*)(uint64_t*)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
+            ImGui::PopStyleVar();
+            if (ImGui::IsItemHovered())
+            {
+                if (m_EnvironmentMap->GetMetalnessInput().TextureMap)
+                {
+                    ImGui::BeginTooltip();
+                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                    ImGui::TextUnformatted(m_EnvironmentMap->GetMetalnessInput().TextureMap->GetPath().c_str());
+                    ImGui::PopTextWrapPos();
+                    ImGui::Image((void*)(uint64_t*)m_EnvironmentMap->GetMetalnessInput().TextureMap->GetID(), ImVec2(384, 384));
+                    ImGui::EndTooltip();
+                }
+                if (ImGui::IsItemClicked())
+                {
+                    std::string filename = Application::Get()->OpenFile("");
+                    if (filename != "")
+                        m_EnvironmentMap->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                }
+            }
+            ImGui::SameLine();
+            ImGui::Checkbox("Use##MetalnessMap", &m_EnvironmentMap->GetMetalnessInput().UseTexture);
+            ImGui::SameLine();
+            ImGui::SliderFloat("Value##MetalnessInput", &m_EnvironmentMap->GetMetalnessInput().Value, 0.0f, 1.0f);
+        }
+    }
+    {
+        // Roughness
+        if (ImGui::CollapsingHeader("Roughness", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+            ImGui::Image(m_EnvironmentMap->GetRoughnessInput().TextureMap ?
+                (void*)(uint64_t*)m_EnvironmentMap->GetRoughnessInput().TextureMap->GetID() :
+                (void*)(uint64_t*)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
+            ImGui::PopStyleVar();
+            if (ImGui::IsItemHovered())
+            {
+                if (m_EnvironmentMap->GetRoughnessInput().TextureMap)
+                {
+                    ImGui::BeginTooltip();
+                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                    ImGui::TextUnformatted(m_EnvironmentMap->GetRoughnessInput().TextureMap->GetPath().c_str());
+                    ImGui::PopTextWrapPos();
+                    ImGui::Image((void*)(uint64_t*)m_EnvironmentMap->GetRoughnessInput().TextureMap->GetID(), ImVec2(384, 384));
+                    ImGui::EndTooltip();
+                }
+                if (ImGui::IsItemClicked())
+                {
+                    std::string filename = Application::Get()->OpenFile("");
+                    if (filename != "")
+                        m_EnvironmentMap->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                }
+            }
+            ImGui::SameLine();
+            ImGui::Checkbox("Use##RoughnessMap", &m_EnvironmentMap->GetRoughnessInput().UseTexture);
+            ImGui::SameLine();
+            ImGui::SliderFloat("Value##RoughnessInput", &m_EnvironmentMap->GetRoughnessInput().Value, 0.0f, 1.0f);
+        }
+    }
+    ImGui::End();
+    /**** END Environment Map Scene Settings ****/
+
     if (!m_IsViewportEnabled)
     {
         ImGui::Begin("ImGuizmo");
@@ -594,7 +788,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
     // ImGui::ShowMetricsWindow();
 
-    m_MeshAnimPBR_M1911->OnImGuiRender();
+    m_MeshAnimPBR->OnImGuiRender();
 }
 
 void SceneHazelEnvMap::UpdateImGuizmo(Window* mainWindow)
@@ -803,7 +997,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
     /**** BEGIN Animated PBR models ****/
     if (m_Entities["M1911"].Enabled)
     {
-        m_MeshAnimPBR_M1911->Render(m_EnvironmentMap->GetSamplerSlots()->at("albedo"), m_Entities["M1911"].Transform.Transform);
+        m_MeshAnimPBR->Render(m_EnvironmentMap->GetSamplerSlots()->at("albedo"), m_Entities["M1911"].Transform.Transform);
     }
 
     m_ShaderBasic->Bind();
@@ -857,6 +1051,91 @@ void SceneHazelEnvMap::SetupUniforms()
     /**** END m_ShaderMain ****/
 }
 
-SceneHazelEnvMap::~SceneHazelEnvMap()
+bool SceneHazelEnvMap::Property(const std::string& name, bool& value)
 {
+    ImGui::Text(name.c_str());
+    ImGui::NextColumn();
+    ImGui::PushItemWidth(-1);
+
+    std::string id = "##" + name;
+    bool result = ImGui::Checkbox(id.c_str(), &value);
+
+    ImGui::PopItemWidth();
+    ImGui::NextColumn();
+
+    return result;
+}
+
+void SceneHazelEnvMap::Property(const std::string& name, float& value, float min, float max, PropertyFlag flags)
+{
+    ImGui::Text(name.c_str());
+    ImGui::NextColumn();
+    ImGui::PushItemWidth(-1);
+
+    std::string id = "##" + name;
+    ImGui::SliderFloat(id.c_str(), &value, min, max);
+
+    ImGui::PopItemWidth();
+    ImGui::NextColumn();
+}
+
+void SceneHazelEnvMap::Property(const std::string& name, glm::vec2& value, PropertyFlag flags)
+{
+    Property(name, value, -1.0f, 1.0f, flags);
+}
+
+void SceneHazelEnvMap::Property(const std::string& name, glm::vec2& value, float min, float max, PropertyFlag flags)
+{
+    ImGui::Text(name.c_str());
+    ImGui::NextColumn();
+    ImGui::PushItemWidth(-1);
+
+    std::string id = "##" + name;
+    ImGui::SliderFloat2(id.c_str(), glm::value_ptr(value), min, max);
+
+    ImGui::PopItemWidth();
+    ImGui::NextColumn();
+}
+
+void SceneHazelEnvMap::Property(const std::string& name, glm::vec3& value, PropertyFlag flags)
+{
+    Property(name, value, -1.0f, 1.0f, flags);
+}
+
+void SceneHazelEnvMap::Property(const std::string& name, glm::vec3& value, float min, float max, PropertyFlag flags)
+{
+    ImGui::Text(name.c_str());
+    ImGui::NextColumn();
+    ImGui::PushItemWidth(-1);
+
+    std::string id = "##" + name;
+    if ((int)flags & (int)PropertyFlag::ColorProperty)
+        ImGui::ColorEdit3(id.c_str(), glm::value_ptr(value), ImGuiColorEditFlags_NoInputs);
+    else
+        ImGui::SliderFloat3(id.c_str(), glm::value_ptr(value), min, max);
+
+    ImGui::PopItemWidth();
+    ImGui::NextColumn();
+}
+
+void SceneHazelEnvMap::Property(const std::string& name, glm::vec4& value, PropertyFlag flags)
+{
+    Property(name, value, -1.0f, 1.0f, flags);
+}
+
+void SceneHazelEnvMap::Property(const std::string& name, glm::vec4& value, float min, float max, PropertyFlag flags)
+{
+
+    ImGui::Text(name.c_str());
+    ImGui::NextColumn();
+    ImGui::PushItemWidth(-1);
+
+    std::string id = "##" + name;
+    if ((int)flags & (int)PropertyFlag::ColorProperty)
+        ImGui::ColorEdit4(id.c_str(), glm::value_ptr(value), ImGuiColorEditFlags_NoInputs);
+    else
+        ImGui::SliderFloat4(id.c_str(), glm::value_ptr(value), min, max);
+
+    ImGui::PopItemWidth();
+    ImGui::NextColumn();
 }

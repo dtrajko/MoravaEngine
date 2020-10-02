@@ -6,12 +6,18 @@
 #include "Framebuffer.h"
 #include "Texture.h"
 #include "Hazel/Panels/SceneHierarchyPanel.h"
+#include "Hazel/Scene/Entity.h"
 
 #include <map>
 #include <string>
 
 
 const int MAX_LIGHTS_ENV_MAP = 4 + 4; // (4 x point lights) + (4 x spot lights)
+
+enum class PropertyFlag
+{
+	None = 0, ColorProperty = 1
+};
 
 class SceneHazelEnvMap : public Scene
 {
@@ -43,6 +49,16 @@ private:
 	void ResizeViewport(glm::vec2 viewportPanelSize);
 	void CheckIntersection(Window* mainWindow);
 
+	// ImGui UI helpers TODO: move it somewhere else to make it reusable
+	bool Property(const std::string& name, bool& value);
+	void Property(const std::string& name, float& value, float min = -1.0f, float max = 1.0f, PropertyFlag flags = PropertyFlag::None);
+	void Property(const std::string& name, glm::vec2& value, PropertyFlag flags);
+	void Property(const std::string& name, glm::vec2& value, float min = -1.0f, float max = 1.0f, PropertyFlag flags = PropertyFlag::None);
+	void Property(const std::string& name, glm::vec3& value, PropertyFlag flags);
+	void Property(const std::string& name, glm::vec3& value, float min = -1.0f, float max = 1.0f, PropertyFlag flags = PropertyFlag::None);
+	void Property(const std::string& name, glm::vec4& value, PropertyFlag flags);
+	void Property(const std::string& name, glm::vec4& value, float min = -1.0f, float max = 1.0f, PropertyFlag flags = PropertyFlag::None);
+
 private:
 	EnvironmentMap* m_EnvironmentMap;
 
@@ -63,9 +79,10 @@ private:
 	Shader* m_ShaderBackground;
 	Shader* m_ShaderBasic;
 
-	Hazel::MeshAnimPBR* m_MeshAnimPBR_M1911;
+	Hazel::MeshAnimPBR* m_MeshAnimPBR;
+	Hazel::Entity* m_EntityMesh = nullptr;
 
-	Material* m_BaseMaterial_M1911;
+	Material* m_MeshBaseMaterial;
 
 	struct Entity {
 		struct Transform {

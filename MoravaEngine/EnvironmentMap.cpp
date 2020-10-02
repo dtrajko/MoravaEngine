@@ -22,11 +22,11 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
 
     m_Environment = Load(filepath);
 
-    m_CheckerboardTex = new Texture("Textures/Hazel/Checkerboard.tga", false, false, GL_LINEAR);
+    m_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
 
     // Set lights
-    m_Lights.Direction = { -0.5f, -0.5f, 1.0f };
-    m_Lights.Radiance = { 1.0f, 1.0f, 1.0f };
+    m_Light.Direction = { -0.5f, -0.5f, 1.0f };
+    m_Light.Radiance = { 1.0f, 1.0f, 1.0f };
 }
 
 Environment EnvironmentMap::Load(const std::string& filepath)
@@ -79,8 +79,8 @@ void EnvironmentMap::UpdateUniforms()
     /**** BEGIN HazelPBR_Anim ***/
     m_ShaderHazelAnimPBR->Bind();
 
-    m_ShaderHazelAnimPBR->setVec3("lights.Direction", m_Lights.Direction);
-    m_ShaderHazelAnimPBR->setVec3("lights.Radiance", m_Lights.Radiance);
+    m_ShaderHazelAnimPBR->setVec3("lights.Direction", m_Light.Direction);
+    m_ShaderHazelAnimPBR->setVec3("lights.Radiance", m_Light.Radiance);
 
     m_ShaderHazelAnimPBR->setInt("u_AlbedoTexture", m_SamplerSlots->at("albedo"));
     m_ShaderHazelAnimPBR->setInt("u_NormalTexture", m_SamplerSlots->at("normal"));

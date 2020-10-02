@@ -3,6 +3,7 @@
 #include "Shader.h"
 #include "TextureCubemap.h"
 #include "Material.h"
+#include "Hazel/Renderer/HazelTexture.h"
 
 
 struct Environment
@@ -13,6 +14,11 @@ struct Environment
 
 class EnvironmentMap
 {
+	struct Light;
+	struct AlbedoInput;
+	struct NormalInput;
+	struct MetalnessInput;
+	struct RoughnessInput;
 
 public:
 	EnvironmentMap() = default;
@@ -20,15 +26,26 @@ public:
 	~EnvironmentMap();
 
 	void Update();
+	Environment Load(const std::string& filepath);
+	void SetEnvironment(Environment environment);
+
+	// Getters
 	inline Shader* GetPBRShader() { return m_ShaderHazelAnimPBR; };
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
+	float& GetSkyboxLod() { return m_SkyboxLod; }
+	Light& GetLight() { return m_Light; }
+	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
+	float& GetEnvMapRotation() { return m_EnvMapRotation; }
+	Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
+	AlbedoInput& GetAlbedoInput() { return m_AlbedoInput; };
+	NormalInput& GetNormalInput() { return m_NormalInput; };
+	MetalnessInput& GetMetalnessInput() { return m_MetalnessInput; };
+	RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; };
 
 private:
 	void SetupShaders();
 	void UpdateUniforms();
-	Environment Load(const std::string& filepath);
 	std::pair<TextureCubemap*, TextureCubemap*> CreateEnvironmentMap(const std::string& filepath);
-	void SetEnvironment(Environment environment);
 	void SetSkybox(TextureCubemap* skybox);
 
 private:
@@ -48,7 +65,7 @@ private:
 	struct AlbedoInput
 	{
 		glm::vec3 Color = { 0.972f, 0.96f, 0.915f }; // Silver, from https://docs.unrealengine.com/en-us/Engine/Rendering/Materials/PhysicallyBased
-		Texture* TextureMap;
+		Hazel::HazelTexture2D* TextureMap;
 		bool SRGB = true;
 		bool UseTexture = false;
 	};
@@ -56,7 +73,7 @@ private:
 
 	struct NormalInput
 	{
-		Texture* TextureMap;
+		Hazel::HazelTexture2D* TextureMap;
 		bool UseTexture = false;
 	};
 	NormalInput m_NormalInput;
@@ -64,7 +81,7 @@ private:
 	struct MetalnessInput
 	{
 		float Value = 1.0f;
-		Texture* TextureMap;
+		Hazel::HazelTexture2D* TextureMap;
 		bool UseTexture = false;
 	};
 	MetalnessInput m_MetalnessInput;
@@ -72,7 +89,7 @@ private:
 	struct RoughnessInput
 	{
 		float Value = 0.2f;
-		Texture* TextureMap;
+		Hazel::HazelTexture2D* TextureMap;
 		bool UseTexture = false;
 	};
 	RoughnessInput m_RoughnessInput;
@@ -83,7 +100,7 @@ private:
 	float m_EnvMapRotation = 0.0f;
 
 	// Editor resources
-	Texture* m_CheckerboardTex;
+	Hazel::HazelTexture2D* m_CheckerboardTexture;
 
 	glm::vec2 m_ViewportBounds[2];
 	int m_GizmoType = -1; // -1 = no gizmo
@@ -97,7 +114,9 @@ private:
 
 		float Multiplier = 1.0f;
 	};
-	Light m_Lights;
+	Light m_Light;
+
+	float m_SkyboxLod = 1.0f;
 	/**** END properties Scene ****/
 
 };
