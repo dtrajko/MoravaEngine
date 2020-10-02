@@ -54,6 +54,10 @@ namespace Hazel {
 			m_Scene->GetRegistry()->remove<T>(m_EntityHandle);
 		}
 
+		// TODO: Move to Component
+		void SetMesh(Mesh* mesh) { m_Mesh = mesh; }
+		Mesh* GetMesh() { return m_Mesh; }
+
 		operator bool() const { return m_EntityHandle != entt::null; }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; }
 		bool operator==(const Entity& other) const {
@@ -66,6 +70,8 @@ namespace Hazel {
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_Scene = nullptr;
+
+		Mesh* m_Mesh;
 
 	};
 
