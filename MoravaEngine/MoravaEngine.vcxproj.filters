@@ -440,12 +440,6 @@
     <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Hazel\Renderer\OpenGLBuffer.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Hazel\Renderer\OpenGLVertexArray.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Hazel\Renderer\Buffer.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
@@ -519,6 +513,12 @@
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLRenderPass.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLBuffer.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexArray.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1030,12 +1030,6 @@
     <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="Hazel\Renderer\OpenGLBuffer.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Hazel\Renderer\OpenGLVertexArray.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="Hazel\Core\Buffer.h">
       <Filter>Hazel\Core</Filter>
     </ClInclude>
@@ -1118,6 +1112,12 @@
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLRenderPass.h">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLBuffer.h">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLVertexArray.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClInclude>
   </ItemGroup>

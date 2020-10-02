@@ -5,6 +5,7 @@
 #include "Material.h"
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/RenderPass.h"
+#include "Mesh.h"
 
 
 struct Environment
@@ -81,7 +82,15 @@ private:
 
 	Hazel::RenderPass* m_RenderPassGeo;
 	Hazel::RenderPass* m_RenderPassComposite;
-	/**** BEGIN properties SceneRenderer ****/
+
+	struct DrawCommand
+	{
+		Mesh* Mesh;
+		Material* Material;
+		glm::mat4 Transform;
+	};
+	std::vector<DrawCommand> DrawList;
+	/**** END properties SceneRenderer ****/
 
 	/**** BEGIN properties EditorLayer ****/
 	struct AlbedoInput
