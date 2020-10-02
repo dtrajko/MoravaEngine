@@ -748,7 +748,7 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
 
         if (ImGui::CollapsingHeader("Editor Elements"))
         {
-            ImGui::Checkbox(" Display Line Elements", &m_DisplayLineElements);
+            ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
             ImGui::Checkbox("Orthographic View", &m_OrthographicViewEnabled);
             ImGui::Separator();
             int sceneObjectCount = (int)m_SceneObjects.size();

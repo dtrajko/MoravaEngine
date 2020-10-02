@@ -20,6 +20,8 @@ Framebuffer::Framebuffer()
 	m_AttachmentDepth = nullptr;
 	m_AttachmentStencil = nullptr;
 	m_AttachmentDepthAndStencil = nullptr;
+
+	Resize(m_Width, m_Height);
 }
 
 Framebuffer::Framebuffer(unsigned int width, unsigned int height)
@@ -27,6 +29,11 @@ Framebuffer::Framebuffer(unsigned int width, unsigned int height)
 {
 	m_Width = width;
 	m_Height = height;
+}
+
+Framebuffer::Framebuffer(FramebufferSpecification spec)
+	: Framebuffer(spec.Width, spec.Height)
+{
 }
 
 void Framebuffer::AddAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)

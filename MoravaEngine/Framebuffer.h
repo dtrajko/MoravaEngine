@@ -8,13 +8,14 @@
 
 struct FramebufferSpecification
 {
-	uint32_t Width, Height;
-	// FramebufferFormat Format; same as AttachmentFormat
+	uint32_t Width = 1280;
+	uint32_t Height = 720;
+	glm::vec4 ClearColor;
 
 	AttachmentType attachmentType;
 	AttachmentFormat attachmentFormat;
 
-	uint32_t Samples = 1;
+	uint32_t Samples = 1; // multisampling
 
 	// SwapChainTarget = screen buffer (i.e. no framebuffer)
 	bool SwapChainTarget = false;
@@ -25,6 +26,7 @@ class Framebuffer
 public:
 	Framebuffer();
 	Framebuffer(unsigned int width, unsigned int height);
+	Framebuffer(FramebufferSpecification spec);
 	~Framebuffer();
 
 	void Bind();
