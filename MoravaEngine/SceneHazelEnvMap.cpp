@@ -20,7 +20,7 @@
 
 SceneHazelEnvMap::SceneHazelEnvMap()
 {
-    sceneSettings.cameraPosition     = glm::vec3(0.0f, 8.0f, 20.0f);
+    sceneSettings.cameraPosition     = glm::vec3(0.0f, 1.0f, 6.0f);
     sceneSettings.cameraStartYaw     = -90.0f;
     sceneSettings.cameraStartPitch   = 0.0f;
     sceneSettings.cameraMoveSpeed    = 2.0f;
@@ -612,8 +612,8 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
             ImGui::Image(m_EnvironmentMap->GetAlbedoInput().TextureMap ? 
-                (void*)(uint64_t*)m_EnvironmentMap->GetAlbedoInput().TextureMap->GetID() :
-                (void*)(uint64_t*)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
+                (void*)(intptr_t)m_EnvironmentMap->GetAlbedoInput().TextureMap->GetID() :
+                (void*)(intptr_t)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
             ImGui::PopStyleVar();
             if (ImGui::IsItemHovered())
             {
@@ -623,7 +623,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                     ImGui::TextUnformatted(m_EnvironmentMap->GetAlbedoInput().TextureMap->GetPath().c_str());
                     ImGui::PopTextWrapPos();
-                    ImGui::Image((void*)(uint64_t*)m_EnvironmentMap->GetAlbedoInput().TextureMap->GetID(), ImVec2(384, 384));
+                    ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetAlbedoInput().TextureMap->GetID(), ImVec2(384, 384));
                     ImGui::EndTooltip();
                 }
                 if (ImGui::IsItemClicked())
@@ -652,8 +652,8 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
             ImGui::Image(m_EnvironmentMap->GetNormalInput().TextureMap ?
-                (void*)(uint64_t*)m_EnvironmentMap->GetNormalInput().TextureMap->GetID() :
-                (void*)(uint64_t*)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
+                (void*)(intptr_t)m_EnvironmentMap->GetNormalInput().TextureMap->GetID() :
+                (void*)(intptr_t)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
             ImGui::PopStyleVar();
             if (ImGui::IsItemHovered())
             {
@@ -663,7 +663,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                     ImGui::TextUnformatted(m_EnvironmentMap->GetNormalInput().TextureMap->GetPath().c_str());
                     ImGui::PopTextWrapPos();
-                    ImGui::Image((void*)(uint64_t*)m_EnvironmentMap->GetNormalInput().TextureMap->GetID(), ImVec2(384, 384));
+                    ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetNormalInput().TextureMap->GetID(), ImVec2(384, 384));
                     ImGui::EndTooltip();
                 }
                 if (ImGui::IsItemClicked())
@@ -683,8 +683,8 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
             ImGui::Image(m_EnvironmentMap->GetMetalnessInput().TextureMap ?
-                (void*)(uint64_t*)m_EnvironmentMap->GetMetalnessInput().TextureMap->GetID() :
-                (void*)(uint64_t*)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
+                (void*)(intptr_t)m_EnvironmentMap->GetMetalnessInput().TextureMap->GetID() :
+                (void*)(intptr_t)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
             ImGui::PopStyleVar();
             if (ImGui::IsItemHovered())
             {
@@ -694,7 +694,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                     ImGui::TextUnformatted(m_EnvironmentMap->GetMetalnessInput().TextureMap->GetPath().c_str());
                     ImGui::PopTextWrapPos();
-                    ImGui::Image((void*)(uint64_t*)m_EnvironmentMap->GetMetalnessInput().TextureMap->GetID(), ImVec2(384, 384));
+                    ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetMetalnessInput().TextureMap->GetID(), ImVec2(384, 384));
                     ImGui::EndTooltip();
                 }
                 if (ImGui::IsItemClicked())
@@ -716,8 +716,8 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
             ImGui::Image(m_EnvironmentMap->GetRoughnessInput().TextureMap ?
-                (void*)(uint64_t*)m_EnvironmentMap->GetRoughnessInput().TextureMap->GetID() :
-                (void*)(uint64_t*)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
+                (void*)(intptr_t)m_EnvironmentMap->GetRoughnessInput().TextureMap->GetID() :
+                (void*)(intptr_t)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
             ImGui::PopStyleVar();
             if (ImGui::IsItemHovered())
             {
@@ -727,7 +727,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                     ImGui::TextUnformatted(m_EnvironmentMap->GetRoughnessInput().TextureMap->GetPath().c_str());
                     ImGui::PopTextWrapPos();
-                    ImGui::Image((void*)(uint64_t*)m_EnvironmentMap->GetRoughnessInput().TextureMap->GetID(), ImVec2(384, 384));
+                    ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetRoughnessInput().TextureMap->GetID(), ImVec2(384, 384));
                     ImGui::EndTooltip();
                 }
                 if (ImGui::IsItemClicked())

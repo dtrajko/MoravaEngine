@@ -1,5 +1,4 @@
 #include "OpenGLBuffer.h"
-#include "../../Log.h"
 
 #include <gl/glew.h>
 
@@ -14,8 +13,8 @@ namespace Hazel {
 	{
 		switch (usage)
 		{
-			case VertexBufferUsage::Static:    return GL_STATIC_DRAW;
-			case VertexBufferUsage::Dynamic:   return GL_DYNAMIC_DRAW;
+			case VertexBufferUsage::Static:  return GL_STATIC_DRAW;
+			case VertexBufferUsage::Dynamic: return GL_DYNAMIC_DRAW;
 		}
 		Log::GetLogger()->error("Unknown vertex buffer usage");
 		return 0;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Buffer.h"
+#include "../../Renderer/Buffer.h"
 #include "OpenGLBuffer.h"
 
 #include <memory>

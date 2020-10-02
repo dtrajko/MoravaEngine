@@ -4,8 +4,8 @@
 #include <glm/glm.hpp>
 
 #include "../Core/Base.h"
-#include "OpenGLBuffer.h"
-#include "OpenGLVertexArray.h"
+#include "../Platform/OpenGL/OpenGLBuffer.h"
+#include "../Platform/OpenGL/OpenGLVertexArray.h"
 
 #include "../../Log.h"
 #include "../../Shader.h"

@@ -1,6 +1,5 @@
 #include "OpenGLVertexArray.h"
-#include "Buffer.h"
-#include "../../Log.h"
+#include "../../../Log.h"
 
 #include <GL/glew.h>
 

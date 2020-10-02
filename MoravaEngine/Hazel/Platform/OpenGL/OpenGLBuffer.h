@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../Log.h"
-#include "../Core/Buffer.h"
-#include "Buffer.h"
+#include "../../Core/Buffer.h"
+#include "../../Renderer/Buffer.h"
+#include "../../../Log.h"
 
 #include <stdint.h>
 #include <initializer_list>
