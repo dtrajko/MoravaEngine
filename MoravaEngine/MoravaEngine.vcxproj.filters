@@ -515,6 +515,12 @@
     <ClCompile Include="Hazel\Renderer\HazelTexture.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Renderer\RenderPass.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLRenderPass.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1107,6 +1113,12 @@
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\HazelTexture.h">
       <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\RenderPass.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLRenderPass.h">
+      <Filter>Hazel\Platform\OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
