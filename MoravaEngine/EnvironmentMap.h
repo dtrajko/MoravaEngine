@@ -6,21 +6,18 @@
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/RenderPass.h"
 #include "Mesh.h"
+#include "Hazel/Scene/Entity.h"
 
-
-struct Environment
-{
-	TextureCubemap* RadianceMap;
-	TextureCubemap* IrradianceMap;
-};
 
 class EnvironmentMap
 {
-	struct Light;
+	struct LightStruct;
 	struct AlbedoInput;
 	struct NormalInput;
 	struct MetalnessInput;
 	struct RoughnessInput;
+	struct Options;
+	struct Environment;
 
 public:
 	EnvironmentMap() = default;
@@ -35,7 +32,7 @@ public:
 	inline Shader* GetPBRShader() { return m_ShaderHazelAnimPBR; };
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
 	float& GetSkyboxLod() { return m_SkyboxLod; }
-	Light& GetLight() { return m_Light; }
+	LightStruct& GetLight() { return s_Data.SceneData.ActiveLight; }
 	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
 	float& GetEnvMapRotation() { return m_EnvMapRotation; }
 	Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
@@ -45,13 +42,79 @@ public:
 	RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; };
 
 private:
-	void Init();
 	void SetupShaders();
 	void UpdateUniforms();
-	std::pair<TextureCubemap*, TextureCubemap*> CreateEnvironmentMap(const std::string& filepath);
-	void SetSkybox(TextureCubemap* skybox);
+	std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> CreateEnvironmentMap(const std::string& filepath);
+	void SetSkybox(Hazel::HazelTextureCube* skybox);
+
+	// SceneRenderer
+	void Init();
+	void SetViewportSize(uint32_t width, uint32_t height);
+	void BeginScene();
+	void EndScene();
+	void SubmitEntity(Hazel::Entity* entity);
+	Hazel::RenderPass* GetFinalRenderPass();
+	Hazel::HazelTexture2D* GetFinalColorBuffer();
+	uint32_t GetFinalColorBufferID();
+	Options& GetOptions();
+	void FlushDrawList();
+	void GeometryPass();
+	void CompositePass();
 
 private:
+	struct Environment
+	{
+		Hazel::HazelTextureCube* RadianceMap;
+		Hazel::HazelTextureCube* IrradianceMap;
+	};
+
+	struct LightStruct
+	{
+		glm::vec3 Direction;
+		glm::vec3 Radiance;
+
+		float Multiplier = 1.0f;
+	};
+
+	struct Options
+	{
+		bool ShowGrid = true;
+		bool ShowBoundingBoxes = false;
+	};
+
+	struct Data
+	{
+		const Scene* ActiveScene = nullptr;
+		struct SceneInfo
+		{
+			Camera SceneCamera;
+
+			// Resources
+			Material* SkyboxMaterial;
+			Environment SceneEnvironment;
+			LightStruct ActiveLight;
+		} SceneData;
+
+		Hazel::HazelTexture2D* BRDFLUT;
+
+		Hazel::RenderPass* RenderPassGeo;
+		Hazel::RenderPass* RenderPassComposite;
+
+		struct DrawCommand
+		{
+			Mesh* Mesh;
+			Material* Material;
+			glm::mat4 Transform;
+		};
+		std::vector<DrawCommand> DrawList;
+
+		// Grid
+		Material* GridMaterial;
+
+		Options Options;
+	};
+	static Data s_Data;
+
 	Shader* m_ShaderEquirectangularConversion;
 	Shader* m_ShaderEnvFiltering;
 	Shader* m_ShaderEnvIrradiance;
@@ -59,39 +122,13 @@ private:
 	Shader* m_ShaderHazelAnimPBR;
 	Shader* m_ShaderComposite;
 
-	Environment m_Environment;
-	TextureCubemap* m_SkyboxTexture;
-	Material* m_SkyboxMaterial;
+	Hazel::HazelTextureCube* m_SkyboxTexture;
 
 	std::map<std::string, unsigned int>* m_SamplerSlots;
 
 	/**** BEGIN properties Scene ****/
-	struct Light
-	{
-		glm::vec3 Direction;
-		glm::vec3 Radiance;
-
-		float Multiplier = 1.0f;
-	};
-	Light m_Light;
-
 	float m_SkyboxLod = 1.0f;
 	/**** END properties Scene ****/
-
-	/**** BEGIN properties SceneRenderer ****/
-	Hazel::HazelTexture2D* m_BRDF_LUT;
-
-	Hazel::RenderPass* m_RenderPassGeo;
-	Hazel::RenderPass* m_RenderPassComposite;
-
-	struct DrawCommand
-	{
-		Mesh* Mesh;
-		Material* Material;
-		glm::mat4 Transform;
-	};
-	std::vector<DrawCommand> DrawList;
-	/**** END properties SceneRenderer ****/
 
 	/**** BEGIN properties EditorLayer ****/
 	struct AlbedoInput

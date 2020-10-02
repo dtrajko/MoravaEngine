@@ -4,6 +4,8 @@
 #include "Log.h"
 
 
+EnvironmentMap::Data EnvironmentMap::s_Data;
+
 EnvironmentMap::EnvironmentMap(const std::string& filepath)
 {
     m_SamplerSlots = new std::map<std::string, unsigned int>();
@@ -23,16 +25,16 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     Init();
     SetupShaders();
 
-    m_Environment = Load(filepath);
+    s_Data.SceneData.SceneEnvironment = Load(filepath);
 
     m_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
 
     // Set lights
-    m_Light.Direction = { -0.5f, -0.5f, 1.0f };
-    m_Light.Radiance = { 1.0f, 1.0f, 1.0f };
+    s_Data.SceneData.ActiveLight.Direction = { -0.5f, -0.5f, 1.0f };
+    s_Data.SceneData.ActiveLight.Radiance = { 1.0f, 1.0f, 1.0f };
 }
 
-Environment EnvironmentMap::Load(const std::string& filepath)
+EnvironmentMap::Environment EnvironmentMap::Load(const std::string& filepath)
 {
     auto [radiance, irradiance] = CreateEnvironmentMap(filepath);
     return { radiance, irradiance };
@@ -40,16 +42,16 @@ Environment EnvironmentMap::Load(const std::string& filepath)
 
 void EnvironmentMap::SetEnvironment(Environment environment)
 {
-    m_Environment = environment;
-    SetSkybox(environment.RadianceMap);
+    s_Data.SceneData.SceneEnvironment = environment;
+    SetSkybox(s_Data.SceneData.SceneEnvironment.RadianceMap);
 }
 
-std::pair<TextureCubemap*, TextureCubemap*> EnvironmentMap::CreateEnvironmentMap(const std::string& filepath)
+std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> EnvironmentMap::CreateEnvironmentMap(const std::string& filepath)
 {
-    return std::pair<TextureCubemap*, TextureCubemap*>();
+    return std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*>();
 }
 
-void EnvironmentMap::SetSkybox(TextureCubemap* skybox)
+void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
 {
     m_SkyboxTexture = skybox;
     m_ShaderSkybox->setInt("u_Texture", skybox->GetID());
@@ -70,7 +72,7 @@ void EnvironmentMap::Init()
 
     Hazel::RenderPassSpecification geoRenderPassSpec;
     geoRenderPassSpec.TargetFramebuffer = new Framebuffer(geoFramebufferSpec);
-    m_RenderPassGeo = Hazel::RenderPass::Create(geoRenderPassSpec);
+    s_Data.RenderPassGeo = Hazel::RenderPass::Create(geoRenderPassSpec);
 
     FramebufferSpecification compFramebufferSpec;
     compFramebufferSpec.Width = 1280;
@@ -80,9 +82,60 @@ void EnvironmentMap::Init()
 
     Hazel::RenderPassSpecification compRenderPassSpec;
     compRenderPassSpec.TargetFramebuffer = new Framebuffer(compFramebufferSpec);
-    m_RenderPassComposite = Hazel::RenderPass::Create(compRenderPassSpec);
+    s_Data.RenderPassComposite = Hazel::RenderPass::Create(compRenderPassSpec);
 
-    m_BRDF_LUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
+    s_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
+}
+
+void EnvironmentMap::SetViewportSize(uint32_t width, uint32_t height)
+{
+    s_Data.RenderPassGeo->GetSpecification().TargetFramebuffer->Resize(width, height);
+    s_Data.RenderPassComposite->GetSpecification().TargetFramebuffer->Resize(width, height);
+}
+
+void EnvironmentMap::BeginScene()
+{
+}
+
+void EnvironmentMap::EndScene()
+{
+    FlushDrawList();
+}
+
+void EnvironmentMap::SubmitEntity(Hazel::Entity* entity)
+{
+}
+
+Hazel::RenderPass* EnvironmentMap::GetFinalRenderPass()
+{
+    return nullptr;
+}
+
+Hazel::HazelTexture2D* EnvironmentMap::GetFinalColorBuffer()
+{
+    return nullptr;
+}
+
+uint32_t EnvironmentMap::GetFinalColorBufferID()
+{
+    return uint32_t();
+}
+
+EnvironmentMap::Options& EnvironmentMap::GetOptions()
+{
+    return s_Data.Options;
+}
+
+void EnvironmentMap::FlushDrawList()
+{
+}
+
+void EnvironmentMap::GeometryPass()
+{
+}
+
+void EnvironmentMap::CompositePass()
+{
 }
 
 void EnvironmentMap::SetupShaders()
@@ -111,8 +164,8 @@ void EnvironmentMap::UpdateUniforms()
     /**** BEGIN HazelPBR_Anim ***/
     m_ShaderHazelAnimPBR->Bind();
 
-    m_ShaderHazelAnimPBR->setVec3("lights.Direction", m_Light.Direction);
-    m_ShaderHazelAnimPBR->setVec3("lights.Radiance", m_Light.Radiance);
+    m_ShaderHazelAnimPBR->setVec3("lights.Direction", s_Data.SceneData.ActiveLight.Direction);
+    m_ShaderHazelAnimPBR->setVec3("lights.Radiance", s_Data.SceneData.ActiveLight.Radiance);
 
     m_ShaderHazelAnimPBR->setInt("u_AlbedoTexture", m_SamplerSlots->at("albedo"));
     m_ShaderHazelAnimPBR->setInt("u_NormalTexture", m_SamplerSlots->at("normal"));
