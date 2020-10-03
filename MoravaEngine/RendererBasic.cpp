@@ -44,10 +44,15 @@ void RendererBasic::RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window*
 	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 
 	// Clear the window
-	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	Clear(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
 
 	// Rendering here
+}
+
+void RendererBasic::Clear(float r, float g, float b, float a)
+{
+	glClearColor(r, g, b, a);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void RendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)

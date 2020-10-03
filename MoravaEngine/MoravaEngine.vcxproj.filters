@@ -521,6 +521,9 @@
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexArray.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Renderer\VertexArray.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1119,6 +1122,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLVertexArray.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\VertexArray.h">
+      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

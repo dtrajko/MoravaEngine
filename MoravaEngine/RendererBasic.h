@@ -34,8 +34,9 @@ public:
 	static std::map<std::string, Shader*>& GetShaders() { return s_Shaders; };
 	static std::map<std::string, int>& GetUniforms() { return s_Uniforms; };
 
-	void RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow);
-	void Cleanup();
+	static void RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow);
+	static void Cleanup();
+	static void Clear(float r, float g, float b, float a);
 
 protected:
 	static void UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene);

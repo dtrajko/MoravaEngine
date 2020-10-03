@@ -108,4 +108,38 @@ namespace Hazel {
 		None = 0, Static = 1, Dynamic = 2
 	};
 
+	class VertexBuffer
+	{
+	public:
+		virtual ~VertexBuffer() {}
+
+		virtual void SetData(void* buffer, uint32_t size, uint32_t offset = 0) = 0;
+		virtual void Bind() const = 0;
+
+		virtual const BufferLayout& GetLayout() const = 0;
+		virtual void SetLayout(const BufferLayout& layout) = 0;
+
+		virtual unsigned int GetSize() const = 0;
+		virtual uint32_t GetID() const = 0;
+
+		static VertexBuffer* Create(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
+		static VertexBuffer* Create(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
+	};
+
+	class IndexBuffer
+	{
+	public:
+		virtual ~IndexBuffer() {}
+
+		virtual void SetData(void* buffer, uint32_t size, uint32_t offset = 0) = 0;
+		virtual void Bind() const = 0;
+
+		virtual uint32_t GetCount() const = 0;
+
+		virtual unsigned int GetSize() const = 0;
+		virtual uint32_t GetID() const = 0;
+
+		static IndexBuffer* Create(void* data, uint32_t size = 0);
+	};
+
 }
