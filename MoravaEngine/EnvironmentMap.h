@@ -7,6 +7,8 @@
 #include "Hazel/Renderer/RenderPass.h"
 #include "Mesh.h"
 #include "Hazel/Scene/Entity.h"
+#include "Hazel/Renderer/RenderCommandQueue.h"
+#include "Hazel/Renderer/VertexArray.h"
 
 
 class EnvironmentMap
@@ -18,6 +20,7 @@ class EnvironmentMap
 	struct RoughnessInput;
 	struct Options;
 	struct Environment;
+	enum class PrimitiveType;
 
 public:
 	EnvironmentMap() = default;
@@ -50,16 +53,22 @@ private:
 	// SceneRenderer
 	void Init();
 	void SetViewportSize(uint32_t width, uint32_t height);
-	void BeginScene();
+	void BeginScene(const Scene* scene);
 	void EndScene();
 	void SubmitEntity(Hazel::Entity* entity);
 	Hazel::RenderPass* GetFinalRenderPass();
-	Hazel::HazelTexture2D* GetFinalColorBuffer();
+	FramebufferTexture* GetFinalColorBuffer();
 	uint32_t GetFinalColorBufferID();
 	Options& GetOptions();
 	void FlushDrawList();
 	void GeometryPass();
 	void CompositePass();
+
+	// Renderer
+	void BeginRenderPass(Hazel::RenderPass* renderPass, bool clear);
+	void SubmitFullscreenQuad(Material* material);
+	void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest);
+	void EndRenderPass();
 
 private:
 	struct Environment
@@ -82,12 +91,17 @@ private:
 		bool ShowBoundingBoxes = false;
 	};
 
+	enum class PrimitiveType
+	{
+		None = 0, Triangles, Lines
+	};
+
 	struct Data
 	{
 		const Scene* ActiveScene = nullptr;
 		struct SceneInfo
 		{
-			Camera SceneCamera;
+			Camera* SceneCamera;
 
 			// Resources
 			Material* SkyboxMaterial;
@@ -97,8 +111,9 @@ private:
 
 		Hazel::HazelTexture2D* BRDFLUT;
 
-		Hazel::RenderPass* RenderPassGeo;
-		Hazel::RenderPass* RenderPassComposite;
+		Hazel::RenderPass* GeoPass;
+		Hazel::RenderPass* CompositePass;
+		Hazel::RenderPass* ActiveRenderPass;
 
 		struct DrawCommand
 		{
@@ -112,6 +127,10 @@ private:
 		Material* GridMaterial;
 
 		Options Options;
+
+		// Renderer data
+		Hazel::RenderCommandQueue* m_CommandQueue;
+		Hazel::VertexArray* m_FullscreenQuadVertexArray;
 	};
 	static Data s_Data;
 

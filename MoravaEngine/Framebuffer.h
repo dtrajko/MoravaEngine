@@ -50,6 +50,8 @@ public:
 	Attachment* GetAttachmentStencil();
 	Attachment* GetAttachmentDepthAndStencil();
 
+	std::vector<FramebufferSpecification>& GetSpecification() { return m_AttachmentSpecs; };
+
 	inline const uint32_t GetWidth() const { return m_Width; };
 	inline const uint32_t GetHeight() const { return m_Height; };
 

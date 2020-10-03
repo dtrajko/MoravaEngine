@@ -2,6 +2,8 @@
 
 #include "../../Scene.h"
 #include "../../Log.h"
+#include "../../Mesh.h"
+#include "../../Material.h"
 
 #include "entt.hpp"
 
@@ -13,7 +15,16 @@ namespace Hazel {
 	public:
 		Entity() = default;
 		Entity(entt::entity handle, Scene* scene);
+		Entity(const std::string& name);
 		Entity(const Entity& other) = default;
+
+		void SetMaterial(Material* material) { m_Material = material; }
+		Material* GetMaterial() { return m_Material; }
+
+		const glm::mat4& GetTransform() const { return m_Transform; }
+		glm::mat4& Transform() { return m_Transform; }
+
+		const std::string& GetName() const { return m_Name; }
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
@@ -71,7 +82,11 @@ namespace Hazel {
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_Scene = nullptr;
 
+		std::string m_Name;
+		glm::mat4 m_Transform;
+
 		Mesh* m_Mesh;
+		Material* m_Material;
 
 	};
 
