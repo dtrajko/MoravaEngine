@@ -352,13 +352,15 @@ void EnvironmentMap::GeometryPass()
 
     // Skybox
     m_ShaderSkybox->Bind();
+    m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
     m_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProjection));
     SubmitFullscreenQuad(s_Data.SceneData.SkyboxMaterial);
 
     // Render entities
     for (auto& dc : s_Data.DrawList)
     {
-        auto baseMaterial = dc.Mesh->GetBaseMaterial();
+        //  auto baseMaterial = dc.Mesh->GetBaseMaterial();
+        auto baseMaterial = dc.Material;
         m_ShaderHazelAnimPBR->setMat4("u_ViewProjectionMatrix", viewProjection);
         m_ShaderHazelAnimPBR->setVec3("u_CameraPosition", s_Data.SceneData.SceneCamera->GetPosition());
 
@@ -411,18 +413,19 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
 
     UpdateUniforms();
 
-    m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
-
     // Update MeshAnimPBR List
     for (auto& dc : s_Data.DrawList)
     {
         dc.Mesh->OnUpdate(timestep, false);
     }
+}
 
+void EnvironmentMap::Render()
+{
     BeginScene(s_Data.ActiveScene);
 
     // Render MeshAnimPBR meshes (later entt entities)
-    uint32_t samplerSlot = 0;
+    uint32_t samplerSlot = m_SamplerSlots->at("albedo");
     glm::mat4 entityTransform = glm::mat4(1.0f);
     for (auto& dc : s_Data.DrawList)
     {
@@ -465,7 +468,7 @@ void EnvironmentMap::SubmitFullscreenQuad(Material* material)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
     glBindVertexArray(0);                     // Unbind VAO
 
-    Log::GetLogger()->debug("END EnvironmentMap::SubmitFullscreenQuad");
+    // Log::GetLogger()->debug("END EnvironmentMap::SubmitFullscreenQuad");
 }
 
 void EnvironmentMap::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)

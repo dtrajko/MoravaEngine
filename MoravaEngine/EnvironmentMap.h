@@ -28,16 +28,16 @@ public:
 	EnvironmentMap(const std::string& filepath);
 	~EnvironmentMap();
 
-	void Update(Scene* scene, float timestep);
 	Environment Load(const std::string& filepath);
 	void SetEnvironment(Environment environment);
-
-	inline static Data GetContextData() { return s_Data; }
+	void Update(Scene* scene, float timestep);
+	void Render();
 
 	// Setters
 	void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
 
 	// Getters
+	inline static Data GetContextData() { return s_Data; }
 	inline Shader* GetPBRShader() { return m_ShaderHazelAnimPBR; }
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
 	float& GetSkyboxLOD() { return m_SkyboxLOD; }
