@@ -28,7 +28,6 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     m_SamplerSlots->insert(std::make_pair("BRDF_LUT",   7)); // uniform sampler2D u_BRDFLUTTexture
 
     Init();
-    SetupShaders();
 
     s_Data.SceneData.SceneEnvironment = Load(filepath);
 
@@ -37,6 +36,31 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     // Set lights
     s_Data.SceneData.ActiveLight.Direction = { -0.5f, -0.5f, 1.0f };
     s_Data.SceneData.ActiveLight.Radiance = { 1.0f, 1.0f, 1.0f };
+}
+
+void EnvironmentMap::SetupContextData()
+{
+    Log::GetLogger()->info("-- BEGIN EnvironmentMap loading MeshAnimPBR M1911 --");
+    {
+        // M1911
+        TextureInfo textureInfoM1911 = {};
+        textureInfoM1911.albedo = "Models/m1911/m1911_color.png";
+        textureInfoM1911.normal = "Models/m1911/m1911_normal.png";
+        textureInfoM1911.metallic = "Models/m1911/m1911_metalness.png";
+        textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
+        textureInfoM1911.ao = "Textures/PBR/silver/ao.png";
+
+        Data::DrawCommand drawCommand;
+        drawCommand.Material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
+        drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHazelAnimPBR, drawCommand.Material);
+        drawCommand.Mesh->SetTimeMultiplier(1.0f);
+        drawCommand.Transform = glm::mat4(1.0f);
+
+        s_Data.DrawList.push_back(drawCommand);
+    }
+    Log::GetLogger()->info("-- END EnvironmentMap loading MeshAnimPBR M1911 --");
+
+    SetupFullscreenQuad();
 }
 
 void EnvironmentMap::SetupFullscreenQuad()
@@ -69,22 +93,22 @@ void EnvironmentMap::SetupFullscreenQuad()
 
     uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 
-    glCreateVertexArrays(1, &s_Data.m_FullscreenQuadVAO);
+    glCreateVertexArrays(1, &s_Data.FullscreenQuadVAO);
 
     // setup plane VAO
-    glGenBuffers(1, &s_Data.m_FullscreenQuadIBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data.m_FullscreenQuadIBO);
+    glGenBuffers(1, &s_Data.FullscreenQuadIBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data.FullscreenQuadIBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * 6, &indices[0], GL_STATIC_DRAW);
 
-    glGenVertexArrays(1, &s_Data.m_FullscreenQuadVAO);
-    glGenBuffers(1, &s_Data.m_FullscreenQuadVBO);
+    glGenVertexArrays(1, &s_Data.FullscreenQuadVAO);
+    glGenBuffers(1, &s_Data.FullscreenQuadVBO);
 
     // fill buffer
-    glBindBuffer(GL_ARRAY_BUFFER, s_Data.m_FullscreenQuadVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, s_Data.FullscreenQuadVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(QuadVertex) * 4, &data[0], GL_STATIC_DRAW);
 
     // link vertex attributes
-    glBindVertexArray(s_Data.m_FullscreenQuadVAO);
+    glBindVertexArray(s_Data.FullscreenQuadVAO);
 
     // layout (location = 0) in vec3 aPos;
     glEnableVertexAttribArray(0);
@@ -167,6 +191,8 @@ void EnvironmentMap::SetEnvironment(Environment environment)
 
 void EnvironmentMap::Init()
 {
+    SetupShaders();
+
     FramebufferSpecification geoFramebufferSpec;
     geoFramebufferSpec.Width = 1280;
     geoFramebufferSpec.Height = 720;
@@ -198,7 +224,7 @@ void EnvironmentMap::Init()
 
     s_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
 
-    SetupFullscreenQuad();
+    SetupContextData();
 }
 
 void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
@@ -433,11 +459,13 @@ void EnvironmentMap::SubmitFullscreenQuad(Material* material)
         depthTest = material->GetFlag(MaterialFlag::DepthTest);
     }
 
-    glBindVertexArray(s_Data.m_FullscreenQuadVAO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data.m_FullscreenQuadIBO);
+    glBindVertexArray(s_Data.FullscreenQuadVAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data.FullscreenQuadIBO);
     DrawIndexed(6, PrimitiveType::Triangles, depthTest);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
     glBindVertexArray(0);                     // Unbind VAO
+
+    Log::GetLogger()->debug("END EnvironmentMap::SubmitFullscreenQuad");
 }
 
 void EnvironmentMap::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)

@@ -38,6 +38,7 @@ public:
 
 private:
 	virtual void SetLightManager() override;
+	virtual void SetWaterManager(int width, int height) override;
 	virtual void SetupTextures() override;
 	virtual void SetupTextureSlots() override;
 	virtual void SetupMaterials() override;
@@ -65,9 +66,6 @@ private:
 private:
 	EnvironmentMap* m_EnvironmentMap;
 
-	int m_ImGuiMainViewportX;
-	int m_ImGuiMainViewportY;
-
 	struct Viewport
 	{
 		int X;
@@ -76,7 +74,26 @@ private:
 		int Height;
 		int MouseX;
 		int MouseY;
-	} m_ImGuiViewport;
+	};
+
+	Viewport m_ImGuiViewport;
+	Viewport m_ImGuiViewportEnvMap;
+
+	// viewports
+	// -- viewport main
+	int m_ImGuiViewportMainX;
+	int m_ImGuiViewportMainY;
+	bool m_IsViewportEnabled;
+	bool m_ViewportFocused;
+	bool m_ViewportHovered;
+	glm::vec2 m_ViewportMainSize;
+	// -- viewport environment map
+	int m_ImGuiViewportEnvMapX;
+	int m_ImGuiViewportEnvMapY;
+	bool m_IsViewportEnvMapEnabled;
+	bool m_ViewportEnvMapFocused;
+	bool m_ViewportEnvMapHovered;
+	glm::vec2 m_ViewportEnvMapSize;
 
 	Shader* m_ShaderMain;
 	Shader* m_ShaderBackground;
@@ -125,11 +142,6 @@ private:
 	glm::vec3 m_LightPosition;
 	glm::vec3 m_LightColor;
 
-	// viewport
-	bool m_IsViewportEnabled;
-	bool m_ViewportFocused;
-	bool m_ViewportHovered;
-	glm::vec2 m_ViewportSize;
 	Framebuffer* m_RenderFramebuffer;
 	float m_CurrentTimestamp;
 	EventCooldown m_ResizeViewport;

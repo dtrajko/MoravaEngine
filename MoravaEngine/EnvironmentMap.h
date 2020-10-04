@@ -13,6 +13,7 @@
 
 class EnvironmentMap
 {
+	struct Data;
 	struct LightStruct;
 	struct AlbedoInput;
 	struct NormalInput;
@@ -31,6 +32,8 @@ public:
 	Environment Load(const std::string& filepath);
 	void SetEnvironment(Environment environment);
 
+	inline static Data GetContextData() { return s_Data; }
+
 	// Setters
 	void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
 
@@ -48,6 +51,7 @@ public:
 	RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
 
 private:
+	void SetupContextData();
 	void SetupFullscreenQuad();
 	void SetupShaders();
 	void UpdateUniforms();
@@ -123,7 +127,7 @@ private:
 		struct DrawCommand
 		{
 			Hazel::MeshAnimPBR* Mesh;
-			Hazel::HazelMaterial* Material;
+			Material* Material;
 			glm::mat4 Transform;
 		};
 		std::vector<DrawCommand> DrawList;
@@ -136,9 +140,9 @@ private:
 		// Renderer data
 		Hazel::RenderCommandQueue* m_CommandQueue;
 
-		unsigned int m_FullscreenQuadVAO;
-		unsigned int m_FullscreenQuadVBO;
-		unsigned int m_FullscreenQuadIBO;
+		unsigned int FullscreenQuadVAO;
+		unsigned int FullscreenQuadVBO;
+		unsigned int FullscreenQuadIBO;
 
 	};
 	static Data s_Data;
@@ -202,5 +206,8 @@ private:
 	glm::vec2 m_ViewportBounds[2];
 	int m_GizmoType = -1; // -1 = no gizmo
 	/**** END properties EditorLayer ****/
+
+	float m_MaterialSpecular = 0.0f;
+	float m_MaterialShininess = 0.0f;
 
 };
