@@ -114,6 +114,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupRenderFramebuffer();
 
     m_EnvironmentMap = new EnvironmentMap("Textures/HDR/birchwood_4k.hdr");
+    m_EnvironmentMap->SetSkyboxLOD(0.0f);
 
     SetupMeshes();
     SetupModels();
@@ -121,7 +122,6 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_LightPosition = glm::vec3(20.0f, 20.0f, 20.0f);
     m_LightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
-    m_EnvironmentMap->SetSkyboxLOD(0.0f);
 
     m_Translation_ImGuizmo = glm::vec3(0.0f);
     m_Transform_ImGuizmo = nullptr;
@@ -250,6 +250,8 @@ void SceneHazelEnvMap::SetupFramebuffers()
 
 void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 {
+    m_EnvironmentMap->Update(this, timestep);
+
     m_CurrentTimestamp = timestep;
 
     for (auto& entity : m_Entities)
@@ -265,8 +267,6 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
     CheckIntersection(mainWindow);
 
     m_EnvironmentMap->GetPBRShader()->Bind();
-
-
     m_EnvironmentMap->GetPBRShader()->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
     m_EnvironmentMap->GetPBRShader()->setVec3("u_CameraPosition", m_Camera->GetPosition());
     // m_EnvironmentMap->GetPBRShader()->setFloat("u_TilingFactor", 1.0f);

@@ -27,7 +27,7 @@ public:
 	EnvironmentMap(const std::string& filepath);
 	~EnvironmentMap();
 
-	void Update(float timestep);
+	void Update(Scene* scene, float timestep);
 	Environment Load(const std::string& filepath);
 	void SetEnvironment(Environment environment);
 
@@ -46,9 +46,9 @@ public:
 	NormalInput& GetNormalInput() { return m_NormalInput; }
 	MetalnessInput& GetMetalnessInput() { return m_MetalnessInput; }
 	RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
-	std::vector<Hazel::MeshAnimPBR*>* GetMeshList() { return m_MeshList; }
 
 private:
+	void SetupFullscreenQuad();
 	void SetupShaders();
 	void UpdateUniforms();
 	std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> CreateEnvironmentMap(const std::string& filepath);
@@ -135,7 +135,11 @@ private:
 
 		// Renderer data
 		Hazel::RenderCommandQueue* m_CommandQueue;
-		Hazel::VertexArray* m_FullscreenQuadVertexArray;
+
+		unsigned int m_FullscreenQuadVAO;
+		unsigned int m_FullscreenQuadVBO;
+		unsigned int m_FullscreenQuadIBO;
+
 	};
 	static Data s_Data;
 
@@ -145,8 +149,6 @@ private:
 	Shader* m_ShaderSkybox;
 	Shader* m_ShaderHazelAnimPBR;
 	Shader* m_ShaderComposite;
-
-	std::vector<Hazel::MeshAnimPBR*>* m_MeshList;
 
 	Hazel::HazelTextureCube* m_SkyboxTexture;
 

@@ -38,22 +38,21 @@ public:
 
 	void AddAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat);
 
+	void CreateAttachment(FramebufferSpecification specs); // the generic one based on FramebufferSpecification 
 	void CreateTextureAttachmentColor(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat = AttachmentFormat::Color);
 	void CreateAttachmentDepth(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth);
 	void CreateAttachmentStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Stencil);
 	void CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth_24_Stencil_8);
-	void CreateAttachmentRGBA16F(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::RGBA16F);
-	void CreateAttachmentRGBA8(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::RGBA8);
 
 	FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0);
 	Attachment* GetAttachmentDepth();
 	Attachment* GetAttachmentStencil();
 	Attachment* GetAttachmentDepthAndStencil();
 
-	std::vector<FramebufferSpecification>& GetSpecification() { return m_AttachmentSpecs; };
+	FramebufferSpecification& GetSpecification() { return m_FramebufferSpecs; };
 
-	inline const uint32_t GetWidth() const { return m_Width; };
-	inline const uint32_t GetHeight() const { return m_Height; };
+	inline const uint32_t GetWidth() const { return m_FramebufferSpecs.Width; };
+	inline const uint32_t GetHeight() const { return m_FramebufferSpecs.Height; };
 
 	void Clear();
 
@@ -62,13 +61,10 @@ public:
 	void Resize(uint32_t width, uint32_t height);
 
 private:
-	uint32_t m_Width;
-	uint32_t m_Height;
+	unsigned int m_FBO;
+	FramebufferSpecification m_FramebufferSpecs;
 
 	std::vector<FramebufferSpecification> m_AttachmentSpecs;
-
-	unsigned int m_FBO;
-
 	std::vector<FramebufferTexture*> m_TextureAttachmentsColor;
 	Attachment* m_AttachmentDepth;
 	Attachment* m_AttachmentStencil;
