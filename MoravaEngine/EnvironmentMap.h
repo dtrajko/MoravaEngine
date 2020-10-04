@@ -5,7 +5,7 @@
 #include "Material.h"
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/RenderPass.h"
-#include "Mesh.h"
+#include "Hazel/Renderer/MeshAnimPBR.h"
 #include "Hazel/Scene/Entity.h"
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/VertexArray.h"
@@ -69,6 +69,7 @@ private:
 	void SubmitFullscreenQuad(Material* material);
 	void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest);
 	void EndRenderPass();
+	void SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& transform, Material* overrideMaterial);
 
 private:
 	struct Environment
@@ -117,8 +118,8 @@ private:
 
 		struct DrawCommand
 		{
-			Mesh* Mesh;
-			Material* Material;
+			Hazel::MeshAnimPBR* Mesh;
+			Hazel::HazelMaterial* Material;
 			glm::mat4 Transform;
 		};
 		std::vector<DrawCommand> DrawList;

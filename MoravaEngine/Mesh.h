@@ -1,8 +1,11 @@
 #pragma once
 
 #include "Transform.h"
+#include "Material.h"
 
 #include <glm/glm.hpp>
+
+#include <vector>
 
 
 class Mesh
@@ -32,6 +35,11 @@ public:
 	virtual void RecalculateNormals();
 	virtual void RecalculateTangentSpace();
 
+	Material* GetBaseMaterial() { return m_BaseMaterial; }
+	std::vector<Material*>* GetMaterials() { return &m_Materials; }
+
+	void BindVertexArray();
+
 public:
 	float* m_Vertices;
 	unsigned int* m_Indices;
@@ -46,5 +54,8 @@ protected:
 	unsigned int m_IndexCount;
 
 	glm::vec3 m_Scale;
+
+	Material* m_BaseMaterial;
+	std::vector<Material*> m_Materials;
 
 };

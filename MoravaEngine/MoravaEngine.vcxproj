@@ -190,6 +190,7 @@
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLTexture.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="Hazel\Renderer\Buffer.cpp" />
+    <ClCompile Include="Hazel\Renderer\HazelMaterial.cpp" />
     <ClCompile Include="Hazel\Renderer\MeshAnimPBR.cpp" />
     <ClCompile Include="Hazel\Renderer\RenderCommandQueue.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelTexture.cpp" />
@@ -381,6 +382,7 @@
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLTexture.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLVertexArray.h" />
     <ClInclude Include="Hazel\Renderer\Buffer.h" />
+    <ClInclude Include="Hazel\Renderer\HazelMaterial.h" />
     <ClInclude Include="Hazel\Renderer\MeshAnimPBR.h" />
     <ClInclude Include="CommonStructs.h" />
     <ClInclude Include="Hazel\Renderer\RenderCommandQueue.h" />

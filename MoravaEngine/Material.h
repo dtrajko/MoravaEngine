@@ -29,6 +29,13 @@ struct TextureInfo
 	std::string ao;
 };
 
+enum class MaterialFlag
+{
+	None      = 1 << 0,
+	DepthTest = 1 << 1,
+	Blend     = 1 << 2,
+};
+
 
 class Material
 {
@@ -50,6 +57,9 @@ public:
 	inline Texture* GetTextureMetallic()  const { return m_TextureMetallic;  };
 	inline Texture* GetTextureRoughness() const { return m_TextureRoughness; };
 	inline Texture* GetTextureAO()        const { return m_TextureAO;        };
+
+	// From Hazel/Renderer/Material
+	bool GetFlag(MaterialFlag flag) const { return (uint32_t)flag & m_MaterialFlags; }
 
 public:
 	int m_AlbedoMap;      // sampler2D, texture slot - diffuse/albedo
@@ -81,4 +91,8 @@ private:
 	int m_EmissionMap;         // sampler2D, texture slot
 
 	float m_SpecularIntensity;
+
+	// From Hazel/Renderer/Material
+	uint32_t m_MaterialFlags;
+
 };

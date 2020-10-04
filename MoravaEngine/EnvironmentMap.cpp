@@ -1,5 +1,6 @@
 #include "EnvironmentMap.h"
 #include "Hazel/Renderer/RenderPass.h"
+#include "Hazel/Renderer/HazelMaterial.h"
 #include "Framebuffer.h"
 #include "RendererBasic.h"
 #include "Log.h"
@@ -160,7 +161,7 @@ void EnvironmentMap::SubmitEntity(Hazel::Entity* entity)
     if (!mesh)
         return;
 
-    s_Data.DrawList.push_back({ mesh, entity->GetMaterial(), entity->GetTransform() });
+    s_Data.DrawList.push_back({ (Hazel::MeshAnimPBR*)mesh, entity->GetMaterial(), entity->GetTransform() });
 }
 
 Hazel::RenderPass* EnvironmentMap::GetFinalRenderPass()
@@ -258,20 +259,22 @@ void EnvironmentMap::GeometryPass()
     // Render entities
     for (auto& dc : s_Data.DrawList)
     {
-        //  auto baseMaterial = dc.Mesh->GetMaterial();
-        //  baseMaterial->Set("u_ViewProjectionMatrix", viewProjection);
-        //  baseMaterial->Set("u_CameraPosition", s_Data.SceneData.SceneCamera.GetPosition());
-        //  
-        //  // Environment (TODO: don't do this per mesh)
-        //  baseMaterial->Set("u_EnvRadianceTex", s_Data.SceneData.SceneEnvironment.RadianceMap);
-        //  baseMaterial->Set("u_EnvIrradianceTex", s_Data.SceneData.SceneEnvironment.IrradianceMap);
-        //  baseMaterial->Set("u_BRDFLUTTexture", s_Data.BRDFLUT);
-        //  
-        //  // Set lights (TODO: move to light environment and don't do per mesh)
-        //  baseMaterial->Set("lights", s_Data.SceneData.ActiveLight);
-        //  
-        //  auto overrideMaterial = nullptr; // dc.Material;
-        //  Renderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
+        auto baseMaterial = dc.Mesh->GetBaseMaterial();
+        m_ShaderHazelAnimPBR->setMat4("u_ViewProjectionMatrix", viewProjection);
+        m_ShaderHazelAnimPBR->setVec3("u_CameraPosition", s_Data.SceneData.SceneCamera->GetPosition());
+
+        // Environment (TODO: don't do this per mesh)
+        m_ShaderHazelAnimPBR->setInt("u_EnvRadianceTex", s_Data.SceneData.SceneEnvironment.RadianceMap->GetID());
+        m_ShaderHazelAnimPBR->setInt("u_EnvIrradianceTex", s_Data.SceneData.SceneEnvironment.IrradianceMap->GetID());
+        m_ShaderHazelAnimPBR->setInt("u_BRDFLUTTexture", s_Data.BRDFLUT->GetID());
+
+        // Set lights (TODO: move to light environment and don't do per mesh)
+        m_ShaderHazelAnimPBR->setVec3("lights.Direction", s_Data.SceneData.ActiveLight.Direction);
+        m_ShaderHazelAnimPBR->setVec3("lights.Radiance", s_Data.SceneData.ActiveLight.Radiance);
+        m_ShaderHazelAnimPBR->setFloat("lights.Multiplier", s_Data.SceneData.ActiveLight.Multiplier);
+
+        auto overrideMaterial = nullptr; // dc.Material;
+        SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
     }
 
     // Grid
@@ -383,4 +386,36 @@ void EnvironmentMap::EndRenderPass()
 
     s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
     s_Data.ActiveRenderPass = nullptr;
+}
+
+void EnvironmentMap::SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& transform, Material* overrideMaterial)
+{
+    // auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
+    // auto shader = material->GetShader();
+    // TODO: Sort this out
+    mesh->BindVertexArray();
+
+    auto& materials = mesh->GetMaterials();
+    for (Hazel::Submesh* submesh : mesh->GetSubmeshes())
+    {
+        // Material
+        auto material = materials[submesh->MaterialIndex];
+
+        for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
+        {
+            std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+            m_ShaderHazelAnimPBR->setMat4(uniformName, mesh->m_BoneTransforms[i]);
+        }
+
+        m_ShaderHazelAnimPBR->setMat4("u_Transform", transform * submesh->Transform);
+
+        if (material->GetFlag(MaterialFlag::DepthTest)) {
+            glEnable(GL_DEPTH_TEST);
+        }
+        else {
+            glDisable(GL_DEPTH_TEST);
+        }
+
+        glDrawElementsBaseVertex(GL_TRIANGLES, submesh->GetIndexCount(), GL_UNSIGNED_INT, (void*)(sizeof(uint32_t)* submesh->BaseIndex), submesh->BaseVertex);
+    }
 }
