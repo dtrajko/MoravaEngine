@@ -198,67 +198,50 @@ void EnvironmentMap::FlushDrawList()
 
 std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> EnvironmentMap::CreateEnvironmentMap(const std::string& filepath)
 {
-    const uint32_t cubemapSize = 2048;
+    const uint32_t cubemapSize = 1024;
     const uint32_t irradianceMapSize = 32;
 
-    //  Ref<TextureCube> envUnfiltered = TextureCube::Create(TextureFormat::Float16, cubemapSize, cubemapSize);
-    //  if (!equirectangularConversionShader)
-    //      equirectangularConversionShader = Shader::Create("assets/shaders/EquirectangularToCubeMap.glsl");
-    //  Ref<Texture2D> envEquirect = Texture2D::Create(filepath);
-    //  HZ_CORE_ASSERT(envEquirect->GetFormat() == TextureFormat::Float16, "Texture is not HDR!");
-    //  
-    //  equirectangularConversionShader->Bind();
-    //  envEquirect->Bind();
-    //  Renderer::Submit([envUnfiltered, cubemapSize, envEquirect]()
-    //      {
-    //          glBindImageTexture(0, envUnfiltered->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-    //          glDispatchCompute(cubemapSize / 32, cubemapSize / 32, 6);
-    //          glGenerateTextureMipmap(envUnfiltered->GetRendererID());
-    //      });
-    //  
-    //  
-    //  if (!envFilteringShader)
-    //      envFilteringShader = Shader::Create("assets/shaders/EnvironmentMipFilter.glsl");
-    //  
-    //  Ref<TextureCube> envFiltered = TextureCube::Create(TextureFormat::Float16, cubemapSize, cubemapSize);
-    //  
-    //  Renderer::Submit([envUnfiltered, envFiltered]()
-    //      {
-    //          glCopyImageSubData(envUnfiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
-    //              envFiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
-    //              envFiltered->GetWidth(), envFiltered->GetHeight(), 6);
-    //      });
-    //  
-    //  envFilteringShader->Bind();
-    //  envUnfiltered->Bind();
-    //  
-    //  Renderer::Submit([envUnfiltered, envFiltered, cubemapSize]() {
-    //      const float deltaRoughness = 1.0f / glm::max((float)(envFiltered->GetMipLevelCount() - 1.0f), 1.0f);
-    //      for (int level = 1, size = cubemapSize / 2; level < envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
-    //      {
-    //          const GLuint numGroups = glm::max(1, size / 32);
-    //          glBindImageTexture(0, envFiltered->GetRendererID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-    //          glProgramUniform1f(envFilteringShader->GetRendererID(), 0, level * deltaRoughness);
-    //          glDispatchCompute(numGroups, numGroups, 6);
-    //      }
-    //      });
-    //  
-    //  if (!envIrradianceShader)
-    //      envIrradianceShader = Shader::Create("assets/shaders/EnvironmentIrradiance.glsl");
-    //  
-    //  Ref<TextureCube> irradianceMap = TextureCube::Create(TextureFormat::Float16, irradianceMapSize, irradianceMapSize);
-    //  envIrradianceShader->Bind();
-    //  envFiltered->Bind();
-    //  Renderer::Submit([irradianceMap]()
-    //      {
-    //          glBindImageTexture(0, irradianceMap->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-    //          glDispatchCompute(irradianceMap->GetWidth() / 32, irradianceMap->GetHeight() / 32, 6);
-    //          glGenerateTextureMipmap(irradianceMap->GetRendererID());
-    //      });
-    //  
-    //  return { envFiltered, irradianceMap };
+    Hazel::HazelTextureCube* envUnfiltered = Hazel::HazelTextureCube::Create(Hazel::HazelTextureFormat::Float16, cubemapSize, cubemapSize);
+    Hazel::HazelTexture2D* envEquirect = Hazel::HazelTexture2D::Create(filepath);
 
-    return std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*>();
+    if (envEquirect->GetFormat() != Hazel::HazelTextureFormat::Float16) {
+        Log::GetLogger()->error("Texture is not HDR!");
+    }
+
+    m_ShaderEquirectangularConversion->Bind();
+    envEquirect->Bind();
+
+    glBindImageTexture(0, envUnfiltered->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+    glDispatchCompute(cubemapSize / 32, cubemapSize / 32, 6);
+    glGenerateTextureMipmap(envUnfiltered->GetID());
+
+    Hazel::HazelTextureCube* envFiltered = Hazel::HazelTextureCube::Create(Hazel::HazelTextureFormat::Float16, cubemapSize, cubemapSize);
+    glCopyImageSubData(envUnfiltered->GetID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
+        envFiltered->GetID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
+        envFiltered->GetWidth(), envFiltered->GetHeight(), 6);
+
+    m_ShaderEnvFiltering->Bind();
+    envFiltered->Bind();
+
+    const float deltaRoughness = 1.0f / glm::max((float)(envFiltered->GetMipLevelCount() - 1.0f), 1.0f);
+    for (int level = 1, size = cubemapSize / 2; level < (int)envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
+    {
+        Log::GetLogger()->debug("BEGIN EnvFiltering size {0} level {1}/{2}", size, level, envFiltered->GetMipLevelCount());
+        const GLuint numGroups = glm::max(1, size / 32);
+        glBindImageTexture(0, envFiltered->GetID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+        glProgramUniform1f(m_ShaderEnvFiltering->GetProgramID(), 0, level * deltaRoughness);
+        glDispatchCompute(numGroups, numGroups, 6);
+        Log::GetLogger()->debug("END EnvFiltering size {0} numGroups {1} level {2}/{3}", size, numGroups, level, envFiltered->GetMipLevelCount());
+    }
+
+    Hazel::HazelTextureCube* irradianceMap = Hazel::HazelTextureCube::Create(Hazel::HazelTextureFormat::Float16, irradianceMapSize, irradianceMapSize);
+    m_ShaderEnvIrradiance->Bind();
+    envFiltered->Bind();
+    glBindImageTexture(0, irradianceMap->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+    glDispatchCompute(irradianceMap->GetWidth() / 32, irradianceMap->GetHeight() / 32, 6);
+    glGenerateTextureMipmap(irradianceMap->GetID());
+
+    return { envFiltered, irradianceMap };
 }
 
 void EnvironmentMap::GeometryPass()
@@ -316,6 +299,27 @@ void EnvironmentMap::CompositePass()
 void EnvironmentMap::Update()
 {
     UpdateUniforms();
+
+    //  m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
+    //  
+    //  // Update all entities
+    //  for (auto entity : m_Entities)
+    //  {
+    //      auto mesh = entity->GetMesh();
+    //      if (mesh)
+    //          mesh->OnUpdate(ts);
+    //  }
+    //  
+    //  SceneRenderer::BeginScene(this);
+    //  
+    //  // Render entities
+    //  for (auto entity : m_Entities)
+    //  {
+    //      // TODO: Should we render (logically)
+    //      SceneRenderer::SubmitEntity(entity);
+    //  }
+    //  
+    //  SceneRenderer::EndScene();
 }
 
 void EnvironmentMap::BeginRenderPass(Hazel::RenderPass* renderPass, bool clear)
