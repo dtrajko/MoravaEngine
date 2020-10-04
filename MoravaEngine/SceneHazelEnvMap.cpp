@@ -122,7 +122,6 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_LightPosition = glm::vec3(20.0f, 20.0f, 20.0f);
     m_LightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
-
     m_Translation_ImGuizmo = glm::vec3(0.0f);
     m_Transform_ImGuizmo = nullptr;
 
@@ -140,6 +139,10 @@ SceneHazelEnvMap::~SceneHazelEnvMap()
 }
 
 void SceneHazelEnvMap::SetLightManager()
+{
+}
+
+void SceneHazelEnvMap::SetWaterManager(int width, int height)
 {
 }
 
@@ -163,10 +166,10 @@ void SceneHazelEnvMap::ResizeViewport(glm::vec2 viewportPanelSize)
     if (m_CurrentTimestamp - m_ResizeViewport.lastTime < m_ResizeViewport.cooldown) return;
     m_ResizeViewport.lastTime = m_CurrentTimestamp;
 
-    if (viewportPanelSize != m_ViewportSize && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
+    if (viewportPanelSize != m_ViewportMainSize && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
     {
         m_RenderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
-        m_ViewportSize = glm::vec2(viewportPanelSize.x, viewportPanelSize.y);
+        m_ViewportMainSize = glm::vec2(viewportPanelSize.x, viewportPanelSize.y);
 
         m_CameraController->OnResize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
     }
@@ -344,8 +347,8 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
 
-    m_ImGuiMainViewportX = (int)ImGui::GetMainViewport()->GetWorkPos().x;
-    m_ImGuiMainViewportY = (int)ImGui::GetMainViewport()->GetWorkPos().y;
+    m_ImGuiViewportMainX = (int)ImGui::GetMainViewport()->GetWorkPos().x;
+    m_ImGuiViewportMainY = (int)ImGui::GetMainViewport()->GetWorkPos().y;
 
     MousePicker* mp = MousePicker::Get();
 
@@ -458,6 +461,12 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         {
             ImGui::Text("Viewport");
             ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+
+            ImGui::Text("Geo Pass");
+            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData().GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+
+            ImGui::Text("Composite Pass");
+            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData().CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
         }
     }
     ImGui::End();
@@ -531,7 +540,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         {
             char buffer[100];
 
-            sprintf(buffer, "Main Window [ X %i Y %i ]", m_ImGuiMainViewportX, m_ImGuiMainViewportY);
+            sprintf(buffer, "Main Window [ X %i Y %i ]", m_ImGuiViewportMainX, m_ImGuiViewportMainY);
             ImGui::Text(buffer);
             ImGui::Separator();
 
@@ -773,10 +782,11 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     {
         // TheCherno ImGui Viewport displaying the framebuffer content
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+
         ImGui::Begin("Viewport");
         {
-            m_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - m_ImGuiMainViewportX);
-            m_ImGuiViewport.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiMainViewportY);
+            m_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportMainX);
+            m_ImGuiViewport.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportMainY);
             m_ImGuiViewport.Width = (int)ImGui::GetWindowWidth();
             m_ImGuiViewport.Height = (int)ImGui::GetWindowHeight();
             m_ImGuiViewport.MouseX = (int)ImGui::GetMousePos().x;
@@ -791,12 +801,33 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             ResizeViewport(viewportPanelSize);
 
             uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
-            // uint64_t textureID = m_BlurEffect->GetVerticalOutputTexture()->GetID();
-            ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+            ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportMainSize.x, m_ViewportMainSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
             UpdateImGuizmo(mainWindow);
         }
         ImGui::End();
+
+        ImGui::Begin("Viewport Environment Map");
+        {
+            m_ImGuiViewportEnvMap.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportEnvMapX);
+            m_ImGuiViewportEnvMap.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportEnvMapY);
+            m_ImGuiViewportEnvMap.Width = (int)ImGui::GetWindowWidth();
+            m_ImGuiViewportEnvMap.Height = (int)ImGui::GetWindowHeight();
+            m_ImGuiViewportEnvMap.MouseX = (int)ImGui::GetMousePos().x;
+            m_ImGuiViewportEnvMap.MouseY = (int)ImGui::GetMousePos().y;
+
+            m_ViewportEnvMapFocused = ImGui::IsWindowFocused();
+            m_ViewportEnvMapHovered = ImGui::IsWindowHovered();
+
+            ImVec2 viewportPanelSizeImGui = ImGui::GetContentRegionAvail();
+            glm::vec2 viewportPanelSize = glm::vec2(viewportPanelSizeImGui.x, viewportPanelSizeImGui.y);
+
+            // ResizeViewport(viewportPanelSize); // Currently resize can only work with a single (main) viewport
+            uint64_t textureID = m_EnvironmentMap->GetContextData().CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
+            ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportEnvMapSize.x, m_ViewportEnvMapSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+        }
+        ImGui::End();
+
         ImGui::PopStyleVar();
     }
 

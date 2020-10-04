@@ -18,8 +18,8 @@ namespace Hazel {
 		Entity(const std::string& name);
 		Entity(const Entity& other) = default;
 
-		void SetMaterial(HazelMaterial* material) { m_Material = material; }
-		HazelMaterial* GetMaterial() { return m_Material; }
+		void SetMaterial(Material* material) { m_Material = material; }
+		Material* GetMaterial() { return m_Material; }
 
 		const glm::mat4& GetTransform() const { return m_Transform; }
 		glm::mat4& Transform() { return m_Transform; }
@@ -86,7 +86,7 @@ namespace Hazel {
 		glm::mat4 m_Transform;
 
 		Mesh* m_Mesh;
-		HazelMaterial* m_Material;
+		Material* m_Material;
 
 	};
 

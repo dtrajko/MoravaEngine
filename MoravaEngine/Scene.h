@@ -107,7 +107,7 @@ public:
 	// Setters
 	virtual void SetCamera();
 	virtual void SetLightManager();
-	void SetWaterManager(int width, int height);
+	virtual void SetWaterManager(int width, int height);
 	inline void SetWireframeEnabled(bool wireframeEnabled) { m_WireframeEnabled = wireframeEnabled; };
 	inline void SetFOV(float FOV) { m_FOV = FOV; };
 

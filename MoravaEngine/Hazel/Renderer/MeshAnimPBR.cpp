@@ -820,10 +820,9 @@ namespace Hazel {
 			m_MeshShader->setMat4("u_Transform", entityTransform * submesh->Transform);
 
 			glEnable(GL_DEPTH_TEST);
-			glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
+			glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t)* submesh->BaseIndex), submesh->BaseVertex);
 
 			submeshIndex++;
 		}
 	}
-
 }
