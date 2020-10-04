@@ -16,7 +16,7 @@ namespace Hazel {
 
 	Entity HazelScene::CreateEntity(const std::string& name)
 	{ 
-		Entity entity = { m_Registry.create(), this };
+		Entity entity = { GetRegistry()->create(), this };
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
@@ -27,7 +27,7 @@ namespace Hazel {
 	{
 		// Update scripts
 		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			GetRegistry()->view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 			{
 				// TODO: Move to Scene::OnScenePlay
 				if (!nsc.Instance)
@@ -45,7 +45,7 @@ namespace Hazel {
 		Camera* mainCamera = nullptr;
 		glm::mat4* cameraTransform = nullptr;
 		{
-			auto view = m_Registry.view<TransformComponent, CameraComponent>();
+			auto view = GetRegistry()->view<TransformComponent, CameraComponent>();
 
 			for (auto entity : view)
 			{
@@ -64,7 +64,7 @@ namespace Hazel {
 		{
 			// Renderer2D::BeginScene(mainCamera->GetProjection(), *cameraTransform);
 
-			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+			auto group = GetRegistry()->group<TransformComponent>(entt::get<SpriteRendererComponent>);
 			for (auto entity : group)
 			{
 				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
@@ -82,7 +82,7 @@ namespace Hazel {
 		m_ViewportHeight = height;
 
 		// Resize our non-FixedAspectRatio cameras
-		auto view = m_Registry.view<CameraComponent>();
+		auto view = GetRegistry()->view<CameraComponent>();
 		for (auto entity : view)
 		{
 			auto& cameraComponent = view.get<CameraComponent>(entity);
@@ -96,7 +96,7 @@ namespace Hazel {
 	{
 		// Destroy scripts
 		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			GetRegistry()->view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 			{
 				// TODO: Move to Scene::OnSceneStop
 				if (nsc.Instance)

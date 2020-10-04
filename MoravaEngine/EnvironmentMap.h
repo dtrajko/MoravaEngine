@@ -27,22 +27,26 @@ public:
 	EnvironmentMap(const std::string& filepath);
 	~EnvironmentMap();
 
-	void Update();
+	void Update(float timestep);
 	Environment Load(const std::string& filepath);
 	void SetEnvironment(Environment environment);
 
+	// Setters
+	void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
+
 	// Getters
-	inline Shader* GetPBRShader() { return m_ShaderHazelAnimPBR; };
+	inline Shader* GetPBRShader() { return m_ShaderHazelAnimPBR; }
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
-	float& GetSkyboxLod() { return m_SkyboxLod; }
+	float& GetSkyboxLOD() { return m_SkyboxLOD; }
 	LightStruct& GetLight() { return s_Data.SceneData.ActiveLight; }
 	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
 	float& GetEnvMapRotation() { return m_EnvMapRotation; }
 	Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
-	AlbedoInput& GetAlbedoInput() { return m_AlbedoInput; };
-	NormalInput& GetNormalInput() { return m_NormalInput; };
-	MetalnessInput& GetMetalnessInput() { return m_MetalnessInput; };
-	RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; };
+	AlbedoInput& GetAlbedoInput() { return m_AlbedoInput; }
+	NormalInput& GetNormalInput() { return m_NormalInput; }
+	MetalnessInput& GetMetalnessInput() { return m_MetalnessInput; }
+	RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
+	std::vector<Hazel::MeshAnimPBR*>* GetMeshList() { return m_MeshList; }
 
 private:
 	void SetupShaders();
@@ -142,12 +146,14 @@ private:
 	Shader* m_ShaderHazelAnimPBR;
 	Shader* m_ShaderComposite;
 
+	std::vector<Hazel::MeshAnimPBR*>* m_MeshList;
+
 	Hazel::HazelTextureCube* m_SkyboxTexture;
 
 	std::map<std::string, unsigned int>* m_SamplerSlots;
 
 	/**** BEGIN properties Scene ****/
-	float m_SkyboxLod = 1.0f;
+	float m_SkyboxLOD = 1.0f;
 	/**** END properties Scene ****/
 
 	/**** BEGIN properties EditorLayer ****/

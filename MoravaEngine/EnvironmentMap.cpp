@@ -297,32 +297,38 @@ void EnvironmentMap::GeometryPass()
 
 void EnvironmentMap::CompositePass()
 {
+    BeginRenderPass(s_Data.CompositePass, true); // should we clear the framebuffer at this stage?
+    m_ShaderComposite->Bind();
+    m_ShaderComposite->setFloat("u_Exposure", s_Data.SceneData.SceneCamera->GetExposure());
+    m_ShaderComposite->setInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification()[0].Samples);
+    s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind();
+    SubmitFullscreenQuad(nullptr);
+    EndRenderPass();
 }
 
-void EnvironmentMap::Update()
+void EnvironmentMap::Update(float timestep)
 {
     UpdateUniforms();
 
-    //  m_SkyboxMaterial->Set("u_TextureLod", m_SkyboxLod);
-    //  
-    //  // Update all entities
-    //  for (auto entity : m_Entities)
-    //  {
-    //      auto mesh = entity->GetMesh();
-    //      if (mesh)
-    //          mesh->OnUpdate(ts);
-    //  }
-    //  
-    //  SceneRenderer::BeginScene(this);
-    //  
-    //  // Render entities
-    //  for (auto entity : m_Entities)
-    //  {
-    //      // TODO: Should we render (logically)
-    //      SceneRenderer::SubmitEntity(entity);
-    //  }
-    //  
-    //  SceneRenderer::EndScene();
+    m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
+
+    // Update MeshAnimPBR List
+    for (auto it = m_MeshList->begin(); it != m_MeshList->end(); it++)
+    {
+        (*it)->OnUpdate(timestep, false);
+    }
+
+    BeginScene(s_Data.ActiveScene);
+
+    // Render MeshAnimPBR meshes (later entt entities)
+    uint32_t samplerSlot = 0;
+    glm::mat4 entityTransform = glm::mat4(1.0f);
+    for (auto it = m_MeshList->begin(); it != m_MeshList->end(); it++)
+    {
+        (*it)->Render(samplerSlot, entityTransform);
+    }
+
+    EndScene();
 }
 
 void EnvironmentMap::BeginRenderPass(Hazel::RenderPass* renderPass, bool clear)
