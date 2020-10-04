@@ -200,6 +200,11 @@ void Mesh::RecalculateTangentSpace()
 	}
 }
 
+void Mesh::BindVertexArray()
+{
+	glBindVertexArray(m_VAO);
+}
+
 Mesh::~Mesh()
 {
 	Clear();
