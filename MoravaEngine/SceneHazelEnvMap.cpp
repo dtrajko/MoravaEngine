@@ -121,7 +121,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_LightPosition = glm::vec3(20.0f, 20.0f, 20.0f);
     m_LightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
-    m_SkyboxLOD = 0.0f;
+    m_EnvironmentMap->SetSkyboxLOD(0.0f);
 
     m_Translation_ImGuizmo = glm::vec3(0.0f);
     m_Transform_ImGuizmo = nullptr;
@@ -492,7 +492,11 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
 
         ImGui::Separator();
-        ImGui::SliderFloat("Skybox LOD", &m_SkyboxLOD, 0.0f, 6.0f);
+        float skyboxLOD = m_EnvironmentMap->GetSkyboxLOD();
+        if (ImGui::SliderFloat("Skybox LOD", &skyboxLOD, 0.0f, 6.0f))
+        {
+            m_EnvironmentMap->SetSkyboxLOD(skyboxLOD);
+        }
     }
     ImGui::End();
 
@@ -563,8 +567,8 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
     m_SceneHierarchyPanel->OnImGuiRender();
 
-    /**** BEGIN Environment Map Scene Settings ****/
-    ImGui::Begin("Environment Map Scene Settings");
+    /**** BEGIN Environment Map Settings ****/
+    ImGui::Begin("Environment Map Settings");
     {
         {
             if (ImGui::Button("Load Environment Map"))
@@ -574,7 +578,11 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     m_EnvironmentMap->SetEnvironment(m_EnvironmentMap->Load(filename));
             }
 
-            ImGui::SliderFloat("Skybox LOD", &m_EnvironmentMap->GetSkyboxLod(), 0.0f, 11.0f);
+            float skyboxLOD = m_EnvironmentMap->GetSkyboxLOD();
+            if (ImGui::SliderFloat("Skybox LOD", &skyboxLOD, 0.0f, 6.0f))
+            {
+                m_EnvironmentMap->SetSkyboxLOD(skyboxLOD);
+            }
 
             ImGui::Columns(2);
             ImGui::AlignTextToFramePadding();
@@ -1021,7 +1029,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
         m_ShaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
 
         m_ShaderBackground->setInt("environmentMap", 0);
-        m_ShaderBackground->setFloat("u_TextureLOD", m_SkyboxLOD);
+        m_ShaderBackground->setFloat("u_TextureLOD", m_EnvironmentMap->GetSkyboxLOD());
     }
     // END Skybox backgroundShader
 

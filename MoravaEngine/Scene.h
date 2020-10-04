@@ -143,8 +143,6 @@ protected:
 
 	std::map<std::string, float> m_ProfilerResults;
 
-	entt::registry m_Registry;
-
 private:
 	DirectionalLight directionalLight;
 	PointLight pointLights[MAX_POINT_LIGHTS];
@@ -157,5 +155,8 @@ private:
 	unsigned int shadowMapHeight;
 
 	bool m_WireframeEnabled;
+
+	// ECS
+	entt::registry m_Registry;
 
 };
