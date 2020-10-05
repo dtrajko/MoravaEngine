@@ -99,10 +99,7 @@ private:
 	Shader* m_ShaderBackground;
 	Shader* m_ShaderBasic;
 
-	Hazel::MeshAnimPBR* m_MeshAnimPBR;
 	Hazel::Entity* m_EntityMesh = nullptr;
-
-	Material* m_MeshBaseMaterial;
 
 	struct Entity {
 		struct Transform {
