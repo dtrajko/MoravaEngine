@@ -346,7 +346,7 @@ std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> EnvironmentMap::Cr
 
 void EnvironmentMap::GeometryPass()
 {
-    BeginRenderPass(m_Data.GeoPass, false); // should we clear the buffer?
+    BeginRenderPass(m_Data.GeoPass, true); // should we clear the buffer?
 
     auto viewProjection = m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
 
@@ -398,7 +398,7 @@ void EnvironmentMap::GeometryPass()
 
 void EnvironmentMap::CompositePass()
 {
-    BeginRenderPass(m_Data.CompositePass, false); // should we clear the framebuffer at this stage?
+    BeginRenderPass(m_Data.CompositePass, true); // should we clear the framebuffer at this stage?
     m_ShaderComposite->Bind();
     m_ShaderComposite->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
     m_ShaderComposite->setInt("u_TextureSamples", m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
