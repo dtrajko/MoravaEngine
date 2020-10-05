@@ -34,7 +34,7 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     m_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
 
     // Set lights
-    m_Data.SceneData.ActiveLight.Direction = { -0.5f, -0.5f, 1.0f };
+    m_Data.SceneData.ActiveLight.Direction = { 0.0f, 0.0f, -1.0f };
     m_Data.SceneData.ActiveLight.Radiance = { 1.0f, 1.0f, 1.0f };
 }
 
@@ -94,30 +94,27 @@ void EnvironmentMap::SetupFullscreenQuad()
 
     uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 
-    glCreateVertexArrays(1, &m_Data.FullscreenQuadVAO);
+    glGenVertexArrays(1, &m_Data.FullscreenQuadVAO);
+    // link vertex attributes
+    glBindVertexArray(m_Data.FullscreenQuadVAO);
 
-    // setup plane VAO
     glGenBuffers(1, &m_Data.FullscreenQuadIBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.FullscreenQuadIBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * 6, &indices[0], GL_STATIC_DRAW);
 
-    glGenVertexArrays(1, &m_Data.FullscreenQuadVAO);
     glGenBuffers(1, &m_Data.FullscreenQuadVBO);
 
     // fill buffer
     glBindBuffer(GL_ARRAY_BUFFER, m_Data.FullscreenQuadVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(QuadVertex) * 4, &data[0], GL_STATIC_DRAW);
 
-    // link vertex attributes
-    glBindVertexArray(m_Data.FullscreenQuadVAO);
-
-    // layout (location = 0) in vec3 aPos;
+    // position layout (location = 0) in vec3 aPos;
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (void*)offsetof(QuadVertex, Position));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*)offsetof(QuadVertex, Position));
 
-    // layout(location = 1) in vec2 aTexCoords;
+    // tex coord layout(location = 1) in vec2 aTexCoords;
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (void*)offsetof(QuadVertex, TexCoord));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*)offsetof(QuadVertex, TexCoord));
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
@@ -467,6 +464,7 @@ void EnvironmentMap::SubmitFullscreenQuad(Material* material)
 
     glBindVertexArray(m_Data.FullscreenQuadVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.FullscreenQuadIBO);
+
     DrawIndexed(6, PrimitiveType::Triangles, depthTest);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
     glBindVertexArray(0);                     // Unbind VAO
