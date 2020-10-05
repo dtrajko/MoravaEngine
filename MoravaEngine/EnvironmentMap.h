@@ -10,6 +10,8 @@
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/VertexArray.h"
 
+#include <string>
+
 
 class EnvironmentMap
 {
@@ -37,11 +39,11 @@ public:
 	void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
 
 	// Getters
-	inline static Data GetContextData() { return s_Data; }
+	inline Data* GetContextData() { return &m_Data; }
 	inline Shader* GetPBRShader() { return m_ShaderHazelAnimPBR; }
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
 	float& GetSkyboxLOD() { return m_SkyboxLOD; }
-	LightStruct& GetLight() { return s_Data.SceneData.ActiveLight; }
+	LightStruct& GetLight() { return m_Data.SceneData.ActiveLight; }
 	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
 	float& GetEnvMapRotation() { return m_EnvMapRotation; }
 	Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
@@ -49,6 +51,7 @@ public:
 	NormalInput& GetNormalInput() { return m_NormalInput; }
 	MetalnessInput& GetMetalnessInput() { return m_MetalnessInput; }
 	RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
+	Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
 
 private:
 	void SetupContextData();
@@ -126,6 +129,7 @@ private:
 
 		struct DrawCommand
 		{
+			std::string Name;
 			Hazel::MeshAnimPBR* Mesh;
 			Material* Material;
 			glm::mat4 Transform;
@@ -145,7 +149,7 @@ private:
 		unsigned int FullscreenQuadIBO;
 
 	};
-	static Data s_Data;
+	Data m_Data;
 
 	Shader* m_ShaderEquirectangularConversion;
 	Shader* m_ShaderEnvFiltering;

@@ -9,10 +9,10 @@
 #include "Log.h"
 
 
-EnvironmentMap::Data EnvironmentMap::s_Data = {};
-
 EnvironmentMap::EnvironmentMap(const std::string& filepath)
 {
+    m_Data = {};
+
     m_SamplerSlots = new std::map<std::string, unsigned int>();
 
     //  // PBR texture inputs
@@ -29,13 +29,13 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
 
     Init();
 
-    s_Data.SceneData.SceneEnvironment = Load(filepath);
+    m_Data.SceneData.SceneEnvironment = Load(filepath);
 
     m_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
 
     // Set lights
-    s_Data.SceneData.ActiveLight.Direction = { -0.5f, -0.5f, 1.0f };
-    s_Data.SceneData.ActiveLight.Radiance = { 1.0f, 1.0f, 1.0f };
+    m_Data.SceneData.ActiveLight.Direction = { -0.5f, -0.5f, 1.0f };
+    m_Data.SceneData.ActiveLight.Radiance = { 1.0f, 1.0f, 1.0f };
 }
 
 void EnvironmentMap::SetupContextData()
@@ -44,19 +44,20 @@ void EnvironmentMap::SetupContextData()
     {
         // M1911
         TextureInfo textureInfoM1911 = {};
-        textureInfoM1911.albedo = "Models/m1911/m1911_color.png";
-        textureInfoM1911.normal = "Models/m1911/m1911_normal.png";
-        textureInfoM1911.metallic = "Models/m1911/m1911_metalness.png";
+        textureInfoM1911.albedo    = "Models/m1911/m1911_color.png";
+        textureInfoM1911.normal    = "Models/m1911/m1911_normal.png";
+        textureInfoM1911.metallic  = "Models/m1911/m1911_metalness.png";
         textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
-        textureInfoM1911.ao = "Textures/PBR/silver/ao.png";
+        textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
 
         Data::DrawCommand drawCommand;
+        drawCommand.Name = "M1911";
         drawCommand.Material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
         drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHazelAnimPBR, drawCommand.Material);
         drawCommand.Mesh->SetTimeMultiplier(1.0f);
         drawCommand.Transform = glm::mat4(1.0f);
 
-        s_Data.DrawList.push_back(drawCommand);
+        m_Data.DrawList.push_back(drawCommand);
     }
     Log::GetLogger()->info("-- END EnvironmentMap loading MeshAnimPBR M1911 --");
 
@@ -93,22 +94,22 @@ void EnvironmentMap::SetupFullscreenQuad()
 
     uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 
-    glCreateVertexArrays(1, &s_Data.FullscreenQuadVAO);
+    glCreateVertexArrays(1, &m_Data.FullscreenQuadVAO);
 
     // setup plane VAO
-    glGenBuffers(1, &s_Data.FullscreenQuadIBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data.FullscreenQuadIBO);
+    glGenBuffers(1, &m_Data.FullscreenQuadIBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.FullscreenQuadIBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * 6, &indices[0], GL_STATIC_DRAW);
 
-    glGenVertexArrays(1, &s_Data.FullscreenQuadVAO);
-    glGenBuffers(1, &s_Data.FullscreenQuadVBO);
+    glGenVertexArrays(1, &m_Data.FullscreenQuadVAO);
+    glGenBuffers(1, &m_Data.FullscreenQuadVBO);
 
     // fill buffer
-    glBindBuffer(GL_ARRAY_BUFFER, s_Data.FullscreenQuadVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_Data.FullscreenQuadVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(QuadVertex) * 4, &data[0], GL_STATIC_DRAW);
 
     // link vertex attributes
-    glBindVertexArray(s_Data.FullscreenQuadVAO);
+    glBindVertexArray(m_Data.FullscreenQuadVAO);
 
     // layout (location = 0) in vec3 aPos;
     glEnableVertexAttribArray(0);
@@ -149,8 +150,8 @@ void EnvironmentMap::UpdateUniforms()
     /**** BEGIN HazelPBR_Anim ***/
     m_ShaderHazelAnimPBR->Bind();
 
-    m_ShaderHazelAnimPBR->setVec3("lights.Direction", s_Data.SceneData.ActiveLight.Direction);
-    m_ShaderHazelAnimPBR->setVec3("lights.Radiance", s_Data.SceneData.ActiveLight.Radiance);
+    m_ShaderHazelAnimPBR->setVec3("lights.Direction", m_Data.SceneData.ActiveLight.Direction);
+    m_ShaderHazelAnimPBR->setVec3("lights.Radiance", m_Data.SceneData.ActiveLight.Radiance);
 
     m_ShaderHazelAnimPBR->setInt("u_AlbedoTexture", m_SamplerSlots->at("albedo"));
     m_ShaderHazelAnimPBR->setInt("u_NormalTexture", m_SamplerSlots->at("normal"));
@@ -185,8 +186,8 @@ EnvironmentMap::Environment EnvironmentMap::Load(const std::string& filepath)
 
 void EnvironmentMap::SetEnvironment(Environment environment)
 {
-    s_Data.SceneData.SceneEnvironment = environment;
-    SetSkybox(s_Data.SceneData.SceneEnvironment.RadianceMap);
+    m_Data.SceneData.SceneEnvironment = environment;
+    SetSkybox(m_Data.SceneData.SceneEnvironment.RadianceMap);
 }
 
 void EnvironmentMap::Init()
@@ -207,7 +208,7 @@ void EnvironmentMap::Init()
     geoRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(geoFramebufferSpec.Width, geoFramebufferSpec.Height, 
         AttachmentType::Renderbuffer, AttachmentFormat::Depth);
     geoRenderPassSpec.TargetFramebuffer->Generate(geoFramebufferSpec.Width, geoFramebufferSpec.Height);
-    s_Data.GeoPass = Hazel::RenderPass::Create(geoRenderPassSpec);
+    m_Data.GeoPass = Hazel::RenderPass::Create(geoRenderPassSpec);
 
     FramebufferSpecification compFramebufferSpec;
     compFramebufferSpec.Width = 1280;
@@ -219,10 +220,12 @@ void EnvironmentMap::Init()
     Hazel::RenderPassSpecification compRenderPassSpec;
     compRenderPassSpec.TargetFramebuffer = new Framebuffer(compFramebufferSpec);
     compRenderPassSpec.TargetFramebuffer->CreateAttachment(compFramebufferSpec);
+    compRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(compFramebufferSpec.Width, compFramebufferSpec.Height,
+        AttachmentType::Renderbuffer, AttachmentFormat::Depth);
     compRenderPassSpec.TargetFramebuffer->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
-    s_Data.CompositePass = Hazel::RenderPass::Create(compRenderPassSpec);
+    m_Data.CompositePass = Hazel::RenderPass::Create(compRenderPassSpec);
 
-    s_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
+    m_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
 
     SetupContextData();
 }
@@ -239,14 +242,14 @@ EnvironmentMap::~EnvironmentMap()
 
 void EnvironmentMap::SetViewportSize(uint32_t width, uint32_t height)
 {
-    s_Data.GeoPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-    s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
+    m_Data.GeoPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+    m_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
 }
 
 void EnvironmentMap::BeginScene(const Scene* scene)
 {
-    s_Data.ActiveScene = scene;
-    s_Data.SceneData.SceneCamera = scene->GetCamera();
+    m_Data.ActiveScene = scene;
+    m_Data.SceneData.SceneCamera = scene->GetCamera();
 }
 
 void EnvironmentMap::EndScene()
@@ -260,40 +263,40 @@ void EnvironmentMap::SubmitEntity(Hazel::Entity* entity)
     if (!mesh)
         return;
 
-    s_Data.DrawList.push_back({ (Hazel::MeshAnimPBR*)mesh, entity->GetMaterial(), entity->GetTransform() });
+    m_Data.DrawList.push_back({ entity->GetName(), (Hazel::MeshAnimPBR*)mesh, entity->GetMaterial(), entity->GetTransform() });
 }
 
 Hazel::RenderPass* EnvironmentMap::GetFinalRenderPass()
 {
-    return s_Data.CompositePass;
+    return m_Data.CompositePass;
 }
 
 FramebufferTexture* EnvironmentMap::GetFinalColorBuffer()
 {
-    return s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor();
+    return m_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor();
 }
 
 uint32_t EnvironmentMap::GetFinalColorBufferID()
 {
-    return (uint32_t)s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
+    return (uint32_t)m_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
 }
 
 EnvironmentMap::Options& EnvironmentMap::GetOptions()
 {
-    return s_Data.Options;
+    return m_Data.Options;
 }
 
 void EnvironmentMap::FlushDrawList()
 {
-    if (!s_Data.ActiveScene) {
+    if (!m_Data.ActiveScene) {
         Log::GetLogger()->error("Active scene is not specified!");
     }
 
     GeometryPass();
     CompositePass();
 
-    s_Data.DrawList.clear();
-    s_Data.SceneData = {};
+    //  m_Data.DrawList.clear(); // TODO: make DrawList update every tick
+    //  m_Data.SceneData = {};   // TODO: make SceneData update every tick
 }
 
 std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> EnvironmentMap::CreateEnvironmentMap(const std::string& filepath)
@@ -346,33 +349,33 @@ std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> EnvironmentMap::Cr
 
 void EnvironmentMap::GeometryPass()
 {
-    BeginRenderPass(s_Data.GeoPass, true); // should we clear the buffer?
+    BeginRenderPass(m_Data.GeoPass, false); // should we clear the buffer?
 
-    auto viewProjection = s_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
+    auto viewProjection = m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
 
     // Skybox
     m_ShaderSkybox->Bind();
     m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
     m_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProjection));
-    SubmitFullscreenQuad(s_Data.SceneData.SkyboxMaterial);
+    SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
 
     // Render entities
-    for (auto& dc : s_Data.DrawList)
+    for (auto& dc : m_Data.DrawList)
     {
         //  auto baseMaterial = dc.Mesh->GetBaseMaterial();
         auto baseMaterial = dc.Material;
         m_ShaderHazelAnimPBR->setMat4("u_ViewProjectionMatrix", viewProjection);
-        m_ShaderHazelAnimPBR->setVec3("u_CameraPosition", s_Data.SceneData.SceneCamera->GetPosition());
+        m_ShaderHazelAnimPBR->setVec3("u_CameraPosition", m_Data.SceneData.SceneCamera->GetPosition());
 
         // Environment (TODO: don't do this per mesh)
-        m_ShaderHazelAnimPBR->setInt("u_EnvRadianceTex", s_Data.SceneData.SceneEnvironment.RadianceMap->GetID());
-        m_ShaderHazelAnimPBR->setInt("u_EnvIrradianceTex", s_Data.SceneData.SceneEnvironment.IrradianceMap->GetID());
-        m_ShaderHazelAnimPBR->setInt("u_BRDFLUTTexture", s_Data.BRDFLUT->GetID());
+        m_ShaderHazelAnimPBR->setInt("u_EnvRadianceTex", m_Data.SceneData.SceneEnvironment.RadianceMap->GetID());
+        m_ShaderHazelAnimPBR->setInt("u_EnvIrradianceTex", m_Data.SceneData.SceneEnvironment.IrradianceMap->GetID());
+        m_ShaderHazelAnimPBR->setInt("u_BRDFLUTTexture", m_Data.BRDFLUT->GetID());
 
         // Set lights (TODO: move to light environment and don't do per mesh)
-        m_ShaderHazelAnimPBR->setVec3("lights.Direction", s_Data.SceneData.ActiveLight.Direction);
-        m_ShaderHazelAnimPBR->setVec3("lights.Radiance", s_Data.SceneData.ActiveLight.Radiance);
-        m_ShaderHazelAnimPBR->setFloat("lights.Multiplier", s_Data.SceneData.ActiveLight.Multiplier);
+        m_ShaderHazelAnimPBR->setVec3("lights.Direction", m_Data.SceneData.ActiveLight.Direction);
+        m_ShaderHazelAnimPBR->setVec3("lights.Radiance", m_Data.SceneData.ActiveLight.Radiance);
+        m_ShaderHazelAnimPBR->setFloat("lights.Multiplier", m_Data.SceneData.ActiveLight.Multiplier);
 
         auto overrideMaterial = nullptr; // dc.Material;
         SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
@@ -398,23 +401,23 @@ void EnvironmentMap::GeometryPass()
 
 void EnvironmentMap::CompositePass()
 {
-    BeginRenderPass(s_Data.CompositePass, true); // should we clear the framebuffer at this stage?
+    BeginRenderPass(m_Data.CompositePass, false); // should we clear the framebuffer at this stage?
     m_ShaderComposite->Bind();
-    m_ShaderComposite->setFloat("u_Exposure", s_Data.SceneData.SceneCamera->GetExposure());
-    m_ShaderComposite->setInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
-    s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind();
+    m_ShaderComposite->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
+    m_ShaderComposite->setInt("u_TextureSamples", m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
+    m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind();
     SubmitFullscreenQuad(nullptr);
     EndRenderPass();
 }
 
 void EnvironmentMap::Update(Scene* scene, float timestep)
 {
-    s_Data.ActiveScene = scene;
+    m_Data.ActiveScene = scene;
 
     UpdateUniforms();
 
     // Update MeshAnimPBR List
-    for (auto& dc : s_Data.DrawList)
+    for (auto& dc : m_Data.DrawList)
     {
         dc.Mesh->OnUpdate(timestep, false);
     }
@@ -422,12 +425,12 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
 
 void EnvironmentMap::Render()
 {
-    BeginScene(s_Data.ActiveScene);
+    BeginScene(m_Data.ActiveScene);
 
     // Render MeshAnimPBR meshes (later entt entities)
     uint32_t samplerSlot = m_SamplerSlots->at("albedo");
     glm::mat4 entityTransform = glm::mat4(1.0f);
-    for (auto& dc : s_Data.DrawList)
+    for (auto& dc : m_Data.DrawList)
     {
         dc.Mesh->Render(samplerSlot, entityTransform);
     }
@@ -442,7 +445,7 @@ void EnvironmentMap::BeginRenderPass(Hazel::RenderPass* renderPass, bool clear)
     }
 
     // TODO: Convert all of this into a render command buffer
-    s_Data.ActiveRenderPass = renderPass;
+    m_Data.ActiveRenderPass = renderPass;
 
     renderPass->GetSpecification().TargetFramebuffer->Bind();
 
@@ -462,8 +465,8 @@ void EnvironmentMap::SubmitFullscreenQuad(Material* material)
         depthTest = material->GetFlag(MaterialFlag::DepthTest);
     }
 
-    glBindVertexArray(s_Data.FullscreenQuadVAO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data.FullscreenQuadIBO);
+    glBindVertexArray(m_Data.FullscreenQuadVAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.FullscreenQuadIBO);
     DrawIndexed(6, PrimitiveType::Triangles, depthTest);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
     glBindVertexArray(0);                     // Unbind VAO
@@ -495,12 +498,12 @@ void EnvironmentMap::DrawIndexed(uint32_t count, PrimitiveType type, bool depthT
 
 void EnvironmentMap::EndRenderPass()
 {
-    if (!s_Data.ActiveRenderPass) {
+    if (!m_Data.ActiveRenderPass) {
         Log::GetLogger()->error("No active render pass! Have you called Renderer::EndRenderPass twice?");
     }
 
-    s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
-    s_Data.ActiveRenderPass = nullptr;
+    m_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
+    m_Data.ActiveRenderPass = nullptr;
 }
 
 void EnvironmentMap::SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& transform, Material* overrideMaterial)

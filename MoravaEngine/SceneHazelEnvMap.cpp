@@ -201,46 +201,29 @@ void SceneHazelEnvMap::SetupShaders()
 
 void SceneHazelEnvMap::SetupMeshes()
 {
-    float materialSpecular = 0.0f;
-    float materialShininess = 0.0f;
-
-    m_Entities.insert(std::make_pair("M1911", Entity()));
-
-    m_Entities["M1911"].Enabled = true;
-
-    for (auto& entity : m_Entities)
+    for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
     {
-        entity.second.Transform.Translation = glm::vec3(0.0f);
-        entity.second.Transform.Rotation = glm::quat(glm::vec3(0.0f));
-        entity.second.Init.Transform.Scale = glm::vec3(1.0f);
+        m_Entities.insert(std::make_pair(drawCommand.Name, Entity()));
+
+        m_Entities[drawCommand.Name].Enabled = true;
+        m_Entities[drawCommand.Name].Transform.Translation = glm::vec3(0.0f);
+        m_Entities[drawCommand.Name].Transform.Rotation = glm::quat(glm::vec3(0.0f));
+        m_Entities[drawCommand.Name].Init.Transform.Scale = glm::vec3(1.0f);
+        m_Entities[drawCommand.Name].Init.AABB.Transform.Scale = glm::vec3(1.0f);
+        m_Entities[drawCommand.Name].OriginOffset = glm::vec3(0.0f);
+
+        Log::GetLogger()->info("-- BEGIN SceneHazelEnvMap setup M1911");
+        {
+            m_Entities[drawCommand.Name].Transform.Scale = m_Entities[drawCommand.Name].Init.Transform.Scale;
+            m_Entities[drawCommand.Name].Transform.Transform = glm::mat4(1.0f);
+            m_Entities[drawCommand.Name].Transform.Transform = glm::translate(m_Entities[drawCommand.Name].Transform.Transform, m_Entities[drawCommand.Name].Transform.Translation);
+            m_Entities[drawCommand.Name].Transform.Transform = glm::scale(m_Entities[drawCommand.Name].Transform.Transform, m_Entities[drawCommand.Name].Transform.Scale);
+
+            m_Entities[drawCommand.Name].AABB = AABB(m_Entities[drawCommand.Name].Transform.Translation + m_Entities[drawCommand.Name].OriginOffset,
+                m_Entities[drawCommand.Name].Transform.Rotation, m_Entities[drawCommand.Name].Init.AABB.Transform.Scale);
+        }
+        Log::GetLogger()->info("-- END SceneHazelEnvMap setup M1911");
     }
-
-    m_Entities["M1911"].Init.AABB.Transform.Scale   = glm::vec3(1.0f, 1.0f, 1.0f);
-    m_Entities["M1911"].OriginOffset   = glm::vec3(0.0f);
-
-    Log::GetLogger()->info("-- BEGIN loading M1911 FBX --");
-
-    // M1911
-    TextureInfo textureInfoM1911 = {};
-    textureInfoM1911.albedo    = "Models/m1911/m1911_color.png";
-    textureInfoM1911.normal    = "Models/m1911/m1911_normal.png";
-    textureInfoM1911.metallic  = "Models/m1911/m1911_metalness.png";
-    textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
-    textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
-
-    m_MeshBaseMaterial = new Material(textureInfoM1911, materialSpecular, materialShininess);
-    m_MeshAnimPBR = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_EnvironmentMap->GetPBRShader(), m_MeshBaseMaterial);
-    m_MeshAnimPBR->SetTimeMultiplier(1.0f);
-
-    m_Entities["M1911"].Transform.Scale = m_Entities["M1911"].Init.Transform.Scale;
-    m_Entities["M1911"].Transform.Transform = glm::mat4(1.0f);
-    m_Entities["M1911"].Transform.Transform = glm::translate(m_Entities["M1911"].Transform.Transform, m_Entities["M1911"].Transform.Translation);
-    m_Entities["M1911"].Transform.Transform = glm::scale(m_Entities["M1911"].Transform.Transform, m_Entities["M1911"].Transform.Scale);
-
-    m_Entities["M1911"].AABB = AABB(m_Entities["M1911"].Transform.Translation + m_Entities["M1911"].OriginOffset,
-        m_Entities["M1911"].Transform.Rotation, m_Entities["M1911"].Init.AABB.Transform.Scale);
-
-    Log::GetLogger()->info("-- END loading M1911 FBX --");
 }
 
 void SceneHazelEnvMap::SetupModels()
@@ -253,8 +236,6 @@ void SceneHazelEnvMap::SetupFramebuffers()
 
 void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 {
-    m_EnvironmentMap->Update(this, timestep);
-
     m_CurrentTimestamp = timestep;
 
     for (auto& entity : m_Entities)
@@ -275,7 +256,8 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
     // m_EnvironmentMap->GetPBRShader()->setFloat("u_TilingFactor", 1.0f);
 
     float deltaTime = Timer::Get()->GetDeltaTime();
-    m_MeshAnimPBR->OnUpdate(deltaTime, false);
+
+    m_EnvironmentMap->Update(this, deltaTime);
 
     if (m_HDRI_Edit != m_HDRI_Edit_Prev)
     {
@@ -463,10 +445,10 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
 
             ImGui::Text("Geo Pass");
-            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData().GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
 
             ImGui::Text("Composite Pass");
-            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData().CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
         }
     }
     ImGui::End();
@@ -481,6 +463,20 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             glm::ivec2 depthAttachmentSize = glm::ivec2(
                 m_RenderFramebuffer->GetAttachmentDepth()->GetWidth(),
                 m_RenderFramebuffer->GetAttachmentDepth()->GetHeight());
+
+            ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
+            ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
+        }
+        ImGui::End();
+
+        ImGui::Begin("Viewport Environment Map Info");
+        {
+            glm::ivec2 colorAttachmentSize = glm::ivec2(
+                m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetWidth(),
+                m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetHeight());
+            glm::ivec2 depthAttachmentSize = glm::ivec2(
+                m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetAttachmentDepth()->GetWidth(),
+                m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetAttachmentDepth()->GetHeight());
 
             ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
             ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
@@ -579,191 +575,200 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     /**** BEGIN Environment Map Settings ****/
     ImGui::Begin("Environment Map Settings");
     {
+        if (ImGui::CollapsingHeader("Display Info"))
         {
-            if (ImGui::Button("Load Environment Map"))
             {
-                std::string filename = Application::Get()->OpenFile("*.hdr");
-                if (filename != "")
-                    m_EnvironmentMap->SetEnvironment(m_EnvironmentMap->Load(filename));
-            }
-
-            float skyboxLOD = m_EnvironmentMap->GetSkyboxLOD();
-            if (ImGui::SliderFloat("Skybox LOD", &skyboxLOD, 0.0f, 6.0f))
-            {
-                m_EnvironmentMap->SetSkyboxLOD(skyboxLOD);
-            }
-
-            ImGui::Columns(2);
-            ImGui::AlignTextToFramePadding();
-
-            auto& light = m_EnvironmentMap->GetLight();
-            Property("Light Direction", light.Direction);
-            Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
-            Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
-            Property("Exposure", m_Camera->GetExposure(), 0.0f, 5.0f);
-
-            Property("Radiance Prefiltering", m_EnvironmentMap->GetRadiancePrefilter());
-            Property("Env Map Rotation", m_EnvironmentMap->GetEnvMapRotation(), -360.0f, 360.0f);
-
-            ImGui::Columns(1);
-        }
-
-        ImGui::Separator();
-
-        {
-            ImGui::Text("Mesh");
-            auto mesh = m_MeshAnimPBR;
-            std::string fullpath = mesh ? mesh->GetFilePath() : "None";
-            size_t found = fullpath.find_last_of("/\\");
-            std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
-            ImGui::Text(path.c_str()); ImGui::SameLine();
-            if (ImGui::Button("...##Mesh"))
-            {
-                std::string filename = Application::Get()->OpenFile("");
-                if (filename != "")
+                if (ImGui::Button("Load Environment Map"))
                 {
-                    auto newMesh = new Hazel::MeshAnimPBR(filename, m_EnvironmentMap->GetPBRShader(), m_MeshBaseMaterial);
-                    m_EntityMesh->SetMesh(newMesh);
+                    std::string filename = Application::Get()->OpenFile("*.hdr");
+                    if (filename != "")
+                        m_EnvironmentMap->SetEnvironment(m_EnvironmentMap->Load(filename));
                 }
-            }
-        }
 
-        ImGui::Separator();
-
-        // Albedo
-        if (ImGui::CollapsingHeader("Albedo", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-            ImGui::Image(m_EnvironmentMap->GetAlbedoInput().TextureMap ? 
-                (void*)(intptr_t)m_EnvironmentMap->GetAlbedoInput().TextureMap->GetID() :
-                (void*)(intptr_t)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
-            ImGui::PopStyleVar();
-            if (ImGui::IsItemHovered())
-            {
-                if (m_EnvironmentMap->GetAlbedoInput().TextureMap)
+                float skyboxLOD = m_EnvironmentMap->GetSkyboxLOD();
+                if (ImGui::SliderFloat("Skybox LOD", &skyboxLOD, 0.0f, 6.0f))
                 {
-                    ImGui::BeginTooltip();
-                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                    ImGui::TextUnformatted(m_EnvironmentMap->GetAlbedoInput().TextureMap->GetPath().c_str());
-                    ImGui::PopTextWrapPos();
-                    ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetAlbedoInput().TextureMap->GetID(), ImVec2(384, 384));
-                    ImGui::EndTooltip();
+                    m_EnvironmentMap->SetSkyboxLOD(skyboxLOD);
                 }
-                if (ImGui::IsItemClicked())
+
+                ImGui::Columns(2);
+                ImGui::AlignTextToFramePadding();
+
+                auto& light = m_EnvironmentMap->GetLight();
+                Property("Light Direction", light.Direction);
+                Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
+                Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
+                Property("Exposure", m_Camera->GetExposure(), 0.0f, 5.0f);
+
+                Property("Radiance Prefiltering", m_EnvironmentMap->GetRadiancePrefilter());
+                Property("Env Map Rotation", m_EnvironmentMap->GetEnvMapRotation(), -360.0f, 360.0f);
+
+                ImGui::Columns(1);
+            }
+
+            ImGui::Separator();
+
+            {
+                ImGui::Text("Mesh");
+
+                auto mesh = m_EnvironmentMap->GetContextData()->DrawList[0].Mesh;
+                std::string fullpath = mesh ? mesh->GetFilePath() : "None";
+                size_t found = fullpath.find_last_of("/\\");
+                std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
+                ImGui::Text(path.c_str()); ImGui::SameLine();
+                if (ImGui::Button("...##Mesh"))
                 {
                     std::string filename = Application::Get()->OpenFile("");
                     if (filename != "")
-                        m_EnvironmentMap->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, m_EnvironmentMap->GetAlbedoInput().SRGB);
+                    {
+                        auto newMesh = new Hazel::MeshAnimPBR(filename, m_EnvironmentMap->GetPBRShader(), m_EnvironmentMap->GetContextData()->DrawList[0].Material);
+                        m_EntityMesh->SetMesh(newMesh);
+                    }
                 }
             }
-            ImGui::SameLine();
-            ImGui::BeginGroup();
-            ImGui::Checkbox("Use##AlbedoMap", &m_EnvironmentMap->GetAlbedoInput().UseTexture);
-            if (ImGui::Checkbox("sRGB##AlbedoMap", &m_EnvironmentMap->GetAlbedoInput().SRGB))
+
+            ImGui::Separator();
+
+            // PBR Textures
             {
-                if (m_EnvironmentMap->GetAlbedoInput().TextureMap)
-                    m_EnvironmentMap->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(m_EnvironmentMap->GetAlbedoInput().TextureMap->GetPath(), m_EnvironmentMap->GetAlbedoInput().SRGB);
+                {
+                    // Albedo
+                    if (ImGui::CollapsingHeader("Albedo", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+                    {
+                        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+                        ImGui::Image(m_EnvironmentMap->GetAlbedoInput().TextureMap ?
+                            (void*)(intptr_t)m_EnvironmentMap->GetAlbedoInput().TextureMap->GetID() :
+                            (void*)(intptr_t)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
+                        ImGui::PopStyleVar();
+                        if (ImGui::IsItemHovered())
+                        {
+                            if (m_EnvironmentMap->GetAlbedoInput().TextureMap)
+                            {
+                                ImGui::BeginTooltip();
+                                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                                ImGui::TextUnformatted(m_EnvironmentMap->GetAlbedoInput().TextureMap->GetPath().c_str());
+                                ImGui::PopTextWrapPos();
+                                ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetAlbedoInput().TextureMap->GetID(), ImVec2(384, 384));
+                                ImGui::EndTooltip();
+                            }
+                            if (ImGui::IsItemClicked())
+                            {
+                                std::string filename = Application::Get()->OpenFile("");
+                                if (filename != "")
+                                    m_EnvironmentMap->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, m_EnvironmentMap->GetAlbedoInput().SRGB);
+                            }
+                        }
+                        ImGui::SameLine();
+                        ImGui::BeginGroup();
+                        ImGui::Checkbox("Use##AlbedoMap", &m_EnvironmentMap->GetAlbedoInput().UseTexture);
+                        if (ImGui::Checkbox("sRGB##AlbedoMap", &m_EnvironmentMap->GetAlbedoInput().SRGB))
+                        {
+                            if (m_EnvironmentMap->GetAlbedoInput().TextureMap)
+                                m_EnvironmentMap->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(m_EnvironmentMap->GetAlbedoInput().TextureMap->GetPath(), m_EnvironmentMap->GetAlbedoInput().SRGB);
+                        }
+                        ImGui::EndGroup();
+                        ImGui::SameLine();
+                        ImGui::ColorEdit3("Color##Albedo", glm::value_ptr(m_EnvironmentMap->GetAlbedoInput().Color), ImGuiColorEditFlags_NoInputs);
+                    }
+                }
+                {
+                    // Normals
+                    if (ImGui::CollapsingHeader("Normals", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+                    {
+                        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+                        ImGui::Image(m_EnvironmentMap->GetNormalInput().TextureMap ?
+                            (void*)(intptr_t)m_EnvironmentMap->GetNormalInput().TextureMap->GetID() :
+                            (void*)(intptr_t)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
+                        ImGui::PopStyleVar();
+                        if (ImGui::IsItemHovered())
+                        {
+                            if (m_EnvironmentMap->GetNormalInput().TextureMap)
+                            {
+                                ImGui::BeginTooltip();
+                                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                                ImGui::TextUnformatted(m_EnvironmentMap->GetNormalInput().TextureMap->GetPath().c_str());
+                                ImGui::PopTextWrapPos();
+                                ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetNormalInput().TextureMap->GetID(), ImVec2(384, 384));
+                                ImGui::EndTooltip();
+                            }
+                            if (ImGui::IsItemClicked())
+                            {
+                                std::string filename = Application::Get()->OpenFile("");
+                                if (filename != "")
+                                    m_EnvironmentMap->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                            }
+                        }
+                        ImGui::SameLine();
+                        ImGui::Checkbox("Use##NormalMap", &m_EnvironmentMap->GetNormalInput().UseTexture);
+                    }
+                }
+                {
+                    // Metalness
+                    if (ImGui::CollapsingHeader("Metalness", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+                    {
+                        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+                        ImGui::Image(m_EnvironmentMap->GetMetalnessInput().TextureMap ?
+                            (void*)(intptr_t)m_EnvironmentMap->GetMetalnessInput().TextureMap->GetID() :
+                            (void*)(intptr_t)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
+                        ImGui::PopStyleVar();
+                        if (ImGui::IsItemHovered())
+                        {
+                            if (m_EnvironmentMap->GetMetalnessInput().TextureMap)
+                            {
+                                ImGui::BeginTooltip();
+                                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                                ImGui::TextUnformatted(m_EnvironmentMap->GetMetalnessInput().TextureMap->GetPath().c_str());
+                                ImGui::PopTextWrapPos();
+                                ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetMetalnessInput().TextureMap->GetID(), ImVec2(384, 384));
+                                ImGui::EndTooltip();
+                            }
+                            if (ImGui::IsItemClicked())
+                            {
+                                std::string filename = Application::Get()->OpenFile("");
+                                if (filename != "")
+                                    m_EnvironmentMap->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                            }
+                        }
+                        ImGui::SameLine();
+                        ImGui::Checkbox("Use##MetalnessMap", &m_EnvironmentMap->GetMetalnessInput().UseTexture);
+                        ImGui::SameLine();
+                        ImGui::SliderFloat("Value##MetalnessInput", &m_EnvironmentMap->GetMetalnessInput().Value, 0.0f, 1.0f);
+                    }
+                }
+                {
+                    // Roughness
+                    if (ImGui::CollapsingHeader("Roughness", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+                    {
+                        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+                        ImGui::Image(m_EnvironmentMap->GetRoughnessInput().TextureMap ?
+                            (void*)(intptr_t)m_EnvironmentMap->GetRoughnessInput().TextureMap->GetID() :
+                            (void*)(intptr_t)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
+                        ImGui::PopStyleVar();
+                        if (ImGui::IsItemHovered())
+                        {
+                            if (m_EnvironmentMap->GetRoughnessInput().TextureMap)
+                            {
+                                ImGui::BeginTooltip();
+                                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                                ImGui::TextUnformatted(m_EnvironmentMap->GetRoughnessInput().TextureMap->GetPath().c_str());
+                                ImGui::PopTextWrapPos();
+                                ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetRoughnessInput().TextureMap->GetID(), ImVec2(384, 384));
+                                ImGui::EndTooltip();
+                            }
+                            if (ImGui::IsItemClicked())
+                            {
+                                std::string filename = Application::Get()->OpenFile("");
+                                if (filename != "")
+                                    m_EnvironmentMap->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                            }
+                        }
+                        ImGui::SameLine();
+                        ImGui::Checkbox("Use##RoughnessMap", &m_EnvironmentMap->GetRoughnessInput().UseTexture);
+                        ImGui::SameLine();
+                        ImGui::SliderFloat("Value##RoughnessInput", &m_EnvironmentMap->GetRoughnessInput().Value, 0.0f, 1.0f);
+                    }
+                }
             }
-            ImGui::EndGroup();
-            ImGui::SameLine();
-            ImGui::ColorEdit3("Color##Albedo", glm::value_ptr(m_EnvironmentMap->GetAlbedoInput().Color), ImGuiColorEditFlags_NoInputs);
-        }
-    }
-    {
-        // Normals
-        if (ImGui::CollapsingHeader("Normals", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-            ImGui::Image(m_EnvironmentMap->GetNormalInput().TextureMap ?
-                (void*)(intptr_t)m_EnvironmentMap->GetNormalInput().TextureMap->GetID() :
-                (void*)(intptr_t)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
-            ImGui::PopStyleVar();
-            if (ImGui::IsItemHovered())
-            {
-                if (m_EnvironmentMap->GetNormalInput().TextureMap)
-                {
-                    ImGui::BeginTooltip();
-                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                    ImGui::TextUnformatted(m_EnvironmentMap->GetNormalInput().TextureMap->GetPath().c_str());
-                    ImGui::PopTextWrapPos();
-                    ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetNormalInput().TextureMap->GetID(), ImVec2(384, 384));
-                    ImGui::EndTooltip();
-                }
-                if (ImGui::IsItemClicked())
-                {
-                    std::string filename = Application::Get()->OpenFile("");
-                    if (filename != "")
-                        m_EnvironmentMap->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
-                }
-            }
-            ImGui::SameLine();
-            ImGui::Checkbox("Use##NormalMap", &m_EnvironmentMap->GetNormalInput().UseTexture);
-        }
-    }
-    {
-        // Metalness
-        if (ImGui::CollapsingHeader("Metalness", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-            ImGui::Image(m_EnvironmentMap->GetMetalnessInput().TextureMap ?
-                (void*)(intptr_t)m_EnvironmentMap->GetMetalnessInput().TextureMap->GetID() :
-                (void*)(intptr_t)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
-            ImGui::PopStyleVar();
-            if (ImGui::IsItemHovered())
-            {
-                if (m_EnvironmentMap->GetMetalnessInput().TextureMap)
-                {
-                    ImGui::BeginTooltip();
-                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                    ImGui::TextUnformatted(m_EnvironmentMap->GetMetalnessInput().TextureMap->GetPath().c_str());
-                    ImGui::PopTextWrapPos();
-                    ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetMetalnessInput().TextureMap->GetID(), ImVec2(384, 384));
-                    ImGui::EndTooltip();
-                }
-                if (ImGui::IsItemClicked())
-                {
-                    std::string filename = Application::Get()->OpenFile("");
-                    if (filename != "")
-                        m_EnvironmentMap->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
-                }
-            }
-            ImGui::SameLine();
-            ImGui::Checkbox("Use##MetalnessMap", &m_EnvironmentMap->GetMetalnessInput().UseTexture);
-            ImGui::SameLine();
-            ImGui::SliderFloat("Value##MetalnessInput", &m_EnvironmentMap->GetMetalnessInput().Value, 0.0f, 1.0f);
-        }
-    }
-    {
-        // Roughness
-        if (ImGui::CollapsingHeader("Roughness", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-            ImGui::Image(m_EnvironmentMap->GetRoughnessInput().TextureMap ?
-                (void*)(intptr_t)m_EnvironmentMap->GetRoughnessInput().TextureMap->GetID() :
-                (void*)(intptr_t)m_EnvironmentMap->GetCheckerboardTexture()->GetID(), ImVec2(64, 64));
-            ImGui::PopStyleVar();
-            if (ImGui::IsItemHovered())
-            {
-                if (m_EnvironmentMap->GetRoughnessInput().TextureMap)
-                {
-                    ImGui::BeginTooltip();
-                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                    ImGui::TextUnformatted(m_EnvironmentMap->GetRoughnessInput().TextureMap->GetPath().c_str());
-                    ImGui::PopTextWrapPos();
-                    ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetRoughnessInput().TextureMap->GetID(), ImVec2(384, 384));
-                    ImGui::EndTooltip();
-                }
-                if (ImGui::IsItemClicked())
-                {
-                    std::string filename = Application::Get()->OpenFile("");
-                    if (filename != "")
-                        m_EnvironmentMap->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
-                }
-            }
-            ImGui::SameLine();
-            ImGui::Checkbox("Use##RoughnessMap", &m_EnvironmentMap->GetRoughnessInput().UseTexture);
-            ImGui::SameLine();
-            ImGui::SliderFloat("Value##RoughnessInput", &m_EnvironmentMap->GetRoughnessInput().Value, 0.0f, 1.0f);
         }
     }
     ImGui::End();
@@ -823,7 +828,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             glm::vec2 viewportPanelSize = glm::vec2(viewportPanelSizeImGui.x, viewportPanelSizeImGui.y);
 
             // ResizeViewport(viewportPanelSize); // Currently resize can only work with a single (main) viewport
-            uint64_t textureID = m_EnvironmentMap->GetContextData().CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
+            uint64_t textureID = m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
             ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportEnvMapSize.x, m_ViewportEnvMapSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
         }
         ImGui::End();
@@ -833,7 +838,10 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
     // ImGui::ShowMetricsWindow();
 
-    m_MeshAnimPBR->OnImGuiRender();
+    for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
+    {
+        drawCommand.Mesh->OnImGuiRender();
+    }
 }
 
 void SceneHazelEnvMap::UpdateImGuizmo(Window* mainWindow)
@@ -1059,21 +1067,25 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
         m_ShaderBackground->setMat4("projection", projectionMatrix);
         m_ShaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
 
+        m_EnvironmentMap->GetContextData()->SceneData.SceneEnvironment.RadianceMap->Bind(0);
         m_ShaderBackground->setInt("environmentMap", 0);
         m_ShaderBackground->setFloat("u_TextureLOD", m_EnvironmentMap->GetSkyboxLOD());
     }
     // END Skybox backgroundShader
 
     /**** BEGIN Animated PBR models ****/
-    if (m_Entities["M1911"].Enabled)
+    for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
     {
-        m_MeshAnimPBR->Render(m_EnvironmentMap->GetSamplerSlots()->at("albedo"), m_Entities["M1911"].Transform.Transform);
+        if (m_Entities[drawCommand.Name].Enabled)
+        {
+            drawCommand.Mesh->Render(m_EnvironmentMap->GetSamplerSlots()->at("albedo"), m_Entities[drawCommand.Name].Transform.Transform);
+        }
     }
 
     RenderLineElements(m_ShaderBasic, projectionMatrix);
 
     // Render the Environment Map scene to the s_Data.CompositePass framebuffer
-    m_EnvironmentMap->Render();
+    // m_EnvironmentMap->Render();
 
     if (m_IsViewportEnabled)
     {
