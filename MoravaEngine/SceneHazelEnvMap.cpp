@@ -1025,62 +1025,87 @@ void SceneHazelEnvMap::RenderLineElements(Shader* shaderBasic, glm::mat4 project
 void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
-    if (m_IsViewportEnabled)
+    /**** BEGIN Render to Main Viewport ****/
     {
-        m_RenderFramebuffer->Bind();
-        m_RenderFramebuffer->Clear(); // Clear the window
-    }
-    else
-    {
-        // configure the viewport to the original framebuffer's screen dimensions
-        glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
-        RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
-    }
-
-    SetupUniforms();
-
-    glm::mat4 model = glm::mat4(1.0f);
-
-    // BEGIN Skybox backgroundShader
-    {
-        // render skybox (render as last to prevent overdraw)
-        m_ShaderBackground->Bind();
-
-        // Skybox shaderBackground
-        RendererBasic::DisableCulling();
-        // render skybox (render as last to prevent overdraw)
-
-        model = glm::mat4(1.0f);
-        float angleRadians = glm::radians((GLfloat)glfwGetTime());
-        // model = glm::rotate(model, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-        m_ShaderBackground->setMat4("model", model);
-        m_ShaderBackground->setMat4("projection", projectionMatrix);
-        m_ShaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
-
-        m_EnvironmentMap->GetContextData()->SceneData.SceneEnvironment.RadianceMap->Bind(0);
-        m_ShaderBackground->setInt("environmentMap", 0);
-        m_ShaderBackground->setFloat("u_TextureLOD", m_EnvironmentMap->GetSkyboxLOD());
-    }
-    // END Skybox backgroundShader
-
-    /**** BEGIN Animated PBR models ****/
-    for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
-    {
-        if (m_Entities[drawCommand.Name].Enabled)
+        if (m_IsViewportEnabled)
         {
-            drawCommand.Mesh->Render(m_EnvironmentMap->GetSamplerSlots()->at("albedo"), m_Entities[drawCommand.Name].Transform.Transform);
+            m_RenderFramebuffer->Bind();
+            m_RenderFramebuffer->Clear(); // Clear the window
+        }
+        else
+        {
+            // configure the viewport to the original framebuffer's screen dimensions
+            glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
+            RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
+        }
+
+        SetupUniforms();
+
+        glm::mat4 model = glm::mat4(1.0f);
+
+        // BEGIN Skybox backgroundShader
+        {
+            // render skybox (render as last to prevent overdraw)
+            m_ShaderBackground->Bind();
+
+            // Skybox shaderBackground
+            RendererBasic::DisableCulling();
+            // render skybox (render as last to prevent overdraw)
+
+            model = glm::mat4(1.0f);
+            float angleRadians = glm::radians((GLfloat)glfwGetTime());
+            // model = glm::rotate(model, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+            m_ShaderBackground->setMat4("model", model);
+            m_ShaderBackground->setMat4("projection", projectionMatrix);
+            m_ShaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
+
+            m_EnvironmentMap->GetContextData()->SceneData.SceneEnvironment.RadianceMap->Bind(0);
+            m_ShaderBackground->setInt("environmentMap", 0);
+            m_ShaderBackground->setFloat("u_TextureLOD", m_EnvironmentMap->GetSkyboxLOD());
+        }
+        // END Skybox backgroundShader
+
+        /**** BEGIN Animated PBR models ****/
+        for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
+        {
+            if (m_Entities[drawCommand.Name].Enabled)
+            {
+                drawCommand.Mesh->Render(m_EnvironmentMap->GetSamplerSlots()->at("albedo"), m_Entities[drawCommand.Name].Transform.Transform);
+            }
+        }
+        /**** END Animated PBR models ****/
+
+        RenderLineElements(m_ShaderBasic, projectionMatrix);
+
+        // Render the Environment Map scene to the s_Data.CompositePass framebuffer
+        m_EnvironmentMap->Render();
+
+        if (m_IsViewportEnabled)
+        {
+            m_RenderFramebuffer->Unbind();
         }
     }
+    /**** END Render to Main Viewport ****/
 
-    RenderLineElements(m_ShaderBasic, projectionMatrix);
-
-    // Render the Environment Map scene to the s_Data.CompositePass framebuffer
-    m_EnvironmentMap->Render();
-
-    if (m_IsViewportEnabled)
+    /**** BEGIN Render to Viewport Environment Map
     {
-        m_RenderFramebuffer->Unbind();
+        if (m_IsViewportEnabled)
+        {
+            m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->Bind();
+            m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->Clear();
+        }
+
+        // Render the Environment Map scene to the s_Data.CompositePass framebuffer
+        m_EnvironmentMap->Render();
+
+        RenderLineElements(m_ShaderBasic, projectionMatrix);
+
+        if (m_IsViewportEnabled)
+        {
+            m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->Unbind();
+        }
     }
+    END Render to Viewport Environment Map ****/
 }
 
 void SceneHazelEnvMap::SetupUniforms()
