@@ -136,9 +136,6 @@ private:
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;
 
-	glm::vec3 m_LightPosition;
-	glm::vec3 m_LightColor;
-
 	Framebuffer* m_RenderFramebuffer;
 	float m_CurrentTimestamp;
 	EventCooldown m_ResizeViewport;

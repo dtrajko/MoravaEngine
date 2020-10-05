@@ -119,9 +119,6 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupMeshes();
     SetupModels();
 
-    m_LightPosition = glm::vec3(20.0f, 20.0f, 20.0f);
-    m_LightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-
     m_Translation_ImGuizmo = glm::vec3(0.0f);
     m_Transform_ImGuizmo = nullptr;
 
@@ -206,7 +203,7 @@ void SceneHazelEnvMap::SetupMeshes()
         m_Entities.insert(std::make_pair(drawCommand.Name, Entity()));
 
         m_Entities[drawCommand.Name].Enabled = true;
-        m_Entities[drawCommand.Name].Transform.Translation = glm::vec3(0.0f);
+        m_Entities[drawCommand.Name].Transform.Translation = glm::vec3(0.0f, 0.0f, 0.0f);
         m_Entities[drawCommand.Name].Transform.Rotation = glm::quat(glm::vec3(0.0f));
         m_Entities[drawCommand.Name].Init.Transform.Scale = glm::vec3(1.0f);
         m_Entities[drawCommand.Name].Init.AABB.Transform.Scale = glm::vec3(1.0f);
@@ -425,13 +422,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         sprintf(buffer, "Right      X %.2f Y %.2f Z %.2f", m_Camera->GetRight().x, m_Camera->GetRight().y, m_Camera->GetRight().z);
         ImGui::Text(buffer);
 
-    }
-    ImGui::End();
-
-    ImGui::Begin("Light");
-    {
-        ImGui::SliderFloat3("Light Position", glm::value_ptr(m_LightPosition), -100.0f, 100.0f);
-        ImGui::ColorEdit3("Light Color", glm::value_ptr(m_LightColor));
     }
     ImGui::End();
 
