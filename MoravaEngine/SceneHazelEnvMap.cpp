@@ -1085,7 +1085,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
     RenderLineElements(m_ShaderBasic, projectionMatrix);
 
     // Render the Environment Map scene to the s_Data.CompositePass framebuffer
-    // m_EnvironmentMap->Render();
+    m_EnvironmentMap->Render();
 
     if (m_IsViewportEnabled)
     {
