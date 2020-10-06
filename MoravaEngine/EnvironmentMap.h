@@ -53,6 +53,13 @@ public:
 	RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
 	Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
 
+public:
+	// Intermediate textures
+	Hazel::HazelTextureCube* m_EnvUnfiltered;
+	Hazel::HazelTexture2D* m_EnvEquirect;
+	Hazel::HazelTextureCube* m_EnvFiltered;
+	Hazel::HazelTextureCube* m_IrradianceMap;
+
 private:
 	void SetupContextData();
 	void SetupFullscreenQuad();

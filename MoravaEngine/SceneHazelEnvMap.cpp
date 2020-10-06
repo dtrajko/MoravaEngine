@@ -434,6 +434,15 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             ImGui::Text("Viewport");
             ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
 
+            ImGui::Text("Equirectangular");
+            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->m_EnvEquirect->GetID(), imageSize);
+
+            ImGui::Text("Radiance Map");
+            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->SceneData.SceneEnvironment.RadianceMap->GetID(), imageSize);
+
+            ImGui::Text("Irradiance Map");
+            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->SceneData.SceneEnvironment.IrradianceMap->GetID(), imageSize);
+
             ImGui::Text("Geo Pass");
             ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
 
