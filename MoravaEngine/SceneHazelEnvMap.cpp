@@ -308,8 +308,11 @@ void SceneHazelEnvMap::CheckIntersection(Window* mainWindow)
         for (auto& entity : m_Entities)
         {
             if (entity.second.Intersecting) {
-                m_Translation_ImGuizmo = entity.second.Transform.Translation;
-                m_Transform_ImGuizmo = &entity.second.Transform.Transform;
+                // m_Transform_ImGuizmo = &entity.second.Transform.Transform;
+                m_Transform_ImGuizmo = &m_EnvironmentMap->GetMeshEntity()->Transform();
+                auto [Translation, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+                m_Translation_ImGuizmo = Translation;
+
                 if (m_ImGuizmoType == -1) {
                     m_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
                 }
@@ -599,8 +602,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
             {
                 ImGui::Text("Mesh");
-
-                auto mesh = m_EnvironmentMap->GetContextData()->DrawList[0].Mesh;
+                auto mesh = m_EnvironmentMap->GetMeshEntity()->GetMesh();
                 std::string fullpath = mesh ? mesh->GetFilePath() : "None";
                 size_t found = fullpath.find_last_of("/\\");
                 std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
@@ -611,7 +613,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     if (filename != "")
                     {
                         auto newMesh = new Hazel::MeshAnimPBR(filename, m_EnvironmentMap->GetPBRShader(), m_EnvironmentMap->GetContextData()->DrawList[0].Material);
-                        m_EntityMesh->SetMesh(newMesh);
+                        m_EnvironmentMap->GetMeshEntity()->SetMesh(newMesh);
                     }
                 }
             }
@@ -859,11 +861,16 @@ void SceneHazelEnvMap::UpdateImGuizmo(Window* mainWindow)
         ImGuizmo::SetDrawlist();
         ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
 
+        bool snap = Input::IsKeyPressed(Key::LeftControl);
         if (m_Transform_ImGuizmo != nullptr) {
             ImGuizmo::Manipulate(
                 glm::value_ptr(m_CameraController->CalculateViewMatrix()),
                 glm::value_ptr(RendererBasic::GetProjectionMatrix()),
-                (ImGuizmo::OPERATION)m_ImGuizmoType, ImGuizmo::LOCAL, glm::value_ptr(*m_Transform_ImGuizmo));
+                (ImGuizmo::OPERATION)m_ImGuizmoType,
+                ImGuizmo::LOCAL,
+                glm::value_ptr(*m_Transform_ImGuizmo),
+                nullptr,
+                snap ? &m_SnapValue : nullptr);
         }
     }
     // END ImGuizmo
@@ -1040,16 +1047,18 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 
         SetupUniforms();
 
+        RendererBasic::EnableMSAA();
+
         m_EnvironmentMap->RenderTemporarySkybox();
 
         /** BEGIN Animated PBR models **/
-        for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
-        {
-            if (m_Entities[drawCommand.Name].Enabled)
-            {
-                drawCommand.Mesh->Render(m_EnvironmentMap->GetSamplerSlots()->at("albedo"), m_Entities[drawCommand.Name].Transform.Transform);
-            }
-        }
+        //  for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
+        //  {
+        //      if (m_Entities[drawCommand.Name].Enabled)
+        //      {
+        //          drawCommand.Mesh->Render(m_EnvironmentMap->GetSamplerSlots()->at("albedo"), m_Entities[drawCommand.Name].Transform.Transform);
+        //      }
+        //  }
         /** END Animated PBR models **/
 
         RenderLineElements(m_ShaderBasic, projectionMatrix);

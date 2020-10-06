@@ -9,6 +9,8 @@
 #include "Log.h"
 
 
+static const std::string DefaultEntityName = "Entity";
+
 EnvironmentMap::EnvironmentMap(const std::string& filepath)
 {
     m_Data = {};
@@ -116,11 +118,14 @@ void EnvironmentMap::SetupContextData()
         drawCommand.Transform = glm::mat4(1.0f);
 
         m_Data.DrawList.push_back(drawCommand);
+
+        m_MeshEntity = CreateEntity("drawCommand.Name");
+        m_MeshEntity->SetMesh(drawCommand.Mesh);
     }
     Log::GetLogger()->info("-- END EnvironmentMap loading MeshAnimPBR M1911 --");
 
     m_Data.SceneData.SkyboxMaterial = new Material(m_ShaderSkybox);
-    m_Data.SceneData.SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, false);
+    m_Data.SceneData.SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, true); // false
 
     SetupFullscreenQuad();
 }
@@ -290,6 +295,8 @@ void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
 
 EnvironmentMap::~EnvironmentMap()
 {
+    for (Hazel::Entity* entity : m_Entities)
+        delete entity;
 }
 
 void EnvironmentMap::SetViewportSize(uint32_t width, uint32_t height)
@@ -347,7 +354,7 @@ void EnvironmentMap::FlushDrawList()
     GeometryPass();
     CompositePass();
 
-    //  m_Data.DrawList.clear(); // TODO: make DrawList update every tick
+    // m_Data.DrawList.clear(); // TODO: make DrawList update every tick
     //  m_Data.SceneData = {};   // TODO: make SceneData update every tick
 }
 
@@ -382,7 +389,7 @@ void EnvironmentMap::GeometryPass()
         m_ShaderHazelAnimPBR->setFloat("lights.Multiplier", m_Data.SceneData.ActiveLight.Multiplier);
 
         auto overrideMaterial = nullptr; // dc.Material;
-        SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
+        SubmitMesh(dc.Mesh, m_MeshEntity->Transform(), overrideMaterial);
     }
 
     // Grid
@@ -414,17 +421,50 @@ void EnvironmentMap::CompositePass()
     EndRenderPass();
 }
 
+void EnvironmentMap::AddEntity(Hazel::Entity* entity)
+{
+    m_Entities.push_back(entity);
+}
+
+Hazel::Entity* EnvironmentMap::CreateEntity(const std::string& name)
+{
+    const std::string& entityName = name.empty() ? DefaultEntityName : name;
+    Hazel::Entity* entity = new Hazel::Entity(entityName);
+    AddEntity(entity);
+    return entity;
+}
+
 void EnvironmentMap::Update(Scene* scene, float timestep)
 {
     m_Data.ActiveScene = scene;
 
     UpdateUniforms();
 
+    // Update all entities
+    //  for (auto entity : m_Entities)
+    //  {
+    //      Hazel::MeshAnimPBR* mesh = (Hazel::MeshAnimPBR*)entity->GetMesh();
+    //      if (mesh) {
+    //          mesh->Update(glm::vec3(1.0f));
+    //      }
+    //  }
+
     // Update MeshAnimPBR List
     for (auto& dc : m_Data.DrawList)
     {
         dc.Mesh->OnUpdate(timestep, false);
     }
+
+    m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
+
+    //  BeginScene(m_Data.ActiveScene);
+    //  // Render entities
+    //  for (auto entity : m_Entities)
+    //  {
+    //      // TODO: Should we render (logically)
+    //      SubmitEntity(entity);
+    //  }
+    //  EndScene();
 }
 
 void EnvironmentMap::Render()
@@ -433,10 +473,10 @@ void EnvironmentMap::Render()
 
     // Render MeshAnimPBR meshes (later entt entities)
     uint32_t samplerSlot = m_SamplerSlots->at("albedo");
-    glm::mat4 entityTransform = glm::mat4(1.0f);
     for (auto& dc : m_Data.DrawList)
     {
-        dc.Mesh->Render(samplerSlot, entityTransform);
+        // Log::GetLogger()->debug("EM::Render dc.Transform {0} {1} {2}", dc.Transform[3][0], dc.Transform[3][1], dc.Transform[3][2]);
+        dc.Mesh->Render(samplerSlot, m_MeshEntity->Transform());
     }
 
     EndScene();
@@ -532,12 +572,14 @@ void EnvironmentMap::SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& trans
 
         m_ShaderHazelAnimPBR->setMat4("u_Transform", transform * submesh->Transform);
 
-        if (material->GetFlag(MaterialFlag::DepthTest)) {
+        if (material->GetFlag(MaterialFlag::DepthTest)) { // TODO: Fix Material flags
             glEnable(GL_DEPTH_TEST);
         }
         else {
             glDisable(GL_DEPTH_TEST);
         }
+
+        glDisable(GL_DEPTH_TEST);
 
         glDrawElementsBaseVertex(GL_TRIANGLES, submesh->GetIndexCount(), GL_UNSIGNED_INT, (void*)(sizeof(uint32_t)* submesh->BaseIndex), submesh->BaseVertex);
     }

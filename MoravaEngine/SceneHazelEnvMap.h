@@ -98,8 +98,6 @@ private:
 	Shader* m_ShaderBackground;
 	Shader* m_ShaderBasic;
 
-	Hazel::Entity* m_EntityMesh = nullptr;
-
 	struct Entity {
 		struct Transform {
 			glm::vec3 Translation;
@@ -151,5 +149,8 @@ private:
 	bool m_DisplayLineElements;
 	Grid* m_Grid;
 	Pivot* m_PivotScene;
+
+	// Hazelnut/EditorLayer
+	float m_SnapValue = 0.5f;
 
 };
