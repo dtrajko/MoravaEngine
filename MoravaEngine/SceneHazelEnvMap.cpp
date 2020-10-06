@@ -186,9 +186,6 @@ void SceneHazelEnvMap::SetupMaterials()
 
 void SceneHazelEnvMap::SetupShaders()
 {
-    m_ShaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
-    Log::GetLogger()->info("SceneHazelEnvMap: m_ShaderMain compiled [programID={0}]", m_ShaderMain->GetProgramID());
-
     m_ShaderBackground = new Shader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
     Log::GetLogger()->info("SceneHazelEnvMap: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
 
@@ -435,13 +432,13 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
 
             ImGui::Text("Equirectangular");
-            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->m_EnvEquirect->GetID(), imageSize);
+            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetEnvEquirect()->GetID(), imageSize);
 
-            ImGui::Text("Radiance Map");
-            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->SceneData.SceneEnvironment.RadianceMap->GetID(), imageSize);
+            //  ImGui::Text("Radiance Map");
+            //  ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->SceneData.SceneEnvironment.RadianceMap->GetID(), imageSize);
 
-            ImGui::Text("Irradiance Map");
-            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->SceneData.SceneEnvironment.IrradianceMap->GetID(), imageSize);
+            //  ImGui::Text("Irradiance Map");
+            //  ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->SceneData.SceneEnvironment.IrradianceMap->GetID(), imageSize);
 
             ImGui::Text("Geo Pass");
             ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
@@ -494,13 +491,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
         ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
         ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
-
-        ImGui::Separator();
-        float skyboxLOD = m_EnvironmentMap->GetSkyboxLOD();
-        if (ImGui::SliderFloat("Skybox LOD", &skyboxLOD, 0.0f, 6.0f))
-        {
-            m_EnvironmentMap->SetSkyboxLOD(skyboxLOD);
-        }
     }
     ImGui::End();
 
@@ -1050,31 +1040,9 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 
         SetupUniforms();
 
-        glm::mat4 model = glm::mat4(1.0f);
+        m_EnvironmentMap->RenderTemporarySkybox();
 
-        // BEGIN Skybox backgroundShader
-        {
-            // render skybox (render as last to prevent overdraw)
-            m_ShaderBackground->Bind();
-
-            // Skybox shaderBackground
-            RendererBasic::DisableCulling();
-            // render skybox (render as last to prevent overdraw)
-
-            model = glm::mat4(1.0f);
-            float angleRadians = glm::radians((GLfloat)glfwGetTime());
-            // model = glm::rotate(model, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-            m_ShaderBackground->setMat4("model", model);
-            m_ShaderBackground->setMat4("projection", projectionMatrix);
-            m_ShaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
-
-            m_EnvironmentMap->GetContextData()->SceneData.SceneEnvironment.RadianceMap->Bind(0);
-            m_ShaderBackground->setInt("environmentMap", 0);
-            m_ShaderBackground->setFloat("u_TextureLOD", m_EnvironmentMap->GetSkyboxLOD());
-        }
-        // END Skybox backgroundShader
-
-        /**** BEGIN Animated PBR models ****/
+        /** BEGIN Animated PBR models **/
         for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
         {
             if (m_Entities[drawCommand.Name].Enabled)
@@ -1082,11 +1050,10 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
                 drawCommand.Mesh->Render(m_EnvironmentMap->GetSamplerSlots()->at("albedo"), m_Entities[drawCommand.Name].Transform.Transform);
             }
         }
-        /**** END Animated PBR models ****/
+        /** END Animated PBR models **/
 
         RenderLineElements(m_ShaderBasic, projectionMatrix);
 
-        // Render the Environment Map scene to the s_Data.CompositePass framebuffer
         m_EnvironmentMap->Render();
 
         if (m_IsViewportEnabled)
@@ -1119,31 +1086,6 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 
 void SceneHazelEnvMap::SetupUniforms()
 {
-    /**** BEGIN m_ShaderMain ****/
-    m_ShaderMain->Bind();
-
-    m_ShaderMain->setMat4("model", glm::mat4(1.0f));
-    m_ShaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
-    m_ShaderMain->setMat4("projection", RendererBasic::GetProjectionMatrix());
-    m_ShaderMain->setVec3("eyePosition", m_Camera->GetPosition());
-
-    // Directional Light
-    m_ShaderMain->setInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
-    m_ShaderMain->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
-    m_ShaderMain->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
-    m_ShaderMain->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-    m_ShaderMain->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
-
-    m_ShaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-
-    m_ShaderMain->setInt("albedoMap", textureSlots["diffuse"]);
-    m_ShaderMain->setInt("normalMap", textureSlots["normal"]);
-    m_ShaderMain->setInt("shadowMap", textureSlots["shadow"]);
-    m_ShaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000.0f));
-    m_ShaderMain->setFloat("tilingFactor", 1.0f);
-    m_ShaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    m_ShaderMain->Validate();
-    /**** END m_ShaderMain ****/
 }
 
 bool SceneHazelEnvMap::Property(const std::string& name, bool& value)
