@@ -60,6 +60,26 @@ Material::Material(int txSlotAlbedo, int txSlotSpecular, int txSlotNormalMap, fl
 	m_Shininess = shininess;
 }
 
+Material::Material(Shader* shader) : Material()
+{
+	m_Shader = shader;
+
+	m_MaterialFlags |= (uint32_t)MaterialFlag::DepthTest;
+	m_MaterialFlags |= (uint32_t)MaterialFlag::Blend;
+}
+
+void Material::SetFlag(MaterialFlag flag, bool value)
+{
+	if (value)
+	{
+		m_MaterialFlags |= (uint32_t)flag;
+	}
+	else
+	{
+		m_MaterialFlags &= ~(uint32_t)flag;
+	}
+}
+
 void Material::BindTextures(unsigned int slot)
 {
 	glActiveTexture(GL_TEXTURE0 + slot + 0);

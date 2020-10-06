@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include "Texture.h"
+#include "Shader.h"
 
 #include <map>
 #include <string>
@@ -42,8 +43,9 @@ class Material
 public:
 	Material();
 	Material(float specularIntensity, float shininess);
-	Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess); // based on LearnOpenGL material classint 
+	Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess); // based on LearnOpenGL material classint
 	Material(int albedo, int specular, int normal, float shininess); // used in SceneNanosuit
+	Material(Shader* shader); // based on Hazel::Material contructor
 	~Material();
 
 	void UseMaterial(int specularIntensityLocation, int shininessLocation);
@@ -60,6 +62,7 @@ public:
 
 	// From Hazel/Renderer/Material
 	bool GetFlag(MaterialFlag flag) const { return (uint32_t)flag & m_MaterialFlags; }
+	void SetFlag(MaterialFlag flag, bool value);
 
 public:
 	int m_AlbedoMap;      // sampler2D, texture slot - diffuse/albedo
@@ -94,5 +97,6 @@ private:
 
 	// From Hazel/Renderer/Material
 	uint32_t m_MaterialFlags;
+	Shader* m_Shader;
 
 };
