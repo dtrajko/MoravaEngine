@@ -30,6 +30,10 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     Init();
 
     m_Data.SceneData.SceneEnvironment = Load(filepath);
+    SetEnvironment(m_Data.SceneData.SceneEnvironment);
+
+    // Skybox temporary version
+    m_SkyboxCube = new CubeSkybox();
 
     m_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
 
@@ -155,15 +159,15 @@ void EnvironmentMap::SetupFullscreenQuad()
     // link vertex attributes
     glBindVertexArray(m_Data.FullscreenQuadVAO);
 
-    glGenBuffers(1, &m_Data.FullscreenQuadIBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.FullscreenQuadIBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * 6, &indices[0], GL_STATIC_DRAW);
-
     glGenBuffers(1, &m_Data.FullscreenQuadVBO);
 
     // fill buffer
     glBindBuffer(GL_ARRAY_BUFFER, m_Data.FullscreenQuadVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(QuadVertex) * 4, &data[0], GL_STATIC_DRAW);
+
+    glGenBuffers(1, &m_Data.FullscreenQuadIBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.FullscreenQuadIBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * 6, &indices[0], GL_STATIC_DRAW);
 
     // position layout (location = 0) in vec3 aPos;
     glEnableVertexAttribArray(0);
@@ -351,7 +355,7 @@ void EnvironmentMap::GeometryPass()
 {
     BeginRenderPass(m_Data.GeoPass, true); // should we clear the buffer?
 
-    auto viewProjection = m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
+    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
 
     // Skybox
     m_ShaderSkybox->Bind();
@@ -537,4 +541,21 @@ void EnvironmentMap::SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& trans
 
         glDrawElementsBaseVertex(GL_TRIANGLES, submesh->GetIndexCount(), GL_UNSIGNED_INT, (void*)(sizeof(uint32_t)* submesh->BaseIndex), submesh->BaseVertex);
     }
+}
+
+/**
+ * Skybox temporary version Shaders/Hazel/Skybox
+ */
+void EnvironmentMap::RenderTemporarySkybox()
+{
+    RendererBasic::DisableCulling();
+
+    m_ShaderSkybox->Bind();
+    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
+    m_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProjection));
+    m_Data.SceneData.SceneEnvironment.RadianceMap->Bind(0);
+    m_ShaderSkybox->setInt("u_Texture", 0);
+    m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
+
+    m_SkyboxCube->Render();
 }

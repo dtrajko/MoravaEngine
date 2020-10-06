@@ -9,6 +9,7 @@
 #include "Hazel/Scene/Entity.h"
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/VertexArray.h"
+#include "CubeSkybox.h" // Skybox temporary version
 
 #include <string>
 
@@ -35,30 +36,28 @@ public:
 	void Update(Scene* scene, float timestep);
 	void Render();
 
+	void RenderTemporarySkybox(); // Skybox temporary version
+
 	// Setters
-	void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
+	inline void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
 
 	// Getters
 	inline Data* GetContextData() { return &m_Data; }
 	inline Shader* GetPBRShader() { return m_ShaderHazelAnimPBR; }
+	inline Shader* GetShaderSkybox() { return m_ShaderSkybox; }
+	inline Hazel::HazelTexture2D* GetEnvEquirect() { return m_EnvEquirect; }
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
-	float& GetSkyboxLOD() { return m_SkyboxLOD; }
-	LightStruct& GetLight() { return m_Data.SceneData.ActiveLight; }
 	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
-	float& GetEnvMapRotation() { return m_EnvMapRotation; }
-	Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
-	AlbedoInput& GetAlbedoInput() { return m_AlbedoInput; }
-	NormalInput& GetNormalInput() { return m_NormalInput; }
-	MetalnessInput& GetMetalnessInput() { return m_MetalnessInput; }
-	RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
-	Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
+	inline float& GetSkyboxLOD() { return m_SkyboxLOD; }
+	inline LightStruct& GetLight() { return m_Data.SceneData.ActiveLight; }
+	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
+	inline Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
+	inline AlbedoInput& GetAlbedoInput() { return m_AlbedoInput; }
+	inline NormalInput& GetNormalInput() { return m_NormalInput; }
+	inline MetalnessInput& GetMetalnessInput() { return m_MetalnessInput; }
+	inline RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
+	inline Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
 
-public:
-	// Intermediate textures
-	Hazel::HazelTextureCube* m_EnvUnfiltered;
-	Hazel::HazelTexture2D* m_EnvEquirect;
-	Hazel::HazelTextureCube* m_EnvFiltered;
-	Hazel::HazelTextureCube* m_IrradianceMap;
 
 private:
 	void SetupContextData();
@@ -88,6 +87,7 @@ private:
 	void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest);
 	void EndRenderPass();
 	void SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& transform, Material* overrideMaterial);
+
 
 private:
 	struct Environment
@@ -158,6 +158,12 @@ private:
 	};
 	Data m_Data;
 
+	// Intermediate textures
+	Hazel::HazelTextureCube* m_EnvUnfiltered;
+	Hazel::HazelTexture2D* m_EnvEquirect;
+	Hazel::HazelTextureCube* m_EnvFiltered;
+	Hazel::HazelTextureCube* m_IrradianceMap;
+
 	Shader* m_ShaderEquirectangularConversion;
 	Shader* m_ShaderEnvFiltering;
 	Shader* m_ShaderEnvIrradiance;
@@ -220,5 +226,8 @@ private:
 
 	float m_MaterialSpecular = 0.0f;
 	float m_MaterialShininess = 0.0f;
+
+	// Skybox temporary version
+	CubeSkybox* m_SkyboxCube;
 
 };

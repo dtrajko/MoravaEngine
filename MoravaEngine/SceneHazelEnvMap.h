@@ -95,7 +95,6 @@ private:
 	bool m_ViewportEnvMapHovered;
 	glm::vec2 m_ViewportEnvMapSize;
 
-	Shader* m_ShaderMain;
 	Shader* m_ShaderBackground;
 	Shader* m_ShaderBasic;
 
