@@ -32,13 +32,15 @@ public:
 	inline const unsigned int GetVBO() const { return m_VBO; };
 	inline const unsigned int GetIBO() const { return m_IBO; };
 
+	void BindVertexArray();
+
 	virtual void RecalculateNormals();
 	virtual void RecalculateTangentSpace();
 
 	Material* GetBaseMaterial() { return m_BaseMaterial; }
 	std::vector<Material*>* GetMaterials() { return &m_Materials; }
 
-	void BindVertexArray();
+	const std::string& GetFilePath() const { return m_FilePath; }
 
 public:
 	float* m_Vertices;
@@ -57,5 +59,8 @@ protected:
 
 	Material* m_BaseMaterial;
 	std::vector<Material*> m_Materials;
+
+	// Hazel/Renderer/Mesh
+	std::string m_FilePath;
 
 };

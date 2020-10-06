@@ -34,6 +34,9 @@ public:
 	Environment Load(const std::string& filepath);
 	void SetEnvironment(Environment environment);
 	void Update(Scene* scene, float timestep);
+	void AddEntity(Hazel::Entity* entity);
+	Hazel::Entity* CreateEntity(const std::string& name);
+
 	void Render();
 
 	void RenderTemporarySkybox(); // Skybox temporary version
@@ -57,7 +60,7 @@ public:
 	inline MetalnessInput& GetMetalnessInput() { return m_MetalnessInput; }
 	inline RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
 	inline Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
-
+	inline Hazel::Entity* GetMeshEntity() { return m_MeshEntity; }
 
 private:
 	void SetupContextData();
@@ -177,6 +180,7 @@ private:
 
 	/**** BEGIN properties Scene ****/
 	float m_SkyboxLOD = 1.0f;
+	std::vector<Hazel::Entity*> m_Entities;
 	/**** END properties Scene ****/
 
 	/**** BEGIN properties EditorLayer ****/
@@ -217,17 +221,20 @@ private:
 
 	float m_EnvMapRotation = 0.0f;
 
+	/** BEGIN properties EditorLayer **/
 	// Editor resources
 	Hazel::HazelTexture2D* m_CheckerboardTexture;
 
 	glm::vec2 m_ViewportBounds[2];
 	int m_GizmoType = -1; // -1 = no gizmo
-	/**** END properties EditorLayer ****/
+	Hazel::Entity* m_MeshEntity = nullptr;
+	/** END properties EditorLayer **/
 
 	float m_MaterialSpecular = 0.0f;
 	float m_MaterialShininess = 0.0f;
 
 	// Skybox temporary version
 	CubeSkybox* m_SkyboxCube;
+
 
 };

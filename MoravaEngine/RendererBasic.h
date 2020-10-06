@@ -20,6 +20,7 @@ public:
 	virtual void SetShaders();
 	virtual void Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix) = 0;
 
+	static void InitDebug();
 	static void EnableCulling();
 	static void DisableCulling();
 	static void EnableTransparency();
@@ -27,6 +28,8 @@ public:
 	static void EnableDepthBuffer();
 	static void DisableDepthBuffer();
 	static void ClearDepthBuffer();
+	static void EnableMSAA();
+	static void DisableMSAA();
 	static inline glm::mat4 GetProjectionMatrix() { return s_ProjectionMatrix; };
 	static inline void SetProjectionMatrix(glm::mat4 projectionMatrix) { s_ProjectionMatrix = projectionMatrix; };
 	static void SetDefaultFramebuffer(unsigned int width, unsigned int height);

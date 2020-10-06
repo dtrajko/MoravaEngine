@@ -63,8 +63,9 @@ namespace Hazel {
 
 
 	MeshAnimPBR::MeshAnimPBR(const std::string& filename, Shader* shader, Material* material)
-		: m_MeshShader(shader), m_BaseMaterial(material), m_FilePath(filename), m_IsAnimated(true)
+		: m_MeshShader(shader), m_BaseMaterial(material), m_IsAnimated(true)
 	{
+		m_FilePath = filename;
 		Create();
 	}
 
@@ -794,7 +795,7 @@ namespace Hazel {
 		Log::GetLogger()->info("------------------------------------------------------");
 	}
 
-	void MeshAnimPBR::Render(uint32_t samplerSlot, const glm::mat4& entityTransform)
+	void MeshAnimPBR::Render(uint32_t samplerSlot, const glm::mat4& transform)
 	{
 		m_BaseMaterial->GetTextureAlbedo()->Bind(   samplerSlot + 0);
 		m_BaseMaterial->GetTextureNormal()->Bind(   samplerSlot + 1);
@@ -804,7 +805,6 @@ namespace Hazel {
 
 		m_VertexArray->Bind();
 
-		int submeshIndex = 0;
 		for (Submesh* submesh : m_Submeshes)
 		{
 			// Material
@@ -817,12 +817,14 @@ namespace Hazel {
 				m_MeshShader->setMat4(uniformName, m_BoneTransforms[i]);
 			}
 
-			m_MeshShader->setMat4("u_Transform", entityTransform * submesh->Transform);
+			m_MeshShader->setMat4("u_Transform", transform * submesh->Transform);
 
-			glEnable(GL_DEPTH_TEST);
+			if (material->GetFlag(MaterialFlag::DepthTest))
+				glEnable(GL_DEPTH_TEST);
+			else
+				glDisable(GL_DEPTH_TEST);
+
 			glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t)* submesh->BaseIndex), submesh->BaseVertex);
-
-			submeshIndex++;
 		}
 	}
 }

@@ -3,6 +3,25 @@
 #include "Application.h"
 
 
+static void OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+{
+	switch (severity)
+	{
+	case GL_DEBUG_SEVERITY_HIGH:
+		Log::GetLogger()->error("[OpenGL Debug HIGH] {0}", message);
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		Log::GetLogger()->warn("[OpenGL Debug MEDIUM] {0}", message);
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+		Log::GetLogger()->info("[OpenGL Debug LOW] {0}", message);
+		break;
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		Log::GetLogger()->trace("[OpenGL Debug NOTIFICATION] {0}", message);
+		break;
+	}
+}
+
 glm::mat4 RendererBasic::s_ProjectionMatrix;
 std::map<std::string, Shader*> RendererBasic::s_Shaders;
 std::map<std::string, int> RendererBasic::s_Uniforms;
@@ -18,6 +37,8 @@ void RendererBasic::Init(Scene* scene)
 	SetShaders();
 
 	s_BgColor = glm::vec4(0.0, 0.0, 0.0, 1.0);
+
+	InitDebug();
 }
 
 void RendererBasic::SetUniforms()
@@ -61,6 +82,13 @@ void RendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int heigh
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 }
 
+void RendererBasic::InitDebug()
+{
+	glDebugMessageCallback(OpenGLLogMessage, nullptr);
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+}
+
 void RendererBasic::EnableCulling()
 {
 	glEnable(GL_CULL_FACE);
@@ -96,6 +124,16 @@ void RendererBasic::DisableDepthBuffer()
 void RendererBasic::ClearDepthBuffer()
 {
 	glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+void RendererBasic::EnableMSAA()
+{
+	glEnable(GL_MULTISAMPLE);
+}
+
+void RendererBasic::DisableMSAA()
+{
+	glDisable(GL_MULTISAMPLE);
 }
 
 void RendererBasic::Cleanup()

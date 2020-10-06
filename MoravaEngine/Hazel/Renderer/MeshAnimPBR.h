@@ -145,7 +145,6 @@ namespace Hazel {
 		const std::vector<Submesh*>& GetSubmeshes() const { return m_Submeshes; }
 		const std::vector<Material*>& GetMaterials() const { return m_Materials; }
 		const std::vector<Texture*>& GetTextures() const { return m_Textures; }
-		const std::string& GetFilePath() const { return m_FilePath; }
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
 
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
@@ -200,8 +199,6 @@ namespace Hazel {
 		float m_WorldTime = 0.0f;
 		float m_TimeMultiplier = 1.0f;
 		bool m_AnimationPlaying = true;
-
-		std::string m_FilePath;
 
 		friend class Renderer;
 		friend class SceneHierarchyPanel;

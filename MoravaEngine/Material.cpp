@@ -27,6 +27,9 @@ Material::Material()
 	m_EmissionMap         = -1;
 
 	m_TexturePlaceholder = TextureLoader::Get()->GetTexture("Textures/plain.png", false, false);
+
+	m_MaterialFlags |= (uint32_t)MaterialFlag::DepthTest;
+	m_MaterialFlags |= (uint32_t)MaterialFlag::Blend;
 }
 
 Material::Material(TextureInfo textureInfo, float specularIntensity, float shininess) : Material(specularIntensity, shininess)
