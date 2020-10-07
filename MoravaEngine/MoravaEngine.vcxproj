@@ -182,6 +182,7 @@
     <ClCompile Include="EndlessTerrain.cpp" />
     <ClCompile Include="EnvironmentMap.cpp" />
     <ClCompile Include="FramebufferTextureCubemap.cpp" />
+    <ClCompile Include="HazelFullscreenQuad.cpp" />
     <ClCompile Include="Hazel\Core\Layer.cpp" />
     <ClCompile Include="Hazel\Core\LayerStack.cpp" />
     <ClCompile Include="Hazel\Panels\SceneHierarchyPanel.cpp" />
@@ -364,6 +365,7 @@
     <ClInclude Include="EndlessTerrain.h" />
     <ClInclude Include="EnvironmentMap.h" />
     <ClInclude Include="FramebufferTextureCubemap.h" />
+    <ClInclude Include="HazelFullscreenQuad.h" />
     <ClInclude Include="Hazel\Core\Base.h" />
     <ClInclude Include="Hazel\Core\Buffer.h" />
     <ClInclude Include="Hazel\Core\HazelWindow.h" />
