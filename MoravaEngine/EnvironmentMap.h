@@ -10,6 +10,7 @@
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/VertexArray.h"
 #include "CubeSkybox.h" // Skybox temporary version
+#include "GeometryFactory.h" // Temporary, in place of the broken SetupFullscreenQuad()
 
 #include <string>
 
@@ -61,6 +62,9 @@ public:
 	inline RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
 	inline Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
 	inline Hazel::Entity* GetMeshEntity() { return m_MeshEntity; }
+	Hazel::RenderPass* GetFinalRenderPass();
+	FramebufferTexture* GetFinalColorBuffer();
+	uint32_t GetFinalColorBufferID();
 
 private:
 	void SetupContextData();
@@ -76,9 +80,6 @@ private:
 	void BeginScene(const Scene* scene);
 	void EndScene();
 	void SubmitEntity(Hazel::Entity* entity);
-	Hazel::RenderPass* GetFinalRenderPass();
-	FramebufferTexture* GetFinalColorBuffer();
-	uint32_t GetFinalColorBufferID();
 	Options& GetOptions();
 	void FlushDrawList();
 	void GeometryPass();
