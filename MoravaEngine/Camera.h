@@ -28,6 +28,7 @@ public:
 	inline void SetPosition(glm::vec3 position) { m_Position = position; };
 	inline void SetFront(glm::vec3 front) { m_Front = front; };
 	inline void SetYaw(float yaw) { m_Yaw = yaw; };
+	inline void SetExposure(float exposure) { m_Exposure = exposure; }
 	void SetPitch(float pitch);
 
 private:

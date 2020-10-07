@@ -37,6 +37,9 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     // Skybox temporary version
     m_SkyboxCube = new CubeSkybox();
 
+    // Framebuffer quad temporary version, in place of the broken SetupFullscreenQuad()
+    GeometryFactory::Quad::Create();
+
     m_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
 
     // Set lights
@@ -239,6 +242,12 @@ void EnvironmentMap::UpdateUniforms()
     m_ShaderHazelAnimPBR->setFloat("u_MetalnessTexToggle", m_MetalnessInput.UseTexture ? 1.0f : 0.0f);
     m_ShaderHazelAnimPBR->setFloat("u_RoughnessTexToggle", m_RoughnessInput.UseTexture ? 1.0f : 0.0f);
     /**** END HazelPBR_Anim ***/
+
+    /**** BEGIN Shaders/Hazel/SceneComposite ****/
+    m_ShaderComposite->Bind();
+    m_ShaderComposite->setInt("u_Texture", 0);
+    /**** END Shaders/Hazel/SceneComposite ****/
+
 }
 
 void EnvironmentMap::SetEnvironment(Environment environment)
@@ -297,6 +306,52 @@ EnvironmentMap::~EnvironmentMap()
 {
     for (Hazel::Entity* entity : m_Entities)
         delete entity;
+}
+
+void EnvironmentMap::AddEntity(Hazel::Entity* entity)
+{
+    m_Entities.push_back(entity);
+}
+
+Hazel::Entity* EnvironmentMap::CreateEntity(const std::string& name)
+{
+    const std::string& entityName = name.empty() ? DefaultEntityName : name;
+    Hazel::Entity* entity = new Hazel::Entity(entityName);
+    AddEntity(entity);
+    return entity;
+}
+
+void EnvironmentMap::Update(Scene* scene, float timestep)
+{
+    m_Data.ActiveScene = scene;
+
+    UpdateUniforms();
+
+    // Update all entities
+    //  for (auto entity : m_Entities)
+    //  {
+    //      Hazel::MeshAnimPBR* mesh = (Hazel::MeshAnimPBR*)entity->GetMesh();
+    //      if (mesh) {
+    //          mesh->Update(glm::vec3(1.0f));
+    //      }
+    //  }
+
+    // Update MeshAnimPBR List
+    for (auto& dc : m_Data.DrawList)
+    {
+        dc.Mesh->OnUpdate(timestep, false);
+    }
+
+    m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
+
+    //  BeginScene(m_Data.ActiveScene);
+    //  // Render entities
+    //  for (auto entity : m_Entities)
+    //  {
+    //      // TODO: Should we render (logically)
+    //      SubmitEntity(entity);
+    //  }
+    //  EndScene();
 }
 
 void EnvironmentMap::SetViewportSize(uint32_t width, uint32_t height)
@@ -417,54 +472,56 @@ void EnvironmentMap::CompositePass()
     m_ShaderComposite->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
     m_ShaderComposite->setInt("u_TextureSamples", m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
     m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind();
+
     SubmitFullscreenQuad(nullptr);
+
     EndRenderPass();
 }
 
-void EnvironmentMap::AddEntity(Hazel::Entity* entity)
+void EnvironmentMap::SubmitFullscreenQuad(Material* material)
 {
-    m_Entities.push_back(entity);
-}
-
-Hazel::Entity* EnvironmentMap::CreateEntity(const std::string& name)
-{
-    const std::string& entityName = name.empty() ? DefaultEntityName : name;
-    Hazel::Entity* entity = new Hazel::Entity(entityName);
-    AddEntity(entity);
-    return entity;
-}
-
-void EnvironmentMap::Update(Scene* scene, float timestep)
-{
-    m_Data.ActiveScene = scene;
-
-    UpdateUniforms();
-
-    // Update all entities
-    //  for (auto entity : m_Entities)
-    //  {
-    //      Hazel::MeshAnimPBR* mesh = (Hazel::MeshAnimPBR*)entity->GetMesh();
-    //      if (mesh) {
-    //          mesh->Update(glm::vec3(1.0f));
-    //      }
-    //  }
-
-    // Update MeshAnimPBR List
-    for (auto& dc : m_Data.DrawList)
+    bool depthTest = true;
+    if (material)
     {
-        dc.Mesh->OnUpdate(timestep, false);
+        m_ShaderHazelAnimPBR->Bind();
+        depthTest = material->GetFlag(MaterialFlag::DepthTest);
     }
 
-    m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
+    //  glBindVertexArray(m_Data.FullscreenQuadVAO);
+    //  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.FullscreenQuadIBO);
+    //  
+    //  DrawIndexed(6, PrimitiveType::Triangles, depthTest);
+    //  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
+    //  glBindVertexArray(0);                     // Unbind VAO
 
-    //  BeginScene(m_Data.ActiveScene);
-    //  // Render entities
-    //  for (auto entity : m_Entities)
-    //  {
-    //      // TODO: Should we render (logically)
-    //      SubmitEntity(entity);
-    //  }
-    //  EndScene();
+    // Framebuffer quad temporary version, in place of the broken SetupFullscreenQuad()
+    glBindVertexArray(GeometryFactory::Quad::GetVAO());
+    m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // Log::GetLogger()->debug("END EnvironmentMap::SubmitFullscreenQuad");
+}
+
+void EnvironmentMap::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
+{
+    if (!depthTest)
+        glDisable(GL_DEPTH_TEST);
+
+    GLenum glPrimitiveType = 0;
+    switch (type)
+    {
+    case PrimitiveType::Triangles:
+        glPrimitiveType = GL_TRIANGLES;
+        break;
+    case PrimitiveType::Lines:
+        glPrimitiveType = GL_LINES;
+        break;
+    }
+
+    glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
+
+    if (!depthTest)
+        glEnable(GL_DEPTH_TEST);
 }
 
 void EnvironmentMap::Render()
@@ -498,47 +555,6 @@ void EnvironmentMap::BeginRenderPass(Hazel::RenderPass* renderPass, bool clear)
         const glm::vec4& clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
         RendererBasic::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
     }
-}
-
-void EnvironmentMap::SubmitFullscreenQuad(Material* material)
-{
-    bool depthTest = true;
-    if (material)
-    {
-        m_ShaderHazelAnimPBR->Bind();
-        depthTest = material->GetFlag(MaterialFlag::DepthTest);
-    }
-
-    glBindVertexArray(m_Data.FullscreenQuadVAO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.FullscreenQuadIBO);
-
-    DrawIndexed(6, PrimitiveType::Triangles, depthTest);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
-    glBindVertexArray(0);                     // Unbind VAO
-
-    // Log::GetLogger()->debug("END EnvironmentMap::SubmitFullscreenQuad");
-}
-
-void EnvironmentMap::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
-{
-    if (!depthTest)
-        glDisable(GL_DEPTH_TEST);
-
-    GLenum glPrimitiveType = 0;
-    switch (type)
-    {
-    case PrimitiveType::Triangles:
-        glPrimitiveType = GL_TRIANGLES;
-        break;
-    case PrimitiveType::Lines:
-        glPrimitiveType = GL_LINES;
-        break;
-    }
-
-    glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
-
-    if (!depthTest)
-        glEnable(GL_DEPTH_TEST);
 }
 
 void EnvironmentMap::EndRenderPass()

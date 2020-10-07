@@ -444,10 +444,16 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             //  ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->SceneData.SceneEnvironment.IrradianceMap->GetID(), imageSize);
 
             ImGui::Text("Geo Pass");
-            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetFinalColorBufferID(), imageSize);
 
             ImGui::Text("Composite Pass");
             ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+
+            //  Log::GetLogger()->debug("Geo Pass Framebuffer Color Attachment ID {0}",
+            //      m_EnvironmentMap->GetContextData()->GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID());
+            //  
+            //  Log::GetLogger()->debug("Compo Pass Framebuffer Color Attachment ID {0}",
+            //      m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID());
         }
     }
     ImGui::End();
@@ -1072,7 +1078,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
     }
     /**** END Render to Main Viewport ****/
 
-    /**** BEGIN Render to Viewport Environment Map
+    /**** BEGIN Render to Viewport Environment Map ****/
     {
         if (m_IsViewportEnabled)
         {
@@ -1090,7 +1096,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
             m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->Unbind();
         }
     }
-    END Render to Viewport Environment Map ****/
+    /**** END Render to Viewport Environment Map ****/
 }
 
 void SceneHazelEnvMap::SetupUniforms()
