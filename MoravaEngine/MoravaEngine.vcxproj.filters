@@ -527,6 +527,9 @@
     <ClCompile Include="Hazel\Renderer\HazelMaterial.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="HazelFullscreenQuad.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1131,6 +1134,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\HazelMaterial.h">
       <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="HazelFullscreenQuad.h">
+      <Filter>Mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
