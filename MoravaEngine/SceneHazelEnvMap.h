@@ -49,7 +49,7 @@ private:
 	void SetupShaders(); // Usually in Renderer* classes
 
 	void SetupRenderFramebuffer();
-	void ResizeViewport(glm::vec2 viewportPanelSize);
+	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
 	void CheckIntersection(Window* mainWindow);
 	void RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix);
 
@@ -81,6 +81,7 @@ private:
 
 	// viewports
 	// -- viewport main
+	Framebuffer* m_RenderFramebuffer;
 	int m_ImGuiViewportMainX;
 	int m_ImGuiViewportMainY;
 	bool m_IsViewportEnabled;
@@ -133,7 +134,6 @@ private:
 	int m_HDRI_Edit;
 	int m_HDRI_Edit_Prev;
 
-	Framebuffer* m_RenderFramebuffer;
 	float m_CurrentTimestamp;
 	EventCooldown m_ResizeViewport;
 

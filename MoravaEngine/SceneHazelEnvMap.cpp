@@ -157,7 +157,7 @@ void SceneHazelEnvMap::SetupRenderFramebuffer()
     m_RenderFramebuffer->Generate(width, height);
 }
 
-void SceneHazelEnvMap::ResizeViewport(glm::vec2 viewportPanelSize)
+void SceneHazelEnvMap::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer)
 {
     // Cooldown
     if (m_CurrentTimestamp - m_ResizeViewport.lastTime < m_ResizeViewport.cooldown) return;
@@ -165,7 +165,7 @@ void SceneHazelEnvMap::ResizeViewport(glm::vec2 viewportPanelSize)
 
     if (viewportPanelSize != m_ViewportMainSize && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
     {
-        m_RenderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+        renderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
         m_ViewportMainSize = glm::vec2(viewportPanelSize.x, viewportPanelSize.y);
 
         m_CameraController->OnResize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
@@ -793,18 +793,18 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             m_ImGuiViewport.Height = (int)ImGui::GetWindowHeight();
             m_ImGuiViewport.MouseX = (int)ImGui::GetMousePos().x;
             m_ImGuiViewport.MouseY = (int)ImGui::GetMousePos().y;
-
+        
             m_ViewportFocused = ImGui::IsWindowFocused();
             m_ViewportHovered = ImGui::IsWindowHovered();
-
+        
             ImVec2 viewportPanelSizeImGui = ImGui::GetContentRegionAvail();
             glm::vec2 viewportPanelSize = glm::vec2(viewportPanelSizeImGui.x, viewportPanelSizeImGui.y);
-
-            ResizeViewport(viewportPanelSize);
-
+        
+            ResizeViewport(viewportPanelSize, m_RenderFramebuffer);
+        
             uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
             ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportMainSize.x, m_ViewportMainSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-
+        
             UpdateImGuizmo(mainWindow);
         }
         ImGui::End();
@@ -821,10 +821,11 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             m_ViewportEnvMapFocused = ImGui::IsWindowFocused();
             m_ViewportEnvMapHovered = ImGui::IsWindowHovered();
 
-            ImVec2 viewportPanelSizeImGui = ImGui::GetContentRegionAvail();
-            glm::vec2 viewportPanelSize = glm::vec2(viewportPanelSizeImGui.x, viewportPanelSizeImGui.y);
+            ImVec2 viewportPanelSizeImGuiEnvMap = ImGui::GetContentRegionAvail();
+            glm::vec2 viewportPanelSizeEnvMap = glm::vec2(viewportPanelSizeImGuiEnvMap.x, viewportPanelSizeImGuiEnvMap.y);
 
-            // ResizeViewport(viewportPanelSize); // Currently resize can only work with a single (main) viewport
+            // Currently resize can only work with a single (main) viewport
+            // ResizeViewport(viewportPanelSizeEnvMap, m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer); 
             uint64_t textureID = m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
             ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportEnvMapSize.x, m_ViewportEnvMapSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
         }
@@ -1058,7 +1059,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 
         m_EnvironmentMap->RenderTemporarySkybox();
 
-        /** BEGIN Animated PBR models **/
+        //  BEGIN Animated PBR models
         //  for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
         //  {
         //      if (m_Entities[drawCommand.Name].Enabled)
@@ -1066,7 +1067,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
         //          drawCommand.Mesh->Render(m_EnvironmentMap->GetSamplerSlots()->at("albedo"), m_Entities[drawCommand.Name].Transform.Transform);
         //      }
         //  }
-        /** END Animated PBR models **/
+        //  END Animated PBR models
 
         RenderLineElements(m_ShaderBasic, projectionMatrix);
 
@@ -1086,11 +1087,15 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
             m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->Bind();
             m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->Clear();
         }
+        else
+        {
+            // configure the viewport to the original framebuffer's screen dimensions
+            glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
+            RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
+        }
 
         // Render the Environment Map scene to the s_Data.CompositePass framebuffer
         m_EnvironmentMap->Render();
-
-        RenderLineElements(m_ShaderBasic, projectionMatrix);
 
         if (m_IsViewportEnabled)
         {
