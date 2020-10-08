@@ -10,7 +10,7 @@
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/VertexArray.h"
 #include "CubeSkybox.h" // Skybox temporary version
-#include "GeometryFactory.h" // Temporary, in place of the broken SetupFullscreenQuad()
+#include "HazelFullscreenQuad.h"
 
 #include <string>
 
@@ -68,7 +68,7 @@ public:
 
 private:
 	void SetupContextData();
-	void SetupFullscreenQuad();
+	// void SetupFullscreenQuad();
 	void SetupShaders();
 	void UpdateUniforms();
 	std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> CreateEnvironmentMap(const std::string& filepath);
@@ -237,5 +237,6 @@ private:
 	// Skybox temporary version
 	CubeSkybox* m_SkyboxCube;
 
+	HazelFullscreenQuad* m_HazelFullscreenQuad;
 
 };

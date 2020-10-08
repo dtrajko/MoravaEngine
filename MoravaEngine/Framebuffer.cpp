@@ -74,27 +74,35 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 		{
 		case AttachmentFormat::Color:
 			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Color, {0}x{1}]", width, height);
 			break;
 		case AttachmentFormat::RGBA16F:
 			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA16F, {0}x{1}]", width, height);
 			break;
 		case AttachmentFormat::RGBA8:
 			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA8, {0}x{1}]", width, height);
 			break;
 		case AttachmentFormat::Depth:
 			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth, {0}x{1}]", width, height);
 			break;
 		case AttachmentFormat::DepthStencil:
 			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::DepthStencil, {0}x{1}]", width, height);
 			break;
 		case AttachmentFormat::Depth_24:
 			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth_24, {0}x{1}]", width, height);
 			break;
 		case AttachmentFormat::Depth_24_Stencil_8:
 			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth_24_Stencil_8, {0}x{1}]", width, height);
 			break;
 		case AttachmentFormat::Stencil:
 			CreateAttachmentStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Stencil, {0}x{1}]", width, height);
 			break;
 		default:
 			Log::GetLogger()->error("Attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);

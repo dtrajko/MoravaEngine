@@ -37,9 +37,6 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     // Skybox temporary version
     m_SkyboxCube = new CubeSkybox();
 
-    // Framebuffer quad temporary version, in place of the broken SetupFullscreenQuad()
-    GeometryFactory::Quad::Create();
-
     m_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
 
     // Set lights
@@ -130,9 +127,12 @@ void EnvironmentMap::SetupContextData()
     m_Data.SceneData.SkyboxMaterial = new Material(m_ShaderSkybox);
     m_Data.SceneData.SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, true); // false
 
-    SetupFullscreenQuad();
+    // SetupFullscreenQuad();
+    // Framebuffer quad temporary version, in place of the broken SetupFullscreenQuad()
+    m_HazelFullscreenQuad = new HazelFullscreenQuad();
 }
 
+/****
 void EnvironmentMap::SetupFullscreenQuad()
 {
     // Create fullscreen quad
@@ -189,6 +189,7 @@ void EnvironmentMap::SetupFullscreenQuad()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
     glBindVertexArray(0);                     // Unbind VAO
 }
+****/
 
 void EnvironmentMap::SetupShaders()
 {
@@ -273,6 +274,7 @@ void EnvironmentMap::Init()
     geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferSpec);
     geoRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(geoFramebufferSpec.Width, geoFramebufferSpec.Height, 
         AttachmentType::Renderbuffer, AttachmentFormat::Depth);
+    Log::GetLogger()->debug("Generating the GEO RenderPass framebuffer with AttachmentFormat::RGBA16F");
     geoRenderPassSpec.TargetFramebuffer->Generate(geoFramebufferSpec.Width, geoFramebufferSpec.Height);
     m_Data.GeoPass = Hazel::RenderPass::Create(geoRenderPassSpec);
 
@@ -288,6 +290,7 @@ void EnvironmentMap::Init()
     compRenderPassSpec.TargetFramebuffer->CreateAttachment(compFramebufferSpec);
     compRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(compFramebufferSpec.Width, compFramebufferSpec.Height,
         AttachmentType::Renderbuffer, AttachmentFormat::Depth);
+    Log::GetLogger()->debug("Generating the COMPOSITE RenderPass framebuffer with AttachmentFormat::RGBA8");
     compRenderPassSpec.TargetFramebuffer->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
     m_Data.CompositePass = Hazel::RenderPass::Create(compRenderPassSpec);
 
@@ -407,7 +410,9 @@ void EnvironmentMap::FlushDrawList()
     }
 
     GeometryPass();
+    // Log::GetLogger()->debug("EnvironmentMap::FlushDrawList GeometryPass executed...");
     CompositePass();
+    // Log::GetLogger()->debug("EnvironmentMap::FlushDrawList CompositePass executed...");
 
     // m_Data.DrawList.clear(); // TODO: make DrawList update every tick
     //  m_Data.SceneData = {};   // TODO: make SceneData update every tick
@@ -415,7 +420,7 @@ void EnvironmentMap::FlushDrawList()
 
 void EnvironmentMap::GeometryPass()
 {
-    BeginRenderPass(m_Data.GeoPass, true); // should we clear the buffer?
+    BeginRenderPass(m_Data.GeoPass, false); // should we clear the buffer?
 
     glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
 
@@ -467,11 +472,15 @@ void EnvironmentMap::GeometryPass()
 
 void EnvironmentMap::CompositePass()
 {
-    BeginRenderPass(m_Data.CompositePass, true); // should we clear the framebuffer at this stage?
+    BeginRenderPass(m_Data.CompositePass, false); // should we clear the framebuffer at this stage?
+
     m_ShaderComposite->Bind();
+
+    m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind();
+    m_ShaderComposite->setInt("u_Texture", 0);
+
     m_ShaderComposite->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
     m_ShaderComposite->setInt("u_TextureSamples", m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
-    m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind();
 
     SubmitFullscreenQuad(nullptr);
 
@@ -489,15 +498,11 @@ void EnvironmentMap::SubmitFullscreenQuad(Material* material)
 
     //  glBindVertexArray(m_Data.FullscreenQuadVAO);
     //  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.FullscreenQuadIBO);
-    //  
     //  DrawIndexed(6, PrimitiveType::Triangles, depthTest);
     //  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
     //  glBindVertexArray(0);                     // Unbind VAO
 
-    // Framebuffer quad temporary version, in place of the broken SetupFullscreenQuad()
-    glBindVertexArray(GeometryFactory::Quad::GetVAO());
-    m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind();
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    m_HazelFullscreenQuad->Render();
 
     // Log::GetLogger()->debug("END EnvironmentMap::SubmitFullscreenQuad");
 }
@@ -555,6 +560,11 @@ void EnvironmentMap::BeginRenderPass(Hazel::RenderPass* renderPass, bool clear)
     m_Data.ActiveRenderPass = renderPass;
 
     renderPass->GetSpecification().TargetFramebuffer->Bind();
+
+    //  Log::GetLogger()->debug("EnvironmentMap::BeginRenderPass Bind TargetFramebuffer [ID={0}, {1}x{2}]",
+    //      renderPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(),
+    //      renderPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetWidth(),
+    //      renderPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetHeight());
 
     if (clear)
     {

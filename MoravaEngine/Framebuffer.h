@@ -53,6 +53,7 @@ public:
 
 	inline const uint32_t GetWidth() const { return m_FramebufferSpecs.Width; };
 	inline const uint32_t GetHeight() const { return m_FramebufferSpecs.Height; };
+	inline const uint32_t GetID() const { return m_FBO; };
 
 	void Clear();
 
