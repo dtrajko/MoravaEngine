@@ -434,9 +434,9 @@ void EnvironmentMap::GeometryPass()
         m_ShaderHazelAnimPBR->setVec3("u_CameraPosition", m_Data.SceneData.SceneCamera->GetPosition());
 
         // Environment (TODO: don't do this per mesh)
-        m_ShaderHazelAnimPBR->setInt("u_EnvRadianceTex", m_Data.SceneData.SceneEnvironment.RadianceMap->GetID());
-        m_ShaderHazelAnimPBR->setInt("u_EnvIrradianceTex", m_Data.SceneData.SceneEnvironment.IrradianceMap->GetID());
-        m_ShaderHazelAnimPBR->setInt("u_BRDFLUTTexture", m_Data.BRDFLUT->GetID());
+        m_ShaderHazelAnimPBR->setInt("u_EnvRadianceTex", m_SamplerSlots->at("radiance"));
+        m_ShaderHazelAnimPBR->setInt("u_EnvIrradianceTex", m_SamplerSlots->at("irradiance"));
+        m_ShaderHazelAnimPBR->setInt("u_BRDFLUTTexture", m_SamplerSlots->at("BRDF_LUT"));
 
         // Set lights (TODO: move to light environment and don't do per mesh)
         m_ShaderHazelAnimPBR->setVec3("lights.Direction", m_Data.SceneData.ActiveLight.Direction);
@@ -528,13 +528,19 @@ void EnvironmentMap::Render()
 {
     BeginScene(m_Data.ActiveScene);
 
+    m_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("radiance"));
+    m_Data.SceneData.SceneEnvironment.IrradianceMap->Bind(m_SamplerSlots->at("irradiance"));
+    m_Data.BRDFLUT->Bind(m_SamplerSlots->at("BRDF_LUT"));
+
     // Render MeshAnimPBR meshes (later entt entities)
     uint32_t samplerSlot = m_SamplerSlots->at("albedo");
     for (auto& dc : m_Data.DrawList)
     {
         // Log::GetLogger()->debug("EM::Render dc.Transform {0} {1} {2}", dc.Transform[3][0], dc.Transform[3][1], dc.Transform[3][2]);
-        dc.Mesh->Render(samplerSlot, m_MeshEntity->Transform());
+        // dc.Mesh->Render(samplerSlot, m_MeshEntity->Transform());
     }
+
+    ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->Render(samplerSlot, m_MeshEntity->Transform());
 
     EndScene();
 }

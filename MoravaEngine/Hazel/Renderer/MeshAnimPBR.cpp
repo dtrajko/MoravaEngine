@@ -61,7 +61,6 @@ namespace Hazel {
 		}
 	};
 
-
 	MeshAnimPBR::MeshAnimPBR(const std::string& filename, Shader* shader, Material* material)
 		: m_MeshShader(shader), m_BaseMaterial(material), m_IsAnimated(true)
 	{
@@ -89,6 +88,7 @@ namespace Hazel {
 
 		m_Scene = scene;
 
+		m_IsAnimated = scene->mAnimations != nullptr;
 		// m_MaterialInstance = std::make_shared<MaterialInstance>(m_BaseMaterial);
 		m_InverseTransform = glm::inverse(Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
 

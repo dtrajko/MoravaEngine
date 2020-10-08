@@ -97,7 +97,7 @@ void SceneEiffel::SetupModels()
 	models.insert(std::make_pair("watchtower", watchtower));
 
 	Model* cerberus = new Model();
-	cerberus->LoadModel("Models/Cerberus_LP.FBX", "Textures/PBR/Cerberus");
+	cerberus->LoadModel("Models/Cerberus/Cerberus_LP.FBX", "Models/Cerberus/Textures");
 	models.insert(std::make_pair("cerberus", cerberus));
 }
 

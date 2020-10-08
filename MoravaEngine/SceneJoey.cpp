@@ -129,11 +129,11 @@ void SceneJoey::SetupMaterials()
 
 	// Cerberus model PBR textures
 	TextureInfo textureInfoCerberus = {};
-	textureInfoCerberus.albedo    = "Textures/PBR/Cerberus/Cerberus_A.tga";
-	textureInfoCerberus.normal    = "Textures/PBR/Cerberus/Cerberus_N.tga";
-	textureInfoCerberus.metallic  = "Textures/PBR/Cerberus/Cerberus_M.tga";
-	textureInfoCerberus.roughness = "Textures/PBR/Cerberus/Cerberus_R.tga";
-	textureInfoCerberus.ao        = "Textures/PBR/Cerberus/Cerberus_AO.tga";
+	textureInfoCerberus.albedo    = "Models/Cerberus/Textures/Cerberus_A.tga";
+	textureInfoCerberus.normal    = "Models/Cerberus/Textures/Cerberus_N.tga";
+	textureInfoCerberus.metallic  = "Models/Cerberus/Textures/Cerberus_M.tga";
+	textureInfoCerberus.roughness = "Models/Cerberus/Textures/Cerberus_R.tga";
+	textureInfoCerberus.ao        = "Models/Cerberus/Textures/Cerberus_AO.tga";
 	materials.insert(std::make_pair("cerberus", new Material(textureInfoCerberus, m_MaterialSpecular, m_MaterialShininess)));
 
 	// Khronos DamagedHelmet model PBR textures
@@ -158,7 +158,7 @@ void SceneJoey::SetupMaterials()
 void SceneJoey::SetupModels()
 {
 	Model* cerberus = new Model();
-	cerberus->LoadModel("Models/Cerberus_LP.FBX", "Textures/PBR/Cerberus");
+	cerberus->LoadModel("Models/Cerberus/Cerberus_LP.FBX", "Models/Cerberus/Textures");
 	models.insert(std::make_pair("cerberus", cerberus));
 
 	Model* damagedHelmet = new Model();
