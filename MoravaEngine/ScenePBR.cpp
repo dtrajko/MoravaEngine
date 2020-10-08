@@ -115,11 +115,11 @@ void ScenePBR::SetupTextures()
 	// PBR cerberus
 	if (m_CerberusEnabled)
 	{
-		textures.insert(std::make_pair("cerberusAlbedo",       TextureLoader::Get()->GetTexture("Textures/PBR/Cerberus/Cerberus_A.tga", false, false)));
-		textures.insert(std::make_pair("cerberusNormal",       TextureLoader::Get()->GetTexture("Textures/PBR/Cerberus/Cerberus_N.tga", false, false)));
-		textures.insert(std::make_pair("cerberusMetallic",     TextureLoader::Get()->GetTexture("Textures/PBR/Cerberus/Cerberus_M.tga", false, false)));
-		textures.insert(std::make_pair("cerberusRoughness",    TextureLoader::Get()->GetTexture("Textures/PBR/Cerberus/Cerberus_R.tga", false, false)));
-		textures.insert(std::make_pair("cerberusAmbOcclusion", TextureLoader::Get()->GetTexture("Textures/PBR/Cerberus/Cerberus_AO.tga", false, false)));
+		textures.insert(std::make_pair("cerberusAlbedo",       TextureLoader::Get()->GetTexture("Models/Cerberus/Textures/Cerberus_A.tga", false, false)));
+		textures.insert(std::make_pair("cerberusNormal",       TextureLoader::Get()->GetTexture("Models/Cerberus/Textures/Cerberus_N.tga", false, false)));
+		textures.insert(std::make_pair("cerberusMetallic",     TextureLoader::Get()->GetTexture("Models/Cerberus/Textures/Cerberus_M.tga", false, false)));
+		textures.insert(std::make_pair("cerberusRoughness",    TextureLoader::Get()->GetTexture("Models/Cerberus/Textures/Cerberus_R.tga", false, false)));
+		textures.insert(std::make_pair("cerberusAmbOcclusion", TextureLoader::Get()->GetTexture("Models/Cerberus/Textures/Cerberus_AO.tga", false, false)));
 	}
 }
 
@@ -147,7 +147,7 @@ void ScenePBR::SetupModels()
 	if (m_CerberusEnabled)
 	{
 		Model* cerberus = new Model();
-		cerberus->LoadModel("Models/Cerberus_LP.FBX", "Textures/PBR/Cerberus");
+		cerberus->LoadModel("Models/Cerberus/Cerberus_LP.FBX", "Models/Cerberus/Textures");
 		models.insert(std::make_pair("cerberus", cerberus));
 	}
 }
@@ -272,7 +272,7 @@ void ScenePBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::strin
 		shaderPBR->setVec3("lightColors[" + std::to_string(i) + "]", m_LightColors[i]);
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, newPos);
-		model = glm::scale(model, glm::vec3(0.5f));
+		model = glm::scale(model, glm::vec3(0.1f));
 		shaderPBR->setMat4("model", model);
 		materials["silver"]->BindTextures(textureSlots["albedo"]);
 		meshes["sphere"]->Render();

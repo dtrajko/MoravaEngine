@@ -205,11 +205,11 @@ void ResourceManager::Init()
 
     // Cerberus model PBR textures
     TextureInfo textureInfoCerberus = {};
-    textureInfoCerberus.albedo = "Textures/PBR/Cerberus/Cerberus_A.tga";
-    textureInfoCerberus.normal = "Textures/PBR/Cerberus/Cerberus_N.tga";
-    textureInfoCerberus.metallic = "Textures/PBR/Cerberus/Cerberus_M.tga";
-    textureInfoCerberus.roughness = "Textures/PBR/Cerberus/Cerberus_R.tga";
-    textureInfoCerberus.ao = "Textures/PBR/Cerberus/Cerberus_AO.tga";
+    textureInfoCerberus.albedo    = "Models/Cerberus/Textures/Cerberus_A.tga";
+    textureInfoCerberus.normal    = "Models/Cerberus/Textures/Cerberus_N.tga";
+    textureInfoCerberus.metallic  = "Models/Cerberus/Textures/Cerberus_M.tga";
+    textureInfoCerberus.roughness = "Models/Cerberus/Textures/Cerberus_R.tga";
+    textureInfoCerberus.ao        = "Models/Cerberus/Textures/Cerberus_AO.tga";
     s_MaterialInfo.insert(std::make_pair("cerberus", textureInfoCerberus));
 
     // Concrete 3 Free PBR Materials freepbr.com

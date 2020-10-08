@@ -2056,7 +2056,7 @@ Model* SceneEditorImGuizmo::AddNewModel(int modelID, glm::vec3 scale)
         model = new Model("Models/SciFiHelmet.gltf", "Textures/PBR/SciFiHelmet");
         break;
     case MODEL_CERBERUS:
-        model = new Model("Models/Cerberus_LP.FBX", "Textures/PBR/Cerberus");
+        model = new Model("Models/Cerberus/Cerberus_LP.FBX", "Models/Cerberus/Textures");
         break;
     case MODEL_PINE:
         model = new Model("Models/ThinMatrix/pine.obj", "Textures/ThinMatrix");

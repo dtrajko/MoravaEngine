@@ -195,6 +195,7 @@ namespace Hazel {
 		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
 
 		// Animation
+		bool m_IsAnimated = false;
 		float m_AnimationTime = 0.0f;
 		float m_WorldTime = 0.0f;
 		float m_TimeMultiplier = 1.0f;
@@ -202,8 +203,6 @@ namespace Hazel {
 
 		friend class Renderer;
 		friend class SceneHierarchyPanel;
-
-		const bool m_IsAnimated;
 
 	};
 }
