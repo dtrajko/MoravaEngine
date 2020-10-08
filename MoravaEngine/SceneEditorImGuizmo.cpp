@@ -1265,6 +1265,13 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
     }
     ImGui::End();
 
+    // Mesh Hierarchy / Mesh Debug
+    for (auto& object : m_SceneObjects) {
+        if (m_AnimPBRMeshes.find(object->m_TypeID) != m_AnimPBRMeshes.end()) { // is it a animated PBR mesh?
+            ((Hazel::MeshAnimPBR*)object->mesh)->OnImGuiRender();
+        }
+    }
+
     //  m_SceneHierarchyPanel.OnImGuiRender();
 
     if (!m_IsViewportEnabled)
