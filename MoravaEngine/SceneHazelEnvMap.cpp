@@ -835,6 +835,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
     // ImGui::ShowMetricsWindow();
 
+    // Mesh Hierarchy / Mesh Debug
     for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
     {
         drawCommand.Mesh->OnImGuiRender();
