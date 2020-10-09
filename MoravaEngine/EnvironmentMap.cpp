@@ -261,6 +261,8 @@ void EnvironmentMap::Init()
 {
     SetupShaders();
 
+    bool isMultisample = false;
+
     FramebufferSpecification geoFramebufferSpec;
     geoFramebufferSpec.Width = 1280;
     geoFramebufferSpec.Height = 720;
@@ -269,10 +271,12 @@ void EnvironmentMap::Init()
     geoFramebufferSpec.Samples = 8;
     geoFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 
+    isMultisample = geoFramebufferSpec.Samples > 1;
+
     Hazel::RenderPassSpecification geoRenderPassSpec;
     geoRenderPassSpec.TargetFramebuffer = new Framebuffer(geoFramebufferSpec);
     geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferSpec);
-    geoRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(geoFramebufferSpec.Width, geoFramebufferSpec.Height, 
+    geoRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(geoFramebufferSpec.Width, geoFramebufferSpec.Height, isMultisample,
         AttachmentType::Renderbuffer, AttachmentFormat::Depth);
     Log::GetLogger()->debug("Generating the GEO RenderPass framebuffer with AttachmentFormat::RGBA16F");
     geoRenderPassSpec.TargetFramebuffer->Generate(geoFramebufferSpec.Width, geoFramebufferSpec.Height);
@@ -285,10 +289,12 @@ void EnvironmentMap::Init()
     compFramebufferSpec.attachmentFormat = AttachmentFormat::RGBA8;
     compFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
 
+    isMultisample = compFramebufferSpec.Samples > 1;
+
     Hazel::RenderPassSpecification compRenderPassSpec;
     compRenderPassSpec.TargetFramebuffer = new Framebuffer(compFramebufferSpec);
     compRenderPassSpec.TargetFramebuffer->CreateAttachment(compFramebufferSpec);
-    compRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(compFramebufferSpec.Width, compFramebufferSpec.Height,
+    compRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(compFramebufferSpec.Width, compFramebufferSpec.Height, isMultisample,
         AttachmentType::Renderbuffer, AttachmentFormat::Depth);
     Log::GetLogger()->debug("Generating the COMPOSITE RenderPass framebuffer with AttachmentFormat::RGBA8");
     compRenderPassSpec.TargetFramebuffer->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);

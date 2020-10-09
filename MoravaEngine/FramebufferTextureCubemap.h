@@ -11,7 +11,8 @@ class FramebufferTextureCubemap : public FramebufferTexture
 
 public:
 	FramebufferTextureCubemap();
-	FramebufferTextureCubemap(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat, unsigned int orderID);
+	FramebufferTextureCubemap(unsigned int width, unsigned int height, bool isMultisample,
+		AttachmentFormat attachmentFormat, unsigned int orderID);
 	FramebufferTextureCubemap(Texture::Specification spec, unsigned int orderID);
 	virtual ~FramebufferTextureCubemap() override;
 

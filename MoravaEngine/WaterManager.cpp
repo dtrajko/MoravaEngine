@@ -21,11 +21,13 @@ WaterManager::WaterManager(int width, int height, float waterHeight, float waveS
 	m_WaveSpeed = waveSpeed;
 	m_MoveFactor = waveSpeed;
 
+	bool isMultisample = false;
+
 	m_WaterColor = glm::vec4(0.0, 0.6, 1.0, 1.0);
 
 	reflectionFB = new FramebufferWater(m_Width, m_Height);
 
-	FramebufferTexture* reflectionTextureAttachment = new FramebufferTexture(m_Width, m_Height, AttachmentFormat::Color, 0);
+	FramebufferTexture* reflectionTextureAttachment = new FramebufferTexture(m_Width, m_Height, isMultisample, AttachmentFormat::Color, 0);
 	reflectionFB->AddColorAttachment(reflectionTextureAttachment);
 
 	Renderbuffer* reflectionDepthBuffer = new Renderbuffer(m_Width, m_Height, AttachmentFormat::Depth, 0);
@@ -35,10 +37,10 @@ WaterManager::WaterManager(int width, int height, float waterHeight, float waveS
 
 	refractionFB = new FramebufferWater(m_Width, m_Height);
 
-	FramebufferTexture* refractionTextureAttachment = new FramebufferTexture(m_Width, m_Height, AttachmentFormat::Color, 0);
+	FramebufferTexture* refractionTextureAttachment = new FramebufferTexture(m_Width, m_Height, isMultisample, AttachmentFormat::Color, 0);
 	refractionFB->AddColorAttachment(refractionTextureAttachment);
 
-	FramebufferTexture* refractionDepthAttachment = new FramebufferTexture(m_Width, m_Height, AttachmentFormat::Depth, 0);
+	FramebufferTexture* refractionDepthAttachment = new FramebufferTexture(m_Width, m_Height, isMultisample, AttachmentFormat::Depth, 0);
 	refractionFB->AddDepthAttachment(refractionDepthAttachment);
 
 	SwitchToDefaultFramebuffer();

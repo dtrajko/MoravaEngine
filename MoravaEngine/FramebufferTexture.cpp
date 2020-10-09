@@ -31,15 +31,19 @@ FramebufferTexture::FramebufferTexture(Texture::Specification spec, unsigned int
 	m_Spec.FlipVertically = spec.FlipVertically;
 	m_Spec.BitDepth = spec.BitDepth;
 	m_Spec.IsSampler = spec.IsSampler;
+	m_Spec.IsMultisample = spec.IsMultisample;
 
 	OpenGLCreate();
 }
 
-FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat, unsigned int orderID)
+FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, bool isMultisample,
+	AttachmentFormat attachmentFormat, unsigned int orderID)
 	: Attachment(width, height, AttachmentType::Texture, attachmentFormat, orderID)
 {
 	m_Level = 0;
 	InitSpecification();
+
+	m_Spec.IsMultisample = isMultisample;
 
 	switch (attachmentFormat)
 	{
@@ -87,11 +91,14 @@ FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, 
 	OpenGLCreate();
 }
 
-FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat, unsigned int orderID)
+FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, bool isMultisample,
+	AttachmentType attachmentType, AttachmentFormat attachmentFormat, unsigned int orderID)
 	: Attachment(width, height, attachmentType, attachmentFormat, orderID)
 {
 	m_Level = 0;
 	InitSpecification();
+
+	m_Spec.IsMultisample = isMultisample;
 
 	OpenGLCreate();
 }
@@ -109,18 +116,41 @@ void FramebufferTexture::InitSpecification()
 
 void FramebufferTexture::OpenGLCreate()
 {
-	glGenTextures(1, &m_ID);
-	glBindTexture(GL_TEXTURE_2D, m_ID);
+	if (m_Spec.IsMultisample)
+	{
+		glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &m_ID);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_ID);
 
-	glTexImage2D(GL_TEXTURE_2D, m_Level, m_Spec.InternalFormat, m_Width, m_Height, m_Spec.Border, m_Spec.Format, m_Spec.Type, nullptr);
+		// TODO: Create Hazel texture object based on format here
+		if (m_Spec.Format == (unsigned int)AttachmentFormat::RGBA16F)
+		{
+			glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, m_Spec.Samples, GL_RGBA16F, m_Spec.Width, m_Spec.Height, GL_FALSE);
+		}
+		else if (m_Spec.Format == (unsigned int)AttachmentFormat::RGBA8)
+		{
+			glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, m_Spec.Samples, GL_RGBA8, m_Spec.Width, m_Spec.Height, GL_FALSE);
+		}
+		// glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		// glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_Spec.Texture_Min_Filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_Spec.Texture_Mag_Filter);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_ID, 0);
+	}
+	else
+	{
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
+		glBindTexture(GL_TEXTURE_2D, m_ID);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_Spec.Texture_Wrap_S); // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_Spec.Texture_Wrap_T); // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
+		glTexImage2D(GL_TEXTURE_2D, m_Level, m_Spec.InternalFormat, m_Width, m_Height, m_Spec.Border, m_Spec.Format, m_Spec.Type, nullptr);
 
-	glFramebufferTexture(GL_FRAMEBUFFER, m_Attachment, m_ID, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_Spec.Texture_Min_Filter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_Spec.Texture_Mag_Filter);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_Spec.Texture_Wrap_S); // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_Spec.Texture_Wrap_T); // GL_CLAMP_TO_EDGE is causing problems with reflection FBO
+
+		glFramebufferTexture(GL_FRAMEBUFFER, m_Attachment, m_ID, 0);
+	}
 }
 
 void FramebufferTexture::Bind(unsigned int slot)

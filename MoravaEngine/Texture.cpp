@@ -90,6 +90,8 @@ Texture::Texture(const char* fileLoc, Specification spec)
 	m_Spec.FlipVertically     = spec.FlipVertically;
 	m_Spec.BitDepth           = spec.BitDepth;
 	m_Spec.IsSampler          = spec.IsSampler;
+	m_Spec.Samples            = spec.Samples;
+	m_Spec.IsMultisample      = spec.IsMultisample;
 
 	Load(m_Spec.FlipVertically);
 }

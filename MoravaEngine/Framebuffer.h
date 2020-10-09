@@ -39,10 +39,14 @@ public:
 	void AddAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat);
 
 	void CreateAttachment(FramebufferSpecification specs); // the generic one based on FramebufferSpecification 
-	void CreateTextureAttachmentColor(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat = AttachmentFormat::Color);
-	void CreateAttachmentDepth(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth);
-	void CreateAttachmentStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Stencil);
-	void CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth_24_Stencil_8);
+	void CreateTextureAttachmentColor(unsigned int width, unsigned int height, bool isMultisample,
+		AttachmentFormat attachmentFormat = AttachmentFormat::Color);
+	void CreateAttachmentDepth(unsigned int width, unsigned int height, bool isMultisample,
+		AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth);
+	void CreateAttachmentStencil(unsigned int width, unsigned int height, bool isMultisample,
+		AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Stencil);
+	void CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, bool isMultisample,
+		AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth_24_Stencil_8);
 
 	FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0);
 	Attachment* GetAttachmentDepth();
@@ -70,5 +74,8 @@ private:
 	Attachment* m_AttachmentDepth;
 	Attachment* m_AttachmentStencil;
 	Attachment* m_AttachmentDepthAndStencil;
+
+	// Hazel/Platform/OpenGL/OpenGLFramebuffer
+	bool m_Multisample;
 
 };
