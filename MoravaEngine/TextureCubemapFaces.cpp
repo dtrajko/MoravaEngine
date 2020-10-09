@@ -9,6 +9,12 @@
 TextureCubemapFaces::TextureCubemapFaces()
 {
     m_ID = 0;
+
+    m_Spec.Texture_Wrap_S = GL_CLAMP_TO_EDGE;
+    m_Spec.Texture_Wrap_T = GL_CLAMP_TO_EDGE;
+    m_Spec.Texture_Wrap_R = GL_CLAMP_TO_EDGE;
+    m_Spec.Texture_Min_Filter = GL_LINEAR;
+    m_Spec.Texture_Mag_Filter = GL_LINEAR;
 }
 
 /** Loads a cubemap texture from 6 individual texture faces
@@ -44,18 +50,18 @@ TextureCubemapFaces::TextureCubemapFaces(std::vector<std::string> faces)
         printf("Cubemap texture '%s' succesfully loaded.\n", faces[i].c_str());
     }
 
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, m_Spec.Texture_Wrap_S);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, m_Spec.Texture_Wrap_T);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, m_Spec.Texture_Wrap_R);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, m_Spec.Texture_Min_Filter);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, m_Spec.Texture_Mag_Filter);
 
     printf("Texture Cube Map succesfully created! [m_ID=%i]\n", m_ID);
 }
 
-void TextureCubemapFaces::Bind(unsigned int slot)
+void TextureCubemapFaces::Bind(unsigned int textureSlot)
 {
-    glActiveTexture(GL_TEXTURE0 + slot);
+    glActiveTexture(GL_TEXTURE0 + textureSlot);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);
 }
 

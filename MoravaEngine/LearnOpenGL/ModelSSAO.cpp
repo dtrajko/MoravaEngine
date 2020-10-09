@@ -182,7 +182,7 @@ std::vector<TextureData> ModelSSAO::loadMaterialTextures(aiMaterial* mat, aiText
             TextureJoey texture(str.C_Str(), textureDirectory, gammaCorrection);
 
             TextureData textureData;
-            textureData.id = texture.GetTextureID();
+            textureData.id = texture.GetID();
             textureData.type = typeName;
             textureData.path = str.C_Str();
             textures.push_back(textureData);

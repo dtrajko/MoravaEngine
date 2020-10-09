@@ -1,20 +1,18 @@
 #pragma once
 
+#include "Texture.h"
+
 #include <vector>
 #include <string>
 
 
-class TextureCubemapFaces
+class TextureCubemapFaces : public Texture
 {
 public:
 	TextureCubemapFaces();
 	TextureCubemapFaces(std::vector<std::string> faces);
-	~TextureCubemapFaces();
+	virtual ~TextureCubemapFaces();
 
-	inline unsigned int GetID() const { return m_ID; };
-	void Bind(unsigned int slot);
-
-private:
-	unsigned int m_ID;
+	virtual void Bind(unsigned int textureSlot = 0) override;
 
 };

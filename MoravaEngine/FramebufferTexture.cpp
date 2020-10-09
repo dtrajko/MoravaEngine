@@ -78,6 +78,7 @@ FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, 
 		m_Spec.Type = GL_FLOAT;
 		break;
 	case AttachmentFormat::DepthStencil:
+	case AttachmentFormat::Depth_24_Stencil_8:
 		m_Attachment = GL_DEPTH_STENCIL_ATTACHMENT;
 		m_Spec.InternalFormat = GL_DEPTH24_STENCIL8;
 		m_Spec.Format = GL_DEPTH_STENCIL;

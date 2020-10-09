@@ -276,8 +276,13 @@ void EnvironmentMap::Init()
     Hazel::RenderPassSpecification geoRenderPassSpec;
     geoRenderPassSpec.TargetFramebuffer = new Framebuffer(geoFramebufferSpec);
     geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferSpec);
-    geoRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(geoFramebufferSpec.Width, geoFramebufferSpec.Height, isMultisample,
-        AttachmentType::Renderbuffer, AttachmentFormat::Depth);
+
+    FramebufferSpecification geoFramebufferDepthSpec;
+    geoFramebufferDepthSpec = geoFramebufferSpec;
+    geoFramebufferDepthSpec.attachmentType = AttachmentType::Texture;
+    geoFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth_24_Stencil_8;
+
+    geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferDepthSpec);
     Log::GetLogger()->debug("Generating the GEO RenderPass framebuffer with AttachmentFormat::RGBA16F");
     geoRenderPassSpec.TargetFramebuffer->Generate(geoFramebufferSpec.Width, geoFramebufferSpec.Height);
     m_Data.GeoPass = Hazel::RenderPass::Create(geoRenderPassSpec);
