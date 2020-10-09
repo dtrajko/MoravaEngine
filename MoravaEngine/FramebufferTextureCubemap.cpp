@@ -14,11 +14,14 @@ FramebufferTextureCubemap::FramebufferTextureCubemap()
 	InitSpecification();
 }
 
-FramebufferTextureCubemap::FramebufferTextureCubemap(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat, unsigned int orderID)
-	: FramebufferTexture(width, height, AttachmentType::Texture, attachmentFormat, orderID)
+FramebufferTextureCubemap::FramebufferTextureCubemap(unsigned int width, unsigned int height, bool isMultisample,
+	AttachmentFormat attachmentFormat, unsigned int orderID)
+	: FramebufferTexture(width, height, isMultisample, AttachmentType::Texture, attachmentFormat, orderID)
 {
 	m_Level = 0;
 	InitSpecification();
+
+	m_Spec.IsMultisample = isMultisample;
 
 	switch (attachmentFormat)
 	{
@@ -85,6 +88,8 @@ FramebufferTextureCubemap::FramebufferTextureCubemap(Texture::Specification spec
 	m_Spec.FlipVertically = spec.FlipVertically;
 	m_Spec.BitDepth = spec.BitDepth;
 	m_Spec.IsSampler = spec.IsSampler;
+	m_Spec.Samples = spec.Samples;
+	m_Spec.IsMultisample = spec.IsMultisample;
 
 	OpenGLCreate();
 }

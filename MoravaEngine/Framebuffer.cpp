@@ -62,6 +62,8 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 	m_FramebufferSpecs.Width = width;
 	m_FramebufferSpecs.Height = height;
 
+	m_Multisample = m_FramebufferSpecs.Samples > 1;
+
 	glGenFramebuffers(1, &m_FBO);
 	Bind(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
 
@@ -73,36 +75,43 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 		switch (attachmentSpecs.attachmentFormat)
 		{
 		case AttachmentFormat::Color:
-			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Color, {0}x{1}]", width, height);
+			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Color, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		case AttachmentFormat::RGBA16F:
-			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA16F, {0}x{1}]", width, height);
+			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
+				attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA16F, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		case AttachmentFormat::RGBA8:
-			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA8, {0}x{1}]", width, height);
+			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
+				attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA8, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Depth:
-			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth, {0}x{1}]", width, height);
+			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
+				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		case AttachmentFormat::DepthStencil:
-			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::DepthStencil, {0}x{1}]", width, height);
+			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
+				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::DepthStencil, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Depth_24:
-			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth_24, {0}x{1}]", width, height);
+			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
+				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth_24, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Depth_24_Stencil_8:
-			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth_24_Stencil_8, {0}x{1}]", width, height);
+			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
+				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth_24_Stencil_8, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Stencil:
-			CreateAttachmentStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Stencil, {0}x{1}]", width, height);
+			CreateAttachmentStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
+				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Stencil, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		default:
 			Log::GetLogger()->error("Attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);
@@ -134,35 +143,40 @@ void Framebuffer::CreateAttachment(FramebufferSpecification specs)
 	m_AttachmentSpecs.push_back(specs);
 }
 
-void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat)
+void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, bool isMultisample,
+	AttachmentFormat attachmentFormat)
 {
-	FramebufferTexture* texture = new FramebufferTexture(width, height, attachmentFormat, (unsigned int)m_TextureAttachmentsColor.size());
+	FramebufferTexture* texture = new FramebufferTexture(width, height, isMultisample,
+		attachmentFormat, (unsigned int)m_TextureAttachmentsColor.size());
 	m_TextureAttachmentsColor.push_back(texture);
 
-	Log::GetLogger()->info("Framebuffer::CreateTextureAttachmentColor [ID={0}, {1}x{2}]",
+	Log::GetLogger()->info("Framebuffer::CreateTextureAttachmentColor [ID={0}, Multisample: {1}, {2}x{3}]",
 		texture->GetID(), texture->GetWidth(), texture->GetHeight());
 }
 
-void Framebuffer::CreateAttachmentDepth(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
+void Framebuffer::CreateAttachmentDepth(unsigned int width, unsigned int height, bool isMultisample,
+	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentDepth = new FramebufferTexture(width, height, attachmentFormat, 0);
+		m_AttachmentDepth = new FramebufferTexture(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
 		m_AttachmentDepth = new Renderbuffer(width, height, attachmentFormat, 0);
 }
 
-void Framebuffer::CreateAttachmentStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
+void Framebuffer::CreateAttachmentStencil(unsigned int width, unsigned int height, bool isMultisample,
+	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentStencil = new FramebufferTexture(width, height, attachmentFormat, 0);
+		m_AttachmentStencil = new FramebufferTexture(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
 		m_AttachmentStencil = new Renderbuffer(width, height, attachmentFormat, 0);
 }
 
-void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
+void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, bool isMultisample,
+	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentDepthAndStencil = new FramebufferTexture(width, height, attachmentFormat, 0);
+		m_AttachmentDepthAndStencil = new FramebufferTexture(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
 		m_AttachmentDepthAndStencil = new Renderbuffer(width, height, attachmentFormat, 0);
 }

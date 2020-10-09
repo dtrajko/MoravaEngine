@@ -11,8 +11,10 @@ class FramebufferTexture : public Attachment
 
 public:
 	FramebufferTexture();
-	FramebufferTexture(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat, unsigned int orderID);
-	FramebufferTexture(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat, unsigned int orderID);
+	FramebufferTexture(unsigned int width, unsigned int height, bool isMultisample,
+		AttachmentFormat attachmentFormat, unsigned int orderID);
+	FramebufferTexture(unsigned int width, unsigned int height, bool isMultisample,
+		AttachmentType attachmentType, AttachmentFormat attachmentFormat, unsigned int orderID);
 	FramebufferTexture(Texture::Specification spec, unsigned int orderID); // constructor for fully customizable framebuffer texture
 	virtual ~FramebufferTexture() override;
 

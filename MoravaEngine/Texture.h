@@ -25,6 +25,8 @@ public:
 		bool FlipVertically;
 		int BitDepth;
 		bool IsSampler; // m_Buffer is required during object lifetime, so it must be deallocated in destructor
+		uint32_t Samples;
+		bool IsMultisample;
 	} m_Spec;
 
 public:
