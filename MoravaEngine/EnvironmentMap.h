@@ -62,6 +62,7 @@ public:
 	inline RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
 	inline Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
 	inline Hazel::Entity* GetMeshEntity() { return m_MeshEntity; }
+	inline void SetMeshEntity(Hazel::Entity* entity) { m_MeshEntity = entity; }
 	Hazel::RenderPass* GetFinalRenderPass();
 	FramebufferTexture* GetFinalColorBuffer();
 	uint32_t GetFinalColorBufferID();
@@ -174,6 +175,7 @@ private:
 	Shader* m_ShaderSkybox;
 	Shader* m_ShaderHazelAnimPBR;
 	Shader* m_ShaderComposite;
+	Shader* m_ShaderGrid;
 
 	Hazel::HazelTextureCube* m_SkyboxTexture;
 

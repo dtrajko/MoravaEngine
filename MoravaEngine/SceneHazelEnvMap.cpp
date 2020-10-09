@@ -609,16 +609,18 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             {
                 ImGui::Text("Mesh");
                 auto mesh = m_EnvironmentMap->GetMeshEntity()->GetMesh();
-                std::string fullpath = mesh ? mesh->GetFilePath() : "None";
-                size_t found = fullpath.find_last_of("/\\");
-                std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
-                ImGui::Text(path.c_str()); ImGui::SameLine();
+                std::string fullPath = mesh ? mesh->GetFilePath() : "None";
+                size_t found = fullPath.find_last_of("/\\");
+                std::string fileName = found != std::string::npos ? fullPath.substr(found + 1) : fullPath;
+                ImGui::Text(fileName.c_str()); ImGui::SameLine();
                 if (ImGui::Button("...##Mesh"))
                 {
-                    std::string filename = Application::Get()->OpenFile("");
-                    if (filename != "")
+                    std::string fullPath = Application::Get()->OpenFile("");
+                    if (fullPath != "")
                     {
-                        auto newMesh = new Hazel::MeshAnimPBR(filename, m_EnvironmentMap->GetPBRShader(), m_EnvironmentMap->GetContextData()->DrawList[0].Material);
+                        auto newMesh = new Hazel::MeshAnimPBR(fullPath, m_EnvironmentMap->GetPBRShader(), m_EnvironmentMap->GetContextData()->DrawList[0].Material);
+                        Log::GetLogger()->debug("CreateEntity fullPath '{0}' path '{1}'", fullPath, fileName);
+                        m_EnvironmentMap->SetMeshEntity(m_EnvironmentMap->CreateEntity(fileName));
                         m_EnvironmentMap->GetMeshEntity()->SetMesh(newMesh);
                     }
                 }
