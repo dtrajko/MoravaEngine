@@ -119,7 +119,7 @@ void EnvironmentMap::SetupContextData()
 
         m_Data.DrawList.push_back(drawCommand);
 
-        m_MeshEntity = CreateEntity("drawCommand.Name");
+        m_MeshEntity = CreateEntity(drawCommand.Name);
         m_MeshEntity->SetMesh(drawCommand.Mesh);
     }
     Log::GetLogger()->info("-- END EnvironmentMap loading MeshAnimPBR M1911 --");
@@ -210,6 +210,9 @@ void EnvironmentMap::SetupShaders()
 
     m_ShaderComposite = new Shader("Shaders/Hazel/SceneComposite.vs", "Shaders/Hazel/SceneComposite.fs");
     Log::GetLogger()->info("EnvironmentMap: m_ShaderComposite compiled [programID={0}]", m_ShaderComposite->GetProgramID());
+
+    m_ShaderGrid = new Shader("Shaders/Hazel/Grid.vs", "Shaders/Hazel/Grid.fs");
+    Log::GetLogger()->info("EnvironmentMap: m_ShaderGrid compiled [programID={0}]", m_ShaderGrid->GetProgramID());
 }
 
 void EnvironmentMap::UpdateUniforms()
@@ -366,6 +369,8 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
     //      SubmitEntity(entity);
     //  }
     //  EndScene();
+
+    BeginScene(m_Data.ActiveScene);
 }
 
 void EnvironmentMap::SetViewportSize(uint32_t width, uint32_t height)
@@ -487,8 +492,8 @@ void EnvironmentMap::CompositePass()
 
     m_ShaderComposite->Bind();
 
-    m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind();
-    m_ShaderComposite->setInt("u_Texture", 0);
+    m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind(1);
+    m_ShaderComposite->setInt("u_Texture", 1);
 
     m_ShaderComposite->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
     m_ShaderComposite->setInt("u_TextureSamples", m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
