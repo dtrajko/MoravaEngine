@@ -36,3 +36,26 @@ void Util::printMatrix(glm::mat4 mat)
 	std::cout << "[02]: " << mat[0][2] << " [13]: " << mat[1][2] << " [22]: " << mat[2][2] << " [32]: " << mat[3][2] << std::endl;
 	std::cout << "[03]: " << mat[0][3] << " [14]: " << mat[1][3] << " [23]: " << mat[2][3] << " [33]: " << mat[3][3] << std::endl;
 }
+
+std::string Util::GetFileNameFromFullPath(std::string fullPath)
+{
+	std::string fileName = "";
+	if (fullPath != "")
+	{
+		size_t lastSlashPosition = fullPath.find_last_of("/\\");
+		fileName = lastSlashPosition != std::string::npos ? fullPath.substr(lastSlashPosition + 1) : fullPath;
+	}
+	return fileName;
+}
+
+std::string Util::StripExtensionFromFileName(std::string fileName)
+{
+	std::string fileNameNoExt = "";
+	if (fileName != "")
+	{
+		size_t lastSlashPosition = fileName.find_last_of("/\\");
+		size_t lastDotPosition = fileName.find_last_of(".");
+		fileNameNoExt = lastDotPosition != std::string::npos ? fileName.substr(lastSlashPosition + 1, lastDotPosition) : fileName;
+	}
+	return fileNameNoExt;
+}

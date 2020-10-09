@@ -14,4 +14,9 @@ public:
 	static void printVec3(glm::vec3 vec);
 	static void printVec4(glm::vec4 vec);
 	static void printMatrix(glm::mat4 mat);
+
+	// filesystem utility methods
+	static std::string GetFileNameFromFullPath(std::string fullPath);
+	static std::string StripExtensionFromFileName(std::string fileName);
+
 };

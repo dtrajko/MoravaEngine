@@ -618,9 +618,14 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     std::string fullPath = Application::Get()->OpenFile("");
                     if (fullPath != "")
                     {
+                        size_t found = fullPath.find_last_of("/\\");
+                        std::string fileName = found != std::string::npos ? fullPath.substr(found + 1) : fullPath;
+                        size_t foundDot = fileName.find_last_of(".");
+                        std::string fileNameNoExt = foundDot != std::string::npos ? fileName.substr(0, foundDot) : fileName;
+
                         auto newMesh = new Hazel::MeshAnimPBR(fullPath, m_EnvironmentMap->GetPBRShader(), m_EnvironmentMap->GetContextData()->DrawList[0].Material);
-                        Log::GetLogger()->debug("CreateEntity fullPath '{0}' path '{1}'", fullPath, fileName);
-                        m_EnvironmentMap->SetMeshEntity(m_EnvironmentMap->CreateEntity(fileName));
+                        Log::GetLogger()->debug("CreateEntity fileName '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
+                        m_EnvironmentMap->SetMeshEntity(m_EnvironmentMap->CreateEntity(fileNameNoExt));
                         m_EnvironmentMap->GetMeshEntity()->SetMesh(newMesh);
                     }
                 }
