@@ -152,7 +152,7 @@ std::vector<TextureData> CubeNanosuit::loadMaterialTextures(std::string fileName
 
     TextureJoey texture(fileName.c_str(), m_TextureDirectory, false);
     TextureData textureData;
-    textureData.id = texture.GetTextureID();
+    textureData.id = texture.GetID();
     textureData.type = typeName;
     textureData.path = m_TextureDirectory + "/" + fileName;
     textures.push_back(textureData);

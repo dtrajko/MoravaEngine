@@ -14,7 +14,7 @@ TextureJoey::TextureJoey(const char* path, const std::string& directory, bool ga
     filename = directory + '/' + filename;
     // printf("TextureJoeyFromFile path: %s, directory: %s, filename: %s\n", path, directory.c_str(), filename.c_str());
 
-    glGenTextures(1, &textureID);
+    glGenTextures(1, &m_ID);
 
     int width, height, nrComponents;
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
@@ -39,7 +39,7 @@ TextureJoey::TextureJoey(const char* path, const std::string& directory, bool ga
             dataFormat = GL_RGBA;
         }
 
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        glBindTexture(GL_TEXTURE_2D, m_ID);
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 

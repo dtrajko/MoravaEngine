@@ -25,9 +25,10 @@ Texture::Texture()
 	m_Spec.MipLevel = 0;
 
 	m_Level = 0;
-	m_TextureID = 0;
+	m_ID = 0;
 	m_FileLocation = "";
 	m_Buffer = nullptr;
+	m_Format = TextureFormat::RGBA;
 }
 
 Texture::Texture(const char* fileLoc, bool flipVert)
@@ -92,6 +93,7 @@ Texture::Texture(const char* fileLoc, Specification spec)
 	m_Spec.IsSampler          = spec.IsSampler;
 	m_Spec.Samples            = spec.Samples;
 	m_Spec.IsMultisample      = spec.IsMultisample;
+	m_Spec.IsSRGB             = spec.IsSRGB;
 
 	Load(m_Spec.FlipVertically);
 }
@@ -118,7 +120,19 @@ bool Texture::Load(bool flipVert)
 	}
 
 	stbi_set_flip_vertically_on_load(flipVert ? 1 : 0);
-	m_Buffer = stbi_load(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
+
+	if (stbi_is_hdr(m_FileLocation))
+	{
+		Log::GetLogger()->info("Loading an HDR texture '{0}'", m_FileLocation);
+		m_Buffer = (byte*)stbi_loadf(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
+		m_Format = TextureFormat::Float16;
+	}
+	else
+	{
+		m_Buffer = stbi_load(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
+		m_Format = TextureFormat::RGBA;
+	}
+
 	if (!m_Buffer)
 	{
 		std::string message = "ERROR: Texture failed to load '" + std::string(m_FileLocation) + "'";
@@ -128,7 +142,7 @@ bool Texture::Load(bool flipVert)
 	OpenGLCreate();
 
 	float fileSize = GetFileSize(m_FileLocation) / (1024.0f * 1024.0f);
-	Log::GetLogger()->info("Loading texture '{0}' [ID={1}, size={2} MB]", m_FileLocation, m_TextureID, fileSize);
+	Log::GetLogger()->info("Loading texture '{0}' [ID={1}, size={2} MB]", m_FileLocation, m_ID, fileSize);
 
 	if (!m_Spec.IsSampler)
 		stbi_image_free(m_Buffer);
@@ -158,18 +172,39 @@ void Texture::OpenGLCreate()
 		}
 	}
 
-	glGenTextures(1, &m_TextureID);
-	glBindTexture(GL_TEXTURE_2D, m_TextureID);
+	if (m_Spec.IsSRGB)
+	{
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
+		glBindTexture(GL_TEXTURE_2D, m_ID);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_Spec.Texture_Wrap_S);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_Spec.Texture_Wrap_T);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_Spec.Texture_Min_Filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_Spec.Texture_Mag_Filter);
+		int mipLevels = Texture::CalculateMipMapCount(m_Spec.Width, m_Spec.Height);
+		Log::GetLogger()->info("Creating a SRGB texture mip levels: {0}", mipLevels);
 
-	glTexImage2D(GL_TEXTURE_2D, m_Level, m_Spec.InternalFormat, m_Spec.Width, m_Spec.Height, m_Spec.Border, m_Spec.Format, m_Spec.Type, m_Buffer);
-	glGenerateMipmap(GL_TEXTURE_2D);
+		glTextureStorage2D(m_ID, mipLevels, GL_SRGB8, m_Spec.Width, m_Spec.Height);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_Spec.Texture_Wrap_S);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_Spec.Texture_Wrap_T);
+		glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, mipLevels > 1 ? GL_LINEAR_MIPMAP_LINEAR : m_Spec.Texture_Min_Filter);
+		glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, m_Spec.Texture_Mag_Filter);
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+		glTextureSubImage2D(m_ID, 0, 0, 0, m_Spec.Width, m_Spec.Height, m_Spec.Format, m_Spec.Type, m_Buffer);
+		glGenerateTextureMipmap(m_ID);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	else
+	{
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
+		glBindTexture(GL_TEXTURE_2D, m_ID);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_Spec.Texture_Wrap_S);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_Spec.Texture_Wrap_T);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_Spec.Texture_Min_Filter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_Spec.Texture_Mag_Filter);
+
+		glTexImage2D(GL_TEXTURE_2D, m_Level, m_Spec.InternalFormat, m_Spec.Width, m_Spec.Height, m_Spec.Border, m_Spec.Format, m_Spec.Type, m_Buffer);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 }
 
 void Texture::Save()
@@ -227,10 +262,10 @@ void Texture::SetAlpha(int x, int z, int value)
 	m_Buffer[((z * m_Spec.Width + x) * m_Spec.BitDepth) + 3] = value;
 }
 
-void Texture::Bind(unsigned int textureUnit)
+void Texture::Bind(unsigned int textureSlot)
 {
-	glActiveTexture(GL_TEXTURE0 + textureUnit);
-	glBindTexture(GL_TEXTURE_2D, m_TextureID);
+	glActiveTexture(GL_TEXTURE0 + textureSlot);
+	glBindTexture(GL_TEXTURE_2D, m_ID);
 }
 
 void Texture::Unbind()
@@ -249,9 +284,9 @@ void Texture::Clear()
 {
 	if (m_Spec.IsSampler)
 		stbi_image_free(m_Buffer);
-	glDeleteTextures(1, &m_TextureID);
+	glDeleteTextures(1, &m_ID);
 
-	m_TextureID = 0;
+	m_ID = 0;
 	m_Spec.Width = 0;
 	m_Spec.Height = 0;
 	m_Spec.BitDepth = 0;

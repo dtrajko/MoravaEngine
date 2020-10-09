@@ -5,6 +5,22 @@
 #include <string>
 
 
+enum class TextureFormat
+{
+	None    = 0,
+	RGB     = 1,
+	RGBA    = 2,
+	Float16 = 3
+};
+
+enum class TextureWrap
+{
+	None   = 0,
+	Clamp  = 1,
+	Repeat = 2
+};
+
+
 class Texture
 {
 public:
@@ -27,6 +43,7 @@ public:
 		bool IsSampler; // m_Buffer is required during object lifetime, so it must be deallocated in destructor
 		uint32_t Samples;
 		bool IsMultisample;
+		bool IsSRGB;
 	} m_Spec;
 
 public:
@@ -36,26 +53,30 @@ public:
 	Texture(const char* fileLoc, bool flipVert, bool isSampler, int filter);
 	Texture(const char* fileLoc, unsigned int width, unsigned int height, bool isSampler, int filter);
 	Texture(const char* fileLoc, Specification spec); // constructor for fully customizable texture
-	~Texture();
+	virtual ~Texture();
 
 	virtual bool Load(bool flipVert = false);
 	virtual void OpenGLCreate();
 	virtual void Save();
-	inline unsigned int GetID() const { return m_TextureID; };
-	virtual void Bind(unsigned int textureUnit = 0);
+	virtual TextureFormat GetFormat() { return m_Format; };
+	virtual void Bind(unsigned int textureSlot = 0);
+
 	void Unbind();
 	void Clear();
+	unsigned int CalculateMipMapCount(unsigned int width, unsigned int height); // used in Hazel::SceneRenderer
+	unsigned int GetMipLevelCount();
+
+	inline unsigned int GetID() const { return m_ID; };
 	inline unsigned int GetWidth() const { return m_Spec.Width; };
 	inline unsigned int GetHeight() const { return m_Spec.Height; };
 	inline bool IsLoaded() const { return m_Buffer ? true : false; }; // used in Hazel::Mesh
-	unsigned int CalculateMipMapCount(unsigned int width, unsigned int height); // used in Hazel::SceneRenderer
-	unsigned int GetMipLevelCount();
 
 	// Getters
 	int GetRed(int x, int z);
 	int GetGreen(int x, int z);
 	int GetBlue(int x, int z);
 	int GetAlpha(int x, int z);
+	float GetFileSize(const char* filename);
 
 	// Setters
 	void SetPixel(int x, int z, glm::ivec4 pixel);
@@ -64,12 +85,11 @@ public:
 	void SetBlue(int x, int z, int value);
 	void SetAlpha(int x, int z, int value);
 
-	float GetFileSize(const char* filename);
-
 protected:
-	unsigned int m_TextureID;
+	unsigned int m_ID;
 	const char* m_FileLocation;
 	unsigned char* m_Buffer;
 	int m_Level;
+	TextureFormat m_Format;
 
 };
