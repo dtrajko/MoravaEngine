@@ -50,6 +50,7 @@ void Framebuffer::AddAttachmentSpecification(unsigned int width, unsigned int he
 	fbSpecs.Height = height;
 	fbSpecs.attachmentType = attachmentType;
 	fbSpecs.attachmentFormat = attachmentFormat;
+	fbSpecs.ClearColor = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
 	m_AttachmentSpecs.push_back(fbSpecs);
 }
 
@@ -76,42 +77,50 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 		{
 		case AttachmentFormat::Color:
 			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Color, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Color, Multisample: {0}, {1}x{2}]",
+				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::RGBA16F:
 			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA16F, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA16F, Multisample: {0}, {1}x{2}]",
+				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::RGBA8:
 			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA8, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA8, Multisample: {0}, {1}x{2}]",
+				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Depth:
 			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth, Multisample: {0}, {1}x{2}]",
+				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::DepthStencil:
 			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::DepthStencil, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::DepthStencil, Multisample: {0}, {1}x{2}]",
+				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Depth_24:
 			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth_24, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth_24, Multisample: {0}, {1}x{2}]",
+				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Depth_24_Stencil_8:
 			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth_24_Stencil_8, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth_24_Stencil_8, Multisample: {0}, {1}x{2}]",
+				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Stencil:
 			CreateAttachmentStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Stencil, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Stencil, Multisample: {0}, {1}x{2}]",
+				m_Multisample, width, height);
 			break;
 		default:
 			Log::GetLogger()->error("Attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);

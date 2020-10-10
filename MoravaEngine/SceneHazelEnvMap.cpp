@@ -13,6 +13,7 @@
 #include "Math.h"
 #include "Input.h"
 #include "Hazel/Renderer/HazelTexture.h"
+#include "Util.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
@@ -610,18 +611,15 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                 ImGui::Text("Mesh");
                 auto mesh = m_EnvironmentMap->GetMeshEntity()->GetMesh();
                 std::string fullPath = mesh ? mesh->GetFilePath() : "None";
-                size_t found = fullPath.find_last_of("/\\");
-                std::string fileName = found != std::string::npos ? fullPath.substr(found + 1) : fullPath;
+                std::string fileName = Util::GetFileNameFromFullPath(fullPath);
                 ImGui::Text(fileName.c_str()); ImGui::SameLine();
                 if (ImGui::Button("...##Mesh"))
                 {
                     std::string fullPath = Application::Get()->OpenFile("");
                     if (fullPath != "")
                     {
-                        size_t found = fullPath.find_last_of("/\\");
-                        std::string fileName = found != std::string::npos ? fullPath.substr(found + 1) : fullPath;
-                        size_t foundDot = fileName.find_last_of(".");
-                        std::string fileNameNoExt = foundDot != std::string::npos ? fileName.substr(0, foundDot) : fileName;
+                        std::string fileName = Util::GetFileNameFromFullPath(fullPath);
+                        std::string fileNameNoExt = Util::StripExtensionFromFileName(fileName);
 
                         auto newMesh = new Hazel::MeshAnimPBR(fullPath, m_EnvironmentMap->GetPBRShader(), m_EnvironmentMap->GetContextData()->DrawList[0].Material);
                         Log::GetLogger()->debug("CreateEntity fileName '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
