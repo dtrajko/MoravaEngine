@@ -393,24 +393,36 @@ void SceneAnimPBR::Update(float timestep, Window* mainWindow)
 
     if (m_HDRI_Edit != m_HDRI_Edit_Prev)
     {
-        if (m_HDRI_Edit == HDRI_GREENWICH_PARK)
+        if (m_HDRI_Edit == HDRI_GREENWICH_PARK) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
-        else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE)
+        }
+        else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
-        else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH)
+        }
+        else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr");
-        else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT)
+        }
+        else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr");
-        else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY)
+        }
+        else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr");
-        else if (m_HDRI_Edit == HDRI_BIRCHWOOD)
+        }
+        else if (m_HDRI_Edit == HDRI_BIRCHWOOD) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr");
-        else if (m_HDRI_Edit == HDRI_PINK_SUNRISE)
+        }
+        else if (m_HDRI_Edit == HDRI_PINK_SUNRISE) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/pink_sunrise_4k.hdr");
-        else if (m_HDRI_Edit == HDRI_ROOITOU_PARK)
+        }
+        else if (m_HDRI_Edit == HDRI_ROOITOU_PARK) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr");
-        else if (m_HDRI_Edit == HDRI_VENICE_DAWN)
+        }
+        else if (m_HDRI_Edit == HDRI_VENICE_DAWN) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr");
+        }
+        else if (m_HDRI_Edit == HDRI_PEPPERMINT_POWERPLANT) {
+            m_MaterialWorkflowPBR->Init("Textures/HDR/peppermint_powerplant_1k.hdr");
+        }
 
         m_HDRI_Edit_Prev = m_HDRI_Edit;
     }
@@ -598,6 +610,7 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
         ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
         ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
+        ImGui::RadioButton("Peppermint Powerplant", &m_HDRI_Edit, HDRI_PEPPERMINT_POWERPLANT);
 
         ImGui::Separator();
         ImGui::SliderFloat("Skybox LOD", &m_SkyboxLOD, 0.0f, 6.0f);
