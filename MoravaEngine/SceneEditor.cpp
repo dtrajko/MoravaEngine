@@ -619,6 +619,7 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
             ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
             ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
             ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
+            ImGui::RadioButton("Peppermint Powerplant", &m_HDRI_Edit, HDRI_PEPPERMINT_POWERPLANT);
 
             ImGui::SliderInt("Blur Level", &m_BlurLevel, 0, 10);
             ImGui::SliderFloat("Skybox LOD", &m_SkyboxLOD, 0.0f, 6.0f);
@@ -1390,6 +1391,9 @@ void SceneEditor::Update(float timestep, Window* mainWindow)
         }
         else if (m_HDRI_Edit == HDRI_VENICE_DAWN) {
             m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr", m_BlurLevel);
+        }
+        else if (m_HDRI_Edit == HDRI_PEPPERMINT_POWERPLANT) {
+            m_MaterialWorkflowPBR->Init("Textures/HDR/peppermint_powerplant_1k.hdr", m_BlurLevel);
         }
 
         m_BlurEffect->Init(m_MaterialWorkflowPBR->m_CaptureSize, m_MaterialWorkflowPBR->m_CaptureSize, ResourceManager::HotLoadTexture("crate")->GetID());

@@ -530,6 +530,18 @@
     <ClCompile Include="HazelFullscreenQuad.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLShader.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLShaderUniform.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Renderer\HazelShader.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Renderer\ShaderUniform.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1137,6 +1149,21 @@
     </ClInclude>
     <ClInclude Include="HazelFullscreenQuad.h">
       <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLShader.h">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\ShaderUniform.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLShaderUniform.h">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Core\Assert.h">
+      <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\HazelShader.h">
+      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
