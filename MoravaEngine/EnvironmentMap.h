@@ -42,6 +42,7 @@ public:
 
 	void RenderHazelSkybox();
 	void RenderHazelGrid();
+	void CompositePassTemporary(Framebuffer* framebuffer);
 
 	// Setters
 	inline void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }

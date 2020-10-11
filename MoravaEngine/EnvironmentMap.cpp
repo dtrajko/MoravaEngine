@@ -256,13 +256,23 @@ void EnvironmentMap::UpdateUniforms()
     m_ShaderHazelAnimPBR->setFloat("u_NormalTexToggle", m_NormalInput.UseTexture ? 1.0f : 0.0f);
     m_ShaderHazelAnimPBR->setFloat("u_MetalnessTexToggle", m_MetalnessInput.UseTexture ? 1.0f : 0.0f);
     m_ShaderHazelAnimPBR->setFloat("u_RoughnessTexToggle", m_RoughnessInput.UseTexture ? 1.0f : 0.0f);
+    // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
+    m_ShaderHazelAnimPBR->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure()); // originally used in Shaders/Hazel/SceneComposite
     /**** END HazelPBR_Anim ***/
 
     /**** BEGIN Shaders/Hazel/SceneComposite ****/
     m_ShaderComposite->Bind();
     m_ShaderComposite->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
+    m_ShaderComposite->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
     /**** END Shaders/Hazel/SceneComposite ****/
 
+    /**** BEGIN Shaders/Hazel/Skybox ****/
+    m_ShaderSkybox->Bind();
+    m_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
+    m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
+    // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
+    m_ShaderSkybox->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure()); // originally used in Shaders/Hazel/SceneComposite
+    /**** END Shaders/Hazel/Skybox ****/
 }
 
 void EnvironmentMap::SetEnvironment(Environment environment)
@@ -328,7 +338,6 @@ void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
 {
     m_SkyboxTexture = skybox;
     m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
-    m_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
 }
 
 EnvironmentMap::~EnvironmentMap()
@@ -354,6 +363,8 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
 {
     m_Data.ActiveScene = scene;
 
+    BeginScene(m_Data.ActiveScene);
+
     UpdateUniforms();
 
     // Update all entities
@@ -371,7 +382,7 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
         dc.Mesh->OnUpdate(timestep, false);
     }
 
-    m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
+    // m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
 
     //  BeginScene(m_Data.ActiveScene);
     //  // Render entities
@@ -381,8 +392,6 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
     //      SubmitEntity(entity);
     //  }
     //  EndScene();
-
-    BeginScene(m_Data.ActiveScene);
 }
 
 void EnvironmentMap::SetViewportSize(uint32_t width, uint32_t height)
@@ -454,12 +463,9 @@ void EnvironmentMap::GeometryPass()
 
     // Skybox
     m_ShaderSkybox->Bind();
-    m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
     m_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProjection));
     m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
-    m_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    // SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
-    SubmitFullscreenQuad(nullptr);
+    SubmitFullscreenQuad(nullptr); // m_Data.SceneData.SkyboxMaterial
 
     // Render entities
     for (auto& dc : m_Data.DrawList)
@@ -509,13 +515,27 @@ void EnvironmentMap::CompositePass()
 
     m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind(m_SamplerSlots->at("u_Texture"));
     m_ShaderComposite->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-
     m_ShaderComposite->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
     m_ShaderComposite->setInt("u_TextureSamples", m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
 
     SubmitFullscreenQuad(nullptr);
 
     EndRenderPass();
+}
+
+void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
+{
+    const glm::vec4& clearColor = framebuffer->GetSpecification().ClearColor;
+    RendererBasic::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+
+    m_ShaderComposite->Bind();
+    framebuffer->GetTextureAttachmentColor()->Bind(m_SamplerSlots->at("u_Texture"));
+    m_ShaderComposite->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
+    m_ShaderComposite->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
+    // m_ShaderComposite->setInt("u_TextureSamples", framebuffer->GetSpecification().Samples);
+    m_ShaderComposite->setInt("u_TextureSamples", m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
+
+    SubmitFullscreenQuad(nullptr);
 }
 
 void EnvironmentMap::SubmitFullscreenQuad(Material* material)
@@ -575,6 +595,9 @@ void EnvironmentMap::Render()
         // Log::GetLogger()->debug("EM::Render dc.Transform {0} {1} {2}", dc.Transform[3][0], dc.Transform[3][1], dc.Transform[3][2]);
         // dc.Mesh->Render(samplerSlot, m_MeshEntity->Transform());
     }
+
+    // m_ShaderHazelAnimPBR->Bind();
+    // m_ShaderHazelAnimPBR->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
 
     ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->Render(samplerSlot, m_MeshEntity->Transform());
 
@@ -657,10 +680,6 @@ void EnvironmentMap::RenderHazelSkybox()
     glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
     m_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProjection));
     m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
-    m_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
-    // apply exposure to skybox shader, considering that composite shader is not yet enabled
-    m_ShaderSkybox->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
 
     // SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
     SubmitFullscreenQuad(nullptr);

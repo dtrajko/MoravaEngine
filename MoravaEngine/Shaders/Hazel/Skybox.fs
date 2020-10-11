@@ -13,5 +13,5 @@ in vec3 v_Position;
 void main()
 {
 	finalColor = textureLod(u_Texture, v_Position, u_TextureLod);
-	finalColor.rgb *= u_Exposure;
+	finalColor.rgb *= u_Exposure; // originally used in Shaders/Hazel/SceneComposite
 }
