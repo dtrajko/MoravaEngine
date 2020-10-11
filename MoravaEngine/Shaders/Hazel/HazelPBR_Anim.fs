@@ -54,6 +54,8 @@ uniform float u_NormalTexToggle;
 uniform float u_MetalnessTexToggle;
 uniform float u_RoughnessTexToggle;
 
+uniform float u_Exposure;
+
 struct PBRParameters
 {
 	vec3 Albedo;
@@ -270,4 +272,5 @@ void main()
 	vec3 iblContribution = IBL(F0, Lr);
 
 	color = vec4(lightContribution + iblContribution, 1.0);
+	color.rgb *= u_Exposure; // originally used in Shaders/Hazel/SceneComposite
 }

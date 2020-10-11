@@ -152,6 +152,17 @@ void SceneHazelEnvMap::SetupRenderFramebuffer()
 
     uint32_t width = Application::Get()->GetWindow()->GetWidth();
     uint32_t height = Application::Get()->GetWindow()->GetHeight();
+
+    // FramebufferSpecification renderFramebufferSpec;
+    // renderFramebufferSpec.attachmentFormat = AttachmentFormat::Color;
+    // renderFramebufferSpec.attachmentType = AttachmentType::Texture;
+    // renderFramebufferSpec.ClearColor = glm::vec4(1.0, 1.0, 1.0, 0.0);
+    // renderFramebufferSpec.Width = width;
+    // renderFramebufferSpec.Height = height;
+    // renderFramebufferSpec.SwapChainTarget = false;
+    // renderFramebufferSpec.Samples = 8;
+    // m_RenderFramebuffer = new Framebuffer(renderFramebufferSpec);
+
     m_RenderFramebuffer = new Framebuffer(width, height);
 
     m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
@@ -1075,19 +1086,11 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
             m_EnvironmentMap->RenderHazelGrid();
         }
 
-        //  BEGIN Animated PBR models
-        //  for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
-        //  {
-        //      if (m_Entities[drawCommand.Name].Enabled)
-        //      {
-        //          drawCommand.Mesh->Render(m_EnvironmentMap->GetSamplerSlots()->at("albedo"), m_Entities[drawCommand.Name].Transform.Transform);
-        //      }
-        //  }
-        //  END Animated PBR models
+        m_EnvironmentMap->Render();
 
         RenderLineElements(m_ShaderBasic, projectionMatrix);
 
-        m_EnvironmentMap->Render();
+        m_EnvironmentMap->CompositePassTemporary(m_RenderFramebuffer);
 
         if (m_IsViewportEnabled)
         {
@@ -1096,7 +1099,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
     }
     /**** END Render to Main Viewport ****/
 
-    /**** BEGIN Render to Viewport Environment Map ****/
+    /**** BEGIN Render to Viewport Environment Map
     {
         if (m_IsViewportEnabled)
         {
@@ -1118,7 +1121,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
             m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->Unbind();
         }
     }
-    /**** END Render to Viewport Environment Map ****/
+    END Render to Viewport Environment Map ****/
 }
 
 void SceneHazelEnvMap::SetupUniforms()
