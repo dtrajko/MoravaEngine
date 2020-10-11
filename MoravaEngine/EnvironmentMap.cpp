@@ -143,65 +143,6 @@ void EnvironmentMap::SetupContextData()
     m_HazelFullscreenQuad = new HazelFullscreenQuad();
 }
 
-/****
-void EnvironmentMap::SetupFullscreenQuad()
-{
-    // Create fullscreen quad
-    float x = -1;
-    float y = -1;
-    float width = 2;
-    float height = 2;
-
-    struct QuadVertex
-    {
-        glm::vec3 Position;
-        glm::vec2 TexCoord;
-    };
-
-    QuadVertex* data = new QuadVertex[4];
-
-    data[0].Position = glm::vec3(x, y, 0.1f);
-    data[0].TexCoord = glm::vec2(0, 0);
-
-    data[1].Position = glm::vec3(x + width, y, 0.1f);
-    data[1].TexCoord = glm::vec2(1, 0);
-
-    data[2].Position = glm::vec3(x + width, y + height, 0.1f);
-    data[2].TexCoord = glm::vec2(1, 1);
-
-    data[3].Position = glm::vec3(x, y + height, 0.1f);
-    data[3].TexCoord = glm::vec2(0, 1);
-
-    uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
-
-    glGenVertexArrays(1, &m_Data.FullscreenQuadVAO);
-    // link vertex attributes
-    glBindVertexArray(m_Data.FullscreenQuadVAO);
-
-    glGenBuffers(1, &m_Data.FullscreenQuadVBO);
-
-    // fill buffer
-    glBindBuffer(GL_ARRAY_BUFFER, m_Data.FullscreenQuadVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(QuadVertex) * 4, &data[0], GL_STATIC_DRAW);
-
-    glGenBuffers(1, &m_Data.FullscreenQuadIBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.FullscreenQuadIBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * 6, &indices[0], GL_STATIC_DRAW);
-
-    // position layout (location = 0) in vec3 aPos;
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*)offsetof(QuadVertex, Position));
-
-    // tex coord layout(location = 1) in vec2 aTexCoords;
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), (const void*)offsetof(QuadVertex, TexCoord));
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);         // Unbind VBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
-    glBindVertexArray(0);                     // Unbind VAO
-}
-****/
-
 void EnvironmentMap::SetupShaders()
 {
     m_ShaderEquirectangularConversion = new Shader("Shaders/Hazel/EquirectangularToCubeMap.cs");
@@ -233,6 +174,7 @@ void EnvironmentMap::UpdateUniforms()
 
     m_ShaderHazelAnimPBR->setVec3("lights.Direction", m_Data.SceneData.ActiveLight.Direction);
     m_ShaderHazelAnimPBR->setVec3("lights.Radiance", m_Data.SceneData.ActiveLight.Radiance);
+    m_ShaderHazelAnimPBR->setFloat("lights.Multiplier", m_Data.SceneData.ActiveLight.Multiplier);
 
     m_ShaderHazelAnimPBR->setInt("u_AlbedoTexture", m_SamplerSlots->at("albedo"));
     m_ShaderHazelAnimPBR->setInt("u_NormalTexture", m_SamplerSlots->at("normal"));
@@ -271,7 +213,7 @@ void EnvironmentMap::UpdateUniforms()
     m_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
     m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
     // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
-    m_ShaderSkybox->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure()); // originally used in Shaders/Hazel/SceneComposite
+    m_ShaderSkybox->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
     /**** END Shaders/Hazel/Skybox ****/
 }
 
@@ -525,9 +467,6 @@ void EnvironmentMap::CompositePass()
 
 void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
 {
-    const glm::vec4& clearColor = framebuffer->GetSpecification().ClearColor;
-    RendererBasic::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-
     m_ShaderComposite->Bind();
     framebuffer->GetTextureAttachmentColor()->Bind(m_SamplerSlots->at("u_Texture"));
     m_ShaderComposite->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
@@ -541,21 +480,14 @@ void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
 void EnvironmentMap::SubmitFullscreenQuad(Material* material)
 {
     bool depthTest = true;
+
     if (material)
     {
         // m_ShaderHazelAnimPBR->Bind(); // hard-coded shader
         depthTest = material->GetFlag(MaterialFlag::DepthTest);
     }
 
-    //  glBindVertexArray(m_Data.FullscreenQuadVAO);
-    //  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.FullscreenQuadIBO);
-    //  DrawIndexed(6, PrimitiveType::Triangles, depthTest);
-    //  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO/EBO
-    //  glBindVertexArray(0);                     // Unbind VAO
-
     m_HazelFullscreenQuad->Render();
-
-    // Log::GetLogger()->debug("END EnvironmentMap::SubmitFullscreenQuad");
 }
 
 void EnvironmentMap::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
@@ -614,11 +546,6 @@ void EnvironmentMap::BeginRenderPass(Hazel::RenderPass* renderPass, bool clear)
     m_Data.ActiveRenderPass = renderPass;
 
     renderPass->GetSpecification().TargetFramebuffer->Bind();
-
-    //  Log::GetLogger()->debug("EnvironmentMap::BeginRenderPass Bind TargetFramebuffer [ID={0}, {1}x{2}]",
-    //      renderPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(),
-    //      renderPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetWidth(),
-    //      renderPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetHeight());
 
     if (clear)
     {
