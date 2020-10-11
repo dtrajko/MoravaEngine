@@ -659,6 +659,8 @@ void EnvironmentMap::RenderHazelSkybox()
     m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
     m_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
     m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
+    // apply exposure to skybox shader, considering that composite shader is not yet enabled
+    m_ShaderSkybox->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
 
     // SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
     SubmitFullscreenQuad(nullptr);
