@@ -114,7 +114,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupFramebuffers();
     SetupRenderFramebuffer();
 
-    m_EnvironmentMap = new EnvironmentMap("Textures/HDR/birchwood_4k.hdr");
+    m_EnvironmentMap = new EnvironmentMap("Textures/HDR/peppermint_powerplant_1k.hdr");
     m_EnvironmentMap->SetSkyboxLOD(0.0f);
 
     SetupMeshes();
@@ -603,7 +603,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                 }
 
                 float skyboxLOD = m_EnvironmentMap->GetSkyboxLOD();
-                if (ImGui::SliderFloat("Skybox LOD", &skyboxLOD, 0.0f, 6.0f))
+                if (ImGui::SliderFloat("Skybox LOD", &skyboxLOD, 0.0f, 2.0f))
                 {
                     m_EnvironmentMap->SetSkyboxLOD(skyboxLOD);
                 }
@@ -616,7 +616,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                 Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
                 Property("Exposure", m_Camera->GetExposure(), 0.0f, 5.0f);
-
+                Property("Skybox Exposure Factor", m_EnvironmentMap->GetSkyboxExposureFactor(), 0.0f, 10.0f);
                 Property("Radiance Prefiltering", m_EnvironmentMap->GetRadiancePrefilter());
                 Property("Env Map Rotation", m_EnvironmentMap->GetEnvMapRotation(), -360.0f, 360.0f);
 

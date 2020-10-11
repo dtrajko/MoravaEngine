@@ -65,13 +65,13 @@ public:
 	inline Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
 	inline Hazel::Entity* GetMeshEntity() { return m_MeshEntity; }
 	inline void SetMeshEntity(Hazel::Entity* entity) { m_MeshEntity = entity; }
+	inline float& GetSkyboxExposureFactor() { return m_SkyboxExposureFactor; };
 	Hazel::RenderPass* GetFinalRenderPass();
 	FramebufferTexture* GetFinalColorBuffer();
 	uint32_t GetFinalColorBufferID();
 
 private:
 	void SetupContextData();
-	// void SetupFullscreenQuad();
 	void SetupShaders();
 	void UpdateUniforms();
 	std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> CreateEnvironmentMap(const std::string& filepath);
@@ -107,7 +107,6 @@ private:
 	{
 		glm::vec3 Direction;
 		glm::vec3 Radiance;
-
 		float Multiplier = 1.0f;
 	};
 
@@ -242,5 +241,7 @@ private:
 	CubeSkybox* m_SkyboxCube;
 
 	HazelFullscreenQuad* m_HazelFullscreenQuad;
+
+	float m_SkyboxExposureFactor = 2.0f;
 
 };
