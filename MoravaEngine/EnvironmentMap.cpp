@@ -29,6 +29,10 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     // BRDF LUT
     m_SamplerSlots->insert(std::make_pair("BRDF_LUT",   7)); // uniform sampler2D u_BRDFLUTTexture
 
+    // Skybox.fs         - uniform samplerCube u_Texture;
+    // SceneComposite.fs - uniform sampler2DMS u_Texture;
+    m_SamplerSlots->insert(std::make_pair("u_Texture",  1));
+
     Init();
 
     m_Data.SceneData.SceneEnvironment = Load(filepath);
@@ -42,6 +46,13 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     // Set lights
     m_Data.SceneData.ActiveLight.Direction = { 0.0f, 0.0f, -1.0f };
     m_Data.SceneData.ActiveLight.Radiance = { 1.0f, 1.0f, 1.0f };
+
+    // Grid
+    m_Data.GridMaterial = new Material(m_ShaderGrid);
+    float gridScale = 16.025f, gridSize = 0.025f;
+    m_ShaderGrid->Bind();
+    m_ShaderGrid->setFloat("u_Scale", gridScale);
+    m_ShaderGrid->setFloat("u_Res", gridSize);
 }
 
 EnvironmentMap::Environment EnvironmentMap::Load(const std::string& filepath)
@@ -249,7 +260,7 @@ void EnvironmentMap::UpdateUniforms()
 
     /**** BEGIN Shaders/Hazel/SceneComposite ****/
     m_ShaderComposite->Bind();
-    m_ShaderComposite->setInt("u_Texture", 0);
+    m_ShaderComposite->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
     /**** END Shaders/Hazel/SceneComposite ****/
 
 }
@@ -316,7 +327,8 @@ void EnvironmentMap::Init()
 void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
 {
     m_SkyboxTexture = skybox;
-    m_ShaderSkybox->setInt("u_Texture", skybox->GetID());
+    m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
+    m_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
 }
 
 EnvironmentMap::~EnvironmentMap()
@@ -444,7 +456,10 @@ void EnvironmentMap::GeometryPass()
     m_ShaderSkybox->Bind();
     m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
     m_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProjection));
-    SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
+    m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
+    m_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
+    // SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
+    SubmitFullscreenQuad(nullptr);
 
     // Render entities
     for (auto& dc : m_Data.DrawList)
@@ -492,8 +507,8 @@ void EnvironmentMap::CompositePass()
 
     m_ShaderComposite->Bind();
 
-    m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind(1);
-    m_ShaderComposite->setInt("u_Texture", 1);
+    m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind(m_SamplerSlots->at("u_Texture"));
+    m_ShaderComposite->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
 
     m_ShaderComposite->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
     m_ShaderComposite->setInt("u_TextureSamples", m_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
@@ -508,7 +523,7 @@ void EnvironmentMap::SubmitFullscreenQuad(Material* material)
     bool depthTest = true;
     if (material)
     {
-        m_ShaderHazelAnimPBR->Bind();
+        // m_ShaderHazelAnimPBR->Bind(); // hard-coded shader
         depthTest = material->GetFlag(MaterialFlag::DepthTest);
     }
 
@@ -633,19 +648,45 @@ void EnvironmentMap::SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& trans
     }
 }
 
-/**
- * Skybox temporary version Shaders/Hazel/Skybox
- */
-void EnvironmentMap::RenderTemporarySkybox()
+void EnvironmentMap::RenderHazelSkybox()
 {
     RendererBasic::DisableCulling();
 
+    // Hazel Skybox
     m_ShaderSkybox->Bind();
     glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
     m_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProjection));
-    m_Data.SceneData.SceneEnvironment.RadianceMap->Bind(0);
-    m_ShaderSkybox->setInt("u_Texture", 0);
+    m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
+    m_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
     m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
 
-    m_SkyboxCube->Render();
+    // SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
+    SubmitFullscreenQuad(nullptr);
+}
+
+void EnvironmentMap::RenderHazelGrid()
+{
+    // Grid
+    // -- Shaders/Hazel/Grid.vs
+    // ---- uniform mat4 u_ViewProjection;
+    // ---- uniform mat4 u_Transform;
+    // -- Shaders/Hazel/Grid.fs
+    // ---- uniform float u_Scale;
+    // ---- uniform float u_Res;
+
+    m_ShaderGrid->Bind();
+    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
+    m_ShaderGrid->setMat4("u_ViewProjection", viewProjection);
+
+    bool depthTest = true;
+
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::scale(transform, glm::vec3(16.0f, 1.0f, 16.0f));
+    transform = glm::rotate(transform, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    m_ShaderGrid->setMat4("u_Transform", transform);
+
+    RendererBasic::EnableTransparency();
+    RendererBasic::EnableMSAA();
+
+    m_HazelFullscreenQuad->Render();
 }

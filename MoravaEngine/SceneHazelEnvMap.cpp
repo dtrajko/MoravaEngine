@@ -127,9 +127,11 @@ SceneHazelEnvMap::SceneHazelEnvMap()
 
     m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel((Scene*)this);
 
-    m_DisplayLineElements = true;
+    m_DisplayLineElements = false;
     m_Grid = new Grid(20);
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
+
+    m_DisplayHazelGrid = true;
 }
 
 SceneHazelEnvMap::~SceneHazelEnvMap()
@@ -512,6 +514,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     {
         ImGui::Checkbox("Display Bounding Boxes", &m_VisibleAABBs);
         ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
+        ImGui::Checkbox("Display Hazel Grid", &m_DisplayHazelGrid);
 
         ImGui::Separator();
         for (auto& entity : m_Entities)
@@ -1066,7 +1069,11 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 
         RendererBasic::EnableMSAA();
 
-        m_EnvironmentMap->RenderTemporarySkybox();
+        m_EnvironmentMap->RenderHazelSkybox();
+
+        if (m_DisplayHazelGrid) {
+            m_EnvironmentMap->RenderHazelGrid();
+        }
 
         //  BEGIN Animated PBR models
         //  for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)

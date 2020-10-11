@@ -40,7 +40,8 @@ public:
 
 	void Render();
 
-	void RenderTemporarySkybox(); // Skybox temporary version
+	void RenderHazelSkybox();
+	void RenderHazelGrid();
 
 	// Setters
 	inline void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
