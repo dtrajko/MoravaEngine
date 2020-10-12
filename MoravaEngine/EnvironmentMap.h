@@ -37,8 +37,8 @@ public:
 	void Update(Scene* scene, float timestep);
 	void AddEntity(Hazel::Entity* entity);
 	Hazel::Entity* CreateEntity(const std::string& name);
-
 	void Render();
+	void OnImGuiRender();
 
 	void RenderHazelSkybox();
 	void RenderHazelGrid();
@@ -75,6 +75,7 @@ private:
 	void SetupContextData();
 	void SetupShaders();
 	void UpdateUniforms();
+	void UpdateShaderPBRUniforms(Shader* shaderHazelPBR);
 	std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> CreateEnvironmentMap(const std::string& filepath);
 	void SetSkybox(Hazel::HazelTextureCube* skybox);
 

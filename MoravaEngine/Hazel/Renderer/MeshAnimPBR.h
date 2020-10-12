@@ -141,10 +141,11 @@ namespace Hazel {
 		void Render(uint32_t samplerSlot, const glm::mat4& entityTransform);
 
 		// Getters
-		const std::vector<Submesh*>& GetSubmeshes() const { return m_Submeshes; }
-		const std::vector<Material*>& GetMaterials() const { return m_Materials; }
-		const std::vector<Texture*>& GetTextures() const { return m_Textures; }
-		const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
+		inline const std::vector<Submesh*>& GetSubmeshes() const { return m_Submeshes; }
+		inline const std::vector<Material*>& GetMaterials() const { return m_Materials; }
+		inline const std::vector<Texture*>& GetTextures() const { return m_Textures; }
+		inline const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
+		inline bool& IsAnimated() { return m_IsAnimated; }
 
 		// Setters
 		inline void SetBaseMaterial(Material* baseMaterial) { m_BaseMaterial = baseMaterial; }

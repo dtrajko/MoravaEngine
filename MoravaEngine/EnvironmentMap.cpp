@@ -128,20 +128,6 @@ void EnvironmentMap::SetupContextData()
         textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
         textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
 
-        Data::DrawCommand drawCommand;
-        drawCommand.Name = "M1911";
-        drawCommand.Material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
-        drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHazelPBR_Anim, drawCommand.Material, true);
-        // drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/Hazel/Sphere1m.fbx", m_ShaderHazelPBR_Anim, drawCommand.Material, false);
-
-        ((Hazel::MeshAnimPBR*)drawCommand.Mesh)->SetTimeMultiplier(1.0f);
-        drawCommand.Transform = glm::mat4(1.0f);
-
-        m_Data.DrawList.push_back(drawCommand);
-
-        m_MeshEntity = CreateEntity(drawCommand.Name);
-        m_MeshEntity->SetMesh(drawCommand.Mesh);
-
         // Load Hazel/Renderer/HazelTexture
         m_AlbedoInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoM1911.albedo);
         m_AlbedoInput.UseTexture = true;
@@ -151,6 +137,20 @@ void EnvironmentMap::SetupContextData()
         m_MetalnessInput.UseTexture = true;
         m_RoughnessInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoM1911.roughness);
         m_RoughnessInput.UseTexture = true;
+
+        Data::DrawCommand drawCommand;
+        drawCommand.Name = "M1911";
+        // drawCommand.Material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
+        drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);
+        // drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/Hazel/Sphere1m.fbx", m_ShaderHazelPBR_Anim, drawCommand.Material, false);
+
+        ((Hazel::MeshAnimPBR*)drawCommand.Mesh)->SetTimeMultiplier(1.0f);
+        drawCommand.Transform = glm::mat4(1.0f);
+
+        m_Data.DrawList.push_back(drawCommand);
+
+        m_MeshEntity = CreateEntity(drawCommand.Name);
+        m_MeshEntity->SetMesh(drawCommand.Mesh);
     }
     Log::GetLogger()->info("-- END EnvironmentMap loading MeshAnimPBR M1911 --");
 
@@ -191,38 +191,8 @@ void EnvironmentMap::SetupShaders()
 
 void EnvironmentMap::UpdateUniforms()
 {
-    /**** BEGIN HazelPBR_Anim ***/
-    m_ShaderHazelPBR_Anim->Bind();
-
-    m_ShaderHazelPBR_Anim->setVec3("lights.Direction", m_Data.SceneData.ActiveLight.Direction);
-    m_ShaderHazelPBR_Anim->setVec3("lights.Radiance", m_Data.SceneData.ActiveLight.Radiance);
-    m_ShaderHazelPBR_Anim->setFloat("lights.Multiplier", m_Data.SceneData.ActiveLight.Multiplier);
-
-    m_ShaderHazelPBR_Anim->setInt("u_AlbedoTexture", m_SamplerSlots->at("albedo"));
-    m_ShaderHazelPBR_Anim->setInt("u_NormalTexture", m_SamplerSlots->at("normal"));
-    m_ShaderHazelPBR_Anim->setInt("u_MetalnessTexture", m_SamplerSlots->at("metalness"));
-    m_ShaderHazelPBR_Anim->setInt("u_RoughnessTexture", m_SamplerSlots->at("roughness"));
-    // m_ShaderHazelPBR_Anim->setInt("u_AOTexture", m_SamplerSlots->at("ao"));
-
-    m_ShaderHazelPBR_Anim->setInt("u_EnvRadianceTex", m_SamplerSlots->at("radiance"));
-    m_ShaderHazelPBR_Anim->setInt("u_EnvIrradianceTex", m_SamplerSlots->at("irradiance"));
-
-    m_ShaderHazelPBR_Anim->setInt("u_BRDFLUTTexture", m_SamplerSlots->at("BRDF_LUT"));
-
-    m_ShaderHazelPBR_Anim->setVec3("u_AlbedoColor", m_AlbedoInput.Color);
-    m_ShaderHazelPBR_Anim->setFloat("u_Metalness", m_MetalnessInput.Value);
-    m_ShaderHazelPBR_Anim->setFloat("u_Roughness", m_RoughnessInput.Value);
-
-    m_ShaderHazelPBR_Anim->setFloat("u_EnvMapRotation", m_EnvMapRotation);
-
-    m_ShaderHazelPBR_Anim->setFloat("u_RadiancePrefilter", m_RadiancePrefilter ? 1.0f : 0.0f);
-    m_ShaderHazelPBR_Anim->setFloat("u_AlbedoTexToggle", m_AlbedoInput.UseTexture ? 1.0f : 0.0f);
-    m_ShaderHazelPBR_Anim->setFloat("u_NormalTexToggle", m_NormalInput.UseTexture ? 1.0f : 0.0f);
-    m_ShaderHazelPBR_Anim->setFloat("u_MetalnessTexToggle", m_MetalnessInput.UseTexture ? 1.0f : 0.0f);
-    m_ShaderHazelPBR_Anim->setFloat("u_RoughnessTexToggle", m_RoughnessInput.UseTexture ? 1.0f : 0.0f);
-    // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
-    m_ShaderHazelPBR_Anim->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure()); // originally used in Shaders/Hazel/SceneComposite
-    /**** END HazelPBR_Anim ***/
+    UpdateShaderPBRUniforms(m_ShaderHazelPBR_Anim);
+    UpdateShaderPBRUniforms(m_ShaderHazelPBR_Static);
 
     /**** BEGIN Shaders/Hazel/SceneComposite ****/
     m_ShaderComposite->Bind();
@@ -237,6 +207,52 @@ void EnvironmentMap::UpdateUniforms()
     // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
     m_ShaderSkybox->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
     /**** END Shaders/Hazel/Skybox ****/
+}
+
+void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR)
+{
+    /**** BEGIN Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
+
+    shaderHazelPBR->Bind();
+
+    shaderHazelPBR->setInt("u_AlbedoTexture", m_SamplerSlots->at("albedo"));
+    shaderHazelPBR->setInt("u_NormalTexture", m_SamplerSlots->at("normal"));
+    shaderHazelPBR->setInt("u_MetalnessTexture", m_SamplerSlots->at("metalness"));
+    shaderHazelPBR->setInt("u_RoughnessTexture", m_SamplerSlots->at("roughness"));
+    // shaderHazelPBR->setInt("u_AOTexture", m_SamplerSlots->at("ao"));
+
+    shaderHazelPBR->setVec3("u_AlbedoColor", m_AlbedoInput.Color);
+    shaderHazelPBR->setFloat("u_Metalness", m_MetalnessInput.Value);
+    shaderHazelPBR->setFloat("u_Roughness", m_RoughnessInput.Value);
+
+    shaderHazelPBR->setFloat("u_EnvMapRotation", m_EnvMapRotation);
+
+    shaderHazelPBR->setFloat("u_RadiancePrefilter", m_RadiancePrefilter ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_AlbedoTexToggle", m_AlbedoInput.UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_NormalTexToggle", m_NormalInput.UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_MetalnessTexToggle", m_MetalnessInput.UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_RoughnessTexToggle", m_RoughnessInput.UseTexture ? 1.0f : 0.0f);
+    // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
+    shaderHazelPBR->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure()); // originally used in Shaders/Hazel/SceneComposite
+
+    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
+
+    shaderHazelPBR->setMat4("u_ViewProjectionMatrix", viewProjection);
+    shaderHazelPBR->setVec3("u_CameraPosition", m_Data.SceneData.SceneCamera->GetPosition());
+
+    // Environment (TODO: don't do this per mesh)
+    shaderHazelPBR->setInt("u_EnvRadianceTex", m_SamplerSlots->at("radiance"));
+    shaderHazelPBR->setInt("u_EnvIrradianceTex", m_SamplerSlots->at("irradiance"));
+    shaderHazelPBR->setInt("u_BRDFLUTTexture", m_SamplerSlots->at("BRDF_LUT"));
+
+    // Set lights (TODO: move to light environment and don't do per mesh)
+    shaderHazelPBR->setVec3("lights.Direction", m_Data.SceneData.ActiveLight.Direction);
+    shaderHazelPBR->setVec3("lights.Radiance", m_Data.SceneData.ActiveLight.Radiance);
+    shaderHazelPBR->setFloat("lights.Multiplier", m_Data.SceneData.ActiveLight.Multiplier);
+
+    shaderHazelPBR->Validate();
+
+    /**** END Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
 }
 
 void EnvironmentMap::Init()
@@ -430,18 +446,6 @@ void EnvironmentMap::GeometryPass()
     {
         //  auto baseMaterial = dc.Mesh->GetBaseMaterial();
         auto baseMaterial = dc.Material;
-        m_ShaderHazelPBR_Anim->setMat4("u_ViewProjectionMatrix", viewProjection);
-        m_ShaderHazelPBR_Anim->setVec3("u_CameraPosition", m_Data.SceneData.SceneCamera->GetPosition());
-
-        // Environment (TODO: don't do this per mesh)
-        m_ShaderHazelPBR_Anim->setInt("u_EnvRadianceTex", m_SamplerSlots->at("radiance"));
-        m_ShaderHazelPBR_Anim->setInt("u_EnvIrradianceTex", m_SamplerSlots->at("irradiance"));
-        m_ShaderHazelPBR_Anim->setInt("u_BRDFLUTTexture", m_SamplerSlots->at("BRDF_LUT"));
-
-        // Set lights (TODO: move to light environment and don't do per mesh)
-        m_ShaderHazelPBR_Anim->setVec3("lights.Direction", m_Data.SceneData.ActiveLight.Direction);
-        m_ShaderHazelPBR_Anim->setVec3("lights.Radiance", m_Data.SceneData.ActiveLight.Radiance);
-        m_ShaderHazelPBR_Anim->setFloat("lights.Multiplier", m_Data.SceneData.ActiveLight.Multiplier);
 
         auto overrideMaterial = nullptr; // dc.Material;
         SubmitMesh(((Hazel::MeshAnimPBR*)dc.Mesh), m_MeshEntity->Transform(), overrideMaterial);
@@ -554,9 +558,21 @@ void EnvironmentMap::Render()
     m_MetalnessInput.TextureMap->Bind(m_SamplerSlots->at("metalness"));
     m_RoughnessInput.TextureMap->Bind(m_SamplerSlots->at("roughness"));
 
+    if (((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->IsAnimated()) {
+        m_ShaderHazelPBR_Anim->Bind();
+    }
+    else {
+        m_ShaderHazelPBR_Static->Bind();
+    }
+
     ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->Render(samplerSlot, m_MeshEntity->Transform());
 
     EndScene();
+}
+
+void EnvironmentMap::OnImGuiRender()
+{
+    ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->OnImGuiRender();
 }
 
 void EnvironmentMap::BeginRenderPass(Hazel::RenderPass* renderPass, bool clear)

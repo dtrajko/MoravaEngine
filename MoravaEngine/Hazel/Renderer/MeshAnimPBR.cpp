@@ -481,14 +481,14 @@ namespace Hazel {
 		delete m_IndexBuffer;
 		delete m_VertexBuffer;
 		delete m_VertexArray;
-
 	}
 
 	void MeshAnimPBR::OnUpdate(float ts, bool debug)
 	{
+		m_WorldTime += ts;
+
 		if (m_IsAnimated && m_AnimationPlaying)
 		{
-			m_WorldTime += ts;
 
 			float ticksPerSecond = (float)(m_Scene->mAnimations[0]->mTicksPerSecond != 0 ? m_Scene->mAnimations[0]->mTicksPerSecond : 25.0f) * m_TimeMultiplier;
 			m_AnimationTime += ts * ticksPerSecond;
@@ -531,45 +531,6 @@ namespace Hazel {
 			TraverseNodes(node->mChildren[i], transform, level + 1);
 	}
 
-	void MeshAnimPBR::ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform, uint32_t level)
-	{
-		glm::mat4 localTransform = Mat4FromAssimpMat4(node->mTransformation);
-		glm::mat4 transform = parentTransform * localTransform;
-		for (uint32_t i = 0; i < node->mNumMeshes; i++)
-		{
-			uint32_t mesh = node->mMeshes[i];
-			m_Submeshes[mesh]->NodeName = node->mName.C_Str();
-			m_Submeshes[mesh]->Transform = transform;
-		}
-
-		if (ImGui::TreeNode(node->mName.C_Str()))
-		{
-			/****
-			{
-				auto [translation, rotation, scale] = Math::GetTransformDecomposition(transform);
-				glm::vec3 rotationVec3 = glm::degrees(glm::eulerAngles(rotation));
-				ImGui::Text("World Transform");
-				ImGui::Text("  Translation: %.2f %.2f %.2f", translation.x, translation.y, translation.z);
-				ImGui::Text("  Rotation:    %.2f %.2f %.2f", rotationVec3.x, rotationVec3.y, rotationVec3.z);
-				ImGui::Text("  Scale:       %.2f %.2f %.2f", scale.x, scale.y, scale.z);
-			}
-			{
-				auto [translation, rotation, scale] = Math::GetTransformDecomposition(localTransform);
-				glm::vec3 rotationVec3 = glm::degrees(glm::eulerAngles(rotation));
-				ImGui::Text("Local Transform");
-				ImGui::Text("  Translation: %.2f %.2f %.2f", translation.x, translation.y, translation.z);
-				ImGui::Text("  Rotation:    %.2f %.2f %.2f", rotationVec3.x, rotationVec3.y, rotationVec3.z);
-				ImGui::Text("  Scale:       %.2f %.2f %.2f", scale.x, scale.y, scale.z);
-			}
-			****/
-
-			for (uint32_t i = 0; i < node->mNumChildren; i++)
-				ImGuiNodeHierarchy(node->mChildren[i], transform, level + 1);
-
-			ImGui::TreePop();
-		}
-	}
-
 	uint32_t MeshAnimPBR::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
 		for (uint32_t i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
@@ -580,7 +541,6 @@ namespace Hazel {
 
 		return 0;
 	}
-
 
 	uint32_t MeshAnimPBR::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
@@ -718,6 +678,45 @@ namespace Hazel {
 		m_BaseMaterial = new Material(textureInfoDefault, 0.0f, 0.0f);
 	}
 
+	void MeshAnimPBR::ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform, uint32_t level)
+	{
+		glm::mat4 localTransform = Mat4FromAssimpMat4(node->mTransformation);
+		glm::mat4 transform = parentTransform * localTransform;
+
+		for (uint32_t i = 0; i < node->mNumMeshes; i++)
+		{
+			uint32_t mesh = node->mMeshes[i];
+			m_Submeshes[mesh]->NodeName = node->mName.C_Str();
+			m_Submeshes[mesh]->Transform = transform;
+		}
+
+		if (ImGui::TreeNode(node->mName.C_Str()))
+		{
+			auto [translation, rotation, scale] = Math::GetTransformDecomposition(transform);
+			glm::vec3 rotationVec3 = glm::degrees(glm::eulerAngles(rotation));
+			ImGui::Text("World Transform");
+			ImGui::Text("  Translation: %.2f %.2f %.2f", translation.x, translation.y, translation.z);
+			ImGui::Text("  Rotation:    %.2f %.2f %.2f", rotationVec3.x, rotationVec3.y, rotationVec3.z);
+			ImGui::Text("  Scale:       %.2f %.2f %.2f", scale.x, scale.y, scale.z);
+
+			/****
+			{
+				auto [translation, rotation, scale] = Math::GetTransformDecomposition(localTransform);
+				glm::vec3 rotationVec3 = glm::degrees(glm::eulerAngles(rotation));
+				ImGui::Text("Local Transform");
+				ImGui::Text("  Translation: %.2f %.2f %.2f", translation.x, translation.y, translation.z);
+				ImGui::Text("  Rotation:    %.2f %.2f %.2f", rotationVec3.x, rotationVec3.y, rotationVec3.z);
+				ImGui::Text("  Scale:       %.2f %.2f %.2f", scale.x, scale.y, scale.z);
+			}
+			****/
+
+			for (uint32_t i = 0; i < node->mNumChildren; i++)
+				ImGuiNodeHierarchy(node->mChildren[i], transform, level + 1);
+
+			ImGui::TreePop();
+		}
+	}
+
 	void MeshAnimPBR::OnImGuiRender()
 	{
 		// Mesh Hierarchy
@@ -824,16 +823,13 @@ namespace Hazel {
 
 	void MeshAnimPBR::Render(uint32_t samplerSlot, const glm::mat4& transform)
 	{
-		// TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
-		//	if (!m_BaseMaterial) {
-		//		SetupDefaultBaseMaterial();
-		//	}
-		//	
-		//	m_BaseMaterial->GetTextureAlbedo()->Bind(samplerSlot + 0);
-		//	m_BaseMaterial->GetTextureNormal()->Bind(samplerSlot + 1);
-		//	m_BaseMaterial->GetTextureMetallic()->Bind(samplerSlot + 2);
-		//	m_BaseMaterial->GetTextureRoughness()->Bind(samplerSlot + 3);
-		//	m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
+		if (m_BaseMaterial) {
+			m_BaseMaterial->GetTextureAlbedo()->Bind(samplerSlot + 0);
+			m_BaseMaterial->GetTextureNormal()->Bind(samplerSlot + 1);
+			m_BaseMaterial->GetTextureMetallic()->Bind(samplerSlot + 2);
+			m_BaseMaterial->GetTextureRoughness()->Bind(samplerSlot + 3);
+			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
+		}
 
 		m_VertexArray->Bind();
 

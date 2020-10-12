@@ -615,7 +615,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                 Property("Light Direction", light.Direction);
                 Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
-                Property("Exposure", m_Camera->GetExposure(), 0.0f, 10.0f);
+                Property("Exposure", m_Camera->GetExposure(), 0.0f, 20.0f);
                 Property("Skybox Exposure Factor", m_EnvironmentMap->GetSkyboxExposureFactor(), 0.0f, 10.0f);
                 Property("Radiance Prefiltering", m_EnvironmentMap->GetRadiancePrefilter());
                 Property("Env Map Rotation", m_EnvironmentMap->GetEnvMapRotation(), -360.0f, 360.0f);
@@ -639,13 +639,24 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                         std::string fileName = Util::GetFileNameFromFullPath(fullPath);
                         std::string fileNameNoExt = Util::StripExtensionFromFileName(fileName);
 
-                        auto newMesh = new Hazel::MeshAnimPBR(fullPath, m_EnvironmentMap->GetShaderPBR_Anim(), m_EnvironmentMap->GetContextData()->DrawList[0].Material, true);
+                        // A bit unfortunate hard-coded mesh type selection by model name
+                        // TODO: detect automatically mesh type in MeshAnimPBR constructor
+                        // Hazel::MeshAnimPBR* newMesh;
+                        if (fileNameNoExt == "m1911") {
+                            mesh = new Hazel::MeshAnimPBR(fullPath, m_EnvironmentMap->GetShaderPBR_Anim(), nullptr, true);
+                        } else {
+                            mesh = new Hazel::MeshAnimPBR(fullPath, m_EnvironmentMap->GetShaderPBR_Static(), nullptr, false);
+                        }
+
                         Log::GetLogger()->debug("CreateEntity fileName '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
                         Hazel::Entity* newMeshEntity = m_EnvironmentMap->CreateEntity(fileNameNoExt);
-                        newMeshEntity->SetMesh(newMesh);
+                        newMeshEntity->SetMesh(mesh);
                         m_EnvironmentMap->SetMeshEntity(newMeshEntity);
                     }
                 }
+
+                Hazel::MeshAnimPBR* meshAnimPBR = (Hazel::MeshAnimPBR*)m_EnvironmentMap->GetMeshEntity()->GetMesh();
+                ImGui::Checkbox("Is Animated", &meshAnimPBR->IsAnimated());
             }
 
             ImGui::Separator();
@@ -861,10 +872,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     // ImGui::ShowMetricsWindow();
 
     // Mesh Hierarchy / Mesh Debug
-    for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
-    {
-        ((Hazel::MeshAnimPBR*)drawCommand.Mesh)->OnImGuiRender();
-    }
+    m_EnvironmentMap->OnImGuiRender();
 }
 
 void SceneHazelEnvMap::UpdateImGuizmo(Window* mainWindow)
