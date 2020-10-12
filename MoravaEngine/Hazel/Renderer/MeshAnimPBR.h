@@ -131,22 +131,23 @@ namespace Hazel {
 	{
 	public:
 		// MeshAnimPBR(const std::string& filename);
-		MeshAnimPBR(const std::string& filename, Shader* shader, Material* material);
+		MeshAnimPBR(const std::string& filename, Shader* shader, Material* material, bool isAnimated);
 		virtual ~MeshAnimPBR() override;
 
 		virtual void Create() override;
-
 		void OnUpdate(float ts, bool debug);
 		void OnImGuiRender();
 		void DumpVertexBuffer();
-
 		void Render(uint32_t samplerSlot, const glm::mat4& entityTransform);
 
+		// Getters
 		const std::vector<Submesh*>& GetSubmeshes() const { return m_Submeshes; }
 		const std::vector<Material*>& GetMaterials() const { return m_Materials; }
 		const std::vector<Texture*>& GetTextures() const { return m_Textures; }
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
 
+		// Setters
+		inline void SetBaseMaterial(Material* baseMaterial) { m_BaseMaterial = baseMaterial; }
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
 
 	private:
@@ -163,6 +164,7 @@ namespace Hazel {
 		glm::vec3 InterpolateTranslation(float animationTime, const aiNodeAnim* nodeAnim);
 		glm::quat InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim);
 		glm::vec3 InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim);
+		void SetupDefaultBaseMaterial();
 
 	public:
 		OpenGLVertexArray* m_VertexArray;
@@ -187,7 +189,7 @@ namespace Hazel {
 
 		// Materials
 		Shader* m_MeshShader;
-		Material* m_BaseMaterial;
+		Material* m_BaseMaterial; // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
 		std::vector<Texture*> m_Textures;
 		std::vector<Texture*> m_NormalMaps;
 		std::vector<Material*> m_Materials;

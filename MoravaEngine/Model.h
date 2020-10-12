@@ -16,12 +16,15 @@ class Model
 public:
 	Model();
 	Model(const std::string& fileName, const std::string& texturesPath = "Textures");
+	~Model();
+
 	void LoadModel(const std::string& fileName, const std::string& texturesPath = "Textures");
 	void Update(glm::vec3 scale);
-	inline const std::vector <Mesh*> GetMeshList() const { return meshList; };
-	void Render(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNormalMaps);
+	void Render(uint32_t txSlotDiffuse, uint32_t txSlotNormal, bool useNormalMaps);
 	void RenderPBR();
-	~Model();
+
+	// Getters
+	inline const std::vector <Mesh*> GetMeshList() const { return m_MeshList; };
 
 private:
 	void LoadNode(aiNode* node, const aiScene* scene);
@@ -30,10 +33,10 @@ private:
 	void Clear();
 
 private:
-	std::vector <Mesh*> meshList;
-	std::vector <Texture*> textureList;
-	std::vector <Texture*> normalMapList;
-	std::vector <unsigned int> meshToTexture;
+	std::vector <Mesh*> m_MeshList;
+	std::vector <Texture*> m_TextureList;
+	std::vector <Texture*> m_NormalMapList;
+	std::vector <unsigned int> m_MeshToTexture;
 
 	std::string m_TexturesPath;
 	glm::vec3 m_Scale;
