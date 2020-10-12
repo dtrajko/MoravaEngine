@@ -156,7 +156,7 @@ namespace Hazel {
 
 		void ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
 
-		const aiNodeAnim* FindNodeAnim(const aiAnimation* animation, const std::string& nodeName);
+		aiNodeAnim* FindNodeAnim(const aiAnimation* animation, const std::string& nodeName);
 		uint32_t FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
 		uint32_t FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
 		uint32_t FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);

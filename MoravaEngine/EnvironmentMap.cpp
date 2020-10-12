@@ -55,6 +55,7 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     m_ShaderGrid->setFloat("u_Res", gridSize);
 }
 
+
 EnvironmentMap::Environment EnvironmentMap::Load(const std::string& filepath)
 {
     auto [radiance, irradiance] = CreateEnvironmentMap(filepath);
@@ -109,6 +110,12 @@ std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> EnvironmentMap::Cr
     return { m_EnvFiltered, m_IrradianceMap };
 }
 
+void EnvironmentMap::SetEnvironment(Environment environment)
+{
+    m_Data.SceneData.SceneEnvironment = environment;
+    SetSkybox(m_Data.SceneData.SceneEnvironment.RadianceMap);
+}
+
 void EnvironmentMap::SetupContextData()
 {
     Log::GetLogger()->info("-- BEGIN EnvironmentMap loading MeshAnimPBR M1911 --");
@@ -125,6 +132,7 @@ void EnvironmentMap::SetupContextData()
         drawCommand.Name = "M1911";
         drawCommand.Material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
         drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHazelAnimPBR, drawCommand.Material);
+        // drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/Hazel/Sphere1m.fbx", m_ShaderHazelAnimPBR, drawCommand.Material);
         drawCommand.Mesh->SetTimeMultiplier(1.0f);
         drawCommand.Transform = glm::mat4(1.0f);
 
@@ -215,12 +223,6 @@ void EnvironmentMap::UpdateUniforms()
     // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
     m_ShaderSkybox->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
     /**** END Shaders/Hazel/Skybox ****/
-}
-
-void EnvironmentMap::SetEnvironment(Environment environment)
-{
-    m_Data.SceneData.SceneEnvironment = environment;
-    SetSkybox(m_Data.SceneData.SceneEnvironment.RadianceMap);
 }
 
 void EnvironmentMap::Init()

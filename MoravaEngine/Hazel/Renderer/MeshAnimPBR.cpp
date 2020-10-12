@@ -480,7 +480,7 @@ namespace Hazel {
 
 	void MeshAnimPBR::OnUpdate(float ts, bool debug)
 	{
-		if (m_AnimationPlaying)
+		if (m_IsAnimated && m_AnimationPlaying)
 		{
 			m_WorldTime += ts;
 
@@ -726,22 +726,29 @@ namespace Hazel {
 	void MeshAnimPBR::ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& parentTransform)
 	{
 		std::string name(pNode->mName.data);
-		const aiAnimation* animation = m_Scene->mAnimations[0];
 		glm::mat4 nodeTransform(Mat4FromAssimpMat4(pNode->mTransformation));
-		const aiNodeAnim* nodeAnim = FindNodeAnim(animation, name);
 
-		if (nodeAnim)
+		aiAnimation* animation;
+		aiNodeAnim* nodeAnim;
+
+		if (m_IsAnimated)
 		{
-			glm::vec3 translation = InterpolateTranslation(AnimationTime, nodeAnim);
-			glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(translation.x, translation.y, translation.z));
+			animation = m_Scene->mAnimations[0];
+			nodeAnim = FindNodeAnim(animation, name);
 
-			glm::quat rotation = InterpolateRotation(AnimationTime, nodeAnim);
-			glm::mat4 rotationMatrix = glm::toMat4(rotation);
+			if (nodeAnim)
+			{
+				glm::vec3 translation = InterpolateTranslation(AnimationTime, nodeAnim);
+				glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(translation.x, translation.y, translation.z));
 
-			glm::vec3 scale = InterpolateScale(AnimationTime, nodeAnim);
-			glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(scale.x, scale.y, scale.z));
+				glm::quat rotation = InterpolateRotation(AnimationTime, nodeAnim);
+				glm::mat4 rotationMatrix = glm::toMat4(rotation);
 
-			nodeTransform = translationMatrix * rotationMatrix * scaleMatrix;
+				glm::vec3 scale = InterpolateScale(AnimationTime, nodeAnim);
+				glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(scale.x, scale.y, scale.z));
+
+				nodeTransform = translationMatrix * rotationMatrix * scaleMatrix;
+			}
 		}
 
 		glm::mat4 transform = parentTransform * nodeTransform;
@@ -756,16 +763,16 @@ namespace Hazel {
 			ReadNodeHierarchy(AnimationTime, pNode->mChildren[i], transform);
 	}
 
-	const aiNodeAnim* MeshAnimPBR::FindNodeAnim(const aiAnimation* animation, const std::string& nodeName)
+	aiNodeAnim* MeshAnimPBR::FindNodeAnim(const aiAnimation* animation, const std::string& nodeName)
 	{
 		for (uint32_t i = 0; i < animation->mNumChannels; i++)
 		{
-			const aiNodeAnim* nodeAnim = animation->mChannels[i];
+			aiNodeAnim* nodeAnim = animation->mChannels[i];
 			if (std::string(nodeAnim->mNodeName.data) == nodeName)
 				return nodeAnim;
 		}
 		return nullptr;
-	} 
+	}
 
 	void MeshAnimPBR::BoneTransform(float time)
 	{
