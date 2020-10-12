@@ -61,10 +61,16 @@ namespace Hazel {
 		}
 	};
 
-	MeshAnimPBR::MeshAnimPBR(const std::string& filename, Shader* shader, Material* material)
-		: m_MeshShader(shader), m_BaseMaterial(material), m_IsAnimated(true)
+	MeshAnimPBR::MeshAnimPBR(const std::string& filename, Shader* shader, Material* material, bool isAnimated)
+		: m_MeshShader(shader), m_BaseMaterial(material), m_IsAnimated(isAnimated)
 	{
 		m_FilePath = filename;
+
+		// TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
+		//	if (!m_BaseMaterial) {
+		//		SetupDefaultBaseMaterial();
+		//	}
+
 		Create();
 	}
 
@@ -495,7 +501,9 @@ namespace Hazel {
 		}
 
 		// TODO: We only need to recalc bones if rendering has been requested at the current animation frame
-		BoneTransform(m_AnimationTime);
+		if (m_IsAnimated) {
+			BoneTransform(m_AnimationTime);
+		}
 	}
 
 	static std::string LevelToSpaces(uint32_t level)
@@ -698,6 +706,18 @@ namespace Hazel {
 		return { aiVec.x, aiVec.y, aiVec.z };
 	}
 
+	void MeshAnimPBR::SetupDefaultBaseMaterial()
+	{
+		// Setup default Material
+		TextureInfo textureInfoDefault = {};
+		textureInfoDefault.albedo    = "Textures/plain.png";
+		textureInfoDefault.normal    = "Textures/normal_map_default.png";
+		textureInfoDefault.metallic  = "Textures/plain.png";
+		textureInfoDefault.roughness = "Textures/plain.png";
+		textureInfoDefault.ao        = "Textures/plain.png";
+		m_BaseMaterial = new Material(textureInfoDefault, 0.0f, 0.0f);
+	}
+
 	void MeshAnimPBR::OnImGuiRender()
 	{
 		// Mesh Hierarchy
@@ -804,11 +824,16 @@ namespace Hazel {
 
 	void MeshAnimPBR::Render(uint32_t samplerSlot, const glm::mat4& transform)
 	{
-		m_BaseMaterial->GetTextureAlbedo()->Bind(   samplerSlot + 0);
-		m_BaseMaterial->GetTextureNormal()->Bind(   samplerSlot + 1);
-		m_BaseMaterial->GetTextureMetallic()->Bind( samplerSlot + 2);
-		m_BaseMaterial->GetTextureRoughness()->Bind(samplerSlot + 3);
-		m_BaseMaterial->GetTextureAO()->Bind(       samplerSlot + 4);
+		// TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
+		//	if (!m_BaseMaterial) {
+		//		SetupDefaultBaseMaterial();
+		//	}
+		//	
+		//	m_BaseMaterial->GetTextureAlbedo()->Bind(samplerSlot + 0);
+		//	m_BaseMaterial->GetTextureNormal()->Bind(samplerSlot + 1);
+		//	m_BaseMaterial->GetTextureMetallic()->Bind(samplerSlot + 2);
+		//	m_BaseMaterial->GetTextureRoughness()->Bind(samplerSlot + 3);
+		//	m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
 
 		m_VertexArray->Bind();
 

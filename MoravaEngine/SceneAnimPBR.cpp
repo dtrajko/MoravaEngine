@@ -286,7 +286,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
 
     m_BaseMaterial_M1911 = new Material(textureInfoM1911, materialSpecular, materialShininess);
-    m_MeshAnimPBR_M1911 = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911);
+    m_MeshAnimPBR_M1911 = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
     m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
 
     m_Entities["M1911"].Transform.Scale = m_Entities["M1911"].Init.Transform.Scale;
@@ -310,7 +310,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoBobLamp.ao        = "Textures/PBR/non_reflective/ao.png";
 
     m_BaseMaterial_BobLamp = new Material(textureInfoBobLamp, materialSpecular, materialShininess);
-    m_MeshAnimPBR_BobLamp = new Hazel::MeshAnimPBR("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp);
+    m_MeshAnimPBR_BobLamp = new Hazel::MeshAnimPBR("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp, true);
     m_MeshAnimPBR_BobLamp->SetTimeMultiplier(1.0f);
 
     m_Entities["BobLamp"].Transform.Scale = m_Entities["BobLamp"].Init.Transform.Scale;
@@ -334,7 +334,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoAnimBoy.ao        = "Textures/PBR/non_reflective/ao.png";
 
     m_BaseMaterial_AnimBoy = new Material(textureInfoAnimBoy, materialSpecular, materialShininess);
-    m_MeshAnimPBR_AnimBoy = new Hazel::MeshAnimPBR("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy);
+    m_MeshAnimPBR_AnimBoy = new Hazel::MeshAnimPBR("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy, true);
     m_MeshAnimPBR_AnimBoy->SetTimeMultiplier(800.0f);
 
     m_Entities["AnimBoy"].Transform.Scale = m_Entities["AnimBoy"].Init.Transform.Scale;

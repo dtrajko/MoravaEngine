@@ -49,7 +49,8 @@ public:
 
 	// Getters
 	inline Data* GetContextData() { return &m_Data; }
-	inline Shader* GetPBRShader() { return m_ShaderHazelAnimPBR; }
+	inline Shader* GetShaderPBR_Anim() { return m_ShaderHazelPBR_Anim; }
+	inline Shader* GetShaderPBR_Static() { return m_ShaderHazelPBR_Static; }
 	inline Shader* GetShaderSkybox() { return m_ShaderSkybox; }
 	inline Hazel::HazelTexture2D* GetEnvEquirect() { return m_EnvEquirect; }
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
@@ -143,7 +144,7 @@ private:
 		struct DrawCommand
 		{
 			std::string Name;
-			Hazel::MeshAnimPBR* Mesh;
+			Mesh* Mesh;
 			Material* Material;
 			glm::mat4 Transform;
 		};
@@ -174,7 +175,8 @@ private:
 	Shader* m_ShaderEnvFiltering;
 	Shader* m_ShaderEnvIrradiance;
 	Shader* m_ShaderSkybox;
-	Shader* m_ShaderHazelAnimPBR;
+	Shader* m_ShaderHazelPBR_Anim;
+	Shader* m_ShaderHazelPBR_Static;
 	Shader* m_ShaderComposite;
 	Shader* m_ShaderGrid;
 

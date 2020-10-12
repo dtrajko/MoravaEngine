@@ -258,10 +258,10 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 
     CheckIntersection(mainWindow);
 
-    m_EnvironmentMap->GetPBRShader()->Bind();
-    m_EnvironmentMap->GetPBRShader()->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
-    m_EnvironmentMap->GetPBRShader()->setVec3("u_CameraPosition", m_Camera->GetPosition());
-    // m_EnvironmentMap->GetPBRShader()->setFloat("u_TilingFactor", 1.0f);
+    m_EnvironmentMap->GetShaderPBR_Anim()->Bind();
+    m_EnvironmentMap->GetShaderPBR_Anim()->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
+    m_EnvironmentMap->GetShaderPBR_Anim()->setVec3("u_CameraPosition", m_Camera->GetPosition());
+    // m_EnvironmentMap->GetShaderPBR_Anim()->setFloat("u_TilingFactor", 1.0f);
 
     float deltaTime = Timer::Get()->GetDeltaTime();
 
@@ -615,7 +615,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                 Property("Light Direction", light.Direction);
                 Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
-                Property("Exposure", m_Camera->GetExposure(), 0.0f, 5.0f);
+                Property("Exposure", m_Camera->GetExposure(), 0.0f, 10.0f);
                 Property("Skybox Exposure Factor", m_EnvironmentMap->GetSkyboxExposureFactor(), 0.0f, 10.0f);
                 Property("Radiance Prefiltering", m_EnvironmentMap->GetRadiancePrefilter());
                 Property("Env Map Rotation", m_EnvironmentMap->GetEnvMapRotation(), -360.0f, 360.0f);
@@ -639,10 +639,11 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                         std::string fileName = Util::GetFileNameFromFullPath(fullPath);
                         std::string fileNameNoExt = Util::StripExtensionFromFileName(fileName);
 
-                        auto newMesh = new Hazel::MeshAnimPBR(fullPath, m_EnvironmentMap->GetPBRShader(), m_EnvironmentMap->GetContextData()->DrawList[0].Material);
+                        auto newMesh = new Hazel::MeshAnimPBR(fullPath, m_EnvironmentMap->GetShaderPBR_Anim(), m_EnvironmentMap->GetContextData()->DrawList[0].Material, true);
                         Log::GetLogger()->debug("CreateEntity fileName '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
-                        m_EnvironmentMap->SetMeshEntity(m_EnvironmentMap->CreateEntity(fileNameNoExt));
-                        m_EnvironmentMap->GetMeshEntity()->SetMesh(newMesh);
+                        Hazel::Entity* newMeshEntity = m_EnvironmentMap->CreateEntity(fileNameNoExt);
+                        newMeshEntity->SetMesh(newMesh);
+                        m_EnvironmentMap->SetMeshEntity(newMeshEntity);
                     }
                 }
             }
@@ -862,7 +863,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     // Mesh Hierarchy / Mesh Debug
     for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
     {
-        drawCommand.Mesh->OnImGuiRender();
+        ((Hazel::MeshAnimPBR*)drawCommand.Mesh)->OnImGuiRender();
     }
 }
 

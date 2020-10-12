@@ -130,8 +130,8 @@ void Model::LoadMesh(aiMesh* mesh, const aiScene* scene)
 	Mesh* newMesh = new Mesh();
 	newMesh->Create(&vertices[0], &indices[0], (unsigned int)vertices.size(), (unsigned int)indices.size());
 	newMesh->Update(m_Scale);
-	meshList.push_back(newMesh);
-	meshToTexture.push_back(mesh->mMaterialIndex);
+	m_MeshList.push_back(newMesh);
+	m_MeshToTexture.push_back(mesh->mMaterialIndex);
 }
 
 /*
@@ -139,14 +139,14 @@ void Model::LoadMesh(aiMesh* mesh, const aiScene* scene)
  */
 void Model::LoadMaterials(const aiScene* scene)
 {
-	textureList.resize(scene->mNumMaterials);
-	normalMapList.resize(scene->mNumMaterials);
+	m_TextureList.resize(scene->mNumMaterials);
+	m_NormalMapList.resize(scene->mNumMaterials);
 
 	for (unsigned int i = 0; i < scene->mNumMaterials; i++)
 	{
 		aiMaterial* material = scene->mMaterials[i];
 
-		textureList[i] = nullptr;
+		m_TextureList[i] = nullptr;
 
 		if (material->GetTextureCount(aiTextureType_DIFFUSE))
 		{
@@ -160,13 +160,13 @@ void Model::LoadMaterials(const aiScene* scene)
 
 				Log::GetLogger()->info("Texture loaded '{0}'", texPath);
 
-				textureList[i] = TextureLoader::Get()->GetTexture(texPath.c_str(), false, false);
+				m_TextureList[i] = TextureLoader::Get()->GetTexture(texPath.c_str(), false, false);
 
-				if (!textureList[i])
+				if (!m_TextureList[i])
 				{
 					Log::GetLogger()->error("Failed to load texture at '{0}'", texPath);
-					delete textureList[i];
-					textureList[i] = nullptr;
+					delete m_TextureList[i];
+					m_TextureList[i] = nullptr;
 				}
 			}
 		}
@@ -186,20 +186,20 @@ void Model::LoadMaterials(const aiScene* scene)
 
 				Log::GetLogger()->info("Normal Map Texture loaded at '{0}'", texPath);
 
-				normalMapList[i] = TextureLoader::Get()->GetTexture(texPath.c_str(), false, false);
+				m_NormalMapList[i] = TextureLoader::Get()->GetTexture(texPath.c_str(), false, false);
 
-				if (!normalMapList[i])
+				if (!m_NormalMapList[i])
 				{
 					Log::GetLogger()->error("Failed to load normal map at '{0}'", texPath);
-					delete normalMapList[i];
-					normalMapList[i] = nullptr;
+					delete m_NormalMapList[i];
+					m_NormalMapList[i] = nullptr;
 				}
 			}
 		}
 
-		if (!textureList[i])
+		if (!m_TextureList[i])
 		{
-			textureList[i] = TextureLoader::Get()->GetTexture("Textures/plain.png", false, false);
+			m_TextureList[i] = TextureLoader::Get()->GetTexture("Textures/plain.png", false, false);
 		}
 	}
 }
@@ -208,9 +208,9 @@ void Model::Update(glm::vec3 scale)
 {
 	if (scale != m_Scale)
 	{
-		for (size_t i = 0; i < meshList.size(); i++)
+		for (size_t i = 0; i < m_MeshList.size(); i++)
 		{
-			meshList[i]->Update(scale);
+			m_MeshList[i]->Update(scale);
 		}
 		m_Scale = scale;
 	}
@@ -220,26 +220,26 @@ void Model::Update(glm::vec3 scale)
  * Render Model by using only Diffuse (Albedo) and Normal textures
  * Texture binding done within the method
  */
-void Model::Render(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNormalMaps)
+void Model::Render(uint32_t txSlotDiffuse, uint32_t txSlotNormal, bool useNormalMaps)
 {
-	for (size_t i = 0; i < meshList.size(); i++)
+	for (size_t i = 0; i < m_MeshList.size(); i++)
 	{
-		unsigned int materialIndex = meshToTexture[i];
+		unsigned int materialIndex = m_MeshToTexture[i];
 
-		if (materialIndex < textureList.size() && textureList[materialIndex])
+		if (materialIndex < m_TextureList.size() && m_TextureList[materialIndex])
 		{
-			textureList[materialIndex]->Bind(txSlotDiffuse);
+			m_TextureList[materialIndex]->Bind(txSlotDiffuse);
 		}
 
 		if (useNormalMaps)
 		{
-			if (materialIndex < normalMapList.size() && normalMapList[materialIndex])
+			if (materialIndex < m_NormalMapList.size() && m_NormalMapList[materialIndex])
 			{
-				normalMapList[materialIndex]->Bind(txSlotNormal);
+				m_NormalMapList[materialIndex]->Bind(txSlotNormal);
 			}
 		}
 
-		meshList[i]->Render();
+		m_MeshList[i]->Render();
 	}
 }
 
@@ -249,35 +249,35 @@ void Model::Render(GLuint txSlotDiffuse, GLuint txSlotNormal, bool useNormalMaps
  */
 void Model::RenderPBR()
 {
-	for (size_t i = 0; i < meshList.size(); i++)
+	for (size_t i = 0; i < m_MeshList.size(); i++)
 	{
-		meshList[i]->Render();
+		m_MeshList[i]->Render();
 	}
 }
 
 void Model::Clear()
 {
-	for (size_t i = 0; i < meshList.size(); i++)
+	for (size_t i = 0; i < m_MeshList.size(); i++)
 	{
-		if (meshList[i])
+		if (m_MeshList[i])
 		{
-			delete meshList[i];
-			meshList[i] = nullptr;
+			delete m_MeshList[i];
+			m_MeshList[i] = nullptr;
 		}
 	}
 
-	for (size_t i = 0; i < textureList.size(); i++)
+	for (size_t i = 0; i < m_TextureList.size(); i++)
 	{
-		if (textureList[i] != nullptr)
+		if (m_TextureList[i] != nullptr)
 		{
-			// delete textureList[i];
-			textureList[i] = nullptr;
+			// delete m_TextureList[i];
+			m_TextureList[i] = nullptr;
 		}
 	}
 
-	meshList.clear();
-	textureList.clear();
-	meshToTexture.clear();
+	m_MeshList.clear();
+	m_TextureList.clear();
+	m_MeshToTexture.clear();
 }
 
 Model::~Model()
