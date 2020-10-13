@@ -38,9 +38,6 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     m_Data.SceneData.SceneEnvironment = Load(filepath);
     SetEnvironment(m_Data.SceneData.SceneEnvironment);
 
-    // Skybox temporary version
-    m_SkyboxCube = new CubeSkybox();
-
     m_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
 
     // Set lights
@@ -54,7 +51,6 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     m_ShaderGrid->setFloat("u_Scale", gridScale);
     m_ShaderGrid->setFloat("u_Res", gridSize);
 }
-
 
 EnvironmentMap::Environment EnvironmentMap::Load(const std::string& filepath)
 {
