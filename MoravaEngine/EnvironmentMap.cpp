@@ -114,30 +114,30 @@ void EnvironmentMap::SetEnvironment(Environment environment)
 
 void EnvironmentMap::SetupContextData()
 {
-    Log::GetLogger()->info("-- BEGIN EnvironmentMap loading MeshAnimPBR M1911 --");
+    Log::GetLogger()->info("-- BEGIN EnvironmentMap loading MeshAnimPBR Gladiator --");
     {
-        // M1911
-        TextureInfo textureInfoM1911 = {};
-        textureInfoM1911.albedo    = "Models/m1911/m1911_color.png";
-        textureInfoM1911.normal    = "Models/m1911/m1911_normal.png";
-        textureInfoM1911.metallic  = "Models/m1911/m1911_metalness.png";
-        textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
-        textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
+        // Gladiator
+        TextureInfo textureInfoGladiator = {};
+        textureInfoGladiator.albedo    = "Models/Gladiator/Gladiator_BaseColor.jpg";
+        textureInfoGladiator.normal    = "Models/Gladiator/Gladiator_Normal.jpg";
+        textureInfoGladiator.metallic  = "Models/Gladiator/Gladiator_Metallic.jpg";
+        textureInfoGladiator.roughness = "Models/Gladiator/Gladiator_Roughness.jpg";
+        textureInfoGladiator.ao        = "Models/Gladiator/Gladiator_AO.jpg";
 
         // Load Hazel/Renderer/HazelTexture
-        m_AlbedoInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoM1911.albedo);
+        m_AlbedoInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.albedo);
         m_AlbedoInput.UseTexture = true;
-        m_NormalInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoM1911.normal);
+        m_NormalInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.normal);
         m_NormalInput.UseTexture = true;
-        m_MetalnessInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoM1911.metallic);
+        m_MetalnessInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.metallic);
         m_MetalnessInput.UseTexture = true;
-        m_RoughnessInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoM1911.roughness);
+        m_RoughnessInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.roughness);
         m_RoughnessInput.UseTexture = true;
 
         Data::DrawCommand drawCommand;
         drawCommand.Name = "M1911";
         // drawCommand.Material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
-        drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);
+        drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/Gladiator/Gladiator.fbx", m_ShaderHazelPBR_Static, nullptr, true);
         // drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/Hazel/Sphere1m.fbx", m_ShaderHazelPBR_Anim, drawCommand.Material, false);
 
         ((Hazel::MeshAnimPBR*)drawCommand.Mesh)->SetTimeMultiplier(1.0f);
@@ -148,7 +148,7 @@ void EnvironmentMap::SetupContextData()
         m_MeshEntity = CreateEntity(drawCommand.Name);
         m_MeshEntity->SetMesh(drawCommand.Mesh);
     }
-    Log::GetLogger()->info("-- END EnvironmentMap loading MeshAnimPBR M1911 --");
+    Log::GetLogger()->info("-- END EnvironmentMap loading MeshAnimPBR Gladiator --");
 
     m_Data.SceneData.SkyboxMaterial = new Material(m_ShaderSkybox);
     m_Data.SceneData.SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, true); // false
