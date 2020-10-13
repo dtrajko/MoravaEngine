@@ -60,7 +60,7 @@ EnvironmentMap::Environment EnvironmentMap::Load(const std::string& filepath)
 
 std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> EnvironmentMap::CreateEnvironmentMap(const std::string& filepath)
 {
-    const uint32_t cubemapSize = 1024;
+    const uint32_t cubemapSize = 512;
     const uint32_t irradianceMapSize = 32;
 
     m_EnvUnfiltered = Hazel::HazelTextureCube::Create(Hazel::HazelTextureFormat::Float16, cubemapSize, cubemapSize);
