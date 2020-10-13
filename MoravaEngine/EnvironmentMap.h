@@ -240,9 +240,6 @@ private:
 	float m_MaterialSpecular = 0.0f;
 	float m_MaterialShininess = 0.0f;
 
-	// Skybox temporary version
-	CubeSkybox* m_SkyboxCube;
-
 	HazelFullscreenQuad* m_HazelFullscreenQuad;
 
 	float m_SkyboxExposureFactor = 2.0f;

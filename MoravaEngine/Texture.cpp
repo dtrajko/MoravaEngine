@@ -48,7 +48,12 @@ Texture::Texture(const char* fileLoc, bool flipVert, bool isSampler)
 
 	m_FileLocation = fileLoc;
 
-	Load(m_Spec.FlipVertically);
+	try {
+		Load(m_Spec.FlipVertically);
+	}
+	catch (const std::exception& e) {
+		throw std::runtime_error(e.what());
+	}
 }
 
 Texture::Texture(const char* fileLoc, unsigned int width, unsigned int height, bool isSampler, int filter)

@@ -236,7 +236,16 @@ namespace Hazel {
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
 					Log::GetLogger()->info("    Albedo map path = {0}", texturePath);
-					auto texture = new Texture(texturePath.c_str(), false);
+
+					Texture* texture = nullptr;
+					try {
+						texture = new Texture(texturePath.c_str(), false);
+					}
+					catch (...) {
+						Log::GetLogger()->warn("The ALBEDO map failed to load. Loading the default texture placeholder instead.");
+						texture = new Texture("Textures/plain.png");
+					}
+
 					if (texture->IsLoaded())
 					{
 						m_Textures[i] = texture;
@@ -266,7 +275,16 @@ namespace Hazel {
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
 					Log::GetLogger()->info("    Normal map path = {0}", texturePath);
-					auto texture = new Texture(texturePath.c_str(), false);
+
+					Texture* texture = nullptr;
+					try {
+						texture = new Texture(texturePath.c_str(), false);
+					}
+					catch (...) {
+						Log::GetLogger()->warn("The NORMAL map failed to load. Loading the default texture placeholder instead.");
+						texture = new Texture("Textures/normal_map_default.png");
+					}
+
 					if (texture->IsLoaded())
 					{
 						m_MeshShader->setInt("u_NormalTexture", texture->GetID());
