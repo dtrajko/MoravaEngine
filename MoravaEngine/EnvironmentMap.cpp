@@ -594,11 +594,10 @@ void EnvironmentMap::Render()
 
     shaderHazelPBR->Bind();
 
-    for (Hazel::Submesh* submesh : ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->GetSubmeshes())
+    for (Hazel::Submesh* submesh : meshAnimPBR->GetSubmeshes())
     {
         UpdateShaderPBRUniforms(shaderHazelPBR, m_EnvMapMaterials.at(submesh->MeshName));
-        submesh->Render(meshAnimPBR->GetVertexArray(), shaderHazelPBR, meshAnimPBR->GetBoneTransforms(),
-            m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials, meshAnimPBR->GetMaterials());
+        submesh->Render(meshAnimPBR, shaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
     }
 
     // ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->RenderSubmeshes(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);

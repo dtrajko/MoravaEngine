@@ -890,23 +890,23 @@ namespace Hazel {
 	{
 		for (Hazel::Submesh* submesh : m_Submeshes)
 		{
-			submesh->Render(*m_VertexArray, m_MeshShader, m_BoneTransforms, transform, samplerSlot, envMapMaterials, m_Materials);
+			submesh->Render(this, m_MeshShader, transform, samplerSlot, envMapMaterials);
 		}
 	}
 
-	void Submesh::Render(const OpenGLVertexArray& vertexArray, Shader* shader, const std::vector<glm::mat4>& boneTransforms,
-		glm::mat4 transform, uint32_t samplerSlot, const std::map<std::string, EnvMapMaterial*>& envMapMaterials, const std::vector<Material*>& materials)
+	void Submesh::Render(MeshAnimPBR* parentMesh, Shader* shader, glm::mat4 transform, uint32_t samplerSlot,
+		const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
 	{
 		EnvMapMaterial* envMapMaterial = nullptr;
 
-		vertexArray.Bind();
+		parentMesh->GetVertexArray().Bind();
 
 		shader->Bind();
 
-		for (size_t i = 0; i < boneTransforms.size(); i++)
+		for (size_t i = 0; i < parentMesh->GetBoneTransforms().size(); i++)
 		{
 			std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-			shader->setMat4(uniformName, boneTransforms[i]);
+			shader->setMat4(uniformName, parentMesh->GetBoneTransforms()[i]);
 		}
 
 		shader->setMat4("u_Transform", transform * Transform);
@@ -929,7 +929,7 @@ namespace Hazel {
 			envMapMaterial->GetRoughnessInput().TextureMap->Bind(samplerSlot + 3);
 		}
 
-		auto material = materials[MaterialIndex];
+		auto material = parentMesh->GetMaterials()[MaterialIndex];
 		if (material->GetFlag(MaterialFlag::DepthTest)) {
 			glEnable(GL_DEPTH_TEST);
 		}
