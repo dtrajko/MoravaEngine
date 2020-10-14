@@ -9,8 +9,8 @@
 #include "Hazel/Scene/Entity.h"
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/VertexArray.h"
-#include "CubeSkybox.h" // Skybox temporary version
 #include "HazelFullscreenQuad.h"
+#include "EnvMapMaterial.h"
 
 #include <string>
 
@@ -19,10 +19,6 @@ class EnvironmentMap
 {
 	struct Data;
 	struct LightStruct;
-	struct AlbedoInput;
-	struct NormalInput;
-	struct MetalnessInput;
-	struct RoughnessInput;
 	struct Options;
 	struct Environment;
 	enum class PrimitiveType;
@@ -59,10 +55,6 @@ public:
 	inline LightStruct& GetLight() { return m_Data.SceneData.ActiveLight; }
 	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
 	inline Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
-	inline AlbedoInput& GetAlbedoInput() { return m_AlbedoInput; }
-	inline NormalInput& GetNormalInput() { return m_NormalInput; }
-	inline MetalnessInput& GetMetalnessInput() { return m_MetalnessInput; }
-	inline RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
 	inline Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
 	inline Hazel::Entity* GetMeshEntity() { return m_MeshEntity; }
 	inline void SetMeshEntity(Hazel::Entity* entity) { m_MeshEntity = entity; }
@@ -75,7 +67,7 @@ private:
 	void SetupContextData();
 	void SetupShaders();
 	void UpdateUniforms();
-	void UpdateShaderPBRUniforms(Shader* shaderHazelPBR);
+	void UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMaterial* m_EnvMapMaterial);
 	std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> CreateEnvironmentMap(const std::string& filepath);
 	void SetSkybox(Hazel::HazelTextureCube* skybox);
 
@@ -190,39 +182,6 @@ private:
 	std::vector<Hazel::Entity*> m_Entities;
 	/**** END properties Scene ****/
 
-	/**** BEGIN properties EditorLayer ****/
-	struct AlbedoInput
-	{
-		glm::vec3 Color = { 0.972f, 0.96f, 0.915f }; // Silver, from https://docs.unrealengine.com/en-us/Engine/Rendering/Materials/PhysicallyBased
-		Hazel::HazelTexture2D* TextureMap;
-		bool SRGB = true;
-		bool UseTexture = false;
-	};
-	AlbedoInput m_AlbedoInput;
-
-	struct NormalInput
-	{
-		Hazel::HazelTexture2D* TextureMap;
-		bool UseTexture = false;
-	};
-	NormalInput m_NormalInput;
-
-	struct MetalnessInput
-	{
-		float Value = 1.0f;
-		Hazel::HazelTexture2D* TextureMap;
-		bool UseTexture = false;
-	};
-	MetalnessInput m_MetalnessInput;
-
-	struct RoughnessInput
-	{
-		float Value = 0.2f;
-		Hazel::HazelTexture2D* TextureMap;
-		bool UseTexture = false;
-	};
-	RoughnessInput m_RoughnessInput;
-
 	// PBR params
 	bool m_RadiancePrefilter = false;
 
@@ -237,8 +196,11 @@ private:
 	Hazel::Entity* m_MeshEntity = nullptr;
 	/** END properties EditorLayer **/
 
+	// Materials
 	float m_MaterialSpecular = 0.0f;
 	float m_MaterialShininess = 0.0f;
+
+	std::map<std::string, EnvMapMaterial*> m_EnvMapMaterials;
 
 	HazelFullscreenQuad* m_HazelFullscreenQuad;
 

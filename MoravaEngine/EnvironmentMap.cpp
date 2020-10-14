@@ -7,6 +7,8 @@
 #include "Framebuffer.h"
 #include "RendererBasic.h"
 #include "Log.h"
+#include "ImGuiWrapper.h"
+#include "Application.h"
 
 
 static const std::string DefaultEntityName = "Entity";
@@ -116,23 +118,53 @@ void EnvironmentMap::SetupContextData()
 {
     Log::GetLogger()->info("-- BEGIN EnvironmentMap loading MeshAnimPBR Gladiator --");
     {
-        // Gladiator
-        TextureInfo textureInfoGladiator = {};
-        textureInfoGladiator.albedo    = "Models/Gladiator/Gladiator_BaseColor.jpg";
-        textureInfoGladiator.normal    = "Models/Gladiator/Gladiator_Normal.jpg";
-        textureInfoGladiator.metallic  = "Models/Gladiator/Gladiator_Metallic.jpg";
-        textureInfoGladiator.roughness = "Models/Gladiator/Gladiator_Roughness.jpg";
-        textureInfoGladiator.ao        = "Models/Gladiator/Gladiator_AO.jpg";
+        {
+            // PBR EnvMapMaterial Weapon (Index = 0)
+            TextureInfo textureInfoWeapon = {};
+            textureInfoWeapon.albedo    = "Models/Gladiator/Gladiator_weapon_BaseColor.jpg";
+            textureInfoWeapon.normal    = "Models/Gladiator/Gladiator_weapon_Normal.jpg";
+            textureInfoWeapon.metallic  = "Models/Gladiator/Gladiator_weapon_Metallic.jpg";
+            textureInfoWeapon.roughness = "Models/Gladiator/Gladiator_weapon_Roughness.jpg";
+            textureInfoWeapon.ao        = "Textures/plain.png";
 
-        // Load Hazel/Renderer/HazelTexture
-        m_AlbedoInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.albedo);
-        m_AlbedoInput.UseTexture = true;
-        m_NormalInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.normal);
-        m_NormalInput.UseTexture = true;
-        m_MetalnessInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.metallic);
-        m_MetalnessInput.UseTexture = true;
-        m_RoughnessInput.TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.roughness);
-        m_RoughnessInput.UseTexture = true;
+            EnvMapMaterial* envMapMaterialWeapon = new EnvMapMaterial();
+
+            // Load Hazel/Renderer/HazelTexture
+            envMapMaterialWeapon->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoWeapon.albedo);
+            envMapMaterialWeapon->GetAlbedoInput().UseTexture = true;
+            envMapMaterialWeapon->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoWeapon.normal);
+            envMapMaterialWeapon->GetNormalInput().UseTexture = true;
+            envMapMaterialWeapon->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoWeapon.metallic);
+            envMapMaterialWeapon->GetMetalnessInput().UseTexture = true;
+            envMapMaterialWeapon->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoWeapon.roughness);
+            envMapMaterialWeapon->GetRoughnessInput().UseTexture = true;
+
+            m_EnvMapMaterials.insert(std::make_pair("Gladiator_weapon", envMapMaterialWeapon));
+        }
+
+        {
+            // PBR EnvMapMaterial Gladiator (Index = 1)
+            TextureInfo textureInfoGladiator = {};
+            textureInfoGladiator.albedo    = "Models/Gladiator/Gladiator_BaseColor.jpg";
+            textureInfoGladiator.normal    = "Models/Gladiator/Gladiator_Normal.jpg";
+            textureInfoGladiator.metallic  = "Models/Gladiator/Gladiator_Metallic.jpg";
+            textureInfoGladiator.roughness = "Models/Gladiator/Gladiator_Roughness.jpg";
+            textureInfoGladiator.ao        = "Models/Gladiator/Gladiator_AO.jpg";
+
+            EnvMapMaterial* envMapMaterialGladiator = new EnvMapMaterial();
+
+            // Load Hazel/Renderer/HazelTexture
+            envMapMaterialGladiator->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.albedo);
+            envMapMaterialGladiator->GetAlbedoInput().UseTexture = true;
+            envMapMaterialGladiator->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.normal);
+            envMapMaterialGladiator->GetNormalInput().UseTexture = true;
+            envMapMaterialGladiator->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.metallic);
+            envMapMaterialGladiator->GetMetalnessInput().UseTexture = true;
+            envMapMaterialGladiator->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.roughness);
+            envMapMaterialGladiator->GetRoughnessInput().UseTexture = true;
+
+            m_EnvMapMaterials.insert(std::make_pair("Gladiator", envMapMaterialGladiator));
+        }
 
         Data::DrawCommand drawCommand;
         drawCommand.Name = "M1911";
@@ -187,8 +219,10 @@ void EnvironmentMap::SetupShaders()
 
 void EnvironmentMap::UpdateUniforms()
 {
-    UpdateShaderPBRUniforms(m_ShaderHazelPBR_Anim);
-    UpdateShaderPBRUniforms(m_ShaderHazelPBR_Static);
+    //  for (auto& material : m_EnvMapMaterials) {
+    //      UpdateShaderPBRUniforms(m_ShaderHazelPBR_Anim, material.second);
+    //      UpdateShaderPBRUniforms(m_ShaderHazelPBR_Static, material.second);
+    //  }
 
     /**** BEGIN Shaders/Hazel/SceneComposite ****/
     m_ShaderComposite->Bind();
@@ -205,7 +239,7 @@ void EnvironmentMap::UpdateUniforms()
     /**** END Shaders/Hazel/Skybox ****/
 }
 
-void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR)
+void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMaterial* envMapMaterial)
 {
     /**** BEGIN Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
 
@@ -217,17 +251,17 @@ void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR)
     shaderHazelPBR->setInt("u_RoughnessTexture", m_SamplerSlots->at("roughness"));
     // shaderHazelPBR->setInt("u_AOTexture", m_SamplerSlots->at("ao"));
 
-    shaderHazelPBR->setVec3("u_AlbedoColor", m_AlbedoInput.Color);
-    shaderHazelPBR->setFloat("u_Metalness", m_MetalnessInput.Value);
-    shaderHazelPBR->setFloat("u_Roughness", m_RoughnessInput.Value);
+    shaderHazelPBR->setVec3("u_AlbedoColor", envMapMaterial->GetAlbedoInput().Color);
+    shaderHazelPBR->setFloat("u_Metalness", envMapMaterial->GetMetalnessInput().Value);
+    shaderHazelPBR->setFloat("u_Roughness", envMapMaterial->GetRoughnessInput().Value);
 
     shaderHazelPBR->setFloat("u_EnvMapRotation", m_EnvMapRotation);
 
     shaderHazelPBR->setFloat("u_RadiancePrefilter", m_RadiancePrefilter ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_AlbedoTexToggle", m_AlbedoInput.UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_NormalTexToggle", m_NormalInput.UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_MetalnessTexToggle", m_MetalnessInput.UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_RoughnessTexToggle", m_RoughnessInput.UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_AlbedoTexToggle", envMapMaterial->GetAlbedoInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_NormalTexToggle", envMapMaterial->GetNormalInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_MetalnessTexToggle", envMapMaterial->GetMetalnessInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_RoughnessTexToggle", envMapMaterial->GetRoughnessInput().UseTexture ? 1.0f : 0.0f);
     // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
     shaderHazelPBR->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure()); // originally used in Shaders/Hazel/SceneComposite
 
@@ -312,8 +346,13 @@ void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
 
 EnvironmentMap::~EnvironmentMap()
 {
-    for (Hazel::Entity* entity : m_Entities)
+    for (Hazel::Entity* entity : m_Entities) {
         delete entity;
+    }
+
+    for (auto const& material : m_EnvMapMaterials) {
+        delete &material;
+    }
 }
 
 void EnvironmentMap::AddEntity(Hazel::Entity* entity)
@@ -530,6 +569,9 @@ void EnvironmentMap::DrawIndexed(uint32_t count, PrimitiveType type, bool depthT
 
 void EnvironmentMap::Render()
 {
+    Hazel::MeshAnimPBR* meshAnimPBR = ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh());
+    Shader* shaderHazelPBR = meshAnimPBR->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
+
     BeginScene(m_Data.ActiveScene);
 
     m_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("radiance"));
@@ -549,19 +591,18 @@ void EnvironmentMap::Render()
 
     // in conflict with MeshAnimPBR::m_BaseMaterial
     // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
-    m_AlbedoInput.TextureMap->Bind(m_SamplerSlots->at("albedo"));
-    m_NormalInput.TextureMap->Bind(m_SamplerSlots->at("normal"));
-    m_MetalnessInput.TextureMap->Bind(m_SamplerSlots->at("metalness"));
-    m_RoughnessInput.TextureMap->Bind(m_SamplerSlots->at("roughness"));
 
-    if (((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->IsAnimated()) {
-        m_ShaderHazelPBR_Anim->Bind();
-    }
-    else {
-        m_ShaderHazelPBR_Static->Bind();
+    shaderHazelPBR->Bind();
+
+    for (Hazel::Submesh* submesh : ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->GetSubmeshes())
+    {
+        UpdateShaderPBRUniforms(shaderHazelPBR, m_EnvMapMaterials.at(submesh->MeshName));
+        submesh->Render(meshAnimPBR->GetVertexArray(), shaderHazelPBR, meshAnimPBR->GetBoneTransforms(),
+            m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials, meshAnimPBR->GetMaterials());
     }
 
-    ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->Render(samplerSlot, m_MeshEntity->Transform());
+    // ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->RenderSubmeshes(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
+    // ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->Render(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
 
     EndScene();
 }
@@ -569,6 +610,180 @@ void EnvironmentMap::Render()
 void EnvironmentMap::OnImGuiRender()
 {
     ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->OnImGuiRender();
+
+    ImGui::Begin("EnvMap Materials");
+    {
+        for (auto& material : m_EnvMapMaterials)
+        {
+            std::string materialName = material.first;
+            std::string materialLabel = "Material " + materialName;
+
+            // Material section
+            if (ImGui::CollapsingHeader(materialLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                // BEGIN PBR Textures
+                ImGui::Indent();
+                {
+                    {
+                        // Albedo
+                        std::string textureLabel = materialName + " Albedo";
+                        if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+                        {
+                            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+                            ImGui::Image(material.second->GetAlbedoInput().TextureMap ?
+                                (void*)(intptr_t)material.second->GetAlbedoInput().TextureMap->GetID() :
+                                (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
+                            ImGui::PopStyleVar();
+                            if (ImGui::IsItemHovered())
+                            {
+                                if (material.second->GetAlbedoInput().TextureMap)
+                                {
+                                    ImGui::BeginTooltip();
+                                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                                    ImGui::TextUnformatted(material.second->GetAlbedoInput().TextureMap->GetPath().c_str());
+                                    ImGui::PopTextWrapPos();
+                                    ImGui::Image((void*)(intptr_t)material.second->GetAlbedoInput().TextureMap->GetID(), ImVec2(384, 384));
+                                    ImGui::EndTooltip();
+                                }
+                                if (ImGui::IsItemClicked())
+                                {
+                                    std::string filename = Application::Get()->OpenFile("");
+                                    if (filename != "")
+                                        material.second->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material.second->GetAlbedoInput().SRGB);
+                                }
+                            }
+                            ImGui::SameLine();
+                            ImGui::BeginGroup();
+
+                            std::string checkboxLabel = "Use##" + materialName + "AlbedoMap";
+                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetAlbedoInput().UseTexture);
+
+                            std::string checkboxLabelSRGB = "sRGB##" + materialName + "AlbedoMap";
+                            if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material.second->GetAlbedoInput().SRGB))
+                            {
+                                if (material.second->GetAlbedoInput().TextureMap)
+                                    material.second->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(
+                                        material.second->GetAlbedoInput().TextureMap->GetPath(),
+                                        material.second->GetAlbedoInput().SRGB);
+                            }
+                            ImGui::EndGroup();
+                            ImGui::SameLine();
+                            std::string colorLabel = "Color##" + materialName + "Albedo";
+                            ImGui::ColorEdit3(colorLabel.c_str(), glm::value_ptr(material.second->GetAlbedoInput().Color), ImGuiColorEditFlags_NoInputs);
+                        }
+                    }
+                    {
+                        // Normals
+                        std::string textureLabel = materialName + " Normals";
+                        if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+                        {
+                            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+                            ImGui::Image(material.second->GetNormalInput().TextureMap ?
+                                (void*)(intptr_t)material.second->GetNormalInput().TextureMap->GetID() :
+                                (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
+                            ImGui::PopStyleVar();
+                            if (ImGui::IsItemHovered())
+                            {
+                                if (material.second->GetNormalInput().TextureMap)
+                                {
+                                    ImGui::BeginTooltip();
+                                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                                    ImGui::TextUnformatted(material.second->GetNormalInput().TextureMap->GetPath().c_str());
+                                    ImGui::PopTextWrapPos();
+                                    ImGui::Image((void*)(intptr_t)material.second->GetNormalInput().TextureMap->GetID(), ImVec2(384, 384));
+                                    ImGui::EndTooltip();
+                                }
+                                if (ImGui::IsItemClicked())
+                                {
+                                    std::string filename = Application::Get()->OpenFile("");
+                                    if (filename != "")
+                                        material.second->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                                }
+                            }
+                            ImGui::SameLine();
+                            std::string checkboxLabel = "Use##" + materialName + "NormalMap";
+                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetNormalInput().UseTexture);
+                        }
+                    }
+                    {
+                        // Metalness
+                        std::string textureLabel = materialName + " Metalness";
+                        if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+                        {
+                            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+                            ImGui::Image(material.second->GetMetalnessInput().TextureMap ?
+                                (void*)(intptr_t)material.second->GetMetalnessInput().TextureMap->GetID() :
+                                (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
+                            ImGui::PopStyleVar();
+                            if (ImGui::IsItemHovered())
+                            {
+                                if (material.second->GetMetalnessInput().TextureMap)
+                                {
+                                    ImGui::BeginTooltip();
+                                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                                    ImGui::TextUnformatted(material.second->GetMetalnessInput().TextureMap->GetPath().c_str());
+                                    ImGui::PopTextWrapPos();
+                                    ImGui::Image((void*)(intptr_t)material.second->GetMetalnessInput().TextureMap->GetID(), ImVec2(384, 384));
+                                    ImGui::EndTooltip();
+                                }
+                                if (ImGui::IsItemClicked())
+                                {
+                                    std::string filename = Application::Get()->OpenFile("");
+                                    if (filename != "")
+                                        material.second->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                                }
+                            }
+                            ImGui::SameLine();
+                            std::string checkboxLabel = "Use##" + materialName + "MetalnessMap";
+                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetMetalnessInput().UseTexture);
+                            ImGui::SameLine();
+                            std::string sliderLabel = "Value##" + materialName + "MetalnessInput";
+                            ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetMetalnessInput().Value, 0.0f, 1.0f);
+                        }
+                    }
+                    {
+                        // Roughness
+                        std::string textureLabel = materialName + " Roughness";
+                        if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+                        {
+                            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+                            ImGui::Image(material.second->GetRoughnessInput().TextureMap ?
+                                (void*)(intptr_t)material.second->GetRoughnessInput().TextureMap->GetID() :
+                                (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
+                            ImGui::PopStyleVar();
+                            if (ImGui::IsItemHovered())
+                            {
+                                if (material.second->GetRoughnessInput().TextureMap)
+                                {
+                                    ImGui::BeginTooltip();
+                                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                                    ImGui::TextUnformatted(material.second->GetRoughnessInput().TextureMap->GetPath().c_str());
+                                    ImGui::PopTextWrapPos();
+                                    ImGui::Image((void*)(intptr_t)material.second->GetRoughnessInput().TextureMap->GetID(), ImVec2(384, 384));
+                                    ImGui::EndTooltip();
+                                }
+                                if (ImGui::IsItemClicked())
+                                {
+                                    std::string filename = Application::Get()->OpenFile("");
+                                    if (filename != "")
+                                        material.second->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                                }
+                            }
+                            ImGui::SameLine();
+                            std::string checkboxLabel = "Use##" + materialName + "RoughnessMap";
+                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetRoughnessInput().UseTexture);
+                            ImGui::SameLine();
+                            std::string sliderLabel = "Value##" + materialName + "RoughnessInput";
+                            ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetRoughnessInput().Value, 0.0f, 1.0f);
+                        }
+                    }
+                }
+                ImGui::Unindent();
+                // END PBR Textures
+            }
+        }
+    }
+    ImGui::End();
 }
 
 void EnvironmentMap::BeginRenderPass(Hazel::RenderPass* renderPass, bool clear)

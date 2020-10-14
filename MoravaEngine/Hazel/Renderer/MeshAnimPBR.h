@@ -11,6 +11,7 @@
 #include "../../Shader.h"
 #include "../../Texture.h"
 #include "../../Material.h"
+#include "../../EnvMapMaterial.h"
 #include "../../Mesh.h"
 
 #include <string>
@@ -117,6 +118,10 @@ namespace Hazel {
 	class Submesh : public Mesh
 	{
 	public:
+		void Render(const OpenGLVertexArray& vertexArray, Shader* shader, const std::vector<glm::mat4>& boneTransforms,
+			glm::mat4 transform, uint32_t samplerSlot, const std::map<std::string, EnvMapMaterial*>& envMapMaterials, const std::vector<Material*>& materials);
+
+	public:
 		uint32_t BaseVertex;
 		uint32_t BaseIndex;
 		uint32_t MaterialIndex;
@@ -138,7 +143,9 @@ namespace Hazel {
 		void OnUpdate(float ts, bool debug);
 		void OnImGuiRender();
 		void DumpVertexBuffer();
-		void Render(uint32_t samplerSlot, const glm::mat4& entityTransform);
+
+		void Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials);
+		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials);
 
 		// Getters
 		inline const std::vector<Submesh*>& GetSubmeshes() const { return m_Submeshes; }
@@ -146,6 +153,8 @@ namespace Hazel {
 		inline const std::vector<Texture*>& GetTextures() const { return m_Textures; }
 		inline const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
 		inline bool& IsAnimated() { return m_IsAnimated; }
+		inline const OpenGLVertexArray& GetVertexArray() { return *m_VertexArray; }
+		inline const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
 
 		// Setters
 		inline void SetBaseMaterial(Material* baseMaterial) { m_BaseMaterial = baseMaterial; }
