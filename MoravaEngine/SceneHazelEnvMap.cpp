@@ -153,21 +153,9 @@ void SceneHazelEnvMap::SetupRenderFramebuffer()
     uint32_t width = Application::Get()->GetWindow()->GetWidth();
     uint32_t height = Application::Get()->GetWindow()->GetHeight();
 
-    // FramebufferSpecification renderFramebufferSpec;
-    // renderFramebufferSpec.attachmentFormat = AttachmentFormat::Color;
-    // renderFramebufferSpec.attachmentType = AttachmentType::Texture;
-    // renderFramebufferSpec.ClearColor = glm::vec4(1.0, 1.0, 1.0, 0.0);
-    // renderFramebufferSpec.Width = width;
-    // renderFramebufferSpec.Height = height;
-    // renderFramebufferSpec.SwapChainTarget = false;
-    // renderFramebufferSpec.Samples = 8;
-    // m_RenderFramebuffer = new Framebuffer(renderFramebufferSpec);
-
     m_RenderFramebuffer = new Framebuffer(width, height);
-
     m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
     m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
-
     m_RenderFramebuffer->Generate(width, height);
 }
 
@@ -598,7 +586,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     /**** BEGIN Environment Map Settings ****/
     ImGui::Begin("Environment Map Settings");
     {
-        if (ImGui::CollapsingHeader("Display Info"))
+        if (ImGui::CollapsingHeader("Display Info"), nullptr, ImGuiTreeNodeFlags_DefaultOpen)
         {
             {
                 if (ImGui::Button("Load Environment Map"))
@@ -618,13 +606,13 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                 ImGui::AlignTextToFramePadding();
 
                 auto& light = m_EnvironmentMap->GetLight();
-                Property("Light Direction", light.Direction);
-                Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
-                Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
-                Property("Exposure", m_Camera->GetExposure(), 0.0f, 20.0f);
-                Property("Skybox Exposure Factor", m_EnvironmentMap->GetSkyboxExposureFactor(), 0.0f, 10.0f);
-                Property("Radiance Prefiltering", m_EnvironmentMap->GetRadiancePrefilter());
-                Property("Env Map Rotation", m_EnvironmentMap->GetEnvMapRotation(), -360.0f, 360.0f);
+                ImGuiWrapper::Property("Light Direction", light.Direction);
+                ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
+                ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
+                ImGuiWrapper::Property("Exposure", m_Camera->GetExposure(), 0.0f, 20.0f);
+                ImGuiWrapper::Property("Skybox Exposure Factor", m_EnvironmentMap->GetSkyboxExposureFactor(), 0.0f, 10.0f);
+                ImGuiWrapper::Property("Radiance Prefiltering", m_EnvironmentMap->GetRadiancePrefilter());
+                ImGuiWrapper::Property("Env Map Rotation", m_EnvironmentMap->GetEnvMapRotation(), -360.0f, 360.0f);
 
                 ImGui::Columns(1);
             }
@@ -1000,93 +988,4 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 
 void SceneHazelEnvMap::SetupUniforms()
 {
-}
-
-bool SceneHazelEnvMap::Property(const std::string& name, bool& value)
-{
-    ImGui::Text(name.c_str());
-    ImGui::NextColumn();
-    ImGui::PushItemWidth(-1);
-
-    std::string id = "##" + name;
-    bool result = ImGui::Checkbox(id.c_str(), &value);
-
-    ImGui::PopItemWidth();
-    ImGui::NextColumn();
-
-    return result;
-}
-
-void SceneHazelEnvMap::Property(const std::string& name, float& value, float min, float max, PropertyFlag flags)
-{
-    ImGui::Text(name.c_str());
-    ImGui::NextColumn();
-    ImGui::PushItemWidth(-1);
-
-    std::string id = "##" + name;
-    ImGui::SliderFloat(id.c_str(), &value, min, max);
-
-    ImGui::PopItemWidth();
-    ImGui::NextColumn();
-}
-
-void SceneHazelEnvMap::Property(const std::string& name, glm::vec2& value, PropertyFlag flags)
-{
-    Property(name, value, -1.0f, 1.0f, flags);
-}
-
-void SceneHazelEnvMap::Property(const std::string& name, glm::vec2& value, float min, float max, PropertyFlag flags)
-{
-    ImGui::Text(name.c_str());
-    ImGui::NextColumn();
-    ImGui::PushItemWidth(-1);
-
-    std::string id = "##" + name;
-    ImGui::SliderFloat2(id.c_str(), glm::value_ptr(value), min, max);
-
-    ImGui::PopItemWidth();
-    ImGui::NextColumn();
-}
-
-void SceneHazelEnvMap::Property(const std::string& name, glm::vec3& value, PropertyFlag flags)
-{
-    Property(name, value, -1.0f, 1.0f, flags);
-}
-
-void SceneHazelEnvMap::Property(const std::string& name, glm::vec3& value, float min, float max, PropertyFlag flags)
-{
-    ImGui::Text(name.c_str());
-    ImGui::NextColumn();
-    ImGui::PushItemWidth(-1);
-
-    std::string id = "##" + name;
-    if ((int)flags & (int)PropertyFlag::ColorProperty)
-        ImGui::ColorEdit3(id.c_str(), glm::value_ptr(value), ImGuiColorEditFlags_NoInputs);
-    else
-        ImGui::SliderFloat3(id.c_str(), glm::value_ptr(value), min, max);
-
-    ImGui::PopItemWidth();
-    ImGui::NextColumn();
-}
-
-void SceneHazelEnvMap::Property(const std::string& name, glm::vec4& value, PropertyFlag flags)
-{
-    Property(name, value, -1.0f, 1.0f, flags);
-}
-
-void SceneHazelEnvMap::Property(const std::string& name, glm::vec4& value, float min, float max, PropertyFlag flags)
-{
-
-    ImGui::Text(name.c_str());
-    ImGui::NextColumn();
-    ImGui::PushItemWidth(-1);
-
-    std::string id = "##" + name;
-    if ((int)flags & (int)PropertyFlag::ColorProperty)
-        ImGui::ColorEdit4(id.c_str(), glm::value_ptr(value), ImGuiColorEditFlags_NoInputs);
-    else
-        ImGui::SliderFloat4(id.c_str(), glm::value_ptr(value), min, max);
-
-    ImGui::PopItemWidth();
-    ImGui::NextColumn();
 }

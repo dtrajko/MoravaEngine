@@ -141,7 +141,6 @@ void EnvironmentMap::SetupContextData()
 
             m_EnvMapMaterials.insert(std::make_pair("Gladiator_weapon", envMapMaterialWeapon));
         }
-
         {
             // PBR EnvMapMaterial Gladiator (Index = 1)
             TextureInfo textureInfoGladiator = {};
@@ -164,6 +163,52 @@ void EnvironmentMap::SetupContextData()
             envMapMaterialGladiator->GetRoughnessInput().UseTexture = true;
 
             m_EnvMapMaterials.insert(std::make_pair("Gladiator", envMapMaterialGladiator));
+        }
+        {
+            // PBR EnvMapMaterial Cerberus (Index = 0)
+            TextureInfo textureInfoCerberus = {};
+            textureInfoCerberus.albedo    = "Models/Cerberus/Textures/Cerberus_A.tga";
+            textureInfoCerberus.normal    = "Models/Cerberus/Textures/Cerberus_N.tga";
+            textureInfoCerberus.metallic  = "Models/Cerberus/Textures/Cerberus_M.tga";
+            textureInfoCerberus.roughness = "Models/Cerberus/Textures/Cerberus_R.tga";
+            textureInfoCerberus.ao        = "Models/Cerberus/Textures/Cerberus_AO.tga";
+
+            EnvMapMaterial* envMapMaterialCerberus = new EnvMapMaterial();
+
+            // Load Hazel/Renderer/HazelTexture
+            envMapMaterialCerberus->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoCerberus.albedo);
+            envMapMaterialCerberus->GetAlbedoInput().UseTexture = true;
+            envMapMaterialCerberus->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoCerberus.normal);
+            envMapMaterialCerberus->GetNormalInput().UseTexture = true;
+            envMapMaterialCerberus->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoCerberus.metallic);
+            envMapMaterialCerberus->GetMetalnessInput().UseTexture = true;
+            envMapMaterialCerberus->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoCerberus.roughness);
+            envMapMaterialCerberus->GetRoughnessInput().UseTexture = true;
+
+            m_EnvMapMaterials.insert(std::make_pair("08 - Default", envMapMaterialCerberus));
+        }
+        {
+            // PBR EnvMapMaterial M1911 (Index = 0)
+            TextureInfo textureInfoM1911 = {};
+            textureInfoM1911.albedo    = "Models/m1911/m1911_color.png";
+            textureInfoM1911.normal    = "Models/m1911/m1911_normal.png";
+            textureInfoM1911.metallic  = "Models/m1911/m1911_metalness.png";
+            textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
+            textureInfoM1911.ao        = "Textures/plain.png";
+
+            EnvMapMaterial* envMapMaterialM1911 = new EnvMapMaterial();
+
+            // Load Hazel/Renderer/HazelTexture
+            envMapMaterialM1911->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoM1911.albedo);
+            envMapMaterialM1911->GetAlbedoInput().UseTexture = true;
+            envMapMaterialM1911->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoM1911.normal);
+            envMapMaterialM1911->GetNormalInput().UseTexture = true;
+            envMapMaterialM1911->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoM1911.metallic);
+            envMapMaterialM1911->GetMetalnessInput().UseTexture = true;
+            envMapMaterialM1911->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoM1911.roughness);
+            envMapMaterialM1911->GetRoughnessInput().UseTexture = true;
+
+            m_EnvMapMaterials.insert(std::make_pair("lambert1", envMapMaterialM1911));
         }
 
         Data::DrawCommand drawCommand;
