@@ -16,11 +16,6 @@
 
 const int MAX_LIGHTS_ENV_MAP = 4 + 4; // (4 x point lights) + (4 x spot lights)
 
-enum class PropertyFlag
-{
-	None = 0, ColorProperty = 1
-};
-
 class SceneHazelEnvMap : public Scene
 {
 
@@ -52,16 +47,6 @@ private:
 	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
 	void CheckIntersection(Window* mainWindow);
 	void RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix);
-
-	// ImGui UI helpers TODO: move it somewhere else to make it reusable
-	bool Property(const std::string& name, bool& value);
-	void Property(const std::string& name, float& value, float min = -1.0f, float max = 1.0f, PropertyFlag flags = PropertyFlag::None);
-	void Property(const std::string& name, glm::vec2& value, PropertyFlag flags);
-	void Property(const std::string& name, glm::vec2& value, float min = -1.0f, float max = 1.0f, PropertyFlag flags = PropertyFlag::None);
-	void Property(const std::string& name, glm::vec3& value, PropertyFlag flags);
-	void Property(const std::string& name, glm::vec3& value, float min = -1.0f, float max = 1.0f, PropertyFlag flags = PropertyFlag::None);
-	void Property(const std::string& name, glm::vec4& value, PropertyFlag flags);
-	void Property(const std::string& name, glm::vec4& value, float min = -1.0f, float max = 1.0f, PropertyFlag flags = PropertyFlag::None);
 
 private:
 	EnvironmentMap* m_EnvironmentMap;

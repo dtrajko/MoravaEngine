@@ -104,3 +104,92 @@ void ImGuiWrapper::Cleanup()
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 }
+
+bool ImGuiWrapper::Property(const std::string& name, bool& value)
+{
+	ImGui::Text(name.c_str());
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	std::string id = "##" + name;
+	bool result = ImGui::Checkbox(id.c_str(), &value);
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+
+	return result;
+}
+
+void ImGuiWrapper::Property(const std::string& name, float& value, float min, float max, PropertyFlag flags)
+{
+	ImGui::Text(name.c_str());
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	std::string id = "##" + name;
+	ImGui::SliderFloat(id.c_str(), &value, min, max);
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+}
+
+void ImGuiWrapper::Property(const std::string& name, glm::vec2& value, PropertyFlag flags)
+{
+	Property(name, value, -1.0f, 1.0f, flags);
+}
+
+void ImGuiWrapper::Property(const std::string& name, glm::vec2& value, float min, float max, PropertyFlag flags)
+{
+	ImGui::Text(name.c_str());
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	std::string id = "##" + name;
+	ImGui::SliderFloat2(id.c_str(), glm::value_ptr(value), min, max);
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+}
+
+void ImGuiWrapper::Property(const std::string& name, glm::vec3& value, PropertyFlag flags)
+{
+	Property(name, value, -1.0f, 1.0f, flags);
+}
+
+void ImGuiWrapper::Property(const std::string& name, glm::vec3& value, float min, float max, PropertyFlag flags)
+{
+	ImGui::Text(name.c_str());
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	std::string id = "##" + name;
+	if ((int)flags & (int)PropertyFlag::ColorProperty)
+		ImGui::ColorEdit3(id.c_str(), glm::value_ptr(value), ImGuiColorEditFlags_NoInputs);
+	else
+		ImGui::SliderFloat3(id.c_str(), glm::value_ptr(value), min, max);
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+}
+
+void ImGuiWrapper::Property(const std::string& name, glm::vec4& value, PropertyFlag flags)
+{
+	Property(name, value, -1.0f, 1.0f, flags);
+}
+
+void ImGuiWrapper::Property(const std::string& name, glm::vec4& value, float min, float max, PropertyFlag flags)
+{
+
+	ImGui::Text(name.c_str());
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	std::string id = "##" + name;
+	if ((int)flags & (int)PropertyFlag::ColorProperty)
+		ImGui::ColorEdit4(id.c_str(), glm::value_ptr(value), ImGuiColorEditFlags_NoInputs);
+	else
+		ImGui::SliderFloat4(id.c_str(), glm::value_ptr(value), min, max);
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+}
