@@ -508,41 +508,47 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Select HDRI");
     {
-        ImGui::RadioButton("Greenwich Park", &m_HDRI_Edit, HDRI_GREENWICH_PARK);
-        ImGui::RadioButton("San Giuseppe Bridge", &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
-        ImGui::RadioButton("Tropical Beach", &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
-        ImGui::RadioButton("Vignaioli Night", &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
-        ImGui::RadioButton("Early Eve & Warm Sky", &m_HDRI_Edit, HDRI_EARLY_EVE_WARM_SKY);
-        ImGui::RadioButton("Birchwood", &m_HDRI_Edit, HDRI_BIRCHWOOD);
-        ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
-        ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
-        ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
-        ImGui::RadioButton("Peppermint Powerplant", &m_HDRI_Edit, HDRI_PEPPERMINT_POWERPLANT);
+        if (ImGui::CollapsingHeader("Display Info"))
+        {
+            ImGui::RadioButton("Greenwich Park", &m_HDRI_Edit, HDRI_GREENWICH_PARK);
+            ImGui::RadioButton("San Giuseppe Bridge", &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
+            ImGui::RadioButton("Tropical Beach", &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
+            ImGui::RadioButton("Vignaioli Night", &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
+            ImGui::RadioButton("Early Eve & Warm Sky", &m_HDRI_Edit, HDRI_EARLY_EVE_WARM_SKY);
+            ImGui::RadioButton("Birchwood", &m_HDRI_Edit, HDRI_BIRCHWOOD);
+            ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
+            ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
+            ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
+            ImGui::RadioButton("Peppermint Powerplant", &m_HDRI_Edit, HDRI_PEPPERMINT_POWERPLANT);
+        }
     }
     ImGui::End();
 
     ImGui::Begin("Settings");
     {
-        ImGui::Checkbox("Display Bounding Boxes", &m_VisibleAABBs);
-        ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
-        ImGui::Checkbox("Display Hazel Grid", &m_DisplayHazelGrid);
+        if (ImGui::CollapsingHeader("Display Info"))
+        {
+            ImGui::Checkbox("Display Bounding Boxes", &m_VisibleAABBs);
+            ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
+            ImGui::Checkbox("Display Hazel Grid", &m_DisplayHazelGrid);
 
-        ImGui::Separator();
-        for (auto& entity : m_Entities)
-        {
-            std::string isEnabled = std::string("Is Enabled ") + entity.first;
-            ImGui::Checkbox(isEnabled.c_str(), &entity.second.Enabled);
-        }
-        ImGui::Separator();
-        for (auto& entity : m_Entities)
-        {
-            std::string isIntersecting = std::string("Is Intersecting ") + entity.first;
-            ImGui::Checkbox(isIntersecting.c_str(), &entity.second.Intersecting);
-        }
-        ImGui::Separator();
-        bool eventLoggingEnabled = Application::Get()->GetWindow()->GetEventLogging();
-        if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
-            Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
+            ImGui::Separator();
+            for (auto& entity : m_Entities)
+            {
+                std::string isEnabled = std::string("Is Enabled ") + entity.first;
+                ImGui::Checkbox(isEnabled.c_str(), &entity.second.Enabled);
+            }
+            ImGui::Separator();
+            for (auto& entity : m_Entities)
+            {
+                std::string isIntersecting = std::string("Is Intersecting ") + entity.first;
+                ImGui::Checkbox(isIntersecting.c_str(), &entity.second.Intersecting);
+            }
+            ImGui::Separator();
+            bool eventLoggingEnabled = Application::Get()->GetWindow()->GetEventLogging();
+            if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
+                Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
+            }
         }
     }
     ImGui::End();

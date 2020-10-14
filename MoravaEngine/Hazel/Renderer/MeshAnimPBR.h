@@ -115,11 +115,13 @@ namespace Hazel {
 			: V0(v0), V1(v1), V2(v2) {}
 	};
 
+	class MeshAnimPBR;
+
 	class Submesh : public Mesh
 	{
 	public:
-		void Render(const OpenGLVertexArray& vertexArray, Shader* shader, const std::vector<glm::mat4>& boneTransforms,
-			glm::mat4 transform, uint32_t samplerSlot, const std::map<std::string, EnvMapMaterial*>& envMapMaterials, const std::vector<Material*>& materials);
+		void Render(MeshAnimPBR* parentMesh, Shader* shader, glm::mat4 transform, uint32_t samplerSlot,
+			const std::map<std::string, EnvMapMaterial*>& envMapMaterials);
 
 	public:
 		uint32_t BaseVertex;
