@@ -177,7 +177,7 @@ void SceneCottage::UpdateImGui(float timestep, Window* mainWindow)
 		pointLights[2].linear = LightManager::pointLights[2].GetLinear();
 		pointLights[2].exponent = LightManager::pointLights[2].GetExponent();
 
-		if (ImGui::CollapsingHeader("Display Info"))
+		if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Checkbox("    DL Enabled",           &directionalLight.base.enabled);
 			ImGui::ColorEdit3(  "DL Color",             glm::value_ptr(directionalLight.base.color));
@@ -250,7 +250,7 @@ void SceneCottage::UpdateImGui(float timestep, Window* mainWindow)
 
 	ImGui::Begin("Framebuffers");
 	{
-		if (ImGui::CollapsingHeader("Display Info"))
+		if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImVec2 imageSize(128.0f, 128.0f);
 
