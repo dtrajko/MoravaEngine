@@ -839,22 +839,14 @@ namespace Hazel {
 		Log::GetLogger()->info("------------------------------------------------------");
 	}
 
-	void MeshAnimPBR::Render(uint32_t samplerSlot, const glm::mat4& transform)
+	void MeshAnimPBR::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
 	{
-		if (m_BaseMaterial) {
-			m_BaseMaterial->GetTextureAlbedo()->Bind(samplerSlot + 0);
-			m_BaseMaterial->GetTextureNormal()->Bind(samplerSlot + 1);
-			m_BaseMaterial->GetTextureMetallic()->Bind(samplerSlot + 2);
-			m_BaseMaterial->GetTextureRoughness()->Bind(samplerSlot + 3);
-			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
-		}
+		EnvMapMaterial* envMapMaterial = nullptr;
 
 		m_VertexArray->Bind();
 
 		for (Submesh* submesh : m_Submeshes)
 		{
-			// Material
-			auto material = m_Materials[submesh->MaterialIndex];
 			m_MeshShader->Bind();
 
 			for (size_t i = 0; i < m_BoneTransforms.size(); i++)
@@ -865,12 +857,86 @@ namespace Hazel {
 
 			m_MeshShader->setMat4("u_Transform", transform * submesh->Transform);
 
-			if (material->GetFlag(MaterialFlag::DepthTest))
+			// Manage materials (PBR texture binding)
+			if (m_BaseMaterial) {
+				m_BaseMaterial->GetTextureAlbedo()->Bind(samplerSlot + 0);
+				m_BaseMaterial->GetTextureNormal()->Bind(samplerSlot + 1);
+				m_BaseMaterial->GetTextureMetallic()->Bind(samplerSlot + 2);
+				m_BaseMaterial->GetTextureRoughness()->Bind(samplerSlot + 3);
+				m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
+			}
+
+			if (envMapMaterials.at(submesh->MeshName))
+			{
+				envMapMaterial = envMapMaterials.at(submesh->MeshName);
+				envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);
+				envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
+				envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);
+				envMapMaterial->GetRoughnessInput().TextureMap->Bind(samplerSlot + 3);
+			}
+
+			auto material = m_Materials[submesh->MaterialIndex];
+			if (material->GetFlag(MaterialFlag::DepthTest)) {
 				glEnable(GL_DEPTH_TEST);
-			else
+			} else {
 				glDisable(GL_DEPTH_TEST);
+			}
 
 			glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t)* submesh->BaseIndex), submesh->BaseVertex);
 		}
+	}
+
+	void MeshAnimPBR::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
+	{
+		for (Hazel::Submesh* submesh : m_Submeshes)
+		{
+			submesh->Render(*m_VertexArray, m_MeshShader, m_BoneTransforms, transform, samplerSlot, envMapMaterials, m_Materials);
+		}
+	}
+
+	void Submesh::Render(const OpenGLVertexArray& vertexArray, Shader* shader, const std::vector<glm::mat4>& boneTransforms,
+		glm::mat4 transform, uint32_t samplerSlot, const std::map<std::string, EnvMapMaterial*>& envMapMaterials, const std::vector<Material*>& materials)
+	{
+		EnvMapMaterial* envMapMaterial = nullptr;
+
+		vertexArray.Bind();
+
+		shader->Bind();
+
+		for (size_t i = 0; i < boneTransforms.size(); i++)
+		{
+			std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+			shader->setMat4(uniformName, boneTransforms[i]);
+		}
+
+		shader->setMat4("u_Transform", transform * Transform);
+
+		// Manage materials (PBR texture binding)
+		if (m_BaseMaterial) {
+			m_BaseMaterial->GetTextureAlbedo()->Bind(samplerSlot + 0);
+			m_BaseMaterial->GetTextureNormal()->Bind(samplerSlot + 1);
+			m_BaseMaterial->GetTextureMetallic()->Bind(samplerSlot + 2);
+			m_BaseMaterial->GetTextureRoughness()->Bind(samplerSlot + 3);
+			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
+		}
+
+		if (envMapMaterials.at(MeshName))
+		{
+			envMapMaterial = envMapMaterials.at(MeshName);
+			envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);
+			envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
+			envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);
+			envMapMaterial->GetRoughnessInput().TextureMap->Bind(samplerSlot + 3);
+		}
+
+		auto material = materials[MaterialIndex];
+		if (material->GetFlag(MaterialFlag::DepthTest)) {
+			glEnable(GL_DEPTH_TEST);
+		}
+		else {
+			glDisable(GL_DEPTH_TEST);
+		}
+
+		glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
 	}
 }

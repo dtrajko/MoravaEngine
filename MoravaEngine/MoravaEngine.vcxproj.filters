@@ -542,6 +542,9 @@
     <ClCompile Include="Hazel\Renderer\ShaderUniform.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="EnvMapMaterial.cpp">
+      <Filter>Material</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1164,6 +1167,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\HazelShader.h">
       <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="EnvMapMaterial.h">
+      <Filter>Material</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
