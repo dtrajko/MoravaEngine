@@ -920,7 +920,7 @@ namespace Hazel {
 			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
 		}
 
-		if (envMapMaterials.at(MeshName))
+		if (envMapMaterials.find(MeshName) != envMapMaterials.end())
 		{
 			envMapMaterial = envMapMaterials.at(MeshName);
 			envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);
