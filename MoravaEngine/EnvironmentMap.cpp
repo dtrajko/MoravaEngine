@@ -596,7 +596,9 @@ void EnvironmentMap::Render()
 
     for (Hazel::Submesh* submesh : meshAnimPBR->GetSubmeshes())
     {
-        UpdateShaderPBRUniforms(shaderHazelPBR, m_EnvMapMaterials.at(submesh->MeshName));
+        if (m_EnvMapMaterials.find(submesh->MeshName) != m_EnvMapMaterials.end()) {
+            UpdateShaderPBRUniforms(shaderHazelPBR, m_EnvMapMaterials.at(submesh->MeshName));
+        }
         submesh->Render(meshAnimPBR, shaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
     }
 
