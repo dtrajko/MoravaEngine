@@ -1,8 +1,11 @@
 #include "SceneHierarchyPanel.h"
 #include "../Scene/Components.h"
+#include "../../Math.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
+
+#include <vector>
 
 
 namespace Hazel
@@ -24,13 +27,19 @@ namespace Hazel
 
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
-		ImGui::Begin("Scene Hierarchy");
+		OnImGuiRenderNoECS();
+		OnImGuiRenderECS();
+	}
 
-		m_Context->GetRegistry()->each([&](auto entityID)
-		{
-			Entity entity{ entityID, m_Context };
-			DrawEntityNode(entity);
-		});
+	void SceneHierarchyPanel::OnImGuiRenderECS()
+	{
+		ImGui::Begin("Scene Hierarchy ECS");
+
+		//	m_Context->GetRegistry()->each([&](auto entityID)
+		//		{
+		//			Entity entity{ entityID, m_Context };
+		//			DrawEntityNode(entity);
+		//		});
 
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 		{
@@ -49,6 +58,88 @@ namespace Hazel
 		ImGui::End();
 
 		// ImGui::ShowDemoWindow();
+	}
+
+	void SceneHierarchyPanel::OnImGuiRenderNoECS()
+	{
+		ImGui::Begin("Scene Hierarchy NoECS");
+
+		//	auto& sceneEntities = m_Context->GetEntities();
+		//	for (Entity* entity : sceneEntities)
+		//	{
+		//		auto mesh = entity->GetMesh();
+		//		auto material = entity->GetMaterial();
+		//		const auto& transform = entity->GetTransform();
+		//	
+		//		if (mesh)
+		//		{
+		//			uint32_t imguiMeshID;
+		//			DrawMeshNode(mesh, imguiMeshID);
+		//		}
+		//	}
+
+		ImGui::End();
+	}
+
+	void SceneHierarchyPanel::DrawEntityNode(Entity* entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID)
+	{
+		const char* name = entity->GetName().c_str();
+		static char imguiName[128];
+		memset(imguiName, 0, 128);
+		sprintf(imguiName, "%s##%d", name, imguiEntityID++);
+		if (ImGui::TreeNode(imguiName))
+		{
+			auto mesh = entity->GetMesh();
+			auto material = entity->GetMaterial();
+			const auto& transform = entity->GetTransform();
+
+			if (mesh)
+				DrawMeshNode(mesh, imguiMeshID);
+
+			ImGui::TreePop();
+		}
+	}
+
+	void SceneHierarchyPanel::DrawMeshNode(Mesh* mesh, uint32_t& imguiMeshID)
+	{
+		static char imguiName[128];
+		memset(imguiName, 0, 128);
+		sprintf(imguiName, "Mesh##%d", imguiMeshID++);
+
+		// Mesh Hierarchy
+		if (ImGui::TreeNode(imguiName))
+		{
+			// auto rootNode = mesh->m_Scene->mRootNode;
+			// MeshNodeHierarchy(mesh, rootNode);
+			ImGui::TreePop();
+		}
+	}
+
+	void SceneHierarchyPanel::MeshNodeHierarchy(Mesh* mesh, aiNode* node, const glm::mat4& parentTransform, uint32_t level)
+	{
+		glm::mat4 localTransform = Math::Mat4FromAssimpMat4(node->mTransformation);
+		glm::mat4 transform = parentTransform * localTransform;
+
+		if (ImGui::TreeNode(node->mName.C_Str()))
+		{
+			{
+				auto [translation, rotation, scale] = Math::GetTransformDecomposition(transform);
+				ImGui::Text("World Transform");
+				ImGui::Text("  Translation: %.2f, %.2f, %.2f", translation.x, translation.y, translation.z);
+				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
+			}
+			{
+				auto [translation, rotation, scale] = Math::GetTransformDecomposition(localTransform);
+				ImGui::Text("Local Transform");
+				ImGui::Text("  Translation: %.2f, %.2f, %.2f", translation.x, translation.y, translation.z);
+				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
+			}
+
+			for (uint32_t i = 0; i < node->mNumChildren; i++)
+				MeshNodeHierarchy(mesh, node->mChildren[i], transform, level + 1);
+
+			ImGui::TreePop();
+		}
 	}
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
@@ -166,4 +257,5 @@ namespace Hazel
 			}
 		}
 	}
+
 }
