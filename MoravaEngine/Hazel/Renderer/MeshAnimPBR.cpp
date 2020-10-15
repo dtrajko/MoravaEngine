@@ -866,9 +866,9 @@ namespace Hazel {
 				m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
 			}
 
-			if (envMapMaterials.find(submesh->MeshName) != envMapMaterials.end())
+			if (envMapMaterials.contains(submesh->NodeName))
 			{
-				envMapMaterial = envMapMaterials.at(submesh->MeshName);
+				envMapMaterial = envMapMaterials.at(submesh->NodeName);
 				envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);
 				envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
 				envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);
@@ -920,9 +920,9 @@ namespace Hazel {
 			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
 		}
 
-		if (envMapMaterials.find(MeshName) != envMapMaterials.end())
+		if (envMapMaterials.contains(NodeName))
 		{
-			envMapMaterial = envMapMaterials.at(MeshName);
+			envMapMaterial = envMapMaterials.at(NodeName);
 			envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);
 			envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
 			envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);

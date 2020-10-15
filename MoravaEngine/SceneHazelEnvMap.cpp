@@ -132,6 +132,9 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 
     m_DisplayHazelGrid = true;
+
+    m_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+    m_Transform_ImGuizmo = &m_EnvironmentMap->GetMeshEntity()->Transform();
 }
 
 SceneHazelEnvMap::~SceneHazelEnvMap()
@@ -630,22 +633,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     std::string fullPath = Application::Get()->OpenFile("");
                     if (fullPath != "")
                     {
-                        std::string fileName = Util::GetFileNameFromFullPath(fullPath);
-                        std::string fileNameNoExt = Util::StripExtensionFromFileName(fileName);
-
-                        // A bit unfortunate hard-coded mesh type selection by model name
-                        // TODO: detect automatically mesh type in MeshAnimPBR constructor
-                        // Hazel::MeshAnimPBR* newMesh;
-                        if (fileNameNoExt == "m1911") {
-                            mesh = new Hazel::MeshAnimPBR(fullPath, m_EnvironmentMap->GetShaderPBR_Anim(), nullptr, true);
-                        } else {
-                            mesh = new Hazel::MeshAnimPBR(fullPath, m_EnvironmentMap->GetShaderPBR_Static(), nullptr, false);
-                        }
-
-                        Log::GetLogger()->debug("CreateEntity fileName '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
-                        Hazel::Entity* newMeshEntity = m_EnvironmentMap->CreateEntity(fileNameNoExt);
-                        newMeshEntity->SetMesh(mesh);
-                        m_EnvironmentMap->SetMeshEntity(newMeshEntity);
+                        m_EnvironmentMap->LoadMesh(mesh, fullPath);
                     }
                 }
 

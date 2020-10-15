@@ -33,6 +33,7 @@ public:
 	void Update(Scene* scene, float timestep);
 	void AddEntity(Hazel::Entity* entity);
 	Hazel::Entity* CreateEntity(const std::string& name);
+	void LoadMesh(Mesh* mesh, std::string fullPath);
 	void Render();
 	void OnImGuiRender();
 
@@ -172,6 +173,7 @@ private:
 	Shader* m_ShaderHazelPBR_Static;
 	Shader* m_ShaderComposite;
 	Shader* m_ShaderGrid;
+	Shader* m_shaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
 
 	Hazel::HazelTextureCube* m_SkyboxTexture;
 
