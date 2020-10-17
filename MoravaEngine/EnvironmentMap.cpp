@@ -438,6 +438,9 @@ void EnvironmentMap::LoadMesh(Mesh* mesh, std::string fullPath)
     Hazel::Entity* newMeshEntity = CreateEntity(fileNameNoExt);
     newMeshEntity->SetMesh(mesh);
     SetMeshEntity(newMeshEntity);
+
+    m_Data.DrawList.clear();
+    SubmitEntity(newMeshEntity);
 }
 
 void EnvironmentMap::Update(Scene* scene, float timestep)
@@ -675,7 +678,7 @@ void EnvironmentMap::Render()
     }
 
     // meshAnimPBR->RenderSubmeshes(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
-    meshAnimPBR->Render(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
+    // meshAnimPBR->Render(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
 
     EndScene();
 }
