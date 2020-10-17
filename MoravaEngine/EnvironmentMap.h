@@ -173,7 +173,7 @@ private:
 	Shader* m_ShaderHazelPBR_Static;
 	Shader* m_ShaderComposite;
 	Shader* m_ShaderGrid;
-	Shader* m_shaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
+	Shader* m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
 
 	Hazel::HazelTextureCube* m_SkyboxTexture;
 

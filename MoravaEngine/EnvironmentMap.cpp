@@ -212,20 +212,14 @@ void EnvironmentMap::SetupContextData()
             m_EnvMapMaterials.insert(std::make_pair("pCylinder5", envMapMaterialM1911));
         }
 
-        Data::DrawCommand drawCommand;
-        drawCommand.Name = "M1911";
-        // drawCommand.Material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
-        // drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/Hazel/Sphere1m.fbx", m_ShaderHazelPBR_Anim, drawCommand.Material, false);
-        // drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/M1911/M1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);
-        drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/Cerberus/Cerberus_LP.FBX", m_ShaderHazelPBR_Static, nullptr, false);
+        Hazel::MeshAnimPBR* mesh;
 
-        ((Hazel::MeshAnimPBR*)drawCommand.Mesh)->SetTimeMultiplier(1.0f);
-        drawCommand.Transform = glm::mat4(1.0f);
+        // Material* material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
+        // mesh = new Hazel::MeshAnimPBR("Models/Hazel/Sphere1m.fbx", m_ShaderHazelPBR_Anim, drawCommand.Material, false);
+        // mesh = new Hazel::MeshAnimPBR("Models/M1911/M1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);
+        mesh = new Hazel::MeshAnimPBR("Models/Cerberus/Cerberus_LP.FBX", m_ShaderHazelPBR_Static, nullptr, false);
 
-        m_Data.DrawList.push_back(drawCommand);
-
-        m_MeshEntity = CreateEntity(drawCommand.Name);
-        m_MeshEntity->SetMesh(drawCommand.Mesh);
+        LoadMesh(mesh, "Models/Cerberus/Cerberus_LP.FBX");
     }
     Log::GetLogger()->info("-- END Setup PBR Materials --");
 
@@ -422,25 +416,35 @@ void EnvironmentMap::LoadMesh(Mesh* mesh, std::string fullPath)
 
     // A bit unfortunate hard-coded mesh type selection by model name
     // TODO: detect automatically mesh type in MeshAnimPBR constructor
-    // Hazel::MeshAnimPBR* newMesh;
     bool isAnimated;
     if (fileNameNoExt == "m1911") {
-        m_shaderHazelPBR = GetShaderPBR_Anim();
         isAnimated = true;
+        m_ShaderHazelPBR = m_ShaderHazelPBR_Anim;
     }
     else {
-        m_shaderHazelPBR = GetShaderPBR_Static();
         isAnimated = false;
+        m_ShaderHazelPBR = m_ShaderHazelPBR_Static;
     }
-    mesh = new Hazel::MeshAnimPBR(fullPath, m_shaderHazelPBR, nullptr, isAnimated);
 
-    Log::GetLogger()->debug("EnvironmentMap::LoadMesh: fileName '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
-    Hazel::Entity* newMeshEntity = CreateEntity(fileNameNoExt);
-    newMeshEntity->SetMesh(mesh);
-    SetMeshEntity(newMeshEntity);
+    Log::GetLogger()->debug("EnvironmentMap::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
-    m_Data.DrawList.clear();
-    SubmitEntity(newMeshEntity);
+    mesh = new Hazel::MeshAnimPBR(fullPath, m_ShaderHazelPBR, nullptr, isAnimated);
+
+    ((Hazel::MeshAnimPBR*)mesh)->SetTimeMultiplier(1.0f);
+
+    m_Data.DrawList.clear(); // doesn't work for multiple meshes on the scene
+    Data::DrawCommand drawCommand;
+
+    drawCommand.Name = fileNameNoExt;
+    drawCommand.Mesh = mesh;
+    drawCommand.Transform = glm::mat4(1.0f);
+
+    m_Data.DrawList.push_back(drawCommand);
+
+    m_MeshEntity = CreateEntity(drawCommand.Name);
+    m_MeshEntity->SetMesh(drawCommand.Mesh);
+
+    SubmitEntity(m_MeshEntity);
 }
 
 void EnvironmentMap::Update(Scene* scene, float timestep)
@@ -645,7 +649,7 @@ void EnvironmentMap::DrawIndexed(uint32_t count, PrimitiveType type, bool depthT
 void EnvironmentMap::Render()
 {
     Hazel::MeshAnimPBR* meshAnimPBR = ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh());
-    m_shaderHazelPBR = meshAnimPBR->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
+    m_ShaderHazelPBR = meshAnimPBR->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
 
     BeginScene(m_Data.ActiveScene);
 
@@ -667,14 +671,14 @@ void EnvironmentMap::Render()
     // in conflict with MeshAnimPBR::m_BaseMaterial
     // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
 
-    m_shaderHazelPBR->Bind();
+    m_ShaderHazelPBR->Bind();
 
     for (Hazel::Submesh* submesh : meshAnimPBR->GetSubmeshes())
     {
         if (m_EnvMapMaterials.contains(submesh->NodeName)) {
-            UpdateShaderPBRUniforms(m_shaderHazelPBR, m_EnvMapMaterials.at(submesh->NodeName));
+            UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh->NodeName));
         }
-        submesh->Render(meshAnimPBR, m_shaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
+        submesh->Render(meshAnimPBR, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
     }
 
     // meshAnimPBR->RenderSubmeshes(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
@@ -906,10 +910,10 @@ void EnvironmentMap::SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& trans
         for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
         {
             std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-            m_shaderHazelPBR->setMat4(uniformName, mesh->m_BoneTransforms[i]);
+            m_ShaderHazelPBR->setMat4(uniformName, mesh->m_BoneTransforms[i]);
         }
 
-        m_shaderHazelPBR->setMat4("u_Transform", transform * submesh->Transform);
+        m_ShaderHazelPBR->setMat4("u_Transform", transform * submesh->Transform);
 
         if (material->GetFlag(MaterialFlag::DepthTest)) { // TODO: Fix Material flags
             glEnable(GL_DEPTH_TEST);
