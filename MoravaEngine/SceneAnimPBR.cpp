@@ -279,14 +279,14 @@ void SceneAnimPBR::SetupMeshes()
 
     // M1911
     TextureInfo textureInfoM1911 = {};
-    textureInfoM1911.albedo    = "Models/m1911/m1911_color.png";
-    textureInfoM1911.normal    = "Models/m1911/m1911_normal.png";
-    textureInfoM1911.metallic  = "Models/m1911/m1911_metalness.png";
-    textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
+    textureInfoM1911.albedo    = "Models/M1911/m1911_color.png";
+    textureInfoM1911.normal    = "Models/M1911/m1911_normal.png";
+    textureInfoM1911.metallic  = "Models/M1911/m1911_metalness.png";
+    textureInfoM1911.roughness = "Models/M1911/m1911_roughness.png";
     textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
 
     m_BaseMaterial_M1911 = new Material(textureInfoM1911, materialSpecular, materialShininess);
-    m_MeshAnimPBR_M1911 = new Hazel::MeshAnimPBR("Models/m1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
+    m_MeshAnimPBR_M1911 = new Hazel::MeshAnimPBR("Models/M1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
     m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
 
     m_Entities["M1911"].Transform.Scale = m_Entities["M1911"].Init.Transform.Scale;

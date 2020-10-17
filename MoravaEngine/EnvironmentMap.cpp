@@ -191,10 +191,10 @@ void EnvironmentMap::SetupContextData()
         {
             // PBR EnvMapMaterial M1911 (Index = 0)
             TextureInfo textureInfoM1911 = {};
-            textureInfoM1911.albedo    = "Models/m1911/m1911_color.png";
-            textureInfoM1911.normal    = "Models/m1911/m1911_normal.png";
-            textureInfoM1911.metallic  = "Models/m1911/m1911_metalness.png";
-            textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
+            textureInfoM1911.albedo    = "Models/M1911/m1911_color.png";
+            textureInfoM1911.normal    = "Models/M1911/m1911_normal.png";
+            textureInfoM1911.metallic  = "Models/M1911/m1911_metalness.png";
+            textureInfoM1911.roughness = "Models/M1911/m1911_roughness.png";
             textureInfoM1911.ao        = "Textures/plain.png";
 
             EnvMapMaterial* envMapMaterialM1911 = new EnvMapMaterial();
@@ -216,7 +216,7 @@ void EnvironmentMap::SetupContextData()
         drawCommand.Name = "M1911";
         // drawCommand.Material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
         // drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/Hazel/Sphere1m.fbx", m_ShaderHazelPBR_Anim, drawCommand.Material, false);
-        // drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/m1911/M1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);
+        // drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/M1911/M1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);
         drawCommand.Mesh = new Hazel::MeshAnimPBR("Models/Cerberus/Cerberus_LP.FBX", m_ShaderHazelPBR_Static, nullptr, false);
 
         ((Hazel::MeshAnimPBR*)drawCommand.Mesh)->SetTimeMultiplier(1.0f);

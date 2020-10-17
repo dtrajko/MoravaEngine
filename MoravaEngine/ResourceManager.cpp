@@ -196,11 +196,11 @@ void ResourceManager::Init()
 
     // SF Helmet glTF PBR
     TextureInfo textureInfoSFHelmet = {};
-    textureInfoSFHelmet.albedo = "Textures/PBR/SciFiHelmet/SciFiHelmet_BaseColor.png";
-    textureInfoSFHelmet.normal = "Textures/PBR/SciFiHelmet/SciFiHelmet_Normal.png";
-    textureInfoSFHelmet.metallic = "Textures/PBR/SciFiHelmet/SciFiHelmet_MetallicRoughness.png";
+    textureInfoSFHelmet.albedo    = "Textures/PBR/SciFiHelmet/SciFiHelmet_BaseColor.png";
+    textureInfoSFHelmet.normal    = "Textures/PBR/SciFiHelmet/SciFiHelmet_Normal.png";
+    textureInfoSFHelmet.metallic  = "Textures/PBR/SciFiHelmet/SciFiHelmet_MetallicRoughness.png";
     textureInfoSFHelmet.roughness = "Textures/PBR/SciFiHelmet/SciFiHelmet_Emissive.png";
-    textureInfoSFHelmet.ao = "Textures/PBR/SciFiHelmet/SciFiHelmet_AmbientOcclusion.png";
+    textureInfoSFHelmet.ao        = "Textures/PBR/SciFiHelmet/SciFiHelmet_AmbientOcclusion.png";
     s_MaterialInfo.insert(std::make_pair("sf_helmet", textureInfoSFHelmet));
 
     // Cerberus model PBR textures
@@ -214,38 +214,38 @@ void ResourceManager::Init()
 
     // Concrete 3 Free PBR Materials freepbr.com
     TextureInfo textureInfoConcrete = {};
-    textureInfoConcrete.albedo = "Textures/PBR/concrete3/concrete3-albedo.png";
-    textureInfoConcrete.normal = "Textures/PBR/concrete3/concrete3-Normal-dx.png";
-    textureInfoConcrete.metallic = "Textures/PBR/concrete3/concrete3-Metallic.png";
+    textureInfoConcrete.albedo    = "Textures/PBR/concrete3/concrete3-albedo.png";
+    textureInfoConcrete.normal    = "Textures/PBR/concrete3/concrete3-Normal-dx.png";
+    textureInfoConcrete.metallic  = "Textures/PBR/concrete3/concrete3-Metallic.png";
     textureInfoConcrete.roughness = "Textures/PBR/concrete3/concrete3-Roughness.png";
-    textureInfoConcrete.ao = "Textures/PBR/concrete3/concrete3-ao.png";
+    textureInfoConcrete.ao        = "Textures/PBR/concrete3/concrete3-ao.png";
     s_MaterialInfo.insert(std::make_pair("concrete", textureInfoConcrete));
 
     // Modern Brick Wall 1 Free PBR Materials freepbr.com
     TextureInfo textureInfoModernBrickWall = {};
-    textureInfoModernBrickWall.albedo = "Textures/PBR/modern_brick_1/modern-brick1_albedo.png";
-    textureInfoModernBrickWall.normal = "Textures/PBR/modern_brick_1/modern-brick1_normal-dx.png";
-    textureInfoModernBrickWall.metallic = "Textures/PBR/modern_brick_1/modern-brick1_metallic.png";
+    textureInfoModernBrickWall.albedo    = "Textures/PBR/modern_brick_1/modern-brick1_albedo.png";
+    textureInfoModernBrickWall.normal    = "Textures/PBR/modern_brick_1/modern-brick1_normal-dx.png";
+    textureInfoModernBrickWall.metallic  = "Textures/PBR/modern_brick_1/modern-brick1_metallic.png";
     textureInfoModernBrickWall.roughness = "Textures/PBR/modern_brick_1/modern-brick1_roughness.png";
-    textureInfoModernBrickWall.ao = "Textures/PBR/modern_brick_1/modern-brick1_ao.png";
+    textureInfoModernBrickWall.ao        = "Textures/PBR/modern_brick_1/modern-brick1_ao.png";
     s_MaterialInfo.insert(std::make_pair("modern_brick_wall", textureInfoModernBrickWall));
 
     // ThinMatrix Boulder
     TextureInfo textureInfoBoulder = {};
-    textureInfoBoulder.albedo = "Textures/ThinMatrix/boulder.png";
-    textureInfoBoulder.normal = "Textures/ThinMatrix/boulderNormal.png";
-    textureInfoBoulder.metallic = "Textures/metalness.png";
+    textureInfoBoulder.albedo    = "Textures/ThinMatrix/boulder.png";
+    textureInfoBoulder.normal    = "Textures/ThinMatrix/boulderNormal.png";
+    textureInfoBoulder.metallic  = "Textures/metalness.png";
     textureInfoBoulder.roughness = "Textures/plain.png";
-    textureInfoBoulder.ao = "Textures/plain.png";
+    textureInfoBoulder.ao        = "Textures/plain.png";
     s_MaterialInfo.insert(std::make_pair("boulder", textureInfoBoulder));
 
     // M1911
     TextureInfo textureInfoM1911 = {};
-    textureInfoM1911.albedo = "Models/m1911/m1911_color.png";
-    textureInfoM1911.normal = "Models/m1911/m1911_normal.png";
-    textureInfoM1911.metallic = "Models/m1911/m1911_metalness.png";
-    textureInfoM1911.roughness = "Models/m1911/m1911_roughness.png";
-    textureInfoM1911.ao = "Textures/plain.png";
+    textureInfoM1911.albedo    = "Models/M1911/m1911_color.png";
+    textureInfoM1911.normal    = "Models/M1911/m1911_normal.png";
+    textureInfoM1911.metallic  = "Models/M1911/m1911_metalness.png";
+    textureInfoM1911.roughness = "Models/M1911/m1911_roughness.png";
+    textureInfoM1911.ao        = "Textures/plain.png";
     s_MaterialInfo.insert(std::make_pair("M1911", textureInfoM1911));
 }
 
