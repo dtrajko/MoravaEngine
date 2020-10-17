@@ -279,10 +279,10 @@ void SceneJoey::UpdateImGui(float timestep, Window* mainWindow)
 		ImGui::Checkbox("Is Rotating?", &m_IsRotating);
 		ImGui::SliderFloat("Rotation Factor", &m_RotationFactor, 0.0f, 10.0f);
 
-		m_LightPositions[0] = m_LightPositionOffset[0]; // m_CameraPosition + m_LightPositionOffset[0];
-		m_LightPositions[1] = m_LightPositionOffset[1]; // m_CameraPosition + m_LightPositionOffset[1];
-		m_LightPositions[2] = m_LightPositionOffset[2]; // m_CameraPosition + m_LightPositionOffset[2];
-		m_LightPositions[3] = m_LightPositionOffset[3]; // m_CameraPosition + m_LightPositionOffset[3];
+		m_LightPositions[0] = m_CameraPosition + m_LightPositionOffset[0];
+		m_LightPositions[1] = m_CameraPosition + m_LightPositionOffset[1];
+		m_LightPositions[2] = m_CameraPosition + m_LightPositionOffset[2];
+		m_LightPositions[3] = m_CameraPosition + m_LightPositionOffset[3];
 
 		m_LightColors[0] = m_LightColorsNormal[0] * 255.0f;
 		m_LightColors[1] = m_LightColorsNormal[1] * 255.0f;

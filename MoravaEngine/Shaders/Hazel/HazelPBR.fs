@@ -46,6 +46,7 @@ uniform sampler2D u_AlbedoTexture;
 uniform sampler2D u_NormalTexture;
 uniform sampler2D u_MetalnessTexture;
 uniform sampler2D u_RoughnessTexture;
+uniform sampler2D u_AOTexture;
 
 // Environment maps
 uniform samplerCube u_EnvRadianceTex;
@@ -57,6 +58,7 @@ uniform sampler2D u_BRDFLUTTexture;
 uniform vec3 u_AlbedoColor;
 uniform float u_Metalness;
 uniform float u_Roughness;
+uniform float u_AO;
 
 uniform float u_EnvMapRotation;
 
@@ -66,16 +68,18 @@ uniform float u_AlbedoTexToggle;
 uniform float u_NormalTexToggle;
 uniform float u_MetalnessTexToggle;
 uniform float u_RoughnessTexToggle;
+uniform float u_AOTexToggle;
 
 uniform float u_Exposure;
 
 struct PBRParameters
 {
 	vec3 Albedo;
-	float Roughness;
-	float Metalness;
-
 	vec3 Normal;
+	float Metalness;
+	float Roughness;
+	float AO;
+
 	vec3 View;
 	float NdotV;
 };
@@ -260,10 +264,11 @@ vec3 IBL(vec3 F0, vec3 Lr)
 void main()
 {
 	// Standard PBR inputs
-	m_Params.Albedo = u_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord).rgb : u_AlbedoColor; 
+	m_Params.Albedo    = u_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord).rgb : u_AlbedoColor; 
 	m_Params.Metalness = u_MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, vs_Input.TexCoord).r : u_Metalness;
-	m_Params.Roughness = u_RoughnessTexToggle > 0.5 ?  texture(u_RoughnessTexture, vs_Input.TexCoord).r : u_Roughness;
+	m_Params.Roughness = u_RoughnessTexToggle > 0.5 ? texture(u_RoughnessTexture, vs_Input.TexCoord).r : u_Roughness;
     m_Params.Roughness = max(m_Params.Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
+	m_Params.AO        = u_AOTexToggle > 0.5 ? texture(u_AOTexture, vs_Input.TexCoord).r : u_AO;
 
 	// Normals (either from vertex or map)
 	m_Params.Normal = normalize(vs_Input.Normal);
@@ -286,5 +291,6 @@ void main()
 	vec3 iblContribution = IBL(F0, Lr);
 
 	color = vec4(lightContribution + iblContribution, 1.0);
+	color.rgb *= m_Params.AO;
 	color.rgb *= u_Exposure; // originally used in Shaders/Hazel/SceneComposite
 }

@@ -863,6 +863,7 @@ namespace Hazel {
 				envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
 				envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);
 				envMapMaterial->GetRoughnessInput().TextureMap->Bind(samplerSlot + 3);
+				envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 4);
 			}
 
 			auto material = m_Materials[submesh->MaterialIndex];
@@ -917,6 +918,7 @@ namespace Hazel {
 			envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
 			envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);
 			envMapMaterial->GetRoughnessInput().TextureMap->Bind(samplerSlot + 3);
+			envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 4);
 		}
 
 		auto material = parentMesh->GetMaterials()[MaterialIndex];

@@ -181,7 +181,6 @@
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="EndlessTerrain.cpp" />
     <ClCompile Include="EnvironmentMap.cpp" />
-    <ClCompile Include="EnvMapMaterial.cpp" />
     <ClCompile Include="FramebufferTextureCubemap.cpp" />
     <ClCompile Include="HazelFullscreenQuad.cpp" />
     <ClCompile Include="Hazel\Core\Layer.cpp" />

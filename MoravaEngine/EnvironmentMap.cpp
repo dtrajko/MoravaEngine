@@ -25,12 +25,12 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     m_SamplerSlots->insert(std::make_pair("normal",     2)); // uniform sampler2D u_NormalTexture
     m_SamplerSlots->insert(std::make_pair("metalness",  3)); // uniform sampler2D u_MetalnessTexture
     m_SamplerSlots->insert(std::make_pair("roughness",  4)); // uniform sampler2D u_RoughnessTexture
-    // m_SamplerSlots.insert(std::make_pair("ao", 5)); // uniform sampler2D u_AOTexture
+    m_SamplerSlots->insert(std::make_pair("ao",         5)); // uniform sampler2D u_AOTexture
     // Environment maps
-    m_SamplerSlots->insert(std::make_pair("radiance",   5)); // uniform samplerCube u_EnvRadianceTex
-    m_SamplerSlots->insert(std::make_pair("irradiance", 6)); // uniform samplerCube u_EnvIrradianceTex
+    m_SamplerSlots->insert(std::make_pair("radiance",   6)); // uniform samplerCube u_EnvRadianceTex
+    m_SamplerSlots->insert(std::make_pair("irradiance", 7)); // uniform samplerCube u_EnvIrradianceTex
     // BRDF LUT
-    m_SamplerSlots->insert(std::make_pair("BRDF_LUT",   7)); // uniform sampler2D u_BRDFLUTTexture
+    m_SamplerSlots->insert(std::make_pair("BRDF_LUT",   8)); // uniform sampler2D u_BRDFLUTTexture
 
     // Skybox.fs         - uniform samplerCube u_Texture;
     // SceneComposite.fs - uniform sampler2DMS u_Texture;
@@ -139,6 +139,8 @@ void EnvironmentMap::SetupContextData()
             envMapMaterialWeapon->GetMetalnessInput().UseTexture = true;
             envMapMaterialWeapon->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoWeapon.roughness);
             envMapMaterialWeapon->GetRoughnessInput().UseTexture = true;
+            envMapMaterialWeapon->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoWeapon.ao);
+            envMapMaterialWeapon->GetAOInput().UseTexture = true;
 
             m_EnvMapMaterials.insert(std::make_pair("Gladiator_weapon", envMapMaterialWeapon));
         }
@@ -162,6 +164,8 @@ void EnvironmentMap::SetupContextData()
             envMapMaterialGladiator->GetMetalnessInput().UseTexture = true;
             envMapMaterialGladiator->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.roughness);
             envMapMaterialGladiator->GetRoughnessInput().UseTexture = true;
+            envMapMaterialGladiator->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoGladiator.ao);
+            envMapMaterialGladiator->GetAOInput().UseTexture = true;
 
             m_EnvMapMaterials.insert(std::make_pair("Gladiator", envMapMaterialGladiator));
         }
@@ -185,6 +189,8 @@ void EnvironmentMap::SetupContextData()
             envMapMaterialCerberus->GetMetalnessInput().UseTexture = true;
             envMapMaterialCerberus->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoCerberus.roughness);
             envMapMaterialCerberus->GetRoughnessInput().UseTexture = true;
+            envMapMaterialCerberus->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoCerberus.ao);
+            envMapMaterialCerberus->GetAOInput().UseTexture = true;
 
             m_EnvMapMaterials.insert(std::make_pair("Cerberus00_Fixed", envMapMaterialCerberus));
         }
@@ -208,6 +214,8 @@ void EnvironmentMap::SetupContextData()
             envMapMaterialM1911->GetMetalnessInput().UseTexture = true;
             envMapMaterialM1911->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoM1911.roughness);
             envMapMaterialM1911->GetRoughnessInput().UseTexture = true;
+            envMapMaterialM1911->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfoM1911.ao);
+            envMapMaterialM1911->GetAOInput().UseTexture = true;
 
             m_EnvMapMaterials.insert(std::make_pair("pCylinder5", envMapMaterialM1911));
         }
@@ -286,23 +294,25 @@ void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMater
 
     shaderHazelPBR->Bind();
 
-    shaderHazelPBR->setInt("u_AlbedoTexture", m_SamplerSlots->at("albedo"));
-    shaderHazelPBR->setInt("u_NormalTexture", m_SamplerSlots->at("normal"));
+    shaderHazelPBR->setInt("u_AlbedoTexture",    m_SamplerSlots->at("albedo"));
+    shaderHazelPBR->setInt("u_NormalTexture",    m_SamplerSlots->at("normal"));
     shaderHazelPBR->setInt("u_MetalnessTexture", m_SamplerSlots->at("metalness"));
     shaderHazelPBR->setInt("u_RoughnessTexture", m_SamplerSlots->at("roughness"));
-    // shaderHazelPBR->setInt("u_AOTexture", m_SamplerSlots->at("ao"));
+    shaderHazelPBR->setInt("u_AOTexture",        m_SamplerSlots->at("ao"));
 
     shaderHazelPBR->setVec3("u_AlbedoColor", envMapMaterial->GetAlbedoInput().Color);
-    shaderHazelPBR->setFloat("u_Metalness", envMapMaterial->GetMetalnessInput().Value);
-    shaderHazelPBR->setFloat("u_Roughness", envMapMaterial->GetRoughnessInput().Value);
+    shaderHazelPBR->setFloat("u_Metalness",  envMapMaterial->GetMetalnessInput().Value);
+    shaderHazelPBR->setFloat("u_Roughness",  envMapMaterial->GetRoughnessInput().Value);
+    shaderHazelPBR->setFloat("u_AO",         envMapMaterial->GetAOInput().Value);
 
     shaderHazelPBR->setFloat("u_EnvMapRotation", m_EnvMapRotation);
 
-    shaderHazelPBR->setFloat("u_RadiancePrefilter", m_RadiancePrefilter ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_AlbedoTexToggle", envMapMaterial->GetAlbedoInput().UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_NormalTexToggle", envMapMaterial->GetNormalInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_RadiancePrefilter",  m_RadiancePrefilter ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_AlbedoTexToggle",    envMapMaterial->GetAlbedoInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_NormalTexToggle",    envMapMaterial->GetNormalInput().UseTexture ? 1.0f : 0.0f);
     shaderHazelPBR->setFloat("u_MetalnessTexToggle", envMapMaterial->GetMetalnessInput().UseTexture ? 1.0f : 0.0f);
     shaderHazelPBR->setFloat("u_RoughnessTexToggle", envMapMaterial->GetRoughnessInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_AOTexToggle",        envMapMaterial->GetAOInput().UseTexture ? 1.0f : 0.0f);
     // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
     shaderHazelPBR->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure()); // originally used in Shaders/Hazel/SceneComposite
 
@@ -855,6 +865,42 @@ void EnvironmentMap::OnImGuiRender()
                             ImGui::SameLine();
                             std::string sliderLabel = "Value##" + materialName + "RoughnessInput";
                             ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetRoughnessInput().Value, 0.0f, 1.0f);
+                        }
+                    }
+                    {
+                        // AO (Ambient Occlusion
+                        std::string textureLabel = materialName + " AO";
+                        if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+                        {
+                            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+                            ImGui::Image(material.second->GetAOInput().TextureMap ?
+                                (void*)(intptr_t)material.second->GetAOInput().TextureMap->GetID() :
+                                (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
+                            ImGui::PopStyleVar();
+                            if (ImGui::IsItemHovered())
+                            {
+                                if (material.second->GetAOInput().TextureMap)
+                                {
+                                    ImGui::BeginTooltip();
+                                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                                    ImGui::TextUnformatted(material.second->GetAOInput().TextureMap->GetPath().c_str());
+                                    ImGui::PopTextWrapPos();
+                                    ImGui::Image((void*)(intptr_t)material.second->GetAOInput().TextureMap->GetID(), ImVec2(384, 384));
+                                    ImGui::EndTooltip();
+                                }
+                                if (ImGui::IsItemClicked())
+                                {
+                                    std::string filename = Application::Get()->OpenFile("");
+                                    if (filename != "")
+                                        material.second->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                                }
+                            }
+                            ImGui::SameLine();
+                            std::string checkboxLabel = "Use##" + materialName + "AOMap";
+                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetAOInput().UseTexture);
+                            ImGui::SameLine();
+                            std::string sliderLabel = "Value##" + materialName + "AOInput";
+                            ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetAOInput().Value, 0.0f, 1.0f);
                         }
                     }
                 }

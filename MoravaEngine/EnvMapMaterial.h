@@ -11,15 +11,17 @@ class EnvMapMaterial
 	struct NormalInput;
 	struct MetalnessInput;
 	struct RoughnessInput;
+	struct AOInput;
 
 public:
-	EnvMapMaterial();
-	~EnvMapMaterial();
+	EnvMapMaterial() = default;
+	~EnvMapMaterial() = default;
 
 	inline AlbedoInput& GetAlbedoInput() { return m_AlbedoInput; }
 	inline NormalInput& GetNormalInput() { return m_NormalInput; }
 	inline MetalnessInput& GetMetalnessInput() { return m_MetalnessInput; }
 	inline RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
+	inline AOInput& GetAOInput() { return m_AOInput; }
 
 private:
 
@@ -55,5 +57,13 @@ private:
 		bool UseTexture = false;
 	};
 	RoughnessInput m_RoughnessInput;
+
+	struct AOInput
+	{
+		float Value = 1.0f;
+		Hazel::HazelTexture2D* TextureMap;
+		bool UseTexture = false;
+	};
+	AOInput m_AOInput;
 
 };
