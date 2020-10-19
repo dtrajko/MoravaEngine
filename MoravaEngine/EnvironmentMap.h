@@ -33,7 +33,8 @@ public:
 	void Update(Scene* scene, float timestep);
 	void AddEntity(Hazel::Entity* entity);
 	Hazel::Entity* CreateEntity(const std::string& name);
-	void LoadMesh(Mesh* mesh, std::string fullPath);
+	void LoadMesh(std::string fullPath);
+	void LoadEnvMapMaterials(Mesh* mesh);
 	void Render();
 	void OnImGuiRender();
 
@@ -202,6 +203,7 @@ private:
 	float m_MaterialSpecular = 0.0f;
 	float m_MaterialShininess = 0.0f;
 
+	std::map<std::string, TextureInfo> m_TextureInfo;
 	std::map<std::string, EnvMapMaterial*> m_EnvMapMaterials;
 
 	HazelFullscreenQuad* m_HazelFullscreenQuad;

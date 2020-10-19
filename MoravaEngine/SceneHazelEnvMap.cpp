@@ -633,7 +633,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     std::string fullPath = Application::Get()->OpenFile("");
                     if (fullPath != "")
                     {
-                        m_EnvironmentMap->LoadMesh(mesh, fullPath);
+                        m_EnvironmentMap->LoadMesh(fullPath);
                     }
                 }
 
