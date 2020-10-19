@@ -177,6 +177,7 @@ namespace Hazel {
 		glm::quat InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim);
 		glm::vec3 InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim);
 		void SetupDefaultBaseMaterial();
+		Texture* LoadBaseTexture();
 
 	public:
 		OpenGLVertexArray* m_VertexArray;
@@ -202,6 +203,7 @@ namespace Hazel {
 		// Materials
 		Shader* m_MeshShader;
 		Material* m_BaseMaterial; // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
+		Texture* m_BaseTexture;
 		std::vector<Texture*> m_Textures;
 		std::vector<Texture*> m_NormalMaps;
 		std::vector<Material*> m_Materials;

@@ -289,8 +289,8 @@ void main()
 
 	vec3 lightContribution = Lighting(F0); // vec3(0.0) / Lighting(F0);
 	vec3 iblContribution = IBL(F0, Lr);
+	iblContribution.rgb *= m_Params.AO;
 
 	color = vec4(lightContribution + iblContribution, 1.0);
-	color.rgb *= m_Params.AO;
 	color.rgb *= u_Exposure; // originally used in Shaders/Hazel/SceneComposite
 }

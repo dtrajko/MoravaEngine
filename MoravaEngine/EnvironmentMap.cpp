@@ -159,8 +159,6 @@ void EnvironmentMap::SetupContextData()
 
         m_TextureInfo.insert(std::make_pair("pCylinder5", textureInfoM1911));
 
-        Hazel::MeshAnimPBR* mesh;
-
         // Material* material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
         // mesh = new Hazel::MeshAnimPBR("Models/Hazel/Sphere1m.fbx", m_ShaderHazelPBR_Anim, drawCommand.Material, false);
         // mesh = new Hazel::MeshAnimPBR("Models/M1911/M1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);

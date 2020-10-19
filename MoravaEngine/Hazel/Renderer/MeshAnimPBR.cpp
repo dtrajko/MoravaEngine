@@ -61,6 +61,8 @@ namespace Hazel {
 		//		SetupDefaultBaseMaterial();
 		//	}
 
+		m_BaseTexture = nullptr;
+
 		Create();
 	}
 
@@ -91,9 +93,9 @@ namespace Hazel {
 		uint32_t vertexCount = 0;
 		uint32_t indexCount = 0;
 
-		Log::GetLogger()->info("Hazel::MeshAnimPBR: Master mesh contains {0} submeshes.", scene->mNumMeshes);
-
 		m_Submeshes.reserve(scene->mNumMeshes);
+
+		Log::GetLogger()->info("Hazel::MeshAnimPBR: Master mesh contains {0} submeshes.", scene->mNumMeshes);
 
 		for (size_t m = 0; m < scene->mNumMeshes; m++)
 		{
@@ -144,6 +146,11 @@ namespace Hazel {
 				Index index = { mesh->mFaces[i].mIndices[0], mesh->mFaces[i].mIndices[1], mesh->mFaces[i].mIndices[2] };
 				m_Indices.push_back(index);
 			}
+		}
+
+		// Display the list of all submeshes
+		for (size_t m = 0; m < scene->mNumMeshes; m++) {
+			Log::GetLogger()->info("-- Submesh ID {0} NodeName: '{1}'", m, m_Submeshes[m]->NodeName);
 		}
 
 		TraverseNodes(scene->mRootNode);
@@ -233,7 +240,7 @@ namespace Hazel {
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The ALBEDO map failed to load. Loading the default texture placeholder instead.");
-						texture = new Texture("Textures/plain.png");
+						texture = LoadBaseTexture();
 					}
 
 					if (texture->IsLoaded())
@@ -301,7 +308,16 @@ namespace Hazel {
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
 					Log::GetLogger()->info("    Roughness map path = {0}", texturePath);
-					auto texture = new Texture(texturePath.c_str(), false);
+
+					Texture* texture = nullptr;
+					try {
+						texture = new Texture(texturePath.c_str(), false);
+					}
+					catch (...) {
+						Log::GetLogger()->warn("The ROUGHNESS map failed to load. Loading the default texture placeholder instead.");
+						texture = LoadBaseTexture();
+					}
+
 					if (texture->IsLoaded())
 					{
 						m_MeshShader->setInt("u_RoughnessTexture", texture->GetID());
@@ -420,7 +436,16 @@ namespace Hazel {
 							parentPath /= str;
 							std::string texturePath = parentPath.string();
 							Log::GetLogger()->info("    Metalness map path = {0}", texturePath);
-							auto texture = new Texture(texturePath.c_str(), false);
+
+							Texture* texture = nullptr;
+							try {
+								texture = new Texture(texturePath.c_str(), false);
+							}
+							catch (...) {
+								Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
+								texture = LoadBaseTexture();
+							}
+
 							if (texture->IsLoaded())
 							{
 								m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
@@ -684,6 +709,15 @@ namespace Hazel {
 		textureInfoDefault.roughness = "Textures/plain.png";
 		textureInfoDefault.ao        = "Textures/plain.png";
 		m_BaseMaterial = new Material(textureInfoDefault, 0.0f, 0.0f);
+	}
+
+	Texture* MeshAnimPBR::LoadBaseTexture()
+	{
+		if (!m_BaseTexture) {
+			m_BaseTexture = new Texture("Textures/plain.png");
+		}
+
+		return m_BaseTexture;
 	}
 
 	void MeshAnimPBR::ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform, uint32_t level)
