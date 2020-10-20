@@ -1,5 +1,5 @@
 #include "SceneHierarchyPanel.h"
-#include "../Scene/Components.h"
+
 #include "../../Math.h"
 
 #include <imgui.h>
@@ -11,7 +11,7 @@
 namespace Hazel
 {
 
-	SceneHierarchyPanel::SceneHierarchyPanel(Scene* context)
+	SceneHierarchyPanel::SceneHierarchyPanel(HazelScene* context)
 	{
 		SetContext(context);
 	}
@@ -20,7 +20,7 @@ namespace Hazel
 	{
 	}
 
-	void SceneHierarchyPanel::SetContext(Scene* context)
+	void SceneHierarchyPanel::SetContext(HazelScene* context)
 	{
 		m_Context = context;
 	}
@@ -35,11 +35,11 @@ namespace Hazel
 	{
 		ImGui::Begin("Scene Hierarchy ECS");
 
-		//	m_Context->GetRegistry()->each([&](auto entityID)
-		//		{
-		//			Entity entity{ entityID, m_Context };
-		//			DrawEntityNode(entity);
-		//		});
+		m_Context->GetRegistry()->each([&](auto entityID)
+			{
+				Entity entity{ entityID, m_Context };
+				DrawEntityNode(entity);
+			});
 
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 		{
@@ -64,19 +64,19 @@ namespace Hazel
 	{
 		ImGui::Begin("Scene Hierarchy NoECS");
 
-		//	auto& sceneEntities = m_Context->GetEntities();
-		//	for (Entity* entity : sceneEntities)
-		//	{
-		//		auto mesh = entity->GetMesh();
-		//		auto material = entity->GetMaterial();
-		//		const auto& transform = entity->GetTransform();
-		//	
-		//		if (mesh)
-		//		{
-		//			uint32_t imguiMeshID;
-		//			DrawMeshNode(mesh, imguiMeshID);
-		//		}
-		//	}
+		std::vector<Entity*> sceneEntities = std::vector<Entity*>(); // m_Context->GetEntities();
+		for (Entity* entity : sceneEntities)
+		{
+			auto mesh = entity->GetMesh();
+			auto material = entity->GetMaterial();
+			const auto& transform = entity->GetTransform();
+		
+			if (mesh)
+			{
+				uint32_t imguiMeshID;
+				DrawMeshNode(mesh, imguiMeshID);
+			}
+		}
 
 		ImGui::End();
 	}

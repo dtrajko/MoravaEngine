@@ -4,9 +4,13 @@
 
 #include "../Core/Base.h"
 #include "../Scene/Entity.h"
-#include "../../Scene.h"
+#include "../Scene/HazelScene.h"
+#include "../Scene/Components.h"
+
 #include "../../Log.h"
 
+
+struct aiNode;
 
 namespace Hazel
 {
@@ -15,10 +19,10 @@ namespace Hazel
 	{
 	public:
 		SceneHierarchyPanel() = default;
-		SceneHierarchyPanel(Scene* context);
+		SceneHierarchyPanel(HazelScene* context);
 		~SceneHierarchyPanel();
 
-		void SetContext(Scene* context);
+		void SetContext(HazelScene* context);
 		void OnImGuiRender();
 
 	private:
@@ -34,7 +38,7 @@ namespace Hazel
 		void MeshNodeHierarchy(Mesh* mesh, aiNode* node, const glm::mat4& parentTransform, uint32_t level);
 
 	private:
-		Scene* m_Context;
+		HazelScene* m_Context;
 		Entity m_SelectionContext;
 
 	};

@@ -2,7 +2,6 @@
 
 #include "entt.hpp"
 
-#include "../Renderer/HazelMaterial.h"
 #include "HazelScene.h"
 
 #include "../../Log.h"
@@ -83,7 +82,7 @@ namespace Hazel {
 
 	private:
 		entt::entity m_EntityHandle;
-		HazelScene* m_Scene;
+		HazelScene* m_Scene = nullptr;
 
 		std::string m_Name;
 		glm::mat4 m_Transform;
