@@ -82,8 +82,8 @@ namespace Hazel {
 		};
 
 	private:
-		HazelScene* m_Scene;
 		entt::entity m_EntityHandle;
+		HazelScene* m_Scene;
 
 		std::string m_Name;
 		glm::mat4 m_Transform;
