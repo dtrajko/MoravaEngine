@@ -1,22 +1,23 @@
 #pragma once
 
+#include "entt.hpp"
+
 #include "../Renderer/HazelMaterial.h"
-#include "../../Scene.h"
+#include "HazelScene.h"
+
 #include "../../Log.h"
 #include "../../Mesh.h"
 
-#include "entt.hpp"
-
-
-class Scene;
 
 namespace Hazel {
+
+	class HazelScene;
 
 	class Entity {
 
 	public:
 		Entity();
-		Entity(entt::entity handle, Scene* scene);
+		Entity(entt::entity handle, HazelScene* scene);
 		Entity(const std::string& name);
 		Entity(const Entity& other) = default;
 
@@ -81,8 +82,8 @@ namespace Hazel {
 		};
 
 	private:
-		entt::entity m_EntityHandle{ entt::null };
-		Scene* m_Scene = nullptr;
+		HazelScene* m_Scene;
+		entt::entity m_EntityHandle;
 
 		std::string m_Name;
 		glm::mat4 m_Transform;

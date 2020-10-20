@@ -51,12 +51,12 @@ namespace Hazel {
 	HazelMaterialInstance::HazelMaterialInstance(HazelMaterial* material)
 		: m_Material(material)
 	{
-		m_Material->m_MaterialInstances.insert(this);
+		m_Material->GetMaterialInstances()->insert(this);
 	}
 
 	HazelMaterialInstance::~HazelMaterialInstance()
 	{
-		m_Material->m_MaterialInstances.erase(this);
+		m_Material->GetMaterialInstances()->erase(this);
 	}
 
 	void HazelMaterialInstance::OnShaderReloaded()
@@ -68,17 +68,19 @@ namespace Hazel {
 	{
 		if (value)
 		{
-			m_Material->m_MaterialFlags |= (uint32_t)flag;
+			uint32_t materialFlags = m_Material->GetMaterialFlags();
+			m_Material->SetMaterialFlags(materialFlags |= (uint32_t)flag);
 		}
 		else
 		{
-			m_Material->m_MaterialFlags &= ~(uint32_t)flag;
+			uint32_t materialFlags = m_Material->GetMaterialFlags();
+			m_Material->SetMaterialFlags(materialFlags &= ~(uint32_t)flag);
 		}
 	}
 
 	void HazelMaterialInstance::Bind() const
 	{
-		m_Material->m_Shader->Bind();
+		m_Material->GetShader()->Bind();
 
 		m_Material->BindTextures();
 		for (uint32_t i = 0; i < (uint32_t)m_Textures.size(); i++)

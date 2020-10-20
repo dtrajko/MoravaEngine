@@ -11,6 +11,7 @@
 #include "Hazel/Renderer/VertexArray.h"
 #include "HazelFullscreenQuad.h"
 #include "EnvMapMaterial.h"
+#include "Scene.h"
 
 #include <string>
 

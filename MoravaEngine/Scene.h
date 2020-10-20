@@ -20,9 +20,9 @@
 #include "SceneObject.h"
 #include "CommonStructs.h"
 #include "Hazel/Events/ApplicationEvent.h"
+#include "Hazel/Scene/HazelScene.h"
 
 #include <glm/glm.hpp>
-#include <entt.hpp>
 
 #include <vector>
 #include <map>
@@ -71,7 +71,7 @@ struct SceneSettings
 
 class LightManager;
 
-class Scene
+class Scene : public Hazel::HazelScene
 {
 public:
 	Scene();
@@ -87,7 +87,6 @@ public:
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) {};
 	inline bool IsWireframeEnabled() { return m_WireframeEnabled; };
 	virtual inline bool IsWaterOnScene() { return false; };
-	// Hazel::Entity CreateEntity(const std::string& name);
 
 	// Getters
 	inline Camera* GetCamera() const { return m_Camera; };
@@ -102,7 +101,6 @@ public:
 	inline Skybox* GetSkybox() const { return m_Skybox; };
 	inline float GetFOV() { return m_FOV; };
 	inline std::map<std::string, float>* GetProfilerResults() { return &m_ProfilerResults; };
-	inline entt::registry* GetRegistry() { return &m_Registry; };
 
 	// Setters
 	virtual void SetCamera();
@@ -155,8 +153,5 @@ private:
 	unsigned int shadowMapHeight;
 
 	bool m_WireframeEnabled;
-
-	// ECS
-	entt::registry m_Registry;
 
 };

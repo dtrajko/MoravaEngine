@@ -16,9 +16,10 @@ namespace Hazel {
 		Blend      = BIT(2)
 	};
 
+	class HazelMaterialInstance;
+
 	class HazelMaterial
 	{
-		friend class HazelMaterialInstance;
 
 	public:
 		HazelMaterial(Shader* shader);
@@ -52,10 +53,16 @@ namespace Hazel {
 			Set(name, (HazelTexture*)texture, slot);
 		}
 
-	public:
 		static HazelMaterial* Create(Shader* shader);
 
-	private:
+		// Setters
+		void SetMaterialFlags(uint32_t materialFlags) { m_MaterialFlags = materialFlags; }
+
+		// Getters
+		uint32_t GetMaterialFlags() { return m_MaterialFlags; }
+		Shader* GetShader() { return m_Shader; }
+		std::unordered_set<HazelMaterialInstance*>* GetMaterialInstances() { return &m_MaterialInstances; }
+
 		void BindTextures() const;
 
 	private:
@@ -71,7 +78,6 @@ namespace Hazel {
 
 	class HazelMaterialInstance
 	{
-		friend class HazelMaterial;
 
 	public:
 		HazelMaterialInstance(HazelMaterial* material);
@@ -102,11 +108,11 @@ namespace Hazel {
 
 		void Bind() const;
 
-		uint32_t GetFlags() const { return m_Material->m_MaterialFlags; }
-		bool GetFlag(HazelMaterialFlag flag) const { return (uint32_t)flag & m_Material->m_MaterialFlags; }
+		uint32_t GetFlags() const { return m_Material->GetMaterialFlags(); }
+		bool GetFlag(HazelMaterialFlag flag) const { return (uint32_t)flag & m_Material->GetMaterialFlags(); }
 		void SetFlag(HazelMaterialFlag flag, bool value = true);
 
-		Shader* GetShader() { return m_Material->m_Shader; }
+		Shader* GetShader() { return m_Material->GetShader(); }
 
 		static HazelMaterialInstance* Create(HazelMaterial* material);
 
