@@ -1,16 +1,18 @@
 #include "SceneHierarchyPanel.h"
 
 #include "../../Math.h"
+#include "../Renderer/MeshAnimPBR.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 
 #include <vector>
 
+// TODO:
+// - Eventually change imgui node IDs to be entity/asset GUID
 
 namespace Hazel
 {
-
 	SceneHierarchyPanel::SceneHierarchyPanel(HazelScene* scene)
 	{
 		SetContext(scene);
@@ -35,10 +37,13 @@ namespace Hazel
 	{
 		ImGui::Begin("Scene Hierarchy NoECS");
 
-		auto& sceneEntities = m_Context->GetEntities();
-		for (Entity* entity : sceneEntities)
+		uint32_t entityCount = 0;
+		uint32_t meshCount = 0;
+
+		auto sceneEntities = m_Context->GetEntities();
+		for (auto& entity = sceneEntities->begin(); entity != sceneEntities->end(); entity++)
 		{
-			DrawEntityNode(entity);
+			DrawEntityNode(*entity, entityCount, meshCount);
 
 			//	auto mesh = entity->GetMesh();
 			//	auto material = entity->GetMaterial();
@@ -67,10 +72,13 @@ namespace Hazel
 	{
 		ImGui::Begin("Scene Hierarchy ECS");
 
+		uint32_t entityCount = 0;
+		uint32_t meshCount = 0;
+
 		m_Context->GetRegistry()->each([&](auto entityID)
 			{
 				Entity entity{ entityID, m_Context };
-				DrawEntityNode(&entity);
+				DrawEntityNode(&entity, entityCount, meshCount);
 			});
 
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
@@ -92,52 +100,13 @@ namespace Hazel
 		// ImGui::ShowDemoWindow();
 	}
 
-	void SceneHierarchyPanel::DrawEntityNode(Entity* entity)
-	{
-		if (ImGui::TreeNode(entity->GetName().c_str()))
-		{
-			auto mesh = entity->GetMesh();
-			auto material = entity->GetMaterial();
-			const auto& transform = entity->GetTransform();
-
-			if (mesh)
-			{
-				uint32_t imguiMeshID;
-				DrawMeshNode(mesh, imguiMeshID);
-			}
-		}
-
-		//	if (ImGui::TreeNode())
-		//	{
-		//	}
-
-		//	auto& tag = entity->GetComponent<TagComponent>().Tag;
-		//	// ImGui::Text("%s", tag.c_str());
-		//	
-		//	ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		//	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)entity, flags, tag.c_str());
-		//	if (ImGui::IsItemClicked())
-		//	{
-		//		m_SelectionContext = entity;
-		//	}
-		//	
-		//	if (opened)
-		//	{
-		//		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		//		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(entity + 1000), flags, tag.c_str());
-		//		if (opened) {
-		//			ImGui::TreePop();
-		//		}
-		//		ImGui::TreePop();
-		//	}
-	}
-
 	void SceneHierarchyPanel::DrawEntityNode(Entity* entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID)
 	{
 		const char* name = entity->GetName().c_str();
 		static char imguiName[128];
 		memset(imguiName, 0, 128);
 		sprintf(imguiName, "%s##%d", name, imguiEntityID++);
+
 		if (ImGui::TreeNode(imguiName))
 		{
 			auto mesh = entity->GetMesh();
@@ -158,7 +127,7 @@ namespace Hazel
 		sprintf(imguiName, "Mesh##%d", imguiMeshID++);
 
 		// Mesh Hierarchy
-		if (ImGui::TreeNode(imguiName))
+		if(ImGui::TreeNode(imguiName))
 		{
 			auto rootNode = mesh->GetSceneAssimp()->mRootNode;
 			MeshNodeHierarchy(mesh, rootNode, glm::mat4(1.0f), 0);
@@ -171,6 +140,12 @@ namespace Hazel
 	{
 		glm::mat4 localTransform = Math::Mat4FromAssimpMat4(node->mTransformation);
 		glm::mat4 transform = parentTransform * localTransform;
+
+		for (uint32_t i = 0; i < node->mNumMeshes; i++)
+		{
+			uint32_t meshIndex = node->mMeshes[i];
+			((MeshAnimPBR*)mesh)->GetSubmeshes()[meshIndex]->Transform = transform;
+		}
 
 		if (ImGui::TreeNode(node->mName.C_Str()))
 		{
@@ -286,5 +261,56 @@ namespace Hazel
 			}
 		}
 	}
+
+	/****
+	void SceneHierarchyPanel::DrawEntityNode(Entity* entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID)
+	{		
+		// Mesh Hierarchy
+		if (ImGui::TreeNode(imguiName))
+		{
+			auto rootNode = mesh->GetSceneAssimp()->mRootNode;
+			MeshNodeHierarchy(mesh, rootNode, glm::mat4(1.0f), 0);
+			ImGui::TreePop();
+		}
+
+		if (ImGui::TreeNode(entity->GetName().c_str()))
+		{
+			auto mesh = entity->GetMesh();
+			auto material = entity->GetMaterial();
+			const auto& transform = entity->GetTransform();
+		
+			if (mesh)
+			{
+				uint32_t imguiMeshID;
+				DrawMeshNode(mesh, imguiMeshID);
+			}
+			ImGui::TreePop();
+		}
+		
+		if (ImGui::TreeNode())
+		{
+		}
+		
+		auto& tag = entity->GetComponent<TagComponent>().Tag;
+		// ImGui::Text("%s", tag.c_str());
+		
+		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)entity, flags, tag.c_str());
+		if (ImGui::IsItemClicked())
+		{
+			m_SelectionContext = entity;
+		}
+		
+		if (opened)
+		{
+			ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(entity + 1000), flags, tag.c_str());
+			if (opened) {
+				ImGui::TreePop();
+			}
+			ImGui::TreePop();
+		}
+	}
+	****/
 
 }

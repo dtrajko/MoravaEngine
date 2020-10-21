@@ -114,7 +114,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupFramebuffers();
     SetupRenderFramebuffer();
 
-    m_EnvironmentMap = new EnvironmentMap("Textures/HDR/peppermint_powerplant_1k.hdr");
+    m_EnvironmentMap = new EnvironmentMap("Textures/HDR/peppermint_powerplant_1k.hdr", this);
     m_EnvironmentMap->SetSkyboxLOD(0.0f);
 
     SetupMeshes();

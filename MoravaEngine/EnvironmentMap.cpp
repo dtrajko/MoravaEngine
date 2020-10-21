@@ -14,10 +14,8 @@
 
 static const std::string DefaultEntityName = "Entity";
 
-EnvironmentMap::EnvironmentMap(const std::string& filepath)
+EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 {
-    m_Data = {};
-
     m_SamplerSlots = new std::map<std::string, unsigned int>();
 
     //  // PBR texture inputs
@@ -35,6 +33,9 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     // Skybox.fs         - uniform samplerCube u_Texture;
     // SceneComposite.fs - uniform sampler2DMS u_Texture;
     m_SamplerSlots->insert(std::make_pair("u_Texture",  1));
+
+    m_Data = {};
+    m_Data.ActiveScene = scene;
 
     Init();
 
@@ -291,7 +292,7 @@ void EnvironmentMap::UpdateUniforms()
     /**** BEGIN Shaders/Hazel/Skybox ****/
     m_ShaderSkybox->Bind();
     m_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
+    m_ShaderSkybox->setFloat("u_TextureLod", ((Hazel::HazelScene*)m_Data.ActiveScene)->GetSkyboxLOD());
     // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
     m_ShaderSkybox->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
     /**** END Shaders/Hazel/Skybox ****/
@@ -325,7 +326,7 @@ void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMater
     // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
     shaderHazelPBR->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure()); // originally used in Shaders/Hazel/SceneComposite
 
-    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
+    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
 
     shaderHazelPBR->setMat4("u_ViewProjectionMatrix", viewProjection);
     shaderHazelPBR->setVec3("u_CameraPosition", m_Data.SceneData.SceneCamera->GetPosition());
@@ -406,8 +407,9 @@ void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
 
 EnvironmentMap::~EnvironmentMap()
 {
-    for (Hazel::Entity* entity : m_Entities) {
-        delete entity;
+    auto entities = ((Hazel::HazelScene*)m_Data.ActiveScene)->GetEntities();
+    for (auto& it = entities->begin(); it != entities->end(); it++) {
+        delete *it;
     }
 
     for (auto const& material : m_EnvMapMaterials) {
@@ -417,7 +419,8 @@ EnvironmentMap::~EnvironmentMap()
 
 void EnvironmentMap::AddEntity(Hazel::Entity* entity)
 {
-    m_Entities.push_back(entity);
+    auto entities = ((Hazel::HazelScene*)m_Data.ActiveScene)->GetEntities();
+    entities->push_back(entity);
 }
 
 Hazel::Entity* EnvironmentMap::CreateEntity(const std::string& name)
@@ -432,7 +435,7 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
 {
     m_Data.ActiveScene = scene;
 
-    BeginScene(m_Data.ActiveScene);
+    BeginScene((Scene*)m_Data.ActiveScene);
 
     UpdateUniforms();
 
@@ -489,6 +492,11 @@ void EnvironmentMap::SubmitEntity(Hazel::Entity* entity)
     m_Data.DrawList.push_back({ entity->GetName(), (Hazel::MeshAnimPBR*)mesh, entity->GetMaterial(), entity->GetTransform() });
 }
 
+float& EnvironmentMap::GetSkyboxLOD()
+{
+    return ((Hazel::HazelScene*)m_Data.ActiveScene)->GetSkyboxLOD();
+}
+
 Hazel::RenderPass* EnvironmentMap::GetFinalRenderPass()
 {
     return m_Data.CompositePass;
@@ -528,7 +536,7 @@ void EnvironmentMap::GeometryPass()
 {
     BeginRenderPass(m_Data.GeoPass, false); // should we clear the buffer?
 
-    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
+    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
 
     // Skybox
     m_ShaderSkybox->Bind();
@@ -592,6 +600,11 @@ void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
     SubmitFullscreenQuad(nullptr);
 }
 
+void EnvironmentMap::SetSkyboxLOD(float LOD)
+{
+    ((Hazel::HazelScene*)m_Data.ActiveScene)->SetSkyboxLOD(LOD);
+}
+
 void EnvironmentMap::SubmitFullscreenQuad(Material* material)
 {
     bool depthTest = true;
@@ -632,7 +645,7 @@ void EnvironmentMap::Render()
     Hazel::MeshAnimPBR* meshAnimPBR = ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh());
     m_ShaderHazelPBR = meshAnimPBR->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
 
-    BeginScene(m_Data.ActiveScene);
+    BeginScene((Scene*)m_Data.ActiveScene);
 
     m_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("radiance"));
     m_Data.SceneData.SceneEnvironment.IrradianceMap->Bind(m_SamplerSlots->at("irradiance"));
@@ -951,7 +964,7 @@ void EnvironmentMap::RenderHazelSkybox()
 
     // Hazel Skybox
     m_ShaderSkybox->Bind();
-    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
+    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
     m_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProjection));
     m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
 
@@ -970,7 +983,7 @@ void EnvironmentMap::RenderHazelGrid()
     // ---- uniform float u_Res;
 
     m_ShaderGrid->Bind();
-    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * m_Data.ActiveScene->GetCameraController()->CalculateViewMatrix();
+    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
     m_ShaderGrid->setMat4("u_ViewProjection", viewProjection);
 
     bool depthTest = true;

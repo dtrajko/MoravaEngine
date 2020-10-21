@@ -27,7 +27,7 @@ class EnvironmentMap
 
 public:
 	EnvironmentMap() = default;
-	EnvironmentMap(const std::string& filepath);
+	EnvironmentMap(const std::string& filepath, Scene* scene);
 	~EnvironmentMap();
 
 	Hazel::Environment Load(const std::string& filepath);
@@ -45,7 +45,7 @@ public:
 	void CompositePassTemporary(Framebuffer* framebuffer);
 
 	// Setters
-	inline void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
+	void SetSkyboxLOD(float LOD);
 
 	// Getters
 	inline Data* GetContextData() { return &m_Data; }
@@ -55,7 +55,6 @@ public:
 	inline Hazel::HazelTexture2D* GetEnvEquirect() { return m_EnvEquirect; }
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
 	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
-	inline float& GetSkyboxLOD() { return m_SkyboxLOD; }
 	inline LightStruct& GetLight() { return m_Data.SceneData.ActiveLight; }
 	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
 	inline Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
@@ -63,6 +62,7 @@ public:
 	inline Hazel::Entity* GetMeshEntity() { return m_MeshEntity; }
 	inline void SetMeshEntity(Hazel::Entity* entity) { m_MeshEntity = entity; }
 	inline float& GetSkyboxExposureFactor() { return m_SkyboxExposureFactor; };
+	float& GetSkyboxLOD();
 	Hazel::RenderPass* GetFinalRenderPass();
 	FramebufferTexture* GetFinalColorBuffer();
 	uint32_t GetFinalColorBufferID();
@@ -115,7 +115,7 @@ private:
 
 	struct Data
 	{
-		const Scene* ActiveScene = nullptr;
+		const Hazel::HazelScene* ActiveScene = nullptr;
 		struct SceneInfo
 		{
 			Camera* SceneCamera;
@@ -175,11 +175,6 @@ private:
 	Hazel::HazelTextureCube* m_SkyboxTexture;
 
 	std::map<std::string, unsigned int>* m_SamplerSlots;
-
-	/**** BEGIN properties Scene ****/
-	float m_SkyboxLOD = 1.0f;
-	std::vector<Hazel::Entity*> m_Entities;
-	/**** END properties Scene ****/
 
 	// PBR params
 	bool m_RadiancePrefilter = false;

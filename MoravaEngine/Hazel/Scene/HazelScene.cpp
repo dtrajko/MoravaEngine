@@ -13,6 +13,7 @@ namespace Hazel {
 
 	HazelScene::HazelScene()
 	{
+		m_Entities = std::vector<Entity*>();
 	}
 
 	void HazelScene::SetCamera(const HazelCamera& camera)
