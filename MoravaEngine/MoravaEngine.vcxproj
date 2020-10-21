@@ -398,6 +398,7 @@
     <ClInclude Include="CommonStructs.h" />
     <ClInclude Include="Hazel\Renderer\RenderCommandQueue.h" />
     <ClInclude Include="Hazel\Renderer\HazelTexture.h" />
+    <ClInclude Include="Hazel\Renderer\Renderer2D.h" />
     <ClInclude Include="Hazel\Renderer\RenderPass.h" />
     <ClInclude Include="Hazel\Renderer\HazelShader.h" />
     <ClInclude Include="Hazel\Renderer\ShaderUniform.h" />

@@ -210,6 +210,7 @@ void EnvironmentMap::LoadMesh(std::string fullPath)
     m_Data.DrawList.push_back(drawCommand);
 
     m_MeshEntity = CreateEntity(drawCommand.Name);
+    m_MeshEntity->Transform() = glm::translate(glm::mat4(1.0f), { 0.0f, 6.0f, 0.0f }) * glm::scale(glm::mat4(1.0f), { 0.1f, 0.1f, 0.1f });
     m_MeshEntity->SetMesh(drawCommand.Mesh);
 
     SubmitEntity(m_MeshEntity);

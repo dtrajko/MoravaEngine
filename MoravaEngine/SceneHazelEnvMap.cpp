@@ -21,7 +21,7 @@
 
 SceneHazelEnvMap::SceneHazelEnvMap()
 {
-    sceneSettings.cameraPosition     = glm::vec3(0.0f, 1.0f, 6.0f);
+    sceneSettings.cameraPosition     = glm::vec3(0.0f, 5.0f, 18.0f);
     sceneSettings.cameraStartYaw     = -90.0f;
     sceneSettings.cameraStartPitch   = 0.0f;
     sceneSettings.cameraMoveSpeed    = 2.0f;
