@@ -1168,6 +1168,9 @@
     <ClInclude Include="EnvMapMaterial.h">
       <Filter>Material</Filter>
     </ClInclude>
+    <ClInclude Include="Hazel\Renderer\HazelCamera.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

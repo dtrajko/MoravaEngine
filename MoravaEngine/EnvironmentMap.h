@@ -10,6 +10,7 @@
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/VertexArray.h"
 #include "HazelFullscreenQuad.h"
+#include "Hazel/Scene/HazelScene.h"
 #include "EnvMapMaterial.h"
 #include "Scene.h"
 
@@ -21,7 +22,7 @@ class EnvironmentMap
 	struct Data;
 	struct LightStruct;
 	struct Options;
-	struct Environment;
+	struct Hazel::Environment;
 	enum class PrimitiveType;
 
 public:
@@ -29,8 +30,8 @@ public:
 	EnvironmentMap(const std::string& filepath);
 	~EnvironmentMap();
 
-	Environment Load(const std::string& filepath);
-	void SetEnvironment(Environment environment);
+	Hazel::Environment Load(const std::string& filepath);
+	void SetEnvironment(Hazel::Environment environment);
 	void Update(Scene* scene, float timestep);
 	void AddEntity(Hazel::Entity* entity);
 	Hazel::Entity* CreateEntity(const std::string& name);
@@ -94,12 +95,6 @@ private:
 
 
 private:
-	struct Environment
-	{
-		Hazel::HazelTextureCube* RadianceMap;
-		Hazel::HazelTextureCube* IrradianceMap;
-	};
-
 	struct LightStruct
 	{
 		glm::vec3 Direction;
@@ -127,7 +122,7 @@ private:
 
 			// Resources
 			Material* SkyboxMaterial;
-			Environment SceneEnvironment;
+			Hazel::Environment SceneEnvironment;
 			LightStruct ActiveLight;
 		} SceneData;
 

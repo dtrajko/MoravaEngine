@@ -9,18 +9,47 @@
 
 namespace Hazel {
 
+	static const std::string DefaultEntityName = "Entity";
 
 	HazelScene::HazelScene()
 	{
 	}
 
-	Entity HazelScene::CreateEntity(const std::string& name)
-	{ 
-		Entity entity = { GetRegistry()->create(), this };
-		entity.AddComponent<TransformComponent>();
-		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "Entity" : name;
+	void HazelScene::SetCamera(const HazelCamera& camera)
+	{
+		m_Camera = camera;
+	}
+
+	void HazelScene::SetEnvironment(const Environment& environment)
+	{
+		m_Environment = environment;
+		SetSkybox(std::shared_ptr<Hazel::HazelTextureCube>(environment.RadianceMap));
+	}
+
+	void HazelScene::SetSkybox(const Ref<Hazel::HazelTextureCube>& skybox)
+	{
+		m_SkyboxTexture = skybox;
+		m_ShaderSkybox->setInt("u_Texture", skybox.get()->GetID());
+	}
+
+	void HazelScene::AddEntity(Entity* entity)
+	{
+		m_Entities.push_back(entity);
+	}
+
+	Entity* HazelScene::CreateEntity(const std::string& name)
+	{
+		const std::string& entityName = name.empty() ? DefaultEntityName : name;
+		Entity* entity = new Entity(entityName);
+		AddEntity(entity);
 		return entity;
+
+		// ECS
+		//	Entity entity = { GetRegistry()->create(), this };
+		//	entity.AddComponent<TransformComponent>();
+		//	auto& tag = entity.AddComponent<TagComponent>();
+		//	tag.Tag = name.empty() ? "Entity" : name;
+		//	return entity;
 	}
 
 	void HazelScene::OnUpdate(float ts)
@@ -42,7 +71,7 @@ namespace Hazel {
 		}
 
 		// Render 2D
-		Camera* mainCamera = nullptr;
+		HazelCamera* mainCamera = nullptr;
 		glm::mat4* cameraTransform = nullptr;
 		{
 			auto view = GetRegistry()->view<TransformComponent, CameraComponent>();

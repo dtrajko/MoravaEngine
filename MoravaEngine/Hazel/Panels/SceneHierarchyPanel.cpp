@@ -94,29 +94,42 @@ namespace Hazel
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity* entity)
 	{
+		if (ImGui::TreeNode(entity->GetName().c_str()))
+		{
+			auto mesh = entity->GetMesh();
+			auto material = entity->GetMaterial();
+			const auto& transform = entity->GetTransform();
+
+			if (mesh)
+			{
+				uint32_t imguiMeshID;
+				DrawMeshNode(mesh, imguiMeshID);
+			}
+		}
+
 		//	if (ImGui::TreeNode())
 		//	{
 		//	}
 
-		auto& tag = entity->GetComponent<TagComponent>().Tag;
-		// ImGui::Text("%s", tag.c_str());
-
-		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)entity, flags, tag.c_str());
-		if (ImGui::IsItemClicked())
-		{
-			m_SelectionContext = entity;
-		}
-
-		if (opened)
-		{
-			ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(entity + 1000), flags, tag.c_str());
-			if (opened) {
-				ImGui::TreePop();
-			}
-			ImGui::TreePop();
-		}
+		//	auto& tag = entity->GetComponent<TagComponent>().Tag;
+		//	// ImGui::Text("%s", tag.c_str());
+		//	
+		//	ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		//	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)entity, flags, tag.c_str());
+		//	if (ImGui::IsItemClicked())
+		//	{
+		//		m_SelectionContext = entity;
+		//	}
+		//	
+		//	if (opened)
+		//	{
+		//		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		//		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(entity + 1000), flags, tag.c_str());
+		//		if (opened) {
+		//			ImGui::TreePop();
+		//		}
+		//		ImGui::TreePop();
+		//	}
 	}
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity* entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID)

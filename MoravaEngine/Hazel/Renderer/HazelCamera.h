@@ -4,14 +4,14 @@
 
 namespace Hazel {
 
-	class Camera
+	class HazelCamera
 	{
 	public:
-		Camera() = default;
-		Camera(const glm::mat4& projection)
+		HazelCamera() = default;
+		HazelCamera(const glm::mat4& projection)
 			: m_Projection(projection) {}
 
-		virtual ~Camera() = default;
+		virtual ~HazelCamera() = default;
 
 		const glm::mat4& GetProjection() const { return m_Projection; }
 

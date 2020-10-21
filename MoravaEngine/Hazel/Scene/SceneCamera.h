@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../Renderer/Camera.h"
+#include "../Renderer/HazelCamera.h"
 
 #include <glm/glm.hpp>
 
 
 namespace Hazel {
 
-	class SceneCamera : public Camera
+	class SceneCamera : public HazelCamera
 	{
 	public:
 		enum class ProjectionType { Perspective = 0, Orthographic = 1 };

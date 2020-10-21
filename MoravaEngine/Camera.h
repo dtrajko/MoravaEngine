@@ -1,9 +1,11 @@
 #pragma once
 
+#include "Hazel/Renderer/HazelCamera.h"
+
 #include "glm/glm.hpp"
 
 
-class Camera
+class Camera : public Hazel::HazelCamera
 {
 
 public:

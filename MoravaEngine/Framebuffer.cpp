@@ -50,7 +50,7 @@ void Framebuffer::AddAttachmentSpecification(unsigned int width, unsigned int he
 	fbSpecs.Height = height;
 	fbSpecs.attachmentType = attachmentType;
 	fbSpecs.attachmentFormat = attachmentFormat;
-	fbSpecs.ClearColor = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
+	fbSpecs.ClearColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	m_AttachmentSpecs.push_back(fbSpecs);
 }
 

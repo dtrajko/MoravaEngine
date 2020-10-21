@@ -55,7 +55,7 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath)
     m_ShaderGrid->setFloat("u_Res", gridSize);
 }
 
-EnvironmentMap::Environment EnvironmentMap::Load(const std::string& filepath)
+Hazel::Environment EnvironmentMap::Load(const std::string& filepath)
 {
     auto [radiance, irradiance] = CreateEnvironmentMap(filepath);
     return { radiance, irradiance };
@@ -109,7 +109,7 @@ std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> EnvironmentMap::Cr
     return { m_EnvFiltered, m_IrradianceMap };
 }
 
-void EnvironmentMap::SetEnvironment(Environment environment)
+void EnvironmentMap::SetEnvironment(Hazel::Environment environment)
 {
     m_Data.SceneData.SceneEnvironment = environment;
     SetSkybox(m_Data.SceneData.SceneEnvironment.RadianceMap);

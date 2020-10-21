@@ -392,6 +392,7 @@
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLTexture.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLVertexArray.h" />
     <ClInclude Include="Hazel\Renderer\Buffer.h" />
+    <ClInclude Include="Hazel\Renderer\HazelCamera.h" />
     <ClInclude Include="Hazel\Renderer\HazelMaterial.h" />
     <ClInclude Include="Hazel\Renderer\MeshAnimPBR.h" />
     <ClInclude Include="CommonStructs.h" />
