@@ -19,27 +19,27 @@ namespace Hazel
 	{
 	public:
 		SceneHierarchyPanel() = default;
-		SceneHierarchyPanel(HazelScene* context);
+		SceneHierarchyPanel(HazelScene* scene);
 		~SceneHierarchyPanel();
 
-		void SetContext(HazelScene* context);
+		void SetContext(HazelScene* scene);
 		void OnImGuiRender();
 
 	private:
 		// ECS (Scene::m_Registry)
-		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
 		void OnImGuiRenderECS();
 
 		// NoECS (Scene::m_Entities)
 		void OnImGuiRenderNoECS();
+		void DrawEntityNode(Entity* entity);
 		void DrawEntityNode(Entity* entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID);
 		void DrawMeshNode(Mesh* mesh, uint32_t& imguiMeshID);
 		void MeshNodeHierarchy(Mesh* mesh, aiNode* node, const glm::mat4& parentTransform, uint32_t level);
 
 	private:
 		HazelScene* m_Context;
-		Entity m_SelectionContext;
+		Entity* m_SelectionContext;
 
 	};
 

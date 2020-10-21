@@ -11,24 +11,56 @@
 namespace Hazel
 {
 
-	SceneHierarchyPanel::SceneHierarchyPanel(HazelScene* context)
+	SceneHierarchyPanel::SceneHierarchyPanel(HazelScene* scene)
 	{
-		SetContext(context);
+		SetContext(scene);
 	}
 
 	SceneHierarchyPanel::~SceneHierarchyPanel()
 	{
 	}
 
-	void SceneHierarchyPanel::SetContext(HazelScene* context)
+	void SceneHierarchyPanel::SetContext(HazelScene* scene)
 	{
-		m_Context = context;
+		m_Context = scene;
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
 		OnImGuiRenderNoECS();
 		OnImGuiRenderECS();
+	}
+
+	void SceneHierarchyPanel::OnImGuiRenderNoECS()
+	{
+		ImGui::Begin("Scene Hierarchy NoECS");
+
+		auto& sceneEntities = m_Context->GetEntities();
+		for (Entity* entity : sceneEntities)
+		{
+			DrawEntityNode(entity);
+
+			//	auto mesh = entity->GetMesh();
+			//	auto material = entity->GetMaterial();
+			//	const auto& transform = entity->GetTransform();
+			//	
+			//	if (mesh)
+			//	{
+			//		uint32_t imguiMeshID;
+			//		DrawMeshNode(mesh, imguiMeshID);
+			//	}
+		}
+
+		ImGui::End();
+
+		ImGui::Begin("Properties NoECS");
+
+		if (m_SelectionContext)
+		{
+
+		}
+
+		ImGui::End();
 	}
 
 	void SceneHierarchyPanel::OnImGuiRenderECS()
@@ -38,7 +70,7 @@ namespace Hazel
 		m_Context->GetRegistry()->each([&](auto entityID)
 			{
 				Entity entity{ entityID, m_Context };
-				DrawEntityNode(entity);
+				DrawEntityNode(&entity);
 			});
 
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
@@ -48,11 +80,11 @@ namespace Hazel
 
 		ImGui::End();
 
-		ImGui::Begin("Properties");
+		ImGui::Begin("Properties ECS");
 
 		if (m_SelectionContext)
 		{
-			DrawComponents(m_SelectionContext);
+			DrawComponents(*m_SelectionContext);
 		}
 
 		ImGui::End();
@@ -60,25 +92,31 @@ namespace Hazel
 		// ImGui::ShowDemoWindow();
 	}
 
-	void SceneHierarchyPanel::OnImGuiRenderNoECS()
+	void SceneHierarchyPanel::DrawEntityNode(Entity* entity)
 	{
-		ImGui::Begin("Scene Hierarchy NoECS");
+		//	if (ImGui::TreeNode())
+		//	{
+		//	}
 
-		std::vector<Entity*> sceneEntities = std::vector<Entity*>(); // m_Context->GetEntities();
-		for (Entity* entity : sceneEntities)
+		auto& tag = entity->GetComponent<TagComponent>().Tag;
+		// ImGui::Text("%s", tag.c_str());
+
+		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)entity, flags, tag.c_str());
+		if (ImGui::IsItemClicked())
 		{
-			auto mesh = entity->GetMesh();
-			auto material = entity->GetMaterial();
-			const auto& transform = entity->GetTransform();
-		
-			if (mesh)
-			{
-				uint32_t imguiMeshID;
-				DrawMeshNode(mesh, imguiMeshID);
-			}
+			m_SelectionContext = entity;
 		}
 
-		ImGui::End();
+		if (opened)
+		{
+			ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(entity + 1000), flags, tag.c_str());
+			if (opened) {
+				ImGui::TreePop();
+			}
+			ImGui::TreePop();
+		}
 	}
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity* entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID)
@@ -109,12 +147,13 @@ namespace Hazel
 		// Mesh Hierarchy
 		if (ImGui::TreeNode(imguiName))
 		{
-			// auto rootNode = mesh->m_Scene->mRootNode;
-			// MeshNodeHierarchy(mesh, rootNode);
+			auto rootNode = mesh->GetSceneAssimp()->mRootNode;
+			MeshNodeHierarchy(mesh, rootNode, glm::mat4(1.0f), 0);
 			ImGui::TreePop();
 		}
 	}
 
+	// NoECS version
 	void SceneHierarchyPanel::MeshNodeHierarchy(Mesh* mesh, aiNode* node, const glm::mat4& parentTransform, uint32_t level)
 	{
 		glm::mat4 localTransform = Math::Mat4FromAssimpMat4(node->mTransformation);
@@ -138,29 +177,6 @@ namespace Hazel
 			for (uint32_t i = 0; i < node->mNumChildren; i++)
 				MeshNodeHierarchy(mesh, node->mChildren[i], transform, level + 1);
 
-			ImGui::TreePop();
-		}
-	}
-
-	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
-	{
-		auto& tag = entity.GetComponent<TagComponent>().Tag;
-		// ImGui::Text("%s", tag.c_str());
-
-		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
-		if (ImGui::IsItemClicked())
-		{
-			m_SelectionContext = entity;
-		}
-
-		if (opened)
-		{
-			ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000), flags, tag.c_str());
-			if (opened) {
-				ImGui::TreePop();
-			}
 			ImGui::TreePop();
 		}
 	}

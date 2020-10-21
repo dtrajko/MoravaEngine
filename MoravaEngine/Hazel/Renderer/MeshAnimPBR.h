@@ -198,7 +198,6 @@ namespace Hazel {
 		std::vector<AnimatedVertex> m_AnimatedVertices;
 		std::vector<Index> m_Indices;
 		std::unordered_map<std::string, uint32_t> m_BoneMapping;
-		const aiScene* m_Scene;
 
 		// Materials
 		Shader* m_MeshShader;

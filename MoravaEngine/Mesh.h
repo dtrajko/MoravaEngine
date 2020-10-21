@@ -8,6 +8,8 @@
 #include <vector>
 
 
+struct aiScene;
+
 class Mesh
 {
 
@@ -23,24 +25,25 @@ public:
 	virtual void Update(glm::vec3 scale);
 	virtual void Render();
 	virtual void Clear();
-	inline glm::vec3 GetScale() const { return m_Scale; };
 
+	// Getters
+	inline glm::vec3 GetScale() const { return m_Scale; };
 	inline const unsigned int GetVertexCount() const { return m_VertexCount; };
 	inline const unsigned int GetIndexCount() const { return m_IndexCount; };
-
 	inline const unsigned int GetVAO() const { return m_VAO; };
 	inline const unsigned int GetVBO() const { return m_VBO; };
 	inline const unsigned int GetIBO() const { return m_IBO; };
+	Material* GetBaseMaterial() { return m_BaseMaterial; }
+	std::vector<Material*>* GetMaterials() { return &m_Materials; }
+	const std::string& GetFilePath() const { return m_FilePath; }
+	const aiScene* GetSceneAssimp() { return m_Scene; }
 
 	void BindVertexArray();
 
 	virtual void RecalculateNormals();
 	virtual void RecalculateTangentSpace();
 
-	Material* GetBaseMaterial() { return m_BaseMaterial; }
-	std::vector<Material*>* GetMaterials() { return &m_Materials; }
 
-	const std::string& GetFilePath() const { return m_FilePath; }
 
 public:
 	float* m_Vertices;
@@ -62,5 +65,7 @@ protected:
 
 	// Hazel/Renderer/Mesh
 	std::string m_FilePath;
+
+	const aiScene* m_Scene; // Moved from MeshAnimPBR
 
 };

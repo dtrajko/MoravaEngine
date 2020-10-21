@@ -24,7 +24,7 @@ namespace Hazel {
 		void OnViewportResize(uint32_t width, uint32_t height);
 
 		inline entt::registry* GetRegistry() { return &m_Registry; };
-		inline std::vector<Entity*>* GetEntities() { return &m_Entities; };
+		inline const std::vector<Entity*>& GetEntities() { return m_Entities; };
 
 	private:
 		uint32_t m_ViewportWidth = 0;
