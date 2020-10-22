@@ -127,8 +127,8 @@ namespace Hazel
 		// Represents a complete shader program stored in a single file.
 		// Note: currently for simplicity this is simply a string filepath, however
 		//       in the future this will be an asset object + metadata
-		static Ref<HazelShader> Create(const std::string& filepath);
-		static Ref<HazelShader> CreateFromString(const std::string& source);
+		static HazelShader* Create(const std::string& filepath);
+		static HazelShader* CreateFromString(const std::string& source);
 
 		virtual void SetVSMaterialUniformBuffer(Buffer buffer) = 0;
 		virtual void SetPSMaterialUniformBuffer(Buffer buffer) = 0;
@@ -145,7 +145,7 @@ namespace Hazel
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) = 0;
 
 		// Temporary, before we have an asset manager
-		static std::vector<Ref<HazelShader>> s_AllShaders;
+		static std::vector<HazelShader*> s_AllShaders;
 	};
 
 	// This should be eventually handled by the Asset Manager

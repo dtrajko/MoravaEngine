@@ -197,6 +197,7 @@
     <ClCompile Include="Hazel\Renderer\MeshAnimPBR.cpp" />
     <ClCompile Include="Hazel\Renderer\RenderCommandQueue.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelTexture.cpp" />
+    <ClCompile Include="Hazel\Renderer\Renderer2D.cpp" />
     <ClCompile Include="Hazel\Renderer\RenderPass.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelShader.cpp" />
     <ClCompile Include="Hazel\Renderer\ShaderUniform.cpp" />

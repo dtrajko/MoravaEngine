@@ -542,6 +542,9 @@
     <ClCompile Include="Hazel\Renderer\ShaderUniform.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Renderer\Renderer2D.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">

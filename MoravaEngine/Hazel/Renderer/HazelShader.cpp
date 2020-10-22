@@ -6,21 +6,21 @@
 
 namespace Hazel {
 
-	std::vector<Ref<HazelShader>> HazelShader::s_AllShaders;
+	std::vector<HazelShader*> HazelShader::s_AllShaders;
 
-	Ref<HazelShader> HazelShader::Create(const std::string& filepath)
+	HazelShader* HazelShader::Create(const std::string& filepath)
 	{
-		Ref<HazelShader> result = nullptr;
+		HazelShader* result = nullptr;
 
-		result = std::make_shared<OpenGLShader>(filepath);
+		result = new OpenGLShader(filepath);
 
 		s_AllShaders.push_back(result);
 		return result;
 	}
 
-	Ref<HazelShader> HazelShader::CreateFromString(const std::string& source)
+	HazelShader* HazelShader::CreateFromString(const std::string& source)
 	{
-		Ref<HazelShader> result = nullptr;
+		HazelShader* result = nullptr;
 
 		result = OpenGLShader::CreateFromString(source);
 

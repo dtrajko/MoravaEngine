@@ -29,9 +29,9 @@ namespace Hazel {
 		Reload();
 	}
 
-	Ref<OpenGLShader> OpenGLShader::CreateFromString(const std::string& source)
+	OpenGLShader* OpenGLShader::CreateFromString(const std::string& source)
 	{
-		Ref<OpenGLShader> shader = std::make_shared<OpenGLShader>();
+		OpenGLShader* shader = new OpenGLShader();
 		shader->Load(source);
 		return shader;
 	}
