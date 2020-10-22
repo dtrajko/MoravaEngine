@@ -551,6 +551,9 @@
     <ClCompile Include="Hazel\Renderer\HazelRenderer.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLRendererAPI.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1194,6 +1197,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\Math\AABB.h">
       <Filter>Hazel\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\RendererAPI.h">
+      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -187,6 +187,7 @@
     <ClCompile Include="Hazel\Core\LayerStack.cpp" />
     <ClCompile Include="Hazel\Panels\SceneHierarchyPanel.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLBuffer.cpp" />
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLRendererAPI.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLRenderPass.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLShader.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLShaderUniform.cpp" />
@@ -405,6 +406,7 @@
     <ClInclude Include="Hazel\Renderer\HazelTexture.h" />
     <ClInclude Include="Hazel\Renderer\HazelRenderer.h" />
     <ClInclude Include="Hazel\Renderer\Renderer2D.h" />
+    <ClInclude Include="Hazel\Renderer\RendererAPI.h" />
     <ClInclude Include="Hazel\Renderer\RenderPass.h" />
     <ClInclude Include="Hazel\Renderer\HazelShader.h" />
     <ClInclude Include="Hazel\Renderer\SceneRenderer.h" />

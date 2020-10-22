@@ -4,6 +4,7 @@
 #include "HazelMaterial.h"
 #include "RenderCommandQueue.h"
 #include "RenderPass.h"
+#include "RendererAPI.h"
 #include "../Core/Math/AABB.h"
 
 #include "../../Mesh.h"
@@ -12,11 +13,6 @@
 namespace Hazel {
 
 	class ShaderLibrary;
-
-	enum class PrimitiveType
-	{
-		None = 0, Triangles, Lines
-	};
 
 	class HazelRenderer
 	{
