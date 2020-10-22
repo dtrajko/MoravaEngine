@@ -197,6 +197,7 @@
     <ClCompile Include="Hazel\Renderer\MeshAnimPBR.cpp" />
     <ClCompile Include="Hazel\Renderer\RenderCommandQueue.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelTexture.cpp" />
+    <ClCompile Include="Hazel\Renderer\HazelRenderer.cpp" />
     <ClCompile Include="Hazel\Renderer\Renderer2D.cpp" />
     <ClCompile Include="Hazel\Renderer\RenderPass.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelShader.cpp" />
@@ -401,6 +402,7 @@
     <ClInclude Include="Hazel\Renderer\RenderCommand.h" />
     <ClInclude Include="Hazel\Renderer\RenderCommandQueue.h" />
     <ClInclude Include="Hazel\Renderer\HazelTexture.h" />
+    <ClInclude Include="Hazel\Renderer\HazelRenderer.h" />
     <ClInclude Include="Hazel\Renderer\Renderer2D.h" />
     <ClInclude Include="Hazel\Renderer\RenderPass.h" />
     <ClInclude Include="Hazel\Renderer\HazelShader.h" />

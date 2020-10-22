@@ -548,6 +548,9 @@
     <ClCompile Include="Hazel\Renderer\SceneRenderer.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Renderer\HazelRenderer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1184,6 +1187,9 @@
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\SceneRenderer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\HazelRenderer.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
