@@ -1177,6 +1177,9 @@
     <ClInclude Include="Hazel\Renderer\Renderer2D.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="Hazel\Renderer\RenderCommand.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

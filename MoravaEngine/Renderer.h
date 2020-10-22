@@ -22,4 +22,5 @@ public:
 	void RenderPassWaterReflection(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 	void RenderPassWaterRefraction(Window* mainWindow, Scene* scene ,glm::mat4 projectionMatrix);
 	~Renderer();
+
 };

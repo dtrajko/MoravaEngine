@@ -397,6 +397,7 @@
     <ClInclude Include="Hazel\Renderer\HazelMaterial.h" />
     <ClInclude Include="Hazel\Renderer\MeshAnimPBR.h" />
     <ClInclude Include="CommonStructs.h" />
+    <ClInclude Include="Hazel\Renderer\RenderCommand.h" />
     <ClInclude Include="Hazel\Renderer\RenderCommandQueue.h" />
     <ClInclude Include="Hazel\Renderer\HazelTexture.h" />
     <ClInclude Include="Hazel\Renderer\Renderer2D.h" />

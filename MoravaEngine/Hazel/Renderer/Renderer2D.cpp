@@ -3,6 +3,7 @@
 #include "../Renderer/VertexArray.h"
 #include "../Renderer/HazelShader.h"
 #include "../../Log.h"
+#include "../Renderer/RenderCommand.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -47,7 +48,7 @@ namespace Hazel {
 	{
 		Log::GetLogger()->info("Renderer2D Init");
 
-		// RenderCommand::Init();
+		RenderCommand::Init();
 
 		s_Data.QuadVertexArray = VertexArray::Create();
 
@@ -91,7 +92,7 @@ namespace Hazel {
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
 
-		s_Data.TextureShader = HazelShader::Create("assets/shaders/Renderer2D_Texture.glsl");
+		s_Data.TextureShader = HazelShader::Create("Shaders/Hazel/Renderer2D.glsl");
 		s_Data.TextureShader->Bind();
 		s_Data.TextureShader->SetIntArray("u_Textures", samplers, s_Data.MaxTextureSlots);
 
@@ -111,7 +112,7 @@ namespace Hazel {
 
 	void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
 	{
-		// RenderCommand::SetViewport(0, 0, width, height);
+		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
 	void Renderer2D::BeginScene(const glm::mat4& viewProj)
@@ -142,7 +143,8 @@ namespace Hazel {
 		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
 			s_Data.TextureSlots[i]->Bind(i);
 
-		// RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
+		RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
+
 		s_Data.Stats.DrawCalls++;
 	}
 
