@@ -1,16 +1,18 @@
 #pragma once
 
-#include "Shader.h"
-#include "TextureCubemap.h"
-#include "Material.h"
+#include "Hazel/Scene/Entity.h"
+#include "Hazel/Scene/HazelScene.h"
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/RenderPass.h"
 #include "Hazel/Renderer/MeshAnimPBR.h"
-#include "Hazel/Scene/Entity.h"
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/VertexArray.h"
+#include "Hazel/Renderer/SceneRenderer.h"
+
+#include "Shader.h"
+#include "TextureCubemap.h"
+#include "Material.h"
 #include "HazelFullscreenQuad.h"
-#include "Hazel/Scene/HazelScene.h"
 #include "EnvMapMaterial.h"
 #include "Scene.h"
 
@@ -92,7 +94,6 @@ private:
 	void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest);
 	void EndRenderPass();
 	void SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& transform, Material* overrideMaterial);
-
 
 private:
 	struct LightStruct
