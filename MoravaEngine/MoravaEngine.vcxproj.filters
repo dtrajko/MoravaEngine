@@ -1192,6 +1192,9 @@
     <ClInclude Include="Hazel\Renderer\HazelRenderer.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="Hazel\Core\Math\AABB.h">
+      <Filter>Hazel\Core\Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1289,6 +1292,9 @@
     </Filter>
     <Filter Include="Hazel\Platform\OpenGL">
       <UniqueIdentifier>{baeaae74-6311-4e23-b857-93ce0dcabd26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Core\Math">
+      <UniqueIdentifier>{a84cc739-cf0b-42e7-af74-a36f25a75eb4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -19,7 +19,7 @@ namespace Hazel {
 		Hazel::HazelTextureCube* IrradianceMap;
 	};
 
-	struct Light
+	struct HazelLight
 	{
 		glm::vec3 Direction;
 		glm::vec3 Radiance;

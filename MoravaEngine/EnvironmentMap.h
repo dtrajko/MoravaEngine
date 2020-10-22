@@ -7,6 +7,7 @@
 #include "Hazel/Renderer/MeshAnimPBR.h"
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/VertexArray.h"
+#include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/SceneRenderer.h"
 
 #include "Shader.h"
@@ -21,11 +22,11 @@
 
 class EnvironmentMap
 {
-	struct Data;
-	struct LightStruct;
-	struct Options;
+	struct Hazel::HazelLight;
 	struct Hazel::Environment;
-	enum class PrimitiveType;
+	enum class Hazel::PrimitiveType;
+	struct Data;
+	struct Options;
 
 public:
 	EnvironmentMap() = default;
@@ -57,7 +58,7 @@ public:
 	inline Hazel::HazelTexture2D* GetEnvEquirect() { return m_EnvEquirect; }
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
 	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
-	inline LightStruct& GetLight() { return m_Data.SceneData.ActiveLight; }
+	inline Hazel::HazelLight& GetLight() { return m_Data.SceneData.ActiveLight; }
 	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
 	inline Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
 	inline Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
@@ -91,27 +92,15 @@ private:
 	// Renderer
 	void BeginRenderPass(Hazel::RenderPass* renderPass, bool clear);
 	void SubmitFullscreenQuad(Material* material);
-	void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest);
+	void DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest);
 	void EndRenderPass();
 	void SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& transform, Material* overrideMaterial);
 
 private:
-	struct LightStruct
-	{
-		glm::vec3 Direction;
-		glm::vec3 Radiance;
-		float Multiplier = 1.0f;
-	};
-
 	struct Options
 	{
 		bool ShowGrid = true;
 		bool ShowBoundingBoxes = false;
-	};
-
-	enum class PrimitiveType
-	{
-		None = 0, Triangles, Lines
 	};
 
 	struct Data
@@ -124,7 +113,7 @@ private:
 			// Resources
 			Material* SkyboxMaterial;
 			Hazel::Environment SceneEnvironment;
-			LightStruct ActiveLight;
+			Hazel::HazelLight ActiveLight;
 		} SceneData;
 
 		Hazel::HazelTexture2D* BRDFLUT;

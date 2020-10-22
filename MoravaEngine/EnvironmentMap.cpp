@@ -619,7 +619,7 @@ void EnvironmentMap::SubmitFullscreenQuad(Material* material)
     m_HazelFullscreenQuad->Render();
 }
 
-void EnvironmentMap::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
+void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest)
 {
     if (!depthTest)
         glDisable(GL_DEPTH_TEST);
@@ -627,10 +627,10 @@ void EnvironmentMap::DrawIndexed(uint32_t count, PrimitiveType type, bool depthT
     GLenum glPrimitiveType = 0;
     switch (type)
     {
-    case PrimitiveType::Triangles:
+    case Hazel::PrimitiveType::Triangles:
         glPrimitiveType = GL_TRIANGLES;
         break;
-    case PrimitiveType::Lines:
+    case Hazel::PrimitiveType::Lines:
         glPrimitiveType = GL_LINES;
         break;
     }

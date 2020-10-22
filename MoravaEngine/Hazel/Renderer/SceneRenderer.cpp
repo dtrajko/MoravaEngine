@@ -21,7 +21,7 @@ namespace Hazel {
             // Resources
             Ref<HazelMaterialInstance> SkyboxMaterial;
             Environment SceneEnvironment;
-            Light ActiveLight;
+            HazelLight ActiveLight;
         } SceneData;
 
         Ref<HazelTexture2D> BRDFLUT;

@@ -382,6 +382,7 @@
     <ClInclude Include="Hazel\Core\KeyCodes.h" />
     <ClInclude Include="Hazel\Core\Layer.h" />
     <ClInclude Include="Hazel\Core\LayerStack.h" />
+    <ClInclude Include="Hazel\Core\Math\AABB.h" />
     <ClInclude Include="Hazel\Core\MouseCodes.h" />
     <ClInclude Include="Hazel\Events\ApplicationEvent.h" />
     <ClInclude Include="Hazel\Events\Event.h" />
