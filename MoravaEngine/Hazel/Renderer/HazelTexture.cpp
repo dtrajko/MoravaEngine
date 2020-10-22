@@ -24,6 +24,10 @@ namespace Hazel {
 		return new OpenGLTextureCube(path);
 	}
 
+	void HazelTexture::SetData(void* data, uint32_t size)
+	{
+	}
+
 	uint32_t HazelTexture::GetBPP(HazelTextureFormat format)
 	{
 		switch (format)
