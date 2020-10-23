@@ -554,6 +554,12 @@
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLRendererAPI.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Renderer\HazelCamera.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Core\Timestep.cpp">
+      <Filter>Hazel\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1200,6 +1206,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\RendererAPI.h">
       <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Core\Timestep.h">
+      <Filter>Hazel\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

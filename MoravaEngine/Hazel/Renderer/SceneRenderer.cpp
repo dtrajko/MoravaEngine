@@ -16,7 +16,7 @@ namespace Hazel {
         const HazelScene* ActiveScene = nullptr;
         struct SceneInfo
         {
-            HazelCamera SceneCamera;
+            HazelCamera* SceneCamera;
 
             // Resources
             Ref<HazelMaterialInstance> SkyboxMaterial;
@@ -57,16 +57,16 @@ namespace Hazel {
         s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
     }
 
-    void SceneRenderer::BeginScene(const HazelScene* scene)
+    void SceneRenderer::BeginScene(HazelScene* scene)
     {
         HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
         s_Data.ActiveScene = scene;
 
-        //  s_Data.SceneData.SceneCamera = scene->m_Camera;
-        //  s_Data.SceneData.SkyboxMaterial = scene->m_SkyboxMaterial;
-        //  s_Data.SceneData.SceneEnvironment = scene->m_Environment;
-        //  s_Data.SceneData.ActiveLight = scene->m_Light;
+        s_Data.SceneData.SceneCamera = scene->GetCamera();
+        s_Data.SceneData.SkyboxMaterial = scene->GetSkyboxMaterial();
+        s_Data.SceneData.SceneEnvironment = scene->GetEnvironment();
+        s_Data.SceneData.ActiveLight = scene->GetLight();
     }
 
     void SceneRenderer::EndScene()

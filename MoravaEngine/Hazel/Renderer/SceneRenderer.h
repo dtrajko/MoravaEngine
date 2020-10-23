@@ -21,7 +21,7 @@ namespace Hazel {
 
 		static void SetViewportSize(uint32_t width, uint32_t height);
 
-		static void BeginScene(const HazelScene* scene);
+		static void BeginScene(HazelScene* scene);
 		static void EndScene();
 
 		static void SubmitEntity(Entity* entity);

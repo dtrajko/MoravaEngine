@@ -119,11 +119,22 @@ namespace Hazel {
 				Log::GetLogger()->error("Meshes require normals.");
 
 			// Vertices
+			submesh->Min = glm::vec3(FLT_MAX);
+			submesh->Max = glm::vec3(FLT_MIN);
+
 			for (size_t i = 0; i < mesh->mNumVertices; i++)
 			{
 				AnimatedVertex vertex;
 				vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
 				vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+
+				submesh->Min.x = glm::min(vertex.Position.x, submesh->Min.x);
+				submesh->Min.y = glm::min(vertex.Position.y, submesh->Min.y);
+				submesh->Min.z = glm::min(vertex.Position.z, submesh->Min.z);
+
+				submesh->Max.x = glm::max(vertex.Position.x, submesh->Max.x);
+				submesh->Max.y = glm::max(vertex.Position.y, submesh->Max.y);
+				submesh->Max.z = glm::max(vertex.Position.z, submesh->Max.z);
 
 				if (mesh->HasTangentsAndBitangents())
 				{

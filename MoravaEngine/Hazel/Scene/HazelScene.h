@@ -3,6 +3,7 @@
 #include "Entity.h"
 #include "../Renderer/HazelTexture.h"
 #include "../Scene/SceneCamera.h"
+#include "../Renderer/HazelMaterial.h"
 
 #include "../../Shader.h"
 
@@ -42,8 +43,18 @@ namespace Hazel {
 		inline entt::registry* GetRegistry() { return &m_Registry; };
 		inline std::vector<Entity*>* GetEntities() { return &m_Entities; };
 
-		void SetCamera(const HazelCamera& camera);
+		inline void SetCamera(const HazelCamera& camera) { m_Camera = camera; };
+		inline HazelCamera* GetCamera() { return &m_Camera; }
+
+		void SetSkyboxMaterial(Ref<HazelMaterialInstance> skyboxMaterial) { m_SkyboxMaterial = skyboxMaterial; }
+		Ref<HazelMaterialInstance> GetSkyboxMaterial() { return m_SkyboxMaterial; }
+
 		void SetEnvironment(const Environment& environment);
+		inline Environment GetEnvironment() { return m_Environment; }
+
+		inline void SetLight(HazelLight light) { m_Light = light; };
+		inline HazelLight GetLight() { return m_Light; }
+
 		void SetSkybox(const Ref<Hazel::HazelTextureCube>& skybox);
 
 		void AddEntity(Entity* entity);
@@ -60,12 +71,18 @@ namespace Hazel {
 		entt::registry m_Registry;
 		std::vector<Entity*> m_Entities;
 
-		float m_SkyboxLOD = 1.0f;
-
 		HazelCamera m_Camera;
+
+		HazelLight m_Light;
+		float m_LightMultiplier = 0.3f;
+
 		Environment m_Environment;
 		Ref<Hazel::HazelTextureCube> m_SkyboxTexture;
 		Shader* m_ShaderSkybox;
+
+		Ref<HazelMaterialInstance> m_SkyboxMaterial;
+
+		float m_SkyboxLOD = 1.0f;
 
 	};
 

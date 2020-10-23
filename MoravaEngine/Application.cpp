@@ -1,11 +1,10 @@
 #include "Application.h"
+#include "Hazel/Core/Base.h"
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include <Windows.h>
 
-
-#define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
 Application* Application::s_Instance = nullptr;
 
@@ -16,7 +15,7 @@ Application::Application()
 void Application::InitWindow(const WindowProps& props)
 {
 	m_Window = Window::Create(props);
-	m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
+	m_Window->SetEventCallback(APP_BIND_EVENT_FN(OnEvent));
 }
 
 Application::~Application()
@@ -40,8 +39,8 @@ Application* Application::Get()
 void Application::OnEvent(Event& e)
 {
 	EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(OnWindowClose));
-	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(OnWindowResize));
+	dispatcher.Dispatch<WindowCloseEvent>(APP_BIND_EVENT_FN(OnWindowClose));
+	dispatcher.Dispatch<WindowResizeEvent>(APP_BIND_EVENT_FN(OnWindowResize));
 
 	for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
 	{

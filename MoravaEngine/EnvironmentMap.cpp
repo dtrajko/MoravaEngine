@@ -4,6 +4,9 @@
 #include "Hazel/Renderer/HazelMaterial.h"
 #include "Hazel/Renderer/VertexArray.h"
 #include "Hazel/Renderer/Buffer.h"
+#include "Hazel/Renderer/HazelRenderer.h"
+#include "Hazel/Renderer/Renderer2D.h"
+
 #include "Framebuffer.h"
 #include "RendererBasic.h"
 #include "Log.h"
@@ -398,6 +401,10 @@ void EnvironmentMap::Init()
     m_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
 
     SetupContextData();
+
+    // Temporary code Hazel LIVE! #004
+    Hazel::HazelRenderer::Init();
+    // Hazel::Renderer2D::Init();
 }
 
 void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
@@ -680,6 +687,12 @@ void EnvironmentMap::Render()
     // meshAnimPBR->Render(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
 
     EndScene();
+
+    // Temporary Hazel LIVE! #004
+    // glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
+    // Hazel::Renderer2D::BeginScene(viewProjection);
+    // Hazel::HazelRenderer::DrawAABB(meshAnimPBR);
+    // Hazel::Renderer2D::EndScene();
 }
 
 void EnvironmentMap::OnImGuiRender()

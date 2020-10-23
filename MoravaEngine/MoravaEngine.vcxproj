@@ -185,6 +185,7 @@
     <ClCompile Include="HazelFullscreenQuad.cpp" />
     <ClCompile Include="Hazel\Core\Layer.cpp" />
     <ClCompile Include="Hazel\Core\LayerStack.cpp" />
+    <ClCompile Include="Hazel\Core\Timestep.cpp" />
     <ClCompile Include="Hazel\Panels\SceneHierarchyPanel.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLRendererAPI.cpp" />
@@ -194,6 +195,7 @@
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLTexture.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="Hazel\Renderer\Buffer.cpp" />
+    <ClCompile Include="Hazel\Renderer\HazelCamera.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelMaterial.cpp" />
     <ClCompile Include="Hazel\Renderer\MeshAnimPBR.cpp" />
     <ClCompile Include="Hazel\Renderer\RenderCommandQueue.cpp" />
@@ -385,6 +387,7 @@
     <ClInclude Include="Hazel\Core\LayerStack.h" />
     <ClInclude Include="Hazel\Core\Math\AABB.h" />
     <ClInclude Include="Hazel\Core\MouseCodes.h" />
+    <ClInclude Include="Hazel\Core\Timestep.h" />
     <ClInclude Include="Hazel\Events\ApplicationEvent.h" />
     <ClInclude Include="Hazel\Events\Event.h" />
     <ClInclude Include="Hazel\Events\KeyEvent.h" />
