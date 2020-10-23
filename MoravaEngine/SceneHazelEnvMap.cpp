@@ -389,18 +389,30 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         if (m_Transform_ImGuizmo != nullptr)
         {
             auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
-            glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
+            glm::vec3 RotationDegrees = glm::degrees(glm::eulerAngles(Rotation));
 
-            char buffer[100];
+            bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", Location,        0.0f, 100.0f);
+            bool isRotationChanged    = ImGuiWrapper::DrawVec3Control("Rotation",    RotationDegrees, 0.0f, 100.0f);
+            bool isScaleChanged       = ImGuiWrapper::DrawVec3Control("Scale",       Scale,           1.0f, 100.0f);
 
-            sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
-            ImGui::Text(buffer);
+            if (isTranslationChanged || isRotationChanged || isScaleChanged) {
+                ImGuizmo::RecomposeMatrixFromComponents(
+                    glm::value_ptr(Location),
+                    glm::value_ptr(RotationDegrees),
+                    glm::value_ptr(Scale),
+                    glm::value_ptr(*m_Transform_ImGuizmo));
+            }
 
-            sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
-            ImGui::Text(buffer);
-
-            sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
-            ImGui::Text(buffer);
+            // char buffer[100];
+            // 
+            // sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
+            // ImGui::Text(buffer);
+            // 
+            // sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationDegrees.x, RotationDegrees.y, RotationDegrees.z);
+            // ImGui::Text(buffer);
+            // 
+            // sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
+            // ImGui::Text(buffer);
         }
     }
     ImGui::End();

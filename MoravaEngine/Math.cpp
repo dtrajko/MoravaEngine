@@ -9,6 +9,19 @@
 
 bool Math::s_IsRandomInit = false;
 
+// Rotation units are Radians
+glm::mat4 Math::CreateTransformHazel(glm::vec3 Translation, glm::vec3 Rotation, glm::vec3 Scale)
+{
+	glm::mat4 rotation =
+		glm::rotate(glm::mat4(1.0f), Rotation.x, { 1, 0, 0 }) *
+		glm::rotate(glm::mat4(1.0f), Rotation.y, { 0, 1, 0 }) *
+		glm::rotate(glm::mat4(1.0f), Rotation.z, { 0, 0, 1 });
+
+	return glm::translate(glm::mat4(1.0f), Translation) *
+		rotation *
+		glm::scale(glm::mat4(1.0f), Scale);
+}
+
 glm::mat4 Math::CreateTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
 {
 	glm::mat4 transform = glm::mat4(1.0f);

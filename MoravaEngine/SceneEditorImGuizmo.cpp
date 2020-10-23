@@ -591,39 +591,59 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
     {
         {
             ImGui::Separator();
-            ImGui::Text("Selected Object Transform");
+            ImGui::Text("Transform");
             ImGui::Separator();
-            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(m_SceneObjects[m_SelectedIndex]->transform);
-            glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
-            char buffer[100];
-            sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
-            ImGui::Text(buffer);
+
+            //  auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+            //  glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
+            //  char buffer[100];
+            //  sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
+            //  ImGui::Text(buffer);
+            //  sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
+            //  ImGui::Text(buffer);
+            //  sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
+            //  ImGui::Text(buffer);
+
+            if (m_Transform_ImGuizmo != nullptr)
+            {
+                auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+                glm::vec3 RotationDegrees = glm::degrees(glm::eulerAngles(Rotation));
+
+                bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", Location,        0.0f, 100.0f);
+                bool isRotationChanged    = ImGuiWrapper::DrawVec3Control("Rotation",    RotationDegrees, 0.0f, 100.0f);
+                bool isScaleChanged       = ImGuiWrapper::DrawVec3Control("Scale",       Scale,           1.0f, 100.0f);
+
+                if (isTranslationChanged || isRotationChanged || isScaleChanged) {
+                    ImGuizmo::RecomposeMatrixFromComponents(
+                        glm::value_ptr(Location),
+                        glm::value_ptr(RotationDegrees),
+                        glm::value_ptr(Scale),
+                        glm::value_ptr(*m_Transform_ImGuizmo));
+                }
+            }
         }
-        ImGui::NewLine();
-        {
-            ImGui::Separator();
-            ImGui::Text("ImGuizmo Transform");
-            ImGui::Separator();
-            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
-            glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
-            char buffer[100];
-            sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
-            ImGui::Text(buffer);
-        }
+        //  ImGui::NewLine();
+        //  {
+        //      ImGui::Separator();
+        //      ImGui::Text("Selected Object Transform");
+        //      ImGui::Separator();
+        //  
+        //      auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(m_SceneObjects[m_SelectedIndex]->transform);
+        //      glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
+        //      char buffer[100];
+        //      sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
+        //      ImGui::Text(buffer);
+        //      sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
+        //      ImGui::Text(buffer);
+        //      sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
+        //      ImGui::Text(buffer);
+        //  }
     }
     ImGui::End();
 
     ImGui::Begin("Object Properties");
     {
-        if (ImGui::CollapsingHeader("Show Details"))
+        if (ImGui::CollapsingHeader("Show Details"), nullptr, ImGuiTreeNodeFlags_DefaultOpen)
         {
             if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
             {
@@ -1222,7 +1242,7 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Experimental Section");
     {
-        if (ImGui::CollapsingHeader("Details", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader("Details"))
         {
             ImGui::Text("File");
             std::string fullpath = (m_LoadedFile != "") ? m_LoadedFile : "None";

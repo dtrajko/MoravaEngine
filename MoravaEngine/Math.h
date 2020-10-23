@@ -9,6 +9,7 @@
 class Math
 {
 public:
+	static glm::mat4 CreateTransformHazel(glm::vec3 Translation, glm::vec3 Rotation, glm::vec3 Scale);
 	static glm::mat4 CreateTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 	static glm::mat4 CreateTransform(glm::vec3 position, glm::quat rotation, glm::vec3 scale);
     static glm::mat4 aiMatrix4x4ToGlm(const aiMatrix4x4* from);
@@ -17,6 +18,7 @@ public:
 	static float ConvertRangeFloat(float value, float oldMin, float oldMax, float newMin, float newMax);
 	static float Lerp(float a, float b, float f);
 	static std::tuple<glm::vec3, glm::quat, glm::vec3> GetTransformDecomposition(const glm::mat4& transform);
+
 
 private:
 	static bool s_IsRandomInit;

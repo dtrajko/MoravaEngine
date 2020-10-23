@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <imgui_internal.h>
 
 #include "CommonValues.h"
 #include "Window.h"
@@ -21,6 +22,8 @@ public:
 	static void Begin();
 	static void End();
 	static void Cleanup();
+
+	static bool ImGuiWrapper::DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 
 	// ImGui UI helpers
 	static bool Property(const std::string& name, bool& value);
