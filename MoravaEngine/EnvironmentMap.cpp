@@ -121,6 +121,14 @@ void EnvironmentMap::SetEnvironment(Hazel::Environment environment)
 
 void EnvironmentMap::SetupContextData()
 {
+    // Setup default texture info
+    m_TextureInfoDefault = {};
+    m_TextureInfoDefault.albedo    = "Textures/PBR/non_reflective/albedo.png";
+    m_TextureInfoDefault.normal    = "Textures/PBR/non_reflective/normal.png";
+    m_TextureInfoDefault.metallic  = "Textures/PBR/non_reflective/metallic.png";
+    m_TextureInfoDefault.roughness = "Textures/PBR/non_reflective/roughness.png";
+    m_TextureInfoDefault.ao        = "Textures/PBR/non_reflective/ao.png";
+
     Log::GetLogger()->info("-- BEGIN Setup PBR Materials --");
     {
         // PBR EnvMapMaterial Weapon (Index = 0)
@@ -234,7 +242,14 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
             continue;
         }
 
-        TextureInfo textureInfo = m_TextureInfo.at(submesh->NodeName);
+        TextureInfo textureInfo;
+        if (m_TextureInfo.contains(submesh->NodeName)) {
+            textureInfo = m_TextureInfo.at(submesh->NodeName);
+        }
+        else {
+            textureInfo = m_TextureInfoDefault;
+        }
+
         EnvMapMaterial* envMapMaterial = new EnvMapMaterial();
 
         // Load Hazel/Renderer/HazelTexture

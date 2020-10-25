@@ -601,7 +601,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     /**** BEGIN Environment Map Settings ****/
     ImGui::Begin("Environment Map Settings");
     {
-        if (ImGui::CollapsingHeader("Display Info"), nullptr, ImGuiTreeNodeFlags_DefaultOpen)
+        if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
         {
             {
                 if (ImGui::Button("Load Environment Map"))

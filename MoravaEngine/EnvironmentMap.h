@@ -184,6 +184,7 @@ private:
 	float m_MaterialSpecular = 0.0f;
 	float m_MaterialShininess = 0.0f;
 
+	TextureInfo m_TextureInfoDefault;
 	std::map<std::string, TextureInfo> m_TextureInfo;
 	std::map<std::string, EnvMapMaterial*> m_EnvMapMaterials;
 

@@ -531,7 +531,7 @@ namespace Hazel {
 	{
 		m_WorldTime += ts;
 
-		if (m_IsAnimated && m_AnimationPlaying)
+		if (m_IsAnimated && m_Scene->mAnimations && m_AnimationPlaying)
 		{
 
 			float ticksPerSecond = (float)(m_Scene->mAnimations[0]->mTicksPerSecond != 0 ? m_Scene->mAnimations[0]->mTicksPerSecond : 25.0f) * m_TimeMultiplier;
@@ -780,7 +780,7 @@ namespace Hazel {
 		ImGui::Begin("Mesh Debug");
 		if (ImGui::CollapsingHeader(m_FilePath.c_str()))
 		{
-			if (m_IsAnimated)
+			if (m_IsAnimated && m_Scene->mAnimations)
 			{
 				if (ImGui::CollapsingHeader("Animation"))
 				{
@@ -788,7 +788,7 @@ namespace Hazel {
 						m_AnimationPlaying = !m_AnimationPlaying;
 
 					ImGui::SliderFloat("##AnimationTime", &m_AnimationTime, 0.0f, (float)m_Scene->mAnimations[0]->mDuration);
-					ImGui::DragFloat("Time Scale", &m_TimeMultiplier, 0.05f, 0.0f, 10.0f);
+					ImGui::DragFloat("Time Scale", &m_TimeMultiplier, 0.05f, 0.0f, 100.0f);
 				}
 			}
 		}
@@ -803,7 +803,7 @@ namespace Hazel {
 		aiAnimation* animation;
 		aiNodeAnim* nodeAnim;
 
-		if (m_IsAnimated)
+		if (m_IsAnimated && m_Scene->mAnimations)
 		{
 			animation = m_Scene->mAnimations[0];
 			nodeAnim = FindNodeAnim(animation, name);
