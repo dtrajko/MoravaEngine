@@ -36,7 +36,6 @@ public:
 	Hazel::Environment Load(const std::string& filepath);
 	void SetEnvironment(Hazel::Environment environment);
 	void Update(Scene* scene, float timestep);
-	void AddEntity(Hazel::Entity* entity);
 	Hazel::Entity* CreateEntity(const std::string& name);
 	void LoadMesh(std::string fullPath);
 	void LoadEnvMapMaterials(Mesh* mesh);

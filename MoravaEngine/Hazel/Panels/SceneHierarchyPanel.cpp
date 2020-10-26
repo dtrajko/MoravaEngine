@@ -138,7 +138,7 @@ namespace Hazel
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
-				m_Context->CreateEntity("Empty Entity", true);
+				m_Context->CreateEntity("Empty Entity");
 			}
 			ImGui::EndPopup();
 		}

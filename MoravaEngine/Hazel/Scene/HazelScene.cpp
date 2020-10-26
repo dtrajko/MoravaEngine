@@ -28,38 +28,27 @@ namespace Hazel {
 		m_ShaderSkybox->setInt("u_Texture", skybox.get()->GetID());
 	}
 
-	void HazelScene::AddEntity(Entity* entity)
+	void HazelScene::AddToEntitiesNoECS(Entity* entity)
 	{
 		m_Entities.push_back(entity);
 	}
 
-	Entity* HazelScene::CreateEntity(const std::string& name, bool ecs)
+	Entity* HazelScene::CreateEntity(const std::string& name)
 	{
-		if (ecs) {
-			return CreateEntityECS(name);
-		}
-		else {
-			return CreateEntityNoECS(name);
-		}
-	}
-
-	Entity* HazelScene::CreateEntityNoECS(const std::string& name)
-	{
-		// No ECS
 		const std::string& entityName = name.empty() ? DefaultEntityName : name;
-		Entity* entity = new Entity(entityName);
-		AddEntity(entity);
-		return entity;
-	}
 
-	Entity* HazelScene::CreateEntityECS(const std::string& name)
-	{
 		// ECS
-		Entity* entity = new Entity(m_Registry.create(), this); // { m_Registry.create(), this };
+		Entity* entity = new Entity(m_Registry.create(), this);
 		entity->AddComponent<TransformComponent>();
 		auto& tag = entity->AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
-		Log::GetLogger()->debug("CreateEntityECS name = '{0}'", name);
+
+		// NoECS
+		entity->SetName(entityName);
+		AddToEntitiesNoECS(entity);
+
+		Log::GetLogger()->debug("CreateEntity name = '{0}'", name);
+
 		return entity;
 	}
 

@@ -15,8 +15,6 @@
 #include "Util.h"
 
 
-static const std::string DefaultEntityName = "Entity";
-
 EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 {
     m_SamplerSlots = new std::map<std::string, unsigned int>();
@@ -220,6 +218,7 @@ void EnvironmentMap::LoadMesh(std::string fullPath)
 
     m_Data.DrawList.push_back(drawCommand);
 
+    // m_MeshEntity: NoECS version
     m_MeshEntity = CreateEntity(drawCommand.Name);
     m_MeshEntity->Transform() = glm::translate(glm::mat4(1.0f), { 0.0f, 6.0f, 0.0f }) * glm::scale(glm::mat4(1.0f), { 0.1f, 0.1f, 0.1f });
     m_MeshEntity->SetMesh(drawCommand.Mesh);
@@ -440,17 +439,11 @@ EnvironmentMap::~EnvironmentMap()
     }
 }
 
-void EnvironmentMap::AddEntity(Hazel::Entity* entity)
-{
-    auto entities = ((Hazel::HazelScene*)m_Data.ActiveScene)->GetEntities();
-    entities->push_back(entity);
-}
-
 Hazel::Entity* EnvironmentMap::CreateEntity(const std::string& name)
 {
-    const std::string& entityName = name.empty() ? DefaultEntityName : name;
-    Hazel::Entity* entity = new Hazel::Entity(entityName);
-    AddEntity(entity);
+    // Both NoECS and ECS
+    Hazel::Entity* entity = ((Hazel::HazelScene*)m_Data.ActiveScene)->CreateEntity(name);
+
     return entity;
 }
 

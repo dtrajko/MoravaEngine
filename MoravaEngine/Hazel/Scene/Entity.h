@@ -68,20 +68,22 @@ namespace Hazel {
 		void SetMaterial(Material* material) { m_Material = material; }
 		Material* GetMaterial() { return m_Material; }
 
+		// NoECS
 		const glm::mat4& GetTransform() const { return m_Transform; }
 		glm::mat4& Transform() { return m_Transform; }
-
 		const std::string& GetName() const { return m_Name; }
+		inline void SetName(std::string name) { m_Name = name; }
 
 	private:
 		entt::entity m_EntityHandle;
 		HazelScene* m_Scene = nullptr;
 
-		std::string m_Name;
-		glm::mat4 m_Transform;
-
 		Mesh* m_Mesh;
 		Material* m_Material;
+
+		// NoECS
+		std::string m_Name;
+		glm::mat4 m_Transform;
 
 	};
 

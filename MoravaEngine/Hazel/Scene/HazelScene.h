@@ -37,9 +37,7 @@ namespace Hazel {
 		HazelScene();
 		~HazelScene();
 
-		Entity* CreateEntity(const std::string& name, bool ecs);
-		Entity* CreateEntityECS(const std::string& name);
-		Entity* CreateEntityNoECS(const std::string& name);
+		Entity* CreateEntity(const std::string& name);
 		void DestroyEntity(Entity entity);
 
 		void OnUpdate(float ts);
@@ -48,7 +46,7 @@ namespace Hazel {
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);
 
-		void AddEntity(Entity* entity);
+		void AddToEntitiesNoECS(Entity* entity);
 
 		// inline entt::registry* GetRegistry() { return &m_Registry; };
 		inline std::vector<Entity*>* GetEntities() { return &m_Entities; };
