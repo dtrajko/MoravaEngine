@@ -81,7 +81,7 @@ private:
 	// SceneRenderer
 	void Init();
 	void SetViewportSize(uint32_t width, uint32_t height);
-	void BeginScene(const Scene* scene);
+	void BeginScene(Scene* scene);
 	void EndScene();
 	void SubmitEntity(Hazel::Entity* entity);
 	Options& GetOptions();
@@ -105,7 +105,7 @@ private:
 
 	struct Data
 	{
-		const Hazel::HazelScene* ActiveScene = nullptr;
+		Hazel::HazelScene* ActiveScene = nullptr;
 		struct SceneInfo
 		{
 			Camera* SceneCamera;

@@ -37,10 +37,20 @@ namespace Hazel {
 		HazelScene();
 		~HazelScene();
 
+		Entity* CreateEntity(const std::string& name, bool ecs);
+		Entity* CreateEntityECS(const std::string& name);
+		Entity* CreateEntityNoECS(const std::string& name);
+		void DestroyEntity(Entity entity);
+
 		void OnUpdate(float ts);
 		void OnViewportResize(uint32_t width, uint32_t height);
 
-		inline entt::registry* GetRegistry() { return &m_Registry; };
+		template<typename T>
+		void OnComponentAdded(Entity entity, T& component);
+
+		void AddEntity(Entity* entity);
+
+		// inline entt::registry* GetRegistry() { return &m_Registry; };
 		inline std::vector<Entity*>* GetEntities() { return &m_Entities; };
 
 		inline void SetCamera(const HazelCamera& camera) { m_Camera = camera; };
@@ -57,18 +67,18 @@ namespace Hazel {
 
 		void SetSkybox(const Ref<Hazel::HazelTextureCube>& skybox);
 
-		void AddEntity(Entity* entity);
-		Entity* CreateEntity(const std::string& name = "");
-
 		inline void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
 		float& GetSkyboxLOD() { return m_SkyboxLOD; }
+
+	public:
+		// ECS
+		entt::registry m_Registry;
 
 	private:
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
 
-		// ECS
-		entt::registry m_Registry;
+		// NoECS
 		std::vector<Entity*> m_Entities;
 
 		HazelCamera m_Camera;

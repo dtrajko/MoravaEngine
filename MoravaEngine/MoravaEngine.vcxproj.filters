@@ -560,6 +560,9 @@
     <ClCompile Include="Hazel\Core\Timestep.cpp">
       <Filter>Hazel\Core</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Platform\Windows\WindowsPlatformUtils.cpp">
+      <Filter>Hazel\Platform\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1210,6 +1213,12 @@
     <ClInclude Include="Hazel\Core\Timestep.h">
       <Filter>Hazel\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Hazel\Utils\PlatformUtils.h">
+      <Filter>Hazel\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Scene\SceneSerializer.h">
+      <Filter>Hazel\Scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1310,6 +1319,12 @@
     </Filter>
     <Filter Include="Hazel\Core\Math">
       <UniqueIdentifier>{a84cc739-cf0b-42e7-af74-a36f25a75eb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Utils">
+      <UniqueIdentifier>{031d2f53-87a8-40ce-b31f-54b4c795af02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Platform\Windows">
+      <UniqueIdentifier>{ac34d5fa-e881-4163-b64f-264ba7d4025e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

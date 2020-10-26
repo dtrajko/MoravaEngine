@@ -1,6 +1,11 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "SceneHazelEnvMap.h"
+
+#include "Hazel/Renderer/HazelTexture.h"
+#include "Hazel/Utils/PlatformUtils.h"
+// #include "Hazel/Scene/SceneSerializer.h"
+
 #include "ImGuiWrapper.h"
 #include "../cross-platform/ImGuizmo/ImGuizmo.h"
 #include "RendererBasic.h"
@@ -12,7 +17,6 @@
 #include "MousePicker.h"
 #include "Math.h"
 #include "Input.h"
-#include "Hazel/Renderer/HazelTexture.h"
 #include "Util.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -840,7 +844,22 @@ void SceneHazelEnvMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Exit")) mainWindow->SetShouldClose(true);
+            if (ImGui::MenuItem("New", "Ctrl+N")) {
+                NewScene();
+            }
+
+            if (ImGui::MenuItem("Open...", "Ctrl+O")) {
+                OpenScene();
+            }
+
+            if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) {
+                SaveSceneAs();
+            }
+
+            if (ImGui::MenuItem("Exit")) {
+                mainWindow->SetShouldClose(true);
+            }
+
             ImGui::EndMenu();
         }
 
@@ -988,4 +1007,74 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 
 void SceneHazelEnvMap::SetupUniforms()
 {
+}
+
+bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
+{
+    // Shortcuts
+    if (e.GetRepeatCount() > 0) {
+        return false;
+    }
+
+    bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+    bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+
+    switch (e.GetKeyCode())
+    {
+        case (int)Key::N:
+        {
+            if (control)
+            {
+                NewScene();
+            }
+            break;
+        }
+        case (int)Key::O:
+        {
+            if (control)
+            {
+                OpenScene();
+            }
+            break;
+        }
+        case (int)Key::S:
+        {
+            if (control && shift)
+            {
+                SaveSceneAs();
+            }
+            break;
+        }
+    }
+    return true;
+}
+
+void SceneHazelEnvMap::NewScene()
+{
+    m_EnvironmentMap->GetContextData()->ActiveScene = new Hazel::HazelScene();
+    m_EnvironmentMap->GetContextData()->ActiveScene->OnViewportResize((uint32_t)m_ViewportMainSize.x, (uint32_t)m_ViewportMainSize.y);
+    m_SceneHierarchyPanel->SetContext(m_EnvironmentMap->GetContextData()->ActiveScene);
+}
+
+void SceneHazelEnvMap::OpenScene()
+{
+    std::string filepath = Hazel::FileDialogs::OpenFile("Hazel Scene (*.hazel)\0*.hazel\0");
+    if (!filepath.empty())
+    {
+        m_EnvironmentMap->GetContextData()->ActiveScene = new Hazel::HazelScene();
+        m_EnvironmentMap->GetContextData()->ActiveScene->OnViewportResize((uint32_t)m_ViewportMainSize.x, (uint32_t)m_ViewportMainSize.y);
+        m_SceneHierarchyPanel->SetContext(m_EnvironmentMap->GetContextData()->ActiveScene);
+
+        // SceneSerializer serializer(m_EnvironmentMap->GetContextData()->ActiveScene);
+        // serializer.Deserialize(filepath);
+    }
+}
+
+void SceneHazelEnvMap::SaveSceneAs()
+{
+    std::string filepath = Hazel::FileDialogs::SaveFile("Hazel Scene (*.hazel)\0*.hazel\0");
+    if (!filepath.empty()) {
+        // SceneSerializer serializer(m_EnvironmentMap->GetContextData()->ActiveScene);
+        // serializer.Serialize(filepath);
+    }
 }

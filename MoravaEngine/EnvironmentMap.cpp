@@ -495,7 +495,7 @@ void EnvironmentMap::SetViewportSize(uint32_t width, uint32_t height)
     m_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
 }
 
-void EnvironmentMap::BeginScene(const Scene* scene)
+void EnvironmentMap::BeginScene(Scene* scene)
 {
     m_Data.ActiveScene = scene;
     m_Data.SceneData.SceneCamera = scene->GetCamera();

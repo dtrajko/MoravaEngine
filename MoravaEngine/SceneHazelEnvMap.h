@@ -9,6 +9,7 @@
 #include "Hazel/Scene/Entity.h"
 #include "Grid.h"
 #include "Pivot.h"
+#include "Hazel/Events/KeyEvent.h"
 
 #include <map>
 #include <string>
@@ -47,6 +48,12 @@ private:
 	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
 	void CheckIntersection(Window* mainWindow);
 	void RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix);
+
+	bool OnKeyPressed(KeyPressedEvent& e);
+
+	void NewScene();
+	void OpenScene();
+	void SaveSceneAs();
 
 private:
 	EnvironmentMap* m_EnvironmentMap;
