@@ -38,6 +38,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spirv-cross-util", "vendor\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spirv-cross-core", "vendor\cross-platform\SPIRV-Cross\spirv-cross-core.vcxproj", "{DEA195E3-58EA-39CE-AAC9-69DFFD4334C9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yaml-cpp static", "vendor\cross-platform\yaml-cpp\yaml-cpp.vcxproj", "{73820396-0E28-3538-B473-9CCCF2F13B2B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -246,6 +248,18 @@ Global
 		{DEA195E3-58EA-39CE-AAC9-69DFFD4334C9}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{DEA195E3-58EA-39CE-AAC9-69DFFD4334C9}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
 		{DEA195E3-58EA-39CE-AAC9-69DFFD4334C9}.RelWithDebInfo|x86.ActiveCfg = RelWithDebInfo|x64
+		{73820396-0E28-3538-B473-9CCCF2F13B2B}.Debug|x64.ActiveCfg = Debug|x64
+		{73820396-0E28-3538-B473-9CCCF2F13B2B}.Debug|x64.Build.0 = Debug|x64
+		{73820396-0E28-3538-B473-9CCCF2F13B2B}.Debug|x86.ActiveCfg = Debug|x64
+		{73820396-0E28-3538-B473-9CCCF2F13B2B}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
+		{73820396-0E28-3538-B473-9CCCF2F13B2B}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
+		{73820396-0E28-3538-B473-9CCCF2F13B2B}.MinSizeRel|x86.ActiveCfg = MinSizeRel|x64
+		{73820396-0E28-3538-B473-9CCCF2F13B2B}.Release|x64.ActiveCfg = Release|x64
+		{73820396-0E28-3538-B473-9CCCF2F13B2B}.Release|x64.Build.0 = Release|x64
+		{73820396-0E28-3538-B473-9CCCF2F13B2B}.Release|x86.ActiveCfg = Release|x64
+		{73820396-0E28-3538-B473-9CCCF2F13B2B}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{73820396-0E28-3538-B473-9CCCF2F13B2B}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+		{73820396-0E28-3538-B473-9CCCF2F13B2B}.RelWithDebInfo|x86.ActiveCfg = RelWithDebInfo|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

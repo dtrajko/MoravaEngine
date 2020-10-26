@@ -361,3 +361,4 @@ vendor/cross-platform/glew/*.*
 vendor/cross-platform/glfw/*.*
 
 MoravaEngine/Models/Bistro_v5_1/
+MoravaEngine/Models/Zombie_Boss/

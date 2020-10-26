@@ -2,6 +2,7 @@
 
 #include "Entity.h"
 #include "Components.h"
+#include "../Core/HazelLog.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -78,7 +79,7 @@ namespace Hazel {
 		return out;
 	}
 
-	SceneSerializer::SceneSerializer(const Ref<Scene>& scene)
+	SceneSerializer::SceneSerializer(const Ref<HazelScene>& scene)
 		: m_Scene(scene)
 	{
 	}
@@ -220,7 +221,7 @@ namespace Hazel {
 
 				HZ_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
-				Entity deserializedEntity = m_Scene->CreateEntity(name);
+				Entity deserializedEntity = *m_Scene->CreateEntity(name, true);
 
 				auto transformComponent = entity["TransformComponent"];
 				if (transformComponent)

@@ -19,3 +19,6 @@
 [submodule "vendor/cross-platform/SPIRV-Cross"]
 	path = vendor/cross-platform/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross.git
+[submodule "vendor/cross-platform/yaml-cpp"]
+	path = vendor/cross-platform/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git

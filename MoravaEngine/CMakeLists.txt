@@ -577,6 +577,38 @@ SET(SPIRV-Cross_SRCS
 	../vendor/cross-platform/SPIRV-Cross/main.cpp
 )
 
+SET(yaml-cpp_SRCS
+	../vendor/cross-platform/yaml-cpp/src/binary.cpp
+	../vendor/cross-platform/yaml-cpp/src/convert.cpp
+	../vendor/cross-platform/yaml-cpp/src/depthguard.cpp
+	../vendor/cross-platform/yaml-cpp/src/directives.cpp
+	../vendor/cross-platform/yaml-cpp/src/emit.cpp
+	../vendor/cross-platform/yaml-cpp/src/emitfromevents.cpp
+	../vendor/cross-platform/yaml-cpp/src/emitter.cpp
+	../vendor/cross-platform/yaml-cpp/src/emitterstate.cpp
+	../vendor/cross-platform/yaml-cpp/src/emitterutils.cpp
+	../vendor/cross-platform/yaml-cpp/src/exceptions.cpp
+	../vendor/cross-platform/yaml-cpp/src/exp.cpp
+	../vendor/cross-platform/yaml-cpp/src/memory.cpp
+	../vendor/cross-platform/yaml-cpp/src/node.cpp
+	../vendor/cross-platform/yaml-cpp/src/node_data.cpp
+	../vendor/cross-platform/yaml-cpp/src/nodebuilder.cpp
+	../vendor/cross-platform/yaml-cpp/src/nodeevents.cpp
+	../vendor/cross-platform/yaml-cpp/src/null.cpp
+	../vendor/cross-platform/yaml-cpp/src/ostream_wrapper.cpp
+	../vendor/cross-platform/yaml-cpp/src/parse.cpp
+	../vendor/cross-platform/yaml-cpp/src/parser.cpp
+	../vendor/cross-platform/yaml-cpp/src/regex_yaml.cpp
+	../vendor/cross-platform/yaml-cpp/src/scanner.cpp
+	../vendor/cross-platform/yaml-cpp/src/scanscalar.cpp
+	../vendor/cross-platform/yaml-cpp/src/scantag.cpp
+	../vendor/cross-platform/yaml-cpp/src/scantoken.cpp
+	../vendor/cross-platform/yaml-cpp/src/simplekey.cpp
+	../vendor/cross-platform/yaml-cpp/src/singledocparser.cpp
+	../vendor/cross-platform/yaml-cpp/src/stream.cpp
+	../vendor/cross-platform/yaml-cpp/src/tag.cpp
+)
+
 message("Environment variable 'MORAVA_BUILD_TYPE' = '" $ENV{MORAVA_BUILD_TYPE} "'")
 
 option(USE_MSVC_INCREMENTAL_LINKING "Use MSVC Incremental Linking" OFF)
@@ -605,6 +637,8 @@ add_library(spirv-cross-util     STATIC "${spirv-cross-util_SRCS}")
 
 add_library(SPIRV-Cross          STATIC "${SPIRV-Cross_SRCS}")
 
+add_library(yaml-cpp             STATIC "${yaml-cpp_SRCS}")
+
 add_dependencies(assimp irrXML)
 add_dependencies(assimp zlibstatic)
 
@@ -624,6 +658,7 @@ add_dependencies("${PROJECT_NAME}" LinearMath)
 add_dependencies("${PROJECT_NAME}" assimp)
 add_dependencies("${PROJECT_NAME}" glfw3)
 add_dependencies("${PROJECT_NAME}" SPIRV-Cross)
+add_dependencies("${PROJECT_NAME}" yaml-cpp)
 
 set_target_properties("${PROJECT_NAME}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
 set_target_properties(BulletDynamics    PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
@@ -717,6 +752,12 @@ target_link_directories(
 	../vendor/cross-platform/SPIRV-Cross
 )
 
+target_include_directories(
+	yaml-cpp PUBLIC
+	../vendor/cross-platform/yaml-cpp/include
+	../vendor/cross-platform/yaml-cpp/src
+)
+
 # -- BEGIN Main project
 
 target_include_directories(
@@ -734,6 +775,7 @@ target_include_directories(
 	../vendor/tinyobjloader
 	../vendor/spdlog/include
     ../vendor/entt/include
+	../vendor/cross-platform/yaml-cpp/include
 )
 
 target_link_directories(
@@ -746,7 +788,7 @@ target_link_directories(
 	../vendor/cross-platform/assimp/lib/$ENV{MORAVA_BUILD_TYPE} # Win32
 	../vendor/cross-platform/assimp/bin                         # Linux
 	../vendor/cross-platform/glfw/src
-	../vendor/GLEW/lib
+	../vendor/cross-platform/yaml-cpp
 	../${PROJECT_NAME}/build/$ENV{MORAVA_BUILD_TYPE}
 )
 
@@ -767,6 +809,7 @@ target_link_libraries(
 	spirv-cross-msld.lib
 	spirv-cross-utild.lib
 	spirv-cross-cored.lib
+	yaml-cppd.lib
 )
 elseif (UNIX)
 target_link_libraries(

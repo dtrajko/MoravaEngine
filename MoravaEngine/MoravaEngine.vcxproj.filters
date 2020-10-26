@@ -563,6 +563,12 @@
     <ClCompile Include="Hazel\Platform\Windows\WindowsPlatformUtils.cpp">
       <Filter>Hazel\Platform\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Scene\SceneSerializer.cpp">
+      <Filter>Hazel\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Core\HazelLog.cpp">
+      <Filter>Hazel\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1218,6 +1224,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\Scene\SceneSerializer.h">
       <Filter>Hazel\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Core\HazelLog.h">
+      <Filter>Hazel\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

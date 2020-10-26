@@ -7,7 +7,7 @@
 // #include "Hazel/Scene/SceneSerializer.h"
 
 #include "ImGuiWrapper.h"
-#include "../cross-platform/ImGuizmo/ImGuizmo.h"
+#include "ImGuizmo.h"
 #include "RendererBasic.h"
 #include "ResourceManager.h"
 #include "Block.h"
@@ -21,6 +21,8 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
+
+#include <yaml-cpp/yaml.h>
 
 
 SceneHazelEnvMap::SceneHazelEnvMap()

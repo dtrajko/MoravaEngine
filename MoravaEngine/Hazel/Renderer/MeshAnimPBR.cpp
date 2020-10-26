@@ -24,6 +24,12 @@
 
 namespace Hazel {
 
+#define MESH_DEBUG_LOG 1
+#if MESH_DEBUG_LOG
+	#define HZ_MESH_LOG(...) MORAVA_CORE_TRACE(__VA_ARGS__)
+#else
+	#define HZ_MESH_LOG(...)
+#endif
 
 	static const uint32_t s_MeshImportFlags =
 		aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
@@ -318,7 +324,7 @@ namespace Hazel {
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					Log::GetLogger()->info("    Roughness map path = {0}", texturePath);
+					// Log::GetLogger()->info("  Roughness map path = '{0}'", texturePath);
 
 					Texture* texture = nullptr;
 					try {
@@ -331,6 +337,7 @@ namespace Hazel {
 
 					if (texture->IsLoaded())
 					{
+						HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
 						m_MeshShader->setInt("u_RoughnessTexture", texture->GetID());
 						m_MeshShader->setFloat("u_RoughnessTexToggle", 1.0f);
 					}
