@@ -270,6 +270,11 @@ void main()
     m_Params.Roughness = max(m_Params.Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
 	m_Params.AO        = u_AOTexToggle > 0.5 ? texture(u_AOTexture, vs_Input.TexCoord).r : u_AO;
 
+	// Handle Albedo texture transparency
+	if(u_AlbedoTexToggle > 0.5 && texture(u_AlbedoTexture, vs_Input.TexCoord).a < 0.1) {
+		discard;
+	}
+
 	// Normals (either from vertex or map)
 	m_Params.Normal = normalize(vs_Input.Normal);
 	if (u_NormalTexToggle > 0.5)

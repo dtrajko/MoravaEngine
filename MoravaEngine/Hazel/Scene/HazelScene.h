@@ -46,11 +46,6 @@ namespace Hazel {
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);
 
-		void AddToEntitiesNoECS(Entity* entity);
-
-		// inline entt::registry* GetRegistry() { return &m_Registry; };
-		inline std::vector<Entity*>* GetEntities() { return &m_Entities; };
-
 		inline void SetCamera(const HazelCamera& camera) { m_Camera = camera; };
 		inline HazelCamera* GetCamera() { return &m_Camera; }
 
@@ -68,6 +63,9 @@ namespace Hazel {
 		inline void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
 		float& GetSkyboxLOD() { return m_SkyboxLOD; }
 
+		// Temporary/experimental
+		virtual void OnEntitySelected(Entity* entity);
+
 	public:
 		// ECS
 		entt::registry m_Registry;
@@ -75,9 +73,6 @@ namespace Hazel {
 	private:
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
-
-		// NoECS
-		std::vector<Entity*> m_Entities;
 
 		HazelCamera m_Camera;
 

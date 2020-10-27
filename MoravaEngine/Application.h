@@ -35,6 +35,8 @@ public:
 
 	std::string OpenFile(const std::string& filter) const;
 
+	void OnImGuiRender();
+
 private:
 	bool OnWindowClose(WindowCloseEvent& e);
 	bool OnWindowResize(WindowResizeEvent& e);

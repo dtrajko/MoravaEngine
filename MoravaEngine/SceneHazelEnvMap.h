@@ -10,6 +10,7 @@
 #include "Grid.h"
 #include "Pivot.h"
 #include "Hazel/Events/KeyEvent.h"
+#include "Hazel/Scene/Entity.h"
 
 #include <map>
 #include <string>
@@ -54,6 +55,9 @@ private:
 	void NewScene();
 	void OpenScene();
 	void SaveSceneAs();
+
+	// Temporary/experimental
+	virtual void OnEntitySelected(Hazel::Entity* entity) override;
 
 private:
 	EnvironmentMap* m_EnvironmentMap;

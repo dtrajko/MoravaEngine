@@ -4,7 +4,9 @@
 
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Utils/PlatformUtils.h"
-// #include "Hazel/Scene/SceneSerializer.h"
+#include "Hazel/Scene/SceneSerializer.h"
+#include "Hazel/Scene/Components.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 #include "ImGuiWrapper.h"
 #include "ImGuizmo.h"
@@ -141,6 +143,8 @@ SceneHazelEnvMap::SceneHazelEnvMap()
 
     m_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
     m_Transform_ImGuizmo = &m_EnvironmentMap->GetMeshEntity()->Transform();
+
+    Hazel::RendererAPI::Init();
 }
 
 SceneHazelEnvMap::~SceneHazelEnvMap()
@@ -425,29 +429,24 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Camera");
     {
-        char buffer[100];
-
-        sprintf(buffer, "Pitch      %.2f", m_Camera->GetPitch());
-        ImGui::Text(buffer);
-
-        sprintf(buffer, "Yaw        %.2f", m_Camera->GetYaw());
-        ImGui::Text(buffer);
-
-        sprintf(buffer, "Position   X %.2f Y %.2f Z %.2f", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
-        ImGui::Text(buffer);
-
-        sprintf(buffer, "Direction  X %.2f Y %.2f Z %.2f", m_Camera->GetDirection().x, m_Camera->GetDirection().y, m_Camera->GetDirection().z);
-        ImGui::Text(buffer);
-
-        sprintf(buffer, "Front      X %.2f Y %.2f Z %.2f", m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
-        ImGui::Text(buffer);
-
-        sprintf(buffer, "Up         X %.2f Y %.2f Z %.2f", m_Camera->GetUp().x, m_Camera->GetUp().y, m_Camera->GetUp().z);
-        ImGui::Text(buffer);
-
-        sprintf(buffer, "Right      X %.2f Y %.2f Z %.2f", m_Camera->GetRight().x, m_Camera->GetRight().y, m_Camera->GetRight().z);
-        ImGui::Text(buffer);
-
+        if (ImGui::CollapsingHeader("Display Info"))
+        {
+            char buffer[100];
+            sprintf(buffer, "Pitch      %.2f", m_Camera->GetPitch());
+            ImGui::Text(buffer);
+            sprintf(buffer, "Yaw        %.2f", m_Camera->GetYaw());
+            ImGui::Text(buffer);
+            sprintf(buffer, "Position   X %.2f Y %.2f Z %.2f", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
+            ImGui::Text(buffer);
+            sprintf(buffer, "Direction  X %.2f Y %.2f Z %.2f", m_Camera->GetDirection().x, m_Camera->GetDirection().y, m_Camera->GetDirection().z);
+            ImGui::Text(buffer);
+            sprintf(buffer, "Front      X %.2f Y %.2f Z %.2f", m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
+            ImGui::Text(buffer);
+            sprintf(buffer, "Up         X %.2f Y %.2f Z %.2f", m_Camera->GetUp().x, m_Camera->GetUp().y, m_Camera->GetUp().z);
+            ImGui::Text(buffer);
+            sprintf(buffer, "Right      X %.2f Y %.2f Z %.2f", m_Camera->GetRight().x, m_Camera->GetRight().y, m_Camera->GetRight().z);
+            ImGui::Text(buffer);
+        }
     }
     ImGui::End();
 
@@ -603,6 +602,8 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     ImGui::End();
 
     m_SceneHierarchyPanel->OnImGuiRender();
+
+    Application::Get()->OnImGuiRender();
 
     /**** BEGIN Environment Map Settings ****/
     ImGui::Begin("Environment Map Settings");
@@ -969,6 +970,8 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
             m_EnvironmentMap->RenderHazelGrid();
         }
 
+        RendererBasic::EnableTransparency();
+
         m_EnvironmentMap->Render();
 
         RenderLineElements(m_ShaderBasic, projectionMatrix);
@@ -980,31 +983,6 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
             m_RenderFramebuffer->Unbind();
         }
     }
-    /**** END Render to Main Viewport ****/
-
-    /**** BEGIN Render to Viewport Environment Map
-    {
-        if (m_IsViewportEnabled)
-        {
-            m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->Bind();
-            m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->Clear();
-        }
-        else
-        {
-            // configure the viewport to the original framebuffer's screen dimensions
-            glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
-            RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
-        }
-
-        // Render the Environment Map scene to the s_Data.CompositePass framebuffer
-        m_EnvironmentMap->Render();
-
-        if (m_IsViewportEnabled)
-        {
-            m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->Unbind();
-        }
-    }
-    END Render to Viewport Environment Map ****/
 }
 
 void SceneHazelEnvMap::SetupUniforms()
@@ -1067,8 +1045,8 @@ void SceneHazelEnvMap::OpenScene()
         m_EnvironmentMap->GetContextData()->ActiveScene->OnViewportResize((uint32_t)m_ViewportMainSize.x, (uint32_t)m_ViewportMainSize.y);
         m_SceneHierarchyPanel->SetContext(m_EnvironmentMap->GetContextData()->ActiveScene);
 
-        // SceneSerializer serializer(m_EnvironmentMap->GetContextData()->ActiveScene);
-        // serializer.Deserialize(filepath);
+        Hazel::SceneSerializer serializer(m_EnvironmentMap->GetContextData()->ActiveScene);
+        serializer.Deserialize(filepath);
     }
 }
 
@@ -1076,7 +1054,13 @@ void SceneHazelEnvMap::SaveSceneAs()
 {
     std::string filepath = Hazel::FileDialogs::SaveFile("Hazel Scene (*.hazel)\0*.hazel\0");
     if (!filepath.empty()) {
-        // SceneSerializer serializer(m_EnvironmentMap->GetContextData()->ActiveScene);
-        // serializer.Serialize(filepath);
+        Hazel::SceneSerializer serializer(m_EnvironmentMap->GetContextData()->ActiveScene);
+        serializer.Serialize(filepath);
     }
+}
+
+void SceneHazelEnvMap::OnEntitySelected(Hazel::Entity* entity)
+{
+    // auto& tc = entity.GetComponent<Hazel::TransformComponent>();
+    // m_EnvironmentMap->SetMeshEntity(entity);
 }

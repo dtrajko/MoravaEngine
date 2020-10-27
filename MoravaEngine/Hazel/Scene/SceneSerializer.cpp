@@ -79,7 +79,7 @@ namespace Hazel {
 		return out;
 	}
 
-	SceneSerializer::SceneSerializer(const Ref<HazelScene>& scene)
+	SceneSerializer::SceneSerializer(HazelScene* scene)
 		: m_Scene(scene)
 	{
 	}
@@ -171,7 +171,7 @@ namespace Hazel {
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
-			Entity entity = { entityID, m_Scene.get() };
+			Entity entity = { entityID, m_Scene };
 			if (!entity)
 			{
 				return;

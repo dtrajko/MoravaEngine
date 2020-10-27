@@ -32,43 +32,8 @@ namespace Hazel
 
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
-		OnImGuiRenderNoECS();
+		// OnImGuiRenderNoECS();
 		OnImGuiRenderECS();
-	}
-
-	void SceneHierarchyPanel::OnImGuiRenderNoECS()
-	{
-		ImGui::Begin("Scene Hierarchy NoECS");
-
-		uint32_t entityCount = 0;
-		uint32_t meshCount = 0;
-
-		for (int i = 0; i < m_Context->GetEntities()->size(); i++)
-		{
-			Entity entity = *m_Context->GetEntities()->at(i);
-			DrawEntityNodeNoECS(entity, entityCount, meshCount);
-
-			//	auto mesh = entity->GetMesh();
-			//	auto material = entity->GetMaterial();
-			//	const auto& transform = entity->GetTransform();
-			//	
-			//	if (mesh)
-			//	{
-			//		uint32_t imguiMeshID;
-			//		DrawMeshNode(mesh, imguiMeshID);
-			//	}
-		}
-
-		ImGui::End();
-
-		ImGui::Begin("Properties NoECS");
-
-		if (m_SelectionContext)
-		{
-
-		}
-
-		ImGui::End();
 	}
 
 	void SceneHierarchyPanel::DrawEntityNodeECS(Entity entity)
@@ -83,6 +48,7 @@ namespace Hazel
 		if (ImGui::IsItemClicked())
 		{
 			m_SelectionContext = entity;
+			m_Context->OnEntitySelected(&entity);
 		}
 
 		bool entityDeleted = false;

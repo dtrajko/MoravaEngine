@@ -1,9 +1,13 @@
 #include "Application.h"
 #include "Hazel/Core/Base.h"
+#include "Hazel/Renderer/RendererAPI.h"
+#include "Timer.h"
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include <Windows.h>
+
+#include <imgui.h>
 
 
 Application* Application::s_Instance = nullptr;
@@ -110,4 +114,17 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	m_Scene->OnWindowResize(e);
 
 	return false;
+}
+
+void Application::OnImGuiRender()
+{
+	ImGui::Begin("Renderer");
+	{
+		auto& caps = Hazel::RendererAPI::GetCapabilities();
+		ImGui::Text("Vendor: %s", caps.Vendor.c_str());
+		ImGui::Text("Renderer: %s", caps.Renderer.c_str());
+		ImGui::Text("Version: %s", caps.Version.c_str());
+		ImGui::Text("Frame Time: %.2fms\n", Timer::Get()->GetCurrentTimestamp());
+		ImGui::End();
+	}
 }

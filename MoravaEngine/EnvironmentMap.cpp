@@ -429,11 +429,6 @@ void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
 
 EnvironmentMap::~EnvironmentMap()
 {
-    auto entities = ((Hazel::HazelScene*)m_Data.ActiveScene)->GetEntities();
-    for (auto& it = entities->begin(); it != entities->end(); it++) {
-        delete *it;
-    }
-
     for (auto const& material : m_EnvMapMaterials) {
         delete &material;
     }
@@ -455,31 +450,11 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
 
     UpdateUniforms();
 
-    // Update all entities
-    //  for (auto entity : m_Entities)
-    //  {
-    //      Hazel::MeshAnimPBR* mesh = (Hazel::MeshAnimPBR*)entity->GetMesh();
-    //      if (mesh) {
-    //          mesh->Update(glm::vec3(1.0f));
-    //      }
-    //  }
-
     // Update MeshAnimPBR List
     for (auto& dc : m_Data.DrawList)
     {
         ((Hazel::MeshAnimPBR*)dc.Mesh)->OnUpdate(timestep, false);
     }
-
-    // m_ShaderSkybox->setFloat("u_TextureLod", m_SkyboxLOD);
-
-    //  BeginScene(m_Data.ActiveScene);
-    //  // Render entities
-    //  for (auto entity : m_Entities)
-    //  {
-    //      // TODO: Should we render (logically)
-    //      SubmitEntity(entity);
-    //  }
-    //  EndScene();
 }
 
 void EnvironmentMap::SetViewportSize(uint32_t width, uint32_t height)

@@ -13,7 +13,6 @@ namespace Hazel {
 
 	HazelScene::HazelScene()
 	{
-		m_Entities = std::vector<Entity*>();
 	}
 
 	void HazelScene::SetEnvironment(const Environment& environment)
@@ -28,9 +27,8 @@ namespace Hazel {
 		m_ShaderSkybox->setInt("u_Texture", skybox.get()->GetID());
 	}
 
-	void HazelScene::AddToEntitiesNoECS(Entity* entity)
+	void HazelScene::OnEntitySelected(Entity* entity)
 	{
-		m_Entities.push_back(entity);
 	}
 
 	Entity* HazelScene::CreateEntity(const std::string& name)
@@ -45,7 +43,6 @@ namespace Hazel {
 
 		// NoECS
 		entity->SetName(entityName);
-		AddToEntitiesNoECS(entity);
 
 		Log::GetLogger()->debug("CreateEntity name = '{0}'", name);
 

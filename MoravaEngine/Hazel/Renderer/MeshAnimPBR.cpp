@@ -227,7 +227,7 @@ namespace Hazel {
 				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
 				aiString aiTexPath;
 				uint32_t textureCount = aiMaterial->GetTextureCount(aiTextureType_DIFFUSE);
-				Log::GetLogger()->info("    TextureCount = {0}", textureCount);
+				HZ_MESH_LOG("    TextureCount = {0}", textureCount);
 
 				aiColor3D aiColor;
 				aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor);
@@ -239,8 +239,8 @@ namespace Hazel {
 				// float roughness = 1.0f - shininess * 0.01f;
 				// roughness *= roughness;
 				float roughness = 1.0f - glm::sqrt(shininess / 100.0f);
-				Log::GetLogger()->info("    COLOR = {0}, {1}, {2}", aiColor.r, aiColor.g, aiColor.b);
-				Log::GetLogger()->info("    ROUGHNESS = {0}", roughness);
+				HZ_MESH_LOG("    COLOR = {0}, {1}, {2}", aiColor.r, aiColor.g, aiColor.b);
+				HZ_MESH_LOG("    ROUGHNESS = {0}", roughness);
 				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
 				if (hasAlbedoMap)
 				{
@@ -271,6 +271,7 @@ namespace Hazel {
 						Log::GetLogger()->error("Could not load texture: {0}", texturePath);
 						// Fallback to albedo color
 						m_MeshShader->setVec3("u_AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
+						HZ_MESH_LOG("Mesh has no Albedo map.");
 					}
 				}
 				else
@@ -288,7 +289,7 @@ namespace Hazel {
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					Log::GetLogger()->info("    Normal map path = {0}", texturePath);
+					HZ_MESH_LOG("    Normal map path = {0}", texturePath);
 
 					Texture* texture = nullptr;
 					try {
@@ -324,7 +325,7 @@ namespace Hazel {
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					// Log::GetLogger()->info("  Roughness map path = '{0}'", texturePath);
+					// HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
 
 					Texture* texture = nullptr;
 					try {
@@ -365,7 +366,7 @@ namespace Hazel {
 					auto texture = Texture2D::Create(texturePath);
 					if (texture->Loaded())
 					{
-						Log::GetLogger()->info("    Metalness map path = {0}", texturePath);
+						HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
 						mi->Set("u_MetalnessTexture", texture);
 						m_MeshShader->setFloat("u_MetalnessTexToggle", 1.0f);
 					}
@@ -387,53 +388,53 @@ namespace Hazel {
 					auto prop = aiMaterial->mProperties[i];
 
 #if DEBUG_PRINT_ALL_PROPS
-					Log::GetLogger()->info("Material Property:");
-					Log::GetLogger()->info("  Name = {0}", prop->mKey.data);
-					// Log::GetLogger()->info("  Type = {0}", prop->mType);
-					// Log::GetLogger()->info("  Size = {0}", prop->mDataLength);
+					HZ_MESH_LOG("Material Property:");
+					HZ_MESH_LOG("  Name = {0}", prop->mKey.data);
+					// HZ_MESH_LOG("  Type = {0}", prop->mType);
+					// HZ_MESH_LOG("  Size = {0}", prop->mDataLength);
 					float data = *(float*)prop->mData;
-					Log::GetLogger()->info("  Value = {0}", data);
+					HZ_MESH_LOG("  Value = {0}", data);
 
 					switch (prop->mSemantic)
 					{
 					case aiTextureType_NONE:
-						Log::GetLogger()->info("  Semantic = aiTextureType_NONE");
+						HZ_MESH_LOG("  Semantic = aiTextureType_NONE");
 						break;
 					case aiTextureType_DIFFUSE:
-						Log::GetLogger()->info("  Semantic = aiTextureType_DIFFUSE");
+						HZ_MESH_LOG("  Semantic = aiTextureType_DIFFUSE");
 						break;
 					case aiTextureType_SPECULAR:
-						Log::GetLogger()->info("  Semantic = aiTextureType_SPECULAR");
+						HZ_MESH_LOG("  Semantic = aiTextureType_SPECULAR");
 						break;
 					case aiTextureType_AMBIENT:
-						Log::GetLogger()->info("  Semantic = aiTextureType_AMBIENT");
+						HZ_MESH_LOG("  Semantic = aiTextureType_AMBIENT");
 						break;
 					case aiTextureType_EMISSIVE:
-						Log::GetLogger()->info("  Semantic = aiTextureType_EMISSIVE");
+						HZ_MESH_LOG("  Semantic = aiTextureType_EMISSIVE");
 						break;
 					case aiTextureType_HEIGHT:
-						Log::GetLogger()->info("  Semantic = aiTextureType_HEIGHT");
+						HZ_MESH_LOG("  Semantic = aiTextureType_HEIGHT");
 						break;
 					case aiTextureType_NORMALS:
-						Log::GetLogger()->info("  Semantic = aiTextureType_NORMALS");
+						HZ_MESH_LOG("  Semantic = aiTextureType_NORMALS");
 						break;
 					case aiTextureType_SHININESS:
-						Log::GetLogger()->info("  Semantic = aiTextureType_SHININESS");
+						HZ_MESH_LOG("  Semantic = aiTextureType_SHININESS");
 						break;
 					case aiTextureType_OPACITY:
-						Log::GetLogger()->info("  Semantic = aiTextureType_OPACITY");
+						HZ_MESH_LOG("  Semantic = aiTextureType_OPACITY");
 						break;
 					case aiTextureType_DISPLACEMENT:
-						Log::GetLogger()->info("  Semantic = aiTextureType_DISPLACEMENT");
+						HZ_MESH_LOG("  Semantic = aiTextureType_DISPLACEMENT");
 						break;
 					case aiTextureType_LIGHTMAP:
-						Log::GetLogger()->info("  Semantic = aiTextureType_LIGHTMAP");
+						HZ_MESH_LOG("  Semantic = aiTextureType_LIGHTMAP");
 						break;
 					case aiTextureType_REFLECTION:
-						Log::GetLogger()->info("  Semantic = aiTextureType_REFLECTION");
+						HZ_MESH_LOG("  Semantic = aiTextureType_REFLECTION");
 						break;
 					case aiTextureType_UNKNOWN:
-						Log::GetLogger()->info("  Semantic = aiTextureType_UNKNOWN");
+						HZ_MESH_LOG("  Semantic = aiTextureType_UNKNOWN");
 						break;
 					}
 #endif
@@ -453,7 +454,7 @@ namespace Hazel {
 							auto parentPath = path.parent_path();
 							parentPath /= str;
 							std::string texturePath = parentPath.string();
-							Log::GetLogger()->info("    Metalness map path = {0}", texturePath);
+							HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
 
 							Texture* texture = nullptr;
 							try {
@@ -488,7 +489,7 @@ namespace Hazel {
 					m_MeshShader->setFloat("u_MetalnessTexToggle", 0.0f);
 				}
 			}
-			Log::GetLogger()->info("------------------------");
+			HZ_MESH_LOG("------------------------");
 		}
 
 		Log::GetLogger()->info("Hazel::MeshAnimPBR: Creating a Vertex Array...");
@@ -576,7 +577,7 @@ namespace Hazel {
 			submesh->Transform = transform;
 		}
 
-		Log::GetLogger()->info("{0} {1}", LevelToSpaces(level), node->mName.C_Str());
+		HZ_MESH_LOG("{0} {1}", LevelToSpaces(level), node->mName.C_Str());
 
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
 			TraverseNodes(node->mChildren[i], transform, level + 1);
@@ -864,21 +865,21 @@ namespace Hazel {
 	void MeshAnimPBR::DumpVertexBuffer()
 	{
 		// TODO: Convert to ImGui
-		Log::GetLogger()->info("------------------------------------------------------");
-		Log::GetLogger()->info("Vertex Buffer Dump");
-		Log::GetLogger()->info("Mesh: {0}", m_FilePath);
+		HZ_MESH_LOG("------------------------------------------------------");
+		HZ_MESH_LOG("Vertex Buffer Dump");
+		HZ_MESH_LOG("Mesh: {0}", m_FilePath);
 		for (size_t i = 0; i < m_AnimatedVertices.size(); i++)
 		{
 			auto& vertex = m_AnimatedVertices[i];
-			Log::GetLogger()->info("Vertex:   {0}", i);
-			Log::GetLogger()->info("Position: {0}, {1}, {2}", vertex.Position.x, vertex.Position.y, vertex.Position.z);
-			Log::GetLogger()->info("Normal:   {0}, {1}, {2}", vertex.Normal.x,   vertex.Normal.y,   vertex.Normal.z);
-			Log::GetLogger()->info("Binormal: {0}, {1}, {2}", vertex.Binormal.x, vertex.Binormal.y, vertex.Binormal.z);
-			Log::GetLogger()->info("Tangent:  {0}, {1}, {2}", vertex.Tangent.x,  vertex.Tangent.y,  vertex.Tangent.z);
-			Log::GetLogger()->info("TexCoord: {0}, {1}",      vertex.Texcoord.x, vertex.Texcoord.y);
-			Log::GetLogger()->info("--");
+			HZ_MESH_LOG("Vertex:   {0}", i);
+			HZ_MESH_LOG("Position: {0}, {1}, {2}", vertex.Position.x, vertex.Position.y, vertex.Position.z);
+			HZ_MESH_LOG("Normal:   {0}, {1}, {2}", vertex.Normal.x,   vertex.Normal.y,   vertex.Normal.z);
+			HZ_MESH_LOG("Binormal: {0}, {1}, {2}", vertex.Binormal.x, vertex.Binormal.y, vertex.Binormal.z);
+			HZ_MESH_LOG("Tangent:  {0}, {1}, {2}", vertex.Tangent.x,  vertex.Tangent.y,  vertex.Tangent.z);
+			HZ_MESH_LOG("TexCoord: {0}, {1}",      vertex.Texcoord.x, vertex.Texcoord.y);
+			HZ_MESH_LOG("--");
 		}
-		Log::GetLogger()->info("------------------------------------------------------");
+		HZ_MESH_LOG("------------------------------------------------------");
 	}
 
 	void MeshAnimPBR::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
