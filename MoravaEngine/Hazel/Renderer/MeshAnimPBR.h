@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 
 #include "../Core/Base.h"
+#include "../Core/Math/AABB.h"
 #include "../Platform/OpenGL/OpenGLBuffer.h"
 #include "../Platform/OpenGL/OpenGLVertexArray.h"
 
@@ -130,7 +131,7 @@ namespace Hazel {
 		uint32_t IndexCount;
 
 		glm::mat4 Transform;
-		glm::vec3 Min, Max; // TODO: AABB
+		AABB BoundingBox;
 
 		std::string NodeName, MeshName;
 	};

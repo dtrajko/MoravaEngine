@@ -1,46 +1,12 @@
 #include "Renderer2D.h"
 
-#include "../Renderer/VertexArray.h"
-#include "../Renderer/HazelShader.h"
 #include "../../Log.h"
 #include "../Renderer/RenderCommand.h"
+#include "../Core/Assert.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace Hazel {
-
-	struct QuadVertex
-	{
-		glm::vec3 Position;
-		glm::vec4 Color;
-		glm::vec2 TexCoord;
-		float TexIndex;
-		float TilingFactor;
-	};
-
-	struct Renderer2DData
-	{
-		static const uint32_t MaxQuads = 20000;
-		static const uint32_t MaxVertices = MaxQuads * 4;
-		static const uint32_t MaxIndices = MaxQuads * 6;
-		static const uint32_t MaxTextureSlots = 32; // TODO: RenderCaps
-
-		VertexArray* QuadVertexArray;
-		VertexBuffer* QuadVertexBuffer;
-		HazelShader* TextureShader;
-		HazelTexture2D* WhiteTexture;
-
-		uint32_t QuadIndexCount = 0;
-		QuadVertex* QuadVertexBufferBase = nullptr;
-		QuadVertex* QuadVertexBufferPtr = nullptr;
-
-		std::array<HazelTexture2D*, MaxTextureSlots> TextureSlots;
-		uint32_t TextureSlotIndex = 1; // 0 = white texture
-
-		glm::vec4 QuadVertexPositions[4];
-
-		Renderer2D::Statistics Stats;
-	};
 
 	static Renderer2DData s_Data;
 
@@ -163,6 +129,11 @@ namespace Hazel {
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 
 		s_Data.TextureSlotIndex = 1;
+	}
+
+	void Renderer2D::FlushAndResetLines()
+	{
+		HZ_ASSERT(false, "Method not yet implemented!");
 	}
 
 	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)

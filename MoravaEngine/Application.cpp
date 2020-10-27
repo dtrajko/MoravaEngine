@@ -2,6 +2,7 @@
 #include "Hazel/Core/Base.h"
 #include "Hazel/Renderer/RendererAPI.h"
 #include "Timer.h"
+#include "EnvironmentMap.h"
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
@@ -124,7 +125,7 @@ void Application::OnImGuiRender()
 		ImGui::Text("Vendor: %s", caps.Vendor.c_str());
 		ImGui::Text("Renderer: %s", caps.Renderer.c_str());
 		ImGui::Text("Version: %s", caps.Version.c_str());
-		ImGui::Text("Frame Time: %.2fms\n", Timer::Get()->GetCurrentTimestamp());
-		ImGui::End();
+		ImGui::Text("Frame Time: %.2fms\n", Timer::Get()->GetDeltaTime() * 1000.0f);
 	}
+	ImGui::End();
 }

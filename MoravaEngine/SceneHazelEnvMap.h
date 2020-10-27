@@ -92,6 +92,9 @@ private:
 	bool m_ViewportEnvMapHovered;
 	glm::vec2 m_ViewportEnvMapSize;
 
+	// Used in EnvironmentMap::CastRay
+	glm::vec2 m_ViewportBounds[2];
+
 	Shader* m_ShaderBackground;
 	Shader* m_ShaderBasic;
 

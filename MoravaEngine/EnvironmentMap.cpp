@@ -13,6 +13,7 @@
 #include "ImGuiWrapper.h"
 #include "Application.h"
 #include "Util.h"
+#include "Input.h"
 
 
 EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
@@ -292,6 +293,12 @@ void EnvironmentMap::SetupShaders()
 
     m_ShaderGrid = new Shader("Shaders/Hazel/Grid.vs", "Shaders/Hazel/Grid.fs");
     Log::GetLogger()->info("EnvironmentMap: m_ShaderGrid compiled [programID={0}]", m_ShaderGrid->GetProgramID());
+
+    m_ShaderRenderer2D = new Shader("Shaders/Hazel/Renderer2D.vs", "Shaders/Hazel/Renderer2D.fs");
+    Log::GetLogger()->info("EnvironmentMap: m_ShaderRenderer2D compiled [programID={0}]", m_ShaderRenderer2D->GetProgramID());
+
+    m_ShaderRenderer2D_Line = new Shader("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
+    Log::GetLogger()->info("EnvironmentMap: m_ShaderRenderer2D_Line compiled [programID={0}]", m_ShaderRenderer2D_Line->GetProgramID());
 }
 
 void EnvironmentMap::UpdateUniforms()
@@ -366,6 +373,8 @@ void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMater
 
 void EnvironmentMap::Init()
 {
+    Application::Get()->GetWindow()->SetEventCallback(HZ_BIND_EVENT_FN(EnvironmentMap::OnEvent));
+
     SetupShaders();
 
     bool isMultisample = false;
@@ -419,6 +428,8 @@ void EnvironmentMap::Init()
     // Temporary code Hazel LIVE! #004
     Hazel::HazelRenderer::Init();
     // Hazel::Renderer2D::Init();
+
+
 }
 
 void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
@@ -501,6 +512,12 @@ FramebufferTexture* EnvironmentMap::GetFinalColorBuffer()
 uint32_t EnvironmentMap::GetFinalColorBufferID()
 {
     return (uint32_t)m_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
+}
+
+void EnvironmentMap::SetViewportBounds(glm::vec2* viewportBounds)
+{
+    m_ViewportBounds[0] = viewportBounds[0];
+    m_ViewportBounds[1] = viewportBounds[1];
 }
 
 EnvironmentMap::Options& EnvironmentMap::GetOptions()
@@ -669,13 +686,18 @@ void EnvironmentMap::Render()
     // meshAnimPBR->RenderSubmeshes(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
     // meshAnimPBR->Render(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
 
-    EndScene();
-
     // Temporary Hazel LIVE! #004
     // glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
     // Hazel::Renderer2D::BeginScene(viewProjection);
     // Hazel::HazelRenderer::DrawAABB(meshAnimPBR);
     // Hazel::Renderer2D::EndScene();
+
+    // Temporary Hazel LIVE #006
+    // DrawAABB(m_MeshEntity->GetMesh(), m_MeshEntity->GetTransform(), glm::vec4(1.0f));
+    // DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+    // Currently not in use
+    EndScene();
 }
 
 void EnvironmentMap::OnImGuiRender()
@@ -955,6 +977,25 @@ void EnvironmentMap::SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& trans
     }
 }
 
+// Renderer2D::BeginScene
+void EnvironmentMap::BeginScene(const glm::mat4& viewProj, bool depthTest)
+{
+    m_Data.CameraViewProj = viewProj;
+    m_Data.DepthTest = depthTest;
+
+    // Renderer2D::s_Data.TextureShader
+    m_ShaderRenderer2D->Bind();
+    m_ShaderRenderer2D->setMat4("u_ViewProjection", viewProj);
+
+    // m_Data.QuadIndexCount = 0;
+    // m_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+
+    m_Data.LineIndexCount = 0;
+    m_Data.LineVertexBufferPtr = m_Data.LineVertexBufferBase;
+
+    m_Data.TextureSlotIndex = 1;
+}
+
 void EnvironmentMap::RenderHazelSkybox()
 {
     RendererBasic::DisableCulling();
@@ -994,4 +1035,150 @@ void EnvironmentMap::RenderHazelGrid()
     RendererBasic::EnableMSAA();
 
     m_HazelFullscreenQuad->Render();
+}
+
+void EnvironmentMap::OnEvent(Event& e)
+{
+    if (m_AllowViewportCameraEvents) {
+        ((Scene*)m_Data.ActiveScene)->GetCamera()->OnEvent(e);
+    }
+
+    EventDispatcher dispatcher(e);
+    dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EnvironmentMap::OnKeyPressedEvent));
+    dispatcher.Dispatch<MouseButtonPressedEvent>(HZ_BIND_EVENT_FN(EnvironmentMap::OnMouseButtonPressed));
+}
+
+bool EnvironmentMap::OnKeyPressedEvent(KeyPressedEvent& e)
+{
+    return false;
+}
+
+bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+{
+    auto [mx, my] = Input::GetMousePosition();
+    if (e.GetMouseButton() == (int)Mouse::ButtonLeft && !Input::IsKeyPressed(Key::LeftAlt))
+    {
+        auto [mouseX, mouseY] = GetMouseViewportSpace();
+
+        Log::GetLogger()->debug("EnvironmentMap::OnMouseButtonPressed GetMouseViewportSpace [mouseX = {0}, mouseY = {1}] ", mouseX, mouseY);
+
+        if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
+        {
+            auto [origin, direction] = CastRay(mouseX, mouseY);
+
+            auto mesh = m_MeshEntity->GetMesh();
+            const auto& submeshes = ((Hazel::MeshAnimPBR*)mesh)->GetSubmeshes();
+
+            for (const auto& submesh : submeshes)
+            {
+                auto newRay = glm::inverse(submesh->Transform) * glm::vec4(origin, 1.0f);
+                m_NewRay = submesh->Transform * newRay;
+                auto newDir = glm::inverse(glm::mat3(submesh->Transform)) * direction;
+
+
+                float t = 0.0f;
+                bool intersects = submesh->BoundingBox.Intersect(newRay, newDir, t);
+
+                Log::GetLogger()->warn("origin [ {0} {1} {2} ] direction [ {3} {4} {5} ]", origin.x, origin.y, origin.z, direction.x, direction.y, direction.z);
+                Log::GetLogger()->warn("Intersects = {0}, t = {1}", intersects, t);
+            }
+        }
+    }
+
+    return false;
+}
+
+std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
+{
+    auto [mx, my] = ImGui::GetMousePos(); // Input::GetMousePosition();
+    mx -= m_ViewportBounds[0].x;
+    my -= m_ViewportBounds[0].y;
+    auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
+    auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
+
+    Log::GetLogger()->debug("EnvironmentMap::GetMouseViewportSpace | viewportWidth {0} viewportHeight {1}", viewportWidth, viewportHeight);
+
+    // return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f + 1.0f) * -1.0f };
+    return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
+}
+
+std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)
+{
+    glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+
+    auto inverseProj = glm::inverse(RendererBasic::GetProjectionMatrix());
+    auto inverseView = glm::inverse(((Scene*)m_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix());
+
+    glm::vec4 ray = inverseProj * mouseClipPos;
+    glm::vec3 rayPos = ((Scene*)m_Data.ActiveScene)->GetCamera()->GetPosition();
+    glm::vec3 rayDir = inverseView * ray; // inverseView * glm::vec3(ray)
+
+    Log::GetLogger()->debug("EnvironmentMap::CastRay | MousePosition [ {0} {1} ]", mx, my);
+    Log::GetLogger()->debug("EnvironmentMap::CastRay | m_ViewportBounds[0] [ {0} {1} ]", m_ViewportBounds[0].x, m_ViewportBounds[0].y);
+    Log::GetLogger()->debug("EnvironmentMap::CastRay | m_ViewportBounds[1] [ {0} {1} ]", m_ViewportBounds[1].x, m_ViewportBounds[1].y);
+    Log::GetLogger()->debug("EnvironmentMap::CastRay | mouseClipPos [ {0} {1} ]", mouseClipPos.x, mouseClipPos.y);
+
+    return { rayPos, rayDir };
+}
+
+// Renderer::DrawAABB()
+void EnvironmentMap::DrawAABB(Mesh* mesh, const glm::mat4& transform, glm::vec4& color)
+{
+    for (Hazel::Submesh* submesh : ((Hazel::MeshAnimPBR*)mesh)->GetSubmeshes())
+    {
+        auto& aabb = submesh->BoundingBox;
+
+        const auto& aabbTransform = transform * submesh->Transform;
+        glm::vec4 min = { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f };
+        glm::vec4 max = { aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f };
+
+        glm::vec4 corners[8] =
+        {
+            aabbTransform* glm::vec4{ aabb.Min.x, aabb.Min.y, aabb.Max.z, 1.0f},
+            aabbTransform* glm::vec4{ aabb.Min.x, aabb.Max.y, aabb.Max.z, 1.0f},
+            aabbTransform* glm::vec4{ aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f},
+            aabbTransform* glm::vec4{ aabb.Max.x, aabb.Min.y, aabb.Max.z, 1.0f},
+
+            aabbTransform* glm::vec4{ aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f},
+            aabbTransform* glm::vec4{ aabb.Min.x, aabb.Max.y, aabb.Min.z, 1.0f},
+            aabbTransform* glm::vec4{ aabb.Max.x, aabb.Max.y, aabb.Min.z, 1.0f},
+            aabbTransform* glm::vec4{ aabb.Max.x, aabb.Min.y, aabb.Min.z, 1.0f}
+        };
+
+        for (uint32_t i = 0; i < 4; i++) {
+            DrawLine(corners[i], corners[(i + 1) % 4], color);
+        }
+
+        for (uint32_t i = 0; i < 4; i++) {
+            DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
+        }
+
+        for (uint32_t i = 0; i < 4; i++) {
+            DrawLine(corners[i], corners[i + 4], color);
+        }
+    }
+}
+
+// Renderer2D::DrawLine
+void EnvironmentMap::DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
+{
+    if (m_Data.LineIndexCount >= Hazel::Renderer2DData::MaxLineIndices)
+        FlushAndResetLines();
+
+    m_Data.LineVertexBufferPtr->Position = p0;
+    m_Data.LineVertexBufferPtr->Color = color;
+    m_Data.LineVertexBufferPtr++;
+
+    m_Data.LineVertexBufferPtr->Position = p1;
+    m_Data.LineVertexBufferPtr->Color = color;
+    m_Data.LineVertexBufferPtr++;
+
+    m_Data.LineIndexCount += 2;
+
+    m_Data.Stats.LineCount++;
+}
+
+void EnvironmentMap::FlushAndResetLines()
+{
+    HZ_ASSERT(false, "Method not yet implemented!");
 }

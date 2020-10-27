@@ -701,6 +701,21 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportMainSize.x, m_ViewportMainSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
         
             UpdateImGuizmo(mainWindow);
+
+            // Calculate Viewport bounds (used in EnvironmentMap::CastRay)
+            auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
+
+            auto windowSize = ImGui::GetWindowSize();
+            ImVec2 minBound = ImGui::GetWindowPos();
+
+            minBound.x += viewportOffset.x;
+            // minBound.y += viewportOffset.y;
+
+            ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
+            m_ViewportBounds[0] = { minBound.x, minBound.y };
+            m_ViewportBounds[1] = { maxBound.x, maxBound.y };
+
+            m_EnvironmentMap->SetViewportBounds(m_ViewportBounds);
         }
         ImGui::End();
 

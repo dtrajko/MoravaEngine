@@ -99,24 +99,6 @@ namespace Hazel {
 	{
 	}
 
-	// temporary method Hazel LIVE! #004
-	void HazelRenderer::DrawAABB(Mesh* mesh)
-	{
-		for (Submesh* submesh : ((MeshAnimPBR*)mesh)->GetSubmeshes())
-		{
-			const auto& transform = submesh->Transform;
-
-			glm::vec4 min = { submesh->Min.x, submesh->Min.y, submesh->Min.z, 1.0f };
-			glm::vec4 max = { submesh->Max.x, submesh->Max.y, submesh->Max.z, 1.0f };
-
-			min = transform * min;
-			max = transform * max;
-
-			Renderer2D::DrawQuad(glm::vec3(min), glm::vec2(1.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 0.5f));
-			Renderer2D::DrawQuad(glm::vec3(max), glm::vec2(1.0f, 1.0f), glm::vec4(1.0f, 1.0f, 0.0f, 0.5f));
-		}
-	}
-
 	void HazelRenderer::DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color)
 	{
 	}

@@ -9,6 +9,9 @@
 #include "Hazel/Renderer/VertexArray.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/SceneRenderer.h"
+#include "Hazel/Events/KeyEvent.h"
+#include "Hazel/Events/MouseEvent.h"
+#include "Hazel/Renderer/Renderer2D.h"
 
 #include "Shader.h"
 #include "TextureCubemap.h"
@@ -68,6 +71,7 @@ public:
 	Hazel::RenderPass* GetFinalRenderPass();
 	FramebufferTexture* GetFinalColorBuffer();
 	uint32_t GetFinalColorBufferID();
+	void SetViewportBounds(glm::vec2* viewportBounds);
 
 private:
 	void SetupContextData();
@@ -94,6 +98,22 @@ private:
 	void DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest);
 	void EndRenderPass();
 	void SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& transform, Material* overrideMaterial);
+
+	// Renderer2D::BeginScene
+	void BeginScene(const glm::mat4& viewProj, bool depthTest);
+
+	// Raypicking (EditorLayer)
+public:
+	void OnEvent(Event& e); // EditorLayer::OnEvent()
+
+private:
+	bool OnKeyPressedEvent(KeyPressedEvent& e); // EditorLayer::OnKeyPressedEvent()
+	bool OnMouseButtonPressed(MouseButtonPressedEvent& e); // EditorLayer::OnMouseButtonPressedEvent()
+	std::pair<float, float> GetMouseViewportSpace();
+	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
+	void DrawAABB(Mesh* mesh, const glm::mat4& transform, glm::vec4& color = glm::vec4(1.0f)); // Renderer::DrawAABB()
+	void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color); // Renderer2D::DrawLine()
+	void FlushAndResetLines(); // Renderer2D::FlushAndResetLines()
 
 private:
 	struct Options
@@ -142,6 +162,20 @@ private:
 		unsigned int FullscreenQuadVBO;
 		unsigned int FullscreenQuadIBO;
 
+		uint32_t TextureSlotIndex = 1; // 0 = white texture
+
+		// Lines
+		Hazel::VertexArray* LineVertexArray;
+		Hazel::VertexBuffer* LineVertexBuffer;
+
+		uint32_t LineIndexCount = 0;
+		Hazel::LineVertex* LineVertexBufferBase = nullptr;
+		Hazel::LineVertex* LineVertexBufferPtr = nullptr;
+
+		glm::mat4 CameraViewProj;
+		bool DepthTest = true;
+
+		Hazel::Renderer2D::Statistics Stats;
 	};
 	Data m_Data;
 
@@ -160,6 +194,8 @@ private:
 	Shader* m_ShaderComposite;
 	Shader* m_ShaderGrid;
 	Shader* m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
+	Shader* m_ShaderRenderer2D; // Renderer2D::s_Data.TextureShader
+	Shader* m_ShaderRenderer2D_Line; // Renderer2D::s_Data.LineShader
 
 	Hazel::HazelTextureCube* m_SkyboxTexture;
 
@@ -190,5 +226,10 @@ private:
 	HazelFullscreenQuad* m_HazelFullscreenQuad;
 
 	float m_SkyboxExposureFactor = 2.0f;
+
+	// Raypicking (EditorLayer)
+	bool m_AllowViewportCameraEvents = true;
+	bool m_DrawOnTopBoundingBoxes = true;
+	glm::vec3 m_NewRay;
 
 };
