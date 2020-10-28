@@ -5,18 +5,17 @@
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/RenderPass.h"
 #include "Hazel/Renderer/MeshAnimPBR.h"
-#include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/VertexArray.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/SceneRenderer.h"
 #include "Hazel/Events/KeyEvent.h"
 #include "Hazel/Events/MouseEvent.h"
 #include "Hazel/Renderer/Renderer2D.h"
+#include "Hazel/Renderer/SceneRenderer.h"
 
 #include "Shader.h"
 #include "TextureCubemap.h"
 #include "Material.h"
-#include "HazelFullscreenQuad.h"
 #include "EnvMapMaterial.h"
 #include "Scene.h"
 
@@ -28,16 +27,12 @@ class EnvironmentMap
 	struct Hazel::HazelLight;
 	struct Hazel::Environment;
 	enum class Hazel::PrimitiveType;
-	struct SceneRendererData;
-	struct Options;
 
 public:
 	EnvironmentMap() = default;
 	EnvironmentMap(const std::string& filepath, Scene* scene);
 	~EnvironmentMap();
 
-	Hazel::Environment Load(const std::string& filepath);
-	void SetEnvironment(Hazel::Environment environment);
 	void Update(Scene* scene, float timestep);
 	Hazel::Entity* CreateEntity(const std::string& name);
 	void LoadMesh(std::string fullPath);
@@ -47,20 +42,15 @@ public:
 
 	void RenderHazelSkybox();
 	void RenderHazelGrid();
-	void CompositePassTemporary(Framebuffer* framebuffer);
 
 	// Setters
 	void SetSkyboxLOD(float LOD);
 
 	// Getters
-	inline SceneRendererData* GetContextData() { return &m_Data; }
 	inline Shader* GetShaderPBR_Anim() { return m_ShaderHazelPBR_Anim; }
 	inline Shader* GetShaderPBR_Static() { return m_ShaderHazelPBR_Static; }
-	inline Shader* GetShaderSkybox() { return m_ShaderSkybox; }
-	inline Hazel::HazelTexture2D* GetEnvEquirect() { return m_EnvEquirect; }
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
 	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
-	inline Hazel::HazelLight& GetLight() { return m_Data.SceneData.ActiveLight; }
 	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
 	inline Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
 	inline Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
@@ -68,35 +58,25 @@ public:
 	inline void SetMeshEntity(Hazel::Entity* entity) { m_MeshEntity = entity; }
 	inline float& GetSkyboxExposureFactor() { return m_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
-	Hazel::RenderPass* GetFinalRenderPass();
-	FramebufferTexture* GetFinalColorBuffer();
-	uint32_t GetFinalColorBufferID();
 	void SetViewportBounds(glm::vec2* viewportBounds);
+	inline Hazel::SceneRenderer* GetSceneRenderer() { return m_SceneRenderer; }
 
 private:
 	void SetupContextData();
 	void SetupShaders();
 	void UpdateUniforms();
 	void UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMaterial* m_EnvMapMaterial);
-	std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> CreateEnvironmentMap(const std::string& filepath);
 	void SetSkybox(Hazel::HazelTextureCube* skybox);
+	void Init();
 
 	// SceneRenderer
-	void Init();
-	void SetViewportSize(uint32_t width, uint32_t height);
-	void BeginScene(Scene* scene);
-	void EndScene();
+public:
+	void CompositePassTemporary(Framebuffer* framebuffer);
+	void GeometryPassTemporary();
 	void SubmitEntity(Hazel::Entity* entity);
-	Options& GetOptions();
-	void FlushDrawList();
-	void GeometryPass();
-	void CompositePass();
 
 	// Renderer
-	void BeginRenderPass(Hazel::RenderPass* renderPass, bool clear);
-	void SubmitFullscreenQuad(Material* material);
 	void DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest);
-	void EndRenderPass();
 	void SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& transform, Material* overrideMaterial);
 
 	// Renderer2D::BeginScene
@@ -113,17 +93,11 @@ private:
 	std::pair<float, float> GetMouseViewportSpace();
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color); // Renderer2D::DrawLine()
-	void FlushAndResetLines(); // Renderer2D::FlushAndResetLines()
+	void Renderer2D_FlushAndResetLines(); // Renderer2D::FlushAndResetLines()
 	void DrawAABB(const Hazel::AABB& aabb, const glm::mat4& transform, glm::vec4& color = glm::vec4(1.0f)); // Renderer::DrawAABB()
 	void DrawAABB(Mesh* mesh, const glm::mat4& transform, glm::vec4& color = glm::vec4(1.0f)); // Renderer::DrawAABB()
 
 private:
-	struct Options
-	{
-		bool ShowGrid = true;
-		bool ShowBoundingBoxes = false;
-	};
-
 	// TODO:  Move to Renderer2D 
 	struct Renderer2DData
 	{
@@ -148,62 +122,8 @@ private:
 	};
 	Renderer2DData m_R2DData;
 
-	struct SceneRendererData
-	{
-		Hazel::HazelScene* ActiveScene = nullptr;
-		struct SceneInfo
-		{
-			Camera* SceneCamera;
-
-			// Resources
-			Material* SkyboxMaterial;
-			Hazel::Environment SceneEnvironment;
-			Hazel::HazelLight ActiveLight;
-		} SceneData;
-
-		Hazel::HazelTexture2D* BRDFLUT;
-
-		Hazel::RenderPass* GeoPass;
-		Hazel::RenderPass* CompositePass;
-		Hazel::RenderPass* ActiveRenderPass;
-
-		struct DrawCommand
-		{
-			std::string Name;
-			Mesh* Mesh;
-			Material* Material;
-			glm::mat4 Transform;
-		};
-		std::vector<DrawCommand> DrawList;
-
-		// Grid
-		Material* GridMaterial;
-
-		Options Options;
-
-		// Renderer data
-		Hazel::RenderCommandQueue* m_CommandQueue;
-
-		unsigned int FullscreenQuadVAO;
-		unsigned int FullscreenQuadVBO;
-		unsigned int FullscreenQuadIBO;
-	};
-	SceneRendererData m_Data;
-
-	// Intermediate textures
-	Hazel::HazelTextureCube* m_EnvUnfiltered;
-	Hazel::HazelTexture2D* m_EnvEquirect;
-	Hazel::HazelTextureCube* m_EnvFiltered;
-	Hazel::HazelTextureCube* m_IrradianceMap;
-
-	Shader* m_ShaderEquirectangularConversion;
-	Shader* m_ShaderEnvFiltering;
-	Shader* m_ShaderEnvIrradiance;
-	Shader* m_ShaderSkybox;
 	Shader* m_ShaderHazelPBR_Anim;
 	Shader* m_ShaderHazelPBR_Static;
-	Shader* m_ShaderComposite;
-	Shader* m_ShaderGrid;
 	Shader* m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
 	Shader* m_ShaderRenderer2D; // Renderer2D::s_Data.TextureShader
 	Shader* m_ShaderRenderer2D_Line; // Renderer2D::s_Data.LineShader
@@ -234,8 +154,6 @@ private:
 	std::map<std::string, TextureInfo> m_TextureInfo;
 	std::map<std::string, EnvMapMaterial*> m_EnvMapMaterials;
 
-	HazelFullscreenQuad* m_HazelFullscreenQuad;
-
 	float m_SkyboxExposureFactor = 2.0f;
 
 	// Raypicking (EditorLayer)
@@ -243,5 +161,7 @@ private:
 	bool m_DrawOnTopBoundingBoxes = true;
 	glm::vec3 m_NewRay;
 	std::vector<Hazel::Submesh> m_SelectedSubmeshes;
+
+	Hazel::SceneRenderer* m_SceneRenderer;
 
 };

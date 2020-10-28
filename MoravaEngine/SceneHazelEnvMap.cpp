@@ -210,7 +210,7 @@ void SceneHazelEnvMap::SetupShaders()
 
 void SceneHazelEnvMap::SetupMeshes()
 {
-    for (auto& drawCommand : m_EnvironmentMap->GetContextData()->DrawList)
+    for (auto& drawCommand : m_EnvironmentMap->GetSceneRenderer()->s_Data.DrawList)
     {
         m_Entities.insert(std::make_pair(drawCommand.Name, Entity()));
 
@@ -460,25 +460,25 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
 
             ImGui::Text("Equirectangular");
-            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetEnvEquirect()->GetID(), imageSize);
+            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->GetEnvEquirect()->GetID(), imageSize);
 
             //  ImGui::Text("Radiance Map");
-            //  ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->SceneData.SceneEnvironment.RadianceMap->GetID(), imageSize);
+            //  ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->s_Data.SceneData.SceneEnvironment.RadianceMap->GetID(), imageSize);
 
             //  ImGui::Text("Irradiance Map");
-            //  ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->SceneData.SceneEnvironment.IrradianceMap->GetID(), imageSize);
+            //  ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->s_Data.SceneData.SceneEnvironment.IrradianceMap->GetID(), imageSize);
 
             ImGui::Text("Geo Pass");
-            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetFinalColorBufferID(), imageSize);
+            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->GetFinalColorBufferID(), imageSize);
 
             ImGui::Text("Composite Pass");
-            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
 
             //  Log::GetLogger()->debug("Geo Pass Framebuffer Color Attachment ID {0}",
-            //      m_EnvironmentMap->GetContextData()->GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID());
+            //      m_EnvironmentMap->GetSceneRenderer()->s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID());
             //  
             //  Log::GetLogger()->debug("Compo Pass Framebuffer Color Attachment ID {0}",
-            //      m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID());
+            //      m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID());
         }
     }
     ImGui::End();
@@ -502,11 +502,11 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::Begin("Viewport Environment Map Info");
         {
             glm::ivec2 colorAttachmentSize = glm::ivec2(
-                m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetWidth(),
-                m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetHeight());
+                m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetWidth(),
+                m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetHeight());
             glm::ivec2 depthAttachmentSize = glm::ivec2(
-                m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetAttachmentDepth()->GetWidth(),
-                m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetAttachmentDepth()->GetHeight());
+                m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetAttachmentDepth()->GetWidth(),
+                m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetAttachmentDepth()->GetHeight());
 
             ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
             ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
@@ -615,7 +615,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                 {
                     std::string filename = Application::Get()->OpenFile("*.hdr");
                     if (filename != "")
-                        m_EnvironmentMap->SetEnvironment(m_EnvironmentMap->Load(filename));
+                        m_EnvironmentMap->GetSceneRenderer()->SetEnvironment(m_EnvironmentMap->GetSceneRenderer()->Load(filename));
                 }
 
                 float skyboxLOD = m_EnvironmentMap->GetSkyboxLOD();
@@ -627,7 +627,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                 ImGui::Columns(2);
                 ImGui::AlignTextToFramePadding();
 
-                auto& light = m_EnvironmentMap->GetLight();
+                auto& light = m_EnvironmentMap->GetSceneRenderer()->GetLight();
                 ImGuiWrapper::Property("Light Direction", light.Direction);
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
@@ -735,8 +735,8 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             glm::vec2 viewportPanelSizeEnvMap = glm::vec2(viewportPanelSizeImGuiEnvMap.x, viewportPanelSizeImGuiEnvMap.y);
 
             // Currently resize can only work with a single (main) viewport
-            // ResizeViewport(viewportPanelSizeEnvMap, m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer); 
-            uint64_t textureID = m_EnvironmentMap->GetContextData()->CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
+            // ResizeViewport(viewportPanelSizeEnvMap, m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer); 
+            uint64_t textureID = m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
             ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportEnvMapSize.x, m_ViewportEnvMapSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
         }
         ImGui::End();
@@ -1046,9 +1046,9 @@ bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
 
 void SceneHazelEnvMap::NewScene()
 {
-    m_EnvironmentMap->GetContextData()->ActiveScene = new Hazel::HazelScene();
-    m_EnvironmentMap->GetContextData()->ActiveScene->OnViewportResize((uint32_t)m_ViewportMainSize.x, (uint32_t)m_ViewportMainSize.y);
-    m_SceneHierarchyPanel->SetContext(m_EnvironmentMap->GetContextData()->ActiveScene);
+    m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene = new Hazel::HazelScene();
+    m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene->OnViewportResize((uint32_t)m_ViewportMainSize.x, (uint32_t)m_ViewportMainSize.y);
+    m_SceneHierarchyPanel->SetContext(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
 }
 
 void SceneHazelEnvMap::OpenScene()
@@ -1056,11 +1056,11 @@ void SceneHazelEnvMap::OpenScene()
     std::string filepath = Hazel::FileDialogs::OpenFile("Hazel Scene (*.hazel)\0*.hazel\0");
     if (!filepath.empty())
     {
-        m_EnvironmentMap->GetContextData()->ActiveScene = new Hazel::HazelScene();
-        m_EnvironmentMap->GetContextData()->ActiveScene->OnViewportResize((uint32_t)m_ViewportMainSize.x, (uint32_t)m_ViewportMainSize.y);
-        m_SceneHierarchyPanel->SetContext(m_EnvironmentMap->GetContextData()->ActiveScene);
+        m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene = new Hazel::HazelScene();
+        m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene->OnViewportResize((uint32_t)m_ViewportMainSize.x, (uint32_t)m_ViewportMainSize.y);
+        m_SceneHierarchyPanel->SetContext(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
 
-        Hazel::SceneSerializer serializer(m_EnvironmentMap->GetContextData()->ActiveScene);
+        Hazel::SceneSerializer serializer(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
         serializer.Deserialize(filepath);
     }
 }
@@ -1069,7 +1069,7 @@ void SceneHazelEnvMap::SaveSceneAs()
 {
     std::string filepath = Hazel::FileDialogs::SaveFile("Hazel Scene (*.hazel)\0*.hazel\0");
     if (!filepath.empty()) {
-        Hazel::SceneSerializer serializer(m_EnvironmentMap->GetContextData()->ActiveScene);
+        Hazel::SceneSerializer serializer(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
         serializer.Serialize(filepath);
     }
 }
