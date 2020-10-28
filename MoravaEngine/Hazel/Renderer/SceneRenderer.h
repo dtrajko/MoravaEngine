@@ -86,7 +86,8 @@ namespace Hazel {
 
 		// From EnvironmentMap
 		inline SceneRendererData* GetContextData() { return &s_Data; }
-		inline HazelLight& GetLight() { return s_Data.SceneData.ActiveLight; }
+		inline HazelLight GetLight() { return s_Data.SceneData.ActiveLight; }
+		inline void SetLight(HazelLight light) { s_Data.SceneData.ActiveLight = light; }
 		Environment Load(const std::string& filepath);
 		void SetEnvironment(Hazel::Environment environment);
 		std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> CreateEnvironmentMap(const std::string& filepath);

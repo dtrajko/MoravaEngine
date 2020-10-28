@@ -627,7 +627,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                 ImGui::Columns(2);
                 ImGui::AlignTextToFramePadding();
 
-                auto& light = m_EnvironmentMap->GetSceneRenderer()->GetLight();
+                auto light = m_EnvironmentMap->GetSceneRenderer()->GetLight();
                 ImGuiWrapper::Property("Light Direction", light.Direction);
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
@@ -635,6 +635,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                 ImGuiWrapper::Property("Skybox Exposure Factor", m_EnvironmentMap->GetSkyboxExposureFactor(), 0.0f, 10.0f);
                 ImGuiWrapper::Property("Radiance Prefiltering", m_EnvironmentMap->GetRadiancePrefilter());
                 ImGuiWrapper::Property("Env Map Rotation", m_EnvironmentMap->GetEnvMapRotation(), -360.0f, 360.0f);
+                m_EnvironmentMap->GetSceneRenderer()->SetLight(light);
 
                 ImGui::Columns(1);
             }
@@ -991,6 +992,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 
         RenderLineElements(m_ShaderBasic, projectionMatrix);
 
+        m_EnvironmentMap->GeometryPassTemporary();
         m_EnvironmentMap->CompositePassTemporary(m_RenderFramebuffer);
 
         if (m_IsViewportEnabled)

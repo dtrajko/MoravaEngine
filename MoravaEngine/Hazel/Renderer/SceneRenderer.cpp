@@ -99,7 +99,7 @@ namespace Hazel {
         s_Data.SceneData.SceneCamera = ((Scene*)scene)->GetCamera();
         // s_Data.SceneData.SkyboxMaterial = ((Scene*)scene)->GetSkyboxMaterial();
         // s_Data.SceneData.SceneEnvironment = ((Scene*)scene)->GetEnvironment();
-        s_Data.SceneData.ActiveLight = ((Scene*)scene)->GetLight();
+        // s_Data.SceneData.ActiveLight = ((Scene*)scene)->GetLight();
     }
 
     void SceneRenderer::EndScene()

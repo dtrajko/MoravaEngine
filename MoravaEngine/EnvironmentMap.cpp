@@ -763,7 +763,8 @@ void EnvironmentMap::RenderHazelSkybox()
     m_SceneRenderer->GetShaderSkybox()->Bind();
     glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
     m_SceneRenderer->GetShaderSkybox()->setMat4("u_InverseVP", glm::inverse(viewProjection));
-    m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
+    // m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
+    m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("u_Texture"));
 
     // SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
     m_SceneRenderer->Renderer_SubmitFullscreenQuad(nullptr);
@@ -993,21 +994,6 @@ void EnvironmentMap::GeometryPassTemporary()
 
         auto overrideMaterial = nullptr; // dc.Material;
         SubmitMesh(((Hazel::MeshAnimPBR*)dc.Mesh), m_MeshEntity->Transform(), overrideMaterial);
-    }
-
-    // Grid
-    if (m_SceneRenderer->GetOptions().ShowGrid)
-    {
-        //  s_Data.GridMaterial->Set("u_ViewProjection", viewProjection);
-        //  SubmitQuad(s_Data.GridMaterial, glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f)));
-    }
-
-    if (m_SceneRenderer->GetOptions().ShowBoundingBoxes)
-    {
-        //  BeginScene(viewProjection);
-        //  for (auto& dc : s_Data.DrawList)
-        //      DrawAABB(dc.Mesh, dc.Transform);
-        //  EndScene();
     }
 
     m_SceneRenderer->Renderer_EndRenderPass();
