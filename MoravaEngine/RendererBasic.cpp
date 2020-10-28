@@ -76,6 +76,11 @@ void RendererBasic::Clear(float r, float g, float b, float a)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void RendererBasic::SetLineThickness(float thickness)
+{
+	glLineWidth(thickness);
+}
+
 void RendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

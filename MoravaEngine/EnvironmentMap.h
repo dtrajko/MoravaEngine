@@ -28,7 +28,7 @@ class EnvironmentMap
 	struct Hazel::HazelLight;
 	struct Hazel::Environment;
 	enum class Hazel::PrimitiveType;
-	struct Data;
+	struct SceneRendererData;
 	struct Options;
 
 public:
@@ -53,7 +53,7 @@ public:
 	void SetSkyboxLOD(float LOD);
 
 	// Getters
-	inline Data* GetContextData() { return &m_Data; }
+	inline SceneRendererData* GetContextData() { return &m_Data; }
 	inline Shader* GetShaderPBR_Anim() { return m_ShaderHazelPBR_Anim; }
 	inline Shader* GetShaderPBR_Static() { return m_ShaderHazelPBR_Static; }
 	inline Shader* GetShaderSkybox() { return m_ShaderSkybox; }
@@ -100,7 +100,8 @@ private:
 	void SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& transform, Material* overrideMaterial);
 
 	// Renderer2D::BeginScene
-	void BeginScene(const glm::mat4& viewProj, bool depthTest);
+	void Renderer2D_Init();
+	void Renderer2D_BeginScene(const glm::mat4& viewProj, bool depthTest);
 
 	// Raypicking (EditorLayer)
 public:
@@ -111,9 +112,10 @@ private:
 	bool OnMouseButtonPressed(MouseButtonPressedEvent& e); // EditorLayer::OnMouseButtonPressedEvent()
 	std::pair<float, float> GetMouseViewportSpace();
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
-	void DrawAABB(Mesh* mesh, const glm::mat4& transform, glm::vec4& color = glm::vec4(1.0f)); // Renderer::DrawAABB()
 	void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color); // Renderer2D::DrawLine()
 	void FlushAndResetLines(); // Renderer2D::FlushAndResetLines()
+	void DrawAABB(const Hazel::AABB& aabb, const glm::mat4& transform, glm::vec4& color = glm::vec4(1.0f)); // Renderer::DrawAABB()
+	void DrawAABB(Mesh* mesh, const glm::mat4& transform, glm::vec4& color = glm::vec4(1.0f)); // Renderer::DrawAABB()
 
 private:
 	struct Options
@@ -122,7 +124,31 @@ private:
 		bool ShowBoundingBoxes = false;
 	};
 
-	struct Data
+	// TODO:  Move to Renderer2D 
+	struct Renderer2DData
+	{
+		static const uint32_t MaxLines = 10000;
+		static const uint32_t MaxLineVertices = MaxLines * 2;
+		static const uint32_t MaxLineIndices = MaxLines * 6;
+
+		uint32_t TextureSlotIndex = 1; // 0 = white texture
+
+		// Lines
+		Hazel::VertexArray* LineVertexArray;
+		Hazel::VertexBuffer* LineVertexBuffer;
+
+		uint32_t LineIndexCount = 0;
+		Hazel::LineVertex* LineVertexBufferBase = nullptr;
+		Hazel::LineVertex* LineVertexBufferPtr = nullptr;
+
+		glm::mat4 CameraViewProj;
+		bool DepthTest = true;
+
+		Hazel::Renderer2D::Statistics Stats;
+	};
+	Renderer2DData m_R2DData;
+
+	struct SceneRendererData
 	{
 		Hazel::HazelScene* ActiveScene = nullptr;
 		struct SceneInfo
@@ -161,23 +187,8 @@ private:
 		unsigned int FullscreenQuadVAO;
 		unsigned int FullscreenQuadVBO;
 		unsigned int FullscreenQuadIBO;
-
-		uint32_t TextureSlotIndex = 1; // 0 = white texture
-
-		// Lines
-		Hazel::VertexArray* LineVertexArray;
-		Hazel::VertexBuffer* LineVertexBuffer;
-
-		uint32_t LineIndexCount = 0;
-		Hazel::LineVertex* LineVertexBufferBase = nullptr;
-		Hazel::LineVertex* LineVertexBufferPtr = nullptr;
-
-		glm::mat4 CameraViewProj;
-		bool DepthTest = true;
-
-		Hazel::Renderer2D::Statistics Stats;
 	};
-	Data m_Data;
+	SceneRendererData m_Data;
 
 	// Intermediate textures
 	Hazel::HazelTextureCube* m_EnvUnfiltered;
@@ -231,5 +242,6 @@ private:
 	bool m_AllowViewportCameraEvents = true;
 	bool m_DrawOnTopBoundingBoxes = true;
 	glm::vec3 m_NewRay;
+	std::vector<Hazel::Submesh> m_SelectedSubmeshes;
 
 };

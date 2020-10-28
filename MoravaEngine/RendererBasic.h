@@ -41,6 +41,8 @@ public:
 	static void Cleanup();
 	static void Clear(float r, float g, float b, float a);
 
+	static void SetLineThickness(float thickness); // RendererAPI::SetLineThickness
+
 protected:
 	static void UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene);
 
