@@ -37,7 +37,7 @@ public:
 	Hazel::Entity* CreateEntity(const std::string& name);
 	void LoadMesh(std::string fullPath);
 	void LoadEnvMapMaterials(Mesh* mesh);
-	void Render();
+	void Render(Framebuffer* framebuffer);
 	void OnImGuiRender();
 
 	void RenderHazelSkybox();
@@ -60,6 +60,7 @@ public:
 	float& GetSkyboxLOD();
 	void SetViewportBounds(glm::vec2* viewportBounds);
 	inline Hazel::SceneRenderer* GetSceneRenderer() { return m_SceneRenderer; }
+	inline bool* GetDisplayHazelGrid() { return &m_DisplayHazelGrid; }
 
 private:
 	void SetupContextData();
@@ -163,5 +164,7 @@ private:
 	std::vector<Hazel::Submesh> m_SelectedSubmeshes;
 
 	Hazel::SceneRenderer* m_SceneRenderer;
+
+	bool m_DisplayHazelGrid;
 
 };

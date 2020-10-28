@@ -42,6 +42,8 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     Init();
 
     m_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
+
+    m_DisplayHazelGrid = true;
 }
 
 void EnvironmentMap::SetupContextData()
@@ -420,68 +422,6 @@ void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool
         glEnable(GL_DEPTH_TEST);
 }
 
-void EnvironmentMap::Render()
-{
-    Hazel::MeshAnimPBR* meshAnimPBR = ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh());
-    m_ShaderHazelPBR = meshAnimPBR->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
-
-    m_SceneRenderer->BeginScene((Scene*)m_SceneRenderer->s_Data.ActiveScene);
-
-    m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("radiance"));
-    m_SceneRenderer->s_Data.SceneData.SceneEnvironment.IrradianceMap->Bind(m_SamplerSlots->at("irradiance"));
-    m_SceneRenderer->s_Data.BRDFLUT->Bind(m_SamplerSlots->at("BRDF_LUT"));
-
-    // Render MeshAnimPBR meshes (later entt entities)
-    uint32_t samplerSlot = m_SamplerSlots->at("albedo");
-    for (auto& dc : m_SceneRenderer->s_Data.DrawList)
-    {
-        // Log::GetLogger()->debug("EM::Render dc.Transform {0} {1} {2}", dc.Transform[3][0], dc.Transform[3][1], dc.Transform[3][2]);
-        // dc.Mesh->Render(samplerSlot, m_MeshEntity->Transform());
-    }
-
-    // m_ShaderHazelPBR_Anim->Bind();
-    // m_ShaderHazelPBR_Anim->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
-
-    // in conflict with MeshAnimPBR::m_BaseMaterial
-    // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
-
-    m_ShaderHazelPBR->Bind();
-
-    for (Hazel::Submesh* submesh : meshAnimPBR->GetSubmeshes())
-    {
-        if (m_EnvMapMaterials.contains(submesh->NodeName)) {
-            UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh->NodeName));
-        }
-        submesh->Render(meshAnimPBR, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
-    }
-
-    // meshAnimPBR->RenderSubmeshes(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
-    // meshAnimPBR->Render(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
-
-    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
-
-    // Temporary Hazel LIVE! #004
-    // Hazel::Renderer2D::BeginScene(viewProjection);
-    // Hazel::HazelRenderer::DrawAABB(meshAnimPBR);
-    // Hazel::Renderer2D::EndScene();
-
-    // Temporary Hazel LIVE #006
-    m_ShaderRenderer2D_Line->Bind();
-    m_ShaderRenderer2D_Line->setMat4("u_ViewProjection", viewProjection);
-    RendererBasic::SetLineThickness(2.0f);
-
-    DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-
-    if (m_SelectedSubmeshes.size()) {
-        for (auto& submesh : m_SelectedSubmeshes) {
-            DrawAABB(submesh.BoundingBox, submesh.Transform, glm::vec4(1.0f));
-        }
-    }
-
-    // Currently not in use
-    m_SceneRenderer->EndScene();
-}
-
 void EnvironmentMap::OnImGuiRender()
 {
     ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->OnImGuiRender();
@@ -765,9 +705,8 @@ void EnvironmentMap::RenderHazelSkybox()
     m_SceneRenderer->GetShaderSkybox()->setMat4("u_InverseVP", glm::inverse(viewProjection));
     // m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("u_Texture"));
-
     // SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
-    m_SceneRenderer->Renderer_SubmitFullscreenQuad(nullptr);
+    m_SceneRenderer->Renderer_SubmitFullscreenQuad(nullptr); // m_Data.SceneData.SkyboxMaterial
 }
 
 void EnvironmentMap::RenderHazelGrid()
@@ -962,29 +901,49 @@ void EnvironmentMap::Renderer2D_FlushAndResetLines()
     HZ_ASSERT(false, "Method not yet implemented!");
 }
 
-void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
-{
-    m_SceneRenderer->GetShaderComposite()->Bind();
-    framebuffer->GetTextureAttachmentColor()->Bind(m_SamplerSlots->at("u_Texture"));
-    m_SceneRenderer->GetShaderComposite()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    m_SceneRenderer->GetShaderComposite()->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure());
-    // m_ShaderComposite->setInt("u_TextureSamples", framebuffer->GetSpecification().Samples);
-    m_SceneRenderer->GetShaderComposite()->setInt("u_TextureSamples", m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
-
-    m_SceneRenderer->Renderer_SubmitFullscreenQuad(nullptr);
-}
-
 void EnvironmentMap::GeometryPassTemporary()
 {
+    Hazel::MeshAnimPBR* meshAnimPBR = ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh());
+    m_ShaderHazelPBR = meshAnimPBR->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
+
+    m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("radiance"));
+    m_SceneRenderer->s_Data.SceneData.SceneEnvironment.IrradianceMap->Bind(m_SamplerSlots->at("irradiance"));
+    m_SceneRenderer->s_Data.BRDFLUT->Bind(m_SamplerSlots->at("BRDF_LUT"));
+
+    RenderHazelSkybox();
+
+    if (m_DisplayHazelGrid) {
+        RenderHazelGrid();
+    }
+
+    // Render MeshAnimPBR meshes (later entt entities)
+    uint32_t samplerSlot = m_SamplerSlots->at("albedo");
+    for (auto& dc : m_SceneRenderer->s_Data.DrawList)
+    {
+        // Log::GetLogger()->debug("EM::Render dc.Transform {0} {1} {2}", dc.Transform[3][0], dc.Transform[3][1], dc.Transform[3][2]);
+        // dc.Mesh->Render(samplerSlot, m_MeshEntity->Transform());
+    }
+
+    // m_ShaderHazelPBR_Anim->Bind();
+    // m_ShaderHazelPBR_Anim->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
+
+    // in conflict with MeshAnimPBR::m_BaseMaterial
+    // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
+
+    m_ShaderHazelPBR->Bind();
+
+    for (Hazel::Submesh* submesh : meshAnimPBR->GetSubmeshes())
+    {
+        if (m_EnvMapMaterials.contains(submesh->NodeName)) {
+            UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh->NodeName));
+        }
+        submesh->Render(meshAnimPBR, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
+    }
+
+    // meshAnimPBR->RenderSubmeshes(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
+    // meshAnimPBR->Render(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
+
     m_SceneRenderer->Renderer_BeginRenderPass(m_SceneRenderer->s_Data.GeoPass, false); // should we clear the buffer?
-
-    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
-
-    // Skybox
-    m_SceneRenderer->GetShaderSkybox()->Bind();
-    m_SceneRenderer->GetShaderSkybox()->setMat4("u_InverseVP", glm::inverse(viewProjection));
-    m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
-    m_SceneRenderer->Renderer_SubmitFullscreenQuad(nullptr); // m_Data.SceneData.SkyboxMaterial
 
     // Render entities
     for (auto& dc : m_SceneRenderer->s_Data.DrawList)
@@ -997,4 +956,51 @@ void EnvironmentMap::GeometryPassTemporary()
     }
 
     m_SceneRenderer->Renderer_EndRenderPass();
+}
+
+void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
+{
+    m_SceneRenderer->GetShaderComposite()->Bind();
+    framebuffer->GetTextureAttachmentColor()->Bind(m_SamplerSlots->at("u_Texture"));
+    m_SceneRenderer->GetShaderComposite()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
+    m_SceneRenderer->GetShaderComposite()->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure());
+    // m_ShaderComposite->setInt("u_TextureSamples", framebuffer->GetSpecification().Samples);
+    m_SceneRenderer->GetShaderComposite()->setInt("u_TextureSamples", m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
+
+    m_SceneRenderer->Renderer_SubmitFullscreenQuad(nullptr);
+}
+
+void EnvironmentMap::Render(Framebuffer* framebuffer)
+{
+    RendererBasic::EnableTransparency();
+    RendererBasic::EnableMSAA();
+
+    m_SceneRenderer->BeginScene((Scene*)m_SceneRenderer->s_Data.ActiveScene);
+
+    GeometryPassTemporary();
+
+    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
+
+    // Temporary Hazel LIVE! #004
+    // Hazel::Renderer2D::BeginScene(viewProjection);
+    // Hazel::HazelRenderer::DrawAABB(meshAnimPBR);
+    // Hazel::Renderer2D::EndScene();
+
+    // Temporary Hazel LIVE #006
+    m_ShaderRenderer2D_Line->Bind();
+    m_ShaderRenderer2D_Line->setMat4("u_ViewProjection", viewProjection);
+    RendererBasic::SetLineThickness(2.0f);
+
+    DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+    if (m_SelectedSubmeshes.size()) {
+        for (auto& submesh : m_SelectedSubmeshes) {
+            DrawAABB(submesh.BoundingBox, submesh.Transform, glm::vec4(1.0f));
+        }
+    }
+
+    CompositePassTemporary(framebuffer);
+
+    // Currently not in use
+    m_SceneRenderer->EndScene();
 }

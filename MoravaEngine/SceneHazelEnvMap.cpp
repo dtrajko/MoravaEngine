@@ -139,8 +139,6 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_Grid = new Grid(20);
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 
-    m_DisplayHazelGrid = true;
-
     m_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
     m_Transform_ImGuizmo = &m_EnvironmentMap->GetMeshEntity()->Transform();
 
@@ -538,7 +536,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         {
             ImGui::Checkbox("Display Bounding Boxes", &m_VisibleAABBs);
             ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
-            ImGui::Checkbox("Display Hazel Grid", &m_DisplayHazelGrid);
+            ImGui::Checkbox("Display Hazel Grid", m_EnvironmentMap->GetDisplayHazelGrid());
 
             ImGui::Separator();
             for (auto& entity : m_Entities)
@@ -978,22 +976,9 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 
         SetupUniforms();
 
-        RendererBasic::EnableMSAA();
-
-        m_EnvironmentMap->RenderHazelSkybox();
-
-        if (m_DisplayHazelGrid) {
-            m_EnvironmentMap->RenderHazelGrid();
-        }
-
-        RendererBasic::EnableTransparency();
-
-        m_EnvironmentMap->Render();
+        m_EnvironmentMap->Render(m_RenderFramebuffer);
 
         RenderLineElements(m_ShaderBasic, projectionMatrix);
-
-        m_EnvironmentMap->GeometryPassTemporary();
-        m_EnvironmentMap->CompositePassTemporary(m_RenderFramebuffer);
 
         if (m_IsViewportEnabled)
         {

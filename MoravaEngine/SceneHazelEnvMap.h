@@ -149,8 +149,6 @@ private:
 	Grid* m_Grid;
 	Pivot* m_PivotScene;
 
-	bool m_DisplayHazelGrid;
-
 	// Hazelnut/EditorLayer
 	float m_SnapValue = 0.5f;
 
