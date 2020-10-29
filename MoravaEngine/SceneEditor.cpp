@@ -25,7 +25,7 @@
 #include "TerrainHeightMap.h"
 #include "PerlinNoise/PerlinNoise.hpp"
 #include "Application.h"
-#include "Hazel/Renderer/MeshAnimPBR.h"
+#include "Hazel/Renderer/HazelMesh.h"
 
 #include <vector>
 #include <map>
@@ -1548,7 +1548,7 @@ Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* n
         *name = "drone";
         break;
     case MESH_TYPE_M1911:
-        mesh = new Hazel::MeshAnimPBR("Models/M1911/m1911.fbx", RendererBasic::s_Shaders["hybrid_anim_pbr"], (*ResourceManager::GetMaterials())["M1911"], true);
+        mesh = new Hazel::HazelMesh("Models/M1911/m1911.fbx", RendererBasic::s_Shaders["hybrid_anim_pbr"], (*ResourceManager::GetMaterials())["M1911"], true);
         *name = "M1911";
         break;
     default:
@@ -2044,7 +2044,7 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Te
 
     m_MaterialWorkflowPBR->BindTextures(m_SamplerSlots["irradiance"]);
 
-    Hazel::MeshAnimPBR* meshAnimPBR = (Hazel::MeshAnimPBR*)sceneObject->mesh;
+    Hazel::HazelMesh* meshAnimPBR = (Hazel::HazelMesh*)sceneObject->mesh;
 
     float deltaTime = Timer::Get()->GetDeltaTime();
     meshAnimPBR->OnUpdate(deltaTime, false);
@@ -2069,7 +2069,7 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Te
         shaderHybridAnimPBR->setMat4("u_Transform", transform);
         shaderHybridAnimPBR->Validate();
 
-        // TODO move to virtual MeshAnimPBR::Render() method
+        // TODO move to virtual HazelMesh::Render() method
         glEnable(GL_DEPTH_TEST);
         glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 

@@ -809,7 +809,8 @@ target_link_libraries(
 	spirv-cross-msld.lib
 	spirv-cross-utild.lib
 	spirv-cross-cored.lib
-	yaml-cppd.lib
+#	yaml-cppd.lib
+	yaml-cpp.lib
 )
 elseif (UNIX)
 target_link_libraries(

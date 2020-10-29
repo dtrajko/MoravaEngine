@@ -443,9 +443,6 @@
     <ClCompile Include="Hazel\Renderer\Buffer.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Hazel\Renderer\MeshAnimPBR.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="RendererTrivial.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
@@ -570,6 +567,9 @@
       <Filter>Hazel\Core</Filter>
     </ClCompile>
     <ClCompile Include="Hazel\Renderer\RendererAPI.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Renderer\HazelMesh.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1087,9 +1087,6 @@
     <ClInclude Include="Hazel\Renderer\Buffer.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Hazel\Renderer\MeshAnimPBR.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="RendererTrivial.h">
       <Filter>Renderer</Filter>
     </ClInclude>
@@ -1230,6 +1227,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\HazelLog.h">
       <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\HazelMesh.h">
+      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

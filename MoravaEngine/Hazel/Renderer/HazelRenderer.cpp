@@ -4,7 +4,7 @@
 #include "RenderPass.h"
 #include "VertexArray.h"
 #include "RendererAPI.h"
-#include "MeshAnimPBR.h"
+#include "HazelMesh.h"
 #include "Renderer2D.h"
 
 #include "../../Log.h"
@@ -103,9 +103,9 @@ namespace Hazel {
 		return s_Data.m_CommandQueue;
 	}
 
-	void HazelRenderer::DrawAABB(Mesh* mesh, const glm::mat4& transform, glm::vec4& color)
+	void HazelRenderer::DrawAABB(const Ref<Mesh>& mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
-		for (Hazel::Submesh* submesh : ((Hazel::MeshAnimPBR*)mesh)->GetSubmeshes())
+		for (Hazel::Submesh* submesh : ((Hazel::HazelMesh*)mesh.get())->GetSubmeshes())
 		{
 			auto& aabb = submesh->BoundingBox;
 			const auto& aabbTransform = transform * submesh->Transform;
@@ -113,8 +113,11 @@ namespace Hazel {
 		}
 	}
 
-	void HazelRenderer::DrawAABB(const Hazel::AABB& aabb, const glm::mat4& transform, glm::vec4& color)
+	void HazelRenderer::DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color)
 	{
+		//	Log::GetLogger()->debug("HazelRenderer::DrawAABB Min [ {0} {1} {2} ] Max [ {3} {4} {5} ]",
+		//		aabb.Min.x, aabb.Min.y, aabb.Min.z, aabb.Max.x, aabb.Max.y, aabb.Max.z);
+
 		glm::vec4 min = { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f };
 		glm::vec4 max = { aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f };
 

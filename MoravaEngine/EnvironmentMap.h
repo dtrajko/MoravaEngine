@@ -4,7 +4,7 @@
 #include "Hazel/Scene/HazelScene.h"
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/RenderPass.h"
-#include "Hazel/Renderer/MeshAnimPBR.h"
+#include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/VertexArray.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/SceneRenderer.h"
@@ -78,15 +78,10 @@ public:
 
 	// Renderer
 	void DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest);
-	void SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& transform, Material* overrideMaterial);
+	void SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial);
 
-	// Renderer2D::BeginScene
-	void Renderer2D_Init();
-	void Renderer2D_BeginScene(const glm::mat4& viewProj, bool depthTest);
-
-	// Raypicking (EditorLayer)
-public:
-	void OnEvent(Event& e); // EditorLayer::OnEvent()
+	// EditorLayer
+	void OnEvent(Event& e);
 
 private:
 	bool OnKeyPressedEvent(KeyPressedEvent& e); // EditorLayer::OnKeyPressedEvent()

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Scene.h"
-#include "Hazel/Renderer/MeshAnimPBR.h"
+#include "Hazel/Renderer/HazelMesh.h"
 #include "TextureCubemap.h"
 #include "CubeSkybox.h"
 #include "MaterialWorkflowPBR.h"
@@ -67,9 +67,9 @@ private:
 	Shader* m_ShaderEnvIrradiance;
 	Shader* m_ShaderBasic;
 
-	Hazel::MeshAnimPBR* m_MeshAnimPBR_M1911;
-	Hazel::MeshAnimPBR* m_MeshAnimPBR_BobLamp;
-	Hazel::MeshAnimPBR* m_MeshAnimPBR_AnimBoy;
+	Hazel::HazelMesh* m_MeshAnimPBR_M1911;
+	Hazel::HazelMesh* m_MeshAnimPBR_BobLamp;
+	Hazel::HazelMesh* m_MeshAnimPBR_AnimBoy;
 
 	Material* m_BaseMaterial_M1911;
 	Material* m_BaseMaterial_BobLamp;

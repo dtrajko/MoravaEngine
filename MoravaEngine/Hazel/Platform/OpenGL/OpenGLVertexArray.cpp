@@ -47,43 +47,43 @@ namespace Hazel {
 		glBindVertexArray(0);
 	}
 
-	void OpenGLVertexArray::AddVertexBuffer(OpenGLVertexBuffer* vertexBuffer)
+	void OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
 	{
-		if (vertexBuffer->GetLayout().GetElements().size() <= 0)
-			Log::GetLogger()->error("Vertex Buffer has no layout!");
+		HZ_CORE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!");
 
 		Bind();
 		vertexBuffer->Bind();
 
-		const auto& layout = vertexBuffer->GetLayout();
-		for (const auto& element : layout)
-		{
-			auto glBaseType = ShaderDataTypeToOpenGLBaseType(element.Type);
-			glEnableVertexAttribArray(m_VertexBufferIndex);
-			if (glBaseType == GL_INT)
+		// Renderer::Submit([this, vertexBuffer]() {
+			const auto& layout = vertexBuffer->GetLayout();
+			for (const auto& element : layout)
 			{
-				glVertexAttribIPointer(m_VertexBufferIndex,
-					element.GetComponentCount(),
-					glBaseType,
-					layout.GetStride(),
-					(const void*)(intptr_t)element.Offset);
+				auto glBaseType = ShaderDataTypeToOpenGLBaseType(element.Type);
+				glEnableVertexAttribArray(m_VertexBufferIndex);
+				if (glBaseType == GL_INT)
+				{
+					glVertexAttribIPointer(m_VertexBufferIndex,
+						element.GetComponentCount(),
+						glBaseType,
+						layout.GetStride(),
+						(const void*)(intptr_t)element.Offset);
+				}
+				else
+				{
+					glVertexAttribPointer(m_VertexBufferIndex,
+						element.GetComponentCount(),
+						glBaseType,
+						element.Normalized ? GL_TRUE : GL_FALSE,
+						layout.GetStride(),
+						(const void*)(intptr_t)element.Offset);
+				}
+				m_VertexBufferIndex++;
 			}
-			else
-			{
-				glVertexAttribPointer(m_VertexBufferIndex,
-					element.GetComponentCount(),
-					glBaseType,
-					element.Normalized ? GL_TRUE : GL_FALSE,
-					layout.GetStride(),
-					(const void*)(intptr_t)element.Offset);
-			}
-			m_VertexBufferIndex++;
-		}
-
-			m_VertexBuffers.push_back(vertexBuffer);
+		// });
+		m_VertexBuffers.push_back(vertexBuffer);
 	}
 
-	void OpenGLVertexArray::SetIndexBuffer(OpenGLIndexBuffer* indexBuffer)
+	void OpenGLVertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
 	{
 		Bind();
 		indexBuffer->Bind();

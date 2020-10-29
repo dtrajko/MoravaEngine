@@ -66,6 +66,6 @@ protected:
 	// Hazel/Renderer/Mesh
 	std::string m_FilePath;
 
-	const aiScene* m_Scene; // Moved from MeshAnimPBR
+	const aiScene* m_Scene; // Moved from HazelMesh
 
 };

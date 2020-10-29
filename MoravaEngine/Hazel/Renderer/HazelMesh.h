@@ -116,12 +116,12 @@ namespace Hazel {
 			: V0(v0), V1(v1), V2(v2) {}
 	};
 
-	class MeshAnimPBR;
+	class HazelMesh;
 
 	class Submesh : public Mesh
 	{
 	public:
-		void Render(MeshAnimPBR* parentMesh, Shader* shader, glm::mat4 transform, uint32_t samplerSlot,
+		void Render(HazelMesh* parentMesh, Shader* shader, glm::mat4 transform, uint32_t samplerSlot,
 			const std::map<std::string, EnvMapMaterial*>& envMapMaterials);
 
 	public:
@@ -136,12 +136,12 @@ namespace Hazel {
 		std::string NodeName, MeshName;
 	};
 
-	class MeshAnimPBR : public Mesh
+	class HazelMesh : public Mesh
 	{
 	public:
-		// MeshAnimPBR(const std::string& filename);
-		MeshAnimPBR(const std::string& filename, Shader* shader, Material* material, bool isAnimated);
-		virtual ~MeshAnimPBR() override;
+		// HazelMesh(const std::string& filename);
+		HazelMesh(const std::string& filename, Shader* shader, Material* material, bool isAnimated);
+		virtual ~HazelMesh() override;
 
 		virtual void Create() override;
 		void OnUpdate(float ts, bool debug);
@@ -157,7 +157,7 @@ namespace Hazel {
 		inline const std::vector<Texture*>& GetTextures() const { return m_Textures; }
 		inline const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
 		inline bool& IsAnimated() { return m_IsAnimated; }
-		inline const OpenGLVertexArray& GetVertexArray() { return *m_VertexArray; }
+		inline Ref<VertexArray> GetVertexArray() { return m_VertexArray; }
 		inline const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
 
 		// Setters
@@ -182,8 +182,7 @@ namespace Hazel {
 		Texture* LoadBaseTexture();
 
 	public:
-		OpenGLVertexArray* m_VertexArray;
-		OpenGLVertexBuffer* m_VertexBuffer;
+		Ref<VertexArray> m_VertexArray;
 		OpenGLIndexBuffer* m_IndexBuffer;
 		std::vector<glm::mat4> m_BoneTransforms;
 

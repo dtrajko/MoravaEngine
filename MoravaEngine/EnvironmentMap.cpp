@@ -46,6 +46,69 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     m_DisplayHazelGrid = true;
 }
 
+void EnvironmentMap::Init()
+{
+    Application::Get()->GetWindow()->SetEventCallback(HZ_BIND_EVENT_FN(EnvironmentMap::OnEvent));
+
+    SetupShaders();
+
+    bool isMultisample = false;
+
+    FramebufferSpecification geoFramebufferSpec;
+    geoFramebufferSpec.Width = 1280;
+    geoFramebufferSpec.Height = 720;
+    geoFramebufferSpec.attachmentType = AttachmentType::Texture;
+    geoFramebufferSpec.attachmentFormat = AttachmentFormat::RGBA16F;
+    geoFramebufferSpec.Samples = 8;
+    geoFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+
+    isMultisample = geoFramebufferSpec.Samples > 1;
+
+    Hazel::RenderPassSpecification geoRenderPassSpec;
+    geoRenderPassSpec.TargetFramebuffer = new Framebuffer(geoFramebufferSpec);
+    geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferSpec);
+
+    FramebufferSpecification geoFramebufferDepthSpec;
+    geoFramebufferDepthSpec = geoFramebufferSpec;
+    geoFramebufferDepthSpec.attachmentType = AttachmentType::Texture;
+    geoFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth_24_Stencil_8;
+
+    geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferDepthSpec);
+    Log::GetLogger()->debug("Generating the GEO RenderPass framebuffer with AttachmentFormat::RGBA16F");
+    geoRenderPassSpec.TargetFramebuffer->Generate(geoFramebufferSpec.Width, geoFramebufferSpec.Height);
+    m_SceneRenderer->s_Data.GeoPass = Hazel::RenderPass::Create(geoRenderPassSpec);
+
+    FramebufferSpecification compFramebufferSpec;
+    compFramebufferSpec.Width = 1280;
+    compFramebufferSpec.Height = 720;
+    compFramebufferSpec.attachmentType = AttachmentType::Texture;
+    compFramebufferSpec.attachmentFormat = AttachmentFormat::RGBA8;
+    compFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+
+    isMultisample = compFramebufferSpec.Samples > 1;
+
+    Hazel::RenderPassSpecification compRenderPassSpec;
+    compRenderPassSpec.TargetFramebuffer = new Framebuffer(compFramebufferSpec);
+    compRenderPassSpec.TargetFramebuffer->CreateAttachment(compFramebufferSpec);
+    compRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(compFramebufferSpec.Width, compFramebufferSpec.Height, isMultisample,
+        AttachmentType::Renderbuffer, AttachmentFormat::Depth);
+    Log::GetLogger()->debug("Generating the COMPOSITE RenderPass framebuffer with AttachmentFormat::RGBA8");
+    compRenderPassSpec.TargetFramebuffer->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
+    m_SceneRenderer->s_Data.CompositePass = Hazel::RenderPass::Create(compRenderPassSpec);
+
+    m_SceneRenderer->s_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
+
+    SetupContextData();
+
+    // Temporary code Hazel LIVE! #004
+    Hazel::HazelRenderer::Init();
+    // Hazel::Renderer2D::Init();
+
+    bool depthTest = true;
+    Hazel::Renderer2D::Init();
+    Hazel::Renderer2D::BeginScene(RendererBasic::GetProjectionMatrix(), depthTest);
+}
+
 void EnvironmentMap::SetupContextData()
 {
     // Setup default texture info
@@ -99,9 +162,9 @@ void EnvironmentMap::SetupContextData()
         m_TextureInfo.insert(std::make_pair("pCylinder5", textureInfoM1911));
 
         // Material* material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
-        // mesh = new Hazel::MeshAnimPBR("Models/Hazel/Sphere1m.fbx", m_ShaderHazelPBR_Anim, drawCommand.Material, false);
-        // mesh = new Hazel::MeshAnimPBR("Models/M1911/M1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);
-        // mesh = new Hazel::MeshAnimPBR("Models/Cerberus/Cerberus_LP.FBX", m_ShaderHazelPBR_Static, nullptr, false);
+        // mesh = new Hazel::HazelMesh("Models/Hazel/Sphere1m.fbx", m_ShaderHazelPBR_Anim, drawCommand.Material, false);
+        // mesh = new Hazel::HazelMesh("Models/M1911/M1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);
+        // mesh = new Hazel::HazelMesh("Models/Cerberus/Cerberus_LP.FBX", m_ShaderHazelPBR_Static, nullptr, false);
 
         LoadMesh("Models/Cerberus/Cerberus_LP.FBX");
     }
@@ -114,7 +177,7 @@ void EnvironmentMap::LoadMesh(std::string fullPath)
     std::string fileNameNoExt = Util::StripExtensionFromFileName(fileName);
 
     // A bit unfortunate hard-coded mesh type selection by model name
-    // TODO: detect automatically mesh type in MeshAnimPBR constructor
+    // TODO: detect automatically mesh type in HazelMesh constructor
     bool isAnimated;
     if (fileNameNoExt == "m1911") {
         isAnimated = true;
@@ -127,9 +190,9 @@ void EnvironmentMap::LoadMesh(std::string fullPath)
 
     Log::GetLogger()->debug("EnvironmentMap::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
-    Hazel::MeshAnimPBR* mesh = new Hazel::MeshAnimPBR(fullPath, m_ShaderHazelPBR, nullptr, isAnimated);
+    Hazel::HazelMesh* mesh = new Hazel::HazelMesh(fullPath, m_ShaderHazelPBR, nullptr, isAnimated);
 
-    ((Hazel::MeshAnimPBR*)mesh)->SetTimeMultiplier(1.0f);
+    ((Hazel::HazelMesh*)mesh)->SetTimeMultiplier(1.0f);
 
     m_SceneRenderer->s_Data.DrawList.clear(); // doesn't work for multiple meshes on the scene
     Hazel::SceneRendererData::DrawCommand drawCommand;
@@ -157,7 +220,7 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
     }
     m_EnvMapMaterials.clear();
 
-    for (Hazel::Submesh* submesh : ((Hazel::MeshAnimPBR*)mesh)->GetSubmeshes())
+    for (Hazel::Submesh* submesh : ((Hazel::HazelMesh*)mesh)->GetSubmeshes())
     {
         if (m_EnvMapMaterials.contains(submesh->NodeName)) {
             continue;
@@ -271,69 +334,6 @@ void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMater
     /**** END Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
 }
 
-void EnvironmentMap::Init()
-{
-    Application::Get()->GetWindow()->SetEventCallback(HZ_BIND_EVENT_FN(EnvironmentMap::OnEvent));
-
-    SetupShaders();
-
-    bool isMultisample = false;
-
-    FramebufferSpecification geoFramebufferSpec;
-    geoFramebufferSpec.Width = 1280;
-    geoFramebufferSpec.Height = 720;
-    geoFramebufferSpec.attachmentType = AttachmentType::Texture;
-    geoFramebufferSpec.attachmentFormat = AttachmentFormat::RGBA16F;
-    geoFramebufferSpec.Samples = 8;
-    geoFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
-
-    isMultisample = geoFramebufferSpec.Samples > 1;
-
-    Hazel::RenderPassSpecification geoRenderPassSpec;
-    geoRenderPassSpec.TargetFramebuffer = new Framebuffer(geoFramebufferSpec);
-    geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferSpec);
-
-    FramebufferSpecification geoFramebufferDepthSpec;
-    geoFramebufferDepthSpec = geoFramebufferSpec;
-    geoFramebufferDepthSpec.attachmentType = AttachmentType::Texture;
-    geoFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth_24_Stencil_8;
-
-    geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferDepthSpec);
-    Log::GetLogger()->debug("Generating the GEO RenderPass framebuffer with AttachmentFormat::RGBA16F");
-    geoRenderPassSpec.TargetFramebuffer->Generate(geoFramebufferSpec.Width, geoFramebufferSpec.Height);
-    m_SceneRenderer->s_Data.GeoPass = Hazel::RenderPass::Create(geoRenderPassSpec);
-
-    FramebufferSpecification compFramebufferSpec;
-    compFramebufferSpec.Width = 1280;
-    compFramebufferSpec.Height = 720;
-    compFramebufferSpec.attachmentType = AttachmentType::Texture;
-    compFramebufferSpec.attachmentFormat = AttachmentFormat::RGBA8;
-    compFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
-
-    isMultisample = compFramebufferSpec.Samples > 1;
-
-    Hazel::RenderPassSpecification compRenderPassSpec;
-    compRenderPassSpec.TargetFramebuffer = new Framebuffer(compFramebufferSpec);
-    compRenderPassSpec.TargetFramebuffer->CreateAttachment(compFramebufferSpec);
-    compRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(compFramebufferSpec.Width, compFramebufferSpec.Height, isMultisample,
-        AttachmentType::Renderbuffer, AttachmentFormat::Depth);
-    Log::GetLogger()->debug("Generating the COMPOSITE RenderPass framebuffer with AttachmentFormat::RGBA8");
-    compRenderPassSpec.TargetFramebuffer->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
-    m_SceneRenderer->s_Data.CompositePass = Hazel::RenderPass::Create(compRenderPassSpec);
-
-    m_SceneRenderer->s_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
-
-    SetupContextData();
-
-    // Temporary code Hazel LIVE! #004
-    Hazel::HazelRenderer::Init();
-    // Hazel::Renderer2D::Init();
-
-    bool depthTest = true;
-    Hazel::Renderer2D::Init();
-    // Hazel::Renderer2D::BeginScene(RendererBasic::GetProjectionMatrix(), depthTest);
-}
-
 void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
 {
     m_SkyboxTexture = skybox;
@@ -365,10 +365,10 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
 
     UpdateUniforms();
 
-    // Update MeshAnimPBR List
+    // Update HazelMesh List
     for (auto& dc : m_SceneRenderer->s_Data.DrawList)
     {
-        ((Hazel::MeshAnimPBR*)dc.Mesh)->OnUpdate(timestep, false);
+        ((Hazel::HazelMesh*)dc.Mesh)->OnUpdate(timestep, false);
     }
 }
 
@@ -378,7 +378,7 @@ void EnvironmentMap::SubmitEntity(Hazel::Entity* entity)
     if (!mesh)
         return;
 
-    m_SceneRenderer->s_Data.DrawList.push_back({ entity->GetName(), (Hazel::MeshAnimPBR*)mesh, entity->GetMaterial(), entity->GetTransform() });
+    m_SceneRenderer->s_Data.DrawList.push_back({ entity->GetName(), (Hazel::HazelMesh*)mesh, entity->GetMaterial(), entity->GetTransform() });
 }
 
 float& EnvironmentMap::GetSkyboxLOD()
@@ -421,7 +421,7 @@ void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool
 
 void EnvironmentMap::OnImGuiRender()
 {
-    ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh())->OnImGuiRender();
+    ((Hazel::HazelMesh*)m_MeshEntity->GetMesh())->OnImGuiRender();
 
     ImGui::Begin("EnvMap Materials");
     {
@@ -634,7 +634,7 @@ void EnvironmentMap::OnImGuiRender()
     ImGui::End();
 }
 
-void EnvironmentMap::SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& transform, Material* overrideMaterial)
+void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial)
 {
     // auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
     // auto shader = material->GetShader();
@@ -741,7 +741,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
             auto [origin, direction] = CastRay(mouseX, mouseY);
 
             auto mesh = m_MeshEntity->GetMesh();
-            const auto& submeshes = ((Hazel::MeshAnimPBR*)mesh)->GetSubmeshes();
+            const auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
             float lastT = 200.0f; // Distance between camera and intersection in CastRay
 
             for (const auto& submesh : submeshes)
@@ -807,8 +807,8 @@ std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)
 
 void EnvironmentMap::GeometryPassTemporary()
 {
-    Hazel::MeshAnimPBR* meshAnimPBR = ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh());
-    m_ShaderHazelPBR = meshAnimPBR->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
+    Hazel::HazelMesh* hazelMesh = ((Hazel::HazelMesh*)m_MeshEntity->GetMesh());
+    m_ShaderHazelPBR = hazelMesh->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
 
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("radiance"));
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.IrradianceMap->Bind(m_SamplerSlots->at("irradiance"));
@@ -820,7 +820,7 @@ void EnvironmentMap::GeometryPassTemporary()
         RenderHazelGrid();
     }
 
-    // Render MeshAnimPBR meshes (later entt entities)
+    // Render HazelMesh meshes (later entt entities)
     uint32_t samplerSlot = m_SamplerSlots->at("albedo");
     for (auto& dc : m_SceneRenderer->s_Data.DrawList)
     {
@@ -831,21 +831,21 @@ void EnvironmentMap::GeometryPassTemporary()
     // m_ShaderHazelPBR_Anim->Bind();
     // m_ShaderHazelPBR_Anim->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
 
-    // in conflict with MeshAnimPBR::m_BaseMaterial
+    // in conflict with HazelMesh::m_BaseMaterial
     // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
 
     m_ShaderHazelPBR->Bind();
 
-    for (Hazel::Submesh* submesh : meshAnimPBR->GetSubmeshes())
+    for (Hazel::Submesh* submesh : hazelMesh->GetSubmeshes())
     {
         if (m_EnvMapMaterials.contains(submesh->NodeName)) {
             UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh->NodeName));
         }
-        submesh->Render(meshAnimPBR, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
+        submesh->Render(hazelMesh, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
     }
 
-    // meshAnimPBR->RenderSubmeshes(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
-    // meshAnimPBR->Render(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
+    // hazelMesh->RenderSubmeshes(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
+    // hazelMesh->Render(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
 
     m_SceneRenderer->Renderer_BeginRenderPass(m_SceneRenderer->s_Data.GeoPass, false); // should we clear the buffer?
 
@@ -856,7 +856,7 @@ void EnvironmentMap::GeometryPassTemporary()
         auto baseMaterial = dc.Material;
 
         auto overrideMaterial = nullptr; // dc.Material;
-        SubmitMesh(((Hazel::MeshAnimPBR*)dc.Mesh), m_MeshEntity->Transform(), overrideMaterial);
+        SubmitMesh(((Hazel::HazelMesh*)dc.Mesh), m_MeshEntity->Transform(), overrideMaterial);
     }
 
     m_SceneRenderer->Renderer_EndRenderPass();
@@ -881,25 +881,39 @@ void EnvironmentMap::Render(Framebuffer* framebuffer)
 
     m_SceneRenderer->BeginScene((Scene*)m_SceneRenderer->s_Data.ActiveScene);
 
-    GeometryPassTemporary();
-
     glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
-
-    // Temporary Hazel LIVE! #004
-    // Hazel::Renderer2D::BeginScene(viewProjection);
-    // Hazel::HazelRenderer::DrawAABB(meshAnimPBR);
-    // Hazel::Renderer2D::EndScene();
 
     // Temporary Hazel LIVE #006
     m_ShaderRenderer2D_Line->Bind();
     m_ShaderRenderer2D_Line->setMat4("u_ViewProjection", viewProjection);
     RendererBasic::SetLineThickness(2.0f);
 
+    // BEGIN dtrajko test code
+    // bool depthTest = true;
+    // Hazel::Renderer2D::BeginScene(viewProjection, depthTest); // Resets LineIndexCount which is bad
+
     // Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
+    auto mesh = m_MeshEntity->GetMesh();
+    const auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
+    for (const auto& submesh : submeshes)
+    {
+        Hazel::HazelRenderer::DrawAABB(submesh->BoundingBox, submesh->Transform, glm::vec4(1.0f));
+    }
+    // END dtrajko test code
+
+    GeometryPassTemporary();
+
+
+    // Temporary Hazel LIVE! #004
+    // Hazel::Renderer2D::BeginScene(viewProjection);
+    // Hazel::HazelRenderer::DrawAABB(hazelMesh);
+    // Hazel::Renderer2D::EndScene();
+
+    /**
     if (m_SelectedSubmeshes.size()) {
         for (auto& submesh : m_SelectedSubmeshes) {
-            // Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, submesh.Transform, glm::vec4(1.0f));
+            Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, submesh.Transform, glm::vec4(1.0f));
         }
     }
 
@@ -911,6 +925,7 @@ void EnvironmentMap::Render(Framebuffer* framebuffer)
             Hazel::HazelRenderer::DrawAABB(dc.Mesh, dc.Transform);
         Hazel::Renderer2D::EndScene();
     }
+    **/
 
     CompositePassTemporary(framebuffer);
 

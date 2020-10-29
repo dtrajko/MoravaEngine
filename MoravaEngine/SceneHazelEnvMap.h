@@ -2,7 +2,7 @@
 
 #include "Scene.h"
 #include "EnvironmentMap.h"
-#include "Hazel/Renderer/MeshAnimPBR.h"
+#include "Hazel/Renderer/HazelMesh.h"
 #include "Framebuffer.h"
 #include "Texture.h"
 #include "Hazel/Panels/SceneHierarchyPanel.h"

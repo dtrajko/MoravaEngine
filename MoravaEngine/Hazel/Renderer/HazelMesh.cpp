@@ -1,4 +1,4 @@
-#include "MeshAnimPBR.h"
+#include "HazelMesh.h"
 
 #include <GL/glew.h>
 
@@ -57,7 +57,7 @@ namespace Hazel {
 		}
 	};
 
-	MeshAnimPBR::MeshAnimPBR(const std::string& filename, Shader* shader, Material* material, bool isAnimated)
+	HazelMesh::HazelMesh(const std::string& filename, Shader* shader, Material* material, bool isAnimated)
 		: m_MeshShader(shader), m_BaseMaterial(material), m_IsAnimated(isAnimated)
 	{
 		m_FilePath = filename;
@@ -72,17 +72,17 @@ namespace Hazel {
 		Create();
 	}
 
-	//	MeshAnimPBR::MeshAnimPBR(const std::string& filename)
+	//	HazelMesh::HazelMesh(const std::string& filename)
 	//		: m_FilePath(filename)
 	//	{
 	//		Create();
 	//	}
 
-	void MeshAnimPBR::Create()
+	void HazelMesh::Create()
 	{
 		LogStream::Initialize();
 
-		Log::GetLogger()->info("Hazel::MeshAnimPBR: Loading mesh: {0}", m_FilePath.c_str());
+		Log::GetLogger()->info("Hazel::HazelMesh: Loading mesh: {0}", m_FilePath.c_str());
 
 		m_Importer = std::make_unique<Assimp::Importer>();
 
@@ -101,7 +101,7 @@ namespace Hazel {
 
 		m_Submeshes.reserve(scene->mNumMeshes);
 
-		Log::GetLogger()->info("Hazel::MeshAnimPBR: Master mesh contains {0} submeshes.", scene->mNumMeshes);
+		Log::GetLogger()->info("Hazel::HazelMesh: Master mesh contains {0} submeshes.", scene->mNumMeshes);
 
 		for (size_t m = 0; m < scene->mNumMeshes; m++)
 		{
@@ -493,34 +493,34 @@ namespace Hazel {
 			HZ_MESH_LOG("------------------------");
 		}
 
-		Log::GetLogger()->info("Hazel::MeshAnimPBR: Creating a Vertex Array...");
+		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Array...");
 
-		m_VertexArray = new OpenGLVertexArray();
+		m_VertexArray = VertexArray::Create();
 
-		Log::GetLogger()->info("Hazel::MeshAnimPBR: Creating a Vertex Buffer...");
+		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Buffer...");
 
-		m_VertexBuffer = new OpenGLVertexBuffer(m_AnimatedVertices.data(), (uint32_t)m_AnimatedVertices.size() * sizeof(AnimatedVertex));
-		m_VertexBuffer->SetLayout({
+		auto vb = VertexBuffer::Create(m_AnimatedVertices.data(), (uint32_t)m_AnimatedVertices.size() * sizeof(AnimatedVertex));
+		vb->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float3, "a_Normal" },
 			{ ShaderDataType::Float3, "a_Tangent" },
 			{ ShaderDataType::Float3, "a_Binormal" },
 			{ ShaderDataType::Float2, "a_TexCoord" },
-			{ ShaderDataType::Int4, "a_BoneIDs" },
+			{ ShaderDataType::Int4,   "a_BoneIDs" },
 			{ ShaderDataType::Float4, "a_BoneWeights" },
 			});
-		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
+		m_VertexArray->AddVertexBuffer(vb);
 
-		Log::GetLogger()->info("Hazel::MeshAnimPBR: Creating an Index Buffer...");
+		Log::GetLogger()->info("Hazel::HazelMesh: Creating an Index Buffer...");
 
-		m_IndexBuffer = new OpenGLIndexBuffer(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
-		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
+		auto ib = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
+		m_VertexArray->SetIndexBuffer(ib);
 
-		Log::GetLogger()->info("Hazel::MeshAnimPBR: Total vertices: {0}", m_AnimatedVertices.size());
-		Log::GetLogger()->info("Hazel::MeshAnimPBR: Total indices: {0}", m_Indices.size());
+		Log::GetLogger()->info("Hazel::HazelMesh: Total vertices: {0}", m_AnimatedVertices.size());
+		Log::GetLogger()->info("Hazel::HazelMesh: Total indices: {0}", m_Indices.size());
 	}
 
-	MeshAnimPBR::~MeshAnimPBR()
+	HazelMesh::~HazelMesh()
 	{
 		for (Material* material : m_Materials)
 			delete material;
@@ -532,11 +532,9 @@ namespace Hazel {
 			delete submesh;
 
 		delete m_IndexBuffer;
-		delete m_VertexBuffer;
-		delete m_VertexArray;
 	}
 
-	void MeshAnimPBR::OnUpdate(float ts, bool debug)
+	void HazelMesh::OnUpdate(float ts, bool debug)
 	{
 		m_WorldTime += ts;
 
@@ -548,7 +546,7 @@ namespace Hazel {
 			m_AnimationTime = fmod(m_AnimationTime, (float)m_Scene->mAnimations[0]->mDuration);
 
 			//	if (debug) {
-			//		Log::GetLogger()->info("MeshAnimPBR::OnUpdate ts: {0} m_AnimationTime: {1} mDuration {2} ticksPerSecond {3}",
+			//		Log::GetLogger()->info("HazelMesh::OnUpdate ts: {0} m_AnimationTime: {1} mDuration {2} ticksPerSecond {3}",
 			//			ts, m_AnimationTime, m_Scene->mAnimations[0]->mDuration, ticksPerSecond);
 			//	}
 		}
@@ -567,7 +565,7 @@ namespace Hazel {
 		return result;
 	}
 
-	void MeshAnimPBR::TraverseNodes(aiNode* node, const glm::mat4& parentTransform, uint32_t level)
+	void HazelMesh::TraverseNodes(aiNode* node, const glm::mat4& parentTransform, uint32_t level)
 	{
 		glm::mat4 transform = parentTransform * Math::Mat4FromAssimpMat4(node->mTransformation);
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
@@ -584,7 +582,7 @@ namespace Hazel {
 			TraverseNodes(node->mChildren[i], transform, level + 1);
 	}
 
-	uint32_t MeshAnimPBR::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
+	uint32_t HazelMesh::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
 		for (uint32_t i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
 		{
@@ -595,7 +593,7 @@ namespace Hazel {
 		return 0;
 	}
 
-	uint32_t MeshAnimPBR::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
+	uint32_t HazelMesh::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
 		if (pNodeAnim->mNumRotationKeys <= 0)
 			Log::GetLogger()->error("pNodeAnim->mNumRotationKeys <= 0");
@@ -610,7 +608,7 @@ namespace Hazel {
 	}
 
 
-	uint32_t MeshAnimPBR::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
+	uint32_t HazelMesh::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
 		if (pNodeAnim->mNumScalingKeys <= 0)
 			Log::GetLogger()->error("pNodeAnim->mNumScalingKeys <= 0");
@@ -625,7 +623,7 @@ namespace Hazel {
 	}
 
 
-	glm::vec3 MeshAnimPBR::InterpolateTranslation(float animationTime, const aiNodeAnim* nodeAnim)
+	glm::vec3 HazelMesh::InterpolateTranslation(float animationTime, const aiNodeAnim* nodeAnim)
 	{
 		if (nodeAnim->mNumPositionKeys == 1)
 		{
@@ -656,7 +654,7 @@ namespace Hazel {
 	}
 
 
-	glm::quat MeshAnimPBR::InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim)
+	glm::quat HazelMesh::InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim)
 	{
 		if (nodeAnim->mNumRotationKeys == 1)
 		{
@@ -689,7 +687,7 @@ namespace Hazel {
 	}
 
 
-	glm::vec3 MeshAnimPBR::InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim)
+	glm::vec3 HazelMesh::InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim)
 	{
 		if (nodeAnim->mNumScalingKeys == 1)
 		{
@@ -719,7 +717,7 @@ namespace Hazel {
 		return { aiVec.x, aiVec.y, aiVec.z };
 	}
 
-	void MeshAnimPBR::SetupDefaultBaseMaterial()
+	void HazelMesh::SetupDefaultBaseMaterial()
 	{
 		// Setup default Material
 		TextureInfo textureInfoDefault = {};
@@ -731,7 +729,7 @@ namespace Hazel {
 		m_BaseMaterial = new Material(textureInfoDefault, 0.0f, 0.0f);
 	}
 
-	Texture* MeshAnimPBR::LoadBaseTexture()
+	Texture* HazelMesh::LoadBaseTexture()
 	{
 		if (!m_BaseTexture) {
 			m_BaseTexture = new Texture("Textures/plain.png");
@@ -740,7 +738,7 @@ namespace Hazel {
 		return m_BaseTexture;
 	}
 
-	void MeshAnimPBR::ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform, uint32_t level)
+	void HazelMesh::ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform, uint32_t level)
 	{
 		glm::mat4 localTransform = Math::Mat4FromAssimpMat4(node->mTransformation);
 		glm::mat4 transform = parentTransform * localTransform;
@@ -779,7 +777,7 @@ namespace Hazel {
 		}
 	}
 
-	void MeshAnimPBR::OnImGuiRender()
+	void HazelMesh::OnImGuiRender()
 	{
 		// Mesh Hierarchy
 		ImGui::Begin("Mesh Hierarchy");
@@ -804,7 +802,7 @@ namespace Hazel {
 		ImGui::End();
 	}
 
-	void MeshAnimPBR::ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& parentTransform)
+	void HazelMesh::ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& parentTransform)
 	{
 		std::string name(pNode->mName.data);
 		glm::mat4 nodeTransform(Math::Mat4FromAssimpMat4(pNode->mTransformation));
@@ -844,7 +842,7 @@ namespace Hazel {
 			ReadNodeHierarchy(AnimationTime, pNode->mChildren[i], transform);
 	}
 
-	aiNodeAnim* MeshAnimPBR::FindNodeAnim(const aiAnimation* animation, const std::string& nodeName)
+	aiNodeAnim* HazelMesh::FindNodeAnim(const aiAnimation* animation, const std::string& nodeName)
 	{
 		for (uint32_t i = 0; i < animation->mNumChannels; i++)
 		{
@@ -855,7 +853,7 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	void MeshAnimPBR::BoneTransform(float time)
+	void HazelMesh::BoneTransform(float time)
 	{
 		ReadNodeHierarchy(time, m_Scene->mRootNode, glm::mat4(1.0f));
 		m_BoneTransforms.resize(m_BoneCount);
@@ -863,7 +861,7 @@ namespace Hazel {
 			m_BoneTransforms[i] = m_BoneInfo[i].FinalTransformation;
 	}
 
-	void MeshAnimPBR::DumpVertexBuffer()
+	void HazelMesh::DumpVertexBuffer()
 	{
 		// TODO: Convert to ImGui
 		HZ_MESH_LOG("------------------------------------------------------");
@@ -883,7 +881,7 @@ namespace Hazel {
 		HZ_MESH_LOG("------------------------------------------------------");
 	}
 
-	void MeshAnimPBR::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
+	void HazelMesh::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
 	{
 		EnvMapMaterial* envMapMaterial = nullptr;
 
@@ -931,7 +929,7 @@ namespace Hazel {
 		}
 	}
 
-	void MeshAnimPBR::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
+	void HazelMesh::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
 	{
 		for (Hazel::Submesh* submesh : m_Submeshes)
 		{
@@ -939,12 +937,12 @@ namespace Hazel {
 		}
 	}
 
-	void Submesh::Render(MeshAnimPBR* parentMesh, Shader* shader, glm::mat4 transform, uint32_t samplerSlot,
+	void Submesh::Render(HazelMesh* parentMesh, Shader* shader, glm::mat4 transform, uint32_t samplerSlot,
 		const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
 	{
 		EnvMapMaterial* envMapMaterial = nullptr;
 
-		parentMesh->GetVertexArray().Bind();
+		parentMesh->GetVertexArray().get()->Bind();
 
 		shader->Bind();
 
