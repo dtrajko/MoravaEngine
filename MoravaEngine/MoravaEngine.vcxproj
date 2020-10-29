@@ -204,6 +204,7 @@
     <ClCompile Include="Hazel\Renderer\HazelTexture.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelRenderer.cpp" />
     <ClCompile Include="Hazel\Renderer\Renderer2D.cpp" />
+    <ClCompile Include="Hazel\Renderer\RendererAPI.cpp" />
     <ClCompile Include="Hazel\Renderer\RenderPass.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelShader.cpp" />
     <ClCompile Include="Hazel\Renderer\SceneRenderer.cpp" />

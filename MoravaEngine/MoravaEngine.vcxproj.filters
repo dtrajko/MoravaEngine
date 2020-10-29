@@ -569,6 +569,9 @@
     <ClCompile Include="Hazel\Core\HazelLog.cpp">
       <Filter>Hazel\Core</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Renderer\RendererAPI.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">

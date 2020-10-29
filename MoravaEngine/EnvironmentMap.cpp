@@ -326,11 +326,11 @@ void EnvironmentMap::Init()
     SetupContextData();
 
     // Temporary code Hazel LIVE! #004
-    // Hazel::HazelRenderer::Init();
+    Hazel::HazelRenderer::Init();
     // Hazel::Renderer2D::Init();
 
     bool depthTest = true;
-    // Hazel::Renderer2D::Init();
+    Hazel::Renderer2D::Init();
     // Hazel::Renderer2D::BeginScene(RendererBasic::GetProjectionMatrix(), depthTest);
 }
 

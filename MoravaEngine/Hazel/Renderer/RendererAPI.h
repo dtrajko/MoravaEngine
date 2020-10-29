@@ -49,9 +49,12 @@ namespace Hazel {
 			return capabilities;
 		}
 
-		static RendererAPIType Current() { return s_CurrentRendererAPI; }
+		// Currently hard-coded to OpenGL
+		static RendererAPIType Current() { s_CurrentRendererAPI = RendererAPIType::OpenGL; return s_CurrentRendererAPI; }
+
 	private:
 		static void LoadRequiredAssets();
+
 	private:
 		static RendererAPIType s_CurrentRendererAPI;
 

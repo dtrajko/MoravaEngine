@@ -5,19 +5,37 @@
 
 namespace Hazel {
 
-	VertexBuffer* VertexBuffer::Create(void* data, uint32_t size, VertexBufferUsage usage)
+	Ref<VertexBuffer> VertexBuffer::Create(void* data, uint32_t size, VertexBufferUsage usage)
 	{
-		return (VertexBuffer*)new OpenGLVertexBuffer(data, size, usage);
+		switch (RendererAPI::Current())
+		{
+		case RendererAPIType::None:    return nullptr;
+		case RendererAPIType::OpenGL:  return std::make_shared<OpenGLVertexBuffer>(data, size, usage);
+		}
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+		return nullptr;
 	}
 
-	VertexBuffer* VertexBuffer::Create(uint32_t size, VertexBufferUsage usage)
+	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, VertexBufferUsage usage)
 	{
-		return (VertexBuffer*)new OpenGLVertexBuffer(size, usage);
+		switch (RendererAPI::Current())
+		{
+		case RendererAPIType::None:    return nullptr;
+		case RendererAPIType::OpenGL:  return std::make_shared<OpenGLVertexBuffer>(size, usage);
+		}
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+		return nullptr;
 	}
 
-	IndexBuffer* IndexBuffer::Create(void* data, uint32_t size)
+	Ref<IndexBuffer> IndexBuffer::Create(void* data, uint32_t size)
 	{
-		return (IndexBuffer*)new OpenGLIndexBuffer(data, size);
+		switch (RendererAPI::Current())
+		{
+		case RendererAPIType::None:    return nullptr;
+		case RendererAPIType::OpenGL:  return std::make_shared<OpenGLIndexBuffer>(data, size);
+		}
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+		return nullptr;
 	}
 
 }

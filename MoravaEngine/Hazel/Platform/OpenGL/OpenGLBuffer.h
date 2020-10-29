@@ -16,24 +16,24 @@ namespace Hazel {
 	// VertexBuffer
 	//////////////////////////////////////////////////////////////////////////////////
 
-	class OpenGLVertexBuffer
+	class OpenGLVertexBuffer : public VertexBuffer
 	{
 	public:
 		OpenGLVertexBuffer(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
 		OpenGLVertexBuffer(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
 		virtual ~OpenGLVertexBuffer();
 
-		void SetData(void* data, uint32_t size, uint32_t offset = 0);
-		void Bind() const;
+		virtual void SetData(void* data, uint32_t size, uint32_t offset = 0);
+		virtual void Bind() const;
 
-		const BufferLayout& GetLayout() const { return m_Layout; }
-		void SetLayout(const BufferLayout& layout) { m_Layout = layout; }
+		virtual const BufferLayout& GetLayout() const override { return m_Layout; }
+		virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
 
-		uint32_t GetSize() const { return m_Size; }
-		uint32_t GetRendererID() const { return m_RendererID; }
+		virtual uint32_t GetSize() const { return m_Size; }
+		virtual uint32_t GetRendererID() const { return m_RendererID; }
 	private:
 		uint32_t m_RendererID = 0;
-		unsigned int m_Size;
+		uint32_t m_Size;
 		VertexBufferUsage m_Usage;
 		BufferLayout m_Layout;
 
@@ -44,7 +44,7 @@ namespace Hazel {
 	// IndexBuffer
 	//////////////////////////////////////////////////////////////////////////////////
 
-	class OpenGLIndexBuffer
+	class OpenGLIndexBuffer : public IndexBuffer
 	{
 	public:
 		OpenGLIndexBuffer(void* data, uint32_t size);

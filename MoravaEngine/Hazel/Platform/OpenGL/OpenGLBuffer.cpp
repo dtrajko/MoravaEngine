@@ -1,4 +1,5 @@
 #include "OpenGLBuffer.h"
+#include "../../Core/Assert.h"
 
 #include <gl/glew.h>
 
@@ -13,10 +14,10 @@ namespace Hazel {
 	{
 		switch (usage)
 		{
-			case VertexBufferUsage::Static:  return GL_STATIC_DRAW;
-			case VertexBufferUsage::Dynamic: return GL_DYNAMIC_DRAW;
+		case VertexBufferUsage::Static:    return GL_STATIC_DRAW;
+		case VertexBufferUsage::Dynamic:   return GL_DYNAMIC_DRAW;
 		}
-		Log::GetLogger()->error("Unknown vertex buffer usage");
+		HZ_CORE_ASSERT(false, "Unknown vertex buffer usage");
 		return 0;
 	}
 
@@ -24,7 +25,7 @@ namespace Hazel {
 		: m_Size(size), m_Usage(usage)
 	{
 		m_LocalData = Buffer::Copy(data, size);
-		 
+
 		glCreateBuffers(1, &m_RendererID);
 		glNamedBufferData(m_RendererID, m_Size, m_LocalData.Data, OpenGLUsage(m_Usage));
 	}

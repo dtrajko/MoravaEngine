@@ -28,17 +28,17 @@ namespace Hazel {
 
 	struct Renderer2DData
 	{
-		static const uint32_t MaxQuads = 20000;
+		static const uint32_t MaxQuads = 200; // 20000;
 		static const uint32_t MaxVertices = MaxQuads * 4;
 		static const uint32_t MaxIndices = MaxQuads * 6;
 		static const uint32_t MaxTextureSlots = 32; // TODO: RenderCaps
 
-		static const uint32_t MaxLines = 10000;
+		static const uint32_t MaxLines = 100; // 10000;
 		static const uint32_t MaxLineVertices = MaxLines * 2;
 		static const uint32_t MaxLineIndices = MaxLines * 6;
 
 		VertexArray* QuadVertexArray;
-		VertexBuffer* QuadVertexBuffer;
+		Ref<VertexBuffer> QuadVertexBuffer;
 		Shader* TextureShader;
 		HazelTexture2D* WhiteTexture;
 
@@ -77,6 +77,7 @@ namespace Hazel {
 		s_Data.QuadVertexArray = VertexArray::Create();
 
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
+
 		s_Data.QuadVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float4, "a_Color" },
@@ -84,6 +85,8 @@ namespace Hazel {
 			{ ShaderDataType::Float, "a_TexIndex" },
 			{ ShaderDataType::Float, "a_TilingFactor" }
 			});
+
+		/**
 		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
 
 		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
@@ -112,12 +115,10 @@ namespace Hazel {
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
-		/**
-		 * - Working on Hazel LIVE! #004
-		s_Data.WhiteTexture->Lock();
-		s_Data.WhiteTexture->GetWriteableBuffer().Write(&whiteTextureData, sizeof(uint32_t));
-		s_Data.WhiteTexture->Unlock();
-		**/
+		// Working on Hazel LIVE! #004
+		// s_Data.WhiteTexture->Lock();
+		// s_Data.WhiteTexture->GetWriteableBuffer().Write(&whiteTextureData, sizeof(uint32_t));
+		// s_Data.WhiteTexture->Unlock();
 
 		int32_t samplers[s_Data.MaxTextureSlots];
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
@@ -155,6 +156,8 @@ namespace Hazel {
 		IndexBuffer* lineIB = IndexBuffer::Create(lineIndices, s_Data.MaxLineIndices);
 		s_Data.LineVertexArray->SetIndexBuffer(lineIB);
 		delete[] lineIndices;
+
+		*/
 	}
 
 	void Renderer2D::Shutdown()

@@ -1,6 +1,11 @@
 #pragma once
 
-#include "../../Log.h"
+#include "../Core/Base.h"
+#include "../Core/Assert.h"
+#include "RendererAPI.h"
+
+#include <string>
+#include <vector>
 
 
 namespace Hazel {
@@ -27,7 +32,7 @@ namespace Hazel {
 		case ShaderDataType::Bool:     return 1;
 		}
 
-		Log::GetLogger()->error("Unknown ShaderDataType!");
+		HZ_CORE_ASSERT(false, "Unknown ShaderDataType!");
 		return 0;
 	}
 
@@ -63,7 +68,7 @@ namespace Hazel {
 			case ShaderDataType::Bool:    return 1;
 			}
 
-			Log::GetLogger()->error("Unknown ShaderDataType!");
+			HZ_CORE_ASSERT(false, "Unknown ShaderDataType!");
 			return 0;
 		}
 	};
@@ -120,10 +125,10 @@ namespace Hazel {
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 
 		virtual unsigned int GetSize() const = 0;
-		virtual uint32_t GetID() const = 0;
+		virtual uint32_t GetRendererID() const = 0;
 
-		static VertexBuffer* Create(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
-		static VertexBuffer* Create(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
+		static Ref<VertexBuffer> Create(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
+		static Ref<VertexBuffer> Create(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
 	};
 
 	class IndexBuffer
@@ -137,9 +142,9 @@ namespace Hazel {
 		virtual uint32_t GetCount() const = 0;
 
 		virtual unsigned int GetSize() const = 0;
-		virtual uint32_t GetID() const = 0;
+		virtual uint32_t GetRendererID() const = 0;
 
-		static IndexBuffer* Create(void* data, uint32_t size = 0);
+		static Ref<IndexBuffer> Create(void* data, uint32_t size = 0);
 	};
 
 }
