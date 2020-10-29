@@ -957,36 +957,6 @@ void SceneHazelEnvMap::RenderLineElements(Shader* shaderBasic, glm::mat4 project
     m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
 }
 
-void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
-{
-    /**** BEGIN Render to Main Viewport ****/
-    {
-        if (m_IsViewportEnabled)
-        {
-            m_RenderFramebuffer->Bind();
-            m_RenderFramebuffer->Clear(); // Clear the window
-        }
-        else
-        {
-            // configure the viewport to the original framebuffer's screen dimensions
-            glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
-            RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
-        }
-
-        SetupUniforms();
-
-        m_EnvironmentMap->Render(m_RenderFramebuffer);
-
-        RenderLineElements(m_ShaderBasic, projectionMatrix);
-
-        if (m_IsViewportEnabled)
-        {
-            m_RenderFramebuffer->Unbind();
-        }
-    }
-}
-
 void SceneHazelEnvMap::SetupUniforms()
 {
 }
@@ -1065,4 +1035,34 @@ void SceneHazelEnvMap::OnEntitySelected(Hazel::Entity* entity)
 {
     // auto& tc = entity.GetComponent<Hazel::TransformComponent>();
     // m_EnvironmentMap->SetMeshEntity(entity);
+}
+
+void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
+    std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+{
+    /**** BEGIN Render to Main Viewport ****/
+    {
+        if (m_IsViewportEnabled)
+        {
+            m_RenderFramebuffer->Bind();
+            m_RenderFramebuffer->Clear(); // Clear the window
+        }
+        else
+        {
+            // configure the viewport to the original framebuffer's screen dimensions
+            glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
+            RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
+        }
+
+        SetupUniforms();
+
+        m_EnvironmentMap->Render(m_RenderFramebuffer);
+
+        RenderLineElements(m_ShaderBasic, projectionMatrix);
+
+        if (m_IsViewportEnabled)
+        {
+            m_RenderFramebuffer->Unbind();
+        }
+    }
 }

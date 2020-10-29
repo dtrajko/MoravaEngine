@@ -902,6 +902,39 @@ void SceneAnimPBR::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
     ImGui::End();
 }
 
+void SceneAnimPBR::SetupUniforms()
+{
+    /**** BEGIN m_ShaderMain ****/
+    m_ShaderMain->Bind();
+
+    m_ShaderMain->setMat4("model", glm::mat4(1.0f));
+    m_ShaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
+    m_ShaderMain->setMat4("projection", RendererBasic::GetProjectionMatrix());
+    m_ShaderMain->setVec3("eyePosition", m_Camera->GetPosition());
+
+    // Directional Light
+    m_ShaderMain->setInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
+    m_ShaderMain->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
+    m_ShaderMain->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+    m_ShaderMain->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+    m_ShaderMain->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
+
+    m_ShaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+
+    m_ShaderMain->setInt("albedoMap", textureSlots["diffuse"]);
+    m_ShaderMain->setInt("normalMap", textureSlots["normal"]);
+    m_ShaderMain->setInt("shadowMap", textureSlots["shadow"]);
+    m_ShaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000.0f));
+    m_ShaderMain->setFloat("tilingFactor", 1.0f);
+    m_ShaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    m_ShaderMain->Validate();
+    /**** END m_ShaderMain ****/
+}
+
+SceneAnimPBR::~SceneAnimPBR()
+{
+}
+
 void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
@@ -1032,6 +1065,9 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
     m_ShaderBasic->setMat4("projection", projectionMatrix);
     m_ShaderBasic->setMat4("view", m_CameraController->CalculateViewMatrix());
 
+    RendererBasic::SetLineThickness(4.0f);
+    RendererBasic::EnableMSAA();
+
     glm::mat4 AABB_Transform = Math::CreateTransform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
 
     for (auto& entity : m_Entities)
@@ -1048,37 +1084,4 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
     {
         m_RenderFramebuffer->Unbind();
     }
-}
-
-void SceneAnimPBR::SetupUniforms()
-{
-    /**** BEGIN m_ShaderMain ****/
-    m_ShaderMain->Bind();
-
-    m_ShaderMain->setMat4("model", glm::mat4(1.0f));
-    m_ShaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
-    m_ShaderMain->setMat4("projection", RendererBasic::GetProjectionMatrix());
-    m_ShaderMain->setVec3("eyePosition", m_Camera->GetPosition());
-
-    // Directional Light
-    m_ShaderMain->setInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
-    m_ShaderMain->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
-    m_ShaderMain->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
-    m_ShaderMain->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-    m_ShaderMain->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
-
-    m_ShaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-
-    m_ShaderMain->setInt("albedoMap", textureSlots["diffuse"]);
-    m_ShaderMain->setInt("normalMap", textureSlots["normal"]);
-    m_ShaderMain->setInt("shadowMap", textureSlots["shadow"]);
-    m_ShaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000.0f));
-    m_ShaderMain->setFloat("tilingFactor", 1.0f);
-    m_ShaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    m_ShaderMain->Validate();
-    /**** END m_ShaderMain ****/
-}
-
-SceneAnimPBR::~SceneAnimPBR()
-{
 }
