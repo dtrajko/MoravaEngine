@@ -1,12 +1,70 @@
 #include "Renderer2D.h"
 
-#include "../../Log.h"
 #include "../Renderer/RenderCommand.h"
 #include "../Core/Assert.h"
+#include "HazelRenderer.h"
+
+#include "../../Log.h"
+#include "../../Shader.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace Hazel {
+
+	struct QuadVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+		glm::vec2 TexCoord;
+		float TexIndex;
+		float TilingFactor;
+	};
+
+	struct LineVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+	};
+
+	struct Renderer2DData
+	{
+		static const uint32_t MaxQuads = 20000;
+		static const uint32_t MaxVertices = MaxQuads * 4;
+		static const uint32_t MaxIndices = MaxQuads * 6;
+		static const uint32_t MaxTextureSlots = 32; // TODO: RenderCaps
+
+		static const uint32_t MaxLines = 10000;
+		static const uint32_t MaxLineVertices = MaxLines * 2;
+		static const uint32_t MaxLineIndices = MaxLines * 6;
+
+		VertexArray* QuadVertexArray;
+		VertexBuffer* QuadVertexBuffer;
+		Shader* TextureShader;
+		HazelTexture2D* WhiteTexture;
+
+		uint32_t QuadIndexCount = 0;
+		QuadVertex* QuadVertexBufferBase = nullptr;
+		QuadVertex* QuadVertexBufferPtr = nullptr;
+
+		std::array<HazelTexture2D*, MaxTextureSlots> TextureSlots;
+		uint32_t TextureSlotIndex = 1; // 0 = white texture
+
+		glm::vec4 QuadVertexPositions[4];
+
+		// Lines
+		Hazel::VertexArray* LineVertexArray;
+		Hazel::VertexBuffer* LineVertexBuffer;
+		Shader* LineShader;
+
+		uint32_t LineIndexCount = 0;
+		Hazel::LineVertex* LineVertexBufferBase = nullptr;
+		Hazel::LineVertex* LineVertexBufferPtr = nullptr;
+
+		glm::mat4 CameraViewProj;
+		bool DepthTest = true;
+
+		Renderer2D::Statistics Stats;
+	};
 
 	static Renderer2DData s_Data;
 
@@ -65,9 +123,9 @@ namespace Hazel {
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
 
-		s_Data.TextureShader = HazelShader::Create("Shaders/Hazel/Renderer2D.glsl");
+		s_Data.TextureShader = new Shader("Shaders/Hazel/Renderer2D.vs", "Shaders/Hazel/Renderer2D.fs");
 		s_Data.TextureShader->Bind();
-		s_Data.TextureShader->SetIntArray("u_Textures", samplers, s_Data.MaxTextureSlots);
+		s_Data.TextureShader->setIntArray("u_Textures", samplers, s_Data.MaxTextureSlots);
 
 		// Set all texture slots to 0
 		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
@@ -76,6 +134,27 @@ namespace Hazel {
 		s_Data.QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
 		s_Data.QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
 		s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
+
+		// Lines
+		s_Data.TextureShader = new Shader("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
+		s_Data.LineVertexArray = VertexArray::Create();
+
+		s_Data.LineVertexBuffer = VertexBuffer::Create(s_Data.MaxLineVertices * sizeof(LineVertex));
+		s_Data.LineVertexBuffer->SetLayout({
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float4, "a_Color" }
+			});
+		s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
+
+		s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxLineVertices];
+
+		uint32_t* lineIndices = new uint32_t[s_Data.MaxLineIndices];
+		for (uint32_t i = 0; i < s_Data.MaxLineIndices; i++)
+			lineIndices[i] = i;
+
+		IndexBuffer* lineIB = IndexBuffer::Create(lineIndices, s_Data.MaxLineIndices);
+		s_Data.LineVertexArray->SetIndexBuffer(lineIB);
+		delete[] lineIndices;
 	}
 
 	void Renderer2D::Shutdown()
@@ -88,13 +167,19 @@ namespace Hazel {
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 
-	void Renderer2D::BeginScene(const glm::mat4& viewProj)
+	void Renderer2D::BeginScene(const glm::mat4& viewProj, bool depthTest)
 	{
+		s_Data.CameraViewProj = viewProj;
+		s_Data.DepthTest = depthTest;
+
 		s_Data.TextureShader->Bind();
-		s_Data.TextureShader->SetMat4("u_ViewProjection", viewProj);
+		s_Data.TextureShader->setMat4("u_ViewProjection", viewProj);
 
 		s_Data.QuadIndexCount = 0;
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+
+		s_Data.LineIndexCount = 0;
+		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
 
 		s_Data.TextureSlotIndex = 1;
 	}
@@ -102,7 +187,35 @@ namespace Hazel {
 	void Renderer2D::EndScene()
 	{
 		uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
-		s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
+		if (dataSize)
+		{
+			s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
+
+			s_Data.TextureShader->Bind();
+			s_Data.TextureShader->setMat4("u_ViewProjection", s_Data.CameraViewProj);
+
+			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
+				s_Data.TextureSlots[i]->Bind(i);
+
+			s_Data.QuadVertexArray->Bind();
+			HazelRenderer::DrawIndexed(s_Data.QuadIndexCount, PrimitiveType::Triangles, s_Data.DepthTest);
+			s_Data.Stats.DrawCalls++;
+		}
+
+
+		dataSize = (uint32_t)((uint8_t*)s_Data.LineVertexBufferPtr - (uint8_t*)s_Data.LineVertexBufferBase);
+		if (dataSize)
+		{
+			s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, dataSize);
+
+			s_Data.LineShader->Bind();
+			s_Data.LineShader->setMat4("u_ViewProjection", s_Data.CameraViewProj);
+
+			s_Data.LineVertexArray->Bind();
+			HazelRenderer::SetLineThickness(2.0f);
+			HazelRenderer::DrawIndexed(s_Data.LineIndexCount, PrimitiveType::Lines, s_Data.DepthTest);
+			s_Data.Stats.DrawCalls++;
+		}
 
 		Flush();
 	}
@@ -324,6 +437,25 @@ namespace Hazel {
 	Renderer2D::Statistics Renderer2D::GetStats()
 	{
 		return s_Data.Stats;
+	}
+
+	void Renderer2D::DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
+	{
+		if (s_Data.LineIndexCount >= s_Data.MaxLineIndices) {
+			FlushAndResetLines();
+		}
+
+		s_Data.LineVertexBufferPtr->Position = p0;
+		s_Data.LineVertexBufferPtr->Color = color;
+		s_Data.LineVertexBufferPtr++;
+
+		s_Data.LineVertexBufferPtr->Position = p1;
+		s_Data.LineVertexBufferPtr->Color = color;
+		s_Data.LineVertexBufferPtr++;
+
+		s_Data.LineIndexCount += 2;
+
+		s_Data.Stats.LineCount++;
 	}
 
 }

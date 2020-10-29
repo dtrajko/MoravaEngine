@@ -184,6 +184,11 @@ GLint Shader::GetUniformLocation(const std::string& name)
 	}
 }
 
+void Shader::setIntArray(const std::string& name, int32_t* values, uint32_t count)
+{
+	glUniform1iv(GetUniformLocation(name), count, values);
+}
+
 void Shader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
 {
 	for (GLuint i = 0; i < 6; i++)

@@ -93,36 +93,8 @@ private:
 	bool OnMouseButtonPressed(MouseButtonPressedEvent& e); // EditorLayer::OnMouseButtonPressedEvent()
 	std::pair<float, float> GetMouseViewportSpace();
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
-	void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color); // Renderer2D::DrawLine()
-	void Renderer2D_FlushAndResetLines(); // Renderer2D::FlushAndResetLines()
-	void DrawAABB(const Hazel::AABB& aabb, const glm::mat4& transform, glm::vec4& color = glm::vec4(1.0f)); // Renderer::DrawAABB()
-	void DrawAABB(Mesh* mesh, const glm::mat4& transform, glm::vec4& color = glm::vec4(1.0f)); // Renderer::DrawAABB()
 
 private:
-	// TODO:  Move to Renderer2D 
-	struct Renderer2DData
-	{
-		static const uint32_t MaxLines = 10000;
-		static const uint32_t MaxLineVertices = MaxLines * 2;
-		static const uint32_t MaxLineIndices = MaxLines * 6;
-
-		uint32_t TextureSlotIndex = 1; // 0 = white texture
-
-		// Lines
-		Hazel::VertexArray* LineVertexArray;
-		Hazel::VertexBuffer* LineVertexBuffer;
-
-		uint32_t LineIndexCount = 0;
-		Hazel::LineVertex* LineVertexBufferBase = nullptr;
-		Hazel::LineVertex* LineVertexBufferPtr = nullptr;
-
-		glm::mat4 CameraViewProj;
-		bool DepthTest = true;
-
-		Hazel::Renderer2D::Statistics Stats;
-	};
-	Renderer2DData m_R2DData;
-
 	Shader* m_ShaderHazelPBR_Anim;
 	Shader* m_ShaderHazelPBR_Static;
 	Shader* m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static

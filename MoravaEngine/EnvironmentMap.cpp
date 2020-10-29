@@ -197,9 +197,6 @@ void EnvironmentMap::SetupShaders()
     m_ShaderHazelPBR_Anim = new Shader("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvironmentMap: m_ShaderHazelPBR_Anim compiled [programID={0}]", m_ShaderHazelPBR_Anim->GetProgramID());
 
-    m_ShaderRenderer2D = new Shader("Shaders/Hazel/Renderer2D.vs", "Shaders/Hazel/Renderer2D.fs");
-    Log::GetLogger()->info("EnvironmentMap: m_ShaderRenderer2D compiled [programID={0}]", m_ShaderRenderer2D->GetProgramID());
-
     m_ShaderRenderer2D_Line = new Shader("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
     Log::GetLogger()->info("EnvironmentMap: m_ShaderRenderer2D_Line compiled [programID={0}]", m_ShaderRenderer2D_Line->GetProgramID());
 }
@@ -333,8 +330,8 @@ void EnvironmentMap::Init()
     // Hazel::Renderer2D::Init();
 
     bool depthTest = true;
-    Renderer2D_Init();
-    Renderer2D_BeginScene(RendererBasic::GetProjectionMatrix(), depthTest); // Renderer2D::BeginScene
+    // Hazel::Renderer2D::Init();
+    // Hazel::Renderer2D::BeginScene(RendererBasic::GetProjectionMatrix(), depthTest);
 }
 
 void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
@@ -671,30 +668,6 @@ void EnvironmentMap::SubmitMesh(Hazel::MeshAnimPBR* mesh, const glm::mat4& trans
     }
 }
 
-void EnvironmentMap::Renderer2D_Init()
-{
-    m_R2DData.LineVertexBufferBase = new Hazel::LineVertex[m_R2DData.MaxLineVertices];
-}
-
-// Renderer2D::BeginScene
-void EnvironmentMap::Renderer2D_BeginScene(const glm::mat4& viewProj, bool depthTest)
-{
-    m_R2DData.CameraViewProj = viewProj;
-    m_R2DData.DepthTest = depthTest;
-
-    // Renderer2D::s_Data.TextureShader
-    m_ShaderRenderer2D->Bind();
-    m_ShaderRenderer2D->setMat4("u_ViewProjection", viewProj);
-
-    // m_Data.QuadIndexCount = 0;
-    // m_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-
-    m_R2DData.LineIndexCount = 0;
-    m_R2DData.LineVertexBufferPtr = m_R2DData.LineVertexBufferBase;
-
-    m_R2DData.TextureSlotIndex = 1;
-}
-
 void EnvironmentMap::RenderHazelSkybox()
 {
     RendererBasic::DisableCulling();
@@ -832,75 +805,6 @@ std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)
     return { rayPos, rayDir };
 }
 
-// Renderer::DrawAABB()
-void EnvironmentMap::DrawAABB(Mesh* mesh, const glm::mat4& transform, glm::vec4& color)
-{
-    for (Hazel::Submesh* submesh : ((Hazel::MeshAnimPBR*)mesh)->GetSubmeshes())
-    {
-        auto& aabb = submesh->BoundingBox;
-        const auto& aabbTransform = transform * submesh->Transform;
-        DrawAABB(aabb, aabbTransform, color);
-    }
-}
-
-// Renderer::DrawAABB()
-void EnvironmentMap::DrawAABB(const Hazel::AABB& aabb, const glm::mat4& transform, glm::vec4& color)
-{
-    glm::vec4 min = { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f };
-    glm::vec4 max = { aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f };
-
-    glm::vec4 corners[8] =
-    {
-        transform* glm::vec4{ aabb.Min.x, aabb.Min.y, aabb.Max.z, 1.0f},
-        transform* glm::vec4{ aabb.Min.x, aabb.Max.y, aabb.Max.z, 1.0f},
-        transform* glm::vec4{ aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f},
-        transform* glm::vec4{ aabb.Max.x, aabb.Min.y, aabb.Max.z, 1.0f},
-
-        transform* glm::vec4{ aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f},
-        transform* glm::vec4{ aabb.Min.x, aabb.Max.y, aabb.Min.z, 1.0f},
-        transform* glm::vec4{ aabb.Max.x, aabb.Max.y, aabb.Min.z, 1.0f},
-        transform* glm::vec4{ aabb.Max.x, aabb.Min.y, aabb.Min.z, 1.0f}
-    };
-
-    for (uint32_t i = 0; i < 4; i++) {
-        DrawLine(corners[i], corners[(i + 1) % 4], color);
-    }
-
-    for (uint32_t i = 0; i < 4; i++) {
-        DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
-    }
-
-    for (uint32_t i = 0; i < 4; i++) {
-        DrawLine(corners[i], corners[i + 4], color);
-    }
-
-}
-
-// Renderer2D::DrawLine
-void EnvironmentMap::DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
-{
-    if (m_R2DData.LineIndexCount >= m_R2DData.MaxLineIndices)
-        Renderer2D_FlushAndResetLines();
-
-    m_R2DData.LineVertexBufferPtr->Position = p0;
-    m_R2DData.LineVertexBufferPtr->Color = color;
-    m_R2DData.LineVertexBufferPtr++;
-
-    m_R2DData.LineVertexBufferPtr->Position = p1;
-    m_R2DData.LineVertexBufferPtr->Color = color;
-    m_R2DData.LineVertexBufferPtr++;
-
-    m_R2DData.LineIndexCount += 2;
-
-    m_R2DData.Stats.LineCount++;
-}
-
-// TODO: move to Renderer2D
-void EnvironmentMap::Renderer2D_FlushAndResetLines()
-{
-    HZ_ASSERT(false, "Method not yet implemented!");
-}
-
 void EnvironmentMap::GeometryPassTemporary()
 {
     Hazel::MeshAnimPBR* meshAnimPBR = ((Hazel::MeshAnimPBR*)m_MeshEntity->GetMesh());
@@ -991,12 +895,21 @@ void EnvironmentMap::Render(Framebuffer* framebuffer)
     m_ShaderRenderer2D_Line->setMat4("u_ViewProjection", viewProjection);
     RendererBasic::SetLineThickness(2.0f);
 
-    DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    // Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
     if (m_SelectedSubmeshes.size()) {
         for (auto& submesh : m_SelectedSubmeshes) {
-            DrawAABB(submesh.BoundingBox, submesh.Transform, glm::vec4(1.0f));
+            // Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, submesh.Transform, glm::vec4(1.0f));
         }
+    }
+
+    if (m_SceneRenderer->GetOptions().ShowBoundingBoxes)
+    {
+        bool depthTest = true;
+        Hazel::Renderer2D::BeginScene(viewProjection, depthTest);
+        for (auto& dc : m_SceneRenderer->s_Data.DrawList)
+            Hazel::HazelRenderer::DrawAABB(dc.Mesh, dc.Transform);
+        Hazel::Renderer2D::EndScene();
     }
 
     CompositePassTemporary(framebuffer);

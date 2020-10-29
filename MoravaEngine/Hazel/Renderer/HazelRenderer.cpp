@@ -44,6 +44,7 @@ namespace Hazel {
 
 	void HazelRenderer::SetLineThickness(float thickness)
 	{
+		glLineWidth(thickness);
 	}
 
 	const Scope<ShaderLibrary>& HazelRenderer::GetShaderLibrary()
@@ -53,9 +54,7 @@ namespace Hazel {
 
 	void HazelRenderer::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
 	{
-		HazelRenderer::Submit([=]() {
-			RendererAPI::DrawIndexed(count, type, depthTest);
-		});
+		RendererAPI::DrawIndexed(count, type, depthTest);
 	}
 
 	void HazelRenderer::WaitAndRender()
@@ -99,16 +98,50 @@ namespace Hazel {
 	{
 	}
 
-	void HazelRenderer::DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color)
-	{
-	}
-
-	void HazelRenderer::DrawAABB(const Ref<Mesh>& mesh, const glm::mat4& transform, const glm::vec4& color)
-	{
-	}
-
 	RenderCommandQueue& HazelRenderer::GetRenderCommandQueue()
 	{
 		return s_Data.m_CommandQueue;
 	}
+
+	void HazelRenderer::DrawAABB(Mesh* mesh, const glm::mat4& transform, glm::vec4& color)
+	{
+		for (Hazel::Submesh* submesh : ((Hazel::MeshAnimPBR*)mesh)->GetSubmeshes())
+		{
+			auto& aabb = submesh->BoundingBox;
+			const auto& aabbTransform = transform * submesh->Transform;
+			DrawAABB(aabb, aabbTransform, color);
+		}
+	}
+
+	void HazelRenderer::DrawAABB(const Hazel::AABB& aabb, const glm::mat4& transform, glm::vec4& color)
+	{
+		glm::vec4 min = { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f };
+		glm::vec4 max = { aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f };
+
+		glm::vec4 corners[8] =
+		{
+			transform * glm::vec4{ aabb.Min.x, aabb.Min.y, aabb.Max.z, 1.0f},
+			transform * glm::vec4{ aabb.Min.x, aabb.Max.y, aabb.Max.z, 1.0f},
+			transform * glm::vec4{ aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f},
+			transform * glm::vec4{ aabb.Max.x, aabb.Min.y, aabb.Max.z, 1.0f},
+
+			transform * glm::vec4{ aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f},
+			transform * glm::vec4{ aabb.Min.x, aabb.Max.y, aabb.Min.z, 1.0f},
+			transform * glm::vec4{ aabb.Max.x, aabb.Max.y, aabb.Min.z, 1.0f},
+			transform * glm::vec4{ aabb.Max.x, aabb.Min.y, aabb.Min.z, 1.0f}
+		};
+
+		for (uint32_t i = 0; i < 4; i++) {
+			Renderer2D::DrawLine(corners[i], corners[(i + 1) % 4], color);
+		}
+
+		for (uint32_t i = 0; i < 4; i++) {
+			Renderer2D::DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
+		}
+
+		for (uint32_t i = 0; i < 4; i++) {
+			Renderer2D::DrawLine(corners[i], corners[i + 4], color);
+		}
+	}
+
 }

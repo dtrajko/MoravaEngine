@@ -41,6 +41,7 @@ public:
 	void setMat4(const std::string& name, const glm::mat4& mat);
 	void setLightMat4(std::vector<glm::mat4> lightMatrices);
 	GLint GetUniformLocation(const std::string& name);
+	void setIntArray(const std::string& name, int32_t* values, uint32_t count);
 
 	void Unbind();
 	void ClearShader();
