@@ -136,8 +136,6 @@ private:
 	float m_CurrentTimestamp;
 	EventCooldown m_ResizeViewport;
 
-	bool m_VisibleAABBs;
-
 	int m_ImGuizmoType = -1; // -1 = no gizmo
 
 	glm::vec3 m_Translation_ImGuizmo;

@@ -44,6 +44,8 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     m_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
 
     m_DisplayHazelGrid = true;
+
+    m_DisplayBoundingBoxes = true;
 }
 
 void EnvironmentMap::Init()
@@ -846,12 +848,14 @@ void EnvironmentMap::GeometryPassTemporary()
 
     Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
-    const auto& submeshes = ((Hazel::HazelMesh*)hazelMesh)->GetSubmeshes();
-    for (const auto& submesh : submeshes)
-    {
-        Hazel::HazelRenderer::DrawAABB(submesh->BoundingBox, m_MeshEntity->Transform() * submesh->Transform, glm::vec4(1.0f));
+    if (m_DisplayBoundingBoxes) {
+        const auto& submeshes = ((Hazel::HazelMesh*)hazelMesh)->GetSubmeshes();
+        for (const auto& submesh : submeshes)
+        {
+            Hazel::HazelRenderer::DrawAABB(submesh->BoundingBox, m_MeshEntity->Transform() * submesh->Transform, glm::vec4(1.0f));
+        }
+        Hazel::Renderer2D::EndScene();
     }
-    Hazel::Renderer2D::EndScene();
     // END dtrajko test code
 
     if (m_SelectedSubmeshes.size()) {

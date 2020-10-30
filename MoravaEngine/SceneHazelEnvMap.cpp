@@ -131,8 +131,6 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_Translation_ImGuizmo = glm::vec3(0.0f);
     m_Transform_ImGuizmo = nullptr;
 
-    m_VisibleAABBs = true;
-
     m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel((Scene*)this);
 
     m_DisplayLineElements = false;
@@ -534,9 +532,9 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     {
         if (ImGui::CollapsingHeader("Display Info"))
         {
-            ImGui::Checkbox("Display Bounding Boxes", &m_VisibleAABBs);
-            ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
+            ImGui::Checkbox("Display Bounding Boxes", m_EnvironmentMap->GetDisplayBoundingBoxes());
             ImGui::Checkbox("Display Hazel Grid", m_EnvironmentMap->GetDisplayHazelGrid());
+            ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
 
             ImGui::Separator();
             for (auto& entity : m_Entities)
@@ -629,7 +627,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                 ImGuiWrapper::Property("Light Direction", light.Direction);
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
-                ImGuiWrapper::Property("Exposure", m_Camera->GetExposure(), 0.0f, 20.0f);
+                ImGuiWrapper::Property("Exposure", m_Camera->GetExposure(), 0.0f, 40.0f);
                 ImGuiWrapper::Property("Skybox Exposure Factor", m_EnvironmentMap->GetSkyboxExposureFactor(), 0.0f, 10.0f);
                 ImGuiWrapper::Property("Radiance Prefiltering", m_EnvironmentMap->GetRadiancePrefilter());
                 ImGuiWrapper::Property("Env Map Rotation", m_EnvironmentMap->GetEnvMapRotation(), -360.0f, 360.0f);
@@ -949,7 +947,9 @@ void SceneHazelEnvMap::RenderLineElements(Shader* shaderBasic, glm::mat4 project
         {
             m_ShaderBasic->setMat4("model", AABB_Transform);
             m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-            if (m_VisibleAABBs) entity.second.AABB.Draw();
+            if (m_EnvironmentMap->GetDisplayBoundingBoxes()) {
+                entity.second.AABB.Draw();
+            }
         }
     }
 

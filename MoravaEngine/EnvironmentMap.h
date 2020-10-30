@@ -61,6 +61,7 @@ public:
 	void SetViewportBounds(glm::vec2* viewportBounds);
 	inline Hazel::SceneRenderer* GetSceneRenderer() { return m_SceneRenderer; }
 	inline bool* GetDisplayHazelGrid() { return &m_DisplayHazelGrid; }
+	inline bool* GetDisplayBoundingBoxes() { return &m_DisplayBoundingBoxes; };
 
 private:
 	void SetupContextData();
@@ -133,5 +134,7 @@ private:
 	Hazel::SceneRenderer* m_SceneRenderer;
 
 	bool m_DisplayHazelGrid;
+
+	bool m_DisplayBoundingBoxes;
 
 };
