@@ -888,27 +888,21 @@ void EnvironmentMap::Render(Framebuffer* framebuffer)
     m_ShaderRenderer2D_Line->setMat4("u_ViewProjection", viewProjection);
     RendererBasic::SetLineThickness(2.0f);
 
-    // BEGIN dtrajko test code
-    // bool depthTest = true;
-    // Hazel::Renderer2D::BeginScene(viewProjection, depthTest); // Resets LineIndexCount which is bad
-
     // Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
     auto mesh = m_MeshEntity->GetMesh();
     const auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
+
+    bool depthTest = true;
+    Hazel::Renderer2D::BeginScene(viewProjection, depthTest);
     for (const auto& submesh : submeshes)
     {
         Hazel::HazelRenderer::DrawAABB(submesh->BoundingBox, submesh->Transform, glm::vec4(1.0f));
     }
+    Hazel::Renderer2D::EndScene();
     // END dtrajko test code
 
     GeometryPassTemporary();
-
-
-    // Temporary Hazel LIVE! #004
-    // Hazel::Renderer2D::BeginScene(viewProjection);
-    // Hazel::HazelRenderer::DrawAABB(hazelMesh);
-    // Hazel::Renderer2D::EndScene();
 
     /**
     if (m_SelectedSubmeshes.size()) {

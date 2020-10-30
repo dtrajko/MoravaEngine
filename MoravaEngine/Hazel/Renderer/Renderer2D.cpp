@@ -70,8 +70,6 @@ namespace Hazel {
 
 	void Renderer2D::Init()
 	{
-		Log::GetLogger()->info("Renderer2D Init");
-
 		RenderCommand::Init();
 
 		s_Data.QuadVertexArray = VertexArray::Create();
@@ -187,14 +185,10 @@ namespace Hazel {
 
 	void Renderer2D::EndScene()
 	{
-		Log::GetLogger()->debug("Renderer2D::EndScene");
-
 		uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
 		if (dataSize)
 		{
 			s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
-
-			Log::GetLogger()->debug("Renderer2D::EndScene BIND fucking TextureShader");
 
 			s_Data.TextureShader->Bind();
 			s_Data.TextureShader->setMat4("u_ViewProjection", s_Data.CameraViewProj);
@@ -212,8 +206,6 @@ namespace Hazel {
 		{
 			s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, dataSize);
 
-			Log::GetLogger()->debug("Renderer2D::EndScene BIND fucking LineShader");
-
 			s_Data.LineShader->Bind();
 			s_Data.LineShader->setMat4("u_ViewProjection", s_Data.CameraViewProj);
 
@@ -223,11 +215,14 @@ namespace Hazel {
 			s_Data.Stats.DrawCalls++;
 		}
 
+#if OLD
 		Flush();
+#endif
 	}
 
 	void Renderer2D::Flush()
 	{
+#if OLD
 		if (s_Data.QuadIndexCount == 0)
 			return; // Nothing to draw
 
@@ -235,15 +230,14 @@ namespace Hazel {
 		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
 			s_Data.TextureSlots[i]->Bind(i);
 
-		RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
-
+		s_Data.QuadVertexArray->Bind();
+		Renderer::DrawIndexed(s_Data.QuadIndexCount, false);
 		s_Data.Stats.DrawCalls++;
+#endif
 	}
 
 	void Renderer2D::FlushAndReset()
 	{
-		Log::GetLogger()->debug("Renderer2D::FlushAndReset");
-
 		EndScene();
 
 		s_Data.QuadIndexCount = 0;
@@ -254,8 +248,6 @@ namespace Hazel {
 
 	void Renderer2D::FlushAndResetLines()
 	{
-		Log::GetLogger()->debug("Renderer2D::FlushAndResetLines");
-
 		EndScene();
 
 		s_Data.LineIndexCount = 0;
@@ -456,8 +448,6 @@ namespace Hazel {
 
 	void Renderer2D::DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
 	{
-		Log::GetLogger()->debug("Renderer2D::DrawLine LineIndexCount {0} MaxLineIndices {1}", s_Data.LineIndexCount, s_Data.MaxLineIndices);
-
 		if (s_Data.LineIndexCount >= s_Data.MaxLineIndices) {
 			FlushAndResetLines();
 		}
