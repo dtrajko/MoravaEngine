@@ -859,6 +859,7 @@ void EnvironmentMap::GeometryPassTemporary()
     // END dtrajko test code
 
     if (m_SelectedSubmeshes.size()) {
+        Hazel::HazelRenderer::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
         for (auto& submesh : m_SelectedSubmeshes) {
             Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, m_MeshEntity->Transform() * submesh.Transform, glm::vec4(1.0f));
         }
@@ -876,12 +877,12 @@ void EnvironmentMap::GeometryPassTemporary()
 
     Hazel::Renderer2D::EndScene();
 
-    m_SceneRenderer->Renderer_BeginRenderPass(m_SceneRenderer->s_Data.GeoPass, false); // should we clear the buffer?
+    Hazel::HazelRenderer::BeginRenderPass(m_SceneRenderer->s_Data.GeoPass, false); // should we clear the buffer?
 
     auto overrideMaterial = nullptr;
     SubmitMesh(hazelMesh, m_MeshEntity->Transform(), overrideMaterial);
 
-    m_SceneRenderer->Renderer_EndRenderPass();
+    Hazel::HazelRenderer::EndRenderPass();
 }
 
 void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)

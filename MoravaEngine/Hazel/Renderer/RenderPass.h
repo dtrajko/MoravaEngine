@@ -18,7 +18,7 @@ namespace Hazel {
 
 		virtual const RenderPassSpecification& GetSpecification() const = 0;
 
-		static RenderPass* Create(const RenderPassSpecification& spec);
+		static Ref<RenderPass> Create(const RenderPassSpecification& spec);
 	};
 
 }

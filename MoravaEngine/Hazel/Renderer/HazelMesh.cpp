@@ -623,6 +623,7 @@ namespace Hazel {
 			uint32_t mesh = node->mMeshes[i];
 			Submesh& submesh = m_Submeshes[mesh];
 			submesh.NodeName = node->mName.C_Str();
+			submesh.MeshName = m_Scene->mMeshes[mesh]->mName.C_Str();
 			submesh.Transform = transform;
 		}
 

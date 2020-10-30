@@ -7,6 +7,7 @@
 #include "../Platform/OpenGL/OpenGLRenderPass.h"
 #include "../../Scene.h"
 #include "../../RendererBasic.h"
+#include "HazelRenderer.h"
 
 #include "../../Log.h"
 
@@ -181,7 +182,7 @@ namespace Hazel {
 
     void SceneRenderer::CompositePass()
     {
-        Renderer_BeginRenderPass(s_Data.CompositePass, false); // should we clear the framebuffer at this stage?
+        HazelRenderer::BeginRenderPass(s_Data.CompositePass, false); // should we clear the framebuffer at this stage?
 
         m_ShaderComposite->Bind();
 
@@ -192,35 +193,7 @@ namespace Hazel {
 
         Renderer_SubmitFullscreenQuad(nullptr);
 
-        Renderer_EndRenderPass();
-    }
-
-    void SceneRenderer::Renderer_BeginRenderPass(Hazel::RenderPass* renderPass, bool clear)
-    {
-        if (!renderPass) {
-            Log::GetLogger()->error("Render pass cannot be null!");
-        }
-
-        // TODO: Convert all of this into a render command buffer
-        s_Data.ActiveRenderPass = renderPass;
-
-        renderPass->GetSpecification().TargetFramebuffer->Bind();
-
-        if (clear)
-        {
-            const glm::vec4& clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
-            RendererBasic::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-        }
-    }
-
-    void SceneRenderer::Renderer_EndRenderPass()
-    {
-        if (!s_Data.ActiveRenderPass) {
-            Log::GetLogger()->error("No active render pass! Have you called Renderer::EndRenderPass twice?");
-        }
-
-        s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
-        s_Data.ActiveRenderPass = nullptr;
+        HazelRenderer::EndRenderPass();
     }
 
     void SceneRenderer::FlushDrawList()
@@ -263,7 +236,7 @@ namespace Hazel {
         m_HazelFullscreenQuad->Render();
     }
 
-    Hazel::RenderPass* SceneRenderer::GetFinalRenderPass()
+    Ref<RenderPass> SceneRenderer::GetFinalRenderPass()
     {
         return s_Data.CompositePass;
     }

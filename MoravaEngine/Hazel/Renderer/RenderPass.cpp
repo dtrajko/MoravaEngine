@@ -1,13 +1,22 @@
 #include "RenderPass.h"
 
 #include "../Platform/OpenGL/OpenGLRenderPass.h"
+#include "RendererAPI.h"
+#include "../Core/Assert.h"
 
 
 namespace Hazel {
 
-	RenderPass* RenderPass::Create(const RenderPassSpecification& spec)
+	Ref<RenderPass> RenderPass::Create(const RenderPassSpecification& spec)
 	{
-		return new OpenGLRenderPass(spec);
+		switch (RendererAPI::Current())
+		{
+		case RendererAPIType::None:    HZ_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+		case RendererAPIType::OpenGL:  return std::make_shared<OpenGLRenderPass>(spec);
+		}
+
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI!");
+		return nullptr;
 	}
 
 }

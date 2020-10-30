@@ -33,9 +33,9 @@ namespace Hazel {
 
 		Hazel::HazelTexture2D* BRDFLUT;
 
-		Hazel::RenderPass* GeoPass;
-		Hazel::RenderPass* CompositePass;
-		Hazel::RenderPass* ActiveRenderPass;
+		Ref<RenderPass> GeoPass;
+		Ref<RenderPass> CompositePass;
+		Ref<RenderPass> ActiveRenderPass;
 
 		struct DrawCommand
 		{
@@ -76,8 +76,9 @@ namespace Hazel {
 
 		static void SubmitEntity(Entity* entity);
 
-		// static RenderPass* GetFinalRenderPass();
+		static Ref<RenderPass> GetFinalRenderPass();
 		// static Ref<HazelTexture2D> GetFinalColorBuffer();
+		static FramebufferTexture* GetFinalColorBuffer();
 
 		// TODO: Temp
 		// static uint32_t GetFinalColorBufferRendererID();
@@ -95,13 +96,9 @@ namespace Hazel {
 		inline Shader* GetShaderGrid() { return m_ShaderGrid; }
 		inline Shader* GetShaderComposite() { return m_ShaderComposite; }
 		inline Hazel::HazelTexture2D* GetEnvEquirect() { return m_EnvEquirect; }
-		Hazel::RenderPass* GetFinalRenderPass();
-		FramebufferTexture* GetFinalColorBuffer();
 		uint32_t GetFinalColorBufferID();
 		HazelFullscreenQuad* GetFullscreenQuad() { return m_HazelFullscreenQuad; }
 		// From EnvironmentMap (Renderer methods)
-		void Renderer_BeginRenderPass(Hazel::RenderPass* renderPass, bool clear);
-		void Renderer_EndRenderPass();
 		void Renderer_SubmitFullscreenQuad(Material* material);
 
 	private:
