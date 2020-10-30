@@ -756,6 +756,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                     {
                         // if (t < lastT)
                         {
+                            Log::GetLogger()->debug("Push back to m_SelectedSubmeshes");
                             m_SelectedSubmeshes.push_back(*submesh);
                             lastT = t;
                         }
@@ -854,13 +855,13 @@ void EnvironmentMap::GeometryPassTemporary()
         {
             Hazel::HazelRenderer::DrawAABB(submesh->BoundingBox, m_MeshEntity->Transform() * submesh->Transform, glm::vec4(1.0f));
         }
-        Hazel::Renderer2D::EndScene();
+        
     }
     // END dtrajko test code
 
     if (m_SelectedSubmeshes.size()) {
         for (auto& submesh : m_SelectedSubmeshes) {
-            Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, submesh.Transform, glm::vec4(1.0f));
+            Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, m_MeshEntity->Transform() * submesh.Transform, glm::vec4(1.0f));
         }
     }
 
@@ -869,10 +870,12 @@ void EnvironmentMap::GeometryPassTemporary()
         bool depthTest = true;
         Hazel::Renderer2D::BeginScene(viewProjection, depthTest);
         // Render HazelMesh meshes (later entt entities)
-        for (auto& dc : m_SceneRenderer->s_Data.DrawList)
+        for (auto& dc : m_SceneRenderer->s_Data.DrawList) {
             Hazel::HazelRenderer::DrawAABB(Ref<Mesh>(dc.Mesh), dc.Transform); // TODO proper way to render entities is through DrawList
-        Hazel::Renderer2D::EndScene();
+        }
     }
+
+    Hazel::Renderer2D::EndScene();
 
     m_SceneRenderer->Renderer_BeginRenderPass(m_SceneRenderer->s_Data.GeoPass, false); // should we clear the buffer?
 
