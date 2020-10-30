@@ -131,6 +131,16 @@ void RendererBasic::ClearDepthBuffer()
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
+void RendererBasic::EnableDepthTest()
+{
+	glEnable(GL_DEPTH_TEST);
+}
+
+void RendererBasic::DisableDepthTest()
+{
+	glDisable(GL_DEPTH_TEST);
+}
+
 void RendererBasic::EnableMSAA()
 {
 	glEnable(GL_MULTISAMPLE);

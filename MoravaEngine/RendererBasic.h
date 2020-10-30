@@ -28,6 +28,8 @@ public:
 	static void EnableDepthBuffer();
 	static void DisableDepthBuffer();
 	static void ClearDepthBuffer();
+	static void EnableDepthTest();
+	static void DisableDepthTest();
 	static void EnableMSAA();
 	static void DisableMSAA();
 	static inline glm::mat4 GetProjectionMatrix() { return s_ProjectionMatrix; };

@@ -205,7 +205,7 @@ void EnvironmentMap::LoadMesh(std::string fullPath)
 
     // m_MeshEntity: NoECS version
     m_MeshEntity = CreateEntity(drawCommand.Name);
-    m_MeshEntity->Transform() = glm::translate(glm::mat4(1.0f), { 0.0f, 6.0f, 0.0f }) * glm::scale(glm::mat4(1.0f), { 0.1f, 0.1f, 0.1f });
+    m_MeshEntity->Transform() = glm::translate(glm::mat4(1.0f), { 0.0f, 0.0f, 0.0f }) * glm::scale(glm::mat4(1.0f), { 1.0f, 1.0f, 1.0f });
     m_MeshEntity->SetMesh(drawCommand.Mesh);
 
     SubmitEntity(m_MeshEntity);
@@ -636,11 +636,6 @@ void EnvironmentMap::OnImGuiRender()
 
 void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial)
 {
-    // auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
-    // auto shader = material->GetShader();
-    // TODO: Sort this out
-    mesh->BindVertexArray();
-
     auto& materials = mesh->GetMaterials();
     for (Hazel::Submesh* submesh : mesh->GetSubmeshes())
     {
@@ -671,6 +666,7 @@ void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transfo
 void EnvironmentMap::RenderHazelSkybox()
 {
     RendererBasic::DisableCulling();
+    RendererBasic::DisableDepthTest();
 
     // Hazel Skybox
     m_SceneRenderer->GetShaderSkybox()->Bind();
@@ -680,6 +676,7 @@ void EnvironmentMap::RenderHazelSkybox()
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("u_Texture"));
     // SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
     m_SceneRenderer->Renderer_SubmitFullscreenQuad(nullptr); // m_Data.SceneData.SkyboxMaterial
+    m_SceneRenderer->GetShaderSkybox()->Unbind();
 }
 
 void EnvironmentMap::RenderHazelGrid()
@@ -807,12 +804,23 @@ std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)
 
 void EnvironmentMap::GeometryPassTemporary()
 {
-    Hazel::HazelMesh* hazelMesh = ((Hazel::HazelMesh*)m_MeshEntity->GetMesh());
-    m_ShaderHazelPBR = hazelMesh->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
+    RendererBasic::EnableTransparency();
+    RendererBasic::EnableMSAA();
+
+    // m_SceneRenderer->BeginScene((Scene*)m_SceneRenderer->s_Data.ActiveScene); // Already called in Update()
+
+    glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
+    glm::mat4 viewMatrix = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
+    glm::mat4 viewProjection = projectionMatrix * viewMatrix;
 
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("radiance"));
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.IrradianceMap->Bind(m_SamplerSlots->at("irradiance"));
     m_SceneRenderer->s_Data.BRDFLUT->Bind(m_SamplerSlots->at("BRDF_LUT"));
+
+    Hazel::HazelMesh* hazelMesh = ((Hazel::HazelMesh*)m_MeshEntity->GetMesh());
+    m_ShaderHazelPBR = hazelMesh->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
+
+    uint32_t samplerSlot = m_SamplerSlots->at("albedo");
 
     RenderHazelSkybox();
 
@@ -820,22 +828,7 @@ void EnvironmentMap::GeometryPassTemporary()
         RenderHazelGrid();
     }
 
-    // Render HazelMesh meshes (later entt entities)
-    uint32_t samplerSlot = m_SamplerSlots->at("albedo");
-    for (auto& dc : m_SceneRenderer->s_Data.DrawList)
-    {
-        // Log::GetLogger()->debug("EM::Render dc.Transform {0} {1} {2}", dc.Transform[3][0], dc.Transform[3][1], dc.Transform[3][2]);
-        // dc.Mesh->Render(samplerSlot, m_MeshEntity->Transform());
-    }
-
-    // m_ShaderHazelPBR_Anim->Bind();
-    // m_ShaderHazelPBR_Anim->setFloat("u_Exposure", m_Data.SceneData.SceneCamera->GetExposure());
-
-    // in conflict with HazelMesh::m_BaseMaterial
-    // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
-
     m_ShaderHazelPBR->Bind();
-
     for (Hazel::Submesh* submesh : hazelMesh->GetSubmeshes())
     {
         if (m_EnvMapMaterials.contains(submesh->NodeName)) {
@@ -843,21 +836,44 @@ void EnvironmentMap::GeometryPassTemporary()
         }
         submesh->Render(hazelMesh, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
     }
+    m_ShaderHazelPBR->Unbind();
 
-    // hazelMesh->RenderSubmeshes(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
-    // hazelMesh->Render(samplerSlot, m_MeshEntity->Transform(), m_EnvMapMaterials);
+    // BEGIN dtrajko test code
+    RendererBasic::SetLineThickness(4.0f);
+
+    bool depthTest = true;
+    Hazel::Renderer2D::BeginScene(viewProjection, depthTest);
+
+    Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+    const auto& submeshes = ((Hazel::HazelMesh*)hazelMesh)->GetSubmeshes();
+    for (const auto& submesh : submeshes)
+    {
+        Hazel::HazelRenderer::DrawAABB(submesh->BoundingBox, m_MeshEntity->Transform() * submesh->Transform, glm::vec4(1.0f));
+    }
+    Hazel::Renderer2D::EndScene();
+    // END dtrajko test code
+
+    if (m_SelectedSubmeshes.size()) {
+        for (auto& submesh : m_SelectedSubmeshes) {
+            Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, submesh.Transform, glm::vec4(1.0f));
+        }
+    }
+
+    if (m_SceneRenderer->GetOptions().ShowBoundingBoxes)
+    {
+        bool depthTest = true;
+        Hazel::Renderer2D::BeginScene(viewProjection, depthTest);
+        // Render HazelMesh meshes (later entt entities)
+        for (auto& dc : m_SceneRenderer->s_Data.DrawList)
+            Hazel::HazelRenderer::DrawAABB(Ref<Mesh>(dc.Mesh), dc.Transform); // TODO proper way to render entities is through DrawList
+        Hazel::Renderer2D::EndScene();
+    }
 
     m_SceneRenderer->Renderer_BeginRenderPass(m_SceneRenderer->s_Data.GeoPass, false); // should we clear the buffer?
 
-    // Render entities
-    for (auto& dc : m_SceneRenderer->s_Data.DrawList)
-    {
-        //  auto baseMaterial = dc.Mesh->GetBaseMaterial();
-        auto baseMaterial = dc.Material;
-
-        auto overrideMaterial = nullptr; // dc.Material;
-        SubmitMesh(((Hazel::HazelMesh*)dc.Mesh), m_MeshEntity->Transform(), overrideMaterial);
-    }
+    auto overrideMaterial = nullptr;
+    SubmitMesh(hazelMesh, m_MeshEntity->Transform(), overrideMaterial);
 
     m_SceneRenderer->Renderer_EndRenderPass();
 }
@@ -870,59 +886,11 @@ void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
     m_SceneRenderer->GetShaderComposite()->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure());
     // m_ShaderComposite->setInt("u_TextureSamples", framebuffer->GetSpecification().Samples);
     m_SceneRenderer->GetShaderComposite()->setInt("u_TextureSamples", m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
-
     m_SceneRenderer->Renderer_SubmitFullscreenQuad(nullptr);
 }
 
 void EnvironmentMap::Render(Framebuffer* framebuffer)
 {
-    RendererBasic::EnableTransparency();
-    RendererBasic::EnableMSAA();
-
-    m_SceneRenderer->BeginScene((Scene*)m_SceneRenderer->s_Data.ActiveScene);
-
-    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
-
-    // Temporary Hazel LIVE #006
-    m_ShaderRenderer2D_Line->Bind();
-    m_ShaderRenderer2D_Line->setMat4("u_ViewProjection", viewProjection);
-    RendererBasic::SetLineThickness(2.0f);
-
-    // Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-
-    auto mesh = m_MeshEntity->GetMesh();
-    const auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
-
-    bool depthTest = true;
-    Hazel::Renderer2D::BeginScene(viewProjection, depthTest);
-    for (const auto& submesh : submeshes)
-    {
-        Hazel::HazelRenderer::DrawAABB(submesh->BoundingBox, submesh->Transform, glm::vec4(1.0f));
-    }
-    Hazel::Renderer2D::EndScene();
-    // END dtrajko test code
-
     GeometryPassTemporary();
-
-    /**
-    if (m_SelectedSubmeshes.size()) {
-        for (auto& submesh : m_SelectedSubmeshes) {
-            Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, submesh.Transform, glm::vec4(1.0f));
-        }
-    }
-
-    if (m_SceneRenderer->GetOptions().ShowBoundingBoxes)
-    {
-        bool depthTest = true;
-        Hazel::Renderer2D::BeginScene(viewProjection, depthTest);
-        for (auto& dc : m_SceneRenderer->s_Data.DrawList)
-            Hazel::HazelRenderer::DrawAABB(dc.Mesh, dc.Transform);
-        Hazel::Renderer2D::EndScene();
-    }
-    **/
-
     CompositePassTemporary(framebuffer);
-
-    // Currently not in use
-    m_SceneRenderer->EndScene();
 }
