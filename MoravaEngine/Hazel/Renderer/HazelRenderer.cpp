@@ -146,10 +146,10 @@ namespace Hazel {
 
 	void HazelRenderer::DrawAABB(const Ref<Mesh>& mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
-		for (Hazel::Submesh* submesh : ((Hazel::HazelMesh*)mesh.get())->GetSubmeshes())
+		for (Hazel::Submesh& submesh : ((Hazel::HazelMesh*)mesh.get())->GetSubmeshes())
 		{
-			auto& aabb = submesh->BoundingBox;
-			const auto& aabbTransform = transform * submesh->Transform;
+			auto& aabb = submesh.BoundingBox;
+			const auto& aabbTransform = transform * submesh.Transform;
 			DrawAABB(aabb, aabbTransform, color);
 		}
 	}

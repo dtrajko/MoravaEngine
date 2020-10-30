@@ -222,15 +222,15 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
     }
     m_EnvMapMaterials.clear();
 
-    for (Hazel::Submesh* submesh : ((Hazel::HazelMesh*)mesh)->GetSubmeshes())
+    for (Hazel::Submesh& submesh : ((Hazel::HazelMesh*)mesh)->GetSubmeshes())
     {
-        if (m_EnvMapMaterials.contains(submesh->NodeName)) {
+        if (m_EnvMapMaterials.contains(submesh.NodeName)) {
             continue;
         }
 
         TextureInfo textureInfo;
-        if (m_TextureInfo.contains(submesh->NodeName)) {
-            textureInfo = m_TextureInfo.at(submesh->NodeName);
+        if (m_TextureInfo.contains(submesh.NodeName)) {
+            textureInfo = m_TextureInfo.at(submesh.NodeName);
         }
         else {
             textureInfo = m_TextureInfoDefault;
@@ -250,7 +250,7 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
         envMapMaterial->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfo.ao);
         envMapMaterial->GetAOInput().UseTexture = true;
 
-        m_EnvMapMaterials.insert(std::make_pair(submesh->NodeName, envMapMaterial));
+        m_EnvMapMaterials.insert(std::make_pair(submesh.NodeName, envMapMaterial));
     }
 }
 
@@ -639,10 +639,10 @@ void EnvironmentMap::OnImGuiRender()
 void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial)
 {
     auto& materials = mesh->GetMaterials();
-    for (Hazel::Submesh* submesh : mesh->GetSubmeshes())
+    for (Hazel::Submesh& submesh : mesh->GetSubmeshes())
     {
         // Material
-        auto material = materials[submesh->MaterialIndex];
+        auto material = materials[submesh.MaterialIndex];
 
         for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
         {
@@ -650,7 +650,7 @@ void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transfo
             m_ShaderHazelPBR->setMat4(uniformName, mesh->m_BoneTransforms[i]);
         }
 
-        m_ShaderHazelPBR->setMat4("u_Transform", transform * submesh->Transform);
+        m_ShaderHazelPBR->setMat4("u_Transform", transform * submesh.Transform);
 
         if (material->GetFlag(MaterialFlag::DepthTest)) { // TODO: Fix Material flags
             glEnable(GL_DEPTH_TEST);
@@ -661,7 +661,7 @@ void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transfo
 
         glDisable(GL_DEPTH_TEST);
 
-        glDrawElementsBaseVertex(GL_TRIANGLES, submesh->GetIndexCount(), GL_UNSIGNED_INT, (void*)(sizeof(uint32_t)* submesh->BaseIndex), submesh->BaseVertex);
+        glDrawElementsBaseVertex(GL_TRIANGLES, submesh.GetIndexCount(), GL_UNSIGNED_INT, (void*)(sizeof(uint32_t)* submesh.BaseIndex), submesh.BaseVertex);
     }
 }
 
@@ -745,19 +745,19 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
             for (const auto& submesh : submeshes)
             {
-                auto newRay = glm::inverse(submesh->Transform) * glm::vec4(origin, 1.0f);
-                m_NewRay = submesh->Transform * newRay;
-                auto newDir = glm::inverse(glm::mat3(submesh->Transform)) * direction;
+                auto newRay = glm::inverse(submesh.Transform) * glm::vec4(origin, 1.0f);
+                m_NewRay = submesh.Transform * newRay;
+                auto newDir = glm::inverse(glm::mat3(submesh.Transform)) * direction;
 
                 float t = 0.0f;
-                bool intersects = submesh->BoundingBox.Intersect(newRay, newDir, t);
+                bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
                 if (intersects) {
                     // if (m_SelectedSubmeshes.size())
                     {
                         // if (t < lastT)
                         {
                             Log::GetLogger()->debug("Push back to m_SelectedSubmeshes");
-                            m_SelectedSubmeshes.push_back(*submesh);
+                            m_SelectedSubmeshes.push_back(submesh);
                             lastT = t;
                         }
                     }
@@ -832,12 +832,12 @@ void EnvironmentMap::GeometryPassTemporary()
     }
 
     m_ShaderHazelPBR->Bind();
-    for (Hazel::Submesh* submesh : hazelMesh->GetSubmeshes())
+    for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
     {
-        if (m_EnvMapMaterials.contains(submesh->NodeName)) {
-            UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh->NodeName));
+        if (m_EnvMapMaterials.contains(submesh.NodeName)) {
+            UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh.NodeName));
         }
-        submesh->Render(hazelMesh, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
+        submesh.Render(hazelMesh, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
     }
     m_ShaderHazelPBR->Unbind();
 
@@ -850,10 +850,9 @@ void EnvironmentMap::GeometryPassTemporary()
     Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
     if (m_DisplayBoundingBoxes) {
-        const auto& submeshes = ((Hazel::HazelMesh*)hazelMesh)->GetSubmeshes();
-        for (const auto& submesh : submeshes)
+        for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
         {
-            Hazel::HazelRenderer::DrawAABB(submesh->BoundingBox, m_MeshEntity->Transform() * submesh->Transform, glm::vec4(1.0f));
+            Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, m_MeshEntity->Transform() * submesh.Transform, glm::vec4(1.0f));
         }
         
     }

@@ -99,60 +99,91 @@ namespace Hazel {
 		uint32_t vertexCount = 0;
 		uint32_t indexCount = 0;
 
-		m_Submeshes.reserve(scene->mNumMeshes);
-
 		Log::GetLogger()->info("Hazel::HazelMesh: Master mesh contains {0} submeshes.", scene->mNumMeshes);
 
+		m_Submeshes.reserve(scene->mNumMeshes);
 		for (size_t m = 0; m < scene->mNumMeshes; m++)
 		{
 			aiMesh* mesh = scene->mMeshes[m];
 
-			Submesh* submesh = new Submesh();
-			submesh->BaseVertex = vertexCount;
-			submesh->BaseIndex = indexCount;
-			submesh->MaterialIndex = mesh->mMaterialIndex;
-			submesh->IndexCount = mesh->mNumFaces * 3;
-			submesh->MeshName = mesh->mName.C_Str();
-			m_Submeshes.push_back(submesh);
+			Submesh& submesh = m_Submeshes.emplace_back();
+			submesh.BaseVertex = vertexCount;
+			submesh.BaseIndex = indexCount;
+			submesh.MaterialIndex = mesh->mMaterialIndex;
+			submesh.IndexCount = mesh->mNumFaces * 3;
+			submesh.MeshName = mesh->mName.C_Str();
+			// m_Submeshes.push_back(submesh);
 
 			vertexCount += mesh->mNumVertices;
-			indexCount += submesh->IndexCount;
+			indexCount += submesh.IndexCount;
 
-			if (!mesh->HasPositions())
-				Log::GetLogger()->error("Meshes require positions.");
-
-			if (!mesh->HasNormals())
-				Log::GetLogger()->error("Meshes require normals.");
+			HZ_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions.");
+			HZ_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals.");
 
 			// Vertices
-			auto& aabb = submesh->BoundingBox;
-			aabb.Min = glm::vec3(FLT_MAX);
-			aabb.Max = glm::vec3(FLT_MIN);
-
-			for (size_t i = 0; i < mesh->mNumVertices; i++)
+			if (m_IsAnimated)
 			{
-				AnimatedVertex vertex;
-				vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
-				vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+				auto& aabb = submesh.BoundingBox;
+				aabb.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
+				aabb.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
-				aabb.Min.x = glm::min(vertex.Position.x, aabb.Min.x);
-				aabb.Min.y = glm::min(vertex.Position.y, aabb.Min.y);
-				aabb.Min.z = glm::min(vertex.Position.z, aabb.Min.z);
-
-				aabb.Max.x = glm::max(vertex.Position.x, aabb.Max.x);
-				aabb.Max.y = glm::max(vertex.Position.y, aabb.Max.y);
-				aabb.Max.z = glm::max(vertex.Position.z, aabb.Max.z);
-
-				if (mesh->HasTangentsAndBitangents())
+				for (size_t i = 0; i < mesh->mNumVertices; i++)
 				{
-					vertex.Tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
-					vertex.Binormal = { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z };
+					AnimatedVertex vertex;
+					vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+					vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+
+					aabb.Min.x = glm::min(vertex.Position.x, aabb.Min.x);
+					aabb.Min.y = glm::min(vertex.Position.y, aabb.Min.y);
+					aabb.Min.z = glm::min(vertex.Position.z, aabb.Min.z);
+
+					aabb.Max.x = glm::max(vertex.Position.x, aabb.Max.x);
+					aabb.Max.y = glm::max(vertex.Position.y, aabb.Max.y);
+					aabb.Max.z = glm::max(vertex.Position.z, aabb.Max.z);
+
+					if (mesh->HasTangentsAndBitangents())
+					{
+						vertex.Tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
+						vertex.Binormal = { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z };
+					}
+
+					if (mesh->HasTextureCoords(0))
+						vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+
+					m_AnimatedVertices.push_back(vertex);
 				}
+			}
+			else
+			{
+				auto& aabb = submesh.BoundingBox;
+				aabb.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
+				aabb.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
-				if (mesh->HasTextureCoords(0))
-					vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+				for (size_t i = 0; i < mesh->mNumVertices; i++)
+				{
+					Vertex vertex;
+					vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+					vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
 
-				m_AnimatedVertices.push_back(vertex);
+					aabb.Min.x = glm::min(vertex.Position.x, aabb.Min.x);
+					aabb.Min.y = glm::min(vertex.Position.y, aabb.Min.y);
+					aabb.Min.z = glm::min(vertex.Position.z, aabb.Min.z);
+
+					aabb.Max.x = glm::max(vertex.Position.x, aabb.Max.x);
+					aabb.Max.y = glm::max(vertex.Position.y, aabb.Max.y);
+					aabb.Max.z = glm::max(vertex.Position.z, aabb.Max.z);
+
+					if (mesh->HasTangentsAndBitangents())
+					{
+						vertex.Tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
+						vertex.Binormal = { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z };
+					}
+
+					if (mesh->HasTextureCoords(0))
+						vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+
+					m_StaticVertices.push_back(vertex);
+				}
 			}
 
 			// Indices
@@ -163,12 +194,16 @@ namespace Hazel {
 
 				Index index = { mesh->mFaces[i].mIndices[0], mesh->mFaces[i].mIndices[1], mesh->mFaces[i].mIndices[2] };
 				m_Indices.push_back(index);
+
+				if (!m_IsAnimated) {
+					// m_TriangleCache[(uint32_t)m].emplace_back(m_StaticVertices[index.V1 + submesh.BaseVertex], m_StaticVertices[index.V2 + submesh.BaseVertex], m_StaticVertices[index.V3 + submesh.BaseVertex]);
+				}
 			}
 		}
 
 		// Display the list of all submeshes
 		for (size_t m = 0; m < scene->mNumMeshes; m++) {
-			Log::GetLogger()->info("-- Submesh ID {0} NodeName: '{1}'", m, m_Submeshes[m]->NodeName);
+			Log::GetLogger()->info("-- Submesh ID {0} NodeName: '{1}'", m, m_Submeshes[m].NodeName);
 		}
 
 		TraverseNodes(scene->mRootNode);
@@ -177,7 +212,7 @@ namespace Hazel {
 		for (size_t m = 0; m < scene->mNumMeshes; m++)
 		{
 			aiMesh* mesh = scene->mMeshes[m];
-			Submesh* submesh = m_Submeshes[m];
+			Submesh& submesh = m_Submeshes[m];
 
 			for (size_t i = 0; i < mesh->mNumBones; i++)
 			{
@@ -203,7 +238,7 @@ namespace Hazel {
 
 				for (size_t j = 0; j < bone->mNumWeights; j++)
 				{
-					int VertexID = submesh->BaseVertex + bone->mWeights[j].mVertexId;
+					int VertexID = submesh.BaseVertex + bone->mWeights[j].mVertexId;
 					float Weight = bone->mWeights[j].mWeight;
 					m_AnimatedVertices[VertexID].AddBoneData(boneIndex, Weight);
 				}
@@ -496,27 +531,42 @@ namespace Hazel {
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Array...");
 
 		m_VertexArray = VertexArray::Create();
-
-		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Buffer...");
-
-		auto vb = VertexBuffer::Create(m_AnimatedVertices.data(), (uint32_t)m_AnimatedVertices.size() * sizeof(AnimatedVertex));
-		vb->SetLayout({
-			{ ShaderDataType::Float3, "a_Position" },
-			{ ShaderDataType::Float3, "a_Normal" },
-			{ ShaderDataType::Float3, "a_Tangent" },
-			{ ShaderDataType::Float3, "a_Binormal" },
-			{ ShaderDataType::Float2, "a_TexCoord" },
-			{ ShaderDataType::Int4,   "a_BoneIDs" },
-			{ ShaderDataType::Float4, "a_BoneWeights" },
-			});
-		m_VertexArray->AddVertexBuffer(vb);
+		if (m_IsAnimated)
+		{
+			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Buffer...");
+			auto vb = VertexBuffer::Create(m_AnimatedVertices.data(), (uint32_t)m_AnimatedVertices.size() * sizeof(AnimatedVertex));
+			vb->SetLayout({
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float3, "a_Normal" },
+				{ ShaderDataType::Float3, "a_Tangent" },
+				{ ShaderDataType::Float3, "a_Binormal" },
+				{ ShaderDataType::Float2, "a_TexCoord" },
+				{ ShaderDataType::Int4,   "a_BoneIDs" },
+				{ ShaderDataType::Float4, "a_BoneWeights" },
+				});
+			m_VertexArray->AddVertexBuffer(vb);
+		}
+		else
+		{
+			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Buffer...");
+			auto vb = VertexBuffer::Create(m_StaticVertices.data(), (uint32_t)m_StaticVertices.size() * sizeof(Vertex));
+			vb->SetLayout({
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float3, "a_Normal" },
+				{ ShaderDataType::Float3, "a_Tangent" },
+				{ ShaderDataType::Float3, "a_Binormal" },
+				{ ShaderDataType::Float2, "a_TexCoord" },
+				//	{ ShaderDataType::Int4,   "a_BoneIDs" },
+				//	{ ShaderDataType::Float4, "a_BoneWeights" },
+				});
+			m_VertexArray->AddVertexBuffer(vb);
+		}
 
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating an Index Buffer...");
-
 		auto ib = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
 		m_VertexArray->SetIndexBuffer(ib);
 
-		Log::GetLogger()->info("Hazel::HazelMesh: Total vertices: {0}", m_AnimatedVertices.size());
+		Log::GetLogger()->info("Hazel::HazelMesh: Total vertices: {0}", m_IsAnimated ? m_StaticVertices.size() : m_AnimatedVertices.size());
 		Log::GetLogger()->info("Hazel::HazelMesh: Total indices: {0}", m_Indices.size());
 	}
 
@@ -528,8 +578,8 @@ namespace Hazel {
 		for (Texture* texture : m_Textures)
 			delete texture;
 
-		for (Submesh* submesh : m_Submeshes)
-			delete submesh;
+		//	for (Submesh* submesh : m_Submeshes)
+		//		delete submesh;
 
 		delete m_IndexBuffer;
 	}
@@ -571,9 +621,9 @@ namespace Hazel {
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t mesh = node->mMeshes[i];
-			Submesh* submesh = m_Submeshes[mesh];
-			submesh->NodeName = node->mName.C_Str();
-			submesh->Transform = transform;
+			Submesh& submesh = m_Submeshes[mesh];
+			submesh.NodeName = node->mName.C_Str();
+			submesh.Transform = transform;
 		}
 
 		HZ_MESH_LOG("{0} {1}", LevelToSpaces(level), node->mName.C_Str());
@@ -746,8 +796,8 @@ namespace Hazel {
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t mesh = node->mMeshes[i];
-			m_Submeshes[mesh]->NodeName = node->mName.C_Str();
-			m_Submeshes[mesh]->Transform = transform;
+			m_Submeshes[mesh].NodeName = node->mName.C_Str();
+			m_Submeshes[mesh].Transform = transform;
 		}
 
 		if (ImGui::TreeNode(node->mName.C_Str()))
@@ -867,16 +917,33 @@ namespace Hazel {
 		HZ_MESH_LOG("------------------------------------------------------");
 		HZ_MESH_LOG("Vertex Buffer Dump");
 		HZ_MESH_LOG("Mesh: {0}", m_FilePath);
-		for (size_t i = 0; i < m_AnimatedVertices.size(); i++)
+		if (m_IsAnimated)
 		{
-			auto& vertex = m_AnimatedVertices[i];
-			HZ_MESH_LOG("Vertex:   {0}", i);
-			HZ_MESH_LOG("Position: {0}, {1}, {2}", vertex.Position.x, vertex.Position.y, vertex.Position.z);
-			HZ_MESH_LOG("Normal:   {0}, {1}, {2}", vertex.Normal.x,   vertex.Normal.y,   vertex.Normal.z);
-			HZ_MESH_LOG("Binormal: {0}, {1}, {2}", vertex.Binormal.x, vertex.Binormal.y, vertex.Binormal.z);
-			HZ_MESH_LOG("Tangent:  {0}, {1}, {2}", vertex.Tangent.x,  vertex.Tangent.y,  vertex.Tangent.z);
-			HZ_MESH_LOG("TexCoord: {0}, {1}",      vertex.Texcoord.x, vertex.Texcoord.y);
-			HZ_MESH_LOG("--");
+			for (size_t i = 0; i < m_AnimatedVertices.size(); i++)
+			{
+				auto& vertex = m_AnimatedVertices[i];
+				HZ_MESH_LOG("Vertex:   {0}", i);
+				HZ_MESH_LOG("Position: {0}, {1}, {2}", vertex.Position.x, vertex.Position.y, vertex.Position.z);
+				HZ_MESH_LOG("Normal:   {0}, {1}, {2}", vertex.Normal.x, vertex.Normal.y, vertex.Normal.z);
+				HZ_MESH_LOG("Binormal: {0}, {1}, {2}", vertex.Binormal.x, vertex.Binormal.y, vertex.Binormal.z);
+				HZ_MESH_LOG("Tangent:  {0}, {1}, {2}", vertex.Tangent.x, vertex.Tangent.y, vertex.Tangent.z);
+				HZ_MESH_LOG("TexCoord: {0}, {1}", vertex.Texcoord.x, vertex.Texcoord.y);
+				HZ_MESH_LOG("--");
+			}
+		}
+		else
+		{
+			for (size_t i = 0; i < m_StaticVertices.size(); i++)
+			{
+				auto& vertex = m_StaticVertices[i];
+				HZ_MESH_LOG("Vertex:   {0}", i);
+				HZ_MESH_LOG("Position: {0}, {1}, {2}", vertex.Position.x, vertex.Position.y, vertex.Position.z);
+				HZ_MESH_LOG("Normal:   {0}, {1}, {2}", vertex.Normal.x, vertex.Normal.y, vertex.Normal.z);
+				HZ_MESH_LOG("Binormal: {0}, {1}, {2}", vertex.Binormal.x, vertex.Binormal.y, vertex.Binormal.z);
+				HZ_MESH_LOG("Tangent:  {0}, {1}, {2}", vertex.Tangent.x, vertex.Tangent.y, vertex.Tangent.z);
+				HZ_MESH_LOG("TexCoord: {0}, {1}", vertex.Texcoord.x, vertex.Texcoord.y);
+				HZ_MESH_LOG("--");
+			}
 		}
 		HZ_MESH_LOG("------------------------------------------------------");
 	}
@@ -887,7 +954,7 @@ namespace Hazel {
 
 		m_VertexArray->Bind();
 
-		for (Submesh* submesh : m_Submeshes)
+		for (Submesh& submesh : m_Submeshes)
 		{
 			m_MeshShader->Bind();
 
@@ -897,7 +964,7 @@ namespace Hazel {
 				m_MeshShader->setMat4(uniformName, m_BoneTransforms[i]);
 			}
 
-			m_MeshShader->setMat4("u_Transform", transform * submesh->Transform);
+			m_MeshShader->setMat4("u_Transform", transform * submesh.Transform);
 
 			// Manage materials (PBR texture binding)
 			if (m_BaseMaterial) {
@@ -908,9 +975,9 @@ namespace Hazel {
 				m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
 			}
 
-			if (envMapMaterials.contains(submesh->NodeName))
+			if (envMapMaterials.contains(submesh.NodeName))
 			{
-				envMapMaterial = envMapMaterials.at(submesh->NodeName);
+				envMapMaterial = envMapMaterials.at(submesh.NodeName);
 				envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);
 				envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
 				envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);
@@ -918,22 +985,22 @@ namespace Hazel {
 				envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 4);
 			}
 
-			auto material = m_Materials[submesh->MaterialIndex];
+			auto material = m_Materials[submesh.MaterialIndex];
 			if (material->GetFlag(MaterialFlag::DepthTest)) {
 				glEnable(GL_DEPTH_TEST);
 			} else {
 				glDisable(GL_DEPTH_TEST);
 			}
 
-			glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t)* submesh->BaseIndex), submesh->BaseVertex);
+			glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t)* submesh.BaseIndex), submesh.BaseVertex);
 		}
 	}
 
 	void HazelMesh::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
 	{
-		for (Hazel::Submesh* submesh : m_Submeshes)
+		for (Hazel::Submesh submesh : m_Submeshes)
 		{
-			submesh->Render(this, m_MeshShader, transform, samplerSlot, envMapMaterials);
+			submesh.Render(this, m_MeshShader, transform, samplerSlot, envMapMaterials);
 		}
 	}
 

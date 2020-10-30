@@ -152,7 +152,9 @@ namespace Hazel {
 		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials);
 
 		// Getters
-		inline std::vector<Submesh*>& GetSubmeshes() { return m_Submeshes; }
+		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
+		const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
+
 		inline const std::vector<Material*>& GetMaterials() const { return m_Materials; }
 		inline const std::vector<Texture*>& GetTextures() const { return m_Textures; }
 		inline const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
@@ -187,7 +189,7 @@ namespace Hazel {
 		std::vector<glm::mat4> m_BoneTransforms;
 
 	private:
-		std::vector<Submesh*> m_Submeshes;
+		std::vector<Submesh> m_Submeshes;
 
 		std::unique_ptr<Assimp::Importer> m_Importer;
 
@@ -196,6 +198,7 @@ namespace Hazel {
 		uint32_t m_BoneCount = 0;
 		std::vector<BoneInfo> m_BoneInfo;
 
+		std::vector<Vertex> m_StaticVertices;
 		std::vector<AnimatedVertex> m_AnimatedVertices;
 		std::vector<Index> m_Indices;
 		std::unordered_map<std::string, uint32_t> m_BoneMapping;

@@ -168,7 +168,7 @@ namespace Hazel
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t meshIndex = node->mMeshes[i];
-			((HazelMesh*)mesh)->GetSubmeshes()[meshIndex]->Transform = transform;
+			((HazelMesh*)mesh)->GetSubmeshes()[meshIndex].Transform = transform;
 		}
 
 		if (ImGui::TreeNode(node->mName.C_Str()))

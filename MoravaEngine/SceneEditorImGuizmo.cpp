@@ -2243,10 +2243,10 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAni
     auto& materials = meshAnimPBR->GetMaterials();
 
     int submeshIndex = 0;
-    for (Hazel::Submesh* submesh : meshAnimPBR->GetSubmeshes())
+    for (Hazel::Submesh& submesh : meshAnimPBR->GetSubmeshes())
     {
         // Material
-        auto material = materials[submesh->MaterialIndex];
+        auto material = materials[submesh.MaterialIndex];
 
         for (size_t i = 0; i < meshAnimPBR->m_BoneTransforms.size(); i++)
         {
@@ -2254,14 +2254,14 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAni
             shaderHybridAnimPBR->setMat4(uniformName, meshAnimPBR->m_BoneTransforms[i]);
         }
 
-        glm::mat4 transform = sceneObject->transform * submesh->Transform;
+        glm::mat4 transform = sceneObject->transform * submesh.Transform;
         transform = glm::scale(transform, sceneObject->scale);
         shaderHybridAnimPBR->setMat4("u_Transform", transform);
         shaderHybridAnimPBR->Validate();
 
         // TODO move to virtual HazelMesh::Render() method
         glEnable(GL_DEPTH_TEST);
-        glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
+        glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
 
         submeshIndex++;
     }
