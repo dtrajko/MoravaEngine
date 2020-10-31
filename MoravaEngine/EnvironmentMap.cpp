@@ -108,7 +108,6 @@ void EnvironmentMap::Init()
 
     bool depthTest = true;
     Hazel::Renderer2D::Init();
-    Hazel::Renderer2D::BeginScene(RendererBasic::GetProjectionMatrix(), depthTest);
 }
 
 void EnvironmentMap::SetupContextData()
@@ -810,8 +809,6 @@ void EnvironmentMap::GeometryPassTemporary()
     RendererBasic::EnableTransparency();
     RendererBasic::EnableMSAA();
 
-    // m_SceneRenderer->BeginScene((Scene*)m_SceneRenderer->s_Data.ActiveScene); // Already called in Update()
-
     glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
     glm::mat4 viewMatrix = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
     glm::mat4 viewProjection = projectionMatrix * viewMatrix;
@@ -841,47 +838,59 @@ void EnvironmentMap::GeometryPassTemporary()
     }
     m_ShaderHazelPBR->Unbind();
 
-    // BEGIN dtrajko test code
     RendererBasic::SetLineThickness(4.0f);
 
-    bool depthTest = true;
-    Hazel::Renderer2D::BeginScene(viewProjection, depthTest);
+    Hazel::Renderer2D::BeginScene(viewProjection, true);
 
-    Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    if (m_DrawOnTopBoundingBoxes)
+    {
+        // Hazel::HazelRenderer::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
+        // Hazel::Renderer2D::BeginScene(viewProjection, false);
+        {
+            Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        }
+        // Hazel::Renderer2D::EndScene();
+        // Hazel::HazelRenderer::EndRenderPass();
+    }
 
-    if (m_DisplayBoundingBoxes) {
+    if (m_DisplayBoundingBoxes)
+    {
+        // Hazel::HazelRenderer::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
+        // Hazel::Renderer2D::BeginScene(viewProjection, false);
         for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
         {
             Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, m_MeshEntity->Transform() * submesh.Transform, glm::vec4(1.0f));
         }
-        
-    }
-    // END dtrajko test code
-
-    if (m_SelectedSubmeshes.size()) {
-        Hazel::HazelRenderer::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
-        for (auto& submesh : m_SelectedSubmeshes) {
-            Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, m_MeshEntity->Transform() * submesh.Transform, glm::vec4(1.0f));
-        }
+        // Hazel::Renderer2D::EndScene();
+        // Hazel::HazelRenderer::EndRenderPass();
     }
 
     if (m_SceneRenderer->GetOptions().ShowBoundingBoxes)
     {
-        bool depthTest = true;
-        Hazel::Renderer2D::BeginScene(viewProjection, depthTest);
+        // Hazel::HazelRenderer::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
+        // Hazel::Renderer2D::BeginScene(viewProjection, false);
         // Render HazelMesh meshes (later entt entities)
         for (auto& dc : m_SceneRenderer->s_Data.DrawList) {
             Hazel::HazelRenderer::DrawAABB(Ref<Mesh>(dc.Mesh), dc.Transform); // TODO proper way to render entities is through DrawList
         }
+        // Hazel::Renderer2D::EndScene();
+        // Hazel::HazelRenderer::EndRenderPass();
+    }
+
+    if (m_SelectedSubmeshes.size()) {
+        // Hazel::HazelRenderer::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
+        // Hazel::Renderer2D::BeginScene(viewProjection, false);
+        for (auto& submesh : m_SelectedSubmeshes)
+        {
+            Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, m_MeshEntity->Transform() * submesh.Transform, glm::vec4(1.0f));
+        }
+        // Hazel::Renderer2D::EndScene();
+        // Hazel::HazelRenderer::EndRenderPass();
     }
 
     Hazel::Renderer2D::EndScene();
 
     Hazel::HazelRenderer::BeginRenderPass(m_SceneRenderer->s_Data.GeoPass, false); // should we clear the buffer?
-
-    auto overrideMaterial = nullptr;
-    SubmitMesh(hazelMesh, m_MeshEntity->Transform(), overrideMaterial);
-
     Hazel::HazelRenderer::EndRenderPass();
 }
 
