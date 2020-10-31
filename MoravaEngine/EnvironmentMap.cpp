@@ -676,7 +676,7 @@ void EnvironmentMap::RenderHazelSkybox()
     // m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("u_Texture"));
     // SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
-    m_SceneRenderer->Renderer_SubmitFullscreenQuad(nullptr); // m_Data.SceneData.SkyboxMaterial
+    Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr); // m_Data.SceneData.SkyboxMaterial
     m_SceneRenderer->GetShaderSkybox()->Unbind();
 }
 
@@ -704,7 +704,7 @@ void EnvironmentMap::RenderHazelGrid()
     RendererBasic::EnableTransparency();
     RendererBasic::EnableMSAA();
 
-    m_SceneRenderer->GetFullscreenQuad()->Render();
+    Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
 }
 
 void EnvironmentMap::OnEvent(Event& e)
@@ -902,7 +902,7 @@ void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
     m_SceneRenderer->GetShaderComposite()->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure());
     // m_ShaderComposite->setInt("u_TextureSamples", framebuffer->GetSpecification().Samples);
     m_SceneRenderer->GetShaderComposite()->setInt("u_TextureSamples", m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
-    m_SceneRenderer->Renderer_SubmitFullscreenQuad(nullptr);
+    Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
 }
 
 void EnvironmentMap::Render(Framebuffer* framebuffer)

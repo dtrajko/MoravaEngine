@@ -28,12 +28,12 @@ namespace Hazel {
 
 	struct Renderer2DData
 	{
-		static const uint32_t MaxQuads = 200; // 20000;
+		static const uint32_t MaxQuads = 2000; // 20000;
 		static const uint32_t MaxVertices = MaxQuads * 4;
 		static const uint32_t MaxIndices = MaxQuads * 6;
 		static const uint32_t MaxTextureSlots = 32; // TODO: RenderCaps
 
-		static const uint32_t MaxLines = 100; // 10000;
+		static const uint32_t MaxLines = 1000; // 10000;
 		static const uint32_t MaxLineVertices = MaxLines * 2;
 		static const uint32_t MaxLineIndices = MaxLines * 6;
 

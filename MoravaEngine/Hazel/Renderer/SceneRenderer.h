@@ -53,10 +53,6 @@ namespace Hazel {
 
 		// Renderer data
 		Hazel::RenderCommandQueue* m_CommandQueue;
-
-		unsigned int FullscreenQuadVAO;
-		unsigned int FullscreenQuadVBO;
-		unsigned int FullscreenQuadIBO;
 	};
 
 
@@ -97,9 +93,6 @@ namespace Hazel {
 		inline Shader* GetShaderComposite() { return m_ShaderComposite; }
 		inline Hazel::HazelTexture2D* GetEnvEquirect() { return m_EnvEquirect; }
 		uint32_t GetFinalColorBufferID();
-		HazelFullscreenQuad* GetFullscreenQuad() { return m_HazelFullscreenQuad; }
-		// From EnvironmentMap (Renderer methods)
-		void Renderer_SubmitFullscreenQuad(Material* material);
 
 	private:
 		void FlushDrawList(); // TODO: static
@@ -125,8 +118,6 @@ namespace Hazel {
 		Hazel::HazelTexture2D* m_EnvEquirect;
 		Hazel::HazelTextureCube* m_EnvFiltered;
 		Hazel::HazelTextureCube* m_IrradianceMap;
-
-		HazelFullscreenQuad* m_HazelFullscreenQuad;
 
 		std::map<std::string, unsigned int>* m_SamplerSlots;
 	};

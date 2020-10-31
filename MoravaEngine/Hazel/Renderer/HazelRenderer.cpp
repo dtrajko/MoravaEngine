@@ -129,10 +129,31 @@ namespace Hazel {
 
 	void HazelRenderer::SubmitQuad(const Ref<HazelMaterialInstance>& material, const glm::mat4& transform)
 	{
+		bool depthTest = true;
+		if (material)
+		{
+			material->Bind();
+			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
+
+			auto shader = material->GetShader();
+			shader->setMat4("u_Transform", transform);
+		}
+
+		s_Data.m_FullscreenQuadVertexArray->Bind();
+		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
 	void HazelRenderer::SubmitFullscreenQuad(const Ref<HazelMaterialInstance>& material)
 	{
+		bool depthTest = true;
+		if (material)
+		{
+			material->Bind();
+			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
+		}
+
+		s_Data.m_FullscreenQuadVertexArray->Bind();
+		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
 	void HazelRenderer::SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform, const Ref<HazelMaterialInstance>& overrideMaterial)

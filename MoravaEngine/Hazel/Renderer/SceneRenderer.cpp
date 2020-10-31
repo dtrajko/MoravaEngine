@@ -51,10 +51,6 @@ namespace Hazel {
 
         s_Data.SceneData.SkyboxMaterial = new Material(m_ShaderSkybox);
         s_Data.SceneData.SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, true); // false
-
-        // SetupFullscreenQuad();
-        // Framebuffer quad temporary version, in place of the broken SetupFullscreenQuad()
-        m_HazelFullscreenQuad = new HazelFullscreenQuad();
     }
 
     void SceneRenderer::SetupShaders()
@@ -191,7 +187,7 @@ namespace Hazel {
         m_ShaderComposite->setFloat("u_Exposure", s_Data.SceneData.SceneCamera->GetExposure());
         m_ShaderComposite->setInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
 
-        Renderer_SubmitFullscreenQuad(nullptr);
+        HazelRenderer::SubmitFullscreenQuad(nullptr);
 
         HazelRenderer::EndRenderPass();
     }
@@ -221,19 +217,6 @@ namespace Hazel {
     SceneRendererOptions& SceneRenderer::GetOptions()
     {
         return s_Data.Options;
-    }
-
-    void SceneRenderer::Renderer_SubmitFullscreenQuad(Material* material)
-    {
-        bool depthTest = true;
-
-        if (material)
-        {
-            // m_ShaderHazelPBR_Anim->Bind(); // hard-coded shader
-            depthTest = material->GetFlag(MaterialFlag::DepthTest);
-        }
-
-        m_HazelFullscreenQuad->Render();
     }
 
     Ref<RenderPass> SceneRenderer::GetFinalRenderPass()
