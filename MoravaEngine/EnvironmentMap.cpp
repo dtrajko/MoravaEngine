@@ -744,9 +744,9 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
             for (const auto& submesh : submeshes)
             {
-                auto newRay = glm::inverse(m_MeshEntity->GetTransform()) * glm::inverse(submesh.Transform) * glm::vec4(origin, 1.0f);
+                auto newRay = glm::inverse(submesh.Transform) * glm::inverse(m_MeshEntity->GetTransform()) * glm::vec4(origin, 1.0f);
                 // m_NewRay = submesh.Transform * newRay;
-                auto newDir = glm::inverse(glm::mat3(m_MeshEntity->GetTransform())) * glm::inverse(glm::mat3(submesh.Transform)) * direction;
+                auto newDir = glm::inverse(glm::mat3(submesh.Transform)) * glm::inverse(glm::mat3(m_MeshEntity->GetTransform())) * direction;
 
                 float t = 0.0f;
                 bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
@@ -755,9 +755,9 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                     {
                         // if (t < lastT)
                         {
-                            // m_SelectedSubmeshes.push_back({ submesh, t });
-                            // LOG_WARN("Selected {0} ({1}), T={2}", submesh.NodeName, submesh.MeshName, t);
-                            // lastT = t;
+                            m_SelectedSubmeshes.push_back({ submesh, t });
+                            LOG_WARN("Selected {0} ({1}), T={2}", submesh.NodeName, submesh.MeshName, t);
+                            lastT = t;
                         }
                     }
                 }
