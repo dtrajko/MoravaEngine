@@ -744,9 +744,9 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
             for (const auto& submesh : submeshes)
             {
-                auto newRay = glm::inverse(submesh.Transform) * glm::vec4(origin, 1.0f);
-                m_NewRay = submesh.Transform * newRay;
-                auto newDir = glm::inverse(glm::mat3(submesh.Transform)) * direction;
+                auto newRay = glm::inverse(m_MeshEntity->GetTransform()) * glm::inverse(submesh.Transform) * glm::vec4(origin, 1.0f);
+                // m_NewRay = submesh.Transform * newRay;
+                auto newDir = glm::inverse(glm::mat3(m_MeshEntity->GetTransform())) * glm::inverse(glm::mat3(submesh.Transform)) * direction;
 
                 float t = 0.0f;
                 bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
@@ -755,15 +755,15 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                     {
                         // if (t < lastT)
                         {
-                            Log::GetLogger()->debug("Push back to m_SelectedSubmeshes");
-                            m_SelectedSubmeshes.push_back(submesh);
-                            lastT = t;
+                            // m_SelectedSubmeshes.push_back({ submesh, t });
+                            // LOG_WARN("Selected {0} ({1}), T={2}", submesh.NodeName, submesh.MeshName, t);
+                            // lastT = t;
                         }
                     }
                 }
 
-                Log::GetLogger()->warn("origin [ {0} {1} {2} ] direction [ {3} {4} {5} ]", origin.x, origin.y, origin.z, direction.x, direction.y, direction.z);
-                Log::GetLogger()->warn("Intersects = {0}, t = {1}", intersects, t);
+                // Log::GetLogger()->warn("origin [ {0} {1} {2} ] direction [ {3} {4} {5} ]", origin.x, origin.y, origin.z, direction.x, direction.y, direction.z);
+                // Log::GetLogger()->warn("Intersects = {0}, t = {1}", intersects, t);
             }
         }
     }
@@ -822,72 +822,56 @@ void EnvironmentMap::GeometryPassTemporary()
 
     uint32_t samplerSlot = m_SamplerSlots->at("albedo");
 
-    RenderHazelSkybox();
-
-    if (m_DisplayHazelGrid) {
-        RenderHazelGrid();
-    }
-
-    m_ShaderHazelPBR->Bind();
-    for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
-    {
-        if (m_EnvMapMaterials.contains(submesh.NodeName)) {
-            UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh.NodeName));
-        }
-        submesh.Render(hazelMesh, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
-    }
-    m_ShaderHazelPBR->Unbind();
-
-    RendererBasic::SetLineThickness(4.0f);
-
     Hazel::Renderer2D::BeginScene(viewProjection, true);
-
-    if (m_DrawOnTopBoundingBoxes)
     {
-        // Hazel::HazelRenderer::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
-        // Hazel::Renderer2D::BeginScene(viewProjection, false);
-        {
-            Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        RenderHazelSkybox();
+
+        if (m_DisplayHazelGrid) {
+            RenderHazelGrid();
         }
-        // Hazel::Renderer2D::EndScene();
-        // Hazel::HazelRenderer::EndRenderPass();
-    }
 
-    if (m_DisplayBoundingBoxes)
-    {
-        // Hazel::HazelRenderer::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
-        // Hazel::Renderer2D::BeginScene(viewProjection, false);
+        m_ShaderHazelPBR->Bind();
         for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
         {
-            Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, m_MeshEntity->Transform() * submesh.Transform, glm::vec4(1.0f));
+            if (m_EnvMapMaterials.contains(submesh.NodeName)) {
+                UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh.NodeName));
+            }
+            submesh.Render(hazelMesh, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
         }
-        // Hazel::Renderer2D::EndScene();
-        // Hazel::HazelRenderer::EndRenderPass();
-    }
+        m_ShaderHazelPBR->Unbind();
 
-    if (m_SceneRenderer->GetOptions().ShowBoundingBoxes)
-    {
-        // Hazel::HazelRenderer::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
-        // Hazel::Renderer2D::BeginScene(viewProjection, false);
-        // Render HazelMesh meshes (later entt entities)
-        for (auto& dc : m_SceneRenderer->s_Data.DrawList) {
-            Hazel::HazelRenderer::DrawAABB(Ref<Mesh>(dc.Mesh), dc.Transform); // TODO proper way to render entities is through DrawList
-        }
-        // Hazel::Renderer2D::EndScene();
-        // Hazel::HazelRenderer::EndRenderPass();
-    }
+        RendererBasic::SetLineThickness(4.0f);
 
-    if (m_SelectedSubmeshes.size()) {
-        // Hazel::HazelRenderer::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
-        // Hazel::Renderer2D::BeginScene(viewProjection, false);
-        for (auto& submesh : m_SelectedSubmeshes)
+        if (m_DrawOnTopBoundingBoxes)
         {
-            Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, m_MeshEntity->Transform() * submesh.Transform, glm::vec4(1.0f));
+            {
+                Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            }
         }
-        // Hazel::Renderer2D::EndScene();
-        // Hazel::HazelRenderer::EndRenderPass();
-    }
 
+        if (m_DisplayBoundingBoxes)
+        {
+            for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
+            {
+                Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, m_MeshEntity->Transform() * submesh.Transform, glm::vec4(1.0f));
+            }
+        }
+
+        if (m_SceneRenderer->GetOptions().ShowBoundingBoxes)
+        {
+            // Render HazelMesh meshes (later entt entities)
+            for (auto& dc : m_SceneRenderer->s_Data.DrawList) {
+                Hazel::HazelRenderer::DrawAABB(Ref<Mesh>(dc.Mesh), dc.Transform); // TODO proper way to render entities is through DrawList
+            }
+        }
+
+        if (m_SelectedSubmeshes.size()) {
+            for (auto& submesh : m_SelectedSubmeshes)
+            {
+                Hazel::HazelRenderer::DrawAABB(submesh.Mesh.BoundingBox, m_MeshEntity->Transform() * submesh.Mesh.Transform, glm::vec4(1.0f));
+            }
+        }
+    }
     Hazel::Renderer2D::EndScene();
 
     Hazel::HazelRenderer::BeginRenderPass(m_SceneRenderer->s_Data.GeoPass, false); // should we clear the buffer?

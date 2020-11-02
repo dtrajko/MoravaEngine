@@ -129,7 +129,13 @@ private:
 	bool m_AllowViewportCameraEvents = true;
 	bool m_DrawOnTopBoundingBoxes = true;
 	glm::vec3 m_NewRay;
-	std::vector<Hazel::Submesh> m_SelectedSubmeshes;
+
+	struct SelectedSubmesh
+	{
+		Hazel::Submesh Mesh;
+		float Distance;
+	};
+	std::vector<SelectedSubmesh> m_SelectedSubmeshes;
 
 	Hazel::SceneRenderer* m_SceneRenderer;
 
