@@ -736,13 +736,13 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
         if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
         {
-            auto [origin, direction] = CastRay(/* mouseX, mouseY */);
+            auto [origin, direction] = CastRay(); // CastRay(mouseX, mouseY);
 
             auto mesh = m_MeshEntity->GetMesh();
             const auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
             float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
 
-            for (const auto& submesh : submeshes)
+            for (const auto submesh : submeshes)
             {
                 auto newRay = glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f);
                 auto newDir = glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction;
@@ -751,26 +751,18 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
                 float t = 0.0f;
                 bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
+
                 if (intersects)
                 {
-                    m_SelectedSubmeshes.push_back({ submesh, t });
-
-                    //  if (t < lastT)
-                    //  {
-                    //      LOG_WARN("Selected {0} ({1}), T={2}", submesh.NodeName, submesh.MeshName, t);
-                    //      lastT = t;
-                    //  }
+                m_SelectedSubmeshes.push_back(submesh); // push_back({ submesh, t });
                 }
-
-                // Log::GetLogger()->warn("origin [ {0} {1} {2} ] direction [ {3} {4} {5} ]", origin.x, origin.y, origin.z, direction.x, direction.y, direction.z);
-                // Log::GetLogger()->warn("Intersects = {0}, t = {1}", intersects, t);
             }
 
-            std::sort(m_SelectedSubmeshes.begin(), m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
+            // std::sort(m_SelectedSubmeshes.begin(), m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
         }
     }
 
-    return false;
+    return true;
 }
 
 std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
@@ -783,7 +775,6 @@ std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
 
     Log::GetLogger()->debug("EnvironmentMap::GetMouseViewportSpace | viewportWidth {0} viewportHeight {1}", viewportWidth, viewportHeight);
 
-    // return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f + 1.0f) * -1.0f };
     return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 }
 
@@ -827,7 +818,7 @@ void EnvironmentMap::GeometryPassTemporary()
 
     glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
     glm::mat4 viewMatrix = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
-    glm::mat4 viewProjection = projectionMatrix * viewMatrix;
+    glm::mat4 viewProj = projectionMatrix * viewMatrix;
 
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("radiance"));
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.IrradianceMap->Bind(m_SamplerSlots->at("irradiance"));
@@ -838,62 +829,40 @@ void EnvironmentMap::GeometryPassTemporary()
 
     uint32_t samplerSlot = m_SamplerSlots->at("albedo");
 
-    Hazel::Renderer2D::BeginScene(viewProjection, true);
-    {
-        RenderHazelSkybox();
+    RenderHazelSkybox();
 
-        if (m_DisplayHazelGrid) {
-            RenderHazelGrid();
-        }
-
-        m_ShaderHazelPBR->Bind();
-        for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
-        {
-            if (m_EnvMapMaterials.contains(submesh.NodeName)) {
-                UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh.NodeName));
-            }
-            submesh.Render(hazelMesh, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
-        }
-        m_ShaderHazelPBR->Unbind();
-
-        RendererBasic::SetLineThickness(2.0f);
-
-        if (m_DrawOnTopBoundingBoxes)
-        {
-            // Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-            glm::vec3 camPosition = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->GetPosition();
-            // Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-        }
-
-        if (m_DisplayBoundingBoxes)
-        {
-            for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
-            {
-                // Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, m_MeshEntity->Transform() * submesh.Transform, glm::vec4(1.0f));
-            }
-        }
-
-        if (m_SceneRenderer->GetOptions().ShowBoundingBoxes)
-        {
-            // Render HazelMesh meshes (later entt entities)
-            for (auto& dc : m_SceneRenderer->s_Data.DrawList) {
-                // Hazel::HazelRenderer::DrawAABB(Ref<Mesh>(dc.Mesh), dc.Transform); // TODO proper way to render entities is through DrawList
-            }
-        }
-
-        if (m_SelectedSubmeshes.size()) {
-            auto& submesh = m_SelectedSubmeshes[0];
-            Hazel::HazelRenderer::DrawAABB(submesh.Mesh.BoundingBox, m_MeshEntity->Transform() * submesh.Mesh.Transform, glm::vec4(1.0f));
-
-            //  for (auto& submesh : m_SelectedSubmeshes)
-            //  {
-            //      Hazel::HazelRenderer::DrawAABB(submesh.Mesh.BoundingBox, m_MeshEntity->Transform() * submesh.Mesh.Transform, glm::vec4(1.0f));
-            //  }
-        }
+    if (m_DisplayHazelGrid) {
+        RenderHazelGrid();
     }
-    Hazel::Renderer2D::EndScene();
 
-    Hazel::HazelRenderer::BeginRenderPass(m_SceneRenderer->s_Data.GeoPass, false); // should we clear the buffer?
+    m_ShaderHazelPBR->Bind();
+    for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
+    {
+        if (m_EnvMapMaterials.contains(submesh.NodeName)) {
+            UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh.NodeName));
+        }
+        submesh.Render(hazelMesh, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
+    }
+    m_ShaderHazelPBR->Unbind();
+ 
+    //  Hazel::Renderer2D::BeginScene(viewProj, true);
+    //  {
+    //      RendererBasic::SetLineThickness(2.0f);
+    //  
+    //      if (m_DrawOnTopBoundingBoxes)
+    //      {
+    //          glm::vec3 camPosition = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->GetPosition();
+    //          Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+    //      }
+    //      
+    //      if (m_SelectedSubmeshes.size()) {
+    //          auto& submesh = m_SelectedSubmeshes[0];
+    //          Hazel::HazelRenderer::DrawAABB(submesh.Mesh.BoundingBox, m_MeshEntity->Transform() * submesh.Mesh.Transform, glm::vec4(1.0f));
+    //      }
+    //  }
+    //  Hazel::Renderer2D::EndScene();
+
+    Hazel::HazelRenderer::BeginRenderPass(m_SceneRenderer->s_Data.GeoPass, false);
     Hazel::HazelRenderer::EndRenderPass();
 }
 
