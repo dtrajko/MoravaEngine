@@ -89,8 +89,9 @@ namespace Hazel {
 
 	void RendererAPI::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
 	{
-		if (!depthTest)
+		if (!depthTest) {
 			glDisable(GL_DEPTH_TEST);
+		}
 
 		GLenum glPrimitiveType = 0;
 		switch (type)
@@ -105,8 +106,9 @@ namespace Hazel {
 
 		glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
 
-		if (!depthTest)
+		if (!depthTest) {
 			glEnable(GL_DEPTH_TEST);
+		}
 	}
 
 	void RendererAPI::SetLineThickness(float thickness)

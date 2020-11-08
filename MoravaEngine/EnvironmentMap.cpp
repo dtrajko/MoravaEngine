@@ -45,7 +45,7 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 
     m_DisplayHazelGrid = true;
 
-    m_DisplayBoundingBoxes = true;
+    m_DisplayBoundingBoxes = false;
 }
 
 void EnvironmentMap::Init()
@@ -677,7 +677,7 @@ void EnvironmentMap::RenderHazelSkybox()
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("u_Texture"));
     // SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
     Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr); // m_Data.SceneData.SkyboxMaterial
-    m_SceneRenderer->GetShaderSkybox()->Unbind();
+    // m_SceneRenderer->GetShaderSkybox()->Unbind();
 }
 
 void EnvironmentMap::RenderHazelGrid()
@@ -736,35 +736,37 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
         if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
         {
-            auto [origin, direction] = CastRay(mouseX, mouseY);
+            auto [origin, direction] = CastRay(/* mouseX, mouseY */);
 
             auto mesh = m_MeshEntity->GetMesh();
             const auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
-            float lastT = 200.0f; // Distance between camera and intersection in CastRay
+            float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
 
             for (const auto& submesh : submeshes)
             {
-                auto newRay = glm::inverse(submesh.Transform) * glm::inverse(m_MeshEntity->GetTransform()) * glm::vec4(origin, 1.0f);
-                // m_NewRay = submesh.Transform * newRay;
-                auto newDir = glm::inverse(glm::mat3(submesh.Transform)) * glm::inverse(glm::mat3(m_MeshEntity->GetTransform())) * direction;
+                auto newRay = glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f);
+                auto newDir = glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction;
+                m_NewRay = newRay;
+                m_NewDir = newDir;
 
                 float t = 0.0f;
                 bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
-                if (intersects) {
-                    // if (m_SelectedSubmeshes.size())
-                    {
-                        // if (t < lastT)
-                        {
-                            m_SelectedSubmeshes.push_back({ submesh, t });
-                            LOG_WARN("Selected {0} ({1}), T={2}", submesh.NodeName, submesh.MeshName, t);
-                            lastT = t;
-                        }
-                    }
+                if (intersects)
+                {
+                    m_SelectedSubmeshes.push_back({ submesh, t });
+
+                    //  if (t < lastT)
+                    //  {
+                    //      LOG_WARN("Selected {0} ({1}), T={2}", submesh.NodeName, submesh.MeshName, t);
+                    //      lastT = t;
+                    //  }
                 }
 
                 // Log::GetLogger()->warn("origin [ {0} {1} {2} ] direction [ {3} {4} {5} ]", origin.x, origin.y, origin.z, direction.x, direction.y, direction.z);
                 // Log::GetLogger()->warn("Intersects = {0}, t = {1}", intersects, t);
             }
+
+            std::sort(m_SelectedSubmeshes.begin(), m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
         }
     }
 
@@ -785,16 +787,30 @@ std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
     return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 }
 
-std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)
+std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(/* float mx, float my */)
 {
-    glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+    // glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
 
-    auto inverseProj = glm::inverse(RendererBasic::GetProjectionMatrix());
-    auto inverseView = glm::inverse(((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix());
+    glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
+    glm::mat4 viewMatrix = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
+
+    const float WindowsTitleBarHeight = 23; // temp
+
+    auto [mx, my] = Input::GetMousePosition();
+    mx -= m_ViewportBounds[0].x;
+    my -= m_ViewportBounds[0].y - WindowsTitleBarHeight;
+    auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
+    auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
+
+    glm::vec4 mouseClipPos = { (mx / viewportWidth) * 2.0f - 1.0f, (my / viewportHeight) * 2.0f - 1.0f, -1.0f, 1.0f };
+    mouseClipPos.y *= -1.0f;
+
+    auto inverseProj = glm::inverse(projectionMatrix);
+    auto inverseView = glm::inverse(glm::mat3(viewMatrix));
 
     glm::vec4 ray = inverseProj * mouseClipPos;
     glm::vec3 rayPos = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->GetPosition();
-    glm::vec3 rayDir = inverseView * ray; // inverseView * glm::vec3(ray)
+    glm::vec3 rayDir = inverseView * glm::vec3(ray); // inverseView * glm::vec3(ray)
 
     Log::GetLogger()->debug("EnvironmentMap::CastRay | MousePosition [ {0} {1} ]", mx, my);
     Log::GetLogger()->debug("EnvironmentMap::CastRay | m_ViewportBounds[0] [ {0} {1} ]", m_ViewportBounds[0].x, m_ViewportBounds[0].y);
@@ -840,20 +856,20 @@ void EnvironmentMap::GeometryPassTemporary()
         }
         m_ShaderHazelPBR->Unbind();
 
-        RendererBasic::SetLineThickness(4.0f);
+        RendererBasic::SetLineThickness(2.0f);
 
         if (m_DrawOnTopBoundingBoxes)
         {
-            {
-                Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-            }
+            // Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1, 0, 0) * 100.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            glm::vec3 camPosition = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->GetPosition();
+            // Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
         }
 
         if (m_DisplayBoundingBoxes)
         {
             for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
             {
-                Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, m_MeshEntity->Transform() * submesh.Transform, glm::vec4(1.0f));
+                // Hazel::HazelRenderer::DrawAABB(submesh.BoundingBox, m_MeshEntity->Transform() * submesh.Transform, glm::vec4(1.0f));
             }
         }
 
@@ -861,15 +877,18 @@ void EnvironmentMap::GeometryPassTemporary()
         {
             // Render HazelMesh meshes (later entt entities)
             for (auto& dc : m_SceneRenderer->s_Data.DrawList) {
-                Hazel::HazelRenderer::DrawAABB(Ref<Mesh>(dc.Mesh), dc.Transform); // TODO proper way to render entities is through DrawList
+                // Hazel::HazelRenderer::DrawAABB(Ref<Mesh>(dc.Mesh), dc.Transform); // TODO proper way to render entities is through DrawList
             }
         }
 
         if (m_SelectedSubmeshes.size()) {
-            for (auto& submesh : m_SelectedSubmeshes)
-            {
-                Hazel::HazelRenderer::DrawAABB(submesh.Mesh.BoundingBox, m_MeshEntity->Transform() * submesh.Mesh.Transform, glm::vec4(1.0f));
-            }
+            auto& submesh = m_SelectedSubmeshes[0];
+            Hazel::HazelRenderer::DrawAABB(submesh.Mesh.BoundingBox, m_MeshEntity->Transform() * submesh.Mesh.Transform, glm::vec4(1.0f));
+
+            //  for (auto& submesh : m_SelectedSubmeshes)
+            //  {
+            //      Hazel::HazelRenderer::DrawAABB(submesh.Mesh.BoundingBox, m_MeshEntity->Transform() * submesh.Mesh.Transform, glm::vec4(1.0f));
+            //  }
         }
     }
     Hazel::Renderer2D::EndScene();

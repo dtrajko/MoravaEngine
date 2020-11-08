@@ -88,7 +88,7 @@ private:
 	bool OnKeyPressedEvent(KeyPressedEvent& e); // EditorLayer::OnKeyPressedEvent()
 	bool OnMouseButtonPressed(MouseButtonPressedEvent& e); // EditorLayer::OnMouseButtonPressedEvent()
 	std::pair<float, float> GetMouseViewportSpace();
-	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
+	std::pair<glm::vec3, glm::vec3> CastRay(/* float mx, float my */); // EditorLayer::CastRay()
 
 private:
 	Shader* m_ShaderHazelPBR_Anim;
@@ -129,6 +129,7 @@ private:
 	bool m_AllowViewportCameraEvents = true;
 	bool m_DrawOnTopBoundingBoxes = true;
 	glm::vec3 m_NewRay;
+	glm::vec3 m_NewDir;
 
 	struct SelectedSubmesh
 	{
