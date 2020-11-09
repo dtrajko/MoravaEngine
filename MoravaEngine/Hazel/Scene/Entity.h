@@ -74,11 +74,13 @@ namespace Hazel {
 		const std::string& GetName() const { return m_Name; }
 		inline void SetName(std::string name) { m_Name = name; }
 
+	public:
+		Mesh* m_Mesh;
+
 	private:
 		entt::entity m_EntityHandle;
 		HazelScene* m_Scene = nullptr;
 
-		Mesh* m_Mesh;
 		Material* m_Material;
 
 		// NoECS

@@ -187,10 +187,9 @@ namespace Hazel {
 		Ref<VertexArray> m_VertexArray;
 		OpenGLIndexBuffer* m_IndexBuffer;
 		std::vector<glm::mat4> m_BoneTransforms;
-
-	private:
 		std::vector<Submesh> m_Submeshes;
 
+	private:
 		std::unique_ptr<Assimp::Importer> m_Importer;
 
 		glm::mat4 m_InverseTransform;
