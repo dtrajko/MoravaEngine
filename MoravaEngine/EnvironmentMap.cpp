@@ -732,33 +732,32 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
         auto [mouseX, mouseY] = GetMouseViewportSpace();
 
-        Log::GetLogger()->debug("EnvironmentMap::OnMouseButtonPressed GetMouseViewportSpace [mouseX = {0}, mouseY = {1}] ", mouseX, mouseY);
-
+        //  Log::GetLogger()->debug("EnvironmentMap::OnMouseButtonPressed GetMouseViewportSpace [mouseX = {0}, mouseY = {1}] ", mouseX, mouseY);
+  
         if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
         {
             auto [origin, direction] = CastRay(); // CastRay(mouseX, mouseY);
-
             auto mesh = m_MeshEntity->GetMesh();
             const auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
             float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
 
-            for (const auto submesh : submeshes)
-            {
-                auto newRay = glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f);
-                auto newDir = glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction;
-                m_NewRay = newRay;
-                m_NewDir = newDir;
+            //  for (const auto submesh : submeshes)
+            //  {
+            //      auto newRay = glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f);
+            //      auto newDir = glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction;
+            //      m_NewRay = newRay;
+            //      m_NewDir = newDir;
+            //  
+            //      float t = 0.0f;
+            //      bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
+            //  
+            //      if (intersects)
+            //      {
+            //      m_SelectedSubmeshes.push_back({ submesh, t });
+            //      }
+            //  }
 
-                float t = 0.0f;
-                bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
-
-                if (intersects)
-                {
-                m_SelectedSubmeshes.push_back(submesh); // push_back({ submesh, t });
-                }
-            }
-
-            // std::sort(m_SelectedSubmeshes.begin(), m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
+            std::sort(m_SelectedSubmeshes.begin(), m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
         }
     }
 

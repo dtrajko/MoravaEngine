@@ -131,14 +131,13 @@ private:
 	glm::vec3 m_NewRay;
 	glm::vec3 m_NewDir;
 
-	//	struct SelectedSubmesh
-	//	{
-	//		Hazel::Submesh Mesh;
-	//		float Distance;
-	//	};
-	//	std::vector<SelectedSubmesh> m_SelectedSubmeshes;
-
-	std::vector<Hazel::Submesh> m_SelectedSubmeshes;
+	struct SelectedSubmesh
+	{
+		Hazel::Submesh Mesh;
+		float Distance;
+	};
+	std::vector<SelectedSubmesh> m_SelectedSubmeshes;
+	// std::vector<Hazel::Submesh> m_SelectedSubmeshes;
 
 	Hazel::SceneRenderer* m_SceneRenderer;
 
