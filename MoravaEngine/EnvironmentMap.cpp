@@ -738,20 +738,20 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
             auto [origin, direction] = CastRay(); // CastRay(mouseX, mouseY);
             float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
 
-            // for (auto submesh : ((Hazel::HazelMesh*)m_MeshEntity->m_Mesh)->m_Submeshes)
+            for (Hazel::Submesh& submesh : ((Hazel::HazelMesh*)m_MeshEntity->m_Mesh)->m_Submeshes)
             {
-                //  auto newRay = glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f);
-                //  auto newDir = glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction;
-                //  m_NewRay = newRay;
-                //  m_NewDir = newDir;
-                //  
-                //  float t = 0.0f;
-                //  bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
-                //  
-                //  if (intersects)
-                //  {
-                //      m_SelectedSubmeshes.push_back({ submesh, t });
-                //  }
+                auto newRay = glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f);
+                auto newDir = glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction;
+                m_NewRay = newRay;
+                m_NewDir = newDir;
+
+                float t = 0.0f;
+                bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
+
+                if (intersects)
+                {
+                    // m_SelectedSubmeshes.push_back({ submesh, t });
+                }
             }
 
             std::sort(m_SelectedSubmeshes.begin(), m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
