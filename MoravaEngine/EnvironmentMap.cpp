@@ -840,26 +840,25 @@ void EnvironmentMap::GeometryPassTemporary()
         submesh.Render(hazelMesh, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
     }
     m_ShaderHazelPBR->Unbind();
- 
-    //  Hazel::Renderer2D::BeginScene(viewProj, true);
-    //  {
-    //      RendererBasic::SetLineThickness(2.0f);
-    //  
-    //      if (m_DrawOnTopBoundingBoxes)
-    //      {
-    //          glm::vec3 camPosition = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->GetPosition();
-    //          Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-    //      }
-    //      
-    //      if (m_SelectedSubmeshes.size()) {
-    //          auto& submesh = m_SelectedSubmeshes[0];
-    //          Hazel::HazelRenderer::DrawAABB(submesh.Mesh.BoundingBox, m_MeshEntity->Transform() * submesh.Mesh.Transform, glm::vec4(1.0f));
-    //      }
-    //  }
-    //  Hazel::Renderer2D::EndScene();
 
-    Hazel::HazelRenderer::BeginRenderPass(m_SceneRenderer->s_Data.GeoPass, false);
-    Hazel::HazelRenderer::EndRenderPass();
+    Hazel::Renderer2D::BeginScene(viewProj, true);
+    {
+        RendererBasic::SetLineThickness(2.0f);
+    
+        if (m_DrawOnTopBoundingBoxes)
+        {
+            glm::vec3 camPosition = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->GetPosition();
+            Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+        }
+        
+        if (m_SelectedSubmeshes.size()) {
+            auto& submesh = m_SelectedSubmeshes[0];
+            Hazel::HazelRenderer::DrawAABB(submesh.Mesh->BoundingBox, m_MeshEntity->Transform() * submesh.Mesh->Transform, glm::vec4(1.0f));
+        }
+    }
+    Hazel::Renderer2D::EndScene();
+
+    m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->Bind();
 }
 
 void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
