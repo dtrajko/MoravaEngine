@@ -133,11 +133,10 @@ private:
 
 	struct SelectedSubmesh
 	{
-		Hazel::Submesh Mesh;
+		Hazel::Submesh* Mesh;
 		float Distance;
 	};
 	std::vector<SelectedSubmesh> m_SelectedSubmeshes;
-	// std::vector<Hazel::Submesh> m_SelectedSubmeshes;
 
 	Hazel::SceneRenderer* m_SceneRenderer;
 

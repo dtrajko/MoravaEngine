@@ -750,7 +750,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
                 if (intersects)
                 {
-                    // m_SelectedSubmeshes.push_back({ submesh, t });
+                    m_SelectedSubmeshes.push_back({ &submesh, t });
                 }
             }
 
