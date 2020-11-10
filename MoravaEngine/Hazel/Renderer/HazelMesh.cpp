@@ -195,9 +195,15 @@ namespace Hazel {
 				Index index = { mesh->mFaces[i].mIndices[0], mesh->mFaces[i].mIndices[1], mesh->mFaces[i].mIndices[2] };
 				m_Indices.push_back(index);
 
-				if (!m_IsAnimated) {
-					// m_TriangleCache[(uint32_t)m].emplace_back(m_StaticVertices[index.V1 + submesh.BaseVertex], m_StaticVertices[index.V2 + submesh.BaseVertex], m_StaticVertices[index.V3 + submesh.BaseVertex]);
-				}
+				//	if (!m_IsAnimated) {
+				//		m_TriangleCache[(uint32_t)m].emplace_back(m_StaticVertices[index.V1 + submesh.BaseVertex], m_StaticVertices[index.V2 + submesh.BaseVertex], m_StaticVertices[index.V3 + //  submesh.BaseVertex]);
+				//	}
+			}
+
+			// Triangle cache
+			for (auto& face : m_Indices)
+			{
+				m_TriangleCache.emplace_back(m_StaticVertices[face.V1], m_StaticVertices[face.V2], m_StaticVertices[face.V3]);
 			}
 		}
 

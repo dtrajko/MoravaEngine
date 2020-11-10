@@ -108,6 +108,14 @@ namespace Hazel {
 		}
 	};
 
+	//	struct Triangle
+	//	{
+	//		Vertex V0, V1, V2;
+	//	
+	//		Triangle(const Vertex& v0, const Vertex& v1, const Vertex& v2)
+	//			: V0(v0), V1(v1), V2(v2) {}
+	//	};
+
 	struct Triangle
 	{
 		Vertex V0, V1, V2;
@@ -157,7 +165,7 @@ namespace Hazel {
 
 		inline const std::vector<Material*>& GetMaterials() const { return m_Materials; }
 		inline const std::vector<Texture*>& GetTextures() const { return m_Textures; }
-		inline const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
+		// inline const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
 		inline bool& IsAnimated() { return m_IsAnimated; }
 		inline Ref<VertexArray> GetVertexArray() { return m_VertexArray; }
 		inline const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
@@ -210,7 +218,8 @@ namespace Hazel {
 		std::vector<Texture*> m_NormalMaps;
 		std::vector<Material*> m_Materials;
 
-		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
+		// std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
+		std::vector<Triangle> m_TriangleCache;
 
 		// Animation
 		bool m_IsAnimated = false;
