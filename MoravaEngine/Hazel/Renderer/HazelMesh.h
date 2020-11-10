@@ -142,6 +142,7 @@ namespace Hazel {
 		AABB BoundingBox;
 
 		std::string NodeName, MeshName;
+		std::vector<Triangle> m_TriangleCache;
 	};
 
 	class HazelMesh : public Mesh

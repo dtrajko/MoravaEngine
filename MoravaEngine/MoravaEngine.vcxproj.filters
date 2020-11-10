@@ -1231,6 +1231,9 @@
     <ClInclude Include="Hazel\Renderer\HazelMesh.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="Hazel\Core\Math\Ray.h">
+      <Filter>Hazel\Core\Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
