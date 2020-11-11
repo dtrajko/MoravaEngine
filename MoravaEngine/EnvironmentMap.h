@@ -12,6 +12,7 @@
 #include "Hazel/Events/MouseEvent.h"
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Renderer/SceneRenderer.h"
+#include "Hazel/Core/Math/Ray.h"
 
 #include "Shader.h"
 #include "TextureCubemap.h"
@@ -135,6 +136,7 @@ private:
 	{
 		Hazel::Submesh* Mesh;
 		float Distance;
+		Hazel::Ray LocalRay;
 	};
 	std::vector<SelectedSubmesh> m_SelectedSubmeshes;
 
@@ -143,5 +145,7 @@ private:
 	bool m_DisplayHazelGrid;
 
 	bool m_DisplayBoundingBoxes;
+
+	glm::vec2 m_WorkPosImGui; // window offset on monitor real estate
 
 };

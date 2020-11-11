@@ -633,6 +633,17 @@ void EnvironmentMap::OnImGuiRender()
         }
     }
     ImGui::End();
+
+    ImGui::Begin("ShowMetricsWindow");
+    {
+        ImGui::ShowMetricsWindow();
+    }
+    ImGui::End();
+
+    ImVec2 workPos = ImGui::GetMainViewport()->GetWorkPos();
+    m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
+
+    // Log::GetLogger()->debug("GetMainViewport GetWorkPos [ {0}, {1} ]", m_WorkPosImGui.x, m_WorkPosImGui.y);
 }
 
 void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial)
@@ -740,14 +751,19 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
             for (Hazel::Submesh& submesh : ((Hazel::HazelMesh*)m_MeshEntity->m_Mesh)->m_Submeshes)
             {
-                auto newRay = glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f);
-                auto newDir = glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction;
-                m_NewRay = newRay;
-                m_NewDir = newDir;
+                Hazel::Ray ray = {
+                    glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform)* glm::vec4(origin, 1.0f),
+                    glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform))* direction
+                };
+
+                // auto newRay = glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f);
+                // auto newDir = glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction;
+                // m_NewRay = newRay;
+                // m_NewDir = newDir;
 
                 float t = 0.0f;
-                bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
-
+                // bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
+                bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
                 if (intersects)
                 {
                     m_SelectedSubmeshes.push_back({ &submesh, t });
@@ -758,6 +774,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
         }
 
         // Triangle test
+
     }
 
     return true;
@@ -773,7 +790,7 @@ std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
 
     Log::GetLogger()->debug("EnvironmentMap::GetMouseViewportSpace | viewportWidth {0} viewportHeight {1}", viewportWidth, viewportHeight);
 
-    return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
+    return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * - 1.0f };
 }
 
 std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(/* float mx, float my */)
@@ -783,11 +800,13 @@ std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(/* float mx, float my */
     glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
     glm::mat4 viewMatrix = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
 
-    const float WindowsTitleBarHeight = 23; // temp
+    const float WindowsTitleBarHeight = 75.0f; // (31 + 22 + 22) temp
 
     auto [mx, my] = Input::GetMousePosition();
+    mx += m_WorkPosImGui.x; // window horizontal offset on monitor real estate
+    my += m_WorkPosImGui.y; // window vertical offset on monitor real estate // -WindowsTitleBarHeight
     mx -= m_ViewportBounds[0].x;
-    my -= m_ViewportBounds[0].y - WindowsTitleBarHeight;
+    my -= m_ViewportBounds[0].y;
     auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 

@@ -16,13 +16,13 @@ namespace Hazel {
             glm::vec3 E2 = C - A;
             glm::vec3 N = cross(E1, E2);
             float det = -glm::dot(Direction, N);
-            float invdet = 1.0 / det;
+            float invdet = 1.0f / det;
             glm::vec3 AO = Origin - A;
             glm::vec3 DAO = glm::cross(AO, Direction);
             float u = glm::dot(E2, DAO) * invdet;
             float v = -glm::dot(E1, DAO) * invdet;
             t = glm::dot(AO, N) * invdet;
-            return (det >= 1e-6 && t >= 0.0 && u >= 0.0 && v >= 0.0 && (u + v) <= 1.0);
+            return (det >= 1e-6f && t >= 0.0f && u >= 0.0f && v >= 0.0f && (u + v) <= 1.0f);
         }
 
         bool IntersectsAABB(const AABB& aabb, float& t) const
