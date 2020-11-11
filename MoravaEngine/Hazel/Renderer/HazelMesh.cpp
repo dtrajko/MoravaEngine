@@ -189,24 +189,23 @@ namespace Hazel {
 			// Indices
 			for (size_t i = 0; i < mesh->mNumFaces; i++)
 			{
-				if (mesh->mFaces[i].mNumIndices != 3)
-					Log::GetLogger()->error("Must have 3 indices.");
-
+				HZ_CORE_ASSERT(mesh->mFaces[i].mNumIndices == 3, "Must have 3 indices.");
 				Index index = { mesh->mFaces[i].mIndices[0], mesh->mFaces[i].mIndices[1], mesh->mFaces[i].mIndices[2] };
 				m_Indices.push_back(index);
 
-				//	if (!m_IsAnimated) {
-				//		m_TriangleCache[(uint32_t)m].emplace_back(m_StaticVertices[index.V1 + submesh.BaseVertex], m_StaticVertices[index.V2 + submesh.BaseVertex], m_StaticVertices[index.V3 + //  submesh.BaseVertex]);
-				//	}
-			}
-
-			if (!m_IsAnimated)
-			{
 				// Triangle cache
-				for (auto& face : m_Indices)
+				if (!m_IsAnimated)
 				{
-					submesh.m_TriangleCache.emplace_back(m_StaticVertices[face.V1], m_StaticVertices[face.V2], m_StaticVertices[face.V3]);
+					submesh.m_TriangleCache.emplace_back(
+						m_StaticVertices[index.V1 + submesh.BaseVertex],
+						m_StaticVertices[index.V2 + submesh.BaseVertex],
+						m_StaticVertices[index.V3 + submesh.BaseVertex]);
 				}
+
+				// m_TriangleCache[(uint32_t)m].emplace_back(
+				// m_StaticVertices[index.V1 + submesh.BaseVertex],
+				// m_StaticVertices[index.V2 + submesh.BaseVertex],
+				// m_StaticVertices[index.V3 + // submesh.BaseVertex]);
 			}
 		}
 

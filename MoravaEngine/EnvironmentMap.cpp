@@ -634,11 +634,7 @@ void EnvironmentMap::OnImGuiRender()
     }
     ImGui::End();
 
-    ImGui::Begin("ShowMetricsWindow");
-    {
-        ImGui::ShowMetricsWindow();
-    }
-    ImGui::End();
+    ImGui::ShowMetricsWindow();
 
     ImVec2 workPos = ImGui::GetMainViewport()->GetWorkPos();
     m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
@@ -751,15 +747,15 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
             auto mesh = m_MeshEntity->GetMesh();
             auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
             float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
-
-            for (Hazel::Submesh& submesh : submeshes)
+            // for (Hazel::Submesh& submesh : submeshes)
+            for (auto& submesh : submeshes)
             {
                 Hazel::Ray ray = {
-                    glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform)* glm::vec4(origin, 1.0f),
+                    glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f),
                     glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform))* direction
                 };
 
-                float t = 0.0f;
+                float t;
                 // bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
                 bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
                 if (intersects)
@@ -778,7 +774,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
         }
     }
 
-    return true;
+    return false;
 }
 
 std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
