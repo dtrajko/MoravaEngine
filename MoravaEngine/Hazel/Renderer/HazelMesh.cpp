@@ -200,10 +200,13 @@ namespace Hazel {
 				//	}
 			}
 
-			// Triangle cache
-			for (auto& face : m_Indices)
+			if (!m_IsAnimated)
 			{
-				m_TriangleCache.emplace_back(m_StaticVertices[face.V1], m_StaticVertices[face.V2], m_StaticVertices[face.V3]);
+				// Triangle cache
+				for (auto& face : m_Indices)
+				{
+					submesh.m_TriangleCache.emplace_back(m_StaticVertices[face.V1], m_StaticVertices[face.V2], m_StaticVertices[face.V3]);
+				}
 			}
 		}
 

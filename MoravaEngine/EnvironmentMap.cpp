@@ -747,34 +747,35 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
         if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
         {
             auto [origin, direction] = CastRay(); // CastRay(mouseX, mouseY);
+
+            auto mesh = m_MeshEntity->GetMesh();
+            auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
             float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
 
-            for (Hazel::Submesh& submesh : ((Hazel::HazelMesh*)m_MeshEntity->m_Mesh)->m_Submeshes)
+            for (Hazel::Submesh& submesh : submeshes)
             {
                 Hazel::Ray ray = {
                     glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform)* glm::vec4(origin, 1.0f),
                     glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform))* direction
                 };
 
-                // auto newRay = glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f);
-                // auto newDir = glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction;
-                // m_NewRay = newRay;
-                // m_NewDir = newDir;
-
                 float t = 0.0f;
                 // bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
                 bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
                 if (intersects)
                 {
-                    m_SelectedSubmeshes.push_back({ &submesh, t });
+                    for (const auto& triangle : submesh.m_TriangleCache)
+                    {
+                        if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+                        {
+                            m_SelectedSubmeshes.push_back({ &submesh, t });
+                            break;
+                        }
+                    }
                 }
             }
-
             std::sort(m_SelectedSubmeshes.begin(), m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
         }
-
-        // Triangle test
-
     }
 
     return true;

@@ -136,7 +136,6 @@ private:
 	{
 		Hazel::Submesh* Mesh;
 		float Distance;
-		Hazel::Ray LocalRay;
 	};
 	std::vector<SelectedSubmesh> m_SelectedSubmeshes;
 
