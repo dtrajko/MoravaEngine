@@ -788,7 +788,7 @@ std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
     const float ViewportBarHeight = 18.0f;
     const float WindowsTitleBarHeight = 75.0f; // (31 + 22 + 22) temp
 
-    auto [mx, my] = Input::GetMousePosition();
+    auto [mx, my] = Input::GetMousePosition(); // ImGui::GetMousePos()
     mx += m_WorkPosImGui.x; // window horizontal offset on monitor real estate
     my += m_WorkPosImGui.y; // window vertical offset on monitor real estate // -WindowsTitleBarHeight
     mx -= m_ViewportBounds[0].x;

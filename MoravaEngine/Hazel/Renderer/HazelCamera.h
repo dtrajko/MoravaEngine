@@ -33,8 +33,8 @@ namespace Hazel {
 		glm::vec3 GetForwardDirection();
 		const glm::vec3& GetPosition() const { return m_Position; }
 
-		float GetExposure() const { return m_Exposure; }
-		float& GetExposure() { return m_Exposure; }
+		inline float GetExposure() const { return m_Exposure; }
+		inline float& GetExposure() { return m_Exposure; }
 
 	private:
 		void UpdateCameraView();
@@ -54,10 +54,13 @@ namespace Hazel {
 
 	protected:
 		glm::mat4 m_ProjectionMatrix;
+		glm::vec3 m_Position;
+		float m_Pitch;
+		float m_Yaw;
+		float m_Exposure = 0.8f; // from Hazel, EnvironmentMap scene
 
 	private:
 		glm::mat4 m_ViewMatrix;
-		glm::vec3 m_Position;
 		glm::vec3 m_Rotation;
 		glm::vec3 m_FocalPoint;
 
@@ -66,9 +69,6 @@ namespace Hazel {
 		glm::vec3 m_InitialFocalPoint, m_InitialRotation;
 
 		float m_Distance;
-		float m_Pitch, m_Yaw;
-
-		float m_Exposure = 0.8f;
 
 		uint32_t m_ViewportWidth = 1280, m_ViewportHeight = 720;
 

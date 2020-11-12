@@ -149,5 +149,4 @@ private:
 
 	// Hazelnut/EditorLayer
 	float m_SnapValue = 0.5f;
-
 };

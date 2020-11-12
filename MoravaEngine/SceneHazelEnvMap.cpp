@@ -253,7 +253,7 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
         entity.second.AABB.Update(entity.second.Transform.Translation, entity.second.Transform.Rotation, entity.second.Transform.Scale);
     }
 
-    // CheckIntersection(mainWindow);
+    CheckIntersection(mainWindow);
     m_Transform_ImGuizmo = m_EnvironmentMap->m_CurrentlySelectedTransform;
 
     m_EnvironmentMap->GetShaderPBR_Anim()->Bind();
@@ -304,35 +304,40 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 
 void SceneHazelEnvMap::CheckIntersection(Window* mainWindow)
 {
-    MousePicker::Get()->Update(
-        (int)mainWindow->GetMouseX(), (int)mainWindow->GetMouseY(),
-        m_ImGuiViewport.X, m_ImGuiViewport.Y, m_ImGuiViewport.Width, m_ImGuiViewport.Height,
-        RendererBasic::GetProjectionMatrix(), m_CameraController->CalculateViewMatrix());
-
-    MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
-
-    for (auto& entity : m_Entities)
-    {
-        entity.second.Intersecting = entity.second.Enabled &&
-            AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
-                entity.second.AABB.GetMin(), entity.second.AABB.GetMax(), glm::vec2(0.0f));
-    }
+    //  MousePicker::Get()->Update(
+    //      (int)mainWindow->GetMouseX(), (int)mainWindow->GetMouseY(),
+    //      m_ImGuiViewport.X, m_ImGuiViewport.Y, m_ImGuiViewport.Width, m_ImGuiViewport.Height,
+    //      RendererBasic::GetProjectionMatrix(), m_CameraController->CalculateViewMatrix());
+    //  
+    //  MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
+    //  
+    //  for (auto& entity : m_Entities)
+    //  {
+    //      entity.second.Intersecting = entity.second.Enabled &&
+    //          AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
+    //              entity.second.AABB.GetMin(), entity.second.AABB.GetMax(), glm::vec2(0.0f));
+    //  }
+    //  
+    //  if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft))
+    //  {
+    //      for (auto& entity : m_Entities)
+    //      {
+    //          if (entity.second.Intersecting) {
+    //              // m_Transform_ImGuizmo = &entity.second.Transform.Transform;
+    //              m_Transform_ImGuizmo = &m_EnvironmentMap->GetMeshEntity()->Transform();
+    //              auto [Translation, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+    //              m_Translation_ImGuizmo = Translation;
+    //  
+    //              if (m_ImGuizmoType == -1) {
+    //                  m_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+    //              }
+    //          }
+    //      }
+    //  }
 
     if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft))
     {
-        for (auto& entity : m_Entities)
-        {
-            if (entity.second.Intersecting) {
-                // m_Transform_ImGuizmo = &entity.second.Transform.Transform;
-                m_Transform_ImGuizmo = &m_EnvironmentMap->GetMeshEntity()->Transform();
-                auto [Translation, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
-                m_Translation_ImGuizmo = Translation;
-
-                if (m_ImGuizmoType == -1) {
-                    m_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-                }
-            }
-        }
+        m_Transform_ImGuizmo = m_EnvironmentMap->m_CurrentlySelectedTransform;
     }
 }
 
@@ -680,6 +685,8 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
         ImGui::Begin("Viewport");
         {
+            ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+
             m_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportMainX);
             m_ImGuiViewport.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportMainY);
             m_ImGuiViewport.Width = (int)ImGui::GetWindowWidth();
@@ -714,6 +721,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             m_ViewportBounds[1] = { maxBound.x, maxBound.y };
 
             m_EnvironmentMap->SetViewportBounds(m_ViewportBounds);
+            m_EnvironmentMap->m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound); // EditorLayer
         }
         ImGui::End();
 

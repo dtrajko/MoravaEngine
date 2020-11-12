@@ -93,6 +93,7 @@ private:
 
 public:
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
+	bool m_AllowViewportCameraEvents = true; // EditorLayer (Raypicking)
 
 private:
 	Shader* m_ShaderHazelPBR_Anim;
@@ -129,8 +130,6 @@ private:
 
 	float m_SkyboxExposureFactor = 2.0f;
 
-	// Raypicking (EditorLayer)
-	bool m_AllowViewportCameraEvents = true;
 	bool m_DrawOnTopBoundingBoxes = true;
 	glm::vec3 m_NewRay;
 	glm::vec3 m_NewDir;
