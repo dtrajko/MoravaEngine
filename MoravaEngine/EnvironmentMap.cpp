@@ -7,10 +7,11 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/Renderer2D.h"
 
+#include "ImGuiWrapper.h"
+#include "ImGuizmo.h"
 #include "Framebuffer.h"
 #include "RendererBasic.h"
 #include "Log.h"
-#include "ImGuiWrapper.h"
 #include "Application.h"
 #include "Util.h"
 #include "Input.h"
@@ -733,7 +734,7 @@ bool EnvironmentMap::OnKeyPressedEvent(KeyPressedEvent& e)
 bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 {
     auto [mx, my] = Input::GetMousePosition();
-    if (e.GetMouseButton() == (int)Mouse::ButtonLeft && !Input::IsKeyPressed(Key::LeftAlt))
+    if (e.GetMouseButton() == (int)Mouse::ButtonLeft && !Input::IsKeyPressed(Key::LeftAlt) && !ImGuizmo::IsOver())
     {
         m_SelectedSubmeshes.clear();
 
@@ -742,7 +743,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
         if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
         {
-            auto [origin, direction] = CastRay(); // CastRay(mouseX, mouseY);
+            auto [origin, direction] = CastRay(mouseX, mouseY);
 
             auto mesh = m_MeshEntity->GetMesh();
             auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
@@ -771,6 +772,14 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 }
             }
             std::sort(m_SelectedSubmeshes.begin(), m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
+
+            // TODO: Handle mesh being deleted, etc
+            if (m_SelectedSubmeshes.size()) {
+                m_CurrentlySelectedTransform = &m_SelectedSubmeshes[0].Mesh->Transform;
+            }
+            else {
+                m_CurrentlySelectedTransform = &m_MeshEntity->Transform();
+            }
         }
     }
 
@@ -790,24 +799,29 @@ std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
     return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * - 1.0f };
 }
 
-std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(/* float mx, float my */)
+std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)
 {
-    // glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+    glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+    // mouseClipPos.y *= -1.0f;
 
     glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
     glm::mat4 viewMatrix = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
 
+    const float ViewportBarHeight = 18.0f;
     const float WindowsTitleBarHeight = 75.0f; // (31 + 22 + 22) temp
 
-    auto [mx, my] = Input::GetMousePosition();
+    auto [imx, imy] = Input::GetMousePosition();
+    mx = imx; // temporary
+    my = imy; // temporary
     mx += m_WorkPosImGui.x; // window horizontal offset on monitor real estate
     my += m_WorkPosImGui.y; // window vertical offset on monitor real estate // -WindowsTitleBarHeight
     mx -= m_ViewportBounds[0].x;
     my -= m_ViewportBounds[0].y;
+    my -= ViewportBarHeight;
     auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
-    glm::vec4 mouseClipPos = { (mx / viewportWidth) * 2.0f - 1.0f, (my / viewportHeight) * 2.0f - 1.0f, -1.0f, 1.0f };
+    mouseClipPos = { (mx / viewportWidth) * 2.0f - 1.0f, (my / viewportHeight) * 2.0f - 1.0f, -1.0f, 1.0f };
     mouseClipPos.y *= -1.0f;
 
     auto inverseProj = glm::inverse(projectionMatrix);

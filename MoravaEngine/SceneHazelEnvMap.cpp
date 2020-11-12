@@ -253,7 +253,8 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
         entity.second.AABB.Update(entity.second.Transform.Translation, entity.second.Transform.Rotation, entity.second.Transform.Scale);
     }
 
-    CheckIntersection(mainWindow);
+    // CheckIntersection(mainWindow);
+    m_Transform_ImGuizmo = m_EnvironmentMap->m_CurrentlySelectedTransform;
 
     m_EnvironmentMap->GetShaderPBR_Anim()->Bind();
     m_EnvironmentMap->GetShaderPBR_Anim()->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());

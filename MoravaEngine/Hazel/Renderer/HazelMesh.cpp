@@ -201,11 +201,6 @@ namespace Hazel {
 						m_StaticVertices[index.V2 + submesh.BaseVertex],
 						m_StaticVertices[index.V3 + submesh.BaseVertex]);
 				}
-
-				// m_TriangleCache[(uint32_t)m].emplace_back(
-				// m_StaticVertices[index.V1 + submesh.BaseVertex],
-				// m_StaticVertices[index.V2 + submesh.BaseVertex],
-				// m_StaticVertices[index.V3 + // submesh.BaseVertex]);
 			}
 		}
 
