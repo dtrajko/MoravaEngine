@@ -736,15 +736,12 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
     auto [mx, my] = Input::GetMousePosition();
     if (e.GetMouseButton() == (int)Mouse::ButtonLeft && !Input::IsKeyPressed(Key::LeftAlt) && !ImGuizmo::IsOver())
     {
-        m_SelectedSubmeshes.clear();
-
         auto [mouseX, mouseY] = GetMouseViewportSpace();
-        // Log::GetLogger()->debug("EnvironmentMap::OnMouseButtonPressed GetMouseViewportSpace [mouseX = {0}, mouseY = {1}] ", mouseX, mouseY);
-
         if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
         {
             auto [origin, direction] = CastRay(mouseX, mouseY);
 
+            m_SelectedSubmeshes.clear();
             auto mesh = m_MeshEntity->GetMesh();
             auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
             float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
