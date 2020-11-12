@@ -788,31 +788,10 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
 std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
 {
-    auto [mx, my] = ImGui::GetMousePos(); // Input::GetMousePosition();
-    mx -= m_ViewportBounds[0].x;
-    my -= m_ViewportBounds[0].y;
-    auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
-    auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
-
-    Log::GetLogger()->debug("EnvironmentMap::GetMouseViewportSpace | viewportWidth {0} viewportHeight {1}", viewportWidth, viewportHeight);
-
-    return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * - 1.0f };
-}
-
-std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)
-{
-    glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
-    // mouseClipPos.y *= -1.0f;
-
-    glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
-    glm::mat4 viewMatrix = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
-
     const float ViewportBarHeight = 18.0f;
     const float WindowsTitleBarHeight = 75.0f; // (31 + 22 + 22) temp
 
-    auto [imx, imy] = Input::GetMousePosition();
-    mx = imx; // temporary
-    my = imy; // temporary
+    auto [mx, my] = Input::GetMousePosition();
     mx += m_WorkPosImGui.x; // window horizontal offset on monitor real estate
     my += m_WorkPosImGui.y; // window vertical offset on monitor real estate // -WindowsTitleBarHeight
     mx -= m_ViewportBounds[0].x;
@@ -821,8 +800,15 @@ std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)
     auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
-    mouseClipPos = { (mx / viewportWidth) * 2.0f - 1.0f, (my / viewportHeight) * 2.0f - 1.0f, -1.0f, 1.0f };
-    mouseClipPos.y *= -1.0f;
+    return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
+}
+
+std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)
+{
+    glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+
+    glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
+    glm::mat4 viewMatrix = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
 
     auto inverseProj = glm::inverse(projectionMatrix);
     auto inverseView = glm::inverse(glm::mat3(viewMatrix));
