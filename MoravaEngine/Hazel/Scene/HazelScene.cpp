@@ -1,6 +1,8 @@
 #include "HazelScene.h"
 #include "Components.h"
 #include "Entity.h"
+#include "../Renderer/HazelMesh.h"
+#include "../Renderer/SceneRenderer.h"
 
 #include <glm/glm.hpp>
 
@@ -27,6 +29,11 @@ namespace Hazel {
 		m_ShaderSkybox->setInt("u_Texture", skybox.get()->GetID());
 	}
 
+	void HazelScene::AddEntity(Entity* entity)
+	{
+		m_Entities.push_back(entity);
+	}
+
 	void HazelScene::OnEntitySelected(Entity* entity)
 	{
 	}
@@ -43,6 +50,7 @@ namespace Hazel {
 
 		// NoECS
 		entity->SetName(entityName);
+		AddEntity(entity);
 
 		Log::GetLogger()->debug("CreateEntity name = '{0}'", name);
 
@@ -56,6 +64,27 @@ namespace Hazel {
 
 	void HazelScene::OnUpdate(float ts)
 	{
+		// No ECS
+		// Update all entities
+		for (auto entity : m_Entities)
+		{
+			auto mesh = entity->GetMesh();
+			if (mesh) {
+				mesh->OnUpdate(ts, false);
+			}
+		}
+
+		SceneRenderer::BeginScene(this);
+
+		// Render entities
+		for (auto entity : m_Entities)
+		{
+			// TODO: Should we render (logically)
+			SceneRenderer::SubmitEntity(entity);
+		}
+
+		SceneRenderer::EndScene();
+
 		// Update scripts
 		{
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
@@ -136,6 +165,12 @@ namespace Hazel {
 					nsc.DestroyScript(&nsc);
 				}
 			});
+		}
+
+		// No ECS
+		for (Entity* entity : m_Entities)
+		{
+			delete entity;
 		}
 	}
 

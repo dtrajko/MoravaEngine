@@ -32,7 +32,7 @@ namespace Hazel
 
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
-		// OnImGuiRenderNoECS();
+		OnImGuiRenderNoECS();
 		OnImGuiRenderECS();
 	}
 
@@ -123,18 +123,71 @@ namespace Hazel
 		// ImGui::ShowDemoWindow();
 	}
 
-	void SceneHierarchyPanel::DrawEntityNodeNoECS(Entity entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID)
+	void SceneHierarchyPanel::OnImGuiRenderNoECS()
 	{
-		const char* name = entity.GetName().c_str();
+		ImGui::Begin("Scene Hierarchy NoECS");
+
+		uint32_t entityCount = 0, meshCount = 0;
+		auto& sceneEntities = m_Context->m_Entities;
+		for (Entity* entity : sceneEntities)
+			DrawEntityNodeNoECS(entity, entityCount, meshCount);
+
+		ImGui::End();
+
+		ImGui::Begin("Properties NoECS");
+
+		if (m_SelectionContext)
+		{
+			/*auto mesh = m_SelectionContext;
+
+			{
+				auto [translation, rotation, scale] = GetTransformDecomposition(transform);
+				ImGui::Text("World Transform");
+				ImGui::Text("  Translation: %.2f, %.2f, %.2f", translation.x, translation.y, translation.z);
+				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
+			}
+			{
+				auto [translation, rotation, scale] = GetTransformDecomposition(localTransform);
+				ImGui::Text("Local Transform");
+				ImGui::Text("  Translation: %.2f, %.2f, %.2f", translation.x, translation.y, translation.z);
+				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
+			}*/
+		}
+
+		ImGui::End();
+
+#if TODO
+		ImGui::Begin("Mesh Debug");
+		if (ImGui::CollapsingHeader(mesh->m_FilePath.c_str()))
+		{
+			if (mesh->m_IsAnimated)
+			{
+				if (ImGui::CollapsingHeader("Animation"))
+				{
+					if (ImGui::Button(mesh->m_AnimationPlaying ? "Pause" : "Play"))
+						mesh->m_AnimationPlaying = !mesh->m_AnimationPlaying;
+
+					ImGui::SliderFloat("##AnimationTime", &mesh->m_AnimationTime, 0.0f, (float)mesh->m_Scene->mAnimations[0]->mDuration);
+					ImGui::DragFloat("Time Scale", &mesh->m_TimeMultiplier, 0.05f, 0.0f, 10.0f);
+				}
+			}
+		}
+		ImGui::End();
+#endif
+	}
+
+	void SceneHierarchyPanel::DrawEntityNodeNoECS(Entity* entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID)
+	{
+		const char* name = entity->GetName().c_str();
 		static char imguiName[128];
 		memset(imguiName, 0, 128);
 		sprintf(imguiName, "%s##%d", name, imguiEntityID++);
 
 		if (ImGui::TreeNode(imguiName))
 		{
-			auto mesh = entity.GetMesh();
-			auto material = entity.GetMaterial();
-			const auto& transform = entity.GetTransform();
+			auto mesh = entity->GetMesh();
+			auto material = entity->GetMaterial();
+			const auto& transform = entity->GetTransform();
 
 			if (mesh) {
 				DrawMeshNode(mesh, imguiMeshID);

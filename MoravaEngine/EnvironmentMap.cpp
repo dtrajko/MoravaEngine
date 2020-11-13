@@ -746,8 +746,9 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
             auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
             float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
             // for (Hazel::Submesh& submesh : submeshes)
-            for (auto& submesh : submeshes)
+            for (uint32_t i = 0; i < submeshes.size(); i++)
             {
+                auto& submesh = submeshes[i];
                 Hazel::Ray ray = {
                     glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f),
                     glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform))* direction
@@ -758,13 +759,20 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
                 if (intersects)
                 {
-                    for (const auto& triangle : submesh.m_TriangleCache)
+                    const auto& triangleCache = ((Hazel::HazelMesh*)mesh)->GetTriangleCache(i);
+                    if (triangleCache.size())
                     {
-                        if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+                        for (const auto& triangle : triangleCache)
                         {
-                            m_SelectedSubmeshes.push_back({ &submesh, t });
-                            break;
+                            if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+                            {
+                                m_SelectedSubmeshes.push_back({ &submesh, t });
+                                break;
+                            }
                         }
+                    }
+                    else {
+                        m_SelectedSubmeshes.push_back({ &submesh, t });
                     }
                 }
             }
@@ -785,15 +793,9 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
 std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
 {
-    const float ViewportBarHeight = 18.0f;
-    const float WindowsTitleBarHeight = 75.0f; // (31 + 22 + 22) temp
-
-    auto [mx, my] = Input::GetMousePosition(); // ImGui::GetMousePos()
-    mx += m_WorkPosImGui.x; // window horizontal offset on monitor real estate
-    my += m_WorkPosImGui.y; // window vertical offset on monitor real estate // -WindowsTitleBarHeight
+    auto [mx, my] = ImGui::GetMousePos(); // Input::GetMousePosition();
     mx -= m_ViewportBounds[0].x;
     my -= m_ViewportBounds[0].y;
-    my -= ViewportBarHeight;
     auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 

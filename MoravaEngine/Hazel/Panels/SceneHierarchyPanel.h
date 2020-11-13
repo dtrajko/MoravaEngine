@@ -32,8 +32,8 @@ namespace Hazel
 		void OnImGuiRenderECS();
 
 		// NoECS (Scene::m_Entities)
-		// void OnImGuiRenderNoECS();
-		void DrawEntityNodeNoECS(Entity entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID);
+		void OnImGuiRenderNoECS();
+		void DrawEntityNodeNoECS(Entity* entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID);
 		void DrawMeshNode(Mesh* mesh, uint32_t& imguiMeshID);
 		void MeshNodeHierarchy(Mesh* mesh, aiNode* node, const glm::mat4& parentTransform, uint32_t level);
 

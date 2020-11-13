@@ -23,6 +23,7 @@ public:
 	virtual void Create(float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indexCount);
 	virtual void Generate(glm::vec3 scale);
 	virtual void Update(glm::vec3 scale);
+	virtual void OnUpdate(float ts, bool debug); // HazelMesh Update method
 	virtual void Render();
 	virtual void Clear();
 

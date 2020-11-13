@@ -196,7 +196,7 @@ namespace Hazel {
 				// Triangle cache
 				if (!m_IsAnimated)
 				{
-					submesh.m_TriangleCache.emplace_back(
+					m_TriangleCache[(uint32_t)m].emplace_back(
 						m_StaticVertices[index.V1 + submesh.BaseVertex],
 						m_StaticVertices[index.V2 + submesh.BaseVertex],
 						m_StaticVertices[index.V3 + submesh.BaseVertex]);
@@ -1006,6 +1006,15 @@ namespace Hazel {
 		{
 			submesh.Render(this, m_MeshShader, transform, samplerSlot, envMapMaterials);
 		}
+	}
+
+	const std::vector<Triangle> HazelMesh::GetTriangleCache(uint32_t index) const
+	{
+		if (index < m_TriangleCache.size())
+		{
+			return m_TriangleCache.at(index);
+		}
+		return std::vector<Triangle>();
 	}
 
 	void Submesh::Render(HazelMesh* parentMesh, Shader* shader, glm::mat4 transform, uint32_t samplerSlot,

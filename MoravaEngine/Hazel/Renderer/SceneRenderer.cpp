@@ -16,6 +16,7 @@ namespace Hazel {
 
 
     SceneRendererData SceneRenderer::s_Data;
+    std::map<std::string, unsigned int>* SceneRenderer::m_SamplerSlots;
 
     SceneRenderer::SceneRenderer(std::string filepath, Scene* scene)
     {
@@ -55,6 +56,9 @@ namespace Hazel {
 
     void SceneRenderer::SetupShaders()
     {
+        s_Data.CompositeShader = new Shader("Shaders/Hazel/SceneComposite.vs", "Shaders/Hazel/SceneComposite.fs");
+        Log::GetLogger()->info("SceneRenderer: m_ShaderComposite compiled [programID={0}]", s_Data.CompositeShader->GetProgramID());
+
         m_ShaderEquirectangularConversion = new Shader("Shaders/Hazel/EquirectangularToCubeMap.cs");
         Log::GetLogger()->info("SceneRenderer: m_ShaderEquirectangularConversion compiled [programID={0}]", m_ShaderEquirectangularConversion->GetProgramID());
 
@@ -63,9 +67,6 @@ namespace Hazel {
 
         m_ShaderEnvIrradiance = new Shader("Shaders/Hazel/EnvironmentIrradiance.cs");
         Log::GetLogger()->info("SceneRenderer: m_ShaderEnvIrradiance compiled [programID={0}]", m_ShaderEnvIrradiance->GetProgramID());
-
-        m_ShaderComposite = new Shader("Shaders/Hazel/SceneComposite.vs", "Shaders/Hazel/SceneComposite.fs");
-        Log::GetLogger()->info("SceneRenderer: m_ShaderComposite compiled [programID={0}]", m_ShaderComposite->GetProgramID());
 
         m_ShaderSkybox = new Shader("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
         Log::GetLogger()->info("SceneRenderer: m_ShaderSkybox compiled [programID={0}]", m_ShaderSkybox->GetProgramID());
@@ -113,8 +114,9 @@ namespace Hazel {
         // TODO: Culling, sorting, etc.
 
         auto mesh = entity->GetMesh();
-        if (!mesh)
+        if (!mesh) {
             return;
+        }
 
         // TODO: s_Data.DrawList.push_back({ mesh, entity->GetMaterial(), entity->GetTransform() });
     }
@@ -180,12 +182,12 @@ namespace Hazel {
     {
         HazelRenderer::BeginRenderPass(s_Data.CompositePass, false); // should we clear the framebuffer at this stage?
 
-        m_ShaderComposite->Bind();
+        s_Data.CompositeShader->Bind();
 
         s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind(m_SamplerSlots->at("u_Texture"));
-        m_ShaderComposite->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-        m_ShaderComposite->setFloat("u_Exposure", s_Data.SceneData.SceneCamera->GetExposure());
-        m_ShaderComposite->setInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
+        s_Data.CompositeShader->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
+        s_Data.CompositeShader->setFloat("u_Exposure", s_Data.SceneData.SceneCamera->GetExposure());
+        s_Data.CompositeShader->setInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
 
         HazelRenderer::SubmitFullscreenQuad(nullptr);
 

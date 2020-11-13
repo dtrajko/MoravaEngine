@@ -33,6 +33,8 @@ namespace Hazel {
 
 		Hazel::HazelTexture2D* BRDFLUT;
 
+		Shader* CompositeShader;
+
 		Ref<RenderPass> GeoPass;
 		Ref<RenderPass> CompositePass;
 		Ref<RenderPass> ActiveRenderPass;
@@ -67,8 +69,8 @@ namespace Hazel {
 
 		static void SetViewportSize(uint32_t width, uint32_t height);
 
-		void BeginScene(HazelScene* scene); // static
-		void EndScene(); // static
+		static void BeginScene(HazelScene* scene);
+		static void EndScene();
 
 		static void SubmitEntity(Entity* entity);
 
@@ -90,20 +92,21 @@ namespace Hazel {
 		std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> CreateEnvironmentMap(const std::string& filepath);
 		inline Shader* GetShaderSkybox() { return m_ShaderSkybox; }
 		inline Shader* GetShaderGrid() { return m_ShaderGrid; }
-		inline Shader* GetShaderComposite() { return m_ShaderComposite; }
+		inline Shader* GetShaderComposite() { return s_Data.CompositeShader; }
 		inline Hazel::HazelTexture2D* GetEnvEquirect() { return m_EnvEquirect; }
 		uint32_t GetFinalColorBufferID();
 
 	private:
-		void FlushDrawList(); // TODO: static
-		void GeometryPass();  // TODO: static
-		void CompositePass(); // TODO: static
+		static void FlushDrawList();
+		static void GeometryPass();
+		static void CompositePass();
 
 		// From EnvironmentMap
 		void SetupShaders();
 
 	public:
 		static SceneRendererData s_Data;
+		static std::map<std::string, unsigned int>* m_SamplerSlots;
 
 		// From EnvironmentMap
 		Shader* m_ShaderEquirectangularConversion;
@@ -111,7 +114,6 @@ namespace Hazel {
 		Shader* m_ShaderEnvIrradiance;
 		Shader* m_ShaderGrid;
 		Shader* m_ShaderSkybox;
-		Shader* m_ShaderComposite;
 
 		// Intermediate textures
 		Hazel::HazelTextureCube* m_EnvUnfiltered;
@@ -119,7 +121,6 @@ namespace Hazel {
 		Hazel::HazelTextureCube* m_EnvFiltered;
 		Hazel::HazelTextureCube* m_IrradianceMap;
 
-		std::map<std::string, unsigned int>* m_SamplerSlots;
 	};
 
 }

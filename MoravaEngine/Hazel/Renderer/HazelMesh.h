@@ -142,7 +142,6 @@ namespace Hazel {
 		AABB BoundingBox;
 
 		std::string NodeName, MeshName;
-		std::vector<Triangle> m_TriangleCache;
 	};
 
 	class HazelMesh : public Mesh
@@ -153,7 +152,7 @@ namespace Hazel {
 		virtual ~HazelMesh() override;
 
 		virtual void Create() override;
-		void OnUpdate(float ts, bool debug);
+		virtual void OnUpdate(float ts, bool debug) override;
 		void OnImGuiRender();
 		void DumpVertexBuffer();
 
@@ -166,10 +165,10 @@ namespace Hazel {
 
 		inline const std::vector<Material*>& GetMaterials() const { return m_Materials; }
 		inline const std::vector<Texture*>& GetTextures() const { return m_Textures; }
-		// inline const std::vector<Triangle> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
 		inline bool& IsAnimated() { return m_IsAnimated; }
 		inline Ref<VertexArray> GetVertexArray() { return m_VertexArray; }
 		inline const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
+		const std::vector<Triangle> GetTriangleCache(uint32_t index) const;
 
 		// Setters
 		inline void SetBaseMaterial(Material* baseMaterial) { m_BaseMaterial = baseMaterial; }
@@ -219,8 +218,7 @@ namespace Hazel {
 		std::vector<Texture*> m_NormalMaps;
 		std::vector<Material*> m_Materials;
 
-		// std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
-		std::vector<Triangle> m_TriangleCache;
+		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
 
 		// Animation
 		bool m_IsAnimated = false;
