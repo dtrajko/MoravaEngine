@@ -15,6 +15,7 @@
 #include "Application.h"
 #include "Util.h"
 #include "Input.h"
+#include "ResourceManager.h"
 
 
 EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
@@ -239,15 +240,15 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
         EnvMapMaterial* envMapMaterial = new EnvMapMaterial();
 
         // Load Hazel/Renderer/HazelTexture
-        envMapMaterial->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfo.albedo);
+        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.albedo);
         envMapMaterial->GetAlbedoInput().UseTexture = true;
-        envMapMaterial->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfo.normal);
+        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.normal);
         envMapMaterial->GetNormalInput().UseTexture = true;
-        envMapMaterial->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfo.metallic);
+        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.metallic);
         envMapMaterial->GetMetalnessInput().UseTexture = true;
-        envMapMaterial->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfo.roughness);
+        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.roughness);
         envMapMaterial->GetRoughnessInput().UseTexture = true;
-        envMapMaterial->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(textureInfo.ao);
+        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.ao);
         envMapMaterial->GetAOInput().UseTexture = true;
 
         m_EnvMapMaterials.insert(std::make_pair(submesh.NodeName, envMapMaterial));

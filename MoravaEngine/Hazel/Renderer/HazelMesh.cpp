@@ -87,8 +87,10 @@ namespace Hazel {
 		m_Importer = std::make_unique<Assimp::Importer>();
 
 		const aiScene* scene = m_Importer->ReadFile(m_FilePath, s_MeshImportFlags);
-		if (!scene || !scene->HasMeshes())
+		if (!scene || !scene->HasMeshes()) {
 			Log::GetLogger()->error("Failed to load mesh file: {0}", m_FilePath);
+			return;
+		}
 
 		m_Scene = scene;
 
@@ -841,6 +843,11 @@ namespace Hazel {
 
 	void HazelMesh::OnImGuiRender()
 	{
+		if (!m_Scene) {
+			Log::GetLogger()->error("Mesh: Scene not initialized!");
+			return;
+		}
+
 		// Mesh Hierarchy
 		ImGui::Begin("Mesh Hierarchy");
 		ImGuiNodeHierarchy(m_Scene->mRootNode, glm::mat4(1.0f), 0);

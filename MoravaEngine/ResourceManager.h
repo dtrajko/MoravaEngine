@@ -2,6 +2,7 @@
 
 #include "Texture.h"
 #include "Material.h"
+#include "Hazel/Renderer/HazelTexture.h"
 
 #include <map>
 
@@ -22,6 +23,9 @@ public:
 	static inline std::map<std::string, std::string>* GetTextureInfo() { return &s_TextureInfo; };
 	static inline std::map<std::string, TextureInfo>* GetMaterialInfo() { return &s_MaterialInfo; };
 
+	// Loading HazelTexture2D
+	static Hazel::HazelTexture2D* LoadHazelTexture2D(std::string filePath);
+
 public:
 	static float s_MaterialSpecular;
 	static float s_MaterialShininess;
@@ -33,4 +37,6 @@ private:
 
 	static std::map<std::string, Texture*> s_Textures;
 	static std::map<std::string, Material*> s_Materials;
+
+	static std::map<std::string, Hazel::HazelTexture2D*> s_HazelTextures2D;
 };
