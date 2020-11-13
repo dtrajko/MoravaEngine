@@ -397,16 +397,24 @@ namespace Hazel {
 				if (aiMaterial->Get("$raw.ReflectionFactor|file", aiPTI_String, 0, aiTexPath) == AI_SUCCESS)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
-					std::filesystem::path path = filename;
+					std::filesystem::path path = m_FilePath;
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
 
-					auto texture = Texture2D::Create(texturePath);
-					if (texture->Loaded())
+					Texture* texture = nullptr;
+					try {
+						texture = new Texture(texturePath.c_str(), false);
+					}
+					catch (...) {
+						Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
+						texture = LoadBaseTexture();
+					}
+
+					if (texture->IsLoaded())
 					{
 						HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
-						mi->Set("u_MetalnessTexture", texture);
+						m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
 						m_MeshShader->setFloat("u_MetalnessTexToggle", 1.0f);
 					}
 					else
@@ -417,7 +425,7 @@ namespace Hazel {
 				else
 				{
 					Log::GetLogger()->info("    No metalness texture");
-					mi->Set("u_Metalness", metalness);
+					m_MeshShader->setFloat("u_Metalness", metalness);
 				}
 #endif
 
