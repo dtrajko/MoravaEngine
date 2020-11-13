@@ -265,6 +265,10 @@ void EnvironmentMap::SetupShaders()
 
     m_ShaderRenderer2D_Line = new Shader("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
     Log::GetLogger()->info("EnvironmentMap: m_ShaderRenderer2D_Line compiled [programID={0}]", m_ShaderRenderer2D_Line->GetProgramID());
+
+    ResourceManager::AddShader("HazelPBR_Static", m_ShaderHazelPBR_Static);
+    ResourceManager::AddShader("HazelPBR_Anim", m_ShaderHazelPBR_Anim);
+    ResourceManager::AddShader("Renderer2D_Line", m_ShaderRenderer2D_Line);
 }
 
 void EnvironmentMap::UpdateUniforms()
@@ -633,6 +637,26 @@ void EnvironmentMap::OnImGuiRender()
                 // END PBR Textures
             }
         }
+    }
+    ImGui::End();
+
+    // Shaders
+    ImGui::Begin("Shaders");
+    if (ImGui::TreeNode("Shaders"))
+    {
+        auto shaders = ResourceManager::GetShaders();
+        for (auto shader = shaders->begin(); shader != shaders->end(); shader++)
+        {
+            if (ImGui::TreeNode(shader->first.c_str()))
+            {
+                std::string buttonName = "Reload##" + shader->first;
+                if (ImGui::Button(buttonName.c_str())) {
+                    shader->second->Reload();
+                }
+                ImGui::TreePop();
+            }
+        }
+        ImGui::TreePop();
     }
     ImGui::End();
 

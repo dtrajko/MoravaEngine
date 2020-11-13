@@ -14,6 +14,9 @@ float ResourceManager::s_MaterialShininess = 256.0f;
 
 std::map<std::string, Hazel::HazelTexture2D*> ResourceManager::s_HazelTextures2D;
 
+std::map<std::string, Shader*> ResourceManager::s_Shaders;
+
+
 void ResourceManager::Init()
 {
     // Setup Textures
@@ -327,5 +330,12 @@ Hazel::HazelTexture2D* ResourceManager::LoadHazelTexture2D(std::string filePath)
         Hazel::HazelTexture2D* texture = Hazel::HazelTexture2D::Create(filePath);
         s_HazelTextures2D.insert(std::make_pair(filePath, texture));
         return texture;
+    }
+}
+
+void ResourceManager::AddShader(std::string name, Shader* shader)
+{
+    if (!s_Shaders.contains(name)) {
+        s_Shaders.insert(std::make_pair(name, shader));
     }
 }

@@ -21,7 +21,12 @@ public:
 	void CreateFromString(const char* vertexCode, const char* fragmentCode);
 	void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);
 	void CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation);
+
+	void CreateFromFileVertex(const char* vertexLocation);
+	void CreateFromFileFragment(const char* fragmentLocation);
+	void CreateFromFileGeometry(const char* geometryLocation);
 	void CreateFromFileCompute(const char* computeLocation);
+
 	static std::string ReadFile(const char* fileLocation);
 	void Validate();
 	void Bind();
@@ -43,6 +48,9 @@ public:
 	GLint GetUniformLocation(const std::string& name);
 	void setIntArray(const std::string& name, int32_t* values, uint32_t count);
 
+	inline std::string GetName() { return m_Name; }
+	void Reload();
+
 	void Unbind();
 	void ClearShader();
 	~Shader();
@@ -59,7 +67,12 @@ protected:
 private:
 	void CompileShader(const char* vertexCode, const char* fragmentCode);
 	void CompileShader(const char* vertexCode, const char* geometryCode, const char* fragmentCode);
-	void CompileComputeShader(const char* computeCode);
+
+	void AddShaderVertex(const char* vertexCode);
+	void AddShaderFragment(const char* fragmentCode);
+	void AddShaderGeometry(const char* geometryCode);
+	void AddShaderCompute(const char* computeCode);
+
 	void AddShader(GLuint programID, const char* shaderCode, GLenum shaderType);
 
 	const char* GetShaderTypeNameFromEnum(const GLenum shaderType);
@@ -80,4 +93,14 @@ private:
 		GLuint shadowMap;
 		GLuint farPlane;
 	} uniformOmniShadowMap[MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS];
+
+	std::string m_Name;
+
+	std::string m_ShaderFilepath_Vertex;
+	std::string m_ShaderFilepath_Fragment;
+	std::string m_ShaderFilepath_Compute;
+	std::string m_ShaderFilepath_Geometry;
+	std::string m_ShaderFilepath_TessControl;
+	std::string m_ShaderFilepath_TessEvaluation;
+
 };

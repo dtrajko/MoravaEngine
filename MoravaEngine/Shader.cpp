@@ -5,23 +5,36 @@
 Shader::Shader()
 {
 	shaderID = 0;
+
+	m_Name = "Untitled";
 }
 
 Shader::Shader(const char* vertexLocation, const char* fragmentLocation)
 	: Shader()
 {
+	m_ShaderFilepath_Vertex = vertexLocation;
+	m_ShaderFilepath_Fragment = fragmentLocation;
+
 	CreateFromFiles(vertexLocation, fragmentLocation);
 }
 
 Shader::Shader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation)
 	: Shader()
 {
+	m_ShaderFilepath_Vertex = vertexLocation;
+	m_ShaderFilepath_Geometry = geometryLocation;
+	m_ShaderFilepath_Fragment = fragmentLocation;
+
 	CreateFromFiles(vertexLocation, geometryLocation, fragmentLocation);
 }
 
 Shader::Shader(const char* computeLocation)
 {
+	m_ShaderFilepath_Compute = computeLocation;
+
 	CreateFromFileCompute(computeLocation);
+
+	CompileProgram();
 }
 
 void Shader::CreateFromString(const char* vertexCode, const char* fragmentCode)
@@ -49,11 +62,32 @@ void Shader::CreateFromFiles(const char* vertexLocation, const char* geometryLoc
 	CompileShader(vertexCode, geometryCode, fragmentCode);
 }
 
+void Shader::CreateFromFileVertex(const char* vertexLocation)
+{
+	std::string vertexString = ReadFile(vertexLocation);
+	const char* vertexCode = vertexString.c_str();
+	AddShaderVertex(vertexCode);
+}
+
+void Shader::CreateFromFileFragment(const char* fragmentLocation)
+{
+	std::string fragmentString = ReadFile(fragmentLocation);
+	const char* fragmentCode = fragmentString.c_str();
+	AddShaderFragment(fragmentCode);
+}
+
+void Shader::CreateFromFileGeometry(const char* geometryLocation)
+{
+	std::string geometryString = ReadFile(geometryLocation);
+	const char* geometryCode = geometryString.c_str();
+	AddShaderGeometry(geometryCode);
+}
+
 void Shader::CreateFromFileCompute(const char* computeLocation)
 {
 	std::string computeString = ReadFile(computeLocation);
 	const char* computeCode = computeString.c_str();
-	CompileComputeShader(computeCode);
+	AddShaderCompute(computeCode);
 }
 
 std::string Shader::ReadFile(const char* fileLocation)
@@ -211,6 +245,27 @@ void Shader::Bind()
 	glUseProgram(programID);
 }
 
+void Shader::Reload()
+{
+	if (!m_ShaderFilepath_Vertex.empty()) {
+		CreateFromFileVertex(m_ShaderFilepath_Vertex.c_str());
+	}
+
+	if (!m_ShaderFilepath_Fragment.empty()) {
+		CreateFromFileFragment(m_ShaderFilepath_Fragment.c_str());
+	}
+
+	if (!m_ShaderFilepath_Geometry.empty()) {
+		CreateFromFileGeometry(m_ShaderFilepath_Geometry.c_str());
+	}
+
+	if (!m_ShaderFilepath_Compute.empty()) {
+		CreateFromFileCompute(m_ShaderFilepath_Compute.c_str());
+	}
+
+	CompileProgram();
+}
+
 void Shader::Unbind()
 {
 	glUseProgram(0);
@@ -265,19 +320,64 @@ void Shader::CompileShader(const char* vertexCode, const char* geometryCode, con
 	CompileProgram();
 }
 
-void Shader::CompileComputeShader(const char* computeCode)
+void Shader::AddShaderVertex(const char* vertexCode)
 {
-	programID = glCreateProgram();
+	if (programID == -1) {
+		programID = glCreateProgram();
+	}
 
 	if (!programID)
 	{
-		LOG_ERROR("Error creating shader program!");
+		LOG_ERROR("Program ID not valid (VERTEX shader)!");
+		return;
+	}
+
+	AddShader(programID, vertexCode, GL_VERTEX_SHADER);
+}
+
+void Shader::AddShaderFragment(const char* fragmentCode)
+{
+	if (programID == -1) {
+		programID = glCreateProgram();
+	}
+
+	if (!programID)
+	{
+		LOG_ERROR("Program ID not valid (FRAGMENT shader)!");
+		return;
+	}
+
+	AddShader(programID, fragmentCode, GL_FRAGMENT_SHADER);
+}
+
+void Shader::AddShaderGeometry(const char* geometryCode)
+{
+	if (programID == -1) {
+		programID = glCreateProgram();
+	}
+
+	if (!programID)
+	{
+		LOG_ERROR("Program ID not valid (GEOMETRY shader)!");
+		return;
+	}
+
+	AddShader(programID, geometryCode, GL_GEOMETRY_SHADER);
+}
+
+void Shader::AddShaderCompute(const char* computeCode)
+{
+	if (programID == -1) {
+		programID = glCreateProgram();
+	}
+
+	if (!programID)
+	{
+		LOG_ERROR("Program ID not valid (COMPUTE shader)!");
 		return;
 	}
 
 	AddShader(programID, computeCode, GL_COMPUTE_SHADER);
-
-	CompileProgram();
 }
 
 const char* Shader::GetShaderTypeNameFromEnum(const GLenum shaderType)
@@ -307,9 +407,9 @@ void Shader::AddShader(GLuint programID, const char* shaderCode, GLenum shaderTy
 	glShaderSource(shaderID, 1, theCode, codeLength);
 	glCompileShader(shaderID);
 
-	// Log::GetLogger()->info("-- BEGIN shader code --");
-	// Log::GetLogger()->info("{0}", shaderCode);
-	// Log::GetLogger()->info("-- END shader code --");
+	Log::GetLogger()->info("-- BEGIN shader code --");
+	Log::GetLogger()->info("{0}", shaderCode);
+	Log::GetLogger()->info("-- END shader code --");
 
 	GLint result = 0;
 	GLchar eLog[1024] = { 0 };
