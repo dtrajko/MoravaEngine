@@ -130,7 +130,24 @@ namespace Hazel
 		uint32_t entityCount = 0, meshCount = 0;
 		auto& sceneEntities = m_Context->m_Entities;
 		for (Entity* entity : sceneEntities)
-			DrawEntityNodeNoECS(entity, entityCount, meshCount);
+		{
+			DrawEntityNodeNoECS(*entity, entityCount, meshCount);
+		}
+
+		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+		{
+			m_SelectionContext = {};
+		}
+
+		// Right-click on blank space
+		if (ImGui::BeginPopupContextWindow(0, 1, false))
+		{
+			if (ImGui::MenuItem("Create Empty Entity"))
+			{
+				m_Context->CreateEntity("Empty Entity");
+			}
+			ImGui::EndPopup();
+		}
 
 		ImGui::End();
 
@@ -138,20 +155,7 @@ namespace Hazel
 
 		if (m_SelectionContext)
 		{
-			/*auto mesh = m_SelectionContext;
-
-			{
-				auto [translation, rotation, scale] = GetTransformDecomposition(transform);
-				ImGui::Text("World Transform");
-				ImGui::Text("  Translation: %.2f, %.2f, %.2f", translation.x, translation.y, translation.z);
-				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
-			}
-			{
-				auto [translation, rotation, scale] = GetTransformDecomposition(localTransform);
-				ImGui::Text("Local Transform");
-				ImGui::Text("  Translation: %.2f, %.2f, %.2f", translation.x, translation.y, translation.z);
-				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
-			}*/
+			DrawComponents(m_SelectionContext);
 		}
 
 		ImGui::End();
@@ -176,24 +180,48 @@ namespace Hazel
 #endif
 	}
 
-	void SceneHierarchyPanel::DrawEntityNodeNoECS(Entity* entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID)
+	void SceneHierarchyPanel::DrawEntityNodeNoECS(Entity entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID)
 	{
-		const char* name = entity->GetName().c_str();
-		static char imguiName[128];
-		memset(imguiName, 0, 128);
-		sprintf(imguiName, "%s##%d", name, imguiEntityID++);
+		std::string tag = entity.GetName();
 
-		if (ImGui::TreeNode(imguiName))
+		// copied from DrawEntityNodeECS
+		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
+			ImGuiTreeNodeFlags_OpenOnArrow |
+			ImGuiTreeNodeFlags_SpanAvailWidth;
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+		if (ImGui::IsItemClicked())
 		{
-			auto mesh = entity->GetMesh();
-			auto material = entity->GetMaterial();
-			const auto& transform = entity->GetTransform();
+			m_SelectionContext = entity;
+			m_Context->OnEntitySelected(&entity);
+		}
 
-			if (mesh) {
-				DrawMeshNode(mesh, imguiMeshID);
+		bool entityDeleted = false;
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::MenuItem("Delete Entity"))
+			{
+				entityDeleted = true;
 			}
+			ImGui::EndPopup();
+		}
 
+		if (opened)
+		{
+			ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
+				ImGuiTreeNodeFlags_OpenOnArrow |
+				ImGuiTreeNodeFlags_SpanAvailWidth;
+			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000), flags, tag.c_str());
+			if (opened) {
+				ImGui::TreePop();
+			}
 			ImGui::TreePop();
+		}
+
+		if (entityDeleted) {
+			m_Context->DestroyEntity(entity);
+			if (m_SelectionContext == entity) {
+				m_SelectionContext = {};
+			}
 		}
 	}
 
