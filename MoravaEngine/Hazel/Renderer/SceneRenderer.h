@@ -121,6 +121,9 @@ namespace Hazel {
 		Hazel::HazelTextureCube* m_EnvFiltered;
 		Hazel::HazelTextureCube* m_IrradianceMap;
 
+		float m_GridScale = 16.025f;
+		float m_GridSize = 0.025f;
+
 	};
 
 }

@@ -658,6 +658,15 @@ void EnvironmentMap::OnImGuiRender()
         }
         ImGui::TreePop();
     }
+
+    std::string buttonName = "Reload All";
+    if (ImGui::Button(buttonName.c_str())) {
+        auto shaders = ResourceManager::GetShaders();
+        for (auto shader = shaders->begin(); shader != shaders->end(); shader++) {
+            shader->second->Reload();
+        }
+    }
+
     ImGui::End();
 
     ImGui::ShowMetricsWindow();
@@ -724,6 +733,9 @@ void EnvironmentMap::RenderHazelGrid()
     // ---- uniform float u_Res;
 
     m_SceneRenderer->GetShaderGrid()->Bind();
+    m_SceneRenderer->GetShaderGrid()->setFloat("u_Scale", m_SceneRenderer->m_GridScale);
+    m_SceneRenderer->GetShaderGrid()->setFloat("u_Res", m_SceneRenderer->m_GridSize);
+
     glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
     m_SceneRenderer->GetShaderGrid()->setMat4("u_ViewProjection", viewProjection);
 

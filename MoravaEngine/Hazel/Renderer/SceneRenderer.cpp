@@ -46,10 +46,9 @@ namespace Hazel {
 
         // Grid
         s_Data.GridMaterial = new Material(m_ShaderGrid);
-        float gridScale = 16.025f, gridSize = 0.025f;
         m_ShaderGrid->Bind();
-        m_ShaderGrid->setFloat("u_Scale", gridScale);
-        m_ShaderGrid->setFloat("u_Res", gridSize);
+        m_ShaderGrid->setFloat("u_Scale", m_GridScale);
+        m_ShaderGrid->setFloat("u_Res", m_GridSize);
 
         s_Data.SceneData.SkyboxMaterial = new Material(m_ShaderSkybox);
         s_Data.SceneData.SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, true); // false

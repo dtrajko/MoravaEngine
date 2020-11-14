@@ -247,9 +247,7 @@ void Shader::Bind()
 
 void Shader::Reload()
 {
-	if (programID != -1) {
-		glDeleteProgram(programID);
-	}
+	ClearShader();
 
 	programID = glCreateProgram();
 
@@ -279,7 +277,7 @@ void Shader::Unbind()
 
 void Shader::ClearShader()
 {
-	if (programID != 0)
+	if (programID > 0)
 	{
 		glDeleteProgram(programID);
 		programID = 0;
