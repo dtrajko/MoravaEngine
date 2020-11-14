@@ -38,11 +38,11 @@ namespace Hazel
 		void MeshNodeHierarchy(Mesh* mesh, aiNode* node, const glm::mat4& parentTransform, uint32_t level);
 
 	public:
-		glm::mat4* m_CurrentlySelectedTransform = nullptr;
+		glm::mat4 m_CurrentlySelectedTransform = glm::mat4(1.0f);
+		Entity m_SelectionContext;
 
 	private:
 		HazelScene* m_Context;
-		Entity m_SelectionContext;
 
 	};
 

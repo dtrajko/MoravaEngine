@@ -48,7 +48,7 @@ namespace Hazel
 		if (ImGui::IsItemClicked())
 		{
 			m_SelectionContext = entity;
-			m_CurrentlySelectedTransform = &entity.GetComponent<TransformComponent>().GetTransform();
+			m_CurrentlySelectedTransform = entity.GetComponent<TransformComponent>().GetTransform();
 
 			m_Context->OnEntitySelected(&entity);
 		}
@@ -79,7 +79,7 @@ namespace Hazel
 			m_Context->DestroyEntity(entity);
 			if (m_SelectionContext == entity) {
 				m_SelectionContext = {};
-				m_CurrentlySelectedTransform = nullptr;
+				m_CurrentlySelectedTransform = glm::mat4(1.0f);
 			}
 		}
 	}
@@ -100,7 +100,7 @@ namespace Hazel
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 		{
 			m_SelectionContext = {};
-			m_CurrentlySelectedTransform = nullptr;
+			m_CurrentlySelectedTransform = glm::mat4(1.0f);
 		}
 
 		// Right-click on blank space
@@ -141,7 +141,7 @@ namespace Hazel
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 		{
 			m_SelectionContext = {};
-			m_CurrentlySelectedTransform = nullptr;
+			m_CurrentlySelectedTransform = glm::mat4(1.0f);
 		}
 
 		// Right-click on blank space
@@ -197,7 +197,7 @@ namespace Hazel
 		if (ImGui::IsItemClicked())
 		{
 			m_SelectionContext = entity;
-			m_CurrentlySelectedTransform = &entity.GetComponent<TransformComponent>().GetTransform();
+			m_CurrentlySelectedTransform = entity.GetComponent<TransformComponent>().GetTransform();
 
 			m_Context->OnEntitySelected(&entity);
 		}
@@ -228,7 +228,7 @@ namespace Hazel
 			m_Context->DestroyEntity(entity);
 			if (m_SelectionContext == entity) {
 				m_SelectionContext = {};
-				m_CurrentlySelectedTransform = nullptr;
+				m_CurrentlySelectedTransform = glm::mat4(1.0f);
 			}
 		}
 	}
