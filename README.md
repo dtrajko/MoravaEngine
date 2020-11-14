@@ -24,10 +24,10 @@ Its current purpose is experimenting with various CGI concepts and techniques:
 * Skeletal animation
 
 ## Credits
-* Yan Chernikov a.k.a. TheCherno (Hazel engine)
-* Ben Cook (Vulkan and OpenGL courses on Udemy)
-* Joey de Vries (learnopengl.com)
-* Sascha Willems (Vulkan C++ examples and demos)
+* Yan Chernikov a.k.a. [TheCherno](https://twitter.com/thecherno) [ [Hazel](https://github.com/TheCherno/Hazel) ]
+* [Ben Cook](https://www.udemy.com/user/ben-cook-19/) [ Vulkan and OpenGL courses on Udemy ]
+* [Joey de Vries](https://twitter.com/JoeyDeVriez) [ [learnopengl.com](https://learnopengl.com/) ]
+* [Sascha Willems](https://twitter.com/SaschaWillems2) [ [Vulkan C++ examples and demos](https://github.com/SaschaWillems/Vulkan) ]
 
 ## Installation
 Build automation based on CMake (in progress)
