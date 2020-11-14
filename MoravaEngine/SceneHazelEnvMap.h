@@ -138,7 +138,6 @@ private:
 
 	int m_ImGuizmoType = -1; // -1 = no gizmo
 
-	glm::vec3 m_Translation_ImGuizmo;
 	glm::mat4* m_Transform_ImGuizmo;
 
 	Hazel::SceneHierarchyPanel* m_SceneHierarchyPanel;

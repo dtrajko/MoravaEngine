@@ -37,6 +37,9 @@ namespace Hazel
 		void DrawMeshNode(Mesh* mesh, uint32_t& imguiMeshID);
 		void MeshNodeHierarchy(Mesh* mesh, aiNode* node, const glm::mat4& parentTransform, uint32_t level);
 
+	public:
+		glm::mat4* m_CurrentlySelectedTransform = nullptr;
+
 	private:
 		HazelScene* m_Context;
 		Entity m_SelectionContext;

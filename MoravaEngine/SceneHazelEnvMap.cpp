@@ -128,7 +128,6 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupMeshes();
     SetupModels();
 
-    m_Translation_ImGuizmo = glm::vec3(0.0f);
     m_Transform_ImGuizmo = nullptr;
 
     m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel((Scene*)this);
@@ -258,6 +257,11 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 
     CheckIntersection(mainWindow);
     m_Transform_ImGuizmo = m_EnvironmentMap->m_CurrentlySelectedTransform;
+    if (m_SceneHierarchyPanel->m_CurrentlySelectedTransform != nullptr) {
+        m_Transform_ImGuizmo = m_SceneHierarchyPanel->m_CurrentlySelectedTransform;
+        auto [Translation, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+        Log::GetLogger()->debug("m_Transform_ImGuizmo::Translation: {0} {1} {2}", Translation.x, Translation.y, Translation.z);
+    }
 
     m_EnvironmentMap->GetShaderPBR_Anim()->Bind();
     m_EnvironmentMap->GetShaderPBR_Anim()->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
