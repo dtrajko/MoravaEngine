@@ -119,6 +119,10 @@ private:
 	virtual void SetupModels();
 	virtual void SetSkybox();
 
+public:
+	static glm::mat4 s_ImGuizmoTransform;
+	static bool s_ImGuizmoEnabled;
+
 protected:
 	static SceneSettings sceneSettings;
 

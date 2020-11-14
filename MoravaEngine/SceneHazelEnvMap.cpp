@@ -128,8 +128,6 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupMeshes();
     SetupModels();
 
-    m_Transform_ImGuizmo = nullptr;
-
     m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel((Scene*)this);
 
     m_DisplayLineElements = false;
@@ -258,10 +256,6 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
     CheckIntersection(mainWindow);
 
     m_Transform_ImGuizmo = m_EnvironmentMap->m_CurrentlySelectedTransform;
-    //  if (m_SceneHierarchyPanel->m_SelectionContext) {
-    //      m_Transform_ImGuizmo = &m_SceneHierarchyPanel->m_CurrentlySelectedTransform;
-    //  }
-
     m_EnvironmentMap->GetShaderPBR_Anim()->Bind();
     m_EnvironmentMap->GetShaderPBR_Anim()->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
     m_EnvironmentMap->GetShaderPBR_Anim()->setVec3("u_CameraPosition", m_Camera->GetPosition());
@@ -310,37 +304,6 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 
 void SceneHazelEnvMap::CheckIntersection(Window* mainWindow)
 {
-    //  MousePicker::Get()->Update(
-    //      (int)mainWindow->GetMouseX(), (int)mainWindow->GetMouseY(),
-    //      m_ImGuiViewport.X, m_ImGuiViewport.Y, m_ImGuiViewport.Width, m_ImGuiViewport.Height,
-    //      RendererBasic::GetProjectionMatrix(), m_CameraController->CalculateViewMatrix());
-    //  
-    //  MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
-    //  
-    //  for (auto& entity : m_Entities)
-    //  {
-    //      entity.second.Intersecting = entity.second.Enabled &&
-    //          AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
-    //              entity.second.AABB.GetMin(), entity.second.AABB.GetMax(), glm::vec2(0.0f));
-    //  }
-    //  
-    //  if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft))
-    //  {
-    //      for (auto& entity : m_Entities)
-    //      {
-    //          if (entity.second.Intersecting) {
-    //              // m_Transform_ImGuizmo = &entity.second.Transform.Transform;
-    //              m_Transform_ImGuizmo = &m_EnvironmentMap->GetMeshEntity()->Transform();
-    //              auto [Translation, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
-    //              m_Translation_ImGuizmo = Translation;
-    //  
-    //              if (m_ImGuizmoType == -1) {
-    //                  m_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-    //              }
-    //          }
-    //      }
-    //  }
-
     if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft))
     {
         m_Transform_ImGuizmo = m_EnvironmentMap->m_CurrentlySelectedTransform;
@@ -420,17 +383,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     glm::value_ptr(Scale),
                     glm::value_ptr(*m_Transform_ImGuizmo));
             }
-
-            // char buffer[100];
-            // 
-            // sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
-            // ImGui::Text(buffer);
-            // 
-            // sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationDegrees.x, RotationDegrees.y, RotationDegrees.z);
-            // ImGui::Text(buffer);
-            // 
-            // sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
-            // ImGui::Text(buffer);
         }
     }
     ImGui::End();

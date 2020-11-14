@@ -99,12 +99,14 @@ private:
 	Shader* m_ShaderBasic;
 
 	struct Entity {
+
 		struct Transform {
 			glm::vec3 Translation;
 			glm::quat Rotation;
 			glm::vec3 Scale;
 			glm::mat4 Transform;
 		} Transform;
+
 		struct Init {
 			struct Transform {
 				glm::vec3 Scale;
@@ -115,6 +117,7 @@ private:
 				} Transform;
 			} AABB;
 		} Init;
+
 		struct AABBTransform {
 			glm::vec3 Translation;
 			glm::quat Rotation;

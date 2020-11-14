@@ -76,6 +76,7 @@ namespace Hazel {
 
 	public:
 		Mesh* m_Mesh;
+		glm::mat4 m_Transform;
 
 	private:
 		entt::entity m_EntityHandle;
@@ -85,8 +86,5 @@ namespace Hazel {
 
 		// NoECS
 		std::string m_Name;
-		glm::mat4 m_Transform;
-
 	};
-
 }
