@@ -413,9 +413,9 @@ void Shader::AddShader(GLuint programID, const char* shaderCode, GLenum shaderTy
 	glShaderSource(shaderID, 1, theCode, codeLength);
 	glCompileShader(shaderID);
 
-	Log::GetLogger()->info("-- BEGIN shader code --");
-	Log::GetLogger()->info("{0}", shaderCode);
-	Log::GetLogger()->info("-- END shader code --");
+	// Log::GetLogger()->info("-- BEGIN shader code --");
+	// Log::GetLogger()->info("{0}", shaderCode);
+	// Log::GetLogger()->info("-- END shader code --");
 
 	GLint result = 0;
 	GLchar eLog[1024] = { 0 };

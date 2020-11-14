@@ -266,9 +266,9 @@ void EnvironmentMap::SetupShaders()
     m_ShaderRenderer2D_Line = new Shader("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
     Log::GetLogger()->info("EnvironmentMap: m_ShaderRenderer2D_Line compiled [programID={0}]", m_ShaderRenderer2D_Line->GetProgramID());
 
-    ResourceManager::AddShader("HazelPBR_Static", m_ShaderHazelPBR_Static);
-    ResourceManager::AddShader("HazelPBR_Anim", m_ShaderHazelPBR_Anim);
-    ResourceManager::AddShader("Renderer2D_Line", m_ShaderRenderer2D_Line);
+    ResourceManager::AddShader("Hazel/HazelPBR_Static", m_ShaderHazelPBR_Static);
+    ResourceManager::AddShader("Hazel/HazelPBR_Anim", m_ShaderHazelPBR_Anim);
+    ResourceManager::AddShader("Hazel/Renderer2D_Line", m_ShaderRenderer2D_Line);
 }
 
 void EnvironmentMap::UpdateUniforms()

@@ -202,6 +202,9 @@ void SceneHazelEnvMap::SetupShaders()
 
     m_ShaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
     Log::GetLogger()->info("SceneHazelEnvMap: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
+
+    ResourceManager::AddShader("LearnOpenGL/2.2.2.background", m_ShaderBackground);
+    ResourceManager::AddShader("basic", m_ShaderBasic);
 }
 
 void SceneHazelEnvMap::SetupMeshes()

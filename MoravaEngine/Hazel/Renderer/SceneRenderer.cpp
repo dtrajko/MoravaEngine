@@ -2,13 +2,14 @@
 
 #include "HazelMaterial.h"
 #include "HazelShader.h"
+#include "HazelRenderer.h"
 #include "../Core/Assert.h"
 #include "../Scene/HazelScene.h"
 #include "../Platform/OpenGL/OpenGLRenderPass.h"
+
 #include "../../Scene.h"
 #include "../../RendererBasic.h"
-#include "HazelRenderer.h"
-
+#include "../../ResourceManager.h"
 #include "../../Log.h"
 
 
@@ -73,6 +74,13 @@ namespace Hazel {
 
         m_ShaderGrid = new Shader("Shaders/Hazel/Grid.vs", "Shaders/Hazel/Grid.fs");
         Log::GetLogger()->info("SceneRenderer: m_ShaderGrid compiled [programID={0}]", m_ShaderGrid->GetProgramID());
+
+        ResourceManager::AddShader("Hazel/SceneComposite", s_Data.CompositeShader);
+        ResourceManager::AddShader("Hazel/EquirectangularToCubeMap", m_ShaderEquirectangularConversion);
+        ResourceManager::AddShader("Hazel/EnvironmentMipFilter", m_ShaderEnvFiltering);
+        ResourceManager::AddShader("Hazel/EnvironmentIrradiance", m_ShaderEnvIrradiance);
+        ResourceManager::AddShader("Hazel/Skybox", m_ShaderSkybox);
+        ResourceManager::AddShader("Hazel/Grid", m_ShaderGrid);
     }
 
     // Moved from EnvironmentMap
