@@ -247,6 +247,12 @@ void Shader::Bind()
 
 void Shader::Reload()
 {
+	if (programID != -1) {
+		glDeleteProgram(programID);
+	}
+
+	programID = glCreateProgram();
+
 	if (!m_ShaderFilepath_Vertex.empty()) {
 		CreateFromFileVertex(m_ShaderFilepath_Vertex.c_str());
 	}
