@@ -23,6 +23,12 @@ Its current purpose is experimenting with various CGI concepts and techniques:
 * Physics simulations
 * Skeletal animation
 
+## Credits
+* Yan Chernikov a.k.a. TheCherno (Hazel engine)
+* Ben Cook (Vulkan and OpenGL courses on Udemy)
+* Joey de Vries (learnopengl.com)
+* Sascha Willems (Vulkan C++ examples and demos)
+
 ## Installation
 Build automation based on CMake (in progress)
 
