@@ -28,7 +28,7 @@ Its current purpose is experimenting with various CGI concepts and techniques:
 * [Ben Cook](https://www.udemy.com/user/ben-cook-19/) [ Vulkan and OpenGL courses on Udemy ]
 * [Joey de Vries](https://twitter.com/JoeyDeVriez) [ [learnopengl.com](https://learnopengl.com/) ]
 * [Sascha Willems](https://twitter.com/SaschaWillems2) [ [Vulkan C++ examples and demos](https://github.com/SaschaWillems/Vulkan) ]
-* [Sebastian Lague] (https://twitter.com/sebastianlague) [ [Sebastian Lague Youtube channel] (https://www.youtube.com/c/SebastianLague) ]
+* [Sebastian Lague](https://twitter.com/sebastianlague) [ [Sebastian Lague Youtube channel](https://www.youtube.com/c/SebastianLague) ]
 
 ## Installation
 Build automation based on CMake (in progress)
