@@ -7,6 +7,7 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Scene/Components.h"
+#include "Hazel/Scene/Entity.h"
 
 #include "ImGuiWrapper.h"
 #include "ImGuizmo.h"
@@ -210,6 +211,7 @@ void EnvironmentMap::LoadMesh(std::string fullPath)
     // m_MeshEntity: NoECS version
     m_MeshEntity = CreateEntity(drawCommand.Name);
     m_MeshEntity->Transform() = glm::translate(glm::mat4(1.0f), { 0.0f, 0.0f, 0.0f }) * glm::scale(glm::mat4(1.0f), { 1.0f, 1.0f, 1.0f });
+    m_MeshEntity->AddComponent<Hazel::MeshComponent>(Ref<Hazel::HazelMesh>(mesh));
     m_MeshEntity->SetMesh(drawCommand.Mesh);
 
     SubmitEntity(m_MeshEntity);
@@ -787,52 +789,47 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 Hazel::Entity entity = { e, m_SceneRenderer->s_Data.ActiveScene };
                 auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
                 auto& submeshes = mesh->GetSubmeshes();
-
-                // TODO
-            }
-
-            auto mesh = m_MeshEntity->GetMesh();
-            auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
-            float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
-            // for (Hazel::Submesh& submesh : submeshes)
-            for (uint32_t i = 0; i < submeshes.size(); i++)
-            {
-                auto& submesh = submeshes[i];
-                Hazel::Ray ray = {
-                    glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f),
-                    glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform))* direction
-                };
-
-                float t;
-                // bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
-                bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
-                if (intersects)
+                float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
+                // for (Hazel::Submesh& submesh : submeshes)
+                for (uint32_t i = 0; i < submeshes.size(); i++)
                 {
-                    const auto& triangleCache = ((Hazel::HazelMesh*)mesh)->GetTriangleCache(i);
-                    if (triangleCache.size())
+                    auto& submesh = submeshes[i];
+                    Hazel::Ray ray = {
+                        glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f),
+                        glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction
+                    };
+
+                    float t;
+                    // bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
+                    bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
+                    if (intersects)
                     {
-                        for (const auto& triangle : triangleCache)
+                        const auto& triangleCache = ((Hazel::HazelMesh*)mesh.get())->GetTriangleCache(i);
+                        if (triangleCache.size())
                         {
-                            if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+                            for (const auto& triangle : triangleCache)
                             {
-                                m_SelectedSubmeshes.push_back({ &submesh, t });
-                                break;
+                                if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+                                {
+                                    m_SelectedSubmeshes.push_back({ entity, &submesh, t });
+                                    break;
+                                }
                             }
                         }
-                    }
-                    else {
-                        m_SelectedSubmeshes.push_back({ &submesh, t });
+                        else {
+                            m_SelectedSubmeshes.push_back({ entity, &submesh, t });
+                        }
                     }
                 }
-            }
-            std::sort(m_SelectedSubmeshes.begin(), m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
+                std::sort(m_SelectedSubmeshes.begin(), m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
 
-            // TODO: Handle mesh being deleted, etc
-            if (m_SelectedSubmeshes.size()) {
-                m_CurrentlySelectedTransform = &m_SelectedSubmeshes[0].Mesh->Transform;
-            }
-            else {
-                m_CurrentlySelectedTransform = &m_MeshEntity->Transform();
+                // TODO: Handle mesh being deleted, etc
+                if (m_SelectedSubmeshes.size()) {
+                    m_CurrentlySelectedTransform = &m_SelectedSubmeshes[0].Mesh->Transform;
+                }
+                else {
+                    m_CurrentlySelectedTransform = &m_MeshEntity->Transform();
+                }
             }
         }
     }
@@ -918,8 +915,9 @@ void EnvironmentMap::GeometryPassTemporary()
         }
         
         if (m_SelectedSubmeshes.size()) {
-            auto& submesh = m_SelectedSubmeshes[0];
-            Hazel::HazelRenderer::DrawAABB(submesh.Mesh->BoundingBox, m_MeshEntity->Transform() * submesh.Mesh->Transform, glm::vec4(1.0f));
+            auto& selection = m_SelectedSubmeshes[0];
+
+            Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, m_MeshEntity->Transform() * selection.Mesh->Transform, glm::vec4(1.0f));
         }
     }
     Hazel::Renderer2D::EndScene();

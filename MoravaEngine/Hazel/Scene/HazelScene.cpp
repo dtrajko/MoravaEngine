@@ -206,4 +206,9 @@ namespace Hazel {
 	{
 	}
 
+	template<>
+	void HazelScene::OnComponentAdded<MeshComponent>(Entity entity, MeshComponent& component)
+	{
+	}
+
 }

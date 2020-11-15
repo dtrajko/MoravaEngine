@@ -136,7 +136,7 @@ private:
 
 	struct SelectedSubmesh
 	{
-		// Hazel::Entity Entity;
+		Hazel::Entity Entity;
 		Hazel::Submesh* Mesh;
 		float Distance;
 	};
