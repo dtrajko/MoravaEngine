@@ -116,11 +116,11 @@ namespace Hazel {
         FlushDrawList();
     }
 
-    void SceneRenderer::SubmitEntity(Entity* entity)
+    void SceneRenderer::SubmitEntity(Entity entity)
     {
         // TODO: Culling, sorting, etc.
 
-        auto mesh = entity->GetMesh();
+        auto mesh = entity.GetMesh();
         if (!mesh) {
             return;
         }

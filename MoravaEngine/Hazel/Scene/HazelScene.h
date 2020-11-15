@@ -56,12 +56,12 @@ namespace Hazel {
 		inline HazelLight GetLight() { return m_Light; }
 
 		void SetSkybox(const Ref<Hazel::HazelTextureCube>& skybox);
-		void AddEntity(Entity* entity);
+		void AddEntity(Entity entity);
 
 		inline void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
 		float& GetSkyboxLOD() { return m_SkyboxLOD; }
 
-		Entity* CreateEntity(const std::string& name);
+		Entity CreateEntity(const std::string& name);
 		void DestroyEntity(Entity entity);
 
 		template<typename T>
@@ -71,12 +71,12 @@ namespace Hazel {
 		}
 
 		// Temporary/experimental
-		virtual void OnEntitySelected(Entity* entity);
+		virtual void OnEntitySelected(Entity entity);
 
 	public:
 		// ECS
 		entt::registry m_Registry;
-		std::vector<Entity*> m_Entities;
+		std::vector<Entity> m_Entities;
 
 	private:
 		uint32_t m_ViewportWidth = 0;

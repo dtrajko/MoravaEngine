@@ -25,18 +25,14 @@
 
 class EnvironmentMap
 {
-	struct Hazel::HazelLight;
-	struct Hazel::Environment;
-	enum class Hazel::PrimitiveType;
-
 public:
 	EnvironmentMap() = default;
 	EnvironmentMap(const std::string& filepath, Scene* scene);
 	~EnvironmentMap();
 
 	void Update(Scene* scene, float timestep);
-	Hazel::Entity* CreateEntity(const std::string& name);
-	void LoadMesh(std::string fullPath);
+	Hazel::Entity CreateEntity(const std::string& name);
+	Hazel::Entity LoadEntity(std::string fullPath);
 	void LoadEnvMapMaterials(Mesh* mesh);
 	void Render(Framebuffer* framebuffer);
 	void OnImGuiRender();
@@ -55,8 +51,8 @@ public:
 	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
 	inline Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
 	inline Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
-	inline Hazel::Entity* GetMeshEntity() { return m_MeshEntity; }
-	inline void SetMeshEntity(Hazel::Entity* entity) { m_MeshEntity = entity; }
+	inline Hazel::Entity GetMeshEntity() { return m_MeshEntity; }
+	inline void SetMeshEntity(Hazel::Entity entity) { m_MeshEntity = entity; }
 	inline float& GetSkyboxExposureFactor() { return m_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
 	void SetViewportBounds(glm::vec2* viewportBounds);
@@ -76,7 +72,7 @@ private:
 public:
 	void CompositePassTemporary(Framebuffer* framebuffer);
 	void GeometryPassTemporary();
-	void SubmitEntity(Hazel::Entity* entity);
+	void SubmitEntity(Hazel::Entity entity);
 
 	// Renderer
 	void DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest);
@@ -117,7 +113,7 @@ private:
 
 	glm::vec2 m_ViewportBounds[2];
 	int m_GizmoType = -1; // -1 = no gizmo
-	Hazel::Entity* m_MeshEntity = nullptr;
+	Hazel::Entity m_MeshEntity;
 	/** END properties EditorLayer **/
 
 	// Materials

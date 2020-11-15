@@ -57,7 +57,7 @@ private:
 	void SaveSceneAs();
 
 	// Temporary/experimental
-	virtual void OnEntitySelected(Hazel::Entity* entity) override;
+	virtual void OnEntitySelected(Hazel::Entity entity) override;
 
 private:
 	EnvironmentMap* m_EnvironmentMap;

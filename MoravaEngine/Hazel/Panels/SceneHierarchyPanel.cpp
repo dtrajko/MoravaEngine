@@ -50,7 +50,7 @@ namespace Hazel
 			m_SelectionContext = entity;
 			m_CurrentlySelectedTransform = entity.GetComponent<TransformComponent>().GetTransform();
 
-			m_Context->OnEntitySelected(&entity);
+			m_Context->OnEntitySelected(entity);
 		}
 
 		bool entityDeleted = false;
@@ -133,9 +133,9 @@ namespace Hazel
 
 		uint32_t entityCount = 0, meshCount = 0;
 		auto& sceneEntities = m_Context->m_Entities;
-		for (Entity* entity : sceneEntities)
+		for (Entity entity : sceneEntities)
 		{
-			DrawEntityNodeNoECS(*entity, entityCount, meshCount);
+			DrawEntityNodeNoECS(entity, entityCount, meshCount);
 		}
 
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
@@ -199,7 +199,7 @@ namespace Hazel
 			m_SelectionContext = entity;
 			m_CurrentlySelectedTransform = entity.GetComponent<TransformComponent>().GetTransform();
 
-			m_Context->OnEntitySelected(&entity);
+			m_Context->OnEntitySelected(entity);
 		}
 
 		bool entityDeleted = false;

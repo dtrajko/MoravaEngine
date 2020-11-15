@@ -171,12 +171,12 @@ void EnvironmentMap::SetupContextData()
         // mesh = new Hazel::HazelMesh("Models/M1911/M1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);
         // mesh = new Hazel::HazelMesh("Models/Cerberus/Cerberus_LP.FBX", m_ShaderHazelPBR_Static, nullptr, false);
 
-        LoadMesh("Models/Cerberus/Cerberus_LP.FBX");
+        LoadEntity("Models/Cerberus/Cerberus_LP.FBX");
     }
     Log::GetLogger()->info("-- END Setup PBR Materials --");
 }
 
-void EnvironmentMap::LoadMesh(std::string fullPath)
+Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
 {
     std::string fileName = Util::GetFileNameFromFullPath(fullPath);
     std::string fileNameNoExt = Util::StripExtensionFromFileName(fileName);
@@ -193,7 +193,7 @@ void EnvironmentMap::LoadMesh(std::string fullPath)
         m_ShaderHazelPBR = m_ShaderHazelPBR_Static;
     }
 
-    Log::GetLogger()->debug("EnvironmentMap::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
+    Log::GetLogger()->debug("EnvironmentMap::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);        
 
     Hazel::HazelMesh* mesh = new Hazel::HazelMesh(fullPath, m_ShaderHazelPBR, nullptr, isAnimated);
 
@@ -210,13 +210,14 @@ void EnvironmentMap::LoadMesh(std::string fullPath)
 
     // m_MeshEntity: NoECS version
     m_MeshEntity = CreateEntity(drawCommand.Name);
-    m_MeshEntity->Transform() = glm::translate(glm::mat4(1.0f), { 0.0f, 0.0f, 0.0f }) * glm::scale(glm::mat4(1.0f), { 1.0f, 1.0f, 1.0f });
-    m_MeshEntity->AddComponent<Hazel::MeshComponent>(Ref<Hazel::HazelMesh>(mesh));
-    m_MeshEntity->SetMesh(drawCommand.Mesh);
+    m_MeshEntity.Transform() = glm::translate(glm::mat4(1.0f), { 0.0f, 0.0f, 0.0f }) * glm::scale(glm::mat4(1.0f), { 1.0f, 1.0f, 1.0f });
+    m_MeshEntity.AddComponent<Hazel::MeshComponent>(Ref<Hazel::HazelMesh>(mesh));
+    m_MeshEntity.SetMesh(drawCommand.Mesh);
 
     SubmitEntity(m_MeshEntity);
-
     LoadEnvMapMaterials(mesh);
+
+    return m_MeshEntity;
 }
 
 void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
@@ -359,10 +360,10 @@ EnvironmentMap::~EnvironmentMap()
     delete m_SceneRenderer;
 }
 
-Hazel::Entity* EnvironmentMap::CreateEntity(const std::string& name)
+Hazel::Entity EnvironmentMap::CreateEntity(const std::string& name)
 {
     // Both NoECS and ECS
-    Hazel::Entity* entity = ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->CreateEntity(name);
+    Hazel::Entity entity = ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->CreateEntity(name);
 
     return entity;
 }
@@ -382,13 +383,13 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
     }
 }
 
-void EnvironmentMap::SubmitEntity(Hazel::Entity* entity)
+void EnvironmentMap::SubmitEntity(Hazel::Entity entity)
 {
-    auto mesh = entity->GetMesh();
+    auto mesh = entity.GetMesh();
     if (!mesh)
         return;
 
-    m_SceneRenderer->s_Data.DrawList.push_back({ entity->GetName(), (Hazel::HazelMesh*)mesh, entity->GetMaterial(), entity->GetTransform() });
+    m_SceneRenderer->s_Data.DrawList.push_back({ entity.GetName(), (Hazel::HazelMesh*)mesh, entity.GetMaterial(), entity.GetTransform() });
 }
 
 float& EnvironmentMap::GetSkyboxLOD()
@@ -431,7 +432,7 @@ void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool
 
 void EnvironmentMap::OnImGuiRender()
 {
-    ((Hazel::HazelMesh*)m_MeshEntity->GetMesh())->OnImGuiRender();
+    ((Hazel::HazelMesh*)m_MeshEntity.GetMesh())->OnImGuiRender();
 
     ImGui::Begin("EnvMap Materials");
     {
@@ -795,8 +796,8 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 {
                     auto& submesh = submeshes[i];
                     Hazel::Ray ray = {
-                        glm::inverse(m_MeshEntity->GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f),
-                        glm::inverse(glm::mat3(m_MeshEntity->GetTransform()) * glm::mat3(submesh.Transform)) * direction
+                        glm::inverse(m_MeshEntity.GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f),
+                        glm::inverse(glm::mat3(m_MeshEntity.GetTransform()) * glm::mat3(submesh.Transform)) * direction
                     };
 
                     float t;
@@ -828,7 +829,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                     m_CurrentlySelectedTransform = &m_SelectedSubmeshes[0].Mesh->Transform;
                 }
                 else {
-                    m_CurrentlySelectedTransform = &m_MeshEntity->Transform();
+                    m_CurrentlySelectedTransform = &m_MeshEntity.Transform();
                 }
             }
         }
@@ -883,7 +884,7 @@ void EnvironmentMap::GeometryPassTemporary()
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.IrradianceMap->Bind(m_SamplerSlots->at("irradiance"));
     m_SceneRenderer->s_Data.BRDFLUT->Bind(m_SamplerSlots->at("BRDF_LUT"));
 
-    Hazel::HazelMesh* hazelMesh = ((Hazel::HazelMesh*)m_MeshEntity->GetMesh());
+    Hazel::HazelMesh* hazelMesh = ((Hazel::HazelMesh*)m_MeshEntity.GetMesh());
     m_ShaderHazelPBR = hazelMesh->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
 
     uint32_t samplerSlot = m_SamplerSlots->at("albedo");
@@ -900,7 +901,7 @@ void EnvironmentMap::GeometryPassTemporary()
         if (m_EnvMapMaterials.contains(submesh.NodeName)) {
             UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh.NodeName));
         }
-        submesh.Render(hazelMesh, m_ShaderHazelPBR, m_MeshEntity->Transform(), samplerSlot, m_EnvMapMaterials);
+        submesh.Render(hazelMesh, m_ShaderHazelPBR, m_MeshEntity.Transform(), samplerSlot, m_EnvMapMaterials);
     }
     m_ShaderHazelPBR->Unbind();
 
@@ -917,7 +918,7 @@ void EnvironmentMap::GeometryPassTemporary()
         if (m_SelectedSubmeshes.size()) {
             auto& selection = m_SelectedSubmeshes[0];
 
-            Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, m_MeshEntity->Transform() * selection.Mesh->Transform, glm::vec4(1.0f));
+            Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, m_MeshEntity.Transform() * selection.Mesh->Transform, glm::vec4(1.0f));
         }
     }
     Hazel::Renderer2D::EndScene();

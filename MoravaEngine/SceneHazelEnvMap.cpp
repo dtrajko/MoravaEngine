@@ -135,7 +135,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 
     m_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-    m_Transform_ImGuizmo = &m_EnvironmentMap->GetMeshEntity()->Transform();
+    m_Transform_ImGuizmo = &m_EnvironmentMap->GetMeshEntity().Transform();
 
     Hazel::RendererAPI::Init();
 }
@@ -604,8 +604,8 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
             {
                 ImGui::Text("Mesh");
-                auto mesh = m_EnvironmentMap->GetMeshEntity()->GetMesh();
-                std::string fullPath = mesh ? mesh->GetFilePath() : "None";
+                auto meshComponent = m_EnvironmentMap->GetMeshEntity().GetComponent<Hazel::MeshComponent>();
+                std::string fullPath = meshComponent.Mesh ? meshComponent.Mesh->GetFilePath() : "None";
                 std::string fileName = Util::GetFileNameFromFullPath(fullPath);
                 ImGui::Text(fileName.c_str()); ImGui::SameLine();
                 if (ImGui::Button("...##Mesh"))
@@ -613,11 +613,12 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     std::string fullPath = Application::Get()->OpenFile("");
                     if (fullPath != "")
                     {
-                        m_EnvironmentMap->LoadMesh(fullPath);
+                        Hazel::Entity entity = m_EnvironmentMap->LoadEntity(fullPath);
+                        meshComponent.Mesh = Ref<Hazel::HazelMesh>((Hazel::HazelMesh*)entity.GetMesh());
                     }
                 }
 
-                Hazel::HazelMesh* meshAnimPBR = (Hazel::HazelMesh*)m_EnvironmentMap->GetMeshEntity()->GetMesh();
+                Hazel::HazelMesh* meshAnimPBR = (Hazel::HazelMesh*)m_EnvironmentMap->GetMeshEntity().GetMesh();
                 ImGui::Checkbox("Is Animated", &meshAnimPBR->IsAnimated());
             }
 
@@ -998,7 +999,7 @@ void SceneHazelEnvMap::SaveSceneAs()
     }
 }
 
-void SceneHazelEnvMap::OnEntitySelected(Hazel::Entity* entity)
+void SceneHazelEnvMap::OnEntitySelected(Hazel::Entity entity)
 {
     // auto& tc = entity.GetComponent<Hazel::TransformComponent>();
     // m_EnvironmentMap->SetMeshEntity(entity);

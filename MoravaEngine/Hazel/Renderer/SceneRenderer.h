@@ -72,7 +72,7 @@ namespace Hazel {
 		static void BeginScene(HazelScene* scene);
 		static void EndScene();
 
-		static void SubmitEntity(Entity* entity);
+		static void SubmitEntity(Entity entity);
 
 		static Ref<RenderPass> GetFinalRenderPass();
 		// static Ref<HazelTexture2D> GetFinalColorBuffer();

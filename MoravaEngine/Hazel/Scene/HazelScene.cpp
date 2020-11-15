@@ -29,27 +29,27 @@ namespace Hazel {
 		m_ShaderSkybox->setInt("u_Texture", skybox.get()->GetID());
 	}
 
-	void HazelScene::AddEntity(Entity* entity)
+	void HazelScene::AddEntity(Entity entity)
 	{
 		m_Entities.push_back(entity);
 	}
 
-	void HazelScene::OnEntitySelected(Entity* entity)
+	void HazelScene::OnEntitySelected(Entity entity)
 	{
 	}
 
-	Entity* HazelScene::CreateEntity(const std::string& name)
+	Entity HazelScene::CreateEntity(const std::string& name)
 	{
 		const std::string& entityName = name.empty() ? DefaultEntityName : name;
 
 		// ECS
-		Entity* entity = new Entity(m_Registry.create(), this);
-		entity->AddComponent<TransformComponent>();
-		auto& tag = entity->AddComponent<TagComponent>();
+		Entity entity = Entity(m_Registry.create(), this);
+		entity.AddComponent<TransformComponent>();
+		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
 
 		// NoECS
-		entity->SetName(entityName);
+		entity.SetName(entityName);
 		AddEntity(entity);
 
 		Log::GetLogger()->debug("CreateEntity name = '{0}'", name);
@@ -68,7 +68,7 @@ namespace Hazel {
 		// Update all entities
 		for (auto entity : m_Entities)
 		{
-			auto mesh = entity->GetMesh();
+			auto mesh = entity.GetMesh();
 			if (mesh) {
 				mesh->OnUpdate(ts, false);
 			}
@@ -168,9 +168,9 @@ namespace Hazel {
 		}
 
 		// No ECS
-		for (Entity* entity : m_Entities)
+		for (Entity entity : m_Entities)
 		{
-			delete entity;
+			// delete entity;
 		}
 	}
 
