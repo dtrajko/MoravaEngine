@@ -37,9 +37,6 @@ namespace Hazel {
 		HazelScene();
 		~HazelScene();
 
-		Entity* CreateEntity(const std::string& name);
-		void DestroyEntity(Entity entity);
-
 		void OnUpdate(float ts);
 		void OnViewportResize(uint32_t width, uint32_t height);
 
@@ -63,6 +60,15 @@ namespace Hazel {
 
 		inline void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
 		float& GetSkyboxLOD() { return m_SkyboxLOD; }
+
+		Entity* CreateEntity(const std::string& name);
+		void DestroyEntity(Entity entity);
+
+		template<typename T>
+		auto GetAllEntitiesWith()
+		{
+			return m_Registry.view<T>();
+		}
 
 		// Temporary/experimental
 		virtual void OnEntitySelected(Entity* entity);

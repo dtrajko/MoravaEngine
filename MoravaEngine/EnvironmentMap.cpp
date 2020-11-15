@@ -6,6 +6,7 @@
 #include "Hazel/Renderer/Buffer.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/Renderer2D.h"
+#include "Hazel/Scene/Components.h"
 
 #include "ImGuiWrapper.h"
 #include "ImGuizmo.h"
@@ -779,6 +780,17 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
             auto [origin, direction] = CastRay(mouseX, mouseY);
 
             m_SelectedSubmeshes.clear();
+
+            auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+            for (auto e : meshEntities)
+            {
+                Hazel::Entity entity = { e, m_SceneRenderer->s_Data.ActiveScene };
+                auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+                auto& submeshes = mesh->GetSubmeshes();
+
+                // TODO
+            }
+
             auto mesh = m_MeshEntity->GetMesh();
             auto& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
             float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay

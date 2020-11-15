@@ -4,6 +4,7 @@
 
 #include "SceneCamera.h"
 #include "ScriptableEntity.h"
+#include "../Renderer/HazelMesh.h"
 
 
 namespace Hazel
@@ -44,6 +45,18 @@ namespace Hazel
 				rotation *
 				glm::scale(glm::mat4(1.0f), Scale);
 		}
+	};
+
+	struct MeshComponent
+	{
+		Ref<HazelMesh> Mesh;
+
+		MeshComponent() = default;
+		MeshComponent(const MeshComponent& other) = default;
+		MeshComponent(const Ref<HazelMesh>& mesh)
+			: Mesh(mesh) {}
+
+		operator Ref<HazelMesh>() { return Mesh; }
 	};
 
 	struct SpriteRendererComponent

@@ -21,5 +21,5 @@ void main()
 	float resolution = u_Res;
 
 	float x = grid(v_TexCoord * scale, resolution);
-	color = vec4(vec3(0.2), 0.5) * (1.0 - x);
+	color = vec4(vec3(0.4), 0.5) * (1.0 - x);
 }
