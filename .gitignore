@@ -362,3 +362,5 @@ vendor/cross-platform/glfw/*.*
 
 MoravaEngine/Models/Bistro_v5_1/
 MoravaEngine/Models/Zombie_Boss/
+MoravaEngine/Models/Chest/
+MoravaEngine/Models/FireHydrant/
