@@ -27,7 +27,6 @@ public:
 
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
-	void UpdateImGuizmo(Window* mainWindow);
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
@@ -47,7 +46,6 @@ private:
 
 	void SetupRenderFramebuffer();
 	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
-	void CheckIntersection(Window* mainWindow);
 	void RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix);
 
 	bool OnKeyPressed(KeyPressedEvent& e);
@@ -145,6 +143,4 @@ private:
 	Grid* m_Grid;
 	Pivot* m_PivotScene;
 
-	// Hazelnut/EditorLayer
-	float m_SnapValue = 0.5f;
 };

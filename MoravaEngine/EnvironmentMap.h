@@ -31,6 +31,7 @@ public:
 	~EnvironmentMap();
 
 	void Update(Scene* scene, float timestep);
+	void UpdateImGuizmo(Window* mainWindow);
 	Hazel::Entity CreateEntity(const std::string& name);
 	Hazel::Entity LoadEntity(std::string fullPath);
 	void LoadEnvMapMaterials(Mesh* mesh);
@@ -108,14 +109,15 @@ private:
 
 	float m_EnvMapRotation = 0.0f;
 
-	/** BEGIN properties EditorLayer **/
+	/** BEGIN properties Hazelnut/EditorLayer **/
 	// Editor resources
 	Hazel::HazelTexture2D* m_CheckerboardTexture;
 
 	glm::vec2 m_ViewportBounds[2];
 	int m_GizmoType = -1; // -1 = no gizmo
 	Hazel::Entity m_MeshEntity;
-	/** END properties EditorLayer **/
+	float m_SnapValue = 0.5f;
+	/** END properties Hazelnut/EditorLayer **/
 
 	// Materials
 	float m_MaterialSpecular = 0.0f;

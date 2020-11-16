@@ -18,6 +18,7 @@
 #include "Util.h"
 #include "Input.h"
 #include "ResourceManager.h"
+#include "Math.h"
 
 
 EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
@@ -50,6 +51,9 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     m_DisplayHazelGrid = true;
 
     m_DisplayBoundingBoxes = false;
+
+    Scene::s_ImGuizmoTransform = &m_MeshEntity.Transform();
+    Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 }
 
 void EnvironmentMap::Init()
@@ -381,6 +385,58 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
     {
         ((Hazel::HazelMesh*)dc.Mesh)->OnUpdate(timestep, false);
     }
+
+    Scene::s_ImGuizmoTransform = m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
+}
+
+void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
+{
+    CameraController* cameraController = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController();
+
+    // BEGIN ImGuizmo
+
+    // ImGizmo switching modes
+    if (Input::IsKeyPressed(Key::D1))
+        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+    if (Input::IsKeyPressed(Key::D2))
+        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
+
+    if (Input::IsKeyPressed(Key::D3))
+        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
+
+    if (Input::IsKeyPressed(Key::D4))
+        Scene::s_ImGuizmoType = -1;
+
+    // ImGuizmo
+    if (Scene::s_ImGuizmoType != -1)
+    {
+        float rw = (float)ImGui::GetWindowWidth();
+        float rh = (float)ImGui::GetWindowHeight();
+        ImGuizmo::SetOrthographic(false);
+        ImGuizmo::SetDrawlist();
+        ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
+
+        bool snap = Input::IsKeyPressed(Key::LeftControl);
+
+        glm::mat4 transformBase = cameraController->CalculateViewMatrix();
+        //  if (m_EnvironmentMap->m_RelativeTransform) {
+        //      transformBase *= *m_EnvironmentMap->m_RelativeTransform;
+        //  }
+
+        if (Scene::s_ImGuizmoTransform)
+        {
+            ImGuizmo::Manipulate(
+                glm::value_ptr(transformBase),
+                glm::value_ptr(RendererBasic::GetProjectionMatrix()),
+                (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+                ImGuizmo::LOCAL,
+                glm::value_ptr(*Scene::s_ImGuizmoTransform),
+                nullptr,
+                snap ? &m_SnapValue : nullptr);
+        }
+    }
+    // END ImGuizmo
 }
 
 void EnvironmentMap::SubmitEntity(Hazel::Entity entity)
@@ -433,6 +489,28 @@ void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool
 void EnvironmentMap::OnImGuiRender()
 {
     ((Hazel::HazelMesh*)m_MeshEntity.GetMesh())->OnImGuiRender();
+
+    ImGui::Begin("Transform");
+    {
+        if (Scene::s_ImGuizmoTransform)
+        {
+            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*Scene::s_ImGuizmoTransform);
+            glm::vec3 RotationDegrees = glm::degrees(glm::eulerAngles(Rotation));
+
+            bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", Location, 0.0f, 100.0f);
+            bool isRotationChanged = ImGuiWrapper::DrawVec3Control("Rotation", RotationDegrees, 0.0f, 100.0f);
+            bool isScaleChanged = ImGuiWrapper::DrawVec3Control("Scale", Scale, 1.0f, 100.0f);
+
+            if (isTranslationChanged || isRotationChanged || isScaleChanged) {
+                ImGuizmo::RecomposeMatrixFromComponents(
+                    glm::value_ptr(Location),
+                    glm::value_ptr(RotationDegrees),
+                    glm::value_ptr(Scale),
+                    glm::value_ptr(*Scene::s_ImGuizmoTransform));
+            }
+        }
+    }
+    ImGui::End();
 
     ImGui::Begin("EnvMap Materials");
     {

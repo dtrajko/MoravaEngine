@@ -134,9 +134,6 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_Grid = new Grid(20);
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 
-    Scene::s_ImGuizmoTransform = &m_EnvironmentMap->GetMeshEntity().Transform();
-    Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-
     Hazel::RendererAPI::Init();
 }
 
@@ -253,9 +250,6 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
         entity.second.AABB.Update(entity.second.Transform.Translation, entity.second.Transform.Rotation, entity.second.Transform.Scale);
     }
 
-    CheckIntersection(mainWindow);
-
-    Scene::s_ImGuizmoTransform = m_EnvironmentMap->m_CurrentlySelectedTransform;
     m_EnvironmentMap->GetShaderPBR_Anim()->Bind();
     m_EnvironmentMap->GetShaderPBR_Anim()->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
     m_EnvironmentMap->GetShaderPBR_Anim()->setVec3("u_CameraPosition", m_Camera->GetPosition());
@@ -300,14 +294,6 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 
         m_HDRI_Edit_Prev = m_HDRI_Edit;
     }
-}
-
-void SceneHazelEnvMap::CheckIntersection(Window* mainWindow)
-{
-    //  if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft))
-    //  {
-    //      Scene::s_ImGuizmoTransform = m_EnvironmentMap->m_CurrentlySelectedTransform;
-    //  }
 }
 
 void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
@@ -364,28 +350,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     colors[ImGuiCol_DragDropTarget] = ImVec4(1.0f, 1.0f, 0.0f, 0.9f);
     colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.6f, 0.6f, 1.0f);
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
-
-    ImGui::Begin("Transform");
-    {
-        if (Scene::s_ImGuizmoTransform)
-        {
-            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*Scene::s_ImGuizmoTransform);
-            glm::vec3 RotationDegrees = glm::degrees(glm::eulerAngles(Rotation));
-
-            bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", Location,        0.0f, 100.0f);
-            bool isRotationChanged    = ImGuiWrapper::DrawVec3Control("Rotation",    RotationDegrees, 0.0f, 100.0f);
-            bool isScaleChanged       = ImGuiWrapper::DrawVec3Control("Scale",       Scale,           1.0f, 100.0f);
-
-            if (isTranslationChanged || isRotationChanged || isScaleChanged) {
-                ImGuizmo::RecomposeMatrixFromComponents(
-                    glm::value_ptr(Location),
-                    glm::value_ptr(RotationDegrees),
-                    glm::value_ptr(Scale),
-                    glm::value_ptr(*Scene::s_ImGuizmoTransform));
-            }
-        }
-    }
-    ImGui::End();
 
     ImGui::Begin("Camera");
     {
@@ -632,7 +596,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     {
         ImGui::Begin("ImGuizmo");
         {
-            UpdateImGuizmo(mainWindow);
+            m_EnvironmentMap->UpdateImGuizmo(mainWindow);
         }
         ImGui::End();
     }
@@ -664,7 +628,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
             ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportMainSize.x, m_ViewportMainSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
         
-            UpdateImGuizmo(mainWindow);
+            m_EnvironmentMap->UpdateImGuizmo(mainWindow);
 
             // Calculate Viewport bounds (used in EnvironmentMap::CastRay)
             auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
@@ -713,54 +677,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
     // Mesh Hierarchy / Mesh Debug
     m_EnvironmentMap->OnImGuiRender();
-}
-
-void SceneHazelEnvMap::UpdateImGuizmo(Window* mainWindow)
-{
-    // BEGIN ImGuizmo
-
-    // ImGizmo switching modes
-    if (Input::IsKeyPressed(Key::D1))
-        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-
-    if (Input::IsKeyPressed(Key::D2))
-        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
-
-    if (Input::IsKeyPressed(Key::D3))
-        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
-
-    if (Input::IsKeyPressed(Key::D4))
-        Scene::s_ImGuizmoType = -1;
-
-    // ImGuizmo
-    if (Scene::s_ImGuizmoType != -1)
-    {
-        float rw = (float)ImGui::GetWindowWidth();
-        float rh = (float)ImGui::GetWindowHeight();
-        ImGuizmo::SetOrthographic(false);
-        ImGuizmo::SetDrawlist();
-        ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
-
-        bool snap = Input::IsKeyPressed(Key::LeftControl);
-
-        glm::mat4 transformBase = m_CameraController->CalculateViewMatrix();
-        //  if (m_EnvironmentMap->m_RelativeTransform) {
-        //      transformBase *= *m_EnvironmentMap->m_RelativeTransform;
-        //  }
-
-        if (Scene::s_ImGuizmoTransform)
-        {
-            ImGuizmo::Manipulate(
-                glm::value_ptr(transformBase),
-                glm::value_ptr(RendererBasic::GetProjectionMatrix()),
-                (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-                ImGuizmo::LOCAL,
-                glm::value_ptr(*Scene::s_ImGuizmoTransform),
-                nullptr,
-                snap ? &m_SnapValue : nullptr);
-        }
-    }
-    // END ImGuizmo
 }
 
 // Demonstrate using DockSpace() to create an explicit docking node within an existing window.
