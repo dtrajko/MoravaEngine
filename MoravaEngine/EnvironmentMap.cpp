@@ -409,8 +409,10 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         Scene::s_ImGuizmoType = -1;
 
     // ImGuizmo
-    if (Scene::s_ImGuizmoType != -1 && Scene::s_ImGuizmoTransform)
+    if (Scene::s_ImGuizmoType != -1 && m_SelectionContext.size())
     {
+        auto& selection = m_SelectionContext[0];
+
         float rw = (float)ImGui::GetWindowWidth();
         float rh = (float)ImGui::GetWindowHeight();
         ImGuizmo::SetOrthographic(false);
@@ -419,24 +421,35 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
 
         bool snap = Input::IsKeyPressed(Key::LeftControl);
 
-        glm::mat4 transformBase = cameraController->CalculateViewMatrix();
-        if (m_RelativeTransform)
+        auto& entityTransform = selection.Entity.Transform();
+        if (m_SelectionMode == SelectionMode::Entity)
         {
-            glm::mat4 relTransform = *m_RelativeTransform;
+            ImGuizmo::Manipulate(
+                glm::value_ptr(cameraController->CalculateViewMatrix()),
+                glm::value_ptr(RendererBasic::GetProjectionMatrix()),
+                (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+                ImGuizmo::LOCAL,
+                glm::value_ptr(entityTransform),
+                nullptr,
+                snap ? &m_SnapValue : nullptr);
+        }
+        else
+        {
+            glm::mat4 relTransform = entityTransform;
             relTransform[0] = glm::normalize(relTransform[0]);
             relTransform[1] = glm::normalize(relTransform[1]);
             relTransform[2] = glm::normalize(relTransform[2]);
-            transformBase *= relTransform;
-        }
+            glm::mat4 transformBase = cameraController->CalculateViewMatrix() * relTransform;
 
-        ImGuizmo::Manipulate(
-            glm::value_ptr(transformBase),
-            glm::value_ptr(RendererBasic::GetProjectionMatrix()),
-            (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-            ImGuizmo::LOCAL,
-            glm::value_ptr(*Scene::s_ImGuizmoTransform),
-            nullptr,
-            snap ? &m_SnapValue : nullptr);
+            ImGuizmo::Manipulate(
+                glm::value_ptr(transformBase),
+                glm::value_ptr(RendererBasic::GetProjectionMatrix()),
+                (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+                ImGuizmo::LOCAL,
+                glm::value_ptr(selection.Mesh->Transform),
+                nullptr,
+                snap ? &m_SnapValue : nullptr);
+        }
     }
     // END ImGuizmo
 }
@@ -751,6 +764,16 @@ void EnvironmentMap::OnImGuiRender()
         }
     }
 
+    {
+        ImGui::Separator();
+
+        char* label = m_SelectionMode == SelectionMode::Entity ? "Entity" : "Mesh";
+        if (ImGui::Button(label))
+        {
+            m_SelectionMode = m_SelectionMode == SelectionMode::Entity ? SelectionMode::SubMesh : SelectionMode::Entity;
+        }
+    }
+
     ImGui::End();
 
     ImGui::ShowMetricsWindow();
@@ -862,7 +885,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
         {
             auto [origin, direction] = CastRay(mouseX, mouseY);
 
-            m_SelectedSubmeshes.clear();
+            m_SelectionContext.clear();
 
             auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
             for (auto e : meshEntities)
@@ -891,28 +914,18 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                             {
                                 if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
                                 {
-                                    m_SelectedSubmeshes.push_back({ entity, &submesh, t });
+                                    m_SelectionContext.push_back({ entity, &submesh, t });
                                     break;
                                 }
                             }
                         }
                         else {
-                            m_SelectedSubmeshes.push_back({ entity, &submesh, t });
+                            m_SelectionContext.push_back({ entity, &submesh, t });
                         }
                     }
                 }
-                std::sort(m_SelectedSubmeshes.begin(), m_SelectedSubmeshes.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
-
-                // TODO: Handle mesh being deleted, etc
-                if (m_SelectedSubmeshes.size()) {
-                    m_CurrentlySelectedTransform = &m_SelectedSubmeshes[0].Mesh->Transform;
-                    m_RelativeTransform = new glm::mat4(1.0f); // &entity.Transform();
-                }
-                else {
-                    m_CurrentlySelectedTransform = &m_MeshEntity.Transform();
-                    m_RelativeTransform = nullptr;
-                }
             }
+            std::sort(m_SelectionContext.begin(), m_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
         }
     }
     return false;
@@ -995,10 +1008,11 @@ void EnvironmentMap::GeometryPassTemporary()
             Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
         }
         
-        if (m_SelectedSubmeshes.size()) {
-            auto& selection = m_SelectedSubmeshes[0];
+        if (m_SelectionContext.size()) {
+            auto& selection = m_SelectionContext[0];
 
-            Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, m_MeshEntity.Transform() * selection.Mesh->Transform, glm::vec4(1.0f));
+            glm::vec4 color = m_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
+            Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, m_MeshEntity.Transform() * selection.Mesh->Transform, color);
         }
     }
     Hazel::Renderer2D::EndScene();

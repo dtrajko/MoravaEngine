@@ -139,7 +139,15 @@ private:
 		Hazel::Submesh* Mesh;
 		float Distance;
 	};
-	std::vector<SelectedSubmesh> m_SelectedSubmeshes;
+	std::vector<SelectedSubmesh> m_SelectionContext;
+
+	enum class SelectionMode
+	{
+		None = 0,
+		Entity = 1,
+		SubMesh = 2,
+	};
+	SelectionMode m_SelectionMode = SelectionMode::Entity;
 
 	Hazel::SceneRenderer* m_SceneRenderer;
 
