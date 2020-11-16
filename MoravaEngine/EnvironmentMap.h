@@ -89,6 +89,7 @@ private:
 
 public:
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
+	glm::mat4* m_RelativeTransform = nullptr;
 	bool m_AllowViewportCameraEvents = true; // EditorLayer (Raypicking)
 
 private:

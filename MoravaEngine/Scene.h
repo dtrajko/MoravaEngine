@@ -120,8 +120,8 @@ private:
 	virtual void SetSkybox();
 
 public:
-	static glm::mat4 s_ImGuizmoTransform;
-	static bool s_ImGuizmoEnabled;
+	static glm::mat4* s_ImGuizmoTransform;
+	static int s_ImGuizmoType;
 
 protected:
 	static SceneSettings sceneSettings;

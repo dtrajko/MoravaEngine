@@ -139,10 +139,6 @@ private:
 	float m_CurrentTimestamp;
 	EventCooldown m_ResizeViewport;
 
-	int m_ImGuizmoType = -1; // -1 = no gizmo
-
-	glm::mat4* m_Transform_ImGuizmo;
-
 	Hazel::SceneHierarchyPanel* m_SceneHierarchyPanel;
 
 	bool m_DisplayLineElements;

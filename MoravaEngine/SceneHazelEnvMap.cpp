@@ -134,8 +134,8 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_Grid = new Grid(20);
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 
-    m_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-    m_Transform_ImGuizmo = &m_EnvironmentMap->GetMeshEntity().Transform();
+    Scene::s_ImGuizmoTransform = &m_EnvironmentMap->GetMeshEntity().Transform();
+    Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
     Hazel::RendererAPI::Init();
 }
@@ -255,7 +255,7 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 
     CheckIntersection(mainWindow);
 
-    m_Transform_ImGuizmo = m_EnvironmentMap->m_CurrentlySelectedTransform;
+    Scene::s_ImGuizmoTransform = m_EnvironmentMap->m_CurrentlySelectedTransform;
     m_EnvironmentMap->GetShaderPBR_Anim()->Bind();
     m_EnvironmentMap->GetShaderPBR_Anim()->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
     m_EnvironmentMap->GetShaderPBR_Anim()->setVec3("u_CameraPosition", m_Camera->GetPosition());
@@ -304,10 +304,10 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 
 void SceneHazelEnvMap::CheckIntersection(Window* mainWindow)
 {
-    if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft))
-    {
-        m_Transform_ImGuizmo = m_EnvironmentMap->m_CurrentlySelectedTransform;
-    }
+    //  if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft))
+    //  {
+    //      Scene::s_ImGuizmoTransform = m_EnvironmentMap->m_CurrentlySelectedTransform;
+    //  }
 }
 
 void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
@@ -367,9 +367,9 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Transform");
     {
-        if (m_Transform_ImGuizmo != nullptr)
+        if (Scene::s_ImGuizmoTransform)
         {
-            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*Scene::s_ImGuizmoTransform);
             glm::vec3 RotationDegrees = glm::degrees(glm::eulerAngles(Rotation));
 
             bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", Location,        0.0f, 100.0f);
@@ -381,7 +381,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     glm::value_ptr(Location),
                     glm::value_ptr(RotationDegrees),
                     glm::value_ptr(Scale),
-                    glm::value_ptr(*m_Transform_ImGuizmo));
+                    glm::value_ptr(*Scene::s_ImGuizmoTransform));
             }
         }
     }
@@ -721,19 +721,19 @@ void SceneHazelEnvMap::UpdateImGuizmo(Window* mainWindow)
 
     // ImGizmo switching modes
     if (Input::IsKeyPressed(Key::D1))
-        m_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
     if (Input::IsKeyPressed(Key::D2))
-        m_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
+        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
 
     if (Input::IsKeyPressed(Key::D3))
-        m_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
+        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
 
     if (Input::IsKeyPressed(Key::D4))
-        m_ImGuizmoType = -1;
+        Scene::s_ImGuizmoType = -1;
 
     // ImGuizmo
-    if (m_ImGuizmoType != -1)
+    if (Scene::s_ImGuizmoType != -1)
     {
         float rw = (float)ImGui::GetWindowWidth();
         float rh = (float)ImGui::GetWindowHeight();
@@ -742,13 +742,20 @@ void SceneHazelEnvMap::UpdateImGuizmo(Window* mainWindow)
         ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
 
         bool snap = Input::IsKeyPressed(Key::LeftControl);
-        if (m_Transform_ImGuizmo != nullptr) {
+
+        glm::mat4 transformBase = m_CameraController->CalculateViewMatrix();
+        //  if (m_EnvironmentMap->m_RelativeTransform) {
+        //      transformBase *= *m_EnvironmentMap->m_RelativeTransform;
+        //  }
+
+        if (Scene::s_ImGuizmoTransform)
+        {
             ImGuizmo::Manipulate(
-                glm::value_ptr(m_CameraController->CalculateViewMatrix()),
+                glm::value_ptr(transformBase),
                 glm::value_ptr(RendererBasic::GetProjectionMatrix()),
-                (ImGuizmo::OPERATION)m_ImGuizmoType,
+                (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
                 ImGuizmo::LOCAL,
-                glm::value_ptr(*m_Transform_ImGuizmo),
+                glm::value_ptr(*Scene::s_ImGuizmoTransform),
                 nullptr,
                 snap ? &m_SnapValue : nullptr);
         }

@@ -10,8 +10,10 @@
 
 
 SceneSettings Scene::sceneSettings;
-glm::mat4 Scene::s_ImGuizmoTransform = glm::mat4(1.0f);
-bool Scene::s_ImGuizmoEnabled = false;
+
+// ImGuizmo
+glm::mat4* Scene::s_ImGuizmoTransform = nullptr;
+int Scene::s_ImGuizmoType = -1; // -1 = no gizmo
 
 
 Scene::Scene()

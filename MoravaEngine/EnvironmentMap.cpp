@@ -801,7 +801,6 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                     };
 
                     float t;
-                    // bool intersects = submesh.BoundingBox.Intersect(newRay, newDir, t);
                     bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
                     if (intersects)
                     {
@@ -827,14 +826,15 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 // TODO: Handle mesh being deleted, etc
                 if (m_SelectedSubmeshes.size()) {
                     m_CurrentlySelectedTransform = &m_SelectedSubmeshes[0].Mesh->Transform;
+                    m_RelativeTransform = &entity.Transform();
                 }
                 else {
                     m_CurrentlySelectedTransform = &m_MeshEntity.Transform();
+                    m_RelativeTransform = nullptr;
                 }
             }
         }
     }
-
     return false;
 }
 
