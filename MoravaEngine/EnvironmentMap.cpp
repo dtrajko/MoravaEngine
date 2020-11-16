@@ -409,7 +409,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         Scene::s_ImGuizmoType = -1;
 
     // ImGuizmo
-    if (Scene::s_ImGuizmoType != -1)
+    if (Scene::s_ImGuizmoType != -1 && Scene::s_ImGuizmoTransform)
     {
         float rw = (float)ImGui::GetWindowWidth();
         float rh = (float)ImGui::GetWindowHeight();
@@ -420,21 +420,23 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         bool snap = Input::IsKeyPressed(Key::LeftControl);
 
         glm::mat4 transformBase = cameraController->CalculateViewMatrix();
-        //  if (m_EnvironmentMap->m_RelativeTransform) {
-        //      transformBase *= *m_EnvironmentMap->m_RelativeTransform;
-        //  }
-
-        if (Scene::s_ImGuizmoTransform)
+        if (m_RelativeTransform)
         {
-            ImGuizmo::Manipulate(
-                glm::value_ptr(transformBase),
-                glm::value_ptr(RendererBasic::GetProjectionMatrix()),
-                (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-                ImGuizmo::LOCAL,
-                glm::value_ptr(*Scene::s_ImGuizmoTransform),
-                nullptr,
-                snap ? &m_SnapValue : nullptr);
+            glm::mat4 relTransform = *m_RelativeTransform;
+            relTransform[0] = glm::normalize(relTransform[0]);
+            relTransform[1] = glm::normalize(relTransform[1]);
+            relTransform[2] = glm::normalize(relTransform[2]);
+            transformBase *= relTransform;
         }
+
+        ImGuizmo::Manipulate(
+            glm::value_ptr(transformBase),
+            glm::value_ptr(RendererBasic::GetProjectionMatrix()),
+            (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+            ImGuizmo::LOCAL,
+            glm::value_ptr(*Scene::s_ImGuizmoTransform),
+            nullptr,
+            snap ? &m_SnapValue : nullptr);
     }
     // END ImGuizmo
 }
@@ -904,7 +906,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 // TODO: Handle mesh being deleted, etc
                 if (m_SelectedSubmeshes.size()) {
                     m_CurrentlySelectedTransform = &m_SelectedSubmeshes[0].Mesh->Transform;
-                    m_RelativeTransform = &entity.Transform();
+                    m_RelativeTransform = new glm::mat4(1.0f); // &entity.Transform();
                 }
                 else {
                     m_CurrentlySelectedTransform = &m_MeshEntity.Transform();
