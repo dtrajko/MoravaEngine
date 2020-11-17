@@ -578,7 +578,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     if (fullPath != "")
                     {
                         Hazel::Entity entity = m_EnvironmentMap->LoadEntity(fullPath);
-                        meshComponent.Mesh = Ref<Hazel::HazelMesh>((Hazel::HazelMesh*)entity.GetMesh());
+                        // meshComponent.Mesh = Ref<Hazel::HazelMesh>((Hazel::HazelMesh*)entity.GetMesh());
                     }
                 }
 

@@ -421,6 +421,19 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
 
         bool snap = Input::IsKeyPressed(Key::LeftControl);
 
+        if (Scene::s_ImGuizmoTransform)
+        {
+            ImGuizmo::Manipulate(
+                glm::value_ptr(cameraController->CalculateViewMatrix()),
+                glm::value_ptr(RendererBasic::GetProjectionMatrix()),
+                (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+                ImGuizmo::LOCAL,
+                glm::value_ptr(*Scene::s_ImGuizmoTransform),
+                nullptr,
+                snap ? &m_SnapValue : nullptr);
+        }
+
+        /****
         auto& entityTransform = selection.Entity.Transform();
         if (m_SelectionMode == SelectionMode::Entity)
         {
@@ -439,7 +452,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
             relTransform[0] = glm::normalize(relTransform[0]);
             relTransform[1] = glm::normalize(relTransform[1]);
             relTransform[2] = glm::normalize(relTransform[2]);
-            glm::mat4 transformBase = cameraController->CalculateViewMatrix() * relTransform;
+            glm::mat4 transformBase = cameraController->CalculateViewMatrix() * entityTransform;
 
             ImGuizmo::Manipulate(
                 glm::value_ptr(transformBase),
@@ -450,6 +463,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
                 nullptr,
                 snap ? &m_SnapValue : nullptr);
         }
+        ****/
     }
     // END ImGuizmo
 }
@@ -780,8 +794,6 @@ void EnvironmentMap::OnImGuiRender()
 
     ImVec2 workPos = ImGui::GetMainViewport()->GetWorkPos();
     m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
-
-    // Log::GetLogger()->debug("GetMainViewport GetWorkPos [ {0}, {1} ]", m_WorkPosImGui.x, m_WorkPosImGui.y);
 }
 
 void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial)
@@ -926,6 +938,14 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 }
             }
             std::sort(m_SelectionContext.begin(), m_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
+
+            // TODO: Handle mesh being deleted, etc
+            if (m_SelectionContext.size()) {
+                m_CurrentlySelectedTransform = &m_SelectionContext[0].Mesh->Transform;
+            }
+            else {
+                m_CurrentlySelectedTransform = &m_MeshEntity.Transform();
+            }
         }
     }
     return false;
