@@ -25,6 +25,8 @@
 
 class EnvironmentMap
 {
+	struct SelectedSubmesh;
+
 public:
 	EnvironmentMap() = default;
 	EnvironmentMap(const std::string& filepath, Scene* scene);
@@ -85,6 +87,7 @@ public:
 private:
 	bool OnKeyPressedEvent(KeyPressedEvent& e); // EditorLayer::OnKeyPressedEvent()
 	bool OnMouseButtonPressed(MouseButtonPressedEvent& e); // EditorLayer::OnMouseButtonPressedEvent()
+	void OnSelected(const SelectedSubmesh& selectionContext);
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();
 

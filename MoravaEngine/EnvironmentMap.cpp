@@ -887,6 +887,10 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
             {
                 Hazel::Entity entity = { e, m_SceneRenderer->s_Data.ActiveScene };
                 auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+                if (!mesh) {
+                    continue;
+                }
+
                 auto& submeshes = mesh->GetSubmeshes();
                 float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
                 // for (Hazel::Submesh& submesh : submeshes)
@@ -925,6 +929,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
             // TODO: Handle mesh being deleted, etc
             if (m_SelectionContext.size()) {
                 m_CurrentlySelectedTransform = &m_SelectionContext[0].Mesh->Transform;
+                OnSelected(m_SelectionContext[0]);
             }
             else {
                 m_CurrentlySelectedTransform = &m_MeshEntity.Transform();
@@ -932,6 +937,12 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
         }
     }
     return false;
+}
+
+void EnvironmentMap::OnSelected(const SelectedSubmesh& selectionContext)
+{
+    // TODO: move to SceneHazelEnvMap
+    // m_SceneHierarchyPanel->SetSelected(selectionContext.Entity);
 }
 
 std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
