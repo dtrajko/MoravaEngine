@@ -421,20 +421,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
 
         bool snap = Input::IsKeyPressed(Key::LeftControl);
 
-        if (Scene::s_ImGuizmoTransform)
-        {
-            ImGuizmo::Manipulate(
-                glm::value_ptr(cameraController->CalculateViewMatrix()),
-                glm::value_ptr(RendererBasic::GetProjectionMatrix()),
-                (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-                ImGuizmo::LOCAL,
-                glm::value_ptr(*Scene::s_ImGuizmoTransform),
-                nullptr,
-                snap ? &m_SnapValue : nullptr);
-        }
-
-        /****
-        auto& entityTransform = selection.Entity.Transform();
+        auto& entityTransform = *Scene::s_ImGuizmoTransform; // selection.Entity.Transform();
         if (m_SelectionMode == SelectionMode::Entity)
         {
             ImGuizmo::Manipulate(
@@ -448,22 +435,18 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         }
         else
         {
-            glm::mat4 relTransform = entityTransform;
-            relTransform[0] = glm::normalize(relTransform[0]);
-            relTransform[1] = glm::normalize(relTransform[1]);
-            relTransform[2] = glm::normalize(relTransform[2]);
-            glm::mat4 transformBase = cameraController->CalculateViewMatrix() * entityTransform;
-
+            glm::mat4 transformBase = entityTransform * selection.Mesh->Transform;
             ImGuizmo::Manipulate(
-                glm::value_ptr(transformBase),
+                glm::value_ptr(cameraController->CalculateViewMatrix()),
                 glm::value_ptr(RendererBasic::GetProjectionMatrix()),
                 (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
                 ImGuizmo::LOCAL,
-                glm::value_ptr(selection.Mesh->Transform),
+                glm::value_ptr(transformBase),
                 nullptr,
                 snap ? &m_SnapValue : nullptr);
+
+            selection.Mesh->Transform = glm::inverse(entityTransform) * transformBase;
         }
-        ****/
     }
     // END ImGuizmo
 }
