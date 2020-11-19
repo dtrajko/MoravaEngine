@@ -77,6 +77,9 @@ namespace Hazel
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
+
+		operator SceneCamera& () { return Camera; }
+		operator const SceneCamera& () const { return Camera; }
 	};
 
 	struct NativeScriptComponent
@@ -93,4 +96,11 @@ namespace Hazel
 			DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
 		}
 	};
+
+	struct ScriptComponent
+	{
+		// TODO: C# script
+		std::string ModuleName;
+	};
+
 }

@@ -211,4 +211,9 @@ namespace Hazel {
 	{
 	}
 
+	template<>
+	void HazelScene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component)
+	{
+	}
+
 }

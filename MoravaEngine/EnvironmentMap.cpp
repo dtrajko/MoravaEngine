@@ -175,7 +175,13 @@ void EnvironmentMap::SetupContextData()
         // mesh = new Hazel::HazelMesh("Models/M1911/M1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);
         // mesh = new Hazel::HazelMesh("Models/Cerberus/Cerberus_LP.FBX", m_ShaderHazelPBR_Static, nullptr, false);
 
-        LoadEntity("Models/Cerberus/Cerberus_LP.FBX");
+        LoadEntity("Models/Hazel/TestScene.fbx");
+
+        m_CameraEntity = CreateEntity("Camera");
+        // m_CameraEntity.AddComponent<Hazel::CameraComponent>((Hazel::SceneCamera*)m_SceneRenderer->s_Data.SceneData.SceneCamera);
+
+        auto mapGenerator = CreateEntity("Map Generator");
+        mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
     }
     Log::GetLogger()->info("-- END Setup PBR Materials --");
 }
@@ -216,6 +222,7 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
     m_MeshEntity = CreateEntity(drawCommand.Name);
     m_MeshEntity.Transform() = glm::translate(glm::mat4(1.0f), { 0.0f, 0.0f, 0.0f }) * glm::scale(glm::mat4(1.0f), { 1.0f, 1.0f, 1.0f });
     m_MeshEntity.AddComponent<Hazel::MeshComponent>(Ref<Hazel::HazelMesh>(mesh));
+    m_MeshEntity.AddComponent<Hazel::ScriptComponent>("Example.Script");
     m_MeshEntity.SetMesh(drawCommand.Mesh);
 
     SubmitEntity(m_MeshEntity);

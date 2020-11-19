@@ -29,9 +29,9 @@
 
 SceneHazelEnvMap::SceneHazelEnvMap()
 {
-    sceneSettings.cameraPosition     = glm::vec3(0.0f, 10.0f, 30.0f);
-    sceneSettings.cameraStartYaw     = -90.0f;
-    sceneSettings.cameraStartPitch   = 0.0f;
+    sceneSettings.cameraPosition     = glm::vec3(20.0f, 10.0f, 0.0f);
+    sceneSettings.cameraStartYaw     = -180.0f;
+    sceneSettings.cameraStartPitch   = 20.0f;
     sceneSettings.cameraMoveSpeed    = 2.0f;
     sceneSettings.waterHeight        = 0.0f;
     sceneSettings.waterWaveSpeed     = 0.05f;
@@ -122,7 +122,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupFramebuffers();
     SetupRenderFramebuffer();
 
-    m_EnvironmentMap = new EnvironmentMap("Textures/HDR/peppermint_powerplant_1k.hdr", this);
+    m_EnvironmentMap = new EnvironmentMap("Textures/HDR/birchwood_4k.hdr", this);
     m_EnvironmentMap->SetSkyboxLOD(0.0f);
 
     SetupMeshes();

@@ -116,9 +116,11 @@ private:
 	// Editor resources
 	Hazel::HazelTexture2D* m_CheckerboardTexture;
 
+	Hazel::Entity m_CameraEntity;
+	Hazel::Entity m_MeshEntity;
+
 	glm::vec2 m_ViewportBounds[2];
 	int m_GizmoType = -1; // -1 = no gizmo
-	Hazel::Entity m_MeshEntity;
 	float m_SnapValue = 0.5f;
 	/** END properties Hazelnut/EditorLayer **/
 

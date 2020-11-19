@@ -24,7 +24,6 @@ namespace Hazel {
 	{
 		glm::vec3 Direction;
 		glm::vec3 Radiance;
-
 		float Multiplier = 1.0f;
 	};
 

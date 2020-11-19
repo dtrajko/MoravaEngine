@@ -41,8 +41,9 @@ namespace Hazel {
         SetEnvironment(s_Data.SceneData.SceneEnvironment);
 
         // Set lights
-        s_Data.SceneData.ActiveLight.Direction = { 0.0f, 0.0f, -1.0f };
+        s_Data.SceneData.ActiveLight.Direction = { 0.0f, -1.0f, 0.0f };
         s_Data.SceneData.ActiveLight.Radiance = { 1.0f, 1.0f, 1.0f };
+        s_Data.SceneData.ActiveLight.Multiplier = 0.5f;
 
         // Grid
         s_Data.GridMaterial = new Material(m_ShaderGrid);
