@@ -178,6 +178,13 @@ void EnvironmentMap::SetupContextData()
         LoadEntity("Models/Hazel/TestScene.fbx");
 
         m_CameraEntity = CreateEntity("Camera");
+        m_SceneRenderer->s_Data.SceneData.SceneCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
+        auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
+        auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
+        m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize(
+            Application::Get()->GetWindow()->GetWidth(),
+            Application::Get()->GetWindow()->GetHeight()
+        );
         // m_CameraEntity.AddComponent<Hazel::CameraComponent>((Hazel::SceneCamera*)m_SceneRenderer->s_Data.SceneData.SceneCamera);
 
         auto mapGenerator = CreateEntity("Map Generator");
@@ -374,7 +381,7 @@ EnvironmentMap::~EnvironmentMap()
 Hazel::Entity EnvironmentMap::CreateEntity(const std::string& name)
 {
     // Both NoECS and ECS
-    Hazel::Entity entity = ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->CreateEntity(name);
+    Hazel::Entity entity = ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->CreateEntity(name, (const Hazel::HazelScene&)m_SceneRenderer->s_Data.ActiveScene);
 
     return entity;
 }
@@ -394,6 +401,10 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
     }
 
     Scene::s_ImGuizmoTransform = m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
+
+    m_ViewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
+    m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
+    m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 }
 
 void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
@@ -957,10 +968,10 @@ std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
     auto [mx, my] = ImGui::GetMousePos(); // Input::GetMousePosition();
     mx -= m_ViewportBounds[0].x;
     my -= m_ViewportBounds[0].y;
-    auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
-    auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
+    m_ViewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
+    m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
-    return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
+    return { (mx / m_ViewportWidth) * 2.0f - 1.0f, ((my / m_ViewportHeight) * 2.0f - 1.0f) * -1.0f };
 }
 
 std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)

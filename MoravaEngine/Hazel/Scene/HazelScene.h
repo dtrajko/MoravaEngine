@@ -61,6 +61,7 @@ namespace Hazel {
 		float& GetSkyboxLOD() { return m_SkyboxLOD; }
 
 		Entity CreateEntity(const std::string& name);
+		Entity CreateEntity(const std::string& name, const HazelScene& scene);
 		void DestroyEntity(Entity entity);
 
 		template<typename T>
@@ -77,9 +78,10 @@ namespace Hazel {
 		entt::registry m_Registry;
 		std::vector<Entity> m_Entities;
 
-	private:
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
+
+	private:
 
 		HazelCamera m_Camera;
 

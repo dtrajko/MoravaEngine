@@ -77,6 +77,8 @@ namespace Hazel
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
+		CameraComponent(Hazel::SceneCamera* camera)
+			: Camera(*camera) {};
 
 		operator SceneCamera& () { return Camera; }
 		operator const SceneCamera& () const { return Camera; }

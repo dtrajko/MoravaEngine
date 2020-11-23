@@ -77,10 +77,10 @@ namespace Hazel {
 	public:
 		Mesh* m_Mesh;
 		glm::mat4 m_Transform;
+		HazelScene* m_Scene = nullptr;
 
 	private:
 		entt::entity m_EntityHandle;
-		HazelScene* m_Scene = nullptr;
 
 		Material* m_Material;
 

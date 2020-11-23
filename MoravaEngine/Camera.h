@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Hazel/Renderer/HazelCamera.h"
+#include "Hazel/Scene/SceneCamera.h"
 
 #include "glm/glm.hpp"
 
 
-class Camera : public Hazel::HazelCamera
+class Camera : public Hazel::SceneCamera
 {
 
 public:

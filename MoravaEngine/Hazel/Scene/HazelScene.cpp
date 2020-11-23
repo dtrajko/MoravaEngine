@@ -38,6 +38,14 @@ namespace Hazel {
 	{
 	}
 
+	Entity HazelScene::CreateEntity(const std::string& name, const HazelScene& scene)
+	{
+		Entity entity = CreateEntity(name);
+		entity.m_Scene = this;
+
+		return entity;
+	}
+
 	Entity HazelScene::CreateEntity(const std::string& name)
 	{
 		const std::string& entityName = name.empty() ? DefaultEntityName : name;
