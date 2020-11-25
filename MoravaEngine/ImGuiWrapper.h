@@ -1,5 +1,7 @@
 #pragma once
 
+#define _CRT_NONSTDC_NO_DEPRECATE
+
 // ImGui includes
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -35,7 +37,17 @@ public:
 	static void Property(const std::string& name, glm::vec4& value, PropertyFlag flags);
 	static void Property(const std::string& name, glm::vec4& value, float min = -1.0f, float max = 1.0f, PropertyFlag flags = PropertyFlag::None);
 
+	static void Property(const char* label, const char* value);
+	static bool Property(const char* label, int& value);
+	static bool Property(const char* label, float& value, float delta = 0.1f);
+	static bool Property(const char* label, glm::vec2& value, float delta = 0.1f);
+
+	static void PushID();
+	static void PopID();
+	static void BeginPropertyGrid();
+
 private:
 	static Window* m_Window;
 	static float m_Time;
+
 };

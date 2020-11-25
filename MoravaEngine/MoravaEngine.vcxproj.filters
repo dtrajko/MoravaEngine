@@ -482,9 +482,6 @@
     <ClCompile Include="Hazel\Scene\HazelScene.cpp">
       <Filter>Hazel\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Hazel\Panels\SceneHierarchyPanel.cpp">
-      <Filter>Hazel\Panels</Filter>
-    </ClCompile>
     <ClCompile Include="Hazel\Renderer\RenderCommandQueue.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
@@ -571,6 +568,12 @@
     </ClCompile>
     <ClCompile Include="Hazel\Renderer\HazelMesh.cpp">
       <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Script\ScriptEngine.cpp">
+      <Filter>Hazel\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Panels\SceneHierarchyPanel.cpp">
+      <Filter>Hazel\Editor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1132,9 +1135,6 @@
     <ClInclude Include="Hazel\Scene\HazelScene.h">
       <Filter>Hazel\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Hazel\Panels\SceneHierarchyPanel.h">
-      <Filter>Hazel\Panels</Filter>
-    </ClInclude>
     <ClInclude Include="Hazel\Renderer\RenderCommandQueue.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
@@ -1234,6 +1234,12 @@
     <ClInclude Include="Hazel\Core\Math\Ray.h">
       <Filter>Hazel\Core\Math</Filter>
     </ClInclude>
+    <ClInclude Include="Hazel\Script\ScriptEngine.h">
+      <Filter>Hazel\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Panels\SceneHierarchyPanel.h">
+      <Filter>Hazel\Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1323,9 +1329,6 @@
     <Filter Include="Hazel\Scene">
       <UniqueIdentifier>{e165e3e5-7964-4fb5-b138-f5088f5674d9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Hazel\Panels">
-      <UniqueIdentifier>{24fdaa4e-10bf-4bdc-900d-881f430035e5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Hazel\Platform">
       <UniqueIdentifier>{dbda6cda-1a09-4cea-93be-39f556584c6a}</UniqueIdentifier>
     </Filter>
@@ -1340,6 +1343,12 @@
     </Filter>
     <Filter Include="Hazel\Platform\Windows">
       <UniqueIdentifier>{ac34d5fa-e881-4163-b64f-264ba7d4025e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Script">
+      <UniqueIdentifier>{2a43787b-f64f-487a-acd0-d4aed4f5e77a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Editor">
+      <UniqueIdentifier>{9fbe7e4a-378d-4b7e-8ff7-5cd4e3f806de}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

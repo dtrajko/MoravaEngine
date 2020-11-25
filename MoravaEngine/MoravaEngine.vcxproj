@@ -230,6 +230,7 @@
     <ClCompile Include="Hazel\Scene\HazelScene.cpp" />
     <ClCompile Include="Hazel\Scene\SceneCamera.cpp" />
     <ClCompile Include="Hazel\Scene\SceneSerializer.cpp" />
+    <ClCompile Include="Hazel\Script\ScriptEngine.cpp" />
     <ClCompile Include="InsertionSort.cpp" />
     <ClCompile Include="LearnOpenGL\MeshSSAO.cpp" />
     <ClCompile Include="LearnOpenGL\ModelSSAO.cpp" />
@@ -443,6 +444,7 @@
     <ClInclude Include="Hazel\Scene\SceneCamera.h" />
     <ClInclude Include="Hazel\Scene\SceneSerializer.h" />
     <ClInclude Include="Hazel\Scene\ScriptableEntity.h" />
+    <ClInclude Include="Hazel\Script\ScriptEngine.h" />
     <ClInclude Include="Hazel\Utils\PlatformUtils.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="InsertionSort.h" />

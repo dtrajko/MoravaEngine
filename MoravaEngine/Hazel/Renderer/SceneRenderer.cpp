@@ -11,6 +11,7 @@
 #include "../../RendererBasic.h"
 #include "../../ResourceManager.h"
 #include "../../Log.h"
+#include "../../Application.h"
 
 
 namespace Hazel {
@@ -53,6 +54,9 @@ namespace Hazel {
 
         s_Data.SceneData.SkyboxMaterial = new Material(m_ShaderSkybox);
         s_Data.SceneData.SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, true); // false
+
+        s_Data.ActiveScene->m_ViewportWidth = Application::Get()->GetWindow()->GetWidth();
+        s_Data.ActiveScene->m_ViewportHeight = Application::Get()->GetWindow()->GetHeight();
     }
 
     void SceneRenderer::SetupShaders()

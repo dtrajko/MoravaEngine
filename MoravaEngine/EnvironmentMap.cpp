@@ -185,7 +185,7 @@ void EnvironmentMap::SetupContextData()
             Application::Get()->GetWindow()->GetWidth(),
             Application::Get()->GetWindow()->GetHeight()
         );
-        // m_CameraEntity.AddComponent<Hazel::CameraComponent>((Hazel::SceneCamera*)m_SceneRenderer->s_Data.SceneData.SceneCamera);
+        m_CameraEntity.AddComponent<Hazel::CameraComponent>((Hazel::SceneCamera*)m_SceneRenderer->s_Data.SceneData.SceneCamera);
 
         auto mapGenerator = CreateEntity("Map Generator");
         mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
@@ -404,7 +404,7 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
 
     m_ViewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
-    m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+    m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize((uint32_t)m_ViewportWidth, (uint32_t)m_ViewportHeight);
 }
 
 void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)

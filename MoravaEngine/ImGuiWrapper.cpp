@@ -286,3 +286,105 @@ void ImGuiWrapper::Property(const std::string& name, glm::vec4& value, float min
 	ImGui::PopItemWidth();
 	ImGui::NextColumn();
 }
+
+
+static int s_UIContextID = 0;
+static uint32_t s_Counter = 0;
+static char s_IDBuffer[16];
+
+void ImGuiWrapper::PushID()
+{
+	ImGui::PushID(s_UIContextID++);
+	s_Counter = 0;
+}
+
+void ImGuiWrapper::PopID()
+{
+	ImGui::PopID();
+	s_UIContextID--;
+}
+
+void ImGuiWrapper::BeginPropertyGrid()
+{
+	PushID();
+	ImGui::Columns(2);
+}
+
+void ImGuiWrapper::Property(const char* label, const char* value)
+{
+	ImGui::Text(label);
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	s_IDBuffer[0] = '#';
+	s_IDBuffer[1] = '#';
+	memset(s_IDBuffer + 2, 0, 14);
+	_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+	ImGui::InputText(s_IDBuffer, (char*)value, 256, ImGuiInputTextFlags_ReadOnly);
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+}
+
+bool ImGuiWrapper::Property(const char* label, int& value)
+{
+	bool modified = false;
+
+	ImGui::Text(label);
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	s_IDBuffer[0] = '#';
+	s_IDBuffer[1] = '#';
+	memset(s_IDBuffer + 2, 0, 14);
+	_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+	if (ImGui::DragInt(s_IDBuffer, &value))
+		modified = true;
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+
+	return modified;
+}
+
+bool ImGuiWrapper::Property(const char* label, float& value, float delta)
+{
+	bool modified = false;
+
+	ImGui::Text(label);
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	s_IDBuffer[0] = '#';
+	s_IDBuffer[1] = '#';
+	memset(s_IDBuffer + 2, 0, 14);
+	_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+	if (ImGui::DragFloat(s_IDBuffer, &value, delta))
+		modified = true;
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+
+	return modified;
+}
+
+bool ImGuiWrapper::Property(const char* label, glm::vec2& value, float delta)
+{
+	bool modified = false;
+
+	ImGui::Text(label);
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	s_IDBuffer[0] = '#';
+	s_IDBuffer[1] = '#';
+	memset(s_IDBuffer + 2, 0, 14);
+	_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+	if (ImGui::DragFloat2(s_IDBuffer, glm::value_ptr(value), delta))
+		modified = true;
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+
+	return modified;
+}

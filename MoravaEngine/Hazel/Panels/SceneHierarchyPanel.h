@@ -23,26 +23,28 @@ namespace Hazel
 		~SceneHierarchyPanel();
 
 		void SetContext(HazelScene* scene);
+		void SetSelected(Entity entity);
+
 		void OnImGuiRender();
 
 	private:
 		// ECS (Scene::m_Registry)
-		void DrawComponents(Entity entity);
-		void DrawEntityNodeECS(Entity entity);
 		void OnImGuiRenderECS();
-
-		// NoECS (Scene::m_Entities)
-		void OnImGuiRenderNoECS();
-		void DrawEntityNodeNoECS(Entity entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID);
+		void DrawEntityNodeECS(Entity entity);
 		void DrawMeshNode(Mesh* mesh, uint32_t& imguiMeshID);
 		void MeshNodeHierarchy(Mesh* mesh, aiNode* node, const glm::mat4& parentTransform, uint32_t level);
+		void DrawComponents(Entity entity);
 
-	public:
-		glm::mat4 m_CurrentlySelectedTransform = glm::mat4(1.0f);
-		Entity m_SelectionContext;
+		// NoECS (Scene::m_Entities)
+		// void OnImGuiRenderNoECS();
+		// void DrawEntityNodeNoECS(Entity entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID);
 
 	private:
 		HazelScene* m_Context;
+		Entity m_SelectionContext;
+
+	public:
+		glm::mat4 m_CurrentlySelectedTransform = glm::mat4(1.0f);
 
 	};
 
