@@ -42,6 +42,7 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     m_SamplerSlots->insert(std::make_pair("u_Texture",  1));
 
     m_SceneRenderer = new Hazel::SceneRenderer(filepath, scene);
+    m_SceneRenderer->s_Data.SceneData.SceneCamera = scene->GetCamera();
     SetSkybox(m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap);
 
     Init();
@@ -54,6 +55,8 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 
     Scene::s_ImGuizmoTransform = &m_MeshEntity.Transform();
     Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+
 }
 
 void EnvironmentMap::Init()
@@ -178,13 +181,13 @@ void EnvironmentMap::SetupContextData()
         LoadEntity("Models/Hazel/TestScene.fbx");
 
         m_CameraEntity = CreateEntity("Camera");
-        m_SceneRenderer->s_Data.SceneData.SceneCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
         auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
         auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
         m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize(
             Application::Get()->GetWindow()->GetWidth(),
             Application::Get()->GetWindow()->GetHeight()
         );
+        m_SceneRenderer->s_Data.SceneData.SceneCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
         m_CameraEntity.AddComponent<Hazel::CameraComponent>((Hazel::SceneCamera*)m_SceneRenderer->s_Data.SceneData.SceneCamera);
 
         auto mapGenerator = CreateEntity("Map Generator");

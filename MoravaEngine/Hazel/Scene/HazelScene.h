@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Entity.h"
+#include "../Core/UUID.h"
 #include "../Renderer/HazelTexture.h"
-#include "../Scene/SceneCamera.h"
 #include "../Renderer/HazelMaterial.h"
+#include "../Scene/SceneCamera.h"
 
 #include "../../Shader.h"
 
@@ -28,6 +29,8 @@ namespace Hazel {
 	};
 
 	class Entity;
+
+	using EntityMap = std::unordered_map<UUID, Entity>;
 
 	class HazelScene
 	{
@@ -69,6 +72,8 @@ namespace Hazel {
 			return m_Registry.view<T>();
 		}
 
+		const EntityMap& GetEntityMap() const { return m_EntityIDMap; }
+
 		// Temporary/experimental
 		virtual void OnEntitySelected(Entity entity);
 
@@ -80,9 +85,9 @@ namespace Hazel {
 		uint32_t m_ViewportHeight = 0;
 
 	private:
+		EntityMap m_EntityIDMap;
 
 		HazelCamera m_Camera;
-
 		HazelLight m_Light;
 		float m_LightMultiplier = 0.3f;
 

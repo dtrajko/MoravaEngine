@@ -6,6 +6,7 @@
 namespace Hazel {
 
 	SceneCamera::SceneCamera()
+		: HazelCamera(glm::mat4(1.0f))
 	{
 		RecalculateProjection();
 	}

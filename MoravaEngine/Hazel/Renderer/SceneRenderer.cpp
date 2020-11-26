@@ -57,6 +57,8 @@ namespace Hazel {
 
         s_Data.ActiveScene->m_ViewportWidth = Application::Get()->GetWindow()->GetWidth();
         s_Data.ActiveScene->m_ViewportHeight = Application::Get()->GetWindow()->GetHeight();
+
+        s_Data.SceneData.SceneCamera = scene->GetCamera();
     }
 
     void SceneRenderer::SetupShaders()
