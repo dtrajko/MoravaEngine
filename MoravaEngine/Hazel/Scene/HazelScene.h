@@ -55,7 +55,6 @@ namespace Hazel {
 		inline HazelLight GetLight() { return m_Light; }
 
 		void SetSkybox(const Ref<Hazel::HazelTextureCube>& skybox);
-		void AddEntity(Entity entity);
 
 		inline void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
 		float& GetSkyboxLOD() { return m_SkyboxLOD; }
@@ -76,7 +75,6 @@ namespace Hazel {
 	public:
 		// ECS
 		entt::registry m_Registry;
-		std::vector<Entity> m_Entities;
 
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;

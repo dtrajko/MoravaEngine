@@ -29,10 +29,10 @@ namespace Hazel {
 		m_ShaderSkybox->setInt("u_Texture", skybox.get()->GetID());
 	}
 
-	void HazelScene::AddEntity(Entity entity)
-	{
-		m_Entities.push_back(entity);
-	}
+	//	void HazelScene::AddEntity(Entity entity)
+	//	{
+	//		m_Entities.push_back(entity);
+	//	}
 
 	void HazelScene::OnEntitySelected(Entity entity)
 	{
@@ -58,7 +58,7 @@ namespace Hazel {
 
 		// NoECS
 		entity.SetName(entityName);
-		AddEntity(entity);
+		// AddEntity(entity);
 
 		Log::GetLogger()->debug("CreateEntity name = '{0}'", name);
 
@@ -72,24 +72,31 @@ namespace Hazel {
 
 	void HazelScene::OnUpdate(float ts)
 	{
-		// No ECS
-		// Update all entities
-		for (auto entity : m_Entities)
-		{
-			auto mesh = entity.GetMesh();
-			if (mesh) {
-				mesh->OnUpdate(ts, false);
-			}
-		}
+		//	ECS Update all entities
+		//	for (auto entity : m_Entities)
+		//	{
+		//		auto mesh = entity.GetMesh();
+		//		if (mesh) {
+		//			mesh->OnUpdate(ts, false);
+		//		}
+		//	}
+
+		m_Registry.view<MeshComponent>().each([=](auto entity, auto& mc)
+			{
+				auto mesh = mc.Mesh;
+				if (mesh) {
+					mesh->OnUpdate(ts, false);
+				}
+			});
 
 		SceneRenderer::BeginScene(this);
 
 		// Render entities
-		for (auto entity : m_Entities)
-		{
-			// TODO: Should we render (logically)
-			SceneRenderer::SubmitEntity(entity);
-		}
+		m_Registry.view<MeshComponent>().each([=](auto entity, auto& mc)
+			{
+				// TODO: Should we render (logically)
+				SceneRenderer::SubmitEntity(Entity{ entity, this });
+			});
 
 		SceneRenderer::EndScene();
 
@@ -175,11 +182,11 @@ namespace Hazel {
 			});
 		}
 
-		// No ECS
-		for (Entity entity : m_Entities)
-		{
-			// delete entity;
-		}
+		//	No ECS
+		//	for (Entity entity : m_Entities)
+		//	{
+		//		delete entity;
+		//	}
 	}
 
 	template<typename T>

@@ -549,29 +549,31 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Camera");
     {
-        char buffer[100];
+        if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_None /* | ImGuiTreeNodeFlags_DefaultOpen */))
+        {
+            char buffer[100];
 
-        sprintf(buffer, "Pitch %.2f", m_Camera->GetPitch());
-        ImGui::Text(buffer);
+            sprintf(buffer, "Pitch %.2f", m_Camera->GetPitch());
+            ImGui::Text(buffer);
 
-        sprintf(buffer, "Yaw   %.2f", m_Camera->GetYaw());
-        ImGui::Text(buffer);
+            sprintf(buffer, "Yaw   %.2f", m_Camera->GetYaw());
+            ImGui::Text(buffer);
 
-        sprintf(buffer, "Position   X %.2f Y %.2f Z %.2f", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
-        ImGui::Text(buffer);
+            sprintf(buffer, "Position   X %.2f Y %.2f Z %.2f", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
+            ImGui::Text(buffer);
 
-        sprintf(buffer, "Direction  X %.2f Y %.2f Z %.2f", m_Camera->GetDirection().x, m_Camera->GetDirection().y, m_Camera->GetDirection().z);
-        ImGui::Text(buffer);
+            sprintf(buffer, "Direction  X %.2f Y %.2f Z %.2f", m_Camera->GetDirection().x, m_Camera->GetDirection().y, m_Camera->GetDirection().z);
+            ImGui::Text(buffer);
 
-        sprintf(buffer, "Front      X %.2f Y %.2f Z %.2f", m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
-        ImGui::Text(buffer);
+            sprintf(buffer, "Front      X %.2f Y %.2f Z %.2f", m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
+            ImGui::Text(buffer);
 
-        sprintf(buffer, "Up         X %.2f Y %.2f Z %.2f", m_Camera->GetUp().x, m_Camera->GetUp().y, m_Camera->GetUp().z);
-        ImGui::Text(buffer);
+            sprintf(buffer, "Up         X %.2f Y %.2f Z %.2f", m_Camera->GetUp().x, m_Camera->GetUp().y, m_Camera->GetUp().z);
+            ImGui::Text(buffer);
 
-        sprintf(buffer, "Right      X %.2f Y %.2f Z %.2f", m_Camera->GetRight().x, m_Camera->GetRight().y, m_Camera->GetRight().z);
-        ImGui::Text(buffer);
-
+            sprintf(buffer, "Right      X %.2f Y %.2f Z %.2f", m_Camera->GetRight().x, m_Camera->GetRight().y, m_Camera->GetRight().z);
+            ImGui::Text(buffer);
+        }
     }
     ImGui::End();
 
@@ -613,41 +615,47 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Select HDRI");
     {
-        ImGui::RadioButton("Greenwich Park", &m_HDRI_Edit, HDRI_GREENWICH_PARK);
-        ImGui::RadioButton("San Giuseppe Bridge", &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
-        ImGui::RadioButton("Tropical Beach", &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
-        ImGui::RadioButton("Vignaioli Night", &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
-        ImGui::RadioButton("Early Eve & Warm Sky", &m_HDRI_Edit, HDRI_EARLY_EVE_WARM_SKY);
-        ImGui::RadioButton("Birchwood", &m_HDRI_Edit, HDRI_BIRCHWOOD);
-        ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
-        ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
-        ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
-        ImGui::RadioButton("Peppermint Powerplant", &m_HDRI_Edit, HDRI_PEPPERMINT_POWERPLANT);
+        if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_None /* | ImGuiTreeNodeFlags_DefaultOpen */))
+        {
+            ImGui::RadioButton("Greenwich Park", &m_HDRI_Edit, HDRI_GREENWICH_PARK);
+            ImGui::RadioButton("San Giuseppe Bridge", &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
+            ImGui::RadioButton("Tropical Beach", &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
+            ImGui::RadioButton("Vignaioli Night", &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
+            ImGui::RadioButton("Early Eve & Warm Sky", &m_HDRI_Edit, HDRI_EARLY_EVE_WARM_SKY);
+            ImGui::RadioButton("Birchwood", &m_HDRI_Edit, HDRI_BIRCHWOOD);
+            ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
+            ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
+            ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
+            ImGui::RadioButton("Peppermint Powerplant", &m_HDRI_Edit, HDRI_PEPPERMINT_POWERPLANT);
 
-        ImGui::Separator();
-        ImGui::SliderFloat("Skybox LOD", &m_SkyboxLOD, 0.0f, 6.0f);
+            ImGui::Separator();
+            ImGui::SliderFloat("Skybox LOD", &m_SkyboxLOD, 0.0f, 6.0f);
+        }
     }
     ImGui::End();
 
     ImGui::Begin("Settings");
     {
-        ImGui::Checkbox("Display Bounding Boxes", &m_VisibleAABBs);
-        ImGui::Separator();
-        for (auto& entity : m_Entities)
+        if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_None /* | ImGuiTreeNodeFlags_DefaultOpen */))
         {
-            std::string isEnabled = std::string("Is Enabled ") + entity.first;
-            ImGui::Checkbox(isEnabled.c_str(), &entity.second.Enabled);
-        }
-        ImGui::Separator();
-        for (auto& entity : m_Entities)
-        {
-            std::string isIntersecting = std::string("Is Intersecting ") + entity.first;
-            ImGui::Checkbox(isIntersecting.c_str(), &entity.second.Intersecting);
-        }
-        ImGui::Separator();
-        bool eventLoggingEnabled = Application::Get()->GetWindow()->GetEventLogging();
-        if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
-            Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
+            ImGui::Checkbox("Display Bounding Boxes", &m_VisibleAABBs);
+            ImGui::Separator();
+            for (auto& entity : m_Entities)
+            {
+                std::string isEnabled = std::string("Is Enabled ") + entity.first;
+                ImGui::Checkbox(isEnabled.c_str(), &entity.second.Enabled);
+            }
+            ImGui::Separator();
+            for (auto& entity : m_Entities)
+            {
+                std::string isIntersecting = std::string("Is Intersecting ") + entity.first;
+                ImGui::Checkbox(isIntersecting.c_str(), &entity.second.Intersecting);
+            }
+            ImGui::Separator();
+            bool eventLoggingEnabled = Application::Get()->GetWindow()->GetEventLogging();
+            if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
+                Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
+            }
         }
     }
     ImGui::End();
