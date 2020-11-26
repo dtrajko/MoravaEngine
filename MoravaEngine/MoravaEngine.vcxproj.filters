@@ -575,6 +575,9 @@
     <ClCompile Include="Hazel\Panels\SceneHierarchyPanel.cpp">
       <Filter>Hazel\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Core\UUID.cpp">
+      <Filter>Hazel\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1239,6 +1242,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\Panels\SceneHierarchyPanel.h">
       <Filter>Hazel\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Core\UUID.h">
+      <Filter>Hazel\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

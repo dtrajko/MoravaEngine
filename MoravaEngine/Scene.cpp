@@ -349,6 +349,11 @@ void Scene::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 	ImGui::End();
 }
 
+inline Camera* Scene::GetCamera() const
+{
+	return m_Camera;
+}
+
 Scene::~Scene()
 {
 	delete m_Skybox;

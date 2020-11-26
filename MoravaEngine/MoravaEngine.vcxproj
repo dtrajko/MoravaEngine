@@ -203,6 +203,7 @@
     <ClCompile Include="Hazel\Core\LayerStack.cpp" />
     <ClCompile Include="Hazel\Core\HazelLog.cpp" />
     <ClCompile Include="Hazel\Core\Timestep.cpp" />
+    <ClCompile Include="Hazel\Core\UUID.cpp" />
     <ClCompile Include="Hazel\Panels\SceneHierarchyPanel.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLRendererAPI.cpp" />
@@ -411,6 +412,7 @@
     <ClInclude Include="Hazel\Core\Math\Ray.h" />
     <ClInclude Include="Hazel\Core\MouseCodes.h" />
     <ClInclude Include="Hazel\Core\Timestep.h" />
+    <ClInclude Include="Hazel\Core\UUID.h" />
     <ClInclude Include="Hazel\Events\ApplicationEvent.h" />
     <ClInclude Include="Hazel\Events\Event.h" />
     <ClInclude Include="Hazel\Events\KeyEvent.h" />

@@ -30,11 +30,84 @@ namespace Hazel
 	void SceneHierarchyPanel::SetContext(HazelScene* scene)
 	{
 		m_Context = scene;
+		m_SelectionContext = {};
+		if (m_SelectionContext && false)
+		{
+			//	Try and find same entity in new scene
+			//	auto& entityMap = m_Context->GetEntityMap();
+			//	UUID selectedEntityID = m_SelectionContext.GetUUID();
+
+			//	if (entityMap.find(selectedEntityID) != entityMap.end()) {
+			//		m_SelectionContext = entityMap.at(selectedEntityID);
+			//	}
+		}
 	}
 
 	void SceneHierarchyPanel::SetSelected(Entity entity)
 	{
 		m_SelectionContext = entity;
+	}
+
+	void SceneHierarchyPanel::OnImGuiRender()
+	{
+		ImGui::Begin("Scene Hierarchy");
+
+		if (m_Context)
+		{
+			uint32_t entityCount = 0;
+			uint32_t meshCount = 0;
+
+			m_Context->m_Registry.each([&](auto entity)
+				{
+					DrawEntityNode(Entity(entity, m_Context));
+				});
+
+			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+			{
+				m_SelectionContext = {};
+				m_CurrentlySelectedTransform = glm::mat4(1.0f);
+			}
+
+			// Right-click on blank space
+			if (ImGui::BeginPopupContextWindow(0, 1, false))
+			{
+				if (ImGui::MenuItem("Create Empty Entity"))
+				{
+					m_Context->CreateEntity("Empty Entity");
+				}
+				ImGui::EndPopup();
+			}
+
+			ImGui::End();
+
+			ImGui::Begin("Properties");
+
+			if (m_SelectionContext)
+			{
+				DrawComponents(m_SelectionContext);
+			}
+
+			ImGui::End();
+
+#if TODO
+			ImGui::Begin("Mesh Debug");
+			if (ImGui::CollapsingHeader(mesh->m_FilePath.c_str()))
+			{
+				if (mesh->m_IsAnimated)
+				{
+					if (ImGui::CollapsingHeader("Animation"))
+					{
+						if (ImGui::Button(mesh->m_AnimationPlaying ? "Pause" : "Play"))
+							mesh->m_AnimationPlaying = !mesh->m_AnimationPlaying;
+
+						ImGui::SliderFloat("##AnimationTime", &mesh->m_AnimationTime, 0.0f, (float)mesh->m_Scene->mAnimations[0]->mDuration);
+						ImGui::DragFloat("Time Scale", &mesh->m_TimeMultiplier, 0.05f, 0.0f, 10.0f);
+					}
+				}
+			}
+			ImGui::End();
+#endif
+		}
 	}
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
@@ -83,65 +156,6 @@ namespace Hazel
 				m_CurrentlySelectedTransform = glm::mat4(1.0f);
 			}
 		}
-	}
-
-	void SceneHierarchyPanel::OnImGuiRender()
-	{
-		ImGui::Begin("Scene Hierarchy");
-
-		uint32_t entityCount = 0;
-		uint32_t meshCount = 0;
-
-		m_Context->m_Registry.each([&](auto entity)
-		{
-			DrawEntityNode(Entity(entity, m_Context));
-		});
-
-		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-		{
-			m_SelectionContext = {};
-			m_CurrentlySelectedTransform = glm::mat4(1.0f);
-		}
-
-		// Right-click on blank space
-		if (ImGui::BeginPopupContextWindow(0, 1, false))
-		{
-			if (ImGui::MenuItem("Create Empty Entity"))
-			{
-				m_Context->CreateEntity("Empty Entity");
-			}
-			ImGui::EndPopup();
-		}
-
-		ImGui::End();
-
-		ImGui::Begin("Properties");
-
-		if (m_SelectionContext)
-		{
-			DrawComponents(m_SelectionContext);
-		}
-
-		ImGui::End();
-
-#if TODO
-		ImGui::Begin("Mesh Debug");
-		if (ImGui::CollapsingHeader(mesh->m_FilePath.c_str()))
-		{
-			if (mesh->m_IsAnimated)
-			{
-				if (ImGui::CollapsingHeader("Animation"))
-				{
-					if (ImGui::Button(mesh->m_AnimationPlaying ? "Pause" : "Play"))
-						mesh->m_AnimationPlaying = !mesh->m_AnimationPlaying;
-
-					ImGui::SliderFloat("##AnimationTime", &mesh->m_AnimationTime, 0.0f, (float)mesh->m_Scene->mAnimations[0]->mDuration);
-					ImGui::DragFloat("Time Scale", &mesh->m_TimeMultiplier, 0.05f, 0.0f, 10.0f);
-				}
-			}
-		}
-		ImGui::End();
-#endif
 	}
 
 	void SceneHierarchyPanel::DrawMeshNode(Mesh* mesh, uint32_t& imguiMeshID)
@@ -292,63 +306,63 @@ namespace Hazel
 		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
+		{
+			auto& camera = component.Camera;
+
+			ImGui::Checkbox("Primary", &component.Primary);
+
+			const char* projectionTypeStrings[] = { "Perspective", "Orthographic" };
+			const char* currentProjectionTypeString = projectionTypeStrings[(int)camera.GetProjectionType()];
+
+			if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
 			{
-				auto& camera = component.Camera;
-
-				ImGui::Checkbox("Primary", &component.Primary);
-
-				const char* projectionTypeStrings[] = { "Perspective", "Orthographic" };
-				const char* currentProjectionTypeString = projectionTypeStrings[(int)camera.GetProjectionType()];
-
-				if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
+				for (int i = 0; i < 2; i++)
 				{
-					for (int i = 0; i < 2; i++)
+					bool isSelected = currentProjectionTypeString == projectionTypeStrings[i];
+					if (ImGui::Selectable(projectionTypeStrings[i], isSelected))
 					{
-						bool isSelected = currentProjectionTypeString == projectionTypeStrings[i];
-						if (ImGui::Selectable(projectionTypeStrings[i], isSelected))
-						{
-							currentProjectionTypeString = projectionTypeStrings[i];
-							camera.SetProjectionType((SceneCamera::ProjectionType)i);
-						}
-
-						if (isSelected)
-							ImGui::SetItemDefaultFocus();
+						currentProjectionTypeString = projectionTypeStrings[i];
+						camera.SetProjectionType((SceneCamera::ProjectionType)i);
 					}
-					ImGui::EndCombo();
+
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
 				}
+				ImGui::EndCombo();
+			}
 
-				if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
-				{
-					float verticalFOV = glm::degrees(camera.GetPerspectiveVerticalFOV());
-					if (ImGui::DragFloat("Vertical FOV", &verticalFOV))
-						camera.SetPerspectiveVerticalFOV(glm::radians(verticalFOV));
+			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+			{
+				float verticalFOV = glm::degrees(camera.GetPerspectiveVerticalFOV());
+				if (ImGui::DragFloat("Vertical FOV", &verticalFOV))
+					camera.SetPerspectiveVerticalFOV(glm::radians(verticalFOV));
 
-					float nearClip = camera.GetPerspectiveNearClip();
-					if (ImGui::DragFloat("Near", &nearClip))
-						camera.SetPerspectiveNearClip(nearClip);
+				float nearClip = camera.GetPerspectiveNearClip();
+				if (ImGui::DragFloat("Near", &nearClip))
+					camera.SetPerspectiveNearClip(nearClip);
 
-					float farClip = camera.GetPerspectiveFarClip();
-					if (ImGui::DragFloat("Far", &farClip))
-						camera.SetPerspectiveFarClip(farClip);
-				}
+				float farClip = camera.GetPerspectiveFarClip();
+				if (ImGui::DragFloat("Far", &farClip))
+					camera.SetPerspectiveFarClip(farClip);
+			}
 
-				if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
-				{
-					float orthoSize = camera.GetOrthographicSize();
-					if (ImGui::DragFloat("Size", &orthoSize))
-						camera.SetOrthographicSize(orthoSize);
+			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
+			{
+				float orthoSize = camera.GetOrthographicSize();
+				if (ImGui::DragFloat("Size", &orthoSize))
+					camera.SetOrthographicSize(orthoSize);
 
-					float orthoNear = camera.GetOrthographicNearClip();
-					if (ImGui::DragFloat("Near", &orthoNear))
-						camera.SetOrthographicNearClip(orthoNear);
+				float orthoNear = camera.GetOrthographicNearClip();
+				if (ImGui::DragFloat("Near", &orthoNear))
+					camera.SetOrthographicNearClip(orthoNear);
 
-					float orthoFar = camera.GetOrthographicFarClip();
-					if (ImGui::DragFloat("Far", &orthoFar))
-						camera.SetOrthographicFarClip(orthoFar);
+				float orthoFar = camera.GetOrthographicFarClip();
+				if (ImGui::DragFloat("Far", &orthoFar))
+					camera.SetOrthographicFarClip(orthoFar);
 
-					ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
-				}
-			});
+				ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
+			}
+		});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
 		{
@@ -404,14 +418,6 @@ namespace Hazel
 				ScriptEngine::OnCreateEntity(entity);
 			}
 		});
-
-		//	if (entity.HasComponent<ScriptComponent>())
-		//	{
-		//		if (ImGui::Button("Run Script"))
-		//		{
-		//			ScriptEngine::OnCreateEntity(entity);
-		//		}
-		//	}
 
 		{
 			if (ImGui::Button("Add Component")) {

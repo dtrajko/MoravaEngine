@@ -2,13 +2,19 @@
 
 #include <glm/glm.hpp>
 
+#include "../Core/UUID.h"
+#include "../Renderer/HazelMesh.h"
 #include "SceneCamera.h"
 #include "ScriptableEntity.h"
-#include "../Renderer/HazelMesh.h"
 
 
 namespace Hazel
 {
+	struct IDComponent
+	{
+		UUID ID = 0;
+	};
+
 	struct TagComponent
 	{
 		std::string Tag;

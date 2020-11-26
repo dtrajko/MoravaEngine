@@ -89,7 +89,7 @@ public:
 	virtual inline bool IsWaterOnScene() { return false; };
 
 	// Getters
-	inline Camera* GetCamera() const { return m_Camera; };
+	inline Camera* GetCamera() const;
 	inline CameraController* GetCameraController() const { return m_CameraController; };
 	static inline SceneSettings GetSettings() { return sceneSettings; };
 	std::map<std::string, Texture*> GetTextures() const { return textures; };
