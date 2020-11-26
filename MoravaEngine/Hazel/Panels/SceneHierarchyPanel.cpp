@@ -37,13 +37,7 @@ namespace Hazel
 		m_SelectionContext = entity;
 	}
 
-	void SceneHierarchyPanel::OnImGuiRender()
-	{
-		OnImGuiRenderECS();
-		// OnImGuiRenderNoECS();
-	}
-
-	void SceneHierarchyPanel::DrawEntityNodeECS(Entity entity)
+	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
 		// ImGui::Text("%s", tag.c_str());
@@ -91,16 +85,16 @@ namespace Hazel
 		}
 	}
 
-	void SceneHierarchyPanel::OnImGuiRenderECS()
+	void SceneHierarchyPanel::OnImGuiRender()
 	{
-		ImGui::Begin("Scene Hierarchy ECS");
+		ImGui::Begin("Scene Hierarchy");
 
 		uint32_t entityCount = 0;
 		uint32_t meshCount = 0;
 
 		m_Context->m_Registry.each([&](auto entity)
 		{
-			DrawEntityNodeECS(Entity(entity, m_Context));
+			DrawEntityNode(Entity(entity, m_Context));
 		});
 
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
@@ -121,7 +115,7 @@ namespace Hazel
 
 		ImGui::End();
 
-		ImGui::Begin("Properties ECS");
+		ImGui::Begin("Properties");
 
 		if (m_SelectionContext)
 		{
@@ -149,112 +143,6 @@ namespace Hazel
 		ImGui::End();
 #endif
 	}
-
-	//	void SceneHierarchyPanel::OnImGuiRenderNoECS()
-	//	{
-	//		ImGui::Begin("Scene Hierarchy NoECS");
-	//	
-	//		uint32_t entityCount = 0, meshCount = 0;
-	//		auto& sceneEntities = m_Context->m_Entities;
-	//		for (Entity entity : sceneEntities)
-	//		{
-	//			DrawEntityNodeNoECS(entity, entityCount, meshCount);
-	//		}
-	//	
-	//		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-	//		{
-	//			m_SelectionContext = {};
-	//			m_CurrentlySelectedTransform = glm::mat4(1.0f);
-	//		}
-	//	
-	//		// Right-click on blank space
-	//		if (ImGui::BeginPopupContextWindow(0, 1, false))
-	//		{
-	//			if (ImGui::MenuItem("Create Empty Entity"))
-	//			{
-	//				m_Context->CreateEntity("Empty Entity");
-	//			}
-	//			ImGui::EndPopup();
-	//		}
-	//	
-	//		ImGui::End();
-	//	
-	//		ImGui::Begin("Properties NoECS");
-	//	
-	//		if (m_SelectionContext)
-	//		{
-	//			DrawComponents(m_SelectionContext);
-	//		}
-	//	
-	//		ImGui::End();
-	//	
-	//	#if TODO
-	//			ImGui::Begin("Mesh Debug");
-	//			if (ImGui::CollapsingHeader(mesh->m_FilePath.c_str()))
-	//			{
-	//				if (mesh->m_IsAnimated)
-	//				{
-	//					if (ImGui::CollapsingHeader("Animation"))
-	//					{
-	//						if (ImGui::Button(mesh->m_AnimationPlaying ? "Pause" : "Play"))
-	//							mesh->m_AnimationPlaying = !mesh->m_AnimationPlaying;
-	//	
-	//						ImGui::SliderFloat("##AnimationTime", &mesh->m_AnimationTime, 0.0f, (float)mesh->m_Scene->mAnimations[0]->mDuration);
-	//						ImGui::DragFloat("Time Scale", &mesh->m_TimeMultiplier, 0.05f, 0.0f, 10.0f);
-	//					}
-	//				}
-	//			}
-	//			ImGui::End();
-	//	#endif
-	//	}
-
-	//	void SceneHierarchyPanel::DrawEntityNodeNoECS(Entity entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID)
-	//	{
-	//		std::string tag = entity.GetName();
-	//	
-	//		// copied from DrawEntityNodeECS
-	//		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
-	//			ImGuiTreeNodeFlags_OpenOnArrow |
-	//			ImGuiTreeNodeFlags_SpanAvailWidth;
-	//		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
-	//		if (ImGui::IsItemClicked())
-	//		{
-	//			m_SelectionContext = entity;
-	//			m_CurrentlySelectedTransform = entity.GetComponent<TransformComponent>().GetTransform();
-	//	
-	//			m_Context->OnEntitySelected(entity);
-	//		}
-	//	
-	//		bool entityDeleted = false;
-	//		if (ImGui::BeginPopupContextItem())
-	//		{
-	//			if (ImGui::MenuItem("Delete Entity"))
-	//			{
-	//				entityDeleted = true;
-	//			}
-	//			ImGui::EndPopup();
-	//		}
-	//	
-	//		if (opened)
-	//		{
-	//			ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
-	//				ImGuiTreeNodeFlags_OpenOnArrow |
-	//				ImGuiTreeNodeFlags_SpanAvailWidth;
-	//			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000), flags, tag.c_str());
-	//			if (opened) {
-	//				ImGui::TreePop();
-	//			}
-	//			ImGui::TreePop();
-	//		}
-	//	
-	//		if (entityDeleted) {
-	//			m_Context->DestroyEntity(entity);
-	//			if (m_SelectionContext == entity) {
-	//				m_SelectionContext = {};
-	//				m_CurrentlySelectedTransform = glm::mat4(1.0f);
-	//			}
-	//		}
-	//	}
 
 	void SceneHierarchyPanel::DrawMeshNode(Mesh* mesh, uint32_t& imguiMeshID)
 	{
@@ -384,172 +272,24 @@ namespace Hazel
 			ImGui::Separator();
 		}
 
-		if (entity.HasComponent<TransformComponent>())
-		{
-			auto& tc = entity.GetComponent<TransformComponent>();
-			if (ImGui::TreeNodeEx((void*)((uint32_t)entity | typeid(MeshComponent).hash_code()), ImGuiTreeNodeFlags_DefaultOpen, "Transform"))
-			{
-				auto [translation, rotation, scale] = Math::GetTransformDecomposition(tc.GetTransform());
-
-				ImGui::Columns(2);
-				ImGui::Text("Translation");
-				ImGui::NextColumn();
-				ImGui::PushItemWidth(-1);
-
-				if (ImGui::DragFloat3("##translation", glm::value_ptr(translation), 0.25f))
-				{
-					tc.GetTransform()[3] = glm::vec4(translation, 1.0f);
-				}
-
-				ImGui::PopItemWidth();
-				ImGui::NextColumn();
-
-				ImGui::Text("Scale");
-				ImGui::NextColumn();
-				ImGui::PushItemWidth(-1);
-
-				if (ImGui::DragFloat3("##scale", glm::value_ptr(scale), 0.25f))
-				{
-
-				}
-
-				ImGui::PopItemWidth();
-				ImGui::NextColumn();
-
-				ImGui::Columns(1);
-
-				ImGui::TreePop();
-			}
-			ImGui::Separator();
-		}
-
-		if (entity.HasComponent<MeshComponent>())
-		{
-			auto& mc = entity.GetComponent<MeshComponent>();
-			if (ImGui::TreeNodeEx((void*)((uint32_t)entity | typeid(TransformComponent).hash_code()), ImGuiTreeNodeFlags_DefaultOpen, "Mesh"))
-			{
-				if (mc.Mesh) {
-					ImGui::InputText("File Path", (char*)mc.Mesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
-				}
-				else {
-					ImGui::InputText("File Path", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
-				}
-				ImGui::TreePop();
-			}
-			ImGui::Separator();
-		}
-
-		if (entity.HasComponent<CameraComponent>())
-		{
-			auto& cc = entity.GetComponent<CameraComponent>();
-			if (ImGui::TreeNodeEx((void*)((uint32_t)entity | typeid(CameraComponent).hash_code()), ImGuiTreeNodeFlags_DefaultOpen, "Camera"))
-			{
-				// TODO ...
-				ImGui::TreePop();
-			}
-			ImGui::Separator();
-		}
-
-		if (entity.HasComponent<SpriteRendererComponent>())
-		{
-			auto& src = entity.GetComponent<SpriteRendererComponent>();
-			if (ImGui::TreeNodeEx((void*)((uint32_t)entity | typeid(SpriteRendererComponent).hash_code()), ImGuiTreeNodeFlags_DefaultOpen, "Sprite Renderer"))
-			{
-				// TODO ...
-				ImGui::TreePop();
-			}
-			ImGui::Separator();
-		}
-
-		if (entity.HasComponent<ScriptComponent>())
-		{
-			auto& sc = entity.GetComponent<ScriptComponent>();
-			if (ImGui::TreeNodeEx((void*)((uint32_t)entity | typeid(ScriptComponent).hash_code()), ImGuiTreeNodeFlags_DefaultOpen, "Script"))
-			{
-				ImGuiWrapper::BeginPropertyGrid();
-				ImGuiWrapper::Property("Module Name", sc.ModuleName.c_str());
-
-				// Public Fields
-				auto& fieldMap = ScriptEngine::GetFieldMap();
-				if (fieldMap.find(sc.ModuleName) != fieldMap.end())
-				{
-					auto& publicFields = fieldMap.at(sc.ModuleName);
-					for (auto& field : publicFields)
-					{
-						switch (field.Type)
-						{
-						case FieldType::Int:
-						{
-							int value = field.GetValue<int>();
-							if (ImGuiWrapper::Property(field.Name.c_str(), value))
-							{
-								field.SetValue(value);
-							}
-							break;
-						}
-						case FieldType::Float:
-						{
-							float value = field.GetValue<float>();
-							if (ImGuiWrapper::Property(field.Name.c_str(), value, 0.2f))
-							{
-								field.SetValue(value);
-							}
-						}
-						case FieldType::Vec2:
-						{
-							glm::vec2 value = field.GetValue<glm::vec2>();
-							if (ImGuiWrapper::Property(field.Name.c_str(), value, 0.2f))
-							{
-								field.SetValue(value);
-							}
-						}
-						}
-					}
-				}
-
-				EndPropertyGrid();
-				if (ImGui::Button("Run Script"))
-				{
-					ScriptEngine::OnCreateEntity(entity);
-				}
-				ImGui::TreePop();
-			}
-			ImGui::Separator();
-		}
-
-		ImGui::SameLine();
-
-		ImGui::PushItemWidth(-1);
-
-		if (ImGui::Button("Add Component")) {
-			ImGui::OpenPopup("AddComponent");
-		}
-
-		if (ImGui::BeginPopup("AddComponent"))
-		{
-			if (ImGui::MenuItem("Camera")) {
-				m_SelectionContext.AddComponent<CameraComponent>();
-				ImGui::CloseCurrentPopup();
-			}
-
-			if (ImGui::MenuItem("Sprite Renderer")) {
-				m_SelectionContext.AddComponent<SpriteRendererComponent>();
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::EndPopup();
-		}
-
-		ImGui::PopItemWidth();
-
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
-			{
-				ImGuiWrapper::DrawVec3Control("Translation", component.Translation, 0.0f, 100.0f);
-				glm::vec3 rotation = glm::degrees(component.Rotation);
-				ImGuiWrapper::DrawVec3Control("Rotation", rotation, 0.0f, 100.0f);
-				component.Rotation = glm::radians(rotation);
-				ImGuiWrapper::DrawVec3Control("Scale", component.Scale, 1.0f, 100.0f);
-			});
+		{
+			ImGuiWrapper::DrawVec3Control("Translation", component.Translation, 0.0f, 100.0f);
+			glm::vec3 rotation = glm::degrees(component.Rotation);
+			ImGuiWrapper::DrawVec3Control("Rotation", rotation, 0.0f, 100.0f);
+			component.Rotation = glm::radians(rotation);
+			ImGuiWrapper::DrawVec3Control("Scale", component.Scale, 1.0f, 100.0f);
+		});
+
+		DrawComponent<MeshComponent>("Mesh", entity, [](auto& component)
+		{
+			if (component.Mesh) {
+				ImGui::InputText("File Path", (char*)component.Mesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+			}
+			else {
+				ImGui::InputText("File Path", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
+			}
+		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 			{
@@ -611,60 +351,97 @@ namespace Hazel
 			});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
+		{
+			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+		});
+
+		DrawComponent<ScriptComponent>("Script", entity, [=](auto& component)
+		{
+			ImGuiWrapper::BeginPropertyGrid();
+			ImGuiWrapper::Property("Module Name", component.ModuleName.c_str());
+
+			// Public Fields
+			auto& fieldMap = ScriptEngine::GetFieldMap();
+			if (fieldMap.find(component.ModuleName) != fieldMap.end())
 			{
-				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-			});
-	}
+				auto& publicFields = fieldMap.at(component.ModuleName);
+				for (auto& field : publicFields)
+				{
+					switch (field.Type)
+					{
+					case FieldType::Int:
+					{
+						int value = field.GetValue<int>();
+						if (ImGuiWrapper::Property(field.Name.c_str(), value))
+						{
+							field.SetValue(value);
+						}
+						break;
+					}
+					case FieldType::Float:
+					{
+						float value = field.GetValue<float>();
+						if (ImGuiWrapper::Property(field.Name.c_str(), value, 0.2f))
+						{
+							field.SetValue(value);
+						}
+					}
+					case FieldType::Vec2:
+					{
+						glm::vec2 value = field.GetValue<glm::vec2>();
+						if (ImGuiWrapper::Property(field.Name.c_str(), value, 0.2f))
+						{
+							field.SetValue(value);
+						}
+					}
+					}
+				}
+			}
+			EndPropertyGrid();
 
-	/****
-	void SceneHierarchyPanel::DrawEntityNode(Entity* entity, uint32_t& imguiEntityID, uint32_t& imguiMeshID)
-	{		
-		// Mesh Hierarchy
-		if (ImGui::TreeNode(imguiName))
-		{
-			auto rootNode = mesh->GetSceneAssimp()->mRootNode;
-			MeshNodeHierarchy(mesh, rootNode, glm::mat4(1.0f), 0);
-			ImGui::TreePop();
-		}
-
-		if (ImGui::TreeNode(entity->GetName().c_str()))
-		{
-			auto mesh = entity->GetMesh();
-			auto material = entity->GetMaterial();
-			const auto& transform = entity->GetTransform();
-		
-			if (mesh)
+			if (ImGui::Button("Run Script"))
 			{
-				uint32_t imguiMeshID;
-				DrawMeshNode(mesh, imguiMeshID);
+				ScriptEngine::OnCreateEntity(entity);
 			}
-			ImGui::TreePop();
-		}
-		
-		if (ImGui::TreeNode())
+		});
+
+		//	if (entity.HasComponent<ScriptComponent>())
+		//	{
+		//		if (ImGui::Button("Run Script"))
+		//		{
+		//			ScriptEngine::OnCreateEntity(entity);
+		//		}
+		//	}
+
 		{
-		}
-		
-		auto& tag = entity->GetComponent<TagComponent>().Tag;
-		// ImGui::Text("%s", tag.c_str());
-		
-		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)entity, flags, tag.c_str());
-		if (ImGui::IsItemClicked())
-		{
-			m_SelectionContext = entity;
-		}
-		
-		if (opened)
-		{
-			ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(entity + 1000), flags, tag.c_str());
-			if (opened) {
-				ImGui::TreePop();
+			if (ImGui::Button("Add Component")) {
+				ImGui::OpenPopup("AddComponent");
 			}
-			ImGui::TreePop();
+
+			if (ImGui::BeginPopup("AddComponent"))
+			{
+				if (ImGui::MenuItem("Mesh")) {
+					m_SelectionContext.AddComponent<MeshComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::MenuItem("Script")) {
+					m_SelectionContext.AddComponent<ScriptComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::MenuItem("Camera")) {
+					m_SelectionContext.AddComponent<CameraComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::MenuItem("Sprite Renderer")) {
+					m_SelectionContext.AddComponent<SpriteRendererComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
 		}
 	}
-	****/
-
 }
