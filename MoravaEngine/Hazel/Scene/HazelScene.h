@@ -29,6 +29,7 @@ namespace Hazel {
 	};
 
 	class Entity;
+	class ScriptableEntity;
 
 	using EntityMap = std::unordered_map<UUID, Entity>;
 

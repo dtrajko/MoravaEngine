@@ -34,8 +34,8 @@ namespace Hazel
 		if (m_SelectionContext && false)
 		{
 			//	Try and find same entity in new scene
-			//	auto& entityMap = m_Context->GetEntityMap();
-			//	UUID selectedEntityID = m_SelectionContext.GetUUID();
+			auto& entityMap = m_Context->GetEntityMap();
+			UUID selectedEntityID = m_SelectionContext.GetUUID();
 
 			//	if (entityMap.find(selectedEntityID) != entityMap.end()) {
 			//		m_SelectionContext = entityMap.at(selectedEntityID);

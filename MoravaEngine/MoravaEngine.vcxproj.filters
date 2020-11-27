@@ -578,6 +578,9 @@
     <ClCompile Include="Hazel\Core\UUID.cpp">
       <Filter>Hazel\Core</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Scene\ScriptableEntity.cpp">
+      <Filter>Hazel\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">

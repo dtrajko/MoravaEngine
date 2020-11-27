@@ -2,8 +2,9 @@
 
 #include "entt.hpp"
 
-#include "HazelScene.h"
 #include "../Core/Assert.h"
+#include "Components.h"
+#include "HazelScene.h"
 
 #include "../../Log.h"
 #include "../../Mesh.h"
@@ -54,6 +55,15 @@ namespace Hazel {
 		void SetMesh(Mesh* mesh) { m_Mesh = mesh; }
 		Mesh* GetMesh() { return m_Mesh; }
 
+		void SetMaterial(Material* material) { m_Material = material; }
+		Material* GetMaterial() { return m_Material; }
+
+		// NoECS
+		const glm::mat4& GetTransform() const { return m_Transform; }
+		glm::mat4& Transform() { return m_Transform; }
+		const std::string& GetName() const { return m_Name; }
+		inline void SetName(std::string name) { m_Name = name; }
+
 		operator bool() const { return m_EntityHandle != entt::null; }
 		operator entt::entity() const { return m_EntityHandle; }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; }
@@ -65,14 +75,7 @@ namespace Hazel {
 			return !(*this == other);
 		};
 
-		void SetMaterial(Material* material) { m_Material = material; }
-		Material* GetMaterial() { return m_Material; }
-
-		// NoECS
-		const glm::mat4& GetTransform() const { return m_Transform; }
-		glm::mat4& Transform() { return m_Transform; }
-		const std::string& GetName() const { return m_Name; }
-		inline void SetName(std::string name) { m_Name = name; }
+		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 
 	public:
 		Mesh* m_Mesh;

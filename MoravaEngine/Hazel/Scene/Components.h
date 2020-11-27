@@ -5,11 +5,12 @@
 #include "../Core/UUID.h"
 #include "../Renderer/HazelMesh.h"
 #include "SceneCamera.h"
-#include "ScriptableEntity.h"
 
 
 namespace Hazel
 {
+	class ScriptableEntity;
+
 	struct IDComponent
 	{
 		UUID ID = 0;

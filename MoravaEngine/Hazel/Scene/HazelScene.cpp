@@ -3,6 +3,7 @@
 #include "Entity.h"
 #include "../Renderer/HazelMesh.h"
 #include "../Renderer/SceneRenderer.h"
+#include "ScriptableEntity.h"
 
 #include <glm/glm.hpp>
 

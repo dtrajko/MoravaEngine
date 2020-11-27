@@ -231,6 +231,7 @@
     <ClCompile Include="Hazel\Scene\HazelScene.cpp" />
     <ClCompile Include="Hazel\Scene\SceneCamera.cpp" />
     <ClCompile Include="Hazel\Scene\SceneSerializer.cpp" />
+    <ClCompile Include="Hazel\Scene\ScriptableEntity.cpp" />
     <ClCompile Include="Hazel\Script\ScriptEngine.cpp" />
     <ClCompile Include="InsertionSort.cpp" />
     <ClCompile Include="LearnOpenGL\MeshSSAO.cpp" />
