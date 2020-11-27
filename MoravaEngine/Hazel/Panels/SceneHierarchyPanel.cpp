@@ -37,9 +37,9 @@ namespace Hazel
 			auto& entityMap = m_Context->GetEntityMap();
 			UUID selectedEntityID = m_SelectionContext.GetUUID();
 
-			//	if (entityMap.find(selectedEntityID) != entityMap.end()) {
-			//		m_SelectionContext = entityMap.at(selectedEntityID);
-			//	}
+			if (entityMap.find(selectedEntityID) != entityMap.end()) {
+				m_SelectionContext = entityMap.at(selectedEntityID);
+			}
 		}
 	}
 
