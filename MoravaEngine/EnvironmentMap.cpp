@@ -1041,9 +1041,9 @@ void EnvironmentMap::GeometryPassTemporary()
     m_ShaderHazelPBR->Bind();
 
     // Render all entities with mesh component
-    for (const entt::entity entity : meshEntities)
+    for (const entt::entity entt : meshEntities)
     {
-        Hazel::Entity entity = { entity, m_SceneRenderer->s_Data.ActiveScene };
+        Hazel::Entity entity = { entt, m_SceneRenderer->s_Data.ActiveScene };
 
         Ref<Hazel::HazelMesh> hazelMesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
         m_ShaderHazelPBR = hazelMesh->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
