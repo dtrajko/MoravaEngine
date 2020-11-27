@@ -53,7 +53,18 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 
     m_DisplayBoundingBoxes = false;
 
-    Scene::s_ImGuizmoTransform = &m_MeshEntity.Transform();
+    // Set current entity to 1st in m_Registry
+    glm::mat4 guizmoTransform;
+    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    for (auto entity : meshEntities)
+    {
+        Hazel::Entity entity = { entity, m_SceneRenderer->s_Data.ActiveScene };
+        guizmoTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+        m_MeshEntity = entity;
+        break;
+    }
+
+    Scene::s_ImGuizmoTransform = &guizmoTransform;
     Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
 
@@ -219,7 +230,7 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
 
     ((Hazel::HazelMesh*)mesh)->SetTimeMultiplier(1.0f);
 
-    m_SceneRenderer->s_Data.DrawList.clear(); // doesn't work for multiple meshes on the scene
+    // m_SceneRenderer->s_Data.DrawList.clear(); // doesn't work for multiple meshes on the scene
     Hazel::SceneRendererData::DrawCommand drawCommand;
 
     drawCommand.Name = fileNameNoExt;
@@ -229,16 +240,14 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
     m_SceneRenderer->s_Data.DrawList.push_back(drawCommand);
 
     // m_MeshEntity: NoECS version
-    m_MeshEntity = CreateEntity(drawCommand.Name);
-    m_MeshEntity.Transform() = glm::translate(glm::mat4(1.0f), { 0.0f, 0.0f, 0.0f }) * glm::scale(glm::mat4(1.0f), { 1.0f, 1.0f, 1.0f });
-    m_MeshEntity.AddComponent<Hazel::MeshComponent>(Ref<Hazel::HazelMesh>(mesh));
-    m_MeshEntity.AddComponent<Hazel::ScriptComponent>("Example.Script");
-    m_MeshEntity.SetMesh(drawCommand.Mesh);
+    Hazel::Entity meshEntity = CreateEntity(drawCommand.Name);
+    meshEntity.AddComponent<Hazel::MeshComponent>(Ref<Hazel::HazelMesh>(mesh));
+    meshEntity.AddComponent<Hazel::ScriptComponent>("Example.Script");
 
-    SubmitEntity(m_MeshEntity);
+    SubmitEntity(meshEntity);
     LoadEnvMapMaterials(mesh);
 
-    return m_MeshEntity;
+    return meshEntity;
 }
 
 void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
@@ -474,11 +483,14 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
 
 void EnvironmentMap::SubmitEntity(Hazel::Entity entity)
 {
-    auto mesh = entity.GetMesh();
+    auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
     if (!mesh)
         return;
 
-    m_SceneRenderer->s_Data.DrawList.push_back({ entity.GetName(), (Hazel::HazelMesh*)mesh, entity.GetMaterial(), entity.GetTransform() });
+    auto& transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+
+    auto name = entity.GetComponent<Hazel::TagComponent>().Tag;
+    m_SceneRenderer->s_Data.DrawList.push_back({ name, mesh.get(), entity.GetMaterial(), transform });
 }
 
 float& EnvironmentMap::GetSkyboxLOD()
@@ -521,7 +533,10 @@ void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool
 
 void EnvironmentMap::OnImGuiRender()
 {
-    ((Hazel::HazelMesh*)m_MeshEntity.GetMesh())->OnImGuiRender();
+    m_SceneRenderer->s_Data.ActiveScene->m_Registry.view<Hazel::MeshComponent>().each([=](auto entity, auto& mc)
+    {
+        mc.Mesh->OnImGuiRender();
+    });
 
     ImGui::Begin("Transform");
     {
@@ -918,9 +933,10 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 for (uint32_t i = 0; i < submeshes.size(); i++)
                 {
                     auto& submesh = submeshes[i];
+                    auto& transform = m_MeshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
                     Hazel::Ray ray = {
-                        glm::inverse(m_MeshEntity.GetTransform() * submesh.Transform) * glm::vec4(origin, 1.0f),
-                        glm::inverse(glm::mat3(m_MeshEntity.GetTransform()) * glm::mat3(submesh.Transform)) * direction
+                        glm::inverse(transform * submesh.Transform) * glm::vec4(origin, 1.0f),
+                        glm::inverse(glm::mat3(transform) * glm::mat3(submesh.Transform)) * direction
                     };
 
                     float t;
@@ -1012,9 +1028,6 @@ void EnvironmentMap::GeometryPassTemporary()
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.IrradianceMap->Bind(m_SamplerSlots->at("irradiance"));
     m_SceneRenderer->s_Data.BRDFLUT->Bind(m_SamplerSlots->at("BRDF_LUT"));
 
-    Hazel::HazelMesh* hazelMesh = ((Hazel::HazelMesh*)m_MeshEntity.GetMesh());
-    m_ShaderHazelPBR = hazelMesh->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
-
     uint32_t samplerSlot = m_SamplerSlots->at("albedo");
 
     RenderHazelSkybox();
@@ -1023,14 +1036,29 @@ void EnvironmentMap::GeometryPassTemporary()
         RenderHazelGrid();
     }
 
+    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+
     m_ShaderHazelPBR->Bind();
-    for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
+
+    // Render all entities with mesh component
+    for (const entt::entity entity : meshEntities)
     {
-        if (m_EnvMapMaterials.contains(submesh.NodeName)) {
-            UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh.NodeName));
+        Hazel::Entity entity = { entity, m_SceneRenderer->s_Data.ActiveScene };
+
+        Ref<Hazel::HazelMesh> hazelMesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+        m_ShaderHazelPBR = hazelMesh->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
+
+        for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
+        {
+            if (m_EnvMapMaterials.contains(submesh.NodeName)) {
+                UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh.NodeName));
+            }
+
+            glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+            submesh.Render(hazelMesh.get(), m_ShaderHazelPBR, entityTransform, samplerSlot, m_EnvMapMaterials);
         }
-        submesh.Render(hazelMesh, m_ShaderHazelPBR, m_MeshEntity.Transform(), samplerSlot, m_EnvMapMaterials);
     }
+
     m_ShaderHazelPBR->Unbind();
 
     Hazel::Renderer2D::BeginScene(viewProj, true);
@@ -1046,8 +1074,9 @@ void EnvironmentMap::GeometryPassTemporary()
         if (m_SelectionContext.size()) {
             auto& selection = m_SelectionContext[0];
 
+            glm::mat4 transform = m_MeshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
             glm::vec4 color = m_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
-            Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, m_MeshEntity.Transform() * selection.Mesh->Transform, color);
+            Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
         }
     }
     Hazel::Renderer2D::EndScene();

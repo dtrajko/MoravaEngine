@@ -127,7 +127,7 @@ namespace Hazel {
     {
         // TODO: Culling, sorting, etc.
 
-        auto mesh = entity.GetMesh();
+        auto& mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
         if (!mesh) {
             return;
         }

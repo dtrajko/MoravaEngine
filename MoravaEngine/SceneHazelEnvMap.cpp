@@ -582,7 +582,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     }
                 }
 
-                Hazel::HazelMesh* meshAnimPBR = (Hazel::HazelMesh*)m_EnvironmentMap->GetMeshEntity().GetMesh();
+                Ref<Hazel::HazelMesh> meshAnimPBR = m_EnvironmentMap->GetMeshEntity().GetComponent<Hazel::MeshComponent>().Mesh;
                 ImGui::Checkbox("Is Animated", &meshAnimPBR->IsAnimated());
             }
 

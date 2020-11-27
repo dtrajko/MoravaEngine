@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Entity.h"
 #include "../Core/UUID.h"
 #include "../Renderer/HazelTexture.h"
 #include "../Renderer/HazelMaterial.h"

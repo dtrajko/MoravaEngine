@@ -82,7 +82,7 @@ namespace Hazel
 
 			ImGui::Begin("Properties");
 
-			if (m_SelectionContext)
+			if (m_SelectionContext.HasComponent<Hazel::TagComponent>())
 			{
 				DrawComponents(m_SelectionContext);
 			}

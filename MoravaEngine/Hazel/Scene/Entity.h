@@ -19,7 +19,6 @@ namespace Hazel {
 	public:
 		Entity();
 		Entity(entt::entity handle, HazelScene* scene);
-		Entity(const std::string& name);
 		Entity(const Entity& other) = default;
 
 		template<typename T, typename... Args>
@@ -41,6 +40,8 @@ namespace Hazel {
 		template<typename T>
 		bool HasComponent()
 		{
+			if (m_Scene == nullptr) return false;
+
 			return m_Scene->m_Registry.has<T>(m_EntityHandle);
 		}
 
@@ -51,22 +52,15 @@ namespace Hazel {
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
-		// TODO: Move to Component
-		void SetMesh(Mesh* mesh) { m_Mesh = mesh; }
-		Mesh* GetMesh() { return m_Mesh; }
+		glm::mat4& Transform() { return m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle).GetTransform(); }
+		const glm::mat4& Transform() const { return m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle).GetTransform(); }
 
 		void SetMaterial(Material* material) { m_Material = material; }
 		Material* GetMaterial() { return m_Material; }
 
-		// NoECS
-		const glm::mat4& GetTransform() const { return m_Transform; }
-		glm::mat4& Transform() { return m_Transform; }
-		const std::string& GetName() const { return m_Name; }
-		inline void SetName(std::string name) { m_Name = name; }
-
-		operator bool() const { return m_EntityHandle != entt::null; }
 		operator entt::entity() const { return m_EntityHandle; }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; }
+		operator bool() const { return (uint32_t)m_EntityHandle && m_Scene; }
 
 		inline bool operator==(const Entity& other) const {
 			return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene;
@@ -77,17 +71,17 @@ namespace Hazel {
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 
-	public:
-		Mesh* m_Mesh;
-		glm::mat4 m_Transform;
-		HazelScene* m_Scene = nullptr;
+	private:
+		Entity(const std::string& name);
 
 	private:
 		entt::entity m_EntityHandle;
+		HazelScene* m_Scene = nullptr;
 
 		Material* m_Material;
 
-		// NoECS
-		std::string m_Name;
+
+		friend HazelScene;
+
 	};
 }

@@ -30,11 +30,6 @@ namespace Hazel {
 		m_ShaderSkybox->setInt("u_Texture", skybox.get()->GetID());
 	}
 
-	//	void HazelScene::AddEntity(Entity entity)
-	//	{
-	//		m_Entities.push_back(entity);
-	//	}
-
 	void HazelScene::OnEntitySelected(Entity entity)
 	{
 	}
@@ -56,10 +51,6 @@ namespace Hazel {
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
-
-		// NoECS
-		entity.SetName(entityName);
-		// AddEntity(entity);
 
 		Log::GetLogger()->debug("CreateEntity name = '{0}'", name);
 

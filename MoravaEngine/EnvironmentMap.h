@@ -55,7 +55,7 @@ public:
 	inline Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
 	inline Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
 	inline Hazel::Entity GetMeshEntity() { return m_MeshEntity; }
-	inline void SetMeshEntity(Hazel::Entity entity) { m_MeshEntity = entity; }
+	// inline void SetMeshEntity(Hazel::Entity entity) { m_MeshEntity = entity; }
 	inline float& GetSkyboxExposureFactor() { return m_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
 	void SetViewportBounds(glm::vec2* viewportBounds);
