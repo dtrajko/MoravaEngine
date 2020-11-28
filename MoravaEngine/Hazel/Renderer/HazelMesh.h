@@ -108,14 +108,6 @@ namespace Hazel {
 		}
 	};
 
-	//	struct Triangle
-	//	{
-	//		Vertex V0, V1, V2;
-	//	
-	//		Triangle(const Vertex& v0, const Vertex& v1, const Vertex& v2)
-	//			: V0(v0), V1(v1), V2(v2) {}
-	//	};
-
 	struct Triangle
 	{
 		Vertex V0, V1, V2;
@@ -153,7 +145,7 @@ namespace Hazel {
 
 		virtual void Create() override;
 		virtual void OnUpdate(float ts, bool debug) override;
-		void OnImGuiRender();
+		void OnImGuiRender(uint32_t id = 0);
 		void DumpVertexBuffer();
 
 		void Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials);
@@ -173,6 +165,8 @@ namespace Hazel {
 		// Setters
 		inline void SetBaseMaterial(Material* baseMaterial) { m_BaseMaterial = baseMaterial; }
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
+
+		static std::string GetSubmeshMaterialName(Mesh* mesh, Hazel::Submesh& submesh);
 
 	private:
 		void BoneTransform(float time);

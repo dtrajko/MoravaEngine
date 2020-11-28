@@ -842,7 +842,7 @@ namespace Hazel {
 		}
 	}
 
-	void HazelMesh::OnImGuiRender()
+	void HazelMesh::OnImGuiRender(uint32_t id)
 	{
 		if (!m_Scene) {
 			Log::GetLogger()->error("Mesh: Scene not initialized!");
@@ -855,7 +855,7 @@ namespace Hazel {
 		ImGui::End();
 
 		ImGui::Begin("Mesh Debug");
-		std::string meshFileName = Util::GetFileNameFromFullPath(m_FilePath);
+		std::string meshFileName = std::to_string(id) + ". " + Util::GetFileNameFromFullPath(m_FilePath);
 		if (ImGui::CollapsingHeader(meshFileName.c_str()))
 		{
 			if (m_IsAnimated && m_Scene->mAnimations)
@@ -924,6 +924,13 @@ namespace Hazel {
 				return nodeAnim;
 		}
 		return nullptr;
+	}
+
+	std::string HazelMesh::GetSubmeshMaterialName(Mesh* mesh, Hazel::Submesh& submesh)
+	{
+		std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));
+		std::string submeshMaterialName = meshName + "_" + submesh.NodeName;
+		return submeshMaterialName;
 	}
 
 	void HazelMesh::BoneTransform(float time)
@@ -1062,9 +1069,11 @@ namespace Hazel {
 			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
 		}
 
-		if (envMapMaterials.contains(NodeName))
+		std::string nodeName = Hazel::HazelMesh::GetSubmeshMaterialName(parentMesh, *this);
+
+		if (envMapMaterials.contains(nodeName))
 		{
-			envMapMaterial = envMapMaterials.at(NodeName);
+			envMapMaterial = envMapMaterials.at(nodeName);
 			envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);
 			envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
 			envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);

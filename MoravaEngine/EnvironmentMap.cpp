@@ -251,41 +251,66 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
 
 void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
 {
-    for (auto material : m_EnvMapMaterials) {
-        delete material.second;
-    }
-    m_EnvMapMaterials.clear();
+    //  for (auto material : m_EnvMapMaterials) {
+    //      delete material.second;
+    //  }
+    //  
+    //  m_EnvMapMaterials.clear();
 
-    for (Hazel::Submesh& submesh : ((Hazel::HazelMesh*)mesh)->GetSubmeshes())
+    std::vector<Hazel::Submesh>& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
+
+    for (Hazel::Submesh& submesh : submeshes)
     {
-        if (m_EnvMapMaterials.contains(submesh.NodeName)) {
+        std::string nodeName = Hazel::HazelMesh::GetSubmeshMaterialName(mesh, submesh);
+
+        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials nodeName = '{0}'", nodeName);
+
+        if (m_EnvMapMaterials.contains(nodeName)) {
             continue;
         }
 
-        TextureInfo textureInfo;
-        if (m_TextureInfo.contains(submesh.NodeName)) {
-            textureInfo = m_TextureInfo.at(submesh.NodeName);
-        }
-        else {
-            textureInfo = m_TextureInfoDefault;
-        }
-
-        EnvMapMaterial* envMapMaterial = new EnvMapMaterial();
-
-        // Load Hazel/Renderer/HazelTexture
-        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.albedo);
-        envMapMaterial->GetAlbedoInput().UseTexture = true;
-        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.normal);
-        envMapMaterial->GetNormalInput().UseTexture = true;
-        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.metallic);
-        envMapMaterial->GetMetalnessInput().UseTexture = true;
-        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.roughness);
-        envMapMaterial->GetRoughnessInput().UseTexture = true;
-        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.ao);
-        envMapMaterial->GetAOInput().UseTexture = true;
-
-        m_EnvMapMaterials.insert(std::make_pair(submesh.NodeName, envMapMaterial));
+        EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(nodeName);
+        m_EnvMapMaterials.insert(std::make_pair(nodeName, envMapMaterial));
     }
+
+    //  // If no submeshes, add a default material for entity
+    //  if (submeshes.empty())
+    //  {
+    //      EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(meshName);
+    //      m_EnvMapMaterials.insert(std::make_pair(meshName, envMapMaterial));
+    //  }
+
+    for (auto& material : m_EnvMapMaterials)
+    {
+        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials material name: '{0}'", material.first);
+    }
+}
+
+EnvMapMaterial* EnvironmentMap::CreateDefaultMaterial(const std::string& nodeName)
+{
+    EnvMapMaterial* envMapMaterial = new EnvMapMaterial();
+
+    TextureInfo textureInfo;
+    if (m_TextureInfo.contains(nodeName)) {
+        textureInfo = m_TextureInfo.at(nodeName);
+    }
+    else {
+        textureInfo = m_TextureInfoDefault;
+    }
+
+    // Load Hazel/Renderer/HazelTexture
+    envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.albedo);
+    envMapMaterial->GetAlbedoInput().UseTexture = true;
+    envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.normal);
+    envMapMaterial->GetNormalInput().UseTexture = true;
+    envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.metallic);
+    envMapMaterial->GetMetalnessInput().UseTexture = true;
+    envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.roughness);
+    envMapMaterial->GetRoughnessInput().UseTexture = true;
+    envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.ao);
+    envMapMaterial->GetAOInput().UseTexture = true;
+
+    return envMapMaterial;
 }
 
 void EnvironmentMap::SetupShaders()
@@ -532,10 +557,14 @@ void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool
 
 void EnvironmentMap::OnImGuiRender()
 {
-    m_SceneRenderer->s_Data.ActiveScene->m_Registry.view<Hazel::MeshComponent>().each([=](auto entity, auto& mc)
+    uint32_t id = 0;
+    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    for (auto entt : meshEntities)
     {
-        mc.Mesh->OnImGuiRender();
-    });
+        Hazel::Entity entity = { entt, m_SceneRenderer->s_Data.ActiveScene };
+        auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+        mesh->OnImGuiRender(++id);
+    }
 
     ImGui::Begin("Transform");
     {
@@ -1049,8 +1078,10 @@ void EnvironmentMap::GeometryPassTemporary()
 
         for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
         {
-            if (m_EnvMapMaterials.contains(submesh.NodeName)) {
-                UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(submesh.NodeName));
+            std::string nodeName = Hazel::HazelMesh::GetSubmeshMaterialName(hazelMesh.get(), submesh);
+            if (m_EnvMapMaterials.contains(nodeName)) {
+                Log::GetLogger()->debug("EnvironmentMap::GeometryPassTemporary Material '{0}' found!", nodeName);
+                UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(nodeName));
             }
 
             glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
