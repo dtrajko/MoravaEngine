@@ -53,7 +53,7 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 
     m_DisplayBoundingBoxes = false;
 
-    // Set current entity to 1st in m_Registry
+    // Set current entity to LAST in m_Registry
     glm::mat4 guizmoTransform;
     auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     for (auto entity : meshEntities)
@@ -61,7 +61,6 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
         Hazel::Entity entity = { entity, m_SceneRenderer->s_Data.ActiveScene };
         guizmoTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
         m_MeshEntity = entity;
-        break;
     }
 
     Scene::s_ImGuizmoTransform = &guizmoTransform;

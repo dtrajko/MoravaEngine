@@ -16,6 +16,7 @@
 #include <assimp/LogStream.hpp>
 
 #include "../../Math.h"
+#include "../../Util.h"
 
 #include "imgui.h"
 
@@ -854,10 +855,12 @@ namespace Hazel {
 		ImGui::End();
 
 		ImGui::Begin("Mesh Debug");
-		if (ImGui::CollapsingHeader(m_FilePath.c_str()))
+		std::string meshFileName = Util::GetFileNameFromFullPath(m_FilePath);
+		if (ImGui::CollapsingHeader(meshFileName.c_str()))
 		{
 			if (m_IsAnimated && m_Scene->mAnimations)
 			{
+				ImGui::Indent(10.0f);
 				if (ImGui::CollapsingHeader("Animation"))
 				{
 					if (ImGui::Button(m_AnimationPlaying ? "Pause" : "Play"))
@@ -866,6 +869,7 @@ namespace Hazel {
 					ImGui::SliderFloat("##AnimationTime", &m_AnimationTime, 0.0f, (float)m_Scene->mAnimations[0]->mDuration);
 					ImGui::DragFloat("Time Scale", &m_TimeMultiplier, 0.05f, 0.0f, 100.0f);
 				}
+				ImGui::Unindent(10.0f);
 			}
 		}
 		ImGui::End();

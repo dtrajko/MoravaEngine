@@ -200,8 +200,9 @@ namespace Hazel
 				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
 			}
 
-			for (uint32_t i = 0; i < node->mNumChildren; i++)
+			for (uint32_t i = 0; i < node->mNumChildren; i++) {
 				MeshNodeHierarchy(mesh, node->mChildren[i], transform, level + 1);
+			}
 
 			ImGui::TreePop();
 		}
