@@ -1080,7 +1080,6 @@ void EnvironmentMap::GeometryPassTemporary()
         {
             std::string nodeName = Hazel::HazelMesh::GetSubmeshMaterialName(hazelMesh.get(), submesh);
             if (m_EnvMapMaterials.contains(nodeName)) {
-                Log::GetLogger()->debug("EnvironmentMap::GeometryPassTemporary Material '{0}' found!", nodeName);
                 UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(nodeName));
             }
 
