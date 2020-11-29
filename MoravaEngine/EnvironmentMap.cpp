@@ -26,20 +26,20 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     m_SamplerSlots = new std::map<std::string, unsigned int>();
 
     //  // PBR texture inputs
-    m_SamplerSlots->insert(std::make_pair("albedo",     1)); // uniform sampler2D u_AlbedoTexture
-    m_SamplerSlots->insert(std::make_pair("normal",     2)); // uniform sampler2D u_NormalTexture
-    m_SamplerSlots->insert(std::make_pair("metalness",  3)); // uniform sampler2D u_MetalnessTexture
-    m_SamplerSlots->insert(std::make_pair("roughness",  4)); // uniform sampler2D u_RoughnessTexture
-    m_SamplerSlots->insert(std::make_pair("ao",         5)); // uniform sampler2D u_AOTexture
+    m_SamplerSlots->insert(std::make_pair("albedo", 1)); // uniform sampler2D u_AlbedoTexture
+    m_SamplerSlots->insert(std::make_pair("normal", 2)); // uniform sampler2D u_NormalTexture
+    m_SamplerSlots->insert(std::make_pair("metalness", 3)); // uniform sampler2D u_MetalnessTexture
+    m_SamplerSlots->insert(std::make_pair("roughness", 4)); // uniform sampler2D u_RoughnessTexture
+    m_SamplerSlots->insert(std::make_pair("ao", 5)); // uniform sampler2D u_AOTexture
     // Environment maps
-    m_SamplerSlots->insert(std::make_pair("radiance",   6)); // uniform samplerCube u_EnvRadianceTex
+    m_SamplerSlots->insert(std::make_pair("radiance", 6)); // uniform samplerCube u_EnvRadianceTex
     m_SamplerSlots->insert(std::make_pair("irradiance", 7)); // uniform samplerCube u_EnvIrradianceTex
     // BRDF LUT
-    m_SamplerSlots->insert(std::make_pair("BRDF_LUT",   8)); // uniform sampler2D u_BRDFLUTTexture
+    m_SamplerSlots->insert(std::make_pair("BRDF_LUT", 8)); // uniform sampler2D u_BRDFLUTTexture
 
     // Skybox.fs         - uniform samplerCube u_Texture;
     // SceneComposite.fs - uniform sampler2DMS u_Texture;
-    m_SamplerSlots->insert(std::make_pair("u_Texture",  1));
+    m_SamplerSlots->insert(std::make_pair("u_Texture", 1));
 
     m_SceneRenderer = new Hazel::SceneRenderer(filepath, scene);
     m_SceneRenderer->s_Data.SceneData.SceneCamera = scene->GetCamera();
@@ -53,20 +53,8 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 
     m_DisplayBoundingBoxes = false;
 
-    // Set current entity to LAST in m_Registry
-    glm::mat4 guizmoTransform;
-    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
-    for (auto entity : meshEntities)
-    {
-        Hazel::Entity entity = { entity, m_SceneRenderer->s_Data.ActiveScene };
-        guizmoTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
-        m_MeshEntity = entity;
-    }
-
-    Scene::s_ImGuizmoTransform = &guizmoTransform;
+    Scene::s_ImGuizmoTransform = nullptr; // &GetMeshEntity()->Transform();
     Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-
-
 }
 
 void EnvironmentMap::Init()
@@ -135,51 +123,51 @@ void EnvironmentMap::SetupContextData()
 {
     // Setup default texture info
     m_TextureInfoDefault = {};
-    m_TextureInfoDefault.albedo    = "Textures/PBR/non_reflective/albedo.png";
-    m_TextureInfoDefault.normal    = "Textures/PBR/non_reflective/normal.png";
-    m_TextureInfoDefault.metallic  = "Textures/PBR/non_reflective/metallic.png";
+    m_TextureInfoDefault.albedo = "Textures/PBR/non_reflective/albedo.png";
+    m_TextureInfoDefault.normal = "Textures/PBR/non_reflective/normal.png";
+    m_TextureInfoDefault.metallic = "Textures/PBR/non_reflective/metallic.png";
     m_TextureInfoDefault.roughness = "Textures/PBR/non_reflective/roughness.png";
-    m_TextureInfoDefault.ao        = "Textures/PBR/non_reflective/ao.png";
+    m_TextureInfoDefault.ao = "Textures/PBR/non_reflective/ao.png";
 
     Log::GetLogger()->info("-- BEGIN Setup PBR Materials --");
     {
         // PBR EnvMapMaterial Weapon (Index = 0)
         TextureInfo textureInfoWeapon = {};
-        textureInfoWeapon.albedo    = "Models/Gladiator/Gladiator_weapon_BaseColor.jpg";
-        textureInfoWeapon.normal    = "Models/Gladiator/Gladiator_weapon_Normal.jpg";
-        textureInfoWeapon.metallic  = "Models/Gladiator/Gladiator_weapon_Metallic.jpg";
+        textureInfoWeapon.albedo = "Models/Gladiator/Gladiator_weapon_BaseColor.jpg";
+        textureInfoWeapon.normal = "Models/Gladiator/Gladiator_weapon_Normal.jpg";
+        textureInfoWeapon.metallic = "Models/Gladiator/Gladiator_weapon_Metallic.jpg";
         textureInfoWeapon.roughness = "Models/Gladiator/Gladiator_weapon_Roughness.jpg";
-        textureInfoWeapon.ao        = "Textures/plain.png";
+        textureInfoWeapon.ao = "Textures/plain.png";
 
         m_TextureInfo.insert(std::make_pair("Gladiator_weapon", textureInfoWeapon));
 
         // PBR EnvMapMaterial Gladiator (Index = 1)
         TextureInfo textureInfoGladiator = {};
-        textureInfoGladiator.albedo    = "Models/Gladiator/Gladiator_BaseColor.jpg";
-        textureInfoGladiator.normal    = "Models/Gladiator/Gladiator_Normal.jpg";
-        textureInfoGladiator.metallic  = "Models/Gladiator/Gladiator_Metallic.jpg";
+        textureInfoGladiator.albedo = "Models/Gladiator/Gladiator_BaseColor.jpg";
+        textureInfoGladiator.normal = "Models/Gladiator/Gladiator_Normal.jpg";
+        textureInfoGladiator.metallic = "Models/Gladiator/Gladiator_Metallic.jpg";
         textureInfoGladiator.roughness = "Models/Gladiator/Gladiator_Roughness.jpg";
-        textureInfoGladiator.ao        = "Models/Gladiator/Gladiator_AO.jpg";
+        textureInfoGladiator.ao = "Models/Gladiator/Gladiator_AO.jpg";
 
         m_TextureInfo.insert(std::make_pair("Gladiator", textureInfoGladiator));
 
         // PBR EnvMapMaterial Cerberus (Index = 0)
         TextureInfo textureInfoCerberus = {};
-        textureInfoCerberus.albedo    = "Models/Cerberus/Textures/Cerberus_A.tga";
-        textureInfoCerberus.normal    = "Models/Cerberus/Textures/Cerberus_N.tga";
-        textureInfoCerberus.metallic  = "Models/Cerberus/Textures/Cerberus_M.tga";
+        textureInfoCerberus.albedo = "Models/Cerberus/Textures/Cerberus_A.tga";
+        textureInfoCerberus.normal = "Models/Cerberus/Textures/Cerberus_N.tga";
+        textureInfoCerberus.metallic = "Models/Cerberus/Textures/Cerberus_M.tga";
         textureInfoCerberus.roughness = "Models/Cerberus/Textures/Cerberus_R.tga";
-        textureInfoCerberus.ao        = "Models/Cerberus/Textures/Cerberus_AO.tga";
+        textureInfoCerberus.ao = "Models/Cerberus/Textures/Cerberus_AO.tga";
 
         m_TextureInfo.insert(std::make_pair("Cerberus00_Fixed", textureInfoCerberus));
 
         // PBR EnvMapMaterial M1911 (Index = 0)
         TextureInfo textureInfoM1911 = {};
-        textureInfoM1911.albedo    = "Models/M1911/m1911_color.png";
-        textureInfoM1911.normal    = "Models/M1911/m1911_normal.png";
-        textureInfoM1911.metallic  = "Models/M1911/m1911_metalness.png";
+        textureInfoM1911.albedo = "Models/M1911/m1911_color.png";
+        textureInfoM1911.normal = "Models/M1911/m1911_normal.png";
+        textureInfoM1911.metallic = "Models/M1911/m1911_metalness.png";
         textureInfoM1911.roughness = "Models/M1911/m1911_roughness.png";
-        textureInfoM1911.ao        = "Textures/plain.png";
+        textureInfoM1911.ao = "Textures/plain.png";
 
         m_TextureInfo.insert(std::make_pair("pCylinder5", textureInfoM1911));
 
@@ -223,7 +211,7 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
         m_ShaderHazelPBR = m_ShaderHazelPBR_Static;
     }
 
-    Log::GetLogger()->debug("EnvironmentMap::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);        
+    Log::GetLogger()->debug("EnvironmentMap::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
     Hazel::HazelMesh* mesh = new Hazel::HazelMesh(fullPath, m_ShaderHazelPBR, nullptr, isAnimated);
 
@@ -357,25 +345,25 @@ void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMater
 
     shaderHazelPBR->Bind();
 
-    shaderHazelPBR->setInt("u_AlbedoTexture",    m_SamplerSlots->at("albedo"));
-    shaderHazelPBR->setInt("u_NormalTexture",    m_SamplerSlots->at("normal"));
+    shaderHazelPBR->setInt("u_AlbedoTexture", m_SamplerSlots->at("albedo"));
+    shaderHazelPBR->setInt("u_NormalTexture", m_SamplerSlots->at("normal"));
     shaderHazelPBR->setInt("u_MetalnessTexture", m_SamplerSlots->at("metalness"));
     shaderHazelPBR->setInt("u_RoughnessTexture", m_SamplerSlots->at("roughness"));
-    shaderHazelPBR->setInt("u_AOTexture",        m_SamplerSlots->at("ao"));
+    shaderHazelPBR->setInt("u_AOTexture", m_SamplerSlots->at("ao"));
 
     shaderHazelPBR->setVec3("u_AlbedoColor", envMapMaterial->GetAlbedoInput().Color);
-    shaderHazelPBR->setFloat("u_Metalness",  envMapMaterial->GetMetalnessInput().Value);
-    shaderHazelPBR->setFloat("u_Roughness",  envMapMaterial->GetRoughnessInput().Value);
-    shaderHazelPBR->setFloat("u_AO",         envMapMaterial->GetAOInput().Value);
+    shaderHazelPBR->setFloat("u_Metalness", envMapMaterial->GetMetalnessInput().Value);
+    shaderHazelPBR->setFloat("u_Roughness", envMapMaterial->GetRoughnessInput().Value);
+    shaderHazelPBR->setFloat("u_AO", envMapMaterial->GetAOInput().Value);
 
     shaderHazelPBR->setFloat("u_EnvMapRotation", m_EnvMapRotation);
 
-    shaderHazelPBR->setFloat("u_RadiancePrefilter",  m_RadiancePrefilter ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_AlbedoTexToggle",    envMapMaterial->GetAlbedoInput().UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_NormalTexToggle",    envMapMaterial->GetNormalInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_RadiancePrefilter", m_RadiancePrefilter ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_AlbedoTexToggle", envMapMaterial->GetAlbedoInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_NormalTexToggle", envMapMaterial->GetNormalInput().UseTexture ? 1.0f : 0.0f);
     shaderHazelPBR->setFloat("u_MetalnessTexToggle", envMapMaterial->GetMetalnessInput().UseTexture ? 1.0f : 0.0f);
     shaderHazelPBR->setFloat("u_RoughnessTexToggle", envMapMaterial->GetRoughnessInput().UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_AOTexToggle",        envMapMaterial->GetAOInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_AOTexToggle", envMapMaterial->GetAOInput().UseTexture ? 1.0f : 0.0f);
     // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
     shaderHazelPBR->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure()); // originally used in Shaders/Hazel/SceneComposite
 
@@ -408,7 +396,7 @@ void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
 EnvironmentMap::~EnvironmentMap()
 {
     for (auto const& material : m_EnvMapMaterials) {
-        delete &material;
+        delete& material;
     }
 
     delete m_SceneRenderer;
@@ -431,9 +419,12 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
     UpdateUniforms();
 
     // Update HazelMesh List
-    for (auto& dc : m_SceneRenderer->s_Data.DrawList)
+    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    for (auto entt : meshEntities)
     {
-        ((Hazel::HazelMesh*)dc.Mesh)->OnUpdate(timestep, false);
+        Hazel::Entity entity{ entt, m_SceneRenderer->s_Data.ActiveScene };
+        Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+        mesh->OnUpdate(timestep, false);
     }
 
     Scene::s_ImGuizmoTransform = m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
@@ -515,6 +506,20 @@ void EnvironmentMap::SubmitEntity(Hazel::Entity entity)
 
     auto name = entity.GetComponent<Hazel::TagComponent>().Tag;
     m_SceneRenderer->s_Data.DrawList.push_back({ name, mesh.get(), entity.GetMaterial(), transform });
+}
+
+Hazel::Entity* EnvironmentMap::GetMeshEntity()
+{
+    Hazel::Entity meshEntity;
+    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    if (meshEntities.size()) {
+        for (auto entt : meshEntities)
+        {
+            meshEntity = Hazel::Entity{ entt, m_SceneRenderer->s_Data.ActiveScene };
+        }
+        return &meshEntity;
+    }
+    return nullptr;
 }
 
 float& EnvironmentMap::GetSkyboxLOD()
@@ -868,7 +873,7 @@ void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transfo
 
         glDisable(GL_DEPTH_TEST);
 
-        glDrawElementsBaseVertex(GL_TRIANGLES, submesh.GetIndexCount(), GL_UNSIGNED_INT, (void*)(sizeof(uint32_t)* submesh.BaseIndex), submesh.BaseVertex);
+        glDrawElementsBaseVertex(GL_TRIANGLES, submesh.GetIndexCount(), GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
     }
 }
 
@@ -961,7 +966,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 for (uint32_t i = 0; i < submeshes.size(); i++)
                 {
                     auto& submesh = submeshes[i];
-                    auto& transform = m_MeshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
+                    auto& transform = GetMeshEntity()->GetComponent<Hazel::TransformComponent>().GetTransform();
                     Hazel::Ray ray = {
                         glm::inverse(transform * submesh.Transform) * glm::vec4(origin, 1.0f),
                         glm::inverse(glm::mat3(transform) * glm::mat3(submesh.Transform)) * direction
@@ -997,7 +1002,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 OnSelected(m_SelectionContext[0]);
             }
             else {
-                m_CurrentlySelectedTransform = &m_MeshEntity.Transform();
+                m_CurrentlySelectedTransform = &GetMeshEntity()->Transform();
             }
         }
     }
@@ -1093,17 +1098,17 @@ void EnvironmentMap::GeometryPassTemporary()
     Hazel::Renderer2D::BeginScene(viewProj, true);
     {
         RendererBasic::SetLineThickness(2.0f);
-    
+
         if (m_DrawOnTopBoundingBoxes)
         {
             glm::vec3 camPosition = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->GetPosition();
             Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
         }
-        
+
         if (m_SelectionContext.size()) {
             auto& selection = m_SelectionContext[0];
 
-            glm::mat4 transform = m_MeshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
+            glm::mat4 transform = GetMeshEntity()->GetComponent<Hazel::TransformComponent>().GetTransform();
             glm::vec4 color = m_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
             Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
         }
