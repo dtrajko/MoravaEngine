@@ -40,7 +40,9 @@ namespace Hazel {
 		template<typename T>
 		bool HasComponent()
 		{
-			if (m_Scene == nullptr) return false;
+			if (!IsValid()) {
+				return false;
+			}
 
 			return m_Scene->m_Registry.has<T>(m_EntityHandle);
 		}
@@ -52,7 +54,7 @@ namespace Hazel {
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
-		glm::mat4& Transform() { return m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle).GetTransform(); }
+		glm::mat4& Transform();
 		const glm::mat4& Transform() const { return m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle).GetTransform(); }
 
 		void SetMaterial(Material* material) { m_Material = material; }
@@ -70,6 +72,8 @@ namespace Hazel {
 		};
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
+
+		bool IsValid();
 
 	private:
 		Entity(const std::string& name);

@@ -568,9 +568,17 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
             {
                 ImGui::Text("Mesh");
-                auto meshComponent = m_EnvironmentMap->GetMeshEntity().GetComponent<Hazel::MeshComponent>();
-                std::string fullPath = meshComponent.Mesh ? meshComponent.Mesh->GetFilePath() : "None";
-                std::string fileName = Util::GetFileNameFromFullPath(fullPath);
+
+                std::string meshFullPath = "None";
+                Hazel::Entity meshEntity = *m_EnvironmentMap->GetMeshEntity();
+                if (meshEntity.HasComponent<Hazel::MeshComponent>()) {
+                    auto meshComponent = m_EnvironmentMap->GetMeshEntity()->GetComponent<Hazel::MeshComponent>();
+                    if (meshComponent.Mesh) {
+                        meshFullPath = meshComponent.Mesh->GetFilePath();
+                    }
+                }
+
+                std::string fileName = Util::GetFileNameFromFullPath(meshFullPath);
                 ImGui::Text(fileName.c_str()); ImGui::SameLine();
                 if (ImGui::Button("...##Mesh"))
                 {
@@ -582,7 +590,8 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     }
                 }
 
-                Ref<Hazel::HazelMesh> meshAnimPBR = m_EnvironmentMap->GetMeshEntity().GetComponent<Hazel::MeshComponent>().Mesh;
+                meshEntity = *m_EnvironmentMap->GetMeshEntity();
+                Ref<Hazel::HazelMesh> meshAnimPBR = meshEntity.GetComponent<Hazel::MeshComponent>().Mesh;
                 ImGui::Checkbox("Is Animated", &meshAnimPBR->IsAnimated());
             }
 

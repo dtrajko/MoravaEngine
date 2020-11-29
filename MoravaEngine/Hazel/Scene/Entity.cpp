@@ -16,4 +16,24 @@ namespace Hazel {
 	{
 	}
 
+	glm::mat4& Entity::Transform()
+	{
+		glm::mat4 transform = glm::mat4(1.0f);
+		if (HasComponent<TransformComponent>()) {
+			transform = m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle).GetTransform();
+		} else {
+			Log::GetLogger()->error("The Entity does not have TransformComponent");
+		}
+		return transform;
+	}
+
+	bool Entity::IsValid()
+	{
+		if (!m_Scene) return false;
+
+		if (m_Scene->m_Registry.valid(m_EntityHandle)) return false;
+
+		return true;
+	}
+
 }

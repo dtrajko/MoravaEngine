@@ -54,7 +54,7 @@ public:
 	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
 	inline Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
 	inline Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
-	inline Hazel::Entity GetMeshEntity() { return m_MeshEntity; }
+	Hazel::Entity* GetMeshEntity();
 	// inline void SetMeshEntity(Hazel::Entity entity) { m_MeshEntity = entity; }
 	inline float& GetSkyboxExposureFactor() { return m_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
@@ -118,7 +118,7 @@ private:
 	Hazel::HazelTexture2D* m_CheckerboardTexture;
 
 	Hazel::Entity m_CameraEntity;
-	Hazel::Entity m_MeshEntity;
+	// Hazel::Entity m_MeshEntity;
 
 	int m_GizmoType = -1; // -1 = no gizmo
 	float m_SnapValue = 0.5f;
