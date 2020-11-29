@@ -65,14 +65,6 @@ namespace Hazel {
 	void HazelScene::OnUpdate(float ts)
 	{
 		//	ECS Update all entities
-		//	for (auto entity : m_Entities)
-		//	{
-		//		auto mesh = entity.GetMesh();
-		//		if (mesh) {
-		//			mesh->OnUpdate(ts, false);
-		//		}
-		//	}
-
 		m_Registry.view<MeshComponent>().each([=](auto entity, auto& mc)
 			{
 				auto mesh = mc.Mesh;
@@ -173,12 +165,6 @@ namespace Hazel {
 				}
 			});
 		}
-
-		//	No ECS
-		//	for (Entity entity : m_Entities)
-		//	{
-		//		delete entity;
-		//	}
 	}
 
 	template<typename T>

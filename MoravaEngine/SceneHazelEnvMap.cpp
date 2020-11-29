@@ -139,6 +139,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
 
 SceneHazelEnvMap::~SceneHazelEnvMap()
 {
+    delete m_EnvironmentMap;
 }
 
 void SceneHazelEnvMap::SetLightManager()
@@ -570,11 +571,15 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                 ImGui::Text("Mesh");
 
                 Hazel::Entity* meshEntity = nullptr;
+                std::string meshFullPath = "None";
 
-                meshEntity = m_EnvironmentMap->GetMeshEntity();
-                auto meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
-                std::string fullPath = meshComponent.Mesh ? meshComponent.Mesh->GetFilePath() : "None";
-                std::string fileName = Util::GetFileNameFromFullPath(fullPath);
+                //  meshEntity = m_EnvironmentMap->GetMeshEntity();
+                //  if (meshEntity->HasComponent<Hazel::MeshComponent>()) {
+                //      auto meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
+                //      meshFullPath = meshComponent.Mesh->GetFilePath();
+                //  }
+
+                std::string fileName = Util::GetFileNameFromFullPath(meshFullPath);
                 ImGui::Text(fileName.c_str()); ImGui::SameLine();
                 if (ImGui::Button("...##Mesh"))
                 {
@@ -586,9 +591,13 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     }
                 }
 
-                meshEntity = m_EnvironmentMap->GetMeshEntity();
-                Ref<Hazel::HazelMesh> meshAnimPBR = meshEntity->GetComponent<Hazel::MeshComponent>().Mesh;
-                ImGui::Checkbox("Is Animated", &meshAnimPBR->IsAnimated());
+                auto meshEntities = GetAllEntitiesWith<Hazel::MeshComponent>();
+                if (meshEntities.size())
+                {
+                    meshEntity = m_EnvironmentMap->GetMeshEntity();
+                    Ref<Hazel::HazelMesh> meshAnimPBR = meshEntity->GetComponent<Hazel::MeshComponent>().Mesh;
+                    ImGui::Checkbox("Is Animated", &meshAnimPBR->IsAnimated());
+                }
             }
 
             ImGui::Separator();
