@@ -204,29 +204,29 @@ void SceneHazelEnvMap::SetupShaders()
 
 void SceneHazelEnvMap::SetupMeshes()
 {
-    for (auto& drawCommand : m_EnvironmentMap->GetSceneRenderer()->s_Data.DrawList)
-    {
-        m_Entities.insert(std::make_pair(drawCommand.Name, Entity()));
-
-        m_Entities[drawCommand.Name].Enabled = true;
-        m_Entities[drawCommand.Name].Transform.Translation = glm::vec3(0.0f, 0.0f, 0.0f);
-        m_Entities[drawCommand.Name].Transform.Rotation = glm::quat(glm::vec3(0.0f));
-        m_Entities[drawCommand.Name].Init.Transform.Scale = glm::vec3(1.0f);
-        m_Entities[drawCommand.Name].Init.AABB.Transform.Scale = glm::vec3(1.0f);
-        m_Entities[drawCommand.Name].OriginOffset = glm::vec3(0.0f);
-
-        Log::GetLogger()->info("-- BEGIN SceneHazelEnvMap setup M1911");
-        {
-            m_Entities[drawCommand.Name].Transform.Scale = m_Entities[drawCommand.Name].Init.Transform.Scale;
-            m_Entities[drawCommand.Name].Transform.Transform = glm::mat4(1.0f);
-            m_Entities[drawCommand.Name].Transform.Transform = glm::translate(m_Entities[drawCommand.Name].Transform.Transform, m_Entities[drawCommand.Name].Transform.Translation);
-            m_Entities[drawCommand.Name].Transform.Transform = glm::scale(m_Entities[drawCommand.Name].Transform.Transform, m_Entities[drawCommand.Name].Transform.Scale);
-
-            m_Entities[drawCommand.Name].AABB = AABB(m_Entities[drawCommand.Name].Transform.Translation + m_Entities[drawCommand.Name].OriginOffset,
-                m_Entities[drawCommand.Name].Transform.Rotation, m_Entities[drawCommand.Name].Init.AABB.Transform.Scale);
-        }
-        Log::GetLogger()->info("-- END SceneHazelEnvMap setup M1911");
-    }
+    //  for (auto& drawCommand : m_EnvironmentMap->GetSceneRenderer()->s_Data.DrawList)
+    //  {
+    //      m_Entities.insert(std::make_pair(drawCommand.Name, Entity()));
+    //  
+    //      m_Entities[drawCommand.Name].Enabled = true;
+    //      m_Entities[drawCommand.Name].Transform.Translation = glm::vec3(0.0f, 0.0f, 0.0f);
+    //      m_Entities[drawCommand.Name].Transform.Rotation = glm::quat(glm::vec3(0.0f));
+    //      m_Entities[drawCommand.Name].Init.Transform.Scale = glm::vec3(1.0f);
+    //      m_Entities[drawCommand.Name].Init.AABB.Transform.Scale = glm::vec3(1.0f);
+    //      m_Entities[drawCommand.Name].OriginOffset = glm::vec3(0.0f);
+    //  
+    //      Log::GetLogger()->info("-- BEGIN SceneHazelEnvMap setup M1911");
+    //      {
+    //          m_Entities[drawCommand.Name].Transform.Scale = m_Entities[drawCommand.Name].Init.Transform.Scale;
+    //          m_Entities[drawCommand.Name].Transform.Transform = glm::mat4(1.0f);
+    //          m_Entities[drawCommand.Name].Transform.Transform = glm::translate(m_Entities[drawCommand.Name].Transform.Transform, m_Entities[drawCommand.Name].Transform.Translation);
+    //          m_Entities[drawCommand.Name].Transform.Transform = glm::scale(m_Entities[drawCommand.Name].Transform.Transform, m_Entities[drawCommand.Name].Transform.Scale);
+    //  
+    //          m_Entities[drawCommand.Name].AABB = AABB(m_Entities[drawCommand.Name].Transform.Translation + m_Entities[drawCommand.Name].OriginOffset,
+    //              m_Entities[drawCommand.Name].Transform.Rotation, m_Entities[drawCommand.Name].Init.AABB.Transform.Scale);
+    //      }
+    //      Log::GetLogger()->info("-- END SceneHazelEnvMap setup M1911");
+    //  }
 }
 
 void SceneHazelEnvMap::SetupModels()
@@ -260,41 +260,41 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 
     m_EnvironmentMap->Update(this, deltaTime);
 
-    if (m_HDRI_Edit != m_HDRI_Edit_Prev)
-    {
-        if (m_HDRI_Edit == HDRI_GREENWICH_PARK) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH) {
-            //  m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_BIRCHWOOD) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_PINK_SUNRISE) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/pink_sunrise_4k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_ROOITOU_PARK) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_VENICE_DAWN) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_PEPPERMINT_POWERPLANT) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/peppermint_powerplant_1k.hdr");
-        }
-
-        m_HDRI_Edit_Prev = m_HDRI_Edit;
-    }
+    //  if (m_HDRI_Edit != m_HDRI_Edit_Prev)
+    //  {
+    //      if (m_HDRI_Edit == HDRI_GREENWICH_PARK) {
+    //          // m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
+    //      }
+    //      else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE) {
+    //          // m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
+    //      }
+    //      else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH) {
+    //          //  m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr");
+    //      }
+    //      else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT) {
+    //          // m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr");
+    //      }
+    //      else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY) {
+    //          // m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr");
+    //      }
+    //      else if (m_HDRI_Edit == HDRI_BIRCHWOOD) {
+    //          // m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr");
+    //      }
+    //      else if (m_HDRI_Edit == HDRI_PINK_SUNRISE) {
+    //          // m_MaterialWorkflowPBR->Init("Textures/HDR/pink_sunrise_4k.hdr");
+    //      }
+    //      else if (m_HDRI_Edit == HDRI_ROOITOU_PARK) {
+    //          // m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr");
+    //      }
+    //      else if (m_HDRI_Edit == HDRI_VENICE_DAWN) {
+    //          // m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr");
+    //      }
+    //      else if (m_HDRI_Edit == HDRI_PEPPERMINT_POWERPLANT) {
+    //          // m_MaterialWorkflowPBR->Init("Textures/HDR/peppermint_powerplant_1k.hdr");
+    //      }
+    //  
+    //      m_HDRI_Edit_Prev = m_HDRI_Edit;
+    //  }
 }
 
 void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
@@ -305,75 +305,75 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     m_ImGuiViewportMainX = (int)ImGui::GetMainViewport()->GetWorkPos().x;
     m_ImGuiViewportMainY = (int)ImGui::GetMainViewport()->GetWorkPos().y;
 
-    MousePicker* mp = MousePicker::Get();
+    // MousePicker* mp = MousePicker::Get();
 
     // ImGui Colors
-    ImVec4* colors = ImGui::GetStyle().Colors;
-    colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-    colors[ImGuiCol_TextDisabled] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-    colors[ImGuiCol_WindowBg] = ImVec4(0.18f, 0.18f, 0.18f, 1.0f); // Window background
-    colors[ImGuiCol_ChildBg] = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
-    colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
-    colors[ImGuiCol_Border] = ImVec4(0.43f, 0.43f, 0.50f, 0.5f);
-    colors[ImGuiCol_BorderShadow] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
-    colors[ImGuiCol_FrameBg] = ImVec4(0.3f, 0.3f, 0.3f, 0.5f); // Widget backgrounds
-    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.4f, 0.4f, 0.4f, 0.4f);
-    colors[ImGuiCol_FrameBgActive] = ImVec4(0.4f, 0.4f, 0.4f, 0.6f);
-    colors[ImGuiCol_TitleBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.0f);
-    colors[ImGuiCol_TitleBgActive] = ImVec4(0.29f, 0.29f, 0.29f, 1.0f);
-    colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.0f, 0.0f, 0.0f, 0.51f);
-    colors[ImGuiCol_MenuBarBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.0f);
-    colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
-    colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.31f, 0.31f, 0.31f, 1.0f);
-    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.41f, 0.41f, 0.41f, 1.0f);
-    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.0f);
-    colors[ImGuiCol_CheckMark] = ImVec4(0.94f, 0.94f, 0.94f, 1.0f);
-    colors[ImGuiCol_SliderGrab] = ImVec4(0.51f, 0.51f, 0.51f, 0.7f);
-    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.66f, 0.66f, 0.66f, 1.0f);
-    colors[ImGuiCol_Button] = ImVec4(0.44f, 0.44f, 0.44f, 0.4f);
-    colors[ImGuiCol_ButtonHovered] = ImVec4(0.46f, 0.47f, 0.48f, 1.0f);
-    colors[ImGuiCol_ButtonActive] = ImVec4(0.42f, 0.42f, 0.42f, 1.0f);
-    colors[ImGuiCol_Header] = ImVec4(0.7f, 0.7f, 0.7f, 0.31f);
-    colors[ImGuiCol_HeaderHovered] = ImVec4(0.7f, 0.7f, 0.7f, 0.8f);
-    colors[ImGuiCol_HeaderActive] = ImVec4(0.48f, 0.5f, 0.52f, 1.0f);
-    colors[ImGuiCol_Separator] = ImVec4(0.43f, 0.43f, 0.5f, 0.5f);
-    colors[ImGuiCol_SeparatorHovered] = ImVec4(0.72f, 0.72f, 0.72f, 0.78f);
-    colors[ImGuiCol_SeparatorActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.0f);
-    colors[ImGuiCol_ResizeGrip] = ImVec4(0.91f, 0.91f, 0.91f, 0.25f);
-    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.81f, 0.81f, 0.81f, 0.67f);
-    colors[ImGuiCol_ResizeGripActive] = ImVec4(0.46f, 0.46f, 0.46f, 0.95f);
-    colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.0f);
-    colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.0f, 0.43f, 0.35f, 1.0f);
-    colors[ImGuiCol_PlotHistogram] = ImVec4(0.73f, 0.6f, 0.15f, 1.0f);
-    colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.0f, 0.6f, 0.0f, 1.0f);
-    colors[ImGuiCol_TextSelectedBg] = ImVec4(0.87f, 0.87f, 0.87f, 0.35f);
-    colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.8f, 0.8f, 0.8f, 0.35f);
-    colors[ImGuiCol_DragDropTarget] = ImVec4(1.0f, 1.0f, 0.0f, 0.9f);
-    colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.6f, 0.6f, 1.0f);
-    colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
+    //  ImVec4* colors = ImGui::GetStyle().Colors;
+    //  colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    //  colors[ImGuiCol_TextDisabled] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+    //  colors[ImGuiCol_WindowBg] = ImVec4(0.18f, 0.18f, 0.18f, 1.0f); // Window background
+    //  colors[ImGuiCol_ChildBg] = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
+    //  colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
+    //  colors[ImGuiCol_Border] = ImVec4(0.43f, 0.43f, 0.50f, 0.5f);
+    //  colors[ImGuiCol_BorderShadow] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+    //  colors[ImGuiCol_FrameBg] = ImVec4(0.3f, 0.3f, 0.3f, 0.5f); // Widget backgrounds
+    //  colors[ImGuiCol_FrameBgHovered] = ImVec4(0.4f, 0.4f, 0.4f, 0.4f);
+    //  colors[ImGuiCol_FrameBgActive] = ImVec4(0.4f, 0.4f, 0.4f, 0.6f);
+    //  colors[ImGuiCol_TitleBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.0f);
+    //  colors[ImGuiCol_TitleBgActive] = ImVec4(0.29f, 0.29f, 0.29f, 1.0f);
+    //  colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.0f, 0.0f, 0.0f, 0.51f);
+    //  colors[ImGuiCol_MenuBarBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.0f);
+    //  colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
+    //  colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.31f, 0.31f, 0.31f, 1.0f);
+    //  colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.41f, 0.41f, 0.41f, 1.0f);
+    //  colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.0f);
+    //  colors[ImGuiCol_CheckMark] = ImVec4(0.94f, 0.94f, 0.94f, 1.0f);
+    //  colors[ImGuiCol_SliderGrab] = ImVec4(0.51f, 0.51f, 0.51f, 0.7f);
+    //  colors[ImGuiCol_SliderGrabActive] = ImVec4(0.66f, 0.66f, 0.66f, 1.0f);
+    //  colors[ImGuiCol_Button] = ImVec4(0.44f, 0.44f, 0.44f, 0.4f);
+    //  colors[ImGuiCol_ButtonHovered] = ImVec4(0.46f, 0.47f, 0.48f, 1.0f);
+    //  colors[ImGuiCol_ButtonActive] = ImVec4(0.42f, 0.42f, 0.42f, 1.0f);
+    //  colors[ImGuiCol_Header] = ImVec4(0.7f, 0.7f, 0.7f, 0.31f);
+    //  colors[ImGuiCol_HeaderHovered] = ImVec4(0.7f, 0.7f, 0.7f, 0.8f);
+    //  colors[ImGuiCol_HeaderActive] = ImVec4(0.48f, 0.5f, 0.52f, 1.0f);
+    //  colors[ImGuiCol_Separator] = ImVec4(0.43f, 0.43f, 0.5f, 0.5f);
+    //  colors[ImGuiCol_SeparatorHovered] = ImVec4(0.72f, 0.72f, 0.72f, 0.78f);
+    //  colors[ImGuiCol_SeparatorActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.0f);
+    //  colors[ImGuiCol_ResizeGrip] = ImVec4(0.91f, 0.91f, 0.91f, 0.25f);
+    //  colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.81f, 0.81f, 0.81f, 0.67f);
+    //  colors[ImGuiCol_ResizeGripActive] = ImVec4(0.46f, 0.46f, 0.46f, 0.95f);
+    //  colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.0f);
+    //  colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.0f, 0.43f, 0.35f, 1.0f);
+    //  colors[ImGuiCol_PlotHistogram] = ImVec4(0.73f, 0.6f, 0.15f, 1.0f);
+    //  colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.0f, 0.6f, 0.0f, 1.0f);
+    //  colors[ImGuiCol_TextSelectedBg] = ImVec4(0.87f, 0.87f, 0.87f, 0.35f);
+    //  colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.8f, 0.8f, 0.8f, 0.35f);
+    //  colors[ImGuiCol_DragDropTarget] = ImVec4(1.0f, 1.0f, 0.0f, 0.9f);
+    //  colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.6f, 0.6f, 1.0f);
+    //  colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
 
-    ImGui::Begin("Camera");
-    {
-        if (ImGui::CollapsingHeader("Display Info"))
-        {
-            char buffer[100];
-            sprintf(buffer, "Pitch      %.2f", m_Camera->GetPitch());
-            ImGui::Text(buffer);
-            sprintf(buffer, "Yaw        %.2f", m_Camera->GetYaw());
-            ImGui::Text(buffer);
-            sprintf(buffer, "Position   X %.2f Y %.2f Z %.2f", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Direction  X %.2f Y %.2f Z %.2f", m_Camera->GetDirection().x, m_Camera->GetDirection().y, m_Camera->GetDirection().z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Front      X %.2f Y %.2f Z %.2f", m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Up         X %.2f Y %.2f Z %.2f", m_Camera->GetUp().x, m_Camera->GetUp().y, m_Camera->GetUp().z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Right      X %.2f Y %.2f Z %.2f", m_Camera->GetRight().x, m_Camera->GetRight().y, m_Camera->GetRight().z);
-            ImGui::Text(buffer);
-        }
-    }
-    ImGui::End();
+    //  ImGui::Begin("Camera");
+    //  {
+    //      if (ImGui::CollapsingHeader("Display Info"))
+    //      {
+    //          char buffer[100];
+    //          sprintf(buffer, "Pitch      %.2f", m_Camera->GetPitch());
+    //          ImGui::Text(buffer);
+    //          sprintf(buffer, "Yaw        %.2f", m_Camera->GetYaw());
+    //          ImGui::Text(buffer);
+    //          sprintf(buffer, "Position   X %.2f Y %.2f Z %.2f", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
+    //          ImGui::Text(buffer);
+    //          sprintf(buffer, "Direction  X %.2f Y %.2f Z %.2f", m_Camera->GetDirection().x, m_Camera->GetDirection().y, m_Camera->GetDirection().z);
+    //          ImGui::Text(buffer);
+    //          sprintf(buffer, "Front      X %.2f Y %.2f Z %.2f", m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
+    //          ImGui::Text(buffer);
+    //          sprintf(buffer, "Up         X %.2f Y %.2f Z %.2f", m_Camera->GetUp().x, m_Camera->GetUp().y, m_Camera->GetUp().z);
+    //          ImGui::Text(buffer);
+    //          sprintf(buffer, "Right      X %.2f Y %.2f Z %.2f", m_Camera->GetRight().x, m_Camera->GetRight().y, m_Camera->GetRight().z);
+    //          ImGui::Text(buffer);
+    //      }
+    //  }
+    //  ImGui::End();
 
     ImGui::Begin("Framebuffers");
     {
@@ -393,11 +393,11 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             //  ImGui::Text("Irradiance Map");
             //  ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->s_Data.SceneData.SceneEnvironment.IrradianceMap->GetID(), imageSize);
 
-            ImGui::Text("Geo Pass");
-            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->GetFinalColorBufferID(), imageSize);
-
-            ImGui::Text("Composite Pass");
-            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+            //  ImGui::Text("Geo Pass");
+            //  ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->GetFinalColorBufferID(), imageSize);
+            //  
+            //  ImGui::Text("Composite Pass");
+            //  ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
 
             //  Log::GetLogger()->debug("Geo Pass Framebuffer Color Attachment ID {0}",
             //      m_EnvironmentMap->GetSceneRenderer()->s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID());
@@ -439,92 +439,92 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::End();
     }
 
-    ImGui::Begin("Select HDRI");
-    {
-        if (ImGui::CollapsingHeader("Display Info"))
-        {
-            ImGui::RadioButton("Greenwich Park", &m_HDRI_Edit, HDRI_GREENWICH_PARK);
-            ImGui::RadioButton("San Giuseppe Bridge", &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
-            ImGui::RadioButton("Tropical Beach", &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
-            ImGui::RadioButton("Vignaioli Night", &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
-            ImGui::RadioButton("Early Eve & Warm Sky", &m_HDRI_Edit, HDRI_EARLY_EVE_WARM_SKY);
-            ImGui::RadioButton("Birchwood", &m_HDRI_Edit, HDRI_BIRCHWOOD);
-            ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
-            ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
-            ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
-            ImGui::RadioButton("Peppermint Powerplant", &m_HDRI_Edit, HDRI_PEPPERMINT_POWERPLANT);
-        }
-    }
-    ImGui::End();
+    //  ImGui::Begin("Select HDRI");
+    //  {
+    //      if (ImGui::CollapsingHeader("Display Info"))
+    //      {
+    //          ImGui::RadioButton("Greenwich Park", &m_HDRI_Edit, HDRI_GREENWICH_PARK);
+    //          ImGui::RadioButton("San Giuseppe Bridge", &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
+    //          ImGui::RadioButton("Tropical Beach", &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
+    //          ImGui::RadioButton("Vignaioli Night", &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
+    //          ImGui::RadioButton("Early Eve & Warm Sky", &m_HDRI_Edit, HDRI_EARLY_EVE_WARM_SKY);
+    //          ImGui::RadioButton("Birchwood", &m_HDRI_Edit, HDRI_BIRCHWOOD);
+    //          ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
+    //          ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
+    //          ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
+    //          ImGui::RadioButton("Peppermint Powerplant", &m_HDRI_Edit, HDRI_PEPPERMINT_POWERPLANT);
+    //      }
+    //  }
+    //  ImGui::End();
 
-    ImGui::Begin("Settings");
-    {
-        if (ImGui::CollapsingHeader("Display Info"))
-        {
-            ImGui::Checkbox("Display Bounding Boxes", m_EnvironmentMap->GetDisplayBoundingBoxes());
-            ImGui::Checkbox("Display Hazel Grid", m_EnvironmentMap->GetDisplayHazelGrid());
-            ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
+    //  ImGui::Begin("Settings");
+    //  {
+    //      if (ImGui::CollapsingHeader("Display Info"))
+    //      {
+    //          ImGui::Checkbox("Display Bounding Boxes", m_EnvironmentMap->GetDisplayBoundingBoxes());
+    //          ImGui::Checkbox("Display Hazel Grid", m_EnvironmentMap->GetDisplayHazelGrid());
+    //          ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
+    //  
+    //          ImGui::Separator();
+    //          for (auto& entity : m_Entities)
+    //          {
+    //              std::string isEnabled = std::string("Is Enabled ") + entity.first;
+    //              ImGui::Checkbox(isEnabled.c_str(), &entity.second.Enabled);
+    //          }
+    //          ImGui::Separator();
+    //          for (auto& entity : m_Entities)
+    //          {
+    //              std::string isIntersecting = std::string("Is Intersecting ") + entity.first;
+    //              ImGui::Checkbox(isIntersecting.c_str(), &entity.second.Intersecting);
+    //          }
+    //          ImGui::Separator();
+    //          bool eventLoggingEnabled = Application::Get()->GetWindow()->GetEventLogging();
+    //          if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
+    //              Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
+    //          }
+    //      }
+    //  }
+    //  ImGui::End();
 
-            ImGui::Separator();
-            for (auto& entity : m_Entities)
-            {
-                std::string isEnabled = std::string("Is Enabled ") + entity.first;
-                ImGui::Checkbox(isEnabled.c_str(), &entity.second.Enabled);
-            }
-            ImGui::Separator();
-            for (auto& entity : m_Entities)
-            {
-                std::string isIntersecting = std::string("Is Intersecting ") + entity.first;
-                ImGui::Checkbox(isIntersecting.c_str(), &entity.second.Intersecting);
-            }
-            ImGui::Separator();
-            bool eventLoggingEnabled = Application::Get()->GetWindow()->GetEventLogging();
-            if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
-                Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
-            }
-        }
-    }
-    ImGui::End();
-
-    ImGui::Begin("Mouse Picker");
-    {
-        if (ImGui::CollapsingHeader("Display Info"))
-        {
-            char buffer[100];
-
-            sprintf(buffer, "Main Window [ X %i Y %i ]", m_ImGuiViewportMainX, m_ImGuiViewportMainY);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Viewport [ X %i Y %i W %i H %i ]", mp->m_Viewport.X, mp->m_Viewport.Y, mp->m_Viewport.Width, mp->m_Viewport.Height);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Screen Mouse [ %i %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Normalized Coords [ %.2ff %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Clip Coords [ %.2ff %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Eye Coords [ %.2ff %.2ff %.2ff %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "World Ray [ %.2ff %.2ff %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
-            ImGui::Text(buffer);
-        }
-    }
-    ImGui::End();
+    //  ImGui::Begin("Mouse Picker");
+    //  {
+    //      if (ImGui::CollapsingHeader("Display Info"))
+    //      {
+    //          char buffer[100];
+    //  
+    //          sprintf(buffer, "Main Window [ X %i Y %i ]", m_ImGuiViewportMainX, m_ImGuiViewportMainY);
+    //          ImGui::Text(buffer);
+    //          ImGui::Separator();
+    //  
+    //          sprintf(buffer, "Viewport [ X %i Y %i W %i H %i ]", mp->m_Viewport.X, mp->m_Viewport.Y, mp->m_Viewport.Width, mp->m_Viewport.Height);
+    //          ImGui::Text(buffer);
+    //          ImGui::Separator();
+    //  
+    //          sprintf(buffer, "Screen Mouse [ %i %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
+    //          ImGui::Text(buffer);
+    //          ImGui::Separator();
+    //  
+    //          sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
+    //          ImGui::Text(buffer);
+    //          ImGui::Separator();
+    //  
+    //          sprintf(buffer, "Normalized Coords [ %.2ff %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
+    //          ImGui::Text(buffer);
+    //          ImGui::Separator();
+    //  
+    //          sprintf(buffer, "Clip Coords [ %.2ff %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
+    //          ImGui::Text(buffer);
+    //          ImGui::Separator();
+    //  
+    //          sprintf(buffer, "Eye Coords [ %.2ff %.2ff %.2ff %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
+    //          ImGui::Text(buffer);
+    //          ImGui::Separator();
+    //  
+    //          sprintf(buffer, "World Ray [ %.2ff %.2ff %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
+    //          ImGui::Text(buffer);
+    //      }
+    //  }
+    //  ImGui::End();
 
     m_SceneHierarchyPanel->OnImGuiRender();
 
@@ -591,13 +591,13 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                     }
                 }
 
-                auto meshEntities = GetAllEntitiesWith<Hazel::MeshComponent>();
-                if (meshEntities.size())
-                {
-                    meshEntity = m_EnvironmentMap->GetMeshEntity();
-                    Ref<Hazel::HazelMesh> meshAnimPBR = meshEntity->GetComponent<Hazel::MeshComponent>().Mesh;
-                    ImGui::Checkbox("Is Animated", &meshAnimPBR->IsAnimated());
-                }
+                //  auto meshEntities = GetAllEntitiesWith<Hazel::MeshComponent>();
+                //  if (meshEntities.size())
+                //  {
+                //      meshEntity = m_EnvironmentMap->GetMeshEntity();
+                //      Ref<Hazel::HazelMesh> meshAnimPBR = meshEntity->GetComponent<Hazel::MeshComponent>().Mesh;
+                //      ImGui::Checkbox("Is Animated", &meshAnimPBR->IsAnimated());
+                //  }
             }
 
             ImGui::Separator();
@@ -837,29 +837,29 @@ void SceneHazelEnvMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 
 void SceneHazelEnvMap::RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix)
 {
-    if (!m_DisplayLineElements) return;
-
-    m_ShaderBasic->Bind();
-    m_ShaderBasic->setMat4("projection", projectionMatrix);
-    m_ShaderBasic->setMat4("view", m_CameraController->CalculateViewMatrix());
-
-    // Draw AABBs
-    glm::mat4 AABB_Transform = Math::CreateTransform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
-
-    for (auto& entity : m_Entities)
-    {
-        if (entity.second.Enabled)
-        {
-            m_ShaderBasic->setMat4("model", AABB_Transform);
-            m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-            if (m_EnvironmentMap->GetDisplayBoundingBoxes()) {
-                entity.second.AABB.Draw();
-            }
-        }
-    }
-
-    m_Grid->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
-    m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
+    //  if (!m_DisplayLineElements) return;
+    //  
+    //  m_ShaderBasic->Bind();
+    //  m_ShaderBasic->setMat4("projection", projectionMatrix);
+    //  m_ShaderBasic->setMat4("view", m_CameraController->CalculateViewMatrix());
+    //  
+    //  // Draw AABBs
+    //  glm::mat4 AABB_Transform = Math::CreateTransform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+    //  
+    //  for (auto& entity : m_Entities)
+    //  {
+    //      if (entity.second.Enabled)
+    //      {
+    //          m_ShaderBasic->setMat4("model", AABB_Transform);
+    //          m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+    //          if (m_EnvironmentMap->GetDisplayBoundingBoxes()) {
+    //              entity.second.AABB.Draw();
+    //          }
+    //      }
+    //  }
+    //  
+    //  m_Grid->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
+    //  m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
 }
 
 void SceneHazelEnvMap::SetupUniforms()
@@ -868,72 +868,72 @@ void SceneHazelEnvMap::SetupUniforms()
 
 bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
 {
-    // Shortcuts
-    if (e.GetRepeatCount() > 0) {
-        return false;
-    }
-
-    bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-    bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
-
-    switch (e.GetKeyCode())
-    {
-        case (int)Key::N:
-        {
-            if (control)
-            {
-                NewScene();
-            }
-            break;
-        }
-        case (int)Key::O:
-        {
-            if (control)
-            {
-                OpenScene();
-            }
-            break;
-        }
-        case (int)Key::S:
-        {
-            if (control && shift)
-            {
-                SaveSceneAs();
-            }
-            break;
-        }
-    }
+    //  // Shortcuts
+    //  if (e.GetRepeatCount() > 0) {
+    //      return false;
+    //  }
+    //  
+    //  bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+    //  bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+    //  
+    //  switch (e.GetKeyCode())
+    //  {
+    //      case (int)Key::N:
+    //      {
+    //          if (control)
+    //          {
+    //              NewScene();
+    //          }
+    //          break;
+    //      }
+    //      case (int)Key::O:
+    //      {
+    //          if (control)
+    //          {
+    //              OpenScene();
+    //          }
+    //          break;
+    //      }
+    //      case (int)Key::S:
+    //      {
+    //          if (control && shift)
+    //          {
+    //              SaveSceneAs();
+    //          }
+    //          break;
+    //      }
+    //  }
     return true;
 }
 
 void SceneHazelEnvMap::NewScene()
 {
-    m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene = new Hazel::HazelScene();
-    m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene->OnViewportResize((uint32_t)m_ViewportMainSize.x, (uint32_t)m_ViewportMainSize.y);
-    m_SceneHierarchyPanel->SetContext(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
+    //  m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene = new Hazel::HazelScene();
+    //  m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene->OnViewportResize((uint32_t)m_ViewportMainSize.x, (uint32_t)m_ViewportMainSize.y);
+    //  m_SceneHierarchyPanel->SetContext(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
 }
 
 void SceneHazelEnvMap::OpenScene()
 {
-    std::string filepath = Hazel::FileDialogs::OpenFile("Hazel Scene (*.hazel)\0*.hazel\0");
-    if (!filepath.empty())
-    {
-        m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene = new Hazel::HazelScene();
-        m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene->OnViewportResize((uint32_t)m_ViewportMainSize.x, (uint32_t)m_ViewportMainSize.y);
-        m_SceneHierarchyPanel->SetContext(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
-
-        Hazel::SceneSerializer serializer(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
-        serializer.Deserialize(filepath);
-    }
+    //  std::string filepath = Hazel::FileDialogs::OpenFile("Hazel Scene (*.hazel)\0*.hazel\0");
+    //  if (!filepath.empty())
+    //  {
+    //      m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene = new Hazel::HazelScene();
+    //      m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene->OnViewportResize((uint32_t)m_ViewportMainSize.x, (uint32_t)m_ViewportMainSize.y);
+    //      m_SceneHierarchyPanel->SetContext(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
+    //  
+    //      Hazel::SceneSerializer serializer(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
+    //      serializer.Deserialize(filepath);
+    //  }
 }
 
 void SceneHazelEnvMap::SaveSceneAs()
 {
-    std::string filepath = Hazel::FileDialogs::SaveFile("Hazel Scene (*.hazel)\0*.hazel\0");
-    if (!filepath.empty()) {
-        Hazel::SceneSerializer serializer(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
-        serializer.Serialize(filepath);
-    }
+    //  std::string filepath = Hazel::FileDialogs::SaveFile("Hazel Scene (*.hazel)\0*.hazel\0");
+    //  if (!filepath.empty()) {
+    //      Hazel::SceneSerializer serializer(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
+    //      serializer.Serialize(filepath);
+    //  }
 }
 
 void SceneHazelEnvMap::OnEntitySelected(Hazel::Entity entity)
@@ -959,11 +959,11 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
             RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
         }
 
-        SetupUniforms();
+        // SetupUniforms();
 
         m_EnvironmentMap->Render(m_RenderFramebuffer);
 
-        RenderLineElements(m_ShaderBasic, projectionMatrix);
+        // RenderLineElements(m_ShaderBasic, projectionMatrix);
 
         if (m_IsViewportEnabled)
         {

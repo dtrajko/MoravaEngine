@@ -115,7 +115,6 @@ void EnvironmentMap::Init()
     Hazel::HazelRenderer::Init();
     // Hazel::Renderer2D::Init();
 
-    bool depthTest = true;
     Hazel::Renderer2D::Init();
 }
 
@@ -129,69 +128,69 @@ void EnvironmentMap::SetupContextData()
     m_TextureInfoDefault.roughness = "Textures/PBR/non_reflective/roughness.png";
     m_TextureInfoDefault.ao = "Textures/PBR/non_reflective/ao.png";
 
-    Log::GetLogger()->info("-- BEGIN Setup PBR Materials --");
-    {
-        // PBR EnvMapMaterial Weapon (Index = 0)
-        TextureInfo textureInfoWeapon = {};
-        textureInfoWeapon.albedo = "Models/Gladiator/Gladiator_weapon_BaseColor.jpg";
-        textureInfoWeapon.normal = "Models/Gladiator/Gladiator_weapon_Normal.jpg";
-        textureInfoWeapon.metallic = "Models/Gladiator/Gladiator_weapon_Metallic.jpg";
-        textureInfoWeapon.roughness = "Models/Gladiator/Gladiator_weapon_Roughness.jpg";
-        textureInfoWeapon.ao = "Textures/plain.png";
-
-        m_TextureInfo.insert(std::make_pair("Gladiator_weapon", textureInfoWeapon));
-
-        // PBR EnvMapMaterial Gladiator (Index = 1)
-        TextureInfo textureInfoGladiator = {};
-        textureInfoGladiator.albedo = "Models/Gladiator/Gladiator_BaseColor.jpg";
-        textureInfoGladiator.normal = "Models/Gladiator/Gladiator_Normal.jpg";
-        textureInfoGladiator.metallic = "Models/Gladiator/Gladiator_Metallic.jpg";
-        textureInfoGladiator.roughness = "Models/Gladiator/Gladiator_Roughness.jpg";
-        textureInfoGladiator.ao = "Models/Gladiator/Gladiator_AO.jpg";
-
-        m_TextureInfo.insert(std::make_pair("Gladiator", textureInfoGladiator));
-
-        // PBR EnvMapMaterial Cerberus (Index = 0)
-        TextureInfo textureInfoCerberus = {};
-        textureInfoCerberus.albedo = "Models/Cerberus/Textures/Cerberus_A.tga";
-        textureInfoCerberus.normal = "Models/Cerberus/Textures/Cerberus_N.tga";
-        textureInfoCerberus.metallic = "Models/Cerberus/Textures/Cerberus_M.tga";
-        textureInfoCerberus.roughness = "Models/Cerberus/Textures/Cerberus_R.tga";
-        textureInfoCerberus.ao = "Models/Cerberus/Textures/Cerberus_AO.tga";
-
-        m_TextureInfo.insert(std::make_pair("Cerberus00_Fixed", textureInfoCerberus));
-
-        // PBR EnvMapMaterial M1911 (Index = 0)
-        TextureInfo textureInfoM1911 = {};
-        textureInfoM1911.albedo = "Models/M1911/m1911_color.png";
-        textureInfoM1911.normal = "Models/M1911/m1911_normal.png";
-        textureInfoM1911.metallic = "Models/M1911/m1911_metalness.png";
-        textureInfoM1911.roughness = "Models/M1911/m1911_roughness.png";
-        textureInfoM1911.ao = "Textures/plain.png";
-
-        m_TextureInfo.insert(std::make_pair("pCylinder5", textureInfoM1911));
-
-        // Material* material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
-        // mesh = new Hazel::HazelMesh("Models/Hazel/Sphere1m.fbx", m_ShaderHazelPBR_Anim, drawCommand.Material, false);
-        // mesh = new Hazel::HazelMesh("Models/M1911/M1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);
-        // mesh = new Hazel::HazelMesh("Models/Cerberus/Cerberus_LP.FBX", m_ShaderHazelPBR_Static, nullptr, false);
-
-        // LoadEntity("Models/Hazel/TestScene.fbx");
-
-        m_CameraEntity = CreateEntity("Camera");
-        auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
-        auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
-        m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize(
-            Application::Get()->GetWindow()->GetWidth(),
-            Application::Get()->GetWindow()->GetHeight()
-        );
-        m_SceneRenderer->s_Data.SceneData.SceneCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
-        m_CameraEntity.AddComponent<Hazel::CameraComponent>((Hazel::SceneCamera*)m_SceneRenderer->s_Data.SceneData.SceneCamera);
-
-        auto mapGenerator = CreateEntity("Map Generator");
-        mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
-    }
-    Log::GetLogger()->info("-- END Setup PBR Materials --");
+    //  Log::GetLogger()->info("-- BEGIN Setup PBR Materials --");
+    //  {
+    //      // PBR EnvMapMaterial Weapon (Index = 0)
+    //      TextureInfo textureInfoWeapon = {};
+    //      textureInfoWeapon.albedo = "Models/Gladiator/Gladiator_weapon_BaseColor.jpg";
+    //      textureInfoWeapon.normal = "Models/Gladiator/Gladiator_weapon_Normal.jpg";
+    //      textureInfoWeapon.metallic = "Models/Gladiator/Gladiator_weapon_Metallic.jpg";
+    //      textureInfoWeapon.roughness = "Models/Gladiator/Gladiator_weapon_Roughness.jpg";
+    //      textureInfoWeapon.ao = "Textures/plain.png";
+    //  
+    //      m_TextureInfo.insert(std::make_pair("Gladiator_weapon", textureInfoWeapon));
+    //  
+    //      // PBR EnvMapMaterial Gladiator (Index = 1)
+    //      TextureInfo textureInfoGladiator = {};
+    //      textureInfoGladiator.albedo = "Models/Gladiator/Gladiator_BaseColor.jpg";
+    //      textureInfoGladiator.normal = "Models/Gladiator/Gladiator_Normal.jpg";
+    //      textureInfoGladiator.metallic = "Models/Gladiator/Gladiator_Metallic.jpg";
+    //      textureInfoGladiator.roughness = "Models/Gladiator/Gladiator_Roughness.jpg";
+    //      textureInfoGladiator.ao = "Models/Gladiator/Gladiator_AO.jpg";
+    //  
+    //      m_TextureInfo.insert(std::make_pair("Gladiator", textureInfoGladiator));
+    //  
+    //      // PBR EnvMapMaterial Cerberus (Index = 0)
+    //      TextureInfo textureInfoCerberus = {};
+    //      textureInfoCerberus.albedo = "Models/Cerberus/Textures/Cerberus_A.tga";
+    //      textureInfoCerberus.normal = "Models/Cerberus/Textures/Cerberus_N.tga";
+    //      textureInfoCerberus.metallic = "Models/Cerberus/Textures/Cerberus_M.tga";
+    //      textureInfoCerberus.roughness = "Models/Cerberus/Textures/Cerberus_R.tga";
+    //      textureInfoCerberus.ao = "Models/Cerberus/Textures/Cerberus_AO.tga";
+    //  
+    //      m_TextureInfo.insert(std::make_pair("Cerberus00_Fixed", textureInfoCerberus));
+    //  
+    //      // PBR EnvMapMaterial M1911 (Index = 0)
+    //      TextureInfo textureInfoM1911 = {};
+    //      textureInfoM1911.albedo = "Models/M1911/m1911_color.png";
+    //      textureInfoM1911.normal = "Models/M1911/m1911_normal.png";
+    //      textureInfoM1911.metallic = "Models/M1911/m1911_metalness.png";
+    //      textureInfoM1911.roughness = "Models/M1911/m1911_roughness.png";
+    //      textureInfoM1911.ao = "Textures/plain.png";
+    //  
+    //      m_TextureInfo.insert(std::make_pair("pCylinder5", textureInfoM1911));
+    //  
+    //      // Material* material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
+    //      // mesh = new Hazel::HazelMesh("Models/Hazel/Sphere1m.fbx", m_ShaderHazelPBR_Anim, drawCommand.Material, false);
+    //      // mesh = new Hazel::HazelMesh("Models/M1911/M1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);
+    //      // mesh = new Hazel::HazelMesh("Models/Cerberus/Cerberus_LP.FBX", m_ShaderHazelPBR_Static, nullptr, false);
+    //  
+    //      // LoadEntity("Models/Hazel/TestScene.fbx");
+    //  
+    //      m_CameraEntity = CreateEntity("Camera");
+    //      auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
+    //      auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
+    //      m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize(
+    //          Application::Get()->GetWindow()->GetWidth(),
+    //          Application::Get()->GetWindow()->GetHeight()
+    //      );
+    //      m_SceneRenderer->s_Data.SceneData.SceneCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
+    //      m_CameraEntity.AddComponent<Hazel::CameraComponent>((Hazel::SceneCamera*)m_SceneRenderer->s_Data.SceneData.SceneCamera);
+    //  
+    //      auto mapGenerator = CreateEntity("Map Generator");
+    //      mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
+    //  }
+    //  Log::GetLogger()->info("-- END Setup PBR Materials --");
 }
 
 Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
@@ -218,21 +217,21 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
     ((Hazel::HazelMesh*)mesh)->SetTimeMultiplier(1.0f);
 
     // m_SceneRenderer->s_Data.DrawList.clear(); // doesn't work for multiple meshes on the scene
-    Hazel::SceneRendererData::DrawCommand drawCommand;
-
-    drawCommand.Name = fileNameNoExt;
-    drawCommand.Mesh = mesh;
-    drawCommand.Transform = glm::mat4(1.0f);
-
-    m_SceneRenderer->s_Data.DrawList.push_back(drawCommand);
+    //  Hazel::SceneRendererData::DrawCommand drawCommand;
+    //  
+    //  drawCommand.Name = fileNameNoExt;
+    //  drawCommand.Mesh = mesh;
+    //  drawCommand.Transform = glm::mat4(1.0f);
+    //  
+    //  m_SceneRenderer->s_Data.DrawList.push_back(drawCommand);
 
     // m_MeshEntity: NoECS version
-    Hazel::Entity meshEntity = CreateEntity(drawCommand.Name);
+    Hazel::Entity meshEntity = CreateEntity(fileNameNoExt);
     meshEntity.AddComponent<Hazel::MeshComponent>(Ref<Hazel::HazelMesh>(mesh));
     meshEntity.AddComponent<Hazel::ScriptComponent>("Example.Script");
 
-    SubmitEntity(meshEntity);
-    LoadEnvMapMaterials(mesh);
+    //  SubmitEntity(meshEntity);
+    //  LoadEnvMapMaterials(mesh);
 
     return meshEntity;
 }
@@ -245,21 +244,21 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
     //  
     //  m_EnvMapMaterials.clear();
 
-    std::vector<Hazel::Submesh>& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
-
-    for (Hazel::Submesh& submesh : submeshes)
-    {
-        std::string nodeName = Hazel::HazelMesh::GetSubmeshMaterialName(mesh, submesh);
-
-        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials nodeName = '{0}'", nodeName);
-
-        if (m_EnvMapMaterials.contains(nodeName)) {
-            continue;
-        }
-
-        EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(nodeName);
-        m_EnvMapMaterials.insert(std::make_pair(nodeName, envMapMaterial));
-    }
+    //  std::vector<Hazel::Submesh>& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
+    //  
+    //  for (Hazel::Submesh& submesh : submeshes)
+    //  {
+    //      std::string nodeName = Hazel::HazelMesh::GetSubmeshMaterialName(mesh, submesh);
+    //  
+    //      Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials nodeName = '{0}'", nodeName);
+    //  
+    //      if (m_EnvMapMaterials.contains(nodeName)) {
+    //          continue;
+    //      }
+    //  
+    //      EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(nodeName);
+    //      m_EnvMapMaterials.insert(std::make_pair(nodeName, envMapMaterial));
+    //  }
 
     //  // If no submeshes, add a default material for entity
     //  if (submeshes.empty())
@@ -268,10 +267,10 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
     //      m_EnvMapMaterials.insert(std::make_pair(meshName, envMapMaterial));
     //  }
 
-    for (auto& material : m_EnvMapMaterials)
-    {
-        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials material name: '{0}'", material.first);
-    }
+    //  for (auto& material : m_EnvMapMaterials)
+    //  {
+    //      Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials material name: '{0}'", material.first);
+    //  }
 }
 
 EnvMapMaterial* EnvironmentMap::CreateDefaultMaterial(const std::string& nodeName)
@@ -416,13 +415,13 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
     UpdateUniforms();
 
     // Update HazelMesh List
-    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
-    for (auto entt : meshEntities)
-    {
-        Hazel::Entity entity{ entt, m_SceneRenderer->s_Data.ActiveScene };
-        Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
-        mesh->OnUpdate(timestep, false);
-    }
+    //  auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    //  for (auto entt : meshEntities)
+    //  {
+    //      Hazel::Entity entity{ entt, m_SceneRenderer->s_Data.ActiveScene };
+    //      Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+    //      mesh->OnUpdate(timestep, false);
+    //  }
 
     Scene::s_ImGuizmoTransform = m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
 
@@ -502,28 +501,28 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
 
 void EnvironmentMap::SubmitEntity(Hazel::Entity entity)
 {
-    auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
-    if (!mesh) {
-        return;
-    }
-
-    auto& transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
-
-    auto name = entity.GetComponent<Hazel::TagComponent>().Tag;
-    m_SceneRenderer->s_Data.DrawList.push_back({ name, mesh.get(), entity.GetMaterial(), transform });
+    //  auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+    //  if (!mesh) {
+    //      return;
+    //  }
+    //  
+    //  auto& transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+    //  
+    //  auto name = entity.GetComponent<Hazel::TagComponent>().Tag;
+    //  m_SceneRenderer->s_Data.DrawList.push_back({ name, mesh.get(), entity.GetMaterial(), transform });
 }
 
 Hazel::Entity* EnvironmentMap::GetMeshEntity()
 {
-    Hazel::Entity meshEntity;
-    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
-    if (meshEntities.size()) {
-        for (auto entt : meshEntities)
-        {
-            meshEntity = Hazel::Entity{ entt, m_SceneRenderer->s_Data.ActiveScene };
-        }
-        return &meshEntity;
-    }
+    //  Hazel::Entity meshEntity;
+    //  auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    //  if (meshEntities.size()) {
+    //      for (auto entt : meshEntities)
+    //      {
+    //          meshEntity = Hazel::Entity{ entt, m_SceneRenderer->s_Data.ActiveScene };
+    //      }
+    //      return &meshEntity;
+    //  }
     return nullptr;
 }
 
@@ -545,341 +544,341 @@ void EnvironmentMap::SetSkyboxLOD(float LOD)
 
 void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest)
 {
-    if (!depthTest)
-        glDisable(GL_DEPTH_TEST);
-
-    GLenum glPrimitiveType = 0;
-    switch (type)
-    {
-    case Hazel::PrimitiveType::Triangles:
-        glPrimitiveType = GL_TRIANGLES;
-        break;
-    case Hazel::PrimitiveType::Lines:
-        glPrimitiveType = GL_LINES;
-        break;
-    }
-
-    glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
-
-    if (!depthTest)
-        glEnable(GL_DEPTH_TEST);
+    //  if (!depthTest)
+    //      glDisable(GL_DEPTH_TEST);
+    //  
+    //  GLenum glPrimitiveType = 0;
+    //  switch (type)
+    //  {
+    //  case Hazel::PrimitiveType::Triangles:
+    //      glPrimitiveType = GL_TRIANGLES;
+    //      break;
+    //  case Hazel::PrimitiveType::Lines:
+    //      glPrimitiveType = GL_LINES;
+    //      break;
+    //  }
+    //  
+    //  glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
+    //  
+    //  if (!depthTest)
+    //      glEnable(GL_DEPTH_TEST);
 }
 
 void EnvironmentMap::OnImGuiRender()
 {
-    uint32_t id = 0;
-    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
-    for (auto entt : meshEntities)
-    {
-        Hazel::Entity entity = { entt, m_SceneRenderer->s_Data.ActiveScene };
-        auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
-        mesh->OnImGuiRender(++id);
-    }
-
-    ImGui::Begin("Transform");
-    {
-        if (Scene::s_ImGuizmoTransform)
-        {
-            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*Scene::s_ImGuizmoTransform);
-            glm::vec3 RotationDegrees = glm::degrees(glm::eulerAngles(Rotation));
-
-            bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", Location, 0.0f, 100.0f);
-            bool isRotationChanged = ImGuiWrapper::DrawVec3Control("Rotation", RotationDegrees, 0.0f, 100.0f);
-            bool isScaleChanged = ImGuiWrapper::DrawVec3Control("Scale", Scale, 1.0f, 100.0f);
-
-            if (isTranslationChanged || isRotationChanged || isScaleChanged) {
-                ImGuizmo::RecomposeMatrixFromComponents(
-                    glm::value_ptr(Location),
-                    glm::value_ptr(RotationDegrees),
-                    glm::value_ptr(Scale),
-                    glm::value_ptr(*Scene::s_ImGuizmoTransform));
-            }
-        }
-    }
-    ImGui::End();
-
-    ImGui::Begin("EnvMap Materials");
-    {
-        for (auto& material : m_EnvMapMaterials)
-        {
-            std::string materialName = material.first;
-            std::string materialLabel = "Material " + materialName;
-
-            // Material section
-            if (ImGui::CollapsingHeader(materialLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                // BEGIN PBR Textures
-                ImGui::Indent();
-                {
-                    {
-                        // Albedo
-                        std::string textureLabel = materialName + " Albedo";
-                        if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-                        {
-                            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-                            ImGui::Image(material.second->GetAlbedoInput().TextureMap ?
-                                (void*)(intptr_t)material.second->GetAlbedoInput().TextureMap->GetID() :
-                                (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
-                            ImGui::PopStyleVar();
-                            if (ImGui::IsItemHovered())
-                            {
-                                if (material.second->GetAlbedoInput().TextureMap)
-                                {
-                                    ImGui::BeginTooltip();
-                                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                                    ImGui::TextUnformatted(material.second->GetAlbedoInput().TextureMap->GetPath().c_str());
-                                    ImGui::PopTextWrapPos();
-                                    ImGui::Image((void*)(intptr_t)material.second->GetAlbedoInput().TextureMap->GetID(), ImVec2(384, 384));
-                                    ImGui::EndTooltip();
-                                }
-                                if (ImGui::IsItemClicked())
-                                {
-                                    std::string filename = Application::Get()->OpenFile("");
-                                    if (filename != "")
-                                        material.second->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material.second->GetAlbedoInput().SRGB);
-                                }
-                            }
-                            ImGui::SameLine();
-                            ImGui::BeginGroup();
-
-                            std::string checkboxLabel = "Use##" + materialName + "AlbedoMap";
-                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetAlbedoInput().UseTexture);
-
-                            std::string checkboxLabelSRGB = "sRGB##" + materialName + "AlbedoMap";
-                            if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material.second->GetAlbedoInput().SRGB))
-                            {
-                                if (material.second->GetAlbedoInput().TextureMap)
-                                    material.second->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(
-                                        material.second->GetAlbedoInput().TextureMap->GetPath(),
-                                        material.second->GetAlbedoInput().SRGB);
-                            }
-                            ImGui::EndGroup();
-                            ImGui::SameLine();
-                            std::string colorLabel = "Color##" + materialName + "Albedo";
-                            ImGui::ColorEdit3(colorLabel.c_str(), glm::value_ptr(material.second->GetAlbedoInput().Color), ImGuiColorEditFlags_NoInputs);
-                        }
-                    }
-                    {
-                        // Normals
-                        std::string textureLabel = materialName + " Normals";
-                        if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-                        {
-                            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-                            ImGui::Image(material.second->GetNormalInput().TextureMap ?
-                                (void*)(intptr_t)material.second->GetNormalInput().TextureMap->GetID() :
-                                (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
-                            ImGui::PopStyleVar();
-                            if (ImGui::IsItemHovered())
-                            {
-                                if (material.second->GetNormalInput().TextureMap)
-                                {
-                                    ImGui::BeginTooltip();
-                                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                                    ImGui::TextUnformatted(material.second->GetNormalInput().TextureMap->GetPath().c_str());
-                                    ImGui::PopTextWrapPos();
-                                    ImGui::Image((void*)(intptr_t)material.second->GetNormalInput().TextureMap->GetID(), ImVec2(384, 384));
-                                    ImGui::EndTooltip();
-                                }
-                                if (ImGui::IsItemClicked())
-                                {
-                                    std::string filename = Application::Get()->OpenFile("");
-                                    if (filename != "")
-                                        material.second->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
-                                }
-                            }
-                            ImGui::SameLine();
-                            std::string checkboxLabel = "Use##" + materialName + "NormalMap";
-                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetNormalInput().UseTexture);
-                        }
-                    }
-                    {
-                        // Metalness
-                        std::string textureLabel = materialName + " Metalness";
-                        if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-                        {
-                            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-                            ImGui::Image(material.second->GetMetalnessInput().TextureMap ?
-                                (void*)(intptr_t)material.second->GetMetalnessInput().TextureMap->GetID() :
-                                (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
-                            ImGui::PopStyleVar();
-                            if (ImGui::IsItemHovered())
-                            {
-                                if (material.second->GetMetalnessInput().TextureMap)
-                                {
-                                    ImGui::BeginTooltip();
-                                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                                    ImGui::TextUnformatted(material.second->GetMetalnessInput().TextureMap->GetPath().c_str());
-                                    ImGui::PopTextWrapPos();
-                                    ImGui::Image((void*)(intptr_t)material.second->GetMetalnessInput().TextureMap->GetID(), ImVec2(384, 384));
-                                    ImGui::EndTooltip();
-                                }
-                                if (ImGui::IsItemClicked())
-                                {
-                                    std::string filename = Application::Get()->OpenFile("");
-                                    if (filename != "")
-                                        material.second->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
-                                }
-                            }
-                            ImGui::SameLine();
-                            std::string checkboxLabel = "Use##" + materialName + "MetalnessMap";
-                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetMetalnessInput().UseTexture);
-                            ImGui::SameLine();
-                            std::string sliderLabel = "Value##" + materialName + "MetalnessInput";
-                            ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetMetalnessInput().Value, 0.0f, 1.0f);
-                        }
-                    }
-                    {
-                        // Roughness
-                        std::string textureLabel = materialName + " Roughness";
-                        if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-                        {
-                            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-                            ImGui::Image(material.second->GetRoughnessInput().TextureMap ?
-                                (void*)(intptr_t)material.second->GetRoughnessInput().TextureMap->GetID() :
-                                (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
-                            ImGui::PopStyleVar();
-                            if (ImGui::IsItemHovered())
-                            {
-                                if (material.second->GetRoughnessInput().TextureMap)
-                                {
-                                    ImGui::BeginTooltip();
-                                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                                    ImGui::TextUnformatted(material.second->GetRoughnessInput().TextureMap->GetPath().c_str());
-                                    ImGui::PopTextWrapPos();
-                                    ImGui::Image((void*)(intptr_t)material.second->GetRoughnessInput().TextureMap->GetID(), ImVec2(384, 384));
-                                    ImGui::EndTooltip();
-                                }
-                                if (ImGui::IsItemClicked())
-                                {
-                                    std::string filename = Application::Get()->OpenFile("");
-                                    if (filename != "")
-                                        material.second->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
-                                }
-                            }
-                            ImGui::SameLine();
-                            std::string checkboxLabel = "Use##" + materialName + "RoughnessMap";
-                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetRoughnessInput().UseTexture);
-                            ImGui::SameLine();
-                            std::string sliderLabel = "Value##" + materialName + "RoughnessInput";
-                            ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetRoughnessInput().Value, 0.0f, 1.0f);
-                        }
-                    }
-                    {
-                        // AO (Ambient Occlusion
-                        std::string textureLabel = materialName + " AO";
-                        if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-                        {
-                            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-                            ImGui::Image(material.second->GetAOInput().TextureMap ?
-                                (void*)(intptr_t)material.second->GetAOInput().TextureMap->GetID() :
-                                (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
-                            ImGui::PopStyleVar();
-                            if (ImGui::IsItemHovered())
-                            {
-                                if (material.second->GetAOInput().TextureMap)
-                                {
-                                    ImGui::BeginTooltip();
-                                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                                    ImGui::TextUnformatted(material.second->GetAOInput().TextureMap->GetPath().c_str());
-                                    ImGui::PopTextWrapPos();
-                                    ImGui::Image((void*)(intptr_t)material.second->GetAOInput().TextureMap->GetID(), ImVec2(384, 384));
-                                    ImGui::EndTooltip();
-                                }
-                                if (ImGui::IsItemClicked())
-                                {
-                                    std::string filename = Application::Get()->OpenFile("");
-                                    if (filename != "")
-                                        material.second->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
-                                }
-                            }
-                            ImGui::SameLine();
-                            std::string checkboxLabel = "Use##" + materialName + "AOMap";
-                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetAOInput().UseTexture);
-                            ImGui::SameLine();
-                            std::string sliderLabel = "Value##" + materialName + "AOInput";
-                            ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetAOInput().Value, 0.0f, 1.0f);
-                        }
-                    }
-                }
-                ImGui::Unindent();
-                // END PBR Textures
-            }
-        }
-    }
-    ImGui::End();
-
-    // Shaders
-    ImGui::Begin("Shaders");
-    if (ImGui::TreeNode("Shaders"))
-    {
-        auto shaders = ResourceManager::GetShaders();
-        for (auto shader = shaders->begin(); shader != shaders->end(); shader++)
-        {
-            if (ImGui::TreeNode(shader->first.c_str()))
-            {
-                std::string buttonName = "Reload##" + shader->first;
-                if (ImGui::Button(buttonName.c_str())) {
-                    shader->second->Reload();
-                }
-                ImGui::TreePop();
-            }
-        }
-        ImGui::TreePop();
-    }
-
-    std::string buttonName = "Reload All";
-    if (ImGui::Button(buttonName.c_str())) {
-        auto shaders = ResourceManager::GetShaders();
-        for (auto shader = shaders->begin(); shader != shaders->end(); shader++) {
-            shader->second->Reload();
-        }
-    }
-
-    {
-        ImGui::Separator();
-
-        char* label = m_SelectionMode == SelectionMode::Entity ? "Entity" : "Mesh";
-        if (ImGui::Button(label))
-        {
-            m_SelectionMode = m_SelectionMode == SelectionMode::Entity ? SelectionMode::SubMesh : SelectionMode::Entity;
-        }
-    }
-
-    ImGui::End();
-
-    ImGui::ShowMetricsWindow();
-
-    ImVec2 workPos = ImGui::GetMainViewport()->GetWorkPos();
-    m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
+    //  uint32_t id = 0;
+    //  auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    //  for (auto entt : meshEntities)
+    //  {
+    //      Hazel::Entity entity = { entt, m_SceneRenderer->s_Data.ActiveScene };
+    //      auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+    //      mesh->OnImGuiRender(++id);
+    //  }
+    //  
+    //  ImGui::Begin("Transform");
+    //  {
+    //      if (Scene::s_ImGuizmoTransform)
+    //      {
+    //          auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*Scene::s_ImGuizmoTransform);
+    //          glm::vec3 RotationDegrees = glm::degrees(glm::eulerAngles(Rotation));
+    //  
+    //          bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", Location, 0.0f, 100.0f);
+    //          bool isRotationChanged = ImGuiWrapper::DrawVec3Control("Rotation", RotationDegrees, 0.0f, 100.0f);
+    //          bool isScaleChanged = ImGuiWrapper::DrawVec3Control("Scale", Scale, 1.0f, 100.0f);
+    //  
+    //          if (isTranslationChanged || isRotationChanged || isScaleChanged) {
+    //              ImGuizmo::RecomposeMatrixFromComponents(
+    //                  glm::value_ptr(Location),
+    //                  glm::value_ptr(RotationDegrees),
+    //                  glm::value_ptr(Scale),
+    //                  glm::value_ptr(*Scene::s_ImGuizmoTransform));
+    //          }
+    //      }
+    //  }
+    //  ImGui::End();
+    //  
+    //  ImGui::Begin("EnvMap Materials");
+    //  {
+    //      for (auto& material : m_EnvMapMaterials)
+    //      {
+    //          std::string materialName = material.first;
+    //          std::string materialLabel = "Material " + materialName;
+    //  
+    //          // Material section
+    //          if (ImGui::CollapsingHeader(materialLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+    //          {
+    //              // BEGIN PBR Textures
+    //              ImGui::Indent();
+    //              {
+    //                  {
+    //                      // Albedo
+    //                      std::string textureLabel = materialName + " Albedo";
+    //                      if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+    //                      {
+    //                          ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+    //                          ImGui::Image(material.second->GetAlbedoInput().TextureMap ?
+    //                              (void*)(intptr_t)material.second->GetAlbedoInput().TextureMap->GetID() :
+    //                              (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
+    //                          ImGui::PopStyleVar();
+    //                          if (ImGui::IsItemHovered())
+    //                          {
+    //                              if (material.second->GetAlbedoInput().TextureMap)
+    //                              {
+    //                                  ImGui::BeginTooltip();
+    //                                  ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+    //                                  ImGui::TextUnformatted(material.second->GetAlbedoInput().TextureMap->GetPath().c_str());
+    //                                  ImGui::PopTextWrapPos();
+    //                                  ImGui::Image((void*)(intptr_t)material.second->GetAlbedoInput().TextureMap->GetID(), ImVec2(384, 384));
+    //                                  ImGui::EndTooltip();
+    //                              }
+    //                              if (ImGui::IsItemClicked())
+    //                              {
+    //                                  std::string filename = Application::Get()->OpenFile("");
+    //                                  if (filename != "")
+    //                                      material.second->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material.second->GetAlbedoInput().SRGB);
+    //                              }
+    //                          }
+    //                          ImGui::SameLine();
+    //                          ImGui::BeginGroup();
+    //  
+    //                          std::string checkboxLabel = "Use##" + materialName + "AlbedoMap";
+    //                          ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetAlbedoInput().UseTexture);
+    //  
+    //                          std::string checkboxLabelSRGB = "sRGB##" + materialName + "AlbedoMap";
+    //                          if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material.second->GetAlbedoInput().SRGB))
+    //                          {
+    //                              if (material.second->GetAlbedoInput().TextureMap)
+    //                                  material.second->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(
+    //                                      material.second->GetAlbedoInput().TextureMap->GetPath(),
+    //                                      material.second->GetAlbedoInput().SRGB);
+    //                          }
+    //                          ImGui::EndGroup();
+    //                          ImGui::SameLine();
+    //                          std::string colorLabel = "Color##" + materialName + "Albedo";
+    //                          ImGui::ColorEdit3(colorLabel.c_str(), glm::value_ptr(material.second->GetAlbedoInput().Color), ImGuiColorEditFlags_NoInputs);
+    //                      }
+    //                  }
+    //                  {
+    //                      // Normals
+    //                      std::string textureLabel = materialName + " Normals";
+    //                      if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+    //                      {
+    //                          ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+    //                          ImGui::Image(material.second->GetNormalInput().TextureMap ?
+    //                              (void*)(intptr_t)material.second->GetNormalInput().TextureMap->GetID() :
+    //                              (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
+    //                          ImGui::PopStyleVar();
+    //                          if (ImGui::IsItemHovered())
+    //                          {
+    //                              if (material.second->GetNormalInput().TextureMap)
+    //                              {
+    //                                  ImGui::BeginTooltip();
+    //                                  ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+    //                                  ImGui::TextUnformatted(material.second->GetNormalInput().TextureMap->GetPath().c_str());
+    //                                  ImGui::PopTextWrapPos();
+    //                                  ImGui::Image((void*)(intptr_t)material.second->GetNormalInput().TextureMap->GetID(), ImVec2(384, 384));
+    //                                  ImGui::EndTooltip();
+    //                              }
+    //                              if (ImGui::IsItemClicked())
+    //                              {
+    //                                  std::string filename = Application::Get()->OpenFile("");
+    //                                  if (filename != "")
+    //                                      material.second->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+    //                              }
+    //                          }
+    //                          ImGui::SameLine();
+    //                          std::string checkboxLabel = "Use##" + materialName + "NormalMap";
+    //                          ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetNormalInput().UseTexture);
+    //                      }
+    //                  }
+    //                  {
+    //                      // Metalness
+    //                      std::string textureLabel = materialName + " Metalness";
+    //                      if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+    //                      {
+    //                          ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+    //                          ImGui::Image(material.second->GetMetalnessInput().TextureMap ?
+    //                              (void*)(intptr_t)material.second->GetMetalnessInput().TextureMap->GetID() :
+    //                              (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
+    //                          ImGui::PopStyleVar();
+    //                          if (ImGui::IsItemHovered())
+    //                          {
+    //                              if (material.second->GetMetalnessInput().TextureMap)
+    //                              {
+    //                                  ImGui::BeginTooltip();
+    //                                  ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+    //                                  ImGui::TextUnformatted(material.second->GetMetalnessInput().TextureMap->GetPath().c_str());
+    //                                  ImGui::PopTextWrapPos();
+    //                                  ImGui::Image((void*)(intptr_t)material.second->GetMetalnessInput().TextureMap->GetID(), ImVec2(384, 384));
+    //                                  ImGui::EndTooltip();
+    //                              }
+    //                              if (ImGui::IsItemClicked())
+    //                              {
+    //                                  std::string filename = Application::Get()->OpenFile("");
+    //                                  if (filename != "")
+    //                                      material.second->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+    //                              }
+    //                          }
+    //                          ImGui::SameLine();
+    //                          std::string checkboxLabel = "Use##" + materialName + "MetalnessMap";
+    //                          ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetMetalnessInput().UseTexture);
+    //                          ImGui::SameLine();
+    //                          std::string sliderLabel = "Value##" + materialName + "MetalnessInput";
+    //                          ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetMetalnessInput().Value, 0.0f, 1.0f);
+    //                      }
+    //                  }
+    //                  {
+    //                      // Roughness
+    //                      std::string textureLabel = materialName + " Roughness";
+    //                      if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+    //                      {
+    //                          ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+    //                          ImGui::Image(material.second->GetRoughnessInput().TextureMap ?
+    //                              (void*)(intptr_t)material.second->GetRoughnessInput().TextureMap->GetID() :
+    //                              (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
+    //                          ImGui::PopStyleVar();
+    //                          if (ImGui::IsItemHovered())
+    //                          {
+    //                              if (material.second->GetRoughnessInput().TextureMap)
+    //                              {
+    //                                  ImGui::BeginTooltip();
+    //                                  ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+    //                                  ImGui::TextUnformatted(material.second->GetRoughnessInput().TextureMap->GetPath().c_str());
+    //                                  ImGui::PopTextWrapPos();
+    //                                  ImGui::Image((void*)(intptr_t)material.second->GetRoughnessInput().TextureMap->GetID(), ImVec2(384, 384));
+    //                                  ImGui::EndTooltip();
+    //                              }
+    //                              if (ImGui::IsItemClicked())
+    //                              {
+    //                                  std::string filename = Application::Get()->OpenFile("");
+    //                                  if (filename != "")
+    //                                      material.second->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+    //                              }
+    //                          }
+    //                          ImGui::SameLine();
+    //                          std::string checkboxLabel = "Use##" + materialName + "RoughnessMap";
+    //                          ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetRoughnessInput().UseTexture);
+    //                          ImGui::SameLine();
+    //                          std::string sliderLabel = "Value##" + materialName + "RoughnessInput";
+    //                          ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetRoughnessInput().Value, 0.0f, 1.0f);
+    //                      }
+    //                  }
+    //                  {
+    //                      // AO (Ambient Occlusion
+    //                      std::string textureLabel = materialName + " AO";
+    //                      if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+    //                      {
+    //                          ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+    //                          ImGui::Image(material.second->GetAOInput().TextureMap ?
+    //                              (void*)(intptr_t)material.second->GetAOInput().TextureMap->GetID() :
+    //                              (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
+    //                          ImGui::PopStyleVar();
+    //                          if (ImGui::IsItemHovered())
+    //                          {
+    //                              if (material.second->GetAOInput().TextureMap)
+    //                              {
+    //                                  ImGui::BeginTooltip();
+    //                                  ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+    //                                  ImGui::TextUnformatted(material.second->GetAOInput().TextureMap->GetPath().c_str());
+    //                                  ImGui::PopTextWrapPos();
+    //                                  ImGui::Image((void*)(intptr_t)material.second->GetAOInput().TextureMap->GetID(), ImVec2(384, 384));
+    //                                  ImGui::EndTooltip();
+    //                              }
+    //                              if (ImGui::IsItemClicked())
+    //                              {
+    //                                  std::string filename = Application::Get()->OpenFile("");
+    //                                  if (filename != "")
+    //                                      material.second->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+    //                              }
+    //                          }
+    //                          ImGui::SameLine();
+    //                          std::string checkboxLabel = "Use##" + materialName + "AOMap";
+    //                          ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetAOInput().UseTexture);
+    //                          ImGui::SameLine();
+    //                          std::string sliderLabel = "Value##" + materialName + "AOInput";
+    //                          ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetAOInput().Value, 0.0f, 1.0f);
+    //                      }
+    //                  }
+    //              }
+    //              ImGui::Unindent();
+    //              // END PBR Textures
+    //          }
+    //      }
+    //  }
+    //  ImGui::End();
+    //  
+    //  // Shaders
+    //  ImGui::Begin("Shaders");
+    //  if (ImGui::TreeNode("Shaders"))
+    //  {
+    //      auto shaders = ResourceManager::GetShaders();
+    //      for (auto shader = shaders->begin(); shader != shaders->end(); shader++)
+    //      {
+    //          if (ImGui::TreeNode(shader->first.c_str()))
+    //          {
+    //              std::string buttonName = "Reload##" + shader->first;
+    //              if (ImGui::Button(buttonName.c_str())) {
+    //                  shader->second->Reload();
+    //              }
+    //              ImGui::TreePop();
+    //          }
+    //      }
+    //      ImGui::TreePop();
+    //  }
+    //  
+    //  std::string buttonName = "Reload All";
+    //  if (ImGui::Button(buttonName.c_str())) {
+    //      auto shaders = ResourceManager::GetShaders();
+    //      for (auto shader = shaders->begin(); shader != shaders->end(); shader++) {
+    //          shader->second->Reload();
+    //      }
+    //  }
+    //  
+    //  {
+    //      ImGui::Separator();
+    //  
+    //      char* label = m_SelectionMode == SelectionMode::Entity ? "Entity" : "Mesh";
+    //      if (ImGui::Button(label))
+    //      {
+    //          m_SelectionMode = m_SelectionMode == SelectionMode::Entity ? SelectionMode::SubMesh : SelectionMode::Entity;
+    //      }
+    //  }
+    //  
+    //  ImGui::End();
+    //  
+    //  ImGui::ShowMetricsWindow();
+    //  
+    //  ImVec2 workPos = ImGui::GetMainViewport()->GetWorkPos();
+    //  m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
 }
 
 void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial)
 {
-    auto& materials = mesh->GetMaterials();
-    for (Hazel::Submesh& submesh : mesh->GetSubmeshes())
-    {
-        // Material
-        auto material = materials[submesh.MaterialIndex];
-
-        for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
-        {
-            std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-            m_ShaderHazelPBR->setMat4(uniformName, mesh->m_BoneTransforms[i]);
-        }
-
-        m_ShaderHazelPBR->setMat4("u_Transform", transform * submesh.Transform);
-
-        if (material->GetFlag(MaterialFlag::DepthTest)) { // TODO: Fix Material flags
-            glEnable(GL_DEPTH_TEST);
-        }
-        else {
-            glDisable(GL_DEPTH_TEST);
-        }
-
-        glDisable(GL_DEPTH_TEST);
-
-        glDrawElementsBaseVertex(GL_TRIANGLES, submesh.GetIndexCount(), GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
-    }
+    //  auto& materials = mesh->GetMaterials();
+    //  for (Hazel::Submesh& submesh : mesh->GetSubmeshes())
+    //  {
+    //      // Material
+    //      auto material = materials[submesh.MaterialIndex];
+    //  
+    //      for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
+    //      {
+    //          std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+    //          m_ShaderHazelPBR->setMat4(uniformName, mesh->m_BoneTransforms[i]);
+    //      }
+    //  
+    //      m_ShaderHazelPBR->setMat4("u_Transform", transform * submesh.Transform);
+    //  
+    //      if (material->GetFlag(MaterialFlag::DepthTest)) { // TODO: Fix Material flags
+    //          glEnable(GL_DEPTH_TEST);
+    //      }
+    //      else {
+    //          glDisable(GL_DEPTH_TEST);
+    //      }
+    //  
+    //      glDisable(GL_DEPTH_TEST);
+    //  
+    //      glDrawElementsBaseVertex(GL_TRIANGLES, submesh.GetIndexCount(), GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+    //  }
 }
 
 void EnvironmentMap::RenderHazelSkybox()
@@ -910,24 +909,24 @@ void EnvironmentMap::RenderHazelGrid()
     // ---- uniform float u_Scale;
     // ---- uniform float u_Res;
 
-    m_SceneRenderer->GetShaderGrid()->Bind();
-    m_SceneRenderer->GetShaderGrid()->setFloat("u_Scale", m_SceneRenderer->m_GridScale);
-    m_SceneRenderer->GetShaderGrid()->setFloat("u_Res", m_SceneRenderer->m_GridSize);
-
-    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
-    m_SceneRenderer->GetShaderGrid()->setMat4("u_ViewProjection", viewProjection);
-
-    bool depthTest = true;
-
-    glm::mat4 transform = glm::mat4(1.0f);
-    transform = glm::scale(transform, glm::vec3(16.0f, 1.0f, 16.0f));
-    transform = glm::rotate(transform, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    m_SceneRenderer->GetShaderGrid()->setMat4("u_Transform", transform);
-
-    RendererBasic::EnableTransparency();
-    RendererBasic::EnableMSAA();
-
-    Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
+    //  m_SceneRenderer->GetShaderGrid()->Bind();
+    //  m_SceneRenderer->GetShaderGrid()->setFloat("u_Scale", m_SceneRenderer->m_GridScale);
+    //  m_SceneRenderer->GetShaderGrid()->setFloat("u_Res", m_SceneRenderer->m_GridSize);
+    //  
+    //  glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
+    //  m_SceneRenderer->GetShaderGrid()->setMat4("u_ViewProjection", viewProjection);
+    //  
+    //  bool depthTest = true;
+    //  
+    //  glm::mat4 transform = glm::mat4(1.0f);
+    //  transform = glm::scale(transform, glm::vec3(16.0f, 1.0f, 16.0f));
+    //  transform = glm::rotate(transform, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    //  m_SceneRenderer->GetShaderGrid()->setMat4("u_Transform", transform);
+    //  
+    //  RendererBasic::EnableTransparency();
+    //  RendererBasic::EnableMSAA();
+    //  
+    //  Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
 }
 
 void EnvironmentMap::OnEvent(Event& e)
@@ -948,74 +947,74 @@ bool EnvironmentMap::OnKeyPressedEvent(KeyPressedEvent& e)
 
 bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 {
-    auto [mx, my] = Input::GetMousePosition();
-    if (e.GetMouseButton() == (int)Mouse::ButtonLeft && !Input::IsKeyPressed(Key::LeftAlt) && !ImGuizmo::IsOver())
-    {
-        auto [mouseX, mouseY] = GetMouseViewportSpace();
-        if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
-        {
-            auto [origin, direction] = CastRay(mouseX, mouseY);
-
-            m_SelectionContext.clear();
-
-            auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
-            for (auto e : meshEntities)
-            {
-                Hazel::Entity entity = { e, m_SceneRenderer->s_Data.ActiveScene };
-                auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
-                if (!mesh) {
-                    continue;
-                }
-
-                auto& submeshes = mesh->GetSubmeshes();
-                float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
-                // for (Hazel::Submesh& submesh : submeshes)
-                for (uint32_t i = 0; i < submeshes.size(); i++)
-                {
-                    auto& submesh = submeshes[i];
-                    auto& transform = GetMeshEntity()->GetComponent<Hazel::TransformComponent>().GetTransform();
-                    Hazel::Ray ray = {
-                        glm::inverse(transform * submesh.Transform) * glm::vec4(origin, 1.0f),
-                        glm::inverse(glm::mat3(transform) * glm::mat3(submesh.Transform)) * direction
-                    };
-
-                    float t;
-                    bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
-                    if (intersects)
-                    {
-                        const auto& triangleCache = ((Hazel::HazelMesh*)mesh.get())->GetTriangleCache(i);
-                        if (triangleCache.size())
-                        {
-                            for (const auto& triangle : triangleCache)
-                            {
-                                if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
-                                {
-                                    m_SelectionContext.push_back({ entity, &submesh, t });
-                                    break;
-                                }
-                            }
-                        }
-                        else {
-                            m_SelectionContext.push_back({ entity, &submesh, t });
-                        }
-                    }
-                }
-            }
-            std::sort(m_SelectionContext.begin(), m_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
-
-            // TODO: Handle mesh being deleted, etc
-            if (m_SelectionContext.size()) {
-                m_CurrentlySelectedTransform = &m_SelectionContext[0].Mesh->Transform;
-                OnSelected(m_SelectionContext[0]);
-            }
-            else {
-                Hazel::Entity* meshEntity = GetMeshEntity();
-                if (meshEntity != nullptr) {
-                    m_CurrentlySelectedTransform = &meshEntity->Transform();
-                }
-            }
-        }
-    }
+    //  auto [mx, my] = Input::GetMousePosition();
+    //  if (e.GetMouseButton() == (int)Mouse::ButtonLeft && !Input::IsKeyPressed(Key::LeftAlt) && !ImGuizmo::IsOver())
+    //  {
+    //      auto [mouseX, mouseY] = GetMouseViewportSpace();
+    //      if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
+    //      {
+    //          auto [origin, direction] = CastRay(mouseX, mouseY);
+    //  
+    //          m_SelectionContext.clear();
+    //  
+    //          auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    //          for (auto e : meshEntities)
+    //          {
+    //              Hazel::Entity entity = { e, m_SceneRenderer->s_Data.ActiveScene };
+    //              auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+    //              if (!mesh) {
+    //                  continue;
+    //              }
+    //  
+    //              auto& submeshes = mesh->GetSubmeshes();
+    //              float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
+    //              // for (Hazel::Submesh& submesh : submeshes)
+    //              for (uint32_t i = 0; i < submeshes.size(); i++)
+    //              {
+    //                  auto& submesh = submeshes[i];
+    //                  auto& transform = GetMeshEntity()->GetComponent<Hazel::TransformComponent>().GetTransform();
+    //                  Hazel::Ray ray = {
+    //                      glm::inverse(transform * submesh.Transform) * glm::vec4(origin, 1.0f),
+    //                      glm::inverse(glm::mat3(transform) * glm::mat3(submesh.Transform)) * direction
+    //                  };
+    //  
+    //                  float t;
+    //                  bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
+    //                  if (intersects)
+    //                  {
+    //                      const auto& triangleCache = ((Hazel::HazelMesh*)mesh.get())->GetTriangleCache(i);
+    //                      if (triangleCache.size())
+    //                      {
+    //                          for (const auto& triangle : triangleCache)
+    //                          {
+    //                              if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+    //                              {
+    //                                  m_SelectionContext.push_back({ entity, &submesh, t });
+    //                                  break;
+    //                              }
+    //                          }
+    //                      }
+    //                      else {
+    //                          m_SelectionContext.push_back({ entity, &submesh, t });
+    //                      }
+    //                  }
+    //              }
+    //          }
+    //          std::sort(m_SelectionContext.begin(), m_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
+    //  
+    //          // TODO: Handle mesh being deleted, etc
+    //          if (m_SelectionContext.size()) {
+    //              m_CurrentlySelectedTransform = &m_SelectionContext[0].Mesh->Transform;
+    //              OnSelected(m_SelectionContext[0]);
+    //          }
+    //          else {
+    //              Hazel::Entity* meshEntity = GetMeshEntity();
+    //              if (meshEntity != nullptr) {
+    //                  m_CurrentlySelectedTransform = &meshEntity->Transform();
+    //              }
+    //          }
+    //      }
+    //  }
     return false;
 }
 
@@ -1038,30 +1037,30 @@ std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
 
 std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)
 {
-    glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+    //  glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+    //  
+    //  glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
+    //  glm::mat4 viewMatrix = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
+    //  
+    //  auto inverseProj = glm::inverse(projectionMatrix);
+    //  auto inverseView = glm::inverse(glm::mat3(viewMatrix));
+    //  
+    //  glm::vec4 ray = inverseProj * mouseClipPos;
+    //  glm::vec3 rayPos = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->GetPosition();
+    //  glm::vec3 rayDir = inverseView * glm::vec3(ray); // inverseView * glm::vec3(ray)
+    //  
+    //  Log::GetLogger()->debug("EnvironmentMap::CastRay | MousePosition [ {0} {1} ]", mx, my);
+    //  Log::GetLogger()->debug("EnvironmentMap::CastRay | m_ViewportBounds[0] [ {0} {1} ]", m_ViewportBounds[0].x, m_ViewportBounds[0].y);
+    //  Log::GetLogger()->debug("EnvironmentMap::CastRay | m_ViewportBounds[1] [ {0} {1} ]", m_ViewportBounds[1].x, m_ViewportBounds[1].y);
+    //  Log::GetLogger()->debug("EnvironmentMap::CastRay | mouseClipPos [ {0} {1} ]", mouseClipPos.x, mouseClipPos.y);
 
-    glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
-    glm::mat4 viewMatrix = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
-
-    auto inverseProj = glm::inverse(projectionMatrix);
-    auto inverseView = glm::inverse(glm::mat3(viewMatrix));
-
-    glm::vec4 ray = inverseProj * mouseClipPos;
-    glm::vec3 rayPos = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->GetPosition();
-    glm::vec3 rayDir = inverseView * glm::vec3(ray); // inverseView * glm::vec3(ray)
-
-    Log::GetLogger()->debug("EnvironmentMap::CastRay | MousePosition [ {0} {1} ]", mx, my);
-    Log::GetLogger()->debug("EnvironmentMap::CastRay | m_ViewportBounds[0] [ {0} {1} ]", m_ViewportBounds[0].x, m_ViewportBounds[0].y);
-    Log::GetLogger()->debug("EnvironmentMap::CastRay | m_ViewportBounds[1] [ {0} {1} ]", m_ViewportBounds[1].x, m_ViewportBounds[1].y);
-    Log::GetLogger()->debug("EnvironmentMap::CastRay | mouseClipPos [ {0} {1} ]", mouseClipPos.x, mouseClipPos.y);
-
-    return { rayPos, rayDir };
+    return { glm::vec4(0.0f), glm::vec4(0.0f) };
 }
 
 void EnvironmentMap::GeometryPassTemporary()
 {
-    RendererBasic::EnableTransparency();
-    RendererBasic::EnableMSAA();
+    //  RendererBasic::EnableTransparency();
+    //  RendererBasic::EnableMSAA();
 
     glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
     glm::mat4 viewMatrix = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
@@ -1075,64 +1074,64 @@ void EnvironmentMap::GeometryPassTemporary()
 
     RenderHazelSkybox();
 
-    if (m_DisplayHazelGrid) {
-        RenderHazelGrid();
-    }
+    //  if (m_DisplayHazelGrid) {
+    //      RenderHazelGrid();
+    //  }
 
-    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    //  auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    //  
+    //  // Render all entities with mesh component
+    //  if (meshEntities.size())
+    //  {
+    //      // Log::GetLogger()->debug("Rendering mesh entities, count = {0}", meshEntities.size());
+    //  
+    //      m_ShaderHazelPBR->Bind();
+    //  
+    //      for (auto entt : meshEntities)
+    //      {
+    //          Hazel::Entity entity = { entt, m_SceneRenderer->s_Data.ActiveScene };
+    //  
+    //          Ref<Hazel::HazelMesh> hazelMesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+    //          m_ShaderHazelPBR = hazelMesh->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
+    //  
+    //          for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
+    //          {
+    //              std::string nodeName = Hazel::HazelMesh::GetSubmeshMaterialName(hazelMesh.get(), submesh);
+    //              if (m_EnvMapMaterials.contains(nodeName)) {
+    //                  UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(nodeName));
+    //              }
+    //  
+    //              glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+    //              submesh.Render(hazelMesh.get(), m_ShaderHazelPBR, entityTransform, samplerSlot, m_EnvMapMaterials);
+    //          }
+    //      }
+    //  
+    //      m_ShaderHazelPBR->Unbind();
+    //  }
 
-    // Render all entities with mesh component
-    if (meshEntities.size())
-    {
-        // Log::GetLogger()->debug("Rendering mesh entities, count = {0}", meshEntities.size());
-
-        m_ShaderHazelPBR->Bind();
-
-        for (auto entt : meshEntities)
-        {
-            Hazel::Entity entity = { entt, m_SceneRenderer->s_Data.ActiveScene };
-
-            Ref<Hazel::HazelMesh> hazelMesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
-            m_ShaderHazelPBR = hazelMesh->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
-
-            for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
-            {
-                std::string nodeName = Hazel::HazelMesh::GetSubmeshMaterialName(hazelMesh.get(), submesh);
-                if (m_EnvMapMaterials.contains(nodeName)) {
-                    UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(nodeName));
-                }
-
-                glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
-                submesh.Render(hazelMesh.get(), m_ShaderHazelPBR, entityTransform, samplerSlot, m_EnvMapMaterials);
-            }
-        }
-
-        m_ShaderHazelPBR->Unbind();
-    }
-
-    Hazel::Renderer2D::BeginScene(viewProj, true);
-    {
-        RendererBasic::SetLineThickness(2.0f);
-
-        if (m_DrawOnTopBoundingBoxes)
-        {
-            glm::vec3 camPosition = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->GetPosition();
-            Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-        }
-
-        if (m_SelectionContext.size()) {
-            auto& selection = m_SelectionContext[0];
-
-            Hazel::Entity* meshEntity = GetMeshEntity();
-            if (meshEntity != nullptr)
-            {
-                glm::mat4 transform = GetMeshEntity()->GetComponent<Hazel::TransformComponent>().GetTransform();
-                glm::vec4 color = m_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
-                Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);            
-            }
-        }
-    }
-    Hazel::Renderer2D::EndScene();
+    //  Hazel::Renderer2D::BeginScene(viewProj, true);
+    //  {
+    //      RendererBasic::SetLineThickness(2.0f);
+    //  
+    //      if (m_DrawOnTopBoundingBoxes)
+    //      {
+    //          glm::vec3 camPosition = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->GetPosition();
+    //          Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+    //      }
+    //  
+    //      if (m_SelectionContext.size()) {
+    //          auto& selection = m_SelectionContext[0];
+    //  
+    //          Hazel::Entity* meshEntity = GetMeshEntity();
+    //          if (meshEntity != nullptr)
+    //          {
+    //              glm::mat4 transform = GetMeshEntity()->GetComponent<Hazel::TransformComponent>().GetTransform();
+    //              glm::vec4 color = m_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
+    //              Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);            
+    //          }
+    //      }
+    //  }
+    //  Hazel::Renderer2D::EndScene();
 
     m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->Bind();
 }

@@ -82,10 +82,10 @@ namespace Hazel
 
 			ImGui::Begin("Properties");
 
-			if (m_SelectionContext.HasComponent<Hazel::TagComponent>())
-			{
-				DrawComponents(m_SelectionContext);
-			}
+			//	if (m_SelectionContext.HasComponent<Hazel::TagComponent>())
+			//	{
+			//		DrawComponents(m_SelectionContext);
+			//	}
 
 			ImGui::End();
 
@@ -151,10 +151,10 @@ namespace Hazel
 
 		if (entityDeleted) {
 			m_Context->DestroyEntity(entity);
-			if (m_SelectionContext == entity) {
-				m_SelectionContext = {};
-				m_CurrentlySelectedTransform = glm::mat4(1.0f);
-			}
+			//	if (m_SelectionContext == entity) {
+			//		m_SelectionContext = {};
+			//		m_CurrentlySelectedTransform = glm::mat4(1.0f);
+			//	}
 		}
 	}
 
