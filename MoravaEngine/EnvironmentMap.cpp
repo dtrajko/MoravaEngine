@@ -1084,7 +1084,7 @@ void EnvironmentMap::GeometryPassTemporary()
     // Render all entities with mesh component
     if (meshEntities.size())
     {
-        Log::GetLogger()->debug("Rendering mesh entities, count = {0}", meshEntities.size());
+        // Log::GetLogger()->debug("Rendering mesh entities, count = {0}", meshEntities.size());
 
         m_ShaderHazelPBR->Bind();
 
