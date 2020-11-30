@@ -82,31 +82,7 @@ namespace Hazel
 
 			ImGui::Begin("Properties");
 
-			//	if (m_SelectionContext.HasComponent<Hazel::TagComponent>())
-			//	{
-			//		DrawComponents(m_SelectionContext);
-			//	}
-
 			ImGui::End();
-
-#if TODO
-			ImGui::Begin("Mesh Debug");
-			if (ImGui::CollapsingHeader(mesh->m_FilePath.c_str()))
-			{
-				if (mesh->m_IsAnimated)
-				{
-					if (ImGui::CollapsingHeader("Animation"))
-					{
-						if (ImGui::Button(mesh->m_AnimationPlaying ? "Pause" : "Play"))
-							mesh->m_AnimationPlaying = !mesh->m_AnimationPlaying;
-
-						ImGui::SliderFloat("##AnimationTime", &mesh->m_AnimationTime, 0.0f, (float)mesh->m_Scene->mAnimations[0]->mDuration);
-						ImGui::DragFloat("Time Scale", &mesh->m_TimeMultiplier, 0.05f, 0.0f, 10.0f);
-					}
-				}
-			}
-			ImGui::End();
-#endif
 		}
 	}
 
@@ -151,10 +127,6 @@ namespace Hazel
 
 		if (entityDeleted) {
 			m_Context->DestroyEntity(entity);
-			//	if (m_SelectionContext == entity) {
-			//		m_SelectionContext = {};
-			//		m_CurrentlySelectedTransform = glm::mat4(1.0f);
-			//	}
 		}
 	}
 

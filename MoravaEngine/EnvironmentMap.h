@@ -33,15 +33,11 @@ public:
 	~EnvironmentMap();
 
 	void Update(Scene* scene, float timestep);
-	void UpdateImGuizmo(Window* mainWindow);
 	Hazel::Entity CreateEntity(const std::string& name);
 	Hazel::Entity LoadEntity(std::string fullPath);
-	void LoadEnvMapMaterials(Mesh* mesh);
 	void Render(Framebuffer* framebuffer);
-	void OnImGuiRender();
 
 	void RenderHazelSkybox();
-	void RenderHazelGrid();
 
 	// Setters
 	void SetSkyboxLOD(float LOD);
@@ -74,11 +70,6 @@ private:
 public:
 	void CompositePassTemporary(Framebuffer* framebuffer);
 	void GeometryPassTemporary();
-	void SubmitEntity(Hazel::Entity entity);
-
-	// Renderer
-	void DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest);
-	void SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial);
 
 	// EditorLayer
 	void OnEvent(Event& e);
@@ -86,8 +77,6 @@ public:
 private:
 	bool OnKeyPressedEvent(KeyPressedEvent& e); // EditorLayer::OnKeyPressedEvent()
 	bool OnMouseButtonPressed(MouseButtonPressedEvent& e); // EditorLayer::OnMouseButtonPressedEvent()
-	void OnSelected(const SelectedSubmesh& selectionContext);
-	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();
 	EnvMapMaterial* CreateDefaultMaterial(const std::string& nodeName);
 

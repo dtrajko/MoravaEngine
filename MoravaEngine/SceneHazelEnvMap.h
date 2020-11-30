@@ -30,32 +30,14 @@ public:
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
-	void SetupUniforms();
 
 private:
-	virtual void SetLightManager() override;
-	virtual void SetWaterManager(int width, int height) override;
-	virtual void SetupTextures() override;
-	virtual void SetupTextureSlots() override;
-	virtual void SetupMaterials() override;
-	virtual void SetupMeshes() override;
-	virtual void SetupModels() override;
-	virtual void SetupFramebuffers() override;
-
 	void SetupShaders(); // Usually in Renderer* classes
 
 	void SetupRenderFramebuffer();
 	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
-	void RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix);
 
 	bool OnKeyPressed(KeyPressedEvent& e);
-
-	void NewScene();
-	void OpenScene();
-	void SaveSceneAs();
-
-	// Temporary/experimental
-	virtual void OnEntitySelected(Hazel::Entity entity) override;
 
 private:
 	EnvironmentMap* m_EnvironmentMap;
