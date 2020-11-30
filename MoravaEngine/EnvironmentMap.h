@@ -75,22 +75,20 @@ public:
 	void OnEvent(Event& e);
 
 private:
-	bool OnKeyPressedEvent(KeyPressedEvent& e); // EditorLayer::OnKeyPressedEvent()
-	bool OnMouseButtonPressed(MouseButtonPressedEvent& e); // EditorLayer::OnMouseButtonPressedEvent()
 	std::pair<float, float> GetMouseViewportSpace();
 	EnvMapMaterial* CreateDefaultMaterial(const std::string& nodeName);
 
 public:
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
 	glm::mat4* m_RelativeTransform = nullptr;
-	bool m_AllowViewportCameraEvents = true; // EditorLayer (Raypicking)
+	bool m_AllowViewportCameraEvents = true;
 
 private:
 	Shader* m_ShaderHazelPBR_Anim;
 	Shader* m_ShaderHazelPBR_Static;
-	Shader* m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
-	Shader* m_ShaderRenderer2D; // Renderer2D::s_Data.TextureShader
-	Shader* m_ShaderRenderer2D_Line; // Renderer2D::s_Data.LineShader
+	Shader* m_ShaderHazelPBR;
+	Shader* m_ShaderRenderer2D;
+	Shader* m_ShaderRenderer2D_Line;
 
 	Hazel::HazelTextureCube* m_SkyboxTexture;
 

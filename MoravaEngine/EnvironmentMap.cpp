@@ -53,7 +53,7 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 
     m_DisplayBoundingBoxes = false;
 
-    Scene::s_ImGuizmoTransform = nullptr; // &GetMeshEntity()->Transform();
+    Scene::s_ImGuizmoTransform = nullptr;
     Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 }
 
@@ -113,7 +113,6 @@ void EnvironmentMap::Init()
 
     // Temporary code Hazel LIVE! #004
     Hazel::HazelRenderer::Init();
-    // Hazel::Renderer2D::Init();
 
     Hazel::Renderer2D::Init();
 }
@@ -148,13 +147,13 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
 
     Log::GetLogger()->debug("EnvironmentMap::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
-    Hazel::HazelMesh* mesh = new Hazel::HazelMesh(fullPath, m_ShaderHazelPBR, nullptr, isAnimated);
+    Ref<Hazel::HazelMesh> mesh = CreateRef<Hazel::HazelMesh>(fullPath, m_ShaderHazelPBR, nullptr, isAnimated);
 
-    ((Hazel::HazelMesh*)mesh)->SetTimeMultiplier(1.0f);
+    mesh->SetTimeMultiplier(1.0f);
 
     // m_MeshEntity: NoECS version
     Hazel::Entity meshEntity = CreateEntity(fileNameNoExt);
-    meshEntity.AddComponent<Hazel::MeshComponent>(Ref<Hazel::HazelMesh>(mesh));
+    meshEntity.AddComponent<Hazel::MeshComponent>(mesh);
     meshEntity.AddComponent<Hazel::ScriptComponent>("Example.Script");
 
     return meshEntity;
@@ -207,15 +206,14 @@ void EnvironmentMap::UpdateUniforms()
 {
     /**** BEGIN Shaders/Hazel/SceneComposite ****/
     m_SceneRenderer->GetShaderComposite()->Bind();
-    m_SceneRenderer->GetShaderComposite()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
+    m_SceneRenderer->GetShaderComposite()->setInt("u_Texture", 1);
     m_SceneRenderer->GetShaderComposite()->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure());
     /**** END Shaders/Hazel/SceneComposite ****/
 
     /**** BEGIN Shaders/Hazel/Skybox ****/
     m_SceneRenderer->GetShaderSkybox()->Bind();
-    m_SceneRenderer->GetShaderSkybox()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    m_SceneRenderer->GetShaderSkybox()->setFloat("u_TextureLod", ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->GetSkyboxLOD());
-    // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
+    m_SceneRenderer->GetShaderSkybox()->setInt("u_Texture", 1);
+    m_SceneRenderer->GetShaderSkybox()->setFloat("u_TextureLod", 0.0f);
     m_SceneRenderer->GetShaderSkybox()->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
     /**** END Shaders/Hazel/Skybox ****/
 }
@@ -270,8 +268,9 @@ void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMater
 
 void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
 {
+    Log::GetLogger()->debug("EnvironmentMap::SetSkybox u_Texture: {0}", 1);
     m_SkyboxTexture = skybox;
-    m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
+    m_SkyboxTexture->Bind(1);
 }
 
 EnvironmentMap::~EnvironmentMap()
@@ -339,10 +338,8 @@ void EnvironmentMap::RenderHazelSkybox()
 
     glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
     m_SceneRenderer->GetShaderSkybox()->setMat4("u_InverseVP", glm::inverse(viewProjection));
-    // m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
-    m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("u_Texture"));
-    // SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
-    Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr); // m_Data.SceneData.SkyboxMaterial
+    m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(1);
+    Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
 
     m_SceneRenderer->GetShaderSkybox()->Unbind();
 }
@@ -352,20 +349,6 @@ void EnvironmentMap::OnEvent(Event& e)
     if (m_AllowViewportCameraEvents) {
         ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->OnEvent(e);
     }
-
-    EventDispatcher dispatcher(e);
-    dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EnvironmentMap::OnKeyPressedEvent));
-    dispatcher.Dispatch<MouseButtonPressedEvent>(HZ_BIND_EVENT_FN(EnvironmentMap::OnMouseButtonPressed));
-}
-
-bool EnvironmentMap::OnKeyPressedEvent(KeyPressedEvent& e)
-{
-    return false;
-}
-
-bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
-{
-    return false;
 }
 
 std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
@@ -397,10 +380,9 @@ void EnvironmentMap::GeometryPassTemporary()
 void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
 {
     m_SceneRenderer->GetShaderComposite()->Bind();
-    framebuffer->GetTextureAttachmentColor()->Bind(m_SamplerSlots->at("u_Texture"));
-    m_SceneRenderer->GetShaderComposite()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
+    framebuffer->GetTextureAttachmentColor()->Bind(1);
+    m_SceneRenderer->GetShaderComposite()->setInt("u_Texture", 1);
     m_SceneRenderer->GetShaderComposite()->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure());
-    // m_ShaderComposite->setInt("u_TextureSamples", framebuffer->GetSpecification().Samples);
     m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->Bind();
     m_SceneRenderer->GetShaderComposite()->setInt("u_TextureSamples", m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
     Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);

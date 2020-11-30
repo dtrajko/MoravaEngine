@@ -591,11 +591,6 @@ namespace Hazel {
 
 		for (Texture* texture : m_Textures)
 			delete texture;
-
-		//	for (Submesh* submesh : m_Submeshes)
-		//		delete submesh;
-
-		delete m_IndexBuffer;
 	}
 
 	void HazelMesh::OnUpdate(float ts, bool debug)
@@ -608,11 +603,6 @@ namespace Hazel {
 			float ticksPerSecond = (float)(m_Scene->mAnimations[0]->mTicksPerSecond != 0 ? m_Scene->mAnimations[0]->mTicksPerSecond : 25.0f) * m_TimeMultiplier;
 			m_AnimationTime += ts * ticksPerSecond;
 			m_AnimationTime = fmod(m_AnimationTime, (float)m_Scene->mAnimations[0]->mDuration);
-
-			//	if (debug) {
-			//		Log::GetLogger()->info("HazelMesh::OnUpdate ts: {0} m_AnimationTime: {1} mDuration {2} ticksPerSecond {3}",
-			//			ts, m_AnimationTime, m_Scene->mAnimations[0]->mDuration, ticksPerSecond);
-			//	}
 		}
 
 		// TODO: We only need to recalc bones if rendering has been requested at the current animation frame
@@ -813,32 +803,6 @@ namespace Hazel {
 			uint32_t mesh = node->mMeshes[i];
 			m_Submeshes[mesh].NodeName = node->mName.C_Str();
 			m_Submeshes[mesh].Transform = transform;
-		}
-
-		if (ImGui::TreeNode(node->mName.C_Str()))
-		{
-			auto [translation, rotation, scale] = Math::GetTransformDecomposition(transform);
-			glm::vec3 rotationVec3 = glm::degrees(glm::eulerAngles(rotation));
-			ImGui::Text("World Transform");
-			ImGui::Text("  Translation: %.2f %.2f %.2f", translation.x, translation.y, translation.z);
-			ImGui::Text("  Rotation:    %.2f %.2f %.2f", rotationVec3.x, rotationVec3.y, rotationVec3.z);
-			ImGui::Text("  Scale:       %.2f %.2f %.2f", scale.x, scale.y, scale.z);
-
-			/****
-			{
-				auto [translation, rotation, scale] = Math::GetTransformDecomposition(localTransform);
-				glm::vec3 rotationVec3 = glm::degrees(glm::eulerAngles(rotation));
-				ImGui::Text("Local Transform");
-				ImGui::Text("  Translation: %.2f %.2f %.2f", translation.x, translation.y, translation.z);
-				ImGui::Text("  Rotation:    %.2f %.2f %.2f", rotationVec3.x, rotationVec3.y, rotationVec3.z);
-				ImGui::Text("  Scale:       %.2f %.2f %.2f", scale.x, scale.y, scale.z);
-			}
-			****/
-
-			for (uint32_t i = 0; i < node->mNumChildren; i++)
-				ImGuiNodeHierarchy(node->mChildren[i], transform, level + 1);
-
-			ImGui::TreePop();
 		}
 	}
 

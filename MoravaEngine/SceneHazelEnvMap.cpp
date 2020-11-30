@@ -254,26 +254,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         }
         ImGui::End();
 
-        ImGui::Begin("Viewport Environment Map");
-        {
-            m_ImGuiViewportEnvMap.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportEnvMapX);
-            m_ImGuiViewportEnvMap.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportEnvMapY);
-            m_ImGuiViewportEnvMap.Width = (int)ImGui::GetWindowWidth();
-            m_ImGuiViewportEnvMap.Height = (int)ImGui::GetWindowHeight();
-            m_ImGuiViewportEnvMap.MouseX = (int)ImGui::GetMousePos().x;
-            m_ImGuiViewportEnvMap.MouseY = (int)ImGui::GetMousePos().y;
-
-            m_ViewportEnvMapFocused = ImGui::IsWindowFocused();
-            m_ViewportEnvMapHovered = ImGui::IsWindowHovered();
-
-            ImVec2 viewportPanelSizeImGuiEnvMap = ImGui::GetContentRegionAvail();
-            glm::vec2 viewportPanelSizeEnvMap = glm::vec2(viewportPanelSizeImGuiEnvMap.x, viewportPanelSizeImGuiEnvMap.y);
-
-            uint64_t textureID = m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
-            ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportEnvMapSize.x, m_ViewportEnvMapSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-        }
-        ImGui::End();
-
         ImGui::PopStyleVar();
     }
 }

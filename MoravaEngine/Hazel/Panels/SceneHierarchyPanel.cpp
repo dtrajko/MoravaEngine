@@ -51,45 +51,26 @@ namespace Hazel
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Scene Hierarchy");
-
 		if (m_Context)
 		{
-			uint32_t entityCount = 0;
-			uint32_t meshCount = 0;
-
 			m_Context->m_Registry.each([&](auto entity)
-				{
-					DrawEntityNode(Entity(entity, m_Context));
-				});
-
-			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 			{
-				m_SelectionContext = {};
-				m_CurrentlySelectedTransform = glm::mat4(1.0f);
-			}
-
-			// Right-click on blank space
-			if (ImGui::BeginPopupContextWindow(0, 1, false))
-			{
-				if (ImGui::MenuItem("Create Empty Entity"))
-				{
-					m_Context->CreateEntity("Empty Entity");
-				}
-				ImGui::EndPopup();
-			}
-
-			ImGui::End();
-
-			ImGui::Begin("Properties");
-
-			ImGui::End();
+				DrawEntityNode(Entity(entity, m_Context));
+			});
 		}
+		ImGui::End();
+
+		ImGui::Begin("Properties");
+		if (m_SelectionContext && m_SelectionContext.HasComponent<Hazel::TagComponent>())
+		{
+			DrawComponents(m_SelectionContext);
+		}
+		ImGui::End();
 	}
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
-		// ImGui::Text("%s", tag.c_str());
 
 		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
 			ImGuiTreeNodeFlags_OpenOnArrow |
@@ -127,6 +108,7 @@ namespace Hazel
 
 		if (entityDeleted) {
 			m_Context->DestroyEntity(entity);
+			m_SelectionContext = {};
 		}
 	}
 
@@ -159,19 +141,6 @@ namespace Hazel
 
 		if (ImGui::TreeNode(node->mName.C_Str()))
 		{
-			{
-				auto [translation, rotation, scale] = Math::GetTransformDecomposition(transform);
-				ImGui::Text("World Transform");
-				ImGui::Text("  Translation: %.2f, %.2f, %.2f", translation.x, translation.y, translation.z);
-				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
-			}
-			{
-				auto [translation, rotation, scale] = Math::GetTransformDecomposition(localTransform);
-				ImGui::Text("Local Transform");
-				ImGui::Text("  Translation: %.2f, %.2f, %.2f", translation.x, translation.y, translation.z);
-				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
-			}
-
 			for (uint32_t i = 0; i < node->mNumChildren; i++) {
 				MeshNodeHierarchy(mesh, node->mChildren[i], transform, level + 1);
 			}
