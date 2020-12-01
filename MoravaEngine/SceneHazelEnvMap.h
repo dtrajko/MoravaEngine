@@ -33,11 +33,8 @@ public:
 
 private:
 	void SetupShaders(); // Usually in Renderer* classes
-
 	void SetupRenderFramebuffer();
 	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
-
-	bool OnKeyPressed(KeyPressedEvent& e);
 
 private:
 	EnvironmentMap* m_EnvironmentMap;

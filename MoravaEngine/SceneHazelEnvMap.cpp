@@ -310,17 +310,7 @@ void SceneHazelEnvMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     }
 
-    if (ImGui::BeginMenuBar())
-    {
-        // ...
-        ImGui::EndMenuBar();
-    }
     ImGui::End();
-}
-
-bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
-{
-    return true;
 }
 
 void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,

@@ -299,12 +299,6 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
     m_SceneRenderer->BeginScene((Scene*)m_SceneRenderer->s_Data.ActiveScene);
 
     UpdateUniforms();
-
-    //  Scene::s_ImGuizmoTransform = m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
-    //  
-    //  m_ViewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
-    //  m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
-    //  m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize((uint32_t)m_ViewportWidth, (uint32_t)m_ViewportHeight);
 }
 
 Hazel::Entity* EnvironmentMap::GetMeshEntity()
