@@ -301,11 +301,6 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
     UpdateUniforms();
 }
 
-Hazel::Entity* EnvironmentMap::GetMeshEntity()
-{
-    return nullptr;
-}
-
 float& EnvironmentMap::GetSkyboxLOD()
 {
     return ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->GetSkyboxLOD();
