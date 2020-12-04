@@ -19,6 +19,7 @@
 #include "Material.h"
 #include "EnvMapMaterial.h"
 #include "Scene.h"
+#include "CubeSkybox.h"
 
 #include <string>
 
@@ -148,5 +149,7 @@ private:
 	bool m_DisplayBoundingBoxes;
 
 	glm::vec2 m_WorkPosImGui; // window offset on monitor real estate
+
+	CubeSkybox* m_SkyboxCube;
 
 };
