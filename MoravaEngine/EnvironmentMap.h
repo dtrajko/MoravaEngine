@@ -19,6 +19,7 @@
 #include "Material.h"
 #include "EnvMapMaterial.h"
 #include "Scene.h"
+#include "CubeSkybox.h"
 
 #include <string>
 
@@ -103,7 +104,9 @@ private:
 	Shader* m_ShaderRenderer2D; // Renderer2D::s_Data.TextureShader
 	Shader* m_ShaderRenderer2D_Line; // Renderer2D::s_Data.LineShader
 
+	CubeSkybox* m_SkyboxCube;
 	Hazel::HazelTextureCube* m_SkyboxTexture;
+	float m_SkyboxExposureFactor = 2.0f;
 
 	std::map<std::string, unsigned int>* m_SamplerSlots;
 
@@ -132,8 +135,6 @@ private:
 	TextureInfo m_TextureInfoDefault;
 	std::map<std::string, TextureInfo> m_TextureInfo;
 	std::map<std::string, EnvMapMaterial*> m_EnvMapMaterials;
-
-	float m_SkyboxExposureFactor = 2.0f;
 
 	bool m_DrawOnTopBoundingBoxes = true;
 	glm::vec3 m_NewRay;

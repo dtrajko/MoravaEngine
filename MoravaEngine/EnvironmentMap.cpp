@@ -43,6 +43,7 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 
     m_SceneRenderer = new Hazel::SceneRenderer(filepath, scene);
     m_SceneRenderer->s_Data.SceneData.SceneCamera = scene->GetCamera();
+
     SetSkybox(m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap);
 
     Init();
@@ -384,6 +385,8 @@ void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMater
 
 void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
 {
+    m_SkyboxCube = new CubeSkybox();
+
     m_SkyboxTexture = skybox;
     m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
 }
@@ -884,18 +887,29 @@ void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transfo
 
 void EnvironmentMap::RenderHazelSkybox()
 {
-    RendererBasic::DisableCulling();
-    RendererBasic::DisableDepthTest();
+    // configure global opengl state
+    glEnable(GL_DEPTH_TEST);
+    // set depth function to less than AND equal for skybox depth trick.
+    glDepthFunc(GL_LEQUAL);
+    // enable seamless cubemap sampling for lower mip levels in the pre-filter map.
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-    // Hazel Skybox
+    // Skybox shaderBackground
+    RendererBasic::DisableCulling();
+
+    // render skybox (render as last to prevent overdraw)
     m_SceneRenderer->GetShaderSkybox()->Bind();
+
+    m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("u_Texture"));
 
     glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
     m_SceneRenderer->GetShaderSkybox()->setMat4("u_InverseVP", glm::inverse(viewProjection));
-    // m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
-    m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("u_Texture"));
-    // SubmitFullscreenQuad(m_Data.SceneData.SkyboxMaterial);
-    Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr); // m_Data.SceneData.SkyboxMaterial
+
+    m_SceneRenderer->GetShaderSkybox()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
+    m_SceneRenderer->GetShaderSkybox()->setFloat("u_TextureLod", ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->GetSkyboxLOD());
+    m_SceneRenderer->GetShaderSkybox()->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
+
+    m_SkyboxCube->Render();
 
     m_SceneRenderer->GetShaderSkybox()->Unbind();
 }
