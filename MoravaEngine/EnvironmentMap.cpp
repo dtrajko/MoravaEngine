@@ -44,6 +44,9 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     m_SceneRenderer = new Hazel::SceneRenderer(filepath, scene);
     m_SceneRenderer->s_Data.SceneData.SceneCamera = scene->GetCamera();
 
+    m_SkyboxCube = new CubeSkybox();
+    m_Quad = new Quad();
+
     SetSkybox(m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap);
 
     Init();
@@ -385,8 +388,6 @@ void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMater
 
 void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
 {
-    m_SkyboxCube = new CubeSkybox();
-
     m_SkyboxTexture = skybox;
     m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
 }
@@ -885,17 +886,10 @@ void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transfo
     }
 }
 
-void EnvironmentMap::RenderHazelSkybox()
+void EnvironmentMap::RenderSkybox()
 {
-    // configure global opengl state
-    glEnable(GL_DEPTH_TEST);
-    // set depth function to less than AND equal for skybox depth trick.
-    glDepthFunc(GL_LEQUAL);
-    // enable seamless cubemap sampling for lower mip levels in the pre-filter map.
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
-    // Skybox shaderBackground
     RendererBasic::DisableCulling();
+    RendererBasic::DisableDepthTest();
 
     // render skybox (render as last to prevent overdraw)
     m_SceneRenderer->GetShaderSkybox()->Bind();
@@ -938,10 +932,10 @@ void EnvironmentMap::RenderHazelGrid()
     transform = glm::rotate(transform, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     m_SceneRenderer->GetShaderGrid()->setMat4("u_Transform", transform);
 
+    m_Quad->Render();
+
     RendererBasic::EnableTransparency();
     RendererBasic::EnableMSAA();
-
-    Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
 }
 
 void EnvironmentMap::OnEvent(Event& e)
@@ -1087,7 +1081,7 @@ void EnvironmentMap::GeometryPassTemporary()
 
     uint32_t samplerSlot = m_SamplerSlots->at("albedo");
 
-    RenderHazelSkybox();
+    RenderSkybox();
 
     if (m_DisplayHazelGrid) {
         RenderHazelGrid();

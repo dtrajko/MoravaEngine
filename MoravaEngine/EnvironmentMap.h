@@ -19,6 +19,7 @@
 #include "Material.h"
 #include "EnvMapMaterial.h"
 #include "Scene.h"
+#include "Quad.h"
 #include "CubeSkybox.h"
 
 #include <string>
@@ -40,9 +41,6 @@ public:
 	void LoadEnvMapMaterials(Mesh* mesh);
 	void Render(Framebuffer* framebuffer);
 	void OnImGuiRender();
-
-	void RenderHazelSkybox();
-	void RenderHazelGrid();
 
 	// Setters
 	void SetSkyboxLOD(float LOD);
@@ -91,6 +89,8 @@ private:
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();
 	EnvMapMaterial* CreateDefaultMaterial(const std::string& nodeName);
+	void RenderSkybox();
+	void RenderHazelGrid();
 
 public:
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
@@ -107,6 +107,8 @@ private:
 	CubeSkybox* m_SkyboxCube;
 	Hazel::HazelTextureCube* m_SkyboxTexture;
 	float m_SkyboxExposureFactor = 2.0f;
+
+	Quad* m_Quad;
 
 	std::map<std::string, unsigned int>* m_SamplerSlots;
 
