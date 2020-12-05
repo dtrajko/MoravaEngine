@@ -464,13 +464,17 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
     // ImGuizmo
     if (Scene::s_ImGuizmoType != -1 && selectionContextSize)
     {
-        auto& selection = m_SelectionContext[0];
-
         float rw = (float)ImGui::GetWindowWidth();
         float rh = (float)ImGui::GetWindowHeight();
         ImGuizmo::SetOrthographic(false);
         ImGuizmo::SetDrawlist();
         ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
+
+        auto& selection = m_SelectionContext[0];
+
+        // Entity transform
+        auto& tc = selection.Entity.GetComponent<Hazel::TransformComponent>();
+        glm::mat4 entityTransform = tc.GetTransform();
 
         // Snapping
         bool snap = Input::IsKeyPressed(Key::LeftControl);
@@ -482,8 +486,6 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
 
         float snapValues[3] = { snapValue, snapValue, snapValue };
 
-        auto& entityTransform = *Scene::s_ImGuizmoTransform; // selection.Entity.Transform();
-
         if (m_SelectionMode == SelectionMode::Entity)
         {
             ImGuizmo::Manipulate(
@@ -494,6 +496,17 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
                 glm::value_ptr(entityTransform),
                 nullptr,
                 snap ? snapValues : nullptr);
+
+            if (ImGuizmo::IsUsing())
+            {
+                auto [translation, quatRotation, scale] = Math::GetTransformDecomposition(entityTransform);
+                glm::vec3 rotation = glm::normalize(glm::degrees(glm::eulerAngles(quatRotation)));
+
+                glm::vec3 deltaRotation = rotation - tc.Rotation;
+                tc.Translation = translation;
+                tc.Rotation += deltaRotation;
+                tc.Scale = scale;
+            }
         }
         else
         {
@@ -518,9 +531,12 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
                 nullptr,
                 snap ? snapValues : nullptr);
 
-            submeshTransform = glm::inverse(entityTransform) * transformBase;
-            submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
-            selection.Mesh->Transform = submeshTransform;
+            if (ImGuizmo::IsUsing())
+            {
+                submeshTransform = glm::inverse(entityTransform) * transformBase;
+                submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
+                selection.Mesh->Transform = submeshTransform;
+            }
         }
     }
     // END ImGuizmo
@@ -876,6 +892,25 @@ void EnvironmentMap::OnImGuiRender()
         {
             m_SelectionMode = m_SelectionMode == SelectionMode::Entity ? SelectionMode::SubMesh : SelectionMode::Entity;
         }
+
+        const char* entityTag = "N/A";
+        const char* meshName = "N/A";
+
+        if (m_SelectionContext.size())
+        {
+            auto& selection = m_SelectionContext[0];
+            entityTag = selection.Entity.GetComponent<Hazel::TagComponent>().Tag.c_str();
+
+            meshName = selection.Mesh->MeshName.c_str();
+        }
+
+        ImGui::Text("Selected Entity: ");
+        ImGui::SameLine();
+        ImGui::Text(entityTag);
+
+        ImGui::Text("Selected Mesh: ");
+        ImGui::SameLine();
+        ImGui::Text(meshName);
     }
     ImGui::End();
 
