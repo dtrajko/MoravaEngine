@@ -474,7 +474,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
 
         // Snapping
         bool snap = Input::IsKeyPressed(Key::LeftControl);
-        float snapValue = 0.5f; // Snap to 0.5m for translation/scale
+        float snapValue = 1.0f; // Snap to 0.5m for translation/scale
         // Snap to 45 degrees for rotation
         if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE) {
             snapValue = 45.0f;
@@ -496,7 +496,15 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         }
         else
         {
-            glm::mat4 transformBase = entityTransform * selection.Mesh->Transform;
+            glm::mat4 submeshTransform = selection.Mesh->Transform;
+            glm::vec3 aabbCenterOffset = glm::vec3(
+                selection.Mesh->BoundingBox.Min.x + ((selection.Mesh->BoundingBox.Max.x - selection.Mesh->BoundingBox.Min.x) / 2.0f),
+                selection.Mesh->BoundingBox.Min.y + ((selection.Mesh->BoundingBox.Max.y - selection.Mesh->BoundingBox.Min.y) / 2.0f),
+                selection.Mesh->BoundingBox.Min.z + ((selection.Mesh->BoundingBox.Max.z - selection.Mesh->BoundingBox.Min.z) / 2.0f)
+            );
+            submeshTransform = glm::translate(submeshTransform, aabbCenterOffset);
+
+            glm::mat4 transformBase = entityTransform * submeshTransform;
 
             ImGuizmo::Manipulate(
                 glm::value_ptr(cameraController->CalculateViewMatrix()),
@@ -506,6 +514,9 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
                 glm::value_ptr(transformBase),
                 nullptr,
                 snap ? snapValues : nullptr);
+
+            submeshTransform = glm::translate(transformBase, -aabbCenterOffset);
+            transformBase = entityTransform * submeshTransform;
 
             selection.Mesh->Transform = glm::inverse(entityTransform) * transformBase;
         }
