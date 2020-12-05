@@ -483,6 +483,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         float snapValues[3] = { snapValue, snapValue, snapValue };
 
         auto& entityTransform = *Scene::s_ImGuizmoTransform; // selection.Entity.Transform();
+
         if (m_SelectionMode == SelectionMode::Entity)
         {
             ImGuizmo::Manipulate(
@@ -496,14 +497,16 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         }
         else
         {
-            glm::mat4 submeshTransform = selection.Mesh->Transform;
-            glm::vec3 aabbCenterOffset = glm::vec3(
-                selection.Mesh->BoundingBox.Min.x + ((selection.Mesh->BoundingBox.Max.x - selection.Mesh->BoundingBox.Min.x) / 2.0f),
-                selection.Mesh->BoundingBox.Min.y + ((selection.Mesh->BoundingBox.Max.y - selection.Mesh->BoundingBox.Min.y) / 2.0f),
-                selection.Mesh->BoundingBox.Min.z + ((selection.Mesh->BoundingBox.Max.z - selection.Mesh->BoundingBox.Min.z) / 2.0f)
-            );
-            submeshTransform = glm::translate(submeshTransform, aabbCenterOffset);
+            auto aabb = selection.Mesh->BoundingBox;
 
+            glm::vec3 aabbCenterOffset = glm::vec3(
+                aabb.Min.x + ((aabb.Max.x - aabb.Min.x) / 2.0f),
+                aabb.Min.y + ((aabb.Max.y - aabb.Min.y) / 2.0f),
+                aabb.Min.z + ((aabb.Max.z - aabb.Min.z) / 2.0f)
+            );
+
+            glm::mat4 submeshTransform = selection.Mesh->Transform;
+            submeshTransform = glm::translate(submeshTransform, aabbCenterOffset);
             glm::mat4 transformBase = entityTransform * submeshTransform;
 
             ImGuizmo::Manipulate(
@@ -515,10 +518,9 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
                 nullptr,
                 snap ? snapValues : nullptr);
 
-            submeshTransform = glm::translate(transformBase, -aabbCenterOffset);
-            transformBase = entityTransform * submeshTransform;
-
-            selection.Mesh->Transform = glm::inverse(entityTransform) * transformBase;
+            submeshTransform = glm::inverse(entityTransform) * transformBase;
+            submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
+            selection.Mesh->Transform = submeshTransform;
         }
     }
     // END ImGuizmo
