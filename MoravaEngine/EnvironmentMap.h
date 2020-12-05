@@ -124,7 +124,6 @@ private:
 	Hazel::Entity m_CameraEntity;
 
 	int m_GizmoType = -1; // -1 = no gizmo
-	float m_SnapValue = 0.5f;
 	glm::vec2 m_ViewportBounds[2];
 	float m_ViewportWidth = 0.0f;
 	float m_ViewportHeight = 0.0f;

@@ -46,7 +46,6 @@ private:
 
 	void SetupRenderFramebuffer();
 	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
-	void RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix);
 
 	bool OnKeyPressed(KeyPressedEvent& e);
 
@@ -128,11 +127,6 @@ private:
 		bool Intersecting;
 		bool Enabled;
 	};
-
-	std::map<std::string, Entity> m_Entities;
-
-	int m_HDRI_Edit;
-	int m_HDRI_Edit_Prev;
 
 	float m_CurrentTimestamp;
 	EventCooldown m_ResizeViewport;

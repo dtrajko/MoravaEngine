@@ -142,14 +142,6 @@ SceneHazelEnvMap::~SceneHazelEnvMap()
     delete m_EnvironmentMap;
 }
 
-void SceneHazelEnvMap::SetLightManager()
-{
-}
-
-void SceneHazelEnvMap::SetWaterManager(int width, int height)
-{
-}
-
 void SceneHazelEnvMap::SetupRenderFramebuffer()
 {
     if (!m_IsViewportEnabled) return;
@@ -178,18 +170,6 @@ void SceneHazelEnvMap::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* 
     }
 }
 
-void SceneHazelEnvMap::SetupTextures()
-{
-}
-
-void SceneHazelEnvMap::SetupTextureSlots()
-{
-}
-
-void SceneHazelEnvMap::SetupMaterials()
-{
-}
-
 void SceneHazelEnvMap::SetupShaders()
 {
     m_ShaderBackground = new Shader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
@@ -202,31 +182,28 @@ void SceneHazelEnvMap::SetupShaders()
     ResourceManager::AddShader("basic", m_ShaderBasic);
 }
 
+void SceneHazelEnvMap::SetLightManager()
+{
+}
+
+void SceneHazelEnvMap::SetWaterManager(int width, int height)
+{
+}
+
+void SceneHazelEnvMap::SetupTextures()
+{
+}
+
+void SceneHazelEnvMap::SetupTextureSlots()
+{
+}
+
+void SceneHazelEnvMap::SetupMaterials()
+{
+}
+
 void SceneHazelEnvMap::SetupMeshes()
 {
-    for (auto& drawCommand : m_EnvironmentMap->GetSceneRenderer()->s_Data.DrawList)
-    {
-        m_Entities.insert(std::make_pair(drawCommand.Name, Entity()));
-
-        m_Entities[drawCommand.Name].Enabled = true;
-        m_Entities[drawCommand.Name].Transform.Translation = glm::vec3(0.0f, 0.0f, 0.0f);
-        m_Entities[drawCommand.Name].Transform.Rotation = glm::quat(glm::vec3(0.0f));
-        m_Entities[drawCommand.Name].Init.Transform.Scale = glm::vec3(1.0f);
-        m_Entities[drawCommand.Name].Init.AABB.Transform.Scale = glm::vec3(1.0f);
-        m_Entities[drawCommand.Name].OriginOffset = glm::vec3(0.0f);
-
-        Log::GetLogger()->info("-- BEGIN SceneHazelEnvMap setup M1911");
-        {
-            m_Entities[drawCommand.Name].Transform.Scale = m_Entities[drawCommand.Name].Init.Transform.Scale;
-            m_Entities[drawCommand.Name].Transform.Transform = glm::mat4(1.0f);
-            m_Entities[drawCommand.Name].Transform.Transform = glm::translate(m_Entities[drawCommand.Name].Transform.Transform, m_Entities[drawCommand.Name].Transform.Translation);
-            m_Entities[drawCommand.Name].Transform.Transform = glm::scale(m_Entities[drawCommand.Name].Transform.Transform, m_Entities[drawCommand.Name].Transform.Scale);
-
-            m_Entities[drawCommand.Name].AABB = AABB(m_Entities[drawCommand.Name].Transform.Translation + m_Entities[drawCommand.Name].OriginOffset,
-                m_Entities[drawCommand.Name].Transform.Rotation, m_Entities[drawCommand.Name].Init.AABB.Transform.Scale);
-        }
-        Log::GetLogger()->info("-- END SceneHazelEnvMap setup M1911");
-    }
 }
 
 void SceneHazelEnvMap::SetupModels()
@@ -237,19 +214,13 @@ void SceneHazelEnvMap::SetupFramebuffers()
 {
 }
 
+void SceneHazelEnvMap::SetupUniforms()
+{
+}
+
 void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 {
     m_CurrentTimestamp = timestep;
-
-    for (auto& entity : m_Entities)
-    {
-        auto [translation, rotation, scale] = Math::GetTransformDecomposition(entity.second.Transform.Transform);
-        entity.second.Transform.Translation = translation;
-        entity.second.Transform.Rotation = rotation;
-        entity.second.Transform.Scale = scale;
-
-        entity.second.AABB.Update(entity.second.Transform.Translation, entity.second.Transform.Rotation, entity.second.Transform.Scale);
-    }
 
     m_EnvironmentMap->GetShaderPBR_Anim()->Bind();
     m_EnvironmentMap->GetShaderPBR_Anim()->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
@@ -259,42 +230,6 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
     float deltaTime = Timer::Get()->GetDeltaTime();
 
     m_EnvironmentMap->Update(this, deltaTime);
-
-    if (m_HDRI_Edit != m_HDRI_Edit_Prev)
-    {
-        if (m_HDRI_Edit == HDRI_GREENWICH_PARK) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH) {
-            //  m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_BIRCHWOOD) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_PINK_SUNRISE) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/pink_sunrise_4k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_ROOITOU_PARK) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_VENICE_DAWN) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr");
-        }
-        else if (m_HDRI_Edit == HDRI_PEPPERMINT_POWERPLANT) {
-            // m_MaterialWorkflowPBR->Init("Textures/HDR/peppermint_powerplant_1k.hdr");
-        }
-
-        m_HDRI_Edit_Prev = m_HDRI_Edit;
-    }
 }
 
 void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
@@ -386,24 +321,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
             ImGui::Text("Equirectangular");
             ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->GetEnvEquirect()->GetID(), imageSize);
-
-            //  ImGui::Text("Radiance Map");
-            //  ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->s_Data.SceneData.SceneEnvironment.RadianceMap->GetID(), imageSize);
-
-            //  ImGui::Text("Irradiance Map");
-            //  ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->s_Data.SceneData.SceneEnvironment.IrradianceMap->GetID(), imageSize);
-
-            ImGui::Text("Geo Pass");
-            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->GetFinalColorBufferID(), imageSize);
-
-            ImGui::Text("Composite Pass");
-            ImGui::Image((void*)(intptr_t)m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
-
-            //  Log::GetLogger()->debug("Geo Pass Framebuffer Color Attachment ID {0}",
-            //      m_EnvironmentMap->GetSceneRenderer()->s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID());
-            //  
-            //  Log::GetLogger()->debug("Compo Pass Framebuffer Color Attachment ID {0}",
-            //      m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID());
         }
     }
     ImGui::End();
@@ -439,24 +356,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::End();
     }
 
-    ImGui::Begin("Select HDRI");
-    {
-        if (ImGui::CollapsingHeader("Display Info"))
-        {
-            ImGui::RadioButton("Greenwich Park", &m_HDRI_Edit, HDRI_GREENWICH_PARK);
-            ImGui::RadioButton("San Giuseppe Bridge", &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
-            ImGui::RadioButton("Tropical Beach", &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
-            ImGui::RadioButton("Vignaioli Night", &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
-            ImGui::RadioButton("Early Eve & Warm Sky", &m_HDRI_Edit, HDRI_EARLY_EVE_WARM_SKY);
-            ImGui::RadioButton("Birchwood", &m_HDRI_Edit, HDRI_BIRCHWOOD);
-            ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
-            ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
-            ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
-            ImGui::RadioButton("Peppermint Powerplant", &m_HDRI_Edit, HDRI_PEPPERMINT_POWERPLANT);
-        }
-    }
-    ImGui::End();
-
     ImGui::Begin("Settings");
     {
         if (ImGui::CollapsingHeader("Display Info"))
@@ -466,18 +365,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
 
             ImGui::Separator();
-            for (auto& entity : m_Entities)
-            {
-                std::string isEnabled = std::string("Is Enabled ") + entity.first;
-                ImGui::Checkbox(isEnabled.c_str(), &entity.second.Enabled);
-            }
-            ImGui::Separator();
-            for (auto& entity : m_Entities)
-            {
-                std::string isIntersecting = std::string("Is Intersecting ") + entity.first;
-                ImGui::Checkbox(isIntersecting.c_str(), &entity.second.Intersecting);
-            }
-            ImGui::Separator();
+
             bool eventLoggingEnabled = Application::Get()->GetWindow()->GetEventLogging();
             if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
                 Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
@@ -572,12 +460,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
                 Hazel::Entity* meshEntity = nullptr;
                 std::string meshFullPath = "None";
-
-                //  meshEntity = m_EnvironmentMap->GetMeshEntity();
-                //  if (meshEntity->HasComponent<Hazel::MeshComponent>()) {
-                //      auto meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
-                //      meshFullPath = meshComponent.Mesh->GetFilePath();
-                //  }
 
                 std::string fileName = Util::GetFileNameFromFullPath(meshFullPath);
                 ImGui::Text(fileName.c_str()); ImGui::SameLine();
@@ -835,37 +717,6 @@ void SceneHazelEnvMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
     ImGui::End();
 }
 
-void SceneHazelEnvMap::RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix)
-{
-    if (!m_DisplayLineElements) return;
-
-    m_ShaderBasic->Bind();
-    m_ShaderBasic->setMat4("projection", projectionMatrix);
-    m_ShaderBasic->setMat4("view", m_CameraController->CalculateViewMatrix());
-
-    // Draw AABBs
-    glm::mat4 AABB_Transform = Math::CreateTransform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
-
-    for (auto& entity : m_Entities)
-    {
-        if (entity.second.Enabled)
-        {
-            m_ShaderBasic->setMat4("model", AABB_Transform);
-            m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-            if (m_EnvironmentMap->GetDisplayBoundingBoxes()) {
-                entity.second.AABB.Draw();
-            }
-        }
-    }
-
-    m_Grid->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
-    m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
-}
-
-void SceneHazelEnvMap::SetupUniforms()
-{
-}
-
 bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
 {
     // Shortcuts
@@ -962,8 +813,6 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
         SetupUniforms();
 
         m_EnvironmentMap->Render(m_RenderFramebuffer);
-
-        RenderLineElements(m_ShaderBasic, projectionMatrix);
 
         if (m_IsViewportEnabled)
         {

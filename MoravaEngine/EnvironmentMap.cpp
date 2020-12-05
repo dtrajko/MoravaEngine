@@ -472,7 +472,15 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         ImGuizmo::SetDrawlist();
         ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
 
+        // Snapping
         bool snap = Input::IsKeyPressed(Key::LeftControl);
+        float snapValue = 0.5f; // Snap to 0.5m for translation/scale
+        // Snap to 45 degrees for rotation
+        if (m_GizmoType == ImGuizmo::OPERATION::ROTATE) {
+            snapValue = 45.0f;
+        }
+
+        float snapValues[3] = { snapValue, snapValue, snapValue };
 
         auto& entityTransform = *Scene::s_ImGuizmoTransform; // selection.Entity.Transform();
         if (m_SelectionMode == SelectionMode::Entity)
@@ -484,11 +492,12 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
                 ImGuizmo::LOCAL,
                 glm::value_ptr(entityTransform),
                 nullptr,
-                snap ? &m_SnapValue : nullptr);
+                snap ? snapValues : nullptr);
         }
         else
         {
             glm::mat4 transformBase = entityTransform * selection.Mesh->Transform;
+
             ImGuizmo::Manipulate(
                 glm::value_ptr(cameraController->CalculateViewMatrix()),
                 glm::value_ptr(RendererBasic::GetProjectionMatrix()),
@@ -496,7 +505,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
                 ImGuizmo::LOCAL,
                 glm::value_ptr(transformBase),
                 nullptr,
-                snap ? &m_SnapValue : nullptr);
+                snap ? snapValues : nullptr);
 
             selection.Mesh->Transform = glm::inverse(entityTransform) * transformBase;
         }
@@ -814,41 +823,47 @@ void EnvironmentMap::OnImGuiRender()
 
     // Shaders
     ImGui::Begin("Shaders");
-    if (ImGui::TreeNode("Shaders"))
     {
-        auto shaders = ResourceManager::GetShaders();
-        for (auto shader = shaders->begin(); shader != shaders->end(); shader++)
+        if (ImGui::TreeNode("Shaders"))
         {
-            if (ImGui::TreeNode(shader->first.c_str()))
+            auto shaders = ResourceManager::GetShaders();
+            for (auto shader = shaders->begin(); shader != shaders->end(); shader++)
             {
-                std::string buttonName = "Reload##" + shader->first;
-                if (ImGui::Button(buttonName.c_str())) {
-                    shader->second->Reload();
+                if (ImGui::TreeNode(shader->first.c_str()))
+                {
+                    std::string buttonName = "Reload##" + shader->first;
+                    if (ImGui::Button(buttonName.c_str())) {
+                        shader->second->Reload();
+                    }
+                    ImGui::TreePop();
                 }
-                ImGui::TreePop();
+            }
+            ImGui::TreePop();
+        }
+
+        std::string buttonName = "Reload All";
+        if (ImGui::Button(buttonName.c_str())) {
+            auto shaders = ResourceManager::GetShaders();
+            for (auto shader = shaders->begin(); shader != shaders->end(); shader++) {
+                shader->second->Reload();
             }
         }
-        ImGui::TreePop();
     }
+    ImGui::End();
 
-    std::string buttonName = "Reload All";
-    if (ImGui::Button(buttonName.c_str())) {
-        auto shaders = ResourceManager::GetShaders();
-        for (auto shader = shaders->begin(); shader != shaders->end(); shader++) {
-            shader->second->Reload();
-        }
-    }
+    ImGui::Separator();
 
+    // Selection
+    ImGui::Begin("Selection");
     {
-        ImGui::Separator();
-
+        ImGui::Text("Selection Mode: ");
+        ImGui::SameLine();
         char* label = m_SelectionMode == SelectionMode::Entity ? "Entity" : "Mesh";
         if (ImGui::Button(label))
         {
             m_SelectionMode = m_SelectionMode == SelectionMode::Entity ? SelectionMode::SubMesh : SelectionMode::Entity;
         }
     }
-
     ImGui::End();
 
     ImGui::ShowMetricsWindow();
