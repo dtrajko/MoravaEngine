@@ -53,7 +53,7 @@ public:
 	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
 	inline Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
 	inline Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
-	Hazel::Entity* GetMeshEntity();
+	Ref<Hazel::Entity> GetMeshEntity();
 	inline float& GetSkyboxExposureFactor() { return m_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
 	void SetViewportBounds(glm::vec2* viewportBounds);
@@ -123,7 +123,6 @@ private:
 
 	Hazel::Entity m_CameraEntity;
 
-	int m_GizmoType = -1; // -1 = no gizmo
 	glm::vec2 m_ViewportBounds[2];
 	float m_ViewportWidth = 0.0f;
 	float m_ViewportHeight = 0.0f;

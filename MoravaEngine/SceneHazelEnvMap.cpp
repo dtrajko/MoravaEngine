@@ -458,7 +458,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             {
                 ImGui::Text("Mesh");
 
-                Hazel::Entity* meshEntity = nullptr;
+                Ref<Hazel::Entity> meshEntity = nullptr;
                 std::string meshFullPath = "None";
 
                 std::string fileName = Util::GetFileNameFromFullPath(meshFullPath);

@@ -476,7 +476,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         bool snap = Input::IsKeyPressed(Key::LeftControl);
         float snapValue = 0.5f; // Snap to 0.5m for translation/scale
         // Snap to 45 degrees for rotation
-        if (m_GizmoType == ImGuizmo::OPERATION::ROTATE) {
+        if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE) {
             snapValue = 45.0f;
         }
 
@@ -526,16 +526,16 @@ void EnvironmentMap::SubmitEntity(Hazel::Entity entity)
     m_SceneRenderer->s_Data.DrawList.push_back({ name, mesh.get(), entity.GetMaterial(), transform });
 }
 
-Hazel::Entity* EnvironmentMap::GetMeshEntity()
+Ref<Hazel::Entity> EnvironmentMap::GetMeshEntity()
 {
-    Hazel::Entity meshEntity;
+    Ref<Hazel::Entity> meshEntity;
     auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     if (meshEntities.size()) {
         for (auto entt : meshEntities)
         {
-            meshEntity = Hazel::Entity{ entt, m_SceneRenderer->s_Data.ActiveScene };
+            meshEntity = CreateRef<Hazel::Entity>(entt, m_SceneRenderer->s_Data.ActiveScene);
         }
-        return &meshEntity;
+        return meshEntity;
     }
     return nullptr;
 }
@@ -1032,7 +1032,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 OnSelected(m_SelectionContext[0]);
             }
             else {
-                Hazel::Entity* meshEntity = GetMeshEntity();
+                Ref<Hazel::Entity> meshEntity = GetMeshEntity();
                 if (meshEntity != nullptr) {
                     m_CurrentlySelectedTransform = &meshEntity->Transform();
                 }
@@ -1146,7 +1146,7 @@ void EnvironmentMap::GeometryPassTemporary()
         if (m_SelectionContext.size()) {
             auto& selection = m_SelectionContext[0];
 
-            Hazel::Entity* meshEntity = GetMeshEntity();
+            Ref<Hazel::Entity> meshEntity = GetMeshEntity();
             if (meshEntity != nullptr)
             {
                 glm::mat4 transform = GetMeshEntity()->GetComponent<Hazel::TransformComponent>().GetTransform();
