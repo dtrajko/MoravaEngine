@@ -29,9 +29,9 @@
 
 SceneHazelEnvMap::SceneHazelEnvMap()
 {
-    sceneSettings.cameraPosition     = glm::vec3(20.0f, 10.0f, 0.0f);
+    sceneSettings.cameraPosition     = glm::vec3(20.0f, 4.0f, 0.0f);
     sceneSettings.cameraStartYaw     = -180.0f;
-    sceneSettings.cameraStartPitch   = 20.0f;
+    sceneSettings.cameraStartPitch   = 0.0f;
     sceneSettings.cameraMoveSpeed    = 2.0f;
     sceneSettings.waterHeight        = 0.0f;
     sceneSettings.waterWaveSpeed     = 0.05f;

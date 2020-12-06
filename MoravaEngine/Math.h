@@ -19,7 +19,7 @@ public:
 	static float ConvertRangeFloat(float value, float oldMin, float oldMax, float newMin, float newMax);
 	static float Lerp(float a, float b, float f);
 	static std::tuple<glm::vec3, glm::quat, glm::vec3> GetTransformDecomposition(const glm::mat4& transform);
-	bool DecomposeTransform(const glm::mat4& transform, glm::vec3& outTranslation, glm::vec3& outRotation, glm::vec3& outScale);
+	static bool DecomposeTransform(const glm::mat4& transform, glm::vec3& outTranslation, glm::vec3& outRotation, glm::vec3& outScale);
 
 private:
 	static bool s_IsRandomInit;

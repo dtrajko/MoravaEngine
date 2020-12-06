@@ -462,7 +462,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
     }
 
     // ImGuizmo
-    if (Scene::s_ImGuizmoType != -1 && selectionContextSize)
+    if (Scene::s_ImGuizmoType != -1 && m_SelectionContext.size())
     {
         float rw = (float)ImGui::GetWindowWidth();
         float rh = (float)ImGui::GetWindowHeight();
@@ -470,10 +470,10 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         ImGuizmo::SetDrawlist();
         ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
 
-        auto& selection = m_SelectionContext[0];
+        auto& selectedSubmesh = m_SelectionContext[0];
 
         // Entity transform
-        auto& tc = selection.Entity.GetComponent<Hazel::TransformComponent>();
+        auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
         glm::mat4 entityTransform = tc.GetTransform();
 
         // Snapping
@@ -499,8 +499,8 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
 
             if (ImGuizmo::IsUsing())
             {
-                auto [translation, quatRotation, scale] = Math::GetTransformDecomposition(entityTransform);
-                glm::vec3 rotation = glm::normalize(glm::degrees(glm::eulerAngles(quatRotation)));
+                glm::vec3 translation, rotation, scale;
+                Math::DecomposeTransform(entityTransform, translation, rotation, scale);
 
                 glm::vec3 deltaRotation = rotation - tc.Rotation;
                 tc.Translation = translation;
@@ -510,7 +510,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         }
         else
         {
-            auto aabb = selection.Mesh->BoundingBox;
+            auto aabb = selectedSubmesh.Mesh->BoundingBox;
 
             glm::vec3 aabbCenterOffset = glm::vec3(
                 aabb.Min.x + ((aabb.Max.x - aabb.Min.x) / 2.0f),
@@ -518,7 +518,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
                 aabb.Min.z + ((aabb.Max.z - aabb.Min.z) / 2.0f)
             );
 
-            glm::mat4 submeshTransform = selection.Mesh->Transform;
+            glm::mat4 submeshTransform = selectedSubmesh.Mesh->Transform;
             submeshTransform = glm::translate(submeshTransform, aabbCenterOffset);
             glm::mat4 transformBase = entityTransform * submeshTransform;
 
@@ -535,7 +535,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
             {
                 submeshTransform = glm::inverse(entityTransform) * transformBase;
                 submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
-                selection.Mesh->Transform = submeshTransform;
+                selectedSubmesh.Mesh->Transform = submeshTransform;
             }
         }
     }
@@ -620,21 +620,62 @@ void EnvironmentMap::OnImGuiRender()
 
     ImGui::Begin("Transform");
     {
-        if (Scene::s_ImGuizmoTransform)
+        if (m_SelectionContext.size())
         {
-            auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*Scene::s_ImGuizmoTransform);
-            glm::vec3 RotationDegrees = glm::degrees(glm::eulerAngles(Rotation));
+            glm::mat4 transformImGui;
+            glm::mat4 submeshTransform;
+            glm::vec3 aabbCenterOffset;
 
-            bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", Location, 0.0f, 100.0f);
-            bool isRotationChanged = ImGuiWrapper::DrawVec3Control("Rotation", RotationDegrees, 0.0f, 100.0f);
-            bool isScaleChanged = ImGuiWrapper::DrawVec3Control("Scale", Scale, 1.0f, 100.0f);
+            auto& selectedSubmesh = m_SelectionContext[0];
 
-            if (isTranslationChanged || isRotationChanged || isScaleChanged) {
-                ImGuizmo::RecomposeMatrixFromComponents(
-                    glm::value_ptr(Location),
-                    glm::value_ptr(RotationDegrees),
-                    glm::value_ptr(Scale),
-                    glm::value_ptr(*Scene::s_ImGuizmoTransform));
+            // Entity transform
+            auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
+            glm::mat4 entityTransform = tc.GetTransform();
+
+            if (m_SelectionMode == SelectionMode::Entity)
+            {
+                transformImGui = entityTransform;
+            }
+            else
+            {
+                auto aabb = selectedSubmesh.Mesh->BoundingBox;
+
+                aabbCenterOffset = glm::vec3(
+                    aabb.Min.x + ((aabb.Max.x - aabb.Min.x) / 2.0f),
+                    aabb.Min.y + ((aabb.Max.y - aabb.Min.y) / 2.0f),
+                    aabb.Min.z + ((aabb.Max.z - aabb.Min.z) / 2.0f)
+                );
+
+                submeshTransform = selectedSubmesh.Mesh->Transform;
+                submeshTransform = glm::translate(submeshTransform, aabbCenterOffset);
+                transformImGui = entityTransform * submeshTransform;
+            }
+
+            glm::vec3 translation, rotationRadians, scale;
+            Math::DecomposeTransform(transformImGui, translation, rotationRadians, scale);
+            glm::vec3 rotationDegrees = glm::degrees(rotationRadians);
+
+            bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", translation, 0.0f, 100.0f);
+            bool isRotationChanged = ImGuiWrapper::DrawVec3Control("Rotation", rotationDegrees, 0.0f, 100.0f);
+            bool isScaleChanged = ImGuiWrapper::DrawVec3Control("Scale", scale, 1.0f, 100.0f);
+
+            if (isTranslationChanged || isRotationChanged || isScaleChanged)
+            {
+                rotationRadians = glm::radians(rotationDegrees);
+
+                if (m_SelectionMode == SelectionMode::Entity)
+                {
+                    glm::vec3 deltaRotation = rotationRadians - tc.Rotation;
+                    tc.Translation = translation;
+                    tc.Rotation += deltaRotation;
+                    tc.Scale = scale;
+                }
+                else
+                {
+                    submeshTransform = glm::inverse(entityTransform) * transformImGui;
+                    submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
+                    selectedSubmesh.Mesh->Transform = submeshTransform;
+                }
             }
         }
     }
@@ -648,7 +689,7 @@ void EnvironmentMap::OnImGuiRender()
             std::string materialLabel = "Material " + materialName;
 
             // Material section
-            if (ImGui::CollapsingHeader(materialLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader(materialLabel.c_str(), nullptr /*, ImGuiTreeNodeFlags_DefaultOpen */ ))
             {
                 // BEGIN PBR Textures
                 ImGui::Indent();

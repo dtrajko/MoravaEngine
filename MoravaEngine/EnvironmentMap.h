@@ -106,7 +106,7 @@ private:
 
 	CubeSkybox* m_SkyboxCube;
 	Hazel::HazelTextureCube* m_SkyboxTexture;
-	float m_SkyboxExposureFactor = 2.0f;
+	float m_SkyboxExposureFactor = 0.5f;
 
 	Quad* m_Quad;
 

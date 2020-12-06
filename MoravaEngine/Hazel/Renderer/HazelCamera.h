@@ -57,7 +57,7 @@ namespace Hazel {
 		glm::vec3 m_Position;
 		float m_Pitch;
 		float m_Yaw;
-		float m_Exposure = 0.8f; // from Hazel, EnvironmentMap scene
+		float m_Exposure = 1.0f; // from Hazel, EnvironmentMap scene
 
 	private:
 		glm::mat4 m_ViewMatrix;

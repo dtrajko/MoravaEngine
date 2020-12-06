@@ -199,10 +199,15 @@ namespace Hazel {
 				// Triangle cache
 				if (!m_IsAnimated)
 				{
-					m_TriangleCache[(uint32_t)m].emplace_back(
-						m_StaticVertices[index.V1 + submesh.BaseVertex],
-						m_StaticVertices[index.V2 + submesh.BaseVertex],
-						m_StaticVertices[index.V3 + submesh.BaseVertex]);
+					if (index.V1 + submesh.BaseVertex < m_StaticVertices.size() &&
+						index.V2 + submesh.BaseVertex < m_StaticVertices.size() &&
+						index.V3 + submesh.BaseVertex < m_StaticVertices.size())
+					{
+						m_TriangleCache[(uint32_t)m].emplace_back(
+							m_StaticVertices[index.V1 + submesh.BaseVertex],
+							m_StaticVertices[index.V2 + submesh.BaseVertex],
+							m_StaticVertices[index.V3 + submesh.BaseVertex]);
+					}
 				}
 			}
 		}
