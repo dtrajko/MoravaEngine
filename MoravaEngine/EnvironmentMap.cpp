@@ -1035,7 +1035,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 for (uint32_t i = 0; i < submeshes.size(); i++)
                 {
                     auto& submesh = submeshes[i];
-                    auto& transform = GetMeshEntity()->GetComponent<Hazel::TransformComponent>().GetTransform();
+                    auto& transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
                     Hazel::Ray ray = {
                         glm::inverse(transform * submesh.Transform) * glm::vec4(origin, 1.0f),
                         glm::inverse(glm::mat3(transform) * glm::mat3(submesh.Transform)) * direction
@@ -1186,13 +1186,11 @@ void EnvironmentMap::GeometryPassTemporary()
         if (m_SelectionContext.size()) {
             auto& selection = m_SelectionContext[0];
 
-            Ref<Hazel::Entity> meshEntity = GetMeshEntity();
-            if (meshEntity != nullptr)
-            {
-                glm::mat4 transform = GetMeshEntity()->GetComponent<Hazel::TransformComponent>().GetTransform();
-                glm::vec4 color = m_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
-                Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);            
-            }
+            Hazel::Entity meshEntity = selection.Entity;
+
+            glm::mat4 transform = meshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
+            glm::vec4 color = m_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
+            Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);            
         }
     }
     Hazel::Renderer2D::EndScene();
