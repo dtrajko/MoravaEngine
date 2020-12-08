@@ -934,8 +934,8 @@ namespace Hazel {
 	std::string HazelMesh::GetSubmeshMaterialName(Mesh* mesh, Hazel::Submesh& submesh)
 	{
 		std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));
-		std::string submeshMaterialName = meshName + "_" + submesh.NodeName;
-		return submeshMaterialName;
+		std::string materialName = meshName + "_" + std::to_string(submesh.MaterialIndex);
+		return materialName;
 	}
 
 	void HazelMesh::BoneTransform(float time)
@@ -983,6 +983,15 @@ namespace Hazel {
 		HZ_MESH_LOG("------------------------------------------------------");
 	}
 
+	const std::vector<Triangle> HazelMesh::GetTriangleCache(uint32_t index) const
+	{
+		if (index < m_TriangleCache.size())
+		{
+			return m_TriangleCache.at(index);
+		}
+		return std::vector<Triangle>();
+	}
+
 	void HazelMesh::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
 	{
 		EnvMapMaterial* envMapMaterial = nullptr;
@@ -1010,9 +1019,11 @@ namespace Hazel {
 				m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
 			}
 
-			if (envMapMaterials.contains(submesh.NodeName))
+			std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(this, submesh);
+
+			if (envMapMaterials.contains(materialName))
 			{
-				envMapMaterial = envMapMaterials.at(submesh.NodeName);
+				envMapMaterial = envMapMaterials.at(materialName);
 				envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);
 				envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
 				envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);
@@ -1037,15 +1048,6 @@ namespace Hazel {
 		{
 			submesh.Render(this, m_MeshShader, transform, samplerSlot, envMapMaterials);
 		}
-	}
-
-	const std::vector<Triangle> HazelMesh::GetTriangleCache(uint32_t index) const
-	{
-		if (index < m_TriangleCache.size())
-		{
-			return m_TriangleCache.at(index);
-		}
-		return std::vector<Triangle>();
 	}
 
 	void Submesh::Render(HazelMesh* parentMesh, Shader* shader, glm::mat4 transform, uint32_t samplerSlot,
@@ -1074,11 +1076,12 @@ namespace Hazel {
 			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
 		}
 
-		std::string nodeName = Hazel::HazelMesh::GetSubmeshMaterialName(parentMesh, *this);
+		std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(parentMesh, *this);
 
-		if (envMapMaterials.contains(nodeName))
+		if (envMapMaterials.contains(materialName))
 		{
-			envMapMaterial = envMapMaterials.at(nodeName);
+			envMapMaterial = envMapMaterials.at(materialName
+			);
 			envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);
 			envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
 			envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);

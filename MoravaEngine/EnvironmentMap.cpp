@@ -133,69 +133,20 @@ void EnvironmentMap::SetupContextData()
     m_TextureInfoDefault.roughness = "Textures/PBR/non_reflective/roughness.png";
     m_TextureInfoDefault.ao = "Textures/PBR/non_reflective/ao.png";
 
-    Log::GetLogger()->info("-- BEGIN Setup PBR Materials --");
-    {
-        // PBR EnvMapMaterial Weapon (Index = 0)
-        TextureInfo textureInfoWeapon = {};
-        textureInfoWeapon.albedo = "Models/Gladiator/Gladiator_weapon_BaseColor.jpg";
-        textureInfoWeapon.normal = "Models/Gladiator/Gladiator_weapon_Normal.jpg";
-        textureInfoWeapon.metallic = "Models/Gladiator/Gladiator_weapon_Metallic.jpg";
-        textureInfoWeapon.roughness = "Models/Gladiator/Gladiator_weapon_Roughness.jpg";
-        textureInfoWeapon.ao = "Textures/plain.png";
+    m_CameraEntity = CreateEntity("Camera");
+    auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
+    auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
-        m_TextureInfo.insert(std::make_pair("Gladiator_weapon", textureInfoWeapon));
+    m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize(
+        Application::Get()->GetWindow()->GetWidth(),
+        Application::Get()->GetWindow()->GetHeight()
+    );
 
-        // PBR EnvMapMaterial Gladiator (Index = 1)
-        TextureInfo textureInfoGladiator = {};
-        textureInfoGladiator.albedo = "Models/Gladiator/Gladiator_BaseColor.jpg";
-        textureInfoGladiator.normal = "Models/Gladiator/Gladiator_Normal.jpg";
-        textureInfoGladiator.metallic = "Models/Gladiator/Gladiator_Metallic.jpg";
-        textureInfoGladiator.roughness = "Models/Gladiator/Gladiator_Roughness.jpg";
-        textureInfoGladiator.ao = "Models/Gladiator/Gladiator_AO.jpg";
+    m_SceneRenderer->s_Data.SceneData.SceneCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
+    m_CameraEntity.AddComponent<Hazel::CameraComponent>((Hazel::SceneCamera*)m_SceneRenderer->s_Data.SceneData.SceneCamera);
 
-        m_TextureInfo.insert(std::make_pair("Gladiator", textureInfoGladiator));
-
-        // PBR EnvMapMaterial Cerberus (Index = 0)
-        TextureInfo textureInfoCerberus = {};
-        textureInfoCerberus.albedo = "Models/Cerberus/Textures/Cerberus_A.tga";
-        textureInfoCerberus.normal = "Models/Cerberus/Textures/Cerberus_N.tga";
-        textureInfoCerberus.metallic = "Models/Cerberus/Textures/Cerberus_M.tga";
-        textureInfoCerberus.roughness = "Models/Cerberus/Textures/Cerberus_R.tga";
-        textureInfoCerberus.ao = "Models/Cerberus/Textures/Cerberus_AO.tga";
-
-        m_TextureInfo.insert(std::make_pair("Cerberus00_Fixed", textureInfoCerberus));
-
-        // PBR EnvMapMaterial M1911 (Index = 0)
-        TextureInfo textureInfoM1911 = {};
-        textureInfoM1911.albedo = "Models/M1911/m1911_color.png";
-        textureInfoM1911.normal = "Models/M1911/m1911_normal.png";
-        textureInfoM1911.metallic = "Models/M1911/m1911_metalness.png";
-        textureInfoM1911.roughness = "Models/M1911/m1911_roughness.png";
-        textureInfoM1911.ao = "Textures/plain.png";
-
-        m_TextureInfo.insert(std::make_pair("pCylinder5", textureInfoM1911));
-
-        // Material* material = new Material(textureInfoM1911, m_MaterialSpecular, m_MaterialShininess);
-        // mesh = new Hazel::HazelMesh("Models/Hazel/Sphere1m.fbx", m_ShaderHazelPBR_Anim, drawCommand.Material, false);
-        // mesh = new Hazel::HazelMesh("Models/M1911/M1911.fbx", m_ShaderHazelPBR_Anim, nullptr, true);
-        // mesh = new Hazel::HazelMesh("Models/Cerberus/Cerberus_LP.FBX", m_ShaderHazelPBR_Static, nullptr, false);
-
-        // LoadEntity("Models/Hazel/TestScene.fbx");
-
-        m_CameraEntity = CreateEntity("Camera");
-        auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
-        auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
-        m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize(
-            Application::Get()->GetWindow()->GetWidth(),
-            Application::Get()->GetWindow()->GetHeight()
-        );
-        m_SceneRenderer->s_Data.SceneData.SceneCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
-        m_CameraEntity.AddComponent<Hazel::CameraComponent>((Hazel::SceneCamera*)m_SceneRenderer->s_Data.SceneData.SceneCamera);
-
-        auto mapGenerator = CreateEntity("Map Generator");
-        mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
-    }
-    Log::GetLogger()->info("-- END Setup PBR Materials --");
+    auto mapGenerator = CreateEntity("Map Generator");
+    mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
 }
 
 Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
@@ -253,16 +204,16 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
 
     for (Hazel::Submesh& submesh : submeshes)
     {
-        std::string nodeName = Hazel::HazelMesh::GetSubmeshMaterialName(mesh, submesh);
+        std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(mesh, submesh);
 
-        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials nodeName = '{0}'", nodeName);
+        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials MaterialIndex = '{0}'", materialName);
 
-        if (m_EnvMapMaterials.contains(nodeName)) {
+        if (m_EnvMapMaterials.contains(materialName)) {
             continue;
         }
 
-        EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(nodeName);
-        m_EnvMapMaterials.insert(std::make_pair(nodeName, envMapMaterial));
+        EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(materialName);
+        m_EnvMapMaterials.insert(std::make_pair(materialName, envMapMaterial));
     }
 
     //  // If no submeshes, add a default material for entity
@@ -278,13 +229,13 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
     }
 }
 
-EnvMapMaterial* EnvironmentMap::CreateDefaultMaterial(const std::string& nodeName)
+EnvMapMaterial* EnvironmentMap::CreateDefaultMaterial(std::string materialName)
 {
     EnvMapMaterial* envMapMaterial = new EnvMapMaterial();
 
     TextureInfo textureInfo;
-    if (m_TextureInfo.contains(nodeName)) {
-        textureInfo = m_TextureInfo.at(nodeName);
+    if (m_TextureInfo.contains(materialName)) {
+        textureInfo = m_TextureInfo.at(materialName);
     }
     else {
         textureInfo = m_TextureInfoDefault;
@@ -686,10 +637,9 @@ void EnvironmentMap::OnImGuiRender()
         for (auto& material : m_EnvMapMaterials)
         {
             std::string materialName = material.first;
-            std::string materialLabel = "Material " + materialName;
 
             // Material section
-            if (ImGui::CollapsingHeader(materialLabel.c_str(), nullptr /*, ImGuiTreeNodeFlags_DefaultOpen */ ))
+            if (ImGui::CollapsingHeader(materialName.c_str(), nullptr /*, ImGuiTreeNodeFlags_DefaultOpen */ ))
             {
                 // BEGIN PBR Textures
                 ImGui::Indent();
@@ -1209,9 +1159,10 @@ void EnvironmentMap::GeometryPassTemporary()
 
             for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
             {
-                std::string nodeName = Hazel::HazelMesh::GetSubmeshMaterialName(hazelMesh.get(), submesh);
-                if (m_EnvMapMaterials.contains(nodeName)) {
-                    UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(nodeName));
+                std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(hazelMesh.get(), submesh);
+
+                if (m_EnvMapMaterials.contains(materialName)) {
+                    UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(materialName));
                 }
 
                 glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();

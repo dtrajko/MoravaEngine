@@ -88,7 +88,7 @@ private:
 	void OnSelected(const SelectedSubmesh& selectionContext);
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();
-	EnvMapMaterial* CreateDefaultMaterial(const std::string& nodeName);
+	EnvMapMaterial* CreateDefaultMaterial(std::string materialName);
 	void RenderSkybox();
 	void RenderHazelGrid();
 
