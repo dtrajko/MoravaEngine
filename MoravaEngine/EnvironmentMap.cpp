@@ -317,6 +317,8 @@ void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMater
     // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
     shaderHazelPBR->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure()); // originally used in Shaders/Hazel/SceneComposite
 
+    shaderHazelPBR->setFloat("u_TilingFactor", envMapMaterial->GetTilingFactor());
+
     glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
 
     shaderHazelPBR->setMat4("u_ViewProjectionMatrix", viewProjection);
@@ -642,9 +644,12 @@ void EnvironmentMap::OnImGuiRender()
             if (ImGui::CollapsingHeader(materialName.c_str(), nullptr /*, ImGuiTreeNodeFlags_DefaultOpen */ ))
             {
                 // BEGIN PBR Textures
-                ImGui::Indent();
+                ImGui::Indent(10.0f);
                 {
                     {
+                        // Tiling Factor
+                        ImGui::SliderFloat("Tiling Factor", &material.second->GetTilingFactor(), 0.0f, 20.0f);
+
                         // Albedo
                         std::string textureLabel = materialName + " Albedo";
                         if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))

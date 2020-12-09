@@ -72,6 +72,8 @@ uniform float u_AOTexToggle;
 
 uniform float u_Exposure;
 
+uniform float u_TilingFactor;
+
 struct PBRParameters
 {
 	vec3 Albedo;
@@ -264,14 +266,14 @@ vec3 IBL(vec3 F0, vec3 Lr)
 void main()
 {
 	// Standard PBR inputs
-	m_Params.Albedo    = u_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord).rgb : u_AlbedoColor; 
-	m_Params.Metalness = u_MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, vs_Input.TexCoord).r : u_Metalness;
-	m_Params.Roughness = u_RoughnessTexToggle > 0.5 ? texture(u_RoughnessTexture, vs_Input.TexCoord).r : u_Roughness;
+	m_Params.Albedo    = u_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord * u_TilingFactor).rgb : u_AlbedoColor; 
+	m_Params.Metalness = u_MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, vs_Input.TexCoord * u_TilingFactor).r : u_Metalness;
+	m_Params.Roughness = u_RoughnessTexToggle > 0.5 ? texture(u_RoughnessTexture, vs_Input.TexCoord * u_TilingFactor).r : u_Roughness;
     m_Params.Roughness = max(m_Params.Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
-	m_Params.AO        = u_AOTexToggle > 0.5 ? texture(u_AOTexture, vs_Input.TexCoord).r : u_AO;
+	m_Params.AO        = u_AOTexToggle > 0.5 ? texture(u_AOTexture, vs_Input.TexCoord * u_TilingFactor).r : u_AO;
 
 	// Handle Albedo texture transparency
-	if(u_AlbedoTexToggle > 0.5 && texture(u_AlbedoTexture, vs_Input.TexCoord).a < 0.1) {
+	if(u_AlbedoTexToggle > 0.5 && texture(u_AlbedoTexture, vs_Input.TexCoord * u_TilingFactor).a < 0.1) {
 		discard;
 	}
 
@@ -279,7 +281,7 @@ void main()
 	m_Params.Normal = normalize(vs_Input.Normal);
 	if (u_NormalTexToggle > 0.5)
 	{
-		m_Params.Normal = normalize(2.0 * texture(u_NormalTexture, vs_Input.TexCoord).rgb - 1.0);
+		m_Params.Normal = normalize(2.0 * texture(u_NormalTexture, vs_Input.TexCoord * u_TilingFactor).rgb - 1.0);
 		m_Params.Normal = normalize(vs_Input.WorldNormals * m_Params.Normal);
 	}
 

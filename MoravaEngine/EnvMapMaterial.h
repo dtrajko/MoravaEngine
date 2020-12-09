@@ -23,6 +23,8 @@ public:
 	inline RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
 	inline AOInput& GetAOInput() { return m_AOInput; }
 
+	inline float& GetTilingFactor() { return m_TilingFactor; }
+
 private:
 
 	/**** BEGIN properties EditorLayer ****/
@@ -65,5 +67,7 @@ private:
 		bool UseTexture = false;
 	};
 	AOInput m_AOInput;
+
+	float m_TilingFactor = 1.0f;
 
 };
