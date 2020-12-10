@@ -898,16 +898,15 @@ void EnvironmentMap::OnImGuiRender()
             auto selection = EntitySelection::s_SelectionContext[0];
             entityTag = selection.Entity.GetComponent<Hazel::TagComponent>().Tag.c_str();
             meshName = selection.Mesh ? selection.Mesh->MeshName.c_str() : "N/A";
-            // Log::GetLogger()->debug("entityTag: {0}, meshName: {1}", entityTag, meshName);
         }
 
         ImGui::Text("Selected Entity: ");
         ImGui::SameLine();
         ImGui::Text(entityTag);
 
-        // ImGui::Text("Selected Mesh: ");
-        // ImGui::SameLine();
-        // ImGui::Text(meshName);
+        ImGui::Text("Selected Mesh: ");
+        ImGui::SameLine();
+        ImGui::Text(meshName);
     }
     ImGui::End();
 
