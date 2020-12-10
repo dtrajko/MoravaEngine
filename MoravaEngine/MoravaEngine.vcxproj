@@ -196,6 +196,7 @@
     <ClCompile Include="CameraControllerVoxelTerrain.cpp" />
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="EndlessTerrain.cpp" />
+    <ClCompile Include="EntitySelection.cpp" />
     <ClCompile Include="EnvironmentMap.cpp" />
     <ClCompile Include="FramebufferTextureCubemap.cpp" />
     <ClCompile Include="HazelFullscreenQuad.cpp" />
@@ -396,6 +397,7 @@
     <ClInclude Include="CameraControllerVoxelTerrain.h" />
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="EndlessTerrain.h" />
+    <ClInclude Include="EntitySelection.h" />
     <ClInclude Include="EnvironmentMap.h" />
     <ClInclude Include="EnvMapMaterial.h" />
     <ClInclude Include="FramebufferTextureCubemap.h" />

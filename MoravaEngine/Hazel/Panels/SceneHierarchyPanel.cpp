@@ -5,6 +5,7 @@
 
 #include "../../Math.h"
 #include "../../ImGuiWrapper.h"
+#include "../../EntitySelection.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -30,22 +31,39 @@ namespace Hazel
 	void SceneHierarchyPanel::SetContext(HazelScene* scene)
 	{
 		m_Context = scene;
-		m_SelectionContext = {};
-		if (m_SelectionContext && false)
+		EntitySelection::s_SelectionContext = {};
+		if (EntitySelection::s_SelectionContext.size() && false)
 		{
 			//	Try and find same entity in new scene
 			auto& entityMap = m_Context->GetEntityMap();
-			UUID selectedEntityID = m_SelectionContext.GetUUID();
+			UUID selectedEntityID = EntitySelection::s_SelectionContext[0].Entity.GetUUID();
 
 			if (entityMap.find(selectedEntityID) != entityMap.end()) {
-				m_SelectionContext = entityMap.at(selectedEntityID);
+				EntitySelection::s_SelectionContext.resize(1);
+				EntitySelection::s_SelectionContext[0] = SelectedSubmesh{ entityMap.at(selectedEntityID), nullptr, 0 };
 			}
 		}
 	}
 
 	void SceneHierarchyPanel::SetSelected(Entity entity)
 	{
-		m_SelectionContext = entity;
+		EntitySelection::s_SelectionContext.clear();
+
+		if (entity.HasComponent<MeshComponent>())
+		{
+			// if MeshComponent is available in entity
+			Ref<Hazel::HazelMesh> mesh = entity.GetComponent<MeshComponent>().Mesh;
+
+			for (auto submesh : mesh->GetSubmeshes())
+			{
+				EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entity, &submesh, 0 });
+			}
+		}
+		else
+		{
+			// if MeshComponent is not available in entity
+			EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entity, nullptr, 0 });
+		}
 	}
 
 	void SceneHierarchyPanel::OnImGuiRender()
@@ -64,7 +82,7 @@ namespace Hazel
 
 			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 			{
-				m_SelectionContext = {};
+				EntitySelection::s_SelectionContext = {};
 				m_CurrentlySelectedTransform = glm::mat4(1.0f);
 			}
 
@@ -82,9 +100,9 @@ namespace Hazel
 
 			ImGui::Begin("Properties");
 
-			if (m_SelectionContext.HasComponent<Hazel::TagComponent>())
+			if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity.HasComponent<Hazel::TagComponent>())
 			{
-				DrawComponents(m_SelectionContext);
+				DrawComponents(EntitySelection::s_SelectionContext[0].Entity);
 			}
 
 			ImGui::End();
@@ -115,31 +133,42 @@ namespace Hazel
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
 		// ImGui::Text("%s", tag.c_str());
 
-		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
+		ImGuiTreeNodeFlags flags = ((EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
 			ImGuiTreeNodeFlags_OpenOnArrow |
 			ImGuiTreeNodeFlags_SpanAvailWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
 		if (ImGui::IsItemClicked())
 		{
-			m_SelectionContext = entity;
-			m_CurrentlySelectedTransform = entity.GetComponent<TransformComponent>().GetTransform();
+			//	EntitySelection::s_SelectionContext.resize(1);
+			//	EntitySelection::s_SelectionContext[0] = SelectedSubmesh{ entity, nullptr, 0 };
+			//	m_CurrentlySelectedTransform = entity.GetComponent<TransformComponent>().GetTransform();
+
+			SetSelected(entity);
 
 			m_Context->OnEntitySelected(entity);
 		}
 
 		bool entityDeleted = false;
+		bool entityCloned = false;
+
 		if (ImGui::BeginPopupContextItem())
 		{
 			if (ImGui::MenuItem("Delete Entity"))
 			{
 				entityDeleted = true;
 			}
+
+			if (ImGui::MenuItem("Clone Entity"))
+			{
+				entityCloned = true;
+			}
+
 			ImGui::EndPopup();
 		}
 
 		if (opened)
 		{
-			ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
+			ImGuiTreeNodeFlags flags = ((EntitySelection::s_SelectionContext[0].Entity == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
 				ImGuiTreeNodeFlags_OpenOnArrow |
 				ImGuiTreeNodeFlags_SpanAvailWidth;
 			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000), flags, tag.c_str());
@@ -151,11 +180,20 @@ namespace Hazel
 
 		if (entityDeleted) {
 			m_Context->DestroyEntity(entity);
-			if (m_SelectionContext == entity) {
-				m_SelectionContext = {};
+			if (EntitySelection::s_SelectionContext[0].Entity == entity) {
+				EntitySelection::s_SelectionContext = {};
 				m_CurrentlySelectedTransform = glm::mat4(1.0f);
 			}
 		}
+
+		if (entityCloned) {
+			m_Context->CloneEntity(entity);
+			if (EntitySelection::s_SelectionContext[0].Entity == entity) {
+				EntitySelection::s_SelectionContext = {};
+				m_CurrentlySelectedTransform = glm::mat4(1.0f);
+			}
+		}
+
 	}
 
 	void SceneHierarchyPanel::DrawMeshNode(Mesh* mesh, uint32_t& imguiMeshID)
@@ -428,22 +466,22 @@ namespace Hazel
 			if (ImGui::BeginPopup("AddComponent"))
 			{
 				if (ImGui::MenuItem("Mesh")) {
-					m_SelectionContext.AddComponent<MeshComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::MenuItem("Script")) {
-					m_SelectionContext.AddComponent<ScriptComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<ScriptComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::MenuItem("Camera")) {
-					m_SelectionContext.AddComponent<CameraComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<CameraComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::MenuItem("Sprite Renderer")) {
-					m_SelectionContext.AddComponent<SpriteRendererComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SpriteRendererComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 

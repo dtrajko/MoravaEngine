@@ -137,4 +137,6 @@ private:
 	Grid* m_Grid;
 	Pivot* m_PivotScene;
 
+	friend class EnvironmentMap;
+
 };

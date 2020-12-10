@@ -32,6 +32,7 @@ namespace Hazel {
 
 	void HazelScene::OnEntitySelected(Entity entity)
 	{
+		// TODO...
 	}
 
 	Entity HazelScene::CreateEntity(const std::string& name, const HazelScene& scene)
@@ -60,6 +61,47 @@ namespace Hazel {
 	void HazelScene::DestroyEntity(Entity entity)
 	{
 		m_Registry.destroy(entity);
+	}
+
+	Entity HazelScene::CloneEntity(Entity entity)
+	{
+		Entity entityClone = Entity(m_Registry.create(), this);
+
+		if (entity.HasComponent<IDComponent>()) {
+			entityClone.AddComponent<IDComponent>(entity.GetComponent<IDComponent>());
+		}
+
+		if (entity.HasComponent<TagComponent>()) {
+			entityClone.AddComponent<TagComponent>(entity.GetComponent<TagComponent>());
+		}
+
+		if (entity.HasComponent<TransformComponent>()) {
+			entityClone.AddComponent<TransformComponent>(entity.GetComponent<TransformComponent>());
+		}
+
+		if (entity.HasComponent<MeshComponent>()) {
+			entityClone.AddComponent<MeshComponent>(entity.GetComponent<MeshComponent>());
+		}
+
+		if (entity.HasComponent<SpriteRendererComponent>()) {
+			entityClone.AddComponent<SpriteRendererComponent>(entity.GetComponent<SpriteRendererComponent>());
+		}
+
+		if (entity.HasComponent<CameraComponent>()) {
+			entityClone.AddComponent<CameraComponent>(entity.GetComponent<CameraComponent>());
+		}
+		
+		if (entity.HasComponent<NativeScriptComponent>()) {
+			entityClone.AddComponent<NativeScriptComponent>(entity.GetComponent<NativeScriptComponent>());
+		}
+
+		if (entity.HasComponent<ScriptComponent>()) {
+			entityClone.AddComponent<ScriptComponent>(entity.GetComponent<ScriptComponent>());
+		}
+
+		Log::GetLogger()->warn("Method HazelScene::CopyEntity implemented poorly [Tag: '{0}']", entity.GetComponent<TagComponent>().Tag);
+
+		return entityClone;
 	}
 
 	void HazelScene::OnUpdate(float ts)
@@ -171,6 +213,11 @@ namespace Hazel {
 	void HazelScene::OnComponentAdded(Entity entity, T& component)
 	{
 		static_assert(false);
+	}
+
+	template<>
+	void HazelScene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
+	{
 	}
 
 	template<>

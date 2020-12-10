@@ -21,14 +21,13 @@
 #include "Scene.h"
 #include "Quad.h"
 #include "CubeSkybox.h"
+#include "EntitySelection.h"
 
 #include <string>
 
 
 class EnvironmentMap
 {
-	struct SelectedSubmesh;
-
 public:
 	EnvironmentMap() = default;
 	EnvironmentMap(const std::string& filepath, Scene* scene);
@@ -139,14 +138,6 @@ private:
 	bool m_DrawOnTopBoundingBoxes = true;
 	glm::vec3 m_NewRay;
 	glm::vec3 m_NewDir;
-
-	struct SelectedSubmesh
-	{
-		Hazel::Entity Entity;
-		Hazel::Submesh* Mesh;
-		float Distance;
-	};
-	std::vector<SelectedSubmesh> m_SelectionContext;
 
 	enum class SelectionMode
 	{

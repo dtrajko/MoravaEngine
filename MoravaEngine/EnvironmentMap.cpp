@@ -19,6 +19,7 @@
 #include "Input.h"
 #include "ResourceManager.h"
 #include "Math.h"
+#include "SceneHazelEnvMap.h"
 
 
 EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
@@ -408,14 +409,14 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         Scene::s_ImGuizmoType = -1;
 
     // Dirty fix: m_SelectionContext not decremented when mesh entity is removed from the scene
-    size_t selectionContextSize = m_SelectionContext.size();
+    size_t selectionContextSize = EntitySelection::s_SelectionContext.size();
     auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     if (selectionContextSize > meshEntities.size()) {
         selectionContextSize = meshEntities.size();
     }
 
     // ImGuizmo
-    if (Scene::s_ImGuizmoType != -1 && m_SelectionContext.size())
+    if (Scene::s_ImGuizmoType != -1 && EntitySelection::s_SelectionContext.size())
     {
         float rw = (float)ImGui::GetWindowWidth();
         float rh = (float)ImGui::GetWindowHeight();
@@ -423,7 +424,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         ImGuizmo::SetDrawlist();
         ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
 
-        auto& selectedSubmesh = m_SelectionContext[0];
+        auto& selectedSubmesh = EntitySelection::s_SelectionContext[0];
 
         // Entity transform
         auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
@@ -573,13 +574,13 @@ void EnvironmentMap::OnImGuiRender()
 
     ImGui::Begin("Transform");
     {
-        if (m_SelectionContext.size())
+        if (EntitySelection::s_SelectionContext.size())
         {
             glm::mat4 transformImGui;
             glm::mat4 submeshTransform;
             glm::vec3 aabbCenterOffset;
 
-            auto& selectedSubmesh = m_SelectionContext[0];
+            auto& selectedSubmesh = EntitySelection::s_SelectionContext[0];
 
             // Entity transform
             auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
@@ -883,7 +884,7 @@ void EnvironmentMap::OnImGuiRender()
     {
         ImGui::Text("Selection Mode: ");
         ImGui::SameLine();
-        char* label = m_SelectionMode == SelectionMode::Entity ? "Entity" : "Mesh";
+        const char* label = m_SelectionMode == SelectionMode::Entity ? "Entity" : "Mesh";
         if (ImGui::Button(label))
         {
             m_SelectionMode = m_SelectionMode == SelectionMode::Entity ? SelectionMode::SubMesh : SelectionMode::Entity;
@@ -892,12 +893,12 @@ void EnvironmentMap::OnImGuiRender()
         const char* entityTag = "N/A";
         const char* meshName = "N/A";
 
-        if (m_SelectionContext.size())
+        if (EntitySelection::s_SelectionContext.size())
         {
-            auto& selection = m_SelectionContext[0];
+            auto selection = EntitySelection::s_SelectionContext[0];
             entityTag = selection.Entity.GetComponent<Hazel::TagComponent>().Tag.c_str();
-
-            meshName = selection.Mesh->MeshName.c_str();
+            meshName = selection.Mesh ? selection.Mesh->MeshName.c_str() : "N/A";
+            // Log::GetLogger()->debug("entityTag: {0}, meshName: {1}", entityTag, meshName);
         }
 
         ImGui::Text("Selected Entity: ");
@@ -1023,7 +1024,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
         {
             auto [origin, direction] = CastRay(mouseX, mouseY);
 
-            m_SelectionContext.clear();
+            EntitySelection::s_SelectionContext.clear();
 
             auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
             for (auto e : meshEntities)
@@ -1057,23 +1058,23 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                             {
                                 if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
                                 {
-                                    m_SelectionContext.push_back({ entity, &submesh, t });
+                                    EntitySelection::s_SelectionContext.push_back({ entity, &submesh, t });
                                     break;
                                 }
                             }
                         }
                         else {
-                            m_SelectionContext.push_back({ entity, &submesh, t });
+                            EntitySelection::s_SelectionContext.push_back({ entity, &submesh, t });
                         }
                     }
                 }
             }
-            std::sort(m_SelectionContext.begin(), m_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
+            std::sort(EntitySelection::s_SelectionContext.begin(), EntitySelection::s_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
 
             // TODO: Handle mesh being deleted, etc
-            if (m_SelectionContext.size()) {
-                m_CurrentlySelectedTransform = &m_SelectionContext[0].Mesh->Transform;
-                OnSelected(m_SelectionContext[0]);
+            if (EntitySelection::s_SelectionContext.size()) {
+                m_CurrentlySelectedTransform = &EntitySelection::s_SelectionContext[0].Mesh->Transform;
+                OnSelected(EntitySelection::s_SelectionContext[0]);
             }
             else {
                 Ref<Hazel::Entity> meshEntity = GetMeshEntity();
@@ -1188,14 +1189,16 @@ void EnvironmentMap::GeometryPassTemporary()
             Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
         }
 
-        if (m_SelectionContext.size()) {
-            auto& selection = m_SelectionContext[0];
-
-            Hazel::Entity meshEntity = selection.Entity;
-
-            glm::mat4 transform = meshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
-            glm::vec4 color = m_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
-            Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);            
+        if (EntitySelection::s_SelectionContext.size()) {
+            for (auto selection : EntitySelection::s_SelectionContext)
+            {
+                if (selection.Mesh) {
+                    Hazel::Entity meshEntity = selection.Entity;
+                    glm::mat4 transform = meshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
+                    glm::vec4 color = m_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
+                    Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
+                }
+            }
         }
     }
     Hazel::Renderer2D::EndScene();

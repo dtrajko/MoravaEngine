@@ -18,6 +18,7 @@ namespace Hazel {
 
 	private:
 		HazelScene* m_Scene;
+
 	};
 
 }

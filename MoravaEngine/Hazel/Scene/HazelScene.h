@@ -65,6 +65,7 @@ namespace Hazel {
 		Entity CreateEntity(const std::string& name);
 		Entity CreateEntity(const std::string& name, const HazelScene& scene);
 		void DestroyEntity(Entity entity);
+		Entity CloneEntity(Entity entity);
 
 		template<typename T>
 		auto GetAllEntitiesWith()

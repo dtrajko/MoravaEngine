@@ -581,6 +581,9 @@
     <ClCompile Include="Hazel\Scene\ScriptableEntity.cpp">
       <Filter>Hazel\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="EntitySelection.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1248,6 +1251,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\UUID.h">
       <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="EntitySelection.h">
+      <Filter>Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
