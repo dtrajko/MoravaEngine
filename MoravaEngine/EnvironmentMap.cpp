@@ -1190,7 +1190,7 @@ void EnvironmentMap::GeometryPassTemporary()
         }
 
         if (EntitySelection::s_SelectionContext.size()) {
-            for (auto& selection : EntitySelection::s_SelectionContext)
+            for (auto selection : EntitySelection::s_SelectionContext)
             {
                 if (selection.Mesh) {
                     Hazel::Entity meshEntity = selection.Entity;

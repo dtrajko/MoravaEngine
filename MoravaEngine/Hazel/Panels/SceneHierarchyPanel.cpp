@@ -51,8 +51,7 @@ namespace Hazel
 		if (entity.HasComponent<MeshComponent>())
 		{
 			// if MeshComponent is available in entity
-			Ref<Hazel::HazelMesh> mesh = entity.GetComponent<MeshComponent>().Mesh;
-
+			auto mesh = entity.GetComponent<MeshComponent>().Mesh;
 			for (auto submesh : mesh->GetSubmeshes())
 			{
 				EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entity, &submesh, 0 });
