@@ -36,9 +36,6 @@ namespace Hazel
 	private:
 		HazelScene* m_Context;
 
-	public:
-		glm::mat4 m_CurrentlySelectedTransform = glm::mat4(1.0f);
-
 	};
 
 }

@@ -905,9 +905,9 @@ void EnvironmentMap::OnImGuiRender()
         ImGui::SameLine();
         ImGui::Text(entityTag);
 
-        ImGui::Text("Selected Mesh: ");
-        ImGui::SameLine();
-        ImGui::Text(meshName);
+        // ImGui::Text("Selected Mesh: ");
+        // ImGui::SameLine();
+        // ImGui::Text(meshName);
     }
     ImGui::End();
 
@@ -1190,7 +1190,7 @@ void EnvironmentMap::GeometryPassTemporary()
         }
 
         if (EntitySelection::s_SelectionContext.size()) {
-            for (auto selection : EntitySelection::s_SelectionContext)
+            for (auto& selection : EntitySelection::s_SelectionContext)
             {
                 if (selection.Mesh) {
                     Hazel::Entity meshEntity = selection.Entity;

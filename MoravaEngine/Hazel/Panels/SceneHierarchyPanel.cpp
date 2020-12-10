@@ -39,8 +39,7 @@ namespace Hazel
 			UUID selectedEntityID = EntitySelection::s_SelectionContext[0].Entity.GetUUID();
 
 			if (entityMap.find(selectedEntityID) != entityMap.end()) {
-				EntitySelection::s_SelectionContext.resize(1);
-				EntitySelection::s_SelectionContext[0] = SelectedSubmesh{ entityMap.at(selectedEntityID), nullptr, 0 };
+				EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entityMap.at(selectedEntityID), nullptr, 0 });
 			}
 		}
 	}
@@ -83,7 +82,6 @@ namespace Hazel
 			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 			{
 				EntitySelection::s_SelectionContext = {};
-				m_CurrentlySelectedTransform = glm::mat4(1.0f);
 			}
 
 			// Right-click on blank space
@@ -137,14 +135,14 @@ namespace Hazel
 			ImGuiTreeNodeFlags_OpenOnArrow |
 			ImGuiTreeNodeFlags_SpanAvailWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+
 		if (ImGui::IsItemClicked())
 		{
-			//	EntitySelection::s_SelectionContext.resize(1);
-			//	EntitySelection::s_SelectionContext[0] = SelectedSubmesh{ entity, nullptr, 0 };
-			//	m_CurrentlySelectedTransform = entity.GetComponent<TransformComponent>().GetTransform();
+			// EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entity, nullptr, 0 });
+
+			Log::GetLogger()->debug("ImGui::IsItemClicked: entity.Tag '{0}'", entity.GetComponent<Hazel::TagComponent>().Tag);
 
 			SetSelected(entity);
-
 			m_Context->OnEntitySelected(entity);
 		}
 
@@ -182,7 +180,6 @@ namespace Hazel
 			m_Context->DestroyEntity(entity);
 			if (EntitySelection::s_SelectionContext[0].Entity == entity) {
 				EntitySelection::s_SelectionContext = {};
-				m_CurrentlySelectedTransform = glm::mat4(1.0f);
 			}
 		}
 
@@ -190,10 +187,8 @@ namespace Hazel
 			m_Context->CloneEntity(entity);
 			if (EntitySelection::s_SelectionContext[0].Entity == entity) {
 				EntitySelection::s_SelectionContext = {};
-				m_CurrentlySelectedTransform = glm::mat4(1.0f);
 			}
 		}
-
 	}
 
 	void SceneHierarchyPanel::DrawMeshNode(Mesh* mesh, uint32_t& imguiMeshID)
