@@ -163,15 +163,10 @@ namespace Hazel
 			ImGui::EndPopup();
 		}
 
-		if (opened)
-		{
-			ImGuiTreeNodeFlags flags = ((EntitySelection::s_SelectionContext[0].Entity == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
-				ImGuiTreeNodeFlags_OpenOnArrow |
-				ImGuiTreeNodeFlags_SpanAvailWidth;
-			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000), flags, tag.c_str());
-			if (opened) {
-				ImGui::TreePop();
-			}
+		if (opened) {
+
+			DrawEntitySubmeshes(entity);
+
 			ImGui::TreePop();
 		}
 
@@ -186,6 +181,43 @@ namespace Hazel
 			m_Context->CloneEntity(entity);
 			if (EntitySelection::s_SelectionContext[0].Entity == entity) {
 				EntitySelection::s_SelectionContext = {};
+			}
+		}
+	}
+
+	void SceneHierarchyPanel::DrawEntitySubmeshes(Entity entity)
+	{
+		if (entity.HasComponent<Hazel::MeshComponent>())
+		{
+			auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+
+			for (auto& submesh : mesh->GetSubmeshes())
+			{
+				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+				bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submesh.BaseIndex + 1), flags, submesh.MeshName.c_str());
+
+				if (ImGui::IsItemClicked())
+				{
+					EntitySelection::s_SelectionContext.clear();
+					EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entity, &submesh, 0 });
+				}
+
+				if (opened) {
+					ImGui::Text("MeshName: ");
+					ImGui::SameLine();
+					ImGui::Text(submesh.MeshName.c_str());
+
+					ImGui::Text("NodeName: ");
+					ImGui::SameLine();
+					ImGui::Text(submesh.NodeName.c_str());
+
+					ImGui::Text("MaterialIndex: ");
+					ImGui::SameLine();
+					ImGui::Text(std::to_string(submesh.MaterialIndex).c_str());
+
+					// ...
+					ImGui::TreePop();
+				}
 			}
 		}
 	}

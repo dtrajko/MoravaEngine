@@ -207,7 +207,7 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
     {
         std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(mesh, submesh);
 
-        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials MaterialIndex = '{0}'", materialName);
+        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials materialName = '{0}'", materialName);
 
         if (m_EnvMapMaterials.contains(materialName)) {
             continue;
