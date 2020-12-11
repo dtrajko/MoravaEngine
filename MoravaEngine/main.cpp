@@ -59,6 +59,7 @@
 #include "RendererOmniShadows.h"
 #include "RendererVoxelTerrain.h"
 #include "RendererEditor.h"
+#include "RendererECS.h"
 
 #include <memory>
 
@@ -212,7 +213,7 @@ int main()
 		break;
 	case SceneName::HazelEnvMap:
 		scene = new SceneHazelEnvMap();
-		renderer = static_cast<RendererBasic*>(new RendererTrivial());
+		renderer = static_cast<RendererBasic*>(new RendererECS());
 		break;
 	default:
 		throw std::runtime_error("Scene and Renderer could not be loaded!");

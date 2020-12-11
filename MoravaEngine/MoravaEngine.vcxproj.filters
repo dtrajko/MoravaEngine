@@ -584,6 +584,9 @@
     <ClCompile Include="EntitySelection.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
+    <ClCompile Include="RendererECS.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1254,6 +1257,9 @@
     </ClInclude>
     <ClInclude Include="EntitySelection.h">
       <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererECS.h">
+      <Filter>Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
