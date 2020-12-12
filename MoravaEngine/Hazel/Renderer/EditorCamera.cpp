@@ -82,6 +82,16 @@ namespace Hazel {
 		dispatcher.Dispatch<MouseScrolledEvent>(HZ_BIND_EVENT_FN(EditorCamera::OnMouseScroll));
 	}
 
+	void EditorCamera::SetViewportSize(float width, float height)
+	{
+		if (width == 0.0f || height == 0.0f) return;
+
+		m_ViewportWidth = width;
+		m_ViewportHeight = height;
+
+		UpdateProjection();
+	}
+
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
 		float delta = e.GetYOffset() * 0.1f;

@@ -188,7 +188,7 @@ namespace Hazel {
 		{
 			auto& cameraComponent = view.get<CameraComponent>(entity);
 			if (!cameraComponent.FixedAspectRatio) {
-				cameraComponent.Camera.SetViewportSize(width, height);
+				cameraComponent.Camera.SetViewportSize((float)width, (float)height);
 			}
 		}
 	}

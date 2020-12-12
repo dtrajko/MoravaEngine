@@ -216,6 +216,7 @@
     <ClCompile Include="Hazel\Platform\Windows\WindowsPlatformUtils.cpp" />
     <ClCompile Include="Hazel\Renderer\Buffer.cpp" />
     <ClCompile Include="Hazel\Renderer\EditorCamera.cpp" />
+    <ClCompile Include="Hazel\Renderer\HazelCamera.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelMaterial.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelMesh.cpp" />
     <ClCompile Include="Hazel\Renderer\RenderCommandQueue.cpp" />

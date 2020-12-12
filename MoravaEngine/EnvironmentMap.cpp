@@ -43,7 +43,6 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     m_SamplerSlots->insert(std::make_pair("u_Texture", 1));
 
     m_SceneRenderer = new Hazel::SceneRenderer(filepath, scene);
-    m_SceneRenderer->s_Data.SceneData.SceneCamera = scene->GetCamera();
 
     m_SkyboxCube = new CubeSkybox();
     m_Quad = new Quad();
@@ -60,6 +59,8 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 
     Scene::s_ImGuizmoTransform = nullptr; // &GetMeshEntity()->Transform();
     Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+    m_EditorCamera = Hazel::EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 }
 
 void EnvironmentMap::Init()
@@ -138,13 +139,10 @@ void EnvironmentMap::SetupContextData()
     auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
-    m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize(
-        Application::Get()->GetWindow()->GetWidth(),
-        Application::Get()->GetWindow()->GetHeight()
-    );
+    m_EditorCamera.SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 
-    m_SceneRenderer->s_Data.SceneData.SceneCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
-    m_CameraEntity.AddComponent<Hazel::CameraComponent>((Hazel::SceneCamera*)m_SceneRenderer->s_Data.SceneData.SceneCamera);
+    // m_EditorCamera.SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
+    m_CameraEntity.AddComponent<Hazel::CameraComponent>((Hazel::HazelCamera*)&m_EditorCamera);
 
     auto mapGenerator = CreateEntity("Map Generator");
     mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
@@ -278,7 +276,7 @@ void EnvironmentMap::UpdateUniforms()
     /**** BEGIN Shaders/Hazel/SceneComposite ****/
     m_SceneRenderer->GetShaderComposite()->Bind();
     m_SceneRenderer->GetShaderComposite()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    m_SceneRenderer->GetShaderComposite()->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure());
+    m_SceneRenderer->GetShaderComposite()->setFloat("u_Exposure", m_EditorCamera.GetExposure());
     /**** END Shaders/Hazel/SceneComposite ****/
 
     /**** BEGIN Shaders/Hazel/Skybox ****/
@@ -286,7 +284,7 @@ void EnvironmentMap::UpdateUniforms()
     m_SceneRenderer->GetShaderSkybox()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
     m_SceneRenderer->GetShaderSkybox()->setFloat("u_TextureLod", ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->GetSkyboxLOD());
     // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
-    m_SceneRenderer->GetShaderSkybox()->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
+    m_SceneRenderer->GetShaderSkybox()->setFloat("u_Exposure", m_EditorCamera.GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
     /**** END Shaders/Hazel/Skybox ****/
 }
 
@@ -316,14 +314,12 @@ void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMater
     shaderHazelPBR->setFloat("u_RoughnessTexToggle", envMapMaterial->GetRoughnessInput().UseTexture ? 1.0f : 0.0f);
     shaderHazelPBR->setFloat("u_AOTexToggle", envMapMaterial->GetAOInput().UseTexture ? 1.0f : 0.0f);
     // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
-    shaderHazelPBR->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure()); // originally used in Shaders/Hazel/SceneComposite
+    shaderHazelPBR->setFloat("u_Exposure", m_EditorCamera.GetExposure()); // originally used in Shaders/Hazel/SceneComposite
 
     shaderHazelPBR->setFloat("u_TilingFactor", envMapMaterial->GetTilingFactor());
 
-    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
-
-    shaderHazelPBR->setMat4("u_ViewProjectionMatrix", viewProjection);
-    shaderHazelPBR->setVec3("u_CameraPosition", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetPosition());
+    shaderHazelPBR->setMat4("u_ViewProjectionMatrix", m_EditorCamera.GetViewProjection());
+    shaderHazelPBR->setVec3("u_CameraPosition", m_EditorCamera.GetPosition());
 
     // Environment (TODO: don't do this per mesh)
     shaderHazelPBR->setInt("u_EnvRadianceTex", m_SamplerSlots->at("radiance"));
@@ -365,7 +361,34 @@ Hazel::Entity EnvironmentMap::CreateEntity(const std::string& name)
     return entity;
 }
 
-void EnvironmentMap::Update(Scene* scene, float timestep)
+void EnvironmentMap::OnUpdateEditor(Scene* scene, float timestep)
+{
+    m_SceneRenderer->s_Data.ActiveScene = scene;
+
+    m_SceneRenderer->BeginScene((Scene*)m_SceneRenderer->s_Data.ActiveScene);
+
+    UpdateUniforms();
+
+    // Update HazelMesh List
+    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    for (auto entt : meshEntities)
+    {
+        Hazel::Entity entity{ entt, m_SceneRenderer->s_Data.ActiveScene };
+        Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+        mesh->OnUpdate(timestep, false);
+    }
+
+    m_EditorCamera.OnUpdate(timestep);
+
+    Scene::s_ImGuizmoTransform = m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
+
+    m_ViewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
+    m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
+
+    m_EditorCamera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+}
+
+void EnvironmentMap::OnUpdateRuntime(Scene* scene, float timestep)
 {
     m_SceneRenderer->s_Data.ActiveScene = scene;
 
@@ -386,12 +409,13 @@ void EnvironmentMap::Update(Scene* scene, float timestep)
 
     m_ViewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
-    m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize((uint32_t)m_ViewportWidth, (uint32_t)m_ViewportHeight);
+
+    m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 }
 
 void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
 {
-    CameraController* cameraController = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController();
+    // CameraController* cameraController = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController();
 
     // BEGIN ImGuizmo
 
@@ -443,8 +467,8 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         if (m_SelectionMode == SelectionMode::Entity)
         {
             ImGuizmo::Manipulate(
-                glm::value_ptr(cameraController->CalculateViewMatrix()),
-                glm::value_ptr(RendererBasic::GetProjectionMatrix()),
+                glm::value_ptr(m_EditorCamera.GetViewMatrix()),
+                glm::value_ptr(m_EditorCamera.GetProjection()),
                 (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
                 ImGuizmo::LOCAL,
                 glm::value_ptr(entityTransform),
@@ -477,8 +501,8 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
             glm::mat4 transformBase = entityTransform * submeshTransform;
 
             ImGuizmo::Manipulate(
-                glm::value_ptr(cameraController->CalculateViewMatrix()),
-                glm::value_ptr(RendererBasic::GetProjectionMatrix()),
+                glm::value_ptr(m_EditorCamera.GetViewMatrix()),
+                glm::value_ptr(m_EditorCamera.GetProjection()),
                 (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
                 ImGuizmo::LOCAL,
                 glm::value_ptr(transformBase),
@@ -955,12 +979,12 @@ void EnvironmentMap::RenderSkybox()
 
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("u_Texture"));
 
-    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
+    glm::mat4 viewProjection = m_EditorCamera.GetViewProjection();
     m_SceneRenderer->GetShaderSkybox()->setMat4("u_InverseVP", glm::inverse(viewProjection));
 
     m_SceneRenderer->GetShaderSkybox()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
     m_SceneRenderer->GetShaderSkybox()->setFloat("u_TextureLod", ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->GetSkyboxLOD());
-    m_SceneRenderer->GetShaderSkybox()->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
+    m_SceneRenderer->GetShaderSkybox()->setFloat("u_Exposure", m_EditorCamera.GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
 
     m_SkyboxCube->Render();
 
@@ -981,8 +1005,7 @@ void EnvironmentMap::RenderHazelGrid()
     m_SceneRenderer->GetShaderGrid()->setFloat("u_Scale", m_SceneRenderer->m_GridScale);
     m_SceneRenderer->GetShaderGrid()->setFloat("u_Res", m_SceneRenderer->m_GridSize);
 
-    glm::mat4 viewProjection = RendererBasic::GetProjectionMatrix() * ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
-    m_SceneRenderer->GetShaderGrid()->setMat4("u_ViewProjection", viewProjection);
+    m_SceneRenderer->GetShaderGrid()->setMat4("u_ViewProjection", m_EditorCamera.GetViewProjection());
 
     bool depthTest = true;
 
@@ -1000,8 +1023,11 @@ void EnvironmentMap::RenderHazelGrid()
 void EnvironmentMap::OnEvent(Event& e)
 {
     if (m_AllowViewportCameraEvents) {
-        ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->OnEvent(e);
+        /* Camera.OnEvent */
+        // ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->OnEvent(e);
     }
+
+    m_EditorCamera.OnEvent(e);
 
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EnvironmentMap::OnKeyPressedEvent));
@@ -1107,14 +1133,14 @@ std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)
 {
     glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
 
-    glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
-    glm::mat4 viewMatrix = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
+    glm::mat4 projectionMatrix = m_EditorCamera.GetProjection();
+    glm::mat4 viewMatrix = m_EditorCamera.GetViewMatrix();
 
     auto inverseProj = glm::inverse(projectionMatrix);
     auto inverseView = glm::inverse(glm::mat3(viewMatrix));
 
     glm::vec4 ray = inverseProj * mouseClipPos;
-    glm::vec3 rayPos = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->GetPosition();
+    glm::vec3 rayPos = m_EditorCamera.GetPosition();
     glm::vec3 rayDir = inverseView * glm::vec3(ray); // inverseView * glm::vec3(ray)
 
     Log::GetLogger()->debug("EnvironmentMap::CastRay | MousePosition [ {0} {1} ]", mx, my);
@@ -1130,9 +1156,7 @@ void EnvironmentMap::GeometryPassTemporary()
     RendererBasic::EnableTransparency();
     RendererBasic::EnableMSAA();
 
-    glm::mat4 projectionMatrix = RendererBasic::GetProjectionMatrix();
-    glm::mat4 viewMatrix = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController()->CalculateViewMatrix();
-    glm::mat4 viewProj = projectionMatrix * viewMatrix;
+    glm::mat4 viewProj = m_EditorCamera.GetViewProjection();
 
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap->Bind(m_SamplerSlots->at("radiance"));
     m_SceneRenderer->s_Data.SceneData.SceneEnvironment.IrradianceMap->Bind(m_SamplerSlots->at("irradiance"));
@@ -1184,7 +1208,7 @@ void EnvironmentMap::GeometryPassTemporary()
 
         if (m_DrawOnTopBoundingBoxes)
         {
-            glm::vec3 camPosition = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->GetPosition();
+            glm::vec3 camPosition = m_EditorCamera.GetPosition();
             Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
         }
 
@@ -1210,7 +1234,7 @@ void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
     m_SceneRenderer->GetShaderComposite()->Bind();
     framebuffer->GetTextureAttachmentColor()->Bind(m_SamplerSlots->at("u_Texture"));
     m_SceneRenderer->GetShaderComposite()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    m_SceneRenderer->GetShaderComposite()->setFloat("u_Exposure", m_SceneRenderer->s_Data.SceneData.SceneCamera->GetExposure());
+    m_SceneRenderer->GetShaderComposite()->setFloat("u_Exposure", m_EditorCamera.GetExposure());
     // m_ShaderComposite->setInt("u_TextureSamples", framebuffer->GetSpecification().Samples);
     m_SceneRenderer->GetShaderComposite()->setInt("u_TextureSamples", m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
     Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);

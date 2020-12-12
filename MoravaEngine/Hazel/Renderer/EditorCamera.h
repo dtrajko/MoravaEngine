@@ -23,7 +23,7 @@ namespace Hazel {
 		inline float GetDistance() const { return m_Distance; }
 		inline void SetDistance(float distance) { m_Distance = distance; }
 
-		inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); };
+		virtual void SetViewportSize(float width, float height) override;
 
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		glm::mat4 GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }
@@ -36,6 +36,10 @@ namespace Hazel {
 
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
+
+		inline float GetExposure() const { return m_Exposure; }
+		inline float& GetExposure() { return m_Exposure; }
+		inline void SetExposure(float exposure) { m_Exposure = exposure; }
 
 	private:
 		void UpdateProjection();
@@ -69,8 +73,7 @@ namespace Hazel {
 		float m_Pitch = 0.0f;
 		float m_Yaw = 0.0f;
 
-		float m_ViewportWidth = 1280.0f;
-		float m_ViewportHeight = 720.0f;
+		float m_Exposure = 1.0f;
 
 	};
 

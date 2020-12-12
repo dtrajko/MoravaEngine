@@ -3,11 +3,13 @@
 #include "RenderPass.h"
 #include "HazelTexture.h"
 #include "RenderCommandQueue.h"
+#include "EditorCamera.h"
 #include "../Scene/Entity.h"
 
 #include "../../Camera.h"
 #include "../../HazelFullscreenQuad.h"
 #include "../../Scene.h"
+
 
 namespace Hazel {
 
@@ -69,6 +71,7 @@ namespace Hazel {
 
 		static void SetViewportSize(uint32_t width, uint32_t height);
 
+		static void BeginScene(HazelScene* scene, const EditorCamera& camera);
 		static void BeginScene(HazelScene* scene);
 		static void EndScene();
 

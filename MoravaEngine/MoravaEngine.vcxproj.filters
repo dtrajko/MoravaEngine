@@ -587,6 +587,9 @@
     <ClCompile Include="Hazel\Renderer\EditorCamera.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Renderer\HazelCamera.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">

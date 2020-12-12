@@ -102,6 +102,15 @@ namespace Hazel {
         s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
     }
 
+    void SceneRenderer::BeginScene(HazelScene* scene, const EditorCamera& camera)
+    {
+        HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+
+        s_Data.ActiveScene = scene;
+
+        // s_Data.SceneData.SceneCamera = ((::Scene*)scene)->GetCamera();
+    }
+
     void SceneRenderer::BeginScene(HazelScene* scene)
     {
         HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
@@ -109,9 +118,6 @@ namespace Hazel {
         s_Data.ActiveScene = scene;
 
         s_Data.SceneData.SceneCamera = ((::Scene*)scene)->GetCamera();
-        // s_Data.SceneData.SkyboxMaterial = ((Scene*)scene)->GetSkyboxMaterial();
-        // s_Data.SceneData.SceneEnvironment = ((Scene*)scene)->GetEnvironment();
-        // s_Data.SceneData.ActiveLight = ((Scene*)scene)->GetLight();
     }
 
     void SceneRenderer::EndScene()

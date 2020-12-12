@@ -166,7 +166,7 @@ void SceneHazelEnvMap::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* 
         renderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
         m_ViewportMainSize = glm::vec2(viewportPanelSize.x, viewportPanelSize.y);
 
-        m_CameraController->OnResize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+        // Camera.OnResize
     }
 }
 
@@ -221,15 +221,9 @@ void SceneHazelEnvMap::SetupUniforms()
 void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 {
     m_CurrentTimestamp = timestep;
-
-    m_EnvironmentMap->GetShaderPBR_Anim()->Bind();
-    m_EnvironmentMap->GetShaderPBR_Anim()->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
-    m_EnvironmentMap->GetShaderPBR_Anim()->setVec3("u_CameraPosition", m_Camera->GetPosition());
-    // m_EnvironmentMap->GetShaderPBR_Anim()->setFloat("u_TilingFactor", 1.0f);
-
     float deltaTime = Timer::Get()->GetDeltaTime();
-
-    m_EnvironmentMap->Update(this, deltaTime);
+    m_EnvironmentMap->OnUpdateEditor(this, deltaTime);
+    // m_EnvironmentMap->OnUpdateRuntime(this, deltaTime);
 }
 
 void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
@@ -291,21 +285,21 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     {
         if (ImGui::CollapsingHeader("Display Info"))
         {
-            char buffer[100];
-            sprintf(buffer, "Pitch      %.2f", m_Camera->GetPitch());
-            ImGui::Text(buffer);
-            sprintf(buffer, "Yaw        %.2f", m_Camera->GetYaw());
-            ImGui::Text(buffer);
-            sprintf(buffer, "Position   X %.2f Y %.2f Z %.2f", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Direction  X %.2f Y %.2f Z %.2f", m_Camera->GetDirection().x, m_Camera->GetDirection().y, m_Camera->GetDirection().z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Front      X %.2f Y %.2f Z %.2f", m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Up         X %.2f Y %.2f Z %.2f", m_Camera->GetUp().x, m_Camera->GetUp().y, m_Camera->GetUp().z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Right      X %.2f Y %.2f Z %.2f", m_Camera->GetRight().x, m_Camera->GetRight().y, m_Camera->GetRight().z);
-            ImGui::Text(buffer);
+            //  char buffer[100];
+            //  sprintf(buffer, "Pitch      %.2f", m_Camera->GetPitch());
+            //  ImGui::Text(buffer);
+            //  sprintf(buffer, "Yaw        %.2f", m_Camera->GetYaw());
+            //  ImGui::Text(buffer);
+            //  sprintf(buffer, "Position   X %.2f Y %.2f Z %.2f", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
+            //  ImGui::Text(buffer);
+            //  sprintf(buffer, "Direction  X %.2f Y %.2f Z %.2f", m_Camera->GetDirection().x, m_Camera->GetDirection().y, m_Camera->GetDirection().z);
+            //  ImGui::Text(buffer);
+            //  sprintf(buffer, "Front      X %.2f Y %.2f Z %.2f", m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
+            //  ImGui::Text(buffer);
+            //  sprintf(buffer, "Up         X %.2f Y %.2f Z %.2f", m_Camera->GetUp().x, m_Camera->GetUp().y, m_Camera->GetUp().z);
+            //  ImGui::Text(buffer);
+            //  sprintf(buffer, "Right      X %.2f Y %.2f Z %.2f", m_Camera->GetRight().x, m_Camera->GetRight().y, m_Camera->GetRight().z);
+            //  ImGui::Text(buffer);
         }
     }
     ImGui::End();
@@ -444,7 +438,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
                 ImGuiWrapper::Property("Light Direction", light.Direction);
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
-                ImGuiWrapper::Property("Exposure", m_Camera->GetExposure(), 0.0f, 40.0f);
+                ImGuiWrapper::Property("Exposure", m_EnvironmentMap->m_EditorCamera.GetExposure(), 0.0f, 40.0f);
                 ImGuiWrapper::Property("Skybox Exposure Factor", m_EnvironmentMap->GetSkyboxExposureFactor(), 0.0f, 10.0f);
                 ImGuiWrapper::Property("Radiance Prefiltering", m_EnvironmentMap->GetRadiancePrefilter());
                 ImGuiWrapper::Property("Env Map Rotation", m_EnvironmentMap->GetEnvMapRotation(), -360.0f, 360.0f);

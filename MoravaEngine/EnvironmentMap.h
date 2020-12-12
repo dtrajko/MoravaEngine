@@ -22,6 +22,7 @@
 #include "Quad.h"
 #include "CubeSkybox.h"
 #include "EntitySelection.h"
+#include "Hazel/Renderer/EditorCamera.h"
 
 #include <string>
 
@@ -33,7 +34,9 @@ public:
 	EnvironmentMap(const std::string& filepath, Scene* scene);
 	~EnvironmentMap();
 
-	void Update(Scene* scene, float timestep);
+	void OnUpdateEditor(Scene* scene, float timestep);
+	void OnUpdateRuntime(Scene* scene, float timestep);
+
 	void UpdateImGuizmo(Window* mainWindow);
 	Hazel::Entity CreateEntity(const std::string& name);
 	Hazel::Entity LoadEntity(std::string fullPath);
@@ -92,6 +95,8 @@ private:
 	void RenderHazelGrid();
 
 public:
+	Hazel::EditorCamera m_EditorCamera;
+
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
 	glm::mat4* m_RelativeTransform = nullptr;
 	bool m_AllowViewportCameraEvents = true; // EditorLayer (Raypicking)

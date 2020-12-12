@@ -29,12 +29,12 @@ namespace Hazel {
 		RecalculateProjection();
 	}
 
-	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
+	void SceneCamera::SetViewportSize(float width, float height)
 	{
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 
-		m_AspectRatio  = (float)width / (float)height;
+		m_AspectRatio  = width / height;
 
 		RecalculateProjection();
 	}

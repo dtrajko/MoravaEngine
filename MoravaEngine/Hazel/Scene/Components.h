@@ -7,7 +7,7 @@
 
 #include "../Core/UUID.h"
 #include "../Renderer/HazelMesh.h"
-#include "SceneCamera.h"
+#include "../Renderer/HazelCamera.h"
 
 
 namespace Hazel
@@ -78,17 +78,17 @@ namespace Hazel
 
 	struct CameraComponent
 	{
-		SceneCamera Camera;
+		HazelCamera Camera;
 		bool Primary = true; // TODO: think about moving to Scene
 		bool FixedAspectRatio = false;
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
-		CameraComponent(Hazel::SceneCamera* camera)
+		CameraComponent(Hazel::HazelCamera* camera)
 			: Camera(*camera) {};
 
-		operator SceneCamera& () { return Camera; }
-		operator const SceneCamera& () const { return Camera; }
+		operator HazelCamera& () { return Camera; }
+		operator const HazelCamera& () const { return Camera; }
 	};
 
 	struct NativeScriptComponent
