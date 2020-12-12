@@ -548,9 +548,6 @@
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLRendererAPI.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="Hazel\Renderer\HazelCamera.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Hazel\Core\Timestep.cpp">
       <Filter>Hazel\Core</Filter>
     </ClCompile>
@@ -586,6 +583,9 @@
     </ClCompile>
     <ClCompile Include="RendererECS.cpp">
       <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Renderer\EditorCamera.cpp">
+      <Filter>Hazel\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1045,9 +1045,6 @@
     <ClInclude Include="Hazel\Events\MouseEvent.h">
       <Filter>Hazel\Events</Filter>
     </ClInclude>
-    <ClInclude Include="Hazel\Core\Input.h">
-      <Filter>Hazel\Core</Filter>
-    </ClInclude>
     <ClInclude Include="Hazel\Core\Base.h">
       <Filter>Hazel\Core</Filter>
     </ClInclude>
@@ -1260,6 +1257,9 @@
     </ClInclude>
     <ClInclude Include="RendererECS.h">
       <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\EditorCamera.h">
+      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

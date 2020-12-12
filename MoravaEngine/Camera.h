@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Hazel/Scene/SceneCamera.h"
+#include "Hazel/Core/Timestep.h"
+#include "Hazel/Events/Event.h"
+#include "Hazel/Events/MouseEvent.h"
 
 #include "glm/glm.hpp"
 
@@ -15,7 +18,15 @@ public:
 
 	void Update();
 
+	void OnUpdate(Hazel::Timestep ts);
+	void OnEvent(Event& e);
+
+	bool OnMouseScroll(MouseScrolledEvent& e);
+
 	// getters
+	const glm::vec3& GetPosition() const { return m_Position; }
+	inline float GetExposure() const { return m_Exposure; }
+	inline float& GetExposure() { return m_Exposure; }
 	inline glm::vec3 GetDirection() const { return glm::normalize(m_Front); }
 	inline float GetPitch() const { return m_Pitch; }
 	inline float GetYaw() const { return m_Yaw; }
@@ -31,11 +42,17 @@ public:
 	void SetPitch(float pitch);
 
 private:
+	glm::vec3 m_Position;
+
+	float m_Pitch;
+	float m_Yaw;
+	float m_Exposure = 1.0f; // from Hazel, EnvironmentMap scene
+
 	glm::vec3 m_Front;
 	glm::vec3 m_Up;
 	glm::vec3 m_Right;
 	glm::vec3 m_WorldUp;
 
-	float m_Roll; // not used
+	// float m_Roll; // not used
 
 };

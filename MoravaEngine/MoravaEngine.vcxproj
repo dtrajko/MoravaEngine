@@ -215,7 +215,7 @@
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="Hazel\Platform\Windows\WindowsPlatformUtils.cpp" />
     <ClCompile Include="Hazel\Renderer\Buffer.cpp" />
-    <ClCompile Include="Hazel\Renderer\HazelCamera.cpp" />
+    <ClCompile Include="Hazel\Renderer\EditorCamera.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelMaterial.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelMesh.cpp" />
     <ClCompile Include="Hazel\Renderer\RenderCommandQueue.cpp" />
@@ -407,7 +407,6 @@
     <ClInclude Include="Hazel\Core\Base.h" />
     <ClInclude Include="Hazel\Core\Buffer.h" />
     <ClInclude Include="Hazel\Core\HazelWindow.h" />
-    <ClInclude Include="Hazel\Core\Input.h" />
     <ClInclude Include="Hazel\Core\KeyCodes.h" />
     <ClInclude Include="Hazel\Core\Layer.h" />
     <ClInclude Include="Hazel\Core\LayerStack.h" />
@@ -429,6 +428,7 @@
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLTexture.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLVertexArray.h" />
     <ClInclude Include="Hazel\Renderer\Buffer.h" />
+    <ClInclude Include="Hazel\Renderer\EditorCamera.h" />
     <ClInclude Include="Hazel\Renderer\HazelCamera.h" />
     <ClInclude Include="Hazel\Renderer\HazelMaterial.h" />
     <ClInclude Include="Hazel\Renderer\HazelMesh.h" />

@@ -2,6 +2,7 @@
 
 #include "../Scene/Entity.h"
 #include "../Scene/Components.h"
+#include "../Core/Timestep.h"
 
 #include <string>
 #include <unordered_map>
