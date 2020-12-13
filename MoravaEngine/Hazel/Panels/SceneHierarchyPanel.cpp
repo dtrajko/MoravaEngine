@@ -193,7 +193,17 @@ namespace Hazel
 
 			for (auto& submesh : mesh->GetSubmeshes())
 			{
-				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+				bool selected = false;
+				for (auto selection : EntitySelection::s_SelectionContext)
+				{
+					if (selection.Mesh->NodeName == submesh.NodeName)
+					{
+						selected = true;
+						break;
+					}
+				}
+
+				ImGuiTreeNodeFlags flags = (selected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 				bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submesh.BaseIndex + 1), flags, submesh.MeshName.c_str());
 
 				if (ImGui::IsItemClicked())
