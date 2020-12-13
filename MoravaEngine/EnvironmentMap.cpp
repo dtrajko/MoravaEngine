@@ -486,7 +486,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
                 tc.Scale = scale;
             }
         }
-        else
+        else if (m_SelectionMode == SelectionMode::SubMesh && selectedSubmesh.Mesh)
         {
             auto aabb = selectedSubmesh.Mesh->BoundingBox;
 
@@ -614,7 +614,7 @@ void EnvironmentMap::OnImGuiRender()
             {
                 transformImGui = entityTransform;
             }
-            else
+            else if (m_SelectionMode == SelectionMode::SubMesh && selectedSubmesh.Mesh)
             {
                 auto aabb = selectedSubmesh.Mesh->BoundingBox;
 
@@ -648,7 +648,7 @@ void EnvironmentMap::OnImGuiRender()
                     tc.Rotation += deltaRotation;
                     tc.Scale = scale;
                 }
-                else
+                else if (m_SelectionMode == SelectionMode::SubMesh && selectedSubmesh.Mesh)
                 {
                     submeshTransform = glm::inverse(entityTransform) * transformImGui;
                     submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
