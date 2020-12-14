@@ -23,12 +23,12 @@ public:
 	virtual void SetViewportSize(float width, float height) override;
 
 	const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-	virtual glm::mat4 GetViewProjection() override { return m_ProjectionMatrix * m_CameraController.CalculateViewMatrix(); }
+	virtual glm::mat4 GetViewProjection() override { return m_ProjectionMatrix * m_ViewMatrix; } // m_CameraController.CalculateViewMatrix()
 
 	inline float& GetExposure() { return m_Exposure; }
 
 public:
 	Camera m_Camera;
-	CameraController m_CameraController;
+	// CameraController m_CameraController;
 
 };
