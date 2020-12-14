@@ -37,6 +37,12 @@ namespace Hazel {
 		float GetOrthographicFarClip() const { return m_OrthographicFar; };
 		void SetOrthographicFarClip(float farClip) { m_OrthographicFar = farClip; RecalculateProjection(); }
 
+		inline float& GetExposure() { return m_Exposure; }
+		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+		const glm::vec3& GetPosition() const { return m_Position; }
+
+		virtual glm::mat4 GetViewProjection() { return m_ProjectionMatrix * m_ViewMatrix; }
+
 	private:
 		virtual void RecalculateProjection();
 
@@ -57,6 +63,10 @@ namespace Hazel {
 
 		float m_ViewportWidth = 1280.0f;
 		float m_ViewportHeight = 720.0f;
+
+		float m_Exposure = 1.0f;
+		glm::mat4 m_ViewMatrix;
+		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
 
 	};
 

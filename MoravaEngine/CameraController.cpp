@@ -15,6 +15,7 @@
 CameraController::CameraController()
 	: CameraController(nullptr, 16 / 9.0f, 2.0f, 0.1f)
 {
+	m_Camera = new Camera();
 }
 
 CameraController::CameraController(Camera* camera, float aspectRatio, float moveSpeed, float turnSpeed)

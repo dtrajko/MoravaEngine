@@ -412,7 +412,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
     Application::Get()->OnImGuiRender();
 
-    /**** BEGIN Environment Map Settings ****/
+    /**** BEGIN Environment Map Settings
     ImGui::Begin("Environment Map Settings");
     {
         if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
@@ -480,7 +480,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         }
     }
     ImGui::End();
-    /**** END Environment Map Scene Settings ****/
+    END Environment Map Scene Settings ****/
 
     if (!m_IsViewportEnabled)
     {

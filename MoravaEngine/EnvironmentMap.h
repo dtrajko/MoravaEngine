@@ -23,6 +23,7 @@
 #include "CubeSkybox.h"
 #include "EntitySelection.h"
 #include "Hazel/Renderer/EditorCamera.h"
+#include "RuntimeCamera.h"
 
 #include <string>
 
@@ -96,6 +97,8 @@ private:
 
 public:
 	Hazel::EditorCamera m_EditorCamera;
+	RuntimeCamera m_RuntimeCamera;
+	Hazel::HazelCamera m_ActiveCamera;
 
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
 	glm::mat4* m_RelativeTransform = nullptr;
