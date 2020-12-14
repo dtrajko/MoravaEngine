@@ -14,10 +14,12 @@ public:
 	CameraController(Camera* camera, float aspectRatio, float moveSpeed, float turnSpeed);
 	virtual ~CameraController();
 
+	virtual void Update();
+	void OnEvent(Event& e);
+
 	virtual void KeyControl(bool* keys, float deltaTime);
 	virtual void MouseControl(bool* buttons, float xChange, float yChange);
 	virtual void MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset);
-	virtual void Update();
 	inline Camera* GetCamera() { return m_Camera; };
 	void InvertPitch();
 	glm::mat4 CalculateViewMatrix();
@@ -32,11 +34,13 @@ public:
 private:
 	void CalculateFront();
 
+private:
+	Camera* m_Camera;
+
 protected:
 	float m_AspectRatio;
 	float m_ZoomLevel = 1.0f;
 
-	Camera* m_Camera;
 
 	float m_MoveSpeed;
 	float m_TurnSpeed;

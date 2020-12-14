@@ -554,7 +554,7 @@ void SceneMarchingCubes::Update(float timestep, Window* mainWindow)
     m_PlayerController->MouseScrollControl(mainWindow->getKeys(), timestep, mainWindow->getXMouseScrollOffset(), mainWindow->getYMouseScrollOffset());
     m_PlayerController->SetUnlockRotation(m_UnlockRotation);
     m_Player->Update();
-    m_CameraController->Update();
+    // m_CameraController->Update(); // called from main.cpp
     m_CameraController->SetUnlockRotation(m_UnlockRotation);
 
     m_DeleteMode = mainWindow->getKeys()[m_DeleteVoxelCodeGLFW];
@@ -564,10 +564,12 @@ void SceneMarchingCubes::Update(float timestep, Window* mainWindow)
     m_RenderInstanced->SetDeleteMode(&m_DeleteMode);
 
     if (m_UnlockRotation != m_UnlockRotationPrev) {
-        if (m_UnlockRotation)
+        if (m_UnlockRotation) {
             mainWindow->SetCursorDisabled();
-        else
+        }
+        else {
             mainWindow->SetCursorNormal();
+        }
         m_UnlockRotationPrev = m_UnlockRotation;
     }
 }

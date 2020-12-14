@@ -2,6 +2,8 @@
 
 #include "Log.h"
 #include "Input.h"
+#include "Application.h"
+#include "Timer.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -13,9 +15,13 @@
 
 
 CameraController::CameraController()
-	: CameraController(nullptr, 16 / 9.0f, 2.0f, 0.1f)
 {
-	m_Camera = new Camera();
+	m_Camera = new Camera(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f);
+	m_AspectRatio = 16 / 9.0f;
+	m_MoveSpeed = 2.0f;
+	m_TurnSpeed = 0.1f;
+
+	Update();
 }
 
 CameraController::CameraController(Camera* camera, float aspectRatio, float moveSpeed, float turnSpeed)
@@ -100,8 +106,25 @@ void CameraController::MouseScrollControl(bool* keys, float deltaTime, float xOf
 
 void CameraController::Update()
 {
+	KeyControl(Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime());
+
+	MouseControl(
+		Application::Get()->GetWindow()->getMouseButtons(),
+		Application::Get()->GetWindow()->getXChange(),
+		Application::Get()->GetWindow()->getYChange());
+
+	MouseScrollControl(
+		Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime(),
+		Application::Get()->GetWindow()->getXMouseScrollOffset(),
+		Application::Get()->GetWindow()->getYMouseScrollOffset());
+
 	CalculateFront();
 	m_Camera->Update();
+}
+
+void CameraController::OnEvent(Event& e)
+{
+	m_Camera->OnEvent(e);
 }
 
 void CameraController::InvertPitch()

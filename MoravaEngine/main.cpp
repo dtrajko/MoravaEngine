@@ -100,7 +100,7 @@ enum class SceneName
 	HazelEnvMap,
 };
 
-SceneName currentScene = SceneName::HazelEnvMap;
+SceneName currentScene = SceneName::Cottage;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -249,15 +249,7 @@ int main()
 	{
 		Timer::Get()->Update();
 
-		scene->GetCameraController()->KeyControl(Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime());
-		scene->GetCameraController()->MouseControl(
-			Application::Get()->GetWindow()->getMouseButtons(),
-			Application::Get()->GetWindow()->getXChange(),
-			Application::Get()->GetWindow()->getYChange());
-		scene->GetCameraController()->MouseScrollControl(
-			Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime(),
-			Application::Get()->GetWindow()->getXMouseScrollOffset(),
-			Application::Get()->GetWindow()->getYMouseScrollOffset());
+		scene->GetCameraController()->Update();
 
 		MousePicker::Get()->Update(
 			(int)Application::Get()->GetWindow()->GetMouseX(), (int)Application::Get()->GetWindow()->GetMouseY(),

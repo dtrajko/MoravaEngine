@@ -28,7 +28,6 @@ public:
 	inline float& GetExposure() { return m_Exposure; }
 
 public:
-	Camera m_Camera;
-	// CameraController m_CameraController;
+	CameraController m_CameraController;
 
 };
