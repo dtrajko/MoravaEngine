@@ -51,7 +51,7 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 
     m_EditorCamera = Hazel::EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
     m_RuntimeCamera = RuntimeCamera(30.0f, 1.778f, 0.1f, 1000.0f);
-    m_ActiveCamera = &m_EditorCamera;
+    m_ActiveCamera = &m_RuntimeCamera; // &m_EditorCamera;
 
     Init(); // requires a valid Camera reference
 
@@ -662,6 +662,29 @@ void EnvironmentMap::OnImGuiRender()
                     selectedSubmesh.Mesh->Transform = submeshTransform;
                 }
             }
+        }
+    }
+    ImGui::End();
+
+    ImGui::Begin("Camera");
+    {
+        if (ImGui::CollapsingHeader("Display Info"))
+        {
+            char buffer[100];
+            sprintf(buffer, "Pitch      %.2f", m_ActiveCamera->GetPitch());
+            ImGui::Text(buffer);
+            sprintf(buffer, "Yaw        %.2f", m_ActiveCamera->GetYaw());
+            ImGui::Text(buffer);
+            sprintf(buffer, "Position   X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetPosition().x, m_ActiveCamera->GetPosition().y, m_ActiveCamera->GetPosition().z);
+            ImGui::Text(buffer);
+            sprintf(buffer, "Direction  X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetDirection().x, m_ActiveCamera->GetDirection().y, m_ActiveCamera->GetDirection().z);
+            ImGui::Text(buffer);
+            sprintf(buffer, "Front      X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetFront().x, m_ActiveCamera->GetFront().y, m_ActiveCamera->GetFront().z);
+            ImGui::Text(buffer);
+            sprintf(buffer, "Up         X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetUp().x, m_ActiveCamera->GetUp().y, m_ActiveCamera->GetUp().z);
+            ImGui::Text(buffer);
+            sprintf(buffer, "Right      X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetRight().x, m_ActiveCamera->GetRight().y, m_ActiveCamera->GetRight().z);
+            ImGui::Text(buffer);
         }
     }
     ImGui::End();

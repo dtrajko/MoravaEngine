@@ -1,6 +1,7 @@
 #include "RuntimeCamera.h"
 
 #include "Application.h"
+#include "Timer.h"
 #include "MousePicker.h"
 
 
@@ -18,12 +19,24 @@ RuntimeCamera::RuntimeCamera(float fov, float aspectRatio, float nearClip, float
 
 void RuntimeCamera::OnUpdate(Hazel::Timestep ts)
 {
-    m_CameraController.Update();
+	m_CameraController.KeyControl(Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime());
+
+	m_CameraController.MouseControl(
+		Application::Get()->GetWindow()->getMouseButtons(),
+		Application::Get()->GetWindow()->getXChange(),
+		Application::Get()->GetWindow()->getYChange());
+
+	m_CameraController.MouseScrollControl(
+		Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime(),
+		Application::Get()->GetWindow()->getXMouseScrollOffset(),
+		Application::Get()->GetWindow()->getYMouseScrollOffset());
 
 	MousePicker::Get()->Update(
 		(int)Application::Get()->GetWindow()->GetMouseX(), (int)Application::Get()->GetWindow()->GetMouseY(),
 		0, 0, (int)Application::Get()->GetWindow()->GetWidth(), (int)Application::Get()->GetWindow()->GetHeight(),
 		RendererBasic::GetProjectionMatrix(), m_CameraController.CalculateViewMatrix());
+
+    m_CameraController.Update();
 }
 
 void RuntimeCamera::OnEvent(Event& e)

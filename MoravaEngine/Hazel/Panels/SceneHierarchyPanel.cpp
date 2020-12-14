@@ -196,7 +196,7 @@ namespace Hazel
 				bool selected = false;
 				for (auto selection : EntitySelection::s_SelectionContext)
 				{
-					if (selection.Mesh->NodeName == submesh.NodeName)
+					if (selection.Mesh && selection.Mesh->NodeName == submesh.NodeName)
 					{
 						selected = true;
 						break;

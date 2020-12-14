@@ -281,29 +281,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.6f, 0.6f, 1.0f);
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
 
-    ImGui::Begin("Camera");
-    {
-        if (ImGui::CollapsingHeader("Display Info"))
-        {
-            //  char buffer[100];
-            //  sprintf(buffer, "Pitch      %.2f", m_Camera->GetPitch());
-            //  ImGui::Text(buffer);
-            //  sprintf(buffer, "Yaw        %.2f", m_Camera->GetYaw());
-            //  ImGui::Text(buffer);
-            //  sprintf(buffer, "Position   X %.2f Y %.2f Z %.2f", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
-            //  ImGui::Text(buffer);
-            //  sprintf(buffer, "Direction  X %.2f Y %.2f Z %.2f", m_Camera->GetDirection().x, m_Camera->GetDirection().y, m_Camera->GetDirection().z);
-            //  ImGui::Text(buffer);
-            //  sprintf(buffer, "Front      X %.2f Y %.2f Z %.2f", m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
-            //  ImGui::Text(buffer);
-            //  sprintf(buffer, "Up         X %.2f Y %.2f Z %.2f", m_Camera->GetUp().x, m_Camera->GetUp().y, m_Camera->GetUp().z);
-            //  ImGui::Text(buffer);
-            //  sprintf(buffer, "Right      X %.2f Y %.2f Z %.2f", m_Camera->GetRight().x, m_Camera->GetRight().y, m_Camera->GetRight().z);
-            //  ImGui::Text(buffer);
-        }
-    }
-    ImGui::End();
-
     ImGui::Begin("Framebuffers");
     {
         ImVec2 imageSize(128.0f, 128.0f);

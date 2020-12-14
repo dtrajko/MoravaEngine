@@ -12,7 +12,6 @@
  */
 class RuntimeCamera : public Hazel::HazelCamera
 {
-
 public:
 	RuntimeCamera();
 	RuntimeCamera(float fov, float aspectRatio, float nearClip, float farClip);
@@ -22,8 +21,8 @@ public:
 
 	virtual void SetViewportSize(float width, float height) override;
 
-	const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-	virtual glm::mat4 GetViewProjection() override { return m_ProjectionMatrix * m_ViewMatrix; } // m_CameraController.CalculateViewMatrix()
+	const glm::mat4& GetViewMatrix() { return m_CameraController.CalculateViewMatrix(); }
+	virtual glm::mat4 GetViewProjection() override { return m_ProjectionMatrix * m_CameraController.CalculateViewMatrix(); }
 
 	inline float& GetExposure() { return m_Exposure; }
 

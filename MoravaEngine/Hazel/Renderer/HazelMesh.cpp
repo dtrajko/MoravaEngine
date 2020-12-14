@@ -802,7 +802,13 @@ namespace Hazel {
 	Texture* HazelMesh::LoadBaseTexture()
 	{
 		if (!m_BaseTexture) {
-			m_BaseTexture = new Texture("Textures/plain.png");
+			try {
+				m_BaseTexture = new Texture("Textures/plain.png");
+			}
+			catch (...) {
+				Log::GetLogger()->warn("Failed to load the base texture!");
+				m_BaseTexture = nullptr;
+			}
 		}
 
 		return m_BaseTexture;

@@ -37,11 +37,24 @@ namespace Hazel {
 		float GetOrthographicFarClip() const { return m_OrthographicFar; };
 		void SetOrthographicFarClip(float farClip) { m_OrthographicFar = farClip; RecalculateProjection(); }
 
+		// Getters
+		inline const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+		inline const glm::vec3& GetPosition() const { return m_Position; }
+		inline virtual glm::mat4 GetViewProjection() { return m_ProjectionMatrix * m_ViewMatrix; }
+		inline float GetPitch() const { return m_Pitch; }
+		inline float GetYaw() const { return m_Yaw; }
+		inline glm::vec3 GetDirection() const { return glm::normalize(m_Front); }
+		inline glm::vec3 GetFront() const { return m_Front; }
+		inline glm::vec3 GetUp() const { return m_Up; }
+		inline glm::vec3 GetRight() const { return m_Right; }
 		inline float& GetExposure() { return m_Exposure; }
-		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-		const glm::vec3& GetPosition() const { return m_Position; }
+		inline float GetExposure() const { return m_Exposure; }
 
-		virtual glm::mat4 GetViewProjection() { return m_ProjectionMatrix * m_ViewMatrix; }
+		// setters
+		inline void SetPosition(glm::vec3 position) { m_Position = position; };
+		inline void SetFront(glm::vec3 front) { m_Front = front; };
+		inline void SetYaw(float yaw) { m_Yaw = yaw; };
+		inline void SetExposure(float exposure) { m_Exposure = exposure; }
 
 	private:
 		virtual void RecalculateProjection();
@@ -50,6 +63,7 @@ namespace Hazel {
 		ProjectionType m_ProjectionType = ProjectionType::Orthographic;
 
 		glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
+		glm::mat4 m_ViewMatrix;
 
 		float m_PerspectiveFOV = glm::radians(45.0f);
 		float m_PerspectiveNear = 0.01f;
@@ -64,9 +78,16 @@ namespace Hazel {
 		float m_ViewportWidth = 1280.0f;
 		float m_ViewportHeight = 720.0f;
 
-		float m_Exposure = 1.0f;
-		glm::mat4 m_ViewMatrix;
 		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
+
+		float m_Pitch = 0.0f;
+		float m_Yaw = 0.0f;
+		float m_Exposure = 1.0f;
+
+		glm::vec3 m_Front;
+		glm::vec3 m_Up;
+		glm::vec3 m_Right;
+		glm::vec3 m_WorldUp;
 
 	};
 

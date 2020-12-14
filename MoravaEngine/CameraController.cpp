@@ -106,18 +106,6 @@ void CameraController::MouseScrollControl(bool* keys, float deltaTime, float xOf
 
 void CameraController::Update()
 {
-	KeyControl(Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime());
-
-	MouseControl(
-		Application::Get()->GetWindow()->getMouseButtons(),
-		Application::Get()->GetWindow()->getXChange(),
-		Application::Get()->GetWindow()->getYChange());
-
-	MouseScrollControl(
-		Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime(),
-		Application::Get()->GetWindow()->getXMouseScrollOffset(),
-		Application::Get()->GetWindow()->getYMouseScrollOffset());
-
 	CalculateFront();
 	m_Camera->Update();
 }

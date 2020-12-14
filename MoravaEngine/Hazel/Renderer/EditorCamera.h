@@ -34,9 +34,6 @@ namespace Hazel {
 		const glm::vec3& GetPosition() const { return m_Position; }
 		glm::quat GetOrientation() const;
 
-		float GetPitch() const { return m_Pitch; }
-		float GetYaw() const { return m_Yaw; }
-
 		inline float GetExposure() const { return m_Exposure; }
 		inline float& GetExposure() { return m_Exposure; }
 		inline void SetExposure(float exposure) { m_Exposure = exposure; }
@@ -68,8 +65,6 @@ namespace Hazel {
 		glm::vec2 m_InitialMousePosition = { 0.0f, 0.0f };
 
 		float m_Distance = 10.0f;
-		float m_Pitch = 0.0f;
-		float m_Yaw = 0.0f;
 
 	};
 

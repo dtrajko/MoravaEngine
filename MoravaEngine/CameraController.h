@@ -34,10 +34,9 @@ public:
 private:
 	void CalculateFront();
 
-private:
+protected:
 	Camera* m_Camera;
 
-protected:
 	float m_AspectRatio;
 	float m_ZoomLevel = 1.0f;
 
