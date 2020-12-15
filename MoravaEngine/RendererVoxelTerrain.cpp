@@ -124,7 +124,7 @@ void RendererVoxelTerrain::RenderPass(Window* mainWindow, Scene* scene, glm::mat
 	shaderMain->Bind();
 
 	shaderMain->setMat4("model", glm::mat4(1.0f));
-	shaderMain->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
+	shaderMain->setMat4("view", scene->GetCamera()->GetViewMatrix());
 	shaderMain->setMat4("projection", projectionMatrix);
 	shaderMain->setVec3("eyePosition", scene->GetCamera()->GetPosition());
 
@@ -199,7 +199,7 @@ void RendererVoxelTerrain::RenderPass(Window* mainWindow, Scene* scene, glm::mat
 	shaderMarchingCubes->Bind();
 
 	shaderMarchingCubes->setMat4("model", glm::mat4(1.0f));
-	shaderMarchingCubes->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
+	shaderMarchingCubes->setMat4("view", scene->GetCamera()->GetViewMatrix());
 	shaderMarchingCubes->setMat4("projection", projectionMatrix);
 	shaderMarchingCubes->setVec3("eyePosition", scene->GetCamera()->GetPosition());
 
@@ -271,7 +271,7 @@ void RendererVoxelTerrain::RenderPass(Window* mainWindow, Scene* scene, glm::mat
 	shaderRenderInstanced->Bind();
 
 	shaderRenderInstanced->setMat4("projection", projectionMatrix);
-	shaderRenderInstanced->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
+	shaderRenderInstanced->setMat4("view", scene->GetCamera()->GetViewMatrix());
 	shaderRenderInstanced->setVec3("eyePosition", scene->GetCamera()->GetPosition());
 
 	// Directional Light
@@ -290,7 +290,7 @@ void RendererVoxelTerrain::RenderPass(Window* mainWindow, Scene* scene, glm::mat
 	Shader* shaderBasic = s_Shaders["basic"];
 	shaderBasic->Bind();
 	shaderBasic->setMat4("projection", projectionMatrix);
-	shaderBasic->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
+	shaderBasic->setMat4("view", scene->GetCamera()->GetViewMatrix());
 	shaderBasic->Validate();
 	/**** END shaderBasic ****/
 

@@ -16,13 +16,10 @@ public:
 	Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch);
 	~Camera();
 
-	void Update();
-
-	void OnUpdate(Hazel::Timestep ts);
-	void OnEvent(Event& e);
-
-	bool OnMouseScroll(MouseScrolledEvent& e);
-
-	void SetPitch(float pitch);
+	virtual void OnUpdate(Hazel::Timestep ts) override;
+	virtual void OnEvent(Event& e) override;
+	virtual void SetPitch(float pitch) override;
+	virtual bool OnMouseScroll(MouseScrolledEvent& e) override;
+	virtual glm::mat4& GetViewMatrix() override;
 
 };

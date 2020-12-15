@@ -221,7 +221,7 @@ void SceneDeferred::RenderPassGeometry(glm::mat4 projectionMatrix)
 
     m_ShaderGeometryPass->Bind();
     m_ShaderGeometryPass->setMat4("projection", projectionMatrix);
-    m_ShaderGeometryPass->setMat4("view", m_CameraController->CalculateViewMatrix());
+    m_ShaderGeometryPass->setMat4("view", m_Camera->GetViewMatrix());
 
     glm::mat4 model = glm::mat4(1.0f);
     for (unsigned int i = 0; i < m_ObjectPositions.size(); i++)
@@ -286,7 +286,7 @@ void SceneDeferred::RenderPassForward(glm::mat4 projectionMatrix)
     // --------------------------------
     m_ShaderLightBox->Bind();
     m_ShaderLightBox->setMat4("projection", projectionMatrix);
-    m_ShaderLightBox->setMat4("view", m_CameraController->CalculateViewMatrix());
+    m_ShaderLightBox->setMat4("view", m_Camera->GetViewMatrix());
     glm::mat4 model = glm::mat4(1.0f);
     for (unsigned int i = 0; i < m_LightPositions.size(); i++)
     {

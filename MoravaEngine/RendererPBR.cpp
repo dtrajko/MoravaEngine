@@ -103,7 +103,7 @@ void RendererPBR::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 project
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		float angleRadians = glm::radians((GLfloat)glfwGetTime());
 		modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		scene->GetSkybox()->Draw(modelMatrix, scene->GetCameraController()->CalculateViewMatrix(), projectionMatrix);
+		scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->GetViewMatrix(), projectionMatrix);
 	}
 
 	ShaderMain* shaderMain = (ShaderMain*)s_Shaders["main"];
@@ -116,7 +116,7 @@ void RendererPBR::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 project
 	s_Uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
 	s_Uniforms["shininess"]         = shaderMain->GetUniformLocationMaterialShininess();
 
-	shaderMain->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
+	shaderMain->setMat4("view", scene->GetCamera()->GetViewMatrix());
 	shaderMain->setMat4("projection", projectionMatrix);
 	shaderMain->setVec3("eyePosition", glm::vec3(scene->GetCamera()->GetPosition().x, scene->GetCamera()->GetPosition().y, scene->GetCamera()->GetPosition().z));
 	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
@@ -163,7 +163,7 @@ void RendererPBR::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 project
 	s_Uniforms["farPlane"]          = shaderWater->GetUniformLocation("farPlane");
 
 	shaderWater->setMat4("model",      glm::mat4(1.0f));
-	shaderWater->setMat4("view",       scene->GetCameraController()->CalculateViewMatrix());
+	shaderWater->setMat4("view",       scene->GetCamera()->GetViewMatrix());
 	shaderWater->setMat4("projection", projectionMatrix);
 
 	scene->GetWaterManager()->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["depth"]);
@@ -195,7 +195,7 @@ void RendererPBR::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 project
 	s_Uniforms["camPos"]     = shaderPBR->GetUniformLocation("camPos");
 	shaderPBR->setMat4("model", glm::mat4(1.0f));
 	shaderPBR->setMat4("projection", projectionMatrix);
-	shaderPBR->setMat4("view", scene->GetCameraController()->CalculateViewMatrix());
+	shaderPBR->setMat4("view", scene->GetCamera()->GetViewMatrix());
 	shaderPBR->setVec3("camPos", scene->GetCamera()->GetPosition());
 
 	DisableCulling();

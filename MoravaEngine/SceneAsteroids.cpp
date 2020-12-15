@@ -144,13 +144,13 @@ void SceneAsteroids::Render(Window* mainWindow, glm::mat4 projectionMatrix, std:
 	{
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		modelMatrix = glm::rotate(modelMatrix, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		GetSkybox()->Draw(modelMatrix, m_CameraController->CalculateViewMatrix(), projectionMatrix);
+		GetSkybox()->Draw(modelMatrix, m_Camera->GetViewMatrix(), projectionMatrix);
 	}
 
 	// configure transformation matrices
 	m_ShaderPlanet->Bind();
 	m_ShaderPlanet->setMat4("projection", projectionMatrix);
-	m_ShaderPlanet->setMat4("view", m_CameraController->CalculateViewMatrix());
+	m_ShaderPlanet->setMat4("view", m_Camera->GetViewMatrix());
 
 	// draw planet
 	glm::mat4 model = glm::mat4(1.0f);
@@ -163,7 +163,7 @@ void SceneAsteroids::Render(Window* mainWindow, glm::mat4 projectionMatrix, std:
 	// draw meteorites
 	m_ShaderAsteroids->Bind();
 	m_ShaderAsteroids->setMat4("projection", projectionMatrix);
-	m_ShaderAsteroids->setMat4("view", m_CameraController->CalculateViewMatrix());
+	m_ShaderAsteroids->setMat4("view", m_Camera->GetViewMatrix());
 	m_ShaderAsteroids->setInt("texture_diffuse1", 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, models["rock"]->GetTextures()[0].id); // note: we also made the textures_loaded vector public (instead of private) from the model class.

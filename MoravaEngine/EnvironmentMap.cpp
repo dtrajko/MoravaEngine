@@ -49,9 +49,10 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 
     SetSkybox(m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap);
 
-    m_EditorCamera = Hazel::EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
-    m_RuntimeCamera = RuntimeCamera(30.0f, 1.778f, 0.1f, 1000.0f);
-    m_ActiveCamera = &m_RuntimeCamera; // &m_EditorCamera;
+    m_EditorCamera = new Hazel::EditorCamera(45.0f, 1.778f, 0.1f, 1000.0f);
+    m_RuntimeCamera = new RuntimeCamera(scene->GetSettings().cameraPosition, scene->GetSettings().cameraStartYaw, scene->GetSettings().cameraStartPitch, 
+        45.0f, 1.778f, scene->GetSettings().cameraMoveSpeed, 0.1f);
+    m_ActiveCamera = m_RuntimeCamera; // m_RuntimeCamera m_EditorCamera;
 
     Init(); // requires a valid Camera reference
 
@@ -141,11 +142,11 @@ void EnvironmentMap::SetupContextData()
     auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
-    m_EditorCamera.SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
-    m_RuntimeCamera.SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
+    m_EditorCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
+    m_RuntimeCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
 
-    m_EditorCamera.SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
-    m_RuntimeCamera.SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
+    m_EditorCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
+    m_RuntimeCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 
     m_CameraEntity.AddComponent<Hazel::CameraComponent>(m_ActiveCamera);
 
@@ -356,6 +357,9 @@ EnvironmentMap::~EnvironmentMap()
     m_EnvMapMaterials.clear();
 
     delete m_SceneRenderer;
+
+    delete m_RuntimeCamera;
+    delete m_EditorCamera;
 }
 
 Hazel::Entity EnvironmentMap::CreateEntity(const std::string& name)
@@ -383,16 +387,18 @@ void EnvironmentMap::OnUpdateEditor(Scene* scene, float timestep)
         mesh->OnUpdate(timestep, false);
     }
 
-    m_EditorCamera.OnUpdate(timestep);
-    m_RuntimeCamera.OnUpdate(timestep);
+    m_EditorCamera->OnUpdate(timestep);
+    m_RuntimeCamera->OnUpdate(timestep);
 
     Scene::s_ImGuizmoTransform = m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
 
     m_ViewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
-    m_EditorCamera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-    m_RuntimeCamera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+    if (m_ViewportWidth > 0.0f && m_ViewportHeight > 0.0f) {
+        m_EditorCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+        m_RuntimeCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+    }
 }
 
 void EnvironmentMap::OnUpdateRuntime(Scene* scene, float timestep)
@@ -417,13 +423,14 @@ void EnvironmentMap::OnUpdateRuntime(Scene* scene, float timestep)
     m_ViewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
-    m_SceneRenderer->s_Data.SceneData.SceneCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+    if (m_ViewportWidth > 0.0f && m_ViewportHeight > 0.0f) {
+        m_EditorCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+        m_RuntimeCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+    }
 }
 
 void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
 {
-    // CameraController* cameraController = ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCameraController();
-
     // BEGIN ImGuizmo
 
     // ImGizmo switching modes
@@ -668,23 +675,35 @@ void EnvironmentMap::OnImGuiRender()
 
     ImGui::Begin("Camera");
     {
-        if (ImGui::CollapsingHeader("Display Info"))
+        if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
         {
             char buffer[100];
-            sprintf(buffer, "Pitch      %.2f", m_ActiveCamera->GetPitch());
+            sprintf(buffer, "Pitch         %.2f", m_ActiveCamera->GetPitch());
             ImGui::Text(buffer);
-            sprintf(buffer, "Yaw        %.2f", m_ActiveCamera->GetYaw());
+            sprintf(buffer, "Yaw           %.2f", m_ActiveCamera->GetYaw());
             ImGui::Text(buffer);
-            sprintf(buffer, "Position   X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetPosition().x, m_ActiveCamera->GetPosition().y, m_ActiveCamera->GetPosition().z);
+            sprintf(buffer, "FOV           %.2f", glm::degrees(m_ActiveCamera->GetPerspectiveVerticalFOV()));
             ImGui::Text(buffer);
-            sprintf(buffer, "Direction  X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetDirection().x, m_ActiveCamera->GetDirection().y, m_ActiveCamera->GetDirection().z);
+            sprintf(buffer, "Aspect Ratio  %.2f", glm::degrees(m_ActiveCamera->GetAspectRatio()));
             ImGui::Text(buffer);
-            sprintf(buffer, "Front      X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetFront().x, m_ActiveCamera->GetFront().y, m_ActiveCamera->GetFront().z);
+            sprintf(buffer, "Position    X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetPosition().x, m_ActiveCamera->GetPosition().y, m_ActiveCamera->GetPosition().z);
             ImGui::Text(buffer);
-            sprintf(buffer, "Up         X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetUp().x, m_ActiveCamera->GetUp().y, m_ActiveCamera->GetUp().z);
+            sprintf(buffer, "Direction   X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetDirection().x, m_ActiveCamera->GetDirection().y, m_ActiveCamera->GetDirection().z);
             ImGui::Text(buffer);
-            sprintf(buffer, "Right      X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetRight().x, m_ActiveCamera->GetRight().y, m_ActiveCamera->GetRight().z);
+            sprintf(buffer, "Front       X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetFront().x, m_ActiveCamera->GetFront().y, m_ActiveCamera->GetFront().z);
             ImGui::Text(buffer);
+            sprintf(buffer, "Up          X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetUp().x, m_ActiveCamera->GetUp().y, m_ActiveCamera->GetUp().z);
+            ImGui::Text(buffer);
+            sprintf(buffer, "Right       X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetRight().x, m_ActiveCamera->GetRight().y, m_ActiveCamera->GetRight().z);
+            ImGui::Text(buffer);
+
+            ImGui::Text("Camera Type: ");
+            ImGui::SameLine();
+            const char* label = m_ActiveCamera == m_EditorCamera ? "Editor Camera" : "Runtime Camera";
+            if (ImGui::Button(label))
+            {
+                m_ActiveCamera = m_ActiveCamera == m_EditorCamera ? (Hazel::HazelCamera*)m_RuntimeCamera : (Hazel::HazelCamera*)m_EditorCamera;
+            }
         }
     }
     ImGui::End();
@@ -716,7 +735,7 @@ void EnvironmentMap::OnImGuiRender()
                 ImGuiWrapper::Property("Light Direction", light.Direction);
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
-                ImGuiWrapper::Property("Exposure", m_EditorCamera.GetExposure(), 0.0f, 40.0f);
+                ImGuiWrapper::Property("Exposure", m_ActiveCamera->GetExposure(), 0.0f, 40.0f);
                 ImGuiWrapper::Property("Skybox Exposure Factor", m_SkyboxExposureFactor, 0.0f, 10.0f);
                 ImGuiWrapper::Property("Radiance Prefiltering", m_RadiancePrefilter);
                 ImGuiWrapper::Property("Env Map Rotation", m_EnvMapRotation, -360.0f, 360.0f);
@@ -1128,8 +1147,8 @@ void EnvironmentMap::OnEvent(Event& e)
         // ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->OnEvent(e);
     }
 
-    m_EditorCamera.OnEvent(e);
-    m_RuntimeCamera.OnEvent(e);
+    m_EditorCamera->OnEvent(e);
+    m_RuntimeCamera->OnEvent(e);
 
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EnvironmentMap::OnKeyPressedEvent));

@@ -46,7 +46,7 @@ void WindowsWindow::Init(const WindowProps& props)
 	yChange = 0.0f;
 	xChangeReset = 0.0f;
 	yChangeReset = 0.0f;
-	m_CursorIgnoreLimit = 2.0f;
+	m_CursorIgnoreLimit = 5.0f;
 
 	for (size_t i = 0; i < 1024; i++) {
 		keys[i] = false;

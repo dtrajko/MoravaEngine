@@ -9,7 +9,7 @@ class CameraControllerVoxelTerrain : public CameraController
 
 public:
 	CameraControllerVoxelTerrain();
-	CameraControllerVoxelTerrain(Camera* camera, Player* player, float aspectRatio, float moveSpeed, float turnSpeed, float cameraPlayerDistance);
+	CameraControllerVoxelTerrain(Hazel::HazelCamera* camera, Player* player, float aspectRatio, float moveSpeed, float turnSpeed, float cameraPlayerDistance);
 	~CameraControllerVoxelTerrain();
 
 	virtual void KeyControl(bool* keys, float deltaTime) override;
@@ -17,10 +17,8 @@ public:
 	virtual void MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset) override;
 	virtual void Update() override;
 	void InvertPitch();
-	glm::mat4 CalculateViewMatrix();
 
 private:
-	void CalculateFront();
 	void UpdateDebugInfo();
 
 	// ThinMatrix methods for 3rd person camera
@@ -39,7 +37,6 @@ private:
 
 	float m_PitchChangeSpeed;
 	float m_YawChangeSpeed;
-	float m_ZoomLevel;
 
 	// KeyControl
 	bool* m_Keys;

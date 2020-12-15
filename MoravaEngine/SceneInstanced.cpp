@@ -100,7 +100,7 @@ void SceneInstanced::Render(Window* mainWindow, glm::mat4 projectionMatrix, std:
 	m_ShaderInstanced->Bind();
 
 	m_ShaderInstanced->setMat4("projection", projectionMatrix);
-	m_ShaderInstanced->setMat4("view", m_CameraController->CalculateViewMatrix());
+	m_ShaderInstanced->setMat4("view", m_Camera->GetViewMatrix());
 	m_ShaderInstanced->setMat4("model", glm::mat4(1.0f));
 
 	glBindVertexArray(quadVAO);

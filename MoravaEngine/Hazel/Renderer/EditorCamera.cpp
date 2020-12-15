@@ -8,15 +8,26 @@
 namespace Hazel {
 
 	EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
-		: m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip), HazelCamera(glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip))
+		: HazelCamera(glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip))
 	{
+		m_PerspectiveFOV = glm::radians(fov);
+		m_PerspectiveNear = nearClip;
+		m_PerspectiveFar = farClip;
+		m_AspectRatio = aspectRatio;
+
+		m_OrthographicNear = nearClip;
+		m_OrthographicFar = farClip;
+
+		m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+		m_Front = glm::vec3(0.0f, 0.0f, -1.0f);
+
 		UpdateView();
 	}
 
 	void EditorCamera::UpdateProjection()
 	{
 		m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
-		m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
+		m_ProjectionMatrix = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
 	}
 
 	void EditorCamera::UpdateView()
@@ -72,6 +83,9 @@ namespace Hazel {
 				MouseZoom(delta.y);
 			}
 		}
+
+		m_Right = glm::normalize(glm::cross(m_Front, m_WorldUp));
+		m_Up = glm::normalize(glm::cross(m_Right, m_Front));
 
 		UpdateView();
 	}

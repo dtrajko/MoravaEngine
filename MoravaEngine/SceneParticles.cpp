@@ -125,7 +125,7 @@ void SceneParticles::Render(Window* mainWindow, glm::mat4 projectionMatrix, std:
         // render skybox (render as last to prevent overdraw)
         m_ShaderBackground->Bind();
         m_ShaderBackground->setMat4("projection", projectionMatrix);
-        m_ShaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
+        m_ShaderBackground->setMat4("view", m_Camera->GetViewMatrix());
         m_ShaderBackground->setMat4("model", glm::mat4(1.0f));
         m_ShaderBackground->setInt("environmentMap", 0);
         m_ShaderBackground->setFloat("u_TextureLOD", 0.0f);
@@ -140,7 +140,7 @@ void SceneParticles::Render(Window* mainWindow, glm::mat4 projectionMatrix, std:
 
     m_ShaderFBScene->Bind();
     m_ShaderFBScene->setMat4("projection", projectionMatrix);
-    m_ShaderFBScene->setMat4("view", m_CameraController->CalculateViewMatrix());
+    m_ShaderFBScene->setMat4("view", m_Camera->GetViewMatrix());
 
     textures["water"]->Bind(0);
     m_ShaderFBScene->setInt("texture1", 0);

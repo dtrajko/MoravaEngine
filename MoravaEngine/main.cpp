@@ -249,20 +249,12 @@ int main()
 	{
 		Timer::Get()->Update();
 
-		scene->GetCameraController()->KeyControl(Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime());
-		scene->GetCameraController()->MouseControl(
-			Application::Get()->GetWindow()->getMouseButtons(),
-			Application::Get()->GetWindow()->getXChange(),
-			Application::Get()->GetWindow()->getYChange());
-		scene->GetCameraController()->MouseScrollControl(
-			Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime(),
-			Application::Get()->GetWindow()->getXMouseScrollOffset(),
-			Application::Get()->GetWindow()->getYMouseScrollOffset());
+		scene->GetCameraController()->Update();
 
 		MousePicker::Get()->Update(
 			(int)Application::Get()->GetWindow()->GetMouseX(), (int)Application::Get()->GetWindow()->GetMouseY(),
 			0, 0, (int)Application::Get()->GetWindow()->GetWidth(), (int)Application::Get()->GetWindow()->GetHeight(),
-			RendererBasic::GetProjectionMatrix(), scene->GetCameraController()->CalculateViewMatrix());
+			RendererBasic::GetProjectionMatrix(), scene->GetCamera()->GetViewMatrix());
 
 		if (Input::IsKeyPressed(Key::F))
 		{

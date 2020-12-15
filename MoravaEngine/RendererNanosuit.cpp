@@ -79,7 +79,7 @@ void RendererNanosuit::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 pr
 	shaderNanosuit->setInt("material.normalMap",   nanosuitUniforms->material.m_NormalMap);
 	shaderNanosuit->setFloat("material.shininess", nanosuitUniforms->material.m_Shininess);
 
-	glm::mat4 view = scene->GetCameraController()->CalculateViewMatrix();
+	glm::mat4 view = scene->GetCamera()->GetViewMatrix();
 
 	// configure transformation matrices
 	shaderNanosuit->setMat4("projection", projectionMatrix);

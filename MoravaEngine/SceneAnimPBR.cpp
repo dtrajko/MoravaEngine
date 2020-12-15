@@ -382,7 +382,7 @@ void SceneAnimPBR::Update(float timestep, Window* mainWindow)
         m_ShaderHybridAnimPBR->setVec3(uniformName, m_LightColor);
     }
 
-    m_ShaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
+    m_ShaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_Camera->GetViewMatrix());
     m_ShaderHybridAnimPBR->setVec3("u_CameraPosition", m_Camera->GetPosition());
     m_ShaderHybridAnimPBR->setFloat("u_TilingFactor", 1.0f);
 
@@ -433,7 +433,7 @@ void SceneAnimPBR::CheckIntersection(Window* mainWindow)
     MousePicker::Get()->Update(
         (int)mainWindow->GetMouseX(), (int)mainWindow->GetMouseY(),
         m_ImGuiViewport.X, m_ImGuiViewport.Y, m_ImGuiViewport.Width, m_ImGuiViewport.Height,
-        RendererBasic::GetProjectionMatrix(), m_CameraController->CalculateViewMatrix());
+        RendererBasic::GetProjectionMatrix(), m_Camera->GetViewMatrix());
 
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
@@ -775,7 +775,7 @@ void SceneAnimPBR::UpdateImGuizmo(Window* mainWindow)
 
         if (m_Transform_ImGuizmo != nullptr) {
             ImGuizmo::Manipulate(
-                glm::value_ptr(m_CameraController->CalculateViewMatrix()),
+                glm::value_ptr(m_Camera->GetViewMatrix()),
                 glm::value_ptr(RendererBasic::GetProjectionMatrix()),
                 (ImGuizmo::OPERATION)m_ImGuizmoType, ImGuizmo::LOCAL, glm::value_ptr(*m_Transform_ImGuizmo));
         }
@@ -916,7 +916,7 @@ void SceneAnimPBR::SetupUniforms()
     m_ShaderMain->Bind();
 
     m_ShaderMain->setMat4("model", glm::mat4(1.0f));
-    m_ShaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
+    m_ShaderMain->setMat4("view", m_Camera->GetViewMatrix());
     m_ShaderMain->setMat4("projection", RendererBasic::GetProjectionMatrix());
     m_ShaderMain->setVec3("eyePosition", m_Camera->GetPosition());
 
@@ -978,7 +978,7 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
         // model = glm::rotate(model, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
         m_ShaderBackground->setMat4("model", model);
         m_ShaderBackground->setMat4("projection", projectionMatrix);
-        m_ShaderBackground->setMat4("view", m_CameraController->CalculateViewMatrix());
+        m_ShaderBackground->setMat4("view", m_Camera->GetViewMatrix());
 
         m_MaterialWorkflowPBR->BindEnvironmentCubemap(0);
         // m_MaterialWorkflowPBR->BindIrradianceMap(0); // display irradiance map
@@ -1071,7 +1071,7 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 
     m_ShaderBasic->Bind();
     m_ShaderBasic->setMat4("projection", projectionMatrix);
-    m_ShaderBasic->setMat4("view", m_CameraController->CalculateViewMatrix());
+    m_ShaderBasic->setMat4("view", m_Camera->GetViewMatrix());
 
     RendererBasic::SetLineThickness(4.0f);
     RendererBasic::EnableMSAA();

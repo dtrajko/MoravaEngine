@@ -96,8 +96,8 @@ private:
 	void RenderHazelGrid();
 
 public:
-	Hazel::EditorCamera m_EditorCamera;
-	RuntimeCamera m_RuntimeCamera;
+	Hazel::EditorCamera* m_EditorCamera;
+	RuntimeCamera* m_RuntimeCamera;
 	Hazel::HazelCamera* m_ActiveCamera;
 
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;

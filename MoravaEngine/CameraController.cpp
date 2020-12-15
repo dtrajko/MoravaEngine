@@ -17,21 +17,17 @@
 CameraController::CameraController()
 {
 	m_Camera = new Camera(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f);
-	m_AspectRatio = 16 / 9.0f;
+	m_Camera->SetAspectRatio(16 / 9.0f);
 	m_MoveSpeed = 2.0f;
 	m_TurnSpeed = 0.1f;
-
-	Update();
 }
 
-CameraController::CameraController(Camera* camera, float aspectRatio, float moveSpeed, float turnSpeed)
+CameraController::CameraController(Hazel::HazelCamera* camera, float aspectRatio, float moveSpeed, float turnSpeed)
 {
 	m_Camera = camera;
-	m_AspectRatio = aspectRatio;
+	m_Camera->SetAspectRatio(aspectRatio);
 	m_MoveSpeed = moveSpeed;
 	m_TurnSpeed = turnSpeed;
-
-	Update();
 }
 
 void CameraController::KeyControl(bool* keys, float deltaTime)
@@ -84,8 +80,6 @@ void CameraController::MouseControl(bool* buttons, float xChange, float yChange)
 	{
 		m_Camera->SetYaw(m_Camera->GetYaw() + xChange * m_TurnSpeed);
 		m_Camera->SetPitch(m_Camera->GetPitch() - yChange * m_TurnSpeed);
-
-		Update();
 	}
 }
 
@@ -106,35 +100,35 @@ void CameraController::MouseScrollControl(bool* keys, float deltaTime, float xOf
 
 void CameraController::Update()
 {
+	KeyControl(Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime());
+
+	MouseControl(
+		Application::Get()->GetWindow()->getMouseButtons(),
+		Application::Get()->GetWindow()->getXChange(),
+		Application::Get()->GetWindow()->getYChange());
+
+	MouseScrollControl(
+		Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime(),
+		Application::Get()->GetWindow()->getXMouseScrollOffset(),
+		Application::Get()->GetWindow()->getYMouseScrollOffset());
+
 	CalculateFront();
-	m_Camera->Update();
 }
 
 void CameraController::OnEvent(Event& e)
 {
-	m_Camera->OnEvent(e);
 }
 
 void CameraController::InvertPitch()
 {
 	float pitch = m_Camera->GetPitch();
 	m_Camera->SetPitch(-pitch);
-	Update();
-}
-
-glm::mat4 CameraController::CalculateViewMatrix()
-{
-	glm::vec3 position = m_Camera->GetPosition();
-	glm::vec3 front = m_Camera->GetFront();
-	glm::vec3 up = m_Camera->GetUp();
-	glm::mat4 viewMatrix = glm::lookAt(position, position + glm::normalize(front), up);
-	return viewMatrix;
 }
 
 void CameraController::OnResize(uint32_t width, uint32_t height)
 {
 	// TODO (void Hazel::OrthographicCameraController::OnResize(float width, float height))
-	m_AspectRatio = (float)width / (float)height;
+	m_Camera->SetAspectRatio((float)width / (float)height);
 }
 
 void CameraController::CalculateFront()

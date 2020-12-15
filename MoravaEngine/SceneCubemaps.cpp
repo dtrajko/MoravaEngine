@@ -175,16 +175,16 @@ void SceneCubemaps::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
     mp->GetPointOnRay(m_Camera->GetPosition(), mp->GetCurrentRay(), mp->m_RayRange);
     m_Raycast->m_Hit = mp->m_Hit;
     m_Raycast->Draw(mp->m_RayStartPoint + m_Camera->GetFront() * 0.1f, mp->GetCurrentRay() * mp->m_RayRange, m_Raycast->m_Color,
-        m_ShaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
+        m_ShaderBasic, projectionMatrix, m_Camera->GetViewMatrix());
 
     m_ShaderCubemaps->Bind();
     m_ShaderCubemaps->setMat4("projection", projectionMatrix);
-    m_ShaderCubemaps->setMat4("view", m_CameraController->CalculateViewMatrix());
+    m_ShaderCubemaps->setMat4("view", m_Camera->GetViewMatrix());
     m_ShaderCubemaps->setVec3("cameraPos", m_Camera->GetPosition());
 
     m_ShaderCubemapsNanosuit->Bind();
     m_ShaderCubemapsNanosuit->setMat4("projection", projectionMatrix);
-    m_ShaderCubemapsNanosuit->setMat4("view", m_CameraController->CalculateViewMatrix());
+    m_ShaderCubemapsNanosuit->setMat4("view", m_Camera->GetViewMatrix());
     m_ShaderCubemapsNanosuit->setVec3("cameraPos", m_Camera->GetPosition());
 
     glm::mat4 model = glm::mat4(1.0f);
@@ -244,14 +244,14 @@ void SceneCubemaps::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
 
     m_ShaderBasic->Bind();
     m_ShaderBasic->setMat4("model", glm::mat4(1.0f));
-    m_ShaderBasic->setMat4("view", m_CameraController->CalculateViewMatrix());
+    m_ShaderBasic->setMat4("view", m_Camera->GetViewMatrix());
     m_ShaderBasic->setMat4("projection", projectionMatrix);
 
     if (m_AABBEnabled)
         m_CubeAABB->Draw();
 
-    m_PivotCube->Draw(m_ShaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
-    m_PivotScene->Draw(m_ShaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
+    m_PivotCube->Draw(m_ShaderBasic, projectionMatrix, m_Camera->GetViewMatrix());
+    m_PivotScene->Draw(m_ShaderBasic, projectionMatrix, m_Camera->GetViewMatrix());
 
     // Draw the Nanosuit model
     m_ShaderCubemapsNanosuit->Bind();
@@ -267,7 +267,7 @@ void SceneCubemaps::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
 
     m_ShaderFramebuffersScene->Bind();
     m_ShaderFramebuffersScene->setMat4("projection", projectionMatrix);
-    m_ShaderFramebuffersScene->setMat4("view", m_CameraController->CalculateViewMatrix());
+    m_ShaderFramebuffersScene->setMat4("view", m_Camera->GetViewMatrix());
 
     /* Floor */
     model = glm::mat4(1.0f);
@@ -292,7 +292,7 @@ void SceneCubemaps::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
     // draw skybox as last
     glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth buffer's content
     m_ShaderSkybox->Bind();
-    m_ShaderSkybox->setMat4("view", glm::mat4(glm::mat3(m_CameraController->CalculateViewMatrix()))); // remove translation from the view matrix
+    m_ShaderSkybox->setMat4("view", glm::mat4(glm::mat3(m_Camera->GetViewMatrix()))); // remove translation from the view matrix
     m_ShaderSkybox->setMat4("projection", projectionMatrix);
 
     // skybox cube

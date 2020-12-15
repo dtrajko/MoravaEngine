@@ -728,7 +728,7 @@ void SceneVoxelTerrainSL::Render(Window* mainWindow, glm::mat4 projectionMatrix,
         if (m_DrawGizmos) {
             shaderBasic->Bind();
             shaderBasic->setMat4("model", glm::mat4(1.0f));
-            m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
+            m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->GetViewMatrix());
         }
 
         shaderMain->Bind();
@@ -738,7 +738,7 @@ void SceneVoxelTerrainSL::Render(Window* mainWindow, glm::mat4 projectionMatrix,
     /**** BEGIN render Player ****/
     shaderMain->Bind();
     shaderMain->setMat4("projection", projectionMatrix);
-    shaderMain->setMat4("view", m_CameraController->CalculateViewMatrix());
+    shaderMain->setMat4("view", m_Camera->GetViewMatrix());
     shaderMain->setInt("albedoMap", 0);
     shaderMain->setVec4("tintColor", m_Player->GetColor());
 
@@ -766,7 +766,7 @@ void SceneVoxelTerrainSL::Render(Window* mainWindow, glm::mat4 projectionMatrix,
     tintColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     shaderRenderInstanced->setMat4("projection", projectionMatrix);
-    shaderRenderInstanced->setMat4("view", m_CameraController->CalculateViewMatrix());
+    shaderRenderInstanced->setMat4("view", m_Camera->GetViewMatrix());
     shaderRenderInstanced->setInt("albedoMap", 0);
     shaderRenderInstanced->setVec4("tintColor", tintColor);
 

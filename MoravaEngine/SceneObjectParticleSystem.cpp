@@ -21,11 +21,14 @@ SceneObjectParticleSystem::SceneObjectParticleSystem()
 
     m_MaxInstances = 10000;
     m_Master = new ParticleMaster();
+
+    m_Camera = nullptr;
     m_CameraController = nullptr;
 }
 
-SceneObjectParticleSystem::SceneObjectParticleSystem(bool instancedRendering, int maxInstances, CameraController* cameraController) : SceneObject()
+SceneObjectParticleSystem::SceneObjectParticleSystem(bool instancedRendering, int maxInstances, Hazel::HazelCamera* camera, CameraController* cameraController) : SceneObject()
 {
+    m_Camera = camera;
     m_CameraController = cameraController;
 
     m_Settings.textureName = "particle_atlas";
@@ -77,7 +80,7 @@ void SceneObjectParticleSystem::Update(bool enabled, std::map<std::string, float
 
 void SceneObjectParticleSystem::Render()
 {
-    glm::mat4 viewMatrix = m_CameraController->CalculateViewMatrix();
+    glm::mat4 viewMatrix = m_Camera->GetViewMatrix();
     m_Master->Render(viewMatrix);
 }
 

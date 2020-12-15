@@ -228,7 +228,7 @@ namespace Hazel {
 	template<>
 	void HazelScene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
 	{
-		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		component.Camera.SetViewportSize((float)m_ViewportWidth, (float)m_ViewportHeight);
 	}
 
 	template<>

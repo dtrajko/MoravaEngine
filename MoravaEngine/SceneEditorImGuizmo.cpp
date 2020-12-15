@@ -1366,7 +1366,7 @@ void SceneEditorImGuizmo::UpdateImGuizmo(Window* mainWindow)
 
         if (m_Transform_ImGuizmo != nullptr) {
             ImGuizmo::Manipulate(
-                glm::value_ptr(m_CameraController->CalculateViewMatrix()),
+                glm::value_ptr(m_Camera->GetViewMatrix()),
                 glm::value_ptr(RendererBasic::GetProjectionMatrix()),
                 (ImGuizmo::OPERATION)m_ImGizmoType, ImGuizmo::WORLD, glm::value_ptr(*m_Transform_ImGuizmo));
         }
@@ -1532,7 +1532,7 @@ void SceneEditorImGuizmo::Update(float timestep, Window* mainWindow)
     MousePicker::Get()->Update(
         (int)mainWindow->GetMouseX(), (int)mainWindow->GetMouseY(),
         viewportX, viewportY, viewportWidth, viewportHeight,
-        RendererBasic::GetProjectionMatrix(), m_CameraController->CalculateViewMatrix());
+        RendererBasic::GetProjectionMatrix(), m_Camera->GetViewMatrix());
 
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
@@ -2104,7 +2104,7 @@ Model* SceneEditorImGuizmo::AddNewModel(int modelID, glm::vec3 scale)
 
 SceneObjectParticleSystem* SceneEditorImGuizmo::AddNewSceneObjectParticleSystem(int objectTypeID, glm::vec3 scale)
 {
-    SceneObjectParticleSystem* particle_system = new SceneObjectParticleSystem(true, m_MaxInstances, m_CameraController);
+    SceneObjectParticleSystem* particle_system = new SceneObjectParticleSystem(true, m_MaxInstances, m_Camera, m_CameraController);
     m_ParticleSettingsEdit = particle_system->GetSettings();
     m_ParticleSettingsPrev = m_ParticleSettingsEdit;
 
@@ -2183,7 +2183,7 @@ void SceneEditorImGuizmo::SetUniformsShaderSkinning(Shader* shaderSkinning, Scen
     SkinnedMesh* skinnedMesh = (SkinnedMesh*)sceneObject->mesh;
     skinnedMesh->BoneTransform(runningTime, m_SkinningTransforms[sceneObject->name]);
     shaderSkinning->setMat4("model", sceneObject->transform);
-    shaderSkinning->setMat4("view", m_CameraController->CalculateViewMatrix());
+    shaderSkinning->setMat4("view", m_Camera->GetViewMatrix());
     shaderSkinning->setInt("gColorMap", 0);
     shaderSkinning->setVec3("gEyeWorldPos", m_Camera->GetPosition());
     shaderSkinning->setFloat("gMatSpecularIntensity", ResourceManager::s_MaterialSpecular);
@@ -2212,7 +2212,7 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAni
     shaderHybridAnimPBR->setInt("u_PrefilterMap",     m_SamplerSlots["prefilter"]);
     shaderHybridAnimPBR->setInt("u_BRDFLUT",          m_SamplerSlots["BRDF_LUT"]);
 
-    shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_CameraController->CalculateViewMatrix());
+    shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_Camera->GetViewMatrix());
     shaderHybridAnimPBR->setVec3("u_CameraPosition", m_Camera->GetPosition());
 
     Material* baseMaterial = ResourceManager::HotLoadMaterial(sceneObject->materialName);
@@ -2279,7 +2279,7 @@ void SceneEditorImGuizmo::SetUniformsShaderWater(Shader* shaderWater, SceneObjec
     shaderWater->setInt("depthMap",          4);
 
     shaderWater->setMat4("model",          sceneObject->transform);
-    shaderWater->setMat4("view",           m_CameraController->CalculateViewMatrix());
+    shaderWater->setMat4("view",           m_Camera->GetViewMatrix());
     shaderWater->setMat4("projection",     projectionMatrix);
     shaderWater->setVec3("lightPosition",  -(LightManager::directionalLight.GetDirection()));
     shaderWater->setVec3("cameraPosition", m_Camera->GetPosition());
@@ -2548,12 +2548,12 @@ void SceneEditorImGuizmo::RenderLineElements(Shader* shaderBasic, glm::mat4 proj
 
         if (drawAABB) {
             m_SceneObjects[m_SelectedIndex]->GetAABB()->Draw();
-            m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
+            m_SceneObjects[m_SelectedIndex]->pivot->Draw(shaderBasic, projectionMatrix, m_Camera->GetViewMatrix());
         }
     }
 
-    m_Grid->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
-    m_PivotScene->Draw(shaderBasic, projectionMatrix, m_CameraController->CalculateViewMatrix());
+    m_Grid->Draw(shaderBasic, projectionMatrix, m_Camera->GetViewMatrix());
+    m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->GetViewMatrix());
 }
 
 void SceneEditorImGuizmo::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,

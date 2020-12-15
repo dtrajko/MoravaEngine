@@ -3,7 +3,6 @@
 #include "Hazel/Renderer/HazelCamera.h"
 #include "Hazel/Core/Timestep.h"
 
-#include "Camera.h"
 #include "CameraController.h"
 
 
@@ -14,19 +13,24 @@ class RuntimeCamera : public Hazel::HazelCamera
 {
 public:
 	RuntimeCamera();
-	RuntimeCamera(float fov, float aspectRatio, float nearClip, float farClip);
+	RuntimeCamera(glm::vec3 position, float yaw, float pitch, float fovDegrees, float aspectRatio, float moveSpeed, float turnSpeed);
+	~RuntimeCamera();
 
 	void OnUpdate(Hazel::Timestep ts);
 	void OnEvent(Event& e);
 
 	virtual void SetViewportSize(float width, float height) override;
-
-	const glm::mat4& GetViewMatrix() { return m_CameraController.CalculateViewMatrix(); }
-	virtual glm::mat4 GetViewProjection() override { return m_ProjectionMatrix * m_CameraController.CalculateViewMatrix(); }
+	virtual void SetPitch(float pitch) override;
+	virtual glm::mat4& GetViewMatrix() override;
+	virtual glm::mat4 GetViewProjection() override { return m_ProjectionMatrix * m_ViewMatrix; }
 
 	inline float& GetExposure() { return m_Exposure; }
 
-public:
-	CameraController m_CameraController;
+private:
+	void UpdateProjection();
+	void UpdateView();
+
+private:
+	CameraController* m_CameraController;
 
 };

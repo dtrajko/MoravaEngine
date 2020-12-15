@@ -1,5 +1,9 @@
 #pragma once
 
+#include "../Events/Event.h"
+#include "../Events/MouseEvent.h"
+#include "../Core/Timestep.h"
+
 #include <glm/glm.hpp>
 
 namespace Hazel {
@@ -13,12 +17,13 @@ namespace Hazel {
 		HazelCamera() = default;
 		HazelCamera(const glm::mat4& projection)
 			: m_ProjectionMatrix(projection) {}
-
 		virtual ~HazelCamera() = default;
 
-		const glm::mat4& GetProjection() const { return m_ProjectionMatrix; }
-
+		virtual void OnUpdate(Timestep ts) {};
+		virtual void OnEvent(Event& e) {};
 		virtual inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; };
+		virtual inline bool OnMouseScroll(MouseScrolledEvent& e) { return false; };
+		virtual inline glm::mat4& GetViewMatrix() { return m_ViewMatrix; }
 
 		ProjectionType GetProjectionType() const { return m_ProjectionType; };
 		void SetProjectionType(ProjectionType type) { m_ProjectionType = type; RecalculateProjection(); }
@@ -38,7 +43,7 @@ namespace Hazel {
 		void SetOrthographicFarClip(float farClip) { m_OrthographicFar = farClip; RecalculateProjection(); }
 
 		// Getters
-		inline const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+		inline const glm::mat4& GetProjection() const { return m_ProjectionMatrix; }
 		inline const glm::vec3& GetPosition() const { return m_Position; }
 		inline virtual glm::mat4 GetViewProjection() { return m_ProjectionMatrix * m_ViewMatrix; }
 		inline float GetPitch() const { return m_Pitch; }
@@ -49,12 +54,15 @@ namespace Hazel {
 		inline glm::vec3 GetRight() const { return m_Right; }
 		inline float& GetExposure() { return m_Exposure; }
 		inline float GetExposure() const { return m_Exposure; }
+		inline float& GetAspectRatio() { return m_AspectRatio; }
 
 		// setters
 		inline void SetPosition(glm::vec3 position) { m_Position = position; };
 		inline void SetFront(glm::vec3 front) { m_Front = front; };
+		inline virtual void SetPitch(float pitch) { m_Pitch = pitch; };
 		inline void SetYaw(float yaw) { m_Yaw = yaw; };
 		inline void SetExposure(float exposure) { m_Exposure = exposure; }
+		inline void SetAspectRatio(float aspectRatio) { m_AspectRatio = aspectRatio; }
 
 	private:
 		virtual void RecalculateProjection();
@@ -73,7 +81,7 @@ namespace Hazel {
 		float m_OrthographicNear = -1000.0f;
 		float m_OrthographicFar = 1000.0f;
 
-		float m_AspectRatio = 1.0f;
+		float m_AspectRatio = 1.778f;
 
 		float m_ViewportWidth = 1280.0f;
 		float m_ViewportHeight = 720.0f;
