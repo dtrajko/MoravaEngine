@@ -32,7 +32,6 @@ namespace Hazel
 		void DrawMeshNode(Mesh* mesh, uint32_t& imguiMeshID);
 		void MeshNodeHierarchy(Mesh* mesh, aiNode* node, const glm::mat4& parentTransform, uint32_t level);
 		void DrawComponents(Entity entity);
-
 		void DrawEntitySubmeshes(Entity entity);
 
 	private:

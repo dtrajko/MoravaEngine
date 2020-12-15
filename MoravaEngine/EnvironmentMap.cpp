@@ -370,6 +370,14 @@ Hazel::Entity EnvironmentMap::CreateEntity(const std::string& name)
     return entity;
 }
 
+void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
+{
+    // CameraSyncECS(); TODO
+
+    OnUpdateEditor(scene, timestep);
+    // OnUpdateRuntime(scene, timestep);
+}
+
 void EnvironmentMap::OnUpdateEditor(Scene* scene, float timestep)
 {
     m_SceneRenderer->s_Data.ActiveScene = scene;
@@ -387,8 +395,7 @@ void EnvironmentMap::OnUpdateEditor(Scene* scene, float timestep)
         mesh->OnUpdate(timestep, false);
     }
 
-    m_EditorCamera->OnUpdate(timestep);
-    m_RuntimeCamera->OnUpdate(timestep);
+    m_ActiveCamera->OnUpdate(timestep);
 
     Scene::s_ImGuizmoTransform = m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
 
@@ -396,8 +403,7 @@ void EnvironmentMap::OnUpdateEditor(Scene* scene, float timestep)
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
     if (m_ViewportWidth > 0.0f && m_ViewportHeight > 0.0f) {
-        m_EditorCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-        m_RuntimeCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+        m_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
     }
 }
 
@@ -424,9 +430,14 @@ void EnvironmentMap::OnUpdateRuntime(Scene* scene, float timestep)
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
     if (m_ViewportWidth > 0.0f && m_ViewportHeight > 0.0f) {
-        m_EditorCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-        m_RuntimeCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+        m_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
     }
+}
+
+void EnvironmentMap::CameraSyncECS()
+{
+    glm::vec3 cameraPosition = m_CameraEntity.GetComponent<Hazel::TransformComponent>().Translation;
+    m_ActiveCamera->SetPosition(cameraPosition);
 }
 
 void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
@@ -478,7 +489,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
 
         float snapValues[3] = { snapValue, snapValue, snapValue };
 
-        if (m_SelectionMode == SelectionMode::Entity)
+        if (m_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
         {
             ImGuizmo::Manipulate(
                 glm::value_ptr(m_ActiveCamera->GetViewMatrix()),
@@ -500,7 +511,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
                 tc.Scale = scale;
             }
         }
-        else if (m_SelectionMode == SelectionMode::SubMesh && selectedSubmesh.Mesh)
+        else if (m_SelectionMode == SelectionMode::SubMesh)
         {
             auto aabb = selectedSubmesh.Mesh->BoundingBox;
 
@@ -624,11 +635,11 @@ void EnvironmentMap::OnImGuiRender()
             auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
             glm::mat4 entityTransform = tc.GetTransform();
 
-            if (m_SelectionMode == SelectionMode::Entity)
+            if (m_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
             {
                 transformImGui = entityTransform;
             }
-            else if (m_SelectionMode == SelectionMode::SubMesh && selectedSubmesh.Mesh)
+            else if (m_SelectionMode == SelectionMode::SubMesh)
             {
                 auto aabb = selectedSubmesh.Mesh->BoundingBox;
 
@@ -655,14 +666,14 @@ void EnvironmentMap::OnImGuiRender()
             {
                 rotationRadians = glm::radians(rotationDegrees);
 
-                if (m_SelectionMode == SelectionMode::Entity)
+                if (m_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
                 {
                     glm::vec3 deltaRotation = rotationRadians - tc.Rotation;
                     tc.Translation = translation;
                     tc.Rotation += deltaRotation;
                     tc.Scale = scale;
                 }
-                else if (m_SelectionMode == SelectionMode::SubMesh && selectedSubmesh.Mesh)
+                else if (m_SelectionMode == SelectionMode::SubMesh)
                 {
                     submeshTransform = glm::inverse(entityTransform) * transformImGui;
                     submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
@@ -1155,8 +1166,7 @@ void EnvironmentMap::OnEvent(Event& e)
         // ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->OnEvent(e);
     }
 
-    m_EditorCamera->OnEvent(e);
-    m_RuntimeCamera->OnEvent(e);
+    m_ActiveCamera->OnEvent(e);
 
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EnvironmentMap::OnKeyPressedEvent));

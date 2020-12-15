@@ -35,8 +35,11 @@ public:
 	EnvironmentMap(const std::string& filepath, Scene* scene);
 	~EnvironmentMap();
 
+	void OnUpdate(Scene* scene, float timestep);
 	void OnUpdateEditor(Scene* scene, float timestep);
 	void OnUpdateRuntime(Scene* scene, float timestep);
+
+	void CameraSyncECS();
 
 	void UpdateImGuizmo(Window* mainWindow);
 	Hazel::Entity CreateEntity(const std::string& name);

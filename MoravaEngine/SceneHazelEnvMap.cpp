@@ -222,8 +222,7 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 {
     m_CurrentTimestamp = timestep;
     float deltaTime = Timer::Get()->GetDeltaTime();
-    m_EnvironmentMap->OnUpdateEditor(this, deltaTime);
-    // m_EnvironmentMap->OnUpdateRuntime(this, deltaTime);
+    m_EnvironmentMap->OnUpdate(this, deltaTime);
 }
 
 void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
