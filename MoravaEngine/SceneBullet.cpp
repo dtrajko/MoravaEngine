@@ -244,6 +244,8 @@ void SceneBullet::BulletSimulation(float timestep)
 
 void SceneBullet::Update(float timestep, Window* mainWindow)
 {
+	m_Camera->OnUpdate(timestep);
+
 	if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_LEFT])
 	{
 		if (timestep - m_LastTimestep > m_FireCooldown)

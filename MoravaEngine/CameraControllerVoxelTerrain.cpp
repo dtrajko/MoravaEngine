@@ -1,6 +1,8 @@
 #include "CameraControllerVoxelTerrain.h"
 
 #include "CommonValues.h"
+#include "Application.h"
+#include "Timer.h"
 
 #include <GLFW/glfw3.h>
 #include <glm/gtc/quaternion.hpp>
@@ -48,6 +50,18 @@ void CameraControllerVoxelTerrain::MouseScrollControl(bool* keys, float deltaTim
 
 void CameraControllerVoxelTerrain::Update()
 {
+	KeyControl(Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime());
+
+	MouseControl(
+		Application::Get()->GetWindow()->getMouseButtons(),
+		Application::Get()->GetWindow()->getXChange(),
+		Application::Get()->GetWindow()->getYChange());
+
+	MouseScrollControl(
+		Application::Get()->GetWindow()->getKeys(), Timer::Get()->GetDeltaTime(),
+		Application::Get()->GetWindow()->getXMouseScrollOffset(),
+		Application::Get()->GetWindow()->getYMouseScrollOffset());
+
 	CalculateZoom(m_yOffset);
 	CalculatePitch(m_Buttons, m_yChange);
 	CalculateAngleAroundPlayer(m_Keys, m_Buttons, m_xChange);

@@ -80,6 +80,7 @@ void SceneSponza::SetupModels()
 
 void SceneSponza::Update(float timestep, Window* mainWindow)
 {
+    m_Camera->OnUpdate(timestep);
 }
 
 void SceneSponza::UpdateImGui(float timestep, Window* mainWindow)

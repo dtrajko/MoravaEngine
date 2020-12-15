@@ -358,6 +358,8 @@ void SceneAnimPBR::SetupFramebuffers()
 
 void SceneAnimPBR::Update(float timestep, Window* mainWindow)
 {
+    m_Camera->OnUpdate(timestep);
+
     m_CurrentTimestamp = timestep;
 
     for (auto& entity : m_Entities)

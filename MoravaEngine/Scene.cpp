@@ -149,6 +149,7 @@ Scene::Scene()
 void Scene::OnWindowResize(WindowResizeEvent& e)
 {
 	m_CameraController->OnResize((uint32_t)e.GetWidth(), (uint32_t)e.GetHeight());
+	m_Camera->SetViewportSize((float)e.GetWidth(), (float)e.GetHeight());
 }
 
 void Scene::SetupTextureSlots()

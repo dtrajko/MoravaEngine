@@ -119,6 +119,7 @@ void SceneAsteroids::SetupModels()
 
 void SceneAsteroids::Update(float timestep, Window* mainWindow)
 {
+	m_Camera->OnUpdate(timestep);
 }
 
 void SceneAsteroids::UpdateImGui(float timestep, Window* mainWindow)

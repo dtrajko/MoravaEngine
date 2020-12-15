@@ -14,16 +14,52 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
 	: Hazel::SceneCamera()
 {
 	m_Position = position;
-	m_WorldUp = up;
 	m_Yaw = yaw;
 	m_Pitch = pitch;
+	m_PerspectiveFOV = glm::radians(45.0f);
+	m_AspectRatio = 1.778f;
+
+	m_WorldUp = up;
 	m_Front = glm::vec3(0.0f, 0.0f, -1.0f);
+
+	UpdateView();
+}
+
+Camera::Camera(glm::vec3 position, float yaw, float pitch, float fovDegrees, float aspectRatio, float moveSpeed, float turnSpeed)
+{
+	m_Position = position;
+	m_Yaw = yaw;
+	m_Pitch = pitch;
+	m_PerspectiveFOV = glm::radians(fovDegrees);
+	m_AspectRatio = aspectRatio;
+
+	m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+	m_Front = glm::vec3(0.0f, 0.0f, -1.0f);
+
+	UpdateView();
+}
+
+Camera::~Camera()
+{
+}
+
+void Camera::UpdateProjection()
+{
+	m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
+	m_ProjectionMatrix = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
+}
+
+void Camera::UpdateView()
+{
+	m_ViewMatrix = glm::lookAt(m_Position, m_Position + glm::normalize(m_Front), m_Up);
 }
 
 void Camera::OnUpdate(Hazel::Timestep ts)
 {
 	m_Right = glm::normalize(glm::cross(m_Front, m_WorldUp));
 	m_Up = glm::normalize(glm::cross(m_Right, m_Front));
+
+	UpdateView();
 }
 
 void Camera::OnEvent(Event& e)
@@ -37,10 +73,12 @@ bool Camera::OnMouseScroll(MouseScrolledEvent& e)
 	return false;
 }
 
-glm::mat4& Camera::GetViewMatrix()
+void Camera::SetViewportSize(float width, float height)
 {
-	m_ViewMatrix = glm::lookAt(m_Position, m_Position + glm::normalize(m_Front), m_Up);
-	return m_ViewMatrix;
+	m_ViewportWidth = width;
+	m_ViewportHeight = height;
+
+	UpdateProjection();
 }
 
 void Camera::SetPitch(float pitch)
@@ -52,6 +90,8 @@ void Camera::SetPitch(float pitch)
 	m_Pitch = pitch;
 }
 
-Camera::~Camera()
+glm::mat4& Camera::GetViewMatrix()
 {
+	m_ViewMatrix = glm::lookAt(m_Position, m_Position + glm::normalize(m_Front), m_Up);
+	return m_ViewMatrix;
 }

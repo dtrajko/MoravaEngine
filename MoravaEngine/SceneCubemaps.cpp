@@ -114,6 +114,7 @@ void SceneCubemaps::SetGeometry()
 
 void SceneCubemaps::Update(float timestep, Window* mainWindow)
 {
+    m_Camera->OnUpdate(timestep);
 }
 
 void SceneCubemaps::UpdateImGui(float timestep, Window* mainWindow)

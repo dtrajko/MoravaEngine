@@ -126,6 +126,7 @@ void SceneOmniShadows::SetupMeshes()
 
 void SceneOmniShadows::Update(float timestep, Window* mainWindow)
 {
+    m_Camera->OnUpdate(timestep);
 }
 
 void SceneOmniShadows::UpdateImGui(float timestep, Window* mainWindow)

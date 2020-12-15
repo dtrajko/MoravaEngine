@@ -154,6 +154,7 @@ void ScenePBR::SetupModels()
 
 void ScenePBR::Update(float timestep, Window* mainWindow)
 {
+	m_Camera->OnUpdate(timestep);
 }
 
 void ScenePBR::UpdateImGui(float timestep, Window* mainWindow)

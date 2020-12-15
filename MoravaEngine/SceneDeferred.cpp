@@ -105,6 +105,8 @@ void SceneDeferred::SetupLights()
 
 void SceneDeferred::Update(float timestep, Window* mainWindow)
 {
+    m_Camera->OnUpdate(timestep);
+
     UpdateCooldown(timestep);
 }
 

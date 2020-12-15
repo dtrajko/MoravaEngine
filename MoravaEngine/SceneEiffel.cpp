@@ -103,6 +103,7 @@ void SceneEiffel::SetupModels()
 
 void SceneEiffel::Update(float timestep, Window* mainWindow)
 {
+	m_Camera->OnUpdate(timestep);
 }
 
 void SceneEiffel::UpdateImGui(float timestep, Window* mainWindow)

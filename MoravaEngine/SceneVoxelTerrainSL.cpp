@@ -104,7 +104,7 @@ SceneVoxelTerrainSL::SceneVoxelTerrainSL()
     m_MapGenConf.heightMapFilePath = "Textures/Noise/heightMap.png";
     m_MapGenConf.colorMapFilePath = "Textures/Noise/colorMap.png";
     m_MapGenConf.drawMode = MapGenerator::DrawMode::Mesh;
-    m_MapGenConf.mapChunkSize = 121;
+    m_MapGenConf.mapChunkSize = 65;
     // m_MapGenConf.mapWidth = 241;
     // m_MapGenConf.mapHeight = 241;
     m_MapGenConf.noiseScale = 25.0f;
@@ -371,7 +371,7 @@ void SceneVoxelTerrainSL::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Debug");
     {
-        if (ImGui::CollapsingHeader("Show Details"))
+        if (ImGui::CollapsingHeader("Show Details", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
         {
             CameraControllerVoxelTerrain* cameraController = (CameraControllerVoxelTerrain*)m_CameraController;
             ImGui::SliderFloat3("Player Position", glm::value_ptr(cameraController->m_DebugPlayerPosition), -200.0f, 200.0f);
@@ -388,7 +388,7 @@ void SceneVoxelTerrainSL::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Ray Casting");
     {
-        if (ImGui::CollapsingHeader("Show Details"))
+        if (ImGui::CollapsingHeader("Show Details", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
         {
             MousePicker* mp = MousePicker::Get();
 
@@ -449,7 +449,7 @@ void SceneVoxelTerrainSL::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Map Generator");
     {
-        if (ImGui::CollapsingHeader("Show Details"))
+        if (ImGui::CollapsingHeader("Show Details", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
         {
             // Begin DrawMode ImGui drop-down list
             static const char* items[]{ "HeightMap", "ColorMap", "Mesh" };

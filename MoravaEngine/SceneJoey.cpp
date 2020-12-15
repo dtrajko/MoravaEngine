@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "SceneJoey.h"
 #include "TerrainHeightMap.h"
 #include "ShaderMain.h"
@@ -213,6 +215,8 @@ void SceneJoey::SetSkybox()
 
 void SceneJoey::Update(float timestep, Window* mainWindow)
 {
+	m_Camera->OnUpdate(timestep);
+
 	if (m_HDRI_Edit != m_HDRI_Edit_Prev || m_BlurLevel != m_BlurLevelPrev)
 	{
 		if (m_HDRI_Edit == HDRI_GREENWICH_PARK) {
@@ -256,7 +260,34 @@ void SceneJoey::UpdateImGui(float timestep, Window* mainWindow)
 	bool p_open = true;
 	ShowExampleAppDockSpace(&p_open, mainWindow);
 
-	ImGui::Begin("Settings");
+	ImGui::Begin("Camera");
+	{
+		if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			char buffer[100];
+			sprintf(buffer, "Pitch         %.2f", m_Camera->GetPitch());
+			ImGui::Text(buffer);
+			sprintf(buffer, "Yaw           %.2f", m_Camera->GetYaw());
+			ImGui::Text(buffer);
+			sprintf(buffer, "FOV           %.2f", glm::degrees(m_Camera->GetPerspectiveVerticalFOV()));
+			ImGui::Text(buffer);
+			sprintf(buffer, "Aspect Ratio  %.2f", glm::degrees(m_Camera->GetAspectRatio()));
+			ImGui::Text(buffer);
+			sprintf(buffer, "Position    X %.2f Y %.2f Z %.2f", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
+			ImGui::Text(buffer);
+			sprintf(buffer, "Direction   X %.2f Y %.2f Z %.2f", m_Camera->GetDirection().x, m_Camera->GetDirection().y, m_Camera->GetDirection().z);
+			ImGui::Text(buffer);
+			sprintf(buffer, "Front       X %.2f Y %.2f Z %.2f", m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
+			ImGui::Text(buffer);
+			sprintf(buffer, "Up          X %.2f Y %.2f Z %.2f", m_Camera->GetUp().x, m_Camera->GetUp().y, m_Camera->GetUp().z);
+			ImGui::Text(buffer);
+			sprintf(buffer, "Right       X %.2f Y %.2f Z %.2f", m_Camera->GetRight().x, m_Camera->GetRight().y, m_Camera->GetRight().z);
+			ImGui::Text(buffer);
+		}
+	}
+	ImGui::End();
+
+	ImGui::Begin("Light");
 	{
 		m_CameraPosition = m_Camera->GetPosition();
 

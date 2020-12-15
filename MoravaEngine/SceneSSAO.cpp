@@ -152,6 +152,7 @@ void SceneSSAO::SetupSSAO()
 
 void SceneSSAO::Update(float timestep, Window* mainWindow)
 {
+    m_Camera->OnUpdate(timestep);
     m_SSAO->Update(timestep);
 }
 
