@@ -28,8 +28,8 @@ namespace Hazel {
 		ProjectionType GetProjectionType() const { return m_ProjectionType; };
 		void SetProjectionType(ProjectionType type) { m_ProjectionType = type; RecalculateProjection(); }
 
-		float GetPerspectiveVerticalFOV() const { return m_PerspectiveFOV; }
-		void SetPerspectiveVerticalFOV(float verticalFOV) { m_PerspectiveFOV = verticalFOV; RecalculateProjection(); }
+		float GetPerspectiveVerticalFOV() const { return glm::degrees(m_PerspectiveFOV); }
+		void SetPerspectiveVerticalFOV(float verticalFOV) { m_PerspectiveFOV = glm::radians(verticalFOV); RecalculateProjection(); }
 		float GetPerspectiveNearClip() const { return m_PerspectiveNear; };
 		void SetPerspectiveNearClip(float nearClip) { m_PerspectiveNear = nearClip; RecalculateProjection(); }
 		float GetPerspectiveFarClip() const { return m_PerspectiveFar; };
@@ -41,6 +41,7 @@ namespace Hazel {
 		void SetOrthographicNearClip(float nearClip) { m_OrthographicNear = nearClip; RecalculateProjection(); }
 		float GetOrthographicFarClip() const { return m_OrthographicFar; };
 		void SetOrthographicFarClip(float farClip) { m_OrthographicFar = farClip; RecalculateProjection(); }
+
 
 		// Getters
 		inline const glm::mat4& GetProjection() const { return m_ProjectionMatrix; }
