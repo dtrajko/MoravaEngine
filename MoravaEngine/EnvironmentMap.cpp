@@ -377,11 +377,9 @@ Hazel::Entity EnvironmentMap::CreateEntity(const std::string& name)
 void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
 {
     // CameraSyncECS(); TODO
-    if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>())
-    {
-        auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
-        m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction = glm::normalize(glm::eulerAngles(glm::quat(tc.Rotation)));
-    }
+
+    auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+    m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction = glm::normalize(glm::eulerAngles(glm::quat(tc.Rotation)));
 
     OnUpdateEditor(scene, timestep);
     // OnUpdateRuntime(scene, timestep);
@@ -630,6 +628,16 @@ void EnvironmentMap::OnImGuiRender()
         mesh->OnImGuiRender(++id);
     }
 
+    ImGui::Begin("Switch State");
+    {
+        const char* label = m_ActiveCamera == m_EditorCamera ? "EDITOR [ Editor Camera ]" : "RUNTIME [ Runtime Camera ]";
+        if (ImGui::Button(label))
+        {
+            m_ActiveCamera = m_ActiveCamera == m_EditorCamera ? (Hazel::HazelCamera*)m_RuntimeCamera : (Hazel::HazelCamera*)m_EditorCamera;
+        }
+    }
+    ImGui::End();
+
     ImGui::Begin("Transform");
     {
         if (EntitySelection::s_SelectionContext.size())
@@ -716,14 +724,6 @@ void EnvironmentMap::OnImGuiRender()
             ImGui::Text(buffer);
             sprintf(buffer, "Right       X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetRight().x, m_ActiveCamera->GetRight().y, m_ActiveCamera->GetRight().z);
             ImGui::Text(buffer);
-
-            ImGui::Text("Camera Type: ");
-            ImGui::SameLine();
-            const char* label = m_ActiveCamera == m_EditorCamera ? "Editor Camera" : "Runtime Camera";
-            if (ImGui::Button(label))
-            {
-                m_ActiveCamera = m_ActiveCamera == m_EditorCamera ? (Hazel::HazelCamera*)m_RuntimeCamera : (Hazel::HazelCamera*)m_EditorCamera;
-            }
         }
     }
     ImGui::End();
@@ -752,6 +752,8 @@ void EnvironmentMap::OnImGuiRender()
                 ImGui::AlignTextToFramePadding();
 
                 auto light = m_SceneRenderer->GetLight();
+                glm::vec3 lightDirectionPrev = light.Direction;
+
                 ImGuiWrapper::Property("Light Direction", light.Direction);
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
@@ -759,7 +761,13 @@ void EnvironmentMap::OnImGuiRender()
                 ImGuiWrapper::Property("Skybox Exposure Factor", m_SkyboxExposureFactor, 0.0f, 10.0f);
                 ImGuiWrapper::Property("Radiance Prefiltering", m_RadiancePrefilter);
                 ImGuiWrapper::Property("Env Map Rotation", m_EnvMapRotation, -360.0f, 360.0f);
-                m_SceneRenderer->SetLight(light);
+
+                if (light.Direction != lightDirectionPrev) {
+                    m_SceneRenderer->SetLight(light);
+                    auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+                    tc.Rotation = glm::eulerAngles(glm::quat(light.Direction));
+                    lightDirectionPrev = light.Direction;
+                }
 
                 ImGui::Columns(1);
             }
