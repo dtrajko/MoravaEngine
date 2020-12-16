@@ -782,7 +782,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 
         SetupUniforms();
 
-        m_EnvironmentMap->Render(m_RenderFramebuffer);
+        m_EnvironmentMap->OnRender(m_RenderFramebuffer);
 
         if (m_IsViewportEnabled)
         {

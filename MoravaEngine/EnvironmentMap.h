@@ -39,14 +39,17 @@ public:
 	void OnUpdateEditor(Scene* scene, float timestep);
 	void OnUpdateRuntime(Scene* scene, float timestep);
 
-	void CameraSyncECS();
+	void OnRender(Framebuffer* framebuffer);
+	void OnRenderEditor(Framebuffer* framebuffer);
+	void OnRenderRuntime(Framebuffer* framebuffer);
 
+	void OnImGuiRender();
+
+	void CameraSyncECS();
 	void UpdateImGuizmo(Window* mainWindow);
 	Hazel::Entity CreateEntity(const std::string& name);
 	Hazel::Entity LoadEntity(std::string fullPath);
 	void LoadEnvMapMaterials(Mesh* mesh);
-	void Render(Framebuffer* framebuffer);
-	void OnImGuiRender();
 
 	// Setters
 	void SetSkyboxLOD(float LOD);
@@ -132,6 +135,7 @@ private:
 	Hazel::HazelTexture2D* m_CheckerboardTexture;
 
 	Hazel::Entity m_CameraEntity;
+	Hazel::Entity m_DirectionalLightEntity;
 
 	glm::vec2 m_ViewportBounds[2];
 	float m_ViewportWidth = 0.0f;

@@ -152,6 +152,10 @@ void EnvironmentMap::SetupContextData()
 
     auto mapGenerator = CreateEntity("Map Generator");
     mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
+
+    m_DirectionalLightEntity = CreateEntity("Directional Light");
+    auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+    tc.Rotation = m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction;
 }
 
 Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
@@ -373,6 +377,11 @@ Hazel::Entity EnvironmentMap::CreateEntity(const std::string& name)
 void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
 {
     // CameraSyncECS(); TODO
+    if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>())
+    {
+        auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+        m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction = glm::normalize(glm::eulerAngles(glm::quat(tc.Rotation)));
+    }
 
     OnUpdateEditor(scene, timestep);
     // OnUpdateRuntime(scene, timestep);
@@ -1379,7 +1388,19 @@ void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
     Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
 }
 
-void EnvironmentMap::Render(Framebuffer* framebuffer)
+void EnvironmentMap::OnRender(Framebuffer* framebuffer)
+{
+    OnRenderEditor(framebuffer);
+    // OnRenderRuntime(framebuffer)
+}
+
+void EnvironmentMap::OnRenderEditor(Framebuffer* framebuffer)
+{
+    GeometryPassTemporary();
+    CompositePassTemporary(framebuffer);
+}
+
+void EnvironmentMap::OnRenderRuntime(Framebuffer* framebuffer)
 {
     GeometryPassTemporary();
     CompositePassTemporary(framebuffer);
