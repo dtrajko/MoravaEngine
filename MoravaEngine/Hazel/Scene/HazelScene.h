@@ -17,8 +17,10 @@ namespace Hazel {
 
 	struct Environment
 	{
-		Hazel::HazelTextureCube* RadianceMap;
-		Hazel::HazelTextureCube* IrradianceMap;
+		Ref<Hazel::HazelTextureCube> RadianceMap;
+		Ref<Hazel::HazelTextureCube> IrradianceMap;
+
+		static Environment Load(const std::string& filepath) {}; // TODO
 	};
 
 	struct HazelLight
@@ -31,7 +33,7 @@ namespace Hazel {
 	class Entity;
 	class ScriptableEntity;
 
-	// using EntityMap = std::unordered_map<UUID, Entity>;
+	using EntityMap = std::unordered_map<UUID, Entity>;
 
 	class HazelScene : public RefCounted
 	{
@@ -64,7 +66,7 @@ namespace Hazel {
 		inline void SetLight(HazelLight light) { m_Light = light; };
 		inline HazelLight GetLight() { return m_Light; }
 
-		void SetSkybox(const Ref<Hazel::HazelTextureCube>& skybox);
+		void SetSkybox(const Ref<HazelTextureCube>& skybox);
 
 		inline void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
 		float& GetSkyboxLOD() { return m_SkyboxLOD; }
@@ -81,7 +83,7 @@ namespace Hazel {
 			return m_Registry.view<T>();
 		}
 
-		// const EntityMap& GetEntityMap() const { return m_EntityIDMap; }
+		const EntityMap& GetEntityMap() const { return m_EntityIDMap; }
 
 		// Temporary/experimental
 		virtual void OnEntitySelected(Entity entity);
@@ -96,7 +98,7 @@ namespace Hazel {
 		uint32_t m_ViewportHeight = 0;
 
 	private:
-		// EntityMap m_EntityIDMap;
+		EntityMap m_EntityIDMap;
 
 		HazelCamera m_Camera;
 		HazelLight m_Light;

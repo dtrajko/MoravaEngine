@@ -48,8 +48,8 @@ namespace Hazel {
 	class HazelTexture2D : public HazelTexture
 	{
 	public:
-		static HazelTexture2D* Create(HazelTextureFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
-		static HazelTexture2D* Create(const std::string& path, bool srgb = false);
+		static Ref<HazelTexture2D> Create(HazelTextureFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
+		static Ref<HazelTexture2D> Create(const std::string& path, bool srgb = false);
 
 		virtual void Lock() = 0;
 		virtual void Unlock() = 0;
@@ -65,8 +65,8 @@ namespace Hazel {
 	class HazelTextureCube : public HazelTexture
 	{
 	public:
-		static HazelTextureCube* Create(HazelTextureFormat format, uint32_t width, uint32_t height);
-		static HazelTextureCube* Create(const std::string& path);
+		static Ref<HazelTextureCube> Create(HazelTextureFormat format, uint32_t width, uint32_t height);
+		static Ref<HazelTextureCube> Create(const std::string& path);
 
 		virtual const std::string& GetPath() const = 0;
 	};

@@ -50,13 +50,13 @@ namespace Hazel {
 	void HazelScene::SetEnvironment(const Environment& environment)
 	{
 		m_Environment = environment;
-		SetSkybox(std::shared_ptr<Hazel::HazelTextureCube>(environment.RadianceMap));
+		SetSkybox(environment.RadianceMap);
 	}
 
-	void HazelScene::SetSkybox(const Ref<Hazel::HazelTextureCube>& skybox)
+	void HazelScene::SetSkybox(const Ref<HazelTextureCube>& skybox)
 	{
 		m_SkyboxTexture = skybox;
-		m_ShaderSkybox->setInt("u_Texture", skybox.get()->GetID());
+		m_ShaderSkybox->setInt("u_Texture", skybox.Raw()->GetID());
 	}
 
 	void HazelScene::OnEntitySelected(Entity entity)

@@ -4,24 +4,24 @@
 
 namespace Hazel {
 
-	HazelTexture2D* HazelTexture2D::Create(HazelTextureFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap)
+	Ref<HazelTexture2D> HazelTexture2D::Create(HazelTextureFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap)
 	{
-		return new OpenGLTexture2D(format, width, height, wrap);
+		return Ref<OpenGLTexture2D>::Create(format, width, height, wrap);
 	}
 
-	HazelTexture2D* HazelTexture2D::Create(const std::string& path, bool srgb)
+	Ref<HazelTexture2D> HazelTexture2D::Create(const std::string& path, bool srgb)
 	{
-		return new OpenGLTexture2D(path, srgb);
+		return Ref<OpenGLTexture2D>::Create(path, srgb);
 	}
 
-	HazelTextureCube* HazelTextureCube::Create(HazelTextureFormat format, uint32_t width, uint32_t height)
+	Ref<HazelTextureCube> HazelTextureCube::Create(HazelTextureFormat format, uint32_t width, uint32_t height)
 	{
-		return new OpenGLTextureCube(format, width, height);
+		return Ref<OpenGLTextureCube>::Create(format, width, height);
 	}
 
-	HazelTextureCube* HazelTextureCube::Create(const std::string& path)
+	Ref<HazelTextureCube> HazelTextureCube::Create(const std::string& path)
 	{
-		return new OpenGLTextureCube(path);
+		return Ref<OpenGLTextureCube>::Create(path);
 	}
 
 	void HazelTexture::SetData(void* data, uint32_t size)
