@@ -39,7 +39,7 @@ namespace Hazel
 			UUID selectedEntityID = EntitySelection::s_SelectionContext[0].Entity.GetUUID();
 
 			if (entityMap.find(selectedEntityID) != entityMap.end()) {
-				EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entityMap.at(selectedEntityID), nullptr, 0 });
+				EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ Entity{ entityMap.at(selectedEntityID), m_Context }, nullptr, 0 });
 			}
 		}
 	}

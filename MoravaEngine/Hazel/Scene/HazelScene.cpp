@@ -59,6 +59,11 @@ namespace Hazel {
 		m_ShaderSkybox->setInt("u_Texture", skybox.Raw()->GetID());
 	}
 
+	std::unordered_map<UUID, entt::entity> HazelScene::GetEntityMap() const
+	{
+		return m_EntityIDMap;
+	}
+
 	void HazelScene::OnEntitySelected(Entity entity)
 	{
 		// TODO...

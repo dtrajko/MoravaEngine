@@ -70,6 +70,7 @@ struct SceneSettings
 };
 
 class LightManager;
+class Hazel::Entity;
 
 class Scene : public Hazel::HazelScene
 {

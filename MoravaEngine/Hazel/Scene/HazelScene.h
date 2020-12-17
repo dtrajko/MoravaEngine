@@ -11,6 +11,7 @@
 #include "entt.hpp"
 
 #include <string>
+#include <unordered_map>
 
 
 namespace Hazel {
@@ -32,8 +33,6 @@ namespace Hazel {
 
 	class Entity;
 	class ScriptableEntity;
-
-	using EntityMap = std::unordered_map<UUID, Entity>;
 
 	class HazelScene : public RefCounted
 	{
@@ -83,7 +82,7 @@ namespace Hazel {
 			return m_Registry.view<T>();
 		}
 
-		const EntityMap& GetEntityMap() const { return m_EntityIDMap; }
+		std::unordered_map<UUID, entt::entity> GetEntityMap() const;
 
 		// Temporary/experimental
 		virtual void OnEntitySelected(Entity entity);
@@ -98,7 +97,7 @@ namespace Hazel {
 		uint32_t m_ViewportHeight = 0;
 
 	private:
-		EntityMap m_EntityIDMap;
+		std::unordered_map<UUID, entt::entity> m_EntityIDMap;
 
 		HazelCamera m_Camera;
 		HazelLight m_Light;

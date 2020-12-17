@@ -8,6 +8,7 @@
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Scene/Components.h"
 #include "Hazel/Scene/Entity.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 #include "ImGuiWrapper.h"
 #include "ImGuizmo.h"

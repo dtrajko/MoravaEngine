@@ -12,7 +12,7 @@ std::map<std::string, Material*> ResourceManager::s_Materials;
 float ResourceManager::s_MaterialSpecular = 1.0f;
 float ResourceManager::s_MaterialShininess = 256.0f;
 
-std::map<std::string, Hazel::HazelTexture2D*> ResourceManager::s_HazelTextures2D;
+std::map<std::string, Hazel::Ref<Hazel::HazelTexture2D>> ResourceManager::s_HazelTextures2D;
 
 std::map<std::string, Shader*> ResourceManager::s_Shaders;
 
@@ -320,14 +320,14 @@ Material* ResourceManager::HotLoadMaterial(std::string materialName)
     return materialIterator->second;
 }
 
-Hazel::HazelTexture2D* ResourceManager::LoadHazelTexture2D(std::string filePath)
+Hazel::Ref<Hazel::HazelTexture2D> ResourceManager::LoadHazelTexture2D(std::string filePath)
 {
-    std::map<std::string, Hazel::HazelTexture2D*>::iterator entry = s_HazelTextures2D.find(filePath);
+    std::map<std::string, Hazel::Ref<Hazel::HazelTexture2D>>::iterator entry = s_HazelTextures2D.find(filePath);
     if (entry != s_HazelTextures2D.end()) {
         return entry->second;
     }
     else {
-        Hazel::HazelTexture2D* texture = Hazel::HazelTexture2D::Create(filePath);
+        Hazel::Ref<Hazel::HazelTexture2D> texture = Hazel::HazelTexture2D::Create(filePath);
         s_HazelTextures2D.insert(std::make_pair(filePath, texture));
         return texture;
     }
