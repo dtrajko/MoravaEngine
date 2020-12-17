@@ -116,11 +116,8 @@ namespace Hazel {
 	}
 
 	template<typename T>
-	static void CopyComponent(entt::registry& srcRegistry, entt::registry& dstRegistry)
+	static void CopyComponent(entt::registry& srcRegistry, entt::registry& dstRegistry, std::unordered_map<UUID, entt::entity>& enttMap)
 	{
-		// TODO
-		Log::GetLogger()->error("CopyComponent static method not implemented yet!");
-
 		auto components = srcRegistry.view<T>();
 		for (auto srcEntity : components)
 		{
@@ -145,27 +142,21 @@ namespace Hazel {
 		target->m_SkyboxMaterial = m_SkyboxMaterial;
 		target->m_SkyboxLOD = m_SkyboxLOD;
 
+		std::unordered_map<UUID, entt::entity> enttMap;
 		auto idComponents = m_Registry.view<IDComponent>();
 		for (auto entity : idComponents)
 		{
 			auto uuid = m_Registry.get<IDComponent>(entity).ID;
 			Entity e = target->CreateEntityWithID(uuid, "Entity");
-			// enttMap[uuid] = e.m_EntityHandle;
+			enttMap[uuid] = e.m_EntityHandle;
 
-			// if (m_Registry.has<TransformComponent>(entity)) {
-			// 	target->m_Registry.emplace<TransformComponent>(entity, m_Registry.get<TransformComponent>(entity).GetTransform());
-			// }
-			// 
-			// if (m_Registry.has<MeshComponent>(entity)) {
-			// 	target->m_Registry.emplace<MeshComponent>(entity, m_Registry.get<MeshComponent>(entity).Mesh);
-			// }
-		}
-
-		auto meshComponents = m_Registry.view<MeshComponent>();
-		for (auto srcEntity : meshComponents)
-		{
-			m_Registry.get<IDComponent>(srcEntity);
-
+			CopyComponent<TagComponent>(target->m_Registry, m_Registry, enttMap);
+			CopyComponent<TransformComponent>(target->m_Registry, m_Registry, enttMap);
+			CopyComponent<MeshComponent>(target->m_Registry, m_Registry, enttMap);
+			CopyComponent<ScriptComponent>(target->m_Registry, m_Registry, enttMap);
+			CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
+			CopyComponent<SpriteRendererComponent>(target->m_Registry, m_Registry, enttMap);
+			CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);	
 		}
 	}
 
