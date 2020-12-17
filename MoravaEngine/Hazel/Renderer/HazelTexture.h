@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Core/Base.h"
+#include "../Core/Ref.h"
 #include "../Core/Buffer.h"
 
 
@@ -21,7 +22,7 @@ namespace Hazel {
 		Repeat = 2
 	};
 
-	class HazelTexture
+	class HazelTexture : public RefCounted
 	{
 	public:
 		virtual ~HazelTexture() {}

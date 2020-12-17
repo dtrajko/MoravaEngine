@@ -1,18 +1,19 @@
 #pragma once
 
-#include "Hazel/Scene/Entity.h"
-#include "Hazel/Scene/HazelScene.h"
+#include "Hazel/Events/KeyEvent.h"
+#include "Hazel/Events/MouseEvent.h"
+#include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/RenderPass.h"
-#include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/VertexArray.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/SceneRenderer.h"
-#include "Hazel/Events/KeyEvent.h"
-#include "Hazel/Events/MouseEvent.h"
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Renderer/SceneRenderer.h"
+#include "Hazel/Scene/Entity.h"
+#include "Hazel/Scene/HazelScene.h"
 #include "Hazel/Core/Math/Ray.h"
+#include "Hazel/Core/Ref.h"
 
 #include "Shader.h"
 #include "TextureCubemap.h"
@@ -38,6 +39,9 @@ public:
 	void OnUpdate(Scene* scene, float timestep);
 	void OnUpdateEditor(Scene* scene, float timestep);
 	void OnUpdateRuntime(Scene* scene, float timestep);
+
+	void OnScenePlay();
+	void OnSceneStop();
 
 	void OnRender(Framebuffer* framebuffer);
 	void OnRenderEditor(Framebuffer* framebuffer);
@@ -177,5 +181,10 @@ private:
 		Pause,
 	};
 	SceneState m_SceneState;
+
+	// Hazel LIVE! #014
+	Hazel::Ref<Hazel::HazelScene> m_RuntimeScene;
+	Hazel::Ref<Hazel::HazelScene> m_EditorScene;
+	Hazel::Ref<Hazel::HazelScene> m_ActiveScene;
 
 };

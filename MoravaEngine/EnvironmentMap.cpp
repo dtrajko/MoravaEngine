@@ -192,7 +192,7 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
 
     // m_MeshEntity: NoECS version
     Hazel::Entity meshEntity = CreateEntity(drawCommand.Name);
-    meshEntity.AddComponent<Hazel::MeshComponent>(Ref<Hazel::HazelMesh>(mesh));
+    meshEntity.AddComponent<Hazel::MeshComponent>(Hazel::Ref<Hazel::HazelMesh>(mesh));
     meshEntity.AddComponent<Hazel::ScriptComponent>("Example.Script");
 
     SubmitEntity(meshEntity);
@@ -415,7 +415,7 @@ void EnvironmentMap::OnUpdateEditor(Scene* scene, float timestep)
     for (auto entt : meshEntities)
     {
         Hazel::Entity entity{ entt, m_SceneRenderer->s_Data.ActiveScene };
-        Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+        Hazel::Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
         mesh->OnUpdate(timestep, false);
     }
 
@@ -444,7 +444,7 @@ void EnvironmentMap::OnUpdateRuntime(Scene* scene, float timestep)
     for (auto entt : meshEntities)
     {
         Hazel::Entity entity{ entt, m_SceneRenderer->s_Data.ActiveScene };
-        Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+        Hazel::Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
         mesh->OnUpdate(timestep, false);
     }
 
@@ -456,6 +456,30 @@ void EnvironmentMap::OnUpdateRuntime(Scene* scene, float timestep)
     if (m_ViewportWidth > 0.0f && m_ViewportHeight > 0.0f) {
         m_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
     }
+}
+
+void EnvironmentMap::OnScenePlay()
+{
+    EntitySelection::s_SelectionContext.clear();
+
+    m_SceneState = SceneState::Play;
+
+    m_RuntimeScene = Hazel::Ref<Hazel::HazelScene>::Create();
+    m_EditorScene->CopyTo(m_RuntimeScene);
+
+    m_ActiveScene = m_RuntimeScene;
+
+    m_ActiveScene->OnRuntimeStart();
+}
+
+void EnvironmentMap::OnSceneStop()
+{
+    m_ActiveScene->OnRuntimeStop();
+    m_SceneState = SceneState::Edit;
+    m_ActiveScene = m_EditorScene;
+
+    // Unload runtime scene
+    m_RuntimeScene = nullptr;
 }
 
 void EnvironmentMap::CameraSyncECS()
@@ -579,7 +603,7 @@ void EnvironmentMap::SubmitEntity(Hazel::Entity entity)
     auto& transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
 
     auto name = entity.GetComponent<Hazel::TagComponent>().Tag;
-    m_SceneRenderer->s_Data.DrawList.push_back({ name, mesh.get(), entity.GetMaterial(), transform });
+    m_SceneRenderer->s_Data.DrawList.push_back({ name, mesh.Raw(), entity.GetMaterial(), transform });
 }
 
 Ref<Hazel::Entity> EnvironmentMap::GetMeshEntity()
@@ -805,7 +829,6 @@ void EnvironmentMap::OnImGuiRender()
                     if (fullPath != "")
                     {
                         Hazel::Entity entity = LoadEntity(fullPath);
-                        // meshComponent.Mesh = Ref<Hazel::HazelMesh>((Hazel::HazelMesh*)entity.GetMesh());
                     }
                 }
 
@@ -813,7 +836,7 @@ void EnvironmentMap::OnImGuiRender()
                 if (meshEntities.size())
                 {
                     meshEntity = GetMeshEntity();
-                    Ref<Hazel::HazelMesh> meshAnimPBR = meshEntity->GetComponent<Hazel::MeshComponent>().Mesh;
+                    Hazel::Ref<Hazel::HazelMesh> meshAnimPBR = meshEntity->GetComponent<Hazel::MeshComponent>().Mesh;
                     ImGui::Checkbox("Is Animated", &meshAnimPBR->IsAnimated());
                 }
             }
@@ -1249,7 +1272,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                     bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
                     if (intersects)
                     {
-                        const auto& triangleCache = ((Hazel::HazelMesh*)mesh.get())->GetTriangleCache(i);
+                        const auto& triangleCache = ((Hazel::HazelMesh*)mesh.Raw())->GetTriangleCache(i);
                         if (triangleCache.size())
                         {
                             for (const auto& triangle : triangleCache)
@@ -1276,7 +1299,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
             }
             else {
                 Ref<Hazel::Entity> meshEntity = GetMeshEntity();
-                if (meshEntity != nullptr) {
+                if (!meshEntity) {
                     m_CurrentlySelectedTransform = &meshEntity->Transform();
                 }
             }
@@ -1356,19 +1379,19 @@ void EnvironmentMap::GeometryPassTemporary()
         {
             Hazel::Entity entity = { entt, m_SceneRenderer->s_Data.ActiveScene };
 
-            Ref<Hazel::HazelMesh> hazelMesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+            Hazel::Ref<Hazel::HazelMesh> hazelMesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
             m_ShaderHazelPBR = hazelMesh->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
 
             for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
             {
-                std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(hazelMesh.get(), submesh);
+                std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(hazelMesh.Raw(), submesh);
 
                 if (m_EnvMapMaterials.contains(materialName)) {
                     UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(materialName));
                 }
 
                 glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
-                submesh.Render(hazelMesh.get(), m_ShaderHazelPBR, entityTransform, samplerSlot, m_EnvMapMaterials);
+                submesh.Render(hazelMesh.Raw(), m_ShaderHazelPBR, entityTransform, samplerSlot, m_EnvMapMaterials);
             }
         }
 

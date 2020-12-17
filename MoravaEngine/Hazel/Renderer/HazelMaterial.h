@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Core/Base.h"
+#include "../Core/Ref.h"
 #include "../Renderer/HazelTexture.h"
 #include "../../Shader.h"
 #include "../../Log.h"
@@ -18,7 +19,7 @@ namespace Hazel {
 
 	class HazelMaterialInstance;
 
-	class HazelMaterial
+	class HazelMaterial : public RefCounted
 	{
 
 	public:
@@ -76,7 +77,7 @@ namespace Hazel {
 		uint32_t m_MaterialFlags;
 	};
 
-	class HazelMaterialInstance
+	class HazelMaterialInstance : public RefCounted
 	{
 
 	public:

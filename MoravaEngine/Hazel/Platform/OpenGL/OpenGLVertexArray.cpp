@@ -47,22 +47,24 @@ namespace Hazel {
 		glBindVertexArray(0);
 	}
 
-	void OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
+	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 	{
 		HZ_CORE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!");
 
 		Bind();
 		vertexBuffer->Bind();
 
+		Ref<OpenGLVertexArray> instance = this;
+
 		// Renderer::Submit([this, vertexBuffer]() {
 			const auto& layout = vertexBuffer->GetLayout();
 			for (const auto& element : layout)
 			{
 				auto glBaseType = ShaderDataTypeToOpenGLBaseType(element.Type);
-				glEnableVertexAttribArray(m_VertexBufferIndex);
+				glEnableVertexAttribArray(instance->m_VertexBufferIndex);
 				if (glBaseType == GL_INT)
 				{
-					glVertexAttribIPointer(m_VertexBufferIndex,
+					glVertexAttribIPointer(instance->m_VertexBufferIndex,
 						element.GetComponentCount(),
 						glBaseType,
 						layout.GetStride(),
@@ -70,20 +72,20 @@ namespace Hazel {
 				}
 				else
 				{
-					glVertexAttribPointer(m_VertexBufferIndex,
+					glVertexAttribPointer(instance->m_VertexBufferIndex,
 						element.GetComponentCount(),
 						glBaseType,
 						element.Normalized ? GL_TRUE : GL_FALSE,
 						layout.GetStride(),
 						(const void*)(intptr_t)element.Offset);
 				}
-				m_VertexBufferIndex++;
+				instance->m_VertexBufferIndex++;
 			}
 		// });
 		m_VertexBuffers.push_back(vertexBuffer);
 	}
 
-	void OpenGLVertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
+	void OpenGLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
 		Bind();
 		indexBuffer->Bind();

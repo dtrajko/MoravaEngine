@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Hazel/Core/Ref.h"
+
 #include "Transform.h"
 #include "Material.h"
 
@@ -10,7 +12,7 @@
 
 struct aiScene;
 
-class Mesh
+class Mesh : public Hazel::RefCounted
 {
 
 public:

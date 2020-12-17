@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Core/Base.h"
+#include "../Core/Ref.h"
 #include "../../Framebuffer.h"
 
 
@@ -11,7 +12,7 @@ namespace Hazel {
 		Framebuffer* TargetFramebuffer;
 	};
 
-	class RenderPass
+	class RenderPass : public RefCounted
 	{
 	public:
 		virtual ~RenderPass() {}

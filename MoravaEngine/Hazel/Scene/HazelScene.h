@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Core/UUID.h"
+#include "../Core/Ref.h"
 #include "../Renderer/HazelTexture.h"
 #include "../Renderer/HazelMaterial.h"
 #include "../Scene/SceneCamera.h"
@@ -32,7 +33,7 @@ namespace Hazel {
 
 	// using EntityMap = std::unordered_map<UUID, Entity>;
 
-	class HazelScene
+	class HazelScene : public RefCounted
 	{
 
 	public:

@@ -1270,6 +1270,9 @@
     <ClInclude Include="RuntimeCamera.h">
       <Filter>Camera</Filter>
     </ClInclude>
+    <ClInclude Include="Hazel\Core\Ref.h">
+      <Filter>Hazel\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

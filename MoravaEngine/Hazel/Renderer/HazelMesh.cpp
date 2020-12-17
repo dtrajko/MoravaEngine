@@ -1061,7 +1061,7 @@ namespace Hazel {
 	{
 		EnvMapMaterial* envMapMaterial = nullptr;
 
-		parentMesh->GetVertexArray().get()->Bind();
+		parentMesh->GetVertexArray().Raw()->Bind();
 
 		shader->Bind();
 

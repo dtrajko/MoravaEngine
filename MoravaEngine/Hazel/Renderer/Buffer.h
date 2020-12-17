@@ -2,6 +2,7 @@
 
 #include "../Core/Base.h"
 #include "../Core/Assert.h"
+#include "../Core/Ref.h"
 #include "RendererAPI.h"
 
 #include <string>
@@ -113,7 +114,7 @@ namespace Hazel {
 		None = 0, Static = 1, Dynamic = 2
 	};
 
-	class VertexBuffer
+	class VertexBuffer : public RefCounted
 	{
 	public:
 		virtual ~VertexBuffer() {}
@@ -131,7 +132,7 @@ namespace Hazel {
 		static Ref<VertexBuffer> Create(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
 	};
 
-	class IndexBuffer
+	class IndexBuffer : public RefCounted
 	{
 	public:
 		virtual ~IndexBuffer() {}
