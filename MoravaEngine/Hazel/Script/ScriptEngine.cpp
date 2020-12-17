@@ -57,4 +57,9 @@ namespace Hazel
 		return s_PublicFields;
 	}
 
+	void ScriptEngine::InstantiateEntityClass(Entity entity)
+	{
+		Log::GetLogger()->error("ScriptEngine::InstantiateEntityClass method not implemented yet!");
+	}
+
 }

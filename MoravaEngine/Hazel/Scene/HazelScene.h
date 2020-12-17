@@ -43,6 +43,9 @@ namespace Hazel {
 		void Init();
 
 		void OnUpdate(float ts);
+		void OnEvent(Event& e);
+		void OnRuntimeStart();
+		void OnRuntimeStop();
 		void OnViewportResize(uint32_t width, uint32_t height);
 
 		template<typename T>
@@ -67,7 +70,7 @@ namespace Hazel {
 
 		Entity CreateEntity(const std::string& name);
 		Entity CreateEntity(const std::string& name, const HazelScene& scene);
-		Entity CreateEntityWithID(UUID uuid, const std::string& name);
+		Entity CreateEntityWithID(UUID uuid, const std::string& name = "", bool runtimeMap = false);
 		void DestroyEntity(Entity entity);
 		Entity CloneEntity(Entity entity);
 

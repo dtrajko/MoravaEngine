@@ -70,5 +70,7 @@ namespace Hazel
 
 		static const ScriptModuleFieldMap& GetFieldMap();
 
+		static void InstantiateEntityClass(Entity entity);
+
 	};
 }

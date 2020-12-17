@@ -17,7 +17,10 @@ namespace Hazel {
 	static const std::string DefaultEntityName = "Entity";
 
 	std::unordered_map<UUID, HazelScene*> s_ActiveScenes;
-	// std::unordered_map<UUID, Entity> s_EntityIDMap;
+	std::unordered_map<UUID, Entity> s_EntityIDMap;
+	std::unordered_map<UUID, Entity> s_RuntimeEntityIDMap;
+
+	std::unordered_map<UUID, Entity>* s_ScriptEntityIDMap = &s_EntityIDMap;
 
 	struct SceneComponent
 	{
@@ -27,15 +30,13 @@ namespace Hazel {
 	void OnScriptComponentConstruct(entt::registry& registry, entt::entity entity)
 	{
 		auto entityID = registry.get<IDComponent>(entity).ID;
-		// HZ_CORE_ASSERT(s_EntityIDMap.find(entityID) != s_EntityIDMap.end());
-		// ScriptEngine::InitScriptEntity(s_EntityIDMap.at(entityID));
+		HZ_CORE_ASSERT(s_EntityIDMap.find(entityID) != s_EntityIDMap.end());
+		ScriptEngine::InitScriptEntity(s_EntityIDMap.at(entityID));
 	}
 
 	HazelScene::HazelScene(const std::string& debugName)
 		: m_DebugName(debugName)
 	{
-		// ScriptEngine::GetFieldMap().clear();
-
 		m_Registry.on_construct<ScriptComponent>().connect<&OnScriptComponentConstruct>();
 
 		m_SceneEntity = m_Registry.create();
@@ -87,11 +88,11 @@ namespace Hazel {
 
 		Log::GetLogger()->debug("CreateEntity name = '{0}'", name);
 
-		// m_EntityIDMap[idComponent.ID] = entity;
+		s_EntityIDMap[idComponent.ID] = entity;
 		return entity;
 	}
 
-	Entity HazelScene::CreateEntityWithID(UUID uuid, const std::string& name)
+	Entity HazelScene::CreateEntityWithID(UUID uuid, const std::string& name, bool runtimeMap)
 	{
 		auto entity = Entity{ m_Registry.create(), this };
 		auto& idComponent = entity.AddComponent<IDComponent>();
@@ -104,9 +105,12 @@ namespace Hazel {
 		//	}
 		entity.AddComponent<TagComponent>(name.empty() ? "Entity" : name);
 
+		auto& entityMap = runtimeMap ? s_RuntimeEntityIDMap : s_EntityIDMap;
+
 		Log::GetLogger()->debug("CreateEntityWithID uuid = '{0}', name = '{1}'", uuid, name);
 
-		// m_EntityIDMap[idComponent.ID] = entity;
+		HZ_CORE_ASSERT(entityMap.find(uuid) == entityMap.end());
+		entityMap[uuid] = entity;
 		return entity;
 	}
 
@@ -130,6 +134,8 @@ namespace Hazel {
 
 	/**
 	 * Working on Hazel LIVE! #14
+	 * 
+	 * Copy to runtime
 	 */
 	void HazelScene::CopyTo(Ref<HazelScene>& target)
 	{
@@ -149,15 +155,15 @@ namespace Hazel {
 			auto uuid = m_Registry.get<IDComponent>(entity).ID;
 			Entity e = target->CreateEntityWithID(uuid, "Entity");
 			enttMap[uuid] = e.m_EntityHandle;
-
-			CopyComponent<TagComponent>(target->m_Registry, m_Registry, enttMap);
-			CopyComponent<TransformComponent>(target->m_Registry, m_Registry, enttMap);
-			CopyComponent<MeshComponent>(target->m_Registry, m_Registry, enttMap);
-			CopyComponent<ScriptComponent>(target->m_Registry, m_Registry, enttMap);
-			CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
-			CopyComponent<SpriteRendererComponent>(target->m_Registry, m_Registry, enttMap);
-			CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);	
 		}
+
+		CopyComponent<TagComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<TransformComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<MeshComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<ScriptComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<SpriteRendererComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);	
 	}
 
 	Entity HazelScene::CloneEntity(Entity entity)
@@ -272,6 +278,25 @@ namespace Hazel {
 
 			// Renderer2D::EndScene();
 		}
+	}
+
+	void HazelScene::OnEvent(Event& e)
+	{
+	}
+
+	void HazelScene::OnRuntimeStart()
+	{
+		s_ScriptEntityIDMap = &s_RuntimeEntityIDMap;
+
+		auto view = m_Registry.view<ScriptComponent>();
+		for (auto entity : view) {
+			ScriptEngine::InstantiateEntityClass({ entity, this });
+		}
+	}
+
+	void HazelScene::OnRuntimeStop()
+	{
+		s_ScriptEntityIDMap = &s_EntityIDMap;
 	}
 
 	void HazelScene::OnViewportResize(uint32_t width, uint32_t height)
