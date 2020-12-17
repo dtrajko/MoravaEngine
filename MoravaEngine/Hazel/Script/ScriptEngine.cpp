@@ -42,6 +42,11 @@ namespace Hazel
 
 	}
 
+	void ScriptEngine::InitScriptEntity(Entity entity)
+	{
+		Log::GetLogger()->error("ScriptEngine::InitScriptEntity method not implemented yet!");
+	}
+
 	void ScriptEngine::OnInitEntity(ScriptComponent& script, uint32_t entityID, uint32_t sceneID)
 	{
 

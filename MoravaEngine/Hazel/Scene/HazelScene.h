@@ -30,14 +30,17 @@ namespace Hazel {
 	class Entity;
 	class ScriptableEntity;
 
-	using EntityMap = std::unordered_map<UUID, Entity>;
+	// using EntityMap = std::unordered_map<UUID, Entity>;
 
 	class HazelScene
 	{
 
 	public:
-		HazelScene();
+		HazelScene() = default;
+		HazelScene(const std::string& debugName);
 		~HazelScene();
+
+		void Init();
 
 		void OnUpdate(float ts);
 		void OnViewportResize(uint32_t width, uint32_t height);
@@ -64,6 +67,7 @@ namespace Hazel {
 
 		Entity CreateEntity(const std::string& name);
 		Entity CreateEntity(const std::string& name, const HazelScene& scene);
+		Entity CreateEntityWithID(UUID uuid, const std::string& name);
 		void DestroyEntity(Entity entity);
 		Entity CloneEntity(Entity entity);
 
@@ -73,10 +77,12 @@ namespace Hazel {
 			return m_Registry.view<T>();
 		}
 
-		const EntityMap& GetEntityMap() const { return m_EntityIDMap; }
+		// const EntityMap& GetEntityMap() const { return m_EntityIDMap; }
 
 		// Temporary/experimental
 		virtual void OnEntitySelected(Entity entity);
+
+		void CopyTo(Ref<HazelScene>& target); // Working on Hazel LIVE! #14
 
 	public:
 		// ECS
@@ -86,7 +92,7 @@ namespace Hazel {
 		uint32_t m_ViewportHeight = 0;
 
 	private:
-		EntityMap m_EntityIDMap;
+		// EntityMap m_EntityIDMap;
 
 		HazelCamera m_Camera;
 		HazelLight m_Light;
@@ -99,6 +105,11 @@ namespace Hazel {
 		Ref<HazelMaterialInstance> m_SkyboxMaterial;
 
 		float m_SkyboxLOD = 1.0f;
+
+		std::string m_DebugName;
+
+		entt::entity m_SceneEntity;
+		UUID m_SceneID;
 
 	};
 

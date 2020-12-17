@@ -65,6 +65,7 @@ namespace Hazel
 		static void OnCreateEntity(Entity entity);
 		static void OnUpdateEntity(uint32_t entityID, Timestep ts);
 
+		static void InitScriptEntity(Entity entity);
 		static void OnInitEntity(ScriptComponent& script, uint32_t entityID, uint32_t sceneID);
 
 		static const ScriptModuleFieldMap& GetFieldMap();

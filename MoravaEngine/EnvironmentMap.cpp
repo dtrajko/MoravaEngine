@@ -376,10 +376,27 @@ Hazel::Entity EnvironmentMap::CreateEntity(const std::string& name)
 
 void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
 {
+    switch (m_SceneState)
+    {
+    case SceneState::Edit:
+        // m_EditorCamera->OnUpdate(timestep);
+        // m_ActiveScene->OnRenderEditor(timestep, m_EditorCamera);
+        break;
+    case SceneState::Play:
+        // m_EditorCamera->OnUpdate(timestep);
+        // m_ActiveScene->OnUpdate(timestep);
+        // m_ActiveScene->OnRenderRuntime(timestep);
+        break;
+    case SceneState::Pause:
+        // m_EditorCamera->OnUpdate(timestep);
+        // m_ActiveScene->OnRenderRuntime(timestep);
+        break;
+    }
+
     // CameraSyncECS(); TODO
 
     auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
-    m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction = glm::normalize(glm::eulerAngles(glm::quat(tc.Rotation)));
+    m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction = glm::eulerAngles(glm::quat(tc.Rotation));
 
     OnUpdateEditor(scene, timestep);
     // OnUpdateRuntime(scene, timestep);
@@ -754,7 +771,7 @@ void EnvironmentMap::OnImGuiRender()
                 auto light = m_SceneRenderer->GetLight();
                 glm::vec3 lightDirectionPrev = light.Direction;
 
-                ImGuiWrapper::Property("Light Direction", light.Direction);
+                ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f);
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
                 ImGuiWrapper::Property("Exposure", m_ActiveCamera->GetExposure(), 0.0f, 40.0f);
@@ -765,7 +782,7 @@ void EnvironmentMap::OnImGuiRender()
                 if (light.Direction != lightDirectionPrev) {
                     m_SceneRenderer->SetLight(light);
                     auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
-                    tc.Rotation = glm::eulerAngles(glm::quat(light.Direction));
+                    tc.Rotation = glm::eulerAngles(glm::quat(glm::radians(light.Direction)));
                     lightDirectionPrev = light.Direction;
                 }
 

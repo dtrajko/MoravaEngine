@@ -170,4 +170,12 @@ private:
 
 	glm::vec2 m_WorkPosImGui; // window offset on monitor real estate
 
+	enum class SceneState
+	{
+		Edit = 0,
+		Play,
+		Pause,
+	};
+	SceneState m_SceneState;
+
 };

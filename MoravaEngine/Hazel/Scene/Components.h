@@ -43,6 +43,7 @@ namespace Hazel
 		TransformComponent(const TransformComponent&) = default;
 		TransformComponent(const glm::vec3 & translation)
 			: Translation(translation) {}
+		TransformComponent(const glm::mat4& transform) {};
 
 		glm::mat4 GetTransform() const
 		{

@@ -3,19 +3,47 @@
 #include "Entity.h"
 #include "../Renderer/HazelMesh.h"
 #include "../Renderer/SceneRenderer.h"
+#include "../Script/ScriptEngine.h"
 #include "ScriptableEntity.h"
 
 #include <glm/glm.hpp>
 
 #include <string>
+#include <unordered_map>
 
 
 namespace Hazel {
 
 	static const std::string DefaultEntityName = "Entity";
 
-	HazelScene::HazelScene()
+	std::unordered_map<UUID, HazelScene*> s_ActiveScenes;
+	// std::unordered_map<UUID, Entity> s_EntityIDMap;
+
+	struct SceneComponent
 	{
+		UUID SceneId;
+	};
+
+	void OnScriptComponentConstruct(entt::registry& registry, entt::entity entity)
+	{
+		auto entityID = registry.get<IDComponent>(entity).ID;
+		// HZ_CORE_ASSERT(s_EntityIDMap.find(entityID) != s_EntityIDMap.end());
+		// ScriptEngine::InitScriptEntity(s_EntityIDMap.at(entityID));
+	}
+
+	HazelScene::HazelScene(const std::string& debugName)
+		: m_DebugName(debugName)
+	{
+		// ScriptEngine::GetFieldMap().clear();
+
+		m_Registry.on_construct<ScriptComponent>().connect<&OnScriptComponentConstruct>();
+
+		m_SceneEntity = m_Registry.create();
+		m_Registry.emplace<SceneComponent>(m_SceneEntity, m_SceneID);
+
+		s_ActiveScenes[m_SceneID] = this;
+
+		Init();
 	}
 
 	void HazelScene::SetEnvironment(const Environment& environment)
@@ -48,19 +76,86 @@ namespace Hazel {
 		const std::string& entityName = name.empty() ? DefaultEntityName : name;
 
 		// ECS
-		Entity entity = Entity(m_Registry.create(), this);
-		entity.AddComponent<TransformComponent>();
-		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "Entity" : name;
+		auto entity = Entity{ m_Registry.create(), this };
+		auto& idComponent = entity.AddComponent<IDComponent>();
+
+		entity.AddComponent<TransformComponent>(glm::vec3(0.0f)); // glm::mat4(1.0f)
+
+		// auto& tag = entity.AddComponent<TagComponent>();
+		// tag.Tag = name.empty() ? "Entity" : name;
+		entity.AddComponent<TagComponent>(name.empty() ? "Entity" : name);
 
 		Log::GetLogger()->debug("CreateEntity name = '{0}'", name);
 
+		// m_EntityIDMap[idComponent.ID] = entity;
+		return entity;
+	}
+
+	Entity HazelScene::CreateEntityWithID(UUID uuid, const std::string& name)
+	{
+		auto entity = Entity{ m_Registry.create(), this };
+		auto& idComponent = entity.AddComponent<IDComponent>();
+		idComponent.ID = uuid;
+
+		entity.AddComponent<TransformComponent>(glm::vec3(0.0f)); // glm::mat4(1.0f)
+
+		//	if (!name.empty()) {
+		//		entity.AddComponent<TagComponent>(name);
+		//	}
+		entity.AddComponent<TagComponent>(name.empty() ? "Entity" : name);
+
+		Log::GetLogger()->debug("CreateEntityWithID uuid = '{0}', name = '{1}'", uuid, name);
+
+		// m_EntityIDMap[idComponent.ID] = entity;
 		return entity;
 	}
 
 	void HazelScene::DestroyEntity(Entity entity)
 	{
 		m_Registry.destroy(entity);
+	}
+
+	template<typename T>
+	static void CopyComponent(entt::registry& srcRegistry, entt::registry& dstRegistry)
+	{
+		// TODO
+		Log::GetLogger()->error("CopyComponent static method not implemented yet!");
+	}
+
+	/**
+	 * Working on Hazel LIVE! #14
+	 */
+	void HazelScene::CopyTo(Ref<HazelScene>& target)
+	{
+		// Environment
+		target->m_Light = m_Light;
+		target->m_LightMultiplier = m_LightMultiplier;
+
+		target->m_Environment = m_Environment;
+		target->m_SkyboxTexture = m_SkyboxTexture;
+		target->m_SkyboxMaterial = m_SkyboxMaterial;
+		target->m_SkyboxLOD = m_SkyboxLOD;
+
+		auto idComponents = m_Registry.view<IDComponent>();
+		for (auto entity : idComponents)
+		{
+			Entity e = target->CreateEntityWithID(m_Registry.get<IDComponent>(entity).ID, "Entity");
+
+			if (m_Registry.has<TransformComponent>(entity)) {
+				target->m_Registry.emplace<TransformComponent>(entity, m_Registry.get<TransformComponent>(entity).GetTransform());
+			}
+
+			if (m_Registry.has<MeshComponent>(entity)) {
+				target->m_Registry.emplace<MeshComponent>(entity, m_Registry.get<MeshComponent>(entity).Mesh);
+			}
+		}
+
+		auto meshComponents = m_Registry.view<MeshComponent>();
+		for (auto entity : meshComponents)
+		{
+			m_Registry.get<IDComponent>(entity);
+
+		}
 	}
 
 	Entity HazelScene::CloneEntity(Entity entity)
@@ -195,6 +290,10 @@ namespace Hazel {
 
 	HazelScene::~HazelScene()
 	{
+		m_Registry.clear();
+
+		s_ActiveScenes.erase(m_SceneID);
+
 		// Destroy scripts
 		{
 			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
@@ -207,6 +306,11 @@ namespace Hazel {
 				}
 			});
 		}
+	}
+
+	void HazelScene::Init()
+	{
+		Log::GetLogger()->error("HazelScene::Init method not implemented yet!");
 	}
 
 	template<typename T>
