@@ -1,10 +1,7 @@
 #include "HazelRenderer.h"
 
 #include "../Core/Assert.h"
-#include "RenderPass.h"
 #include "VertexArray.h"
-#include "RendererAPI.h"
-#include "HazelMesh.h"
 #include "Renderer2D.h"
 
 #include "../../Log.h"
@@ -127,7 +124,7 @@ namespace Hazel {
 		s_Data.m_ActiveRenderPass = nullptr;
 	}
 
-	void HazelRenderer::SubmitQuad(const Ref<HazelMaterialInstance>& material, const glm::mat4& transform)
+	void HazelRenderer::SubmitQuad(Ref<HazelMaterialInstance> material, const glm::mat4& transform)
 	{
 		bool depthTest = true;
 		if (material)
@@ -143,7 +140,7 @@ namespace Hazel {
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
-	void HazelRenderer::SubmitFullscreenQuad(const Ref<HazelMaterialInstance>& material)
+	void HazelRenderer::SubmitFullscreenQuad(Ref<HazelMaterialInstance> material)
 	{
 		bool depthTest = true;
 		if (material)
@@ -156,7 +153,7 @@ namespace Hazel {
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
-	void HazelRenderer::SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform, const Ref<HazelMaterialInstance>& overrideMaterial)
+	void HazelRenderer::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial)
 	{
 	}
 
@@ -167,7 +164,7 @@ namespace Hazel {
 
 	void HazelRenderer::DrawAABB(const Ref<Mesh>& mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
-		for (Hazel::Submesh& submesh : ((Hazel::HazelMesh*)mesh.get())->GetSubmeshes())
+		for (Hazel::Submesh& submesh : ((Hazel::HazelMesh*)mesh.Raw())->GetSubmeshes())
 		{
 			auto& aabb = submesh.BoundingBox;
 			const auto& aabbTransform = transform * submesh.Transform;

@@ -5,6 +5,7 @@
 #include "RenderCommandQueue.h"
 #include "RenderPass.h"
 #include "RendererAPI.h"
+#include "HazelMesh.h"
 #include "../Core/Math/AABB.h"
 
 #include "../../Mesh.h"
@@ -62,9 +63,9 @@ namespace Hazel {
 		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear = true);
 		static void EndRenderPass();
 
-		static void SubmitQuad(const Ref<HazelMaterialInstance>& material, const glm::mat4& transform = glm::mat4(1.0f));
-		static void SubmitFullscreenQuad(const Ref<HazelMaterialInstance>& material);
-		static void SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform, const Ref<HazelMaterialInstance>& overrideMaterial = nullptr);
+		static void SubmitQuad(Ref<HazelMaterialInstance> material, const glm::mat4& transform = glm::mat4(1.0f));
+		static void SubmitFullscreenQuad(Ref<HazelMaterialInstance> material);
+		static void SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial = nullptr);
 
 		static void DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		static void DrawAABB(const Ref<Mesh>& mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));

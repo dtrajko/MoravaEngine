@@ -40,13 +40,13 @@ namespace Hazel {
 		Ref <VertexArray> QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
 		Shader* TextureShader;
-		HazelTexture2D* WhiteTexture;
+		Ref<HazelTexture2D> WhiteTexture;
 
 		uint32_t QuadIndexCount = 0;
 		QuadVertex* QuadVertexBufferBase = nullptr;
 		QuadVertex* QuadVertexBufferPtr = nullptr;
 
-		std::array<HazelTexture2D*, MaxTextureSlots> TextureSlots;
+		std::array<Ref<HazelTexture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = white texture
 
 		glm::vec4 QuadVertexPositions[4];
