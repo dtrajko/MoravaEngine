@@ -115,6 +115,7 @@ namespace Hazel {
 
 		entt::entity m_SceneEntity;
 		UUID m_SceneID;
+		bool m_IsPlaying = false;
 
 	};
 

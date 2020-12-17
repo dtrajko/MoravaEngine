@@ -24,22 +24,22 @@ namespace Hazel
 
 	void ScriptEngine::Init(const std::string& assemblyPath)
 	{
-
+		Log::GetLogger()->error("ScriptEngine::Init method not implemented yet!");
 	}
 
 	void ScriptEngine::Shutdown()
 	{
-
+		Log::GetLogger()->error("ScriptEngine::Shutdown method not implemented yet!");
 	}
 
 	void ScriptEngine::OnCreateEntity(Entity entity)
 	{
-
+		Log::GetLogger()->error("ScriptEngine::OnCreateEntity method not implemented yet!");
 	}
 
-	void ScriptEngine::OnUpdateEntity(uint32_t entityID, Timestep ts)
+	void ScriptEngine::OnUpdateEntity(UUID sceneID, uint32_t entityID, Timestep ts)
 	{
-
+		Log::GetLogger()->error("ScriptEngine::OnUpdateEntity method not implemented yet!");
 	}
 
 	void ScriptEngine::InitScriptEntity(Entity entity)
@@ -49,7 +49,7 @@ namespace Hazel
 
 	void ScriptEngine::OnInitEntity(ScriptComponent& script, uint32_t entityID, uint32_t sceneID)
 	{
-
+		Log::GetLogger()->error("ScriptEngine::OnInitEntity method not implemented yet!");
 	}
 
 	const ScriptModuleFieldMap& ScriptEngine::GetFieldMap()
@@ -60,6 +60,12 @@ namespace Hazel
 	void ScriptEngine::InstantiateEntityClass(Entity entity)
 	{
 		Log::GetLogger()->error("ScriptEngine::InstantiateEntityClass method not implemented yet!");
+	}
+
+	bool ScriptEngine::ModuleExists(std::string moduleName)
+	{
+		Log::GetLogger()->error("ScriptEngine::ModuleExists method not implemented yet!");
+		return true;
 	}
 
 }

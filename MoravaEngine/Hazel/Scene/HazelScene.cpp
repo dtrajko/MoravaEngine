@@ -47,6 +47,95 @@ namespace Hazel {
 		Init();
 	}
 
+	void HazelScene::Init()
+	{
+		Log::GetLogger()->error("HazelScene::Init method not implemented yet!");
+	}
+
+	// Merge OnUpdate/Render into one function?
+	void HazelScene::OnUpdate(float ts)
+	{
+		//	ECS Update all entities
+		auto view = m_Registry.view<ScriptComponent>();
+		for (auto entity : view)
+		{
+			UUID entityID = m_Registry.get<IDComponent>(entity).ID;
+			Entity e = { entity, this };
+			if (ScriptEngine::ModuleExists(e.GetComponent<ScriptComponent>().ModuleName)) {
+				ScriptEngine::OnUpdateEntity(m_SceneID, entityID, ts);
+			}
+		}
+
+		m_Registry.view<MeshComponent>().each([=](auto entity, auto& mc)
+			{
+				auto mesh = mc.Mesh;
+				if (mesh) {
+					mesh->OnUpdate(ts, false);
+				}
+			});
+
+		SceneRenderer::BeginScene(this);
+
+		// Render entities
+		m_Registry.view<MeshComponent>().each([=](auto entity, auto& mc)
+			{
+				// TODO: Should we render (logically)
+				SceneRenderer::SubmitEntity(Entity{ entity, this });
+			});
+
+		SceneRenderer::EndScene();
+
+		// Update scripts
+		{
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+				{
+					// TODO: Move to Scene::OnScenePlay
+					if (!nsc.Instance)
+					{
+						nsc.Instance = nsc.InstantiateScript();
+						nsc.Instance->m_Entity = Entity{ entity, this };
+						nsc.Instance->OnCreate();
+					}
+
+					nsc.Instance->OnUpdate(ts);
+				});
+		}
+
+		// Render 2D
+		HazelCamera* mainCamera = nullptr;
+		glm::mat4* cameraTransform = nullptr;
+		{
+			auto view = m_Registry.view<TransformComponent, CameraComponent>();
+
+			for (auto entity : view)
+			{
+				auto [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+
+				if (camera.Primary)
+				{
+					mainCamera = &camera.Camera;
+					cameraTransform = &transform.GetTransform();
+					break;
+				}
+			}
+		}
+
+		if (mainCamera)
+		{
+			// Renderer2D::BeginScene(mainCamera->GetProjection(), *cameraTransform);
+
+			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+			for (auto entity : group)
+			{
+				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+
+				// Renderer2D::DrawQuad(transform, sprite.Color);
+			}
+
+			// Renderer2D::EndScene();
+		}
+	}
+
 	void HazelScene::SetEnvironment(const Environment& environment)
 	{
 		m_Environment = environment;
@@ -212,79 +301,6 @@ namespace Hazel {
 		return entityClone;
 	}
 
-	void HazelScene::OnUpdate(float ts)
-	{
-		//	ECS Update all entities
-		m_Registry.view<MeshComponent>().each([=](auto entity, auto& mc)
-			{
-				auto mesh = mc.Mesh;
-				if (mesh) {
-					mesh->OnUpdate(ts, false);
-				}
-			});
-
-		SceneRenderer::BeginScene(this);
-
-		// Render entities
-		m_Registry.view<MeshComponent>().each([=](auto entity, auto& mc)
-			{
-				// TODO: Should we render (logically)
-				SceneRenderer::SubmitEntity(Entity{ entity, this });
-			});
-
-		SceneRenderer::EndScene();
-
-		// Update scripts
-		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-			{
-				// TODO: Move to Scene::OnScenePlay
-				if (!nsc.Instance)
-				{
-					nsc.Instance = nsc.InstantiateScript();
-					nsc.Instance->m_Entity = Entity{ entity, this };
-					nsc.Instance->OnCreate();
-				}
-
-				nsc.Instance->OnUpdate(ts);
-			});
-		}
-
-		// Render 2D
-		HazelCamera* mainCamera = nullptr;
-		glm::mat4* cameraTransform = nullptr;
-		{
-			auto view = m_Registry.view<TransformComponent, CameraComponent>();
-
-			for (auto entity : view)
-			{
-				auto [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
-
-				if (camera.Primary)
-				{
-					mainCamera = &camera.Camera;
-					cameraTransform = &transform.GetTransform();
-					break;
-				}
-			}
-		}
-
-		if (mainCamera)
-		{
-			// Renderer2D::BeginScene(mainCamera->GetProjection(), *cameraTransform);
-
-			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-			for (auto entity : group)
-			{
-				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-			
-				// Renderer2D::DrawQuad(transform, sprite.Color);
-			}
-
-			// Renderer2D::EndScene();
-		}
-	}
-
 	void HazelScene::OnEvent(Event& e)
 	{
 	}
@@ -295,13 +311,20 @@ namespace Hazel {
 
 		auto view = m_Registry.view<ScriptComponent>();
 		for (auto entity : view) {
-			ScriptEngine::InstantiateEntityClass({ entity, this });
+			Entity e = { entity, this };
+			if (ScriptEngine::ModuleExists(e.GetComponent<ScriptComponent>().ModuleName)) { // TODO implemented method
+				ScriptEngine::InstantiateEntityClass({ entity, this });
+			}
 		}
+
+		m_IsPlaying = true;
 	}
 
 	void HazelScene::OnRuntimeStop()
 	{
 		s_ScriptEntityIDMap = &s_EntityIDMap;
+
+		m_IsPlaying = false;
 	}
 
 	void HazelScene::OnViewportResize(uint32_t width, uint32_t height)
@@ -338,11 +361,6 @@ namespace Hazel {
 				}
 			});
 		}
-	}
-
-	void HazelScene::Init()
-	{
-		Log::GetLogger()->error("HazelScene::Init method not implemented yet!");
 	}
 
 	template<typename T>

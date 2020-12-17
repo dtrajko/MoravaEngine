@@ -1,4 +1,6 @@
 #include "OpenGLVertexArray.h"
+#include "../../Renderer/HazelRenderer.h"
+
 #include "../../../Log.h"
 
 #include <GL/glew.h>
@@ -39,11 +41,21 @@ namespace Hazel {
 
 	void OpenGLVertexArray::Bind() const
 	{
+		//	Ref<const OpenGLVertexArray> instance = this;
+		//	Renderer::Submit([instance]() {
+		//		glBindVertexArray(instance->m_RendererID);
+		//	});
+
 		glBindVertexArray(m_RendererID);
 	}
 
 	void OpenGLVertexArray::Unbind() const
 	{
+		//	Ref<const OpenGLVertexArray> instance = this;
+		//	HazelRenderer::Submit([this]() {
+		//		glBindVertexArray(0);
+		//	});
+
 		glBindVertexArray(0);
 	}
 
@@ -54,33 +66,37 @@ namespace Hazel {
 		Bind();
 		vertexBuffer->Bind();
 
-		Ref<OpenGLVertexArray> instance = this;
+		// Ref<OpenGLVertexArray> instance = this;
 
 		// Renderer::Submit([this, vertexBuffer]() {
-			const auto& layout = vertexBuffer->GetLayout();
-			for (const auto& element : layout)
+		const auto& layout = vertexBuffer->GetLayout();
+		for (const auto& element : layout)
+		{
+			auto glBaseType = ShaderDataTypeToOpenGLBaseType(element.Type);
+			// glEnableVertexAttribArray(instance->m_VertexBufferIndex);
+			glEnableVertexAttribArray(m_VertexBufferIndex);
+			if (glBaseType == GL_INT)
 			{
-				auto glBaseType = ShaderDataTypeToOpenGLBaseType(element.Type);
-				glEnableVertexAttribArray(instance->m_VertexBufferIndex);
-				if (glBaseType == GL_INT)
-				{
-					glVertexAttribIPointer(instance->m_VertexBufferIndex,
-						element.GetComponentCount(),
-						glBaseType,
-						layout.GetStride(),
-						(const void*)(intptr_t)element.Offset);
-				}
-				else
-				{
-					glVertexAttribPointer(instance->m_VertexBufferIndex,
-						element.GetComponentCount(),
-						glBaseType,
-						element.Normalized ? GL_TRUE : GL_FALSE,
-						layout.GetStride(),
-						(const void*)(intptr_t)element.Offset);
-				}
-				instance->m_VertexBufferIndex++;
+				// glVertexAttribIPointer(instance->m_VertexBufferIndex,
+				glVertexAttribIPointer(m_VertexBufferIndex,
+					element.GetComponentCount(),
+					glBaseType,
+					layout.GetStride(),
+					(const void*)(intptr_t)element.Offset);
 			}
+			else
+			{
+				// glVertexAttribPointer(instance->m_VertexBufferIndex,
+				glVertexAttribPointer(m_VertexBufferIndex,
+					element.GetComponentCount(),
+					glBaseType,
+					element.Normalized ? GL_TRUE : GL_FALSE,
+					layout.GetStride(),
+					(const void*)(intptr_t)element.Offset);
+			}
+			// instance->m_VertexBufferIndex++;
+			m_VertexBufferIndex++;
+		}
 		// });
 		m_VertexBuffers.push_back(vertexBuffer);
 	}

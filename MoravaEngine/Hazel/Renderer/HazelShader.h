@@ -151,7 +151,7 @@ namespace Hazel
 	};
 
 	// This should be eventually handled by the Asset Manager
-	class ShaderLibrary
+	class ShaderLibrary : public RefCounted
 	{
 	public:
 		ShaderLibrary();
@@ -162,6 +162,7 @@ namespace Hazel
 		void Load(const std::string& name, const std::string& path);
 
 		Ref<HazelShader>& Get(const std::string& name);
+
 	private:
 		std::unordered_map<std::string, Ref<HazelShader>> m_Shaders;
 	};

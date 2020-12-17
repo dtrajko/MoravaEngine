@@ -123,7 +123,6 @@ void EnvironmentMap::Init()
 
     // Temporary code Hazel LIVE! #004
     Hazel::HazelRenderer::Init();
-    // Hazel::Renderer2D::Init();
 
     bool depthTest = true;
     Hazel::Renderer2D::Init();

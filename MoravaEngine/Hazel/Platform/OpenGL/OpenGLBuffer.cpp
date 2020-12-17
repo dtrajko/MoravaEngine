@@ -63,22 +63,29 @@ namespace Hazel {
 	{
 		m_LocalData = Buffer::Copy(data, size);
 
-		Ref<OpenGLIndexBuffer> instance = this;
-		// Renderer::Submit([instance]() mutable {
-		glCreateBuffers(1, &instance->m_RendererID);
-		glNamedBufferData(instance->m_RendererID, instance->m_Size, instance->m_LocalData.Data, GL_STATIC_DRAW);
-		// });
+		//	Ref<OpenGLIndexBuffer> instance = this;
+		//	Renderer::Submit([instance]() mutable {
+		//		glCreateBuffers(1, &instance->m_RendererID);
+		//		glNamedBufferData(instance->m_RendererID, instance->m_Size, instance->m_LocalData.Data, GL_STATIC_DRAW);
+		//	});
+
+		glCreateBuffers(1, &m_RendererID);
+		glNamedBufferData(m_RendererID, m_Size, m_LocalData.Data, GL_STATIC_DRAW);
 	}
 
 	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t size)
 		: m_Size(size)
 	{
 		// m_LocalData = Buffer(size);
-		Ref<OpenGLIndexBuffer> instance = this;
-		// Renderer::Submit([instance]() mutable {
-		glCreateBuffers(1, &instance->m_RendererID);
-		glNamedBufferData(instance->m_RendererID, instance->m_Size, nullptr, GL_DYNAMIC_DRAW);
-		// });
+
+		//	Ref<OpenGLIndexBuffer> instance = this;
+		//	Renderer::Submit([instance]() mutable {
+		//		glCreateBuffers(1, &instance->m_RendererID);
+		//		glNamedBufferData(instance->m_RendererID, instance->m_Size, nullptr, GL_DYNAMIC_DRAW);
+		//	});
+
+		glCreateBuffers(1, &m_RendererID);
+		glNamedBufferData(m_RendererID, m_Size, nullptr, GL_DYNAMIC_DRAW);
 	}
 
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()

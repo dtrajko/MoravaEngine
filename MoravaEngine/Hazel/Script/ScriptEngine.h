@@ -63,7 +63,7 @@ namespace Hazel
 		static void Shutdown();
 
 		static void OnCreateEntity(Entity entity);
-		static void OnUpdateEntity(uint32_t entityID, Timestep ts);
+		static void OnUpdateEntity(UUID sceneID, uint32_t entityID, Timestep ts);
 
 		static void InitScriptEntity(Entity entity);
 		static void OnInitEntity(ScriptComponent& script, uint32_t entityID, uint32_t sceneID);
@@ -71,6 +71,8 @@ namespace Hazel
 		static const ScriptModuleFieldMap& GetFieldMap();
 
 		static void InstantiateEntityClass(Entity entity);
+
+		static bool ModuleExists(std::string moduleName);
 
 	};
 }

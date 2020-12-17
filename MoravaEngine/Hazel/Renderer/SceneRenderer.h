@@ -67,7 +67,9 @@ namespace Hazel {
 		SceneRenderer(std::string filepath, Scene* scene);
 		~SceneRenderer();
 
-		void Init(std::string filepath, Scene* scene);
+		static void Init(); // TODO
+
+		void Init(std::string filepath, Scene* scene); // TODO convert to static
 
 		static void SetViewportSize(uint32_t width, uint32_t height);
 
@@ -91,7 +93,7 @@ namespace Hazel {
 		inline HazelLight GetLight() { return s_Data.SceneData.ActiveLight; }
 		inline void SetLight(HazelLight light) { s_Data.SceneData.ActiveLight = light; }
 		Environment Load(const std::string& filepath);
-		void SetEnvironment(Environment environment);
+		static void SetEnvironment(Environment environment);
 		std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);
 		inline Shader* GetShaderSkybox() { return m_ShaderSkybox; }
 		inline Shader* GetShaderGrid() { return m_ShaderGrid; }
@@ -105,7 +107,7 @@ namespace Hazel {
 		static void CompositePass();
 
 		// From EnvironmentMap
-		void SetupShaders();
+		void SetupShaders(); // TODO convert to static
 
 	public:
 		static SceneRendererData s_Data;

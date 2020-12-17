@@ -3,41 +3,30 @@
 #include "../Core/Assert.h"
 #include "VertexArray.h"
 #include "Renderer2D.h"
+#include "SceneRenderer.h"
 
 #include "../../Log.h"
 
 
 namespace Hazel {
 
+	RendererAPIType RendererAPI::s_CurrentRendererAPI = RendererAPIType::OpenGL;
+
 	struct RendererData
 	{
 		Ref<RenderPass> m_ActiveRenderPass;
 		RenderCommandQueue m_CommandQueue;
-		Scope<ShaderLibrary> m_ShaderLibrary;
+		Ref<ShaderLibrary> m_ShaderLibrary;
 		Ref<VertexArray> m_FullscreenQuadVertexArray;
 	};
 
 	static RendererData s_Data;
 
-	void HazelRenderer::Clear()
-	{
-	}
-
-	void HazelRenderer::Clear(float r, float g, float b, float a)
-	{
-	}
-
-	void HazelRenderer::SetClearColor(float r, float g, float b, float a)
-	{
-	}
-
-	void HazelRenderer::ClearMagenta()
-	{
-	}
-
 	void HazelRenderer::Init()
 	{
-		// SceneRenderer::Init();
+		s_Data.m_ShaderLibrary = Ref<ShaderLibrary>::Create();
+
+		// SceneRenderer::Init(); // TODO
 
 		// Create fullscreen quad
 		float x = -1;
@@ -80,12 +69,28 @@ namespace Hazel {
 		Renderer2D::Init();
 	}
 
+	void HazelRenderer::Clear()
+	{
+	}
+
+	void HazelRenderer::Clear(float r, float g, float b, float a)
+	{
+	}
+
+	void HazelRenderer::SetClearColor(float r, float g, float b, float a)
+	{
+	}
+
+	void HazelRenderer::ClearMagenta()
+	{
+	}
+
 	void HazelRenderer::SetLineThickness(float thickness)
 	{
 		glLineWidth(thickness);
 	}
 
-	const Scope<ShaderLibrary>& HazelRenderer::GetShaderLibrary()
+	const Ref<ShaderLibrary>& HazelRenderer::GetShaderLibrary()
 	{
 		return s_Data.m_ShaderLibrary;
 	}

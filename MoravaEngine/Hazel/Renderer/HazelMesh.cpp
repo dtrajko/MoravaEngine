@@ -591,11 +591,15 @@ namespace Hazel {
 
 	HazelMesh::~HazelMesh()
 	{
-		for (Material* material : m_Materials)
+		for (auto material : m_Materials) {
 			delete material;
+		}
 
-		for (Texture* texture : m_Textures)
-			delete texture;
+		for (auto texture : m_Textures) {
+			if (texture != nullptr) {
+				delete texture;
+			}
+		}
 
 		//	for (Submesh* submesh : m_Submeshes)
 		//		delete submesh;

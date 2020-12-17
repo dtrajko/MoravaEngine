@@ -29,6 +29,11 @@ namespace Hazel {
     {
     }
 
+    void SceneRenderer::Init()
+    {
+        // TODO
+    }
+
     void SceneRenderer::Init(std::string filepath, Scene* scene)
     {
         m_SamplerSlots = new std::map<std::string, unsigned int>();

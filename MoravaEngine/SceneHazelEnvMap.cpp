@@ -340,6 +340,11 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
                 Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
             }
+
+            float fovDegrees = m_EnvironmentMap->m_ActiveCamera->GetPerspectiveVerticalFOV();
+            if (ImGui::SliderFloat("FOV", &fovDegrees, -60.0f, 180.0f)) {
+                m_EnvironmentMap->m_ActiveCamera->SetPerspectiveVerticalFOV(fovDegrees);
+            }
         }
     }
     ImGui::End();
