@@ -64,8 +64,8 @@ public:
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
 	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
 	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
-	inline Hazel::HazelTexture2D* GetCheckerboardTexture() { return m_CheckerboardTexture; }
-	inline Hazel::HazelTextureCube* GetSkyboxTexture() { return m_SkyboxTexture; }
+	inline Hazel::Ref < Hazel::HazelTexture2D> GetCheckerboardTexture() { return m_CheckerboardTexture; }
+	inline Hazel::Ref<Hazel::HazelTextureCube> GetSkyboxTexture() { return m_SkyboxTexture; }
 	Ref<Hazel::Entity> GetMeshEntity();
 	inline float& GetSkyboxExposureFactor() { return m_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
@@ -79,7 +79,7 @@ private:
 	void SetupShaders();
 	void UpdateUniforms();
 	void UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMaterial* m_EnvMapMaterial);
-	void SetSkybox(Hazel::HazelTextureCube* skybox);
+	void SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox);
 	void Init();
 
 	// SceneRenderer
@@ -122,7 +122,7 @@ private:
 	Shader* m_ShaderRenderer2D_Line; // Renderer2D::s_Data.LineShader
 
 	CubeSkybox* m_SkyboxCube;
-	Hazel::HazelTextureCube* m_SkyboxTexture;
+	Hazel::Ref<Hazel::HazelTextureCube> m_SkyboxTexture;
 	float m_SkyboxExposureFactor = 0.5f;
 
 	Quad* m_Quad;
@@ -136,7 +136,7 @@ private:
 
 	/** BEGIN properties Hazelnut/EditorLayer **/
 	// Editor resources
-	Hazel::HazelTexture2D* m_CheckerboardTexture;
+	Hazel::Ref<Hazel::HazelTexture2D> m_CheckerboardTexture;
 
 	Hazel::Entity m_CameraEntity;
 	Hazel::Entity m_DirectionalLightEntity;

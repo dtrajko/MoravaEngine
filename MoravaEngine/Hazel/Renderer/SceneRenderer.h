@@ -1,10 +1,11 @@
 #pragma once
 
+#include "../Core/Ref.h"
+#include "../Scene/Entity.h"
 #include "RenderPass.h"
 #include "HazelTexture.h"
 #include "RenderCommandQueue.h"
 #include "EditorCamera.h"
-#include "../Scene/Entity.h"
 
 #include "../../Camera.h"
 #include "../../HazelFullscreenQuad.h"
@@ -12,7 +13,6 @@
 
 
 namespace Hazel {
-
 
 	struct SceneRendererOptions
 	{
@@ -22,18 +22,18 @@ namespace Hazel {
 
 	struct SceneRendererData
 	{
-		Hazel::HazelScene* ActiveScene = nullptr;
+		HazelScene* ActiveScene = nullptr;
 		struct SceneInfo
 		{
 			Camera* SceneCamera;
 
 			// Resources
 			Material* SkyboxMaterial;
-			Hazel::Environment SceneEnvironment;
-			Hazel::HazelLight ActiveLight;
+			Environment SceneEnvironment;
+			HazelLight ActiveLight;
 		} SceneData;
 
-		Hazel::HazelTexture2D* BRDFLUT;
+		Ref<HazelTexture2D> BRDFLUT;
 
 		Shader* CompositeShader;
 
@@ -56,7 +56,7 @@ namespace Hazel {
 		SceneRendererOptions Options;
 
 		// Renderer data
-		Hazel::RenderCommandQueue* m_CommandQueue;
+		RenderCommandQueue* m_CommandQueue;
 	};
 
 
@@ -91,12 +91,12 @@ namespace Hazel {
 		inline HazelLight GetLight() { return s_Data.SceneData.ActiveLight; }
 		inline void SetLight(HazelLight light) { s_Data.SceneData.ActiveLight = light; }
 		Environment Load(const std::string& filepath);
-		void SetEnvironment(Hazel::Environment environment);
-		std::pair<Hazel::HazelTextureCube*, Hazel::HazelTextureCube*> CreateEnvironmentMap(const std::string& filepath);
+		void SetEnvironment(Environment environment);
+		std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);
 		inline Shader* GetShaderSkybox() { return m_ShaderSkybox; }
 		inline Shader* GetShaderGrid() { return m_ShaderGrid; }
 		inline Shader* GetShaderComposite() { return s_Data.CompositeShader; }
-		inline Hazel::HazelTexture2D* GetEnvEquirect() { return m_EnvEquirect; }
+		inline Ref<HazelTexture2D> GetEnvEquirect() { return m_EnvEquirect; }
 		uint32_t GetFinalColorBufferID();
 
 	private:
@@ -119,10 +119,10 @@ namespace Hazel {
 		Shader* m_ShaderSkybox;
 
 		// Intermediate textures
-		Hazel::HazelTextureCube* m_EnvUnfiltered;
-		Hazel::HazelTexture2D* m_EnvEquirect;
-		Hazel::HazelTextureCube* m_EnvFiltered;
-		Hazel::HazelTextureCube* m_IrradianceMap;
+		Ref<HazelTextureCube> m_EnvUnfiltered;
+		Ref<HazelTexture2D> m_EnvEquirect;
+		Ref<HazelTextureCube> m_EnvFiltered;
+		Ref<HazelTextureCube> m_IrradianceMap;
 
 		float m_GridScale = 16.025f;
 		float m_GridSize = 0.025f;

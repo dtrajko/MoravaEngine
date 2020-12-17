@@ -145,7 +145,9 @@ namespace Hazel {
 		virtual unsigned int GetSize() const = 0;
 		virtual uint32_t GetRendererID() const = 0;
 
+		static Ref<IndexBuffer> Create(uint32_t size);
 		static Ref<IndexBuffer> Create(void* data, uint32_t size = 0);
+
 	};
 
 }

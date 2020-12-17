@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../Core/Ref.h"
 #include "../Core/Buffer.h"
 #include "ShaderUniform.h"
 
@@ -103,7 +104,7 @@ namespace Hazel
 
 	};
 
-	class HazelShader
+	class HazelShader : public RefCounted
 	{
 	public:
 		using ShaderReloadedCallback = std::function<void()>;
@@ -127,8 +128,8 @@ namespace Hazel
 		// Represents a complete shader program stored in a single file.
 		// Note: currently for simplicity this is simply a string filepath, however
 		//       in the future this will be an asset object + metadata
-		static HazelShader* Create(const std::string& filepath);
-		static HazelShader* CreateFromString(const std::string& source);
+		static Ref<HazelShader> Create(const std::string& filepath);
+		static Ref<HazelShader> CreateFromString(const std::string& source);
 
 		virtual void SetVSMaterialUniformBuffer(Buffer buffer) = 0;
 		virtual void SetPSMaterialUniformBuffer(Buffer buffer) = 0;
@@ -145,7 +146,8 @@ namespace Hazel
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) = 0;
 
 		// Temporary, before we have an asset manager
-		static std::vector<HazelShader*> s_AllShaders;
+		static std::vector<Ref<HazelShader>> s_AllShaders;
+
 	};
 
 	// This should be eventually handled by the Asset Manager

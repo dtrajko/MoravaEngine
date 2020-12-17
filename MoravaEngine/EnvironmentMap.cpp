@@ -346,7 +346,7 @@ void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMater
     /**** END Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
 }
 
-void EnvironmentMap::SetSkybox(Hazel::HazelTextureCube* skybox)
+void EnvironmentMap::SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox)
 {
     m_SkyboxTexture = skybox;
     m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));

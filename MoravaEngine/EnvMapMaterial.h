@@ -31,7 +31,7 @@ private:
 	struct AlbedoInput
 	{
 		glm::vec3 Color = { 0.972f, 0.96f, 0.915f }; // Silver, from https://docs.unrealengine.com/en-us/Engine/Rendering/Materials/PhysicallyBased
-		Hazel::HazelTexture2D* TextureMap;
+		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
 		bool SRGB = true;
 		bool UseTexture = false;
 	};
@@ -39,7 +39,7 @@ private:
 
 	struct NormalInput
 	{
-		Hazel::HazelTexture2D* TextureMap;
+		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
 		bool UseTexture = false;
 	};
 	NormalInput m_NormalInput;
@@ -47,7 +47,7 @@ private:
 	struct MetalnessInput
 	{
 		float Value = 1.0f;
-		Hazel::HazelTexture2D* TextureMap;
+		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
 		bool UseTexture = false;
 	};
 	MetalnessInput m_MetalnessInput;
@@ -55,7 +55,7 @@ private:
 	struct RoughnessInput
 	{
 		float Value = 0.2f;
-		Hazel::HazelTexture2D* TextureMap;
+		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
 		bool UseTexture = false;
 	};
 	RoughnessInput m_RoughnessInput;
@@ -63,7 +63,7 @@ private:
 	struct AOInput
 	{
 		float Value = 1.0f;
-		Hazel::HazelTexture2D* TextureMap;
+		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
 		bool UseTexture = false;
 	};
 	AOInput m_AOInput;
