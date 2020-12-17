@@ -120,6 +120,15 @@ namespace Hazel {
 	{
 		// TODO
 		Log::GetLogger()->error("CopyComponent static method not implemented yet!");
+
+		auto components = srcRegistry.view<T>();
+		for (auto srcEntity : components)
+		{
+			entt::entity destEntity = enttMap.at(srcRegistry.get<IDComponent>(srcEntity).ID);
+
+			auto& srcComponent = srcRegistry.get<T>(srcEntity);
+			auto& destComponent = dstRegistry.emplace<T>(destEntity, srcComponent);
+		}
 	}
 
 	/**
@@ -139,21 +148,23 @@ namespace Hazel {
 		auto idComponents = m_Registry.view<IDComponent>();
 		for (auto entity : idComponents)
 		{
-			Entity e = target->CreateEntityWithID(m_Registry.get<IDComponent>(entity).ID, "Entity");
+			auto uuid = m_Registry.get<IDComponent>(entity).ID;
+			Entity e = target->CreateEntityWithID(uuid, "Entity");
+			// enttMap[uuid] = e.m_EntityHandle;
 
-			if (m_Registry.has<TransformComponent>(entity)) {
-				target->m_Registry.emplace<TransformComponent>(entity, m_Registry.get<TransformComponent>(entity).GetTransform());
-			}
-
-			if (m_Registry.has<MeshComponent>(entity)) {
-				target->m_Registry.emplace<MeshComponent>(entity, m_Registry.get<MeshComponent>(entity).Mesh);
-			}
+			// if (m_Registry.has<TransformComponent>(entity)) {
+			// 	target->m_Registry.emplace<TransformComponent>(entity, m_Registry.get<TransformComponent>(entity).GetTransform());
+			// }
+			// 
+			// if (m_Registry.has<MeshComponent>(entity)) {
+			// 	target->m_Registry.emplace<MeshComponent>(entity, m_Registry.get<MeshComponent>(entity).Mesh);
+			// }
 		}
 
 		auto meshComponents = m_Registry.view<MeshComponent>();
-		for (auto entity : meshComponents)
+		for (auto srcEntity : meshComponents)
 		{
-			m_Registry.get<IDComponent>(entity);
+			m_Registry.get<IDComponent>(srcEntity);
 
 		}
 	}
