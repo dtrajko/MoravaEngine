@@ -59,8 +59,9 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 
     m_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
 
-    m_DisplayHazelGrid = true;
+    m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(scene);
 
+    m_DisplayHazelGrid = true;
     m_DisplayBoundingBoxes = false;
 
     Scene::s_ImGuizmoTransform = nullptr; // &GetMeshEntity()->Transform();
@@ -1131,10 +1132,19 @@ void EnvironmentMap::OnImGuiRender()
     }
     ImGui::End();
 
+    m_SceneHierarchyPanel->OnImGuiRender();
+
     ImGui::ShowMetricsWindow();
 
     ImVec2 workPos = ImGui::GetMainViewport()->GetWorkPos();
     m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
+}
+
+void EnvironmentMap::OnNewScene(glm::vec2 viewportSize)
+{
+    m_SceneRenderer->s_Data.ActiveScene = new Hazel::HazelScene();
+    m_SceneRenderer->s_Data.ActiveScene->OnViewportResize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+    m_SceneHierarchyPanel->SetContext(m_SceneRenderer->s_Data.ActiveScene);
 }
 
 void EnvironmentMap::OnEntityDeleted(Hazel::Entity e)

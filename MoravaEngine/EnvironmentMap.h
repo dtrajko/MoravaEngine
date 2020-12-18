@@ -49,6 +49,8 @@ public:
 
 	void OnImGuiRender();
 
+	void OnNewScene(glm::vec2 viewportSize);
+
 	void OnEntityDeleted(Hazel::Entity e);
 
 	void CameraSyncECS();
@@ -188,5 +190,7 @@ private:
 	Hazel::Ref<Hazel::HazelScene> m_RuntimeScene;
 	Hazel::Ref<Hazel::HazelScene> m_EditorScene;
 	Hazel::Ref<Hazel::HazelScene> m_ActiveScene;
+
+	Hazel::SceneHierarchyPanel* m_SceneHierarchyPanel;
 
 };

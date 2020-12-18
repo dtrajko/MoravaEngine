@@ -131,8 +131,6 @@ private:
 	float m_CurrentTimestamp;
 	EventCooldown m_ResizeViewport;
 
-	Hazel::SceneHierarchyPanel* m_SceneHierarchyPanel;
-
 	bool m_DisplayLineElements;
 	Grid* m_Grid;
 	Pivot* m_PivotScene;

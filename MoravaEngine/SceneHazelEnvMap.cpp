@@ -128,8 +128,6 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupMeshes();
     SetupModels();
 
-    m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel((Scene*)this);
-
     m_DisplayLineElements = false;
     m_Grid = new Grid(20);
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
@@ -388,8 +386,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
         }
     }
     ImGui::End();
-
-    m_SceneHierarchyPanel->OnImGuiRender();
 
     Application::Get()->OnImGuiRender();
 
@@ -734,9 +730,7 @@ bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
 
 void SceneHazelEnvMap::NewScene()
 {
-    m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene = new Hazel::HazelScene();
-    m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene->OnViewportResize((uint32_t)m_ViewportMainSize.x, (uint32_t)m_ViewportMainSize.y);
-    m_SceneHierarchyPanel->SetContext(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
+    m_EnvironmentMap->OnNewScene(m_ViewportMainSize);
 }
 
 void SceneHazelEnvMap::OpenScene()
@@ -744,10 +738,7 @@ void SceneHazelEnvMap::OpenScene()
     std::string filepath = Hazel::FileDialogs::OpenFile("Hazel Scene (*.hazel)\0*.hazel\0");
     if (!filepath.empty())
     {
-        m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene = new Hazel::HazelScene();
-        m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene->OnViewportResize((uint32_t)m_ViewportMainSize.x, (uint32_t)m_ViewportMainSize.y);
-        m_SceneHierarchyPanel->SetContext(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
-
+        m_EnvironmentMap->OnNewScene(m_ViewportMainSize);
         Hazel::SceneSerializer serializer(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
         serializer.Deserialize(filepath);
     }
