@@ -49,6 +49,8 @@ public:
 
 	void OnImGuiRender();
 
+	void OnEntityDeleted(Hazel::Entity e);
+
 	void CameraSyncECS();
 	void UpdateImGuizmo(Window* mainWindow);
 	Hazel::Entity CreateEntity(const std::string& name);

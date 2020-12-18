@@ -792,8 +792,8 @@ void EnvironmentMap::OnImGuiRender()
                 ImGui::Columns(2);
                 ImGui::AlignTextToFramePadding();
 
-                auto light = m_SceneRenderer->GetLight();
-                glm::vec3 lightDirectionPrev = light.Direction;
+                Hazel::HazelLight light = m_SceneRenderer->GetLight();
+                Hazel::HazelLight lightPrev = light;
 
                 ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f);
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
@@ -803,11 +803,12 @@ void EnvironmentMap::OnImGuiRender()
                 ImGuiWrapper::Property("Radiance Prefiltering", m_RadiancePrefilter);
                 ImGuiWrapper::Property("Env Map Rotation", m_EnvMapRotation, -360.0f, 360.0f);
 
-                if (light.Direction != lightDirectionPrev) {
-                    m_SceneRenderer->SetLight(light);
+                m_SceneRenderer->SetLight(light);
+
+                if (light.Direction != lightPrev.Direction) {
                     auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
                     tc.Rotation = glm::eulerAngles(glm::quat(glm::radians(light.Direction)));
-                    lightDirectionPrev = light.Direction;
+                    lightPrev = light;
                 }
 
                 ImGui::Columns(1);
@@ -1134,6 +1135,10 @@ void EnvironmentMap::OnImGuiRender()
 
     ImVec2 workPos = ImGui::GetMainViewport()->GetWorkPos();
     m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
+}
+
+void EnvironmentMap::OnEntityDeleted(Hazel::Entity e)
+{
 }
 
 void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial)
