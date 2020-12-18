@@ -51,6 +51,7 @@ public:
 
 	void OnNewScene(glm::vec2 viewportSize);
 
+	void SelectEntity(Hazel::Entity e);
 	void OnEntityDeleted(Hazel::Entity e);
 
 	void CameraSyncECS();
@@ -141,6 +142,7 @@ private:
 	/** BEGIN properties Hazelnut/EditorLayer **/
 	// Editor resources
 	Hazel::Ref<Hazel::HazelTexture2D> m_CheckerboardTexture;
+	Hazel::Ref<Hazel::HazelTexture2D> m_PlayButtonTex;
 
 	Hazel::Entity m_CameraEntity;
 	Hazel::Entity m_DirectionalLightEntity;

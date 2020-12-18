@@ -22,6 +22,8 @@
 #include "Math.h"
 #include "SceneHazelEnvMap.h"
 
+#include <functional>
+
 
 EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 {
@@ -58,8 +60,13 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     Init(); // requires a valid Camera reference
 
     m_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
+    m_PlayButtonTex = Hazel::HazelTexture2D::Create("Textures/Hazel/PlayButton.png");
+
+    m_EditorScene = Hazel::Ref<Hazel::HazelScene>::Create();
 
     m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(scene);
+    m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvironmentMap::SelectEntity, this, std::placeholders::_1));
+    m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvironmentMap::OnEntityDeleted, this, std::placeholders::_1));
 
     m_DisplayHazelGrid = true;
     m_DisplayBoundingBoxes = false;
@@ -1145,6 +1152,10 @@ void EnvironmentMap::OnNewScene(glm::vec2 viewportSize)
     m_SceneRenderer->s_Data.ActiveScene = new Hazel::HazelScene();
     m_SceneRenderer->s_Data.ActiveScene->OnViewportResize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
     m_SceneHierarchyPanel->SetContext(m_SceneRenderer->s_Data.ActiveScene);
+}
+
+void EnvironmentMap::SelectEntity(Hazel::Entity e)
+{
 }
 
 void EnvironmentMap::OnEntityDeleted(Hazel::Entity e)
