@@ -175,6 +175,8 @@ namespace Hazel
 			if (EntitySelection::s_SelectionContext[0].Entity == entity) {
 				EntitySelection::s_SelectionContext = {};
 			}
+
+			m_EntityDeletedCallback(entity);
 		}
 
 		if (entityCloned) {

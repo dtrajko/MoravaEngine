@@ -1160,6 +1160,9 @@ void EnvironmentMap::SelectEntity(Hazel::Entity e)
 
 void EnvironmentMap::OnEntityDeleted(Hazel::Entity e)
 {
+    if (EntitySelection::s_SelectionContext.size() > 0 && EntitySelection::s_SelectionContext[0].Entity == e) {
+        EntitySelection::s_SelectionContext.clear();
+    }
 }
 
 void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial)
