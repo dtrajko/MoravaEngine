@@ -89,8 +89,16 @@ namespace Hazel {
 
 		void CopyTo(Ref<HazelScene>& target); // Working on Hazel LIVE! #14
 
+		UUID GetUUID() const { return m_SceneID; }
+
+		static Ref<HazelScene> GetScene(UUID uuid);
+
+		// Editor-specific
+		void SetSelectedEntity(entt::entity entity) { m_SelectedEntity = entity; }
+
 	public:
-		// ECS
+		UUID m_SceneID;
+		entt::entity m_SceneEntity;
 		entt::registry m_Registry;
 
 		uint32_t m_ViewportWidth = 0;
@@ -109,12 +117,12 @@ namespace Hazel {
 
 		Ref<HazelMaterialInstance> m_SkyboxMaterial;
 
+		entt::entity m_SelectedEntity;
+
 		float m_SkyboxLOD = 1.0f;
 
 		std::string m_DebugName;
 
-		entt::entity m_SceneEntity;
-		UUID m_SceneID;
 		bool m_IsPlaying = false;
 
 	};

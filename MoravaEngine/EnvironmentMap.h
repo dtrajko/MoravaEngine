@@ -51,8 +51,13 @@ public:
 
 	void OnNewScene(glm::vec2 viewportSize);
 
-	void SelectEntity(Hazel::Entity e);
+	void OnSelected(const SelectedSubmesh& selectionContext);
 	void OnEntityDeleted(Hazel::Entity e);
+
+	bool OnKeyPressedEvent(KeyPressedEvent& e); // EditorLayer::OnKeyPressedEvent()
+	bool OnMouseButtonPressed(MouseButtonPressedEvent& e); // EditorLayer::OnMouseButtonPressedEvent()
+
+	void SelectEntity(Hazel::Entity e);
 
 	void CameraSyncECS();
 	void UpdateImGuizmo(Window* mainWindow);
@@ -101,9 +106,6 @@ public:
 	void OnEvent(Event& e);
 
 private:
-	bool OnKeyPressedEvent(KeyPressedEvent& e); // EditorLayer::OnKeyPressedEvent()
-	bool OnMouseButtonPressed(MouseButtonPressedEvent& e); // EditorLayer::OnMouseButtonPressedEvent()
-	void OnSelected(const SelectedSubmesh& selectionContext);
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();
 	EnvMapMaterial* CreateDefaultMaterial(std::string materialName);

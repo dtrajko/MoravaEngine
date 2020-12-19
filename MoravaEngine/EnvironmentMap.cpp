@@ -1158,13 +1158,6 @@ void EnvironmentMap::SelectEntity(Hazel::Entity e)
 {
 }
 
-void EnvironmentMap::OnEntityDeleted(Hazel::Entity e)
-{
-    if (EntitySelection::s_SelectionContext.size() > 0 && EntitySelection::s_SelectionContext[0].Entity == e) {
-        EntitySelection::s_SelectionContext.clear();
-    }
-}
-
 void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial)
 {
     auto& materials = mesh->GetMaterials();
@@ -1340,7 +1333,19 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 void EnvironmentMap::OnSelected(const SelectedSubmesh& selectionContext)
 {
     // TODO: move to SceneHazelEnvMap
-    // m_SceneHierarchyPanel->SetSelected(selectionContext.Entity);
+    m_SceneHierarchyPanel->SetSelected(selectionContext.Entity);
+    m_EditorScene->SetSelectedEntity(selectionContext.Entity);
+}
+
+void EnvironmentMap::OnEntityDeleted(Hazel::Entity e)
+{
+    if (EntitySelection::s_SelectionContext.size())
+    {
+        if (EntitySelection::s_SelectionContext[0].Entity == e) {
+            EntitySelection::s_SelectionContext.clear();
+            m_EditorScene->SetSelectedEntity({});
+        }
+    }
 }
 
 std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()

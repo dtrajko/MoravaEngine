@@ -260,6 +260,15 @@ namespace Hazel {
 		CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);	
 	}
 
+	Ref<HazelScene> HazelScene::GetScene(UUID uuid)
+	{
+		if (s_ActiveScenes.find(uuid) != s_ActiveScenes.end()) {
+			return s_ActiveScenes.at(uuid);
+		}
+
+		return {};
+	}
+
 	Entity HazelScene::CloneEntity(Entity entity)
 	{
 		Entity entityClone = Entity(m_Registry.create(), this);
