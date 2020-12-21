@@ -21,7 +21,18 @@ namespace Hazel
 		None = 0, Float, Int, UnsignedInt, String, Vec2, Vec3, Vec4
 	};
 
-	struct EntityInstance;
+	const char* FieldTypeToString(FieldType type);
+
+	struct EntityScriptClass;
+	struct EntityInstance
+	{
+		EntityScriptClass* ScriptClass = nullptr;
+
+		uint32_t Handle = 0;
+		HazelScene* SceneInstance = nullptr;
+
+		// MonoObject* GetInstance();
+	};
 
 	struct PublicField
 	{
@@ -56,6 +67,13 @@ namespace Hazel
 
 	using ScriptModuleFieldMap = std::unordered_map<std::string, std::vector<PublicField>>;
 
+	struct EntityInstanceData
+	{
+		EntityInstance Instance;
+		ScriptModuleFieldMap ModuleFieldMap;
+	};
+	using EntityInstanceMap = std::unordered_map<UUID, std::unordered_map<UUID, EntityInstanceData>>;
+
 	class ScriptEngine
 	{
 	public:
@@ -73,6 +91,11 @@ namespace Hazel
 		static void InstantiateEntityClass(Entity entity);
 
 		static bool ModuleExists(std::string moduleName);
+
+		static void CopyEntityScriptData(UUID dstSceneID, UUID srcSceneID);
+
+		static EntityInstanceMap& GetEntityInstanceMap();
+		static EntityInstanceData& GetEntityInstanceData(UUID sceneID, UUID entityID);
 
 	};
 }

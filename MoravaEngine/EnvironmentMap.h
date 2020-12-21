@@ -64,6 +64,7 @@ public:
 	Hazel::Entity CreateEntity(const std::string& name);
 	Hazel::Entity LoadEntity(std::string fullPath);
 	void LoadEnvMapMaterials(Mesh* mesh);
+	void ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop);
 
 	// Setters
 	void SetSkyboxLOD(float LOD);
@@ -162,7 +163,6 @@ private:
 	std::map<std::string, TextureInfo> m_TextureInfo;
 	std::map<std::string, EnvMapMaterial*> m_EnvMapMaterials;
 
-	bool m_DrawOnTopBoundingBoxes = true;
 	glm::vec3 m_NewRay;
 	glm::vec3 m_NewDir;
 
@@ -176,10 +176,6 @@ private:
 
 	Hazel::SceneRenderer* m_SceneRenderer;
 
-	bool m_DisplayHazelGrid;
-
-	bool m_DisplayBoundingBoxes;
-
 	glm::vec2 m_WorkPosImGui; // window offset on monitor real estate
 
 	enum class SceneState
@@ -190,11 +186,19 @@ private:
 	};
 	SceneState m_SceneState;
 
+	bool m_DisplayHazelGrid;
+	bool m_DisplayBoundingBoxes;
+	bool m_DrawOnTopBoundingBoxes = true;
+
 	// Hazel LIVE! #014
 	Hazel::Ref<Hazel::HazelScene> m_RuntimeScene;
 	Hazel::Ref<Hazel::HazelScene> m_EditorScene;
 	Hazel::Ref<Hazel::HazelScene> m_ActiveScene;
 
 	Hazel::SceneHierarchyPanel* m_SceneHierarchyPanel;
+
+	// Hazel LIVE! #015
+	bool m_UIShowBoundingBoxes;
+	bool m_UIShowBoundingBoxesOnTop;
 
 };

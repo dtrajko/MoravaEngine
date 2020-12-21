@@ -257,7 +257,12 @@ namespace Hazel {
 		CopyComponent<ScriptComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<SpriteRendererComponent>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);	
+		CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);
+
+		const auto& entityInstanceMap = ScriptEngine::GetEntityInstanceMap();
+		if (entityInstanceMap.find(target->GetUUID()) != entityInstanceMap.end()) {
+			ScriptEngine::CopyEntityScriptData(target->GetUUID(), m_SceneID);
+		}
 	}
 
 	Ref<HazelScene> HazelScene::GetScene(UUID uuid)
@@ -308,6 +313,10 @@ namespace Hazel {
 		Log::GetLogger()->warn("Method HazelScene::CopyEntity implemented poorly [Tag: '{0}']", entity.GetComponent<TagComponent>().Tag);
 
 		return entityClone;
+	}
+
+	void HazelScene::DuplicateEntity(Entity entity)
+	{
 	}
 
 	void HazelScene::OnEvent(Event& e)

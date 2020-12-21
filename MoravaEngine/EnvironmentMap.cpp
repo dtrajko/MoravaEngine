@@ -246,6 +246,10 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
     }
 }
 
+void EnvironmentMap::ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop)
+{
+}
+
 EnvMapMaterial* EnvironmentMap::CreateDefaultMaterial(std::string materialName)
 {
     EnvMapMaterial* envMapMaterial = new EnvMapMaterial();
@@ -1254,6 +1258,60 @@ void EnvironmentMap::OnEvent(Event& e)
 
 bool EnvironmentMap::OnKeyPressedEvent(KeyPressedEvent& e)
 {
+    switch (e.GetKeyCode())
+    {
+    case (int)KeyCode::Q:
+        Scene::s_ImGuizmoType = -1;
+        break;
+
+    /**** BEGIN UpdateImGuizmo
+    case (int)KeyCode::W:
+        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+        break;
+    case (int)KeyCode::E:
+        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
+        break;
+    case (int)KeyCode::R:
+        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
+        break;
+    END UpdateImGuizmo ****/
+
+    case (int)KeyCode::G:
+        // Toggle grid
+        if (Input::IsKeyPressed(MORAVA_KEY_LEFT_CONTROL))
+        {
+            Hazel::SceneRenderer::GetOptions().ShowGrid = !Hazel::SceneRenderer::GetOptions().ShowGrid;
+        }
+        break;
+    case (int)KeyCode::B:
+        // Toggle bounding boxes
+        if (Input::IsKeyPressed(MORAVA_KEY_LEFT_CONTROL))
+        {
+            m_UIShowBoundingBoxes = !m_UIShowBoundingBoxes;
+            ShowBoundingBoxes(m_UIShowBoundingBoxes, m_UIShowBoundingBoxesOnTop);
+        }
+        break;
+    case (int)KeyCode::D:
+        if (Input::IsKeyPressed(MORAVA_KEY_LEFT_CONTROL))
+        {
+            if (EntitySelection::s_SelectionContext.size())
+            {
+                Hazel::Entity selectedEntity = EntitySelection::s_SelectionContext[0].Entity;
+                m_EditorScene->DuplicateEntity(selectedEntity);
+            }
+        }
+        break;
+    case (int)KeyCode::Delete:
+        if (EntitySelection::s_SelectionContext.size())
+        {
+            Hazel::Entity selectedEntity = EntitySelection::s_SelectionContext[0].Entity;
+            m_EditorScene->DestroyEntity(selectedEntity);
+            EntitySelection::s_SelectionContext.clear();
+            m_EditorScene->SetSelectedEntity({});
+            m_SceneHierarchyPanel->SetSelected({});
+        }
+        break;
+    }
     return false;
 }
 

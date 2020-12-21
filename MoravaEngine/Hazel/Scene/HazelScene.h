@@ -75,6 +75,7 @@ namespace Hazel {
 		Entity CreateEntityWithID(UUID uuid, const std::string& name = "", bool runtimeMap = false);
 		void DestroyEntity(Entity entity);
 		Entity CloneEntity(Entity entity);
+		void DuplicateEntity(Entity entity); // Cherno's version, same as CloneEntity
 
 		template<typename T>
 		auto GetAllEntitiesWith()
