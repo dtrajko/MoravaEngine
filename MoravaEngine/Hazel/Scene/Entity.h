@@ -71,6 +71,8 @@ namespace Hazel {
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 
+		UUID GetSceneUUID() { return m_Scene->GetUUID(); };
+
 	private:
 		Entity(const std::string& name);
 
@@ -81,7 +83,9 @@ namespace Hazel {
 		Material* m_Material;
 
 
-		friend HazelScene;
+		friend class HazelScene;
+		friend class ScriptEngine;
 
 	};
+
 }

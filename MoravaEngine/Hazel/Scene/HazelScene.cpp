@@ -41,6 +41,13 @@ namespace Hazel {
 
 	void OnScriptComponentDestroy(entt::registry& registry, entt::entity entity)
 	{
+		auto sceneView = registry.view<SceneComponent>();
+		UUID sceneID = registry.get<SceneComponent>(sceneView.front()).SceneID;
+		UUID entityID = registry.get<IDComponent>(entity).ID;
+
+		HazelScene* scene = s_ActiveScenes[sceneID];
+
+		ScriptEngine::OnScriptComponentDestroyed(sceneID, entityID);
 	}
 
 	HazelScene::HazelScene(const std::string& debugName)
