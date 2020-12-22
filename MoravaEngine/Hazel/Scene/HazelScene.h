@@ -126,6 +126,10 @@ namespace Hazel {
 
 		bool m_IsPlaying = false;
 
+
+		friend void OnScriptComponentConstruct(entt::registry& registry, entt::entity entity);
+		friend void OnScriptComponentDestroy(entt::registry& registry, entt::entity entity);
+
 	};
 
 }

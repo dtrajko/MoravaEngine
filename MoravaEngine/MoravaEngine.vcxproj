@@ -88,18 +88,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\mono\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\$(Configuration);$(SolutionDir)vendor\build\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib
-;glew32.lib
-;glfw3.lib
-;assimp-vc142-mtd.lib
-;yaml-cppd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;assimp-vc142-mtd.lib;yaml-cppd.lib;mono-2.0-sgen.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -111,19 +107,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\mono\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\$(Configuration);$(SolutionDir)vendor\build\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib
-;glew32.lib
-;glfw3.lib
-;assimp-vc142-mtd.lib
-;yaml-cppd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;assimp-vc142-mtd.lib;yaml-cppd.lib;mono-2.0-sgen.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -137,7 +129,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\mono\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -145,12 +137,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\$(Configuration);$(SolutionDir)vendor\build\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib
-;glew32.lib
-;glfw3.lib
-;assimp-vc142-mt.lib
-;yaml-cpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;assimp-vc142-mt.lib;yaml-cpp.lib;mono-2.0-sgen.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -164,7 +152,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\mono\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
@@ -173,12 +161,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\$(Configuration);$(SolutionDir)vendor\build\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib
-;glew32.lib
-;glfw3.lib
-;assimp-vc142-mt.lib
-;yaml-cpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;assimp-vc142-mt.lib;yaml-cpp.lib;mono-2.0-sgen.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -235,6 +219,8 @@
     <ClCompile Include="Hazel\Scene\SceneSerializer.cpp" />
     <ClCompile Include="Hazel\Scene\ScriptableEntity.cpp" />
     <ClCompile Include="Hazel\Script\ScriptEngine.cpp" />
+    <ClCompile Include="Hazel\Script\ScriptEngineRegistry.cpp" />
+    <ClCompile Include="Hazel\Script\ScriptWrappers.cpp" />
     <ClCompile Include="InsertionSort.cpp" />
     <ClCompile Include="LearnOpenGL\MeshSSAO.cpp" />
     <ClCompile Include="LearnOpenGL\ModelSSAO.cpp" />
@@ -454,6 +440,8 @@
     <ClInclude Include="Hazel\Scene\SceneSerializer.h" />
     <ClInclude Include="Hazel\Scene\ScriptableEntity.h" />
     <ClInclude Include="Hazel\Script\ScriptEngine.h" />
+    <ClInclude Include="Hazel\Script\ScriptEngineRegistry.h" />
+    <ClInclude Include="Hazel\Script\ScriptWrappers.h" />
     <ClInclude Include="Hazel\Utils\PlatformUtils.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="InsertionSort.h" />

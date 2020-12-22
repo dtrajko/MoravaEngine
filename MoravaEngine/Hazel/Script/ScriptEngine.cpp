@@ -1,5 +1,23 @@
 #include "ScriptEngine.h"
 
+#include <mono/jit/jit.h>
+#include <mono/metadata/assembly.h>
+#include <mono/metadata/debug-helpers.h>
+#include <mono/metadata/attrdefs.h>
+
+#include <iostream>
+#include <chrono>
+#include <thread>
+
+#include <Windows.h>
+#include <winioctl.h>
+
+#include "ScriptEngineRegistry.h"
+
+#include "../Scene/HazelScene.h"
+
+#include "imgui.h"
+
 
 namespace Hazel
 {
@@ -23,15 +41,55 @@ namespace Hazel
 		m_EntityInstance = nullptr;
 	}
 
-	void PublicField::SetValue_Internal(void* value) const
+	PublicField::PublicField(PublicField&& other)
 	{
-
 	}
 
-	void PublicField::GetValue_Internal(void* outValue) const
+	PublicField::~PublicField()
 	{
-
 	}
+
+	void PublicField::CopyStoredValueToRuntime()
+	{
+	}
+
+	bool PublicField::IsRuntimeAvailable() const
+	{
+		return false;
+	}
+
+	void PublicField::SetStoredValueRaw(void* src)
+	{
+	}
+
+	uint8_t* PublicField::AllocateBuffer(FieldType type)
+	{
+		return nullptr;
+	}
+
+	void PublicField::SetStoredValue_Internal(void* value) const
+	{
+	}
+
+	void PublicField::GetStoredValue_Internal(void* outValue) const
+	{
+	}
+
+	void PublicField::SetRuntimeValue_Internal(void* value) const
+	{
+	}
+
+	void PublicField::GetRuntimeValue_Internal(void* outValue) const
+	{
+	}
+
+	// void PublicField::SetValue_Internal(void* value) const
+	// {
+	// }
+
+	// void PublicField::GetValue_Internal(void* outValue) const
+	// {
+	// }
 
 	void ScriptEngine::Init(const std::string& assemblyPath)
 	{
@@ -43,19 +101,76 @@ namespace Hazel
 		Log::GetLogger()->error("ScriptEngine::Shutdown method not implemented yet!");
 	}
 
+	void ScriptEngine::OnSceneDestruct(UUID sceneID)
+	{
+	}
+
+	void ScriptEngine::LoadHazelRuntimeAssembly(const std::string& path)
+	{
+	}
+
+	void ScriptEngine::ReloadAssembly(const std::string& path)
+	{
+	}
+
+	void ScriptEngine::SetSceneContext(const Ref<HazelScene>& scene)
+	{
+	}
+
+	const Ref<HazelScene>& ScriptEngine::GetCurrentSceneContext()
+	{
+		// TODO: insert return statement here
+
+		return Ref<HazelScene>();
+	}
+
 	void ScriptEngine::OnCreateEntity(Entity entity)
 	{
 		Log::GetLogger()->error("ScriptEngine::OnCreateEntity method not implemented yet!");
 	}
 
-	void ScriptEngine::OnUpdateEntity(UUID sceneID, uint32_t entityID, Timestep ts)
+	void ScriptEngine::OnCreateEntity(UUID sceneID, UUID entityID)
+	{
+	}
+
+	void ScriptEngine::OnUpdateEntity(UUID sceneID, UUID entityID, Timestep ts)
 	{
 		Log::GetLogger()->error("ScriptEngine::OnUpdateEntity method not implemented yet!");
+	}
+
+	void ScriptEngine::OnCollision2DBegin(Entity entity)
+	{
+	}
+
+	void ScriptEngine::OnCollision2DBegin(UUID sceneID, UUID entityID)
+	{
+	}
+
+	void ScriptEngine::OnCollision2DEnd(Entity entity)
+	{
+	}
+
+	void ScriptEngine::OnCollision2DEnd(UUID sceneID, UUID entityID)
+	{
+	}
+
+	void ScriptEngine::OnScriptComponentDestroyed(UUID sceneID, UUID entityID)
+	{
+	}
+
+	bool ScriptEngine::ModuleExists(const std::string& moduleName)
+	{
+		Log::GetLogger()->error("ScriptEngine::ModuleExists method not implemented yet!");
+		return true;
 	}
 
 	void ScriptEngine::InitScriptEntity(Entity entity)
 	{
 		Log::GetLogger()->error("ScriptEngine::InitScriptEntity method not implemented yet!");
+	}
+
+	void ScriptEngine::ShutdownScriptEntity(Entity entity, const std::string& moduleName)
+	{
 	}
 
 	void ScriptEngine::OnInitEntity(ScriptComponent& script, uint32_t entityID, uint32_t sceneID)
@@ -73,15 +188,28 @@ namespace Hazel
 		Log::GetLogger()->error("ScriptEngine::InstantiateEntityClass method not implemented yet!");
 	}
 
-	bool ScriptEngine::ModuleExists(std::string moduleName)
+	void ScriptEngine::CopyEntityScriptData(UUID dst, UUID src)
 	{
-		Log::GetLogger()->error("ScriptEngine::ModuleExists method not implemented yet!");
-		return true;
-	}
+		HZ_CORE_ASSERT(s_EntityInstanceMap.find(dst) != s_EntityInstanceMap.end());
+		HZ_CORE_ASSERT(s_EntityInstanceMap.find(src) != s_EntityInstanceMap.end());
 
-	void ScriptEngine::CopyEntityScriptData(UUID dstSceneID, UUID srcSceneID)
-	{
-		Log::GetLogger()->error("ScriptEngine::CopyEntityScriptData method not implemented yet!");
+		auto& dstEntityMap = s_EntityInstanceMap.at(dst);
+		auto& srcEntityMap = s_EntityInstanceMap.at(src);
+
+		for (auto& [entityID, entityInstanceData] : srcEntityMap)
+		{
+			for (auto& [moduleName, srcFieldMap] : srcEntityMap[entityID].ModuleFieldMap)
+			{
+				auto& dstModuleFieldMap = dstEntityMap[entityID].ModuleFieldMap;
+				for (auto& [fieldName, field] : srcFieldMap)
+				{
+					HZ_CORE_ASSERT(dstModuleFieldMap.find(moduleName) != dstModuleFieldMap.end());
+					auto& fieldMap = dstModuleFieldMap.at(moduleName);
+					HZ_CORE_ASSERT(fieldMap.find(fieldName) != fieldMap.end());
+					fieldMap.at(fieldName).SetStoredValueRaw(field.m_StoredValueBuffer);
+				}
+			}
+		}
 	}
 
 	EntityInstanceMap& ScriptEngine::GetEntityInstanceMap()
@@ -95,6 +223,10 @@ namespace Hazel
 		auto& entityIDMap = s_EntityInstanceMap.at(sceneID);
 		HZ_CORE_ASSERT(entityIDMap.find(entityID) != entityIDMap.end(), "Invalid entity ID!");
 		return entityIDMap.at(entityID);
+	}
+
+	void ScriptEngine::OnImGuiRender()
+	{
 	}
 
 	const char* FieldTypeToString(FieldType type)

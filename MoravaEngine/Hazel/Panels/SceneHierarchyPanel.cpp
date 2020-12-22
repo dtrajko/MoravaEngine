@@ -365,11 +365,11 @@ namespace Hazel
 
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
 		{
-			ImGuiWrapper::DrawVec3Control("Translation", component.Translation, 0.0f, 100.0f);
+			ImGuiWrapper::DrawVec3Control("Translation", component.Translation, 0.0f, 80.0f);
 			glm::vec3 rotation = glm::degrees(component.Rotation);
-			ImGuiWrapper::DrawVec3Control("Rotation", rotation, 0.0f, 100.0f);
+			ImGuiWrapper::DrawVec3Control("Rotation", rotation, 0.0f, 80.0f);
 			component.Rotation = glm::radians(rotation);
-			ImGuiWrapper::DrawVec3Control("Scale", component.Scale, 1.0f, 100.0f);
+			ImGuiWrapper::DrawVec3Control("Scale", component.Scale, 1.0f, 80.0f);
 		});
 
 		DrawComponent<MeshComponent>("Mesh", entity, [](auto& component)
@@ -446,54 +446,96 @@ namespace Hazel
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 		});
 
-		DrawComponent<ScriptComponent>("Script", entity, [=](auto& component)
+		DrawComponent<ScriptComponent>("Script", entity, [=](ScriptComponent& sc) mutable
 		{
-			ImGuiWrapper::BeginPropertyGrid();
-			ImGuiWrapper::Property("Module Name", component.ModuleName.c_str());
-
-			// Public Fields
-			auto& fieldMap = ScriptEngine::GetFieldMap();
-			if (fieldMap.find(component.ModuleName) != fieldMap.end())
-			{
-				auto& publicFields = fieldMap.at(component.ModuleName);
-				for (auto& field : publicFields)
-				{
-					switch (field.Type)
-					{
-					case FieldType::Int:
-					{
-						int value = field.GetValue<int>();
-						if (ImGuiWrapper::Property(field.Name.c_str(), value))
-						{
-							field.SetValue(value);
-						}
-						break;
-					}
-					case FieldType::Float:
-					{
-						float value = field.GetValue<float>();
-						if (ImGuiWrapper::Property(field.Name.c_str(), value, 0.2f))
-						{
-							field.SetValue(value);
-						}
-					}
-					case FieldType::Vec2:
-					{
-						glm::vec2 value = field.GetValue<glm::vec2>();
-						if (ImGuiWrapper::Property(field.Name.c_str(), value, 0.2f))
-						{
-							field.SetValue(value);
-						}
-					}
-					}
-				}
-			}
-			EndPropertyGrid();
-
-			if (ImGui::Button("Run Script"))
-			{
-				ScriptEngine::OnCreateEntity(entity);
-			}
+			// UI::BeginPropertyGrid();
+			// std::string oldName = sc.ModuleName;
+			// if (UI::Property("Module Name", sc.ModuleName, !ScriptEngine::ModuleExists(sc.ModuleName))) // TODO: no live edit
+			// {
+			// 	// Shutdown old script
+			// 	if (ScriptEngine::ModuleExists(oldName))
+			// 		ScriptEngine::ShutdownScriptEntity(entity, oldName);
+			// 
+			// 	if (ScriptEngine::ModuleExists(sc.ModuleName))
+			// 		ScriptEngine::InitScriptEntity(entity);
+			// }
+			// 
+			// // Public Fields
+			// if (ScriptEngine::ModuleExists(sc.ModuleName))
+			// {
+			// 	EntityInstanceData& entityInstanceData = ScriptEngine::GetEntityInstanceData(entity.GetSceneUUID(), id);
+			// 	auto& moduleFieldMap = entityInstanceData.ModuleFieldMap;
+			// 	if (moduleFieldMap.find(sc.ModuleName) != moduleFieldMap.end())
+			// 	{
+			// 		auto& publicFields = moduleFieldMap.at(sc.ModuleName);
+			// 		for (auto& [name, field] : publicFields)
+			// 		{
+			// 			bool isRuntime = m_Context->m_IsPlaying && field.IsRuntimeAvailable();
+			// 
+			// 			for (auto& field : publicFields)
+			// 			{
+			// 				switch (field.Type)
+			// 				{
+			// 				case FieldType::Int:
+			// 				{
+			// 					int value = field.GetValue<int>();
+			// 					if (ImGuiWrapper::Property(field.Name.c_str(), value))
+			// 					{
+			// 						field.SetValue(value);
+			// 					}
+			// 					break;
+			// 				}
+			// 				case FieldType::Float:
+			// 				{
+			// 					float value = field.GetValue<float>();
+			// 					if (ImGuiWrapper::Property(field.Name.c_str(), value, 0.2f))
+			// 					{
+			// 						field.SetValue(value);
+			// 					}
+			// 					break;
+			// 				}
+			// 				case FieldType::Vec2:
+			// 				{
+			// 					glm::vec2 value = field.GetValue<glm::vec2>();
+			// 					if (ImGuiWrapper::Property(field.Name.c_str(), value, 0.2f))
+			// 					{
+			// 						field.SetValue(value);
+			// 					}
+			// 					break;
+			// 				}
+			// 				case FieldType::Vec3:
+			// 				{
+			// 					glm::vec3 value = isRuntime ? field.GetRuntimeValue<glm::vec3>() : field.GetStoredValue<glm::vec3>();
+			// 					if (UI::Property(field.Name.c_str(), value, 0.2f))
+			// 					{
+			// 						if (isRuntime)
+			// 							field.SetRuntimeValue(value);
+			// 						else
+			// 							field.SetStoredValue(value);
+			// 					}
+			// 					break;
+			// 				}
+			// 				case FieldType::Vec4:
+			// 				{
+			// 					glm::vec4 value = isRuntime ? field.GetRuntimeValue<glm::vec4>() : field.GetStoredValue<glm::vec4>();
+			// 					if (UI::Property(field.Name.c_str(), value, 0.2f))
+			// 					{
+			// 						if (isRuntime)
+			// 							field.SetRuntimeValue(value);
+			// 						else
+			// 							field.SetStoredValue(value);
+			// 					}
+			// 					break;
+			// 				}
+			// 				}
+			// 			}
+			// }
+			// EndPropertyGrid();
+			// 
+			// if (ImGui::Button("Run Script"))
+			// {
+			// 	ScriptEngine::OnCreateEntity(entity);
+			// }
 		});
 
 		{

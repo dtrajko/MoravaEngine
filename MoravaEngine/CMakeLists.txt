@@ -776,6 +776,7 @@ target_include_directories(
 	../vendor/spdlog/include
     ../vendor/entt/include
 	../vendor/cross-platform/yaml-cpp/include
+	../vendor/mono/include
 )
 
 target_link_directories(
@@ -811,6 +812,7 @@ target_link_libraries(
 	spirv-cross-cored.lib
 #	yaml-cppd.lib
 	yaml-cpp.lib
+	mono-2.0-sgen.lib
 )
 elseif (UNIX)
 target_link_libraries(

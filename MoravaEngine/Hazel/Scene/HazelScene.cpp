@@ -24,20 +24,30 @@ namespace Hazel {
 
 	struct SceneComponent
 	{
-		UUID SceneId;
+		UUID SceneID;
 	};
 
 	void OnScriptComponentConstruct(entt::registry& registry, entt::entity entity)
 	{
+		auto sceneView = registry.view<SceneComponent>();
+		UUID sceneID = registry.get<SceneComponent>(sceneView.front()).SceneID;
+
+		HazelScene* scene = s_ActiveScenes[sceneID];
+
 		auto entityID = registry.get<IDComponent>(entity).ID;
-		HZ_CORE_ASSERT(s_EntityIDMap.find(entityID) != s_EntityIDMap.end());
-		ScriptEngine::InitScriptEntity(s_EntityIDMap.at(entityID));
+		HZ_CORE_ASSERT(scene->m_EntityIDMap.find(entityID) != scene->m_EntityIDMap.end());
+		ScriptEngine::InitScriptEntity(Entity{ scene->m_EntityIDMap.at(entityID), scene });
+	}
+
+	void OnScriptComponentDestroy(entt::registry& registry, entt::entity entity)
+	{
 	}
 
 	HazelScene::HazelScene(const std::string& debugName)
 		: m_DebugName(debugName)
 	{
 		m_Registry.on_construct<ScriptComponent>().connect<&OnScriptComponentConstruct>();
+		m_Registry.on_destroy<ScriptComponent>().connect<&OnScriptComponentDestroy>();
 
 		m_SceneEntity = m_Registry.create();
 		m_Registry.emplace<SceneComponent>(m_SceneEntity, m_SceneID);

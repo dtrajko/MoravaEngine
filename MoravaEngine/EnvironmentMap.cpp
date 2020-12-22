@@ -52,9 +52,11 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 
     SetSkybox(m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap);
 
-    m_EditorCamera = new Hazel::EditorCamera(45.0f, 1.778f, 0.1f, 1000.0f);
+    float fov = 60.0f;
+    float aspectRatio = 1.778f; // 16/9
+    m_EditorCamera = new Hazel::EditorCamera(fov, aspectRatio, 0.1f, 1000.0f);
     m_RuntimeCamera = new RuntimeCamera(scene->GetSettings().cameraPosition, scene->GetSettings().cameraStartYaw, scene->GetSettings().cameraStartPitch, 
-        45.0f, 1.778f, scene->GetSettings().cameraMoveSpeed, 0.1f);
+        fov, aspectRatio, scene->GetSettings().cameraMoveSpeed, 0.1f);
     m_ActiveCamera = m_RuntimeCamera; // m_RuntimeCamera m_EditorCamera;
 
     Init(); // requires a valid Camera reference
@@ -728,9 +730,9 @@ void EnvironmentMap::OnImGuiRender()
             Math::DecomposeTransform(transformImGui, translation, rotationRadians, scale);
             glm::vec3 rotationDegrees = glm::degrees(rotationRadians);
 
-            bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", translation, 0.0f, 100.0f);
-            bool isRotationChanged = ImGuiWrapper::DrawVec3Control("Rotation", rotationDegrees, 0.0f, 100.0f);
-            bool isScaleChanged = ImGuiWrapper::DrawVec3Control("Scale", scale, 1.0f, 100.0f);
+            bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", translation, 0.0f, 80.0f);
+            bool isRotationChanged = ImGuiWrapper::DrawVec3Control("Rotation", rotationDegrees, 0.0f, 80.0f);
+            bool isScaleChanged = ImGuiWrapper::DrawVec3Control("Scale", scale, 1.0f, 80.0f);
 
             if (isTranslationChanged || isRotationChanged || isScaleChanged)
             {
@@ -1379,7 +1381,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
             }
             else {
                 Ref<Hazel::Entity> meshEntity = GetMeshEntity();
-                if (!meshEntity) {
+                if (meshEntity) {
                     m_CurrentlySelectedTransform = &meshEntity->Transform();
                 }
             }

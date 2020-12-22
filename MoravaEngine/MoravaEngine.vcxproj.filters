@@ -593,6 +593,12 @@
     <ClCompile Include="RuntimeCamera.cpp">
       <Filter>Camera</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Script\ScriptEngineRegistry.cpp">
+      <Filter>Hazel\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Script\ScriptWrappers.cpp">
+      <Filter>Hazel\Script</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1272,6 +1278,12 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\Ref.h">
       <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Script\ScriptEngineRegistry.h">
+      <Filter>Hazel\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Script\ScriptWrappers.h">
+      <Filter>Hazel\Script</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
