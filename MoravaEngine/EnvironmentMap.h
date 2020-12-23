@@ -201,4 +201,6 @@ private:
 	bool m_UIShowBoundingBoxes;
 	bool m_UIShowBoundingBoxesOnTop;
 
+	bool m_ReloadScriptOnPlay = true;
+
 };

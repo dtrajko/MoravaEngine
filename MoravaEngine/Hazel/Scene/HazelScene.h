@@ -121,11 +121,11 @@ namespace Hazel {
 		entt::entity m_SelectedEntity;
 
 		float m_SkyboxLOD = 1.0f;
+		bool m_IsPlaying = false;
 
 		std::string m_DebugName;
 
-		bool m_IsPlaying = false;
-
+		friend class SceneHierarchyPanel;
 
 		friend void OnScriptComponentConstruct(entt::registry& registry, entt::entity entity);
 		friend void OnScriptComponentDestroy(entt::registry& registry, entt::entity entity);

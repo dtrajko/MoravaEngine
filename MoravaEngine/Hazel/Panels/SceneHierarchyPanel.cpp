@@ -2,6 +2,7 @@
 
 #include "../Renderer/HazelMesh.h"
 #include "../Script/ScriptEngine.h"
+#include "../ImGui/ImGui.h"
 
 #include "../../Math.h"
 #include "../../ImGuiWrapper.h"
@@ -347,6 +348,10 @@ namespace Hazel
 	{
 		ImGui::AlignTextToFramePadding();
 
+		auto id = entity.GetComponent<IDComponent>().ID;
+
+		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+
 		if (entity.HasComponent<TagComponent>())
 		{
 			auto& tag = entity.GetComponent<TagComponent>().Tag;
@@ -448,94 +453,102 @@ namespace Hazel
 
 		DrawComponent<ScriptComponent>("Script", entity, [=](ScriptComponent& sc) mutable
 		{
-			// UI::BeginPropertyGrid();
-			// std::string oldName = sc.ModuleName;
-			// if (UI::Property("Module Name", sc.ModuleName, !ScriptEngine::ModuleExists(sc.ModuleName))) // TODO: no live edit
-			// {
-			// 	// Shutdown old script
-			// 	if (ScriptEngine::ModuleExists(oldName))
-			// 		ScriptEngine::ShutdownScriptEntity(entity, oldName);
-			// 
-			// 	if (ScriptEngine::ModuleExists(sc.ModuleName))
-			// 		ScriptEngine::InitScriptEntity(entity);
-			// }
-			// 
-			// // Public Fields
-			// if (ScriptEngine::ModuleExists(sc.ModuleName))
-			// {
-			// 	EntityInstanceData& entityInstanceData = ScriptEngine::GetEntityInstanceData(entity.GetSceneUUID(), id);
-			// 	auto& moduleFieldMap = entityInstanceData.ModuleFieldMap;
-			// 	if (moduleFieldMap.find(sc.ModuleName) != moduleFieldMap.end())
-			// 	{
-			// 		auto& publicFields = moduleFieldMap.at(sc.ModuleName);
-			// 		for (auto& [name, field] : publicFields)
-			// 		{
-			// 			bool isRuntime = m_Context->m_IsPlaying && field.IsRuntimeAvailable();
-			// 
-			// 			for (auto& field : publicFields)
-			// 			{
-			// 				switch (field.Type)
-			// 				{
-			// 				case FieldType::Int:
-			// 				{
-			// 					int value = field.GetValue<int>();
-			// 					if (ImGuiWrapper::Property(field.Name.c_str(), value))
-			// 					{
-			// 						field.SetValue(value);
-			// 					}
-			// 					break;
-			// 				}
-			// 				case FieldType::Float:
-			// 				{
-			// 					float value = field.GetValue<float>();
-			// 					if (ImGuiWrapper::Property(field.Name.c_str(), value, 0.2f))
-			// 					{
-			// 						field.SetValue(value);
-			// 					}
-			// 					break;
-			// 				}
-			// 				case FieldType::Vec2:
-			// 				{
-			// 					glm::vec2 value = field.GetValue<glm::vec2>();
-			// 					if (ImGuiWrapper::Property(field.Name.c_str(), value, 0.2f))
-			// 					{
-			// 						field.SetValue(value);
-			// 					}
-			// 					break;
-			// 				}
-			// 				case FieldType::Vec3:
-			// 				{
-			// 					glm::vec3 value = isRuntime ? field.GetRuntimeValue<glm::vec3>() : field.GetStoredValue<glm::vec3>();
-			// 					if (UI::Property(field.Name.c_str(), value, 0.2f))
-			// 					{
-			// 						if (isRuntime)
-			// 							field.SetRuntimeValue(value);
-			// 						else
-			// 							field.SetStoredValue(value);
-			// 					}
-			// 					break;
-			// 				}
-			// 				case FieldType::Vec4:
-			// 				{
-			// 					glm::vec4 value = isRuntime ? field.GetRuntimeValue<glm::vec4>() : field.GetStoredValue<glm::vec4>();
-			// 					if (UI::Property(field.Name.c_str(), value, 0.2f))
-			// 					{
-			// 						if (isRuntime)
-			// 							field.SetRuntimeValue(value);
-			// 						else
-			// 							field.SetStoredValue(value);
-			// 					}
-			// 					break;
-			// 				}
-			// 				}
-			// 			}
-			// }
-			// EndPropertyGrid();
-			// 
-			// if (ImGui::Button("Run Script"))
-			// {
-			// 	ScriptEngine::OnCreateEntity(entity);
-			// }
+			UI::BeginPropertyGrid();
+			std::string oldName = sc.ModuleName;
+
+			if (UI::Property("Module Name", sc.ModuleName, ScriptEngine::ModuleExists(sc.ModuleName))) // TODO: no live edit
+			{
+				// Shutdown old script
+				if (ScriptEngine::ModuleExists(oldName)) {
+					ScriptEngine::ShutdownScriptEntity(entity, oldName);
+				}
+
+				if (ScriptEngine::ModuleExists(sc.ModuleName)) {
+					ScriptEngine::InitScriptEntity(entity);
+				}
+			}
+			
+			// Public Fields
+			if (ScriptEngine::ModuleExists(sc.ModuleName))
+			{
+				EntityInstanceData& entityInstanceData = ScriptEngine::GetEntityInstanceData(entity.GetSceneUUID(), id);
+				auto& moduleFieldMap = entityInstanceData.ModuleFieldMap;
+				if (moduleFieldMap.find(sc.ModuleName) != moduleFieldMap.end())
+				{
+					auto& publicFields = moduleFieldMap.at(sc.ModuleName);
+					for (auto& [name, field] : publicFields)
+					{
+						bool isRuntime = m_Context->m_IsPlaying && field.IsRuntimeAvailable();
+
+						for (auto& field : publicFields)
+						{
+							switch (field.second.Type)
+							{
+							case FieldType::Int:
+							{
+								int value = field.second.GetStoredValue<int>();
+								if (ImGuiWrapper::Property(field.second.Name.c_str(), value))
+								{
+									field.second.SetStoredValue(value);
+								}
+								break;
+							}
+							case FieldType::Float:
+							{
+								float value = field.second.GetStoredValue<float>();
+								if (ImGuiWrapper::Property(field.second.Name.c_str(), value, 0.2f))
+								{
+									field.second.SetStoredValue(value);
+								}
+								break;
+							}
+							case FieldType::Vec2:
+							{
+								glm::vec2 value = field.second.GetStoredValue<glm::vec2>();
+								if (ImGuiWrapper::Property(field.second.Name.c_str(), value, 0.2f))
+								{
+									field.second.SetStoredValue(value);
+								}
+								break;
+							}
+							case FieldType::Vec3:
+							{
+								glm::vec3 value = isRuntime ? field.second.GetRuntimeValue<glm::vec3>() : field.second.GetStoredValue<glm::vec3>();
+								if (UI::Property(field.second.Name.c_str(), value, 0.2f))
+								{
+									if (isRuntime) {
+										field.second.SetRuntimeValue(value);
+									} else {
+										field.second.SetStoredValue(value);
+									}
+								}
+								break;
+							}
+							case FieldType::Vec4:
+							{
+								glm::vec4 value = isRuntime ? field.second.GetRuntimeValue<glm::vec4>() : field.second.GetStoredValue<glm::vec4>();
+								if (UI::Property(field.second.Name.c_str(), value, 0.2f))
+								{
+									if (isRuntime) {
+										field.second.SetRuntimeValue(value);
+									} else {
+										field.second.SetStoredValue(value);
+									}
+								}
+								break;
+							}
+							}
+						}
+					}
+				}
+			}
+
+			EndPropertyGrid();
+
+			if (ImGui::Button("Run Script"))
+			{
+				ScriptEngine::OnCreateEntity(entity);
+			}
 		});
 
 		{

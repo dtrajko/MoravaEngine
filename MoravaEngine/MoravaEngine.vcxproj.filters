@@ -1285,6 +1285,9 @@
     <ClInclude Include="Hazel\Script\ScriptWrappers.h">
       <Filter>Hazel\Script</Filter>
     </ClInclude>
+    <ClInclude Include="Hazel\ImGui\ImGui.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1394,6 +1397,9 @@
     </Filter>
     <Filter Include="Hazel\Editor">
       <UniqueIdentifier>{9fbe7e4a-378d-4b7e-8ff7-5cd4e3f806de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\ImGui">
+      <UniqueIdentifier>{85960568-1b09-4a7d-b4d4-0a4c5567f69e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

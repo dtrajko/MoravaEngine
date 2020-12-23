@@ -537,77 +537,34 @@ namespace Hazel
 		}
 	}
 
-	// TODO: Continue here...
-
-
-	static ScriptModuleFieldMap s_PublicFields;
-
-	PublicField::PublicField(const std::string& name, FieldType type)
-		: Name(name), Type(type)
-	{
-		m_EntityInstance = nullptr;
-	}
-
-	PublicField::PublicField(PublicField&& other)
-	{
-	}
-
-	PublicField::~PublicField()
-	{
-	}
-
-	void PublicField::CopyStoredValueToRuntime()
-	{
-	}
-
-	bool PublicField::IsRuntimeAvailable() const
-	{
-		return false;
-	}
-
-	void PublicField::SetStoredValueRaw(void* src)
-	{
-	}
-
-	uint8_t* PublicField::AllocateBuffer(FieldType type)
-	{
-		return nullptr;
-	}
-
-	void PublicField::SetStoredValue_Internal(void* value) const
-	{
-	}
-
-	void PublicField::GetStoredValue_Internal(void* outValue) const
-	{
-	}
-
-	void PublicField::SetRuntimeValue_Internal(void* value) const
-	{
-	}
-
-	void PublicField::GetRuntimeValue_Internal(void* outValue) const
-	{
-	}
-
-	void ScriptEngine::OnInitEntity(ScriptComponent& script, uint32_t entityID, uint32_t sceneID)
-	{
-		Log::GetLogger()->error("ScriptEngine::OnInitEntity method not implemented yet!");
-	}
-
-	const ScriptModuleFieldMap& ScriptEngine::GetFieldMap()
-	{
-		return s_PublicFields;
-	}
-
 	void ScriptEngine::InstantiateEntityClass(Entity entity)
 	{
-		Log::GetLogger()->error("ScriptEngine::InstantiateEntityClass method not implemented yet!");
-	}
+		HazelScene* scene = entity.m_Scene;
+		UUID id = entity.GetComponent<IDComponent>().ID;
+		auto& moduleName = entity.GetComponent<ScriptComponent>().ModuleName;
 
-	EntityInstanceMap& ScriptEngine::GetEntityInstanceMap()
-	{
-		return s_EntityInstanceMap;
+		EntityInstanceData& entityInstanceData = GetEntityInstanceData(scene->GetUUID(), id);
+		EntityInstance& entityInstance = entityInstanceData.Instance;
+		HZ_CORE_ASSERT(entityInstance.ScriptClass);
+		entityInstance.Handle = Instantiate(*entityInstance.ScriptClass);
+
+		MonoProperty* entityIDPropery = mono_class_get_property_from_name(entityInstance.ScriptClass->Class, "ID");
+		mono_property_get_get_method(entityIDPropery);
+		MonoMethod* entityIDSetMethod = mono_property_get_set_method(entityIDPropery);
+		void* param[] = { &id };
+		CallMethod(entityInstance.GetInstance(), entityIDSetMethod, param);
+
+		// Set all public fields to appropriate values
+		ScriptModuleFieldMap& moduleFieldMap = entityInstanceData.ModuleFieldMap;
+		if (moduleFieldMap.find(moduleName) != moduleFieldMap.end())
+		{
+			auto& publicFields = moduleFieldMap.at(moduleName);
+			for (auto& [name, field] : publicFields)
+				field.CopyStoredValueToRuntime();
+		}
+
+		// Call OnCreate function (if exists)
+		OnCreateEntity(entity);
 	}
 
 	EntityInstanceData& ScriptEngine::GetEntityInstanceData(UUID sceneID, UUID entityID)
@@ -618,8 +575,144 @@ namespace Hazel
 		return entityIDMap.at(entityID);
 	}
 
+	EntityInstanceMap& ScriptEngine::GetEntityInstanceMap()
+	{
+		return s_EntityInstanceMap;
+	}
+
+	static uint32_t GetFieldSize(FieldType type)
+	{
+		switch (type)
+		{
+		case FieldType::Float:       return 4;
+		case FieldType::Int:         return 4;
+		case FieldType::UnsignedInt: return 4;
+			// case FieldType::String:   return 8; // TODO
+		case FieldType::Vec2:        return 4 * 2;
+		case FieldType::Vec3:        return 4 * 3;
+		case FieldType::Vec4:        return 4 * 4;
+		}
+		HZ_CORE_ASSERT(false, "Unknown field type!");
+		return 0;
+	}
+
+	PublicField::PublicField(const std::string& name, FieldType type)
+		: Name(name), Type(type)
+	{
+		m_EntityInstance = nullptr;
+	}
+
+	PublicField::PublicField(PublicField&& other)
+	{
+		Name = std::move(other.Name);
+		Type = other.Type;
+		m_EntityInstance = other.m_EntityInstance;
+		m_MonoClassField = other.m_MonoClassField;
+		m_StoredValueBuffer = other.m_StoredValueBuffer;
+
+		other.m_EntityInstance = nullptr;
+		other.m_MonoClassField = nullptr;
+		other.m_StoredValueBuffer = nullptr;
+	}
+
+	PublicField::~PublicField()
+	{
+		delete[] m_StoredValueBuffer;
+	}
+
+	void PublicField::CopyStoredValueToRuntime()
+	{
+		HZ_CORE_ASSERT(m_EntityInstance->GetInstance());
+		mono_field_set_value(m_EntityInstance->GetInstance(), m_MonoClassField, m_StoredValueBuffer);
+	}
+
+	bool PublicField::IsRuntimeAvailable() const
+	{
+		return m_EntityInstance->Handle != 0;
+	}
+
+	void PublicField::SetStoredValueRaw(void* src)
+	{
+		uint32_t size = GetFieldSize(Type);
+		memcpy(m_StoredValueBuffer, src, size);
+	}
+
+	uint8_t* PublicField::AllocateBuffer(FieldType type)
+	{
+		uint32_t size = GetFieldSize(type);
+		uint8_t* buffer = new uint8_t[size];
+		memset(buffer, 0, size);
+		return buffer;
+	}
+
+	void PublicField::SetStoredValue_Internal(void* value) const
+	{
+		uint32_t size = GetFieldSize(Type);
+		memcpy(m_StoredValueBuffer, value, size);
+	}
+
+	void PublicField::GetStoredValue_Internal(void* outValue) const
+	{
+		uint32_t size = GetFieldSize(Type);
+		memcpy(outValue, m_StoredValueBuffer, size);
+	}
+
+	void PublicField::SetRuntimeValue_Internal(void* value) const
+	{
+		HZ_CORE_ASSERT(m_EntityInstance->GetInstance());
+		mono_field_set_value(m_EntityInstance->GetInstance(), m_MonoClassField, value);
+	}
+
+	void PublicField::GetRuntimeValue_Internal(void* outValue) const
+	{
+		HZ_CORE_ASSERT(m_EntityInstance->GetInstance());
+		mono_field_get_value(m_EntityInstance->GetInstance(), m_MonoClassField, outValue);
+	}
+
+	// Debug
 	void ScriptEngine::OnImGuiRender()
 	{
+		ImGui::Begin("Script Engine Debug");
+		for (auto& [sceneID, entityMap] : s_EntityInstanceMap)
+		{
+			bool opened = ImGui::TreeNode((void*)(uint64_t)sceneID, "Scene (%llx)", sceneID);
+			if (opened)
+			{
+				Ref<HazelScene> scene = HazelScene::GetScene(sceneID);
+				for (auto& [entityID, entityInstanceData] : entityMap)
+				{
+					Entity entity = Entity{ scene->GetScene(sceneID)->GetEntityMap().at(entityID), scene.Raw() };
+					std::string entityName = "Unnamed Entity";
+					if (entity.HasComponent<TagComponent>())
+						entityName = entity.GetComponent<TagComponent>().Tag;
+					opened = ImGui::TreeNode((void*)(uint64_t)entityID, "%s (%llx)", entityName.c_str(), entityID);
+					if (opened)
+					{
+						for (auto& [moduleName, fieldMap] : entityInstanceData.ModuleFieldMap)
+						{
+							opened = ImGui::TreeNode(moduleName.c_str());
+							if (opened)
+							{
+								for (auto& [fieldName, field] : fieldMap)
+								{
+
+									opened = ImGui::TreeNodeEx((void*)&field, ImGuiTreeNodeFlags_Leaf, fieldName.c_str());
+									if (opened)
+									{
+
+										ImGui::TreePop();
+									}
+								}
+								ImGui::TreePop();
+							}
+						}
+						ImGui::TreePop();
+					}
+				}
+				ImGui::TreePop();
+			}
+		}
+		ImGui::End();
 	}
 
 }

@@ -131,9 +131,6 @@ namespace Hazel
 		static void ShutdownScriptEntity(Entity entity, const std::string& moduleName);
 		static void InstantiateEntityClass(Entity entity);
 
-		static void OnInitEntity(ScriptComponent& script, uint32_t entityID, uint32_t sceneID);
-		static const ScriptModuleFieldMap& GetFieldMap();
-
 		static EntityInstanceMap& GetEntityInstanceMap();
 		static EntityInstanceData& GetEntityInstanceData(UUID sceneID, UUID entityID);
 

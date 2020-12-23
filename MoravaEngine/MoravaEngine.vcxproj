@@ -409,6 +409,7 @@
     <ClInclude Include="Hazel\Events\Event.h" />
     <ClInclude Include="Hazel\Events\KeyEvent.h" />
     <ClInclude Include="Hazel\Events\MouseEvent.h" />
+    <ClInclude Include="Hazel\ImGui\ImGui.h" />
     <ClInclude Include="Hazel\Panels\SceneHierarchyPanel.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLRenderPass.h" />

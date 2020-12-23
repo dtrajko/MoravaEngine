@@ -9,6 +9,7 @@
 #include "Hazel/Scene/Components.h"
 #include "Hazel/Scene/Entity.h"
 #include "Hazel/Renderer/RendererAPI.h"
+#include "Hazel/Script/ScriptEngine.h"
 
 #include "ImGuiWrapper.h"
 #include "ImGuizmo.h"
@@ -478,12 +479,17 @@ void EnvironmentMap::OnScenePlay()
 
     m_SceneState = SceneState::Play;
 
+    if (m_ReloadScriptOnPlay) {
+        // Hazel::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
+    }
+
     m_RuntimeScene = Hazel::Ref<Hazel::HazelScene>::Create();
     m_EditorScene->CopyTo(m_RuntimeScene);
 
     m_ActiveScene = m_RuntimeScene;
 
     m_ActiveScene->OnRuntimeStart();
+    m_SceneHierarchyPanel->SetContext(m_RuntimeScene.Raw());
 }
 
 void EnvironmentMap::OnSceneStop()
@@ -683,6 +689,40 @@ void EnvironmentMap::OnImGuiRender()
         mesh->OnImGuiRender(++id);
     }
 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(12, 4));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.8f, 0.8f, 0.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+    ImGui::Begin("Toolbar");
+    if (m_SceneState == SceneState::Edit)
+    {
+        if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
+        {
+            OnScenePlay();
+        }
+    }
+    else if (m_SceneState == SceneState::Play)
+    {
+        if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(1.0f, 1.0f, 1.0f, 0.2f)))
+        {
+            OnSceneStop();
+        }
+    }
+    ImGui::SameLine();
+    if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(1.0f, 1.0f, 1.0f, 0.6f)))
+    {
+        MORAVA_CORE_INFO("PLAY!");
+    }
+    ImGui::End();
+    ImGui::PopStyleColor();
+    ImGui::PopStyleColor();
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleVar();
+
     ImGui::Begin("Switch State");
     {
         const char* label = m_ActiveCamera == m_EditorCamera ? "EDITOR [ Editor Camera ]" : "RUNTIME [ Runtime Camera ]";
@@ -855,8 +895,6 @@ void EnvironmentMap::OnImGuiRender()
                     ImGui::Checkbox("Is Animated", &meshAnimPBR->IsAnimated());
                 }
             }
-
-            ImGui::Separator();
         }
     }
     ImGui::End();
