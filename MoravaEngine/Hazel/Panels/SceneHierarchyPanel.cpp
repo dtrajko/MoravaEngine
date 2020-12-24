@@ -474,7 +474,7 @@ namespace Hazel
 			UI::BeginPropertyGrid();
 			std::string oldName = sc.ModuleName;
 
-			if (false && UI::Property("Module Name", sc.ModuleName, ScriptEngine::ModuleExists(sc.ModuleName))) // TODO: no live edit
+			if (UI::Property("Module Name", sc.ModuleName, ScriptEngine::ModuleExists(sc.ModuleName))) // TODO: no live edit
 			{
 				// Shutdown old script
 				if (ScriptEngine::ModuleExists(oldName)) {

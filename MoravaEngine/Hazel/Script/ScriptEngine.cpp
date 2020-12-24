@@ -407,6 +407,9 @@ namespace Hazel
 
 	bool ScriptEngine::ModuleExists(const std::string& moduleName)
 	{
+		// Log::GetLogger()->error("Method 'ScriptEngine::ModuleExists' crashes!");
+		return false;
+
 		std::string NamespaceName, ClassName;
 		if (moduleName.find('.') != std::string::npos)
 		{
