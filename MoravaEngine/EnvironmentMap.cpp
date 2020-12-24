@@ -394,17 +394,23 @@ void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
     switch (m_SceneState)
     {
     case SceneState::Edit:
-        // m_EditorCamera->OnUpdate(timestep);
-        // m_ActiveScene->OnRenderEditor(timestep, m_EditorCamera);
+        //  if (m_ViewportPanelFocused) {
+        //      m_EditorCamera->OnUpdate(timestep);
+        //      m_ActiveScene->OnRenderEditor(timestep, m_EditorCamera);
+        //  }
         break;
     case SceneState::Play:
-        // m_EditorCamera->OnUpdate(timestep);
-        // m_ActiveScene->OnUpdate(timestep);
-        // m_ActiveScene->OnRenderRuntime(timestep);
+        //  if (m_ViewportPanelFocused) {
+        //      m_EditorCamera->OnUpdate(timestep);
+        //      m_ActiveScene->OnUpdate(timestep);
+        //      m_ActiveScene->OnRenderRuntime(timestep);
+        //  }
         break;
     case SceneState::Pause:
-        // m_EditorCamera->OnUpdate(timestep);
-        // m_ActiveScene->OnRenderRuntime(timestep);
+        //  if (m_ViewportPanelFocused) {
+        //      m_EditorCamera->OnUpdate(timestep);
+        //      m_ActiveScene->OnRenderRuntime(timestep);
+        //  }
         break;
     }
 
@@ -431,7 +437,9 @@ void EnvironmentMap::OnUpdateEditor(Scene* scene, float timestep)
     {
         Hazel::Entity entity{ entt, m_SceneRenderer->s_Data.ActiveScene };
         Hazel::Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
-        mesh->OnUpdate(timestep, false);
+        if (mesh) {
+            mesh->OnUpdate(timestep, false);
+        }
     }
 
     m_ActiveCamera->OnUpdate(timestep);
@@ -1289,7 +1297,20 @@ void EnvironmentMap::OnEvent(Event& e)
         // ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->OnEvent(e);
     }
 
-    m_ActiveCamera->OnEvent(e);
+    if (m_SceneState == SceneState::Edit)
+    {
+        // if (m_ViewportPanelMouseOver) {
+            m_EditorCamera->OnEvent(e);
+        // }
+
+        m_EditorScene->OnEvent(e);
+    }
+    else if (m_SceneState == SceneState::Play)
+    {
+        m_RuntimeScene->OnEvent(e);
+    }
+
+    // m_ActiveCamera->OnEvent(e);
 
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EnvironmentMap::OnKeyPressedEvent));
@@ -1503,8 +1524,6 @@ void EnvironmentMap::GeometryPassTemporary()
     // Render all entities with mesh component
     if (meshEntities.size())
     {
-        // Log::GetLogger()->debug("Rendering mesh entities, count = {0}", meshEntities.size());
-
         m_ShaderHazelPBR->Bind();
 
         for (auto entt : meshEntities)
