@@ -33,7 +33,8 @@ public:
 	inline void SetScene(Scene* scene) { m_Scene = scene; }
 	inline void SetRenderer(RendererBasic* renderer) { m_Renderer = renderer; }
 
-	std::string OpenFile(const std::string& filter) const;
+	std::string OpenFile(const char* filter = "All\0*.*\0") const;
+	std::string SaveFile(const char* filter = "All\0*.*\0") const;
 
 	void OnImGuiRender();
 

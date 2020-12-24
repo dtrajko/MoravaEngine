@@ -70,7 +70,7 @@ namespace Hazel {
 		inline void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
 		float& GetSkyboxLOD() { return m_SkyboxLOD; }
 
-		Entity CreateEntity(const std::string& name);
+		Entity CreateEntity(const std::string& name = "");
 		Entity CreateEntity(const std::string& name, const HazelScene& scene);
 		Entity CreateEntityWithID(UUID uuid, const std::string& name = "", bool runtimeMap = false);
 		void DestroyEntity(Entity entity);

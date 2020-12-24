@@ -880,7 +880,7 @@ void EnvironmentMap::OnImGuiRender()
                 ImGui::Text(fileName.c_str()); ImGui::SameLine();
                 if (ImGui::Button("...##Mesh"))
                 {
-                    std::string fullPath = Application::Get()->OpenFile("");
+                    std::string fullPath = Application::Get()->OpenFile();
                     if (fullPath != "")
                     {
                         Hazel::Entity entity = LoadEntity(fullPath);
@@ -938,7 +938,7 @@ void EnvironmentMap::OnImGuiRender()
                                 }
                                 if (ImGui::IsItemClicked())
                                 {
-                                    std::string filename = Application::Get()->OpenFile("");
+                                    std::string filename = Application::Get()->OpenFile();
                                     if (filename != "")
                                         material.second->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material.second->GetAlbedoInput().SRGB);
                                 }
@@ -986,7 +986,7 @@ void EnvironmentMap::OnImGuiRender()
                                 }
                                 if (ImGui::IsItemClicked())
                                 {
-                                    std::string filename = Application::Get()->OpenFile("");
+                                    std::string filename = Application::Get()->OpenFile();
                                     if (filename != "")
                                         material.second->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
                                 }
@@ -1019,7 +1019,7 @@ void EnvironmentMap::OnImGuiRender()
                                 }
                                 if (ImGui::IsItemClicked())
                                 {
-                                    std::string filename = Application::Get()->OpenFile("");
+                                    std::string filename = Application::Get()->OpenFile();
                                     if (filename != "")
                                         material.second->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
                                 }
@@ -1055,7 +1055,7 @@ void EnvironmentMap::OnImGuiRender()
                                 }
                                 if (ImGui::IsItemClicked())
                                 {
-                                    std::string filename = Application::Get()->OpenFile("");
+                                    std::string filename = Application::Get()->OpenFile();
                                     if (filename != "")
                                         material.second->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
                                 }
@@ -1091,7 +1091,7 @@ void EnvironmentMap::OnImGuiRender()
                                 }
                                 if (ImGui::IsItemClicked())
                                 {
-                                    std::string filename = Application::Get()->OpenFile("");
+                                    std::string filename = Application::Get()->OpenFile();
                                     if (filename != "")
                                         material.second->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
                                 }

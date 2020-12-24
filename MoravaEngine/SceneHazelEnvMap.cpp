@@ -475,6 +475,9 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
         ImGui::Begin("Viewport");
         {
+            m_ViewportPanelMouseOver = ImGui::IsWindowHovered();
+            m_ViewportPanelFocused = ImGui::IsWindowFocused();
+
             ImVec2 screen_pos = ImGui::GetCursorScreenPos();
 
             m_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportMainX);

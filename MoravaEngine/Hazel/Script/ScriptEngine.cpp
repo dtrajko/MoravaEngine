@@ -135,19 +135,21 @@ namespace Hazel
 	{
 		MonoAssembly* assembly = LoadAssemblyFromFile(path.c_str());
 
-		if (!assembly)
+		if (!assembly) {
 			std::cout << "Could not load assembly: " << path << std::endl;
-		else
+		}
+		else {
 			std::cout << "Successfully loaded assembly: " << path << std::endl;
-
+		}
 		return assembly;
 	}
 
 	static MonoImage* GetAssemblyImage(MonoAssembly* assembly)
 	{
 		MonoImage* image = mono_assembly_get_image(assembly);
-		if (!image)
+		if (!image) {
 			std::cout << "mono_assembly_get_image failed" << std::endl;
+		}
 
 		return image;
 	}
@@ -155,8 +157,9 @@ namespace Hazel
 	static MonoClass* GetClass(MonoImage* image, const EntityScriptClass& scriptClass)
 	{
 		MonoClass* monoClass = mono_class_from_name(image, scriptClass.NamespaceName.c_str(), scriptClass.ClassName.c_str());
-		if (!monoClass)
+		if (!monoClass) {
 			std::cout << "mono_class_from_name failed" << std::endl;
+		}
 
 		return monoClass;
 	}

@@ -39,22 +39,10 @@ namespace Hazel {
 		ScriptEngine::InitScriptEntity(Entity{ scene->m_EntityIDMap.at(entityID), scene });
 	}
 
-	void OnScriptComponentDestroy(entt::registry& registry, entt::entity entity)
-	{
-		auto sceneView = registry.view<SceneComponent>();
-		UUID sceneID = registry.get<SceneComponent>(sceneView.front()).SceneID;
-		UUID entityID = registry.get<IDComponent>(entity).ID;
-
-		HazelScene* scene = s_ActiveScenes[sceneID];
-
-		ScriptEngine::OnScriptComponentDestroyed(sceneID, entityID);
-	}
-
 	HazelScene::HazelScene(const std::string& debugName)
 		: m_DebugName(debugName)
 	{
 		m_Registry.on_construct<ScriptComponent>().connect<&OnScriptComponentConstruct>();
-		m_Registry.on_destroy<ScriptComponent>().connect<&OnScriptComponentDestroy>();
 
 		m_SceneEntity = m_Registry.create();
 		m_Registry.emplace<SceneComponent>(m_SceneEntity, m_SceneID);
@@ -227,7 +215,12 @@ namespace Hazel {
 
 	void HazelScene::DestroyEntity(Entity entity)
 	{
-		m_Registry.destroy(entity);
+		if (entity.HasComponent<ScriptComponent>())
+		{
+			ScriptEngine::OnScriptComponentDestroyed(m_SceneID, entity.GetUUID());
+		}
+
+		m_Registry.destroy(entity.m_EntityHandle);
 	}
 
 	template<typename T>
@@ -240,6 +233,16 @@ namespace Hazel {
 
 			auto& srcComponent = srcRegistry.get<T>(srcEntity);
 			auto& destComponent = dstRegistry.emplace<T>(destEntity, srcComponent);
+		}
+	}
+
+	template<typename T>
+	static void CopyComponentIfExists(entt::entity dst, entt::entity src, entt::registry& registry)
+	{
+		if (registry.has<T>(src))
+		{
+			auto& srcComponent = registry.get<T>(src);
+			registry.emplace_or_replace<T>(dst, srcComponent);
 		}
 	}
 
@@ -334,6 +337,19 @@ namespace Hazel {
 
 	void HazelScene::DuplicateEntity(Entity entity)
 	{
+		Entity newEntity;
+		if (entity.HasComponent<TagComponent>()) {
+			newEntity = CreateEntity(entity.GetComponent<TagComponent>().Tag);
+		}
+		else {
+			newEntity = CreateEntity();
+		}
+
+		CopyComponentIfExists<TransformComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<MeshComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<ScriptComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<CameraComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<SpriteRendererComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 	}
 
 	void HazelScene::OnEvent(Event& e)
@@ -381,8 +397,8 @@ namespace Hazel {
 	HazelScene::~HazelScene()
 	{
 		m_Registry.clear();
-
 		s_ActiveScenes.erase(m_SceneID);
+		ScriptEngine::OnSceneDestruct(m_SceneID);
 
 		// Destroy scripts
 		{

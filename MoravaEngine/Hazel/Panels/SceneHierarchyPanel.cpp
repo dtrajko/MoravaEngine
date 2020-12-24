@@ -7,6 +7,7 @@
 #include "../../Math.h"
 #include "../../ImGuiWrapper.h"
 #include "../../EntitySelection.h"
+#include "../../Application.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -377,14 +378,31 @@ namespace Hazel
 			ImGuiWrapper::DrawVec3Control("Scale", component.Scale, 1.0f, 80.0f);
 		});
 
-		DrawComponent<MeshComponent>("Mesh", entity, [](auto& component)
+		DrawComponent<MeshComponent>("Mesh", entity, [](MeshComponent& mc)
 		{
-			if (component.Mesh) {
-				ImGui::InputText("File Path", (char*)component.Mesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
-			}
-			else {
-				ImGui::InputText("File Path", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
-			}
+				ImGui::Columns(3);
+				ImGui::SetColumnWidth(0, 100);
+				ImGui::SetColumnWidth(1, 300);
+				ImGui::SetColumnWidth(2, 40);
+				ImGui::Text("File Path");
+				ImGui::NextColumn();
+				ImGui::PushItemWidth(-1);
+				if (mc.Mesh) {
+					ImGui::InputText("##meshfilepath", (char*)mc.Mesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+				}
+				else {
+					ImGui::InputText("##meshfilepath", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
+				}
+				ImGui::PopItemWidth();
+				ImGui::NextColumn();
+				if (ImGui::Button("...##openmesh"))
+				{
+					std::string file = Application::Get()->OpenFile();
+					if (!file.empty()) {
+						// mc.Mesh = Ref<HazelMesh>::Create(file); // TODO: HazelMesh constructor
+					}
+				}
+				ImGui::Columns(1);
 		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
@@ -456,7 +474,7 @@ namespace Hazel
 			UI::BeginPropertyGrid();
 			std::string oldName = sc.ModuleName;
 
-			if (UI::Property("Module Name", sc.ModuleName, ScriptEngine::ModuleExists(sc.ModuleName))) // TODO: no live edit
+			if (false && UI::Property("Module Name", sc.ModuleName, ScriptEngine::ModuleExists(sc.ModuleName))) // TODO: no live edit
 			{
 				// Shutdown old script
 				if (ScriptEngine::ModuleExists(oldName)) {

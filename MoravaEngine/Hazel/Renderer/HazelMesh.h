@@ -139,7 +139,7 @@ namespace Hazel {
 	class HazelMesh : public Mesh
 	{
 	public:
-		// HazelMesh(const std::string& filename);
+		HazelMesh(const std::string& filename);
 		HazelMesh(const std::string& filename, Shader* shader, Material* material, bool isAnimated);
 		virtual ~HazelMesh() override;
 

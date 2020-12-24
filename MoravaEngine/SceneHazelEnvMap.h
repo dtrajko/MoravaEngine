@@ -89,6 +89,9 @@ private:
 	bool m_ViewportEnvMapHovered;
 	glm::vec2 m_ViewportEnvMapSize;
 
+	bool m_ViewportPanelMouseOver = false;
+	bool m_ViewportPanelFocused = false;
+
 	// Used in EnvironmentMap::CastRay
 	glm::vec2 m_ViewportBounds[2];
 
