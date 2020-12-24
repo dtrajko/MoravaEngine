@@ -43,11 +43,11 @@ public:
 	void OnScenePlay();
 	void OnSceneStop();
 
-	void OnRender(Framebuffer* framebuffer);
+	void OnRender(Framebuffer* framebuffer, Window* mainWindow);
 	void OnRenderEditor(Framebuffer* framebuffer);
 	void OnRenderRuntime(Framebuffer* framebuffer);
 
-	void OnImGuiRender();
+	void OnImGuiRender(Window* mainWindow);
 
 	void OnNewScene(glm::vec2 viewportSize);
 
@@ -106,6 +106,10 @@ public:
 	// EditorLayer
 	void OnEvent(Event& e);
 
+	// from SceneHazelEnvMap
+	void SetupRenderFramebuffer();
+	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
+
 private:
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();
@@ -121,6 +125,45 @@ public:
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
 	glm::mat4* m_RelativeTransform = nullptr;
 	bool m_AllowViewportCameraEvents = true; // EditorLayer (Raypicking)
+
+	struct Viewport
+	{
+		int X;
+		int Y;
+		int Width;
+		int Height;
+		int MouseX;
+		int MouseY;
+	};
+
+	Viewport m_ImGuiViewport;
+	Viewport m_ImGuiViewportEnvMap;
+
+	// viewports
+	// -- viewport main
+	Framebuffer* m_RenderFramebuffer;
+	int m_ImGuiViewportMainX;
+	int m_ImGuiViewportMainY;
+	bool m_IsViewportEnabled;
+	bool m_ViewportFocused;
+	bool m_ViewportHovered;
+	glm::vec2 m_ViewportMainSize;
+	// -- viewport environment map
+	int m_ImGuiViewportEnvMapX;
+	int m_ImGuiViewportEnvMapY;
+	bool m_IsViewportEnvMapEnabled;
+	bool m_ViewportEnvMapFocused;
+	bool m_ViewportEnvMapHovered;
+	glm::vec2 m_ViewportEnvMapSize;
+
+	bool m_ViewportPanelMouseOver = false;
+	bool m_ViewportPanelFocused = false;
+
+	// Used in EnvironmentMap::CastRay
+	glm::vec2 m_ViewportBounds[2];
+
+	float m_CurrentTimestamp;
+	EventCooldown m_ResizeViewport;
 
 private:
 	Shader* m_ShaderHazelPBR_Anim;
@@ -150,7 +193,6 @@ private:
 	Hazel::Entity m_CameraEntity;
 	Hazel::Entity m_DirectionalLightEntity;
 
-	glm::vec2 m_ViewportBounds[2];
 	float m_ViewportWidth = 0.0f;
 	float m_ViewportHeight = 0.0f;
 	/** END properties Hazelnut/EditorLayer **/

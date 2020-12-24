@@ -76,6 +76,12 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 
     Scene::s_ImGuizmoTransform = nullptr; // &GetMeshEntity()->Transform();
     Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+    m_IsViewportEnabled = true;
+    m_ViewportFocused = false;
+    m_ViewportHovered = false;
+
+    m_ResizeViewport = { 0.0f, 1.0f };
 }
 
 void EnvironmentMap::Init()
@@ -416,6 +422,8 @@ void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
 
     // CameraSyncECS(); TODO
 
+    m_CurrentTimestamp = timestep;
+
     auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
     m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction = glm::eulerAngles(glm::quat(tc.Rotation));
 
@@ -686,8 +694,141 @@ void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool
         glEnable(GL_DEPTH_TEST);
 }
 
-void EnvironmentMap::OnImGuiRender()
+void EnvironmentMap::OnImGuiRender(Window* mainWindow)
 {
+    m_ImGuiViewportMainX = (int)ImGui::GetMainViewport()->GetWorkPos().x;
+    m_ImGuiViewportMainY = (int)ImGui::GetMainViewport()->GetWorkPos().y;
+
+    ImGui::Begin("Framebuffers");
+    {
+        ImVec2 imageSize(128.0f, 128.0f);
+
+        if (m_IsViewportEnabled)
+        {
+            ImGui::Text("Viewport");
+            ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+
+            ImGui::Text("Equirectangular");
+            ImGui::Image((void*)(intptr_t)m_SceneRenderer->GetEnvEquirect()->GetID(), imageSize);
+        }
+    }
+    ImGui::End();
+
+    if (m_IsViewportEnabled)
+    {
+        ImGui::Begin("Viewport Info");
+        {
+            glm::ivec2 colorAttachmentSize = glm::ivec2(
+                m_RenderFramebuffer->GetTextureAttachmentColor()->GetWidth(),
+                m_RenderFramebuffer->GetTextureAttachmentColor()->GetHeight());
+            glm::ivec2 depthAttachmentSize = glm::ivec2(
+                m_RenderFramebuffer->GetAttachmentDepth()->GetWidth(),
+                m_RenderFramebuffer->GetAttachmentDepth()->GetHeight());
+
+            ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
+            ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
+        }
+        ImGui::End();
+
+        ImGui::Begin("Viewport Environment Map Info");
+        {
+            glm::ivec2 colorAttachmentSize = glm::ivec2(
+                m_SceneRenderer->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetWidth(),
+                m_SceneRenderer->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetHeight());
+            glm::ivec2 depthAttachmentSize = glm::ivec2(
+                m_SceneRenderer->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetAttachmentDepth()->GetWidth(),
+                m_SceneRenderer->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetAttachmentDepth()->GetHeight());
+
+            ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
+            ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
+        }
+        ImGui::End();
+    }
+
+    if (!m_IsViewportEnabled)
+    {
+        ImGui::Begin("ImGuizmo");
+        {
+            UpdateImGuizmo(mainWindow);
+        }
+        ImGui::End();
+    }
+
+    if (m_IsViewportEnabled)
+    {
+        // TheCherno ImGui Viewport displaying the framebuffer content
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+
+        ImGui::Begin("Viewport");
+        {
+            m_ViewportPanelMouseOver = ImGui::IsWindowHovered();
+            m_ViewportPanelFocused = ImGui::IsWindowFocused();
+
+            ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+
+            m_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportMainX);
+            m_ImGuiViewport.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportMainY);
+            m_ImGuiViewport.Width = (int)ImGui::GetWindowWidth();
+            m_ImGuiViewport.Height = (int)ImGui::GetWindowHeight();
+            m_ImGuiViewport.MouseX = (int)ImGui::GetMousePos().x;
+            m_ImGuiViewport.MouseY = (int)ImGui::GetMousePos().y;
+
+            m_ViewportFocused = ImGui::IsWindowFocused();
+            m_ViewportHovered = ImGui::IsWindowHovered();
+
+            ImVec2 viewportPanelSizeImGui = ImGui::GetContentRegionAvail();
+            glm::vec2 viewportPanelSize = glm::vec2(viewportPanelSizeImGui.x, viewportPanelSizeImGui.y);
+
+            ResizeViewport(viewportPanelSize, m_RenderFramebuffer);
+
+            uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
+            ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportMainSize.x, m_ViewportMainSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+            UpdateImGuizmo(mainWindow);
+
+            // Calculate Viewport bounds (used in EnvironmentMap::CastRay)
+            auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
+
+            auto windowSize = ImGui::GetWindowSize();
+            ImVec2 minBound = ImGui::GetWindowPos();
+
+            minBound.x += viewportOffset.x;
+            // minBound.y += viewportOffset.y;
+
+            ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
+            m_ViewportBounds[0] = { minBound.x, minBound.y };
+            m_ViewportBounds[1] = { maxBound.x, maxBound.y };
+
+            SetViewportBounds(m_ViewportBounds);
+            m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound); // EditorLayer
+        }
+        ImGui::End();
+
+        ImGui::Begin("Viewport Environment Map");
+        {
+            m_ImGuiViewportEnvMap.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportEnvMapX);
+            m_ImGuiViewportEnvMap.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportEnvMapY);
+            m_ImGuiViewportEnvMap.Width = (int)ImGui::GetWindowWidth();
+            m_ImGuiViewportEnvMap.Height = (int)ImGui::GetWindowHeight();
+            m_ImGuiViewportEnvMap.MouseX = (int)ImGui::GetMousePos().x;
+            m_ImGuiViewportEnvMap.MouseY = (int)ImGui::GetMousePos().y;
+
+            m_ViewportEnvMapFocused = ImGui::IsWindowFocused();
+            m_ViewportEnvMapHovered = ImGui::IsWindowHovered();
+
+            ImVec2 viewportPanelSizeImGuiEnvMap = ImGui::GetContentRegionAvail();
+            glm::vec2 viewportPanelSizeEnvMap = glm::vec2(viewportPanelSizeImGuiEnvMap.x, viewportPanelSizeImGuiEnvMap.y);
+
+            // Currently resize can only work with a single (main) viewport
+            // ResizeViewport(viewportPanelSizeEnvMap, m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer); 
+            uint64_t textureID = m_SceneRenderer->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
+            ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportEnvMapSize.x, m_ViewportEnvMapSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+        }
+        ImGui::End();
+
+        ImGui::PopStyleVar();
+    }
+
     uint32_t id = 0;
     auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     for (auto entt : meshEntities)
@@ -706,20 +847,20 @@ void EnvironmentMap::OnImGuiRender()
     ImGui::Begin("Toolbar");
     if (m_SceneState == SceneState::Edit)
     {
-        if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
+        if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
         {
             OnScenePlay();
         }
     }
     else if (m_SceneState == SceneState::Play)
     {
-        if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(1.0f, 1.0f, 1.0f, 0.2f)))
+        if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(1.0f, 1.0f, 1.0f, 0.2f)))
         {
             OnSceneStop();
         }
     }
     ImGui::SameLine();
-    if (ImGui::ImageButton((ImTextureID)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(1.0f, 1.0f, 1.0f, 0.6f)))
+    if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(1.0f, 1.0f, 1.0f, 0.6f)))
     {
         MORAVA_CORE_INFO("PLAY!");
     }
@@ -1290,6 +1431,32 @@ void EnvironmentMap::RenderHazelGrid()
     RendererBasic::EnableMSAA();
 }
 
+void EnvironmentMap::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer)
+{
+    // Cooldown
+    if (m_CurrentTimestamp - m_ResizeViewport.lastTime < m_ResizeViewport.cooldown) return;
+    m_ResizeViewport.lastTime = m_CurrentTimestamp;
+
+    if (viewportPanelSize != m_ViewportMainSize && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
+    {
+        renderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+        m_ViewportMainSize = glm::vec2(viewportPanelSize.x, viewportPanelSize.y);
+    }
+}
+
+void EnvironmentMap::SetupRenderFramebuffer()
+{
+    if (!m_IsViewportEnabled) return;
+
+    uint32_t width = Application::Get()->GetWindow()->GetWidth();
+    uint32_t height = Application::Get()->GetWindow()->GetHeight();
+
+    m_RenderFramebuffer = new Framebuffer(width, height);
+    m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
+    m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
+    m_RenderFramebuffer->Generate(width, height);
+}
+
 void EnvironmentMap::OnEvent(Event& e)
 {
     if (m_AllowViewportCameraEvents) {
@@ -1587,10 +1754,30 @@ void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
     Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
 }
 
-void EnvironmentMap::OnRender(Framebuffer* framebuffer)
+void EnvironmentMap::OnRender(Framebuffer* framebuffer, Window* mainWindow)
 {
+    /**** BEGIN Render to Main Viewport ****/
+    {
+        if (m_IsViewportEnabled)
+        {
+            m_RenderFramebuffer->Bind();
+            m_RenderFramebuffer->Clear(); // Clear the window
+        }
+        else
+        {
+            // configure the viewport to the original framebuffer's screen dimensions
+            glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
+            RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
+        }
+    }
+
     OnRenderEditor(framebuffer);
     // OnRenderRuntime(framebuffer)
+
+    if (m_IsViewportEnabled)
+    {
+        m_RenderFramebuffer->Unbind();
+    }
 }
 
 void EnvironmentMap::OnRenderEditor(Framebuffer* framebuffer)

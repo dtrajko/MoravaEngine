@@ -44,9 +44,6 @@ private:
 
 	void SetupShaders(); // Usually in Renderer* classes
 
-	void SetupRenderFramebuffer();
-	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
-
 	bool OnKeyPressed(KeyPressedEvent& e);
 
 	void NewScene();
@@ -58,42 +55,6 @@ private:
 
 private:
 	EnvironmentMap* m_EnvironmentMap;
-
-	struct Viewport
-	{
-		int X;
-		int Y;
-		int Width;
-		int Height;
-		int MouseX;
-		int MouseY;
-	};
-
-	Viewport m_ImGuiViewport;
-	Viewport m_ImGuiViewportEnvMap;
-
-	// viewports
-	// -- viewport main
-	Framebuffer* m_RenderFramebuffer;
-	int m_ImGuiViewportMainX;
-	int m_ImGuiViewportMainY;
-	bool m_IsViewportEnabled;
-	bool m_ViewportFocused;
-	bool m_ViewportHovered;
-	glm::vec2 m_ViewportMainSize;
-	// -- viewport environment map
-	int m_ImGuiViewportEnvMapX;
-	int m_ImGuiViewportEnvMapY;
-	bool m_IsViewportEnvMapEnabled;
-	bool m_ViewportEnvMapFocused;
-	bool m_ViewportEnvMapHovered;
-	glm::vec2 m_ViewportEnvMapSize;
-
-	bool m_ViewportPanelMouseOver = false;
-	bool m_ViewportPanelFocused = false;
-
-	// Used in EnvironmentMap::CastRay
-	glm::vec2 m_ViewportBounds[2];
 
 	Shader* m_ShaderBackground;
 	Shader* m_ShaderBasic;
@@ -130,9 +91,6 @@ private:
 		bool Intersecting;
 		bool Enabled;
 	};
-
-	float m_CurrentTimestamp;
-	EventCooldown m_ResizeViewport;
 
 	bool m_DisplayLineElements;
 	Grid* m_Grid;
