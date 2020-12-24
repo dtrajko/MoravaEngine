@@ -126,44 +126,11 @@ public:
 	glm::mat4* m_RelativeTransform = nullptr;
 	bool m_AllowViewportCameraEvents = true; // EditorLayer (Raypicking)
 
-	struct Viewport
-	{
-		int X;
-		int Y;
-		int Width;
-		int Height;
-		int MouseX;
-		int MouseY;
-	};
-
-	Viewport m_ImGuiViewport;
-	Viewport m_ImGuiViewportEnvMap;
-
-	// viewports
-	// -- viewport main
-	Framebuffer* m_RenderFramebuffer;
-	int m_ImGuiViewportMainX;
-	int m_ImGuiViewportMainY;
+	// viewports public
 	bool m_IsViewportEnabled;
-	bool m_ViewportFocused;
-	bool m_ViewportHovered;
+	glm::vec2 m_ImGuiViewportMain;
 	glm::vec2 m_ViewportMainSize;
-	// -- viewport environment map
-	int m_ImGuiViewportEnvMapX;
-	int m_ImGuiViewportEnvMapY;
-	bool m_IsViewportEnvMapEnabled;
-	bool m_ViewportEnvMapFocused;
-	bool m_ViewportEnvMapHovered;
-	glm::vec2 m_ViewportEnvMapSize;
-
-	bool m_ViewportPanelMouseOver = false;
-	bool m_ViewportPanelFocused = false;
-
-	// Used in EnvironmentMap::CastRay
-	glm::vec2 m_ViewportBounds[2];
-
-	float m_CurrentTimestamp;
-	EventCooldown m_ResizeViewport;
+	Framebuffer* m_RenderFramebuffer;
 
 private:
 	Shader* m_ShaderHazelPBR_Anim;
@@ -196,6 +163,39 @@ private:
 	float m_ViewportWidth = 0.0f;
 	float m_ViewportHeight = 0.0f;
 	/** END properties Hazelnut/EditorLayer **/
+
+	struct Viewport
+	{
+		int X;
+		int Y;
+		int Width;
+		int Height;
+		int MouseX;
+		int MouseY;
+	};
+
+	Viewport m_ImGuiViewport;
+	Viewport m_ImGuiViewportEnvMap;
+
+	// viewports private
+	// -- viewport main
+	bool m_ViewportFocused;
+	bool m_ViewportHovered;
+	// -- viewport environment map
+	int m_ImGuiViewportEnvMapX;
+	int m_ImGuiViewportEnvMapY;
+	bool m_IsViewportEnvMapEnabled;
+	bool m_ViewportEnvMapFocused;
+	bool m_ViewportEnvMapHovered;
+	glm::vec2 m_ViewportEnvMapSize;
+
+	bool m_ViewportPanelMouseOver = false;
+	bool m_ViewportPanelFocused = false;
+
+	// Used in EnvironmentMap::CastRay
+	glm::vec2 m_ViewportBounds[2];
+
+	EventCooldown m_ResizeViewport;
 
 	// Materials
 	float m_MaterialSpecular = 0.0f;

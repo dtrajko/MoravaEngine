@@ -5,6 +5,7 @@
 #include "../Renderer/HazelTexture.h"
 #include "../Renderer/HazelMaterial.h"
 #include "../Scene/SceneCamera.h"
+#include "../Renderer/EditorCamera.h"
 
 #include "../../Shader.h"
 
@@ -45,7 +46,11 @@ namespace Hazel {
 		void Init();
 
 		void OnUpdate(float ts);
+		void OnRenderRuntime(Timestep ts);
+		void OnRenderEditor(Timestep ts, const EditorCamera& editorCamera);
 		void OnEvent(Event& e);
+
+		// Runtime
 		void OnRuntimeStart();
 		void OnRuntimeStop();
 		void OnViewportResize(uint32_t width, uint32_t height);

@@ -141,6 +141,14 @@ namespace Hazel {
 		}
 	}
 
+	void HazelScene::OnRenderRuntime(Timestep ts)
+	{
+	}
+
+	void HazelScene::OnRenderEditor(Timestep ts, const EditorCamera& editorCamera)
+	{
+	}
+
 	void HazelScene::SetEnvironment(const Environment& environment)
 	{
 		m_Environment = environment;

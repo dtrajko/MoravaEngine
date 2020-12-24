@@ -272,10 +272,12 @@ int main()
 			}
 		}
 
-		if (scene->IsWireframeEnabled())
+		if (scene->IsWireframeEnabled()) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		else
+		}
+		else {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
 
 		ImGuiWrapper::Begin();
 

@@ -16,7 +16,6 @@
 #include "Application.h"
 #include "Shader.h"
 #include "Timer.h"
-#include "MousePicker.h"
 #include "Math.h"
 #include "Input.h"
 #include "Util.h"
@@ -194,8 +193,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
 
-    MousePicker* mp = MousePicker::Get();
-
     // ImGui Colors
     ImVec4* colors = ImGui::GetStyle().Colors;
     colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -260,46 +257,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             if (ImGui::SliderFloat("FOV", &fovDegrees, -60.0f, 180.0f)) {
                 m_EnvironmentMap->m_ActiveCamera->SetPerspectiveVerticalFOV(fovDegrees);
             }
-        }
-    }
-    ImGui::End();
-
-    ImGui::Begin("Mouse Picker");
-    {
-        if (ImGui::CollapsingHeader("Display Info"))
-        {
-            char buffer[100];
-
-            sprintf(buffer, "Main Window [ X %i Y %i ]", m_EnvironmentMap->m_ImGuiViewportMainX, m_EnvironmentMap->m_ImGuiViewportMainY);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Viewport [ X %i Y %i W %i H %i ]", mp->m_Viewport.X, mp->m_Viewport.Y, mp->m_Viewport.Width, mp->m_Viewport.Height);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Screen Mouse [ %i %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Normalized Coords [ %.2ff %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Clip Coords [ %.2ff %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Eye Coords [ %.2ff %.2ff %.2ff %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "World Ray [ %.2ff %.2ff %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
-            ImGui::Text(buffer);
         }
     }
     ImGui::End();

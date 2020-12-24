@@ -22,6 +22,8 @@
 #include "ResourceManager.h"
 #include "Math.h"
 #include "SceneHazelEnvMap.h"
+#include "MousePicker.h"
+#include "Timer.h"
 
 #include <functional>
 
@@ -400,29 +402,27 @@ void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
     switch (m_SceneState)
     {
     case SceneState::Edit:
-        //  if (m_ViewportPanelFocused) {
-        //      m_EditorCamera->OnUpdate(timestep);
-        //      m_ActiveScene->OnRenderEditor(timestep, m_EditorCamera);
-        //  }
+        if (m_ViewportPanelFocused) {
+            m_EditorCamera->OnUpdate(timestep);
+        }
+        m_ActiveScene->OnRenderEditor(timestep, *m_EditorCamera);
         break;
     case SceneState::Play:
-        //  if (m_ViewportPanelFocused) {
-        //      m_EditorCamera->OnUpdate(timestep);
-        //      m_ActiveScene->OnUpdate(timestep);
-        //      m_ActiveScene->OnRenderRuntime(timestep);
-        //  }
+        if (m_ViewportPanelFocused) {
+            m_EditorCamera->OnUpdate(timestep);
+        }
+        m_RuntimeScene->OnUpdate(timestep);
+        m_RuntimeScene->OnRenderRuntime(timestep);
         break;
     case SceneState::Pause:
-        //  if (m_ViewportPanelFocused) {
-        //      m_EditorCamera->OnUpdate(timestep);
-        //      m_ActiveScene->OnRenderRuntime(timestep);
-        //  }
+        if (m_ViewportPanelFocused) {
+            m_EditorCamera->OnUpdate(timestep);
+        }
+        m_RuntimeScene->OnRenderRuntime(timestep);
         break;
     }
 
     // CameraSyncECS(); TODO
-
-    m_CurrentTimestamp = timestep;
 
     auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
     m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction = glm::eulerAngles(glm::quat(tc.Rotation));
@@ -696,8 +696,50 @@ void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool
 
 void EnvironmentMap::OnImGuiRender(Window* mainWindow)
 {
-    m_ImGuiViewportMainX = (int)ImGui::GetMainViewport()->GetWorkPos().x;
-    m_ImGuiViewportMainY = (int)ImGui::GetMainViewport()->GetWorkPos().y;
+    m_ImGuiViewportMain.x = (int)ImGui::GetMainViewport()->GetWorkPos().x;
+    m_ImGuiViewportMain.y = (int)ImGui::GetMainViewport()->GetWorkPos().y;
+
+    MousePicker* mp = MousePicker::Get();
+
+    ImGui::Begin("Mouse Picker");
+    {
+        if (ImGui::CollapsingHeader("Display Info"))
+        {
+            char buffer[100];
+
+            sprintf(buffer, "Main Window [ X %i Y %i ]", (int)m_ImGuiViewportMain.x, (int)m_ImGuiViewportMain.y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Viewport [ X %i Y %i W %i H %i ]", mp->m_Viewport.X, mp->m_Viewport.Y, mp->m_Viewport.Width, mp->m_Viewport.Height);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Screen Mouse [ %i %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Normalized Coords [ %.2ff %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Clip Coords [ %.2ff %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "Eye Coords [ %.2ff %.2ff %.2ff %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "World Ray [ %.2ff %.2ff %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
+            ImGui::Text(buffer);
+        }
+    }
+    ImGui::End();
 
     ImGui::Begin("Framebuffers");
     {
@@ -766,8 +808,8 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
 
             ImVec2 screen_pos = ImGui::GetCursorScreenPos();
 
-            m_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportMainX);
-            m_ImGuiViewport.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportMainY);
+            m_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportMain.x);
+            m_ImGuiViewport.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportMain.y);
             m_ImGuiViewport.Width = (int)ImGui::GetWindowWidth();
             m_ImGuiViewport.Height = (int)ImGui::GetWindowHeight();
             m_ImGuiViewport.MouseX = (int)ImGui::GetMousePos().x;
@@ -1433,9 +1475,11 @@ void EnvironmentMap::RenderHazelGrid()
 
 void EnvironmentMap::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer)
 {
+    float currentTimestamp = Timer::Get()->GetCurrentTimestamp();
+
     // Cooldown
-    if (m_CurrentTimestamp - m_ResizeViewport.lastTime < m_ResizeViewport.cooldown) return;
-    m_ResizeViewport.lastTime = m_CurrentTimestamp;
+    if (currentTimestamp - m_ResizeViewport.lastTime < m_ResizeViewport.cooldown) return;
+    m_ResizeViewport.lastTime = currentTimestamp;
 
     if (viewportPanelSize != m_ViewportMainSize && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
     {
@@ -1466,9 +1510,9 @@ void EnvironmentMap::OnEvent(Event& e)
 
     if (m_SceneState == SceneState::Edit)
     {
-        // if (m_ViewportPanelMouseOver) {
+        if (m_ViewportPanelMouseOver) {
             m_EditorCamera->OnEvent(e);
-        // }
+        }
 
         m_EditorScene->OnEvent(e);
     }
@@ -1486,60 +1530,61 @@ void EnvironmentMap::OnEvent(Event& e)
 
 bool EnvironmentMap::OnKeyPressedEvent(KeyPressedEvent& e)
 {
-    switch (e.GetKeyCode())
+    if (m_ViewportPanelFocused)
     {
-    case (int)KeyCode::Q:
-        Scene::s_ImGuizmoType = -1;
-        break;
+        switch (e.GetKeyCode())
+        {
+            case (int)KeyCode::Q:
+                Scene::s_ImGuizmoType = -1;
+                break;
 
-    /**** BEGIN UpdateImGuizmo
-    case (int)KeyCode::W:
-        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-        break;
-    case (int)KeyCode::E:
-        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
-        break;
-    case (int)KeyCode::R:
-        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
-        break;
-    END UpdateImGuizmo ****/
+            /**** BEGIN UpdateImGuizmo
+            case (int)KeyCode::W:
+                Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+                break;
+            case (int)KeyCode::E:
+                Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
+                break;
+            case (int)KeyCode::R:
+                Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
+                break;
+            END UpdateImGuizmo ****/
 
-    case (int)KeyCode::G:
-        // Toggle grid
-        if (Input::IsKeyPressed(MORAVA_KEY_LEFT_CONTROL))
-        {
-            Hazel::SceneRenderer::GetOptions().ShowGrid = !Hazel::SceneRenderer::GetOptions().ShowGrid;
+            case (int)KeyCode::Delete:
+                if (EntitySelection::s_SelectionContext.size())
+                {
+                    Hazel::Entity selectedEntity = EntitySelection::s_SelectionContext[0].Entity;
+                    m_EditorScene->DestroyEntity(selectedEntity);
+                    EntitySelection::s_SelectionContext.clear();
+                    m_EditorScene->SetSelectedEntity({});
+                    m_SceneHierarchyPanel->SetSelected({});
+                }
+                break;
         }
-        break;
-    case (int)KeyCode::B:
-        // Toggle bounding boxes
-        if (Input::IsKeyPressed(MORAVA_KEY_LEFT_CONTROL))
-        {
-            m_UIShowBoundingBoxes = !m_UIShowBoundingBoxes;
-            ShowBoundingBoxes(m_UIShowBoundingBoxes, m_UIShowBoundingBoxesOnTop);
-        }
-        break;
-    case (int)KeyCode::D:
-        if (Input::IsKeyPressed(MORAVA_KEY_LEFT_CONTROL))
-        {
-            if (EntitySelection::s_SelectionContext.size())
-            {
-                Hazel::Entity selectedEntity = EntitySelection::s_SelectionContext[0].Entity;
-                m_EditorScene->DuplicateEntity(selectedEntity);
-            }
-        }
-        break;
-    case (int)KeyCode::Delete:
-        if (EntitySelection::s_SelectionContext.size())
-        {
-            Hazel::Entity selectedEntity = EntitySelection::s_SelectionContext[0].Entity;
-            m_EditorScene->DestroyEntity(selectedEntity);
-            EntitySelection::s_SelectionContext.clear();
-            m_EditorScene->SetSelectedEntity({});
-            m_SceneHierarchyPanel->SetSelected({});
-        }
-        break;
     }
+
+    if (Input::IsKeyPressed(MORAVA_KEY_LEFT_CONTROL))
+    {
+        switch (e.GetKeyCode())
+        {
+            case (int)KeyCode::G:
+                // Toggle grid
+                Hazel::SceneRenderer::GetOptions().ShowGrid = !Hazel::SceneRenderer::GetOptions().ShowGrid;
+                break;
+            case (int)KeyCode::B:
+                // Toggle bounding boxes
+                m_UIShowBoundingBoxes = !m_UIShowBoundingBoxes;
+                ShowBoundingBoxes(m_UIShowBoundingBoxes, m_UIShowBoundingBoxesOnTop);
+                break;
+            case (int)KeyCode::D:
+                if (EntitySelection::s_SelectionContext.size()) {
+                    Hazel::Entity selectedEntity = EntitySelection::s_SelectionContext[0].Entity;
+                    m_EditorScene->DuplicateEntity(selectedEntity);
+                }
+                break;
+        }
+    }
+
     return false;
 }
 
