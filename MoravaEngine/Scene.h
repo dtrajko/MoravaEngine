@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Hazel/Events/ApplicationEvent.h"
+#include "Hazel/Scene/HazelScene.h"
+
 #include "CommonValues.h"
 #include "Camera.h"
 #include "CameraController.h"
@@ -19,8 +22,6 @@
 #include "TextureLoader.h"
 #include "SceneObject.h"
 #include "CommonStructs.h"
-#include "Hazel/Events/ApplicationEvent.h"
-#include "Hazel/Scene/HazelScene.h"
 
 #include <glm/glm.hpp>
 
@@ -70,7 +71,6 @@ struct SceneSettings
 };
 
 class LightManager;
-class Hazel::Entity;
 
 class Scene : public Hazel::HazelScene
 {

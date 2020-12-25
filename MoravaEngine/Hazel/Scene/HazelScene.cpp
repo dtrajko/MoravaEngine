@@ -19,7 +19,6 @@ namespace Hazel {
 	std::unordered_map<UUID, HazelScene*> s_ActiveScenes;
 	std::unordered_map<UUID, Entity> s_EntityIDMap;
 	std::unordered_map<UUID, Entity> s_RuntimeEntityIDMap;
-
 	std::unordered_map<UUID, Entity>* s_ScriptEntityIDMap = &s_EntityIDMap;
 
 	struct SceneComponent
@@ -159,11 +158,6 @@ namespace Hazel {
 	{
 		m_SkyboxTexture = skybox;
 		m_ShaderSkybox->setInt("u_Texture", skybox.Raw()->GetID());
-	}
-
-	std::unordered_map<UUID, entt::entity> HazelScene::GetEntityMap() const
-	{
-		return m_EntityIDMap;
 	}
 
 	void HazelScene::OnEntitySelected(Entity entity)
