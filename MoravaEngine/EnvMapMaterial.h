@@ -11,6 +11,7 @@ class EnvMapMaterial
 	struct NormalInput;
 	struct MetalnessInput;
 	struct RoughnessInput;
+	struct EmissiveInput;
 	struct AOInput;
 
 public:
@@ -21,6 +22,7 @@ public:
 	inline NormalInput& GetNormalInput() { return m_NormalInput; }
 	inline MetalnessInput& GetMetalnessInput() { return m_MetalnessInput; }
 	inline RoughnessInput& GetRoughnessInput() { return m_RoughnessInput; }
+	inline EmissiveInput& GetEmissiveInput() { return m_EmissiveInput; }
 	inline AOInput& GetAOInput() { return m_AOInput; }
 
 	inline float& GetTilingFactor() { return m_TilingFactor; }
@@ -59,6 +61,15 @@ private:
 		bool UseTexture = false;
 	};
 	RoughnessInput m_RoughnessInput;
+
+	struct EmissiveInput
+	{
+		float Value = 0.0f;
+		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
+		bool SRGB = true;
+		bool UseTexture = false;
+	};
+	EmissiveInput m_EmissiveInput;
 
 	struct AOInput
 	{

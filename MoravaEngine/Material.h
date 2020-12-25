@@ -27,6 +27,7 @@ struct TextureInfo
 	std::string normal;
 	std::string metallic;
 	std::string roughness;
+	std::string emissive;
 	std::string ao;
 };
 
@@ -58,6 +59,7 @@ public:
 	inline Texture* GetTextureNormal()    const { return m_TextureNormal;    };
 	inline Texture* GetTextureMetallic()  const { return m_TextureMetallic;  };
 	inline Texture* GetTextureRoughness() const { return m_TextureRoughness; };
+	inline Texture* GetTextureEmissive()  const { return m_TextureEmissive;  };
 	inline Texture* GetTextureAO()        const { return m_TextureAO;        };
 
 	// From Hazel/Renderer/Material
@@ -75,6 +77,7 @@ private:
 	Texture* m_TextureNormal;
 	Texture* m_TextureMetallic;
 	Texture* m_TextureRoughness;
+	Texture* m_TextureEmissive;
 	Texture* m_TextureAO;
 
 	Texture* m_TexturePlaceholder;

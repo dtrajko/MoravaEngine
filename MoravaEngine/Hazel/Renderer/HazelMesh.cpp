@@ -803,6 +803,7 @@ namespace Hazel {
 		textureInfoDefault.normal    = "Textures/normal_map_default.png";
 		textureInfoDefault.metallic  = "Textures/plain.png";
 		textureInfoDefault.roughness = "Textures/plain.png";
+		textureInfoDefault.emissive  = "Texture/plain.png";
 		textureInfoDefault.ao        = "Textures/plain.png";
 		m_BaseMaterial = new Material(textureInfoDefault, 0.0f, 0.0f);
 	}
@@ -1030,7 +1031,8 @@ namespace Hazel {
 				m_BaseMaterial->GetTextureNormal()->Bind(samplerSlot + 1);
 				m_BaseMaterial->GetTextureMetallic()->Bind(samplerSlot + 2);
 				m_BaseMaterial->GetTextureRoughness()->Bind(samplerSlot + 3);
-				m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
+				m_BaseMaterial->GetTextureEmissive()->Bind(samplerSlot + 4);
+				m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
 			}
 
 			std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(this, submesh);
@@ -1042,7 +1044,8 @@ namespace Hazel {
 				envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
 				envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);
 				envMapMaterial->GetRoughnessInput().TextureMap->Bind(samplerSlot + 3);
-				envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 4);
+				envMapMaterial->GetEmissiveInput().TextureMap->Bind(samplerSlot + 4);
+				envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 5);
 			}
 
 			auto material = m_Materials[submesh.MaterialIndex];
@@ -1087,20 +1090,21 @@ namespace Hazel {
 			m_BaseMaterial->GetTextureNormal()->Bind(samplerSlot + 1);
 			m_BaseMaterial->GetTextureMetallic()->Bind(samplerSlot + 2);
 			m_BaseMaterial->GetTextureRoughness()->Bind(samplerSlot + 3);
-			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 4);
+			m_BaseMaterial->GetTextureEmissive()->Bind(samplerSlot + 4);
+			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
 		}
 
 		std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(parentMesh, *this);
 
 		if (envMapMaterials.contains(materialName))
 		{
-			envMapMaterial = envMapMaterials.at(materialName
-			);
+			envMapMaterial = envMapMaterials.at(materialName);
 			envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);
 			envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
 			envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);
 			envMapMaterial->GetRoughnessInput().TextureMap->Bind(samplerSlot + 3);
-			envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 4);
+			envMapMaterial->GetEmissiveInput().TextureMap->Bind(samplerSlot + 4);
+			envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 5);
 		}
 
 		auto material = parentMesh->GetMaterials()[MaterialIndex];
