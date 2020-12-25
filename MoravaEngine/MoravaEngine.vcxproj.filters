@@ -599,6 +599,9 @@
     <ClCompile Include="Hazel\Script\ScriptWrappers.cpp">
       <Filter>Hazel\Script</Filter>
     </ClCompile>
+    <ClCompile Include="Hazel\Renderer\SceneEnvironment.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1287,6 +1290,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\ImGui\ImGui.h">
       <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\SceneEnvironment.h">
+      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

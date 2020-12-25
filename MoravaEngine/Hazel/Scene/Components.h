@@ -8,6 +8,7 @@
 #include "../Core/UUID.h"
 #include "../Renderer/HazelMesh.h"
 #include "../Renderer/HazelCamera.h"
+#include "../Renderer/SceneEnvironment.h"
 
 
 namespace Hazel
@@ -67,14 +68,15 @@ namespace Hazel
 		operator Ref<HazelMesh>() { return Mesh; }
 	};
 
-	struct SpriteRendererComponent
+	struct ScriptComponent
 	{
-		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
+		// C# script
+		std::string ModuleName;
 
-		SpriteRendererComponent() = default;
-		SpriteRendererComponent(const SpriteRendererComponent&) = default;
-		SpriteRendererComponent(const glm::vec4& color)
-			: Color(color) {};
+		ScriptComponent() = default;
+		ScriptComponent(const ScriptComponent & other) = default;
+		ScriptComponent(const std::string & moduleName)
+			: ModuleName(moduleName) {}
 	};
 
 	struct CameraComponent
@@ -84,7 +86,8 @@ namespace Hazel
 		bool FixedAspectRatio = false;
 
 		CameraComponent() = default;
-		CameraComponent(const CameraComponent&) = default;
+		CameraComponent(const CameraComponent& other) = default;
+
 		CameraComponent(Hazel::HazelCamera* camera)
 			: Camera(*camera) {};
 
@@ -92,11 +95,67 @@ namespace Hazel
 		operator const HazelCamera& () const { return Camera; }
 	};
 
+	struct SpriteRendererComponent
+	{
+		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
+		Ref<HazelTexture2D> Texture;
+		float TilingFactor = 1.0f;
+
+		SpriteRendererComponent() = default;
+		SpriteRendererComponent(const SpriteRendererComponent&) = default;
+		SpriteRendererComponent(const glm::vec4& color)
+			: Color(color) {};
+	};
+
+	struct RigidBody2DComponent
+	{
+		enum class Type { Static, Dynamic, Kinematic };
+		Type BodyType;
+		bool FixedRotation = false;
+
+		// Storage for runtime
+		void* RuntimeBody = nullptr;
+
+		RigidBody2DComponent() = default;
+		RigidBody2DComponent(const RigidBody2DComponent& other) = default;
+	};
+
+	struct BoxCollider2DComponent
+	{
+		glm::vec2 Offset = { 0.0f,0.0f };
+		glm::vec2 Size = { 1.0f, 1.0f };
+
+		float Density = 1.0f;
+		float Friction = 1.0f;
+
+		// Storage for runtime
+		void* RuntimeFixture = nullptr;
+
+		BoxCollider2DComponent() = default;
+		BoxCollider2DComponent(const BoxCollider2DComponent& other) = default;
+	};
+
+	struct CircleCollider2DComponent
+	{
+		glm::vec2 Offset = { 0.0f,0.0f };
+		float Radius = 1.0f;
+
+		float Density = 1.0f;
+		float Friction = 1.0f;
+
+		// Storage for runtime
+		void* RuntimeFixture = nullptr;
+
+		CircleCollider2DComponent() = default;
+		CircleCollider2DComponent(const CircleCollider2DComponent& other) = default;
+	};
+
+	// Obsolete?
 	struct NativeScriptComponent
 	{
 		ScriptableEntity* Instance = nullptr;
 
-		ScriptableEntity*(*InstantiateScript)();
+		ScriptableEntity* (*InstantiateScript)();
 		void (*DestroyScript)(NativeScriptComponent*);
 
 		template<typename T>
@@ -107,10 +166,28 @@ namespace Hazel
 		}
 	};
 
-	struct ScriptComponent
+	// Lights
+
+	// TODO: Move to renderer
+	enum class LightType
 	{
-		// TODO: C# script
-		std::string ModuleName;
+		None = 0, Directional = 1, Point = 2, Spot = 3
+	};
+
+	struct DirectionalLightComponent
+	{
+		glm::vec3 Radiance = { 1.0f, 1.0f, 1.0f };
+		float Intensity = 1.0f;
+		bool CastShadows = true;
+		bool SoftShadows = true;
+		float LightSize = 0.5f; // For PCSS
+	};
+
+	struct SkyLightComponent
+	{
+		Environment SceneEnvironment;
+		float Intensity = 1.0f;
+		float Angle = 0.0f;
 	};
 
 }

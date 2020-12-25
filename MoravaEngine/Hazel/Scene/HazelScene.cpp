@@ -276,9 +276,14 @@ namespace Hazel {
 		CopyComponent<TagComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<TransformComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<MeshComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<DirectionalLightComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<SkyLightComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<ScriptComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<SpriteRendererComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<RigidBody2DComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<BoxCollider2DComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<CircleCollider2DComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);
 
 		const auto& entityInstanceMap = ScriptEngine::GetEntityInstanceMap();
@@ -316,20 +321,40 @@ namespace Hazel {
 			entityClone.AddComponent<MeshComponent>(entity.GetComponent<MeshComponent>());
 		}
 
-		if (entity.HasComponent<SpriteRendererComponent>()) {
-			entityClone.AddComponent<SpriteRendererComponent>(entity.GetComponent<SpriteRendererComponent>());
+		if (entity.HasComponent<ScriptComponent>()) {
+			entityClone.AddComponent<ScriptComponent>(entity.GetComponent<ScriptComponent>());
 		}
 
 		if (entity.HasComponent<CameraComponent>()) {
 			entityClone.AddComponent<CameraComponent>(entity.GetComponent<CameraComponent>());
 		}
-		
-		if (entity.HasComponent<NativeScriptComponent>()) {
-			entityClone.AddComponent<NativeScriptComponent>(entity.GetComponent<NativeScriptComponent>());
+
+		if (entity.HasComponent<SpriteRendererComponent>()) {
+			entityClone.AddComponent<SpriteRendererComponent>(entity.GetComponent<SpriteRendererComponent>());
 		}
 
-		if (entity.HasComponent<ScriptComponent>()) {
-			entityClone.AddComponent<ScriptComponent>(entity.GetComponent<ScriptComponent>());
+		if (entity.HasComponent<RigidBody2DComponent>()) {
+			entityClone.AddComponent<RigidBody2DComponent>(entity.GetComponent<RigidBody2DComponent>());
+		}
+
+		if (entity.HasComponent<BoxCollider2DComponent>()) {
+			entityClone.AddComponent<BoxCollider2DComponent>(entity.GetComponent<BoxCollider2DComponent>());
+		}
+
+		if (entity.HasComponent<CircleCollider2DComponent>()) {
+			entityClone.AddComponent<CircleCollider2DComponent>(entity.GetComponent<CircleCollider2DComponent>());
+		}
+
+		if (entity.HasComponent<DirectionalLightComponent>()) {
+			entityClone.AddComponent<DirectionalLightComponent>(entity.GetComponent<DirectionalLightComponent>());
+		}
+
+		if (entity.HasComponent<SkyLightComponent>()) {
+			entityClone.AddComponent<SkyLightComponent>(entity.GetComponent<SkyLightComponent>());
+		}
+
+		if (entity.HasComponent<NativeScriptComponent>()) {
+			entityClone.AddComponent<NativeScriptComponent>(entity.GetComponent<NativeScriptComponent>());
 		}
 
 		Log::GetLogger()->warn("Method HazelScene::CopyEntity implemented poorly [Tag: '{0}']", entity.GetComponent<TagComponent>().Tag);
@@ -349,9 +374,14 @@ namespace Hazel {
 
 		CopyComponentIfExists<TransformComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<MeshComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<DirectionalLightComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<SkyLightComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<ScriptComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<CameraComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<SpriteRendererComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<RigidBody2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<BoxCollider2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<CircleCollider2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 	}
 
 	void HazelScene::OnEvent(Event& e)
@@ -428,7 +458,22 @@ namespace Hazel {
 	}
 
 	template<>
+	void HazelScene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
+	{
+	}
+
+	template<>
 	void HazelScene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
+	{
+	}
+
+	template<>
+	void HazelScene::OnComponentAdded<MeshComponent>(Entity entity, MeshComponent& component)
+	{
+	}
+
+	template<>
+	void HazelScene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component)
 	{
 	}
 
@@ -444,22 +489,32 @@ namespace Hazel {
 	}
 
 	template<>
-	void HazelScene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
+	void HazelScene::OnComponentAdded<RigidBody2DComponent>(Entity entity, RigidBody2DComponent& component)
+	{
+	}
+
+	template<>
+	void HazelScene::OnComponentAdded<BoxCollider2DComponent>(Entity entity, BoxCollider2DComponent& component)
+	{
+	}
+
+	template<>
+	void HazelScene::OnComponentAdded<CircleCollider2DComponent>(Entity entity, CircleCollider2DComponent& component)
+	{
+	}
+
+	template<>
+	void HazelScene::OnComponentAdded<DirectionalLightComponent>(Entity entity, DirectionalLightComponent& component)
+	{
+	}
+
+	template<>
+	void HazelScene::OnComponentAdded<SkyLightComponent>(Entity entity, SkyLightComponent& component)
 	{
 	}
 
 	template<>
 	void HazelScene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
-	{
-	}
-
-	template<>
-	void HazelScene::OnComponentAdded<MeshComponent>(Entity entity, MeshComponent& component)
-	{
-	}
-
-	template<>
-	void HazelScene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component)
 	{
 	}
 

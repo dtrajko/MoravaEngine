@@ -18,14 +18,6 @@
 
 namespace Hazel {
 
-	struct Environment
-	{
-		Ref<Hazel::HazelTextureCube> RadianceMap;
-		Ref<Hazel::HazelTextureCube> IrradianceMap;
-
-		static Environment Load(const std::string& filepath) {}; // TODO
-	};
-
 	struct HazelLight
 	{
 		glm::vec3 Direction;
@@ -68,10 +60,12 @@ namespace Hazel {
 		Ref<HazelMaterialInstance> GetSkyboxMaterial() { return m_SkyboxMaterial; }
 
 		void SetEnvironment(const Environment& environment);
-		inline Environment GetEnvironment() { return m_Environment; }
+		inline const Environment& GetEnvironment() const { return m_Environment; }
 
 		inline void SetLight(HazelLight light) { m_Light = light; };
-		inline HazelLight GetLight() { return m_Light; }
+
+		HazelLight& GetLight() { return m_Light; }
+		inline const HazelLight& GetLight() const { return m_Light; }
 
 		void SetSkybox(const Ref<HazelTextureCube>& skybox);
 

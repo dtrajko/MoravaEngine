@@ -2,6 +2,7 @@
 
 #include "../Core/Ref.h"
 #include "../Scene/Entity.h"
+#include "../Renderer/SceneEnvironment.h"
 #include "RenderPass.h"
 #include "HazelTexture.h"
 #include "RenderCommandQueue.h"
@@ -94,7 +95,7 @@ namespace Hazel {
 		inline void SetLight(HazelLight light) { s_Data.SceneData.ActiveLight = light; }
 		Environment Load(const std::string& filepath);
 		static void SetEnvironment(Environment environment);
-		std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);
+		static std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);
 		inline Shader* GetShaderSkybox() { return m_ShaderSkybox; }
 		inline Shader* GetShaderGrid() { return m_ShaderGrid; }
 		inline Shader* GetShaderComposite() { return s_Data.CompositeShader; }
@@ -114,17 +115,17 @@ namespace Hazel {
 		static std::map<std::string, unsigned int>* m_SamplerSlots;
 
 		// From EnvironmentMap
-		Shader* m_ShaderEquirectangularConversion;
-		Shader* m_ShaderEnvFiltering;
-		Shader* m_ShaderEnvIrradiance;
-		Shader* m_ShaderGrid;
-		Shader* m_ShaderSkybox;
+		static Shader* m_ShaderEquirectangularConversion;
+		static Shader* m_ShaderEnvFiltering;
+		static Shader* m_ShaderEnvIrradiance;
+		static Shader* m_ShaderGrid;
+		static Shader* m_ShaderSkybox;
 
 		// Intermediate textures
-		Ref<HazelTextureCube> m_EnvUnfiltered;
-		Ref<HazelTexture2D> m_EnvEquirect;
-		Ref<HazelTextureCube> m_EnvFiltered;
-		Ref<HazelTextureCube> m_IrradianceMap;
+		static Ref<HazelTextureCube> m_EnvUnfiltered;
+		static Ref<HazelTexture2D> m_EnvEquirect;
+		static Ref<HazelTextureCube> m_EnvFiltered;
+		static Ref<HazelTextureCube> m_IrradianceMap;
 
 		float m_GridScale = 16.025f;
 		float m_GridSize = 0.025f;

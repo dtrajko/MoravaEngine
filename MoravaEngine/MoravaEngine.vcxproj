@@ -210,6 +210,7 @@
     <ClCompile Include="Hazel\Renderer\RendererAPI.cpp" />
     <ClCompile Include="Hazel\Renderer\RenderPass.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelShader.cpp" />
+    <ClCompile Include="Hazel\Renderer\SceneEnvironment.cpp" />
     <ClCompile Include="Hazel\Renderer\SceneRenderer.cpp" />
     <ClCompile Include="Hazel\Renderer\ShaderUniform.cpp" />
     <ClCompile Include="Hazel\Renderer\VertexArray.cpp" />
@@ -431,6 +432,7 @@
     <ClInclude Include="Hazel\Renderer\RendererAPI.h" />
     <ClInclude Include="Hazel\Renderer\RenderPass.h" />
     <ClInclude Include="Hazel\Renderer\HazelShader.h" />
+    <ClInclude Include="Hazel\Renderer\SceneEnvironment.h" />
     <ClInclude Include="Hazel\Renderer\SceneRenderer.h" />
     <ClInclude Include="Hazel\Renderer\ShaderUniform.h" />
     <ClInclude Include="Hazel\Renderer\VertexArray.h" />

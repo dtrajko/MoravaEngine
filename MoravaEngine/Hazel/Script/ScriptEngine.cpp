@@ -277,7 +277,7 @@ namespace Hazel
 				{
 					const auto& entityMap = scene->GetEntityMap();
 					HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
-					InitScriptEntity(Entity{ entityMap.at(entityID), scene.Raw() });
+					InitScriptEntity(entityMap.at(entityID));
 				}
 			}
 		}
@@ -687,7 +687,7 @@ namespace Hazel
 				Ref<HazelScene> scene = HazelScene::GetScene(sceneID);
 				for (auto& [entityID, entityInstanceData] : entityMap)
 				{
-					Entity entity = Entity{ scene->GetScene(sceneID)->GetEntityMap().at(entityID), scene.Raw() };
+					Entity entity = scene->GetScene(sceneID)->GetEntityMap().at(entityID);
 					std::string entityName = "Unnamed Entity";
 					if (entity.HasComponent<TagComponent>())
 						entityName = entity.GetComponent<TagComponent>().Tag;

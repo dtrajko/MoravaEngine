@@ -4,8 +4,8 @@
 #include "HazelShader.h"
 #include "HazelRenderer.h"
 #include "../Core/Assert.h"
-#include "../Scene/HazelScene.h"
 #include "../Platform/OpenGL/OpenGLRenderPass.h"
+#include "../Scene/HazelScene.h"
 
 #include "../../Scene.h"
 #include "../../RendererBasic.h"
@@ -19,6 +19,16 @@ namespace Hazel {
 
     SceneRendererData SceneRenderer::s_Data;
     std::map<std::string, unsigned int>* SceneRenderer::m_SamplerSlots;
+    Shader* SceneRenderer::m_ShaderEquirectangularConversion;
+    Shader* SceneRenderer::m_ShaderEnvFiltering;
+    Shader* SceneRenderer::m_ShaderEnvIrradiance;
+    Shader* SceneRenderer::m_ShaderGrid;
+    Shader* SceneRenderer::m_ShaderSkybox;
+    Ref<HazelTextureCube> SceneRenderer::m_EnvUnfiltered;
+    Ref<HazelTexture2D> SceneRenderer::m_EnvEquirect;
+    Ref<HazelTextureCube> SceneRenderer::m_EnvFiltered;
+    Ref<HazelTextureCube> SceneRenderer::m_IrradianceMap;
+
 
     SceneRenderer::SceneRenderer(std::string filepath, Scene* scene)
     {
@@ -98,7 +108,7 @@ namespace Hazel {
     Environment SceneRenderer::Load(const std::string& filepath)
     {
         auto [radiance, irradiance] = CreateEnvironmentMap(filepath);
-        return { radiance, irradiance };
+        return { "", radiance, irradiance };
     }
 
     void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
