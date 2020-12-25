@@ -179,6 +179,7 @@ void EnvironmentMap::SetupContextData()
     m_DirectionalLightEntity = CreateEntity("Directional Light");
     auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
     tc.Rotation = m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction;
+    m_DirectionalLightEntity.AddComponent<Hazel::DirectionalLightComponent>();
 }
 
 Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)

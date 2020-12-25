@@ -561,6 +561,26 @@ namespace Hazel
 				}
 			}
 
+			DrawComponent<RigidBody2DComponent>("Rigidbody 2D", entity, [](auto& component)
+				{
+				});
+
+			DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](auto& component)
+				{
+				});
+
+			DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](auto& component)
+				{
+				});
+
+			DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](auto& component)
+				{
+				});
+
+			DrawComponent<SkyLightComponent>("Sky Light", entity, [](auto& component)
+				{
+				});
+
 			EndPropertyGrid();
 
 			if (ImGui::Button("Run Script"))
@@ -576,6 +596,11 @@ namespace Hazel
 
 			if (ImGui::BeginPopup("AddComponent"))
 			{
+				if (ImGui::MenuItem("Camera")) {
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<CameraComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+
 				if (ImGui::MenuItem("Mesh")) {
 					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>();
 					ImGui::CloseCurrentPopup();
@@ -586,13 +611,33 @@ namespace Hazel
 					ImGui::CloseCurrentPopup();
 				}
 
-				if (ImGui::MenuItem("Camera")) {
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<CameraComponent>();
+				if (ImGui::MenuItem("Sprite Renderer")) {
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SpriteRendererComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 
-				if (ImGui::MenuItem("Sprite Renderer")) {
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SpriteRendererComponent>();
+				if (ImGui::MenuItem("Rigidbody 2D")) {
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<RigidBody2DComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::MenuItem("Box Collider 2D")) {
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<BoxCollider2DComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::MenuItem("Circle Collider 2D")) {
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<CircleCollider2DComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::MenuItem("Directional Light")) {
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<DirectionalLightComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::MenuItem("Sky Light")) {
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 
