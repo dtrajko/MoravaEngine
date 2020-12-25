@@ -141,6 +141,8 @@ void EnvironmentMap::Init()
 
     SetupContextData();
 
+    // Hazel::ScriptEngine::Init(""); // TODO Assembly path
+
     // Temporary code Hazel LIVE! #004
     Hazel::HazelRenderer::Init();
 
@@ -1559,11 +1561,6 @@ void EnvironmentMap::SetupRenderFramebuffer()
 
 void EnvironmentMap::OnEvent(Event& e)
 {
-    if (m_AllowViewportCameraEvents) {
-        /* Camera.OnEvent */
-        // ((Scene*)m_SceneRenderer->s_Data.ActiveScene)->GetCamera()->OnEvent(e);
-    }
-
     if (m_SceneState == SceneState::Edit)
     {
         if (m_ViewportPanelMouseOver) {
