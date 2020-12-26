@@ -253,7 +253,9 @@ namespace Hazel {
 			out << YAML::BeginMap; // MeshComponent
 
 			auto mesh = entity.GetComponent<MeshComponent>().Mesh;
-			out << YAML::Key << "AssetPath" << YAML::Value << mesh->GetFilePath();
+			if (mesh) {
+				out << YAML::Key << "AssetPath" << YAML::Value << mesh->GetFilePath();
+			}
 
 			out << YAML::EndMap; // MeshComponent
 		}

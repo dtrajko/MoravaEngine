@@ -887,8 +887,10 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
     for (auto entt : meshEntities)
     {
         Hazel::Entity entity = { entt, m_SceneRenderer->s_Data.ActiveScene };
-        auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
-        mesh->OnImGuiRender(++id);
+        auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
+        if (meshComponent.Mesh) {
+            meshComponent.Mesh->OnImGuiRender(++id);
+        }
     }
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12, 0));
@@ -1093,8 +1095,10 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                 if (meshEntities.size())
                 {
                     meshEntity = GetMeshEntity();
-                    Hazel::Ref<Hazel::HazelMesh> meshAnimPBR = meshEntity->GetComponent<Hazel::MeshComponent>().Mesh;
-                    ImGui::Checkbox("Is Animated", &meshAnimPBR->IsAnimated());
+                    auto& meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
+                    if (meshComponent.Mesh) {
+                        ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
+                    }
                 }
             }
         }
@@ -1790,29 +1794,32 @@ void EnvironmentMap::GeometryPassTemporary()
     // Render all entities with mesh component
     if (meshEntities.size())
     {
-        m_ShaderHazelPBR->Bind();
-
         for (auto entt : meshEntities)
         {
             Hazel::Entity entity = { entt, m_SceneRenderer->s_Data.ActiveScene };
+            auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
 
-            Hazel::Ref<Hazel::HazelMesh> hazelMesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
-            m_ShaderHazelPBR = hazelMesh->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
-
-            for (Hazel::Submesh& submesh : hazelMesh->GetSubmeshes())
+            if (meshComponent.Mesh)
             {
-                std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(hazelMesh.Raw(), submesh);
+                m_ShaderHazelPBR = meshComponent.Mesh->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
 
-                if (m_EnvMapMaterials.contains(materialName)) {
-                    UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(materialName));
+                m_ShaderHazelPBR->Bind();
+                {
+                    for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
+                    {
+                        std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(meshComponent.Mesh.Raw(), submesh);
+
+                        if (m_EnvMapMaterials.contains(materialName)) {
+                            UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(materialName));
+                        }
+
+                        glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+                        submesh.Render(meshComponent.Mesh.Raw(), m_ShaderHazelPBR, entityTransform, samplerSlot, m_EnvMapMaterials);
+                    }
                 }
-
-                glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
-                submesh.Render(hazelMesh.Raw(), m_ShaderHazelPBR, entityTransform, samplerSlot, m_EnvMapMaterials);
+                m_ShaderHazelPBR->Unbind();
             }
         }
-
-        m_ShaderHazelPBR->Unbind();
     }
 
     Hazel::Renderer2D::BeginScene(viewProj, true);

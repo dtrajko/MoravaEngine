@@ -8,6 +8,9 @@
 
 #include <glm/glm.hpp>
 
+// Box2D
+// #include <box2d/box2d.h>
+
 #include <string>
 #include <unordered_map>
 
@@ -24,6 +27,11 @@ namespace Hazel {
 	struct SceneComponent
 	{
 		UUID SceneID;
+	};
+
+	struct Box2DWorldComponent
+	{
+		// std::unique_ptr<b2World> World;
 	};
 
 	void OnScriptComponentConstruct(entt::registry& registry, entt::entity entity)
@@ -45,6 +53,9 @@ namespace Hazel {
 
 		m_SceneEntity = m_Registry.create();
 		m_Registry.emplace<SceneComponent>(m_SceneEntity, m_SceneID);
+
+		// TODO: Obviously not necessary in all cases
+		// m_Registry.emplace<Box2DWorldComponent>(m_SceneEntity, std::make_unique<b2World>(b2Vec2{ 0.0f, -9.81f }));
 
 		s_ActiveScenes[m_SceneID] = this;
 

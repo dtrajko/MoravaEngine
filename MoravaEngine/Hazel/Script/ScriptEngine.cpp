@@ -400,9 +400,12 @@ namespace Hazel
 	void ScriptEngine::OnScriptComponentDestroyed(UUID sceneID, UUID entityID)
 	{
 		HZ_CORE_ASSERT(s_EntityInstanceMap.find(sceneID) != s_EntityInstanceMap.end());
-		auto& entityMap = s_EntityInstanceMap.at(sceneID);
-		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end());
-		entityMap.erase(entityID);
+		if (s_EntityInstanceMap.size() > sceneID)
+		{
+			auto& entityMap = s_EntityInstanceMap.at(sceneID);
+			HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end());
+			entityMap.erase(entityID);
+		}
 	}
 
 	bool ScriptEngine::ModuleExists(const std::string& moduleName)

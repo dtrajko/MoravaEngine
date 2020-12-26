@@ -433,9 +433,9 @@ namespace Hazel
 
 			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
-				float verticalFOV = glm::degrees(camera.GetPerspectiveVerticalFOV());
+				float verticalFOV = camera.GetPerspectiveVerticalFOV();
 				if (ImGui::DragFloat("Vertical FOV", &verticalFOV))
-					camera.SetPerspectiveVerticalFOV(glm::radians(verticalFOV));
+					camera.SetPerspectiveVerticalFOV(verticalFOV);
 
 				float nearClip = camera.GetPerspectiveNearClip();
 				if (ImGui::DragFloat("Near", &nearClip))
@@ -561,32 +561,32 @@ namespace Hazel
 				}
 			}
 
-			DrawComponent<RigidBody2DComponent>("Rigidbody 2D", entity, [](auto& component)
-				{
-				});
-
-			DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](auto& component)
-				{
-				});
-
-			DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](auto& component)
-				{
-				});
-
-			DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](auto& component)
-				{
-				});
-
-			DrawComponent<SkyLightComponent>("Sky Light", entity, [](auto& component)
-				{
-				});
-
 			EndPropertyGrid();
 
 			if (ImGui::Button("Run Script"))
 			{
 				ScriptEngine::OnCreateEntity(entity);
 			}
+		});
+
+		DrawComponent<RigidBody2DComponent>("Rigidbody 2D", entity, [](auto& component)
+		{
+		});
+
+		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](auto& component)
+		{
+		});
+
+		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](auto& component)
+		{
+		});
+
+		DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](auto& component)
+		{
+		});
+
+		DrawComponent<SkyLightComponent>("Sky Light", entity, [](auto& component)
+		{
 		});
 
 		{
@@ -602,6 +602,9 @@ namespace Hazel
 				}
 
 				if (ImGui::MenuItem("Mesh")) {
+					// Ref<Hazel::HazelMesh> mesh = Ref<Hazel::HazelMesh>(new Hazel::HazelMesh("Models/sphere.obj"));
+					// auto& mc = EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>(mesh);
+
 					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>();
 					ImGui::CloseCurrentPopup();
 				}
