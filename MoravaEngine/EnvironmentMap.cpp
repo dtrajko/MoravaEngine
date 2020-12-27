@@ -1050,7 +1050,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                 Hazel::HazelLight light = m_SceneRenderer->GetLight();
                 Hazel::HazelLight lightPrev = light;
 
-                ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::SliderProperty);
+                ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::DragProperty);
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f, PropertyFlag::SliderProperty);
                 ImGuiWrapper::Property("Exposure", m_ActiveCamera->GetExposure(), 0.0f, 40.0f, PropertyFlag::SliderProperty);
