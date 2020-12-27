@@ -609,6 +609,63 @@ SET(yaml-cpp_SRCS
 	../vendor/cross-platform/yaml-cpp/src/tag.cpp
 )
 
+SET(box2d_SRCS
+	../vendor/box2d/src/collision/b2_broad_phase.cpp
+	../vendor/box2d/src/collision/b2_chain_shape.cpp
+	../vendor/box2d/src/collision/b2_circle_shape.cpp
+	../vendor/box2d/src/collision/b2_collide_circle.cpp
+	../vendor/box2d/src/collision/b2_collide_edge.cpp
+	../vendor/box2d/src/collision/b2_collide_polygon.cpp
+	../vendor/box2d/src/collision/b2_collision.cpp
+	../vendor/box2d/src/collision/b2_distance.cpp
+	../vendor/box2d/src/collision/b2_dynamic_tree.cpp
+	../vendor/box2d/src/collision/b2_edge_shape.cpp
+	../vendor/box2d/src/collision/b2_polygon_shape.cpp
+	../vendor/box2d/src/collision/b2_time_of_impact.cpp
+	../vendor/box2d/src/common/b2_block_allocator.cpp
+	../vendor/box2d/src/common/b2_draw.cpp
+	../vendor/box2d/src/common/b2_math.cpp
+	../vendor/box2d/src/common/b2_settings.cpp
+	../vendor/box2d/src/common/b2_stack_allocator.cpp
+	../vendor/box2d/src/common/b2_timer.cpp
+	../vendor/box2d/src/dynamics/b2_body.cpp
+	../vendor/box2d/src/dynamics/b2_chain_circle_contact.cpp
+	../vendor/box2d/src/dynamics/b2_chain_circle_contact.h
+	../vendor/box2d/src/dynamics/b2_chain_polygon_contact.cpp
+	../vendor/box2d/src/dynamics/b2_chain_polygon_contact.h
+	../vendor/box2d/src/dynamics/b2_circle_contact.cpp
+	../vendor/box2d/src/dynamics/b2_circle_contact.h
+	../vendor/box2d/src/dynamics/b2_contact.cpp
+	../vendor/box2d/src/dynamics/b2_contact_manager.cpp
+	../vendor/box2d/src/dynamics/b2_contact_solver.cpp
+	../vendor/box2d/src/dynamics/b2_contact_solver.h
+	../vendor/box2d/src/dynamics/b2_distance_joint.cpp
+	../vendor/box2d/src/dynamics/b2_edge_circle_contact.cpp
+	../vendor/box2d/src/dynamics/b2_edge_circle_contact.h
+	../vendor/box2d/src/dynamics/b2_edge_polygon_contact.cpp
+	../vendor/box2d/src/dynamics/b2_edge_polygon_contact.h
+	../vendor/box2d/src/dynamics/b2_fixture.cpp
+	../vendor/box2d/src/dynamics/b2_friction_joint.cpp
+	../vendor/box2d/src/dynamics/b2_gear_joint.cpp
+	../vendor/box2d/src/dynamics/b2_island.cpp
+	../vendor/box2d/src/dynamics/b2_island.h
+	../vendor/box2d/src/dynamics/b2_joint.cpp
+	../vendor/box2d/src/dynamics/b2_motor_joint.cpp
+	../vendor/box2d/src/dynamics/b2_mouse_joint.cpp
+	../vendor/box2d/src/dynamics/b2_polygon_circle_contact.cpp
+	../vendor/box2d/src/dynamics/b2_polygon_circle_contact.h
+	../vendor/box2d/src/dynamics/b2_polygon_contact.cpp
+	../vendor/box2d/src/dynamics/b2_polygon_contact.h
+	../vendor/box2d/src/dynamics/b2_prismatic_joint.cpp
+	../vendor/box2d/src/dynamics/b2_pulley_joint.cpp
+	../vendor/box2d/src/dynamics/b2_revolute_joint.cpp
+	../vendor/box2d/src/dynamics/b2_weld_joint.cpp
+	../vendor/box2d/src/dynamics/b2_wheel_joint.cpp
+	../vendor/box2d/src/dynamics/b2_world.cpp
+	../vendor/box2d/src/dynamics/b2_world_callbacks.cpp
+	../vendor/box2d/src/rope/b2_rope.cpp
+)
+
 message("Environment variable 'MORAVA_BUILD_TYPE' = '" $ENV{MORAVA_BUILD_TYPE} "'")
 
 option(USE_MSVC_INCREMENTAL_LINKING "Use MSVC Incremental Linking" OFF)
@@ -636,8 +693,8 @@ add_library(spirv-cross-reflect  STATIC "${spirv-cross-reflect_SRCS}")
 add_library(spirv-cross-util     STATIC "${spirv-cross-util_SRCS}")
 
 add_library(SPIRV-Cross          STATIC "${SPIRV-Cross_SRCS}")
-
 add_library(yaml-cpp             STATIC "${yaml-cpp_SRCS}")
+add_library(box2d                STATIC "${box2d_SRCS}")
 
 add_dependencies(assimp irrXML)
 add_dependencies(assimp zlibstatic)
@@ -659,6 +716,7 @@ add_dependencies("${PROJECT_NAME}" assimp)
 add_dependencies("${PROJECT_NAME}" glfw3)
 add_dependencies("${PROJECT_NAME}" SPIRV-Cross)
 add_dependencies("${PROJECT_NAME}" yaml-cpp)
+add_dependencies("${PROJECT_NAME}" box2d)
 
 set_target_properties("${PROJECT_NAME}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
 set_target_properties(BulletDynamics    PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
@@ -758,6 +816,12 @@ target_include_directories(
 	../vendor/cross-platform/yaml-cpp/src
 )
 
+target_include_directories(
+	box2d PUBLIC
+	../vendor/box2d/include
+	../vendor/box2d/src
+)
+
 # -- BEGIN Main project
 
 target_include_directories(
@@ -777,6 +841,7 @@ target_include_directories(
     ../vendor/entt/include
 	../vendor/cross-platform/yaml-cpp/include
 	../vendor/mono/include
+	../vendor/box2d/include
 )
 
 target_link_directories(
@@ -790,6 +855,7 @@ target_link_directories(
 	../vendor/cross-platform/assimp/bin                         # Linux
 	../vendor/cross-platform/glfw/src
 	../vendor/cross-platform/yaml-cpp
+	../vendor/box2d/bin/$ENV{MORAVA_BUILD_TYPE}
 	../${PROJECT_NAME}/build/$ENV{MORAVA_BUILD_TYPE}
 )
 
@@ -813,6 +879,7 @@ target_link_libraries(
 #	yaml-cppd.lib
 	yaml-cpp.lib
 	mono-2.0-sgen.lib
+	box2d.lib
 )
 elseif (UNIX)
 target_link_libraries(

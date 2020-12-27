@@ -1361,6 +1361,17 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                 }
                 ImGui::Unindent();
                 // END PBR Textures
+
+                bool materialDeleted = false;
+                if (ImGui::BeginPopupContextItem())
+                {
+                    if (ImGui::MenuItem("Delete Material"))
+                    {
+                        materialDeleted = true;
+                    }
+                    ImGui::EndPopup();
+                }
+
             }
         }
     }
