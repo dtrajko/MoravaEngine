@@ -1097,6 +1097,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                     meshEntity = GetMeshEntity();
                     auto& meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
                     if (meshComponent.Mesh) {
+                        ImGui::SameLine();
                         ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
                     }
                 }
@@ -1108,65 +1109,80 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
 
     ImGui::Begin("EnvMap Materials");
     {
-        for (auto& material : m_EnvMapMaterials)
+        unsigned int materialIndex = 0;
+        for (auto iterator = m_EnvMapMaterials.cbegin(); iterator != m_EnvMapMaterials.cend();)
         {
-            std::string materialName = material.first;
+            EnvMapMaterial& material = *iterator->second;
+            std::string materialName = iterator->first;
 
             // Material section
-            if (ImGui::CollapsingHeader(materialName.c_str(), nullptr /*, ImGuiTreeNodeFlags_DefaultOpen */ ))
+            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+            bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)materialIndex++, flags, materialName.c_str());
+
+            bool materialDeleted = false;
+            if (ImGui::BeginPopupContextItem())
+            {
+                if (ImGui::MenuItem("Delete Material"))
+                {
+                    materialDeleted = true;
+                }
+                ImGui::EndPopup();
+            }
+
+            if (opened)
             {
                 // BEGIN PBR Textures
-                ImGui::Indent(10.0f);
+                ImGui::Indent(0.0f);
                 {
-                    {
-                        // Tiling Factor
-                        ImGui::SliderFloat("Tiling Factor", &material.second->GetTilingFactor(), 0.0f, 20.0f);
+                    // Tiling Factor
+                    ImGui::SliderFloat("Tiling Factor", &material.GetTilingFactor(), 0.0f, 20.0f);
 
+                    {
                         // Albedo
                         std::string textureLabel = materialName + " Albedo";
                         if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
                         {
                             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-                            ImGui::Image(material.second->GetAlbedoInput().TextureMap ?
-                                (void*)(intptr_t)material.second->GetAlbedoInput().TextureMap->GetID() :
+                            ImGui::Image(material.GetAlbedoInput().TextureMap ?
+                                (void*)(intptr_t)material.GetAlbedoInput().TextureMap->GetID() :
                                 (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
                             ImGui::PopStyleVar();
                             if (ImGui::IsItemHovered())
                             {
-                                if (material.second->GetAlbedoInput().TextureMap)
+                                if (material.GetAlbedoInput().TextureMap)
                                 {
                                     ImGui::BeginTooltip();
                                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                                    ImGui::TextUnformatted(material.second->GetAlbedoInput().TextureMap->GetPath().c_str());
+                                    ImGui::TextUnformatted(material.GetAlbedoInput().TextureMap->GetPath().c_str());
                                     ImGui::PopTextWrapPos();
-                                    ImGui::Image((void*)(intptr_t)material.second->GetAlbedoInput().TextureMap->GetID(), ImVec2(384, 384));
+                                    ImGui::Image((void*)(intptr_t)material.GetAlbedoInput().TextureMap->GetID(), ImVec2(384, 384));
                                     ImGui::EndTooltip();
                                 }
                                 if (ImGui::IsItemClicked())
                                 {
                                     std::string filename = Application::Get()->OpenFile();
                                     if (filename != "")
-                                        material.second->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material.second->GetAlbedoInput().SRGB);
+                                        material.GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material.GetAlbedoInput().SRGB);
                                 }
                             }
                             ImGui::SameLine();
                             ImGui::BeginGroup();
 
                             std::string checkboxLabel = "Use##" + materialName + "AlbedoMap";
-                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetAlbedoInput().UseTexture);
+                            ImGui::Checkbox(checkboxLabel.c_str(), &material.GetAlbedoInput().UseTexture);
 
                             std::string checkboxLabelSRGB = "sRGB##" + materialName + "AlbedoMap";
-                            if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material.second->GetAlbedoInput().SRGB))
+                            if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material.GetAlbedoInput().SRGB))
                             {
-                                if (material.second->GetAlbedoInput().TextureMap)
-                                    material.second->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(
-                                        material.second->GetAlbedoInput().TextureMap->GetPath(),
-                                        material.second->GetAlbedoInput().SRGB);
+                                if (material.GetAlbedoInput().TextureMap)
+                                    material.GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(
+                                        material.GetAlbedoInput().TextureMap->GetPath(),
+                                        material.GetAlbedoInput().SRGB);
                             }
                             ImGui::EndGroup();
                             ImGui::SameLine();
                             std::string colorLabel = "Color##" + materialName + "Albedo";
-                            ImGui::ColorEdit3(colorLabel.c_str(), glm::value_ptr(material.second->GetAlbedoInput().Color), ImGuiColorEditFlags_NoInputs);
+                            ImGui::ColorEdit3(colorLabel.c_str(), glm::value_ptr(material.GetAlbedoInput().Color), ImGuiColorEditFlags_NoInputs);
                         }
                     }
                     {
@@ -1175,31 +1191,31 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                         if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
                         {
                             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-                            ImGui::Image(material.second->GetNormalInput().TextureMap ?
-                                (void*)(intptr_t)material.second->GetNormalInput().TextureMap->GetID() :
+                            ImGui::Image(material.GetNormalInput().TextureMap ?
+                                (void*)(intptr_t)material.GetNormalInput().TextureMap->GetID() :
                                 (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
                             ImGui::PopStyleVar();
                             if (ImGui::IsItemHovered())
                             {
-                                if (material.second->GetNormalInput().TextureMap)
+                                if (material.GetNormalInput().TextureMap)
                                 {
                                     ImGui::BeginTooltip();
                                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                                    ImGui::TextUnformatted(material.second->GetNormalInput().TextureMap->GetPath().c_str());
+                                    ImGui::TextUnformatted(material.GetNormalInput().TextureMap->GetPath().c_str());
                                     ImGui::PopTextWrapPos();
-                                    ImGui::Image((void*)(intptr_t)material.second->GetNormalInput().TextureMap->GetID(), ImVec2(384, 384));
+                                    ImGui::Image((void*)(intptr_t)material.GetNormalInput().TextureMap->GetID(), ImVec2(384, 384));
                                     ImGui::EndTooltip();
                                 }
                                 if (ImGui::IsItemClicked())
                                 {
                                     std::string filename = Application::Get()->OpenFile();
                                     if (filename != "")
-                                        material.second->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                                        material.GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
                                 }
                             }
                             ImGui::SameLine();
                             std::string checkboxLabel = "Use##" + materialName + "NormalMap";
-                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetNormalInput().UseTexture);
+                            ImGui::Checkbox(checkboxLabel.c_str(), &material.GetNormalInput().UseTexture);
                         }
                     }
                     {
@@ -1208,34 +1224,34 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                         if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
                         {
                             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-                            ImGui::Image(material.second->GetMetalnessInput().TextureMap ?
-                                (void*)(intptr_t)material.second->GetMetalnessInput().TextureMap->GetID() :
+                            ImGui::Image(material.GetMetalnessInput().TextureMap ?
+                                (void*)(intptr_t)material.GetMetalnessInput().TextureMap->GetID() :
                                 (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
                             ImGui::PopStyleVar();
                             if (ImGui::IsItemHovered())
                             {
-                                if (material.second->GetMetalnessInput().TextureMap)
+                                if (material.GetMetalnessInput().TextureMap)
                                 {
                                     ImGui::BeginTooltip();
                                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                                    ImGui::TextUnformatted(material.second->GetMetalnessInput().TextureMap->GetPath().c_str());
+                                    ImGui::TextUnformatted(material.GetMetalnessInput().TextureMap->GetPath().c_str());
                                     ImGui::PopTextWrapPos();
-                                    ImGui::Image((void*)(intptr_t)material.second->GetMetalnessInput().TextureMap->GetID(), ImVec2(384, 384));
+                                    ImGui::Image((void*)(intptr_t)material.GetMetalnessInput().TextureMap->GetID(), ImVec2(384, 384));
                                     ImGui::EndTooltip();
                                 }
                                 if (ImGui::IsItemClicked())
                                 {
                                     std::string filename = Application::Get()->OpenFile();
                                     if (filename != "")
-                                        material.second->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                                        material.GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
                                 }
                             }
                             ImGui::SameLine();
                             std::string checkboxLabel = "Use##" + materialName + "MetalnessMap";
-                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetMetalnessInput().UseTexture);
+                            ImGui::Checkbox(checkboxLabel.c_str(), &material.GetMetalnessInput().UseTexture);
                             ImGui::SameLine();
                             std::string sliderLabel = "Value##" + materialName + "MetalnessInput";
-                            ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetMetalnessInput().Value, 0.0f, 1.0f);
+                            ImGui::SliderFloat(sliderLabel.c_str(), &material.GetMetalnessInput().Value, 0.0f, 1.0f);
                         }
                     }
                     {
@@ -1244,34 +1260,34 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                         if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
                         {
                             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-                            ImGui::Image(material.second->GetRoughnessInput().TextureMap ?
-                                (void*)(intptr_t)material.second->GetRoughnessInput().TextureMap->GetID() :
+                            ImGui::Image(material.GetRoughnessInput().TextureMap ?
+                                (void*)(intptr_t)material.GetRoughnessInput().TextureMap->GetID() :
                                 (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
                             ImGui::PopStyleVar();
                             if (ImGui::IsItemHovered())
                             {
-                                if (material.second->GetRoughnessInput().TextureMap)
+                                if (material.GetRoughnessInput().TextureMap)
                                 {
                                     ImGui::BeginTooltip();
                                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                                    ImGui::TextUnformatted(material.second->GetRoughnessInput().TextureMap->GetPath().c_str());
+                                    ImGui::TextUnformatted(material.GetRoughnessInput().TextureMap->GetPath().c_str());
                                     ImGui::PopTextWrapPos();
-                                    ImGui::Image((void*)(intptr_t)material.second->GetRoughnessInput().TextureMap->GetID(), ImVec2(384, 384));
+                                    ImGui::Image((void*)(intptr_t)material.GetRoughnessInput().TextureMap->GetID(), ImVec2(384, 384));
                                     ImGui::EndTooltip();
                                 }
                                 if (ImGui::IsItemClicked())
                                 {
                                     std::string filename = Application::Get()->OpenFile();
                                     if (filename != "")
-                                        material.second->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                                        material.GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
                                 }
                             }
                             ImGui::SameLine();
                             std::string checkboxLabel = "Use##" + materialName + "RoughnessMap";
-                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetRoughnessInput().UseTexture);
+                            ImGui::Checkbox(checkboxLabel.c_str(), &material.GetRoughnessInput().UseTexture);
                             ImGui::SameLine();
                             std::string sliderLabel = "Value##" + materialName + "RoughnessInput";
-                            ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetRoughnessInput().Value, 0.0f, 1.0f);
+                            ImGui::SliderFloat(sliderLabel.c_str(), &material.GetRoughnessInput().Value, 0.0f, 1.0f);
                         }
                     }
                     {
@@ -1280,44 +1296,44 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                         if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
                         {
                             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-                            ImGui::Image(material.second->GetEmissiveInput().TextureMap ?
-                                (void*)(intptr_t)material.second->GetEmissiveInput().TextureMap->GetID() :
+                            ImGui::Image(material.GetEmissiveInput().TextureMap ?
+                                (void*)(intptr_t)material.GetEmissiveInput().TextureMap->GetID() :
                                 (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
                             ImGui::PopStyleVar();
                             if (ImGui::IsItemHovered())
                             {
-                                if (material.second->GetEmissiveInput().TextureMap)
+                                if (material.GetEmissiveInput().TextureMap)
                                 {
                                     ImGui::BeginTooltip();
                                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                                    ImGui::TextUnformatted(material.second->GetEmissiveInput().TextureMap->GetPath().c_str());
+                                    ImGui::TextUnformatted(material.GetEmissiveInput().TextureMap->GetPath().c_str());
                                     ImGui::PopTextWrapPos();
-                                    ImGui::Image((void*)(intptr_t)material.second->GetEmissiveInput().TextureMap->GetID(), ImVec2(384, 384));
+                                    ImGui::Image((void*)(intptr_t)material.GetEmissiveInput().TextureMap->GetID(), ImVec2(384, 384));
                                     ImGui::EndTooltip();
                                 }
                                 if (ImGui::IsItemClicked())
                                 {
                                     std::string filename = Application::Get()->OpenFile();
                                     if (filename != "")
-                                        material.second->GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material.second->GetEmissiveInput().SRGB);
+                                        material.GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material.GetEmissiveInput().SRGB);
                                 }
                             }
                             ImGui::SameLine();
                             ImGui::BeginGroup();
 
                             std::string checkboxLabel = "Use##" + materialName + "EmissiveMap";
-                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetEmissiveInput().UseTexture);
+                            ImGui::Checkbox(checkboxLabel.c_str(), &material.GetEmissiveInput().UseTexture);
                             ImGui::SameLine();
                             std::string sliderLabel = "Value##" + materialName + "EmissiveInput";
-                            ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetEmissiveInput().Value, 0.0f, 1.0f);
+                            ImGui::SliderFloat(sliderLabel.c_str(), &material.GetEmissiveInput().Value, 0.0f, 1.0f);
 
                             std::string checkboxLabelSRGB = "sRGB##" + materialName + "EmissiveMap";
-                            if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material.second->GetEmissiveInput().SRGB))
+                            if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material.GetEmissiveInput().SRGB))
                             {
-                                if (material.second->GetEmissiveInput().TextureMap)
-                                    material.second->GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(
-                                        material.second->GetEmissiveInput().TextureMap->GetPath(),
-                                        material.second->GetEmissiveInput().SRGB);
+                                if (material.GetEmissiveInput().TextureMap)
+                                    material.GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(
+                                        material.GetEmissiveInput().TextureMap->GetPath(),
+                                        material.GetEmissiveInput().SRGB);
                             }
                             ImGui::EndGroup();
                         }
@@ -1328,50 +1344,48 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                         if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
                         {
                             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-                            ImGui::Image(material.second->GetAOInput().TextureMap ?
-                                (void*)(intptr_t)material.second->GetAOInput().TextureMap->GetID() :
+                            ImGui::Image(material.GetAOInput().TextureMap ?
+                                (void*)(intptr_t)material.GetAOInput().TextureMap->GetID() :
                                 (void*)(intptr_t)m_CheckerboardTexture->GetID(), ImVec2(64, 64));
                             ImGui::PopStyleVar();
                             if (ImGui::IsItemHovered())
                             {
-                                if (material.second->GetAOInput().TextureMap)
+                                if (material.GetAOInput().TextureMap)
                                 {
                                     ImGui::BeginTooltip();
                                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                                    ImGui::TextUnformatted(material.second->GetAOInput().TextureMap->GetPath().c_str());
+                                    ImGui::TextUnformatted(material.GetAOInput().TextureMap->GetPath().c_str());
                                     ImGui::PopTextWrapPos();
-                                    ImGui::Image((void*)(intptr_t)material.second->GetAOInput().TextureMap->GetID(), ImVec2(384, 384));
+                                    ImGui::Image((void*)(intptr_t)material.GetAOInput().TextureMap->GetID(), ImVec2(384, 384));
                                     ImGui::EndTooltip();
                                 }
                                 if (ImGui::IsItemClicked())
                                 {
                                     std::string filename = Application::Get()->OpenFile();
                                     if (filename != "")
-                                        material.second->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
+                                        material.GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(filename);
                                 }
                             }
                             ImGui::SameLine();
                             std::string checkboxLabel = "Use##" + materialName + "AOMap";
-                            ImGui::Checkbox(checkboxLabel.c_str(), &material.second->GetAOInput().UseTexture);
+                            ImGui::Checkbox(checkboxLabel.c_str(), &material.GetAOInput().UseTexture);
                             ImGui::SameLine();
                             std::string sliderLabel = "Value##" + materialName + "AOInput";
-                            ImGui::SliderFloat(sliderLabel.c_str(), &material.second->GetAOInput().Value, 0.0f, 1.0f);
+                            ImGui::SliderFloat(sliderLabel.c_str(), &material.GetAOInput().Value, 0.0f, 1.0f);
                         }
                     }
                 }
                 ImGui::Unindent();
                 // END PBR Textures
 
-                bool materialDeleted = false;
-                if (ImGui::BeginPopupContextItem())
-                {
-                    if (ImGui::MenuItem("Delete Material"))
-                    {
-                        materialDeleted = true;
-                    }
-                    ImGui::EndPopup();
-                }
+                ImGui::TreePop();
+            }
 
+            if (materialDeleted) {
+                iterator = m_EnvMapMaterials.erase(iterator++);
+            }
+            else {
+                ++iterator;
             }
         }
     }
