@@ -301,6 +301,8 @@ namespace Hazel {
 		if (entityInstanceMap.find(target->GetUUID()) != entityInstanceMap.end()) {
 			ScriptEngine::CopyEntityScriptData(target->GetUUID(), m_SceneID);
 		}
+
+		target->SetPhysics2DGravity(GetPhysics2DGravity());
 	}
 
 	Ref<HazelScene> HazelScene::GetScene(UUID uuid)
@@ -310,6 +312,16 @@ namespace Hazel {
 		}
 
 		return {};
+	}
+
+	void HazelScene::SetPhysics2DGravity(float gravity)
+	{
+		m_Registry.get<Box2DWorldComponent>(m_SceneEntity).World->SetGravity({ 0.0f, gravity });
+	}
+
+	float HazelScene::GetPhysics2DGravity() const
+	{
+		return m_Registry.get<Box2DWorldComponent>(m_SceneEntity).World->GetGravity().y;
 	}
 
 	Entity HazelScene::CloneEntity(Entity entity)

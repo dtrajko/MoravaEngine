@@ -96,6 +96,9 @@ namespace Hazel {
 
 		static Ref<HazelScene> GetScene(UUID uuid);
 
+		void SetPhysics2DGravity(float gravity);
+		float GetPhysics2DGravity() const;
+
 		// Editor-specific
 		void SetSelectedEntity(entt::entity entity) { m_SelectedEntity = entity; }
 

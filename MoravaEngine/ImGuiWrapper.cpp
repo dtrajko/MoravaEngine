@@ -198,96 +198,6 @@ bool ImGuiWrapper::DrawVec3Control(const std::string& label, glm::vec3& values, 
 	return isChangedX || isChangedY || isChangedZ;
 }
 
-bool ImGuiWrapper::Property(const std::string& name, bool& value)
-{
-	ImGui::Text(name.c_str());
-	ImGui::NextColumn();
-	ImGui::PushItemWidth(-1);
-
-	std::string id = "##" + name;
-	bool result = ImGui::Checkbox(id.c_str(), &value);
-
-	ImGui::PopItemWidth();
-	ImGui::NextColumn();
-
-	return result;
-}
-
-void ImGuiWrapper::Property(const std::string& name, float& value, float min, float max, PropertyFlag flags)
-{
-	ImGui::Text(name.c_str());
-	ImGui::NextColumn();
-	ImGui::PushItemWidth(-1);
-
-	std::string id = "##" + name;
-	ImGui::SliderFloat(id.c_str(), &value, min, max);
-
-	ImGui::PopItemWidth();
-	ImGui::NextColumn();
-}
-
-void ImGuiWrapper::Property(const std::string& name, glm::vec2& value, PropertyFlag flags)
-{
-	Property(name, value, -1.0f, 1.0f, flags);
-}
-
-void ImGuiWrapper::Property(const std::string& name, glm::vec2& value, float min, float max, PropertyFlag flags)
-{
-	ImGui::Text(name.c_str());
-	ImGui::NextColumn();
-	ImGui::PushItemWidth(-1);
-
-	std::string id = "##" + name;
-	ImGui::SliderFloat2(id.c_str(), glm::value_ptr(value), min, max);
-
-	ImGui::PopItemWidth();
-	ImGui::NextColumn();
-}
-
-void ImGuiWrapper::Property(const std::string& name, glm::vec3& value, PropertyFlag flags)
-{
-	Property(name, value, -1.0f, 1.0f, flags);
-}
-
-void ImGuiWrapper::Property(const std::string& name, glm::vec3& value, float min, float max, PropertyFlag flags)
-{
-	ImGui::Text(name.c_str());
-	ImGui::NextColumn();
-	ImGui::PushItemWidth(-1);
-
-	std::string id = "##" + name;
-	if ((int)flags & (int)PropertyFlag::ColorProperty)
-		ImGui::ColorEdit3(id.c_str(), glm::value_ptr(value), ImGuiColorEditFlags_NoInputs);
-	else
-		ImGui::SliderFloat3(id.c_str(), glm::value_ptr(value), min, max);
-
-	ImGui::PopItemWidth();
-	ImGui::NextColumn();
-}
-
-void ImGuiWrapper::Property(const std::string& name, glm::vec4& value, PropertyFlag flags)
-{
-	Property(name, value, -1.0f, 1.0f, flags);
-}
-
-void ImGuiWrapper::Property(const std::string& name, glm::vec4& value, float min, float max, PropertyFlag flags)
-{
-
-	ImGui::Text(name.c_str());
-	ImGui::NextColumn();
-	ImGui::PushItemWidth(-1);
-
-	std::string id = "##" + name;
-	if ((int)flags & (int)PropertyFlag::ColorProperty)
-		ImGui::ColorEdit4(id.c_str(), glm::value_ptr(value), ImGuiColorEditFlags_NoInputs);
-	else
-		ImGui::SliderFloat4(id.c_str(), glm::value_ptr(value), min, max);
-
-	ImGui::PopItemWidth();
-	ImGui::NextColumn();
-}
-
-
 static int s_UIContextID = 0;
 static uint32_t s_Counter = 0;
 static char s_IDBuffer[16];
@@ -310,8 +220,134 @@ void ImGuiWrapper::BeginPropertyGrid()
 	ImGui::Columns(2);
 }
 
-void ImGuiWrapper::Property(const char* label, const char* value)
+bool ImGuiWrapper::Property(const std::string& name, bool& value)
 {
+	bool modified = false;
+
+	ImGui::Text(name.c_str());
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	std::string id = "##" + name;
+	modified = ImGui::Checkbox(id.c_str(), &value);
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+
+	return modified;
+}
+
+bool ImGuiWrapper::Property(const std::string& name, float& value, float min, float max, PropertyFlag flags)
+{
+	ImGui::Text(name.c_str());
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	std::string id = "##" + name;
+
+	bool changed = false;
+	if (flags == PropertyFlag::SliderProperty) {
+		changed = ImGui::SliderFloat(id.c_str(), &value, min, max);
+	}
+	else {
+		changed = ImGui::DragFloat(id.c_str(), &value, 1.0f, min, max);
+	}
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+
+	return changed;
+}
+
+bool ImGuiWrapper::Property(const std::string& name, glm::vec2& value, PropertyFlag flags)
+{
+	return Property(name, value, -1.0f, 1.0f, flags);
+}
+
+bool ImGuiWrapper::Property(const std::string& name, glm::vec2& value, float min, float max, PropertyFlag flags)
+{
+	ImGui::Text(name.c_str());
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	std::string id = "##" + name;
+
+	bool changed = false;
+	if (flags == PropertyFlag::SliderProperty) {
+		changed = ImGui::SliderFloat2(id.c_str(), glm::value_ptr(value), min, max);
+	}
+	else {
+		changed = ImGui::DragFloat2(id.c_str(), glm::value_ptr(value), 1.0f, min, max);
+	}
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+
+	return changed;
+}
+
+bool ImGuiWrapper::Property(const std::string& name, glm::vec3& value, PropertyFlag flags)
+{
+	return Property(name, value, -1.0f, 1.0f, flags);
+}
+
+bool ImGuiWrapper::Property(const std::string& name, glm::vec3& value, float min, float max, PropertyFlag flags)
+{
+	ImGui::Text(name.c_str());
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	std::string id = "##" + name;
+
+	bool changed = false;
+	if ((int)flags & (int)PropertyFlag::ColorProperty)
+		changed = ImGui::ColorEdit3(id.c_str(), glm::value_ptr(value), ImGuiColorEditFlags_NoInputs);
+	else if (flags == PropertyFlag::SliderProperty) {
+		changed = ImGui::SliderFloat3(id.c_str(), glm::value_ptr(value), min, max);
+	}
+	else {
+		changed = ImGui::DragFloat3(id.c_str(), glm::value_ptr(value), 1.0f, min, max);
+	}
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+
+	return changed;
+}
+
+bool ImGuiWrapper::Property(const std::string& name, glm::vec4& value, PropertyFlag flags)
+{
+	return Property(name, value, -1.0f, 1.0f, flags);
+}
+
+bool ImGuiWrapper::Property(const std::string& name, glm::vec4& value, float min, float max, PropertyFlag flags)
+{
+	ImGui::Text(name.c_str());
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	std::string id = "##" + name;
+
+	bool changed = false;
+	if ((int)flags & (int)PropertyFlag::ColorProperty)
+		changed = ImGui::ColorEdit4(id.c_str(), glm::value_ptr(value), ImGuiColorEditFlags_NoInputs);
+	else if (flags == PropertyFlag::SliderProperty) {
+		changed = ImGui::SliderFloat4(id.c_str(), glm::value_ptr(value), min, max);
+	}
+	else {
+		changed = ImGui::DragFloat4(id.c_str(), glm::value_ptr(value), 1.0f, min, max);
+	}
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+
+	return changed;
+}
+
+bool ImGuiWrapper::Property(const char* label, const char* value)
+{
+	bool modified = false;
+
 	ImGui::Text(label);
 	ImGui::NextColumn();
 	ImGui::PushItemWidth(-1);
@@ -320,10 +356,12 @@ void ImGuiWrapper::Property(const char* label, const char* value)
 	s_IDBuffer[1] = '#';
 	memset(s_IDBuffer + 2, 0, 14);
 	_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
-	ImGui::InputText(s_IDBuffer, (char*)value, 256, ImGuiInputTextFlags_ReadOnly);
+	modified = ImGui::InputText(s_IDBuffer, (char*)value, 256, ImGuiInputTextFlags_ReadOnly);
 
 	ImGui::PopItemWidth();
 	ImGui::NextColumn();
+
+	return modified;
 }
 
 bool ImGuiWrapper::Property(const char* label, int& value)
@@ -338,8 +376,9 @@ bool ImGuiWrapper::Property(const char* label, int& value)
 	s_IDBuffer[1] = '#';
 	memset(s_IDBuffer + 2, 0, 14);
 	_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
-	if (ImGui::DragInt(s_IDBuffer, &value))
+	if (ImGui::DragInt(s_IDBuffer, &value)) {
 		modified = true;
+	}
 
 	ImGui::PopItemWidth();
 	ImGui::NextColumn();
@@ -359,8 +398,9 @@ bool ImGuiWrapper::Property(const char* label, float& value, float delta)
 	s_IDBuffer[1] = '#';
 	memset(s_IDBuffer + 2, 0, 14);
 	_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
-	if (ImGui::DragFloat(s_IDBuffer, &value, delta))
+	if (ImGui::DragFloat(s_IDBuffer, &value, delta)) {
 		modified = true;
+	}
 
 	ImGui::PopItemWidth();
 	ImGui::NextColumn();
@@ -380,8 +420,9 @@ bool ImGuiWrapper::Property(const char* label, glm::vec2& value, float delta)
 	s_IDBuffer[1] = '#';
 	memset(s_IDBuffer + 2, 0, 14);
 	_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
-	if (ImGui::DragFloat2(s_IDBuffer, glm::value_ptr(value), delta))
+	if (ImGui::DragFloat2(s_IDBuffer, glm::value_ptr(value), delta)) {
 		modified = true;
+	}
 
 	ImGui::PopItemWidth();
 	ImGui::NextColumn();

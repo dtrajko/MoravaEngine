@@ -235,7 +235,6 @@ private:
 	// Hazel LIVE! #014
 	Hazel::Ref<Hazel::HazelScene> m_RuntimeScene;
 	Hazel::Ref<Hazel::HazelScene> m_EditorScene;
-	Hazel::Ref<Hazel::HazelScene> m_ActiveScene;
 
 	Hazel::SceneHierarchyPanel* m_SceneHierarchyPanel;
 

@@ -416,7 +416,7 @@ void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
         if (m_ViewportPanelFocused) {
             m_EditorCamera->OnUpdate(timestep);
         }
-        m_ActiveScene->OnRenderEditor(timestep, *m_EditorCamera);
+        m_EditorScene->OnRenderEditor(timestep, *m_EditorCamera);
         break;
     case SceneState::Play:
         if (m_ViewportPanelFocused) {
@@ -513,17 +513,14 @@ void EnvironmentMap::OnScenePlay()
     m_RuntimeScene = Hazel::Ref<Hazel::HazelScene>::Create();
     m_EditorScene->CopyTo(m_RuntimeScene);
 
-    m_ActiveScene = m_RuntimeScene;
-
-    m_ActiveScene->OnRuntimeStart();
+    m_RuntimeScene->OnRuntimeStart();
     m_SceneHierarchyPanel->SetContext(m_RuntimeScene.Raw());
 }
 
 void EnvironmentMap::OnSceneStop()
 {
-    m_ActiveScene->OnRuntimeStop();
+    m_RuntimeScene->OnRuntimeStop();
     m_SceneState = SceneState::Edit;
-    m_ActiveScene = m_EditorScene;
 
     // Unload runtime scene
     m_RuntimeScene = nullptr;
@@ -1053,13 +1050,27 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                 Hazel::HazelLight light = m_SceneRenderer->GetLight();
                 Hazel::HazelLight lightPrev = light;
 
-                ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f);
+                ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::SliderProperty);
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
-                ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f);
-                ImGuiWrapper::Property("Exposure", m_ActiveCamera->GetExposure(), 0.0f, 40.0f);
-                ImGuiWrapper::Property("Skybox Exposure Factor", m_SkyboxExposureFactor, 0.0f, 10.0f);
+                ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f, PropertyFlag::SliderProperty);
+                ImGuiWrapper::Property("Exposure", m_ActiveCamera->GetExposure(), 0.0f, 40.0f, PropertyFlag::SliderProperty);
+                ImGuiWrapper::Property("Skybox Exposure Factor", m_SkyboxExposureFactor, 0.0f, 10.0f, PropertyFlag::SliderProperty);
+
                 ImGuiWrapper::Property("Radiance Prefiltering", m_RadiancePrefilter);
                 ImGuiWrapper::Property("Env Map Rotation", m_EnvMapRotation, -360.0f, 360.0f);
+
+                if (m_SceneState == SceneState::Edit) {
+                    //  float physics2DGravity = m_EditorScene->GetPhysics2DGravity();
+                    //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
+                    //      m_EditorScene->SetPhysics2DGravity(physics2DGravity);
+                    //  }
+                }
+                else if (m_SceneState == SceneState::Play) {
+                    //  float physics2DGravity = m_RuntimeScene->GetPhysics2DGravity();
+                    //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
+                    //      m_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
+                    //  }
+                }
 
                 m_SceneRenderer->SetLight(light);
 
