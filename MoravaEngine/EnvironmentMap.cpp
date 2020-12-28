@@ -193,11 +193,11 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
     bool isAnimated;
     if (fileNameNoExt == "m1911") {
         isAnimated = true;
-        m_ShaderHazelPBR = m_ShaderHazelPBR_Anim;
+        m_ShaderHazelPBR = ShaderLibrary::Get("HazelPBR_Anim");
     }
     else {
         isAnimated = false;
-        m_ShaderHazelPBR = m_ShaderHazelPBR_Static;
+        m_ShaderHazelPBR = ShaderLibrary::Get("HazelPBR_Static");
     }
 
     Log::GetLogger()->debug("EnvironmentMap::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
@@ -298,21 +298,21 @@ EnvMapMaterial* EnvironmentMap::CreateDefaultMaterial(std::string materialName)
 
 void EnvironmentMap::SetupShaders()
 {
-    m_ShaderHazelPBR_Static = CreateRef<Shader>("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
-    Log::GetLogger()->info("EnvironmentMap: m_ShaderHazelPBR_Static compiled [programID={0}]", m_ShaderHazelPBR_Static->GetProgramID());
+    Ref<Shader> shaderHazelPBR_Static = CreateRef<Shader>("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
+    Log::GetLogger()->info("EnvironmentMap: m_ShaderHazelPBR_Static compiled [programID={0}]", shaderHazelPBR_Static->GetProgramID());
 
-    m_ShaderHazelPBR_Anim = CreateRef<Shader>("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
-    Log::GetLogger()->info("EnvironmentMap: m_ShaderHazelPBR_Anim compiled [programID={0}]", m_ShaderHazelPBR_Anim->GetProgramID());
+    Ref<Shader> shaderHazelPBR_Anim = CreateRef<Shader>("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
+    Log::GetLogger()->info("EnvironmentMap: m_ShaderHazelPBR_Anim compiled [programID={0}]", shaderHazelPBR_Anim->GetProgramID());
 
     m_ShaderRenderer2D_Line = CreateRef<Shader>("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
     Log::GetLogger()->info("EnvironmentMap: m_ShaderRenderer2D_Line compiled [programID={0}]", m_ShaderRenderer2D_Line->GetProgramID());
 
-    ResourceManager::AddShader("Hazel/HazelPBR_Static", m_ShaderHazelPBR_Static);
-    ResourceManager::AddShader("Hazel/HazelPBR_Anim", m_ShaderHazelPBR_Anim);
+    ResourceManager::AddShader("Hazel/HazelPBR_Static", shaderHazelPBR_Static);
+    ResourceManager::AddShader("Hazel/HazelPBR_Anim", shaderHazelPBR_Anim);
     ResourceManager::AddShader("Hazel/Renderer2D_Line", m_ShaderRenderer2D_Line);
 
-    ShaderLibrary::Add(m_ShaderHazelPBR_Static);
-    ShaderLibrary::Add(m_ShaderHazelPBR_Anim);
+    ShaderLibrary::Add(shaderHazelPBR_Static);
+    ShaderLibrary::Add(shaderHazelPBR_Anim);
 }
 
 void EnvironmentMap::UpdateUniforms()
@@ -682,6 +682,16 @@ void EnvironmentMap::SetViewportBounds(glm::vec2* viewportBounds)
 void EnvironmentMap::SetSkyboxLOD(float LOD)
 {
     ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->SetSkyboxLOD(LOD);
+}
+
+Ref<Shader> EnvironmentMap::GetShaderPBR_Anim()
+{
+    return ShaderLibrary::Get("HazelPBR_Anim");
+}
+
+Ref<Shader> EnvironmentMap::GetShaderPBR_Static()
+{
+    return ShaderLibrary::Get("HazelPBR_Static");
 }
 
 void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest)
@@ -1404,6 +1414,31 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             }
         }
     }
+
+    // Right-click on blank space
+    if (ImGui::BeginPopupContextWindow(0, 1, false))
+    {
+        if (ImGui::MenuItem("Create a Material"))
+        {
+            unsigned int materialIndex = 0;
+            bool materialCreated = false;
+            while (!materialCreated)
+            {
+                std::string materialName = "Def_Mat_" + std::to_string(materialIndex);
+                if (m_EnvMapMaterials.find(materialName) == m_EnvMapMaterials.end())
+                {
+                    EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(materialName);
+                    m_EnvMapMaterials.insert(std::make_pair(materialName, envMapMaterial));
+                    materialCreated = true;
+                }
+                else {
+                    materialIndex++;
+                }
+            }
+        }
+        ImGui::EndPopup();
+    }
+
     ImGui::End();
 
     // Shaders
@@ -1841,7 +1876,7 @@ void EnvironmentMap::GeometryPassTemporary()
 
             if (meshComponent.Mesh)
             {
-                m_ShaderHazelPBR = meshComponent.Mesh->IsAnimated() ? m_ShaderHazelPBR_Anim : m_ShaderHazelPBR_Static;
+                m_ShaderHazelPBR = meshComponent.Mesh->IsAnimated() ? ShaderLibrary::Get("HazelPBR_Anim") : ShaderLibrary::Get("HazelPBR_Static");
 
                 m_ShaderHazelPBR->Bind();
                 {

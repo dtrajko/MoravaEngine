@@ -36,10 +36,10 @@ void ShaderLibrary::Load(const std::string& name, const std::string& computeLoca
 	}
 }
 
-Ref<Shader> ShaderLibrary::Get(const std::string& name)
+const Ref<Shader>& ShaderLibrary::Get(const std::string& name)
 {
 	if (s_Shaders.find(name) != s_Shaders.end()) {
 		return s_Shaders[name];
 	}
-	return CreateRef<Shader>();
+	return nullptr;
 }

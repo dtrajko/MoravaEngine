@@ -339,3 +339,11 @@ void ResourceManager::AddShader(std::string name, Ref<Shader> shader)
         s_Shaders.insert(std::make_pair(name, shader));
     }
 }
+
+const Ref<Shader>& ResourceManager::GetShader(std::string name)
+{
+    if (s_Shaders.find(name) != s_Shaders.end()) {
+        return s_Shaders.find(name)->second;
+    }
+    return nullptr;
+}

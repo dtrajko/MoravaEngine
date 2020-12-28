@@ -61,6 +61,13 @@ namespace Hazel {
 
 	HazelMesh::HazelMesh(const std::string& filename)
 	{
+		m_FilePath = filename;
+		m_BaseTexture = nullptr;
+		m_MeshShader = nullptr;
+		m_BaseMaterial = nullptr;
+		m_IsAnimated = false;
+
+		Create();
 	}
 
 	HazelMesh::HazelMesh(const std::string& filename, ::Ref<Shader> shader, Material* material, bool isAnimated)

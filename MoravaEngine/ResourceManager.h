@@ -28,6 +28,7 @@ public:
 	static Hazel::Ref<Hazel::HazelTexture2D> LoadHazelTexture2D(std::string filePath);
 
 	static void AddShader(std::string name, Ref<Shader> shader);
+	static const Ref<Shader>& GetShader(std::string name);
 
 public:
 	static float s_MaterialSpecular;

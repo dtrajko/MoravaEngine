@@ -401,9 +401,10 @@ namespace Hazel
 				if (ImGui::Button("...##openmesh"))
 				{
 					std::string file = Application::Get()->OpenFile();
-					if (!file.empty())
+					if (!file.empty()) {
 						// mc.Mesh = Ref<HazelMesh>::Create(file);
 						mc.Mesh = new Hazel::HazelMesh(file, nullptr, nullptr, false);
+					}
 				}
 				ImGui::Columns(1);
 		});

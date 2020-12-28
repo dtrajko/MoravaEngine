@@ -16,7 +16,7 @@ Shader::Shader(const char* vertexLocation, const char* fragmentLocation)
 	m_ShaderFilepath_Vertex = vertexLocation;
 	m_ShaderFilepath_Fragment = fragmentLocation;
 
-	m_Name = Util::StripExtensionFromFileName(vertexLocation);
+	m_Name = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(vertexLocation));
 
 	CreateFromFiles(vertexLocation, fragmentLocation);
 }
@@ -28,7 +28,7 @@ Shader::Shader(const char* vertexLocation, const char* geometryLocation, const c
 	m_ShaderFilepath_Geometry = geometryLocation;
 	m_ShaderFilepath_Fragment = fragmentLocation;
 
-	m_Name = Util::StripExtensionFromFileName(vertexLocation);
+	m_Name = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(vertexLocation));
 
 	CreateFromFiles(vertexLocation, geometryLocation, fragmentLocation);
 }
@@ -37,7 +37,7 @@ Shader::Shader(const char* computeLocation)
 {
 	m_ShaderFilepath_Compute = computeLocation;
 
-	m_Name = Util::StripExtensionFromFileName(computeLocation);
+	m_Name = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(computeLocation));
 
 	CreateFromFileCompute(computeLocation);
 
