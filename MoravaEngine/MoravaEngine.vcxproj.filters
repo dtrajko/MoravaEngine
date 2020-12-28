@@ -602,6 +602,9 @@
     <ClCompile Include="Hazel\Renderer\SceneEnvironment.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderLibrary.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1293,6 +1296,9 @@
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\SceneEnvironment.h">
       <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderLibrary.h">
+      <Filter>Shader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

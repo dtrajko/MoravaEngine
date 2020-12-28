@@ -56,8 +56,8 @@ private:
 private:
 	EnvironmentMap* m_EnvironmentMap;
 
-	Shader* m_ShaderBackground;
-	Shader* m_ShaderBasic;
+	Ref<Shader> m_ShaderBackground;
+	Ref<Shader> m_ShaderBasic;
 
 	struct Entity {
 

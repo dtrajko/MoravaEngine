@@ -63,7 +63,7 @@ Material::Material(int txSlotAlbedo, int txSlotSpecular, int txSlotNormalMap, fl
 	m_Shininess = shininess;
 }
 
-Material::Material(Shader* shader) : Material()
+Material::Material(Ref<Shader> shader) : Material()
 {
 	m_Shader = shader;
 

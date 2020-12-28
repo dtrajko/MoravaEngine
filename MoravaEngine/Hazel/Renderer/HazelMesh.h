@@ -121,7 +121,7 @@ namespace Hazel {
 	class Submesh : public Mesh
 	{
 	public:
-		void Render(HazelMesh* parentMesh, Shader* shader, glm::mat4 transform, uint32_t samplerSlot,
+		void Render(HazelMesh* parentMesh, ::Ref<Shader> shader, glm::mat4 transform, uint32_t samplerSlot,
 			const std::map<std::string, EnvMapMaterial*>& envMapMaterials);
 
 	public:
@@ -140,7 +140,7 @@ namespace Hazel {
 	{
 	public:
 		HazelMesh(const std::string& filename);
-		HazelMesh(const std::string& filename, Shader* shader, Material* material, bool isAnimated);
+		HazelMesh(const std::string& filename, ::Ref<Shader> shader, Material* material, bool isAnimated);
 		virtual ~HazelMesh() override;
 
 		virtual void Create() override;
@@ -205,7 +205,7 @@ namespace Hazel {
 		std::unordered_map<std::string, uint32_t> m_BoneMapping;
 
 		// Materials
-		Shader* m_MeshShader;
+		::Ref<Shader> m_MeshShader;
 		Material* m_BaseMaterial; // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
 		Texture* m_BaseTexture;
 		std::vector<Texture*> m_Textures;

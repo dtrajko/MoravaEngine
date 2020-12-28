@@ -151,11 +151,11 @@ namespace Hazel
 	};
 
 	// This should be eventually handled by the Asset Manager
-	class ShaderLibrary : public RefCounted
+	class HazelShaderLibrary : public RefCounted
 	{
 	public:
-		ShaderLibrary();
-		~ShaderLibrary();
+		HazelShaderLibrary();
+		~HazelShaderLibrary();
 
 		void Add(const Ref<HazelShader>& shader);
 		void Load(const std::string& path);

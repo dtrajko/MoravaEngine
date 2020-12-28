@@ -23,7 +23,7 @@ static void OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum sever
 }
 
 glm::mat4 RendererBasic::s_ProjectionMatrix;
-std::map<std::string, Shader*> RendererBasic::s_Shaders;
+std::map<std::string, Ref<Shader>> RendererBasic::s_Shaders;
 std::map<std::string, int> RendererBasic::s_Uniforms;
 glm::vec4 RendererBasic::s_BgColor;
 

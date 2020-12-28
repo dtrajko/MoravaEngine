@@ -384,9 +384,9 @@ namespace Hazel
 		DrawComponent<MeshComponent>("Mesh", entity, [](MeshComponent& mc)
 		{
 				ImGui::Columns(3);
-				ImGui::SetColumnWidth(0, 100);
-				ImGui::SetColumnWidth(1, 300);
-				ImGui::SetColumnWidth(2, 40);
+				ImGui::SetColumnWidth(0, 80.0f);
+				ImGui::SetColumnWidth(1, 100.0f);
+				ImGui::SetColumnWidth(2, 40.0f);
 				ImGui::Text("File Path");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(-1);
@@ -401,9 +401,9 @@ namespace Hazel
 				if (ImGui::Button("...##openmesh"))
 				{
 					std::string file = Application::Get()->OpenFile();
-					if (!file.empty()) {
-						// mc.Mesh = Ref<HazelMesh>::Create(file); // TODO: HazelMesh constructor
-					}
+					if (!file.empty())
+						// mc.Mesh = Ref<HazelMesh>::Create(file);
+						mc.Mesh = new Hazel::HazelMesh(file, nullptr, nullptr, false);
 				}
 				ImGui::Columns(1);
 		});
@@ -470,6 +470,45 @@ namespace Hazel
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
 		{
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+		});
+
+		DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](DirectionalLightComponent& dlc)
+		{
+			UI::BeginPropertyGrid();
+			UI::PropertyColor("Radiance", dlc.Radiance);
+			UI::Property("Intensity", dlc.Intensity);
+			UI::Property("Cast Shadows", dlc.CastShadows);
+			UI::Property("Soft Shadows", dlc.SoftShadows);
+			UI::Property("Source Size", dlc.LightSize);
+			UI::EndPropertyGrid();
+		});
+
+		DrawComponent<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& slc)
+		{
+			ImGui::Columns(3);
+			ImGui::SetColumnWidth(0, 100);
+			ImGui::SetColumnWidth(1, 300);
+			ImGui::SetColumnWidth(2, 40);
+			ImGui::Text("File Path");
+			ImGui::NextColumn();
+			ImGui::PushItemWidth(-1);
+			if (!slc.SceneEnvironment.FilePath.empty())
+				ImGui::InputText("##envfilepath", (char*)slc.SceneEnvironment.FilePath.c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+			else
+				ImGui::InputText("##envfilepath", (char*)"Empty", 256, ImGuiInputTextFlags_ReadOnly);
+			ImGui::PopItemWidth();
+			ImGui::NextColumn();
+			if (ImGui::Button("...##openenv"))
+			{
+				std::string file = Application::Get()->OpenFile("*.hdr");
+				if (!file.empty())
+					slc.SceneEnvironment = Environment::Load(file);
+			}
+			ImGui::Columns(1);
+
+			UI::BeginPropertyGrid();
+			UI::Property("Intensity", slc.Intensity, 0.01f, 0.0f, 5.0f);
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<ScriptComponent>("Script", entity, [=](ScriptComponent& sc) mutable
@@ -572,24 +611,57 @@ namespace Hazel
 			}
 		});
 
-		DrawComponent<RigidBody2DComponent>("Rigidbody 2D", entity, [](auto& component)
+		DrawComponent<RigidBody2DComponent>("Rigidbody 2D", entity, [](RigidBody2DComponent& rb2dc)
 		{
+			// Rigidbody2D Type
+			const char* rb2dTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
+			const char* currentType = rb2dTypeStrings[(int)rb2dc.BodyType];
+			if (ImGui::BeginCombo("Type", currentType))
+			{
+				for (int type = 0; type < 3; type++)
+				{
+					bool is_selected = (currentType == rb2dTypeStrings[type]);
+					if (ImGui::Selectable(rb2dTypeStrings[type], is_selected))
+					{
+						currentType = rb2dTypeStrings[type];
+						rb2dc.BodyType = (RigidBody2DComponent::Type)type;
+					}
+					if (is_selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+
+			if (rb2dc.BodyType == RigidBody2DComponent::Type::Dynamic)
+			{
+				UI::BeginPropertyGrid();
+				UI::Property("Fixed Rotation", rb2dc.FixedRotation);
+				UI::EndPropertyGrid();
+			}
 		});
 
-		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](auto& component)
+		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](BoxCollider2DComponent& bc2dc)
 		{
+			UI::BeginPropertyGrid();
+
+			UI::Property("Offset", bc2dc.Offset);
+			UI::Property("Size", bc2dc.Size);
+			UI::Property("Density", bc2dc.Density);
+			UI::Property("Friction", bc2dc.Friction);
+
+			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](auto& component)
+		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](CircleCollider2DComponent& cc2dc)
 		{
-		});
+			UI::BeginPropertyGrid();
 
-		DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](auto& component)
-		{
-		});
+			UI::Property("Offset", cc2dc.Offset);
+			UI::Property("Radius", cc2dc.Radius);
+			UI::Property("Density", cc2dc.Density);
+			UI::Property("Friction", cc2dc.Friction);
 
-		DrawComponent<SkyLightComponent>("Sky Light", entity, [](auto& component)
-		{
+			UI::EndPropertyGrid();
 		});
 
 		{
@@ -605,9 +677,6 @@ namespace Hazel
 				}
 
 				if (ImGui::MenuItem("Mesh")) {
-					// Ref<Hazel::HazelMesh> mesh = Ref<Hazel::HazelMesh>(new Hazel::HazelMesh("Models/sphere.obj"));
-					// auto& mc = EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>(mesh);
-
 					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>();
 					ImGui::CloseCurrentPopup();
 				}

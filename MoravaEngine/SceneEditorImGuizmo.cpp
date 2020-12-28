@@ -1748,7 +1748,7 @@ Mesh* SceneEditorImGuizmo::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::s
         *name = "drone";
         break;
     case MESH_TYPE_M1911:
-        mesh = new Hazel::HazelMesh("Models/M1911/m1911.fbx", RendererBasic::s_Shaders["hybrid_anim_pbr"], (*ResourceManager::GetMaterials())["M1911"], true);
+        mesh = new Hazel::HazelMesh("Models/M1911/m1911.fbx", Ref<Shader>(RendererBasic::s_Shaders["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
         *name = "M1911";
         break;
     default:

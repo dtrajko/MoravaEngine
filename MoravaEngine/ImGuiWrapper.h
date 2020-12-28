@@ -14,7 +14,7 @@
 
 enum class PropertyFlag
 {
-	None = 0, ColorProperty = 1, DragProperty = 2, SliderProperty = 3
+	None = 0, ColorProperty = 1, DragProperty = 2, SliderProperty = 4
 };
 
 class ImGuiWrapper

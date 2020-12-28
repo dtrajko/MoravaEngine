@@ -16,7 +16,7 @@ namespace Hazel {
 	{
 		Ref<RenderPass> m_ActiveRenderPass;
 		RenderCommandQueue m_CommandQueue;
-		Ref<ShaderLibrary> m_ShaderLibrary;
+		Ref<HazelShaderLibrary> m_ShaderLibrary;
 		Ref<VertexArray> m_FullscreenQuadVertexArray;
 	};
 
@@ -24,7 +24,10 @@ namespace Hazel {
 
 	void HazelRenderer::Init()
 	{
-		s_Data.m_ShaderLibrary = Ref<ShaderLibrary>::Create();
+		s_Data.m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
+
+		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
+		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
 
 		// SceneRenderer::Init(); // TODO
 
@@ -90,7 +93,7 @@ namespace Hazel {
 		glLineWidth(thickness);
 	}
 
-	const Ref<ShaderLibrary>& HazelRenderer::GetShaderLibrary()
+	const Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()
 	{
 		return s_Data.m_ShaderLibrary;
 	}

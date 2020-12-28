@@ -196,8 +196,9 @@ namespace Hazel::UI {
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
 		_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
-		if (ImGui::ColorEdit3(s_IDBuffer, glm::value_ptr(value)))
+		if (ImGui::ColorEdit3(s_IDBuffer, glm::value_ptr(value))) {
 			modified = true;
+		}
 
 		ImGui::PopItemWidth();
 		ImGui::NextColumn();

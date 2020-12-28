@@ -70,8 +70,8 @@ public:
 	void SetSkyboxLOD(float LOD);
 
 	// Getters
-	inline Shader* GetShaderPBR_Anim() { return m_ShaderHazelPBR_Anim; }
-	inline Shader* GetShaderPBR_Static() { return m_ShaderHazelPBR_Static; }
+	inline Ref<Shader> GetShaderPBR_Anim() { return m_ShaderHazelPBR_Anim; }
+	inline Ref<Shader> GetShaderPBR_Static() { return m_ShaderHazelPBR_Static; }
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
 	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
 	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
@@ -89,7 +89,7 @@ private:
 	void SetupContextData();
 	void SetupShaders();
 	void UpdateUniforms();
-	void UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMaterial* m_EnvMapMaterial);
+	void UpdateShaderPBRUniforms(Ref<Shader> shaderHazelPBR, EnvMapMaterial* m_EnvMapMaterial);
 	void SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox);
 	void Init();
 
@@ -133,11 +133,11 @@ public:
 	Framebuffer* m_RenderFramebuffer;
 
 private:
-	Shader* m_ShaderHazelPBR_Anim;
-	Shader* m_ShaderHazelPBR_Static;
-	Shader* m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
-	Shader* m_ShaderRenderer2D; // Renderer2D::s_Data.TextureShader
-	Shader* m_ShaderRenderer2D_Line; // Renderer2D::s_Data.LineShader
+	Ref<Shader> m_ShaderHazelPBR_Anim;
+	Ref<Shader> m_ShaderHazelPBR_Static;
+	Ref<Shader> m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
+	Ref<Shader> m_ShaderRenderer2D; // Renderer2D::s_Data.TextureShader
+	Ref<Shader> m_ShaderRenderer2D_Line; // Renderer2D::s_Data.LineShader
 
 	CubeSkybox* m_SkyboxCube;
 	Hazel::Ref<Hazel::HazelTextureCube> m_SkyboxTexture;

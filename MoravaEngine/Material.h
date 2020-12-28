@@ -4,6 +4,7 @@
 
 #include "Texture.h"
 #include "Shader.h"
+#include "Hazel/Core/Base.h"
 
 #include <map>
 #include <string>
@@ -46,7 +47,7 @@ public:
 	Material(float specularIntensity, float shininess);
 	Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess); // based on LearnOpenGL material classint
 	Material(int albedo, int specular, int normal, float shininess); // used in SceneNanosuit
-	Material(Shader* shader); // based on Hazel::Material contructor
+	Material(Ref<Shader> shader); // based on Hazel::Material contructor
 	~Material();
 
 	void UseMaterial(int specularIntensityLocation, int shininessLocation);
@@ -100,6 +101,6 @@ private:
 
 	// From Hazel/Renderer/Material
 	uint32_t m_MaterialFlags;
-	Shader* m_Shader;
+	Ref<Shader> m_Shader;
 
 };

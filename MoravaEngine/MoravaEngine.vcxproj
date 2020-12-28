@@ -269,6 +269,7 @@
     <ClCompile Include="ShaderEditorObjects.cpp" />
     <ClCompile Include="ShaderEditorObjectsPBR.cpp" />
     <ClCompile Include="ShaderGizmo.cpp" />
+    <ClCompile Include="ShaderLibrary.cpp" />
     <ClCompile Include="ShaderOmniShadowMap.cpp" />
     <ClCompile Include="ShaderShadowMap.cpp" />
     <ClCompile Include="ShaderSkinning.cpp" />
@@ -498,6 +499,7 @@
     <ClInclude Include="ShaderEditorObjects.h" />
     <ClInclude Include="ShaderEditorObjectsPBR.h" />
     <ClInclude Include="ShaderGizmo.h" />
+    <ClInclude Include="ShaderLibrary.h" />
     <ClInclude Include="ShaderOmniShadowMap.h" />
     <ClInclude Include="ShaderShadowMap.h" />
     <ClInclude Include="ShaderSkinning.h" />

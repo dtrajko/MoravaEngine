@@ -28,22 +28,22 @@ namespace Hazel {
 		return result;
 	}
 
-	ShaderLibrary::ShaderLibrary()
+	HazelShaderLibrary::HazelShaderLibrary()
 	{
 	}
 
-	ShaderLibrary::~ShaderLibrary()
+	HazelShaderLibrary::~HazelShaderLibrary()
 	{
 	}
 
-	void ShaderLibrary::Add(const Ref<HazelShader>& shader)
+	void HazelShaderLibrary::Add(const Ref<HazelShader>& shader)
 	{
 		auto& name = shader->GetName();
 		HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
 		m_Shaders[name] = shader;
 	}
 
-	void ShaderLibrary::Load(const std::string& path)
+	void HazelShaderLibrary::Load(const std::string& path)
 	{
 		auto shader = Ref<HazelShader>(HazelShader::Create(path));
 		auto& name = shader->GetName();
@@ -51,13 +51,13 @@ namespace Hazel {
 		m_Shaders[name] = shader;
 	}
 
-	void ShaderLibrary::Load(const std::string& name, const std::string& path)
+	void HazelShaderLibrary::Load(const std::string& name, const std::string& path)
 	{
 		HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
 		m_Shaders[name] = Ref<HazelShader>(HazelShader::Create(path));
 	}
 
-	Ref<HazelShader>& ShaderLibrary::Get(const std::string& name)
+	Ref<HazelShader>& HazelShaderLibrary::Get(const std::string& name)
 	{
 		HZ_CORE_ASSERT(m_Shaders.find(name) != m_Shaders.end());
 		return m_Shaders[name];

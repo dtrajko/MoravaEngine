@@ -24,6 +24,7 @@
 #include "SceneHazelEnvMap.h"
 #include "MousePicker.h"
 #include "Timer.h"
+#include "ShaderLibrary.h"
 
 #include <functional>
 
@@ -297,18 +298,21 @@ EnvMapMaterial* EnvironmentMap::CreateDefaultMaterial(std::string materialName)
 
 void EnvironmentMap::SetupShaders()
 {
-    m_ShaderHazelPBR_Static = new Shader("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
+    m_ShaderHazelPBR_Static = CreateRef<Shader>("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvironmentMap: m_ShaderHazelPBR_Static compiled [programID={0}]", m_ShaderHazelPBR_Static->GetProgramID());
 
-    m_ShaderHazelPBR_Anim = new Shader("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
+    m_ShaderHazelPBR_Anim = CreateRef<Shader>("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvironmentMap: m_ShaderHazelPBR_Anim compiled [programID={0}]", m_ShaderHazelPBR_Anim->GetProgramID());
 
-    m_ShaderRenderer2D_Line = new Shader("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
+    m_ShaderRenderer2D_Line = CreateRef<Shader>("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
     Log::GetLogger()->info("EnvironmentMap: m_ShaderRenderer2D_Line compiled [programID={0}]", m_ShaderRenderer2D_Line->GetProgramID());
 
     ResourceManager::AddShader("Hazel/HazelPBR_Static", m_ShaderHazelPBR_Static);
     ResourceManager::AddShader("Hazel/HazelPBR_Anim", m_ShaderHazelPBR_Anim);
     ResourceManager::AddShader("Hazel/Renderer2D_Line", m_ShaderRenderer2D_Line);
+
+    ShaderLibrary::Add(m_ShaderHazelPBR_Static);
+    ShaderLibrary::Add(m_ShaderHazelPBR_Anim);
 }
 
 void EnvironmentMap::UpdateUniforms()
@@ -328,7 +332,7 @@ void EnvironmentMap::UpdateUniforms()
     /**** END Shaders/Hazel/Skybox ****/
 }
 
-void EnvironmentMap::UpdateShaderPBRUniforms(Shader* shaderHazelPBR, EnvMapMaterial* envMapMaterial)
+void EnvironmentMap::UpdateShaderPBRUniforms(Ref<Shader> shaderHazelPBR, EnvMapMaterial* envMapMaterial)
 {
     /**** BEGIN Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
 
@@ -704,8 +708,8 @@ void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool
 
 void EnvironmentMap::OnImGuiRender(Window* mainWindow)
 {
-    m_ImGuiViewportMain.x = (int)ImGui::GetMainViewport()->GetWorkPos().x;
-    m_ImGuiViewportMain.y = (int)ImGui::GetMainViewport()->GetWorkPos().y;
+    m_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkPos().x;
+    m_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkPos().y;
 
     MousePicker* mp = MousePicker::Get();
 
@@ -1050,7 +1054,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                 Hazel::HazelLight light = m_SceneRenderer->GetLight();
                 Hazel::HazelLight lightPrev = light;
 
-                ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::DragProperty);
+                ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::SliderProperty);
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f, PropertyFlag::SliderProperty);
                 ImGuiWrapper::Property("Exposure", m_ActiveCamera->GetExposure(), 0.0f, 40.0f, PropertyFlag::SliderProperty);
@@ -1445,23 +1449,23 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             m_SelectionMode = m_SelectionMode == SelectionMode::Entity ? SelectionMode::SubMesh : SelectionMode::Entity;
         }
 
-        const char* entityTag = "N/A";
-        const char* meshName = "N/A";
+        std::string entityTag = "N/A";
+        std::string meshName = "N/A";
 
         if (EntitySelection::s_SelectionContext.size())
         {
             auto selection = EntitySelection::s_SelectionContext[0];
-            entityTag = selection.Entity.GetComponent<Hazel::TagComponent>().Tag.c_str();
-            meshName = selection.Mesh ? selection.Mesh->MeshName.c_str() : "N/A";
+            entityTag = selection.Entity.GetComponent<Hazel::TagComponent>().Tag;
+            meshName = selection.Mesh ? selection.Mesh->MeshName : "N/A";
         }
 
         ImGui::Text("Selected Entity: ");
         ImGui::SameLine();
-        ImGui::Text(entityTag);
+        ImGui::Text(entityTag.c_str());
 
         ImGui::Text("Selected Mesh: ");
         ImGui::SameLine();
-        ImGui::Text(meshName);
+        ImGui::Text(meshName.c_str());
     }
     ImGui::End();
 

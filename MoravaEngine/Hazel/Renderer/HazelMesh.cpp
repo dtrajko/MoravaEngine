@@ -17,6 +17,7 @@
 
 #include "../../Math.h"
 #include "../../Util.h"
+#include "../../ShaderLibrary.h"
 
 #include "imgui.h"
 
@@ -62,7 +63,7 @@ namespace Hazel {
 	{
 	}
 
-	HazelMesh::HazelMesh(const std::string& filename, Shader* shader, Material* material, bool isAnimated)
+	HazelMesh::HazelMesh(const std::string& filename, ::Ref<Shader> shader, Material* material, bool isAnimated)
 		: m_MeshShader(shader), m_BaseMaterial(material), m_IsAnimated(isAnimated)
 	{
 		m_FilePath = filename;
@@ -101,6 +102,11 @@ namespace Hazel {
 
 		m_IsAnimated = scene->mAnimations != nullptr;
 		// m_MaterialInstance = std::make_shared<MaterialInstance>(m_BaseMaterial);
+
+		// Refactor to HazelRenderer::GetShaderLibrary()->Get()
+		if (!m_MeshShader) {
+			m_MeshShader = m_IsAnimated ? ShaderLibrary::Get("HazelPBR_Anim") : ShaderLibrary::Get("HazelPBR_Static");
+		}
 		m_InverseTransform = glm::inverse(Math::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
 
 		uint32_t vertexCount = 0;
@@ -1067,7 +1073,7 @@ namespace Hazel {
 		}
 	}
 
-	void Submesh::Render(HazelMesh* parentMesh, Shader* shader, glm::mat4 transform, uint32_t samplerSlot,
+	void Submesh::Render(HazelMesh* parentMesh, ::Ref<Shader> shader, glm::mat4 transform, uint32_t samplerSlot,
 		const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
 	{
 		EnvMapMaterial* envMapMaterial = nullptr;

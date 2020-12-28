@@ -13,7 +13,7 @@
 
 namespace Hazel {
 
-	class ShaderLibrary;
+	class HazelShaderLibrary;
 
 	class HazelRenderer
 	{
@@ -34,7 +34,7 @@ namespace Hazel {
 
 		static void Init();
 
-		static const Ref<ShaderLibrary>& GetShaderLibrary();
+		static const Ref<HazelShaderLibrary>& GetShaderLibrary();
 
 		template<typename FuncT>
 		static void Submit(FuncT&& func)

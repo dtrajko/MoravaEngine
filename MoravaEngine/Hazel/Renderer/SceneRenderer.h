@@ -36,7 +36,7 @@ namespace Hazel {
 
 		Ref<HazelTexture2D> BRDFLUT;
 
-		Shader* CompositeShader;
+		::Ref<Shader> CompositeShader;
 
 		Ref<RenderPass> GeoPass;
 		Ref<RenderPass> CompositePass;
@@ -96,9 +96,9 @@ namespace Hazel {
 		Environment Load(const std::string& filepath);
 		static void SetEnvironment(Environment environment);
 		static std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);
-		inline Shader* GetShaderSkybox() { return m_ShaderSkybox; }
-		inline Shader* GetShaderGrid() { return m_ShaderGrid; }
-		inline Shader* GetShaderComposite() { return s_Data.CompositeShader; }
+		inline ::Ref<Shader> GetShaderSkybox() { return m_ShaderSkybox; }
+		inline ::Ref<Shader> GetShaderGrid() { return m_ShaderGrid; }
+		inline ::Ref<Shader> GetShaderComposite() { return s_Data.CompositeShader; }
 		inline Ref<HazelTexture2D> GetEnvEquirect() { return m_EnvEquirect; }
 		uint32_t GetFinalColorBufferID();
 
@@ -115,11 +115,11 @@ namespace Hazel {
 		static std::map<std::string, unsigned int>* m_SamplerSlots;
 
 		// From EnvironmentMap
-		static Shader* m_ShaderEquirectangularConversion;
-		static Shader* m_ShaderEnvFiltering;
-		static Shader* m_ShaderEnvIrradiance;
-		static Shader* m_ShaderGrid;
-		static Shader* m_ShaderSkybox;
+		static ::Ref<Shader> m_ShaderEquirectangularConversion;
+		static ::Ref<Shader> m_ShaderEnvFiltering;
+		static ::Ref<Shader> m_ShaderEnvIrradiance;
+		static ::Ref<Shader> m_ShaderGrid;
+		static ::Ref<Shader> m_ShaderSkybox;
 
 		// Intermediate textures
 		static Ref<HazelTextureCube> m_EnvUnfiltered;
