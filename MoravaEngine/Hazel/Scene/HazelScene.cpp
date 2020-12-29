@@ -461,8 +461,8 @@ namespace Hazel {
 			{
 				Entity e = { entity, this };
 				auto& transform = e.Transform();
-				auto& boxCollider2D = m_Registry.get<BoxCollider2DComponent>(entity);
 
+				auto& boxCollider2D = m_Registry.get<BoxCollider2DComponent>(entity);
 				if (e.HasComponent<RigidBody2DComponent>())
 				{
 					auto& rigidBody2D = e.GetComponent<RigidBody2DComponent>();
@@ -475,6 +475,33 @@ namespace Hazel {
 					// TODO:
 					b2FixtureDef fixtureDef;
 					fixtureDef.shape = &polygonShape;
+					fixtureDef.density = 1.0f;
+					fixtureDef.friction = 1.0f;
+					body->CreateFixture(&fixtureDef);
+				}
+			}
+		}
+
+		{
+			auto view = m_Registry.view<CircleCollider2DComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto& transform = e.Transform();
+
+				auto& circleCollider2D = m_Registry.get<CircleCollider2DComponent>(entity);
+				if (e.HasComponent<RigidBody2DComponent>())
+				{
+					auto& rigidBody2D = e.GetComponent<RigidBody2DComponent>();
+					HZ_CORE_ASSERT(rigidBody2D.RuntimeBody);
+					b2Body* body = static_cast<b2Body*>(rigidBody2D.RuntimeBody);
+
+					b2CircleShape circleShape;
+					circleShape.m_radius = circleCollider2D.Radius;
+
+					// TODO:
+					b2FixtureDef fixtureDef;
+					fixtureDef.shape = &circleShape;
 					fixtureDef.density = 1.0f;
 					fixtureDef.friction = 1.0f;
 					body->CreateFixture(&fixtureDef);
