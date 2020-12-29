@@ -6,6 +6,8 @@
 #include "../Script/ScriptEngine.h"
 #include "ScriptableEntity.h"
 
+#include "../../Math.h"
+
 #include <glm/glm.hpp>
 
 // Box2D
@@ -424,7 +426,61 @@ namespace Hazel {
 		}
 
 		// Box2D physics
-		// TODO...
+		auto sceneView = m_Registry.view<Box2DWorldComponent>();
+		auto& world = m_Registry.get<Box2DWorldComponent>(sceneView.front()).World;
+		{
+			auto view = m_Registry.view<RigidBody2DComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto& transform = e.Transform();
+				auto& rigidBody2D = m_Registry.get<RigidBody2DComponent>(entity);
+
+				b2BodyDef bodyDef;
+				if (rigidBody2D.BodyType == RigidBody2DComponent::Type::Static) {
+					bodyDef.type = b2_staticBody;
+				}
+				else if (rigidBody2D.BodyType == RigidBody2DComponent::Type::Dynamic) {
+					bodyDef.type = b2_dynamicBody;
+				}
+				else if (rigidBody2D.BodyType == RigidBody2DComponent::Type::Kinematic) {
+					bodyDef.type = b2_kinematicBody;
+				}
+				bodyDef.position.Set(transform[3].x, transform[3].y);
+
+				auto [translation, rotationQuat, scale] = Math::GetTransformDecomposition(transform);
+				glm::vec3 rotation = glm::eulerAngles(rotationQuat);
+				bodyDef.angle = rotation.z;
+				rigidBody2D.RuntimeBody = world->CreateBody(&bodyDef);
+			}
+		}
+
+		{
+			auto view = m_Registry.view<BoxCollider2DComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto& transform = e.Transform();
+				auto& boxCollider2D = m_Registry.get<BoxCollider2DComponent>(entity);
+
+				if (e.HasComponent<RigidBody2DComponent>())
+				{
+					auto& rigidBody2D = e.GetComponent<RigidBody2DComponent>();
+					HZ_CORE_ASSERT(rigidBody2D.RuntimeBody);
+					b2Body* body = static_cast<b2Body*>(rigidBody2D.RuntimeBody);
+
+					b2PolygonShape polygonShape;
+					polygonShape.SetAsBox(boxCollider2D.Size.x, boxCollider2D.Size.y);
+
+					// TODO:
+					b2FixtureDef fixtureDef;
+					fixtureDef.shape = &polygonShape;
+					fixtureDef.density = 1.0f;
+					fixtureDef.friction = 1.0f;
+					body->CreateFixture(&fixtureDef);
+				}
+			}
+		}
 
 		m_IsPlaying = true;
 	}

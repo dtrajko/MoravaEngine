@@ -384,9 +384,9 @@ namespace Hazel
 		DrawComponent<MeshComponent>("Mesh", entity, [](MeshComponent& mc)
 		{
 				ImGui::Columns(3);
-				ImGui::SetColumnWidth(0, 80.0f);
-				ImGui::SetColumnWidth(1, 100.0f);
-				ImGui::SetColumnWidth(2, 40.0f);
+				ImGui::SetColumnWidth(0, 70.0f);
+				ImGui::SetColumnWidth(1, 180.0f);
+				ImGui::SetColumnWidth(2, 30.0f);
 				ImGui::Text("File Path");
 				ImGui::NextColumn();
 				ImGui::PushItemWidth(-1);
@@ -487,9 +487,9 @@ namespace Hazel
 		DrawComponent<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& slc)
 		{
 			ImGui::Columns(3);
-			ImGui::SetColumnWidth(0, 100);
-			ImGui::SetColumnWidth(1, 300);
-			ImGui::SetColumnWidth(2, 40);
+			ImGui::SetColumnWidth(0, 70.0f);
+			ImGui::SetColumnWidth(1, 180.0f);
+			ImGui::SetColumnWidth(2, 30.0f);
 			ImGui::Text("File Path");
 			ImGui::NextColumn();
 			ImGui::PushItemWidth(-1);
@@ -666,6 +666,8 @@ namespace Hazel
 		});
 
 		{
+			ImGui::Separator();
+
 			if (ImGui::Button("Add Component")) {
 				ImGui::OpenPopup("AddComponent");
 			}
