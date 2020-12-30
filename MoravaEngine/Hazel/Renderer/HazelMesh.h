@@ -166,7 +166,7 @@ namespace Hazel {
 		inline void SetBaseMaterial(Material* baseMaterial) { m_BaseMaterial = baseMaterial; }
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
 
-		static std::string GetSubmeshMaterialName(Mesh* mesh, Hazel::Submesh& submesh);
+		static std::string GetSubmeshMaterialName(Ref<HazelMesh> mesh, Hazel::Submesh& submesh);
 
 	private:
 		void BoneTransform(float time);

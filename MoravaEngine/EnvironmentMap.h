@@ -63,8 +63,9 @@ public:
 	void UpdateImGuizmo(Window* mainWindow);
 	Hazel::Entity CreateEntity(const std::string& name);
 	Hazel::Entity LoadEntity(std::string fullPath);
-	void LoadEnvMapMaterials(Mesh* mesh);
 	void ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop);
+
+	static void LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh);
 
 	// Setters
 	void SetSkyboxLOD(float LOD);
@@ -111,9 +112,10 @@ public:
 	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
 
 private:
+	static EnvMapMaterial* CreateDefaultMaterial(std::string materialName);
+
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();
-	EnvMapMaterial* CreateDefaultMaterial(std::string materialName);
 	void RenderSkybox();
 	void RenderHazelGrid();
 
@@ -121,6 +123,10 @@ public:
 	Hazel::EditorCamera* m_EditorCamera;
 	RuntimeCamera* m_RuntimeCamera;
 	Hazel::HazelCamera* m_ActiveCamera;
+
+	static TextureInfo s_TextureInfoDefault;
+	static std::map<std::string, TextureInfo> s_TextureInfo;
+	static std::map<std::string, EnvMapMaterial*> s_EnvMapMaterials;
 
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
 	glm::mat4* m_RelativeTransform = nullptr;
@@ -198,10 +204,6 @@ private:
 	// Materials
 	float m_MaterialSpecular = 0.0f;
 	float m_MaterialShininess = 0.0f;
-
-	TextureInfo m_TextureInfoDefault;
-	std::map<std::string, TextureInfo> m_TextureInfo;
-	std::map<std::string, EnvMapMaterial*> m_EnvMapMaterials;
 
 	glm::vec3 m_NewRay;
 	glm::vec3 m_NewDir;

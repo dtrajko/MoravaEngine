@@ -959,7 +959,7 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	std::string HazelMesh::GetSubmeshMaterialName(Mesh* mesh, Hazel::Submesh& submesh)
+	std::string HazelMesh::GetSubmeshMaterialName(Ref<HazelMesh> mesh, Hazel::Submesh& submesh)
 	{
 		std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));
 		std::string materialName = meshName + "_" + std::to_string(submesh.MaterialIndex);

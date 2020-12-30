@@ -29,6 +29,10 @@
 #include <functional>
 
 
+TextureInfo EnvironmentMap::s_TextureInfoDefault;
+std::map<std::string, TextureInfo> EnvironmentMap::s_TextureInfo;
+std::map<std::string, EnvMapMaterial*> EnvironmentMap::s_EnvMapMaterials;
+
 EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 {
     m_SamplerSlots = new std::map<std::string, unsigned int>();
@@ -154,13 +158,13 @@ void EnvironmentMap::Init()
 void EnvironmentMap::SetupContextData()
 {
     // Setup default texture info
-    m_TextureInfoDefault = {};
-    m_TextureInfoDefault.albedo    = "Textures/PBR/non_reflective/albedo.png";
-    m_TextureInfoDefault.normal    = "Textures/PBR/non_reflective/normal.png";
-    m_TextureInfoDefault.metallic  = "Textures/PBR/non_reflective/metallic.png";
-    m_TextureInfoDefault.roughness = "Textures/PBR/non_reflective/roughness.png";
-    m_TextureInfoDefault.emissive  = "Textures/PBR/non_reflective/emissive.png";
-    m_TextureInfoDefault.ao        = "Textures/PBR/non_reflective/ao.png";
+    s_TextureInfoDefault = {};
+    s_TextureInfoDefault.albedo    = "Textures/PBR/non_reflective/albedo.png";
+    s_TextureInfoDefault.normal    = "Textures/PBR/non_reflective/normal.png";
+    s_TextureInfoDefault.metallic  = "Textures/PBR/non_reflective/metallic.png";
+    s_TextureInfoDefault.roughness = "Textures/PBR/non_reflective/roughness.png";
+    s_TextureInfoDefault.emissive  = "Textures/PBR/non_reflective/emissive.png";
+    s_TextureInfoDefault.ao        = "Textures/PBR/non_reflective/ao.png";
 
     m_CameraEntity = CreateEntity("Camera");
     auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
@@ -204,7 +208,7 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
 
     Hazel::HazelMesh* mesh = new Hazel::HazelMesh(fullPath, m_ShaderHazelPBR, nullptr, isAnimated);
 
-    ((Hazel::HazelMesh*)mesh)->SetTimeMultiplier(1.0f);
+    mesh->SetTimeMultiplier(1.0f);
 
     // m_SceneRenderer->s_Data.DrawList.clear(); // doesn't work for multiple meshes on the scene
     Hazel::SceneRendererData::DrawCommand drawCommand;
@@ -226,7 +230,7 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
     return meshEntity;
 }
 
-void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
+void EnvironmentMap::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh)
 {
     //  for (auto material : m_EnvMapMaterials) {
     //      delete material.second;
@@ -234,7 +238,7 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
     //  
     //  m_EnvMapMaterials.clear();
 
-    std::vector<Hazel::Submesh>& submeshes = ((Hazel::HazelMesh*)mesh)->GetSubmeshes();
+    std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
 
     for (Hazel::Submesh& submesh : submeshes)
     {
@@ -242,12 +246,12 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
 
         Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials materialName = '{0}'", materialName);
 
-        if (m_EnvMapMaterials.contains(materialName)) {
+        if (s_EnvMapMaterials.contains(materialName)) {
             continue;
         }
 
         EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(materialName);
-        m_EnvMapMaterials.insert(std::make_pair(materialName, envMapMaterial));
+        s_EnvMapMaterials.insert(std::make_pair(materialName, envMapMaterial));
     }
 
     //  // If no submeshes, add a default material for entity
@@ -257,7 +261,7 @@ void EnvironmentMap::LoadEnvMapMaterials(Mesh* mesh)
     //      m_EnvMapMaterials.insert(std::make_pair(meshName, envMapMaterial));
     //  }
 
-    for (auto& material : m_EnvMapMaterials)
+    for (auto& material : s_EnvMapMaterials)
     {
         Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials material name: '{0}'", material.first);
     }
@@ -272,11 +276,11 @@ EnvMapMaterial* EnvironmentMap::CreateDefaultMaterial(std::string materialName)
     EnvMapMaterial* envMapMaterial = new EnvMapMaterial();
 
     TextureInfo textureInfo;
-    if (m_TextureInfo.contains(materialName)) {
-        textureInfo = m_TextureInfo.at(materialName);
+    if (s_TextureInfo.contains(materialName)) {
+        textureInfo = s_TextureInfo.at(materialName);
     }
     else {
-        textureInfo = m_TextureInfoDefault;
+        textureInfo = s_TextureInfoDefault;
     }
 
     // Load Hazel/Renderer/HazelTexture
@@ -392,11 +396,11 @@ void EnvironmentMap::SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox)
 
 EnvironmentMap::~EnvironmentMap()
 {
-    for (auto material : m_EnvMapMaterials) {
+    for (auto material : s_EnvMapMaterials) {
         delete material.second;
     }
 
-    m_EnvMapMaterials.clear();
+    s_EnvMapMaterials.clear();
 
     delete m_SceneRenderer;
 
@@ -1135,7 +1139,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
     ImGui::Begin("EnvMap Materials");
     {
         unsigned int materialIndex = 0;
-        for (auto iterator = m_EnvMapMaterials.cbegin(); iterator != m_EnvMapMaterials.cend();)
+        for (auto iterator = s_EnvMapMaterials.cbegin(); iterator != s_EnvMapMaterials.cend();)
         {
             EnvMapMaterial& material = *iterator->second;
             std::string materialName = iterator->first;
@@ -1407,7 +1411,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             }
 
             if (materialDeleted) {
-                iterator = m_EnvMapMaterials.erase(iterator++);
+                iterator = s_EnvMapMaterials.erase(iterator++);
             }
             else {
                 ++iterator;
@@ -1425,10 +1429,10 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             while (!materialCreated)
             {
                 std::string materialName = "Def_Mat_" + std::to_string(materialIndex);
-                if (m_EnvMapMaterials.find(materialName) == m_EnvMapMaterials.end())
+                if (s_EnvMapMaterials.find(materialName) == s_EnvMapMaterials.end())
                 {
                     EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(materialName);
-                    m_EnvMapMaterials.insert(std::make_pair(materialName, envMapMaterial));
+                    s_EnvMapMaterials.insert(std::make_pair(materialName, envMapMaterial));
                     materialCreated = true;
                 }
                 else {
@@ -1884,12 +1888,12 @@ void EnvironmentMap::GeometryPassTemporary()
                     {
                         std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(meshComponent.Mesh.Raw(), submesh);
 
-                        if (m_EnvMapMaterials.contains(materialName)) {
-                            UpdateShaderPBRUniforms(m_ShaderHazelPBR, m_EnvMapMaterials.at(materialName));
+                        if (s_EnvMapMaterials.contains(materialName)) {
+                            UpdateShaderPBRUniforms(m_ShaderHazelPBR, s_EnvMapMaterials.at(materialName));
                         }
 
                         glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
-                        submesh.Render(meshComponent.Mesh.Raw(), m_ShaderHazelPBR, entityTransform, samplerSlot, m_EnvMapMaterials);
+                        submesh.Render(meshComponent.Mesh.Raw(), m_ShaderHazelPBR, entityTransform, samplerSlot, s_EnvMapMaterials);
                     }
                 }
                 m_ShaderHazelPBR->Unbind();

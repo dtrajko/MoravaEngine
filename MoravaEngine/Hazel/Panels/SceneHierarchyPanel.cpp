@@ -8,6 +8,7 @@
 #include "../../ImGuiWrapper.h"
 #include "../../EntitySelection.h"
 #include "../../Application.h"
+#include "../../EnvironmentMap.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -360,16 +361,104 @@ namespace Hazel
 		{
 			auto& tag = entity.GetComponent<TagComponent>().Tag;
 
-			// Camera0
 			char buffer[256];
-			memset(buffer, 0, sizeof(buffer));
-			strcpy_s(buffer, sizeof(buffer), tag.c_str());
-			if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
+			memset(buffer, 0, 256);
+			memcpy(buffer, tag.c_str(), tag.length());
+			ImGui::PushItemWidth(contentRegionAvailable.x * 0.5f);
+			if (ImGui::InputText("##Tag", buffer, 256))
 			{
 				tag = std::string(buffer);
 			}
+			ImGui::PopItemWidth();
 
 			ImGui::Separator();
+		}
+
+		// ID
+		ImGui::SameLine();
+		ImGui::TextDisabled("%llx", id);
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImVec2 textSize = ImGui::CalcTextSize("Add Component");
+		ImGui::SameLine(contentRegionAvailable.x - (textSize.x + GImGui->Style.FramePadding.y));
+		if (ImGui::Button("Add Component")) {
+			ImGui::OpenPopup("AddComponentPanel");
+		}
+
+		if (ImGui::BeginPopup("AddComponentPanel"))
+		{
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<CameraComponent>())
+			{
+				if (ImGui::Button("Camera"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<CameraComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MeshComponent>())
+			{
+				if (ImGui::Button("Mesh"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<DirectionalLightComponent>())
+			{
+				if (ImGui::Button("Directional Light"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<DirectionalLightComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SkyLightComponent>())
+			{
+				if (ImGui::Button("Sky Light"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<ScriptComponent>())
+			{
+				if (ImGui::Button("Script"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<ScriptComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SpriteRendererComponent>())
+			{
+				if (ImGui::Button("Sprite Renderer"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SpriteRendererComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<RigidBody2DComponent>())
+			{
+				if (ImGui::Button("Rigidbody 2D"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<RigidBody2DComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<BoxCollider2DComponent>())
+			{
+				if (ImGui::Button("Box Collider 2D"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<BoxCollider2DComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<CircleCollider2DComponent>())
+			{
+				if (ImGui::Button("Circle Collider 2D"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<CircleCollider2DComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			ImGui::EndPopup();
 		}
 
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
@@ -383,30 +472,31 @@ namespace Hazel
 
 		DrawComponent<MeshComponent>("Mesh", entity, [](MeshComponent& mc)
 		{
-				ImGui::Columns(3);
-				ImGui::SetColumnWidth(0, 70.0f);
-				ImGui::SetColumnWidth(1, 180.0f);
-				ImGui::SetColumnWidth(2, 30.0f);
-				ImGui::Text("File Path");
-				ImGui::NextColumn();
-				ImGui::PushItemWidth(-1);
-				if (mc.Mesh) {
-					ImGui::InputText("##meshfilepath", (char*)mc.Mesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+			ImGui::Columns(3);
+			ImGui::SetColumnWidth(0, 70.0f);
+			ImGui::SetColumnWidth(1, 180.0f);
+			ImGui::SetColumnWidth(2, 30.0f);
+			ImGui::Text("File Path");
+			ImGui::NextColumn();
+			ImGui::PushItemWidth(-1);
+			if (mc.Mesh) {
+				ImGui::InputText("##meshfilepath", (char*)mc.Mesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+			}
+			else {
+				ImGui::InputText("##meshfilepath", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
+			}
+			ImGui::PopItemWidth();
+			ImGui::NextColumn();
+			if (ImGui::Button("...##openmesh"))
+			{
+				std::string file = Application::Get()->OpenFile();
+				if (!file.empty()) {
+					// mc.Mesh = Ref<HazelMesh>::Create(file);
+					mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(file, nullptr, nullptr, false);
+					EnvironmentMap::LoadEnvMapMaterials(mc.Mesh);
 				}
-				else {
-					ImGui::InputText("##meshfilepath", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
-				}
-				ImGui::PopItemWidth();
-				ImGui::NextColumn();
-				if (ImGui::Button("...##openmesh"))
-				{
-					std::string file = Application::Get()->OpenFile();
-					if (!file.empty()) {
-						// mc.Mesh = Ref<HazelMesh>::Create(file);
-						mc.Mesh = new Hazel::HazelMesh(file, nullptr, nullptr, false);
-					}
-				}
-				ImGui::Columns(1);
+			}
+			ImGui::Columns(1);
 		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
@@ -665,6 +755,7 @@ namespace Hazel
 			UI::EndPropertyGrid();
 		});
 
+		/****
 		{
 			ImGui::Separator();
 
@@ -722,5 +813,6 @@ namespace Hazel
 				ImGui::EndPopup();
 			}
 		}
+		****/
 	}
 }
