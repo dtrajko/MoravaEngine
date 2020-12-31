@@ -24,7 +24,7 @@ namespace Hazel
 		SceneHierarchyPanel(HazelScene* scene);
 		~SceneHierarchyPanel();
 
-		void SetContext(HazelScene* scene);
+		void SetContext(const Ref<HazelScene>& scene);
 		void SetSelected(Entity entity);
 		void SetSelectionChangedCallback(const std::function<void(Entity)>& func) { m_SelectionChangedCallback = func; }
 		void SetEntityDeletedCallback(const std::function<void(Entity)>& func) { m_EntityDeletedCallback = func; }
@@ -39,7 +39,7 @@ namespace Hazel
 		void DrawEntitySubmeshes(Entity entity);
 
 	private:
-		HazelScene* m_Context;
+		Ref<HazelScene> m_Context;
 		Entity m_SelectionContext;
 
 		std::function<void(Entity)> m_SelectionChangedCallback;

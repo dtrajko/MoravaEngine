@@ -406,7 +406,6 @@ namespace Hazel {
 		SerializeEnvironment(out, m_Scene);
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
-
 		m_Scene->m_Registry.each([&](auto entityID)
 		{
 			Entity entity = { entityID, m_Scene.Raw() };
@@ -417,7 +416,6 @@ namespace Hazel {
 
 			SerializeEntity(out, entity);
 		});
-
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 

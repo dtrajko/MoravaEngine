@@ -214,9 +214,9 @@ namespace Hazel {
 
 		entity.AddComponent<TransformComponent>(glm::vec3(0.0f)); // glm::mat4(1.0f)
 
-		//	if (!name.empty()) {
-		//		entity.AddComponent<TagComponent>(name);
-		//	}
+		if (!name.empty()) {
+			entity.AddComponent<TagComponent>(name);
+		}
 		entity.AddComponent<TagComponent>(name.empty() ? "Entity" : name);
 
 		auto& entityMap = runtimeMap ? s_RuntimeEntityIDMap : s_EntityIDMap;

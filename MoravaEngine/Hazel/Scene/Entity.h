@@ -40,8 +40,6 @@ namespace Hazel {
 		template<typename T>
 		bool HasComponent()
 		{
-			if (m_Scene == nullptr) return false;
-
 			return m_Scene->m_Registry.has<T>(m_EntityHandle);
 		}
 

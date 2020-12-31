@@ -532,6 +532,10 @@ void EnvironmentMap::OnSceneStop()
 
     // Unload runtime scene
     m_RuntimeScene = nullptr;
+
+    EntitySelection::s_SelectionContext.clear();
+    Hazel::ScriptEngine::SetSceneContext(m_EditorScene);
+    m_SceneHierarchyPanel->SetContext(m_EditorScene);
 }
 
 void EnvironmentMap::CameraSyncECS()

@@ -31,7 +31,7 @@ namespace Hazel
 	{
 	}
 
-	void SceneHierarchyPanel::SetContext(HazelScene* scene)
+	void SceneHierarchyPanel::SetContext(const Ref<HazelScene>& scene)
 	{
 		m_Context = scene;
 		EntitySelection::s_SelectionContext = {};
@@ -42,7 +42,7 @@ namespace Hazel
 			UUID selectedEntityID = EntitySelection::s_SelectionContext[0].Entity.GetUUID();
 
 			if (entityMap.find(selectedEntityID) != entityMap.end()) {
-				EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ Entity{ entityMap.at(selectedEntityID), m_Context }, nullptr, 0 });
+				EntitySelection::s_SelectionContext.push_back(SelectedSubmesh({ entityMap.at(selectedEntityID), nullptr, 0 }));
 			}
 		}
 	}
@@ -80,9 +80,12 @@ namespace Hazel
 			uint32_t meshCount = 0;
 
 			m_Context->m_Registry.each([&](auto entity)
-				{
-					DrawEntityNode(Entity(entity, m_Context));
-				});
+			{
+				Entity e(entity, m_Context.Raw());
+				if (e.HasComponent<IDComponent>()) {
+					DrawEntityNode(e);
+				}
+			});
 
 			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 			{
@@ -133,13 +136,16 @@ namespace Hazel
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
-		auto& tag = entity.GetComponent<TagComponent>().Tag;
+		const char* name = "Unnamed Entity";
+		if (entity.HasComponent<TagComponent>()) {
+			name = entity.GetComponent<TagComponent>().Tag.c_str();
+		}
 		// ImGui::Text("%s", tag.c_str());
 
 		ImGuiTreeNodeFlags flags = ((EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
 			ImGuiTreeNodeFlags_OpenOnArrow |
 			ImGuiTreeNodeFlags_SpanAvailWidth;
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name);
 
 		if (ImGui::IsItemClicked())
 		{
@@ -380,6 +386,7 @@ namespace Hazel
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 		ImVec2 textSize = ImGui::CalcTextSize("Add Component");
 		ImGui::SameLine(contentRegionAvailable.x - (textSize.x + GImGui->Style.FramePadding.y));
+
 		if (ImGui::Button("Add Component")) {
 			ImGui::OpenPopup("AddComponentPanel");
 		}
