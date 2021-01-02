@@ -465,6 +465,14 @@ namespace Hazel
 					ImGui::CloseCurrentPopup();
 				}
 			}
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponent>())
+			{
+				if (ImGui::Button("Material"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
 			ImGui::EndPopup();
 		}
 
@@ -761,6 +769,17 @@ namespace Hazel
 
 			UI::EndPropertyGrid();
 		});
+
+		DrawComponent <MaterialComponent > ("Material", entity, [](MaterialComponent& mc)
+			{
+				UI::BeginPropertyGrid();
+
+				UI::Property("Name", mc.Name);
+
+				// ImGuiWrapper::DrawMaterialUI(nullptr, mc.Name, m_CheckerboardTexture);
+
+				UI::EndPropertyGrid();
+			});
 
 		/****
 		{

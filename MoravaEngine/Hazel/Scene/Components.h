@@ -150,6 +150,15 @@ namespace Hazel
 		CircleCollider2DComponent(const CircleCollider2DComponent& other) = default;
 	};
 
+	struct MaterialComponent
+	{
+		std::string Name = "Untitled";
+		EnvMapMaterial Material;
+
+		MaterialComponent() = default;
+		MaterialComponent(const MaterialComponent& other) = default;
+	};
+
 	// Obsolete?
 	struct NativeScriptComponent
 	{

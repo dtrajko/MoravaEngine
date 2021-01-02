@@ -8,8 +8,11 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_internal.h>
 
+#include "Hazel/Core/Ref.h"
+
 #include "CommonValues.h"
 #include "Window.h"
+#include "EnvMapMaterial.h"
 
 
 enum class PropertyFlag
@@ -25,7 +28,8 @@ public:
 	static void End();
 	static void Cleanup();
 
-	static bool ImGuiWrapper::DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
+	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
+	static void DrawMaterialUI(EnvMapMaterial& material, const std::string& materialName, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture);
 
 	// ImGui UI helpers
 	static bool Property(const std::string& name, bool& value);
@@ -45,6 +49,7 @@ public:
 	static void PushID();
 	static void PopID();
 	static void BeginPropertyGrid();
+
 
 private:
 	static Window* m_Window;

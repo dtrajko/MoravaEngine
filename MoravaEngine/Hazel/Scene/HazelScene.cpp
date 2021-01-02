@@ -297,6 +297,7 @@ namespace Hazel {
 		CopyComponent<RigidBody2DComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<BoxCollider2DComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<CircleCollider2DComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<MaterialComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<NativeScriptComponent>(target->m_Registry, m_Registry, enttMap);
 
 		const auto& entityInstanceMap = ScriptEngine::GetEntityInstanceMap();
@@ -370,6 +371,10 @@ namespace Hazel {
 			entityClone.AddComponent<CircleCollider2DComponent>(entity.GetComponent<CircleCollider2DComponent>());
 		}
 
+		if (entity.HasComponent<MaterialComponent>()) {
+			entityClone.AddComponent<MaterialComponent>(entity.GetComponent<MaterialComponent>());
+		}
+
 		if (entity.HasComponent<DirectionalLightComponent>()) {
 			entityClone.AddComponent<DirectionalLightComponent>(entity.GetComponent<DirectionalLightComponent>());
 		}
@@ -407,6 +412,7 @@ namespace Hazel {
 		CopyComponentIfExists<RigidBody2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<BoxCollider2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<CircleCollider2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<MaterialComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 	}
 
 	void HazelScene::OnEvent(Event& e)
@@ -609,6 +615,11 @@ namespace Hazel {
 
 	template<>
 	void HazelScene::OnComponentAdded<CircleCollider2DComponent>(Entity entity, CircleCollider2DComponent& component)
+	{
+	}
+
+	template<>
+	void HazelScene::OnComponentAdded<MaterialComponent>(Entity entity, MaterialComponent& component)
 	{
 	}
 
