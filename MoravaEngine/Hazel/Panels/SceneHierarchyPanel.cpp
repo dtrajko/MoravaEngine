@@ -49,23 +49,32 @@ namespace Hazel
 
 	void SceneHierarchyPanel::SetSelected(Entity entity)
 	{
-		EntitySelection::s_SelectionContext.clear();
-
 		if (entity.HasComponent<MeshComponent>())
 		{
 			// if MeshComponent is available in entity
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
 			if (meshComponent.Mesh)
 			{
-				for (auto& submesh : meshComponent.Mesh->GetSubmeshes())
+				if (EnvironmentMap::s_SelectionMode == SelectionMode::Entity)
 				{
-					EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entity, &submesh, 0 });
+					EntitySelection::s_SelectionContext.clear();
+					for (auto& submesh : meshComponent.Mesh->GetSubmeshes())
+					{
+						EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entity, &submesh, 0 });
+					}
+				}
+				else if (EnvironmentMap::s_SelectionMode == SelectionMode::SubMesh) {
+					// Do nothing...
+				}
+				else {
+					// Do nothing...
 				}
 			}
 		}
 		else
 		{
 			// if MeshComponent is not available in entity
+			EntitySelection::s_SelectionContext.clear();
 			EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entity, nullptr, 0 });
 		}
 	}

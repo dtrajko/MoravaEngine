@@ -1413,8 +1413,37 @@
     <Filter Include="Hazel\ImGui">
       <UniqueIdentifier>{85960568-1b09-4a7d-b4d4-0a4c5567f69e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Hazel\ExampleApp">
+      <UniqueIdentifier>{4e0cdee5-9044-420f-a212-6d9454330fac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MoravaEngine.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Hazel\ExampleApp\Properties\AssemblyInfo.cs">
+      <Filter>Hazel\ExampleApp</Filter>
+    </None>
+    <None Include="Hazel\ExampleApp\src\BasicController.cs">
+      <Filter>Hazel\ExampleApp</Filter>
+    </None>
+    <None Include="Hazel\ExampleApp\src\MapGenerator.cs">
+      <Filter>Hazel\ExampleApp</Filter>
+    </None>
+    <None Include="Hazel\ExampleApp\src\Noise.cs">
+      <Filter>Hazel\ExampleApp</Filter>
+    </None>
+    <None Include="Hazel\ExampleApp\src\PlayerCube.cs">
+      <Filter>Hazel\ExampleApp</Filter>
+    </None>
+    <None Include="Hazel\ExampleApp\src\RandomColor.cs">
+      <Filter>Hazel\ExampleApp</Filter>
+    </None>
+    <None Include="Hazel\ExampleApp\src\Script.cs">
+      <Filter>Hazel\ExampleApp</Filter>
+    </None>
+    <None Include="Hazel\ExampleApp\src\Sink.cs">
+      <Filter>Hazel\ExampleApp</Filter>
+    </None>
   </ItemGroup>
 </Project>

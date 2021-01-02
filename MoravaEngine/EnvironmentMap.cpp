@@ -32,6 +32,7 @@
 TextureInfo EnvironmentMap::s_TextureInfoDefault;
 std::map<std::string, TextureInfo> EnvironmentMap::s_TextureInfo;
 std::map<std::string, EnvMapMaterial*> EnvironmentMap::s_EnvMapMaterials;
+SelectionMode EnvironmentMap::s_SelectionMode = SelectionMode::Entity;
 
 EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 {
@@ -593,7 +594,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
 
         float snapValues[3] = { snapValue, snapValue, snapValue };
 
-        if (m_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
+        if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
         {
             ImGuizmo::Manipulate(
                 glm::value_ptr(m_ActiveCamera->GetViewMatrix()),
@@ -615,7 +616,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
                 tc.Scale = scale;
             }
         }
-        else if (m_SelectionMode == SelectionMode::SubMesh)
+        else if (s_SelectionMode == SelectionMode::SubMesh)
         {
             auto aabb = selectedSubmesh.Mesh->BoundingBox;
 
@@ -970,11 +971,11 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
             glm::mat4 entityTransform = tc.GetTransform();
 
-            if (m_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
+            if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
             {
                 transformImGui = entityTransform;
             }
-            else if (m_SelectionMode == SelectionMode::SubMesh)
+            else if (s_SelectionMode == SelectionMode::SubMesh)
             {
                 auto aabb = selectedSubmesh.Mesh->BoundingBox;
 
@@ -1001,14 +1002,14 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             {
                 rotationRadians = glm::radians(rotationDegrees);
 
-                if (m_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
+                if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
                 {
                     glm::vec3 deltaRotation = rotationRadians - tc.Rotation;
                     tc.Translation = translation;
                     tc.Rotation += deltaRotation;
                     tc.Scale = scale;
                 }
-                else if (m_SelectionMode == SelectionMode::SubMesh)
+                else if (s_SelectionMode == SelectionMode::SubMesh)
                 {
                     submeshTransform = glm::inverse(entityTransform) * transformImGui;
                     submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
@@ -1241,10 +1242,10 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
     {
         ImGui::Text("Selection Mode: ");
         ImGui::SameLine();
-        const char* label = m_SelectionMode == SelectionMode::Entity ? "Entity" : "Mesh";
+        const char* label = s_SelectionMode == SelectionMode::Entity ? "Entity" : "Mesh";
         if (ImGui::Button(label))
         {
-            m_SelectionMode = m_SelectionMode == SelectionMode::Entity ? SelectionMode::SubMesh : SelectionMode::Entity;
+            s_SelectionMode = s_SelectionMode == SelectionMode::Entity ? SelectionMode::SubMesh : SelectionMode::Entity;
         }
 
         std::string entityTag = "N/A";
@@ -1529,6 +1530,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                                 if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
                                 {
                                     EntitySelection::s_SelectionContext.push_back({ entity, &submesh, t });
+                                    Log::GetLogger()->debug("Adding submesh to selection context. Submesh Name: '{0}', selection size: '{1}'", submesh.MeshName, EntitySelection::s_SelectionContext.size());
                                     break;
                                 }
                             }
@@ -1676,7 +1678,7 @@ void EnvironmentMap::GeometryPassTemporary()
                 if (selection.Mesh) {
                     Hazel::Entity meshEntity = selection.Entity;
                     glm::mat4 transform = meshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
-                    glm::vec4 color = m_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
+                    glm::vec4 color = s_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
                     Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
                 }
             }

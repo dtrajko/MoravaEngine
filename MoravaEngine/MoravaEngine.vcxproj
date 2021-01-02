@@ -622,6 +622,16 @@
       <Project>{f6796644-473c-3b79-b854-c7e495593afb}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Hazel\ExampleApp\Properties\AssemblyInfo.cs" />
+    <None Include="Hazel\ExampleApp\src\BasicController.cs" />
+    <None Include="Hazel\ExampleApp\src\MapGenerator.cs" />
+    <None Include="Hazel\ExampleApp\src\Noise.cs" />
+    <None Include="Hazel\ExampleApp\src\PlayerCube.cs" />
+    <None Include="Hazel\ExampleApp\src\RandomColor.cs" />
+    <None Include="Hazel\ExampleApp\src\Script.cs" />
+    <None Include="Hazel\ExampleApp\src\Sink.cs" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

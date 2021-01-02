@@ -29,6 +29,13 @@
 #include <string>
 
 
+enum class SelectionMode
+{
+	None = 0,
+	Entity = 1,
+	SubMesh = 2,
+};
+
 class EnvironmentMap
 {
 public:
@@ -127,6 +134,7 @@ public:
 	static TextureInfo s_TextureInfoDefault;
 	static std::map<std::string, TextureInfo> s_TextureInfo;
 	static std::map<std::string, EnvMapMaterial*> s_EnvMapMaterials;
+	static SelectionMode s_SelectionMode;
 
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
 	glm::mat4* m_RelativeTransform = nullptr;
@@ -137,6 +145,7 @@ public:
 	glm::vec2 m_ImGuiViewportMain;
 	glm::vec2 m_ViewportMainSize;
 	Framebuffer* m_RenderFramebuffer;
+
 
 private:
 	Ref<Shader> m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
@@ -207,14 +216,6 @@ private:
 
 	glm::vec3 m_NewRay;
 	glm::vec3 m_NewDir;
-
-	enum class SelectionMode
-	{
-		None = 0,
-		Entity = 1,
-		SubMesh = 2,
-	};
-	SelectionMode m_SelectionMode = SelectionMode::Entity;
 
 	Hazel::SceneRenderer* m_SceneRenderer;
 
