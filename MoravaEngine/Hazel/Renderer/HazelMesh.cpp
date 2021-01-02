@@ -1020,9 +1020,9 @@ namespace Hazel {
 		return std::vector<Triangle>();
 	}
 
-	void HazelMesh::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
+	void HazelMesh::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, ::Ref<EnvMapMaterial>>& envMapMaterials)
 	{
-		EnvMapMaterial* envMapMaterial = nullptr;
+		::Ref<EnvMapMaterial> envMapMaterial = nullptr;
 
 		m_VertexArray->Bind();
 
@@ -1072,7 +1072,7 @@ namespace Hazel {
 		}
 	}
 
-	void HazelMesh::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
+	void HazelMesh::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, ::Ref<EnvMapMaterial>>& envMapMaterials)
 	{
 		for (Hazel::Submesh submesh : m_Submeshes)
 		{
@@ -1081,9 +1081,9 @@ namespace Hazel {
 	}
 
 	void Submesh::Render(HazelMesh* parentMesh, ::Ref<Shader> shader, glm::mat4 transform, uint32_t samplerSlot,
-		const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
+		const std::map<std::string, ::Ref<EnvMapMaterial>>& envMapMaterials)
 	{
-		EnvMapMaterial* envMapMaterial = nullptr;
+		::Ref<EnvMapMaterial> envMapMaterial = nullptr;
 
 		parentMesh->GetVertexArray().Raw()->Bind();
 

@@ -83,7 +83,7 @@ public:
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
 	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
 	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
-	inline Hazel::Ref < Hazel::HazelTexture2D> GetCheckerboardTexture() { return m_CheckerboardTexture; }
+	inline Hazel::Ref < Hazel::HazelTexture2D> GetCheckerboardTexture() { return s_CheckerboardTexture; }
 	inline Hazel::Ref<Hazel::HazelTextureCube> GetSkyboxTexture() { return m_SkyboxTexture; }
 	Ref<Hazel::Entity> GetMeshEntity();
 	inline float& GetSkyboxExposureFactor() { return m_SkyboxExposureFactor; };
@@ -119,7 +119,7 @@ public:
 	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
 
 private:
-	static EnvMapMaterial* CreateDefaultMaterial(std::string materialName);
+	static Ref<EnvMapMaterial> CreateDefaultMaterial(std::string materialName);
 
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();
@@ -133,8 +133,9 @@ public:
 
 	static TextureInfo s_TextureInfoDefault;
 	static std::map<std::string, TextureInfo> s_TextureInfo;
-	static std::map<std::string, EnvMapMaterial*> s_EnvMapMaterials;
+	static std::map<std::string, Ref<EnvMapMaterial>> s_EnvMapMaterials;
 	static SelectionMode s_SelectionMode;
+	static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
 
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
 	glm::mat4* m_RelativeTransform = nullptr;
@@ -167,7 +168,6 @@ private:
 
 	/** BEGIN properties Hazelnut/EditorLayer **/
 	// Editor resources
-	Hazel::Ref<Hazel::HazelTexture2D> m_CheckerboardTexture;
 	Hazel::Ref<Hazel::HazelTexture2D> m_PlayButtonTex;
 
 	Hazel::Entity m_CameraEntity;

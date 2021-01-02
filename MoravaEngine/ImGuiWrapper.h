@@ -9,6 +9,7 @@
 #include <imgui_internal.h>
 
 #include "Hazel/Core/Ref.h"
+#include "Hazel/Scene/Components.h"
 
 #include "CommonValues.h"
 #include "Window.h"
@@ -29,7 +30,11 @@ public:
 	static void Cleanup();
 
 	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
-	static void DrawMaterialUI(EnvMapMaterial& material, const std::string& materialName, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture);
+
+	
+	;
+
+	static void DrawMaterialUI(Ref<EnvMapMaterial> material, const std::string& materialName, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture);
 
 	// ImGui UI helpers
 	static bool Property(const std::string& name, bool& value);

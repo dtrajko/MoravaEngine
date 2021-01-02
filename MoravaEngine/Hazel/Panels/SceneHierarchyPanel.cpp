@@ -517,7 +517,7 @@ namespace Hazel
 				if (!file.empty()) {
 					// mc.Mesh = Ref<HazelMesh>::Create(file);
 					mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(file, nullptr, nullptr, false);
-					EnvironmentMap::LoadEnvMapMaterials(mc.Mesh);
+					// EnvironmentMap::LoadEnvMapMaterials(mc.Mesh);
 				}
 			}
 			ImGui::Columns(1);
@@ -782,12 +782,10 @@ namespace Hazel
 		DrawComponent <MaterialComponent > ("Material", entity, [](MaterialComponent& mc)
 			{
 				UI::BeginPropertyGrid();
-
 				UI::Property("Name", mc.Name);
-
-				// ImGuiWrapper::DrawMaterialUI(nullptr, mc.Name, m_CheckerboardTexture);
-
 				UI::EndPropertyGrid();
+
+				ImGuiWrapper::DrawMaterialUI(mc.Material, mc.Name, EnvironmentMap::s_CheckerboardTexture);
 			});
 
 		/****

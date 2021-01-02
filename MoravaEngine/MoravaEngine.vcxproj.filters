@@ -1416,14 +1416,14 @@
     <Filter Include="Hazel\ExampleApp">
       <UniqueIdentifier>{4e0cdee5-9044-420f-a212-6d9454330fac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Hazel\ExampleApp\Properties">
+      <UniqueIdentifier>{e9a6fc49-b180-49e3-a39b-40232dee4135}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MoravaEngine.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Hazel\ExampleApp\Properties\AssemblyInfo.cs">
-      <Filter>Hazel\ExampleApp</Filter>
-    </None>
     <None Include="Hazel\ExampleApp\src\BasicController.cs">
       <Filter>Hazel\ExampleApp</Filter>
     </None>
@@ -1444,6 +1444,9 @@
     </None>
     <None Include="Hazel\ExampleApp\src\Sink.cs">
       <Filter>Hazel\ExampleApp</Filter>
+    </None>
+    <None Include="Hazel\ExampleApp\Properties\AssemblyInfo.cs">
+      <Filter>Hazel\ExampleApp\Properties</Filter>
     </None>
   </ItemGroup>
 </Project>
