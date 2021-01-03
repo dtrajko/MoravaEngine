@@ -16,6 +16,7 @@ class EnvMapMaterial
 
 public:
 	EnvMapMaterial() = default;
+	EnvMapMaterial(std::string name = "Untitled") { m_Name = name; }
 	~EnvMapMaterial() = default;
 
 	inline AlbedoInput& GetAlbedoInput() { return m_AlbedoInput; }
@@ -26,6 +27,9 @@ public:
 	inline AOInput& GetAOInput() { return m_AOInput; }
 
 	inline float& GetTilingFactor() { return m_TilingFactor; }
+
+	inline void SetName(std::string name) { m_Name = name; };
+	inline std::string GetName() { return m_Name; };
 
 private:
 
@@ -80,5 +84,6 @@ private:
 	AOInput m_AOInput;
 
 	float m_TilingFactor = 1.0f;
+	std::string m_Name = "Untitled";
 
 };

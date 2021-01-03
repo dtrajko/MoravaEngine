@@ -275,7 +275,7 @@ void EnvironmentMap::ShowBoundingBoxes(bool showBoundingBoxes, bool showBounding
 
 Ref<EnvMapMaterial> EnvironmentMap::CreateDefaultMaterial(std::string materialName)
 {
-    Ref<EnvMapMaterial> envMapMaterial = CreateRef<EnvMapMaterial>();
+    Ref<EnvMapMaterial> envMapMaterial = CreateRef<EnvMapMaterial>(materialName);
 
     TextureInfo textureInfo;
     if (s_TextureInfo.contains(materialName)) {

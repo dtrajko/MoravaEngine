@@ -73,6 +73,7 @@ public:
 	void ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop);
 
 	static void LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh);
+	static Ref<EnvMapMaterial> CreateDefaultMaterial(std::string materialName);
 
 	// Setters
 	void SetSkyboxLOD(float LOD);
@@ -93,16 +94,7 @@ public:
 	inline bool* GetDisplayHazelGrid() { return &m_DisplayHazelGrid; }
 	inline bool* GetDisplayBoundingBoxes() { return &m_DisplayBoundingBoxes; };
 
-private:
-	void SetupContextData();
-	void SetupShaders();
-	void UpdateUniforms();
-	void UpdateShaderPBRUniforms(Ref<Shader> shaderHazelPBR, EnvMapMaterial* m_EnvMapMaterial);
-	void SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox);
-	void Init();
-
 	// SceneRenderer
-public:
 	void CompositePassTemporary(Framebuffer* framebuffer);
 	void GeometryPassTemporary();
 	void SubmitEntity(Hazel::Entity entity);
@@ -119,7 +111,12 @@ public:
 	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
 
 private:
-	static Ref<EnvMapMaterial> CreateDefaultMaterial(std::string materialName);
+	void SetupContextData();
+	void SetupShaders();
+	void UpdateUniforms();
+	void UpdateShaderPBRUniforms(Ref<Shader> shaderHazelPBR, EnvMapMaterial* m_EnvMapMaterial);
+	void SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox);
+	void Init();
 
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();

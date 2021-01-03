@@ -224,10 +224,6 @@ void ImGuiWrapper::BeginPropertyGrid()
 
 void ImGuiWrapper::DrawMaterialUI(Ref<EnvMapMaterial> material, const std::string& materialName, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture)
 {
-	if (!material) {
-		material = CreateRef<EnvMapMaterial>();
-	}
-
 	// Tiling Factor
 	ImGui::SliderFloat("Tiling Factor", &material->GetTilingFactor(), 0.0f, 20.0f);
 

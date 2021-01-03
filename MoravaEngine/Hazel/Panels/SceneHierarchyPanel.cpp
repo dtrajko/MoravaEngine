@@ -785,6 +785,7 @@ namespace Hazel
 				UI::Property("Name", mc.Name);
 				UI::EndPropertyGrid();
 
+				mc.Material = EnvironmentMap::CreateDefaultMaterial(mc.Name);
 				ImGuiWrapper::DrawMaterialUI(mc.Material, mc.Name, EnvironmentMap::s_CheckerboardTexture);
 			});
 
