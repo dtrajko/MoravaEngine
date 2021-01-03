@@ -222,14 +222,14 @@ void ImGuiWrapper::BeginPropertyGrid()
 	ImGui::Columns(2);
 }
 
-void ImGuiWrapper::DrawMaterialUI(Ref<EnvMapMaterial> material, const std::string& materialName, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture)
+void ImGuiWrapper::DrawMaterialUI(EnvMapMaterial* material, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture)
 {
 	// Tiling Factor
 	ImGui::SliderFloat("Tiling Factor", &material->GetTilingFactor(), 0.0f, 20.0f);
 
 	{
 		// Albedo
-		std::string textureLabel = materialName + " Albedo";
+		std::string textureLabel = material->GetName() + " Albedo";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
@@ -258,10 +258,10 @@ void ImGuiWrapper::DrawMaterialUI(Ref<EnvMapMaterial> material, const std::strin
 			ImGui::SameLine();
 			ImGui::BeginGroup();
 
-			std::string checkboxLabel = "Use##" + materialName + "AlbedoMap";
+			std::string checkboxLabel = "Use##" + material->GetName() + "AlbedoMap";
 			ImGui::Checkbox(checkboxLabel.c_str(), &material->GetAlbedoInput().UseTexture);
 
-			std::string checkboxLabelSRGB = "sRGB##" + materialName + "AlbedoMap";
+			std::string checkboxLabelSRGB = "sRGB##" + material->GetName() + "AlbedoMap";
 			if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material->GetAlbedoInput().SRGB))
 			{
 				if (material->GetAlbedoInput().TextureMap)
@@ -271,13 +271,13 @@ void ImGuiWrapper::DrawMaterialUI(Ref<EnvMapMaterial> material, const std::strin
 			}
 			ImGui::EndGroup();
 			ImGui::SameLine();
-			std::string colorLabel = "Color##" + materialName + "Albedo";
+			std::string colorLabel = "Color##" + material->GetName() + "Albedo";
 			ImGui::ColorEdit3(colorLabel.c_str(), glm::value_ptr(material->GetAlbedoInput().Color), ImGuiColorEditFlags_NoInputs);
 		}
 	}
 	{
 		// Normals
-		std::string textureLabel = materialName + " Normals";
+		std::string textureLabel = material->GetName() + " Normals";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
@@ -304,13 +304,13 @@ void ImGuiWrapper::DrawMaterialUI(Ref<EnvMapMaterial> material, const std::strin
 				}
 			}
 			ImGui::SameLine();
-			std::string checkboxLabel = "Use##" + materialName + "NormalMap";
+			std::string checkboxLabel = "Use##" + material->GetName() + "NormalMap";
 			ImGui::Checkbox(checkboxLabel.c_str(), &material->GetNormalInput().UseTexture);
 		}
 	}
 	{
 		// Metalness
-		std::string textureLabel = materialName + " Metalness";
+		std::string textureLabel = material->GetName() + " Metalness";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
@@ -337,16 +337,16 @@ void ImGuiWrapper::DrawMaterialUI(Ref<EnvMapMaterial> material, const std::strin
 				}
 			}
 			ImGui::SameLine();
-			std::string checkboxLabel = "Use##" + materialName + "MetalnessMap";
+			std::string checkboxLabel = "Use##" + material->GetName() + "MetalnessMap";
 			ImGui::Checkbox(checkboxLabel.c_str(), &material->GetMetalnessInput().UseTexture);
 			ImGui::SameLine();
-			std::string sliderLabel = "Value##" + materialName + "MetalnessInput";
+			std::string sliderLabel = "Value##" + material->GetName() + "MetalnessInput";
 			ImGui::SliderFloat(sliderLabel.c_str(), &material->GetMetalnessInput().Value, 0.0f, 1.0f);
 		}
 	}
 	{
 		// Roughness
-		std::string textureLabel = materialName + " Roughness";
+		std::string textureLabel = material->GetName() + " Roughness";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
@@ -373,16 +373,16 @@ void ImGuiWrapper::DrawMaterialUI(Ref<EnvMapMaterial> material, const std::strin
 				}
 			}
 			ImGui::SameLine();
-			std::string checkboxLabel = "Use##" + materialName + "RoughnessMap";
+			std::string checkboxLabel = "Use##" + material->GetName() + "RoughnessMap";
 			ImGui::Checkbox(checkboxLabel.c_str(), &material->GetRoughnessInput().UseTexture);
 			ImGui::SameLine();
-			std::string sliderLabel = "Value##" + materialName + "RoughnessInput";
+			std::string sliderLabel = "Value##" + material->GetName() + "RoughnessInput";
 			ImGui::SliderFloat(sliderLabel.c_str(), &material->GetRoughnessInput().Value, 0.0f, 1.0f);
 		}
 	}
 	{
 		// Emissive
-		std::string textureLabel = materialName + " Emissive";
+		std::string textureLabel = material->GetName() + " Emissive";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
@@ -411,13 +411,13 @@ void ImGuiWrapper::DrawMaterialUI(Ref<EnvMapMaterial> material, const std::strin
 			ImGui::SameLine();
 			ImGui::BeginGroup();
 
-			std::string checkboxLabel = "Use##" + materialName + "EmissiveMap";
+			std::string checkboxLabel = "Use##" + material->GetName() + "EmissiveMap";
 			ImGui::Checkbox(checkboxLabel.c_str(), &material->GetEmissiveInput().UseTexture);
 			ImGui::SameLine();
-			std::string sliderLabel = "Value##" + materialName + "EmissiveInput";
+			std::string sliderLabel = "Value##" + material->GetName() + "EmissiveInput";
 			ImGui::SliderFloat(sliderLabel.c_str(), &material->GetEmissiveInput().Value, 0.0f, 1.0f);
 
-			std::string checkboxLabelSRGB = "sRGB##" + materialName + "EmissiveMap";
+			std::string checkboxLabelSRGB = "sRGB##" + material->GetName() + "EmissiveMap";
 			if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material->GetEmissiveInput().SRGB))
 			{
 				if (material->GetEmissiveInput().TextureMap)
@@ -430,7 +430,7 @@ void ImGuiWrapper::DrawMaterialUI(Ref<EnvMapMaterial> material, const std::strin
 	}
 	{
 		// AO (Ambient Occlusion)
-		std::string textureLabel = materialName + " AO";
+		std::string textureLabel = material->GetName() + " AO";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
@@ -457,10 +457,10 @@ void ImGuiWrapper::DrawMaterialUI(Ref<EnvMapMaterial> material, const std::strin
 				}
 			}
 			ImGui::SameLine();
-			std::string checkboxLabel = "Use##" + materialName + "AOMap";
+			std::string checkboxLabel = "Use##" + material->GetName() + "AOMap";
 			ImGui::Checkbox(checkboxLabel.c_str(), &material->GetAOInput().UseTexture);
 			ImGui::SameLine();
-			std::string sliderLabel = "Value##" + materialName + "AOInput";
+			std::string sliderLabel = "Value##" + material->GetName() + "AOInput";
 			ImGui::SliderFloat(sliderLabel.c_str(), &material->GetAOInput().Value, 0.0f, 1.0f);
 		}
 	}

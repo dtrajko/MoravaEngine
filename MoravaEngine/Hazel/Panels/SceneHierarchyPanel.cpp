@@ -415,6 +415,9 @@ namespace Hazel
 				if (ImGui::Button("Mesh"))
 				{
 					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>();
+					if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponent>()) {
+						EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponent>();
+					}
 					ImGui::CloseCurrentPopup();
 				}
 			}
@@ -779,14 +782,18 @@ namespace Hazel
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent <MaterialComponent > ("Material", entity, [](MaterialComponent& mc)
+		DrawComponent <MaterialComponent > ("Material", entity, [=](MaterialComponent& mc)
 			{
 				UI::BeginPropertyGrid();
 				UI::Property("Name", mc.Name);
 				UI::EndPropertyGrid();
 
-				mc.Material = EnvironmentMap::CreateDefaultMaterial(mc.Name);
-				ImGuiWrapper::DrawMaterialUI(mc.Material, mc.Name, EnvironmentMap::s_CheckerboardTexture);
+				if (!mc.Material) {
+					mc.Material = EnvironmentMap::CreateDefaultMaterial(mc.Name);
+					EnvironmentMap::AddMaterialFromComponent(entity);
+				}
+
+				ImGuiWrapper::DrawMaterialUI(mc.Material, EnvironmentMap::s_CheckerboardTexture);
 			});
 
 		/****

@@ -15,6 +15,8 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
+#include "../Scene/Entity.h"
+
 #include "../../Math.h"
 #include "../../Util.h"
 #include "../../ShaderLibrary.h"
@@ -1020,9 +1022,9 @@ namespace Hazel {
 		return std::vector<Triangle>();
 	}
 
-	void HazelMesh::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, ::Ref<EnvMapMaterial>>& envMapMaterials)
+	void HazelMesh::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
 	{
-		::Ref<EnvMapMaterial> envMapMaterial = nullptr;
+		EnvMapMaterial* envMapMaterial = nullptr;
 
 		m_VertexArray->Bind();
 
@@ -1072,18 +1074,26 @@ namespace Hazel {
 		}
 	}
 
-	void HazelMesh::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, ::Ref<EnvMapMaterial>>& envMapMaterials)
+	void HazelMesh::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials, Entity entity)
 	{
 		for (Hazel::Submesh submesh : m_Submeshes)
 		{
-			submesh.Render(this, m_MeshShader, transform, samplerSlot, envMapMaterials);
+			submesh.Render(this, m_MeshShader, transform, samplerSlot, envMapMaterials, entity);
 		}
 	}
 
 	void Submesh::Render(HazelMesh* parentMesh, ::Ref<Shader> shader, glm::mat4 transform, uint32_t samplerSlot,
-		const std::map<std::string, ::Ref<EnvMapMaterial>>& envMapMaterials)
+		const std::map<std::string, EnvMapMaterial*>& envMapMaterials, Entity entity)
 	{
-		::Ref<EnvMapMaterial> envMapMaterial = nullptr;
+		glm::mat4 submeshTransform;
+		if (entity && entity.HasComponent<TransformComponent>()) {
+			submeshTransform = entity.GetComponent<TransformComponent>().GetTransform();
+		}
+		else {
+			submeshTransform = transform;
+		}
+
+		EnvMapMaterial* envMapMaterial = nullptr;
 
 		parentMesh->GetVertexArray().Raw()->Bind();
 
@@ -1095,7 +1105,7 @@ namespace Hazel {
 			shader->setMat4(uniformName, parentMesh->GetBoneTransforms()[i]);
 		}
 
-		shader->setMat4("u_Transform", transform * Transform);
+		shader->setMat4("u_Transform", submeshTransform * Transform);
 
 		// Manage materials (PBR texture binding)
 		if (m_BaseMaterial) {
@@ -1107,7 +1117,13 @@ namespace Hazel {
 			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
 		}
 
-		std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(parentMesh, *this);
+		std::string materialName;
+		if (entity && entity.HasComponent<MaterialComponent>()) {
+			materialName = entity.GetComponent<MaterialComponent>().Name;
+		}
+		else {
+			materialName = Hazel::HazelMesh::GetSubmeshMaterialName(parentMesh, *this);
+		}
 
 		if (envMapMaterials.contains(materialName))
 		{

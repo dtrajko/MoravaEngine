@@ -73,7 +73,8 @@ public:
 	void ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop);
 
 	static void LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh);
-	static Ref<EnvMapMaterial> CreateDefaultMaterial(std::string materialName);
+	static EnvMapMaterial* CreateDefaultMaterial(std::string materialName);
+	static void AddMaterialFromComponent(Hazel::Entity entity);
 
 	// Setters
 	void SetSkyboxLOD(float LOD);
@@ -130,7 +131,7 @@ public:
 
 	static TextureInfo s_TextureInfoDefault;
 	static std::map<std::string, TextureInfo> s_TextureInfo;
-	static std::map<std::string, Ref<EnvMapMaterial>> s_EnvMapMaterials;
+	static std::map<std::string, EnvMapMaterial*> s_EnvMapMaterials;
 	static SelectionMode s_SelectionMode;
 	static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
 

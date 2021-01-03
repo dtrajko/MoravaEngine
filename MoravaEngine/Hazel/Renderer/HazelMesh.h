@@ -117,12 +117,13 @@ namespace Hazel {
 	};
 
 	class HazelMesh;
+	class Entity;
 
 	class Submesh : public Mesh
 	{
 	public:
 		void Render(HazelMesh* parentMesh, ::Ref<Shader> shader, glm::mat4 transform, uint32_t samplerSlot,
-			const std::map<std::string, ::Ref<EnvMapMaterial>>& envMapMaterials);
+			const std::map<std::string, EnvMapMaterial*>& envMapMaterials, Entity entity);
 
 	public:
 		uint32_t BaseVertex;
@@ -148,8 +149,8 @@ namespace Hazel {
 		void OnImGuiRender(uint32_t id = 0);
 		void DumpVertexBuffer();
 
-		void Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, ::Ref<EnvMapMaterial>>& envMapMaterials);
-		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, ::Ref<EnvMapMaterial>>& envMapMaterials);
+		void Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials);
+		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials, Entity entity);
 
 		// Getters
 		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }

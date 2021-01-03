@@ -31,7 +31,7 @@
 
 TextureInfo EnvironmentMap::s_TextureInfoDefault;
 std::map<std::string, TextureInfo> EnvironmentMap::s_TextureInfo;
-std::map<std::string, Ref<EnvMapMaterial>> EnvironmentMap::s_EnvMapMaterials;
+std::map<std::string, EnvMapMaterial*> EnvironmentMap::s_EnvMapMaterials;
 SelectionMode EnvironmentMap::s_SelectionMode = SelectionMode::Entity;
 Hazel::Ref<Hazel::HazelTexture2D> EnvironmentMap::s_CheckerboardTexture;
 
@@ -252,7 +252,7 @@ void EnvironmentMap::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh)
             continue;
         }
 
-        Ref<EnvMapMaterial> envMapMaterial = CreateDefaultMaterial(materialName);
+        EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(materialName);
         s_EnvMapMaterials.insert(std::make_pair(materialName, envMapMaterial));
     }
 
@@ -269,13 +269,29 @@ void EnvironmentMap::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh)
     }
 }
 
+void EnvironmentMap::AddMaterialFromComponent(Hazel::Entity entity)
+{
+    // If entity contains MaterialComponent, load generic material for the entire entity (all submeshes)
+    if (entity.HasComponent<Hazel::MaterialComponent>())
+    {
+        if (entity.GetComponent<Hazel::MaterialComponent>().Material != nullptr)
+        {
+            auto material = entity.GetComponent<Hazel::MaterialComponent>().Material;
+            if (!s_EnvMapMaterials.contains(material->GetName()))
+            {
+                s_EnvMapMaterials.insert(std::make_pair(material->GetName(), material));
+            }
+        }
+    }
+}
+
 void EnvironmentMap::ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop)
 {
 }
 
-Ref<EnvMapMaterial> EnvironmentMap::CreateDefaultMaterial(std::string materialName)
+EnvMapMaterial* EnvironmentMap::CreateDefaultMaterial(std::string materialName)
 {
-    Ref<EnvMapMaterial> envMapMaterial = CreateRef<EnvMapMaterial>(materialName);
+    EnvMapMaterial* envMapMaterial = new EnvMapMaterial(materialName);
 
     TextureInfo textureInfo;
     if (s_TextureInfo.contains(materialName)) {
@@ -398,6 +414,9 @@ void EnvironmentMap::SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox)
 
 EnvironmentMap::~EnvironmentMap()
 {
+    for (auto item : s_EnvMapMaterials) {
+        delete item.second;
+    }
     s_EnvMapMaterials.clear();
 
     delete m_SceneRenderer;
@@ -1143,7 +1162,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
         unsigned int materialIndex = 0;
         for (auto iterator = s_EnvMapMaterials.cbegin(); iterator != s_EnvMapMaterials.cend();)
         {
-            Ref<EnvMapMaterial> material = CreateRef<EnvMapMaterial>(*iterator->second);
+            EnvMapMaterial* material = iterator->second;
             std::string materialName = iterator->first;
 
             // Material section
@@ -1162,7 +1181,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
 
             if (opened)
             {
-                ImGuiWrapper::DrawMaterialUI(material, materialName, s_CheckerboardTexture);
+                ImGuiWrapper::DrawMaterialUI(material, s_CheckerboardTexture);
 
                 ImGui::TreePop();
             }
@@ -1186,9 +1205,9 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             while (!materialCreated)
             {
                 std::string materialName = "Def_Mat_" + std::to_string(materialIndex);
-                if (s_EnvMapMaterials.find(materialName) == s_EnvMapMaterials.end())
+                if (!s_EnvMapMaterials.contains(materialName))
                 {
-                    Ref<EnvMapMaterial> envMapMaterial = CreateDefaultMaterial(materialName);
+                    EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(materialName);
                     s_EnvMapMaterials.insert(std::make_pair(materialName, envMapMaterial));
                     materialCreated = true;
                 }
@@ -1642,26 +1661,26 @@ void EnvironmentMap::GeometryPassTemporary()
 
                 m_ShaderHazelPBR->Bind();
                 {
-                    Ref<EnvMapMaterial> envMapMaterial;
+                    EnvMapMaterial* envMapMaterial = nullptr;
+                    std::string materialName;
 
-                    // If entity contains MaterialComponent, load generic material for the entire entity (all submeshes)
-                    if (entity.HasComponent<Hazel::MaterialComponent>()) {
-                        if (entity.GetComponent<Hazel::MaterialComponent>().Material) {
-                            envMapMaterial = entity.GetComponent<Hazel::MaterialComponent>().Material;
-                        }
-                    }
-
-                    // load submesh materials for each specific submesh from the s_EnvMapMaterials list
                     for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
                     {
-                        std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(meshComponent.Mesh.Raw(), submesh);
+                        if (entity && entity.HasComponent<Hazel::MaterialComponent>()) {
+                            materialName = entity.GetComponent<Hazel::MaterialComponent>().Name;
+                        }
+                        else {
+                            materialName = Hazel::HazelMesh::GetSubmeshMaterialName(meshComponent.Mesh.Raw(), submesh);
+                        }
+
+                        // load submesh materials for each specific submesh from the s_EnvMapMaterials list
                         if (s_EnvMapMaterials.contains(materialName)) {
-                            envMapMaterial = Ref<EnvMapMaterial>(s_EnvMapMaterials.at(materialName));
-                            UpdateShaderPBRUniforms(m_ShaderHazelPBR, envMapMaterial.get());
+                            envMapMaterial = s_EnvMapMaterials.at(materialName);
+                            UpdateShaderPBRUniforms(m_ShaderHazelPBR, envMapMaterial);
                         }
 
                         glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
-                        submesh.Render(meshComponent.Mesh.Raw(), m_ShaderHazelPBR, entityTransform, samplerSlot, s_EnvMapMaterials);
+                        submesh.Render(meshComponent.Mesh.Raw(), m_ShaderHazelPBR, entityTransform, samplerSlot, s_EnvMapMaterials, entity);
                     }
                 }
                 m_ShaderHazelPBR->Unbind();

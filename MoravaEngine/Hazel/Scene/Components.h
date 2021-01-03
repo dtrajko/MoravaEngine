@@ -153,7 +153,7 @@ namespace Hazel
 	struct MaterialComponent
 	{
 		std::string Name = "Untitled";
-		::Ref<EnvMapMaterial> Material;
+		EnvMapMaterial* Material = nullptr;
 
 		MaterialComponent() = default;
 		MaterialComponent(const MaterialComponent& other) = default;
