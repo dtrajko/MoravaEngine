@@ -75,6 +75,7 @@ public:
 	static void LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh);
 	static EnvMapMaterial* CreateDefaultMaterial(std::string materialName);
 	static void AddMaterialFromComponent(Hazel::Entity entity);
+	static std::string NewMaterialName();
 
 	// Setters
 	void SetSkyboxLOD(float LOD);

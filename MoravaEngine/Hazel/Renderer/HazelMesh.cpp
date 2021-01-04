@@ -1119,7 +1119,7 @@ namespace Hazel {
 
 		std::string materialName;
 		if (entity && entity.HasComponent<MaterialComponent>()) {
-			materialName = entity.GetComponent<MaterialComponent>().Name;
+			materialName = entity.GetComponent<MaterialComponent>().Material->GetName();
 		}
 		else {
 			materialName = Hazel::HazelMesh::GetSubmeshMaterialName(parentMesh, *this);

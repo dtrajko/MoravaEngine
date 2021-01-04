@@ -276,13 +276,36 @@ void EnvironmentMap::AddMaterialFromComponent(Hazel::Entity entity)
     {
         if (entity.GetComponent<Hazel::MaterialComponent>().Material != nullptr)
         {
+            std::string materialName = NewMaterialName();
             auto material = entity.GetComponent<Hazel::MaterialComponent>().Material;
+            material->SetName(materialName);
+
             if (!s_EnvMapMaterials.contains(material->GetName()))
             {
                 s_EnvMapMaterials.insert(std::make_pair(material->GetName(), material));
             }
         }
     }
+}
+
+std::string EnvironmentMap::NewMaterialName()
+{
+    std::string materialName = "MAT_UNDEFINED";
+    unsigned int materialIndex = 0;
+    bool newNameCreated = false;
+    while (!newNameCreated)
+    {
+        materialName = "MAT_" + std::to_string(materialIndex);
+        if (!s_EnvMapMaterials.contains(materialName))
+        {
+            newNameCreated = true;
+        }
+        else {
+            materialIndex++;
+        }
+    }
+
+    return materialName;
 }
 
 void EnvironmentMap::ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop)
@@ -1200,21 +1223,9 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
     {
         if (ImGui::MenuItem("Create a Material"))
         {
-            unsigned int materialIndex = 0;
-            bool materialCreated = false;
-            while (!materialCreated)
-            {
-                std::string materialName = "Def_Mat_" + std::to_string(materialIndex);
-                if (!s_EnvMapMaterials.contains(materialName))
-                {
-                    EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(materialName);
-                    s_EnvMapMaterials.insert(std::make_pair(materialName, envMapMaterial));
-                    materialCreated = true;
-                }
-                else {
-                    materialIndex++;
-                }
-            }
+            std::string materialName = NewMaterialName();
+            EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(materialName);
+            s_EnvMapMaterials.insert(std::make_pair(materialName, envMapMaterial));
         }
         ImGui::EndPopup();
     }
@@ -1667,7 +1678,7 @@ void EnvironmentMap::GeometryPassTemporary()
                     for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
                     {
                         if (entity && entity.HasComponent<Hazel::MaterialComponent>()) {
-                            materialName = entity.GetComponent<Hazel::MaterialComponent>().Name;
+                            materialName = entity.GetComponent<Hazel::MaterialComponent>().Material->GetName();
                         }
                         else {
                             materialName = Hazel::HazelMesh::GetSubmeshMaterialName(meshComponent.Mesh.Raw(), submesh);

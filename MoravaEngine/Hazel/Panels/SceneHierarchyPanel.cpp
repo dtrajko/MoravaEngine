@@ -784,14 +784,15 @@ namespace Hazel
 
 		DrawComponent <MaterialComponent > ("Material", entity, [=](MaterialComponent& mc)
 			{
-				UI::BeginPropertyGrid();
-				UI::Property("Name", mc.Name);
-				UI::EndPropertyGrid();
-
 				if (!mc.Material) {
-					mc.Material = EnvironmentMap::CreateDefaultMaterial(mc.Name);
+					std::string materialName = EnvironmentMap::NewMaterialName();
+					mc.Material = EnvironmentMap::CreateDefaultMaterial(materialName);
 					EnvironmentMap::AddMaterialFromComponent(entity);
 				}
+
+				UI::BeginPropertyGrid();
+				UI::Property("Name", mc.Material->GetName());
+				UI::EndPropertyGrid();
 
 				ImGuiWrapper::DrawMaterialUI(mc.Material, EnvironmentMap::s_CheckerboardTexture);
 			});
