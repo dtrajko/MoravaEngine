@@ -1292,6 +1292,26 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
         ImGui::Text("Selected Mesh: ");
         ImGui::SameLine();
         ImGui::Text(meshName.c_str());
+
+        // Drop down for selecting a material for a specific submesh
+        int selectedMaterial = -1;
+        const char* materialNameStrings[] = { "MAT_0", "MAT_1", "MAT_2", "MAT_3" };
+        const char* currentType = "MAT_2";
+        if (ImGui::BeginCombo("Material", currentType))
+        {
+            for (int type = 0; type < 4; type++)
+            {
+                bool is_selected = (currentType == materialNameStrings[type]);
+                if (ImGui::Selectable(materialNameStrings[type], is_selected))
+                {
+                    currentType = materialNameStrings[type];
+                    // submesh.Material = type; // something like that...
+                }
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
     }
     ImGui::End();
 
