@@ -631,6 +631,22 @@
     <None Include="Hazel\ExampleApp\src\RandomColor.cs" />
     <None Include="Hazel\ExampleApp\src\Script.cs" />
     <None Include="Hazel\ExampleApp\src\Sink.cs" />
+    <None Include="Hazel\ScriptCore\Properties\AssemblyInfo.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\Entity.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\Input.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\KeyCodes.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\Math\Matrix4.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\Math\Noise.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\Math\Vector2.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\Math\Vector3.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\Math\Vector4.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\Renderer\Color.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\Renderer\Material.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\Renderer\Mesh.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\Renderer\MeshFactory.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\Renderer\Texture2D.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\Scene\Component.cs" />
+    <None Include="Hazel\ScriptCore\src\Hazel\SpriteRenderer.cs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1419,6 +1419,21 @@
     <Filter Include="Hazel\ExampleApp\Properties">
       <UniqueIdentifier>{e9a6fc49-b180-49e3-a39b-40232dee4135}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Hazel\ScriptCore">
+      <UniqueIdentifier>{57836ef2-6a3e-4d99-97e1-1aa391c5ee3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\ScriptCore\Properties">
+      <UniqueIdentifier>{1818e1d5-faea-46f6-a602-0478652d0f92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\ScriptCore\Math">
+      <UniqueIdentifier>{7fc183f9-5416-499c-bd3c-5abd06574a4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\ScriptCore\Renderer">
+      <UniqueIdentifier>{e15f45ac-01da-44fc-b5f0-294f8f197f55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\ScriptCore\Scene">
+      <UniqueIdentifier>{3b7f3ca6-b0ee-42a1-a4b2-e5a1fb50e9b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MoravaEngine.rc" />
@@ -1447,6 +1462,54 @@
     </None>
     <None Include="Hazel\ExampleApp\Properties\AssemblyInfo.cs">
       <Filter>Hazel\ExampleApp\Properties</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\Properties\AssemblyInfo.cs">
+      <Filter>Hazel\ScriptCore\Properties</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\Entity.cs">
+      <Filter>Hazel\ScriptCore</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\Input.cs">
+      <Filter>Hazel\ScriptCore</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\KeyCodes.cs">
+      <Filter>Hazel\ScriptCore</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\SpriteRenderer.cs">
+      <Filter>Hazel\ScriptCore</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\Math\Matrix4.cs">
+      <Filter>Hazel\ScriptCore\Math</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\Math\Noise.cs">
+      <Filter>Hazel\ScriptCore\Math</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\Math\Vector2.cs">
+      <Filter>Hazel\ScriptCore\Math</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\Math\Vector3.cs">
+      <Filter>Hazel\ScriptCore\Math</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\Math\Vector4.cs">
+      <Filter>Hazel\ScriptCore\Math</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\Scene\Component.cs">
+      <Filter>Hazel\ScriptCore\Scene</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\Renderer\Color.cs">
+      <Filter>Hazel\ScriptCore\Renderer</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\Renderer\Material.cs">
+      <Filter>Hazel\ScriptCore\Renderer</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\Renderer\Mesh.cs">
+      <Filter>Hazel\ScriptCore\Renderer</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\Renderer\MeshFactory.cs">
+      <Filter>Hazel\ScriptCore\Renderer</Filter>
+    </None>
+    <None Include="Hazel\ScriptCore\src\Hazel\Renderer\Texture2D.cs">
+      <Filter>Hazel\ScriptCore\Renderer</Filter>
     </None>
   </ItemGroup>
 </Project>
