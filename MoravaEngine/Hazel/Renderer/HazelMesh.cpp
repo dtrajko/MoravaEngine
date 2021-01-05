@@ -20,6 +20,7 @@
 #include "../../Math.h"
 #include "../../Util.h"
 #include "../../ShaderLibrary.h"
+#include "../../EnvironmentMap.h"
 
 #include "imgui.h"
 
@@ -961,10 +962,21 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	std::string HazelMesh::GetSubmeshMaterialName(Ref<HazelMesh> mesh, Hazel::Submesh& submesh)
+	std::string HazelMesh::GetSubmeshMaterialName(Ref<HazelMesh> mesh, Hazel::Submesh& submesh, Entity entity, const std::map<std::string, std::string>& submeshMaterials)
 	{
-		std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));
-		std::string materialName = meshName + "_" + std::to_string(submesh.MaterialIndex);
+		std::string materialName = "";
+
+		if (submeshMaterials.contains(submesh.MeshName)) {
+			materialName = submeshMaterials.at(submesh.MeshName);
+		}
+		else if (entity && entity.HasComponent<Hazel::MaterialComponent>()) {
+			materialName = entity.GetComponent<Hazel::MaterialComponent>().Material->GetName();
+		}
+		else {
+			std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));
+			materialName = meshName + "_" + std::to_string(submesh.MaterialIndex);
+		}
+
 		return materialName;
 	}
 
@@ -1050,7 +1062,7 @@ namespace Hazel {
 				m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
 			}
 
-			std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(this, submesh);
+			std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(this, submesh, Entity{}, std::map<std::string, std::string>());
 
 			if (envMapMaterials.contains(materialName))
 			{
@@ -1117,13 +1129,7 @@ namespace Hazel {
 			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
 		}
 
-		std::string materialName;
-		if (entity && entity.HasComponent<MaterialComponent>()) {
-			materialName = entity.GetComponent<MaterialComponent>().Material->GetName();
-		}
-		else {
-			materialName = Hazel::HazelMesh::GetSubmeshMaterialName(parentMesh, *this);
-		}
+		std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(parentMesh, *this, entity, EnvironmentMap::s_SubmeshMaterials);
 
 		if (envMapMaterials.contains(materialName))
 		{

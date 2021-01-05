@@ -34,6 +34,8 @@ std::map<std::string, TextureInfo> EnvironmentMap::s_TextureInfo;
 std::map<std::string, EnvMapMaterial*> EnvironmentMap::s_EnvMapMaterials;
 SelectionMode EnvironmentMap::s_SelectionMode = SelectionMode::Entity;
 Hazel::Ref<Hazel::HazelTexture2D> EnvironmentMap::s_CheckerboardTexture;
+std::map<std::string, std::string> EnvironmentMap::s_SubmeshMaterials;
+
 
 EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
 {
@@ -227,12 +229,12 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
     meshEntity.AddComponent<Hazel::ScriptComponent>("Example.Script");
 
     SubmitEntity(meshEntity);
-    LoadEnvMapMaterials(mesh);
+    LoadEnvMapMaterials(mesh, meshEntity);
 
     return meshEntity;
 }
 
-void EnvironmentMap::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh)
+void EnvironmentMap::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity)
 {
     //  for (auto material : m_EnvMapMaterials) {
     //      delete material.second;
@@ -244,7 +246,7 @@ void EnvironmentMap::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh)
 
     for (Hazel::Submesh& submesh : submeshes)
     {
-        std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(mesh, submesh);
+        std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(mesh, submesh, entity, s_SubmeshMaterials);
 
         Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials materialName = '{0}'", materialName);
 
@@ -1294,21 +1296,33 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
         ImGui::Text(meshName.c_str());
 
         // Drop down for selecting a material for a specific submesh
+        std::vector<std::string> materialNameStrings;
+        int index = 0;
+        for (auto& material : s_EnvMapMaterials) {
+            materialNameStrings.push_back(material.first.c_str());
+        }
+
+        std::string submeshMaterialName = materialNameStrings.size() ? materialNameStrings[0] : "N/A";
+        if (s_SubmeshMaterials.contains(meshName)) {
+            submeshMaterialName = s_SubmeshMaterials.at(meshName);
+        }
         int selectedMaterial = -1;
-        const char* materialNameStrings[] = { "MAT_0", "MAT_1", "MAT_2", "MAT_3" };
-        const char* currentType = "MAT_2";
-        if (ImGui::BeginCombo("Material", currentType))
+        if (ImGui::BeginCombo("Material", submeshMaterialName.c_str()))
         {
-            for (int type = 0; type < 4; type++)
+            for (size_t type = 0; type < s_EnvMapMaterials.size(); type++)
             {
-                bool is_selected = (currentType == materialNameStrings[type]);
-                if (ImGui::Selectable(materialNameStrings[type], is_selected))
+                bool is_selected = (submeshMaterialName == materialNameStrings[type]);
+                if (ImGui::Selectable(materialNameStrings.at(type).c_str(), is_selected))
                 {
-                    currentType = materialNameStrings[type];
-                    // submesh.Material = type; // something like that...
+                    submeshMaterialName = materialNameStrings[type];
+                    if (meshName != "N/A" && submeshMaterialName != "N/A") {
+                        s_SubmeshMaterials.erase(meshName);
+                        s_SubmeshMaterials.insert(std::make_pair(meshName, submeshMaterialName));
+                    }
                 }
-                if (is_selected)
+                if (is_selected) {
                     ImGui::SetItemDefaultFocus();
+                }
             }
             ImGui::EndCombo();
         }
@@ -1697,12 +1711,7 @@ void EnvironmentMap::GeometryPassTemporary()
 
                     for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
                     {
-                        if (entity && entity.HasComponent<Hazel::MaterialComponent>()) {
-                            materialName = entity.GetComponent<Hazel::MaterialComponent>().Material->GetName();
-                        }
-                        else {
-                            materialName = Hazel::HazelMesh::GetSubmeshMaterialName(meshComponent.Mesh.Raw(), submesh);
-                        }
+                        materialName = Hazel::HazelMesh::GetSubmeshMaterialName(meshComponent.Mesh.Raw(), submesh, entity, s_SubmeshMaterials);
 
                         // load submesh materials for each specific submesh from the s_EnvMapMaterials list
                         if (s_EnvMapMaterials.contains(materialName)) {

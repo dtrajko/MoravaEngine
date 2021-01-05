@@ -72,7 +72,7 @@ public:
 	Hazel::Entity LoadEntity(std::string fullPath);
 	void ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop);
 
-	static void LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh);
+	static void LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity);
 	static EnvMapMaterial* CreateDefaultMaterial(std::string materialName);
 	static void AddMaterialFromComponent(Hazel::Entity entity);
 	static std::string NewMaterialName();
@@ -135,6 +135,7 @@ public:
 	static std::map<std::string, EnvMapMaterial*> s_EnvMapMaterials;
 	static SelectionMode s_SelectionMode;
 	static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
+	static std::map<std::string, std::string> s_SubmeshMaterials; // Map to match submesh name with material name
 
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
 	glm::mat4* m_RelativeTransform = nullptr;
