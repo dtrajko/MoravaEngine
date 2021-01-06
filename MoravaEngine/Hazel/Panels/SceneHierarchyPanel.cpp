@@ -203,10 +203,12 @@ namespace Hazel
 		{
 			auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
 
-			for (auto& submesh : mesh->GetSubmeshes())
+			std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
+
+			for (Hazel::Submesh& submesh : submeshes)
 			{
 				bool submeshSelected = false;
-				for (auto& selection : EntitySelection::s_SelectionContext)
+				for (auto selection : EntitySelection::s_SelectionContext)
 				{
 					if (selection.Mesh && selection.Mesh->NodeName == submesh.NodeName)
 					{

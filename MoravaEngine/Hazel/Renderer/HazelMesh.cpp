@@ -996,21 +996,10 @@ namespace Hazel {
 
 	void HazelMesh::CloneSubmesh(Submesh submesh)
 	{
-		Submesh submeshCopy;
-		submeshCopy.m_Indices = submesh.m_Indices;
-		submeshCopy.m_Vertices = submesh.m_Vertices;
-		submeshCopy.m_Transform = submesh.m_Transform;
-		submeshCopy.Transform = submesh.Transform;
-		submeshCopy.BaseVertex = submesh.BaseVertex;
-		submeshCopy.BaseIndex = submesh.BaseIndex;
-		submeshCopy.MaterialIndex = submesh.MaterialIndex;
-		submeshCopy.IndexCount = submesh.IndexCount;
-		submeshCopy.BoundingBox = submesh.BoundingBox;
-		submeshCopy.MeshName = submesh.MeshName + "_"; // + Util::randomString(8);
-		submeshCopy.NodeName = submesh.NodeName + "_"; // + Util::randomString(8);
-
-		m_Submeshes.push_back(submeshCopy);
-		Log::GetLogger()->debug("HazelMesh::CloneSubmesh('{0}' => '{1}')", submesh.MeshName, submeshCopy.MeshName);
+		std::string appendix = Util::randomString(4);
+		submesh.MeshName += "_" + appendix;
+		submesh.NodeName += "_" + appendix;
+		m_Submeshes.push_back(submesh);
 	}
 
 	void HazelMesh::BoneTransform(float time)

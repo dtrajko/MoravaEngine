@@ -1553,20 +1553,20 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                     continue;
                 }
 
-                auto submeshes = mesh->GetSubmeshes();
+                std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
                 float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
                 // for (Hazel::Submesh& submesh : submeshes)
                 for (uint32_t i = 0; i < submeshes.size(); i++)
                 {
-                    auto& submesh = submeshes[i];
+                    Hazel::Submesh* submesh = &submeshes[i];
                     auto& transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
                     Hazel::Ray ray = {
-                        glm::inverse(transform * submesh.Transform) * glm::vec4(origin, 1.0f),
-                        glm::inverse(glm::mat3(transform) * glm::mat3(submesh.Transform)) * direction
+                        glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
+                        glm::inverse(glm::mat3(transform) * glm::mat3(submesh->Transform)) * direction
                     };
 
                     float t;
-                    bool intersects = ray.IntersectsAABB(submesh.BoundingBox, t);
+                    bool intersects = ray.IntersectsAABB(submesh->BoundingBox, t);
                     if (intersects)
                     {
                         const auto& triangleCache = ((Hazel::HazelMesh*)mesh.Raw())->GetTriangleCache(i);
@@ -1576,14 +1576,15 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                             {
                                 if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
                                 {
-                                    EntitySelection::s_SelectionContext.push_back({ entity, &submesh, t });
-                                    Log::GetLogger()->debug("Adding submesh to selection context. Submesh Name: '{0}', selection size: '{1}'", submesh.MeshName, EntitySelection::s_SelectionContext.size());
+                                    EntitySelection::s_SelectionContext.push_back({ entity, submesh, t });
+                                    Log::GetLogger()->debug("Adding submesh to selection context. Submesh Name: '{0}', selection size: '{1}'", 
+                                        submesh->MeshName, EntitySelection::s_SelectionContext.size());
                                     break;
                                 }
                             }
                         }
                         else {
-                            EntitySelection::s_SelectionContext.push_back({ entity, &submesh, t });
+                            EntitySelection::s_SelectionContext.push_back({ entity, submesh, t });
                         }
                     }
                 }
