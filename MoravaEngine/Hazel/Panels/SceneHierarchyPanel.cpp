@@ -1,21 +1,11 @@
 #include "SceneHierarchyPanel.h"
 
-#include "../Renderer/HazelMesh.h"
+// Hazel
 #include "../Script/ScriptEngine.h"
-#include "../ImGui/ImGui.h"
 
-#include "../../Math.h"
-#include "../../ImGuiWrapper.h"
+// Morava
 #include "../../EntitySelection.h"
-#include "../../Application.h"
 #include "../../EnvironmentMap.h"
-
-#include <imgui.h>
-#include <imgui_internal.h>
-
-#include <glm/gtc/type_ptr.hpp>
-
-#include <vector>
 
 // TODO:
 // - Eventually change imgui node IDs to be entity/asset GUID
@@ -196,7 +186,6 @@ namespace Hazel
 			if (EntitySelection::s_SelectionContext[0].Entity == entity) {
 				EntitySelection::s_SelectionContext = {};
 			}
-
 			m_EntityDeletedCallback(entity);
 		}
 
@@ -216,23 +205,41 @@ namespace Hazel
 
 			for (auto& submesh : mesh->GetSubmeshes())
 			{
-				bool selected = false;
-				for (auto selection : EntitySelection::s_SelectionContext)
+				bool submeshSelected = false;
+				for (auto& selection : EntitySelection::s_SelectionContext)
 				{
 					if (selection.Mesh && selection.Mesh->NodeName == submesh.NodeName)
 					{
-						selected = true;
+						submeshSelected = true;
 						break;
 					}
 				}
 
-				ImGuiTreeNodeFlags flags = (selected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+				ImGuiTreeNodeFlags flags = (submeshSelected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 				bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submesh.BaseIndex + 1), flags, submesh.MeshName.c_str());
 
 				if (ImGui::IsItemClicked())
 				{
 					EntitySelection::s_SelectionContext.clear();
 					EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entity, &submesh, 0 });
+				}
+
+				bool submeshDeleted = false;
+				bool submeshCloned = false;
+
+				if (ImGui::BeginPopupContextItem())
+				{
+					if (ImGui::MenuItem("Delete Submesh"))
+					{
+						submeshDeleted = true;
+					}
+
+					if (ImGui::MenuItem("Clone Submesh"))
+					{
+						submeshCloned = true;
+					}
+
+					ImGui::EndPopup();
 				}
 
 				if (opened) {
@@ -250,6 +257,15 @@ namespace Hazel
 
 					// ...
 					ImGui::TreePop();
+				}
+
+				if (submeshDeleted && submeshSelected) {
+					mesh->DeleteSubmesh(submesh);
+					Log::GetLogger()->debug("SceneHierarchyPanel DeleteSubmesh('{0}')", submesh.MeshName);
+				}
+
+				if (submeshCloned && submeshSelected) {
+					mesh->CloneSubmesh(submesh);
 				}
 			}
 		}

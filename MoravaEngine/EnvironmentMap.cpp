@@ -1,32 +1,18 @@
 #include "EnvironmentMap.h"
 
 #include "Hazel/Renderer/RenderPass.h"
-#include "Hazel/Renderer/HazelMaterial.h"
-#include "Hazel/Renderer/VertexArray.h"
-#include "Hazel/Renderer/Buffer.h"
+#include "Hazel/Renderer/RendererAPI.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/Renderer2D.h"
-#include "Hazel/Scene/Components.h"
-#include "Hazel/Scene/Entity.h"
-#include "Hazel/Renderer/RendererAPI.h"
 #include "Hazel/Script/ScriptEngine.h"
 
 #include "ImGuiWrapper.h"
 #include "ImGuizmo.h"
-#include "Framebuffer.h"
 #include "RendererBasic.h"
-#include "Log.h"
-#include "Application.h"
-#include "Util.h"
-#include "Input.h"
-#include "ResourceManager.h"
-#include "Math.h"
 #include "SceneHazelEnvMap.h"
 #include "MousePicker.h"
-#include "Timer.h"
 #include "ShaderLibrary.h"
 
-#include <functional>
 
 
 TextureInfo EnvironmentMap::s_TextureInfoDefault;
@@ -1284,7 +1270,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
         {
             auto selection = EntitySelection::s_SelectionContext[0];
             entityTag = selection.Entity.GetComponent<Hazel::TagComponent>().Tag;
-            meshName = selection.Mesh ? selection.Mesh->MeshName : "N/A";
+            meshName = (selection.Mesh) ? selection.Mesh->MeshName : "N/A";
         }
 
         ImGui::Text("Selected Entity: ");
@@ -1567,7 +1553,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                     continue;
                 }
 
-                auto& submeshes = mesh->GetSubmeshes();
+                auto submeshes = mesh->GetSubmeshes();
                 float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
                 // for (Hazel::Submesh& submesh : submeshes)
                 for (uint32_t i = 0; i < submeshes.size(); i++)

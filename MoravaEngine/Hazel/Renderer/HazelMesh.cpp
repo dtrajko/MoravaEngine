@@ -980,6 +980,39 @@ namespace Hazel {
 		return materialName;
 	}
 
+	void HazelMesh::DeleteSubmesh(Submesh submesh)
+	{
+		for (auto& iterator = m_Submeshes.cbegin(); iterator != m_Submeshes.cend();)
+		{
+			if (iterator->MeshName == submesh.MeshName) {
+				iterator = m_Submeshes.erase(iterator++);
+				Log::GetLogger()->debug("HazelMesh::DeleteSubmesh erase '{0}'", submesh.MeshName);
+			}
+			else {
+				++iterator;
+			}
+		}
+	}
+
+	void HazelMesh::CloneSubmesh(Submesh submesh)
+	{
+		Submesh submeshCopy;
+		submeshCopy.m_Indices = submesh.m_Indices;
+		submeshCopy.m_Vertices = submesh.m_Vertices;
+		submeshCopy.m_Transform = submesh.m_Transform;
+		submeshCopy.Transform = submesh.Transform;
+		submeshCopy.BaseVertex = submesh.BaseVertex;
+		submeshCopy.BaseIndex = submesh.BaseIndex;
+		submeshCopy.MaterialIndex = submesh.MaterialIndex;
+		submeshCopy.IndexCount = submesh.IndexCount;
+		submeshCopy.BoundingBox = submesh.BoundingBox;
+		submeshCopy.MeshName = submesh.MeshName + "_"; // + Util::randomString(8);
+		submeshCopy.NodeName = submesh.NodeName + "_"; // + Util::randomString(8);
+
+		m_Submeshes.push_back(submeshCopy);
+		Log::GetLogger()->debug("HazelMesh::CloneSubmesh('{0}' => '{1}')", submesh.MeshName, submeshCopy.MeshName);
+	}
+
 	void HazelMesh::BoneTransform(float time)
 	{
 		ReadNodeHierarchy(time, m_Scene->mRootNode, glm::mat4(1.0f));

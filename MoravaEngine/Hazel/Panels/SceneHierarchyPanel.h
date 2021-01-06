@@ -1,15 +1,13 @@
 #pragma once
 
+#include "../../pch.h"
+
+// ImGui
 #define _CRT_SECURE_NO_WARNINGS
+#include "../ImGui/ImGui.h"
 
-#include "../Core/Base.h"
-#include "../Scene/Entity.h"
-#include "../Scene/HazelScene.h"
-#include "../Scene/Components.h"
-
-#include "../../Log.h"
-
-#include <functional>
+#include <imgui.h>
+#include <imgui_internal.h>
 
 
 struct aiNode;

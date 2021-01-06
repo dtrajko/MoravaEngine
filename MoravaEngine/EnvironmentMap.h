@@ -1,32 +1,17 @@
 #pragma once
 
-#include "Hazel/Events/KeyEvent.h"
-#include "Hazel/Events/MouseEvent.h"
-#include "Hazel/Renderer/HazelMesh.h"
-#include "Hazel/Renderer/HazelTexture.h"
+#include "pch.h"
+
 #include "Hazel/Renderer/RenderPass.h"
-#include "Hazel/Renderer/VertexArray.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/SceneRenderer.h"
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Renderer/SceneRenderer.h"
-#include "Hazel/Scene/Entity.h"
-#include "Hazel/Scene/HazelScene.h"
-#include "Hazel/Core/Math/Ray.h"
-#include "Hazel/Core/Ref.h"
 
-#include "Shader.h"
-#include "TextureCubemap.h"
-#include "Material.h"
 #include "EnvMapMaterial.h"
-#include "Scene.h"
 #include "Quad.h"
 #include "CubeSkybox.h"
 #include "EntitySelection.h"
-#include "Hazel/Renderer/EditorCamera.h"
-#include "RuntimeCamera.h"
-
-#include <string>
 
 
 enum class SelectionMode

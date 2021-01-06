@@ -19,4 +19,6 @@ public:
 	static std::string GetFileNameFromFullPath(std::string fullPath);
 	static std::string StripExtensionFromFileName(std::string fileName);
 
+	static std::string randomString(size_t length);
+
 };

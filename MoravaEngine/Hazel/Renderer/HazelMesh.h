@@ -169,6 +169,9 @@ namespace Hazel {
 
 		static std::string GetSubmeshMaterialName(Ref<HazelMesh> mesh, Hazel::Submesh& submesh, Entity entity, const std::map<std::string, std::string>& submeshMaterials);
 
+		void DeleteSubmesh(Submesh submesh);
+		void CloneSubmesh(Submesh submesh);
+
 	private:
 		void BoneTransform(float time);
 		void ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
