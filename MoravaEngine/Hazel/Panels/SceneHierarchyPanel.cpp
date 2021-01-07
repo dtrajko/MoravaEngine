@@ -32,7 +32,7 @@ namespace Hazel
 			UUID selectedEntityID = EntitySelection::s_SelectionContext[0].Entity.GetUUID();
 
 			if (entityMap.find(selectedEntityID) != entityMap.end()) {
-				EntitySelection::s_SelectionContext.push_back(SelectedSubmesh({ entityMap.at(selectedEntityID), nullptr, 0 }));
+				EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh({ entityMap.at(selectedEntityID), nullptr, 0 }));
 			}
 		}
 	}
@@ -65,7 +65,7 @@ namespace Hazel
 		{
 			// if MeshComponent is not available in entity
 			EntitySelection::s_SelectionContext.clear();
-			EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entity, nullptr, 0 });
+			EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, nullptr, 0 });
 		}
 	}
 
@@ -148,7 +148,7 @@ namespace Hazel
 
 		if (ImGui::IsItemClicked())
 		{
-			// EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entity, nullptr, 0 });
+			// EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, nullptr, 0 });
 
 			Log::GetLogger()->debug("ImGui::IsItemClicked: entity.Tag '{0}'", entity.GetComponent<Hazel::TagComponent>().Tag);
 
@@ -205,12 +205,12 @@ namespace Hazel
 
 			std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
 
-			for (Hazel::Submesh& submesh : submeshes)
+			for (int i = 0; i < submeshes.size(); i++)
 			{
 				bool submeshSelected = false;
 				for (auto selection : EntitySelection::s_SelectionContext)
 				{
-					if (selection.Mesh && selection.Mesh->NodeName == submesh.NodeName)
+					if (selection.Mesh && selection.Mesh->NodeName == submeshes[i].NodeName)
 					{
 						submeshSelected = true;
 						break;
@@ -218,12 +218,12 @@ namespace Hazel
 				}
 
 				ImGuiTreeNodeFlags flags = (submeshSelected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-				bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submesh.BaseIndex + 1), flags, submesh.MeshName.c_str());
+				bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submeshes[i].BaseIndex + 1), flags, submeshes[i].MeshName.c_str());
 
 				if (ImGui::IsItemClicked())
 				{
 					EntitySelection::s_SelectionContext.clear();
-					EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entity, &submesh, 0 });
+					EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, &submeshes[i], 0 });
 				}
 
 				bool submeshDeleted = false;
@@ -247,27 +247,27 @@ namespace Hazel
 				if (opened) {
 					ImGui::Text("MeshName: ");
 					ImGui::SameLine();
-					ImGui::Text(submesh.MeshName.c_str());
+					ImGui::Text(submeshes[i].MeshName.c_str());
 
 					ImGui::Text("NodeName: ");
 					ImGui::SameLine();
-					ImGui::Text(submesh.NodeName.c_str());
+					ImGui::Text(submeshes[i].NodeName.c_str());
 
 					ImGui::Text("MaterialIndex: ");
 					ImGui::SameLine();
-					ImGui::Text(std::to_string(submesh.MaterialIndex).c_str());
+					ImGui::Text(std::to_string(submeshes[i].MaterialIndex).c_str());
 
 					// ...
 					ImGui::TreePop();
 				}
 
 				if (submeshDeleted && submeshSelected) {
-					mesh->DeleteSubmesh(submesh);
-					Log::GetLogger()->debug("SceneHierarchyPanel DeleteSubmesh('{0}')", submesh.MeshName);
+					mesh->DeleteSubmesh(submeshes[i]);
+					Log::GetLogger()->debug("SceneHierarchyPanel DeleteSubmesh('{0}')", submeshes[i].MeshName);
 				}
 
 				if (submeshCloned && submeshSelected) {
-					mesh->CloneSubmesh(submesh);
+					mesh->CloneSubmesh(submeshes[i]);
 				}
 			}
 		}

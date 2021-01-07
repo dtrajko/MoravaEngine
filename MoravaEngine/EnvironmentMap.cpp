@@ -296,6 +296,15 @@ std::string EnvironmentMap::NewMaterialName()
     return materialName;
 }
 
+void EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh submesh)
+{
+    EntitySelection::s_SelectionContext.push_back(submesh);
+
+    if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Mesh != nullptr) {
+        Log::GetLogger()->debug("SelectionContext[0].Mesh->MeshName: '{0}'", EntitySelection::s_SelectionContext[0].Mesh->MeshName);
+    }
+}
+
 void EnvironmentMap::ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop)
 {
 }
@@ -605,7 +614,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
         ImGuizmo::SetDrawlist();
         ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
 
-        auto& selectedSubmesh = EntitySelection::s_SelectionContext[0];
+        SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
 
         // Entity transform
         auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
@@ -992,7 +1001,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             glm::mat4 submeshTransform;
             glm::vec3 aabbCenterOffset;
 
-            auto& selectedSubmesh = EntitySelection::s_SelectionContext[0];
+            SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
 
             // Entity transform
             auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
@@ -1268,9 +1277,10 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
 
         if (EntitySelection::s_SelectionContext.size())
         {
-            auto selection = EntitySelection::s_SelectionContext[0];
-            entityTag = selection.Entity.GetComponent<Hazel::TagComponent>().Tag;
-            meshName = (selection.Mesh) ? selection.Mesh->MeshName : "N/A";
+            SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
+
+            entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponent>().Tag;
+            meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
         }
 
         ImGui::Text("Selected Entity: ");
@@ -1576,7 +1586,8 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                             {
                                 if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
                                 {
-                                    EntitySelection::s_SelectionContext.push_back({ entity, submesh, t });
+                                    AddSubmeshToSelectionContext({ entity, submesh, t });
+
                                     Log::GetLogger()->debug("Adding submesh to selection context. Submesh Name: '{0}', selection size: '{1}'", 
                                         submesh->MeshName, EntitySelection::s_SelectionContext.size());
                                     break;
@@ -1584,7 +1595,7 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                             }
                         }
                         else {
-                            EntitySelection::s_SelectionContext.push_back({ entity, submesh, t });
+                            AddSubmeshToSelectionContext({ entity, submesh, t });
                         }
                     }
                 }

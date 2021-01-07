@@ -61,6 +61,7 @@ public:
 	static EnvMapMaterial* CreateDefaultMaterial(std::string materialName);
 	static void AddMaterialFromComponent(Hazel::Entity entity);
 	static std::string NewMaterialName();
+	static void AddSubmeshToSelectionContext(SelectedSubmesh submesh);
 
 	// Setters
 	void SetSkyboxLOD(float LOD);
