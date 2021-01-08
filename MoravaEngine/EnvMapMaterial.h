@@ -15,7 +15,7 @@ class EnvMapMaterial
 	struct AOInput;
 
 public:
-	EnvMapMaterial() = default;
+	EnvMapMaterial() { m_Name = "Untitled"; };
 	EnvMapMaterial(std::string name = "Untitled") { m_Name = name; }
 	~EnvMapMaterial() = default;
 

@@ -996,10 +996,13 @@ namespace Hazel {
 
 	void HazelMesh::CloneSubmesh(Submesh submesh)
 	{
-		std::string appendix = Util::randomString(4);
-		submesh.MeshName += "_" + appendix;
-		submesh.NodeName += "_" + appendix;
-		m_Submeshes.push_back(submesh);
+		EntitySelection::s_SelectionContext.clear();
+
+		Submesh* submeshCopy = new Submesh(submesh);
+		std::string appendix = Util::randomString(2);
+		submeshCopy->MeshName += "." + appendix;
+		submeshCopy->NodeName += "." + appendix;
+		m_Submeshes.push_back(*submeshCopy);
 	}
 
 	void HazelMesh::BoneTransform(float time)

@@ -32,7 +32,7 @@ namespace Hazel
 			UUID selectedEntityID = EntitySelection::s_SelectionContext[0].Entity.GetUUID();
 
 			if (entityMap.find(selectedEntityID) != entityMap.end()) {
-				EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh({ entityMap.at(selectedEntityID), nullptr, 0 }));
+				EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh({ entityMap.at(selectedEntityID), new Hazel::Submesh(), 0 }));
 			}
 		}
 	}
@@ -50,7 +50,7 @@ namespace Hazel
 					EntitySelection::s_SelectionContext.clear();
 					for (auto& submesh : meshComponent.Mesh->GetSubmeshes())
 					{
-						EntitySelection::s_SelectionContext.push_back(SelectedSubmesh{ entity, &submesh, 0 });
+						EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, &submesh, 0 });
 					}
 				}
 				else if (EnvironmentMap::s_SelectionMode == SelectionMode::SubMesh) {
@@ -65,7 +65,7 @@ namespace Hazel
 		{
 			// if MeshComponent is not available in entity
 			EntitySelection::s_SelectionContext.clear();
-			EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, nullptr, 0 });
+			EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, new Hazel::Submesh(), 0 });
 		}
 	}
 
@@ -210,7 +210,7 @@ namespace Hazel
 				bool submeshSelected = false;
 				for (auto selection : EntitySelection::s_SelectionContext)
 				{
-					if (selection.Mesh && selection.Mesh->NodeName == submeshes[i].NodeName)
+					if (selection.Mesh && selection.Mesh->MeshName == submeshes[i].MeshName)
 					{
 						submeshSelected = true;
 						break;
@@ -218,7 +218,7 @@ namespace Hazel
 				}
 
 				ImGuiTreeNodeFlags flags = (submeshSelected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-				bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submeshes[i].BaseIndex + 1), flags, submeshes[i].MeshName.c_str());
+				bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submeshes[i].BaseIndex + i), flags, submeshes[i].MeshName.c_str());
 
 				if (ImGui::IsItemClicked())
 				{
