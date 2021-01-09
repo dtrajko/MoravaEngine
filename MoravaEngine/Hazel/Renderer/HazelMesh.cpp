@@ -966,8 +966,10 @@ namespace Hazel {
 	{
 		std::string materialName = "";
 
-		if (submeshMaterials.contains(submesh.MeshName)) {
-			materialName = submeshMaterials.at(submesh.MeshName);
+		std::string submeshMatKey = entity.GetComponent<TagComponent>().Tag + "." + submesh.MeshName;
+
+		if (submeshMaterials.contains(submeshMatKey)) {
+			materialName = submeshMaterials.at(submeshMatKey);
 		}
 		else if (entity && entity.HasComponent<Hazel::MaterialComponent>()) {
 			materialName = entity.GetComponent<Hazel::MaterialComponent>().Material->GetName();

@@ -305,6 +305,14 @@ void EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh submesh)
     }
 }
 
+void EnvironmentMap::RenameMaterial(EnvMapMaterial* envMapMaterial, std::string newName)
+{
+    // TODO: Make sure that the new name is not already taken in s_EnvMapMaterials
+    // TODO: Rename object attribute
+    // TODO: Rename in s_EnvMapMaterials
+    // TODO: Rename in s_SubmeshMaterials
+}
+
 void EnvironmentMap::ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop)
 {
 }
@@ -1180,22 +1188,30 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
     ImGui::Begin("EnvMap Materials");
     {
         unsigned int materialIndex = 0;
-        for (auto iterator = s_EnvMapMaterials.cbegin(); iterator != s_EnvMapMaterials.cend();)
+        for (auto material_it = s_EnvMapMaterials.cbegin(); material_it != s_EnvMapMaterials.cend();)
         {
-            EnvMapMaterial* material = iterator->second;
-            std::string materialName = iterator->first;
+            EnvMapMaterial* material = material_it->second;
+            std::string materialName = material_it->first;
 
             // Material section
             ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
             bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)materialIndex++, flags, materialName.c_str());
 
-            bool materialDeleted = false;
+            bool materialDelete = false;
+            bool materialClone = false;
+
             if (ImGui::BeginPopupContextItem())
             {
                 if (ImGui::MenuItem("Delete Material"))
                 {
-                    materialDeleted = true;
+                    materialDelete = true;
                 }
+
+                if (ImGui::MenuItem("Clone Material"))
+                {
+                    materialClone = true;
+                }
+
                 ImGui::EndPopup();
             }
 
@@ -1206,11 +1222,17 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                 ImGui::TreePop();
             }
 
-            if (materialDeleted) {
-                iterator = s_EnvMapMaterials.erase(iterator++);
+            if (materialClone) {
+                auto envMapMaterialSrc = s_EnvMapMaterials.at(materialName);
+                EnvMapMaterial* envMapMaterialDst = new EnvMapMaterial(NewMaterialName(), envMapMaterialSrc);
+                s_EnvMapMaterials.insert(std::make_pair(envMapMaterialDst->GetName(), envMapMaterialDst));
+            }
+
+            if (materialDelete) {
+                material_it = s_EnvMapMaterials.erase(material_it++);
             }
             else {
-                ++iterator;
+                ++material_it;
             }
         }
     }
@@ -1299,8 +1321,9 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
         }
 
         std::string submeshMaterialName = materialNameStrings.size() ? materialNameStrings[0] : "N/A";
-        if (s_SubmeshMaterials.contains(meshName)) {
-            submeshMaterialName = s_SubmeshMaterials.at(meshName);
+        std::string submeshMatKey = entityTag + "." + meshName;
+        if (s_SubmeshMaterials.contains(submeshMatKey)) {
+            submeshMaterialName = s_SubmeshMaterials.at(submeshMatKey);
         }
         int selectedMaterial = -1;
         if (ImGui::BeginCombo("Material", submeshMaterialName.c_str()))
@@ -1312,8 +1335,8 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                 {
                     submeshMaterialName = materialNameStrings[type];
                     if (meshName != "N/A" && submeshMaterialName != "N/A") {
-                        s_SubmeshMaterials.erase(meshName);
-                        s_SubmeshMaterials.insert(std::make_pair(meshName, submeshMaterialName));
+                        s_SubmeshMaterials.erase(submeshMatKey);
+                        s_SubmeshMaterials.insert(std::make_pair(submeshMatKey, submeshMaterialName));
                     }
                 }
                 if (is_selected) {

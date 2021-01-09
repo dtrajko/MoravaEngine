@@ -183,7 +183,7 @@ namespace Hazel
 
 		if (entityDeleted) {
 			m_Context->DestroyEntity(entity);
-			if (EntitySelection::s_SelectionContext[0].Entity == entity) {
+			if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity == entity) {
 				EntitySelection::s_SelectionContext = {};
 			}
 			m_EntityDeletedCallback(entity);
@@ -191,7 +191,7 @@ namespace Hazel
 
 		if (entityCloned) {
 			m_Context->CloneEntity(entity);
-			if (EntitySelection::s_SelectionContext[0].Entity == entity) {
+			if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity == entity) {
 				EntitySelection::s_SelectionContext = {};
 			}
 		}
@@ -199,76 +199,76 @@ namespace Hazel
 
 	void SceneHierarchyPanel::DrawEntitySubmeshes(Entity entity)
 	{
-		if (entity.HasComponent<Hazel::MeshComponent>())
+		if (!entity.HasComponent<Hazel::MeshComponent>()) return;
+		if (!entity.GetComponent<Hazel::MeshComponent>().Mesh) return;
+
+		auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+
+		std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
+
+		for (int i = 0; i < submeshes.size(); i++)
 		{
-			auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
-
-			std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
-
-			for (int i = 0; i < submeshes.size(); i++)
+			bool submeshSelected = false;
+			for (auto selection : EntitySelection::s_SelectionContext)
 			{
-				bool submeshSelected = false;
-				for (auto selection : EntitySelection::s_SelectionContext)
+				if (selection.Mesh && selection.Mesh->MeshName == submeshes[i].MeshName)
 				{
-					if (selection.Mesh && selection.Mesh->MeshName == submeshes[i].MeshName)
-					{
-						submeshSelected = true;
-						break;
-					}
+					submeshSelected = true;
+					break;
 				}
+			}
 
-				ImGuiTreeNodeFlags flags = (submeshSelected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-				bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submeshes[i].BaseIndex + i), flags, submeshes[i].MeshName.c_str());
+			ImGuiTreeNodeFlags flags = (submeshSelected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submeshes[i].BaseIndex + i), flags, submeshes[i].MeshName.c_str());
 
-				if (ImGui::IsItemClicked())
+			if (ImGui::IsItemClicked())
+			{
+				EntitySelection::s_SelectionContext.clear();
+				EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, &submeshes[i], 0 });
+			}
+
+			bool submeshDeleted = false;
+			bool submeshCloned = false;
+
+			if (ImGui::BeginPopupContextItem())
+			{
+				if (ImGui::MenuItem("Delete Submesh"))
 				{
-					EntitySelection::s_SelectionContext.clear();
-					EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, &submeshes[i], 0 });
+					submeshDeleted = true;
 				}
 
-				bool submeshDeleted = false;
-				bool submeshCloned = false;
-
-				if (ImGui::BeginPopupContextItem())
+				if (ImGui::MenuItem("Clone Submesh"))
 				{
-					if (ImGui::MenuItem("Delete Submesh"))
-					{
-						submeshDeleted = true;
-					}
-
-					if (ImGui::MenuItem("Clone Submesh"))
-					{
-						submeshCloned = true;
-					}
-
-					ImGui::EndPopup();
+					submeshCloned = true;
 				}
 
-				if (opened) {
-					ImGui::Text("MeshName: ");
-					ImGui::SameLine();
-					ImGui::Text(submeshes[i].MeshName.c_str());
+				ImGui::EndPopup();
+			}
 
-					ImGui::Text("NodeName: ");
-					ImGui::SameLine();
-					ImGui::Text(submeshes[i].NodeName.c_str());
+			if (opened) {
+				ImGui::Text("MeshName: ");
+				ImGui::SameLine();
+				ImGui::Text(submeshes[i].MeshName.c_str());
 
-					ImGui::Text("MaterialIndex: ");
-					ImGui::SameLine();
-					ImGui::Text(std::to_string(submeshes[i].MaterialIndex).c_str());
+				ImGui::Text("NodeName: ");
+				ImGui::SameLine();
+				ImGui::Text(submeshes[i].NodeName.c_str());
 
-					// ...
-					ImGui::TreePop();
-				}
+				ImGui::Text("MaterialIndex: ");
+				ImGui::SameLine();
+				ImGui::Text(std::to_string(submeshes[i].MaterialIndex).c_str());
 
-				if (submeshDeleted && submeshSelected) {
-					mesh->DeleteSubmesh(submeshes[i]);
-					Log::GetLogger()->debug("SceneHierarchyPanel DeleteSubmesh('{0}')", submeshes[i].MeshName);
-				}
+				// ...
+				ImGui::TreePop();
+			}
 
-				if (submeshCloned && submeshSelected) {
-					mesh->CloneSubmesh(submeshes[i]);
-				}
+			if (submeshDeleted && submeshSelected) {
+				Log::GetLogger()->debug("SceneHierarchyPanel DeleteSubmesh('{0}')", submeshes[i].MeshName);
+				mesh->DeleteSubmesh(submeshes[i]);
+			}
+
+			if (submeshCloned && submeshSelected) {
+				mesh->CloneSubmesh(submeshes[i]);
 			}
 		}
 	}

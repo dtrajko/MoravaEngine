@@ -606,6 +606,9 @@
       <Filter>Shader</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="EnvMapMaterial.cpp">
+      <Filter>Material</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">

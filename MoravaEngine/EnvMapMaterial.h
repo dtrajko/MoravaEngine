@@ -17,6 +17,7 @@ class EnvMapMaterial
 public:
 	EnvMapMaterial() { m_Name = "Untitled"; };
 	EnvMapMaterial(std::string name = "Untitled") { m_Name = name; }
+	EnvMapMaterial(std::string name, EnvMapMaterial* other);
 	~EnvMapMaterial() = default;
 
 	inline AlbedoInput& GetAlbedoInput() { return m_AlbedoInput; }
