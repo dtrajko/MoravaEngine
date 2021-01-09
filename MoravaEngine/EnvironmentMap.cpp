@@ -305,12 +305,49 @@ void EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh submesh)
     }
 }
 
-void EnvironmentMap::RenameMaterial(EnvMapMaterial* envMapMaterial, std::string newName)
+void EnvironmentMap::RenameMaterial(EnvMapMaterial* envMapMaterial, const std::string newName)
 {
+    Log::GetLogger()->debug("EnvironmentMap::RenameMaterial from '{0}' to '{1}'", envMapMaterial->GetName(), newName);
+
+    std::string oldName = envMapMaterial->GetName();
+
     // TODO: Make sure that the new name is not already taken in s_EnvMapMaterials
+    if (s_EnvMapMaterials.find(newName) != s_EnvMapMaterials.end()) {
+        Log::GetLogger()->error("Material name '{0}' is already taken!", newName);
+    }
+
     // TODO: Rename object attribute
+    envMapMaterial->SetName(newName);
+
     // TODO: Rename in s_EnvMapMaterials
+    // auto nodeHandlerEMM = s_EnvMapMaterials.extract(oldName);
+    // nodeHandlerEMM.key() = newName;
+    for (auto emm_it = s_EnvMapMaterials.cbegin(); emm_it != s_EnvMapMaterials.cend();) {
+        if (emm_it->first == oldName) {
+            EnvMapMaterial* envMapMaterial = emm_it->second;
+            emm_it++; // emm_it = s_EnvMapMaterials.erase(emm_it++);
+            s_EnvMapMaterials.insert(std::make_pair(newName, envMapMaterial));
+            Log::GetLogger()->error("s_EnvMapMaterials: '{0}' => '{1}'", s_EnvMapMaterials.find(newName)->first, s_EnvMapMaterials.find(newName)->second->GetName());
+            break;
+        }
+        else {
+            ++emm_it;
+        }
+    }
+
     // TODO: Rename in s_SubmeshMaterials
+    for (auto sm_it = s_SubmeshMaterials.cbegin(); sm_it != s_SubmeshMaterials.cend(); sm_it++) {
+        if (sm_it->second == oldName) {
+            std::string key = sm_it->first;
+            sm_it = s_SubmeshMaterials.erase(sm_it++);
+            s_SubmeshMaterials.insert(std::make_pair(key, newName));
+            Log::GetLogger()->error("s_SubmeshMaterials: '{0}' => '{1}'", s_SubmeshMaterials.find(key)->first, s_SubmeshMaterials.find(key)->second);
+            break;
+        }
+        else {
+            ++sm_it;
+        }
+    }
 }
 
 void EnvironmentMap::ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop)

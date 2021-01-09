@@ -1,16 +1,18 @@
 #include "ImGuiWrapper.h"
 
 #include "Application.h"
+#include "EnvironmentMap.h"
 
 #include "../vendor/cross-platform/ImGuizmo/ImGuizmo.h"
 
 
-Window* ImGuiWrapper::m_Window;
-float ImGuiWrapper::m_Time;
+Window* ImGuiWrapper::s_Window;
+float ImGuiWrapper::s_Time;
+std::string  ImGuiWrapper::s_MaterialNameNew;
 
 void ImGuiWrapper::Init(Window* window)
 {
-	m_Window = window;
+	s_Window = window;
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -71,8 +73,8 @@ void ImGuiWrapper::Begin()
 	ImGuiIO& io = ImGui::GetIO();
 
 	float time = (float)glfwGetTime();
-	io.DeltaTime = m_Time > 0.0f ? (time - m_Time) : (1.0f / 60.0f);
-	m_Time = time;
+	io.DeltaTime = s_Time > 0.0f ? (time - s_Time) : (1.0f / 60.0f);
+	s_Time = time;
 
 	// ImGui Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
@@ -86,7 +88,7 @@ void ImGuiWrapper::End()
 {
 	// ImGui Rendering
 	ImGuiIO& io = ImGui::GetIO();
-	io.DisplaySize = ImVec2((float)m_Window->GetWidth(), (float)m_Window->GetHeight());
+	io.DisplaySize = ImVec2((float)s_Window->GetWidth(), (float)s_Window->GetHeight());
 
 	// Rendering
 	ImGui::Render();
@@ -224,6 +226,27 @@ void ImGuiWrapper::BeginPropertyGrid()
 
 void ImGuiWrapper::DrawMaterialUI(EnvMapMaterial* material, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture)
 {
+	// Rename material
+	std::string materialNameOld = material->GetName();
+
+	char buffer[256];
+	memset(buffer, 0, 256);
+	memcpy(buffer, material->GetName().c_str(), material->GetName().length());
+	if (ImGui::InputText("##MaterialName", buffer, 256))
+	{
+		s_MaterialNameNew = std::string(buffer);
+	}
+
+	ImGui::SameLine();
+
+	std::string buttonName = "Rename";
+	if (ImGui::Button(buttonName.c_str())) {
+		if (s_MaterialNameNew != materialNameOld) {
+			EnvironmentMap::RenameMaterial(material, s_MaterialNameNew);
+			s_MaterialNameNew = "";
+		}
+	}
+
 	// Tiling Factor
 	ImGui::SliderFloat("Tiling Factor", &material->GetTilingFactor(), 0.0f, 20.0f);
 

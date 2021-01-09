@@ -53,7 +53,9 @@ public:
 
 
 private:
-	static Window* m_Window;
-	static float m_Time;
+	static Window* s_Window;
+	static float s_Time;
+
+	static std::string s_MaterialNameNew;
 
 };
