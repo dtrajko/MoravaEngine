@@ -21,6 +21,8 @@ enum class SelectionMode
 	SubMesh = 2,
 };
 
+using SubmeshUUID = std::string;
+
 class EnvironmentMap
 {
 public:
@@ -119,10 +121,12 @@ public:
 
 	static TextureInfo s_TextureInfoDefault;
 	static std::map<std::string, TextureInfo> s_TextureInfo;
-	static std::map<std::string, EnvMapMaterial*> s_EnvMapMaterials;
 	static SelectionMode s_SelectionMode;
 	static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
-	static std::map<std::string, std::string> s_SubmeshMaterials; // Map to match submesh name with material name
+
+	static std::map<MaterialUUID, EnvMapMaterial*> s_EnvMapMaterials;
+	static std::map<SubmeshUUID, MaterialUUID> s_SubmeshMaterialUUIDs;
+	static SubmeshUUID GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh);
 
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
 	glm::mat4* m_RelativeTransform = nullptr;

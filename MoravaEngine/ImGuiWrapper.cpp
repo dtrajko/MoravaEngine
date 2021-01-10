@@ -226,6 +226,15 @@ void ImGuiWrapper::BeginPropertyGrid()
 
 void ImGuiWrapper::DrawMaterialUI(EnvMapMaterial* material, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture)
 {
+	// Display Material UUID
+	ImGui::Columns(2);
+	ImGui::SetColumnWidth(0, 70.0f);
+	ImGui::SetColumnWidth(1, 200.0f);
+	ImGui::Text("UUID");
+	ImGui::NextColumn();
+	ImGui::Text(material->GetUUID().c_str());
+	ImGui::Columns(1);
+
 	// Rename material
 	std::string materialNameOld = material->GetName();
 

@@ -1,9 +1,24 @@
 #include "EnvMapMaterial.h"
 
+#include "EnvironmentMap.h"
+#include "Util.h"
 
-EnvMapMaterial::EnvMapMaterial(std::string name, EnvMapMaterial* other)
+
+EnvMapMaterial::EnvMapMaterial()
+{
+	m_Name = EnvironmentMap::NewMaterialName();
+	m_UUID = NewMaterialUUID();
+}
+
+EnvMapMaterial::EnvMapMaterial(std::string name)
 {
 	m_Name = name;
+	m_UUID = NewMaterialUUID();
+}
+
+EnvMapMaterial::EnvMapMaterial(std::string name, EnvMapMaterial* other)
+	: EnvMapMaterial(name)
+{
 	m_AlbedoInput = other->m_AlbedoInput;
 	m_NormalInput = other->m_NormalInput;
 	m_MetalnessInput = other->m_MetalnessInput;
@@ -11,4 +26,9 @@ EnvMapMaterial::EnvMapMaterial(std::string name, EnvMapMaterial* other)
 	m_EmissiveInput = other->m_EmissiveInput;
 	m_AOInput = other->m_AOInput;
 	m_TilingFactor = other->m_TilingFactor;
+}
+
+MaterialUUID EnvMapMaterial::NewMaterialUUID()
+{
+	return Util::randomString(10);
 }

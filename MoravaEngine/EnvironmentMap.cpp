@@ -17,10 +17,11 @@
 
 TextureInfo EnvironmentMap::s_TextureInfoDefault;
 std::map<std::string, TextureInfo> EnvironmentMap::s_TextureInfo;
-std::map<std::string, EnvMapMaterial*> EnvironmentMap::s_EnvMapMaterials;
 SelectionMode EnvironmentMap::s_SelectionMode = SelectionMode::Entity;
 Hazel::Ref<Hazel::HazelTexture2D> EnvironmentMap::s_CheckerboardTexture;
-std::map<std::string, std::string> EnvironmentMap::s_SubmeshMaterials;
+
+std::map<MaterialUUID, EnvMapMaterial*> EnvironmentMap::s_EnvMapMaterials; // MaterialUUID, EnvMapMaterial*
+std::map<SubmeshUUID, MaterialUUID> EnvironmentMap::s_SubmeshMaterialUUIDs; // SubmeshUUID, MaterialUUID
 
 
 EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
@@ -232,16 +233,16 @@ void EnvironmentMap::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Haze
 
     for (Hazel::Submesh& submesh : submeshes)
     {
-        std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(mesh, submesh, entity, s_SubmeshMaterials);
+        std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(mesh, submesh, entity);
 
-        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials materialName = '{0}'", materialName);
+        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials materialUUID = '{0}'", materialUUID);
 
-        if (s_EnvMapMaterials.contains(materialName)) {
+        if (s_EnvMapMaterials.contains(materialUUID)) {
             continue;
         }
 
-        EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(materialName);
-        s_EnvMapMaterials.insert(std::make_pair(materialName, envMapMaterial));
+        EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(materialUUID);
+        s_EnvMapMaterials.insert(std::make_pair(materialUUID, envMapMaterial));
     }
 
     //  // If no submeshes, add a default material for entity
@@ -253,7 +254,7 @@ void EnvironmentMap::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Haze
 
     for (auto& material : s_EnvMapMaterials)
     {
-        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials material name: '{0}'", material.first);
+        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials material name: '{0}' UUID: '{1}'", material.second->GetName(), material.first);
     }
 }
 
@@ -270,7 +271,7 @@ void EnvironmentMap::AddMaterialFromComponent(Hazel::Entity entity)
 
             if (!s_EnvMapMaterials.contains(material->GetName()))
             {
-                s_EnvMapMaterials.insert(std::make_pair(material->GetName(), material));
+                s_EnvMapMaterials.insert(std::make_pair(material->GetUUID(), material));
             }
         }
     }
@@ -310,42 +311,28 @@ void EnvironmentMap::RenameMaterial(EnvMapMaterial* envMapMaterial, const std::s
     Log::GetLogger()->debug("EnvironmentMap::RenameMaterial from '{0}' to '{1}'", envMapMaterial->GetName(), newName);
 
     std::string oldName = envMapMaterial->GetName();
+    MaterialUUID materialUUID = envMapMaterial->GetUUID();
 
-    // TODO: Make sure that the new name is not already taken in s_EnvMapMaterials
-    if (s_EnvMapMaterials.find(newName) != s_EnvMapMaterials.end()) {
-        Log::GetLogger()->error("Material name '{0}' is already taken!", newName);
+    // TODO: Make sure that the new material name is not already taken
+    for (auto emm_it = s_EnvMapMaterials.cbegin(); emm_it != s_EnvMapMaterials.cend(); emm_it++) {
+        if (emm_it->second->GetName() == newName) {
+            Log::GetLogger()->error("Material name is already taken [Name: '{0}', UUID: '{1}']!", newName, emm_it->second->GetUUID());
+            return;
+        }
     }
 
     // TODO: Rename object attribute
     envMapMaterial->SetName(newName);
 
     // TODO: Rename in s_EnvMapMaterials
-    // auto nodeHandlerEMM = s_EnvMapMaterials.extract(oldName);
-    // nodeHandlerEMM.key() = newName;
     for (auto emm_it = s_EnvMapMaterials.cbegin(); emm_it != s_EnvMapMaterials.cend();) {
-        if (emm_it->first == oldName) {
-            EnvMapMaterial* envMapMaterial = emm_it->second;
-            emm_it++; // emm_it = s_EnvMapMaterials.erase(emm_it++);
-            s_EnvMapMaterials.insert(std::make_pair(newName, envMapMaterial));
-            Log::GetLogger()->error("s_EnvMapMaterials: '{0}' => '{1}'", s_EnvMapMaterials.find(newName)->first, s_EnvMapMaterials.find(newName)->second->GetName());
+        if (emm_it->second->GetName() == oldName) {
+            emm_it->second->SetName(newName);
+            Log::GetLogger()->error("s_EnvMapMaterials: '{0}' => '{1}'", oldName, s_EnvMapMaterials.find(materialUUID)->second->GetName());
             break;
         }
         else {
             ++emm_it;
-        }
-    }
-
-    // TODO: Rename in s_SubmeshMaterials
-    for (auto sm_it = s_SubmeshMaterials.cbegin(); sm_it != s_SubmeshMaterials.cend(); sm_it++) {
-        if (sm_it->second == oldName) {
-            std::string key = sm_it->first;
-            sm_it = s_SubmeshMaterials.erase(sm_it++);
-            s_SubmeshMaterials.insert(std::make_pair(key, newName));
-            Log::GetLogger()->error("s_SubmeshMaterials: '{0}' => '{1}'", s_SubmeshMaterials.find(key)->first, s_SubmeshMaterials.find(key)->second);
-            break;
-        }
-        else {
-            ++sm_it;
         }
     }
 }
@@ -1228,7 +1215,8 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
         for (auto material_it = s_EnvMapMaterials.cbegin(); material_it != s_EnvMapMaterials.cend();)
         {
             EnvMapMaterial* material = material_it->second;
-            std::string materialName = material_it->first;
+            std::string materialName = material->GetName();
+            MaterialUUID materialUUID = material->GetUUID();
 
             // Material section
             ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -1260,9 +1248,9 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             }
 
             if (materialClone) {
-                auto envMapMaterialSrc = s_EnvMapMaterials.at(materialName);
+                auto envMapMaterialSrc = s_EnvMapMaterials.at(materialUUID);
                 EnvMapMaterial* envMapMaterialDst = new EnvMapMaterial(NewMaterialName(), envMapMaterialSrc);
-                s_EnvMapMaterials.insert(std::make_pair(envMapMaterialDst->GetName(), envMapMaterialDst));
+                s_EnvMapMaterials.insert(std::make_pair(envMapMaterialDst->GetUUID(), envMapMaterialDst));
             }
 
             if (materialDelete) {
@@ -1281,7 +1269,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
         {
             std::string materialName = NewMaterialName();
             EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(materialName);
-            s_EnvMapMaterials.insert(std::make_pair(materialName, envMapMaterial));
+            s_EnvMapMaterials.insert(std::make_pair(envMapMaterial->GetUUID(), envMapMaterial));
         }
         ImGui::EndPopup();
     }
@@ -1333,13 +1321,17 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
 
         std::string entityTag = "N/A";
         std::string meshName = "N/A";
+        SubmeshUUID submeshUUID = "N/A";
+        Hazel::Entity* entity = nullptr;
 
         if (EntitySelection::s_SelectionContext.size())
         {
             SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
 
+            entity = &selectedSubmesh.Entity;
             entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponent>().Tag;
             meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
+            submeshUUID = GetSubmeshUUID(entity, selectedSubmesh.Mesh);
         }
 
         ImGui::Text("Selected Entity: ");
@@ -1354,31 +1346,46 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
         std::vector<std::string> materialNameStrings;
         int index = 0;
         for (auto& material : s_EnvMapMaterials) {
-            materialNameStrings.push_back(material.first.c_str());
+            materialNameStrings.push_back(material.second->GetName());
         }
 
         std::string submeshMaterialName = materialNameStrings.size() ? materialNameStrings[0] : "N/A";
-        std::string submeshMatKey = entityTag + "." + meshName;
-        if (s_SubmeshMaterials.contains(submeshMatKey)) {
-            submeshMaterialName = s_SubmeshMaterials.at(submeshMatKey);
+
+        MaterialUUID materialUUID;
+        if (s_SubmeshMaterialUUIDs.contains(submeshUUID)) {
+            materialUUID = s_SubmeshMaterialUUIDs.at(submeshUUID);
         }
         int selectedMaterial = -1;
+
         if (ImGui::BeginCombo("Material", submeshMaterialName.c_str()))
         {
-            for (size_t type = 0; type < s_EnvMapMaterials.size(); type++)
+            size_t emm_index = 0;
+            for (auto emm_it = s_EnvMapMaterials.begin(); emm_it != s_EnvMapMaterials.end(); emm_it++)
             {
-                bool is_selected = (submeshMaterialName == materialNameStrings[type]);
-                if (ImGui::Selectable(materialNameStrings.at(type).c_str(), is_selected))
+                bool is_selected = (submeshMaterialName == materialNameStrings[emm_index]);
+                if (ImGui::Selectable(materialNameStrings.at(emm_index).c_str(), is_selected))
                 {
-                    submeshMaterialName = materialNameStrings[type];
-                    if (meshName != "N/A" && submeshMaterialName != "N/A") {
-                        s_SubmeshMaterials.erase(submeshMatKey);
-                        s_SubmeshMaterials.insert(std::make_pair(submeshMatKey, submeshMaterialName));
+                    submeshMaterialName = materialNameStrings[emm_index];
+                    materialUUID = emm_it->second->GetUUID();
+                    if (meshName != "N/A" && submeshMaterialName != "N/A" && submeshUUID != "N/A")
+                    {
+                        auto sm_it = s_SubmeshMaterialUUIDs.find(submeshUUID);
+                        if (sm_it != s_SubmeshMaterialUUIDs.end()) {
+                            sm_it->second = materialUUID;
+                            Log::GetLogger()->debug("s_SubmeshMaterialUUIDs UPDATE [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
+                                submeshUUID, materialUUID, s_SubmeshMaterialUUIDs.size());
+                        }
+                        else {
+                            s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));
+                            Log::GetLogger()->debug("s_SubmeshMaterialUUIDs INSERT [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
+                                submeshUUID, materialUUID, s_SubmeshMaterialUUIDs.size());
+                        }
                     }
                 }
                 if (is_selected) {
                     ImGui::SetItemDefaultFocus();
                 }
+                emm_index++;
             }
             ImGui::EndCombo();
         }
@@ -1490,6 +1497,13 @@ void EnvironmentMap::RenderHazelGrid()
 
     RendererBasic::EnableTransparency();
     RendererBasic::EnableMSAA();
+}
+
+SubmeshUUID EnvironmentMap::GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh)
+{
+    SubmeshUUID submeshUUID = "E_" + std::to_string(entity->GetHandle()) + "_S_" + submesh->MeshName;
+    // Log::GetLogger()->debug("EnvironmentMap::GetSubmeshUUID: '{0}'", submeshUUID);
+    return submeshUUID;
 }
 
 void EnvironmentMap::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer)
@@ -1765,15 +1779,15 @@ void EnvironmentMap::GeometryPassTemporary()
                 m_ShaderHazelPBR->Bind();
                 {
                     EnvMapMaterial* envMapMaterial = nullptr;
-                    std::string materialName;
+                    std::string materialUUID;
 
                     for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
                     {
-                        materialName = Hazel::HazelMesh::GetSubmeshMaterialName(meshComponent.Mesh.Raw(), submesh, entity, s_SubmeshMaterials);
+                        materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, entity);
 
                         // load submesh materials for each specific submesh from the s_EnvMapMaterials list
-                        if (s_EnvMapMaterials.contains(materialName)) {
-                            envMapMaterial = s_EnvMapMaterials.at(materialName);
+                        if (s_EnvMapMaterials.contains(materialUUID)) {
+                            envMapMaterial = s_EnvMapMaterials.at(materialUUID);
                             UpdateShaderPBRUniforms(m_ShaderHazelPBR, envMapMaterial);
                         }
 

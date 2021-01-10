@@ -808,10 +808,6 @@ namespace Hazel
 					EnvironmentMap::AddMaterialFromComponent(entity);
 				}
 
-				UI::BeginPropertyGrid();
-				UI::Property("Name", mc.Material->GetName());
-				UI::EndPropertyGrid();
-
 				ImGuiWrapper::DrawMaterialUI(mc.Material, EnvironmentMap::s_CheckerboardTexture);
 			});
 

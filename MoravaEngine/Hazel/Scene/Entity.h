@@ -71,6 +71,8 @@ namespace Hazel {
 
 		UUID GetSceneUUID();
 
+		inline uint32_t GetHandle() { return (uint32_t)m_EntityHandle; }
+
 	private:
 		Entity(const std::string& name);
 

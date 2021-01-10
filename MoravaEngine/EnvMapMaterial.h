@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 
 
+using MaterialUUID = std::string;
+
 class EnvMapMaterial
 {
 	struct AlbedoInput;
@@ -15,8 +17,8 @@ class EnvMapMaterial
 	struct AOInput;
 
 public:
-	EnvMapMaterial() { m_Name = "Untitled"; };
-	EnvMapMaterial(std::string name = "Untitled") { m_Name = name; }
+	EnvMapMaterial();
+	EnvMapMaterial(std::string name = "Untitled");
 	EnvMapMaterial(std::string name, EnvMapMaterial* other);
 	~EnvMapMaterial() = default;
 
@@ -31,6 +33,10 @@ public:
 
 	inline void SetName(std::string name) { m_Name = name; };
 	inline std::string GetName() { return m_Name; };
+
+	inline MaterialUUID GetUUID() { return m_UUID; };
+
+	static MaterialUUID NewMaterialUUID();
 
 private:
 
@@ -86,5 +92,7 @@ private:
 
 	float m_TilingFactor = 1.0f;
 	std::string m_Name = "Untitled";
+
+	MaterialUUID m_UUID;
 
 };

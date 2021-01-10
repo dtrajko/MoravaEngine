@@ -962,24 +962,24 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	std::string HazelMesh::GetSubmeshMaterialName(Ref<HazelMesh> mesh, Hazel::Submesh& submesh, Entity entity, const std::map<std::string, std::string>& submeshMaterials)
+	MaterialUUID HazelMesh::GetSubmeshMaterialUUID(Ref<HazelMesh> mesh, Hazel::Submesh& submesh, Entity entity)
 	{
-		std::string materialName = "";
+		MaterialUUID materialUUID = "";
 
-		std::string submeshMatKey = entity.GetComponent<TagComponent>().Tag + "." + submesh.MeshName;
+		std::string submeshUUID = EnvironmentMap::GetSubmeshUUID(&entity, &submesh);
 
-		if (submeshMaterials.contains(submeshMatKey)) {
-			materialName = submeshMaterials.at(submeshMatKey);
+		if (EnvironmentMap::s_SubmeshMaterialUUIDs.contains(submeshUUID)) {
+			materialUUID = EnvironmentMap::s_SubmeshMaterialUUIDs.at(submeshUUID);
 		}
 		else if (entity && entity.HasComponent<Hazel::MaterialComponent>()) {
-			materialName = entity.GetComponent<Hazel::MaterialComponent>().Material->GetName();
+			materialUUID = entity.GetComponent<Hazel::MaterialComponent>().Material->GetUUID();
 		}
 		else {
 			std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));
-			materialName = meshName + "_" + std::to_string(submesh.MaterialIndex);
+			materialUUID = EnvMapMaterial::NewMaterialUUID();
 		}
 
-		return materialName;
+		return materialUUID;
 	}
 
 	void HazelMesh::DeleteSubmesh(Submesh submesh)
@@ -1089,11 +1089,11 @@ namespace Hazel {
 				m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
 			}
 
-			std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(this, submesh, Entity{}, std::map<std::string, std::string>());
+			std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(this, submesh, Entity{});
 
-			if (envMapMaterials.contains(materialName))
+			if (envMapMaterials.contains(materialUUID))
 			{
-				envMapMaterial = envMapMaterials.at(materialName);
+				envMapMaterial = envMapMaterials.at(materialUUID);
 				envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);
 				envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
 				envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);
@@ -1156,11 +1156,11 @@ namespace Hazel {
 			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
 		}
 
-		std::string materialName = Hazel::HazelMesh::GetSubmeshMaterialName(parentMesh, *this, entity, EnvironmentMap::s_SubmeshMaterials);
+		std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(parentMesh, *this, entity);
 
-		if (envMapMaterials.contains(materialName))
+		if (envMapMaterials.contains(materialUUID))
 		{
-			envMapMaterial = envMapMaterials.at(materialName);
+			envMapMaterial = envMapMaterials.at(materialUUID);
 			envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);
 			envMapMaterial->GetNormalInput().TextureMap->Bind(samplerSlot + 1);
 			envMapMaterial->GetMetalnessInput().TextureMap->Bind(samplerSlot + 2);
