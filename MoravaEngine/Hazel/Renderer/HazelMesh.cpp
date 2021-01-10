@@ -971,7 +971,7 @@ namespace Hazel {
 		if (EnvironmentMap::s_SubmeshMaterialUUIDs.contains(submeshUUID)) {
 			materialUUID = EnvironmentMap::s_SubmeshMaterialUUIDs.at(submeshUUID);
 		}
-		else if (entity && entity.HasComponent<Hazel::MaterialComponent>()) {
+		else if (entity && entity.HasComponent<Hazel::MaterialComponent>() && entity.GetComponent<Hazel::MaterialComponent>().Material) {
 			materialUUID = entity.GetComponent<Hazel::MaterialComponent>().Material->GetUUID();
 		}
 		else {

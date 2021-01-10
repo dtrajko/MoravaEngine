@@ -263,7 +263,7 @@ int main()
 		}
 
 		// Toggle wireframe mode
-		if (Input::IsKeyPressed(Key::R) && !Input::IsKeyPressed(Key::LeftControl))
+		if (Input::IsKeyPressed(Key::R) && Input::IsKeyPressed(Key::LeftShift) && !Input::IsKeyPressed(Key::LeftControl))
 		{
 			if (Timer::Get()->GetCurrentTimestamp() - keyPressCooldown.lastTime > keyPressCooldown.cooldown)
 			{

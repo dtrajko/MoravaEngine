@@ -1397,6 +1397,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
         ImGui::Text("* Left ALT + Left Mouse Button - Pan");
         ImGui::Text("* Left ALT + Middle Mouse Button - Rotate/Orbit");
         ImGui::Text("* Left ALT + Right Mouse Button - Zoom");
+        ImGui::Text("* Left SHIFT + R - Toggle Wireframe");
     }
     ImGui::End();
 

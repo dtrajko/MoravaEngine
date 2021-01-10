@@ -154,6 +154,8 @@ namespace Hazel
 
 			SetSelected(entity);
 			m_Context->OnEntitySelected(entity);
+
+			EnvironmentMap::s_SelectionMode = SelectionMode::Entity;
 		}
 
 		bool entityDeleted = false;
@@ -225,6 +227,8 @@ namespace Hazel
 			{
 				EntitySelection::s_SelectionContext.clear();
 				EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, &submeshes[i], 0 });
+
+				EnvironmentMap::s_SelectionMode = SelectionMode::SubMesh;
 			}
 
 			bool submeshDeleted = false;
@@ -372,6 +376,7 @@ namespace Hazel
 
 			if (removeComponent) {
 				entity.RemoveComponent<T>();
+				EntitySelection::s_SelectionContext = {};
 			}
 		}
 	}
