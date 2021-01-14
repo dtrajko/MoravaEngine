@@ -38,6 +38,7 @@ Material::Material(TextureInfo textureInfo, float specularIntensity, float shini
 	m_TextureNormal    = TextureLoader::Get()->GetTexture(textureInfo.normal.c_str(), false, false);
 	m_TextureMetallic  = TextureLoader::Get()->GetTexture(textureInfo.metallic.c_str(), false, false);
 	m_TextureRoughness = TextureLoader::Get()->GetTexture(textureInfo.roughness.c_str(), false, false);
+	m_TextureEmissive  = TextureLoader::Get()->GetTexture(textureInfo.emissive.c_str(), false, false);
 	m_TextureAO        = TextureLoader::Get()->GetTexture(textureInfo.ao.c_str(), false, false);
 }
 

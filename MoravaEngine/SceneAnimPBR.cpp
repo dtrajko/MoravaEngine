@@ -120,12 +120,13 @@ SceneAnimPBR::SceneAnimPBR()
     m_SamplerSlots.insert(std::make_pair("normal",     2)); // uniform sampler2D u_NormalTexture
     m_SamplerSlots.insert(std::make_pair("metalness",  3)); // uniform sampler2D u_MetalnessTexture
     m_SamplerSlots.insert(std::make_pair("roughness",  4)); // uniform sampler2D u_RoughnessTexture
-    m_SamplerSlots.insert(std::make_pair("ao",         5)); // uniform sampler2D u_AOTexture
+    m_SamplerSlots.insert(std::make_pair("emissive",   5)); // uniform sampler2D u_Emissive
+    m_SamplerSlots.insert(std::make_pair("ao",         6)); // uniform sampler2D u_AOTexture
     // Environment maps
-    m_SamplerSlots.insert(std::make_pair("irradiance", 6)); // uniform samplerCube u_IrradianceMap
-    m_SamplerSlots.insert(std::make_pair("prefilter",  7)); // uniform samplerCube u_PrefilterMap
+    m_SamplerSlots.insert(std::make_pair("irradiance", 7)); // uniform samplerCube u_IrradianceMap
+    m_SamplerSlots.insert(std::make_pair("prefilter",  8)); // uniform samplerCube u_PrefilterMap
     // BRDF LUT
-    m_SamplerSlots.insert(std::make_pair("BRDF_LUT",   8)); // uniform sampler2D u_BRDFLUT
+    m_SamplerSlots.insert(std::make_pair("BRDF_LUT",   9)); // uniform sampler2D u_BRDFLUT
 
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
     m_MaterialWorkflowPBR->m_CaptureSize       = 512; // 512
@@ -283,6 +284,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoM1911.normal    = "Models/M1911/m1911_normal.png";
     textureInfoM1911.metallic  = "Models/M1911/m1911_metalness.png";
     textureInfoM1911.roughness = "Models/M1911/m1911_roughness.png";
+    textureInfoM1911.emissive  = "Textures/plain.png";
     textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
 
     m_BaseMaterial_M1911 = new Material(textureInfoM1911, materialSpecular, materialShininess);
@@ -307,6 +309,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoBobLamp.normal    = "Textures/PBR/non_reflective/normal.png";
     textureInfoBobLamp.metallic  = "Textures/PBR/non_reflective/metallic.png";
     textureInfoBobLamp.roughness = "Textures/PBR/non_reflective/roughness.png";
+    textureInfoBobLamp.emissive  = "Textures/plain.png";
     textureInfoBobLamp.ao        = "Textures/PBR/non_reflective/ao.png";
 
     m_BaseMaterial_BobLamp = new Material(textureInfoBobLamp, materialSpecular, materialShininess);
@@ -331,6 +334,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoAnimBoy.normal    = "Textures/PBR/non_reflective/normal.png";
     textureInfoAnimBoy.metallic  = "Textures/PBR/non_reflective/metallic.png";
     textureInfoAnimBoy.roughness = "Textures/PBR/non_reflective/roughness.png";
+    textureInfoAnimBoy.emissive  = "Textures/plain.png";
     textureInfoAnimBoy.ao        = "Textures/PBR/non_reflective/ao.png";
 
     m_BaseMaterial_AnimBoy = new Material(textureInfoAnimBoy, materialSpecular, materialShininess);
@@ -999,6 +1003,7 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
     m_ShaderHybridAnimPBR->setInt("u_NormalTexture",    m_SamplerSlots["normal"]);
     m_ShaderHybridAnimPBR->setInt("u_MetalnessTexture", m_SamplerSlots["metalness"]);
     m_ShaderHybridAnimPBR->setInt("u_RoughnessTexture", m_SamplerSlots["roughness"]);
+    m_ShaderHybridAnimPBR->setInt("u_EmissiveTexture",  m_SamplerSlots["emissive"]);
     m_ShaderHybridAnimPBR->setInt("u_AOTexture",        m_SamplerSlots["ao"]);
     m_ShaderHybridAnimPBR->setInt("u_EnvRadianceTex",   m_SamplerSlots["irradiance"]);
     m_ShaderHybridAnimPBR->setInt("u_PrefilterMap",     m_SamplerSlots["prefilter"]);
@@ -1022,6 +1027,7 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
         m_BaseMaterial_BobLamp->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
         m_BaseMaterial_BobLamp->GetTextureMetallic()->Bind(m_SamplerSlots["metalness"]);
         m_BaseMaterial_BobLamp->GetTextureRoughness()->Bind(m_SamplerSlots["roughness"]);
+        m_BaseMaterial_BobLamp->GetTextureEmissive()->Bind(m_SamplerSlots["emissive"]);
         m_BaseMaterial_BobLamp->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
  
         m_MeshAnimPBR_BobLamp->m_VertexArray->Bind();

@@ -1102,9 +1102,12 @@ namespace Hazel {
 				envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 5);
 			}
 
-			auto material = m_Materials[submesh.MaterialIndex];
-			if (material->GetFlag(MaterialFlag::DepthTest)) {
-				glEnable(GL_DEPTH_TEST);
+			Material* material = nullptr;
+			if (m_Materials.size()) {
+				material = m_Materials[submesh.MaterialIndex];
+				if (material && material->GetFlag(MaterialFlag::DepthTest)) {
+					glEnable(GL_DEPTH_TEST);
+				}
 			} else {
 				glDisable(GL_DEPTH_TEST);
 			}
