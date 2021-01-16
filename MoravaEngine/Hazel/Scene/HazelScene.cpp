@@ -37,6 +37,9 @@ namespace Hazel {
 	public:
 		virtual void BeginContact(b2Contact* contact) override
 		{
+			contact->GetFixtureA()->GetBody()->GetUserData();
+			contact->GetFixtureB()->GetBody()->GetUserData();
+
 			//	Entity& a = *(Entity*)contact->GetFixtureA()->GetBody()->GetUserData();
 			//	Entity& b = *(Entity*)contact->GetFixtureB()->GetBody()->GetUserData();
 			//	
@@ -96,11 +99,32 @@ namespace Hazel {
 		m_Registry.emplace<SceneComponent>(m_SceneEntity, m_SceneID);
 
 		// TODO: Obviously not necessary in all cases
-		m_Registry.emplace<Box2DWorldComponent>(m_SceneEntity, std::make_unique<b2World>(b2Vec2{ 0.0f, -9.81f }));
+		Box2DWorldComponent& b2dWorld = m_Registry.emplace<Box2DWorldComponent>(m_SceneEntity, std::make_unique<b2World>(b2Vec2{ 0.0f, -9.81f }));
+		b2dWorld.World->SetContactListener(&s_Box2DContactListener);
 
 		s_ActiveScenes[m_SceneID] = this;
 
 		Init();
+	}
+
+	HazelScene::~HazelScene()
+	{
+		m_Registry.clear();
+		s_ActiveScenes.erase(m_SceneID);
+		ScriptEngine::OnSceneDestruct(m_SceneID);
+
+		// Destroy scripts
+		{
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+				{
+					// TODO: Move to Scene::OnSceneStop
+					if (nsc.Instance)
+					{
+						nsc.Instance->OnDestroy();
+						nsc.DestroyScript(&nsc);
+					}
+				});
+		}
 	}
 
 	void HazelScene::Init()
@@ -577,26 +601,6 @@ namespace Hazel {
 			if (!cameraComponent.FixedAspectRatio) {
 				cameraComponent.Camera.SetViewportSize((float)width, (float)height);
 			}
-		}
-	}
-
-	HazelScene::~HazelScene()
-	{
-		m_Registry.clear();
-		s_ActiveScenes.erase(m_SceneID);
-		ScriptEngine::OnSceneDestruct(m_SceneID);
-
-		// Destroy scripts
-		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-			{
-				// TODO: Move to Scene::OnSceneStop
-				if (nsc.Instance)
-				{
-					nsc.Instance->OnDestroy();
-					nsc.DestroyScript(&nsc);
-				}
-			});
 		}
 	}
 
