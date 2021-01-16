@@ -31,6 +31,45 @@ namespace Hazel {
 		UUID SceneID;
 	};
 
+	// TODO: move to physics file
+	class ContactListener : public b2ContactListener
+	{
+	public:
+		virtual void BeginContact(b2Contact* contact) override
+		{
+			//	Entity& a = *(Entity*)contact->GetFixtureA()->GetBody()->GetUserData();
+			//	Entity& b = *(Entity*)contact->GetFixtureB()->GetBody()->GetUserData();
+			//	
+			//	// TODO: improve these if checks
+			//	if (a.HasComponent<ScriptComponent>() && ScriptEngine::ModuleExists(a.GetComponent<ScriptComponent>().ModuleName))
+			//	{
+			//		ScriptEngine::OnCollision2DBegin(a);
+			//	}
+			//	
+			//	if (b.HasComponent<ScriptComponent>() && ScriptEngine::ModuleExists(b.GetComponent<ScriptComponent>().ModuleName)) {
+			//		ScriptEngine::OnCollision2DBegin(b);
+			//	}
+		}
+
+		virtual void EndContact(b2Contact* contact) override
+		{
+		}
+
+		virtual void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override
+		{
+			B2_NOT_USED(contact);
+			B2_NOT_USED(oldManifold);
+		}
+
+		virtual void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) override
+		{
+			B2_NOT_USED(contact);
+			B2_NOT_USED(impulse);
+		}
+	};
+
+	static ContactListener s_Box2DContactListener;
+
 	struct Box2DWorldComponent
 	{
 		std::unique_ptr<b2World> World;

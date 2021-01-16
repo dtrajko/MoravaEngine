@@ -100,7 +100,7 @@ enum class SceneName
 	HazelEnvMap,
 };
 
-SceneName currentScene = SceneName::AnimPBR;
+SceneName currentScene = SceneName::HazelEnvMap;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
