@@ -125,6 +125,8 @@ namespace Hazel {
 
 		entt::entity m_SelectedEntity;
 
+		Entity* m_PhysicsBodyEntityBuffer = nullptr;
+
 		float m_SkyboxLOD = 1.0f;
 		bool m_IsPlaying = false;
 

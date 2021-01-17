@@ -37,21 +37,18 @@ namespace Hazel {
 	public:
 		virtual void BeginContact(b2Contact* contact) override
 		{
-			contact->GetFixtureA()->GetBody()->GetUserData();
-			contact->GetFixtureB()->GetBody()->GetUserData();
+			Entity& a = *(Entity*)contact->GetFixtureA()->GetBody()->GetUserData().pointer;
+			Entity& b = *(Entity*)contact->GetFixtureB()->GetBody()->GetUserData().pointer;
 
-			//	Entity& a = *(Entity*)contact->GetFixtureA()->GetBody()->GetUserData();
-			//	Entity& b = *(Entity*)contact->GetFixtureB()->GetBody()->GetUserData();
-			//	
-			//	// TODO: improve these if checks
-			//	if (a.HasComponent<ScriptComponent>() && ScriptEngine::ModuleExists(a.GetComponent<ScriptComponent>().ModuleName))
-			//	{
-			//		ScriptEngine::OnCollision2DBegin(a);
-			//	}
-			//	
-			//	if (b.HasComponent<ScriptComponent>() && ScriptEngine::ModuleExists(b.GetComponent<ScriptComponent>().ModuleName)) {
-			//		ScriptEngine::OnCollision2DBegin(b);
-			//	}
+			// TODO: improve these if checks
+			if (a.HasComponent<ScriptComponent>() && ScriptEngine::ModuleExists(a.GetComponent<ScriptComponent>().ModuleName))
+			{
+				ScriptEngine::OnCollision2DBegin(a);
+			}
+
+			if (b.HasComponent<ScriptComponent>() && ScriptEngine::ModuleExists(b.GetComponent<ScriptComponent>().ModuleName)) {
+				ScriptEngine::OnCollision2DBegin(b);
+			}
 		}
 
 		virtual void EndContact(b2Contact* contact) override
@@ -499,9 +496,12 @@ namespace Hazel {
 		auto& world = m_Registry.get<Box2DWorldComponent>(sceneView.front()).World;
 		{
 			auto view = m_Registry.view<RigidBody2DComponent>();
+			m_PhysicsBodyEntityBuffer = new Entity[view.size()];
+			uint32_t physicsBodyEntityBufferIndex = 0;
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
+				UUID entityID = e.GetComponent<IDComponent>().ID;
 				auto& transform = e.Transform();
 				auto& rigidBody2D = m_Registry.get<RigidBody2DComponent>(entity);
 
@@ -520,7 +520,13 @@ namespace Hazel {
 				auto [translation, rotationQuat, scale] = Math::GetTransformDecomposition(transform);
 				glm::vec3 rotation = glm::eulerAngles(rotationQuat);
 				bodyDef.angle = rotation.z;
-				rigidBody2D.RuntimeBody = world->CreateBody(&bodyDef);
+
+				b2Body* body = world->CreateBody(&bodyDef);
+				body->SetFixedRotation(rigidBody2D.FixedRotation);
+				Entity* entityStorage = &m_PhysicsBodyEntityBuffer[physicsBodyEntityBufferIndex++];
+				*entityStorage = e;
+				body->GetUserData().pointer = (uintptr_t)entityStorage;
+				rigidBody2D.RuntimeBody = body;
 			}
 		}
 
@@ -583,9 +589,10 @@ namespace Hazel {
 
 	void HazelScene::OnRuntimeStop()
 	{
-		s_ScriptEntityIDMap = &s_EntityIDMap;
-
+		delete[] m_PhysicsBodyEntityBuffer;
 		m_IsPlaying = false;
+
+		s_ScriptEntityIDMap = &s_EntityIDMap;
 	}
 
 	void HazelScene::OnViewportResize(uint32_t width, uint32_t height)
