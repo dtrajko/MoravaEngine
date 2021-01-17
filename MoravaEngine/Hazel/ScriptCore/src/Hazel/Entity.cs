@@ -76,14 +76,16 @@ namespace Hazel
 
         private void OnCollision2DBegin(float data)
         {
-            foreach (var callback in m_Collision2DBeginCallbacks)
+            foreach (var callback in m_Collision2DBeginCallbacks) { 
                 callback.Invoke(data);
+            }
         }
 
         private void OnCollision2DEnd(float data)
         {
-            foreach (var callback in m_Collision2DEndCallbacks)
+            foreach (var callback in m_Collision2DEndCallbacks) { 
                 callback.Invoke(data);
+            }
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]

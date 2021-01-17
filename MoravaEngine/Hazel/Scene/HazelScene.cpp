@@ -53,6 +53,17 @@ namespace Hazel {
 
 		virtual void EndContact(b2Contact* contact) override
 		{
+			Entity& a = *(Entity*)contact->GetFixtureA()->GetBody()->GetUserData().pointer;
+			Entity& b = *(Entity*)contact->GetFixtureB()->GetBody()->GetUserData().pointer;
+
+			// TODO: improve these if checks
+			if (a.HasComponent<ScriptComponent>() && ScriptEngine::ModuleExists(a.GetComponent<ScriptComponent>().ModuleName)) {
+				ScriptEngine::OnCollision2DEnd(a);
+			}
+
+			if (b.HasComponent<ScriptComponent>() && ScriptEngine::ModuleExists(b.GetComponent<ScriptComponent>().ModuleName)) {
+				ScriptEngine::OnCollision2DEnd(b);
+			}
 		}
 
 		virtual void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override
@@ -132,6 +143,32 @@ namespace Hazel {
 	// Merge OnUpdate/Render into one function?
 	void HazelScene::OnUpdate(float ts)
 	{
+		// Box2D physics
+		auto sceneView = m_Registry.view<Box2DWorldComponent>();
+		auto& box2DWorld = m_Registry.get<Box2DWorldComponent>(sceneView.front()).World;
+		int32_t velocityIterations = 6;
+		int32_t positionIterations = 2;
+		box2DWorld->Step(ts, velocityIterations, positionIterations);
+
+		{
+			auto view = m_Registry.view<RigidBody2DComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto& transform = e.Transform();
+				auto& rb2d = e.GetComponent<RigidBody2DComponent>();
+				b2Body* body = static_cast<b2Body*>(rb2d.RuntimeBody);
+
+				auto& position = body->GetPosition();
+				auto [translation, rotationQuat, scale] = Math::GetTransformDecomposition(transform);
+				glm::vec3 rotation = glm::eulerAngles(rotationQuat);
+
+				transform = glm::translate(glm::mat4(1.0f), { position.x, position.y, transform[3].z }) *
+					glm::toMat4(glm::quat({ rotation.x, rotation.y, body->GetAngle() })) *
+					glm::scale(glm::mat4(1.0f), scale);
+			}
+		}
+
 		//	ECS Update all entities
 		auto view = m_Registry.view<ScriptComponent>();
 		for (auto entity : view)

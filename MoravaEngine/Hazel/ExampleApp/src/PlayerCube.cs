@@ -36,13 +36,16 @@ namespace Example
 
         void OnPlayerCollisionBegin(float value)
         {
+            m_MeshMaterial.Set("u_AlbedoColor", new Vector(1.0f, 0.0f, 0.0f));
             m_CollisionCounter++;
         }
 
         void OnPlayerCollisionEnd(float value)
         {
+            m_MeshMaterial.Set("u_AlbedoColor", new Vector(0.8f, 0.8f, 0.8f));
             m_CollisionCounter--;
         }
+
         void OnUpdate(float ts)
         {
             float movementForce = HorizontalForce;

@@ -666,6 +666,36 @@ SET(box2d_SRCS
 	../vendor/box2d/src/rope/b2_rope.cpp
 )
 
+SET(Hazel-ScriptCore_SRCS
+	../MoravaEngine/Hazel/ExampleApp/Properties/AssemblyInfo.cs
+	../MoravaEngine/Hazel/ExampleApp/src/BasicController.cs
+	../MoravaEngine/Hazel/ExampleApp/src/MapGenerator.cs
+	../MoravaEngine/Hazel/ExampleApp/src/Noise.cs
+	../MoravaEngine/Hazel/ExampleApp/src/PlayerCube.cs
+	../MoravaEngine/Hazel/ExampleApp/src/RandomColor.cs
+	../MoravaEngine/Hazel/ExampleApp/src/Script.cs
+	../MoravaEngine/Hazel/ExampleApp/src/Sink.cs
+)
+
+SET(ExampleApp_SRCS
+	../MoravaEngine/Hazel/ScriptCore/Properties/AssemblyInfo.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Math/Matrix4.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Math/Noise.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Math/Vector2.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Math/Vector3.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Math/Vector4.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Renderer/Color.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Renderer/Material.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Renderer/Mesh.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Renderer/MeshFactory.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Renderer/Texture2D.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Scene/Component.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Entity.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Input.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/KeyCodes.cs
+	../MoravaEngine/Hazel/ScriptCore/src/Hazel/SpriteRenderer.cs
+)
+
 message("Environment variable 'MORAVA_BUILD_TYPE' = '" $ENV{MORAVA_BUILD_TYPE} "'")
 
 option(USE_MSVC_INCREMENTAL_LINKING "Use MSVC Incremental Linking" OFF)
@@ -696,6 +726,36 @@ add_library(SPIRV-Cross          STATIC "${SPIRV-Cross_SRCS}")
 add_library(yaml-cpp             STATIC "${yaml-cpp_SRCS}")
 add_library(box2d                STATIC "${box2d_SRCS}")
 
+#	add_library(Hazel-ScriptCore     SHARED "${Hazel-ScriptCore_SRCS}")
+#	add_library(ExampleApp           SHARED "${ExampleApp_SRCS}")
+
+#	set_property(TARGET Hazel-ScriptCore PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.6.1")
+#	set_property(TARGET ExampleApp PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.6.1")
+#	
+#	set(CMAKE_CSharp_FLAGS "/langversion:6")
+#	
+#	set_property(TARGET Hazel-ScriptCore PROPERTY VS_DOTNET_REFERENCES
+#	    "Microsoft.CSharp"
+#	    "System"
+#	    "System.Core"
+#	    "System.Data"
+#	    "System.Deployment"
+#	    "System.Drawing"
+#	    "System.Net.Http"
+#	    "System.Xml"
+#	)
+#	
+#	set_property(TARGET ExampleApp PROPERTY VS_DOTNET_REFERENCES
+#	    "Microsoft.CSharp"
+#	    "System"
+#	    "System.Core"
+#	    "System.Data"
+#	    "System.Deployment"
+#	    "System.Drawing"
+#	    "System.Net.Http"
+#	    "System.Xml"
+#	)
+
 add_dependencies(assimp irrXML)
 add_dependencies(assimp zlibstatic)
 
@@ -717,6 +777,8 @@ add_dependencies("${PROJECT_NAME}" glfw3)
 add_dependencies("${PROJECT_NAME}" SPIRV-Cross)
 add_dependencies("${PROJECT_NAME}" yaml-cpp)
 add_dependencies("${PROJECT_NAME}" box2d)
+# add_dependencies("${PROJECT_NAME}" Hazel-ScriptCore)
+# add_dependencies("${PROJECT_NAME}" ExampleApp)
 
 set_target_properties("${PROJECT_NAME}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
 set_target_properties(BulletDynamics    PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
@@ -821,6 +883,26 @@ target_include_directories(
 	../vendor/box2d/include
 	../vendor/box2d/src
 )
+
+#	target_include_directories(
+#		Hazel-ScriptCore PUBLIC
+#		../MoravaEngine/Hazel/ScriptCore
+#	)
+#	
+#	target_include_directories(
+#		ExampleApp PUBLIC
+#		../MoravaEngine/Hazel/ExampleApp
+#	)
+#	
+#	target_link_directories(
+#		Hazel-ScriptCore PUBLIC
+#		../MoravaEngine/Hazel/ScriptCore
+#	)
+#	
+#	target_link_directories(
+#		ExampleApp PUBLIC
+#		../MoravaEngine/Hazel/ExampleApp
+#	)
 
 # -- BEGIN Main project
 
