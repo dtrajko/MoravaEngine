@@ -141,7 +141,7 @@ namespace Hazel {
 	}
 
 	// Merge OnUpdate/Render into one function?
-	void HazelScene::OnUpdate(float ts)
+	void HazelScene::OnUpdate(Timestep ts)
 	{
 		// Box2D physics
 		auto sceneView = m_Registry.view<Box2DWorldComponent>();

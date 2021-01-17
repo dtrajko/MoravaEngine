@@ -36,14 +36,16 @@ namespace Example
 
         void OnPlayerCollisionBegin(float value)
         {
-            m_MeshMaterial.Set("u_AlbedoColor", new Vector(1.0f, 0.0f, 0.0f));
             m_CollisionCounter++;
+
+            m_MeshMaterial.Set("u_AlbedoColor", new Vector(1.0f, 0.0f, 0.0f));
         }
 
         void OnPlayerCollisionEnd(float value)
         {
-            m_MeshMaterial.Set("u_AlbedoColor", new Vector(0.8f, 0.8f, 0.8f));
             m_CollisionCounter--;
+
+            m_MeshMaterial.Set("u_AlbedoColor", new Vector(0.8f, 0.8f, 0.8f));
         }
 
         void OnUpdate(float ts)
@@ -54,18 +56,22 @@ namespace Example
             {
                 movementForce *= 0.4f;
             }
-            if (Input.IsKeyPressed(KeyCode.D))
+            if (Input.IsKeyPressed(KeyCode.D)) {
                 m_PhysicsBody.ApplyLinearImpulse(new Vector2(movementForce, 0), new Vector2(), true);
-            else if (Input.IsKeyPressed(KeyCode.A))
+            }
+            else if (Input.IsKeyPressed(KeyCode.A)) {
                 m_PhysicsBody.ApplyLinearImpulse(new Vector2(-movementForce, 0), new Vector2(), true);
+            }
 
-            if (Colliding && Input.IsKeyPressed(KeyCode.Space))
+            if (Colliding && Input.IsKeyPressed(KeyCode.Space)) {
                 m_PhysicsBody.ApplyLinearImpulse(new Vector2(0, JumpForce), new Vector2(0, 0), true);
+            }
 
-            if (m_CollisionCounter > 0)
+            if (m_CollisionCounter > 0) {
                 m_MeshMaterial.Set("u_AlbedoColor", new Vector3(1.0f, 0.0f, 0.0f));
-            else
+            } else {
                 m_MeshMaterial.Set("u_AlbedoColor", new Vector3(0.8f, 0.8f, 0.8f));
+            }
 
             Vector2 linearVelocity = m_PhysicsBody.GetLinearVelocity();
             linearVelocity.Clamp(new Vector2(-MaxSpeed.X, -1000), MaxSpeed);

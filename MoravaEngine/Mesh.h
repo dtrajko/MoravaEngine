@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Hazel/Core/Ref.h"
+#include "Hazel/Core/Timestep.h"
 
 #include "Transform.h"
 #include "Material.h"
@@ -25,7 +26,7 @@ public:
 	virtual void Create(float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indexCount);
 	virtual void Generate(glm::vec3 scale);
 	virtual void Update(glm::vec3 scale);
-	virtual void OnUpdate(float ts, bool debug); // HazelMesh Update method
+	virtual void OnUpdate(Hazel::Timestep ts, bool debug); // HazelMesh Update method
 	virtual void Render();
 	virtual void Clear();
 

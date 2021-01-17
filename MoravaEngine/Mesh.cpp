@@ -82,7 +82,7 @@ void Mesh::Update(glm::vec3 scale)
 		Generate(scale);
 }
 
-void Mesh::OnUpdate(float ts, bool debug)
+void Mesh::OnUpdate(Hazel::Timestep ts, bool debug)
 {
 }
 

@@ -627,7 +627,7 @@ namespace Hazel {
 		delete m_IndexBuffer;
 	}
 
-	void HazelMesh::OnUpdate(float ts, bool debug)
+	void HazelMesh::OnUpdate(Timestep ts, bool debug)
 	{
 		m_WorldTime += ts;
 

@@ -40,7 +40,7 @@ namespace Hazel {
 
 		void Init();
 
-		void OnUpdate(float ts);
+		void OnUpdate(Timestep ts);
 		void OnRenderRuntime(Timestep ts);
 		void OnRenderEditor(Timestep ts, const EditorCamera& editorCamera);
 		void OnEvent(Event& e);
