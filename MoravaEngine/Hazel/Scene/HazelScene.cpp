@@ -314,7 +314,7 @@ namespace Hazel {
 		if (!name.empty()) {
 			entity.AddComponent<TagComponent>(name);
 		}
-		entity.AddComponent<TagComponent>(name.empty() ? "Entity" : name);
+		// entity.AddComponent<TagComponent>(name.empty() ? "Entity" : name);
 
 		auto& entityMap = runtimeMap ? s_RuntimeEntityIDMap : s_EntityIDMap;
 

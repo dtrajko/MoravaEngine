@@ -438,12 +438,15 @@ namespace Hazel {
 		strStream << stream.rdbuf();
 
 		YAML::Node data = YAML::Load(strStream.str());
+
 		if (!data["Scene"]) {
+			Log::GetLogger()->error("Invalid Scene data!");
 			return false;
 		}
 
 		std::string sceneName = data["Scene"].as<std::string>();
-		HZ_CORE_INFO("Deserializing scene '{0}'", sceneName);
+		// HZ_CORE_INFO("Deserializing scene '{0}'", sceneName);
+		Log::GetLogger()->info("Deserializing scene '{0}'", sceneName);
 
 		auto environment = data["Environment"];
 		if (environment)
@@ -466,15 +469,15 @@ namespace Hazel {
 		{
 			for (auto entity : entities)
 			{
-				uint64_t uuid = entity["Entity"].as<uint64_t>(); // TODO
+				uint64_t uuid = entity["Entity"].as<uint64_t>();
 
 				std::string name;
 				auto tagComponent = entity["TagComponent"];
-				if (tagComponent) {
+				if (tagComponent)
 					name = tagComponent["Tag"].as<std::string>();
-				}
 
-				HZ_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
+				// HZ_CORE_INFO("Deserialized entity with ID = {0}, name = {1}", uuid, name);
+				Log::GetLogger()->info("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
 				Entity deserializedEntity = m_Scene->CreateEntityWithID(uuid, name);
 
@@ -490,10 +493,15 @@ namespace Hazel {
 					transform = glm::translate(glm::mat4(1.0f), translation) *
 						glm::toMat4(rotation) * glm::scale(glm::mat4(1.0f), scale);
 
-					HZ_CORE_INFO("  Entity Transform:");
-					HZ_CORE_INFO("    Translation: {0}, {1}, {2}", translation.x, translation.y, translation.z);
-					HZ_CORE_INFO("    Rotation: {0}, {1}, {2}, {3}", rotation.w, rotation.x, rotation.y, rotation.z);
-					HZ_CORE_INFO("    Scale: {0}, {1}, {2}", scale.x, scale.y, scale.z);
+					// HZ_CORE_INFO("  Entity Transform:");
+					// HZ_CORE_INFO("    Translation: {0}, {1}, {2}", translation.x, translation.y, translation.z);
+					// HZ_CORE_INFO("    Rotation: {0}, {1}, {2}, {3}", rotation.w, rotation.x, rotation.y, rotation.z);
+					// HZ_CORE_INFO("    Scale: {0}, {1}, {2}", scale.x, scale.y, scale.z);
+
+					Log::GetLogger()->info("  Entity Transform:");
+					Log::GetLogger()->info("    Translation: {0}, {1}, {2}", translation.x, translation.y, translation.z);
+					Log::GetLogger()->info("    Rotation: {0}, {1}, {2}, {3}", rotation.w, rotation.x, rotation.y, rotation.z);
+					Log::GetLogger()->info("    Scale: {0}, {1}, {2}", scale.x, scale.y, scale.z);
 				}
 
 				auto scriptComponent = entity["ScriptComponent"];
@@ -502,7 +510,8 @@ namespace Hazel {
 					std::string moduleName = scriptComponent["ModuleName"].as<std::string>();
 					deserializedEntity.AddComponent<ScriptComponent>(moduleName);
 
-					HZ_CORE_INFO("  Script Module: {0}", moduleName);
+					// HZ_CORE_INFO("  Script Module: {0}", moduleName);
+					Log::GetLogger()->info("  Script Module: {0}", moduleName);
 
 					if (ScriptEngine::ModuleExists(moduleName))
 					{
@@ -573,7 +582,8 @@ namespace Hazel {
 					if (!deserializedEntity.HasComponent<MeshComponent>())
 						deserializedEntity.AddComponent<MeshComponent>(Ref<HazelMesh>::Create(meshPath));
 
-					HZ_CORE_INFO("  Mesh Asset Path: {0}", meshPath);
+					// HZ_CORE_INFO("  Mesh Asset Path: {0}", meshPath);
+					Log::GetLogger()->info("  Mesh Asset Path: {0}", meshPath);
 				}
 
 				auto cameraComponent = entity["CameraComponent"];
@@ -595,6 +605,9 @@ namespace Hazel {
 
 					component.Primary = cameraComponent["Primary"].as<bool>();
 					component.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
+
+					// HZ_CORE_INFO("  Primary Camera: {0}", component.Primary);
+					Log::GetLogger()->info("  Primary Camera: {0}", component.Primary);
 				}
 
 				auto directionalLightComponent = entity["DirectionalLightComponent"];
