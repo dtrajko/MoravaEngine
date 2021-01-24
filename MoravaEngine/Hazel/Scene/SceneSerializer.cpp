@@ -198,6 +198,7 @@ namespace Hazel {
 
 		if (entity.HasComponent<ScriptComponent>())
 		{
+			/**** A problem with ScriptEngine::GetEntityInstanceData during SaveSceneAs()
 			out << YAML::Key << "ScriptComponent";
 			out << YAML::BeginMap; // ScriptComponent
 
@@ -245,6 +246,8 @@ namespace Hazel {
 			}
 
 			out << YAML::EndMap; // ScriptComponent
+
+			****/
 		}
 
 		if (entity.HasComponent<MeshComponent>())
@@ -407,15 +410,14 @@ namespace Hazel {
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
 		m_Scene->m_Registry.each([&](auto entityID)
-		{
-			Entity entity = { entityID, m_Scene.Raw() };
-			if (!entity || !entity.HasComponent<IDComponent>())
 			{
-				return;
-			}
+				Entity entity = { entityID, m_Scene.Raw() };
+				if (!entity || !entity.HasComponent<IDComponent>())
+					return;
 
-			SerializeEntity(out, entity);
-		});
+				SerializeEntity(out, entity);
+
+			});
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 

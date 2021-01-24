@@ -461,8 +461,10 @@ void SceneHazelEnvMap::OpenScene()
     std::string filepath = Hazel::FileDialogs::OpenFile("Hazel Scene (*.hazel)\0*.hazel\0");
     if (!filepath.empty())
     {
+        Hazel::SceneRenderer* sceneRenderer = m_EnvironmentMap->GetSceneRenderer();
+
         m_EnvironmentMap->OnNewScene(m_EnvironmentMap->m_ViewportMainSize);
-        Hazel::SceneSerializer serializer(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
+        Hazel::SceneSerializer serializer(sceneRenderer->s_Data.ActiveScene);
         serializer.Deserialize(filepath);
     }
 }

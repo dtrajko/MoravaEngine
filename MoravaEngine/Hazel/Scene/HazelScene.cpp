@@ -379,7 +379,7 @@ namespace Hazel {
 		for (auto entity : idComponents)
 		{
 			auto uuid = m_Registry.get<IDComponent>(entity).ID;
-			Entity e = target->CreateEntityWithID(uuid, "Entity");
+			Entity e = target->CreateEntityWithID(uuid, "Entity", true);
 			enttMap[uuid] = e.m_EntityHandle;
 		}
 
