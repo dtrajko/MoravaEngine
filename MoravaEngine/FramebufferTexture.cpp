@@ -165,6 +165,11 @@ void FramebufferTexture::Unbind()
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+GLenum FramebufferTexture::TextureTarget(bool multisampled)
+{
+	return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+}
+
 FramebufferTexture::~FramebufferTexture()
 {
 	glDeleteTextures(1, &m_ID);

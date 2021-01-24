@@ -24,6 +24,8 @@ public:
 	virtual void Bind(unsigned int slot = 0) override;
 	virtual void Unbind() override;
 
+	static GLenum TextureTarget(bool multisampled);
+
 public:
 	Texture::Specification m_Spec;
 
