@@ -1563,6 +1563,10 @@ void EnvironmentMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
                 OpenScene();
             }
 
+            if (ImGui::MenuItem("Save", "Ctrl+Shift+S")) {
+                SaveScene();
+            }
+
             if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) {
                 SaveSceneAs();
             }
@@ -1630,7 +1634,7 @@ void EnvironmentMap::NewScene()
 {
     OnNewScene(m_ViewportMainSize);
 }
-
+ 
 void EnvironmentMap::OpenScene()
 {
     std::string filepath = Hazel::FileDialogs::OpenFile("Hazel Scene (*.hazel)\0*.hazel\0");
@@ -1639,6 +1643,16 @@ void EnvironmentMap::OpenScene()
         OnNewScene(m_ViewportMainSize);
         Hazel::SceneSerializer serializer(m_SceneRenderer->s_Data.ActiveScene);
         serializer.Deserialize(filepath);
+
+        m_SceneFilePath = filepath;
+    }
+}
+
+void EnvironmentMap::SaveScene()
+{
+    if (!m_SceneFilePath.empty()) {
+        Hazel::SceneSerializer serializer(m_SceneRenderer->s_Data.ActiveScene);
+        serializer.Serialize(m_SceneFilePath);
     }
 }
 
@@ -1648,6 +1662,8 @@ void EnvironmentMap::SaveSceneAs()
     if (!filepath.empty()) {
         Hazel::SceneSerializer serializer(m_SceneRenderer->s_Data.ActiveScene);
         serializer.Serialize(filepath);
+
+        m_SceneFilePath = filepath;
     }
 }
 

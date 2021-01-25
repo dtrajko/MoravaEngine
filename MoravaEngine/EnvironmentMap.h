@@ -46,6 +46,7 @@ public:
 
 	void NewScene();
 	void OpenScene();
+	void SaveScene();
 	void SaveSceneAs();
 
 	void OnNewScene(glm::vec2 viewportSize);
@@ -235,6 +236,8 @@ private:
 	// Hazel LIVE! #014
 	Hazel::Ref<Hazel::HazelScene> m_RuntimeScene;
 	Hazel::Ref<Hazel::HazelScene> m_EditorScene;
+	std::string m_SceneFilePath;
+	bool m_ReloadScriptOnPlay = true;
 
 	Hazel::SceneHierarchyPanel* m_SceneHierarchyPanel;
 
@@ -242,6 +245,5 @@ private:
 	bool m_UIShowBoundingBoxes;
 	bool m_UIShowBoundingBoxesOnTop;
 
-	bool m_ReloadScriptOnPlay = true;
 
 };
