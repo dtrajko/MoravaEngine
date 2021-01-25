@@ -84,6 +84,7 @@ public:
 	inline Hazel::SceneRenderer* GetSceneRenderer() { return m_SceneRenderer; }
 	inline bool* GetDisplayHazelGrid() { return &m_DisplayHazelGrid; }
 	inline bool* GetDisplayBoundingBoxes() { return &m_DisplayBoundingBoxes; };
+	inline bool* GetDisplayRay() { return &m_DisplayRay; };
 
 	// SceneRenderer
 	void CompositePassTemporary(Framebuffer* framebuffer);
@@ -222,7 +223,8 @@ private:
 
 	bool m_DisplayHazelGrid;
 	bool m_DisplayBoundingBoxes;
-	bool m_DrawOnTopBoundingBoxes = true;
+	bool m_DisplayRay = false;
+	bool m_DrawOnTopBoundingBoxes = true; // obsolete?
 
 	// Hazel LIVE! #014
 	Hazel::Ref<Hazel::HazelScene> m_RuntimeScene;

@@ -1411,7 +1411,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
 
 void EnvironmentMap::OnNewScene(glm::vec2 viewportSize)
 {
-    m_SceneRenderer->s_Data.ActiveScene = new Hazel::HazelScene();
+    // m_SceneRenderer->s_Data.ActiveScene = new Hazel::HazelScene();
     m_SceneRenderer->s_Data.ActiveScene->OnViewportResize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
     m_SceneHierarchyPanel->SetContext(m_SceneRenderer->s_Data.ActiveScene);
 }
@@ -1805,7 +1805,7 @@ void EnvironmentMap::GeometryPassTemporary()
     {
         RendererBasic::SetLineThickness(2.0f);
 
-        if (m_DrawOnTopBoundingBoxes)
+        if (m_DisplayRay)
         {
             glm::vec3 camPosition = m_ActiveCamera->GetPosition();
             Hazel::Renderer2D::DrawLine(m_NewRay, m_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));

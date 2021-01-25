@@ -245,6 +245,7 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
             ImGui::Checkbox("Display Bounding Boxes", m_EnvironmentMap->GetDisplayBoundingBoxes());
             ImGui::Checkbox("Display Hazel Grid", m_EnvironmentMap->GetDisplayHazelGrid());
             ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
+            ImGui::Checkbox("Display Ray", m_EnvironmentMap->GetDisplayRay());
 
             ImGui::Separator();
 

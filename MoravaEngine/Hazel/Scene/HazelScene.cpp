@@ -86,7 +86,7 @@ namespace Hazel {
 		std::unique_ptr<b2World> World;
 	};
 
-	void OnScriptComponentConstruct(entt::registry& registry, entt::entity entity)
+	static void OnScriptComponentConstruct(entt::registry& registry, entt::entity entity)
 	{
 		auto sceneView = registry.view<SceneComponent>();
 		UUID sceneID = registry.get<SceneComponent>(sceneView.front()).SceneID;
@@ -98,10 +98,24 @@ namespace Hazel {
 		ScriptEngine::InitScriptEntity(Entity{ scene->m_EntityIDMap.at(entityID), scene });
 	}
 
+	static void OnScriptComponentDestroy(entt::registry& registry, entt::entity entity)
+	{
+		auto sceneView = registry.view<SceneComponent>();
+		UUID sceneID = registry.get<SceneComponent>(sceneView.front()).SceneID;
+
+		HazelScene* scene = s_ActiveScenes[sceneID];
+
+		auto entityID = registry.get<IDComponent>(entity).ID;
+
+		HZ_CORE_ASSERT(scene->m_EntityIDMap.find(entityID) != scene->m_EntityIDMap.end());
+		ScriptEngine::OnScriptComponentDestroyed(sceneID, entityID);
+	}
+
 	HazelScene::HazelScene(const std::string& debugName)
 		: m_DebugName(debugName)
 	{
 		m_Registry.on_construct<ScriptComponent>().connect<&OnScriptComponentConstruct>();
+		m_Registry.on_destroy<ScriptComponent>().connect<&OnScriptComponentDestroy>();
 
 		m_SceneEntity = m_Registry.create();
 		m_Registry.emplace<SceneComponent>(m_SceneEntity, m_SceneID);
@@ -117,6 +131,8 @@ namespace Hazel {
 
 	HazelScene::~HazelScene()
 	{
+		m_Registry.on_destroy<ScriptComponent>().disconnect();
+
 		m_Registry.clear();
 		s_ActiveScenes.erase(m_SceneID);
 		ScriptEngine::OnSceneDestruct(m_SceneID);
