@@ -42,6 +42,11 @@ public:
 	void OnRenderRuntime(Framebuffer* framebuffer);
 
 	void OnImGuiRender(Window* mainWindow);
+	void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
+
+	void NewScene();
+	void OpenScene();
+	void SaveSceneAs();
 
 	void OnNewScene(glm::vec2 viewportSize);
 
@@ -223,8 +228,9 @@ private:
 
 	bool m_DisplayHazelGrid;
 	bool m_DisplayBoundingBoxes;
-	bool m_DisplayRay = false;
-	bool m_DrawOnTopBoundingBoxes = true; // obsolete?
+	bool m_DisplayRay;
+	bool m_DrawOnTopBoundingBoxes; // obsolete?
+	bool m_DisplayLineElements;
 
 	// Hazel LIVE! #014
 	Hazel::Ref<Hazel::HazelScene> m_RuntimeScene;

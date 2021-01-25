@@ -46,10 +46,6 @@ private:
 
 	bool OnKeyPressed(KeyPressedEvent& e);
 
-	void NewScene();
-	void OpenScene();
-	void SaveSceneAs();
-
 	// Temporary/experimental
 	virtual void OnEntitySelected(Hazel::Entity entity) override;
 
@@ -92,7 +88,6 @@ private:
 		bool Enabled;
 	};
 
-	bool m_DisplayLineElements;
 	Grid* m_Grid;
 	Pivot* m_PivotScene;
 

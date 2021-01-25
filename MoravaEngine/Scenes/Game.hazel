@@ -8,22 +8,41 @@ Environment:
 Entities:
   - Entity: 0
     TagComponent:
-      Tag: Player
+      Tag: Map Generator
     TransformComponent:
-      Position: [0, 2, -2]
+      Position: [0, 0, 0]
       Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
-    MeshComponent:
-      AssetPath: D:\workspace\cpp\MoravaEngine\MoravaEngine\Models\sphere.obj
+  - Entity: 0
+    TagComponent:
+      Tag: Directional Light
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]
+    DirectionalLightComponent:
+      Radiance: [1, 1, 1]
+      CastShadows: true
+      SoftShadows: true
+      LightSize: 0.5
   - Entity: 0
     TagComponent:
       Tag: Platform
     TransformComponent:
-      Position: [0, 0, -20]
+      Position: [0, 0, -16]
       Rotation: [1, 0, 0, 0]
-      Scale: [4, 0.5, 20]
+      Scale: [3, 0.5, 20]
     MeshComponent:
       AssetPath: D:\workspace\cpp\MoravaEngine\MoravaEngine\Models\cube.obj
+  - Entity: 0
+    TagComponent:
+      Tag: Player
+    TransformComponent:
+      Position: [0, 4, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      AssetPath: D:\workspace\cpp\MoravaEngine\MoravaEngine\Models\sphere.obj
   - Entity: 0
     TagComponent:
       Tag: Directional Light

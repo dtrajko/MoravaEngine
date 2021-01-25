@@ -3,8 +3,6 @@
 #include "SceneHazelEnvMap.h"
 
 #include "Hazel/Renderer/HazelTexture.h"
-#include "Hazel/Utils/PlatformUtils.h"
-#include "Hazel/Scene/SceneSerializer.h"
 #include "Hazel/Scene/Components.h"
 #include "Hazel/Renderer/RendererAPI.h"
 
@@ -123,7 +121,6 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupMeshes();
     SetupModels();
 
-    m_DisplayLineElements = false;
     m_Grid = new Grid(20);
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 
@@ -190,90 +187,9 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 
 void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 {
-    bool p_open = true;
-    ShowExampleAppDockSpace(&p_open, mainWindow);
-
-    // ImGui Colors
-    ImVec4* colors = ImGui::GetStyle().Colors;
-    colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-    colors[ImGuiCol_TextDisabled] = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-    colors[ImGuiCol_WindowBg] = ImVec4(0.18f, 0.18f, 0.18f, 1.0f); // Window background
-    colors[ImGuiCol_ChildBg] = ImVec4(1.0f, 1.0f, 1.0f, 0.0f);
-    colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
-    colors[ImGuiCol_Border] = ImVec4(0.43f, 0.43f, 0.50f, 0.5f);
-    colors[ImGuiCol_BorderShadow] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
-    colors[ImGuiCol_FrameBg] = ImVec4(0.3f, 0.3f, 0.3f, 0.5f); // Widget backgrounds
-    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.4f, 0.4f, 0.4f, 0.4f);
-    colors[ImGuiCol_FrameBgActive] = ImVec4(0.4f, 0.4f, 0.4f, 0.6f);
-    colors[ImGuiCol_TitleBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.0f);
-    colors[ImGuiCol_TitleBgActive] = ImVec4(0.29f, 0.29f, 0.29f, 1.0f);
-    colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.0f, 0.0f, 0.0f, 0.51f);
-    colors[ImGuiCol_MenuBarBg] = ImVec4(0.14f, 0.14f, 0.14f, 1.0f);
-    colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
-    colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.31f, 0.31f, 0.31f, 1.0f);
-    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.41f, 0.41f, 0.41f, 1.0f);
-    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.0f);
-    colors[ImGuiCol_CheckMark] = ImVec4(0.94f, 0.94f, 0.94f, 1.0f);
-    colors[ImGuiCol_SliderGrab] = ImVec4(0.51f, 0.51f, 0.51f, 0.7f);
-    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.66f, 0.66f, 0.66f, 1.0f);
-    colors[ImGuiCol_Button] = ImVec4(0.44f, 0.44f, 0.44f, 0.4f);
-    colors[ImGuiCol_ButtonHovered] = ImVec4(0.46f, 0.47f, 0.48f, 1.0f);
-    colors[ImGuiCol_ButtonActive] = ImVec4(0.42f, 0.42f, 0.42f, 1.0f);
-    colors[ImGuiCol_Header] = ImVec4(0.7f, 0.7f, 0.7f, 0.31f);
-    colors[ImGuiCol_HeaderHovered] = ImVec4(0.7f, 0.7f, 0.7f, 0.8f);
-    colors[ImGuiCol_HeaderActive] = ImVec4(0.48f, 0.5f, 0.52f, 1.0f);
-    colors[ImGuiCol_Separator] = ImVec4(0.43f, 0.43f, 0.5f, 0.5f);
-    colors[ImGuiCol_SeparatorHovered] = ImVec4(0.72f, 0.72f, 0.72f, 0.78f);
-    colors[ImGuiCol_SeparatorActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.0f);
-    colors[ImGuiCol_ResizeGrip] = ImVec4(0.91f, 0.91f, 0.91f, 0.25f);
-    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.81f, 0.81f, 0.81f, 0.67f);
-    colors[ImGuiCol_ResizeGripActive] = ImVec4(0.46f, 0.46f, 0.46f, 0.95f);
-    colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.0f);
-    colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.0f, 0.43f, 0.35f, 1.0f);
-    colors[ImGuiCol_PlotHistogram] = ImVec4(0.73f, 0.6f, 0.15f, 1.0f);
-    colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.0f, 0.6f, 0.0f, 1.0f);
-    colors[ImGuiCol_TextSelectedBg] = ImVec4(0.87f, 0.87f, 0.87f, 0.35f);
-    colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.8f, 0.8f, 0.8f, 0.35f);
-    colors[ImGuiCol_DragDropTarget] = ImVec4(1.0f, 1.0f, 0.0f, 0.9f);
-    colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.6f, 0.6f, 1.0f);
-    colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
-
-    ImGui::Begin("Settings");
-    {
-        if (ImGui::CollapsingHeader("Display Info"))
-        {
-            ImGui::Checkbox("Display Bounding Boxes", m_EnvironmentMap->GetDisplayBoundingBoxes());
-            ImGui::Checkbox("Display Hazel Grid", m_EnvironmentMap->GetDisplayHazelGrid());
-            ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
-            ImGui::Checkbox("Display Ray", m_EnvironmentMap->GetDisplayRay());
-
-            ImGui::Separator();
-
-            bool eventLoggingEnabled = Application::Get()->GetWindow()->GetEventLogging();
-            if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
-                Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
-            }
-
-            float fovDegrees = m_EnvironmentMap->m_ActiveCamera->GetPerspectiveVerticalFOV();
-            if (ImGui::SliderFloat("FOV", &fovDegrees, -60.0f, 180.0f)) {
-                m_EnvironmentMap->m_ActiveCamera->SetPerspectiveVerticalFOV(fovDegrees);
-            }
-        }
-    }
-    ImGui::End();
-
-    Application::Get()->OnImGuiRender();
-
-    // ImGui::ShowMetricsWindow();
-
-    // Mesh Hierarchy / Mesh Debug
     m_EnvironmentMap->OnImGuiRender(mainWindow);
 }
 
-// Demonstrate using DockSpace() to create an explicit docking node within an existing window.
-// Note that you already dock windows into each others _without_ a DockSpace() by just moving windows 
-// from their title bar (or by holding SHIFT if io.ConfigDockingWithShift is set).
-// DockSpace() is only useful to construct to a central location for your application.
 void SceneHazelEnvMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
     if (!m_EnvironmentMap->m_IsViewportEnabled) {
@@ -281,135 +197,7 @@ void SceneHazelEnvMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
         return;
     }
 
-    static bool opt_fullscreen_persistant = true;
-    bool opt_fullscreen = opt_fullscreen_persistant;
-    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-    // ImGuiDockNodeFlags_None |
-    // ImGuiDockNodeFlags_PassthruCentralNode |
-    // ImGuiDockNodeFlags_NoDockingInCentralNode;
-
-    // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-    // because it would be confusing to have two docking targets within each others.
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-    if (opt_fullscreen)
-    {
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->Pos);
-        ImGui::SetNextWindowSize(viewport->Size);
-        ImGui::SetNextWindowViewport(viewport->ID);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-    }
-
-    // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
-    if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-        window_flags |= ImGuiWindowFlags_NoBackground;
-
-    // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-    // This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 
-    // all active windows docked into it will lose their parent and become undocked.
-    // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise 
-    // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-    ImGui::Begin("DockSpace Demo", p_open, window_flags);
-    ImGui::PopStyleVar();
-
-    if (opt_fullscreen)
-        ImGui::PopStyleVar(2);
-
-    // DockSpace
-    ImGuiIO& io = ImGui::GetIO();
-    if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-    {
-        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-    }
-    else
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        ImGui::Text("ERROR: Docking is not enabled! See Demo > Configuration.");
-        ImGui::Text("Set io.ConfigFlags |= ImGuiConfigFlags_DockingEnable in your code, or ");
-        ImGui::SameLine(0.0f, 0.0f);
-        if (ImGui::SmallButton("click here"))
-            io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    }
-
-    if (ImGui::BeginMenuBar())
-    {
-        if (ImGui::BeginMenu("File"))
-        {
-            if (ImGui::MenuItem("New", "Ctrl+N")) {
-                NewScene();
-            }
-
-            if (ImGui::MenuItem("Open...", "Ctrl+O")) {
-                OpenScene();
-            }
-
-            if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) {
-                SaveSceneAs();
-            }
-
-            if (ImGui::MenuItem("Exit")) {
-                mainWindow->SetShouldClose(true);
-            }
-
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Edit"))
-        {
-            ImGui::MenuItem("Undo");
-            ImGui::MenuItem("Redo");
-            ImGui::MenuItem("Cut");
-            ImGui::MenuItem("Copy");
-            ImGui::MenuItem("Paste");
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Docking"))
-        {
-            // Disabling fullscreen would allow the window to be moved to the front of other windows, 
-            // which we can't undo at the moment without finer window depth/z control.
-            //ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
-
-            if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))
-                dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
-            if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))
-                dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
-            if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))
-                dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
-            if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))
-                dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
-            if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))
-                dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
-            ImGui::EndMenu();
-        }
-
-        ImGui::TextDisabled("(?)");
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted("When docking is enabled, you can ALWAYS dock MOST window into another! Try it now!" "\n\n"
-                " > if io.ConfigDockingWithShift==false (default):" "\n"
-                "   drag windows from title bar to dock" "\n"
-                " > if io.ConfigDockingWithShift==true:" "\n"
-                "   drag windows from anywhere and hold Shift to dock" "\n\n"
-                "This demo app has nothing to do with it!" "\n\n"
-                "This demo app only demonstrate the use of ImGui::DockSpace() which allows you to manually create a docking node _within_ another window. This is useful so you can decorate your main application window (e.g. with a menu bar)." "\n\n"
-                "ImGui::DockSpace() comes with one hard constraint: it needs to be submitted _before_ any window which may be docked into it. Therefore, if you use a dock spot as the central point of your application, you'll probably want it to be part of the very first window you are submitting to imgui every frame." "\n\n"
-                "(NB: because of this constraint, the implicit \"Debug\" window can not be docked into an explicit DockSpace() node, because that window is submitted as part of the NewFrame() call. An easy workaround is that you can create your own implicit \"Debug##2\" window after calling DockSpace() and leave it in the window stack for anyone to use.)");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
-
-        ImGui::EndMenuBar();
-    }
-    ImGui::End();
+    m_EnvironmentMap->ShowExampleAppDockSpace(p_open, mainWindow);
 }
 
 bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
@@ -428,7 +216,7 @@ bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
         {
             if (control)
             {
-                NewScene();
+                m_EnvironmentMap->NewScene();
             }
             break;
         }
@@ -436,7 +224,7 @@ bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
         {
             if (control)
             {
-                OpenScene();
+                m_EnvironmentMap->OpenScene();
             }
             break;
         }
@@ -444,39 +232,12 @@ bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
         {
             if (control && shift)
             {
-                SaveSceneAs();
+                m_EnvironmentMap->SaveSceneAs();
             }
             break;
         }
     }
     return true;
-}
-
-void SceneHazelEnvMap::NewScene()
-{
-    m_EnvironmentMap->OnNewScene(m_EnvironmentMap->m_ViewportMainSize);
-}
-
-void SceneHazelEnvMap::OpenScene()
-{
-    std::string filepath = Hazel::FileDialogs::OpenFile("Hazel Scene (*.hazel)\0*.hazel\0");
-    if (!filepath.empty())
-    {
-        Hazel::SceneRenderer* sceneRenderer = m_EnvironmentMap->GetSceneRenderer();
-
-        m_EnvironmentMap->OnNewScene(m_EnvironmentMap->m_ViewportMainSize);
-        Hazel::SceneSerializer serializer(sceneRenderer->s_Data.ActiveScene);
-        serializer.Deserialize(filepath);
-    }
-}
-
-void SceneHazelEnvMap::SaveSceneAs()
-{
-    std::string filepath = Hazel::FileDialogs::SaveFile("Hazel Scene (*.hazel)\0*.hazel\0");
-    if (!filepath.empty()) {
-        Hazel::SceneSerializer serializer(m_EnvironmentMap->GetSceneRenderer()->s_Data.ActiveScene);
-        serializer.Serialize(filepath);
-    }
 }
 
 void SceneHazelEnvMap::OnEntitySelected(Hazel::Entity entity)
