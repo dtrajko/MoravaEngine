@@ -51,6 +51,8 @@ public:
 
 	void OnNewScene(glm::vec2 viewportSize);
 
+	void UpdateWindowTitle(const std::string& sceneName);
+
 	void OnSelected(const SelectedSubmesh& selectionContext);
 	void OnEntityDeleted(Hazel::Entity e);
 
@@ -190,8 +192,6 @@ private:
 
 	// viewports private
 	// -- viewport main
-	bool m_ViewportFocused;
-	bool m_ViewportHovered;
 	// -- viewport environment map
 	int m_ImGuiViewportEnvMapX;
 	int m_ImGuiViewportEnvMapY;

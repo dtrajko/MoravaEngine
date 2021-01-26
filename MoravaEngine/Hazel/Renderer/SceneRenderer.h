@@ -23,7 +23,7 @@ namespace Hazel {
 
 	struct SceneRendererData
 	{
-		HazelScene* ActiveScene = nullptr;
+		// HazelScene* ActiveScene = nullptr;
 		struct SceneInfo
 		{
 			Camera* SceneCamera;

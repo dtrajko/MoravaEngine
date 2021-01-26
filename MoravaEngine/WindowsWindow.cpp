@@ -24,6 +24,11 @@ Window* Window::Create(const WindowProps& props)
 	return new WindowsWindow(props);
 }
 
+void Window::SetTitle(std::string title)
+{
+	Log::GetLogger()->error("Window::SetTitle method not implemented!");
+}
+
 WindowsWindow::WindowsWindow(const WindowProps& props)
 {
 	m_EventLoggingEnabled = false;

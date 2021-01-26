@@ -291,10 +291,10 @@ namespace Hazel {
 		// TODO...
 	}
 
-	Entity HazelScene::CreateEntity(const std::string& name, const HazelScene& scene)
+	Entity HazelScene::CreateEntity(const std::string& name, Ref<HazelScene> scene)
 	{
 		Entity entity = CreateEntity(name);
-		entity.m_Scene = this;
+		entity.m_Scene = scene.Raw();
 
 		return entity;
 	}
@@ -648,10 +648,15 @@ namespace Hazel {
 		s_ScriptEntityIDMap = &s_EntityIDMap;
 	}
 
-	void HazelScene::OnViewportResize(uint32_t width, uint32_t height)
+	void HazelScene::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
+	}
+
+	void HazelScene::OnViewportResize(uint32_t width, uint32_t height)
+	{
+		SetViewportSize(width, height);
 
 		// Resize our non-FixedAspectRatio cameras
 		auto view = m_Registry.view<CameraComponent>();

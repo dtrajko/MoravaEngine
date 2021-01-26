@@ -69,8 +69,8 @@ namespace Hazel {
         s_Data.SceneData.SkyboxMaterial = new Material(m_ShaderSkybox);
         s_Data.SceneData.SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, true); // false
 
-        s_Data.ActiveScene->m_ViewportWidth = Application::Get()->GetWindow()->GetWidth();
-        s_Data.ActiveScene->m_ViewportHeight = Application::Get()->GetWindow()->GetHeight();
+        // s_Data.ActiveScene->m_ViewportWidth = Application::Get()->GetWindow()->GetWidth();
+        // s_Data.ActiveScene->m_ViewportHeight = Application::Get()->GetWindow()->GetHeight();
 
         s_Data.SceneData.SceneCamera = scene->GetCamera();
     }
@@ -120,7 +120,7 @@ namespace Hazel {
     {
         HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
-        s_Data.ActiveScene = scene;
+        // s_Data.ActiveScene = scene;
 
         // s_Data.SceneData.SceneCamera = ((::Scene*)scene)->GetCamera();
     }
@@ -129,7 +129,7 @@ namespace Hazel {
     {
         HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
-        s_Data.ActiveScene = scene;
+        // s_Data.ActiveScene = scene;
 
         s_Data.SceneData.SceneCamera = ((::Scene*)scene)->GetCamera();
     }
@@ -232,9 +232,9 @@ namespace Hazel {
     {
         HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
-        if (!s_Data.ActiveScene) {
-            Log::GetLogger()->error("Active scene is not specified!");
-        }
+        //  if (!s_Data.ActiveScene) {
+        //      Log::GetLogger()->error("Active scene is not specified!");
+        //  }
 
         GeometryPass();
         // Log::GetLogger()->debug("EnvironmentMap::FlushDrawList GeometryPass executed...");

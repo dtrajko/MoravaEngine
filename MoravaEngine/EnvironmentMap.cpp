@@ -15,6 +15,8 @@
 #include "MousePicker.h"
 #include "ShaderLibrary.h"
 
+#include <filesystem>
+
 
 TextureInfo EnvironmentMap::s_TextureInfoDefault;
 std::map<std::string, TextureInfo> EnvironmentMap::s_TextureInfo;
@@ -60,12 +62,12 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
         fov, aspectRatio, scene->GetSettings().cameraMoveSpeed, 0.1f);
     m_ActiveCamera = m_RuntimeCamera; // m_RuntimeCamera m_EditorCamera;
 
+    m_EditorScene = Hazel::Ref<Hazel::HazelScene>::Create();
+
     Init(); // requires a valid Camera reference
 
     s_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
     m_PlayButtonTex = Hazel::HazelTexture2D::Create("Textures/Hazel/PlayButton.png");
-
-    m_EditorScene = Hazel::Ref<Hazel::HazelScene>::Create();
 
     m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(scene);
     m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvironmentMap::SelectEntity, this, std::placeholders::_1));
@@ -81,8 +83,6 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
     m_IsViewportEnabled = true;
-    m_ViewportFocused = false;
-    m_ViewportHovered = false;
 
     m_ResizeViewport = { 0.0f, 1.0f };
 }
@@ -404,7 +404,7 @@ void EnvironmentMap::UpdateUniforms()
     /**** BEGIN Shaders/Hazel/Skybox ****/
     m_SceneRenderer->GetShaderSkybox()->Bind();
     m_SceneRenderer->GetShaderSkybox()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    m_SceneRenderer->GetShaderSkybox()->setFloat("u_TextureLod", ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->GetSkyboxLOD());
+    m_SceneRenderer->GetShaderSkybox()->setFloat("u_TextureLod", m_EditorScene->GetSkyboxLOD());
     // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
     m_SceneRenderer->GetShaderSkybox()->setFloat("u_Exposure", m_ActiveCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
     /**** END Shaders/Hazel/Skybox ****/
@@ -484,7 +484,7 @@ EnvironmentMap::~EnvironmentMap()
 Hazel::Entity EnvironmentMap::CreateEntity(const std::string& name)
 {
     // Both NoECS and ECS
-    Hazel::Entity entity = ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->CreateEntity(name, (const Hazel::HazelScene&)m_SceneRenderer->s_Data.ActiveScene);
+    Hazel::Entity entity = m_EditorScene->CreateEntity(name, m_EditorScene);
 
     return entity;
 }
@@ -516,8 +516,11 @@ void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
 
     // CameraSyncECS(); TODO
 
-    auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
-    m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction = glm::eulerAngles(glm::quat(tc.Rotation));
+    //  if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>())
+    //  {
+    //      auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+    //      m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction = glm::eulerAngles(glm::quat(tc.Rotation));
+    //  }
 
     OnUpdateEditor(scene, timestep);
     // OnUpdateRuntime(scene, timestep);
@@ -525,17 +528,17 @@ void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
 
 void EnvironmentMap::OnUpdateEditor(Scene* scene, float timestep)
 {
-    m_SceneRenderer->s_Data.ActiveScene = scene;
+    m_EditorScene = scene;
 
-    m_SceneRenderer->BeginScene((Scene*)m_SceneRenderer->s_Data.ActiveScene);
+    m_SceneRenderer->BeginScene(m_EditorScene.Raw());
 
     UpdateUniforms();
 
     // Update HazelMesh List
-    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     for (auto entt : meshEntities)
     {
-        Hazel::Entity entity{ entt, m_SceneRenderer->s_Data.ActiveScene };
+        Hazel::Entity entity{ entt, m_EditorScene.Raw() };
         Hazel::Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
         if (mesh) {
             mesh->OnUpdate(timestep, false);
@@ -556,17 +559,17 @@ void EnvironmentMap::OnUpdateEditor(Scene* scene, float timestep)
 
 void EnvironmentMap::OnUpdateRuntime(Scene* scene, float timestep)
 {
-    m_SceneRenderer->s_Data.ActiveScene = scene;
+    m_EditorScene = scene;
 
-    m_SceneRenderer->BeginScene((Scene*)m_SceneRenderer->s_Data.ActiveScene);
+    m_SceneRenderer->BeginScene(m_EditorScene.Raw());
 
     UpdateUniforms();
 
     // Update HazelMesh List
-    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     for (auto entt : meshEntities)
     {
-        Hazel::Entity entity{ entt, m_SceneRenderer->s_Data.ActiveScene };
+        Hazel::Entity entity{ entt, m_EditorScene.Raw() };
         Hazel::Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
         mesh->OnUpdate(timestep, false);
     }
@@ -611,6 +614,12 @@ void EnvironmentMap::OnSceneStop()
     m_SceneHierarchyPanel->SetContext(m_EditorScene);
 }
 
+void EnvironmentMap::UpdateWindowTitle(const std::string& sceneName)
+{
+    std::string title = sceneName + " - Hazelnut - " + Application::GetPlatformName() + " (" + Application::GetConfigurationName() + ")";
+    Application::Get()->GetWindow()->SetTitle(title);
+}
+
 void EnvironmentMap::CameraSyncECS()
 {
     glm::vec3 cameraPosition = m_CameraEntity.GetComponent<Hazel::TransformComponent>().Translation;
@@ -636,7 +645,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
 
     // Dirty fix: m_SelectionContext not decremented when mesh entity is removed from the scene
     size_t selectionContextSize = EntitySelection::s_SelectionContext.size();
-    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     if (selectionContextSize > meshEntities.size()) {
         selectionContextSize = meshEntities.size();
     }
@@ -738,11 +747,11 @@ void EnvironmentMap::SubmitEntity(Hazel::Entity entity)
 Ref<Hazel::Entity> EnvironmentMap::GetMeshEntity()
 {
     Ref<Hazel::Entity> meshEntity;
-    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     if (meshEntities.size()) {
         for (auto entt : meshEntities)
         {
-            meshEntity = CreateRef<Hazel::Entity>(entt, m_SceneRenderer->s_Data.ActiveScene);
+            meshEntity = CreateRef<Hazel::Entity>(entt, m_EditorScene.Raw());
         }
         return meshEntity;
     }
@@ -751,7 +760,7 @@ Ref<Hazel::Entity> EnvironmentMap::GetMeshEntity()
 
 float& EnvironmentMap::GetSkyboxLOD()
 {
-    return ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->GetSkyboxLOD();
+    return m_EditorScene->GetSkyboxLOD();
 }
 
 void EnvironmentMap::SetViewportBounds(glm::vec2* viewportBounds)
@@ -762,7 +771,7 @@ void EnvironmentMap::SetViewportBounds(glm::vec2* viewportBounds)
 
 void EnvironmentMap::SetSkyboxLOD(float LOD)
 {
-    ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->SetSkyboxLOD(LOD);
+    m_EditorScene->SetSkyboxLOD(LOD);
 }
 
 Ref<Shader> EnvironmentMap::GetShaderPBR_Anim()
@@ -985,6 +994,19 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             m_ViewportPanelMouseOver = ImGui::IsWindowHovered();
             m_ViewportPanelFocused = ImGui::IsWindowFocused();
 
+            // Calculate Viewport bounds (used in EnvironmentMap::CastRay)
+            auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
+            auto viewportSize = ImGui::GetContentRegionAvail();
+            //  Hazel::SceneRenderer::SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+            //  m_EditorScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+            //  if (m_RuntimeScene) {
+            //      m_RuntimeScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+            //  }
+            //  
+            //  m_EditorCamera->SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
+            //  m_EditorCamera->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+            //  ImGui::Image((void*)Hazel::SceneRenderer::GetFinalColorBufferID(), viewportSize, { 0, 1 }, { 1, 0 });
+
             ImVec2 screen_pos = ImGui::GetCursorScreenPos();
 
             m_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportMain.x);
@@ -994,11 +1016,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             m_ImGuiViewport.MouseX = (int)ImGui::GetMousePos().x;
             m_ImGuiViewport.MouseY = (int)ImGui::GetMousePos().y;
 
-            m_ViewportFocused = ImGui::IsWindowFocused();
-            m_ViewportHovered = ImGui::IsWindowHovered();
-
-            ImVec2 viewportPanelSizeImGui = ImGui::GetContentRegionAvail();
-            glm::vec2 viewportPanelSize = glm::vec2(viewportPanelSizeImGui.x, viewportPanelSizeImGui.y);
+            glm::vec2 viewportPanelSize = glm::vec2(viewportSize.x, viewportSize.y);
 
             ResizeViewport(viewportPanelSize, m_RenderFramebuffer);
 
@@ -1006,9 +1024,6 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportMainSize.x, m_ViewportMainSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
             UpdateImGuizmo(mainWindow);
-
-            // Calculate Viewport bounds (used in EnvironmentMap::CastRay)
-            auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
 
             auto windowSize = ImGui::GetWindowSize();
             ImVec2 minBound = ImGui::GetWindowPos();
@@ -1051,10 +1066,10 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
     }
 
     uint32_t id = 0;
-    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     for (auto entt : meshEntities)
     {
-        Hazel::Entity entity = { entt, m_SceneRenderer->s_Data.ActiveScene };
+        Hazel::Entity entity = { entt, m_EditorScene.Raw() };
         auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
         if (meshComponent.Mesh) {
             meshComponent.Mesh->OnImGuiRender(++id);
@@ -1068,8 +1083,15 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.8f, 0.8f, 0.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
     ImGui::Begin("Toolbar");
+
     if (m_SceneState == SceneState::Edit)
     {
+        //  float physics2DGravity = m_EditorScene->GetPhysics2DGravity();
+        //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
+        //  {
+        //      m_EditorScene->SetPhysics2DGravity(physics2DGravity);
+        //  }
+
         if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
         {
             OnScenePlay();
@@ -1077,6 +1099,13 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
     }
     else if (m_SceneState == SceneState::Play)
     {
+        //  float physics2DGravity = m_RuntimeScene->GetPhysics2DGravity();
+        //  
+        //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
+        //  {
+        //      m_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
+        //  }
+
         if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(1.0f, 1.0f, 1.0f, 0.2f)))
         {
             OnSceneStop();
@@ -1273,7 +1302,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                     }
                 }
 
-                auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+                auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
                 if (meshEntities.size())
                 {
                     meshEntity = GetMeshEntity();
@@ -1588,6 +1617,16 @@ void EnvironmentMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
             ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu("Script"))
+        {
+            if (ImGui::MenuItem("Reload C# Assembly")) {
+                Hazel::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
+            }
+
+            ImGui::MenuItem("Reload assembly on play", nullptr, &m_ReloadScriptOnPlay);
+            ImGui::EndMenu();
+        }
+
         if (ImGui::BeginMenu("Docking"))
         {
             // Disabling fullscreen would allow the window to be moved to the front of other windows, 
@@ -1641,7 +1680,7 @@ void EnvironmentMap::OpenScene()
     if (!filepath.empty())
     {
         OnNewScene(m_ViewportMainSize);
-        Hazel::SceneSerializer serializer(m_SceneRenderer->s_Data.ActiveScene);
+        Hazel::SceneSerializer serializer(m_EditorScene);
         serializer.Deserialize(filepath);
 
         m_SceneFilePath = filepath;
@@ -1651,27 +1690,28 @@ void EnvironmentMap::OpenScene()
 void EnvironmentMap::SaveScene()
 {
     if (!m_SceneFilePath.empty()) {
-        Hazel::SceneSerializer serializer(m_SceneRenderer->s_Data.ActiveScene);
+        Hazel::SceneSerializer serializer(m_EditorScene);
         serializer.Serialize(m_SceneFilePath);
     }
 }
 
 void EnvironmentMap::SaveSceneAs()
 {
-    std::string filepath = Hazel::FileDialogs::SaveFile("Hazel Scene (*.hazel)\0*.hazel\0");
-    if (!filepath.empty()) {
-        Hazel::SceneSerializer serializer(m_SceneRenderer->s_Data.ActiveScene);
-        serializer.Serialize(filepath);
+    auto app = Application::Get();
+    std::string filepath = app->SaveFile("Hazel Scene (*.hsc)\0*.hsc\0");
+    Hazel::SceneSerializer serializer(m_EditorScene);
+    serializer.Serialize(filepath);
 
-        m_SceneFilePath = filepath;
-    }
+    std::filesystem::path path = filepath;
+    UpdateWindowTitle(path.filename().string());
+    m_SceneFilePath = filepath;
 }
 
 void EnvironmentMap::OnNewScene(glm::vec2 viewportSize)
 {
     // m_SceneRenderer->s_Data.ActiveScene = new Hazel::HazelScene();
-    m_SceneRenderer->s_Data.ActiveScene->OnViewportResize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-    m_SceneHierarchyPanel->SetContext(m_SceneRenderer->s_Data.ActiveScene);
+    m_EditorScene->OnViewportResize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+    m_SceneHierarchyPanel->SetContext(m_EditorScene);
 }
 
 void EnvironmentMap::SelectEntity(Hazel::Entity e)
@@ -1721,7 +1761,7 @@ void EnvironmentMap::RenderSkybox()
     m_SceneRenderer->GetShaderSkybox()->setMat4("u_InverseVP", glm::inverse(viewProjection));
 
     m_SceneRenderer->GetShaderSkybox()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    m_SceneRenderer->GetShaderSkybox()->setFloat("u_TextureLod", ((Hazel::HazelScene*)m_SceneRenderer->s_Data.ActiveScene)->GetSkyboxLOD());
+    m_SceneRenderer->GetShaderSkybox()->setFloat("u_TextureLod", m_EditorScene->GetSkyboxLOD());
     m_SceneRenderer->GetShaderSkybox()->setFloat("u_Exposure", m_ActiveCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
 
     m_SkyboxCube->Render();
@@ -1869,6 +1909,9 @@ bool EnvironmentMap::OnKeyPressedEvent(KeyPressedEvent& e)
                     m_EditorScene->DuplicateEntity(selectedEntity);
                 }
                 break;
+            case (int)KeyCode::S:
+                SaveScene();
+                break;
         }
     }
 
@@ -1887,10 +1930,10 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
             EntitySelection::s_SelectionContext.clear();
 
-            auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+            auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
             for (auto e : meshEntities)
             {
-                Hazel::Entity entity = { e, m_SceneRenderer->s_Data.ActiveScene };
+                Hazel::Entity entity = { e, m_EditorScene.Raw() };
                 auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
                 if (!mesh) {
                     continue;
@@ -2021,14 +2064,14 @@ void EnvironmentMap::GeometryPassTemporary()
         RenderHazelGrid();
     }
 
-    auto meshEntities = m_SceneRenderer->s_Data.ActiveScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
 
     // Render all entities with mesh component
     if (meshEntities.size())
     {
         for (auto entt : meshEntities)
         {
-            Hazel::Entity entity = { entt, m_SceneRenderer->s_Data.ActiveScene };
+            Hazel::Entity entity = { entt, m_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
 
             if (meshComponent.Mesh)

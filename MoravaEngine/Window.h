@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <functional>
+#include <string>
 
 
 struct WindowProps
@@ -62,5 +63,7 @@ public:
 
 	virtual void SetEventLogging(bool enabled) = 0;
 	virtual const bool GetEventLogging() const = 0;
+
+	void SetTitle(std::string title);
 
 };

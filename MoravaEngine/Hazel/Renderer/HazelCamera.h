@@ -19,6 +19,9 @@ namespace Hazel {
 			: m_ProjectionMatrix(projection) {}
 		virtual ~HazelCamera() = default;
 
+		const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
+		void SetProjectionMatrix(const glm::mat4& projectionMatrix) { m_ProjectionMatrix = projectionMatrix; }
+
 		virtual void OnUpdate(Timestep ts) {};
 		virtual void OnEvent(Event& e) {};
 		virtual inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; };

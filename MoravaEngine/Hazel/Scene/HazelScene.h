@@ -48,6 +48,9 @@ namespace Hazel {
 		// Runtime
 		void OnRuntimeStart();
 		void OnRuntimeStop();
+
+		void SetViewportSize(uint32_t width, uint32_t height);
+
 		void OnViewportResize(uint32_t width, uint32_t height);
 
 		template<typename T>
@@ -73,7 +76,7 @@ namespace Hazel {
 		float& GetSkyboxLOD() { return m_SkyboxLOD; }
 
 		Entity CreateEntity(const std::string& name = "");
-		Entity CreateEntity(const std::string& name, const HazelScene& scene);
+		Entity CreateEntity(const std::string& name, Ref<HazelScene> scene);
 		Entity CreateEntityWithID(UUID uuid, const std::string& name = "", bool runtimeMap = false);
 		void DestroyEntity(Entity entity);
 		Entity CloneEntity(Entity entity);

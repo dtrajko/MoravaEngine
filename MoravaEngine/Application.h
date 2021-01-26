@@ -38,6 +38,9 @@ public:
 
 	void OnImGuiRender();
 
+	static const char* GetConfigurationName();
+	static const char* GetPlatformName();
+
 private:
 	bool OnWindowClose(WindowCloseEvent& e);
 	bool OnWindowResize(WindowResizeEvent& e);
