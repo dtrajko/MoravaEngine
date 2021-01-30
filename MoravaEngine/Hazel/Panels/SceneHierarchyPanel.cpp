@@ -433,6 +433,7 @@ namespace Hazel
 					ImGui::CloseCurrentPopup();
 				}
 			}
+
 			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MeshComponent>())
 			{
 				if (ImGui::Button("Mesh"))
@@ -444,6 +445,7 @@ namespace Hazel
 					ImGui::CloseCurrentPopup();
 				}
 			}
+
 			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<DirectionalLightComponent>())
 			{
 				if (ImGui::Button("Directional Light"))
@@ -452,6 +454,7 @@ namespace Hazel
 					ImGui::CloseCurrentPopup();
 				}
 			}
+
 			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SkyLightComponent>())
 			{
 				if (ImGui::Button("Sky Light"))
@@ -460,6 +463,7 @@ namespace Hazel
 					ImGui::CloseCurrentPopup();
 				}
 			}
+
 			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<ScriptComponent>())
 			{
 				if (ImGui::Button("Script"))
@@ -468,6 +472,7 @@ namespace Hazel
 					ImGui::CloseCurrentPopup();
 				}
 			}
+
 			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SpriteRendererComponent>())
 			{
 				if (ImGui::Button("Sprite Renderer"))
@@ -520,7 +525,7 @@ namespace Hazel
 			ImGuiWrapper::DrawVec3Control("Scale", component.Scale, 1.0f, 80.0f);
 		});
 
-		DrawComponent<MeshComponent>("Mesh", entity, [](MeshComponent& mc)
+		DrawComponent<MeshComponent>("Mesh", entity, [=](MeshComponent& mc)
 		{
 			ImGui::Columns(3);
 			ImGui::SetColumnWidth(0, 70.0f);
@@ -541,9 +546,8 @@ namespace Hazel
 			{
 				std::string file = Application::Get()->OpenFile();
 				if (!file.empty()) {
-					// mc.Mesh = Ref<HazelMesh>::Create(file);
 					mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(file, nullptr, nullptr, false);
-					// EnvironmentMap::LoadEnvMapMaterials(mc.Mesh);
+					EnvironmentMap::LoadEnvMapMaterials(mc.Mesh, entity);
 				}
 			}
 			ImGui::Columns(1);

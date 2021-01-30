@@ -12,7 +12,7 @@ namespace Hazel {
 		m_Scene = nullptr;
 	}
 
-	Entity::Entity(entt::entity handle, HazelScene* scene)
+	Entity::Entity(entt::entity handle, Ref<HazelScene> scene)
 		: m_EntityHandle(handle), m_Scene(scene)
 	{
 	}

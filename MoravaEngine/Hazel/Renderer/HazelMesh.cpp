@@ -968,11 +968,15 @@ namespace Hazel {
 
 		std::string submeshUUID = EnvironmentMap::GetSubmeshUUID(&entity, &submesh);
 
-		if (EnvironmentMap::s_SubmeshMaterialUUIDs.contains(submeshUUID)) {
-			materialUUID = EnvironmentMap::s_SubmeshMaterialUUIDs.at(submeshUUID);
+		bool hasMaterialComponent = entity.HasComponent<Hazel::MaterialComponent>();
+		Hazel::MaterialComponent materialComponent = entity.GetComponent<Hazel::MaterialComponent>();
+		EnvMapMaterial* envMapMaterial = materialComponent.Material;
+
+		if (hasMaterialComponent && envMapMaterial) {
+			materialUUID = envMapMaterial->GetUUID();
 		}
-		else if (entity && entity.HasComponent<Hazel::MaterialComponent>() && entity.GetComponent<Hazel::MaterialComponent>().Material) {
-			materialUUID = entity.GetComponent<Hazel::MaterialComponent>().Material->GetUUID();
+		else if (EnvironmentMap::s_SubmeshMaterialUUIDs.contains(submeshUUID)) {
+			materialUUID = EnvironmentMap::s_SubmeshMaterialUUIDs.at(submeshUUID);
 		}
 		else {
 			std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));

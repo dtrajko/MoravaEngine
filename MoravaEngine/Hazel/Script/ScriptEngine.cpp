@@ -465,7 +465,7 @@ namespace Hazel
 
 	void ScriptEngine::InitScriptEntity(Entity entity)
 	{
-		HazelScene* scene = entity.m_Scene;
+		HazelScene* scene = entity.m_Scene.Raw();
 		UUID id = entity.GetComponent<IDComponent>().ID;
 		auto& moduleName = entity.GetComponent<ScriptComponent>().ModuleName;
 		if (moduleName.empty())
@@ -548,7 +548,7 @@ namespace Hazel
 
 	void ScriptEngine::InstantiateEntityClass(Entity entity)
 	{
-		HazelScene* scene = entity.m_Scene;
+		HazelScene* scene = entity.m_Scene.Raw();
 		UUID id = entity.GetComponent<IDComponent>().ID;
 		auto& moduleName = entity.GetComponent<ScriptComponent>().ModuleName;
 

@@ -294,7 +294,7 @@ namespace Hazel {
 	Entity HazelScene::CreateEntity(const std::string& name, Ref<HazelScene> scene)
 	{
 		Entity entity = CreateEntity(name);
-		entity.m_Scene = scene.Raw();
+		entity.m_Scene = scene;
 
 		return entity;
 	}

@@ -18,7 +18,7 @@ namespace Hazel {
 
 	public:
 		Entity();
-		Entity(entt::entity handle, HazelScene* scene);
+		Entity(entt::entity handle, Ref<HazelScene>scene);
 		Entity(const Entity& other) = default;
 
 		template<typename T, typename... Args>
@@ -78,7 +78,7 @@ namespace Hazel {
 
 	private:
 		entt::entity m_EntityHandle;
-		HazelScene* m_Scene = nullptr;
+		Ref<HazelScene> m_Scene;
 
 		Material* m_Material;
 

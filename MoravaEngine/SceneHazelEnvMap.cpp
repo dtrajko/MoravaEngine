@@ -115,8 +115,6 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupFramebuffers();
 
     m_EnvironmentMap = new EnvironmentMap("Textures/HDR/birchwood_4k.hdr", this);
-    m_EnvironmentMap->SetSkyboxLOD(0.0f);
-    m_EnvironmentMap->SetupRenderFramebuffer();
 
     SetupMeshes();
     SetupModels();

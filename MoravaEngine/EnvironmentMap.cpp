@@ -63,15 +63,19 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     m_ActiveCamera = m_RuntimeCamera; // m_RuntimeCamera m_EditorCamera;
 
     m_EditorScene = Hazel::Ref<Hazel::HazelScene>::Create();
+    m_EditorScene->SetSkyboxLOD(0.1f);
+
+    m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(scene);
+    m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvironmentMap::SelectEntity, this, std::placeholders::_1));
+    m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvironmentMap::OnEntityDeleted, this, std::placeholders::_1));
+    // m_SceneHierarchyPanel->SetContext(m_EditorScene);
+    Hazel::ScriptEngine::SetSceneContext(m_EditorScene);
+    m_EditorScene->SetSelectedEntity({});
 
     Init(); // requires a valid Camera reference
 
     s_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
     m_PlayButtonTex = Hazel::HazelTexture2D::Create("Textures/Hazel/PlayButton.png");
-
-    m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(scene);
-    m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvironmentMap::SelectEntity, this, std::placeholders::_1));
-    m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvironmentMap::OnEntityDeleted, this, std::placeholders::_1));
 
     m_DisplayHazelGrid = true;
     m_DisplayBoundingBoxes = false;
@@ -85,6 +89,8 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     m_IsViewportEnabled = true;
 
     m_ResizeViewport = { 0.0f, 1.0f };
+
+    SetupRenderFramebuffer();
 }
 
 void EnvironmentMap::Init()
@@ -516,11 +522,11 @@ void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
 
     // CameraSyncECS(); TODO
 
-    //  if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>())
-    //  {
-    //      auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
-    //      m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction = glm::eulerAngles(glm::quat(tc.Rotation));
-    //  }
+    if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>())
+    {
+        auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+        m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction = glm::eulerAngles(glm::quat(tc.Rotation));
+    }
 
     OnUpdateEditor(scene, timestep);
     // OnUpdateRuntime(scene, timestep);
@@ -1584,26 +1590,28 @@ void EnvironmentMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("New", "Ctrl+N")) {
+            if (ImGui::MenuItem("New Scene", "Ctrl+N")) {
                 NewScene();
             }
 
-            if (ImGui::MenuItem("Open...", "Ctrl+O")) {
+            if (ImGui::MenuItem("Open Scene...", "Ctrl+O")) {
                 OpenScene();
             }
 
-            if (ImGui::MenuItem("Save", "Ctrl+Shift+S")) {
+            if (ImGui::MenuItem("Save Scene", "Ctrl+Shift+S")) {
                 SaveScene();
             }
 
-            if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) {
+            if (ImGui::MenuItem("Save Scene As...", "Ctrl+Shift+S")) {
                 SaveSceneAs();
             }
 
+            ImGui::Separator();
+
             if (ImGui::MenuItem("Exit")) {
+                p_open = false;
                 mainWindow->SetShouldClose(true);
             }
-
             ImGui::EndMenu();
         }
 
@@ -1676,14 +1684,25 @@ void EnvironmentMap::NewScene()
  
 void EnvironmentMap::OpenScene()
 {
-    std::string filepath = Hazel::FileDialogs::OpenFile("Hazel Scene (*.hazel)\0*.hazel\0");
+    // auto app = Application::Get();
+    std::string filepath = Hazel::FileDialogs::OpenFile("Hazel Scene (*.hsc)\0*.hsc\0");
     if (!filepath.empty())
     {
-        OnNewScene(m_ViewportMainSize);
-        Hazel::SceneSerializer serializer(m_EditorScene);
+        Hazel::Ref<Hazel::HazelScene> newScene = Hazel::Ref<Hazel::HazelScene>::Create();
+        Hazel::SceneSerializer serializer(newScene);
         serializer.Deserialize(filepath);
+        m_EditorScene = newScene;
+        std::filesystem::path path = filepath;
+        UpdateWindowTitle(path.filename().string());
+        m_SceneHierarchyPanel->SetContext(m_EditorScene);
+        Hazel::ScriptEngine::SetSceneContext(m_EditorScene);
+
+        m_EditorScene->SetSelectedEntity({});
+        EntitySelection::s_SelectionContext.clear();
 
         m_SceneFilePath = filepath;
+
+        OnNewScene(m_ViewportMainSize);
     }
 }
 
