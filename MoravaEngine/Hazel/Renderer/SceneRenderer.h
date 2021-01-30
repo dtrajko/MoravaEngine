@@ -26,7 +26,7 @@ namespace Hazel {
 		// HazelScene* ActiveScene = nullptr;
 		struct SceneInfo
 		{
-			Camera* SceneCamera;
+			HazelCamera* SceneCamera;
 
 			// Resources
 			Material* SkyboxMaterial;
@@ -65,12 +65,12 @@ namespace Hazel {
 	{
 	public:
 		SceneRenderer() = default;
-		SceneRenderer(std::string filepath, Scene* scene);
+		SceneRenderer(std::string filepath, HazelScene* scene);
 		~SceneRenderer();
 
 		static void Init(); // TODO
 
-		void Init(std::string filepath, Scene* scene); // TODO convert to static
+		void Init(std::string filepath, HazelScene* scene); // TODO convert to static
 
 		static void SetViewportSize(uint32_t width, uint32_t height);
 

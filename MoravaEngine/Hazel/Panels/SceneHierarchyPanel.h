@@ -19,10 +19,11 @@ namespace Hazel
 	{
 	public:
 		SceneHierarchyPanel() = default;
-		SceneHierarchyPanel(HazelScene* scene);
+		SceneHierarchyPanel(const Ref<HazelScene>& scene);
 		~SceneHierarchyPanel();
 
 		void SetContext(const Ref<HazelScene>& scene);
+		Ref<HazelScene> GetContext() { return m_Context; };
 		void SetSelected(Entity entity);
 		void SetSelectionChangedCallback(const std::function<void(Entity)>& func) { m_SelectionChangedCallback = func; }
 		void SetEntityDeletedCallback(const std::function<void(Entity)>& func) { m_EntityDeletedCallback = func; }

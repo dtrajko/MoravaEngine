@@ -29,7 +29,7 @@ namespace Hazel {
     Ref<HazelTextureCube> SceneRenderer::m_EnvFiltered;
     Ref<HazelTextureCube> SceneRenderer::m_IrradianceMap;
 
-    SceneRenderer::SceneRenderer(std::string filepath, Scene* scene)
+    SceneRenderer::SceneRenderer(std::string filepath, HazelScene* scene)
     {
         Init(filepath, scene);
     }
@@ -43,14 +43,14 @@ namespace Hazel {
         // TODO
     }
 
-    void SceneRenderer::Init(std::string filepath, Scene* scene)
+    void SceneRenderer::Init(std::string filepath, HazelScene* scene)
     {
         m_SamplerSlots = new std::map<std::string, unsigned int>();
         m_SamplerSlots->insert(std::make_pair("u_Texture", 1));
 
         SetupShaders();
 
-        BeginScene((Hazel::HazelScene*)scene);
+        BeginScene(scene);
 
         s_Data.SceneData.SceneEnvironment = Load(filepath);
         SetEnvironment(s_Data.SceneData.SceneEnvironment);

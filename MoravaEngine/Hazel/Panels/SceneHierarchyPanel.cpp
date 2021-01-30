@@ -12,7 +12,7 @@
 
 namespace Hazel
 {
-	SceneHierarchyPanel::SceneHierarchyPanel(HazelScene* scene)
+	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<HazelScene>& scene)
 	{
 		SetContext(scene);
 	}

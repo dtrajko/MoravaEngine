@@ -48,12 +48,8 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     // SceneComposite.fs - uniform sampler2DMS u_Texture;
     m_SamplerSlots->insert(std::make_pair("u_Texture",  1));
 
-    m_SceneRenderer = new Hazel::SceneRenderer(filepath, scene);
-
     m_SkyboxCube = new CubeSkybox();
     m_Quad = new Quad();
-
-    SetSkybox(m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap);
 
     float fov = 60.0f;
     float aspectRatio = 1.778f; // 16/9
@@ -65,14 +61,17 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     m_EditorScene = Hazel::Ref<Hazel::HazelScene>::Create();
     m_EditorScene->SetSkyboxLOD(0.1f);
 
-    m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(scene);
-    m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvironmentMap::SelectEntity, this, std::placeholders::_1));
-    m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvironmentMap::OnEntityDeleted, this, std::placeholders::_1));
-    // m_SceneHierarchyPanel->SetContext(m_EditorScene);
-    Hazel::ScriptEngine::SetSceneContext(m_EditorScene);
-    m_EditorScene->SetSelectedEntity({});
+    m_SceneRenderer = new Hazel::SceneRenderer(filepath, m_EditorScene.Raw());
+    SetSkybox(m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap);
 
     Init(); // requires a valid Camera reference
+
+    m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(m_EditorScene);
+    m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvironmentMap::SelectEntity, this, std::placeholders::_1));
+    m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvironmentMap::OnEntityDeleted, this, std::placeholders::_1));
+    m_SceneHierarchyPanel->SetContext(m_EditorScene); // already done in constructor
+    Hazel::ScriptEngine::SetSceneContext(m_EditorScene);
+    m_EditorScene->SetSelectedEntity({});
 
     s_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
     m_PlayButtonTex = Hazel::HazelTexture2D::Create("Textures/Hazel/PlayButton.png");
@@ -604,7 +603,7 @@ void EnvironmentMap::OnScenePlay()
     m_EditorScene->CopyTo(m_RuntimeScene);
 
     m_RuntimeScene->OnRuntimeStart();
-    m_SceneHierarchyPanel->SetContext(m_RuntimeScene.Raw());
+    m_SceneHierarchyPanel->SetContext(m_RuntimeScene);
 }
 
 void EnvironmentMap::OnSceneStop()
@@ -1598,7 +1597,7 @@ void EnvironmentMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
                 OpenScene();
             }
 
-            if (ImGui::MenuItem("Save Scene", "Ctrl+Shift+S")) {
+            if (ImGui::MenuItem("Save Scene", "Ctrl+S")) {
                 SaveScene();
             }
 
@@ -2083,14 +2082,15 @@ void EnvironmentMap::GeometryPassTemporary()
         RenderHazelGrid();
     }
 
-    auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    // auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = m_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<Hazel::MeshComponent>();
 
     // Render all entities with mesh component
     if (meshEntities.size())
     {
         for (auto entt : meshEntities)
         {
-            Hazel::Entity entity = { entt, m_EditorScene.Raw() };
+            Hazel::Entity entity = { entt, m_SceneHierarchyPanel->GetContext().Raw() };
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
 
             if (meshComponent.Mesh)
