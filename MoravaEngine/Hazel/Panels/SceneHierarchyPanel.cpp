@@ -12,7 +12,7 @@
 
 namespace Hazel
 {
-	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<HazelScene>& scene)
+	SceneHierarchyPanel::SceneHierarchyPanel(Ref<HazelScene> scene)
 	{
 		SetContext(scene);
 	}
@@ -21,7 +21,7 @@ namespace Hazel
 	{
 	}
 
-	void SceneHierarchyPanel::SetContext(const Ref<HazelScene>& scene)
+	void SceneHierarchyPanel::SetContext(Ref<HazelScene> scene)
 	{
 		m_Context = scene;
 		EntitySelection::s_SelectionContext = {};

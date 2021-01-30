@@ -527,11 +527,11 @@ void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
         m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction = glm::eulerAngles(glm::quat(tc.Rotation));
     }
 
-    OnUpdateEditor(scene, timestep);
-    // OnUpdateRuntime(scene, timestep);
+    OnUpdateEditor(m_EditorScene, timestep);
+    // OnUpdateRuntime(m_RuntimeScene, timestep);
 }
 
-void EnvironmentMap::OnUpdateEditor(Scene* scene, float timestep)
+void EnvironmentMap::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, float timestep)
 {
     m_EditorScene = scene;
 
@@ -562,7 +562,7 @@ void EnvironmentMap::OnUpdateEditor(Scene* scene, float timestep)
     }
 }
 
-void EnvironmentMap::OnUpdateRuntime(Scene* scene, float timestep)
+void EnvironmentMap::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, float timestep)
 {
     m_EditorScene = scene;
 
@@ -2082,15 +2082,15 @@ void EnvironmentMap::GeometryPassTemporary()
         RenderHazelGrid();
     }
 
-    // auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
-    auto meshEntities = m_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    // auto meshEntities = m_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<Hazel::MeshComponent>();
 
     // Render all entities with mesh component
     if (meshEntities.size())
     {
         for (auto entt : meshEntities)
         {
-            Hazel::Entity entity = { entt, m_SceneHierarchyPanel->GetContext().Raw() };
+            Hazel::Entity entity = { entt, m_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
 
             if (meshComponent.Mesh)

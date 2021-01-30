@@ -31,8 +31,8 @@ public:
 	~EnvironmentMap();
 
 	void OnUpdate(Scene* scene, float timestep);
-	void OnUpdateEditor(Scene* scene, float timestep);
-	void OnUpdateRuntime(Scene* scene, float timestep);
+	void OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, float timestep);
+	void OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, float timestep);
 
 	void OnScenePlay();
 	void OnSceneStop();
