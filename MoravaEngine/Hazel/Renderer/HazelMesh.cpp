@@ -968,9 +968,12 @@ namespace Hazel {
 
 		std::string submeshUUID = EnvironmentMap::GetSubmeshUUID(&entity, &submesh);
 
+		EnvMapMaterial* envMapMaterial = nullptr;
 		bool hasMaterialComponent = entity.HasComponent<Hazel::MaterialComponent>();
-		Hazel::MaterialComponent materialComponent = entity.GetComponent<Hazel::MaterialComponent>();
-		EnvMapMaterial* envMapMaterial = materialComponent.Material;
+		if (hasMaterialComponent) {
+			Hazel::MaterialComponent materialComponent = entity.GetComponent<Hazel::MaterialComponent>();
+			EnvMapMaterial* envMapMaterial = materialComponent.Material;
+		}
 
 		if (EnvironmentMap::s_SubmeshMaterialUUIDs.contains(submeshUUID)) {
 			materialUUID = EnvironmentMap::s_SubmeshMaterialUUIDs.at(submeshUUID);

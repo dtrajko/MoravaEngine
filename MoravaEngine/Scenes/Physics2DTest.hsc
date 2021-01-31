@@ -1,6 +1,6 @@
 Scene: Scene Name
 Environment:
-  AssetPath: assets\env\pink_sunrise_4k.hdr
+  AssetPath: Textures/HDR/pink_sunrise_4k.hdr
   Light:
     Direction: [-0.787, -0.73299998, 1]
     Radiance: [1, 1, 1]
@@ -14,7 +14,7 @@ Entities:
       Rotation: [0.967056513, 0, 0, -0.254561812]
       Scale: [4.47999525, 4.47999525, 4.48000002]
     MeshComponent:
-      AssetPath: assets\meshes\Cube1m.fbx
+      AssetPath: Models/Hazel/Cube1m.fbx
     RigidBody2DComponent:
       BodyType: 1
       Mass: 1
@@ -29,7 +29,7 @@ Entities:
       Rotation: [0.977883637, 0, 0, -0.209149718]
       Scale: [4.47999668, 4.47999668, 4.48000002]
     MeshComponent:
-      AssetPath: assets\meshes\Cube1m.fbx
+      AssetPath: Models/Hazel/Cube1m.fbx
     RigidBody2DComponent:
       BodyType: 1
       Mass: 1
@@ -44,7 +44,7 @@ Entities:
       Rotation: [0.989285827, 0, 0, 0.145991713]
       Scale: [4.47999287, 4.47999287, 4.48000002]
     MeshComponent:
-      AssetPath: assets\meshes\Cube1m.fbx
+      AssetPath: Models/Hazel/Cube1m.fbx
     RigidBody2DComponent:
       BodyType: 1
       Mass: 0.5
@@ -59,7 +59,7 @@ Entities:
       Rotation: [0.956475914, 0, 0, -0.291811317]
       Scale: [5, 2, 2]
     MeshComponent:
-      AssetPath: assets\meshes\Cube1m.fbx
+      AssetPath: Models/Hazel/Cube1m.fbx
     RigidBody2DComponent:
       BodyType: 1
       Mass: 0.25
@@ -74,7 +74,7 @@ Entities:
       Rotation: [0.781595349, 0, 0, 0.623785794]
       Scale: [14.000001, 4.47999334, 4.48000002]
     MeshComponent:
-      AssetPath: assets\meshes\Cube1m.fbx
+      AssetPath: Models/Hazel/Cube1m.fbx
     RigidBody2DComponent:
       BodyType: 1
       Mass: 3
@@ -89,7 +89,7 @@ Entities:
       Rotation: [0.986578286, 0, 0, 0.163288936]
       Scale: [4.47999954, 4.47999954, 4.48000002]
     MeshComponent:
-      AssetPath: assets\meshes\Cube1m.fbx
+      AssetPath: Models/Hazel/Cube1m.fbx
     RigidBody2DComponent:
       BodyType: 1
       Mass: 1
@@ -113,7 +113,7 @@ Entities:
           Type: 1
           Data: 10
     MeshComponent:
-      AssetPath: assets\meshes\Sphere1m.fbx
+      AssetPath: Models/Hazel/Sphere1m.fbx
     RigidBody2DComponent:
       BodyType: 1
       Mass: 1
@@ -134,7 +134,7 @@ Entities:
           Type: 1
           Data: 0
     MeshComponent:
-      AssetPath: assets\meshes\Cube1m.fbx
+      AssetPath: Models/Hazel/Cube1m.fbx
     RigidBody2DComponent:
       BodyType: 0
       Mass: 1
@@ -155,8 +155,16 @@ Entities:
           Type: 1
           Data: 12
     CameraComponent:
-      Camera: some camera data...
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.100000001
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1000
+        OrthographicFar: 1000
       Primary: true
+      FixedAspectRatio: false
   - Entity: 3948844418381294888
     TagComponent:
       Tag: Box
@@ -165,7 +173,7 @@ Entities:
       Rotation: [0.977883637, 0, 0, -0.209149733]
       Scale: [1.99999976, 1.99999976, 2]
     MeshComponent:
-      AssetPath: assets\meshes\Cube1m.fbx
+      AssetPath: Models/Hazel/Cube1m.fbx
     RigidBody2DComponent:
       BodyType: 1
       Mass: 1

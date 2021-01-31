@@ -596,7 +596,7 @@ void EnvironmentMap::OnScenePlay()
     m_SceneState = SceneState::Play;
 
     if (m_ReloadScriptOnPlay) {
-        Hazel::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
+        // Hazel::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
     }
 
     m_RuntimeScene = Hazel::Ref<Hazel::HazelScene>::Create();
@@ -1913,10 +1913,6 @@ bool EnvironmentMap::OnKeyPressedEvent(KeyPressedEvent& e)
     {
         switch (e.GetKeyCode())
         {
-            case (int)KeyCode::G:
-                // Toggle grid
-                Hazel::SceneRenderer::GetOptions().ShowGrid = !Hazel::SceneRenderer::GetOptions().ShowGrid;
-                break;
             case (int)KeyCode::B:
                 // Toggle bounding boxes
                 m_UIShowBoundingBoxes = !m_UIShowBoundingBoxes;
@@ -1928,9 +1924,26 @@ bool EnvironmentMap::OnKeyPressedEvent(KeyPressedEvent& e)
                     m_EditorScene->DuplicateEntity(selectedEntity);
                 }
                 break;
+            case (int)KeyCode::G:
+                // Toggle grid
+                Hazel::SceneRenderer::GetOptions().ShowGrid = !Hazel::SceneRenderer::GetOptions().ShowGrid;
+                break;
+            case (int)KeyCode::O:
+                OpenScene();
+                break;
             case (int)KeyCode::S:
                 SaveScene();
                 break;
+        }
+
+        if (Input::IsKeyPressed(MORAVA_KEY_LEFT_SHIFT))
+        {
+            switch (e.GetKeyCode())
+            {
+            case (int)KeyCode::S:
+                SaveSceneAs();
+                break;
+            }
         }
     }
 
