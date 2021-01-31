@@ -335,7 +335,7 @@ void EnvironmentMap::RenameMaterial(EnvMapMaterial* envMapMaterial, const std::s
 
     // TODO: Rename in s_EnvMapMaterials
     for (auto emm_it = s_EnvMapMaterials.cbegin(); emm_it != s_EnvMapMaterials.cend();) {
-        if (emm_it->second->GetName() == oldName) {
+        if (emm_it->second->GetUUID() == materialUUID) {
             emm_it->second->SetName(newName);
             Log::GetLogger()->error("s_EnvMapMaterials: '{0}' => '{1}'", oldName, s_EnvMapMaterials.find(materialUUID)->second->GetName());
             break;
@@ -1488,6 +1488,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                             sm_it->second = materialUUID;
                             Log::GetLogger()->debug("s_SubmeshMaterialUUIDs UPDATE [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
                                 submeshUUID, materialUUID, s_SubmeshMaterialUUIDs.size());
+                            break;
                         }
                         else {
                             s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));

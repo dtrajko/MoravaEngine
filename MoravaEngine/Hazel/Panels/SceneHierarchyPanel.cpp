@@ -262,6 +262,23 @@ namespace Hazel
 				ImGui::SameLine();
 				ImGui::Text(std::to_string(submeshes[i].MaterialIndex).c_str());
 
+				SubmeshUUID submeshUUID = EnvironmentMap::GetSubmeshUUID(&entity, &submeshes[i]);
+				std::string materialUUID = "N/A";
+				std::string materialName = "N/A";
+				auto map_it = EnvironmentMap::s_SubmeshMaterialUUIDs.find(submeshUUID);
+				if (EnvironmentMap::s_SubmeshMaterialUUIDs.find(submeshUUID) != EnvironmentMap::s_SubmeshMaterialUUIDs.end()) {
+					materialUUID = map_it->second;
+					materialName = map_it->first;
+				}
+
+				ImGui::Text("MaterialUUID: ");
+				ImGui::SameLine();
+				ImGui::Text(materialUUID.c_str());
+
+				ImGui::Text("Material Name: ");
+				ImGui::SameLine();
+				ImGui::Text(materialName.c_str());
+
 				// ...
 				ImGui::TreePop();
 			}

@@ -972,11 +972,11 @@ namespace Hazel {
 		Hazel::MaterialComponent materialComponent = entity.GetComponent<Hazel::MaterialComponent>();
 		EnvMapMaterial* envMapMaterial = materialComponent.Material;
 
-		if (hasMaterialComponent && envMapMaterial) {
-			materialUUID = envMapMaterial->GetUUID();
-		}
-		else if (EnvironmentMap::s_SubmeshMaterialUUIDs.contains(submeshUUID)) {
+		if (EnvironmentMap::s_SubmeshMaterialUUIDs.contains(submeshUUID)) {
 			materialUUID = EnvironmentMap::s_SubmeshMaterialUUIDs.at(submeshUUID);
+		}
+		else if (hasMaterialComponent && envMapMaterial) {
+			materialUUID = envMapMaterial->GetUUID();
 		}
 		else {
 			std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));
