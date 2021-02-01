@@ -374,6 +374,45 @@ namespace Hazel {
 		}
 	}
 
+	void HazelScene::DuplicateEntity(Entity entity)
+	{
+		Entity newEntity;
+		if (entity.HasComponent<TagComponent>()) {
+			newEntity = CreateEntity(entity.GetComponent<TagComponent>().Tag);
+		}
+		else {
+			newEntity = CreateEntity();
+		}
+
+		CopyComponentIfExists<TransformComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<MeshComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<DirectionalLightComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<SkyLightComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<ScriptComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<CameraComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<SpriteRendererComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<RigidBody2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<BoxCollider2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<CircleCollider2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<MaterialComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+	}
+
+	Entity HazelScene::FindEntityByTag(const std::string& tag)
+	{
+		// TODO: If this becomes used often, consider indexing by tag
+		auto view = m_Registry.view<TagComponent>();
+		for (auto entity : view)
+		{
+			auto& candidate = view.get<TagComponent>(entity).Tag;
+			if (candidate == tag)
+			{
+				return Entity(entity, this);
+			}
+		}
+
+		return Entity{};
+	}
+
 	/**
 	 * Working on Hazel LIVE! #14
 	 * 
@@ -503,29 +542,6 @@ namespace Hazel {
 		Log::GetLogger()->warn("Method HazelScene::CopyEntity implemented poorly [Tag: '{0}']", entity.GetComponent<TagComponent>().Tag);
 
 		return entityClone;
-	}
-
-	void HazelScene::DuplicateEntity(Entity entity)
-	{
-		Entity newEntity;
-		if (entity.HasComponent<TagComponent>()) {
-			newEntity = CreateEntity(entity.GetComponent<TagComponent>().Tag);
-		}
-		else {
-			newEntity = CreateEntity();
-		}
-
-		CopyComponentIfExists<TransformComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<MeshComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<DirectionalLightComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<SkyLightComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<ScriptComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<CameraComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<SpriteRendererComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<RigidBody2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<BoxCollider2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<CircleCollider2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<MaterialComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 	}
 
 	void HazelScene::OnEvent(Event& e)

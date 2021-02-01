@@ -88,6 +88,8 @@ namespace Hazel {
 			return m_Registry.view<T>();
 		}
 
+		Entity FindEntityByTag(const std::string& tag);
+
 		const EntityMap& GetEntityMap() const { return m_EntityIDMap; }
 
 		// Temporary/experimental

@@ -116,9 +116,10 @@ namespace Hazel { namespace Script {
 		Ref<HazelScene> scene = ScriptEngine::GetCurrentSceneContext();
 		HZ_CORE_ASSERT(scene, "No active scene!");
 
-		// Entity entity = scene->FindEntityByTag(mono_string_to_utf8(tag));
-		// if (entity)
-		// 	return entity.GetComponent<IDComponent>().ID;
+		Entity entity = scene->FindEntityByTag(mono_string_to_utf8(tag));
+		if (entity) {
+			return entity.GetComponent<IDComponent>().ID;
+		}
 
 		return 0;
 	}

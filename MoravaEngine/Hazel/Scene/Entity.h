@@ -77,7 +77,7 @@ namespace Hazel {
 		Entity(const std::string& name);
 
 	private:
-		entt::entity m_EntityHandle;
+		entt::entity m_EntityHandle{ entt::null };
 		Ref<HazelScene> m_Scene;
 
 		Material* m_Material;
