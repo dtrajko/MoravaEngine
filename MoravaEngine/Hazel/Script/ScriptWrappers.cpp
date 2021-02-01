@@ -12,7 +12,8 @@
 
 #include <mono/jit/jit.h>
 
-// #include <box2d/box2d.h>
+#include <box2d/box2d.h>
+
 
 namespace Hazel {
 	extern std::unordered_map<MonoType*, std::function<bool(Entity&)>> s_HasComponentFuncs;
@@ -79,9 +80,9 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		// Entity entity = entityMap.at(entityID);
-		// auto& transformComponent = entity.GetComponent<TransformComponent>();
-		// memcpy(glm::value_ptr(transformComponent.Transform), inTransform, sizeof(glm::mat4));
+		Entity entity = entityMap.at(entityID);
+		auto& transformComponent = entity.GetComponent<TransformComponent>();
+		memcpy((void*)glm::value_ptr(transformComponent.GetTransform()), inTransform, sizeof(glm::mat4));
 	}
 
 	void Hazel_Entity_CreateComponent(uint64_t entityID, void* type)
@@ -91,9 +92,9 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		// Entity entity = entityMap.at(entityID);
-		// MonoType* monoType = mono_reflection_type_get_type((MonoReflectionType*)type);
-		// s_CreateComponentFuncs[monoType](entity);
+		Entity entity = entityMap.at(entityID);
+		MonoType* monoType = mono_reflection_type_get_type((MonoReflectionType*)type);
+		s_CreateComponentFuncs[monoType](entity);
 	}
 
 	bool Hazel_Entity_HasComponent(uint64_t entityID, void* type)
@@ -103,12 +104,10 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		// Entity entity = entityMap.at(entityID);
-		// MonoType* monoType = mono_reflection_type_get_type((MonoReflectionType*)type);
-		// bool result = s_HasComponentFuncs[monoType](entity);
-		// return result;
-
-		return false;
+		Entity entity = entityMap.at(entityID);
+		MonoType* monoType = mono_reflection_type_get_type((MonoReflectionType*)type);
+		bool result = s_HasComponentFuncs[monoType](entity);
+		return result;
 	}
 
 	uint64_t Hazel_Entity_FindEntityByTag(MonoString* tag)
@@ -131,9 +130,9 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		// Entity entity = entityMap.at(entityID);
-		// auto& meshComponent = entity.GetComponent<MeshComponent>();
-		// return new Ref<Mesh>(meshComponent.Mesh);
+		Entity entity = entityMap.at(entityID);
+		auto& meshComponent = entity.GetComponent<MeshComponent>();
+		return new Ref<Mesh>(meshComponent.Mesh);
 
 		return (void*)nullptr;
 	}
@@ -157,11 +156,11 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		// Entity entity = entityMap.at(entityID);
-		// HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
-		// auto& component = entity.GetComponent<RigidBody2DComponent>();
-		// b2Body* body = (b2Body*)component.RuntimeBody;
-		// body->ApplyLinearImpulse(*(const b2Vec2*)impulse, body->GetWorldCenter() + *(const b2Vec2*)offset, wake);
+		Entity entity = entityMap.at(entityID);
+		HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
+		auto& component = entity.GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)component.RuntimeBody;
+		body->ApplyLinearImpulse(*(const b2Vec2*)impulse, body->GetWorldCenter() + *(const b2Vec2*)offset, wake);
 	}
 
 	void Hazel_RigidBody2DComponent_GetLinearVelocity(uint64_t entityID, glm::vec2* outVelocity)
@@ -171,13 +170,13 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		// Entity entity = entityMap.at(entityID);
-		// HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
-		// auto& component = entity.GetComponent<RigidBody2DComponent>();
-		// b2Body* body = (b2Body*)component.RuntimeBody;
-		// const auto& velocity = body->GetLinearVelocity();
-		// HZ_CORE_ASSERT(outVelocity);
-		// *outVelocity = { velocity.x, velocity.y };
+		Entity entity = entityMap.at(entityID);
+		HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
+		auto& component = entity.GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)component.RuntimeBody;
+		const auto& velocity = body->GetLinearVelocity();
+		HZ_CORE_ASSERT(outVelocity);
+		*outVelocity = { velocity.x, velocity.y };
 	}
 
 	void Hazel_RigidBody2DComponent_SetLinearVelocity(uint64_t entityID, glm::vec2* velocity)
@@ -187,12 +186,12 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		// Entity entity = entityMap.at(entityID);
-		// HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
-		// auto& component = entity.GetComponent<RigidBody2DComponent>();
-		// b2Body* body = (b2Body*)component.RuntimeBody;
-		// HZ_CORE_ASSERT(velocity);
-		// body->SetLinearVelocity({velocity->x, velocity->y});
+		Entity entity = entityMap.at(entityID);
+		HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
+		auto& component = entity.GetComponent<RigidBody2DComponent>();
+		b2Body* body = (b2Body*)component.RuntimeBody;
+		HZ_CORE_ASSERT(velocity);
+		body->SetLinearVelocity({velocity->x, velocity->y});
 	}
 
 	Ref<HazelMesh>* Hazel_Mesh_Constructor(MonoString* filepath)
@@ -231,9 +230,7 @@ namespace Hazel { namespace Script {
 	{
 		Ref<HazelMesh>& mesh = *(Ref<HazelMesh>*)inMesh;
 		const auto& materials = mesh->GetMaterials();
-		// return materials.size();
-
-		return 0;
+		return (int)materials.size();
 	}
 
 	void* Hazel_Texture2D_Constructor(uint32_t width, uint32_t height)
