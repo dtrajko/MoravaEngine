@@ -248,4 +248,6 @@ private:
 	std::string m_WindowTitleStatic = "";
 	std::string m_WindowTitleDynamic = "";
 
+	std::string m_StatusBarMessage = "";
+
 };

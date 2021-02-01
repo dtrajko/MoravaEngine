@@ -1520,6 +1520,16 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
     }
     ImGui::End();
 
+    ImGui::SetNextWindowSize({ 0.0f, 22.0f }, {});
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 10, 5 });
+    ImGui::Begin("Status bar");
+    {
+        m_StatusBarMessage = "Status bar message...";
+        ImGui::Text(m_StatusBarMessage.c_str());
+    }
+    ImGui::End();
+    ImGui::PopStyleVar();
+
     m_SceneHierarchyPanel->OnImGuiRender();
 
     ImGui::ShowMetricsWindow();
