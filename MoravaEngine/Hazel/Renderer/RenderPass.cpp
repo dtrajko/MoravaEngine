@@ -1,8 +1,11 @@
 #include "RenderPass.h"
 
+#include "../Core/Base.h"
+#include "../Core/Assert.h"
 #include "../Platform/OpenGL/OpenGLRenderPass.h"
 #include "RendererAPI.h"
-#include "../Core/Assert.h"
+
+#include "../../Log.h"
 
 
 namespace Hazel {

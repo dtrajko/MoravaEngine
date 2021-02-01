@@ -159,7 +159,7 @@ const char* Application::GetConfigurationName()
 	return "Dist";
 #else
 	// #error Undefined configuration?
-	return "Undefined";
+	return "N/A";
 #endif
 }
 
@@ -169,6 +169,6 @@ const char* Application::GetPlatformName()
 	return "Windows x64";
 #else
 	// #error Undefined platform?
-	return "Undefined";
+	return "N/A";
 #endif
 }

@@ -78,6 +78,9 @@ public:
 	virtual inline void SetEventLogging(bool enabled) override { m_EventLoggingEnabled = enabled; }
 	virtual inline const bool GetEventLogging() const override { return m_EventLoggingEnabled; }
 
+	virtual void SetTitle(std::string title) override;
+	virtual std::string GetTitle() override;
+
 private:
 	GLFWwindow* glfwWindow;
 

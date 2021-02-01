@@ -301,7 +301,7 @@ namespace Hazel
 
 	void ScriptEngine::OnSceneDestruct(UUID sceneID)
 	{
-		if (s_EntityInstanceMap.find(sceneID) != s_EntityInstanceMap.end())
+		if (s_EntityInstanceMap.size() > 0 && s_EntityInstanceMap.find(sceneID) != s_EntityInstanceMap.end())
 		{
 			s_EntityInstanceMap.at(sceneID).clear();
 			s_EntityInstanceMap.erase(sceneID);

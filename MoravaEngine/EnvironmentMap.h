@@ -245,5 +245,7 @@ private:
 	bool m_UIShowBoundingBoxes;
 	bool m_UIShowBoundingBoxesOnTop;
 
+	std::string m_WindowTitleStatic = "";
+	std::string m_WindowTitleDynamic = "";
 
 };

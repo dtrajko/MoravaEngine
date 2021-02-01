@@ -90,6 +90,9 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     m_ResizeViewport = { 0.0f, 1.0f };
 
     SetupRenderFramebuffer();
+
+    m_WindowTitleStatic = Application::Get()->GetWindow()->GetTitle();
+    UpdateWindowTitle("New Scene");
 }
 
 void EnvironmentMap::Init()
@@ -621,8 +624,9 @@ void EnvironmentMap::OnSceneStop()
 
 void EnvironmentMap::UpdateWindowTitle(const std::string& sceneName)
 {
-    std::string title = sceneName + " - Hazelnut - " + Application::GetPlatformName() + " (" + Application::GetConfigurationName() + ")";
-    Application::Get()->GetWindow()->SetTitle(title);
+    m_WindowTitleDynamic = sceneName + " - " + Application::GetPlatformName() + " (" + Application::GetConfigurationName() + ")";
+    std::string newTitle = m_WindowTitleDynamic + " - " + m_WindowTitleStatic;
+    Application::Get()->GetWindow()->SetTitle(newTitle);
 }
 
 void EnvironmentMap::CameraSyncECS()
@@ -1718,12 +1722,15 @@ void EnvironmentMap::SaveSceneAs()
 {
     auto app = Application::Get();
     std::string filepath = app->SaveFile("Hazel Scene (*.hsc)\0*.hsc\0");
-    Hazel::SceneSerializer serializer(m_EditorScene);
-    serializer.Serialize(filepath);
+    if (!filepath.empty())
+    {
+        Hazel::SceneSerializer serializer(m_EditorScene);
+        serializer.Serialize(filepath);
 
-    std::filesystem::path path = filepath;
-    UpdateWindowTitle(path.filename().string());
-    m_SceneFilePath = filepath;
+        std::filesystem::path path = filepath;
+        UpdateWindowTitle(path.filename().string());
+        m_SceneFilePath = filepath;
+    }
 }
 
 void EnvironmentMap::OnNewScene(glm::vec2 viewportSize)

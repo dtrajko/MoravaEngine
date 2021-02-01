@@ -1,4 +1,5 @@
 #include "../../Renderer/RendererAPI.h"
+#include "../../Core/Base.h"
 #include "../../Core/Assert.h"
 #include "../../../Log.h"
 

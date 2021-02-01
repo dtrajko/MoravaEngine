@@ -118,7 +118,7 @@ namespace Hazel {
 
     void SceneRenderer::BeginScene(HazelScene* scene, const EditorCamera& camera)
     {
-        HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+        // HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
         // s_Data.ActiveScene = scene;
 
@@ -127,7 +127,7 @@ namespace Hazel {
 
     void SceneRenderer::BeginScene(HazelScene* scene)
     {
-        HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+        // HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
         // s_Data.ActiveScene = scene;
 
@@ -136,7 +136,7 @@ namespace Hazel {
 
     void SceneRenderer::EndScene()
     {
-        HZ_CORE_ASSERT(s_Data.ActiveScene, "");
+        // HZ_CORE_ASSERT(s_Data.ActiveScene, "");
 
         // s_Data.ActiveScene = nullptr;
 
@@ -230,7 +230,7 @@ namespace Hazel {
 
     void SceneRenderer::FlushDrawList()
     {
-        HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+        // HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
         //  if (!s_Data.ActiveScene) {
         //      Log::GetLogger()->error("Active scene is not specified!");

@@ -5,6 +5,8 @@
 #include "../Core/Ref.h"
 #include "RendererAPI.h"
 
+#include "../../Log.h"
+
 #include <string>
 #include <vector>
 

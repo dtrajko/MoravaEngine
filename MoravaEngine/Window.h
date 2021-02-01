@@ -64,6 +64,7 @@ public:
 	virtual void SetEventLogging(bool enabled) = 0;
 	virtual const bool GetEventLogging() const = 0;
 
-	void SetTitle(std::string title);
+	virtual void SetTitle(std::string title) = 0;
+	virtual std::string GetTitle() = 0;
 
 };

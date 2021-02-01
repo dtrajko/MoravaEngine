@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(ENV{MORAVA_BUILD_TYPE} Release)
+add_compile_definitions(HZ_PLATFORM_WINDOWS)
+
+set(ENV{MORAVA_BUILD_TYPE} Debug)
+add_compile_definitions(HZ_DEBUG)
 
 set(MSVC_INCREMENTAL_DEFAULT ON)
 

@@ -24,9 +24,15 @@ Window* Window::Create(const WindowProps& props)
 	return new WindowsWindow(props);
 }
 
-void Window::SetTitle(std::string title)
+void WindowsWindow::SetTitle(std::string title)
 {
-	Log::GetLogger()->error("Window::SetTitle method not implemented!");
+	m_Data.Title = title;
+	glfwSetWindowTitle(glfwWindow, m_Data.Title.c_str());
+}
+
+std::string WindowsWindow::GetTitle()
+{
+	return m_Data.Title;
 }
 
 WindowsWindow::WindowsWindow(const WindowProps& props)

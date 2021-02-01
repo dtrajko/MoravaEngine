@@ -41,5 +41,5 @@ const Ref<Shader>& ShaderLibrary::Get(const std::string& name)
 	if (s_Shaders.find(name) != s_Shaders.end()) {
 		return s_Shaders[name];
 	}
-	return nullptr;
+	return Ref<Shader>();
 }

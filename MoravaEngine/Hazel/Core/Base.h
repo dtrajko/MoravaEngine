@@ -5,6 +5,9 @@
 #include <memory>
 
 
+// __VA_ARGS__ expansion to get past MSVC "bug"
+#define HZ_EXPAND_VARGS(x) x
+
 #define BIT(x) (1 << x)
 
 #define APP_BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
