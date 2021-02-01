@@ -940,7 +940,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
 
     ImGui::Begin("Framebuffers");
     {
-        ImVec2 imageSize(128.0f, 128.0f);
+        ImVec2 imageSize(96.0f, 96.0f);
 
         if (m_IsViewportEnabled)
         {
@@ -1524,8 +1524,10 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 10, 5 });
     ImGui::Begin("Status bar");
     {
-        m_StatusBarMessage = "Status bar message...";
-        ImGui::Text(m_StatusBarMessage.c_str());
+        char buffer[100];
+        snprintf(buffer, sizeof(buffer), "Frame Time: %.2fms\n", Timer::Get()->GetDeltaTime() * 1000.0f);
+        m_StatusBarMessage = buffer;
+        ImGui::Text(buffer);
     }
     ImGui::End();
     ImGui::PopStyleVar();

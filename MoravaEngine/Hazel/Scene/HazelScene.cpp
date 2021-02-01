@@ -619,8 +619,8 @@ namespace Hazel {
 					// TODO:
 					b2FixtureDef fixtureDef;
 					fixtureDef.shape = &polygonShape;
-					fixtureDef.density = 1.0f;
-					fixtureDef.friction = 1.0f;
+					fixtureDef.density = boxCollider2D.Density;
+					fixtureDef.friction = boxCollider2D.Friction;
 					body->CreateFixture(&fixtureDef);
 				}
 			}

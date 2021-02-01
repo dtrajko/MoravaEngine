@@ -83,8 +83,6 @@ namespace Example
                 transform.Translation = new Vector3(0.0f);
                 SetTransform(transform);
             }
-
         }
-
     }
 }
