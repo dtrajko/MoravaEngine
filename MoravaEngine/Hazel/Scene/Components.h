@@ -122,7 +122,7 @@ namespace Hazel
 
 	struct BoxCollider2DComponent
 	{
-		glm::vec2 Offset = { 0.0f,0.0f };
+		glm::vec2 Offset = { 0.0f, 0.0f };
 		glm::vec2 Size = { 1.0f, 1.0f };
 
 		float Density = 1.0f;
@@ -137,7 +137,7 @@ namespace Hazel
 
 	struct CircleCollider2DComponent
 	{
-		glm::vec2 Offset = { 0.0f,0.0f };
+		glm::vec2 Offset = { 0.0f, 0.0f };
 		float Radius = 1.0f;
 
 		float Density = 1.0f;
