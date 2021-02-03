@@ -599,7 +599,7 @@ void EnvironmentMap::OnScenePlay()
     m_SceneState = SceneState::Play;
 
     if (m_ReloadScriptOnPlay) {
-        // Hazel::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
+        Hazel::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
     }
 
     m_RuntimeScene = Hazel::Ref<Hazel::HazelScene>::Create();

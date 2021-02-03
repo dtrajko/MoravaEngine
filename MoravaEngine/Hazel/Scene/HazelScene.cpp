@@ -154,6 +154,10 @@ namespace Hazel {
 	void HazelScene::Init()
 	{
 		Log::GetLogger()->error("HazelScene::Init method not implemented yet!");
+
+		// auto skyboxShader = Shader::Create("assets/shaders/Skybox.glsl");
+		// m_SkyboxMaterial = MaterialInstance::Create(Material::Create(skyboxShader));
+		// m_SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, false);
 	}
 
 	// Merge OnUpdate/Render into one function?
@@ -336,7 +340,7 @@ namespace Hazel {
 
 		Log::GetLogger()->debug("CreateEntityWithID uuid = '{0}', name = '{1}'", uuid, name);
 
-		HZ_CORE_ASSERT(entityMap.find(uuid) == entityMap.end());
+		// HZ_CORE_ASSERT(entityMap.find(uuid) == entityMap.end());
 		entityMap[uuid] = entity;
 		return entity;
 	}
@@ -360,7 +364,7 @@ namespace Hazel {
 			entt::entity destEntity = enttMap.at(srcRegistry.get<IDComponent>(srcEntity).ID);
 
 			auto& srcComponent = srcRegistry.get<T>(srcEntity);
-			auto& destComponent = dstRegistry.emplace<T>(destEntity, srcComponent);
+			auto& destComponent = dstRegistry.emplace_or_replace<T>(destEntity, srcComponent);
 		}
 	}
 
