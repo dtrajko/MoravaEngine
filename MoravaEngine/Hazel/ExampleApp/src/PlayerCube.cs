@@ -20,10 +20,12 @@ namespace Example
 
         public Vector2 MaxSpeed = new Vector2();
 
-        private bool Colliding => m_CollisionCounter > 0;
+        private bool Colliding;
 
         void OnCreate()
         {
+            Colliding = m_CollisionCounter > 0;
+
             m_PhysicsBody = GetComponent<RigidBody2DComponent>();
 
             MeshComponent meshComponent = GetComponent<MeshComponent>();
@@ -38,14 +40,14 @@ namespace Example
         {
             m_CollisionCounter++;
 
-            m_MeshMaterial.Set("u_AlbedoColor", new Vector(1.0f, 0.0f, 0.0f));
+            m_MeshMaterial.Set("u_AlbedoColor", new Vector3(1.0f, 0.0f, 0.0f));
         }
 
         void OnPlayerCollisionEnd(float value)
         {
             m_CollisionCounter--;
 
-            m_MeshMaterial.Set("u_AlbedoColor", new Vector(0.8f, 0.8f, 0.8f));
+            m_MeshMaterial.Set("u_AlbedoColor", new Vector3(0.8f, 0.8f, 0.8f));
         }
 
         void OnUpdate(float ts)

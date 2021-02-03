@@ -1,0 +1,5 @@
+D:\workspace\cpp\MoravaEngine\MoravaEngine\Hazel\bin\Debug-windows-x86_64\Hazel-ScriptCore\Hazel-ScriptCore.dll
+D:\workspace\cpp\MoravaEngine\MoravaEngine\Hazel\bin\Debug-windows-x86_64\Hazel-ScriptCore\Hazel-ScriptCore.pdb
+D:\workspace\cpp\MoravaEngine\MoravaEngine\Hazel\bin-int\Debug-windows-x86_64\Hazel-ScriptCore\Hazel-ScriptCore.csproj.CoreCompileInputs.cache
+D:\workspace\cpp\MoravaEngine\MoravaEngine\Hazel\bin-int\Debug-windows-x86_64\Hazel-ScriptCore\Hazel-ScriptCore.dll
+D:\workspace\cpp\MoravaEngine\MoravaEngine\Hazel\bin-int\Debug-windows-x86_64\Hazel-ScriptCore\Hazel-ScriptCore.pdb

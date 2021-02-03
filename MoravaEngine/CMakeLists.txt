@@ -669,36 +669,6 @@ SET(box2d_SRCS
 	../vendor/box2d/src/rope/b2_rope.cpp
 )
 
-SET(Hazel-ScriptCore_SRCS
-	../MoravaEngine/Hazel/ExampleApp/Properties/AssemblyInfo.cs
-	../MoravaEngine/Hazel/ExampleApp/src/BasicController.cs
-	../MoravaEngine/Hazel/ExampleApp/src/MapGenerator.cs
-	../MoravaEngine/Hazel/ExampleApp/src/Noise.cs
-	../MoravaEngine/Hazel/ExampleApp/src/PlayerCube.cs
-	../MoravaEngine/Hazel/ExampleApp/src/RandomColor.cs
-	../MoravaEngine/Hazel/ExampleApp/src/Script.cs
-	../MoravaEngine/Hazel/ExampleApp/src/Sink.cs
-)
-
-SET(ExampleApp_SRCS
-	../MoravaEngine/Hazel/ScriptCore/Properties/AssemblyInfo.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Math/Matrix4.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Math/Noise.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Math/Vector2.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Math/Vector3.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Math/Vector4.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Renderer/Color.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Renderer/Material.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Renderer/Mesh.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Renderer/MeshFactory.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Renderer/Texture2D.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Scene/Component.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Entity.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/Input.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/KeyCodes.cs
-	../MoravaEngine/Hazel/ScriptCore/src/Hazel/SpriteRenderer.cs
-)
-
 message("Environment variable 'MORAVA_BUILD_TYPE' = '" $ENV{MORAVA_BUILD_TYPE} "'")
 
 option(USE_MSVC_INCREMENTAL_LINKING "Use MSVC Incremental Linking" OFF)
@@ -988,3 +958,41 @@ file(COPY ./Shaders             DESTINATION ../build)
 file(COPY ./Textures            DESTINATION ../build)
 
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
+
+
+
+project(Sandbox LANGUAGES CSharp)
+
+# Include CMake utilities for CSharp, for WinForm and WPF application support.
+include(CSharpUtilities)
+
+SET(ExampleApp_SRCS
+	../MoravaEngine/Hazel/ExampleApp/src/BasicController.cs
+	../MoravaEngine/Hazel/ExampleApp/src/MapGenerator.cs
+	../MoravaEngine/Hazel/ExampleApp/src/Noise.cs
+	../MoravaEngine/Hazel/ExampleApp/src/PlayerCube.cs
+	../MoravaEngine/Hazel/ExampleApp/src/RandomColor.cs
+	../MoravaEngine/Hazel/ExampleApp/src/Script.cs
+	../MoravaEngine/Hazel/ExampleApp/src/Sink.cs
+)
+
+SET(Hazel-ScriptCore_SRCS
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Matrix4.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Noise.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector2.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector3.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector4.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Color.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Material.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Mesh.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/MeshFactory.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Texture2D.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Scene/Component.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Entity.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Input.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/KeyCodes.cs
+	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/SpriteRenderer.cs
+)
+
+add_library(ExampleApp        SHARED "${ExampleApp_SRCS}")
+add_library(Hazel-ScriptCore  SHARED "${Hazel-ScriptCore_SRCS}")
