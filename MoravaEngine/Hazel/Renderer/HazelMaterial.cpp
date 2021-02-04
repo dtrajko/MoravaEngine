@@ -1,19 +1,59 @@
 #include "HazelMaterial.h"
 
+#include "../Core/Assert.h"
+
+
 namespace Hazel {
 
 	//////////////////////////////////////////////////////////////////////////////////
 	// Material
 	//////////////////////////////////////////////////////////////////////////////////
 
-	HazelMaterial* HazelMaterial::Create(Shader* shader)
+	Ref<HazelMaterial> HazelMaterial::Create(::Ref<Shader> shader)
 	{
-		return new HazelMaterial(shader);
+		return Ref<HazelMaterial>::Create(shader);
 	}
 
-	HazelMaterial::HazelMaterial(Shader* shader)
+	void HazelMaterial::AllocateStorage()
+	{
+	}
+
+	void HazelMaterial::OnShaderReloaded()
+	{
+	}
+
+	void HazelMaterial::BindTextures()
+	{
+	}
+
+	ShaderUniformDeclaration* HazelMaterial::FindUniformDeclaration(const std::string& name)
+	{
+		return nullptr;
+	}
+
+	ShaderResourceDeclaration* HazelMaterial::FindResourceDeclaration(const std::string& name)
+	{
+		return nullptr;
+	}
+
+	Buffer& HazelMaterial::GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration)
+	{
+		switch (uniformDeclaration->GetDomain())
+		{
+		case ShaderDomain::Vertex:    return m_VSUniformStorageBuffer;
+		case ShaderDomain::Pixel:     return m_PSUniformStorageBuffer;
+		}
+
+		HZ_CORE_ASSERT(false, "Invalid uniform declaration domain! Material does not support this shader type.");
+		return m_VSUniformStorageBuffer;
+	}
+
+	HazelMaterial::HazelMaterial(::Ref<Shader> shader)
 		: m_Shader(shader)
 	{
+		// m_Shader->AddShaderReloadedCallback(std::bind(&HazelMaterial::OnShaderReloaded, this));
+		AllocateStorage();
+
 		m_MaterialFlags |= (uint32_t)HazelMaterialFlag::DepthTest;
 		m_MaterialFlags |= (uint32_t)HazelMaterialFlag::Blend;
 	}
@@ -24,7 +64,7 @@ namespace Hazel {
 
 	void HazelMaterial::Bind() const
 	{
-		m_Shader->Bind();
+		// m_Shader->Bind();
 		// ...
 		BindTextures();
 	}
@@ -59,9 +99,34 @@ namespace Hazel {
 		m_Material->GetMaterialInstances()->erase(this);
 	}
 
+	Ref<HazelMaterial> HazelMaterialInstance::Create(const Ref<Shader>& shader)
+	{
+		return Ref<HazelMaterial>();
+	}
+
+	void HazelMaterialInstance::AllocateStorage()
+	{
+	}
+
 	void HazelMaterialInstance::OnShaderReloaded()
 	{
 		m_OverriddenValues.clear();
+	}
+
+	Buffer& HazelMaterialInstance::GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration)
+	{
+		switch (uniformDeclaration->GetDomain())
+		{
+		case ShaderDomain::Vertex:    return m_VSUniformStorageBuffer;
+		case ShaderDomain::Pixel:     return m_PSUniformStorageBuffer;
+		}
+
+		HZ_CORE_ASSERT(false, "Invalid uniform declaration domain! Material does not support this shader type.");
+		return m_VSUniformStorageBuffer;
+	}
+
+	void HazelMaterialInstance::OnMaterialValueUpdated(ShaderUniformDeclaration* decl)
+	{
 	}
 
 	void HazelMaterialInstance::SetFlag(HazelMaterialFlag flag, bool value)

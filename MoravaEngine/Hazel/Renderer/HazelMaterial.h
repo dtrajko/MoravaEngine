@@ -3,6 +3,8 @@
 #include "../Core/Base.h"
 #include "../Core/Ref.h"
 #include "../Renderer/HazelTexture.h"
+#include "../Renderer/HazelShader.h"
+
 #include "../../Shader.h"
 #include "../../Log.h"
 
@@ -21,9 +23,10 @@ namespace Hazel {
 
 	class HazelMaterial : public RefCounted
 	{
+		friend class HazelMaterialInstance;
 
 	public:
-		HazelMaterial(Shader* shader);
+		HazelMaterial(::Ref<Shader> shader);
 		virtual ~HazelMaterial();
 
 		void Bind() const;
@@ -54,20 +57,29 @@ namespace Hazel {
 			Set(name, (HazelTexture*)texture, slot);
 		}
 
-		static HazelMaterial* Create(Shader* shader);
-
 		// Setters
 		void SetMaterialFlags(uint32_t materialFlags) { m_MaterialFlags = materialFlags; }
 
 		// Getters
 		uint32_t GetMaterialFlags() { return m_MaterialFlags; }
-		Shader* GetShader() { return m_Shader; }
+		::Ref<Shader> GetShader() { return m_Shader; }
 		std::unordered_set<HazelMaterialInstance*>* GetMaterialInstances() { return &m_MaterialInstances; }
 
 		void BindTextures() const;
 
+		static Ref<HazelMaterial> Create(::Ref<Shader> shader);
+
 	private:
-		Shader* m_Shader;
+		void AllocateStorage();
+		void OnShaderReloaded();
+		void BindTextures();
+
+		ShaderUniformDeclaration* FindUniformDeclaration(const std::string& name);
+		ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
+		Buffer& GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration);
+
+	private:
+		::Ref<Shader> m_Shader;
 		std::unordered_set<HazelMaterialInstance*> m_MaterialInstances;
 
 		Buffer m_VSUniformStorageBuffer;
@@ -79,6 +91,7 @@ namespace Hazel {
 
 	class HazelMaterialInstance : public RefCounted
 	{
+		friend class HazelMaterial;
 
 	public:
 		HazelMaterialInstance(HazelMaterial* material);
@@ -113,19 +126,44 @@ namespace Hazel {
 		bool GetFlag(HazelMaterialFlag flag) const { return (uint32_t)flag & m_Material->GetMaterialFlags(); }
 		void SetFlag(HazelMaterialFlag flag, bool value = true);
 
-		Shader* GetShader() { return m_Material->GetShader(); }
+		::Ref<Shader> GetShader() { return m_Material->GetShader(); }
 
 		static HazelMaterialInstance* Create(HazelMaterial* material);
 
+		template<typename T>
+		T& Get(const std::string& name)
+		{
+			auto decl = FindUniformDeclaration(name);
+			HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
+			auto& buffer = GetUniformBufferTarget(decl);
+			return buffer.Read<T>(decl->GetOffset());
+		}
+
+		template<typename T>
+		Ref<T> GetResource(const std::string& name)
+		{
+			auto decl = FindResourceDeclaration(name);
+			uint32_t slot = decl->GetRegister();
+			HZ_CORE_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
+			return m_Textures[slot];
+		}
+
+	public:
+		static Ref <HazelMaterial> Create(const Ref<Shader>& shader);
+
 	private:
+		void AllocateStorage();
 		void OnShaderReloaded();
+		Buffer& GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration);
+		void OnMaterialValueUpdated(ShaderUniformDeclaration* decl);
 
 	private:
 		HazelMaterial* m_Material;
+		std::string m_Name;
 
 		Buffer m_VSUniformStorageBuffer;
 		Buffer m_PSUniformStorageBuffer;
-		std::vector<HazelTexture*> m_Textures;
+		std::vector<Ref<HazelTexture>> m_Textures;
 
 		// TODO: This is temporary; come up with a proper system to track overrides
 		std::unordered_set<std::string> m_OverriddenValues;
