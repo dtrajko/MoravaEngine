@@ -1248,8 +1248,8 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
                 }
 
                 float skyboxLOD = GetSkyboxLOD();
-                if (ImGui::SliderFloat("Skybox LOD", &skyboxLOD, 0.0f, 2.0f))
-                {
+                bool valueChanged = ImGui::DragFloat("Skybox LOD", &skyboxLOD, 0.01f, 0.0f, 2.0f, "%.2f");
+                if (valueChanged) {
                     SetSkyboxLOD(skyboxLOD);
                 }
 

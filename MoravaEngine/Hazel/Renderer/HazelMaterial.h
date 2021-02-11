@@ -16,7 +16,8 @@ namespace Hazel {
 	{
 		None       = BIT(0),
 		DepthTest  = BIT(1),
-		Blend      = BIT(2)
+		Blend      = BIT(2),
+		TwoSided   = BIT(3),
 	};
 
 	class HazelMaterialInstance;

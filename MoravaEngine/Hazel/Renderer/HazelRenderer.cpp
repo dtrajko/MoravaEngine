@@ -69,35 +69,46 @@ namespace Hazel {
 		Renderer2D::Init();
 	}
 
+	const Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()
+	{
+		return s_Data.m_ShaderLibrary;
+	}
+
 	void HazelRenderer::Clear()
 	{
+		// HazelRenderer::Submit([]() {
+			RendererAPI::Clear(0.0f, 0.0f, 0.0f, 1.0f);
+		// });
 	}
 
 	void HazelRenderer::Clear(float r, float g, float b, float a)
 	{
+		// Renderer::Submit([=]() {
+			RendererAPI::Clear(r, g, b, a);
+		// });
+	}
+
+	void HazelRenderer::ClearMagenta()
+	{
+		Clear(1, 0, 1);
 	}
 
 	void HazelRenderer::SetClearColor(float r, float g, float b, float a)
 	{
 	}
 
-	void HazelRenderer::ClearMagenta()
+	void HazelRenderer::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
 	{
+		// HazelRenderer::Submit([=]() {
+		RendererAPI::DrawIndexed(count, type, depthTest);
+		// });
 	}
 
 	void HazelRenderer::SetLineThickness(float thickness)
 	{
-		glLineWidth(thickness);
-	}
-
-	const Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()
-	{
-		return s_Data.m_ShaderLibrary;
-	}
-
-	void HazelRenderer::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
-	{
-		RendererAPI::DrawIndexed(count, type, depthTest);
+		// HazelRenderer::Submit([=]() {
+			RendererAPI::SetLineThickness(thickness);
+		// });
 	}
 
 	void HazelRenderer::WaitAndRender()
@@ -105,7 +116,7 @@ namespace Hazel {
 		s_Data.m_CommandQueue.Execute();
 	}
 
-	void HazelRenderer::BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear)
+	void HazelRenderer::BeginRenderPass(Ref<RenderPass> renderPass, bool clear)
 	{
 		HZ_CORE_ASSERT(renderPass, "Render pass cannot be null!");
 
@@ -158,8 +169,53 @@ namespace Hazel {
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
+	/**
+	 * THIS METHOD IS NOT USED IN CURRENT MORAVA ENGINE WORKFLOW
+	 */
 	void HazelRenderer::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial)
 	{
+		// auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
+		// auto shader = material->GetShader();
+		// TODO: Sort this out
+
+		mesh->m_VertexArray->Bind();
+
+		// mesh->m_VertexBuffer->Bind();
+		// mesh->m_Pipeline->Bind();
+		// mesh->m_IndexBuffer->Bind();
+
+		auto& materials = mesh->GetMaterials();
+		for (Submesh& submesh : mesh->m_Submeshes)
+		{
+			// Material
+			//	auto material = overrideMaterial ? overrideMaterial : materials[submesh.MaterialIndex];
+			//	auto shader = material->GetShader();
+			//	material->Bind();
+
+			//	if (mesh->IsAnimated())
+			//	{
+			//		for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
+			//		{
+			//			std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+			//			shader->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
+			//		}
+			//	}
+			//	shader->SetMat4("u_Transform", transform * submesh.Transform);
+
+			//	HazelRenderer::Submit([submesh, material]() {
+			//		if (material->GetFlag(HazelMaterialFlag::DepthTest))
+			//			glEnable(GL_DEPTH_TEST);
+			//		else
+			//			glDisable(GL_DEPTH_TEST);
+			//	
+			//		if (!material->GetFlag(HazelMaterialFlag::TwoSided))
+			//			HazelRenderer::Submit([]() { glEnable(GL_CULL_FACE); });
+			//		else
+			//			HazelRenderer::Submit([]() { glDisable(GL_CULL_FACE); });
+			//	
+			//		glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+			//	});
+		}
 	}
 
 	RenderCommandQueue& HazelRenderer::GetRenderCommandQueue()

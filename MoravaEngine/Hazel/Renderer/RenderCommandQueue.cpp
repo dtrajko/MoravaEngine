@@ -17,6 +17,7 @@ namespace Hazel {
     {
         delete[] m_CommandBuffer;
     }
+
     void* RenderCommandQueue::Allocate(RenderCommandFn fn, uint32_t size)
     {
         // TODO: alignment

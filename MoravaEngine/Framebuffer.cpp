@@ -138,7 +138,7 @@ void Framebuffer::Release()
 
 	m_TextureAttachmentsColor.clear();
 
-	delete m_AttachmentDepth;
+	// delete m_AttachmentDepth;
 	delete m_AttachmentStencil;
 	delete m_AttachmentDepthAndStencil;
 

@@ -2,6 +2,7 @@
 
 #include "FramebufferTexture.h"
 #include "Renderbuffer.h"
+#include "Hazel/Core/Ref.h"
 
 #include <vector>
 
@@ -21,7 +22,8 @@ struct FramebufferSpecification
 	bool SwapChainTarget = false;
 };
 
-class Framebuffer
+
+class Framebuffer : public Hazel::RefCounted
 {
 public:
 	Framebuffer();

@@ -1311,6 +1311,9 @@
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLIndexBuffer.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="Hazel\Renderer\Pipeline.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

@@ -52,7 +52,7 @@ namespace Hazel {
 		static void WaitAndRender();
 
 		// ~Actual~ Renderer here... TODO: remove confusion later
-		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear = true);
+		static void BeginRenderPass(Ref<RenderPass> renderPass, bool clear = true);
 		static void EndRenderPass();
 
 		static void SubmitQuad(Ref<HazelMaterialInstance> material, const glm::mat4& transform = glm::mat4(1.0f));
