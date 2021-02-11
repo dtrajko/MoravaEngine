@@ -49,7 +49,7 @@ namespace Hazel {
 	{
 	public:
 		static Ref<HazelTexture2D> Create(HazelTextureFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
-		static Ref<HazelTexture2D> Create(const std::string& path, bool srgb = false);
+		static Ref<HazelTexture2D> Create(const std::string& path, bool srgb = false, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
 
 		virtual void Lock() = 0;
 		virtual void Unlock() = 0;

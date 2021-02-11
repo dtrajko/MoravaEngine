@@ -9,7 +9,7 @@ namespace Hazel {
 	{
 	public:
 		OpenGLTexture2D(HazelTextureFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap);
-		OpenGLTexture2D(const std::string& path, bool srgb);
+		OpenGLTexture2D(const std::string& path, bool srgb, HazelTextureWrap wrap);
 		virtual ~OpenGLTexture2D();
 
 		virtual void Bind(uint32_t slot = 0) const;

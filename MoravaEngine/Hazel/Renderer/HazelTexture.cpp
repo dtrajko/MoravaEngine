@@ -16,12 +16,12 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	Ref<HazelTexture2D> HazelTexture2D::Create(const std::string& path, bool srgb)
+	Ref<HazelTexture2D> HazelTexture2D::Create(const std::string& path, bool srgb, HazelTextureWrap wrap)
 	{
 		switch (RendererAPI::Current())
 		{
 		case RendererAPIType::None: return nullptr;
-		case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(path, srgb);
+		case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(path, srgb, wrap);
 		}
 		return nullptr;
 	}
