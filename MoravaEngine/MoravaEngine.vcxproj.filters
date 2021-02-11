@@ -509,9 +509,6 @@
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLRenderPass.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLBuffer.cpp">
-      <Filter>Hazel\Platform\OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexArray.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
@@ -608,6 +605,12 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="EnvMapMaterial.cpp">
       <Filter>Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexBuffer.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLIndexBuffer.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1193,9 +1196,6 @@
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLRenderPass.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLBuffer.h">
-      <Filter>Hazel\Platform\OpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLVertexArray.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClInclude>
@@ -1305,6 +1305,12 @@
       <Filter>Shader</Filter>
     </ClInclude>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLVertexBuffer.h">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLIndexBuffer.h">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

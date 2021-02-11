@@ -195,7 +195,8 @@
     <ClCompile Include="Hazel\Core\Timestep.cpp" />
     <ClCompile Include="Hazel\Core\UUID.cpp" />
     <ClCompile Include="Hazel\Panels\SceneHierarchyPanel.cpp" />
-    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLBuffer.cpp" />
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLIndexBuffer.cpp" />
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexBuffer.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLRendererAPI.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLRenderPass.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLShader.cpp" />
@@ -424,7 +425,8 @@
     <ClInclude Include="Hazel\Events\MouseEvent.h" />
     <ClInclude Include="Hazel\ImGui\ImGui.h" />
     <ClInclude Include="Hazel\Panels\SceneHierarchyPanel.h" />
-    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLBuffer.h" />
+    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLIndexBuffer.h" />
+    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLVertexBuffer.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLRenderPass.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLShader.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLShaderUniform.h" />

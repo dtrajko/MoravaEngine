@@ -5,7 +5,7 @@
 
 #include "../Core/Base.h"
 #include "../Core/Math/AABB.h"
-#include "../Platform/OpenGL/OpenGLBuffer.h"
+#include "../Platform/OpenGL/OpenGLIndexBuffer.h"
 #include "../Platform/OpenGL/OpenGLVertexArray.h"
 
 #include "../../Log.h"

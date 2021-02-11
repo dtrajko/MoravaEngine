@@ -4,8 +4,6 @@
 #include "../../Renderer/Buffer.h"
 #include "../../Renderer/VertexArray.h"
 
-#include "OpenGLBuffer.h"
-
 #include <memory>
 #include <vector>
 

@@ -1,6 +1,7 @@
 #include "Buffer.h"
 
-#include "../Platform/OpenGL/OpenGLBuffer.h"
+#include "../Platform/OpenGL/OpenGLVertexBuffer.h"
+#include "../Platform/OpenGL/OpenGLIndexBuffer.h"
 
 
 namespace Hazel {
