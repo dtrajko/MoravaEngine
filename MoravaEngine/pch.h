@@ -2,6 +2,7 @@
 
 // Hazel classes
 #include "Hazel/Core/Base.h"
+#include "Hazel/Core/Math/AABB.h"
 #include "Hazel/Core/Math/Ray.h"
 #include "Hazel/Core/Ref.h"
 #include "Hazel/Events/KeyEvent.h"
@@ -11,6 +12,10 @@
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/HazelMaterial.h"
+#include "Hazel/Renderer/HazelShader.h"
+#include "Hazel/Renderer/RenderCommandQueue.h"
+#include "Hazel/Renderer/RenderPass.h"
+#include "Hazel/Renderer/RendererAPI.h"
 #include "Hazel/Renderer/VertexArray.h"
 #include "Hazel/Scene/Components.h"
 #include "Hazel/Scene/HazelScene.h"
@@ -25,6 +30,7 @@
 #include "Input.h"
 #include "ImGuiWrapper.h"
 #include "Math.h"
+#include "Mesh.h"
 #include "Scene.h"
 #include "Shader.h"
 #include "Material.h"

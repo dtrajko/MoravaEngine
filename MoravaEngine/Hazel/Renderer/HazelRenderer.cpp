@@ -1,11 +1,8 @@
 #include "HazelRenderer.h"
 
 #include "../Core/Assert.h"
-#include "VertexArray.h"
 #include "Renderer2D.h"
 #include "SceneRenderer.h"
-
-#include "../../Log.h"
 
 
 namespace Hazel {

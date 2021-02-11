@@ -257,7 +257,8 @@ void ImGuiWrapper::DrawMaterialUI(EnvMapMaterial* material, Hazel::Ref<Hazel::Ha
 	}
 
 	// Tiling Factor
-	ImGui::SliderFloat("Tiling Factor", &material->GetTilingFactor(), 0.0f, 20.0f);
+	// ImGui::SliderFloat("Tiling Factor", &material->GetTilingFactor(), 0.0f, 20.0f);
+	ImGui::DragFloat("Tiling Factor", &material->GetTilingFactor(), 0.1f, 0.0f, 20.0f, "%.2f");
 
 	{
 		// Albedo

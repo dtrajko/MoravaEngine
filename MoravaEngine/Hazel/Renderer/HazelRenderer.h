@@ -1,14 +1,6 @@
 #pragma once
 
-#include "HazelShader.h"
-#include "HazelMaterial.h"
-#include "RenderCommandQueue.h"
-#include "RenderPass.h"
-#include "RendererAPI.h"
-#include "HazelMesh.h"
-#include "../Core/Math/AABB.h"
-
-#include "../../Mesh.h"
+#include "../../pch.h"
 
 
 namespace Hazel {
