@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../Core/Buffer.h"
-#include "../../Renderer/Buffer.h"
+#include "../../Renderer/IndexBuffer.h"
 #include "../../../Log.h"
 
 #include <stdint.h>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../Core/Buffer.h"
-#include "../../Renderer/Buffer.h"
+#include "../../Renderer/VertexBuffer.h"
 #include "../../../Log.h"
 
 #include <stdint.h>
@@ -26,8 +26,8 @@ namespace Hazel {
 		virtual void SetData(void* data, uint32_t size, uint32_t offset = 0);
 		virtual void Bind() const;
 
-		virtual const BufferLayout& GetLayout() const override { return m_Layout; }
-		virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
+		virtual const VertexBufferLayout& GetLayout() const override { return m_Layout; }
+		virtual void SetLayout(const VertexBufferLayout& layout) override { m_Layout = layout; }
 
 		virtual uint32_t GetSize() const { return m_Size; }
 		virtual uint32_t GetRendererID() const { return m_RendererID; }
@@ -35,7 +35,7 @@ namespace Hazel {
 		uint32_t m_RendererID = 0;
 		uint32_t m_Size;
 		VertexBufferUsage m_Usage;
-		BufferLayout m_Layout;
+		VertexBufferLayout m_Layout;
 
 		Buffer m_LocalData;
 	};

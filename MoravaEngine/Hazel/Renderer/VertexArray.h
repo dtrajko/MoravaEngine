@@ -2,7 +2,9 @@
 
 #include <memory>
 
-#include "../Renderer/Buffer.h"
+#include "../Renderer/IndexBuffer.h"
+#include "../Renderer/VertexBuffer.h"
+
 
 namespace Hazel {
 
