@@ -1261,12 +1261,12 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
 
                 ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::SliderProperty);
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
-                ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.0f, 5.0f, PropertyFlag::SliderProperty);
-                ImGuiWrapper::Property("Exposure", m_ActiveCamera->GetExposure(), 0.0f, 40.0f, PropertyFlag::SliderProperty);
-                ImGuiWrapper::Property("Skybox Exposure Factor", m_SkyboxExposureFactor, 0.0f, 10.0f, PropertyFlag::SliderProperty);
+                ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
+                ImGuiWrapper::Property("Exposure", m_ActiveCamera->GetExposure(), 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
+                ImGuiWrapper::Property("Skybox Exposure Factor", m_SkyboxExposureFactor, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
 
                 ImGuiWrapper::Property("Radiance Prefiltering", m_RadiancePrefilter);
-                ImGuiWrapper::Property("Env Map Rotation", m_EnvMapRotation, -360.0f, 360.0f);
+                ImGuiWrapper::Property("Env Map Rotation", m_EnvMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
 
                 if (m_SceneState == SceneState::Edit) {
                     //  float physics2DGravity = m_EditorScene->GetPhysics2DGravity();

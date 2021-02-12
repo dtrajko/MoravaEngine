@@ -541,6 +541,31 @@ bool ImGuiWrapper::Property(const std::string& name, float& value, float min, fl
 	return changed;
 }
 
+/**
+ * by dtrajko: custom version of the method with an additional 'speed' parameter
+ */
+bool ImGuiWrapper::Property(const std::string& name, float& value, float speed, float min, float max, PropertyFlag flags)
+{
+	ImGui::Text(name.c_str());
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+
+	std::string id = "##" + name;
+
+	bool changed = false;
+	if (flags == PropertyFlag::SliderProperty) {
+		changed = ImGui::SliderFloat(id.c_str(), &value, min, max);
+	}
+	else {
+		changed = ImGui::DragFloat(id.c_str(), &value, speed, min, max);
+	}
+
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+
+	return changed;
+}
+
 bool ImGuiWrapper::Property(const std::string& name, glm::vec2& value, PropertyFlag flags)
 {
 	return Property(name, value, -1.0f, 1.0f, flags);
