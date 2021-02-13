@@ -41,22 +41,21 @@ namespace Hazel {
 
 	void OpenGLVertexArray::Bind() const
 	{
-		//	Ref<const OpenGLVertexArray> instance = this;
+		Ref<const OpenGLVertexArray> instance = this;
+
 		//	Renderer::Submit([instance]() {
-		//		glBindVertexArray(instance->m_RendererID);
+				glBindVertexArray(instance->m_RendererID);
 		//	});
 
-		glBindVertexArray(m_RendererID);
 	}
 
 	void OpenGLVertexArray::Unbind() const
 	{
-		//	Ref<const OpenGLVertexArray> instance = this;
-		//	HazelRenderer::Submit([this]() {
-		//		glBindVertexArray(0);
-		//	});
+		Ref<const OpenGLVertexArray> instance = this;
 
-		glBindVertexArray(0);
+		//	HazelRenderer::Submit([this]() {
+				glBindVertexArray(0);
+		//	});
 	}
 
 	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
@@ -66,7 +65,7 @@ namespace Hazel {
 		Bind();
 		vertexBuffer->Bind();
 
-		// Ref<OpenGLVertexArray> instance = this;
+		Ref<OpenGLVertexArray> instance = this;
 
 		// Renderer::Submit([this, vertexBuffer]() {
 		const auto& layout = vertexBuffer->GetLayout();

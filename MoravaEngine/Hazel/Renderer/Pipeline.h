@@ -2,6 +2,7 @@
 
 #include "../Core/Ref.h"
 #include "HazelShader.h"
+#include "VertexBuffer.h"
 
 
 namespace Hazel {
@@ -10,11 +11,9 @@ namespace Hazel {
 	{
 		Ref<HazelShader> Shader;
 		VertexBufferLayout Layout;
-
 	};
 
-
-	class Pipeline
+	class Pipeline : public RefCounted
 	{
 	public:
 		virtual ~Pipeline() = default;
@@ -23,9 +22,6 @@ namespace Hazel {
 		virtual const PipelineSpecification& GetSpecification() const = 0;
 
 		static Ref<Pipeline> Create(const PipelineSpecification& spec);
-
-	private:
-
 
 	};
 
