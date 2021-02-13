@@ -64,9 +64,9 @@ namespace Hazel {
 	void OpenGLIndexBuffer::Bind() const
 	{
 		Ref<const OpenGLIndexBuffer> instance = this;
-		// HazelRenderer::Submit([instance]() {
+		HazelRenderer::Submit([instance]() {
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance->m_RendererID);
-		// });
+		});
 	}
 
 }
