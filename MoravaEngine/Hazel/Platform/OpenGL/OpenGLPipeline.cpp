@@ -31,17 +31,35 @@ namespace Hazel {
     OpenGLPipeline::OpenGLPipeline(const PipelineSpecification& spec)
         : m_Specification(spec)
     {
-		HZ_CORE_ASSERT(spec.Layout.GetElements().size(), "Layout is empty!");
+		Invalidate();
+    }
+
+    OpenGLPipeline::~OpenGLPipeline()
+    {
+		GLuint rendererID = m_VertexArrayRendererID;
+		HazelRenderer::Submit([rendererID]()
+		{
+			glDeleteVertexArrays(1, &rendererID);
+		});
+    }
+
+	void OpenGLPipeline::Invalidate()
+	{
+		HZ_CORE_ASSERT(m_Specification.Layout.GetElements().size(), "Layout is empty!");
 
 		Ref<OpenGLPipeline> instance = this;
+		HazelRenderer::Submit([instance]() mutable
+		{
+			auto& vertexArrayRendererID = instance->m_VertexArrayRendererID;
 
-		HazelRenderer::Submit([instance]() mutable {
+			if (vertexArrayRendererID)
+				glDeleteVertexArrays(1, &vertexArrayRendererID);
 
-			glCreateVertexArrays(1, &instance->m_VertexArrayRendererID);
+			glGenVertexArrays(1, &vertexArrayRendererID);
+			glBindVertexArray(vertexArrayRendererID);
 
 			const auto& layout = instance->m_Specification.Layout;
 			uint32_t attribIndex = 0;
-
 			for (const auto& element : layout)
 			{
 				auto glBaseType = ShaderDataTypeToOpenGLBaseType(element.Type);
@@ -66,11 +84,8 @@ namespace Hazel {
 				attribIndex++;
 			}
 
+			glBindVertexArray(0);
 		});
-    }
-
-    OpenGLPipeline::~OpenGLPipeline()
-    {
-    }
+	}
 
 }
