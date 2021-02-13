@@ -31,31 +31,33 @@ namespace Hazel {
 
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
-		glCreateVertexArrays(1, &m_RendererID);
+		HazelRenderer::Submit([this]() {
+			glCreateVertexArrays(1, &m_RendererID);
+		});
 	}
 
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
-		glDeleteVertexArrays(1, &m_RendererID);
+		GLuint rendererID = m_RendererID;
+		HazelRenderer::Submit([rendererID]() {
+			glDeleteVertexArrays(1, &rendererID);
+		});
 	}
 
 	void OpenGLVertexArray::Bind() const
 	{
 		Ref<const OpenGLVertexArray> instance = this;
-
-		//	Renderer::Submit([instance]() {
-				glBindVertexArray(instance->m_RendererID);
-		//	});
-
+		HazelRenderer::Submit([instance]() {
+			glBindVertexArray(instance->m_RendererID);
+		});
 	}
 
 	void OpenGLVertexArray::Unbind() const
 	{
 		Ref<const OpenGLVertexArray> instance = this;
-
-		//	HazelRenderer::Submit([this]() {
-				glBindVertexArray(0);
-		//	});
+		HazelRenderer::Submit([this]() {
+			glBindVertexArray(0);
+		});
 	}
 
 	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
@@ -66,37 +68,32 @@ namespace Hazel {
 		vertexBuffer->Bind();
 
 		Ref<OpenGLVertexArray> instance = this;
-
-		// Renderer::Submit([this, vertexBuffer]() {
-		const auto& layout = vertexBuffer->GetLayout();
-		for (const auto& element : layout)
-		{
-			auto glBaseType = ShaderDataTypeToOpenGLBaseType(element.Type);
-			// glEnableVertexAttribArray(instance->m_VertexBufferIndex);
-			glEnableVertexAttribArray(m_VertexBufferIndex);
-			if (glBaseType == GL_INT)
+		HazelRenderer::Submit([instance, vertexBuffer]() mutable {
+			const auto& layout = vertexBuffer->GetLayout();
+			for (const auto& element : layout)
 			{
-				// glVertexAttribIPointer(instance->m_VertexBufferIndex,
-				glVertexAttribIPointer(m_VertexBufferIndex,
-					element.GetComponentCount(),
-					glBaseType,
-					layout.GetStride(),
-					(const void*)(intptr_t)element.Offset);
+				auto glBaseType = ShaderDataTypeToOpenGLBaseType(element.Type);
+				glEnableVertexAttribArray(instance->m_VertexBufferIndex);
+				if (glBaseType == GL_INT)
+				{
+					glVertexAttribIPointer(instance->m_VertexBufferIndex,
+						element.GetComponentCount(),
+						glBaseType,
+						layout.GetStride(),
+						(const void*)(intptr_t)element.Offset);
+				}
+				else
+				{
+					glVertexAttribPointer(instance->m_VertexBufferIndex,
+						element.GetComponentCount(),
+						glBaseType,
+						element.Normalized ? GL_TRUE : GL_FALSE,
+						layout.GetStride(),
+						(const void*)(intptr_t)element.Offset);
+				}
+				instance->m_VertexBufferIndex++;
 			}
-			else
-			{
-				// glVertexAttribPointer(instance->m_VertexBufferIndex,
-				glVertexAttribPointer(m_VertexBufferIndex,
-					element.GetComponentCount(),
-					glBaseType,
-					element.Normalized ? GL_TRUE : GL_FALSE,
-					layout.GetStride(),
-					(const void*)(intptr_t)element.Offset);
-			}
-			// instance->m_VertexBufferIndex++;
-			m_VertexBufferIndex++;
-		}
-		// });
+		});
 		m_VertexBuffers.push_back(vertexBuffer);
 	}
 

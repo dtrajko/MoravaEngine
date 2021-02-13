@@ -31,6 +31,11 @@ namespace Hazel {
 		template<typename FuncT>
 		static void Submit(FuncT&& func)
 		{
+#if 1
+			// dtrajko: call lambda immediately instead of storing it to the render command buffer
+			func();
+#else
+			// dtrajko: disable the following code because render command buffer is still not in use
 			auto renderCmd = [](void* ptr) {
 				auto pFunc = (FuncT*)ptr;
 				(*pFunc)();
@@ -42,6 +47,7 @@ namespace Hazel {
 			};
 			auto storageBuffer = GetRenderCommandQueue().Allocate(renderCmd, sizeof(func));
 			new (storageBuffer) FuncT(std::forward<FuncT>(func));
+#endif
 		}
 
 		/*static void* Submit(RenderCommandFn fn, unsigned int size)
