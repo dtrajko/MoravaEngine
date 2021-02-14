@@ -1,5 +1,6 @@
 #include "HazelShader.h"
 #include "../Core/Assert.h"
+#include "RendererAPI.h"
 
 #include "../Platform/OpenGL/OpenGLShader.h"
 
@@ -12,8 +13,11 @@ namespace Hazel {
 	{
 		Ref<HazelShader> result = nullptr;
 
-		result = Ref<OpenGLShader>::Create(filepath);
-
+		switch (RendererAPI::Current())
+		{
+		case RendererAPIType::None: return nullptr;
+		case RendererAPIType::OpenGL: result = Ref<OpenGLShader>::Create(filepath);
+		}
 		s_AllShaders.push_back(result);
 		return result;
 	}
@@ -22,8 +26,11 @@ namespace Hazel {
 	{
 		Ref<HazelShader> result = nullptr;
 
-		result = OpenGLShader::CreateFromString(source);
-
+		switch (RendererAPI::Current())
+		{
+		case RendererAPIType::None: return nullptr;
+		case RendererAPIType::OpenGL: result = OpenGLShader::CreateFromString(source);
+		}
 		s_AllShaders.push_back(result);
 		return result;
 	}
@@ -60,7 +67,7 @@ namespace Hazel {
 	Ref<HazelShader>& HazelShaderLibrary::Get(const std::string& name)
 	{
 		HZ_CORE_ASSERT(m_Shaders.find(name) != m_Shaders.end());
-		return m_Shaders[name];
+		return m_Shaders.at(name);
 	}
 
 }

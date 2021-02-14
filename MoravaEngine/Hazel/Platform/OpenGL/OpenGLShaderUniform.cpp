@@ -19,14 +19,6 @@ namespace Hazel {
 		m_Size = m_Struct->GetSize() * count;
 	}
 
-	const ShaderStruct& OpenGLShaderUniformDeclaration::GetShaderUniformStruct() const
-	{
-		if (!m_Struct) {
-			Log::GetLogger()->error("m_Struct not defined!");
-		}
-		return *m_Struct;
-	}
-
 	void OpenGLShaderUniformDeclaration::SetOffset(uint32_t offset)
 	{
 		if (m_Type == OpenGLShaderUniformDeclaration::Type::STRUCT)
@@ -39,13 +31,14 @@ namespace Hazel {
 	{
 		switch (type)
 		{
-			case OpenGLShaderUniformDeclaration::Type::INT32:      return 4;
-			case OpenGLShaderUniformDeclaration::Type::FLOAT32:    return 4;
-			case OpenGLShaderUniformDeclaration::Type::VEC2:       return 4 * 2;
-			case OpenGLShaderUniformDeclaration::Type::VEC3:       return 4 * 3;
-			case OpenGLShaderUniformDeclaration::Type::VEC4:       return 4 * 4;
-			case OpenGLShaderUniformDeclaration::Type::MAT3:       return 4 * 3 * 3;
-			case OpenGLShaderUniformDeclaration::Type::MAT4:       return 4 * 4 * 4;
+		case OpenGLShaderUniformDeclaration::Type::BOOL:       return 1;
+		case OpenGLShaderUniformDeclaration::Type::INT32:      return 4;
+		case OpenGLShaderUniformDeclaration::Type::FLOAT32:    return 4;
+		case OpenGLShaderUniformDeclaration::Type::VEC2:       return 4 * 2;
+		case OpenGLShaderUniformDeclaration::Type::VEC3:       return 4 * 3;
+		case OpenGLShaderUniformDeclaration::Type::VEC4:       return 4 * 4;
+		case OpenGLShaderUniformDeclaration::Type::MAT3:       return 4 * 3 * 3;
+		case OpenGLShaderUniformDeclaration::Type::MAT4:       return 4 * 4 * 4;
 		}
 		return 0;
 	}
@@ -53,6 +46,7 @@ namespace Hazel {
 	OpenGLShaderUniformDeclaration::Type OpenGLShaderUniformDeclaration::StringToType(const std::string& type)
 	{
 		if (type == "int")      return Type::INT32;
+		if (type == "bool")     return Type::BOOL;
 		if (type == "float")    return Type::FLOAT32;
 		if (type == "vec2")     return Type::VEC2;
 		if (type == "vec3")     return Type::VEC3;
@@ -67,13 +61,14 @@ namespace Hazel {
 	{
 		switch (type)
 		{
-			case OpenGLShaderUniformDeclaration::Type::INT32:      return "int32";
-			case OpenGLShaderUniformDeclaration::Type::FLOAT32:    return "float";
-			case OpenGLShaderUniformDeclaration::Type::VEC2:       return "vec2";
-			case OpenGLShaderUniformDeclaration::Type::VEC3:       return "vec3";
-			case OpenGLShaderUniformDeclaration::Type::VEC4:       return "vec4";
-			case OpenGLShaderUniformDeclaration::Type::MAT3:       return "mat3";
-			case OpenGLShaderUniformDeclaration::Type::MAT4:       return "mat4";
+		case OpenGLShaderUniformDeclaration::Type::INT32:      return "int32";
+		case OpenGLShaderUniformDeclaration::Type::BOOL:       return "bool";
+		case OpenGLShaderUniformDeclaration::Type::FLOAT32:    return "float";
+		case OpenGLShaderUniformDeclaration::Type::VEC2:       return "vec2";
+		case OpenGLShaderUniformDeclaration::Type::VEC3:       return "vec3";
+		case OpenGLShaderUniformDeclaration::Type::VEC4:       return "vec4";
+		case OpenGLShaderUniformDeclaration::Type::MAT3:       return "mat3";
+		case OpenGLShaderUniformDeclaration::Type::MAT4:       return "mat4";
 		}
 		return "Invalid Type";
 	}
@@ -126,8 +121,8 @@ namespace Hazel {
 	{
 		switch (type)
 		{
-			case Type::TEXTURE2D:	return "sampler2D";
-			case Type::TEXTURECUBE:	return "samplerCube";
+		case Type::TEXTURE2D:	return "sampler2D";
+		case Type::TEXTURECUBE:	return "samplerCube";
 		}
 		return "Invalid Type";
 	}

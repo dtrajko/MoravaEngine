@@ -11,7 +11,7 @@ namespace Hazel {
 	public:
 		OpenGLShader() = default;
 		OpenGLShader(const std::string& filepath);
-		static OpenGLShader* CreateFromString(const std::string& source);
+		static Ref<OpenGLShader> CreateFromString(const std::string& source);
 
 		virtual void Reload() override;
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
@@ -24,8 +24,11 @@ namespace Hazel {
 		virtual void SetVSMaterialUniformBuffer(Buffer buffer) override;
 		virtual void SetPSMaterialUniformBuffer(Buffer buffer) override;
 
-		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetInt(const std::string& name, int value) override;
+		virtual void SetBool(const std::string& name, bool value) override;
+		virtual void SetFloat(const std::string& name, float value) override;
+		virtual void SetFloat2(const std::string& name, const glm::vec2& value) override;
+		virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 		virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) override;
 
