@@ -19,7 +19,7 @@ namespace Hazel {
 		m_LocalData = Buffer::Copy(data, size);
 
 		//	Ref<OpenGLIndexBuffer> instance = this;
-		//	Renderer::Submit([instance]() mutable {
+		//	HazelRenderer::Submit([instance]() mutable {
 		//		glCreateBuffers(1, &instance->m_RendererID);
 		//		glNamedBufferData(instance->m_RendererID, instance->m_Size, instance->m_LocalData.Data, GL_STATIC_DRAW);
 		//	});
@@ -34,7 +34,7 @@ namespace Hazel {
 		// m_LocalData = Buffer(size);
 
 		//	Ref<OpenGLIndexBuffer> instance = this;
-		//	Renderer::Submit([instance]() mutable {
+		//	HazelRenderer::Submit([instance]() mutable {
 		//		glCreateBuffers(1, &instance->m_RendererID);
 		//		glNamedBufferData(instance->m_RendererID, instance->m_Size, nullptr, GL_DYNAMIC_DRAW);
 		//	});

@@ -15,6 +15,9 @@ namespace Hazel {
 		RenderCommandQueue m_CommandQueue;
 		Ref<HazelShaderLibrary> m_ShaderLibrary;
 		Ref<VertexArray> m_FullscreenQuadVertexArray;
+
+		Ref<VertexBuffer> m_FullscreenQuadVertexBuffer;
+		Ref<IndexBuffer> m_FullscreenQuadIndexBuffer;
 	};
 
 	static RendererData s_Data;
@@ -54,17 +57,17 @@ namespace Hazel {
 		data[3].TexCoord = glm::vec2(0, 1);
 
 		s_Data.m_FullscreenQuadVertexArray = VertexArray::Create();
-		auto quadVB = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
-		quadVB->SetLayout({
+		s_Data.m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		s_Data.m_FullscreenQuadVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoord" }
-			});
+		});
 
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
-		auto quadIB = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+		s_Data.m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 
-		s_Data.m_FullscreenQuadVertexArray->AddVertexBuffer(quadVB);
-		s_Data.m_FullscreenQuadVertexArray->SetIndexBuffer(quadIB);
+		s_Data.m_FullscreenQuadVertexArray->AddVertexBuffer(s_Data.m_FullscreenQuadVertexBuffer);
+		s_Data.m_FullscreenQuadVertexArray->SetIndexBuffer(s_Data.m_FullscreenQuadIndexBuffer);
 
 		Renderer2D::Init();
 	}
