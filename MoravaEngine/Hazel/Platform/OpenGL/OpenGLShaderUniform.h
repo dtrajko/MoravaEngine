@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../Renderer/ShaderUniform.h"
+#include "../../Core/Assert.h"
 
 
 namespace Hazel {
@@ -40,7 +41,7 @@ namespace Hazel {
 	public:
 		enum class Type
 		{
-			NONE, FLOAT32, VEC2, VEC3, VEC4, MAT3, MAT4, INT32, STRUCT
+			NONE, FLOAT32, VEC2, VEC3, VEC4, MAT3, MAT4, INT32, BOOL, STRUCT
 		};
 	private:
 		std::string m_Name;
@@ -66,7 +67,7 @@ namespace Hazel {
 		int32_t GetLocation() const { return m_Location; }
 		inline Type GetType() const { return m_Type; }
 		inline bool IsArray() const { return m_Count > 1; }
-		const ShaderStruct& GetShaderUniformStruct() const;
+		inline const ShaderStruct& GetShaderUniformStruct() const { HZ_CORE_ASSERT(m_Struct, ""); return *m_Struct; }
 
 	protected:
 		void SetOffset(uint32_t offset) override;
@@ -88,7 +89,7 @@ namespace Hazel {
 	class OpenGLShaderUniformBufferDeclaration : public ShaderUniformBufferDeclaration
 	{
 	private:
-		friend class Shader;
+		friend class HazelShader;
 	private:
 		std::string m_Name;
 		ShaderUniformList m_Uniforms;

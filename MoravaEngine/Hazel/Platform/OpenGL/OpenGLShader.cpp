@@ -1,5 +1,6 @@
 #include "OpenGLShader.h"
 #include "../../Core/Assert.h"
+#include "../../Renderer/HazelRenderer.h"
 
 #include <string>
 #include <sstream>
@@ -29,9 +30,9 @@ namespace Hazel {
 		Reload();
 	}
 
-	OpenGLShader* OpenGLShader::CreateFromString(const std::string& source)
+	Ref<OpenGLShader> OpenGLShader::CreateFromString(const std::string& source)
 	{
-		OpenGLShader* shader = new OpenGLShader();
+		Ref<OpenGLShader> shader = new OpenGLShader();
 		shader->Load(source);
 		return shader;
 	}
@@ -48,23 +49,26 @@ namespace Hazel {
 		if (!m_IsCompute)
 			Parse();
 
-		if (m_RendererID)
-			glDeleteProgram(m_RendererID);
-
-		CompileAndUploadShader();
-		if (!m_IsCompute)
+		HazelRenderer::Submit([=]()
 		{
-			ResolveUniforms();
-			ValidateUniforms();
-		}
+			if (m_RendererID)
+				glDeleteProgram(m_RendererID);
 
-		if (m_Loaded)
-		{
-			for (auto& callback : m_ShaderReloadedCallbacks)
-				callback();
-		}
+			CompileAndUploadShader();
+			if (!m_IsCompute)
+			{
+				ResolveUniforms();
+				ValidateUniforms();
+			}
 
-		m_Loaded = true;
+			if (m_Loaded)
+			{
+				for (auto& callback : m_ShaderReloadedCallbacks)
+					callback();
+			}
+
+			m_Loaded = true;
+		});
 	}
 
 	void OpenGLShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)
@@ -74,7 +78,9 @@ namespace Hazel {
 
 	void OpenGLShader::Bind()
 	{
-		glUseProgram(m_RendererID);
+		HazelRenderer::Submit([=]() {
+			glUseProgram(m_RendererID);
+		});
 	}
 
 	std::string OpenGLShader::ReadShaderFromFile(const std::string& filepath) const
@@ -87,13 +93,13 @@ namespace Hazel {
 			result.resize(in.tellg());
 			in.seekg(0, std::ios::beg);
 			in.read(&result[0], result.size());
-			in.close();
 		}
 		else
 		{
 			HZ_CORE_ASSERT(false, "Could not load shader!");
 		}
 
+		in.close();
 		return result;
 	}
 
@@ -179,7 +185,7 @@ namespace Hazel {
 
 	std::vector<std::string> Tokenize(const std::string& string)
 	{
-		return SplitString(string, " \t\n");
+		return SplitString(string, " \t\n\r");
 	}
 
 	std::vector<std::string> GetLines(const std::string& string)
@@ -252,6 +258,7 @@ namespace Hazel {
 
 	static bool IsTypeStringResource(const std::string& type)
 	{
+		if (type == "sampler1D")		return true;
 		if (type == "sampler2D")		return true;
 		if (type == "sampler2DMS")		return true;
 		if (type == "samplerCube")		return true;
@@ -607,14 +614,18 @@ namespace Hazel {
 
 	void OpenGLShader::SetVSMaterialUniformBuffer(Buffer buffer)
 	{
-		glUseProgram(m_RendererID);
-		ResolveAndSetUniforms(m_VSMaterialUniformBuffer, buffer);
+		HazelRenderer::Submit([this, buffer]() {
+			glUseProgram(m_RendererID);
+			ResolveAndSetUniforms(m_VSMaterialUniformBuffer, buffer);
+		});
 	}
 
 	void OpenGLShader::SetPSMaterialUniformBuffer(Buffer buffer)
 	{
-		glUseProgram(m_RendererID);
-		ResolveAndSetUniforms(m_PSMaterialUniformBuffer, buffer);
+		HazelRenderer::Submit([this, buffer]() {
+			glUseProgram(m_RendererID);
+			ResolveAndSetUniforms(m_PSMaterialUniformBuffer, buffer);
+		});
 	}
 
 	void OpenGLShader::ResolveAndSetUniforms(const Scope<OpenGLShaderUniformBufferDeclaration>& decl, Buffer buffer)
@@ -640,6 +651,9 @@ namespace Hazel {
 		uint32_t offset = uniform->GetOffset();
 		switch (uniform->GetType())
 		{
+		case OpenGLShaderUniformDeclaration::Type::BOOL:
+			UploadUniformFloat(uniform->GetLocation(), *(bool*)&buffer.Data[offset]);
+			break;
 		case OpenGLShaderUniformDeclaration::Type::FLOAT32:
 			UploadUniformFloat(uniform->GetLocation(), *(float*)&buffer.Data[offset]);
 			break;
@@ -676,6 +690,9 @@ namespace Hazel {
 		uint32_t offset = uniform->GetOffset();
 		switch (uniform->GetType())
 		{
+		case OpenGLShaderUniformDeclaration::Type::BOOL:
+			UploadUniformFloat(uniform->GetLocation(), *(bool*)&buffer.Data[offset]);
+			break;
 		case OpenGLShaderUniformDeclaration::Type::FLOAT32:
 			UploadUniformFloat(uniform->GetLocation(), *(float*)&buffer.Data[offset]);
 			break;
@@ -709,6 +726,9 @@ namespace Hazel {
 	{
 		switch (field.GetType())
 		{
+		case OpenGLShaderUniformDeclaration::Type::BOOL:
+			UploadUniformFloat(field.GetLocation(), *(bool*)&data[offset]);
+			break;
 		case OpenGLShaderUniformDeclaration::Type::FLOAT32:
 			UploadUniformFloat(field.GetLocation(), *(float*)&data[offset]);
 			break;
@@ -776,17 +796,44 @@ namespace Hazel {
 
 	void OpenGLShader::SetFloat(const std::string& name, float value)
 	{
-		UploadUniformFloat(name, value);
+		HazelRenderer::Submit([=]() {
+			UploadUniformFloat(name, value);
+		});
 	}
 
 	void OpenGLShader::SetInt(const std::string& name, int value)
 	{
-		UploadUniformInt(name, value);
+		HazelRenderer::Submit([=]() {
+			UploadUniformInt(name, value);
+		});
+	}
+
+	void OpenGLShader::SetBool(const std::string& name, bool value)
+	{
+		HazelRenderer::Submit([=]() {
+			UploadUniformInt(name, value);
+		});
+	}
+
+	void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value)
+	{
+		HazelRenderer::Submit([=]() {
+			UploadUniformFloat2(name, value);
+		});
+	}
+
+	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value)
+	{
+		HazelRenderer::Submit([=]() {
+			UploadUniformFloat3(name, value);
+		});
 	}
 
 	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
 	{
-		UploadUniformMat4(name, value);
+		HazelRenderer::Submit([=]() {
+			UploadUniformMat4(name, value);
+		});
 	}
 
 	void OpenGLShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind)
@@ -805,7 +852,9 @@ namespace Hazel {
 
 	void OpenGLShader::SetIntArray(const std::string& name, int* values, uint32_t size)
 	{
-		UploadUniformIntArray(name, values, size);
+		HazelRenderer::Submit([=]() {
+			UploadUniformIntArray(name, values, size);
+		});
 	}
 
 	void OpenGLShader::UploadUniformInt(uint32_t location, int32_t value)

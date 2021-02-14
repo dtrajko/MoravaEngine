@@ -41,7 +41,9 @@ namespace Hazel {
 		Ref<VertexBuffer> QuadVertexBuffer;
 		Ref<IndexBuffer> QuadIndexBuffer;
 
-		Shader* TextureShader;
+		Shader* TextureShader; // Morava shader class
+		Ref<HazelShader> TextureHazelShader; // Hazel shader class
+
 		Ref<HazelTexture2D> WhiteTexture;
 
 		uint32_t QuadIndexCount = 0;
@@ -58,7 +60,8 @@ namespace Hazel {
 		Ref<VertexBuffer> LineVertexBuffer;
 		Ref<IndexBuffer> LineIndexBuffer;
 
-		Shader* LineShader;
+		Shader* LineShader; // Morava shader class
+		Ref<HazelShader> LineHazelShader; // Hazel shader class
 
 		uint32_t LineIndexCount = 0;
 		Hazel::LineVertex* LineVertexBufferBase = nullptr;
@@ -76,6 +79,8 @@ namespace Hazel {
 	{
 		RenderCommand::Init();
 
+		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
+
 		PipelineSpecification pipelineSpecificationQuad;
 		pipelineSpecificationQuad.Layout = {
 			{ ShaderDataType::Float3, "a_Position" },
@@ -85,8 +90,6 @@ namespace Hazel {
 			{ ShaderDataType::Float,  "a_TilingFactor" }
 		};
 		s_Data.QuadPipeline = Pipeline::Create(pipelineSpecificationQuad);
-
-		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
 
 		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
 
@@ -107,21 +110,21 @@ namespace Hazel {
 		}
 
 		s_Data.QuadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxIndices);
-
 		delete[] quadIndices;
 
 		s_Data.WhiteTexture = HazelTexture2D::Create(HazelTextureFormat::RGBA, 1, 1);
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
-
 		// Working on Hazel LIVE! #004
-		// s_Data.WhiteTexture->Lock();
-		// s_Data.WhiteTexture->GetWriteableBuffer().Write(&whiteTextureData, sizeof(uint32_t));
-		// s_Data.WhiteTexture->Unlock();
+		s_Data.WhiteTexture->Lock();
+		s_Data.WhiteTexture->GetWriteableBuffer().Write(&whiteTextureData, sizeof(uint32_t));
+		s_Data.WhiteTexture->Unlock();
 
 		int32_t samplers[s_Data.MaxTextureSlots];
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
+
+		// s_Data.TextureHazelShader = HazelShader::Create("assets/shaders/Renderer2D.glsl");
 
 		s_Data.TextureShader = new Shader("Shaders/Hazel/Renderer2D.vs", "Shaders/Hazel/Renderer2D.fs");
 		s_Data.TextureShader->Bind();
@@ -136,6 +139,8 @@ namespace Hazel {
 		s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
 		// Lines
+		// s_Data.LineHazelShader = HazelShader::Create("assets/shaders/Renderer2D_Line.glsl");
+
 		s_Data.LineShader = new Shader("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
 
 		PipelineSpecification pipelineSpecificationLine;
