@@ -124,7 +124,7 @@ namespace Hazel {
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
 
-		// s_Data.TextureHazelShader = HazelShader::Create("assets/shaders/Renderer2D.glsl");
+		s_Data.TextureHazelShader = HazelShader::Create("assets/shaders/Renderer2D.glsl"); // not in use, only for constructor testing
 
 		s_Data.TextureShader = new Shader("Shaders/Hazel/Renderer2D.vs", "Shaders/Hazel/Renderer2D.fs");
 		s_Data.TextureShader->Bind();
@@ -139,9 +139,11 @@ namespace Hazel {
 		s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
 		// Lines
-		// s_Data.LineHazelShader = HazelShader::Create("assets/shaders/Renderer2D_Line.glsl");
+		s_Data.LineHazelShader = HazelShader::Create("assets/shaders/Renderer2D_Line.glsl"); // not in use, only for constructor testing
 
 		s_Data.LineShader = new Shader("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
+
+		s_Data.LineVertexBuffer = VertexBuffer::Create(s_Data.MaxLineVertices * sizeof(LineVertex));
 
 		PipelineSpecification pipelineSpecificationLine;
 		pipelineSpecificationLine.Layout = {
@@ -150,8 +152,6 @@ namespace Hazel {
 		};
 		s_Data.LinePipeline = Pipeline::Create(pipelineSpecificationLine);
 
-		s_Data.LineVertexBuffer = VertexBuffer::Create(s_Data.MaxLineVertices * sizeof(LineVertex));
-
 		s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxLineVertices];
 
 		uint32_t* lineIndices = new uint32_t[s_Data.MaxLineIndices];
@@ -159,7 +159,6 @@ namespace Hazel {
 			lineIndices[i] = i;
 
 		s_Data.LineIndexBuffer = IndexBuffer::Create(lineIndices, s_Data.MaxLineIndices);
-
 		delete[] lineIndices;
 	}
 
