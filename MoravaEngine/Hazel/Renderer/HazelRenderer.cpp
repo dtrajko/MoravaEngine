@@ -14,10 +14,12 @@ namespace Hazel {
 		Ref<RenderPass> m_ActiveRenderPass;
 		RenderCommandQueue m_CommandQueue;
 		Ref<HazelShaderLibrary> m_ShaderLibrary;
+
 		Ref<VertexArray> m_FullscreenQuadVertexArray;
 
 		Ref<VertexBuffer> m_FullscreenQuadVertexBuffer;
 		Ref<IndexBuffer> m_FullscreenQuadIndexBuffer;
+		Ref<Pipeline> m_FullscreenQuadPipeline;
 	};
 
 	static RendererData s_Data;
@@ -56,16 +58,20 @@ namespace Hazel {
 		data[3].Position = glm::vec3(x, y + height, 0.1f);
 		data[3].TexCoord = glm::vec2(0, 1);
 
-		s_Data.m_FullscreenQuadVertexArray = VertexArray::Create();
-		s_Data.m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
-		s_Data.m_FullscreenQuadVertexBuffer->SetLayout({
+		PipelineSpecification pipelineSpecification;
+		pipelineSpecification.Layout = {
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoord" }
-		});
+		};
+		s_Data.m_FullscreenQuadPipeline = Pipeline::Create(pipelineSpecification);
+
+		s_Data.m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		s_Data.m_FullscreenQuadVertexBuffer->SetLayout(pipelineSpecification.Layout);
 
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 		s_Data.m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 
+		s_Data.m_FullscreenQuadVertexArray = VertexArray::Create();
 		s_Data.m_FullscreenQuadVertexArray->AddVertexBuffer(s_Data.m_FullscreenQuadVertexBuffer);
 		s_Data.m_FullscreenQuadVertexArray->SetIndexBuffer(s_Data.m_FullscreenQuadIndexBuffer);
 
@@ -79,16 +85,16 @@ namespace Hazel {
 
 	void HazelRenderer::Clear()
 	{
-		// HazelRenderer::Submit([]() {
+		HazelRenderer::Submit([]() {
 			RendererAPI::Clear(0.0f, 0.0f, 0.0f, 1.0f);
-		// });
+		});
 	}
 
 	void HazelRenderer::Clear(float r, float g, float b, float a)
 	{
-		// Renderer::Submit([=]() {
+		HazelRenderer::Submit([=]() {
 			RendererAPI::Clear(r, g, b, a);
-		// });
+		});
 	}
 
 	void HazelRenderer::ClearMagenta()
@@ -102,16 +108,16 @@ namespace Hazel {
 
 	void HazelRenderer::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
 	{
-		// HazelRenderer::Submit([=]() {
-		RendererAPI::DrawIndexed(count, type, depthTest);
-		// });
+		HazelRenderer::Submit([=]() {
+			RendererAPI::DrawIndexed(count, type, depthTest);
+		});
 	}
 
 	void HazelRenderer::SetLineThickness(float thickness)
 	{
-		// HazelRenderer::Submit([=]() {
+		HazelRenderer::Submit([=]() {
 			RendererAPI::SetLineThickness(thickness);
-		// });
+		});
 	}
 
 	void HazelRenderer::WaitAndRender()
@@ -130,9 +136,9 @@ namespace Hazel {
 		if (clear)
 		{
 			const glm::vec4& clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
-			// HazelRenderer::Submit([=]() {
+			HazelRenderer::Submit([=]() {
 				RendererAPI::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-			// });
+			});
 		}
 	}
 
@@ -156,6 +162,11 @@ namespace Hazel {
 		}
 
 		s_Data.m_FullscreenQuadVertexArray->Bind();
+
+		// s_Data.m_FullscreenQuadVertexBuffer->Bind();
+		// s_Data.m_FullscreenQuadPipeline->Bind();
+		// s_Data.m_FullscreenQuadIndexBuffer->Bind();
+
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
@@ -169,6 +180,11 @@ namespace Hazel {
 		}
 
 		s_Data.m_FullscreenQuadVertexArray->Bind();
+
+		// s_Data.m_FullscreenQuadVertexBuffer->Bind();
+		// s_Data.m_FullscreenQuadPipeline->Bind();
+		// s_Data.m_FullscreenQuadIndexBuffer->Bind();
+
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
