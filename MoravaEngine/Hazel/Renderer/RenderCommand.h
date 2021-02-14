@@ -30,9 +30,9 @@ namespace Hazel {
 			glViewport(x, y, width, height);
 		}
 
-		inline static void DrawIndexed(Ref<VertexArray> vertexArray, uint32_t indexCount)
+		inline static void DrawIndexed(Ref<Pipeline> pipeline, uint32_t indexCount)
 		{
-			vertexArray->Bind();
+			pipeline->Bind();
 			glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 		}
 

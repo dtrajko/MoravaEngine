@@ -91,6 +91,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName)_$(PlatformTarget).pch</PrecompiledHeaderOutputFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -112,6 +113,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName)_$(PlatformTarget).pch</PrecompiledHeaderOutputFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -134,6 +136,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName)_$(PlatformTarget).pch</PrecompiledHeaderOutputFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -159,6 +162,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName)_$(PlatformTarget).pch</PrecompiledHeaderOutputFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -203,7 +207,6 @@
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLShader.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLShaderUniform.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLTexture.cpp" />
-    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="Hazel\Platform\Windows\WindowsPlatformUtils.cpp" />
     <ClCompile Include="Hazel\Renderer\IndexBuffer.cpp" />
     <ClCompile Include="Hazel\Renderer\Pipeline.cpp" />
@@ -222,7 +225,6 @@
     <ClCompile Include="Hazel\Renderer\SceneEnvironment.cpp" />
     <ClCompile Include="Hazel\Renderer\SceneRenderer.cpp" />
     <ClCompile Include="Hazel\Renderer\ShaderUniform.cpp" />
-    <ClCompile Include="Hazel\Renderer\VertexArray.cpp" />
     <ClCompile Include="Hazel\Scene\Entity.cpp" />
     <ClCompile Include="Hazel\Scene\HazelScene.cpp" />
     <ClCompile Include="Hazel\Scene\SceneCamera.cpp" />
@@ -435,7 +437,6 @@
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLShader.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLShaderUniform.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLTexture.h" />
-    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLVertexArray.h" />
     <ClInclude Include="Hazel\Renderer\IndexBuffer.h" />
     <ClInclude Include="Hazel\Renderer\VertexBuffer.h" />
     <ClInclude Include="Hazel\Renderer\EditorCamera.h" />
@@ -455,7 +456,6 @@
     <ClInclude Include="Hazel\Renderer\SceneEnvironment.h" />
     <ClInclude Include="Hazel\Renderer\SceneRenderer.h" />
     <ClInclude Include="Hazel\Renderer\ShaderUniform.h" />
-    <ClInclude Include="Hazel\Renderer\VertexArray.h" />
     <ClInclude Include="Hazel\Scene\Components.h" />
     <ClInclude Include="Hazel\Scene\Entity.h" />
     <ClInclude Include="Hazel\Scene\HazelScene.h" />

@@ -16,7 +16,6 @@
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/RenderPass.h"
 #include "Hazel/Renderer/RendererAPI.h"
-#include "Hazel/Renderer/VertexArray.h"
 #include "Hazel/Renderer/VertexBuffer.h"
 #include "Hazel/Scene/Components.h"
 #include "Hazel/Scene/HazelScene.h"

@@ -2241,7 +2241,10 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAni
     float deltaTime = Timer::Get()->GetDeltaTime();
     meshAnimPBR->OnUpdate(deltaTime, false);
 
-    meshAnimPBR->m_VertexArray->Bind();
+    meshAnimPBR->m_Pipeline->Bind();
+    meshAnimPBR->m_VertexBuffer->Bind();
+    meshAnimPBR->m_IndexBuffer->Bind();
+
     auto& materials = meshAnimPBR->GetMaterials();
 
     int submeshIndex = 0;

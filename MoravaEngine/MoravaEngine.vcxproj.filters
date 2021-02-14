@@ -506,12 +506,6 @@
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLRenderPass.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexArray.cpp">
-      <Filter>Hazel\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="Hazel\Renderer\VertexArray.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Hazel\Renderer\HazelMaterial.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
@@ -1201,12 +1195,6 @@
     </ClInclude>
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLRenderPass.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLVertexArray.h">
-      <Filter>Hazel\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="Hazel\Renderer\VertexArray.h">
-      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\HazelMaterial.h">
       <Filter>Hazel\Renderer</Filter>

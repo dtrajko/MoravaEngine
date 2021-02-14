@@ -3,7 +3,7 @@
 #include "../Core/Base.h"
 #include "../Renderer/HazelCamera.h"
 #include "../Renderer/HazelTexture.h"
-#include "../Renderer/VertexArray.h"
+#include "../Renderer/Pipeline.h"
 #include "../Renderer/HazelShader.h"
 
 

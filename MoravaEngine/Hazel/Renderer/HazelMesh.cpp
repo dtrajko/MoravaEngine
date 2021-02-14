@@ -569,12 +569,12 @@ namespace Hazel {
 
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Array...");
 
-		m_VertexArray = VertexArray::Create();
+		VertexBufferLayout vertexLayout;
 		if (m_IsAnimated)
 		{
 			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Buffer...");
-			auto vb = VertexBuffer::Create(m_AnimatedVertices.data(), (uint32_t)m_AnimatedVertices.size() * sizeof(AnimatedVertex));
-			vb->SetLayout({
+			m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), (uint32_t)m_AnimatedVertices.size() * sizeof(AnimatedVertex));
+			vertexLayout = {
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float3, "a_Normal" },
 				{ ShaderDataType::Float3, "a_Tangent" },
@@ -582,14 +582,16 @@ namespace Hazel {
 				{ ShaderDataType::Float2, "a_TexCoord" },
 				{ ShaderDataType::Int4,   "a_BoneIDs" },
 				{ ShaderDataType::Float4, "a_BoneWeights" },
-				});
-			m_VertexArray->AddVertexBuffer(vb);
+			};
+
+			// m_Pipeline->AddVertexBuffer(m_VertexBuffer);
 		}
 		else
 		{
 			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Buffer...");
-			auto vb = VertexBuffer::Create(m_StaticVertices.data(), (uint32_t)m_StaticVertices.size() * sizeof(Vertex));
-			vb->SetLayout({
+
+			m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), (uint32_t)m_StaticVertices.size() * sizeof(Vertex));
+			vertexLayout = {
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float3, "a_Normal" },
 				{ ShaderDataType::Float3, "a_Tangent" },
@@ -597,13 +599,20 @@ namespace Hazel {
 				{ ShaderDataType::Float2, "a_TexCoord" },
 				//	{ ShaderDataType::Int4,   "a_BoneIDs" },
 				//	{ ShaderDataType::Float4, "a_BoneWeights" },
-				});
-			m_VertexArray->AddVertexBuffer(vb);
+			};
+
+			// m_Pipeline->AddVertexBuffer(vb);
 		}
 
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating an Index Buffer...");
-		auto ib = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
-		m_VertexArray->SetIndexBuffer(ib);
+
+		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
+
+		PipelineSpecification pipelineSpecification;
+		pipelineSpecification.Layout = vertexLayout;
+		m_Pipeline = Pipeline::Create(pipelineSpecification);
+
+		// m_Pipeline->SetIndexBuffer(ib);
 
 		Log::GetLogger()->info("Hazel::HazelMesh: Total vertices: {0}", m_IsAnimated ? m_StaticVertices.size() : m_AnimatedVertices.size());
 		Log::GetLogger()->info("Hazel::HazelMesh: Total indices: {0}", m_Indices.size());
@@ -623,8 +632,6 @@ namespace Hazel {
 
 		//	for (Submesh* submesh : m_Submeshes)
 		//		delete submesh;
-
-		delete m_IndexBuffer;
 	}
 
 	void HazelMesh::OnUpdate(Timestep ts, bool debug)
@@ -1072,7 +1079,9 @@ namespace Hazel {
 	{
 		EnvMapMaterial* envMapMaterial = nullptr;
 
-		m_VertexArray->Bind();
+		m_Pipeline->Bind();
+		m_VertexBuffer->Bind();
+		m_IndexBuffer->Bind();
 
 		for (Submesh& submesh : m_Submeshes)
 		{
@@ -1144,7 +1153,9 @@ namespace Hazel {
 
 		EnvMapMaterial* envMapMaterial = nullptr;
 
-		parentMesh->GetVertexArray().Raw()->Bind();
+		parentMesh->m_Pipeline->Bind();
+		parentMesh->m_VertexBuffer->Bind();
+		parentMesh->m_IndexBuffer->Bind();
 
 		shader->Bind();
 

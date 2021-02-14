@@ -88,4 +88,13 @@ namespace Hazel {
 		});
 	}
 
+	void OpenGLPipeline::Bind()
+	{
+		Ref<OpenGLPipeline> instance = this;
+		HazelRenderer::Submit([instance]()
+		{
+			glBindVertexArray(instance->m_VertexArrayRendererID);
+		});
+	}
+
 }

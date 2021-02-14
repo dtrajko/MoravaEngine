@@ -16,6 +16,9 @@ namespace Hazel {
 
 		virtual void Invalidate() override;
 
+		// TEMP: remove this when render command buffers are a thing
+		virtual void Bind() override;
+
 	private:
 		PipelineSpecification m_Specification;
 		uint32_t m_VertexArrayRendererID = 0;
