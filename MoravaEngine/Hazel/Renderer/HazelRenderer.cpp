@@ -1,6 +1,7 @@
 #include "HazelRenderer.h"
 
 #include "../Core/Assert.h"
+#include "Renderer2D.h"
 #include "SceneRenderer.h"
 
 
@@ -66,7 +67,7 @@ namespace Hazel {
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 		s_Data.m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 
-		// Renderer2D::Init();
+		Renderer2D::Init();
 	}
 
 	const Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()
@@ -76,16 +77,16 @@ namespace Hazel {
 
 	void HazelRenderer::Clear()
 	{
-		// HazelRenderer::Submit([]() {
+		HazelRenderer::Submit([]() {
 			RendererAPI::Clear(0.0f, 0.0f, 0.0f, 1.0f);
-		// });
+		});
 	}
 
 	void HazelRenderer::Clear(float r, float g, float b, float a)
 	{
-		// Renderer::Submit([=]() {
+		HazelRenderer::Submit([=]() {
 			RendererAPI::Clear(r, g, b, a);
-		// });
+		});
 	}
 
 	void HazelRenderer::ClearMagenta()
@@ -100,7 +101,7 @@ namespace Hazel {
 	void HazelRenderer::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
 	{
 		// HazelRenderer::Submit([=]() {
-		RendererAPI::DrawIndexed(count, type, depthTest);
+			RendererAPI::DrawIndexed(count, type, depthTest);
 		// });
 	}
 
@@ -152,8 +153,8 @@ namespace Hazel {
 			shader->setMat4("u_Transform", transform);
 		}
 
-		s_Data.m_FullscreenQuadPipeline->Bind();
 		s_Data.m_FullscreenQuadVertexBuffer->Bind();
+		s_Data.m_FullscreenQuadPipeline->Bind();
 		s_Data.m_FullscreenQuadIndexBuffer->Bind();
 
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
@@ -168,11 +169,9 @@ namespace Hazel {
 			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
 		}
 
-		if (s_Data.m_FullscreenQuadPipeline) {
-			s_Data.m_FullscreenQuadPipeline->Bind();
-			s_Data.m_FullscreenQuadVertexBuffer->Bind();
-			s_Data.m_FullscreenQuadIndexBuffer->Bind();
-		}
+		s_Data.m_FullscreenQuadVertexBuffer->Bind();
+		s_Data.m_FullscreenQuadPipeline->Bind();
+		s_Data.m_FullscreenQuadIndexBuffer->Bind();
 
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
@@ -186,11 +185,9 @@ namespace Hazel {
 		// auto shader = material->GetShader();
 		// TODO: Sort this out
 
+		mesh->m_VertexBuffer->Bind();
 		mesh->m_Pipeline->Bind();
-
-		// mesh->m_VertexBuffer->Bind();
-		// mesh->m_Pipeline->Bind();
-		// mesh->m_IndexBuffer->Bind();
+		mesh->m_IndexBuffer->Bind();
 
 		auto& materials = mesh->GetMaterials();
 		for (Submesh& submesh : mesh->m_Submeshes)
@@ -263,15 +260,15 @@ namespace Hazel {
 		};
 
 		for (uint32_t i = 0; i < 4; i++) {
-			// Renderer2D::DrawLine(corners[i], corners[(i + 1) % 4], color);
+			Renderer2D::DrawLine(corners[i], corners[(i + 1) % 4], color);
 		}
 
 		for (uint32_t i = 0; i < 4; i++) {
-			// Renderer2D::DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
+			Renderer2D::DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
 		}
 
 		for (uint32_t i = 0; i < 4; i++) {
-			// Renderer2D::DrawLine(corners[i], corners[i + 4], color);
+			Renderer2D::DrawLine(corners[i], corners[i + 4], color);
 		}
 	}
 

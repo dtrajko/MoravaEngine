@@ -37,28 +37,28 @@ namespace Hazel {
     OpenGLPipeline::~OpenGLPipeline()
     {
 		GLuint rendererID = m_VertexArrayRendererID;
-		HazelRenderer::Submit([rendererID]()
-		{
-			glDeleteVertexArrays(1, &rendererID);
-		});
+		// HazelRenderer::Submit([rendererID]()
+		// {
+			glDeleteVertexArrays(1, &m_VertexArrayRendererID);
+		// });
     }
 
 	void OpenGLPipeline::Invalidate()
 	{
 		HZ_CORE_ASSERT(m_Specification.Layout.GetElements().size(), "Layout is empty!");
 
-		Ref<OpenGLPipeline> instance = this;
-		HazelRenderer::Submit([instance]() mutable
-		{
-			auto& vertexArrayRendererID = instance->m_VertexArrayRendererID;
+		// Ref<OpenGLPipeline> instance = this;
+		// HazelRenderer::Submit([instance]() mutable
+		// {
+			// auto& vertexArrayRendererID = m_VertexArrayRendererID;
 
-			if (vertexArrayRendererID)
-				glDeleteVertexArrays(1, &vertexArrayRendererID);
+			if (m_VertexArrayRendererID)
+				glDeleteVertexArrays(1, &m_VertexArrayRendererID);
 
-			glGenVertexArrays(1, &vertexArrayRendererID);
-			glBindVertexArray(vertexArrayRendererID);
+			glGenVertexArrays(1, &m_VertexArrayRendererID);
+			glBindVertexArray(m_VertexArrayRendererID);
 
-			const auto& layout = instance->m_Specification.Layout;
+			const auto& layout = m_Specification.Layout;
 			uint32_t attribIndex = 0;
 			for (const auto& element : layout)
 			{
@@ -85,16 +85,16 @@ namespace Hazel {
 			}
 
 			glBindVertexArray(0);
-		});
+		// });
 	}
 
 	void OpenGLPipeline::Bind()
 	{
-		Ref<OpenGLPipeline> instance = this;
-		HazelRenderer::Submit([instance]()
-		{
-			glBindVertexArray(instance->m_VertexArrayRendererID);
-		});
+		// Ref<OpenGLPipeline> instance = this;
+		// HazelRenderer::Submit([instance]()
+		// {
+			glBindVertexArray(m_VertexArrayRendererID);
+		// });
 	}
 
 }
