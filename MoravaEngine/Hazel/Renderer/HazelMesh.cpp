@@ -624,7 +624,7 @@ namespace Hazel {
 		//	for (Submesh* submesh : m_Submeshes)
 		//		delete submesh;
 
-		delete m_IndexBuffer;
+		// delete m_IndexBuffer;
 	}
 
 	void HazelMesh::OnUpdate(Timestep ts, bool debug)
@@ -1144,7 +1144,7 @@ namespace Hazel {
 
 		EnvMapMaterial* envMapMaterial = nullptr;
 
-		parentMesh->GetVertexArray().Raw()->Bind();
+		parentMesh->m_VertexArray->Bind();
 
 		shader->Bind();
 

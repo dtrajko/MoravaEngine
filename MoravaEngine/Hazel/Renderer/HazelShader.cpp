@@ -15,8 +15,8 @@ namespace Hazel {
 
 		switch (RendererAPI::Current())
 		{
-		case RendererAPIType::None: return nullptr;
-		case RendererAPIType::OpenGL: result = Ref<OpenGLShader>::Create(filepath);
+			case RendererAPIType::None: return nullptr;
+			case RendererAPIType::OpenGL: result = Ref<OpenGLShader>::Create(filepath);
 		}
 		s_AllShaders.push_back(result);
 		return result;
@@ -28,8 +28,8 @@ namespace Hazel {
 
 		switch (RendererAPI::Current())
 		{
-		case RendererAPIType::None: return nullptr;
-		case RendererAPIType::OpenGL: result = OpenGLShader::CreateFromString(source);
+			case RendererAPIType::None: return nullptr;
+			case RendererAPIType::OpenGL: result = OpenGLShader::CreateFromString(source);
 		}
 		s_AllShaders.push_back(result);
 		return result;

@@ -9,8 +9,8 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-		case RendererAPIType::None:    return nullptr;
-		case RendererAPIType::OpenGL:  return Ref<OpenGLIndexBuffer>::Create(size);
+			case RendererAPIType::None:    return nullptr;
+			case RendererAPIType::OpenGL:  return Ref<OpenGLIndexBuffer>::Create(size);
 		}
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
@@ -20,8 +20,8 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-		case RendererAPIType::None:    return nullptr;
-		case RendererAPIType::OpenGL:  return Ref<OpenGLIndexBuffer>::Create(data, size);
+			case RendererAPIType::None:    return nullptr;
+			case RendererAPIType::OpenGL:  return Ref<OpenGLIndexBuffer>::Create(data, size);
 		}
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;

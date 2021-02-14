@@ -5,8 +5,10 @@
 
 #include "../Core/Base.h"
 #include "../Core/Math/AABB.h"
-#include "../Platform/OpenGL/OpenGLIndexBuffer.h"
-#include "../Platform/OpenGL/OpenGLVertexArray.h"
+#include "../Renderer/Pipeline.h"
+#include "../Renderer/IndexBuffer.h"
+#include "../Renderer/VertexBuffer.h"
+#include "../Renderer/VertexArray.h" // TODO: replace with Pipeline
 
 #include "../../Log.h"
 #include "../../Shader.h"
@@ -159,7 +161,6 @@ namespace Hazel {
 		inline const std::vector<Material*>& GetMaterials() const { return m_Materials; }
 		inline const std::vector<Texture*>& GetTextures() const { return m_Textures; }
 		inline bool& IsAnimated() { return m_IsAnimated; }
-		inline Ref<VertexArray> GetVertexArray() { return m_VertexArray; }
 		inline const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const;
 
@@ -190,8 +191,12 @@ namespace Hazel {
 		Texture* LoadBaseTexture();
 
 	public:
-		Ref<VertexArray> m_VertexArray;
-		OpenGLIndexBuffer* m_IndexBuffer;
+		Ref<VertexArray> m_VertexArray; // TODO: replace with Pipeline
+
+		Ref<Pipeline> m_Pipeline;
+		Ref<VertexBuffer> m_VertexBuffer;
+		Ref<IndexBuffer> m_IndexBuffer;
+
 		std::vector<glm::mat4> m_BoneTransforms;
 		std::vector<Submesh> m_Submeshes;
 

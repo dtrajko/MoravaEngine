@@ -48,7 +48,7 @@ namespace Hazel {
 		GLuint rendererID = m_RendererID;
 		HazelRenderer::Submit([rendererID]() {
 			glDeleteBuffers(1, &rendererID);
-			});
+		});
 	}
 
 	void OpenGLIndexBuffer::SetData(void* data, uint32_t size, uint32_t offset)
@@ -58,7 +58,7 @@ namespace Hazel {
 		Ref<OpenGLIndexBuffer> instance = this;
 		HazelRenderer::Submit([instance, offset]() {
 			glNamedBufferSubData(instance->m_RendererID, offset, instance->m_Size, instance->m_LocalData.Data);
-			});
+		});
 	}
 
 	void OpenGLIndexBuffer::Bind() const
@@ -66,7 +66,7 @@ namespace Hazel {
 		Ref<const OpenGLIndexBuffer> instance = this;
 		HazelRenderer::Submit([instance]() {
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance->m_RendererID);
-			});
+		});
 	}
 
 }

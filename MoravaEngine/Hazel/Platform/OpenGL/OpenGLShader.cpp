@@ -50,25 +50,25 @@ namespace Hazel {
 			Parse();
 
 		HazelRenderer::Submit([=]()
+		{
+			if (m_RendererID)
+				glDeleteProgram(m_RendererID);
+
+			CompileAndUploadShader();
+			if (!m_IsCompute)
 			{
-				if (m_RendererID)
-					glDeleteProgram(m_RendererID);
+				ResolveUniforms();
+				ValidateUniforms();
+			}
 
-				CompileAndUploadShader();
-				if (!m_IsCompute)
-				{
-					ResolveUniforms();
-					ValidateUniforms();
-				}
+			if (m_Loaded)
+			{
+				for (auto& callback : m_ShaderReloadedCallbacks)
+					callback();
+			}
 
-				if (m_Loaded)
-				{
-					for (auto& callback : m_ShaderReloadedCallbacks)
-						callback();
-				}
-
-				m_Loaded = true;
-			});
+			m_Loaded = true;
+		});
 	}
 
 	void OpenGLShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)
@@ -80,7 +80,7 @@ namespace Hazel {
 	{
 		HazelRenderer::Submit([=]() {
 			glUseProgram(m_RendererID);
-			});
+		});
 	}
 
 	std::string OpenGLShader::ReadShaderFromFile(const std::string& filepath) const
@@ -617,7 +617,7 @@ namespace Hazel {
 		HazelRenderer::Submit([this, buffer]() {
 			glUseProgram(m_RendererID);
 			ResolveAndSetUniforms(m_VSMaterialUniformBuffer, buffer);
-			});
+		});
 	}
 
 	void OpenGLShader::SetPSMaterialUniformBuffer(Buffer buffer)
@@ -625,7 +625,7 @@ namespace Hazel {
 		HazelRenderer::Submit([this, buffer]() {
 			glUseProgram(m_RendererID);
 			ResolveAndSetUniforms(m_PSMaterialUniformBuffer, buffer);
-			});
+		});
 	}
 
 	void OpenGLShader::ResolveAndSetUniforms(const Scope<OpenGLShaderUniformBufferDeclaration>& decl, Buffer buffer)
@@ -661,19 +661,19 @@ namespace Hazel {
 			UploadUniformInt(uniform->GetLocation(), *(int32_t*)&buffer.Data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::VEC2:
-			UploadUniformFloat2(uniform->GetLocation(), *(glm::vec2*) & buffer.Data[offset]);
+			UploadUniformFloat2(uniform->GetLocation(), *(glm::vec2*)&buffer.Data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::VEC3:
-			UploadUniformFloat3(uniform->GetLocation(), *(glm::vec3*) & buffer.Data[offset]);
+			UploadUniformFloat3(uniform->GetLocation(), *(glm::vec3*)&buffer.Data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::VEC4:
-			UploadUniformFloat4(uniform->GetLocation(), *(glm::vec4*) & buffer.Data[offset]);
+			UploadUniformFloat4(uniform->GetLocation(), *(glm::vec4*)&buffer.Data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::MAT3:
-			UploadUniformMat3(uniform->GetLocation(), *(glm::mat3*) & buffer.Data[offset]);
+			UploadUniformMat3(uniform->GetLocation(), *(glm::mat3*)&buffer.Data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::MAT4:
-			UploadUniformMat4(uniform->GetLocation(), *(glm::mat4*) & buffer.Data[offset]);
+			UploadUniformMat4(uniform->GetLocation(), *(glm::mat4*)&buffer.Data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::STRUCT:
 			UploadUniformStruct(uniform, buffer.Data, offset);
@@ -700,19 +700,19 @@ namespace Hazel {
 			UploadUniformInt(uniform->GetLocation(), *(int32_t*)&buffer.Data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::VEC2:
-			UploadUniformFloat2(uniform->GetLocation(), *(glm::vec2*) & buffer.Data[offset]);
+			UploadUniformFloat2(uniform->GetLocation(), *(glm::vec2*)&buffer.Data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::VEC3:
-			UploadUniformFloat3(uniform->GetLocation(), *(glm::vec3*) & buffer.Data[offset]);
+			UploadUniformFloat3(uniform->GetLocation(), *(glm::vec3*)&buffer.Data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::VEC4:
-			UploadUniformFloat4(uniform->GetLocation(), *(glm::vec4*) & buffer.Data[offset]);
+			UploadUniformFloat4(uniform->GetLocation(), *(glm::vec4*)&buffer.Data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::MAT3:
-			UploadUniformMat3(uniform->GetLocation(), *(glm::mat3*) & buffer.Data[offset]);
+			UploadUniformMat3(uniform->GetLocation(), *(glm::mat3*)&buffer.Data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::MAT4:
-			UploadUniformMat4Array(uniform->GetLocation(), *(glm::mat4*) & buffer.Data[offset], uniform->GetCount());
+			UploadUniformMat4Array(uniform->GetLocation(), *(glm::mat4*)&buffer.Data[offset], uniform->GetCount());
 			break;
 		case OpenGLShaderUniformDeclaration::Type::STRUCT:
 			UploadUniformStruct(uniform, buffer.Data, offset);
@@ -736,19 +736,19 @@ namespace Hazel {
 			UploadUniformInt(field.GetLocation(), *(int32_t*)&data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::VEC2:
-			UploadUniformFloat2(field.GetLocation(), *(glm::vec2*) & data[offset]);
+			UploadUniformFloat2(field.GetLocation(), *(glm::vec2*)&data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::VEC3:
-			UploadUniformFloat3(field.GetLocation(), *(glm::vec3*) & data[offset]);
+			UploadUniformFloat3(field.GetLocation(), *(glm::vec3*)&data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::VEC4:
-			UploadUniformFloat4(field.GetLocation(), *(glm::vec4*) & data[offset]);
+			UploadUniformFloat4(field.GetLocation(), *(glm::vec4*)&data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::MAT3:
-			UploadUniformMat3(field.GetLocation(), *(glm::mat3*) & data[offset]);
+			UploadUniformMat3(field.GetLocation(), *(glm::mat3*)&data[offset]);
 			break;
 		case OpenGLShaderUniformDeclaration::Type::MAT4:
-			UploadUniformMat4(field.GetLocation(), *(glm::mat4*) & data[offset]);
+			UploadUniformMat4(field.GetLocation(), *(glm::mat4*)&data[offset]);
 			break;
 		default:
 			HZ_CORE_ASSERT(false, "Unknown uniform type!");
@@ -762,34 +762,34 @@ namespace Hazel {
 			const UniformDecl& decl = uniformBuffer.GetUniforms()[i];
 			switch (decl.Type)
 			{
-			case UniformType::Float:
-			{
-				const std::string& name = decl.Name;
-				float value = *(float*)(uniformBuffer.GetBuffer() + decl.Offset);
+				case UniformType::Float:
+				{
+					const std::string& name = decl.Name;
+					float value = *(float*)(uniformBuffer.GetBuffer() + decl.Offset);
 
-				UploadUniformFloat(name, value);
-			}
-			case UniformType::Float3:
-			{
-				const std::string& name = decl.Name;
-				glm::vec3& values = *(glm::vec3*)(uniformBuffer.GetBuffer() + decl.Offset);
+					UploadUniformFloat(name, value);
+				}
+				case UniformType::Float3:
+				{
+					const std::string& name = decl.Name;
+					glm::vec3& values = *(glm::vec3*)(uniformBuffer.GetBuffer() + decl.Offset);
 
-				UploadUniformFloat3(name, values);
-			}
-			case UniformType::Float4:
-			{
-				const std::string& name = decl.Name;
-				glm::vec4& values = *(glm::vec4*)(uniformBuffer.GetBuffer() + decl.Offset);
+					UploadUniformFloat3(name, values);
+				}
+				case UniformType::Float4:
+				{
+					const std::string& name = decl.Name;
+					glm::vec4& values = *(glm::vec4*)(uniformBuffer.GetBuffer() + decl.Offset);
 
-				UploadUniformFloat4(name, values);
-			}
-			case UniformType::Matrix4x4:
-			{
-				const std::string& name = decl.Name;
-				glm::mat4& values = *(glm::mat4*)(uniformBuffer.GetBuffer() + decl.Offset);
+					UploadUniformFloat4(name, values);
+				}
+				case UniformType::Matrix4x4:
+				{
+					const std::string& name = decl.Name;
+					glm::mat4& values = *(glm::mat4*)(uniformBuffer.GetBuffer() + decl.Offset);
 
-				UploadUniformMat4(name, values);
-			}
+					UploadUniformMat4(name, values);
+				}
 			}
 		}
 	}
@@ -798,42 +798,42 @@ namespace Hazel {
 	{
 		HazelRenderer::Submit([=]() {
 			UploadUniformFloat(name, value);
-			});
+		});
 	}
 
 	void OpenGLShader::SetInt(const std::string& name, int value)
 	{
 		HazelRenderer::Submit([=]() {
 			UploadUniformInt(name, value);
-			});
+		});
 	}
 
 	void OpenGLShader::SetBool(const std::string& name, bool value)
 	{
 		HazelRenderer::Submit([=]() {
 			UploadUniformInt(name, value);
-			});
+		});
 	}
 
 	void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value)
 	{
 		HazelRenderer::Submit([=]() {
 			UploadUniformFloat2(name, value);
-			});
+		});
 	}
 
 	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
 		HazelRenderer::Submit([=]() {
 			UploadUniformFloat3(name, value);
-			});
+		});
 	}
 
 	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
 	{
 		HazelRenderer::Submit([=]() {
 			UploadUniformMat4(name, value);
-			});
+		});
 	}
 
 	void OpenGLShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind)
@@ -854,7 +854,7 @@ namespace Hazel {
 	{
 		HazelRenderer::Submit([=]() {
 			UploadUniformIntArray(name, values, size);
-			});
+		});
 	}
 
 	void OpenGLShader::UploadUniformInt(uint32_t location, int32_t value)

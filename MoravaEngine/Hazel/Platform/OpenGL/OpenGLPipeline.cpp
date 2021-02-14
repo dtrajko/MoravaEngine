@@ -37,64 +37,64 @@ namespace Hazel {
 	OpenGLPipeline::~OpenGLPipeline()
 	{
 		GLuint rendererID = m_VertexArrayRendererID;
-		// HazelRenderer::Submit([rendererID]()
-		// {
-		glDeleteVertexArrays(1, &m_VertexArrayRendererID);
-		// });
+		HazelRenderer::Submit([rendererID]()
+		{
+			glDeleteVertexArrays(1, &rendererID);
+		});
 	}
 
 	void OpenGLPipeline::Invalidate()
 	{
 		HZ_CORE_ASSERT(m_Specification.Layout.GetElements().size(), "Layout is empty!");
 
-		// Ref<OpenGLPipeline> instance = this;
-		// HazelRenderer::Submit([instance]() mutable
-		// {
-			// auto& vertexArrayRendererID = m_VertexArrayRendererID;
-
-		if (m_VertexArrayRendererID)
-			glDeleteVertexArrays(1, &m_VertexArrayRendererID);
-
-		glGenVertexArrays(1, &m_VertexArrayRendererID);
-		glBindVertexArray(m_VertexArrayRendererID);
-
-		const auto& layout = m_Specification.Layout;
-		uint32_t attribIndex = 0;
-		for (const auto& element : layout)
+		Ref<OpenGLPipeline> instance = this;
+		HazelRenderer::Submit([instance]() mutable
 		{
-			auto glBaseType = ShaderDataTypeToOpenGLBaseType(element.Type);
-			glEnableVertexAttribArray(attribIndex);
-			if (glBaseType == GL_INT)
-			{
-				glVertexAttribIPointer(attribIndex,
-					element.GetComponentCount(),
-					glBaseType,
-					layout.GetStride(),
-					(const void*)(intptr_t)element.Offset);
-			}
-			else
-			{
-				glVertexAttribPointer(attribIndex,
-					element.GetComponentCount(),
-					glBaseType,
-					element.Normalized ? GL_TRUE : GL_FALSE,
-					layout.GetStride(),
-					(const void*)(intptr_t)element.Offset);
-			}
-			attribIndex++;
-		}
+			auto& vertexArrayRendererID = instance->m_VertexArrayRendererID;
 
-		glBindVertexArray(0);
-		// });
+			if (vertexArrayRendererID)
+				glDeleteVertexArrays(1, &vertexArrayRendererID);
+
+			glGenVertexArrays(1, &vertexArrayRendererID);
+			glBindVertexArray(vertexArrayRendererID);
+
+			const auto& layout = instance->m_Specification.Layout;
+			uint32_t attribIndex = 0;
+			for (const auto& element : layout)
+			{
+				auto glBaseType = ShaderDataTypeToOpenGLBaseType(element.Type);
+				glEnableVertexAttribArray(attribIndex);
+				if (glBaseType == GL_INT)
+				{
+					glVertexAttribIPointer(attribIndex,
+						element.GetComponentCount(),
+						glBaseType,
+						layout.GetStride(),
+						(const void*)(intptr_t)element.Offset);
+				}
+				else
+				{
+					glVertexAttribPointer(attribIndex,
+						element.GetComponentCount(),
+						glBaseType,
+						element.Normalized ? GL_TRUE : GL_FALSE,
+						layout.GetStride(),
+						(const void*)(intptr_t)element.Offset);
+				}
+				attribIndex++;
+			}
+
+			glBindVertexArray(0);
+		});
 	}
 
 	void OpenGLPipeline::Bind()
 	{
-		// Ref<OpenGLPipeline> instance = this;
-		// HazelRenderer::Submit([instance]()
-		// {
-		glBindVertexArray(m_VertexArrayRendererID);
-		// });
+		Ref<OpenGLPipeline> instance = this;
+		HazelRenderer::Submit([instance]()
+		{
+			glBindVertexArray(instance->m_VertexArrayRendererID);
+		});
 	}
 
 }
