@@ -1079,9 +1079,11 @@ namespace Hazel {
 	{
 		EnvMapMaterial* envMapMaterial = nullptr;
 
-		m_Pipeline->Bind();
-		m_VertexBuffer->Bind();
-		m_IndexBuffer->Bind();
+		if (m_Pipeline) {
+			m_Pipeline->Bind();
+			m_VertexBuffer->Bind();
+			m_IndexBuffer->Bind();
+		}
 
 		for (Submesh& submesh : m_Submeshes)
 		{
@@ -1153,9 +1155,11 @@ namespace Hazel {
 
 		EnvMapMaterial* envMapMaterial = nullptr;
 
-		parentMesh->m_Pipeline->Bind();
-		parentMesh->m_VertexBuffer->Bind();
-		parentMesh->m_IndexBuffer->Bind();
+		if (parentMesh->m_Pipeline) {
+ 			parentMesh->m_Pipeline->Bind();
+			parentMesh->m_VertexBuffer->Bind();
+			parentMesh->m_IndexBuffer->Bind();
+		}
 
 		shader->Bind();
 

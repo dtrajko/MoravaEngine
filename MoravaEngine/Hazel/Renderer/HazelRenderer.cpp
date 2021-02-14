@@ -168,9 +168,11 @@ namespace Hazel {
 			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
 		}
 
-		s_Data.m_FullscreenQuadPipeline->Bind();
-		s_Data.m_FullscreenQuadVertexBuffer->Bind();
-		s_Data.m_FullscreenQuadIndexBuffer->Bind();
+		if (s_Data.m_FullscreenQuadPipeline) {
+			s_Data.m_FullscreenQuadPipeline->Bind();
+			s_Data.m_FullscreenQuadVertexBuffer->Bind();
+			s_Data.m_FullscreenQuadIndexBuffer->Bind();
+		}
 
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
