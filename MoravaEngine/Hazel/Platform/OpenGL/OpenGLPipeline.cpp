@@ -47,16 +47,54 @@ namespace Hazel {
 	{
 		HZ_CORE_ASSERT(m_Specification.Layout.GetElements().size(), "Layout is empty!");
 
-		Ref<OpenGLPipeline> instance = this;
-		HazelRenderer::Submit([instance]() mutable
-		{
-			auto& vertexArrayRendererID = instance->m_VertexArrayRendererID;
+		// Ref<OpenGLPipeline> instance = this;
+		// HazelRenderer::Submit([instance]() mutable
+		// {
+			auto& vertexArrayRendererID = this->m_VertexArrayRendererID;
 
 			if (vertexArrayRendererID)
 				glDeleteVertexArrays(1, &vertexArrayRendererID);
 
 			glGenVertexArrays(1, &vertexArrayRendererID);
 			glBindVertexArray(vertexArrayRendererID);
+
+#if 0
+			const auto& layout = instance->m_Specification.Layout;
+			uint32_t attribIndex = 0;
+			for (const auto& element : layout)
+			{
+				auto glBaseType = ShaderDataTypeToOpenGLBaseType(element.Type);
+				glEnableVertexAttribArray(attribIndex);
+				if (glBaseType == GL_INT)
+				{
+					glVertexAttribIPointer(attribIndex,
+						element.GetComponentCount(),
+						glBaseType,
+						layout.GetStride(),
+						(const void*)(intptr_t)element.Offset);
+				}
+				else
+				{
+					glVertexAttribPointer(attribIndex,
+						element.GetComponentCount(),
+						glBaseType,
+						element.Normalized ? GL_TRUE : GL_FALSE,
+						layout.GetStride(),
+						(const void*)(intptr_t)element.Offset);
+				}
+				attribIndex++;
+			}
+#endif
+			glBindVertexArray(0);
+		// });
+	}
+
+	void OpenGLPipeline::Bind()
+	{
+		Ref<OpenGLPipeline> instance = this;
+		HazelRenderer::Submit([instance]()
+		{
+			glBindVertexArray(instance->m_VertexArrayRendererID);
 
 			const auto& layout = instance->m_Specification.Layout;
 			uint32_t attribIndex = 0;
@@ -83,17 +121,6 @@ namespace Hazel {
 				}
 				attribIndex++;
 			}
-
-			glBindVertexArray(0);
-		});
-	}
-
-	void OpenGLPipeline::Bind()
-	{
-		Ref<OpenGLPipeline> instance = this;
-		HazelRenderer::Submit([instance]()
-		{
-			glBindVertexArray(instance->m_VertexArrayRendererID);
 		});
 	}
 

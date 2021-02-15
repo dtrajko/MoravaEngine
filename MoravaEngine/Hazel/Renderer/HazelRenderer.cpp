@@ -15,8 +15,6 @@ namespace Hazel {
 		RenderCommandQueue m_CommandQueue;
 		Ref<HazelShaderLibrary> m_ShaderLibrary;
 
-		Ref<VertexArray> m_FullscreenQuadVertexArray;
-
 		Ref<VertexBuffer> m_FullscreenQuadVertexBuffer;
 		Ref<IndexBuffer> m_FullscreenQuadIndexBuffer;
 		Ref<Pipeline> m_FullscreenQuadPipeline;
@@ -70,10 +68,6 @@ namespace Hazel {
 
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 		s_Data.m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
-
-		s_Data.m_FullscreenQuadVertexArray = VertexArray::Create();
-		s_Data.m_FullscreenQuadVertexArray->AddVertexBuffer(s_Data.m_FullscreenQuadVertexBuffer);
-		s_Data.m_FullscreenQuadVertexArray->SetIndexBuffer(s_Data.m_FullscreenQuadIndexBuffer);
 
 		Renderer2D::Init();
 	}
@@ -161,10 +155,8 @@ namespace Hazel {
 			shader->setMat4("u_Transform", transform);
 		}
 
-		s_Data.m_FullscreenQuadVertexArray->Bind();
-
-		// s_Data.m_FullscreenQuadVertexBuffer->Bind();
-		// s_Data.m_FullscreenQuadPipeline->Bind();
+		s_Data.m_FullscreenQuadVertexBuffer->Bind();
+		s_Data.m_FullscreenQuadPipeline->Bind();
 		// s_Data.m_FullscreenQuadIndexBuffer->Bind();
 
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
@@ -179,10 +171,8 @@ namespace Hazel {
 			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
 		}
 
-		s_Data.m_FullscreenQuadVertexArray->Bind();
-
-		// s_Data.m_FullscreenQuadVertexBuffer->Bind();
-		// s_Data.m_FullscreenQuadPipeline->Bind();
+		s_Data.m_FullscreenQuadVertexBuffer->Bind();
+		s_Data.m_FullscreenQuadPipeline->Bind();
 		// s_Data.m_FullscreenQuadIndexBuffer->Bind();
 
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
@@ -198,9 +188,7 @@ namespace Hazel {
 		// TODO: Sort this out
 
 		mesh->m_VertexArray->Bind();
-
-		// mesh->m_VertexBuffer->Bind();
-		// mesh->m_Pipeline->Bind();
+		mesh->m_Pipeline->Bind();
 		// mesh->m_IndexBuffer->Bind();
 
 		auto& materials = mesh->GetMaterials();

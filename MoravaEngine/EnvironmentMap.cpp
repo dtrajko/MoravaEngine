@@ -340,7 +340,7 @@ void EnvironmentMap::RenameMaterial(EnvMapMaterial* envMapMaterial, const std::s
     for (auto emm_it = s_EnvMapMaterials.cbegin(); emm_it != s_EnvMapMaterials.cend();) {
         if (emm_it->second->GetUUID() == materialUUID) {
             emm_it->second->SetName(newName);
-            Log::GetLogger()->error("s_EnvMapMaterials: '{0}' => '{1}'", oldName, s_EnvMapMaterials.find(materialUUID)->second->GetName());
+            Log::GetLogger()->error("s_EnvMapMaterials: '{0}' => '{1}'", oldName, newName);
             break;
         }
         else {
