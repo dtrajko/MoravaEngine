@@ -26,7 +26,7 @@ namespace Hazel {
 
 		static void Init();
 
-		static const Ref<HazelShaderLibrary>& GetShaderLibrary();
+		static Ref<HazelShaderLibrary>& GetShaderLibrary();
 
 		template<typename FuncT>
 		static void Submit(FuncT&& func)

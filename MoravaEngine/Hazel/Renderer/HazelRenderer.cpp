@@ -26,8 +26,8 @@ namespace Hazel {
 	{
 		s_Data.m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
 
-		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
-		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
 
 		// SceneRenderer::Init(); // TODO
 
@@ -72,7 +72,7 @@ namespace Hazel {
 		Renderer2D::Init();
 	}
 
-	const Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()
+	Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()
 	{
 		return s_Data.m_ShaderLibrary;
 	}
