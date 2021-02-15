@@ -37,8 +37,6 @@ namespace Hazel {
 		static const uint32_t MaxLineVertices = MaxLines * 2;
 		static const uint32_t MaxLineIndices = MaxLines * 6;
 
-		Ref <VertexArray> QuadVertexArray;
-
 		Ref <Pipeline> QuadPipeline;
 		Ref<VertexBuffer> QuadVertexBuffer;
 		Ref<IndexBuffer> QuadIndexBuffer;
@@ -58,8 +56,6 @@ namespace Hazel {
 		glm::vec4 QuadVertexPositions[4];
 
 		// Lines
-		Ref<VertexArray> LineVertexArray;
-
 		Ref<Pipeline> LinePipeline;
 		Ref<VertexBuffer> LineVertexBuffer;
 		Ref<IndexBuffer> LineIndexBuffer;
@@ -92,9 +88,7 @@ namespace Hazel {
 				{ ShaderDataType::Float,  "a_TexIndex" },
 				{ ShaderDataType::Float,  "a_TilingFactor" }
 			};
-			// s_Data.QuadPipeline = Pipeline::Create(pipelineSpecification);
-
-			s_Data.QuadVertexArray = VertexArray::Create();
+			s_Data.QuadPipeline = Pipeline::Create(pipelineSpecification);
 
 			s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
 
@@ -104,9 +98,7 @@ namespace Hazel {
 				{ ShaderDataType::Float2, "a_TexCoord" },
 				{ ShaderDataType::Float,  "a_TexIndex" },
 				{ ShaderDataType::Float,  "a_TilingFactor" }
-				});
-
-			s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
+			});
 
 			s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
 
@@ -163,21 +155,18 @@ namespace Hazel {
 
 			s_Data.LineShader = new Shader("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
 
-			s_Data.LineVertexArray = VertexArray::Create();
-
 			PipelineSpecification pipelineSpecification;
 			pipelineSpecification.Layout = {
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float4, "a_Color" }
 			};
-			// s_Data.LinePipeline = Pipeline::Create(pipelineSpecification);
+			s_Data.LinePipeline = Pipeline::Create(pipelineSpecification);
 
 			s_Data.LineVertexBuffer = VertexBuffer::Create(s_Data.MaxLineVertices * sizeof(LineVertex));
 			s_Data.LineVertexBuffer->SetLayout({
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float4, "a_Color" }
-				});
-			s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
+			});
 
 			s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxLineVertices];
 
@@ -186,8 +175,6 @@ namespace Hazel {
 				lineIndices[i] = i;
 
 			s_Data.LineIndexBuffer = IndexBuffer::Create(lineIndices, s_Data.MaxLineIndices);
-
-			s_Data.LineVertexArray->SetIndexBuffer(s_Data.LineIndexBuffer);
 
 			delete[] lineIndices;
 		}
@@ -233,10 +220,8 @@ namespace Hazel {
 			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
 				s_Data.TextureSlots[i]->Bind(i);
 
-			s_Data.QuadVertexArray->Bind();
-
-			// s_Data.QuadVertexBuffer->Bind();
-			// s_Data.QuadPipeline->Bind();
+			s_Data.QuadVertexBuffer->Bind();
+			s_Data.QuadPipeline->Bind();
 			// s_Data.QuadIndexBuffer->Bind();
 
 			HazelRenderer::DrawIndexed(s_Data.QuadIndexCount, PrimitiveType::Triangles, s_Data.DepthTest);
@@ -251,11 +236,9 @@ namespace Hazel {
 			s_Data.LineShader->Bind();
 			s_Data.LineShader->setMat4("u_ViewProjection", s_Data.CameraViewProj);
 
-			s_Data.LineVertexArray->Bind();
-
-			// s_Data.LineVertexBuffer->Bind();
-			// s_Data.LinePipeline->Bind();
-			// s_Data.LineIndexBuffer->Bind();
+			s_Data.LineVertexBuffer->Bind();
+			s_Data.LinePipeline->Bind();
+			s_Data.LineIndexBuffer->Bind();
 
 			HazelRenderer::SetLineThickness(2.0f);
 			HazelRenderer::DrawIndexed(s_Data.LineIndexCount, PrimitiveType::Lines, s_Data.DepthTest);
@@ -277,7 +260,10 @@ namespace Hazel {
 		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
 			s_Data.TextureSlots[i]->Bind(i);
 
-		s_Data.QuadVertexArray->Bind();
+		s_Data.LineVertexBuffer->Bind();
+		s_Data.LinePipeline->Bind();
+		// s_Data.LineIndexBuffer->Bind();
+
 		Renderer::DrawIndexed(s_Data.QuadIndexCount, false);
 		s_Data.Stats.DrawCalls++;
 #endif
