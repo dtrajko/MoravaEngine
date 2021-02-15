@@ -8,7 +8,6 @@
 #include "../Renderer/Pipeline.h"
 #include "../Renderer/IndexBuffer.h"
 #include "../Renderer/VertexBuffer.h"
-#include "../Renderer/VertexArray.h" // TODO: replace with Pipeline
 
 #include "../../Log.h"
 #include "../../Shader.h"
@@ -143,7 +142,7 @@ namespace Hazel {
 	{
 	public:
 		HazelMesh(const std::string& filename);
-		HazelMesh(const std::string& filename, ::Ref<Shader> shader, Material* material, bool isAnimated);
+		HazelMesh(const std::string& filename, ::Ref<Shader> shader, ::Ref<Material> material, bool isAnimated);
 		virtual ~HazelMesh() override;
 
 		virtual void Create() override;
@@ -158,17 +157,17 @@ namespace Hazel {
 		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
 		const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
 
-		inline const std::vector<Material*>& GetMaterials() const { return m_Materials; }
+		inline const std::vector<::Ref<Material>>& GetMaterials() const { return m_Materials; }
 		inline const std::vector<Texture*>& GetTextures() const { return m_Textures; }
 		inline bool& IsAnimated() { return m_IsAnimated; }
 		inline const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const;
 
 		// Setters
-		inline void SetBaseMaterial(Material* baseMaterial) { m_BaseMaterial = baseMaterial; }
+		inline void SetBaseMaterial(::Ref<Material> baseMaterial) { m_BaseMaterial = baseMaterial; }
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
 
-		static MaterialUUID GetSubmeshMaterialUUID(Ref<HazelMesh> mesh, Hazel::Submesh& submesh, Entity entity);
+		static MaterialUUID GetSubmeshMaterialUUID(Ref<HazelMesh> mesh, Hazel::Submesh& submesh, Entity* entity);
 
 		void DeleteSubmesh(Submesh submesh);
 		void CloneSubmesh(Submesh submesh);
@@ -191,8 +190,6 @@ namespace Hazel {
 		Texture* LoadBaseTexture();
 
 	public:
-		Ref<VertexArray> m_VertexArray; // TODO: replace with Pipeline
-
 		Ref<Pipeline> m_Pipeline;
 		Ref<VertexBuffer> m_VertexBuffer;
 		Ref<IndexBuffer> m_IndexBuffer;
@@ -215,11 +212,11 @@ namespace Hazel {
 
 		// Materials
 		::Ref<Shader> m_MeshShader;
-		Material* m_BaseMaterial; // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
+		::Ref<Material> m_BaseMaterial; // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
 		Texture* m_BaseTexture;
 		std::vector<Texture*> m_Textures;
 		std::vector<Texture*> m_NormalMaps;
-		std::vector<Material*> m_Materials;
+		std::vector<::Ref<Material>> m_Materials;
 
 		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
 

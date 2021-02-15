@@ -187,7 +187,7 @@ namespace Hazel {
 		// auto shader = material->GetShader();
 		// TODO: Sort this out
 
-		mesh->m_VertexArray->Bind();
+		mesh->m_VertexBuffer->Bind();
 		mesh->m_Pipeline->Bind();
 		// mesh->m_IndexBuffer->Bind();
 

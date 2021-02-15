@@ -245,7 +245,7 @@ void EnvironmentMap::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Haze
 
     for (Hazel::Submesh& submesh : submeshes)
     {
-        std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(mesh, submesh, entity);
+        std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(mesh, submesh, &entity);
 
         Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials materialUUID = '{0}'", materialUUID);
 
@@ -1838,7 +1838,8 @@ void EnvironmentMap::RenderHazelGrid()
 
 SubmeshUUID EnvironmentMap::GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh)
 {
-    SubmeshUUID submeshUUID = "E_" + std::to_string(entity->GetHandle()) + "_S_" + submesh->MeshName;
+    std::string entityHandle = entity ? std::to_string(entity->GetHandle()) : "0000";
+    SubmeshUUID submeshUUID = "E_" + entityHandle + "_S_" + submesh->MeshName;
     // Log::GetLogger()->debug("EnvironmentMap::GetSubmeshUUID: '{0}'", submeshUUID);
     return submeshUUID;
 }
@@ -2137,7 +2138,7 @@ void EnvironmentMap::GeometryPassTemporary()
 
                     for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
                     {
-                        materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, entity);
+                        materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
 
                         // load submesh materials for each specific submesh from the s_EnvMapMaterials list
                         if (s_EnvMapMaterials.contains(materialUUID)) {

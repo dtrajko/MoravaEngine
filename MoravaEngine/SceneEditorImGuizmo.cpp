@@ -2148,7 +2148,7 @@ void SceneEditorImGuizmo::SetUniformsShaderEditor(Shader* shaderEditor, Texture*
     shaderEditor->setInt("shadowMap", 2);
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Material* material, SceneObject* sceneObject)
+void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Ref<Material> material, SceneObject* sceneObject)
 {
     shaderEditorPBR->Bind();
 
@@ -2217,7 +2217,7 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAni
     shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_Camera->GetViewMatrix());
     shaderHybridAnimPBR->setVec3("u_CameraPosition", m_Camera->GetPosition());
 
-    Material* baseMaterial = ResourceManager::HotLoadMaterial(sceneObject->materialName);
+    Ref<Material> baseMaterial = ResourceManager::HotLoadMaterial(sceneObject->materialName);
 
     baseMaterial->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
     baseMaterial->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
@@ -2241,7 +2241,10 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAni
     float deltaTime = Timer::Get()->GetDeltaTime();
     meshAnimPBR->OnUpdate(deltaTime, false);
 
-    meshAnimPBR->m_VertexArray->Bind();
+    meshAnimPBR->m_VertexBuffer->Bind();
+    meshAnimPBR->m_Pipeline->Bind();
+    meshAnimPBR->m_IndexBuffer->Bind();
+
     auto& materials = meshAnimPBR->GetMaterials();
 
     int submeshIndex = 0;
@@ -2606,7 +2609,7 @@ void SceneEditorImGuizmo::Render(Window* mainWindow, glm::mat4 projectionMatrix,
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
 
         Texture* texture = ResourceManager::HotLoadTexture(object->textureName);
-        Material* material = ResourceManager::HotLoadMaterial(object->materialName);
+        Ref<Material> material = ResourceManager::HotLoadMaterial(object->materialName);
 
         // Don't render Lights (id = 0 to 8), it's done in RenderLightSources()
         if (object->name.substr(0, 6) == "Light.")

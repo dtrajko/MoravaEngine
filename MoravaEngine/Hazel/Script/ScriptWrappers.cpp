@@ -198,7 +198,7 @@ namespace Hazel { namespace Script {
 	{
 		// return new Ref<HazelMesh>(new HazelMesh(mono_string_to_utf8(filepath)));
 
-		return &Ref<HazelMesh>::Create("", CreateRef<Shader>(), new Material(), false);
+		return &Ref<HazelMesh>::Create("", CreateRef<Shader>(), CreateRef<Material>(), false);
 	}
 
 	void Hazel_Mesh_Destructor(Ref<HazelMesh>* _this)

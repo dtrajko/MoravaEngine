@@ -7,7 +7,7 @@ std::map<std::string, std::string> ResourceManager::s_TextureInfo;
 std::map<std::string, TextureInfo> ResourceManager::s_MaterialInfo;
 
 std::map<std::string, Texture*> ResourceManager::s_Textures;
-std::map<std::string, Material*> ResourceManager::s_Materials;
+std::map<std::string, Ref<Material>> ResourceManager::s_Materials;
 
 float ResourceManager::s_MaterialSpecular = 1.0f;
 float ResourceManager::s_MaterialShininess = 256.0f;
@@ -273,7 +273,7 @@ void ResourceManager::LoadTexture(std::string name, std::string filePath, GLenum
 
 void ResourceManager::LoadMaterial(std::string name, TextureInfo textureInfo)
 {
-    s_Materials.insert(std::make_pair(name, new Material(textureInfo, s_MaterialSpecular, s_MaterialShininess)));
+    s_Materials.insert(std::make_pair(name, CreateRef<Material>(textureInfo, s_MaterialSpecular, s_MaterialShininess)));
 }
 
 Texture* ResourceManager::HotLoadTexture(std::string textureName)
@@ -298,7 +298,7 @@ Texture* ResourceManager::HotLoadTexture(std::string textureName)
     return textureIterator->second;
 }
 
-Material* ResourceManager::HotLoadMaterial(std::string materialName)
+Ref<Material> ResourceManager::HotLoadMaterial(std::string materialName)
 {
     // Load Material if not available in materials map
     auto materialInfoIterator = s_MaterialInfo.find(materialName);

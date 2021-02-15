@@ -73,7 +73,7 @@ namespace Hazel {
 		Create();
 	}
 
-	HazelMesh::HazelMesh(const std::string& filename, ::Ref<Shader> shader, Material* material, bool isAnimated)
+	HazelMesh::HazelMesh(const std::string& filename, ::Ref<Shader> shader, ::Ref<Material> material, bool isAnimated)
 		: m_MeshShader(shader), m_BaseMaterial(material), m_IsAnimated(isAnimated)
 	{
 		m_FilePath = filename;
@@ -288,7 +288,7 @@ namespace Hazel {
 				auto aiMaterial = scene->mMaterials[i];
 				auto aiMaterialName = aiMaterial->GetName();
 
-				auto mi = new Material(); // m_BaseMaterial
+				auto mi = CreateRef<Material>(); // m_BaseMaterial
 				m_Materials[i] = mi;
 
 				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
@@ -567,14 +567,12 @@ namespace Hazel {
 			HZ_MESH_LOG("------------------------");
 		}
 
-		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Array...");
-
-		m_VertexArray = VertexArray::Create();
+		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Buffer...");
+		VertexBufferLayout vertexLayout;
 		if (m_IsAnimated)
 		{
-			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Buffer...");
-			auto vb = VertexBuffer::Create(m_AnimatedVertices.data(), (uint32_t)m_AnimatedVertices.size() * sizeof(AnimatedVertex));
-			vb->SetLayout({
+			m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), (uint32_t)m_AnimatedVertices.size() * sizeof(AnimatedVertex));
+			vertexLayout = {
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float3, "a_Normal" },
 				{ ShaderDataType::Float3, "a_Tangent" },
@@ -582,28 +580,27 @@ namespace Hazel {
 				{ ShaderDataType::Float2, "a_TexCoord" },
 				{ ShaderDataType::Int4,   "a_BoneIDs" },
 				{ ShaderDataType::Float4, "a_BoneWeights" },
-				});
-			m_VertexArray->AddVertexBuffer(vb);
+			};
 		}
 		else
 		{
-			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Buffer...");
-			auto vb = VertexBuffer::Create(m_StaticVertices.data(), (uint32_t)m_StaticVertices.size() * sizeof(Vertex));
-			vb->SetLayout({
+			m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), (uint32_t)m_StaticVertices.size() * sizeof(Vertex));
+			vertexLayout = {
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float3, "a_Normal" },
 				{ ShaderDataType::Float3, "a_Tangent" },
 				{ ShaderDataType::Float3, "a_Binormal" },
 				{ ShaderDataType::Float2, "a_TexCoord" },
-				//	{ ShaderDataType::Int4,   "a_BoneIDs" },
-				//	{ ShaderDataType::Float4, "a_BoneWeights" },
-				});
-			m_VertexArray->AddVertexBuffer(vb);
+			};
 		}
 
+		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
+		PipelineSpecification pipelineSpecification;
+		pipelineSpecification.Layout = vertexLayout;
+		m_Pipeline = Pipeline::Create(pipelineSpecification);
+
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating an Index Buffer...");
-		auto ib = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
-		m_VertexArray->SetIndexBuffer(ib);
+		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
 
 		Log::GetLogger()->info("Hazel::HazelMesh: Total vertices: {0}", m_IsAnimated ? m_StaticVertices.size() : m_AnimatedVertices.size());
 		Log::GetLogger()->info("Hazel::HazelMesh: Total indices: {0}", m_Indices.size());
@@ -611,20 +608,6 @@ namespace Hazel {
 
 	HazelMesh::~HazelMesh()
 	{
-		for (auto material : m_Materials) {
-			delete material;
-		}
-
-		for (auto texture : m_Textures) {
-			if (texture != nullptr) {
-				delete texture;
-			}
-		}
-
-		//	for (Submesh* submesh : m_Submeshes)
-		//		delete submesh;
-
-		// delete m_IndexBuffer;
 	}
 
 	void HazelMesh::OnUpdate(Timestep ts, bool debug)
@@ -821,7 +804,7 @@ namespace Hazel {
 		textureInfoDefault.roughness = "Textures/plain.png";
 		textureInfoDefault.emissive  = "Texture/plain.png";
 		textureInfoDefault.ao        = "Textures/plain.png";
-		m_BaseMaterial = new Material(textureInfoDefault, 0.0f, 0.0f);
+		m_BaseMaterial = CreateRef<Material>(textureInfoDefault, 0.0f, 0.0f);
 	}
 
 	Texture* HazelMesh::LoadBaseTexture()
@@ -962,18 +945,18 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	MaterialUUID HazelMesh::GetSubmeshMaterialUUID(Ref<HazelMesh> mesh, Hazel::Submesh& submesh, Entity entity)
+	MaterialUUID HazelMesh::GetSubmeshMaterialUUID(Ref<HazelMesh> mesh, Hazel::Submesh& submesh, Entity* entity)
 	{
 		MaterialUUID materialUUID = "";
 
-		std::string submeshUUID = EnvironmentMap::GetSubmeshUUID(&entity, &submesh);
-
 		EnvMapMaterial* envMapMaterial = nullptr;
-		bool hasMaterialComponent = entity.HasComponent<Hazel::MaterialComponent>();
+		bool hasMaterialComponent = entity && entity->HasComponent<Hazel::MaterialComponent>();
 		if (hasMaterialComponent) {
-			Hazel::MaterialComponent materialComponent = entity.GetComponent<Hazel::MaterialComponent>();
+			Hazel::MaterialComponent materialComponent = entity->GetComponent<Hazel::MaterialComponent>();
 			EnvMapMaterial* envMapMaterial = materialComponent.Material;
 		}
+
+		std::string submeshUUID = EnvironmentMap::GetSubmeshUUID(entity, &submesh);
 
 		if (EnvironmentMap::s_SubmeshMaterialUUIDs.contains(submeshUUID)) {
 			materialUUID = EnvironmentMap::s_SubmeshMaterialUUIDs.at(submeshUUID);
@@ -1072,7 +1055,9 @@ namespace Hazel {
 	{
 		EnvMapMaterial* envMapMaterial = nullptr;
 
-		m_VertexArray->Bind();
+		m_VertexBuffer->Bind();
+		m_Pipeline->Bind();
+		m_IndexBuffer->Bind();
 
 		for (Submesh& submesh : m_Submeshes)
 		{
@@ -1096,7 +1081,8 @@ namespace Hazel {
 				m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
 			}
 
-			std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(this, submesh, Entity{});
+			Ref<HazelMesh> instance = this;
+			std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(instance, submesh, nullptr);
 
 			if (envMapMaterials.contains(materialUUID))
 			{
@@ -1109,7 +1095,7 @@ namespace Hazel {
 				envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 5);
 			}
 
-			Material* material = nullptr;
+			::Ref<Material> material = nullptr;
 			if (m_Materials.size()) {
 				material = m_Materials[submesh.MaterialIndex];
 				if (material && material->GetFlag(MaterialFlag::DepthTest)) {
@@ -1144,7 +1130,9 @@ namespace Hazel {
 
 		EnvMapMaterial* envMapMaterial = nullptr;
 
-		parentMesh->m_VertexArray->Bind();
+		parentMesh->m_VertexBuffer->Bind();
+		parentMesh->m_Pipeline->Bind();
+		parentMesh->m_IndexBuffer->Bind();
 
 		shader->Bind();
 
@@ -1166,7 +1154,7 @@ namespace Hazel {
 			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
 		}
 
-		std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(parentMesh, *this, entity);
+		std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(parentMesh, *this, &entity);
 
 		if (envMapMaterials.contains(materialUUID))
 		{

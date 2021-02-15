@@ -118,7 +118,12 @@ Texture::Texture(const char* fileLoc, bool flipVert, bool isSampler, int filter)
 	m_Spec.FlipVertically = flipVert;
 	m_Spec.IsSampler = isSampler;
 
-	Load(m_Spec.FlipVertically);
+	try {
+		Load(m_Spec.FlipVertically);
+	}
+	catch(...) {
+		Log::GetLogger()->error("Failed to load a texture '{0}'!", fileLoc);
+	}
 }
 
 bool Texture::Load(bool flipVert)
