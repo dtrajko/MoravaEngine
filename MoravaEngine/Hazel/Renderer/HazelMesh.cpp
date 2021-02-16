@@ -318,9 +318,9 @@ namespace Hazel {
 					std::string texturePath = parentPath.string();
 					Log::GetLogger()->info("    Albedo map path = {0}", texturePath);
 
-					Texture* texture = nullptr;
+					Ref<Texture> texture = nullptr;
 					try {
-						texture = new Texture(texturePath.c_str(), false);
+						texture = Ref<Texture>::Create(texturePath.c_str(), false);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The ALBEDO map failed to load. Loading the default texture placeholder instead.");
@@ -358,13 +358,13 @@ namespace Hazel {
 					std::string texturePath = parentPath.string();
 					HZ_MESH_LOG("    Normal map path = {0}", texturePath);
 
-					Texture* texture = nullptr;
+					Ref<Texture> texture = nullptr;
 					try {
-						texture = new Texture(texturePath.c_str(), false);
+						texture = Ref<Texture>::Create(texturePath.c_str(), false);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The NORMAL map failed to load. Loading the default texture placeholder instead.");
-						texture = new Texture("Textures/normal_map_default.png");
+						texture = Ref<Texture>::Create("Textures/normal_map_default.png");
 					}
 
 					if (texture->IsLoaded())
@@ -394,9 +394,9 @@ namespace Hazel {
 					std::string texturePath = parentPath.string();
 					// HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
 
-					Texture* texture = nullptr;
+					Ref<Texture> texture = nullptr;
 					try {
-						texture = new Texture(texturePath.c_str(), false);
+						texture = Ref<Texture>::Create(texturePath.c_str(), false);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The ROUGHNESS map failed to load. Loading the default texture placeholder instead.");
@@ -531,9 +531,9 @@ namespace Hazel {
 							std::string texturePath = parentPath.string();
 							HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
 
-							Texture* texture = nullptr;
+							Ref<Texture> texture = nullptr;
 							try {
-								texture = new Texture(texturePath.c_str(), false);
+								texture = Ref<Texture>::Create(texturePath.c_str(), false);
 							}
 							catch (...) {
 								Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
@@ -807,7 +807,7 @@ namespace Hazel {
 		m_BaseMaterial = CreateRef<Material>(textureInfoDefault, 0.0f, 0.0f);
 	}
 
-	Texture* HazelMesh::LoadBaseTexture()
+	Ref<Texture> HazelMesh::LoadBaseTexture()
 	{
 		if (!m_BaseTexture) {
 			try {

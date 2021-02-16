@@ -158,7 +158,8 @@ namespace Hazel {
 		const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
 
 		inline const std::vector<::Ref<Material>>& GetMaterials() const { return m_Materials; }
-		inline const std::vector<Texture*>& GetTextures() const { return m_Textures; }
+		inline std::vector<Ref<Texture>>& GetTextures() { return m_Textures; }
+		inline const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
 		inline bool& IsAnimated() { return m_IsAnimated; }
 		inline const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const;
@@ -187,7 +188,7 @@ namespace Hazel {
 		glm::quat InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim);
 		glm::vec3 InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim);
 		void SetupDefaultBaseMaterial();
-		Texture* LoadBaseTexture();
+		Ref<Texture> LoadBaseTexture();
 
 	public:
 		Ref<Pipeline> m_Pipeline;
@@ -213,9 +214,9 @@ namespace Hazel {
 		// Materials
 		::Ref<Shader> m_MeshShader;
 		::Ref<Material> m_BaseMaterial; // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
-		Texture* m_BaseTexture;
-		std::vector<Texture*> m_Textures;
-		std::vector<Texture*> m_NormalMaps;
+		Ref<Texture> m_BaseTexture;
+		std::vector<Ref<Texture>> m_Textures;
+		std::vector<Ref<Texture>> m_NormalMaps;
 		std::vector<::Ref<Material>> m_Materials;
 
 		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;

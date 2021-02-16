@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommonValues.h"
+#include "Hazel/Core/Ref.h"
 
 #include <string>
 
@@ -21,7 +22,7 @@ enum class TextureWrap
 };
 
 
-class Texture
+class Texture : public Hazel::RefCounted
 {
 public:
 	struct Specification
