@@ -669,6 +669,32 @@ SET(box2d_SRCS
 	../vendor/box2d/src/rope/b2_rope.cpp
 )
 
+SET(shaderc_SRCS
+	../vendor/cross-platform/shaderc/libshaderc/src/shaderc.cc
+	../vendor/cross-platform/shaderc/libshaderc/src/shaderc_cpp_test.cc
+	../vendor/cross-platform/shaderc/libshaderc/src/shaderc_private_test.cc
+	../vendor/cross-platform/shaderc/libshaderc/src/shaderc_test.cc
+
+	../vendor/cross-platform/shaderc/libshaderc_util/src/args.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/compiler.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/compiler_test.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/counting_includer_test.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/file_finder.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/file_finder_test.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/format_test.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/io.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/io_test.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/message.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/message_test.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/mutex_test.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/resources.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/shader_stage.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/spirv_tools_wrapper.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/string_piece_test.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/version_profile.cc
+	../vendor/cross-platform/shaderc/libshaderc_util/src/version_profile_test.cc
+)
+
 message("Environment variable 'MORAVA_BUILD_TYPE' = '" $ENV{MORAVA_BUILD_TYPE} "'")
 
 option(USE_MSVC_INCREMENTAL_LINKING "Use MSVC Incremental Linking" OFF)
@@ -698,6 +724,8 @@ add_library(spirv-cross-util     STATIC "${spirv-cross-util_SRCS}")
 add_library(SPIRV-Cross          STATIC "${SPIRV-Cross_SRCS}")
 add_library(yaml-cpp             STATIC "${yaml-cpp_SRCS}")
 add_library(box2d                STATIC "${box2d_SRCS}")
+
+add_library(shaderc              STATIC "${shaderc_SRCS}")
 
 #	add_library(Hazel-ScriptCore     SHARED "${Hazel-ScriptCore_SRCS}")
 #	add_library(ExampleApp           SHARED "${ExampleApp_SRCS}")
@@ -750,6 +778,7 @@ add_dependencies("${PROJECT_NAME}" glfw3)
 add_dependencies("${PROJECT_NAME}" SPIRV-Cross)
 add_dependencies("${PROJECT_NAME}" yaml-cpp)
 add_dependencies("${PROJECT_NAME}" box2d)
+add_dependencies("${PROJECT_NAME}" shaderc)
 # add_dependencies("${PROJECT_NAME}" Hazel-ScriptCore)
 # add_dependencies("${PROJECT_NAME}" ExampleApp)
 
@@ -857,6 +886,18 @@ target_include_directories(
 	../vendor/box2d/src
 )
 
+target_include_directories(
+	shaderc PUBLIC
+	../vendor/cross-platform/shaderc/libshaderc/include
+	../vendor/cross-platform/shaderc/libshaderc_util/include
+)
+
+target_link_directories(
+	shaderc PUBLIC
+	../vendor/cross-platform/shaderc/build/libshaderc/$ENV{MORAVA_BUILD_TYPE}
+	../vendor/cross-platform/shaderc/build/libshaderc_util/$ENV{MORAVA_BUILD_TYPE}
+)
+
 #	target_include_directories(
 #		Hazel-ScriptCore PUBLIC
 #		../MoravaEngine/Hazel/ScriptCore
@@ -897,6 +938,8 @@ target_include_directories(
 	../vendor/cross-platform/yaml-cpp/include
 	../vendor/mono/include
 	../vendor/box2d/include
+	../vendor/cross-platform/shaderc/libshaderc/include
+	../vendor/cross-platform/shaderc/libshaderc_util/include
 )
 
 target_link_directories(
@@ -911,6 +954,8 @@ target_link_directories(
 	../vendor/cross-platform/glfw/src
 	../vendor/cross-platform/yaml-cpp
 	../vendor/box2d/bin/$ENV{MORAVA_BUILD_TYPE}
+	../vendor/cross-platform/shaderc/build/libshaderc/$ENV{MORAVA_BUILD_TYPE}
+	../vendor/cross-platform/shaderc/build/libshaderc_util/$ENV{MORAVA_BUILD_TYPE}
 	../${PROJECT_NAME}/build/$ENV{MORAVA_BUILD_TYPE}
 )
 
@@ -935,6 +980,7 @@ target_link_libraries(
 	yaml-cpp.lib
 	mono-2.0-sgen.lib
 	box2d.lib
+	shaderc_combined.lib
 )
 elseif (UNIX)
 target_link_libraries(

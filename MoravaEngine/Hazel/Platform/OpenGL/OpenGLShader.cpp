@@ -1,6 +1,7 @@
 #include "OpenGLShader.h"
 #include "../../Core/Assert.h"
 #include "../../Renderer/HazelRenderer.h"
+#include "../../Core/HazelLog.h"
 
 #include <string>
 #include <sstream>
@@ -8,6 +9,8 @@
 #include <fstream>
 
 #include <glm/gtc/type_ptr.hpp>
+
+#include <shaderc/shaderc.hpp>
 
 
 namespace Hazel {
@@ -45,6 +48,25 @@ namespace Hazel {
 
 	void OpenGLShader::Load(const std::string& source)
 	{
+		shaderc::Compiler compiler;
+		shaderc::CompileOptions options;
+
+		const bool optimize = true;
+		if (optimize)
+			options.SetOptimizationLevel(shaderc_optimization_level_size);
+
+		//	shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, shaderc_vertex_shader, m_AssetPath.c_str(), options);
+		//	
+		//	if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+		//		HZ_CORE_ERROR(module.GetErrorMessage());
+		//	}
+		//	
+		//	std::vector<uint32_t> binary = { module.cbegin(), module.cend() };
+
+
+		// -------------------------------
+
+
 		m_ShaderSource = PreProcess(source);
 		if (!m_IsCompute)
 			Parse();
