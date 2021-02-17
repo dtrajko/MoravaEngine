@@ -48,28 +48,65 @@ namespace Hazel {
 
 	void OpenGLShader::Load(const std::string& source)
 	{
-		shaderc::Compiler compiler;
-		shaderc::CompileOptions options;
-
-		const bool optimize = true;
-		if (optimize)
-			options.SetOptimizationLevel(shaderc_optimization_level_size);
-
-		//	shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, shaderc_vertex_shader, m_AssetPath.c_str(), options);
-		//	
-		//	if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
-		//		HZ_CORE_ERROR(module.GetErrorMessage());
-		//	}
-		//	
-		//	std::vector<uint32_t> binary = { module.cbegin(), module.cend() };
-
-
-		// -------------------------------
-
-
 		m_ShaderSource = PreProcess(source);
 		if (!m_IsCompute)
+		{
+#if 0 // Spir-V binary format
+
+			Ref<OpenGLShader> instance = this;
+			HazelRenderer::Submit([instance]() {
+
+				});
+
+			shaderc::Compiler compiler;
+			shaderc::CompileOptions options;
+
+			const bool optimize = true;
+			if (optimize)
+				options.SetOptimizationLevel(shaderc_optimization_level_size);
+
+			// Vertex Shader
+			{
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(m_ShaderSource[GL_VERTEX_SHADER], shaderc_vertex_shader, m_AssetPath.c_str(), options);
+
+				if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+					HZ_CORE_ERROR(module.GetErrorMessage());
+					HZ_CORE_ASSERT(false);
+				}
+
+				const uint8_t* begin = (const uint8_t*)module.cbegin();
+				const uint8_t* end = (const uint8_t*)module.end();
+				const ptrdiff_t size = end - begin;
+
+				GLuint shaderID = glCreateShader(GL_VERTEX_SHADER);
+				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, begin, size);
+				glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
+				glAttachShader(m_RendererID, shaderID);
+			}
+
+			// Fragment Shader
+			{
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(m_ShaderSource[GL_FRAGMENT_SHADER], shaderc_fragment_shader, m_AssetPath.c_str(), options);
+
+				if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+					HZ_CORE_ERROR(module.GetErrorMessage());
+					HZ_CORE_ASSERT(false);
+				}
+
+				const uint8_t* begin = (const uint8_t*)module.cbegin();
+				const uint8_t* end = (const uint8_t*)module.end();
+				const ptrdiff_t size = end - begin;
+
+				GLuint shaderID = glCreateShader(GL_FRAGMENT_SHADER);
+				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, begin, size);
+				glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
+				glAttachShader(m_RendererID, shaderID);
+			}
+		}
+#else // GLSL text format
 			Parse();
+#endif
+		}
 
 		HazelRenderer::Submit([=]()
 		{
