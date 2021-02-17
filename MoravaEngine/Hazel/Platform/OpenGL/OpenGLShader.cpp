@@ -51,83 +51,133 @@ namespace Hazel {
 		m_ShaderSource = PreProcess(source);
 		if (!m_IsCompute)
 		{
-#if 0 // Spir-V binary format
+			Parse();
+
+#define SPIR_ENABLED 0
+#if SPIR_ENABLED
+
+			// Spir-V binary format
 
 			Ref<OpenGLShader> instance = this;
-			HazelRenderer::Submit([instance]() {
-
-				});
-
-			shaderc::Compiler compiler;
-			shaderc::CompileOptions options;
-
-			const bool optimize = true;
-			if (optimize)
-				options.SetOptimizationLevel(shaderc_optimization_level_size);
-
-			// Vertex Shader
+			HazelRenderer::Submit([instance]() mutable
 			{
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(m_ShaderSource[GL_VERTEX_SHADER], shaderc_vertex_shader, m_AssetPath.c_str(), options);
+			});
 
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
-					HZ_CORE_ERROR(module.GetErrorMessage());
-					HZ_CORE_ASSERT(false);
+			{
+				if (instance->m_RendererID)
+					glDeleteProgram(instance->m_RendererID);
+
+				GLuint program = glCreateProgram();
+				instance->m_RendererID = program;
+
+				std::array<GLuint, 2> shaderRendererIDs = { 0, 0 };
+
+				shaderc::Compiler compiler;
+				shaderc::CompileOptions options;
+
+				const bool optimize = true;
+				if (optimize)
+					options.SetOptimizationLevel(shaderc_optimization_level_size);
+
+				// Vertex Shader
+				{
+					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(instance->m_ShaderSource.at(GL_VERTEX_SHADER), shaderc_vertex_shader, instance->m_AssetPath.c_str(), options);
+
+					if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+						HZ_CORE_ERROR(module.GetErrorMessage());
+						HZ_CORE_ASSERT(false);
+					}
+
+					const uint8_t* begin = (const uint8_t*)module.cbegin();
+					const uint8_t* end = (const uint8_t*)module.end();
+					const ptrdiff_t size = end - begin;
+
+					GLuint shaderID = glCreateShader(GL_VERTEX_SHADER);
+					glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, begin, (GLsizei)size);
+					glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
+					glAttachShader(instance->m_RendererID, shaderID);
+
+					shaderRendererIDs[0] = shaderID;
 				}
 
-				const uint8_t* begin = (const uint8_t*)module.cbegin();
-				const uint8_t* end = (const uint8_t*)module.end();
-				const ptrdiff_t size = end - begin;
+				// Fragment Shader
+				{
+					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(instance->m_ShaderSource.at(GL_FRAGMENT_SHADER), shaderc_fragment_shader, instance->m_AssetPath.c_str(), options);
 
-				GLuint shaderID = glCreateShader(GL_VERTEX_SHADER);
-				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, begin, size);
-				glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
-				glAttachShader(m_RendererID, shaderID);
-			}
+					if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+						HZ_CORE_ERROR(module.GetErrorMessage());
+						HZ_CORE_ASSERT(false);
+					}
 
-			// Fragment Shader
-			{
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(m_ShaderSource[GL_FRAGMENT_SHADER], shaderc_fragment_shader, m_AssetPath.c_str(), options);
+					const uint8_t* begin = (const uint8_t*)module.cbegin();
+					const uint8_t* end = (const uint8_t*)module.end();
+					const ptrdiff_t size = end - begin;
 
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
-					HZ_CORE_ERROR(module.GetErrorMessage());
-					HZ_CORE_ASSERT(false);
+					GLuint shaderID = glCreateShader(GL_FRAGMENT_SHADER);
+					glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, begin, (GLsizei)size);
+					glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
+					glAttachShader(instance->m_RendererID, shaderID);
+
+					shaderRendererIDs[1] = shaderID;
 				}
 
-				const uint8_t* begin = (const uint8_t*)module.cbegin();
-				const uint8_t* end = (const uint8_t*)module.end();
-				const ptrdiff_t size = end - begin;
+				// Link our program
+				glLinkProgram(program);
 
-				GLuint shaderID = glCreateShader(GL_FRAGMENT_SHADER);
-				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, begin, size);
-				glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
-				glAttachShader(m_RendererID, shaderID);
-			}
-		}
-#else // GLSL text format
-			Parse();
-#endif
-		}
+				// Note the different functions here: glGetProgram* instead of glGetShader*.
+				GLint isLinked = 0;
+				glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
+				if (isLinked == GL_FALSE)
+				{
+					GLint maxLength = 0;
+					glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
 
-		HazelRenderer::Submit([=]()
+					// The maxLength includes the NULL character
+					std::vector<GLchar> infoLog(maxLength);
+					glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+					Log::GetLogger()->error("Shader compilation failed:\n{0}", &infoLog[0]);
+
+					// We don't need the program anymore.
+					glDeleteProgram(program);
+					// Don't leak shaders either.
+					for (auto id : shaderRendererIDs)
+						glDeleteShader(id);
+				}
+
+				// Always detach shaders after a successful link.
+				for (auto id : shaderRendererIDs)
+					glDetachShader(program, id);
+
+				instance->ResolveUniforms();
+				instance->ValidateUniforms();
+			};
+
+#endif // SPIR_ENABLED
+
+		}
+		else
 		{
-			if (m_RendererID)
-				glDeleteProgram(m_RendererID);
-
-			CompileAndUploadShader();
-			if (!m_IsCompute)
+			HazelRenderer::Submit([=]()
 			{
-				ResolveUniforms();
-				ValidateUniforms();
-			}
+				if (m_RendererID)
+					glDeleteProgram(m_RendererID);
 
-			if (m_Loaded)
-			{
-				for (auto& callback : m_ShaderReloadedCallbacks)
-					callback();
-			}
+				CompileAndUploadShader();
+				if (!m_IsCompute)
+				{
+					ResolveUniforms();
+					ValidateUniforms();
+				}
 
-			m_Loaded = true;
-		});
+				if (m_Loaded)
+				{
+					for (auto& callback : m_ShaderReloadedCallbacks)
+						callback();
+				}
+
+				m_Loaded = true;
+			});
+		}
 	}
 
 	void OpenGLShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)
