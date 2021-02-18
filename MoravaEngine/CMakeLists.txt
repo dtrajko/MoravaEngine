@@ -10,53 +10,53 @@ set(MSVC_INCREMENTAL_DEFAULT ON)
 project("MoravaEngine" VERSION 0.0.1)
 
 if (WIN32)
-file(GLOB SOURCES
-	./*.h
-	./*.cpp
-	PerlinNoise/PerlinNoise.hpp
-	LearnOpenGL/*.h
-	LearnOpenGL/*.cpp
-	SongHo/*.h
-	SongHo/*.cpp
-	../vendor/ImGui/imconfig.h
-	../vendor/ImGui/imgui.cpp
-	../vendor/ImGui/imgui.h
-	../vendor/ImGui/imgui_demo.cpp
-	../vendor/ImGui/imgui_draw.cpp
-	../vendor/ImGui/imgui_impl_dx11.cpp
-	../vendor/ImGui/imgui_impl_dx11.h
-	../vendor/ImGui/imgui_impl_glfw.h
-	../vendor/ImGui/imgui_impl_opengl3.h
-	../vendor/ImGui/imgui_impl_win32.cpp
-	../vendor/ImGui/imgui_impl_win32.h
-	../vendor/ImGui/imgui_internal.h
-	../vendor/ImGui/imgui_widgets.cpp
-	../vendor/ImGui/imstb_rectpack.h
-	../vendor/ImGui/imstb_textedit.h
-	../vendor/ImGui/imstb_truetype.h
-)
+	file(GLOB SOURCES
+		./*.h
+		./*.cpp
+		PerlinNoise/PerlinNoise.hpp
+		LearnOpenGL/*.h
+		LearnOpenGL/*.cpp
+		SongHo/*.h
+		SongHo/*.cpp
+		../vendor/ImGui/imconfig.h
+		../vendor/ImGui/imgui.cpp
+		../vendor/ImGui/imgui.h
+		../vendor/ImGui/imgui_demo.cpp
+		../vendor/ImGui/imgui_draw.cpp
+		../vendor/ImGui/imgui_impl_dx11.cpp
+		../vendor/ImGui/imgui_impl_dx11.h
+		../vendor/ImGui/imgui_impl_glfw.h
+		../vendor/ImGui/imgui_impl_opengl3.h
+		../vendor/ImGui/imgui_impl_win32.cpp
+		../vendor/ImGui/imgui_impl_win32.h
+		../vendor/ImGui/imgui_internal.h
+		../vendor/ImGui/imgui_widgets.cpp
+		../vendor/ImGui/imstb_rectpack.h
+		../vendor/ImGui/imstb_textedit.h
+		../vendor/ImGui/imstb_truetype.h
+	)
 elseif (UNIX)
-file(GLOB SOURCES
-	./*.h
-	./*.cpp
-	PerlinNoise/PerlinNoise.hpp
-	LearnOpenGL/*.h
-	LearnOpenGL/*.cpp
-	SongHo/*.h
-	SongHo/*.cpp
-	../vendor/ImGui/imconfig.h
-	../vendor/ImGui/imgui.cpp
-	../vendor/ImGui/imgui.h
-	../vendor/ImGui/imgui_demo.cpp
-	../vendor/ImGui/imgui_draw.cpp
-	../vendor/ImGui/imgui_impl_glfw.h
-	../vendor/ImGui/imgui_impl_opengl3.h
-	../vendor/ImGui/imgui_internal.h
-	../vendor/ImGui/imgui_widgets.cpp
-	../vendor/ImGui/imstb_rectpack.h
-	../vendor/ImGui/imstb_textedit.h
-	../vendor/ImGui/imstb_truetype.h
-)
+	file(GLOB SOURCES
+		./*.h
+		./*.cpp
+		PerlinNoise/PerlinNoise.hpp
+		LearnOpenGL/*.h
+		LearnOpenGL/*.cpp
+		SongHo/*.h
+		SongHo/*.cpp
+		../vendor/ImGui/imconfig.h
+		../vendor/ImGui/imgui.cpp
+		../vendor/ImGui/imgui.h
+		../vendor/ImGui/imgui_demo.cpp
+		../vendor/ImGui/imgui_draw.cpp
+		../vendor/ImGui/imgui_impl_glfw.h
+		../vendor/ImGui/imgui_impl_opengl3.h
+		../vendor/ImGui/imgui_internal.h
+		../vendor/ImGui/imgui_widgets.cpp
+		../vendor/ImGui/imstb_rectpack.h
+		../vendor/ImGui/imstb_textedit.h
+		../vendor/ImGui/imstb_truetype.h
+	)
 endif ()
 
 SET(BulletDynamics_SRCS
@@ -443,51 +443,51 @@ SET(assimp_SRCS
 )
 
 if (WIN32)
-SET(glfw3_SRCS	
-    ../vendor/cross-platform/glfw/src/context.c
-    ../vendor/cross-platform/glfw/src/init.c
-    ../vendor/cross-platform/glfw/src/input.c
-    ../vendor/cross-platform/glfw/src/monitor.c
-    ../vendor/cross-platform/glfw/src/vulkan.c
-    ../vendor/cross-platform/glfw/src/window.c
-    ../vendor/cross-platform/glfw/src/win32_init.c
-    ../vendor/cross-platform/glfw/src/win32_joystick.c
-    ../vendor/cross-platform/glfw/src/win32_monitor.c
-    ../vendor/cross-platform/glfw/src/win32_time.c
-    ../vendor/cross-platform/glfw/src/win32_thread.c
-    ../vendor/cross-platform/glfw/src/win32_window.c
-    ../vendor/cross-platform/glfw/src/wgl_context.c
-    ../vendor/cross-platform/glfw/src/egl_context.c
-    ../vendor/cross-platform/glfw/src/osmesa_context.c
-)
+	SET(glfw3_SRCS	
+		../vendor/cross-platform/glfw/src/context.c
+		../vendor/cross-platform/glfw/src/init.c
+		../vendor/cross-platform/glfw/src/input.c
+		../vendor/cross-platform/glfw/src/monitor.c
+		../vendor/cross-platform/glfw/src/vulkan.c
+		../vendor/cross-platform/glfw/src/window.c
+		../vendor/cross-platform/glfw/src/win32_init.c
+		../vendor/cross-platform/glfw/src/win32_joystick.c
+		../vendor/cross-platform/glfw/src/win32_monitor.c
+		../vendor/cross-platform/glfw/src/win32_time.c
+		../vendor/cross-platform/glfw/src/win32_thread.c
+		../vendor/cross-platform/glfw/src/win32_window.c
+		../vendor/cross-platform/glfw/src/wgl_context.c
+		../vendor/cross-platform/glfw/src/egl_context.c
+		../vendor/cross-platform/glfw/src/osmesa_context.c
+	)
 elseif (UNIX)
-SET(glfw3_SRCS
-    ../vendor/cross-platform/glfw/src/glfw_config.h
-    ../vendor/cross-platform/glfw/include/GLFW/glfw3.h
-    ../vendor/cross-platform/glfw/include/GLFW/glfw3native.h
-    ../vendor/cross-platform/glfw/src/internal.h
-    ../vendor/cross-platform/glfw/src/mappings.h
-    ../vendor/cross-platform/glfw/src/context.c
-    ../vendor/cross-platform/glfw/src/init.c
-    ../vendor/cross-platform/glfw/src/input.c
-    ../vendor/cross-platform/glfw/src/monitor.c
-    ../vendor/cross-platform/glfw/src/vulkan.c
-    ../vendor/cross-platform/glfw/src/window.c
-    ../vendor/cross-platform/glfw/src/win32_platform.h
-    ../vendor/cross-platform/glfw/src/win32_joystick.h
-    ../vendor/cross-platform/glfw/src/wgl_context.h
-    ../vendor/cross-platform/glfw/src/egl_context.h
-    ../vendor/cross-platform/glfw/src/osmesa_context.h
-    #../vendor/cross-platform/glfw/src/win32_init.c
-    #../vendor/cross-platform/glfw/src/win32_joystick.c
-    #../vendor/cross-platform/glfw/src/win32_monitor.c
-    #../vendor/cross-platform/glfw/src/win32_time.c
-    #../vendor/cross-platform/glfw/src/win32_thread.c
-    #../vendor/cross-platform/glfw/src/win32_window.c
-    #../vendor/cross-platform/glfw/src/wgl_context.c
-    ../vendor/cross-platform/glfw/src/egl_context.c
-    ../vendor/cross-platform/glfw/src/osmesa_context.c
-)
+	SET(glfw3_SRCS
+		../vendor/cross-platform/glfw/src/glfw_config.h
+		../vendor/cross-platform/glfw/include/GLFW/glfw3.h
+		../vendor/cross-platform/glfw/include/GLFW/glfw3native.h
+		../vendor/cross-platform/glfw/src/internal.h
+		../vendor/cross-platform/glfw/src/mappings.h
+		../vendor/cross-platform/glfw/src/context.c
+		../vendor/cross-platform/glfw/src/init.c
+		../vendor/cross-platform/glfw/src/input.c
+		../vendor/cross-platform/glfw/src/monitor.c
+		../vendor/cross-platform/glfw/src/vulkan.c
+		../vendor/cross-platform/glfw/src/window.c
+		../vendor/cross-platform/glfw/src/win32_platform.h
+		../vendor/cross-platform/glfw/src/win32_joystick.h
+		../vendor/cross-platform/glfw/src/wgl_context.h
+		../vendor/cross-platform/glfw/src/egl_context.h
+		../vendor/cross-platform/glfw/src/osmesa_context.h
+		#../vendor/cross-platform/glfw/src/win32_init.c
+		#../vendor/cross-platform/glfw/src/win32_joystick.c
+		#../vendor/cross-platform/glfw/src/win32_monitor.c
+		#../vendor/cross-platform/glfw/src/win32_time.c
+		#../vendor/cross-platform/glfw/src/win32_thread.c
+		#../vendor/cross-platform/glfw/src/win32_window.c
+		#../vendor/cross-platform/glfw/src/wgl_context.c
+		../vendor/cross-platform/glfw/src/egl_context.c
+		../vendor/cross-platform/glfw/src/osmesa_context.c
+	)
 endif()
 
 SET(irrXML_SRCS
@@ -923,6 +923,7 @@ target_link_directories(
 target_include_directories(
 	"${PROJECT_NAME}" PUBLIC
 	.
+	./src
 	../vendor/cross-platform/assimp/include
 	../vendor/cross-platform/glfw/include
 	../vendor/cross-platform/glfw/src
@@ -960,41 +961,41 @@ target_link_directories(
 )
 
 if (WIN32)
-target_link_libraries(
-	"${PROJECT_NAME}"
-	opengl32.lib
-	glew32.lib
-	glfw3.lib
-	assimp-vc142-mt.lib
-	BulletDynamics.lib
-	BulletCollision.lib
-	LinearMath.lib
-	spirv-cross-glsld.lib
-	spirv-cross-hlsld.lib
-	spirv-cross-cppd.lib
-	spirv-cross-reflectd.lib
-	spirv-cross-msld.lib
-	spirv-cross-utild.lib
-	spirv-cross-cored.lib
-#	yaml-cppd.lib
-	yaml-cpp.lib
-	mono-2.0-sgen.lib
-	box2d.lib
-	shaderc_combined.lib
-)
+	target_link_libraries(
+		"${PROJECT_NAME}"
+		opengl32.lib
+		glew32.lib
+		glfw3.lib
+		assimp-vc142-mt.lib
+		BulletDynamics.lib
+		BulletCollision.lib
+		LinearMath.lib
+		spirv-cross-glsld.lib
+		spirv-cross-hlsld.lib
+		spirv-cross-cppd.lib
+		spirv-cross-reflectd.lib
+		spirv-cross-msld.lib
+		spirv-cross-utild.lib
+		spirv-cross-cored.lib
+	#	yaml-cppd.lib
+		yaml-cpp.lib
+		mono-2.0-sgen.lib
+		box2d.lib
+		shaderc_combined.lib
+	)
 elseif (UNIX)
-target_link_libraries(
-	"${PROJECT_NAME}"
-	libGLEW.so # -lGLEW
-	libGLU.so  # -lGLU
-	libGL.so   # -lGL
-	#libglfw3.a
-	libassimp.so
-	libBulletDynamics.a
-	libBulletCollision.a
-	libLinearMath.a
-)
-target_link_libraries("${PROJECT_NAME}" libglfw3.a dl pthread)
+	target_link_libraries(
+		"${PROJECT_NAME}"
+		libGLEW.so # -lGLEW
+		libGLU.so  # -lGLU
+		libGL.so   # -lGL
+		#libglfw3.a
+		libassimp.so
+		libBulletDynamics.a
+		libBulletCollision.a
+		libLinearMath.a
+	)
+	target_link_libraries("${PROJECT_NAME}" libglfw3.a dl pthread)
 endif ()
 
 file(COPY ./assimp-vc142-mt.dll DESTINATION ../build)
@@ -1006,11 +1007,14 @@ file(COPY ./Textures            DESTINATION ../build)
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
 
 
+if (WIN32)
 
-project(Sandbox LANGUAGES CSharp)
+	project(Sandbox LANGUAGES CSharp)
 
-# Include CMake utilities for CSharp, for WinForm and WPF application support.
-include(CSharpUtilities)
+	# Include CMake utilities for CSharp, for WinForm and WPF application support.
+	include(CSharpUtilities)
+
+endif ()
 
 SET(ExampleApp_SRCS
 	../MoravaEngine/Hazel/ExampleApp/src/BasicController.cs
