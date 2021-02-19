@@ -22,3 +22,9 @@
 [submodule "vendor/cross-platform/yaml-cpp"]
 	path = vendor/cross-platform/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git
+[submodule "vendor/cross-platform/shaderc"]
+	path = vendor/cross-platform/shaderc
+	url = https://github.com/google/shaderc.git
+[submodule "vendor/box2d"]
+	path = vendor/box2d
+	url = https://github.com/erincatto/box2d.git

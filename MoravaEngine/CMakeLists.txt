@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 
-add_compile_definitions(HZ_PLATFORM_WINDOWS)
+if(WIN32)
+	add_compile_definitions(HZ_PLATFORM_WINDOWS)
+elseif(UNIX)
+	add_compile_definitions(HZ_PLATFORM_LINUX)
+endif()
 
 set(ENV{MORAVA_BUILD_TYPE} Debug)
 add_compile_definitions(HZ_DEBUG)
@@ -9,7 +13,7 @@ set(MSVC_INCREMENTAL_DEFAULT ON)
 
 project("MoravaEngine" VERSION 0.0.1)
 
-if (WIN32)
+if(WIN32)
 	file(GLOB SOURCES
 		./*.h
 		./*.cpp
@@ -35,7 +39,7 @@ if (WIN32)
 		../vendor/ImGui/imstb_textedit.h
 		../vendor/ImGui/imstb_truetype.h
 	)
-elseif (UNIX)
+elseif(UNIX)
 	file(GLOB SOURCES
 		./*.h
 		./*.cpp
@@ -57,7 +61,7 @@ elseif (UNIX)
 		../vendor/ImGui/imstb_textedit.h
 		../vendor/ImGui/imstb_truetype.h
 	)
-endif ()
+endif()
 
 SET(BulletDynamics_SRCS
 	../vendor/cross-platform/bullet3/src/BulletDynamics/Character/btKinematicCharacterController.cpp
@@ -442,7 +446,7 @@ SET(assimp_SRCS
     ../vendor/cross-platform/assimp/contrib/zip/src/zip.c
 )
 
-if (WIN32)
+if(WIN32)
 	SET(glfw3_SRCS	
 		../vendor/cross-platform/glfw/src/context.c
 		../vendor/cross-platform/glfw/src/init.c
@@ -460,7 +464,7 @@ if (WIN32)
 		../vendor/cross-platform/glfw/src/egl_context.c
 		../vendor/cross-platform/glfw/src/osmesa_context.c
 	)
-elseif (UNIX)
+elseif(UNIX)
 	SET(glfw3_SRCS
 		../vendor/cross-platform/glfw/src/glfw_config.h
 		../vendor/cross-platform/glfw/include/GLFW/glfw3.h
@@ -778,7 +782,7 @@ add_dependencies("${PROJECT_NAME}" glfw3)
 add_dependencies("${PROJECT_NAME}" SPIRV-Cross)
 add_dependencies("${PROJECT_NAME}" yaml-cpp)
 add_dependencies("${PROJECT_NAME}" box2d)
-add_dependencies("${PROJECT_NAME}" shaderc)
+# add_dependencies("${PROJECT_NAME}" shaderc)
 # add_dependencies("${PROJECT_NAME}" Hazel-ScriptCore)
 # add_dependencies("${PROJECT_NAME}" ExampleApp)
 
@@ -954,13 +958,16 @@ target_link_directories(
 	../vendor/cross-platform/assimp/bin                         # Linux
 	../vendor/cross-platform/glfw/src
 	../vendor/cross-platform/yaml-cpp
-	../vendor/box2d/bin/$ENV{MORAVA_BUILD_TYPE}
-	../vendor/cross-platform/shaderc/build/libshaderc/$ENV{MORAVA_BUILD_TYPE}
-	../vendor/cross-platform/shaderc/build/libshaderc_util/$ENV{MORAVA_BUILD_TYPE}
+	../vendor/box2d/bin/$ENV{MORAVA_BUILD_TYPE} # Win32
+	../vendor/box2d/build/bin # Linux
+	../vendor/cross-platform/shaderc/build/libshaderc/$ENV{MORAVA_BUILD_TYPE}      # Win32
+	../vendor/cross-platform/shaderc/build/libshaderc_util/$ENV{MORAVA_BUILD_TYPE} # Win32
+        ../vendor/cross-platform/shaderc/libshaderc      # Linux
+	../vendor/cross-platform/shaderc/libshaderc_util # Linux
 	../${PROJECT_NAME}/build/$ENV{MORAVA_BUILD_TYPE}
 )
 
-if (WIN32)
+if(WIN32)
 	target_link_libraries(
 		"${PROJECT_NAME}"
 		opengl32.lib
@@ -983,7 +990,7 @@ if (WIN32)
 		box2d.lib
 		shaderc_combined.lib
 	)
-elseif (UNIX)
+elseif(UNIX)
 	target_link_libraries(
 		"${PROJECT_NAME}"
 		libGLEW.so # -lGLEW
@@ -994,9 +1001,12 @@ elseif (UNIX)
 		libBulletDynamics.a
 		libBulletCollision.a
 		libLinearMath.a
+		libbox2d.a
+		libshaderc.a
+		libshaderc_util.a
 	)
 	target_link_libraries("${PROJECT_NAME}" libglfw3.a dl pthread)
-endif ()
+endif()
 
 file(COPY ./assimp-vc142-mt.dll DESTINATION ../build)
 file(COPY ./glew32.dll          DESTINATION ../build)
@@ -1007,42 +1017,43 @@ file(COPY ./Textures            DESTINATION ../build)
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
 
 
-if (WIN32)
+if(WIN32)
 
 	project(Sandbox LANGUAGES CSharp)
 
 	# Include CMake utilities for CSharp, for WinForm and WPF application support.
 	include(CSharpUtilities)
 
-endif ()
+	SET(ExampleApp_SRCS
+		../MoravaEngine/Hazel/ExampleApp/src/BasicController.cs
+		../MoravaEngine/Hazel/ExampleApp/src/MapGenerator.cs
+		../MoravaEngine/Hazel/ExampleApp/src/Noise.cs
+		../MoravaEngine/Hazel/ExampleApp/src/PlayerCube.cs
+		../MoravaEngine/Hazel/ExampleApp/src/RandomColor.cs
+		../MoravaEngine/Hazel/ExampleApp/src/Script.cs
+		../MoravaEngine/Hazel/ExampleApp/src/Sink.cs
+	)
 
-SET(ExampleApp_SRCS
-	../MoravaEngine/Hazel/ExampleApp/src/BasicController.cs
-	../MoravaEngine/Hazel/ExampleApp/src/MapGenerator.cs
-	../MoravaEngine/Hazel/ExampleApp/src/Noise.cs
-	../MoravaEngine/Hazel/ExampleApp/src/PlayerCube.cs
-	../MoravaEngine/Hazel/ExampleApp/src/RandomColor.cs
-	../MoravaEngine/Hazel/ExampleApp/src/Script.cs
-	../MoravaEngine/Hazel/ExampleApp/src/Sink.cs
-)
+	SET(Hazel-ScriptCore_SRCS
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Matrix4.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Noise.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector2.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector3.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector4.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Color.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Material.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Mesh.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/MeshFactory.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Texture2D.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Scene/Component.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Entity.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Input.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/KeyCodes.cs
+		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/SpriteRenderer.cs
+	)
 
-SET(Hazel-ScriptCore_SRCS
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Matrix4.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Noise.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector2.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector3.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector4.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Color.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Material.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Mesh.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/MeshFactory.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Texture2D.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Scene/Component.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Entity.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Input.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/KeyCodes.cs
-	../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/SpriteRenderer.cs
-)
+	add_library(ExampleApp        SHARED "${ExampleApp_SRCS}")
+	add_library(Hazel-ScriptCore  SHARED "${Hazel-ScriptCore_SRCS}")
 
-add_library(ExampleApp        SHARED "${ExampleApp_SRCS}")
-add_library(Hazel-ScriptCore  SHARED "${Hazel-ScriptCore_SRCS}")
+endif()
+

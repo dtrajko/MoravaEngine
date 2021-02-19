@@ -47,8 +47,7 @@ sudo dnf install git cmake make libXmu-devel libXi-devel libGL-devel mesa-libGL-
 
 ### Project setup:
 ```
-$ git clone --recurse-submodules https://github.com/dtrajko/MoravaEngine.git
-$ mkdir MoravaEngine/MoravaEngine/build
+$ git clone --recursive https://github.com/dtrajko/MoravaEngine.git
 
 $ cd MoravaEngine/vendor/cross-platform/assimp/contrib/zlib
 $ cmake .
@@ -66,9 +65,17 @@ $ cd MoravaEngine/vendor/cross-platform/bullet3
 $ cmake .
 $ make
 
+$ MoravaEngine/vendor/cross-platform/shaderc/utils/git-sync-deps
+$ MoravaEngine/vendor/cross-platform/shaderc
+$ cmake .
+$ make
+
+$ cd MoravaEngine/vendor/box2d/build
+
+$ mkdir MoravaEngine/MoravaEngine/build
 $ cd MoravaEngine/MoravaEngine/build
 $ cmake ..
-$ cmake --build .
+$ make
 ```
 
 ### Fetching submodules for the main project cloned without submodules:
