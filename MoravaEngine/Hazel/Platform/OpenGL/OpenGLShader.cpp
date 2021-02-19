@@ -7,6 +7,7 @@
 #include <sstream>
 #include <limits>
 #include <fstream>
+#include <filesystem>
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -71,17 +72,20 @@ namespace Hazel {
 				instance->m_RendererID = program;
 
 				std::array<GLuint, 2> shaderRendererIDs = { 0, 0 };
+				std::vector<uint32_t> shaderData[2]; // vertex + fragment for now
 
 				shaderc::Compiler compiler;
 				shaderc::CompileOptions options;
+				options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
 
-				const bool optimize = true;
+				const bool optimize = false;
 				if (optimize)
-					options.SetOptimizationLevel(shaderc_optimization_level_size);
+					options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
 				// Vertex Shader
 				{
-					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(instance->m_ShaderSource.at(GL_VERTEX_SHADER), shaderc_vertex_shader, instance->m_AssetPath.c_str(), options);
+					auto& shaderSource = instance->m_ShaderSource.at(GL_VERTEX_SHADER);
+					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, shaderc_vertex_shader, instance->m_AssetPath.c_str(), options);
 
 					if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
 						HZ_CORE_ERROR(module.GetErrorMessage());
@@ -92,17 +96,20 @@ namespace Hazel {
 					const uint8_t* end = (const uint8_t*)module.end();
 					const ptrdiff_t size = end - begin;
 
+					shaderData[0] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
 					GLuint shaderID = glCreateShader(GL_VERTEX_SHADER);
 					glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, begin, (GLsizei)size);
 					glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
-					glAttachShader(instance->m_RendererID, shaderID);
+					glAttachShader(program, shaderID);
 
 					shaderRendererIDs[0] = shaderID;
 				}
 
 				// Fragment Shader
 				{
-					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(instance->m_ShaderSource.at(GL_FRAGMENT_SHADER), shaderc_fragment_shader, instance->m_AssetPath.c_str(), options);
+					auto& shaderSource = instance->m_ShaderSource.at(GL_FRAGMENT_SHADER);
+					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, shaderc_fragment_shader, instance->m_AssetPath.c_str(), options);
 
 					if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
 						HZ_CORE_ERROR(module.GetErrorMessage());
@@ -113,10 +120,12 @@ namespace Hazel {
 					const uint8_t* end = (const uint8_t*)module.end();
 					const ptrdiff_t size = end - begin;
 
+					shaderData[1] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
 					GLuint shaderID = glCreateShader(GL_FRAGMENT_SHADER);
 					glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, begin, (GLsizei)size);
 					glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
-					glAttachShader(instance->m_RendererID, shaderID);
+					glAttachShader(program, shaderID);
 
 					shaderRendererIDs[1] = shaderID;
 				}
@@ -148,6 +157,9 @@ namespace Hazel {
 				for (auto id : shaderRendererIDs)
 					glDetachShader(program, id);
 
+				instance->Reflect(shaderData[0]);
+				instance->Reflect(shaderData[1]);
+
 				instance->ResolveUniforms();
 				instance->ValidateUniforms();
 			};
@@ -178,6 +190,366 @@ namespace Hazel {
 				m_Loaded = true;
 			});
 		}
+	}
+
+	void OpenGLShader::Compile(const std::vector<uint32_t>& vertexBinary, const std::vector<uint32_t>& fragmentBinary)
+	{
+	}
+
+	void OpenGLShader::Reflect(std::vector<uint32_t>& data)
+	{
+		/****
+		spirv_cross::Compiler comp(data);
+		spirv_cross::ShaderResources res = comp.get_shader_resources();
+
+		HZ_CORE_TRACE("OpenGLShader::Reflect - {0}", m_AssetPath);
+		HZ_CORE_TRACE("   {0} Uniform Buffers", res.uniform_buffers.size());
+		HZ_CORE_TRACE("   {0} Resources", res.sampled_images.size());
+
+		glUseProgram(m_RendererID);
+
+		uint32_t bufferIndex = 0;
+		for (const spirv_cross::Resource& resource : res.uniform_buffers)
+		{
+			auto& bufferType = comp.get_type(resource.base_type_id);
+			int memberCount = bufferType.member_types.size();
+			uint32_t bindingPoint = comp.get_decoration(resource.id, spv::DecorationBinding);
+
+			if (s_UniformBuffers.find(bindingPoint) == s_UniformBuffers.end())
+			{
+				ShaderUniformBuffer& buffer = s_UniformBuffers[bindingPoint];
+				buffer.Name = resource.name;
+				buffer.BindingPoint = bindingPoint;
+				buffer.Size = comp.get_declared_struct_size(bufferType);
+
+#if 0
+				buffer.Uniforms.reserve(memberCount);
+				for (int i = 0; i < memberCount; i++)
+				{
+					auto type = comp.get_type(bufferType.member_types[i]);
+					const auto& name = comp.get_member_name(bufferType.self, i);
+					auto size = comp.get_declared_struct_member_size(bufferType, i);
+					auto offset = comp.type_struct_member_offset(bufferType, i);
+
+					//ShaderUniformType uniformType = SPIRTypeToShaderUniformType(type);
+					//buffer.Uniforms.emplace_back(name, uniformType, size, offset);
+				}
+#endif
+				glCreateBuffers(1, &buffer.RendererID);
+				glBindBuffer(GL_UNIFORM_BUFFER, buffer.RendererID);
+				glBufferData(GL_UNIFORM_BUFFER, buffer.Size, nullptr, GL_DYNAMIC_DRAW);
+				glBindBufferBase(GL_UNIFORM_BUFFER, buffer.BindingPoint, buffer.RendererID);
+
+				HZ_CORE_TRACE("Created Uniform Buffer at binding point {0} with name '{1}', size is {2} bytes", buffer.BindingPoint, buffer.Name, buffer.Size);
+
+				glBindBuffer(GL_UNIFORM_BUFFER, 0);
+			}
+		}
+
+		int32_t sampler = 0;
+		for (const spirv_cross::Resource& resource : res.sampled_images)
+		{
+			auto& type = comp.get_type(resource.base_type_id);
+			auto binding = comp.get_decoration(resource.id, spv::DecorationBinding);
+			const auto& name = resource.name;
+			uint32_t dimension = type.image.dim;
+
+			GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+			HZ_CORE_ASSERT(location != -1);
+			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
+			glUniform1i(location, binding);
+		}
+		****/
+	}
+
+	void OpenGLShader::CompileOrGetVulkanBinary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile)
+	{
+		// Vertex Shader
+		{
+			std::filesystem::path p = m_AssetPath;
+			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.vert");
+			std::string cachedFilePath = path.string();
+
+			FILE* f = fopen(cachedFilePath.c_str(), "rb");
+			if (f)
+			{
+				fseek(f, 0, SEEK_END);
+				uint64_t size = ftell(f);
+				fseek(f, 0, SEEK_SET);
+				outputBinary[0] = std::vector<uint32_t>(size / sizeof(uint32_t));
+				fread(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f);
+				fclose(f);
+			}
+		}
+
+		// Fragment Shader
+		{
+			std::filesystem::path p = m_AssetPath;
+			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.frag");
+			std::string cachedFilePath = path.string();
+
+			FILE* f = fopen(cachedFilePath.c_str(), "rb");
+			if (f)
+			{
+				fseek(f, 0, SEEK_END);
+				uint64_t size = ftell(f);
+				fseek(f, 0, SEEK_SET);
+				outputBinary[1] = std::vector<uint32_t>(size / sizeof(uint32_t));
+				fread(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f);
+				fclose(f);
+			}
+		}
+
+		if (outputBinary[0].size() == 0)
+		{
+			shaderc::Compiler compiler;
+			shaderc::CompileOptions options;
+			options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+
+			const bool optimize = false;
+			if (optimize)
+				options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+			// Vertex Shader
+			{
+				auto& shaderSource = m_ShaderSource.at(GL_VERTEX_SHADER);
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, shaderc_vertex_shader, m_AssetPath.c_str(), options);
+
+				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
+				{
+					HZ_CORE_ERROR(module.GetErrorMessage());
+					HZ_CORE_ASSERT(false);
+				}
+
+				const uint8_t* begin = (const uint8_t*)module.cbegin();
+				const uint8_t* end = (const uint8_t*)module.cend();
+				const ptrdiff_t size = end - begin;
+
+				outputBinary[0] = std::vector<uint32_t>(module.cbegin(), module.cend());
+			}
+
+			{
+				std::filesystem::path p = m_AssetPath;
+				auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.vert");
+				std::string cachedFilePath = path.string();
+
+				FILE* f = fopen(cachedFilePath.c_str(), "wb");
+				fwrite(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f);
+				fclose(f);
+			}
+		}
+
+		if (outputBinary[1].size() == 0)
+		{
+			shaderc::Compiler compiler;
+			shaderc::CompileOptions options;
+			options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+
+			const bool optimize = false;
+			if (optimize)
+				options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+			// Fragment Shader
+			{
+				auto& shaderSource = m_ShaderSource.at(GL_FRAGMENT_SHADER);
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, shaderc_fragment_shader, m_AssetPath.c_str(), options);
+
+				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
+				{
+					HZ_CORE_ERROR(module.GetErrorMessage());
+					HZ_CORE_ASSERT(false);
+				}
+
+				const uint8_t* begin = (const uint8_t*)module.cbegin();
+				const uint8_t* end = (const uint8_t*)module.cend();
+				const ptrdiff_t size = end - begin;
+
+				outputBinary[1] = std::vector<uint32_t>(module.cbegin(), module.cend());
+			}
+
+			{
+				std::filesystem::path p = m_AssetPath;
+				auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.frag");
+				std::string cachedFilePath = path.string();
+
+				FILE* f = fopen(cachedFilePath.c_str(), "wb");
+				fwrite(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f);
+				fclose(f);
+			}
+		}
+	}
+
+	void OpenGLShader::CompileOrGetOpenGLBinary(const std::array<std::vector<uint32_t>, 2>& vulkanBinaries, bool forceCompile)
+	{
+		if (m_RendererID)
+			glDeleteProgram(m_RendererID);
+
+		const auto& vertexBinary = vulkanBinaries[0];
+		const auto& fragmentBinary = vulkanBinaries[1];
+
+		GLuint program = glCreateProgram();
+		m_RendererID = program;
+
+		shaderc::Compiler compiler;
+		shaderc::CompileOptions options;
+		options.SetTargetEnvironment(shaderc_target_env_opengl_compat, shaderc_env_version_opengl_4_5);
+
+		std::array<GLuint, 2> shaderRendererIDs = { 0, 0 };
+		std::vector<uint32_t> shaderData[2]; // vertex + fragment for now
+
+		/****
+		{
+			spirv_cross::CompilerGLSL glsl(vertexBinary);
+			ParseConstantBuffers(glsl);
+
+			std::filesystem::path p = m_AssetPath;
+			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_opengl.vert");
+			std::string cachedFilePath = path.string();
+
+			FILE* f = fopen(cachedFilePath.c_str(), "rb");
+			if (f)
+			{
+				fseek(f, 0, SEEK_END);
+				uint64_t size = ftell(f);
+				fseek(f, 0, SEEK_SET);
+				shaderData[0] = std::vector<uint32_t>(size / sizeof(uint32_t));
+				fread(shaderData[0].data(), sizeof(uint32_t), shaderData[0].size(), f);
+				fclose(f);
+			}
+			else
+			{
+				std::string source = glsl.compile();
+#if PRINT_SHADERS
+				printf("=========================================\n");
+				printf("Vertex Shader:\n%s\n", source.c_str());
+				printf("=========================================\n");
+#endif
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, shaderc_vertex_shader, m_AssetPath.c_str(), options);
+
+				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
+				{
+					HZ_CORE_ERROR(module.GetErrorMessage());
+					HZ_CORE_ASSERT(false);
+				}
+
+				shaderData[0] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+				{
+					std::filesystem::path p = m_AssetPath;
+					auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_opengl.vert");
+					std::string cachedFilePath = path.string();
+					FILE* f = fopen(cachedFilePath.c_str(), "wb");
+					fwrite(shaderData[0].data(), sizeof(uint32_t), shaderData[0].size(), f);
+					fclose(f);
+				}
+			}
+
+			GLuint shaderID = glCreateShader(GL_VERTEX_SHADER);
+			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderData[0].data(), shaderData[0].size() * sizeof(uint32_t));
+			glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
+			glAttachShader(program, shaderID);
+
+			shaderRendererIDs[0] = shaderID;
+		}
+
+		{
+			spirv_cross::CompilerGLSL glsl(fragmentBinary);
+			ParseConstantBuffers(glsl);
+
+			std::filesystem::path p = m_AssetPath;
+			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_opengl.frag");
+			std::string cachedFilePath = path.string();
+
+			FILE* f = fopen(cachedFilePath.c_str(), "rb");
+			if (f)
+			{
+				fseek(f, 0, SEEK_END);
+				uint64_t size = ftell(f);
+				fseek(f, 0, SEEK_SET);
+				shaderData[1] = std::vector<uint32_t>(size / sizeof(uint32_t));
+				fread(shaderData[1].data(), sizeof(uint32_t), shaderData[1].size(), f);
+				fclose(f);
+			}
+			else
+			{
+				std::string source = glsl.compile();
+#if PRINT_SHADERS
+				printf("=========================================\n");
+				printf("Fragment Shader:\n%s\n", source.c_str());
+				printf("=========================================\n");
+#endif
+				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, shaderc_fragment_shader, m_AssetPath.c_str(), options);
+				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
+				{
+					HZ_CORE_ERROR(module.GetErrorMessage());
+					HZ_CORE_ASSERT(false);
+				}
+
+				shaderData[1] = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+				{
+					std::filesystem::path p = m_AssetPath;
+					auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_opengl.frag");
+					std::string cachedFilePath = path.string();
+
+					FILE* f = fopen(cachedFilePath.c_str(), "wb");
+					fwrite(shaderData[1].data(), sizeof(uint32_t), shaderData[1].size(), f);
+					fclose(f);
+				}
+			}
+
+			GLuint shaderID = glCreateShader(GL_FRAGMENT_SHADER);
+			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderData[1].data(), shaderData[1].size() * sizeof(uint32_t));
+			glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
+			glAttachShader(program, shaderID);
+
+			shaderRendererIDs[1] = shaderID;
+		}
+
+		// Link shader program
+		glLinkProgram(program);
+
+		// Note the different functions here: glGetProgram* instead of glGetShader*.
+		GLint isLinked = 0;
+		glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
+		if (isLinked == GL_FALSE)
+		{
+			GLint maxLength = 0;
+			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+			// The maxLength includes the NULL character
+			std::vector<GLchar> infoLog(maxLength);
+			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+			HZ_CORE_ERROR("Shader compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
+
+			// We don't need the program anymore.
+			glDeleteProgram(program);
+			// Don't leak shaders either.
+			for (auto id : shaderRendererIDs)
+				glDeleteShader(id);
+		}
+
+		// Always detach shaders after a successful link.
+		for (auto id : shaderRendererIDs)
+			glDetachShader(program, id);
+
+		// Get uniform locations
+		for (auto& [name, buffer] : m_Buffers)
+		{
+			for (auto& [name, uniform] : buffer.Uniforms)
+			{
+				const auto& name = uniform.GetName();
+				GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+				if (location == -1)
+					HZ_CORE_WARN("{0}: could not find uniform location {0}", name);
+
+				m_UniformLocations[name] = location;
+			}
+		}
+
+		Reflect(shaderData[0]);
+		Reflect(shaderData[1]);
+		****/
 	}
 
 	void OpenGLShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)

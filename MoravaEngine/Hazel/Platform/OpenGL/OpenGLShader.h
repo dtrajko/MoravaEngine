@@ -3,6 +3,8 @@
 #include "../../Renderer/HazelShader.h"
 #include "OpenGLShaderUniform.h"
 
+// #include <spirv_glsl.hpp>
+
 
 namespace Hazel {
 
@@ -38,9 +40,17 @@ namespace Hazel {
 
 	private:
 		void Load(const std::string& source);
+		void Compile(const std::vector<uint32_t>& vertexBinary, const std::vector<uint32_t>& fragmentBinary);
+		void Reflect(std::vector<uint32_t>& data);
+
+		void CompileOrGetVulkanBinary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile = false);
+		void CompileOrGetOpenGLBinary(const std::array<std::vector<uint32_t>, 2>& vulkanBinaries, bool forceCompile = false);
 
 		std::string ReadShaderFromFile(const std::string& filepath) const;
 		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
+
+		// void ParseConstantBuffers(const spirv_cross::CompilerGLSL& compiler);
+
 		void Parse();
 		void ParseUniform(const std::string& statement, ShaderDomain domain);
 		void ParseUniformStruct(const std::string& block, ShaderDomain domain);

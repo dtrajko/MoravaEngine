@@ -31,6 +31,7 @@ namespace Hazel {
 
 		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
 		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
 
 #endif // SPIR_ENABLED
 
