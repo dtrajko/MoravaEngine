@@ -11,7 +11,7 @@
 #define APIENTRY
 #endif // !_WIN32
 
-#define SPIR_ENABLED 1
+// #define SPIR_ENABLED
 
 #include "CommonValues.h"
 #include "Hazel/Core/Base.h"
@@ -113,6 +113,12 @@ int main()
 	Log::Init();
 
 	Application::Get()->InitWindow(WindowProps({ windowTitle, WIDTH, HEIGHT }));
+
+#if defined(SPIR_ENABLED)
+	RendererBasic::SetSpirVEnabled(true);
+#else
+	RendererBasic::SetSpirVEnabled(false);
+#endif
 
 	LOG_INFO("OpenGL Info:");
 	LOG_INFO("   Vendor: {0}",   glGetString(GL_VENDOR));
@@ -223,12 +229,6 @@ int main()
 
 	Application::Get()->SetScene(scene);
 	Application::Get()->SetRenderer(renderer);
-
-#if defined(SPIR_ENABLED)
-	RendererBasic::SetSpirVEnabled(true);
-#else
-	RendererBasic::SetSpirVEnabled(false);
-#endif
 
 	// experimental, testing Hazel event system
 	Application::Run();

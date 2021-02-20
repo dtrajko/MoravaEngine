@@ -24,7 +24,7 @@ namespace Hazel {
 #define HZ_LOG_UNIFORM
 #endif
 
-#define PRINT_SHADERS 0
+#define PRINT_SHADERS 1
 
 	OpenGLShader::OpenGLShader(const std::string& filepath)
 		: m_AssetPath(filepath)
