@@ -122,6 +122,7 @@ private:
 	std::pair<float, float> GetMouseViewportSpace();
 	void RenderSkybox();
 	void RenderHazelGrid();
+	void RenderOutline(Ref<Shader> shader, Hazel::Submesh& submesh, Hazel::Entity entity);
 
 public:
 	Hazel::EditorCamera* m_EditorCamera;
@@ -150,8 +151,7 @@ public:
 
 private:
 	Ref<Shader> m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
-	Ref<Shader> m_ShaderRenderer2D; // Renderer2D::s_Data.TextureShader
-	Ref<Shader> m_ShaderRenderer2D_Line; // Renderer2D::s_Data.LineShader
+	Ref<Shader> m_ShaderOutline;
 
 	CubeSkybox* m_SkyboxCube;
 	Hazel::Ref<Hazel::HazelTextureCube> m_SkyboxTexture;

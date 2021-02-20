@@ -33,6 +33,9 @@ namespace Hazel {
 
 	ShaderResourceDeclaration* HazelMaterial::FindResourceDeclaration(const std::string& name)
 	{
+		// auto& resources = m_Shader->GetResources();
+
+
 		return nullptr;
 	}
 

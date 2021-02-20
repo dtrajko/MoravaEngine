@@ -125,6 +125,7 @@ namespace Hazel {
 	public:
 		void Render(HazelMesh* parentMesh, ::Ref<Shader> shader, glm::mat4 transform, uint32_t samplerSlot,
 			const std::map<std::string, EnvMapMaterial*>& envMapMaterials, Entity entity);
+		void RenderOutline(HazelMesh* parentMesh, ::Ref<Shader> shader, const glm::mat4& transform, Entity entity);
 
 	public:
 		uint32_t BaseVertex;

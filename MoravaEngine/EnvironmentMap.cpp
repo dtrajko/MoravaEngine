@@ -390,15 +390,21 @@ void EnvironmentMap::SetupShaders()
     Ref<Shader> shaderHazelPBR_Anim = CreateRef<Shader>("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvironmentMap: m_ShaderHazelPBR_Anim compiled [programID={0}]", shaderHazelPBR_Anim->GetProgramID());
 
-    m_ShaderRenderer2D_Line = CreateRef<Shader>("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
-    Log::GetLogger()->info("EnvironmentMap: m_ShaderRenderer2D_Line compiled [programID={0}]", m_ShaderRenderer2D_Line->GetProgramID());
+    Ref<Shader> shaderRenderer2D_Line = CreateRef<Shader>("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
+    Log::GetLogger()->info("EnvironmentMap: m_ShaderRenderer2D_Line compiled [programID={0}]", shaderRenderer2D_Line->GetProgramID());
+
+    m_ShaderOutline = CreateRef<Shader>("Shaders/Hazel/Outline.vs", "Shaders/Hazel/Outline.fs");
+    Log::GetLogger()->info("EnvironmentMap: shaderOutline compiled [programID={0}]", m_ShaderOutline->GetProgramID());
 
     ResourceManager::AddShader("Hazel/HazelPBR_Static", shaderHazelPBR_Static);
     ResourceManager::AddShader("Hazel/HazelPBR_Anim", shaderHazelPBR_Anim);
-    ResourceManager::AddShader("Hazel/Renderer2D_Line", m_ShaderRenderer2D_Line);
+    ResourceManager::AddShader("Hazel/Renderer2D_Line", shaderRenderer2D_Line);
+    ResourceManager::AddShader("Hazel/Outline", m_ShaderOutline);
 
     ShaderLibrary::Add(shaderHazelPBR_Static);
     ShaderLibrary::Add(shaderHazelPBR_Anim);
+    ShaderLibrary::Add(shaderRenderer2D_Line);
+    ShaderLibrary::Add(m_ShaderOutline);
 }
 
 void EnvironmentMap::UpdateUniforms()
@@ -416,6 +422,11 @@ void EnvironmentMap::UpdateUniforms()
     // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
     m_SceneRenderer->GetShaderSkybox()->setFloat("u_Exposure", m_ActiveCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
     /**** END Shaders/Hazel/Skybox ****/
+
+    /**** BEGIN Shaders/Hazel/Outline ****/
+    m_ShaderOutline->Bind();
+    m_ShaderOutline->setMat4("u_ViewProjection", m_ActiveCamera->GetViewProjection());
+    /**** BEGIN Shaders/Hazel/Outline ****/
 }
 
 void EnvironmentMap::UpdateShaderPBRUniforms(Ref<Shader> shaderHazelPBR, EnvMapMaterial* envMapMaterial)
@@ -2126,31 +2137,34 @@ void EnvironmentMap::GeometryPassTemporary()
         {
             Hazel::Entity entity = { entt, m_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
+            glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
 
             if (meshComponent.Mesh)
             {
                 m_ShaderHazelPBR = meshComponent.Mesh->IsAnimated() ? ShaderLibrary::Get("HazelPBR_Anim") : ShaderLibrary::Get("HazelPBR_Static");
 
-                m_ShaderHazelPBR->Bind();
+                EnvMapMaterial* envMapMaterial = nullptr;
+                std::string materialUUID;
+
+                for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
                 {
-                    EnvMapMaterial* envMapMaterial = nullptr;
-                    std::string materialUUID;
+                    materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
 
-                    for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
+                    // RenderOutline(m_ShaderOutline, submesh, entity);
+
+                    // Render Submesh
+                    m_ShaderHazelPBR->Bind();
                     {
-                        materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
-
                         // load submesh materials for each specific submesh from the s_EnvMapMaterials list
                         if (s_EnvMapMaterials.contains(materialUUID)) {
                             envMapMaterial = s_EnvMapMaterials.at(materialUUID);
                             UpdateShaderPBRUniforms(m_ShaderHazelPBR, envMapMaterial);
                         }
 
-                        glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
                         submesh.Render(meshComponent.Mesh.Raw(), m_ShaderHazelPBR, entityTransform, samplerSlot, s_EnvMapMaterials, entity);
                     }
+                    m_ShaderHazelPBR->Unbind();
                 }
-                m_ShaderHazelPBR->Unbind();
             }
         }
     }
@@ -2180,6 +2194,26 @@ void EnvironmentMap::GeometryPassTemporary()
     Hazel::Renderer2D::EndScene();
 
     m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->Bind();
+}
+
+void EnvironmentMap::RenderOutline(Ref<Shader> shader, Hazel::Submesh& submesh, Hazel::Entity entity)
+{
+    auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
+    glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+
+    // Render outline
+    shader->Bind();
+    {
+        if (EntitySelection::s_SelectionContext.size()) {
+            for (auto selection : EntitySelection::s_SelectionContext)
+            {
+                if (selection.Mesh && &submesh == selection.Mesh) {
+                    submesh.RenderOutline(meshComponent.Mesh.Raw(), shader, entityTransform, entity);
+                }
+            }
+        }
+    }
+    shader->Unbind();
 }
 
 void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)

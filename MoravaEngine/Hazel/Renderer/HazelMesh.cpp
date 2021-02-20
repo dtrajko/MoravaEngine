@@ -1177,4 +1177,29 @@ namespace Hazel {
 
 		glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
 	}
+
+	void Submesh::RenderOutline(HazelMesh* parentMesh, ::Ref<Shader> shader, const glm::mat4& transform, Entity entity)
+	{
+		glm::mat4 submeshTransform;
+		if (entity && entity.HasComponent<TransformComponent>()) {
+			submeshTransform = entity.GetComponent<TransformComponent>().GetTransform();
+		}
+		else {
+			submeshTransform = transform;
+		}
+
+		parentMesh->m_VertexBuffer->Bind();
+		parentMesh->m_Pipeline->Bind();
+		parentMesh->m_IndexBuffer->Bind();
+
+		shader->Bind();
+
+		glm::mat4 outlineTransform = submeshTransform * Transform;
+		outlineTransform = glm::scale(outlineTransform, glm::vec3(1.2f));
+		shader->setMat4("u_Transform", outlineTransform);
+
+		glEnable(GL_DEPTH_TEST);
+
+		glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
+	}
 }
