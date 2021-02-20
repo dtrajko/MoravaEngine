@@ -45,6 +45,9 @@ public:
 
 	static void SetLineThickness(float thickness); // RendererAPI::SetLineThickness
 
+	static void SetSpirVEnabled(bool enabled) { s_SpirV_Enabled = enabled; }
+	static bool GetSpirVEnabled() { return s_SpirV_Enabled; }
+
 protected:
 	static void UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene);
 
@@ -55,5 +58,6 @@ public:
 	static std::map<std::string, Shader*> s_Shaders;
 	static std::map<std::string, int> s_Uniforms;
 	static glm::vec4 s_BgColor;
+	static bool s_SpirV_Enabled;
 
 };

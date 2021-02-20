@@ -11,6 +11,8 @@ namespace Hazel {
 
 	Ref<HazelShader> HazelShader::Create(const std::string& filepath)
 	{
+		Log::GetLogger()->info("HazelShader::Create('{0}')", filepath.c_str());
+
 		Ref<HazelShader> result = nullptr;
 
 		switch (RendererAPI::Current())
@@ -24,6 +26,8 @@ namespace Hazel {
 
 	Ref<HazelShader> HazelShader::CreateFromString(const std::string& source)
 	{
+		Log::GetLogger()->info("HazelShader::CreateFromString('{0}')", source.c_str());
+
 		Ref<HazelShader> result = nullptr;
 
 		switch (RendererAPI::Current())

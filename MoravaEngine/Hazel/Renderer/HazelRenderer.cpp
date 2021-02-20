@@ -26,11 +26,11 @@ namespace Hazel {
 	{
 		s_Data.m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
 
-#if SPIR_ENABLED
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
-#endif // SPIR_ENABLED
+		if (RendererBasic::GetSpirVEnabled()) {
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
+		}
 
 		// SceneRenderer::Init(); // TODO
 

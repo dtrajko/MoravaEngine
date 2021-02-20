@@ -11,7 +11,7 @@
 #define APIENTRY
 #endif // !_WIN32
 
-#define SPIR_ENABLED 0
+#define SPIR_ENABLED 1
 
 #include "CommonValues.h"
 #include "Hazel/Core/Base.h"
@@ -223,6 +223,12 @@ int main()
 
 	Application::Get()->SetScene(scene);
 	Application::Get()->SetRenderer(renderer);
+
+#if defined(SPIR_ENABLED)
+	RendererBasic::SetSpirVEnabled(true);
+#else
+	RendererBasic::SetSpirVEnabled(false);
+#endif
 
 	// experimental, testing Hazel event system
 	Application::Run();

@@ -26,6 +26,7 @@ glm::mat4 RendererBasic::s_ProjectionMatrix;
 std::map<std::string, Shader*> RendererBasic::s_Shaders;
 std::map<std::string, int> RendererBasic::s_Uniforms;
 glm::vec4 RendererBasic::s_BgColor;
+bool RendererBasic::s_SpirV_Enabled;
 
 RendererBasic::RendererBasic()
 {
