@@ -11,6 +11,8 @@
 #define APIENTRY
 #endif // !_WIN32
 
+#define SPIR_ENABLED 0
+
 #include "CommonValues.h"
 #include "Hazel/Core/Base.h"
 #include "Hazel/Events/Event.h"

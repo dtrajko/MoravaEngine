@@ -26,13 +26,10 @@ namespace Hazel {
 	{
 		s_Data.m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
 
-#define SPIR_ENABLED 0
 #if SPIR_ENABLED
-
 		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
 		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
 		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
-
 #endif // SPIR_ENABLED
 
 		// SceneRenderer::Init(); // TODO

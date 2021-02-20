@@ -134,7 +134,9 @@ namespace Hazel {
 			for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 				samplers[i] = i;
 
+#if SPIR_ENABLED
 			s_Data.TextureHazelShader = HazelShader::Create("assets/shaders/Renderer2D.glsl"); // not in use, only for constructor testing
+#endif
 
 			s_Data.TextureShader = new Shader("Shaders/Hazel/Renderer2D.vs", "Shaders/Hazel/Renderer2D.fs");
 			s_Data.TextureShader->Bind();
@@ -151,7 +153,9 @@ namespace Hazel {
 
 		// Lines
 		{
+#if SPIR_ENABLED
 			s_Data.LineHazelShader = HazelShader::Create("assets/shaders/Renderer2D_Line.glsl"); // not in use, only for constructor testing
+#endif
 
 			s_Data.LineShader = new Shader("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
 

@@ -253,197 +253,197 @@ SET(assimp_SRCS
 	../vendor/cross-platform/assimp/code/Common/simd.cpp
 	../vendor/cross-platform/assimp/code/Common/material.cpp
 	../vendor/cross-platform/assimp/code/Common/AssertHandler.cpp
-    ../vendor/cross-platform/assimp/code/Common/DefaultLogger.cpp
-    ../vendor/cross-platform/assimp/code/Common/Exporter.cpp
-    ../vendor/cross-platform/assimp/code/CApi/AssimpCExport.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/CalcTangentsProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/ComputeUVMappingProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/ConvertToLHProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/EmbedTexturesProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/FindDegenerates.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/FindInstancesProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/FindInvalidDataProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/FixNormalsStep.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/DropFaceNormalsProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/GenFaceNormalsProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/GenVertexNormalsProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/PretransformVertices.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/ImproveCacheLocality.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/JoinVerticesProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/LimitBoneWeightsProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/RemoveRedundantMaterials.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/RemoveVCProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/SortByPTypeProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/SplitLargeMeshes.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/TextureTransform.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/TriangulateProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/ValidateDataStructure.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/OptimizeGraph.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/OptimizeMeshes.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/DeboneProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/ProcessHelper.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/MakeVerboseFormat.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/ScaleProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/ArmaturePopulate.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/GenBoundingBoxesProcess.cpp
-    ../vendor/cross-platform/assimp/code/PostProcessing/SplitByBoneCountProcess.cpp
-    ../vendor/cross-platform/assimp/code/Material/MaterialSystem.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/STEPParser/STEPFileReader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/STEPParser/STEPFileEncoding.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/AMF/AMFImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/AMF/AMFImporter_Geometry.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/AMF/AMFImporter_Material.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/AMF/AMFImporter_Postprocess.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/3DS/3DSConverter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/3DS/3DSLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/AC/ACLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/ASE/ASELoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/ASE/ASEParser.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Assbin/AssbinLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/B3D/B3DImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/BVH/BVHLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Collada/ColladaHelper.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Collada/ColladaLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Collada/ColladaParser.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/DXF/DXFLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/CSM/CSMLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/HMP/HMPLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Irr/IRRMeshLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Irr/IRRShared.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Irr/IRRLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/LWO/LWOAnimation.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/LWO/LWOBLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/LWO/LWOLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/LWO/LWOMaterial.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/LWS/LWSLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/M3D/M3DImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/M3D/M3DWrapper.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/MD2/MD2Loader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/MD3/MD3Loader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/MD5/MD5Loader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/MD5/MD5Parser.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/MDC/MDCLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/MDL/MDLLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/MDL/MDLMaterialLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/MDL/HalfLife/HL1MDLLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/MDL/HalfLife/UniqueNameGenerator.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/NFF/NFFLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/NDO/NDOLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/OFF/OFFLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Obj/ObjFileImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Obj/ObjFileMtlImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Obj/ObjFileParser.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Ogre/OgreImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Ogre/OgreStructs.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Ogre/OgreBinarySerializer.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Ogre/OgreXmlSerializer.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Ogre/OgreMaterial.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/OpenGEX/OpenGEXImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Ply/PlyLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Ply/PlyParser.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/MS3D/MS3DLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/COB/COBLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderDNA.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderScene.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderModifier.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderBMesh.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderTessellator.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderCustomData.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCReaderGen1_2x3.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCReaderGen2_2x3.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCUtil.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCGeometry.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCMaterial.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCProfile.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCCurve.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCBoolean.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCOpenings.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/XGL/XGLLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXParser.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXTokenizer.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXConverter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXUtil.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXDocument.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXProperties.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXMeshGeometry.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXMaterial.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXModel.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXAnimation.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXNodeAttribute.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXDeformer.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXBinaryTokenizer.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXDocumentUtil.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Q3D/Q3DLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Q3BSP/Q3BSPFileParser.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Q3BSP/Q3BSPFileImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Raw/RawLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/SIB/SIBImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/SMD/SMDLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/STL/STLLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Terragen/TerragenLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Unreal/UnrealLoader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X/XFileImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X/XFileParser.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Geometry2D.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Geometry3D.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Group.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Light.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Metadata.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Networking.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Postprocess.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Rendering.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Shape.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Texturing.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/FIReader.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DVocabulary.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/glTF/glTFCommon.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/glTF/glTFImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/glTF2/glTF2Importer.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/3MF/D3MFImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/3MF/D3MFOpcPackage.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/MMD/MMDImporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/MMD/MMDPmxParser.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Obj/ObjExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/OpenGEX/OpenGEXExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Ply/PlyExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/3DS/3DSExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Assbin/AssbinExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Assbin/AssbinFileWriter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Assxml/AssxmlExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Assxml/AssxmlFileWriter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/M3D/M3DExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Collada/ColladaExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXExportNode.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXExportProperty.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/STL/STLExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X/XFileExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/glTF/glTFExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/glTF2/glTF2Exporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/3MF/D3MFExporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Assjson/cencode.c
-    ../vendor/cross-platform/assimp/code/AssetLib/Assjson/json_exporter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Assjson/mesh_splitter.cpp
-    ../vendor/cross-platform/assimp/code/AssetLib/Step/StepExporter.cpp
-    ../vendor/cross-platform/assimp/contrib/unzip/ioapi.c
-    ../vendor/cross-platform/assimp/contrib/unzip/unzip.c
-    ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/common/shapes.cc
-    ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/sweep/advancing_front.cc
-    ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/sweep/cdt.cc
-    ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/sweep/sweep.cc
-    ../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/sweep/sweep_context.cc
-    ../vendor/cross-platform/assimp/contrib/clipper/clipper.cpp
-    ../vendor/cross-platform/assimp/contrib/Open3DGC/o3dgcArithmeticCodec.cpp
-    ../vendor/cross-platform/assimp/contrib/Open3DGC/o3dgcDynamicVectorDecoder.cpp
-    ../vendor/cross-platform/assimp/contrib/Open3DGC/o3dgcDynamicVectorEncoder.cpp
-    ../vendor/cross-platform/assimp/contrib/Open3DGC/o3dgcTools.cpp
-    ../vendor/cross-platform/assimp/contrib/Open3DGC/o3dgcTriangleFans.cpp
-    ../vendor/cross-platform/assimp/contrib/zip/src/zip.c
+	../vendor/cross-platform/assimp/code/Common/DefaultLogger.cpp
+	../vendor/cross-platform/assimp/code/Common/Exporter.cpp
+	../vendor/cross-platform/assimp/code/CApi/AssimpCExport.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/CalcTangentsProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/ComputeUVMappingProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/ConvertToLHProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/EmbedTexturesProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/FindDegenerates.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/FindInstancesProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/FindInvalidDataProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/FixNormalsStep.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/DropFaceNormalsProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/GenFaceNormalsProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/GenVertexNormalsProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/PretransformVertices.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/ImproveCacheLocality.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/JoinVerticesProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/LimitBoneWeightsProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/RemoveRedundantMaterials.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/RemoveVCProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/SortByPTypeProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/SplitLargeMeshes.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/TextureTransform.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/TriangulateProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/ValidateDataStructure.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/OptimizeGraph.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/OptimizeMeshes.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/DeboneProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/ProcessHelper.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/MakeVerboseFormat.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/ScaleProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/ArmaturePopulate.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/GenBoundingBoxesProcess.cpp
+	../vendor/cross-platform/assimp/code/PostProcessing/SplitByBoneCountProcess.cpp
+	../vendor/cross-platform/assimp/code/Material/MaterialSystem.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/STEPParser/STEPFileReader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/STEPParser/STEPFileEncoding.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/AMF/AMFImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/AMF/AMFImporter_Geometry.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/AMF/AMFImporter_Material.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/AMF/AMFImporter_Postprocess.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/3DS/3DSConverter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/3DS/3DSLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/AC/ACLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/ASE/ASELoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/ASE/ASEParser.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Assbin/AssbinLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/B3D/B3DImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/BVH/BVHLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Collada/ColladaHelper.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Collada/ColladaLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Collada/ColladaParser.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/DXF/DXFLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/CSM/CSMLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/HMP/HMPLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Irr/IRRMeshLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Irr/IRRShared.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Irr/IRRLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/LWO/LWOAnimation.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/LWO/LWOBLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/LWO/LWOLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/LWO/LWOMaterial.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/LWS/LWSLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/M3D/M3DImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/M3D/M3DWrapper.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/MD2/MD2Loader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/MD3/MD3Loader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/MD5/MD5Loader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/MD5/MD5Parser.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/MDC/MDCLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/MDL/MDLLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/MDL/MDLMaterialLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/MDL/HalfLife/HL1MDLLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/MDL/HalfLife/UniqueNameGenerator.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/NFF/NFFLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/NDO/NDOLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/OFF/OFFLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Obj/ObjFileImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Obj/ObjFileMtlImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Obj/ObjFileParser.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Ogre/OgreImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Ogre/OgreStructs.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Ogre/OgreBinarySerializer.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Ogre/OgreXmlSerializer.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Ogre/OgreMaterial.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/OpenGEX/OpenGEXImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Ply/PlyLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Ply/PlyParser.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/MS3D/MS3DLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/COB/COBLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderDNA.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderScene.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderModifier.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderBMesh.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderTessellator.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Blender/BlenderCustomData.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCReaderGen1_2x3.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCReaderGen2_2x3.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCUtil.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCGeometry.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCMaterial.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCProfile.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCCurve.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCBoolean.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/IFC/IFCOpenings.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/XGL/XGLLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXParser.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXTokenizer.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXConverter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXUtil.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXDocument.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXProperties.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXMeshGeometry.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXMaterial.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXModel.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXAnimation.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXNodeAttribute.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXDeformer.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXBinaryTokenizer.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXDocumentUtil.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Q3D/Q3DLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Q3BSP/Q3BSPFileParser.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Q3BSP/Q3BSPFileImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Raw/RawLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/SIB/SIBImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/SMD/SMDLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/STL/STLLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Terragen/TerragenLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Unreal/UnrealLoader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X/XFileImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X/XFileParser.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Geometry2D.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Geometry3D.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Group.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Light.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Metadata.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Networking.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Postprocess.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Rendering.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Shape.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DImporter_Texturing.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/FIReader.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DVocabulary.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/glTF/glTFCommon.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/glTF/glTFImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/glTF2/glTF2Importer.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/3MF/D3MFImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/3MF/D3MFOpcPackage.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/MMD/MMDImporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/MMD/MMDPmxParser.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Obj/ObjExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/OpenGEX/OpenGEXExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Ply/PlyExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/3DS/3DSExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Assbin/AssbinExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Assbin/AssbinFileWriter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Assxml/AssxmlExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Assxml/AssxmlFileWriter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/M3D/M3DExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Collada/ColladaExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXExportNode.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/FBX/FBXExportProperty.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/STL/STLExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X/XFileExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/X3D/X3DExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/glTF/glTFExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/glTF2/glTF2Exporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/3MF/D3MFExporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Assjson/cencode.c
+	../vendor/cross-platform/assimp/code/AssetLib/Assjson/json_exporter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Assjson/mesh_splitter.cpp
+	../vendor/cross-platform/assimp/code/AssetLib/Step/StepExporter.cpp
+	../vendor/cross-platform/assimp/contrib/unzip/ioapi.c
+	../vendor/cross-platform/assimp/contrib/unzip/unzip.c
+	../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/common/shapes.cc
+	../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/sweep/advancing_front.cc
+	../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/sweep/cdt.cc
+	../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/sweep/sweep.cc
+	../vendor/cross-platform/assimp/contrib/poly2tri/poly2tri/sweep/sweep_context.cc
+	../vendor/cross-platform/assimp/contrib/clipper/clipper.cpp
+	../vendor/cross-platform/assimp/contrib/Open3DGC/o3dgcArithmeticCodec.cpp
+	../vendor/cross-platform/assimp/contrib/Open3DGC/o3dgcDynamicVectorDecoder.cpp
+	../vendor/cross-platform/assimp/contrib/Open3DGC/o3dgcDynamicVectorEncoder.cpp
+	../vendor/cross-platform/assimp/contrib/Open3DGC/o3dgcTools.cpp
+	../vendor/cross-platform/assimp/contrib/Open3DGC/o3dgcTriangleFans.cpp
+	../vendor/cross-platform/assimp/contrib/zip/src/zip.c
 )
 
 if(WIN32)
@@ -495,7 +495,7 @@ elseif(UNIX)
 endif()
 
 SET(irrXML_SRCS
-    ../vendor/cross-platform/assimp/contrib/irrXML/irrXML.cpp
+	../vendor/cross-platform/assimp/contrib/irrXML/irrXML.cpp
 )
 
 SET(zlibstatic_SRCS	
@@ -709,30 +709,30 @@ set(CMAKE_GENERATOR_PLATFORM, x64)
 
 unset(CMAKE_IMPORT_LIBRARY_SUFFIX)
 
-add_library(BulletDynamics       STATIC "${BulletDynamics_SRCS}")
-add_library(BulletCollision      STATIC "${BulletCollision_SRCS}")
-add_library(LinearMath           STATIC "${LinearMath_SRCS}")
-add_library(assimp               STATIC "${assimp_SRCS}")
-add_library(glfw3                STATIC "${glfw3_SRCS}")
-add_library(irrXML               STATIC "${irrXML_SRCS}")
-add_library(zlibstatic           STATIC "${zlibstatic_SRCS}")
+add_library(BulletDynamics		STATIC "${BulletDynamics_SRCS}")
+add_library(BulletCollision		STATIC "${BulletCollision_SRCS}")
+add_library(LinearMath			STATIC "${LinearMath_SRCS}")
+add_library(assimp				STATIC "${assimp_SRCS}")
+add_library(glfw3				STATIC "${glfw3_SRCS}")
+add_library(irrXML				STATIC "${irrXML_SRCS}")
+add_library(zlibstatic			STATIC "${zlibstatic_SRCS}")
 
-add_library(spirv-cross-core     STATIC "${spirv-cross-core_SRCS}")
-add_library(spirv-cross-cpp      STATIC "${spirv-cross-cpp_SRCS}")
-add_library(spirv-cross-glsl     STATIC "${spirv-cross-glsl_SRCS}")
-add_library(spirv-cross-hlsl     STATIC "${spirv-cross-hlsl_SRCS}")
-add_library(spirv-cross-msl      STATIC "${spirv-cross-msl_SRCS}")
-add_library(spirv-cross-reflect  STATIC "${spirv-cross-reflect_SRCS}")
-add_library(spirv-cross-util     STATIC "${spirv-cross-util_SRCS}")
+add_library(spirv-cross-core	STATIC "${spirv-cross-core_SRCS}")
+add_library(spirv-cross-cpp		STATIC "${spirv-cross-cpp_SRCS}")
+add_library(spirv-cross-glsl	STATIC "${spirv-cross-glsl_SRCS}")
+add_library(spirv-cross-hlsl	STATIC "${spirv-cross-hlsl_SRCS}")
+add_library(spirv-cross-msl		STATIC "${spirv-cross-msl_SRCS}")
+add_library(spirv-cross-reflect	STATIC "${spirv-cross-reflect_SRCS}")
+add_library(spirv-cross-util	STATIC "${spirv-cross-util_SRCS}")
 
-add_library(SPIRV-Cross          STATIC "${SPIRV-Cross_SRCS}")
-add_library(yaml-cpp             STATIC "${yaml-cpp_SRCS}")
-add_library(box2d                STATIC "${box2d_SRCS}")
+add_library(SPIRV-Cross			STATIC "${SPIRV-Cross_SRCS}")
+add_library(yaml-cpp			STATIC "${yaml-cpp_SRCS}")
+add_library(box2d				STATIC "${box2d_SRCS}")
 
-add_library(shaderc              STATIC "${shaderc_SRCS}")
+add_library(shaderc				STATIC "${shaderc_SRCS}")
 
-#	add_library(Hazel-ScriptCore     SHARED "${Hazel-ScriptCore_SRCS}")
-#	add_library(ExampleApp           SHARED "${ExampleApp_SRCS}")
+#	add_library(Hazel-ScriptCore	SHARED "${Hazel-ScriptCore_SRCS}")
+#	add_library(ExampleApp			SHARED "${ExampleApp_SRCS}")
 
 #	set_property(TARGET Hazel-ScriptCore PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.6.1")
 #	set_property(TARGET ExampleApp PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.6.1")
@@ -740,25 +740,25 @@ add_library(shaderc              STATIC "${shaderc_SRCS}")
 #	set(CMAKE_CSharp_FLAGS "/langversion:6")
 #	
 #	set_property(TARGET Hazel-ScriptCore PROPERTY VS_DOTNET_REFERENCES
-#	    "Microsoft.CSharp"
-#	    "System"
-#	    "System.Core"
-#	    "System.Data"
-#	    "System.Deployment"
-#	    "System.Drawing"
-#	    "System.Net.Http"
-#	    "System.Xml"
+#		"Microsoft.CSharp"
+#		"System"
+#		"System.Core"
+#		"System.Data"
+#		"System.Deployment"
+#		"System.Drawing"
+#		"System.Net.Http"
+#		"System.Xml"
 #	)
 #	
 #	set_property(TARGET ExampleApp PROPERTY VS_DOTNET_REFERENCES
-#	    "Microsoft.CSharp"
-#	    "System"
-#	    "System.Core"
-#	    "System.Data"
-#	    "System.Deployment"
-#	    "System.Drawing"
-#	    "System.Net.Http"
-#	    "System.Xml"
+#		"Microsoft.CSharp"
+#		"System"
+#		"System.Core"
+#		"System.Data"
+#		"System.Deployment"
+#		"System.Drawing"
+#		"System.Net.Http"
+#		"System.Xml"
 #	)
 
 add_dependencies(assimp irrXML)
@@ -787,16 +787,16 @@ add_dependencies("${PROJECT_NAME}" box2d)
 # add_dependencies("${PROJECT_NAME}" ExampleApp)
 
 set_target_properties("${PROJECT_NAME}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
-set_target_properties(BulletDynamics    PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+set_target_properties(BulletDynamics	PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
 set_target_properties(BulletCollision   PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
-set_target_properties(LinearMath        PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
-set_target_properties(assimp            PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
-set_target_properties(glfw3             PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+set_target_properties(LinearMath		PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+set_target_properties(assimp			PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+set_target_properties(glfw3				PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
 
 target_compile_definitions(glfw3 PRIVATE _GLFW_USE_CONFIG_H)
 
-target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_17)
-target_compile_features(assimp            PRIVATE cxx_std_17)
+target_compile_features("${PROJECT_NAME}"	PRIVATE cxx_std_17)
+target_compile_features(assimp				PRIVATE cxx_std_17)
 
 target_include_directories(
 	zlibstatic PUBLIC
@@ -945,6 +945,7 @@ target_include_directories(
 	../vendor/box2d/include
 	../vendor/cross-platform/shaderc/libshaderc/include
 	../vendor/cross-platform/shaderc/libshaderc_util/include
+	../vendor/cross-platform/SPIRV-Cross
 )
 
 target_link_directories(
@@ -962,8 +963,9 @@ target_link_directories(
 	../vendor/box2d/build/bin # Linux
 	../vendor/cross-platform/shaderc/build/libshaderc/$ENV{MORAVA_BUILD_TYPE}      # Win32
 	../vendor/cross-platform/shaderc/build/libshaderc_util/$ENV{MORAVA_BUILD_TYPE} # Win32
-        ../vendor/cross-platform/shaderc/libshaderc      # Linux
+	../vendor/cross-platform/shaderc/libshaderc      # Linux
 	../vendor/cross-platform/shaderc/libshaderc_util # Linux
+	../vendor/cross-platform/SPIRV-Cross/$ENV{MORAVA_BUILD_TYPE}
 	../${PROJECT_NAME}/build/$ENV{MORAVA_BUILD_TYPE}
 )
 
@@ -977,13 +979,23 @@ if(WIN32)
 		BulletDynamics.lib
 		BulletCollision.lib
 		LinearMath.lib
-		spirv-cross-glsld.lib
-		spirv-cross-hlsld.lib
-		spirv-cross-cppd.lib
-		spirv-cross-reflectd.lib
-		spirv-cross-msld.lib
-		spirv-cross-utild.lib
-		spirv-cross-cored.lib
+	if ($ENV{MORAVA_BUILD_TYPE} == 'Debug')
+		spirv-cross-cored.lib		# Debug
+		spirv-cross-cppd.lib		# Debug
+		spirv-cross-glsld.lib		# Debug
+		spirv-cross-hlsld.lib		# Debug
+		spirv-cross-msld.lib		# Debug
+		spirv-cross-reflectd.lib	# Debug
+		spirv-cross-utild.lib		# Debug
+	elseif($ENV{MORAVA_BUILD_TYPE} == 'Release')
+		spirv-cross-core.lib		# Release
+		spirv-cross-cpp.lib			# Release
+		spirv-cross-glsl.lib		# Release
+		spirv-cross-hlsl.lib		# Release
+		spirv-cross-msl.lib			# Release
+		spirv-cross-reflect.lib		# Release
+		spirv-cross-util.lib		# Release
+	endif()
 	#	yaml-cppd.lib
 		yaml-cpp.lib
 		mono-2.0-sgen.lib
@@ -1008,11 +1020,11 @@ elseif(UNIX)
 	target_link_libraries("${PROJECT_NAME}" libglfw3.a dl pthread)
 endif()
 
-file(COPY ./assimp-vc142-mt.dll DESTINATION ../build)
-file(COPY ./glew32.dll          DESTINATION ../build)
-file(COPY ./Models              DESTINATION ../build)
-file(COPY ./Shaders             DESTINATION ../build)
-file(COPY ./Textures            DESTINATION ../build)
+file(COPY ./assimp-vc142-mt.dll	DESTINATION ../build)
+file(COPY ./glew32.dll			DESTINATION ../build)
+file(COPY ./Models				DESTINATION ../build)
+file(COPY ./Shaders				DESTINATION ../build)
+file(COPY ./Textures			DESTINATION ../build)
 
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
 
@@ -1052,8 +1064,8 @@ if(WIN32)
 		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/SpriteRenderer.cs
 	)
 
-	add_library(ExampleApp        SHARED "${ExampleApp_SRCS}")
-	add_library(Hazel-ScriptCore  SHARED "${Hazel-ScriptCore_SRCS}")
+	add_library(ExampleApp			SHARED "${ExampleApp_SRCS}")
+	add_library(Hazel-ScriptCore	SHARED "${Hazel-ScriptCore_SRCS}")
 
 endif()
 
