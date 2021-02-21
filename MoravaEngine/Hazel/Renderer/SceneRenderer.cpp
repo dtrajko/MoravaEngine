@@ -61,6 +61,7 @@ namespace Hazel {
         s_Data.SceneData.ActiveLight.Multiplier = 0.5f;
 
         // Grid
+        // s_Data.OutlineMaterial = Hazel::Ref<HazelMaterial>::Create(m_ShaderGrid);
         s_Data.GridMaterial = new Material(m_ShaderGrid);
         m_ShaderGrid->Bind();
         m_ShaderGrid->setFloat("u_Scale", m_GridScale);
@@ -141,6 +142,14 @@ namespace Hazel {
         // s_Data.ActiveScene = nullptr;
 
         FlushDrawList();
+    }
+
+    void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial)
+    {
+    }
+
+    void SceneRenderer::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform)
+    {
     }
 
     void SceneRenderer::SubmitEntity(Entity entity)
@@ -247,7 +256,37 @@ namespace Hazel {
 
     void SceneRenderer::GeometryPass()
     {
-        HZ_ASSERT(false, "Method not yet implemented!");
+        bool outline = s_Data.SelectedMeshDrawList.size() > 0;
+
+        if (outline)
+        {
+            HazelRenderer::Submit([]() {
+            });
+
+            glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        }
+
+        HazelRenderer::BeginRenderPass(s_Data.GeoPass);
+
+        if (outline)
+        {
+            HazelRenderer::Submit([]() {
+            });
+
+            glStencilMask(0);
+        }
+
+        auto viewProjection = s_Data.SceneData.SceneCamera->GetProjectionMatrix() * s_Data.SceneData.SceneCamera->GetViewMatrix();
+        glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera->GetViewMatrix())[3];
+
+        // Skybox
+        auto skyboxShader = s_Data.SceneData.HazelSkyboxMaterial->GetShader();
+
+    }
+
+    uint32_t SceneRenderer::GetFinalColorBufferRendererID()
+    {
+        return uint32_t();
     }
 
     SceneRendererOptions& SceneRenderer::GetOptions()
@@ -260,10 +299,10 @@ namespace Hazel {
         return s_Data.CompositePass;
     }
 
-    FramebufferTexture* SceneRenderer::GetFinalColorBuffer()
-    {
-        return s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor();
-    }
+    // FramebufferTexture* SceneRenderer::GetFinalColorBuffer()
+    // {
+    //     return s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor();
+    // }
 
     uint32_t SceneRenderer::GetFinalColorBufferID()
     {

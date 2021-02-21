@@ -39,18 +39,6 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	Buffer& HazelMaterial::GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration)
-	{
-		switch (uniformDeclaration->GetDomain())
-		{
-		case ShaderDomain::Vertex:    return m_VSUniformStorageBuffer;
-		case ShaderDomain::Pixel:     return m_PSUniformStorageBuffer;
-		}
-
-		HZ_CORE_ASSERT(false, "Invalid uniform declaration domain! Material does not support this shader type.");
-		return m_VSUniformStorageBuffer;
-	}
-
 	HazelMaterial::HazelMaterial(::Ref<HazelShader> shader)
 		: m_Shader(shader)
 	{
@@ -130,6 +118,43 @@ namespace Hazel {
 
 	void HazelMaterialInstance::OnMaterialValueUpdated(ShaderUniformDeclaration* decl)
 	{
+		if (m_OverriddenValues.find(decl->GetName()) == m_OverriddenValues.end())
+		{
+			auto& buffer = GetUniformBufferTarget(decl);
+			auto& materialBuffer = m_Material->GetUniformBufferTarget(decl);
+			buffer.Write(materialBuffer.Data + decl->GetOffset(), decl->GetSize(), decl->GetOffset());
+		}
+	}
+
+	void HazelMaterialInstance::Bind() const
+	{
+		m_Material->GetShader()->Bind();
+
+		if (m_VSUniformStorageBuffer)
+			// m_Material->m_Shader->SetVSMaterialUniformBuffer(m_VSUniformStorageBuffer);
+
+		if (m_PSUniformStorageBuffer)
+			// m_Material->m_Shader->SetPSMaterialUniformBuffer(m_PSUniformStorageBuffer);
+
+		m_Material->BindTextures();
+		for (size_t i = 0; i < m_Textures.size(); i++)
+		{
+			auto& texture = m_Textures[i];
+			if (texture)
+				texture->Bind((uint32_t)i);
+		}
+	}
+
+	Buffer& HazelMaterial::GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration)
+	{
+		switch (uniformDeclaration->GetDomain())
+		{
+		case ShaderDomain::Vertex:    return m_VSUniformStorageBuffer;
+		case ShaderDomain::Pixel:     return m_PSUniformStorageBuffer;
+		}
+
+		HZ_CORE_ASSERT(false, "Invalid uniform declaration domain! Material does not support this shader type.");
+		return m_VSUniformStorageBuffer;
 	}
 
 	void HazelMaterialInstance::SetFlag(HazelMaterialFlag flag, bool value)
@@ -143,19 +168,6 @@ namespace Hazel {
 		{
 			uint32_t materialFlags = m_Material->GetMaterialFlags();
 			m_Material->SetMaterialFlags(materialFlags &= ~(uint32_t)flag);
-		}
-	}
-
-	void HazelMaterialInstance::Bind() const
-	{
-		m_Material->GetShader()->Bind();
-
-		m_Material->BindTextures();
-		for (uint32_t i = 0; i < (uint32_t)m_Textures.size(); i++)
-		{
-			auto& texture = m_Textures[i];
-			if (texture)
-				texture->Bind(i);
 		}
 	}
 
