@@ -9,7 +9,7 @@ namespace Hazel {
 	// Material
 	//////////////////////////////////////////////////////////////////////////////////
 
-	Ref<HazelMaterial> HazelMaterial::Create(::Ref<Shader> shader)
+	Ref<HazelMaterial> HazelMaterial::Create(::Ref<HazelShader> shader)
 	{
 		return Ref<HazelMaterial>::Create(shader);
 	}
@@ -51,7 +51,7 @@ namespace Hazel {
 		return m_VSUniformStorageBuffer;
 	}
 
-	HazelMaterial::HazelMaterial(::Ref<Shader> shader)
+	HazelMaterial::HazelMaterial(::Ref<HazelShader> shader)
 		: m_Shader(shader)
 	{
 		// m_Shader->AddShaderReloadedCallback(std::bind(&HazelMaterial::OnShaderReloaded, this));
@@ -102,7 +102,7 @@ namespace Hazel {
 		m_Material->GetMaterialInstances()->erase(this);
 	}
 
-	Ref<HazelMaterial> HazelMaterialInstance::Create(const Ref<Shader>& shader)
+	Ref<HazelMaterial> HazelMaterialInstance::Create(const Ref<HazelShader>& shader)
 	{
 		return Ref<HazelMaterial>();
 	}

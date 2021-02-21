@@ -5,7 +5,6 @@
 #include "../Renderer/HazelTexture.h"
 #include "../Renderer/HazelShader.h"
 
-#include "../../Shader.h"
 #include "../../Log.h"
 
 #include <unordered_set>
@@ -27,7 +26,7 @@ namespace Hazel {
 		friend class HazelMaterialInstance;
 
 	public:
-		HazelMaterial(::Ref<Shader> shader);
+		HazelMaterial(::Ref<HazelShader> shader);
 		virtual ~HazelMaterial();
 
 		void Bind() const;
@@ -63,12 +62,12 @@ namespace Hazel {
 
 		// Getters
 		uint32_t GetMaterialFlags() { return m_MaterialFlags; }
-		::Ref<Shader> GetShader() { return m_Shader; }
+		::Ref<HazelShader> GetShader() { return m_Shader; }
 		std::unordered_set<HazelMaterialInstance*>* GetMaterialInstances() { return &m_MaterialInstances; }
 
 		void BindTextures() const;
 
-		static Ref<HazelMaterial> Create(::Ref<Shader> shader);
+		static Ref<HazelMaterial> Create(::Ref<HazelShader> shader);
 
 	private:
 		void AllocateStorage();
@@ -80,7 +79,7 @@ namespace Hazel {
 		Buffer& GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration);
 
 	private:
-		::Ref<Shader> m_Shader;
+		::Ref<HazelShader> m_Shader;
 		std::unordered_set<HazelMaterialInstance*> m_MaterialInstances;
 
 		Buffer m_VSUniformStorageBuffer;
@@ -127,7 +126,7 @@ namespace Hazel {
 		bool GetFlag(HazelMaterialFlag flag) const { return (uint32_t)flag & m_Material->GetMaterialFlags(); }
 		void SetFlag(HazelMaterialFlag flag, bool value = true);
 
-		::Ref<Shader> GetShader() { return m_Material->GetShader(); }
+		::Ref<HazelShader> GetShader() { return m_Material->GetShader(); }
 
 		static HazelMaterialInstance* Create(HazelMaterial* material);
 
@@ -150,7 +149,7 @@ namespace Hazel {
 		}
 
 	public:
-		static Ref <HazelMaterial> Create(const Ref<Shader>& shader);
+		static Ref <HazelMaterial> Create(const Ref<HazelShader>& shader);
 
 	private:
 		void AllocateStorage();

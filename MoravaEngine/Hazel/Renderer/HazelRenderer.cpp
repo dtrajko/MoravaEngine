@@ -157,12 +157,12 @@ namespace Hazel {
 			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
 
 			auto shader = material->GetShader();
-			shader->setMat4("u_Transform", transform);
+			shader->SetMat4("u_Transform", transform);
 		}
 
 		s_Data.m_FullscreenQuadVertexBuffer->Bind();
 		s_Data.m_FullscreenQuadPipeline->Bind();
-		// s_Data.m_FullscreenQuadIndexBuffer->Bind();
+		s_Data.m_FullscreenQuadIndexBuffer->Bind();
 
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
@@ -178,7 +178,7 @@ namespace Hazel {
 
 		s_Data.m_FullscreenQuadVertexBuffer->Bind();
 		s_Data.m_FullscreenQuadPipeline->Bind();
-		// s_Data.m_FullscreenQuadIndexBuffer->Bind();
+		s_Data.m_FullscreenQuadIndexBuffer->Bind();
 
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
@@ -194,7 +194,7 @@ namespace Hazel {
 
 		mesh->m_VertexBuffer->Bind();
 		mesh->m_Pipeline->Bind();
-		// mesh->m_IndexBuffer->Bind();
+		mesh->m_IndexBuffer->Bind();
 
 		auto& materials = mesh->GetMaterials();
 		for (Submesh& submesh : mesh->m_Submeshes)
