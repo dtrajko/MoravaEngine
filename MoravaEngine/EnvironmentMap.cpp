@@ -2161,7 +2161,7 @@ void EnvironmentMap::GeometryPassTemporary()
                             UpdateShaderPBRUniforms(m_ShaderHazelPBR, envMapMaterial);
                         }
 
-                        submesh.Render(meshComponent.Mesh.Raw(), m_ShaderHazelPBR, entityTransform, samplerSlot, s_EnvMapMaterials, entity);
+                        submesh.Render(meshComponent.Mesh, m_ShaderHazelPBR, entityTransform, samplerSlot, s_EnvMapMaterials, entity);
                     }
                     m_ShaderHazelPBR->Unbind();
                 }
@@ -2208,7 +2208,7 @@ void EnvironmentMap::RenderOutline(Ref<Shader> shader, Hazel::Submesh& submesh, 
             for (auto selection : EntitySelection::s_SelectionContext)
             {
                 if (selection.Mesh && &submesh == selection.Mesh) {
-                    submesh.RenderOutline(meshComponent.Mesh.Raw(), shader, entityTransform, entity);
+                    submesh.RenderOutline(meshComponent.Mesh, shader, entityTransform, entity);
                 }
             }
         }
