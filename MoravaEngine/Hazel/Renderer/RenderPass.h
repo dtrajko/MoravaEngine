@@ -2,14 +2,14 @@
 
 #include "../Core/Base.h"
 #include "../Core/Ref.h"
-#include "../../Framebuffer.h"
+#include "../Renderer/HazelFramebuffer.h"
 
 
 namespace Hazel {
 
 	struct RenderPassSpecification
 	{
-		Ref<Framebuffer> TargetFramebuffer;
+		Ref<HazelFramebuffer> TargetFramebuffer;
 	};
 
 	class RenderPass : public RefCounted

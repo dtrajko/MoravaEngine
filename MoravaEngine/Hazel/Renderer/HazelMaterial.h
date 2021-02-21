@@ -67,7 +67,7 @@ namespace Hazel {
 
 		void BindTextures() const;
 
-		static Ref<HazelMaterial> Create(::Ref<HazelShader> shader);
+		static Ref<HazelMaterial> Create(Ref<HazelShader> shader);
 
 	private:
 		void AllocateStorage();

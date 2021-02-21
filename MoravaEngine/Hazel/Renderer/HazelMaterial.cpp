@@ -9,7 +9,7 @@ namespace Hazel {
 	// Material
 	//////////////////////////////////////////////////////////////////////////////////
 
-	Ref<HazelMaterial> HazelMaterial::Create(::Ref<HazelShader> shader)
+	Ref<HazelMaterial> HazelMaterial::Create(Ref<HazelShader> shader)
 	{
 		return Ref<HazelMaterial>::Create(shader);
 	}

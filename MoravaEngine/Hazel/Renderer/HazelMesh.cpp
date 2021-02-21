@@ -20,7 +20,7 @@
 #include "../../Math.h"
 #include "../../Util.h"
 #include "../../ShaderLibrary.h"
-#include "../../EnvironmentMap.h"
+#include "../../EnvMapEditorLayer.h"
 
 #include "imgui.h"
 
@@ -956,10 +956,10 @@ namespace Hazel {
 			EnvMapMaterial* envMapMaterial = materialComponent.Material;
 		}
 
-		std::string submeshUUID = EnvironmentMap::GetSubmeshUUID(entity, &submesh);
+		std::string submeshUUID = EnvMapEditorLayer::GetSubmeshUUID(entity, &submesh);
 
-		if (EnvironmentMap::s_SubmeshMaterialUUIDs.contains(submeshUUID)) {
-			materialUUID = EnvironmentMap::s_SubmeshMaterialUUIDs.at(submeshUUID);
+		if (EnvMapEditorLayer::s_SubmeshMaterialUUIDs.contains(submeshUUID)) {
+			materialUUID = EnvMapEditorLayer::s_SubmeshMaterialUUIDs.at(submeshUUID);
 		}
 		else if (hasMaterialComponent && envMapMaterial) {
 			materialUUID = envMapMaterial->GetUUID();

@@ -137,6 +137,9 @@ namespace Hazel {
 
 		std::string m_DebugName;
 
+		friend class Entity;
+		friend class SceneRenderer;
+		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
 
 		friend void OnScriptComponentConstruct(entt::registry& registry, entt::entity entity);

@@ -2,7 +2,6 @@
 #include "Hazel/Core/Base.h"
 #include "Hazel/Renderer/RendererAPI.h"
 #include "Timer.h"
-#include "EnvironmentMap.h"
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>

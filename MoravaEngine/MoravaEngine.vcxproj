@@ -191,8 +191,9 @@
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="EndlessTerrain.cpp" />
     <ClCompile Include="EntitySelection.cpp" />
-    <ClCompile Include="EnvironmentMap.cpp" />
+    <ClCompile Include="EnvMapEditorLayer.cpp" />
     <ClCompile Include="EnvMapMaterial.cpp" />
+    <ClCompile Include="EnvMapSceneRenderer.cpp" />
     <ClCompile Include="FramebufferTextureCubemap.cpp" />
     <ClCompile Include="HazelFullscreenQuad.cpp" />
     <ClCompile Include="Hazel\Core\Layer.cpp" />
@@ -201,6 +202,7 @@
     <ClCompile Include="Hazel\Core\Timestep.cpp" />
     <ClCompile Include="Hazel\Core\UUID.cpp" />
     <ClCompile Include="Hazel\Panels\SceneHierarchyPanel.cpp" />
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLFramebuffer.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLIndexBuffer.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLPipeline.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexBuffer.cpp" />
@@ -211,8 +213,10 @@
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLTexture.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="Hazel\Platform\Windows\WindowsPlatformUtils.cpp" />
+    <ClCompile Include="Hazel\Renderer\HazelFramebuffer.cpp" />
     <ClCompile Include="Hazel\Renderer\IndexBuffer.cpp" />
     <ClCompile Include="Hazel\Renderer\Pipeline.cpp" />
+    <ClCompile Include="Hazel\Renderer\SceneRenderer.cpp" />
     <ClCompile Include="Hazel\Renderer\VertexBuffer.cpp" />
     <ClCompile Include="Hazel\Renderer\EditorCamera.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelCamera.cpp" />
@@ -226,7 +230,6 @@
     <ClCompile Include="Hazel\Renderer\RenderPass.cpp" />
     <ClCompile Include="Hazel\Renderer\HazelShader.cpp" />
     <ClCompile Include="Hazel\Renderer\SceneEnvironment.cpp" />
-    <ClCompile Include="Hazel\Renderer\SceneRenderer.cpp" />
     <ClCompile Include="Hazel\Renderer\ShaderUniform.cpp" />
     <ClCompile Include="Hazel\Renderer\VertexArray.cpp" />
     <ClCompile Include="Hazel\Scene\Entity.cpp" />
@@ -410,8 +413,9 @@
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="EndlessTerrain.h" />
     <ClInclude Include="EntitySelection.h" />
-    <ClInclude Include="EnvironmentMap.h" />
+    <ClInclude Include="EnvMapEditorLayer.h" />
     <ClInclude Include="EnvMapMaterial.h" />
+    <ClInclude Include="EnvMapSceneRenderer.h" />
     <ClInclude Include="FramebufferTextureCubemap.h" />
     <ClInclude Include="HazelFullscreenQuad.h" />
     <ClInclude Include="Hazel\Core\Assert.h" />
@@ -434,6 +438,7 @@
     <ClInclude Include="Hazel\Events\MouseEvent.h" />
     <ClInclude Include="Hazel\ImGui\ImGui.h" />
     <ClInclude Include="Hazel\Panels\SceneHierarchyPanel.h" />
+    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLFramebuffer.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLIndexBuffer.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLPipeline.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLVertexBuffer.h" />
@@ -442,7 +447,9 @@
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLShaderUniform.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLTexture.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLVertexArray.h" />
+    <ClInclude Include="Hazel\Renderer\HazelFramebuffer.h" />
     <ClInclude Include="Hazel\Renderer\IndexBuffer.h" />
+    <ClInclude Include="Hazel\Renderer\SceneRenderer.h" />
     <ClInclude Include="Hazel\Renderer\VertexBuffer.h" />
     <ClInclude Include="Hazel\Renderer\EditorCamera.h" />
     <ClInclude Include="Hazel\Renderer\HazelCamera.h" />
@@ -459,7 +466,6 @@
     <ClInclude Include="Hazel\Renderer\RenderPass.h" />
     <ClInclude Include="Hazel\Renderer\HazelShader.h" />
     <ClInclude Include="Hazel\Renderer\SceneEnvironment.h" />
-    <ClInclude Include="Hazel\Renderer\SceneRenderer.h" />
     <ClInclude Include="Hazel\Renderer\ShaderUniform.h" />
     <ClInclude Include="Hazel\Renderer\VertexArray.h" />
     <ClInclude Include="Hazel\Scene\Components.h" />

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Scene.h"
-#include "EnvironmentMap.h"
+#include "EnvMapEditorLayer.h"
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Framebuffer.h"
 #include "Texture.h"
@@ -17,6 +17,7 @@
 
 
 const int MAX_LIGHTS_ENV_MAP = 4 + 4; // (4 x point lights) + (4 x spot lights)
+
 
 class SceneHazelEnvMap : public Scene
 {
@@ -50,7 +51,7 @@ private:
 	virtual void OnEntitySelected(Hazel::Entity entity) override;
 
 private:
-	EnvironmentMap* m_EnvironmentMap;
+	EnvMapEditorLayer* m_EnvironmentMap;
 
 	Ref<Shader> m_ShaderBackground;
 	Ref<Shader> m_ShaderBasic;
@@ -91,6 +92,6 @@ private:
 	Grid* m_Grid;
 	Pivot* m_PivotScene;
 
-	friend class EnvironmentMap;
+	friend class EnvMapEditorLayer;
 
 };

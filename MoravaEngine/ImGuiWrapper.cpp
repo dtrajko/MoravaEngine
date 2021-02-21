@@ -1,7 +1,7 @@
 #include "ImGuiWrapper.h"
 
 #include "Application.h"
-#include "EnvironmentMap.h"
+#include "EnvMapEditorLayer.h"
 
 #include "../vendor/cross-platform/ImGuizmo/ImGuizmo.h"
 

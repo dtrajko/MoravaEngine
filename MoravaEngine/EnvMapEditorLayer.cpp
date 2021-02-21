@@ -1,4 +1,4 @@
-#include "EnvironmentMap.h"
+#include "EnvMapEditorLayer.h"
 
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/RenderPass.h"
@@ -18,16 +18,16 @@
 #include <filesystem>
 
 
-TextureInfo EnvironmentMap::s_TextureInfoDefault;
-std::map<std::string, TextureInfo> EnvironmentMap::s_TextureInfo;
-SelectionMode EnvironmentMap::s_SelectionMode = SelectionMode::Entity;
-Hazel::Ref<Hazel::HazelTexture2D> EnvironmentMap::s_CheckerboardTexture;
+TextureInfo EnvMapEditorLayer::s_TextureInfoDefault;
+std::map<std::string, TextureInfo> EnvMapEditorLayer::s_TextureInfo;
+SelectionMode EnvMapEditorLayer::s_SelectionMode = SelectionMode::Entity;
+Hazel::Ref<Hazel::HazelTexture2D> EnvMapEditorLayer::s_CheckerboardTexture;
 
-std::map<MaterialUUID, EnvMapMaterial*> EnvironmentMap::s_EnvMapMaterials; // MaterialUUID, EnvMapMaterial*
-std::map<SubmeshUUID, MaterialUUID> EnvironmentMap::s_SubmeshMaterialUUIDs; // SubmeshUUID, MaterialUUID
+std::map<MaterialUUID, EnvMapMaterial*> EnvMapEditorLayer::s_EnvMapMaterials; // MaterialUUID, EnvMapMaterial*
+std::map<SubmeshUUID, MaterialUUID> EnvMapEditorLayer::s_SubmeshMaterialUUIDs; // SubmeshUUID, MaterialUUID
 
 
-EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
+EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 {
     m_SamplerSlots = new std::map<std::string, unsigned int>();
 
@@ -61,14 +61,14 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     m_EditorScene = Hazel::Ref<Hazel::HazelScene>::Create();
     m_EditorScene->SetSkyboxLOD(0.1f);
 
-    m_SceneRenderer = new Hazel::SceneRenderer(filepath, m_EditorScene.Raw());
+    m_SceneRenderer = new EnvMapSceneRenderer(filepath, m_EditorScene.Raw());
     SetSkybox(m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap);
 
     Init(); // requires a valid Camera reference
 
     m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(m_EditorScene);
-    m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvironmentMap::SelectEntity, this, std::placeholders::_1));
-    m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvironmentMap::OnEntityDeleted, this, std::placeholders::_1));
+    m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvMapEditorLayer::SelectEntity, this, std::placeholders::_1));
+    m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvMapEditorLayer::OnEntityDeleted, this, std::placeholders::_1));
     m_SceneHierarchyPanel->SetContext(m_EditorScene); // already done in constructor
     Hazel::ScriptEngine::SetSceneContext(m_EditorScene);
     m_EditorScene->SetSelectedEntity({});
@@ -95,9 +95,9 @@ EnvironmentMap::EnvironmentMap(const std::string& filepath, Scene* scene)
     UpdateWindowTitle("New Scene");
 }
 
-void EnvironmentMap::Init()
+void EnvMapEditorLayer::Init()
 {
-    Application::Get()->GetWindow()->SetEventCallback(HZ_BIND_EVENT_FN(EnvironmentMap::OnEvent));
+    Application::Get()->GetWindow()->SetEventCallback(HZ_BIND_EVENT_FN(EnvMapEditorLayer::OnEvent));
 
     SetupShaders();
 
@@ -113,7 +113,7 @@ void EnvironmentMap::Init()
 
     isMultisample = geoFramebufferSpec.Samples > 1;
 
-    Hazel::RenderPassSpecification geoRenderPassSpec;
+    RenderPassSpecification geoRenderPassSpec;
     geoRenderPassSpec.TargetFramebuffer = new Framebuffer(geoFramebufferSpec);
     geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferSpec);
 
@@ -136,7 +136,7 @@ void EnvironmentMap::Init()
 
     isMultisample = compFramebufferSpec.Samples > 1;
 
-    Hazel::RenderPassSpecification compRenderPassSpec;
+    RenderPassSpecification compRenderPassSpec;
     compRenderPassSpec.TargetFramebuffer = new Framebuffer(compFramebufferSpec);
     compRenderPassSpec.TargetFramebuffer->CreateAttachment(compFramebufferSpec);
     compRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(compFramebufferSpec.Width, compFramebufferSpec.Height, isMultisample,
@@ -158,7 +158,7 @@ void EnvironmentMap::Init()
     Hazel::Renderer2D::Init();
 }
 
-void EnvironmentMap::SetupContextData()
+void EnvMapEditorLayer::SetupContextData()
 {
     // Setup default texture info
     s_TextureInfoDefault = {};
@@ -190,7 +190,7 @@ void EnvironmentMap::SetupContextData()
     m_DirectionalLightEntity.AddComponent<Hazel::DirectionalLightComponent>();
 }
 
-Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
+Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
 {
     std::string fileName = Util::GetFileNameFromFullPath(fullPath);
     std::string fileNameNoExt = Util::StripExtensionFromFileName(fileName);
@@ -207,14 +207,14 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
         m_ShaderHazelPBR = ShaderLibrary::Get("HazelPBR_Static");
     }
 
-    Log::GetLogger()->debug("EnvironmentMap::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
+    Log::GetLogger()->debug("EnvMapEditorLayer::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
     Hazel::HazelMesh* mesh = new Hazel::HazelMesh(fullPath, m_ShaderHazelPBR, nullptr, isAnimated);
 
     mesh->SetTimeMultiplier(1.0f);
 
     // m_SceneRenderer->s_Data.DrawList.clear(); // doesn't work for multiple meshes on the scene
-    Hazel::SceneRendererData::DrawCommand drawCommand;
+    SceneRendererData::DrawCommand drawCommand;
 
     drawCommand.Name = fileNameNoExt;
     drawCommand.Mesh = mesh;
@@ -233,7 +233,7 @@ Hazel::Entity EnvironmentMap::LoadEntity(std::string fullPath)
     return meshEntity;
 }
 
-void EnvironmentMap::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity)
+void EnvMapEditorLayer::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity)
 {
     //  for (auto material : m_EnvMapMaterials) {
     //      delete material.second;
@@ -247,7 +247,7 @@ void EnvironmentMap::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Haze
     {
         std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(mesh, submesh, &entity);
 
-        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials materialUUID = '{0}'", materialUUID);
+        Log::GetLogger()->debug("EnvMapEditorLayer::LoadEnvMapMaterials materialUUID = '{0}'", materialUUID);
 
         if (s_EnvMapMaterials.contains(materialUUID)) {
             continue;
@@ -266,11 +266,11 @@ void EnvironmentMap::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Haze
 
     for (auto& material : s_EnvMapMaterials)
     {
-        Log::GetLogger()->debug("EnvironmentMap::LoadEnvMapMaterials material name: '{0}' UUID: '{1}'", material.second->GetName(), material.first);
+        Log::GetLogger()->debug("EnvMapEditorLayer::LoadEnvMapMaterials material name: '{0}' UUID: '{1}'", material.second->GetName(), material.first);
     }
 }
 
-void EnvironmentMap::AddMaterialFromComponent(Hazel::Entity entity)
+void EnvMapEditorLayer::AddMaterialFromComponent(Hazel::Entity entity)
 {
     // If entity contains MaterialComponent, load generic material for the entire entity (all submeshes)
     if (entity.HasComponent<Hazel::MaterialComponent>())
@@ -289,7 +289,7 @@ void EnvironmentMap::AddMaterialFromComponent(Hazel::Entity entity)
     }
 }
 
-std::string EnvironmentMap::NewMaterialName()
+std::string EnvMapEditorLayer::NewMaterialName()
 {
     std::string materialName = "MAT_UNDEFINED";
     unsigned int materialIndex = 0;
@@ -309,7 +309,7 @@ std::string EnvironmentMap::NewMaterialName()
     return materialName;
 }
 
-void EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh submesh)
+void EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh submesh)
 {
     EntitySelection::s_SelectionContext.push_back(submesh);
 
@@ -318,9 +318,9 @@ void EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh submesh)
     }
 }
 
-void EnvironmentMap::RenameMaterial(EnvMapMaterial* envMapMaterial, const std::string newName)
+void EnvMapEditorLayer::RenameMaterial(EnvMapMaterial* envMapMaterial, const std::string newName)
 {
-    Log::GetLogger()->debug("EnvironmentMap::RenameMaterial from '{0}' to '{1}'", envMapMaterial->GetName(), newName);
+    Log::GetLogger()->debug("EnvMapEditorLayer::RenameMaterial from '{0}' to '{1}'", envMapMaterial->GetName(), newName);
 
     std::string oldName = envMapMaterial->GetName();
     MaterialUUID materialUUID = envMapMaterial->GetUUID();
@@ -349,11 +349,11 @@ void EnvironmentMap::RenameMaterial(EnvMapMaterial* envMapMaterial, const std::s
     }
 }
 
-void EnvironmentMap::ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop)
+void EnvMapEditorLayer::ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop)
 {
 }
 
-EnvMapMaterial* EnvironmentMap::CreateDefaultMaterial(std::string materialName)
+EnvMapMaterial* EnvMapEditorLayer::CreateDefaultMaterial(std::string materialName)
 {
     EnvMapMaterial* envMapMaterial = new EnvMapMaterial(materialName);
 
@@ -382,19 +382,19 @@ EnvMapMaterial* EnvironmentMap::CreateDefaultMaterial(std::string materialName)
     return envMapMaterial;
 }
 
-void EnvironmentMap::SetupShaders()
+void EnvMapEditorLayer::SetupShaders()
 {
     Ref<Shader> shaderHazelPBR_Static = CreateRef<Shader>("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
-    Log::GetLogger()->info("EnvironmentMap: m_ShaderHazelPBR_Static compiled [programID={0}]", shaderHazelPBR_Static->GetProgramID());
+    Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Static compiled [programID={0}]", shaderHazelPBR_Static->GetProgramID());
 
     Ref<Shader> shaderHazelPBR_Anim = CreateRef<Shader>("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
-    Log::GetLogger()->info("EnvironmentMap: m_ShaderHazelPBR_Anim compiled [programID={0}]", shaderHazelPBR_Anim->GetProgramID());
+    Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Anim compiled [programID={0}]", shaderHazelPBR_Anim->GetProgramID());
 
     Ref<Shader> shaderRenderer2D_Line = CreateRef<Shader>("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
-    Log::GetLogger()->info("EnvironmentMap: m_ShaderRenderer2D_Line compiled [programID={0}]", shaderRenderer2D_Line->GetProgramID());
+    Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderRenderer2D_Line compiled [programID={0}]", shaderRenderer2D_Line->GetProgramID());
 
     m_ShaderOutline = CreateRef<Shader>("Shaders/Hazel/Outline.vs", "Shaders/Hazel/Outline.fs");
-    Log::GetLogger()->info("EnvironmentMap: shaderOutline compiled [programID={0}]", m_ShaderOutline->GetProgramID());
+    Log::GetLogger()->info("EnvMapEditorLayer: shaderOutline compiled [programID={0}]", m_ShaderOutline->GetProgramID());
 
     ResourceManager::AddShader("Hazel/HazelPBR_Static", shaderHazelPBR_Static);
     ResourceManager::AddShader("Hazel/HazelPBR_Anim", shaderHazelPBR_Anim);
@@ -407,7 +407,7 @@ void EnvironmentMap::SetupShaders()
     ShaderLibrary::Add(m_ShaderOutline);
 }
 
-void EnvironmentMap::UpdateUniforms()
+void EnvMapEditorLayer::UpdateUniforms()
 {
     /**** BEGIN Shaders/Hazel/SceneComposite ****/
     m_SceneRenderer->GetShaderComposite()->Bind();
@@ -429,7 +429,7 @@ void EnvironmentMap::UpdateUniforms()
     /**** BEGIN Shaders/Hazel/Outline ****/
 }
 
-void EnvironmentMap::UpdateShaderPBRUniforms(Ref<Shader> shaderHazelPBR, EnvMapMaterial* envMapMaterial)
+void EnvMapEditorLayer::UpdateShaderPBRUniforms(Ref<Shader> shaderHazelPBR, EnvMapMaterial* envMapMaterial)
 {
     /**** BEGIN Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
 
@@ -481,13 +481,13 @@ void EnvironmentMap::UpdateShaderPBRUniforms(Ref<Shader> shaderHazelPBR, EnvMapM
     /**** END Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
 }
 
-void EnvironmentMap::SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox)
+void EnvMapEditorLayer::SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox)
 {
     m_SkyboxTexture = skybox;
     m_SkyboxTexture->Bind(m_SamplerSlots->at("u_Texture"));
 }
 
-EnvironmentMap::~EnvironmentMap()
+EnvMapEditorLayer::~EnvMapEditorLayer()
 {
     for (auto item : s_EnvMapMaterials) {
         delete item.second;
@@ -500,7 +500,7 @@ EnvironmentMap::~EnvironmentMap()
     delete m_EditorCamera;
 }
 
-Hazel::Entity EnvironmentMap::CreateEntity(const std::string& name)
+Hazel::Entity EnvMapEditorLayer::CreateEntity(const std::string& name)
 {
     // Both NoECS and ECS
     Hazel::Entity entity = m_EditorScene->CreateEntity(name, m_EditorScene);
@@ -508,7 +508,7 @@ Hazel::Entity EnvironmentMap::CreateEntity(const std::string& name)
     return entity;
 }
 
-void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
+void EnvMapEditorLayer::OnUpdate(Scene* scene, float timestep)
 {
     switch (m_SceneState)
     {
@@ -545,7 +545,7 @@ void EnvironmentMap::OnUpdate(Scene* scene, float timestep)
     // OnUpdateRuntime(m_RuntimeScene, timestep);
 }
 
-void EnvironmentMap::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, float timestep)
+void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, float timestep)
 {
     m_EditorScene = scene;
 
@@ -576,7 +576,7 @@ void EnvironmentMap::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, float t
     }
 }
 
-void EnvironmentMap::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, float timestep)
+void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, float timestep)
 {
     m_EditorScene = scene;
 
@@ -603,7 +603,7 @@ void EnvironmentMap::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, float 
     }
 }
 
-void EnvironmentMap::OnScenePlay()
+void EnvMapEditorLayer::OnScenePlay()
 {
     EntitySelection::s_SelectionContext.clear();
 
@@ -620,7 +620,7 @@ void EnvironmentMap::OnScenePlay()
     m_SceneHierarchyPanel->SetContext(m_RuntimeScene);
 }
 
-void EnvironmentMap::OnSceneStop()
+void EnvMapEditorLayer::OnSceneStop()
 {
     m_RuntimeScene->OnRuntimeStop();
     m_SceneState = SceneState::Edit;
@@ -633,20 +633,20 @@ void EnvironmentMap::OnSceneStop()
     m_SceneHierarchyPanel->SetContext(m_EditorScene);
 }
 
-void EnvironmentMap::UpdateWindowTitle(const std::string& sceneName)
+void EnvMapEditorLayer::UpdateWindowTitle(const std::string& sceneName)
 {
     m_WindowTitleDynamic = sceneName + " - " + Application::GetPlatformName() + " (" + Application::GetConfigurationName() + ")";
     std::string newTitle = m_WindowTitleDynamic + " - " + m_WindowTitleStatic;
     Application::Get()->GetWindow()->SetTitle(newTitle);
 }
 
-void EnvironmentMap::CameraSyncECS()
+void EnvMapEditorLayer::CameraSyncECS()
 {
     glm::vec3 cameraPosition = m_CameraEntity.GetComponent<Hazel::TransformComponent>().Translation;
     m_ActiveCamera->SetPosition(cameraPosition);
 }
 
-void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
+void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
 {
     // BEGIN ImGuizmo
 
@@ -751,7 +751,7 @@ void EnvironmentMap::UpdateImGuizmo(Window* mainWindow)
     // END ImGuizmo
 }
 
-void EnvironmentMap::SubmitEntity(Hazel::Entity entity)
+void EnvMapEditorLayer::SubmitEntity(Hazel::Entity entity)
 {
     auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
     if (!mesh) {
@@ -764,7 +764,7 @@ void EnvironmentMap::SubmitEntity(Hazel::Entity entity)
     m_SceneRenderer->s_Data.DrawList.push_back({ name, mesh.Raw(), entity.GetMaterial(), transform });
 }
 
-Ref<Hazel::Entity> EnvironmentMap::GetMeshEntity()
+Ref<Hazel::Entity> EnvMapEditorLayer::GetMeshEntity()
 {
     Ref<Hazel::Entity> meshEntity;
     auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
@@ -778,33 +778,33 @@ Ref<Hazel::Entity> EnvironmentMap::GetMeshEntity()
     return nullptr;
 }
 
-float& EnvironmentMap::GetSkyboxLOD()
+float& EnvMapEditorLayer::GetSkyboxLOD()
 {
     return m_EditorScene->GetSkyboxLOD();
 }
 
-void EnvironmentMap::SetViewportBounds(glm::vec2* viewportBounds)
+void EnvMapEditorLayer::SetViewportBounds(glm::vec2* viewportBounds)
 {
     m_ViewportBounds[0] = viewportBounds[0];
     m_ViewportBounds[1] = viewportBounds[1];
 }
 
-void EnvironmentMap::SetSkyboxLOD(float LOD)
+void EnvMapEditorLayer::SetSkyboxLOD(float LOD)
 {
     m_EditorScene->SetSkyboxLOD(LOD);
 }
 
-Ref<Shader> EnvironmentMap::GetShaderPBR_Anim()
+Ref<Shader> EnvMapEditorLayer::GetShaderPBR_Anim()
 {
     return ShaderLibrary::Get("HazelPBR_Anim");
 }
 
-Ref<Shader> EnvironmentMap::GetShaderPBR_Static()
+Ref<Shader> EnvMapEditorLayer::GetShaderPBR_Static()
 {
     return ShaderLibrary::Get("HazelPBR_Static");
 }
 
-void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest)
+void EnvMapEditorLayer::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest)
 {
     if (!depthTest)
         glDisable(GL_DEPTH_TEST);
@@ -826,7 +826,7 @@ void EnvironmentMap::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool
         glEnable(GL_DEPTH_TEST);
 }
 
-void EnvironmentMap::OnImGuiRender(Window* mainWindow)
+void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -1014,10 +1014,10 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             m_ViewportPanelMouseOver = ImGui::IsWindowHovered();
             m_ViewportPanelFocused = ImGui::IsWindowFocused();
 
-            // Calculate Viewport bounds (used in EnvironmentMap::CastRay)
+            // Calculate Viewport bounds (used in EnvMapEditorLayer::CastRay)
             auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
             auto viewportSize = ImGui::GetContentRegionAvail();
-            //  Hazel::SceneRenderer::SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+            //  Hazel::EnvMapSceneRenderer::SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
             //  m_EditorScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
             //  if (m_RuntimeScene) {
             //      m_RuntimeScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
@@ -1025,7 +1025,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             //  
             //  m_EditorCamera->SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
             //  m_EditorCamera->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-            //  ImGui::Image((void*)Hazel::SceneRenderer::GetFinalColorBufferID(), viewportSize, { 0, 1 }, { 1, 0 });
+            //  ImGui::Image((void*)Hazel::EnvMapSceneRenderer::GetFinalColorBufferID(), viewportSize, { 0, 1 }, { 1, 0 });
 
             ImVec2 screen_pos = ImGui::GetCursorScreenPos();
 
@@ -1076,7 +1076,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
             glm::vec2 viewportPanelSizeEnvMap = glm::vec2(viewportPanelSizeImGuiEnvMap.x, viewportPanelSizeImGuiEnvMap.y);
 
             // Currently resize can only work with a single (main) viewport
-            // ResizeViewport(viewportPanelSizeEnvMap, m_EnvironmentMap->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer); 
+            // ResizeViewport(viewportPanelSizeEnvMap, m_EnvMapEditorLayer->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer); 
             uint64_t textureID = m_SceneRenderer->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
             ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportEnvMapSize.x, m_ViewportEnvMapSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
         }
@@ -1555,7 +1555,7 @@ void EnvironmentMap::OnImGuiRender(Window* mainWindow)
 // Note that you already dock windows into each others _without_ a DockSpace() by just moving windows 
 // from their title bar (or by holding SHIFT if io.ConfigDockingWithShift is set).
 // DockSpace() is only useful to construct to a central location for your application.
-void EnvironmentMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
+void EnvMapEditorLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
     static bool opt_fullscreen_persistant = true;
     bool opt_fullscreen = opt_fullscreen_persistant;
@@ -1704,12 +1704,12 @@ void EnvironmentMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
     ImGui::End();
 }
 
-void EnvironmentMap::NewScene()
+void EnvMapEditorLayer::NewScene()
 {
     OnNewScene(m_ViewportMainSize);
 }
  
-void EnvironmentMap::OpenScene()
+void EnvMapEditorLayer::OpenScene()
 {
     // auto app = Application::Get();
     std::string filepath = Hazel::FileDialogs::OpenFile("Hazel Scene (*.hsc)\0*.hsc\0");
@@ -1733,7 +1733,7 @@ void EnvironmentMap::OpenScene()
     }
 }
 
-void EnvironmentMap::SaveScene()
+void EnvMapEditorLayer::SaveScene()
 {
     if (!m_SceneFilePath.empty()) {
         Hazel::SceneSerializer serializer(m_EditorScene);
@@ -1741,7 +1741,7 @@ void EnvironmentMap::SaveScene()
     }
 }
 
-void EnvironmentMap::SaveSceneAs()
+void EnvMapEditorLayer::SaveSceneAs()
 {
     auto app = Application::Get();
     std::string filepath = app->SaveFile("Hazel Scene (*.hsc)\0*.hsc\0");
@@ -1756,18 +1756,18 @@ void EnvironmentMap::SaveSceneAs()
     }
 }
 
-void EnvironmentMap::OnNewScene(glm::vec2 viewportSize)
+void EnvMapEditorLayer::OnNewScene(glm::vec2 viewportSize)
 {
     // m_SceneRenderer->s_Data.ActiveScene = new Hazel::HazelScene();
     m_EditorScene->OnViewportResize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
     m_SceneHierarchyPanel->SetContext(m_EditorScene);
 }
 
-void EnvironmentMap::SelectEntity(Hazel::Entity e)
+void EnvMapEditorLayer::SelectEntity(Hazel::Entity e)
 {
 }
 
-void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial)
+void EnvMapEditorLayer::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial)
 {
     auto& materials = mesh->GetMaterials();
     for (Hazel::Submesh& submesh : mesh->GetSubmeshes())
@@ -1796,7 +1796,7 @@ void EnvironmentMap::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transfo
     }
 }
 
-void EnvironmentMap::RenderSkybox()
+void EnvMapEditorLayer::RenderSkybox()
 {
     RendererBasic::DisableCulling();
     RendererBasic::DisableDepthTest();
@@ -1818,7 +1818,7 @@ void EnvironmentMap::RenderSkybox()
     m_SceneRenderer->GetShaderSkybox()->Unbind();
 }
 
-void EnvironmentMap::RenderHazelGrid()
+void EnvMapEditorLayer::RenderHazelGrid()
 {
     // Grid
     // -- Shaders/Hazel/Grid.vs
@@ -1829,8 +1829,8 @@ void EnvironmentMap::RenderHazelGrid()
     // ---- uniform float u_Res;
 
     m_SceneRenderer->GetShaderGrid()->Bind();
-    m_SceneRenderer->GetShaderGrid()->setFloat("u_Scale", m_SceneRenderer->m_GridScale);
-    m_SceneRenderer->GetShaderGrid()->setFloat("u_Res", m_SceneRenderer->m_GridSize);
+    m_SceneRenderer->GetShaderGrid()->setFloat("u_Scale", EnvMapSceneRenderer::s_GridScale);
+    m_SceneRenderer->GetShaderGrid()->setFloat("u_Res", EnvMapSceneRenderer::s_GridSize);
 
     m_SceneRenderer->GetShaderGrid()->setMat4("u_ViewProjection", m_ActiveCamera->GetViewProjection());
 
@@ -1847,15 +1847,15 @@ void EnvironmentMap::RenderHazelGrid()
     RendererBasic::EnableMSAA();
 }
 
-SubmeshUUID EnvironmentMap::GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh)
+SubmeshUUID EnvMapEditorLayer::GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh)
 {
     std::string entityHandle = entity ? std::to_string(entity->GetHandle()) : "0000";
     SubmeshUUID submeshUUID = "E_" + entityHandle + "_S_" + submesh->MeshName;
-    // Log::GetLogger()->debug("EnvironmentMap::GetSubmeshUUID: '{0}'", submeshUUID);
+    // Log::GetLogger()->debug("EnvMapEditorLayer::GetSubmeshUUID: '{0}'", submeshUUID);
     return submeshUUID;
 }
 
-void EnvironmentMap::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer)
+void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer)
 {
     float currentTimestamp = Timer::Get()->GetCurrentTimestamp();
 
@@ -1870,7 +1870,7 @@ void EnvironmentMap::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* re
     }
 }
 
-void EnvironmentMap::SetupRenderFramebuffer()
+void EnvMapEditorLayer::SetupRenderFramebuffer()
 {
     if (!m_IsViewportEnabled) return;
 
@@ -1883,7 +1883,7 @@ void EnvironmentMap::SetupRenderFramebuffer()
     m_RenderFramebuffer->Generate(width, height);
 }
 
-void EnvironmentMap::OnEvent(Event& e)
+void EnvMapEditorLayer::OnEvent(Event& e)
 {
     if (m_SceneState == SceneState::Edit)
     {
@@ -1901,11 +1901,11 @@ void EnvironmentMap::OnEvent(Event& e)
     // m_ActiveCamera->OnEvent(e);
 
     EventDispatcher dispatcher(e);
-    dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EnvironmentMap::OnKeyPressedEvent));
-    dispatcher.Dispatch<MouseButtonPressedEvent>(HZ_BIND_EVENT_FN(EnvironmentMap::OnMouseButtonPressed));
+    dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EnvMapEditorLayer::OnKeyPressedEvent));
+    dispatcher.Dispatch<MouseButtonPressedEvent>(HZ_BIND_EVENT_FN(EnvMapEditorLayer::OnMouseButtonPressed));
 }
 
-bool EnvironmentMap::OnKeyPressedEvent(KeyPressedEvent& e)
+bool EnvMapEditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 {
     if (m_ViewportPanelFocused)
     {
@@ -1957,7 +1957,7 @@ bool EnvironmentMap::OnKeyPressedEvent(KeyPressedEvent& e)
                 break;
             case (int)KeyCode::G:
                 // Toggle grid
-                Hazel::SceneRenderer::GetOptions().ShowGrid = !Hazel::SceneRenderer::GetOptions().ShowGrid;
+                EnvMapSceneRenderer::GetOptions().ShowGrid = !EnvMapSceneRenderer::GetOptions().ShowGrid;
                 break;
             case (int)KeyCode::O:
                 OpenScene();
@@ -1981,7 +1981,7 @@ bool EnvironmentMap::OnKeyPressedEvent(KeyPressedEvent& e)
     return false;
 }
 
-bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 {
     auto [mx, my] = Input::GetMousePosition();
     if (e.GetMouseButton() == (int)Mouse::ButtonLeft && !Input::IsKeyPressed(Key::LeftAlt) && !ImGuizmo::IsOver())
@@ -2057,14 +2057,14 @@ bool EnvironmentMap::OnMouseButtonPressed(MouseButtonPressedEvent& e)
     return false;
 }
 
-void EnvironmentMap::OnSelected(const SelectedSubmesh& selectionContext)
+void EnvMapEditorLayer::OnSelected(const SelectedSubmesh& selectionContext)
 {
     // TODO: move to SceneHazelEnvMap
     m_SceneHierarchyPanel->SetSelected(selectionContext.Entity);
     m_EditorScene->SetSelectedEntity(selectionContext.Entity);
 }
 
-void EnvironmentMap::OnEntityDeleted(Hazel::Entity e)
+void EnvMapEditorLayer::OnEntityDeleted(Hazel::Entity e)
 {
     if (EntitySelection::s_SelectionContext.size())
     {
@@ -2075,7 +2075,7 @@ void EnvironmentMap::OnEntityDeleted(Hazel::Entity e)
     }
 }
 
-std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
+std::pair<float, float> EnvMapEditorLayer::GetMouseViewportSpace()
 {
     auto [mx, my] = ImGui::GetMousePos(); // Input::GetMousePosition();
     mx -= m_ViewportBounds[0].x;
@@ -2086,7 +2086,7 @@ std::pair<float, float> EnvironmentMap::GetMouseViewportSpace()
     return { (mx / m_ViewportWidth) * 2.0f - 1.0f, ((my / m_ViewportHeight) * 2.0f - 1.0f) * -1.0f };
 }
 
-std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)
+std::pair<glm::vec3, glm::vec3> EnvMapEditorLayer::CastRay(float mx, float my)
 {
     glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
 
@@ -2100,15 +2100,15 @@ std::pair<glm::vec3, glm::vec3> EnvironmentMap::CastRay(float mx, float my)
     glm::vec3 rayPos = m_ActiveCamera->GetPosition();
     glm::vec3 rayDir = inverseView * glm::vec3(ray); // inverseView * glm::vec3(ray)
 
-    Log::GetLogger()->debug("EnvironmentMap::CastRay | MousePosition [ {0} {1} ]", mx, my);
-    Log::GetLogger()->debug("EnvironmentMap::CastRay | m_ViewportBounds[0] [ {0} {1} ]", m_ViewportBounds[0].x, m_ViewportBounds[0].y);
-    Log::GetLogger()->debug("EnvironmentMap::CastRay | m_ViewportBounds[1] [ {0} {1} ]", m_ViewportBounds[1].x, m_ViewportBounds[1].y);
-    Log::GetLogger()->debug("EnvironmentMap::CastRay | mouseClipPos [ {0} {1} ]", mouseClipPos.x, mouseClipPos.y);
+    Log::GetLogger()->debug("EnvMapEditorLayer::CastRay | MousePosition [ {0} {1} ]", mx, my);
+    Log::GetLogger()->debug("EnvMapEditorLayer::CastRay | m_ViewportBounds[0] [ {0} {1} ]", m_ViewportBounds[0].x, m_ViewportBounds[0].y);
+    Log::GetLogger()->debug("EnvMapEditorLayer::CastRay | m_ViewportBounds[1] [ {0} {1} ]", m_ViewportBounds[1].x, m_ViewportBounds[1].y);
+    Log::GetLogger()->debug("EnvMapEditorLayer::CastRay | mouseClipPos [ {0} {1} ]", mouseClipPos.x, mouseClipPos.y);
 
     return { rayPos, rayDir };
 }
 
-void EnvironmentMap::GeometryPassTemporary()
+void EnvMapEditorLayer::GeometryPassTemporary()
 {
     RendererBasic::EnableTransparency();
     RendererBasic::EnableMSAA();
@@ -2196,7 +2196,7 @@ void EnvironmentMap::GeometryPassTemporary()
     m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->Bind();
 }
 
-void EnvironmentMap::RenderOutline(Ref<Shader> shader, Hazel::Submesh& submesh, Hazel::Entity entity)
+void EnvMapEditorLayer::RenderOutline(Ref<Shader> shader, Hazel::Submesh& submesh, Hazel::Entity entity)
 {
     auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
     glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
@@ -2216,7 +2216,7 @@ void EnvironmentMap::RenderOutline(Ref<Shader> shader, Hazel::Submesh& submesh, 
     shader->Unbind();
 }
 
-void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
+void EnvMapEditorLayer::CompositePassTemporary(Framebuffer* framebuffer)
 {
     m_SceneRenderer->GetShaderComposite()->Bind();
     framebuffer->GetTextureAttachmentColor()->Bind(m_SamplerSlots->at("u_Texture"));
@@ -2227,7 +2227,7 @@ void EnvironmentMap::CompositePassTemporary(Framebuffer* framebuffer)
     Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
 }
 
-void EnvironmentMap::OnRender(Framebuffer* framebuffer, Window* mainWindow)
+void EnvMapEditorLayer::OnRender(Framebuffer* framebuffer, Window* mainWindow)
 {
     /**** BEGIN Render to Main Viewport ****/
     {
@@ -2253,13 +2253,13 @@ void EnvironmentMap::OnRender(Framebuffer* framebuffer, Window* mainWindow)
     }
 }
 
-void EnvironmentMap::OnRenderEditor(Framebuffer* framebuffer)
+void EnvMapEditorLayer::OnRenderEditor(Framebuffer* framebuffer)
 {
     GeometryPassTemporary();
     CompositePassTemporary(framebuffer);
 }
 
-void EnvironmentMap::OnRenderRuntime(Framebuffer* framebuffer)
+void EnvMapEditorLayer::OnRenderRuntime(Framebuffer* framebuffer)
 {
     GeometryPassTemporary();
     CompositePassTemporary(framebuffer);

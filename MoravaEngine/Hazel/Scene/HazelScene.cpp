@@ -208,14 +208,14 @@ namespace Hazel {
 				}
 			});
 
-		SceneRenderer::BeginScene(this);
+		SceneRenderer::BeginScene(this, { m_Camera, m_Camera.GetViewMatrix() });
 
 		// Render entities
 		m_Registry.view<MeshComponent>().each([=](auto entity, auto& mc)
-			{
-				// TODO: Should we render (logically)
-				SceneRenderer::SubmitEntity(Entity{ entity, this });
-			});
+		{
+			// TODO: Should we render (logically)
+			EnvMapSceneRenderer::SubmitEntity(Entity{ entity, this });
+		});
 
 		SceneRenderer::EndScene();
 

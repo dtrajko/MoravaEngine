@@ -5,7 +5,7 @@
 
 // Morava
 #include "../../EntitySelection.h"
-#include "../../EnvironmentMap.h"
+#include "../../EnvMapEditorLayer.h"
 
 // TODO:
 // - Eventually change imgui node IDs to be entity/asset GUID
@@ -32,7 +32,7 @@ namespace Hazel
 			UUID selectedEntityID = EntitySelection::s_SelectionContext[0].Entity.GetUUID();
 
 			if (entityMap.find(selectedEntityID) != entityMap.end()) {
-				EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh({ entityMap.at(selectedEntityID), new Hazel::Submesh(), 0 }));
+				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh({ entityMap.at(selectedEntityID), new Hazel::Submesh(), 0 }));
 			}
 		}
 	}
@@ -45,15 +45,15 @@ namespace Hazel
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
 			if (meshComponent.Mesh)
 			{
-				if (EnvironmentMap::s_SelectionMode == SelectionMode::Entity)
+				if (EnvMapEditorLayer::s_SelectionMode == SelectionMode::Entity)
 				{
 					EntitySelection::s_SelectionContext.clear();
 					for (auto& submesh : meshComponent.Mesh->GetSubmeshes())
 					{
-						EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, &submesh, 0 });
+						EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, &submesh, 0 });
 					}
 				}
-				else if (EnvironmentMap::s_SelectionMode == SelectionMode::SubMesh) {
+				else if (EnvMapEditorLayer::s_SelectionMode == SelectionMode::SubMesh) {
 					// Do nothing...
 				}
 				else {
@@ -65,7 +65,7 @@ namespace Hazel
 		{
 			// if MeshComponent is not available in entity
 			EntitySelection::s_SelectionContext.clear();
-			EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, new Hazel::Submesh(), 0 });
+			EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, new Hazel::Submesh(), 0 });
 		}
 	}
 
@@ -155,7 +155,7 @@ namespace Hazel
 			SetSelected(entity);
 			m_Context->OnEntitySelected(entity);
 
-			EnvironmentMap::s_SelectionMode = SelectionMode::Entity;
+			EnvMapEditorLayer::s_SelectionMode = SelectionMode::Entity;
 		}
 
 		bool entityDeleted = false;
@@ -226,9 +226,9 @@ namespace Hazel
 			if (ImGui::IsItemClicked())
 			{
 				EntitySelection::s_SelectionContext.clear();
-				EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, &submeshes[i], 0 });
+				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, &submeshes[i], 0 });
 
-				EnvironmentMap::s_SelectionMode = SelectionMode::SubMesh;
+				EnvMapEditorLayer::s_SelectionMode = SelectionMode::SubMesh;
 			}
 
 			bool submeshDeleted = false;
@@ -262,11 +262,11 @@ namespace Hazel
 				ImGui::SameLine();
 				ImGui::Text(std::to_string(submeshes[i].MaterialIndex).c_str());
 
-				SubmeshUUID submeshUUID = EnvironmentMap::GetSubmeshUUID(&entity, &submeshes[i]);
+				SubmeshUUID submeshUUID = EnvMapEditorLayer::GetSubmeshUUID(&entity, &submeshes[i]);
 				std::string materialUUID = "N/A";
 				std::string materialName = "N/A";
-				auto map_it = EnvironmentMap::s_SubmeshMaterialUUIDs.find(submeshUUID);
-				if (EnvironmentMap::s_SubmeshMaterialUUIDs.find(submeshUUID) != EnvironmentMap::s_SubmeshMaterialUUIDs.end()) {
+				auto map_it = EnvMapEditorLayer::s_SubmeshMaterialUUIDs.find(submeshUUID);
+				if (EnvMapEditorLayer::s_SubmeshMaterialUUIDs.find(submeshUUID) != EnvMapEditorLayer::s_SubmeshMaterialUUIDs.end()) {
 					materialUUID = map_it->second;
 					materialName = map_it->first;
 				}
@@ -564,7 +564,7 @@ namespace Hazel
 				std::string file = Application::Get()->OpenFile();
 				if (!file.empty()) {
 					mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(file, nullptr, nullptr, false);
-					EnvironmentMap::LoadEnvMapMaterials(mc.Mesh, entity);
+					EnvMapEditorLayer::LoadEnvMapMaterials(mc.Mesh, entity);
 				}
 			}
 			ImGui::Columns(1);
@@ -829,12 +829,12 @@ namespace Hazel
 		DrawComponent <MaterialComponent > ("Material", entity, [=](MaterialComponent& mc)
 			{
 				if (!mc.Material) {
-					std::string materialName = EnvironmentMap::NewMaterialName();
-					mc.Material = EnvironmentMap::CreateDefaultMaterial(materialName);
-					EnvironmentMap::AddMaterialFromComponent(entity);
+					std::string materialName = EnvMapEditorLayer::NewMaterialName();
+					mc.Material = EnvMapEditorLayer::CreateDefaultMaterial(materialName);
+					EnvMapEditorLayer::AddMaterialFromComponent(entity);
 				}
 
-				ImGuiWrapper::DrawMaterialUI(mc.Material, EnvironmentMap::s_CheckerboardTexture);
+				ImGuiWrapper::DrawMaterialUI(mc.Material, EnvMapEditorLayer::s_CheckerboardTexture);
 			});
 
 		/****

@@ -158,6 +158,10 @@ namespace Hazel {
 		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
 		const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
 
+		// Ref<HazelShader> GetMeshShader() { return m_MeshShader; }
+		// Ref<HazelMaterial> GetMaterial() { return m_BaseMaterial; }
+		// std::vector<Ref<HazelMaterialInstance>> GetMaterials() { return m_Materials; }
+
 		inline const std::vector<::Ref<Material>>& GetMaterials() const { return m_Materials; }
 		inline std::vector<Ref<Texture>>& GetTextures() { return m_Textures; }
 		inline const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }

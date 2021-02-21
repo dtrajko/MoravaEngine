@@ -485,9 +485,6 @@
     <ClCompile Include="SceneHazelEnvMap.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="EnvironmentMap.cpp">
-      <Filter>Material</Filter>
-    </ClCompile>
     <ClCompile Include="TextureCubemapFaces.cpp">
       <Filter>Texture</Filter>
     </ClCompile>
@@ -531,9 +528,6 @@
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="Hazel\Renderer\Renderer2D.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Hazel\Renderer\SceneRenderer.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="Hazel\Renderer\HazelRenderer.cpp">
@@ -620,6 +614,21 @@
     </ClCompile>
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLPipeline.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="EnvMapEditorLayer.cpp">
+      <Filter>Material</Filter>
+    </ClCompile>
+    <ClCompile Include="EnvMapSceneRenderer.cpp">
+      <Filter>Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Renderer\SceneRenderer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Platform\OpenGL\OpenGLFramebuffer.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="Hazel\Renderer\HazelFramebuffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1181,9 +1190,6 @@
     <ClInclude Include="SceneHazelEnvMap.h">
       <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="EnvironmentMap.h">
-      <Filter>Material</Filter>
-    </ClInclude>
     <ClInclude Include="TextureCubemapFaces.h">
       <Filter>Texture</Filter>
     </ClInclude>
@@ -1239,9 +1245,6 @@
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\RenderCommand.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Hazel\Renderer\SceneRenderer.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\HazelRenderer.h">
@@ -1328,6 +1331,21 @@
     </ClInclude>
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLPipeline.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="EnvMapEditorLayer.h">
+      <Filter>Material</Filter>
+    </ClInclude>
+    <ClInclude Include="EnvMapSceneRenderer.h">
+      <Filter>Material</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\SceneRenderer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Platform\OpenGL\OpenGLFramebuffer.h">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="Hazel\Renderer\HazelFramebuffer.h">
+      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

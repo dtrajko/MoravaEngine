@@ -4,15 +4,20 @@
 
 #include "Hazel/Renderer/RenderPass.h"
 #include "Hazel/Renderer/HazelRenderer.h"
-#include "Hazel/Renderer/SceneRenderer.h"
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Renderer/SceneRenderer.h"
 
 #include "EnvMapMaterial.h"
+#include "EnvMapSceneRenderer.h"
 #include "Quad.h"
 #include "CubeSkybox.h"
 #include "EntitySelection.h"
 
+
+struct RenderPassSpecification
+{
+	Ref<Framebuffer> TargetFramebuffer;
+};
 
 enum class SelectionMode
 {
@@ -23,12 +28,12 @@ enum class SelectionMode
 
 using SubmeshUUID = std::string;
 
-class EnvironmentMap
+class EnvMapEditorLayer
 {
 public:
-	EnvironmentMap() = default;
-	EnvironmentMap(const std::string& filepath, Scene* scene);
-	~EnvironmentMap();
+	EnvMapEditorLayer() = default;
+	EnvMapEditorLayer(const std::string& filepath, Scene* scene);
+	~EnvMapEditorLayer();
 
 	void OnUpdate(Scene* scene, float timestep);
 	void OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, float timestep);
@@ -89,12 +94,12 @@ public:
 	inline float& GetSkyboxExposureFactor() { return m_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
 	void SetViewportBounds(glm::vec2* viewportBounds);
-	inline Hazel::SceneRenderer* GetSceneRenderer() { return m_SceneRenderer; }
+	inline EnvMapSceneRenderer* GetSceneRenderer() { return m_SceneRenderer; }
 	inline bool* GetDisplayHazelGrid() { return &m_DisplayHazelGrid; }
 	inline bool* GetDisplayBoundingBoxes() { return &m_DisplayBoundingBoxes; };
 	inline bool* GetDisplayRay() { return &m_DisplayRay; };
 
-	// SceneRenderer
+	// EnvMapSceneRenderer
 	void CompositePassTemporary(Framebuffer* framebuffer);
 	void GeometryPassTemporary();
 	void SubmitEntity(Hazel::Entity entity);
@@ -203,7 +208,7 @@ private:
 	bool m_ViewportPanelMouseOver = false;
 	bool m_ViewportPanelFocused = false;
 
-	// Used in EnvironmentMap::CastRay
+	// Used in EnvMapEditorLayer::CastRay
 	glm::vec2 m_ViewportBounds[2];
 
 	EventCooldown m_ResizeViewport;
@@ -215,7 +220,7 @@ private:
 	glm::vec3 m_NewRay;
 	glm::vec3 m_NewDir;
 
-	Hazel::SceneRenderer* m_SceneRenderer;
+	EnvMapSceneRenderer* m_SceneRenderer;
 
 	glm::vec2 m_WorkPosImGui; // window offset on monitor real estate
 

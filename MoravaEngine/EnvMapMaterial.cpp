@@ -1,12 +1,12 @@
 #include "EnvMapMaterial.h"
 
-#include "EnvironmentMap.h"
+#include "EnvMapEditorLayer.h"
 #include "Util.h"
 
 
 EnvMapMaterial::EnvMapMaterial()
 {
-	m_Name = EnvironmentMap::NewMaterialName();
+	m_Name = EnvMapEditorLayer::NewMaterialName();
 	m_UUID = NewMaterialUUID();
 }
 
