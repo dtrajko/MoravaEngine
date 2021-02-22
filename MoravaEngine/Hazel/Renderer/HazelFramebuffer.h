@@ -18,7 +18,7 @@ namespace Hazel {
 		RGBA16F = 2
 	};
 
-	struct FramebufferSpecification
+	struct HazelFramebufferSpecification
 	{
 		uint32_t Width = 1280;
 		uint32_t Height = 720;
@@ -45,9 +45,10 @@ namespace Hazel {
 		virtual RendererID GetColorAttachmentRendererID() const = 0;
 		virtual RendererID GetDepthAttachmentRendererID() const = 0;
 
-		virtual const FramebufferSpecification& GetSpecification() const = 0;
+		virtual const HazelFramebufferSpecification& GetSpecification() const = 0;
 
-		static Ref<HazelFramebuffer> Create(const FramebufferSpecification& spec);
+		static Ref<HazelFramebuffer> Create(const HazelFramebufferSpecification& spec);
+
 	};
 
 	class FramebufferPool final

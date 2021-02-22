@@ -193,6 +193,7 @@
     <ClCompile Include="EntitySelection.cpp" />
     <ClCompile Include="EnvMapEditorLayer.cpp" />
     <ClCompile Include="EnvMapMaterial.cpp" />
+    <ClCompile Include="EnvMapRenderPass.cpp" />
     <ClCompile Include="EnvMapSceneRenderer.cpp" />
     <ClCompile Include="FramebufferTextureCubemap.cpp" />
     <ClCompile Include="HazelFullscreenQuad.cpp" />
@@ -245,6 +246,7 @@
     <ClCompile Include="LearnOpenGL\ModelSSAO.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MapGenerator.cpp" />
+    <ClCompile Include="MaterialInstance.cpp" />
     <ClCompile Include="MeshGenerator.cpp" />
     <ClCompile Include="MeshUnity.cpp" />
     <ClCompile Include="NoiseSL.cpp" />
@@ -415,6 +417,7 @@
     <ClInclude Include="EntitySelection.h" />
     <ClInclude Include="EnvMapEditorLayer.h" />
     <ClInclude Include="EnvMapMaterial.h" />
+    <ClInclude Include="EnvMapRenderPass.h" />
     <ClInclude Include="EnvMapSceneRenderer.h" />
     <ClInclude Include="FramebufferTextureCubemap.h" />
     <ClInclude Include="HazelFullscreenQuad.h" />
@@ -485,6 +488,7 @@
     <ClInclude Include="LearnOpenGL\ModelSSAO.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MapGenerator.h" />
+    <ClInclude Include="MaterialInstance.h" />
     <ClInclude Include="MeshGenerator.h" />
     <ClInclude Include="MeshUnity.h" />
     <ClInclude Include="NoiseSL.h" />

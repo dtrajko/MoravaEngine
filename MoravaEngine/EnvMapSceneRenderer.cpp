@@ -14,11 +14,11 @@
 
 SceneRendererData EnvMapSceneRenderer::s_Data;
 std::map<std::string, unsigned int>* EnvMapSceneRenderer::m_SamplerSlots;
-Ref<Shader> EnvMapSceneRenderer::m_ShaderEquirectangularConversion;
-Ref<Shader> EnvMapSceneRenderer::m_ShaderEnvFiltering;
-Ref<Shader> EnvMapSceneRenderer::m_ShaderEnvIrradiance;
-Ref<Shader> EnvMapSceneRenderer::m_ShaderGrid;
-Ref<Shader> EnvMapSceneRenderer::m_ShaderSkybox;
+Hazel::Ref<Shader> EnvMapSceneRenderer::m_ShaderEquirectangularConversion;
+Hazel::Ref<Shader> EnvMapSceneRenderer::m_ShaderEnvFiltering;
+Hazel::Ref<Shader> EnvMapSceneRenderer::m_ShaderEnvIrradiance;
+Hazel::Ref<Shader> EnvMapSceneRenderer::m_ShaderGrid;
+Hazel::Ref<Shader> EnvMapSceneRenderer::m_ShaderSkybox;
 Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::m_EnvUnfiltered;
 Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::m_EnvEquirect;
 Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::m_EnvFiltered;
@@ -71,30 +71,30 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
 
 void EnvMapSceneRenderer::SetupShaders()
 {
-    s_Data.CompositeShader = CreateRef<Shader>("Shaders/Hazel/SceneComposite.vs", "Shaders/Hazel/SceneComposite.fs");
+    s_Data.CompositeShader = Hazel::Ref<Shader>::Create("Shaders/Hazel/SceneComposite.vs", "Shaders/Hazel/SceneComposite.fs");
     Log::GetLogger()->info("EnvMapSceneRenderer: m_ShaderComposite compiled [programID={0}]", s_Data.CompositeShader->GetProgramID());
 
-    m_ShaderEquirectangularConversion = CreateRef<Shader>("Shaders/Hazel/EquirectangularToCubeMap.cs");
+    m_ShaderEquirectangularConversion = Hazel::Ref<Shader>::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
     Log::GetLogger()->info("EnvMapSceneRenderer: m_ShaderEquirectangularConversion compiled [programID={0}]", m_ShaderEquirectangularConversion->GetProgramID());
 
-    m_ShaderEnvFiltering = CreateRef<Shader>("Shaders/Hazel/EnvironmentMipFilter.cs");
+    m_ShaderEnvFiltering = Hazel::Ref<Shader>::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
     Log::GetLogger()->info("EnvMapSceneRenderer: m_ShaderEnvFiltering compiled [programID={0}]", m_ShaderEnvFiltering->GetProgramID());
 
-    m_ShaderEnvIrradiance = CreateRef<Shader>("Shaders/Hazel/EnvironmentIrradiance.cs");
+    m_ShaderEnvIrradiance = Hazel::Ref<Shader>::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
     Log::GetLogger()->info("EnvMapSceneRenderer: m_ShaderEnvIrradiance compiled [programID={0}]", m_ShaderEnvIrradiance->GetProgramID());
 
-    m_ShaderSkybox = CreateRef<Shader>("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
+    m_ShaderSkybox = Hazel::Ref<Shader>::Create("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
     Log::GetLogger()->info("EnvMapSceneRenderer: m_ShaderSkybox compiled [programID={0}]", m_ShaderSkybox->GetProgramID());
 
-    m_ShaderGrid = CreateRef<Shader>("Shaders/Hazel/Grid.vs", "Shaders/Hazel/Grid.fs");
+    m_ShaderGrid = Hazel::Ref<Shader>::Create("Shaders/Hazel/Grid.vs", "Shaders/Hazel/Grid.fs");
     Log::GetLogger()->info("EnvMapSceneRenderer: m_ShaderGrid compiled [programID={0}]", m_ShaderGrid->GetProgramID());
 
     ResourceManager::AddShader("Hazel/SceneComposite", s_Data.CompositeShader);
-    ResourceManager::AddShader("Hazel/EquirectangularToCubeMap", m_ShaderEquirectangularConversion);
-    ResourceManager::AddShader("Hazel/EnvironmentMipFilter", m_ShaderEnvFiltering);
-    ResourceManager::AddShader("Hazel/EnvironmentIrradiance", m_ShaderEnvIrradiance);
-    ResourceManager::AddShader("Hazel/Skybox", m_ShaderSkybox);
-    ResourceManager::AddShader("Hazel/Grid", m_ShaderGrid);
+    ResourceManager::AddShader("Hazel/EquirectangularToCubeMap", m_ShaderEquirectangularConversion.Raw());
+    ResourceManager::AddShader("Hazel/EnvironmentMipFilter", m_ShaderEnvFiltering.Raw());
+    ResourceManager::AddShader("Hazel/EnvironmentIrradiance", m_ShaderEnvIrradiance.Raw());
+    ResourceManager::AddShader("Hazel/Skybox", m_ShaderSkybox.Raw());
+    ResourceManager::AddShader("Hazel/Grid", m_ShaderGrid.Raw());
 }
 
 // Moved from EnvironmentMap
@@ -106,8 +106,8 @@ Hazel::Environment EnvMapSceneRenderer::Load(const std::string& filepath)
 
 void EnvMapSceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
 {
-    s_Data.GeoPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-    s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
+    s_Data.GeoPass->GetSpecification().TargetFramebuffer->Resize(width, height, true);
+    s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height, true);
 }
 
 void EnvMapSceneRenderer::BeginScene(Hazel::HazelScene* scene, const Hazel::EditorCamera& camera)

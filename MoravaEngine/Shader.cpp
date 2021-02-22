@@ -2,6 +2,8 @@
 #include "Log.h"
 #include "Util.h"
 
+#include "Hazel/Core/Assert.h"
+
 
 Shader::Shader()
 {
@@ -228,9 +230,157 @@ GLint Shader::GetUniformLocation(const std::string& name)
 	}
 }
 
-void Shader::setIntArray(const std::string& name, int32_t* values, uint32_t count)
+void Shader::SetIntArray(const std::string& name, int* values, uint32_t size)
 {
-	glUniform1iv(GetUniformLocation(name), count, values);
+	glUniform1iv(GetUniformLocation(name), size, values);
+}
+
+const std::string& Shader::GetName() const
+{
+	// TODO: insert return statement here
+}
+
+const std::unordered_map<std::string, Hazel::ShaderBuffer>& Shader::GetShaderBuffers() const
+{
+	// TODO: insert return statement here
+}
+
+const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& Shader::GetResources() const
+{
+	// TODO: insert return statement here
+}
+
+void Shader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)
+{
+}
+
+uint32_t Shader::GetRendererID() const
+{
+	return programID;
+}
+
+void Shader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size)
+{
+}
+
+void Shader::SetUniform(const std::string& fullname, float value)
+{
+	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	GLint location = m_UniformLocations.at(fullname);
+	glUniform1f(location, value);
+}
+
+void Shader::SetUniform(const std::string& fullname, int value)
+{
+	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	GLint location = m_UniformLocations.at(fullname);
+	glUniform1i(location, value);
+}
+
+void Shader::SetUniform(const std::string& fullname, const glm::vec2& value)
+{
+	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	GLint location = m_UniformLocations.at(fullname);
+	glUniform2fv(location, 1, glm::value_ptr(value));
+}
+
+void Shader::SetUniform(const std::string& fullname, const glm::vec3& value)
+{
+	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	GLint location = m_UniformLocations.at(fullname);
+	glUniform3fv(location, 1, glm::value_ptr(value));
+}
+
+void Shader::SetUniform(const std::string& fullname, const glm::vec4& value)
+{
+	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	GLint location = m_UniformLocations.at(fullname);
+	glUniform4fv(location, 1, glm::value_ptr(value));
+}
+
+void Shader::SetUniform(const std::string& fullname, const glm::mat3& value)
+{
+	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	GLint location = m_UniformLocations.at(fullname);
+	glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
+}
+
+void Shader::SetUniform(const std::string& fullname, const glm::mat4& value)
+{
+	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	GLint location = m_UniformLocations.at(fullname);
+	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+}
+
+void Shader::SetFloat(const std::string& name, float value)
+{
+	glUseProgram(programID);
+	auto location = glGetUniformLocation(programID, name.c_str());
+	if (location != -1)
+		glUniform1f(location, value);
+	else
+		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+}
+
+void Shader::SetInt(const std::string& name, int value)
+{
+	int32_t location = GetUniformLocation(name);
+	glUniform1i(location, value);
+}
+
+void Shader::SetBool(const std::string& name, bool value)
+{
+	int32_t location = GetUniformLocation(name);
+	glUniform1i(location, value);
+}
+
+void Shader::SetFloat3(const std::string& name, const glm::vec3& value)
+{
+	glUseProgram(programID);
+	auto location = glGetUniformLocation(programID, name.c_str());
+	if (location != -1)
+		glUniform3f(location, value.x, value.y, value.z);
+	else
+		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+}
+
+void Shader::SetMat4(const std::string& name, const glm::mat4& value)
+{
+	glUseProgram(programID);
+	auto location = glGetUniformLocation(programID, name.c_str());
+	if (location != -1)
+		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&value);
+	else
+		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+}
+
+void Shader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind)
+{
+	if (bind)
+	{
+		UploadUniformMat4(name, value);
+	}
+	else
+	{
+		int location = glGetUniformLocation(programID, name.c_str());
+		if (location != -1)
+			UploadUniformMat4(location, value);
+	}
+}
+
+void Shader::UploadUniformMat4(const std::string& name, const glm::mat4& values)
+{
+	glUseProgram(programID);
+	auto location = glGetUniformLocation(programID, name.c_str());
+	if (location != -1)
+		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&values);
+	else
+		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+}
+
+void Shader::UploadUniformMat4(uint32_t location, const glm::mat4& value)
+{
+	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }
 
 void Shader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)

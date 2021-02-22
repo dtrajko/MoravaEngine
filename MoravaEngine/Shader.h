@@ -2,6 +2,8 @@
 
 #include "CommonValues.h"
 
+#include "Hazel/Renderer/HazelShader.h"
+
 #include <stdio.h>
 #include <string>
 #include <iostream>
@@ -10,14 +12,43 @@
 #include <map>
 
 
-
-class Shader
+class Shader : public Hazel::HazelShader
 {
 public:
 	Shader();
 	Shader(const char* vertexLocation, const char* fragmentLocation);
 	Shader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation);
 	Shader(const char* computeLocation);
+
+	// virtual methods
+	virtual void Bind() override;
+	virtual void Reload() override;
+	virtual void SetIntArray(const std::string& name, int* values, uint32_t size) override;
+
+	// HazelShader abstract methods
+	virtual uint32_t GetRendererID() const override;
+	virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
+	virtual void SetUniform(const std::string& fullname, float value) override;
+	virtual void SetUniform(const std::string& fullname, int value) override;
+	virtual void SetUniform(const std::string& fullname, const glm::vec2& value) override;
+	virtual void SetUniform(const std::string& fullname, const glm::vec3& value) override;
+	virtual void SetUniform(const std::string& fullname, const glm::vec4& value) override;
+	virtual void SetUniform(const std::string& fullname, const glm::mat3& value) override;
+	virtual void SetUniform(const std::string& fullname, const glm::mat4& value) override;
+	virtual void SetFloat(const std::string& name, float value) override;
+	virtual void SetInt(const std::string& name, int value) override;
+	virtual void SetBool(const std::string& name, bool value) override;
+	virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
+	virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
+	virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) override;
+	virtual const std::string& GetName() const override;
+	virtual const std::unordered_map<std::string, Hazel::ShaderBuffer>& GetShaderBuffers() const override;
+	virtual const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& GetResources() const override;
+	virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
+
+	void UploadUniformMat4(const std::string& name, const glm::mat4& values);
+	void UploadUniformMat4(uint32_t location, const glm::mat4& values);
+
 	void CreateFromString(const char* vertexCode, const char* fragmentCode);
 	void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);
 	void CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation);
@@ -29,7 +60,6 @@ public:
 
 	static std::string ReadFile(const char* fileLocation);
 	void Validate();
-	void Bind();
 
 	// generic setter methods for uniform location variables
 	void setBool(const std::string& name, bool value);
@@ -46,10 +76,8 @@ public:
 	void setMat4(const std::string& name, const glm::mat4& mat);
 	void setLightMat4(std::vector<glm::mat4> lightMatrices);
 	GLint GetUniformLocation(const std::string& name);
-	void setIntArray(const std::string& name, int32_t* values, uint32_t count);
 
 	inline std::string GetName() { return m_Name; }
-	void Reload();
 
 	void Unbind();
 	void ClearShader();

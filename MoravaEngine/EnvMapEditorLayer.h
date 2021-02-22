@@ -14,11 +14,6 @@
 #include "EntitySelection.h"
 
 
-struct RenderPassSpecification
-{
-	Ref<Framebuffer> TargetFramebuffer;
-};
-
 enum class SelectionMode
 {
 	None = 0,
@@ -83,8 +78,8 @@ public:
 	void SetSkyboxLOD(float LOD);
 
 	// Getters
-	Ref<Shader> GetShaderPBR_Anim();
-	Ref<Shader> GetShaderPBR_Static();
+	Hazel::Ref<Shader> GetShaderPBR_Anim();
+	Hazel::Ref<Shader> GetShaderPBR_Static();
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
 	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
 	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
@@ -119,7 +114,7 @@ private:
 	void SetupContextData();
 	void SetupShaders();
 	void UpdateUniforms();
-	void UpdateShaderPBRUniforms(Ref<Shader> shaderHazelPBR, EnvMapMaterial* m_EnvMapMaterial);
+	void UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPBR, EnvMapMaterial* m_EnvMapMaterial);
 	void SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox);
 	void Init();
 
@@ -127,7 +122,7 @@ private:
 	std::pair<float, float> GetMouseViewportSpace();
 	void RenderSkybox();
 	void RenderHazelGrid();
-	void RenderOutline(Ref<Shader> shader, Hazel::Submesh& submesh, Hazel::Entity entity);
+	void RenderOutline(Hazel::Ref<Shader> shader, Hazel::Submesh& submesh, Hazel::Entity entity);
 
 public:
 	Hazel::EditorCamera* m_EditorCamera;
@@ -153,10 +148,9 @@ public:
 	glm::vec2 m_ViewportMainSize;
 	Framebuffer* m_RenderFramebuffer;
 
-
 private:
-	Ref<Shader> m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
-	Ref<Shader> m_ShaderOutline;
+	Hazel::Ref<Shader> m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
+	Hazel::Ref<Shader> m_ShaderOutline;
 
 	CubeSkybox* m_SkyboxCube;
 	Hazel::Ref<Hazel::HazelTextureCube> m_SkyboxTexture;

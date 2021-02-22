@@ -73,7 +73,7 @@ namespace Hazel {
 		Create();
 	}
 
-	HazelMesh::HazelMesh(const std::string& filename, ::Ref<Shader> shader, ::Ref<Material> material, bool isAnimated)
+	HazelMesh::HazelMesh(const std::string& filename, Ref<Shader> shader, ::Ref<Material> material, bool isAnimated)
 		: m_MeshShader(shader), m_BaseMaterial(material), m_IsAnimated(isAnimated)
 	{
 		m_FilePath = filename;
@@ -1117,7 +1117,7 @@ namespace Hazel {
 		}
 	}
 
-	void Submesh::Render(Hazel::Ref<HazelMesh> parentMesh, ::Ref<Shader> shader, glm::mat4 transform, uint32_t samplerSlot,
+	void Submesh::Render(Ref<HazelMesh> parentMesh, Ref<Shader> shader, glm::mat4 transform, uint32_t samplerSlot,
 		const std::map<std::string, EnvMapMaterial*>& envMapMaterials, Entity entity)
 	{
 		glm::mat4 submeshTransform;
@@ -1178,7 +1178,7 @@ namespace Hazel {
 		glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
 	}
 
-	void Submesh::RenderOutline(Hazel::Ref<HazelMesh> parentMesh, ::Ref<Shader> shader, const glm::mat4& transform, Entity entity)
+	void Submesh::RenderOutline(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& transform, Entity entity)
 	{
 		glm::mat4 submeshTransform;
 		if (entity && entity.HasComponent<TransformComponent>()) {

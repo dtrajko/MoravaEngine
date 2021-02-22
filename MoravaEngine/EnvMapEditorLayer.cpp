@@ -14,6 +14,7 @@
 #include "SceneHazelEnvMap.h"
 #include "MousePicker.h"
 #include "ShaderLibrary.h"
+#include "EnvMapRenderPass.h"
 
 #include <filesystem>
 
@@ -113,8 +114,8 @@ void EnvMapEditorLayer::Init()
 
     isMultisample = geoFramebufferSpec.Samples > 1;
 
-    RenderPassSpecification geoRenderPassSpec;
-    geoRenderPassSpec.TargetFramebuffer = new Framebuffer(geoFramebufferSpec);
+    EnvMapRenderPassSpecification geoRenderPassSpec;
+    geoRenderPassSpec.TargetFramebuffer = CreateRef<Framebuffer>(geoFramebufferSpec);
     geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferSpec);
 
     FramebufferSpecification geoFramebufferDepthSpec;
@@ -125,7 +126,7 @@ void EnvMapEditorLayer::Init()
     geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferDepthSpec);
     Log::GetLogger()->debug("Generating the GEO RenderPass framebuffer with AttachmentFormat::RGBA16F");
     geoRenderPassSpec.TargetFramebuffer->Generate(geoFramebufferSpec.Width, geoFramebufferSpec.Height);
-    m_SceneRenderer->s_Data.GeoPass = Hazel::RenderPass::Create(geoRenderPassSpec);
+    m_SceneRenderer->s_Data.GeoPass = Hazel::Ref<EnvMapRenderPass>::Create(geoRenderPassSpec);
 
     FramebufferSpecification compFramebufferSpec;
     compFramebufferSpec.Width = 1280;
@@ -136,14 +137,14 @@ void EnvMapEditorLayer::Init()
 
     isMultisample = compFramebufferSpec.Samples > 1;
 
-    RenderPassSpecification compRenderPassSpec;
-    compRenderPassSpec.TargetFramebuffer = new Framebuffer(compFramebufferSpec);
+    EnvMapRenderPassSpecification compRenderPassSpec;
+    compRenderPassSpec.TargetFramebuffer = CreateRef<Framebuffer>(compFramebufferSpec);
     compRenderPassSpec.TargetFramebuffer->CreateAttachment(compFramebufferSpec);
     compRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(compFramebufferSpec.Width, compFramebufferSpec.Height, isMultisample,
         AttachmentType::Renderbuffer, AttachmentFormat::Depth);
     Log::GetLogger()->debug("Generating the COMPOSITE RenderPass framebuffer with AttachmentFormat::RGBA8");
     compRenderPassSpec.TargetFramebuffer->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
-    m_SceneRenderer->s_Data.CompositePass = Hazel::RenderPass::Create(compRenderPassSpec);
+    m_SceneRenderer->s_Data.CompositePass = Hazel::Ref<EnvMapRenderPass>::Create(compRenderPassSpec);
 
     m_SceneRenderer->s_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
 
@@ -384,16 +385,16 @@ EnvMapMaterial* EnvMapEditorLayer::CreateDefaultMaterial(std::string materialNam
 
 void EnvMapEditorLayer::SetupShaders()
 {
-    Ref<Shader> shaderHazelPBR_Static = CreateRef<Shader>("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
+    Hazel::Ref<Shader> shaderHazelPBR_Static = Hazel::Ref<Shader>::Create("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Static compiled [programID={0}]", shaderHazelPBR_Static->GetProgramID());
 
-    Ref<Shader> shaderHazelPBR_Anim = CreateRef<Shader>("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
+    Hazel::Ref<Shader> shaderHazelPBR_Anim = Hazel::Ref<Shader>::Create("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Anim compiled [programID={0}]", shaderHazelPBR_Anim->GetProgramID());
 
-    Ref<Shader> shaderRenderer2D_Line = CreateRef<Shader>("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
+    Hazel::Ref<Shader> shaderRenderer2D_Line = Hazel::Ref<Shader>::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderRenderer2D_Line compiled [programID={0}]", shaderRenderer2D_Line->GetProgramID());
 
-    m_ShaderOutline = CreateRef<Shader>("Shaders/Hazel/Outline.vs", "Shaders/Hazel/Outline.fs");
+    m_ShaderOutline = Hazel::Ref<Shader>::Create("Shaders/Hazel/Outline.vs", "Shaders/Hazel/Outline.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: shaderOutline compiled [programID={0}]", m_ShaderOutline->GetProgramID());
 
     ResourceManager::AddShader("Hazel/HazelPBR_Static", shaderHazelPBR_Static);
@@ -429,7 +430,7 @@ void EnvMapEditorLayer::UpdateUniforms()
     /**** BEGIN Shaders/Hazel/Outline ****/
 }
 
-void EnvMapEditorLayer::UpdateShaderPBRUniforms(Ref<Shader> shaderHazelPBR, EnvMapMaterial* envMapMaterial)
+void EnvMapEditorLayer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPBR, EnvMapMaterial* envMapMaterial)
 {
     /**** BEGIN Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
 
@@ -794,12 +795,12 @@ void EnvMapEditorLayer::SetSkyboxLOD(float LOD)
     m_EditorScene->SetSkyboxLOD(LOD);
 }
 
-Ref<Shader> EnvMapEditorLayer::GetShaderPBR_Anim()
+Hazel::Ref<Shader> EnvMapEditorLayer::GetShaderPBR_Anim()
 {
     return ShaderLibrary::Get("HazelPBR_Anim");
 }
 
-Ref<Shader> EnvMapEditorLayer::GetShaderPBR_Static()
+Hazel::Ref<Shader> EnvMapEditorLayer::GetShaderPBR_Static()
 {
     return ShaderLibrary::Get("HazelPBR_Static");
 }
@@ -1865,7 +1866,7 @@ void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer*
 
     if (viewportPanelSize != m_ViewportMainSize && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
     {
-        renderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+        renderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y, true);
         m_ViewportMainSize = glm::vec2(viewportPanelSize.x, viewportPanelSize.y);
     }
 }
@@ -2196,7 +2197,7 @@ void EnvMapEditorLayer::GeometryPassTemporary()
     m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->Bind();
 }
 
-void EnvMapEditorLayer::RenderOutline(Ref<Shader> shader, Hazel::Submesh& submesh, Hazel::Entity entity)
+void EnvMapEditorLayer::RenderOutline(Hazel::Ref<Shader> shader, Hazel::Submesh& submesh, Hazel::Entity entity)
 {
     auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
     glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();

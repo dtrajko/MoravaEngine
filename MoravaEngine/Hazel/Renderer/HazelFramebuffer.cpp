@@ -5,7 +5,7 @@
 
 namespace Hazel {
 
-	Ref<HazelFramebuffer> HazelFramebuffer::Create(const FramebufferSpecification& spec)
+	Ref<HazelFramebuffer> HazelFramebuffer::Create(const HazelFramebufferSpecification& spec)
 	{
 		Ref<HazelFramebuffer> result = nullptr;
 

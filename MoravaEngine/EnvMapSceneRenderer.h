@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "HazelFullscreenQuad.h"
 #include "Scene.h"
+#include "EnvMapRenderPass.h"
 
 
 struct SceneRendererOptions
@@ -42,11 +43,11 @@ struct SceneRendererData
 
 	Hazel::Ref<Hazel::HazelTexture2D> BRDFLUT;
 
-	Ref<Shader> CompositeShader;
+	Hazel::Ref<Shader> CompositeShader;
 
-	Hazel::Ref<Hazel::RenderPass> GeoPass;
-	Hazel::Ref<Hazel::RenderPass> CompositePass;
-	Hazel::Ref<Hazel::RenderPass> ActiveRenderPass;
+	Hazel::Ref<EnvMapRenderPass> GeoPass;
+	Hazel::Ref<EnvMapRenderPass> CompositePass;
+	Hazel::Ref<EnvMapRenderPass> ActiveRenderPass;
 
 	struct DrawCommand
 	{
@@ -118,9 +119,9 @@ public:
 	inline Hazel::HazelLight GetLight() { return s_Data.SceneData.ActiveLight; }
 	inline void SetLight(Hazel::HazelLight light) { s_Data.SceneData.ActiveLight = light; }
 	static void SetEnvironment(Hazel::Environment environment);
-	inline Ref<Shader> GetShaderSkybox() { return m_ShaderSkybox; }
-	inline Ref<Shader> GetShaderGrid() { return m_ShaderGrid; }
-	inline Ref<Shader> GetShaderComposite() { return s_Data.CompositeShader; }
+	inline Hazel::Ref<Shader> GetShaderSkybox() { return m_ShaderSkybox; }
+	inline Hazel::Ref<Shader> GetShaderGrid() { return m_ShaderGrid; }
+	inline Hazel::Ref<Shader> GetShaderComposite() { return s_Data.CompositeShader; }
 	inline Hazel::Ref<Hazel::HazelTexture2D> GetEnvEquirect() { return m_EnvEquirect; }
 	uint32_t GetFinalColorBufferID();
 
@@ -131,11 +132,11 @@ public:
 	static std::map<std::string, unsigned int>* m_SamplerSlots;
 
 	// From EnvironmentMap
-	static Ref<Shader> m_ShaderEquirectangularConversion;
-	static Ref<Shader> m_ShaderEnvFiltering;
-	static Ref<Shader> m_ShaderEnvIrradiance;
-	static Ref<Shader> m_ShaderGrid;
-	static Ref<Shader> m_ShaderSkybox;
+	static Hazel::Ref<Shader> m_ShaderEquirectangularConversion;
+	static Hazel::Ref<Shader> m_ShaderEnvFiltering;
+	static Hazel::Ref<Shader> m_ShaderEnvIrradiance;
+	static Hazel::Ref<Shader> m_ShaderGrid;
+	static Hazel::Ref<Shader> m_ShaderSkybox;
 
 	// Intermediate textures
 	static Hazel::Ref<Hazel::HazelTextureCube> m_EnvUnfiltered;

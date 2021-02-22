@@ -594,9 +594,6 @@
       <Filter>Shader</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="EnvMapMaterial.cpp">
-      <Filter>Material</Filter>
-    </ClCompile>
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexBuffer.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
@@ -615,12 +612,6 @@
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLPipeline.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="EnvMapEditorLayer.cpp">
-      <Filter>Material</Filter>
-    </ClCompile>
-    <ClCompile Include="EnvMapSceneRenderer.cpp">
-      <Filter>Material</Filter>
-    </ClCompile>
     <ClCompile Include="Hazel\Renderer\SceneRenderer.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
@@ -629,6 +620,21 @@
     </ClCompile>
     <ClCompile Include="Hazel\Renderer\HazelFramebuffer.cpp">
       <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialInstance.cpp">
+      <Filter>Material</Filter>
+    </ClCompile>
+    <ClCompile Include="EnvMapEditorLayer.cpp">
+      <Filter>EnvMap</Filter>
+    </ClCompile>
+    <ClCompile Include="EnvMapMaterial.cpp">
+      <Filter>EnvMap</Filter>
+    </ClCompile>
+    <ClCompile Include="EnvMapRenderPass.cpp">
+      <Filter>EnvMap</Filter>
+    </ClCompile>
+    <ClCompile Include="EnvMapSceneRenderer.cpp">
+      <Filter>EnvMap</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1235,9 +1241,6 @@
     <ClInclude Include="Hazel\Renderer\HazelShader.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="EnvMapMaterial.h">
-      <Filter>Material</Filter>
-    </ClInclude>
     <ClInclude Include="Hazel\Renderer\HazelCamera.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
@@ -1332,12 +1335,6 @@
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLPipeline.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="EnvMapEditorLayer.h">
-      <Filter>Material</Filter>
-    </ClInclude>
-    <ClInclude Include="EnvMapSceneRenderer.h">
-      <Filter>Material</Filter>
-    </ClInclude>
     <ClInclude Include="Hazel\Renderer\SceneRenderer.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
@@ -1346,6 +1343,21 @@
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\HazelFramebuffer.h">
       <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialInstance.h">
+      <Filter>Material</Filter>
+    </ClInclude>
+    <ClInclude Include="EnvMapEditorLayer.h">
+      <Filter>EnvMap</Filter>
+    </ClInclude>
+    <ClInclude Include="EnvMapMaterial.h">
+      <Filter>EnvMap</Filter>
+    </ClInclude>
+    <ClInclude Include="EnvMapRenderPass.h">
+      <Filter>EnvMap</Filter>
+    </ClInclude>
+    <ClInclude Include="EnvMapSceneRenderer.h">
+      <Filter>EnvMap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1480,6 +1492,9 @@
     </Filter>
     <Filter Include="Hazel\ScriptCore\Scene">
       <UniqueIdentifier>{3b7f3ca6-b0ee-42a1-a4b2-e5a1fb50e9b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EnvMap">
+      <UniqueIdentifier>{fdbce3fc-8bff-48ca-8689-4070b29a1e54}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

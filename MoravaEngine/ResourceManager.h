@@ -23,13 +23,13 @@ public:
 	static inline std::map<std::string, Ref<Material>>* GetMaterials() { return &s_Materials; };
 	static inline std::map<std::string, std::string>* GetTextureInfo() { return &s_TextureInfo; };
 	static inline std::map<std::string, TextureInfo>* GetMaterialInfo() { return &s_MaterialInfo; };
-	static inline std::map<std::string, Ref<Shader>>* GetShaders() { return &s_Shaders; };
+	static inline std::map<std::string, Hazel::Ref<Shader>>* GetShaders() { return &s_Shaders; };
 
 	// Loading HazelTexture2D
 	static Hazel::Ref<Hazel::HazelTexture2D> LoadHazelTexture2D(std::string filePath);
 
-	static void AddShader(std::string name, Ref<Shader> shader);
-	static const Ref<Shader>& GetShader(std::string name);
+	static void AddShader(std::string name, Hazel::Ref<Shader> shader);
+	static const Hazel::Ref<Shader>& GetShader(std::string name);
 
 public:
 	static float s_MaterialSpecular;
@@ -45,6 +45,6 @@ private:
 
 	static std::map<std::string, Hazel::Ref<Hazel::HazelTexture2D>> s_HazelTextures2D;
 
-	static std::map<std::string, Ref<Shader>> s_Shaders;
+	static std::map<std::string, Hazel::Ref<Shader>> s_Shaders;
 
 };

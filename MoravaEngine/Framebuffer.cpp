@@ -27,7 +27,7 @@ Framebuffer::Framebuffer()
 	m_AttachmentStencil = nullptr;
 	m_AttachmentDepthAndStencil = nullptr;
 
-	Resize(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
+	Resize(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, false);
 }
 
 Framebuffer::Framebuffer(unsigned int width, unsigned int height)
@@ -283,6 +283,45 @@ void Framebuffer::Resize(uint32_t width, uint32_t height)
 	m_FramebufferSpecs.Height = height;
 
 	Generate(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
+}
+
+void Framebuffer::Bind() const
+{
+	Bind();
+}
+
+void Framebuffer::Unbind() const
+{
+	Unbind();
+}
+
+void Framebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate)
+{
+	Resize(width, height, false);
+}
+
+void Framebuffer::BindTexture(uint32_t slot) const
+{
+}
+
+Hazel::RendererID Framebuffer::GetRendererID() const
+{
+	return m_FBO;
+}
+
+Hazel::RendererID Framebuffer::GetColorAttachmentRendererID() const
+{
+	return Hazel::RendererID();
+}
+
+Hazel::RendererID Framebuffer::GetDepthAttachmentRendererID() const
+{
+	return Hazel::RendererID();
+}
+
+const Hazel::HazelFramebufferSpecification& Framebuffer::GetSpecification() const
+{
+	return Hazel::HazelFramebufferSpecification();
 }
 
 Framebuffer::~Framebuffer()

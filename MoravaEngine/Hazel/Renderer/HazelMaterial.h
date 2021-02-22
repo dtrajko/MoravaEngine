@@ -26,7 +26,7 @@ namespace Hazel {
 		friend class HazelMaterialInstance;
 
 	public:
-		HazelMaterial(::Ref<HazelShader> shader);
+		HazelMaterial(Ref<HazelShader> shader);
 		virtual ~HazelMaterial();
 
 		void Bind() const;
@@ -62,7 +62,7 @@ namespace Hazel {
 
 		// Getters
 		uint32_t GetMaterialFlags() { return m_MaterialFlags; }
-		::Ref<HazelShader> GetShader() { return m_Shader; }
+		Ref<HazelShader> GetShader() { return m_Shader; }
 		std::unordered_set<HazelMaterialInstance*>* GetMaterialInstances() { return &m_MaterialInstances; }
 
 		void BindTextures() const;
@@ -79,7 +79,7 @@ namespace Hazel {
 		Buffer& GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration);
 
 	private:
-		::Ref<HazelShader> m_Shader;
+		Ref<HazelShader> m_Shader;
 		std::unordered_set<HazelMaterialInstance*> m_MaterialInstances;
 
 		Buffer m_VSUniformStorageBuffer;
@@ -94,7 +94,7 @@ namespace Hazel {
 		friend class HazelMaterial;
 
 	public:
-		HazelMaterialInstance(HazelMaterial* material);
+		HazelMaterialInstance(const Ref<HazelMaterial > & material, const std::string& name = "");
 		virtual ~HazelMaterialInstance();
 
 		template <typename T>
@@ -120,13 +120,13 @@ namespace Hazel {
 			Set(name, (HazelTexture*)texture);
 		}
 
-		void Bind() const;
+		void Bind();
 
-		uint32_t GetFlags() const { return m_Material->GetMaterialFlags(); }
-		bool GetFlag(HazelMaterialFlag flag) const { return (uint32_t)flag & m_Material->GetMaterialFlags(); }
+		uint32_t GetFlags() const { return m_Material->GetFlags(); }
+		bool GetFlag(HazelMaterialFlag flag) const { return (uint32_t)flag & m_Material->GetFlags(); }
 		void SetFlag(HazelMaterialFlag flag, bool value = true);
 
-		::Ref<HazelShader> GetShader() { return m_Material->GetShader(); }
+		Ref<HazelShader> GetShader() { return m_Material->GetShader(); }
 
 		static HazelMaterialInstance* Create(HazelMaterial* material);
 
@@ -158,7 +158,7 @@ namespace Hazel {
 		void OnMaterialValueUpdated(ShaderUniformDeclaration* decl);
 
 	private:
-		HazelMaterial* m_Material;
+		Ref<HazelMaterial> m_Material;
 		std::string m_Name;
 
 		Buffer m_VSUniformStorageBuffer;

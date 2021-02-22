@@ -3,6 +3,8 @@
 #include "FramebufferTexture.h"
 #include "Renderbuffer.h"
 #include "Hazel/Core/Ref.h"
+#include "Hazel/Renderer/HazelFramebuffer.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 #include <vector>
 
@@ -23,7 +25,7 @@ struct FramebufferSpecification
 };
 
 
-class Framebuffer : public Hazel::RefCounted
+class Framebuffer : public Hazel::HazelFramebuffer
 {
 public:
 	Framebuffer();
@@ -66,6 +68,16 @@ public:
 	void Release();
 	void Generate(unsigned int width, unsigned int height); // Invalidate() in Hazel
 	void Resize(uint32_t width, uint32_t height);
+
+	// HazelFramebuffer abstract methods
+	virtual void Bind() const override;
+	virtual void Unbind() const override;
+	virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) override;
+	virtual void BindTexture(uint32_t slot = 0) const override;
+	virtual Hazel::RendererID GetRendererID() const override;
+	virtual Hazel::RendererID GetColorAttachmentRendererID() const override;
+	virtual Hazel::RendererID GetDepthAttachmentRendererID() const override;
+	virtual const Hazel::HazelFramebufferSpecification& GetSpecification() const override;
 
 private:
 	unsigned int m_FBO;

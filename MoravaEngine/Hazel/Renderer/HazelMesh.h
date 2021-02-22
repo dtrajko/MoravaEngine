@@ -123,9 +123,9 @@ namespace Hazel {
 	class Submesh : public Mesh
 	{
 	public:
-		void Render(Hazel::Ref<HazelMesh> parentMesh, ::Ref<Shader> shader, glm::mat4 transform, uint32_t samplerSlot,
+		void Render(Ref<HazelMesh> parentMesh, Ref<Shader> shader, glm::mat4 transform, uint32_t samplerSlot,
 			const std::map<std::string, EnvMapMaterial*>& envMapMaterials, Entity entity);
-		void RenderOutline(Hazel::Ref<HazelMesh> parentMesh, ::Ref<Shader> shader, const glm::mat4& transform, Entity entity);
+		void RenderOutline(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& transform, Entity entity);
 
 	public:
 		uint32_t BaseVertex;
@@ -143,7 +143,7 @@ namespace Hazel {
 	{
 	public:
 		HazelMesh(const std::string& filename);
-		HazelMesh(const std::string& filename, ::Ref<Shader> shader, ::Ref<Material> material, bool isAnimated);
+		HazelMesh(const std::string& filename, Ref<Shader> shader, ::Ref<Material> material, bool isAnimated);
 		virtual ~HazelMesh() override;
 
 		virtual void Create() override;
@@ -217,7 +217,7 @@ namespace Hazel {
 		std::unordered_map<std::string, uint32_t> m_BoneMapping;
 
 		// Materials
-		::Ref<Shader> m_MeshShader;
+		Ref<Shader> m_MeshShader;
 		::Ref<Material> m_BaseMaterial; // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
 		Ref<Texture> m_BaseTexture;
 		std::vector<Ref<Texture>> m_Textures;

@@ -6,6 +6,9 @@
 #include "Shader.h"
 #include "Hazel/Core/Base.h"
 
+#include "Hazel/Renderer/HazelMaterial.h"
+#include "Hazel/Renderer/HazelShader.h"
+
 #include <map>
 #include <string>
 
@@ -40,14 +43,14 @@ enum class MaterialFlag
 };
 
 
-class Material
+class Material : public Hazel::HazelMaterial
 {
 public:
 	Material();
 	Material(float specularIntensity, float shininess);
 	Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess); // based on LearnOpenGL material classint
 	Material(int albedo, int specular, int normal, float shininess); // used in SceneNanosuit
-	Material(Ref<Shader> shader); // based on Hazel::Material contructor
+	Material(Hazel::Ref<Hazel::HazelShader> shader); // based on Hazel::Material contructor
 	~Material();
 
 	void UseMaterial(int specularIntensityLocation, int shininessLocation);
@@ -101,6 +104,6 @@ private:
 
 	// From Hazel/Renderer/Material
 	uint32_t m_MaterialFlags;
-	Ref<Shader> m_Shader;
+	Hazel::Ref<Hazel::HazelShader> m_Shader;
 
 };
