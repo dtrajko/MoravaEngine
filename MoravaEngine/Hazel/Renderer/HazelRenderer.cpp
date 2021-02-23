@@ -108,15 +108,21 @@ namespace Hazel {
 	void HazelRenderer::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
 	{
 		HazelRenderer::Submit([=]() {
-			RendererAPI::DrawIndexed(count, type, depthTest);
 		});
+
+		{
+			RendererAPI::DrawIndexed(count, type, depthTest);
+		}
 	}
 
 	void HazelRenderer::SetLineThickness(float thickness)
 	{
 		HazelRenderer::Submit([=]() {
-			RendererAPI::SetLineThickness(thickness);
 		});
+
+		{
+			RendererAPI::SetLineThickness(thickness);
+		}
 	}
 
 	void HazelRenderer::WaitAndRender()

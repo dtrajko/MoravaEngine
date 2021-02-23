@@ -564,69 +564,67 @@ namespace Hazel
 				std::string file = Application::Get()->OpenFile();
 				if (!file.empty()) {
 					mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(file, nullptr, nullptr, false);
-					EnvMapEditorLayer::LoadEnvMapMaterials(mc.Mesh, entity);
+					// EnvMapEditorLayer::LoadEnvMapMaterials(mc.Mesh, entity);
 				}
 			}
 			ImGui::Columns(1);
 		});
 
-		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
+		DrawComponent<CameraComponent>("Camera", entity, [=](CameraComponent& cc)
 		{
-			auto& camera = component.Camera;
-
-			ImGui::Checkbox("Primary", &component.Primary);
-
-			const char* projectionTypeStrings[] = { "Perspective", "Orthographic" };
-			const char* currentProjectionTypeString = projectionTypeStrings[(int)camera.GetProjectionType()];
-
-			if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
+			// Projection Type
+			const char* projTypeStrings[] = { "Perspective", "Orthographic" };
+			const char* currentProj = projTypeStrings[(int)cc.Camera.GetProjectionType()];
+			if (ImGui::BeginCombo("Projection", currentProj))
 			{
-				for (int i = 0; i < 2; i++)
+				for (int type = 0; type < 2; type++)
 				{
-					bool isSelected = currentProjectionTypeString == projectionTypeStrings[i];
-					if (ImGui::Selectable(projectionTypeStrings[i], isSelected))
+					bool is_selected = (currentProj == projTypeStrings[type]);
+					if (ImGui::Selectable(projTypeStrings[type], is_selected))
 					{
-						currentProjectionTypeString = projectionTypeStrings[i];
-						camera.SetProjectionType((SceneCamera::ProjectionType)i);
+						currentProj = projTypeStrings[type];
+						cc.Camera.SetProjectionType((SceneCamera::ProjectionType)type);
 					}
-
-					if (isSelected)
+					if (is_selected)
 						ImGui::SetItemDefaultFocus();
 				}
 				ImGui::EndCombo();
 			}
 
-			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+			ImGuiWrapper::BeginPropertyGrid();
+			// Perspective parameters
+			if (cc.Camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
-				float verticalFOV = camera.GetPerspectiveVerticalFOV();
-				if (ImGui::DragFloat("Vertical FOV", &verticalFOV))
-					camera.SetPerspectiveVerticalFOV(verticalFOV);
+				float verticalFOV = cc.Camera.GetPerspectiveVerticalFOV();
+				if (ImGuiWrapper::Property("Vertical FOV", verticalFOV))
+					cc.Camera.SetPerspectiveVerticalFOV(verticalFOV);
 
-				float nearClip = camera.GetPerspectiveNearClip();
-				if (ImGui::DragFloat("Near", &nearClip))
-					camera.SetPerspectiveNearClip(nearClip);
+				float nearClip = cc.Camera.GetPerspectiveNearClip();
+				if (ImGuiWrapper::Property("Near Clip", nearClip))
+					cc.Camera.SetPerspectiveNearClip(nearClip);
 
-				float farClip = camera.GetPerspectiveFarClip();
-				if (ImGui::DragFloat("Far", &farClip))
-					camera.SetPerspectiveFarClip(farClip);
+				float farClip = cc.Camera.GetPerspectiveFarClip();
+				if (ImGuiWrapper::Property("Far Clip", farClip))
+					cc.Camera.SetPerspectiveFarClip(farClip);
 			}
 
-			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
+			// Orthographic parameters
+			else if (cc.Camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
 			{
-				float orthoSize = camera.GetOrthographicSize();
-				if (ImGui::DragFloat("Size", &orthoSize))
-					camera.SetOrthographicSize(orthoSize);
+				float orthoSize = cc.Camera.GetOrthographicSize();
+				if (ImGuiWrapper::Property("Size", orthoSize))
+					cc.Camera.SetOrthographicSize(orthoSize);
 
-				float orthoNear = camera.GetOrthographicNearClip();
-				if (ImGui::DragFloat("Near", &orthoNear))
-					camera.SetOrthographicNearClip(orthoNear);
+				float nearClip = cc.Camera.GetOrthographicNearClip();
+				if (ImGuiWrapper::Property("Near Clip", nearClip))
+					cc.Camera.SetOrthographicNearClip(nearClip);
 
-				float orthoFar = camera.GetOrthographicFarClip();
-				if (ImGui::DragFloat("Far", &orthoFar))
-					camera.SetOrthographicFarClip(orthoFar);
-
-				ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
+				float farClip = cc.Camera.GetOrthographicFarClip();
+				if (ImGuiWrapper::Property("Far Clip", farClip))
+					cc.Camera.SetOrthographicFarClip(farClip);
 			}
+
+			EndPropertyGrid();
 		});
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)

@@ -271,7 +271,9 @@ namespace Hazel {
 				{
 					int VertexID = submesh.BaseVertex + bone->mWeights[j].mVertexId;
 					float Weight = bone->mWeights[j].mWeight;
-					m_AnimatedVertices[VertexID].AddBoneData(boneIndex, Weight);
+					if (m_AnimatedVertices.size() > VertexID) {
+						m_AnimatedVertices[VertexID].AddBoneData(boneIndex, Weight);
+					}
 				}
 			}
 		}

@@ -26,8 +26,8 @@
 
 SceneHazelEnvMap::SceneHazelEnvMap()
 {
-    sceneSettings.cameraPosition     = glm::vec3(20.0f, 4.0f, 0.0f);
-    sceneSettings.cameraStartYaw     = -180.0f;
+    sceneSettings.cameraPosition     = glm::vec3(-24.0f, 5.0f, 0.0f);
+    sceneSettings.cameraStartYaw     = 0.0f;
     sceneSettings.cameraStartPitch   = 0.0f;
     sceneSettings.cameraMoveSpeed    = 2.0f;
     sceneSettings.waterHeight        = 0.0f;
@@ -114,7 +114,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupMaterials();
     SetupFramebuffers();
 
-    m_EnvironmentMap = new EnvMapEditorLayer("Textures/HDR/birchwood_4k.hdr", this);
+    m_EnvironmentMap = new EnvMapEditorLayer("Textures/HDR/umhlanga_sunrise_4k.hdr", this);
 
     SetupMeshes();
     SetupModels();

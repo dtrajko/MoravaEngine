@@ -183,6 +183,8 @@ void EnvMapEditorLayer::SetupContextData()
 
     m_CameraEntity.AddComponent<Hazel::CameraComponent>(m_ActiveCamera);
 
+    Log::GetLogger()->debug("m_CameraEntity UUID: {0}", m_CameraEntity.GetUUID());
+
     auto mapGenerator = CreateEntity("Map Generator");
     mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
 
@@ -230,7 +232,7 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
     meshEntity.AddComponent<Hazel::ScriptComponent>("Example.Script");
 
     SubmitEntity(meshEntity);
-    LoadEnvMapMaterials(mesh, meshEntity);
+    // LoadEnvMapMaterials(mesh, meshEntity);
 
     return meshEntity;
 }
@@ -1178,17 +1180,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
             }
             else if (s_SelectionMode == SelectionMode::SubMesh)
             {
-                auto aabb = selectedSubmesh.Mesh->BoundingBox;
-
-                aabbCenterOffset = glm::vec3(
-                    aabb.Min.x + ((aabb.Max.x - aabb.Min.x) / 2.0f),
-                    aabb.Min.y + ((aabb.Max.y - aabb.Min.y) / 2.0f),
-                    aabb.Min.z + ((aabb.Max.z - aabb.Min.z) / 2.0f)
-                );
-
-                submeshTransform = selectedSubmesh.Mesh->Transform;
-                submeshTransform = glm::translate(submeshTransform, aabbCenterOffset);
-                transformImGui = entityTransform * submeshTransform;
+                transformImGui = selectedSubmesh.Mesh->Transform;
             }
 
             glm::vec3 translation, rotationRadians, scale;
@@ -1212,9 +1204,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
                 }
                 else if (s_SelectionMode == SelectionMode::SubMesh)
                 {
-                    submeshTransform = glm::inverse(entityTransform) * transformImGui;
-                    submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
-                    selectedSubmesh.Mesh->Transform = submeshTransform;
+                    selectedSubmesh.Mesh->Transform = Math::CreateTransform(translation, rotationDegrees, scale);
                 }
             }
         }
@@ -1225,13 +1215,22 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
     {
         if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
         {
+            auto pitch = m_ActiveCamera->GetPitch();
+            if (ImGui::DragFloat("Pitch", &pitch, 1.0f, -89.0f, 89.0f)) {
+                m_ActiveCamera->SetPitch(pitch);
+            }
+
+            auto yaw = m_ActiveCamera->GetYaw();
+            if (ImGui::DragFloat("Yaw", &yaw, 1.0f, -180.0f, 180.0f)) {
+                m_ActiveCamera->SetYaw(yaw);
+            }
+
+            auto fov = m_ActiveCamera->GetPerspectiveVerticalFOV();
+            if(ImGui::DragFloat("FOV", &fov, 1.0f, 10.0f, 150.0f)) {
+                m_ActiveCamera->SetPerspectiveVerticalFOV(fov);
+            }
+
             char buffer[100];
-            sprintf(buffer, "Pitch         %.2f", m_ActiveCamera->GetPitch());
-            ImGui::Text(buffer);
-            sprintf(buffer, "Yaw           %.2f", m_ActiveCamera->GetYaw());
-            ImGui::Text(buffer);
-            sprintf(buffer, "FOV           %.2f", glm::degrees(m_ActiveCamera->GetPerspectiveVerticalFOV()));
-            ImGui::Text(buffer);
             sprintf(buffer, "Aspect Ratio  %.2f", glm::degrees(m_ActiveCamera->GetAspectRatio()));
             ImGui::Text(buffer);
             sprintf(buffer, "Position    X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetPosition().x, m_ActiveCamera->GetPosition().y, m_ActiveCamera->GetPosition().z);
