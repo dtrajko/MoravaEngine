@@ -1,12 +1,13 @@
 #include "HazelScene.h"
 #include "Components.h"
 #include "Entity.h"
+#include "ScriptableEntity.h"
 #include "../Renderer/HazelMesh.h"
 #include "../Renderer/SceneRenderer.h"
 #include "../Script/ScriptEngine.h"
-#include "ScriptableEntity.h"
 
 #include "../../Math.h"
+#include "../../EnvMapSceneRenderer.h"
 
 #include <glm/glm.hpp>
 

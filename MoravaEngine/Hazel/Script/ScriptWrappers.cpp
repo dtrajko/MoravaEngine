@@ -196,9 +196,7 @@ namespace Hazel { namespace Script {
 
 	Ref<HazelMesh>* Hazel_Mesh_Constructor(MonoString* filepath)
 	{
-		// return new Ref<HazelMesh>(new HazelMesh(mono_string_to_utf8(filepath)));
-
-		return &Ref<HazelMesh>::Create("", CreateRef<Shader>(), CreateRef<Material>(), false);
+		return new Ref<HazelMesh>(new HazelMesh(mono_string_to_utf8(filepath)));
 	}
 
 	void Hazel_Mesh_Destructor(Ref<HazelMesh>* _this)
@@ -210,9 +208,8 @@ namespace Hazel { namespace Script {
 	Ref<HazelMaterial>* Hazel_Mesh_GetMaterial(Ref<HazelMesh>* inMesh)
 	{
 		Ref<HazelMesh>& mesh = *(Ref<HazelMesh>*)inMesh;
+		return new Ref<HazelMaterial>();
 		// return new Ref<HazelMaterial>(mesh->GetMaterial());
-
-		return &Ref<HazelMaterial>();
 	}
 
 	Ref<HazelMaterialInstance>* Hazel_Mesh_GetMaterialByIndex(Ref<HazelMesh>* inMesh, int index)

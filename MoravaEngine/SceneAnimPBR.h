@@ -58,22 +58,22 @@ private:
 		int MouseY;
 	} m_ImGuiViewport;
 
-	Ref<Shader> m_ShaderMain;
-	Ref<Shader> m_ShaderBackground;
-	Ref<Shader> m_ShaderHybridAnimPBR;
-	Ref<Shader> m_ShaderHDR;
-	Ref<Shader> m_ShaderEquirectangularConversion;
-	Ref<Shader> m_ShaderEnvFiltering;
-	Ref<Shader> m_ShaderEnvIrradiance;
-	Ref<Shader> m_ShaderBasic;
+	Hazel::Ref<Shader> m_ShaderMain;
+	Hazel::Ref<Shader> m_ShaderBackground;
+	Hazel::Ref<Shader> m_ShaderHybridAnimPBR;
+	Hazel::Ref<Shader> m_ShaderHDR;
+	Hazel::Ref<Shader> m_ShaderEquirectangularConversion;
+	Hazel::Ref<Shader> m_ShaderEnvFiltering;
+	Hazel::Ref<Shader> m_ShaderEnvIrradiance;
+	Hazel::Ref<Shader> m_ShaderBasic;
 
 	Hazel::Ref<Hazel::HazelMesh> m_MeshAnimPBR_M1911;
 	Hazel::Ref<Hazel::HazelMesh> m_MeshAnimPBR_BobLamp;
 	Hazel::Ref<Hazel::HazelMesh> m_MeshAnimPBR_AnimBoy;
 
-	Ref<Material> m_BaseMaterial_M1911;
-	Ref<Material> m_BaseMaterial_BobLamp;
-	Ref<Material> m_BaseMaterial_AnimBoy;
+	Hazel::Ref<Material> m_BaseMaterial_M1911;
+	Hazel::Ref<Material> m_BaseMaterial_BobLamp;
+	Hazel::Ref<Material> m_BaseMaterial_AnimBoy;
 
 	struct Entity {
 		struct Transform {

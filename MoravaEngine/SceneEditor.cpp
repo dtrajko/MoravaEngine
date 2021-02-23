@@ -1550,7 +1550,7 @@ Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* n
         *name = "drone";
         break;
     case MESH_TYPE_M1911:
-        mesh = new Hazel::HazelMesh("Models/M1911/m1911.fbx", Ref<Shader>(RendererBasic::s_Shaders["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
+        mesh = new Hazel::HazelMesh("Models/M1911/m1911.fbx", Hazel::Ref<Shader>(RendererBasic::s_Shaders["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
         *name = "M1911";
         break;
     default:
@@ -1959,7 +1959,7 @@ void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture
     shaderEditor->setInt("shadowMap", 2);
 }
 
-void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Ref<Material> material, SceneObject* sceneObject)
+void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Hazel::Ref<Material> material, SceneObject* sceneObject)
 {
     shaderEditorPBR->Bind();
 
@@ -2027,7 +2027,7 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Te
     shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_Camera->GetViewMatrix());
     shaderHybridAnimPBR->setVec3("u_CameraPosition", m_Camera->GetPosition());
 
-    Ref<Material> baseMaterial = ResourceManager::HotLoadMaterial(sceneObject->materialName);
+    Hazel::Ref<Material> baseMaterial = ResourceManager::HotLoadMaterial(sceneObject->materialName);
 
     baseMaterial->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
     baseMaterial->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
@@ -2503,7 +2503,7 @@ void SceneEditor::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
 
         Texture* texture = ResourceManager::HotLoadTexture(object->textureName);
-        Ref<Material> material = ResourceManager::HotLoadMaterial(object->materialName);
+        Hazel::Ref<Material> material = ResourceManager::HotLoadMaterial(object->materialName);
 
         // Don't render Lights (id = 0 to 8), it's done in RenderLightSources()
         if (object->name.substr(0, 6) == "Light.")

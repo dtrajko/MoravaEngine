@@ -143,7 +143,7 @@ namespace Hazel {
 	{
 	public:
 		HazelMesh(const std::string& filename);
-		HazelMesh(const std::string& filename, Ref<Shader> shader, ::Ref<Material> material, bool isAnimated);
+		HazelMesh(const std::string& filename, Ref<Shader> shader, Ref<HazelMaterial> material, bool isAnimated);
 		virtual ~HazelMesh() override;
 
 		virtual void Create() override;
@@ -159,7 +159,7 @@ namespace Hazel {
 		const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
 
 		// Ref<HazelShader> GetMeshShader() { return m_MeshShader; }
-		// Ref<HazelMaterial> GetMaterial() { return m_BaseMaterial; }
+		Ref<HazelMaterial> GetMaterial() { return m_BaseMaterial; }
 		// std::vector<Ref<HazelMaterialInstance>> GetMaterials() { return m_Materials; }
 
 		inline const std::vector<::Ref<Material>>& GetMaterials() const { return m_Materials; }
@@ -170,7 +170,7 @@ namespace Hazel {
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const;
 
 		// Setters
-		inline void SetBaseMaterial(::Ref<Material> baseMaterial) { m_BaseMaterial = baseMaterial; }
+		inline void SetBaseMaterial(Ref<HazelMaterial> baseMaterial) { m_BaseMaterial = baseMaterial; }
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
 
 		static MaterialUUID GetSubmeshMaterialUUID(Ref<HazelMesh> mesh, Hazel::Submesh& submesh, Entity* entity);
@@ -218,7 +218,7 @@ namespace Hazel {
 
 		// Materials
 		Ref<Shader> m_MeshShader;
-		::Ref<Material> m_BaseMaterial; // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
+		Ref<HazelMaterial> m_BaseMaterial; // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
 		Ref<Texture> m_BaseTexture;
 		std::vector<Ref<Texture>> m_Textures;
 		std::vector<Ref<Texture>> m_NormalMaps;

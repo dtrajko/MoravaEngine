@@ -27,7 +27,7 @@ Framebuffer::Framebuffer()
 	m_AttachmentStencil = nullptr;
 	m_AttachmentDepthAndStencil = nullptr;
 
-	Resize(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, false);
+	Resize(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
 }
 
 Framebuffer::Framebuffer(unsigned int width, unsigned int height)
@@ -38,9 +38,9 @@ Framebuffer::Framebuffer(unsigned int width, unsigned int height)
 }
 
 Framebuffer::Framebuffer(FramebufferSpecification spec)
-	: Framebuffer(spec.Width, spec.Height)
 {
 	m_FramebufferSpecs = spec;
+	Framebuffer(spec.Width, spec.Height);
 }
 
 void Framebuffer::AddAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
@@ -264,6 +264,11 @@ Attachment* Framebuffer::GetAttachmentDepthAndStencil()
 	}
 
 	return m_AttachmentDepthAndStencil;
+}
+
+Hazel::Ref<Framebuffer> Framebuffer::Create(const FramebufferSpecification& spec)
+{
+	return Hazel::Ref<Framebuffer>::Create(spec);
 }
 
 void Framebuffer::Clear()

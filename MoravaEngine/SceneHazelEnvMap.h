@@ -53,8 +53,8 @@ private:
 private:
 	EnvMapEditorLayer* m_EnvironmentMap;
 
-	Ref<Shader> m_ShaderBackground;
-	Ref<Shader> m_ShaderBasic;
+	Hazel::Ref<Shader> m_ShaderBackground;
+	Hazel::Ref<Shader> m_ShaderBasic;
 
 	struct Entity {
 

@@ -140,7 +140,7 @@ namespace Hazel {
 
 			s_Data.TextureShader = new Shader("Shaders/Hazel/Renderer2D.vs", "Shaders/Hazel/Renderer2D.fs");
 			s_Data.TextureShader->Bind();
-			s_Data.TextureShader->setIntArray("u_Textures", samplers, s_Data.MaxTextureSlots);
+			s_Data.TextureShader->SetIntArray("u_Textures", samplers, s_Data.MaxTextureSlots);
 
 			// Set all texture slots to 0
 			s_Data.TextureSlots[0] = s_Data.WhiteTexture;

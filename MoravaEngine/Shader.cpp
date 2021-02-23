@@ -237,17 +237,17 @@ void Shader::SetIntArray(const std::string& name, int* values, uint32_t size)
 
 const std::string& Shader::GetName() const
 {
-	// TODO: insert return statement here
+	return std::string();
 }
 
 const std::unordered_map<std::string, Hazel::ShaderBuffer>& Shader::GetShaderBuffers() const
 {
-	// TODO: insert return statement here
+	return std::unordered_map<std::string, Hazel::ShaderBuffer>();
 }
 
 const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& Shader::GetResources() const
 {
-	// TODO: insert return statement here
+	return std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>();
 }
 
 void Shader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)

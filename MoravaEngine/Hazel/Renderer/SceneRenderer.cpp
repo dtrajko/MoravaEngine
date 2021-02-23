@@ -49,7 +49,7 @@ namespace Hazel {
 
 	void SceneRenderer::Init()
 	{
-		FramebufferSpecification geoFramebufferSpec;
+		HazelFramebufferSpecification geoFramebufferSpec;
 		geoFramebufferSpec.Width = 1280;
 		geoFramebufferSpec.Height = 720;
 		geoFramebufferSpec.Format = FramebufferFormat::RGBA16F;
@@ -60,7 +60,7 @@ namespace Hazel {
 		geoRenderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(geoFramebufferSpec);
 		s_Data.GeoPass = RenderPass::Create(geoRenderPassSpec);
 
-		FramebufferSpecification compFramebufferSpec;
+		HazelFramebufferSpecification compFramebufferSpec;
 		compFramebufferSpec.Width = 1280;
 		compFramebufferSpec.Height = 720;
 		compFramebufferSpec.Format = FramebufferFormat::RGBA8;
@@ -125,7 +125,7 @@ namespace Hazel {
 		s_Data.SelectedMeshDrawList.push_back({ mesh, nullptr, transform });
 	}
 
-	static Ref<Shader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
+	static Ref<HazelShader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
 
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> SceneRenderer::CreateEnvironmentMap(const std::string& filepath)
 	{
@@ -165,11 +165,11 @@ namespace Hazel {
 
 		HazelRenderer::Submit([envUnfiltered, envFiltered, cubemapSize]() {
 			const float deltaRoughness = 1.0f / glm::max((float)(envFiltered->GetMipLevelCount() - 1.0f), 1.0f);
-			for (int level = 1, size = cubemapSize / 2; level < envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
+			for (int level = 1, size = cubemapSize / 2; level < (int)envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
 			{
 				const GLuint numGroups = glm::max(1, size / 32);
 				glBindImageTexture(0, envFiltered->GetID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-				glProgramUniform1f(envFilteringShader->GetProgramID(), 0, level * deltaRoughness);
+				glProgramUniform1f(envFilteringShader->GetRendererID(), 0, level * deltaRoughness);
 				glDispatchCompute(numGroups, numGroups, 6);
 			}
 		});

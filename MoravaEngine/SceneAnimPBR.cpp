@@ -203,25 +203,25 @@ void SceneAnimPBR::SetupMaterials()
 
 void SceneAnimPBR::SetupShaders()
 {
-    m_ShaderMain = CreateRef<Shader>("Shaders/shader.vert", "Shaders/shader.frag");
+    m_ShaderMain = Hazel::Ref<Shader>::Create("Shaders/shader.vert", "Shaders/shader.frag");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderMain compiled [programID={0}]", m_ShaderMain->GetProgramID());
 
-    m_ShaderBackground = CreateRef<Shader>("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    m_ShaderBackground = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
 
-    m_ShaderHybridAnimPBR = CreateRef<Shader>("Shaders/HybridAnimPBR.vs", "Shaders/HybridAnimPBR.fs");
+    m_ShaderHybridAnimPBR = Hazel::Ref<Shader>::Create("Shaders/HybridAnimPBR.vs", "Shaders/HybridAnimPBR.fs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderHybridAnimPBR compiled [programID={0}]", m_ShaderHybridAnimPBR->GetProgramID());
 
-    m_ShaderEquirectangularConversion = CreateRef<Shader>("Shaders/Hazel/EquirectangularToCubeMap.cs");
+    m_ShaderEquirectangularConversion = Hazel::Ref<Shader>::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderEquirectangularConversion compiled [programID={0}]", m_ShaderEquirectangularConversion->GetProgramID());
 
-    m_ShaderEnvFiltering = CreateRef<Shader>("Shaders/Hazel/EnvironmentMipFilter.cs");
+    m_ShaderEnvFiltering = Hazel::Ref<Shader>::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderEnvFiltering compiled [programID={0}]", m_ShaderEnvFiltering->GetProgramID());
 
-    m_ShaderEnvIrradiance = CreateRef<Shader>("Shaders/Hazel/EnvironmentIrradiance.cs");
+    m_ShaderEnvIrradiance = Hazel::Ref<Shader>::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderEnvIrradiance compiled [programID={0}]", m_ShaderEnvIrradiance->GetProgramID());
 
-    m_ShaderBasic = CreateRef<Shader>("Shaders/basic.vs", "Shaders/basic.fs");
+    m_ShaderBasic = Hazel::Ref<Shader>::Create("Shaders/basic.vs", "Shaders/basic.fs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
 }
 
@@ -287,8 +287,9 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoM1911.emissive  = "Textures/plain.png";
     textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
 
-    m_BaseMaterial_M1911 = CreateRef<Material>(textureInfoM1911, materialSpecular, materialShininess);
+    m_BaseMaterial_M1911 = Hazel::Ref<Material>::Create(textureInfoM1911, materialSpecular, materialShininess);
     m_MeshAnimPBR_M1911 = Hazel::Ref<Hazel::HazelMesh>::Create("Models/M1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
+
     m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
 
     m_Entities["M1911"].Transform.Scale = m_Entities["M1911"].Init.Transform.Scale;
@@ -312,7 +313,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoBobLamp.emissive  = "Textures/plain.png";
     textureInfoBobLamp.ao        = "Textures/PBR/non_reflective/ao.png";
 
-    m_BaseMaterial_BobLamp = CreateRef<Material>(textureInfoBobLamp, materialSpecular, materialShininess);
+    m_BaseMaterial_BobLamp = Hazel::Ref<Material>::Create(textureInfoBobLamp, materialSpecular, materialShininess);
     m_MeshAnimPBR_BobLamp = Hazel::Ref<Hazel::HazelMesh>::Create("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp, true);
     m_MeshAnimPBR_BobLamp->SetTimeMultiplier(1.0f);
 
@@ -337,7 +338,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoAnimBoy.emissive  = "Textures/plain.png";
     textureInfoAnimBoy.ao        = "Textures/PBR/non_reflective/ao.png";
 
-    m_BaseMaterial_AnimBoy = CreateRef<Material>(textureInfoAnimBoy, materialSpecular, materialShininess);
+    m_BaseMaterial_AnimBoy = Hazel::Ref<Material>::Create(textureInfoAnimBoy, materialSpecular, materialShininess);
     m_MeshAnimPBR_AnimBoy = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy, true);
     m_MeshAnimPBR_AnimBoy->SetTimeMultiplier(800.0f);
 

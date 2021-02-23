@@ -114,17 +114,18 @@ void EnvMapEditorLayer::Init()
 
     isMultisample = geoFramebufferSpec.Samples > 1;
 
-    EnvMapRenderPassSpecification geoRenderPassSpec;
-    geoRenderPassSpec.TargetFramebuffer = CreateRef<Framebuffer>(geoFramebufferSpec);
-    geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferSpec);
-
     FramebufferSpecification geoFramebufferDepthSpec;
     geoFramebufferDepthSpec = geoFramebufferSpec;
     geoFramebufferDepthSpec.attachmentType = AttachmentType::Texture;
     geoFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth_24_Stencil_8;
 
+    EnvMapRenderPassSpecification geoRenderPassSpec;
+    geoRenderPassSpec.TargetFramebuffer = Framebuffer::Create(geoFramebufferSpec);
+    geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferSpec);
+
     geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferDepthSpec);
     Log::GetLogger()->debug("Generating the GEO RenderPass framebuffer with AttachmentFormat::RGBA16F");
+
     geoRenderPassSpec.TargetFramebuffer->Generate(geoFramebufferSpec.Width, geoFramebufferSpec.Height);
     m_SceneRenderer->s_Data.GeoPass = Hazel::Ref<EnvMapRenderPass>::Create(geoRenderPassSpec);
 
@@ -138,7 +139,7 @@ void EnvMapEditorLayer::Init()
     isMultisample = compFramebufferSpec.Samples > 1;
 
     EnvMapRenderPassSpecification compRenderPassSpec;
-    compRenderPassSpec.TargetFramebuffer = CreateRef<Framebuffer>(compFramebufferSpec);
+    compRenderPassSpec.TargetFramebuffer = Framebuffer::Create(compFramebufferSpec);
     compRenderPassSpec.TargetFramebuffer->CreateAttachment(compFramebufferSpec);
     compRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(compFramebufferSpec.Width, compFramebufferSpec.Height, isMultisample,
         AttachmentType::Renderbuffer, AttachmentFormat::Depth);
@@ -983,12 +984,13 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
 
         ImGui::Begin("Viewport Environment Map Info");
         {
+            Hazel::Ref<Framebuffer> targetFramebuffer = m_SceneRenderer->s_Data.CompositePass->GetSpecification().TargetFramebuffer;
             glm::ivec2 colorAttachmentSize = glm::ivec2(
-                m_SceneRenderer->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetWidth(),
-                m_SceneRenderer->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetHeight());
+                targetFramebuffer->GetTextureAttachmentColor()->GetWidth(),
+                targetFramebuffer->GetTextureAttachmentColor()->GetHeight());
             glm::ivec2 depthAttachmentSize = glm::ivec2(
-                m_SceneRenderer->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetAttachmentDepth()->GetWidth(),
-                m_SceneRenderer->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetAttachmentDepth()->GetHeight());
+                targetFramebuffer->GetAttachmentDepth()->GetWidth(),
+                targetFramebuffer->GetAttachmentDepth()->GetHeight());
 
             ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
             ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
@@ -1077,8 +1079,9 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
             glm::vec2 viewportPanelSizeEnvMap = glm::vec2(viewportPanelSizeImGuiEnvMap.x, viewportPanelSizeImGuiEnvMap.y);
 
             // Currently resize can only work with a single (main) viewport
-            // ResizeViewport(viewportPanelSizeEnvMap, m_EnvMapEditorLayer->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer); 
-            uint64_t textureID = m_SceneRenderer->s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
+            // ResizeViewport(viewportPanelSizeEnvMap, m_EnvMapEditorLayer->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer);
+            Hazel::Ref<Framebuffer> targetFramebuffer = m_SceneRenderer->s_Data.CompositePass->GetSpecification().TargetFramebuffer;
+            uint64_t textureID = targetFramebuffer->GetTextureAttachmentColor()->GetID();
             ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportEnvMapSize.x, m_ViewportEnvMapSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
         }
         ImGui::End();
@@ -1866,7 +1869,7 @@ void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer*
 
     if (viewportPanelSize != m_ViewportMainSize && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
     {
-        renderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y, true);
+        renderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
         m_ViewportMainSize = glm::vec2(viewportPanelSize.x, viewportPanelSize.y);
     }
 }

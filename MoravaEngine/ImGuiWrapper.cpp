@@ -251,7 +251,7 @@ void ImGuiWrapper::DrawMaterialUI(EnvMapMaterial* material, Hazel::Ref<Hazel::Ha
 	std::string buttonName = "Rename";
 	if (ImGui::Button(buttonName.c_str())) {
 		if (s_MaterialNameNew != materialNameOld) {
-			EnvironmentMap::RenameMaterial(material, s_MaterialNameNew);
+			EnvMapEditorLayer::RenameMaterial(material, s_MaterialNameNew);
 			s_MaterialNameNew = "";
 		}
 	}

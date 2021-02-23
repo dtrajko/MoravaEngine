@@ -8,7 +8,7 @@
 #include "Log.h"
 
 
-Hazel::Ref<EnvMapRenderPass> EnvMapRenderPass::Create(const Hazel::RenderPassSpecification& spec)
+EnvMapRenderPass::EnvMapRenderPass(const EnvMapRenderPassSpecification& spec)
+	: m_Specification(spec)
 {
-	return Hazel::Ref<Hazel::OpenGLRenderPass>::Create(spec);
 }

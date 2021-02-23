@@ -73,7 +73,7 @@ namespace Hazel {
 		Create();
 	}
 
-	HazelMesh::HazelMesh(const std::string& filename, Ref<Shader> shader, ::Ref<Material> material, bool isAnimated)
+	HazelMesh::HazelMesh(const std::string& filename, Ref<Shader> shader, Ref<HazelMaterial> material, bool isAnimated)
 		: m_MeshShader(shader), m_BaseMaterial(material), m_IsAnimated(isAnimated)
 	{
 		m_FilePath = filename;
@@ -804,7 +804,7 @@ namespace Hazel {
 		textureInfoDefault.roughness = "Textures/plain.png";
 		textureInfoDefault.emissive  = "Texture/plain.png";
 		textureInfoDefault.ao        = "Textures/plain.png";
-		m_BaseMaterial = CreateRef<Material>(textureInfoDefault, 0.0f, 0.0f);
+		m_BaseMaterial = Hazel::Ref<Material>::Create(textureInfoDefault, 0.0f, 0.0f);
 	}
 
 	Ref<Texture> HazelMesh::LoadBaseTexture()
@@ -1073,12 +1073,13 @@ namespace Hazel {
 
 			// Manage materials (PBR texture binding)
 			if (m_BaseMaterial) {
-				m_BaseMaterial->GetTextureAlbedo()->Bind(samplerSlot + 0);
-				m_BaseMaterial->GetTextureNormal()->Bind(samplerSlot + 1);
-				m_BaseMaterial->GetTextureMetallic()->Bind(samplerSlot + 2);
-				m_BaseMaterial->GetTextureRoughness()->Bind(samplerSlot + 3);
-				m_BaseMaterial->GetTextureEmissive()->Bind(samplerSlot + 4);
-				m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
+				Hazel::Ref<Material> baseMaterialRef = m_BaseMaterial;
+				baseMaterialRef->GetTextureAlbedo()->Bind(samplerSlot + 0);
+				baseMaterialRef->GetTextureNormal()->Bind(samplerSlot + 1);
+				baseMaterialRef->GetTextureMetallic()->Bind(samplerSlot + 2);
+				baseMaterialRef->GetTextureRoughness()->Bind(samplerSlot + 3);
+				baseMaterialRef->GetTextureEmissive()->Bind(samplerSlot + 4);
+				baseMaterialRef->GetTextureAO()->Bind(samplerSlot + 5);
 			}
 
 			Ref<HazelMesh> instance = this;

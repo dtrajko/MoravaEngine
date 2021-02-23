@@ -91,9 +91,9 @@ namespace Hazel {
 		m_Material->GetMaterialInstances()->erase(this);
 	}
 
-	Ref<HazelMaterial> HazelMaterialInstance::Create(const Ref<HazelShader>& shader)
+	Ref<HazelMaterialInstance> HazelMaterialInstance::Create(const Ref<HazelMaterial>& material)
 	{
-		return Ref<HazelMaterial>();
+		return Ref<HazelMaterialInstance>::Create(material);
 	}
 
 	void HazelMaterialInstance::AllocateStorage()

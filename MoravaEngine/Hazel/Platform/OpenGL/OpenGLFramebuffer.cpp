@@ -7,7 +7,7 @@
 
 namespace Hazel {
 
-	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecification& spec)
+	OpenGLFramebuffer::OpenGLFramebuffer(const HazelFramebufferSpecification& spec)
 		: m_Specification(spec)
 	{
 		if (!spec.SwapChainTarget)

@@ -149,7 +149,7 @@ namespace Hazel {
 		}
 
 	public:
-		static Ref <HazelMaterial> Create(const Ref<HazelShader>& shader);
+		static Ref <HazelMaterialInstance> Create(const Ref<HazelMaterial>& material);
 
 	private:
 		void AllocateStorage();
