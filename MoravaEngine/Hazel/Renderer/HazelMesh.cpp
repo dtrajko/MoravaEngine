@@ -78,10 +78,9 @@ namespace Hazel {
 	{
 		m_FilePath = filename;
 
-		// TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
-		//	if (!m_BaseMaterial) {
-		//		SetupDefaultBaseMaterial();
-		//	}
+		if (!m_BaseMaterial) {
+			SetupDefaultBaseMaterial();
+		}
 
 		m_BaseTexture = nullptr;
 
@@ -290,7 +289,7 @@ namespace Hazel {
 				auto aiMaterial = scene->mMaterials[i];
 				auto aiMaterialName = aiMaterial->GetName();
 
-				auto mi = CreateRef<Material>(); // m_BaseMaterial
+				auto mi = Ref<HazelMaterialInstance>::Create(m_BaseMaterial, aiMaterialName.data);
 				m_Materials[i] = mi;
 
 				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
@@ -1098,10 +1097,10 @@ namespace Hazel {
 				envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 5);
 			}
 
-			::Ref<Material> material = nullptr;
+			Ref<HazelMaterialInstance> material = nullptr;
 			if (m_Materials.size()) {
 				material = m_Materials[submesh.MaterialIndex];
-				if (material && material->GetFlag(MaterialFlag::DepthTest)) {
+				if (material && material->GetFlag(HazelMaterialFlag::DepthTest)) {
 					glEnable(GL_DEPTH_TEST);
 				}
 			} else {
@@ -1171,7 +1170,7 @@ namespace Hazel {
 		}
 
 		auto material = parentMesh->GetMaterials()[MaterialIndex];
-		if (material->GetFlag(MaterialFlag::DepthTest)) {
+		if (material->GetFlag(HazelMaterialFlag::DepthTest)) {
 			glEnable(GL_DEPTH_TEST);
 		}
 		else {

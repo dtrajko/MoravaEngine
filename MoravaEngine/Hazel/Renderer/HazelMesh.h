@@ -160,9 +160,8 @@ namespace Hazel {
 
 		// Ref<HazelShader> GetMeshShader() { return m_MeshShader; }
 		Ref<HazelMaterial> GetMaterial() { return m_BaseMaterial; }
-		// std::vector<Ref<HazelMaterialInstance>> GetMaterials() { return m_Materials; }
-
-		inline const std::vector<::Ref<Material>>& GetMaterials() const { return m_Materials; }
+		std::vector<Ref<HazelMaterialInstance>>& GetMaterials() { return m_Materials; }
+		const std::vector<Ref<HazelMaterialInstance>>& GetMaterials() const { return m_Materials; }
 		inline std::vector<Ref<Texture>>& GetTextures() { return m_Textures; }
 		inline const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
 		inline bool& IsAnimated() { return m_IsAnimated; }
@@ -218,13 +217,15 @@ namespace Hazel {
 
 		// Materials
 		Ref<Shader> m_MeshShader;
-		Ref<HazelMaterial> m_BaseMaterial; // TODO: Convert m_BaseMaterial type to Hazel/Renderer/HazelMaterial
+		Ref<HazelMaterial> m_BaseMaterial;
 		Ref<Texture> m_BaseTexture;
 		std::vector<Ref<Texture>> m_Textures;
 		std::vector<Ref<Texture>> m_NormalMaps;
-		std::vector<::Ref<Material>> m_Materials;
+		std::vector<Ref<HazelMaterialInstance>> m_Materials;
 
 		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
+
+		// std::vector<MaterialDescriptor> m_MaterialDescriptors;
 
 		// Animation
 		bool m_IsAnimated = false;
@@ -232,6 +233,8 @@ namespace Hazel {
 		float m_WorldTime = 0.0f;
 		float m_TimeMultiplier = 1.0f;
 		bool m_AnimationPlaying = true;
+
+		std::string m_FilePath;
 
 		friend class Renderer;
 		friend class SceneHierarchyPanel;

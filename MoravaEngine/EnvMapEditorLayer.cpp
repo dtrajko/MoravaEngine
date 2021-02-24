@@ -1786,7 +1786,7 @@ void EnvMapEditorLayer::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& tran
 
         m_ShaderHazelPBR->setMat4("u_Transform", transform * submesh.Transform);
 
-        if (material->GetFlag(MaterialFlag::DepthTest)) { // TODO: Fix Material flags
+        if (material->GetFlag(Hazel::HazelMaterialFlag::DepthTest)) { // TODO: Fix Material flags
             glEnable(GL_DEPTH_TEST);
         }
         else {
@@ -2153,7 +2153,7 @@ void EnvMapEditorLayer::GeometryPassTemporary()
                 {
                     materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
 
-                    // RenderOutline(m_ShaderOutline, submesh, entity);
+                    RenderOutline(m_ShaderOutline, submesh, entity);
 
                     // Render Submesh
                     m_ShaderHazelPBR->Bind();

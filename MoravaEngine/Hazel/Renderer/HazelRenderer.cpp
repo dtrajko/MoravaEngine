@@ -197,7 +197,6 @@ namespace Hazel {
 		// auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
 		// auto shader = material->GetShader();
 		// TODO: Sort this out
-
 		mesh->m_VertexBuffer->Bind();
 		mesh->m_Pipeline->Bind();
 		mesh->m_IndexBuffer->Bind();
@@ -206,9 +205,9 @@ namespace Hazel {
 		for (Submesh& submesh : mesh->m_Submeshes)
 		{
 			// Material
-			//	auto material = overrideMaterial ? overrideMaterial : materials[submesh.MaterialIndex];
-			//	auto shader = material->GetShader();
-			//	material->Bind();
+			auto material = overrideMaterial ? overrideMaterial : materials[submesh.MaterialIndex];
+			auto shader = material->GetShader();
+			material->Bind();
 
 			//	if (mesh->IsAnimated())
 			//	{
