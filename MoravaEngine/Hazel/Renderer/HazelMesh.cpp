@@ -1196,8 +1196,7 @@ namespace Hazel {
 		parentMesh->m_Pipeline->Bind();
 		parentMesh->m_IndexBuffer->Bind();
 
-		glm::mat4 outlineTransform = submeshTransform * Transform;
-		outlineTransform *= glm::scale(glm::mat4(1.0f), glm::vec3(1.2f));
+		glm::mat4 outlineTransform = glm::scale(glm::mat4(1.0f), glm::vec3(1.2f)) * submeshTransform * Transform;
 
 		shader->Bind();
 
