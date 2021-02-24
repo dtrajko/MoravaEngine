@@ -39,6 +39,7 @@ namespace Hazel {
 		std::vector<DrawCommand> SelectedMeshDrawList;
 
 		// Grid
+		Ref<HazelMaterial> GridMaterial;
 		Ref<HazelShader> GridShader;
 		Ref<HazelMaterialInstance> OutlineMaterial;
 
@@ -197,9 +198,12 @@ namespace Hazel {
 		if (outline)
 		{
 			HazelRenderer::Submit([]()
-				{
-					glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-				});
+			{
+			});
+
+			{
+				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+			}
 		}
 
 		HazelRenderer::BeginRenderPass(s_Data.GeoPass);
@@ -236,46 +240,62 @@ namespace Hazel {
 		// Set uniform buffers
 		s_Data.GridShader->SetUniformBuffer("Camera", &viewProjection, sizeof(glm::mat4));
 
+#if 0
 		// Render entities
 		for (auto& dc : s_Data.DrawList)
 		{
-			// auto baseMaterial = dc.Mesh->GetMaterial(); // TODO change Mesh::m_BaseMaterial to HazelMaterial
+			auto baseMaterial = dc.Mesh->GetMaterial();
+			baseMaterial->Set("u_ViewProjectionMatrix", viewProjection);
+			baseMaterial->Set("u_CameraPosition", cameraPosition);
 
 			// Environment (TODO: don't do this per mesh)
-			// baseMaterial->Set("u_EnvRadianceTex", s_Data.SceneData.SceneEnvironment.RadianceMap);
-			// baseMaterial->Set("u_EnvIrradianceTex", s_Data.SceneData.SceneEnvironment.IrradianceMap);
-			// baseMaterial->Set("u_BRDFLUTTexture", s_Data.BRDFLUT);
+			baseMaterial->Set("u_EnvRadianceTex", s_Data.SceneData.SceneEnvironment.RadianceMap);
+			baseMaterial->Set("u_EnvIrradianceTex", s_Data.SceneData.SceneEnvironment.IrradianceMap);
+			baseMaterial->Set("u_BRDFLUTTexture", s_Data.BRDFLUT);
+
+			// Set lights (TODO: move to light environment and don't do per mesh)
+			baseMaterial->Set("lights", s_Data.SceneData.ActiveLight);
 
 			auto overrideMaterial = nullptr; // dc.Material;
 			HazelRenderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
 		}
+
+		if (outline)
+		{
+			HazelRenderer::Submit([]() {
+			});
+
+			{
+				glStencilFunc(GL_ALWAYS, 1, 0xff);
+				glStencilMask(0xff);
+			}
+		}
+
+		for (auto& dc : s_Data.SelectedMeshDrawList)
+		{
+			auto baseMaterial = dc.Mesh->GetMaterial();
+			baseMaterial->Set("u_ViewProjectionMatrix", viewProjection);
+			baseMaterial->Set("u_CameraPosition", cameraPosition);
+
+			// Environment (TODO: don't do this per mesh)
+			baseMaterial->Set("u_EnvRadianceTex", s_Data.SceneData.SceneEnvironment.RadianceMap);
+			baseMaterial->Set("u_EnvIrradianceTex", s_Data.SceneData.SceneEnvironment.IrradianceMap);
+			baseMaterial->Set("u_BRDFLUTTexture", s_Data.BRDFLUT);
+
+			// Set lights (TODO: move to light environment and don't do per mesh)
+			baseMaterial->Set("lights", s_Data.SceneData.ActiveLight);
+
+			auto overrideMaterial = nullptr; // dc.Material;
+			HazelRenderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
+		}
+#endif
 
 		if (outline)
 		{
 			HazelRenderer::Submit([]()
 			{
-				glStencilFunc(GL_ALWAYS, 1, 0xff);
-				glStencilMask(0xff);
 			});
-		}
 
-		for (auto& dc : s_Data.SelectedMeshDrawList)
-		{
-			// auto baseMaterial = dc.Mesh->GetMaterial();
-			// auto shader = baseMaterial->GetShader(); // TODO: convert HazelMaterial::m_MeshShader to HazelShader
-
-			// Environment (TODO: don't do this per mesh)
-			// baseMaterial->Set("u_EnvRadianceTex", s_Data.SceneData.SceneEnvironment.RadianceMap);
-			// baseMaterial->Set("u_EnvIrradianceTex", s_Data.SceneData.SceneEnvironment.IrradianceMap);
-			// baseMaterial->Set("u_BRDFLUTTexture", s_Data.BRDFLUT);
-
-			auto overrideMaterial = nullptr; // dc.Material;
-			HazelRenderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
-		}
-
-		if (outline)
-		{
-			HazelRenderer::Submit([]()
 			{
 				glStencilFunc(GL_NOTEQUAL, 1, 0xff);
 				glStencilMask(0);
@@ -284,7 +304,7 @@ namespace Hazel {
 				glEnable(GL_LINE_SMOOTH);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				glDisable(GL_DEPTH_TEST);
-			});
+			}
 
 			// Draw outline here
 			s_Data.OutlineMaterial->Set("u_ViewProjection", viewProjection);
@@ -315,6 +335,8 @@ namespace Hazel {
 		// Grid
 		if (GetOptions().ShowGrid)
 		{
+			// s_Data.GridMaterial->Set("u_ViewProjection", viewProjection);
+
 			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f));
 			s_Data.GridShader->Bind();
 			s_Data.GridShader->SetUniform("u_VertexUniforms.Transform", transform);
