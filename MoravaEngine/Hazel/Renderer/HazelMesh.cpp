@@ -1136,16 +1136,6 @@ namespace Hazel {
 		parentMesh->m_Pipeline->Bind();
 		parentMesh->m_IndexBuffer->Bind();
 
-		shader->Bind();
-
-		for (size_t i = 0; i < parentMesh->GetBoneTransforms().size(); i++)
-		{
-			std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-			shader->setMat4(uniformName, parentMesh->GetBoneTransforms()[i]);
-		}
-
-		shader->setMat4("u_Transform", submeshTransform * Transform);
-
 		// Manage materials (PBR texture binding)
 		if (m_BaseMaterial) {
 			m_BaseMaterial->GetTextureAlbedo()->Bind(samplerSlot + 0);
@@ -1177,7 +1167,19 @@ namespace Hazel {
 			glDisable(GL_DEPTH_TEST);
 		}
 
+		shader->Bind();
+
+		for (size_t i = 0; i < parentMesh->GetBoneTransforms().size(); i++)
+		{
+			std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+			shader->setMat4(uniformName, parentMesh->GetBoneTransforms()[i]);
+		}
+
+		shader->setMat4("u_Transform", submeshTransform * Transform);
+
 		glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
+
+		shader->Unbind();
 	}
 
 	void Submesh::RenderOutline(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& transform, Entity entity)
@@ -1200,8 +1202,10 @@ namespace Hazel {
 		outlineTransform = glm::scale(outlineTransform, glm::vec3(1.2f));
 		shader->setMat4("u_Transform", outlineTransform);
 
-		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_DEPTH_TEST);
 
 		glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
+
+		shader->Unbind();
 	}
 }

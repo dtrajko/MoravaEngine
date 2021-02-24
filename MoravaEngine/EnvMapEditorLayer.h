@@ -231,6 +231,7 @@ private:
 	bool m_DisplayRay;
 	bool m_DrawOnTopBoundingBoxes; // obsolete?
 	bool m_DisplayLineElements;
+	bool m_DisplayOutline;
 
 	// Hazel LIVE! #014
 	Hazel::Ref<Hazel::HazelScene> m_RuntimeScene;

@@ -82,6 +82,7 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_DisplayRay = false;
     m_DrawOnTopBoundingBoxes = true; // obsolete?
     m_DisplayLineElements = false;
+    m_DisplayOutline = false;
 
     Scene::s_ImGuizmoTransform = nullptr; // &GetMeshEntity()->Transform();
     Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
@@ -481,6 +482,7 @@ void EnvMapEditorLayer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPB
     shaderHazelPBR->setFloat("lights.Multiplier", m_SceneRenderer->s_Data.SceneData.ActiveLight.Multiplier);
 
     shaderHazelPBR->Validate();
+    shaderHazelPBR->Unbind();
 
     /**** END Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
 }
@@ -884,6 +886,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
     {
         if (ImGui::CollapsingHeader("Display Info"))
         {
+            ImGui::Checkbox("Display Outline", &m_DisplayOutline);
             ImGui::Checkbox("Display Bounding Boxes", &m_DisplayBoundingBoxes);
             ImGui::Checkbox("Display Hazel Grid", &m_DisplayHazelGrid);
             ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
@@ -2156,17 +2159,13 @@ void EnvMapEditorLayer::GeometryPassTemporary()
                     RenderOutline(m_ShaderOutline, submesh, entity);
 
                     // Render Submesh
-                    m_ShaderHazelPBR->Bind();
-                    {
-                        // load submesh materials for each specific submesh from the s_EnvMapMaterials list
-                        if (s_EnvMapMaterials.contains(materialUUID)) {
-                            envMapMaterial = s_EnvMapMaterials.at(materialUUID);
-                            UpdateShaderPBRUniforms(m_ShaderHazelPBR, envMapMaterial);
-                        }
-
-                        submesh.Render(meshComponent.Mesh, m_ShaderHazelPBR, entityTransform, samplerSlot, s_EnvMapMaterials, entity);
+                    // load submesh materials for each specific submesh from the s_EnvMapMaterials list
+                    if (s_EnvMapMaterials.contains(materialUUID)) {
+                        envMapMaterial = s_EnvMapMaterials.at(materialUUID);
+                        UpdateShaderPBRUniforms(m_ShaderHazelPBR, envMapMaterial);
                     }
-                    m_ShaderHazelPBR->Unbind();
+
+                    submesh.Render(meshComponent.Mesh, m_ShaderHazelPBR, entityTransform, samplerSlot, s_EnvMapMaterials, entity);
                 }
             }
         }
@@ -2201,22 +2200,20 @@ void EnvMapEditorLayer::GeometryPassTemporary()
 
 void EnvMapEditorLayer::RenderOutline(Hazel::Ref<Shader> shader, Hazel::Submesh& submesh, Hazel::Entity entity)
 {
+    if (!m_DisplayOutline) return;
+
     auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
     glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
 
     // Render outline
-    shader->Bind();
-    {
-        if (EntitySelection::s_SelectionContext.size()) {
-            for (auto selection : EntitySelection::s_SelectionContext)
-            {
-                if (selection.Mesh && &submesh == selection.Mesh) {
-                    submesh.RenderOutline(meshComponent.Mesh, shader, entityTransform, entity);
-                }
+    if (EntitySelection::s_SelectionContext.size()) {
+        for (auto selection : EntitySelection::s_SelectionContext)
+        {
+            if (selection.Mesh && &submesh == selection.Mesh) {
+                submesh.RenderOutline(meshComponent.Mesh, shader, entityTransform, entity);
             }
         }
     }
-    shader->Unbind();
 }
 
 void EnvMapEditorLayer::CompositePassTemporary(Framebuffer* framebuffer)
