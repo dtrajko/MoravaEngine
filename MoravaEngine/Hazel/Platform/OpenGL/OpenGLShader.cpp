@@ -151,7 +151,8 @@ namespace Hazel {
 
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					HZ_CORE_ERROR(module.GetErrorMessage());
+					// HZ_CORE_ERROR(module.GetErrorMessage());
+					Log::GetLogger()->critical(module.GetErrorMessage());
 					HZ_CORE_ASSERT(false);
 				}
 
@@ -190,7 +191,8 @@ namespace Hazel {
 
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					HZ_CORE_ERROR(module.GetErrorMessage());
+					// HZ_CORE_ERROR(module.GetErrorMessage());
+					Log::GetLogger()->critical(module.GetErrorMessage());
 					HZ_CORE_ASSERT(false);
 				}
 
@@ -261,7 +263,8 @@ namespace Hazel {
 
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					HZ_CORE_ERROR(module.GetErrorMessage());
+					// HZ_CORE_ERROR(module.GetErrorMessage());
+					Log::GetLogger()->critical(module.GetErrorMessage());
 					HZ_CORE_ASSERT(false);
 				}
 
@@ -279,7 +282,34 @@ namespace Hazel {
 
 			GLuint shaderID = glCreateShader(GL_VERTEX_SHADER);
 			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderData[0].data(), (GLsizei)(shaderData[0].size() * sizeof(uint32_t)));
-			glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
+
+			try {
+				glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
+			}
+			catch (...) {
+				// Specialization is equivalent to compilation.
+				GLint isCompiled = 0;
+				glGetShaderiv(shaderID, GL_COMPILE_STATUS, &isCompiled);
+				if (isCompiled == GL_FALSE)
+				{
+					GLint maxLength = 0;
+					glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &maxLength);
+
+					// The maxLength includes the NULL character
+					std::vector<GLchar> infoLog(maxLength);
+					glGetShaderInfoLog(shaderID, maxLength, &maxLength, &infoLog[0]);
+
+					// We don't need the shader anymore.
+					// glDeleteShader(shaderID);
+
+					// Use the infoLog as you see fit.
+					Log::GetLogger()->critical("Vertex Shader specialization / compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
+
+					// In this simple program, we'll just leave
+					return;
+				}
+			}
+
 			glAttachShader(program, shaderID);
 
 			shaderRendererIDs[0] = shaderID;
@@ -314,7 +344,8 @@ namespace Hazel {
 				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, shaderc_fragment_shader, m_AssetPath.c_str(), options);
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					HZ_CORE_ERROR(module.GetErrorMessage());
+					// HZ_CORE_ERROR(module.GetErrorMessage());
+					Log::GetLogger()->critical(module.GetErrorMessage());
 					HZ_CORE_ASSERT(false);
 				}
 
@@ -333,7 +364,34 @@ namespace Hazel {
 
 			GLuint shaderID = glCreateShader(GL_FRAGMENT_SHADER);
 			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderData[1].data(), (GLsizei)(shaderData[1].size() * sizeof(uint32_t)));
-			glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
+
+			try {
+				glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
+			}
+			catch(...) {
+				// Specialization is equivalent to compilation.
+				GLint isCompiled = 0;
+				glGetShaderiv(shaderID, GL_COMPILE_STATUS, &isCompiled);
+				if (isCompiled == GL_FALSE)
+				{
+					GLint maxLength = 0;
+					glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &maxLength);
+
+					// The maxLength includes the NULL character
+					std::vector<GLchar> infoLog(maxLength);
+					glGetShaderInfoLog(shaderID, maxLength, &maxLength, &infoLog[0]);
+
+					// We don't need the shader anymore.
+					// glDeleteShader(shaderID);
+
+					// Use the infoLog as you see fit.
+					Log::GetLogger()->critical("Fragment Shader specialization / compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
+
+					// In this simple program, we'll just leave
+					return;
+				}
+			}
+
 			glAttachShader(program, shaderID);
 
 			shaderRendererIDs[1] = shaderID;
@@ -353,7 +411,8 @@ namespace Hazel {
 			// The maxLength includes the NULL character
 			std::vector<GLchar> infoLog(maxLength);
 			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-			HZ_CORE_ERROR("Shader compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
+			// HZ_CORE_ERROR("Shader compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
+			Log::GetLogger()->critical("Shader compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
 
 			// We don't need the program anymore.
 			glDeleteProgram(program);
@@ -708,7 +767,8 @@ namespace Hazel {
 				std::vector<GLchar> infoLog(maxLength);
 				glGetShaderInfoLog(shaderRendererID, maxLength, &maxLength, &infoLog[0]);
 
-				HZ_CORE_ERROR("Shader compilation failed:\n{0}", &infoLog[0]);
+				// HZ_CORE_ERROR("Shader compilation failed:\n{0}", &infoLog[0]);
+				Log::GetLogger()->critical("Shader compilation failed:\n{0}", &infoLog[0]);
 
 				// We don't need the shader anymore.
 				glDeleteShader(shaderRendererID);
@@ -734,7 +794,8 @@ namespace Hazel {
 			// The maxLength includes the NULL character
 			std::vector<GLchar> infoLog(maxLength);
 			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-			HZ_CORE_ERROR("Shader compilation failed:\n{0}", &infoLog[0]);
+			// HZ_CORE_ERROR("Shader compilation failed:\n{0}", &infoLog[0]);
+			Log::GetLogger()->critical("Shader compilation failed:\n{0}", &infoLog[0]);
 
 			// We don't need the program anymore.
 			glDeleteProgram(program);
