@@ -3,7 +3,7 @@
 #include "Scene.h"
 
 #include "btBulletDynamicsCommon.h"
-#include "BulletDebugDrawer.h"
+#include "src/Misc/BulletDebugDrawer.h"
 
 
 class SceneBullet : public Scene

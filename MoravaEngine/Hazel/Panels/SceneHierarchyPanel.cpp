@@ -5,7 +5,7 @@
 
 // Morava
 #include "../../EntitySelection.h"
-#include "../../EnvMapEditorLayer.h"
+#include "../../src/EnvMap/EnvMapEditorLayer.h"
 
 // TODO:
 // - Eventually change imgui node IDs to be entity/asset GUID
@@ -456,9 +456,9 @@ namespace Hazel
 				if (ImGui::Button("Mesh"))
 				{
 					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>();
-					if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponent>()) {
-						EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponent>();
-					}
+					//	if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponent>()) {
+					//		EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponent>();
+					//	}
 					ImGui::CloseCurrentPopup();
 				}
 			}

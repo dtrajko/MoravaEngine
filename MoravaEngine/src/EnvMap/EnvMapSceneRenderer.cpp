@@ -1,15 +1,15 @@
 #include "EnvMapSceneRenderer.h"
 
-#include "Hazel/Core/Assert.h"
-#include "Hazel/Platform/OpenGL/OpenGLRenderPass.h"
-#include "Hazel/Renderer/HazelShader.h"
-#include "Hazel/Renderer/HazelRenderer.h"
-#include "Hazel/Scene/HazelScene.h"
+#include "../../Hazel/Core/Assert.h"
+#include "../../Hazel/Platform/OpenGL/OpenGLRenderPass.h"
+#include "../../Hazel/Renderer/HazelShader.h"
+#include "../../Hazel/Renderer/HazelRenderer.h"
+#include "../../Hazel/Scene/HazelScene.h"
 
-#include "Application.h"
-#include "Log.h"
-#include "RendererBasic.h"
-#include "ResourceManager.h"
+#include "../../Application.h"
+#include "../../Log.h"
+#include "../../RendererBasic.h"
+#include "../../ResourceManager.h"
 
 
 SceneRendererData EnvMapSceneRenderer::s_Data;

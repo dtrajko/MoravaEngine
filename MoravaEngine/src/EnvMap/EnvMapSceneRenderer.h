@@ -1,18 +1,18 @@
 #pragma once
 
-#include "Hazel/Core/Ref.h"
-#include "Hazel/Scene/Entity.h"
-#include "Hazel/Renderer/EditorCamera.h"
-#include "Hazel/Renderer/HazelMaterial.h"
-#include "Hazel/Renderer/HazelTexture.h"
-#include "Hazel/Renderer/RenderCommandQueue.h"
-#include "Hazel/Renderer/RenderPass.h"
-#include "Hazel/Renderer/SceneEnvironment.h"
+#include "../../Hazel/Core/Ref.h"
+#include "../../Hazel/Scene/Entity.h"
+#include "../../Hazel/Renderer/EditorCamera.h"
+#include "../../Hazel/Renderer/HazelMaterial.h"
+#include "../../Hazel/Renderer/HazelTexture.h"
+#include "../../Hazel/Renderer/RenderCommandQueue.h"
+#include "../../Hazel/Renderer/RenderPass.h"
+#include "../../Hazel/Renderer/SceneEnvironment.h"
 
-#include "Camera.h"
-#include "HazelFullscreenQuad.h"
-#include "Scene.h"
 #include "EnvMapRenderPass.h"
+#include "../../Camera.h"
+#include "../../HazelFullscreenQuad.h"
+#include "../../Scene.h"
 
 
 struct SceneRendererOptions

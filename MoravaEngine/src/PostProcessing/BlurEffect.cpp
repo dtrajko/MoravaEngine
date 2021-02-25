@@ -1,6 +1,7 @@
 #include "BlurEffect.h"
-#include "Log.h"
-#include "Application.h"
+
+#include "../../Log.h"
+#include "../../Application.h"
 
 
 BlurEffect::BlurEffect()

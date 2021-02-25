@@ -3,11 +3,11 @@
 #include "Scene.h"
 
 #include "RenderInstanced.h"
-#include "Player.h"
-#include "PlayerController.h"
 #include "Raycast.h"
 #include "MapGenerator.h"
 #include "TerrainMarchingCubes.h"
+#include "src/Player/Player.h"
+#include "src/Player/PlayerController.h"
 
 
 class SceneMarchingCubes : public Scene

@@ -2,7 +2,7 @@
 
 #include "ShaderMain.h"
 #include "ShaderPBR.h"
-#include "WaterManager.h"
+#include "src/Water/WaterManager.h"
 #include "Application.h"
 
 

@@ -3,12 +3,12 @@
 #include "Scene.h"
 
 #include "RenderInstanced.h"
-#include "Player.h"
-#include "PlayerController.h"
 #include "Raycast.h"
 #include "MapGenerator.h"
 #include "TerrainVoxel.h"
 #include "TerrainSL.h"
+#include "src/Player/Player.h"
+#include "src/Player/PlayerController.h"
 
 
 class SceneVoxelTerrainSL : public Scene

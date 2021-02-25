@@ -1,19 +1,20 @@
 #pragma once
 
-#include "Scene.h"
+#include "Hazel/Panels/SceneHierarchyPanel.h"
+
+#include "Grid.h"
+#include "Framebuffer.h"
+#include "MaterialWorkflowPBR.h"
+#include "Mesh.h"
+#include "Pivot.h"
 #include "Quad.h"
 #include "Raycast.h"
-#include "Pivot.h"
-#include "Grid.h"
-#include "MaterialWorkflowPBR.h"
-#include "SceneObjectParticleSystem.h"
-#include "Framebuffer.h"
-#include "BlurEffect.h"
-#include "Mesh.h"
-#include "SceneObject.h"
 #include "Ring90.h"
+#include "Scene.h"
+#include "SceneObject.h"
+#include "SceneObjectParticleSystem.h"
 #include "Gizmo.h"
-#include "Hazel/Panels/SceneHierarchyPanel.h"
+#include "src/PostProcessing/BlurEffect.h"
 
 #include <glm/ext/quaternion_float.hpp>
 

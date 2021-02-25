@@ -1,20 +1,17 @@
 #include "EnvMapEditorLayer.h"
 
-#include "Hazel/Renderer/HazelRenderer.h"
-#include "Hazel/Renderer/RenderPass.h"
-#include "Hazel/Renderer/RendererAPI.h"
-#include "Hazel/Renderer/Renderer2D.h"
-#include "Hazel/Scene/SceneSerializer.h"
-#include "Hazel/Script/ScriptEngine.h"
-#include "Hazel/Utils/PlatformUtils.h"
+#include "../../Hazel/Renderer/RendererAPI.h"
+#include "../../Hazel/Scene/SceneSerializer.h"
+#include "../../Hazel/Script/ScriptEngine.h"
+#include "../../Hazel/Utils/PlatformUtils.h"
 
-#include "ImGuiWrapper.h"
-#include "ImGuizmo.h"
-#include "RendererBasic.h"
-#include "SceneHazelEnvMap.h"
-#include "MousePicker.h"
-#include "ShaderLibrary.h"
 #include "EnvMapRenderPass.h"
+#include "../../ImGuiWrapper.h"
+#include "../../ImGuizmo/ImGuizmo.h"
+#include "../../RendererBasic.h"
+#include "../../SceneHazelEnvMap.h"
+#include "../../MousePicker.h"
+#include "../../ShaderLibrary.h"
 
 #include <filesystem>
 
@@ -1168,8 +1165,6 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
         if (EntitySelection::s_SelectionContext.size())
         {
             glm::mat4 transformImGui;
-            glm::mat4 submeshTransform;
-            glm::vec3 aabbCenterOffset;
 
             SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
 

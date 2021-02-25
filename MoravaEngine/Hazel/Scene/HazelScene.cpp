@@ -7,7 +7,7 @@
 #include "../Script/ScriptEngine.h"
 
 #include "../../Math.h"
-#include "../../EnvMapSceneRenderer.h"
+#include "../../src/EnvMap/EnvMapSceneRenderer.h"
 
 #include <glm/glm.hpp>
 

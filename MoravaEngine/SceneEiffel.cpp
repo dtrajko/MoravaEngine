@@ -6,7 +6,6 @@
 #include "Tile2D.h"
 #include "ShaderMain.h"
 #include "Renderer.h"
-#include "WaterManager.h"
 
 
 SceneEiffel::SceneEiffel()

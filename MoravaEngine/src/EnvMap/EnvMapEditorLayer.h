@@ -1,17 +1,16 @@
 #pragma once
 
-#include "pch.h"
+#include "../../pch.h"
 
-#include "Hazel/Renderer/RenderPass.h"
-#include "Hazel/Renderer/HazelRenderer.h"
-#include "Hazel/Renderer/Renderer2D.h"
-#include "Hazel/Renderer/SceneRenderer.h"
+#include "../../Hazel/Renderer/HazelRenderer.h"
+#include "../../Hazel/Renderer/Renderer2D.h"
+#include "../../Hazel/Renderer/SceneRenderer.h"
 
 #include "EnvMapMaterial.h"
 #include "EnvMapSceneRenderer.h"
-#include "Quad.h"
-#include "CubeSkybox.h"
-#include "EntitySelection.h"
+#include "../../Quad.h"
+#include "../../CubeSkybox.h"
+#include "../../EntitySelection.h"
 
 
 enum class SelectionMode

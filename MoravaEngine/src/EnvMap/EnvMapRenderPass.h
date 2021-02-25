@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Hazel/Core/Base.h"
-#include "Hazel/Core/Ref.h"
-#include "Hazel/Renderer/RenderPass.h"
-#include "Hazel/Platform/OpenGL/OpenGLRenderPass.h"
+#include "../../Hazel/Core/Base.h"
+#include "../../Hazel/Core/Ref.h"
+#include "../../Hazel/Renderer/RenderPass.h"
+#include "../../Hazel/Platform/OpenGL/OpenGLRenderPass.h"
 
-#include "Framebuffer.h"
+#include "../../Framebuffer.h"
 
 
 struct EnvMapRenderPassSpecification : public Hazel::RenderPassSpecification

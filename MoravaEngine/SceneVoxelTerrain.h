@@ -4,9 +4,9 @@
 
 #include "TerrainVoxel.h"
 #include "RenderInstanced.h"
-#include "Player.h"
-#include "PlayerController.h"
 #include "Raycast.h"
+#include "src/Player/Player.h"
+#include "src/Player/PlayerController.h"
 
 
 class SceneVoxelTerrain : public Scene

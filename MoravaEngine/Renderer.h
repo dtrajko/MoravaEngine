@@ -2,7 +2,7 @@
 
 #include "RendererBasic.h"
 
-#include "WaterManager.h"
+#include "src/Water/WaterManager.h"
 
 
 class Renderer : public RendererBasic

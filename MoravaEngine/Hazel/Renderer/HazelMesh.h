@@ -13,7 +13,7 @@
 #include "../../Shader.h"
 #include "../../Texture.h"
 #include "../../Material.h"
-#include "../../EnvMapMaterial.h"
+#include "../../src/EnvMap/EnvMapMaterial.h"
 #include "../../Mesh.h"
 
 #include <string>

@@ -2,18 +2,18 @@
 
 #include "Scene.h"
 
-#include "Quad.h"
-#include "Raycast.h"
 #include "AABB.h"
-#include "Pivot.h"
+#include "Framebuffer.h"
 #include "Grid.h"
 #include "Gizmo.h"
-#include "TextureCubemapFaces.h"
 #include "MaterialWorkflowPBR.h"
+#include "Pivot.h"
+#include "Quad.h"
+#include "Raycast.h"
 #include "SkinnedMesh.h"
 #include "SceneObjectParticleSystem.h"
-#include "Framebuffer.h"
-#include "BlurEffect.h"
+#include "TextureCubemapFaces.h"
+#include "src/PostProcessing/BlurEffect.h"
 
 #include <future>
 #include <set>

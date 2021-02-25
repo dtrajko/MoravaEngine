@@ -133,7 +133,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;HZ_PLATFORM_WINDOWS;HZ_RELEASE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\mono\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(ProjectName);$(ProjectDir)src;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\mono\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName)_$(PlatformTarget).pch</PrecompiledHeaderOutputFile>
@@ -159,7 +159,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;HZ_PLATFORM_WINDOWS;HZ_RELEASE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\mono\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(ProjectName);$(ProjectDir)src;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\mono\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -185,16 +185,11 @@
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="AABB.cpp" />
     <ClCompile Include="Application.cpp" />
-    <ClCompile Include="BlurEffect.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraControllerVoxelTerrain.cpp" />
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="EndlessTerrain.cpp" />
     <ClCompile Include="EntitySelection.cpp" />
-    <ClCompile Include="EnvMapEditorLayer.cpp" />
-    <ClCompile Include="EnvMapMaterial.cpp" />
-    <ClCompile Include="EnvMapRenderPass.cpp" />
-    <ClCompile Include="EnvMapSceneRenderer.cpp" />
     <ClCompile Include="FramebufferTextureCubemap.cpp" />
     <ClCompile Include="HazelFullscreenQuad.cpp" />
     <ClCompile Include="Hazel\Core\Layer.cpp" />
@@ -250,7 +245,6 @@
     <ClCompile Include="MeshGenerator.cpp" />
     <ClCompile Include="MeshUnity.cpp" />
     <ClCompile Include="NoiseSL.cpp" />
-    <ClCompile Include="Octree.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleMaster.cpp" />
     <ClCompile Include="ParticleRenderer.cpp" />
@@ -263,11 +257,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Player.cpp" />
-    <ClCompile Include="PlayerController.cpp" />
     <ClCompile Include="QuadInstanced.cpp" />
     <ClCompile Include="QuadSSAO.cpp" />
-    <ClCompile Include="Quadtree.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="RendererECS.cpp" />
     <ClCompile Include="RendererTrivial.cpp" />
@@ -303,7 +294,6 @@
     <ClCompile Include="SkinnedMesh.cpp" />
     <ClCompile Include="Attachment.cpp" />
     <ClCompile Include="Block.cpp" />
-    <ClCompile Include="BulletDebugDrawer.cpp" />
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="Cone.cpp" />
     <ClCompile Include="Cube.cpp" />
@@ -369,10 +359,21 @@
     <ClCompile Include="ShaderMain.cpp" />
     <ClCompile Include="ShaderPBR.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
-    <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="SongHo\CylinderSongHo.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="SpotLight.cpp" />
+    <ClCompile Include="src\Data\Octree.cpp" />
+    <ClCompile Include="src\Data\Quadtree.cpp" />
+    <ClCompile Include="src\EnvMap\EnvMapEditorLayer.cpp" />
+    <ClCompile Include="src\EnvMap\EnvMapMaterial.cpp" />
+    <ClCompile Include="src\EnvMap\EnvMapRenderPass.cpp" />
+    <ClCompile Include="src\EnvMap\EnvMapSceneRenderer.cpp" />
+    <ClCompile Include="src\Misc\BulletDebugDrawer.cpp" />
+    <ClCompile Include="src\Player\Player.cpp" />
+    <ClCompile Include="src\Player\PlayerController.cpp" />
+    <ClCompile Include="src\PostProcessing\BlurEffect.cpp" />
+    <ClCompile Include="src\Skybox\Skybox.cpp" />
+    <ClCompile Include="src\Water\WaterManager.cpp" />
     <ClCompile Include="SSAO.cpp" />
     <ClCompile Include="SubTexture2D.cpp" />
     <ClCompile Include="TerrainBase.cpp" />
@@ -391,7 +392,6 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Util.cpp" />
-    <ClCompile Include="WaterManager.cpp" />
     <ClCompile Include="WindowsInput.cpp" />
     <ClCompile Include="WindowsWindow.cpp" />
   </ItemGroup>
@@ -409,16 +409,11 @@
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
     <ClInclude Include="AABB.h" />
     <ClInclude Include="Application.h" />
-    <ClInclude Include="BlurEffect.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraControllerVoxelTerrain.h" />
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="EndlessTerrain.h" />
     <ClInclude Include="EntitySelection.h" />
-    <ClInclude Include="EnvMapEditorLayer.h" />
-    <ClInclude Include="EnvMapMaterial.h" />
-    <ClInclude Include="EnvMapRenderPass.h" />
-    <ClInclude Include="EnvMapSceneRenderer.h" />
     <ClInclude Include="FramebufferTextureCubemap.h" />
     <ClInclude Include="HazelFullscreenQuad.h" />
     <ClInclude Include="Hazel\Core\Assert.h" />
@@ -492,7 +487,6 @@
     <ClInclude Include="MeshGenerator.h" />
     <ClInclude Include="MeshUnity.h" />
     <ClInclude Include="NoiseSL.h" />
-    <ClInclude Include="Octree.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleMaster.h" />
     <ClInclude Include="ParticleRenderer.h" />
@@ -501,12 +495,8 @@
     <ClInclude Include="ParticleSystemThinMatrix.h" />
     <ClInclude Include="ParticleTexture.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="PerlinNoise\PerlinNoise.hpp" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="PlayerController.h" />
     <ClInclude Include="QuadInstanced.h" />
     <ClInclude Include="QuadSSAO.h" />
-    <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="RendererECS.h" />
     <ClInclude Include="RendererTrivial.h" />
@@ -543,7 +533,6 @@
     <ClInclude Include="SkinnedMesh.h" />
     <ClInclude Include="Attachment.h" />
     <ClInclude Include="Block.h" />
-    <ClInclude Include="BulletDebugDrawer.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="CommonValues.h" />
     <ClInclude Include="Cone.h" />
@@ -610,10 +599,22 @@
     <ClInclude Include="ShaderMain.h" />
     <ClInclude Include="ShaderPBR.h" />
     <ClInclude Include="ShadowMap.h" />
-    <ClInclude Include="Skybox.h" />
     <ClInclude Include="SongHo\CylinderSongHo.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="SpotLight.h" />
+    <ClInclude Include="src\Data\Octree.h" />
+    <ClInclude Include="src\Data\Quadtree.h" />
+    <ClInclude Include="src\EnvMap\EnvMapEditorLayer.h" />
+    <ClInclude Include="src\EnvMap\EnvMapMaterial.h" />
+    <ClInclude Include="src\EnvMap\EnvMapRenderPass.h" />
+    <ClInclude Include="src\EnvMap\EnvMapSceneRenderer.h" />
+    <ClInclude Include="src\Misc\BulletDebugDrawer.h" />
+    <ClInclude Include="src\PerlinNoise\PerlinNoise.hpp" />
+    <ClInclude Include="src\Player\Player.h" />
+    <ClInclude Include="src\Player\PlayerController.h" />
+    <ClInclude Include="src\PostProcessing\BlurEffect.h" />
+    <ClInclude Include="src\Skybox\Skybox.h" />
+    <ClInclude Include="src\Water\WaterManager.h" />
     <ClInclude Include="SSAO.h" />
     <ClInclude Include="SubTexture2D.h" />
     <ClInclude Include="TerrainBase.h" />
@@ -634,7 +635,6 @@
     <ClInclude Include="Util.h" />
     <ClInclude Include="VertexInstanced.h" />
     <ClInclude Include="VertexTBN.h" />
-    <ClInclude Include="WaterManager.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="WindowsWindow.h" />
   </ItemGroup>

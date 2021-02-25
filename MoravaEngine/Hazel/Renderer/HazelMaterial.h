@@ -37,24 +37,32 @@ namespace Hazel {
 		template <typename T>
 		void Set(const std::string& name, const T& value)
 		{
-			Log::GetLogger()->error("Method not implemented: Set(name {0}, value {1})", name, value);
+			auto decl = FindUniformDeclaration(name);
+			HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
+			auto& buffer = GetUniformBufferTarget(decl);
+			buffer.Write((byte*)&value, decl->GetSize(), decl->GetOffset());
+
+			for (auto mi : m_MaterialInstances)
+				mi->OnMaterialValueUpdated(decl);
 		}
 
-		void Set(const std::string& name, HazelTexture* texture, uint32_t slot)
+		void Set(const std::string& name, const Ref<HazelTexture>& texture)
 		{
+			auto decl = FindResourceDeclaration(name);
+			uint32_t slot = decl->GetRegister();
 			if (m_Textures.size() <= slot)
 				m_Textures.resize((size_t)slot + 1);
 			m_Textures[slot] = texture;
 		}
 
-		void Set(const std::string& name, HazelTexture2D* texture, uint32_t slot)
+		void Set(const std::string& name, const Ref<HazelTexture2D>& texture)
 		{
-			Set(name, (HazelTexture*)texture, slot);
+			Set(name, (const Ref<HazelTexture>&)texture);
 		}
 
-		void Set(const std::string& name, HazelTextureCube* texture, uint32_t slot)
+		void Set(const std::string& name, const Ref<HazelTextureCube>& texture)
 		{
-			Set(name, (HazelTexture*)texture, slot);
+			Set(name, (const Ref<HazelTexture>&)texture);
 		}
 
 		// Setters
@@ -84,7 +92,7 @@ namespace Hazel {
 
 		Buffer m_VSUniformStorageBuffer;
 		Buffer m_PSUniformStorageBuffer;
-		std::vector<HazelTexture*> m_Textures;
+		std::vector<Ref<HazelTexture>> m_Textures;
 
 		uint32_t m_MaterialFlags;
 	};

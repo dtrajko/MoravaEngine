@@ -257,15 +257,6 @@
     <ClCompile Include="Renderbuffer.cpp">
       <Filter>Framebuffer</Filter>
     </ClCompile>
-    <ClCompile Include="WaterManager.cpp">
-      <Filter>Water</Filter>
-    </ClCompile>
-    <ClCompile Include="Skybox.cpp">
-      <Filter>Skybox</Filter>
-    </ClCompile>
-    <ClCompile Include="BulletDebugDrawer.cpp">
-      <Filter>Misc</Filter>
-    </ClCompile>
     <ClCompile Include="SceneObject.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
@@ -341,12 +332,6 @@
     <ClCompile Include="CameraControllerVoxelTerrain.cpp">
       <Filter>Camera</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>Player</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerController.cpp">
-      <Filter>Player</Filter>
-    </ClCompile>
     <ClCompile Include="TerrainVoxel.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
@@ -398,12 +383,6 @@
     <ClCompile Include="Transform.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Octree.cpp">
-      <Filter>Data</Filter>
-    </ClCompile>
-    <ClCompile Include="Quadtree.cpp">
-      <Filter>Data</Filter>
-    </ClCompile>
     <ClCompile Include="SceneBullet.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
@@ -445,9 +424,6 @@
     </ClCompile>
     <ClCompile Include="SceneAnimPBR.cpp">
       <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="BlurEffect.cpp">
-      <Filter>PostProcessing</Filter>
     </ClCompile>
     <ClCompile Include="FramebufferTextureCubemap.cpp">
       <Filter>Framebuffer</Filter>
@@ -624,17 +600,41 @@
     <ClCompile Include="MaterialInstance.cpp">
       <Filter>Material</Filter>
     </ClCompile>
-    <ClCompile Include="EnvMapEditorLayer.cpp">
+    <ClCompile Include="src\EnvMap\EnvMapEditorLayer.cpp">
       <Filter>EnvMap</Filter>
     </ClCompile>
-    <ClCompile Include="EnvMapMaterial.cpp">
+    <ClCompile Include="src\EnvMap\EnvMapMaterial.cpp">
       <Filter>EnvMap</Filter>
     </ClCompile>
-    <ClCompile Include="EnvMapRenderPass.cpp">
+    <ClCompile Include="src\EnvMap\EnvMapRenderPass.cpp">
       <Filter>EnvMap</Filter>
     </ClCompile>
-    <ClCompile Include="EnvMapSceneRenderer.cpp">
+    <ClCompile Include="src\EnvMap\EnvMapSceneRenderer.cpp">
       <Filter>EnvMap</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Misc\BulletDebugDrawer.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Data\Octree.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Data\Quadtree.cpp">
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Water\WaterManager.cpp">
+      <Filter>Water</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Skybox\Skybox.cpp">
+      <Filter>Skybox</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PostProcessing\BlurEffect.cpp">
+      <Filter>PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Player\Player.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Player\PlayerController.cpp">
+      <Filter>Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -920,15 +920,6 @@
     <ClInclude Include="Renderbuffer.h">
       <Filter>Framebuffer</Filter>
     </ClInclude>
-    <ClInclude Include="WaterManager.h">
-      <Filter>Water</Filter>
-    </ClInclude>
-    <ClInclude Include="Skybox.h">
-      <Filter>Skybox</Filter>
-    </ClInclude>
-    <ClInclude Include="BulletDebugDrawer.h">
-      <Filter>Misc</Filter>
-    </ClInclude>
     <ClInclude Include="SceneObject.h">
       <Filter>Editor</Filter>
     </ClInclude>
@@ -992,9 +983,6 @@
     <ClInclude Include="SceneOmniShadows.h">
       <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="PerlinNoise\PerlinNoise.hpp">
-      <Filter>PerlinNoise</Filter>
-    </ClInclude>
     <ClInclude Include="RendererVoxelTerrain.h">
       <Filter>Renderer</Filter>
     </ClInclude>
@@ -1009,12 +997,6 @@
     </ClInclude>
     <ClInclude Include="CameraControllerVoxelTerrain.h">
       <Filter>Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>Player</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerController.h">
-      <Filter>Player</Filter>
     </ClInclude>
     <ClInclude Include="TerrainVoxel.h">
       <Filter>Terrain</Filter>
@@ -1069,12 +1051,6 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Octree.h">
-      <Filter>Data</Filter>
-    </ClInclude>
-    <ClInclude Include="Quadtree.h">
-      <Filter>Data</Filter>
     </ClInclude>
     <ClInclude Include="SceneBullet.h">
       <Filter>Scene</Filter>
@@ -1150,9 +1126,6 @@
     </ClInclude>
     <ClInclude Include="SceneAnimPBR.h">
       <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="BlurEffect.h">
-      <Filter>PostProcessing</Filter>
     </ClInclude>
     <ClInclude Include="FramebufferTextureCubemap.h">
       <Filter>Framebuffer</Filter>
@@ -1347,17 +1320,44 @@
     <ClInclude Include="MaterialInstance.h">
       <Filter>Material</Filter>
     </ClInclude>
-    <ClInclude Include="EnvMapEditorLayer.h">
+    <ClInclude Include="src\EnvMap\EnvMapEditorLayer.h">
       <Filter>EnvMap</Filter>
     </ClInclude>
-    <ClInclude Include="EnvMapMaterial.h">
+    <ClInclude Include="src\EnvMap\EnvMapMaterial.h">
       <Filter>EnvMap</Filter>
     </ClInclude>
-    <ClInclude Include="EnvMapRenderPass.h">
+    <ClInclude Include="src\EnvMap\EnvMapRenderPass.h">
       <Filter>EnvMap</Filter>
     </ClInclude>
-    <ClInclude Include="EnvMapSceneRenderer.h">
+    <ClInclude Include="src\EnvMap\EnvMapSceneRenderer.h">
       <Filter>EnvMap</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Misc\BulletDebugDrawer.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PerlinNoise\PerlinNoise.hpp">
+      <Filter>PerlinNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Data\Octree.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Data\Quadtree.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Water\WaterManager.h">
+      <Filter>Water</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Skybox\Skybox.h">
+      <Filter>Skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PostProcessing\BlurEffect.h">
+      <Filter>PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Player\Player.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Player\PlayerController.h">
+      <Filter>Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

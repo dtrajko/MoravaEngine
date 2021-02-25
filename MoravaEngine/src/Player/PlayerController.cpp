@@ -1,7 +1,7 @@
 #include "PlayerController.h"
 
-#include "Log.h"
-#include "CommonValues.h"
+#include "../../Log.h"
+#include "../../CommonValues.h"
 
 #include <GLFW/glfw3.h>
 #include <glm/gtc/quaternion.hpp>

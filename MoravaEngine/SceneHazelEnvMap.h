@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Scene.h"
-#include "EnvMapEditorLayer.h"
+#include "Hazel/Events/KeyEvent.h"
+#include "Hazel/Panels/SceneHierarchyPanel.h"
 #include "Hazel/Renderer/HazelMesh.h"
+#include "Hazel/Scene/Entity.h"
+
+#include "src/EnvMap/EnvMapEditorLayer.h"
+#include "Scene.h"
 #include "Framebuffer.h"
 #include "Texture.h"
-#include "Hazel/Panels/SceneHierarchyPanel.h"
-#include "Hazel/Scene/Entity.h"
 #include "Grid.h"
 #include "Pivot.h"
-#include "Hazel/Events/KeyEvent.h"
-#include "Hazel/Scene/Entity.h"
 
 #include <map>
 #include <string>
