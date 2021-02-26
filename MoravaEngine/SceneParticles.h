@@ -2,11 +2,11 @@
 
 #include "Scene.h"
 
-#include "ParticleSystemCherno.h"
 #include "Grid.h"
 #include "Pivot.h"
 #include "MaterialWorkflowPBR.h"
 #include "TextureCubemapFaces.h"
+#include "src/Particle/ParticleSystemCherno.h"
 
 
 class SceneParticles : public Scene

@@ -1,7 +1,7 @@
 #include "ParticleMaster.h"
 
-#include "InsertionSort.h"
 #include "ParticleRendererInstanced.h"
+#include "../../InsertionSort.h"
 
 
 ParticleMaster::ParticleMaster()

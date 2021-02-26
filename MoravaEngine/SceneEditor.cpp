@@ -14,7 +14,6 @@
 #include "Log.h"
 #include "Math.h"
 #include "MousePicker.h"
-#include "ParticleMaster.h"
 #include "Pyramid.h"
 #include "Profiler.h"
 #include "PerlinNoise/PerlinNoise.hpp"
@@ -26,6 +25,7 @@
 #include "Tile2D.h"
 #include "Timer.h"
 #include "TerrainHeightMap.h"
+#include "src/Particle/ParticleMaster.h"
 
 #include <vector>
 #include <map>

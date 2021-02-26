@@ -1,10 +1,11 @@
 #include "SceneObjectParticleSystem.h"
+
 #include "Profiler.h"
-#include "ParticleMaster.h"
 #include "Timer.h"
 #include "Log.h"
 #include "AABB.h"
 #include "ResourceManager.h"
+#include "src/Particle/ParticleMaster.h"
 
 
 SceneObjectParticleSystem::SceneObjectParticleSystem()

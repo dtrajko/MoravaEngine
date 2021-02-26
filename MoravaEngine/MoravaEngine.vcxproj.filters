@@ -248,26 +248,8 @@
     <ClCompile Include="Pivot.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
-    <ClCompile Include="Particle.cpp">
-      <Filter>Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleRenderer.cpp">
-      <Filter>Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleMaster.cpp">
-      <Filter>Particle</Filter>
-    </ClCompile>
     <ClCompile Include="CubeSkybox.cpp">
       <Filter>Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleSystemCherno.cpp">
-      <Filter>Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleSystemThinMatrix.cpp">
-      <Filter>Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleTexture.cpp">
-      <Filter>Particle</Filter>
     </ClCompile>
     <ClCompile Include="InsertionSort.cpp">
       <Filter>Core</Filter>
@@ -277,9 +259,6 @@
     </ClCompile>
     <ClCompile Include="QuadInstanced.cpp">
       <Filter>Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleRendererInstanced.cpp">
-      <Filter>Particle</Filter>
     </ClCompile>
     <ClCompile Include="Util.cpp">
       <Filter>Core</Filter>
@@ -636,6 +615,27 @@
     <ClCompile Include="src\Renderer\RenderInstanced.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Particle\Particle.cpp">
+      <Filter>Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Particle\ParticleMaster.cpp">
+      <Filter>Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Particle\ParticleRenderer.cpp">
+      <Filter>Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Particle\ParticleRendererInstanced.cpp">
+      <Filter>Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Particle\ParticleSystemCherno.cpp">
+      <Filter>Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Particle\ParticleSystemThinMatrix.cpp">
+      <Filter>Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Particle\ParticleTexture.cpp">
+      <Filter>Particle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -911,26 +911,8 @@
     <ClInclude Include="Pivot.h">
       <Filter>Editor</Filter>
     </ClInclude>
-    <ClInclude Include="Particle.h">
-      <Filter>Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleRenderer.h">
-      <Filter>Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleMaster.h">
-      <Filter>Particle</Filter>
-    </ClInclude>
     <ClInclude Include="CubeSkybox.h">
       <Filter>Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleSystemCherno.h">
-      <Filter>Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleSystemThinMatrix.h">
-      <Filter>Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleTexture.h">
-      <Filter>Particle</Filter>
     </ClInclude>
     <ClInclude Include="InsertionSort.h">
       <Filter>Core</Filter>
@@ -940,9 +922,6 @@
     </ClInclude>
     <ClInclude Include="QuadInstanced.h">
       <Filter>Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleRendererInstanced.h">
-      <Filter>Particle</Filter>
     </ClInclude>
     <ClInclude Include="Util.h">
       <Filter>Core</Filter>
@@ -1358,6 +1337,30 @@
     </ClInclude>
     <ClInclude Include="src\Renderer\RenderInstanced.h">
       <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Particle\Particle.h">
+      <Filter>Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Particle\ParticleMaster.h">
+      <Filter>Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Particle\ParticleRenderer.h">
+      <Filter>Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Particle\ParticleRendererInstanced.h">
+      <Filter>Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Particle\ParticleSettings.h">
+      <Filter>Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Particle\ParticleSystemCherno.h">
+      <Filter>Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Particle\ParticleSystemThinMatrix.h">
+      <Filter>Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Particle\ParticleTexture.h">
+      <Filter>Particle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

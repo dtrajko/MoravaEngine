@@ -1,7 +1,8 @@
 #include "ParticleSystemThinMatrix.h"
+
 #include "Particle.h"
-#include "Timer.h"
-#include "Math.h"
+#include "../../Timer.h"
+#include "../../Math.h"
 
 
 ParticleSystemThinMatrix::ParticleSystemThinMatrix()

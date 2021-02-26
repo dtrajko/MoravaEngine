@@ -245,12 +245,6 @@
     <ClCompile Include="MeshGenerator.cpp" />
     <ClCompile Include="MeshUnity.cpp" />
     <ClCompile Include="NoiseSL.cpp" />
-    <ClCompile Include="Particle.cpp" />
-    <ClCompile Include="ParticleMaster.cpp" />
-    <ClCompile Include="ParticleRenderer.cpp" />
-    <ClCompile Include="ParticleRendererInstanced.cpp" />
-    <ClCompile Include="ParticleSystemThinMatrix.cpp" />
-    <ClCompile Include="ParticleTexture.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -319,7 +313,6 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="MousePicker.cpp" />
     <ClCompile Include="OmniShadowMap.cpp" />
-    <ClCompile Include="ParticleSystemCherno.cpp" />
     <ClCompile Include="Pivot.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Pyramid.cpp" />
@@ -358,6 +351,13 @@
     <ClCompile Include="src\EnvMap\EnvMapRenderPass.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapSceneRenderer.cpp" />
     <ClCompile Include="src\Misc\BulletDebugDrawer.cpp" />
+    <ClCompile Include="src\Particle\Particle.cpp" />
+    <ClCompile Include="src\Particle\ParticleMaster.cpp" />
+    <ClCompile Include="src\Particle\ParticleRenderer.cpp" />
+    <ClCompile Include="src\Particle\ParticleRendererInstanced.cpp" />
+    <ClCompile Include="src\Particle\ParticleSystemCherno.cpp" />
+    <ClCompile Include="src\Particle\ParticleSystemThinMatrix.cpp" />
+    <ClCompile Include="src\Particle\ParticleTexture.cpp" />
     <ClCompile Include="src\Physics\Physics.cpp" />
     <ClCompile Include="src\Player\Player.cpp" />
     <ClCompile Include="src\Player\PlayerController.cpp" />
@@ -487,13 +487,7 @@
     <ClInclude Include="MeshGenerator.h" />
     <ClInclude Include="MeshUnity.h" />
     <ClInclude Include="NoiseSL.h" />
-    <ClInclude Include="Particle.h" />
-    <ClInclude Include="ParticleMaster.h" />
-    <ClInclude Include="ParticleRenderer.h" />
-    <ClInclude Include="ParticleRendererInstanced.h" />
     <ClInclude Include="ParticleSettings.h" />
-    <ClInclude Include="ParticleSystemThinMatrix.h" />
-    <ClInclude Include="ParticleTexture.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="QuadInstanced.h" />
     <ClInclude Include="QuadSSAO.h" />
@@ -558,7 +552,6 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="MousePicker.h" />
     <ClInclude Include="OmniShadowMap.h" />
-    <ClInclude Include="ParticleSystemCherno.h" />
     <ClInclude Include="Pivot.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="Profiler.h" />
@@ -598,6 +591,14 @@
     <ClInclude Include="src\EnvMap\EnvMapRenderPass.h" />
     <ClInclude Include="src\EnvMap\EnvMapSceneRenderer.h" />
     <ClInclude Include="src\Misc\BulletDebugDrawer.h" />
+    <ClInclude Include="src\Particle\Particle.h" />
+    <ClInclude Include="src\Particle\ParticleMaster.h" />
+    <ClInclude Include="src\Particle\ParticleRenderer.h" />
+    <ClInclude Include="src\Particle\ParticleRendererInstanced.h" />
+    <ClInclude Include="src\Particle\ParticleSettings.h" />
+    <ClInclude Include="src\Particle\ParticleSystemCherno.h" />
+    <ClInclude Include="src\Particle\ParticleSystemThinMatrix.h" />
+    <ClInclude Include="src\Particle\ParticleTexture.h" />
     <ClInclude Include="src\PerlinNoise\PerlinNoise.hpp" />
     <ClInclude Include="src\Physics\Physics.h" />
     <ClInclude Include="src\Player\Player.h" />

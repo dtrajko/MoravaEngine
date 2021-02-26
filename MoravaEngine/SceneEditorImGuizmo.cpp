@@ -15,7 +15,6 @@
 #include "Log.h"
 #include "Math.h"
 #include "MousePicker.h"
-#include "ParticleMaster.h"
 #include "PerlinNoise/PerlinNoise.hpp"
 #include "Pyramid.h"
 #include "Profiler.h"
@@ -28,6 +27,7 @@
 #include "TerrainHeightMap.h"
 #include "Timer.h"
 #include "Tile2D.h"
+#include "src/Particle/ParticleMaster.h"
 
 #include "../cross-platform/ImGuizmo/ImGuizmo.h"
 

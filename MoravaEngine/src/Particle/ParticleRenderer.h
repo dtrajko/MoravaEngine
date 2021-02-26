@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Quad.h"
-#include "Shader.h"
 #include "Particle.h"
-#include "CameraController.h"
+#include "../../CameraController.h"
+#include "../../Quad.h"
+#include "../../Shader.h"
 
 
 class Particle;

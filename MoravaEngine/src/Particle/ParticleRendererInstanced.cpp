@@ -1,8 +1,8 @@
 #include "ParticleRendererInstanced.h"
 
-#include "Log.h"
-#include "Util.h"
-#include "src/Renderer/RendererBasic.h"
+#include "../Renderer/RendererBasic.h"
+#include "../../Log.h"
+#include "../../Util.h"
 
 
 ParticleRendererInstanced::ParticleRendererInstanced() : ParticleRendererInstanced(10000)
