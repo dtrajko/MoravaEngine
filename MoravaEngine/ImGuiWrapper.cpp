@@ -235,9 +235,21 @@ void ImGuiWrapper::DrawMaterialUI(EnvMapMaterial* material, Hazel::Ref<Hazel::Ha
 	ImGui::Text(material->GetUUID().c_str());
 	ImGui::Columns(1);
 
+	auto& materialName = material->GetName();
+
+	char buffer[256];
+	memset(buffer, 0, 256);
+	memcpy(buffer, materialName.c_str(), materialName.length());
+	if (ImGui::InputText("##MaterialName", buffer, 256))
+	{
+		materialName = std::string(buffer);
+		material->SetName(materialName);
+	}
+
+	/**** 
 	// Rename material
 	std::string materialNameOld = material->GetName();
-
+	
 	char buffer[256];
 	memset(buffer, 0, 256);
 	memcpy(buffer, material->GetName().c_str(), material->GetName().length());
@@ -247,7 +259,7 @@ void ImGuiWrapper::DrawMaterialUI(EnvMapMaterial* material, Hazel::Ref<Hazel::Ha
 	}
 
 	ImGui::SameLine();
-
+	
 	std::string buttonName = "Rename";
 	if (ImGui::Button(buttonName.c_str())) {
 		if (s_MaterialNameNew != materialNameOld) {
@@ -255,6 +267,7 @@ void ImGuiWrapper::DrawMaterialUI(EnvMapMaterial* material, Hazel::Ref<Hazel::Ha
 			s_MaterialNameNew = "";
 		}
 	}
+	****/
 
 	// Tiling Factor
 	// ImGui::SliderFloat("Tiling Factor", &material->GetTilingFactor(), 0.0f, 20.0f);

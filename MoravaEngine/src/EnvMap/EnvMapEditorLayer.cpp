@@ -20,9 +20,10 @@ TextureInfo EnvMapEditorLayer::s_TextureInfoDefault;
 std::map<std::string, TextureInfo> EnvMapEditorLayer::s_TextureInfo;
 SelectionMode EnvMapEditorLayer::s_SelectionMode = SelectionMode::Entity;
 Hazel::Ref<Hazel::HazelTexture2D> EnvMapEditorLayer::s_CheckerboardTexture;
-
 std::map<MaterialUUID, EnvMapMaterial*> EnvMapEditorLayer::s_EnvMapMaterials; // MaterialUUID, EnvMapMaterial*
 std::map<SubmeshUUID, MaterialUUID> EnvMapEditorLayer::s_SubmeshMaterialUUIDs; // SubmeshUUID, MaterialUUID
+EnvMapMaterial* EnvMapEditorLayer::s_DefaultMaterial;
+uint32_t EnvMapEditorLayer::s_MaterialIndex = 0;
 
 
 EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
@@ -92,6 +93,10 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 
     m_WindowTitleStatic = Application::Get()->GetWindow()->GetTitle();
     UpdateWindowTitle("New Scene");
+
+    // Create a default material
+    s_DefaultMaterial = CreateDefaultMaterial("MAT_DEF");
+    s_EnvMapMaterials.insert(std::make_pair(s_DefaultMaterial->GetUUID(), s_DefaultMaterial));
 }
 
 void EnvMapEditorLayer::Init()
@@ -162,7 +167,7 @@ void EnvMapEditorLayer::SetupContextData()
 {
     // Setup default texture info
     s_TextureInfoDefault = {};
-    s_TextureInfoDefault.albedo    = "Textures/PBR/non_reflective/albedo.png";
+    s_TextureInfoDefault.albedo    = "Textures/default_material_albedo.png";
     s_TextureInfoDefault.normal    = "Textures/PBR/non_reflective/normal.png";
     s_TextureInfoDefault.metallic  = "Textures/PBR/non_reflective/metallic.png";
     s_TextureInfoDefault.roughness = "Textures/PBR/non_reflective/roughness.png";
@@ -293,20 +298,8 @@ void EnvMapEditorLayer::AddMaterialFromComponent(Hazel::Entity entity)
 
 std::string EnvMapEditorLayer::NewMaterialName()
 {
-    std::string materialName = "MAT_UNDEFINED";
-    unsigned int materialIndex = 0;
-    bool newNameCreated = false;
-    while (!newNameCreated)
-    {
-        materialName = "MAT_" + std::to_string(materialIndex);
-        if (!s_EnvMapMaterials.contains(materialName))
-        {
-            newNameCreated = true;
-        }
-        else {
-            materialIndex++;
-        }
-    }
+    std::string materialName = "MAT_" + std::to_string(s_MaterialIndex);
+    s_MaterialIndex++;
 
     return materialName;
 }
@@ -1397,8 +1390,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
     {
         if (ImGui::MenuItem("Create a Material"))
         {
-            std::string materialName = NewMaterialName();
-            EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(materialName);
+            EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(NewMaterialName());
             s_EnvMapMaterials.insert(std::make_pair(envMapMaterial->GetUUID(), envMapMaterial));
         }
         ImGui::EndPopup();
@@ -1854,6 +1846,16 @@ SubmeshUUID EnvMapEditorLayer::GetSubmeshUUID(Hazel::Entity* entity, Hazel::Subm
     SubmeshUUID submeshUUID = "E_" + entityHandle + "_S_" + submesh->MeshName;
     // Log::GetLogger()->debug("EnvMapEditorLayer::GetSubmeshUUID: '{0}'", submeshUUID);
     return submeshUUID;
+}
+
+void EnvMapEditorLayer::SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity)
+{
+    for (auto submesh : mesh->GetSubmeshes())
+    {
+        SubmeshUUID submeshUUID = GetSubmeshUUID(&entity, &submesh);
+        MaterialUUID materialUUID = s_DefaultMaterial->GetUUID();
+        s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));
+    }
 }
 
 void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer)

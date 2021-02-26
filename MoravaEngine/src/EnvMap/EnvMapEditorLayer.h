@@ -72,6 +72,8 @@ public:
 	static std::string NewMaterialName();
 	static void AddSubmeshToSelectionContext(SelectedSubmesh submesh);
 	static void RenameMaterial(EnvMapMaterial* envMapMaterial, std::string newName);
+	static SubmeshUUID GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh);
+	static void SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity);
 
 	// Setters
 	void SetSkyboxLOD(float LOD);
@@ -135,7 +137,9 @@ public:
 
 	static std::map<MaterialUUID, EnvMapMaterial*> s_EnvMapMaterials;
 	static std::map<SubmeshUUID, MaterialUUID> s_SubmeshMaterialUUIDs;
-	static SubmeshUUID GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh);
+
+	static EnvMapMaterial* s_DefaultMaterial;
+	static uint32_t s_MaterialIndex;
 
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
 	glm::mat4* m_RelativeTransform = nullptr;
