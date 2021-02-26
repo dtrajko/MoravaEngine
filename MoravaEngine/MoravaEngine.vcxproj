@@ -369,6 +369,7 @@
     <ClCompile Include="src\EnvMap\EnvMapRenderPass.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapSceneRenderer.cpp" />
     <ClCompile Include="src\Misc\BulletDebugDrawer.cpp" />
+    <ClCompile Include="src\Physics\Physics.cpp" />
     <ClCompile Include="src\Player\Player.cpp" />
     <ClCompile Include="src\Player\PlayerController.cpp" />
     <ClCompile Include="src\PostProcessing\BlurEffect.cpp" />
@@ -610,6 +611,7 @@
     <ClInclude Include="src\EnvMap\EnvMapSceneRenderer.h" />
     <ClInclude Include="src\Misc\BulletDebugDrawer.h" />
     <ClInclude Include="src\PerlinNoise\PerlinNoise.hpp" />
+    <ClInclude Include="src\Physics\Physics.h" />
     <ClInclude Include="src\Player\Player.h" />
     <ClInclude Include="src\Player\PlayerController.h" />
     <ClInclude Include="src\PostProcessing\BlurEffect.h" />

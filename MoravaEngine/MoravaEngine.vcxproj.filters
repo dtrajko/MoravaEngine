@@ -636,6 +636,9 @@
     <ClCompile Include="src\Player\PlayerController.cpp">
       <Filter>Player</Filter>
     </ClCompile>
+    <ClCompile Include="src\Physics\Physics.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -1359,6 +1362,9 @@
     <ClInclude Include="src\Player\PlayerController.h">
       <Filter>Player</Filter>
     </ClInclude>
+    <ClInclude Include="src\Physics\Physics.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1495,6 +1501,9 @@
     </Filter>
     <Filter Include="EnvMap">
       <UniqueIdentifier>{fdbce3fc-8bff-48ca-8689-4070b29a1e54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{dff8738b-62be-4a44-87e8-9156b51321aa}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
