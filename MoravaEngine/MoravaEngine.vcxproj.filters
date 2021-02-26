@@ -621,9 +621,6 @@
     <ClCompile Include="src\Renderer\RendererJoey.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\RendererNanosuit.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Renderer\RendererOmniShadows.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
@@ -1345,9 +1342,6 @@
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererJoey.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Renderer\RendererNanosuit.h">
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererOmniShadows.h">

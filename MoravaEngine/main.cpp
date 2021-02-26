@@ -56,7 +56,6 @@
 #include "src/Renderer/RendererTrivial.h"
 #include "src/Renderer/RendererPBR.h"
 #include "src/Renderer/RendererJoey.h"
-#include "src/Renderer/RendererNanosuit.h"
 #include "src/Renderer/RendererOmniShadows.h"
 #include "src/Renderer/RendererVoxelTerrain.h"
 #include "src/Renderer/RendererEditor.h"
@@ -101,7 +100,7 @@ enum class SceneName
 	HazelEnvMap,
 };
 
-SceneName currentScene = SceneName::HazelEnvMap;
+SceneName currentScene = SceneName::Nanosuit;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -164,7 +163,7 @@ int main()
 		break;
 	case SceneName::Nanosuit:
 		scene = new SceneNanosuit();
-		renderer = static_cast<RendererBasic*>(new RendererNanosuit());
+		renderer = static_cast<RendererBasic*>(new RendererTrivial());
 		break;
 	case SceneName::Framebuffers:
 		scene = new SceneFramebuffers();

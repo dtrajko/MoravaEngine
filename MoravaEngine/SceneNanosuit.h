@@ -4,7 +4,7 @@
 
 #include "LearnOpenGL/ModelJoey.h"
 #include "Material.h"
-
+#include "Shader.h"
 
 
 struct NanosuitLight
@@ -36,6 +36,8 @@ class SceneNanosuit : public Scene
 
 public:
 	SceneNanosuit();
+	virtual ~SceneNanosuit() override;
+
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
@@ -43,25 +45,28 @@ public:
 	inline std::map<std::string, ModelJoey*> GetModels() const { return models; };
 	inline std::map<std::string, MeshJoey*> GetMeshesJoey() const { return meshesJoey; };
 	NanosuitUniforms* GetNanosuitUniforms() { return nanosuitUniforms; };
-	void InitNanosuitUniforms();
-	virtual ~SceneNanosuit() override;
 
-public:
+private:
+	virtual void SetSkybox() override {};
+	virtual void SetupMeshes() override {};
+	virtual void SetupTextures() override;
+	virtual void SetupModels() override;
+
+	void SetupShaders();
+	void InitNanosuitUniforms();
+
+private:
 	bool m_LightOnCamera;
 	bool m_IsRotating;
 	float m_RotationSpeed;
-	bool m_DefaultNanosuitUniforms;
 	bool m_LightSourceVisible;
-	glm::vec3 m_BgColor;
+	glm::vec4 m_BgColor;
 
-private:
-	virtual void SetSkybox() override;
-	virtual void SetupTextures() override;
-	virtual void SetupMeshes() override;
-	virtual void SetupModels() override;
+	Shader* m_ShaderNanosuit;
 
 	std::map<std::string, ModelJoey*> models;
 	std::map<std::string, MeshJoey*> meshesJoey;
 	NanosuitUniforms* nanosuitUniforms;
+	float m_ModelRotationY = 0.0f;
 
 };
