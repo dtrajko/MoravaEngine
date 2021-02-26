@@ -39,6 +39,7 @@ public:
 	inline const unsigned int GetIBO() const { return m_IBO; };
 	Material* GetBaseMaterial() { return m_BaseMaterial; }
 	std::vector<Material*>* GetMaterials() { return &m_Materials; }
+	void SetFilePath(const std::string& filePath) { m_FilePath = filePath; }
 	const std::string& GetFilePath() const { return m_FilePath; }
 	const aiScene* GetSceneAssimp() { return m_Scene; }
 

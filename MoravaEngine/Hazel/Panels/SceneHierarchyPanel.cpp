@@ -542,7 +542,7 @@ namespace Hazel
 			ImGuiWrapper::DrawVec3Control("Scale", component.Scale, 1.0f, 80.0f);
 		});
 
-		DrawComponent<MeshComponent>("Mesh", entity, [=](MeshComponent& mc) mutable
+		DrawComponent<MeshComponent>("Mesh", entity, [=](MeshComponent& mc)
 		{
 			ImGui::Columns(3);
 			ImGui::SetColumnWidth(0, 70.0f);
@@ -564,7 +564,6 @@ namespace Hazel
 				std::string file = Application::Get()->OpenFile();
 				if (!file.empty()) {
 					mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(file, nullptr, nullptr, false);
-					// EnvMapEditorLayer::LoadEnvMapMaterials(mc.Mesh, entity);
 					EnvMapEditorLayer::SetDefaultMaterialToSubmeshes(mc.Mesh, entity);
 				}
 			}

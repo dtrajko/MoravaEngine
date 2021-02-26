@@ -234,8 +234,6 @@ namespace Hazel {
 		float m_TimeMultiplier = 1.0f;
 		bool m_AnimationPlaying = true;
 
-		std::string m_FilePath;
-
 		friend class Renderer;
 		friend class SceneHierarchyPanel;
 
