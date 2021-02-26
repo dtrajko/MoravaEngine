@@ -2,8 +2,9 @@
 
 #include "Hazel/Panels/SceneHierarchyPanel.h"
 
-#include "Grid.h"
 #include "Framebuffer.h"
+#include "Grid.h"
+#include "Gizmo.h"
 #include "MaterialWorkflowPBR.h"
 #include "Mesh.h"
 #include "Pivot.h"
@@ -13,7 +14,6 @@
 #include "Scene.h"
 #include "SceneObject.h"
 #include "SceneObjectParticleSystem.h"
-#include "Gizmo.h"
 #include "src/PostProcessing/BlurEffect.h"
 
 #include <glm/ext/quaternion_float.hpp>

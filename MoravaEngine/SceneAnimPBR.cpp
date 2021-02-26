@@ -1,18 +1,18 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "SceneAnimPBR.h"
-#include "ImGuiWrapper.h"
-#include "../cross-platform/ImGuizmo/ImGuizmo.h"
-#include "RendererBasic.h"
-#include "ResourceManager.h"
-#include "Block.h"
+
 #include "Application.h"
-#include "Shader.h"
-#include "Hazel/Renderer/HazelMesh.h"
-#include "Timer.h"
-#include "MousePicker.h"
-#include "Math.h"
+#include "Block.h"
 #include "Input.h"
+#include "ImGuiWrapper.h"
+#include "Math.h"
+#include "MousePicker.h"
+#include "ResourceManager.h"
+#include "Shader.h"
+#include "Timer.h"
+
+#include "../cross-platform/ImGuizmo/ImGuizmo.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>

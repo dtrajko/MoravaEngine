@@ -1,9 +1,9 @@
 #include "Renderer.h"
 
-#include "ShaderMain.h"
-#include "ShaderPBR.h"
-#include "src/Water/WaterManager.h"
-#include "Application.h"
+#include "../../Application.h"
+#include "../../ShaderMain.h"
+#include "../../ShaderPBR.h"
+#include "../Water/WaterManager.h"
 
 
 Renderer::Renderer()

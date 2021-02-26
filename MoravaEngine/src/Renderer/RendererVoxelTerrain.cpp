@@ -1,8 +1,8 @@
 #include "RendererVoxelTerrain.h"
 
-#include "ResourceManager.h"
-#include "Log.h"
-#include "Profiler.h"
+#include "../../ResourceManager.h"
+#include "../../Log.h"
+#include "../../Profiler.h"
 
 
 RendererVoxelTerrain::RendererVoxelTerrain()

@@ -2,20 +2,19 @@
 
 #include "SceneHazelEnvMap.h"
 
-#include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Scene/Components.h"
+#include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/RendererAPI.h"
 
+#include "Application.h"
+#include "Block.h"
+#include "Input.h"
 #include "ImGuiWrapper.h"
 #include "ImGuizmo.h"
-#include "RendererBasic.h"
-#include "ResourceManager.h"
-#include "Block.h"
-#include "Application.h"
-#include "Shader.h"
-#include "Timer.h"
 #include "Math.h"
-#include "Input.h"
+#include "Shader.h"
+#include "ResourceManager.h"
+#include "Timer.h"
 #include "Util.h"
 
 #define GLM_ENABLE_EXPERIMENTAL

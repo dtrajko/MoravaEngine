@@ -2,9 +2,6 @@
 
 #include "RendererBasic.h"
 
-#include "LearnOpenGL/ModelJoey.h"
-#include "AABB.h"
-
 
 class RendererEditor : public RendererBasic
 {

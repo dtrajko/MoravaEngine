@@ -3,9 +3,9 @@
 #include "ImGuiWrapper.h"
 
 #include "MeshData.h"
-#include "Tile2D.h"
 #include "ShaderMain.h"
-#include "Renderer.h"
+#include "Tile2D.h"
+#include "src/Renderer/Renderer.h"
 
 
 SceneEiffel::SceneEiffel()

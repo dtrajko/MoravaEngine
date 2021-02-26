@@ -1,7 +1,7 @@
 #include "RenderInstanced.h"
 
-#include "CommonValues.h"
-#include "Log.h"
+#include "../../CommonValues.h"
+#include "../../Log.h"
 
 
 RenderInstanced::RenderInstanced()

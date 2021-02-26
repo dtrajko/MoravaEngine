@@ -1,10 +1,9 @@
 #include "SceneSponza.h"
 
 #include "ImGuiWrapper.h"
-
 #include "MeshData.h"
 #include "Tile2D.h"
-#include "Renderer.h"
+#include "src/Renderer/Renderer.h"
 
 
 SceneSponza::SceneSponza()

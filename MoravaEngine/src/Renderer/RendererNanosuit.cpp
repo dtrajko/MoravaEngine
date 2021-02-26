@@ -1,7 +1,5 @@
 #include "RendererNanosuit.h"
 
-#include "SceneNanosuit.h"
-
 
 RendererNanosuit::RendererNanosuit()
 {

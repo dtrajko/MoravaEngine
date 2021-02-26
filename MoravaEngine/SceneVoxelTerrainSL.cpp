@@ -2,17 +2,15 @@
 
 #include "SceneVoxelTerrainSL.h"
 
-#include "ResourceManager.h"
 #include "Block.h"
 #include "CameraControllerVoxelTerrain.h"
-#include "RendererBasic.h"
-#include "MousePicker.h"
+#include "ImGuiWrapper.h"
 #include "Log.h"
+#include "MousePicker.h"
+#include "NoiseSL.h"
+#include "ResourceManager.h"
 #include "TerrainVoxel.h"
 #include "TerrainSL.h"
-#include "NoiseSL.h"
-
-#include "ImGuiWrapper.h"
 
 
 SceneVoxelTerrainSL::SceneVoxelTerrainSL()

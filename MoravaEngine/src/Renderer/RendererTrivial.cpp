@@ -1,6 +1,4 @@
 #include "RendererTrivial.h"
-#include "Log.h"
-#include "Application.h"
 
 
 RendererTrivial::RendererTrivial()

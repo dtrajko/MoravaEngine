@@ -2,8 +2,8 @@
 
 #include "RendererBasic.h"
 
-#include "LearnOpenGL/ModelJoey.h"
-#include "SceneNanosuit.h"
+#include "../../LearnOpenGL/ModelJoey.h"
+#include "../../SceneNanosuit.h"
 
 
 class RendererNanosuit : public RendererBasic
@@ -22,4 +22,5 @@ public:
 	float m_ModelRotationY = 0.0f;
 
 	NanosuitUniforms* nanosuitUniforms;
+
 };

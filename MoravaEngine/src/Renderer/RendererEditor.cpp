@@ -1,13 +1,13 @@
 #include "RendererEditor.h"
 
-#include "SceneParticles.h"
-#include "GeometryFactory.h"
-#include "Timer.h"
-#include "Profiler.h"
-#include "Log.h"
-#include "Framebuffer.h"
-#include "SceneEditor.h"
-#include "Application.h"
+#include "../../Application.h"
+#include "../../Framebuffer.h"
+#include "../../GeometryFactory.h"
+#include "../../Log.h"
+#include "../../Profiler.h"
+#include "../../SceneEditor.h"
+#include "../../SceneParticles.h"
+#include "../../Timer.h"
 
 #include <stdexcept>
 

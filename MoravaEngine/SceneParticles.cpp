@@ -1,9 +1,7 @@
 #include "SceneParticles.h"
 
-#include "RendererBasic.h"
-#include "Log.h"
-
 #include "ImGuiWrapper.h"
+#include "Log.h"
 
 
 SceneParticles::SceneParticles()

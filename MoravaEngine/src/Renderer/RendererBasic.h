@@ -1,11 +1,13 @@
 #pragma once
 
+#include "../../Scene.h"
+#include "../../Shader.h"
+#include "../../Window.h"
+
 #include "glm/glm.hpp"
 
-#include "Window.h"
-#include "Scene.h"
-#include "Shader.h"
 
+class Scene;
 
 class RendererBasic
 {

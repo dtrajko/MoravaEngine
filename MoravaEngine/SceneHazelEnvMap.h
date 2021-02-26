@@ -5,12 +5,13 @@
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Scene/Entity.h"
 
-#include "src/EnvMap/EnvMapEditorLayer.h"
 #include "Scene.h"
-#include "Framebuffer.h"
-#include "Texture.h"
+
 #include "Grid.h"
+#include "Framebuffer.h"
 #include "Pivot.h"
+#include "Texture.h"
+#include "src/EnvMap/EnvMapEditorLayer.h"
 
 #include <map>
 #include <string>

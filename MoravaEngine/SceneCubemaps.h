@@ -2,10 +2,10 @@
 
 #include "Scene.h"
 
-#include "TextureCubemapFaces.h"
 #include "LearnOpenGL/ModelJoey.h"
 #include "Quad.h"
 #include "Raycast.h"
+#include "TextureCubemapFaces.h"
 #include "TerrainHeightMap.h"
 
 

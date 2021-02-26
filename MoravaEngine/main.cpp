@@ -52,15 +52,15 @@
 #include "SceneEditorImGuizmo.h"
 #include "SceneHazelEnvMap.h"
 
-#include "Renderer.h"
-#include "RendererTrivial.h"
-#include "RendererPBR.h"
-#include "RendererJoey.h"
-#include "RendererNanosuit.h"
-#include "RendererOmniShadows.h"
-#include "RendererVoxelTerrain.h"
-#include "RendererEditor.h"
-#include "RendererECS.h"
+#include "src/Renderer/Renderer.h"
+#include "src/Renderer/RendererTrivial.h"
+#include "src/Renderer/RendererPBR.h"
+#include "src/Renderer/RendererJoey.h"
+#include "src/Renderer/RendererNanosuit.h"
+#include "src/Renderer/RendererOmniShadows.h"
+#include "src/Renderer/RendererVoxelTerrain.h"
+#include "src/Renderer/RendererEditor.h"
+#include "src/Renderer/RendererECS.h"
 
 #include <memory>
 

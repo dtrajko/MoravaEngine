@@ -8,8 +8,8 @@
 
 #include "../../Application.h"
 #include "../../Log.h"
-#include "../../RendererBasic.h"
 #include "../../ResourceManager.h"
+#include "../Renderer/RendererBasic.h"
 
 
 SceneRendererData EnvMapSceneRenderer::s_Data;

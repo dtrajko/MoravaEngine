@@ -8,10 +8,10 @@
 #include "EnvMapRenderPass.h"
 #include "../../ImGuiWrapper.h"
 #include "../../ImGuizmo/ImGuizmo.h"
-#include "../../RendererBasic.h"
-#include "../../SceneHazelEnvMap.h"
 #include "../../MousePicker.h"
+#include "../../SceneHazelEnvMap.h"
 #include "../../ShaderLibrary.h"
+#include "../Renderer/RendererBasic.h"
 
 #include <filesystem>
 

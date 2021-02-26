@@ -1,12 +1,13 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "SceneJoey.h"
-#include "TerrainHeightMap.h"
+
+#include "ImGuiWrapper.h"
 #include "ShaderMain.h"
 #include "ShaderPBR.h"
-#include "Renderer.h"
 #include "Sphere.h"
-#include "ImGuiWrapper.h"
+#include "TerrainHeightMap.h"
+#include "src/Renderer/Renderer.h"
 
 
 SceneJoey::SceneJoey()

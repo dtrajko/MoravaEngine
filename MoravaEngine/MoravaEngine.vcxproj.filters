@@ -35,24 +35,6 @@
     <ClCompile Include="ImGuiWrapper.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="RendererBasic.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="RendererEditor.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="RendererJoey.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="RendererNanosuit.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="RendererPBR.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
@@ -311,14 +293,8 @@
     <ClCompile Include="SceneObjectLight.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
-    <ClCompile Include="RendererOmniShadows.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="SceneOmniShadows.cpp">
       <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="RendererVoxelTerrain.cpp">
-      <Filter>Renderer</Filter>
     </ClCompile>
     <ClCompile Include="SceneVoxelTerrain.cpp">
       <Filter>Scene</Filter>
@@ -337,9 +313,6 @@
     </ClCompile>
     <ClCompile Include="TerrainBase.cpp">
       <Filter>Terrain</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderInstanced.cpp">
-      <Filter>Renderer</Filter>
     </ClCompile>
     <ClCompile Include="TerrainSL.cpp">
       <Filter>Terrain</Filter>
@@ -418,9 +391,6 @@
     </ClCompile>
     <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp">
       <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="RendererTrivial.cpp">
-      <Filter>Renderer</Filter>
     </ClCompile>
     <ClCompile Include="SceneAnimPBR.cpp">
       <Filter>Scene</Filter>
@@ -545,9 +515,6 @@
     <ClCompile Include="EntitySelection.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
-    <ClCompile Include="RendererECS.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Hazel\Renderer\EditorCamera.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
@@ -639,6 +606,39 @@
     <ClCompile Include="src\Physics\Physics.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\Renderer.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\RendererBasic.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\RendererECS.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\RendererEditor.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\RendererJoey.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\RendererNanosuit.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\RendererOmniShadows.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\RendererPBR.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\RendererTrivial.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\RendererVoxelTerrain.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\RenderInstanced.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -682,24 +682,6 @@
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h">
       <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderer.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="RendererBasic.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="RendererEditor.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="RendererJoey.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="RendererNanosuit.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="RendererPBR.h">
-      <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>Scene</Filter>
@@ -980,14 +962,8 @@
     <ClInclude Include="SceneObjectLight.h">
       <Filter>Editor</Filter>
     </ClInclude>
-    <ClInclude Include="RendererOmniShadows.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="SceneOmniShadows.h">
       <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="RendererVoxelTerrain.h">
-      <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="SceneVoxelTerrain.h">
       <Filter>Scene</Filter>
@@ -1006,9 +982,6 @@
     </ClInclude>
     <ClInclude Include="TerrainBase.h">
       <Filter>Terrain</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderInstanced.h">
-      <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="TerrainSL.h">
       <Filter>Terrain</Filter>
@@ -1123,9 +1096,6 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\Buffer.h">
       <Filter>Hazel\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="RendererTrivial.h">
-      <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="SceneAnimPBR.h">
       <Filter>Scene</Filter>
@@ -1265,9 +1235,6 @@
     <ClInclude Include="EntitySelection.h">
       <Filter>Editor</Filter>
     </ClInclude>
-    <ClInclude Include="RendererECS.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="Hazel\Renderer\EditorCamera.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
@@ -1364,6 +1331,39 @@
     </ClInclude>
     <ClInclude Include="src\Physics\Physics.h">
       <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\Renderer.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\RendererBasic.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\RendererECS.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\RendererEditor.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\RendererJoey.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\RendererNanosuit.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\RendererOmniShadows.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\RendererPBR.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\RendererTrivial.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\RendererVoxelTerrain.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\RenderInstanced.h">
+      <Filter>Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
