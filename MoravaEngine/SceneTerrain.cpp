@@ -112,9 +112,9 @@ void SceneTerrain::UpdateImGui(float timestep, Window* mainWindow)
 
 	ImGui::Begin("Framebuffers");
 	{
-		if (ImGui::CollapsingHeader("Display Info"))
+		if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImVec2 imageSize(128.0f, 128.0f);
+			ImVec2 imageSize(96.0f, 96.0f);
 
 			ImGui::Text("Shadow Map");
 			ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);

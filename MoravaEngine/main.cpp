@@ -13,53 +13,121 @@
 
 // #define SPIR_ENABLED
 
-#include "CommonValues.h"
+// #define SCENE_COTTAGE
+// #define SCENE_EIFFEL
+// #define SCENE_SPONZA
+// #define SCENE_TERRAIN
+// #define SCENE_PBR
+// #define SCENE_LEARN_OPEN_GL
+// #define SCENE_BULLET
+// #define SCENE_INSTANCED
+// #define SCENE_ASTEROIDS
+// #define SCENE_NANOSUIT
+// #define SCENE_FRAMEBUFFERS
+// #define SCENE_CUBEMAPS
+// #define SCENE_PARTICLES
+// #define SCENE_OMNI_SHADOWS
+// #define SCENE_VOXEL_TERRAIN
+// #define SCENE_PROCEDURAL_LANDMASS
+// #define SCENE_VOXEL_TERRAIN_SL
+// #define SCENE_MARCHING_CUBES
+// #define SCENE_SSAO
+// #define SCENE_DEFERRED
+// #define SCENE_EDITOR
+// #define SCENE_EDITOR_IMGUIZMO
+// #define SCENE_ANIM_PBR
+#define SCENE_HAZEL_ENV_MAP
+
 #include "Hazel/Core/Base.h"
 #include "Hazel/Events/Event.h"
+
 #include "Application.h"
-#include "ImGuiWrapper.h"
-#include "WindowsWindow.h"
 #include "CameraController.h"
-#include "LightManager.h"
-#include "Profiler.h"
-#include "MousePicker.h"
-#include "Timer.h"
-#include "Log.h"
+#include "CommonValues.h"
+#include "ImGuiWrapper.h"
 #include "Input.h"
+#include "LightManager.h"
+#include "Log.h"
+#include "MousePicker.h"
+#include "Profiler.h"
+#include "Timer.h"
+#include "WindowsWindow.h"
 
+#if defined(SCENE_COTTAGE)
 #include "SceneCottage.h"
-#include "SceneEiffel.h"
-#include "SceneSponza.h"
-#include "SceneTerrain.h"
-#include "ScenePBR.h"
-#include "SceneJoey.h"
-#include "SceneBullet.h"
-#include "SceneInstanced.h"
-#include "SceneAsteroids.h"
-#include "SceneNanosuit.h"
-#include "SceneFramebuffers.h"
-#include "SceneCubemaps.h"
-#include "SceneParticles.h"
-#include "SceneOmniShadows.h"
-#include "SceneProceduralLandmass.h"
-#include "SceneVoxelTerrain.h"
-#include "SceneVoxelTerrainSL.h"
-#include "SceneMarchingCubes.h"
-#include "SceneSSAO.h"
-#include "SceneAnimPBR.h"
-#include "SceneDeferred.h"
-#include "SceneEditor.h"
-#include "SceneEditorImGuizmo.h"
-#include "SceneHazelEnvMap.h"
-
 #include "src/Renderer/Renderer.h"
-#include "src/Renderer/RendererTrivial.h"
+#elif defined(SCENE_EIFFEL)
+#include "SceneEiffel.h"
+#include "src/Renderer/Renderer.h"
+#elif defined(SCENE_SPONZA)
+#include "SceneSponza.h"
+#include "src/Renderer/Renderer.h"
+#elif defined(SCENE_TERRAIN)
+#include "SceneTerrain.h"
+#include "src/Renderer/Renderer.h"
+#elif defined(SCENE_PBR)
+#include "ScenePBR.h"
 #include "src/Renderer/RendererPBR.h"
+#elif defined(SCENE_LEARN_OPEN_GL)
+#include "SceneJoey.h"
 #include "src/Renderer/RendererJoey.h"
+#elif defined(SCENE_BULLET)
+#include "SceneBullet.h"
+#include "src/Renderer/Renderer.h"
+#elif defined(SCENE_INSTANCED)
+#include "SceneInstanced.h"
+#include "src/Renderer/RendererTrivial.h"
+#elif defined(SCENE_ASTEROIDS)
+#include "SceneAsteroids.h"
+#include "src/Renderer/RendererTrivial.h"
+#elif defined(SCENE_NANOSUIT)
+#include "SceneNanosuit.h"
+#include "src/Renderer/RendererTrivial.h"
+#elif defined(SCENE_FRAMEBUFFERS)
+#include "SceneFramebuffers.h"
+#include "src/Renderer/RendererTrivial.h"
+#elif defined(SCENE_CUBEMAPS)
+#include "SceneCubemaps.h"
+#include "src/Renderer/RendererTrivial.h"
+#elif defined(SCENE_PARTICLES)
+#include "SceneParticles.h"
+#include "src/Renderer/RendererTrivial.h"
+#elif defined(SCENE_OMNI_SHADOWS)
+#include "SceneOmniShadows.h"
 #include "src/Renderer/RendererOmniShadows.h"
+#elif defined(SCENE_VOXEL_TERRAIN)
+#include "SceneVoxelTerrain.h"
 #include "src/Renderer/RendererVoxelTerrain.h"
+#elif defined(SCENE_PROCEDURAL_LANDMASS)
+#include "SceneProceduralLandmass.h"
+#include "src/Renderer/RendererVoxelTerrain.h"
+#elif defined(SCENE_VOXEL_TERRAIN_SL)
+#include "SceneVoxelTerrainSL.h"
+#include "src/Renderer/RendererVoxelTerrain.h"
+#elif defined(SCENE_MARCHING_CUBES)
+#include "SceneMarchingCubes.h"
+#include "src/Renderer/RendererVoxelTerrain.h"
+#elif defined(SCENE_SSAO)
+#include "SceneSSAO.h"
+#include "src/Renderer/RendererTrivial.h"
+#elif defined(SCENE_DEFERRED)
+#include "SceneDeferred.h"
+#include "src/Renderer/RendererTrivial.h"
+#elif defined(SCENE_EDITOR)
+#include "SceneEditor.h"
 #include "src/Renderer/RendererEditor.h"
+#elif defined(SCENE_EDITOR_IMGUIZMO)
+#include "SceneEditorImGuizmo.h"
+#include "src/Renderer/RendererEditor.h"
+#elif defined(SCENE_ANIM_PBR)
+#include "SceneAnimPBR.h"
+#include "src/Renderer/RendererTrivial.h"
+#elif defined(SCENE_HAZEL_ENV_MAP)
+#include "SceneHazelEnvMap.h"
 #include "src/Renderer/RendererECS.h"
+#endif
+
+#include <GL/glew.h>
 
 #include <memory>
 
@@ -71,36 +139,6 @@ const int HEIGHT = 720;
 
 Scene* scene;
 RendererBasic* renderer;
-
-enum class SceneName
-{
-	Cottage,
-	Eiffel,
-	Sponza,
-	Terrain,
-	PBR,
-	LearnOpenGL,
-	Bullet,
-	Instanced,
-	Asteroids,
-	Nanosuit,
-	Framebuffers,
-	Cubemaps,
-	Particles,
-	OmniShadows,
-	VoxelTerrain,
-	ProceduralLandmass,
-	VoxelTerrainSL,
-	MarchingCubes,
-	SSAO,
-	Deferred,
-	Editor,
-	EditorImGuizmo,
-	AnimPBR,
-	HazelEnvMap,
-};
-
-SceneName currentScene = SceneName::HazelEnvMap;
 
 // Key cooldown time (emulate onKeyReleased)
 EventCooldown keyPressCooldown = { 0.0f, 0.2f };
@@ -123,107 +161,81 @@ int main()
 	LOG_INFO("   Renderer: {0}", glGetString(GL_RENDERER));
 	LOG_INFO("   Version: {0}",  glGetString(GL_VERSION));
 
-	switch (currentScene)
-	{
-	case SceneName::Cottage:
-		scene = new SceneCottage();
-		renderer = static_cast<RendererBasic*>(new Renderer());
-		break;
-	case SceneName::Eiffel:
-		scene = new SceneEiffel();
-		renderer = static_cast<RendererBasic*>(new Renderer());
-		break;
-	case SceneName::Sponza:
-		scene = new SceneSponza();
-		renderer = static_cast<RendererBasic*>(new Renderer());
-		break;
-	case SceneName::Terrain:
-		scene = new SceneTerrain();
-		renderer = static_cast<RendererBasic*>(new Renderer());
-		break;
-	case SceneName::PBR:
-		scene = new ScenePBR();
-		renderer = static_cast<RendererBasic*>(new RendererPBR());
-		break;
-	case SceneName::LearnOpenGL:
-		scene = new SceneJoey();
-		renderer = static_cast<RendererBasic*>(new RendererJoey());
-		break;
-	case SceneName::Bullet:
-		scene = new SceneBullet();
-		renderer = static_cast<RendererBasic*>(new Renderer());
-		break;
-	case SceneName::Instanced:
-		scene = new SceneInstanced();
-		renderer = static_cast<RendererBasic*>(new RendererTrivial());
-		break;
-	case SceneName::Asteroids:
-		scene = new SceneAsteroids();
-		renderer = static_cast<RendererBasic*>(new RendererTrivial());
-		break;
-	case SceneName::Nanosuit:
-		scene = new SceneNanosuit();
-		renderer = static_cast<RendererBasic*>(new RendererTrivial());
-		break;
-	case SceneName::Framebuffers:
-		scene = new SceneFramebuffers();
-		renderer = static_cast<RendererBasic*>(new RendererTrivial());
-		break;
-	case SceneName::Cubemaps:
-		scene = new SceneCubemaps();
-		renderer = static_cast<RendererBasic*>(new RendererTrivial());
-		break;
-	case SceneName::Particles:
-		scene = new SceneParticles();
-		renderer = static_cast<RendererBasic*>(new RendererTrivial());
-		break;
-	case SceneName::OmniShadows:
-		scene = new SceneOmniShadows();
-		renderer = static_cast<RendererBasic*>(new RendererOmniShadows());
-		break;
-	case SceneName::ProceduralLandmass:
-		scene = new SceneProceduralLandmass();
-		renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
-		break;
-	case SceneName::VoxelTerrain:
-		scene = new SceneVoxelTerrain();
-		renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
-		break;
-	case SceneName::VoxelTerrainSL:
-		scene = new SceneVoxelTerrainSL();
-		renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
-		break;
-	case SceneName::MarchingCubes:
-		scene = new SceneMarchingCubes();
-		renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
-		break;
-	case SceneName::SSAO:
-		scene = new SceneSSAO();
-		renderer = static_cast<RendererBasic*>(new RendererTrivial());
-		break;
-	case SceneName::AnimPBR:
-		scene = new SceneAnimPBR();
-		renderer = static_cast<RendererBasic*>(new RendererTrivial());
-		break;
-	case SceneName::Deferred:
-		scene = new SceneDeferred();
-		renderer = static_cast<RendererBasic*>(new RendererTrivial());
-		break;
-	case SceneName::Editor:
-		scene = new SceneEditor();
-		renderer = static_cast<RendererBasic*>(new RendererEditor());
-		break;
-	case SceneName::EditorImGuizmo:
-		scene = new SceneEditorImGuizmo();
-		renderer = static_cast<RendererBasic*>(new RendererEditor());
-		break;
-	case SceneName::HazelEnvMap:
-		scene = new SceneHazelEnvMap();
-		renderer = static_cast<RendererBasic*>(new RendererECS());
-		break;
-	default:
+#if defined(SCENE_COTTAGE)
+	scene = new SceneCottage();
+	renderer = static_cast<RendererBasic*>(new Renderer());
+#elif defined(SCENE_EIFFEL)
+	scene = new SceneEiffel();
+	renderer = static_cast<RendererBasic*>(new Renderer());
+#elif defined(SCENE_SPONZA)
+	scene = new SceneSponza();
+	renderer = static_cast<RendererBasic*>(new Renderer());
+#elif defined(SCENE_TERRAIN)
+	scene = new SceneTerrain();
+	renderer = static_cast<RendererBasic*>(new Renderer());
+#elif defined(SCENE_PBR)
+	scene = new ScenePBR();
+	renderer = static_cast<RendererBasic*>(new RendererPBR());
+#elif defined(SCENE_LEARN_OPEN_GL)
+	scene = new SceneJoey();
+	renderer = static_cast<RendererBasic*>(new RendererJoey());
+#elif defined(SCENE_BULLET)
+	scene = new SceneBullet();
+	renderer = static_cast<RendererBasic*>(new Renderer());
+#elif defined(SCENE_INSTANCED)
+	scene = new SceneInstanced();
+	renderer = static_cast<RendererBasic*>(new RendererTrivial());
+#elif defined(SCENE_ASTEROIDS)
+	scene = new SceneAsteroids();
+	renderer = static_cast<RendererBasic*>(new RendererTrivial());
+#elif defined(SCENE_NANOSUIT)
+	scene = new SceneNanosuit();
+	renderer = static_cast<RendererBasic*>(new RendererTrivial());
+#elif defined(SCENE_FRAMEBUFFERS)
+	scene = new SceneFramebuffers();
+	renderer = static_cast<RendererBasic*>(new RendererTrivial());
+#elif defined(SCENE_CUBEMAPS)
+	scene = new SceneCubemaps();
+	renderer = static_cast<RendererBasic*>(new RendererTrivial());
+#elif defined(SCENE_PARTICLES)
+	scene = new SceneParticles();
+	renderer = static_cast<RendererBasic*>(new RendererTrivial());
+#elif defined(SCENE_OMNI_SHADOWS)
+	scene = new SceneOmniShadows();
+	renderer = static_cast<RendererBasic*>(new RendererOmniShadows());
+#elif defined(SCENE_PROCEDURAL_LANDMASS)
+	scene = new SceneProceduralLandmass();
+	renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
+#elif defined(SCENE_VOXEL_TERRAIN)
+	scene = new SceneVoxelTerrain();
+	renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
+#elif defined(SCENE_VOXEL_TERRAIN_SL)
+	scene = new SceneVoxelTerrainSL();
+	renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
+#elif defined(SCENE_MARCHING_CUBES)
+	scene = new SceneMarchingCubes();
+	renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
+#elif defined(SCENE_SSAO)
+	scene = new SceneSSAO();
+	renderer = static_cast<RendererBasic*>(new RendererTrivial());
+#elif defined(SCENE_ANIM_PBR)
+	scene = new SceneAnimPBR();
+	renderer = static_cast<RendererBasic*>(new RendererTrivial());
+#elif defined(SCENE_DEFERRED)
+	scene = new SceneDeferred();
+	renderer = static_cast<RendererBasic*>(new RendererTrivial());
+#elif defined(SCENE_EDITOR)
+	scene = new SceneEditor();
+	renderer = static_cast<RendererBasic*>(new RendererEditor());
+#elif defined(SCENE_EDITOR_IMGUIZMO)
+	scene = new SceneEditorImGuizmo();
+	renderer = static_cast<RendererBasic*>(new RendererEditor());
+#elif defined(SCENE_HAZEL_ENV_MAP)
+	scene = new SceneHazelEnvMap();
+	renderer = static_cast<RendererBasic*>(new RendererECS());
+#else
 		throw std::runtime_error("Scene and Renderer could not be loaded!");
-	}
+#endif
 
 	Application::Get()->SetScene(scene);
 	Application::Get()->SetRenderer(renderer);
