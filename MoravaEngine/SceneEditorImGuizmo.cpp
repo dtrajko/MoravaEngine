@@ -27,7 +27,7 @@
 #include "TerrainHeightMap.h"
 #include "Timer.h"
 #include "Tile2D.h"
-#include "src/Particle/ParticleMaster.h"
+#include "Particle/ParticleMaster.h"
 
 #include "../cross-platform/ImGuizmo/ImGuizmo.h"
 

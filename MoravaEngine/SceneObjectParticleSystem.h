@@ -2,10 +2,10 @@
 
 #include "Scene.h"
 #include "SceneObject.h"
-#include "src/Particle/ParticleSettings.h"
-#include "src/Particle/ParticleTexture.h"
-#include "src/Particle/ParticleSystemThinMatrix.h"
-#include "src/Particle/ParticleMaster.h"
+#include "Particle/ParticleSettings.h"
+#include "Particle/ParticleTexture.h"
+#include "Particle/ParticleSystemThinMatrix.h"
+#include "Particle/ParticleMaster.h"
 
 
 class SceneObjectParticleSystem : public SceneObject

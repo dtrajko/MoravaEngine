@@ -6,7 +6,7 @@
 
 #include "Log.h"
 #include "Window.h"
-#include "src/Renderer/RendererBasic.h"
+#include "Renderer/RendererBasic.h"
 
 
 class Application

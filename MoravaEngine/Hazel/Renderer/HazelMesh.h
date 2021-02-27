@@ -13,8 +13,8 @@
 #include "../../Shader.h"
 #include "../../Texture.h"
 #include "../../Material.h"
-#include "../../src/EnvMap/EnvMapMaterial.h"
 #include "../../Mesh.h"
+#include "EnvMap/EnvMapMaterial.h"
 
 #include <string>
 

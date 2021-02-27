@@ -3,7 +3,7 @@
 #include "ImGuiWrapper.h"
 #include "MeshData.h"
 #include "Tile2D.h"
-#include "src/Renderer/Renderer.h"
+#include "Renderer/Renderer.h"
 
 
 SceneSponza::SceneSponza()

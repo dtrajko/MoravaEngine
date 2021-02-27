@@ -5,9 +5,9 @@
 #include "MapGenerator.h"
 #include "Raycast.h"
 #include "TerrainMarchingCubes.h"
-#include "src/Player/Player.h"
-#include "src/Player/PlayerController.h"
-#include "src/Renderer/RenderInstanced.h"
+#include "Player/Player.h"
+#include "Player/PlayerController.h"
+#include "Renderer/RenderInstanced.h"
 
 
 class SceneMarchingCubes : public Scene

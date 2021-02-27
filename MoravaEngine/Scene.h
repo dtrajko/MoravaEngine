@@ -20,9 +20,9 @@
 #include "Texture.h"
 #include "TextureLoader.h"
 #include "Window.h"
-#include "src/Renderer/RendererBasic.h"
-#include "src/Skybox/Skybox.h"
-#include "src/Water/WaterManager.h"
+#include "Renderer/RendererBasic.h"
+#include "Skybox/Skybox.h"
+#include "Water/WaterManager.h"
 
 #include <glm/glm.hpp>
 

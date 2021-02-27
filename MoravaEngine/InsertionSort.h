@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/Particle/Particle.h"
+#include "Particle/Particle.h"
 
 #include <vector>
 

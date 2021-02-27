@@ -5,7 +5,7 @@
 #include "MeshData.h"
 #include "ShaderMain.h"
 #include "Tile2D.h"
-#include "src/Renderer/Renderer.h"
+#include "Renderer/Renderer.h"
 
 
 SceneEiffel::SceneEiffel()

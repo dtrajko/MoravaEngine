@@ -13,7 +13,7 @@
 #include "SkinnedMesh.h"
 #include "SceneObjectParticleSystem.h"
 #include "TextureCubemapFaces.h"
-#include "src/PostProcessing/BlurEffect.h"
+#include "PostProcessing/BlurEffect.h"
 
 #include <future>
 #include <set>

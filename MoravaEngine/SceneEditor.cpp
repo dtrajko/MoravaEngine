@@ -25,7 +25,7 @@
 #include "Tile2D.h"
 #include "Timer.h"
 #include "TerrainHeightMap.h"
-#include "src/Particle/ParticleMaster.h"
+#include "Particle/ParticleMaster.h"
 
 #include <vector>
 #include <map>

@@ -13,7 +13,7 @@
 
 #include "CommonValues.h"
 #include "Window.h"
-#include "src/EnvMap/EnvMapMaterial.h"
+#include "EnvMap/EnvMapMaterial.h"
 
 
 enum class PropertyFlag

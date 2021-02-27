@@ -6,7 +6,7 @@
 #include "Pivot.h"
 #include "MaterialWorkflowPBR.h"
 #include "TextureCubemapFaces.h"
-#include "src/Particle/ParticleSystemCherno.h"
+#include "Particle/ParticleSystemCherno.h"
 
 
 class SceneParticles : public Scene

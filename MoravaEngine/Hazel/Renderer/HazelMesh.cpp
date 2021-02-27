@@ -20,7 +20,7 @@
 #include "../../Math.h"
 #include "../../Util.h"
 #include "../../ShaderLibrary.h"
-#include "../../src/EnvMap/EnvMapEditorLayer.h"
+#include "EnvMap/EnvMapEditorLayer.h"
 
 #include "imgui.h"
 

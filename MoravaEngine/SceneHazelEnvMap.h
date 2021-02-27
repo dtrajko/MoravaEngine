@@ -11,7 +11,7 @@
 #include "Framebuffer.h"
 #include "Pivot.h"
 #include "Texture.h"
-#include "src/EnvMap/EnvMapEditorLayer.h"
+#include "EnvMap/EnvMapEditorLayer.h"
 
 #include <map>
 #include <string>

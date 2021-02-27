@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CameraController.h"
-#include "src/Player/Player.h"
+#include "Player/Player.h"
 
 
 class CameraControllerVoxelTerrain : public CameraController

@@ -5,7 +5,7 @@
 #include "Log.h"
 #include "AABB.h"
 #include "ResourceManager.h"
-#include "src/Particle/ParticleMaster.h"
+#include "Particle/ParticleMaster.h"
 
 
 SceneObjectParticleSystem::SceneObjectParticleSystem()

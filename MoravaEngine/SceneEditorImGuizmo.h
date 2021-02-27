@@ -14,7 +14,7 @@
 #include "Scene.h"
 #include "SceneObject.h"
 #include "SceneObjectParticleSystem.h"
-#include "src/PostProcessing/BlurEffect.h"
+#include "PostProcessing/BlurEffect.h"
 
 #include <glm/ext/quaternion_float.hpp>
 

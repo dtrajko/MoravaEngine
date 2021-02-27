@@ -7,7 +7,7 @@
 #include "ShaderPBR.h"
 #include "Sphere.h"
 #include "TerrainHeightMap.h"
-#include "src/Renderer/Renderer.h"
+#include "Renderer/Renderer.h"
 
 
 SceneJoey::SceneJoey()
