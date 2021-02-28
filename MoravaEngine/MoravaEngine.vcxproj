@@ -185,8 +185,6 @@
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="AABB.cpp" />
     <ClCompile Include="Application.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="CameraControllerVoxelTerrain.cpp" />
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="EndlessTerrain.cpp" />
     <ClCompile Include="EntitySelection.cpp" />
@@ -255,7 +253,6 @@
     <ClCompile Include="QuadSSAO.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="RuntimeCamera.cpp" />
     <ClCompile Include="SceneBullet.cpp" />
     <ClCompile Include="SceneAnimPBR.cpp" />
     <ClCompile Include="SceneDeferred.cpp" />
@@ -283,7 +280,6 @@
     <ClCompile Include="SkinnedMesh.cpp" />
     <ClCompile Include="Attachment.cpp" />
     <ClCompile Include="Block.cpp" />
-    <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="Cone.cpp" />
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="Cubemap.cpp" />
@@ -344,6 +340,10 @@
     <ClCompile Include="SongHo\CylinderSongHo.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="SpotLight.cpp" />
+    <ClCompile Include="src\Camera\Camera.cpp" />
+    <ClCompile Include="src\Camera\CameraController.cpp" />
+    <ClCompile Include="src\Camera\CameraControllerVoxelTerrain.cpp" />
+    <ClCompile Include="src\Camera\RuntimeCamera.cpp" />
     <ClCompile Include="src\Data\Octree.cpp" />
     <ClCompile Include="src\Data\Quadtree.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapEditorLayer.cpp" />
@@ -409,8 +409,6 @@
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
     <ClInclude Include="AABB.h" />
     <ClInclude Include="Application.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="CameraControllerVoxelTerrain.h" />
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="EndlessTerrain.h" />
     <ClInclude Include="EntitySelection.h" />
@@ -494,7 +492,6 @@
     <ClInclude Include="Random.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceManager.h" />
-    <ClInclude Include="RuntimeCamera.h" />
     <ClInclude Include="SceneBullet.h" />
     <ClInclude Include="SceneAnimPBR.h" />
     <ClInclude Include="SceneDeferred.h" />
@@ -522,7 +519,6 @@
     <ClInclude Include="SkinnedMesh.h" />
     <ClInclude Include="Attachment.h" />
     <ClInclude Include="Block.h" />
-    <ClInclude Include="CameraController.h" />
     <ClInclude Include="CommonValues.h" />
     <ClInclude Include="Cone.h" />
     <ClInclude Include="Cube.h" />
@@ -584,6 +580,10 @@
     <ClInclude Include="SongHo\CylinderSongHo.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="SpotLight.h" />
+    <ClInclude Include="src\Camera\Camera.h" />
+    <ClInclude Include="src\Camera\CameraController.h" />
+    <ClInclude Include="src\Camera\CameraControllerVoxelTerrain.h" />
+    <ClInclude Include="src\Camera\RuntimeCamera.h" />
     <ClInclude Include="src\Data\Octree.h" />
     <ClInclude Include="src\Data\Quadtree.h" />
     <ClInclude Include="src\EnvMap\EnvMapEditorLayer.h" />

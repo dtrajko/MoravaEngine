@@ -38,7 +38,8 @@
 #include "Framebuffer.h"
 #include "TextureCubemap.h"
 #include "ResourceManager.h"
-#include "RuntimeCamera.h"
+
+#include "Camera/RuntimeCamera.h"
 
 // GLM
 #include <glm/gtc/type_ptr.hpp>

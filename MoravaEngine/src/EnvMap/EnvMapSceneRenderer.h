@@ -9,10 +9,11 @@
 #include "../../Hazel/Renderer/RenderPass.h"
 #include "../../Hazel/Renderer/SceneEnvironment.h"
 
-#include "EnvMapRenderPass.h"
-#include "../../Camera.h"
 #include "../../HazelFullscreenQuad.h"
 #include "../../Scene.h"
+
+#include "EnvMap/EnvMapRenderPass.h"
+#include "Camera/Camera.h"
 
 
 struct SceneRendererOptions

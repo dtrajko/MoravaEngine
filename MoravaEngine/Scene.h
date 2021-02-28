@@ -4,8 +4,6 @@
 #include "Hazel/Scene/HazelScene.h"
 
 #include "AABB.h"
-#include "Camera.h"
-#include "CameraController.h"
 #include "CommonStructs.h"
 #include "CommonValues.h"
 #include "DirectionalLight.h"
@@ -20,6 +18,9 @@
 #include "Texture.h"
 #include "TextureLoader.h"
 #include "Window.h"
+
+#include "Camera/Camera.h"
+#include "Camera/CameraController.h"
 #include "Renderer/RendererBasic.h"
 #include "Skybox/Skybox.h"
 #include "Water/WaterManager.h"

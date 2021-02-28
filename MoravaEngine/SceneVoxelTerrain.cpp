@@ -3,13 +3,14 @@
 #include "SceneVoxelTerrain.h"
 
 #include "Block.h"
-#include "CameraControllerVoxelTerrain.h"
 #include "ImGuiWrapper.h"
 #include "Log.h"
 #include "MousePicker.h"
 #include "ResourceManager.h"
 #include "TerrainSL.h"
 #include "TerrainVoxel.h"
+
+#include "Camera/CameraControllerVoxelTerrain.h"
 
 
 SceneVoxelTerrain::SceneVoxelTerrain()

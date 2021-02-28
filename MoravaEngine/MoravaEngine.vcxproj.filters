@@ -278,15 +278,6 @@
     <ClCompile Include="SceneVoxelTerrain.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="CameraController.cpp">
-      <Filter>Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="CameraControllerVoxelTerrain.cpp">
-      <Filter>Camera</Filter>
-    </ClCompile>
     <ClCompile Include="TerrainVoxel.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
@@ -500,9 +491,6 @@
     <ClCompile Include="Hazel\Renderer\HazelCamera.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="RuntimeCamera.cpp">
-      <Filter>Camera</Filter>
-    </ClCompile>
     <ClCompile Include="Hazel\Script\ScriptEngineRegistry.cpp">
       <Filter>Hazel\Script</Filter>
     </ClCompile>
@@ -635,6 +623,18 @@
     </ClCompile>
     <ClCompile Include="src\Particle\ParticleTexture.cpp">
       <Filter>Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera\Camera.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera\CameraController.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera\CameraControllerVoxelTerrain.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera\RuntimeCamera.cpp">
+      <Filter>Camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -944,15 +944,6 @@
     <ClInclude Include="SceneVoxelTerrain.h">
       <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="CameraController.h">
-      <Filter>Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="CameraControllerVoxelTerrain.h">
-      <Filter>Camera</Filter>
-    </ClInclude>
     <ClInclude Include="TerrainVoxel.h">
       <Filter>Terrain</Filter>
     </ClInclude>
@@ -1214,9 +1205,6 @@
     <ClInclude Include="Hazel\Renderer\EditorCamera.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="RuntimeCamera.h">
-      <Filter>Camera</Filter>
-    </ClInclude>
     <ClInclude Include="Hazel\Core\Ref.h">
       <Filter>Hazel\Core</Filter>
     </ClInclude>
@@ -1361,6 +1349,18 @@
     </ClInclude>
     <ClInclude Include="src\Particle\ParticleTexture.h">
       <Filter>Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera\Camera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera\CameraController.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera\CameraControllerVoxelTerrain.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera\RuntimeCamera.h">
+      <Filter>Camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

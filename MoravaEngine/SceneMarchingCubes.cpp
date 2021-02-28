@@ -3,7 +3,6 @@
 #include "SceneMarchingCubes.h"
 
 #include "Block.h"
-#include "CameraControllerVoxelTerrain.h"
 #include "ImGuiWrapper.h"
 #include "Log.h"
 #include "MousePicker.h"
@@ -14,6 +13,7 @@
 #include "TerrainMarchingCubes.h"
 #include "Timer.h"
 
+#include "Camera/CameraControllerVoxelTerrain.h"
 
 
 SceneMarchingCubes::SceneMarchingCubes()

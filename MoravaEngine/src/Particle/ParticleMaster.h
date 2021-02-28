@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Particle.h"
-#include "ParticleRenderer.h"
-#include "../../CameraController.h"
+#include "Camera/CameraController.h"
+#include "Particle/Particle.h"
+#include "Particle/ParticleRenderer.h"
 
 #include <map>
 
