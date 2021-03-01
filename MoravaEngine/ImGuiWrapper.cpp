@@ -233,7 +233,7 @@ bool const ImGuiWrapper::CanViewportReceiveEvents()
 		s_CanViewportReceiveEvents = false;
 	}
 
-	if (s_ViewportHovered && Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
+	if (s_ViewportHovered && (Input::IsMouseButtonPressed(Mouse::ButtonRight) || Input::IsMouseButtonPressed(Mouse::ButtonMiddle))) {
 		s_CanViewportReceiveEvents = true;
 	}
 
