@@ -52,11 +52,21 @@ public:
 	static void PopID();
 	static void BeginPropertyGrid();
 
+	static inline void SetViewportHovered(bool viewportHovered) { s_ViewportHovered = viewportHovered; }
+	static inline void SetViewportFocused(bool viewportFocused) { s_ViewportFocused = viewportFocused; }
+
+	static inline bool const GetViewportHovered() { return s_ViewportHovered; }
+	static inline bool const GetViewportFocused() { return s_ViewportFocused; }
+	static bool const CanViewportReceiveEvents();
 
 private:
 	static Window* s_Window;
 	static float s_Time;
 
 	static std::string s_MaterialNameNew;
+
+	static bool s_ViewportHovered;
+	static bool s_ViewportFocused;
+	static bool s_CanViewportReceiveEvents;
 
 };

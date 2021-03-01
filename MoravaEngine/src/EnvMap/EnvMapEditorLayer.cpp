@@ -876,13 +876,17 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
     {
         if (ImGui::CollapsingHeader("Display Info"))
         {
+            char buffer[100];
+            sprintf(buffer, "Can Viewport Receive Events ? %s", ImGuiWrapper::CanViewportReceiveEvents() ? "YES" : "NO");
+            ImGui::Text(buffer);
+
+            ImGui::Separator();
+
             ImGui::Checkbox("Display Outline", &m_DisplayOutline);
             ImGui::Checkbox("Display Bounding Boxes", &m_DisplayBoundingBoxes);
             ImGui::Checkbox("Display Hazel Grid", &m_DisplayHazelGrid);
             ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
             ImGui::Checkbox("Display Ray", &m_DisplayRay);
-
-            ImGui::Separator();
 
             bool eventLoggingEnabled = Application::Get()->GetWindow()->GetEventLogging();
             if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
@@ -890,7 +894,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
             }
 
             float fovDegrees = m_ActiveCamera->GetPerspectiveVerticalFOV();
-            if (ImGui::SliderFloat("FOV", &fovDegrees, -60.0f, 180.0f)) {
+            if (ImGui::DragFloat("FOV", &fovDegrees, 1.0f, -60.0f, 180.0f)) {
                 m_ActiveCamera->SetPerspectiveVerticalFOV(fovDegrees);
             }
         }
@@ -1012,6 +1016,9 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
             m_ViewportPanelMouseOver = ImGui::IsWindowHovered();
             m_ViewportPanelFocused = ImGui::IsWindowFocused();
 
+            ImGuiWrapper::SetViewportHovered(m_ViewportPanelMouseOver);
+            ImGuiWrapper::SetViewportFocused(m_ViewportPanelFocused);
+
             // Calculate Viewport bounds (used in EnvMapEditorLayer::CastRay)
             auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
             auto viewportSize = ImGui::GetContentRegionAvail();
@@ -1067,8 +1074,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
             m_ImGuiViewportEnvMap.MouseX = (int)ImGui::GetMousePos().x;
             m_ImGuiViewportEnvMap.MouseY = (int)ImGui::GetMousePos().y;
 
-            m_ViewportEnvMapFocused = ImGui::IsWindowFocused();
-            m_ViewportEnvMapHovered = ImGui::IsWindowHovered();
+            m_ViewportEnvMapFocused = ImGui::IsWindowFocused(); // Not in use, use m_ViewportPanelFocused instead
+            m_ViewportEnvMapHovered = ImGui::IsWindowHovered(); // Not in use, use m_ViewportPanelMouseOver instead
 
             ImVec2 viewportPanelSizeImGuiEnvMap = ImGui::GetContentRegionAvail();
             glm::vec2 viewportPanelSizeEnvMap = glm::vec2(viewportPanelSizeImGuiEnvMap.x, viewportPanelSizeImGuiEnvMap.y);

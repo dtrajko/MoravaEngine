@@ -8,7 +8,10 @@
 
 Window* ImGuiWrapper::s_Window;
 float ImGuiWrapper::s_Time;
-std::string  ImGuiWrapper::s_MaterialNameNew;
+std::string ImGuiWrapper::s_MaterialNameNew;
+bool ImGuiWrapper::s_ViewportHovered;
+bool ImGuiWrapper::s_ViewportFocused;
+bool ImGuiWrapper::s_CanViewportReceiveEvents;
 
 void ImGuiWrapper::Init(Window* window)
 {
@@ -222,6 +225,23 @@ void ImGuiWrapper::BeginPropertyGrid()
 {
 	PushID();
 	ImGui::Columns(2);
+}
+
+bool const ImGuiWrapper::CanViewportReceiveEvents()
+{
+	if (!s_ViewportFocused && !s_ViewportHovered) {
+		s_CanViewportReceiveEvents = false;
+	}
+
+	if (s_ViewportHovered && Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
+		s_CanViewportReceiveEvents = true;
+	}
+
+	if (s_ViewportFocused) {
+		s_CanViewportReceiveEvents = true;
+	}
+
+	return s_CanViewportReceiveEvents;
 }
 
 void ImGuiWrapper::DrawMaterialUI(EnvMapMaterial* material, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture)

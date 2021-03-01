@@ -4,6 +4,7 @@
 #include "../../Input.h"
 #include "../../Application.h"
 #include "../../Timer.h"
+#include "../../ImGuiWrapper.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -32,8 +33,11 @@ CameraController::CameraController(Hazel::HazelCamera* camera, float aspectRatio
 
 void CameraController::KeyControl(bool* keys, float deltaTime)
 {
-	// Don't move camera when using Ctrl+S or Ctrl+D in Editor
+	// Don't move the camera when using Ctrl+S or Ctrl+D in Editor
 	if (Input::IsKeyPressed(Key::LeftControl)) return;
+
+	// Move the camera only the viewport accepts events, i.e. in focus or hovered (mouse over)
+	if (!ImGuiWrapper::CanViewportReceiveEvents()) return;
 
 	float velocity = m_MoveSpeed * deltaTime;
 

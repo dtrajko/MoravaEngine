@@ -275,19 +275,23 @@ int main()
 			0, 0, (int)Application::Get()->GetWindow()->GetWidth(), (int)Application::Get()->GetWindow()->GetHeight(),
 			RendererBasic::GetProjectionMatrix(), scene->GetCamera()->GetViewMatrix());
 
-		if (Input::IsKeyPressed(Key::F))
+		if (ImGuiWrapper::CanViewportReceiveEvents())
 		{
-			LightManager::spotLights[2].GetBasePL()->Toggle();
-			// Application::Get()->GetWindow()->getKeys()[GLFW_KEY_L] = false;
-		}
-
-		// Toggle wireframe mode
-		if (Input::IsKeyPressed(Key::R) && Input::IsKeyPressed(Key::LeftShift) && !Input::IsKeyPressed(Key::LeftControl))
-		{
-			if (Timer::Get()->GetCurrentTimestamp() - keyPressCooldown.lastTime > keyPressCooldown.cooldown)
+			// Toggle wireframe mode
+			if (Input::IsKeyPressed(Key::R))
 			{
-				scene->SetWireframeEnabled(!scene->IsWireframeEnabled());
-				keyPressCooldown.lastTime = Timer::Get()->GetCurrentTimestamp();
+				if (Timer::Get()->GetCurrentTimestamp() - keyPressCooldown.lastTime > keyPressCooldown.cooldown)
+				{
+					scene->SetWireframeEnabled(!scene->IsWireframeEnabled());
+					keyPressCooldown.lastTime = Timer::Get()->GetCurrentTimestamp();
+				}
+			}
+
+			// Flashlight toggle key
+			if (Input::IsKeyPressed(Key::F))
+			{
+				LightManager::spotLights[2].GetBasePL()->Toggle();
+				// Application::Get()->GetWindow()->getKeys()[GLFW_KEY_L] = false;
 			}
 		}
 
