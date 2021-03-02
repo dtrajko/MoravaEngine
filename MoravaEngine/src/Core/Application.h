@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Hazel/Events/Event.h"
-#include "Hazel/Events/ApplicationEvent.h"
-#include "Hazel/Core/LayerStack.h"
+#include "../../Hazel/Events/Event.h"
+#include "../../Hazel/Events/ApplicationEvent.h"
+#include "../../Hazel/Core/LayerStack.h"
 
-#include "Log.h"
-#include "Window.h"
+#include "../../Log.h"
+#include "../../Window.h"
+
 #include "Renderer/RendererBasic.h"
 
 

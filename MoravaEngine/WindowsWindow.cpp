@@ -5,7 +5,8 @@
 #include "Hazel/Events/ApplicationEvent.h"
 
 #include "Log.h"
-#include "Application.h"
+
+#include "Core/Application.h"
 
 #include <cmath>
 #include <exception>

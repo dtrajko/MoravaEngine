@@ -1,7 +1,9 @@
-#include "Application.h"
-#include "Hazel/Core/Base.h"
-#include "Hazel/Renderer/RendererAPI.h"
-#include "Timer.h"
+#include "Core/Application.h"
+
+#include "../../Hazel/Core/Base.h"
+#include "../../Hazel/Renderer/RendererAPI.h"
+
+#include "../../Timer.h"
 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>

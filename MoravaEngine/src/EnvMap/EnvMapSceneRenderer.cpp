@@ -6,10 +6,11 @@
 #include "../../Hazel/Renderer/HazelRenderer.h"
 #include "../../Hazel/Scene/HazelScene.h"
 
-#include "../../Application.h"
 #include "../../Log.h"
 #include "../../ResourceManager.h"
-#include "../Renderer/RendererBasic.h"
+
+#include "Core/Application.h"
+#include "Renderer/RendererBasic.h"
 
 
 SceneRendererData EnvMapSceneRenderer::s_Data;

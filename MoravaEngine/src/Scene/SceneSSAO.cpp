@@ -1,11 +1,12 @@
 #include "Scene/SceneSSAO.h"
 
-#include "../../Application.h"
 #include "../../Block.h"
 #include "../../Cube.h"
 #include "../../ImGuiWrapper.h"
 #include "../../QuadSSAO.h"
 #include "../../ResourceManager.h"
+
+#include "Core/Application.h"
 
 
 SceneSSAO::SceneSSAO()

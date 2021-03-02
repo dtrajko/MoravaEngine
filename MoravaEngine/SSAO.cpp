@@ -1,10 +1,12 @@
 #include "SSAO.h"
+
 #include "Log.h"
-#include "Application.h"
 #include "LearnOpenGL/ModelSSAO.h"
+#include "Math.h"
 #include "Mesh.h"
 #include "Timer.h"
-#include "Math.h"
+
+#include "Core/Application.h"
 
 #include <random>
 

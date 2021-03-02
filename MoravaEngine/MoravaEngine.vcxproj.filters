@@ -269,9 +269,6 @@
     <ClCompile Include="TerrainHeightMap.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="Application.cpp">
-      <Filter>CoreOld</Filter>
-    </ClCompile>
     <ClCompile Include="QuadSSAO.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
@@ -636,6 +633,9 @@
     <ClCompile Include="src\Scene\SceneVoxelTerrainSL.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\Application.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -952,9 +952,6 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\Base.h">
       <Filter>Hazel\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Application.h">
-      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Core\HazelWindow.h">
       <Filter>Hazel\Core</Filter>
@@ -1361,6 +1358,9 @@
     </ClInclude>
     <ClInclude Include="src\Scene\SceneVoxelTerrainSL.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Application.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

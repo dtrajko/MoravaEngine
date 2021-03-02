@@ -6,7 +6,6 @@
 #include "../../Hazel/Renderer/HazelMesh.h"
 #include "../../Hazel/Scene/Components.h"
 
-#include "../../Application.h"
 #include "../../Block.h"
 #include "../../Cylinder.h"
 #include "../../Cone.h"
@@ -17,16 +16,17 @@
 #include "../../MousePicker.h"
 #include "../../Pyramid.h"
 #include "../../Profiler.h"
-#include "../../Ring.h"
 #include "../../ResourceManager.h"
+#include "../../Ring.h"
 #include "../../SkinnedMesh.h"
 #include "../../Shader.h"
 #include "../../Sphere.h"
-#include "../../TextureLoader.h"
 #include "../../TerrainHeightMap.h"
+#include "../../TextureLoader.h"
 #include "../../Timer.h"
 #include "../../Tile2D.h"
 
+#include "Core/Application.h"
 #include "Particle/ParticleMaster.h"
 #include "PerlinNoise/PerlinNoise.hpp"
 

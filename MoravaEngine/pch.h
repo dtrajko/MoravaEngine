@@ -24,7 +24,6 @@
 #include "Hazel/Scene/HazelScene.h"
 
 // Morava classes
-#include "Application.h"
 #include "Log.h"
 #include "Timer.h"
 #include "Util.h"
@@ -39,6 +38,7 @@
 #include "ResourceManager.h"
 
 #include "Camera/RuntimeCamera.h"
+#include "Core/Application.h"
 #include "Scene/Scene.h"
 
 // GLM

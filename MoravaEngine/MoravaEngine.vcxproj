@@ -183,7 +183,6 @@
     <ClCompile Include="..\vendor\ImGui\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
-    <ClCompile Include="Application.cpp" />
     <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="EndlessTerrain.cpp" />
     <ClCompile Include="EntitySelection.cpp" />
@@ -319,6 +318,7 @@
     <ClCompile Include="src\Camera\CameraControllerVoxelTerrain.cpp" />
     <ClCompile Include="src\Camera\RuntimeCamera.cpp" />
     <ClCompile Include="src\Core\AABB.cpp" />
+    <ClCompile Include="src\Core\Application.cpp" />
     <ClCompile Include="src\Data\Octree.cpp" />
     <ClCompile Include="src\Data\Quadtree.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapEditorLayer.cpp" />
@@ -407,7 +407,6 @@
     <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
-    <ClInclude Include="Application.h" />
     <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="EndlessTerrain.h" />
     <ClInclude Include="EntitySelection.h" />
@@ -559,6 +558,7 @@
     <ClInclude Include="src\Camera\CameraControllerVoxelTerrain.h" />
     <ClInclude Include="src\Camera\RuntimeCamera.h" />
     <ClInclude Include="src\Core\AABB.h" />
+    <ClInclude Include="src\Core\Application.h" />
     <ClInclude Include="src\Data\Octree.h" />
     <ClInclude Include="src\Data\Quadtree.h" />
     <ClInclude Include="src\EnvMap\EnvMapEditorLayer.h" />

@@ -1,7 +1,8 @@
-#include "RendererECS.h"
+#include "Renderer/RendererECS.h"
 
 #include "../../Log.h"
-#include "../../Application.h"
+
+#include "Core/Application.h"
 
 
 RendererECS::RendererECS()

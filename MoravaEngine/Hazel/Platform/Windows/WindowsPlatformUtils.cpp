@@ -1,5 +1,6 @@
 #include "../../Utils/PlatformUtils.h"
-#include "../../../Application.h"
+
+#include "Core/Application.h"
 
 #include <commdlg.h>
 #include <GLFW/glfw3.h>

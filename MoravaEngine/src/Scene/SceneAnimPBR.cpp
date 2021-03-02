@@ -2,7 +2,6 @@
 
 #include "Scene/SceneAnimPBR.h"
 
-#include "../../Application.h"
 #include "../../Block.h"
 #include "../../Input.h"
 #include "../../ImGuiWrapper.h"
@@ -11,6 +10,8 @@
 #include "../../ResourceManager.h"
 #include "../../Shader.h"
 #include "../../Timer.h"
+
+#include "Core/Application.h"
 
 #include "../cross-platform/ImGuizmo/ImGuizmo.h"
 

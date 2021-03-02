@@ -1,10 +1,11 @@
-#include "CameraController.h"
+#include "Camera/CameraController.h"
 
 #include "../../Log.h"
 #include "../../Input.h"
-#include "../../Application.h"
 #include "../../Timer.h"
 #include "../../ImGuiWrapper.h"
+
+#include "Core/Application.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>

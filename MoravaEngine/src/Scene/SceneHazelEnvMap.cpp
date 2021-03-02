@@ -6,7 +6,6 @@
 #include "../../Hazel/Renderer/HazelTexture.h"
 #include "../../Hazel/Renderer/RendererAPI.h"
 
-#include "../../Application.h"
 #include "../../Block.h"
 #include "../../Input.h"
 #include "../../ImGuiWrapper.h"
@@ -16,6 +15,8 @@
 #include "../../ResourceManager.h"
 #include "../../Timer.h"
 #include "../../Util.h"
+
+#include "Core/Application.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>

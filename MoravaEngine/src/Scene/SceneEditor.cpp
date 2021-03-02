@@ -1,12 +1,11 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "SceneEditor.h"
+#include "Scene/SceneEditor.h"
 
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "../../Hazel/Renderer/HazelMesh.h"
 
-#include "../../Application.h"
 #include "../../Block.h"
 #include "../../Cylinder.h"
 #include "../../Cone.h"
@@ -26,6 +25,7 @@
 #include "../../Timer.h"
 #include "../../TerrainHeightMap.h"
 
+#include "Core/Application.h"
 #include "Particle/ParticleMaster.h"
 
 #include <vector>
