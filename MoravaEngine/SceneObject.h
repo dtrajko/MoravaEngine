@@ -2,8 +2,9 @@
 
 #include "Mesh.h"
 #include "Model.h"
-#include "AABB.h"
 #include "Pivot.h"
+
+#include "Core/AABB.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext/quaternion_float.hpp>

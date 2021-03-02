@@ -1,8 +1,9 @@
 #pragma once
 
-#include "../../Scene.h"
 #include "../../Shader.h"
 #include "../../Window.h"
+
+#include "Scene/Scene.h"
 
 #include "glm/glm.hpp"
 

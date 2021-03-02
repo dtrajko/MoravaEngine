@@ -32,7 +32,6 @@
 #include "ImGuiWrapper.h"
 #include "Math.h"
 #include "Mesh.h"
-#include "Scene.h"
 #include "Shader.h"
 #include "Material.h"
 #include "Framebuffer.h"
@@ -40,6 +39,7 @@
 #include "ResourceManager.h"
 
 #include "Camera/RuntimeCamera.h"
+#include "Scene/Scene.h"
 
 // GLM
 #include <glm/gtc/type_ptr.hpp>

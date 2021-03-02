@@ -1,17 +1,18 @@
-#include "EnvMapEditorLayer.h"
+#include "EnvMap/EnvMapEditorLayer.h"
 
 #include "../../Hazel/Renderer/RendererAPI.h"
 #include "../../Hazel/Scene/SceneSerializer.h"
 #include "../../Hazel/Script/ScriptEngine.h"
 #include "../../Hazel/Utils/PlatformUtils.h"
 
-#include "EnvMapRenderPass.h"
 #include "../../ImGuiWrapper.h"
 #include "../../ImGuizmo/ImGuizmo.h"
 #include "../../MousePicker.h"
-#include "../../SceneHazelEnvMap.h"
 #include "../../ShaderLibrary.h"
-#include "../Renderer/RendererBasic.h"
+
+#include "EnvMap/EnvMapRenderPass.h"
+#include "Renderer/RendererBasic.h"
+#include "Scene/SceneHazelEnvMap.h"
 
 #include <filesystem>
 

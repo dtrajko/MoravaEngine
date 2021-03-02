@@ -35,48 +35,6 @@
     <ClCompile Include="ImGuiWrapper.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneAsteroids.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneCottage.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneCubemaps.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneEditor.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneEiffel.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneFramebuffers.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneInstanced.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneJoey.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneNanosuit.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneParticles.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="ScenePBR.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneSponza.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneTerrain.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Shader.cpp">
       <Filter>Shader</Filter>
     </ClCompile>
@@ -116,9 +74,6 @@
     <ClCompile Include="ShaderWater.cpp">
       <Filter>Shader</Filter>
     </ClCompile>
-    <ClCompile Include="AABB.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Attachment.cpp">
       <Filter>Framebuffer</Filter>
     </ClCompile>
@@ -150,7 +105,7 @@
       <Filter>Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Math.cpp">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>Material</Filter>
@@ -168,7 +123,7 @@
       <Filter>Mesh</Filter>
     </ClCompile>
     <ClCompile Include="MousePicker.cpp">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClCompile>
     <ClCompile Include="PointLight.cpp">
       <Filter>Light</Filter>
@@ -216,7 +171,7 @@
       <Filter>Texture</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClCompile>
     <ClCompile Include="SkinnedMesh.cpp">
       <Filter>Mesh</Filter>
@@ -234,7 +189,7 @@
       <Filter>Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Raycast.cpp">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClCompile>
     <ClCompile Include="Renderbuffer.cpp">
       <Filter>Framebuffer</Filter>
@@ -252,7 +207,7 @@
       <Filter>Mesh</Filter>
     </ClCompile>
     <ClCompile Include="InsertionSort.cpp">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClCompile>
     <ClCompile Include="SubTexture2D.cpp">
       <Filter>Texture</Filter>
@@ -261,22 +216,16 @@
       <Filter>Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Util.cpp">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClCompile>
     <ClCompile Include="Log.cpp">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClCompile>
     <ClCompile Include="SceneObjectParticleSystem.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
     <ClCompile Include="SceneObjectLight.cpp">
       <Filter>Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneOmniShadows.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneVoxelTerrain.cpp">
-      <Filter>Scene</Filter>
     </ClCompile>
     <ClCompile Include="TerrainVoxel.cpp">
       <Filter>Terrain</Filter>
@@ -294,16 +243,13 @@
       <Filter>Terrain</Filter>
     </ClCompile>
     <ClCompile Include="Random.cpp">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClCompile>
     <ClCompile Include="TextureGenerator.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="SceneProceduralLandmass.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="ResourceManager.cpp">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClCompile>
     <ClCompile Include="MeshGenerator.cpp">
       <Filter>Terrain</Filter>
@@ -314,29 +260,17 @@
     <ClCompile Include="EndlessTerrain.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="SceneVoxelTerrainSL.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="TerrainMarchingCubes.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="SceneMarchingCubes.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Transform.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneBullet.cpp">
-      <Filter>Scene</Filter>
+      <Filter>CoreOld</Filter>
     </ClCompile>
     <ClCompile Include="TerrainHeightMap.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
     <ClCompile Include="Application.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneSSAO.cpp">
-      <Filter>Scene</Filter>
+      <Filter>CoreOld</Filter>
     </ClCompile>
     <ClCompile Include="QuadSSAO.cpp">
       <Filter>Mesh</Filter>
@@ -362,14 +296,8 @@
     <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="SceneAnimPBR.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="FramebufferTextureCubemap.cpp">
       <Filter>Framebuffer</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneDeferred.cpp">
-      <Filter>Scene</Filter>
     </ClCompile>
     <ClCompile Include="WindowsWindow.cpp">
       <Filter>Platform\Windows</Filter>
@@ -383,9 +311,6 @@
     <ClCompile Include="WindowsInput.cpp">
       <Filter>Platform\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="SceneEditorImGuizmo.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Hazel\Scene\Entity.cpp">
       <Filter>Hazel\Scene</Filter>
     </ClCompile>
@@ -397,9 +322,6 @@
     </ClCompile>
     <ClCompile Include="Hazel\Renderer\RenderCommandQueue.cpp">
       <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneHazelEnvMap.cpp">
-      <Filter>Scene</Filter>
     </ClCompile>
     <ClCompile Include="TextureCubemapFaces.cpp">
       <Filter>Texture</Filter>
@@ -636,6 +558,84 @@
     <ClCompile Include="src\Camera\RuntimeCamera.cpp">
       <Filter>Camera</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\AABB.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\Scene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneAnimPBR.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneAsteroids.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneBullet.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneCottage.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneCubemaps.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneDeferred.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneEditor.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneEditorImGuizmo.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneEiffel.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneFramebuffers.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneHazelEnvMap.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneInstanced.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneJoey.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneMarchingCubes.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneNanosuit.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneOmniShadows.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneParticles.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\ScenePBR.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneProceduralLandmass.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneSponza.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneSSAO.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneTerrain.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneVoxelTerrain.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneVoxelTerrainSL.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framebuffer.h">
@@ -680,48 +680,6 @@
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneAsteroids.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneCottage.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneCubemaps.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneEditor.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneEiffel.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneFramebuffers.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneInstanced.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneJoey.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneNanosuit.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneParticles.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="ScenePBR.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneSponza.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneTerrain.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
     <ClInclude Include="Shader.h">
       <Filter>Shader</Filter>
     </ClInclude>
@@ -761,9 +719,6 @@
     <ClInclude Include="ShaderWater.h">
       <Filter>Shader</Filter>
     </ClInclude>
-    <ClInclude Include="AABB.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Attachment.h">
       <Filter>Framebuffer</Filter>
     </ClInclude>
@@ -774,7 +729,7 @@
       <Filter>Mesh</Filter>
     </ClInclude>
     <ClInclude Include="CommonValues.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="Cone.h">
       <Filter>Mesh</Filter>
@@ -801,7 +756,7 @@
       <Filter>Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Math.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>Material</Filter>
@@ -819,7 +774,7 @@
       <Filter>Mesh</Filter>
     </ClInclude>
     <ClInclude Include="MousePicker.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="PointLight.h">
       <Filter>Light</Filter>
@@ -867,10 +822,10 @@
       <Filter>Texture</Filter>
     </ClInclude>
     <ClInclude Include="Window.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="SkinnedMesh.h">
       <Filter>Mesh</Filter>
@@ -894,10 +849,10 @@
       <Filter>Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Profiler.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="Raycast.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="Renderbuffer.h">
       <Filter>Framebuffer</Filter>
@@ -915,7 +870,7 @@
       <Filter>Mesh</Filter>
     </ClInclude>
     <ClInclude Include="InsertionSort.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="SubTexture2D.h">
       <Filter>Texture</Filter>
@@ -924,10 +879,10 @@
       <Filter>Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Util.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="Log.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="ParticleSettings.h">
       <Filter>Editor</Filter>
@@ -937,12 +892,6 @@
     </ClInclude>
     <ClInclude Include="SceneObjectLight.h">
       <Filter>Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneOmniShadows.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneVoxelTerrain.h">
-      <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="TerrainVoxel.h">
       <Filter>Terrain</Filter>
@@ -960,16 +909,13 @@
       <Filter>Terrain</Filter>
     </ClInclude>
     <ClInclude Include="Random.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="TextureGenerator.h">
       <Filter>Terrain</Filter>
     </ClInclude>
-    <ClInclude Include="SceneProceduralLandmass.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
     <ClInclude Include="ResourceManager.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="MeshGenerator.h">
       <Filter>Terrain</Filter>
@@ -980,23 +926,14 @@
     <ClInclude Include="EndlessTerrain.h">
       <Filter>Terrain</Filter>
     </ClInclude>
-    <ClInclude Include="SceneVoxelTerrainSL.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
     <ClInclude Include="TerrainMarchingCubes.h">
       <Filter>Terrain</Filter>
     </ClInclude>
-    <ClInclude Include="SceneMarchingCubes.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
     <ClInclude Include="Transform.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneBullet.h">
-      <Filter>Scene</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="TerrainHeightMap.h">
       <Filter>Terrain</Filter>
@@ -1017,7 +954,7 @@
       <Filter>Hazel\Core</Filter>
     </ClInclude>
     <ClInclude Include="Application.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Core\HazelWindow.h">
       <Filter>Hazel\Core</Filter>
@@ -1027,9 +964,6 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\MouseCodes.h">
       <Filter>Hazel\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneSSAO.h">
-      <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="QuadSSAO.h">
       <Filter>Mesh</Filter>
@@ -1056,7 +990,7 @@
       <Filter>Light</Filter>
     </ClInclude>
     <ClInclude Include="CommonStructs.h">
-      <Filter>Core</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h">
       <Filter>ImGui</Filter>
@@ -1064,14 +998,8 @@
     <ClInclude Include="Hazel\Core\Buffer.h">
       <Filter>Hazel\Core</Filter>
     </ClInclude>
-    <ClInclude Include="SceneAnimPBR.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
     <ClInclude Include="FramebufferTextureCubemap.h">
       <Filter>Framebuffer</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneDeferred.h">
-      <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="WindowsWindow.h">
       <Filter>Platform\Windows</Filter>
@@ -1083,10 +1011,7 @@
       <Filter>Hazel\Core</Filter>
     </ClInclude>
     <ClInclude Include="Input.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneEditorImGuizmo.h">
-      <Filter>Scene</Filter>
+      <Filter>CoreOld</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Scene\ScriptableEntity.h">
       <Filter>Hazel\Scene</Filter>
@@ -1105,9 +1030,6 @@
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\RenderCommandQueue.h">
       <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneHazelEnvMap.h">
-      <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="TextureCubemapFaces.h">
       <Filter>Texture</Filter>
@@ -1362,6 +1284,84 @@
     <ClInclude Include="src\Camera\RuntimeCamera.h">
       <Filter>Camera</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\AABB.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\Scene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneAnimPBR.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneAsteroids.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneBullet.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneCottage.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneCubemaps.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneDeferred.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneEditor.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneEditorImGuizmo.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneEiffel.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneFramebuffers.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneHazelEnvMap.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneInstanced.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneJoey.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneMarchingCubes.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneNanosuit.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneOmniShadows.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneParticles.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\ScenePBR.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneProceduralLandmass.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneSponza.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneSSAO.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneTerrain.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneVoxelTerrain.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneVoxelTerrainSL.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1387,9 +1387,6 @@
     </Filter>
     <Filter Include="Material">
       <UniqueIdentifier>{7cae81c5-191e-4f87-b92d-106056996405}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core">
-      <UniqueIdentifier>{bbaaa05d-f7b2-443a-84c4-03f28f25f0cc}</UniqueIdentifier>
     </Filter>
     <Filter Include="LearnOpenGL">
       <UniqueIdentifier>{70fddf24-9111-4cf0-b645-69795cbd12a0}</UniqueIdentifier>
@@ -1501,6 +1498,12 @@
     </Filter>
     <Filter Include="Physics">
       <UniqueIdentifier>{dff8738b-62be-4a44-87e8-9156b51321aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CoreOld">
+      <UniqueIdentifier>{bbaaa05d-f7b2-443a-84c4-03f28f25f0cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{c12df6c2-9bc0-4a5f-9691-d9cea6400cb9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

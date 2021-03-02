@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ParticleTexture.h"
-#include "ParticleMaster.h"
-#include "../../AABB.h"
+#include "Core/AABB.h"
+#include "Particle/ParticleTexture.h"
+#include "Particle/ParticleMaster.h"
 
 #include <glm/glm.hpp>
 

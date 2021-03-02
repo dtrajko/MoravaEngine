@@ -4,7 +4,8 @@
 #include "DirectionalLight.h"
 #include "PointLight.h"
 #include "SpotLight.h"
-#include "Scene.h"
+
+#include "Scene/Scene.h"
 
 
 struct SceneSettings;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Scene.h"
 #include "Shader.h"
 #include "Mesh.h"
 #include "Cylinder.h"
@@ -8,6 +7,8 @@
 #include "Block.h"
 #include "Ring.h"
 #include "SceneObject.h"
+
+#include "Scene/Scene.h"
 
 #include <glm/ext/quaternion_float.hpp>
 

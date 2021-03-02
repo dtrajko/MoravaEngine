@@ -10,7 +10,6 @@
 #include "../../Hazel/Renderer/SceneEnvironment.h"
 
 #include "../../HazelFullscreenQuad.h"
-#include "../../Scene.h"
 
 #include "EnvMap/EnvMapRenderPass.h"
 #include "Camera/Camera.h"

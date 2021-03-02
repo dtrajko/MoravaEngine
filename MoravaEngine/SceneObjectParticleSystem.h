@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Scene.h"
 #include "SceneObject.h"
+
 #include "Particle/ParticleSettings.h"
 #include "Particle/ParticleTexture.h"
 #include "Particle/ParticleSystemThinMatrix.h"
 #include "Particle/ParticleMaster.h"
+#include "Scene/Scene.h"
 
 
 class SceneObjectParticleSystem : public SceneObject
