@@ -2,10 +2,11 @@
 
 #include "Scene/Scene.h"
 
-#include "../../Framebuffer.h"
 #include "../../LearnOpenGL/ModelSSAO.h"
 #include "../../LearnOpenGL/ModelJoey.h"
 #include "../../SSAO.h"
+
+#include "Framebuffer/Framebuffer.h"
 
 
 class SceneSSAO : public Scene

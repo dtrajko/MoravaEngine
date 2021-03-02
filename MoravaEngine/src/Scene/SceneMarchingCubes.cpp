@@ -2,7 +2,6 @@
 
 #include "Scene/SceneMarchingCubes.h"
 
-#include "../../Block.h"
 #include "../../ImGuiWrapper.h"
 #include "../../Log.h"
 #include "../../MousePicker.h"
@@ -14,6 +13,7 @@
 #include "../../Timer.h"
 
 #include "Camera/CameraControllerVoxelTerrain.h"
+#include "Mesh/Block.h"
 
 
 SceneMarchingCubes::SceneMarchingCubes()

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "Texture.h"
 #include "MeshUnity.h"
 #include "MeshGenerator.h"
+
+#include "Texture/Texture.h"
 
 #include <vector>
 

@@ -2,15 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Framebuffer.cpp">
-      <Filter>Framebuffer</Filter>
-    </ClCompile>
-    <ClCompile Include="FramebufferTexture.cpp">
-      <Filter>Framebuffer</Filter>
-    </ClCompile>
-    <ClCompile Include="FramebufferWater.cpp">
-      <Filter>Framebuffer</Filter>
-    </ClCompile>
     <ClCompile Include="..\vendor\ImGui\imgui.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
@@ -35,77 +26,23 @@
     <ClCompile Include="ImGuiWrapper.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderBackground.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderBasic.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderEditorObjects.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderEditorObjectsPBR.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderGizmo.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderInstanced.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderMain.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderOmniShadowMap.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderPBR.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderShadowMap.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderSkinning.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderWater.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="Attachment.cpp">
-      <Filter>Framebuffer</Filter>
-    </ClCompile>
-    <ClCompile Include="Block.cpp">
-      <Filter>Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Cone.cpp">
-      <Filter>Mesh</Filter>
-    </ClCompile>
     <ClCompile Include="Cube.cpp">
-      <Filter>Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Cubemap.cpp">
-      <Filter>Framebuffer</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="CubeNanosuit.cpp">
-      <Filter>Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Cylinder.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="SongHo\CylinderSongHo.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="DirectionalLight.cpp">
       <Filter>Light</Filter>
     </ClCompile>
     <ClCompile Include="GeometryFactory.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="Math.cpp">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>Material</Filter>
@@ -114,16 +51,16 @@
       <Filter>Material</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="MeshData.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="MousePicker.cpp">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClCompile>
     <ClCompile Include="PointLight.cpp">
       <Filter>Light</Filter>
@@ -132,13 +69,13 @@
       <Filter>Light</Filter>
     </ClCompile>
     <ClCompile Include="Grid.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="OmniShadowMap.cpp">
-      <Filter>Texture</Filter>
+      <Filter>Texture__</Filter>
     </ClCompile>
     <ClCompile Include="ShadowMap.cpp">
-      <Filter>Texture</Filter>
+      <Filter>Texture__</Filter>
     </ClCompile>
     <ClCompile Include="Light.cpp">
       <Filter>Light</Filter>
@@ -146,53 +83,29 @@
     <ClCompile Include="LightManager.cpp">
       <Filter>Light</Filter>
     </ClCompile>
-    <ClCompile Include="Pyramid.cpp">
-      <Filter>Mesh</Filter>
-    </ClCompile>
     <ClCompile Include="Quad.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="RadianceHDR.cpp">
-      <Filter>Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureAtlas.cpp">
-      <Filter>Texture</Filter>
+      <Filter>Texture__</Filter>
     </ClCompile>
     <ClCompile Include="learnopengl\TextureJoey.cpp">
-      <Filter>Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureLoader.cpp">
-      <Filter>Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureSampler.cpp">
-      <Filter>Texture</Filter>
+      <Filter>Texture__</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClCompile>
     <ClCompile Include="SkinnedMesh.cpp">
-      <Filter>Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Ring90.cpp">
-      <Filter>Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Ring.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="Sphere.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="Tile2D.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="Raycast.cpp">
-      <Filter>CoreOld</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderbuffer.cpp">
-      <Filter>Framebuffer</Filter>
+      <Filter>Core__</Filter>
     </ClCompile>
     <ClCompile Include="SceneObject.cpp">
       <Filter>Editor</Filter>
@@ -204,22 +117,22 @@
       <Filter>Editor</Filter>
     </ClCompile>
     <ClCompile Include="CubeSkybox.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="InsertionSort.cpp">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClCompile>
     <ClCompile Include="SubTexture2D.cpp">
-      <Filter>Texture</Filter>
+      <Filter>Texture__</Filter>
     </ClCompile>
     <ClCompile Include="QuadInstanced.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="Util.cpp">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClCompile>
     <ClCompile Include="Log.cpp">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClCompile>
     <ClCompile Include="SceneObjectParticleSystem.cpp">
       <Filter>Editor</Filter>
@@ -243,19 +156,16 @@
       <Filter>Terrain</Filter>
     </ClCompile>
     <ClCompile Include="Random.cpp">
-      <Filter>CoreOld</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureGenerator.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>Core__</Filter>
     </ClCompile>
     <ClCompile Include="ResourceManager.cpp">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClCompile>
     <ClCompile Include="MeshGenerator.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
     <ClCompile Include="MeshUnity.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="EndlessTerrain.cpp">
       <Filter>Terrain</Filter>
@@ -264,13 +174,13 @@
       <Filter>Terrain</Filter>
     </ClCompile>
     <ClCompile Include="Transform.cpp">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClCompile>
     <ClCompile Include="TerrainHeightMap.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
     <ClCompile Include="QuadSSAO.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="LearnOpenGL\MeshJoey.cpp">
       <Filter>LearnOpenGL</Filter>
@@ -292,9 +202,6 @@
     </ClCompile>
     <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp">
       <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="FramebufferTextureCubemap.cpp">
-      <Filter>Framebuffer</Filter>
     </ClCompile>
     <ClCompile Include="WindowsWindow.cpp">
       <Filter>Platform\Windows</Filter>
@@ -320,12 +227,6 @@
     <ClCompile Include="Hazel\Renderer\RenderCommandQueue.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="TextureCubemapFaces.cpp">
-      <Filter>Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureCubemap.cpp">
-      <Filter>Texture</Filter>
-    </ClCompile>
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLTexture.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
@@ -348,7 +249,7 @@
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="HazelFullscreenQuad.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLShader.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
@@ -418,9 +319,6 @@
     </ClCompile>
     <ClCompile Include="Hazel\Renderer\SceneEnvironment.cpp">
       <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderLibrary.cpp">
-      <Filter>Shader</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLVertexBuffer.cpp">
@@ -636,17 +534,110 @@
     <ClCompile Include="src\Core\Application.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\Framebuffer\Attachment.cpp">
+      <Filter>Framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\Block.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\Cone.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\Cylinder.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\Pyramid.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\Ring.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\Ring90.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\Shader.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderBackground.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderBasic.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderEditorObjects.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderEditorObjectsPBR.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderGizmo.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderInstanced.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderLibrary.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderMain.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderOmniShadowMap.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderPBR.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderShadowMap.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderSkinning.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader\ShaderWater.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture\Texture.cpp">
+      <Filter>Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture\TextureAtlas.cpp">
+      <Filter>Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture\TextureCubemap.cpp">
+      <Filter>Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture\TextureCubemapFaces.cpp">
+      <Filter>Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture\TextureGenerator.cpp">
+      <Filter>Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture\TextureLoader.cpp">
+      <Filter>Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture\TextureSampler.cpp">
+      <Filter>Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Framebuffer\Cubemap.cpp">
+      <Filter>Framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Framebuffer\Framebuffer.cpp">
+      <Filter>Framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Framebuffer\FramebufferTexture.cpp">
+      <Filter>Framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Framebuffer\FramebufferTextureCubemap.cpp">
+      <Filter>Framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Framebuffer\FramebufferWater.cpp">
+      <Filter>Framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Framebuffer\Renderbuffer.cpp">
+      <Filter>Framebuffer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Framebuffer.h">
-      <Filter>Framebuffer</Filter>
-    </ClInclude>
-    <ClInclude Include="FramebufferTexture.h">
-      <Filter>Framebuffer</Filter>
-    </ClInclude>
-    <ClInclude Include="FramebufferWater.h">
-      <Filter>Framebuffer</Filter>
-    </ClInclude>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
       <Filter>ImGui</Filter>
     </ClInclude>
@@ -680,83 +671,26 @@
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderBackground.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderBasic.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderEditorObjects.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderEditorObjectsPBR.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderGizmo.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderInstanced.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderMain.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderOmniShadowMap.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderPBR.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderShadowMap.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderSkinning.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderWater.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="Attachment.h">
-      <Filter>Framebuffer</Filter>
-    </ClInclude>
     <ClInclude Include="LearnOpenGL\Camera.h">
       <Filter>LearnOpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="Block.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="CommonValues.h">
-      <Filter>CoreOld</Filter>
-    </ClInclude>
-    <ClInclude Include="Cone.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
     <ClInclude Include="Cube.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Cubemap.h">
-      <Filter>Framebuffer</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="CubeNanosuit.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Cylinder.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="SongHo\CylinderSongHo.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="DirectionalLight.h">
       <Filter>Light</Filter>
     </ClInclude>
     <ClInclude Include="GeometryFactory.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="Math.h">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>Material</Filter>
@@ -765,16 +699,16 @@
       <Filter>Material</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="MeshData.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="Model.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="MousePicker.h">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="PointLight.h">
       <Filter>Light</Filter>
@@ -783,13 +717,13 @@
       <Filter>Light</Filter>
     </ClInclude>
     <ClInclude Include="Grid.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="OmniShadowMap.h">
-      <Filter>Texture</Filter>
+      <Filter>Texture__</Filter>
     </ClInclude>
     <ClInclude Include="ShadowMap.h">
-      <Filter>Texture</Filter>
+      <Filter>Texture__</Filter>
     </ClInclude>
     <ClInclude Include="LightManager.h">
       <Filter>Light</Filter>
@@ -797,65 +731,41 @@
     <ClInclude Include="Light.h">
       <Filter>Light</Filter>
     </ClInclude>
-    <ClInclude Include="Pyramid.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
     <ClInclude Include="Quad.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="RadianceHDR.h">
-      <Filter>Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureAtlas.h">
-      <Filter>Texture</Filter>
+      <Filter>Texture__</Filter>
     </ClInclude>
     <ClInclude Include="learnopengl\TextureJoey.h">
-      <Filter>Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureLoader.h">
-      <Filter>Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureSampler.h">
-      <Filter>Texture</Filter>
+      <Filter>Texture__</Filter>
     </ClInclude>
     <ClInclude Include="Window.h">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="SkinnedMesh.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Ring90.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Ring.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="Sphere.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="Tile2D.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="VertexInstanced.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="VertexTBN.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="Profiler.h">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="Raycast.h">
-      <Filter>CoreOld</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderbuffer.h">
-      <Filter>Framebuffer</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="SceneObject.h">
       <Filter>Editor</Filter>
@@ -867,22 +777,22 @@
       <Filter>Editor</Filter>
     </ClInclude>
     <ClInclude Include="CubeSkybox.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="InsertionSort.h">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="SubTexture2D.h">
-      <Filter>Texture</Filter>
+      <Filter>Texture__</Filter>
     </ClInclude>
     <ClInclude Include="QuadInstanced.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="Util.h">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="Log.h">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="ParticleSettings.h">
       <Filter>Editor</Filter>
@@ -909,19 +819,16 @@
       <Filter>Terrain</Filter>
     </ClInclude>
     <ClInclude Include="Random.h">
-      <Filter>CoreOld</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureGenerator.h">
-      <Filter>Terrain</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="ResourceManager.h">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="MeshGenerator.h">
       <Filter>Terrain</Filter>
     </ClInclude>
     <ClInclude Include="MeshUnity.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="EndlessTerrain.h">
       <Filter>Terrain</Filter>
@@ -930,10 +837,10 @@
       <Filter>Terrain</Filter>
     </ClInclude>
     <ClInclude Include="Transform.h">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="TerrainHeightMap.h">
       <Filter>Terrain</Filter>
@@ -963,7 +870,7 @@
       <Filter>Hazel\Core</Filter>
     </ClInclude>
     <ClInclude Include="QuadSSAO.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="LearnOpenGL\MeshJoey.h">
       <Filter>LearnOpenGL</Filter>
@@ -986,17 +893,11 @@
     <ClInclude Include="SSAO.h">
       <Filter>Light</Filter>
     </ClInclude>
-    <ClInclude Include="CommonStructs.h">
-      <Filter>CoreOld</Filter>
-    </ClInclude>
     <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h">
       <Filter>ImGui</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Core\Buffer.h">
       <Filter>Hazel\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="FramebufferTextureCubemap.h">
-      <Filter>Framebuffer</Filter>
     </ClInclude>
     <ClInclude Include="WindowsWindow.h">
       <Filter>Platform\Windows</Filter>
@@ -1008,7 +909,7 @@
       <Filter>Hazel\Core</Filter>
     </ClInclude>
     <ClInclude Include="Input.h">
-      <Filter>CoreOld</Filter>
+      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Scene\ScriptableEntity.h">
       <Filter>Hazel\Scene</Filter>
@@ -1027,12 +928,6 @@
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\RenderCommandQueue.h">
       <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureCubemapFaces.h">
-      <Filter>Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureCubemap.h">
-      <Filter>Texture</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLTexture.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
@@ -1056,7 +951,7 @@
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="HazelFullscreenQuad.h">
-      <Filter>Mesh</Filter>
+      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLShader.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
@@ -1138,9 +1033,6 @@
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\SceneEnvironment.h">
       <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderLibrary.h">
-      <Filter>Shader</Filter>
     </ClInclude>
     <ClInclude Include="pch.h" />
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLVertexBuffer.h">
@@ -1362,6 +1254,114 @@
     <ClInclude Include="src\Core\Application.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Framebuffer\Attachment.h">
+      <Filter>Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\Block.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\Cone.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\Cylinder.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\Pyramid.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\Ring.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\Ring90.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\Shader.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderBackground.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderBasic.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderEditorObjects.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderEditorObjectsPBR.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderGizmo.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderInstanced.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderLibrary.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderMain.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderOmniShadowMap.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderPBR.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderShadowMap.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderSkinning.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader\ShaderWater.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\CommonStructs.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\CommonValues.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture\Texture.h">
+      <Filter>Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture\TextureAtlas.h">
+      <Filter>Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture\TextureCubemap.h">
+      <Filter>Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture\TextureCubemapFaces.h">
+      <Filter>Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture\TextureGenerator.h">
+      <Filter>Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture\TextureLoader.h">
+      <Filter>Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture\TextureSampler.h">
+      <Filter>Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Framebuffer\Cubemap.h">
+      <Filter>Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Framebuffer\Framebuffer.h">
+      <Filter>Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Framebuffer\FramebufferTexture.h">
+      <Filter>Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Framebuffer\FramebufferTextureCubemap.h">
+      <Filter>Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Framebuffer\FramebufferWater.h">
+      <Filter>Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Framebuffer\Renderbuffer.h">
+      <Filter>Framebuffer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1373,17 +1373,8 @@
     <Filter Include="Shader">
       <UniqueIdentifier>{d0b26742-b39e-4373-a778-1f82bad0dd47}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Texture">
-      <UniqueIdentifier>{f9b8ed3d-1977-473c-abdc-21630e7183e8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Light">
       <UniqueIdentifier>{a1c4fd28-f0a8-4279-84f5-7d8efd5c7e6c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Mesh">
-      <UniqueIdentifier>{4b105abb-df6c-4935-864f-c6f6d6f67c8d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Framebuffer">
-      <UniqueIdentifier>{95963855-d14a-4146-82da-c4ae090209d1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Material">
       <UniqueIdentifier>{7cae81c5-191e-4f87-b92d-106056996405}</UniqueIdentifier>
@@ -1499,11 +1490,26 @@
     <Filter Include="Physics">
       <UniqueIdentifier>{dff8738b-62be-4a44-87e8-9156b51321aa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="CoreOld">
-      <UniqueIdentifier>{bbaaa05d-f7b2-443a-84c4-03f28f25f0cc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Core">
       <UniqueIdentifier>{c12df6c2-9bc0-4a5f-9691-d9cea6400cb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core__">
+      <UniqueIdentifier>{bbaaa05d-f7b2-443a-84c4-03f28f25f0cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Framebuffer">
+      <UniqueIdentifier>{1557624c-a4a3-462a-933a-dc43da41b798}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mesh__">
+      <UniqueIdentifier>{4b105abb-df6c-4935-864f-c6f6d6f67c8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mesh">
+      <UniqueIdentifier>{5bc36ffa-09a4-4405-8331-13dbc8599f65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Texture__">
+      <UniqueIdentifier>{f9b8ed3d-1977-473c-abdc-21630e7183e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Texture">
+      <UniqueIdentifier>{0e61b564-ff23-4486-831f-aba4eab69adc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

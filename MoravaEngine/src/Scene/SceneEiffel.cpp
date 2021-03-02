@@ -2,10 +2,10 @@
 
 #include "../../ImGuiWrapper.h"
 #include "../../MeshData.h"
-#include "../../ShaderMain.h"
 #include "../../Tile2D.h"
 
 #include "Renderer/Renderer.h"
+#include "Shader/ShaderMain.h"
 
 
 SceneEiffel::SceneEiffel()

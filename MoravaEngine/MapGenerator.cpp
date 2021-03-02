@@ -4,7 +4,8 @@
 #include "Math.h"
 #include "NoiseSL.h"
 #include "Util.h"
-#include "TextureGenerator.h"
+
+#include "Texture/TextureGenerator.h"
 
 
 MapGenerator::MapGenerator()

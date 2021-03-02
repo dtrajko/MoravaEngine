@@ -1,10 +1,11 @@
 #pragma once
 
-#include "RendererBasic.h"
+#include "Renderer/RendererBasic.h"
 
 #include "../../Cube.h"
-#include "../../Cubemap.h"
 #include "../../RadianceHDR.h"
+
+#include "Framebuffer/Cubemap.h"
 
 
 class RendererPBR : public RendererBasic

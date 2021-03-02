@@ -1,7 +1,9 @@
 #include "TerrainHeightMap.h"
-#include "VertexTBN.h"
+
 #include "Mesh.h"
-#include "TextureSampler.h"
+#include "VertexTBN.h"
+
+#include "Texture/TextureSampler.h"
 
 
 TerrainHeightMap::TerrainHeightMap(const char* heightMapPath, float tilingFactor, const char* colorMapPath)

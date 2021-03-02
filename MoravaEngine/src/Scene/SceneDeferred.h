@@ -4,8 +4,9 @@
 
 #include "../../Cube.h"
 #include "../../LearnOpenGL/ModelSSAO.h"
-#include "../../Framebuffer.h"
 #include "../../QuadSSAO.h"
+
+#include "Framebuffer/Framebuffer.h"
 
 
 class SceneDeferred : public Scene

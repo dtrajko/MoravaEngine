@@ -1,8 +1,9 @@
 #pragma once
 
+#include "Texture/Texture.h"
+
 #include <glm/glm.hpp>
 
-#include "Texture.h"
 
 class SubTexture2D
 {

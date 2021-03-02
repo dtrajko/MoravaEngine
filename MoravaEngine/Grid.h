@@ -1,8 +1,8 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include "Shader/Shader.h"
 
-#include "Shader.h"
+#include <glm/glm.hpp>
 
 #include <vector>
 

@@ -4,9 +4,10 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "../Shader.h"
 #include "MeshJoey.h"
 #include "TextureJoey.h"
+
+#include "Shader/Shader.h"
 
 #include <string>
 

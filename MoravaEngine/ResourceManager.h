@@ -1,8 +1,10 @@
 #pragma once
 
-#include "Texture.h"
-#include "Material.h"
 #include "Hazel/Renderer/HazelTexture.h"
+
+#include "Material.h"
+
+#include "Texture/Texture.h"
 
 #include <map>
 

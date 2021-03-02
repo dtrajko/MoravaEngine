@@ -1,8 +1,9 @@
 #pragma once
 
-#include "../../CommonValues.h"
 #include "../../Mesh.h"
-#include "../../Shader.h"
+
+#include "Core/CommonValues.h"
+#include "Shader/Shader.h"
 
 #include <GL/glew.h>
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <GL/glew.h>
+#include "Texture/Texture.h"
 
-#include "Texture.h"
+#include <GL/glew.h>
 
 
 class RadianceHDR : public Texture

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "glm/glm.hpp"
+#include "Framebuffer/FramebufferWater.h"
 
-#include "../../FramebufferWater.h"
+#include "glm/glm.hpp"
 
 
 class WaterManager

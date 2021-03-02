@@ -1,11 +1,12 @@
 #include "ModelSSAO.h"
 
+#include "TextureJoey.h"
+
+#include "Shader/Shader.h"
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-
-#include "../Shader.h"
-#include "TextureJoey.h"
 
 #include <string>
 

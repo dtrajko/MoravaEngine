@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../Framebuffer.h"
-#include "../../Shader.h"
-#include "../../Texture.h"
+#include "Framebuffer/Framebuffer.h"
+#include "Shader/Shader.h"
+#include "Texture/Texture.h"
 
 
 class BlurEffect

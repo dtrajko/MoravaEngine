@@ -2,7 +2,6 @@
 
 #include "../../Hazel/Panels/SceneHierarchyPanel.h"
 
-#include "../../Framebuffer.h"
 #include "../../Grid.h"
 #include "../../Gizmo.h"
 #include "../../MaterialWorkflowPBR.h"
@@ -10,10 +9,11 @@
 #include "../../Pivot.h"
 #include "../../Quad.h"
 #include "../../Raycast.h"
-#include "../../Ring90.h"
 #include "../../SceneObject.h"
 #include "../../SceneObjectParticleSystem.h"
 
+#include "Framebuffer/Framebuffer.h"
+#include "Mesh/Ring90.h"
 #include "PostProcessing/BlurEffect.h"
 #include "Scene/Scene.h"
 

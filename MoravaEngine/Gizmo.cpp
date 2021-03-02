@@ -2,7 +2,8 @@
 
 #include "Math.h"
 #include "MousePicker.h"
-#include "Ring90.h"
+
+#include "Mesh/Ring90.h"
 #include "Renderer/RendererBasic.h"
 
 

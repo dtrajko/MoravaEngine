@@ -5,8 +5,9 @@
 #include "../../LearnOpenGL/ModelJoey.h"
 #include "../../Quad.h"
 #include "../../Raycast.h"
-#include "../../TextureCubemapFaces.h"
 #include "../../TerrainHeightMap.h"
+
+#include "Texture/TextureCubemapFaces.h"
 
 
 class SceneCubemaps : public Scene

@@ -1,8 +1,9 @@
 #include "Scene/SceneOmniShadows.h"
 
-#include "../../Block.h"
 #include "../../ImGuiWrapper.h"
 #include "../../ResourceManager.h"
+
+#include "Mesh/Block.h"
 
 
 SceneOmniShadows::SceneOmniShadows()

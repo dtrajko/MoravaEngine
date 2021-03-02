@@ -6,37 +6,35 @@
 #include "../../Hazel/Renderer/HazelMesh.h"
 #include "../../Hazel/Scene/Components.h"
 
-#include "../../Block.h"
-#include "../../Cylinder.h"
-#include "../../Cone.h"
 #include "../../ImGuiWrapper.h"
+#include "../../ImGuizmo/ImGuizmo.h"
 #include "../../Input.h"
 #include "../../Log.h"
 #include "../../Math.h"
 #include "../../MousePicker.h"
-#include "../../Pyramid.h"
 #include "../../Profiler.h"
 #include "../../ResourceManager.h"
-#include "../../Ring.h"
 #include "../../SkinnedMesh.h"
-#include "../../Shader.h"
 #include "../../Sphere.h"
 #include "../../TerrainHeightMap.h"
-#include "../../TextureLoader.h"
 #include "../../Timer.h"
 #include "../../Tile2D.h"
 
 #include "Core/Application.h"
+#include "Mesh/Block.h"
+#include "Mesh/Cylinder.h"
+#include "Mesh/Cone.h"
+#include "Mesh/Pyramid.h"
+#include "Mesh/Ring.h"
 #include "Particle/ParticleMaster.h"
 #include "PerlinNoise/PerlinNoise.hpp"
-
-#include "../cross-platform/ImGuizmo/ImGuizmo.h"
+#include "Shader/Shader.h"
+#include "Texture/TextureLoader.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtc/matrix_transform.hpp"
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/ext/quaternion_float.hpp>
-
 
 #include <vector>
 #include <map>

@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Shader.h"
 #include "Mesh.h"
-#include "Cylinder.h"
-#include "Cone.h"
-#include "Block.h"
-#include "Ring.h"
 #include "SceneObject.h"
 
+#include "Mesh/Block.h"
+#include "Mesh/Cylinder.h"
+#include "Mesh/Cone.h"
+#include "Mesh/Ring.h"
 #include "Scene/Scene.h"
+#include "Shader/Shader.h"
 
 #include <glm/ext/quaternion_float.hpp>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../CommonValues.h"
+#include "Core/CommonValues.h"
 
 #include <memory>
 

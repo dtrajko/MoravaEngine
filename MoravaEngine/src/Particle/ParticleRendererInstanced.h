@@ -1,11 +1,11 @@
 #pragma once
 
 #include "../../QuadInstanced.h"
-#include "../../Shader.h"
 
+#include "Camera/CameraController.h"
 #include "Particle/Particle.h"
 #include "Particle/ParticleRenderer.h"
-#include "Camera/CameraController.h"
+#include "Shader/Shader.h"
 
 
 class ParticleRendererInstanced : public ParticleRenderer

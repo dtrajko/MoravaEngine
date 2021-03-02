@@ -1,10 +1,10 @@
 #include "Model.h"
 
-#include "TextureLoader.h"
 #include "Log.h"
 
-#include <chrono>
+#include "Texture/TextureLoader.h"
 
+#include <chrono>
 
 
 Model::Model()

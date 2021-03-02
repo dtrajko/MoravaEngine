@@ -1,9 +1,8 @@
 #include "Renderer/RendererPBR.h"
 
-#include "../../ShaderMain.h"
-#include "../../ShaderPBR.h"
-
 #include "Core/Application.h"
+#include "Shader/ShaderMain.h"
+#include "Shader/ShaderPBR.h"
 
 
 RendererPBR::RendererPBR()

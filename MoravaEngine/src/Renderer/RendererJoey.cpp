@@ -1,9 +1,9 @@
 #include "Renderer/RendererJoey.h"
 
-#include "../../ShaderPBR.h"
 #include "../../Material.h"
 
 #include "Scene/SceneJoey.h"
+#include "Shader/ShaderPBR.h"
 
 
 RendererJoey::RendererJoey()

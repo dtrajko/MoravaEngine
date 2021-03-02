@@ -1,6 +1,6 @@
 #include "ResourceManager.h"
 
-#include "TextureLoader.h"
+#include "Texture/TextureLoader.h"
 
 
 std::map<std::string, std::string> ResourceManager::s_TextureInfo;

@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Shader/Shader.h"
+
 #include <glm/glm.hpp>
 
 #include <vector>
-
-#include "Shader.h"
 
 
 class Pivot

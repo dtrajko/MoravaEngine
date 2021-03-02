@@ -1,6 +1,6 @@
 #include "Material.h"
 
-#include "TextureLoader.h"
+#include "Texture/TextureLoader.h"
 
 #include <GL/glew.h>
 

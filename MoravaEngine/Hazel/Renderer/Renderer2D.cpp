@@ -5,7 +5,8 @@
 #include "HazelRenderer.h"
 
 #include "../../Log.h"
-#include "../../Shader.h"
+
+#include "Shader/Shader.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 

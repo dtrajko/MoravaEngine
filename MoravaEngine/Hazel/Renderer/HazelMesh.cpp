@@ -19,8 +19,9 @@
 
 #include "../../Math.h"
 #include "../../Util.h"
-#include "../../ShaderLibrary.h"
+
 #include "EnvMap/EnvMapEditorLayer.h"
+#include "Shader/ShaderLibrary.h"
 
 #include "imgui.h"
 

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <string>
-
-#include "../Shader.h"
 #include "../LearnOpenGLStructs.h"
 #include "MeshSSAO.h"
 
+#include "Shader/Shader.h"
+
+#include <string>
 
 /**
  * Mesh class compatible with LearnOpenGL code / shaders

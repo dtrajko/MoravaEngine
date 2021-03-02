@@ -8,11 +8,11 @@
 #include "../../Hazel/Scene/Entity.h"
 
 #include "../../Grid.h"
-#include "../../Framebuffer.h"
 #include "../../Pivot.h"
-#include "../../Texture.h"
 
 #include "EnvMap/EnvMapEditorLayer.h"
+#include "Framebuffer/Framebuffer.h"
+#include "Texture/Texture.h"
 
 #include <map>
 #include <string>

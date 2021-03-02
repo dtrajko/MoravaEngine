@@ -2,31 +2,31 @@
 
 #include "Scene/SceneEditor.h"
 
-#include "glm/gtc/matrix_transform.hpp"
-
 #include "../../Hazel/Renderer/HazelMesh.h"
 
-#include "../../Block.h"
-#include "../../Cylinder.h"
-#include "../../Cone.h"
 #include "../../ImGuiWrapper.h"
 #include "../../Log.h"
 #include "../../Math.h"
 #include "../../MousePicker.h"
-#include "../../Pyramid.h"
 #include "../../Profiler.h"
-#include "../../PerlinNoise/PerlinNoise.hpp"
 #include "../../ResourceManager.h"
-#include "../../Ring.h"
-#include "../../Shader.h"
 #include "../../Sphere.h"
-#include "../../TextureLoader.h"
+#include "../../TerrainHeightMap.h"
 #include "../../Tile2D.h"
 #include "../../Timer.h"
-#include "../../TerrainHeightMap.h"
 
 #include "Core/Application.h"
+#include "Mesh/Block.h"
+#include "Mesh/Cone.h"
+#include "Mesh/Cylinder.h"
+#include "Mesh/Pyramid.h"
+#include "Mesh/Ring.h"
 #include "Particle/ParticleMaster.h"
+#include "PerlinNoise/PerlinNoise.hpp"
+#include "Shader/Shader.h"
+#include "Texture/TextureLoader.h"
+
+#include "glm/gtc/matrix_transform.hpp"
 
 #include <vector>
 #include <map>

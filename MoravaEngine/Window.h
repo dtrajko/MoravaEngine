@@ -1,7 +1,8 @@
 #pragma once
 
-#include "CommonValues.h"
 #include "Hazel/Events/Event.h"
+
+#include "Core/CommonValues.h"
 
 #include <stdio.h>
 #include <functional>

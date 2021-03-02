@@ -3,11 +3,11 @@
 #include "../../Hazel/Renderer/HazelMesh.h"
 
 #include "../../CubeSkybox.h"
-#include "../../Framebuffer.h"
 #include "../../MaterialWorkflowPBR.h"
-#include "../../TextureCubemap.h"
 
+#include "Framebuffer/Framebuffer.h"
 #include "Scene/Scene.h"
+#include "Texture/TextureCubemap.h"
 
 #include <map>
 #include <string>

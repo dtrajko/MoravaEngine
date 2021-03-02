@@ -1,5 +1,10 @@
 #pragma once
 
+#include "Window.h"
+
+#include "Core/CommonValues.h"
+#include "EnvMap/EnvMapMaterial.h"
+
 #define _CRT_NONSTDC_NO_DEPRECATE
 
 // ImGui includes
@@ -10,10 +15,6 @@
 
 #include "Hazel/Core/Ref.h"
 #include "Hazel/Scene/Components.h"
-
-#include "CommonValues.h"
-#include "Window.h"
-#include "EnvMap/EnvMapMaterial.h"
 
 
 enum class PropertyFlag

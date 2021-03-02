@@ -1,22 +1,23 @@
 #pragma once
 
-#include <vector>
-#include <glm/glm.hpp>
-
 #include "../Core/Base.h"
 #include "../Core/Math/AABB.h"
-#include "../Renderer/Pipeline.h"
 #include "../Renderer/IndexBuffer.h"
+#include "../Renderer/Pipeline.h"
 #include "../Renderer/VertexBuffer.h"
 
 #include "../../Log.h"
-#include "../../Shader.h"
-#include "../../Texture.h"
-#include "../../Material.h"
 #include "../../Mesh.h"
+#include "../../Material.h"
+
 #include "EnvMap/EnvMapMaterial.h"
+#include "Shader/Shader.h"
+#include "Texture/Texture.h"
+
+#include <glm/glm.hpp>
 
 #include <string>
+#include <vector>
 
 struct aiNode;
 struct aiAnimation;

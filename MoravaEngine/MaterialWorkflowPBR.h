@@ -1,8 +1,9 @@
 #pragma once
 
-#include "Shader.h"
-#include "Quad.h"
 #include "CubeSkybox.h"
+#include "Quad.h"
+
+#include "Shader/Shader.h"
 
 #include <string>
 

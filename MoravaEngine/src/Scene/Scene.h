@@ -3,8 +3,6 @@
 #include "../../Hazel/Events/ApplicationEvent.h"
 #include "../../Hazel/Scene/HazelScene.h"
 
-#include "../../CommonStructs.h"
-#include "../../CommonValues.h"
 #include "../../DirectionalLight.h"
 #include "../../LightManager.h"
 #include "../../Material.h"
@@ -14,15 +12,17 @@
 #include "../../PointLight.h"
 #include "../../SceneObject.h"
 #include "../../SpotLight.h"
-#include "../../Texture.h"
-#include "../../TextureLoader.h"
 #include "../../Window.h"
 
 #include "Camera/Camera.h"
 #include "Camera/CameraController.h"
 #include "Core/AABB.h"
+#include "Core/CommonStructs.h"
+#include "Core/CommonValues.h"
 #include "Renderer/RendererBasic.h"
 #include "Skybox/Skybox.h"
+#include "Texture/Texture.h"
+#include "Texture/TextureLoader.h"
 #include "Water/WaterManager.h"
 
 #include <glm/glm.hpp>

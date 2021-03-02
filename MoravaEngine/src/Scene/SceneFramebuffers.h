@@ -2,7 +2,7 @@
 
 #include "Scene/Scene.h"
 
-#include "../../Framebuffer.h"
+#include "Framebuffer/Framebuffer.h"
 
 
 class SceneFramebuffers : public Scene

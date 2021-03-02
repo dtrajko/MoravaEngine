@@ -2,7 +2,6 @@
 
 #include "Scene/Scene.h"
 
-#include "../../Framebuffer.h"
 #include "../../Grid.h"
 #include "../../Gizmo.h"
 #include "../../MaterialWorkflowPBR.h"
@@ -11,9 +10,10 @@
 #include "../../Raycast.h"
 #include "../../SkinnedMesh.h"
 #include "../../SceneObjectParticleSystem.h"
-#include "../../TextureCubemapFaces.h"
 
+#include "Framebuffer/Framebuffer.h"
 #include "PostProcessing/BlurEffect.h"
+#include "Texture/TextureCubemapFaces.h"
 
 #include <future>
 #include <set>

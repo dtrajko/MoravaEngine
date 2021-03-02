@@ -6,7 +6,8 @@
 #include "../../ImGuiWrapper.h"
 #include "../../MeshData.h"
 #include "../../Tile2D.h"
-#include "../../TextureLoader.h"
+
+#include "Texture/TextureLoader.h"
 
 
 SceneSettings Scene::sceneSettings;

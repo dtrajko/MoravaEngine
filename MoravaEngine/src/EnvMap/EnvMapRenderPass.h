@@ -5,7 +5,7 @@
 #include "../../Hazel/Renderer/RenderPass.h"
 #include "../../Hazel/Platform/OpenGL/OpenGLRenderPass.h"
 
-#include "../../Framebuffer.h"
+#include "Framebuffer/Framebuffer.h"
 
 
 struct EnvMapRenderPassSpecification : public Hazel::RenderPassSpecification

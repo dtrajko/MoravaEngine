@@ -1,9 +1,9 @@
 #pragma once
 
 #include "../../Quad.h"
-#include "../../Shader.h"
 
 #include "Camera/Camera.h"
+#include "Shader/Shader.h"
 
 #include <vector>
 

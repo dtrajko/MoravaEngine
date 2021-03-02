@@ -1,7 +1,6 @@
 #include "RadianceHDR.h"
 
-#include "CommonValues.h"
-
+#include "Core/CommonValues.h"
 
 
 RadianceHDR::RadianceHDR()

@@ -1,9 +1,9 @@
 #include "Camera/CameraControllerVoxelTerrain.h"
 
-#include "../../CommonValues.h"
 #include "../../Timer.h"
 
 #include "Core/Application.h"
+#include "Core/CommonValues.h"
 
 #include <GLFW/glfw3.h>
 #include <glm/gtc/quaternion.hpp>

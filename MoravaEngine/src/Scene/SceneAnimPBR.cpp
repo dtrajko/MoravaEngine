@@ -2,16 +2,16 @@
 
 #include "Scene/SceneAnimPBR.h"
 
-#include "../../Block.h"
-#include "../../Input.h"
 #include "../../ImGuiWrapper.h"
+#include "../../Input.h"
 #include "../../Math.h"
 #include "../../MousePicker.h"
 #include "../../ResourceManager.h"
-#include "../../Shader.h"
 #include "../../Timer.h"
 
 #include "Core/Application.h"
+#include "Mesh/Block.h"
+#include "Shader/Shader.h"
 
 #include "../cross-platform/ImGuizmo/ImGuizmo.h"
 

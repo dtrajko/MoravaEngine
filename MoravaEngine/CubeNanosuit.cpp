@@ -1,9 +1,10 @@
 #include "CubeNanosuit.h"
 
-#include "GL/glew.h"
-
-#include "Shader.h"
 #include "LearnOpenGL/TextureJoey.h"
+
+#include "Shader/Shader.h"
+
+#include "GL/glew.h"
 
 
 CubeNanosuit::CubeNanosuit()

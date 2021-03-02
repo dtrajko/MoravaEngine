@@ -6,17 +6,17 @@
 #include "../../Hazel/Renderer/HazelTexture.h"
 #include "../../Hazel/Renderer/RendererAPI.h"
 
-#include "../../Block.h"
-#include "../../Input.h"
 #include "../../ImGuiWrapper.h"
 #include "../../ImGuizmo/ImGuizmo.h"
+#include "../../Input.h"
 #include "../../Math.h"
-#include "../../Shader.h"
 #include "../../ResourceManager.h"
 #include "../../Timer.h"
 #include "../../Util.h"
 
 #include "Core/Application.h"
+#include "Mesh/Block.h"
+#include "Shader/Shader.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>

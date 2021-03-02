@@ -1,7 +1,7 @@
 #ifndef _AABB_H
 #define _AABB_H
 
-#include "../../Shader.h"
+#include "Shader/Shader.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext/quaternion_float.hpp>

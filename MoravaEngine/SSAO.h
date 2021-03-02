@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Shader.h"
 #include "Cube.h"
-#include "QuadSSAO.h"
 #include "LearnOpenGL/ModelSSAO.h"
-#include "CommonStructs.h"
+#include "QuadSSAO.h"
+
+#include "Core/CommonStructs.h"
+#include "Shader/Shader.h"
 
 
 class SSAO

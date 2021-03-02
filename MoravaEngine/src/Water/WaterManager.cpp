@@ -1,6 +1,6 @@
-#include "WaterManager.h"
+#include "Water/WaterManager.h"
 
-#include "../../Renderbuffer.h"
+#include "Framebuffer/Renderbuffer.h"
 
 
 float WaterManager::m_WaveSpeed = 0.005f;

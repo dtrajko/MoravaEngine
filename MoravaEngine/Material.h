@@ -1,13 +1,13 @@
 #pragma once
 
-#include <glm/glm.hpp>
-
-#include "Texture.h"
-#include "Shader.h"
 #include "Hazel/Core/Base.h"
-
 #include "Hazel/Renderer/HazelMaterial.h"
 #include "Hazel/Renderer/HazelShader.h"
+
+#include "Shader/Shader.h"
+#include "Texture/Texture.h"
+
+#include <glm/glm.hpp>
 
 #include <map>
 #include <string>

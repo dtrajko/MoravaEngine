@@ -31,15 +31,15 @@
 #include "ImGuiWrapper.h"
 #include "Math.h"
 #include "Mesh.h"
-#include "Shader.h"
 #include "Material.h"
-#include "Framebuffer.h"
-#include "TextureCubemap.h"
 #include "ResourceManager.h"
 
 #include "Camera/RuntimeCamera.h"
 #include "Core/Application.h"
+#include "Framebuffer/Framebuffer.h"
 #include "Scene/Scene.h"
+#include "Shader/Shader.h"
+#include "Texture/TextureCubemap.h"
 
 // GLM
 #include <glm/gtc/type_ptr.hpp>

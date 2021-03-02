@@ -1,10 +1,10 @@
 #include "Renderer/Renderer.h"
 
-#include "../../ShaderMain.h"
-#include "../../ShaderPBR.h"
-
 #include "Core/Application.h"
+#include "Shader/ShaderMain.h"
+#include "Shader/ShaderPBR.h"
 #include "Water/WaterManager.h"
+
 
 Renderer::Renderer()
 {

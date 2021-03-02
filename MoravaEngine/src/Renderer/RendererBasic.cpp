@@ -1,8 +1,7 @@
 #include "Renderer/RendererBasic.h"
 
-#include "../../CommonValues.h"
-
 #include "Core/Application.h"
+#include "Core/CommonValues.h"
 
 
 static void OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)

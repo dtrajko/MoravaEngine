@@ -4,7 +4,8 @@
 
 #include "../../LearnOpenGL/ModelJoey.h"
 #include "../../Material.h"
-#include "../../Shader.h"
+
+#include "Shader/Shader.h"
 
 
 struct NanosuitLight

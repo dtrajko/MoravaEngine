@@ -4,8 +4,9 @@
 
 #include "../../ImGuiWrapper.h"
 #include "../../MeshData.h"
-#include "../../ShaderMain.h"
 #include "../../Sphere.h"
+
+#include "Shader/ShaderMain.h"
 
 
 SceneCottage::SceneCottage()
