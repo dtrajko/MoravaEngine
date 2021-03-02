@@ -16,7 +16,7 @@ Ring90::Ring90(glm::vec3 scale) : Mesh(scale)
 	m_Scale = scale;
 
 	m_Model = new Model();
-	m_Model->LoadModel("Models/ring_90.obj");
+	m_Model->LoadModel("Models/Primitives/ring_90.obj");
 	auto& meshList = m_Model->GetMeshList();
 	auto& mesh = meshList.at(0);
 
