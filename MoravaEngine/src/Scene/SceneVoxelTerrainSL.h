@@ -2,14 +2,14 @@
 
 #include "Scene/Scene.h"
 
-#include "../../MapGenerator.h"
 #include "../../Raycast.h"
-#include "../../TerrainVoxel.h"
-#include "../../TerrainSL.h"
 
 #include "Player/Player.h"
 #include "Player/PlayerController.h"
 #include "Renderer/RenderInstanced.h"
+#include "Terrain/MapGenerator.h"
+#include "Terrain/TerrainSL.h"
+#include "Terrain/TerrainVoxel.h"
 
 
 class SceneVoxelTerrainSL : public Scene

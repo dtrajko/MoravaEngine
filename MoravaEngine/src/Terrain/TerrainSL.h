@@ -1,8 +1,7 @@
 #pragma once
 
-#include "TerrainVoxel.h"
-
-#include "MapGenerator.h"
+#include "Terrain/MapGenerator.h"
+#include "Terrain/TerrainVoxel.h"
 
 
 /**

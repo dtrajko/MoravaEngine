@@ -1,10 +1,10 @@
 #include "Scene/SceneTerrain.h"
 
 #include "../../ImGuiWrapper.h"
-#include "../../TerrainHeightMap.h"
 #include "../../Tile2D.h"
 
 #include "Renderer/Renderer.h"
+#include "Terrain/TerrainHeightMap.h"
 
 
 SceneTerrain::SceneTerrain()

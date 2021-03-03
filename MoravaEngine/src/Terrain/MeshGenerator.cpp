@@ -1,4 +1,4 @@
-#include "MeshGenerator.h"
+#include "Terrain/MeshGenerator.h"
 
 
 MeshGenerator::MeshGenerator()

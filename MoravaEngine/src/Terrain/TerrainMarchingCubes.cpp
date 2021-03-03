@@ -1,7 +1,7 @@
-#include "TerrainMarchingCubes.h"
+#include "Terrain/TerrainMarchingCubes.h"
 
-#include "VertexTBN.h"
-#include "Profiler.h"
+#include "../../Profiler.h"
+#include "../../VertexTBN.h"
 
 #include <limits>
 

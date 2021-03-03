@@ -1,7 +1,6 @@
 #pragma once
 
-#include "TerrainBase.h"
-
+#include "Terrain/TerrainBase.h"
 #include "Texture/Texture.h"
 
 #include <string>

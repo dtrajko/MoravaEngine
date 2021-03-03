@@ -16,7 +16,6 @@
 #include "../../ResourceManager.h"
 #include "../../SkinnedMesh.h"
 #include "../../Sphere.h"
-#include "../../TerrainHeightMap.h"
 #include "../../Timer.h"
 #include "../../Tile2D.h"
 
@@ -29,6 +28,7 @@
 #include "Particle/ParticleMaster.h"
 #include "PerlinNoise/PerlinNoise.hpp"
 #include "Shader/Shader.h"
+#include "Terrain/TerrainHeightMap.h"
 #include "Texture/TextureLoader.h"
 
 #define GLM_ENABLE_EXPERIMENTAL

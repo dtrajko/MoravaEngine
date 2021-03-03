@@ -183,7 +183,6 @@
     <ClCompile Include="..\vendor\ImGui\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
-    <ClCompile Include="EndlessTerrain.cpp" />
     <ClCompile Include="EntitySelection.cpp" />
     <ClCompile Include="HazelFullscreenQuad.cpp" />
     <ClCompile Include="Hazel\Core\Layer.cpp" />
@@ -234,11 +233,8 @@
     <ClCompile Include="LearnOpenGL\MeshSSAO.cpp" />
     <ClCompile Include="LearnOpenGL\ModelSSAO.cpp" />
     <ClCompile Include="Log.cpp" />
-    <ClCompile Include="MapGenerator.cpp" />
     <ClCompile Include="MaterialInstance.cpp" />
-    <ClCompile Include="MeshGenerator.cpp" />
     <ClCompile Include="MeshUnity.cpp" />
-    <ClCompile Include="NoiseSL.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -370,6 +366,15 @@
     <ClCompile Include="src\Shader\ShaderSkinning.cpp" />
     <ClCompile Include="src\Shader\ShaderWater.cpp" />
     <ClCompile Include="src\Skybox\Skybox.cpp" />
+    <ClCompile Include="src\Terrain\EndlessTerrain.cpp" />
+    <ClCompile Include="src\Terrain\MapGenerator.cpp" />
+    <ClCompile Include="src\Terrain\MeshGenerator.cpp" />
+    <ClCompile Include="src\Terrain\NoiseSL.cpp" />
+    <ClCompile Include="src\Terrain\TerrainBase.cpp" />
+    <ClCompile Include="src\Terrain\TerrainHeightMap.cpp" />
+    <ClCompile Include="src\Terrain\TerrainMarchingCubes.cpp" />
+    <ClCompile Include="src\Terrain\TerrainSL.cpp" />
+    <ClCompile Include="src\Terrain\TerrainVoxel.cpp" />
     <ClCompile Include="src\Texture\OmniShadowMap.cpp" />
     <ClCompile Include="src\Texture\RadianceHDR.cpp" />
     <ClCompile Include="src\Texture\ShadowMap.cpp" />
@@ -383,11 +388,6 @@
     <ClCompile Include="src\Texture\TextureSampler.cpp" />
     <ClCompile Include="src\Water\WaterManager.cpp" />
     <ClCompile Include="SSAO.cpp" />
-    <ClCompile Include="TerrainBase.cpp" />
-    <ClCompile Include="TerrainHeightMap.cpp" />
-    <ClCompile Include="TerrainMarchingCubes.cpp" />
-    <ClCompile Include="TerrainSL.cpp" />
-    <ClCompile Include="TerrainVoxel.cpp" />
     <ClCompile Include="Tile2D.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Transform.cpp" />
@@ -407,7 +407,6 @@
     <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
-    <ClInclude Include="EndlessTerrain.h" />
     <ClInclude Include="EntitySelection.h" />
     <ClInclude Include="HazelFullscreenQuad.h" />
     <ClInclude Include="Hazel\Core\Assert.h" />
@@ -475,11 +474,8 @@
     <ClInclude Include="LearnOpenGL\MeshSSAO.h" />
     <ClInclude Include="LearnOpenGL\ModelSSAO.h" />
     <ClInclude Include="Log.h" />
-    <ClInclude Include="MapGenerator.h" />
     <ClInclude Include="MaterialInstance.h" />
-    <ClInclude Include="MeshGenerator.h" />
     <ClInclude Include="MeshUnity.h" />
-    <ClInclude Include="NoiseSL.h" />
     <ClInclude Include="ParticleSettings.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="QuadInstanced.h" />
@@ -612,6 +608,15 @@
     <ClInclude Include="src\Shader\ShaderSkinning.h" />
     <ClInclude Include="src\Shader\ShaderWater.h" />
     <ClInclude Include="src\Skybox\Skybox.h" />
+    <ClInclude Include="src\Terrain\EndlessTerrain.h" />
+    <ClInclude Include="src\Terrain\MapGenerator.h" />
+    <ClInclude Include="src\Terrain\MeshGenerator.h" />
+    <ClInclude Include="src\Terrain\NoiseSL.h" />
+    <ClInclude Include="src\Terrain\TerrainBase.h" />
+    <ClInclude Include="src\Terrain\TerrainHeightMap.h" />
+    <ClInclude Include="src\Terrain\TerrainMarchingCubes.h" />
+    <ClInclude Include="src\Terrain\TerrainSL.h" />
+    <ClInclude Include="src\Terrain\TerrainVoxel.h" />
     <ClInclude Include="src\Texture\OmniShadowMap.h" />
     <ClInclude Include="src\Texture\RadianceHDR.h" />
     <ClInclude Include="src\Texture\ShadowMap.h" />
@@ -625,11 +630,6 @@
     <ClInclude Include="src\Texture\TextureSampler.h" />
     <ClInclude Include="src\Water\WaterManager.h" />
     <ClInclude Include="SSAO.h" />
-    <ClInclude Include="TerrainBase.h" />
-    <ClInclude Include="TerrainHeightMap.h" />
-    <ClInclude Include="TerrainMarchingCubes.h" />
-    <ClInclude Include="TerrainSL.h" />
-    <ClInclude Include="TerrainVoxel.h" />
     <ClInclude Include="Tile2D.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Transform.h" />

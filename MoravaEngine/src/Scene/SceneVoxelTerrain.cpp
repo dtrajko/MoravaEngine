@@ -6,11 +6,11 @@
 #include "../../Log.h"
 #include "../../MousePicker.h"
 #include "../../ResourceManager.h"
-#include "../../TerrainSL.h"
-#include "../../TerrainVoxel.h"
 
 #include "Camera/CameraControllerVoxelTerrain.h"
 #include "Mesh/Block.h"
+#include "Terrain/TerrainSL.h"
+#include "Terrain/TerrainVoxel.h"
 
 
 SceneVoxelTerrain::SceneVoxelTerrain()

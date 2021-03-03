@@ -1,8 +1,7 @@
-#include "TerrainHeightMap.h"
+#include "../../Mesh.h"
+#include "../../VertexTBN.h"
 
-#include "Mesh.h"
-#include "VertexTBN.h"
-
+#include "Terrain/TerrainHeightMap.h"
 #include "Texture/TextureSampler.h"
 
 

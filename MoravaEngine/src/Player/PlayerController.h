@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Player.h"
-#include "../../TerrainVoxel.h"
+#include "Player/Player.h"
+#include "Terrain/TerrainVoxel.h"
 
 
 class PlayerController

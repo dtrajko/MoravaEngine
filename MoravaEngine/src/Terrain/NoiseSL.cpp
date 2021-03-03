@@ -1,6 +1,6 @@
-#include "NoiseSL.h"
+#include "Terrain/NoiseSL.h"
 
-#include "Math.h"
+#include "../../Math.h"
 
 #include <limits>
 #include <cstdlib>

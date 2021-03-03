@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Mesh.h"
+#include "../../Mesh.h"
 
 
 class TerrainBase : public Mesh

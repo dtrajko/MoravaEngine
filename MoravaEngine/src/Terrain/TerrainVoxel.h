@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PerlinNoise/PerlinNoise.hpp"
-#include "TerrainBase.h"
+#include "Terrain/TerrainBase.h"
 
 #include <glm/glm.hpp>
 

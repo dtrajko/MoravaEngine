@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../../Mesh.h"
-#include "../../TerrainVoxel.h"
 
+#include "Terrain/TerrainVoxel.h"
 #include "Texture/Texture.h"
 
 #include <map>

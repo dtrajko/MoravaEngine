@@ -1,6 +1,6 @@
-#include "EndlessTerrain.h"
+#include "Terrain/EndlessTerrain.h"
 
-#include "Quad.h"
+#include "../../Quad.h"
 
 
 TerrainChunk::TerrainChunk()

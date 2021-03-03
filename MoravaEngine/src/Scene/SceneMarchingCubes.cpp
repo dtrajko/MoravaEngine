@@ -5,15 +5,15 @@
 #include "../../ImGuiWrapper.h"
 #include "../../Log.h"
 #include "../../MousePicker.h"
-#include "../../NoiseSL.h"
 #include "../../Math.h"
 #include "../../Profiler.h"
 #include "../../ResourceManager.h"
-#include "../../TerrainMarchingCubes.h"
 #include "../../Timer.h"
 
 #include "Camera/CameraControllerVoxelTerrain.h"
 #include "Mesh/Block.h"
+#include "Terrain/NoiseSL.h"
+#include "Terrain/TerrainMarchingCubes.h"
 
 
 SceneMarchingCubes::SceneMarchingCubes()

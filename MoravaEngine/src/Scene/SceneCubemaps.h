@@ -5,8 +5,8 @@
 #include "../../LearnOpenGL/ModelJoey.h"
 #include "../../Quad.h"
 #include "../../Raycast.h"
-#include "../../TerrainHeightMap.h"
 
+#include "Terrain/TerrainHeightMap.h"
 #include "Texture/TextureCubemapFaces.h"
 
 

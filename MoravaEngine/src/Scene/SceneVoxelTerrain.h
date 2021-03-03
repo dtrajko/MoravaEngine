@@ -3,11 +3,11 @@
 #include "Scene/Scene.h"
 
 #include "../../Raycast.h"
-#include "../../TerrainVoxel.h"
 
 #include "Player/Player.h"
 #include "Player/PlayerController.h"
 #include "Renderer/RenderInstanced.h"
+#include "Terrain/TerrainVoxel.h"
 
 
 class SceneVoxelTerrain : public Scene

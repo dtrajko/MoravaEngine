@@ -2,13 +2,13 @@
 
 #include "Scene/Scene.h"
 
-#include "../../MapGenerator.h"
 #include "../../Raycast.h"
-#include "../../TerrainMarchingCubes.h"
 
 #include "Player/Player.h"
 #include "Player/PlayerController.h"
 #include "Renderer/RenderInstanced.h"
+#include "Terrain/MapGenerator.h"
+#include "Terrain/TerrainMarchingCubes.h"
 
 
 class SceneMarchingCubes : public Scene

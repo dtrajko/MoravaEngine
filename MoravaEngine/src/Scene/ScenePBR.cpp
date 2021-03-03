@@ -2,11 +2,11 @@
 
 #include "../../ImGuiWrapper.h"
 #include "../../Sphere.h"
-#include "../../TerrainHeightMap.h"
 
 #include "Renderer/Renderer.h"
 #include "Shader/ShaderMain.h"
 #include "Shader/ShaderPBR.h"
+#include "Terrain/TerrainHeightMap.h"
 
 
 ScenePBR::ScenePBR()

@@ -11,7 +11,6 @@
 #include "../../Profiler.h"
 #include "../../ResourceManager.h"
 #include "../../Sphere.h"
-#include "../../TerrainHeightMap.h"
 #include "../../Tile2D.h"
 #include "../../Timer.h"
 
@@ -24,6 +23,7 @@
 #include "Particle/ParticleMaster.h"
 #include "PerlinNoise/PerlinNoise.hpp"
 #include "Shader/Shader.h"
+#include "Terrain/TerrainHeightMap.h"
 #include "Texture/TextureLoader.h"
 
 #include "glm/gtc/matrix_transform.hpp"

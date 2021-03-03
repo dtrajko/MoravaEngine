@@ -1,7 +1,8 @@
 #include "Texture/TextureGenerator.h"
 
-#include "../../NoiseSL.h"
 #include "../../Math.h"
+
+#include "Terrain/NoiseSL.h"
 
 
 Texture* TextureGenerator::TextureFromHeightMap(float** noiseMap, const char* fileLocation, int width, int height)

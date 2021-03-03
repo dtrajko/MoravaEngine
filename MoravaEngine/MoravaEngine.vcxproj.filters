@@ -116,44 +116,17 @@
     <ClCompile Include="SceneObjectLight.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
-    <ClCompile Include="TerrainVoxel.cpp">
-      <Filter>Terrain__</Filter>
-    </ClCompile>
-    <ClCompile Include="TerrainBase.cpp">
-      <Filter>Terrain__</Filter>
-    </ClCompile>
-    <ClCompile Include="TerrainSL.cpp">
-      <Filter>Terrain__</Filter>
-    </ClCompile>
-    <ClCompile Include="NoiseSL.cpp">
-      <Filter>Terrain__</Filter>
-    </ClCompile>
-    <ClCompile Include="MapGenerator.cpp">
-      <Filter>Terrain__</Filter>
-    </ClCompile>
     <ClCompile Include="Random.cpp">
       <Filter>Core__</Filter>
     </ClCompile>
     <ClCompile Include="ResourceManager.cpp">
       <Filter>Core__</Filter>
     </ClCompile>
-    <ClCompile Include="MeshGenerator.cpp">
-      <Filter>Terrain__</Filter>
-    </ClCompile>
     <ClCompile Include="MeshUnity.cpp">
       <Filter>Mesh__</Filter>
     </ClCompile>
-    <ClCompile Include="EndlessTerrain.cpp">
-      <Filter>Terrain__</Filter>
-    </ClCompile>
-    <ClCompile Include="TerrainMarchingCubes.cpp">
-      <Filter>Terrain__</Filter>
-    </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="TerrainHeightMap.cpp">
-      <Filter>Terrain__</Filter>
     </ClCompile>
     <ClCompile Include="QuadSSAO.cpp">
       <Filter>Mesh__</Filter>
@@ -636,6 +609,33 @@
     <ClCompile Include="src\Texture\SubTexture2D.cpp">
       <Filter>Texture</Filter>
     </ClCompile>
+    <ClCompile Include="src\Terrain\EndlessTerrain.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrain\TerrainBase.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrain\TerrainHeightMap.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrain\TerrainMarchingCubes.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrain\TerrainSL.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrain\TerrainVoxel.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrain\MapGenerator.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrain\MeshGenerator.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrain\NoiseSL.cpp">
+      <Filter>Terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -779,47 +779,20 @@
     <ClInclude Include="SceneObjectLight.h">
       <Filter>Editor</Filter>
     </ClInclude>
-    <ClInclude Include="TerrainVoxel.h">
-      <Filter>Terrain__</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainBase.h">
-      <Filter>Terrain__</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainSL.h">
-      <Filter>Terrain__</Filter>
-    </ClInclude>
-    <ClInclude Include="NoiseSL.h">
-      <Filter>Terrain__</Filter>
-    </ClInclude>
-    <ClInclude Include="MapGenerator.h">
-      <Filter>Terrain__</Filter>
-    </ClInclude>
     <ClInclude Include="Random.h">
       <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="ResourceManager.h">
       <Filter>Core__</Filter>
     </ClInclude>
-    <ClInclude Include="MeshGenerator.h">
-      <Filter>Terrain__</Filter>
-    </ClInclude>
     <ClInclude Include="MeshUnity.h">
       <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="EndlessTerrain.h">
-      <Filter>Terrain__</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainMarchingCubes.h">
-      <Filter>Terrain__</Filter>
     </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainHeightMap.h">
-      <Filter>Terrain__</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Events\ApplicationEvent.h">
       <Filter>Hazel\Events</Filter>
@@ -1362,6 +1335,33 @@
     <ClInclude Include="src\Texture\SubTexture2D.h">
       <Filter>Texture</Filter>
     </ClInclude>
+    <ClInclude Include="src\Terrain\EndlessTerrain.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Terrain\TerrainBase.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Terrain\TerrainHeightMap.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Terrain\TerrainMarchingCubes.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Terrain\TerrainSL.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Terrain\TerrainVoxel.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Terrain\MapGenerator.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Terrain\MeshGenerator.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Terrain\NoiseSL.h">
+      <Filter>Terrain</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1504,9 +1504,6 @@
     </Filter>
     <Filter Include="Texture">
       <UniqueIdentifier>{0e61b564-ff23-4486-831f-aba4eab69adc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Terrain__">
-      <UniqueIdentifier>{4981229f-a7f9-4b97-8a26-dbd492d51348}</UniqueIdentifier>
     </Filter>
     <Filter Include="Terrain">
       <UniqueIdentifier>{cad5a15f-3c79-4ab5-867f-68481af6dc01}</UniqueIdentifier>
