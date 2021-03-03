@@ -1,7 +1,6 @@
 #include "Renderer/RendererJoey.h"
 
-#include "../../Material.h"
-
+#include "Material/Material.h"
 #include "Scene/SceneJoey.h"
 #include "Shader/ShaderPBR.h"
 

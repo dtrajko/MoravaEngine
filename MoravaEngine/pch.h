@@ -31,12 +31,12 @@
 #include "ImGuiWrapper.h"
 #include "Math.h"
 #include "Mesh.h"
-#include "Material.h"
 #include "ResourceManager.h"
 
 #include "Camera/RuntimeCamera.h"
 #include "Core/Application.h"
 #include "Framebuffer/Framebuffer.h"
+#include "Material/Material.h"
 #include "Scene/Scene.h"
 #include "Shader/Shader.h"
 #include "Texture/TextureCubemap.h"

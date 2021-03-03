@@ -3,8 +3,8 @@
 #include "Scene/Scene.h"
 
 #include "../../LearnOpenGL/ModelJoey.h"
-#include "../../Material.h"
 
+#include "Material/Material.h"
 #include "Shader/Shader.h"
 
 

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Material.h"
-#include "Hazel/Renderer/HazelMaterial.h"
+#include "../../Hazel/Renderer/HazelMaterial.h"
+
+#include "Material/Material.h"
 
 
 class MaterialInstance : public Hazel::HazelMaterialInstance

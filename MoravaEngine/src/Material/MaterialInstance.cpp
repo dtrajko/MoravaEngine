@@ -1,4 +1,4 @@
-#include "MaterialInstance.h"
+#include "Material/MaterialInstance.h"
 
 
 MaterialInstance::MaterialInstance(const Hazel::Ref<Hazel::HazelMaterial>& material, const std::string& name)

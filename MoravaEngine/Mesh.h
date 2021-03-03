@@ -4,7 +4,8 @@
 #include "Hazel/Core/Timestep.h"
 
 #include "Transform.h"
-#include "Material.h"
+
+#include "Material/Material.h"
 
 #include <glm/glm.hpp>
 

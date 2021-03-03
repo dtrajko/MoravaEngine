@@ -4,7 +4,6 @@
 
 #include "../../Grid.h"
 #include "../../Gizmo.h"
-#include "../../MaterialWorkflowPBR.h"
 #include "../../Pivot.h"
 #include "../../Quad.h"
 #include "../../Raycast.h"
@@ -12,6 +11,7 @@
 #include "../../SceneObjectParticleSystem.h"
 
 #include "Framebuffer/Framebuffer.h"
+#include "Material/MaterialWorkflowPBR.h"
 #include "PostProcessing/BlurEffect.h"
 #include "Texture/TextureCubemapFaces.h"
 

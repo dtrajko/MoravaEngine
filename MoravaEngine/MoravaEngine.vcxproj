@@ -233,7 +233,6 @@
     <ClCompile Include="LearnOpenGL\MeshSSAO.cpp" />
     <ClCompile Include="LearnOpenGL\ModelSSAO.cpp" />
     <ClCompile Include="Log.cpp" />
-    <ClCompile Include="MaterialInstance.cpp" />
     <ClCompile Include="MeshUnity.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -262,8 +261,6 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Material.cpp" />
-    <ClCompile Include="MaterialWorkflowPBR.cpp" />
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshData.cpp" />
@@ -295,6 +292,9 @@
     <ClCompile Include="src\Framebuffer\FramebufferTextureCubemap.cpp" />
     <ClCompile Include="src\Framebuffer\FramebufferWater.cpp" />
     <ClCompile Include="src\Framebuffer\Renderbuffer.cpp" />
+    <ClCompile Include="src\Material\Material.cpp" />
+    <ClCompile Include="src\Material\MaterialInstance.cpp" />
+    <ClCompile Include="src\Material\MaterialWorkflowPBR.cpp" />
     <ClCompile Include="src\Mesh\Block.cpp" />
     <ClCompile Include="src\Mesh\Cone.cpp" />
     <ClCompile Include="src\Mesh\Cube.cpp" />
@@ -474,7 +474,6 @@
     <ClInclude Include="LearnOpenGL\MeshSSAO.h" />
     <ClInclude Include="LearnOpenGL\ModelSSAO.h" />
     <ClInclude Include="Log.h" />
-    <ClInclude Include="MaterialInstance.h" />
     <ClInclude Include="MeshUnity.h" />
     <ClInclude Include="ParticleSettings.h" />
     <ClInclude Include="pch.h" />
@@ -499,8 +498,6 @@
     <ClInclude Include="learnopengl\TextureJoey.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightManager.h" />
-    <ClInclude Include="Material.h" />
-    <ClInclude Include="MaterialWorkflowPBR.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshData.h" />
@@ -535,6 +532,9 @@
     <ClInclude Include="src\Framebuffer\FramebufferTextureCubemap.h" />
     <ClInclude Include="src\Framebuffer\FramebufferWater.h" />
     <ClInclude Include="src\Framebuffer\Renderbuffer.h" />
+    <ClInclude Include="src\Material\Material.h" />
+    <ClInclude Include="src\Material\MaterialInstance.h" />
+    <ClInclude Include="src\Material\MaterialWorkflowPBR.h" />
     <ClInclude Include="src\Mesh\Block.h" />
     <ClInclude Include="src\Mesh\Cone.h" />
     <ClInclude Include="src\Mesh\Cube.h" />

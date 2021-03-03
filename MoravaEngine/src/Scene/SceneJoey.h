@@ -3,7 +3,8 @@
 #include "Scene/Scene.h"
 
 #include "../../LearnOpenGL/SphereJoey.h"
-#include "../../MaterialWorkflowPBR.h"
+
+#include "Material/MaterialWorkflowPBR.h"
 
 
 const unsigned int SCENE_JOEY_LIGHT_COUNT = 4;

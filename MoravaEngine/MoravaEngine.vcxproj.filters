@@ -38,12 +38,6 @@
     <ClCompile Include="Math.cpp">
       <Filter>Core__</Filter>
     </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>Material</Filter>
-    </ClCompile>
-    <ClCompile Include="MaterialWorkflowPBR.cpp">
-      <Filter>Material</Filter>
-    </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>Mesh__</Filter>
     </ClCompile>
@@ -296,9 +290,6 @@
     </ClCompile>
     <ClCompile Include="Hazel\Renderer\HazelFramebuffer.cpp">
       <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="MaterialInstance.cpp">
-      <Filter>Material</Filter>
     </ClCompile>
     <ClCompile Include="src\EnvMap\EnvMapEditorLayer.cpp">
       <Filter>EnvMap</Filter>
@@ -636,6 +627,15 @@
     <ClCompile Include="src\Terrain\NoiseSL.cpp">
       <Filter>Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="src\Material\Material.cpp">
+      <Filter>Material</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Material\MaterialInstance.cpp">
+      <Filter>Material</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Material\MaterialWorkflowPBR.cpp">
+      <Filter>Material</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -685,12 +685,6 @@
     </ClInclude>
     <ClInclude Include="Math.h">
       <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>Material</Filter>
-    </ClInclude>
-    <ClInclude Include="MaterialWorkflowPBR.h">
-      <Filter>Material</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
       <Filter>Mesh__</Filter>
@@ -1010,9 +1004,6 @@
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\HazelFramebuffer.h">
       <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="MaterialInstance.h">
-      <Filter>Material</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMap\EnvMapEditorLayer.h">
       <Filter>EnvMap</Filter>
@@ -1361,6 +1352,15 @@
     </ClInclude>
     <ClInclude Include="src\Terrain\NoiseSL.h">
       <Filter>Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Material\Material.h">
+      <Filter>Material</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Material\MaterialInstance.h">
+      <Filter>Material</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Material\MaterialWorkflowPBR.h">
+      <Filter>Material</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2,8 +2,7 @@
 
 #include "Hazel/Renderer/HazelTexture.h"
 
-#include "Material.h"
-
+#include "Material/Material.h"
 #include "Texture/Texture.h"
 
 #include <map>

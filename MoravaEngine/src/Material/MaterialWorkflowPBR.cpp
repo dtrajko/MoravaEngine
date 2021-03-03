@@ -1,7 +1,7 @@
-#include "MaterialWorkflowPBR.h"
+#include "Material/MaterialWorkflowPBR.h"
 
-#include "Log.h"
-#include "Math.h"
+#include "../../Log.h"
+#include "../../Math.h"
 
 #include "Core/CommonValues.h"
 

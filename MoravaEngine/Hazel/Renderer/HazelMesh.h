@@ -8,9 +8,9 @@
 
 #include "../../Log.h"
 #include "../../Mesh.h"
-#include "../../Material.h"
 
 #include "EnvMap/EnvMapMaterial.h"
+#include "Material/Material.h"
 #include "Shader/Shader.h"
 #include "Texture/Texture.h"
 

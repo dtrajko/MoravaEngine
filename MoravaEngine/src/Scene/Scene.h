@@ -5,7 +5,6 @@
 
 #include "../../DirectionalLight.h"
 #include "../../LightManager.h"
-#include "../../Material.h"
 #include "../../Mesh.h"
 #include "../../Model.h"
 #include "../../Pivot.h"
@@ -19,6 +18,7 @@
 #include "Core/AABB.h"
 #include "Core/CommonStructs.h"
 #include "Core/CommonValues.h"
+#include "Material/Material.h"
 #include "Renderer/RendererBasic.h"
 #include "Skybox/Skybox.h"
 #include "Texture/Texture.h"
