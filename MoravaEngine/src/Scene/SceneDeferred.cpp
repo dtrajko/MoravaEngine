@@ -1,12 +1,12 @@
 #include "Scene/SceneDeferred.h"
 
-#include "../../Cube.h"
 #include "../../ImGuiWrapper.h"
 #include "../../Log.h"
 #include "../../ResourceManager.h"
 
 #include "Core/Application.h"
 #include "Mesh/Block.h"
+#include "Mesh/Cube.h"
 
 
 SceneDeferred::SceneDeferred()

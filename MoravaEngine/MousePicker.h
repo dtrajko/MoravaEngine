@@ -15,6 +15,7 @@ public:
 	MousePicker();
 	static MousePicker* Get();
 	glm::vec3 GetCurrentRay();
+	void Update(glm::mat4 viewMatrix);
 	void Update(int screenMouseX, int screenMouseY, int viewportX, int viewportY, int viewportWidth, int viewportHeight, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 	inline void SetTerrain(TerrainBase* terrain) { m_Terrain = terrain; };
 	glm::vec3 CalculateMouseRay();

@@ -1,5 +1,6 @@
-#include "ShadowMap.h"
-#include "Log.h"
+#include "Texture/ShadowMap.h"
+
+#include "../../Log.h"
 
 
 ShadowMap::ShadowMap()

@@ -1,5 +1,8 @@
 #include "MousePicker.h"
 
+#include "Core/Application.h"
+#include "Renderer/RendererBasic.h"
+
 
 MousePicker* MousePicker::s_Instance = nullptr;
 
@@ -39,6 +42,17 @@ MousePicker::MousePicker()
 glm::vec3 MousePicker::GetCurrentRay()
 {
 	return m_CurrentRay;
+}
+
+void MousePicker::Update(glm::mat4 viewMatrix)
+{
+	Update(
+		(int)Application::Get()->GetWindow()->GetMouseX(),
+		(int)Application::Get()->GetWindow()->GetMouseY(),
+		0, 0,
+		(int)Application::Get()->GetWindow()->GetWidth(),
+		(int)Application::Get()->GetWindow()->GetHeight(),
+		RendererBasic::GetProjectionMatrix(), viewMatrix);
 }
 
 void MousePicker::Update(int screenMouseX, int screenMouseY, int viewportX, int viewportY, int viewportWidth, int viewportHeight, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)

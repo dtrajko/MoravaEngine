@@ -270,10 +270,7 @@ int main()
 
 		scene->GetCameraController()->Update();
 
-		MousePicker::Get()->Update(
-			(int)Application::Get()->GetWindow()->GetMouseX(), (int)Application::Get()->GetWindow()->GetMouseY(),
-			0, 0, (int)Application::Get()->GetWindow()->GetWidth(), (int)Application::Get()->GetWindow()->GetHeight(),
-			RendererBasic::GetProjectionMatrix(), scene->GetCamera()->GetViewMatrix());
+		MousePicker::Get()->Update(scene->GetCamera()->GetViewMatrix());
 
 		if (ImGuiWrapper::CanViewportReceiveEvents())
 		{

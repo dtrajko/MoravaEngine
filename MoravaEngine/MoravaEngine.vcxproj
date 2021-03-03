@@ -183,7 +183,6 @@
     <ClCompile Include="..\vendor\ImGui\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
-    <ClCompile Include="CubeSkybox.cpp" />
     <ClCompile Include="EndlessTerrain.cpp" />
     <ClCompile Include="EntitySelection.cpp" />
     <ClCompile Include="HazelFullscreenQuad.cpp" />
@@ -254,8 +253,6 @@
     <ClCompile Include="SceneObjectLight.cpp" />
     <ClCompile Include="SceneObjectParticleSystem.cpp" />
     <ClCompile Include="SkinnedMesh.cpp" />
-    <ClCompile Include="Cube.cpp" />
-    <ClCompile Include="CubeNanosuit.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="GeometryFactory.cpp" />
     <ClCompile Include="Gizmo.cpp" />
@@ -276,13 +273,10 @@
     <ClCompile Include="MeshData.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="MousePicker.cpp" />
-    <ClCompile Include="OmniShadowMap.cpp" />
     <ClCompile Include="Pivot.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Quad.cpp" />
-    <ClCompile Include="RadianceHDR.cpp" />
     <ClCompile Include="Raycast.cpp" />
-    <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="SongHo\CylinderSongHo.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="SpotLight.cpp" />
@@ -307,6 +301,9 @@
     <ClCompile Include="src\Framebuffer\Renderbuffer.cpp" />
     <ClCompile Include="src\Mesh\Block.cpp" />
     <ClCompile Include="src\Mesh\Cone.cpp" />
+    <ClCompile Include="src\Mesh\Cube.cpp" />
+    <ClCompile Include="src\Mesh\CubeNanosuit.cpp" />
+    <ClCompile Include="src\Mesh\CubeSkybox.cpp" />
     <ClCompile Include="src\Mesh\Cylinder.cpp" />
     <ClCompile Include="src\Mesh\Pyramid.cpp" />
     <ClCompile Include="src\Mesh\Ring.cpp" />
@@ -373,6 +370,10 @@
     <ClCompile Include="src\Shader\ShaderSkinning.cpp" />
     <ClCompile Include="src\Shader\ShaderWater.cpp" />
     <ClCompile Include="src\Skybox\Skybox.cpp" />
+    <ClCompile Include="src\Texture\OmniShadowMap.cpp" />
+    <ClCompile Include="src\Texture\RadianceHDR.cpp" />
+    <ClCompile Include="src\Texture\ShadowMap.cpp" />
+    <ClCompile Include="src\Texture\SubTexture2D.cpp" />
     <ClCompile Include="src\Texture\Texture.cpp" />
     <ClCompile Include="src\Texture\TextureAtlas.cpp" />
     <ClCompile Include="src\Texture\TextureCubemap.cpp" />
@@ -382,7 +383,6 @@
     <ClCompile Include="src\Texture\TextureSampler.cpp" />
     <ClCompile Include="src\Water\WaterManager.cpp" />
     <ClCompile Include="SSAO.cpp" />
-    <ClCompile Include="SubTexture2D.cpp" />
     <ClCompile Include="TerrainBase.cpp" />
     <ClCompile Include="TerrainHeightMap.cpp" />
     <ClCompile Include="TerrainMarchingCubes.cpp" />
@@ -407,7 +407,6 @@
     <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
-    <ClInclude Include="CubeSkybox.h" />
     <ClInclude Include="EndlessTerrain.h" />
     <ClInclude Include="EntitySelection.h" />
     <ClInclude Include="HazelFullscreenQuad.h" />
@@ -492,8 +491,6 @@
     <ClInclude Include="SceneObjectLight.h" />
     <ClInclude Include="SceneObjectParticleSystem.h" />
     <ClInclude Include="SkinnedMesh.h" />
-    <ClInclude Include="Cube.h" />
-    <ClInclude Include="CubeNanosuit.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="GeometryFactory.h" />
     <ClInclude Include="Gizmo.h" />
@@ -513,14 +510,11 @@
     <ClInclude Include="MeshData.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="MousePicker.h" />
-    <ClInclude Include="OmniShadowMap.h" />
     <ClInclude Include="Pivot.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="Profiler.h" />
     <ClInclude Include="Quad.h" />
-    <ClInclude Include="RadianceHDR.h" />
     <ClInclude Include="Raycast.h" />
-    <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="SongHo\CylinderSongHo.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="SpotLight.h" />
@@ -547,6 +541,9 @@
     <ClInclude Include="src\Framebuffer\Renderbuffer.h" />
     <ClInclude Include="src\Mesh\Block.h" />
     <ClInclude Include="src\Mesh\Cone.h" />
+    <ClInclude Include="src\Mesh\Cube.h" />
+    <ClInclude Include="src\Mesh\CubeNanosuit.h" />
+    <ClInclude Include="src\Mesh\CubeSkybox.h" />
     <ClInclude Include="src\Mesh\Cylinder.h" />
     <ClInclude Include="src\Mesh\Pyramid.h" />
     <ClInclude Include="src\Mesh\Ring.h" />
@@ -615,6 +612,10 @@
     <ClInclude Include="src\Shader\ShaderSkinning.h" />
     <ClInclude Include="src\Shader\ShaderWater.h" />
     <ClInclude Include="src\Skybox\Skybox.h" />
+    <ClInclude Include="src\Texture\OmniShadowMap.h" />
+    <ClInclude Include="src\Texture\RadianceHDR.h" />
+    <ClInclude Include="src\Texture\ShadowMap.h" />
+    <ClInclude Include="src\Texture\SubTexture2D.h" />
     <ClInclude Include="src\Texture\Texture.h" />
     <ClInclude Include="src\Texture\TextureAtlas.h" />
     <ClInclude Include="src\Texture\TextureCubemap.h" />
@@ -624,7 +625,6 @@
     <ClInclude Include="src\Texture\TextureSampler.h" />
     <ClInclude Include="src\Water\WaterManager.h" />
     <ClInclude Include="SSAO.h" />
-    <ClInclude Include="SubTexture2D.h" />
     <ClInclude Include="TerrainBase.h" />
     <ClInclude Include="TerrainHeightMap.h" />
     <ClInclude Include="TerrainMarchingCubes.h" />

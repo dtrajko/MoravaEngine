@@ -1,4 +1,4 @@
-#include "RadianceHDR.h"
+#include "Texture/RadianceHDR.h"
 
 #include "Core/CommonValues.h"
 

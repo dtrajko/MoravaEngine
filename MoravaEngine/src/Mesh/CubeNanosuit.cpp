@@ -1,6 +1,6 @@
-#include "CubeNanosuit.h"
+#include "Mesh/CubeNanosuit.h"
 
-#include "LearnOpenGL/TextureJoey.h"
+#include "../../LearnOpenGL/TextureJoey.h"
 
 #include "Shader/Shader.h"
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Cube.h"
+#include "Mesh/Cube.h"
 
-#include "LearnOpenGL/MeshJoey.h"
+#include "../../LearnOpenGL/MeshJoey.h"
 
 #include <string>
 #include <vector>

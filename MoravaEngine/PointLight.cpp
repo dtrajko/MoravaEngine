@@ -1,9 +1,8 @@
 #include "PointLight.h"
 
+#include "Texture/OmniShadowMap.h"
+
 #include <glm/gtc/matrix_transform.hpp>
-
-#include "OmniShadowMap.h"
-
 
 
 PointLight::PointLight()

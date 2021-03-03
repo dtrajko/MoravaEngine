@@ -1017,6 +1017,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
             m_ViewportPanelMouseOver = ImGui::IsWindowHovered();
             m_ViewportPanelFocused = ImGui::IsWindowFocused();
 
+            ImGuiWrapper::SetViewportEnabled(true);
             ImGuiWrapper::SetViewportHovered(m_ViewportPanelMouseOver);
             ImGuiWrapper::SetViewportFocused(m_ViewportPanelFocused);
 

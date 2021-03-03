@@ -2,10 +2,10 @@
 
 #include "../../Hazel/Renderer/HazelMesh.h"
 
-#include "../../CubeSkybox.h"
 #include "../../MaterialWorkflowPBR.h"
 
 #include "Framebuffer/Framebuffer.h"
+#include "Mesh/CubeSkybox.h"
 #include "Scene/Scene.h"
 #include "Texture/TextureCubemap.h"
 

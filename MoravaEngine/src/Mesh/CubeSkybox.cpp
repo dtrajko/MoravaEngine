@@ -1,9 +1,8 @@
-#include "CubeSkybox.h"
+#include "Mesh/CubeSkybox.h"
+
+#include "../../VertexTBN.h"
 
 #include "GL/glew.h"
-
-#include "VertexTBN.h"
-
 
 #include <vector>
 

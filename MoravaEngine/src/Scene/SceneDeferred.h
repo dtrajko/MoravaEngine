@@ -2,11 +2,11 @@
 
 #include "Scene/Scene.h"
 
-#include "../../Cube.h"
 #include "../../LearnOpenGL/ModelSSAO.h"
 #include "../../QuadSSAO.h"
 
 #include "Framebuffer/Framebuffer.h"
+#include "Mesh/Cube.h"
 
 
 class SceneDeferred : public Scene

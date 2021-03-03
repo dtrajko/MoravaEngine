@@ -1,5 +1,6 @@
-#include "OmniShadowMap.h"
-#include "Log.h"
+#include "Texture/OmniShadowMap.h"
+
+#include "../../Log.h"
 
 
 OmniShadowMap::OmniShadowMap() : ShadowMap() {}

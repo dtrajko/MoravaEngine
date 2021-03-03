@@ -26,12 +26,6 @@
     <ClCompile Include="ImGuiWrapper.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Cube.cpp">
-      <Filter>Mesh__</Filter>
-    </ClCompile>
-    <ClCompile Include="CubeNanosuit.cpp">
-      <Filter>Mesh__</Filter>
-    </ClCompile>
     <ClCompile Include="SongHo\CylinderSongHo.cpp">
       <Filter>Mesh__</Filter>
     </ClCompile>
@@ -71,12 +65,6 @@
     <ClCompile Include="Grid.cpp">
       <Filter>Mesh__</Filter>
     </ClCompile>
-    <ClCompile Include="OmniShadowMap.cpp">
-      <Filter>Texture__</Filter>
-    </ClCompile>
-    <ClCompile Include="ShadowMap.cpp">
-      <Filter>Texture__</Filter>
-    </ClCompile>
     <ClCompile Include="Light.cpp">
       <Filter>Light</Filter>
     </ClCompile>
@@ -85,12 +73,6 @@
     </ClCompile>
     <ClCompile Include="Quad.cpp">
       <Filter>Mesh__</Filter>
-    </ClCompile>
-    <ClCompile Include="RadianceHDR.cpp">
-      <Filter>Texture__</Filter>
-    </ClCompile>
-    <ClCompile Include="learnopengl\TextureJoey.cpp">
-      <Filter>Texture__</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp">
       <Filter>Core__</Filter>
@@ -116,14 +98,8 @@
     <ClCompile Include="Pivot.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
-    <ClCompile Include="CubeSkybox.cpp">
-      <Filter>Mesh__</Filter>
-    </ClCompile>
     <ClCompile Include="InsertionSort.cpp">
       <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="SubTexture2D.cpp">
-      <Filter>Texture__</Filter>
     </ClCompile>
     <ClCompile Include="QuadInstanced.cpp">
       <Filter>Mesh__</Filter>
@@ -141,19 +117,19 @@
       <Filter>Editor</Filter>
     </ClCompile>
     <ClCompile Include="TerrainVoxel.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClCompile>
     <ClCompile Include="TerrainBase.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClCompile>
     <ClCompile Include="TerrainSL.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClCompile>
     <ClCompile Include="NoiseSL.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClCompile>
     <ClCompile Include="MapGenerator.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClCompile>
     <ClCompile Include="Random.cpp">
       <Filter>Core__</Filter>
@@ -162,22 +138,22 @@
       <Filter>Core__</Filter>
     </ClCompile>
     <ClCompile Include="MeshGenerator.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClCompile>
     <ClCompile Include="MeshUnity.cpp">
       <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="EndlessTerrain.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClCompile>
     <ClCompile Include="TerrainMarchingCubes.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>Core__</Filter>
     </ClCompile>
     <ClCompile Include="TerrainHeightMap.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClCompile>
     <ClCompile Include="QuadSSAO.cpp">
       <Filter>Mesh__</Filter>
@@ -636,6 +612,30 @@
     <ClCompile Include="src\Framebuffer\Renderbuffer.cpp">
       <Filter>Framebuffer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Mesh\Cube.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\CubeNanosuit.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\CubeSkybox.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="learnopengl\TextureJoey.cpp">
+      <Filter>LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture\OmniShadowMap.cpp">
+      <Filter>Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture\RadianceHDR.cpp">
+      <Filter>Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture\ShadowMap.cpp">
+      <Filter>Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture\SubTexture2D.cpp">
+      <Filter>Texture</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -673,12 +673,6 @@
     </ClInclude>
     <ClInclude Include="LearnOpenGL\Camera.h">
       <Filter>LearnOpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="Cube.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="CubeNanosuit.h">
-      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="SongHo\CylinderSongHo.h">
       <Filter>Mesh__</Filter>
@@ -719,12 +713,6 @@
     <ClInclude Include="Grid.h">
       <Filter>Mesh__</Filter>
     </ClInclude>
-    <ClInclude Include="OmniShadowMap.h">
-      <Filter>Texture__</Filter>
-    </ClInclude>
-    <ClInclude Include="ShadowMap.h">
-      <Filter>Texture__</Filter>
-    </ClInclude>
     <ClInclude Include="LightManager.h">
       <Filter>Light</Filter>
     </ClInclude>
@@ -733,12 +721,6 @@
     </ClInclude>
     <ClInclude Include="Quad.h">
       <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="RadianceHDR.h">
-      <Filter>Texture__</Filter>
-    </ClInclude>
-    <ClInclude Include="learnopengl\TextureJoey.h">
-      <Filter>Texture__</Filter>
     </ClInclude>
     <ClInclude Include="Window.h">
       <Filter>Core__</Filter>
@@ -776,14 +758,8 @@
     <ClInclude Include="Pivot.h">
       <Filter>Editor</Filter>
     </ClInclude>
-    <ClInclude Include="CubeSkybox.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
     <ClInclude Include="InsertionSort.h">
       <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="SubTexture2D.h">
-      <Filter>Texture__</Filter>
     </ClInclude>
     <ClInclude Include="QuadInstanced.h">
       <Filter>Mesh__</Filter>
@@ -804,19 +780,19 @@
       <Filter>Editor</Filter>
     </ClInclude>
     <ClInclude Include="TerrainVoxel.h">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClInclude>
     <ClInclude Include="TerrainBase.h">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClInclude>
     <ClInclude Include="TerrainSL.h">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClInclude>
     <ClInclude Include="NoiseSL.h">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClInclude>
     <ClInclude Include="MapGenerator.h">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClInclude>
     <ClInclude Include="Random.h">
       <Filter>Core__</Filter>
@@ -825,16 +801,16 @@
       <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="MeshGenerator.h">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClInclude>
     <ClInclude Include="MeshUnity.h">
       <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="EndlessTerrain.h">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClInclude>
     <ClInclude Include="TerrainMarchingCubes.h">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>Core__</Filter>
@@ -843,7 +819,7 @@
       <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="TerrainHeightMap.h">
-      <Filter>Terrain</Filter>
+      <Filter>Terrain__</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Events\ApplicationEvent.h">
       <Filter>Hazel\Events</Filter>
@@ -1362,6 +1338,30 @@
     <ClInclude Include="src\Framebuffer\Renderbuffer.h">
       <Filter>Framebuffer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Mesh\Cube.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\CubeNanosuit.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\CubeSkybox.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="learnopengl\TextureJoey.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture\OmniShadowMap.h">
+      <Filter>Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture\RadianceHDR.h">
+      <Filter>Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture\ShadowMap.h">
+      <Filter>Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture\SubTexture2D.h">
+      <Filter>Texture</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1399,9 +1399,6 @@
     </Filter>
     <Filter Include="Editor">
       <UniqueIdentifier>{ca1a9e2f-c6d6-492e-8d60-e3af3cf4f1d1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Terrain">
-      <UniqueIdentifier>{4981229f-a7f9-4b97-8a26-dbd492d51348}</UniqueIdentifier>
     </Filter>
     <Filter Include="PerlinNoise">
       <UniqueIdentifier>{dbfdba99-a8bc-4267-ad45-40ae3edc4c3b}</UniqueIdentifier>
@@ -1505,11 +1502,14 @@
     <Filter Include="Mesh">
       <UniqueIdentifier>{5bc36ffa-09a4-4405-8331-13dbc8599f65}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Texture__">
-      <UniqueIdentifier>{f9b8ed3d-1977-473c-abdc-21630e7183e8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Texture">
       <UniqueIdentifier>{0e61b564-ff23-4486-831f-aba4eab69adc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Terrain__">
+      <UniqueIdentifier>{4981229f-a7f9-4b97-8a26-dbd492d51348}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Terrain">
+      <UniqueIdentifier>{cad5a15f-3c79-4ab5-867f-68481af6dc01}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

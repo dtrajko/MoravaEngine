@@ -1,10 +1,11 @@
 #include "Scene/SceneNanosuit.h"
 
-#include "../../CubeNanosuit.h"
 #include "../../ImGuiWrapper.h"
 #include "../../LearnOpenGL/ModelJoey.h"
 #include "../../Sphere.h"
 #include "../../Timer.h"
+
+#include "Mesh/CubeNanosuit.h"
 
 
 SceneNanosuit::SceneNanosuit()

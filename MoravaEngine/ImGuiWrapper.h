@@ -53,6 +53,7 @@ public:
 	static void PopID();
 	static void BeginPropertyGrid();
 
+	static inline void SetViewportEnabled(bool enabled) { s_ViewportEnabled = enabled; }
 	static inline void SetViewportHovered(bool viewportHovered) { s_ViewportHovered = viewportHovered; }
 	static inline void SetViewportFocused(bool viewportFocused) { s_ViewportFocused = viewportFocused; }
 
@@ -66,6 +67,7 @@ private:
 
 	static std::string s_MaterialNameNew;
 
+	static bool s_ViewportEnabled;
 	static bool s_ViewportHovered;
 	static bool s_ViewportFocused;
 	static bool s_CanViewportReceiveEvents;

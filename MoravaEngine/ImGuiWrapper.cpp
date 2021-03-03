@@ -9,9 +9,11 @@
 Window* ImGuiWrapper::s_Window;
 float ImGuiWrapper::s_Time;
 std::string ImGuiWrapper::s_MaterialNameNew;
-bool ImGuiWrapper::s_ViewportHovered;
-bool ImGuiWrapper::s_ViewportFocused;
-bool ImGuiWrapper::s_CanViewportReceiveEvents;
+
+bool ImGuiWrapper::s_ViewportEnabled = false;
+bool ImGuiWrapper::s_ViewportHovered = true;
+bool ImGuiWrapper::s_ViewportFocused = true;
+bool ImGuiWrapper::s_CanViewportReceiveEvents = true;
 
 void ImGuiWrapper::Init(Window* window)
 {
@@ -229,6 +231,11 @@ void ImGuiWrapper::BeginPropertyGrid()
 
 bool const ImGuiWrapper::CanViewportReceiveEvents()
 {
+	if (!s_ViewportEnabled) {
+		s_CanViewportReceiveEvents = true;
+		return s_CanViewportReceiveEvents;
+	}
+
 	if (!s_ViewportFocused && !s_ViewportHovered) {
 		s_CanViewportReceiveEvents = false;
 	}

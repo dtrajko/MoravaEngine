@@ -2,10 +2,9 @@
 
 #include "Renderer/RendererBasic.h"
 
-#include "../../Cube.h"
-#include "../../RadianceHDR.h"
-
 #include "Framebuffer/Cubemap.h"
+#include "Mesh/Cube.h"
+#include "Texture/RadianceHDR.h"
 
 
 class RendererPBR : public RendererBasic

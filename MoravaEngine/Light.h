@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Texture/ShadowMap.h"
+
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-
-#include "ShadowMap.h"
 
 
 class Light

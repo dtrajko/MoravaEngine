@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ShadowMap.h"
+#include "Texture/ShadowMap.h"
 
 
 class OmniShadowMap : public ShadowMap
