@@ -1,8 +1,8 @@
-#include "Particle.h"
+#include "Particle/Particle.h"
+
+#include "Core/Timer.h"
 
 #include "glm/gtc/matrix_transform.hpp"
-
-#include "../../Timer.h"
 
 
 Particle::Particle()

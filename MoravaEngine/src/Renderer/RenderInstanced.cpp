@@ -1,7 +1,5 @@
 #include "Renderer/RenderInstanced.h"
 
-#include "../../Log.h"
-
 #include "Core/CommonValues.h"
 
 

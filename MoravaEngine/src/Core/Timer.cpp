@@ -1,9 +1,8 @@
-#include "Timer.h"
+#include "Core/Timer.h"
 
 #include <GLFW/glfw3.h>
 
 #include <stdio.h>
-
 
 
 Timer* Timer::s_Instance = nullptr;

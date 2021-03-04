@@ -17,9 +17,8 @@
 
 #include "../Scene/Entity.h"
 
-#include "../../Math.h"
-#include "../../Util.h"
-
+#include "Core/Math.h"
+#include "Core/Util.h"
 #include "EnvMap/EnvMapEditorLayer.h"
 #include "Shader/ShaderLibrary.h"
 

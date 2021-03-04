@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Hazel/Core/KeyCodes.h"
-#include "Hazel/Core/MouseCodes.h"
+#include "../../Hazel/Core/KeyCodes.h"
+#include "../../Hazel/Core/MouseCodes.h"
 
 #include <utility>
 

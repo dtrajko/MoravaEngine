@@ -1,6 +1,6 @@
 #include "Mesh/Cylinder.h"
 
-#include "../../VertexTBN.h"
+#include "Mesh/VertexTBN.h"
 
 #include <GL/glew.h>
 #include <glm/gtx/rotate_vector.hpp>

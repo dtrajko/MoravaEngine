@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../../Mesh.h"
-
 #include "Camera/Camera.h"
+#include "Mesh/Mesh.h"
 
 #include <glm/ext/quaternion_float.hpp>
 

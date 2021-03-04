@@ -5,7 +5,7 @@
 #include "../Renderer/HazelTexture.h"
 #include "../Renderer/HazelShader.h"
 
-#include "../../Log.h"
+#include "Core/Log.h"
 
 #include <unordered_set>
 

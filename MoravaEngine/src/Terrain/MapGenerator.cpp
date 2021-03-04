@@ -1,9 +1,8 @@
 #include "Terrain/MapGenerator.h"
 
-#include "../../Log.h"
-#include "../../Math.h"
-#include "../../Util.h"
-
+#include "Core/Log.h"
+#include "Core/Math.h"
+#include "Core/Util.h"
 #include "Terrain/NoiseSL.h"
 #include "Texture/TextureGenerator.h"
 

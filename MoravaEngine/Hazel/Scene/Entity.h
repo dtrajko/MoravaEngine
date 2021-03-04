@@ -6,8 +6,8 @@
 #include "Components.h"
 #include "HazelScene.h"
 
-#include "../../Log.h"
-#include "../../Mesh.h"
+#include "Core/Log.h"
+#include "Mesh/Mesh.h"
 
 
 namespace Hazel {

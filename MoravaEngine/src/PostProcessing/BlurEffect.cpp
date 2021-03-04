@@ -1,8 +1,7 @@
 #include "PostProcessing/BlurEffect.h"
 
-#include "../../Log.h"
-
 #include "Core/Application.h"
+#include "Core/Log.h"
 
 
 BlurEffect::BlurEffect()

@@ -1,11 +1,10 @@
 #pragma once
 
-#include "../../Mesh.h"
-
 #include "Editor/SceneObject.h"
 #include "Mesh/Block.h"
-#include "Mesh/Cylinder.h"
 #include "Mesh/Cone.h"
+#include "Mesh/Cylinder.h"
+#include "Mesh/Mesh.h"
 #include "Mesh/Ring.h"
 #include "Scene/Scene.h"
 #include "Shader/Shader.h"
@@ -17,7 +16,6 @@ const int GIZMO_MODE_NONE      = 0;
 const int GIZMO_MODE_TRANSLATE = 1;
 const int GIZMO_MODE_SCALE     = 2;
 const int GIZMO_MODE_ROTATE    = 3;
-
 
 struct Bool3
 {

@@ -4,8 +4,7 @@
 #include "../Core/Assert.h"
 #include "HazelRenderer.h"
 
-#include "../../Log.h"
-
+#include "Core/Log.h"
 #include "Shader/Shader.h"
 
 #include <glm/gtc/matrix_transform.hpp>

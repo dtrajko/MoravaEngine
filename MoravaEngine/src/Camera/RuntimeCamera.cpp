@@ -1,9 +1,8 @@
 #include "Camera/RuntimeCamera.h"
 
-#include "../../Timer.h"
-#include "../../MousePicker.h"
-
 #include "Core/Application.h"
+#include "Core/MousePicker.h"
+#include "Core/Timer.h"
 
 
 RuntimeCamera::RuntimeCamera()

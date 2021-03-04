@@ -1,8 +1,7 @@
 #include "Editor/Gizmo.h"
 
-#include "../../Math.h"
-#include "../../MousePicker.h"
-
+#include "Core/Math.h"
+#include "Core/MousePicker.h"
 #include "Mesh/Ring90.h"
 #include "Renderer/RendererBasic.h"
 

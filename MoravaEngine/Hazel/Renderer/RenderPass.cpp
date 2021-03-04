@@ -5,7 +5,7 @@
 #include "../Platform/OpenGL/OpenGLRenderPass.h"
 #include "RendererAPI.h"
 
-#include "../../Log.h"
+#include "Core/Log.h"
 
 
 namespace Hazel {

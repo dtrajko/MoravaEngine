@@ -5,7 +5,7 @@
 #include "../../Hazel/Renderer/RendererAPI.h"
 #include "../../Hazel/Renderer/RenderPass.h"
 
-#include "../../Log.h"
+#include "Core/Log.h"
 
 
 EnvMapRenderPass::EnvMapRenderPass(const EnvMapRenderPassSpecification& spec)

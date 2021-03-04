@@ -1,8 +1,8 @@
-#include "Sphere.h"
+#include "Mesh/Sphere.h"
+
+#include "Mesh/VertexTBN.h"
 
 #include <cmath>
-
-#include "VertexTBN.h"
 
 
 Sphere::Sphere() : Sphere(glm::vec3(1.0f))

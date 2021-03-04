@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Quad.h"
+#include "Mesh/Quad.h"
 
 #include <vector>
 

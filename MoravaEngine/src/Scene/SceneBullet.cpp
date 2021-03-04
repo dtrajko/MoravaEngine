@@ -2,11 +2,11 @@
 
 #include "../../ImGuiWrapper.h"
 #include "../../LearnOpenGL/SphereJoey.h"
-#include "../../MeshData.h"
-#include "../../Profiler.h"
-#include "../../Sphere.h"
 
+#include "Core/Profiler.h"
 #include "Mesh/Block.h"
+#include "Mesh/MeshData.h"
+#include "Mesh/Sphere.h"
 
 #include <string>
 

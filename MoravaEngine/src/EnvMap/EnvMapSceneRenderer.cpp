@@ -1,4 +1,4 @@
-#include "EnvMapSceneRenderer.h"
+#include "EnvMap/EnvMapSceneRenderer.h"
 
 #include "../../Hazel/Core/Assert.h"
 #include "../../Hazel/Platform/OpenGL/OpenGLRenderPass.h"
@@ -6,10 +6,9 @@
 #include "../../Hazel/Renderer/HazelRenderer.h"
 #include "../../Hazel/Scene/HazelScene.h"
 
-#include "../../Log.h"
-#include "../../ResourceManager.h"
-
 #include "Core/Application.h"
+#include "Core/Log.h"
+#include "Core/ResourceManager.h"
 #include "Renderer/RendererBasic.h"
 
 

@@ -6,7 +6,7 @@
 #include "../Scene/Entity.h"
 #include "../Scene/Components.h"
 
-#include "../../Input.h"
+#include "Core/Input.h"
 
 #include <glm/gtc/type_ptr.hpp>
 

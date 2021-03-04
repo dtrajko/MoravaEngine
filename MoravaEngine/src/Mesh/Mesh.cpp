@@ -1,8 +1,8 @@
-#include "Mesh.h"
+#include "Mesh/Mesh.h"
+
+#include "Mesh/VertexTBN.h"
 
 #include <GL/glew.h>
-
-#include "VertexTBN.h"
 
 #include <cstdio>
 

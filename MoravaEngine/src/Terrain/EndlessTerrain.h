@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Mesh.h"
+#include "Mesh/Mesh.h"
 
 #include <glm/glm.hpp>
 

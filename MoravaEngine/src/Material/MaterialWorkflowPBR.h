@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../../Quad.h"
-
 #include "Mesh/CubeSkybox.h"
+#include "Mesh/Quad.h"
 #include "Shader/Shader.h"
 
 #include <string>

@@ -1,7 +1,7 @@
-#include "ParticleRenderer.h"
+#include "Particle/ParticleRenderer.h"
 
-#include "../../Util.h"
-#include "../Renderer/RendererBasic.h"
+#include "Core/Util.h"
+#include "Renderer/RendererBasic.h"
 
 
 ParticleRenderer::ParticleRenderer()

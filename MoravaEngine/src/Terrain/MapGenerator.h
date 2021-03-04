@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../../MeshUnity.h"
-
+#include "Mesh/MeshUnity.h"
 #include "Terrain/MeshGenerator.h"
 #include "Texture/Texture.h"
 

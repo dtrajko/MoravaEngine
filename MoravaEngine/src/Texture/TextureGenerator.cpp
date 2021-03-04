@@ -1,7 +1,6 @@
 #include "Texture/TextureGenerator.h"
 
-#include "../../Math.h"
-
+#include "Core/Math.h"
 #include "Terrain/NoiseSL.h"
 
 

@@ -1,6 +1,6 @@
 #include "Texture/Texture.h"
 
-#include "../../Log.h"
+#include "Core/Log.h"
 
 #include <fstream>
 #include <exception>

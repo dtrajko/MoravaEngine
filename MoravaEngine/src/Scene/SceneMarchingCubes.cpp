@@ -3,14 +3,12 @@
 #include "Scene/SceneMarchingCubes.h"
 
 #include "../../ImGuiWrapper.h"
-#include "../../Log.h"
-#include "../../MousePicker.h"
-#include "../../Math.h"
-#include "../../Profiler.h"
-#include "../../ResourceManager.h"
-#include "../../Timer.h"
 
 #include "Camera/CameraControllerVoxelTerrain.h"
+#include "Core/Math.h"
+#include "Core/MousePicker.h"
+#include "Core/Profiler.h"
+#include "Core/Timer.h"
 #include "Mesh/Block.h"
 #include "Terrain/NoiseSL.h"
 #include "Terrain/TerrainMarchingCubes.h"

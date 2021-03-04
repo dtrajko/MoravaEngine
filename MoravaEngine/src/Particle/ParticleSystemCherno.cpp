@@ -1,6 +1,6 @@
-#include "ParticleSystemCherno.h"
+#include "Particle/ParticleSystemCherno.h"
 
-#include "../../Random.h"
+#include "Core/Random.h"
 
 #include <glm/gtc/constants.hpp>
 #define GLM_ENABLE_EXPERIMENTAL

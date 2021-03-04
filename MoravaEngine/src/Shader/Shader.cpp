@@ -2,8 +2,8 @@
 
 #include "../../Hazel/Core/Assert.h"
 
-#include "../../Log.h"
-#include "../../Util.h"
+#include "Core/Log.h"
+#include "Core/Util.h"
 
 
 Shader::Shader()

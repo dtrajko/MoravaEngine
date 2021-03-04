@@ -3,11 +3,9 @@
 #include "Scene/SceneVoxelTerrain.h"
 
 #include "../../ImGuiWrapper.h"
-#include "../../Log.h"
-#include "../../MousePicker.h"
-#include "../../ResourceManager.h"
 
 #include "Camera/CameraControllerVoxelTerrain.h"
+#include "Core/MousePicker.h"
 #include "Mesh/Block.h"
 #include "Terrain/TerrainSL.h"
 #include "Terrain/TerrainVoxel.h"

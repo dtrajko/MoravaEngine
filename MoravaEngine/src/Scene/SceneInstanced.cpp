@@ -1,7 +1,8 @@
 #include "Scene/SceneInstanced.h"
 
 #include "../../ImGuiWrapper.h"
-#include "../../VertexInstanced.h"
+
+#include "Mesh/VertexInstanced.h"
 
 
 SceneInstanced::SceneInstanced()

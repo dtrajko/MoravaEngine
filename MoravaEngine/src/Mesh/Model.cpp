@@ -1,7 +1,6 @@
-#include "Model.h"
+#include "Mesh/Model.h"
 
-#include "Log.h"
-
+#include "Core/Log.h"
 #include "Texture/TextureLoader.h"
 
 #include <chrono>

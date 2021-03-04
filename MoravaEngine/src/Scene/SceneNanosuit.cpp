@@ -2,9 +2,9 @@
 
 #include "../../ImGuiWrapper.h"
 #include "../../LearnOpenGL/ModelJoey.h"
-#include "../../Sphere.h"
-#include "../../Timer.h"
 
+#include "Core/Timer.h"
+#include "Mesh/Sphere.h"
 #include "Mesh/CubeNanosuit.h"
 
 

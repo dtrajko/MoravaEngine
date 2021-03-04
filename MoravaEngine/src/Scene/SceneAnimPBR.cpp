@@ -3,13 +3,12 @@
 #include "Scene/SceneAnimPBR.h"
 
 #include "../../ImGuiWrapper.h"
-#include "../../Input.h"
-#include "../../Math.h"
-#include "../../MousePicker.h"
-#include "../../ResourceManager.h"
-#include "../../Timer.h"
 
 #include "Core/Application.h"
+#include "Core/Input.h"
+#include "Core/Math.h"
+#include "Core/MousePicker.h"
+#include "Core/Timer.h"
 #include "Mesh/Block.h"
 #include "Shader/Shader.h"
 

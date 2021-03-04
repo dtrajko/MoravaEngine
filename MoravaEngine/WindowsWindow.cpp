@@ -4,9 +4,8 @@
 #include "Hazel/Events/MouseEvent.h"
 #include "Hazel/Events/ApplicationEvent.h"
 
-#include "Log.h"
-
 #include "Core/Application.h"
+#include "Core/Log.h"
 
 #include <cmath>
 #include <exception>

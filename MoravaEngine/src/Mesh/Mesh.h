@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Hazel/Core/Ref.h"
-#include "Hazel/Core/Timestep.h"
+#include "../../Hazel/Core/Ref.h"
+#include "../../Hazel/Core/Timestep.h"
 
-#include "Transform.h"
-
+#include "Core/Transform.h"
 #include "Material/Material.h"
 
 #include <glm/glm.hpp>

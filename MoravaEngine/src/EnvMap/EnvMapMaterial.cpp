@@ -1,7 +1,7 @@
-#include "EnvMapMaterial.h"
+#include "EnvMap/EnvMapMaterial.h"
 
-#include "EnvMapEditorLayer.h"
-#include "../../Util.h"
+#include "Core/Util.h"
+#include "EnvMap/EnvMapEditorLayer.h"
 
 
 EnvMapMaterial::EnvMapMaterial()

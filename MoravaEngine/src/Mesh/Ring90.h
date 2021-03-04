@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Mesh.h"
-#include "../../Model.h"
+#include "Mesh/Mesh.h"
+#include "Mesh/Model.h"
 
 
 class Ring90 : public Mesh

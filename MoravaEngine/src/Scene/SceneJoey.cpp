@@ -3,8 +3,8 @@
 #include "Scene/SceneJoey.h"
 
 #include "../../ImGuiWrapper.h"
-#include "../../Sphere.h"
 
+#include "Mesh/Sphere.h"
 #include "Renderer/Renderer.h"
 #include "Shader/ShaderMain.h"
 #include "Shader/ShaderPBR.h"

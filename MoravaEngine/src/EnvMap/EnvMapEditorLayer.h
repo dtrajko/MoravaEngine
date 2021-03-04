@@ -6,12 +6,11 @@
 #include "../../Hazel/Renderer/Renderer2D.h"
 #include "../../Hazel/Renderer/SceneRenderer.h"
 
-#include "../../Quad.h"
-
 #include "Editor/EntitySelection.h"
 #include "EnvMap/EnvMapMaterial.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
 #include "Mesh/CubeSkybox.h"
+#include "Mesh/Quad.h"
 
 
 enum class SelectionMode

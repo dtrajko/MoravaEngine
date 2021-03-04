@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Window.h"
-
+#include "Core/Log.h"
+#include "Core/Window.h"
 #include "Scene/Scene.h"
 #include "Shader/Shader.h"
 

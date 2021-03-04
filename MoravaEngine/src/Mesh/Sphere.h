@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Mesh/Mesh.h"
+
 #include <GL/glew.h>
 
 #include <vector>
-
-#include "Mesh.h"
 
 
 class Sphere : public Mesh

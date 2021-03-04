@@ -1,7 +1,6 @@
 #include "Scene/SceneOmniShadows.h"
 
 #include "../../ImGuiWrapper.h"
-#include "../../ResourceManager.h"
 
 #include "Mesh/Block.h"
 

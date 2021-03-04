@@ -1,7 +1,7 @@
 #include "OpenGLVertexArray.h"
 #include "../../Renderer/HazelRenderer.h"
 
-#include "../../../Log.h"
+#include "Core/Log.h"
 
 #include <GL/glew.h>
 

@@ -1,7 +1,8 @@
 #pragma once
 
 #include "../Core/Base.h"
-#include "../../Log.h"
+
+#include "Core/Log.h"
 
 #include <string>
 #include <vector>

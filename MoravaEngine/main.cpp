@@ -42,16 +42,16 @@
 #include "Hazel/Events/Event.h"
 
 #include "ImGuiWrapper.h"
-#include "Input.h"
-#include "Log.h"
-#include "MousePicker.h"
-#include "Profiler.h"
-#include "Timer.h"
 #include "WindowsWindow.h"
 
 #include "Camera/CameraController.h"
 #include "Core/Application.h"
 #include "Core/CommonValues.h"
+#include "Core/Input.h"
+#include "Core/Log.h"
+#include "Core/MousePicker.h"
+#include "Core/Profiler.h"
+#include "Core/Timer.h"
 #include "Light/LightManager.h"
 
 #if defined(SCENE_COTTAGE)

@@ -1,9 +1,8 @@
 #pragma once
 
-#include "../../Mesh.h"
-#include "../../Model.h"
-
 #include "Core/AABB.h"
+#include "Mesh/Mesh.h"
+#include "Mesh/Model.h"
 #include "Editor/Pivot.h"
 
 #include <glm/glm.hpp>

@@ -1,10 +1,8 @@
 #include "Renderer/RendererEditor.h"
 
-#include "../../Log.h"
-#include "../../Profiler.h"
-#include "../../Timer.h"
-
 #include "Core/Application.h"
+#include "Core/Profiler.h"
+#include "Core/Timer.h"
 #include "Framebuffer/Framebuffer.h"
 #include "Mesh/GeometryFactory.h"
 #include "Scene/SceneEditor.h"

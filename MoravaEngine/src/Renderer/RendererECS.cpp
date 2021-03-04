@@ -1,7 +1,5 @@
 #include "Renderer/RendererECS.h"
 
-#include "../../Log.h"
-
 #include "Core/Application.h"
 
 

@@ -1,8 +1,7 @@
 #include "Framebuffer/Framebuffer.h"
 
-#include "../../Log.h"
-
 #include "Core/Application.h"
+#include "Core/Log.h"
 
 #include <GL/glew.h>
 

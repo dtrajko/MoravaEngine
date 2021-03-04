@@ -1,12 +1,12 @@
 #include "SSAO.h"
 
-#include "../../Log.h"
 #include "../../LearnOpenGL/ModelSSAO.h"
-#include "../../Math.h"
-#include "../../Mesh.h"
-#include "../../Timer.h"
 
 #include "Core/Application.h"
+#include "Core/Log.h"
+#include "Core/Math.h"
+#include "Core/Timer.h"
+#include "Mesh/Mesh.h"
 
 #include <random>
 

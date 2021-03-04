@@ -1,6 +1,6 @@
 #include "Framebuffer/FramebufferTextureCubemap.h"
 
-#include "../../Log.h"
+#include "Core/Log.h"
 
 #include <GL/glew.h>
 

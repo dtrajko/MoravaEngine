@@ -1,6 +1,4 @@
-#include "RendererOmniShadows.h"
-
-#include "../../Log.h"
+#include "Renderer/RendererOmniShadows.h"
 
 
 RendererOmniShadows::RendererOmniShadows()

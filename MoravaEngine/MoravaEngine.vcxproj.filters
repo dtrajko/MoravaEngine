@@ -26,57 +26,6 @@
     <ClCompile Include="ImGuiWrapper.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Math.cpp">
-      <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Mesh__</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshData.cpp">
-      <Filter>Mesh__</Filter>
-    </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>Mesh__</Filter>
-    </ClCompile>
-    <ClCompile Include="MousePicker.cpp">
-      <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="Quad.cpp">
-      <Filter>Mesh__</Filter>
-    </ClCompile>
-    <ClCompile Include="Timer.cpp">
-      <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="Sphere.cpp">
-      <Filter>Mesh__</Filter>
-    </ClCompile>
-    <ClCompile Include="Tile2D.cpp">
-      <Filter>Mesh__</Filter>
-    </ClCompile>
-    <ClCompile Include="Raycast.cpp">
-      <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="InsertionSort.cpp">
-      <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="Util.cpp">
-      <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="Log.cpp">
-      <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="Random.cpp">
-      <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="ResourceManager.cpp">
-      <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshUnity.cpp">
-      <Filter>Mesh__</Filter>
-    </ClCompile>
-    <ClCompile Include="Transform.cpp">
-      <Filter>Core__</Filter>
-    </ClCompile>
     <ClCompile Include="LearnOpenGL\MeshJoey.cpp">
       <Filter>LearnOpenGL</Filter>
     </ClCompile>
@@ -636,6 +585,57 @@
     <ClCompile Include="src\Mesh\SkinnedMesh.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\MousePicker.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\ResourceManager.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\InsertionSort.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Log.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Math.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Random.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Raycast.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Timer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Transform.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Util.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\Mesh.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\MeshData.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\MeshUnity.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\Model.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\Quad.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\Sphere.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\Tile2D.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -673,72 +673,6 @@
     </ClInclude>
     <ClInclude Include="LearnOpenGL\Camera.h">
       <Filter>LearnOpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="Math.h">
-      <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshData.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="Model.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="MousePicker.h">
-      <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="Quad.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="Window.h">
-      <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="Timer.h">
-      <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="Sphere.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="Tile2D.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="VertexInstanced.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="VertexTBN.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="Profiler.h">
-      <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="Raycast.h">
-      <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="InsertionSort.h">
-      <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="Util.h">
-      <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="Log.h">
-      <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="Random.h">
-      <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceManager.h">
-      <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshUnity.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform.h">
-      <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Events\ApplicationEvent.h">
       <Filter>Hazel\Events</Filter>
@@ -796,9 +730,6 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\LayerStack.h">
       <Filter>Hazel\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Input.h">
-      <Filter>Core__</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Scene\ScriptableEntity.h">
       <Filter>Hazel\Scene</Filter>
@@ -1359,6 +1290,72 @@
     <ClInclude Include="src\Mesh\SkinnedMesh.h">
       <Filter>Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\MousePicker.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\ResourceManager.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Input.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\InsertionSort.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Log.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Math.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Profiler.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Random.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Raycast.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Timer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Transform.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Util.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Window.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\Mesh.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\MeshData.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\MeshUnity.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\Model.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\Quad.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\Sphere.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\Tile2D.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\VertexInstanced.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\VertexTBN.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1487,14 +1484,8 @@
     <Filter Include="Core">
       <UniqueIdentifier>{c12df6c2-9bc0-4a5f-9691-d9cea6400cb9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core__">
-      <UniqueIdentifier>{bbaaa05d-f7b2-443a-84c4-03f28f25f0cc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Framebuffer">
       <UniqueIdentifier>{1557624c-a4a3-462a-933a-dc43da41b798}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Mesh__">
-      <UniqueIdentifier>{4b105abb-df6c-4935-864f-c6f6d6f67c8d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Mesh">
       <UniqueIdentifier>{5bc36ffa-09a4-4405-8331-13dbc8599f65}</UniqueIdentifier>

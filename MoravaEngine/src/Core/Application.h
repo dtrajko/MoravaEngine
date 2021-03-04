@@ -4,9 +4,8 @@
 #include "../../Hazel/Events/ApplicationEvent.h"
 #include "../../Hazel/Core/LayerStack.h"
 
-#include "../../Log.h"
-#include "../../Window.h"
-
+#include "Core/Log.h"
+#include "Core/Window.h"
 #include "Renderer/RendererBasic.h"
 
 

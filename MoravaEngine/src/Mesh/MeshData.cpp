@@ -1,4 +1,4 @@
-#include "MeshData.h"
+#include "Mesh/MeshData.h"
 
 
 unsigned int MeshData::vertexStrideCount = sizeof(VertexTBN) / sizeof(float);

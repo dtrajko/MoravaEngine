@@ -2,7 +2,8 @@
 
 #include "../../Core/Buffer.h"
 #include "../../Renderer/VertexBuffer.h"
-#include "../../../Log.h"
+
+#include "Core/Log.h"
 
 #include <stdint.h>
 #include <initializer_list>

@@ -1,7 +1,6 @@
 #include "Scene/SceneSSAO.h"
 
 #include "../../ImGuiWrapper.h"
-#include "../../ResourceManager.h"
 
 #include "Core/Application.h"
 #include "Mesh/Block.h"

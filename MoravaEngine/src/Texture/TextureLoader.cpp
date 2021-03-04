@@ -1,6 +1,6 @@
 #include "Texture/TextureLoader.h"
 
-#include "../../Log.h"
+#include "Core/Log.h"
 
 
 TextureLoader* TextureLoader::s_Instance = nullptr;

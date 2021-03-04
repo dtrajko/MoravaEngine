@@ -1,9 +1,8 @@
 #include "Material/MaterialWorkflowPBR.h"
 
-#include "../../Log.h"
-#include "../../Math.h"
-
 #include "Core/CommonValues.h"
+#include "Core/Log.h"
+#include "Core/Math.h"
 
 #include <iostream>
 

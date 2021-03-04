@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../../Quad.h"
-
 #include "Camera/CameraController.h"
+#include "Mesh/Quad.h"
 #include "Particle/Particle.h"
 #include "Shader/Shader.h"
 

@@ -1,5 +1,6 @@
 #include "Layer.h"
-#include "../../Log.h"
+
+#include "Core/Log.h"
 
 
 Layer::Layer(const std::string& debugName)

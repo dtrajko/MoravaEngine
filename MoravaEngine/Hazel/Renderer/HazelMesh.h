@@ -6,11 +6,10 @@
 #include "../Renderer/Pipeline.h"
 #include "../Renderer/VertexBuffer.h"
 
-#include "../../Log.h"
-#include "../../Mesh.h"
-
+#include "Core/Log.h"
 #include "EnvMap/EnvMapMaterial.h"
 #include "Material/Material.h"
+#include "Mesh/Mesh.h"
 #include "Shader/Shader.h"
 #include "Texture/Texture.h"
 

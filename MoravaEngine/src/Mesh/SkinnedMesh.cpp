@@ -1,7 +1,7 @@
 #include "Mesh/SkinnedMesh.h"
 
-#include "../../Math.h"
-#include "../../Log.h"
+#include "Core/Log.h"
+#include "Core/Math.h"
 
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>

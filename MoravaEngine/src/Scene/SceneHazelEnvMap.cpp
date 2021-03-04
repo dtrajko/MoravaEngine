@@ -8,13 +8,12 @@
 
 #include "../../ImGuiWrapper.h"
 #include "../../ImGuizmo/ImGuizmo.h"
-#include "../../Input.h"
-#include "../../Math.h"
-#include "../../ResourceManager.h"
-#include "../../Timer.h"
-#include "../../Util.h"
 
 #include "Core/Application.h"
+#include "Core/Input.h"
+#include "Core/Math.h"
+#include "Core/Timer.h"
+#include "Core/Util.h"
 #include "Mesh/Block.h"
 #include "Shader/Shader.h"
 

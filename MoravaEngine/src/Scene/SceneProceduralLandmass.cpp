@@ -3,11 +3,9 @@
 #include "Scene/SceneProceduralLandmass.h"
 
 #include "../../ImGuiWrapper.h"
-#include "../../Log.h"
-#include "../../MousePicker.h"
-#include "../../ResourceManager.h"
 
 #include "Camera/CameraControllerVoxelTerrain.h"
+#include "Core/MousePicker.h"
 #include "Mesh/Block.h"
 #include "Terrain/NoiseSL.h"
 #include "Terrain/TerrainSL.h"
