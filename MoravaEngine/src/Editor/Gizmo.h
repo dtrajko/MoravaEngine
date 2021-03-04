@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Mesh.h"
-#include "SceneObject.h"
+#include "../../Mesh.h"
 
+#include "Editor/SceneObject.h"
 #include "Mesh/Block.h"
 #include "Mesh/Cylinder.h"
 #include "Mesh/Cone.h"

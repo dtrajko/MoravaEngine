@@ -1,7 +1,6 @@
 #pragma once
 
-#include "SceneObject.h"
-
+#include "Editor/SceneObject.h"
 #include "Particle/ParticleSettings.h"
 #include "Particle/ParticleTexture.h"
 #include "Particle/ParticleSystemThinMatrix.h"

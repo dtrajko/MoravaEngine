@@ -1,9 +1,10 @@
-#include "SceneObjectParticleSystem.h"
+#include "Editor/SceneObjectParticleSystem.h"
 
-#include "Profiler.h"
-#include "Timer.h"
-#include "Log.h"
-#include "ResourceManager.h"
+#include "../../Profiler.h"
+#include "../../Timer.h"
+#include "../../Log.h"
+#include "../../ResourceManager.h"
+
 #include "Particle/ParticleMaster.h"
 
 

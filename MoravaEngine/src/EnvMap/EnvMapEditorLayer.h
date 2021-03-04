@@ -7,8 +7,8 @@
 #include "../../Hazel/Renderer/SceneRenderer.h"
 
 #include "../../Quad.h"
-#include "../../EntitySelection.h"
 
+#include "Editor/EntitySelection.h"
 #include "EnvMap/EnvMapMaterial.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
 #include "Mesh/CubeSkybox.h"

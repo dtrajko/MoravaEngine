@@ -1,4 +1,4 @@
-#include "SceneObject.h"
+#include "Editor/SceneObject.h"
 
 
 SceneObject::SceneObject()

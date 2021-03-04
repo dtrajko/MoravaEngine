@@ -4,8 +4,9 @@
 #include "../Script/ScriptEngine.h"
 
 // Morava
-#include "../../EntitySelection.h"
+#include "Editor/EntitySelection.h"
 #include "EnvMap/EnvMapEditorLayer.h"
+
 
 // TODO:
 // - Eventually change imgui node IDs to be entity/asset GUID

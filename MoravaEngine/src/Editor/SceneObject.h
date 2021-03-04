@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Mesh.h"
-#include "Model.h"
-#include "Pivot.h"
+#include "../../Mesh.h"
+#include "../../Model.h"
 
 #include "Core/AABB.h"
+#include "Editor/Pivot.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext/quaternion_float.hpp>

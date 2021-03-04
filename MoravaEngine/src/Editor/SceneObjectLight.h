@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SceneObject.h"
+#include "Editor/SceneObject.h"
 
 
 class SceneObjectLight : public SceneObject

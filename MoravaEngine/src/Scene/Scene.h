@@ -5,8 +5,6 @@
 
 #include "../../Mesh.h"
 #include "../../Model.h"
-#include "../../Pivot.h"
-#include "../../SceneObject.h"
 #include "../../Window.h"
 
 #include "Camera/Camera.h"
@@ -14,6 +12,8 @@
 #include "Core/AABB.h"
 #include "Core/CommonStructs.h"
 #include "Core/CommonValues.h"
+#include "Editor/Pivot.h"
+#include "Editor/SceneObject.h"
 #include "Light/DirectionalLight.h"
 #include "Light/LightManager.h"
 #include "Light/PointLight.h"

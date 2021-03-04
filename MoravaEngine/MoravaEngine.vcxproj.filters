@@ -68,15 +68,6 @@
     <ClCompile Include="Raycast.cpp">
       <Filter>Core__</Filter>
     </ClCompile>
-    <ClCompile Include="SceneObject.cpp">
-      <Filter>Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="Gizmo.cpp">
-      <Filter>Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="Pivot.cpp">
-      <Filter>Editor</Filter>
-    </ClCompile>
     <ClCompile Include="InsertionSort.cpp">
       <Filter>Core__</Filter>
     </ClCompile>
@@ -88,12 +79,6 @@
     </ClCompile>
     <ClCompile Include="Log.cpp">
       <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneObjectParticleSystem.cpp">
-      <Filter>Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneObjectLight.cpp">
-      <Filter>Editor</Filter>
     </ClCompile>
     <ClCompile Include="Random.cpp">
       <Filter>Core__</Filter>
@@ -226,9 +211,6 @@
     </ClCompile>
     <ClCompile Include="Hazel\Scene\ScriptableEntity.cpp">
       <Filter>Hazel\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="EntitySelection.cpp">
-      <Filter>Editor</Filter>
     </ClCompile>
     <ClCompile Include="Hazel\Renderer\EditorCamera.cpp">
       <Filter>Hazel\Renderer</Filter>
@@ -636,6 +618,24 @@
     <ClCompile Include="src\Light\SSAO.cpp">
       <Filter>Light</Filter>
     </ClCompile>
+    <ClCompile Include="src\Editor\EntitySelection.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Editor\Gizmo.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Editor\Pivot.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Editor\SceneObject.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Editor\SceneObjectLight.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Editor\SceneObjectParticleSystem.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -728,15 +728,6 @@
     <ClInclude Include="Raycast.h">
       <Filter>Core__</Filter>
     </ClInclude>
-    <ClInclude Include="SceneObject.h">
-      <Filter>Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Gizmo.h">
-      <Filter>Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Pivot.h">
-      <Filter>Editor</Filter>
-    </ClInclude>
     <ClInclude Include="InsertionSort.h">
       <Filter>Core__</Filter>
     </ClInclude>
@@ -748,15 +739,6 @@
     </ClInclude>
     <ClInclude Include="Log.h">
       <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleSettings.h">
-      <Filter>Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneObjectParticleSystem.h">
-      <Filter>Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneObjectLight.h">
-      <Filter>Editor</Filter>
     </ClInclude>
     <ClInclude Include="Random.h">
       <Filter>Core__</Filter>
@@ -937,9 +919,6 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\UUID.h">
       <Filter>Hazel\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="EntitySelection.h">
-      <Filter>Editor</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\EditorCamera.h">
       <Filter>Hazel\Renderer</Filter>
@@ -1361,6 +1340,24 @@
     </ClInclude>
     <ClInclude Include="src\Light\SSAO.h">
       <Filter>Light</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Editor\EntitySelection.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Editor\Gizmo.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Editor\Pivot.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Editor\SceneObject.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Editor\SceneObjectLight.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Editor\SceneObjectParticleSystem.h">
+      <Filter>Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

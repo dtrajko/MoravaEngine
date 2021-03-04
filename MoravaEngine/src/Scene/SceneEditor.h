@@ -3,13 +3,12 @@
 #include "Scene/Scene.h"
 
 #include "../../Grid.h"
-#include "../../Gizmo.h"
-#include "../../Pivot.h"
 #include "../../Quad.h"
 #include "../../Raycast.h"
 #include "../../SkinnedMesh.h"
-#include "../../SceneObjectParticleSystem.h"
 
+#include "Editor/Gizmo.h"
+#include "Editor/SceneObjectParticleSystem.h"
 #include "Framebuffer/Framebuffer.h"
 #include "Material/MaterialWorkflowPBR.h"
 #include "PostProcessing/BlurEffect.h"

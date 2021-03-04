@@ -8,7 +8,6 @@
 #include "../../Hazel/Scene/Entity.h"
 
 #include "../../Grid.h"
-#include "../../Pivot.h"
 
 #include "EnvMap/EnvMapEditorLayer.h"
 #include "Framebuffer/Framebuffer.h"
