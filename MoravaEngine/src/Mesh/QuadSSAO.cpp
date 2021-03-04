@@ -1,4 +1,4 @@
-#include "QuadSSAO.h"
+#include "Mesh/QuadSSAO.h"
 
 #include "GL/glew.h"
 

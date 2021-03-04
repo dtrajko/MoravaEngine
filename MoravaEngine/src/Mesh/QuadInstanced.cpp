@@ -1,4 +1,4 @@
-#include "QuadInstanced.h"
+#include "Mesh/QuadInstanced.h"
 
 #include "GL/glew.h"
 

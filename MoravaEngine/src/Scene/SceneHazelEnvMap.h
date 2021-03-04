@@ -7,10 +7,9 @@
 #include "../../Hazel/Renderer/HazelMesh.h"
 #include "../../Hazel/Scene/Entity.h"
 
-#include "../../Grid.h"
-
 #include "EnvMap/EnvMapEditorLayer.h"
 #include "Framebuffer/Framebuffer.h"
+#include "Mesh/Grid.h"
 #include "Texture/Texture.h"
 
 #include <map>

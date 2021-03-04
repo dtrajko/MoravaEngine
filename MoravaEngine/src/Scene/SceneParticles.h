@@ -2,9 +2,8 @@
 
 #include "Scene/Scene.h"
 
-#include "../../Grid.h"
-
 #include "Material/MaterialWorkflowPBR.h"
+#include "Mesh/Grid.h"
 #include "Particle/ParticleSystemCherno.h"
 #include "Texture/TextureCubemapFaces.h"
 

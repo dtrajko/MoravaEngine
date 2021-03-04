@@ -26,12 +26,6 @@
     <ClCompile Include="ImGuiWrapper.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="SongHo\CylinderSongHo.cpp">
-      <Filter>Mesh__</Filter>
-    </ClCompile>
-    <ClCompile Include="GeometryFactory.cpp">
-      <Filter>Mesh__</Filter>
-    </ClCompile>
     <ClCompile Include="Math.cpp">
       <Filter>Core__</Filter>
     </ClCompile>
@@ -47,17 +41,11 @@
     <ClCompile Include="MousePicker.cpp">
       <Filter>Core__</Filter>
     </ClCompile>
-    <ClCompile Include="Grid.cpp">
-      <Filter>Mesh__</Filter>
-    </ClCompile>
     <ClCompile Include="Quad.cpp">
       <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp">
       <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="SkinnedMesh.cpp">
-      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="Sphere.cpp">
       <Filter>Mesh__</Filter>
@@ -70,9 +58,6 @@
     </ClCompile>
     <ClCompile Include="InsertionSort.cpp">
       <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="QuadInstanced.cpp">
-      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="Util.cpp">
       <Filter>Core__</Filter>
@@ -91,9 +76,6 @@
     </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>Core__</Filter>
-    </ClCompile>
-    <ClCompile Include="QuadSSAO.cpp">
-      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="LearnOpenGL\MeshJoey.cpp">
       <Filter>LearnOpenGL</Filter>
@@ -157,9 +139,6 @@
     </ClCompile>
     <ClCompile Include="Hazel\Renderer\HazelMaterial.cpp">
       <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="HazelFullscreenQuad.cpp">
-      <Filter>Mesh__</Filter>
     </ClCompile>
     <ClCompile Include="Hazel\Platform\OpenGL\OpenGLShader.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
@@ -636,6 +615,27 @@
     <ClCompile Include="src\Editor\SceneObjectParticleSystem.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
+    <ClCompile Include="src\Mesh\GeometryFactory.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\Grid.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\HazelFullscreenQuad.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SongHo\CylinderSongHo.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\QuadInstanced.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\QuadSSAO.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mesh\SkinnedMesh.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -674,12 +674,6 @@
     <ClInclude Include="LearnOpenGL\Camera.h">
       <Filter>LearnOpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="SongHo\CylinderSongHo.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="GeometryFactory.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
     <ClInclude Include="Math.h">
       <Filter>Core__</Filter>
     </ClInclude>
@@ -695,9 +689,6 @@
     <ClInclude Include="MousePicker.h">
       <Filter>Core__</Filter>
     </ClInclude>
-    <ClInclude Include="Grid.h">
-      <Filter>Mesh__</Filter>
-    </ClInclude>
     <ClInclude Include="Quad.h">
       <Filter>Mesh__</Filter>
     </ClInclude>
@@ -706,9 +697,6 @@
     </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="SkinnedMesh.h">
-      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="Sphere.h">
       <Filter>Mesh__</Filter>
@@ -730,9 +718,6 @@
     </ClInclude>
     <ClInclude Include="InsertionSort.h">
       <Filter>Core__</Filter>
-    </ClInclude>
-    <ClInclude Include="QuadInstanced.h">
-      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="Util.h">
       <Filter>Core__</Filter>
@@ -778,9 +763,6 @@
     </ClInclude>
     <ClInclude Include="Hazel\Core\MouseCodes.h">
       <Filter>Hazel\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="QuadSSAO.h">
-      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="LearnOpenGL\MeshJoey.h">
       <Filter>LearnOpenGL</Filter>
@@ -856,9 +838,6 @@
     </ClInclude>
     <ClInclude Include="Hazel\Renderer\HazelMaterial.h">
       <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="HazelFullscreenQuad.h">
-      <Filter>Mesh__</Filter>
     </ClInclude>
     <ClInclude Include="Hazel\Platform\OpenGL\OpenGLShader.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
@@ -1358,6 +1337,27 @@
     </ClInclude>
     <ClInclude Include="src\Editor\SceneObjectParticleSystem.h">
       <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\GeometryFactory.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\Grid.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\HazelFullscreenQuad.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SongHo\CylinderSongHo.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\QuadInstanced.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\QuadSSAO.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\SkinnedMesh.h">
+      <Filter>Mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

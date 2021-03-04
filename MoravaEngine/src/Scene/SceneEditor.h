@@ -2,15 +2,15 @@
 
 #include "Scene/Scene.h"
 
-#include "../../Grid.h"
 #include "../../Quad.h"
 #include "../../Raycast.h"
-#include "../../SkinnedMesh.h"
 
 #include "Editor/Gizmo.h"
 #include "Editor/SceneObjectParticleSystem.h"
 #include "Framebuffer/Framebuffer.h"
 #include "Material/MaterialWorkflowPBR.h"
+#include "Mesh/Grid.h"
+#include "Mesh/SkinnedMesh.h"
 #include "PostProcessing/BlurEffect.h"
 #include "Texture/TextureCubemapFaces.h"
 

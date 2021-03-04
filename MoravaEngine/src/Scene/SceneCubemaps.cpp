@@ -1,8 +1,9 @@
 #include "Scene/SceneCubemaps.h"
 
-#include "../../GeometryFactory.h"
 #include "../../ImGuiWrapper.h"
 #include "../../MousePicker.h"
+
+#include "Mesh/GeometryFactory.h"
 
 #include <vector>
 #include <string>

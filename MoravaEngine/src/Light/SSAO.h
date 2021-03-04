@@ -1,10 +1,10 @@
 #pragma once
 
 #include "../../LearnOpenGL/ModelSSAO.h"
-#include "../../QuadSSAO.h"
 
 #include "Core/CommonStructs.h"
 #include "Mesh/Cube.h"
+#include "Mesh/QuadSSAO.h"
 #include "Shader/Shader.h"
 
 

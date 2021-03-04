@@ -183,7 +183,6 @@
     <ClCompile Include="..\vendor\ImGui\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
-    <ClCompile Include="HazelFullscreenQuad.cpp" />
     <ClCompile Include="Hazel\Core\Layer.cpp" />
     <ClCompile Include="Hazel\Core\LayerStack.cpp" />
     <ClCompile Include="Hazel\Core\HazelLog.cpp" />
@@ -239,13 +238,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="QuadInstanced.cpp" />
-    <ClCompile Include="QuadSSAO.cpp" />
     <ClCompile Include="Random.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="SkinnedMesh.cpp" />
-    <ClCompile Include="GeometryFactory.cpp" />
-    <ClCompile Include="Grid.cpp" />
     <ClCompile Include="ImGuiBuild.cpp" />
     <ClCompile Include="ImGuiWrapper.cpp" />
     <ClCompile Include="LearnOpenGL\MeshJoey.cpp" />
@@ -302,9 +296,15 @@
     <ClCompile Include="src\Mesh\CubeNanosuit.cpp" />
     <ClCompile Include="src\Mesh\CubeSkybox.cpp" />
     <ClCompile Include="src\Mesh\Cylinder.cpp" />
+    <ClCompile Include="src\Mesh\GeometryFactory.cpp" />
+    <ClCompile Include="src\Mesh\Grid.cpp" />
+    <ClCompile Include="src\Mesh\HazelFullscreenQuad.cpp" />
     <ClCompile Include="src\Mesh\Pyramid.cpp" />
+    <ClCompile Include="src\Mesh\QuadInstanced.cpp" />
+    <ClCompile Include="src\Mesh\QuadSSAO.cpp" />
     <ClCompile Include="src\Mesh\Ring.cpp" />
     <ClCompile Include="src\Mesh\Ring90.cpp" />
+    <ClCompile Include="src\Mesh\SkinnedMesh.cpp" />
     <ClCompile Include="src\Misc\BulletDebugDrawer.cpp" />
     <ClCompile Include="src\Particle\Particle.cpp" />
     <ClCompile Include="src\Particle\ParticleMaster.cpp" />
@@ -407,7 +407,6 @@
     <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
-    <ClInclude Include="HazelFullscreenQuad.h" />
     <ClInclude Include="Hazel\Core\Assert.h" />
     <ClInclude Include="Hazel\Core\Base.h" />
     <ClInclude Include="Hazel\Core\Buffer.h" />
@@ -475,14 +474,9 @@
     <ClInclude Include="Log.h" />
     <ClInclude Include="MeshUnity.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="QuadInstanced.h" />
-    <ClInclude Include="QuadSSAO.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceManager.h" />
-    <ClInclude Include="SkinnedMesh.h" />
-    <ClInclude Include="GeometryFactory.h" />
-    <ClInclude Include="Grid.h" />
     <ClInclude Include="ImGuiWrapper.h" />
     <ClInclude Include="LearnOpenGL\Camera.h" />
     <ClInclude Include="LearnOpenGL\MeshJoey.h" />
@@ -541,9 +535,15 @@
     <ClInclude Include="src\Mesh\CubeNanosuit.h" />
     <ClInclude Include="src\Mesh\CubeSkybox.h" />
     <ClInclude Include="src\Mesh\Cylinder.h" />
+    <ClInclude Include="src\Mesh\GeometryFactory.h" />
+    <ClInclude Include="src\Mesh\Grid.h" />
+    <ClInclude Include="src\Mesh\HazelFullscreenQuad.h" />
     <ClInclude Include="src\Mesh\Pyramid.h" />
+    <ClInclude Include="src\Mesh\QuadInstanced.h" />
+    <ClInclude Include="src\Mesh\QuadSSAO.h" />
     <ClInclude Include="src\Mesh\Ring.h" />
     <ClInclude Include="src\Mesh\Ring90.h" />
+    <ClInclude Include="src\Mesh\SkinnedMesh.h" />
     <ClInclude Include="src\Misc\BulletDebugDrawer.h" />
     <ClInclude Include="src\Particle\Particle.h" />
     <ClInclude Include="src\Particle\ParticleMaster.h" />

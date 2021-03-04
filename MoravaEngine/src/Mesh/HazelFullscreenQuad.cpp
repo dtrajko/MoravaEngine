@@ -1,4 +1,4 @@
-#include "HazelFullscreenQuad.h"
+#include "Mesh/HazelFullscreenQuad.h"
 
 #include "GL/glew.h"
 

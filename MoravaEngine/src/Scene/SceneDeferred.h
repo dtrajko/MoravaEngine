@@ -3,10 +3,10 @@
 #include "Scene/Scene.h"
 
 #include "../../LearnOpenGL/ModelSSAO.h"
-#include "../../QuadSSAO.h"
 
 #include "Framebuffer/Framebuffer.h"
 #include "Mesh/Cube.h"
+#include "Mesh/QuadSSAO.h"
 
 
 class SceneDeferred : public Scene

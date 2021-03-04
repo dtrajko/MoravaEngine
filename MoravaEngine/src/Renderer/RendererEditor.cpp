@@ -1,12 +1,12 @@
 #include "Renderer/RendererEditor.h"
 
-#include "../../GeometryFactory.h"
 #include "../../Log.h"
 #include "../../Profiler.h"
 #include "../../Timer.h"
 
 #include "Core/Application.h"
 #include "Framebuffer/Framebuffer.h"
+#include "Mesh/GeometryFactory.h"
 #include "Scene/SceneEditor.h"
 
 #include <stdexcept>

@@ -1,7 +1,8 @@
 #include "Scene/SceneFramebuffers.h"
 
-#include "../../GeometryFactory.h"
 #include "../../ImGuiWrapper.h"
+
+#include "Mesh/GeometryFactory.h"
 
 
 SceneFramebuffers::SceneFramebuffers()

@@ -1,4 +1,4 @@
-#include "GeometryFactory.h"
+#include "Mesh/GeometryFactory.h"
 
 #include <GL/glew.h>
 
