@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PointLight.h"
-#include "DirectionalLight.h"
+#include "Light/PointLight.h"
+#include "Light/DirectionalLight.h"
 
 
 class SpotLight : public DirectionalLight, PointLight

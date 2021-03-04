@@ -29,9 +29,6 @@
     <ClCompile Include="SongHo\CylinderSongHo.cpp">
       <Filter>Mesh__</Filter>
     </ClCompile>
-    <ClCompile Include="DirectionalLight.cpp">
-      <Filter>Light</Filter>
-    </ClCompile>
     <ClCompile Include="GeometryFactory.cpp">
       <Filter>Mesh__</Filter>
     </ClCompile>
@@ -50,20 +47,8 @@
     <ClCompile Include="MousePicker.cpp">
       <Filter>Core__</Filter>
     </ClCompile>
-    <ClCompile Include="PointLight.cpp">
-      <Filter>Light</Filter>
-    </ClCompile>
-    <ClCompile Include="SpotLight.cpp">
-      <Filter>Light</Filter>
-    </ClCompile>
     <ClCompile Include="Grid.cpp">
       <Filter>Mesh__</Filter>
-    </ClCompile>
-    <ClCompile Include="Light.cpp">
-      <Filter>Light</Filter>
-    </ClCompile>
-    <ClCompile Include="LightManager.cpp">
-      <Filter>Light</Filter>
     </ClCompile>
     <ClCompile Include="Quad.cpp">
       <Filter>Mesh__</Filter>
@@ -139,9 +124,6 @@
     </ClCompile>
     <ClCompile Include="LearnOpenGL\ModelSSAO.cpp">
       <Filter>LearnOpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="SSAO.cpp">
-      <Filter>Light</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp">
       <Filter>ImGui</Filter>
@@ -636,6 +618,24 @@
     <ClCompile Include="src\Material\MaterialWorkflowPBR.cpp">
       <Filter>Material</Filter>
     </ClCompile>
+    <ClCompile Include="src\Light\DirectionalLight.cpp">
+      <Filter>Light</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Light\Light.cpp">
+      <Filter>Light</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Light\LightManager.cpp">
+      <Filter>Light</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Light\PointLight.cpp">
+      <Filter>Light</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Light\SpotLight.cpp">
+      <Filter>Light</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Light\SSAO.cpp">
+      <Filter>Light</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -677,9 +677,6 @@
     <ClInclude Include="SongHo\CylinderSongHo.h">
       <Filter>Mesh__</Filter>
     </ClInclude>
-    <ClInclude Include="DirectionalLight.h">
-      <Filter>Light</Filter>
-    </ClInclude>
     <ClInclude Include="GeometryFactory.h">
       <Filter>Mesh__</Filter>
     </ClInclude>
@@ -698,20 +695,8 @@
     <ClInclude Include="MousePicker.h">
       <Filter>Core__</Filter>
     </ClInclude>
-    <ClInclude Include="PointLight.h">
-      <Filter>Light</Filter>
-    </ClInclude>
-    <ClInclude Include="SpotLight.h">
-      <Filter>Light</Filter>
-    </ClInclude>
     <ClInclude Include="Grid.h">
       <Filter>Mesh__</Filter>
-    </ClInclude>
-    <ClInclude Include="LightManager.h">
-      <Filter>Light</Filter>
-    </ClInclude>
-    <ClInclude Include="Light.h">
-      <Filter>Light</Filter>
     </ClInclude>
     <ClInclude Include="Quad.h">
       <Filter>Mesh__</Filter>
@@ -832,9 +817,6 @@
     </ClInclude>
     <ClInclude Include="LearnOpenGLStructs.h">
       <Filter>LearnOpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="SSAO.h">
-      <Filter>Light</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h">
       <Filter>ImGui</Filter>
@@ -1361,6 +1343,24 @@
     </ClInclude>
     <ClInclude Include="src\Material\MaterialWorkflowPBR.h">
       <Filter>Material</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Light\DirectionalLight.h">
+      <Filter>Light</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Light\Light.h">
+      <Filter>Light</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Light\LightManager.h">
+      <Filter>Light</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Light\PointLight.h">
+      <Filter>Light</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Light\SpotLight.h">
+      <Filter>Light</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Light\SSAO.h">
+      <Filter>Light</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

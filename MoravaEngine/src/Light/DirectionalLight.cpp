@@ -1,7 +1,6 @@
-#include "DirectionalLight.h"
+#include "Light/DirectionalLight.h"
 
 #include <glm/gtc/matrix_transform.hpp>
-
 
 
 DirectionalLight::DirectionalLight()

@@ -1,5 +1,4 @@
-#include "PointLight.h"
-
+#include "Light/PointLight.h"
 #include "Texture/OmniShadowMap.h"
 
 #include <glm/gtc/matrix_transform.hpp>

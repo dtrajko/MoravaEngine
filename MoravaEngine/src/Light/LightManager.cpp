@@ -1,5 +1,4 @@
-#include "LightManager.h"
-
+#include "Light/LightManager.h"
 
 
 DirectionalLight LightManager::directionalLight;

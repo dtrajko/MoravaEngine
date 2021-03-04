@@ -4,9 +4,9 @@
 
 #include "../../LearnOpenGL/ModelSSAO.h"
 #include "../../LearnOpenGL/ModelJoey.h"
-#include "../../SSAO.h"
 
 #include "Framebuffer/Framebuffer.h"
+#include "Light/SSAO.h"
 
 
 class SceneSSAO : public Scene

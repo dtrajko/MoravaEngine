@@ -43,7 +43,6 @@
 
 #include "ImGuiWrapper.h"
 #include "Input.h"
-#include "LightManager.h"
 #include "Log.h"
 #include "MousePicker.h"
 #include "Profiler.h"
@@ -53,6 +52,7 @@
 #include "Camera/CameraController.h"
 #include "Core/Application.h"
 #include "Core/CommonValues.h"
+#include "Light/LightManager.h"
 
 #if defined(SCENE_COTTAGE)
 #include "Scene/SceneCottage.h"

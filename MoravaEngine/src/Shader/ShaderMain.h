@@ -1,9 +1,8 @@
 #pragma once
 
-#include "../../DirectionalLight.h"
-#include "../../PointLight.h"
-#include "../../SpotLight.h"
-
+#include "Light/DirectionalLight.h"
+#include "Light/PointLight.h"
+#include "Light/SpotLight.h"
 #include "Shader/Shader.h"
 
 

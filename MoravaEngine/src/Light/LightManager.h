@@ -1,10 +1,9 @@
 #pragma once
 
-#include "DirectionalLight.h"
-#include "PointLight.h"
-#include "SpotLight.h"
-
 #include "Core/CommonValues.h"
+#include "Light/DirectionalLight.h"
+#include "Light/PointLight.h"
+#include "Light/SpotLight.h"
 #include "Scene/Scene.h"
 
 

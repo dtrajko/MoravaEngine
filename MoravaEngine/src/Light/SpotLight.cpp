@@ -1,4 +1,4 @@
-#include "SpotLight.h"
+#include "Light/SpotLight.h"
 
 
 SpotLight::SpotLight()
