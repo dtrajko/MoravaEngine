@@ -1,7 +1,5 @@
 #include "Scene/SceneAsteroids.h"
 
-#include "../../ImGuiWrapper.h"
-
 
 SceneAsteroids::SceneAsteroids()
 {

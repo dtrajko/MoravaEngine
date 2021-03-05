@@ -1,7 +1,5 @@
 #include "Scene/SceneInstanced.h"
 
-#include "../../ImGuiWrapper.h"
-
 #include "Mesh/VertexInstanced.h"
 
 

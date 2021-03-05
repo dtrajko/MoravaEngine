@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../../LearnOpenGL/ModelSSAO.h"
-
 #include "Core/CommonStructs.h"
+#include "LearnOpenGL/ModelSSAO.h"
 #include "Mesh/Cube.h"
 #include "Mesh/QuadSSAO.h"
 #include "Shader/Shader.h"

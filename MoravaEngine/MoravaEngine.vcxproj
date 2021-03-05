@@ -183,22 +183,13 @@
     <ClCompile Include="..\vendor\ImGui\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
-    <ClCompile Include="LearnOpenGL\MeshSSAO.cpp" />
-    <ClCompile Include="LearnOpenGL\ModelSSAO.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ImGuiBuild.cpp" />
-    <ClCompile Include="ImGuiWrapper.cpp" />
-    <ClCompile Include="LearnOpenGL\MeshJoey.cpp" />
-    <ClCompile Include="LearnOpenGL\ModelJoey.cpp" />
-    <ClCompile Include="LearnOpenGL\SphereJoey.cpp" />
-    <ClCompile Include="learnopengl\TextureJoey.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="SongHo\CylinderSongHo.cpp" />
     <ClCompile Include="src\Camera\Camera.cpp" />
     <ClCompile Include="src\Camera\CameraController.cpp" />
     <ClCompile Include="src\Camera\CameraControllerVoxelTerrain.cpp" />
@@ -278,6 +269,14 @@
     <ClCompile Include="src\Hazel\Script\ScriptEngine.cpp" />
     <ClCompile Include="src\Hazel\Script\ScriptEngineRegistry.cpp" />
     <ClCompile Include="src\Hazel\Script\ScriptWrappers.cpp" />
+    <ClCompile Include="src\ImGui\ImGuiBuild.cpp" />
+    <ClCompile Include="src\ImGui\ImGuiWrapper.cpp" />
+    <ClCompile Include="src\LearnOpenGL\MeshJoey.cpp" />
+    <ClCompile Include="src\LearnOpenGL\MeshSSAO.cpp" />
+    <ClCompile Include="src\LearnOpenGL\ModelJoey.cpp" />
+    <ClCompile Include="src\LearnOpenGL\ModelSSAO.cpp" />
+    <ClCompile Include="src\LearnOpenGL\SphereJoey.cpp" />
+    <ClCompile Include="src\LearnOpenGL\TextureJoey.cpp" />
     <ClCompile Include="src\Light\DirectionalLight.cpp" />
     <ClCompile Include="src\Light\Light.cpp" />
     <ClCompile Include="src\Light\LightManager.cpp" />
@@ -318,6 +317,8 @@
     <ClCompile Include="src\Particle\ParticleSystemThinMatrix.cpp" />
     <ClCompile Include="src\Particle\ParticleTexture.cpp" />
     <ClCompile Include="src\Physics\Physics.cpp" />
+    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
+    <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\Player\Player.cpp" />
     <ClCompile Include="src\Player\PlayerController.cpp" />
     <ClCompile Include="src\PostProcessing\BlurEffect.cpp" />
@@ -371,6 +372,7 @@
     <ClCompile Include="src\Shader\ShaderSkinning.cpp" />
     <ClCompile Include="src\Shader\ShaderWater.cpp" />
     <ClCompile Include="src\Skybox\Skybox.cpp" />
+    <ClCompile Include="src\SongHo\CylinderSongHo.cpp" />
     <ClCompile Include="src\Terrain\EndlessTerrain.cpp" />
     <ClCompile Include="src\Terrain\MapGenerator.cpp" />
     <ClCompile Include="src\Terrain\MeshGenerator.cpp" />
@@ -392,8 +394,6 @@
     <ClCompile Include="src\Texture\TextureLoader.cpp" />
     <ClCompile Include="src\Texture\TextureSampler.cpp" />
     <ClCompile Include="src\Water\WaterManager.cpp" />
-    <ClCompile Include="WindowsInput.cpp" />
-    <ClCompile Include="WindowsWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h" />
@@ -407,17 +407,7 @@
     <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
-    <ClInclude Include="LearnOpenGLStructs.h" />
-    <ClInclude Include="LearnOpenGL\MeshSSAO.h" />
-    <ClInclude Include="LearnOpenGL\ModelSSAO.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="ImGuiWrapper.h" />
-    <ClInclude Include="LearnOpenGL\Camera.h" />
-    <ClInclude Include="LearnOpenGL\MeshJoey.h" />
-    <ClInclude Include="LearnOpenGL\ModelJoey.h" />
-    <ClInclude Include="LearnOpenGL\SphereJoey.h" />
-    <ClInclude Include="learnopengl\TextureJoey.h" />
-    <ClInclude Include="SongHo\CylinderSongHo.h" />
     <ClInclude Include="src\Camera\Camera.h" />
     <ClInclude Include="src\Camera\CameraController.h" />
     <ClInclude Include="src\Camera\CameraControllerVoxelTerrain.h" />
@@ -517,6 +507,15 @@
     <ClInclude Include="src\Hazel\Script\ScriptEngineRegistry.h" />
     <ClInclude Include="src\Hazel\Script\ScriptWrappers.h" />
     <ClInclude Include="src\Hazel\Utils\PlatformUtils.h" />
+    <ClInclude Include="src\ImGui\ImGuiWrapper.h" />
+    <ClInclude Include="src\LearnOpenGL\camera.h" />
+    <ClInclude Include="src\LearnOpenGL\LearnOpenGLStructs.h" />
+    <ClInclude Include="src\LearnOpenGL\MeshJoey.h" />
+    <ClInclude Include="src\LearnOpenGL\MeshSSAO.h" />
+    <ClInclude Include="src\LearnOpenGL\ModelJoey.h" />
+    <ClInclude Include="src\LearnOpenGL\ModelSSAO.h" />
+    <ClInclude Include="src\LearnOpenGL\SphereJoey.h" />
+    <ClInclude Include="src\LearnOpenGL\TextureJoey.h" />
     <ClInclude Include="src\Light\DirectionalLight.h" />
     <ClInclude Include="src\Light\Light.h" />
     <ClInclude Include="src\Light\LightManager.h" />
@@ -561,6 +560,7 @@
     <ClInclude Include="src\Particle\ParticleTexture.h" />
     <ClInclude Include="src\PerlinNoise\PerlinNoise.hpp" />
     <ClInclude Include="src\Physics\Physics.h" />
+    <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Player\Player.h" />
     <ClInclude Include="src\Player\PlayerController.h" />
     <ClInclude Include="src\PostProcessing\BlurEffect.h" />
@@ -614,6 +614,7 @@
     <ClInclude Include="src\Shader\ShaderSkinning.h" />
     <ClInclude Include="src\Shader\ShaderWater.h" />
     <ClInclude Include="src\Skybox\Skybox.h" />
+    <ClInclude Include="src\SongHo\CylinderSongHo.h" />
     <ClInclude Include="src\Terrain\EndlessTerrain.h" />
     <ClInclude Include="src\Terrain\MapGenerator.h" />
     <ClInclude Include="src\Terrain\MeshGenerator.h" />
@@ -635,7 +636,6 @@
     <ClInclude Include="src\Texture\TextureLoader.h" />
     <ClInclude Include="src\Texture\TextureSampler.h" />
     <ClInclude Include="src\Water\WaterManager.h" />
-    <ClInclude Include="WindowsWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MoravaEngine.rc" />

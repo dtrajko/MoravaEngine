@@ -2,8 +2,6 @@
 
 #include "Scene/SceneVoxelTerrainSL.h"
 
-#include "../../ImGuiWrapper.h"
-
 #include "Camera/CameraControllerVoxelTerrain.h"
 #include "Core/MousePicker.h"
 #include "Mesh/Block.h"

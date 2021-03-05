@@ -1,6 +1,6 @@
 #include "Mesh/Cube.h"
 
-#include "../../LearnOpenGLStructs.h"
+#include "LearnOpenGL/LearnOpenGLStructs.h"
 
 #include "GL/glew.h"
 

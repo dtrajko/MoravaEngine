@@ -1,7 +1,5 @@
 #include "Scene/SceneDeferred.h"
 
-#include "../../ImGuiWrapper.h"
-
 #include "Core/Application.h"
 #include "Mesh/Block.h"
 #include "Mesh/Cube.h"

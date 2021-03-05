@@ -2,9 +2,8 @@
 
 #include "Scene/Scene.h"
 
-#include "../../LearnOpenGL/ModelSSAO.h"
-
 #include "Framebuffer/Framebuffer.h"
+#include "LearnOpenGL/ModelSSAO.h"
 #include "Mesh/Cube.h"
 #include "Mesh/QuadSSAO.h"
 

@@ -1,7 +1,5 @@
 #include "Scene/SceneCubemaps.h"
 
-#include "../../ImGuiWrapper.h"
-
 #include "Core/MousePicker.h"
 #include "Mesh/GeometryFactory.h"
 

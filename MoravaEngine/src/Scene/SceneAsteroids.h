@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../../LearnOpenGL/ModelJoey.h"
-
+#include "LearnOpenGL/ModelJoey.h"
 #include "Scene/Scene.h"
 
 

@@ -12,6 +12,7 @@
 #include "Core/Window.h"
 #include "Editor/Pivot.h"
 #include "Editor/SceneObject.h"
+#include "ImGui/ImGuiWrapper.h"
 #include "Light/DirectionalLight.h"
 #include "Light/LightManager.h"
 #include "Light/PointLight.h"

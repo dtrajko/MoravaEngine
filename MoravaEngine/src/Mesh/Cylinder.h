@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../../SongHo/CylinderSongHo.h"
-
 #include "Mesh/Mesh.h"
+#include "SongHo/CylinderSongHo.h"
 
 #include <glm/glm.hpp>
 

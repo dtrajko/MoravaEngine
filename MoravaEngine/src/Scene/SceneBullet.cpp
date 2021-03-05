@@ -1,9 +1,7 @@
 #include "Scene/SceneBullet.h"
 
-#include "../../ImGuiWrapper.h"
-#include "../../LearnOpenGL/SphereJoey.h"
-
 #include "Core/Profiler.h"
+#include "LearnOpenGL/SphereJoey.h"
 #include "Mesh/Block.h"
 #include "Mesh/MeshData.h"
 #include "Mesh/Sphere.h"

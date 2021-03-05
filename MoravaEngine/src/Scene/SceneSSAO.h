@@ -2,10 +2,9 @@
 
 #include "Scene/Scene.h"
 
-#include "../../LearnOpenGL/ModelSSAO.h"
-#include "../../LearnOpenGL/ModelJoey.h"
-
 #include "Framebuffer/Framebuffer.h"
+#include "LearnOpenGL/ModelJoey.h"
+#include "LearnOpenGL/ModelSSAO.h"
 #include "Light/SSAO.h"
 
 

@@ -1,7 +1,5 @@
 #include "Scene/ScenePBR.h"
 
-#include "../../ImGuiWrapper.h"
-
 #include "Mesh/Sphere.h"
 #include "Renderer/Renderer.h"
 #include "Shader/ShaderMain.h"

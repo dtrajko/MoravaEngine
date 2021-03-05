@@ -2,9 +2,8 @@
 
 #include "Scene/Scene.h"
 
-#include "../../LearnOpenGL/ModelJoey.h"
-
 #include "Core/Raycast.h"
+#include "LearnOpenGL/ModelJoey.h"
 #include "Mesh/Quad.h"
 #include "Terrain/TerrainHeightMap.h"
 #include "Texture/TextureCubemapFaces.h"

@@ -1,7 +1,5 @@
 #include "Scene/SceneTerrain.h"
 
-#include "../../ImGuiWrapper.h"
-
 #include "Mesh/Tile2D.h"
 #include "Renderer/Renderer.h"
 #include "Terrain/TerrainHeightMap.h"

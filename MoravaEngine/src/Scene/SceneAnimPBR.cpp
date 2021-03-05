@@ -2,8 +2,6 @@
 
 #include "Scene/SceneAnimPBR.h"
 
-#include "../../ImGuiWrapper.h"
-
 #include "Core/Application.h"
 #include "Core/Input.h"
 #include "Core/Math.h"
@@ -12,7 +10,7 @@
 #include "Mesh/Block.h"
 #include "Shader/Shader.h"
 
-#include "../cross-platform/ImGuizmo/ImGuizmo.h"
+#include "../../ImGuizmo/ImGuizmo.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>

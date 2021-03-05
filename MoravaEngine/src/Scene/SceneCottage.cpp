@@ -2,8 +2,6 @@
 
 #include "Scene/SceneCottage.h"
 
-#include "../../ImGuiWrapper.h"
-
 #include "Mesh/MeshData.h"
 #include "Mesh/Sphere.h"
 #include "Shader/ShaderMain.h"

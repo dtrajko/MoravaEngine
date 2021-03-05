@@ -24,8 +24,6 @@
 #include "Hazel/Scene/HazelScene.h"
 
 // Morava classes
-#include "ImGuiWrapper.h"
-
 #include "Camera/RuntimeCamera.h"
 #include "Core/Application.h"
 #include "Core/Input.h"
@@ -35,6 +33,7 @@
 #include "Core/Util.h"
 #include "Core/ResourceManager.h"
 #include "Framebuffer/Framebuffer.h"
+#include "ImGui/ImGuiWrapper.h"
 #include "Material/Material.h"
 #include "Mesh/Mesh.h"
 #include "Scene/Scene.h"

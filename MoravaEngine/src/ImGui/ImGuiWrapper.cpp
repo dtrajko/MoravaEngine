@@ -3,7 +3,7 @@
 #include "Core/Application.h"
 #include "EnvMap/EnvMapEditorLayer.h"
 
-#include "../vendor/cross-platform/ImGuizmo/ImGuizmo.h"
+#include "../../ImGuizmo/ImGuizmo.h"
 
 
 Window* ImGuiWrapper::s_Window;

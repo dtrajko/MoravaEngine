@@ -6,7 +6,6 @@
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Scene/Components.h"
 
-#include "../../ImGuiWrapper.h"
 #include "../../ImGuizmo/ImGuizmo.h"
 
 #include "Core/Application.h"

@@ -41,9 +41,6 @@
 #include "Hazel/Core/Base.h"
 #include "Hazel/Events/Event.h"
 
-#include "ImGuiWrapper.h"
-#include "WindowsWindow.h"
-
 #include "Camera/CameraController.h"
 #include "Core/Application.h"
 #include "Core/CommonValues.h"
@@ -52,7 +49,9 @@
 #include "Core/MousePicker.h"
 #include "Core/Profiler.h"
 #include "Core/Timer.h"
+#include "ImGui/ImGuiWrapper.h"
 #include "Light/LightManager.h"
+#include "Platform/Windows/WindowsWindow.h"
 
 #if defined(SCENE_COTTAGE)
 #include "Scene/SceneCottage.h"

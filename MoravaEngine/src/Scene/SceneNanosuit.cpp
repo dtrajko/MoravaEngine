@@ -1,9 +1,7 @@
 #include "Scene/SceneNanosuit.h"
 
-#include "../../ImGuiWrapper.h"
-#include "../../LearnOpenGL/ModelJoey.h"
-
 #include "Core/Timer.h"
+#include "LearnOpenGL/ModelJoey.h"
 #include "Mesh/Sphere.h"
 #include "Mesh/CubeNanosuit.h"
 

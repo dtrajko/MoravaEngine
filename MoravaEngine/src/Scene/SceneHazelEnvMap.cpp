@@ -6,7 +6,6 @@
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/RendererAPI.h"
 
-#include "../../ImGuiWrapper.h"
 #include "../../ImGuizmo/ImGuizmo.h"
 
 #include "Core/Application.h"

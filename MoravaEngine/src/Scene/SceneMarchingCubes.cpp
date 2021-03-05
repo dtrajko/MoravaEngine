@@ -2,8 +2,6 @@
 
 #include "Scene/SceneMarchingCubes.h"
 
-#include "../../ImGuiWrapper.h"
-
 #include "Camera/CameraControllerVoxelTerrain.h"
 #include "Core/Math.h"
 #include "Core/MousePicker.h"

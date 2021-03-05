@@ -5,11 +5,11 @@
 #include "Hazel/Script/ScriptEngine.h"
 #include "Hazel/Utils/PlatformUtils.h"
 
-#include "../../ImGuiWrapper.h"
 #include "../../ImGuizmo/ImGuizmo.h"
 
 #include "Core/MousePicker.h"
 #include "EnvMap/EnvMapRenderPass.h"
+#include "ImGui/ImGuiWrapper.h"
 #include "Renderer/RendererBasic.h"
 #include "Scene/SceneHazelEnvMap.h"
 #include "Shader/ShaderLibrary.h"

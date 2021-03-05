@@ -1,7 +1,5 @@
 #include "Scene/SceneEiffel.h"
 
-#include "../../ImGuiWrapper.h"
-
 #include "Mesh/MeshData.h"
 #include "Mesh/Tile2D.h"
 #include "Renderer/Renderer.h"

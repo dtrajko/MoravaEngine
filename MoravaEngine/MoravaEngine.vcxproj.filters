@@ -20,35 +20,8 @@
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="ImGuiBuild.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGuiWrapper.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="LearnOpenGL\MeshJoey.cpp">
-      <Filter>LearnOpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="LearnOpenGL\ModelJoey.cpp">
-      <Filter>LearnOpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="LearnOpenGL\SphereJoey.cpp">
-      <Filter>LearnOpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="LearnOpenGL\MeshSSAO.cpp">
-      <Filter>LearnOpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="LearnOpenGL\ModelSSAO.cpp">
-      <Filter>LearnOpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp">
       <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowsWindow.cpp">
-      <Filter>Platform\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowsInput.cpp">
-      <Filter>Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapEditorLayer.cpp">
@@ -345,9 +318,6 @@
     <ClCompile Include="src\Mesh\CubeSkybox.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="learnopengl\TextureJoey.cpp">
-      <Filter>LearnOpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="src\Texture\OmniShadowMap.cpp">
       <Filter>Texture</Filter>
     </ClCompile>
@@ -439,9 +409,6 @@
       <Filter>Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\HazelFullscreenQuad.cpp">
-      <Filter>Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="SongHo\CylinderSongHo.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\QuadInstanced.cpp">
@@ -636,6 +603,39 @@
     <ClCompile Include="src\Hazel\Script\ScriptWrappers.cpp">
       <Filter>Hazel\Script</Filter>
     </ClCompile>
+    <ClCompile Include="src\ImGui\ImGuiBuild.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ImGui\ImGuiWrapper.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
+      <Filter>Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
+      <Filter>Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LearnOpenGL\MeshJoey.cpp">
+      <Filter>LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LearnOpenGL\MeshSSAO.cpp">
+      <Filter>LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LearnOpenGL\ModelJoey.cpp">
+      <Filter>LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LearnOpenGL\ModelSSAO.cpp">
+      <Filter>LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LearnOpenGL\SphereJoey.cpp">
+      <Filter>LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LearnOpenGL\TextureJoey.cpp">
+      <Filter>LearnOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SongHo\CylinderSongHo.cpp">
+      <Filter>SongHo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -659,9 +659,6 @@
     <ClInclude Include="..\vendor\ImGui\imgui_internal.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="ImGuiWrapper.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h">
       <Filter>ImGui</Filter>
     </ClInclude>
@@ -671,32 +668,8 @@
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="LearnOpenGL\Camera.h">
-      <Filter>LearnOpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="LearnOpenGL\MeshJoey.h">
-      <Filter>LearnOpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="LearnOpenGL\ModelJoey.h">
-      <Filter>LearnOpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="LearnOpenGL\SphereJoey.h">
-      <Filter>LearnOpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="LearnOpenGL\MeshSSAO.h">
-      <Filter>LearnOpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="LearnOpenGL\ModelSSAO.h">
-      <Filter>LearnOpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="LearnOpenGLStructs.h">
-      <Filter>LearnOpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h">
       <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowsWindow.h">
-      <Filter>Platform\Windows</Filter>
     </ClInclude>
     <ClInclude Include="pch.h" />
     <ClInclude Include="src\EnvMap\EnvMapEditorLayer.h">
@@ -1005,9 +978,6 @@
     <ClInclude Include="src\Mesh\CubeSkybox.h">
       <Filter>Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="learnopengl\TextureJoey.h">
-      <Filter>LearnOpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="src\Texture\OmniShadowMap.h">
       <Filter>Texture</Filter>
     </ClInclude>
@@ -1099,9 +1069,6 @@
       <Filter>Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\HazelFullscreenQuad.h">
-      <Filter>Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="SongHo\CylinderSongHo.h">
       <Filter>Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\QuadInstanced.h">
@@ -1356,6 +1323,39 @@
     <ClInclude Include="src\Hazel\Utils\PlatformUtils.h">
       <Filter>Hazel\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="src\ImGui\ImGuiWrapper.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
+      <Filter>Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LearnOpenGL\camera.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LearnOpenGL\LearnOpenGLStructs.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LearnOpenGL\MeshJoey.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LearnOpenGL\MeshSSAO.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LearnOpenGL\ModelJoey.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LearnOpenGL\ModelSSAO.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LearnOpenGL\SphereJoey.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LearnOpenGL\TextureJoey.h">
+      <Filter>LearnOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SongHo\CylinderSongHo.h">
+      <Filter>SongHo</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1495,6 +1495,9 @@
     </Filter>
     <Filter Include="Terrain">
       <UniqueIdentifier>{cad5a15f-3c79-4ab5-867f-68481af6dc01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SongHo">
+      <UniqueIdentifier>{0712e484-7c09-4c16-82a2-fd97a48b56b5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../LearnOpenGLStructs.h"
-
+#include "LearnOpenGL/LearnOpenGLStructs.h"
 #include "Shader/Shader.h"
 
 #include <string>

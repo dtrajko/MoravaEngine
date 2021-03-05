@@ -2,8 +2,7 @@
 
 #include "Scene/Scene.h"
 
-#include "../../LearnOpenGL/SphereJoey.h"
-
+#include "LearnOpenGL/SphereJoey.h"
 #include "Material/MaterialWorkflowPBR.h"
 
 

@@ -3,8 +3,6 @@
 #include "Hazel/Events/ApplicationEvent.h"
 #include "Hazel/Scene/Components.h"
 
-#include "../../ImGuiWrapper.h"
-
 #include "Mesh/MeshData.h"
 #include "Mesh/Tile2D.h"
 #include "Texture/TextureLoader.h"

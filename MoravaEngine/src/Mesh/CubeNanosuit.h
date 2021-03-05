@@ -1,8 +1,7 @@
 #pragma once
 
+#include "LearnOpenGL/MeshJoey.h"
 #include "Mesh/Cube.h"
-
-#include "../../LearnOpenGL/MeshJoey.h"
 
 #include <string>
 #include <vector>
