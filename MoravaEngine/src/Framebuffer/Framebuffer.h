@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../Hazel/Core/Ref.h"
-#include "../../Hazel/Renderer/HazelFramebuffer.h"
-#include "../../Hazel/Renderer/RendererAPI.h"
+#include "Hazel/Core/Ref.h"
+#include "Hazel/Renderer/HazelFramebuffer.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 #include "Framebuffer/FramebufferTexture.h"
 #include "Framebuffer/Renderbuffer.h"

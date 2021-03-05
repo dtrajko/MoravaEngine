@@ -1,7 +1,7 @@
 #include "Scene/Scene.h"
 
-#include "../../Hazel/Events/ApplicationEvent.h"
-#include "../../Hazel/Scene/Components.h"
+#include "Hazel/Events/ApplicationEvent.h"
+#include "Hazel/Scene/Components.h"
 
 #include "../../ImGuiWrapper.h"
 

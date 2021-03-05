@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Hazel/Panels/SceneHierarchyPanel.h"
+#include "Hazel/Editor/SceneHierarchyPanel.h"
 
 #include "Core/Raycast.h"
 #include "Editor/Gizmo.h"

@@ -2,9 +2,9 @@
 
 #include "../../pch.h"
 
-#include "../../Hazel/Renderer/HazelRenderer.h"
-#include "../../Hazel/Renderer/Renderer2D.h"
-#include "../../Hazel/Renderer/SceneRenderer.h"
+#include "Hazel/Renderer/HazelRenderer.h"
+#include "Hazel/Renderer/Renderer2D.h"
+#include "Hazel/Renderer/SceneRenderer.h"
 
 #include "Editor/EntitySelection.h"
 #include "EnvMap/EnvMapMaterial.h"

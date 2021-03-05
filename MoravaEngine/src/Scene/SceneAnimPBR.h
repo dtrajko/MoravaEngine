@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../../Hazel/Renderer/HazelMesh.h"
-
+#include "Hazel/Renderer/HazelMesh.h"
 
 #include "Framebuffer/Framebuffer.h"
 #include "Material/MaterialWorkflowPBR.h"

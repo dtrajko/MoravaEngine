@@ -1,6 +1,6 @@
 #include "Shader/Shader.h"
 
-#include "../../Hazel/Core/Assert.h"
+#include "Hazel/Core/Assert.h"
 
 #include "Core/Log.h"
 #include "Core/Util.h"

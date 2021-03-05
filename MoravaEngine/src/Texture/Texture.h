@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Hazel/Core/Ref.h"
+#include "Hazel/Core/Ref.h"
 
 #include "Core/CommonValues.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Hazel/Renderer/HazelMaterial.h"
+#include "Hazel/Renderer/HazelMaterial.h"
 
 #include "Material/Material.h"
 

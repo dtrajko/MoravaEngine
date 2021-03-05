@@ -2,7 +2,7 @@
 
 #include "Scene/SceneEditor.h"
 
-#include "../../Hazel/Renderer/HazelMesh.h"
+#include "Hazel/Renderer/HazelMesh.h"
 
 #include "../../ImGuiWrapper.h"
 

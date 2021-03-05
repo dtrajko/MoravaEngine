@@ -2,9 +2,9 @@
 
 #include "Scene/SceneEditorImGuizmo.h"
 
-#include "../../Hazel/Panels/SceneHierarchyPanel.h"
-#include "../../Hazel/Renderer/HazelMesh.h"
-#include "../../Hazel/Scene/Components.h"
+#include "Hazel/Editor/SceneHierarchyPanel.h"
+#include "Hazel/Renderer/HazelMesh.h"
+#include "Hazel/Scene/Components.h"
 
 #include "../../ImGuiWrapper.h"
 #include "../../ImGuizmo/ImGuizmo.h"

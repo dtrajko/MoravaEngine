@@ -2,10 +2,10 @@
 
 #include "Scene/Scene.h"
 
-#include "../../Hazel/Events/KeyEvent.h"
-#include "../../Hazel/Panels/SceneHierarchyPanel.h"
-#include "../../Hazel/Renderer/HazelMesh.h"
-#include "../../Hazel/Scene/Entity.h"
+#include "Hazel/Editor/SceneHierarchyPanel.h"
+#include "Hazel/Events/KeyEvent.h"
+#include "Hazel/Renderer/HazelMesh.h"
+#include "Hazel/Scene/Entity.h"
 
 #include "EnvMap/EnvMapEditorLayer.h"
 #include "Framebuffer/Framebuffer.h"

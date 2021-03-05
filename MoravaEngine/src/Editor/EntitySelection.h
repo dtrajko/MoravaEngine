@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Hazel/Scene/HazelScene.h"
-#include "../../Hazel/Scene/Entity.h"
+#include "Hazel/Scene/Entity.h"
+#include "Hazel/Scene/HazelScene.h"
 
 #include <vector>
 

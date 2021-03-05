@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Hazel/Renderer/HazelCamera.h"
-#include "../../Hazel/Core/Timestep.h"
+#include "Hazel/Core/Timestep.h"
+#include "Hazel/Renderer/HazelCamera.h"
 
 #include "CameraController.h"
 

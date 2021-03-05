@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Hazel/Renderer/HazelShader.h"
+#include "Hazel/Renderer/HazelShader.h"
 
 #include "Core/CommonValues.h"
 

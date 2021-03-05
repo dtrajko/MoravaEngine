@@ -1,7 +1,7 @@
-#include "SceneHierarchyPanel.h"
+#include "Hazel/Editor/SceneHierarchyPanel.h"
 
 // Hazel
-#include "../Script/ScriptEngine.h"
+#include "Hazel/Script/ScriptEngine.h"
 
 // Morava
 #include "Editor/EntitySelection.h"

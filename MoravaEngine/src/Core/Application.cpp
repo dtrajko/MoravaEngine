@@ -1,7 +1,7 @@
 #include "Core/Application.h"
 
-#include "../../Hazel/Core/Base.h"
-#include "../../Hazel/Renderer/RendererAPI.h"
+#include "Hazel/Core/Base.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 #include "Core/Timer.h"
 

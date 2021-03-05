@@ -1,9 +1,9 @@
-#include "../../Input.h"
+#include "Hazel/Renderer/EditorCamera.h"
 
-#include "EditorCamera.h"
+#include "Hazel/Core/KeyCodes.h"
+#include "Hazel/Core/MouseCodes.h"
 
-#include "../Core/KeyCodes.h"
-#include "../Core/MouseCodes.h"
+#include "Core/Input.h"
 
 
 namespace Hazel {

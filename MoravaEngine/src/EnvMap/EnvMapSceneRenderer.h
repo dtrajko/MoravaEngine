@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../../Hazel/Core/Ref.h"
-#include "../../Hazel/Scene/Entity.h"
-#include "../../Hazel/Renderer/EditorCamera.h"
-#include "../../Hazel/Renderer/HazelMaterial.h"
-#include "../../Hazel/Renderer/HazelTexture.h"
-#include "../../Hazel/Renderer/RenderCommandQueue.h"
-#include "../../Hazel/Renderer/RenderPass.h"
-#include "../../Hazel/Renderer/SceneEnvironment.h"
+#include "Hazel/Core/Ref.h"
+#include "Hazel/Renderer/EditorCamera.h"
+#include "Hazel/Renderer/HazelMaterial.h"
+#include "Hazel/Renderer/HazelTexture.h"
+#include "Hazel/Renderer/RenderCommandQueue.h"
+#include "Hazel/Renderer/RenderPass.h"
+#include "Hazel/Renderer/SceneEnvironment.h"
+#include "Hazel/Scene/Entity.h"
 
 #include "Camera/Camera.h"
 #include "EnvMap/EnvMapRenderPass.h"

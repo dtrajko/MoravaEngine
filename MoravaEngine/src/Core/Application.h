@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../Hazel/Events/Event.h"
-#include "../../Hazel/Events/ApplicationEvent.h"
-#include "../../Hazel/Core/LayerStack.h"
+#include "Hazel/Core/LayerStack.h"
+#include "Hazel/Events/ApplicationEvent.h"
+#include "Hazel/Events/Event.h"
 
 #include "Core/Log.h"
 #include "Core/Window.h"

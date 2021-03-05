@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../Hazel/Core/Base.h"
-#include "../../Hazel/Renderer/HazelMaterial.h"
-#include "../../Hazel/Renderer/HazelShader.h"
+#include "Hazel/Core/Base.h"
+#include "Hazel/Renderer/HazelMaterial.h"
+#include "Hazel/Renderer/HazelShader.h"
 
 #include "Shader/Shader.h"
 #include "Texture/Texture.h"

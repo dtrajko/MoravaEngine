@@ -1,9 +1,9 @@
 #include "EnvMap/EnvMapEditorLayer.h"
 
-#include "../../Hazel/Renderer/RendererAPI.h"
-#include "../../Hazel/Scene/SceneSerializer.h"
-#include "../../Hazel/Script/ScriptEngine.h"
-#include "../../Hazel/Utils/PlatformUtils.h"
+#include "Hazel/Renderer/RendererAPI.h"
+#include "Hazel/Scene/SceneSerializer.h"
+#include "Hazel/Script/ScriptEngine.h"
+#include "Hazel/Utils/PlatformUtils.h"
 
 #include "../../ImGuiWrapper.h"
 #include "../../ImGuizmo/ImGuizmo.h"
