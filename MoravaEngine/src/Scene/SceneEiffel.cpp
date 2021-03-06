@@ -22,7 +22,7 @@ SceneEiffel::SceneEiffel()
 	sceneSettings.directionalLight.base.ambientIntensity = 0.4f;
 	sceneSettings.directionalLight.base.diffuseIntensity = 0.8f;
 	sceneSettings.directionalLight.direction = glm::vec3(-0.8f, -1.2f, 0.8f);
-	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
+	sceneSettings.lightProjectionMatrix = glm::ortho(m_OrthoLeft, m_OrthoRight, m_OrthoBottom, m_OrthoTop, m_OrthoNear, m_OrthoFar);
 
 	sceneSettings.pointLights[0].base.enabled = false;
 	sceneSettings.pointLights[0].base.color = glm::vec3(1.0f, 0.0f, 1.0f);
@@ -136,6 +136,22 @@ void SceneEiffel::UpdateImGui(float timestep, Window* mainWindow)
 		m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
 		LightManager::directionalLight.SetDirection(m_LightDirection);
 		LightManager::directionalLight.SetColor(m_LightColor);
+
+		ImGui::Separator();
+
+		ImGui::Text("Light Projection Matrix (Ortho)");
+
+		bool changedLeft   = ImGui::DragFloat("Left",   &m_OrthoLeft,   0.1f, -1000.0f,    0.0f, "%.2f");
+		bool changedRight  = ImGui::DragFloat("Right",  &m_OrthoRight,  0.1f,     0.0f, 1000.0f, "%.2f");
+		bool changedBottom = ImGui::DragFloat("Bottom", &m_OrthoBottom, 0.1f, -1000.0f,    0.0f, "%.2f");
+		bool changedTop    = ImGui::DragFloat("Top",    &m_OrthoTop,    0.1f,     0.0f, 1000.0f, "%.2f");
+		bool changedNear   = ImGui::DragFloat("Near",   &m_OrthoNear,   0.1f, -100.0f,     0.0f, "%.2f");
+		bool changedFar    = ImGui::DragFloat("Far",    &m_OrthoFar,    0.1f,    0.0f,  1000.0f, "%.2f");
+
+		if (changedLeft || changedRight || changedBottom || changedTop || changedNear || changedFar) {
+			glm::mat4 lightOrtho = glm::ortho(m_OrthoLeft, m_OrthoRight, m_OrthoBottom, m_OrthoTop, m_OrthoNear, m_OrthoFar);
+			LightManager::directionalLight.SetLightProjection(lightOrtho);
+		}
 	}
 	ImGui::End();
 
@@ -202,7 +218,7 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 
 	/* Cerberus model */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 5.0f, 10.0f));
+	model = glm::translate(model, glm::vec3(0.0f, 5.0f, 5.0f));
 	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -213,7 +229,7 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 
 	/* Cube */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
+	model = glm::translate(model, glm::vec3(0.0f, 5.0f, -5.0f));
 	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));

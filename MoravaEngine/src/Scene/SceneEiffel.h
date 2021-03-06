@@ -25,4 +25,12 @@ private:
 	glm::vec3 m_LightDirection;
 	glm::vec3 m_LightColor;
 
+	// Parameters for light projection orthogonal matrix
+	float m_OrthoLeft   = -32.0f;
+	float m_OrthoRight  =  32.0f;
+	float m_OrthoBottom = -32.0f;
+	float m_OrthoTop    =  32.0f;
+	float m_OrthoNear   = -32.0f;
+	float m_OrthoFar    =  32.0f;
+
 };
