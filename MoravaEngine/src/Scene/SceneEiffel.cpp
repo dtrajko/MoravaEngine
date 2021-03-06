@@ -121,18 +121,21 @@ void SceneEiffel::UpdateImGui(float timestep, Window* mainWindow)
 		m_LightDirection = sceneSettings.directionalLight.direction;
 		m_LightColor = LightManager::directionalLight.GetColor();
 
+		float lightRadius = abs(m_LightDirection.x);
+		float lightAngle = timestep * sceneSettings.shadowSpeed;
+		m_LightDirection.x = (float)cos(lightAngle) * lightRadius;
+		m_LightDirection.z = (float)sin(lightAngle) * lightRadius;
+
 		if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(m_LightDirection), -100.0f, 100.0f)) {
-				LightManager::directionalLight.SetDirection(m_LightDirection);
-			}
-			if (ImGui::ColorEdit3("DirLight Color", glm::value_ptr(m_LightColor))) {
-				LightManager::directionalLight.SetColor(m_LightColor);
-			}
-			if (ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, -2.0f, 20.0f)) {
-				m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
-			}
+			ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, -2.0f, 20.0f);
+			ImGui::SliderFloat3("DirLight direction", glm::value_ptr(m_LightDirection), -100.0f, 100.0f);
+			ImGui::ColorEdit3("DirLight Color", glm::value_ptr(m_LightColor));
 		}
+
+		m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
+		LightManager::directionalLight.SetDirection(m_LightDirection);
+		LightManager::directionalLight.SetColor(m_LightColor);
 	}
 	ImGui::End();
 
