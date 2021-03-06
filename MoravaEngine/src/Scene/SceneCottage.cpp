@@ -141,9 +141,9 @@ void SceneCottage::UpdateImGui(float timestep, Window* mainWindow)
 			ImGui::Text(buffer);
 			sprintf(buffer, "Yaw           %.2f", m_Camera->GetYaw());
 			ImGui::Text(buffer);
-			sprintf(buffer, "FOV           %.2f", glm::degrees(m_Camera->GetPerspectiveVerticalFOV()));
+			sprintf(buffer, "FOV           %.2f", m_Camera->GetPerspectiveVerticalFOV());
 			ImGui::Text(buffer);
-			sprintf(buffer, "Aspect Ratio  %.2f", glm::degrees(m_Camera->GetAspectRatio()));
+			sprintf(buffer, "Aspect Ratio  %.2f", m_Camera->GetAspectRatio());
 			ImGui::Text(buffer);
 			sprintf(buffer, "Position    X %.2f Y %.2f Z %.2f", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
 			ImGui::Text(buffer);
@@ -284,27 +284,6 @@ void SceneCottage::UpdateImGui(float timestep, Window* mainWindow)
 
 			ImGui::Text("Shadow Map");
 			ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
-
-			if (ImGui::CollapsingHeader("Omni Shadow Maps"))
-			{
-				ImGui::Text("Omni Shadow Map 0\n(Point Light 0)");
-				ImGui::Image((void*)(intptr_t)LightManager::pointLights[0].GetShadowMap()->GetTextureID(), imageSize);
-				ImGui::Text("Omni Shadow Map 1\n(Point Light 1)");
-				ImGui::Image((void*)(intptr_t)LightManager::pointLights[1].GetShadowMap()->GetTextureID(), imageSize);
-				ImGui::Text("Omni Shadow Map 2\n(Point Light 2)");
-				ImGui::Image((void*)(intptr_t)LightManager::pointLights[2].GetShadowMap()->GetTextureID(), imageSize);
-				ImGui::Text("Omni Shadow Map 3\n(Point Light 3)");
-				ImGui::Image((void*)(intptr_t)LightManager::pointLights[3].GetShadowMap()->GetTextureID(), imageSize);
-
-				ImGui::Text("Omni Shadow Map 4\n(Spot Light 0)");
-				ImGui::Image((void*)(intptr_t)LightManager::spotLights[0].GetShadowMap()->GetTextureID(), imageSize);
-				ImGui::Text("Omni Shadow Map 5\n(Spot Light 1)");
-				ImGui::Image((void*)(intptr_t)LightManager::spotLights[1].GetShadowMap()->GetTextureID(), imageSize);
-				ImGui::Text("Omni Shadow Map 6\n(Spot Light 2)");
-				ImGui::Image((void*)(intptr_t)LightManager::spotLights[2].GetShadowMap()->GetTextureID(), imageSize);
-				ImGui::Text("Omni Shadow Map 7\n(Spot Light 3)");
-				ImGui::Image((void*)(intptr_t)LightManager::spotLights[3].GetShadowMap()->GetTextureID(), imageSize);
-			}
 		}
 	}
 	ImGui::End();

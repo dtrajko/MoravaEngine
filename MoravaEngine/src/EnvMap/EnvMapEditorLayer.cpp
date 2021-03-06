@@ -1231,7 +1231,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
             }
 
             char buffer[100];
-            sprintf(buffer, "Aspect Ratio  %.2f", glm::degrees(m_ActiveCamera->GetAspectRatio()));
+            sprintf(buffer, "Aspect Ratio  %.2f", m_ActiveCamera->GetAspectRatio());
             ImGui::Text(buffer);
             sprintf(buffer, "Position    X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetPosition().x, m_ActiveCamera->GetPosition().y, m_ActiveCamera->GetPosition().z);
             ImGui::Text(buffer);

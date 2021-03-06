@@ -14,11 +14,11 @@
 // #define SPIR_ENABLED
 
 // #define SCENE_COTTAGE
-// #define SCENE_EIFFEL
+#define SCENE_EIFFEL
 // #define SCENE_SPONZA
 // #define SCENE_TERRAIN
 // #define SCENE_PBR
-#define SCENE_LEARN_OPEN_GL
+// #define SCENE_LEARN_OPEN_GL
 // #define SCENE_BULLET
 // #define SCENE_INSTANCED
 // #define SCENE_ASTEROIDS
