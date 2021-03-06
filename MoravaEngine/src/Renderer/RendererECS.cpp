@@ -32,7 +32,6 @@ void RendererECS::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 project
 	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
 	// ...
 
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();

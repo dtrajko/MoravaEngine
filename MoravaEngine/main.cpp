@@ -18,7 +18,7 @@
 // #define SCENE_SPONZA
 // #define SCENE_TERRAIN
 // #define SCENE_PBR
-// #define SCENE_LEARN_OPEN_GL
+#define SCENE_LEARN_OPEN_GL
 // #define SCENE_BULLET
 // #define SCENE_INSTANCED
 // #define SCENE_ASTEROIDS
@@ -36,7 +36,7 @@
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
 // #define SCENE_ANIM_PBR
-#define SCENE_HAZEL_ENV_MAP
+// #define SCENE_HAZEL_ENV_MAP
 
 #include "Hazel/Core/Base.h"
 #include "Hazel/Events/Event.h"
@@ -70,7 +70,7 @@
 #include "Renderer/RendererPBR.h"
 #elif defined(SCENE_LEARN_OPEN_GL)
 #include "Scene/SceneJoey.h"
-#include "Renderer/RendererJoey.h"
+#include "Renderer/RendererTrivial.h"
 #elif defined(SCENE_BULLET)
 #include "Scene/SceneBullet.h"
 #include "Renderer/Renderer.h"
@@ -178,7 +178,7 @@ int main()
 	renderer = static_cast<RendererBasic*>(new RendererPBR());
 #elif defined(SCENE_LEARN_OPEN_GL)
 	scene = new SceneJoey();
-	renderer = static_cast<RendererBasic*>(new RendererJoey());
+	renderer = static_cast<RendererBasic*>(new RendererTrivial());
 #elif defined(SCENE_BULLET)
 	scene = new SceneBullet();
 	renderer = static_cast<RendererBasic*>(new Renderer());

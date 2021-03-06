@@ -326,7 +326,6 @@
     <ClCompile Include="src\Renderer\RendererBasic.cpp" />
     <ClCompile Include="src\Renderer\RendererECS.cpp" />
     <ClCompile Include="src\Renderer\RendererEditor.cpp" />
-    <ClCompile Include="src\Renderer\RendererJoey.cpp" />
     <ClCompile Include="src\Renderer\RendererOmniShadows.cpp" />
     <ClCompile Include="src\Renderer\RendererPBR.cpp" />
     <ClCompile Include="src\Renderer\RendererTrivial.cpp" />
@@ -568,7 +567,6 @@
     <ClInclude Include="src\Renderer\RendererBasic.h" />
     <ClInclude Include="src\Renderer\RendererECS.h" />
     <ClInclude Include="src\Renderer\RendererEditor.h" />
-    <ClInclude Include="src\Renderer\RendererJoey.h" />
     <ClInclude Include="src\Renderer\RendererOmniShadows.h" />
     <ClInclude Include="src\Renderer\RendererPBR.h" />
     <ClInclude Include="src\Renderer\RendererTrivial.h" />

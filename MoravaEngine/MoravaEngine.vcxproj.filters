@@ -75,9 +75,6 @@
     <ClCompile Include="src\Renderer\RendererEditor.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\RendererJoey.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Renderer\RendererOmniShadows.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
@@ -724,9 +721,6 @@
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererEditor.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Renderer\RendererJoey.h">
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererOmniShadows.h">

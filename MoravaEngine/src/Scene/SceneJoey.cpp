@@ -53,6 +53,7 @@ SceneJoey::SceneJoey()
 	sceneSettings.waterHeight = 0.0f; // 1.0f 5.0f
 	sceneSettings.waterWaveSpeed = 0.1f;
 
+	SetupShaders();
 	SetupTextures();
 	SetupMaterials();
 	SetupModels();
@@ -69,8 +70,46 @@ SceneJoey::SceneJoey()
 	m_SkyboxLOD = 0.0f;
 }
 
-void SceneJoey::SetupTextures()
+void SceneJoey::SetupShaders()
 {
+	m_Shader_PBR = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/2.2.2.pbr.vs", "Shaders/LearnOpenGL/2.2.2.pbr.fs");
+	printf("RendererJoey: m_Shader_PBR compiled [programID=%d]\n", m_Shader_PBR->GetProgramID());
+
+	m_Shader_PBR_MRE = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/2.2.2.pbr.vs", "Shaders/LearnOpenGL/2.2.3.pbr.fs");
+	printf("RendererJoey: m_Shader_PBR_MRE compiled [programID=%d]\n", m_Shader_PBR_MRE->GetProgramID());
+
+	m_ShaderBackground = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+	printf("RendererJoey: m_ShaderBackground compiled [programID=%d]\n", m_ShaderBackground->GetProgramID());
+
+	m_ShaderBlurHorizontal = Hazel::Ref<Shader>::Create("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs");
+	printf("RendererJoey: m_ShaderBlurHorizontal compiled [programID=%d]\n", m_ShaderBlurHorizontal->GetProgramID());
+
+	m_ShaderBlurVertical = Hazel::Ref<Shader>::Create("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs");
+	printf("RendererJoey: m_ShaderBlurVertical compiled [programID=%d]\n", m_ShaderBlurVertical->GetProgramID());
+
+	m_Shader_PBR->Bind();
+	m_Shader_PBR->setInt("irradianceMap", 0);
+	m_Shader_PBR->setInt("prefilterMap", 1);
+	m_Shader_PBR->setInt("brdfLUT", 2);
+	m_Shader_PBR->setInt("albedoMap", 3);
+	m_Shader_PBR->setInt("normalMap", 4);
+	m_Shader_PBR->setInt("metallicMap", 5);
+	m_Shader_PBR->setInt("roughnessMap", 6);
+	m_Shader_PBR->setInt("aoMap", 7);
+
+	m_Shader_PBR_MRE->Bind();
+	m_Shader_PBR_MRE->setInt("irradianceMap", 0);
+	m_Shader_PBR_MRE->setInt("prefilterMap", 1);
+	m_Shader_PBR_MRE->setInt("brdfLUT", 2);
+	m_Shader_PBR_MRE->setInt("albedoMap", 3);
+	m_Shader_PBR_MRE->setInt("normalMap", 4);
+	m_Shader_PBR_MRE->setInt("metalRoughMap", 5);
+	m_Shader_PBR_MRE->setInt("emissiveMap", 6);
+	m_Shader_PBR_MRE->setInt("aoMap", 7);
+
+	m_ShaderBackground->Bind();
+	m_ShaderBackground->setInt("environmentMap", 0);
+	m_ShaderBackground->setFloat("u_TextureLOD", 0.0f);
 }
 
 void SceneJoey::SetupMaterials()
@@ -209,10 +248,6 @@ void SceneJoey::SetupLights()
 	m_RotationFactor = 0.0f;
 }
 
-void SceneJoey::SetSkybox()
-{
-}
-
 void SceneJoey::Update(float timestep, Window* mainWindow)
 {
 	m_Camera->OnUpdate(timestep);
@@ -269,7 +304,7 @@ void SceneJoey::UpdateImGui(float timestep, Window* mainWindow)
 			ImGui::Text(buffer);
 			sprintf(buffer, "Yaw           %.2f", m_Camera->GetYaw());
 			ImGui::Text(buffer);
-			sprintf(buffer, "FOV           %.2f", glm::degrees(m_Camera->GetPerspectiveVerticalFOV()));
+			sprintf(buffer, "FOV           %.2f", m_Camera->GetPerspectiveVerticalFOV());
 			ImGui::Text(buffer);
 			sprintf(buffer, "Aspect Ratio  %.2f", glm::degrees(m_Camera->GetAspectRatio()));
 			ImGui::Text(buffer);
@@ -322,18 +357,9 @@ void SceneJoey::UpdateImGui(float timestep, Window* mainWindow)
 	}
 	ImGui::End();
 
-	ImGui::Begin("Framebuffers");
+	ImGui::Begin("MaterialWorkflowPBR Textures");
 	{
 		ImVec2 imageSize(128.0f, 128.0f);
-
-		ImGui::Text("Environment Cubemap");
-		ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetEnvironmentCubemap(), imageSize);
-
-		ImGui::Text("Irradiance Map");
-		ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetIrradianceMap(), imageSize);
-
-		ImGui::Text("Prefilter Map");
-		ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetPrefilterMap(), imageSize);
 
 		ImGui::Text("BRDF LUT");
 		ImGui::Image((void*)(intptr_t)m_MaterialWorkflowPBR->GetBRDF_LUT_Texture(), imageSize);
@@ -354,7 +380,7 @@ void SceneJoey::UpdateImGui(float timestep, Window* mainWindow)
 		ImGui::RadioButton("Peppermint Powerplant", &m_HDRI_Edit, HDRI_PEPPERMINT_POWERPLANT);
 
 		ImGui::SliderInt("Blur Level", &m_BlurLevel, 0, 10);
-		ImGui::SliderFloat("Skybox LOD", &m_SkyboxLOD, 0.0f, 6.0f);
+		ImGui::DragFloat("Skybox LOD", &m_SkyboxLOD, 0.01f, 0.0f, 6.0f, "%.2f");
 	}
 	ImGui::End();
 }
@@ -362,15 +388,25 @@ void SceneJoey::UpdateImGui(float timestep, Window* mainWindow)
 void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
+	// configure global opengl state
+	glEnable(GL_DEPTH_TEST);
+	// set depth function to less than AND equal for skybox depth trick.
+	glDepthFunc(GL_LEQUAL);
+	// enable seamless cubemap sampling for lower mip levels in the pre-filter map.
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+	// then before rendering, configure the viewport to the original framebuffer's screen dimensions
+	RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
+
 	glm::mat4 model;
 
 	/* Begin pbrShader */
 	{
 		// initialize static shader uniforms before rendering
-		shaders["pbrShader"]->Bind();
-		shaders["pbrShader"]->setMat4("projection", projectionMatrix);
-		shaders["pbrShader"]->setMat4("view", m_Camera->GetViewMatrix());
-		shaders["pbrShader"]->setVec3("camPos", m_Camera->GetPosition());
+		m_Shader_PBR->Bind();
+		m_Shader_PBR->setMat4("projection", projectionMatrix);
+		m_Shader_PBR->setMat4("view", m_Camera->GetViewMatrix());
+		m_Shader_PBR->setVec3("camPos", m_Camera->GetPosition());
 
 		// render scene, supplying the convoluted irradiance map to the final shader.
 		// bind pre-computed IBL data
@@ -384,35 +420,35 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 		// rusted iron
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-5.0, 0.0, 2.0));
-		shaders["pbrShader"]->setMat4("model", model);
+		m_Shader_PBR->setMat4("model", model);
 		materials["rusted_iron"]->BindTextures(3);
 		m_SphereJoey->Render();
 
 		// gold
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-3.0, 0.0, 2.0));
-		shaders["pbrShader"]->setMat4("model", model);
+		m_Shader_PBR->setMat4("model", model);
 		materials["gold"]->BindTextures(3);
 		m_SphereJoey->Render();
 
 		// grass
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-1.0, 0.0, 2.0));
-		shaders["pbrShader"]->setMat4("model", model);
+		m_Shader_PBR->setMat4("model", model);
 		materials["grass"]->BindTextures(3);
 		m_SphereJoey->Render();
 
 		// plastic
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(1.0, 0.0, 2.0));
-		shaders["pbrShader"]->setMat4("model", model);
+		m_Shader_PBR->setMat4("model", model);
 		materials["plastic"]->BindTextures(3);
 		m_SphereJoey->Render();
 
 		// wall
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(3.0, 0.0, 2.0));
-		shaders["pbrShader"]->setMat4("model", model);
+		m_Shader_PBR->setMat4("model", model);
 		materials["wall"]->BindTextures(3);
 		m_SphereJoey->Render();
 
@@ -423,12 +459,12 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 		{
 			glm::vec3 newPos = m_LightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
 			newPos = m_LightPositions[i];
-			shaders["pbrShader"]->setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
-			shaders["pbrShader"]->setVec3("lightColors[" + std::to_string(i) + "]", m_LightColors[i]);
+			m_Shader_PBR->setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+			m_Shader_PBR->setVec3("lightColors[" + std::to_string(i) + "]", m_LightColors[i]);
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, newPos);
 			model = glm::scale(model, glm::vec3(0.5f));
-			shaders["pbrShader"]->setMat4("model", model);
+			m_Shader_PBR->setMat4("model", model);
 			materials["silver"]->BindTextures(3);
 			m_SphereJoey->Render();
 		}
@@ -441,7 +477,7 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.1f));
-		shaders["pbrShader"]->setMat4("model", model);
+		m_Shader_PBR->setMat4("model", model);
 		materials["cerberus"]->BindTextures(3);
 		models["cerberus"]->RenderPBR();
 	}
@@ -451,20 +487,20 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 	{
 		m_Timestep = m_IsRotating ? m_Timestep - 0.1f * m_RotationFactor : 0.0f;
 
-		shaders["pbrShaderMRE"]->Bind();
-		shaders["pbrShaderMRE"]->setMat4("projection", projectionMatrix);
-		shaders["pbrShaderMRE"]->setMat4("view", m_Camera->GetViewMatrix());
-		shaders["pbrShaderMRE"]->setVec3("camPos", m_Camera->GetPosition());
-		shaders["pbrShaderMRE"]->setFloat("emissiveFactor",  m_EmissiveFactor);
-		shaders["pbrShaderMRE"]->setFloat("metalnessFactor", m_MetalnessFactor);
-		shaders["pbrShaderMRE"]->setFloat("roughnessFactor", m_RoughnessFactor);
+		m_Shader_PBR_MRE->Bind();
+		m_Shader_PBR_MRE->setMat4("projection", projectionMatrix);
+		m_Shader_PBR_MRE->setMat4("view", m_Camera->GetViewMatrix());
+		m_Shader_PBR_MRE->setVec3("camPos", m_Camera->GetPosition());
+		m_Shader_PBR_MRE->setFloat("emissiveFactor",  m_EmissiveFactor);
+		m_Shader_PBR_MRE->setFloat("metalnessFactor", m_MetalnessFactor);
+		m_Shader_PBR_MRE->setFloat("roughnessFactor", m_RoughnessFactor);
 
 		for (unsigned int i = 0; i < SCENE_JOEY_LIGHT_COUNT; ++i)
 		{
 			glm::vec3 newPos = m_LightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
 			newPos = m_LightPositions[i];
-			shaders["pbrShaderMRE"]->setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
-			shaders["pbrShaderMRE"]->setVec3("lightColors[" + std::to_string(i) + "]", m_LightColors[i]);
+			m_Shader_PBR_MRE->setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+			m_Shader_PBR_MRE->setVec3("lightColors[" + std::to_string(i) + "]", m_LightColors[i]);
 		}
 
 		/* Khronos DamagedHelmet model */
@@ -474,7 +510,7 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f + m_Timestep), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(5.0f));
-		shaders["pbrShaderMRE"]->setMat4("model", model);
+		m_Shader_PBR_MRE->setMat4("model", model);
 		materials["damaged_helmet"]->BindTextures(3);
 		models["damagedHelmet"]->RenderPBR();
 
@@ -485,7 +521,7 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 		model = glm::rotate(model, glm::radians(0.0f - m_Timestep), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(5.0f));
-		shaders["pbrShaderMRE"]->setMat4("model", model);
+		m_Shader_PBR_MRE->setMat4("model", model);
 		materials["sf_helmet"]->BindTextures(3);
 		models["sfHelmet"]->RenderPBR();
 	}
@@ -494,7 +530,7 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 	/* Begin backgroundShader */
 	{
 		// render skybox (render as last to prevent overdraw)
-		shaders["backgroundShader"]->Bind();
+		m_ShaderBackground->Bind();
 
 		// Skybox shaderBackground
 		RendererBasic::DisableCulling();
@@ -503,27 +539,22 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 		glm::mat4 transform = glm::mat4(1.0f);
 		float angleRadians = glm::radians((GLfloat)glfwGetTime());
 		// transform = glm::rotate(transform, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		shaders["backgroundShader"]->setMat4("model", transform);
-		shaders["backgroundShader"]->setMat4("projection", projectionMatrix);
-		shaders["backgroundShader"]->setMat4("view", m_Camera->GetViewMatrix());
+		m_ShaderBackground->setMat4("model", transform);
+		m_ShaderBackground->setMat4("projection", projectionMatrix);
+		m_ShaderBackground->setMat4("view", m_Camera->GetViewMatrix());
 
 		m_MaterialWorkflowPBR->BindEnvironmentCubemap(0);
 		// m_MaterialWorkflowPBR->BindIrradianceMap(0); // display irradiance map
 		// m_MaterialWorkflowPBR->BindPrefilterMap(0); // display prefilter map
-		shaders["backgroundShader"]->setInt("environmentMap", 0);
-		shaders["backgroundShader"]->setFloat("u_TextureLOD", m_SkyboxLOD);
+		m_ShaderBackground->setInt("environmentMap", 0);
+		m_ShaderBackground->setFloat("u_TextureLOD", m_SkyboxLOD);
 
 		m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
-
 	}
 	/* End backgroundShader */
 }
 
 void SceneJoey::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
-{
-}
-
-SceneJoey::~SceneJoey()
 {
 }
