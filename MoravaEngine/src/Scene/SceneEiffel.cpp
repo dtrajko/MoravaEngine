@@ -100,9 +100,9 @@ void SceneEiffel::SetupModels()
 	watchtower->LoadModel("Models/wooden_watch_tower.obj");
 	models.insert(std::make_pair("watchtower", watchtower));
 
-	Model* cerberus = new Model();
-	cerberus->LoadModel("Models/Cerberus/Cerberus_LP.FBX", "Models/Cerberus/Textures");
-	models.insert(std::make_pair("cerberus", cerberus));
+	Model* helicopter = new Model();
+	helicopter->LoadModel("Models/OGLdev/hheli/hheli.obj", "Textures/OGLdev/hheli");
+	models.insert(std::make_pair("helicopter", helicopter));
 }
 
 void SceneEiffel::Update(float timestep, Window* mainWindow)
@@ -128,14 +128,14 @@ void SceneEiffel::UpdateImGui(float timestep, Window* mainWindow)
 
 		if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, -2.0f, 20.0f);
+			ImGui::DragFloat("Water level", &sceneSettings.waterHeight, 0.1f, -2.0f, 20.0f, "%.2f");
 			ImGui::SliderFloat3("DirLight direction", glm::value_ptr(m_LightDirection), -100.0f, 100.0f);
 			ImGui::ColorEdit3("DirLight Color", glm::value_ptr(m_LightColor));
-		}
 
-		m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
-		LightManager::directionalLight.SetDirection(m_LightDirection);
-		LightManager::directionalLight.SetColor(m_LightColor);
+			m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
+			LightManager::directionalLight.SetDirection(m_LightDirection);
+			LightManager::directionalLight.SetColor(m_LightColor);
+		}
 
 		ImGui::Separator();
 
@@ -216,16 +216,16 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	models["watchtower"]->Render(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
-	/* Cerberus model */
+	/* Helicopter model */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 5.0f, 5.0f));
-	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(0.05f));
+	model = glm::translate(model, glm::vec3(0.0f, 1.0f, 6.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::scale(model, glm::vec3(0.02f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	models["cerberus"]->Render(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
+	models["helicopter"]->Render(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
 	/* Cube */
 	model = glm::mat4(1.0f);
@@ -302,8 +302,8 @@ void SceneEiffel::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(30.0f, 1.0f, 30.0f));
-	shaderWater->setMat4("model", model);
+	model = glm::scale(model, glm::vec3(30.0f));
+	shaderWater->SetMat4("model", model);
 	m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
@@ -317,8 +317,16 @@ void SceneEiffel::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 
 	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
 	shaderWater->setVec3("lightPosition", -m_LightDirection);
+
+	shaderWater->setVec3("eyePosition", m_Camera->GetPosition());
+
+	shaderWater->setFloat("waterLevel", sceneSettings.waterHeight);
+	shaderWater->setVec4("waterColor", glm::vec4(0.0f, 0.4f, 0.8f, 1.0f));
+
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["water"]->Render();
+
+	shaderWater->Unbind();
 }
 
 SceneEiffel::~SceneEiffel()

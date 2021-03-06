@@ -171,15 +171,15 @@ void Scene::SetupTextureSlots()
 
 	// environment cubemap
 	textureSlots.insert(std::make_pair("equirectangularMap", 6));
-	textureSlots.insert(std::make_pair("environmentMap", 7));
+	textureSlots.insert(std::make_pair("environmentMap",     7));
 }
 
 void Scene::SetupMaterials()
 {
-	materials.insert(std::make_pair("shiny",      new Material(1.0f, 128.0f)));
-	materials.insert(std::make_pair("dull",       new Material(1.0f, 64.0f)));
+	materials.insert(std::make_pair("shiny",      new Material(1.0f,  128.0f)));
+	materials.insert(std::make_pair("dull",       new Material(1.0f,   64.0f)));
 	materials.insert(std::make_pair("superShiny", new Material(1.0f, 1024.0f)));
-	materials.insert(std::make_pair("superDull",  new Material(1.0f, 16.0f)));
+	materials.insert(std::make_pair("superDull",  new Material(1.0f,   16.0f)));
 }
 
 void Scene::SetupMeshes()
