@@ -70,7 +70,11 @@ $ MoravaEngine/vendor/cross-platform/shaderc
 $ cmake .
 $ make
 
-$ cd MoravaEngine/vendor/box2d/build
+$ cd MoravaEngine/vendor/box2d
+$ ./build.sh
+
+$ cd MoravaEngine/vendor/cross-platform/SPIRV-Cross
+$ cd cmake .
 
 $ mkdir MoravaEngine/MoravaEngine/build
 $ cd MoravaEngine/MoravaEngine/build
