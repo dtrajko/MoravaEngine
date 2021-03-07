@@ -33,12 +33,29 @@ void RendererDeferredOGL::Render(float deltaTime, Window* mainWindow, Scene* sce
 
 void RendererDeferredOGL::GeometryPass()
 {
+	m_ShaderGeometryPass->Bind();
+
 	m_gbuffer.BindForWriting();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Pipeline
+	// layout(location = 0) in vec3 Position;
+	// layout(location = 1) in vec2 TexCoord;
+	// layout(location = 2) in vec3 Normal;
+	// uniform mat4 gWVP;           // vertex shader
+	// uniform mat4 gWorld;         // vertex shader
+	// uniform sampler2D gColorMap; // fragment shader
 
+	glm::mat4 gWVP = glm::mat4(1.0f);
+	m_ShaderGeometryPass->SetMat4("gWVP", gWVP);
+
+	glm::mat4 gWorld = glm::mat4(1.0f);
+	m_ShaderGeometryPass->SetMat4("gWorld", gWorld);
+
+	int colorMapTextureSlot = 0;
+	m_ShaderGeometryPass->setInt("gColorMap", colorMapTextureSlot);
+
+	// Render a mesh
 }
 
 void RendererDeferredOGL::LightPass()
