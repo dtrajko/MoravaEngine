@@ -407,7 +407,7 @@ void Shader::Bind()
 	glUseProgram(programID);
 }
 
-void Shader::Reload()
+void Shader::Reload(bool forceCompile)
 {
 	ClearShader();
 

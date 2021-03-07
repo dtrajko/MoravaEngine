@@ -633,6 +633,9 @@
     <ClCompile Include="src\SongHo\CylinderSongHo.cpp">
       <Filter>SongHo</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanShader.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -1350,6 +1353,9 @@
     <ClInclude Include="src\SongHo\CylinderSongHo.h">
       <Filter>SongHo</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanShader.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1492,6 +1498,9 @@
     </Filter>
     <Filter Include="SongHo">
       <UniqueIdentifier>{0712e484-7c09-4c16-82a2-fd97a48b56b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Platform\Vulkan">
+      <UniqueIdentifier>{a695ef4d-47ed-4fc1-bfdc-88fe1201473f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

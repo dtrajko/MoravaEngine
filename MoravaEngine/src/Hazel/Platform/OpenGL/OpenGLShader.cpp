@@ -26,7 +26,7 @@ namespace Hazel {
 
 #define PRINT_SHADERS 1
 
-	OpenGLShader::OpenGLShader(const std::string& filepath)
+	OpenGLShader::OpenGLShader(const std::string& filepath, bool forceRecompile)
 		: m_AssetPath(filepath)
 	{
 		size_t found = filepath.find_last_of("/\\");
@@ -34,23 +34,23 @@ namespace Hazel {
 		found = m_Name.find_last_of(".");
 		m_Name = found != std::string::npos ? m_Name.substr(0, found) : m_Name;
 
-		Reload();
+		Reload(forceRecompile);
 	}
 
 	Ref<OpenGLShader> OpenGLShader::CreateFromString(const std::string& source)
 	{
 		Ref<OpenGLShader> shader = Ref<OpenGLShader>::Create();
-		shader->Load(source);
+		shader->Load(source, true);
 		return shader;
 	}
 
-	void OpenGLShader::Reload()
+	void OpenGLShader::Reload(bool forceCompile)
 	{
 		std::string source = ReadShaderFromFile(m_AssetPath);
-		Load(source);
+		Load(source, forceCompile);
 	}
 
-	void OpenGLShader::Load(const std::string& source)
+	void OpenGLShader::Load(const std::string& source, bool forceCompile)
 	{
 		m_ShaderSource = PreProcess(source);
 		if (!m_IsCompute)
@@ -64,8 +64,9 @@ namespace Hazel {
 
 			{
 				std::array<std::vector<uint32_t>, 2> vulkanBinaries;
-				instance->CompileOrGetVulkanBinary(vulkanBinaries);
-				instance->CompileOrGetOpenGLBinary(vulkanBinaries);
+				std::unordered_map<uint32_t, std::vector<uint32_t>> shaderData;
+				instance->CompileOrGetVulkanBinary(shaderData, forceCompile);
+				instance->CompileOrGetOpenGLBinary(shaderData, forceCompile);
 			}
 		}
 		else
@@ -96,7 +97,7 @@ namespace Hazel {
 		}
 	}
 
-	void OpenGLShader::CompileOrGetVulkanBinary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile)
+	void OpenGLShader::CompileOrGetVulkanBinary(std::unordered_map<uint32_t, std::vector<uint32_t>>& outputBinary, bool forceCompile)
 	{
 		// Vertex Shader
 		{
@@ -215,13 +216,13 @@ namespace Hazel {
 		}
 	}
 
-	void OpenGLShader::CompileOrGetOpenGLBinary(const std::array<std::vector<uint32_t>, 2>& vulkanBinaries, bool forceCompile)
+	void OpenGLShader::CompileOrGetOpenGLBinary(const std::unordered_map<uint32_t, std::vector<uint32_t>>& vulkanBinaries, bool forceCompile)
 	{
 		if (m_RendererID)
 			glDeleteProgram(m_RendererID);
 
-		const auto& vertexBinary = vulkanBinaries[0];
-		const auto& fragmentBinary = vulkanBinaries[1];
+		const auto& vertexBinary = vulkanBinaries.at(0);
+		const auto& fragmentBinary = vulkanBinaries.at(1);
 
 		GLuint program = glCreateProgram();
 		m_RendererID = program;
@@ -500,9 +501,9 @@ namespace Hazel {
 		spirv_cross::Compiler comp(data);
 		spirv_cross::ShaderResources res = comp.get_shader_resources();
 
-		HZ_CORE_TRACE("OpenGLShader::Reflect - {0}", m_AssetPath);
-		HZ_CORE_TRACE("   {0} Uniform Buffers", res.uniform_buffers.size());
-		HZ_CORE_TRACE("   {0} Resources", res.sampled_images.size());
+		Log::GetLogger()->trace("OpenGLShader::Reflect - {0}", m_AssetPath);
+		Log::GetLogger()->trace("   {0} Uniform Buffers", res.uniform_buffers.size());
+		Log::GetLogger()->trace("   {0} Resources", res.sampled_images.size());
 
 		glUseProgram(m_RendererID);
 
@@ -538,7 +539,7 @@ namespace Hazel {
 				glBufferData(GL_UNIFORM_BUFFER, buffer.Size, nullptr, GL_DYNAMIC_DRAW);
 				glBindBufferBase(GL_UNIFORM_BUFFER, buffer.BindingPoint, buffer.RendererID);
 
-				HZ_CORE_TRACE("Created Uniform Buffer at binding point {0} with name '{1}', size is {2} bytes", buffer.BindingPoint, buffer.Name, buffer.Size);
+				Log::GetLogger()->trace("Created Uniform Buffer at binding point {0} with name '{1}', size is {2} bytes", buffer.BindingPoint, buffer.Name, buffer.Size);
 
 				glBindBuffer(GL_UNIFORM_BUFFER, 0);
 			}

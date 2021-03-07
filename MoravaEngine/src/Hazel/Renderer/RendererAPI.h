@@ -11,6 +11,7 @@ namespace Hazel {
 	enum class RendererAPIType
 	{
 		None,
+		Vulkan,
 		OpenGL
 	};
 

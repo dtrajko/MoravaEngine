@@ -143,7 +143,7 @@ namespace Hazel
 	public:
 		using ShaderReloadedCallback = std::function<void()>;
 
-		virtual void Reload() = 0;
+		virtual void Reload(bool forceCompile = false) = 0;
 
 		virtual void Bind() = 0;
 		virtual uint32_t GetRendererID() const = 0;
@@ -173,7 +173,7 @@ namespace Hazel
 		// Represents a complete shader program stored in a single file.
 		// Note: currently for simplicity this is simply a string filepath, however
 		//       in the future this will be an asset object + metadata
-		static Ref<HazelShader> Create(const std::string& filepath);
+		static Ref<HazelShader> Create(const std::string& filepath, bool forceCompile = false);
 		static Ref<HazelShader> CreateFromString(const std::string& source);
 
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const = 0;
@@ -195,7 +195,7 @@ namespace Hazel
 		~HazelShaderLibrary();
 
 		void Add(const Ref<HazelShader>& shader);
-		void Load(const std::string& path);
+		void Load(const std::string& path, bool forceCompile = false);
 		void Load(const std::string& name, const std::string& path);
 
 		Ref<HazelShader>& Get(const std::string& name);

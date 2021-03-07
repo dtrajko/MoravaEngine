@@ -1,15 +1,16 @@
-#include "HazelShader.h"
-#include "../Core/Assert.h"
-#include "RendererAPI.h"
+#include "Hazel/Core/Assert.h"
+#include "Hazel/Renderer/HazelShader.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
-#include "../Platform/OpenGL/OpenGLShader.h"
+#include "Hazel/Platform/OpenGL/OpenGLShader.h"
+#include "Hazel/Platform/Vulkan/VulkanShader.h"
 
 
 namespace Hazel {
 
 	std::vector<Ref<HazelShader>> HazelShader::s_AllShaders;
 
-	Ref<HazelShader> HazelShader::Create(const std::string& filepath)
+	Ref<HazelShader> HazelShader::Create(const std::string& filepath, bool forceCompile)
 	{
 		Log::GetLogger()->info("HazelShader::Create('{0}')", filepath.c_str());
 
@@ -18,7 +19,12 @@ namespace Hazel {
 		switch (RendererAPI::Current())
 		{
 			case RendererAPIType::None: return nullptr;
-			case RendererAPIType::OpenGL: result = Ref<OpenGLShader>::Create(filepath);
+			case RendererAPIType::OpenGL:
+				result = Ref<OpenGLShader>::Create(filepath, forceCompile);
+				break;
+			case RendererAPIType::Vulkan:
+				result = Ref<VulkanShader>::Create(filepath, forceCompile);
+				break;
 		}
 		s_AllShaders.push_back(result);
 		return result;
@@ -54,11 +60,11 @@ namespace Hazel {
 		m_Shaders[name] = shader;
 	}
 
-	void HazelShaderLibrary::Load(const std::string& path)
+	void HazelShaderLibrary::Load(const std::string& path, bool forceCompile)
 	{
 		Log::GetLogger()->info("HazelShaderLibrary::Load(path: '{0}')", path);
 
-		auto shader = Ref<HazelShader>(HazelShader::Create(path));
+		auto shader = HazelShader::Create(path, forceCompile);
 		auto& name = shader->GetName();
 		HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
 		m_Shaders[name] = shader;

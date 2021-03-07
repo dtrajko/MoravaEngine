@@ -22,7 +22,7 @@ public:
 
 	// virtual methods
 	virtual void Bind() override;
-	virtual void Reload() override;
+	virtual void Reload(bool forceCompile = false) override;
 	virtual void SetIntArray(const std::string& name, int* values, uint32_t size) override;
 
 	// HazelShader abstract methods

@@ -1,21 +1,18 @@
 #pragma once
 
-#include "../../Renderer/HazelShader.h"
-#include "OpenGLShaderUniform.h"
-
-#include <spirv_glsl.hpp>
+#include "Hazel/Renderer/HazelShader.h"
 
 
 namespace Hazel {
 
-	class OpenGLShader : public HazelShader
+	class VulkanShader : public HazelShader
 	{
 	public:
-		OpenGLShader() = default;
-		OpenGLShader(const std::string& filepath, bool forceRecompile);
-		static Ref<OpenGLShader> CreateFromString(const std::string& source);
+		VulkanShader() = default;
+		VulkanShader(const std::string& path, bool forceCompile);
+		static Ref<VulkanShader> CreateFromString(const std::string& source);
 
-		virtual void Reload(bool forceCompile = false) override;
+		void Reload(bool forceCompile = false) override;
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
 
 		virtual void Bind() override;
@@ -44,17 +41,15 @@ namespace Hazel {
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const override { return m_Buffers; }
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override { return m_Resources; }
 	private:
-		void Load(const std::string& source, bool forceCompile);
+		void Load(const std::string& source);
 		void Compile(const std::vector<uint32_t>& vertexBinary, const std::vector<uint32_t>& fragmentBinary);
 		void Reflect(std::vector<uint32_t>& data);
 
-		void CompileOrGetVulkanBinary(std::unordered_map<uint32_t, std::vector<uint32_t>>& outputBinary, bool forceCompile = false);
-		void CompileOrGetOpenGLBinary(const std::unordered_map<uint32_t, std::vector<uint32_t>>&, bool forceCompile = false);
+		void CompileOrGetVulkanBinary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile = false);
+		void CompileOrGetOpenGLBinary(const std::array<std::vector<uint32_t>, 2>& vulkanBinaries, bool forceCompile = false);
 
 		std::string ReadShaderFromFile(const std::string& filepath) const;
 		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
-
-		void ParseConstantBuffers(const spirv_cross::CompilerGLSL& compiler);
 
 		int32_t GetUniformLocation(const std::string& name) const;
 

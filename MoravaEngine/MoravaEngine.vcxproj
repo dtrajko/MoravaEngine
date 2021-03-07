@@ -96,7 +96,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\build\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration);$(SolutionDir)vendor\box2d\bin\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\SPIRV-Cross\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\build\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration);$(SolutionDir)vendor\box2d\bin\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\SPIRV-Cross\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;mono-2.0-sgen.lib;box2d.lib;shaderc_combined.lib;assimp-vc142-mtd.lib;yaml-cppd.lib;spirv-cross-cored.lib;spirv-cross-cppd.lib;spirv-cross-glsld.lib;spirv-cross-hlsld.lib;spirv-cross-msld.lib;spirv-cross-reflectd.lib;spirv-cross-utild.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
@@ -119,7 +119,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\build\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration);$(SolutionDir)vendor\box2d\bin\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\SPIRV-Cross\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\build\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration);$(SolutionDir)vendor\box2d\bin\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\SPIRV-Cross\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;mono-2.0-sgen.lib;box2d.lib;shaderc_combined.lib;assimp-vc142-mtd.lib;yaml-cppd.lib;spirv-cross-cored.lib;spirv-cross-cppd.lib;spirv-cross-glsld.lib;spirv-cross-hlsld.lib;spirv-cross-msld.lib;spirv-cross-reflectd.lib;spirv-cross-utild.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
@@ -145,7 +145,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\build\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration);$(SolutionDir)vendor\box2d\bin\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\SPIRV-Cross\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\build\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration);$(SolutionDir)vendor\box2d\bin\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\SPIRV-Cross\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;mono-2.0-sgen.lib;box2d.lib;shaderc_combined.lib;assimp-vc142-mt.lib;yaml-cpp.lib;spirv-cross-core.lib;spirv-cross-cpp.lib;spirv-cross-glsl.lib;spirv-cross-hlsl.lib;spirv-cross-msl.lib;spirv-cross-reflect.lib;spirv-cross-util.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
@@ -171,7 +171,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\build\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration);$(SolutionDir)vendor\box2d\bin\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\SPIRV-Cross\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\build\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration);$(SolutionDir)vendor\box2d\bin\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\SPIRV-Cross\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;mono-2.0-sgen.lib;box2d.lib;shaderc_combined.lib;assimp-vc142-mt.lib;yaml-cpp.lib;spirv-cross-core.lib;spirv-cross-cpp.lib;spirv-cross-glsl.lib;spirv-cross-hlsl.lib;spirv-cross-msl.lib;spirv-cross-reflect.lib;spirv-cross-util.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
@@ -242,6 +242,7 @@
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLTexture.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLVertexBuffer.cpp" />
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanShader.cpp" />
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsPlatformUtils.cpp" />
     <ClCompile Include="src\Hazel\Renderer\EditorCamera.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelCamera.cpp" />
@@ -477,6 +478,7 @@
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLTexture.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLVertexArray.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLVertexBuffer.h" />
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanShader.h" />
     <ClInclude Include="src\Hazel\Renderer\EditorCamera.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelCamera.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelFramebuffer.h" />
