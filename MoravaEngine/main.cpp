@@ -36,7 +36,8 @@
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
 // #define SCENE_ANIM_PBR
-#define SCENE_HAZEL_ENV_MAP
+#define SCENE_DEFERRED_OGL
+// #define SCENE_HAZEL_ENV_MAP
 
 #include "Hazel/Core/Base.h"
 #include "Hazel/Events/Event.h"
@@ -113,6 +114,9 @@
 #elif defined(SCENE_DEFERRED)
 #include "Scene/SceneDeferred.h"
 #include "Renderer/RendererTrivial.h"
+#elif defined(SCENE_DEFERRED_OGL)
+#include "Scene/SceneDeferredOGL.h"
+#include "Renderer/RendererDeferredOGL.h"
 #elif defined(SCENE_EDITOR)
 #include "Scene/SceneEditor.h"
 #include "Renderer/RendererEditor.h"
@@ -224,6 +228,9 @@ int main()
 #elif defined(SCENE_DEFERRED)
 	scene = new SceneDeferred();
 	renderer = static_cast<RendererBasic*>(new RendererTrivial());
+#elif defined(SCENE_DEFERRED_OGL)
+	scene = new SceneDeferredOGL();
+	renderer = static_cast<RendererBasic*>(new RendererDeferredOGL());
 #elif defined(SCENE_EDITOR)
 	scene = new SceneEditor();
 	renderer = static_cast<RendererBasic*>(new RendererEditor());

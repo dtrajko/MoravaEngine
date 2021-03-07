@@ -636,6 +636,15 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanShader.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\Deferred\GBuffer.cpp">
+      <Filter>Deferred</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene\SceneDeferredOGL.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\RendererDeferredOGL.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -1356,6 +1365,15 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanShader.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="src\Deferred\GBuffer.h">
+      <Filter>Deferred</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene\SceneDeferredOGL.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\RendererDeferredOGL.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1501,6 +1519,9 @@
     </Filter>
     <Filter Include="Hazel\Platform\Vulkan">
       <UniqueIdentifier>{a695ef4d-47ed-4fc1-bfdc-88fe1201473f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Deferred">
+      <UniqueIdentifier>{5f6a158c-cd8a-4a62-862c-c58a72b6f68a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
