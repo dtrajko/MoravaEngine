@@ -76,6 +76,11 @@ $ ./build.sh
 $ cd MoravaEngine/vendor/cross-platform/SPIRV-Cross
 $ cd cmake .
 
+$ cd MoravaEngine/vendor/cross-platform/yaml-cpp
+$ mkdir build
+$ cd build
+$ cmake ..
+
 $ mkdir MoravaEngine/MoravaEngine/build
 $ cd MoravaEngine/MoravaEngine/build
 $ cmake ..

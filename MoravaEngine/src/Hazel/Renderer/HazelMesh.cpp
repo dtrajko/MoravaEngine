@@ -959,7 +959,7 @@ namespace Hazel {
 
 		std::string submeshUUID = EnvMapEditorLayer::GetSubmeshUUID(entity, &submesh);
 
-		if (EnvMapEditorLayer::s_SubmeshMaterialUUIDs.contains(submeshUUID)) {
+		if (EnvMapEditorLayer::s_SubmeshMaterialUUIDs.find(submeshUUID) != EnvMapEditorLayer::s_SubmeshMaterialUUIDs.end()) {
 			materialUUID = EnvMapEditorLayer::s_SubmeshMaterialUUIDs.at(submeshUUID);
 		}
 		else if (hasMaterialComponent && envMapMaterial) {
@@ -1086,7 +1086,7 @@ namespace Hazel {
 			Ref<HazelMesh> instance = this;
 			std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(instance, submesh, nullptr);
 
-			if (envMapMaterials.contains(materialUUID))
+			if (envMapMaterials.find(materialUUID) != envMapMaterials.end())
 			{
 				envMapMaterial = envMapMaterials.at(materialUUID);
 				envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);
@@ -1148,7 +1148,7 @@ namespace Hazel {
 
 		std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(parentMesh, *this, &entity);
 
-		if (envMapMaterials.contains(materialUUID))
+		if (envMapMaterials.find(materialUUID) != envMapMaterials.end())
 		{
 			envMapMaterial = envMapMaterials.at(materialUUID);
 			envMapMaterial->GetAlbedoInput().TextureMap->Bind(samplerSlot + 0);

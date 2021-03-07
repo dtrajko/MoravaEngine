@@ -257,7 +257,7 @@ void EnvMapEditorLayer::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, H
 
         Log::GetLogger()->debug("EnvMapEditorLayer::LoadEnvMapMaterials materialUUID = '{0}'", materialUUID);
 
-        if (s_EnvMapMaterials.contains(materialUUID)) {
+        if (s_EnvMapMaterials.find(materialUUID) != s_EnvMapMaterials.end()) {
             continue;
         }
 
@@ -289,7 +289,7 @@ void EnvMapEditorLayer::AddMaterialFromComponent(Hazel::Entity entity)
             auto material = entity.GetComponent<Hazel::MaterialComponent>().Material;
             material->SetName(materialName);
 
-            if (!s_EnvMapMaterials.contains(material->GetName()))
+            if (s_EnvMapMaterials.find(material->GetName()) == s_EnvMapMaterials.end())
             {
                 s_EnvMapMaterials.insert(std::make_pair(material->GetUUID(), material));
             }
@@ -354,7 +354,7 @@ EnvMapMaterial* EnvMapEditorLayer::CreateDefaultMaterial(std::string materialNam
     EnvMapMaterial* envMapMaterial = new EnvMapMaterial(materialName);
 
     TextureInfo textureInfo;
-    if (s_TextureInfo.contains(materialName)) {
+    if (s_TextureInfo.find(materialName) != s_TextureInfo.end()) {
         textureInfo = s_TextureInfo.at(materialName);
     }
     else {
@@ -1483,7 +1483,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
         std::string submeshMaterialName = materialNameStrings.size() ? materialNameStrings[0] : "N/A";
 
         MaterialUUID materialUUID;
-        if (s_SubmeshMaterialUUIDs.contains(submeshUUID)) {
+        if (s_SubmeshMaterialUUIDs.find(submeshUUID) != s_SubmeshMaterialUUIDs.end()) {
             materialUUID = s_SubmeshMaterialUUIDs.at(submeshUUID);
         }
         int selectedMaterial = -1;
@@ -2166,7 +2166,7 @@ void EnvMapEditorLayer::GeometryPassTemporary()
 
                     // Render Submesh
                     // load submesh materials for each specific submesh from the s_EnvMapMaterials list
-                    if (s_EnvMapMaterials.contains(materialUUID)) {
+                    if (s_EnvMapMaterials.find(materialUUID) != s_EnvMapMaterials.end()) {
                         envMapMaterial = s_EnvMapMaterials.at(materialUUID);
                         UpdateShaderPBRUniforms(m_ShaderHazelPBR, envMapMaterial);
                     }
@@ -2230,7 +2230,7 @@ void EnvMapEditorLayer::CompositePassTemporary(Framebuffer* framebuffer)
     m_SceneRenderer->GetShaderComposite()->setFloat("u_Exposure", m_ActiveCamera->GetExposure());
     // m_ShaderComposite->setInt("u_TextureSamples", framebuffer->GetSpecification().Samples);
     m_SceneRenderer->GetShaderComposite()->setInt("u_TextureSamples", m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
-    Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
+    // Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
 }
 
 void EnvMapEditorLayer::OnRender(Framebuffer* framebuffer, Window* mainWindow)

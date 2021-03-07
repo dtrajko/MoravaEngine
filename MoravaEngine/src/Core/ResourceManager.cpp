@@ -335,7 +335,7 @@ Hazel::Ref<Hazel::HazelTexture2D> ResourceManager::LoadHazelTexture2D(std::strin
 
 void ResourceManager::AddShader(std::string name, Hazel::Ref<Shader> shader)
 {
-    if (!s_Shaders.contains(name)) {
+    if (s_Shaders.find(name) == s_Shaders.end()) {
         s_Shaders.insert(std::make_pair(name, shader));
     }
 }

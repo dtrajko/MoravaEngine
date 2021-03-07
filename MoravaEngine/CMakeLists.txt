@@ -898,8 +898,8 @@ target_include_directories(
 
 target_link_directories(
 	shaderc PUBLIC
-	../vendor/cross-platform/shaderc/build/libshaderc/$ENV{MORAVA_BUILD_TYPE}
-	../vendor/cross-platform/shaderc/build/libshaderc_util/$ENV{MORAVA_BUILD_TYPE}
+	../vendor/cross-platform/shaderc/libshaderc/$ENV{MORAVA_BUILD_TYPE}
+	../vendor/cross-platform/shaderc/libshaderc_util/$ENV{MORAVA_BUILD_TYPE}
 )
 
 #	target_include_directories(
@@ -960,8 +960,8 @@ target_link_directories(
 	../vendor/cross-platform/yaml-cpp
 	../vendor/box2d/bin/$ENV{MORAVA_BUILD_TYPE} # Win32
 	../vendor/box2d/build/bin # Linux
-	../vendor/cross-platform/shaderc/build/libshaderc/$ENV{MORAVA_BUILD_TYPE}      # Win32
-	../vendor/cross-platform/shaderc/build/libshaderc_util/$ENV{MORAVA_BUILD_TYPE} # Win32
+	../vendor/cross-platform/shaderc/libshaderc/$ENV{MORAVA_BUILD_TYPE}      # Win32
+	../vendor/cross-platform/shaderc/libshaderc_util/$ENV{MORAVA_BUILD_TYPE} # Win32
 	../vendor/cross-platform/shaderc/libshaderc      # Linux
 	../vendor/cross-platform/shaderc/libshaderc_util # Linux
 	../vendor/cross-platform/SPIRV-Cross/$ENV{MORAVA_BUILD_TYPE}
@@ -1036,31 +1036,31 @@ if(WIN32)
 	include(CSharpUtilities)
 
 	SET(ExampleApp_SRCS
-		../MoravaEngine/Hazel/ExampleApp/src/BasicController.cs
-		../MoravaEngine/Hazel/ExampleApp/src/MapGenerator.cs
-		../MoravaEngine/Hazel/ExampleApp/src/Noise.cs
-		../MoravaEngine/Hazel/ExampleApp/src/PlayerCube.cs
-		../MoravaEngine/Hazel/ExampleApp/src/RandomColor.cs
-		../MoravaEngine/Hazel/ExampleApp/src/Script.cs
-		../MoravaEngine/Hazel/ExampleApp/src/Sink.cs
+		../MoravaEngine/src/Hazel/ExampleApp/src/BasicController.cs
+		../MoravaEngine/src/Hazel/ExampleApp/src/MapGenerator.cs
+		../MoravaEngine/src/Hazel/ExampleApp/src/Noise.cs
+		../MoravaEngine/src/Hazel/ExampleApp/src/PlayerCube.cs
+		../MoravaEngine/src/Hazel/ExampleApp/src/RandomColor.cs
+		../MoravaEngine/src/Hazel/ExampleApp/src/Script.cs
+		../MoravaEngine/src/Hazel/ExampleApp/src/Sink.cs
 	)
 
 	SET(Hazel-ScriptCore_SRCS
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Matrix4.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Noise.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector2.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector3.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector4.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Color.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Material.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Mesh.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/MeshFactory.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Texture2D.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Scene/Component.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Entity.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/Input.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/KeyCodes.cs
-		../MoravaEngine/Hazel/Hazel-ScriptCore/src/Hazel/SpriteRenderer.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Math/Matrix4.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Math/Noise.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector2.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector3.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector4.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Color.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Material.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Mesh.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/MeshFactory.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Texture2D.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Scene/Component.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Entity.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Input.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/KeyCodes.cs
+		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/SpriteRenderer.cs
 	)
 
 	add_library(ExampleApp			SHARED "${ExampleApp_SRCS}")
