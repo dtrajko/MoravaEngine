@@ -181,7 +181,8 @@ void Shader::setVec2(const std::string& name, float x, float y)
 }
 void Shader::setVec3(const std::string& name, const glm::vec3& value)
 {
-	glUniform3fv(GetUniformLocation(name), 1, &value[0]);
+	auto location = GetUniformLocation(name);
+	glUniform3fv(location, 1, &value[0]);
 }
 
 void Shader::setVec3(const std::string& name, float x, float y, float z)

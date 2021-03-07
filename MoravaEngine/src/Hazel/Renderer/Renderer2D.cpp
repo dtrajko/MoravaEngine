@@ -244,7 +244,7 @@ namespace Hazel {
 			s_Data.LinePipeline->Bind();
 			s_Data.LineIndexBuffer->Bind();
 
-			HazelRenderer::SetLineThickness(2.0f);
+			// HazelRenderer::SetLineThickness(2.0f);
 			HazelRenderer::DrawIndexed(s_Data.LineIndexCount, PrimitiveType::Lines, s_Data.DepthTest);
 			s_Data.Stats.DrawCalls++;
 		}
