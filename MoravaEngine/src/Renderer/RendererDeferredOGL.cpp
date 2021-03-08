@@ -35,25 +35,9 @@ void RendererDeferredOGL::RenderPass(Window* mainWindow, Scene* scene, glm::mat4
 	Shader* shaderForwardBasic = (Shader*)s_Shaders["forward_basic"];
 	shaderForwardBasic->Bind();
 
-	shaderForwardBasic->setMat4("model", glm::mat4(1.0f));
-	shaderForwardBasic->setMat4("view", scene->GetCamera()->GetViewMatrix());
-	shaderForwardBasic->setMat4("projection", projectionMatrix);
-	shaderForwardBasic->setVec3("eyePosition", scene->GetCamera()->GetPosition());
-
-	// Directional Light
-	shaderForwardBasic->setInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
-	shaderForwardBasic->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
-	shaderForwardBasic->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
-	shaderForwardBasic->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-	shaderForwardBasic->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
-
-	shaderForwardBasic->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-
-	shaderForwardBasic->setInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
-	shaderForwardBasic->setInt("normalMap", scene->GetTextureSlots()["normal"]);
-	shaderForwardBasic->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);
-	shaderForwardBasic->setFloat("tilingFactor", 1.0f);
-	shaderForwardBasic->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	shaderForwardBasic->setMat4("gWVP", projectionMatrix * scene->GetCamera()->GetViewMatrix() * glm::mat4(1.0f));
+	shaderForwardBasic->setMat4("gWorld", glm::mat4(1.0f));
+	shaderForwardBasic->setInt("gColorMap", scene->GetTextureSlots()["diffuse"]);
 	shaderForwardBasic->Validate();
 
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();

@@ -1,26 +1,21 @@
 #version 330 core
 
-layout (location = 0) in vec3 aPosition;
-layout (location = 1) in vec2 aTexCoord;
-layout (location = 2) in vec3 aNormal;
-layout (location = 3) in vec3 aTangent;
-layout (location = 4) in vec3 aBitangent;
+layout (location = 0) in vec3 Position;
+layout (location = 1) in vec2 TexCoord;
+layout (location = 2) in vec3 Normal;
 
-out vec2 vTexCoord;
-out vec3 vNormal;
-out vec3 vPosition;
-out vec3 vFragPos;
+uniform mat4 gWVP;
+uniform mat4 gWorld;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+out vec2 TexCoord0;
+out vec3 Normal0;
+out vec3 WorldPos0;
 
 void main()
 {
-    vPosition = vec3(model * vec4(aPosition, 1.0));
-    vTexCoord = aTexCoord;
-    vFragPos = (model * vec4(aPosition, 1.0)).xyz;
+    WorldPos0 = vec3(gWorld * vec4(Position, 1.0));
+    TexCoord0 = TexCoord;
 
-    vNormal = normalize(aNormal);
-    gl_Position = projection * view * model * vec4(aPosition, 1.0);
+    Normal0 = normalize(Normal);
+    gl_Position = gWVP * vec4(Position, 1.0);
 }

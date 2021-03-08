@@ -1,25 +1,17 @@
 #version 330 core
 
-in vec2 vTexCoord;
-in vec3 vNormal;
-in vec3 vPosition;
-in vec3 vFragPos;
+in vec2 TexCoord0;
+in vec3 Normal0;
+in vec3 WorldPos0;
 
 out vec4 FragColor;
 
-uniform samplerCube cubeMap;
-uniform sampler2D albedoMap;
-uniform sampler2D shadowMap;
-uniform sampler2D normalMap;
-uniform vec4  tintColor;
-uniform float tilingFactor;
-uniform bool  isSelected;
-uniform bool  useCubeMaps;
+uniform sampler2D gColorMap;
 
 
 void main()
 {
-	vec4 texColor = texture(albedoMap, vTexCoord * tilingFactor);
+	vec4 texColor = texture(gColorMap, TexCoord0);
 	if(texColor.a < 0.1)
         discard;
 
