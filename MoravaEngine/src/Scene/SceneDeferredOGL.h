@@ -5,7 +5,6 @@
 
 class SceneDeferredOGL : public Scene
 {
-
 public:
 	SceneDeferredOGL();
 	virtual ~SceneDeferredOGL() override;
@@ -15,5 +14,10 @@ public:
 		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
 
 	void UpdateImGui(float timestep, Window* mainWindow);
+
+private:
+	virtual void SetupTextures() override;
+	virtual void SetupTextureSlots() override;
+	virtual void SetupMeshes() override;
 
 };

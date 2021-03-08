@@ -36,10 +36,10 @@ Scene::Scene()
 	// Directional light
 	sceneSettings.directionalLight.base.enabled = true;
 	sceneSettings.directionalLight.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
-	sceneSettings.directionalLight.base.ambientIntensity = 0.2f;
+	sceneSettings.directionalLight.base.ambientIntensity = 0.5f;
 	sceneSettings.directionalLight.base.diffuseIntensity = 0.8f;
 	sceneSettings.directionalLight.direction = glm::vec3(3.0f, -9.0f, -3.0f);
-	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
+	sceneSettings.lightProjectionMatrix = glm::ortho(-32.0f, 32.0f, -32.0f, 32.0f, -32.0f, 32.0f);
 
 	// Point lights
 	sceneSettings.pointLights[0].base.enabled = true;
