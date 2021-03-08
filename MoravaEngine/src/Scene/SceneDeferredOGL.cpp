@@ -32,19 +32,14 @@ SceneDeferredOGL::~SceneDeferredOGL()
 void SceneDeferredOGL::SetupTextureSlots()
 {
     textureSlots.insert(std::make_pair("diffuse", 1));
-    textureSlots.insert(std::make_pair("normal", 2));
-    textureSlots.insert(std::make_pair("shadow", 3));
-    textureSlots.insert(std::make_pair("omniShadow", 4));
-    textureSlots.insert(std::make_pair("reflection", 5));
-    textureSlots.insert(std::make_pair("refraction", 6));
-    textureSlots.insert(std::make_pair("depth", 7));
-    textureSlots.insert(std::make_pair("DuDv", 8));
+    textureSlots.insert(std::make_pair("normal",  2));
+    textureSlots.insert(std::make_pair("depth",   3));
 }
 
 void SceneDeferredOGL::SetupTextures()
 {
-    ResourceManager::LoadTexture("crate", "Textures/crate.png");
-    ResourceManager::LoadTexture("crateNormal", "Textures/crateNormal.png");
+    ResourceManager::LoadTexture("crate_diffuse", "Textures/crate.png");
+    ResourceManager::LoadTexture("crate_normal",  "Textures/crateNormal.png");
 }
 
 void SceneDeferredOGL::SetupMeshes()
@@ -76,7 +71,7 @@ void SceneDeferredOGL::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
     shaderForwardBasic->setMat4("model", model);
-    ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
-    ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
+    ResourceManager::GetTexture("crate_diffuse")->Bind(textureSlots["diffuse"]);
+    ResourceManager::GetTexture("crate_normal")->Bind(textureSlots["normal"]);
     meshes["cube"]->Render();
 }

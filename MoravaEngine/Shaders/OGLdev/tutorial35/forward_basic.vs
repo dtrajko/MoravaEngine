@@ -10,16 +10,10 @@ out vec2 vTexCoord;
 out vec3 vNormal;
 out vec3 vPosition;
 out vec3 vFragPos;
-out vec4 vDirLightSpacePos;
-out mat3 vTBN;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-
-uniform mat4 dirLightTransform;
-uniform vec4 clipPlane;
-
 
 void main()
 {
@@ -27,23 +21,6 @@ void main()
     vTexCoord = aTexCoord;
     vFragPos = (model * vec4(aPosition, 1.0)).xyz;
 
-    vec4 WorldPosition = model * vec4(aPosition, 1.0);
-	gl_ClipDistance[0] = dot(WorldPosition, clipPlane);
-
-	vDirLightSpacePos = dirLightTransform * model * vec4(aPosition, 1.0);
-
-    mat3 modelVector = transpose(inverse(mat3(model)));
-
-    vec3 T = normalize(modelVector * aTangent);
-    vec3 B = normalize(modelVector * aBitangent);
-    vec3 N = normalize(modelVector * aNormal);
-
-    // Gram-Schmidt process
-    T = normalize(T - dot(T, N) * N);
-    B = cross(N, T);
-
-    vTBN = mat3(T, B, N);
-
-    vNormal = normalize(modelVector * aNormal);
+    vNormal = normalize(aNormal);
     gl_Position = projection * view * model * vec4(aPosition, 1.0);
 }

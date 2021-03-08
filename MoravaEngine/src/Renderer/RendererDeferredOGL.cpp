@@ -49,11 +49,9 @@ void RendererDeferredOGL::RenderPass(Window* mainWindow, Scene* scene, glm::mat4
 
 	shaderForwardBasic->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
-	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
 	shaderForwardBasic->setInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderForwardBasic->setInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderForwardBasic->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);
-	shaderForwardBasic->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
 	shaderForwardBasic->setFloat("tilingFactor", 1.0f);
 	shaderForwardBasic->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	shaderForwardBasic->Validate();
