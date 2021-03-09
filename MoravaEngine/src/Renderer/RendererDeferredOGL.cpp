@@ -1,6 +1,7 @@
 #include "RendererDeferredOGL.h"
 
 #include "Core/Application.h"
+#include "Mesh/QuadSSAO.h"
 
 
 RendererDeferredOGL::RendererDeferredOGL()
@@ -13,17 +14,25 @@ RendererDeferredOGL::RendererDeferredOGL()
 
 void RendererDeferredOGL::Init(Scene* scene)
 {
+	unsigned int WindowWidth = Application::Get()->GetWindow()->GetWidth();
+	unsigned int WindowHeight = Application::Get()->GetWindow()->GetHeight();
+
+	m_gbuffer.Init(WindowWidth, WindowHeight);
 }
 
 void RendererDeferredOGL::SetShaders()
 {
+	m_ShaderForwardBasic = Hazel::Ref<Shader>::Create("Shaders/OGLdev/tutorial35/forward_basic.vs", "Shaders/OGLdev/tutorial35/forward_basic.fs");
+	s_Shaders.insert(std::make_pair("forward_basic", m_ShaderForwardBasic.Raw()));
+	Log::GetLogger()->info("RendererDeferredOGL: m_ShaderForwardBasic compiled [programID={0}]", m_ShaderForwardBasic->GetProgramID());
+
 	m_ShaderGeometryPass = Hazel::Ref<Shader>::Create("Shaders/OGLdev/tutorial35/geometry_pass.vs", "Shaders/OGLdev/tutorial35/geometry_pass.fs");
 	s_Shaders.insert(std::make_pair("geometry_pass", m_ShaderGeometryPass.Raw()));
 	Log::GetLogger()->info("RendererDeferredOGL: m_ShaderGeometryPass compiled [programID={0}]", m_ShaderGeometryPass->GetProgramID());
 
-	m_ShaderForwardBasic = Hazel::Ref<Shader>::Create("Shaders/OGLdev/tutorial35/forward_basic.vs", "Shaders/OGLdev/tutorial35/forward_basic.fs");
-	s_Shaders.insert(std::make_pair("forward_basic", m_ShaderForwardBasic.Raw()));
-	Log::GetLogger()->info("RendererDeferredOGL: m_ShaderForwardBasic compiled [programID={0}]", m_ShaderForwardBasic->GetProgramID());
+	m_ShaderLightPass = Hazel::Ref<Shader>::Create("Shaders/OGLdev/tutorial35/light_pass.vs", "Shaders/OGLdev/tutorial35/light_pass.fs");
+	s_Shaders.insert(std::make_pair("light_pass", m_ShaderLightPass.Raw()));
+	Log::GetLogger()->info("RendererDeferredOGL: m_ShaderLightPass compiled [programID={0}]", m_ShaderLightPass->GetProgramID());
 }
 
 void RendererDeferredOGL::SetupTextureSlots()
@@ -40,6 +49,7 @@ void RendererDeferredOGL::SetupTextures()
 void RendererDeferredOGL::SetupMeshes()
 {
 	m_MeshBlock = Hazel::Ref<Block>::Create(glm::vec3(1.0f, 1.0f, 1.0f));
+	m_MeshQuad = Hazel::Ref<QuadSSAO>::Create();
 }
 
 void RendererDeferredOGL::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -47,11 +57,11 @@ void RendererDeferredOGL::Render(float deltaTime, Window* mainWindow, Scene* sce
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
 	// Forward rendering
-	ForwardPass(mainWindow, scene, projectionMatrix);
+	// ForwardPass(mainWindow, scene, projectionMatrix);
 
 	// Deferred rendering
-	// GeometryPass(scene, projectionMatrix);
-	// LightPass(mainWindow);
+	GeometryPass(mainWindow, scene, projectionMatrix);
+	LightPass(mainWindow, scene, projectionMatrix);
 }
 
 void RendererDeferredOGL::ForwardPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -73,7 +83,7 @@ void RendererDeferredOGL::ForwardPass(Window* mainWindow, Scene* scene, glm::mat
 	m_ShaderForwardBasic->Unbind();
 }
 
-void RendererDeferredOGL::GeometryPass(Scene* scene, glm::mat4 projectionMatrix)
+void RendererDeferredOGL::GeometryPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	m_gbuffer.BindForWriting();
 
@@ -94,13 +104,15 @@ void RendererDeferredOGL::GeometryPass(Scene* scene, glm::mat4 projectionMatrix)
 	m_ShaderGeometryPass->Unbind();
 }
 
-void RendererDeferredOGL::LightPass(Window* mainWindow)
+void RendererDeferredOGL::LightPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	m_gbuffer.BindForReading();
+
+	// m_ShaderLightPass->Bind();
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	GLint WINDOW_WIDTH = Application::Get()->GetWindow()->GetWidth();
 	GLint WINDOW_HEIGHT = Application::Get()->GetWindow()->GetHeight();
@@ -123,6 +135,17 @@ void RendererDeferredOGL::LightPass(Window* mainWindow)
 	m_gbuffer.SetReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_TEXCOORD);
 	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
 		HalfWidth, 0, WINDOW_WIDTH, HalfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+	// m_ShaderLightPass->setInt("u_GBuffer_Position", GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
+	// m_ShaderLightPass->setInt("u_GBuffer_Diffuse",  GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
+	// m_ShaderLightPass->setInt("u_GBuffer_Normal",   GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
+	// m_ShaderLightPass->setInt("u_GBuffer_TexCoord", GBuffer::GBUFFER_TEXTURE_TYPE_TEXCOORD);
+
+	// m_ShaderLightPass->Validate();
+
+	// m_MeshQuad->Render();
+
+	// m_ShaderLightPass->Unbind();
 }
 
 RendererDeferredOGL::~RendererDeferredOGL()

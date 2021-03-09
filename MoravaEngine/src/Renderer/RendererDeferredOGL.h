@@ -19,8 +19,8 @@ public:
 
 	virtual void SetShaders() override;
 
-	void GeometryPass(Scene* scene, glm::mat4 projectionMatrix);
-	void LightPass(Window* mainWindow);
+	void GeometryPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix);
+	void LightPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 
 private:
 	void SetupTextures();
@@ -32,9 +32,11 @@ private:
 
 	uint32_t m_TextureSlot_Diffuse;
 
-	Hazel::Ref<Shader> m_ShaderGeometryPass;
 	Hazel::Ref<Shader> m_ShaderForwardBasic;
+	Hazel::Ref<Shader> m_ShaderGeometryPass;
+	Hazel::Ref<Shader> m_ShaderLightPass;
 
-	Hazel::Ref<Block> m_MeshBlock;
+	Hazel::Ref<Mesh> m_MeshBlock;
+	Hazel::Ref<Mesh> m_MeshQuad;
 
 };
