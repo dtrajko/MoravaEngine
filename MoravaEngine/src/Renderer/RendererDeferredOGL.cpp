@@ -29,10 +29,6 @@ void RendererDeferredOGL::SetShaders()
 	m_ShaderGeometryPass = Hazel::Ref<Shader>::Create("Shaders/OGLdev/tutorial35/geometry_pass.vs", "Shaders/OGLdev/tutorial35/geometry_pass.fs");
 	s_Shaders.insert(std::make_pair("geometry_pass", m_ShaderGeometryPass.Raw()));
 	Log::GetLogger()->info("RendererDeferredOGL: m_ShaderGeometryPass compiled [programID={0}]", m_ShaderGeometryPass->GetProgramID());
-
-	m_ShaderLightPass = Hazel::Ref<Shader>::Create("Shaders/OGLdev/tutorial35/light_pass.vs", "Shaders/OGLdev/tutorial35/light_pass.fs");
-	s_Shaders.insert(std::make_pair("light_pass", m_ShaderLightPass.Raw()));
-	Log::GetLogger()->info("RendererDeferredOGL: m_ShaderLightPass compiled [programID={0}]", m_ShaderLightPass->GetProgramID());
 }
 
 void RendererDeferredOGL::SetupTextureSlots()
@@ -110,8 +106,6 @@ void RendererDeferredOGL::LightPass(Window* mainWindow, Scene* scene, glm::mat4 
 
 	m_gbuffer.BindForReading();
 
-	// m_ShaderLightPass->Bind();
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	GLint WINDOW_WIDTH = Application::Get()->GetWindow()->GetWidth();
@@ -135,17 +129,6 @@ void RendererDeferredOGL::LightPass(Window* mainWindow, Scene* scene, glm::mat4 
 	m_gbuffer.SetReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_TEXCOORD);
 	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
 		HalfWidth, 0, WINDOW_WIDTH, HalfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-	// m_ShaderLightPass->setInt("u_GBuffer_Position", GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
-	// m_ShaderLightPass->setInt("u_GBuffer_Diffuse",  GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
-	// m_ShaderLightPass->setInt("u_GBuffer_Normal",   GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
-	// m_ShaderLightPass->setInt("u_GBuffer_TexCoord", GBuffer::GBUFFER_TEXTURE_TYPE_TEXCOORD);
-
-	// m_ShaderLightPass->Validate();
-
-	// m_MeshQuad->Render();
-
-	// m_ShaderLightPass->Unbind();
 }
 
 RendererDeferredOGL::~RendererDeferredOGL()

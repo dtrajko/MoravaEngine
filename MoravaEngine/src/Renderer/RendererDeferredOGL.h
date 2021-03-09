@@ -34,7 +34,6 @@ private:
 
 	Hazel::Ref<Shader> m_ShaderForwardBasic;
 	Hazel::Ref<Shader> m_ShaderGeometryPass;
-	Hazel::Ref<Shader> m_ShaderLightPass;
 
 	Hazel::Ref<Mesh> m_MeshBlock;
 	Hazel::Ref<Mesh> m_MeshQuad;
