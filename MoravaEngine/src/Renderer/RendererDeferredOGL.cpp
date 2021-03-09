@@ -10,14 +10,19 @@ RendererDeferredOGL::RendererDeferredOGL()
 	SetupTextureSlots();
 	SetupTextures();
 	SetupMeshes();
+
+	m_RenderingType = RenderingType::Deferred;
 }
 
 void RendererDeferredOGL::Init(Scene* scene)
 {
-	unsigned int WindowWidth = Application::Get()->GetWindow()->GetWidth();
-	unsigned int WindowHeight = Application::Get()->GetWindow()->GetHeight();
+	if (m_RenderingType == RenderingType::Deferred)
+	{
+		unsigned int WindowWidth = Application::Get()->GetWindow()->GetWidth();
+		unsigned int WindowHeight = Application::Get()->GetWindow()->GetHeight();
 
-	m_gbuffer.Init(WindowWidth, WindowHeight);
+		m_gbuffer.Init(WindowWidth, WindowHeight);
+	}
 }
 
 void RendererDeferredOGL::SetShaders()
@@ -52,12 +57,17 @@ void RendererDeferredOGL::Render(float deltaTime, Window* mainWindow, Scene* sce
 {
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
-	// Forward rendering
-	// ForwardPass(mainWindow, scene, projectionMatrix);
-
-	// Deferred rendering
-	GeometryPass(mainWindow, scene, projectionMatrix);
-	LightPass(mainWindow, scene, projectionMatrix);
+	if (m_RenderingType == RenderingType::Forward)
+	{
+		// Forward rendering
+		ForwardPass(mainWindow, scene, projectionMatrix);
+	}
+	else if (m_RenderingType == RenderingType::Deferred)
+	{
+		// Deferred rendering
+		GeometryPass(mainWindow, scene, projectionMatrix);
+		LightPass(mainWindow, scene, projectionMatrix);
+	}
 }
 
 void RendererDeferredOGL::ForwardPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)

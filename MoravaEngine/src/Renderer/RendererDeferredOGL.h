@@ -38,4 +38,12 @@ private:
 	Hazel::Ref<Mesh> m_MeshBlock;
 	Hazel::Ref<Mesh> m_MeshQuad;
 
+	enum class RenderingType
+	{
+		Forward,
+		Deferred
+	};
+
+	RenderingType m_RenderingType;
+
 };
