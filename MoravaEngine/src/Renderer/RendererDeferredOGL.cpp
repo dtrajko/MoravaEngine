@@ -1,12 +1,14 @@
 #include "RendererDeferredOGL.h"
 
 #include "Core/Application.h"
-#include "LearnOpenGL/SphereJoey.h"
 
 
 RendererDeferredOGL::RendererDeferredOGL()
 {
 	SetShaders();
+	SetupTextureSlots();
+	SetupTextures();
+	SetupMeshes();
 }
 
 void RendererDeferredOGL::Init(Scene* scene)
@@ -19,83 +21,82 @@ void RendererDeferredOGL::SetShaders()
 	s_Shaders.insert(std::make_pair("geometry_pass", m_ShaderGeometryPass.Raw()));
 	Log::GetLogger()->info("RendererDeferredOGL: m_ShaderGeometryPass compiled [programID={0}]", m_ShaderGeometryPass->GetProgramID());
 
-	m_ShaderForwardBasic = new Shader("Shaders/OGLdev/tutorial35/forward_basic.vs", "Shaders/OGLdev/tutorial35/forward_basic.fs");
-	s_Shaders.insert(std::make_pair("forward_basic", m_ShaderForwardBasic));
+	m_ShaderForwardBasic = Hazel::Ref<Shader>::Create("Shaders/OGLdev/tutorial35/forward_basic.vs", "Shaders/OGLdev/tutorial35/forward_basic.fs");
+	s_Shaders.insert(std::make_pair("forward_basic", m_ShaderForwardBasic.Raw()));
 	Log::GetLogger()->info("RendererDeferredOGL: m_ShaderForwardBasic compiled [programID={0}]", m_ShaderForwardBasic->GetProgramID());
 }
 
-void RendererDeferredOGL::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererDeferredOGL::SetupTextureSlots()
 {
-	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
+	m_TextureSlot_Diffuse = 1;
+}
 
-	// Clear the window
-	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void RendererDeferredOGL::SetupTextures()
+{
+	ResourceManager::LoadTexture("crate_diffuse", "Textures/crate.png");
+	ResourceManager::LoadTexture("crate_normal", "Textures/crateNormal.png");
+}
 
-	Shader* shaderForwardBasic = (Shader*)s_Shaders["forward_basic"];
-	shaderForwardBasic->Bind();
-
-	shaderForwardBasic->setMat4("gWVP", projectionMatrix * scene->GetCamera()->GetViewMatrix() * glm::mat4(1.0f));
-	shaderForwardBasic->setMat4("gWorld", glm::mat4(1.0f));
-	shaderForwardBasic->setInt("gColorMap", scene->GetTextureSlots()["diffuse"]);
-	shaderForwardBasic->Validate();
-
-	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
-	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
-
-	shaderForwardBasic->Unbind();
+void RendererDeferredOGL::SetupMeshes()
+{
+	m_MeshBlock = Hazel::Ref<Block>::Create(glm::vec3(1.0f, 1.0f, 1.0f));
 }
 
 void RendererDeferredOGL::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
-	RenderPass(mainWindow, scene, projectionMatrix);
+	// Forward rendering
+	ForwardPass(mainWindow, scene, projectionMatrix);
+
+	// Deferred rendering
+	// GeometryPass(scene, projectionMatrix);
+	// LightPass(mainWindow);
+}
+
+void RendererDeferredOGL::ForwardPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	m_ShaderForwardBasic->Bind();
+
+	glm::mat4 model = glm::mat4(1.0f);
+	m_ShaderForwardBasic->setMat4("gWVP", projectionMatrix * scene->GetCamera()->GetViewMatrix() * model);
+	m_ShaderForwardBasic->setMat4("gWorld", model);
+	m_ShaderForwardBasic->setInt("gColorMap", m_TextureSlot_Diffuse);
+	m_ShaderForwardBasic->Validate();
+
+	ResourceManager::GetTexture("crate_diffuse")->Bind(m_TextureSlot_Diffuse);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	m_MeshBlock->Render();
+
+	m_ShaderForwardBasic->Unbind();
 }
 
 void RendererDeferredOGL::GeometryPass(Scene* scene, glm::mat4 projectionMatrix)
 {
+	m_gbuffer.BindForWriting();
+
 	m_ShaderGeometryPass->Bind();
 
-	m_gbuffer.BindForWriting();
+	glm::mat4 model = glm::mat4(1.0f);
+	m_ShaderGeometryPass->setMat4("gWVP", projectionMatrix * scene->GetCamera()->GetViewMatrix() * model);
+	m_ShaderGeometryPass->setMat4("gWorld", model);
+	m_ShaderGeometryPass->setInt("gColorMap", m_TextureSlot_Diffuse);
+	m_ShaderGeometryPass->Validate();
+
+	ResourceManager::GetTexture("crate_diffuse")->Bind(m_TextureSlot_Diffuse);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// layout(location = 0) in vec3 Position;
-	// layout(location = 1) in vec2 TexCoord;
-	// layout(location = 2) in vec3 Normal;
-	// uniform mat4 gWVP;           // vertex shader
-	// uniform mat4 gWorld;         // vertex shader
-	// uniform sampler2D gColorMap; // fragment shader
+	m_MeshBlock->Render();
 
-	glm::mat4 model = glm::mat4(1.0f);
-
-	glm::mat4 gWVP = projectionMatrix * scene->GetCamera()->GetViewMatrix() * model;
-	m_ShaderGeometryPass->SetMat4("gWVP", gWVP);
-
-	glm::mat4 gWorld = model;
-	m_ShaderGeometryPass->SetMat4("gWorld", gWorld);
-
-	// m_ShaderGeometryPass->SetMat4("model", model);
-	// m_ShaderGeometryPass->SetMat4("view", scene->GetCamera()->GetViewMatrix());
-	// m_ShaderGeometryPass->SetMat4("projection", projectionMatrix);
-
-	int colorMapTextureSlot = 0;
-	m_ShaderGeometryPass->setInt("gColorMap", colorMapTextureSlot);
-
-	// m_Texture->Bind(colorMapTextureSlot);
-
-	// Render a mesh
-	// m_Mesh->Render();
+	m_ShaderGeometryPass->Unbind();
 }
 
 void RendererDeferredOGL::LightPass(Window* mainWindow)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	// then before rendering, configure the viewport to the original framebuffer's screen dimensions
-	RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

@@ -15,9 +15,4 @@ public:
 
 	void UpdateImGui(float timestep, Window* mainWindow);
 
-private:
-	virtual void SetupTextures() override;
-	virtual void SetupTextureSlots() override;
-	virtual void SetupMeshes() override;
-
 };
