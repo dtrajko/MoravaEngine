@@ -30,6 +30,7 @@ Its current purpose is experimenting with various CG concepts and techniques:
 * [Joey de Vries](https://twitter.com/JoeyDeVriez) [ [learnopengl.com](https://learnopengl.com/) ]
 * [Sascha Willems](https://twitter.com/SaschaWillems2) [ [Vulkan C++ examples and demos](https://github.com/SaschaWillems/Vulkan) ]
 * [Sebastian Lague](https://twitter.com/sebastianlague) [ [Sebastian Lague YouTube channel](https://www.youtube.com/c/SebastianLague) ]
+* [ilya73](https://www.cgtrader.com/ilya73 ) [ [Gladiator free VR](https://www.cgtrader.com/free-3d-models/character/man/gladiator-7ac625db-88c2-46ed-a2f1-182fd1f79739) ]
 
 ## Installation
 Build automation based on CMake (in progress)
