@@ -27,6 +27,8 @@ private:
 	void SetupTextureSlots();
 	void SetupMeshes();
 
+	void CreateGBuffer();
+
 private:
 	GBuffer m_gbuffer;
 
@@ -38,12 +40,7 @@ private:
 	Hazel::Ref<Mesh> m_MeshBlock;
 	Hazel::Ref<Mesh> m_MeshQuad;
 
-	enum class RenderingType
-	{
-		Forward,
-		Deferred
-	};
-
-	RenderingType m_RenderingType;
+	uint32_t m_WindowWidthOld = 0;
+	uint32_t m_WindowHeightOld = 0;
 
 };

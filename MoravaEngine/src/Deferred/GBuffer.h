@@ -4,6 +4,8 @@
 
 #include <GL/glew.h>
 
+#include <cstdint>
+
 
 class GBuffer
 {
@@ -25,9 +27,15 @@ public:
 	void BindForReading();
 	void SetReadBuffer(GBUFFER_TEXTURE_TYPE TextureType);
 
+	inline uint32_t GetWidth() { return m_Width; }
+	inline uint32_t GetHeight() { return m_Height; }
+
 private:
 	GLuint m_fbo;
 	GLuint m_textures[GBUFFER_NUM_TEXTURES];
 	GLuint m_depthTexture;
+
+	uint32_t m_Width;
+	uint32_t m_Height;
 
 };

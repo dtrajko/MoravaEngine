@@ -13,6 +13,9 @@ GBuffer::~GBuffer()
 
 bool GBuffer::Init(unsigned int WindowWidth, unsigned int WindowHeight)
 {
+	m_Width = WindowWidth;
+	m_Height = WindowHeight;
+
 	// Create the FBO
 	glGenFramebuffers(1, &m_fbo);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);

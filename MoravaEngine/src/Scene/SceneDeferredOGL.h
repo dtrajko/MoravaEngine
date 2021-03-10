@@ -15,4 +15,19 @@ public:
 
 	void UpdateImGui(float timestep, Window* mainWindow);
 
+	inline int GetRenderTarget() { return m_RenderTarget; }
+
+public:
+	enum class RenderTarget
+	{
+		Forward,
+		Deferred_Position,
+		Deferred_Normal,
+		Deferred_Diffuse,
+		Deferred_TexCoord,
+	};
+
+private:
+	int m_RenderTarget;
+
 };

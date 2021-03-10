@@ -32,6 +32,21 @@ void SceneDeferredOGL::UpdateImGui(float timestep, Window* mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
+
+	ImGui::Begin("Render Targets");
+	{
+        ImGui::Text("Forward Rendering");
+		ImGui::RadioButton("Forward Rendering", &m_RenderTarget, (int)RenderTarget::Forward);
+
+        ImGui::Separator();
+
+        ImGui::Text("Deferred Rendering");
+        ImGui::RadioButton("Deferred - Position", &m_RenderTarget, (int)RenderTarget::Deferred_Position);
+        ImGui::RadioButton("Deferred - Diffuse",  &m_RenderTarget, (int)RenderTarget::Deferred_Diffuse);
+        ImGui::RadioButton("Deferred - Normal",   &m_RenderTarget, (int)RenderTarget::Deferred_Normal);
+        ImGui::RadioButton("Deferred - TexCoord", &m_RenderTarget, (int)RenderTarget::Deferred_TexCoord);
+	}
+	ImGui::End();
 }
 
 void SceneDeferredOGL::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
