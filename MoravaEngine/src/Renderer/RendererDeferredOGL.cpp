@@ -53,7 +53,7 @@ void RendererDeferredOGL::SetupTextureSlots()
 void RendererDeferredOGL::SetupTextures()
 {
 	ResourceManager::LoadTexture("crate_diffuse", "Textures/crate.png");
-	ResourceManager::LoadTexture("crate_normal", "Textures/crateNormal.png");
+	ResourceManager::LoadTexture("crate_normal",  "Textures/crateNormal.png");
 }
 
 void RendererDeferredOGL::SetupMeshes()
