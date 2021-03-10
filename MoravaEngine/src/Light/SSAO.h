@@ -15,13 +15,13 @@ public:
 
 	void Init();
 	void Update(float timestep);
-	void UpdateCooldown(float timestep);
 	void Render(glm::mat4 projectionMatrix, glm::mat4 viewMatrix,
 		std::map<std::string, Mesh*> meshes, std::map<std::string, ModelSSAO*>* models);
 
 private:
 	// private methods
 	void SetupShaders();
+	void GenerateConditional();
 	void Generate(unsigned int width, unsigned int height);
 	void Release();
 	void ResetHandlers();
@@ -57,9 +57,7 @@ public:
 private:
 	std::vector<glm::vec3> ssaoKernel;
 
-	unsigned int m_WidthPrev;
-	unsigned int m_HeightPrev;
-
-	EventCooldown m_UpdateCooldown;
+	uint32_t m_WidthPrev;
+	uint32_t m_HeightPrev;
 
 };

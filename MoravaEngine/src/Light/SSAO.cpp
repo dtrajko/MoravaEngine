@@ -14,8 +14,6 @@ SSAO::SSAO()
 {
 	ResetHandlers();
 
-	m_UpdateCooldown = { 0.0f, 0.2f };
-
 	kernelSize = 64;
 	radius = 0.5f;
 	bias = 0.025f;
@@ -82,10 +80,15 @@ void SSAO::ResetHandlers()
 	ssaoColorBuffer = 0;
 	ssaoColorBufferBlur = 0;
 	noiseTexture = 0;
+
+	m_WidthPrev = 0;
+	m_HeightPrev = 0;
 }
 
 void SSAO::Generate(unsigned int width, unsigned int height)
 {
+	Log::GetLogger()->warn("SSAO::Generate(width: {0}, height: {1})", width, height);
+
 	Release();
 
 	// configure g-buffer framebuffer
@@ -224,26 +227,16 @@ void SSAO::Init()
 {
 	SetupShaders();
 
-	uint32_t width = Application::Get()->GetWindow()->GetWidth();
-	uint32_t height = Application::Get()->GetWindow()->GetHeight();
-
-	m_WidthPrev = width;
-	m_HeightPrev = height;
-
-	Generate(width, height);
+	GenerateConditional();
 }
 
 void SSAO::Update(float timestep)
 {
-	UpdateCooldown(timestep);
+	GenerateConditional();
 }
 
-void SSAO::UpdateCooldown(float timestep)
+void SSAO::GenerateConditional()
 {
-	// Cooldown
-	if (timestep - m_UpdateCooldown.lastTime < m_UpdateCooldown.cooldown) return;
-	m_UpdateCooldown.lastTime = timestep;
-
 	uint32_t width = Application::Get()->GetWindow()->GetWidth();
 	uint32_t height = Application::Get()->GetWindow()->GetHeight();
 

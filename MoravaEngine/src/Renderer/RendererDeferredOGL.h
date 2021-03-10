@@ -38,7 +38,6 @@ private:
 	Hazel::Ref<Shader> m_ShaderGeometryPass;
 
 	Hazel::Ref<Mesh> m_MeshBlock;
-	Hazel::Ref<Mesh> m_MeshQuad;
 
 	uint32_t m_WindowWidthOld = 0;
 	uint32_t m_WindowHeightOld = 0;

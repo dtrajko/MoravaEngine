@@ -59,7 +59,6 @@ void RendererDeferredOGL::SetupTextures()
 void RendererDeferredOGL::SetupMeshes()
 {
 	m_MeshBlock = Hazel::Ref<Block>::Create(glm::vec3(1.0f, 1.0f, 1.0f));
-	m_MeshQuad = Hazel::Ref<QuadSSAO>::Create();
 }
 
 void RendererDeferredOGL::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -133,25 +132,6 @@ void RendererDeferredOGL::LightPass(Window* mainWindow, Scene* scene, glm::mat4 
 
 	GLint WINDOW_WIDTH = Application::Get()->GetWindow()->GetWidth();
 	GLint WINDOW_HEIGHT = Application::Get()->GetWindow()->GetHeight();
-
-	//	GLsizei HalfWidth = (GLsizei)(WINDOW_WIDTH / 2.0f);
-	//	GLsizei HalfHeight = (GLsizei)(WINDOW_HEIGHT / 2.0f);
-	//	
-	//	m_gbuffer.SetReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_POSITION);
-	//	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-	//		0, 0, HalfWidth, HalfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	//	
-	//	m_gbuffer.SetReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_DIFFUSE);
-	//	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-	//		0, HalfHeight, HalfWidth, WINDOW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	//	
-	//	m_gbuffer.SetReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_NORMAL);
-	//	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-	//		HalfWidth, HalfHeight, WINDOW_WIDTH, WINDOW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	//	
-	//	m_gbuffer.SetReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_TEXCOORD);
-	//	glBlitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-	//		HalfWidth, 0, WINDOW_WIDTH, HalfHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
 	SceneDeferredOGL* sceneOGL = (SceneDeferredOGL*)scene;
 
