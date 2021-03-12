@@ -209,6 +209,7 @@
     <ClCompile Include="src\Core\Util.cpp" />
     <ClCompile Include="src\Data\Octree.cpp" />
     <ClCompile Include="src\Data\Quadtree.cpp" />
+    <ClCompile Include="src\Deferred\FramebufferSSAO.cpp" />
     <ClCompile Include="src\Deferred\GBuffer.cpp" />
     <ClCompile Include="src\Editor\EntitySelection.cpp" />
     <ClCompile Include="src\Editor\Gizmo.cpp" />
@@ -435,6 +436,7 @@
     <ClInclude Include="src\Core\Window.h" />
     <ClInclude Include="src\Data\Octree.h" />
     <ClInclude Include="src\Data\Quadtree.h" />
+    <ClInclude Include="src\Deferred\FramebufferSSAO.h" />
     <ClInclude Include="src\Deferred\GBuffer.h" />
     <ClInclude Include="src\Editor\EntitySelection.h" />
     <ClInclude Include="src\Editor\Gizmo.h" />

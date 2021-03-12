@@ -3,6 +3,7 @@
 #include "RendererBasic.h"
 
 #include "Deferred/GBuffer.h"
+#include "Deferred/FramebufferSSAO.h"
 #include "Mesh/Block.h"
 
 
@@ -27,10 +28,11 @@ private:
 	void SetupTextureSlots();
 	void SetupMeshes();
 
-	void CreateGBuffer();
+	void CreateBuffers();
 
 private:
 	GBuffer m_gbuffer;
+	FramebufferSSAO m_FramebufferSSAO;
 
 	uint32_t m_TextureSlot_Diffuse;
 

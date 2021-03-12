@@ -25,6 +25,7 @@ public:
 		Deferred_Normal,
 		Deferred_Diffuse,
 		Deferred_TexCoord,
+		Deferred_SSAO,
 	};
 
 private:

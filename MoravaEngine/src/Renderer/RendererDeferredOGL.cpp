@@ -15,18 +15,20 @@ RendererDeferredOGL::RendererDeferredOGL()
 
 void RendererDeferredOGL::Init(Scene* scene)
 {
-	CreateGBuffer();
+	CreateBuffers();
 }
 
-void RendererDeferredOGL::CreateGBuffer()
+void RendererDeferredOGL::CreateBuffers()
 {
 	unsigned int WindowWidth = Application::Get()->GetWindow()->GetWidth();
 	unsigned int WindowHeight = Application::Get()->GetWindow()->GetHeight();
 
 	if (WindowWidth != m_WindowWidthOld || WindowHeight != m_WindowHeightOld)
 	{
-		m_gbuffer.Init(WindowWidth, WindowHeight);
+		m_FramebufferSSAO.Init(WindowWidth, WindowHeight);
+		Log::GetLogger()->warn("Re-create SSAO framebuffer width: {0}, height: {1}", WindowWidth, WindowHeight);
 
+		m_gbuffer.Init(WindowWidth, WindowHeight);
 		Log::GetLogger()->warn("Re-create GBuffer width: {0}, height: {1}", WindowWidth, WindowHeight);
 
 		m_WindowWidthOld = WindowWidth;
@@ -75,7 +77,7 @@ void RendererDeferredOGL::Render(float deltaTime, Window* mainWindow, Scene* sce
 	else
 	{
 		// Deferred rendering
-		CreateGBuffer();
+		CreateBuffers();
 
 		GeometryPass(mainWindow, scene, projectionMatrix);
 		LightPass(mainWindow, scene, projectionMatrix);
@@ -150,6 +152,11 @@ void RendererDeferredOGL::LightPass(Window* mainWindow, Scene* scene, glm::mat4 
 	else if (sceneOGL->GetRenderTarget() == (int)SceneDeferredOGL::RenderTarget::Deferred_TexCoord)
 	{
 		m_gbuffer.SetReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_TEXCOORD);
+	}
+	else if (sceneOGL->GetRenderTarget() == (int)SceneDeferredOGL::RenderTarget::Deferred_SSAO)
+	{
+		m_FramebufferSSAO.BindForReading();
+		m_FramebufferSSAO.SetReadBuffer();
 	}
 
 	glBlitFramebuffer(0, 0, m_gbuffer.GetWidth(), m_gbuffer.GetHeight(),

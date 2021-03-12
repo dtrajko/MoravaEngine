@@ -645,6 +645,9 @@
     <ClCompile Include="src\Renderer\RendererDeferredOGL.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Deferred\FramebufferSSAO.cpp">
+      <Filter>Deferred</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -1373,6 +1376,9 @@
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererDeferredOGL.h">
       <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Deferred\FramebufferSSAO.h">
+      <Filter>Deferred</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

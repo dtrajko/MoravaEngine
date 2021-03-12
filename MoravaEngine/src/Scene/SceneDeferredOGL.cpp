@@ -45,6 +45,7 @@ void SceneDeferredOGL::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::RadioButton("Deferred - Diffuse",  &m_RenderTarget, (int)RenderTarget::Deferred_Diffuse);
         ImGui::RadioButton("Deferred - Normal",   &m_RenderTarget, (int)RenderTarget::Deferred_Normal);
         ImGui::RadioButton("Deferred - TexCoord", &m_RenderTarget, (int)RenderTarget::Deferred_TexCoord);
+        ImGui::RadioButton("Deferred - SSAO",     &m_RenderTarget, (int)RenderTarget::Deferred_SSAO);
 	}
 	ImGui::End();
 }

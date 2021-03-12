@@ -300,41 +300,37 @@ void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
         ImVec2 imageSize(128.0f, 128.0f);
 
         ImGui::Text("gPosition");
-        ImGui::Image((void*)(intptr_t)m_SSAO->gPosition, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO->gPosition, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO->m_GBufferPosition, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO->m_GBufferPosition, 0, 128);
 
         ImGui::Text("gNormal");
-        ImGui::Image((void*)(intptr_t)m_SSAO->gNormal, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO->gNormal, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO->m_GBufferNormal, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO->m_GBufferNormal, 0, 128);
 
         ImGui::Text("gAlbedo");
-        ImGui::Image((void*)(intptr_t)m_SSAO->gAlbedo, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO->gAlbedo, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO->m_GBufferAlbedo, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO->m_GBufferAlbedo, 0, 128);
 
-        ImGui::Text("ssaoColorBuffer");
-        ImGui::Image((void*)(intptr_t)m_SSAO->ssaoColorBuffer, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO->ssaoColorBuffer, 0, 128);
+        ImGui::Text("m_SSAO_ColorBuffer");
+        ImGui::Image((void*)(intptr_t)m_SSAO->m_SSAO_ColorBuffer, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO->m_SSAO_ColorBuffer, 0, 128);
 
-        ImGui::Text("ssaoColorBufferBlur");
-        ImGui::Image((void*)(intptr_t)m_SSAO->ssaoColorBufferBlur, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO->ssaoColorBufferBlur, 0, 128);
+        ImGui::Text("m_SSAO_ColorBufferBlur");
+        ImGui::Image((void*)(intptr_t)m_SSAO->m_SSAO_ColorBufferBlur, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO->m_SSAO_ColorBufferBlur, 0, 128);
 
-        ImGui::Text("gBuffer");
-        ImGui::Image((void*)(intptr_t)m_SSAO->gBuffer, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO->gBuffer, 0, 128);
-
-        ImGui::Text("noiseTexture");
-        ImGui::Image((void*)(intptr_t)m_SSAO->noiseTexture, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO->noiseTexture, 0, 128);
+        ImGui::Text("m_NoiseTexture");
+        ImGui::Image((void*)(intptr_t)m_SSAO->m_NoiseTexture, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO->m_NoiseTexture, 0, 128);
     }
     ImGui::End();
 
     ImGui::Begin("SSAO Settings");
     {
-        ImGui::SliderFloat3("Light Position", glm::value_ptr(m_SSAO->lightPos), -10.0f, 10.0f);
-        ImGui::SliderInt("kernelSize", (int*)&m_SSAO->kernelSize, 0, 128);
-        ImGui::SliderFloat("radius", &m_SSAO->radius, 0.0f, 10.0f);
-        ImGui::SliderFloat("bias", &m_SSAO->bias, -1.0f, 1.0f);
+        ImGui::SliderFloat3("Light Position", glm::value_ptr(m_SSAO->m_LightPos), -10.0f, 10.0f);
+        ImGui::SliderInt("m_KernelSize", (int*)&m_SSAO->m_KernelSize, 0, 128);
+        ImGui::SliderFloat("radius", &m_SSAO->m_KernelRadius, 0.0f, 10.0f);
+        ImGui::SliderFloat("bias", &m_SSAO->m_KernelBias, -1.0f, 1.0f);
     }
     ImGui::End();
 }
