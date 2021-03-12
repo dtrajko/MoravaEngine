@@ -5,6 +5,7 @@
 #include "Mesh/Cube.h"
 #include "Mesh/QuadSSAO.h"
 #include "Shader/Shader.h"
+#include "SSAO/GBufferSSAO.h"
 
 
 class SSAO
@@ -14,13 +15,14 @@ public:
 	~SSAO();
 
 	void Init();
-	void Update(float timestep);
+	void Update();
 	void Render(glm::mat4 projectionMatrix, glm::mat4 viewMatrix,
 		std::map<std::string, Mesh*> meshes, std::map<std::string, ModelSSAO*>* models);
 
 private:
 	// generate methods
-	void GenerateGBuffer();
+	void GenerateConditional();
+
 	void GenerateSSAO_FBO();
 	void GenerateSSAO_BlurFBO();
 	void GenerateSampleKernel();
@@ -35,22 +37,19 @@ private:
 	void LightPass(glm::mat4 viewMatrix, std::map<std::string, Mesh*> meshes);
 
 	void SetupShaders();
-	void GenerateConditional();
 	void Generate();
 	void Release();
 	void ResetHandlers();
 
 public:
+	// GBufferSSAO
+	GBufferSSAO m_GBufferSSAO;
+
 	// Shaders
 	Shader* m_ShaderGeometryPass;
 	Shader* m_ShaderLightingPass;
 	Shader* m_ShaderSSAO;
 	Shader* m_ShaderSSAOBlur;
-
-	unsigned int m_GBufferPosition;
-	unsigned int m_GBufferNormal;
-	unsigned int m_GBufferAlbedo;
-	unsigned int m_RBO_Depth;
 
 	// SSAO processing stage
 	unsigned int m_SSAO_FBO;
@@ -58,7 +57,6 @@ public:
 	unsigned int m_SSAO_ColorBuffer;
 	unsigned int m_SSAO_ColorBufferBlur;
 
-	unsigned int m_GBuffer;
 	unsigned int m_NoiseTexture;
 
 	glm::vec3 m_LightPos;

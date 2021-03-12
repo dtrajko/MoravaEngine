@@ -286,7 +286,6 @@
     <ClCompile Include="src\Light\LightManager.cpp" />
     <ClCompile Include="src\Light\PointLight.cpp" />
     <ClCompile Include="src\Light\SpotLight.cpp" />
-    <ClCompile Include="src\Light\SSAO.cpp" />
     <ClCompile Include="src\Material\Material.cpp" />
     <ClCompile Include="src\Material\MaterialInstance.cpp" />
     <ClCompile Include="src\Material\MaterialWorkflowPBR.cpp" />
@@ -378,6 +377,8 @@
     <ClCompile Include="src\Shader\ShaderWater.cpp" />
     <ClCompile Include="src\Skybox\Skybox.cpp" />
     <ClCompile Include="src\SongHo\CylinderSongHo.cpp" />
+    <ClCompile Include="src\SSAO\GBufferSSAO.cpp" />
+    <ClCompile Include="src\SSAO\SSAO.cpp" />
     <ClCompile Include="src\Terrain\EndlessTerrain.cpp" />
     <ClCompile Include="src\Terrain\MapGenerator.cpp" />
     <ClCompile Include="src\Terrain\MeshGenerator.cpp" />
@@ -529,7 +530,6 @@
     <ClInclude Include="src\Light\LightManager.h" />
     <ClInclude Include="src\Light\PointLight.h" />
     <ClInclude Include="src\Light\SpotLight.h" />
-    <ClInclude Include="src\Light\SSAO.h" />
     <ClInclude Include="src\Material\Material.h" />
     <ClInclude Include="src\Material\MaterialInstance.h" />
     <ClInclude Include="src\Material\MaterialWorkflowPBR.h" />
@@ -624,6 +624,8 @@
     <ClInclude Include="src\Shader\ShaderWater.h" />
     <ClInclude Include="src\Skybox\Skybox.h" />
     <ClInclude Include="src\SongHo\CylinderSongHo.h" />
+    <ClInclude Include="src\SSAO\GBufferSSAO.h" />
+    <ClInclude Include="src\SSAO\SSAO.h" />
     <ClInclude Include="src\Terrain\EndlessTerrain.h" />
     <ClInclude Include="src\Terrain\MapGenerator.h" />
     <ClInclude Include="src\Terrain\MeshGenerator.h" />

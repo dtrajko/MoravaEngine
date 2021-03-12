@@ -5,7 +5,7 @@
 #include "Framebuffer/Framebuffer.h"
 #include "LearnOpenGL/ModelJoey.h"
 #include "LearnOpenGL/ModelSSAO.h"
-#include "Light/SSAO.h"
+#include "SSAO/SSAO.h"
 
 
 class SceneSSAO : public Scene
@@ -29,7 +29,7 @@ private:
 	void SetupSSAO();
 
 private:
-	SSAO* m_SSAO;
+	SSAO m_SSAO;
 	std::map<std::string, ModelSSAO*> modelsSSAO;
 
 };

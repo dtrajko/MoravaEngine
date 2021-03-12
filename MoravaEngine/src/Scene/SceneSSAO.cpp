@@ -143,14 +143,13 @@ void SceneSSAO::SetupFramebuffers()
 
 void SceneSSAO::SetupSSAO()
 {
-    m_SSAO = new SSAO();
-    m_SSAO->Init();
+    m_SSAO.Init();
 }
 
 void SceneSSAO::Update(float timestep, Window* mainWindow)
 {
     m_Camera->OnUpdate(timestep);
-    m_SSAO->Update(timestep);
+    m_SSAO.Update();
 }
 
 void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
@@ -300,37 +299,37 @@ void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
         ImVec2 imageSize(128.0f, 128.0f);
 
         ImGui::Text("gPosition");
-        ImGui::Image((void*)(intptr_t)m_SSAO->m_GBufferPosition, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO->m_GBufferPosition, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferPosition, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO.m_GBufferSSAO.m_GBufferPosition, 0, 128);
 
         ImGui::Text("gNormal");
-        ImGui::Image((void*)(intptr_t)m_SSAO->m_GBufferNormal, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO->m_GBufferNormal, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferNormal, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO.m_GBufferSSAO.m_GBufferNormal, 0, 128);
 
         ImGui::Text("gAlbedo");
-        ImGui::Image((void*)(intptr_t)m_SSAO->m_GBufferAlbedo, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO->m_GBufferAlbedo, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferAlbedo, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO.m_GBufferSSAO.m_GBufferAlbedo, 0, 128);
 
         ImGui::Text("m_SSAO_ColorBuffer");
-        ImGui::Image((void*)(intptr_t)m_SSAO->m_SSAO_ColorBuffer, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO->m_SSAO_ColorBuffer, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBuffer, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO.m_SSAO_ColorBuffer, 0, 128);
 
         ImGui::Text("m_SSAO_ColorBufferBlur");
-        ImGui::Image((void*)(intptr_t)m_SSAO->m_SSAO_ColorBufferBlur, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO->m_SSAO_ColorBufferBlur, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBufferBlur, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO.m_SSAO_ColorBufferBlur, 0, 128);
 
         ImGui::Text("m_NoiseTexture");
-        ImGui::Image((void*)(intptr_t)m_SSAO->m_NoiseTexture, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO->m_NoiseTexture, 0, 128);
+        ImGui::Image((void*)(intptr_t)m_SSAO.m_NoiseTexture, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO.m_NoiseTexture, 0, 128);
     }
     ImGui::End();
 
     ImGui::Begin("SSAO Settings");
     {
-        ImGui::SliderFloat3("Light Position", glm::value_ptr(m_SSAO->m_LightPos), -10.0f, 10.0f);
-        ImGui::SliderInt("m_KernelSize", (int*)&m_SSAO->m_KernelSize, 0, 128);
-        ImGui::SliderFloat("radius", &m_SSAO->m_KernelRadius, 0.0f, 10.0f);
-        ImGui::SliderFloat("bias", &m_SSAO->m_KernelBias, -1.0f, 1.0f);
+        ImGui::SliderFloat3("Light Position", glm::value_ptr(m_SSAO.m_LightPos), -10.0f, 10.0f);
+        ImGui::SliderInt("m_KernelSize", (int*)&m_SSAO.m_KernelSize, 0, 128);
+        ImGui::SliderFloat("radius", &m_SSAO.m_KernelRadius, 0.0f, 10.0f);
+        ImGui::SliderFloat("bias", &m_SSAO.m_KernelBias, -1.0f, 1.0f);
     }
     ImGui::End();
 }
@@ -338,7 +337,7 @@ void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
 void SceneSSAO::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
-    m_SSAO->Render(projectionMatrix, m_Camera->GetViewMatrix(), meshes, &modelsSSAO);
+    m_SSAO.Render(projectionMatrix, m_Camera->GetViewMatrix(), meshes, &modelsSSAO);
 }
 
 SceneSSAO::~SceneSSAO()
@@ -347,6 +346,4 @@ SceneSSAO::~SceneSSAO()
     delete meshes["floor"];
     delete meshes["cube"];
     delete modelsSSAO["backpack"];
-
-    delete m_SSAO;
 }

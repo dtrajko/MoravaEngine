@@ -17,12 +17,21 @@ SSAO::SSAO()
 	m_KernelSize = 64;
 	m_KernelRadius = 0.5f;
 	m_KernelBias = 0.025f;
+
+	m_WidthPrev = 0;
+	m_HeightPrev = 0;
+}
+
+SSAO::~SSAO()
+{
+	Release();
 }
 
 void SSAO::Init()
 {
 	SetupShaders();
 
+	m_GBufferSSAO.Init();
 	GenerateConditional();
 }
 
@@ -45,22 +54,10 @@ void SSAO::Release()
 {
 	Log::GetLogger()->info("SSAO::Release");
 
-	if (m_GBuffer)
-		glDeleteFramebuffers(1, &m_GBuffer);
 	if (m_SSAO_FBO)
 		glDeleteFramebuffers(1, &m_SSAO_FBO);
 	if (m_SSAO_BlurFBO)
 		glDeleteFramebuffers(1, &m_SSAO_BlurFBO);
-
-	if (m_GBufferPosition)
-		glDeleteTextures(1, &m_GBufferPosition);
-	if (m_GBufferNormal)
-		glDeleteTextures(1, &m_GBufferNormal);
-	if (m_GBufferAlbedo)
-		glDeleteTextures(1, &m_GBufferAlbedo);
-
-	if (m_RBO_Depth)
-		glDeleteRenderbuffers(1, &m_RBO_Depth);
 
 	if (m_SSAO_ColorBuffer)
 		glDeleteTextures(1, &m_SSAO_ColorBuffer);
@@ -75,84 +72,40 @@ void SSAO::Release()
 void SSAO::ResetHandlers()
 {
 	// Framebuffers
-	m_GBuffer = 0;
 	m_SSAO_FBO = 0;
 	m_SSAO_BlurFBO = 0;
 
 	// textures / framebuffer attachments
-	m_GBufferPosition = 0;
-	m_GBufferNormal = 0;
-	m_GBufferAlbedo = 0;
-	m_RBO_Depth = 0;
 	m_SSAO_ColorBuffer = 0;
 	m_SSAO_ColorBufferBlur = 0;
 	m_NoiseTexture = 0;
+}
 
-	m_WidthPrev = 0;
-	m_HeightPrev = 0;
+void SSAO::GenerateConditional()
+{
+	m_Width = Application::Get()->GetWindow()->GetWidth();
+	m_Height = Application::Get()->GetWindow()->GetHeight();
+
+	if (m_Width != m_WidthPrev || m_Height != m_HeightPrev)
+	{
+		Generate();
+
+		m_WidthPrev = m_Width;
+		m_HeightPrev = m_Height;
+	}
 }
 
 void SSAO::Generate()
 {
-	Log::GetLogger()->warn("SSAO::Generate(width: {0}, height: {1})", m_Width, m_Height);
+	Log::GetLogger()->warn("SSAO::Generate - width: {0}, height: {1}", m_Width, m_Height);
 
 	Release();
 
-	GenerateGBuffer();
 	GenerateSSAO_FBO();
 	GenerateSSAO_BlurFBO();
 	GenerateSampleKernel();
 	GenerateNoiseTexture();
 	GenerateLightingInfo();
-}
-
-void SSAO::GenerateGBuffer()
-{
-	// configure g-buffer framebuffer
-	// ------------------------------
-	glGenFramebuffers(1, &m_GBuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_GBuffer);
-
-	// position color buffer
-	glGenTextures(1, &m_GBufferPosition);
-	glBindTexture(GL_TEXTURE_2D, m_GBufferPosition);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_Width, m_Height, 0, GL_RGBA, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_GBufferPosition, 0);
-
-	// normal color buffer
-	glGenTextures(1, &m_GBufferNormal);
-	glBindTexture(GL_TEXTURE_2D, m_GBufferNormal);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_Width, m_Height, 0, GL_RGBA, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_GBufferNormal, 0);
-
-	// color + specular color buffer
-	glGenTextures(1, &m_GBufferAlbedo);
-	glBindTexture(GL_TEXTURE_2D, m_GBufferAlbedo);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_GBufferAlbedo, 0);
-
-	// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-	glDrawBuffers(3, attachments);
-
-	// create and attach depth buffer (renderbuffer)
-	glGenRenderbuffers(1, &m_RBO_Depth);
-	glBindRenderbuffer(GL_RENDERBUFFER, m_RBO_Depth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_Width, m_Height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_RBO_Depth);
-
-	// finally check if framebuffer is complete
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Framebuffer not complete!" << std::endl;
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void SSAO::GenerateSSAO_FBO()
@@ -257,23 +210,10 @@ void SSAO::GenerateLightingInfo()
 	m_ShaderSSAOBlur->setInt("ssaoInput", 0);
 }
 
-void SSAO::Update(float timestep)
+void SSAO::Update()
 {
+	m_GBufferSSAO.Update();
 	GenerateConditional();
-}
-
-void SSAO::GenerateConditional()
-{
-	m_Width = Application::Get()->GetWindow()->GetWidth();
-	m_Height = Application::Get()->GetWindow()->GetHeight();
-
-	if (m_Width != m_WidthPrev || m_Height != m_HeightPrev)
-	{
-		Generate();
-
-		m_WidthPrev = m_Width;
-		m_HeightPrev = m_Height;
-	}
 }
 
 void SSAO::Render(glm::mat4 projectionMatrix, glm::mat4 viewMatrix,
@@ -294,7 +234,7 @@ void SSAO::GeometryPass(glm::mat4 projectionMatrix, glm::mat4 viewMatrix,
 {
 	// 1. geometry pass: render scene's geometry/color data into gbuffer
 	// -----------------------------------------------------------------
-	glBindFramebuffer(GL_FRAMEBUFFER, m_GBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_GBufferSSAO.m_GBuffer);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glm::mat4 projection = projectionMatrix;
 	glm::mat4 view = viewMatrix;
@@ -350,9 +290,9 @@ void SSAO::GenerateSSAOTexture(glm::mat4 projectionMatrix, std::map<std::string,
 	}
 	m_ShaderSSAO->setMat4("projection", projectionMatrix);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_GBufferPosition);
+	glBindTexture(GL_TEXTURE_2D, m_GBufferSSAO.m_GBufferPosition);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, m_GBufferNormal);
+	glBindTexture(GL_TEXTURE_2D, m_GBufferSSAO.m_GBufferNormal);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_NoiseTexture);
 	// RenderQuad();
@@ -391,18 +331,13 @@ void SSAO::LightPass(glm::mat4 viewMatrix, std::map<std::string, Mesh*> meshes)
 	m_ShaderLightingPass->setFloat("light.Linear", linear);
 	m_ShaderLightingPass->setFloat("light.Quadratic", quadratic);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_GBufferPosition);
+	glBindTexture(GL_TEXTURE_2D, m_GBufferSSAO.m_GBufferPosition);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, m_GBufferNormal);
+	glBindTexture(GL_TEXTURE_2D, m_GBufferSSAO.m_GBufferNormal);
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, m_GBufferAlbedo);
+	glBindTexture(GL_TEXTURE_2D, m_GBufferSSAO.m_GBufferAlbedo);
 	glActiveTexture(GL_TEXTURE3); // add extra SSAO texture to lighting pass
 	glBindTexture(GL_TEXTURE_2D, m_SSAO_ColorBufferBlur);
 	// RenderQuad();
 	meshes["quad_ssao"]->Render();
-}
-
-SSAO::~SSAO()
-{
-	Release();
 }
