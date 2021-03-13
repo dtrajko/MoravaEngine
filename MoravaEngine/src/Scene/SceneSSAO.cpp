@@ -98,6 +98,8 @@ SceneSSAO::SceneSSAO()
     SetupMeshes();
     SetupModels();
     SetupSSAO();
+
+    m_RenderTarget = (int)RenderTarget::SSAO;
 }
 
 void SceneSSAO::SetupTextures()
@@ -310,6 +312,10 @@ void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferAlbedo, imageSize);
         ImGui::SliderInt("", (int*)&m_SSAO.m_GBufferSSAO.m_GBufferAlbedo, 0, 128);
 
+        ImGui::Text("gTexCoord");
+        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferTexCoord, imageSize);
+        ImGui::SliderInt("", (int*)&m_SSAO.m_GBufferSSAO.m_GBufferTexCoord, 0, 128);
+
         ImGui::Text("m_SSAO_ColorBuffer");
         ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBuffer, imageSize);
         ImGui::SliderInt("", (int*)&m_SSAO.m_SSAO_ColorBuffer, 0, 128);
@@ -332,12 +338,47 @@ void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::SliderFloat("bias", &m_SSAO.m_KernelBias, -1.0f, 1.0f);
     }
     ImGui::End();
+
+    ImGui::Begin("Render Targets");
+    {
+        ImGui::RadioButton("SSAO",                &m_RenderTarget, (int)RenderTarget::SSAO);
+        ImGui::RadioButton("G-Buffer - Position", &m_RenderTarget, (int)RenderTarget::GBuffer_Position);
+        ImGui::RadioButton("G-Buffer - Normal",   &m_RenderTarget, (int)RenderTarget::GBuffer_Normal);
+        ImGui::RadioButton("G-Buffer - Albedo",   &m_RenderTarget, (int)RenderTarget::GBuffer_Albedo);
+        ImGui::RadioButton("G-Buffer - TexCoord", &m_RenderTarget, (int)RenderTarget::GBuffer_TexCoord);
+    }
+    ImGui::End();
 }
 
 void SceneSSAO::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     m_SSAO.Render(projectionMatrix, m_Camera->GetViewMatrix(), meshes, &modelsSSAO);
+
+    if (m_RenderTarget != (int)RenderTarget::SSAO)
+    {
+        m_SSAO.m_GBufferSSAO.BindForReading();
+
+        if (m_RenderTarget == (int)RenderTarget::GBuffer_Position)
+        {
+            m_SSAO.m_GBufferSSAO.SetReadBuffer((int)RenderTarget::GBuffer_Position);
+        }
+        else if (m_RenderTarget == (int)RenderTarget::GBuffer_Normal)
+        {
+            m_SSAO.m_GBufferSSAO.SetReadBuffer((int)RenderTarget::GBuffer_Normal);
+        }
+        else if (m_RenderTarget == (int)RenderTarget::GBuffer_Albedo)
+        {
+            m_SSAO.m_GBufferSSAO.SetReadBuffer((int)RenderTarget::GBuffer_Albedo);
+        }
+        else if (m_RenderTarget == (int)RenderTarget::GBuffer_TexCoord)
+        {
+            m_SSAO.m_GBufferSSAO.SetReadBuffer((int)RenderTarget::GBuffer_TexCoord);
+        }
+
+        glBlitFramebuffer(0, 0, m_SSAO.m_GBufferSSAO.GetWidth(), m_SSAO.m_GBufferSSAO.GetHeight(),
+            0, 0, m_SSAO.m_GBufferSSAO.GetWidth(), m_SSAO.m_GBufferSSAO.GetHeight(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    }
 }
 
 SceneSSAO::~SceneSSAO()

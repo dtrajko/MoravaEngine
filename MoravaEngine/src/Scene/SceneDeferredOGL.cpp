@@ -17,6 +17,8 @@ SceneDeferredOGL::SceneDeferredOGL()
 
     SetCamera();
     SetLightManager();
+
+    m_RenderTarget = (int)RenderTarget::Forward;
 }
 
 SceneDeferredOGL::~SceneDeferredOGL()

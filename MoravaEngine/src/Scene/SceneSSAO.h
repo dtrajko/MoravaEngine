@@ -32,4 +32,16 @@ private:
 	SSAO m_SSAO;
 	std::map<std::string, ModelSSAO*> modelsSSAO;
 
+	enum class RenderTarget
+	{
+		GBuffer_Position,
+		GBuffer_Normal,
+		GBuffer_Albedo,
+		GBuffer_TexCoord,
+		SSAO,
+	};
+
+private:
+	int m_RenderTarget;
+
 };
