@@ -8,7 +8,7 @@
 
 SceneSSAO::SceneSSAO()
 {
-    sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 8.0f);
+    sceneSettings.cameraPosition = glm::vec3(0.0f, 5.0f, 10.0f);
     sceneSettings.cameraStartYaw = -90.0f;
     sceneSettings.cameraStartPitch = 0.0f;
     sceneSettings.cameraMoveSpeed = 1.0f;
@@ -125,18 +125,12 @@ void SceneSSAO::SetupMeshes()
     // SSAO meshes
     Cube* cube = new Cube();
     meshes.insert(std::make_pair("cube", cube));
-
-    QuadSSAO* quadSSAO = new QuadSSAO();
-    meshes.insert(std::make_pair("quad_ssao", quadSSAO));
 }
 
 void SceneSSAO::SetupModels()
 {
-    ModelSSAO* backpack = new ModelSSAO("Models/backpack/backpack.obj", "IgnoreTextures");
-    modelsSSAO.insert(std::make_pair("backpack", backpack));
-
-    ModelSSAO* nanosuit = new ModelSSAO("Models/nanosuit.obj", "IgnoreTextures");
-    modelsSSAO.insert(std::make_pair("nanosuit", nanosuit));
+    ModelSSAO* gladiator = new ModelSSAO("Models/Gladiator/Gladiator.fbx", "IgnoreTextures");
+    modelsSSAO.insert(std::make_pair("gladiator", gladiator));
 }
 
 void SceneSSAO::SetupFramebuffers()
@@ -298,38 +292,31 @@ void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Framebuffers");
     {
-        ImVec2 imageSize(128.0f, 128.0f);
+        ImVec2 imageSize(96.0f, 96.0f);
 
         ImGui::Text("gPosition");
         ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferPosition, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO.m_GBufferSSAO.m_GBufferPosition, 0, 128);
 
         ImGui::Text("gNormal");
         ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferNormal, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO.m_GBufferSSAO.m_GBufferNormal, 0, 128);
 
         ImGui::Text("gAlbedo");
         ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferAlbedo, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO.m_GBufferSSAO.m_GBufferAlbedo, 0, 128);
 
         ImGui::Text("gTexCoord");
         ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferTexCoord, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO.m_GBufferSSAO.m_GBufferTexCoord, 0, 128);
 
         ImGui::Text("m_SSAO_ColorBuffer");
         ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBuffer, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO.m_SSAO_ColorBuffer, 0, 128);
 
         if (m_SSAO.m_BlurEnabled)
         {
             ImGui::Text("m_SSAO_ColorBufferBlur");
             ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBufferBlur, imageSize);
-            ImGui::SliderInt("", (int*)&m_SSAO.m_SSAO_ColorBufferBlur, 0, 128);
         }
 
         ImGui::Text("m_NoiseTexture");
         ImGui::Image((void*)(intptr_t)m_SSAO.m_NoiseTexture, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO.m_NoiseTexture, 0, 128);
     }
     ImGui::End();
 
@@ -339,13 +326,16 @@ void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::SliderInt("KernelSize", (int*)&m_SSAO.m_KernelSize, 0, 128);
         ImGui::SliderFloat("Radius", &m_SSAO.m_KernelRadius, 0.0f, 10.0f);
         ImGui::SliderFloat("Bias", &m_SSAO.m_KernelBias, -1.0f, 1.0f);
-        ImGui::Checkbox("Blur Enabled", &m_SSAO.m_BlurEnabled);
-    }
-    ImGui::End();
+        if (ImGui::Checkbox("Blur Enabled", &m_SSAO.m_BlurEnabled)) {
+            if (m_RenderTarget == (int)RenderTarget::SSAO_ColorBuffer || m_RenderTarget == (int)RenderTarget::SSAO_ColorBufferBlur) {
+                m_RenderTarget = m_SSAO.m_BlurEnabled ? (int)RenderTarget::SSAO_ColorBufferBlur : (int)RenderTarget::SSAO_ColorBuffer;
+            }
+        }
 
-    ImGui::Begin("Render Targets");
-    {
-        ImGui::RadioButton("SSAO Composite",      &m_RenderTarget, (int)RenderTarget::SSAO_Composite);
+        ImGui::Separator();
+
+        ImGui::Text("Render Targets");
+        ImGui::RadioButton("SSAO Composite",    &m_RenderTarget, (int)RenderTarget::SSAO_Composite);
         ImGui::RadioButton("G-Buffer Position", &m_RenderTarget, (int)RenderTarget::GBuffer_Position);
         ImGui::RadioButton("G-Buffer Normal",   &m_RenderTarget, (int)RenderTarget::GBuffer_Normal);
         ImGui::RadioButton("G-Buffer Albedo",   &m_RenderTarget, (int)RenderTarget::GBuffer_Albedo);
@@ -353,7 +343,7 @@ void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::RadioButton("SSAO Color",        &m_RenderTarget, (int)RenderTarget::SSAO_ColorBuffer);
         if (m_SSAO.m_BlurEnabled)
         {
-            ImGui::RadioButton("SSAO Color Blur",   &m_RenderTarget, (int)RenderTarget::SSAO_ColorBufferBlur);
+            ImGui::RadioButton("SSAO Color Blur", &m_RenderTarget, (int)RenderTarget::SSAO_ColorBufferBlur);
         }
     }
     ImGui::End();
@@ -407,5 +397,5 @@ SceneSSAO::~SceneSSAO()
     delete meshes["block"];
     delete meshes["floor"];
     delete meshes["cube"];
-    delete modelsSSAO["backpack"];
+    delete modelsSSAO["gladiator"];
 }

@@ -50,10 +50,10 @@ public:
 	GBufferSSAO m_GBufferSSAO;
 
 	// Shaders
-	Shader* m_ShaderGeometryPass;
-	Shader* m_ShaderLightingPass;
-	Shader* m_ShaderSSAO;
-	Shader* m_ShaderSSAOBlur;
+	Hazel::Ref<Shader> m_ShaderGeometryPass;
+	Hazel::Ref<Shader> m_ShaderLightingPass;
+	Hazel::Ref<Shader> m_ShaderSSAO;
+	Hazel::Ref<Shader> m_ShaderSSAOBlur;
 
 	// SSAO processing stage
 	unsigned int m_SSAO_FBO;
@@ -74,6 +74,8 @@ public:
 
 private:
 	std::vector<glm::vec3> m_SSAO_Kernel;
+
+	Hazel::Ref<QuadSSAO> m_QuadSSAO;
 
 	uint32_t m_Width;
 	uint32_t m_Height;

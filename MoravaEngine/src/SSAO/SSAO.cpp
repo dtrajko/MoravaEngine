@@ -35,20 +35,22 @@ void SSAO::Init()
 
 	m_GBufferSSAO.Init();
 	GenerateConditional();
+
+	m_QuadSSAO = Hazel::Ref<QuadSSAO>::Create();
 }
 
 void SSAO::SetupShaders()
 {
-	m_ShaderGeometryPass = new Shader("Shaders/LearnOpenGL/ssao_geometry.vs", "Shaders/LearnOpenGL/ssao_geometry.fs");
+	m_ShaderGeometryPass = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/ssao_geometry.vs", "Shaders/LearnOpenGL/ssao_geometry.fs");
 	Log::GetLogger()->info("SSAO: shaderGeometryPass compiled [programID={0}]", m_ShaderGeometryPass->GetProgramID());
 
-	m_ShaderLightingPass = new Shader("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao_lighting.fs");
+	m_ShaderLightingPass = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao_lighting.fs");
 	Log::GetLogger()->info("SSAO: shaderLightingPass compiled [programID={0}]", m_ShaderLightingPass->GetProgramID());
 
-	m_ShaderSSAO = new Shader("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao.fs");
+	m_ShaderSSAO = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao.fs");
 	Log::GetLogger()->info("SSAO: shaderSSAO compiled [programID={0}]", m_ShaderSSAO->GetProgramID());
 
-	m_ShaderSSAOBlur = new Shader("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao_blur.fs");
+	m_ShaderSSAOBlur = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao_blur.fs");
 	Log::GetLogger()->info("SSAO: shaderSSAOBlur compiled [programID={0}]", m_ShaderSSAOBlur->GetProgramID());
 }
 
@@ -270,21 +272,13 @@ void SSAO::GeometryPass(glm::mat4 projectionMatrix, glm::mat4 viewMatrix,
 	meshes["cube"]->Render();
 	m_ShaderGeometryPass->setInt("invertedNormals", 0);
 
-	// backpack model on the floor
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 6.6f, -2.15));
-	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0, 1.0, 0.0));
-	model = glm::scale(model, glm::vec3(1.0f));
-	m_ShaderGeometryPass->setMat4("model", model);
-	(*models)["backpack"]->Draw(m_ShaderGeometryPass);
-
-	// nanosuit model
+	// gladiator model
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 	// model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
-	model = glm::scale(model, glm::vec3(0.62f));
+	model = glm::scale(model, glm::vec3(0.05f));
 	m_ShaderGeometryPass->setMat4("model", model);
-	(*models)["nanosuit"]->Draw(m_ShaderGeometryPass);
+	(*models)["gladiator"]->Draw(m_ShaderGeometryPass.Raw());
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -312,8 +306,7 @@ void SSAO::GenerateSSAOTexture(glm::mat4 projectionMatrix, std::map<std::string,
 	glBindTexture(GL_TEXTURE_2D, m_GBufferSSAO.m_GBufferNormal);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_NoiseTexture);
-	// RenderQuad();
-	meshes["quad_ssao"]->Render();
+	m_QuadSSAO->Render();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -328,8 +321,7 @@ void SSAO::BlurSSAOTexture(std::map<std::string, Mesh*> meshes)
 	m_ShaderSSAOBlur->Bind();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_SSAO_ColorBuffer);
-	// RenderQuad();
-	meshes["quad_ssao"]->Render();
+	m_QuadSSAO->Render();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -357,6 +349,5 @@ void SSAO::LightPass(glm::mat4 viewMatrix, std::map<std::string, Mesh*> meshes)
 	glBindTexture(GL_TEXTURE_2D, m_GBufferSSAO.m_GBufferAlbedo);
 	glActiveTexture(GL_TEXTURE3); // add extra SSAO texture to lighting pass
 	glBindTexture(GL_TEXTURE_2D, m_BlurEnabled ? m_SSAO_ColorBufferBlur : m_SSAO_ColorBuffer);
-	// RenderQuad();
-	meshes["quad_ssao"]->Render();
+	m_QuadSSAO->Render();
 }
