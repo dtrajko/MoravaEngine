@@ -19,6 +19,10 @@ public:
 	void Render(glm::mat4 projectionMatrix, glm::mat4 viewMatrix,
 		std::map<std::string, Mesh*> meshes, std::map<std::string, ModelSSAO*>* models);
 
+	void BindFramebufferSSAO();
+	void BindFramebufferSSAOBlur();
+	void BindColorAttachment();
+
 private:
 	// generate methods
 	void GenerateConditional();
@@ -53,7 +57,7 @@ public:
 
 	// SSAO processing stage
 	unsigned int m_SSAO_FBO;
-	unsigned int m_SSAO_BlurFBO;
+	unsigned int m_SSAO_FBO_Blur;
 	unsigned int m_SSAO_ColorBuffer;
 	unsigned int m_SSAO_ColorBufferBlur;
 
@@ -65,6 +69,8 @@ public:
 	unsigned int m_KernelSize;
 	float m_KernelRadius;
 	float m_KernelBias;
+
+	bool m_BlurEnabled;
 
 private:
 	std::vector<glm::vec3> m_SSAO_Kernel;

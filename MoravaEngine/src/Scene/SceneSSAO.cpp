@@ -99,7 +99,7 @@ SceneSSAO::SceneSSAO()
     SetupModels();
     SetupSSAO();
 
-    m_RenderTarget = (int)RenderTarget::SSAO;
+    m_RenderTarget = (int)RenderTarget::SSAO_Composite;
 }
 
 void SceneSSAO::SetupTextures()
@@ -132,10 +132,10 @@ void SceneSSAO::SetupMeshes()
 
 void SceneSSAO::SetupModels()
 {
-    ModelSSAO* backpack = new ModelSSAO("Models/backpack/backpack.obj", "Models/backpack");
+    ModelSSAO* backpack = new ModelSSAO("Models/backpack/backpack.obj", "IgnoreTextures");
     modelsSSAO.insert(std::make_pair("backpack", backpack));
 
-    ModelSSAO* nanosuit = new ModelSSAO("Models/nanosuit.obj", "Textures/nanosuit");
+    ModelSSAO* nanosuit = new ModelSSAO("Models/nanosuit.obj", "IgnoreTextures");
     modelsSSAO.insert(std::make_pair("nanosuit", nanosuit));
 }
 
@@ -320,9 +320,12 @@ void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBuffer, imageSize);
         ImGui::SliderInt("", (int*)&m_SSAO.m_SSAO_ColorBuffer, 0, 128);
 
-        ImGui::Text("m_SSAO_ColorBufferBlur");
-        ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBufferBlur, imageSize);
-        ImGui::SliderInt("", (int*)&m_SSAO.m_SSAO_ColorBufferBlur, 0, 128);
+        if (m_SSAO.m_BlurEnabled)
+        {
+            ImGui::Text("m_SSAO_ColorBufferBlur");
+            ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBufferBlur, imageSize);
+            ImGui::SliderInt("", (int*)&m_SSAO.m_SSAO_ColorBufferBlur, 0, 128);
+        }
 
         ImGui::Text("m_NoiseTexture");
         ImGui::Image((void*)(intptr_t)m_SSAO.m_NoiseTexture, imageSize);
@@ -333,19 +336,25 @@ void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
     ImGui::Begin("SSAO Settings");
     {
         ImGui::SliderFloat3("Light Position", glm::value_ptr(m_SSAO.m_LightPos), -10.0f, 10.0f);
-        ImGui::SliderInt("m_KernelSize", (int*)&m_SSAO.m_KernelSize, 0, 128);
-        ImGui::SliderFloat("radius", &m_SSAO.m_KernelRadius, 0.0f, 10.0f);
-        ImGui::SliderFloat("bias", &m_SSAO.m_KernelBias, -1.0f, 1.0f);
+        ImGui::SliderInt("KernelSize", (int*)&m_SSAO.m_KernelSize, 0, 128);
+        ImGui::SliderFloat("Radius", &m_SSAO.m_KernelRadius, 0.0f, 10.0f);
+        ImGui::SliderFloat("Bias", &m_SSAO.m_KernelBias, -1.0f, 1.0f);
+        ImGui::Checkbox("Blur Enabled", &m_SSAO.m_BlurEnabled);
     }
     ImGui::End();
 
     ImGui::Begin("Render Targets");
     {
-        ImGui::RadioButton("SSAO",                &m_RenderTarget, (int)RenderTarget::SSAO);
-        ImGui::RadioButton("G-Buffer - Position", &m_RenderTarget, (int)RenderTarget::GBuffer_Position);
-        ImGui::RadioButton("G-Buffer - Normal",   &m_RenderTarget, (int)RenderTarget::GBuffer_Normal);
-        ImGui::RadioButton("G-Buffer - Albedo",   &m_RenderTarget, (int)RenderTarget::GBuffer_Albedo);
-        ImGui::RadioButton("G-Buffer - TexCoord", &m_RenderTarget, (int)RenderTarget::GBuffer_TexCoord);
+        ImGui::RadioButton("SSAO Composite",      &m_RenderTarget, (int)RenderTarget::SSAO_Composite);
+        ImGui::RadioButton("G-Buffer Position", &m_RenderTarget, (int)RenderTarget::GBuffer_Position);
+        ImGui::RadioButton("G-Buffer Normal",   &m_RenderTarget, (int)RenderTarget::GBuffer_Normal);
+        ImGui::RadioButton("G-Buffer Albedo",   &m_RenderTarget, (int)RenderTarget::GBuffer_Albedo);
+        ImGui::RadioButton("G-Buffer TexCoord", &m_RenderTarget, (int)RenderTarget::GBuffer_TexCoord);
+        ImGui::RadioButton("SSAO Color",        &m_RenderTarget, (int)RenderTarget::SSAO_ColorBuffer);
+        if (m_SSAO.m_BlurEnabled)
+        {
+            ImGui::RadioButton("SSAO Color Blur",   &m_RenderTarget, (int)RenderTarget::SSAO_ColorBufferBlur);
+        }
     }
     ImGui::End();
 }
@@ -355,25 +364,37 @@ void SceneSSAO::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 {
     m_SSAO.Render(projectionMatrix, m_Camera->GetViewMatrix(), meshes, &modelsSSAO);
 
-    if (m_RenderTarget != (int)RenderTarget::SSAO)
+    if (m_RenderTarget != (int)RenderTarget::SSAO_Composite)
     {
-        m_SSAO.m_GBufferSSAO.BindForReading();
-
         if (m_RenderTarget == (int)RenderTarget::GBuffer_Position)
         {
+            m_SSAO.m_GBufferSSAO.BindForReading();
             m_SSAO.m_GBufferSSAO.SetReadBuffer((int)RenderTarget::GBuffer_Position);
         }
         else if (m_RenderTarget == (int)RenderTarget::GBuffer_Normal)
         {
+            m_SSAO.m_GBufferSSAO.BindForReading();
             m_SSAO.m_GBufferSSAO.SetReadBuffer((int)RenderTarget::GBuffer_Normal);
         }
         else if (m_RenderTarget == (int)RenderTarget::GBuffer_Albedo)
         {
+            m_SSAO.m_GBufferSSAO.BindForReading();
             m_SSAO.m_GBufferSSAO.SetReadBuffer((int)RenderTarget::GBuffer_Albedo);
         }
         else if (m_RenderTarget == (int)RenderTarget::GBuffer_TexCoord)
         {
+            m_SSAO.m_GBufferSSAO.BindForReading();
             m_SSAO.m_GBufferSSAO.SetReadBuffer((int)RenderTarget::GBuffer_TexCoord);
+        }
+        else if (m_RenderTarget == (int)RenderTarget::SSAO_ColorBuffer)
+        {
+            m_SSAO.BindFramebufferSSAO();
+            m_SSAO.BindColorAttachment();
+        }
+        else if (m_RenderTarget == (int)RenderTarget::SSAO_ColorBufferBlur)
+        {
+            m_SSAO.BindFramebufferSSAOBlur();
+            m_SSAO.BindColorAttachment();
         }
 
         glBlitFramebuffer(0, 0, m_SSAO.m_GBufferSSAO.GetWidth(), m_SSAO.m_GBufferSSAO.GetHeight(),

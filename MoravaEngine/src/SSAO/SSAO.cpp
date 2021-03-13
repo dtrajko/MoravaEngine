@@ -18,6 +18,8 @@ SSAO::SSAO()
 	m_KernelRadius = 0.5f;
 	m_KernelBias = 0.025f;
 
+	m_BlurEnabled = true;
+
 	m_WidthPrev = 0;
 	m_HeightPrev = 0;
 }
@@ -56,8 +58,8 @@ void SSAO::Release()
 
 	if (m_SSAO_FBO)
 		glDeleteFramebuffers(1, &m_SSAO_FBO);
-	if (m_SSAO_BlurFBO)
-		glDeleteFramebuffers(1, &m_SSAO_BlurFBO);
+	if (m_SSAO_FBO_Blur)
+		glDeleteFramebuffers(1, &m_SSAO_FBO_Blur);
 
 	if (m_SSAO_ColorBuffer)
 		glDeleteTextures(1, &m_SSAO_ColorBuffer);
@@ -73,7 +75,7 @@ void SSAO::ResetHandlers()
 {
 	// Framebuffers
 	m_SSAO_FBO = 0;
-	m_SSAO_BlurFBO = 0;
+	m_SSAO_FBO_Blur = 0;
 
 	// textures / framebuffer attachments
 	m_SSAO_ColorBuffer = 0;
@@ -113,7 +115,7 @@ void SSAO::GenerateSSAO_FBO()
 	// also create framebuffer to hold SSAO processing stage 
 	// -----------------------------------------------------
 	glGenFramebuffers(1, &m_SSAO_FBO);
-	glGenFramebuffers(1, &m_SSAO_BlurFBO);
+	glGenFramebuffers(1, &m_SSAO_FBO_Blur);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAO_FBO);
 
 	// SSAO color buffer
@@ -131,7 +133,7 @@ void SSAO::GenerateSSAO_FBO()
 void SSAO::GenerateSSAO_BlurFBO()
 {
 	// and blur stage
-	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAO_BlurFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAO_FBO_Blur);
 	glGenTextures(1, &m_SSAO_ColorBufferBlur);
 	glBindTexture(GL_TEXTURE_2D, m_SSAO_ColorBufferBlur);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_Width, m_Height, 0, GL_RED, GL_FLOAT, NULL);
@@ -229,6 +231,21 @@ void SSAO::Render(glm::mat4 projectionMatrix, glm::mat4 viewMatrix,
 	// END SSAO Rendering
 }
 
+void SSAO::BindFramebufferSSAO()
+{
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_SSAO_FBO);
+}
+
+void SSAO::BindFramebufferSSAOBlur()
+{
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_SSAO_FBO_Blur);
+}
+
+void SSAO::BindColorAttachment()
+{
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+}
+
 void SSAO::GeometryPass(glm::mat4 projectionMatrix, glm::mat4 viewMatrix,
 	std::map<std::string, Mesh*> meshes, std::map<std::string, ModelSSAO*>* models)
 {
@@ -302,9 +319,11 @@ void SSAO::GenerateSSAOTexture(glm::mat4 projectionMatrix, std::map<std::string,
 
 void SSAO::BlurSSAOTexture(std::map<std::string, Mesh*> meshes)
 {
+	if (!m_BlurEnabled) return;
+
 	// 3. blur SSAO texture to remove noise
 	// -----------------------------------------------------------------
-	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAO_BlurFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAO_FBO_Blur);
 	glClear(GL_COLOR_BUFFER_BIT);
 	m_ShaderSSAOBlur->Bind();
 	glActiveTexture(GL_TEXTURE0);
@@ -337,7 +356,7 @@ void SSAO::LightPass(glm::mat4 viewMatrix, std::map<std::string, Mesh*> meshes)
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_GBufferSSAO.m_GBufferAlbedo);
 	glActiveTexture(GL_TEXTURE3); // add extra SSAO texture to lighting pass
-	glBindTexture(GL_TEXTURE_2D, m_SSAO_ColorBufferBlur);
+	glBindTexture(GL_TEXTURE_2D, m_BlurEnabled ? m_SSAO_ColorBufferBlur : m_SSAO_ColorBuffer);
 	// RenderQuad();
 	meshes["quad_ssao"]->Render();
 }

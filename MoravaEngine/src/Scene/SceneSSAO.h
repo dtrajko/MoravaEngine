@@ -34,11 +34,13 @@ private:
 
 	enum class RenderTarget
 	{
-		GBuffer_Position,
-		GBuffer_Normal,
-		GBuffer_Albedo,
-		GBuffer_TexCoord,
-		SSAO,
+		GBuffer_Position     = 0,
+		GBuffer_Normal       = 1,
+		GBuffer_Albedo       = 2,
+		GBuffer_TexCoord     = 3,
+		SSAO_Composite       = 4,
+		SSAO_ColorBuffer     = 5,
+		SSAO_ColorBufferBlur = 6,
 	};
 
 private:

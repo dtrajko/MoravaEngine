@@ -16,7 +16,7 @@ ModelSSAO::ModelSSAO()
 }
 
 // constructor, expects a filepath to a 3D model.
-ModelSSAO::ModelSSAO(std::string const& path, std::string const& textureDirectory, bool gamma)
+ModelSSAO::ModelSSAO(const std::string& path, const std::string& textureDirectory, bool gamma)
 {
     gammaCorrection = gamma;
     m_TextureDirectory = textureDirectory;

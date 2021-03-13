@@ -17,7 +17,7 @@ class ModelSSAO
 {
 public:
     ModelSSAO();
-    ModelSSAO(std::string const& path, std::string const& textureDirectory = "", bool gamma = false);
+    ModelSSAO(const std::string& path, const std::string& textureDirectory = "", bool gamma = false);
     virtual ~ModelSSAO();
 
     virtual void Draw(Shader* shader);
