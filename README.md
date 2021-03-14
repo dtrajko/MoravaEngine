@@ -2,7 +2,7 @@
 
 ## About
 2D/3D graphics engine based on C++ and OpenGL ES 2.0.
-Its current purpose is experimenting with various CG concepts and techniques:
+Its current purpose is to experiment with various CG concepts and techniques:
 
 * Phong lighting model
 * Shadows (directional light, omni-directional shadows)
