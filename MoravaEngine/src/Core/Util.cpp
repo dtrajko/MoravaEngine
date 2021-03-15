@@ -1,4 +1,7 @@
+#include "Core/Log.h"
 #include "Core/Util.h"
+
+#include <GL/glew.h>
 
 #include <algorithm>
 
@@ -77,4 +80,16 @@ std::string Util::randomString(size_t length)
 	std::string str(length, 0);
 	std::generate_n(str.begin(), length, randchar);
 	return str;
+}
+
+void Util::CheckOpenGLErrors(const std::string& label)
+{
+	GLenum error = glGetError();
+	const GLubyte* errorString = glewGetErrorString(error);
+
+	while (error != GL_NO_ERROR)
+	{
+		Log::GetLogger()->error("[{0}] OpenGL Error code: {1}, Message: '{2}'", label, error, errorString);
+		error = glGetError();
+	}
 }

@@ -145,8 +145,13 @@ void EnvMapEditorLayer::Init()
     EnvMapRenderPassSpecification compRenderPassSpec;
     compRenderPassSpec.TargetFramebuffer = Framebuffer::Create(compFramebufferSpec);
     compRenderPassSpec.TargetFramebuffer->CreateAttachment(compFramebufferSpec);
-    compRenderPassSpec.TargetFramebuffer->CreateAttachmentDepth(compFramebufferSpec.Width, compFramebufferSpec.Height, isMultisample,
-        AttachmentType::Renderbuffer, AttachmentFormat::Depth);
+
+    FramebufferSpecification compFramebufferDepthSpec;
+    compFramebufferDepthSpec = compFramebufferSpec;
+    compFramebufferDepthSpec.attachmentType = AttachmentType::Renderbuffer;
+    compFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth;
+    compRenderPassSpec.TargetFramebuffer->CreateAttachment(compFramebufferDepthSpec);
+
     Log::GetLogger()->debug("Generating the COMPOSITE RenderPass framebuffer with AttachmentFormat::RGBA8");
     compRenderPassSpec.TargetFramebuffer->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
     m_SceneRenderer->s_Data.CompositePass = Hazel::Ref<EnvMapRenderPass>::Create(compRenderPassSpec);

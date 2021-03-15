@@ -18,7 +18,7 @@ public:
 	// filesystem utility methods
 	static std::string GetFileNameFromFullPath(std::string fullPath);
 	static std::string StripExtensionFromFileName(std::string fileName);
-
 	static std::string randomString(size_t length);
+	static void CheckOpenGLErrors(const std::string& label = "Undefined");
 
 };
