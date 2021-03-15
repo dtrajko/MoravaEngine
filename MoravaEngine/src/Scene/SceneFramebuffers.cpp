@@ -56,11 +56,11 @@ void SceneFramebuffers::SetupFramebuffers()
 	m_Framebuffer = new Framebuffer(SCR_WIDTH, SCR_HEIGHT);
 
 	// -- generate a color texture attachment
-	m_Framebuffer->AddAttachmentSpecification(SCR_WIDTH, SCR_HEIGHT, AttachmentType::Texture, AttachmentFormat::Color);
+	m_Framebuffer->AddColorAttachmentSpecification(SCR_WIDTH, SCR_HEIGHT, AttachmentType::Texture, AttachmentFormat::Color);
 
 	// -- create a renderbuffer object (RBO) to be used as a depth and stencil attachment to the framebuffer
 	//  (we won't be sampling these)
-	m_Framebuffer->AddAttachmentSpecification(SCR_WIDTH, SCR_HEIGHT, AttachmentType::Renderbuffer, AttachmentFormat::DepthStencil);
+	m_Framebuffer->AddDepthAttachmentSpecification(SCR_WIDTH, SCR_HEIGHT, AttachmentType::Renderbuffer, AttachmentFormat::DepthStencil);
 
 	m_Framebuffer->Generate(SCR_WIDTH, SCR_HEIGHT);
 

@@ -44,7 +44,7 @@ Framebuffer::Framebuffer(FramebufferSpecification spec)
 	Framebuffer(spec.Width, spec.Height);
 }
 
-void Framebuffer::AddAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
+void Framebuffer::AddColorAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	FramebufferSpecification fbSpecs;
 	fbSpecs.Width = width;
@@ -52,7 +52,37 @@ void Framebuffer::AddAttachmentSpecification(unsigned int width, unsigned int he
 	fbSpecs.attachmentType = attachmentType;
 	fbSpecs.attachmentFormat = attachmentFormat;
 	fbSpecs.ClearColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	m_AttachmentSpecs.push_back(fbSpecs);
+	m_ColorAttachmentSpecs.push_back(fbSpecs);
+}
+
+void Framebuffer::AddDepthAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
+{
+	if (m_RenderbufferAttachmentSpec.size()) {
+		Log::GetLogger()->error("Depth attachment specification already exists!");
+	}
+
+	FramebufferSpecification fbSpecs;
+	fbSpecs.Width = width;
+	fbSpecs.Height = height;
+	fbSpecs.attachmentType = attachmentType;
+	fbSpecs.attachmentFormat = attachmentFormat;
+	fbSpecs.ClearColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	m_RenderbufferAttachmentSpec.push_back(fbSpecs);
+}
+
+
+void Framebuffer::AddColorAttachment(FramebufferSpecification specs)
+{
+	m_ColorAttachmentSpecs.push_back(specs);
+}
+
+void Framebuffer::AddDepthAttachment(FramebufferSpecification specs)
+{
+	if (m_RenderbufferAttachmentSpec.size()) {
+		Log::GetLogger()->error("Depth attachment specification already exists!");
+	}
+
+	m_RenderbufferAttachmentSpec.push_back(specs);
 }
 
 void Framebuffer::Generate(unsigned int width, unsigned int height)
@@ -69,7 +99,10 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 	glGenFramebuffers(1, &m_FBO);
 	Bind(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
 
-	for (FramebufferSpecification attachmentSpecs : m_AttachmentSpecs)
+	// color attachments
+	std::vector<GLenum> colorAttachments;
+	int colorAttachmentIndex = 0;
+	for (FramebufferSpecification attachmentSpecs : m_ColorAttachmentSpecs)
 	{
 		// m_FramebufferSpecs.Width = attachmentSpecs.Width;
 		// m_FramebufferSpecs.Height = attachmentSpecs.Height;
@@ -93,6 +126,23 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA8, Multisample: {0}, {1}x{2}]",
 				m_Multisample, width, height);
 			break;
+		default:
+			Log::GetLogger()->error("Color attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);
+			break;
+		}
+
+		// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
+		colorAttachments.push_back(GL_COLOR_ATTACHMENT0 + colorAttachmentIndex);
+		colorAttachmentIndex++;
+	}
+
+	glDrawBuffers(colorAttachments.size(), colorAttachments.data());
+
+	// renderbuffer attachments
+	if (m_RenderbufferAttachmentSpec.size()) {
+		auto attachmentSpecs = m_RenderbufferAttachmentSpec[0];
+		switch (attachmentSpecs.attachmentFormat)
+		{
 		case AttachmentFormat::Depth:
 			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
@@ -124,7 +174,7 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 				m_Multisample, width, height);
 			break;
 		default:
-			Log::GetLogger()->error("Attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->error("Depth attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);
 			break;
 		}
 	}
@@ -146,11 +196,6 @@ void Framebuffer::Release()
 	glDeleteFramebuffers(1, &m_FBO);
 
 	m_FBO = 0;
-}
-
-void Framebuffer::CreateAttachment(FramebufferSpecification specs)
-{
-	m_AttachmentSpecs.push_back(specs);
 }
 
 void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, bool isMultisample,
@@ -333,5 +378,6 @@ const Hazel::HazelFramebufferSpecification& Framebuffer::GetSpecification() cons
 Framebuffer::~Framebuffer()
 {
 	Release();
-	m_AttachmentSpecs.clear();
+	m_ColorAttachmentSpecs.clear();
+	m_RenderbufferAttachmentSpec.clear();
 }

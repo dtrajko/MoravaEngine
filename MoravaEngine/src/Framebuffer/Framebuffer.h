@@ -41,9 +41,12 @@ public:
 	void Unbind(unsigned int width, unsigned int height);
 	bool CheckStatus();
 
-	void AddAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat);
+	void AddColorAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat);
+	void AddDepthAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat);
 
-	void CreateAttachment(FramebufferSpecification specs); // the generic one based on FramebufferSpecification 
+	void AddColorAttachment(FramebufferSpecification specs); // the generic one based on FramebufferSpecification 
+	void AddDepthAttachment(FramebufferSpecification specs); // the generic one based on FramebufferSpecification 
+
 	void CreateTextureAttachmentColor(unsigned int width, unsigned int height, bool isMultisample,
 		AttachmentFormat attachmentFormat = AttachmentFormat::Color);
 	void CreateAttachmentDepth(unsigned int width, unsigned int height, bool isMultisample,
@@ -86,7 +89,9 @@ private:
 	unsigned int m_FBO;
 	FramebufferSpecification m_FramebufferSpecs;
 
-	std::vector<FramebufferSpecification> m_AttachmentSpecs;
+	std::vector<FramebufferSpecification> m_ColorAttachmentSpecs;
+	std::vector<FramebufferSpecification> m_RenderbufferAttachmentSpec;
+
 	std::vector<FramebufferTexture*> m_TextureAttachmentsColor;
 	Attachment* m_AttachmentDepth;
 	Attachment* m_AttachmentStencil;

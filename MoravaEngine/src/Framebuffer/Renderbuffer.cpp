@@ -47,6 +47,12 @@ Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, AttachmentFo
 	glRenderbufferStorage(GL_RENDERBUFFER, internalFormat, m_Width, m_Height);
 	// Attach the renderbuffer object
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, m_ID);
+
+	// finally check if framebuffer is complete
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		Log::GetLogger()->error("Renderbuffer::Renderbuffer: Framebuffer not complete!");
+	}
+
 	Unbind();
 	// Log::GetLogger()->info("Renderbuffer ID={0}, m_Width={1}, m_Height={2}", m_ID, m_Width, m_Height);
 

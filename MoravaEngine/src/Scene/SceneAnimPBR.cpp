@@ -155,8 +155,8 @@ void SceneAnimPBR::SetupRenderFramebuffer()
     uint32_t height = Application::Get()->GetWindow()->GetHeight();
     m_RenderFramebuffer = new Framebuffer(width, height);
 
-    m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
-    m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
+    m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
+    m_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
 
     m_RenderFramebuffer->Generate(width, height);
 }

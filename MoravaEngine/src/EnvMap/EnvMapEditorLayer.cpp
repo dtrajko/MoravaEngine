@@ -125,9 +125,9 @@ void EnvMapEditorLayer::Init()
 
     EnvMapRenderPassSpecification geoRenderPassSpec;
     geoRenderPassSpec.TargetFramebuffer = Framebuffer::Create(geoFramebufferSpec);
-    geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferSpec);
+    geoRenderPassSpec.TargetFramebuffer->AddColorAttachment(geoFramebufferSpec);
 
-    geoRenderPassSpec.TargetFramebuffer->CreateAttachment(geoFramebufferDepthSpec);
+    geoRenderPassSpec.TargetFramebuffer->AddDepthAttachment(geoFramebufferDepthSpec);
     Log::GetLogger()->debug("Generating the GEO RenderPass framebuffer with AttachmentFormat::RGBA16F");
 
     geoRenderPassSpec.TargetFramebuffer->Generate(geoFramebufferSpec.Width, geoFramebufferSpec.Height);
@@ -144,13 +144,13 @@ void EnvMapEditorLayer::Init()
 
     EnvMapRenderPassSpecification compRenderPassSpec;
     compRenderPassSpec.TargetFramebuffer = Framebuffer::Create(compFramebufferSpec);
-    compRenderPassSpec.TargetFramebuffer->CreateAttachment(compFramebufferSpec);
+    compRenderPassSpec.TargetFramebuffer->AddColorAttachment(compFramebufferSpec);
 
     FramebufferSpecification compFramebufferDepthSpec;
     compFramebufferDepthSpec = compFramebufferSpec;
     compFramebufferDepthSpec.attachmentType = AttachmentType::Renderbuffer;
     compFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth;
-    compRenderPassSpec.TargetFramebuffer->CreateAttachment(compFramebufferDepthSpec);
+    compRenderPassSpec.TargetFramebuffer->AddDepthAttachment(compFramebufferDepthSpec);
 
     Log::GetLogger()->debug("Generating the COMPOSITE RenderPass framebuffer with AttachmentFormat::RGBA8");
     compRenderPassSpec.TargetFramebuffer->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
@@ -1895,8 +1895,8 @@ void EnvMapEditorLayer::SetupRenderFramebuffer()
     uint32_t height = Application::Get()->GetWindow()->GetHeight();
 
     m_RenderFramebuffer = new Framebuffer(width, height);
-    m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
-    m_RenderFramebuffer->AddAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
+    m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
+    m_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
     m_RenderFramebuffer->Generate(width, height);
 }
 
