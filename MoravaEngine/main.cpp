@@ -31,13 +31,13 @@
 // #define SCENE_PROCEDURAL_LANDMASS
 // #define SCENE_VOXEL_TERRAIN_SL
 // #define SCENE_MARCHING_CUBES
-#define SCENE_SSAO
+// #define SCENE_SSAO
 // #define SCENE_DEFERRED
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
 // #define SCENE_ANIM_PBR
 // #define SCENE_DEFERRED_OGL
-// #define SCENE_HAZEL_ENV_MAP
+#define SCENE_HAZEL_ENV_MAP
 
 #include "Hazel/Core/Base.h"
 #include "Hazel/Events/Event.h"
