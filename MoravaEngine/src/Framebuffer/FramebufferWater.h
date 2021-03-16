@@ -29,13 +29,13 @@ public:
 	inline FramebufferTexture* GetColorAttachment() const { return m_ColorAttachment; };
 	inline FramebufferTexture* GetDepthAttachment() const { return m_DepthAttachment; };
 	inline Renderbuffer* GetDepthBuffer() const { return m_DepthBuffer; };
-	inline unsigned int GetID() const { return fbo; };
+	inline unsigned int GetID() const { return m_FBO; };
 	void Bind();
 	void Unbind();
 	~FramebufferWater();
 
 private:
-	unsigned int fbo = -1;
+	unsigned int m_FBO = -1;
 	unsigned int m_Width = -1;
 	unsigned int m_Height = -1;
 

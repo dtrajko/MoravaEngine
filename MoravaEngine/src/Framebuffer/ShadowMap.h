@@ -15,8 +15,8 @@ public:
 	virtual void BindForWriting();
 	virtual void ReadTexture(unsigned int textureUnit);
 	virtual void Unbind(unsigned int width, unsigned int height);
-	GLuint GetShadowWidth() { return shadowWidth; };
-	GLuint GetShadowHeight() { return shadowHeight; };
+	GLuint GetShadowWidth() { return m_ShadowWidth; };
+	GLuint GetShadowHeight() { return m_ShadowHeight; };
 	inline const unsigned int GetFBO() const { return m_FBO; };
 	inline const unsigned int GetTextureID() const { return m_TextureID; };
 	virtual ~ShadowMap();
@@ -24,7 +24,7 @@ public:
 protected:
 	GLuint m_FBO;
 	GLuint m_TextureID;
-	GLuint shadowWidth;
-	GLuint shadowHeight;
+	GLuint m_ShadowWidth;
+	GLuint m_ShadowHeight;
 
 };

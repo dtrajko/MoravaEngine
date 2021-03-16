@@ -42,12 +42,12 @@ Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, AttachmentFo
 	}
 
 	glGenRenderbuffers(1, &m_ID);
-	Bind();
+	glBindRenderbuffer(GL_RENDERBUFFER, m_ID);
 	// Create a depth and stencil renderbuffer object
 	glRenderbufferStorage(GL_RENDERBUFFER, internalFormat, m_Width, m_Height);
 	// Attach the renderbuffer object
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, m_ID);
-	Unbind();
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	// finally check if framebuffer is complete
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -70,7 +70,5 @@ void Renderbuffer::Unbind()
 
 Renderbuffer::~Renderbuffer()
 {
-	// Log::GetLogger()->info("Renderbuffer Destructor");
-
 	glDeleteRenderbuffers(1, &m_ID);
 }
