@@ -126,7 +126,7 @@ private:
 	std::pair<float, float> GetMouseViewportSpace();
 	void RenderSkybox();
 	void RenderHazelGrid();
-	void RenderOutline(Hazel::Ref<Shader> shader, Hazel::Submesh& submesh, Hazel::Entity entity);
+	void RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh);
 
 public:
 	Hazel::EditorCamera* m_EditorCamera;

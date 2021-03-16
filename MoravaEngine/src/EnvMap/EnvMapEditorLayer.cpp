@@ -2171,10 +2171,14 @@ void EnvMapEditorLayer::GeometryPassTemporary()
         {
             Hazel::Entity entity = { entt, m_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
-            glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
 
             if (meshComponent.Mesh)
             {
+                glm::mat4 entityTransform = glm::mat4(1.0f);
+                if (entity && entity.HasComponent<Hazel::TransformComponent>()) {
+                    entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+                }
+
                 m_ShaderHazelPBR = meshComponent.Mesh->IsAnimated() ? ShaderLibrary::Get("HazelPBR_Anim") : ShaderLibrary::Get("HazelPBR_Static");
 
                 EnvMapMaterial* envMapMaterial = nullptr;
@@ -2184,7 +2188,7 @@ void EnvMapEditorLayer::GeometryPassTemporary()
                 {
                     materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
 
-                    RenderOutline(m_ShaderOutline, submesh, entity);
+                    RenderOutline(m_ShaderOutline, entity, entityTransform, submesh);
 
                     // Render Submesh
                     // load submesh materials for each specific submesh from the s_EnvMapMaterials list
@@ -2226,12 +2230,11 @@ void EnvMapEditorLayer::GeometryPassTemporary()
     m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->Bind();
 }
 
-void EnvMapEditorLayer::RenderOutline(Hazel::Ref<Shader> shader, Hazel::Submesh& submesh, Hazel::Entity entity)
+void EnvMapEditorLayer::RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh)
 {
     if (!m_DisplayOutline) return;
 
     auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
-    glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
 
     // Render outline
     if (EntitySelection::s_SelectionContext.size()) {
@@ -2298,8 +2301,8 @@ void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
     }
 
     m_ShaderShadow->Bind();
-    m_ShaderShadow->setMat4("dirLightTransform", m_LightProjectionMatrix);
-    // m_ShaderShadow->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    // m_ShaderShadow->setMat4("dirLightTransform", m_LightProjectionMatrix);
+    m_ShaderShadow->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
     // Rendering all meshes (submeshes) on the scene to a shadow framebuffer
     auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();

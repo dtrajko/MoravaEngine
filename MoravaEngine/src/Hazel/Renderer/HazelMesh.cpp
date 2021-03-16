@@ -1119,17 +1119,9 @@ namespace Hazel {
 		}
 	}
 
-	void Submesh::Render(Ref<HazelMesh> parentMesh, Ref<Shader> shader, glm::mat4 transform, uint32_t samplerSlot,
+	void Submesh::Render(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
 		const std::map<std::string, EnvMapMaterial*>& envMapMaterials, Entity entity)
 	{
-		glm::mat4 submeshTransform;
-		if (entity && entity.HasComponent<TransformComponent>()) {
-			submeshTransform = entity.GetComponent<TransformComponent>().GetTransform();
-		}
-		else {
-			submeshTransform = transform;
-		}
-
 		EnvMapMaterial* envMapMaterial = nullptr;
 
 		parentMesh->m_VertexBuffer->Bind();
@@ -1175,29 +1167,21 @@ namespace Hazel {
 			shader->setMat4(uniformName, parentMesh->GetBoneTransforms()[i]);
 		}
 
-		shader->setMat4("u_Transform", submeshTransform * Transform);
+		shader->setMat4("u_Transform", entityTransform * Transform);
 
 		glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
 
 		shader->Unbind();
 	}
 
-	void Submesh::RenderOutline(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& transform, Entity entity)
+	void Submesh::RenderOutline(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& entityTransform, Entity entity)
 	{
-		glm::mat4 submeshTransform;
-		if (entity && entity.HasComponent<TransformComponent>()) {
-			submeshTransform = entity.GetComponent<TransformComponent>().GetTransform();
-		}
-		else {
-			submeshTransform = transform;
-		}
-
 		parentMesh->m_VertexBuffer->Bind();
 		parentMesh->m_Pipeline->Bind();
 		parentMesh->m_IndexBuffer->Bind();
 
 		glm::vec3 translation, rotation, scale;
-		Math::DecomposeTransform(submeshTransform * Transform, translation, rotation, scale);
+		Math::DecomposeTransform(entityTransform * Transform, translation, rotation, scale);
 		scale *= 1.2f;
 		glm::mat4 outlineTransform = Math::CreateTransform(translation, glm::quat(rotation), scale);
 

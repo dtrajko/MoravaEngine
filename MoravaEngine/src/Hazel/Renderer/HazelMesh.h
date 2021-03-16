@@ -123,9 +123,9 @@ namespace Hazel {
 	class Submesh : public Mesh
 	{
 	public:
-		void Render(Ref<HazelMesh> parentMesh, Ref<Shader> shader, glm::mat4 transform, uint32_t samplerSlot,
+		void Render(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
 			const std::map<std::string, EnvMapMaterial*>& envMapMaterials, Entity entity);
-		void RenderOutline(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& transform, Entity entity);
+		void RenderOutline(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& entityTransform, Entity entity);
 
 	public:
 		uint32_t BaseVertex;
