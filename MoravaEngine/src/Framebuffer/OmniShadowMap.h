@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Texture/ShadowMap.h"
+#include "Framebuffer/ShadowMap.h"
 
 
 class OmniShadowMap : public ShadowMap
@@ -10,5 +10,5 @@ public:
 	virtual ~OmniShadowMap();
 
 	virtual bool Init(GLuint width, GLuint height) override;
-	virtual void Read(unsigned int textureUnit) override;
+	virtual void ReadTexture(unsigned int textureUnit) override;
 };

@@ -107,7 +107,7 @@ void Renderer::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 proj
 	DirectionalLight* light = &LightManager::directionalLight;
 	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
-	light->GetShadowMap()->Write();
+	light->GetShadowMap()->BindForWriting();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_BLEND);
@@ -142,7 +142,7 @@ void Renderer::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Scene
 
 	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
-	light->GetShadowMap()->Write();
+	light->GetShadowMap()->BindForWriting();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_BLEND);
@@ -220,7 +220,7 @@ void Renderer::RenderPassWaterReflection(Window* mainWindow, Scene* scene, glm::
 	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
 	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
-	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
+	LightManager::directionalLight.GetShadowMap()->ReadTexture(scene->GetTextureSlots()["shadow"]);
 	shaderMain->setInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderMain->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);
@@ -266,7 +266,7 @@ void Renderer::RenderPassWaterRefraction(Window* mainWindow, Scene* scene, glm::
 	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
 	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
-	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
+	LightManager::directionalLight.GetShadowMap()->ReadTexture(scene->GetTextureSlots()["shadow"]);
 	shaderMain->setInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderMain->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);
@@ -318,7 +318,7 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
 	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
-	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
+	LightManager::directionalLight.GetShadowMap()->ReadTexture(scene->GetTextureSlots()["shadow"]);
 	shaderMain->setInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderMain->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);

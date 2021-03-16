@@ -124,7 +124,7 @@ void RendererPBR::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 pro
 	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
 	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
-	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
+	LightManager::directionalLight.GetShadowMap()->ReadTexture(scene->GetTextureSlots()["shadow"]);
 	shaderMain->setInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderMain->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);

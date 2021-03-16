@@ -19,21 +19,9 @@ void RendererECS::SetShaders()
 void RendererECS::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     if (!scene->GetSettings().enableShadows) return;
-    if (!LightManager::directionalLight.GetEnabled()) return;
-    if (LightManager::directionalLight.GetShadowMap() == nullptr) return;
 
-	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
-
-	// Clear the window
-	RendererBasic::Clear(1.0f, 1.0f, 1.0f, 1.0f);
-
-	glDisable(GL_BLEND);
-
-    DisableCulling();
     std::string passType = "shadow";
     scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RendererECS::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)

@@ -136,7 +136,7 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 		colorAttachmentIndex++;
 	}
 
-	glDrawBuffers(colorAttachments.size(), colorAttachments.data());
+	glDrawBuffers((GLsizei)colorAttachments.size(), colorAttachments.data());
 
 	// renderbuffer attachments
 	if (m_RenderbufferAttachmentSpec.size()) {

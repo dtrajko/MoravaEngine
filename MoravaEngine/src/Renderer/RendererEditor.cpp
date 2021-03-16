@@ -112,7 +112,7 @@ void RendererEditor::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat
     DirectionalLight* light = &LightManager::directionalLight;
     glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
-    light->GetShadowMap()->Write();
+    light->GetShadowMap()->BindForWriting();
     // printf("RenderPassShadow write to FBO = %i Texture ID = %i\n", light->GetShadowMap()->GetFBO(), light->GetShadowMap()->GetTextureID());
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -137,7 +137,7 @@ void RendererEditor::RenderPassOmniShadow(PointLight* light, Window* mainWindow,
 
     glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
-    light->GetShadowMap()->Write();
+    light->GetShadowMap()->BindForWriting();
     // printf("RenderPassOmniShadow write to FBO = %i Texture ID = %i\n", light->GetShadowMap()->GetFBO(), light->GetShadowMap()->GetTextureID());
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -416,7 +416,7 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
         // set uniforms for omni shadow maps
         // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object.fs is 3
         int textureSlotOffset = 0;
-        LightManager::pointLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
+        LightManager::pointLights[i].GetShadowMap()->ReadTexture(m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
         shaderEditor->setInt(locBuff, m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
@@ -459,7 +459,7 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
         // set uniforms for omni shadow maps
         // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object.fs is 3
         int textureSlotOffset = LightManager::pointLightCount;
-        LightManager::spotLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
+        LightManager::spotLights[i].GetShadowMap()->ReadTexture(m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
         shaderEditor->setInt(locBuff, m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
@@ -517,7 +517,7 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
         // set uniforms for omni shadow maps
         // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object_pbr.fs is 9
         int textureSlotOffset = 0;
-        LightManager::pointLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
+        LightManager::pointLights[i].GetShadowMap()->ReadTexture(m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
         shaderEditorPBR->setInt(locBuff, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
@@ -548,7 +548,7 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
         // set uniforms for omni shadow maps
         // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object_pbr.fs is 9
         int textureSlotOffset = LightManager::pointLightCount;
-        LightManager::spotLights[i].GetShadowMap()->Read(m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
+        LightManager::spotLights[i].GetShadowMap()->ReadTexture(m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
         shaderEditorPBR->setInt(locBuff, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);

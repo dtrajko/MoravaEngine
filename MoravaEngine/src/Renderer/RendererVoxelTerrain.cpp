@@ -52,7 +52,7 @@ void RendererVoxelTerrain::RenderPassShadow(Window* mainWindow, Scene* scene, gl
 	DirectionalLight* light = &LightManager::directionalLight;
 	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
-	light->GetShadowMap()->Write();
+	light->GetShadowMap()->BindForWriting();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_BLEND);
@@ -90,7 +90,7 @@ void RendererVoxelTerrain::RenderPassOmniShadow(PointLight* light, Window* mainW
 
 	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
-	light->GetShadowMap()->Write();
+	light->GetShadowMap()->BindForWriting();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_BLEND);
@@ -155,7 +155,7 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 		shaderMain->setFloat("pointLights[" + std::to_string(i) + "].linear", LightManager::pointLights[i].GetLinear());
 		shaderMain->setFloat("pointLights[" + std::to_string(i) + "].exponent", LightManager::pointLights[i].GetExponent());
 
-		LightManager::pointLights[i].GetShadowMap()->Read(textureUnit + offset + i);
+		LightManager::pointLights[i].GetShadowMap()->ReadTexture(textureUnit + offset + i);
 		shaderMain->setInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
 		shaderMain->setFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::pointLights[i].GetFarPlane());
 	}
@@ -178,12 +178,12 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 		shaderMain->setVec3("spotLights[" + std::to_string(i) + "].direction", LightManager::spotLights[i].GetDirection());
 		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].edge", LightManager::spotLights[i].GetEdge());
 
-		LightManager::spotLights[i].GetShadowMap()->Read(textureUnit + offset + i);
+		LightManager::spotLights[i].GetShadowMap()->ReadTexture(textureUnit + offset + i);
 		shaderMain->setInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
 		shaderMain->setFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::spotLights[i].GetFarPlane());
 	}
 
-	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
+	LightManager::directionalLight.GetShadowMap()->ReadTexture(scene->GetTextureSlots()["shadow"]);
 	shaderMain->setInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
 	if (scene->GetSettings().enableShadows)
@@ -227,7 +227,7 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 		shaderMarchingCubes->setFloat("pointLights[" + std::to_string(i) + "].linear", LightManager::pointLights[i].GetLinear());
 		shaderMarchingCubes->setFloat("pointLights[" + std::to_string(i) + "].exponent", LightManager::pointLights[i].GetExponent());
 
-		LightManager::pointLights[i].GetShadowMap()->Read(textureUnit + offset + i);
+		LightManager::pointLights[i].GetShadowMap()->ReadTexture(textureUnit + offset + i);
 		shaderMarchingCubes->setInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
 		shaderMarchingCubes->setFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::pointLights[i].GetFarPlane());
 	}
@@ -250,12 +250,12 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 		shaderMarchingCubes->setVec3("spotLights[" + std::to_string(i) + "].direction", LightManager::spotLights[i].GetDirection());
 		shaderMarchingCubes->setFloat("spotLights[" + std::to_string(i) + "].edge", LightManager::spotLights[i].GetEdge());
 
-		LightManager::spotLights[i].GetShadowMap()->Read(textureUnit + offset + i);
+		LightManager::spotLights[i].GetShadowMap()->ReadTexture(textureUnit + offset + i);
 		shaderMarchingCubes->setInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
 		shaderMarchingCubes->setFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::spotLights[i].GetFarPlane());
 	}
 
-	LightManager::directionalLight.GetShadowMap()->Read(scene->GetTextureSlots()["shadow"]);
+	LightManager::directionalLight.GetShadowMap()->ReadTexture(scene->GetTextureSlots()["shadow"]);
 	shaderMarchingCubes->setInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMarchingCubes->setInt("normalMap", scene->GetTextureSlots()["normal"]);
 	if (scene->GetSettings().enableShadows)

@@ -34,7 +34,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     sceneSettings.enableSpotLights   = true;
     sceneSettings.enableOmniShadows  = false;
     sceneSettings.enableSkybox       = false;
-    sceneSettings.enableShadows      = false;
+    sceneSettings.enableShadows      = true;
     sceneSettings.enableWaterEffects = false;
     sceneSettings.enableParticles    = false;
 
@@ -250,6 +250,6 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
     }
 
     if (passType == "shadow") {
-        m_EnvironmentMap->OnRenderShadow();
+        m_EnvironmentMap->OnRenderShadow(mainWindow);
     }
 }

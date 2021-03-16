@@ -9,9 +9,9 @@
 #include "Editor/EntitySelection.h"
 #include "EnvMap/EnvMapMaterial.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
+#include "Framebuffer/ShadowMap.h"
 #include "Mesh/CubeSkybox.h"
 #include "Mesh/Quad.h"
-#include "Texture/ShadowMap.h"
 
 
 enum class SelectionMode
@@ -38,7 +38,7 @@ public:
 	void OnSceneStop();
 
 	void OnRender(Framebuffer* framebuffer, Window* mainWindow);
-	void OnRenderShadow();
+	void OnRenderShadow(Window* mainWindow);
 
 	void OnRenderEditor(Framebuffer* framebuffer);
 	void OnRenderRuntime(Framebuffer* framebuffer);
@@ -261,5 +261,6 @@ private:
 	std::string m_StatusBarMessage = "";
 
 	Hazel::Ref<ShadowMap> m_ShadowMapDirLight;
+	glm::mat4 m_LightProjectionMatrix;
 
 };

@@ -49,8 +49,9 @@ Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, AttachmentFo
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, m_ID);
 
 	// finally check if framebuffer is complete
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		Log::GetLogger()->error("Renderbuffer::Renderbuffer: Framebuffer not complete!");
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		Log::GetLogger()->error("Renderbuffer::Renderbuffer: Framebuffer not complete! Status: '{0}'", status);
 	}
 
 	Unbind();

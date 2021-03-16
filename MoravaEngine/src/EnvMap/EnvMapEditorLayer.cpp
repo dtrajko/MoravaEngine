@@ -103,7 +103,9 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     s_EnvMapMaterials.insert(std::make_pair(s_DefaultMaterial->GetUUID(), s_DefaultMaterial));
 
     m_ShadowMapDirLight = Hazel::Ref<ShadowMap>::Create();
-    m_ShadowMapDirLight->Init(m_FramebufferWidth, m_FramebufferHeight);
+    m_ShadowMapDirLight->Init(scene->GetSettings().shadowMapWidth, scene->GetSettings().shadowMapHeight);
+
+    m_LightProjectionMatrix = scene->GetSettings().lightProjectionMatrix;
 }
 
 void EnvMapEditorLayer::Init()
@@ -410,11 +412,13 @@ void EnvMapEditorLayer::SetupShaders()
     ResourceManager::AddShader("Hazel/HazelPBR_Anim", shaderHazelPBR_Anim);
     ResourceManager::AddShader("Hazel/Renderer2D_Line", shaderRenderer2D_Line);
     ResourceManager::AddShader("Hazel/Outline", m_ShaderOutline);
+    ResourceManager::AddShader("directional_shadow_map", m_ShaderShadow);
 
     ShaderLibrary::Add(shaderHazelPBR_Static);
     ShaderLibrary::Add(shaderHazelPBR_Anim);
     ShaderLibrary::Add(shaderRenderer2D_Line);
     ShaderLibrary::Add(m_ShaderOutline);
+    ShaderLibrary::Add(m_ShaderShadow);
 }
 
 void EnvMapEditorLayer::UpdateUniforms()
@@ -976,6 +980,10 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
 
             ImGui::Text("Equirectangular");
             ImGui::Image((void*)(intptr_t)m_SceneRenderer->GetEnvEquirect()->GetID(), imageSize);
+
+            ImGui::Text("Shadow Map");
+            ImGui::Image((void*)(intptr_t)m_ShadowMapDirLight->GetTextureID(), imageSize);
+            // ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
         }
     }
     ImGui::End();
@@ -2259,7 +2267,6 @@ void EnvMapEditorLayer::OnRender(Framebuffer* framebuffer, Window* mainWindow)
         else
         {
             // configure the viewport to the original framebuffer's screen dimensions
-            glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
             RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
         }
     }
@@ -2273,8 +2280,17 @@ void EnvMapEditorLayer::OnRender(Framebuffer* framebuffer, Window* mainWindow)
     }
 }
 
-void EnvMapEditorLayer::OnRenderShadow()
+void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
 {
+    glViewport(0, 0, m_ShadowMapDirLight->GetShadowWidth(), m_ShadowMapDirLight->GetShadowHeight());
+
+    RendererBasic::Clear(1.0f, 1.0f, 1.0f, 1.0f);
+    RendererBasic::DisableBlend();
+    RendererBasic::DisableCulling();
+    RendererBasic::EnableDepthTest();
+
+    m_ShadowMapDirLight->BindForWriting();
+
     glm::mat4 dirLightTransform = glm::mat4(1.0f);
     if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>()) {
         auto& dirLightTransformComponent = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
@@ -2282,7 +2298,8 @@ void EnvMapEditorLayer::OnRenderShadow()
     }
 
     m_ShaderShadow->Bind();
-    m_ShaderShadow->setMat4("dirLightTransform", dirLightTransform);
+    m_ShaderShadow->setMat4("dirLightTransform", m_LightProjectionMatrix);
+    // m_ShaderShadow->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
     // Rendering all meshes (submeshes) on the scene to a shadow framebuffer
     auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
@@ -2293,30 +2310,22 @@ void EnvMapEditorLayer::OnRenderShadow()
         {
             Hazel::Entity entity = { entt, m_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
-            glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+
+            glm::mat4 entityTransform = glm::mat4(1.0f);
+            if (entity && entity.HasComponent<Hazel::TransformComponent>()) {
+                entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+            }
 
             if (meshComponent.Mesh)
             {
-                Hazel::Ref<Hazel::HazelMesh> parentMesh = meshComponent.Mesh;
-
                 for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
                 {
                     // Render Submesh
-                    glm::mat4 submeshTransform;
-                    if (entity && entity.HasComponent<Hazel::TransformComponent>()) {
-                        submeshTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
-                    }
-                    else {
-                        submeshTransform = entityTransform;
-                    }
+                    meshComponent.Mesh->m_VertexBuffer->Bind();
+                    meshComponent.Mesh->m_Pipeline->Bind();
+                    meshComponent.Mesh->m_IndexBuffer->Bind();
 
-                    parentMesh->m_VertexBuffer->Bind();
-                    parentMesh->m_Pipeline->Bind();
-                    parentMesh->m_IndexBuffer->Bind();
-
-                    glDisable(GL_DEPTH_TEST);
-
-                    m_ShaderShadow->setMat4("model", submeshTransform * submesh.Transform);
+                    m_ShaderShadow->setMat4("model", entityTransform * submesh.Transform);
 
                     glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
                 }
@@ -2325,6 +2334,8 @@ void EnvMapEditorLayer::OnRenderShadow()
     }
 
     m_ShaderShadow->Unbind();
+    m_ShadowMapDirLight->Unbind((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
+    RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
 }
 
 void EnvMapEditorLayer::OnRenderEditor(Framebuffer* framebuffer)

@@ -1,4 +1,4 @@
-#include "Texture/ShadowMap.h"
+#include "ShadowMap.h"
 
 #include "Core/Log.h"
 
@@ -47,12 +47,12 @@ bool ShadowMap::Init(GLuint width, GLuint height)
 	return true;
 }
 
-void ShadowMap::Write()
+void ShadowMap::BindForWriting()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 }
 
-void ShadowMap::Read(unsigned int textureUnit)
+void ShadowMap::ReadTexture(unsigned int textureUnit)
 {
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
 	glBindTexture(GL_TEXTURE_2D, m_TextureID);

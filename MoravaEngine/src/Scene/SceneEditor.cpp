@@ -1955,7 +1955,7 @@ void SceneEditor::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture
 
     // Shadows in shaderEditor
     if (LightManager::directionalLight.GetShadowMap() != nullptr)
-        LightManager::directionalLight.GetShadowMap()->Read(2);
+        LightManager::directionalLight.GetShadowMap()->ReadTexture(2);
     shaderEditor->setInt("shadowMap", 2);
 }
 
@@ -1983,7 +1983,7 @@ void SceneEditor::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* t
     }
 
     // Shadows in shaderEditorPBR
-    LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
+    LightManager::directionalLight.GetShadowMap()->ReadTexture(8); // texture slots 8
     shaderEditorPBR->setInt("shadowMap", 8);
 }
 
@@ -2423,7 +2423,7 @@ void SceneEditor::RenderFramebufferTextures(Shader* shaderEditor)
     model = glm::translate(model, glm::vec3(0.0f, 10.0f, -20.0f));
     model = glm::scale(model, glm::vec3(16.0f, 9.0f, 1.0f));
     shaderEditor->setMat4("model", model);
-    LightManager::directionalLight.GetShadowMap()->Read(0);
+    LightManager::directionalLight.GetShadowMap()->ReadTexture(0);
     shaderEditor->setInt("shadowMap", 0);
     m_Quad->Render();
 }

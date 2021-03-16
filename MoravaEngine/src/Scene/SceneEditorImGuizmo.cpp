@@ -2141,7 +2141,7 @@ void SceneEditorImGuizmo::SetUniformsShaderEditor(Shader* shaderEditor, Texture*
 
     // Shadows in shaderEditor
     if (LightManager::directionalLight.GetShadowMap() != nullptr)
-        LightManager::directionalLight.GetShadowMap()->Read(2);
+        LightManager::directionalLight.GetShadowMap()->ReadTexture(2);
     shaderEditor->setInt("shadowMap", 2);
 }
 
@@ -2169,7 +2169,7 @@ void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Te
     }
 
     // Shadows in shaderEditorPBR
-    LightManager::directionalLight.GetShadowMap()->Read(8); // texture slots 8
+    LightManager::directionalLight.GetShadowMap()->ReadTexture(8); // texture slots 8
     shaderEditorPBR->setInt("shadowMap", 8);
 }
 

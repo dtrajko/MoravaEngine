@@ -815,7 +815,7 @@ void SceneMarchingCubes::Render(Window* mainWindow, glm::mat4 projectionMatrix, 
     ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
 
     if (sceneSettings.enableShadows && LightManager::directionalLight.GetShadowMap() != nullptr)
-        LightManager::directionalLight.GetShadowMap()->Read(GetTextureSlots()["shadow"]);
+        LightManager::directionalLight.GetShadowMap()->ReadTexture(GetTextureSlots()["shadow"]);
 
     m_RenderInstanced->m_Texture->Bind(0);
 

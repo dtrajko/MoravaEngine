@@ -228,43 +228,13 @@
     <ClCompile Include="src\Shader\Shader.cpp">
       <Filter>Shader</Filter>
     </ClCompile>
-    <ClCompile Include="src\Shader\ShaderBackground.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Shader\ShaderBasic.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Shader\ShaderEditorObjects.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Shader\ShaderEditorObjectsPBR.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Shader\ShaderGizmo.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Shader\ShaderInstanced.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
     <ClCompile Include="src\Shader\ShaderLibrary.cpp">
       <Filter>Shader</Filter>
     </ClCompile>
     <ClCompile Include="src\Shader\ShaderMain.cpp">
       <Filter>Shader</Filter>
     </ClCompile>
-    <ClCompile Include="src\Shader\ShaderOmniShadowMap.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
     <ClCompile Include="src\Shader\ShaderPBR.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Shader\ShaderShadowMap.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Shader\ShaderSkinning.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Shader\ShaderWater.cpp">
       <Filter>Shader</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture\Texture.cpp">
@@ -315,13 +285,7 @@
     <ClCompile Include="src\Mesh\CubeSkybox.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="src\Texture\OmniShadowMap.cpp">
-      <Filter>Texture</Filter>
-    </ClCompile>
     <ClCompile Include="src\Texture\RadianceHDR.cpp">
-      <Filter>Texture</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Texture\ShadowMap.cpp">
       <Filter>Texture</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture\SubTexture2D.cpp">
@@ -651,6 +615,12 @@
     <ClCompile Include="src\SSAO\SSAO.cpp">
       <Filter>SSAO</Filter>
     </ClCompile>
+    <ClCompile Include="src\Framebuffer\OmniShadowMap.cpp">
+      <Filter>Framebuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Framebuffer\ShadowMap.cpp">
+      <Filter>Framebuffer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -897,43 +867,13 @@
     <ClInclude Include="src\Shader\Shader.h">
       <Filter>Shader</Filter>
     </ClInclude>
-    <ClInclude Include="src\Shader\ShaderBackground.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Shader\ShaderBasic.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Shader\ShaderEditorObjects.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Shader\ShaderEditorObjectsPBR.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Shader\ShaderGizmo.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Shader\ShaderInstanced.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
     <ClInclude Include="src\Shader\ShaderLibrary.h">
       <Filter>Shader</Filter>
     </ClInclude>
     <ClInclude Include="src\Shader\ShaderMain.h">
       <Filter>Shader</Filter>
     </ClInclude>
-    <ClInclude Include="src\Shader\ShaderOmniShadowMap.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
     <ClInclude Include="src\Shader\ShaderPBR.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Shader\ShaderShadowMap.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Shader\ShaderSkinning.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Shader\ShaderWater.h">
       <Filter>Shader</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\CommonStructs.h">
@@ -990,13 +930,7 @@
     <ClInclude Include="src\Mesh\CubeSkybox.h">
       <Filter>Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="src\Texture\OmniShadowMap.h">
-      <Filter>Texture</Filter>
-    </ClInclude>
     <ClInclude Include="src\Texture\RadianceHDR.h">
-      <Filter>Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Texture\ShadowMap.h">
       <Filter>Texture</Filter>
     </ClInclude>
     <ClInclude Include="src\Texture\SubTexture2D.h">
@@ -1385,6 +1319,12 @@
     </ClInclude>
     <ClInclude Include="src\SSAO\SSAO.h">
       <Filter>SSAO</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Framebuffer\OmniShadowMap.h">
+      <Filter>Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Framebuffer\ShadowMap.h">
+      <Filter>Framebuffer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

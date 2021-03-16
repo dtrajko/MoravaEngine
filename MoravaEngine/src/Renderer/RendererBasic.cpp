@@ -153,6 +153,16 @@ void RendererBasic::DisableMSAA()
 	glDisable(GL_MULTISAMPLE);
 }
 
+void RendererBasic::EnableBlend()
+{
+	glEnable(GL_BLEND);
+}
+
+void RendererBasic::DisableBlend()
+{
+	glDisable(GL_BLEND);
+}
+
 void RendererBasic::Cleanup()
 {
 	for (auto& shader : s_Shaders)

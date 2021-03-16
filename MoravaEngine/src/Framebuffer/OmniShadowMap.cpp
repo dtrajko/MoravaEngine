@@ -1,4 +1,4 @@
-#include "Texture/OmniShadowMap.h"
+#include "OmniShadowMap.h"
 
 #include "Core/Log.h"
 
@@ -48,7 +48,7 @@ bool OmniShadowMap::Init(GLuint width, GLuint height)
 	return false;
 }
 
-void OmniShadowMap::Read(unsigned int textureUnit)
+void OmniShadowMap::ReadTexture(unsigned int textureUnit)
 {
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);

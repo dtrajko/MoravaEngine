@@ -65,7 +65,7 @@ void ShaderMain::SetPointLights(PointLight* pointLights, unsigned int lightCount
 			uniformPointLight[i].uniformLinear,
 			uniformPointLight[i].uniformExponent);
 
-		pointLights[i].GetShadowMap()->Read(textureUnit + offset + i);
+		pointLights[i].GetShadowMap()->ReadTexture(textureUnit + offset + i);
 		glUniform1i(uniformOmniShadowMap[offset + i].shadowMap, textureUnit + offset + i);
 		glUniform1f(uniformOmniShadowMap[offset + i].farPlane, pointLights[i].GetFarPlane());
 	}
@@ -91,7 +91,7 @@ void ShaderMain::SetSpotLights(SpotLight* spotLights, unsigned int lightCount, u
 			uniformSpotLight[i].uniformExponent,
 			uniformSpotLight[i].uniformEdge);
 
-		spotLights[i].GetShadowMap()->Read(textureUnit + offset + i);
+		spotLights[i].GetShadowMap()->ReadTexture(textureUnit + offset + i);
 		glUniform1i(uniformOmniShadowMap[offset + i].shadowMap, textureUnit + offset + i);
 		glUniform1f(uniformOmniShadowMap[offset + i].farPlane, spotLights[i].GetFarPlane());
 	}

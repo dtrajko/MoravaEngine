@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Texture/ShadowMap.h"
+#include "Framebuffer/ShadowMap.h"
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
