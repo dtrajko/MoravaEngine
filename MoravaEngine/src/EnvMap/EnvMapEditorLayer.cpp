@@ -134,11 +134,11 @@ void EnvMapEditorLayer::Init()
     EnvMapRenderPassSpecification geoRenderPassSpec;
     geoRenderPassSpec.TargetFramebuffer = Framebuffer::Create(geoFramebufferSpec);
     geoRenderPassSpec.TargetFramebuffer->AddColorAttachment(geoFramebufferSpec);
-
     geoRenderPassSpec.TargetFramebuffer->AddDepthAttachment(geoFramebufferDepthSpec);
     Log::GetLogger()->debug("Generating the GEO RenderPass framebuffer with AttachmentFormat::RGBA16F");
 
     geoRenderPassSpec.TargetFramebuffer->Generate(geoFramebufferSpec.Width, geoFramebufferSpec.Height);
+
     m_SceneRenderer->s_Data.GeoPass = Hazel::Ref<EnvMapRenderPass>::Create(geoRenderPassSpec);
 
     FramebufferSpecification compFramebufferSpec;
@@ -154,11 +154,11 @@ void EnvMapEditorLayer::Init()
     compRenderPassSpec.TargetFramebuffer = Framebuffer::Create(compFramebufferSpec);
     compRenderPassSpec.TargetFramebuffer->AddColorAttachment(compFramebufferSpec);
 
-    FramebufferSpecification compFramebufferDepthSpec;
-    compFramebufferDepthSpec = compFramebufferSpec;
-    compFramebufferDepthSpec.attachmentType = AttachmentType::Renderbuffer;
-    compFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth;
-    compRenderPassSpec.TargetFramebuffer->AddDepthAttachment(compFramebufferDepthSpec);
+    // FramebufferSpecification compFramebufferDepthSpec;
+    // compFramebufferDepthSpec = compFramebufferSpec;
+    // compFramebufferDepthSpec.attachmentType = AttachmentType::Renderbuffer;
+    // compFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth;
+    // compRenderPassSpec.TargetFramebuffer->AddDepthAttachment(compFramebufferDepthSpec);
 
     Log::GetLogger()->debug("Generating the COMPOSITE RenderPass framebuffer with AttachmentFormat::RGBA8");
     compRenderPassSpec.TargetFramebuffer->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
@@ -1010,12 +1010,12 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
             glm::ivec2 colorAttachmentSize = glm::ivec2(
                 targetFramebuffer->GetTextureAttachmentColor()->GetWidth(),
                 targetFramebuffer->GetTextureAttachmentColor()->GetHeight());
-            glm::ivec2 depthAttachmentSize = glm::ivec2(
-                targetFramebuffer->GetAttachmentDepth()->GetWidth(),
-                targetFramebuffer->GetAttachmentDepth()->GetHeight());
+            //  glm::ivec2 depthAttachmentSize = glm::ivec2(
+            //      targetFramebuffer->GetAttachmentDepth()->GetWidth(),
+            //      targetFramebuffer->GetAttachmentDepth()->GetHeight());
 
             ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
-            ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
+            // ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
         }
         ImGui::End();
     }

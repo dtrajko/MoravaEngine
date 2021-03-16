@@ -1186,10 +1186,9 @@ namespace Hazel {
 		glm::mat4 outlineTransform = Math::CreateTransform(translation, glm::quat(rotation), scale);
 
 		shader->Bind();
-
 		shader->setMat4("u_Transform", outlineTransform);
 
-		glDisable(GL_DEPTH_TEST);
+		RendererBasic::DisableDepthTest();
 
 		glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
 
