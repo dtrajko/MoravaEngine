@@ -94,10 +94,11 @@ void BlurEffect::HorizontalBlurSetup(int width, int height)
 
 	m_HorizontalFBO = new Framebuffer(m_Width, m_Height);
 	m_HorizontalFBO->AddColorAttachmentSpecification(m_Width, m_Height, AttachmentType::Texture, AttachmentFormat::Color);
-	// m_HorizontalFBO->Generate(m_Width, m_Height);
+	m_HorizontalFBO->Generate(m_Width, m_Height);
 
-	if (!m_HorizontalFBO->CheckStatus())
+	if (!m_HorizontalFBO->CheckStatus()) {
 		Log::GetLogger()->error("ERROR: BlurEffect Horizontal blur FBO is not complete!");
+	}
 
 	Log::GetLogger()->info("Horizontal Blur FBO created successfully.");
 
@@ -112,10 +113,11 @@ void BlurEffect::VerticalBlurSetup(int width, int height)
 
 	m_VerticalFBO = new Framebuffer(m_Width, m_Height);
 	m_VerticalFBO->AddColorAttachmentSpecification(m_Width, m_Height, AttachmentType::Texture, AttachmentFormat::Color);
-	// m_VerticalFBO->Generate(m_Width, m_Height);
+	m_VerticalFBO->Generate(m_Width, m_Height);
 
-	if (!m_VerticalFBO->CheckStatus())
+	if (!m_VerticalFBO->CheckStatus()) {
 		Log::GetLogger()->error("ERROR: BlurEffect Vertical blur FBO is not complete!");
+	}
 
 	Log::GetLogger()->info("Vertical Blur FBO created successfully.");
 

@@ -33,10 +33,10 @@
 // #define SCENE_MARCHING_CUBES
 // #define SCENE_SSAO
 // #define SCENE_DEFERRED
+// #define SCENE_DEFERRED_OGL
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
 // #define SCENE_ANIM_PBR
-// #define SCENE_DEFERRED_OGL
 #define SCENE_HAZEL_ENV_MAP
 
 #include "Hazel/Core/Base.h"

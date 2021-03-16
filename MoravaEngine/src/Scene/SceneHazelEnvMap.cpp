@@ -245,5 +245,11 @@ void SceneHazelEnvMap::OnEntitySelected(Hazel::Entity entity)
 void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
-    m_EnvironmentMap->OnRender(m_EnvironmentMap->m_RenderFramebuffer, mainWindow);
+    if (passType == "main") {
+        m_EnvironmentMap->OnRender(m_EnvironmentMap->m_RenderFramebuffer, mainWindow);
+    }
+
+    if (passType == "shadow") {
+        m_EnvironmentMap->OnRenderShadow();
+    }
 }

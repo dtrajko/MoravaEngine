@@ -54,7 +54,7 @@ SceneEditor::SceneEditor()
     sceneSettings.directionalLight.direction = glm::vec3(0.6f, -0.5f, -0.6f);
     sceneSettings.directionalLight.base.ambientIntensity = 0.75f;
     sceneSettings.directionalLight.base.diffuseIntensity = 0.4f;
-    sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 40.0f);
+    sceneSettings.lightProjectionMatrix = glm::ortho(-32.0f, 32.0f, -32.0f, 32.0f, -32.0f, 32.0f);
 
     // point lights
     sceneSettings.pointLights[0].base.enabled = false;
@@ -221,7 +221,7 @@ void SceneEditor::SetupRenderFramebuffer()
     m_RenderFramebuffer = new Framebuffer(width, height);
 
     m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
-    m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
+    m_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
 
     m_RenderFramebuffer->Generate(width, height);
 }
@@ -885,9 +885,9 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Framebuffers");
     {
-        if (ImGui::CollapsingHeader("Display Info"))
+        if (ImGui::CollapsingHeader("Display Info"), nullptr, ImGuiTreeNodeFlags_DefaultOpen)
         {
-            ImVec2 imageSize(128.0f, 128.0f);
+            ImVec2 imageSize(96.0f, 96.0f);
 
             ImGui::Text("Shadow Map");
             ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
@@ -898,6 +898,7 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
                 ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
             }
 
+            /****
             if (ImGui::CollapsingHeader("Omni Shadow Maps"))
             {
                 ImGui::Text("Omni Shadow Map 0\n(Point Light 0)");
@@ -918,6 +919,7 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
                 ImGui::Text("Omni Shadow Map 7\n(Spot Light 3)");
                 ImGui::Image((void*)(intptr_t)LightManager::spotLights[3].GetShadowMap()->GetTextureID(), imageSize);
             }
+            ****/
 
             ImGui::Text("Water Reflection\nColor Attachment");
             ImGui::Image((void*)(intptr_t)m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->GetID(), imageSize);

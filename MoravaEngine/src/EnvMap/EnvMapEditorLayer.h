@@ -11,6 +11,7 @@
 #include "EnvMap/EnvMapSceneRenderer.h"
 #include "Mesh/CubeSkybox.h"
 #include "Mesh/Quad.h"
+#include "Texture/ShadowMap.h"
 
 
 enum class SelectionMode
@@ -37,6 +38,8 @@ public:
 	void OnSceneStop();
 
 	void OnRender(Framebuffer* framebuffer, Window* mainWindow);
+	void OnRenderShadow();
+
 	void OnRenderEditor(Framebuffer* framebuffer);
 	void OnRenderRuntime(Framebuffer* framebuffer);
 
@@ -154,6 +157,10 @@ public:
 private:
 	Hazel::Ref<Shader> m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
 	Hazel::Ref<Shader> m_ShaderOutline;
+	Hazel::Ref<Shader> m_ShaderShadow;
+
+	uint32_t m_FramebufferWidth;
+	uint32_t m_FramebufferHeight;
 
 	CubeSkybox* m_SkyboxCube;
 	Hazel::Ref<Hazel::HazelTextureCube> m_SkyboxTexture;
@@ -252,5 +259,7 @@ private:
 	std::string m_WindowTitleDynamic = "";
 
 	std::string m_StatusBarMessage = "";
+
+	Hazel::Ref<ShadowMap> m_ShadowMapDirLight;
 
 };

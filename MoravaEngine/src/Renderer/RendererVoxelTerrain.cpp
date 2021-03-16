@@ -110,7 +110,7 @@ void RendererVoxelTerrain::RenderPassOmniShadow(PointLight* light, Window* mainW
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RendererVoxelTerrain::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 
@@ -310,7 +310,7 @@ void RendererVoxelTerrain::Render(float deltaTime, Window* mainWindow, Scene* sc
 
 	{
 		Profiler profiler("RVT::RenderPass");
-		RenderPass(mainWindow, scene, projectionMatrix);
+		RenderPassMain(mainWindow, scene, projectionMatrix);
 		scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 	}
 }

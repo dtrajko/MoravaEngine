@@ -10,6 +10,7 @@
 
 class RenderInstanced
 {
+
 public:
 	RenderInstanced();
 	RenderInstanced(TerrainBase* terrain, Texture* texture, Mesh* mesh);

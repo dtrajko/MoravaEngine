@@ -14,7 +14,6 @@ class RendererBasic
 {
 
 public:
-
 	RendererBasic();
 	virtual ~RendererBasic();
 
@@ -42,7 +41,7 @@ public:
 	static std::map<std::string, Shader*>& GetShaders() { return s_Shaders; };
 	static std::map<std::string, int>& GetUniforms() { return s_Uniforms; };
 
-	static void RenderPass(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow);
+	static void RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow);
 	static void Cleanup();
 	static void Clear(float r, float g, float b, float a);
 

@@ -255,7 +255,7 @@ void RendererEditor::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::ma
         if (LightManager::pointLights[i].GetEnabled()) {
             std::string profilerTitle = "RE::RenderPassOmniShadow[PL_" + std::to_string(i) + ']';
             Profiler profiler(profilerTitle);
-            RenderPassOmniShadow(&LightManager::pointLights[i], mainWindow, scene, projectionMatrix);
+            ; (&LightManager::pointLights[i], mainWindow, scene, projectionMatrix);
             scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
         }
     }
@@ -306,7 +306,7 @@ void RendererEditor::RenderWaterEffects(float deltaTime, Window* mainWindow, Sce
     glDisable(GL_CLIP_DISTANCE0);
 }
 
-void RendererEditor::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererEditor::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     SceneEditor* sceneEditor = (SceneEditor*)scene;
     Framebuffer* renderFramebuffer = nullptr;
@@ -701,7 +701,7 @@ void RendererEditor::Render(float deltaTime, Window* mainWindow, Scene* scene, g
     }
     {
         Profiler profiler("RE::RenderPass");
-        RenderPass(mainWindow, scene, projectionMatrix);
+        RenderPassMain(mainWindow, scene, projectionMatrix);
         scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
 }

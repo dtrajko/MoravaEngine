@@ -22,7 +22,7 @@ void RendererTrivial::RenderPassOmniShadow(PointLight* light, Window* mainWindow
 {
 }
 
-void RendererTrivial::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererTrivial::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 	
@@ -42,7 +42,7 @@ void RendererTrivial::Render(float deltaTime, Window* mainWindow, Scene* scene, 
 {
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
-	RenderPass(mainWindow, scene, projectionMatrix);
+	RenderPassMain(mainWindow, scene, projectionMatrix);
 }
 
 RendererTrivial::~RendererTrivial()

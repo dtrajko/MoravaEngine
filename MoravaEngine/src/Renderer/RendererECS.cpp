@@ -16,6 +16,26 @@ void RendererECS::SetShaders()
 {
 }
 
+void RendererECS::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+    if (!scene->GetSettings().enableShadows) return;
+    if (!LightManager::directionalLight.GetEnabled()) return;
+    if (LightManager::directionalLight.GetShadowMap() == nullptr) return;
+
+	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
+
+	// Clear the window
+	RendererBasic::Clear(1.0f, 1.0f, 1.0f, 1.0f);
+
+	glDisable(GL_BLEND);
+
+    DisableCulling();
+    std::string passType = "shadow";
+    scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void RendererECS::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 }
@@ -24,13 +44,12 @@ void RendererECS::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Sc
 {
 }
 
-void RendererECS::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererECS::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
-	
+
 	// Clear the window
-	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	RendererBasic::Clear(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
 
 	// ...
 
@@ -43,7 +62,9 @@ void RendererECS::Render(float deltaTime, Window* mainWindow, Scene* scene, glm:
 {
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
-	RenderPass(mainWindow, scene, projectionMatrix);
+	RenderPassShadow(mainWindow, scene, projectionMatrix);
+
+	RenderPassMain(mainWindow, scene, projectionMatrix);
 }
 
 RendererECS::~RendererECS()

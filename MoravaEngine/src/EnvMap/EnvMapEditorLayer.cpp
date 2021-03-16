@@ -29,6 +29,9 @@ uint32_t EnvMapEditorLayer::s_MaterialIndex = 0;
 
 EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 {
+    m_FramebufferWidth = 1280;
+    m_FramebufferHeight = 720;
+
     m_SamplerSlots = new std::map<std::string, unsigned int>();
 
     //  // PBR texture inputs
@@ -98,6 +101,9 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     // Create a default material
     s_DefaultMaterial = CreateDefaultMaterial("MAT_DEF");
     s_EnvMapMaterials.insert(std::make_pair(s_DefaultMaterial->GetUUID(), s_DefaultMaterial));
+
+    m_ShadowMapDirLight = Hazel::Ref<ShadowMap>::Create();
+    m_ShadowMapDirLight->Init(m_FramebufferWidth, m_FramebufferHeight);
 }
 
 void EnvMapEditorLayer::Init()
@@ -109,8 +115,8 @@ void EnvMapEditorLayer::Init()
     bool isMultisample = false;
 
     FramebufferSpecification geoFramebufferSpec;
-    geoFramebufferSpec.Width = 1280;
-    geoFramebufferSpec.Height = 720;
+    geoFramebufferSpec.Width = m_FramebufferWidth;
+    geoFramebufferSpec.Height = m_FramebufferHeight;
     geoFramebufferSpec.attachmentType = AttachmentType::Texture;
     geoFramebufferSpec.attachmentFormat = AttachmentFormat::RGBA16F;
     geoFramebufferSpec.Samples = 8;
@@ -134,8 +140,8 @@ void EnvMapEditorLayer::Init()
     m_SceneRenderer->s_Data.GeoPass = Hazel::Ref<EnvMapRenderPass>::Create(geoRenderPassSpec);
 
     FramebufferSpecification compFramebufferSpec;
-    compFramebufferSpec.Width = 1280;
-    compFramebufferSpec.Height = 720;
+    compFramebufferSpec.Width = m_FramebufferWidth;
+    compFramebufferSpec.Height = m_FramebufferHeight;
     compFramebufferSpec.attachmentType = AttachmentType::Texture;
     compFramebufferSpec.attachmentFormat = AttachmentFormat::RGBA8;
     compFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
@@ -396,6 +402,9 @@ void EnvMapEditorLayer::SetupShaders()
 
     m_ShaderOutline = Hazel::Ref<Shader>::Create("Shaders/Hazel/Outline.vs", "Shaders/Hazel/Outline.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: shaderOutline compiled [programID={0}]", m_ShaderOutline->GetProgramID());
+
+    m_ShaderShadow = Hazel::Ref<Shader>::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+    Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderShadow compiled [programID={0}]", m_ShaderShadow->GetProgramID());
 
     ResourceManager::AddShader("Hazel/HazelPBR_Static", shaderHazelPBR_Static);
     ResourceManager::AddShader("Hazel/HazelPBR_Anim", shaderHazelPBR_Anim);
@@ -2001,7 +2010,7 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 {
     auto [mx, my] = Input::GetMousePosition();
-    if (e.GetMouseButton() == (int)Mouse::ButtonLeft && !Input::IsKeyPressed(Key::LeftAlt) && !ImGuizmo::IsOver())
+    if (e.GetMouseButton() == (int)Mouse::ButtonLeft && !ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
     {
         auto [mouseX, mouseY] = GetMouseViewportSpace();
         if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
@@ -2262,6 +2271,60 @@ void EnvMapEditorLayer::OnRender(Framebuffer* framebuffer, Window* mainWindow)
     {
         m_RenderFramebuffer->Unbind();
     }
+}
+
+void EnvMapEditorLayer::OnRenderShadow()
+{
+    glm::mat4 dirLightTransform = glm::mat4(1.0f);
+    if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>()) {
+        auto& dirLightTransformComponent = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+        dirLightTransform = dirLightTransformComponent.GetTransform();
+    }
+
+    m_ShaderShadow->Bind();
+    m_ShaderShadow->setMat4("dirLightTransform", dirLightTransform);
+
+    // Rendering all meshes (submeshes) on the scene to a shadow framebuffer
+    auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    // Render all entities with mesh component
+    if (meshEntities.size())
+    {
+        for (auto entt : meshEntities)
+        {
+            Hazel::Entity entity = { entt, m_EditorScene.Raw() };
+            auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
+            glm::mat4 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+
+            if (meshComponent.Mesh)
+            {
+                Hazel::Ref<Hazel::HazelMesh> parentMesh = meshComponent.Mesh;
+
+                for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
+                {
+                    // Render Submesh
+                    glm::mat4 submeshTransform;
+                    if (entity && entity.HasComponent<Hazel::TransformComponent>()) {
+                        submeshTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+                    }
+                    else {
+                        submeshTransform = entityTransform;
+                    }
+
+                    parentMesh->m_VertexBuffer->Bind();
+                    parentMesh->m_Pipeline->Bind();
+                    parentMesh->m_IndexBuffer->Bind();
+
+                    glDisable(GL_DEPTH_TEST);
+
+                    m_ShaderShadow->setMat4("model", submeshTransform * submesh.Transform);
+
+                    glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+                }
+            }
+        }
+    }
+
+    m_ShaderShadow->Unbind();
 }
 
 void EnvMapEditorLayer::OnRenderEditor(Framebuffer* framebuffer)

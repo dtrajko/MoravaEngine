@@ -63,7 +63,7 @@ SceneEditorImGuizmo::SceneEditorImGuizmo()
     sceneSettings.directionalLight.direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
     sceneSettings.directionalLight.base.ambientIntensity = 0.75f;
     sceneSettings.directionalLight.base.diffuseIntensity = 0.4f;
-    sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 40.0f);
+    sceneSettings.lightProjectionMatrix = glm::ortho(-32.0f, 32.0f, -32.0f, 32.0f, -32.0f, 32.0f);
 
     // point lights
     sceneSettings.pointLights[0].base.enabled = false;
@@ -1002,9 +1002,9 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Framebuffers");
     {
-        if (ImGui::CollapsingHeader("Display Info"))
+        if (ImGui::CollapsingHeader("Display Info"), nullptr, ImGuiTreeNodeFlags_DefaultOpen)
         {
-            ImVec2 imageSize(128.0f, 128.0f);
+            ImVec2 imageSize(96.0f, 96.0f);
 
             ImGui::Text("Shadow Map");
             ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
@@ -1015,6 +1015,7 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
                 ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
             }
 
+            /****
             if (ImGui::CollapsingHeader("Omni Shadow Maps"))
             {
                 ImGui::Text("Omni Shadow Map 0\n(Point Light 0)");
@@ -1035,6 +1036,7 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
                 ImGui::Text("Omni Shadow Map 7\n(Spot Light 3)");
                 ImGui::Image((void*)(intptr_t)LightManager::spotLights[3].GetShadowMap()->GetTextureID(), imageSize);
             }
+            ****/
 
             ImGui::Text("Water Reflection\nColor Attachment");
             ImGui::Image((void*)(intptr_t)m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
@@ -1636,7 +1638,7 @@ void SceneEditorImGuizmo::Update(float timestep, Window* mainWindow)
         m_Transform_ImGuizmo = &m_SceneObjects[m_SelectedIndex]->transform;
     }
 
-    if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft))
+    if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft) && !ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
     {
         m_Transform_ImGuizmo = &m_SceneObjects[m_SelectedIndex]->transform;
         if (m_ImGizmoType == -1) {

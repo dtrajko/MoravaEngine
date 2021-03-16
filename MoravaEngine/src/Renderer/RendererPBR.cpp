@@ -88,7 +88,7 @@ void RendererPBR::SetShaders()
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
 }
 
-void RendererPBR::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererPBR::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glDisable(GL_CLIP_DISTANCE0);
 
@@ -206,7 +206,7 @@ void RendererPBR::Render(float deltaTime, Window* mainWindow, Scene* scene, glm:
 {
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
-	RenderPass(mainWindow, scene, projectionMatrix);
+	RenderPassMain(mainWindow, scene, projectionMatrix);
 }
 
 RendererPBR::~RendererPBR()

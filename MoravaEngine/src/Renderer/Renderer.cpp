@@ -280,7 +280,7 @@ void Renderer::RenderPassWaterRefraction(Window* mainWindow, Scene* scene, glm::
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::RenderPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glDisable(GL_CLIP_DISTANCE0);
 
@@ -390,7 +390,7 @@ void Renderer::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::ma
 	RenderPassShadow(mainWindow, scene, projectionMatrix);
 	RenderOmniShadows(mainWindow, scene, projectionMatrix);
 	RenderWaterEffects(deltaTime, mainWindow, scene, projectionMatrix);
-	RenderPass(mainWindow, scene, projectionMatrix);
+	RenderPassMain(mainWindow, scene, projectionMatrix);
 }
 
 Renderer::~Renderer()
