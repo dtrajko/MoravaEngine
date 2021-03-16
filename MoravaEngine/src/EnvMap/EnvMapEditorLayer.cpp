@@ -154,11 +154,11 @@ void EnvMapEditorLayer::Init()
     compRenderPassSpec.TargetFramebuffer = Framebuffer::Create(compFramebufferSpec);
     compRenderPassSpec.TargetFramebuffer->AddColorAttachment(compFramebufferSpec);
 
-    // FramebufferSpecification compFramebufferDepthSpec;
-    // compFramebufferDepthSpec = compFramebufferSpec;
-    // compFramebufferDepthSpec.attachmentType = AttachmentType::Renderbuffer;
-    // compFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth;
-    // compRenderPassSpec.TargetFramebuffer->AddDepthAttachment(compFramebufferDepthSpec);
+    FramebufferSpecification compFramebufferDepthSpec;
+    compFramebufferDepthSpec = compFramebufferSpec;
+    compFramebufferDepthSpec.attachmentType = AttachmentType::Renderbuffer;
+    compFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth;
+    compRenderPassSpec.TargetFramebuffer->AddDepthAttachment(compFramebufferDepthSpec);
 
     Log::GetLogger()->debug("Generating the COMPOSITE RenderPass framebuffer with AttachmentFormat::RGBA8");
     compRenderPassSpec.TargetFramebuffer->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
@@ -1010,12 +1010,12 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
             glm::ivec2 colorAttachmentSize = glm::ivec2(
                 targetFramebuffer->GetTextureAttachmentColor()->GetWidth(),
                 targetFramebuffer->GetTextureAttachmentColor()->GetHeight());
-            //  glm::ivec2 depthAttachmentSize = glm::ivec2(
-            //      targetFramebuffer->GetAttachmentDepth()->GetWidth(),
-            //      targetFramebuffer->GetAttachmentDepth()->GetHeight());
+            glm::ivec2 depthAttachmentSize = glm::ivec2(
+                targetFramebuffer->GetAttachmentDepth()->GetWidth(),
+                targetFramebuffer->GetAttachmentDepth()->GetHeight());
 
             ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
-            // ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
+            ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
         }
         ImGui::End();
     }
@@ -1813,8 +1813,6 @@ void EnvMapEditorLayer::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& tran
         else {
             glDisable(GL_DEPTH_TEST);
         }
-
-        glDisable(GL_DEPTH_TEST);
 
         glDrawElementsBaseVertex(GL_TRIANGLES, submesh.GetIndexCount(), GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
     }
