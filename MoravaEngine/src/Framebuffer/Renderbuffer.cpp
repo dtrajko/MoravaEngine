@@ -11,8 +11,8 @@ Renderbuffer::Renderbuffer() : Attachment()
 {
 }
 
-Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat, unsigned int orderID)
-	: Attachment(width, height, AttachmentType::Renderbuffer, attachmentFormat, orderID)
+Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, AttachmentFormat attachmentFormat, unsigned int orderID, uint32_t framebufferID)
+	: Attachment(width, height, AttachmentType::Renderbuffer, attachmentFormat, orderID, framebufferID)
 {
 	GLenum internalFormat;
 	GLenum attachment;
@@ -41,6 +41,8 @@ Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, AttachmentFo
 		return;
 	}
 
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FramebufferID);
+
 	glGenRenderbuffers(1, &m_ID);
 	glBindRenderbuffer(GL_RENDERBUFFER, m_ID);
 	// Create a depth and stencil renderbuffer object
@@ -52,7 +54,7 @@ Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, AttachmentFo
 	// finally check if framebuffer is complete
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		Log::GetLogger()->error("Renderbuffer::Renderbuffer: Framebuffer not complete! Status: '{0}'", status);
+		Log::GetLogger()->error("Renderbuffer::Renderbuffer: Framebuffer not complete! Status: '{0}', [{1}x{2}]", status, m_Width, m_Height);
 	}
 
 	Util::CheckOpenGLErrors("Renderbuffer::Renderbuffer");

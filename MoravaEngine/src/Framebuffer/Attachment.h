@@ -28,7 +28,7 @@ class Attachment : public Hazel::RefCounted
 {
 public:
 	Attachment();
-	Attachment(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat, unsigned int orderID);
+	Attachment(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat, unsigned int orderID, uint32_t framebufferID);
 	virtual ~Attachment();
 
 	inline unsigned int GetID() const { return m_ID; };
@@ -46,5 +46,7 @@ protected:
 	AttachmentType m_AttachmentType;
 	AttachmentFormat m_AttachmentFormat;
 	unsigned int m_OrderID; // used for color texture attachments GL_COLOR_ATTACHMENT0 + m_OrderID
+
+	uint32_t m_FramebufferID;
 
 };

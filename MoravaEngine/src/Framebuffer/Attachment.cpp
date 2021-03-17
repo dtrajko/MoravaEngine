@@ -11,8 +11,8 @@ Attachment::Attachment()
 	m_OrderID = 0;
 }
 
-Attachment::Attachment(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat, unsigned int orderID)
-	: m_Width(width), m_Height(height), m_AttachmentType(attachmentType), m_AttachmentFormat(attachmentFormat), m_OrderID(orderID)
+Attachment::Attachment(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat, unsigned int orderID, uint32_t framebufferID)
+	: m_Width(width), m_Height(height), m_AttachmentType(attachmentType), m_AttachmentFormat(attachmentFormat), m_OrderID(orderID), m_FramebufferID(framebufferID)
 {
 }
 

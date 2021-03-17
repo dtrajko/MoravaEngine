@@ -211,7 +211,7 @@ void Framebuffer::CreateAttachmentDepth(unsigned int width, unsigned int height,
 	if (attachmentType == AttachmentType::Texture)
 		m_AttachmentDepth = Hazel::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentDepth = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0);
+		m_AttachmentDepth = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
 }
 
 void Framebuffer::CreateAttachmentStencil(unsigned int width, unsigned int height, bool isMultisample,
@@ -220,7 +220,7 @@ void Framebuffer::CreateAttachmentStencil(unsigned int width, unsigned int heigh
 	if (attachmentType == AttachmentType::Texture)
 		m_AttachmentStencil = Hazel::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentStencil = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0);
+		m_AttachmentStencil = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
 }
 
 void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, bool isMultisample,
@@ -229,7 +229,7 @@ void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned i
 	if (attachmentType == AttachmentType::Texture)
 		m_AttachmentDepthAndStencil = Hazel::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentDepthAndStencil = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0);
+		m_AttachmentDepthAndStencil = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
 }
 
 void Framebuffer::Bind()

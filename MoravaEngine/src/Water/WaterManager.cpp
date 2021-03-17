@@ -30,7 +30,7 @@ WaterManager::WaterManager(int width, int height, float waterHeight, float waveS
 	Hazel::Ref<FramebufferTexture> reflectionTextureAttachment = Hazel::Ref<FramebufferTexture>::Create(m_Width, m_Height, isMultisample, AttachmentFormat::Color, 0);
 	m_ReflectionFB->AddColorAttachment(reflectionTextureAttachment);
 
-	Hazel::Ref<Renderbuffer> reflectionDepthBuffer = Hazel::Ref<Renderbuffer>::Create(m_Width, m_Height, AttachmentFormat::Depth, 0);
+	Hazel::Ref<Renderbuffer> reflectionDepthBuffer = Hazel::Ref<Renderbuffer>::Create(m_Width, m_Height, AttachmentFormat::Depth, 0, m_ReflectionFB->GetID());
 	m_ReflectionFB->AddDepthBuffer(reflectionDepthBuffer);
 
 	SwitchToDefaultFramebuffer();

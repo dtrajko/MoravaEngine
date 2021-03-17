@@ -38,7 +38,7 @@ FramebufferTexture::FramebufferTexture(Texture::Specification spec, unsigned int
 
 FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentFormat attachmentFormat, unsigned int orderID)
-	: Attachment(width, height, AttachmentType::Texture, attachmentFormat, orderID)
+	: Attachment(width, height, AttachmentType::Texture, attachmentFormat, orderID, 0)
 {
 	m_Level = 0;
 	InitSpecification();
@@ -94,7 +94,7 @@ FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, 
 
 FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat, unsigned int orderID)
-	: Attachment(width, height, attachmentType, attachmentFormat, orderID)
+	: Attachment(width, height, attachmentType, attachmentFormat, orderID, 0)
 {
 	m_Level = 0;
 	InitSpecification();
