@@ -249,7 +249,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
         m_EnvironmentMap->OnRender(m_EnvironmentMap->m_RenderFramebuffer, mainWindow);
     }
 
-    if (passType == "shadow") {
+    if (passType == "shadow" && sceneSettings.enableShadows) {
         m_EnvironmentMap->OnRenderShadow(mainWindow);
     }
 }
