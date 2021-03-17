@@ -13,8 +13,8 @@ public:
 	void SwitchToDefaultFramebuffer();
 	inline int GetFramebufferWidth() const { return m_Width; };
 	inline int GetFramebufferHeight() const { return m_Height; };
-	inline FramebufferWater* GetReflectionFramebuffer() const { return reflectionFB; };
-	inline FramebufferWater* GetRefractionFramebuffer() const { return refractionFB; };
+	inline FramebufferWater* GetReflectionFramebuffer() const { return m_ReflectionFB; };
+	inline FramebufferWater* GetRefractionFramebuffer() const { return m_RefractionFB; };
 	inline float GetWaterHeight() const { return m_WaterHeight; };
 	inline void SetWaterHeight(float waterHeight) { m_WaterHeight = waterHeight; };
 	inline float GetWaterMoveFactor() const { return m_MoveFactor; };
@@ -27,8 +27,8 @@ public:
 	static float m_WaveSpeed;
 
 private:
-	FramebufferWater* reflectionFB;
-	FramebufferWater* refractionFB;
+	FramebufferWater* m_ReflectionFB;
+	FramebufferWater* m_RefractionFB;
 
 	int m_Width;
 	int m_Height;

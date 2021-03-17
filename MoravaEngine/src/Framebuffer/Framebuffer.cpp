@@ -189,10 +189,6 @@ void Framebuffer::Release()
 
 	m_TextureAttachmentsColor.clear();
 
-	// delete m_AttachmentDepth;
-	delete m_AttachmentStencil;
-	delete m_AttachmentDepthAndStencil;
-
 	glDeleteFramebuffers(1, &m_FBO);
 
 	m_FBO = 0;
@@ -213,27 +209,27 @@ void Framebuffer::CreateAttachmentDepth(unsigned int width, unsigned int height,
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentDepth = new FramebufferTexture(width, height, isMultisample, attachmentFormat, 0);
+		m_AttachmentDepth = Hazel::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentDepth = new Renderbuffer(width, height, attachmentFormat, 0);
+		m_AttachmentDepth = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0);
 }
 
 void Framebuffer::CreateAttachmentStencil(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentStencil = new FramebufferTexture(width, height, isMultisample, attachmentFormat, 0);
+		m_AttachmentStencil = Hazel::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentStencil = new Renderbuffer(width, height, attachmentFormat, 0);
+		m_AttachmentStencil = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0);
 }
 
 void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentDepthAndStencil = new FramebufferTexture(width, height, isMultisample, attachmentFormat, 0);
+		m_AttachmentDepthAndStencil = Hazel::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentDepthAndStencil = new Renderbuffer(width, height, attachmentFormat, 0);
+		m_AttachmentDepthAndStencil = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0);
 }
 
 void Framebuffer::Bind()
@@ -283,9 +279,9 @@ FramebufferTexture* Framebuffer::GetTextureAttachmentColor(unsigned int orderID)
 	return m_TextureAttachmentsColor.at(orderID);
 }
 
-Attachment* Framebuffer::GetAttachmentDepth()
+Hazel::Ref<Attachment> Framebuffer::GetAttachmentDepth()
 {
-	if (m_AttachmentDepth == nullptr)
+	if (!m_AttachmentDepth)
 	{
 		throw std::runtime_error("Depth attachment does not exist in current Framebuffer [ " + std::to_string(m_FBO) + " ]");
 	}
@@ -293,18 +289,18 @@ Attachment* Framebuffer::GetAttachmentDepth()
 	return m_AttachmentDepth;
 }
 
-Attachment* Framebuffer::GetAttachmentStencil()
+Hazel::Ref<Attachment> Framebuffer::GetAttachmentStencil()
 {
-	if (m_AttachmentStencil == nullptr)
+	if (!m_AttachmentStencil)
 	{
 		throw std::runtime_error("Stencil attachment does not exist in current Framebuffer [ " + std::to_string(m_FBO) + " ]");
 	}
 	return m_AttachmentStencil;
 }
 
-Attachment* Framebuffer::GetAttachmentDepthAndStencil()
+Hazel::Ref<Attachment> Framebuffer::GetAttachmentDepthAndStencil()
 {
-	if (m_AttachmentDepthAndStencil == nullptr)
+	if (!m_AttachmentDepthAndStencil)
 	{
 		throw std::runtime_error("Depth/Stencil attachment does not exist in current Framebuffer [ " + std::to_string(m_FBO) + " ]");
 	}

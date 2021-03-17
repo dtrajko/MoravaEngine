@@ -30,21 +30,20 @@ FramebufferWater::FramebufferWater(unsigned int width, unsigned int height)
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-	Log::GetLogger()->info("FramebufferWater FBO={0}, m_Width={1}, m_Height={2}", m_FBO, m_Width, m_Height);
-
+	Log::GetLogger()->info("FramebufferWater FBO={0} {1}x{2}", m_FBO, m_Width, m_Height);
 }
 
-void FramebufferWater::AddColorAttachment(FramebufferTexture* colorAttachment)
+void FramebufferWater::AddColorAttachment(Hazel::Ref<FramebufferTexture> colorAttachment)
 {
 	m_ColorAttachment = colorAttachment;
 }
 
-void FramebufferWater::AddDepthAttachment(FramebufferTexture* depthAttachment)
+void FramebufferWater::AddDepthAttachment(Hazel::Ref<FramebufferTexture> depthAttachment)
 {
 	m_DepthAttachment = depthAttachment;
 }
 
-void FramebufferWater::AddDepthBuffer(Renderbuffer* depthBuffer)
+void FramebufferWater::AddDepthBuffer(Hazel::Ref<Renderbuffer> depthBuffer)
 {
 	m_DepthBuffer = depthBuffer;
 }
@@ -66,8 +65,5 @@ void FramebufferWater::Unbind()
 
 FramebufferWater::~FramebufferWater()
 {
-	delete m_ColorAttachment;
-	delete m_DepthAttachment;
-	delete m_DepthBuffer;
 	glDeleteFramebuffers(1, &m_FBO);
 }

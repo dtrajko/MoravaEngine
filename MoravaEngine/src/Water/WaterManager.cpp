@@ -25,23 +25,23 @@ WaterManager::WaterManager(int width, int height, float waterHeight, float waveS
 
 	m_WaterColor = glm::vec4(0.0, 0.6, 1.0, 1.0);
 
-	reflectionFB = new FramebufferWater(m_Width, m_Height);
+	m_ReflectionFB = new FramebufferWater(m_Width, m_Height);
 
-	FramebufferTexture* reflectionTextureAttachment = new FramebufferTexture(m_Width, m_Height, isMultisample, AttachmentFormat::Color, 0);
-	reflectionFB->AddColorAttachment(reflectionTextureAttachment);
+	Hazel::Ref<FramebufferTexture> reflectionTextureAttachment = Hazel::Ref<FramebufferTexture>::Create(m_Width, m_Height, isMultisample, AttachmentFormat::Color, 0);
+	m_ReflectionFB->AddColorAttachment(reflectionTextureAttachment);
 
-	Renderbuffer* reflectionDepthBuffer = new Renderbuffer(m_Width, m_Height, AttachmentFormat::Depth, 0);
-	reflectionFB->AddDepthBuffer(reflectionDepthBuffer);
+	Hazel::Ref<Renderbuffer> reflectionDepthBuffer = Hazel::Ref<Renderbuffer>::Create(m_Width, m_Height, AttachmentFormat::Depth, 0);
+	m_ReflectionFB->AddDepthBuffer(reflectionDepthBuffer);
 
 	SwitchToDefaultFramebuffer();
 
-	refractionFB = new FramebufferWater(m_Width, m_Height);
+	m_RefractionFB = new FramebufferWater(m_Width, m_Height);
 
-	FramebufferTexture* refractionTextureAttachment = new FramebufferTexture(m_Width, m_Height, isMultisample, AttachmentFormat::Color, 0);
-	refractionFB->AddColorAttachment(refractionTextureAttachment);
+	Hazel::Ref<FramebufferTexture> refractionTextureAttachment = Hazel::Ref<FramebufferTexture>::Create(m_Width, m_Height, isMultisample, AttachmentFormat::Color, 0);
+	m_RefractionFB->AddColorAttachment(refractionTextureAttachment);
 
-	FramebufferTexture* refractionDepthAttachment = new FramebufferTexture(m_Width, m_Height, isMultisample, AttachmentFormat::Depth, 0);
-	refractionFB->AddDepthAttachment(refractionDepthAttachment);
+	Hazel::Ref<FramebufferTexture> refractionDepthAttachment = Hazel::Ref<FramebufferTexture>::Create(m_Width, m_Height, isMultisample, AttachmentFormat::Depth, 0);
+	m_RefractionFB->AddDepthAttachment(refractionDepthAttachment);
 
 	SwitchToDefaultFramebuffer();
 }
@@ -54,6 +54,6 @@ void WaterManager::SwitchToDefaultFramebuffer()
 
 WaterManager::~WaterManager()
 {
-	delete reflectionFB;
-	delete refractionFB;
+	delete m_ReflectionFB;
+	delete m_RefractionFB;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Hazel/Core/Ref.h"
+
 
 enum class AttachmentType
 {
@@ -22,7 +24,7 @@ enum class AttachmentFormat
 };
 
 
-class Attachment
+class Attachment : public Hazel::RefCounted
 {
 public:
 	Attachment();

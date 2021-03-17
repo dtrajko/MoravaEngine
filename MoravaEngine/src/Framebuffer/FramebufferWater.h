@@ -23,25 +23,27 @@ class FramebufferWater
 public:
 	FramebufferWater();
 	FramebufferWater(unsigned int width, unsigned int height);
-	void AddColorAttachment(FramebufferTexture* colorAttachment);
-	void AddDepthAttachment(FramebufferTexture* depthAttachment);
-	void AddDepthBuffer(Renderbuffer* depthBuffer);
-	inline FramebufferTexture* GetColorAttachment() const { return m_ColorAttachment; };
-	inline FramebufferTexture* GetDepthAttachment() const { return m_DepthAttachment; };
-	inline Renderbuffer* GetDepthBuffer() const { return m_DepthBuffer; };
+	~FramebufferWater();
+
+	void AddColorAttachment(Hazel::Ref<FramebufferTexture> colorAttachment);
+	void AddDepthAttachment(Hazel::Ref<FramebufferTexture> depthAttachment);
+	void AddDepthBuffer(Hazel::Ref<Renderbuffer> depthBuffer);
+	inline Hazel::Ref<FramebufferTexture> GetColorAttachment() const { return m_ColorAttachment; };
+	inline Hazel::Ref<FramebufferTexture> GetDepthAttachment() const { return m_DepthAttachment; };
+	inline Hazel::Ref<Renderbuffer> GetDepthBuffer() const { return m_DepthBuffer; };
 	inline unsigned int GetID() const { return m_FBO; };
 	void Bind();
 	void Unbind();
-	~FramebufferWater();
 
 private:
 	unsigned int m_FBO = -1;
 	unsigned int m_Width = -1;
 	unsigned int m_Height = -1;
 
-	FramebufferTexture* m_ColorAttachment = nullptr;
-	FramebufferTexture* m_DepthAttachment = nullptr;
-	Renderbuffer* m_DepthBuffer = nullptr;
-	FramebufferTexture* m_StencilAttachment = nullptr; // still not in use
+	Hazel::Ref<FramebufferTexture> m_ColorAttachment = nullptr;
+	Hazel::Ref<FramebufferTexture> m_DepthAttachment = nullptr;
+
+	Hazel::Ref<Renderbuffer> m_DepthBuffer = nullptr;
+	Hazel::Ref<FramebufferTexture> m_StencilAttachment = nullptr; // still not in use
 
 };

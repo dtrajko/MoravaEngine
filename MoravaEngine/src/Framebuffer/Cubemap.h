@@ -12,7 +12,7 @@ public:
 	Cubemap(int width, int height);
 	inline TextureCubemap* GetTextureCubemap() { return m_TextureCubemap; };
 	inline FramebufferWater* GetCaptureFBO() { return m_CaptureFBO; };
-	inline Renderbuffer* GetCaptureRBO() { return m_CaptureRBO; };
+	inline Hazel::Ref<Renderbuffer> GetCaptureRBO() { return m_CaptureRBO; };
 	~Cubemap();
 
 private:
@@ -20,7 +20,7 @@ private:
 	unsigned int m_Height;
 
 	FramebufferWater* m_CaptureFBO;
-	Renderbuffer* m_CaptureRBO;
+	Hazel::Ref<Renderbuffer> m_CaptureRBO;
 	TextureCubemap* m_TextureCubemap;
 
 };

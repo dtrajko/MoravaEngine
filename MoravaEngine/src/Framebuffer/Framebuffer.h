@@ -57,9 +57,9 @@ public:
 		AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth_24_Stencil_8);
 
 	FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0);
-	Attachment* GetAttachmentDepth();
-	Attachment* GetAttachmentStencil();
-	Attachment* GetAttachmentDepthAndStencil();
+	Hazel::Ref<Attachment> GetAttachmentDepth();
+	Hazel::Ref<Attachment> GetAttachmentStencil();
+	Hazel::Ref<Attachment> GetAttachmentDepthAndStencil();
 
 	FramebufferSpecification& GetSpecification() { return m_FramebufferSpecs; };
 
@@ -93,9 +93,9 @@ private:
 	std::vector<FramebufferSpecification> m_RenderbufferAttachmentSpec;
 
 	std::vector<FramebufferTexture*> m_TextureAttachmentsColor;
-	Attachment* m_AttachmentDepth;
-	Attachment* m_AttachmentStencil;
-	Attachment* m_AttachmentDepthAndStencil;
+	Hazel::Ref<Attachment> m_AttachmentDepth;
+	Hazel::Ref<Attachment> m_AttachmentStencil;
+	Hazel::Ref<Attachment> m_AttachmentDepthAndStencil;
 
 	// Hazel/Platform/OpenGL/OpenGLFramebuffer
 	bool m_Multisample;

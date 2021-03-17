@@ -15,8 +15,7 @@ Cubemap::Cubemap(int width, int height)
 	printf("Create Environment Cubemap Framebuffer:\n");
 	m_CaptureFBO = new FramebufferWater(m_Width, m_Height);
 	printf("Create Environment Cubemap Renderbuffer:\n");
-	m_CaptureRBO = new Renderbuffer(m_Width, m_Height, AttachmentFormat::Depth_24, 0);
-	// m_CaptureFBO->AddDepthBuffer(m_CaptureRBO);
+	m_CaptureRBO = Hazel::Ref<Renderbuffer>::Create(m_Width, m_Height, AttachmentFormat::Depth_24, 0);
 
 	m_TextureCubemap = new TextureCubemap(m_Width, m_Height);
 
@@ -26,6 +25,5 @@ Cubemap::Cubemap(int width, int height)
 Cubemap::~Cubemap()
 {
 	delete m_CaptureFBO;
-	delete m_CaptureRBO;
 	delete m_TextureCubemap;
 }
