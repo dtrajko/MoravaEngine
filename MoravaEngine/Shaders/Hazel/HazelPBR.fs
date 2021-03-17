@@ -77,6 +77,9 @@ uniform float u_Exposure;
 
 uniform float u_TilingFactor;
 
+// Shadow Map Directional Light
+uniform sampler2D u_ShadowMap;
+
 struct PBRParameters
 {
 	vec3 Albedo;

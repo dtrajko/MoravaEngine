@@ -46,6 +46,8 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_SamplerSlots->insert(std::make_pair("irradiance", 8)); // uniform samplerCube u_EnvIrradianceTex
     // BRDF LUT
     m_SamplerSlots->insert(std::make_pair("BRDF_LUT",   9)); // uniform sampler2D u_BRDFLUTTexture
+    // Shadow Map Directional Light
+    m_SamplerSlots->insert(std::make_pair("shadow",     10)); // uniform sampler2D u_ShadowMap
 
     // Skybox.fs         - uniform samplerCube u_Texture;
     // SceneComposite.fs - uniform sampler2DMS u_Texture;
@@ -2195,6 +2197,8 @@ void EnvMapEditorLayer::GeometryPassTemporary()
                         UpdateShaderPBRUniforms(m_ShaderHazelPBR, envMapMaterial);
                     }
 
+                    m_ShadowMapDirLight->ReadTexture(m_SamplerSlots->at("shadow"));
+                    m_ShaderHazelPBR->setInt("u_ShadowMap", m_SamplerSlots->at("shadow"));
                     submesh.Render(meshComponent.Mesh, m_ShaderHazelPBR, entityTransform, samplerSlot, s_EnvMapMaterials, entity);
                 }
             }
