@@ -93,3 +93,8 @@ void Util::CheckOpenGLErrors(const std::string& label)
 		error = glGetError();
 	}
 }
+
+glm::mat4 Util::CalculateLightTransform(glm::mat4 lightProjectionMatrix, glm::vec3 lightDirection)
+{
+	return lightProjectionMatrix * glm::lookAt(-lightDirection, glm::vec3(0.0f, -lightDirection.y * 0.75f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+}

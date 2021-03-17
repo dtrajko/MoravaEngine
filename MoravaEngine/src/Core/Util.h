@@ -21,4 +21,6 @@ public:
 	static std::string randomString(size_t length);
 	static void CheckOpenGLErrors(const std::string& label = "Undefined");
 
+	static glm::mat4 CalculateLightTransform(glm::mat4 lightProjectionMatrix, glm::vec3 lightDirection);
+
 };

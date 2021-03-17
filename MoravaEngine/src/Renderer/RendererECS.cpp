@@ -18,8 +18,6 @@ void RendererECS::SetShaders()
 
 void RendererECS::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-    if (!scene->GetSettings().enableShadows) return;
-
     std::string passType = "shadow";
     scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 }

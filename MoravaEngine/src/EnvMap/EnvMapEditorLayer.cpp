@@ -8,6 +8,7 @@
 #include "../../ImGuizmo/ImGuizmo.h"
 
 #include "Core/MousePicker.h"
+#include "Core/Util.h"
 #include "EnvMap/EnvMapRenderPass.h"
 #include "ImGui/ImGuiWrapper.h"
 #include "Renderer/RendererBasic.h"
@@ -107,7 +108,8 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_ShadowMapDirLight = Hazel::Ref<ShadowMap>::Create();
     m_ShadowMapDirLight->Init(scene->GetSettings().shadowMapWidth, scene->GetSettings().shadowMapHeight);
 
-    m_LightProjectionMatrix = scene->GetSettings().lightProjectionMatrix;
+    m_LightDirection = glm::normalize(glm::vec3(0.5f, -1.0f, 0.5f));
+    m_LightProjectionMatrix = glm::ortho(-32.0f, 32.0f, -32.0f, 32.0f, -32.0f, 32.0f);
 }
 
 void EnvMapEditorLayer::Init()
@@ -2287,24 +2289,24 @@ void EnvMapEditorLayer::OnRender(Framebuffer* framebuffer, Window* mainWindow)
 
 void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
 {
-    glViewport(0, 0, m_ShadowMapDirLight->GetShadowWidth(), m_ShadowMapDirLight->GetShadowHeight());
-
-    RendererBasic::Clear(1.0f, 1.0f, 1.0f, 1.0f);
-    RendererBasic::DisableBlend();
-    RendererBasic::DisableCulling();
-    RendererBasic::EnableDepthTest();
-
     m_ShadowMapDirLight->BindForWriting();
 
-    glm::mat4 dirLightTransform = glm::mat4(1.0f);
-    if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>()) {
-        auto& dirLightTransformComponent = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
-        dirLightTransform = dirLightTransformComponent.GetTransform();
-    }
+    glViewport(0, 0, m_ShadowMapDirLight->GetShadowWidth(), m_ShadowMapDirLight->GetShadowHeight());
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_BLEND);
+    RendererBasic::DisableCulling();
 
     m_ShaderShadow->Bind();
-    // m_ShaderShadow->setMat4("dirLightTransform", m_LightProjectionMatrix);
-    m_ShaderShadow->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+
+    //  glm::mat4 dirLightTransform = glm::mat4(1.0f);
+    //  if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>()) {
+    //      auto& dirLightTransformComponent = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+    //      dirLightTransform = dirLightTransformComponent.GetTransform();
+    //  }
+
+    glm::mat4 dirLightTransform = Util::CalculateLightTransform(m_LightProjectionMatrix, m_LightDirection);
+    m_ShaderShadow->setMat4("dirLightTransform", dirLightTransform);
 
     // Rendering all meshes (submeshes) on the scene to a shadow framebuffer
     auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();

@@ -262,5 +262,6 @@ private:
 
 	Hazel::Ref<ShadowMap> m_ShadowMapDirLight;
 	glm::mat4 m_LightProjectionMatrix;
+	glm::vec3 m_LightDirection; // temporary, use DirectionalLightComponent
 
 };
