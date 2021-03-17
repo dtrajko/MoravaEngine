@@ -20,6 +20,7 @@ layout(location = 4) in vec2 a_TexCoord;
 
 uniform mat4 u_ViewProjectionMatrix;
 uniform mat4 u_Transform;
+uniform mat4 u_DirLightTransform;
 
 out VertexOutput
 {
@@ -29,6 +30,7 @@ out VertexOutput
 	mat3 WorldNormals;
 	mat3 WorldTransform;
 	vec3 Binormal;
+	vec4 DirLightSpacePos;
 } vs_Output;
 
 void main()
@@ -41,6 +43,7 @@ void main()
 	vs_Output.WorldNormals = mat3(u_Transform) * mat3(a_Tangent, a_Binormal, a_Normal);
 	vs_Output.WorldTransform = mat3(u_Transform);
 	vs_Output.Binormal = a_Binormal;
+	vs_Output.DirLightSpacePos = u_DirLightTransform * u_Transform * vec4(a_Position, 1.0);
 
 	gl_Position = u_ViewProjectionMatrix * u_Transform * localPosition;
 }

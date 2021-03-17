@@ -23,6 +23,7 @@ layout(location = 6) in vec4 a_BoneWeights;
 
 uniform mat4 u_ViewProjectionMatrix;
 uniform mat4 u_Transform;
+uniform mat4 u_DirLightTransform;
 
 const int MAX_BONES = 100;
 uniform mat4 u_BoneTransforms[MAX_BONES];
@@ -35,6 +36,7 @@ out VertexOutput
 	mat3 WorldNormals;
 	mat3 WorldTransform;
 	vec3 Binormal;
+	vec4 DirLightSpacePos;
 } vs_Output;
 
 void main()
@@ -51,6 +53,7 @@ void main()
 	vs_Output.TexCoord = vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
 	vs_Output.WorldNormals = mat3(u_Transform) * mat3(a_Tangent, a_Binormal, a_Normal);
 	vs_Output.Binormal = mat3(boneTransform) * a_Binormal;
+	vs_Output.DirLightSpacePos = u_DirLightTransform * u_Transform * vec4(a_Position, 1.0);
 
 	gl_Position = u_ViewProjectionMatrix * u_Transform * localPosition;
 }

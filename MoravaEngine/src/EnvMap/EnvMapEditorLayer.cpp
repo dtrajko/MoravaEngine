@@ -108,7 +108,7 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_ShadowMapDirLight = Hazel::Ref<ShadowMap>::Create();
     m_ShadowMapDirLight->Init(scene->GetSettings().shadowMapWidth, scene->GetSettings().shadowMapHeight);
 
-    m_LightDirection = glm::normalize(glm::vec3(0.5f, -1.0f, 0.5f));
+    m_LightDirection = glm::normalize(glm::vec3(0.25f, -1.0f, 0.25f));
     m_LightProjectionMatrix = glm::ortho(-32.0f, 32.0f, -32.0f, 32.0f, -32.0f, 32.0f);
 }
 
@@ -482,6 +482,8 @@ void EnvMapEditorLayer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPB
     shaderHazelPBR->setFloat("u_TilingFactor", envMapMaterial->GetTilingFactor());
 
     shaderHazelPBR->setMat4("u_ViewProjectionMatrix", m_ActiveCamera->GetViewProjection());
+    glm::mat4 dirLightTransform = Util::CalculateLightTransform(m_LightProjectionMatrix, m_LightDirection);
+    shaderHazelPBR->setMat4("u_DirLightTransform", dirLightTransform);
     shaderHazelPBR->setVec3("u_CameraPosition", m_ActiveCamera->GetPosition());
 
     // Environment (TODO: don't do this per mesh)
@@ -2183,6 +2185,10 @@ void EnvMapEditorLayer::GeometryPassTemporary()
 
                 m_ShaderHazelPBR = meshComponent.Mesh->IsAnimated() ? ShaderLibrary::Get("HazelPBR_Anim") : ShaderLibrary::Get("HazelPBR_Static");
 
+                m_ShaderHazelPBR->Bind();
+                m_ShadowMapDirLight->ReadTexture(m_SamplerSlots->at("shadow"));
+                m_ShaderHazelPBR->setInt("u_ShadowMap", m_SamplerSlots->at("shadow"));
+
                 EnvMapMaterial* envMapMaterial = nullptr;
                 std::string materialUUID;
 
@@ -2199,8 +2205,6 @@ void EnvMapEditorLayer::GeometryPassTemporary()
                         UpdateShaderPBRUniforms(m_ShaderHazelPBR, envMapMaterial);
                     }
 
-                    m_ShadowMapDirLight->ReadTexture(m_SamplerSlots->at("shadow"));
-                    m_ShaderHazelPBR->setInt("u_ShadowMap", m_SamplerSlots->at("shadow"));
                     submesh.Render(meshComponent.Mesh, m_ShaderHazelPBR, entityTransform, samplerSlot, s_EnvMapMaterials, entity);
                 }
             }

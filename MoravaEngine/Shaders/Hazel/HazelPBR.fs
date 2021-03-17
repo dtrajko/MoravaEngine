@@ -34,6 +34,7 @@ in VertexOutput
 	mat3 WorldNormals;
 	mat3 WorldTransform;
 	vec3 Binormal;
+	vec4 DirLightSpacePos;
 } vs_Input;
 
 layout(location = 0) out vec4 color;
@@ -91,6 +92,8 @@ struct PBRParameters
 
 	vec3 View;
 	float NdotV;
+
+	float ShadowFactor;
 };
 
 PBRParameters m_Params;
@@ -245,7 +248,7 @@ vec3 Lighting(vec3 F0)
 		// Cook-Torrance
 		vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * m_Params.NdotV);
 
-		result += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
+		result += ((1.0 - m_Params.ShadowFactor) * (diffuseBRDF + specularBRDF)) * Lradiance * cosLi;
 	}
 	result *= lights.Multiplier;
 	return result;
@@ -274,6 +277,45 @@ vec4 SRGBtoLINEAR(vec4 srgbIn)
 {
 	vec3 linOut = pow(srgbIn.xyz,vec3(2.2));
 	return vec4(linOut, srgbIn.w);
+}
+
+float CalcDirectionalShadowFactor()
+{
+	vec3 projCoords = vs_Input.DirLightSpacePos.xyz / vs_Input.DirLightSpacePos.w;
+	projCoords = (projCoords * 0.5) + 0.5;
+
+	float closestDepth = texture(u_ShadowMap, projCoords.xy).r;
+	float currentDepth = projCoords.z;
+
+	vec3 normal = normalize(m_Params.Normal);
+	vec3 lightDir = normalize(lights.Direction);
+
+	float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001);
+	
+	float shadow = 0.0;
+	shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+	// PCF method
+	if (true)
+	{
+		vec2 texelSize = 1.0 / textureSize(u_ShadowMap, 0);
+		for (int x = -1; x <= 1; ++x)
+		{
+			for (int y = -1; y <= 1; ++y)
+			{
+				float pcfDepth = texture(u_ShadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+				shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+			}
+		}
+		shadow /= 9.0;
+	}
+
+	if (projCoords.z > 1.0)
+	{
+		shadow = 0.0;
+	}
+
+	return shadow;
 }
 
 
@@ -308,6 +350,8 @@ void main()
 
 	// Fresnel reflectance, metals use albedo
 	vec3 F0 = mix(Fdielectric, m_Params.Albedo, m_Params.Metalness);
+
+	m_Params.ShadowFactor = CalcDirectionalShadowFactor();
 
 	vec3 lightContribution = Lighting(F0); // vec3(0.0) / Lighting(F0);
 	vec3 iblContribution = IBL(F0, Lr);
