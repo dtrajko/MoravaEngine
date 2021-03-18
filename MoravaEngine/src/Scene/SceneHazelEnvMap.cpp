@@ -183,7 +183,7 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 
 void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 {
-    m_EnvironmentMap->OnImGuiRender(mainWindow);
+    m_EnvironmentMap->OnImGuiRender(mainWindow, this);
 }
 
 void SceneHazelEnvMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)

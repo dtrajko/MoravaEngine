@@ -43,7 +43,7 @@ public:
 	void OnRenderEditor(Framebuffer* framebuffer);
 	void OnRenderRuntime(Framebuffer* framebuffer);
 
-	void OnImGuiRender(Window* mainWindow);
+	void OnImGuiRender(Window* mainWindow, Scene* scene);
 	void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 
 	void NewScene();
@@ -180,7 +180,13 @@ private:
 	Hazel::Ref<Hazel::HazelTexture2D> m_PlayButtonTex;
 
 	Hazel::Entity m_CameraEntity;
+
 	Hazel::Entity m_DirectionalLightEntity;
+
+	Hazel::Ref<ShadowMap> m_ShadowMapDirLight;
+	glm::mat4 m_LightProjectionMatrix;
+	glm::vec3 m_LightDirection; // temporary, use DirectionalLightComponent
+	glm::mat4 m_DirLightTransform; // sent to shaders as an uniform dirLightTransform / u_DirLightTransform
 
 	float m_ViewportWidth = 0.0f;
 	float m_ViewportHeight = 0.0f;
@@ -259,9 +265,5 @@ private:
 	std::string m_WindowTitleDynamic = "";
 
 	std::string m_StatusBarMessage = "";
-
-	Hazel::Ref<ShadowMap> m_ShadowMapDirLight;
-	glm::mat4 m_LightProjectionMatrix;
-	glm::vec3 m_LightDirection; // temporary, use DirectionalLightComponent
 
 };

@@ -455,6 +455,42 @@ void ImGuiWrapper::DrawMaterialUI(EnvMapMaterial* material, Hazel::Ref<Hazel::Ha
 		}
 	}
 	{
+		// AO (Ambient Occlusion)
+		std::string textureLabel = material->GetName() + " AO";
+		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+			ImGui::Image(material->GetAOInput().TextureMap ?
+				(void*)(intptr_t)material->GetAOInput().TextureMap->GetID() :
+				(void*)(intptr_t)checkerboardTexture->GetID(), ImVec2(64, 64));
+			ImGui::PopStyleVar();
+			if (ImGui::IsItemHovered())
+			{
+				if (material->GetAOInput().TextureMap)
+				{
+					ImGui::BeginTooltip();
+					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+					ImGui::TextUnformatted(material->GetAOInput().TextureMap->GetPath().c_str());
+					ImGui::PopTextWrapPos();
+					ImGui::Image((void*)(intptr_t)material->GetAOInput().TextureMap->GetID(), ImVec2(384, 384));
+					ImGui::EndTooltip();
+				}
+				if (ImGui::IsItemClicked())
+				{
+					std::string filename = Application::Get()->OpenFile();
+					if (filename != "")
+						material->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false, Hazel::HazelTextureWrap::Repeat);
+				}
+			}
+			ImGui::SameLine();
+			std::string checkboxLabel = "Use##" + material->GetName() + "AOMap";
+			ImGui::Checkbox(checkboxLabel.c_str(), &material->GetAOInput().UseTexture);
+			ImGui::SameLine();
+			std::string sliderLabel = "Value##" + material->GetName() + "AOInput";
+			ImGui::SliderFloat(sliderLabel.c_str(), &material->GetAOInput().Value, 0.0f, 1.0f);
+		}
+	}
+	{
 		// Emissive
 		std::string textureLabel = material->GetName() + " Emissive";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
@@ -501,42 +537,6 @@ void ImGuiWrapper::DrawMaterialUI(EnvMapMaterial* material, Hazel::Ref<Hazel::Ha
 						Hazel::HazelTextureWrap::Repeat);
 			}
 			ImGui::EndGroup();
-		}
-	}
-	{
-		// AO (Ambient Occlusion)
-		std::string textureLabel = material->GetName() + " AO";
-		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-			ImGui::Image(material->GetAOInput().TextureMap ?
-				(void*)(intptr_t)material->GetAOInput().TextureMap->GetID() :
-				(void*)(intptr_t)checkerboardTexture->GetID(), ImVec2(64, 64));
-			ImGui::PopStyleVar();
-			if (ImGui::IsItemHovered())
-			{
-				if (material->GetAOInput().TextureMap)
-				{
-					ImGui::BeginTooltip();
-					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-					ImGui::TextUnformatted(material->GetAOInput().TextureMap->GetPath().c_str());
-					ImGui::PopTextWrapPos();
-					ImGui::Image((void*)(intptr_t)material->GetAOInput().TextureMap->GetID(), ImVec2(384, 384));
-					ImGui::EndTooltip();
-				}
-				if (ImGui::IsItemClicked())
-				{
-					std::string filename = Application::Get()->OpenFile();
-					if (filename != "")
-						material->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false, Hazel::HazelTextureWrap::Repeat);
-				}
-			}
-			ImGui::SameLine();
-			std::string checkboxLabel = "Use##" + material->GetName() + "AOMap";
-			ImGui::Checkbox(checkboxLabel.c_str(), &material->GetAOInput().UseTexture);
-			ImGui::SameLine();
-			std::string sliderLabel = "Value##" + material->GetName() + "AOInput";
-			ImGui::SliderFloat(sliderLabel.c_str(), &material->GetAOInput().Value, 0.0f, 1.0f);
 		}
 	}
 	// END PBR Textures

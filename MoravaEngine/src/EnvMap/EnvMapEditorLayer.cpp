@@ -109,7 +109,7 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_ShadowMapDirLight->Init(scene->GetSettings().shadowMapWidth, scene->GetSettings().shadowMapHeight);
 
     m_LightDirection = glm::normalize(glm::vec3(0.25f, -1.0f, 0.25f));
-    m_LightProjectionMatrix = glm::ortho(-32.0f, 32.0f, -32.0f, 32.0f, -32.0f, 32.0f);
+    m_LightProjectionMatrix = glm::ortho(-64.0f, 64.0f, -64.0f, 64.0f, -64.0f, 64.0f);
 }
 
 void EnvMapEditorLayer::Init()
@@ -482,9 +482,8 @@ void EnvMapEditorLayer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPB
     shaderHazelPBR->setFloat("u_TilingFactor", envMapMaterial->GetTilingFactor());
 
     shaderHazelPBR->setMat4("u_ViewProjectionMatrix", m_ActiveCamera->GetViewProjection());
-    glm::mat4 dirLightTransform = Util::CalculateLightTransform(m_LightProjectionMatrix, m_LightDirection);
-    shaderHazelPBR->setMat4("u_DirLightTransform", dirLightTransform);
     shaderHazelPBR->setVec3("u_CameraPosition", m_ActiveCamera->GetPosition());
+    shaderHazelPBR->setMat4("u_DirLightTransform", m_DirLightTransform);
 
     // Environment (TODO: don't do this per mesh)
     shaderHazelPBR->setInt("u_EnvRadianceTex", m_SamplerSlots->at("radiance"));
@@ -560,6 +559,9 @@ void EnvMapEditorLayer::OnUpdate(Scene* scene, float timestep)
     {
         auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
         m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction = glm::eulerAngles(glm::quat(tc.Rotation));
+
+        m_LightDirection = glm::eulerAngles(glm::quat(tc.Rotation));
+        m_DirLightTransform = Util::CalculateLightTransform(m_LightProjectionMatrix, m_LightDirection);
     }
 
     OnUpdateEditor(m_EditorScene, timestep);
@@ -847,7 +849,7 @@ void EnvMapEditorLayer::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, b
         glEnable(GL_DEPTH_TEST);
 }
 
-void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
+void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -922,6 +924,14 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow)
             if (ImGui::DragFloat("FOV", &fovDegrees, 1.0f, -60.0f, 180.0f)) {
                 m_ActiveCamera->SetPerspectiveVerticalFOV(fovDegrees);
             }
+
+            ImGui::Separator();
+
+            ImGui::Text("Scene Settings");
+            ImGui::Checkbox("Enable Shadows",       &scene->sceneSettings.enableShadows);
+            ImGui::Checkbox("Enable Omni Shadows",  &scene->sceneSettings.enableOmniShadows);
+            ImGui::Checkbox("Enable Water Effects", &scene->sceneSettings.enableWaterEffects);
+            ImGui::Checkbox("Enable Particles",     &scene->sceneSettings.enableParticles);
         }
     }
     ImGui::End();
@@ -2226,7 +2236,10 @@ void EnvMapEditorLayer::GeometryPassTemporary()
             {
                 if (selection.Mesh) {
                     Hazel::Entity meshEntity = selection.Entity;
-                    glm::mat4 transform = meshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
+                    glm::mat4 transform = glm::mat4(1.0f);
+                    if (meshEntity.HasComponent<Hazel::TransformComponent>()) {
+                        transform = meshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
+                    }
                     glm::vec4 color = s_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
                     Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
                 }
@@ -2303,14 +2316,7 @@ void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
 
     m_ShaderShadow->Bind();
 
-    //  glm::mat4 dirLightTransform = glm::mat4(1.0f);
-    //  if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>()) {
-    //      auto& dirLightTransformComponent = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
-    //      dirLightTransform = dirLightTransformComponent.GetTransform();
-    //  }
-
-    glm::mat4 dirLightTransform = Util::CalculateLightTransform(m_LightProjectionMatrix, m_LightDirection);
-    m_ShaderShadow->setMat4("dirLightTransform", dirLightTransform);
+    m_ShaderShadow->setMat4("dirLightTransform", m_DirLightTransform);
 
     // Rendering all meshes (submeshes) on the scene to a shadow framebuffer
     auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
