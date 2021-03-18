@@ -758,6 +758,16 @@ namespace Hazel {
 	}
 
 	template<>
+	void HazelScene::OnComponentAdded<PointLightComponent>(Entity entity, PointLightComponent& component)
+	{
+	}
+
+	template<>
+	void HazelScene::OnComponentAdded<SpotLightComponent>(Entity entity, SpotLightComponent& component)
+	{
+	}
+
+	template<>
 	void HazelScene::OnComponentAdded<SkyLightComponent>(Entity entity, SkyLightComponent& component)
 	{
 	}

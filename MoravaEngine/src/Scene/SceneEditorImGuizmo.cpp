@@ -1074,22 +1074,20 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
     {
         ImGui::Checkbox("Display Light Sources", &m_DisplayLightSources);
 
-        ImGui::NewLine();
-        {
-            ImGui::Separator();
-            ImGui::Text("Light Directions");
-            ImGui::Separator();
+        ImGui::Separator();
 
-            char buffer[100];
-            sprintf(buffer, "DL:   X %.2f Y %.2f Z %.2f", m_DirectionDirLight.x, m_DirectionDirLight.y, m_DirectionDirLight.z);
+        ImGui::Text("Light Directions");
+        ImGui::Separator();
+        char buffer[100];
+        sprintf(buffer, "DL:   X %.2f Y %.2f Z %.2f", m_DirectionDirLight.x, m_DirectionDirLight.y, m_DirectionDirLight.z);
+        ImGui::Text(buffer);
+
+        for (int i = 0; i < m_DirectionsSpotLight.size(); i++) {
+            sprintf(buffer, "SL %i: X %.2f Y %.2f Z %.2f", i, m_DirectionsSpotLight[i].x, m_DirectionsSpotLight[i].y, m_DirectionsSpotLight[i].z);
             ImGui::Text(buffer);
-
-            for (int i = 0; i < m_DirectionsSpotLight.size(); i++) {
-                sprintf(buffer, "SL %i: X %.2f Y %.2f Z %.2f", i, m_DirectionsSpotLight[i].x, m_DirectionsSpotLight[i].y, m_DirectionsSpotLight[i].z);
-                ImGui::Text(buffer);
-            }
-            ImGui::Separator();
         }
+
+        ImGui::Separator();
 
         if (ImGui::CollapsingHeader("Directional Light"))
         {

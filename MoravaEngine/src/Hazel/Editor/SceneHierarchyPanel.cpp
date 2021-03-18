@@ -473,6 +473,24 @@ namespace Hazel
 				}
 			}
 
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<PointLightComponent>())
+			{
+				if (ImGui::Button("Point Light"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<PointLightComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SpotLightComponent>())
+			{
+				if (ImGui::Button("Spot Light"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SpotLightComponent>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
 			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SkyLightComponent>())
 			{
 				if (ImGui::Button("Sky Light"))
@@ -637,10 +655,43 @@ namespace Hazel
 		{
 			UI::BeginPropertyGrid();
 			UI::PropertyColor("Radiance", dlc.Radiance);
-			UI::Property("Intensity", dlc.Intensity);
-			UI::Property("Cast Shadows", dlc.CastShadows);
-			UI::Property("Soft Shadows", dlc.SoftShadows);
-			UI::Property("Source Size", dlc.LightSize);
+			UI::Property("Intensity",     dlc.Intensity);
+			UI::Property("Cast Shadows",  dlc.CastShadows);
+			UI::Property("Soft Shadows",  dlc.SoftShadows);
+			UI::Property("Source Size",   dlc.LightSize);
+			UI::EndPropertyGrid();
+		});
+
+		DrawComponent<PointLightComponent>("Point Light", entity, [](PointLightComponent& plc)
+		{
+			UI::BeginPropertyGrid();
+			UI::Property("Enabled",          plc.Enabled);
+			UI::PropertyColor("Color",       plc.Color);
+			// UI::Property("Position",         plc.Position);
+			UI::Property("AmbientIntensity", plc.AmbientIntensity);
+			UI::Property("DiffuseIntensity", plc.DiffuseIntensity);
+			UI::Property("Constant",         plc.Constant);
+			UI::Property("Linear",           plc.Linear);
+			UI::Property("Exponent",         plc.Exponent);
+			UI::Property("FarPlane",         plc.FarPlane);
+			UI::EndPropertyGrid();
+		});
+
+		DrawComponent<SpotLightComponent>("Spot Light", entity, [](SpotLightComponent& slc)
+		{
+			UI::BeginPropertyGrid();
+			UI::Property("Enabled",          slc.Enabled);
+			UI::PropertyColor("Color",       slc.Color);
+			// UI::Property("Position",         slc.Position);
+			// UI::Property("Direction",        slc.Direction);
+			UI::Property("AmbientIntensity", slc.AmbientIntensity);
+			UI::Property("DiffuseIntensity", slc.DiffuseIntensity);
+			UI::Property("Constant",         slc.Constant);
+			UI::Property("Linear",           slc.Linear);
+			UI::Property("Exponent",         slc.Exponent);
+			UI::Property("Edge",             slc.Edge);
+			UI::Property("EdgeProcessed",    slc.EdgeProcessed);
+			UI::Property("FarPlane",         slc.FarPlane);
 			UI::EndPropertyGrid();
 		});
 
