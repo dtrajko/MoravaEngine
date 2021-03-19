@@ -166,6 +166,7 @@ SceneEditor::SceneEditor()
     m_MaterialNameEdit         = new std::string;
     m_TilingFactorMaterialEdit = new float(1.0f);
     m_DrawGizmos = true;
+    m_GizmoOrthoProjection = false;
     m_PBR_Map_Edit = PBR_MAP_ENVIRONMENT;
     m_HDRI_Edit = HDRI_EARLY_EVE_WARM_SKY;
     m_HDRI_Edit_Prev = -1;
@@ -635,6 +636,7 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
         if (ImGui::CollapsingHeader("Gizmos"))
         {
             ImGui::Checkbox("Draw Gizmos", &m_DrawGizmos);
+            ImGui::Checkbox("Gizmo Ortho Projection", &m_GizmoOrthoProjection);
             ImGui::Checkbox("Orthographic View", &m_OrthographicViewEnabled);
 
             bool gizmoActive = m_Gizmo->GetActive();

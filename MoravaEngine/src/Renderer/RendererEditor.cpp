@@ -656,7 +656,20 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     /**** Begin gizmo shader ****/
     Shader* shaderGizmo = s_Shaders["gizmo"];
     shaderGizmo->Bind();
-    shaderGizmo->setMat4("projection", *projectionMatrix);
+    // shaderGizmo->setMat4("projection", *projectionMatrix);
+
+    // experimental
+    if (((SceneEditor*)scene)->m_GizmoOrthoProjection) {
+        float aspectRatio = scene->GetCameraController()->GetAspectRatio();
+        float sizeCoef = 5.0f;
+        glm::mat4 orthoMatrix = glm::ortho(-aspectRatio * sizeCoef, aspectRatio * sizeCoef, -1.0f * sizeCoef, 1.0f * sizeCoef,
+            scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+        shaderGizmo->setMat4("projection", orthoMatrix);
+    }
+    else {
+        shaderGizmo->setMat4("projection", *projectionMatrix);
+    }
+
     shaderGizmo->setMat4("view", scene->GetCamera()->GetViewMatrix());
     // Directional Light
     shaderGizmo->setBool("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());

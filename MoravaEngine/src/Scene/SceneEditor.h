@@ -73,6 +73,7 @@ private:
 
 public:
 	bool m_IsViewportEnabled;
+	bool m_GizmoOrthoProjection;
 
 private:
 	int m_ImGuiMainViewportX;
