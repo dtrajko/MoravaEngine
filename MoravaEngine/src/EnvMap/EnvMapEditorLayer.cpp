@@ -25,6 +25,7 @@ Hazel::Ref<Hazel::HazelTexture2D> EnvMapEditorLayer::s_CheckerboardTexture;
 std::map<MaterialUUID, EnvMapMaterial*> EnvMapEditorLayer::s_EnvMapMaterials; // MaterialUUID, EnvMapMaterial*
 std::map<SubmeshUUID, MaterialUUID> EnvMapEditorLayer::s_SubmeshMaterialUUIDs; // SubmeshUUID, MaterialUUID
 EnvMapMaterial* EnvMapEditorLayer::s_DefaultMaterial;
+EnvMapMaterial* EnvMapEditorLayer::s_LightMaterial;
 uint32_t EnvMapEditorLayer::s_MaterialIndex = 0;
 
 
@@ -70,6 +71,19 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_SceneRenderer = new EnvMapSceneRenderer(filepath, m_EditorScene.Raw());
     SetSkybox(m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap);
 
+    SetupContextData();
+
+    // Create a default material
+    s_DefaultMaterial = CreateDefaultMaterial("MAT_DEF");
+    s_EnvMapMaterials.insert(std::make_pair(s_DefaultMaterial->GetUUID(), s_DefaultMaterial));
+
+    // Create the light material
+    s_LightMaterial = CreateDefaultMaterial("MAT_LIGHT");
+    // Load Hazel/Renderer/HazelTexture
+    s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D("Textures/light_bulb.png");
+    s_LightMaterial->GetAlbedoInput().UseTexture = true;
+    s_EnvMapMaterials.insert(std::make_pair(s_LightMaterial->GetUUID(), s_LightMaterial));
+
     Init(); // requires a valid Camera reference
 
     m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(m_EditorScene);
@@ -100,10 +114,6 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 
     m_WindowTitleStatic = Application::Get()->GetWindow()->GetTitle();
     UpdateWindowTitle("New Scene");
-
-    // Create a default material
-    s_DefaultMaterial = CreateDefaultMaterial("MAT_DEF");
-    s_EnvMapMaterials.insert(std::make_pair(s_DefaultMaterial->GetUUID(), s_DefaultMaterial));
 
     m_ShadowMapDirLight = Hazel::Ref<ShadowMap>::Create();
     m_ShadowMapDirLight->Init(scene->GetSettings().shadowMapWidth, scene->GetSettings().shadowMapHeight);
@@ -170,8 +180,6 @@ void EnvMapEditorLayer::Init()
 
     m_SceneRenderer->s_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
 
-    SetupContextData();
-
     // Hazel::ScriptEngine::Init(""); // TODO Assembly path
 
     // Temporary code Hazel LIVE! #004
@@ -209,10 +217,21 @@ void EnvMapEditorLayer::SetupContextData()
     auto mapGenerator = CreateEntity("Map Generator");
     mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
 
+    // Hazel::HazelMesh* meshQuad = new Hazel::HazelMesh("Models/Primitives/quad.obj", m_ShaderHazelPBR, nullptr, false);
+
     m_DirectionalLightEntity = CreateEntity("Directional Light");
     auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
     tc.Rotation = m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction;
+    // m_DirectionalLightEntity.AddComponent<Hazel::MeshComponent>(meshQuad);
     m_DirectionalLightEntity.AddComponent<Hazel::DirectionalLightComponent>();
+
+    m_PointLightEntity = CreateEntity("Point Light");
+    // m_PointLightEntity.AddComponent<Hazel::MeshComponent>(meshQuad);
+    m_PointLightEntity.AddComponent<Hazel::PointLightComponent>();
+
+    m_SpotLightEntity = CreateEntity("Spot Light");
+    // m_SpotLightEntity.AddComponent<Hazel::MeshComponent>(meshQuad);
+    m_SpotLightEntity.AddComponent<Hazel::SpotLightComponent>();
 }
 
 Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
@@ -249,7 +268,7 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
 
     // m_MeshEntity: NoECS version
     Hazel::Entity meshEntity = CreateEntity(drawCommand.Name);
-    meshEntity.AddComponent<Hazel::MeshComponent>(Hazel::Ref<Hazel::HazelMesh>(mesh));
+    meshEntity.AddComponent<Hazel::MeshComponent>(mesh);
     meshEntity.AddComponent<Hazel::ScriptComponent>("Example.Script");
 
     SubmitEntity(meshEntity);

@@ -144,6 +144,8 @@ public:
 	static EnvMapMaterial* s_DefaultMaterial;
 	static uint32_t s_MaterialIndex;
 
+	static EnvMapMaterial* s_LightMaterial;
+
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
 	glm::mat4* m_RelativeTransform = nullptr;
 	bool m_AllowViewportCameraEvents = true; // EditorLayer (Raypicking)
@@ -182,6 +184,9 @@ private:
 	Hazel::Entity m_CameraEntity;
 
 	Hazel::Entity m_DirectionalLightEntity;
+
+	Hazel::Entity m_PointLightEntity; // temporary, for experimental use
+	Hazel::Entity m_SpotLightEntity;  // temporary, for experimental use
 
 	Hazel::Ref<ShadowMap> m_ShadowMapDirLight;
 	glm::mat4 m_LightProjectionMatrix;
