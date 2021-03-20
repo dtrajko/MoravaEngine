@@ -71,22 +71,22 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
 
 void EnvMapSceneRenderer::SetupShaders()
 {
-    s_Data.CompositeShader = Hazel::Ref<Shader>::Create("Shaders/Hazel/SceneComposite.vs", "Shaders/Hazel/SceneComposite.fs");
+    s_Data.CompositeShader = Shader::Create("Shaders/Hazel/SceneComposite.vs", "Shaders/Hazel/SceneComposite.fs");
     Log::GetLogger()->info("EnvMapSceneRenderer: m_ShaderComposite compiled [programID={0}]", s_Data.CompositeShader->GetProgramID());
 
-    m_ShaderEquirectangularConversion = Hazel::Ref<Shader>::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
+    m_ShaderEquirectangularConversion = Shader::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
     Log::GetLogger()->info("EnvMapSceneRenderer: m_ShaderEquirectangularConversion compiled [programID={0}]", m_ShaderEquirectangularConversion->GetProgramID());
 
-    m_ShaderEnvFiltering = Hazel::Ref<Shader>::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
+    m_ShaderEnvFiltering = Shader::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
     Log::GetLogger()->info("EnvMapSceneRenderer: m_ShaderEnvFiltering compiled [programID={0}]", m_ShaderEnvFiltering->GetProgramID());
 
-    m_ShaderEnvIrradiance = Hazel::Ref<Shader>::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
+    m_ShaderEnvIrradiance = Shader::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
     Log::GetLogger()->info("EnvMapSceneRenderer: m_ShaderEnvIrradiance compiled [programID={0}]", m_ShaderEnvIrradiance->GetProgramID());
 
-    m_ShaderSkybox = Hazel::Ref<Shader>::Create("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
+    m_ShaderSkybox = Shader::Create("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
     Log::GetLogger()->info("EnvMapSceneRenderer: m_ShaderSkybox compiled [programID={0}]", m_ShaderSkybox->GetProgramID());
 
-    m_ShaderGrid = Hazel::Ref<Shader>::Create("Shaders/Hazel/Grid.vs", "Shaders/Hazel/Grid.fs");
+    m_ShaderGrid = Shader::Create("Shaders/Hazel/Grid.vs", "Shaders/Hazel/Grid.fs");
     Log::GetLogger()->info("EnvMapSceneRenderer: m_ShaderGrid compiled [programID={0}]", m_ShaderGrid->GetProgramID());
 
     ResourceManager::AddShader("Hazel/SceneComposite", s_Data.CompositeShader);

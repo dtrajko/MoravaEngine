@@ -97,121 +97,116 @@ namespace Hazel {
 		}
 	}
 
+	static const char* GLShaderStageCachedVulkanFileExtension(uint32_t stage)
+	{
+		switch (stage)
+		{
+		case GL_VERTEX_SHADER:    return ".cached_vulkan.vert";
+		case GL_FRAGMENT_SHADER:  return ".cached_vulkan.frag";
+		case GL_COMPUTE_SHADER:   return ".cached_vulkan.comp";
+		}
+		HZ_CORE_ASSERT(false);
+		return "";
+	}
+
+	static const char* GLShaderStageCachedOpenGLFileExtension(uint32_t stage)
+	{
+		switch (stage)
+		{
+		case GL_VERTEX_SHADER:    return ".cached_opengl.vert";
+		case GL_FRAGMENT_SHADER:  return ".cached_opengl.frag";
+		case GL_COMPUTE_SHADER:   return ".cached_opengl.comp";
+		}
+		HZ_CORE_ASSERT(false);
+		return "";
+	}
+
+	static shaderc_shader_kind GLShaderStageToShaderC(uint32_t stage)
+	{
+		switch (stage)
+		{
+		case GL_VERTEX_SHADER:    return shaderc_vertex_shader;
+		case GL_FRAGMENT_SHADER:  return shaderc_fragment_shader;
+		case GL_COMPUTE_SHADER:   return shaderc_compute_shader;
+		}
+		HZ_CORE_ASSERT(false);
+		return (shaderc_shader_kind)0;
+	}
+
+	static const char* GLShaderTypeToString(uint32_t stage)
+	{
+		switch (stage)
+		{
+		case GL_VERTEX_SHADER:    return "Vertex";
+		case GL_FRAGMENT_SHADER:  return "Fragment";
+		case GL_COMPUTE_SHADER:   return "Compute";
+		}
+		HZ_CORE_ASSERT(false);
+		return "";
+	}
+
 	void OpenGLShader::CompileOrGetVulkanBinary(std::unordered_map<uint32_t, std::vector<uint32_t>>& outputBinary, bool forceCompile)
 	{
-		// Vertex Shader
+		for (auto [stage, source] : m_ShaderSource)
 		{
-			std::filesystem::path p = m_AssetPath;
-			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.vert");
-			std::string cachedFilePath = path.string();
-
-			FILE* f = fopen(cachedFilePath.c_str(), "rb");
-			if (f)
-			{
-				fseek(f, 0, SEEK_END);
-				uint64_t size = ftell(f);
-				fseek(f, 0, SEEK_SET);
-				outputBinary[0] = std::vector<uint32_t>(size / sizeof(uint32_t));
-				fread(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f);
-				fclose(f);
-			}
-		}
-
-		// Fragment Shader
-		{
-			std::filesystem::path p = m_AssetPath;
-			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.frag");
-			std::string cachedFilePath = path.string();
-
-			FILE* f = fopen(cachedFilePath.c_str(), "rb");
-			if (f)
-			{
-				fseek(f, 0, SEEK_END);
-				uint64_t size = ftell(f);
-				fseek(f, 0, SEEK_SET);
-				outputBinary[1] = std::vector<uint32_t>(size / sizeof(uint32_t));
-				fread(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f);
-				fclose(f);
-			}
-		}
-
-		if (outputBinary[0].size() == 0)
-		{
-			shaderc::Compiler compiler;
-			shaderc::CompileOptions options;
-			options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-
-			const bool optimize = false;
-			if (optimize)
-				options.SetOptimizationLevel(shaderc_optimization_level_performance);
-
-			// Vertex Shader
-			{
-				auto& shaderSource = m_ShaderSource.at(GL_VERTEX_SHADER);
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, shaderc_vertex_shader, m_AssetPath.c_str(), options);
-
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-				{
-					// HZ_CORE_ERROR(module.GetErrorMessage());
-					Log::GetLogger()->critical(module.GetErrorMessage());
-					HZ_CORE_ASSERT(false);
-				}
-
-				const uint8_t* begin = (const uint8_t*)module.cbegin();
-				const uint8_t* end = (const uint8_t*)module.cend();
-				const ptrdiff_t size = end - begin;
-
-				outputBinary[0] = std::vector<uint32_t>(module.cbegin(), module.cend());
-			}
-
+			auto extension = GLShaderStageCachedVulkanFileExtension(stage);
+			if (!forceCompile)
 			{
 				std::filesystem::path p = m_AssetPath;
-				auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.vert");
+				auto path = p.parent_path() / "cached" / (p.filename().string() + extension);
 				std::string cachedFilePath = path.string();
 
-				FILE* f = fopen(cachedFilePath.c_str(), "wb");
-				fwrite(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f);
-				fclose(f);
-			}
-		}
-
-		if (outputBinary[1].size() == 0)
-		{
-			shaderc::Compiler compiler;
-			shaderc::CompileOptions options;
-			options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-
-			const bool optimize = false;
-			if (optimize)
-				options.SetOptimizationLevel(shaderc_optimization_level_performance);
-
-			// Fragment Shader
-			{
-				auto& shaderSource = m_ShaderSource.at(GL_FRAGMENT_SHADER);
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, shaderc_fragment_shader, m_AssetPath.c_str(), options);
-
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
+				FILE* f = fopen(cachedFilePath.c_str(), "rb");
+				if (f)
 				{
-					// HZ_CORE_ERROR(module.GetErrorMessage());
-					Log::GetLogger()->critical(module.GetErrorMessage());
-					HZ_CORE_ASSERT(false);
+					fseek(f, 0, SEEK_END);
+					uint64_t size = ftell(f);
+					fseek(f, 0, SEEK_SET);
+					outputBinary[stage] = std::vector<uint32_t>(size / sizeof(uint32_t));
+					fread(outputBinary[stage].data(), sizeof(uint32_t), outputBinary[stage].size(), f);
+					fclose(f);
+				}
+			}
+
+			if (outputBinary[stage].size() == 0)
+			{
+				// Do we need to init a compiler for each stage?
+				shaderc::Compiler compiler;
+				shaderc::CompileOptions options;
+				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+
+				const bool optimize = false;
+				if (optimize)
+					options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+				// Compile shader
+				{
+					auto& shaderSource = m_ShaderSource.at(stage);
+					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, GLShaderStageToShaderC(stage), m_AssetPath.c_str(), options);
+
+					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
+					{
+						HZ_CORE_ERROR(module.GetErrorMessage());
+						HZ_CORE_ASSERT(false);
+					}
+
+					const uint8_t* begin = (const uint8_t*)module.cbegin();
+					const uint8_t* end = (const uint8_t*)module.cend();
+					const ptrdiff_t size = end - begin;
+
+					outputBinary[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
 				}
 
-				const uint8_t* begin = (const uint8_t*)module.cbegin();
-				const uint8_t* end = (const uint8_t*)module.cend();
-				const ptrdiff_t size = end - begin;
+				// Cache compiled shader
+				{
+					std::filesystem::path p = m_AssetPath;
+					auto path = p.parent_path() / "cached" / (p.filename().string() + extension);
+					std::string cachedFilePath = path.string();
 
-				outputBinary[1] = std::vector<uint32_t>(module.cbegin(), module.cend());
-			}
-
-			{
-				std::filesystem::path p = m_AssetPath;
-				auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.frag");
-				std::string cachedFilePath = path.string();
-
-				FILE* f = fopen(cachedFilePath.c_str(), "wb");
-				fwrite(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f);
-				fclose(f);
+					FILE* f = fopen(cachedFilePath.c_str(), "wb");
+					fwrite(outputBinary[stage].data(), sizeof(uint32_t), outputBinary[stage].size(), f);
+					fclose(f);
+				}
 			}
 		}
 	}
@@ -221,181 +216,79 @@ namespace Hazel {
 		if (m_RendererID)
 			glDeleteProgram(m_RendererID);
 
-		const auto& vertexBinary = vulkanBinaries.at(0);
-		const auto& fragmentBinary = vulkanBinaries.at(1);
-
 		GLuint program = glCreateProgram();
 		m_RendererID = program;
 
-		shaderc::Compiler compiler;
-		shaderc::CompileOptions options;
-		options.SetTargetEnvironment(shaderc_target_env_opengl_compat, shaderc_env_version_opengl_4_5);
+		std::vector<GLuint> shaderRendererIDs;
+		shaderRendererIDs.reserve(vulkanBinaries.size());
 
-		std::array<GLuint, 2> shaderRendererIDs = { 0, 0 };
-		std::vector<uint32_t> shaderData[2]; // vertex + fragment for now
-
+		m_ConstantBufferOffset = 0;
+		std::vector<std::vector<uint32_t>> shaderData;
+		for (auto [stage, binary] : vulkanBinaries)
 		{
-			spirv_cross::CompilerGLSL glsl(vertexBinary);
-			ParseConstantBuffers(glsl);
+			shaderc::Compiler compiler;
+			shaderc::CompileOptions options;
+			options.SetTargetEnvironment(shaderc_target_env_opengl_compat, shaderc_env_version_opengl_4_5);
 
-			std::filesystem::path p = m_AssetPath;
-			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_opengl.vert");
-			std::string cachedFilePath = path.string();
+			{
+				spirv_cross::CompilerGLSL glsl(binary);
+				ParseConstantBuffers(glsl);
 
-			FILE* f = fopen(cachedFilePath.c_str(), "rb");
-			if (f)
-			{
-				fseek(f, 0, SEEK_END);
-				uint64_t size = ftell(f);
-				fseek(f, 0, SEEK_SET);
-				shaderData[0] = std::vector<uint32_t>(size / sizeof(uint32_t));
-				fread(shaderData[0].data(), sizeof(uint32_t), shaderData[0].size(), f);
-				fclose(f);
-			}
-			else
-			{
-				std::string source = glsl.compile();
+				std::filesystem::path p = m_AssetPath;
+				auto path = p.parent_path() / "cached" / (p.filename().string() + GLShaderStageCachedOpenGLFileExtension(stage));
+				std::string cachedFilePath = path.string();
+
+				std::vector<uint32_t>& shaderStageData = shaderData.emplace_back();
+
+				if (!forceCompile)
+				{
+					FILE* f = fopen(cachedFilePath.c_str(), "rb");
+					if (f)
+					{
+						fseek(f, 0, SEEK_END);
+						uint64_t size = ftell(f);
+						fseek(f, 0, SEEK_SET);
+						shaderStageData = std::vector<uint32_t>(size / sizeof(uint32_t));
+						fread(shaderStageData.data(), sizeof(uint32_t), shaderStageData.size(), f);
+						fclose(f);
+					}
+				}
+
+				if (!shaderStageData.size())
+				{
+					std::string source = glsl.compile();
 #if PRINT_SHADERS
-				printf("=========================================\n");
-				printf("Vertex Shader:\n%s\n", source.c_str());
-				printf("=========================================\n");
+					printf("=========================================\n");
+					printf("%s Shader:\n%s\n", GLShaderTypeToString(stage), source.c_str());
+					printf("=========================================\n");
 #endif
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, shaderc_vertex_shader, m_AssetPath.c_str(), options);
+					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, GLShaderStageToShaderC(stage), m_AssetPath.c_str(), options);
 
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-				{
-					// HZ_CORE_ERROR(module.GetErrorMessage());
-					Log::GetLogger()->critical(module.GetErrorMessage());
-					HZ_CORE_ASSERT(false);
+					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
+					{
+						HZ_CORE_ERROR(module.GetErrorMessage());
+						HZ_CORE_ASSERT(false);
+					}
+
+					shaderStageData = std::vector<uint32_t>(module.cbegin(), module.cend());
+
+					{
+						std::filesystem::path p = m_AssetPath;
+						auto path = p.parent_path() / "cached" / (p.filename().string() + GLShaderStageCachedOpenGLFileExtension(stage));
+						std::string cachedFilePath = path.string();
+						FILE* f = fopen(cachedFilePath.c_str(), "wb");
+						fwrite(shaderStageData.data(), sizeof(uint32_t), shaderStageData.size(), f);
+						fclose(f);
+					}
 				}
 
-				shaderData[0] = std::vector<uint32_t>(module.cbegin(), module.cend());
-
-				{
-					std::filesystem::path p = m_AssetPath;
-					auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_opengl.vert");
-					std::string cachedFilePath = path.string();
-					FILE* f = fopen(cachedFilePath.c_str(), "wb");
-					fwrite(shaderData[0].data(), sizeof(uint32_t), shaderData[0].size(), f);
-					fclose(f);
-				}
-			}
-
-			GLuint shaderID = glCreateShader(GL_VERTEX_SHADER);
-			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderData[0].data(), (GLsizei)(shaderData[0].size() * sizeof(uint32_t)));
-
-			try {
+				GLuint shaderID = glCreateShader(stage);
+				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderStageData.data(), (GLsizei)shaderStageData.size() * sizeof(uint32_t));
 				glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
+				glAttachShader(program, shaderID);
+
+				shaderRendererIDs.emplace_back(shaderID);
 			}
-			catch (...) {
-				// Specialization is equivalent to compilation.
-				GLint isCompiled = 0;
-				glGetShaderiv(shaderID, GL_COMPILE_STATUS, &isCompiled);
-				if (isCompiled == GL_FALSE)
-				{
-					GLint maxLength = 0;
-					glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &maxLength);
-
-					// The maxLength includes the NULL character
-					std::vector<GLchar> infoLog(maxLength);
-					glGetShaderInfoLog(shaderID, maxLength, &maxLength, &infoLog[0]);
-
-					// We don't need the shader anymore.
-					// glDeleteShader(shaderID);
-
-					// Use the infoLog as you see fit.
-					Log::GetLogger()->critical("Vertex Shader specialization / compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
-
-					// In this simple program, we'll just leave
-					return;
-				}
-			}
-
-			glAttachShader(program, shaderID);
-
-			shaderRendererIDs[0] = shaderID;
-		}
-
-		{
-			spirv_cross::CompilerGLSL glsl(fragmentBinary);
-			ParseConstantBuffers(glsl);
-
-			std::filesystem::path p = m_AssetPath;
-			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_opengl.frag");
-			std::string cachedFilePath = path.string();
-
-			FILE* f = fopen(cachedFilePath.c_str(), "rb");
-			if (f)
-			{
-				fseek(f, 0, SEEK_END);
-				uint64_t size = ftell(f);
-				fseek(f, 0, SEEK_SET);
-				shaderData[1] = std::vector<uint32_t>(size / sizeof(uint32_t));
-				fread(shaderData[1].data(), sizeof(uint32_t), shaderData[1].size(), f);
-				fclose(f);
-			}
-			else
-			{
-				std::string source = glsl.compile();
-#if PRINT_SHADERS
-				printf("=========================================\n");
-				printf("Fragment Shader:\n%s\n", source.c_str());
-				printf("=========================================\n");
-#endif
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, shaderc_fragment_shader, m_AssetPath.c_str(), options);
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-				{
-					// HZ_CORE_ERROR(module.GetErrorMessage());
-					Log::GetLogger()->critical(module.GetErrorMessage());
-					HZ_CORE_ASSERT(false);
-				}
-
-				shaderData[1] = std::vector<uint32_t>(module.cbegin(), module.cend());
-
-				{
-					std::filesystem::path p = m_AssetPath;
-					auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_opengl.frag");
-					std::string cachedFilePath = path.string();
-
-					FILE* f = fopen(cachedFilePath.c_str(), "wb");
-					fwrite(shaderData[1].data(), sizeof(uint32_t), shaderData[1].size(), f);
-					fclose(f);
-				}
-			}
-
-			GLuint shaderID = glCreateShader(GL_FRAGMENT_SHADER);
-			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderData[1].data(), (GLsizei)(shaderData[1].size() * sizeof(uint32_t)));
-
-			try {
-				glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
-			}
-			catch(...) {
-				// Specialization is equivalent to compilation.
-				GLint isCompiled = 0;
-				glGetShaderiv(shaderID, GL_COMPILE_STATUS, &isCompiled);
-				if (isCompiled == GL_FALSE)
-				{
-					GLint maxLength = 0;
-					glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &maxLength);
-
-					// The maxLength includes the NULL character
-					std::vector<GLchar> infoLog(maxLength);
-					glGetShaderInfoLog(shaderID, maxLength, &maxLength, &infoLog[0]);
-
-					// We don't need the shader anymore.
-					// glDeleteShader(shaderID);
-
-					// Use the infoLog as you see fit.
-					Log::GetLogger()->critical("Fragment Shader specialization / compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
-
-					// In this simple program, we'll just leave
-					return;
-				}
-			}
-
-			glAttachShader(program, shaderID);
-
-			shaderRendererIDs[1] = shaderID;
 		}
 
 		// Link shader program
@@ -412,8 +305,7 @@ namespace Hazel {
 			// The maxLength includes the NULL character
 			std::vector<GLchar> infoLog(maxLength);
 			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-			// HZ_CORE_ERROR("Shader compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
-			Log::GetLogger()->critical("Shader compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
+			HZ_CORE_ERROR("Shader compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
 
 			// We don't need the program anymore.
 			glDeleteProgram(program);
@@ -440,8 +332,8 @@ namespace Hazel {
 			}
 		}
 
-		Reflect(shaderData[0]);
-		Reflect(shaderData[1]);
+		for (auto& shaderStageData : shaderData)
+			Reflect(shaderStageData);
 	}
 
 	static ShaderUniformType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
@@ -810,6 +702,11 @@ namespace Hazel {
 			glDetachShader(program, id);
 
 		m_RendererID = program;
+	}
+
+	size_t OpenGLShader::GetHash() const
+	{
+		return std::hash<std::string>{}(m_AssetPath);
 	}
 
 	void OpenGLShader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size)

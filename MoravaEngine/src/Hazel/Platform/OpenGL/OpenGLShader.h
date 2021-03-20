@@ -21,6 +21,8 @@ namespace Hazel {
 		virtual void Bind() override;
 		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
+		virtual size_t GetHash() const override;
+
 		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
 		virtual void SetUniform(const std::string& fullname, float value) override;
 		virtual void SetUniform(const std::string& fullname, int value) override;
@@ -84,6 +86,8 @@ namespace Hazel {
 		uint32_t m_RendererID = 0;
 		bool m_Loaded = false;
 		bool m_IsCompute = false;
+
+		uint32_t m_ConstantBufferOffset = 0;
 
 		std::string m_Name, m_AssetPath;
 		std::unordered_map<GLenum, std::string> m_ShaderSource;

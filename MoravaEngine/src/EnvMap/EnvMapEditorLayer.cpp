@@ -416,19 +416,19 @@ EnvMapMaterial* EnvMapEditorLayer::CreateDefaultMaterial(std::string materialNam
 
 void EnvMapEditorLayer::SetupShaders()
 {
-    Hazel::Ref<Shader> shaderHazelPBR_Static = Hazel::Ref<Shader>::Create("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
+    Hazel::Ref<Shader> shaderHazelPBR_Static = Shader::Create("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Static compiled [programID={0}]", shaderHazelPBR_Static->GetProgramID());
 
-    Hazel::Ref<Shader> shaderHazelPBR_Anim = Hazel::Ref<Shader>::Create("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
+    Hazel::Ref<Shader> shaderHazelPBR_Anim = Shader::Create("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Anim compiled [programID={0}]", shaderHazelPBR_Anim->GetProgramID());
 
-    Hazel::Ref<Shader> shaderRenderer2D_Line = Hazel::Ref<Shader>::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
+    Hazel::Ref<Shader> shaderRenderer2D_Line = Shader::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderRenderer2D_Line compiled [programID={0}]", shaderRenderer2D_Line->GetProgramID());
 
-    m_ShaderOutline = Hazel::Ref<Shader>::Create("Shaders/Hazel/Outline.vs", "Shaders/Hazel/Outline.fs");
+    m_ShaderOutline = Shader::Create("Shaders/Hazel/Outline.vs", "Shaders/Hazel/Outline.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: shaderOutline compiled [programID={0}]", m_ShaderOutline->GetProgramID());
 
-    m_ShaderShadow = Hazel::Ref<Shader>::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+    m_ShaderShadow = Shader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderShadow compiled [programID={0}]", m_ShaderShadow->GetProgramID());
 
     ResourceManager::AddShader("Hazel/HazelPBR_Static", shaderHazelPBR_Static);

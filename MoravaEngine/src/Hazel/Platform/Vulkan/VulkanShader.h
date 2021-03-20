@@ -1,94 +1,139 @@
 #pragma once
 
 #include "Hazel/Renderer/HazelShader.h"
+#include "Hazel/Core/Assert.h"
+
+#include <vulkan/vulkan.h>
 
 
 namespace Hazel {
 
-	class VulkanShader : public HazelShader
+	class VulkanShader : public Shader
 	{
 	public:
-		VulkanShader() = default;
+		struct UniformBuffer
+		{
+			VkDeviceMemory Memory;
+			VkBuffer Buffer;
+			VkDescriptorBufferInfo Descriptor;
+			uint32_t Size = 0;
+			uint32_t BindingPoint = 0;
+			std::string Name;
+			VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+		};
+
+		struct ImageSampler
+		{
+			uint32_t BindingPoint = 0;
+			uint32_t DescriptorSet = 0;
+			std::string Name;
+			VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+		};
+
+		struct PushConstantRange
+		{
+			VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+			uint32_t Offset = 0;
+			uint32_t Size = 0;
+		};
+	public:
 		VulkanShader(const std::string& path, bool forceCompile);
-		static Ref<VulkanShader> CreateFromString(const std::string& source);
+		virtual ~VulkanShader();
 
+		void Bind() override;
 		void Reload(bool forceCompile = false) override;
-		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
 
-		virtual void Bind() override;
-		virtual uint32_t GetRendererID() const override { return m_RendererID; }
+		virtual size_t GetHash() const override;
 
-		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
-		virtual void SetUniform(const std::string& fullname, float value) override;
-		virtual void SetUniform(const std::string& fullname, int value) override;
-		virtual void SetUniform(const std::string& fullname, const glm::vec2& value) override;
-		virtual void SetUniform(const std::string& fullname, const glm::vec3& value) override;
-		virtual void SetUniform(const std::string& fullname, const glm::vec4& value) override;
-		virtual void SetUniform(const std::string& fullname, const glm::mat3& value) override;
-		virtual void SetUniform(const std::string& fullname, const glm::mat4& value) override;
+		RendererID GetRendererID() const override;
+
+		void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
+
+		void SetUniform(const std::string& fullname, float value) override;
+		void SetUniform(const std::string& fullname, int value) override;
+		void SetUniform(const std::string& fullname, const glm::vec2& value) override;
+		void SetUniform(const std::string& fullname, const glm::vec3& value) override;
+		void SetUniform(const std::string& fullname, const glm::vec4& value) override;
+		void SetUniform(const std::string& fullname, const glm::mat3& value) override;
+		void SetUniform(const std::string& fullname, const glm::mat4& value) override;
 
 		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetInt(const std::string& name, int value) override;
-		virtual void SetBool(const std::string& name, bool value) override;
 		virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 		virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) override;
-
 		virtual void SetIntArray(const std::string& name, int* values, uint32_t size) override;
-
-		virtual const std::string& GetName() const override { return m_Name; }
-
+		virtual const std::string& GetName() const override { return  m_Name; }
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const override { return m_Buffers; }
-		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override { return m_Resources; }
+		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override;
+		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
+
+		// Vulkan-specific
+		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
+
+		void* MapUniformBuffer(uint32_t bindingPoint, uint32_t set = 0);
+		void UnmapUniformBuffer(uint32_t bindingPoint, uint32_t set = 0);
+
+		VkDescriptorSet GetDescriptorSet() { return m_DescriptorSet; }
+		VkDescriptorSetLayout GetDescriptorSetLayout(uint32_t set) { return m_DescriptorSetLayouts.at(set); }
+		std::vector<VkDescriptorSetLayout> GetAllDescriptorSetLayouts();
+
+		UniformBuffer& GetUniformBuffer(uint32_t binding = 0, uint32_t set = 0) { HZ_CORE_ASSERT(m_ShaderDescriptorSets.at(set).UniformBuffers.size() > binding); return m_ShaderDescriptorSets.at(set).UniformBuffers[binding]; }
+		uint32_t GetUniformBufferCount(uint32_t set = 0)
+		{
+			if (m_ShaderDescriptorSets.find(set) == m_ShaderDescriptorSets.end())
+				return 0;
+
+			return m_ShaderDescriptorSets.at(set).UniformBuffers.size();
+		}
+		const std::vector<PushConstantRange>& GetPushConstantRanges() const { return m_PushConstantRanges; }
+
+		struct ShaderMaterialDescriptorSet
+		{
+			VkDescriptorPool Pool;
+			std::vector<VkDescriptorSet> DescriptorSets;
+		};
+
+		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set = 0);
+		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set, uint32_t numberOfSets);
+		const VkWriteDescriptorSet* GetDescriptorSet(const std::string& name, uint32_t set = 0) const;
 	private:
-		void Load(const std::string& source);
-		void Compile(const std::vector<uint32_t>& vertexBinary, const std::vector<uint32_t>& fragmentBinary);
-		void Reflect(std::vector<uint32_t>& data);
+		std::unordered_map<VkShaderStageFlagBits, std::string> PreProcess(const std::string& source);
+		void CompileOrGetVulkanBinary(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile);
+		void LoadAndCreateShaders(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
+		void Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData);
+		void ReflectAllShaderStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
 
-		void CompileOrGetVulkanBinary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile = false);
-		void CompileOrGetOpenGLBinary(const std::array<std::vector<uint32_t>, 2>& vulkanBinaries, bool forceCompile = false);
+		void CreateDescriptors();
 
-		std::string ReadShaderFromFile(const std::string& filepath) const;
-		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
-
-		int32_t GetUniformLocation(const std::string& name) const;
-
-		void CompileAndUploadShader();
-		static GLenum ShaderTypeFromString(const std::string& type);
-
-		void UploadUniformInt(uint32_t location, int32_t value);
-		void UploadUniformIntArray(uint32_t location, int32_t* values, int32_t count);
-		void UploadUniformFloat(uint32_t location, float value);
-		void UploadUniformFloat2(uint32_t location, const glm::vec2& value);
-		void UploadUniformFloat3(uint32_t location, const glm::vec3& value);
-		void UploadUniformFloat4(uint32_t location, const glm::vec4& value);
-		void UploadUniformMat3(uint32_t location, const glm::mat3& values);
-		void UploadUniformMat4(uint32_t location, const glm::mat4& values);
-		void UploadUniformMat4Array(uint32_t location, const glm::mat4& values, uint32_t count);
-
-		void UploadUniformInt(const std::string& name, int32_t value);
-		void UploadUniformIntArray(const std::string& name, int32_t* values, uint32_t count);
-
-		void UploadUniformFloat(const std::string& name, float value);
-		void UploadUniformFloat2(const std::string& name, const glm::vec2& values);
-		void UploadUniformFloat3(const std::string& name, const glm::vec3& values);
-		void UploadUniformFloat4(const std::string& name, const glm::vec4& values);
-
-		void UploadUniformMat4(const std::string& name, const glm::mat4& value);
+		void AllocateUniformBuffer(UniformBuffer& dst);
 	private:
-		uint32_t m_RendererID = 0;
-		bool m_Loaded = false;
-		bool m_IsCompute = false;
+		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageCreateInfos;
+		std::unordered_map<VkShaderStageFlagBits, std::string> m_ShaderSource;
+		std::string m_AssetPath;
+		std::string m_Name;
 
-		std::string m_Name, m_AssetPath;
-		std::unordered_map<GLenum, std::string> m_ShaderSource;
+		struct ShaderDescriptorSet
+		{
+			std::unordered_map<uint32_t, UniformBuffer> UniformBuffers;
+			std::unordered_map<uint32_t, ImageSampler> ImageSamplers;
+			std::unordered_map<uint32_t, ImageSampler> StorageImages;
 
-		std::vector<ShaderReloadedCallback> m_ShaderReloadedCallbacks;
-		inline static std::unordered_map<uint32_t, ShaderUniformBuffer> s_UniformBuffers;
+			std::unordered_map<std::string, VkWriteDescriptorSet> WriteDescriptorSets;
+		};
+
+		std::unordered_map<uint32_t, ShaderDescriptorSet> m_ShaderDescriptorSets;
+
+		std::vector<PushConstantRange> m_PushConstantRanges;
+		std::unordered_map<std::string, ShaderResourceDeclaration> m_Resources;
 
 		std::unordered_map<std::string, ShaderBuffer> m_Buffers;
-		std::unordered_map<std::string, ShaderResourceDeclaration> m_Resources;
-		std::unordered_map<std::string, GLint> m_UniformLocations;
+
+		std::unordered_map<uint32_t, VkDescriptorSetLayout> m_DescriptorSetLayouts;
+		VkDescriptorSet m_DescriptorSet;
+		VkDescriptorPool m_DescriptorPool;
+
+		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> m_TypeCounts;
 
 	};
 

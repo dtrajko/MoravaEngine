@@ -621,6 +621,15 @@
     <ClCompile Include="src\Framebuffer\ShadowMap.cpp">
       <Filter>Framebuffer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanContext.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\RendererContext.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLContext.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -1325,6 +1334,15 @@
     </ClInclude>
     <ClInclude Include="src\Framebuffer\ShadowMap.h">
       <Filter>Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanContext.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\RendererContext.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLContext.h">
+      <Filter>Hazel\Platform\OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

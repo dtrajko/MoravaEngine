@@ -20,6 +20,10 @@ public:
 	Shader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation);
 	Shader(const char* computeLocation);
 
+	static Hazel::Ref<Shader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
+	static Hazel::Ref<Shader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
+	static Hazel::Ref<Shader> Create(const char* computeLocation, bool forceCompile = false);
+
 	// virtual methods
 	virtual void Bind() override;
 	virtual void Reload(bool forceCompile = false) override;
@@ -27,6 +31,7 @@ public:
 
 	// HazelShader abstract methods
 	virtual uint32_t GetRendererID() const override;
+	virtual size_t GetHash() const override;
 	virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
 	virtual void SetUniform(const std::string& fullname, float value) override;
 	virtual void SetUniform(const std::string& fullname, int value) override;
@@ -130,5 +135,8 @@ private:
 	std::string m_ShaderFilepath_Geometry;
 	std::string m_ShaderFilepath_TessControl;
 	std::string m_ShaderFilepath_TessEvaluation;
+
+	// Temporary, before we have an asset manager
+	static std::vector<Hazel::Ref<Shader>> s_AllShaders;
 
 };

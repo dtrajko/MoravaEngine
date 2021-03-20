@@ -368,7 +368,7 @@ Hazel::RendererID Framebuffer::GetDepthAttachmentRendererID() const
 
 const Hazel::HazelFramebufferSpecification& Framebuffer::GetSpecification() const
 {
-	return Hazel::HazelFramebufferSpecification();
+	return m_HazelFramebufferSpecs;
 }
 
 Framebuffer::~Framebuffer()

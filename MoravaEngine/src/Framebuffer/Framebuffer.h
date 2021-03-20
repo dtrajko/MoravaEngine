@@ -100,4 +100,6 @@ private:
 	// Hazel/Platform/OpenGL/OpenGLFramebuffer
 	bool m_Multisample;
 
+	Hazel::HazelFramebufferSpecification m_HazelFramebufferSpecs; // not in use, only for compatibility with Hazel::HazelFramebuffer
+
 };

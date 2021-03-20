@@ -945,6 +945,7 @@ target_include_directories(
 	../vendor/cross-platform/shaderc/libshaderc/include
 	../vendor/cross-platform/shaderc/libshaderc_util/include
 	../vendor/cross-platform/SPIRV-Cross
+	../vendor/Vulkan/1.2.148.1/Include
 )
 
 target_link_directories(
@@ -965,6 +966,7 @@ target_link_directories(
 	../vendor/cross-platform/shaderc/libshaderc      # Linux
 	../vendor/cross-platform/shaderc/libshaderc_util # Linux
 	../vendor/cross-platform/SPIRV-Cross/$ENV{MORAVA_BUILD_TYPE}
+	../vendor/Vulkan/1.2.148.1/Lib
 	../${PROJECT_NAME}/build/$ENV{MORAVA_BUILD_TYPE}
 )
 
@@ -1000,6 +1002,7 @@ if(WIN32)
 		mono-2.0-sgen.lib
 		box2d.lib
 		shaderc_combined.lib
+		vulkan-1.lib
 	)
 elseif(UNIX)
 	target_link_libraries(

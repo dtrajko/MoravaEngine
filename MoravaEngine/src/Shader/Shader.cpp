@@ -1,10 +1,13 @@
 #include "Shader/Shader.h"
 
 #include "Hazel/Core/Assert.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 #include "Core/Log.h"
 #include "Core/Util.h"
 
+
+std::vector<Hazel::Ref<Shader>> Shader::s_AllShaders;
 
 Shader::Shader()
 {
@@ -48,6 +51,60 @@ Shader::Shader(const char* computeLocation)
 	CreateFromFileCompute(computeLocation);
 
 	CompileProgram();
+}
+
+Hazel::Ref<Shader> Shader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
+{
+	Hazel::Ref<Shader> result = nullptr;
+
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return nullptr;
+	case Hazel::RendererAPIType::OpenGL:
+		result = Hazel::Ref<Shader>::Create(vertexLocation, fragmentLocation, forceCompile);
+		break;
+	case Hazel::RendererAPIType::Vulkan:
+		Log::GetLogger()->error("Not implemented for Vulkan API!");
+		break;
+	}
+	s_AllShaders.push_back(result);
+	return result;
+}
+
+Hazel::Ref<Shader> Shader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
+{
+	Hazel::Ref<Shader> result = nullptr;
+
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return nullptr;
+	case Hazel::RendererAPIType::OpenGL:
+		result = Hazel::Ref<Shader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
+		break;
+	case Hazel::RendererAPIType::Vulkan:
+		Log::GetLogger()->error("Not implemented for Vulkan API!");
+		break;
+	}
+	s_AllShaders.push_back(result);
+	return result;
+}
+
+Hazel::Ref<Shader> Shader::Create(const char* computeLocation, bool forceCompile)
+{
+	Hazel::Ref<Shader> result = nullptr;
+
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return nullptr;
+	case Hazel::RendererAPIType::OpenGL:
+		result = Hazel::Ref<Shader>::Create(computeLocation, forceCompile);
+		break;
+	case Hazel::RendererAPIType::Vulkan:
+		Log::GetLogger()->error("Not implemented for Vulkan API!");
+		break;
+	}
+	s_AllShaders.push_back(result);
+	return result;
 }
 
 void Shader::CreateFromString(const char* vertexCode, const char* fragmentCode)
@@ -259,6 +316,11 @@ void Shader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)
 uint32_t Shader::GetRendererID() const
 {
 	return programID;
+}
+
+size_t Shader::GetHash() const
+{
+	return std::hash<std::string>{}(m_ShaderFilepath_Vertex + m_ShaderFilepath_Compute + m_ShaderFilepath_Fragment);
 }
 
 void Shader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size)

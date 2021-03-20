@@ -33,7 +33,7 @@ bool FramebufferSSAO::Init(unsigned int width, unsigned int height)
 		return false;
 	}
 
-	m_ShaderSSAO = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao.fs");
+	m_ShaderSSAO = (Hazel::Ref<Shader>)Shader::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao.fs");
 	Log::GetLogger()->info("FramebufferSSAO: m_ShaderSSAO compiled [programID={0}]", m_ShaderSSAO->GetProgramID());
 
 	m_QuadSSAO = Hazel::Ref<QuadSSAO>::Create();

@@ -98,7 +98,7 @@ namespace Hazel
 
 	enum class ShaderUniformType
 	{
-		None = 0, Bool, Int, Float, Vec2, Vec3, Vec4, Mat3, Mat4
+		None = 0, Bool, Int, UInt, Float, Vec2, Vec3, Vec4, Mat3, Mat4
 	};
 
 	class ShaderUniform
@@ -147,6 +147,8 @@ namespace Hazel
 
 		virtual void Bind() = 0;
 		virtual uint32_t GetRendererID() const = 0;
+
+		virtual size_t GetHash() const = 0;
 
 		// NEW shader system
 		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) = 0;
