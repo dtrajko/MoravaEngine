@@ -1,19 +1,15 @@
 #include "OpenGLShader.h"
-#include "../../Core/Assert.h"
-#include "../../Renderer/HazelRenderer.h"
-#include "../../Core/HazelLog.h"
-#include "../../Renderer/ShaderUniform.h"
 
 #include <string>
 #include <sstream>
 #include <limits>
-#include <fstream>
-#include <filesystem>
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include <shaderc/shaderc.hpp>
+#include "Hazel/Renderer/HazelRenderer.h"
 
+#include <shaderc/shaderc.hpp>
+#include <filesystem>
 
 namespace Hazel {
 
@@ -53,25 +49,24 @@ namespace Hazel {
 	void OpenGLShader::Load(const std::string& source, bool forceCompile)
 	{
 		m_ShaderSource = PreProcess(source);
-
+		
 		Ref<OpenGLShader> instance = this;
 		HazelRenderer::Submit([instance, forceCompile]() mutable
 		{
+			std::array<std::vector<uint32_t>, 2> vulkanBinaries;
+			std::unordered_map<uint32_t, std::vector<uint32_t>> shaderData;
+			instance->CompileOrGetVulkanBinary(shaderData, forceCompile);
+			instance->CompileOrGetOpenGLBinary(shaderData, forceCompile);
 		});
-
-		std::array<std::vector<uint32_t>, 2> vulkanBinaries;
-		std::unordered_map<uint32_t, std::vector<uint32_t>> shaderData;
-		this->CompileOrGetVulkanBinary(shaderData, forceCompile);
-		this->CompileOrGetOpenGLBinary(shaderData, forceCompile);
 	}
 
 	static const char* GLShaderStageCachedVulkanFileExtension(uint32_t stage)
 	{
 		switch (stage)
 		{
-		case GL_VERTEX_SHADER:    return ".cached_vulkan.vert";
-		case GL_FRAGMENT_SHADER:  return ".cached_vulkan.frag";
-		case GL_COMPUTE_SHADER:   return ".cached_vulkan.comp";
+			case GL_VERTEX_SHADER:    return ".cached_vulkan.vert";
+			case GL_FRAGMENT_SHADER:  return ".cached_vulkan.frag";
+			case GL_COMPUTE_SHADER:   return ".cached_vulkan.comp";
 		}
 		HZ_CORE_ASSERT(false);
 		return "";
@@ -93,9 +88,9 @@ namespace Hazel {
 	{
 		switch (stage)
 		{
-		case GL_VERTEX_SHADER:    return shaderc_vertex_shader;
-		case GL_FRAGMENT_SHADER:  return shaderc_fragment_shader;
-		case GL_COMPUTE_SHADER:   return shaderc_compute_shader;
+			case GL_VERTEX_SHADER:    return shaderc_vertex_shader;
+			case GL_FRAGMENT_SHADER:  return shaderc_fragment_shader;
+			case GL_COMPUTE_SHADER:   return shaderc_compute_shader;
 		}
 		HZ_CORE_ASSERT(false);
 		return (shaderc_shader_kind)0;
@@ -105,9 +100,9 @@ namespace Hazel {
 	{
 		switch (stage)
 		{
-		case GL_VERTEX_SHADER:    return "Vertex";
-		case GL_FRAGMENT_SHADER:  return "Fragment";
-		case GL_COMPUTE_SHADER:   return "Compute";
+			case GL_VERTEX_SHADER:    return "Vertex";
+			case GL_FRAGMENT_SHADER:  return "Fragment";
+			case GL_COMPUTE_SHADER:   return "Compute";
 		}
 		HZ_CORE_ASSERT(false);
 		return "";
@@ -221,7 +216,7 @@ namespace Hazel {
 						fclose(f);
 					}
 				}
-
+				
 				if (!shaderStageData.size())
 				{
 					std::string source = glsl.compile();
@@ -251,7 +246,7 @@ namespace Hazel {
 				}
 
 				GLuint shaderID = glCreateShader(stage);
-				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderStageData.data(), (GLsizei)shaderStageData.size() * sizeof(uint32_t));
+				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderStageData.data(), shaderStageData.size() * sizeof(uint32_t));
 				glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
 				glAttachShader(program, shaderID);
 
@@ -310,6 +305,7 @@ namespace Hazel {
 		{
 		case spirv_cross::SPIRType::Boolean:  return ShaderUniformType::Bool;
 		case spirv_cross::SPIRType::Int:      return ShaderUniformType::Int;
+		case spirv_cross::SPIRType::UInt:     return ShaderUniformType::UInt;
 		case spirv_cross::SPIRType::Float:
 			if (type.vecsize == 1)            return ShaderUniformType::Float;
 			if (type.vecsize == 2)            return ShaderUniformType::Vec2;
@@ -326,7 +322,7 @@ namespace Hazel {
 
 	void OpenGLShader::Compile(const std::vector<uint32_t>& vertexBinary, const std::vector<uint32_t>& fragmentBinary)
 	{
-
+		
 	}
 
 	void OpenGLShader::ParseConstantBuffers(const spirv_cross::CompilerGLSL& compiler)
@@ -334,25 +330,34 @@ namespace Hazel {
 		spirv_cross::ShaderResources res = compiler.get_shader_resources();
 		for (const spirv_cross::Resource& resource : res.push_constant_buffers)
 		{
-			auto& bufferType = compiler.get_type(resource.base_type_id);
-			auto location = compiler.get_decoration(resource.id, spv::DecorationLocation);
 			const auto& bufferName = resource.name;
+			auto& bufferType = compiler.get_type(resource.base_type_id);
 			auto bufferSize = compiler.get_declared_struct_size(bufferType);
-			int memberCount = (int)bufferType.member_types.size();
+
+			// Skip empty push constant buffers - these are for the renderer only
+			if (bufferName.empty() || bufferName == "u_Renderer")
+			{
+				m_ConstantBufferOffset += bufferSize;
+				continue;
+			}
+
+			auto location = compiler.get_decoration(resource.id, spv::DecorationLocation);
+			int memberCount = bufferType.member_types.size();
 			ShaderBuffer& buffer = m_Buffers[bufferName];
 			buffer.Name = bufferName;
-			buffer.Size = (uint32_t)bufferSize;
+			buffer.Size = bufferSize - m_ConstantBufferOffset;
 			for (int i = 0; i < memberCount; i++)
 			{
 				auto type = compiler.get_type(bufferType.member_types[i]);
 				const auto& memberName = compiler.get_member_name(bufferType.self, i);
 				auto size = compiler.get_declared_struct_member_size(bufferType, i);
-				auto offset = compiler.type_struct_member_offset(bufferType, i);
+				auto offset = compiler.type_struct_member_offset(bufferType, i) - m_ConstantBufferOffset;
 
 				std::string uniformName = bufferName + "." + memberName;
-				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), (uint32_t)size, offset);
+				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), size, offset);
 			}
 
+			m_ConstantBufferOffset += bufferSize;
 		}
 	}
 
@@ -361,9 +366,9 @@ namespace Hazel {
 		spirv_cross::Compiler comp(data);
 		spirv_cross::ShaderResources res = comp.get_shader_resources();
 
-		Log::GetLogger()->trace("OpenGLShader::Reflect - {0}", m_AssetPath);
-		Log::GetLogger()->trace("   {0} Uniform Buffers", res.uniform_buffers.size());
-		Log::GetLogger()->trace("   {0} Resources", res.sampled_images.size());
+		HZ_CORE_TRACE("OpenGLShader::Reflect - {0}", m_AssetPath);
+		HZ_CORE_TRACE("   {0} Uniform Buffers", res.uniform_buffers.size());
+		HZ_CORE_TRACE("   {0} Resources", res.sampled_images.size());
 
 		glUseProgram(m_RendererID);
 
@@ -371,7 +376,7 @@ namespace Hazel {
 		for (const spirv_cross::Resource& resource : res.uniform_buffers)
 		{
 			auto& bufferType = comp.get_type(resource.base_type_id);
-			int memberCount = (int)bufferType.member_types.size();
+			int memberCount = bufferType.member_types.size();
 			uint32_t bindingPoint = comp.get_decoration(resource.id, spv::DecorationBinding);
 
 			if (s_UniformBuffers.find(bindingPoint) == s_UniformBuffers.end())
@@ -379,8 +384,8 @@ namespace Hazel {
 				ShaderUniformBuffer& buffer = s_UniformBuffers[bindingPoint];
 				buffer.Name = resource.name;
 				buffer.BindingPoint = bindingPoint;
-				buffer.Size = (uint32_t)comp.get_declared_struct_size(bufferType);
-
+				buffer.Size = comp.get_declared_struct_size(bufferType);
+			 
 #if 0
 				buffer.Uniforms.reserve(memberCount);
 				for (int i = 0; i < memberCount; i++)
@@ -399,7 +404,7 @@ namespace Hazel {
 				glBufferData(GL_UNIFORM_BUFFER, buffer.Size, nullptr, GL_DYNAMIC_DRAW);
 				glBindBufferBase(GL_UNIFORM_BUFFER, buffer.BindingPoint, buffer.RendererID);
 
-				Log::GetLogger()->trace("Created Uniform Buffer at binding point {0} with name '{1}', size is {2} bytes", buffer.BindingPoint, buffer.Name, buffer.Size);
+				HZ_CORE_TRACE("Created Uniform Buffer at binding point {0} with name '{1}', size is {2} bytes", buffer.BindingPoint, buffer.Name, buffer.Size);
 
 				glBindBuffer(GL_UNIFORM_BUFFER, 0);
 			}
@@ -414,7 +419,7 @@ namespace Hazel {
 			uint32_t dimension = type.image.dim;
 
 			GLint location = glGetUniformLocation(m_RendererID, name.c_str());
-			HZ_CORE_ASSERT(location != -1);
+			//HZ_CORE_ASSERT(location != -1);
 			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
 			glUniform1i(location, binding);
 		}
@@ -428,9 +433,8 @@ namespace Hazel {
 	void OpenGLShader::Bind()
 	{
 		HazelRenderer::Submit([=]() {
+			glUseProgram(m_RendererID);
 		});
-
-		glUseProgram(m_RendererID);
 	}
 
 	std::string OpenGLShader::ReadShaderFromFile(const std::string& filepath) const
@@ -550,7 +554,7 @@ namespace Hazel {
 
 		if (outPosition)
 			*outPosition = end;
-		uint32_t length = (uint32_t)(end - str + 1);
+		uint32_t length = end - str + 1;
 		return std::string(str, length);
 	}
 
@@ -562,7 +566,7 @@ namespace Hazel {
 
 		if (outPosition)
 			*outPosition = end;
-		uint32_t length = (uint32_t)(end - str + 1);
+		uint32_t length = end - str + 1;
 		return std::string(str, length);
 	}
 
@@ -601,77 +605,6 @@ namespace Hazel {
 		return GL_NONE;
 	}
 
-	void OpenGLShader::CompileAndUploadShader()
-	{
-		std::vector<GLuint> shaderRendererIDs;
-
-		GLuint program = glCreateProgram();
-		for (auto& kv : m_ShaderSource)
-		{
-			GLenum type = kv.first;
-			std::string& source = kv.second;
-
-			GLuint shaderRendererID = glCreateShader(type);
-			const GLchar* sourceCstr = (const GLchar*)source.c_str();
-			glShaderSource(shaderRendererID, 1, &sourceCstr, 0);
-
-			glCompileShader(shaderRendererID);
-
-			GLint isCompiled = 0;
-			glGetShaderiv(shaderRendererID, GL_COMPILE_STATUS, &isCompiled);
-			if (isCompiled == GL_FALSE)
-			{
-				GLint maxLength = 0;
-				glGetShaderiv(shaderRendererID, GL_INFO_LOG_LENGTH, &maxLength);
-
-				// The maxLength includes the NULL character
-				std::vector<GLchar> infoLog(maxLength);
-				glGetShaderInfoLog(shaderRendererID, maxLength, &maxLength, &infoLog[0]);
-
-				// HZ_CORE_ERROR("Shader compilation failed:\n{0}", &infoLog[0]);
-				Log::GetLogger()->critical("Shader compilation failed:\n{0}", &infoLog[0]);
-
-				// We don't need the shader anymore.
-				glDeleteShader(shaderRendererID);
-
-				HZ_CORE_ASSERT(false, "Failed");
-			}
-
-			shaderRendererIDs.push_back(shaderRendererID);
-			glAttachShader(program, shaderRendererID);
-		}
-
-		// Link our program
-		glLinkProgram(program);
-
-		// Note the different functions here: glGetProgram* instead of glGetShader*.
-		GLint isLinked = 0;
-		glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
-		if (isLinked == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-
-			// The maxLength includes the NULL character
-			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-			// HZ_CORE_ERROR("Shader compilation failed:\n{0}", &infoLog[0]);
-			Log::GetLogger()->critical("Shader compilation failed:\n{0}", &infoLog[0]);
-
-			// We don't need the program anymore.
-			glDeleteProgram(program);
-			// Don't leak shaders either.
-			for (auto id : shaderRendererIDs)
-				glDeleteShader(id);
-		}
-
-		// Always detach shaders after a successful link.
-		for (auto id : shaderRendererIDs)
-			glDetachShader(program, id);
-
-		m_RendererID = program;
-	}
-
 	size_t OpenGLShader::GetHash() const
 	{
 		return std::hash<std::string>{}(m_AssetPath);
@@ -684,9 +617,6 @@ namespace Hazel {
 
 		Ref<OpenGLShader> instance = this;
 		HazelRenderer::Submit([=]()
-		{
-		});
-
 		{
 			ShaderUniformBuffer* uniformBuffer = nullptr;
 			for (auto& [bindingPoint, ub] : s_UniformBuffers)
@@ -703,148 +633,112 @@ namespace Hazel {
 			glNamedBufferSubData(uniformBuffer->RendererID, 0, size, buffer);
 
 			delete[] buffer;
-		}
+		});
 	}
 
 	void OpenGLShader::SetUniform(const std::string& fullname, float value)
 	{
 		HazelRenderer::Submit([=]()
 		{
-		});
-
-		{
 			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniform1f(location, value);
-		}
+		});
 	}
 
 	void OpenGLShader::SetUniform(const std::string& fullname, int value)
 	{
 		HazelRenderer::Submit([=]()
 		{
-		});
-
-		{
 			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniform1i(location, value);
-		}
+		});
 	}
 
 	void OpenGLShader::SetUniform(const std::string& fullname, const glm::vec2& value)
 	{
 		HazelRenderer::Submit([=]()
 		{
-		});
-
-		{
 			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniform2fv(location, 1, glm::value_ptr(value));
-		}
+		});
 	}
 
 	void OpenGLShader::SetUniform(const std::string& fullname, const glm::vec3& value)
 	{
 		HazelRenderer::Submit([=]()
 		{
-		});
-
-		{
 			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniform3fv(location, 1, glm::value_ptr(value));
-		}
+		});
 	}
 
 	void OpenGLShader::SetUniform(const std::string& fullname, const glm::vec4& value)
 	{
 		HazelRenderer::Submit([=]()
 		{
-		});
-
-		{
 			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniform4fv(location, 1, glm::value_ptr(value));
-		}
+		});
 	}
 
 	void OpenGLShader::SetUniform(const std::string& fullname, const glm::mat3& value)
 	{
 		HazelRenderer::Submit([=]()
 		{
-		});
-
-		{
 			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
-		}
+		});
 	}
 
 	void OpenGLShader::SetUniform(const std::string& fullname, const glm::mat4& value)
 	{
 		HazelRenderer::Submit([=]()
 		{
-		});
-
-		{
 			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
-		}
+		});
 	}
 
 	void OpenGLShader::SetFloat(const std::string& name, float value)
 	{
 		HazelRenderer::Submit([=]() {
-		});
-
-		{
 			UploadUniformFloat(name, value);
-		}
+		});
 	}
 
 	void OpenGLShader::SetInt(const std::string& name, int value)
 	{
 		HazelRenderer::Submit([=]() {
-		});
-
-		{
 			UploadUniformInt(name, value);
-		}
+		});
 	}
 
 	void OpenGLShader::SetBool(const std::string& name, bool value)
 	{
 		HazelRenderer::Submit([=]() {
-		});
-
-		{
 			UploadUniformInt(name, value);
-		}
+		});
 	}
 
 	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
 		HazelRenderer::Submit([=]() {
-		});
-
-		{
 			UploadUniformFloat3(name, value);
-		}
+		});
 	}
 
 	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
 	{
 		HazelRenderer::Submit([=]() {
-		});
-
-		{
 			UploadUniformMat4(name, value);
-		}
+		});
 	}
 
 	void OpenGLShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind)
@@ -864,11 +758,16 @@ namespace Hazel {
 	void OpenGLShader::SetIntArray(const std::string& name, int* values, uint32_t size)
 	{
 		HazelRenderer::Submit([=]() {
-		});
-
-		{
 			UploadUniformIntArray(name, values, size);
-		}
+		});
+	}
+
+	const ShaderResourceDeclaration* OpenGLShader::GetShaderResource(const std::string& name)
+	{
+		if (m_Resources.find(name) == m_Resources.end())
+			return nullptr;
+		
+		return &m_Resources.at(name);
 	}
 
 	void OpenGLShader::UploadUniformInt(uint32_t location, int32_t value)
@@ -934,16 +833,6 @@ namespace Hazel {
 		auto location = glGetUniformLocation(m_RendererID, name.c_str());
 		if (location != -1)
 			glUniform1f(location, value);
-		else
-			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
-	}
-
-	void OpenGLShader::UploadUniformFloat2(const std::string& name, const glm::vec2& values)
-	{
-		glUseProgram(m_RendererID);
-		auto location = glGetUniformLocation(m_RendererID, name.c_str());
-		if (location != -1)
-			glUniform2f(location, values.x, values.y);
 		else
 			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
 	}
