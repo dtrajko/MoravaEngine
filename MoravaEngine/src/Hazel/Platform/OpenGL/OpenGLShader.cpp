@@ -366,9 +366,9 @@ namespace Hazel {
 		spirv_cross::Compiler comp(data);
 		spirv_cross::ShaderResources res = comp.get_shader_resources();
 
-		HZ_CORE_TRACE("OpenGLShader::Reflect - {0}", m_AssetPath);
-		HZ_CORE_TRACE("   {0} Uniform Buffers", res.uniform_buffers.size());
-		HZ_CORE_TRACE("   {0} Resources", res.sampled_images.size());
+		Log::GetLogger()->trace("OpenGLShader::Reflect - {0}", m_AssetPath);
+		Log::GetLogger()->trace("   {0} Uniform Buffers", res.uniform_buffers.size());
+		Log::GetLogger()->trace("   {0} Resources", res.sampled_images.size());
 
 		glUseProgram(m_RendererID);
 
@@ -404,7 +404,7 @@ namespace Hazel {
 				glBufferData(GL_UNIFORM_BUFFER, buffer.Size, nullptr, GL_DYNAMIC_DRAW);
 				glBindBufferBase(GL_UNIFORM_BUFFER, buffer.BindingPoint, buffer.RendererID);
 
-				HZ_CORE_TRACE("Created Uniform Buffer at binding point {0} with name '{1}', size is {2} bytes", buffer.BindingPoint, buffer.Name, buffer.Size);
+				Log::GetLogger()->trace("Created Uniform Buffer at binding point {0} with name '{1}', size is {2} bytes", buffer.BindingPoint, buffer.Name, buffer.Size);
 
 				glBindBuffer(GL_UNIFORM_BUFFER, 0);
 			}

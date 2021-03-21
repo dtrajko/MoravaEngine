@@ -352,7 +352,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
-MoravaEngine/imgui.ini
 MoravaEngine/Scenes/scene_tmp.scene
 build/
 
@@ -365,4 +364,6 @@ MoravaEngine/Models/Zombie_Boss/
 MoravaEngine/Models/Chest/
 MoravaEngine/Models/FireHydrant/
 MoravaEngine/Hazel/bin-int/
-/MoravaEngine/imgui.ini
+
+MoravaEngine/imgui.ini
+
