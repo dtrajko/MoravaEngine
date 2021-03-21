@@ -31,6 +31,8 @@ out VertexOutput
 	mat3 WorldTransform;
 	vec3 Binormal;
 	vec4 DirLightSpacePos;
+	vec3 FragPos;
+	mat3 TBN;
 } vs_Output;
 
 void main()
@@ -44,6 +46,18 @@ void main()
 	vs_Output.WorldTransform = mat3(u_Transform);
 	vs_Output.Binormal = a_Binormal;
 	vs_Output.DirLightSpacePos = u_DirLightTransform * u_Transform * vec4(a_Position, 1.0);
+	vs_Output.FragPos = (u_Transform * vec4(a_Position, 1.0)).xyz;
+
+	// BEGIN TBN
+    mat3 modelVector = transpose(inverse(mat3(u_Transform)));
+    vec3 T = normalize(modelVector * a_Tangent);
+    vec3 B = normalize(modelVector * a_Binormal);
+    vec3 N = normalize(modelVector * a_Normal);
+    // Gram-Schmidt process
+    T = normalize(T - dot(T, N) * N);
+    B = cross(N, T);
+    vs_Output.TBN = mat3(T, B, N);
+	// END TBN
 
 	gl_Position = u_ViewProjectionMatrix * u_Transform * localPosition;
 }

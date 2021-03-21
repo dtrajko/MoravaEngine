@@ -35,6 +35,8 @@ in VertexOutput
 	mat3 WorldTransform;
 	vec3 Binormal;
 	vec4 DirLightSpacePos;
+	vec3 FragPos;
+	mat3 TBN;
 } vs_Input;
 
 layout(location = 0) out vec4 color;
@@ -81,6 +83,9 @@ uniform float u_TilingFactor;
 // Shadow Map Directional Light
 uniform sampler2D u_ShadowMap;
 
+// Point lights
+const int pointLightCount = 1;
+
 struct PBRParameters
 {
 	vec3 Albedo;
@@ -97,6 +102,191 @@ struct PBRParameters
 };
 
 PBRParameters m_Params;
+
+
+// BEGIN Phong lighting model
+
+const int MAX_POINT_LIGHTS = 1;
+const int MAX_SPOT_LIGHTS = 1;
+const int MAX_LIGHTS = MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS;
+
+const float material_Shininess = 256.0f;
+const float material_SpecularIntensity = 1.0;
+
+
+struct LightBase
+{
+	bool enabled;
+	vec3 color;
+	float ambientIntensity;
+	float diffuseIntensity;
+};
+
+struct PointLight
+{
+	LightBase base;
+	vec3 position;
+	float constant;
+	float linear;
+	float exponent;
+};
+
+uniform PointLight pointLights[MAX_POINT_LIGHTS];
+
+struct OmniShadowMap
+{
+	samplerCube shadowMap;
+	float farPlane;
+};
+
+uniform OmniShadowMap omniShadowMaps[MAX_LIGHTS];
+
+vec3 sampleOffsetDirections[20] = vec3[]
+(
+	vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1),
+	vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+	vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+	vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+	vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
+
+vec3 GetNormal()
+{
+	vec3 normal = normalize(vs_Input.Normal);
+	// return normal;
+
+	normal = texture(u_NormalTexture, vs_Input.TexCoord * u_TilingFactor).rgb;
+	normal = normal * 2.0 - 1.0;
+	normal = normalize(vs_Input.TBN * normal);
+	return normal;
+}
+
+float CalcOmniShadowFactor(PointLight light, int shadowIndex)
+{
+	float shadow = 0.0;
+	float bias = 0.001;
+	float samples = 20.0;
+
+	float viewDistance = length(u_CameraPosition - vs_Input.FragPos);
+	float diskRadius = (1.0 + (viewDistance / omniShadowMaps[shadowIndex].farPlane)) / 25.0;
+
+	vec3 fragToLight = vs_Input.FragPos - light.position;
+	float currentDepth = length(fragToLight);
+	float closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight).r;
+	closestDepth *= omniShadowMaps[shadowIndex].farPlane;
+	shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+	// PCF method
+	if (true)
+	{
+		for (int i = 0; i < samples; i++)
+		{
+			closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
+			closestDepth *= omniShadowMaps[shadowIndex].farPlane;
+			if (currentDepth - bias > closestDepth)
+			{
+				shadow += 1.0;
+			}		
+		}
+		shadow /= samples;
+	}
+	return shadow;
+}
+
+float CalcDirectionalShadowFactor()
+{
+	vec3 projCoords = vs_Input.DirLightSpacePos.xyz / vs_Input.DirLightSpacePos.w;
+	projCoords = (projCoords * 0.5) + 0.5;
+
+	float closestDepth = texture(u_ShadowMap, projCoords.xy).r;
+	float currentDepth = projCoords.z;
+
+	vec3 normal = normalize(m_Params.Normal);
+	vec3 lightDir = normalize(lights.Direction);
+
+	float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001);
+	
+	float shadow = 0.0;
+	shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+	// PCF method
+	if (true)
+	{
+		vec2 texelSize = 1.0 / textureSize(u_ShadowMap, 0);
+		for (int x = -1; x <= 1; ++x)
+		{
+			for (int y = -1; y <= 1; ++y)
+			{
+				float pcfDepth = texture(u_ShadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+				shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+			}
+		}
+		shadow /= 9.0;
+	}
+
+	if (projCoords.z > 1.0)
+	{
+		shadow = 0.0;
+	}
+
+	return shadow;
+}
+
+vec4 CalcLightByDirection(LightBase light, vec3 direction, float shadowFactor)
+{
+	vec4 ambientColor = vec4(light.color, 1.0) * light.ambientIntensity;
+
+	float diffuseFactor = max(dot(GetNormal(), -normalize(direction)), 0.0);
+	vec4 diffuseColor = vec4(light.color, 1.0) * light.diffuseIntensity * diffuseFactor;
+
+	vec4 specularColor = vec4(0.0, 0.0, 0.0, 1.0);
+
+	if (diffuseFactor > 0.0)
+	{
+		vec3 fragToEye = normalize(u_CameraPosition - vs_Input.FragPos);
+		vec3 reflectedVertex = normalize(reflect(direction, GetNormal()));
+
+		float specularFactor = dot(fragToEye, reflectedVertex);
+		if (specularFactor > 0.0)
+		{
+			specularFactor = pow(specularFactor, material_Shininess);
+			specularColor = vec4(light.color * material_SpecularIntensity * specularFactor, 1.0f);
+		}
+	}
+
+	return (ambientColor + (1.0 - shadowFactor) * (diffuseColor + specularColor));
+}
+
+vec4 CalcPointLight(PointLight pointLight, int shadowIndex)
+{
+	if (!pointLight.base.enabled) return vec4(0.0, 0.0, 0.0, 1.0);
+
+	vec3 direction = vs_Input.FragPos - pointLight.position;
+	float distance = length(direction);
+	direction = normalize(direction);
+
+	float shadowFactor = CalcOmniShadowFactor(pointLight, shadowIndex);
+
+	vec4 color = CalcLightByDirection(pointLight.base, direction, shadowFactor);
+	float attenuation =	pointLight.exponent * distance * distance +
+						pointLight.linear * distance +
+						pointLight.constant;
+
+	return (color / attenuation);
+}
+
+vec4 CalcPointLights()
+{
+	vec4 totalColor = vec4(0.0, 0.0, 0.0, 1.0);
+	for (int i = 0; i < pointLightCount; i++)
+	{
+		totalColor += CalcPointLight(pointLights[i], i);
+	}
+	return totalColor;
+}
+
+// END Phong lighting model
+
 
 // GGX/Towbridge-Reitz normal distribution function.
 // Uses Disney's reparametrization of alpha = roughness^2
@@ -250,6 +440,9 @@ vec3 Lighting(vec3 F0)
 
 		result += ((1.0 - m_Params.ShadowFactor) * (diffuseBRDF + specularBRDF)) * Lradiance * cosLi;
 	}
+
+	vec4 pointLights = CalcPointLights();
+
 	result *= lights.Multiplier;
 	return result;
 }
@@ -277,45 +470,6 @@ vec4 SRGBtoLINEAR(vec4 srgbIn)
 {
 	vec3 linOut = pow(srgbIn.xyz,vec3(2.2));
 	return vec4(linOut, srgbIn.w);
-}
-
-float CalcDirectionalShadowFactor()
-{
-	vec3 projCoords = vs_Input.DirLightSpacePos.xyz / vs_Input.DirLightSpacePos.w;
-	projCoords = (projCoords * 0.5) + 0.5;
-
-	float closestDepth = texture(u_ShadowMap, projCoords.xy).r;
-	float currentDepth = projCoords.z;
-
-	vec3 normal = normalize(m_Params.Normal);
-	vec3 lightDir = normalize(lights.Direction);
-
-	float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001);
-	
-	float shadow = 0.0;
-	shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
-
-	// PCF method
-	if (true)
-	{
-		vec2 texelSize = 1.0 / textureSize(u_ShadowMap, 0);
-		for (int x = -1; x <= 1; ++x)
-		{
-			for (int y = -1; y <= 1; ++y)
-			{
-				float pcfDepth = texture(u_ShadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
-				shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
-			}
-		}
-		shadow /= 9.0;
-	}
-
-	if (projCoords.z > 1.0)
-	{
-		shadow = 0.0;
-	}
-
-	return shadow;
 }
 
 
