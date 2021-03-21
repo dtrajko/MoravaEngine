@@ -13,6 +13,7 @@ namespace Hazel {
 	public:
 		OpenGLShader() = default;
 		OpenGLShader(const std::string& filepath, bool forceRecompile);
+		static Ref<OpenGLShader> CreateFromString(const std::string& source);
 
 		virtual void Reload(bool forceCompile = false) override;
 		virtual void Bind() override;
@@ -42,7 +43,6 @@ namespace Hazel {
 
 		virtual const std::string& GetName() const override { return m_Name; }
 
-		static Ref<OpenGLShader> CreateFromString(const std::string& source);
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const override { return m_Buffers; }
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override { return m_Resources; }
 	private:
