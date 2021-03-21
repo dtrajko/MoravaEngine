@@ -9,26 +9,44 @@ namespace Hazel {
 	// Material
 	//////////////////////////////////////////////////////////////////////////////////
 
-	Ref<HazelMaterial> HazelMaterial::Create(Ref<HazelShader> shader)
+	Ref<HazelMaterial> HazelMaterial::Create(const Ref<HazelShader>& shader)
 	{
 		return Ref<HazelMaterial>::Create(shader);
 	}
 
 	void HazelMaterial::AllocateStorage()
 	{
+		if (m_Shader->HasVSMaterialUniformBuffer())
+		{
+			const auto& vsBuffer = m_Shader->GetVSMaterialUniformBuffer();
+			m_VSUniformStorageBuffer.Allocate(vsBuffer.GetSize());
+			m_VSUniformStorageBuffer.ZeroInitialize();
+		}
+
+		if (m_Shader->HasPSMaterialUniformBuffer())
+		{
+			const auto& psBuffer = m_Shader->GetPSMaterialUniformBuffer();
+			m_PSUniformStorageBuffer.Allocate(psBuffer.GetSize());
+			m_PSUniformStorageBuffer.ZeroInitialize();
+		}
 	}
 
 	void HazelMaterial::OnShaderReloaded()
 	{
-	}
+		return;
+		AllocateStorage();
 
-	void HazelMaterial::BindTextures()
-	{
+		for (auto mi : m_MaterialInstances)
+			mi->OnShaderReloaded();
 	}
 
 	ShaderUniformDeclaration* HazelMaterial::FindUniformDeclaration(const std::string& name)
 	{
 		return nullptr;
+	}
+
+	void HazelMaterial::BindTextures()
+	{
 	}
 
 	ShaderResourceDeclaration* HazelMaterial::FindResourceDeclaration(const std::string& name)
@@ -39,7 +57,7 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	HazelMaterial::HazelMaterial(Ref<HazelShader> shader)
+	HazelMaterial::HazelMaterial(const Ref<HazelShader>& shader)
 		: m_Shader(shader)
 	{
 		// m_Shader->AddShaderReloadedCallback(std::bind(&HazelMaterial::OnShaderReloaded, this));

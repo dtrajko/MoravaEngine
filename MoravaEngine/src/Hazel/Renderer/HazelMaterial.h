@@ -26,7 +26,7 @@ namespace Hazel {
 		friend class HazelMaterialInstance;
 
 	public:
-		HazelMaterial(Ref<HazelShader> shader);
+		HazelMaterial(const Ref<HazelShader>& shader);
 		virtual ~HazelMaterial();
 
 		void Bind() const;
@@ -49,6 +49,7 @@ namespace Hazel {
 		void Set(const std::string& name, const Ref<HazelTexture>& texture)
 		{
 			auto decl = FindResourceDeclaration(name);
+			HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
 			uint32_t slot = decl->GetRegister();
 			if (m_Textures.size() <= slot)
 				m_Textures.resize((size_t)slot + 1);
@@ -75,7 +76,7 @@ namespace Hazel {
 
 		void BindTextures() const;
 
-		static Ref<HazelMaterial> Create(Ref<HazelShader> shader);
+		static Ref<HazelMaterial> Create(const Ref<HazelShader>& shader);
 
 	private:
 		void AllocateStorage();

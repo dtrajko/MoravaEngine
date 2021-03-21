@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Hazel/Core/Assert.h"
+
 #include "Core/Log.h"
 
 #include <stdint.h>
@@ -49,10 +51,15 @@ namespace Hazel {
 				memset(Data, 0, Size);
 		}
 
+		template<typename T>
+		T& Read(uint32_t offset = 0)
+		{
+			return *(T*)(Data + offset);
+		}
+
 		void Write(void* data, uint32_t size, uint32_t offset = 0)
 		{
-			if (offset + size > Size)
-				Log::GetLogger()->error("Buffer overflow!");
+			HZ_CORE_ASSERT(offset + size <= size, "Buffer overflow!");
 			memcpy(Data + offset, data, size);
 		}
 

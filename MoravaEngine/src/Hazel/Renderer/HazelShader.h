@@ -188,6 +188,19 @@ namespace Hazel
 		// Temporary, before we have an asset manager
 		static std::vector<Ref<HazelShader>> s_AllShaders;
 
+		// Methods from Vulkan Week Day 1
+		bool HasVSMaterialUniformBuffer();
+		bool HasPSMaterialUniformBuffer();
+		Buffer GetVSMaterialUniformBuffer();
+		Buffer GetPSMaterialUniformBuffer();
+
+		virtual const ShaderUniformBufferList& GetVSRendererUniforms() const = 0;
+		virtual const ShaderUniformBufferList& GetPSRendererUniforms() const = 0;
+		virtual bool HasVSMaterialUniformBuffer() const = 0;
+		virtual bool HasPSMaterialUniformBuffer() const = 0;
+		virtual const ShaderUniformBufferDeclaration& GetVSMaterialUniformBuffer() const = 0;
+		virtual const ShaderUniformBufferDeclaration& GetPSMaterialUniformBuffer() const = 0;
+
 	};
 
 	// This should be eventually handled by the Asset Manager

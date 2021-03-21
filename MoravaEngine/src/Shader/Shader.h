@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Hazel/Renderer/HazelShader.h"
+#include "Hazel/Renderer/ShaderUniform.h"
 
 #include "Core/CommonValues.h"
 
@@ -110,6 +111,15 @@ private:
 
 	const char* GetShaderTypeNameFromEnum(const GLenum shaderType);
 
+	// Vulkan Week Day 1
+	virtual const Hazel::ShaderUniformBufferList& GetVSRendererUniforms() const override { return m_VSRendererUniformBuffers; }
+	virtual const Hazel::ShaderUniformBufferList& GetPSRendererUniforms() const override { return m_PSRendererUniformBuffers; }
+	virtual bool HasVSMaterialUniformBuffer() const override { return (bool)m_VSMaterialUniformBuffer; }
+	virtual bool HasPSMaterialUniformBuffer() const override { return (bool)m_PSMaterialUniformBuffer; }
+	virtual const Hazel::ShaderUniformBufferDeclaration& GetVSMaterialUniformBuffer() const override { return *m_VSMaterialUniformBuffer; }
+	virtual const Hazel::ShaderUniformBufferDeclaration& GetPSMaterialUniformBuffer() const override { return *m_PSMaterialUniformBuffer; }
+	// virtual const ShaderResourceList& GetResources() const override { return m_Resources; }
+
 protected:
 	GLuint programID = -1;
 	GLint shaderID = -1;
@@ -138,5 +148,11 @@ private:
 
 	// Temporary, before we have an asset manager
 	static std::vector<Hazel::Ref<Shader>> s_AllShaders;
+
+	// Vulkan Week Day 1
+	Hazel::ShaderUniformBufferList m_VSRendererUniformBuffers;
+	Hazel::ShaderUniformBufferList m_PSRendererUniformBuffers;
+	Ref<Hazel::ShaderUniformBufferDeclaration> m_VSMaterialUniformBuffer;
+	Ref<Hazel::ShaderUniformBufferDeclaration> m_PSMaterialUniformBuffer;
 
 };

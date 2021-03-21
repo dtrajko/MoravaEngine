@@ -82,6 +82,15 @@ namespace Hazel {
 		void UploadUniformFloat4(const std::string& name, const glm::vec4& values);
 		void UploadUniformMat4(const std::string& name, const glm::mat4& value);
 
+		// Vulkan Week Day 1
+		virtual const ShaderUniformBufferList& GetVSRendererUniforms() const override { return m_VSRendererUniformBuffers; }
+		virtual const ShaderUniformBufferList& GetPSRendererUniforms() const override { return m_PSRendererUniformBuffers; }
+		virtual bool HasVSMaterialUniformBuffer() const override { return (bool)m_VSMaterialUniformBuffer; }
+		virtual bool HasPSMaterialUniformBuffer() const override { return (bool)m_PSMaterialUniformBuffer; }
+		virtual const ShaderUniformBufferDeclaration& GetVSMaterialUniformBuffer() const override { return *m_VSMaterialUniformBuffer; }
+		virtual const ShaderUniformBufferDeclaration& GetPSMaterialUniformBuffer() const override { return *m_PSMaterialUniformBuffer; }
+		// virtual const ShaderResourceList& GetResources() const override { return m_Resources; }
+
 	private:
 		RendererID m_RendererID = 0;
 		bool m_Loaded = false;
@@ -98,6 +107,15 @@ namespace Hazel {
 		std::unordered_map<std::string, ShaderBuffer> m_Buffers;
 		std::unordered_map<std::string, ShaderResourceDeclaration> m_Resources;
 		std::unordered_map<std::string, GLint> m_UniformLocations;
+
+		// Vulkan Week Day 1
+		ShaderUniformBufferList m_VSRendererUniformBuffers;
+		ShaderUniformBufferList m_PSRendererUniformBuffers;
+		Ref<OpenGLShaderUniformBufferDeclaration> m_VSMaterialUniformBuffer;
+		Ref<OpenGLShaderUniformBufferDeclaration> m_PSMaterialUniformBuffer;
+
+		// ShaderResourceList m_Resources;
+		ShaderStructList m_Structs;
 
 	};
 

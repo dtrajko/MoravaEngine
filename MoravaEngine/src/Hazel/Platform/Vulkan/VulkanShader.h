@@ -97,6 +97,7 @@ namespace Hazel {
 		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set = 0);
 		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set, uint32_t numberOfSets);
 		const VkWriteDescriptorSet* GetDescriptorSet(const std::string& name, uint32_t set = 0) const;
+
 	private:
 		std::unordered_map<VkShaderStageFlagBits, std::string> PreProcess(const std::string& source);
 		void CompileOrGetVulkanBinary(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile);
@@ -107,6 +108,16 @@ namespace Hazel {
 		void CreateDescriptors();
 
 		void AllocateUniformBuffer(UniformBuffer& dst);
+
+		// Vulkan Week Day 1
+		virtual const ShaderUniformBufferList& GetVSRendererUniforms() const override { return m_VSRendererUniformBuffers; }
+		virtual const ShaderUniformBufferList& GetPSRendererUniforms() const override { return m_PSRendererUniformBuffers; }
+		virtual bool HasVSMaterialUniformBuffer() const override { return (bool)m_VSMaterialUniformBuffer; }
+		virtual bool HasPSMaterialUniformBuffer() const override { return (bool)m_PSMaterialUniformBuffer; }
+		virtual const ShaderUniformBufferDeclaration& GetVSMaterialUniformBuffer() const override { return *m_VSMaterialUniformBuffer; }
+		virtual const ShaderUniformBufferDeclaration& GetPSMaterialUniformBuffer() const override { return *m_PSMaterialUniformBuffer; }
+		// virtual const ShaderResourceList& GetResources() const override { return m_Resources; }
+
 	private:
 		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageCreateInfos;
 		std::unordered_map<VkShaderStageFlagBits, std::string> m_ShaderSource;
@@ -134,6 +145,12 @@ namespace Hazel {
 		VkDescriptorPool m_DescriptorPool;
 
 		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> m_TypeCounts;
+
+		// Vulkan Week Day 1
+		ShaderUniformBufferList m_VSRendererUniformBuffers;
+		ShaderUniformBufferList m_PSRendererUniformBuffers;
+		Ref<ShaderUniformBufferDeclaration> m_VSMaterialUniformBuffer;
+		Ref<ShaderUniformBufferDeclaration> m_PSMaterialUniformBuffer;
 
 	};
 
