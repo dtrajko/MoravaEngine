@@ -2,6 +2,10 @@
 
 #include "../../../pch.h"
 
+#include "Hazel/Renderer/RendererContext.h"
+
+#include "Core/Application.h"
+
 
 namespace Hazel {
 
@@ -11,6 +15,11 @@ namespace Hazel {
 	{
 	public:
 		typedef void(*RenderCommandFn)(void*);
+
+		static Ref<RendererContext> GetContext()
+		{
+			return Application::Get()->GetWindow()->GetRenderContext();
+		}
 
 		// Commands
 		static void Clear();

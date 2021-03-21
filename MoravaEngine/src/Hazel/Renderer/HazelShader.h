@@ -1,8 +1,9 @@
 #pragma once
 
-#include "../Core/Ref.h"
-#include "../Core/Buffer.h"
-#include "ShaderUniform.h"
+#include "Hazel/Core/Buffer.h"
+#include "Hazel/Core/Ref.h"
+#include "Hazel/Renderer/RendererAPI.h"
+#include "Hazel/Renderer/ShaderUniform.h"
 
 #include <glm/glm.hpp>
 
@@ -146,7 +147,7 @@ namespace Hazel
 		virtual void Reload(bool forceCompile = false) = 0;
 
 		virtual void Bind() = 0;
-		virtual uint32_t GetRendererID() const = 0;
+		virtual RendererID GetRendererID() const = 0;
 
 		virtual size_t GetHash() const = 0;
 

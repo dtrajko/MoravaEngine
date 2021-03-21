@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Hazel/Events/Event.h"
+#include "Hazel/Renderer/RendererContext.h"
 
 #include "Core/CommonValues.h"
 
@@ -67,5 +68,7 @@ public:
 
 	virtual void SetTitle(std::string title) = 0;
 	virtual std::string GetTitle() = 0;
+
+	virtual Hazel::Ref<Hazel::RendererContext> GetRenderContext() = 0;
 
 };

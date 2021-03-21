@@ -247,8 +247,11 @@
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLTexture.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLVertexBuffer.cpp" />
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanAllocator.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanContext.cpp" />
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanDevice.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanShader.cpp" />
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanSwapChain.cpp" />
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsPlatformUtils.cpp" />
     <ClCompile Include="src\Hazel\Renderer\EditorCamera.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelCamera.cpp" />
@@ -481,8 +484,12 @@
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLTexture.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLVertexArray.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLVertexBuffer.h" />
+    <ClInclude Include="src\Hazel\Platform\Vulkan\Vulkan.h" />
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanAllocator.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanContext.h" />
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanDevice.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanShader.h" />
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanSwapChain.h" />
     <ClInclude Include="src\Hazel\Renderer\EditorCamera.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelCamera.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelFramebuffer.h" />

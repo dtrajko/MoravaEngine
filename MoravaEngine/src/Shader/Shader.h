@@ -16,9 +16,9 @@ class Shader : public Hazel::HazelShader
 {
 public:
 	Shader();
-	Shader(const char* vertexLocation, const char* fragmentLocation);
-	Shader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation);
-	Shader(const char* computeLocation);
+	Shader(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
+	Shader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
+	Shader(const char* computeLocation, bool forceCompile = false);
 
 	static Hazel::Ref<Shader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
 	static Hazel::Ref<Shader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
@@ -30,7 +30,7 @@ public:
 	virtual void SetIntArray(const std::string& name, int* values, uint32_t size) override;
 
 	// HazelShader abstract methods
-	virtual uint32_t GetRendererID() const override;
+	virtual Hazel::RendererID GetRendererID() const override;
 	virtual size_t GetHash() const override;
 	virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
 	virtual void SetUniform(const std::string& fullname, float value) override;

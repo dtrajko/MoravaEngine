@@ -18,7 +18,7 @@ Shader::Shader()
 	m_UniformLocations = std::map<std::string, int>();
 }
 
-Shader::Shader(const char* vertexLocation, const char* fragmentLocation)
+Shader::Shader(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
 	: Shader()
 {
 	m_ShaderFilepath_Vertex = vertexLocation;
@@ -29,7 +29,7 @@ Shader::Shader(const char* vertexLocation, const char* fragmentLocation)
 	CreateFromFiles(vertexLocation, fragmentLocation);
 }
 
-Shader::Shader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation)
+Shader::Shader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
 	: Shader()
 {
 	m_ShaderFilepath_Vertex = vertexLocation;
@@ -41,7 +41,7 @@ Shader::Shader(const char* vertexLocation, const char* geometryLocation, const c
 	CreateFromFiles(vertexLocation, geometryLocation, fragmentLocation);
 }
 
-Shader::Shader(const char* computeLocation)
+Shader::Shader(const char* computeLocation, bool forceCompile)
 	: Shader()
 {
 	m_ShaderFilepath_Compute = computeLocation;

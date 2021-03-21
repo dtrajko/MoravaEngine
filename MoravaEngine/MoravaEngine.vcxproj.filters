@@ -630,6 +630,15 @@
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLContext.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanAllocator.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanDevice.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanSwapChain.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -1343,6 +1352,18 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLContext.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\Vulkan.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanAllocator.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanDevice.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanSwapChain.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -13,15 +13,13 @@ namespace Hazel {
 	public:
 		OpenGLShader() = default;
 		OpenGLShader(const std::string& filepath, bool forceRecompile);
-		static Ref<OpenGLShader> CreateFromString(const std::string& source);
 
 		virtual void Reload(bool forceCompile = false) override;
-		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
-
 		virtual void Bind() override;
-		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
 		virtual size_t GetHash() const override;
+
+		virtual RendererID GetRendererID() const override { return m_RendererID; }
 
 		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
 		virtual void SetUniform(const std::string& fullname, float value) override;
@@ -31,6 +29,7 @@ namespace Hazel {
 		virtual void SetUniform(const std::string& fullname, const glm::vec4& value) override;
 		virtual void SetUniform(const std::string& fullname, const glm::mat3& value) override;
 		virtual void SetUniform(const std::string& fullname, const glm::mat4& value) override;
+		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
 
 		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetInt(const std::string& name, int value) override;
@@ -43,6 +42,7 @@ namespace Hazel {
 
 		virtual const std::string& GetName() const override { return m_Name; }
 
+		static Ref<OpenGLShader> CreateFromString(const std::string& source);
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const override { return m_Buffers; }
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override { return m_Resources; }
 	private:
@@ -80,10 +80,10 @@ namespace Hazel {
 		void UploadUniformFloat2(const std::string& name, const glm::vec2& values);
 		void UploadUniformFloat3(const std::string& name, const glm::vec3& values);
 		void UploadUniformFloat4(const std::string& name, const glm::vec4& values);
-
 		void UploadUniformMat4(const std::string& name, const glm::mat4& value);
+
 	private:
-		uint32_t m_RendererID = 0;
+		RendererID m_RendererID = 0;
 		bool m_Loaded = false;
 		bool m_IsCompute = false;
 

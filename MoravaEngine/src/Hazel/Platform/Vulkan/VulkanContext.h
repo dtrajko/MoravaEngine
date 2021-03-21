@@ -1,5 +1,10 @@
 #pragma once
 
+#include "Hazel/Platform/Vulkan/VulkanDevice.h"
+#include "Hazel/Platform/Vulkan/VulkanSwapChain.h"
+#include "Hazel/Renderer/HazelRenderer.h"
+#include "Hazel/Renderer/RendererContext.h"
+
 #include <vulkan/vulkan.h>
 
 
@@ -23,7 +28,7 @@ namespace Hazel {
 
 		static VkInstance GetInstance() { return s_VulkanInstance; }
 
-		static Ref<VulkanContext> Get() { return Ref<VulkanContext>(Renderer::GetContext()); }
+		static Ref<VulkanContext> Get() { return Ref<VulkanContext>(HazelRenderer::GetContext()); }
 		static Ref<VulkanDevice> GetCurrentDevice() { return Get()->GetDevice(); }
 	private:
 		GLFWwindow* m_WindowHandle;

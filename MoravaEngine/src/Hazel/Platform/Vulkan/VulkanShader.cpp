@@ -2,6 +2,8 @@
 
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/ShaderUniform.h"
+#include "Hazel/Platform/Vulkan/Vulkan.h"
+#include "Hazel/Platform/Vulkan/VulkanContext.h"
 
 #include "Core/Log.h"
 
@@ -150,10 +152,10 @@ namespace Hazel {
 		{
 			const auto& name = resource.name;
 			auto& bufferType = compiler.get_type(resource.base_type_id);
-			int memberCount = bufferType.member_types.size();
+			size_t memberCount = bufferType.member_types.size();
 			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
-			uint32_t size = compiler.get_declared_struct_size(bufferType);
+			uint32_t size = (uint32_t)compiler.get_declared_struct_size(bufferType);
 
 			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
 			HZ_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end());
@@ -174,8 +176,8 @@ namespace Hazel {
 		{
 			const auto& bufferName = resource.name;
 			auto& bufferType = compiler.get_type(resource.base_type_id);
-			auto bufferSize = compiler.get_declared_struct_size(bufferType);
-			int memberCount = bufferType.member_types.size();
+			auto bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
+			size_t memberCount = bufferType.member_types.size();
 			uint32_t bufferOffset = 0;
 			if (m_PushConstantRanges.size())
 				bufferOffset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
@@ -205,7 +207,7 @@ namespace Hazel {
 				auto offset = compiler.type_struct_member_offset(bufferType, i) - bufferOffset;
 
 				std::string uniformName = bufferName + "." + memberName;
-				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), size, offset);
+				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), (uint32_t)size, offset);
 			}
 		}
 
@@ -271,19 +273,19 @@ namespace Hazel {
 			{
 				VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				typeCount.descriptorCount = shaderDescriptorSet.UniformBuffers.size();
+				typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.UniformBuffers.size();
 			}
 			if (shaderDescriptorSet.ImageSamplers.size())
 			{
 				VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				typeCount.descriptorCount = shaderDescriptorSet.ImageSamplers.size();
+				typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.ImageSamplers.size();
 			}
 			if (shaderDescriptorSet.StorageImages.size())
 			{
 				VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-				typeCount.descriptorCount = shaderDescriptorSet.StorageImages.size();
+				typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.StorageImages.size();
 			}
 
 #if 0
@@ -368,7 +370,7 @@ namespace Hazel {
 			VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
 			descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			descriptorLayout.pNext = nullptr;
-			descriptorLayout.bindingCount = layoutBindings.size();
+			descriptorLayout.bindingCount = (uint32_t)layoutBindings.size();
 			descriptorLayout.pBindings = layoutBindings.data();
 
 			Log::GetLogger()->info("Creating descriptor set {0} with {1} ubos, {2} samplers and {3} storage images", set,
@@ -391,7 +393,7 @@ namespace Hazel {
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		descriptorPoolInfo.pNext = nullptr;
-		descriptorPoolInfo.poolSizeCount = m_TypeCounts.at(set).size();
+		descriptorPoolInfo.poolSizeCount = (uint32_t)m_TypeCounts.at(set).size();
 		descriptorPoolInfo.pPoolSizes = m_TypeCounts.at(set).data();
 		descriptorPoolInfo.maxSets = 1;
 
@@ -422,19 +424,19 @@ namespace Hazel {
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				typeCount.descriptorCount = shaderDescriptorSet.UniformBuffers.size() * numberOfSets;
+				typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.UniformBuffers.size() * numberOfSets;
 			}
 			if (shaderDescriptorSet.ImageSamplers.size())
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				typeCount.descriptorCount = shaderDescriptorSet.ImageSamplers.size() * numberOfSets;
+				typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.ImageSamplers.size() * numberOfSets;
 			}
 			if (shaderDescriptorSet.StorageImages.size())
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-				typeCount.descriptorCount = shaderDescriptorSet.StorageImages.size() * numberOfSets;
+				typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.StorageImages.size() * numberOfSets;
 			}
 
 		}
@@ -445,7 +447,7 @@ namespace Hazel {
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		descriptorPoolInfo.pNext = nullptr;
-		descriptorPoolInfo.poolSizeCount = poolSizes.at(set).size();
+		descriptorPoolInfo.poolSizeCount = (uint32_t)poolSizes.at(set).size();
 		descriptorPoolInfo.pPoolSizes = poolSizes.at(set).data();
 		descriptorPoolInfo.maxSets = numberOfSets;
 
@@ -693,6 +695,10 @@ namespace Hazel {
 	}
 
 	void VulkanShader::SetInt(const std::string& name, int value)
+	{
+	}
+
+	void VulkanShader::SetBool(const std::string& name, bool value)
 	{
 	}
 

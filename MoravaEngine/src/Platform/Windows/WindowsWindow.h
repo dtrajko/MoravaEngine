@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Hazel/Renderer/RendererContext.h"
+
 #include "Core/Window.h"
 
 
@@ -81,6 +83,8 @@ public:
 	virtual void SetTitle(std::string title) override;
 	virtual std::string GetTitle() override;
 
+	virtual Hazel::Ref<Hazel::RendererContext> GetRenderContext() override { return m_RendererContext; }
+
 private:
 	GLFWwindow* glfwWindow;
 
@@ -107,5 +111,7 @@ private:
 	float m_CursorIgnoreLimit;
 
 	bool m_EventLoggingEnabled;
+
+	Hazel::Ref<Hazel::RendererContext> m_RendererContext;
 
 };

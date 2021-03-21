@@ -8,7 +8,7 @@
 
 namespace Hazel {
 
-	class VulkanShader : public Shader
+	class VulkanShader : public HazelShader
 	{
 	public:
 		struct UniformBuffer
@@ -40,25 +40,26 @@ namespace Hazel {
 		VulkanShader(const std::string& path, bool forceCompile);
 		virtual ~VulkanShader();
 
-		void Bind() override;
-		void Reload(bool forceCompile = false) override;
+		virtual void Reload(bool forceCompile = false) override;
+		virtual void Bind() override;
 
 		virtual size_t GetHash() const override;
 
-		RendererID GetRendererID() const override;
+		virtual RendererID GetRendererID() const override;
 
-		void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
-
-		void SetUniform(const std::string& fullname, float value) override;
-		void SetUniform(const std::string& fullname, int value) override;
-		void SetUniform(const std::string& fullname, const glm::vec2& value) override;
-		void SetUniform(const std::string& fullname, const glm::vec3& value) override;
-		void SetUniform(const std::string& fullname, const glm::vec4& value) override;
-		void SetUniform(const std::string& fullname, const glm::mat3& value) override;
-		void SetUniform(const std::string& fullname, const glm::mat4& value) override;
+		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
+		virtual void SetUniform(const std::string& fullname, float value) override;
+		virtual void SetUniform(const std::string& fullname, int value) override;
+		virtual void SetUniform(const std::string& fullname, const glm::vec2& value) override;
+		virtual void SetUniform(const std::string& fullname, const glm::vec3& value) override;
+		virtual void SetUniform(const std::string& fullname, const glm::vec4& value) override;
+		virtual void SetUniform(const std::string& fullname, const glm::mat3& value) override;
+		virtual void SetUniform(const std::string& fullname, const glm::mat4& value) override;
+		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
 
 		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetInt(const std::string& name, int value) override;
+		virtual void SetBool(const std::string& name, bool value) override;
 		virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 		virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) override;
@@ -66,7 +67,6 @@ namespace Hazel {
 		virtual const std::string& GetName() const override { return  m_Name; }
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const override { return m_Buffers; }
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override;
-		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
 
 		// Vulkan-specific
 		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
@@ -84,7 +84,7 @@ namespace Hazel {
 			if (m_ShaderDescriptorSets.find(set) == m_ShaderDescriptorSets.end())
 				return 0;
 
-			return m_ShaderDescriptorSets.at(set).UniformBuffers.size();
+			return (uint32_t)m_ShaderDescriptorSets.at(set).UniformBuffers.size();
 		}
 		const std::vector<PushConstantRange>& GetPushConstantRanges() const { return m_PushConstantRanges; }
 
