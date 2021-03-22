@@ -246,7 +246,7 @@ namespace Hazel {
 				}
 
 				GLuint shaderID = glCreateShader(stage);
-				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderStageData.data(), shaderStageData.size() * sizeof(uint32_t));
+				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderStageData.data(), (GLsizei)shaderStageData.size() * sizeof(uint32_t));
 				glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
 				glAttachShader(program, shaderID);
 
@@ -337,15 +337,15 @@ namespace Hazel {
 			// Skip empty push constant buffers - these are for the renderer only
 			if (bufferName.empty() || bufferName == "u_Renderer")
 			{
-				m_ConstantBufferOffset += bufferSize;
+				m_ConstantBufferOffset += (uint32_t)bufferSize;
 				continue;
 			}
 
 			auto location = compiler.get_decoration(resource.id, spv::DecorationLocation);
-			int memberCount = bufferType.member_types.size();
+			int memberCount = (int)bufferType.member_types.size();
 			ShaderBuffer& buffer = m_Buffers[bufferName];
 			buffer.Name = bufferName;
-			buffer.Size = bufferSize - m_ConstantBufferOffset;
+			buffer.Size = (uint32_t)bufferSize - m_ConstantBufferOffset;
 			for (int i = 0; i < memberCount; i++)
 			{
 				auto type = compiler.get_type(bufferType.member_types[i]);

@@ -80,12 +80,6 @@ uniform float u_Exposure;
 
 uniform float u_TilingFactor;
 
-// Shadow Map Directional Light
-uniform sampler2D u_ShadowMap;
-
-// Point lights
-const int pointLightCount = 1;
-
 struct PBRParameters
 {
 	vec3 Albedo;
@@ -99,12 +93,16 @@ struct PBRParameters
 	float NdotV;
 
 	float ShadowFactor;
+	vec4 PointLights;
 };
 
 PBRParameters m_Params;
 
 
-// BEGIN Phong lighting model
+// ---- BEGIN Phong lighting model ----
+
+// Point lights
+const int pointLightCount = 1; // TODO: convert to an uniform
 
 const int MAX_POINT_LIGHTS = 1;
 const int MAX_SPOT_LIGHTS = 1;
@@ -112,7 +110,6 @@ const int MAX_LIGHTS = MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS;
 
 const float material_Shininess = 256.0f;
 const float material_SpecularIntensity = 1.0;
-
 
 struct LightBase
 {
@@ -133,13 +130,16 @@ struct PointLight
 
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 
+// Shadow Map Directional Light
+uniform sampler2D u_ShadowMap;
+
 struct OmniShadowMap
 {
 	samplerCube shadowMap;
 	float farPlane;
 };
 
-uniform OmniShadowMap omniShadowMaps[MAX_LIGHTS];
+uniform OmniShadowMap u_OmniShadowMaps[MAX_LIGHTS];
 
 vec3 sampleOffsetDirections[20] = vec3[]
 (
@@ -168,12 +168,12 @@ float CalcOmniShadowFactor(PointLight light, int shadowIndex)
 	float samples = 20.0;
 
 	float viewDistance = length(u_CameraPosition - vs_Input.FragPos);
-	float diskRadius = (1.0 + (viewDistance / omniShadowMaps[shadowIndex].farPlane)) / 25.0;
+	float diskRadius = (1.0 + (viewDistance / u_OmniShadowMaps[shadowIndex].farPlane)) / 25.0;
 
 	vec3 fragToLight = vs_Input.FragPos - light.position;
 	float currentDepth = length(fragToLight);
-	float closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight).r;
-	closestDepth *= omniShadowMaps[shadowIndex].farPlane;
+	float closestDepth = texture(u_OmniShadowMaps[shadowIndex].shadowMap, fragToLight).r;
+	closestDepth *= u_OmniShadowMaps[shadowIndex].farPlane;
 	shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 
 	// PCF method
@@ -181,8 +181,8 @@ float CalcOmniShadowFactor(PointLight light, int shadowIndex)
 	{
 		for (int i = 0; i < samples; i++)
 		{
-			closestDepth = texture(omniShadowMaps[shadowIndex].shadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
-			closestDepth *= omniShadowMaps[shadowIndex].farPlane;
+			closestDepth = texture(u_OmniShadowMaps[shadowIndex].shadowMap, fragToLight + sampleOffsetDirections[i] * diskRadius).r;
+			closestDepth *= u_OmniShadowMaps[shadowIndex].farPlane;
 			if (currentDepth - bias > closestDepth)
 			{
 				shadow += 1.0;
@@ -285,7 +285,7 @@ vec4 CalcPointLights()
 	return totalColor;
 }
 
-// END Phong lighting model
+// END ---- Phong lighting model ----
 
 
 // GGX/Towbridge-Reitz normal distribution function.
@@ -438,10 +438,12 @@ vec3 Lighting(vec3 F0)
 		// Cook-Torrance
 		vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * m_Params.NdotV);
 
-		result += ((1.0 - m_Params.ShadowFactor) * (diffuseBRDF + specularBRDF)) * Lradiance * cosLi;
-	}
+		m_Params.ShadowFactor = CalcDirectionalShadowFactor();
+		m_Params.PointLights = CalcPointLights();
 
-	vec4 pointLights = CalcPointLights();
+		result += ((1.0 - m_Params.ShadowFactor) * (diffuseBRDF + specularBRDF)) * Lradiance * cosLi;
+		result += m_Params.PointLights.rgb;
+	}
 
 	result *= lights.Multiplier;
 	return result;
@@ -504,8 +506,6 @@ void main()
 
 	// Fresnel reflectance, metals use albedo
 	vec3 F0 = mix(Fdielectric, m_Params.Albedo, m_Params.Metalness);
-
-	m_Params.ShadowFactor = CalcDirectionalShadowFactor();
 
 	vec3 lightContribution = Lighting(F0); // vec3(0.0) / Lighting(F0);
 	vec3 iblContribution = IBL(F0, Lr);

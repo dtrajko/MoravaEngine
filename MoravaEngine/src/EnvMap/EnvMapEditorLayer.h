@@ -39,6 +39,9 @@ public:
 
 	void OnRender(Framebuffer* framebuffer, Window* mainWindow);
 	void OnRenderShadow(Window* mainWindow);
+	void OnRenderShadowOmni(Window* mainWindow);
+
+	void RenderSubmeshesShadowPass(Hazel::Ref<Shader> shader);
 
 	void OnRenderEditor(Framebuffer* framebuffer);
 	void OnRenderRuntime(Framebuffer* framebuffer);
@@ -124,6 +127,8 @@ private:
 
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();
+	std::vector<glm::mat4> CalculateLightTransform(glm::mat4 lightProj, glm::vec3 position);
+
 	void RenderSkybox();
 	void RenderHazelGrid();
 	void RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh);
@@ -160,6 +165,7 @@ private:
 	Hazel::Ref<Shader> m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
 	Hazel::Ref<Shader> m_ShaderOutline;
 	Hazel::Ref<Shader> m_ShaderShadow;
+	Hazel::Ref<Shader> m_ShaderOmniShadow;
 
 	uint32_t m_FramebufferWidth;
 	uint32_t m_FramebufferHeight;
@@ -184,14 +190,15 @@ private:
 	Hazel::Entity m_CameraEntity;
 
 	Hazel::Entity m_DirectionalLightEntity;
-
-	Hazel::Entity m_PointLightEntity; // temporary, for experimental use
-	Hazel::Entity m_SpotLightEntity;  // temporary, for experimental use
-
 	Hazel::Ref<ShadowMap> m_ShadowMapDirLight;
 	glm::mat4 m_LightProjectionMatrix;
 	glm::vec3 m_LightDirection; // temporary, use DirectionalLightComponent
 	glm::mat4 m_DirLightTransform; // sent to shaders as an uniform dirLightTransform / u_DirLightTransform
+
+	Hazel::Entity m_PointLightEntity; // temporary, for experimental use
+	Hazel::Ref<ShadowMap> m_ShadowMapPointLight;
+
+	Hazel::Entity m_SpotLightEntity;  // temporary, for experimental use
 
 	float m_ViewportWidth = 0.0f;
 	float m_ViewportHeight = 0.0f;

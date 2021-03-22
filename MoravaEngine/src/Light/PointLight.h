@@ -12,6 +12,8 @@ public:
 	PointLight(GLuint shadowWidth, GLuint shadowHeight, GLfloat nearPlane, GLfloat farPlane,
 		bool enabled, glm::vec3 color, GLfloat ambientIntensity, GLfloat diffuseIntensity,
 		glm::vec3 position, GLfloat constant, GLfloat linear, GLfloat exponent);
+	~PointLight();
+
 	void UseLight(GLint enabledLocation, GLint ambientColorLocation, GLint ambientIntensityLocation, GLint diffuseIntensityLocation,
 		GLint positionLocation, GLint constantLocation, GLint linearLocation, GLint exponentLocation);
 	std::vector<glm::mat4> CalculateLightTransform();
@@ -26,8 +28,6 @@ public:
 	inline void SetConstant(float constant) { m_Constant = constant; };
 	inline void SetLinear(float linear) { m_Linear = linear; };
 	inline void SetExponent(float exponent) { m_Exponent = exponent; };
-
-	~PointLight();
 
 protected:
 	glm::vec3 m_Position;

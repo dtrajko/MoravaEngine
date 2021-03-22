@@ -11,6 +11,7 @@
 #include "Core/Util.h"
 #include "EnvMap/EnvMapRenderPass.h"
 #include "ImGui/ImGuiWrapper.h"
+#include "Light/PointLight.h"
 #include "Renderer/RendererBasic.h"
 #include "Scene/SceneHazelEnvMap.h"
 #include "Shader/ShaderLibrary.h"
@@ -49,7 +50,8 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     // BRDF LUT
     m_SamplerSlots->insert(std::make_pair("BRDF_LUT",   9)); // uniform sampler2D u_BRDFLUTTexture
     // Shadow Map Directional Light
-    m_SamplerSlots->insert(std::make_pair("shadow",     10)); // uniform sampler2D u_ShadowMap
+    m_SamplerSlots->insert(std::make_pair("shadow",      10)); // uniform sampler2D u_ShadowMap
+    m_SamplerSlots->insert(std::make_pair("shadow_omni", 11)); // uniform samplerCube omniShadowMaps[i].shadowMap
 
     // Skybox.fs         - uniform samplerCube u_Texture;
     // SceneComposite.fs - uniform sampler2DMS u_Texture;
@@ -120,6 +122,9 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 
     m_LightDirection = glm::normalize(glm::vec3(0.25f, -1.0f, 0.25f));
     m_LightProjectionMatrix = glm::ortho(-64.0f, 64.0f, -64.0f, 64.0f, -64.0f, 64.0f);
+
+    m_ShadowMapPointLight = Hazel::Ref<ShadowMap>::Create();
+    m_ShadowMapPointLight->Init(scene->GetSettings().shadowMapWidth, scene->GetSettings().shadowMapHeight);
 }
 
 void EnvMapEditorLayer::Init()
@@ -431,6 +436,9 @@ void EnvMapEditorLayer::SetupShaders()
     m_ShaderShadow = Shader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderShadow compiled [programID={0}]", m_ShaderShadow->GetProgramID());
 
+    m_ShaderOmniShadow = Shader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+    Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderOmniShadow compiled [programID={0}]", m_ShaderOmniShadow->GetProgramID());
+
     ResourceManager::AddShader("Hazel/HazelPBR_Static", shaderHazelPBR_Static);
     ResourceManager::AddShader("Hazel/HazelPBR_Anim", shaderHazelPBR_Anim);
     ResourceManager::AddShader("Hazel/Renderer2D_Line", shaderRenderer2D_Line);
@@ -513,6 +521,23 @@ void EnvMapEditorLayer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPB
     shaderHazelPBR->setVec3("lights.Direction", m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction);
     shaderHazelPBR->setVec3("lights.Radiance", m_SceneRenderer->s_Data.SceneData.ActiveLight.Radiance);
     shaderHazelPBR->setFloat("lights.Multiplier", m_SceneRenderer->s_Data.SceneData.ActiveLight.Multiplier);
+
+    // Point lights / Omni directional shadows
+    if (m_PointLightEntity.HasComponent<Hazel::PointLightComponent>())
+    {
+        auto& plc = m_PointLightEntity.GetComponent<Hazel::PointLightComponent>();
+        auto& tc = m_PointLightEntity.GetComponent<Hazel::TransformComponent>();
+        shaderHazelPBR->setBool( "pointLights[0].base.enabled",          plc.Enabled);
+        shaderHazelPBR->setVec3( "pointLights[0].base.color",            plc.Color);
+        shaderHazelPBR->setFloat("pointLights[0].base.ambientIntensity", plc.AmbientIntensity);
+        shaderHazelPBR->setFloat("pointLights[0].base.diffuseIntensity", plc.DiffuseIntensity);
+        shaderHazelPBR->setVec3( "pointLights[0].position",              tc.Translation);
+        shaderHazelPBR->setFloat("pointLights[0].constant",              plc.Constant);
+        shaderHazelPBR->setFloat("pointLights[0].linear",                plc.Linear);
+        shaderHazelPBR->setFloat("pointLights[0].exponent",              plc.Exponent);
+        shaderHazelPBR->setInt(  "omniShadowMaps[0].shadowMap", 0);
+        shaderHazelPBR->setFloat("omniShadowMaps[0].farPlane", plc.FarPlane);
+    }
 
     shaderHazelPBR->Validate();
     shaderHazelPBR->Unbind();
@@ -2215,8 +2240,18 @@ void EnvMapEditorLayer::GeometryPassTemporary()
                 m_ShaderHazelPBR = meshComponent.Mesh->IsAnimated() ? ShaderLibrary::Get("HazelPBR_Anim") : ShaderLibrary::Get("HazelPBR_Static");
 
                 m_ShaderHazelPBR->Bind();
+
                 m_ShadowMapDirLight->ReadTexture(m_SamplerSlots->at("shadow"));
                 m_ShaderHazelPBR->setInt("u_ShadowMap", m_SamplerSlots->at("shadow"));
+
+                m_ShadowMapPointLight->ReadTexture(m_SamplerSlots->at("shadow_omni"));
+                m_ShaderHazelPBR->setInt("u_OmniShadowMaps[0].shadowMap", m_SamplerSlots->at("shadow_omni"));
+
+                float farPlane = 1000.0f;
+                if (m_PointLightEntity.HasComponent<Hazel::PointLightComponent>()) {
+                    farPlane = m_PointLightEntity.GetComponent<Hazel::PointLightComponent>().FarPlane;
+                }
+                m_ShaderHazelPBR->setFloat("u_OmniShadowMaps[0].farPlane", farPlane);
 
                 EnvMapMaterial* envMapMaterial = nullptr;
                 std::string materialUUID;
@@ -2268,6 +2303,22 @@ void EnvMapEditorLayer::GeometryPassTemporary()
     Hazel::Renderer2D::EndScene();
 
     m_SceneRenderer->s_Data.GeoPass->GetSpecification().TargetFramebuffer->Bind();
+}
+
+std::vector<glm::mat4> EnvMapEditorLayer::CalculateLightTransform(glm::mat4 lightProj, glm::vec3 position)
+{
+    std::vector<glm::mat4> lightMatrices = std::vector<glm::mat4>();
+    // X axis
+    lightMatrices.push_back(lightProj * glm::lookAt(position, position + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+    lightMatrices.push_back(lightProj * glm::lookAt(position, position + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+    // Y axis
+    lightMatrices.push_back(lightProj * glm::lookAt(position, position + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+    lightMatrices.push_back(lightProj * glm::lookAt(position, position + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+    // Z axis
+    lightMatrices.push_back(lightProj * glm::lookAt(position, position + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+    lightMatrices.push_back(lightProj * glm::lookAt(position, position + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+
+    return lightMatrices;
 }
 
 void EnvMapEditorLayer::RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh)
@@ -2337,6 +2388,59 @@ void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
 
     m_ShaderShadow->setMat4("dirLightTransform", m_DirLightTransform);
 
+    RenderSubmeshesShadowPass(m_ShaderShadow);
+
+    m_ShaderShadow->Unbind();
+    m_ShadowMapDirLight->Unbind((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
+    RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
+}
+
+void EnvMapEditorLayer::OnRenderShadowOmni(Window* mainWindow)
+{
+    m_ShadowMapPointLight->BindForWriting();
+
+    glViewport(0, 0, m_ShadowMapPointLight->GetShadowWidth(), m_ShadowMapPointLight->GetShadowHeight());
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_BLEND);
+    RendererBasic::EnableCulling();
+
+    m_ShaderOmniShadow->Bind();
+
+    glm::vec3 lightPosition = glm::vec3(0.0f);
+    if (m_PointLightEntity.HasComponent<Hazel::TransformComponent>())
+    {
+        auto& tc = m_PointLightEntity.GetComponent<Hazel::TransformComponent>();
+        lightPosition = tc.Translation;
+    }
+
+    float farPlane = 1000.0f;
+    if (m_PointLightEntity.HasComponent<Hazel::PointLightComponent>())
+    {
+        auto& plc = m_PointLightEntity.GetComponent<Hazel::PointLightComponent>();
+        farPlane = plc.FarPlane;
+    }
+
+    m_ShaderOmniShadow->setVec3("lightPosition", lightPosition);
+    m_ShaderOmniShadow->setFloat("farPlane", farPlane);
+
+    float aspect = (float)m_ShadowMapPointLight->GetShadowWidth() / (float)m_ShadowMapPointLight->GetShadowWidth();
+    float nearPlane = 0.01f;
+    glm::mat4 lightProj = glm::perspective(glm::radians(90.0f), aspect, nearPlane, farPlane);
+    std::vector<glm::mat4> lightMatrices = CalculateLightTransform(lightProj, lightPosition);
+    for (unsigned int i = 0; i < lightMatrices.size(); i++) {
+        m_ShaderOmniShadow->setMat4("lightMatrices[" + std::to_string(i) + "]", lightMatrices[i]);
+    }
+
+    RenderSubmeshesShadowPass(m_ShaderOmniShadow);
+
+    m_ShaderOmniShadow->Unbind();
+    m_ShadowMapPointLight->Unbind((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
+    RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
+}
+
+void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<Shader> shader)
+{
     // Rendering all meshes (submeshes) on the scene to a shadow framebuffer
     auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     // Render all entities with mesh component
@@ -2361,17 +2465,13 @@ void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
                     meshComponent.Mesh->m_Pipeline->Bind();
                     meshComponent.Mesh->m_IndexBuffer->Bind();
 
-                    m_ShaderShadow->setMat4("model", entityTransform * submesh.Transform);
+                    shader->setMat4("model", entityTransform * submesh.Transform);
 
                     glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
                 }
             }
         }
     }
-
-    m_ShaderShadow->Unbind();
-    m_ShadowMapDirLight->Unbind((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
-    RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
 }
 
 void EnvMapEditorLayer::OnRenderEditor(Framebuffer* framebuffer)

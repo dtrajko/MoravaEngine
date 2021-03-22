@@ -255,7 +255,7 @@ void RendererEditor::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::ma
         if (LightManager::pointLights[i].GetEnabled()) {
             std::string profilerTitle = "RE::RenderPassOmniShadow[PL_" + std::to_string(i) + ']';
             Profiler profiler(profilerTitle);
-            ; (&LightManager::pointLights[i], mainWindow, scene, projectionMatrix);
+            RenderPassOmniShadow(&LightManager::pointLights[i], mainWindow, scene, projectionMatrix);
             scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
         }
     }

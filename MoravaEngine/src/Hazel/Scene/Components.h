@@ -200,7 +200,7 @@ namespace Hazel
 
 	struct PointLightComponent
 	{
-		bool Enabled;
+		bool Enabled = true;
 		glm::vec3 Color = { 1.0f, 1.0f, 1.0f };
 		// glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
 		float AmbientIntensity = 2.0f;
@@ -208,12 +208,12 @@ namespace Hazel
 		float Constant = 4.0f;
 		float Linear = 2.0f;
 		float Exponent = 1.0f;
-		float FarPlane;
+		float FarPlane = 1000.0f;
 	};
 
 	struct SpotLightComponent
 	{
-		bool Enabled = false;
+		bool Enabled = true;
 		glm::vec3 Color = { 1.0f, 1.0f, 1.0f };
 		// glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
 		// glm::vec3 Direction = { 0.0f, -1.0f, 0.0f };
@@ -224,7 +224,7 @@ namespace Hazel
 		float Exponent = 1.0f;
 		float Edge = 0.0f;
 		float EdgeProcessed = 0.0f;
-		float FarPlane;
+		float FarPlane = 1000.0f;
 	};
 
 }

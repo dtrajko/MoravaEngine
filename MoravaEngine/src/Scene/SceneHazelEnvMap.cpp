@@ -32,7 +32,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     sceneSettings.waterWaveSpeed     = 0.05f;
     sceneSettings.enablePointLights  = true;
     sceneSettings.enableSpotLights   = true;
-    sceneSettings.enableOmniShadows  = false;
+    sceneSettings.enableOmniShadows  = true;
     sceneSettings.enableSkybox       = false;
     sceneSettings.enableShadows      = true;
     sceneSettings.enableWaterEffects = false;
@@ -251,5 +251,9 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 
     if (passType == "shadow" && sceneSettings.enableShadows) {
         m_EnvironmentMap->OnRenderShadow(mainWindow);
+    }
+
+    if (passType == "shadow_omni" && sceneSettings.enableOmniShadows) {
+        m_EnvironmentMap->OnRenderShadowOmni(mainWindow);
     }
 }

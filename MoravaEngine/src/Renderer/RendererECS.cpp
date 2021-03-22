@@ -16,6 +16,10 @@ void RendererECS::SetShaders()
 {
 }
 
+void RendererECS::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+}
+
 void RendererECS::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     std::string passType = "shadow";
@@ -24,10 +28,8 @@ void RendererECS::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 p
 
 void RendererECS::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-}
-
-void RendererECS::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
-{
+	std::string passType = "shadow_omni";
+	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 }
 
 void RendererECS::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -49,6 +51,8 @@ void RendererECS::Render(float deltaTime, Window* mainWindow, Scene* scene, glm:
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
 	RenderPassShadow(mainWindow, scene, projectionMatrix);
+
+	RenderOmniShadows(mainWindow, scene, projectionMatrix);
 
 	RenderPassMain(mainWindow, scene, projectionMatrix);
 }
