@@ -10,6 +10,7 @@
 #include "EnvMap/EnvMapMaterial.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
 #include "Framebuffer/ShadowMap.h"
+#include "Framebuffer/OmniShadowMap.h"
 #include "Mesh/CubeSkybox.h"
 #include "Mesh/Quad.h"
 
@@ -41,6 +42,7 @@ public:
 	void OnRenderShadow(Window* mainWindow);
 	void OnRenderShadowOmni(Window* mainWindow);
 
+	void RenderShadowOmniSingleLight(Window* mainWindow, Hazel::Entity lightEntity, Hazel::Ref<OmniShadowMap> omniShadowMap);
 	void RenderSubmeshesShadowPass(Hazel::Ref<Shader> shader);
 
 	void OnRenderEditor(Framebuffer* framebuffer);
@@ -196,9 +198,10 @@ private:
 	glm::mat4 m_DirLightTransform; // sent to shaders as an uniform dirLightTransform / u_DirLightTransform
 
 	Hazel::Entity m_PointLightEntity; // temporary, for experimental use
-	Hazel::Ref<ShadowMap> m_ShadowMapPointLight;
+	Hazel::Ref<OmniShadowMap> m_OmniShadowMapPointLight;
 
 	Hazel::Entity m_SpotLightEntity;  // temporary, for experimental use
+	Hazel::Ref<OmniShadowMap> m_OmniShadowMapSpotLight;
 
 	float m_ViewportWidth = 0.0f;
 	float m_ViewportHeight = 0.0f;

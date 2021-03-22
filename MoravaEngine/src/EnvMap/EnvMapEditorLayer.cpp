@@ -123,8 +123,11 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_LightDirection = glm::normalize(glm::vec3(0.25f, -1.0f, 0.25f));
     m_LightProjectionMatrix = glm::ortho(-64.0f, 64.0f, -64.0f, 64.0f, -64.0f, 64.0f);
 
-    m_ShadowMapPointLight = Hazel::Ref<ShadowMap>::Create();
-    m_ShadowMapPointLight->Init(scene->GetSettings().shadowMapWidth, scene->GetSettings().shadowMapHeight);
+    m_OmniShadowMapPointLight = Hazel::Ref<OmniShadowMap>::Create();
+    m_OmniShadowMapPointLight->Init(scene->GetSettings().omniShadowMapWidth, scene->GetSettings().omniShadowMapHeight);
+
+    m_OmniShadowMapSpotLight = Hazel::Ref<OmniShadowMap>::Create();
+    m_OmniShadowMapSpotLight->Init(scene->GetSettings().omniShadowMapWidth, scene->GetSettings().omniShadowMapHeight);
 }
 
 void EnvMapEditorLayer::Init()
@@ -226,17 +229,20 @@ void EnvMapEditorLayer::SetupContextData()
 
     m_DirectionalLightEntity = CreateEntity("Directional Light");
     auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
-    tc.Rotation = m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction;
+    // tc.Rotation = m_SceneRenderer->s_Data.SceneData.ActiveLight.Direction;
+    tc.Rotation = glm::normalize(glm::vec3(-0.2f, -0.8f, -0.2f));
     // m_DirectionalLightEntity.AddComponent<Hazel::MeshComponent>(meshQuad);
-    m_DirectionalLightEntity.AddComponent<Hazel::DirectionalLightComponent>();
+    auto& dlc = m_DirectionalLightEntity.AddComponent<Hazel::DirectionalLightComponent>();
 
     m_PointLightEntity = CreateEntity("Point Light");
     // m_PointLightEntity.AddComponent<Hazel::MeshComponent>(meshQuad);
-    m_PointLightEntity.AddComponent<Hazel::PointLightComponent>();
+    auto& plc = m_PointLightEntity.AddComponent<Hazel::PointLightComponent>();
 
     m_SpotLightEntity = CreateEntity("Spot Light");
     // m_SpotLightEntity.AddComponent<Hazel::MeshComponent>(meshQuad);
-    m_SpotLightEntity.AddComponent<Hazel::SpotLightComponent>();
+    auto& slc = m_SpotLightEntity.AddComponent<Hazel::SpotLightComponent>();
+    auto& sltc = m_SpotLightEntity.GetComponent<Hazel::TransformComponent>();
+    sltc.Rotation = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
 Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
@@ -522,6 +528,9 @@ void EnvMapEditorLayer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPB
     shaderHazelPBR->setVec3("lights.Radiance", m_SceneRenderer->s_Data.SceneData.ActiveLight.Radiance);
     shaderHazelPBR->setFloat("lights.Multiplier", m_SceneRenderer->s_Data.SceneData.ActiveLight.Multiplier);
 
+    shaderHazelPBR->setInt("pointLightCount", 1);
+    shaderHazelPBR->setInt("spotLightCount",  1);
+
     // Point lights / Omni directional shadows
     if (m_PointLightEntity.HasComponent<Hazel::PointLightComponent>())
     {
@@ -535,8 +544,23 @@ void EnvMapEditorLayer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPB
         shaderHazelPBR->setFloat("pointLights[0].constant",              plc.Constant);
         shaderHazelPBR->setFloat("pointLights[0].linear",                plc.Linear);
         shaderHazelPBR->setFloat("pointLights[0].exponent",              plc.Exponent);
-        shaderHazelPBR->setInt(  "omniShadowMaps[0].shadowMap", 0);
-        shaderHazelPBR->setFloat("omniShadowMaps[0].farPlane", plc.FarPlane);
+    }
+
+    // Spot lights / Omni directional shadows
+    if (m_SpotLightEntity.HasComponent<Hazel::SpotLightComponent>())
+    {
+        auto& slc = m_SpotLightEntity.GetComponent<Hazel::SpotLightComponent>();
+        auto& tc = m_SpotLightEntity.GetComponent<Hazel::TransformComponent>();
+        shaderHazelPBR->setBool( "spotLights[0].base.base.enabled", slc.Enabled);
+        shaderHazelPBR->setVec3( "spotLights[0].base.base.color", slc.Color);
+        shaderHazelPBR->setFloat("spotLights[0].base.base.ambientIntensity", slc.AmbientIntensity);
+        shaderHazelPBR->setFloat("spotLights[0].base.base.diffuseIntensity", slc.DiffuseIntensity);
+        shaderHazelPBR->setVec3( "spotLights[0].base.position", tc.Translation);
+        shaderHazelPBR->setFloat("spotLights[0].base.constant", slc.Constant);
+        shaderHazelPBR->setFloat("spotLights[0].base.linear", slc.Linear);
+        shaderHazelPBR->setFloat("spotLights[0].base.exponent", slc.Exponent);
+        shaderHazelPBR->setVec3( "spotLights[0].direction", tc.Rotation);
+        shaderHazelPBR->setFloat("spotLights[0].edge", slc.Edge);
     }
 
     shaderHazelPBR->Validate();
@@ -2244,14 +2268,27 @@ void EnvMapEditorLayer::GeometryPassTemporary()
                 m_ShadowMapDirLight->ReadTexture(m_SamplerSlots->at("shadow"));
                 m_ShaderHazelPBR->setInt("u_ShadowMap", m_SamplerSlots->at("shadow"));
 
-                m_ShadowMapPointLight->ReadTexture(m_SamplerSlots->at("shadow_omni"));
-                m_ShaderHazelPBR->setInt("u_OmniShadowMaps[0].shadowMap", m_SamplerSlots->at("shadow_omni"));
+                {
+                    m_OmniShadowMapPointLight->ReadTexture(m_SamplerSlots->at("shadow_omni"));
+                    m_ShaderHazelPBR->setInt("u_OmniShadowMaps[0].shadowMap", m_SamplerSlots->at("shadow_omni"));
 
-                float farPlane = 1000.0f;
-                if (m_PointLightEntity.HasComponent<Hazel::PointLightComponent>()) {
-                    farPlane = m_PointLightEntity.GetComponent<Hazel::PointLightComponent>().FarPlane;
+                    float farPlane = 1000.0f;
+                    if (m_PointLightEntity.HasComponent<Hazel::PointLightComponent>()) {
+                        farPlane = m_PointLightEntity.GetComponent<Hazel::PointLightComponent>().FarPlane;
+                    }
+                    m_ShaderHazelPBR->setFloat("u_OmniShadowMaps[0].farPlane", farPlane);
                 }
-                m_ShaderHazelPBR->setFloat("u_OmniShadowMaps[0].farPlane", farPlane);
+
+                {
+                    m_OmniShadowMapSpotLight->ReadTexture(m_SamplerSlots->at("shadow_omni") + 1);
+                    m_ShaderHazelPBR->setInt("u_OmniShadowMaps[1].shadowMap", m_SamplerSlots->at("shadow_omni") + 1);
+
+                    float farPlane = 1000.0f;
+                    if (m_SpotLightEntity.HasComponent<Hazel::SpotLightComponent>()) {
+                        farPlane = m_SpotLightEntity.GetComponent<Hazel::SpotLightComponent>().FarPlane;
+                    }
+                    m_ShaderHazelPBR->setFloat("u_OmniShadowMaps[1].farPlane", farPlane);
+                }
 
                 EnvMapMaterial* envMapMaterial = nullptr;
                 std::string materialUUID;
@@ -2397,9 +2434,16 @@ void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
 
 void EnvMapEditorLayer::OnRenderShadowOmni(Window* mainWindow)
 {
-    m_ShadowMapPointLight->BindForWriting();
+    // render all point and spot lights here, create a loop for multiple lights
+    RenderShadowOmniSingleLight(mainWindow, m_PointLightEntity, m_OmniShadowMapPointLight);
+    RenderShadowOmniSingleLight(mainWindow, m_SpotLightEntity, m_OmniShadowMapSpotLight);
+}
 
-    glViewport(0, 0, m_ShadowMapPointLight->GetShadowWidth(), m_ShadowMapPointLight->GetShadowHeight());
+void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, Hazel::Entity lightEntity, Hazel::Ref<OmniShadowMap> omniShadowMap)
+{
+    omniShadowMap->BindForWriting();
+
+    glViewport(0, 0, omniShadowMap->GetShadowWidth(), omniShadowMap->GetShadowHeight());
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDisable(GL_BLEND);
@@ -2408,23 +2452,23 @@ void EnvMapEditorLayer::OnRenderShadowOmni(Window* mainWindow)
     m_ShaderOmniShadow->Bind();
 
     glm::vec3 lightPosition = glm::vec3(0.0f);
-    if (m_PointLightEntity.HasComponent<Hazel::TransformComponent>())
+    if (lightEntity.HasComponent<Hazel::TransformComponent>())
     {
-        auto& tc = m_PointLightEntity.GetComponent<Hazel::TransformComponent>();
+        auto& tc = lightEntity.GetComponent<Hazel::TransformComponent>();
         lightPosition = tc.Translation;
     }
 
     float farPlane = 1000.0f;
-    if (m_PointLightEntity.HasComponent<Hazel::PointLightComponent>())
+    if (lightEntity.HasComponent<Hazel::PointLightComponent>())
     {
-        auto& plc = m_PointLightEntity.GetComponent<Hazel::PointLightComponent>();
+        auto& plc = lightEntity.GetComponent<Hazel::PointLightComponent>();
         farPlane = plc.FarPlane;
     }
 
     m_ShaderOmniShadow->setVec3("lightPosition", lightPosition);
     m_ShaderOmniShadow->setFloat("farPlane", farPlane);
 
-    float aspect = (float)m_ShadowMapPointLight->GetShadowWidth() / (float)m_ShadowMapPointLight->GetShadowWidth();
+    float aspect = (float)omniShadowMap->GetShadowWidth() / (float)omniShadowMap->GetShadowHeight();
     float nearPlane = 0.01f;
     glm::mat4 lightProj = glm::perspective(glm::radians(90.0f), aspect, nearPlane, farPlane);
     std::vector<glm::mat4> lightMatrices = CalculateLightTransform(lightProj, lightPosition);
@@ -2435,7 +2479,7 @@ void EnvMapEditorLayer::OnRenderShadowOmni(Window* mainWindow)
     RenderSubmeshesShadowPass(m_ShaderOmniShadow);
 
     m_ShaderOmniShadow->Unbind();
-    m_ShadowMapPointLight->Unbind((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
+    omniShadowMap->Unbind((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
     RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
 }
 

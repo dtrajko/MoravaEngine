@@ -125,6 +125,8 @@ Scene::Scene()
 
 	sceneSettings.shadowMapWidth = 2048;
 	sceneSettings.shadowMapHeight = 2048;
+	sceneSettings.omniShadowMapWidth = 1024;
+	sceneSettings.omniShadowMapHeight = 1024;
 	sceneSettings.shadowSpeed = 0.4f;
 	sceneSettings.waterHeight = 1.6f;
 	sceneSettings.waterWaveSpeed = 0.005f;

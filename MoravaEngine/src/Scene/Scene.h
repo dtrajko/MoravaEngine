@@ -67,7 +67,13 @@ struct SceneSettings
 	// shadow
 	unsigned int shadowMapWidth;
 	unsigned int shadowMapHeight;
+
+	// omni shadows
+	unsigned int omniShadowMapWidth;
+	unsigned int omniShadowMapHeight;
+
 	float shadowSpeed;
+
 	// water
 	float waterHeight;
 	float waterWaveSpeed;
@@ -159,6 +165,9 @@ private:
 
 	unsigned int shadowMapWidth;
 	unsigned int shadowMapHeight;
+
+	unsigned int omniShadowMapWidth;
+	unsigned int omniShadowMapHeight;
 
 	bool m_WireframeEnabled;
 

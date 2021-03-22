@@ -94,15 +94,13 @@ struct PBRParameters
 
 	float ShadowFactor;
 	vec4 PointLights;
+	vec4 SpotLights;
 };
 
 PBRParameters m_Params;
 
 
 // ---- BEGIN Phong lighting model ----
-
-// Point lights
-const int pointLightCount = 1; // TODO: convert to an uniform
 
 const int MAX_POINT_LIGHTS = 1;
 const int MAX_SPOT_LIGHTS = 1;
@@ -128,7 +126,18 @@ struct PointLight
 	float exponent;
 };
 
+struct SpotLight
+{
+	PointLight base;
+	vec3 direction;
+	float edge;
+};
+
+uniform int pointLightCount;
+uniform int spotLightCount;
+
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
+uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 
 // Shadow Map Directional Light
 uniform sampler2D u_ShadowMap;
@@ -275,12 +284,41 @@ vec4 CalcPointLight(PointLight pointLight, int shadowIndex)
 	return (color / attenuation);
 }
 
+vec4 CalcSpotLight(SpotLight spotLight, int shadowIndex)
+{
+	if (!spotLight.base.base.enabled) return vec4(0.0, 0.0, 0.0, 1.0);
+
+	vec3 rayDirection = normalize(vs_Input.FragPos - spotLight.base.position);
+	float spotLightFactor = dot(rayDirection, spotLight.direction);
+
+	if (spotLightFactor > spotLight.edge)
+	{
+		vec4 color = CalcPointLight(spotLight.base, shadowIndex);
+		color *= (1.0 - (1.0 - spotLightFactor) * (1.0 / (1.0 - spotLight.edge)));
+		return color;
+	}
+	else
+	{
+		return vec4(0.0, 0.0, 0.0, 1.0);
+	}
+}
+
 vec4 CalcPointLights()
 {
 	vec4 totalColor = vec4(0.0, 0.0, 0.0, 1.0);
 	for (int i = 0; i < pointLightCount; i++)
 	{
 		totalColor += CalcPointLight(pointLights[i], i);
+	}
+	return totalColor;
+}
+
+vec4 CalcSpotLights()
+{
+	vec4 totalColor = vec4(0.0, 0.0, 0.0, 1.0);
+	for (int i = 0; i < spotLightCount; i++)
+	{
+		totalColor += CalcSpotLight(spotLights[i], pointLightCount + i);
 	}
 	return totalColor;
 }
@@ -440,9 +478,11 @@ vec3 Lighting(vec3 F0)
 
 		m_Params.ShadowFactor = CalcDirectionalShadowFactor();
 		m_Params.PointLights = CalcPointLights();
+		m_Params.SpotLights = CalcSpotLights();
 
 		result += ((1.0 - m_Params.ShadowFactor) * (diffuseBRDF + specularBRDF)) * Lradiance * cosLi;
 		result += m_Params.PointLights.rgb;
+		result += m_Params.SpotLights.rgb;
 	}
 
 	result *= lights.Multiplier;
