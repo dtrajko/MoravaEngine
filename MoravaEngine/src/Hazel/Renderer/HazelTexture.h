@@ -1,8 +1,9 @@
 #pragma once
 
-#include "../Core/Base.h"
-#include "../Core/Ref.h"
-#include "../Core/Buffer.h"
+#include "Hazel/Core/Base.h"
+#include "Hazel/Core/Ref.h"
+#include "Hazel/Core/Buffer.h"
+#include "Hazel/Renderer/HazelImage.h"
 
 
 namespace Hazel {
@@ -29,7 +30,7 @@ namespace Hazel {
 
 		virtual void Bind(uint32_t slot = 0) const = 0;
 
-		virtual HazelTextureFormat GetFormat() const = 0;
+		virtual HazelImageFormat GetFormat() const = 0;
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
@@ -50,6 +51,8 @@ namespace Hazel {
 	public:
 		static Ref<HazelTexture2D> Create(HazelTextureFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
 		static Ref<HazelTexture2D> Create(const std::string& path, bool srgb = false, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
+
+		virtual Ref<HazelImage2D> GetImage() const = 0;
 
 		virtual void Lock() = 0;
 		virtual void Unlock() = 0;

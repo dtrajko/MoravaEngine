@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Renderer/HazelTexture.h"
+#include "Hazel/Renderer/HazelTexture.h"
 
 
 namespace Hazel {
@@ -14,7 +14,9 @@ namespace Hazel {
 
 		virtual void Bind(uint32_t slot = 0) const;
 
-		virtual HazelTextureFormat GetFormat() const override { return m_Format; }
+		virtual Ref<HazelImage2D> GetImage() const override { return m_Image; }
+
+		virtual HazelImageFormat GetFormat() const override { return m_Format; }
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 		// This function currently returns the expected number of mips based on image size,
@@ -39,7 +41,7 @@ namespace Hazel {
 		}
 	private:
 		uint32_t m_ID;
-		HazelTextureFormat m_Format;
+		HazelImageFormat m_Format;
 		HazelTextureWrap m_Wrap = HazelTextureWrap::Clamp;
 		uint32_t m_Width, m_Height;
 
@@ -64,7 +66,7 @@ namespace Hazel {
 
 		virtual void Bind(uint32_t slot = 0) const;
 
-		virtual HazelTextureFormat GetFormat() const { return m_Format; }
+		virtual HazelImageFormat GetFormat() const { return m_Format; }
 		virtual uint32_t GetWidth() const { return m_Width; }
 		virtual uint32_t GetHeight() const { return m_Height; }
 		// This function currently returns the expected number of mips based on image size,
@@ -81,7 +83,7 @@ namespace Hazel {
 		}
 	private:
 		uint32_t m_ID;
-		HazelTextureFormat m_Format;
+		HazelImageFormat m_Format;
 		uint32_t m_Width, m_Height;
 
 		unsigned char* m_ImageData;
@@ -91,4 +93,5 @@ namespace Hazel {
 		float m_MaxAnisotropy = 16.0f;
 
 	};
+
 }

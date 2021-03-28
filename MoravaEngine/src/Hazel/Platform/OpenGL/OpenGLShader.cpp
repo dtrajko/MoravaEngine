@@ -252,9 +252,11 @@ namespace Hazel {
 
 				GLuint shaderID = glCreateShader(stage);
 				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderStageData.data(), (GLsizei)shaderStageData.size() * sizeof(uint32_t));
+
+				Util::CheckOpenGLErrors("OpenGLShader::CompileOrGetOpenGLBinary glShaderBinary");
+
 				glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
 				glAttachShader(program, shaderID);
-
 				shaderRendererIDs.emplace_back(shaderID);
 			}
 		}
@@ -428,7 +430,7 @@ namespace Hazel {
 			uint32_t dimension = type.image.dim;
 
 			GLint location = glGetUniformLocation(m_RendererID, name.c_str());
-			//HZ_CORE_ASSERT(location != -1);
+			// HZ_CORE_ASSERT(location != -1);
 			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
 			glUniform1i(location, binding);
 		}
