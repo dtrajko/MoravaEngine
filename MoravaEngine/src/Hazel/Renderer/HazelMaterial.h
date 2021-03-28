@@ -80,7 +80,6 @@ namespace Hazel {
 		}
 #endif
 
-
 		virtual uint32_t GetFlags() const = 0;
 		virtual bool GetFlag(HazelMaterialFlag flag) const = 0;
 		virtual void SetFlag(HazelMaterialFlag flag, bool value = true) = 0;

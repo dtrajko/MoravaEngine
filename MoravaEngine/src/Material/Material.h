@@ -51,7 +51,48 @@ public:
 	Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess); // based on LearnOpenGL material classint
 	Material(int albedo, int specular, int normal, float shininess); // used in SceneNanosuit
 	Material(Hazel::Ref<Hazel::HazelShader> shader); // based on Hazel::Material contructor
-	~Material();
+	virtual ~Material() override;
+
+	/**** BEGIN virtual methods defined in HazelMaterial ****/
+
+	virtual void Set(const std::string& name, float value) override {};
+	virtual void Set(const std::string& name, int value) override {};
+	virtual void Set(const std::string& name, uint32_t value) override {};
+	virtual void Set(const std::string& name, bool value) override {};
+	virtual void Set(const std::string& name, const glm::vec2& value) override {};
+	virtual void Set(const std::string& name, const glm::vec3& value) override {};
+	virtual void Set(const std::string& name, const glm::vec4& value) override {};
+	virtual void Set(const std::string& name, const glm::mat3& value) override {};
+	virtual void Set(const std::string& name, const glm::mat4& value) override {};
+
+	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelTexture2D>& texture) override {};
+	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelTextureCube>& texture) override {};
+	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelImage2D>& image) override {};
+
+	virtual float& GetFloat(const std::string& name) override {};
+	virtual int32_t& GetInt(const std::string& name) override {};
+	virtual uint32_t& GetUInt(const std::string& name) override {};
+	virtual bool& GetBool(const std::string& name) override {};
+	virtual glm::vec2& GetVector2(const std::string& name) override {};
+	virtual glm::vec3& GetVector3(const std::string& name) override {};
+	virtual glm::vec4& GetVector4(const std::string& name) override {};
+	virtual glm::mat3& GetMatrix3(const std::string& name) override {};
+	virtual glm::mat4& GetMatrix4(const std::string& name) override {};
+
+	virtual Hazel::Ref<Hazel::HazelTexture2D> GetTexture2D(const std::string& name) override {};
+	virtual Hazel::Ref<Hazel::HazelTextureCube> GetTextureCube(const std::string& name) override {};
+
+	virtual Hazel::Ref<Hazel::HazelTexture2D> TryGetTexture2D(const std::string& name) override {};
+	virtual Hazel::Ref<Hazel::HazelTextureCube> TryGetTextureCube(const std::string& name) override {};
+
+	virtual uint32_t GetFlags() const override {};
+	virtual bool GetFlag(Hazel::HazelMaterialFlag flag) const override {};
+	virtual void SetFlag(Hazel::HazelMaterialFlag flag, bool value = true) override {};
+
+	virtual Hazel::Ref<Hazel::HazelShader> GetShader() override {};
+	virtual const std::string& GetName() const override {};
+
+	/**** END virtual methods defined in HazelMaterial ****/
 
 	void UseMaterial(int specularIntensityLocation, int shininessLocation);
 	void AddMap(MapType mapType, int textureSlot);
