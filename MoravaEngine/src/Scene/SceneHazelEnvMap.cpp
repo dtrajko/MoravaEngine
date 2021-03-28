@@ -104,6 +104,9 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
     sceneSettings.spotLights[3].edge = 0.5f;
 
+    sceneSettings.nearPlane = 0.01f;
+    sceneSettings.farPlane = 2000.0f;
+
     SetCamera();
     SetLightManager();
     SetupShaders();

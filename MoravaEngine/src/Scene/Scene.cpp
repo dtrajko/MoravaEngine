@@ -31,7 +31,7 @@ Scene::Scene()
 	sceneSettings.cameraStartPitch = 0.0f;
 	sceneSettings.cameraMoveSpeed = 4.0f;
 	sceneSettings.nearPlane = 0.01f;
-	sceneSettings.farPlane = 200.0f;
+	sceneSettings.farPlane = 1000.0f;
 
 	// Directional light
 	sceneSettings.directionalLight.base.enabled = true;

@@ -1340,6 +1340,9 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 m_ActiveCamera->SetPerspectiveVerticalFOV(fov);
             }
 
+            ImGui::DragFloat("Near Plane", &scene->sceneSettings.nearPlane, 0.1f, -10.0f, 100.0f);
+            ImGui::DragFloat("Far Plane", &scene->sceneSettings.farPlane, 1.0f, -100.0f, 5000.0f);
+
             char buffer[100];
             sprintf(buffer, "Aspect Ratio  %.2f", m_ActiveCamera->GetAspectRatio());
             ImGui::Text(buffer);

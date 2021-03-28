@@ -11,7 +11,7 @@
 #define APIENTRY
 #endif // !_WIN32
 
-// #define SPIR_ENABLED
+#define SPIR_ENABLED
 
 // #define SCENE_COTTAGE
 // #define SCENE_EIFFEL
