@@ -282,6 +282,8 @@ namespace Hazel {
 		{
 			Log::GetLogger()->info("---- Materials - {0} ----", m_FilePath);
 
+			m_MeshShader->Bind();
+
 			m_Textures.resize(scene->mNumMaterials);
 			m_Materials.resize(scene->mNumMaterials);
 			for (uint32_t i = 0; i < scene->mNumMaterials; i++)

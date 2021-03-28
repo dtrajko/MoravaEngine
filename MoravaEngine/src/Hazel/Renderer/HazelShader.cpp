@@ -47,25 +47,25 @@ namespace Hazel {
 
 	bool HazelShader::HasVSMaterialUniformBuffer()
 	{
-		Log::GetLogger()->error("Method not implemented!");
+		Log::GetLogger()->warn("HazelShader::HasVSMaterialUniformBuffer - Method not implemented!");
 		return false;
 	}
 
 	bool HazelShader::HasPSMaterialUniformBuffer()
 	{
-		Log::GetLogger()->error("Method not implemented!");
+		Log::GetLogger()->warn("HazelShader::HasPSMaterialUniformBuffer - Method not implemented!");
 		return false;
 	}
 
 	Buffer HazelShader::GetVSMaterialUniformBuffer()
 	{
-		Log::GetLogger()->error("Method not implemented!");
+		Log::GetLogger()->warn("HazelShader::GetVSMaterialUniformBuffer - Method not implemented!");
 		return Buffer();
 	}
 
 	Buffer HazelShader::GetPSMaterialUniformBuffer()
 	{
-		Log::GetLogger()->error("Method not implemented!");
+		Log::GetLogger()->warn("HazelShader::GetPSMaterialUniformBuffer - Method not implemented!");
 		return Buffer();
 	}
 

@@ -224,7 +224,10 @@ void Shader::setInt(const std::string& name, int value)
 
 void Shader::setFloat(const std::string& name, float value)
 {
+	auto uniformLocation = GetUniformLocation(name);
 	glUniform1f(GetUniformLocation(name), value);
+
+	// Log::GetLogger()->debug("Shader::setFloat name: '{0}', value: '{1}', uniformLocation: '{2}'", name, value, uniformLocation);
 }
 
 void Shader::setVec2(const std::string& name, const glm::vec2& value)
@@ -238,7 +241,10 @@ void Shader::setVec2(const std::string& name, float x, float y)
 }
 void Shader::setVec3(const std::string& name, const glm::vec3& value)
 {
+	auto uniformLocation = GetUniformLocation(name);
 	glUniform3fv(GetUniformLocation(name), 1, &value[0]);
+
+	// Log::GetLogger()->debug("Shader::setFloat name: '{0}', value: [{1} {2} {3}], uniformLocation: '{4}'", name, value.x, value.y, value.z, uniformLocation);
 }
 
 void Shader::setVec3(const std::string& name, float x, float y, float z)
