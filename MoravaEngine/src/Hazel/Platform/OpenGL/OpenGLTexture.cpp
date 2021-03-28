@@ -1,6 +1,7 @@
 #include "OpenGLTexture.h"
 
 #include "Core/Log.h"
+#include "Core/Util.h"
 
 #include <GL/glew.h>
 
@@ -107,10 +108,12 @@ namespace Hazel {
 			GLenum type = internalFormat == GL_RGBA16F ? GL_FLOAT : GL_UNSIGNED_BYTE;
 			glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, format, type, m_ImageData.Data);
 			glGenerateMipmap(GL_TEXTURE_2D);
-
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
+
 		stbi_image_free(m_ImageData.Data);
+
+		Util::CheckOpenGLErrors("OpenGLTexture2D::OpenGLTexture2D");
 	}
 
 	OpenGLTexture2D::~OpenGLTexture2D()

@@ -19,8 +19,9 @@ enum class AttachmentFormat
 	Depth_24            = 4, // GL_DEPTH_COMPONENT24
 	DepthStencil        = 5,
 	Depth_24_Stencil_8  = 6, // GL_DEPTH24_STENCIL8
-	RGBA16F             = 7,
-	RGBA8               = 8,
+	RGBA                = 7,
+	RGBA16F             = 8,
+	RGBA8               = 9,
 };
 
 

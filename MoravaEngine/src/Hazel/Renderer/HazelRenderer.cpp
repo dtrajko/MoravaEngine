@@ -30,8 +30,8 @@ namespace Hazel {
 
 		if (RendererBasic::GetSpirVEnabled()) {
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl", true);
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl", true);
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl", true);
+			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl", true);
+			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl", true);
 		}
 
 		// SceneRenderer::Init(); // TODO

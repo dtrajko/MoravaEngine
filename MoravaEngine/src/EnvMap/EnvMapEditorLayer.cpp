@@ -32,6 +32,10 @@ uint32_t EnvMapEditorLayer::s_MaterialIndex = 0;
 
 EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 {
+    glDebugMessageCallback(Util::OpenGLLogMessage, nullptr);
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
     m_FramebufferWidth = 1280;
     m_FramebufferHeight = 720;
 
@@ -167,7 +171,7 @@ void EnvMapEditorLayer::Init()
     compFramebufferSpec.Width = m_FramebufferWidth;
     compFramebufferSpec.Height = m_FramebufferHeight;
     compFramebufferSpec.attachmentType = AttachmentType::Texture;
-    compFramebufferSpec.attachmentFormat = AttachmentFormat::RGBA8;
+    compFramebufferSpec.attachmentFormat = AttachmentFormat::RGBA;
     compFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
 
     isMultisample = compFramebufferSpec.Samples > 1;
@@ -182,7 +186,7 @@ void EnvMapEditorLayer::Init()
     compFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth;
     compRenderPassSpec.TargetFramebuffer->AddDepthAttachment(compFramebufferDepthSpec);
 
-    Log::GetLogger()->debug("Generating the COMPOSITE RenderPass framebuffer with AttachmentFormat::RGBA8");
+    Log::GetLogger()->debug("Generating the COMPOSITE RenderPass framebuffer with AttachmentFormat::RGBA");
     compRenderPassSpec.TargetFramebuffer->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
     m_SceneRenderer->s_Data.CompositePass = Hazel::Ref<EnvMapRenderPass>::Create(compRenderPassSpec);
 

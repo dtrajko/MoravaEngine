@@ -114,6 +114,12 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Color, Multisample: {0}, {1}x{2}]",
 				m_Multisample, width, height);
 			break;
+		case AttachmentFormat::RGBA:
+			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
+				attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA, Multisample: {0}, {1}x{2}]",
+				m_Multisample, width, height);
+			break;
 		case AttachmentFormat::RGBA16F:
 			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentFormat);

@@ -1,6 +1,8 @@
 #include "Core/Log.h"
 #include "Core/Util.h"
 
+#include "Hazel/Core/Assert.h"
+
 #include <GL/glew.h>
 
 #include <algorithm>
@@ -82,6 +84,11 @@ std::string Util::randomString(size_t length)
 	return str;
 }
 
+glm::mat4 Util::CalculateLightTransform(glm::mat4 lightProjectionMatrix, glm::vec3 lightDirection)
+{
+	return lightProjectionMatrix * glm::lookAt(-lightDirection, glm::vec3(0.0f, -lightDirection.y * 0.75f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
 void Util::CheckOpenGLErrors(const std::string& label)
 {
 	GLenum error = glGetError();
@@ -94,7 +101,23 @@ void Util::CheckOpenGLErrors(const std::string& label)
 	}
 }
 
-glm::mat4 Util::CalculateLightTransform(glm::mat4 lightProjectionMatrix, glm::vec3 lightDirection)
+void Util::OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
-	return lightProjectionMatrix * glm::lookAt(-lightDirection, glm::vec3(0.0f, -lightDirection.y * 0.75f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	switch (severity)
+	{
+	case GL_DEBUG_SEVERITY_HIGH:
+		Log::GetLogger()->error("[OpenGL Debug HIGH] {0}", message);
+		// HZ_CORE_ASSERT(false, "GL_DEBUG_SEVERITY_HIGH");
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		Log::GetLogger()->warn("[OpenGL Debug MEDIUM] {0}", message);
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+		Log::GetLogger()->info("[OpenGL Debug LOW] {0}", message);
+		break;
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		Log::GetLogger()->trace("[OpenGL Debug NOTIFICATION] {0}", message);
+		break;
+	}
+
 }

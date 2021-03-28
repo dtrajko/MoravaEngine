@@ -49,15 +49,20 @@ namespace Hazel {
 	void OpenGLShader::Load(const std::string& source, bool forceCompile)
 	{
 		m_ShaderSource = PreProcess(source);
-		
-		Ref<OpenGLShader> instance = this;
-		HazelRenderer::Submit([instance, forceCompile]() mutable
-		{
-			std::array<std::vector<uint32_t>, 2> vulkanBinaries;
-			std::unordered_map<uint32_t, std::vector<uint32_t>> shaderData;
-			instance->CompileOrGetVulkanBinary(shaderData, forceCompile);
-			instance->CompileOrGetOpenGLBinary(shaderData, forceCompile);
-		});
+
+		//	Ref<OpenGLShader> instance = this;
+		//	HazelRenderer::Submit([instance, forceCompile]() mutable
+		//	{
+		//		std::array<std::vector<uint32_t>, 2> vulkanBinaries;
+		//		std::unordered_map<uint32_t, std::vector<uint32_t>> shaderData;
+		//		instance->CompileOrGetVulkanBinary(shaderData, forceCompile);
+		//		instance->CompileOrGetOpenGLBinary(shaderData, forceCompile);
+		//	});
+
+		std::array<std::vector<uint32_t>, 2> vulkanBinaries;
+		std::unordered_map<uint32_t, std::vector<uint32_t>> shaderData;
+		CompileOrGetVulkanBinary(shaderData, forceCompile);
+		CompileOrGetOpenGLBinary(shaderData, forceCompile);
 	}
 
 	static const char* GLShaderStageCachedVulkanFileExtension(uint32_t stage)
