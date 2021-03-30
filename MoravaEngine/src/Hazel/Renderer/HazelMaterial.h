@@ -19,12 +19,8 @@ namespace Hazel {
 		TwoSided   = BIT(3),
 	};
 
-	class HazelMaterialInstance;
-
 	class HazelMaterial : public RefCounted
 	{
-		friend class HazelMaterialInstance;
-
 	public:
 		HazelMaterial();
 		HazelMaterial(const Ref<HazelShader>& shader, const std::string& name = "");
@@ -103,7 +99,7 @@ namespace Hazel {
 
 	private:
 		Ref<HazelShader> m_Shader;
-		std::unordered_set<HazelMaterialInstance*> m_MaterialInstances;
+		std::unordered_set<HazelMaterial*> m_MaterialInstances;
 
 		Buffer m_VSUniformStorageBuffer;
 		Buffer m_PSUniformStorageBuffer;

@@ -18,7 +18,7 @@ namespace Hazel {
 			SceneRendererCamera SceneCamera;
 
 			// Resources
-			Ref<HazelMaterialInstance> SkyboxMaterial;
+			Ref<HazelMaterial> SkyboxMaterial;
 			Environment SceneEnvironment;
 			HazelLight ActiveLight;
 		} SceneData;

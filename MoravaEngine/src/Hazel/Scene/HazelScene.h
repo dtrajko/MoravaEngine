@@ -59,8 +59,8 @@ namespace Hazel {
 		inline void SetCamera(const HazelCamera& camera) { m_Camera = camera; };
 		inline HazelCamera* GetCamera() { return &m_Camera; }
 
-		void SetSkyboxMaterial(Ref<HazelMaterialInstance> skyboxMaterial) { m_SkyboxMaterial = skyboxMaterial; }
-		Ref<HazelMaterialInstance> GetSkyboxMaterial() { return m_SkyboxMaterial; }
+		void SetSkyboxMaterial(Ref<HazelMaterial> skyboxMaterial) { m_SkyboxMaterial = skyboxMaterial; }
+		Ref<HazelMaterial> GetSkyboxMaterial() { return m_SkyboxMaterial; }
 
 		void SetEnvironment(const Environment& environment);
 		inline const Environment& GetEnvironment() const { return m_Environment; }
@@ -126,7 +126,7 @@ namespace Hazel {
 		Ref<Hazel::HazelTextureCube> m_SkyboxTexture;
 		Shader* m_ShaderSkybox;
 
-		Ref<HazelMaterialInstance> m_SkyboxMaterial;
+		Ref<HazelMaterial> m_SkyboxMaterial;
 
 		entt::entity m_SelectedEntity;
 
