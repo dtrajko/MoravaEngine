@@ -109,7 +109,7 @@ void SceneFramebuffers::UpdateImGui(float timestep, Window* mainWindow)
 
 	ImGui::Begin("Framebuffers");
 	{
-		ImVec2 imageSize(128.0f, 128.0f);
+		ImVec2 imageSize(96.0f, 96.0f);
 
 		ImGui::Text("Texture Attachment");
 		ImGui::Image((void*)(intptr_t)m_Framebuffer->GetTextureAttachmentColor(0)->GetID(), imageSize);

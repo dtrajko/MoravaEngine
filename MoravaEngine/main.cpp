@@ -137,7 +137,7 @@
 
 
 // Window dimensions
-const char* windowTitle = "3D Graphics Engine (C++ / OpenGL)";
+const char* windowTitle = "3D Graphics Engine (C++/OpenGL)";
 const int WIDTH = 1280;
 const int HEIGHT = 720;
 
