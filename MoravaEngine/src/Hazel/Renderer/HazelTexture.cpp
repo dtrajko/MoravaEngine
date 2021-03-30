@@ -6,7 +6,7 @@
 
 namespace Hazel {
 
-	Ref<HazelTexture2D> HazelTexture2D::Create(HazelTextureFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap)
+	Ref<HazelTexture2D> HazelTexture2D::Create(HazelImageFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap)
 	{
 		switch (RendererAPI::Current())
 		{
@@ -26,7 +26,7 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	Ref<HazelTextureCube> HazelTextureCube::Create(HazelTextureFormat format, uint32_t width, uint32_t height)
+	Ref<HazelTextureCube> HazelTextureCube::Create(HazelImageFormat format, uint32_t width, uint32_t height)
 	{
 		switch (RendererAPI::Current())
 		{
@@ -50,12 +50,12 @@ namespace Hazel {
 	{
 	}
 
-	uint32_t HazelTexture::GetBPP(HazelTextureFormat format)
+	uint32_t HazelTexture::GetBPP(HazelImageFormat format)
 	{
 		switch (format)
 		{
-			case HazelTextureFormat::RGB:    return 3;
-			case HazelTextureFormat::RGBA:   return 4;
+			case HazelImageFormat::RGB:    return 3;
+			case HazelImageFormat::RGBA:   return 4;
 		}
 		return 0;
 	}

@@ -1404,6 +1404,9 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTexture.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\Asset.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1555,6 +1558,9 @@
     </Filter>
     <Filter Include="SSAO">
       <UniqueIdentifier>{cd00ca42-9ed6-43da-958a-e9b60e9b9d05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Asset">
+      <UniqueIdentifier>{80ca6d47-775a-4dc3-ae10-7eea90846fbe}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

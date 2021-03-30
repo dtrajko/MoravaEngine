@@ -8,6 +8,15 @@
 
 namespace Hazel {
 
+	HazelMaterial::HazelMaterial()
+	{
+	}
+
+	HazelMaterial::HazelMaterial(const Ref<HazelShader>& shader, const std::string& name)
+	{
+		// Create(shader, name);
+	}
+
 	Ref<HazelMaterial> HazelMaterial::Create(const Ref<HazelShader>& shader, const std::string& name)
 	{
 		switch (RendererAPI::Current())

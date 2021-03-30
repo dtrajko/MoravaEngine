@@ -365,10 +365,10 @@ namespace Hazel {
 				auto offset = compiler.type_struct_member_offset(bufferType, i) - m_ConstantBufferOffset;
 
 				std::string uniformName = bufferName + "." + memberName;
-				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), size, offset);
+				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), (uint32_t)size, offset);
 			}
 
-			m_ConstantBufferOffset += bufferSize;
+			m_ConstantBufferOffset += (uint32_t)bufferSize;
 		}
 	}
 
@@ -387,7 +387,7 @@ namespace Hazel {
 		for (const spirv_cross::Resource& resource : res.uniform_buffers)
 		{
 			auto& bufferType = comp.get_type(resource.base_type_id);
-			int memberCount = bufferType.member_types.size();
+			int memberCount = (int)bufferType.member_types.size();
 			uint32_t bindingPoint = comp.get_decoration(resource.id, spv::DecorationBinding);
 
 			if (s_UniformBuffers.find(bindingPoint) == s_UniformBuffers.end())
@@ -395,7 +395,7 @@ namespace Hazel {
 				ShaderUniformBuffer& buffer = s_UniformBuffers[bindingPoint];
 				buffer.Name = resource.name;
 				buffer.BindingPoint = bindingPoint;
-				buffer.Size = comp.get_declared_struct_size(bufferType);
+				buffer.Size = (uint32_t)comp.get_declared_struct_size(bufferType);
 			 
 #if 0
 				buffer.Uniforms.reserve(memberCount);
@@ -560,24 +560,32 @@ namespace Hazel {
 	std::string GetBlock(const char* str, const char** outPosition)
 	{
 		const char* end = strstr(str, "}");
-		if (!end)
-			return str;
 
-		if (outPosition)
+		if (!end) {
+			return str;
+		}
+
+		if (outPosition) {
 			*outPosition = end;
-		uint32_t length = end - str + 1;
+		}
+
+		uint32_t length = (uint32_t)(end - str + 1);
 		return std::string(str, length);
 	}
 
 	std::string GetStatement(const char* str, const char** outPosition)
 	{
 		const char* end = strstr(str, ";");
-		if (!end)
-			return str;
 
-		if (outPosition)
+		if (!end) {
+			return str;
+		}
+
+		if (outPosition) {
 			*outPosition = end;
-		uint32_t length = end - str + 1;
+		}
+
+		uint32_t length = (uint32_t)(end - str + 1);
 		return std::string(str, length);
 	}
 

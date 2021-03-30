@@ -121,7 +121,7 @@ namespace Hazel {
 			s_Data.QuadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxIndices);
 			delete[] quadIndices;
 
-			s_Data.WhiteTexture = HazelTexture2D::Create(HazelTextureFormat::RGBA, 1, 1);
+			s_Data.WhiteTexture = HazelTexture2D::Create(HazelImageFormat::RGBA, 1, 1);
 			uint32_t whiteTextureData = 0xffffffff;
 			s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 

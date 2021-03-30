@@ -212,15 +212,15 @@ namespace Hazel { namespace Script {
 		// return new Ref<HazelMaterial>(mesh->GetMaterial());
 	}
 
-	Ref<HazelMaterialInstance>* Hazel_Mesh_GetMaterialByIndex(Ref<HazelMesh>* inMesh, int index)
+	Ref<HazelMaterial>* Hazel_Mesh_GetMaterialByIndex(Ref<HazelMesh>* inMesh, int index)
 	{
 		Ref<HazelMesh>& mesh = *(Ref<HazelMesh>*)inMesh;
 		const auto& materials = mesh->GetMaterials();
 		
 		HZ_CORE_ASSERT(index < materials.size());
-		// return new Ref<HazelMaterialInstance>(materials[index]);
+		// return new Ref<HazelMaterial>(materials[index]);
 
-		return new Ref<HazelMaterialInstance>();
+		return new Ref<HazelMaterial>();
 	}
 
 	int Hazel_Mesh_GetMaterialCount(Ref<HazelMesh>* inMesh)
@@ -232,7 +232,7 @@ namespace Hazel { namespace Script {
 
 	void* Hazel_Texture2D_Constructor(uint32_t width, uint32_t height)
 	{
-		auto result = HazelTexture2D::Create(HazelTextureFormat::RGBA, width, height);
+		auto result = HazelTexture2D::Create(HazelImageFormat::RGBA, width, height);
 		return new Ref<HazelTexture2D>(result);
 	}
 
@@ -282,32 +282,32 @@ namespace Hazel { namespace Script {
 		instance->Set(mono_string_to_utf8(uniform), *texture);
 	}
 
-	void Hazel_MaterialInstance_Destructor(Ref<HazelMaterialInstance>* _this)
+	void Hazel_MaterialInstance_Destructor(Ref<HazelMaterial>* _this)
 	{
 		delete _this;
 	}
 
-	void Hazel_MaterialInstance_SetFloat(Ref<HazelMaterialInstance>* _this, MonoString* uniform, float value)
+	void Hazel_MaterialInstance_SetFloat(Ref<HazelMaterial>* _this, MonoString* uniform, float value)
 	{
-		Ref<HazelMaterialInstance>& instance = *(Ref<HazelMaterialInstance>*)_this;
+		Ref<HazelMaterial>& instance = *(Ref<HazelMaterial>*)_this;
 		instance->Set(mono_string_to_utf8(uniform), value);
 	}
 
-	void Hazel_MaterialInstance_SetVector3(Ref<HazelMaterialInstance>* _this, MonoString* uniform, glm::vec3* value)
+	void Hazel_MaterialInstance_SetVector3(Ref<HazelMaterial>* _this, MonoString* uniform, glm::vec3* value)
 	{
-		Ref<HazelMaterialInstance>& instance = *(Ref<HazelMaterialInstance>*)_this;
+		Ref<HazelMaterial>& instance = *(Ref<HazelMaterial>*)_this;
 		instance->Set(mono_string_to_utf8(uniform), *value);
 	}
 
-	void Hazel_MaterialInstance_SetVector4(Ref<HazelMaterialInstance>* _this, MonoString* uniform, glm::vec4* value)
+	void Hazel_MaterialInstance_SetVector4(Ref<HazelMaterial>* _this, MonoString* uniform, glm::vec4* value)
 	{
-		Ref<HazelMaterialInstance>& instance = *(Ref<HazelMaterialInstance>*)_this;
+		Ref<HazelMaterial>& instance = *(Ref<HazelMaterial>*)_this;
 		instance->Set(mono_string_to_utf8(uniform), *value);
 	}
 
-	void Hazel_MaterialInstance_SetTexture(Ref<HazelMaterialInstance>* _this, MonoString* uniform, Ref<HazelTexture2D>* texture)
+	void Hazel_MaterialInstance_SetTexture(Ref<HazelMaterial>* _this, MonoString* uniform, Ref<HazelTexture2D>* texture)
 	{
-		Ref<HazelMaterialInstance>& instance = *(Ref<HazelMaterialInstance>*)_this;
+		Ref<HazelMaterial>& instance = *(Ref<HazelMaterial>*)_this;
 		instance->Set(mono_string_to_utf8(uniform), *texture);
 	}
 

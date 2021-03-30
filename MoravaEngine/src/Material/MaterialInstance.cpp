@@ -2,7 +2,7 @@
 
 
 MaterialInstance::MaterialInstance(const Hazel::Ref<Hazel::HazelMaterial>& material, const std::string& name)
-	: Hazel::HazelMaterialInstance(material, name)
+	: Hazel::HazelMaterial(material, name)
 {
 }
 

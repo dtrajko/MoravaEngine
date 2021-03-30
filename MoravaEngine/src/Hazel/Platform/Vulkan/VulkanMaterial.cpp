@@ -211,17 +211,17 @@ namespace Hazel {
 		Set<glm::mat4>(name, value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const Ref<Texture2D>& texture)
+	void VulkanMaterial::Set(const std::string& name, const Ref<HazelTexture2D>& texture)
 	{
 		SetVulkanDescriptor(name, texture);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const Ref<TextureCube>& texture)
+	void VulkanMaterial::Set(const std::string& name, const Ref<HazelTextureCube>& texture)
 	{
 		SetVulkanDescriptor(name, texture);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const Ref<Image2D>& image)
+	void VulkanMaterial::Set(const std::string& name, const Ref<HazelImage2D>& image)
 	{
 		SetVulkanDescriptor(name, image);
 	}
@@ -327,7 +327,7 @@ namespace Hazel {
 						writeDescriptor.dstSet = instance->m_DescriptorSet.DescriptorSets[0];
 
 					HZ_CORE_WARN("Updating {0} descriptor sets", writeDescriptors.size());
-					vkUpdateDescriptorSets(vulkanDevice, writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
+					vkUpdateDescriptorSets(vulkanDevice, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 				}
 			});
 		pendingDescriptors.clear();

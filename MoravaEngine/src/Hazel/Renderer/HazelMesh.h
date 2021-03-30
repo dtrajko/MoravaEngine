@@ -160,8 +160,8 @@ namespace Hazel {
 
 		// Ref<HazelShader> GetMeshShader() { return m_MeshShader; }
 		Ref<HazelMaterial> GetMaterial() { return m_BaseMaterial; }
-		std::vector<Ref<HazelMaterialInstance>>& GetMaterials() { return m_Materials; }
-		const std::vector<Ref<HazelMaterialInstance>>& GetMaterials() const { return m_Materials; }
+		std::vector<Ref<HazelMaterial>>& GetMaterials() { return m_Materials; }
+		const std::vector<Ref<HazelMaterial>>& GetMaterials() const { return m_Materials; }
 		inline std::vector<Ref<Texture>>& GetTextures() { return m_Textures; }
 		inline const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
 		inline bool& IsAnimated() { return m_IsAnimated; }
@@ -221,7 +221,7 @@ namespace Hazel {
 		Ref<Texture> m_BaseTexture;
 		std::vector<Ref<Texture>> m_Textures;
 		std::vector<Ref<Texture>> m_NormalMaps;
-		std::vector<Ref<HazelMaterialInstance>> m_Materials;
+		std::vector<Ref<HazelMaterial>> m_Materials;
 
 		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
 

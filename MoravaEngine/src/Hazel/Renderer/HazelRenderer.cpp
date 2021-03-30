@@ -154,12 +154,12 @@ namespace Hazel {
 		s_Data.m_ActiveRenderPass = nullptr;
 	}
 
-	void HazelRenderer::SubmitQuad(Ref<HazelMaterialInstance> material, const glm::mat4& transform)
+	void HazelRenderer::SubmitQuad(Ref<HazelMaterial> material, const glm::mat4& transform)
 	{
 		bool depthTest = true;
 		if (material)
 		{
-			material->Bind();
+			// material->Bind(); // obsolete?
 			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
 
 			auto shader = material->GetShader();
@@ -173,12 +173,12 @@ namespace Hazel {
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
-	void HazelRenderer::SubmitFullscreenQuad(Ref<HazelMaterialInstance> material)
+	void HazelRenderer::SubmitFullscreenQuad(Ref<HazelMaterial> material)
 	{
 		bool depthTest = true;
 		if (material)
 		{
-			material->Bind();
+			// material->Bind(); // obsolete?
 			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
 		}
 
@@ -192,11 +192,12 @@ namespace Hazel {
 	/**
 	 * THIS METHOD IS NOT USED IN CURRENT MORAVA ENGINE WORKFLOW
 	 */
-	void HazelRenderer::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial)
+	void HazelRenderer::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterial> overrideMaterial)
 	{
-		// auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
-		// auto shader = material->GetShader();
+		auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterial();
+		auto shader = material->GetShader();
 		// TODO: Sort this out
+
 		mesh->m_VertexBuffer->Bind();
 		mesh->m_Pipeline->Bind();
 		mesh->m_IndexBuffer->Bind();
@@ -207,7 +208,7 @@ namespace Hazel {
 			// Material
 			auto material = overrideMaterial ? overrideMaterial : materials[submesh.MaterialIndex];
 			auto shader = material->GetShader();
-			material->Bind();
+			// material->Bind(); // obsolete?
 
 			//	if (mesh->IsAnimated())
 			//	{

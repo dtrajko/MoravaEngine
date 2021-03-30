@@ -32,7 +32,7 @@ namespace Hazel {
 		struct DrawCommand
 		{
 			Ref<HazelMesh> Mesh;
-			Ref<HazelMaterialInstance> Material;
+			Ref<HazelMaterial> Material;
 			glm::mat4 Transform;
 		};
 		std::vector<DrawCommand> DrawList;
@@ -41,7 +41,7 @@ namespace Hazel {
 		// Grid
 		Ref<HazelMaterial> GridMaterial;
 		Ref<HazelShader> GridShader;
-		Ref<HazelMaterialInstance> OutlineMaterial;
+		Ref<HazelMaterial> OutlineMaterial;
 
 		SceneRendererOptions Options;
 	};
@@ -84,7 +84,7 @@ namespace Hazel {
 
 		// Outline
 		auto outlineShader = HazelRenderer::GetShaderLibrary()->Get("Outline");
-		s_Data.OutlineMaterial = HazelMaterialInstance::Create(HazelMaterial::Create(outlineShader));
+		s_Data.OutlineMaterial = HazelMaterial::Create(outlineShader);
 		s_Data.OutlineMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
 	}
 
@@ -115,7 +115,7 @@ namespace Hazel {
 		FlushDrawList();
 	}
 
-	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial)
+	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<HazelMaterial> overrideMaterial)
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data.DrawList.push_back({ mesh, overrideMaterial, transform });
@@ -133,11 +133,11 @@ namespace Hazel {
 		const uint32_t cubemapSize = 2048;
 		const uint32_t irradianceMapSize = 32;
 
-		Ref<HazelTextureCube> envUnfiltered = HazelTextureCube::Create(HazelTextureFormat::Float16, cubemapSize, cubemapSize);
+		Ref<HazelTextureCube> envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
 		if (!equirectangularConversionShader)
 			equirectangularConversionShader = HazelShader::Create("assets/shaders/EquirectangularToCubeMap.glsl");
 		Ref<HazelTexture2D> envEquirect = HazelTexture2D::Create(filepath);
-		HZ_CORE_ASSERT(envEquirect->GetFormat() == HazelTextureFormat::Float16, "Texture is not HDR!");
+		HZ_CORE_ASSERT(envEquirect->GetFormat() == HazelImageFormat::RGBA16F, "Texture is not HDR!");
 
 		equirectangularConversionShader->Bind();
 		envEquirect->Bind();
@@ -152,7 +152,7 @@ namespace Hazel {
 		if (!envFilteringShader)
 			envFilteringShader = HazelShader::Create("assets/shaders/EnvironmentMipFilter.glsl");
 
-		Ref<HazelTextureCube> envFiltered = HazelTextureCube::Create(HazelTextureFormat::Float16, cubemapSize, cubemapSize);
+		Ref<HazelTextureCube> envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
 
 		HazelRenderer::Submit([envUnfiltered, envFiltered]()
 		{
@@ -178,7 +178,7 @@ namespace Hazel {
 		if (!envIrradianceShader)
 			envIrradianceShader = HazelShader::Create("assets/shaders/EnvironmentIrradiance.glsl");
 
-		Ref<HazelTextureCube> irradianceMap = HazelTextureCube::Create(HazelTextureFormat::Float16, irradianceMapSize, irradianceMapSize);
+		Ref<HazelTextureCube> irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize);
 		envIrradianceShader->Bind();
 		envFiltered->Bind();
 		HazelRenderer::Submit([irradianceMap]()

@@ -26,9 +26,10 @@ namespace Hazel {
 		friend class HazelMaterialInstance;
 
 	public:
-		HazelMaterial(const Ref<HazelShader>& shader);
+		HazelMaterial();
+		HazelMaterial(const Ref<HazelShader>& shader, const std::string& name = "");
 		static Ref<HazelMaterial> Create(const Ref<HazelShader>& shader, const std::string& name = "");
-		virtual ~HazelMaterial();
+		virtual ~HazelMaterial() {};
 
 		virtual void Set(const std::string& name, float value) = 0;
 		virtual void Set(const std::string& name, int value) = 0;
@@ -116,7 +117,7 @@ namespace Hazel {
 		friend class HazelMaterial;
 
 	public:
-		HazelMaterialInstance(const Ref<HazelMaterial > & material, const std::string& name = "");
+		HazelMaterialInstance(const Ref<HazelMaterial>& material, const std::string& name = "");
 		virtual ~HazelMaterialInstance();
 
 		template <typename T>

@@ -43,17 +43,17 @@ namespace Hazel { namespace Script {
 	void Hazel_Material_SetFloat(Ref<HazelMaterial>* _this, MonoString* uniform, float value);
 	void Hazel_Material_SetTexture(Ref<HazelMaterial>* _this, MonoString* uniform, Ref<HazelTexture2D>* texture);
 
-	void Hazel_MaterialInstance_Destructor(Ref<HazelMaterialInstance>* _this);
-	void Hazel_MaterialInstance_SetFloat(Ref<HazelMaterialInstance>* _this, MonoString* uniform, float value);
-	void Hazel_MaterialInstance_SetVector3(Ref<HazelMaterialInstance>* _this, MonoString* uniform, glm::vec3* value);
-	void Hazel_MaterialInstance_SetVector4(Ref<HazelMaterialInstance>* _this, MonoString* uniform, glm::vec4* value);
-	void Hazel_MaterialInstance_SetTexture(Ref<HazelMaterialInstance>* _this, MonoString* uniform, Ref<HazelTexture2D>* texture);
+	void Hazel_MaterialInstance_Destructor(Ref<HazelMaterial>* _this);
+	void Hazel_MaterialInstance_SetFloat(Ref<HazelMaterial>* _this, MonoString* uniform, float value);
+	void Hazel_MaterialInstance_SetVector3(Ref<HazelMaterial>* _this, MonoString* uniform, glm::vec3* value);
+	void Hazel_MaterialInstance_SetVector4(Ref<HazelMaterial>* _this, MonoString* uniform, glm::vec4* value);
+	void Hazel_MaterialInstance_SetTexture(Ref<HazelMaterial>* _this, MonoString* uniform, Ref<HazelTexture2D>* texture);
 
 	// Mesh
 	Ref<HazelMesh>* Hazel_Mesh_Constructor(MonoString* filepath);
 	void Hazel_Mesh_Destructor(Ref<HazelMesh>* _this);
 	Ref<HazelMaterial>* Hazel_Mesh_GetMaterial(Ref<HazelMesh>* inMesh);
-	Ref<HazelMaterialInstance>* Hazel_Mesh_GetMaterialByIndex(Ref<HazelMesh>* inMesh, int index);
+	Ref<HazelMaterial>* Hazel_Mesh_GetMaterialByIndex(Ref<HazelMesh>* inMesh, int index);
 	int Hazel_Mesh_GetMaterialCount(Ref<HazelMesh>* inMesh);
 
 	void* Hazel_MeshFactory_CreatePlane(float width, float height);

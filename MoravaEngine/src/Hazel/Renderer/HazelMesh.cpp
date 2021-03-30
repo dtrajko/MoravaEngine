@@ -291,7 +291,10 @@ namespace Hazel {
 				auto aiMaterial = scene->mMaterials[i];
 				auto aiMaterialName = aiMaterial->GetName();
 
-				auto mi = Ref<HazelMaterialInstance>::Create(m_BaseMaterial, aiMaterialName.data);
+				// auto mi = Ref<HazelMaterial>::Create(m_BaseMaterial, aiMaterialName.data);
+
+				auto mi = HazelMaterial::Create(m_MeshShader, aiMaterialName.data);
+
 				m_Materials[i] = mi;
 
 				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
@@ -1099,7 +1102,7 @@ namespace Hazel {
 				envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 5);
 			}
 
-			Ref<HazelMaterialInstance> material = nullptr;
+			Ref<HazelMaterial> material = nullptr;
 			if (m_Materials.size()) {
 				material = m_Materials[submesh.MaterialIndex];
 				if (material && material->GetFlag(HazelMaterialFlag::DepthTest)) {

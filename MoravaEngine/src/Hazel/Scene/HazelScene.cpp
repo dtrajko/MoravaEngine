@@ -157,7 +157,7 @@ namespace Hazel {
 		Log::GetLogger()->error("HazelScene::Init method not implemented yet!");
 
 		// auto skyboxShader = Shader::Create("assets/shaders/Skybox.glsl");
-		// m_SkyboxMaterial = MaterialInstance::Create(Material::Create(skyboxShader));
+		// m_SkyboxMaterial = HazelMaterial::Create(Material::Create(skyboxShader));
 		// m_SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, false);
 	}
 

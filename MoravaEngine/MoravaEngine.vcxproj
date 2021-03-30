@@ -460,6 +460,7 @@
     <ClInclude Include="src\Framebuffer\OmniShadowMap.h" />
     <ClInclude Include="src\Framebuffer\Renderbuffer.h" />
     <ClInclude Include="src\Framebuffer\ShadowMap.h" />
+    <ClInclude Include="src\Hazel\Asset\Asset.h" />
     <ClInclude Include="src\Hazel\Core\Assert.h" />
     <ClInclude Include="src\Hazel\Core\Base.h" />
     <ClInclude Include="src\Hazel\Core\Buffer.h" />

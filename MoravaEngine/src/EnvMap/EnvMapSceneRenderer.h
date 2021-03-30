@@ -34,7 +34,7 @@ struct SceneRendererData
 		Hazel::HazelCamera* SceneCamera;
 
 		// Resources
-		Ref<Hazel::HazelMaterialInstance> HazelSkyboxMaterial;
+		Ref<Hazel::HazelMaterial> HazelSkyboxMaterial;
 		Material* SkyboxMaterial;
 		Hazel::Environment SceneEnvironment;
 		Hazel::HazelLight ActiveLight;
@@ -62,7 +62,7 @@ struct SceneRendererData
 	Material* GridMaterial;
 	// Ref<HazelShader> HazelGridShader;
 	// Ref<Shader> GridShader;
-	Ref<Hazel::HazelMaterialInstance> OutlineMaterial;
+	Ref<Hazel::HazelMaterial> OutlineMaterial;
 
 	SceneRendererOptions Options;
 
@@ -87,7 +87,7 @@ public:
 	static void BeginScene(Hazel::HazelScene* scene);
 	static void EndScene();
 
-	static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<Hazel::HazelMaterialInstance> overrideMaterial = nullptr);
+	static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<Hazel::HazelMaterial> overrideMaterial = nullptr);
 	static void SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
 	static std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);

@@ -8,7 +8,7 @@ namespace Hazel {
 	class OpenGLTexture2D : public HazelTexture2D
 	{
 	public:
-		OpenGLTexture2D(HazelTextureFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap);
+		OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap);
 		OpenGLTexture2D(const std::string& path, bool srgb, HazelTextureWrap wrap);
 		virtual ~OpenGLTexture2D();
 
@@ -33,17 +33,21 @@ namespace Hazel {
 
 		virtual bool Loaded() const override { return m_Loaded; }
 
-		virtual uint32_t GetID() const override { return m_ID; }
+		virtual uint64_t GetHash() const { return m_Image->GetHash(); }
 
 		virtual bool operator==(const HazelTexture& other) const override
 		{
 			return m_ID == ((OpenGLTexture2D&)other).m_ID;
 		}
+
+		virtual uint32_t GetID() const override { return m_ID; }
+
 	private:
-		uint32_t m_ID;
+		Ref<HazelImage2D> m_Image;
 		HazelImageFormat m_Format;
 		HazelTextureWrap m_Wrap = HazelTextureWrap::Clamp;
 		uint32_t m_Width, m_Height;
+		uint32_t m_ID;
 
 		Buffer m_ImageData;
 		bool m_IsHDR = false;
@@ -60,7 +64,7 @@ namespace Hazel {
 	class OpenGLTextureCube : public HazelTextureCube
 	{
 	public:
-		OpenGLTextureCube(HazelTextureFormat format, uint32_t width, uint32_t height);
+		OpenGLTextureCube(HazelImageFormat format, uint32_t width, uint32_t height);
 		OpenGLTextureCube(const std::string& path);
 		virtual ~OpenGLTextureCube();
 
@@ -76,6 +80,8 @@ namespace Hazel {
 		virtual const std::string& GetPath() const override { return m_FilePath; }
 
 		virtual uint32_t GetID() const override { return m_ID; }
+
+		virtual uint64_t GetHash() const { return (uint64_t)m_ID; }
 
 		virtual bool operator==(const HazelTexture& other) const override
 		{

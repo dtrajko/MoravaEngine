@@ -8,13 +8,13 @@
 
 namespace Hazel {
 
-	static GLenum HazelToOpenGLTextureFormat(HazelTextureFormat format)
+	static GLenum HazelToOpenGLTextureFormat(HazelImageFormat format)
 	{
 		switch (format)
 		{
-			case Hazel::HazelTextureFormat::RGB:     return GL_RGB;
-			case Hazel::HazelTextureFormat::RGBA:    return GL_RGBA;
-			case Hazel::HazelTextureFormat::Float16: return GL_RGBA16F;
+			case Hazel::HazelImageFormat::RGB:     return GL_RGB;
+			case Hazel::HazelImageFormat::RGBA:    return GL_RGBA;
+			case Hazel::HazelImageFormat::RGBA16F: return GL_RGBA16F;
 		}
 		Log::GetLogger()->error("Unknown texture format!");
 		return 0;
@@ -24,7 +24,7 @@ namespace Hazel {
 	// Texture2D
 	//////////////////////////////////////////////////////////////////////////////////
 
-	OpenGLTexture2D::OpenGLTexture2D(HazelTextureFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap)
+	OpenGLTexture2D::OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap)
 		: m_Format(format), m_Width(width), m_Height(height), m_Wrap(wrap)
 	{
 		auto self = this;
@@ -58,7 +58,7 @@ namespace Hazel {
 			Log::GetLogger()->info("Loading HDR texture {0}, srgb={1}", path, srgb);
 			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 0);
 			m_IsHDR = true;
-			m_Format = HazelTextureFormat::Float16;
+			m_Format = HazelImageFormat::RGBA16F;
 		}
 		else
 		{
@@ -67,7 +67,7 @@ namespace Hazel {
 			if (!m_ImageData.Data) {
 				Log::GetLogger()->error("Could not read image!");
 			}
-			m_Format = HazelTextureFormat::RGBA;
+			m_Format = HazelImageFormat::RGBA;
 		}
 
 		if (!m_ImageData.Data)
@@ -166,7 +166,7 @@ namespace Hazel {
 	// TextureCube
 	//////////////////////////////////////////////////////////////////////////////////
 
-	OpenGLTextureCube::OpenGLTextureCube(HazelTextureFormat format, uint32_t width, uint32_t height)
+	OpenGLTextureCube::OpenGLTextureCube(HazelImageFormat format, uint32_t width, uint32_t height)
 	{
 		m_Width = width;
 		m_Height = height;
@@ -195,7 +195,7 @@ namespace Hazel {
 
 		m_Width = width;
 		m_Height = height;
-		m_Format = HazelTextureFormat::RGB;
+		m_Format = HazelImageFormat::RGB;
 
 		uint32_t faceWidth = m_Width / 4;
 		uint32_t faceHeight = m_Height / 3;
