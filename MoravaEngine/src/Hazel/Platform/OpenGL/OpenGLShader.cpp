@@ -25,6 +25,9 @@ namespace Hazel {
 	OpenGLShader::OpenGLShader(const std::string& filepath, bool forceRecompile)
 		: m_AssetPath(filepath)
 	{
+		m_Buffers = std::unordered_map<std::string, ShaderBuffer>();
+		m_Buffers.reserve(0);
+
 		size_t found = filepath.find_last_of("/\\");
 		m_Name = found != std::string::npos ? filepath.substr(found + 1) : filepath;
 		found = m_Name.find_last_of(".");

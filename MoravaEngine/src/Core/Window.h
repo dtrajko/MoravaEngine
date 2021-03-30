@@ -16,7 +16,7 @@ struct WindowProps
 	uint32_t Width;
 	uint32_t Height;
 
-	WindowProps(const std::string& title = "3D Graphics Engine (C++ / OpenGL)",
+	WindowProps(const std::string& title = "3D Graphics Engine (C++/OpenGL)",
 		uint32_t width = 1280,
 		uint32_t height = 720)
 		: Title(title), Width(width), Height(height)
@@ -48,20 +48,20 @@ public:
 	/**** END Window Hazel version - a platform independent Window interface ****/
 
 	// Methods used by MoravaEngine classes
-	virtual GLFWwindow* GetHandle() { return nullptr; };
-	virtual bool* getKeys() { return nullptr; };
-	virtual bool* getMouseButtons() { return nullptr; };
-	virtual bool IsMouseButtonClicked(int mouseButton) { return false; };
-	virtual float GetMouseX() const { return 0.0f; };
-	virtual float GetMouseY() const { return 0.0f; };
-	virtual float getXChange() { return 0.0f; };
-	virtual float getYChange() { return 0.0f; };
-	virtual float getXMouseScrollOffset() { return 0.0f; };
-	virtual float getYMouseScrollOffset() { return 0.0f; };
-	virtual void SetShouldClose(bool shouldClose) {};
-	virtual void SetCursorDisabled() {};
-	virtual void SetCursorNormal() {};
-	virtual bool GetShouldClose() { return false; };
+	virtual GLFWwindow* GetHandle() = 0;
+	virtual bool* getKeys() = 0;
+	virtual bool* getMouseButtons() = 0;
+	virtual bool IsMouseButtonClicked(int mouseButton) = 0;
+	virtual float GetMouseX() const = 0;
+	virtual float GetMouseY() const = 0;
+	virtual float getXChange() = 0;
+	virtual float getYChange() = 0;
+	virtual float getXMouseScrollOffset() = 0;
+	virtual float getYMouseScrollOffset() = 0;
+	virtual void SetShouldClose(bool shouldClose) = 0;
+	virtual void SetCursorDisabled() = 0;
+	virtual void SetCursorNormal() = 0;
+	virtual bool GetShouldClose() = 0;
 
 	virtual void SetEventLogging(bool enabled) = 0;
 	virtual const bool GetEventLogging() const = 0;

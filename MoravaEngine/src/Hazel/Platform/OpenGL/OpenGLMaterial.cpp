@@ -26,6 +26,8 @@ namespace Hazel {
 	{
 		const auto& shaderBuffers = m_Shader->GetShaderBuffers();
 
+		if (shaderBuffers.size() > 100000) return; // temporary check for properly allocated resource
+
 		if (shaderBuffers.size() > 0)
 		{
 			uint32_t size = 0;
