@@ -8,6 +8,7 @@ std::map<MaterialUUID, Hazel::Ref<EnvMapMaterial>> MaterialLibrary::s_EnvMapMate
 std::map<SubmeshUUID, MaterialUUID> MaterialLibrary::s_SubmeshMaterialUUIDs;
 TextureInfo MaterialLibrary::s_TextureInfoDefault;
 std::map<std::string, TextureInfo> MaterialLibrary::s_TextureInfo;
+Hazel::Ref<EnvMapMaterial> MaterialLibrary::s_DefaultMaterial;
 uint32_t MaterialLibrary::s_MaterialIndex = 0;
 
 
@@ -21,6 +22,10 @@ void MaterialLibrary::Init()
     s_TextureInfoDefault.roughness = "Textures/PBR/non_reflective/roughness.png";
     s_TextureInfoDefault.emissive  = "Textures/PBR/non_reflective/emissive.png";
     s_TextureInfoDefault.ao        = "Textures/PBR/non_reflective/ao.png";
+
+    // Create a default material
+    s_DefaultMaterial = CreateDefaultEnvMapMaterial("MAT_DEF");
+    AddEnvMapMaterial(s_DefaultMaterial->GetUUID(), s_DefaultMaterial);
 }
 
 Hazel::Ref<MaterialData> MaterialLibrary::AddNewMaterial(std::string name)
@@ -43,11 +48,45 @@ Hazel::Ref<MaterialData> MaterialLibrary::CreateMaterialData(std::string name)
     materialData->Name = name;
     s_MaterialData.push_back(materialData);
 
-    Hazel::Ref<EnvMapMaterial> defaultEnvMapMaterial = MaterialLibrary::CreateDefaultMaterial(materialData->Name);
+    Hazel::Ref<EnvMapMaterial> defaultEnvMapMaterial = CreateDefaultEnvMapMaterial(materialData->Name);
     AddEnvMapMaterial(defaultEnvMapMaterial->GetUUID(), defaultEnvMapMaterial);
     materialData->EnvMapMaterial = defaultEnvMapMaterial;
 
+    // SubmeshUUID submeshUUID = GetSubmeshUUID({}, submesh);
+    // AddSubmeshMaterialRelation(submeshUUID, defaultEnvMapMaterial->GetUUID());
+
     return materialData;
+}
+
+void MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType textureType, const std::string& texturePath, Hazel::Ref<EnvMapMaterial> envMapMaterial)
+{
+    switch (textureType)
+    {
+    case MaterialTextureType::Albedo:
+        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetAlbedoInput().UseTexture = true;
+        break;
+    case MaterialTextureType::Normal:
+        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetNormalInput().UseTexture = true;
+        break;
+    case MaterialTextureType::Metalness:
+        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetMetalnessInput().UseTexture = true;
+        break;
+    case MaterialTextureType::Roughness:
+        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetRoughnessInput().UseTexture = true;
+        break;
+    case MaterialTextureType::AO:
+        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetAOInput().UseTexture = true;
+        break;
+    case MaterialTextureType::Emissive:
+        envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetEmissiveInput().UseTexture = true;
+        break;
+    }
 }
 
 void MaterialLibrary::AddEnvMapMaterial(MaterialUUID UUID, Hazel::Ref<EnvMapMaterial> envMapMaterial)
@@ -104,7 +143,7 @@ void MaterialLibrary::AddSubmeshMaterialRelation(SubmeshUUID submeshUUID, Materi
     s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));
 }
 
-Hazel::Ref<EnvMapMaterial> MaterialLibrary::CreateDefaultMaterial(std::string materialName)
+Hazel::Ref<EnvMapMaterial> MaterialLibrary::CreateDefaultEnvMapMaterial(std::string materialName)
 {
     Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>::Create(materialName);
 
@@ -125,10 +164,10 @@ Hazel::Ref<EnvMapMaterial> MaterialLibrary::CreateDefaultMaterial(std::string ma
     envMapMaterial->GetMetalnessInput().UseTexture = true;
     envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.roughness);
     envMapMaterial->GetRoughnessInput().UseTexture = true;
-    envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.emissive);
-    envMapMaterial->GetEmissiveInput().UseTexture = true;
     envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.ao);
     envMapMaterial->GetAOInput().UseTexture = true;
+    envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.emissive);
+    envMapMaterial->GetEmissiveInput().UseTexture = true;
 
     return envMapMaterial;
 }
@@ -145,7 +184,7 @@ void MaterialLibrary::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Haz
 
     for (Hazel::Submesh& submesh : submeshes)
     {
-        std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(mesh, submesh, &entity);
+        std::string materialUUID = GetSubmeshMaterialUUID(mesh, submesh, &entity);
 
         Log::GetLogger()->debug("EnvMapEditorLayer::LoadEnvMapMaterials materialUUID = '{0}'", materialUUID);
 
@@ -153,14 +192,14 @@ void MaterialLibrary::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Haz
             continue;
         }
 
-        Hazel::Ref<EnvMapMaterial> envMapMaterial = MaterialLibrary::CreateDefaultMaterial(materialUUID);
+        Hazel::Ref<EnvMapMaterial> envMapMaterial = MaterialLibrary::CreateDefaultEnvMapMaterial(materialUUID);
         MaterialLibrary::AddEnvMapMaterial(materialUUID, envMapMaterial);
     }
 
     //  // If no submeshes, add a default material for entity
     //  if (submeshes.empty())
     //  {
-    //      EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(meshName);
+    //      EnvMapMaterial* envMapMaterial = CreateDefaultEnvMapMaterial(meshName);
     //      m_EnvMapMaterials.insert(std::make_pair(meshName, envMapMaterial));
     //  }
 
@@ -178,12 +217,12 @@ SubmeshUUID MaterialLibrary::GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submes
     return submeshUUID;
 }
 
-void MaterialLibrary::SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, Hazel::Ref<EnvMapMaterial> defaultMaterial)
+void MaterialLibrary::SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity)
 {
     for (auto submesh : mesh->GetSubmeshes())
     {
         SubmeshUUID submeshUUID = GetSubmeshUUID(&entity, &submesh);
-        MaterialUUID materialUUID = defaultMaterial->GetUUID();
+        MaterialUUID materialUUID = s_DefaultMaterial->GetUUID();
         MaterialLibrary::AddSubmeshMaterialRelation(submeshUUID, materialUUID);
     }
 }
@@ -208,4 +247,31 @@ void MaterialLibrary::AddMaterialFromComponent(Hazel::Entity entity)
             material->SetName(newMaterialData->Name);
         }
     }
+}
+
+MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Submesh& submesh, Hazel::Entity* entity)
+{
+    MaterialUUID materialUUID = "";
+
+    EnvMapMaterial* envMapMaterial = nullptr;
+    bool hasMaterialComponent = entity && entity->HasComponent<Hazel::MaterialComponent>();
+    if (hasMaterialComponent) {
+        Hazel::MaterialComponent materialComponent = entity->GetComponent<Hazel::MaterialComponent>();
+        Hazel::Ref<EnvMapMaterial> envMapMaterial = materialComponent.Material;
+    }
+
+    std::string submeshUUID = GetSubmeshUUID(entity, &submesh);
+
+    if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
+        materialUUID = MaterialLibrary::s_SubmeshMaterialUUIDs.at(submeshUUID);
+    }
+    else if (hasMaterialComponent && envMapMaterial) {
+        materialUUID = envMapMaterial->GetUUID();
+    }
+    else {
+        std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));
+        materialUUID = EnvMapMaterial::NewMaterialUUID();
+    }
+
+    return materialUUID;
 }

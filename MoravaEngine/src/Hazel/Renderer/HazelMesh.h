@@ -172,8 +172,6 @@ namespace Hazel {
 		inline void SetBaseMaterial(Ref<HazelMaterial> baseMaterial) { m_BaseMaterial = baseMaterial; }
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
 
-		static MaterialUUID GetSubmeshMaterialUUID(Ref<HazelMesh> mesh, Hazel::Submesh& submesh, Entity* entity);
-
 		void DeleteSubmesh(Submesh submesh);
 		void CloneSubmesh(Submesh submesh);
 
