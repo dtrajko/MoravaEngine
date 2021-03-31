@@ -358,7 +358,6 @@ namespace Hazel {
 	{
 		HazelRenderer::BeginRenderPass(s_Data.CompositePass);
 
-		// float exposure = s_Data.SceneData.SceneCamera.Camera.GetExposure();
 		float exposure = s_Data.SceneData.SceneCamera.Camera.GetExposure();
 		int textureSamples = s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples;
 
@@ -384,9 +383,7 @@ namespace Hazel {
 
 	Ref<HazelTexture2D> SceneRenderer::GetFinalColorBuffer()
 	{
-		// return s_Data.CompositePass->GetSpecification().TargetFramebuffer;
-		HZ_CORE_ASSERT(false, "Not implemented");
-		return nullptr;
+		return s_Data.CompositePass->GetSpecification().TargetFramebuffer;
 	}
 
 	Ref<RenderPass> SceneRenderer::GetFinalRenderPass()

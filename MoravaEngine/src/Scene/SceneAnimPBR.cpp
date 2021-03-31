@@ -1012,12 +1012,12 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 
     if (m_Entities["M1911"].Enabled)
     {
-        m_MeshAnimPBR_M1911->Render(m_SamplerSlots["albedo"], m_Entities["M1911"].Transform.Transform, std::map<std::string, EnvMapMaterial*>());
+        m_MeshAnimPBR_M1911->Render(m_SamplerSlots["albedo"], m_Entities["M1911"].Transform.Transform, std::map<std::string, Hazel::Ref<EnvMapMaterial>>());
     }
 
     if (m_Entities["AnimBoy"].Enabled)
     {
-        m_MeshAnimPBR_AnimBoy->Render(m_SamplerSlots["albedo"], m_Entities["AnimBoy"].Transform.Transform, std::map<std::string, EnvMapMaterial*>());
+        m_MeshAnimPBR_AnimBoy->Render(m_SamplerSlots["albedo"], m_Entities["AnimBoy"].Transform.Transform, std::map<std::string, Hazel::Ref<EnvMapMaterial>>());
     }
 
     if (m_Entities["BobLamp"].Enabled)

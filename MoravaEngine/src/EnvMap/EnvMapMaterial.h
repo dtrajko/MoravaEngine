@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Hazel/Core/Ref.h"
 #include "Hazel/Renderer/HazelTexture.h"
 
 #include <glm/glm.hpp>
@@ -7,7 +8,7 @@
 
 using MaterialUUID = std::string;
 
-class EnvMapMaterial
+class EnvMapMaterial : public Hazel::RefCounted
 {
 	struct AlbedoInput;
 	struct NormalInput;
@@ -19,7 +20,7 @@ class EnvMapMaterial
 public:
 	EnvMapMaterial();
 	EnvMapMaterial(std::string name = "Untitled");
-	EnvMapMaterial(std::string name, EnvMapMaterial* other);
+	EnvMapMaterial(std::string name, Hazel::Ref<EnvMapMaterial> other);
 	~EnvMapMaterial() = default;
 
 	inline AlbedoInput& GetAlbedoInput() { return m_AlbedoInput; }

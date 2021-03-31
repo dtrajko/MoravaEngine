@@ -657,6 +657,9 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTexture.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\Material\MaterialLibrary.cpp">
+      <Filter>Material</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -1406,6 +1409,9 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Asset\Asset.h">
       <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Material\MaterialLibrary.h">
+      <Filter>Material</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -302,6 +302,7 @@
     <ClCompile Include="src\Light\SpotLight.cpp" />
     <ClCompile Include="src\Material\Material.cpp" />
     <ClCompile Include="src\Material\MaterialInstance.cpp" />
+    <ClCompile Include="src\Material\MaterialLibrary.cpp" />
     <ClCompile Include="src\Material\MaterialWorkflowPBR.cpp" />
     <ClCompile Include="src\Mesh\Block.cpp" />
     <ClCompile Include="src\Mesh\Cone.cpp" />
@@ -551,6 +552,7 @@
     <ClInclude Include="src\Light\SpotLight.h" />
     <ClInclude Include="src\Material\Material.h" />
     <ClInclude Include="src\Material\MaterialInstance.h" />
+    <ClInclude Include="src\Material\MaterialLibrary.h" />
     <ClInclude Include="src\Material\MaterialWorkflowPBR.h" />
     <ClInclude Include="src\Mesh\Block.h" />
     <ClInclude Include="src\Mesh\Cone.h" />

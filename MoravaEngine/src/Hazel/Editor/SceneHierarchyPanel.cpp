@@ -6,6 +6,7 @@
 // Morava
 #include "Editor/EntitySelection.h"
 #include "EnvMap/EnvMapEditorLayer.h"
+#include "Material/MaterialLibrary.h"
 
 
 // TODO:
@@ -266,8 +267,8 @@ namespace Hazel
 				SubmeshUUID submeshUUID = EnvMapEditorLayer::GetSubmeshUUID(&entity, &submeshes[i]);
 				std::string materialUUID = "N/A";
 				std::string materialName = "N/A";
-				auto map_it = EnvMapEditorLayer::s_SubmeshMaterialUUIDs.find(submeshUUID);
-				if (EnvMapEditorLayer::s_SubmeshMaterialUUIDs.find(submeshUUID) != EnvMapEditorLayer::s_SubmeshMaterialUUIDs.end()) {
+				auto map_it = MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID);
+				if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
 					materialUUID = map_it->second;
 					materialName = map_it->first;
 				}
@@ -583,6 +584,12 @@ namespace Hazel
 				std::string file = Application::Get()->OpenFile();
 				if (!file.empty()) {
 					mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(file, nullptr, nullptr, false);
+
+					auto materialDataVector = MaterialLibrary::s_MaterialData;
+					for (auto materialData : materialDataVector) {
+						Log::GetLogger()->debug("* * * * * SceneHierarchyPanel Material name: '{0}'", materialData->Name);
+					}
+
 					EnvMapEditorLayer::SetDefaultMaterialToSubmeshes(mc.Mesh, entity);
 				}
 			}

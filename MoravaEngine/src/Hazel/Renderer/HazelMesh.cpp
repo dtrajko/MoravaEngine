@@ -15,11 +15,12 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
-#include "../Scene/Entity.h"
+#include "Hazel/Scene/Entity.h"
 
 #include "Core/Math.h"
 #include "Core/Util.h"
 #include "EnvMap/EnvMapEditorLayer.h"
+#include "Material/MaterialLibrary.h"
 #include "Shader/ShaderLibrary.h"
 
 #include "imgui.h"
@@ -296,6 +297,10 @@ namespace Hazel {
 				auto mi = HazelMaterial::Create(m_MeshShader, aiMaterialName.data);
 
 				m_Materials[i] = mi;
+
+				Hazel::Ref<MaterialData> materialData = MaterialLibrary::AddNew();
+				materialData->Name = aiMaterialName.data;
+				materialData->Material = mi;
 
 				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
 				aiString aiTexPath;
@@ -959,13 +964,13 @@ namespace Hazel {
 		bool hasMaterialComponent = entity && entity->HasComponent<Hazel::MaterialComponent>();
 		if (hasMaterialComponent) {
 			Hazel::MaterialComponent materialComponent = entity->GetComponent<Hazel::MaterialComponent>();
-			EnvMapMaterial* envMapMaterial = materialComponent.Material;
+			Hazel::Ref<EnvMapMaterial> envMapMaterial = materialComponent.Material;
 		}
 
 		std::string submeshUUID = EnvMapEditorLayer::GetSubmeshUUID(entity, &submesh);
 
-		if (EnvMapEditorLayer::s_SubmeshMaterialUUIDs.find(submeshUUID) != EnvMapEditorLayer::s_SubmeshMaterialUUIDs.end()) {
-			materialUUID = EnvMapEditorLayer::s_SubmeshMaterialUUIDs.at(submeshUUID);
+		if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
+			materialUUID = MaterialLibrary::s_SubmeshMaterialUUIDs.at(submeshUUID);
 		}
 		else if (hasMaterialComponent && envMapMaterial) {
 			materialUUID = envMapMaterial->GetUUID();
@@ -1057,9 +1062,9 @@ namespace Hazel {
 		return std::vector<Triangle>();
 	}
 
-	void HazelMesh::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials)
+	void HazelMesh::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials)
 	{
-		EnvMapMaterial* envMapMaterial = nullptr;
+		Ref<EnvMapMaterial> envMapMaterial = nullptr;
 
 		m_VertexBuffer->Bind();
 		m_Pipeline->Bind();
@@ -1116,7 +1121,7 @@ namespace Hazel {
 		}
 	}
 
-	void HazelMesh::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials, Entity entity)
+	void HazelMesh::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity)
 	{
 		for (Hazel::Submesh submesh : m_Submeshes)
 		{
@@ -1125,9 +1130,9 @@ namespace Hazel {
 	}
 
 	void Submesh::Render(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
-		const std::map<std::string, EnvMapMaterial*>& envMapMaterials, Entity entity)
+		const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity)
 	{
-		EnvMapMaterial* envMapMaterial = nullptr;
+		Ref<EnvMapMaterial> envMapMaterial = nullptr;
 
 		parentMesh->m_VertexBuffer->Bind();
 		parentMesh->m_Pipeline->Bind();

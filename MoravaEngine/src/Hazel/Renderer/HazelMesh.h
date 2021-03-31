@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../Core/Base.h"
-#include "../Core/Math/AABB.h"
-#include "../Renderer/IndexBuffer.h"
-#include "../Renderer/Pipeline.h"
-#include "../Renderer/VertexBuffer.h"
+#include "Hazel/Core/Base.h"
+#include "Hazel/Core/Math/AABB.h"
+#include "Hazel/Renderer/IndexBuffer.h"
+#include "Hazel/Renderer/Pipeline.h"
+#include "Hazel/Renderer/VertexBuffer.h"
 
 #include "Core/Log.h"
 #include "EnvMap/EnvMapMaterial.h"
@@ -124,7 +124,7 @@ namespace Hazel {
 	{
 	public:
 		void Render(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
-			const std::map<std::string, EnvMapMaterial*>& envMapMaterials, Entity entity);
+			const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity);
 		void RenderOutline(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& entityTransform, Entity entity);
 
 	public:
@@ -151,8 +151,8 @@ namespace Hazel {
 		void OnImGuiRender(uint32_t id = 0);
 		void DumpVertexBuffer();
 
-		void Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials);
-		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, EnvMapMaterial*>& envMapMaterials, Entity entity);
+		void Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials);
+		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity);
 
 		// Getters
 		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }

@@ -75,11 +75,10 @@ public:
 	void ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop);
 
 	static void LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity);
-	static EnvMapMaterial* CreateDefaultMaterial(std::string materialName);
+	static Hazel::Ref<EnvMapMaterial> CreateDefaultMaterial(std::string materialName);
 	static void AddMaterialFromComponent(Hazel::Entity entity);
 	static std::string NewMaterialName();
 	static void AddSubmeshToSelectionContext(SelectedSubmesh submesh);
-	static void RenameMaterial(EnvMapMaterial* envMapMaterial, std::string newName);
 	static SubmeshUUID GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh);
 	static void SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity);
 
@@ -123,7 +122,7 @@ private:
 	void SetupContextData();
 	void SetupShaders();
 	void UpdateUniforms();
-	void UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPBR, EnvMapMaterial* m_EnvMapMaterial);
+	void UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPBR, Hazel::Ref<EnvMapMaterial> envMapMaterial);
 	void SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox);
 	void Init();
 
@@ -145,13 +144,10 @@ public:
 	static SelectionMode s_SelectionMode;
 	static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
 
-	static std::map<MaterialUUID, EnvMapMaterial*> s_EnvMapMaterials;
-	static std::map<SubmeshUUID, MaterialUUID> s_SubmeshMaterialUUIDs;
-
-	static EnvMapMaterial* s_DefaultMaterial;
+	static Hazel::Ref<EnvMapMaterial> s_DefaultMaterial;
 	static uint32_t s_MaterialIndex;
 
-	static EnvMapMaterial* s_LightMaterial;
+	static Hazel::Ref<EnvMapMaterial> s_LightMaterial;
 
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
 	glm::mat4* m_RelativeTransform = nullptr;

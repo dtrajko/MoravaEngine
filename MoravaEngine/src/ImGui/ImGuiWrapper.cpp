@@ -251,7 +251,7 @@ bool const ImGuiWrapper::CanViewportReceiveEvents()
 	return s_CanViewportReceiveEvents;
 }
 
-void ImGuiWrapper::DrawMaterialUI(EnvMapMaterial* material, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture)
+void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture)
 {
 	// Display Material UUID
 	ImGui::Columns(2);

@@ -30,7 +30,7 @@ public:
 	static void Cleanup();
 
 	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
-	static void DrawMaterialUI(EnvMapMaterial* material, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture);
+	static void DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture);
 
 	// ImGui UI helpers
 	static bool Property(const std::string& name, bool& value);

@@ -12,6 +12,7 @@
 #include "EnvMap/EnvMapRenderPass.h"
 #include "ImGui/ImGuiWrapper.h"
 #include "Light/PointLight.h"
+#include "Material/MaterialLibrary.h"
 #include "Renderer/RendererBasic.h"
 #include "Scene/SceneHazelEnvMap.h"
 #include "Shader/ShaderLibrary.h"
@@ -23,10 +24,8 @@ TextureInfo EnvMapEditorLayer::s_TextureInfoDefault;
 std::map<std::string, TextureInfo> EnvMapEditorLayer::s_TextureInfo;
 SelectionMode EnvMapEditorLayer::s_SelectionMode = SelectionMode::Entity;
 Hazel::Ref<Hazel::HazelTexture2D> EnvMapEditorLayer::s_CheckerboardTexture;
-std::map<MaterialUUID, EnvMapMaterial*> EnvMapEditorLayer::s_EnvMapMaterials; // MaterialUUID, EnvMapMaterial*
-std::map<SubmeshUUID, MaterialUUID> EnvMapEditorLayer::s_SubmeshMaterialUUIDs; // SubmeshUUID, MaterialUUID
-EnvMapMaterial* EnvMapEditorLayer::s_DefaultMaterial;
-EnvMapMaterial* EnvMapEditorLayer::s_LightMaterial;
+Hazel::Ref<EnvMapMaterial> EnvMapEditorLayer::s_DefaultMaterial;
+Hazel::Ref<EnvMapMaterial> EnvMapEditorLayer::s_LightMaterial;
 uint32_t EnvMapEditorLayer::s_MaterialIndex = 0;
 
 
@@ -81,14 +80,14 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 
     // Create a default material
     s_DefaultMaterial = CreateDefaultMaterial("MAT_DEF");
-    s_EnvMapMaterials.insert(std::make_pair(s_DefaultMaterial->GetUUID(), s_DefaultMaterial));
+    MaterialLibrary::AddEnvMapMaterial(s_DefaultMaterial->GetUUID(), s_DefaultMaterial);
 
     // Create the light material
     s_LightMaterial = CreateDefaultMaterial("MAT_LIGHT");
     // Load Hazel/Renderer/HazelTexture
     s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D("Textures/light_bulb.png");
     s_LightMaterial->GetAlbedoInput().UseTexture = true;
-    s_EnvMapMaterials.insert(std::make_pair(s_LightMaterial->GetUUID(), s_LightMaterial));
+    MaterialLibrary::AddEnvMapMaterial(s_LightMaterial->GetUUID(), s_LightMaterial);
 
     Init(); // requires a valid Camera reference
 
@@ -308,12 +307,12 @@ void EnvMapEditorLayer::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, H
 
         Log::GetLogger()->debug("EnvMapEditorLayer::LoadEnvMapMaterials materialUUID = '{0}'", materialUUID);
 
-        if (s_EnvMapMaterials.find(materialUUID) != s_EnvMapMaterials.end()) {
+        if (MaterialLibrary::s_EnvMapMaterials.find(materialUUID) != MaterialLibrary::s_EnvMapMaterials.end()) {
             continue;
         }
 
-        EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(materialUUID);
-        s_EnvMapMaterials.insert(std::make_pair(materialUUID, envMapMaterial));
+        Hazel::Ref<EnvMapMaterial> envMapMaterial = CreateDefaultMaterial(materialUUID);
+        MaterialLibrary::AddEnvMapMaterial(materialUUID, envMapMaterial);
     }
 
     //  // If no submeshes, add a default material for entity
@@ -323,7 +322,7 @@ void EnvMapEditorLayer::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, H
     //      m_EnvMapMaterials.insert(std::make_pair(meshName, envMapMaterial));
     //  }
 
-    for (auto& material : s_EnvMapMaterials)
+    for (auto& material : MaterialLibrary::s_EnvMapMaterials)
     {
         Log::GetLogger()->debug("EnvMapEditorLayer::LoadEnvMapMaterials material name: '{0}' UUID: '{1}'", material.second->GetName(), material.first);
     }
@@ -334,16 +333,13 @@ void EnvMapEditorLayer::AddMaterialFromComponent(Hazel::Entity entity)
     // If entity contains MaterialComponent, load generic material for the entire entity (all submeshes)
     if (entity.HasComponent<Hazel::MaterialComponent>())
     {
-        if (entity.GetComponent<Hazel::MaterialComponent>().Material != nullptr)
+        if (entity.GetComponent<Hazel::MaterialComponent>().Material)
         {
             std::string materialName = NewMaterialName();
             auto material = entity.GetComponent<Hazel::MaterialComponent>().Material;
             material->SetName(materialName);
 
-            if (s_EnvMapMaterials.find(material->GetName()) == s_EnvMapMaterials.end())
-            {
-                s_EnvMapMaterials.insert(std::make_pair(material->GetUUID(), material));
-            }
+            MaterialLibrary::AddEnvMapMaterial(material->GetUUID(), material);
         }
     }
 }
@@ -365,44 +361,13 @@ void EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh submesh)
     }
 }
 
-void EnvMapEditorLayer::RenameMaterial(EnvMapMaterial* envMapMaterial, const std::string newName)
-{
-    Log::GetLogger()->debug("EnvMapEditorLayer::RenameMaterial from '{0}' to '{1}'", envMapMaterial->GetName(), newName);
-
-    std::string oldName = envMapMaterial->GetName();
-    MaterialUUID materialUUID = envMapMaterial->GetUUID();
-
-    // TODO: Make sure that the new material name is not already taken
-    for (auto emm_it = s_EnvMapMaterials.cbegin(); emm_it != s_EnvMapMaterials.cend(); emm_it++) {
-        if (emm_it->second->GetName() == newName) {
-            Log::GetLogger()->error("Material name is already taken [Name: '{0}', UUID: '{1}']!", newName, emm_it->second->GetUUID());
-            return;
-        }
-    }
-
-    // TODO: Rename object attribute
-    envMapMaterial->SetName(newName);
-
-    // TODO: Rename in s_EnvMapMaterials
-    for (auto emm_it = s_EnvMapMaterials.cbegin(); emm_it != s_EnvMapMaterials.cend();) {
-        if (emm_it->second->GetUUID() == materialUUID) {
-            emm_it->second->SetName(newName);
-            Log::GetLogger()->error("s_EnvMapMaterials: '{0}' => '{1}'", oldName, newName);
-            break;
-        }
-        else {
-            ++emm_it;
-        }
-    }
-}
-
 void EnvMapEditorLayer::ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop)
 {
 }
 
-EnvMapMaterial* EnvMapEditorLayer::CreateDefaultMaterial(std::string materialName)
+Hazel::Ref<EnvMapMaterial> EnvMapEditorLayer::CreateDefaultMaterial(std::string materialName)
 {
-    EnvMapMaterial* envMapMaterial = new EnvMapMaterial(materialName);
+    Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>::Create(materialName);
 
     TextureInfo textureInfo;
     if (s_TextureInfo.find(materialName) != s_TextureInfo.end()) {
@@ -484,7 +449,7 @@ void EnvMapEditorLayer::UpdateUniforms()
     /**** BEGIN Shaders/Hazel/Outline ****/
 }
 
-void EnvMapEditorLayer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPBR, EnvMapMaterial* envMapMaterial)
+void EnvMapEditorLayer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPBR, Hazel::Ref<EnvMapMaterial> envMapMaterial)
 {
     /**** BEGIN Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
 
@@ -581,13 +546,9 @@ void EnvMapEditorLayer::SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox)
 
 EnvMapEditorLayer::~EnvMapEditorLayer()
 {
-    for (auto item : s_EnvMapMaterials) {
-        delete item.second;
-    }
-    s_EnvMapMaterials.clear();
+    MaterialLibrary::Cleanup();
 
     delete m_SceneRenderer;
-
     delete m_RuntimeCamera;
     delete m_EditorCamera;
 }
@@ -1457,9 +1418,9 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     ImGui::Begin("EnvMap Materials");
     {
         unsigned int materialIndex = 0;
-        for (auto material_it = s_EnvMapMaterials.cbegin(); material_it != s_EnvMapMaterials.cend();)
+        for (auto material_it = MaterialLibrary::s_EnvMapMaterials.begin(); material_it != MaterialLibrary::s_EnvMapMaterials.end();)
         {
-            EnvMapMaterial* material = material_it->second;
+            Hazel::Ref<EnvMapMaterial> material = material_it->second;
             std::string materialName = material->GetName();
             MaterialUUID materialUUID = material->GetUUID();
 
@@ -1493,13 +1454,13 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             }
 
             if (materialClone) {
-                auto envMapMaterialSrc = s_EnvMapMaterials.at(materialUUID);
-                EnvMapMaterial* envMapMaterialDst = new EnvMapMaterial(NewMaterialName(), envMapMaterialSrc);
-                s_EnvMapMaterials.insert(std::make_pair(envMapMaterialDst->GetUUID(), envMapMaterialDst));
+                auto envMapMaterialSrc = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
+                Hazel::Ref<EnvMapMaterial> envMapMaterialDst = Hazel::Ref<EnvMapMaterial>::Create(NewMaterialName(), envMapMaterialSrc);
+                MaterialLibrary::AddEnvMapMaterial(envMapMaterialDst->GetUUID(), envMapMaterialDst);
             }
 
             if (materialDelete) {
-                material_it = s_EnvMapMaterials.erase(material_it++);
+                material_it = MaterialLibrary::s_EnvMapMaterials.erase(material_it++);
             }
             else {
                 ++material_it;
@@ -1512,8 +1473,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     {
         if (ImGui::MenuItem("Create a Material"))
         {
-            EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(NewMaterialName());
-            s_EnvMapMaterials.insert(std::make_pair(envMapMaterial->GetUUID(), envMapMaterial));
+            Hazel::Ref<EnvMapMaterial> envMapMaterial = CreateDefaultMaterial(NewMaterialName());
+            MaterialLibrary::AddEnvMapMaterial(envMapMaterial->GetUUID(), envMapMaterial);
         }
         ImGui::EndPopup();
     }
@@ -1589,22 +1550,22 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         // Drop down for selecting a material for a specific submesh
         std::vector<std::string> materialNameStrings;
         int index = 0;
-        for (auto& material : s_EnvMapMaterials) {
+        for (auto& material : MaterialLibrary::s_EnvMapMaterials) {
             materialNameStrings.push_back(material.second->GetName());
         }
 
         std::string submeshMaterialName = materialNameStrings.size() ? materialNameStrings[0] : "N/A";
 
         MaterialUUID materialUUID;
-        if (s_SubmeshMaterialUUIDs.find(submeshUUID) != s_SubmeshMaterialUUIDs.end()) {
-            materialUUID = s_SubmeshMaterialUUIDs.at(submeshUUID);
+        if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
+            materialUUID = MaterialLibrary::s_SubmeshMaterialUUIDs.at(submeshUUID);
         }
         int selectedMaterial = -1;
 
         if (ImGui::BeginCombo("Material", submeshMaterialName.c_str()))
         {
             size_t emm_index = 0;
-            for (auto emm_it = s_EnvMapMaterials.begin(); emm_it != s_EnvMapMaterials.end(); emm_it++)
+            for (auto emm_it = MaterialLibrary::s_EnvMapMaterials.begin(); emm_it != MaterialLibrary::s_EnvMapMaterials.end(); emm_it++)
             {
                 bool is_selected = (submeshMaterialName == materialNameStrings[emm_index]);
                 if (ImGui::Selectable(materialNameStrings.at(emm_index).c_str(), is_selected))
@@ -1613,17 +1574,17 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                     materialUUID = emm_it->second->GetUUID();
                     if (meshName != "N/A" && submeshMaterialName != "N/A" && submeshUUID != "N/A")
                     {
-                        auto sm_it = s_SubmeshMaterialUUIDs.find(submeshUUID);
-                        if (sm_it != s_SubmeshMaterialUUIDs.end()) {
+                        auto sm_it = MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID);
+                        if (sm_it != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
                             sm_it->second = materialUUID;
                             Log::GetLogger()->debug("s_SubmeshMaterialUUIDs UPDATE [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
-                                submeshUUID, materialUUID, s_SubmeshMaterialUUIDs.size());
+                                submeshUUID, materialUUID, MaterialLibrary::s_SubmeshMaterialUUIDs.size());
                             break;
                         }
                         else {
-                            s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));
+                            MaterialLibrary::s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));
                             Log::GetLogger()->debug("s_SubmeshMaterialUUIDs INSERT [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
-                                submeshUUID, materialUUID, s_SubmeshMaterialUUIDs.size());
+                                submeshUUID, materialUUID, MaterialLibrary::s_SubmeshMaterialUUIDs.size());
                         }
                     }
                 }
@@ -1974,7 +1935,7 @@ void EnvMapEditorLayer::SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMes
     {
         SubmeshUUID submeshUUID = GetSubmeshUUID(&entity, &submesh);
         MaterialUUID materialUUID = s_DefaultMaterial->GetUUID();
-        s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));
+        MaterialLibrary::AddSubmeshMaterialRelation(submeshUUID, materialUUID);
     }
 }
 
@@ -2297,7 +2258,7 @@ void EnvMapEditorLayer::GeometryPassTemporary()
                     m_ShaderHazelPBR->setFloat("u_OmniShadowMaps[1].farPlane", farPlane);
                 }
 
-                EnvMapMaterial* envMapMaterial = nullptr;
+                Hazel::Ref<EnvMapMaterial> envMapMaterial = nullptr;
                 std::string materialUUID;
 
                 for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
@@ -2308,12 +2269,12 @@ void EnvMapEditorLayer::GeometryPassTemporary()
 
                     // Render Submesh
                     // load submesh materials for each specific submesh from the s_EnvMapMaterials list
-                    if (s_EnvMapMaterials.find(materialUUID) != s_EnvMapMaterials.end()) {
-                        envMapMaterial = s_EnvMapMaterials.at(materialUUID);
+                    if (MaterialLibrary::s_EnvMapMaterials.find(materialUUID) != MaterialLibrary::s_EnvMapMaterials.end()) {
+                        envMapMaterial = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
                         UpdateShaderPBRUniforms(m_ShaderHazelPBR, envMapMaterial);
                     }
 
-                    submesh.Render(meshComponent.Mesh, m_ShaderHazelPBR, entityTransform, samplerSlot, s_EnvMapMaterials, entity);
+                    submesh.Render(meshComponent.Mesh, m_ShaderHazelPBR, entityTransform, samplerSlot, MaterialLibrary::s_EnvMapMaterials, entity);
                 }
             }
         }
