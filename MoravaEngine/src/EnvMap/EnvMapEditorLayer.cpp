@@ -20,13 +20,10 @@
 #include <filesystem>
 
 
-TextureInfo EnvMapEditorLayer::s_TextureInfoDefault;
-std::map<std::string, TextureInfo> EnvMapEditorLayer::s_TextureInfo;
 SelectionMode EnvMapEditorLayer::s_SelectionMode = SelectionMode::Entity;
 Hazel::Ref<Hazel::HazelTexture2D> EnvMapEditorLayer::s_CheckerboardTexture;
 Hazel::Ref<EnvMapMaterial> EnvMapEditorLayer::s_DefaultMaterial;
 Hazel::Ref<EnvMapMaterial> EnvMapEditorLayer::s_LightMaterial;
-uint32_t EnvMapEditorLayer::s_MaterialIndex = 0;
 
 
 EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
@@ -79,11 +76,11 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     SetupContextData();
 
     // Create a default material
-    s_DefaultMaterial = CreateDefaultMaterial("MAT_DEF");
+    s_DefaultMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_DEF");
     MaterialLibrary::AddEnvMapMaterial(s_DefaultMaterial->GetUUID(), s_DefaultMaterial);
 
     // Create the light material
-    s_LightMaterial = CreateDefaultMaterial("MAT_LIGHT");
+    s_LightMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_LIGHT");
     // Load Hazel/Renderer/HazelTexture
     s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D("Textures/light_bulb.png");
     s_LightMaterial->GetAlbedoInput().UseTexture = true;
@@ -202,14 +199,7 @@ void EnvMapEditorLayer::Init()
 
 void EnvMapEditorLayer::SetupContextData()
 {
-    // Setup default texture info
-    s_TextureInfoDefault = {};
-    s_TextureInfoDefault.albedo    = "Textures/default_material_albedo.png";
-    s_TextureInfoDefault.normal    = "Textures/PBR/non_reflective/normal.png";
-    s_TextureInfoDefault.metallic  = "Textures/PBR/non_reflective/metallic.png";
-    s_TextureInfoDefault.roughness = "Textures/PBR/non_reflective/roughness.png";
-    s_TextureInfoDefault.emissive  = "Textures/PBR/non_reflective/emissive.png";
-    s_TextureInfoDefault.ao        = "Textures/PBR/non_reflective/ao.png";
+    MaterialLibrary::Init();
 
     m_CameraEntity = CreateEntity("Camera");
     auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
@@ -291,67 +281,6 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
     return meshEntity;
 }
 
-void EnvMapEditorLayer::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity)
-{
-    //  for (auto material : m_EnvMapMaterials) {
-    //      delete material.second;
-    //  }
-    //  
-    //  m_EnvMapMaterials.clear();
-
-    std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
-
-    for (Hazel::Submesh& submesh : submeshes)
-    {
-        std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(mesh, submesh, &entity);
-
-        Log::GetLogger()->debug("EnvMapEditorLayer::LoadEnvMapMaterials materialUUID = '{0}'", materialUUID);
-
-        if (MaterialLibrary::s_EnvMapMaterials.find(materialUUID) != MaterialLibrary::s_EnvMapMaterials.end()) {
-            continue;
-        }
-
-        Hazel::Ref<EnvMapMaterial> envMapMaterial = CreateDefaultMaterial(materialUUID);
-        MaterialLibrary::AddEnvMapMaterial(materialUUID, envMapMaterial);
-    }
-
-    //  // If no submeshes, add a default material for entity
-    //  if (submeshes.empty())
-    //  {
-    //      EnvMapMaterial* envMapMaterial = CreateDefaultMaterial(meshName);
-    //      m_EnvMapMaterials.insert(std::make_pair(meshName, envMapMaterial));
-    //  }
-
-    for (auto& material : MaterialLibrary::s_EnvMapMaterials)
-    {
-        Log::GetLogger()->debug("EnvMapEditorLayer::LoadEnvMapMaterials material name: '{0}' UUID: '{1}'", material.second->GetName(), material.first);
-    }
-}
-
-void EnvMapEditorLayer::AddMaterialFromComponent(Hazel::Entity entity)
-{
-    // If entity contains MaterialComponent, load generic material for the entire entity (all submeshes)
-    if (entity.HasComponent<Hazel::MaterialComponent>())
-    {
-        if (entity.GetComponent<Hazel::MaterialComponent>().Material)
-        {
-            std::string materialName = NewMaterialName();
-            auto material = entity.GetComponent<Hazel::MaterialComponent>().Material;
-            material->SetName(materialName);
-
-            MaterialLibrary::AddEnvMapMaterial(material->GetUUID(), material);
-        }
-    }
-}
-
-std::string EnvMapEditorLayer::NewMaterialName()
-{
-    std::string materialName = "MAT_" + std::to_string(s_MaterialIndex);
-    s_MaterialIndex++;
-
-    return materialName;
-}
-
 void EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh submesh)
 {
     EntitySelection::s_SelectionContext.push_back(submesh);
@@ -363,35 +292,6 @@ void EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh submesh)
 
 void EnvMapEditorLayer::ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop)
 {
-}
-
-Hazel::Ref<EnvMapMaterial> EnvMapEditorLayer::CreateDefaultMaterial(std::string materialName)
-{
-    Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>::Create(materialName);
-
-    TextureInfo textureInfo;
-    if (s_TextureInfo.find(materialName) != s_TextureInfo.end()) {
-        textureInfo = s_TextureInfo.at(materialName);
-    }
-    else {
-        textureInfo = s_TextureInfoDefault;
-    }
-
-    // Load Hazel/Renderer/HazelTexture
-    envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.albedo);
-    envMapMaterial->GetAlbedoInput().UseTexture = true;
-    envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.normal);
-    envMapMaterial->GetNormalInput().UseTexture = true;
-    envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.metallic);
-    envMapMaterial->GetMetalnessInput().UseTexture = true;
-    envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.roughness);
-    envMapMaterial->GetRoughnessInput().UseTexture = true;
-    envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.emissive);
-    envMapMaterial->GetEmissiveInput().UseTexture = true;
-    envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.ao);
-    envMapMaterial->GetAOInput().UseTexture = true;
-
-    return envMapMaterial;
 }
 
 void EnvMapEditorLayer::SetupShaders()
@@ -1455,7 +1355,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
             if (materialClone) {
                 auto envMapMaterialSrc = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
-                Hazel::Ref<EnvMapMaterial> envMapMaterialDst = Hazel::Ref<EnvMapMaterial>::Create(NewMaterialName(), envMapMaterialSrc);
+                Hazel::Ref<EnvMapMaterial> envMapMaterialDst = Hazel::Ref<EnvMapMaterial>::Create(MaterialLibrary::NewMaterialName(), envMapMaterialSrc);
                 MaterialLibrary::AddEnvMapMaterial(envMapMaterialDst->GetUUID(), envMapMaterialDst);
             }
 
@@ -1473,8 +1373,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     {
         if (ImGui::MenuItem("Create a Material"))
         {
-            Hazel::Ref<EnvMapMaterial> envMapMaterial = CreateDefaultMaterial(NewMaterialName());
-            MaterialLibrary::AddEnvMapMaterial(envMapMaterial->GetUUID(), envMapMaterial);
+            MaterialLibrary::AddNewMaterial("");
         }
         ImGui::EndPopup();
     }
@@ -1536,7 +1435,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             entity = &selectedSubmesh.Entity;
             entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponent>().Tag;
             meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
-            submeshUUID = GetSubmeshUUID(entity, selectedSubmesh.Mesh);
+            submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
         }
 
         ImGui::Text("Selected Entity: ");
@@ -1919,24 +1818,6 @@ void EnvMapEditorLayer::RenderHazelGrid()
 
     RendererBasic::EnableTransparency();
     RendererBasic::EnableMSAA();
-}
-
-SubmeshUUID EnvMapEditorLayer::GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh)
-{
-    std::string entityHandle = entity ? std::to_string(entity->GetHandle()) : "0000";
-    SubmeshUUID submeshUUID = "E_" + entityHandle + "_S_" + submesh->MeshName;
-    // Log::GetLogger()->debug("EnvMapEditorLayer::GetSubmeshUUID: '{0}'", submeshUUID);
-    return submeshUUID;
-}
-
-void EnvMapEditorLayer::SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity)
-{
-    for (auto submesh : mesh->GetSubmeshes())
-    {
-        SubmeshUUID submeshUUID = GetSubmeshUUID(&entity, &submesh);
-        MaterialUUID materialUUID = s_DefaultMaterial->GetUUID();
-        MaterialLibrary::AddSubmeshMaterialRelation(submeshUUID, materialUUID);
-    }
 }
 
 void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer)

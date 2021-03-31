@@ -264,7 +264,7 @@ namespace Hazel
 				ImGui::SameLine();
 				ImGui::Text(std::to_string(submeshes[i].MaterialIndex).c_str());
 
-				SubmeshUUID submeshUUID = EnvMapEditorLayer::GetSubmeshUUID(&entity, &submeshes[i]);
+				SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(&entity, &submeshes[i]);
 				std::string materialUUID = "N/A";
 				std::string materialName = "N/A";
 				auto map_it = MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID);
@@ -590,7 +590,7 @@ namespace Hazel
 						Log::GetLogger()->debug("* * * * * SceneHierarchyPanel Material name: '{0}'", materialData->Name);
 					}
 
-					EnvMapEditorLayer::SetDefaultMaterialToSubmeshes(mc.Mesh, entity);
+					MaterialLibrary::SetDefaultMaterialToSubmeshes(mc.Mesh, entity, EnvMapEditorLayer::s_DefaultMaterial);
 				}
 			}
 			ImGui::Columns(1);
@@ -886,9 +886,10 @@ namespace Hazel
 		DrawComponent <MaterialComponent > ("Material", entity, [=](MaterialComponent& mc)
 			{
 				if (!mc.Material) {
-					std::string materialName = EnvMapEditorLayer::NewMaterialName();
-					mc.Material = EnvMapEditorLayer::CreateDefaultMaterial(materialName);
-					EnvMapEditorLayer::AddMaterialFromComponent(entity);
+					mc.Material = MaterialLibrary::AddNewMaterial("")->EnvMapMaterial;
+					// std::string materialName = EnvMapEditorLayer::NewMaterialName();
+					// mc.Material = EnvMapEditorLayer::CreateDefaultMaterial(materialName);
+					MaterialLibrary::AddMaterialFromComponent(entity);
 				}
 
 				ImGuiWrapper::DrawMaterialUI(mc.Material, EnvMapEditorLayer::s_CheckerboardTexture);

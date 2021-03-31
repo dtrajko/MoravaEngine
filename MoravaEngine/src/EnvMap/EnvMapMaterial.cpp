@@ -2,11 +2,12 @@
 
 #include "Core/Util.h"
 #include "EnvMap/EnvMapEditorLayer.h"
+#include "Material/MaterialLibrary.h"
 
 
 EnvMapMaterial::EnvMapMaterial()
 {
-	m_Name = EnvMapEditorLayer::NewMaterialName();
+	m_Name = MaterialLibrary::NewMaterialName();
 	m_UUID = NewMaterialUUID();
 }
 

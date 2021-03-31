@@ -74,13 +74,7 @@ public:
 	Hazel::Entity LoadEntity(std::string fullPath);
 	void ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop);
 
-	static void LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity);
-	static Hazel::Ref<EnvMapMaterial> CreateDefaultMaterial(std::string materialName);
-	static void AddMaterialFromComponent(Hazel::Entity entity);
-	static std::string NewMaterialName();
 	static void AddSubmeshToSelectionContext(SelectedSubmesh submesh);
-	static SubmeshUUID GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh);
-	static void SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity);
 
 	// Setters
 	void SetSkyboxLOD(float LOD);
@@ -91,7 +85,7 @@ public:
 	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
 	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
 	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
-	inline Hazel::Ref < Hazel::HazelTexture2D> GetCheckerboardTexture() { return s_CheckerboardTexture; }
+	inline Hazel::Ref<Hazel::HazelTexture2D> GetCheckerboardTexture() { return s_CheckerboardTexture; }
 	inline Hazel::Ref<Hazel::HazelTextureCube> GetSkyboxTexture() { return m_SkyboxTexture; }
 	Ref<Hazel::Entity> GetMeshEntity();
 	inline float& GetSkyboxExposureFactor() { return m_SkyboxExposureFactor; };
@@ -139,14 +133,10 @@ public:
 	RuntimeCamera* m_RuntimeCamera;
 	Hazel::HazelCamera* m_ActiveCamera;
 
-	static TextureInfo s_TextureInfoDefault;
-	static std::map<std::string, TextureInfo> s_TextureInfo;
 	static SelectionMode s_SelectionMode;
 	static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
 
 	static Hazel::Ref<EnvMapMaterial> s_DefaultMaterial;
-	static uint32_t s_MaterialIndex;
-
 	static Hazel::Ref<EnvMapMaterial> s_LightMaterial;
 
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;

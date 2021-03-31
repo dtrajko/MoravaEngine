@@ -298,8 +298,7 @@ namespace Hazel {
 
 				m_Materials[i] = mi;
 
-				Hazel::Ref<MaterialData> materialData = MaterialLibrary::AddNew();
-				materialData->Name = aiMaterialName.data;
+				Hazel::Ref<MaterialData> materialData = MaterialLibrary::AddNewMaterial(aiMaterialName.data);
 				materialData->Material = mi;
 
 				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
@@ -967,7 +966,7 @@ namespace Hazel {
 			Hazel::Ref<EnvMapMaterial> envMapMaterial = materialComponent.Material;
 		}
 
-		std::string submeshUUID = EnvMapEditorLayer::GetSubmeshUUID(entity, &submesh);
+		std::string submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, &submesh);
 
 		if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
 			materialUUID = MaterialLibrary::s_SubmeshMaterialUUIDs.at(submeshUUID);
