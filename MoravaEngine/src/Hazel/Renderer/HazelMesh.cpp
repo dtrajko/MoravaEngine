@@ -298,8 +298,7 @@ namespace Hazel {
 
 				m_Materials[i] = mi;
 
-				Hazel::Ref<MaterialData> materialData = MaterialLibrary::AddNewMaterial(aiMaterialName.data);
-				materialData->Material = mi;
+				Hazel::Ref<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], &m_Submeshes[i]);
 
 				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
 				aiString aiTexPath;

@@ -29,18 +29,19 @@ Hazel::Ref<MaterialData> MaterialLibrary::AddNewMaterial(std::string name)
         NewMaterialName();
     }
 
-	return CreateMaterialData(name);
+	return CreateMaterialData(name, nullptr);
 }
 
-Hazel::Ref<MaterialData> MaterialLibrary::AddNewMaterial(Hazel::Ref<Hazel::HazelMaterial> material)
+Hazel::Ref<MaterialData> MaterialLibrary::AddNewMaterial(Hazel::Ref<Hazel::HazelMaterial> material, Hazel::Submesh* submesh)
 {
-    return CreateMaterialData(material->GetName());
+    return CreateMaterialData(material->GetName(), submesh);
 }
 
-Hazel::Ref<MaterialData> MaterialLibrary::CreateMaterialData(std::string name)
+Hazel::Ref<MaterialData> MaterialLibrary::CreateMaterialData(std::string name, Hazel::Submesh* submesh)
 {
     Hazel::Ref<MaterialData> materialData = Hazel::Ref<MaterialData>::Create();
     materialData->Name = name;
+    materialData->Submesh = submesh;
     s_MaterialData.push_back(materialData);
 
     Hazel::Ref<EnvMapMaterial> defaultEnvMapMaterial = MaterialLibrary::CreateDefaultMaterial(materialData->Name);
@@ -132,7 +133,14 @@ void MaterialLibrary::RenameMaterial(Hazel::Ref<EnvMapMaterial> envMapMaterial, 
 
 void MaterialLibrary::AddSubmeshMaterialRelation(SubmeshUUID submeshUUID, MaterialUUID materialUUID)
 {
-    s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));
+    if (s_SubmeshMaterialUUIDs.find(submeshUUID) == s_SubmeshMaterialUUIDs.end())
+    {
+        s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));
+    }
+    else {
+        // Do we really want to overwrite the existing submesh/material relation?
+        // s_SubmeshMaterialUUIDs.find(submeshUUID)->second = materialUUID;
+    }
 }
 
 Hazel::Ref<EnvMapMaterial> MaterialLibrary::CreateDefaultMaterial(std::string materialName)
@@ -216,6 +224,39 @@ void MaterialLibrary::SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh>
         SubmeshUUID submeshUUID = GetSubmeshUUID(&entity, &submesh);
         MaterialUUID materialUUID = defaultMaterial->GetUUID();
         MaterialLibrary::AddSubmeshMaterialRelation(submeshUUID, materialUUID);
+    }
+}
+
+/****
+ * The more intelligent version of SetDefaultMaterialToSubmeshes
+ * Instead of just assigning the default material to each submesh, this method tries to detect the correct material and assign to the submesh
+ * If it fails to do so, it loads the default material
+ */
+void MaterialLibrary::SetMaterialsToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, Hazel::Ref<EnvMapMaterial> defaultMaterial)
+{
+    for (auto submesh : mesh->GetSubmeshes())
+    {
+        bool correctMaterialFound = false;
+        // Let's try to detect a correct material from the list of loaded materials in MaterialLibrary
+        for (auto materialData : s_MaterialData)
+        {
+            if (materialData->Submesh != nullptr && materialData->EnvMapMaterial)
+            {
+                if (submesh.MeshName == materialData->Submesh->MeshName)
+                {
+                    SubmeshUUID submeshUUID = GetSubmeshUUID(&entity, &submesh);
+                    MaterialUUID materialUUID = materialData->EnvMapMaterial->GetUUID();
+                    MaterialLibrary::AddSubmeshMaterialRelation(submeshUUID, materialUUID);
+                    correctMaterialFound = true;
+                    break;
+                }
+            }
+        }
+
+        // If we fail to find a correct material for the submesh, fallback to default material
+        if (!correctMaterialFound) {
+            SetDefaultMaterialToSubmeshes(mesh, entity, defaultMaterial);
+        }
     }
 }
 

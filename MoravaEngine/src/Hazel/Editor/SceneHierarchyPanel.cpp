@@ -590,7 +590,8 @@ namespace Hazel
 						Log::GetLogger()->debug("* * * * * SceneHierarchyPanel Material name: '{0}'", materialData->Name);
 					}
 
-					MaterialLibrary::SetDefaultMaterialToSubmeshes(mc.Mesh, entity, EnvMapEditorLayer::s_DefaultMaterial);
+					// MaterialLibrary::SetDefaultMaterialToSubmeshes(mc.Mesh, entity, EnvMapEditorLayer::s_DefaultMaterial);
+					MaterialLibrary::SetMaterialsToSubmeshes(mc.Mesh, entity, EnvMapEditorLayer::s_DefaultMaterial);
 				}
 			}
 			ImGui::Columns(1);
