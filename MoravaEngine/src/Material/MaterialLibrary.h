@@ -15,43 +15,34 @@
 #include <string>
 
 
-enum class MaterialTextureType {
-	Albedo,
-	Normal,
-	Metalness,
-	Roughness,
-	AO,
-	Emissive,
-};
-
 struct MaterialData : public Hazel::RefCounted
 {
 	MaterialUUID UUID;
 	std::string Name;
 	Hazel::Ref<Hazel::HazelMaterial> Material;
 	Hazel::Ref<EnvMapMaterial> EnvMapMaterial;
+
 };
 
-class MaterialLibrary
-{
+class MaterialLibrary {
+
 public:
+
 	static void Init();
 	static Hazel::Ref<MaterialData> AddNewMaterial(std::string name = "");
 	static Hazel::Ref<MaterialData> AddNewMaterial(Hazel::Ref<Hazel::HazelMaterial> material);
 	static void RenameMaterial(Hazel::Ref<EnvMapMaterial> envMapMaterial, std::string newName);
 	static void LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity);
-	static Hazel::Ref<EnvMapMaterial> CreateDefaultEnvMapMaterial(std::string materialName);
+	static Hazel::Ref<EnvMapMaterial> CreateDefaultMaterial(std::string materialName);
 	static void AddEnvMapMaterial(MaterialUUID UUID, Hazel::Ref<EnvMapMaterial> envMapMaterial);
 	static std::string NewMaterialName();
 	static SubmeshUUID GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh);
-	static void SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity);
+	static void SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, Hazel::Ref<EnvMapMaterial> defaultMaterial);
 	static void AddMaterialFromComponent(Hazel::Entity entity);
-	static void AddTextureToEnvMapMaterial(MaterialTextureType textureType, const std::string& texturePath, Hazel::Ref<EnvMapMaterial> envMapMaterial);
-	static MaterialUUID GetSubmeshMaterialUUID(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Submesh& submesh, Hazel::Entity* entity);
 	static void Cleanup();
 
 private:
-	static Hazel::Ref<MaterialData> CreateMaterialData(std::string name);
+	static Hazel::Ref<MaterialData> CreateMaterialData(std::string name = "");
 	static void AddSubmeshMaterialRelation(SubmeshUUID submeshUUID, MaterialUUID materialUUID);
 
 public:
@@ -60,7 +51,6 @@ public:
 	static std::map<SubmeshUUID, MaterialUUID> s_SubmeshMaterialUUIDs;
 	static TextureInfo s_TextureInfoDefault;
 	static std::map<std::string, TextureInfo> s_TextureInfo;
-	static Hazel::Ref<EnvMapMaterial> s_DefaultMaterial;
 	static uint32_t s_MaterialIndex;
 
 };

@@ -126,7 +126,7 @@ private:
 
 	void RenderSkybox();
 	void RenderHazelGrid();
-	void RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh* submesh);
+	void RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh);
 
 public:
 	Hazel::EditorCamera* m_EditorCamera;
@@ -136,6 +136,7 @@ public:
 	static SelectionMode s_SelectionMode;
 	static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
 
+	static Hazel::Ref<EnvMapMaterial> s_DefaultMaterial;
 	static Hazel::Ref<EnvMapMaterial> s_LightMaterial;
 
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;

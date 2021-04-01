@@ -292,11 +292,14 @@ namespace Hazel {
 				auto aiMaterial = scene->mMaterials[i];
 				auto aiMaterialName = aiMaterial->GetName();
 
+				// auto mi = Ref<HazelMaterial>::Create(m_BaseMaterial, aiMaterialName.data);
+
 				auto mi = HazelMaterial::Create(m_MeshShader, aiMaterialName.data);
 
 				m_Materials[i] = mi;
 
-				Hazel::Ref<MaterialData> materialData = MaterialLibrary::AddNewMaterial(mi);
+				Hazel::Ref<MaterialData> materialData = MaterialLibrary::AddNewMaterial(aiMaterialName.data);
+				materialData->Material = mi;
 
 				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
 				aiString aiTexPath;
@@ -339,8 +342,6 @@ namespace Hazel {
 						m_Textures[i] = texture;
 						m_MeshShader->setInt("u_AlbedoTexture", m_Textures[i]->GetID());
 						m_MeshShader->setFloat("u_AlbedoTexToggle", 1.0f);
-
-						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Albedo, texturePath, materialData->EnvMapMaterial);
 					}
 					else
 					{
@@ -380,8 +381,6 @@ namespace Hazel {
 					{
 						m_MeshShader->setInt("u_NormalTexture", texture->GetID());
 						m_MeshShader->setFloat("u_NormalTexToggle", 1.0f);
-
-						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Normal, texturePath, materialData->EnvMapMaterial);
 					}
 					else
 					{
@@ -419,8 +418,6 @@ namespace Hazel {
 						HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
 						m_MeshShader->setInt("u_RoughnessTexture", texture->GetID());
 						m_MeshShader->setFloat("u_RoughnessTexToggle", 1.0f);
-
-						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Roughness, texturePath, materialData->EnvMapMaterial);
 					}
 					else
 					{
@@ -557,8 +554,6 @@ namespace Hazel {
 							{
 								m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
 								m_MeshShader->setFloat("u_MetalnessTexToggle", 1.0f);
-
-								MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Metalness, texturePath, materialData->EnvMapMaterial);
 							}
 							else
 							{
@@ -960,12 +955,38 @@ namespace Hazel {
 		return nullptr;
 	}
 
+	MaterialUUID HazelMesh::GetSubmeshMaterialUUID(Ref<HazelMesh> mesh, Hazel::Submesh& submesh, Entity* entity)
+	{
+		MaterialUUID materialUUID = "";
+
+		EnvMapMaterial* envMapMaterial = nullptr;
+		bool hasMaterialComponent = entity && entity->HasComponent<Hazel::MaterialComponent>();
+		if (hasMaterialComponent) {
+			Hazel::MaterialComponent materialComponent = entity->GetComponent<Hazel::MaterialComponent>();
+			Hazel::Ref<EnvMapMaterial> envMapMaterial = materialComponent.Material;
+		}
+
+		std::string submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, &submesh);
+
+		if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
+			materialUUID = MaterialLibrary::s_SubmeshMaterialUUIDs.at(submeshUUID);
+		}
+		else if (hasMaterialComponent && envMapMaterial) {
+			materialUUID = envMapMaterial->GetUUID();
+		}
+		else {
+			std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));
+			materialUUID = EnvMapMaterial::NewMaterialUUID();
+		}
+
+		return materialUUID;
+	}
+
 	void HazelMesh::DeleteSubmesh(Submesh submesh)
 	{
 		for (auto& iterator = m_Submeshes.cbegin(); iterator != m_Submeshes.cend();)
 		{
-			if (iterator->MeshName == submesh.MeshName)
-			{
+			if (iterator->MeshName == submesh.MeshName) {
 				iterator = m_Submeshes.erase(iterator++);
 				Log::GetLogger()->debug("HazelMesh::DeleteSubmesh erase '{0}'", submesh.MeshName);
 			}
@@ -1072,7 +1093,7 @@ namespace Hazel {
 			}
 
 			Ref<HazelMesh> instance = this;
-			std::string materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(instance, submesh, nullptr);
+			std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(instance, submesh, nullptr);
 
 			if (envMapMaterials.find(materialUUID) != envMapMaterials.end())
 			{
@@ -1126,7 +1147,7 @@ namespace Hazel {
 			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
 		}
 
-		std::string materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(parentMesh, *this, &entity);
+		std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(parentMesh, *this, &entity);
 
 		if (envMapMaterials.find(materialUUID) != envMapMaterials.end())
 		{

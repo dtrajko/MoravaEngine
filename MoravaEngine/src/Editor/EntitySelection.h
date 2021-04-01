@@ -9,7 +9,7 @@
 struct SelectedSubmesh
 {
 	Hazel::Entity Entity;
-	Hazel::Submesh* Submesh;
+	Hazel::Submesh* Mesh;
 	float Distance;
 };
 

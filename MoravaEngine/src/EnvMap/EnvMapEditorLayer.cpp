@@ -22,6 +22,7 @@
 
 SelectionMode EnvMapEditorLayer::s_SelectionMode = SelectionMode::Entity;
 Hazel::Ref<Hazel::HazelTexture2D> EnvMapEditorLayer::s_CheckerboardTexture;
+Hazel::Ref<EnvMapMaterial> EnvMapEditorLayer::s_DefaultMaterial;
 Hazel::Ref<EnvMapMaterial> EnvMapEditorLayer::s_LightMaterial;
 
 
@@ -72,11 +73,14 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_SceneRenderer = new EnvMapSceneRenderer(filepath, m_EditorScene.Raw());
     SetSkybox(m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap);
 
-    MaterialLibrary::Init();
     SetupContextData();
 
+    // Create a default material
+    s_DefaultMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_DEF");
+    MaterialLibrary::AddEnvMapMaterial(s_DefaultMaterial->GetUUID(), s_DefaultMaterial);
+
     // Create the light material
-    s_LightMaterial = MaterialLibrary::CreateDefaultEnvMapMaterial("MAT_LIGHT");
+    s_LightMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_LIGHT");
     // Load Hazel/Renderer/HazelTexture
     s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D("Textures/light_bulb.png");
     s_LightMaterial->GetAlbedoInput().UseTexture = true;
@@ -195,6 +199,8 @@ void EnvMapEditorLayer::Init()
 
 void EnvMapEditorLayer::SetupContextData()
 {
+    MaterialLibrary::Init();
+
     m_CameraEntity = CreateEntity("Camera");
     auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
@@ -230,9 +236,6 @@ void EnvMapEditorLayer::SetupContextData()
     auto& slc = m_SpotLightEntity.AddComponent<Hazel::SpotLightComponent>();
     auto& sltc = m_SpotLightEntity.GetComponent<Hazel::TransformComponent>();
     sltc.Rotation = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
-
-    EntitySelection::s_SelectionContext = std::vector<SelectedSubmesh>();
-    EntitySelection::s_SelectionContext.resize(0);
 }
 
 Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
@@ -282,8 +285,8 @@ void EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh submesh)
 {
     EntitySelection::s_SelectionContext.push_back(submesh);
 
-    if (EntitySelection::s_SelectionContext.size() && !EntitySelection::s_SelectionContext[0].Submesh) {
-        Log::GetLogger()->debug("SelectionContext[0].Mesh->MeshName: '{0}'", EntitySelection::s_SelectionContext[0].Submesh->MeshName);
+    if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Mesh != nullptr) {
+        Log::GetLogger()->debug("SelectionContext[0].Mesh->MeshName: '{0}'", EntitySelection::s_SelectionContext[0].Mesh->MeshName);
     }
 }
 
@@ -648,7 +651,7 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
 
         float snapValues[3] = { snapValue, snapValue, snapValue };
 
-        if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Submesh)
+        if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
         {
             ImGuizmo::Manipulate(
                 glm::value_ptr(m_ActiveCamera->GetViewMatrix()),
@@ -672,7 +675,7 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
         }
         else if (s_SelectionMode == SelectionMode::SubMesh)
         {
-            auto aabb = selectedSubmesh.Submesh->BoundingBox;
+            auto aabb = selectedSubmesh.Mesh->BoundingBox;
 
             glm::vec3 aabbCenterOffset = glm::vec3(
                 aabb.Min.x + ((aabb.Max.x - aabb.Min.x) / 2.0f),
@@ -680,7 +683,7 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
                 aabb.Min.z + ((aabb.Max.z - aabb.Min.z) / 2.0f)
             );
 
-            glm::mat4 submeshTransform = selectedSubmesh.Submesh->Transform;
+            glm::mat4 submeshTransform = selectedSubmesh.Mesh->Transform;
             submeshTransform = glm::translate(submeshTransform, aabbCenterOffset);
             glm::mat4 transformBase = entityTransform * submeshTransform;
 
@@ -697,7 +700,7 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
             {
                 submeshTransform = glm::inverse(entityTransform) * transformBase;
                 submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
-                selectedSubmesh.Submesh->Transform = submeshTransform;
+                selectedSubmesh.Mesh->Transform = submeshTransform;
             }
         }
     }
@@ -1142,13 +1145,13 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
             glm::mat4 entityTransform = tc.GetTransform();
 
-            if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Submesh)
+            if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
             {
                 transformImGui = entityTransform;
             }
             else if (s_SelectionMode == SelectionMode::SubMesh)
             {
-                transformImGui = selectedSubmesh.Submesh->Transform;
+                transformImGui = selectedSubmesh.Mesh->Transform;
             }
 
             glm::vec3 translation, rotationRadians, scale;
@@ -1163,7 +1166,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             {
                 rotationRadians = glm::radians(rotationDegrees);
 
-                if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Submesh)
+                if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
                 {
                     glm::vec3 deltaRotation = rotationRadians - tc.Rotation;
                     tc.Translation = translation;
@@ -1172,7 +1175,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 }
                 else if (s_SelectionMode == SelectionMode::SubMesh)
                 {
-                    selectedSubmesh.Submesh->Transform = Math::CreateTransform(translation, rotationDegrees, scale);
+                    selectedSubmesh.Mesh->Transform = Math::CreateTransform(translation, rotationDegrees, scale);
                 }
             }
         }
@@ -1431,11 +1434,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
             entity = &selectedSubmesh.Entity;
             entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponent>().Tag;
-
-            if (entity->HasComponent<Hazel::MeshComponent>()) {
-                // meshName = (selectedSubmesh.Submesh) ? selectedSubmesh.Submesh->MeshName : "N/A";
-                submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Submesh);
-            }
+            meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
+            submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
         }
 
         ImGui::Text("Selected Entity: ");
@@ -2008,7 +2008,7 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
             // TODO: Handle mesh being deleted, etc
             if (EntitySelection::s_SelectionContext.size()) {
-                m_CurrentlySelectedTransform = &EntitySelection::s_SelectionContext[0].Submesh->Transform;
+                m_CurrentlySelectedTransform = &EntitySelection::s_SelectionContext[0].Mesh->Transform;
                 OnSelected(EntitySelection::s_SelectionContext[0]);
             }
             else {
@@ -2142,11 +2142,11 @@ void EnvMapEditorLayer::GeometryPassTemporary()
                 Hazel::Ref<EnvMapMaterial> envMapMaterial = nullptr;
                 std::string materialUUID;
 
-                for (auto submesh : meshComponent.Mesh->GetSubmeshes())
+                for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
                 {
-                    materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
+                    materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
 
-                    RenderOutline(m_ShaderOutline, entity, entityTransform, &submesh);
+                    RenderOutline(m_ShaderOutline, entity, entityTransform, submesh);
 
                     // Render Submesh
                     // load submesh materials for each specific submesh from the s_EnvMapMaterials list
@@ -2174,14 +2174,14 @@ void EnvMapEditorLayer::GeometryPassTemporary()
         if (EntitySelection::s_SelectionContext.size()) {
             for (auto selection : EntitySelection::s_SelectionContext)
             {
-                if (selection.Submesh) {
+                if (selection.Mesh) {
                     Hazel::Entity meshEntity = selection.Entity;
                     glm::mat4 transform = glm::mat4(1.0f);
                     if (meshEntity.HasComponent<Hazel::TransformComponent>()) {
                         transform = meshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
                     }
                     glm::vec4 color = s_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
-                    Hazel::HazelRenderer::DrawAABB(selection.Submesh->BoundingBox, transform * selection.Submesh->Transform, color);
+                    Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
                 }
             }
         }
@@ -2207,7 +2207,7 @@ std::vector<glm::mat4> EnvMapEditorLayer::CalculateLightTransform(glm::mat4 ligh
     return lightMatrices;
 }
 
-void EnvMapEditorLayer::RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh* submesh)
+void EnvMapEditorLayer::RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh)
 {
     if (!m_DisplayOutline) return;
 
@@ -2217,8 +2217,8 @@ void EnvMapEditorLayer::RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity e
     if (EntitySelection::s_SelectionContext.size()) {
         for (auto selection : EntitySelection::s_SelectionContext)
         {
-            if (selection.Submesh && submesh == selection.Submesh) {
-                submesh->RenderOutline(meshComponent.Mesh, shader, entityTransform, entity);
+            if (selection.Mesh && &submesh == selection.Mesh) {
+                submesh.RenderOutline(meshComponent.Mesh, shader, entityTransform, entity);
             }
         }
     }

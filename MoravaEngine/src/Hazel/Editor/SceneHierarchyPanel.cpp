@@ -215,7 +215,7 @@ namespace Hazel
 			bool submeshSelected = false;
 			for (auto selection : EntitySelection::s_SelectionContext)
 			{
-				if (selection.Submesh && selection.Submesh->MeshName == submeshes[i].MeshName)
+				if (selection.Mesh && selection.Mesh->MeshName == submeshes[i].MeshName)
 				{
 					submeshSelected = true;
 					break;
@@ -590,7 +590,7 @@ namespace Hazel
 						Log::GetLogger()->debug("* * * * * SceneHierarchyPanel Material name: '{0}'", materialData->Name);
 					}
 
-					MaterialLibrary::SetDefaultMaterialToSubmeshes(mc.Mesh, entity);
+					MaterialLibrary::SetDefaultMaterialToSubmeshes(mc.Mesh, entity, EnvMapEditorLayer::s_DefaultMaterial);
 				}
 			}
 			ImGui::Columns(1);
@@ -888,7 +888,7 @@ namespace Hazel
 				if (!mc.Material) {
 					mc.Material = MaterialLibrary::AddNewMaterial("")->EnvMapMaterial;
 					// std::string materialName = EnvMapEditorLayer::NewMaterialName();
-					// mc.Material = EnvMapEditorLayer::CreateDefaultEnvMapMaterial(materialName);
+					// mc.Material = EnvMapEditorLayer::CreateDefaultMaterial(materialName);
 					MaterialLibrary::AddMaterialFromComponent(entity);
 				}
 
