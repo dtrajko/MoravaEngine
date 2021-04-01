@@ -61,6 +61,37 @@ void MaterialLibrary::AddEnvMapMaterial(MaterialUUID UUID, Hazel::Ref<EnvMapMate
 	s_EnvMapMaterials.insert(std::make_pair(UUID, envMapMaterial));
 }
 
+void MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType textureType, const std::string& texturePath, Hazel::Ref<EnvMapMaterial> envMapMaterial)
+{
+    switch (textureType)
+    {
+    case MaterialTextureType::Albedo:
+        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetAlbedoInput().UseTexture = true;
+        break;
+    case MaterialTextureType::Normal:
+        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetNormalInput().UseTexture = true;
+        break;
+    case MaterialTextureType::Metalness:
+        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetMetalnessInput().UseTexture = true;
+        break;
+    case MaterialTextureType::Roughness:
+        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetRoughnessInput().UseTexture = true;
+        break;
+    case MaterialTextureType::AO:
+        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetAOInput().UseTexture = true;
+        break;
+    case MaterialTextureType::Emissive:
+        envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetEmissiveInput().UseTexture = true;
+        break;
+    }
+}
+
 void MaterialLibrary::Cleanup()
 {
 	s_EnvMapMaterials.clear();

@@ -342,6 +342,8 @@ namespace Hazel {
 						m_Textures[i] = texture;
 						m_MeshShader->setInt("u_AlbedoTexture", m_Textures[i]->GetID());
 						m_MeshShader->setFloat("u_AlbedoTexToggle", 1.0f);
+
+						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Albedo, texturePath, materialData->EnvMapMaterial);
 					}
 					else
 					{
@@ -381,6 +383,8 @@ namespace Hazel {
 					{
 						m_MeshShader->setInt("u_NormalTexture", texture->GetID());
 						m_MeshShader->setFloat("u_NormalTexToggle", 1.0f);
+
+						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Normal, texturePath, materialData->EnvMapMaterial);
 					}
 					else
 					{
@@ -418,6 +422,8 @@ namespace Hazel {
 						HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
 						m_MeshShader->setInt("u_RoughnessTexture", texture->GetID());
 						m_MeshShader->setFloat("u_RoughnessTexToggle", 1.0f);
+
+						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Roughness, texturePath, materialData->EnvMapMaterial);
 					}
 					else
 					{
@@ -554,6 +560,8 @@ namespace Hazel {
 							{
 								m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
 								m_MeshShader->setFloat("u_MetalnessTexToggle", 1.0f);
+
+								MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Metalness, texturePath, materialData->EnvMapMaterial);
 							}
 							else
 							{

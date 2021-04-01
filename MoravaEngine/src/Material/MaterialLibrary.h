@@ -15,6 +15,15 @@
 #include <string>
 
 
+enum class MaterialTextureType {
+	Albedo,
+	Normal,
+	Metalness,
+	Roughness,
+	AO,
+	Emissive,
+};
+
 struct MaterialData : public Hazel::RefCounted
 {
 	MaterialUUID UUID;
@@ -39,6 +48,7 @@ public:
 	static SubmeshUUID GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh);
 	static void SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, Hazel::Ref<EnvMapMaterial> defaultMaterial);
 	static void AddMaterialFromComponent(Hazel::Entity entity);
+	static void AddTextureToEnvMapMaterial(MaterialTextureType textureType, const std::string& texturePath, Hazel::Ref<EnvMapMaterial> envMapMaterial);
 	static void Cleanup();
 
 private:
