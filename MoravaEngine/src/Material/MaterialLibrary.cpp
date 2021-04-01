@@ -40,7 +40,20 @@ Hazel::Ref<MaterialData> MaterialLibrary::AddNewMaterial(Hazel::Ref<Hazel::Hazel
 Hazel::Ref<MaterialData> MaterialLibrary::CreateMaterialData(std::string name, Hazel::Submesh* submesh)
 {
     Hazel::Ref<MaterialData> materialData = Hazel::Ref<MaterialData>::Create();
-    materialData->Name = name;
+
+    // If material is "DefaultMaterial", try to assign more meaningful name from submesh info
+    if ((
+        name == "DefaultMaterial" ||
+        name == "Material" ||
+        name == ""
+        ) && submesh != nullptr)
+    {
+        materialData->Name = Util::SpaceToUnderscore(submesh->NodeName) + "__" + Util::SpaceToUnderscore(submesh->MeshName);
+    }
+    else {
+        materialData->Name = name;
+    }
+
     materialData->Submesh = submesh;
     s_MaterialData.push_back(materialData);
 

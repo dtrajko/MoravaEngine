@@ -298,7 +298,12 @@ namespace Hazel {
 
 				m_Materials[i] = mi;
 
-				Hazel::Ref<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], &m_Submeshes[i]);
+				Submesh* submeshPtr = nullptr;
+				if (i < m_Submeshes.size()) {
+					submeshPtr = &m_Submeshes[i];
+				}
+
+				Hazel::Ref<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
 
 				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
 				aiString aiTexPath;
@@ -629,23 +634,20 @@ namespace Hazel {
 
 	void HazelMesh::OnUpdate(Timestep ts, bool debug)
 	{
-		m_WorldTime += ts;
+		ts = Timer::Get()->GetDeltaTime();
 
-		if (m_IsAnimated && m_Scene->mAnimations && m_AnimationPlaying)
+		if (m_IsAnimated)
 		{
+			if (m_AnimationPlaying)
+			{
+				m_WorldTime += ts;
 
-			float ticksPerSecond = (float)(m_Scene->mAnimations[0]->mTicksPerSecond != 0 ? m_Scene->mAnimations[0]->mTicksPerSecond : 25.0f) * m_TimeMultiplier;
-			m_AnimationTime += ts * ticksPerSecond;
-			m_AnimationTime = fmod(m_AnimationTime, (float)m_Scene->mAnimations[0]->mDuration);
+				float ticksPerSecond = (float)(m_Scene->mAnimations[0]->mTicksPerSecond != 0 ? m_Scene->mAnimations[0]->mTicksPerSecond : 25.0f) * m_TimeMultiplier;
+				m_AnimationTime += ts * ticksPerSecond;
+				m_AnimationTime = fmod(m_AnimationTime, (float)m_Scene->mAnimations[0]->mDuration);
+			}
 
-			//	if (debug) {
-			//		Log::GetLogger()->info("HazelMesh::OnUpdate ts: {0} m_AnimationTime: {1} mDuration {2} ticksPerSecond {3}",
-			//			ts, m_AnimationTime, m_Scene->mAnimations[0]->mDuration, ticksPerSecond);
-			//	}
-		}
-
-		// TODO: We only need to recalc bones if rendering has been requested at the current animation frame
-		if (m_IsAnimated) {
+			// TODO: We only need to recalc bones if rendering has been requested at the current animation frame
 			BoneTransform(m_AnimationTime);
 		}
 	}

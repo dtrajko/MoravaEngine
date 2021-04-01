@@ -121,3 +121,13 @@ void Util::OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severi
 	}
 
 }
+
+std::string Util::SpaceToUnderscore(std::string text)
+{
+	for (std::string::iterator it = text.begin(); it != text.end(); ++it) {
+		if (*it == ' ') {
+			*it = '_';
+		}
+	}
+	return text;
+}
