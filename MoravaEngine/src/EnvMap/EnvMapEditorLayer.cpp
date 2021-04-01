@@ -515,7 +515,8 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, floa
     {
         Hazel::Entity entity{ entt, m_EditorScene.Raw() };
         Hazel::Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
-        if (mesh) {
+        if (mesh)
+        {
             mesh->OnUpdate(timestep, false);
         }
     }
@@ -546,6 +547,7 @@ void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, flo
     {
         Hazel::Entity entity{ entt, m_EditorScene.Raw() };
         Hazel::Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+
         mesh->OnUpdate(timestep, false);
     }
 

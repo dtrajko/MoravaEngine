@@ -634,8 +634,6 @@ namespace Hazel {
 
 	void HazelMesh::OnUpdate(Timestep ts, bool debug)
 	{
-		ts = Timer::Get()->GetDeltaTime();
-
 		if (m_IsAnimated)
 		{
 			if (m_AnimationPlaying)
