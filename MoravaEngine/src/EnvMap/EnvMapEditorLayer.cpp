@@ -2144,7 +2144,7 @@ void EnvMapEditorLayer::GeometryPassTemporary()
 
                 for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
                 {
-                    materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
+                    materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
 
                     RenderOutline(m_ShaderOutline, entity, entityTransform, submesh);
 

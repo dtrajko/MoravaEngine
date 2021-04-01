@@ -963,33 +963,6 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	MaterialUUID HazelMesh::GetSubmeshMaterialUUID(Ref<HazelMesh> mesh, Hazel::Submesh& submesh, Entity* entity)
-	{
-		MaterialUUID materialUUID = "";
-
-		EnvMapMaterial* envMapMaterial = nullptr;
-		bool hasMaterialComponent = entity && entity->HasComponent<Hazel::MaterialComponent>();
-		if (hasMaterialComponent) {
-			Hazel::MaterialComponent materialComponent = entity->GetComponent<Hazel::MaterialComponent>();
-			Hazel::Ref<EnvMapMaterial> envMapMaterial = materialComponent.Material;
-		}
-
-		std::string submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, &submesh);
-
-		if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
-			materialUUID = MaterialLibrary::s_SubmeshMaterialUUIDs.at(submeshUUID);
-		}
-		else if (hasMaterialComponent && envMapMaterial) {
-			materialUUID = envMapMaterial->GetUUID();
-		}
-		else {
-			std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));
-			materialUUID = EnvMapMaterial::NewMaterialUUID();
-		}
-
-		return materialUUID;
-	}
-
 	void HazelMesh::DeleteSubmesh(Submesh submesh)
 	{
 		for (auto& iterator = m_Submeshes.cbegin(); iterator != m_Submeshes.cend();)
@@ -1101,7 +1074,7 @@ namespace Hazel {
 			}
 
 			Ref<HazelMesh> instance = this;
-			std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(instance, submesh, nullptr);
+			std::string materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(instance, submesh, nullptr);
 
 			if (envMapMaterials.find(materialUUID) != envMapMaterials.end())
 			{
@@ -1155,7 +1128,7 @@ namespace Hazel {
 			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
 		}
 
-		std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(parentMesh, *this, &entity);
+		std::string materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(parentMesh, *this, &entity);
 
 		if (envMapMaterials.find(materialUUID) != envMapMaterials.end())
 		{

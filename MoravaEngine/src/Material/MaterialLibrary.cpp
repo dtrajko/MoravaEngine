@@ -176,7 +176,7 @@ void MaterialLibrary::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Haz
 
     for (Hazel::Submesh& submesh : submeshes)
     {
-        std::string materialUUID = Hazel::HazelMesh::GetSubmeshMaterialUUID(mesh, submesh, &entity);
+        std::string materialUUID = GetSubmeshMaterialUUID(mesh, submesh, &entity);
 
         Log::GetLogger()->debug("EnvMapEditorLayer::LoadEnvMapMaterials materialUUID = '{0}'", materialUUID);
 
@@ -239,4 +239,31 @@ void MaterialLibrary::AddMaterialFromComponent(Hazel::Entity entity)
             material->SetName(newMaterialData->Name);
         }
     }
+}
+
+MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Submesh& submesh, Hazel::Entity* entity)
+{
+    MaterialUUID materialUUID = "";
+
+    EnvMapMaterial* envMapMaterial = nullptr;
+    bool hasMaterialComponent = entity && entity->HasComponent<Hazel::MaterialComponent>();
+    if (hasMaterialComponent) {
+        Hazel::MaterialComponent materialComponent = entity->GetComponent<Hazel::MaterialComponent>();
+        Hazel::Ref<EnvMapMaterial> envMapMaterial = materialComponent.Material;
+    }
+
+    std::string submeshUUID = GetSubmeshUUID(entity, &submesh);
+
+    if (s_SubmeshMaterialUUIDs.find(submeshUUID) != s_SubmeshMaterialUUIDs.end()) {
+        materialUUID = s_SubmeshMaterialUUIDs.at(submeshUUID);
+    }
+    else if (hasMaterialComponent && envMapMaterial) {
+        materialUUID = envMapMaterial->GetUUID();
+    }
+    else {
+        std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));
+        materialUUID = EnvMapMaterial::NewMaterialUUID();
+    }
+
+    return materialUUID;
 }
