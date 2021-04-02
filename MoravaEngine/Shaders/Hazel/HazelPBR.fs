@@ -553,5 +553,5 @@ void main()
 
 	color = vec4(lightContribution + iblContribution, 1.0);
 	color.rgb += m_Params.Emissive;
-	color.rgb *= u_Exposure; // originally used in Shaders/Hazel/SceneComposite
+	color.rgb *= u_Exposure; // originally used in Shaders/Hazel/SceneComposite	
 }
