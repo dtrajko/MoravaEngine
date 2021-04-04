@@ -112,7 +112,7 @@ namespace Hazel {
 		ScriptEngine::OnScriptComponentDestroyed(sceneID, entityID);
 	}
 
-	HazelScene::HazelScene(const std::string& debugName)
+	HazelScene::HazelScene(const std::string& debugName, bool isEditorScene)
 		: m_DebugName(debugName)
 	{
 		m_Registry.on_construct<ScriptComponent>().connect<&OnScriptComponentConstruct>();

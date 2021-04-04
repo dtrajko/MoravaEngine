@@ -32,10 +32,8 @@ namespace Hazel {
 
 	class HazelScene : public RefCounted
 	{
-
 	public:
-		HazelScene() = default;
-		HazelScene(const std::string& debugName);
+		HazelScene(const std::string& debugName = "Scene", bool isEditorScene = false);
 		~HazelScene();
 
 		void Init();

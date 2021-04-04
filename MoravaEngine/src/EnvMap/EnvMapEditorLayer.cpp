@@ -216,7 +216,7 @@ void EnvMapEditorLayer::SetupContextData()
     Log::GetLogger()->debug("m_CameraEntity UUID: {0}", m_CameraEntity.GetUUID());
 
     auto mapGenerator = CreateEntity("Map Generator");
-    mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
+    // mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
 
     // Hazel::HazelMesh* meshQuad = new Hazel::HazelMesh("Models/Primitives/quad.obj", m_ShaderHazelPBR, nullptr, false);
 
