@@ -153,6 +153,8 @@
     <ClCompile Include="src\Hazel\Core\Timestep.cpp" />
     <ClCompile Include="src\Hazel\Core\UUID.cpp" />
     <ClCompile Include="src\Hazel\Editor\SceneHierarchyPanel.cpp" />
+    <ClCompile Include="src\Hazel\Physics\Physics.cpp" />
+    <ClCompile Include="src\Hazel\Physics\PhysicsActor.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLFramebuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLImage.cpp" />
@@ -251,7 +253,7 @@
     <ClCompile Include="src\Particle\ParticleSystemCherno.cpp" />
     <ClCompile Include="src\Particle\ParticleSystemThinMatrix.cpp" />
     <ClCompile Include="src\Particle\ParticleTexture.cpp" />
-    <ClCompile Include="src\Physics\Physics.cpp" />
+    <ClCompile Include="src\Physics\SpartanPhysics.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandPool.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanDescriptorSet.cpp" />
@@ -412,6 +414,8 @@
     <ClInclude Include="src\Hazel\Events\KeyEvent.h" />
     <ClInclude Include="src\Hazel\Events\MouseEvent.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGui.h" />
+    <ClInclude Include="src\Hazel\Physics\Physics.h" />
+    <ClInclude Include="src\Hazel\Physics\PhysicsActor.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLFramebuffer.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLImage.h" />
@@ -518,7 +522,7 @@
     <ClInclude Include="src\Particle\ParticleSystemThinMatrix.h" />
     <ClInclude Include="src\Particle\ParticleTexture.h" />
     <ClInclude Include="src\PerlinNoise\PerlinNoise.hpp" />
-    <ClInclude Include="src\Physics\Physics.h" />
+    <ClInclude Include="src\Physics\SpartanPhysics.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanCommandBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanCommandPool.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanDescriptorSet.h" />

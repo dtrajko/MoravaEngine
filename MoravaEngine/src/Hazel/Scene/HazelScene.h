@@ -70,8 +70,8 @@ namespace Hazel {
 
 		void SetSkybox(const Ref<HazelTextureCube>& skybox);
 
-		inline void SetSkyboxLOD(float LOD) { m_SkyboxLOD = LOD; }
-		float& GetSkyboxLOD() { return m_SkyboxLOD; }
+		inline void SetSkyboxLod(float LOD) { m_SkyboxLod = LOD; }
+		float& GetSkyboxLod() { return m_SkyboxLod; }
 
 		Entity CreateEntity(const std::string& name = "");
 		Entity CreateEntity(const std::string& name, Ref<HazelScene> scene);
@@ -130,7 +130,7 @@ namespace Hazel {
 
 		Entity* m_PhysicsBodyEntityBuffer = nullptr;
 
-		float m_SkyboxLOD = 1.0f;
+		float m_SkyboxLod = 1.0f;
 		bool m_IsPlaying = false;
 
 		std::string m_DebugName;

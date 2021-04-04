@@ -42,11 +42,11 @@ namespace Spartan
     class Renderer;
     class PhysicsDebugDraw;
 
-    class Physics
+    class SpartanPhysics
     {
     public:
-        Physics();
-        ~Physics();
+        SpartanPhysics();
+        ~SpartanPhysics();
 
         //= Subsystem =======================
         bool Initialize();

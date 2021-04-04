@@ -32,6 +32,11 @@ namespace Hazel {
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
+
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ShadowMap.glsl");
+
 		}
 
 		// SceneRenderer::Init(); // TODO

@@ -60,9 +60,6 @@
     <ClCompile Include="src\Player\PlayerController.cpp">
       <Filter>Player</Filter>
     </ClCompile>
-    <ClCompile Include="src\Physics\Physics.cpp">
-      <Filter>Physics</Filter>
-    </ClCompile>
     <ClCompile Include="src\Renderer\Renderer.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
@@ -699,6 +696,15 @@
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanTexture.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\Physics\SpartanPhysics.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\Physics.cpp">
+      <Filter>Hazel\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\PhysicsActor.cpp">
+      <Filter>Hazel\Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -773,9 +779,6 @@
     </ClInclude>
     <ClInclude Include="src\Player\PlayerController.h">
       <Filter>Player</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Physics\Physics.h">
-      <Filter>Physics</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\Renderer.h">
       <Filter>Renderer</Filter>
@@ -1491,6 +1494,15 @@
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanTexture.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="src\Physics\SpartanPhysics.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\Physics.h">
+      <Filter>Hazel\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\PhysicsActor.h">
+      <Filter>Hazel\Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1648,6 +1660,9 @@
     </Filter>
     <Filter Include="Platform\Vulkan">
       <UniqueIdentifier>{f2f242b6-2ea7-4121-8530-370abb9fd364}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Physics">
+      <UniqueIdentifier>{a159bf0c-5951-4118-8982-d832c351dc77}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -2,9 +2,10 @@
 #include "Components.h"
 #include "Entity.h"
 #include "ScriptableEntity.h"
-#include "../Renderer/HazelMesh.h"
-#include "../Renderer/SceneRenderer.h"
-#include "../Script/ScriptEngine.h"
+#include "Hazel/Renderer/HazelMesh.h"
+#include "Hazel/Renderer/HazelRenderer.h"
+#include "Hazel/Renderer/SceneRenderer.h"
+#include "Hazel/Script/ScriptEngine.h"
 
 #include "Core/Math.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
@@ -154,11 +155,16 @@ namespace Hazel {
 
 	void HazelScene::Init()
 	{
-		Log::GetLogger()->error("HazelScene::Init method not implemented yet!");
+		if (RendererBasic::GetSpirVEnabled()) {
+			auto skyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox"); // Spir-V method
+			m_SkyboxMaterial = HazelMaterial::Create(skyboxShader);
+		}
+		else {
+			auto skyboxShader = Shader::Create("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
+			m_SkyboxMaterial = HazelMaterial::Create(skyboxShader);
+		}
 
-		// auto skyboxShader = Shader::Create("assets/shaders/Skybox.glsl");
-		// m_SkyboxMaterial = HazelMaterial::Create(Material::Create(skyboxShader));
-		// m_SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, false);
+		m_SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
 	}
 
 	// Merge OnUpdate/Render into one function?
@@ -277,6 +283,11 @@ namespace Hazel {
 
 	void HazelScene::OnRenderEditor(Timestep ts, const EditorCamera& editorCamera)
 	{
+		/////////////////////////////////////////////////////////////////////
+		// RENDER 3D SCENE
+		/////////////////////////////////////////////////////////////////////
+
+		// m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
 	}
 
 	void HazelScene::SetEnvironment(const Environment& environment)
@@ -432,7 +443,7 @@ namespace Hazel {
 		target->m_Environment = m_Environment;
 		target->m_SkyboxTexture = m_SkyboxTexture;
 		target->m_SkyboxMaterial = m_SkyboxMaterial;
-		target->m_SkyboxLOD = m_SkyboxLOD;
+		target->m_SkyboxLod = m_SkyboxLod;
 
 		std::unordered_map<UUID, entt::entity> enttMap;
 		auto idComponents = m_Registry.view<IDComponent>();

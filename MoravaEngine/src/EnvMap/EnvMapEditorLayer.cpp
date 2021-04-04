@@ -68,7 +68,7 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_ActiveCamera = m_RuntimeCamera; // m_RuntimeCamera m_EditorCamera;
 
     m_EditorScene = Hazel::Ref<Hazel::HazelScene>::Create();
-    m_EditorScene->SetSkyboxLOD(0.1f);
+    m_EditorScene->SetSkyboxLod(0.1f);
 
     m_SceneRenderer = new EnvMapSceneRenderer(filepath, m_EditorScene.Raw());
     SetSkybox(m_SceneRenderer->s_Data.SceneData.SceneEnvironment.RadianceMap);
@@ -338,7 +338,7 @@ void EnvMapEditorLayer::UpdateUniforms()
     /**** BEGIN Shaders/Hazel/Skybox ****/
     m_SceneRenderer->GetShaderSkybox()->Bind();
     m_SceneRenderer->GetShaderSkybox()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    m_SceneRenderer->GetShaderSkybox()->setFloat("u_TextureLod", m_EditorScene->GetSkyboxLOD());
+    m_SceneRenderer->GetShaderSkybox()->setFloat("u_TextureLod", m_EditorScene->GetSkyboxLod());
     // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
     m_SceneRenderer->GetShaderSkybox()->setFloat("u_Exposure", m_ActiveCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
     /**** END Shaders/Hazel/Skybox ****/
@@ -749,7 +749,7 @@ Ref<Hazel::Entity> EnvMapEditorLayer::GetMeshEntity()
 
 float& EnvMapEditorLayer::GetSkyboxLOD()
 {
-    return m_EditorScene->GetSkyboxLOD();
+    return m_EditorScene->GetSkyboxLod();
 }
 
 void EnvMapEditorLayer::SetViewportBounds(glm::vec2* viewportBounds)
@@ -760,7 +760,7 @@ void EnvMapEditorLayer::SetViewportBounds(glm::vec2* viewportBounds)
 
 void EnvMapEditorLayer::SetSkyboxLOD(float LOD)
 {
-    m_EditorScene->SetSkyboxLOD(LOD);
+    m_EditorScene->SetSkyboxLod(LOD);
 }
 
 Hazel::Ref<Shader> EnvMapEditorLayer::GetShaderPBR_Anim()
@@ -1796,7 +1796,7 @@ void EnvMapEditorLayer::RenderSkybox()
     m_SceneRenderer->GetShaderSkybox()->setMat4("u_InverseVP", glm::inverse(viewProjection));
 
     m_SceneRenderer->GetShaderSkybox()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    m_SceneRenderer->GetShaderSkybox()->setFloat("u_TextureLod", m_EditorScene->GetSkyboxLOD());
+    m_SceneRenderer->GetShaderSkybox()->setFloat("u_TextureLod", m_EditorScene->GetSkyboxLod());
     m_SceneRenderer->GetShaderSkybox()->setFloat("u_Exposure", m_ActiveCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
 
     m_SkyboxCube->Render();

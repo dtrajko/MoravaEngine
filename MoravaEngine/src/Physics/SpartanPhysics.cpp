@@ -20,7 +20,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 //= INCLUDES =====================
-#include "Physics.h"
+#include "SpartanPhysics.h"
 #include "BulletCollision/BroadphaseCollision/btDbvtBroadphase.h"
 #include "BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h"
 //================================
@@ -29,7 +29,7 @@ namespace Spartan
 {
     static const bool m_soft_body_support = true;
 
-    Physics::Physics()
+    SpartanPhysics::SpartanPhysics()
     {
         m_broadphase        = new btDbvtBroadphase();
         m_constraint_solver = new btSequentialImpulseConstraintSolver();
@@ -69,7 +69,7 @@ namespace Spartan
         // m_world->getSolverInfo().m_numIterations    = m_max_solve_iterations;
     }
 
-    Physics::~Physics()
+    SpartanPhysics::~SpartanPhysics()
     {
         // sp_ptr_delete(m_world);
         // sp_ptr_delete(m_constraint_solver);
@@ -80,7 +80,7 @@ namespace Spartan
         // sp_ptr_delete(m_debug_draw);
     }
 
-    bool Physics::Initialize()
+    bool SpartanPhysics::Initialize()
     {
         // Enabled debug drawing
         {
@@ -95,7 +95,7 @@ namespace Spartan
         return true;
     }
 
-    void Physics::Tick(float delta_time_sec)
+    void SpartanPhysics::Tick(float delta_time_sec)
     {
         if (!m_world)
             return;
@@ -131,7 +131,7 @@ namespace Spartan
         m_simulating = false;
     }
 
-    void Physics::AddBody(btRigidBody* body) const
+    void SpartanPhysics::AddBody(btRigidBody* body) const
     {
         if (!m_world)
             return;
@@ -139,7 +139,7 @@ namespace Spartan
         // m_world->addRigidBody(body);
     }
 
-    void Physics::RemoveBody(btRigidBody*& body) const
+    void SpartanPhysics::RemoveBody(btRigidBody*& body) const
     {
         if (!m_world)
             return;
@@ -149,7 +149,7 @@ namespace Spartan
         // sp_ptr_delete(body);
     }
 
-    void Physics::AddConstraint(btTypedConstraint* constraint, bool collision_with_linked_body /*= true*/) const
+    void SpartanPhysics::AddConstraint(btTypedConstraint* constraint, bool collision_with_linked_body /*= true*/) const
     {
         if (!m_world)
             return;
@@ -157,7 +157,7 @@ namespace Spartan
         // m_world->addConstraint(constraint, !collision_with_linked_body);
     }
 
-    void Physics::RemoveConstraint(btTypedConstraint*& constraint) const
+    void SpartanPhysics::RemoveConstraint(btTypedConstraint*& constraint) const
     {
         if (!m_world)
             return;
@@ -166,7 +166,7 @@ namespace Spartan
         // sp_ptr_delete(constraint);
     }
 
-    void Physics::AddBody(btSoftBody* body) const
+    void SpartanPhysics::AddBody(btSoftBody* body) const
     {
         if (!m_world)
             return;
@@ -177,7 +177,7 @@ namespace Spartan
         //  }
     }
 
-    void Physics::RemoveBody(btSoftBody*& body) const
+    void SpartanPhysics::RemoveBody(btSoftBody*& body) const
     {
         //  if (btSoftRigidDynamicsWorld* world = static_cast<btSoftRigidDynamicsWorld*>(m_world))
         //  {
@@ -186,7 +186,7 @@ namespace Spartan
         //  }
     }
 
-    glm::vec3 Physics::GetGravity() const
+    glm::vec3 SpartanPhysics::GetGravity() const
     {
         // auto gravity = m_world->getGravity();
         //  if (!gravity)
