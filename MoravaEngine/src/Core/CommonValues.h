@@ -26,6 +26,10 @@
 const float numPI = 3.14159265358979323846f;
 const float toRadians = numPI / 180.0f;
 
+#ifndef M_PI
+#define M_PI numPI
+#endif
+
 const int MAX_POINT_LIGHTS = 4;
 const int MAX_SPOT_LIGHTS = 4;
 

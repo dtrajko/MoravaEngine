@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../Core/Ref.h"
-#include "../Core/UUID.h"
-#include "../Renderer/EditorCamera.h"
-#include "../Renderer/HazelMaterial.h"
-#include "../Renderer/HazelTexture.h"
-#include "../Scene/Entity.h"
-#include "../Scene/SceneCamera.h"
+#include "Hazel/Core/Ref.h"
+#include "Hazel/Core/UUID.h"
+#include "Hazel/Editor/EditorCamera.h"
+#include "Hazel/Renderer/HazelMaterial.h"
+#include "Hazel/Renderer/HazelTexture.h"
+#include "Hazel/Scene/Entity.h"
+#include "Hazel/Scene/SceneCamera.h"
 
 #include "Shader/Shader.h"
 

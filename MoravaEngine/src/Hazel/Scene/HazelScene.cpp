@@ -161,7 +161,7 @@ namespace Hazel {
 		}
 		else {
 			auto skyboxShader = Shader::Create("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
-			m_SkyboxMaterial = HazelMaterial::Create(skyboxShader);
+			m_SkyboxMaterial = Material::Create(skyboxShader);
 		}
 
 		m_SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);

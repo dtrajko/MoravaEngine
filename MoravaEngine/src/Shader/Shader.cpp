@@ -306,7 +306,11 @@ const std::string& Shader::GetName() const
 
 const std::unordered_map<std::string, Hazel::ShaderBuffer>& Shader::GetShaderBuffers() const
 {
-	return std::unordered_map<std::string, Hazel::ShaderBuffer>();
+	// OpenGLMaterial::FindUniformDeclaration requires at least 2 shader buffers
+	std::unordered_map<std::string, Hazel::ShaderBuffer> shaderBuffers = std::unordered_map<std::string, Hazel::ShaderBuffer>();
+	shaderBuffers.insert(std::make_pair("One", Hazel::ShaderBuffer()));
+	shaderBuffers.insert(std::make_pair("Two", Hazel::ShaderBuffer()));
+	return shaderBuffers;
 }
 
 const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& Shader::GetResources() const

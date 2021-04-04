@@ -1,4 +1,4 @@
-#include "Hazel/Renderer/EditorCamera.h"
+#include "EditorCamera.h"
 
 #include "Hazel/Core/KeyCodes.h"
 #include "Hazel/Core/MouseCodes.h"
@@ -7,6 +7,22 @@
 
 
 namespace Hazel {
+
+
+	EditorCamera::EditorCamera(const glm::mat4& projectionMatrix)
+		: HazelCamera(projectionMatrix)
+	{
+		m_Rotation = glm::vec3(90.0f, 0.0f, 0.0f);
+		m_FocalPoint = glm::vec3(0.0f);
+
+		glm::vec3 position = { -5, 5, 5 };
+		m_Distance = glm::distance(position, m_FocalPoint);
+
+		m_Yaw = 3.0f * (float)M_PI / 4.0f;
+		m_Pitch = M_PI / 4.0f;
+
+		UpdateCameraView();
+	}
 
 	EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
 		: HazelCamera(glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip))
@@ -25,20 +41,25 @@ namespace Hazel {
 		UpdateView();
 	}
 
-	void EditorCamera::UpdateProjection()
+	void EditorCamera::UpdateCameraView()
 	{
-		m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
-		m_ProjectionMatrix = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
-	}
-
-	void EditorCamera::UpdateView()
-	{
-		// m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
 		m_Position = CalculatePosition();
 
 		glm::quat orientation = GetOrientation();
+		m_Rotation = glm::eulerAngles(orientation) * (180.0f / (float)M_PI);
 		m_ViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
 		m_ViewMatrix = glm::inverse(m_ViewMatrix);
+	}
+
+	void EditorCamera::Focus(const glm::vec3& focusPoint)
+	{
+		m_FocalPoint = focusPoint;
+		if (m_Distance > m_MinFocusDistance)
+		{
+			float distance = m_Distance - m_MinFocusDistance;
+			MouseZoom(distance / ZoomSpeed());
+			UpdateCameraView();
+		}
 	}
 
 	std::pair<float, float> EditorCamera::PanSpeed() const
@@ -64,6 +85,22 @@ namespace Hazel {
 		float speed = distance * distance;
 		speed = std::min(speed, 100.0f); // max speed = 100
 		return speed;
+	}
+
+	void EditorCamera::UpdateView()
+	{
+		// m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
+		m_Position = CalculatePosition();
+
+		glm::quat orientation = GetOrientation();
+		m_ViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
+		m_ViewMatrix = glm::inverse(m_ViewMatrix);
+	}
+
+	void EditorCamera::UpdateProjection()
+	{
+		m_AspectRatio = (float)m_ViewportWidth / (float)m_ViewportHeight;
+		m_ProjectionMatrix = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
 	}
 
 	void EditorCamera::OnUpdate(Timestep ts)
@@ -101,8 +138,8 @@ namespace Hazel {
 	{
 		if (width == 0.0f || height == 0.0f) return;
 
-		m_ViewportWidth = width;
-		m_ViewportHeight = height;
+		m_ViewportWidth = (uint32_t)width;
+		m_ViewportHeight = (uint32_t)height;
 
 		UpdateProjection();
 	}

@@ -6,13 +6,17 @@
 #include "OpenGLTexture.h"
 #include "OpenGLImage.h"
 
+
 namespace Hazel {
+
 
 	OpenGLMaterial::OpenGLMaterial(const Ref<HazelShader>& shader, const std::string& name)
 		: m_Shader(shader), m_Name(name)
 	{
 		m_Shader->AddShaderReloadedCallback(std::bind(&OpenGLMaterial::OnShaderReloaded, this));
-		AllocateStorage();
+		if (RendererBasic::GetSpirVEnabled()) {
+			AllocateStorage();
+		}
 
 		m_MaterialFlags |= (uint32_t)MaterialFlag::DepthTest;
 		m_MaterialFlags |= (uint32_t)MaterialFlag::Blend;

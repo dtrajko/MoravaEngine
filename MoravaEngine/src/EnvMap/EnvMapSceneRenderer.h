@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Hazel/Core/Ref.h"
-#include "Hazel/Renderer/EditorCamera.h"
+#include "Hazel/Editor/EditorCamera.h"
 #include "Hazel/Renderer/HazelMaterial.h"
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/RenderCommandQueue.h"
