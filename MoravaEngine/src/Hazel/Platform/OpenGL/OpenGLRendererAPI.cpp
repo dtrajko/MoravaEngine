@@ -24,7 +24,7 @@ namespace Hazel {
 			Log::GetLogger()->info("[OpenGL Debug LOW] {0}", message);
 			break;
 		case GL_DEBUG_SEVERITY_NOTIFICATION:
-			HZ_CORE_TRACE("[OpenGL Debug NOTIFICATION] {0}", message);
+			// Log::GetLogger()->trace("[OpenGL Debug NOTIFICATION] {0}", message);
 			break;
 		}
 	}

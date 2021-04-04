@@ -689,8 +689,8 @@ SET(shaderc_SRCS
 	../vendor/cross-platform/shaderc/libshaderc_util/src/file_finder.cc
 	../vendor/cross-platform/shaderc/libshaderc_util/src/file_finder_test.cc
 	../vendor/cross-platform/shaderc/libshaderc_util/src/format_test.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/io.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/io_test.cc
+	# ../vendor/cross-platform/shaderc/libshaderc_util/src/io.cc
+	# ../vendor/cross-platform/shaderc/libshaderc_util/src/io_test.cc
 	../vendor/cross-platform/shaderc/libshaderc_util/src/message.cc
 	../vendor/cross-platform/shaderc/libshaderc_util/src/message_test.cc
 	../vendor/cross-platform/shaderc/libshaderc_util/src/mutex_test.cc
@@ -712,9 +712,13 @@ set(CMAKE_GENERATOR_PLATFORM, x64)
 
 unset(CMAKE_IMPORT_LIBRARY_SUFFIX)
 
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+
 add_library(BulletDynamics		STATIC "${BulletDynamics_SRCS}")
 add_library(BulletCollision		STATIC "${BulletCollision_SRCS}")
 add_library(LinearMath			STATIC "${LinearMath_SRCS}")
+
 add_library(assimp				STATIC "${assimp_SRCS}")
 add_library(glfw3				STATIC "${glfw3_SRCS}")
 add_library(irrXML				STATIC "${irrXML_SRCS}")

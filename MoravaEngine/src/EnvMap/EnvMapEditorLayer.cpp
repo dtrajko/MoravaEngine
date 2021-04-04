@@ -470,6 +470,17 @@ void EnvMapEditorLayer::OnUpdate(Scene* scene, float timestep)
             m_EditorCamera->OnUpdate(timestep);
         }
         m_EditorScene->OnRenderEditor(timestep, *m_EditorCamera);
+
+        if (m_DrawOnTopBoundingBoxes)
+        {
+            // Hazel::HazelRenderer::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
+            // auto viewProj = m_EditorCamera->GetViewProjection();
+            // Hazel::Renderer2D::BeginScene(viewProj, false);
+            // // TODO: Renderer::DrawAABB(m_MeshEntity.GetComponent<MeshComponent>(), m_MeshEntity.GetComponent<TransformComponent>());
+            // Hazel::Renderer2D::EndScene();
+            // Hazel::HazelRenderer::EndRenderPass();
+        }
+
         break;
     case SceneState::Play:
         if (m_ViewportPanelFocused) {

@@ -226,7 +226,7 @@ namespace Hazel {
 
 			s_Data.QuadVertexBuffer->Bind();
 			s_Data.QuadPipeline->Bind();
-			// s_Data.QuadIndexBuffer->Bind();
+			s_Data.QuadIndexBuffer->Bind();
 
 			HazelRenderer::DrawIndexed(s_Data.QuadIndexCount, PrimitiveType::Triangles, s_Data.DepthTest);
 			s_Data.Stats.DrawCalls++;
