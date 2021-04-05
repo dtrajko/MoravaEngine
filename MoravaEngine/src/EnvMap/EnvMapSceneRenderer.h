@@ -26,58 +26,11 @@ struct SceneRendererCamera
 	glm::mat4 ViewMatrix;
 };
 
-struct SceneRendererData
-{
-	// HazelScene* ActiveScene = nullptr;
-	struct SceneInfo
-	{
-		Hazel::HazelCamera* SceneCamera;
-
-		// Resources
-		Ref<Hazel::HazelMaterial> HazelSkyboxMaterial;
-		Material* SkyboxMaterial;
-		Hazel::Environment SceneEnvironment;
-		Hazel::HazelLight ActiveLight;
-	} SceneData;
-
-	Hazel::Ref<Hazel::HazelTexture2D> BRDFLUT;
-
-	Hazel::Ref<Shader> CompositeShader;
-
-	Hazel::Ref<EnvMapRenderPass> GeoPass;
-	Hazel::Ref<EnvMapRenderPass> CompositePass;
-	Hazel::Ref<EnvMapRenderPass> ActiveRenderPass;
-
-	struct DrawCommand
-	{
-		std::string Name;
-		Mesh* Mesh;
-		Material* Material;
-		glm::mat4 Transform;
-	};
-	std::vector<DrawCommand> DrawList;
-	std::vector<DrawCommand> SelectedMeshDrawList;
-
-	// Grid
-	Material* GridMaterial;
-	// Ref<HazelShader> HazelGridShader;
-	// Ref<Shader> GridShader;
-	Ref<Hazel::HazelMaterial> OutlineMaterial;
-
-	SceneRendererOptions Options;
-
-	// Renderer data
-	Hazel::RenderCommandQueue* m_CommandQueue;
-};
-
+struct DrawCommand;
 
 class EnvMapSceneRenderer
 {
 public:
-	EnvMapSceneRenderer() = default;
-	EnvMapSceneRenderer(std::string filepath, Hazel::HazelScene* scene);
-	~EnvMapSceneRenderer();
-
 	// static void Init(); // TODO
 	static void Init(std::string filepath, Hazel::HazelScene* scene); // TODO convert to static
 
@@ -103,6 +56,17 @@ public:
 
 	static SceneRendererOptions& GetOptions();
 
+	// Temporary methods from EnvMapEditorLayer
+	static Hazel::Ref<Hazel::HazelTextureCube> GetRadianceMap();
+	static Hazel::Ref<Hazel::HazelTextureCube> GetIrradianceMap();
+	static Hazel::Ref<Hazel::HazelTexture2D> GetBRDFLUT();
+	static Hazel::Ref<Shader> GetShaderComposite();
+	static Hazel::Ref<EnvMapRenderPass> GetGeoPass();
+	static Hazel::Ref<EnvMapRenderPass> GetCompositePass();
+	static void CreateDrawCommand(std::string fileNameNoExt, Hazel::HazelMesh* mesh);
+	static Hazel::HazelLight& GetActiveLight();
+	static void SetActiveLight(Hazel::HazelLight& light);
+	static void AddToDrawList(std::string name, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, glm::mat4 transform);
 
 private:
 	static void FlushDrawList();
@@ -114,34 +78,29 @@ public:
 	//static
 	static Hazel::Environment Load(const std::string& filepath);
 
-	inline SceneRendererData* GetContextData() { return &s_Data; }
-	inline Hazel::HazelLight GetLight() { return s_Data.SceneData.ActiveLight; }
-	inline void SetLight(Hazel::HazelLight light) { s_Data.SceneData.ActiveLight = light; }
 	static void SetEnvironment(Hazel::Environment environment);
-	inline Hazel::Ref<Shader> GetShaderSkybox() { return m_ShaderSkybox; }
-	inline Hazel::Ref<Shader> GetShaderGrid() { return m_ShaderGrid; }
-	inline Hazel::Ref<Shader> GetShaderComposite() { return s_Data.CompositeShader; }
-	inline Hazel::Ref<Hazel::HazelTexture2D> GetEnvEquirect() { return m_EnvEquirect; }
+	static Hazel::Ref<Shader> GetShaderSkybox() { return s_ShaderSkybox; }
+	static Hazel::Ref<Shader> GetShaderGrid() { return s_ShaderGrid; }
+	static Hazel::Ref<Hazel::HazelTexture2D> GetEnvEquirect() { return s_EnvEquirect; }
 	uint32_t GetFinalColorBufferID();
 
 	// From EnvironmentMap
 	static void SetupShaders(); // TODO convert to static
 
-	static SceneRendererData s_Data;
 	static std::map<std::string, unsigned int>* m_SamplerSlots;
 
 	// From EnvironmentMap
-	static Hazel::Ref<Shader> m_ShaderEquirectangularConversion;
-	static Hazel::Ref<Shader> m_ShaderEnvFiltering;
-	static Hazel::Ref<Shader> m_ShaderEnvIrradiance;
-	static Hazel::Ref<Shader> m_ShaderGrid;
-	static Hazel::Ref<Shader> m_ShaderSkybox;
+	static Hazel::Ref<Shader> s_ShaderEquirectangularConversion;
+	static Hazel::Ref<Shader> s_ShaderEnvFiltering;
+	static Hazel::Ref<Shader> s_ShaderEnvIrradiance;
+	static Hazel::Ref<Shader> s_ShaderGrid;
+	static Hazel::Ref<Shader> s_ShaderSkybox;
 
 	// Intermediate textures
-	static Hazel::Ref<Hazel::HazelTextureCube> m_EnvUnfiltered;
-	static Hazel::Ref<Hazel::HazelTexture2D> m_EnvEquirect;
-	static Hazel::Ref<Hazel::HazelTextureCube> m_EnvFiltered;
-	static Hazel::Ref<Hazel::HazelTextureCube> m_IrradianceMap;
+	static Hazel::Ref<Hazel::HazelTextureCube> s_EnvUnfiltered;
+	static Hazel::Ref<Hazel::HazelTexture2D> s_EnvEquirect;
+	static Hazel::Ref<Hazel::HazelTextureCube> s_EnvFiltered;
+	static Hazel::Ref<Hazel::HazelTextureCube> s_IrradianceMap;
 
 	static float s_GridScale;
 	static float s_GridSize;

@@ -91,7 +91,6 @@ public:
 	inline float& GetSkyboxExposureFactor() { return m_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
 	void SetViewportBounds(glm::vec2* viewportBounds);
-	inline EnvMapSceneRenderer* GetSceneRenderer() { return m_SceneRenderer; }
 	inline bool* GetDisplayHazelGrid() { return &m_DisplayHazelGrid; }
 	inline bool* GetDisplayBoundingBoxes() { return &m_DisplayBoundingBoxes; };
 	inline bool* GetDisplayRay() { return &m_DisplayRay; };
@@ -154,9 +153,6 @@ private:
 	Hazel::Ref<Shader> m_ShaderOutline;
 	Hazel::Ref<Shader> m_ShaderShadow;
 	Hazel::Ref<Shader> m_ShaderOmniShadow;
-
-	uint32_t m_FramebufferWidth;
-	uint32_t m_FramebufferHeight;
 
 	CubeSkybox* m_SkyboxCube;
 	Hazel::Ref<Hazel::HazelTextureCube> m_SkyboxTexture;
@@ -230,8 +226,6 @@ private:
 
 	glm::vec3 m_NewRay;
 	glm::vec3 m_NewDir;
-
-	EnvMapSceneRenderer* m_SceneRenderer;
 
 	glm::vec2 m_WorkPosImGui; // window offset on monitor real estate
 
