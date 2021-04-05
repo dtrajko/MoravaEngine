@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Renderer/HazelCamera.h"
+#include "Hazel/Renderer/HazelCamera.h"
 
 
 namespace Hazel {

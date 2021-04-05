@@ -115,7 +115,17 @@ namespace Hazel {
 		FlushDrawList();
 	}
 
-	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<HazelMaterial> overrideMaterial)
+	void SceneRenderer::SubmitMesh(Hazel::MeshComponent meshComponent, Hazel::TransformComponent transformComponent)
+	{
+		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), nullptr);
+	}
+
+	void SceneRenderer::SubmitSelectedMesh(Hazel::MeshComponent meshComponent, Hazel::TransformComponent transformComponent)
+	{
+		SubmitSelectedMesh(meshComponent.Mesh, transformComponent.GetTransform());
+	}
+
+	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Material> overrideMaterial)
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data.DrawList.push_back({ mesh, overrideMaterial, transform });

@@ -29,7 +29,12 @@ namespace Hazel {
 		static void BeginScene(const HazelScene* scene, const SceneRendererCamera& camera);
 		static void EndScene();
 
-		static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<HazelMaterial> overrideMaterial = nullptr);
+		// old?
+		static void SubmitMesh(Hazel::MeshComponent meshComponent, Hazel::TransformComponent transformComponent);
+		static void SubmitSelectedMesh(Hazel::MeshComponent meshComponent, Hazel::TransformComponent transformComponent);
+
+		// new?
+		static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<Material> overrideMaterial = nullptr);
 		static void SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
 		static std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);

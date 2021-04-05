@@ -26,6 +26,7 @@ namespace Hazel {
 		virtual void OnEvent(Event& e) {};
 		virtual inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; };
 		virtual inline bool OnMouseScroll(MouseScrolledEvent& e) { return false; };
+		virtual inline const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		virtual inline glm::mat4& GetViewMatrix() { return m_ViewMatrix; }
 
 		ProjectionType GetProjectionType() const { return m_ProjectionType; };
@@ -56,8 +57,8 @@ namespace Hazel {
 		inline glm::vec3 GetFront() const { return m_Front; }
 		inline glm::vec3 GetUp() const { return m_Up; }
 		inline glm::vec3 GetRight() const { return m_Right; }
-		inline float& GetExposure() { return m_Exposure; }
 		inline float GetExposure() const { return m_Exposure; }
+		inline float& GetExposure() { return m_Exposure; }
 		inline float& GetAspectRatio() { return m_AspectRatio; }
 
 		// setters

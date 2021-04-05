@@ -288,6 +288,32 @@ namespace Hazel {
 		/////////////////////////////////////////////////////////////////////
 
 		// m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
+
+		auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+
+		if (RendererBasic::GetSpirVEnabled())
+		{
+			SceneRenderer::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
+			for (auto entity : group)
+			{
+				auto& [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
+				if (meshComponent.Mesh)
+				{
+					meshComponent.Mesh->OnUpdate(ts, false);
+
+					// TODO: Should we render (logically)
+
+					if (m_SelectedEntity == entity) {
+						SceneRenderer::SubmitSelectedMesh(meshComponent, transformComponent);
+					}
+					else {
+						SceneRenderer::SubmitMesh(meshComponent, transformComponent);
+					}
+				}
+			}
+			SceneRenderer::EndScene();
+		}
+		/////////////////////////////////////////////////////////////////////
 	}
 
 	void HazelScene::SetEnvironment(const Environment& environment)
