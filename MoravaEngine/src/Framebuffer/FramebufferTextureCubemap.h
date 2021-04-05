@@ -19,7 +19,7 @@ public:
 	virtual void InitSpecification() override;
 	virtual void OpenGLCreate() override;
 
-	virtual void Bind(unsigned int slot = 0) override;
+	virtual void Bind(unsigned int slot = 0) const override;
 	virtual void Unbind() override;
 
 };

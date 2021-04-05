@@ -370,7 +370,7 @@ void EnvMapSceneRenderer::GeometryPass()
 
 uint32_t EnvMapSceneRenderer::GetFinalColorBufferRendererID()
 {
-    return uint32_t();
+    return (uint32_t)s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
 }
 
 SceneRendererOptions& EnvMapSceneRenderer::GetOptions()
@@ -443,9 +443,4 @@ Hazel::Ref<Hazel::RenderPass> EnvMapSceneRenderer::GetFinalRenderPass()
 FramebufferTexture* EnvMapSceneRenderer::GetFinalColorBuffer()
 {
     return s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor();
-}
-
-uint32_t EnvMapSceneRenderer::GetFinalColorBufferID()
-{
-    return (uint32_t)s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
 }

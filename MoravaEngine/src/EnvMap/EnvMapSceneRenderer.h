@@ -24,15 +24,14 @@ struct SceneRendererCamera
 {
 	Hazel::HazelCamera Camera;
 	glm::mat4 ViewMatrix;
+	float Near, Far;
+	float FOV;
 };
-
-struct DrawCommand;
 
 class EnvMapSceneRenderer
 {
 public:
-	// static void Init(); // TODO
-	static void Init(std::string filepath, Hazel::HazelScene* scene); // TODO convert to static
+	static void Init(std::string filepath, Hazel::HazelScene* scene);
 
 	static void SetViewportSize(uint32_t width, uint32_t height);
 
@@ -46,10 +45,7 @@ public:
 	static std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);
 
 	static Hazel::Ref<Hazel::RenderPass> GetFinalRenderPass();
-	// static Ref<HazelTexture2D> GetFinalColorBuffer();
-	static FramebufferTexture* GetFinalColorBuffer();
-
-	static void SubmitEntity(Hazel::Entity entity);
+	static FramebufferTexture* GetFinalColorBuffer(); // originally returns Hazel::Ref<Hazel::HazelTexture2D>
 
 	// TODO: Temp
 	static uint32_t GetFinalColorBufferRendererID();
@@ -67,6 +63,13 @@ public:
 	static Hazel::HazelLight& GetActiveLight();
 	static void SetActiveLight(Hazel::HazelLight& light);
 	static void AddToDrawList(std::string name, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, glm::mat4 transform);
+	static Hazel::Environment Load(const std::string& filepath);
+	static void SetEnvironment(Hazel::Environment environment);
+	static Hazel::Ref<Shader> GetShaderSkybox() { return s_ShaderSkybox; }
+	static Hazel::Ref<Shader> GetShaderGrid() { return s_ShaderGrid; }
+	static Hazel::Ref<Hazel::HazelTexture2D> GetEnvEquirect() { return s_EnvEquirect; }
+	static void SetupShaders();
+	static void SubmitEntity(Hazel::Entity entity);
 
 private:
 	static void FlushDrawList();
@@ -74,19 +77,6 @@ private:
 	static void CompositePass();
 
 public:
-	// From EnvironmentMap
-	//static
-	static Hazel::Environment Load(const std::string& filepath);
-
-	static void SetEnvironment(Hazel::Environment environment);
-	static Hazel::Ref<Shader> GetShaderSkybox() { return s_ShaderSkybox; }
-	static Hazel::Ref<Shader> GetShaderGrid() { return s_ShaderGrid; }
-	static Hazel::Ref<Hazel::HazelTexture2D> GetEnvEquirect() { return s_EnvEquirect; }
-	uint32_t GetFinalColorBufferID();
-
-	// From EnvironmentMap
-	static void SetupShaders(); // TODO convert to static
-
 	static std::map<std::string, unsigned int>* m_SamplerSlots;
 
 	// From EnvironmentMap

@@ -126,7 +126,7 @@ void FramebufferTextureCubemap::OpenGLCreate()
 	}
 }
 
-void FramebufferTextureCubemap::Bind(unsigned int slot)
+void FramebufferTextureCubemap::Bind(unsigned int slot) const
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);

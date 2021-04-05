@@ -19,3 +19,46 @@ Attachment::Attachment(unsigned int width, unsigned int height, AttachmentType a
 Attachment::~Attachment()
 {
 }
+
+/****
+ * Maps between AttachmentFormat and Hazel::HazelImageFormat values
+ */
+Hazel::HazelImageFormat Attachment::GetFormat() const
+{
+	switch (m_AttachmentFormat)
+	{
+	case AttachmentFormat::None:
+		return Hazel::HazelImageFormat::None;
+		break;
+	case AttachmentFormat::Color:
+		return Hazel::HazelImageFormat::RGB;
+		break;
+	case AttachmentFormat::Depth:
+		return Hazel::HazelImageFormat::Depth;
+		break;
+	case AttachmentFormat::Stencil:
+		return Hazel::HazelImageFormat::DEPTH24STENCIL8;
+		break;
+	case AttachmentFormat::Depth_24:
+		return Hazel::HazelImageFormat::Depth;
+		break;
+	case AttachmentFormat::DepthStencil:
+		return Hazel::HazelImageFormat::DEPTH24STENCIL8;
+		break;
+	case AttachmentFormat::Depth_24_Stencil_8:
+		return Hazel::HazelImageFormat::DEPTH24STENCIL8;
+		break;
+	case AttachmentFormat::RGBA:
+		return Hazel::HazelImageFormat::RGBA;
+		break;
+	case AttachmentFormat::RGBA16F:
+		return Hazel::HazelImageFormat::RGBA16F;
+		break;
+	case AttachmentFormat::RGBA8:
+		return Hazel::HazelImageFormat::RGBA;
+		break;
+	default:
+		return Hazel::HazelImageFormat::None;
+		break;
+	}
+}

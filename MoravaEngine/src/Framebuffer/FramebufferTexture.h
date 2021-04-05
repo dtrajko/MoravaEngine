@@ -8,7 +8,6 @@
 
 class FramebufferTexture : public Attachment
 {
-
 public:
 	FramebufferTexture();
 	FramebufferTexture(unsigned int width, unsigned int height, bool isMultisample,
@@ -21,7 +20,7 @@ public:
 	virtual void InitSpecification();
 	virtual void OpenGLCreate();
 
-	virtual void Bind(unsigned int slot = 0) override;
+	virtual void Bind(unsigned int slot = 0) const override;
 	virtual void Unbind() override;
 
 	static GLenum TextureTarget(bool multisampled);

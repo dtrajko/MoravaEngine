@@ -17,6 +17,8 @@ namespace Hazel {
 	{
 		Hazel::HazelCamera Camera;
 		glm::mat4 ViewMatrix;
+		float Near, Far;
+		float FOV;
 	};
 
 	class SceneRenderer

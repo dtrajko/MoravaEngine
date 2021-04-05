@@ -60,7 +60,7 @@ Renderbuffer::Renderbuffer(unsigned int width, unsigned int height, AttachmentFo
 	Util::CheckOpenGLErrors("Renderbuffer::Renderbuffer");
 }
 
-void Renderbuffer::Bind(unsigned int slot)
+void Renderbuffer::Bind(unsigned int slot) const
 {
 	glBindRenderbuffer(GL_RENDERBUFFER, m_ID);
 }

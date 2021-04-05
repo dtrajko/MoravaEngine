@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Hazel/Core/Ref.h"
+#include "Hazel/Renderer/HazelTexture.h"
 
 
 enum class AttachmentType
@@ -22,23 +23,34 @@ enum class AttachmentFormat
 	RGBA                = 7,
 	RGBA16F             = 8,
 	RGBA8               = 9,
+	RGB                 = 10, // Hazel::HazelImageFormat
+	RGBA32F             = 11, // Hazel::HazelImageFormat
+	RG32F               = 12, // Hazel::HazelImageFormat
+	SRGB                = 13, // Hazel::HazelImageFormat
+	DEPTH32F            = 14, // Hazel::HazelImageFormat
 };
 
-
-class Attachment : public Hazel::RefCounted
+class Attachment : public Hazel::HazelTexture
 {
 public:
 	Attachment();
 	Attachment(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat, unsigned int orderID, uint32_t framebufferID);
 	virtual ~Attachment();
 
-	inline unsigned int GetID() const { return m_ID; };
-	inline const unsigned int GetWidth() const { return m_Width; };
-	inline const unsigned int GetHeight() const { return m_Height; };
+	inline uint32_t GetID() const { return m_ID; };
+	inline virtual uint32_t GetWidth() const override { return m_Width; };
+	inline virtual uint32_t GetHeight() const override { return m_Height; };
 
-	virtual void Bind(unsigned int slot) = 0;
+	virtual void Bind(uint32_t slot) const = 0;
 	virtual void Unbind() = 0;
 
+	// virtual methods from Hazel::HazelTexture
+	virtual Hazel::HazelImageFormat GetFormat() const;
+	virtual uint32_t GetMipLevelCount() const { Log::GetLogger()->error("Attachment::GetMipLevelCount - method not implemented!"); return 0; }
+	virtual uint64_t GetHash() const { Log::GetLogger()->error("Attachment::GetHash - method not implemented!"); return 0; }
+	virtual Hazel::HazelTextureType GetType() const { Log::GetLogger()->error("Attachment::GetType - method not implemented!"); return Hazel::HazelTextureType(); }
+	virtual bool operator==(const HazelTexture& other) const { Log::GetLogger()->error("Attachment::operator== - method not implemented!"); return false; }
+	virtual void SetData(void* data, uint32_t size) { Log::GetLogger()->error("Attachment::SetData - method not implemented!"); }
 
 protected:
 	unsigned int m_ID;
