@@ -115,7 +115,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupMaterials();
     SetupFramebuffers();
 
-    m_EnvironmentMap = new EnvMapEditorLayer("Textures/HDR/umhlanga_sunrise_4k.hdr", this);
+    m_EnvMapEditorLayer = new EnvMapEditorLayer("Textures/HDR/umhlanga_sunrise_4k.hdr", this);
 
     SetupMeshes();
     SetupModels();
@@ -128,7 +128,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
 
 SceneHazelEnvMap::~SceneHazelEnvMap()
 {
-    delete m_EnvironmentMap;
+    delete m_EnvMapEditorLayer;
 }
 
 void SceneHazelEnvMap::SetupShaders()
@@ -182,22 +182,22 @@ void SceneHazelEnvMap::SetupUniforms()
 void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 {
     float deltaTime = Timer::Get()->GetDeltaTime();
-    m_EnvironmentMap->OnUpdate(this, deltaTime);
+    m_EnvMapEditorLayer->OnUpdate(this, deltaTime);
 }
 
 void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 {
-    m_EnvironmentMap->OnImGuiRender(mainWindow, this);
+    m_EnvMapEditorLayer->OnImGuiRender(mainWindow, this);
 }
 
 void SceneHazelEnvMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
-    if (!m_EnvironmentMap->m_IsViewportEnabled) {
+    if (!m_EnvMapEditorLayer->m_IsViewportEnabled) {
         Scene::ShowExampleAppDockSpace(p_open, mainWindow);
         return;
     }
 
-    m_EnvironmentMap->ShowExampleAppDockSpace(p_open, mainWindow);
+    m_EnvMapEditorLayer->ShowExampleAppDockSpace(p_open, mainWindow);
 }
 
 bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
@@ -216,7 +216,7 @@ bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
         {
             if (control)
             {
-                m_EnvironmentMap->NewScene();
+                m_EnvMapEditorLayer->NewScene();
             }
             break;
         }
@@ -224,7 +224,7 @@ bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
         {
             if (control)
             {
-                m_EnvironmentMap->OpenScene();
+                m_EnvMapEditorLayer->OpenScene();
             }
             break;
         }
@@ -232,7 +232,7 @@ bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
         {
             if (control && shift)
             {
-                m_EnvironmentMap->SaveSceneAs();
+                m_EnvMapEditorLayer->SaveSceneAs();
             }
             break;
         }
@@ -243,21 +243,21 @@ bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
 void SceneHazelEnvMap::OnEntitySelected(Hazel::Entity entity)
 {
     // auto& tc = entity.GetComponent<Hazel::TransformComponent>();
-    // m_EnvironmentMap->SetMeshEntity(entity);
+    // m_EnvMapEditorLayer->SetMeshEntity(entity);
 }
 
 void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     if (passType == "main") {
-        m_EnvironmentMap->OnRender(m_EnvironmentMap->m_RenderFramebuffer, mainWindow);
+        m_EnvMapEditorLayer->OnRender(m_EnvMapEditorLayer->m_RenderFramebuffer, mainWindow);
     }
 
     if (passType == "shadow" && sceneSettings.enableShadows) {
-        m_EnvironmentMap->OnRenderShadow(mainWindow);
+        m_EnvMapEditorLayer->OnRenderShadow(mainWindow);
     }
 
     if (passType == "shadow_omni" && sceneSettings.enableOmniShadows) {
-        m_EnvironmentMap->OnRenderShadowOmni(mainWindow);
+        m_EnvMapEditorLayer->OnRenderShadowOmni(mainWindow);
     }
 }

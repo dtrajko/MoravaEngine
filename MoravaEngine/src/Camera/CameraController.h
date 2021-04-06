@@ -10,7 +10,7 @@ class CameraController
 {
 
 public:
-	CameraController();
+	CameraController() = default;
 	CameraController(Hazel::HazelCamera* camera, float aspectRatio, float moveSpeed, float turnSpeed);
 	virtual ~CameraController();
 

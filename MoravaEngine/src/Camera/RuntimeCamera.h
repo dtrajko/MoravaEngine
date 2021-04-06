@@ -30,6 +30,6 @@ private:
 	void UpdateView();
 
 private:
-	CameraController* m_CameraController;
+	CameraController m_CameraController;
 
 };

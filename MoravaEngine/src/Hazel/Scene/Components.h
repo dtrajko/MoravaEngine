@@ -88,8 +88,8 @@ namespace Hazel
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent& other) = default;
 
-		CameraComponent(Hazel::HazelCamera* camera)
-			: Camera(*camera) {};
+		CameraComponent(Hazel::HazelCamera camera)
+			: Camera(camera) {};
 
 		operator HazelCamera& () { return Camera; }
 		operator const HazelCamera& () const { return Camera; }

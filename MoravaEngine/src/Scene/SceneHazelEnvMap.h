@@ -51,7 +51,7 @@ private:
 	virtual void OnEntitySelected(Hazel::Entity entity) override;
 
 private:
-	EnvMapEditorLayer* m_EnvironmentMap;
+	EnvMapEditorLayer* m_EnvMapEditorLayer;
 
 	Hazel::Ref<Shader> m_ShaderBackground;
 	Hazel::Ref<Shader> m_ShaderBasic;

@@ -58,20 +58,13 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_SkyboxCube = new CubeSkybox();
     m_Quad = new Quad();
 
-    float fov = 60.0f;
-    float aspectRatio = 1.778f; // 16/9
-    m_EditorCamera = new Hazel::EditorCamera(fov, aspectRatio, 0.1f, 1000.0f);
-    m_RuntimeCamera = new RuntimeCamera(scene->GetSettings().cameraPosition, scene->GetSettings().cameraStartYaw, scene->GetSettings().cameraStartPitch, 
-        fov, aspectRatio, scene->GetSettings().cameraMoveSpeed, 0.1f);
-    m_ActiveCamera = m_RuntimeCamera; // m_RuntimeCamera m_EditorCamera;
-
     m_EditorScene = Hazel::Ref<Hazel::HazelScene>::Create();
     m_EditorScene->SetSkyboxLod(0.1f);
 
     EnvMapSceneRenderer::Init(filepath, m_EditorScene.Raw());
     SetSkybox(EnvMapSceneRenderer::GetRadianceMap());
 
-    SetupContextData();
+    SetupContextData(scene);
 
     // Create a default material
     s_DefaultMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_DEF");
@@ -143,13 +136,19 @@ void EnvMapEditorLayer::Init()
     Hazel::Renderer2D::Init();
 }
 
-void EnvMapEditorLayer::SetupContextData()
+void EnvMapEditorLayer::SetupContextData(Scene* scene)
 {
     MaterialLibrary::Init();
 
-    m_CameraEntity = CreateEntity("Camera");
     auto viewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     auto viewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
+
+    float fov = 60.0f;
+    float aspectRatio = 1.778f; // 16/9
+    m_EditorCamera = new Hazel::EditorCamera(fov, aspectRatio, 0.1f, 1000.0f);
+    m_RuntimeCamera = new RuntimeCamera(scene->GetSettings().cameraPosition, scene->GetSettings().cameraStartYaw, scene->GetSettings().cameraStartPitch,
+        fov, aspectRatio, scene->GetSettings().cameraMoveSpeed, 0.1f);
+    m_ActiveCamera = m_RuntimeCamera; // m_RuntimeCamera m_EditorCamera;
 
     m_EditorCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
     m_RuntimeCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
@@ -157,7 +156,8 @@ void EnvMapEditorLayer::SetupContextData()
     m_EditorCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
     m_RuntimeCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 
-    m_CameraEntity.AddComponent<Hazel::CameraComponent>(m_ActiveCamera);
+    m_CameraEntity = CreateEntity("Camera");
+    m_CameraEntity.AddComponent<Hazel::CameraComponent>(EnvMapSceneRenderer::GetCamera().Camera);
 
     Log::GetLogger()->debug("m_CameraEntity UUID: {0}", m_CameraEntity.GetUUID());
 
@@ -284,7 +284,9 @@ void EnvMapEditorLayer::UpdateUniforms()
 
     /**** BEGIN Shaders/Hazel/Outline ****/
     m_ShaderOutline->Bind();
-    m_ShaderOutline->setMat4("u_ViewProjection", m_ActiveCamera->GetViewProjection());
+    glm::mat4 viewProj = m_ActiveCamera->GetViewProjection();
+    // glm::mat4 viewProj = RendererBasic::GetProjectionMatrix() * m_ActiveCamera->GetViewMatrix();
+    m_ShaderOutline->setMat4("u_ViewProjection", viewProj);
     /**** BEGIN Shaders/Hazel/Outline ****/
 }
 
@@ -322,7 +324,9 @@ void EnvMapEditorLayer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPB
 
     shaderHazelPBR->setFloat("u_TilingFactor", envMapMaterial->GetTilingFactor());
 
-    shaderHazelPBR->setMat4("u_ViewProjectionMatrix", m_ActiveCamera->GetViewProjection());
+    glm::mat4 viewProj = m_ActiveCamera->GetViewProjection();
+    // glm::mat4 viewProj = RendererBasic::GetProjectionMatrix() * m_ActiveCamera->GetViewMatrix();
+    shaderHazelPBR->setMat4("u_ViewProjectionMatrix", viewProj);
     shaderHazelPBR->setVec3("u_CameraPosition", m_ActiveCamera->GetPosition());
     shaderHazelPBR->setMat4("u_DirLightTransform", m_DirLightTransform);
 
@@ -418,7 +422,6 @@ void EnvMapEditorLayer::OnUpdate(Scene* scene, float timestep)
             // Hazel::Renderer2D::EndScene();
             // Hazel::HazelRenderer::EndRenderPass();
         }
-
         break;
     case SceneState::Play:
         if (m_ViewportPanelFocused) {
@@ -1164,15 +1167,30 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             char buffer[100];
             sprintf(buffer, "Aspect Ratio  %.2f", m_ActiveCamera->GetAspectRatio());
             ImGui::Text(buffer);
-            sprintf(buffer, "Position    X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetPosition().x, m_ActiveCamera->GetPosition().y, m_ActiveCamera->GetPosition().z);
+            sprintf(buffer, "Position    X %.2f Y %.2f Z %.2f", 
+                m_ActiveCamera->GetPosition().x,
+                m_ActiveCamera->GetPosition().y,
+                m_ActiveCamera->GetPosition().z);
             ImGui::Text(buffer);
-            sprintf(buffer, "Direction   X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetDirection().x, m_ActiveCamera->GetDirection().y, m_ActiveCamera->GetDirection().z);
+            sprintf(buffer, "Direction   X %.2f Y %.2f Z %.2f",
+                m_ActiveCamera->GetDirection().x,
+                m_ActiveCamera->GetDirection().y,
+                m_ActiveCamera->GetDirection().z);
             ImGui::Text(buffer);
-            sprintf(buffer, "Front       X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetFront().x, m_ActiveCamera->GetFront().y, m_ActiveCamera->GetFront().z);
+            sprintf(buffer, "Front       X %.2f Y %.2f Z %.2f",
+                m_ActiveCamera->GetFront().x,
+                m_ActiveCamera->GetFront().y,
+                m_ActiveCamera->GetFront().z);
             ImGui::Text(buffer);
-            sprintf(buffer, "Up          X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetUp().x, m_ActiveCamera->GetUp().y, m_ActiveCamera->GetUp().z);
+            sprintf(buffer, "Up          X %.2f Y %.2f Z %.2f",
+                m_ActiveCamera->GetUp().x,
+                m_ActiveCamera->GetUp().y,
+                m_ActiveCamera->GetUp().z);
             ImGui::Text(buffer);
-            sprintf(buffer, "Right       X %.2f Y %.2f Z %.2f", m_ActiveCamera->GetRight().x, m_ActiveCamera->GetRight().y, m_ActiveCamera->GetRight().z);
+            sprintf(buffer, "Right       X %.2f Y %.2f Z %.2f",
+                m_ActiveCamera->GetRight().x,
+                m_ActiveCamera->GetRight().y,
+                m_ActiveCamera->GetRight().z);
             ImGui::Text(buffer);
         }
     }
@@ -1736,8 +1754,9 @@ void EnvMapEditorLayer::RenderSkybox()
 
     EnvMapSceneRenderer::GetRadianceMap()->Bind(m_SamplerSlots->at("u_Texture"));
 
-    glm::mat4 viewProjection = m_ActiveCamera->GetViewProjection();
-    EnvMapSceneRenderer::s_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProjection));
+    glm::mat4 viewProj = m_ActiveCamera->GetViewProjection();
+    // glm::mat4 viewProj = RendererBasic::GetProjectionMatrix() * m_ActiveCamera->GetViewMatrix();
+    EnvMapSceneRenderer::s_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProj));
 
     EnvMapSceneRenderer::s_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
     EnvMapSceneRenderer::s_ShaderSkybox->setFloat("u_TextureLod", m_EditorScene->GetSkyboxLod());
@@ -1762,7 +1781,9 @@ void EnvMapEditorLayer::RenderHazelGrid()
     EnvMapSceneRenderer::s_ShaderGrid->setFloat("u_Scale", EnvMapSceneRenderer::s_GridScale);
     EnvMapSceneRenderer::s_ShaderGrid->setFloat("u_Res", EnvMapSceneRenderer::s_GridSize);
 
-    EnvMapSceneRenderer::s_ShaderGrid->setMat4("u_ViewProjection", m_ActiveCamera->GetViewProjection());
+    // glm::mat4 viewProj = RendererBasic::GetProjectionMatrix() * m_ActiveCamera->GetViewMatrix();
+    glm::mat4 viewProj = m_ActiveCamera->GetViewProjection();
+    EnvMapSceneRenderer::s_ShaderGrid->setMat4("u_ViewProjection", viewProj);
 
     bool depthTest = true;
 
@@ -1810,7 +1831,7 @@ void EnvMapEditorLayer::OnEvent(Event& e)
     if (m_SceneState == SceneState::Edit)
     {
         if (m_ViewportPanelMouseOver) {
-            m_EditorCamera->OnEvent(e);
+            m_ActiveCamera->OnEvent(e);
         }
 
         m_EditorScene->OnEvent(e);
@@ -2036,6 +2057,7 @@ void EnvMapEditorLayer::GeometryPassTemporary()
     RendererBasic::EnableMSAA();
 
     glm::mat4 viewProj = m_ActiveCamera->GetViewProjection();
+    // glm::mat4 viewProj = RendererBasic::GetProjectionMatrix() * m_ActiveCamera->GetViewMatrix();
 
     EnvMapSceneRenderer::GetRadianceMap()->Bind(m_SamplerSlots->at("radiance"));
     EnvMapSceneRenderer::GetIrradianceMap()->Bind(m_SamplerSlots->at("irradiance"));

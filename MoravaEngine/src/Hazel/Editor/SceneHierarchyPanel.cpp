@@ -633,6 +633,10 @@ namespace Hazel
 				float farClip = cc.Camera.GetPerspectiveFarClip();
 				if (ImGuiWrapper::Property("Far Clip", farClip))
 					cc.Camera.SetPerspectiveFarClip(farClip);
+
+				float exposure = cc.Camera.GetExposure();
+				if (ImGuiWrapper::Property("Exposure", exposure))
+					cc.Camera.SetExposure(exposure);
 			}
 
 			// Orthographic parameters
@@ -649,6 +653,10 @@ namespace Hazel
 				float farClip = cc.Camera.GetOrthographicFarClip();
 				if (ImGuiWrapper::Property("Far Clip", farClip))
 					cc.Camera.SetOrthographicFarClip(farClip);
+
+				float exposure = cc.Camera.GetExposure();
+				if (ImGuiWrapper::Property("Exposure", exposure))
+					cc.Camera.SetExposure(exposure);
 			}
 
 			EndPropertyGrid();

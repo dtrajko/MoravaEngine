@@ -69,6 +69,7 @@ public:
 	static Hazel::Ref<Hazel::HazelTexture2D> GetEnvEquirect() { return s_EnvEquirect; }
 	static void SetupShaders();
 	static void SubmitEntity(Hazel::Entity entity);
+	static SceneRendererCamera& GetCamera();
 
 private:
 	static void FlushDrawList();

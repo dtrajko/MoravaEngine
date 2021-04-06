@@ -112,7 +112,7 @@ public:
 	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
 
 private:
-	void SetupContextData();
+	void SetupContextData(Scene* scene);
 	void SetupShaders();
 	void UpdateUniforms();
 	void UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPBR, Hazel::Ref<EnvMapMaterial> envMapMaterial);

@@ -7,7 +7,7 @@
 
 RuntimeCamera::RuntimeCamera()
 {
-    m_CameraController = new CameraController(this, 1.778f, 2.0f, 0.1f);
+    m_CameraController = CameraController(this, 1.778f, 2.0f, 0.1f);
 }
 
 RuntimeCamera::RuntimeCamera(glm::vec3 position, float yaw, float pitch, float fovDegrees, float aspectRatio, float moveSpeed, float turnSpeed)
@@ -21,12 +21,11 @@ RuntimeCamera::RuntimeCamera(glm::vec3 position, float yaw, float pitch, float f
 	m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	m_Front = glm::vec3(0.0f, 0.0f, -1.0f);
 
-	m_CameraController = new CameraController(this, aspectRatio, moveSpeed, turnSpeed);
+	m_CameraController = CameraController(this, aspectRatio, moveSpeed, turnSpeed);
 }
 
 RuntimeCamera::~RuntimeCamera()
 {
-	delete m_CameraController;
 }
 
 void RuntimeCamera::UpdateProjection()
@@ -42,7 +41,7 @@ void RuntimeCamera::UpdateView()
 
 void RuntimeCamera::OnUpdate(Hazel::Timestep ts)
 {
-	m_CameraController->Update();
+	m_CameraController.Update();
 
 	MousePicker::Get()->Update(
 		(int)Application::Get()->GetWindow()->GetMouseX(), (int)Application::Get()->GetWindow()->GetMouseY(),
@@ -57,7 +56,7 @@ void RuntimeCamera::OnUpdate(Hazel::Timestep ts)
 
 void RuntimeCamera::OnEvent(Event& e)
 {
-	m_CameraController->OnEvent(e);
+	m_CameraController.OnEvent(e);
 
 	EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<MouseScrolledEvent>(HZ_BIND_EVENT_FN(RuntimeCamera::OnMouseScroll));

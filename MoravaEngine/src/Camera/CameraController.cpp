@@ -15,14 +15,6 @@
 #include <cstdio>
 
 
-CameraController::CameraController()
-{
-	m_Camera = new Camera(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f);
-	m_Camera->SetAspectRatio(16 / 9.0f);
-	m_MoveSpeed = 2.0f;
-	m_TurnSpeed = 0.1f;
-}
-
 CameraController::CameraController(Hazel::HazelCamera* camera, float aspectRatio, float moveSpeed, float turnSpeed)
 {
 	m_Camera = camera;

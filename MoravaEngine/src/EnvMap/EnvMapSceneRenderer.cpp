@@ -234,6 +234,11 @@ void EnvMapSceneRenderer::SubmitEntity(Hazel::Entity entity)
     // TODO: s_Data.DrawList.push_back({ mesh, entity->GetMaterial(), entity->GetTransform() });
 }
 
+SceneRendererCamera& EnvMapSceneRenderer::GetCamera()
+{
+    return s_Data.SceneData.SceneCamera;
+}
+
 static Ref<Hazel::HazelShader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
 
 // Moved from EnvironmentMap
