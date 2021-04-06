@@ -623,40 +623,48 @@ namespace Hazel
 			if (cc.Camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
 				float verticalFOV = cc.Camera.GetPerspectiveVerticalFOV();
-				if (ImGuiWrapper::Property("Vertical FOV", verticalFOV))
+				if (ImGuiWrapper::Property("Vertical FOV", verticalFOV)) {
 					cc.Camera.SetPerspectiveVerticalFOV(verticalFOV);
+				}
 
 				float nearClip = cc.Camera.GetPerspectiveNearClip();
-				if (ImGuiWrapper::Property("Near Clip", nearClip))
+				if (ImGuiWrapper::Property("Near Clip", nearClip)) {
 					cc.Camera.SetPerspectiveNearClip(nearClip);
+				}
 
 				float farClip = cc.Camera.GetPerspectiveFarClip();
-				if (ImGuiWrapper::Property("Far Clip", farClip))
+				if (ImGuiWrapper::Property("Far Clip", farClip)) {
 					cc.Camera.SetPerspectiveFarClip(farClip);
+				}
 
 				float exposure = cc.Camera.GetExposure();
-				if (ImGuiWrapper::Property("Exposure", exposure))
+				if (ImGuiWrapper::Property("Exposure", exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty)) {
 					cc.Camera.SetExposure(exposure);
+				}
 			}
 
 			// Orthographic parameters
 			else if (cc.Camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
 			{
 				float orthoSize = cc.Camera.GetOrthographicSize();
-				if (ImGuiWrapper::Property("Size", orthoSize))
+				if (ImGuiWrapper::Property("Size", orthoSize)) {
 					cc.Camera.SetOrthographicSize(orthoSize);
+				}
 
 				float nearClip = cc.Camera.GetOrthographicNearClip();
-				if (ImGuiWrapper::Property("Near Clip", nearClip))
+				if (ImGuiWrapper::Property("Near Clip", nearClip)) {
 					cc.Camera.SetOrthographicNearClip(nearClip);
+				}
 
 				float farClip = cc.Camera.GetOrthographicFarClip();
-				if (ImGuiWrapper::Property("Far Clip", farClip))
+				if (ImGuiWrapper::Property("Far Clip", farClip)) {
 					cc.Camera.SetOrthographicFarClip(farClip);
+				}
 
 				float exposure = cc.Camera.GetExposure();
-				if (ImGuiWrapper::Property("Exposure", exposure))
+				if (ImGuiWrapper::Property("Exposure", exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty)) {
 					cc.Camera.SetExposure(exposure);
+				}
 			}
 
 			EndPropertyGrid();

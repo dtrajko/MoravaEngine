@@ -7,6 +7,7 @@
 
 RuntimeCamera::RuntimeCamera()
 {
+	m_ProjectionType = Hazel::HazelCamera::ProjectionType::Perspective;
     m_CameraController = CameraController(this, 1.778f, 2.0f, 0.1f);
 }
 
@@ -17,6 +18,7 @@ RuntimeCamera::RuntimeCamera(glm::vec3 position, float yaw, float pitch, float f
 	m_Pitch = pitch;
 	m_PerspectiveFOV = glm::radians(fovDegrees);
 	m_AspectRatio = aspectRatio;
+	m_ProjectionType = Hazel::HazelCamera::ProjectionType::Perspective;
 
 	m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	m_Front = glm::vec3(0.0f, 0.0f, -1.0f);
