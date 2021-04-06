@@ -440,7 +440,7 @@ void EnvMapEditorLayer::OnUpdate(Scene* scene, float timestep)
         break;
     }
 
-    // CameraSyncECS(); TODO
+    CameraSyncECS(); // TODO
 
     if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>())
     {
@@ -563,9 +563,25 @@ void EnvMapEditorLayer::UpdateWindowTitle(const std::string& sceneName)
 
 void EnvMapEditorLayer::CameraSyncECS()
 {
-    glm::vec3 cameraPosition = m_CameraEntity.GetComponent<Hazel::TransformComponent>().Translation;
-    m_ActiveCamera->SetPosition(cameraPosition); // remove m_ActiveCamera when possible
-    EnvMapSceneRenderer::GetCamera().Camera.SetPosition(cameraPosition);
+    // temporary solution before switching from m_ActiveCamera to ECS camera in EnvMapSceneRenderer
+    EnvMapSceneRenderer::GetCamera().Camera = *m_ActiveCamera;
+    EnvMapSceneRenderer::GetCamera().FOV = m_ActiveCamera->GetPerspectiveVerticalFOV();
+    EnvMapSceneRenderer::GetCamera().ViewMatrix = m_ActiveCamera->GetViewMatrix();
+    EnvMapSceneRenderer::GetCamera().Near = m_ActiveCamera->GetPerspectiveNearClip();
+    EnvMapSceneRenderer::GetCamera().Far = m_ActiveCamera->GetPerspectiveFarClip();
+
+    // glm::vec3 cameraPosition = m_CameraEntity.GetComponent<Hazel::TransformComponent>().Translation;
+    // m_ActiveCamera->SetPosition(cameraPosition); // remove m_ActiveCamera when possible
+    // EnvMapSceneRenderer::GetCamera().Camera.SetPosition(cameraPosition);
+
+    // glm::vec3 cameraRotation = m_CameraEntity.GetComponent<Hazel::TransformComponent>().Rotation;
+    // m_ActiveCamera->SetYaw(glm::degrees(cameraRotation.y)); // remove m_ActiveCamera when possible
+    // m_ActiveCamera->SetPitch(glm::degrees(cameraRotation.z)); // remove m_ActiveCamera when possible
+    // EnvMapSceneRenderer::GetCamera().Camera.SetYaw(glm::degrees(cameraRotation.y));
+    // EnvMapSceneRenderer::GetCamera().Camera.SetPitch(glm::degrees(cameraRotation.z));
+
+    // m_ActiveCamera->SetPerspectiveNearClip(EnvMapSceneRenderer::GetCamera().Camera.GetPerspectiveNearClip());
+    // m_ActiveCamera->SetPerspectiveFarClip(EnvMapSceneRenderer::GetCamera().Camera.GetPerspectiveFarClip());
 }
 
 void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
