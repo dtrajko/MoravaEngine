@@ -1664,6 +1664,36 @@
     <Filter Include="Hazel\Physics">
       <UniqueIdentifier>{a159bf0c-5951-4118-8982-d832c351dc77}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{65432256-d30e-476b-889b-d3645c27ff4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Hazel">
+      <UniqueIdentifier>{106a9f9c-85c3-4c1d-bc6a-b539697f660f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Hazel\Shaders">
+      <UniqueIdentifier>{09be69c6-ba34-4d3e-b9ad-a4b1b3c22397}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Shaders">
+      <UniqueIdentifier>{1fa4af93-d603-45ed-84e4-2102fed20030}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Shaders\Hazel">
+      <UniqueIdentifier>{22005396-2ef0-4cf0-9115-977f55abfdc3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Shaders\LearnOpenGL">
+      <UniqueIdentifier>{52877ba7-4942-4935-aefe-37bc94546c52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Shaders\OGLdev">
+      <UniqueIdentifier>{2708a105-dcf7-4d98-b932-8b7f6093e5f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Shaders\PBR">
+      <UniqueIdentifier>{ce93b422-7888-4f20-9c11-9a8751876ac9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Shaders\ThinMatrix">
+      <UniqueIdentifier>{a275f58a-ad39-4823-b341-9a396d6be34c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Shaders\OGLdev\tutorial35">
+      <UniqueIdentifier>{1111f9db-5bae-40a8-84a4-0d2d37e8727b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MoravaEngine.rc" />
@@ -1740,6 +1770,450 @@
     </None>
     <None Include="src\Hazel\Hazel-ScriptCore\src\Hazel\Math\Vector4.cs">
       <Filter>Hazel\ScriptCore\Math</Filter>
+    </None>
+    <None Include="assets\shaders\BloomBlend.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\BloomBlur.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\Collider.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\EnvironmentIrradiance.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\EnvironmentMipFilter.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\EquirectangularToCubeMap.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\Grid.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\HazelPBR_Anim.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\HazelPBR_Static.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\HazelPBR_Static_NoTexture.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\HazelSimple.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\Outline.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\Outline_Anim.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\Renderer2D.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\Renderer2D_Circle.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\Renderer2D_Line.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\SceneComposite.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\SceneCompositeMS.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\shader.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\ShadowMap.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\ShadowMap_Anim.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\Skybox.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\Texture.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\VulkanTriangle.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="Shaders\asteroids.fs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\asteroids.vs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\asteroids_planet.vs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\basic.fs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\basic.vs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\cubemap.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\cubemap.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\directional_shadow_map.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\directional_shadow_map.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\editor_object.fs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\editor_object.vs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\framebuffers_scene.fs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\framebuffers_scene.vs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\framebuffers_screen.fs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\framebuffers_screen.vs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\gizmo.fs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\gizmo.vs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\glass.fs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\glass.vs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\HybridAnimPBR.fs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\HybridAnimPBR.vs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\instanced.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\instanced.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\learnopengl.PBR.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\marching_cubes.fs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\marching_cubes.vs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\nanosuit.fs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\nanosuit.vs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\omni_shadow_map.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\omni_shadow_map.geom">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\omni_shadow_map.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\PBR.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\PBR.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\render_instanced.fs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\render_instanced.vs">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\shader.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\shader.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\skybox.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\skybox.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\skybox_joey.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\skybox_joey.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\water.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\water.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Shaders\Hazel\EnvironmentIrradiance.cs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\EnvironmentMipFilter.cs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\EquirectangularToCubeMap.cs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\Grid.fs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\Grid.vs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\HazelPBR.fs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\HazelPBR_Anim.vs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\HazelPBR_Static.vs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\HDR.fs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\HDR.vs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\Outline.fs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\Outline.vs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\Renderer2D.fs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\Renderer2D.glsl">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\Renderer2D.vs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\Renderer2D_Line.fs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\Renderer2D_Line.vs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\SceneComposite.fs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\SceneComposite.vs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\Skybox.fs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\Hazel\Skybox.vs">
+      <Filter>Resources\Shaders\Hazel</Filter>
+    </None>
+    <None Include="Shaders\OGLdev\skinning.fs">
+      <Filter>Resources\Shaders\OGLdev</Filter>
+    </None>
+    <None Include="Shaders\OGLdev\skinning.vs">
+      <Filter>Resources\Shaders\OGLdev</Filter>
+    </None>
+    <None Include="Shaders\OGLdev\tutorial35\forward_basic.fs">
+      <Filter>Resources\Shaders\OGLdev\tutorial35</Filter>
+    </None>
+    <None Include="Shaders\OGLdev\tutorial35\forward_basic.vs">
+      <Filter>Resources\Shaders\OGLdev\tutorial35</Filter>
+    </None>
+    <None Include="Shaders\OGLdev\tutorial35\geometry_pass.fs">
+      <Filter>Resources\Shaders\OGLdev\tutorial35</Filter>
+    </None>
+    <None Include="Shaders\OGLdev\tutorial35\geometry_pass.vs">
+      <Filter>Resources\Shaders\OGLdev\tutorial35</Filter>
+    </None>
+    <None Include="Shaders\PBR\brdf.fs">
+      <Filter>Resources\Shaders\PBR</Filter>
+    </None>
+    <None Include="Shaders\PBR\brdf.vs">
+      <Filter>Resources\Shaders\PBR</Filter>
+    </None>
+    <None Include="Shaders\PBR\cubemap.vs">
+      <Filter>Resources\Shaders\PBR</Filter>
+    </None>
+    <None Include="Shaders\PBR\editor_object_pbr.fs">
+      <Filter>Resources\Shaders\PBR</Filter>
+    </None>
+    <None Include="Shaders\PBR\equirectangular_to_cubemap.fs">
+      <Filter>Resources\Shaders\PBR</Filter>
+    </None>
+    <None Include="Shaders\PBR\irradiance_convolution.fs">
+      <Filter>Resources\Shaders\PBR</Filter>
+    </None>
+    <None Include="Shaders\PBR\prefilter.fs">
+      <Filter>Resources\Shaders\PBR</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\blur.fs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\blur_horizontal.vs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\blur_vertical.vs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\flare.fs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\flare.vs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\font.fs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\font.vs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\gui.fs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\gui.vs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\particle.fs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\particle.vs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\particle_instanced.fs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\particle_instanced.vs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\sun.fs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\sun.vs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\terrain.fs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\terrain.vs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\terrain_low_poly.fs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\terrain_low_poly.vs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\water.fs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\water.vs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\water_low_poly.fs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\ThinMatrix\water_low_poly.vs">
+      <Filter>Resources\Shaders\ThinMatrix</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\2.2.2.background.fs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\2.2.2.background.vs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\2.2.2.pbr.fs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\2.2.2.pbr.vs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\2.2.3.pbr.fs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\4.2.lighting_maps.fs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\4.2.lighting_maps.vs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\6.2.cubemaps.fs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\6.2.cubemaps.vs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\6.2.cubemaps_nanosuit.vs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\6.2.skybox.fs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\6.2.skybox.vs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\8.2.deferred_light_box.fs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\8.2.deferred_light_box.vs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\8.2.deferred_shading.fs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\8.2.deferred_shading.vs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\8.2.g_buffer.fs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\8.2.g_buffer.vs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\ssao.fs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\ssao.vs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\ssao_blur.fs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\ssao_geometry.fs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\ssao_geometry.vs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+    </None>
+    <None Include="Shaders\LearnOpenGL\ssao_lighting.fs">
+      <Filter>Resources\Shaders\LearnOpenGL</Filter>
     </None>
   </ItemGroup>
 </Project>

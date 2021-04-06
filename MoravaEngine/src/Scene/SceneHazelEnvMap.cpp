@@ -250,7 +250,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
     std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     if (passType == "main") {
-        m_EnvMapEditorLayer->OnRender(m_EnvMapEditorLayer->m_RenderFramebuffer, mainWindow);
+        m_EnvMapEditorLayer->OnRender(mainWindow);
     }
 
     if (passType == "shadow" && sceneSettings.enableShadows) {

@@ -14,14 +14,16 @@ const uint NumSamples = 1024;
 const float InvNumSamples = 1.0 / float(NumSamples);
 
 const int NumMipLevels = 1;
-layout(binding = 0) uniform samplerCube inputTexture;
-layout(binding = 0, rgba16f) restrict writeonly uniform imageCube outputTexture[NumMipLevels];
+layout(binding = 0, rgba32f) restrict writeonly uniform imageCube outputTexture[NumMipLevels];
+layout(binding = 1) uniform samplerCube inputTexture;
 
-// Roughness value to pre-filter for.
-layout(location=0) uniform float roughness;
+layout (push_constant) uniform Uniforms
+{
+	float Roughness;
+} u_Uniforms;
 
 #define PARAM_LEVEL     0
-#define PARAM_ROUGHNESS roughness
+#define PARAM_ROUGHNESS u_Uniforms.Roughness
 
 // Compute Van der Corput radical inverse
 // See: http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html

@@ -38,7 +38,7 @@ public:
 	void OnScenePlay();
 	void OnSceneStop();
 
-	void OnRender(Framebuffer* framebuffer, Window* mainWindow);
+	void OnRender(Window* mainWindow);
 	void OnRenderShadow(Window* mainWindow);
 	void OnRenderShadowOmni(Window* mainWindow);
 
@@ -72,6 +72,8 @@ public:
 	void UpdateImGuizmo(Window* mainWindow);
 	Hazel::Entity CreateEntity(const std::string& name);
 	Hazel::Entity LoadEntity(std::string fullPath);
+	Hazel::CameraComponent GetMainCameraComponent();
+
 	void ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop);
 
 	static void AddSubmeshToSelectionContext(SelectedSubmesh submesh);
@@ -170,8 +172,6 @@ private:
 	/** BEGIN properties Hazelnut/EditorLayer **/
 	// Editor resources
 	Hazel::Ref<Hazel::HazelTexture2D> m_PlayButtonTex;
-
-	Hazel::Entity m_CameraEntity;
 
 	Hazel::Entity m_DirectionalLightEntity;
 	Hazel::Ref<ShadowMap> m_ShadowMapDirLight;

@@ -155,13 +155,13 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     m_EditorCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
     m_RuntimeCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 
+    // GetMainCameraComponent().Camera
     m_ActiveCamera = m_RuntimeCamera; // m_RuntimeCamera m_EditorCamera;
-    EnvMapSceneRenderer::GetCamera().Camera = *m_RuntimeCamera;
 
-    m_CameraEntity = CreateEntity("Camera");
-    m_CameraEntity.AddComponent<Hazel::CameraComponent>(EnvMapSceneRenderer::GetCamera().Camera);
+    Hazel::Entity cameraEntity = CreateEntity("Camera");
+    cameraEntity.AddComponent<Hazel::CameraComponent>(*m_ActiveCamera);
 
-    Log::GetLogger()->debug("m_CameraEntity UUID: {0}", m_CameraEntity.GetUUID());
+    Log::GetLogger()->debug("m_CameraEntity UUID: {0}", cameraEntity.GetUUID());
 
     auto mapGenerator = CreateEntity("Map Generator");
     // mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
@@ -184,6 +184,14 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     auto& slc = m_SpotLightEntity.AddComponent<Hazel::SpotLightComponent>();
     auto& sltc = m_SpotLightEntity.GetComponent<Hazel::TransformComponent>();
     sltc.Rotation = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
+}
+
+Hazel::Entity EnvMapEditorLayer::CreateEntity(const std::string& name)
+{
+    // Both NoECS and ECS
+    Hazel::Entity entity = m_EditorScene->CreateEntity(name, m_EditorScene);
+
+    return entity;
 }
 
 Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
@@ -220,6 +228,17 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
     // LoadEnvMapMaterials(mesh, meshEntity);
 
     return meshEntity;
+}
+
+Hazel::CameraComponent EnvMapEditorLayer::GetMainCameraComponent()
+{
+    auto mainCameraEntity = m_EditorScene->GetMainCameraEntity();
+    if (mainCameraEntity && mainCameraEntity.HasComponent<Hazel::CameraComponent>())
+    {
+        auto mainCameraComponent = mainCameraEntity.GetComponent<Hazel::CameraComponent>();
+        return mainCameraComponent;
+    }
+    return {};
 }
 
 void EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh submesh)
@@ -273,7 +292,7 @@ void EnvMapEditorLayer::UpdateUniforms()
     /**** BEGIN Shaders/Hazel/SceneComposite ****/
     EnvMapSceneRenderer::GetShaderComposite()->Bind();
     EnvMapSceneRenderer::GetShaderComposite()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    EnvMapSceneRenderer::GetShaderComposite()->setFloat("u_Exposure", EnvMapSceneRenderer::GetCamera().Camera.GetExposure());
+    EnvMapSceneRenderer::GetShaderComposite()->setFloat("u_Exposure", m_ActiveCamera->GetExposure());
     /**** END Shaders/Hazel/SceneComposite ****/
 
     /**** BEGIN Shaders/Hazel/Skybox ****/
@@ -281,7 +300,7 @@ void EnvMapEditorLayer::UpdateUniforms()
     EnvMapSceneRenderer::s_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
     EnvMapSceneRenderer::s_ShaderSkybox->setFloat("u_TextureLod", m_EditorScene->GetSkyboxLod());
     // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
-    EnvMapSceneRenderer::s_ShaderSkybox->setFloat("u_Exposure", EnvMapSceneRenderer::GetCamera().Camera.GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
+    EnvMapSceneRenderer::s_ShaderSkybox->setFloat("u_Exposure", m_ActiveCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
     /**** END Shaders/Hazel/Skybox ****/
 
     /**** BEGIN Shaders/Hazel/Outline ****/
@@ -322,7 +341,7 @@ void EnvMapEditorLayer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPB
     shaderHazelPBR->setFloat("u_AOTexToggle",        envMapMaterial->GetAOInput().UseTexture ? 1.0f : 0.0f);
 
     // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
-    shaderHazelPBR->setFloat("u_Exposure", EnvMapSceneRenderer::GetCamera().Camera.GetExposure()); // originally used in Shaders/Hazel/SceneComposite
+    shaderHazelPBR->setFloat("u_Exposure", m_ActiveCamera->GetExposure()); // originally used in Shaders/Hazel/SceneComposite
 
     shaderHazelPBR->setFloat("u_TilingFactor", envMapMaterial->GetTilingFactor());
 
@@ -397,14 +416,6 @@ EnvMapEditorLayer::~EnvMapEditorLayer()
     delete m_EditorCamera;
 }
 
-Hazel::Entity EnvMapEditorLayer::CreateEntity(const std::string& name)
-{
-    // Both NoECS and ECS
-    Hazel::Entity entity = m_EditorScene->CreateEntity(name, m_EditorScene);
-
-    return entity;
-}
-
 void EnvMapEditorLayer::OnUpdate(Scene* scene, float timestep)
 {
     switch (m_SceneState)
@@ -440,7 +451,7 @@ void EnvMapEditorLayer::OnUpdate(Scene* scene, float timestep)
         break;
     }
 
-    CameraSyncECS(); // TODO
+    // CameraSyncECS(); // TODO
 
     if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>())
     {
@@ -478,8 +489,7 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, floa
         }
     }
 
-    m_ActiveCamera->OnUpdate(timestep); // remove m_ActiveCamera when possible
-    EnvMapSceneRenderer::GetCamera().Camera.OnUpdate(timestep);
+    m_ActiveCamera->OnUpdate(timestep);
 
     Scene::s_ImGuizmoTransform = m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
 
@@ -487,8 +497,7 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, floa
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
     if (m_ViewportWidth > 0.0f && m_ViewportHeight > 0.0f) {
-        m_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight); // remove m_ActiveCamera when possible
-        EnvMapSceneRenderer::GetCamera().Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+        m_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
     }
 }
 
@@ -519,8 +528,7 @@ void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, flo
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
     if (m_ViewportWidth > 0.0f && m_ViewportHeight > 0.0f) {
-        m_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight); // remove m_ActiveCamera when possible
-        EnvMapSceneRenderer::GetCamera().Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+        m_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
     }
 }
 
@@ -563,25 +571,6 @@ void EnvMapEditorLayer::UpdateWindowTitle(const std::string& sceneName)
 
 void EnvMapEditorLayer::CameraSyncECS()
 {
-    // temporary solution before switching from m_ActiveCamera to ECS camera in EnvMapSceneRenderer
-    EnvMapSceneRenderer::GetCamera().Camera = *m_ActiveCamera;
-    EnvMapSceneRenderer::GetCamera().FOV = m_ActiveCamera->GetPerspectiveVerticalFOV();
-    EnvMapSceneRenderer::GetCamera().ViewMatrix = m_ActiveCamera->GetViewMatrix();
-    EnvMapSceneRenderer::GetCamera().Near = m_ActiveCamera->GetPerspectiveNearClip();
-    EnvMapSceneRenderer::GetCamera().Far = m_ActiveCamera->GetPerspectiveFarClip();
-
-    // glm::vec3 cameraPosition = m_CameraEntity.GetComponent<Hazel::TransformComponent>().Translation;
-    // m_ActiveCamera->SetPosition(cameraPosition); // remove m_ActiveCamera when possible
-    // EnvMapSceneRenderer::GetCamera().Camera.SetPosition(cameraPosition);
-
-    // glm::vec3 cameraRotation = m_CameraEntity.GetComponent<Hazel::TransformComponent>().Rotation;
-    // m_ActiveCamera->SetYaw(glm::degrees(cameraRotation.y)); // remove m_ActiveCamera when possible
-    // m_ActiveCamera->SetPitch(glm::degrees(cameraRotation.z)); // remove m_ActiveCamera when possible
-    // EnvMapSceneRenderer::GetCamera().Camera.SetYaw(glm::degrees(cameraRotation.y));
-    // EnvMapSceneRenderer::GetCamera().Camera.SetPitch(glm::degrees(cameraRotation.z));
-
-    // m_ActiveCamera->SetPerspectiveNearClip(EnvMapSceneRenderer::GetCamera().Camera.GetPerspectiveNearClip());
-    // m_ActiveCamera->SetPerspectiveFarClip(EnvMapSceneRenderer::GetCamera().Camera.GetPerspectiveFarClip());
 }
 
 void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
@@ -835,10 +824,9 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
             }
 
-            float fovDegrees = EnvMapSceneRenderer::GetCamera().Camera.GetPerspectiveVerticalFOV();
+            float fovDegrees = m_ActiveCamera->GetPerspectiveVerticalFOV();
             if (ImGui::DragFloat("FOV", &fovDegrees, 1.0f, -60.0f, 180.0f)) {
-                EnvMapSceneRenderer::GetCamera().Camera.SetPerspectiveVerticalFOV(fovDegrees);
-                m_ActiveCamera->SetPerspectiveVerticalFOV(fovDegrees); // remove m_ActiveCamera when possible
+                m_ActiveCamera->SetPerspectiveVerticalFOV(fovDegrees);
             }
 
             ImGui::Separator();
@@ -1179,10 +1167,9 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 m_ActiveCamera->SetYaw(yaw);
             }
 
-            auto fov = EnvMapSceneRenderer::GetCamera().Camera.GetPerspectiveVerticalFOV();
+            auto fov = m_ActiveCamera->GetPerspectiveVerticalFOV();
             if(ImGui::DragFloat("FOV", &fov, 1.0f, 10.0f, 150.0f)) {
-                m_ActiveCamera->SetPerspectiveVerticalFOV(fov); // remove m_ActiveCamera when possible
-                EnvMapSceneRenderer::GetCamera().Camera.SetPerspectiveVerticalFOV(fov);
+                m_ActiveCamera->SetPerspectiveVerticalFOV(fov);
             }
 
             ImGui::DragFloat("Near Plane", &scene->sceneSettings.nearPlane, 0.1f, -10.0f, 100.0f);
@@ -1249,7 +1236,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::SliderProperty);
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
-                ImGuiWrapper::Property("Exposure", EnvMapSceneRenderer::GetCamera().Camera.GetExposure(), 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
+                ImGuiWrapper::Property("Exposure", m_ActiveCamera->GetExposure(), 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
                 ImGuiWrapper::Property("Skybox Exposure Factor", m_SkyboxExposureFactor, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
 
                 ImGuiWrapper::Property("Radiance Prefiltering", m_RadiancePrefilter);
@@ -1784,7 +1771,7 @@ void EnvMapEditorLayer::RenderSkybox()
 
     EnvMapSceneRenderer::s_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
     EnvMapSceneRenderer::s_ShaderSkybox->setFloat("u_TextureLod", m_EditorScene->GetSkyboxLod());
-    EnvMapSceneRenderer::s_ShaderSkybox->setFloat("u_Exposure", EnvMapSceneRenderer::GetCamera().Camera.GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
+    EnvMapSceneRenderer::s_ShaderSkybox->setFloat("u_Exposure", m_ActiveCamera->GetExposure() * m_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
 
     m_SkyboxCube->Render();
 
@@ -2232,13 +2219,13 @@ void EnvMapEditorLayer::CompositePassTemporary(Framebuffer* framebuffer)
     EnvMapSceneRenderer::GetShaderComposite()->Bind();
     framebuffer->GetTextureAttachmentColor()->Bind(m_SamplerSlots->at("u_Texture"));
     EnvMapSceneRenderer::GetShaderComposite()->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    EnvMapSceneRenderer::GetShaderComposite()->setFloat("u_Exposure", EnvMapSceneRenderer::GetCamera().Camera.GetExposure());
+    EnvMapSceneRenderer::GetShaderComposite()->setFloat("u_Exposure", m_ActiveCamera->GetExposure());
     // m_ShaderComposite->setInt("u_TextureSamples", framebuffer->GetSpecification().Samples);
     EnvMapSceneRenderer::GetShaderComposite()->setInt("u_TextureSamples", EnvMapSceneRenderer::GetGeoPass()->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
     // Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
 }
 
-void EnvMapEditorLayer::OnRender(Framebuffer* framebuffer, Window* mainWindow)
+void EnvMapEditorLayer::OnRender(Window* mainWindow)
 {
     /**** BEGIN Render to Main Viewport ****/
     {
@@ -2254,7 +2241,7 @@ void EnvMapEditorLayer::OnRender(Framebuffer* framebuffer, Window* mainWindow)
         }
     }
 
-    OnRenderEditor(framebuffer);
+    OnRenderEditor(m_RenderFramebuffer);
     // OnRenderRuntime(framebuffer)
 
     if (m_IsViewportEnabled)
