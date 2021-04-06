@@ -328,6 +328,18 @@ namespace Hazel {
 		m_ShaderSkybox->setInt("u_Texture", skybox.Raw()->GetID());
 	}
 
+	Entity HazelScene::GetMainCameraEntity()
+	{
+		auto view = m_Registry.view<CameraComponent>();
+		for (auto entity : view)
+		{
+			auto& comp = view.get<CameraComponent>(entity);
+			if (comp.Primary)
+				return { entity, this };
+		}
+		return {};
+	}
+
 	void HazelScene::OnEntitySelected(Entity entity)
 	{
 		// TODO...

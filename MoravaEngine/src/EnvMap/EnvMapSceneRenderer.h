@@ -35,8 +35,7 @@ public:
 
 	static void SetViewportSize(uint32_t width, uint32_t height);
 
-	static void BeginScene(Hazel::HazelScene* scene, const Hazel::EditorCamera& camera);
-	static void BeginScene(Hazel::HazelScene* scene);
+	static void BeginScene(Hazel::HazelScene* scene, const SceneRendererCamera& camera);
 	static void EndScene();
 
 	static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<Hazel::HazelMaterial> overrideMaterial = nullptr);
@@ -94,5 +93,8 @@ public:
 
 	static float s_GridScale;
 	static float s_GridSize;
+
+	static uint32_t s_FramebufferWidth;
+	static uint32_t s_FramebufferHeight;
 
 };

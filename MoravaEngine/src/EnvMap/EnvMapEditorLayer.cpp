@@ -454,7 +454,10 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, floa
 {
     m_EditorScene = scene;
 
-    EnvMapSceneRenderer::BeginScene(m_EditorScene.Raw());
+    auto cameraEntity = m_EditorScene->GetMainCameraEntity();
+    auto cameraComponent = cameraEntity.GetComponent<Hazel::CameraComponent>();
+
+    EnvMapSceneRenderer::BeginScene(m_EditorScene.Raw(), { cameraComponent.Camera, cameraComponent.Camera.GetViewMatrix() });
 
     UpdateUniforms();
 
@@ -486,7 +489,10 @@ void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, flo
 {
     m_EditorScene = scene;
 
-    EnvMapSceneRenderer::BeginScene(m_EditorScene.Raw());
+    auto cameraEntity = m_EditorScene->GetMainCameraEntity();
+    auto cameraComponent = cameraEntity.GetComponent<Hazel::CameraComponent>();
+
+    EnvMapSceneRenderer::BeginScene(m_EditorScene.Raw(), { cameraComponent.Camera, cameraComponent.Camera.GetViewMatrix() });
 
     UpdateUniforms();
 

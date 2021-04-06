@@ -24,14 +24,16 @@ Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::s_EnvFiltered;
 Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::s_IrradianceMap;
 float EnvMapSceneRenderer::s_GridScale = 16.025f;
 float EnvMapSceneRenderer::s_GridSize = 0.025f;
+uint32_t EnvMapSceneRenderer::s_FramebufferWidth = 1280;
+uint32_t EnvMapSceneRenderer::s_FramebufferHeight = 720;
 
 
 struct EnvMapSceneRendererData
 {
-    // HazelScene* ActiveScene = nullptr;
+    const Hazel::HazelScene* ActiveScene = nullptr;
     struct SceneInfo
     {
-        Hazel::HazelCamera* SceneCamera;
+        SceneRendererCamera SceneCamera;
 
         // Resources
         Ref<Hazel::HazelMaterial> HazelSkyboxMaterial;
@@ -79,8 +81,6 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
 
     SetupShaders();
 
-    BeginScene(scene);
-
     s_Data.SceneData.SceneEnvironment = Load(filepath);
     SetEnvironment(s_Data.SceneData.SceneEnvironment);
 
@@ -102,16 +102,11 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
     // s_Data.ActiveScene->m_ViewportWidth = Application::Get()->GetWindow()->GetWidth();
     // s_Data.ActiveScene->m_ViewportHeight = Application::Get()->GetWindow()->GetHeight();
 
-    s_Data.SceneData.SceneCamera = scene->GetCamera();
-
     bool isMultisample = false;
 
-    uint32_t framebufferWidth = 1280;
-    uint32_t framebufferHeight = 720;
-
     FramebufferSpecification geoFramebufferSpec;
-    geoFramebufferSpec.Width = framebufferWidth;
-    geoFramebufferSpec.Height = framebufferHeight;
+    geoFramebufferSpec.Width = s_FramebufferWidth;
+    geoFramebufferSpec.Height = s_FramebufferHeight;
     geoFramebufferSpec.attachmentType = AttachmentType::Texture;
     geoFramebufferSpec.attachmentFormat = AttachmentFormat::RGBA16F;
     geoFramebufferSpec.Samples = 8;
@@ -135,8 +130,8 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
     s_Data.GeoPass = Hazel::Ref<EnvMapRenderPass>::Create(geoRenderPassSpec);
 
     FramebufferSpecification compFramebufferSpec;
-    compFramebufferSpec.Width = framebufferWidth;
-    compFramebufferSpec.Height = framebufferHeight;
+    compFramebufferSpec.Width = s_FramebufferWidth;
+    compFramebufferSpec.Height = s_FramebufferHeight;
     compFramebufferSpec.attachmentType = AttachmentType::Texture;
     compFramebufferSpec.attachmentFormat = AttachmentFormat::RGBA;
     compFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
@@ -201,29 +196,20 @@ void EnvMapSceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
     s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height, true);
 }
 
-void EnvMapSceneRenderer::BeginScene(Hazel::HazelScene* scene, const Hazel::EditorCamera& camera)
+void EnvMapSceneRenderer::BeginScene(Hazel::HazelScene* scene, const SceneRendererCamera& camera)
 {
     // HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
-    // s_Data.ActiveScene = scene;
+    s_Data.ActiveScene = scene;
 
-    // s_Data.SceneData.SceneCamera = ((::Scene*)scene)->GetCamera();
-}
-
-void EnvMapSceneRenderer::BeginScene(Hazel::HazelScene* scene)
-{
-    // HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
-
-    // s_Data.ActiveScene = scene;
-
-    s_Data.SceneData.SceneCamera = ((::Scene*)scene)->GetCamera();
+    s_Data.SceneData.SceneCamera = camera;
 }
 
 void EnvMapSceneRenderer::EndScene()
 {
-    // HZ_CORE_ASSERT(s_Data.ActiveScene, "");
+    HZ_CORE_ASSERT(s_Data.ActiveScene, "");
 
-    // s_Data.ActiveScene = nullptr;
+    s_Data.ActiveScene = nullptr;
 
     FlushDrawList();
 }
@@ -313,7 +299,7 @@ void EnvMapSceneRenderer::CompositePass()
 
     s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind(m_SamplerSlots->at("u_Texture"));
     s_Data.CompositeShader->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
-    s_Data.CompositeShader->setFloat("u_Exposure", s_Data.SceneData.SceneCamera->GetExposure());
+    s_Data.CompositeShader->setFloat("u_Exposure", s_Data.SceneData.SceneCamera.Camera.GetExposure());
     s_Data.CompositeShader->setInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
 
     Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
@@ -360,8 +346,8 @@ void EnvMapSceneRenderer::GeometryPass()
         glStencilMask(0);
     }
 
-    auto viewProjection = s_Data.SceneData.SceneCamera->GetProjectionMatrix() * s_Data.SceneData.SceneCamera->GetViewMatrix();
-    glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera->GetViewMatrix())[3];
+    auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.Camera.GetViewMatrix();
+    glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix())[3];
 
     // Skybox
     auto skyboxShader = s_Data.SceneData.HazelSkyboxMaterial->GetShader();

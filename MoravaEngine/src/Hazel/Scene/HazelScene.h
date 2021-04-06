@@ -62,16 +62,17 @@ namespace Hazel {
 
 		void SetEnvironment(const Environment& environment);
 		inline const Environment& GetEnvironment() const { return m_Environment; }
-
-		inline void SetLight(HazelLight light) { m_Light = light; };
+		void SetSkybox(const Ref<HazelTextureCube>& skybox);
 
 		HazelLight& GetLight() { return m_Light; }
 		inline const HazelLight& GetLight() const { return m_Light; }
+		inline void SetLight(HazelLight light) { m_Light = light; };
 
-		void SetSkybox(const Ref<HazelTextureCube>& skybox);
+		Entity GetMainCameraEntity();
 
 		inline void SetSkyboxLod(float LOD) { m_SkyboxLod = LOD; }
 		float& GetSkyboxLod() { return m_SkyboxLod; }
+		float GetSkyboxLod() const { return m_SkyboxLod; }
 
 		Entity CreateEntity(const std::string& name = "");
 		Entity CreateEntity(const std::string& name, Ref<HazelScene> scene);
