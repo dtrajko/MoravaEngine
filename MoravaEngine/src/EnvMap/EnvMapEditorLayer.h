@@ -96,6 +96,7 @@ public:
 	inline bool* GetDisplayHazelGrid() { return &m_DisplayHazelGrid; }
 	inline bool* GetDisplayBoundingBoxes() { return &m_DisplayBoundingBoxes; };
 	inline bool* GetDisplayRay() { return &m_DisplayRay; };
+	glm::mat4 GetViewProjection();
 
 	// EnvMapSceneRenderer
 	void CompositePassTemporary(Framebuffer* framebuffer);

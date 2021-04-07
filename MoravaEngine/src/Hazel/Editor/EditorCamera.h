@@ -64,9 +64,6 @@ namespace Hazel {
 
 		float m_MinFocusDistance = 100.0f;
 
-		uint32_t m_ViewportWidth = 1280;
-		uint32_t m_ViewportHeight = 720;
-
 	};
 
 }
