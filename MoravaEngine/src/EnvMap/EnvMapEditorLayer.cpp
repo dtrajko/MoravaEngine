@@ -157,6 +157,9 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
 
     Hazel::Entity cameraEntity = CreateEntity("Camera");
     cameraEntity.AddComponent<Hazel::CameraComponent>(*m_RuntimeCamera);
+
+    // auto ecsCamera = GetMainCameraComponent().Camera;
+    // m_ActiveCamera = &ecsCamera;
     m_ActiveCamera = m_RuntimeCamera;
 
     Log::GetLogger()->debug("cameraEntity UUID: {0}", cameraEntity.GetUUID());
@@ -304,7 +307,6 @@ void EnvMapEditorLayer::UpdateUniforms()
     /**** BEGIN Shaders/Hazel/Outline ****/
     m_ShaderOutline->Bind();
     glm::mat4 viewProj = m_ActiveCamera->GetViewProjection();
-    // glm::mat4 viewProj = RendererBasic::GetProjectionMatrix() * m_ActiveCamera->GetViewMatrix();
     m_ShaderOutline->setMat4("u_ViewProjection", viewProj);
     /**** BEGIN Shaders/Hazel/Outline ****/
 }
@@ -344,7 +346,6 @@ void EnvMapEditorLayer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPB
     shaderHazelPBR->setFloat("u_TilingFactor", envMapMaterial->GetTilingFactor());
 
     glm::mat4 viewProj = m_ActiveCamera->GetViewProjection();
-    // glm::mat4 viewProj = RendererBasic::GetProjectionMatrix() * m_ActiveCamera->GetViewMatrix();
     shaderHazelPBR->setMat4("u_ViewProjectionMatrix", viewProj);
     shaderHazelPBR->setVec3("u_CameraPosition", m_ActiveCamera->GetPosition());
     shaderHazelPBR->setMat4("u_DirLightTransform", m_DirLightTransform);
@@ -449,7 +450,7 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
         break;
     }
 
-    CameraSyncECS();
+    // CameraSyncECS();
 
     if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>())
     {
@@ -468,10 +469,7 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, floa
 {
     m_EditorScene = scene;
 
-    auto cameraEntity = m_EditorScene->GetMainCameraEntity();
-    auto cameraComponent = cameraEntity.GetComponent<Hazel::CameraComponent>();
-
-    EnvMapSceneRenderer::BeginScene(m_EditorScene.Raw(), { cameraComponent.Camera, cameraComponent.Camera.GetViewMatrix() });
+    EnvMapSceneRenderer::BeginScene(m_EditorScene.Raw(), { GetMainCameraComponent().Camera, GetMainCameraComponent().Camera.GetViewMatrix() });
 
     UpdateUniforms();
 
@@ -503,10 +501,7 @@ void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, flo
 {
     m_EditorScene = scene;
 
-    auto cameraEntity = m_EditorScene->GetMainCameraEntity();
-    auto cameraComponent = cameraEntity.GetComponent<Hazel::CameraComponent>();
-
-    EnvMapSceneRenderer::BeginScene(m_EditorScene.Raw(), { cameraComponent.Camera, cameraComponent.Camera.GetViewMatrix() });
+    EnvMapSceneRenderer::BeginScene(m_EditorScene.Raw(), { GetMainCameraComponent().Camera, GetMainCameraComponent().Camera.GetViewMatrix() });
 
     UpdateUniforms();
 
@@ -1793,7 +1788,6 @@ void EnvMapEditorLayer::RenderSkybox()
     EnvMapSceneRenderer::GetRadianceMap()->Bind(m_SamplerSlots->at("u_Texture"));
 
     glm::mat4 viewProj = m_ActiveCamera->GetViewProjection();
-    // glm::mat4 viewProj = RendererBasic::GetProjectionMatrix() * m_ActiveCamera->GetViewMatrix();
     EnvMapSceneRenderer::s_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProj));
 
     EnvMapSceneRenderer::s_ShaderSkybox->setInt("u_Texture", m_SamplerSlots->at("u_Texture"));
@@ -1819,7 +1813,6 @@ void EnvMapEditorLayer::RenderHazelGrid()
     EnvMapSceneRenderer::s_ShaderGrid->setFloat("u_Scale", EnvMapSceneRenderer::s_GridScale);
     EnvMapSceneRenderer::s_ShaderGrid->setFloat("u_Res", EnvMapSceneRenderer::s_GridSize);
 
-    // glm::mat4 viewProj = RendererBasic::GetProjectionMatrix() * m_ActiveCamera->GetViewMatrix();
     glm::mat4 viewProj = m_ActiveCamera->GetViewProjection();
     EnvMapSceneRenderer::s_ShaderGrid->setMat4("u_ViewProjection", viewProj);
 
@@ -1869,7 +1862,7 @@ void EnvMapEditorLayer::OnEvent(Event& e)
     if (m_SceneState == SceneState::Edit)
     {
         if (m_ViewportPanelMouseOver) {
-            m_ActiveCamera->OnEvent(e);
+            GetMainCameraComponent().Camera.OnEvent(e);
         }
 
         m_EditorScene->OnEvent(e);
@@ -2095,7 +2088,6 @@ void EnvMapEditorLayer::GeometryPassTemporary()
     RendererBasic::EnableMSAA();
 
     glm::mat4 viewProj = m_ActiveCamera->GetViewProjection();
-    // glm::mat4 viewProj = RendererBasic::GetProjectionMatrix() * m_ActiveCamera->GetViewMatrix();
 
     EnvMapSceneRenderer::GetRadianceMap()->Bind(m_SamplerSlots->at("radiance"));
     EnvMapSceneRenderer::GetIrradianceMap()->Bind(m_SamplerSlots->at("irradiance"));

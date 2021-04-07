@@ -68,11 +68,6 @@ void Camera::OnEvent(Event& e)
 	dispatcher.Dispatch<MouseScrolledEvent>(HZ_BIND_EVENT_FN(Camera::OnMouseScroll));
 }
 
-bool Camera::OnMouseScroll(MouseScrolledEvent& e)
-{
-	return false;
-}
-
 void Camera::SetViewportSize(float width, float height)
 {
 	m_ViewportWidth = width;

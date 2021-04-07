@@ -64,11 +64,6 @@ void RuntimeCamera::OnEvent(Event& e)
 	dispatcher.Dispatch<MouseScrolledEvent>(HZ_BIND_EVENT_FN(RuntimeCamera::OnMouseScroll));
 }
 
-bool RuntimeCamera::OnMouseScroll(MouseScrolledEvent& e)
-{
-	return false;
-}
-
 void RuntimeCamera::SetViewportSize(float width, float height)
 {
 	m_ViewportWidth = width;

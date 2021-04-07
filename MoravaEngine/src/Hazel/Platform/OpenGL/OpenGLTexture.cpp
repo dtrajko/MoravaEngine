@@ -62,7 +62,7 @@ namespace Hazel {
 		}
 		else
 		{
-			Log::GetLogger()->info("Loading texture {0}, srgb={1}", path, srgb);
+			// Log::GetLogger()->info("Loading texture {0}, srgb={1}", path, srgb);
 			m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, srgb ? STBI_rgb : STBI_rgb_alpha);
 			if (!m_ImageData.Data) {
 				Log::GetLogger()->error("Could not read image!");

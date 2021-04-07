@@ -19,11 +19,9 @@ public:
 	virtual void OnUpdate(Hazel::Timestep ts) override;
 	virtual void OnEvent(Event& e) override;
 	virtual void SetViewportSize(float width, float height) override;
+
 	virtual void SetPitch(float pitch) override;
-	virtual bool OnMouseScroll(MouseScrolledEvent& e) override;
 	virtual glm::mat4& GetViewMatrix() override;
-	virtual glm::mat4 GetViewProjection() override { return m_ProjectionMatrix * m_ViewMatrix; }
-	inline float& GetExposure() { return m_Exposure; }
 
 private:
 	void UpdateProjection();
