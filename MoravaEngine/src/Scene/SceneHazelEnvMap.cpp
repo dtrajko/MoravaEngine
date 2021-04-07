@@ -182,7 +182,7 @@ void SceneHazelEnvMap::SetupUniforms()
 void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 {
     float deltaTime = Timer::Get()->GetDeltaTime();
-    m_EnvMapEditorLayer->OnUpdate(this, deltaTime);
+    m_EnvMapEditorLayer->OnUpdate(deltaTime);
 }
 
 void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)

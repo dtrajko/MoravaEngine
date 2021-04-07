@@ -31,7 +31,7 @@ public:
 	EnvMapEditorLayer(const std::string& filepath, Scene* scene);
 	~EnvMapEditorLayer();
 
-	void OnUpdate(Scene* scene, float timestep);
+	void OnUpdate(float timestep);
 	void OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, float timestep);
 	void OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, float timestep);
 
@@ -130,15 +130,15 @@ private:
 	void RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh);
 
 public:
-	Hazel::EditorCamera* m_EditorCamera;
-	RuntimeCamera* m_RuntimeCamera;
-	Hazel::HazelCamera* m_ActiveCamera;
-
 	static SelectionMode s_SelectionMode;
 	static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
 
 	static Hazel::Ref<EnvMapMaterial> s_DefaultMaterial;
 	static Hazel::Ref<EnvMapMaterial> s_LightMaterial;
+
+	Hazel::EditorCamera* m_EditorCamera;
+	RuntimeCamera* m_RuntimeCamera;
+	Hazel::HazelCamera* m_ActiveCamera;
 
 	glm::mat4* m_CurrentlySelectedTransform = nullptr;
 	glm::mat4* m_RelativeTransform = nullptr;
