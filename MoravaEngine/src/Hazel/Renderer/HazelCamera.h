@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../Events/Event.h"
-#include "../Events/MouseEvent.h"
-#include "../Core/Timestep.h"
+#include "Hazel/Events/Event.h"
+#include "Hazel/Events/MouseEvent.h"
+#include "Hazel/Core/Timestep.h"
 
 #include <glm/glm.hpp>
 
@@ -26,8 +26,10 @@ namespace Hazel {
 		virtual void OnEvent(Event& e) {};
 		virtual inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; };
 		virtual inline bool OnMouseScroll(MouseScrolledEvent& e) { return false; };
+
 		virtual inline const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		virtual inline glm::mat4& GetViewMatrix() { return m_ViewMatrix; }
+		void SetViewMatrix(const glm::mat4& viewMatrix) { m_ViewMatrix = viewMatrix; }
 
 		ProjectionType GetProjectionType() const { return m_ProjectionType; };
 		void SetProjectionType(ProjectionType type) { m_ProjectionType = type; RecalculateProjection(); }

@@ -450,7 +450,7 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
         break;
     }
 
-    // CameraSyncECS();
+    CameraSyncECS();
 
     if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>())
     {
