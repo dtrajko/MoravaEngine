@@ -63,7 +63,7 @@ namespace Hazel
 		template<typename T>
 		void Push(const std::string& name, const T& data) {}
 
-		template<>
+		template<typename T>
 		void Push(const std::string& name, const float& data)
 		{
 			Uniforms[Index++] = { UniformType::Float, Cursor, name };
@@ -71,7 +71,7 @@ namespace Hazel
 			Cursor += sizeof(float);
 		}
 
-		template<>
+		template<typename T>
 		void Push(const std::string& name, const glm::vec3& data)
 		{
 			Uniforms[Index++] = { UniformType::Float3, Cursor, name };
@@ -79,7 +79,7 @@ namespace Hazel
 			Cursor += sizeof(glm::vec3);
 		}
 
-		template<>
+		template<typename T>
 		void Push(const std::string& name, const glm::vec4& data)
 		{
 			Uniforms[Index++] = { UniformType::Float4, Cursor, name };
@@ -87,7 +87,7 @@ namespace Hazel
 			Cursor += sizeof(glm::vec4);
 		}
 
-		template<>
+		template<typename T>
 		void Push(const std::string& name, const glm::mat4& data)
 		{
 			Uniforms[Index++] = { UniformType::Matrix4x4, Cursor, name };

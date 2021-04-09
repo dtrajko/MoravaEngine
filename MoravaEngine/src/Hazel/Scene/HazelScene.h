@@ -5,7 +5,7 @@
 #include "Hazel/Editor/EditorCamera.h"
 #include "Hazel/Renderer/HazelMaterial.h"
 #include "Hazel/Renderer/HazelTexture.h"
-#include "Hazel/Scene/Entity.h"
+#include "Hazel/Renderer/SceneEnvironment.h"
 #include "Hazel/Scene/SceneCamera.h"
 
 #include "Shader/Shader.h"
@@ -27,7 +27,7 @@ namespace Hazel {
 
 	class Entity;
 	class ScriptableEntity;
-	using EntityMap = std::unordered_map<UUID, Entity>;
+	using EntityMap = std::unordered_map<UUID, entt::entity>;
 
 
 	class HazelScene : public RefCounted
@@ -90,7 +90,7 @@ namespace Hazel {
 		Entity FindEntityByTag(const std::string& tag);
 
 		const EntityMap& GetEntityMap() const { return m_EntityIDMap; }
-
+		
 		// Temporary/experimental
 		virtual void OnEntitySelected(Entity entity);
 

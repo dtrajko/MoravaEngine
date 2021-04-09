@@ -35,7 +35,7 @@ namespace Hazel {
 
 		void Allocate(uint32_t size)
 		{
-			delete[] Data;
+			// delete[] Data;
 			Data = nullptr;
 
 			if (size == 0)
@@ -47,7 +47,7 @@ namespace Hazel {
 
 		void Release()
 		{
-			delete[] Data;
+			// delete[] Data;
 			Data = nullptr;
 			Size = 0;
 		}

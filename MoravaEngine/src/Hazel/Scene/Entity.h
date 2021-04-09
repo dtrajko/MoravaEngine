@@ -2,7 +2,7 @@
 
 #include "entt.hpp"
 
-#include "../Core/Assert.h"
+#include "Hazel/Core/Assert.h"
 #include "Components.h"
 #include "HazelScene.h"
 
@@ -12,13 +12,11 @@
 
 namespace Hazel {
 
-	class HazelScene;
-
-	class Entity {
-
+	class Entity
+	{
 	public:
 		Entity();
-		Entity(entt::entity handle, Ref<HazelScene>scene);
+		Entity(entt::entity handle, HazelScene* scene);
 		Entity(const Entity& other) = default;
 
 		template<typename T, typename... Args>
@@ -80,10 +78,9 @@ namespace Hazel {
 
 	private:
 		entt::entity m_EntityHandle{ entt::null };
-		Ref<HazelScene> m_Scene;
+		HazelScene* m_Scene;
 
 		Material* m_Material;
-
 
 		friend class HazelScene;
 		friend class ScriptEngine;

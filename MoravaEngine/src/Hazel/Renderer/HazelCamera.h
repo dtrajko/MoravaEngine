@@ -51,7 +51,7 @@ namespace Hazel {
 		// Getters
 		inline const glm::mat4& GetProjection() const { return m_ProjectionMatrix; }
 		inline const glm::vec3& GetPosition() const { return m_Position; }
-		inline virtual const glm::mat4& GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }
+		inline virtual glm::mat4 GetViewProjection() { return m_ProjectionMatrix * m_ViewMatrix; }
 		inline float GetPitch() const { return m_Pitch; }
 		inline float GetYaw() const { return m_Yaw; }
 		inline glm::vec3 GetDirection() const { return glm::normalize(m_Front); }

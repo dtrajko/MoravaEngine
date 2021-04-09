@@ -46,7 +46,8 @@ namespace Hazel::UI {
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
-		_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 
 		if (error)
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
@@ -72,7 +73,8 @@ namespace Hazel::UI {
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
-		_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 		ImGui::InputText(s_IDBuffer, (char*)value, 256, ImGuiInputTextFlags_ReadOnly);
 
 		ImGui::PopItemWidth();
@@ -90,7 +92,8 @@ namespace Hazel::UI {
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
-		_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 		if (ImGui::Checkbox(s_IDBuffer, &value))
 			modified = true;
 
@@ -111,7 +114,8 @@ namespace Hazel::UI {
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
-		_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 		if (ImGui::DragInt(s_IDBuffer, &value))
 			modified = true;
 
@@ -132,7 +136,8 @@ namespace Hazel::UI {
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
-		_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 		if (ImGui::SliderInt(s_IDBuffer, &value, min, max))
 			modified = true;
 
@@ -153,7 +158,8 @@ namespace Hazel::UI {
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
-		_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 		if (ImGui::DragFloat(s_IDBuffer, &value, delta, min, max))
 			modified = true;
 
@@ -174,7 +180,8 @@ namespace Hazel::UI {
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
-		_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 		if (ImGui::DragFloat3(s_IDBuffer, glm::value_ptr(value), delta))
 			modified = true;
 
@@ -195,7 +202,8 @@ namespace Hazel::UI {
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
-		_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 		if (ImGui::ColorEdit3(s_IDBuffer, glm::value_ptr(value))) {
 			modified = true;
 		}
@@ -217,7 +225,8 @@ namespace Hazel::UI {
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
-		_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 		if (ImGui::DragFloat3(s_IDBuffer, glm::value_ptr(value), delta))
 			modified = true;
 
@@ -238,7 +247,8 @@ namespace Hazel::UI {
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
-		_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 		if (ImGui::DragFloat4(s_IDBuffer, glm::value_ptr(value), delta))
 			modified = true;
 

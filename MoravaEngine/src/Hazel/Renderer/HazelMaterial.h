@@ -149,6 +149,7 @@ namespace Hazel {
 
 		static HazelMaterialInstance* Create(HazelMaterial* material);
 
+#if 0
 		template<typename T>
 		T& Get(const std::string& name)
 		{
@@ -166,6 +167,7 @@ namespace Hazel {
 			HZ_CORE_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
 			return m_Textures[slot];
 		}
+#endif
 
 	public:
 		static Ref <HazelMaterialInstance> Create(const Ref<HazelMaterial>& material);

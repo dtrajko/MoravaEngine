@@ -27,8 +27,6 @@ private:
 	virtual void Init(const WindowProps& props);
 	virtual void Shutdown();
 
-	static Window* Create(const WindowProps& props = WindowProps()) {};
-
 private:
 	// GLFWwindow* m_Window;
 	struct WindowData

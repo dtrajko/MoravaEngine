@@ -152,7 +152,7 @@ int main()
 {
 	Log::Init();
 
-	Application::Get()->InitWindow(WindowProps({ windowTitle, WIDTH, HEIGHT }));
+	Application::Get()->InitWindow(WindowProps(windowTitle, WIDTH, HEIGHT));
 
 #if defined(SPIR_ENABLED)
 	RendererBasic::SetSpirVEnabled(true);
