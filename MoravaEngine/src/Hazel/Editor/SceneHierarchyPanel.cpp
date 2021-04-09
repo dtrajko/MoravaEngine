@@ -34,7 +34,8 @@ namespace Hazel
 			UUID selectedEntityID = EntitySelection::s_SelectionContext[0].Entity.GetUUID();
 
 			if (entityMap.find(selectedEntityID) != entityMap.end()) {
-				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh({ entityMap.at(selectedEntityID), new Hazel::Submesh(), 0 }));
+				entt::entity entityID = entityMap.at(selectedEntityID);
+				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh({ Entity(entityID, scene.Raw()) , new Hazel::Submesh(), 0 }));
 			}
 		}
 	}

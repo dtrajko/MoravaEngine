@@ -115,12 +115,12 @@ namespace Hazel {
 		FlushDrawList();
 	}
 
-	void SceneRenderer::SubmitMesh(Hazel::MeshComponent meshComponent, Hazel::TransformComponent transformComponent)
+	void SceneRenderer::SubmitMesh(MeshComponent meshComponent, TransformComponent transformComponent)
 	{
 		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), nullptr);
 	}
 
-	void SceneRenderer::SubmitSelectedMesh(Hazel::MeshComponent meshComponent, Hazel::TransformComponent transformComponent)
+	void SceneRenderer::SubmitSelectedMesh(MeshComponent meshComponent, TransformComponent transformComponent)
 	{
 		SubmitSelectedMesh(meshComponent.Mesh, transformComponent.GetTransform());
 	}
@@ -158,9 +158,9 @@ namespace Hazel {
 			glGenerateTextureMipmap(envUnfiltered->GetID());
 		});
 
-
-		if (!envFilteringShader)
+		if (!envFilteringShader) {
 			envFilteringShader = HazelShader::Create("assets/shaders/EnvironmentMipFilter.glsl");
+		}
 
 		Ref<HazelTextureCube> envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
 
@@ -185,8 +185,9 @@ namespace Hazel {
 			}
 		});
 
-		if (!envIrradianceShader)
+		if (!envIrradianceShader) {
 			envIrradianceShader = HazelShader::Create("assets/shaders/EnvironmentIrradiance.glsl");
+		}
 
 		Ref<HazelTextureCube> irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize);
 		envIrradianceShader->Bind();

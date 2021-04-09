@@ -80,7 +80,7 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		Entity entity = entityMap.at(entityID);
+		Entity entity = { entityMap.at(entityID), scene.Raw() };
 		auto& transformComponent = entity.GetComponent<TransformComponent>();
 		memcpy((void*)glm::value_ptr(transformComponent.GetTransform()), inTransform, sizeof(glm::mat4));
 	}
@@ -92,7 +92,7 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		Entity entity = entityMap.at(entityID);
+		Entity entity = { entityMap.at(entityID), scene.Raw() };
 		MonoType* monoType = mono_reflection_type_get_type((MonoReflectionType*)type);
 		s_CreateComponentFuncs[monoType](entity);
 	}
@@ -104,7 +104,7 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		Entity entity = entityMap.at(entityID);
+		Entity entity = { entityMap.at(entityID), scene.Raw() };
 		MonoType* monoType = mono_reflection_type_get_type((MonoReflectionType*)type);
 		bool result = s_HasComponentFuncs[monoType](entity);
 		return result;
@@ -130,7 +130,7 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		Entity entity = entityMap.at(entityID);
+		Entity entity = { entityMap.at(entityID), scene.Raw() };
 		auto& meshComponent = entity.GetComponent<MeshComponent>();
 		return new Ref<Mesh>(meshComponent.Mesh);
 
@@ -156,7 +156,7 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		Entity entity = entityMap.at(entityID);
+		Entity entity = { entityMap.at(entityID), scene.Raw() };
 		HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
 		auto& component = entity.GetComponent<RigidBody2DComponent>();
 		b2Body* body = (b2Body*)component.RuntimeBody;
@@ -170,7 +170,7 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		Entity entity = entityMap.at(entityID);
+		Entity entity = { entityMap.at(entityID), scene.Raw() };
 		HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
 		auto& component = entity.GetComponent<RigidBody2DComponent>();
 		b2Body* body = (b2Body*)component.RuntimeBody;
@@ -186,7 +186,7 @@ namespace Hazel { namespace Script {
 		const auto& entityMap = scene->GetEntityMap();
 		HZ_CORE_ASSERT(entityMap.find(entityID) != entityMap.end(), "Invalid entity ID or entity doesn't exist in scene!");
 
-		Entity entity = entityMap.at(entityID);
+		Entity entity = { entityMap.at(entityID), scene.Raw() };
 		HZ_CORE_ASSERT(entity.HasComponent<RigidBody2DComponent>());
 		auto& component = entity.GetComponent<RigidBody2DComponent>();
 		b2Body* body = (b2Body*)component.RuntimeBody;

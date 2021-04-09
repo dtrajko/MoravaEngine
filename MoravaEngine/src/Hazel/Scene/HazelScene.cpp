@@ -182,15 +182,15 @@ namespace Hazel {
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
-				auto& transform = e.Transform();
+				auto& tc = e.Transform();
 				auto& rb2d = e.GetComponent<RigidBody2DComponent>();
 				b2Body* body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
 				auto& position = body->GetPosition();
-				auto [translation, rotationQuat, scale] = Math::GetTransformDecomposition(transform);
+				auto [translation, rotationQuat, scale] = Math::GetTransformDecomposition(tc.GetTransform());
 				glm::vec3 rotation = glm::eulerAngles(rotationQuat);
 
-				transform = glm::translate(glm::mat4(1.0f), { position.x, position.y, transform[3].z }) *
+				tc.GetTransform() = glm::translate(glm::mat4(1.0f), { position.x, position.y, tc.GetTransform()[3].z }) *
 					glm::toMat4(glm::quat({ rotation.x, rotation.y, body->GetAngle() })) *
 					glm::scale(glm::mat4(1.0f), scale);
 			}
@@ -348,7 +348,7 @@ namespace Hazel {
 	Entity HazelScene::CreateEntity(const std::string& name, Ref<HazelScene> scene)
 	{
 		Entity entity = CreateEntity(name);
-		entity.m_Scene = scene;
+		entity.m_Scene = scene.Raw();
 
 		return entity;
 	}
@@ -625,7 +625,7 @@ namespace Hazel {
 			{
 				Entity e = { entity, this };
 				UUID entityID = e.GetComponent<IDComponent>().ID;
-				auto& transform = e.Transform();
+				auto& tc = e.Transform();
 				auto& rigidBody2D = m_Registry.get<RigidBody2DComponent>(entity);
 
 				b2BodyDef bodyDef;
@@ -638,9 +638,9 @@ namespace Hazel {
 				else if (rigidBody2D.BodyType == RigidBody2DComponent::Type::Kinematic) {
 					bodyDef.type = b2_kinematicBody;
 				}
-				bodyDef.position.Set(transform[3].x, transform[3].y);
+				bodyDef.position.Set(tc.GetTransform()[3].x, tc.GetTransform()[3].y);
 
-				auto [translation, rotationQuat, scale] = Math::GetTransformDecomposition(transform);
+				auto [translation, rotationQuat, scale] = Math::GetTransformDecomposition(tc.GetTransform());
 				glm::vec3 rotation = glm::eulerAngles(rotationQuat);
 				bodyDef.angle = rotation.z;
 

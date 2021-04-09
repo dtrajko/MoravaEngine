@@ -48,8 +48,8 @@ namespace Hazel {
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
-		glm::mat4& Transform();
-		const glm::mat4& Transform() const;
+		TransformComponent& Transform() { return m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle); }
+		const glm::mat4& Transform() const { return m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle).GetTransform(); }
 
 		void SetMaterial(Material* material) { m_Material = material; }
 		Material* GetMaterial() { return m_Material; }
@@ -67,7 +67,7 @@ namespace Hazel {
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 
-		UUID GetSceneUUID();
+		UUID GetSceneUUID() { return m_Scene->GetUUID(); }
 
 		inline uint32_t GetHandle() { return (uint32_t)m_EntityHandle; }
 

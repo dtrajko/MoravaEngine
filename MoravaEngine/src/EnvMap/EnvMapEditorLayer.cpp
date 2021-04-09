@@ -2030,7 +2030,7 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
             else {
                 Ref<Hazel::Entity> meshEntity = GetMeshEntity();
                 if (meshEntity) {
-                    m_CurrentlySelectedTransform = &meshEntity->Transform();
+                    m_CurrentlySelectedTransform = &meshEntity->Transform().GetTransform();
                 }
             }
         }

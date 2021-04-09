@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../Scene/HazelScene.h"
+#include "Hazel/Scene/HazelScene.h"
+#include "Hazel/Scene/Components.h"
 #include "HazelMesh.h"
 #include "RenderPass.h"
 
@@ -32,8 +33,8 @@ namespace Hazel {
 		static void EndScene();
 
 		// old?
-		static void SubmitMesh(Hazel::MeshComponent meshComponent, Hazel::TransformComponent transformComponent);
-		static void SubmitSelectedMesh(Hazel::MeshComponent meshComponent, Hazel::TransformComponent transformComponent);
+		static void SubmitMesh(MeshComponent meshComponent, TransformComponent transformComponent);
+		static void SubmitSelectedMesh(MeshComponent meshComponent, TransformComponent transformComponent);
 
 		// new?
 		static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<Material> overrideMaterial = nullptr);
