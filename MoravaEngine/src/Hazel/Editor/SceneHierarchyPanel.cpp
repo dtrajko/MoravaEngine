@@ -584,7 +584,7 @@ namespace Hazel
 			{
 				std::string file = Application::Get()->OpenFile();
 				if (!file.empty()) {
-					mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(file, nullptr, nullptr, false);
+					mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(file, Hazel::Ref<Shader>(), Hazel::Ref<Hazel::HazelMaterial>(), false);
 
 					auto materialDataVector = MaterialLibrary::s_MaterialData;
 					for (auto materialData : materialDataVector) {
@@ -904,7 +904,7 @@ namespace Hazel
 		DrawComponent <MaterialComponent > ("Material", entity, [=](MaterialComponent& mc)
 			{
 				if (!mc.Material) {
-					mc.Material = MaterialLibrary::AddNewMaterial("")->EnvMapMaterial;
+					mc.Material = MaterialLibrary::AddNewMaterial("")->EnvMapMaterialRef;
 					// std::string materialName = EnvMapEditorLayer::NewMaterialName();
 					// mc.Material = EnvMapEditorLayer::CreateDefaultMaterial(materialName);
 					MaterialLibrary::AddMaterialFromComponent(entity);

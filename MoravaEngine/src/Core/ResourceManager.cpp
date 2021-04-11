@@ -304,18 +304,21 @@ Hazel::Ref<Material> ResourceManager::HotLoadMaterial(std::string materialName)
     auto materialInfoIterator = s_MaterialInfo.find(materialName);
     auto materialIterator = s_Materials.find(materialName);
 
-    if (materialInfoIterator == s_MaterialInfo.end())
-        return nullptr;
+    if (materialInfoIterator == s_MaterialInfo.end()) {
+        return Hazel::Ref<Material>();
+    }
 
-    if (materialIterator != s_Materials.end())
+    if (materialIterator != s_Materials.end()) {
         return materialIterator->second;
+    }
 
     LoadMaterial(materialInfoIterator->first, materialInfoIterator->second);
 
     materialIterator = s_Materials.find(materialName);
 
-    if (materialIterator == s_Materials.end())
-        return nullptr;
+    if (materialIterator == s_Materials.end()) {
+        return Hazel::Ref<Material>();
+    }
 
     return materialIterator->second;
 }
@@ -345,5 +348,6 @@ const Hazel::Ref<Shader>& ResourceManager::GetShader(std::string name)
     if (s_Shaders.find(name) != s_Shaders.end()) {
         return s_Shaders.find(name)->second;
     }
-    return nullptr;
+    return Hazel::Ref<Shader>();
 }
+

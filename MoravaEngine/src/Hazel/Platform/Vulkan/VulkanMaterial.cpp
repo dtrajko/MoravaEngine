@@ -107,7 +107,7 @@ namespace Hazel {
 
 		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
 		HZ_CORE_ASSERT(wds);
-		m_PendingDescriptors.push_back({ PendingDescriptorType::Texture2D, *wds, texture.As<HazelTexture>(), nullptr });
+		m_PendingDescriptors.push_back({ PendingDescriptorType::Texture2D, *wds, texture.As<HazelTexture>(), Hazel::Ref<Hazel::HazelImage>() });
 	}
 
 	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const Ref<HazelTextureCube>& texture)
@@ -125,7 +125,7 @@ namespace Hazel {
 
 		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
 		HZ_CORE_ASSERT(wds);
-		m_PendingDescriptors.push_back({ PendingDescriptorType::TextureCube, *wds, texture.As<HazelTexture>(), nullptr });
+		m_PendingDescriptors.push_back({ PendingDescriptorType::TextureCube, *wds, texture.As<HazelTexture>(), Hazel::Ref<Hazel::HazelImage>() });
 	}
 
 	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const VkDescriptorImageInfo& imageInfo)
@@ -162,7 +162,7 @@ namespace Hazel {
 
 		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
 		HZ_CORE_ASSERT(wds);
-		m_PendingDescriptors.push_back({ PendingDescriptorType::Image2D, *wds, nullptr, image.As<HazelImage>() });
+		m_PendingDescriptors.push_back({ PendingDescriptorType::Image2D, *wds, Hazel::Ref<Hazel::HazelTexture>(), image.As<HazelImage>() });
 	}
 
 	void VulkanMaterial::Set(const std::string& name, float value)

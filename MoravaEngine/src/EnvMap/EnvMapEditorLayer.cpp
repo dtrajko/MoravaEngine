@@ -212,7 +212,7 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
 
     Log::GetLogger()->debug("EnvMapEditorLayer::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
-    Hazel::HazelMesh* mesh = new Hazel::HazelMesh(fullPath, m_ShaderHazelPBR, nullptr, isAnimated);
+    Hazel::HazelMesh* mesh = new Hazel::HazelMesh(fullPath, m_ShaderHazelPBR, Hazel::Ref<Hazel::HazelMaterial>(), isAnimated);
 
     mesh->SetTimeMultiplier(1.0f);
 
@@ -494,7 +494,7 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, floa
     auto viewMatrix2 = GetMainCameraComponent().Camera.GetViewMatrix();
     auto projectionMatrix2 = GetMainCameraComponent().Camera.GetProjectionMatrix();
 
-    Scene::s_ImGuizmoTransform = m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
+    Scene::s_ImGuizmoTransform = &m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
 
     m_ViewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
@@ -522,7 +522,7 @@ void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, flo
         mesh->OnUpdate(timestep, false);
     }
 
-    Scene::s_ImGuizmoTransform = m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
+    Scene::s_ImGuizmoTransform = &m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
 
     m_ViewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
@@ -705,7 +705,7 @@ void EnvMapEditorLayer::SubmitEntity(Hazel::Entity entity)
         return;
     }
 
-    auto& transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+    auto transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
 
     auto name = entity.GetComponent<Hazel::TagComponent>().Tag;
     EnvMapSceneRenderer::AddToDrawList(name, mesh, entity, transform);
@@ -1626,7 +1626,8 @@ void EnvMapEditorLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow
             ImGui::Separator();
 
             if (ImGui::MenuItem("Exit")) {
-                p_open = false;
+                bool pOpen = false;
+                p_open = &pOpen;
                 mainWindow->SetShouldClose(true);
             }
             ImGui::EndMenu();
@@ -1989,7 +1990,7 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 for (uint32_t i = 0; i < submeshes.size(); i++)
                 {
                     Hazel::Submesh* submesh = &submeshes[i];
-                    auto& transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+                    auto transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
                     Hazel::Ray ray = {
                         glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
                         glm::inverse(glm::mat3(transform) * glm::mat3(submesh->Transform)) * direction
@@ -2024,13 +2025,13 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
             // TODO: Handle mesh being deleted, etc
             if (EntitySelection::s_SelectionContext.size()) {
-                m_CurrentlySelectedTransform = &EntitySelection::s_SelectionContext[0].Mesh->Transform;
+                m_CurrentlySelectedTransform = EntitySelection::s_SelectionContext[0].Mesh->Transform;
                 OnSelected(EntitySelection::s_SelectionContext[0]);
             }
             else {
                 Ref<Hazel::Entity> meshEntity = GetMeshEntity();
                 if (meshEntity) {
-                    m_CurrentlySelectedTransform = &meshEntity->Transform().GetTransform();
+                    m_CurrentlySelectedTransform = meshEntity->Transform().GetTransform();
                 }
             }
         }
@@ -2155,7 +2156,7 @@ void EnvMapEditorLayer::GeometryPassTemporary()
                     m_ShaderHazelPBR->setFloat("u_OmniShadowMaps[1].farPlane", farPlane);
                 }
 
-                Hazel::Ref<EnvMapMaterial> envMapMaterial = nullptr;
+                Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>();
                 std::string materialUUID;
 
                 for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())

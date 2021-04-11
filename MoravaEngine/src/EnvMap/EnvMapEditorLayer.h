@@ -2,6 +2,7 @@
 
 #include "../../pch.h"
 
+#include "Hazel/Editor/SceneHierarchyPanel.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Renderer/SceneRenderer.h"
@@ -141,7 +142,7 @@ public:
 	RuntimeCamera* m_RuntimeCamera;
 	Hazel::HazelCamera* m_ActiveCamera;
 
-	glm::mat4* m_CurrentlySelectedTransform = nullptr;
+	glm::mat4 m_CurrentlySelectedTransform;
 	glm::mat4* m_RelativeTransform = nullptr;
 	bool m_AllowViewportCameraEvents = true; // EditorLayer (Raypicking)
 

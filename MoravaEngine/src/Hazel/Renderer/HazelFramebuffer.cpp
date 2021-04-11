@@ -7,11 +7,11 @@ namespace Hazel {
 
 	Ref<HazelFramebuffer> HazelFramebuffer::Create(const HazelFramebufferSpecification& spec)
 	{
-		Ref<HazelFramebuffer> result = nullptr;
+		Ref<HazelFramebuffer> result = Ref<HazelFramebuffer>();
 
 		switch (RendererAPI::Current())
 		{
-			case RendererAPIType::None:		return nullptr;
+			case RendererAPIType::None:		return Ref<HazelFramebuffer>();
 			case RendererAPIType::OpenGL:	result = Ref<OpenGLFramebuffer>::Create(spec);
 		}
 		FramebufferPool::GetGlobal()->Add(result);

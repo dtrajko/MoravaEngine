@@ -40,10 +40,11 @@ private:
 	unsigned int m_Width = -1;
 	unsigned int m_Height = -1;
 
-	Hazel::Ref<FramebufferTexture> m_ColorAttachment = nullptr;
-	Hazel::Ref<FramebufferTexture> m_DepthAttachment = nullptr;
+	Hazel::Ref<FramebufferTexture> m_ColorAttachment = Hazel::Ref<FramebufferTexture>();
+	Hazel::Ref<FramebufferTexture> m_DepthAttachment = Hazel::Ref<FramebufferTexture>();
 
-	Hazel::Ref<Renderbuffer> m_DepthBuffer = nullptr;
-	Hazel::Ref<FramebufferTexture> m_StencilAttachment = nullptr; // still not in use
+	Hazel::Ref<Renderbuffer> m_DepthBuffer = Hazel::Ref<Renderbuffer>();
+	Hazel::Ref<FramebufferTexture> m_StencilAttachment = Hazel::Ref<FramebufferTexture>(); // still not in use
 
 };
+

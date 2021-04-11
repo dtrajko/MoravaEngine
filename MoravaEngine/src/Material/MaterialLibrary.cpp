@@ -321,3 +321,4 @@ MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(Hazel::Ref<Hazel::HazelMesh
 
     return materialUUID;
 }
+

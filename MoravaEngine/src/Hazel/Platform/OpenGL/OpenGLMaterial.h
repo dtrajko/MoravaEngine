@@ -92,12 +92,14 @@ namespace Hazel {
 		Ref<T> TryGetResource(const std::string& name)
 		{
 			auto decl = FindResourceDeclaration(name);
-			if (!decl)
-				return nullptr;
+			if (!decl) {
+				return Ref<T>();
+			}
 
 			uint32_t slot = decl->GetRegister();
-			if (slot >= m_Textures.size())
-				return nullptr;
+			if (slot >= m_Textures.size()) {
+				return Ref<T>();
+			}
 
 			return Ref<T>(m_Textures[slot]);
 		}

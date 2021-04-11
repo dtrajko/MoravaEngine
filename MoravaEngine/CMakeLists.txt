@@ -18,51 +18,80 @@ project("MoravaEngine" VERSION 0.0.1)
 
 if(WIN32)
 	file(GLOB SOURCES
-		./*.h
 		./*.cpp
-		PerlinNoise/PerlinNoise.hpp
-		LearnOpenGL/*.h
 		LearnOpenGL/*.cpp
-		SongHo/*.h
 		SongHo/*.cpp
-		../vendor/ImGui/imconfig.h
 		../vendor/ImGui/imgui.cpp
-		../vendor/ImGui/imgui.h
 		../vendor/ImGui/imgui_demo.cpp
 		../vendor/ImGui/imgui_draw.cpp
 		../vendor/ImGui/imgui_impl_dx11.cpp
-		../vendor/ImGui/imgui_impl_dx11.h
-		../vendor/ImGui/imgui_impl_glfw.h
-		../vendor/ImGui/imgui_impl_opengl3.h
 		../vendor/ImGui/imgui_impl_win32.cpp
-		../vendor/ImGui/imgui_impl_win32.h
-		../vendor/ImGui/imgui_internal.h
 		../vendor/ImGui/imgui_widgets.cpp
-		../vendor/ImGui/imstb_rectpack.h
-		../vendor/ImGui/imstb_textedit.h
-		../vendor/ImGui/imstb_truetype.h
 	)
 elseif(UNIX)
 	file(GLOB SOURCES
-		./*.h
 		./*.cpp
-		PerlinNoise/PerlinNoise.hpp
-		LearnOpenGL/*.h
-		LearnOpenGL/*.cpp
-		SongHo/*.h
-		SongHo/*.cpp
-		../vendor/ImGui/imconfig.h
+		./src/Mesh/*.cpp
+		./src/SSAO/*.cpp
+		./src/Renderer/*.cpp
+		./src/Framebuffer/*.cpp
+		./src/Misc/*.cpp
+		./src/Editor/*.cpp
+		./src/SongHo/*.cpp
+		./src/Physics/*.cpp
+		./src/PostProcessing/*.cpp
+		./src/LearnOpenGL/*.cpp
+		./src/Water/*.cpp
+		./src/Platform/*.cpp
+		./src/Platform/Vulkan/*.cpp
+		./src/Platform/Windows/*.cpp
+		./src/Terrain/*.cpp
+		./src/Material/*.cpp
+		./src/Skybox/*.cpp
+		./src/Texture/*.cpp
+		./src/Player/*.cpp
+		./src/Deferred/*.cpp
+		./src/EnvMap/*.cpp
+		./src/Core/*.cpp
+		./src/Light/*.cpp
+		./src/Camera/*.cpp
+		./src/Shader/*.cpp
+		./src/Particle/*.cpp
+		./src/Scene/*.cpp
+		./src/PerlinNoise/*.cpp
+		./src/Data/*.cpp
+		./src/Hazel/*.cpp
+		./src/Hazel/Script/*.cpp
+		./src/Hazel/Renderer/*.cpp
+		./src/Hazel/Editor/*.cpp
+		./src/Hazel/Utils/*.cpp
+		./src/Hazel/Physics/*.cpp
+		./src/Hazel/Platform/*.cpp
+		./src/Hazel/Platform/Vulkan/*.cpp
+		./src/Hazel/Platform/OpenGL/*.cpp
+		./src/Hazel/Platform/Windows/*.cpp
+		./src/Hazel/Core/*.cpp
+		./src/Hazel/Core/Math/*.cpp
+		./src/Hazel/Events/*.cpp
+		./src/Hazel/Hazel-ScriptCore/*.cpp
+		./src/Hazel/Hazel-ScriptCore/src/*.cpp
+		./src/Hazel/Hazel-ScriptCore/src/Hazel/*.cpp
+		./src/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/*.cpp
+		./src/Hazel/Hazel-ScriptCore/src/Hazel/Math/*.cpp
+		./src/Hazel/Hazel-ScriptCore/src/Hazel/Scene/*.cpp
+		./src/Hazel/Hazel-ScriptCore/Properties/*.cpp
+		./src/Hazel/Scene/*.cpp
+		./src/Hazel/ExampleApp/*.cpp
+		./src/Hazel/ExampleApp/src/*.cpp
+		./src/Hazel/ExampleApp/Properties/*.cpp
+		./src/Hazel/ImGui/*.cpp
+		./src/Hazel/Asset/*.cpp
+		./src/ImGui/*.cpp
+
 		../vendor/ImGui/imgui.cpp
-		../vendor/ImGui/imgui.h
 		../vendor/ImGui/imgui_demo.cpp
 		../vendor/ImGui/imgui_draw.cpp
-		../vendor/ImGui/imgui_impl_glfw.h
-		../vendor/ImGui/imgui_impl_opengl3.h
-		../vendor/ImGui/imgui_internal.h
 		../vendor/ImGui/imgui_widgets.cpp
-		../vendor/ImGui/imstb_rectpack.h
-		../vendor/ImGui/imstb_textedit.h
-		../vendor/ImGui/imstb_truetype.h
 	)
 endif()
 

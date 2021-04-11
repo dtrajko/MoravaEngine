@@ -29,7 +29,7 @@ struct MaterialData : public Hazel::RefCounted
 	MaterialUUID UUID;
 	std::string Name;
 	Hazel::Ref<Hazel::HazelMaterial> Material;
-	Hazel::Ref<EnvMapMaterial> EnvMapMaterial;
+	Hazel::Ref<EnvMapMaterial> EnvMapMaterialRef;
 	Hazel::Submesh* Submesh;
 
 };
@@ -67,3 +67,4 @@ public:
 	static uint32_t s_MaterialIndex;
 
 };
+

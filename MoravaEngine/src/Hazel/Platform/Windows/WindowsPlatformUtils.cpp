@@ -2,16 +2,23 @@
 
 #include "Core/Application.h"
 
-#include <commdlg.h>
 #include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
+
+#if defined(HZ_PLATFORM_WINDOWS)
+	#include <commdlg.h>
+
+	#define GLFW_EXPOSE_NATIVE_WIN32
+	#include <GLFW/glfw3native.h>
+#endif
 
 
 namespace Hazel {
 
 	std::string FileDialogs::OpenFile(const char* filter)
 	{
+
+#if defined(HZ_PLATFORM_WINDOWS)
+
 		OPENFILENAMEA ofn;
 		CHAR szFile[260] = { 0 };
 		// Initialize OPENFILENAME
@@ -26,11 +33,17 @@ namespace Hazel {
 		if (GetOpenFileNameA(&ofn) == TRUE) {
 			return ofn.lpstrFile;
 		}
+
+#endif
+
 		return std::string();
 	}
 
 	std::string FileDialogs::SaveFile(const char* filter)
 	{
+
+#if defined(HZ_PLATFORM_WINDOWS)
+
 		OPENFILENAMEA ofn;
 		CHAR szFile[260] = { 0 };
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -44,6 +57,9 @@ namespace Hazel {
 		if (GetSaveFileNameA(&ofn) == TRUE) {
 			return ofn.lpstrFile;
 		}
+
+#endif
+
 		return std::string();
 	}
 

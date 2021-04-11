@@ -332,7 +332,7 @@ namespace Hazel {
 					std::string texturePath = parentPath.string();
 					Log::GetLogger()->info("    Albedo map path = {0}", texturePath);
 
-					Ref<Texture> texture = nullptr;
+					Ref<Texture> texture = Ref<Texture>();
 					try {
 						texture = Ref<Texture>::Create(texturePath.c_str(), false);
 					}
@@ -347,7 +347,7 @@ namespace Hazel {
 						m_MeshShader->setInt("u_AlbedoTexture", m_Textures[i]->GetID());
 						m_MeshShader->setFloat("u_AlbedoTexToggle", 1.0f);
 
-						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Albedo, texturePath, materialData->EnvMapMaterial);
+						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Albedo, texturePath, materialData->EnvMapMaterialRef);
 					}
 					else
 					{
@@ -374,7 +374,7 @@ namespace Hazel {
 					std::string texturePath = parentPath.string();
 					HZ_MESH_LOG("    Normal map path = {0}", texturePath);
 
-					Ref<Texture> texture = nullptr;
+					Ref<Texture> texture = Ref<Texture>();
 					try {
 						texture = Ref<Texture>::Create(texturePath.c_str(), false);
 					}
@@ -388,7 +388,7 @@ namespace Hazel {
 						m_MeshShader->setInt("u_NormalTexture", texture->GetID());
 						m_MeshShader->setFloat("u_NormalTexToggle", 1.0f);
 
-						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Normal, texturePath, materialData->EnvMapMaterial);
+						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Normal, texturePath, materialData->EnvMapMaterialRef);
 					}
 					else
 					{
@@ -412,7 +412,7 @@ namespace Hazel {
 					std::string texturePath = parentPath.string();
 					// HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
 
-					Ref<Texture> texture = nullptr;
+					Ref<Texture> texture = Ref<Texture>();
 					try {
 						texture = Ref<Texture>::Create(texturePath.c_str(), false);
 					}
@@ -427,7 +427,7 @@ namespace Hazel {
 						m_MeshShader->setInt("u_RoughnessTexture", texture->GetID());
 						m_MeshShader->setFloat("u_RoughnessTexToggle", 1.0f);
 
-						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Roughness, texturePath, materialData->EnvMapMaterial);
+						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Roughness, texturePath, materialData->EnvMapMaterialRef);
 					}
 					else
 					{
@@ -551,7 +551,7 @@ namespace Hazel {
 							std::string texturePath = parentPath.string();
 							HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
 
-							Ref<Texture> texture = nullptr;
+							Ref<Texture> texture = Ref<Texture>();
 							try {
 								texture = Ref<Texture>::Create(texturePath.c_str(), false);
 							}
@@ -565,7 +565,7 @@ namespace Hazel {
 								m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
 								m_MeshShader->setFloat("u_MetalnessTexToggle", 1.0f);
 
-								MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Metalness, texturePath, materialData->EnvMapMaterial);
+								MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Metalness, texturePath, materialData->EnvMapMaterialRef);
 							}
 							else
 							{
@@ -964,7 +964,7 @@ namespace Hazel {
 
 	void HazelMesh::DeleteSubmesh(Submesh submesh)
 	{
-		for (auto& iterator = m_Submeshes.cbegin(); iterator != m_Submeshes.cend();)
+		for (auto iterator = m_Submeshes.cbegin(); iterator != m_Submeshes.cend();)
 		{
 			if (iterator->MeshName == submesh.MeshName) {
 				iterator = m_Submeshes.erase(iterator++);
@@ -1043,7 +1043,7 @@ namespace Hazel {
 
 	void HazelMesh::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials)
 	{
-		Ref<EnvMapMaterial> envMapMaterial = nullptr;
+		Ref<EnvMapMaterial> envMapMaterial = Ref<EnvMapMaterial>();
 
 		m_VertexBuffer->Bind();
 		m_Pipeline->Bind();
@@ -1086,7 +1086,7 @@ namespace Hazel {
 				envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 5);
 			}
 
-			Ref<HazelMaterial> material = nullptr;
+			Ref<HazelMaterial> material = Ref<HazelMaterial>();
 			if (m_Materials.size()) {
 				material = m_Materials[submesh.MaterialIndex];
 				if (material && material->GetFlag(HazelMaterialFlag::DepthTest)) {
@@ -1111,7 +1111,7 @@ namespace Hazel {
 	void Submesh::Render(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
 		const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity)
 	{
-		Ref<EnvMapMaterial> envMapMaterial = nullptr;
+		Ref<EnvMapMaterial> envMapMaterial = Ref<EnvMapMaterial>();
 
 		parentMesh->m_VertexBuffer->Bind();
 		parentMesh->m_Pipeline->Bind();

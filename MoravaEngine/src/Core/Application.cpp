@@ -5,9 +5,11 @@
 
 #include "Core/Timer.h"
 
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
-#include <Windows.h>
+#if defined(HZ_PLATFORM_WINDOWS)
+	#define GLFW_EXPOSE_NATIVE_WIN32
+	#include <GLFW/glfw3native.h>
+	#include <Windows.h>
+#endif
 
 #include <imgui.h>
 
@@ -74,6 +76,9 @@ void Application::Run()
 
 std::string Application::OpenFile(const char* filter) const
 {
+
+#if defined(HZ_PLATFORM_WINDOWS)
+
 	OPENFILENAMEA ofn;        // common dialog box structure
 	CHAR szFile[260] = { 0 }; // if using TCHAR macros
 
@@ -91,11 +96,17 @@ std::string Application::OpenFile(const char* filter) const
 	{
 		return ofn.lpstrFile;
 	}
+
+#endif
+
 	return std::string();
 }
 
 std::string Application::SaveFile(const char* filter) const
 {
+
+#if defined(HZ_PLATFORM_WINDOWS)
+
 	OPENFILENAMEA ofn;       // common dialog box structure
 	CHAR szFile[260] = { 0 };       // if using TCHAR macros
 
@@ -113,6 +124,9 @@ std::string Application::SaveFile(const char* filter) const
 	{
 		return ofn.lpstrFile;
 	}
+
+#endif
+
 	return std::string();
 }
 
@@ -173,3 +187,4 @@ const char* Application::GetPlatformName()
 	return "N/A";
 #endif
 }
+

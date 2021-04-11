@@ -1,9 +1,9 @@
 #include "OpenGLIndexBuffer.h"
 
-#include "../../Core/Assert.h"
-#include "../../Renderer/HazelRenderer.h"
+#include "Hazel/Core/Assert.h"
+#include "Hazel/Renderer/HazelRenderer.h"
 
-#include <gl/glew.h>
+#include <GL/glew.h>
 
 
 namespace Hazel {

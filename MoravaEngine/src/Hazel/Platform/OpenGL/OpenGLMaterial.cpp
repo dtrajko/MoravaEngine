@@ -223,12 +223,14 @@ namespace Hazel {
 	Ref<HazelTexture2D> OpenGLMaterial::TryGetTexture2D(const std::string& name)
 	{
 		auto decl = FindResourceDeclaration(name);
-		if (!decl)
-			return nullptr;
+		if (!decl) {
+			return Hazel::Ref<Hazel::HazelTexture2D>();
+		}
 
 		uint32_t slot = decl->GetRegister();
-		if (m_Texture2Ds.find(slot) == m_Texture2Ds.end())
-			return nullptr;
+		if (m_Texture2Ds.find(slot) == m_Texture2Ds.end()) {
+			return Hazel::Ref<Hazel::HazelTexture2D>();
+		}
 
 		return m_Texture2Ds[slot];
 	}

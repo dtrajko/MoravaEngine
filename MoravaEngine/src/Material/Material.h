@@ -79,17 +79,17 @@ public:
 	virtual glm::mat3& GetMatrix3(const std::string& name) override { return m_glm_mat3; }
 	virtual glm::mat4& GetMatrix4(const std::string& name) override { return m_glm_mat4; }
 
-	virtual Hazel::Ref<Hazel::HazelTexture2D> GetTexture2D(const std::string& name) override { return nullptr; };
-	virtual Hazel::Ref<Hazel::HazelTextureCube> GetTextureCube(const std::string& name) override { return nullptr; };
+	virtual Hazel::Ref<Hazel::HazelTexture2D> GetTexture2D(const std::string& name) override { return Hazel::Ref<Hazel::HazelTexture2D>(); };
+	virtual Hazel::Ref<Hazel::HazelTextureCube> GetTextureCube(const std::string& name) override { return Hazel::Ref<Hazel::HazelTextureCube>(); };
 
-	virtual Hazel::Ref<Hazel::HazelTexture2D> TryGetTexture2D(const std::string& name) override { return nullptr; };
-	virtual Hazel::Ref<Hazel::HazelTextureCube> TryGetTextureCube(const std::string& name) override { return nullptr; };
+	virtual Hazel::Ref<Hazel::HazelTexture2D> TryGetTexture2D(const std::string& name) override { return Hazel::Ref<Hazel::HazelTexture2D>(); };
+	virtual Hazel::Ref<Hazel::HazelTextureCube> TryGetTextureCube(const std::string& name) override { return Hazel::Ref<Hazel::HazelTextureCube>(); };
 
 	virtual uint32_t GetFlags() const override { return uint32_t(); };
 	virtual bool GetFlag(Hazel::HazelMaterialFlag flag) const override { return bool(); }
 	virtual void SetFlag(Hazel::HazelMaterialFlag flag, bool value = true) override {}
 
-	virtual Hazel::Ref<Hazel::HazelShader> GetShader() override { return nullptr; }
+	virtual Hazel::Ref<Hazel::HazelShader> GetShader() override { return Hazel::Ref<Hazel::HazelShader>(); }
 	virtual const std::string& GetName() const override { return m_Name; }
 
 	/**** END virtual methods defined in HazelMaterial ****/

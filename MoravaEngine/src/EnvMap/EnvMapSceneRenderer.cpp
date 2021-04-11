@@ -53,8 +53,8 @@ struct EnvMapSceneRendererData
     struct DrawCommand
     {
         std::string Name;
-        Mesh* Mesh;
-        Material* Material;
+        Mesh* MeshPtr;
+        Material* MaterialPtr;
         glm::mat4 Transform;
     };
     std::vector<DrawCommand> DrawList;
@@ -307,7 +307,7 @@ void EnvMapSceneRenderer::CompositePass()
     s_Data.CompositeShader->setFloat("u_Exposure", s_Data.SceneData.SceneCamera.Camera.GetExposure());
     s_Data.CompositeShader->setInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
 
-    Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
+    Hazel::HazelRenderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::HazelMaterial>());
 
     Hazel::HazelRenderer::EndRenderPass();
 }
@@ -405,7 +405,7 @@ void EnvMapSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, Hazel::Ha
     EnvMapSceneRendererData::DrawCommand drawCommand;
 
     drawCommand.Name = fileNameNoExt;
-    drawCommand.Mesh = mesh;
+    drawCommand.MeshPtr = mesh;
     drawCommand.Transform = glm::mat4(1.0f);
 
     s_Data.DrawList.push_back(drawCommand);

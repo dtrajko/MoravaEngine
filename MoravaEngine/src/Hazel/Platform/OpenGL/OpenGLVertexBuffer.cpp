@@ -1,8 +1,8 @@
 #include "OpenGLVertexBuffer.h"
 
-#include "../../Core/Assert.h"
+#include "Hazel/Core/Assert.h"
 
-#include <gl/glew.h>
+#include <GL/glew.h>
 
 
 namespace Hazel {

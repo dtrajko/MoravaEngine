@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stdint.h>
+#include <utility>
+
 
 namespace Hazel {
 
@@ -31,7 +33,7 @@ namespace Hazel {
 		{
 		}
 
-		Ref(std::nullptr_t n)
+		Ref(void* n)
 			: m_Instance(nullptr)
 		{
 		}
@@ -69,7 +71,7 @@ namespace Hazel {
 			IncRef();
 		}
 
-		Ref& operator=(std::nullptr_t)
+		Ref& operator=(void*)
 		{
 			DecRef();
 			m_Instance = nullptr;
@@ -161,3 +163,4 @@ namespace Hazel {
 	// TODO: WeakRef
 
 }
+

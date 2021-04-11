@@ -294,11 +294,10 @@ namespace Hazel {
 		// Get uniform locations
 		glUseProgram(m_RendererID);
 
-		for (auto& [name, buffer] : m_Buffers)
+		for (auto& [bufferName, buffer] : m_Buffers)
 		{
 			for (auto& [name, uniform] : buffer.Uniforms)
 			{
-				const auto& name = uniform.GetName();
 				GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 				if (location == -1) {
 					Log::GetLogger()->warn("{0}: could not find uniform location {0}", name);
