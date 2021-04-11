@@ -59,26 +59,48 @@ uniform samplerCube u_EnvIrradianceTex;
 // BRDF LUT
 uniform sampler2D u_BRDFLUTTexture;
 
-uniform vec3 u_AlbedoColor;
-uniform float u_Metalness;
-uniform float u_Roughness;
-uniform float u_Emissive;
-uniform float u_AO;
+uniform vec3 u_AlbedoColor; // TODO: move to Material struct
+uniform float u_Metalness;  // TODO: move to Material struct
+uniform float u_Roughness;  // TODO: move to Material struct
+uniform float u_Emissive;   // TODO: move to Material struct
+uniform float u_AO;         // TODO: move to Material struct
 
-uniform float u_EnvMapRotation;
+uniform float u_EnvMapRotation; // TODO: move to Material struct
 
 // Toggles
-uniform float u_RadiancePrefilter;
-uniform float u_AlbedoTexToggle;
-uniform float u_NormalTexToggle;
-uniform float u_MetalnessTexToggle;
-uniform float u_RoughnessTexToggle;
-uniform float u_EmissiveTexToggle;
-uniform float u_AOTexToggle;
+uniform float u_RadiancePrefilter;  // TODO: move to Material struct
+uniform float u_AlbedoTexToggle;    // TODO: move to Material struct
+uniform float u_NormalTexToggle;    // TODO: move to Material struct
+uniform float u_MetalnessTexToggle; // TODO: move to Material struct
+uniform float u_RoughnessTexToggle; // TODO: move to Material struct
+uniform float u_EmissiveTexToggle;  // TODO: move to Material struct
+uniform float u_AOTexToggle;        // TODO: move to Material struct
 
 uniform float u_Exposure;
 
 uniform float u_TilingFactor;
+
+struct Material
+{
+	vec3 AlbedoColor;
+	float Metalness;
+	float Roughness;
+	float Emissive;
+	float AO;
+
+	float EnvMapRotation;
+
+	// Toggles
+	float RadiancePrefilter;
+	float AlbedoTexToggle;
+	float NormalTexToggle;
+	float MetalnessTexToggle;
+	float RoughnessTexToggle;
+	float EmissiveTexToggle;
+	float AOTexToggle;
+};
+
+uniform Material u_MaterialUniforms;
 
 struct PBRParameters
 {
