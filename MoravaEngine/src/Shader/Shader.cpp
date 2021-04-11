@@ -55,11 +55,11 @@ Shader::Shader(const char* computeLocation, bool forceCompile)
 
 Hazel::Ref<Shader> Shader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
 {
-	Hazel::Ref<Shader> result = nullptr;
+	Hazel::Ref<Shader> result = Hazel::Ref<Shader>();
 
 	switch (Hazel::RendererAPI::Current())
 	{
-	case Hazel::RendererAPIType::None: return nullptr;
+	case Hazel::RendererAPIType::None: return Hazel::Ref<Shader>();
 	case Hazel::RendererAPIType::OpenGL:
 		result = Hazel::Ref<Shader>::Create(vertexLocation, fragmentLocation, forceCompile);
 		break;
@@ -73,11 +73,11 @@ Hazel::Ref<Shader> Shader::Create(const char* vertexLocation, const char* fragme
 
 Hazel::Ref<Shader> Shader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
 {
-	Hazel::Ref<Shader> result = nullptr;
+	Hazel::Ref<Shader> result = Hazel::Ref<Shader>();
 
 	switch (Hazel::RendererAPI::Current())
 	{
-	case Hazel::RendererAPIType::None: return nullptr;
+	case Hazel::RendererAPIType::None: return Hazel::Ref<Shader>();
 	case Hazel::RendererAPIType::OpenGL:
 		result = Hazel::Ref<Shader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
 		break;
@@ -91,11 +91,11 @@ Hazel::Ref<Shader> Shader::Create(const char* vertexLocation, const char* geomet
 
 Hazel::Ref<Shader> Shader::Create(const char* computeLocation, bool forceCompile)
 {
-	Hazel::Ref<Shader> result = nullptr;
+	Hazel::Ref<Shader> result = Hazel::Ref<Shader>();
 
 	switch (Hazel::RendererAPI::Current())
 	{
-	case Hazel::RendererAPIType::None: return nullptr;
+	case Hazel::RendererAPIType::None: return Hazel::Ref<Shader>();
 	case Hazel::RendererAPIType::OpenGL:
 		result = Hazel::Ref<Shader>::Create(computeLocation, forceCompile);
 		break;

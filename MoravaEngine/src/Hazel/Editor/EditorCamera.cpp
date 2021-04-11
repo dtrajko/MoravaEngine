@@ -138,8 +138,8 @@ namespace Hazel {
 	{
 		if (width == 0.0f || height == 0.0f) return;
 
-		m_ViewportWidth = (uint32_t)width;
-		m_ViewportHeight = (uint32_t)height;
+		m_ViewportWidth = width;
+		m_ViewportHeight = height;
 
 		UpdateProjection();
 	}

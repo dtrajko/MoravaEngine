@@ -130,7 +130,7 @@ namespace Hazel {
 		VkMemoryAllocateInfo memAllocInfo{};
 		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
-		VulkanAllocator allocator("Texture2D");
+		VulkanAllocator allocator(std::string("Texture2D"));
 
 		// Create staging buffer
 		VkBuffer stagingBuffer;
@@ -706,7 +706,7 @@ namespace Hazel {
 		VkMemoryAllocateInfo memAllocInfo{};
 		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
-		VulkanAllocator allocator("TextureCube");
+		VulkanAllocator allocator(std::string("TextureCube"));
 
 		// Create optimal tiled target image on the device
 		VkImageCreateInfo imageCreateInfo{};

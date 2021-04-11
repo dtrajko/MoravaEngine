@@ -117,7 +117,7 @@ namespace Hazel {
 
 	void SceneRenderer::SubmitMesh(MeshComponent meshComponent, TransformComponent transformComponent)
 	{
-		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), nullptr);
+		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), Ref<Material>());
 	}
 
 	void SceneRenderer::SubmitSelectedMesh(MeshComponent meshComponent, TransformComponent transformComponent)
@@ -133,7 +133,7 @@ namespace Hazel {
 
 	void SceneRenderer::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform)
 	{
-		s_Data.SelectedMeshDrawList.push_back({ mesh, nullptr, transform });
+		s_Data.SelectedMeshDrawList.push_back({ mesh, Ref<HazelMaterial>(), transform });
 	}
 
 	static Ref<HazelShader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
@@ -351,7 +351,7 @@ namespace Hazel {
 			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f));
 			s_Data.GridShader->Bind();
 			s_Data.GridShader->SetUniform("u_VertexUniforms.Transform", transform);
-			HazelRenderer::SubmitQuad(nullptr);
+			HazelRenderer::SubmitQuad(Ref<HazelMaterial>());
 		}
 
 		if (GetOptions().ShowBoundingBoxes)
@@ -376,7 +376,7 @@ namespace Hazel {
 		s_Data.CompositeShader->SetUniform("u_Uniforms.Exposure", exposure);
 		s_Data.CompositeShader->SetUniform("u_Uniforms.TextureSamples", textureSamples);
 		s_Data.GeoPass->GetSpecification().TargetFramebuffer->BindTexture();
-		HazelRenderer::SubmitFullscreenQuad(nullptr);
+		HazelRenderer::SubmitFullscreenQuad(Ref<HazelMaterial>());
 		HazelRenderer::EndRenderPass();
 	}
 

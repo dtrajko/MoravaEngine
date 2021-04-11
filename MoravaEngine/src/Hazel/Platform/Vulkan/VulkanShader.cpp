@@ -508,7 +508,7 @@ namespace Hazel {
 		// This buffer will be used as a uniform buffer
 		bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
-		VulkanAllocator allocator("UniformBuffer");
+		VulkanAllocator allocator(std::string("UniformBuffer"));
 
 		// Create a new buffer
 		VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &uniformBuffer.Buffer));

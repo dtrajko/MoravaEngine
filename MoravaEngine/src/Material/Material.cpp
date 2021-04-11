@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 
 
-Material::Material() : Hazel::HazelMaterial(nullptr)
+Material::Material() : Hazel::HazelMaterial(Hazel::Ref<Hazel::HazelShader>())
 {
 	m_SpecularIntensity = 0.0f;
 	m_Shininess = 0.0f;

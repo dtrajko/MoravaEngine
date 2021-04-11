@@ -146,7 +146,7 @@ namespace Hazel { namespace Script {
 
 		Entity entity = Entity{ entityMap.at(entityID), scene.Raw() };
 		auto& meshComponent = entity.GetComponent<MeshComponent>();
-		meshComponent.Mesh = inMesh ? *inMesh : nullptr;
+		meshComponent.Mesh = inMesh ? *inMesh : Hazel::Ref<Hazel::HazelMesh>();
 	}
 
 	void Hazel_RigidBody2DComponent_ApplyLinearImpulse(uint64_t entityID, glm::vec2* impulse, glm::vec2* offset, bool wake)

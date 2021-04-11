@@ -14,11 +14,11 @@ namespace Hazel {
 	{
 		Log::GetLogger()->info("HazelShader::Create('{0}')", filepath.c_str());
 
-		Ref<HazelShader> result = nullptr;
+		Ref<HazelShader> result = Ref<HazelShader>();
 
 		switch (RendererAPI::Current())
 		{
-			case RendererAPIType::None: return nullptr;
+			case RendererAPIType::None: return Ref<HazelShader>();
 			case RendererAPIType::OpenGL:
 				result = Ref<OpenGLShader>::Create(filepath, forceCompile);
 				break;
@@ -34,11 +34,11 @@ namespace Hazel {
 	{
 		Log::GetLogger()->info("HazelShader::CreateFromString('{0}')", source.c_str());
 
-		Ref<HazelShader> result = nullptr;
+		Ref<HazelShader> result = Ref<HazelShader>();
 
 		switch (RendererAPI::Current())
 		{
-			case RendererAPIType::None: return nullptr;
+			case RendererAPIType::None: return Ref<HazelShader>();
 			case RendererAPIType::OpenGL: result = OpenGLShader::CreateFromString(source);
 		}
 		s_AllShaders.push_back(result);

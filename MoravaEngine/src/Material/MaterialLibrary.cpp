@@ -59,7 +59,7 @@ Hazel::Ref<MaterialData> MaterialLibrary::CreateMaterialData(std::string name, H
 
     Hazel::Ref<EnvMapMaterial> defaultEnvMapMaterial = MaterialLibrary::CreateDefaultMaterial(materialData->Name);
     AddEnvMapMaterial(defaultEnvMapMaterial->GetUUID(), defaultEnvMapMaterial);
-    materialData->EnvMapMaterial = defaultEnvMapMaterial;
+    materialData->EnvMapMaterialRef = defaultEnvMapMaterial;
 
     return materialData;
 }
@@ -253,12 +253,12 @@ void MaterialLibrary::SetMaterialsToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh,
         // Let's try to detect a correct material from the list of loaded materials in MaterialLibrary
         for (auto materialData : s_MaterialData)
         {
-            if (materialData->Submesh != nullptr && materialData->EnvMapMaterial)
+            if (materialData->Submesh != nullptr && materialData->EnvMapMaterialRef)
             {
                 if (submesh.MeshName == materialData->Submesh->MeshName)
                 {
                     SubmeshUUID submeshUUID = GetSubmeshUUID(&entity, &submesh);
-                    MaterialUUID materialUUID = materialData->EnvMapMaterial->GetUUID();
+                    MaterialUUID materialUUID = materialData->EnvMapMaterialRef->GetUUID();
                     MaterialLibrary::AddSubmeshMaterialRelation(submeshUUID, materialUUID);
                     correctMaterialFound = true;
                     break;
@@ -321,4 +321,3 @@ MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(Hazel::Ref<Hazel::HazelMesh
 
     return materialUUID;
 }
-

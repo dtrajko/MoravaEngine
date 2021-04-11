@@ -22,5 +22,4 @@ namespace Hazel {
 		std::string m_Tag;
 	};
 
-
 }
