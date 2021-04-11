@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ShaderUniform.h"
 
 
@@ -25,3 +23,4 @@ namespace Hazel {
 	}
 
 }
+

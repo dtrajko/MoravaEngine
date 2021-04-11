@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <functional>
+#include <cstring>
 
 
 namespace Hazel {

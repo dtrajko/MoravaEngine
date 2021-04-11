@@ -186,7 +186,7 @@ namespace Hazel {
 			out << YAML::Key << "TransformComponent";
 			out << YAML::BeginMap; // TransformComponent
 			
-			auto& transform = entity.GetComponent<TransformComponent>().GetTransform();
+			auto transform = entity.GetComponent<TransformComponent>().GetTransform();
 			auto [pos, rot, scale] = GetTransformDecomposition(transform);
 
 			out << YAML::Key << "Position" << YAML::Value << pos;
@@ -485,7 +485,7 @@ namespace Hazel {
 				if (transformComponent)
 				{
 					// Entities always have transforms
-					auto& transform = deserializedEntity.GetComponent<TransformComponent>().GetTransform();
+					auto transform = deserializedEntity.GetComponent<TransformComponent>().GetTransform();
 					glm::vec3 translation = transformComponent["Position"].as<glm::vec3>();
 					glm::quat rotation = transformComponent["Rotation"].as<glm::quat>();
 					glm::vec3 scale = transformComponent["Scale"].as<glm::vec3>();
@@ -592,7 +592,7 @@ namespace Hazel {
 					auto& component = deserializedEntity.AddComponent<CameraComponent>();
 					component.Camera = SceneCamera();
 
-					auto& cameraProps = cameraComponent["Camera"];
+					auto cameraProps = cameraComponent["Camera"];
 					component.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
 
 					component.Camera.SetPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());

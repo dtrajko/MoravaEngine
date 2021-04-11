@@ -60,7 +60,7 @@ void Particle::UpdateTextureCoordInfo()
 	float atlasProgression = lifeFactor * stageCount;
 	int index1 = (int)floor(atlasProgression);
 	int index2 = index1 < stageCount - 1 ? index1 + 1 : index1;
-	float integerPart;
+	double integerPart;
 	m_Blend  = (float)modf(atlasProgression, &integerPart);
 	SetTextureOffset(&m_TexOffset1, index1);
 	SetTextureOffset(&m_TexOffset2, index2);

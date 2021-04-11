@@ -99,7 +99,7 @@ private:
 			glm::mat4 Transform;
 		} AABBTransform;
 
-		AABB AABB;
+		AABB AABBox;
 		glm::vec3 OriginOffset;
 		bool Intersecting;
 		bool Enabled;

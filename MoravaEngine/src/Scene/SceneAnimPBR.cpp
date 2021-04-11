@@ -269,7 +269,7 @@ void SceneAnimPBR::SetupMeshes()
     m_Entities["Cube"].Transform.Transform = glm::translate(m_Entities["Cube"].Transform.Transform, m_Entities["Cube"].Transform.Translation);
     m_Entities["Cube"].Transform.Transform = glm::scale(m_Entities["Cube"].Transform.Transform, m_Entities["Cube"].Transform.Scale);
 
-    m_Entities["Cube"].AABB = AABB(m_Entities["Cube"].Transform.Translation + m_Entities["Cube"].OriginOffset,
+    m_Entities["Cube"].AABBox = AABB(m_Entities["Cube"].Transform.Translation + m_Entities["Cube"].OriginOffset,
         m_Entities["Cube"].Transform.Rotation, m_Entities["Cube"].Init.AABB.Transform.Scale);
 
     Log::GetLogger()->info("-- END loading the Cube mesh --");
@@ -295,7 +295,7 @@ void SceneAnimPBR::SetupMeshes()
     m_Entities["M1911"].Transform.Transform = glm::translate(m_Entities["M1911"].Transform.Transform, m_Entities["M1911"].Transform.Translation);
     m_Entities["M1911"].Transform.Transform = glm::scale(m_Entities["M1911"].Transform.Transform, m_Entities["M1911"].Transform.Scale);
 
-    m_Entities["M1911"].AABB = AABB(m_Entities["M1911"].Transform.Translation + m_Entities["M1911"].OriginOffset,
+    m_Entities["M1911"].AABBox = AABB(m_Entities["M1911"].Transform.Translation + m_Entities["M1911"].OriginOffset,
         m_Entities["M1911"].Transform.Rotation, m_Entities["M1911"].Init.AABB.Transform.Scale);
 
     Log::GetLogger()->info("-- END loading the animated PBR model M1911 --");
@@ -320,7 +320,7 @@ void SceneAnimPBR::SetupMeshes()
     m_Entities["BobLamp"].Transform.Transform = glm::translate(m_Entities["BobLamp"].Transform.Transform, m_Entities["BobLamp"].Transform.Translation);
     m_Entities["BobLamp"].Transform.Transform = glm::scale(m_Entities["BobLamp"].Transform.Transform, m_Entities["BobLamp"].Transform.Scale);
 
-    m_Entities["BobLamp"].AABB = AABB(m_Entities["BobLamp"].Transform.Translation + m_Entities["BobLamp"].OriginOffset,
+    m_Entities["BobLamp"].AABBox = AABB(m_Entities["BobLamp"].Transform.Translation + m_Entities["BobLamp"].OriginOffset,
         m_Entities["BobLamp"].Transform.Rotation, m_Entities["BobLamp"].Init.AABB.Transform.Scale);
 
     Log::GetLogger()->info("-- END loading the animated PBR model BobLamp --");
@@ -345,7 +345,7 @@ void SceneAnimPBR::SetupMeshes()
     m_Entities["AnimBoy"].Transform.Transform = glm::translate(m_Entities["AnimBoy"].Transform.Transform, m_Entities["AnimBoy"].Transform.Translation);
     m_Entities["AnimBoy"].Transform.Transform = glm::scale(m_Entities["AnimBoy"].Transform.Transform, m_Entities["AnimBoy"].Transform.Scale);
 
-    m_Entities["AnimBoy"].AABB = AABB(m_Entities["AnimBoy"].Transform.Translation + m_Entities["AnimBoy"].OriginOffset,
+    m_Entities["AnimBoy"].AABBox = AABB(m_Entities["AnimBoy"].Transform.Translation + m_Entities["AnimBoy"].OriginOffset,
         m_Entities["AnimBoy"].Transform.Rotation, m_Entities["AnimBoy"].Init.AABB.Transform.Scale);
 
     Log::GetLogger()->info("-- END loading the animated PBR model Animated Boy --");
@@ -372,7 +372,7 @@ void SceneAnimPBR::Update(float timestep, Window* mainWindow)
         entity.second.Transform.Rotation = rotation;
         entity.second.Transform.Scale = scale;
 
-        entity.second.AABB.Update(entity.second.Transform.Translation, entity.second.Transform.Rotation, entity.second.Transform.Scale);
+        entity.second.AABBox.Update(entity.second.Transform.Translation, entity.second.Transform.Rotation, entity.second.Transform.Scale);
     }
 
     CheckIntersection(mainWindow);
@@ -446,7 +446,7 @@ void SceneAnimPBR::CheckIntersection(Window* mainWindow)
     {
         entity.second.Intersecting = entity.second.Enabled &&
             AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
-                entity.second.AABB.GetMin(), entity.second.AABB.GetMax(), glm::vec2(0.0f));
+                entity.second.AABBox.GetMin(), entity.second.AABBox.GetMax(), glm::vec2(0.0f));
     }
 
     if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft))
@@ -1094,7 +1094,7 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
         {
             m_ShaderBasic->setMat4("model", AABB_Transform);
             m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-            if (m_VisibleAABBs) entity.second.AABB.Draw();
+            if (m_VisibleAABBs) entity.second.AABBox.Draw();
         }
     }
 

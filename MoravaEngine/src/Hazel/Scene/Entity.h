@@ -49,7 +49,7 @@ namespace Hazel {
 		}
 
 		TransformComponent& Transform() { return m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle); }
-		const glm::mat4& Transform() const { return m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle).GetTransform(); }
+		glm::mat4 Transform() const { return m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle).GetTransform(); }
 
 		void SetMaterial(Material* material) { m_Material = material; }
 		Material* GetMaterial() { return m_Material; }

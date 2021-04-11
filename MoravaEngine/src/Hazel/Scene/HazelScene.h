@@ -114,8 +114,9 @@ namespace Hazel {
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
 
-	private:
 		EntityMap m_EntityIDMap;
+
+	private:
 
 		HazelCamera m_Camera;
 		HazelLight m_Light;
@@ -141,8 +142,8 @@ namespace Hazel {
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
 
-		friend void OnScriptComponentConstruct(entt::registry& registry, entt::entity entity);
-		friend void OnScriptComponentDestroy(entt::registry& registry, entt::entity entity);
+		// friend void OnScriptComponentConstruct(entt::registry& registry, entt::entity entity);
+		// friend void OnScriptComponentDestroy(entt::registry& registry, entt::entity entity);
 
 	};
 

@@ -244,7 +244,7 @@ namespace Hazel {
 
 		// Render 2D
 		HazelCamera* mainCamera = nullptr;
-		glm::mat4* cameraTransform = nullptr;
+		glm::mat4 cameraTransform = glm::mat4(1.0f);
 		{
 			auto view = m_Registry.view<TransformComponent, CameraComponent>();
 
@@ -255,7 +255,7 @@ namespace Hazel {
 				if (camera.Primary)
 				{
 					mainCamera = &camera.Camera;
-					cameraTransform = &transform.GetTransform();
+					cameraTransform = transform.GetTransform();
 					break;
 				}
 			}
@@ -296,7 +296,7 @@ namespace Hazel {
 			SceneRenderer::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
 			for (auto entity : group)
 			{
-				auto& [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
+				auto [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
 				if (meshComponent.Mesh)
 				{
 					meshComponent.Mesh->OnUpdate(ts, false);
@@ -742,7 +742,7 @@ namespace Hazel {
 	template<typename T>
 	void HazelScene::OnComponentAdded(Entity entity, T& component)
 	{
-		static_assert(false);
+		// static_assert(false);
 	}
 
 	template<>

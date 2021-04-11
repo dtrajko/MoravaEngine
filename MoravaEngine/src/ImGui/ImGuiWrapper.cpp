@@ -262,7 +262,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 	ImGui::Text(material->GetUUID().c_str());
 	ImGui::Columns(1);
 
-	auto& materialName = material->GetName();
+	auto materialName = material->GetName();
 
 	char buffer[256];
 	memset(buffer, 0, 256);
@@ -702,7 +702,8 @@ bool ImGuiWrapper::Property(const char* label, const char* value)
 	s_IDBuffer[0] = '#';
 	s_IDBuffer[1] = '#';
 	memset(s_IDBuffer + 2, 0, 14);
-	_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+	// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+	sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 	modified = ImGui::InputText(s_IDBuffer, (char*)value, 256, ImGuiInputTextFlags_ReadOnly);
 
 	ImGui::PopItemWidth();
@@ -722,7 +723,8 @@ bool ImGuiWrapper::Property(const char* label, int& value)
 	s_IDBuffer[0] = '#';
 	s_IDBuffer[1] = '#';
 	memset(s_IDBuffer + 2, 0, 14);
-	_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+	// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+	sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 	if (ImGui::DragInt(s_IDBuffer, &value)) {
 		modified = true;
 	}
@@ -744,7 +746,8 @@ bool ImGuiWrapper::Property(const char* label, float& value, float delta)
 	s_IDBuffer[0] = '#';
 	s_IDBuffer[1] = '#';
 	memset(s_IDBuffer + 2, 0, 14);
-	_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+	// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+	sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 	if (ImGui::DragFloat(s_IDBuffer, &value, delta)) {
 		modified = true;
 	}
@@ -766,7 +769,8 @@ bool ImGuiWrapper::Property(const char* label, glm::vec2& value, float delta)
 	s_IDBuffer[0] = '#';
 	s_IDBuffer[1] = '#';
 	memset(s_IDBuffer + 2, 0, 14);
-	_itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+	// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
+	sprintf(s_IDBuffer + 2, "%d", s_Counter++);
 	if (ImGui::DragFloat2(s_IDBuffer, glm::value_ptr(value), delta)) {
 		modified = true;
 	}

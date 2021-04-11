@@ -1,6 +1,7 @@
 #include "Texture/Texture.h"
 
 #include "Core/Log.h"
+#include "Hazel/Core/Base.h"
 
 #include <fstream>
 #include <exception>
@@ -327,3 +328,4 @@ Texture::~Texture()
 {
 	Clear();
 }
+

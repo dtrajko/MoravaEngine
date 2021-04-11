@@ -1,5 +1,9 @@
 #include "ScriptEngine.h"
 
+#include "ScriptEngineRegistry.h"
+
+#include "Hazel/Scene/HazelScene.h"
+
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/debug-helpers.h>
@@ -10,12 +14,10 @@
 #include <thread>
 #include <filesystem>
 
-#include <Windows.h>
-#include <winioctl.h>
-
-#include "ScriptEngineRegistry.h"
-
-#include "../Scene/HazelScene.h"
+#if defined(HZ_PLATFORM_WINDOWS)
+	#include <Windows.h>
+	#include <winioctl.h>
+#endif
 
 #include "imgui.h"
 
@@ -75,6 +77,8 @@ namespace Hazel
 			return NULL;
 		}
 
+#if defined(HZ_PLATFORM_WINDOWS)
+
 		HANDLE file = CreateFileA(filepath, FILE_READ_ACCESS, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (file == INVALID_HANDLE_VALUE)
 		{
@@ -115,6 +119,10 @@ namespace Hazel
 		CloseHandle(file);
 		mono_image_close(image);
 		return assemb;
+
+#endif
+
+		return nullptr;
 	}
 
 	static void InitMono()
