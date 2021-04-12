@@ -57,7 +57,7 @@ namespace Example
             Console.WriteLine("Mesh has {0} materials!", meshComponent.Mesh.GetMaterialCount());
 
             MaterialInstance material = meshComponent.Mesh.GetMaterial(1);
-            material.Set("u_AlbedoTexToggle", 1.0f);
+            material.Set("u_MaterialUniforms.AlbedoTexToggle", 1.0f);
             material.Set("u_AlbedoTexture", texture);
         }
 

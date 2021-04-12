@@ -50,6 +50,8 @@ namespace Hazel {
 		virtual bool operator==(const HazelTexture& other) const = 0;
 
 		virtual uint32_t GetID() const = 0;
+		virtual uint32_t GetRendererID() const = 0;
+
 		virtual void SetData(void* data, uint32_t size);
 		static uint32_t GetBPP(HazelImageFormat format);
 		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);

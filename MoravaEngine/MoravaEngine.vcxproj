@@ -452,6 +452,7 @@
     <ClInclude Include="src\Hazel\Renderer\RenderCommandQueue.h" />
     <ClInclude Include="src\Hazel\Renderer\Renderer2D.h" />
     <ClInclude Include="src\Hazel\Renderer\RendererAPI.h" />
+    <ClInclude Include="src\Hazel\Renderer\RendererCapabilities.h" />
     <ClInclude Include="src\Hazel\Renderer\RendererContext.h" />
     <ClInclude Include="src\Hazel\Renderer\RendererTypes.h" />
     <ClInclude Include="src\Hazel\Renderer\RenderPass.h" />

@@ -19,7 +19,7 @@ namespace Example
             float r = (float)random.NextDouble();
             float g = (float)random.NextDouble();
             float b = (float)random.NextDouble();
-            material.Set("u_AlbedoColor", new Vector3(r, g, b));
+            material.Set("u_MaterialUniforms.AlbedoColor", new Vector3(r, g, b));
         }
 
     }

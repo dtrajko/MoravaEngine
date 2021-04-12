@@ -345,7 +345,7 @@ namespace Hazel {
 					{
 						m_Textures[i] = texture;
 						m_MeshShader->setInt("u_AlbedoTexture", m_Textures[i]->GetID());
-						m_MeshShader->setFloat("u_AlbedoTexToggle", 1.0f);
+						m_MeshShader->setFloat("u_MaterialUniforms.AlbedoTexToggle", 1.0f);
 
 						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Albedo, texturePath, materialData->EnvMapMaterialRef);
 					}
@@ -353,18 +353,18 @@ namespace Hazel {
 					{
 						Log::GetLogger()->error("Could not load texture: {0}", texturePath);
 						// Fallback to albedo color
-						m_MeshShader->setVec3("u_AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
+						m_MeshShader->setVec3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
 						HZ_MESH_LOG("Mesh has no Albedo map.");
 					}
 				}
 				else
 				{
-					m_MeshShader->setVec3("u_AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
+					m_MeshShader->setVec3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
 					Log::GetLogger()->info("    No albedo map");
 				}
 
 				// Normal maps
-				m_MeshShader->setFloat("u_NormalTexToggle", 0.0f);
+				m_MeshShader->setFloat("u_MaterialUniforms.NormalTexToggle", 0.0f);
 				if (aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &aiTexPath) == AI_SUCCESS)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
@@ -386,7 +386,7 @@ namespace Hazel {
 					if (texture->IsLoaded())
 					{
 						m_MeshShader->setInt("u_NormalTexture", texture->GetID());
-						m_MeshShader->setFloat("u_NormalTexToggle", 1.0f);
+						m_MeshShader->setFloat("u_MaterialUniforms.NormalTexToggle", 1.0f);
 
 						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Normal, texturePath, materialData->EnvMapMaterialRef);
 					}
@@ -401,8 +401,8 @@ namespace Hazel {
 				}
 
 				// Roughness map
-				// m_MeshShader->setFloat("u_Roughness", 1.0f);
-				// m_MeshShader->setFloat("u_RoughnessTexToggle", 0.0f);
+				// m_MeshShader->setFloat("u_MaterialUniforms.Roughness", 1.0f);
+				// m_MeshShader->setFloat("u_MaterialUniforms.RoughnessTexToggle", 0.0f);
 				if (aiMaterial->GetTexture(aiTextureType_SHININESS, 0, &aiTexPath) == AI_SUCCESS)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
@@ -425,7 +425,7 @@ namespace Hazel {
 					{
 						HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
 						m_MeshShader->setInt("u_RoughnessTexture", texture->GetID());
-						m_MeshShader->setFloat("u_RoughnessTexToggle", 1.0f);
+						m_MeshShader->setFloat("u_MaterialUniforms.RoughnessTexToggle", 1.0f);
 
 						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Roughness, texturePath, materialData->EnvMapMaterialRef);
 					}
@@ -437,7 +437,7 @@ namespace Hazel {
 				else
 				{
 					Log::GetLogger()->info("    No roughness map");
-					m_MeshShader->setFloat("u_Roughness", roughness);
+					m_MeshShader->setFloat("u_MaterialUniforms.Roughness", roughness);
 				}
 
 #if 0
@@ -463,7 +463,7 @@ namespace Hazel {
 					{
 						HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
 						m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
-						m_MeshShader->setFloat("u_MetalnessTexToggle", 1.0f);
+						m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
 					}
 					else
 					{
@@ -473,7 +473,7 @@ namespace Hazel {
 				else
 				{
 					Log::GetLogger()->info("    No metalness texture");
-					m_MeshShader->setFloat("u_Metalness", metalness);
+					m_MeshShader->setFloat("u_MaterialUniforms.Metalness", metalness);
 				}
 #endif
 
@@ -563,15 +563,15 @@ namespace Hazel {
 							if (texture->IsLoaded())
 							{
 								m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
-								m_MeshShader->setFloat("u_MetalnessTexToggle", 1.0f);
+								m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
 
 								MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Metalness, texturePath, materialData->EnvMapMaterialRef);
 							}
 							else
 							{
 								Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
-								m_MeshShader->setFloat("u_Metalness", metalness);
-								m_MeshShader->setFloat("u_MetalnessTexToggle", 0.0f);
+								m_MeshShader->setFloat("u_MaterialUniforms.Metalness", metalness);
+								m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 0.0f);
 							}
 							break;
 						}
@@ -582,8 +582,8 @@ namespace Hazel {
 				{
 					Log::GetLogger()->info("    No metalness map");
 
-					m_MeshShader->setFloat("u_Metalness", metalness);
-					m_MeshShader->setFloat("u_MetalnessTexToggle", 0.0f);
+					m_MeshShader->setFloat("u_MaterialUniforms.Metalness", metalness);
+					m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 0.0f);
 				}
 			}
 			HZ_MESH_LOG("------------------------");

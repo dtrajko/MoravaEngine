@@ -322,21 +322,21 @@ void EnvMapEditorLayer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPB
     shaderHazelPBR->setInt("u_EmissiveTexture",  m_SamplerSlots->at("emissive"));
     shaderHazelPBR->setInt("u_AOTexture",        m_SamplerSlots->at("ao"));
 
-    shaderHazelPBR->setVec3("u_AlbedoColor", envMapMaterial->GetAlbedoInput().Color);
-    shaderHazelPBR->setFloat("u_Metalness",  envMapMaterial->GetMetalnessInput().Value);
-    shaderHazelPBR->setFloat("u_Roughness",  envMapMaterial->GetRoughnessInput().Value);
-    shaderHazelPBR->setFloat("u_Emissive",   envMapMaterial->GetEmissiveInput().Value);
-    shaderHazelPBR->setFloat("u_AO",         envMapMaterial->GetAOInput().Value);
+    shaderHazelPBR->setVec3( "u_MaterialUniforms.AlbedoColor", envMapMaterial->GetAlbedoInput().Color);
+    shaderHazelPBR->setFloat("u_MaterialUniforms.Metalness",  envMapMaterial->GetMetalnessInput().Value);
+    shaderHazelPBR->setFloat("u_MaterialUniforms.Roughness",  envMapMaterial->GetRoughnessInput().Value);
+    shaderHazelPBR->setFloat("u_MaterialUniforms.Emissive",   envMapMaterial->GetEmissiveInput().Value);
+    shaderHazelPBR->setFloat("u_MaterialUniforms.AO",         envMapMaterial->GetAOInput().Value);
 
-    shaderHazelPBR->setFloat("u_EnvMapRotation", m_EnvMapRotation);
+    shaderHazelPBR->setFloat("u_MaterialUniforms.EnvMapRotation", m_EnvMapRotation);
 
-    shaderHazelPBR->setFloat("u_RadiancePrefilter",  m_RadiancePrefilter ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_AlbedoTexToggle",    envMapMaterial->GetAlbedoInput().UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_NormalTexToggle",    envMapMaterial->GetNormalInput().UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_MetalnessTexToggle", envMapMaterial->GetMetalnessInput().UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_RoughnessTexToggle", envMapMaterial->GetRoughnessInput().UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_EmissiveTexToggle",  envMapMaterial->GetEmissiveInput().UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_AOTexToggle",        envMapMaterial->GetAOInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_MaterialUniforms.RadiancePrefilter",  m_RadiancePrefilter ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_MaterialUniforms.AlbedoTexToggle",    envMapMaterial->GetAlbedoInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_MaterialUniforms.NormalTexToggle",    envMapMaterial->GetNormalInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_MaterialUniforms.MetalnessTexToggle", envMapMaterial->GetMetalnessInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_MaterialUniforms.RoughnessTexToggle", envMapMaterial->GetRoughnessInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_MaterialUniforms.EmissiveTexToggle",  envMapMaterial->GetEmissiveInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->setFloat("u_MaterialUniforms.AOTexToggle",        envMapMaterial->GetAOInput().UseTexture ? 1.0f : 0.0f);
 
     // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
     shaderHazelPBR->setFloat("u_Exposure", GetMainCameraComponent().Camera.GetExposure()); // originally used in Shaders/Hazel/SceneComposite

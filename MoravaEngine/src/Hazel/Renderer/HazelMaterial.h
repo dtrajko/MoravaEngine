@@ -21,6 +21,8 @@ namespace Hazel {
 
 	class HazelMaterial : public RefCounted
 	{
+		friend class HazelMaterialInstance; // Removed in more recent commits in Vulkan branch?
+
 	public:
 		HazelMaterial();
 		HazelMaterial(const Ref<HazelShader>& shader, const std::string& name = "");
@@ -85,13 +87,13 @@ namespace Hazel {
 		virtual const std::string& GetName() const = 0;
 
 		// TODO: obsolete?
-		void Bind() const;
-		void BindTextures() const;
+		void Bind(); // Removed in more recent commits in Vulkan branch
 
 	private:
-		void AllocateStorage();
+		void AllocateStorage(); // Removed in more recent commits in Vulkan branch?
+		void BindTextures(); // Removed in more recent commits in Vulkan branch?
+
 		void OnShaderReloaded();
-		void BindTextures();
 
 		ShaderUniformDeclaration* FindUniformDeclaration(const std::string& name);
 		ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
@@ -103,6 +105,9 @@ namespace Hazel {
 
 		Buffer m_VSUniformStorageBuffer;
 		Buffer m_PSUniformStorageBuffer;
+
+		Buffer m_UniformStorageBuffer; // could be obsolete in later versions of vulkan branch
+
 		std::vector<Ref<HazelTexture>> m_Textures;
 
 		uint32_t m_MaterialFlags;
@@ -139,7 +144,8 @@ namespace Hazel {
 			Set(name, (HazelTexture*)texture);
 		}
 
-		void Bind();
+		void Bind(); // Removed in more recent commits in Vulkan branch
+		void AllocateStorage(); // Removed in more recent commits in Vulkan branch?
 
 		uint32_t GetFlags() const { return m_Material->GetFlags(); }
 		bool GetFlag(HazelMaterialFlag flag) const { return (uint32_t)flag & m_Material->GetFlags(); }
@@ -173,7 +179,6 @@ namespace Hazel {
 		static Ref <HazelMaterialInstance> Create(const Ref<HazelMaterial>& material);
 
 	private:
-		void AllocateStorage();
 		void OnShaderReloaded();
 		Buffer& GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration);
 		void OnMaterialValueUpdated(ShaderUniformDeclaration* decl);
@@ -184,6 +189,9 @@ namespace Hazel {
 
 		Buffer m_VSUniformStorageBuffer;
 		Buffer m_PSUniformStorageBuffer;
+
+		Buffer m_UniformStorageBuffer; // could be obsolete in later versions of vulkan branch
+
 		std::vector<Ref<HazelTexture>> m_Textures;
 
 		// TODO: This is temporary; come up with a proper system to track overrides

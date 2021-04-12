@@ -1,5 +1,7 @@
 #pragma once
 
+#include "RendererCapabilities.h"
+
 #include <cstdint>
 #include <string>
 

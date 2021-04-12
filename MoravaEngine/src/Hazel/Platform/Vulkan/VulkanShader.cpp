@@ -43,7 +43,6 @@ namespace Hazel {
 		return ShaderUniformType::None;
 	}
 
-
 	VulkanShader::VulkanShader(const std::string& path, bool forceCompile)
 		: m_AssetPath(path)
 	{

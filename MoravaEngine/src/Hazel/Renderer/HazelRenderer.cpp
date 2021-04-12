@@ -213,31 +213,38 @@ namespace Hazel {
 			// Material
 			auto material = overrideMaterial ? overrideMaterial : materials[submesh.MaterialIndex];
 			auto shader = material->GetShader();
-			// material->Bind(); // obsolete?
+			material->Bind();
 
-			//	if (mesh->IsAnimated())
-			//	{
-			//		for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
-			//		{
-			//			std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-			//			shader->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
-			//		}
-			//	}
-			//	shader->SetMat4("u_Transform", transform * submesh.Transform);
+			if (false && mesh->IsAnimated())
+			{
+				for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
+				{
+					std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+					shader->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
+				}
+			}
 
-			//	HazelRenderer::Submit([submesh, material]() {
-			//		if (material->GetFlag(HazelMaterialFlag::DepthTest))
-			//			glEnable(GL_DEPTH_TEST);
-			//		else
-			//			glDisable(GL_DEPTH_TEST);
-			//	
-			//		if (!material->GetFlag(HazelMaterialFlag::TwoSided))
-			//			HazelRenderer::Submit([]() { glEnable(GL_CULL_FACE); });
-			//		else
-			//			HazelRenderer::Submit([]() { glDisable(GL_CULL_FACE); });
-			//	
-			//		glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
-			//	});
+			auto transformUniform = transform * submesh.Transform;
+			shader->SetUniformBuffer("Transform", &transformUniform, sizeof(glm::mat4));
+
+			HazelRenderer::Submit([submesh, material]() {
+			});
+
+			if (material->GetFlag(HazelMaterialFlag::DepthTest)) {
+				glEnable(GL_DEPTH_TEST);
+			}
+			else {
+				glDisable(GL_DEPTH_TEST);
+			}
+
+			if (!material->GetFlag(HazelMaterialFlag::TwoSided)) {
+				HazelRenderer::Submit([]() { glEnable(GL_CULL_FACE); });
+			}
+			else {
+				HazelRenderer::Submit([]() { glDisable(GL_CULL_FACE); });
+			}
+
+			glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
 		}
 	}
 

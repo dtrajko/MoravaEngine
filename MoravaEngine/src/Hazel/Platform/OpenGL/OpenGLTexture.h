@@ -41,6 +41,7 @@ namespace Hazel {
 		}
 
 		virtual uint32_t GetID() const override { return m_ID; }
+		virtual uint32_t GetRendererID() const override { return m_ID; }
 
 	private:
 		Ref<HazelImage2D> m_Image;
@@ -80,6 +81,7 @@ namespace Hazel {
 		virtual const std::string& GetPath() const override { return m_FilePath; }
 
 		virtual uint32_t GetID() const override { return m_ID; }
+		virtual uint32_t GetRendererID() const override { return m_ID; }
 
 		virtual uint64_t GetHash() const { return (uint64_t)m_ID; }
 

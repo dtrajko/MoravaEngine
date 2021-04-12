@@ -59,22 +59,22 @@ uniform samplerCube u_EnvIrradianceTex;
 // BRDF LUT
 uniform sampler2D u_BRDFLUTTexture;
 
-uniform vec3 u_AlbedoColor; // TODO: move to Material struct
-uniform float u_Metalness;  // TODO: move to Material struct
-uniform float u_Roughness;  // TODO: move to Material struct
-uniform float u_Emissive;   // TODO: move to Material struct
-uniform float u_AO;         // TODO: move to Material struct
+// uniform vec3 u_AlbedoColor; // TODO: move to Material struct
+// uniform float u_Metalness;  // TODO: move to Material struct
+// uniform float u_Roughness;  // TODO: move to Material struct
+// uniform float u_Emissive;   // TODO: move to Material struct
+// uniform float u_AO;         // TODO: move to Material struct
 
-uniform float u_EnvMapRotation; // TODO: move to Material struct
+// uniform float u_EnvMapRotation; // TODO: move to Material struct
 
 // Toggles
-uniform float u_RadiancePrefilter;  // TODO: move to Material struct
-uniform float u_AlbedoTexToggle;    // TODO: move to Material struct
-uniform float u_NormalTexToggle;    // TODO: move to Material struct
-uniform float u_MetalnessTexToggle; // TODO: move to Material struct
-uniform float u_RoughnessTexToggle; // TODO: move to Material struct
-uniform float u_EmissiveTexToggle;  // TODO: move to Material struct
-uniform float u_AOTexToggle;        // TODO: move to Material struct
+// uniform float u_RadiancePrefilter;  // TODO: move to Material struct
+// uniform float u_AlbedoTexToggle;    // TODO: move to Material struct
+// uniform float u_NormalTexToggle;    // TODO: move to Material struct
+// uniform float u_MetalnessTexToggle; // TODO: move to Material struct
+// uniform float u_RoughnessTexToggle; // TODO: move to Material struct
+// uniform float u_EmissiveTexToggle;  // TODO: move to Material struct
+// uniform float u_AOTexToggle;        // TODO: move to Material struct
 
 uniform float u_Exposure;
 
@@ -521,7 +521,7 @@ vec3 IBL(vec3 F0, vec3 Lr)
 	int u_EnvRadianceTexLevels = textureQueryLevels(u_EnvRadianceTex);
 	float NoV = clamp(m_Params.NdotV, 0.0, 1.0);
 	vec3 R = 2.0 * dot(m_Params.View, m_Params.Normal) * m_Params.Normal - m_Params.View;
-	vec3 specularIrradiance = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_EnvMapRotation, Lr), m_Params.Roughness * u_EnvRadianceTexLevels).rgb;
+	vec3 specularIrradiance = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_MaterialUniforms.EnvMapRotation, Lr), m_Params.Roughness * u_EnvRadianceTexLevels).rgb;
 
 	// Sample BRDF Lut, 1.0 - roughness for y-coord because texture was generated (in Sparky) for gloss model
 	vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
@@ -540,21 +540,21 @@ vec4 SRGBtoLINEAR(vec4 srgbIn)
 void main()
 {
 	// Standard PBR inputs
-	m_Params.Albedo    = u_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord * u_TilingFactor).rgb : u_AlbedoColor; 
-	m_Params.Metalness = u_MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, vs_Input.TexCoord * u_TilingFactor).r : u_Metalness;
-	m_Params.Roughness = u_RoughnessTexToggle > 0.5 ? texture(u_RoughnessTexture, vs_Input.TexCoord * u_TilingFactor).r : u_Roughness;
+	m_Params.Albedo    = u_MaterialUniforms.AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord * u_TilingFactor).rgb : u_MaterialUniforms.AlbedoColor; 
+	m_Params.Metalness = u_MaterialUniforms.MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, vs_Input.TexCoord * u_TilingFactor).r : u_MaterialUniforms.Metalness;
+	m_Params.Roughness = u_MaterialUniforms.RoughnessTexToggle > 0.5 ? texture(u_RoughnessTexture, vs_Input.TexCoord * u_TilingFactor).r : u_MaterialUniforms.Roughness;
     m_Params.Roughness = max(m_Params.Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
-	m_Params.Emissive = u_EmissiveTexToggle > 0.5 ? SRGBtoLINEAR(texture(u_EmissiveTexture, vs_Input.TexCoord * u_TilingFactor)).rgb : vec3(u_Emissive);
-	m_Params.AO        = u_AOTexToggle > 0.5 ? texture(u_AOTexture, vs_Input.TexCoord * u_TilingFactor).r : u_AO;
+	m_Params.Emissive  = u_MaterialUniforms.EmissiveTexToggle > 0.5 ? SRGBtoLINEAR(texture(u_EmissiveTexture, vs_Input.TexCoord * u_TilingFactor)).rgb : vec3(u_MaterialUniforms.Emissive);
+	m_Params.AO        = u_MaterialUniforms.AOTexToggle > 0.5 ? texture(u_AOTexture, vs_Input.TexCoord * u_TilingFactor).r : u_MaterialUniforms.AO;
 
 	// Handle Albedo texture transparency
-	if(u_AlbedoTexToggle > 0.5 && texture(u_AlbedoTexture, vs_Input.TexCoord * u_TilingFactor).a < 0.1) {
+	if(u_MaterialUniforms.AlbedoTexToggle > 0.5 && texture(u_AlbedoTexture, vs_Input.TexCoord * u_TilingFactor).a < 0.1) {
 		discard;
 	}
 
 	// Normals (either from vertex or map)
 	m_Params.Normal = normalize(vs_Input.Normal);
-	if (u_NormalTexToggle > 0.5)
+	if (u_MaterialUniforms.NormalTexToggle > 0.5)
 	{
 		m_Params.Normal = normalize(2.0 * texture(u_NormalTexture, vs_Input.TexCoord * u_TilingFactor).rgb - 1.0);
 		m_Params.Normal = normalize(vs_Input.WorldNormals * m_Params.Normal);

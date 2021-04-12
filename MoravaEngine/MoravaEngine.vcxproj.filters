@@ -1503,6 +1503,9 @@
     <ClInclude Include="src\Hazel\Editor\EditorCamera.h">
       <Filter>Hazel\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\RendererCapabilities.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

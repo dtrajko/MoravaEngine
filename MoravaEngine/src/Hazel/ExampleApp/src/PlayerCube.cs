@@ -30,7 +30,7 @@ namespace Example
 
             MeshComponent meshComponent = GetComponent<MeshComponent>();
             m_MeshMaterial = meshComponent.Mesh.GetMaterial(0);
-            m_MeshMaterial.Set("u_Metalness", 0.0f);
+            m_MeshMaterial.Set("u_MaterialUniforms.Metalness", 0.0f);
 
             AddCollision2DBeginCallback(OnPlayerCollisionBegin);
             AddCollision2DEndCallback(OnPlayerCollisionEnd);
@@ -40,14 +40,14 @@ namespace Example
         {
             m_CollisionCounter++;
 
-            m_MeshMaterial.Set("u_AlbedoColor", new Vector3(1.0f, 0.0f, 0.0f));
+            m_MeshMaterial.Set("u_MaterialUniforms.AlbedoColor", new Vector3(1.0f, 0.0f, 0.0f));
         }
 
         void OnPlayerCollisionEnd(float value)
         {
             m_CollisionCounter--;
 
-            m_MeshMaterial.Set("u_AlbedoColor", new Vector3(0.8f, 0.8f, 0.8f));
+            m_MeshMaterial.Set("u_MaterialUniforms.AlbedoColor", new Vector3(0.8f, 0.8f, 0.8f));
         }
 
         void OnUpdate(float ts)
@@ -70,9 +70,9 @@ namespace Example
             }
 
             if (m_CollisionCounter > 0) {
-                m_MeshMaterial.Set("u_AlbedoColor", new Vector3(1.0f, 0.0f, 0.0f));
+                m_MeshMaterial.Set("u_MaterialUniforms.AlbedoColor", new Vector3(1.0f, 0.0f, 0.0f));
             } else {
-                m_MeshMaterial.Set("u_AlbedoColor", new Vector3(0.8f, 0.8f, 0.8f));
+                m_MeshMaterial.Set("u_MaterialUniforms.AlbedoColor", new Vector3(0.8f, 0.8f, 0.8f));
             }
 
             Vector2 linearVelocity = m_PhysicsBody.GetLinearVelocity();
