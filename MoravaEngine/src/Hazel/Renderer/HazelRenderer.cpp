@@ -183,7 +183,7 @@ namespace Hazel {
 		bool depthTest = true;
 		if (material)
 		{
-			// material->Bind(); // obsolete?
+			material->Bind(); // obsolete?
 			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
 		}
 

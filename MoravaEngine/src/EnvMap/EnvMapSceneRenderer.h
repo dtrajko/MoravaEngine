@@ -68,17 +68,30 @@ public:
 	static Hazel::Ref<Shader> GetShaderGrid() { return s_ShaderGrid; }
 	static Hazel::Ref<Hazel::HazelTexture2D> GetEnvEquirect() { return s_EnvEquirect; }
 	static void SetupShaders();
-	static void SubmitEntity(Hazel::Entity entity);
 	static SceneRendererCamera& GetCamera();
+
+	static void SubmitEntity(Hazel::Entity entity);
 
 private:
 	static void FlushDrawList();
 	static void GeometryPass();
 	static void CompositePass();
 
+// Moved from EnvMapEditorLayer back to EnvMapSceneRenderer
 public:
-	static std::map<std::string, unsigned int>* m_SamplerSlots;
+	static void GeometryPassEnvMap();
+	static void CompositePassEnvMap(Framebuffer* framebuffer);
 
+	static void SubmitEntityEnvMap(Hazel::Entity entity);
+	static glm::mat4 GetViewProjection();
+
+private:
+	static void RenderSkybox();
+	static void RenderHazelGrid();
+	static void RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh);
+	static void UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPBR, Hazel::Ref<EnvMapMaterial> envMapMaterial);
+
+public:
 	// From EnvironmentMap
 	static Hazel::Ref<Shader> s_ShaderEquirectangularConversion;
 	static Hazel::Ref<Shader> s_ShaderEnvFiltering;

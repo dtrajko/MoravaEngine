@@ -73,7 +73,7 @@ public:
 	void UpdateImGuizmo(Window* mainWindow);
 	Hazel::Entity CreateEntity(const std::string& name);
 	Hazel::Entity LoadEntity(std::string fullPath);
-	Hazel::CameraComponent GetMainCameraComponent();
+	static Hazel::CameraComponent GetMainCameraComponent();
 
 	void ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop);
 
@@ -85,24 +85,18 @@ public:
 	// Getters
 	Hazel::Ref<Shader> GetShaderPBR_Anim();
 	Hazel::Ref<Shader> GetShaderPBR_Static();
-	inline std::map<std::string, unsigned int>* GetSamplerSlots() { return m_SamplerSlots; }
-	inline bool& GetRadiancePrefilter() { return m_RadiancePrefilter; }
-	inline float& GetEnvMapRotation() { return m_EnvMapRotation; }
+	inline std::map<std::string, unsigned int>& GetSamplerSlots() { return s_SamplerSlots; }
+	inline bool& GetRadiancePrefilter() { return s_RadiancePrefilter; }
+	inline float& GetEnvMapRotation() { return s_EnvMapRotation; }
 	inline Hazel::Ref<Hazel::HazelTexture2D> GetCheckerboardTexture() { return s_CheckerboardTexture; }
 	inline Hazel::Ref<Hazel::HazelTextureCube> GetSkyboxTexture() { return m_SkyboxTexture; }
 	Ref<Hazel::Entity> GetMeshEntity();
-	inline float& GetSkyboxExposureFactor() { return m_SkyboxExposureFactor; };
+	inline float& GetSkyboxExposureFactor() { return s_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
 	void SetViewportBounds(glm::vec2* viewportBounds);
-	inline bool* GetDisplayHazelGrid() { return &m_DisplayHazelGrid; }
+	inline bool* GetDisplayHazelGrid() { return &s_DisplayHazelGrid; }
 	inline bool* GetDisplayBoundingBoxes() { return &m_DisplayBoundingBoxes; };
-	inline bool* GetDisplayRay() { return &m_DisplayRay; };
-	glm::mat4 GetViewProjection();
-
-	// EnvMapSceneRenderer
-	void CompositePassTemporary(Framebuffer* framebuffer);
-	void GeometryPassTemporary();
-	void SubmitEntity(Hazel::Entity entity);
+	inline bool* GetDisplayRay() { return &s_DisplayRay; };
 
 	// Renderer
 	void DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest);
@@ -119,17 +113,12 @@ private:
 	void SetupContextData(Scene* scene);
 	void SetupShaders();
 	void UpdateUniforms();
-	void UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPBR, Hazel::Ref<EnvMapMaterial> envMapMaterial);
 	void SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox);
 	void Init();
 
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();
 	std::vector<glm::mat4> CalculateLightTransform(glm::mat4 lightProj, glm::vec3 position);
-
-	void RenderSkybox();
-	void RenderHazelGrid();
-	void RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh);
 
 public:
 	static SelectionMode s_SelectionMode;
@@ -138,9 +127,36 @@ public:
 	static Hazel::Ref<EnvMapMaterial> s_DefaultMaterial;
 	static Hazel::Ref<EnvMapMaterial> s_LightMaterial;
 
-	Hazel::EditorCamera* m_EditorCamera;
-	RuntimeCamera* m_RuntimeCamera;
-	Hazel::HazelCamera* m_ActiveCamera;
+	static std::map<std::string, unsigned int> s_SamplerSlots;
+
+	static Hazel::Ref<Hazel::HazelScene> s_RuntimeScene;
+	static Hazel::Ref<Hazel::HazelScene> s_EditorScene;
+
+	static Hazel::EditorCamera* s_EditorCamera;
+	static RuntimeCamera* s_RuntimeCamera;
+	static Hazel::HazelCamera* s_ActiveCamera;
+
+	static CubeSkybox* s_SkyboxCube;
+	static Quad* s_Quad;
+	static bool s_DisplayOutline;
+	static float s_SkyboxExposureFactor;
+	static bool s_RadiancePrefilter;
+	static float s_EnvMapRotation;
+	static glm::mat4 s_DirLightTransform; // sent to shaders as an uniform dirLightTransform / u_DirLightTransform
+	static bool s_DisplayHazelGrid;
+	static bool s_DisplayRay;
+	static glm::vec3 s_NewRay;
+
+	static Hazel::Ref<Shader> s_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
+	static Hazel::Ref<Shader> s_ShaderOutline;
+
+	static Hazel::Entity s_PointLightEntity; // temporary, for experimental use
+	static Hazel::Ref<OmniShadowMap> s_OmniShadowMapPointLight;
+
+	static Hazel::Entity s_SpotLightEntity;  // temporary, for experimental use
+	static Hazel::Ref<OmniShadowMap> s_OmniShadowMapSpotLight;
+
+	static Hazel::Ref<ShadowMap> s_ShadowMapDirLight;
 
 	glm::mat4 m_CurrentlySelectedTransform;
 	glm::mat4* m_RelativeTransform = nullptr;
@@ -153,39 +169,18 @@ public:
 	Framebuffer* m_RenderFramebuffer;
 
 private:
-	Hazel::Ref<Shader> m_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
-	Hazel::Ref<Shader> m_ShaderOutline;
 	Hazel::Ref<Shader> m_ShaderShadow;
 	Hazel::Ref<Shader> m_ShaderOmniShadow;
 
-	CubeSkybox* m_SkyboxCube;
 	Hazel::Ref<Hazel::HazelTextureCube> m_SkyboxTexture;
-	float m_SkyboxExposureFactor = 1.0f;
-
-	Quad* m_Quad;
-
-	std::map<std::string, unsigned int>* m_SamplerSlots;
-
-	// PBR params
-	bool m_RadiancePrefilter = false;
-
-	float m_EnvMapRotation = 0.0f;
 
 	/** BEGIN properties Hazelnut/EditorLayer **/
 	// Editor resources
 	Hazel::Ref<Hazel::HazelTexture2D> m_PlayButtonTex;
 
 	Hazel::Entity m_DirectionalLightEntity;
-	Hazel::Ref<ShadowMap> m_ShadowMapDirLight;
 	glm::mat4 m_LightProjectionMatrix;
 	glm::vec3 m_LightDirection; // temporary, use DirectionalLightComponent
-	glm::mat4 m_DirLightTransform; // sent to shaders as an uniform dirLightTransform / u_DirLightTransform
-
-	Hazel::Entity m_PointLightEntity; // temporary, for experimental use
-	Hazel::Ref<OmniShadowMap> m_OmniShadowMapPointLight;
-
-	Hazel::Entity m_SpotLightEntity;  // temporary, for experimental use
-	Hazel::Ref<OmniShadowMap> m_OmniShadowMapSpotLight;
 
 	float m_ViewportWidth = 0.0f;
 	float m_ViewportHeight = 0.0f;
@@ -226,7 +221,6 @@ private:
 	float m_MaterialSpecular = 0.0f;
 	float m_MaterialShininess = 0.0f;
 
-	glm::vec3 m_NewRay;
 	glm::vec3 m_NewDir;
 
 	glm::vec2 m_WorkPosImGui; // window offset on monitor real estate
@@ -239,16 +233,11 @@ private:
 	};
 	SceneState m_SceneState;
 
-	bool m_DisplayHazelGrid;
 	bool m_DisplayBoundingBoxes;
-	bool m_DisplayRay;
 	bool m_DrawOnTopBoundingBoxes; // obsolete?
 	bool m_DisplayLineElements;
-	bool m_DisplayOutline;
 
 	// Hazel LIVE! #014
-	Hazel::Ref<Hazel::HazelScene> m_RuntimeScene;
-	Hazel::Ref<Hazel::HazelScene> m_EditorScene;
 	std::string m_SceneFilePath;
 	bool m_ReloadScriptOnPlay = true;
 

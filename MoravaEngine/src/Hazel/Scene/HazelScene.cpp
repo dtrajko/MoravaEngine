@@ -287,12 +287,12 @@ namespace Hazel {
 		// RENDER 3D SCENE
 		/////////////////////////////////////////////////////////////////////
 
-		// m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
-
-		auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-
 		if (RendererBasic::GetSpirVEnabled())
 		{
+			m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
+
+			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+
 			SceneRenderer::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
 			for (auto entity : group)
 			{
