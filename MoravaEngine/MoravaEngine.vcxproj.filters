@@ -705,6 +705,9 @@
     <ClCompile Include="src\Hazel\Editor\EditorCamera.cpp">
       <Filter>Hazel\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="src\EnvMap\EnvMapSharedData.cpp">
+      <Filter>EnvMap</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -1505,6 +1508,9 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Renderer\RendererCapabilities.h">
       <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EnvMap\EnvMapSharedData.h">
+      <Filter>EnvMap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

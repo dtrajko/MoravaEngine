@@ -10,10 +10,8 @@
 #include "Editor/EntitySelection.h"
 #include "EnvMap/EnvMapMaterial.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
+#include "EnvMap/EnvMapSharedData.h"
 #include "Framebuffer/ShadowMap.h"
-#include "Framebuffer/OmniShadowMap.h"
-#include "Mesh/CubeSkybox.h"
-#include "Mesh/Quad.h"
 
 
 enum class SelectionMode
@@ -85,18 +83,18 @@ public:
 	// Getters
 	Hazel::Ref<Shader> GetShaderPBR_Anim();
 	Hazel::Ref<Shader> GetShaderPBR_Static();
-	inline std::map<std::string, unsigned int>& GetSamplerSlots() { return s_SamplerSlots; }
-	inline bool& GetRadiancePrefilter() { return s_RadiancePrefilter; }
-	inline float& GetEnvMapRotation() { return s_EnvMapRotation; }
+	inline std::map<std::string, unsigned int>& GetSamplerSlots() { return EnvMapSharedData::s_SamplerSlots; }
+	inline bool& GetRadiancePrefilter() { return EnvMapSharedData::s_RadiancePrefilter; }
+	inline float& GetEnvMapRotation() { return EnvMapSharedData::s_EnvMapRotation; }
 	inline Hazel::Ref<Hazel::HazelTexture2D> GetCheckerboardTexture() { return s_CheckerboardTexture; }
 	inline Hazel::Ref<Hazel::HazelTextureCube> GetSkyboxTexture() { return m_SkyboxTexture; }
 	Ref<Hazel::Entity> GetMeshEntity();
-	inline float& GetSkyboxExposureFactor() { return s_SkyboxExposureFactor; };
+	inline float& GetSkyboxExposureFactor() { return EnvMapSharedData::s_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
 	void SetViewportBounds(glm::vec2* viewportBounds);
-	inline bool* GetDisplayHazelGrid() { return &s_DisplayHazelGrid; }
+	inline bool* GetDisplayHazelGrid() { return &EnvMapSharedData::s_DisplayHazelGrid; }
 	inline bool* GetDisplayBoundingBoxes() { return &m_DisplayBoundingBoxes; };
-	inline bool* GetDisplayRay() { return &s_DisplayRay; };
+	inline bool* GetDisplayRay() { return &EnvMapSharedData::s_DisplayRay; };
 
 	// Renderer
 	void DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest);
@@ -126,37 +124,6 @@ public:
 
 	static Hazel::Ref<EnvMapMaterial> s_DefaultMaterial;
 	static Hazel::Ref<EnvMapMaterial> s_LightMaterial;
-
-	static std::map<std::string, unsigned int> s_SamplerSlots;
-
-	static Hazel::Ref<Hazel::HazelScene> s_RuntimeScene;
-	static Hazel::Ref<Hazel::HazelScene> s_EditorScene;
-
-	static Hazel::EditorCamera* s_EditorCamera;
-	static RuntimeCamera* s_RuntimeCamera;
-	static Hazel::HazelCamera* s_ActiveCamera;
-
-	static CubeSkybox* s_SkyboxCube;
-	static Quad* s_Quad;
-	static bool s_DisplayOutline;
-	static float s_SkyboxExposureFactor;
-	static bool s_RadiancePrefilter;
-	static float s_EnvMapRotation;
-	static glm::mat4 s_DirLightTransform; // sent to shaders as an uniform dirLightTransform / u_DirLightTransform
-	static bool s_DisplayHazelGrid;
-	static bool s_DisplayRay;
-	static glm::vec3 s_NewRay;
-
-	static Hazel::Ref<Shader> s_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
-	static Hazel::Ref<Shader> s_ShaderOutline;
-
-	static Hazel::Entity s_PointLightEntity; // temporary, for experimental use
-	static Hazel::Ref<OmniShadowMap> s_OmniShadowMapPointLight;
-
-	static Hazel::Entity s_SpotLightEntity;  // temporary, for experimental use
-	static Hazel::Ref<OmniShadowMap> s_OmniShadowMapSpotLight;
-
-	static Hazel::Ref<ShadowMap> s_ShadowMapDirLight;
 
 	glm::mat4 m_CurrentlySelectedTransform;
 	glm::mat4* m_RelativeTransform = nullptr;

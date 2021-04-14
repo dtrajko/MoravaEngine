@@ -11,6 +11,7 @@
 
 #include "Camera/Camera.h"
 #include "EnvMap/EnvMapRenderPass.h"
+#include "EnvMap/EnvMapSharedData.h"
 #include "Mesh/HazelFullscreenQuad.h"
 
 

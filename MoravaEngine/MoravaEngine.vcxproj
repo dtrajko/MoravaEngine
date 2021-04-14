@@ -138,6 +138,7 @@
     <ClCompile Include="src\EnvMap\EnvMapMaterial.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapRenderPass.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapSceneRenderer.cpp" />
+    <ClCompile Include="src\EnvMap\EnvMapSharedData.cpp" />
     <ClCompile Include="src\Framebuffer\Attachment.cpp" />
     <ClCompile Include="src\Framebuffer\Cubemap.cpp" />
     <ClCompile Include="src\Framebuffer\Framebuffer.cpp" />
@@ -384,6 +385,7 @@
     <ClInclude Include="src\EnvMap\EnvMapMaterial.h" />
     <ClInclude Include="src\EnvMap\EnvMapRenderPass.h" />
     <ClInclude Include="src\EnvMap\EnvMapSceneRenderer.h" />
+    <ClInclude Include="src\EnvMap\EnvMapSharedData.h" />
     <ClInclude Include="src\Framebuffer\Attachment.h" />
     <ClInclude Include="src\Framebuffer\Cubemap.h" />
     <ClInclude Include="src\Framebuffer\Framebuffer.h" />

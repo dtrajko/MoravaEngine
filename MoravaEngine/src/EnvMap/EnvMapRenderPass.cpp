@@ -1,4 +1,4 @@
-#include "EnvMap/EnvMapRenderPass.h"
+#include "EnvMapRenderPass.h"
 
 #include "Hazel/Core/Assert.h"
 #include "Hazel/Platform/OpenGL/OpenGLRenderPass.h"

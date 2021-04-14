@@ -60,7 +60,7 @@ private:
 
 	struct MetalnessInput
 	{
-		float Value = 1.0f;
+		float Value = 0.0f;
 		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
 		bool UseTexture = false;
 	};
@@ -68,7 +68,7 @@ private:
 
 	struct RoughnessInput
 	{
-		float Value = 0.2f;
+		float Value = 1.0f;
 		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
 		bool UseTexture = false;
 	};

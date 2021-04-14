@@ -1,4 +1,4 @@
-#include "EnvMap/EnvMapMaterial.h"
+#include "EnvMapMaterial.h"
 
 #include "Core/Util.h"
 #include "EnvMap/EnvMapEditorLayer.h"

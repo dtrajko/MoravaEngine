@@ -1,4 +1,4 @@
-#include "EnvMap/EnvMapEditorLayer.h"
+#include "EnvMapEditorLayer.h"
 
 #include "Hazel/Renderer/RendererAPI.h"
 #include "Hazel/Scene/SceneSerializer.h"
@@ -26,35 +26,6 @@ Hazel::Ref<Hazel::HazelTexture2D> EnvMapEditorLayer::s_CheckerboardTexture;
 Hazel::Ref<EnvMapMaterial> EnvMapEditorLayer::s_DefaultMaterial;
 Hazel::Ref<EnvMapMaterial> EnvMapEditorLayer::s_LightMaterial;
 
-std::map<std::string, unsigned int> EnvMapEditorLayer::s_SamplerSlots;
-
-Hazel::Ref<Hazel::HazelScene> EnvMapEditorLayer::s_RuntimeScene;
-Hazel::Ref<Hazel::HazelScene> EnvMapEditorLayer::s_EditorScene;
-Hazel::EditorCamera* EnvMapEditorLayer::s_EditorCamera;
-RuntimeCamera*       EnvMapEditorLayer::s_RuntimeCamera;
-Hazel::HazelCamera*  EnvMapEditorLayer::s_ActiveCamera;
-
-CubeSkybox* EnvMapEditorLayer::s_SkyboxCube;
-Quad* EnvMapEditorLayer::s_Quad;
-bool EnvMapEditorLayer::s_DisplayOutline;
-float EnvMapEditorLayer::s_SkyboxExposureFactor;
-bool EnvMapEditorLayer::s_RadiancePrefilter;
-float EnvMapEditorLayer::s_EnvMapRotation;
-glm::mat4 EnvMapEditorLayer::s_DirLightTransform;
-bool EnvMapEditorLayer::s_DisplayHazelGrid;
-bool EnvMapEditorLayer::s_DisplayRay;
-glm::vec3 EnvMapEditorLayer::s_NewRay;
-Hazel::Ref<ShadowMap> EnvMapEditorLayer::s_ShadowMapDirLight;
-
-Hazel::Ref<Shader> EnvMapEditorLayer::s_ShaderHazelPBR;
-Hazel::Ref<Shader> EnvMapEditorLayer::s_ShaderOutline;
-
-Hazel::Entity EnvMapEditorLayer::s_PointLightEntity;
-Hazel::Ref<OmniShadowMap> EnvMapEditorLayer::s_OmniShadowMapPointLight;
-
-Hazel::Entity EnvMapEditorLayer::s_SpotLightEntity;
-Hazel::Ref<OmniShadowMap> EnvMapEditorLayer::s_OmniShadowMapSpotLight;
-
 
 EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 {
@@ -62,35 +33,35 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
-    s_SamplerSlots = std::map<std::string, unsigned int>();
+    EnvMapSharedData::s_SamplerSlots = std::map<std::string, unsigned int>();
 
     //  // PBR texture inputs
-    s_SamplerSlots.insert(std::make_pair("albedo",     1)); // uniform sampler2D u_AlbedoTexture
-    s_SamplerSlots.insert(std::make_pair("normal",     2)); // uniform sampler2D u_NormalTexture
-    s_SamplerSlots.insert(std::make_pair("metalness",  3)); // uniform sampler2D u_MetalnessTexture
-    s_SamplerSlots.insert(std::make_pair("roughness",  4)); // uniform sampler2D u_RoughnessTexture
-    s_SamplerSlots.insert(std::make_pair("emissive",   5)); // uniform sampler2D u_EmissiveTexture
-    s_SamplerSlots.insert(std::make_pair("ao",         6)); // uniform sampler2D u_AOTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("albedo",     1)); // uniform sampler2D u_AlbedoTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("normal",     2)); // uniform sampler2D u_NormalTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("metalness",  3)); // uniform sampler2D u_MetalnessTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("roughness",  4)); // uniform sampler2D u_RoughnessTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("emissive",   5)); // uniform sampler2D u_EmissiveTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("ao",         6)); // uniform sampler2D u_AOTexture
     // Environment maps
-    s_SamplerSlots.insert(std::make_pair("radiance",   7)); // uniform samplerCube u_EnvRadianceTex
-    s_SamplerSlots.insert(std::make_pair("irradiance", 8)); // uniform samplerCube u_EnvIrradianceTex
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("radiance",   7)); // uniform samplerCube u_EnvRadianceTex
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("irradiance", 8)); // uniform samplerCube u_EnvIrradianceTex
     // BRDF LUT
-    s_SamplerSlots.insert(std::make_pair("BRDF_LUT",   9)); // uniform sampler2D u_BRDFLUTTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("BRDF_LUT",   9)); // uniform sampler2D u_BRDFLUTTexture
     // Shadow Map Directional Light
-    s_SamplerSlots.insert(std::make_pair("shadow",      10)); // uniform sampler2D u_ShadowMap
-    s_SamplerSlots.insert(std::make_pair("shadow_omni", 11)); // uniform samplerCube omniShadowMaps[i].shadowMap
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("shadow",      10)); // uniform sampler2D u_ShadowMap
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("shadow_omni", 11)); // uniform samplerCube omniShadowMaps[i].shadowMap
 
     // Skybox.fs         - uniform samplerCube u_Texture;
     // SceneComposite.fs - uniform sampler2DMS u_Texture;
-    s_SamplerSlots.insert(std::make_pair("u_Texture",  1));
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("u_Texture",  1));
 
-    s_SkyboxCube = new CubeSkybox();
-    s_Quad = new Quad();
+    EnvMapSharedData::s_SkyboxCube = new CubeSkybox();
+    EnvMapSharedData::s_Quad = new Quad();
 
-    s_EditorScene = Hazel::Ref<Hazel::HazelScene>::Create();
-    s_EditorScene->SetSkyboxLod(0.1f);
+    EnvMapSharedData::s_EditorScene = Hazel::Ref<Hazel::HazelScene>::Create();
+    EnvMapSharedData::s_EditorScene->SetSkyboxLod(0.1f);
 
-    EnvMapSceneRenderer::Init(filepath, s_EditorScene.Raw());
+    EnvMapSceneRenderer::Init(filepath, EnvMapSharedData::s_EditorScene.Raw());
     SetSkybox(EnvMapSceneRenderer::GetRadianceMap());
 
     SetupContextData(scene);
@@ -108,12 +79,12 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 
     Init(); // requires a valid Camera reference
 
-    m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(s_EditorScene);
+    m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(EnvMapSharedData::s_EditorScene);
     m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvMapEditorLayer::SelectEntity, this, std::placeholders::_1));
     m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvMapEditorLayer::OnEntityDeleted, this, std::placeholders::_1));
-    m_SceneHierarchyPanel->SetContext(s_EditorScene); // already done in constructor
-    Hazel::ScriptEngine::SetSceneContext(s_EditorScene);
-    s_EditorScene->SetSelectedEntity({});
+    m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene); // already done in constructor
+    Hazel::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
+    EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
 
     s_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
     m_PlayButtonTex = Hazel::HazelTexture2D::Create("Textures/Hazel/PlayButton.png");
@@ -122,12 +93,12 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_DrawOnTopBoundingBoxes = true; // obsolete?
     m_DisplayLineElements = false;
 
-    s_DisplayOutline = false;
-    s_SkyboxExposureFactor = 1.0f;
-    s_RadiancePrefilter = false;
-    s_EnvMapRotation = 0.0f;
-    s_DisplayHazelGrid = true;
-    s_DisplayRay = false;
+    EnvMapSharedData::s_DisplayOutline = false;
+    EnvMapSharedData::s_SkyboxExposureFactor = 1.0f;
+    EnvMapSharedData::s_RadiancePrefilter = false;
+    EnvMapSharedData::s_EnvMapRotation = 0.0f;
+    EnvMapSharedData::s_DisplayHazelGrid = true;
+    EnvMapSharedData::s_DisplayRay = false;
 
     Scene::s_ImGuizmoTransform = nullptr; // &GetMeshEntity()->Transform();
     Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
@@ -141,17 +112,17 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_WindowTitleStatic = Application::Get()->GetWindow()->GetTitle();
     UpdateWindowTitle("New Scene");
 
-    s_ShadowMapDirLight = Hazel::Ref<ShadowMap>::Create();
-    s_ShadowMapDirLight->Init(scene->GetSettings().shadowMapWidth, scene->GetSettings().shadowMapHeight);
+    EnvMapSharedData::s_ShadowMapDirLight = Hazel::Ref<ShadowMap>::Create();
+    EnvMapSharedData::s_ShadowMapDirLight->Init(scene->GetSettings().shadowMapWidth, scene->GetSettings().shadowMapHeight);
 
     m_LightDirection = glm::normalize(glm::vec3(0.05f, -0.85f, 0.05f));
     m_LightProjectionMatrix = glm::ortho(-64.0f, 64.0f, -64.0f, 64.0f, -64.0f, 64.0f);
 
-    s_OmniShadowMapPointLight = Hazel::Ref<OmniShadowMap>::Create();
-    s_OmniShadowMapPointLight->Init(scene->GetSettings().omniShadowMapWidth, scene->GetSettings().omniShadowMapHeight);
+    EnvMapSharedData::s_OmniShadowMapPointLight = Hazel::Ref<OmniShadowMap>::Create();
+    EnvMapSharedData::s_OmniShadowMapPointLight->Init(scene->GetSettings().omniShadowMapWidth, scene->GetSettings().omniShadowMapHeight);
 
-    s_OmniShadowMapSpotLight = Hazel::Ref<OmniShadowMap>::Create();
-    s_OmniShadowMapSpotLight->Init(scene->GetSettings().omniShadowMapWidth, scene->GetSettings().omniShadowMapHeight);
+    EnvMapSharedData::s_OmniShadowMapSpotLight = Hazel::Ref<OmniShadowMap>::Create();
+    EnvMapSharedData::s_OmniShadowMapSpotLight->Init(scene->GetSettings().omniShadowMapWidth, scene->GetSettings().omniShadowMapHeight);
 }
 
 void EnvMapEditorLayer::Init()
@@ -178,20 +149,20 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
 
     float fov = 60.0f;
     float aspectRatio = 1.778f; // 16/9
-    s_EditorCamera = new Hazel::EditorCamera(fov, aspectRatio, 0.1f, 1000.0f);
-    s_RuntimeCamera = new RuntimeCamera(scene->GetSettings().cameraPosition, scene->GetSettings().cameraStartYaw, scene->GetSettings().cameraStartPitch,
+    EnvMapSharedData::s_EditorCamera = new Hazel::EditorCamera(fov, aspectRatio, 0.1f, 1000.0f);
+    EnvMapSharedData::s_RuntimeCamera = new RuntimeCamera(scene->GetSettings().cameraPosition, scene->GetSettings().cameraStartYaw, scene->GetSettings().cameraStartPitch,
         fov, aspectRatio, scene->GetSettings().cameraMoveSpeed, 0.1f);
 
-    s_EditorCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
-    s_RuntimeCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
+    EnvMapSharedData::s_EditorCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
+    EnvMapSharedData::s_RuntimeCamera->SetProjectionType(Hazel::SceneCamera::ProjectionType::Perspective);
 
-    s_EditorCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
-    s_RuntimeCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
+    EnvMapSharedData::s_EditorCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
+    EnvMapSharedData::s_RuntimeCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 
     Hazel::Entity cameraEntity = CreateEntity("Camera");
-    cameraEntity.AddComponent<Hazel::CameraComponent>(*s_RuntimeCamera);
+    cameraEntity.AddComponent<Hazel::CameraComponent>(*EnvMapSharedData::s_RuntimeCamera);
 
-    s_ActiveCamera = s_RuntimeCamera;
+    EnvMapSharedData::s_ActiveCamera = EnvMapSharedData::s_RuntimeCamera;
 
     Log::GetLogger()->debug("cameraEntity UUID: {0}", cameraEntity.GetUUID());
 
@@ -207,21 +178,21 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     // m_DirectionalLightEntity.AddComponent<Hazel::MeshComponent>(meshQuad);
     auto& dlc = m_DirectionalLightEntity.AddComponent<Hazel::DirectionalLightComponent>();
 
-    s_PointLightEntity = CreateEntity("Point Light");
+    EnvMapSharedData::s_PointLightEntity = CreateEntity("Point Light");
     // m_PointLightEntity.AddComponent<Hazel::MeshComponent>(meshQuad);
-    auto& plc = s_PointLightEntity.AddComponent<Hazel::PointLightComponent>();
+    auto& plc = EnvMapSharedData::s_PointLightEntity.AddComponent<Hazel::PointLightComponent>();
 
-    s_SpotLightEntity = CreateEntity("Spot Light");
+    EnvMapSharedData::s_SpotLightEntity = CreateEntity("Spot Light");
     // m_SpotLightEntity.AddComponent<Hazel::MeshComponent>(meshQuad);
-    auto& slc = s_SpotLightEntity.AddComponent<Hazel::SpotLightComponent>();
-    auto& sltc = s_SpotLightEntity.GetComponent<Hazel::TransformComponent>();
+    auto& slc = EnvMapSharedData::s_SpotLightEntity.AddComponent<Hazel::SpotLightComponent>();
+    auto& sltc = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::TransformComponent>();
     sltc.Rotation = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
 Hazel::Entity EnvMapEditorLayer::CreateEntity(const std::string& name)
 {
     // Both NoECS and ECS
-    Hazel::Entity entity = s_EditorScene->CreateEntity(name, s_EditorScene);
+    Hazel::Entity entity = EnvMapSharedData::s_EditorScene->CreateEntity(name, EnvMapSharedData::s_EditorScene);
 
     return entity;
 }
@@ -236,16 +207,16 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
     bool isAnimated;
     if (fileNameNoExt == "m1911") {
         isAnimated = true;
-        s_ShaderHazelPBR = ShaderLibrary::Get("HazelPBR_Anim");
+        EnvMapSharedData::s_ShaderHazelPBR = ShaderLibrary::Get("HazelPBR_Anim");
     }
     else {
         isAnimated = false;
-        s_ShaderHazelPBR = ShaderLibrary::Get("HazelPBR_Static");
+        EnvMapSharedData::s_ShaderHazelPBR = ShaderLibrary::Get("HazelPBR_Static");
     }
 
     Log::GetLogger()->debug("EnvMapEditorLayer::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
-    Hazel::HazelMesh* mesh = new Hazel::HazelMesh(fullPath, s_ShaderHazelPBR, Hazel::Ref<Hazel::HazelMaterial>(), isAnimated);
+    Hazel::HazelMesh* mesh = new Hazel::HazelMesh(fullPath, EnvMapSharedData::s_ShaderHazelPBR, Hazel::Ref<Hazel::HazelMaterial>(), isAnimated);
 
     mesh->SetTimeMultiplier(1.0f);
 
@@ -264,7 +235,7 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
 
 Hazel::CameraComponent EnvMapEditorLayer::GetMainCameraComponent()
 {
-    auto mainCameraEntity = s_EditorScene->GetMainCameraEntity();
+    auto mainCameraEntity = EnvMapSharedData::s_EditorScene->GetMainCameraEntity();
     if (mainCameraEntity && mainCameraEntity.HasComponent<Hazel::CameraComponent>())
     {
         auto mainCameraComponent = mainCameraEntity.GetComponent<Hazel::CameraComponent>();
@@ -297,8 +268,8 @@ void EnvMapEditorLayer::SetupShaders()
     Hazel::Ref<Shader> shaderRenderer2D_Line = Shader::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderRenderer2D_Line compiled [programID={0}]", shaderRenderer2D_Line->GetProgramID());
 
-    s_ShaderOutline = Shader::Create("Shaders/Hazel/Outline.vs", "Shaders/Hazel/Outline.fs");
-    Log::GetLogger()->info("EnvMapEditorLayer: shaderOutline compiled [programID={0}]", s_ShaderOutline->GetProgramID());
+    EnvMapSharedData::s_ShaderOutline = Shader::Create("Shaders/Hazel/Outline.vs", "Shaders/Hazel/Outline.fs");
+    Log::GetLogger()->info("EnvMapEditorLayer: shaderOutline compiled [programID={0}]", EnvMapSharedData::s_ShaderOutline->GetProgramID());
 
     m_ShaderShadow = Shader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderShadow compiled [programID={0}]", m_ShaderShadow->GetProgramID());
@@ -309,13 +280,13 @@ void EnvMapEditorLayer::SetupShaders()
     ResourceManager::AddShader("Hazel/HazelPBR_Static", shaderHazelPBR_Static);
     ResourceManager::AddShader("Hazel/HazelPBR_Anim", shaderHazelPBR_Anim);
     ResourceManager::AddShader("Hazel/Renderer2D_Line", shaderRenderer2D_Line);
-    ResourceManager::AddShader("Hazel/Outline", s_ShaderOutline);
+    ResourceManager::AddShader("Hazel/Outline", EnvMapSharedData::s_ShaderOutline);
     ResourceManager::AddShader("directional_shadow_map", m_ShaderShadow);
 
     ShaderLibrary::Add(shaderHazelPBR_Static);
     ShaderLibrary::Add(shaderHazelPBR_Anim);
     ShaderLibrary::Add(shaderRenderer2D_Line);
-    ShaderLibrary::Add(s_ShaderOutline);
+    ShaderLibrary::Add(EnvMapSharedData::s_ShaderOutline);
     ShaderLibrary::Add(m_ShaderShadow);
 }
 
@@ -323,37 +294,37 @@ void EnvMapEditorLayer::UpdateUniforms()
 {
     /**** BEGIN Shaders/Hazel/SceneComposite ****/
     EnvMapSceneRenderer::GetShaderComposite()->Bind();
-    EnvMapSceneRenderer::GetShaderComposite()->setInt("u_Texture", s_SamplerSlots.at("u_Texture"));
+    EnvMapSceneRenderer::GetShaderComposite()->setInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
     EnvMapSceneRenderer::GetShaderComposite()->setFloat("u_Exposure", GetMainCameraComponent().Camera.GetExposure());
     /**** END Shaders/Hazel/SceneComposite ****/
 
     /**** BEGIN Shaders/Hazel/Skybox ****/
     EnvMapSceneRenderer::s_ShaderSkybox->Bind();
-    EnvMapSceneRenderer::s_ShaderSkybox->setInt("u_Texture", s_SamplerSlots.at("u_Texture"));
-    EnvMapSceneRenderer::s_ShaderSkybox->setFloat("u_TextureLod", s_EditorScene->GetSkyboxLod());
+    EnvMapSceneRenderer::s_ShaderSkybox->setInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
+    EnvMapSceneRenderer::s_ShaderSkybox->setFloat("u_TextureLod", EnvMapSharedData::s_EditorScene->GetSkyboxLod());
     // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
-    EnvMapSceneRenderer::s_ShaderSkybox->setFloat("u_Exposure", GetMainCameraComponent().Camera.GetExposure() * s_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
+    EnvMapSceneRenderer::s_ShaderSkybox->setFloat("u_Exposure", GetMainCameraComponent().Camera.GetExposure() * EnvMapSharedData::s_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
     /**** END Shaders/Hazel/Skybox ****/
 
     /**** BEGIN Shaders/Hazel/Outline ****/
-    s_ShaderOutline->Bind();
+    EnvMapSharedData::s_ShaderOutline->Bind();
     glm::mat4 viewProj = EnvMapSceneRenderer::GetViewProjection();
-    s_ShaderOutline->setMat4("u_ViewProjection", viewProj);
+    EnvMapSharedData::s_ShaderOutline->setMat4("u_ViewProjection", viewProj);
     /**** BEGIN Shaders/Hazel/Outline ****/
 }
 
 void EnvMapEditorLayer::SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox)
 {
     m_SkyboxTexture = skybox;
-    m_SkyboxTexture->Bind(s_SamplerSlots.at("u_Texture"));
+    m_SkyboxTexture->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
 }
 
 EnvMapEditorLayer::~EnvMapEditorLayer()
 {
     MaterialLibrary::Cleanup();
 
-    delete s_RuntimeCamera;
-    delete s_EditorCamera;
+    delete EnvMapSharedData::s_RuntimeCamera;
+    delete EnvMapSharedData::s_EditorCamera;
 }
 
 void EnvMapEditorLayer::OnUpdate(float timestep)
@@ -362,9 +333,9 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
     {
     case SceneState::Edit:
         if (m_ViewportPanelFocused) {
-            s_EditorCamera->OnUpdate(timestep);
+            EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        s_EditorScene->OnRenderEditor(timestep, *s_EditorCamera);
+        EnvMapSharedData::s_EditorScene->OnRenderEditor(timestep, *EnvMapSharedData::s_EditorCamera);
 
         if (m_DrawOnTopBoundingBoxes)
         {
@@ -378,16 +349,16 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
         break;
     case SceneState::Play:
         if (m_ViewportPanelFocused) {
-            s_EditorCamera->OnUpdate(timestep);
+            EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        s_RuntimeScene->OnUpdate(timestep);
-        s_RuntimeScene->OnRenderRuntime(timestep);
+        EnvMapSharedData::s_RuntimeScene->OnUpdate(timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(timestep);
         break;
     case SceneState::Pause:
         if (m_ViewportPanelFocused) {
-            s_EditorCamera->OnUpdate(timestep);
+            EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        s_RuntimeScene->OnRenderRuntime(timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(timestep);
         break;
     }
 
@@ -399,26 +370,26 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
         EnvMapSceneRenderer::GetActiveLight().Direction = glm::eulerAngles(glm::quat(tc.Rotation));
 
         m_LightDirection = glm::eulerAngles(glm::quat(tc.Rotation));
-        s_DirLightTransform = Util::CalculateLightTransform(m_LightProjectionMatrix, m_LightDirection);
+        EnvMapSharedData::s_DirLightTransform = Util::CalculateLightTransform(m_LightProjectionMatrix, m_LightDirection);
     }
 
-    OnUpdateEditor(s_EditorScene, timestep);
+    OnUpdateEditor(EnvMapSharedData::s_EditorScene, timestep);
     // OnUpdateRuntime(s_RuntimeScene, timestep);
 }
 
 void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, float timestep)
 {
-    s_EditorScene = scene;
+    EnvMapSharedData::s_EditorScene = scene;
 
-    EnvMapSceneRenderer::BeginScene(s_EditorScene.Raw(), { GetMainCameraComponent().Camera, GetMainCameraComponent().Camera.GetViewMatrix() });
+    EnvMapSceneRenderer::BeginScene(EnvMapSharedData::s_EditorScene.Raw(), { GetMainCameraComponent().Camera, GetMainCameraComponent().Camera.GetViewMatrix() });
 
     UpdateUniforms();
 
     // Update HazelMesh List
-    auto meshEntities = s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     for (auto entt : meshEntities)
     {
-        Hazel::Entity entity{ entt, s_EditorScene.Raw() };
+        Hazel::Entity entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
         Hazel::Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
         if (mesh)
         {
@@ -426,13 +397,13 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, floa
         }
     }
 
-    s_ActiveCamera->OnUpdate(timestep);
+    EnvMapSharedData::s_ActiveCamera->OnUpdate(timestep);
 
-    GetMainCameraComponent().Camera.SetViewMatrix(s_ActiveCamera->GetViewMatrix());
-    GetMainCameraComponent().Camera.SetProjectionMatrix(s_ActiveCamera->GetProjectionMatrix());
+    GetMainCameraComponent().Camera.SetViewMatrix(EnvMapSharedData::s_ActiveCamera->GetViewMatrix());
+    GetMainCameraComponent().Camera.SetProjectionMatrix(EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix());
 
-    auto viewMatrix1 = s_ActiveCamera->GetViewMatrix();
-    auto projectionMatrix1 = s_ActiveCamera->GetProjectionMatrix();
+    auto viewMatrix1 = EnvMapSharedData::s_ActiveCamera->GetViewMatrix();
+    auto projectionMatrix1 = EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix();
 
     auto viewMatrix2 = GetMainCameraComponent().Camera.GetViewMatrix();
     auto projectionMatrix2 = GetMainCameraComponent().Camera.GetProjectionMatrix();
@@ -443,23 +414,23 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, floa
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
     if (m_ViewportWidth > 0.0f && m_ViewportHeight > 0.0f) {
-        s_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+        EnvMapSharedData::s_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
     }
 }
 
 void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, float timestep)
 {
-    s_EditorScene = scene;
+    EnvMapSharedData::s_EditorScene = scene;
 
-    EnvMapSceneRenderer::BeginScene(s_EditorScene.Raw(), { GetMainCameraComponent().Camera, GetMainCameraComponent().Camera.GetViewMatrix() });
+    EnvMapSceneRenderer::BeginScene(EnvMapSharedData::s_EditorScene.Raw(), { GetMainCameraComponent().Camera, GetMainCameraComponent().Camera.GetViewMatrix() });
 
     UpdateUniforms();
 
     // Update HazelMesh List
-    auto meshEntities = s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     for (auto entt : meshEntities)
     {
-        Hazel::Entity entity{ entt, s_EditorScene.Raw() };
+        Hazel::Entity entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
         Hazel::Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
 
         mesh->OnUpdate(timestep, false);
@@ -471,7 +442,7 @@ void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, flo
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
     if (m_ViewportWidth > 0.0f && m_ViewportHeight > 0.0f) {
-        s_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+        EnvMapSharedData::s_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
     }
 }
 
@@ -485,24 +456,24 @@ void EnvMapEditorLayer::OnScenePlay()
         Hazel::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
     }
 
-    s_RuntimeScene = Hazel::Ref<Hazel::HazelScene>::Create();
-    s_EditorScene->CopyTo(s_RuntimeScene);
+    EnvMapSharedData::s_RuntimeScene = Hazel::Ref<Hazel::HazelScene>::Create();
+    EnvMapSharedData::s_EditorScene->CopyTo(EnvMapSharedData::s_RuntimeScene);
 
-    s_RuntimeScene->OnRuntimeStart();
-    m_SceneHierarchyPanel->SetContext(s_RuntimeScene);
+    EnvMapSharedData::s_RuntimeScene->OnRuntimeStart();
+    m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_RuntimeScene);
 }
 
 void EnvMapEditorLayer::OnSceneStop()
 {
-    s_RuntimeScene->OnRuntimeStop();
+    EnvMapSharedData::s_RuntimeScene->OnRuntimeStop();
     m_SceneState = SceneState::Edit;
 
     // Unload runtime scene
-    s_RuntimeScene = nullptr;
+    EnvMapSharedData::s_RuntimeScene = nullptr;
 
     EntitySelection::s_SelectionContext.clear();
-    Hazel::ScriptEngine::SetSceneContext(s_EditorScene);
-    m_SceneHierarchyPanel->SetContext(s_EditorScene);
+    Hazel::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
+    m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene);
 }
 
 void EnvMapEditorLayer::UpdateWindowTitle(const std::string& sceneName)
@@ -517,18 +488,18 @@ void EnvMapEditorLayer::UpdateWindowTitle(const std::string& sceneName)
  **/
 void EnvMapEditorLayer::CameraSyncECS()
 {
-    s_ActiveCamera->SetAspectRatio(GetMainCameraComponent().Camera.GetAspectRatio());
-    s_ActiveCamera->SetExposure(GetMainCameraComponent().Camera.GetExposure());
-    s_ActiveCamera->SetProjectionType(GetMainCameraComponent().Camera.GetProjectionType());
+    EnvMapSharedData::s_ActiveCamera->SetAspectRatio(GetMainCameraComponent().Camera.GetAspectRatio());
+    EnvMapSharedData::s_ActiveCamera->SetExposure(GetMainCameraComponent().Camera.GetExposure());
+    EnvMapSharedData::s_ActiveCamera->SetProjectionType(GetMainCameraComponent().Camera.GetProjectionType());
 
     // perspective
-    s_ActiveCamera->SetPerspectiveVerticalFOV(GetMainCameraComponent().Camera.GetPerspectiveVerticalFOV());
-    s_ActiveCamera->SetPerspectiveNearClip(GetMainCameraComponent().Camera.GetPerspectiveNearClip());
-    s_ActiveCamera->SetPerspectiveFarClip(GetMainCameraComponent().Camera.GetPerspectiveFarClip());
+    EnvMapSharedData::s_ActiveCamera->SetPerspectiveVerticalFOV(GetMainCameraComponent().Camera.GetPerspectiveVerticalFOV());
+    EnvMapSharedData::s_ActiveCamera->SetPerspectiveNearClip(GetMainCameraComponent().Camera.GetPerspectiveNearClip());
+    EnvMapSharedData::s_ActiveCamera->SetPerspectiveFarClip(GetMainCameraComponent().Camera.GetPerspectiveFarClip());
 
     // ortho
-    s_ActiveCamera->SetOrthographicNearClip(GetMainCameraComponent().Camera.GetOrthographicNearClip());
-    s_ActiveCamera->SetOrthographicFarClip(GetMainCameraComponent().Camera.GetOrthographicFarClip());
+    EnvMapSharedData::s_ActiveCamera->SetOrthographicNearClip(GetMainCameraComponent().Camera.GetOrthographicNearClip());
+    EnvMapSharedData::s_ActiveCamera->SetOrthographicFarClip(GetMainCameraComponent().Camera.GetOrthographicFarClip());
 
     // s_ActiveCamera->SetPosition(GetMainCameraComponent().Camera.GetPosition());
     // s_ActiveCamera->SetPitch(GetMainCameraComponent().Camera.GetPitch());
@@ -555,7 +526,7 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
 
     // Dirty fix: m_SelectionContext not decremented when mesh entity is removed from the scene
     size_t selectionContextSize = EntitySelection::s_SelectionContext.size();
-    auto meshEntities = s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     if (selectionContextSize > meshEntities.size()) {
         selectionContextSize = meshEntities.size();
     }
@@ -588,8 +559,8 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
         if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
         {
             ImGuizmo::Manipulate(
-                glm::value_ptr(s_ActiveCamera->GetViewMatrix()),
-                glm::value_ptr(s_ActiveCamera->GetProjection()),
+                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetViewMatrix()),
+                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjection()),
                 (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
                 ImGuizmo::LOCAL,
                 glm::value_ptr(entityTransform),
@@ -622,8 +593,8 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
             glm::mat4 transformBase = entityTransform * submeshTransform;
 
             ImGuizmo::Manipulate(
-                glm::value_ptr(s_ActiveCamera->GetViewMatrix()),
-                glm::value_ptr(s_ActiveCamera->GetProjection()),
+                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetViewMatrix()),
+                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjection()),
                 (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
                 ImGuizmo::LOCAL,
                 glm::value_ptr(transformBase),
@@ -644,11 +615,11 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
 Ref<Hazel::Entity> EnvMapEditorLayer::GetMeshEntity()
 {
     Ref<Hazel::Entity> meshEntity;
-    auto meshEntities = s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     if (meshEntities.size()) {
         for (auto entt : meshEntities)
         {
-            meshEntity = CreateRef<Hazel::Entity>(entt, s_EditorScene.Raw());
+            meshEntity = CreateRef<Hazel::Entity>(entt, EnvMapSharedData::s_EditorScene.Raw());
         }
         return meshEntity;
     }
@@ -657,7 +628,7 @@ Ref<Hazel::Entity> EnvMapEditorLayer::GetMeshEntity()
 
 float& EnvMapEditorLayer::GetSkyboxLOD()
 {
-    return s_EditorScene->GetSkyboxLod();
+    return EnvMapSharedData::s_EditorScene->GetSkyboxLod();
 }
 
 void EnvMapEditorLayer::SetViewportBounds(glm::vec2* viewportBounds)
@@ -668,7 +639,7 @@ void EnvMapEditorLayer::SetViewportBounds(glm::vec2* viewportBounds)
 
 void EnvMapEditorLayer::SetSkyboxLOD(float LOD)
 {
-    s_EditorScene->SetSkyboxLod(LOD);
+    EnvMapSharedData::s_EditorScene->SetSkyboxLod(LOD);
 }
 
 Hazel::Ref<Shader> EnvMapEditorLayer::GetShaderPBR_Anim()
@@ -763,11 +734,11 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
             ImGui::Separator();
 
-            ImGui::Checkbox("Display Outline", &s_DisplayOutline);
+            ImGui::Checkbox("Display Outline", &EnvMapSharedData::s_DisplayOutline);
             ImGui::Checkbox("Display Bounding Boxes", &m_DisplayBoundingBoxes);
-            ImGui::Checkbox("Display Hazel Grid", &s_DisplayHazelGrid);
+            ImGui::Checkbox("Display Hazel Grid", &EnvMapSharedData::s_DisplayHazelGrid);
             ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
-            ImGui::Checkbox("Display Ray", &s_DisplayRay);
+            ImGui::Checkbox("Display Ray", &EnvMapSharedData::s_DisplayRay);
 
             bool eventLoggingEnabled = Application::Get()->GetWindow()->GetEventLogging();
             if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
@@ -852,7 +823,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             ImGui::Image((void*)(intptr_t)EnvMapSceneRenderer::GetEnvEquirect()->GetID(), imageSize);
 
             ImGui::Text("Shadow Map");
-            ImGui::Image((void*)(intptr_t)s_ShadowMapDirLight->GetTextureID(), imageSize);
+            ImGui::Image((void*)(intptr_t)EnvMapSharedData::s_ShadowMapDirLight->GetTextureID(), imageSize);
             // ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
         }
     }
@@ -917,7 +888,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
             auto viewportSize = ImGui::GetContentRegionAvail();
             //  Hazel::EnvMapSceneRenderer::SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-            //  s_EditorScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+            //  EnvMapSharedData::s_EditorScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
             //  if (s_RuntimeScene) {
             //      s_RuntimeScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
             //  }
@@ -986,10 +957,10 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     }
 
     uint32_t id = 0;
-    auto meshEntities = s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     for (auto entt : meshEntities)
     {
-        Hazel::Entity entity = { entt, s_EditorScene.Raw() };
+        Hazel::Entity entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
         auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
         if (meshComponent.Mesh) {
             meshComponent.Mesh->OnImGuiRender(++id);
@@ -1006,10 +977,10 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
     if (m_SceneState == SceneState::Edit)
     {
-        //  float physics2DGravity = s_EditorScene->GetPhysics2DGravity();
+        //  float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
         //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
         //  {
-        //      s_EditorScene->SetPhysics2DGravity(physics2DGravity);
+        //      EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
         //  }
 
         if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
@@ -1046,10 +1017,12 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
     ImGui::Begin("Switch State");
     {
-        const char* label = s_ActiveCamera == s_EditorCamera ? "EDITOR [ Editor Camera ]" : "RUNTIME [ Runtime Camera ]";
+        const char* label = EnvMapSharedData::s_ActiveCamera == EnvMapSharedData::s_EditorCamera ? "EDITOR [ Editor Camera ]" : "RUNTIME [ Runtime Camera ]";
         if (ImGui::Button(label))
         {
-            s_ActiveCamera = (s_ActiveCamera == s_EditorCamera) ? (Hazel::HazelCamera*)s_RuntimeCamera : (Hazel::HazelCamera*)s_EditorCamera;
+            EnvMapSharedData::s_ActiveCamera = (EnvMapSharedData::s_ActiveCamera == EnvMapSharedData::s_EditorCamera) ?
+                (Hazel::HazelCamera*)EnvMapSharedData::s_RuntimeCamera :
+                (Hazel::HazelCamera*)EnvMapSharedData::s_EditorCamera;
         }
     }
     ImGui::End();
@@ -1135,32 +1108,32 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             }
 
             char buffer[100];
-            sprintf(buffer, "Aspect Ratio  %.2f", s_ActiveCamera->GetAspectRatio());
+            sprintf(buffer, "Aspect Ratio  %.2f", EnvMapSharedData::s_ActiveCamera->GetAspectRatio());
             ImGui::Text(buffer);
             sprintf(buffer, "Position    X %.2f Y %.2f Z %.2f", 
-                s_ActiveCamera->GetPosition().x,
-                s_ActiveCamera->GetPosition().y,
-                s_ActiveCamera->GetPosition().z);
+                EnvMapSharedData::s_ActiveCamera->GetPosition().x,
+                EnvMapSharedData::s_ActiveCamera->GetPosition().y,
+                EnvMapSharedData::s_ActiveCamera->GetPosition().z);
             ImGui::Text(buffer);
             sprintf(buffer, "Direction   X %.2f Y %.2f Z %.2f",
-                s_ActiveCamera->GetDirection().x,
-                s_ActiveCamera->GetDirection().y,
-                s_ActiveCamera->GetDirection().z);
+                EnvMapSharedData::s_ActiveCamera->GetDirection().x,
+                EnvMapSharedData::s_ActiveCamera->GetDirection().y,
+                EnvMapSharedData::s_ActiveCamera->GetDirection().z);
             ImGui::Text(buffer);
             sprintf(buffer, "Front       X %.2f Y %.2f Z %.2f",
-                s_ActiveCamera->GetFront().x,
-                s_ActiveCamera->GetFront().y,
-                s_ActiveCamera->GetFront().z);
+                EnvMapSharedData::s_ActiveCamera->GetFront().x,
+                EnvMapSharedData::s_ActiveCamera->GetFront().y,
+                EnvMapSharedData::s_ActiveCamera->GetFront().z);
             ImGui::Text(buffer);
             sprintf(buffer, "Up          X %.2f Y %.2f Z %.2f",
-                s_ActiveCamera->GetUp().x,
-                s_ActiveCamera->GetUp().y,
-                s_ActiveCamera->GetUp().z);
+                EnvMapSharedData::s_ActiveCamera->GetUp().x,
+                EnvMapSharedData::s_ActiveCamera->GetUp().y,
+                EnvMapSharedData::s_ActiveCamera->GetUp().z);
             ImGui::Text(buffer);
             sprintf(buffer, "Right       X %.2f Y %.2f Z %.2f",
-                s_ActiveCamera->GetRight().x,
-                s_ActiveCamera->GetRight().y,
-                s_ActiveCamera->GetRight().z);
+                EnvMapSharedData::s_ActiveCamera->GetRight().x,
+                EnvMapSharedData::s_ActiveCamera->GetRight().y,
+                EnvMapSharedData::s_ActiveCamera->GetRight().z);
             ImGui::Text(buffer);
         }
     }
@@ -1196,15 +1169,15 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
                 ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
                 ImGuiWrapper::Property("Exposure", GetMainCameraComponent().Camera.GetExposure(), 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
-                ImGuiWrapper::Property("Skybox Exposure Factor", s_SkyboxExposureFactor, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
+                ImGuiWrapper::Property("Skybox Exposure Factor", EnvMapSharedData::s_SkyboxExposureFactor, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
 
-                ImGuiWrapper::Property("Radiance Prefiltering", s_RadiancePrefilter);
-                ImGuiWrapper::Property("Env Map Rotation", s_EnvMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
+                ImGuiWrapper::Property("Radiance Prefiltering", EnvMapSharedData::s_RadiancePrefilter);
+                ImGuiWrapper::Property("Env Map Rotation", EnvMapSharedData::s_EnvMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
 
                 if (m_SceneState == SceneState::Edit) {
-                    //  float physics2DGravity = s_EditorScene->GetPhysics2DGravity();
+                    //  float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
                     //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
-                    //      s_EditorScene->SetPhysics2DGravity(physics2DGravity);
+                    //      EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
                     //  }
                 }
                 else if (m_SceneState == SceneState::Play) {
@@ -1244,7 +1217,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                     }
                 }
 
-                auto meshEntities = s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+                auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
                 if (meshEntities.size())
                 {
                     meshEntity = GetMeshEntity();
@@ -1639,13 +1612,13 @@ void EnvMapEditorLayer::OpenScene()
         Hazel::Ref<Hazel::HazelScene> newScene = Hazel::Ref<Hazel::HazelScene>::Create();
         Hazel::SceneSerializer serializer(newScene);
         serializer.Deserialize(filepath);
-        s_EditorScene = newScene;
+        EnvMapSharedData::s_EditorScene = newScene;
         std::filesystem::path path = filepath;
         UpdateWindowTitle(path.filename().string());
-        m_SceneHierarchyPanel->SetContext(s_EditorScene);
-        Hazel::ScriptEngine::SetSceneContext(s_EditorScene);
+        m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene);
+        Hazel::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
 
-        s_EditorScene->SetSelectedEntity({});
+        EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
         EntitySelection::s_SelectionContext.clear();
 
         m_SceneFilePath = filepath;
@@ -1657,7 +1630,7 @@ void EnvMapEditorLayer::OpenScene()
 void EnvMapEditorLayer::SaveScene()
 {
     if (!m_SceneFilePath.empty()) {
-        Hazel::SceneSerializer serializer(s_EditorScene);
+        Hazel::SceneSerializer serializer(EnvMapSharedData::s_EditorScene);
         serializer.Serialize(m_SceneFilePath);
     }
 }
@@ -1668,7 +1641,7 @@ void EnvMapEditorLayer::SaveSceneAs()
     std::string filepath = app->SaveFile("Hazel Scene (*.hsc)\0*.hsc\0");
     if (!filepath.empty())
     {
-        Hazel::SceneSerializer serializer(s_EditorScene);
+        Hazel::SceneSerializer serializer(EnvMapSharedData::s_EditorScene);
         serializer.Serialize(filepath);
 
         std::filesystem::path path = filepath;
@@ -1680,8 +1653,8 @@ void EnvMapEditorLayer::SaveSceneAs()
 void EnvMapEditorLayer::OnNewScene(glm::vec2 viewportSize)
 {
     // m_SceneRenderer->s_Data.ActiveScene = new Hazel::HazelScene();
-    s_EditorScene->OnViewportResize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-    m_SceneHierarchyPanel->SetContext(s_EditorScene);
+    EnvMapSharedData::s_EditorScene->OnViewportResize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+    m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene);
 }
 
 void EnvMapEditorLayer::SelectEntity(Hazel::Entity e)
@@ -1699,10 +1672,10 @@ void EnvMapEditorLayer::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& tran
         for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
         {
             std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-            s_ShaderHazelPBR->setMat4(uniformName, mesh->m_BoneTransforms[i]);
+            EnvMapSharedData::s_ShaderHazelPBR->setMat4(uniformName, mesh->m_BoneTransforms[i]);
         }
 
-        s_ShaderHazelPBR->setMat4("u_Transform", transform * submesh.Transform);
+        EnvMapSharedData::s_ShaderHazelPBR->setMat4("u_Transform", transform * submesh.Transform);
 
         if (material->GetFlag(Hazel::HazelMaterialFlag::DepthTest)) { // TODO: Fix Material flags
             glEnable(GL_DEPTH_TEST);
@@ -1751,14 +1724,14 @@ void EnvMapEditorLayer::OnEvent(Event& e)
             GetMainCameraComponent().Camera.OnEvent(e);
         }
 
-        s_EditorScene->OnEvent(e);
+        EnvMapSharedData::s_EditorScene->OnEvent(e);
     }
     else if (m_SceneState == SceneState::Play)
     {
-        s_RuntimeScene->OnEvent(e);
+        EnvMapSharedData::s_RuntimeScene->OnEvent(e);
     }
 
-    // s_ActiveCamera->OnEvent(e);
+    // EnvMapSharedData::s_ActiveCamera->OnEvent(e);
 
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EnvMapEditorLayer::OnKeyPressedEvent));
@@ -1791,9 +1764,9 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
                 if (EntitySelection::s_SelectionContext.size())
                 {
                     Hazel::Entity selectedEntity = EntitySelection::s_SelectionContext[0].Entity;
-                    s_EditorScene->DestroyEntity(selectedEntity);
+                    EnvMapSharedData::s_EditorScene->DestroyEntity(selectedEntity);
                     EntitySelection::s_SelectionContext.clear();
-                    s_EditorScene->SetSelectedEntity({});
+                    EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
                     m_SceneHierarchyPanel->SetSelected({});
                 }
                 break;
@@ -1812,7 +1785,7 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
             case (int)KeyCode::D:
                 if (EntitySelection::s_SelectionContext.size()) {
                     Hazel::Entity selectedEntity = EntitySelection::s_SelectionContext[0].Entity;
-                    s_EditorScene->DuplicateEntity(selectedEntity);
+                    EnvMapSharedData::s_EditorScene->DuplicateEntity(selectedEntity);
                 }
                 break;
             case (int)KeyCode::G:
@@ -1853,10 +1826,10 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
             EntitySelection::s_SelectionContext.clear();
 
-            auto meshEntities = s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+            auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
             for (auto e : meshEntities)
             {
-                Hazel::Entity entity = { e, s_EditorScene.Raw() };
+                Hazel::Entity entity = { e, EnvMapSharedData::s_EditorScene.Raw() };
                 auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
                 if (!mesh) {
                     continue;
@@ -1921,7 +1894,7 @@ void EnvMapEditorLayer::OnSelected(const SelectedSubmesh& selectionContext)
 {
     // TODO: move to SceneHazelEnvMap
     m_SceneHierarchyPanel->SetSelected(selectionContext.Entity);
-    s_EditorScene->SetSelectedEntity(selectionContext.Entity);
+    EnvMapSharedData::s_EditorScene->SetSelectedEntity(selectionContext.Entity);
 }
 
 void EnvMapEditorLayer::OnEntityDeleted(Hazel::Entity e)
@@ -1930,7 +1903,7 @@ void EnvMapEditorLayer::OnEntityDeleted(Hazel::Entity e)
     {
         if (EntitySelection::s_SelectionContext[0].Entity == e) {
             EntitySelection::s_SelectionContext.clear();
-            s_EditorScene->SetSelectedEntity({});
+            EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
         }
     }
 }
@@ -1950,14 +1923,14 @@ std::pair<glm::vec3, glm::vec3> EnvMapEditorLayer::CastRay(float mx, float my)
 {
     glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
 
-    glm::mat4 projectionMatrix = s_ActiveCamera->GetProjection();
-    glm::mat4 viewMatrix = s_ActiveCamera->GetViewMatrix();
+    glm::mat4 projectionMatrix = EnvMapSharedData::s_ActiveCamera->GetProjection();
+    glm::mat4 viewMatrix = EnvMapSharedData::s_ActiveCamera->GetViewMatrix();
 
     auto inverseProj = glm::inverse(projectionMatrix);
     auto inverseView = glm::inverse(glm::mat3(viewMatrix));
 
     glm::vec4 ray = inverseProj * mouseClipPos;
-    glm::vec3 rayPos = s_ActiveCamera->GetPosition();
+    glm::vec3 rayPos = EnvMapSharedData::s_ActiveCamera->GetPosition();
     glm::vec3 rayDir = inverseView * glm::vec3(ray); // inverseView * glm::vec3(ray)
 
     Log::GetLogger()->debug("EnvMapEditorLayer::CastRay | MousePosition [ {0} {1} ]", mx, my);
@@ -2011,9 +1984,9 @@ void EnvMapEditorLayer::OnRender(Window* mainWindow)
 
 void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
 {
-    s_ShadowMapDirLight->BindForWriting();
+    EnvMapSharedData::s_ShadowMapDirLight->BindForWriting();
 
-    glViewport(0, 0, s_ShadowMapDirLight->GetShadowWidth(), s_ShadowMapDirLight->GetShadowHeight());
+    glViewport(0, 0, EnvMapSharedData::s_ShadowMapDirLight->GetShadowWidth(), EnvMapSharedData::s_ShadowMapDirLight->GetShadowHeight());
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDisable(GL_BLEND);
@@ -2021,20 +1994,20 @@ void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
 
     m_ShaderShadow->Bind();
 
-    m_ShaderShadow->setMat4("dirLightTransform", s_DirLightTransform);
+    m_ShaderShadow->setMat4("dirLightTransform", EnvMapSharedData::s_DirLightTransform);
 
     RenderSubmeshesShadowPass(m_ShaderShadow);
 
     m_ShaderShadow->Unbind();
-    s_ShadowMapDirLight->Unbind((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
+    EnvMapSharedData::s_ShadowMapDirLight->Unbind((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
     RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
 }
 
 void EnvMapEditorLayer::OnRenderShadowOmni(Window* mainWindow)
 {
     // render all point and spot lights here, create a loop for multiple lights
-    RenderShadowOmniSingleLight(mainWindow, s_PointLightEntity, s_OmniShadowMapPointLight);
-    RenderShadowOmniSingleLight(mainWindow, s_SpotLightEntity, s_OmniShadowMapSpotLight);
+    RenderShadowOmniSingleLight(mainWindow, EnvMapSharedData::s_PointLightEntity, EnvMapSharedData::s_OmniShadowMapPointLight);
+    RenderShadowOmniSingleLight(mainWindow, EnvMapSharedData::s_SpotLightEntity, EnvMapSharedData::s_OmniShadowMapSpotLight);
 }
 
 void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, Hazel::Entity lightEntity, Hazel::Ref<OmniShadowMap> omniShadowMap)
@@ -2084,13 +2057,13 @@ void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, Hazel::E
 void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<Shader> shader)
 {
     // Rendering all meshes (submeshes) on the scene to a shadow framebuffer
-    auto meshEntities = s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
     // Render all entities with mesh component
     if (meshEntities.size())
     {
         for (auto entt : meshEntities)
         {
-            Hazel::Entity entity = { entt, s_EditorScene.Raw() };
+            Hazel::Entity entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
 
             glm::mat4 entityTransform = glm::mat4(1.0f);
