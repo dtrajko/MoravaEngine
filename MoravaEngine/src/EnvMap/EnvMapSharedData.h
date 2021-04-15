@@ -19,8 +19,8 @@ public:
 	static RuntimeCamera* s_RuntimeCamera;
 	static Hazel::HazelCamera* s_ActiveCamera;
 
-	static CubeSkybox* s_SkyboxCube;
-	static Quad* s_Quad;
+	static Hazel::Ref<CubeSkybox>s_SkyboxCube;
+	static Hazel::Ref<Quad> s_Quad;
 	static bool s_DisplayOutline;
 	static float s_SkyboxExposureFactor;
 	static bool s_RadiancePrefilter;

@@ -9,8 +9,9 @@ Hazel::EditorCamera* EnvMapSharedData::s_EditorCamera;
 RuntimeCamera* EnvMapSharedData::s_RuntimeCamera;
 Hazel::HazelCamera* EnvMapSharedData::s_ActiveCamera;
 
-CubeSkybox* EnvMapSharedData::s_SkyboxCube;
-Quad* EnvMapSharedData::s_Quad;
+Hazel::Ref<CubeSkybox> EnvMapSharedData::s_SkyboxCube;
+Hazel::Ref<Quad> EnvMapSharedData::s_Quad;
+
 bool EnvMapSharedData::s_DisplayOutline;
 float EnvMapSharedData::s_SkyboxExposureFactor;
 bool EnvMapSharedData::s_RadiancePrefilter;

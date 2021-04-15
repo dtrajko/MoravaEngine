@@ -55,8 +55,8 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     // SceneComposite.fs - uniform sampler2DMS u_Texture;
     EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("u_Texture",  1));
 
-    EnvMapSharedData::s_SkyboxCube = new CubeSkybox();
-    EnvMapSharedData::s_Quad = new Quad();
+    EnvMapSharedData::s_SkyboxCube = Hazel::Ref<CubeSkybox>::Create();
+    EnvMapSharedData::s_Quad = Hazel::Ref<Quad>::Create();
 
     EnvMapSharedData::s_EditorScene = Hazel::Ref<Hazel::HazelScene>::Create();
     EnvMapSharedData::s_EditorScene->SetSkyboxLod(0.1f);
@@ -187,6 +187,19 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     auto& slc = EnvMapSharedData::s_SpotLightEntity.AddComponent<Hazel::SpotLightComponent>();
     auto& sltc = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::TransformComponent>();
     sltc.Rotation = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
+}
+
+void EnvMapEditorLayer::SetupRenderFramebuffer()
+{
+    if (!m_IsViewportEnabled) return;
+
+    uint32_t width = Application::Get()->GetWindow()->GetWidth();
+    uint32_t height = Application::Get()->GetWindow()->GetHeight();
+
+    m_RenderFramebuffer = Hazel::Ref<Framebuffer>::Create(width, height);
+    m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
+    m_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
+    m_RenderFramebuffer->Generate(width, height);
 }
 
 Hazel::Entity EnvMapEditorLayer::CreateEntity(const std::string& name)
@@ -1701,19 +1714,6 @@ void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<F
         renderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
         m_ViewportMainSize = glm::vec2(viewportPanelSize.x, viewportPanelSize.y);
     }
-}
-
-void EnvMapEditorLayer::SetupRenderFramebuffer()
-{
-    if (!m_IsViewportEnabled) return;
-
-    uint32_t width = Application::Get()->GetWindow()->GetWidth();
-    uint32_t height = Application::Get()->GetWindow()->GetHeight();
-
-    m_RenderFramebuffer = Hazel::Ref<Framebuffer>::Create(width, height);
-    m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
-    m_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
-    m_RenderFramebuffer->Generate(width, height);
 }
 
 void EnvMapEditorLayer::OnEvent(Event& e)
