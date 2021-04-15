@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Hazel/Renderer/RendererContext.h"
+#include "Hazel/Renderer/GraphicsContext.h"
 
 #include "Core/Window.h"
 
@@ -26,23 +27,10 @@ public:
 private:
 	virtual void Init(const WindowProps& props);
 	virtual void Shutdown();
-
-private:
-	// GLFWwindow* m_Window;
-	struct WindowData
-	{
-		std::string Title;
-		uint32_t Width, Height;
-		bool VSync;
-
-		EventCallbackFn EventCallback;
-	};
-
-	WindowData m_Data;
 	/**** END Window Hazel version - a platform independent Window interface ****/
 
 public:
-	virtual inline GLFWwindow* GetHandle() override { return glfwWindow; };
+	virtual inline GLFWwindow* GetHandle() override { return m_Window; };
 	virtual bool* getKeys() override { return keys; };
 	virtual bool* getMouseButtons() override { return buttons; };
 	virtual bool IsMouseButtonClicked(int mouseButton) override;
@@ -55,7 +43,7 @@ public:
 	virtual void SetShouldClose(bool shouldClose) override;
 	virtual void SetCursorDisabled() override;
 	virtual void SetCursorNormal() override;
-	virtual bool GetShouldClose() override { return glfwWindowShouldClose(glfwWindow); };
+	virtual bool GetShouldClose() override { return glfwWindowShouldClose(m_Window); };
 
 	bool* getKeysPrev() { return keys_prev; }; // previous states of keys
 	bool* getMouseButtonsPrev() { return buttons_prev; }; // previos states of mouse buttons
@@ -84,7 +72,23 @@ public:
 	virtual Hazel::Ref<Hazel::RendererContext> GetRenderContext() override { return m_RendererContext; }
 
 private:
-	GLFWwindow* glfwWindow;
+	/**** BEGIN Window Hazel version - a platform independent Window interface ****/
+	GLFWwindow* m_Window;
+	struct WindowData
+	{
+		std::string Title;
+		uint32_t Width, Height;
+		bool VSync;
+
+		EventCallbackFn EventCallback;
+	};
+
+	WindowData m_Data;
+	Hazel::Ref<Hazel::GraphicsContext> m_Context;
+
+	/**** END Window Hazel version - a platform independent Window interface ****/
+
+	// GLFWwindow* glfwWindow;
 
 	bool keys[1024];
 	bool buttons[32];

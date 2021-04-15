@@ -3,6 +3,7 @@
 #include "Hazel/Events/KeyEvent.h"
 #include "Hazel/Events/MouseEvent.h"
 #include "Hazel/Events/ApplicationEvent.h"
+#include "Hazel/Renderer/GraphicsContext.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"
@@ -27,7 +28,7 @@ Window* Window::Create(const WindowProps& props)
 void WindowsWindow::SetTitle(std::string title)
 {
 	m_Data.Title = title;
-	glfwSetWindowTitle(glfwWindow, m_Data.Title.c_str());
+	glfwSetWindowTitle(m_Window, m_Data.Title.c_str());
 }
 
 std::string WindowsWindow::GetTitle()
@@ -103,16 +104,19 @@ void WindowsWindow::Init(const WindowProps& props)
 	// Allow forward compatibility
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	glfwWindow = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
-	if (!glfwWindow)
+	m_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
+	if (!m_Window)
 	{
 		glfwTerminate();
 		throw std::runtime_error("GLFW Window creation failed!");
 	}
 
+	m_Context = Hazel::Ref<Hazel::GraphicsContext>(Hazel::GraphicsContext::Create(m_Window));
+	m_Context->Init();
+
 	// Set context for GLEW to use
-	glfwMakeContextCurrent(glfwWindow);
-	glfwSetWindowUserPointer(glfwWindow, &m_Data);
+	glfwMakeContextCurrent(m_Window);
+	glfwSetWindowUserPointer(m_Window, &m_Data);
 	SetVSync(true);
 
 	// Allow modern extension features
@@ -120,7 +124,7 @@ void WindowsWindow::Init(const WindowProps& props)
 
 	if (glewInit() != GLEW_OK)
 	{
-		glfwDestroyWindow(glfwWindow);
+		glfwDestroyWindow(m_Window);
 		glfwTerminate();
 		throw std::runtime_error("GLEW initialization failed!");
 	}
@@ -141,7 +145,7 @@ void WindowsWindow::Init(const WindowProps& props)
 
 void WindowsWindow::Shutdown()
 {
-	glfwDestroyWindow(glfwWindow);
+	glfwDestroyWindow(m_Window);
 	glfwTerminate();
 }
 
@@ -151,7 +155,7 @@ void WindowsWindow::OnUpdate()
 	glfwPollEvents();
 
 	// Swap buffers
-	glfwSwapBuffers(glfwWindow);
+	glfwSwapBuffers(m_Window);
 }
 
 void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)
@@ -209,12 +213,12 @@ float WindowsWindow::getYMouseScrollOffset()
 
 void WindowsWindow::SetCursorDisabled()
 {
-	glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void WindowsWindow::SetCursorNormal()
 {
-	glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
 bool WindowsWindow::IsMouseButtonClicked(int mouseButton)
@@ -233,15 +237,15 @@ bool WindowsWindow::IsMouseButtonReleased(int mouseButton)
 
 void WindowsWindow::SetShouldClose(bool shouldClose)
 {
-	glfwSetWindowShouldClose(glfwWindow, shouldClose);
+	glfwSetWindowShouldClose(m_Window, shouldClose);
 }
 
 void WindowsWindow::SetInputMode(bool cursorEnabled)
 {
 	if (cursorEnabled)
-		glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	else
-		glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 /**
@@ -249,20 +253,20 @@ void WindowsWindow::SetInputMode(bool cursorEnabled)
  */
 void WindowsWindow::SetCallbacks()
 {
-	glfwSetKeyCallback(glfwWindow, KeyCallback);
-	glfwSetCharCallback(glfwWindow, CharCallback);
-	glfwSetCursorPosCallback(glfwWindow, CursorPosCallback);
-	glfwSetMouseButtonCallback(glfwWindow, MouseButtonCallback);
-	glfwSetCursorEnterCallback(glfwWindow, CursorEnterCallback);
-	glfwSetWindowSizeCallback(glfwWindow, WindowSizeCallback);
-	glfwSetWindowCloseCallback(glfwWindow, WindowCloseCallback);
-	glfwSetScrollCallback(glfwWindow, ScrollCallback);
+	glfwSetKeyCallback(m_Window, KeyCallback);
+	glfwSetCharCallback(m_Window, CharCallback);
+	glfwSetCursorPosCallback(m_Window, CursorPosCallback);
+	glfwSetMouseButtonCallback(m_Window, MouseButtonCallback);
+	glfwSetCursorEnterCallback(m_Window, CursorEnterCallback);
+	glfwSetWindowSizeCallback(m_Window, WindowSizeCallback);
+	glfwSetWindowCloseCallback(m_Window, WindowCloseCallback);
+	glfwSetScrollCallback(m_Window, ScrollCallback);
 }
 
 void WindowsWindow::SetCallbacksHazelDev()
 {
 	// Set GLFW callbacks (Handle Key and Mouse input)
-	glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow* window, int width, int height)
+	glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data.Width = width;
@@ -274,7 +278,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			WindowSizeCallback(window, width, height);
 		});
 
-	glfwSetWindowCloseCallback(glfwWindow, [](GLFWwindow* window)
+	glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			WindowCloseEvent event;
@@ -284,7 +288,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			WindowCloseCallback(window);
 		});
 
-	glfwSetKeyCallback(glfwWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+	glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -314,7 +318,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			KeyCallback(window, key, scancode, action, mods);
 		});
 
-	glfwSetCharCallback(glfwWindow, [](GLFWwindow* window, unsigned int codepoint)
+	glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int codepoint)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -325,7 +329,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			CharCallback(window, codepoint);
 		});
 
-	glfwSetMouseButtonCallback(glfwWindow, [](GLFWwindow* window, int button, int action, int mods)
+	glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -349,7 +353,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			MouseButtonCallback(window, button, action, mods);
 		});
 
-	glfwSetScrollCallback(glfwWindow, [](GLFWwindow* window, double xoffset, double yoffset)
+	glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xoffset, double yoffset)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -360,7 +364,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			ScrollCallback(window, xoffset, yoffset);
 		});
 
-	glfwSetCursorPosCallback(glfwWindow, [](GLFWwindow* window, double xpos, double ypos)
+	glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xpos, double ypos)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -371,7 +375,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			CursorPosCallback(window, xpos, ypos);
 		});
 
-	glfwSetCursorEnterCallback(glfwWindow, [](GLFWwindow* window, int entered)
+	glfwSetCursorEnterCallback(m_Window, [](GLFWwindow* window, int entered)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 

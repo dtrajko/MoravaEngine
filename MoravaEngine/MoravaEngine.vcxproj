@@ -188,6 +188,7 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTexture.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanUtils.cpp" />
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsPlatformUtils.cpp" />
+    <ClCompile Include="src\Hazel\Renderer\GraphicsContext.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelCamera.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelFramebuffer.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelImage.cpp" />
@@ -458,6 +459,7 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanSwapChain.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTexture.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUtils.h" />
+    <ClInclude Include="src\Hazel\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelCamera.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelFramebuffer.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelImage.h" />

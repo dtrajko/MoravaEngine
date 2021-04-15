@@ -163,4 +163,3 @@ namespace Hazel {
 	// TODO: WeakRef
 
 }
-

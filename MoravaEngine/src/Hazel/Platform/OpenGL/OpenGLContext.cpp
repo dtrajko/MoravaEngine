@@ -25,6 +25,15 @@ namespace Hazel {
 
 		glfwMakeContextCurrent(m_WindowHandle);
 
+		if (glewInit() != GLEW_OK)
+		{
+			glfwDestroyWindow(m_WindowHandle);
+			glfwTerminate();
+			throw std::runtime_error("GLEW initialization failed!");
+		}
+
+		Log::GetLogger()->info("GLEW initialized.");
+
 		Log::GetLogger()->info("OpenGL Info:");
 		Log::GetLogger()->info("  Vendor: {0}", glGetString(GL_VENDOR));
 		Log::GetLogger()->info("  Renderer: {0}", glGetString(GL_RENDERER));

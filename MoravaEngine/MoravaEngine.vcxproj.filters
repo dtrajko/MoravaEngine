@@ -735,6 +735,9 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanBuffer.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\GraphicsContext.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -1565,6 +1568,9 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanBuffer.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\GraphicsContext.h">
+      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
