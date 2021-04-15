@@ -75,13 +75,11 @@ public:
 
 private:
 	static void FlushDrawList();
-	static void GeometryPass();
-	static void CompositePass();
 
 // Moved from EnvMapEditorLayer back to EnvMapSceneRenderer
 public:
-	static void GeometryPassEnvMap();
-	static void CompositePassEnvMap(Framebuffer* framebuffer);
+	static void GeometryPass();
+	static void CompositePass();
 
 	static void SubmitEntityEnvMap(Hazel::Entity entity);
 	static glm::mat4 GetViewProjection();

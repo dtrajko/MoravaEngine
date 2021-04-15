@@ -295,22 +295,6 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
     return { s_EnvFiltered, s_IrradianceMap };
 }
 
-void EnvMapSceneRenderer::CompositePass()
-{
-    Hazel::HazelRenderer::BeginRenderPass(s_Data.CompositePass, false); // should we clear the framebuffer at this stage?
-
-    s_Data.CompositeShader->Bind();
-
-    s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-    s_Data.CompositeShader->setInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-    s_Data.CompositeShader->setFloat("u_Exposure", s_Data.SceneData.SceneCamera.Camera.GetExposure());
-    s_Data.CompositeShader->setInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
-
-    Hazel::HazelRenderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::HazelMaterial>());
-
-    Hazel::HazelRenderer::EndRenderPass();
-}
-
 void EnvMapSceneRenderer::RenderSkybox()
 {
     RendererBasic::DisableCulling();
@@ -477,7 +461,7 @@ glm::mat4 EnvMapSceneRenderer::GetViewProjection()
     return viewProj;
 }
 
-void EnvMapSceneRenderer::GeometryPassEnvMap()
+void EnvMapSceneRenderer::GeometryPass()
 {
     RendererBasic::EnableTransparency();
     RendererBasic::EnableMSAA();
@@ -595,15 +579,20 @@ void EnvMapSceneRenderer::GeometryPassEnvMap()
     GetGeoPass()->GetSpecification().TargetFramebuffer->Bind();
 }
 
-void EnvMapSceneRenderer::CompositePassEnvMap(Framebuffer* framebuffer)
+void EnvMapSceneRenderer::CompositePass()
 {
-    GetShaderComposite()->Bind();
-    framebuffer->GetTextureAttachmentColor()->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-    GetShaderComposite()->setInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-    GetShaderComposite()->setFloat("u_Exposure", EnvMapEditorLayer::GetMainCameraComponent().Camera.GetExposure());
-    // m_ShaderComposite->setInt("u_TextureSamples", framebuffer->GetSpecification().Samples);
-    GetShaderComposite()->setInt("u_TextureSamples", GetGeoPass()->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
-    // Hazel::HazelRenderer::SubmitFullscreenQuad(nullptr);
+    // Hazel::HazelRenderer::BeginRenderPass(s_Data.CompositePass, false); // should we clear the framebuffer at this stage?
+
+    s_Data.CompositeShader->Bind();
+
+    s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
+    s_Data.CompositeShader->setInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
+    s_Data.CompositeShader->setFloat("u_Exposure", EnvMapEditorLayer::GetMainCameraComponent().Camera.GetExposure()); // s_Data.SceneData.SceneCamera.Camera
+    s_Data.CompositeShader->setInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
+
+    // Hazel::HazelRenderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::HazelMaterial>());
+
+    // Hazel::HazelRenderer::EndRenderPass();
 }
 
 void EnvMapSceneRenderer::SubmitEntityEnvMap(Hazel::Entity entity)
@@ -629,41 +618,11 @@ void EnvMapSceneRenderer::FlushDrawList()
 
     GeometryPass();
     // Log::GetLogger()->debug("EnvironmentMap::FlushDrawList GeometryPass executed...");
-    CompositePass();
+    // CompositePass(framebuffer?);
     // Log::GetLogger()->debug("EnvironmentMap::FlushDrawList CompositePass executed...");
 
     // m_Data.DrawList.clear(); // TODO: make DrawList update every tick
     //  m_Data.SceneData = {};   // TODO: make SceneData update every tick
-}
-
-void EnvMapSceneRenderer::GeometryPass()
-{
-    bool outline = s_Data.SelectedMeshDrawList.size() > 0;
-
-    if (outline)
-    {
-        Hazel::HazelRenderer::Submit([]() {
-        });
-
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    }
-
-    Hazel::HazelRenderer::BeginRenderPass(s_Data.GeoPass);
-
-    if (outline)
-    {
-        Hazel::HazelRenderer::Submit([]() {
-        });
-
-        glStencilMask(0);
-    }
-
-    auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.Camera.GetViewMatrix();
-    glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix())[3];
-
-    // Skybox
-    auto skyboxShader = s_Data.SceneData.HazelSkyboxMaterial->GetShader();
-
 }
 
 uint32_t EnvMapSceneRenderer::GetFinalColorBufferRendererID()

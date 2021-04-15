@@ -44,8 +44,8 @@ public:
 	void RenderShadowOmniSingleLight(Window* mainWindow, Hazel::Entity lightEntity, Hazel::Ref<OmniShadowMap> omniShadowMap);
 	void RenderSubmeshesShadowPass(Hazel::Ref<Shader> shader);
 
-	void OnRenderEditor(Framebuffer* framebuffer);
-	void OnRenderRuntime(Framebuffer* framebuffer);
+	void OnRenderEditor();
+	void OnRenderRuntime();
 
 	void OnImGuiRender(Window* mainWindow, Scene* scene);
 	void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
@@ -105,7 +105,7 @@ public:
 
 	// from SceneHazelEnvMap
 	void SetupRenderFramebuffer();
-	void ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer);
+	void ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<Framebuffer> renderFramebuffer);
 
 private:
 	void SetupContextData(Scene* scene);
@@ -133,7 +133,7 @@ public:
 	bool m_IsViewportEnabled;
 	glm::vec2 m_ImGuiViewportMain;
 	glm::vec2 m_ViewportMainSize;
-	Framebuffer* m_RenderFramebuffer;
+	Hazel::Ref<Framebuffer> m_RenderFramebuffer;
 
 private:
 	Hazel::Ref<Shader> m_ShaderShadow;

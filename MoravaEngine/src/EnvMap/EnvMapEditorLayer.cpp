@@ -1688,7 +1688,7 @@ void EnvMapEditorLayer::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& tran
     }
 }
 
-void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, Framebuffer* renderFramebuffer)
+void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<Framebuffer> renderFramebuffer)
 {
     float currentTimestamp = Timer::Get()->GetCurrentTimestamp();
 
@@ -1710,7 +1710,7 @@ void EnvMapEditorLayer::SetupRenderFramebuffer()
     uint32_t width = Application::Get()->GetWindow()->GetWidth();
     uint32_t height = Application::Get()->GetWindow()->GetHeight();
 
-    m_RenderFramebuffer = new Framebuffer(width, height);
+    m_RenderFramebuffer = Hazel::Ref<Framebuffer>::Create(width, height);
     m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
     m_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
     m_RenderFramebuffer->Generate(width, height);
@@ -1973,8 +1973,10 @@ void EnvMapEditorLayer::OnRender(Window* mainWindow)
         }
     }
 
-    OnRenderEditor(m_RenderFramebuffer);
-    // OnRenderRuntime(framebuffer)
+    EnvMapSceneRenderer::GetGeoPass()->GetSpecification().TargetFramebuffer = m_RenderFramebuffer;
+
+    OnRenderEditor();
+    // OnRenderRuntime()
 
     if (m_IsViewportEnabled)
     {
@@ -2089,14 +2091,14 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<Shader> shader)
     }
 }
 
-void EnvMapEditorLayer::OnRenderEditor(Framebuffer* framebuffer)
+void EnvMapEditorLayer::OnRenderEditor()
 {
-    EnvMapSceneRenderer::GeometryPassEnvMap();
-    EnvMapSceneRenderer::CompositePassEnvMap(framebuffer);
+    EnvMapSceneRenderer::GeometryPass();
+    EnvMapSceneRenderer::CompositePass();
 }
 
-void EnvMapEditorLayer::OnRenderRuntime(Framebuffer* framebuffer)
+void EnvMapEditorLayer::OnRenderRuntime()
 {
-    EnvMapSceneRenderer::GeometryPassEnvMap();
-    EnvMapSceneRenderer::CompositePassEnvMap(framebuffer);
+    EnvMapSceneRenderer::GeometryPass();
+    EnvMapSceneRenderer::CompositePass();
 }
