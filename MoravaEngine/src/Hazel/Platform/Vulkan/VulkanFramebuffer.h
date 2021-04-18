@@ -2,13 +2,15 @@
 
 #include "Vulkan.h"
 
+#include "Hazel/Renderer/HazelFramebuffer.h"
+
 
 namespace Hazel {
 
-	class VulkanFramebuffer
+	class VulkanFramebuffer : public HazelFramebuffer
 	{
 	public:
-		VulkanFramebuffer();
+		VulkanFramebuffer(const HazelFramebufferSpecification& spec);
 		~VulkanFramebuffer();
 	};
 

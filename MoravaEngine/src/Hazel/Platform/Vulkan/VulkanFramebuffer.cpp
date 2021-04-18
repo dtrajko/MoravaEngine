@@ -3,8 +3,11 @@
 
 namespace Hazel {
 
-	VulkanFramebuffer::VulkanFramebuffer()
+	VulkanFramebuffer::VulkanFramebuffer(const HazelFramebufferSpecification& spec)
 	{
+		if (spec.SwapChainTarget) {
+			return;
+		}
 	}
 
 	VulkanFramebuffer::~VulkanFramebuffer()
