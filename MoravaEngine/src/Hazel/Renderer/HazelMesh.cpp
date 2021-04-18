@@ -341,7 +341,7 @@ namespace Hazel {
 						texture = LoadBaseTexture();
 					}
 
-					if (texture->IsLoaded())
+					if (texture && texture->IsLoaded())
 					{
 						m_Textures[i] = texture;
 						m_MeshShader->setInt("u_AlbedoTexture", m_Textures[i]->GetID());
