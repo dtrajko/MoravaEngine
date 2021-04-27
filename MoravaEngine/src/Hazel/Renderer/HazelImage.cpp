@@ -11,9 +11,9 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-		case RendererAPIType::None: return Ref<HazelImage2D>();
-		case RendererAPIType::OpenGL: return Ref<OpenGLImage2D>::Create(format, width, height, buffer);
-		case RendererAPIType::Vulkan: return Ref<VulkanImage2D>::Create(format, width, height);
+		case RendererAPI::RendererAPIType::None: return Ref<HazelImage2D>();
+		case RendererAPI::RendererAPIType::OpenGL: return Ref<OpenGLImage2D>::Create(format, width, height, buffer);
+		case RendererAPI::RendererAPIType::Vulkan: return Ref<VulkanImage2D>::Create(format, width, height);
 		}
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<HazelImage2D>();
@@ -23,9 +23,9 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-		case RendererAPIType::None: return Ref<HazelImage2D>();
-		case RendererAPIType::OpenGL: return Ref<OpenGLImage2D>::Create(format, width, height, data);
-		case RendererAPIType::Vulkan: return Ref<VulkanImage2D>::Create(format, width, height);
+		case RendererAPI::RendererAPIType::None: return Ref<HazelImage2D>();
+		case RendererAPI::RendererAPIType::OpenGL: return Ref<OpenGLImage2D>::Create(format, width, height, data);
+		case RendererAPI::RendererAPIType::Vulkan: return Ref<VulkanImage2D>::Create(format, width, height);
 		}
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<HazelImage2D>();

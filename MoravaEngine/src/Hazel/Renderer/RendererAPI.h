@@ -10,13 +10,6 @@ namespace Hazel {
 
 	using RendererID = uint32_t;
 
-	enum class RendererAPIType
-	{
-		None,
-		Vulkan,
-		OpenGL
-	};
-
 	enum class PrimitiveType
 	{
 		None = 0, Triangles, Lines
@@ -36,6 +29,17 @@ namespace Hazel {
 	class RendererAPI
 	{
 	public:
+		enum class RendererAPIType
+		{
+			None,
+			Vulkan,
+			OpenGL,
+		};
+
+	public:
+
+
+		static void InitAPI();
 
 		static void Init();
 		static void Shutdown();
@@ -53,7 +57,8 @@ namespace Hazel {
 		}
 
 		// Currently hard-coded to OpenGL
-		static RendererAPIType Current() { s_CurrentRendererAPI = RendererAPIType::OpenGL; return s_CurrentRendererAPI; }
+		static RendererAPIType Current() { return s_CurrentRendererAPI; }
+		static void SetAPI(RendererAPIType api);
 
 	private:
 		static void LoadRequiredAssets();

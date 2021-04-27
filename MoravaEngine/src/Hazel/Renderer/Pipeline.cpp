@@ -9,8 +9,8 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-			case RendererAPIType::None:    return Ref<Pipeline>();
-			case RendererAPIType::OpenGL:  return Ref<OpenGLPipeline>::Create(spec);
+			case RendererAPI::RendererAPIType::None:    return Ref<Pipeline>();
+			case RendererAPI::RendererAPIType::OpenGL:  return Ref<OpenGLPipeline>::Create(spec);
 		}
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<Pipeline>();

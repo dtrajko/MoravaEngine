@@ -18,11 +18,11 @@ namespace Hazel {
 
 		switch (RendererAPI::Current())
 		{
-			case RendererAPIType::None: return Ref<HazelShader>();
-			case RendererAPIType::OpenGL:
+			case RendererAPI::RendererAPIType::None: return Ref<HazelShader>();
+			case RendererAPI::RendererAPIType::OpenGL:
 				result = Ref<OpenGLShader>::Create(filepath, forceCompile);
 				break;
-			case RendererAPIType::Vulkan:
+			case RendererAPI::RendererAPIType::Vulkan:
 				result = Ref<VulkanShader>::Create(filepath, forceCompile);
 				break;
 		}
@@ -38,8 +38,8 @@ namespace Hazel {
 
 		switch (RendererAPI::Current())
 		{
-			case RendererAPIType::None: return Ref<HazelShader>();
-			case RendererAPIType::OpenGL: result = OpenGLShader::CreateFromString(source);
+			case RendererAPI::RendererAPIType::None: return Ref<HazelShader>();
+			case RendererAPI::RendererAPIType::OpenGL: result = OpenGLShader::CreateFromString(source);
 		}
 		s_AllShaders.push_back(result);
 		return result;

@@ -134,6 +134,7 @@ void EnvMapEditorLayer::Init()
     // Hazel::ScriptEngine::Init(""); // TODO Assembly path
 
     // Temporary code Hazel LIVE! #004
+    Hazel::RendererAPI::SetAPI(Hazel::RendererAPI::RendererAPIType::OpenGL);
     Hazel::HazelRenderer::Init();
 
     bool depthTest = true;

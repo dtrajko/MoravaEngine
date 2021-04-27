@@ -23,7 +23,11 @@ namespace Hazel {
 	{
 		Log::GetLogger()->info("OpenGLContext::Create");
 
+		// Set context for GLEW to use
 		glfwMakeContextCurrent(m_WindowHandle);
+
+		// Allow modern extension features
+		glewExperimental = GL_TRUE;
 
 		if (glewInit() != GLEW_OK)
 		{
@@ -31,6 +35,9 @@ namespace Hazel {
 			glfwTerminate();
 			throw std::runtime_error("GLEW initialization failed!");
 		}
+
+		Log::GetLogger()->info("GLEW initialized.");
+
 
 		Log::GetLogger()->info("GLEW initialized.");
 

@@ -12,9 +12,9 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-		case RendererAPIType::None:    return Ref<RendererContext>();
-		case RendererAPIType::OpenGL:  return Ref<OpenGLContext>::Create(windowHandle);
-		case RendererAPIType::Vulkan:  return Ref<VulkanContext>::Create(windowHandle);
+		case RendererAPI::RendererAPIType::None:    HZ_CORE_ASSERT(false, "RendererAPIType:None is currently not supported!"); return Ref<RendererContext>();
+		case RendererAPI::RendererAPIType::OpenGL:  return Ref<OpenGLContext>::Create(windowHandle);
+		case RendererAPI::RendererAPIType::Vulkan:  return Ref<VulkanContext>::Create(windowHandle);
 		}
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<RendererContext>();

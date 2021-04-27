@@ -3,7 +3,6 @@
 #include "Hazel/Events/KeyEvent.h"
 #include "Hazel/Events/MouseEvent.h"
 #include "Hazel/Events/ApplicationEvent.h"
-#include "Hazel/Renderer/GraphicsContext.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"
@@ -111,8 +110,7 @@ void WindowsWindow::Init(const WindowProps& props)
 		throw std::runtime_error("GLFW Window creation failed!");
 	}
 
-	m_Context = Hazel::Ref<Hazel::GraphicsContext>(Hazel::GraphicsContext::Create(m_Window));
-	m_Context->Init();
+	m_RendererContext = Hazel::Ref<Hazel::RendererContext>(Hazel::RendererContext::Create(m_Window));
 
 	// Set context for GLEW to use
 	glfwMakeContextCurrent(m_Window);
@@ -248,9 +246,9 @@ void WindowsWindow::SetInputMode(bool cursorEnabled)
 		glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
-/**
+/****
  * Obsolete after adding GLFW callbacks to Init() method
- */
+ *
 void WindowsWindow::SetCallbacks()
 {
 	glfwSetKeyCallback(m_Window, KeyCallback);
@@ -262,6 +260,7 @@ void WindowsWindow::SetCallbacks()
 	glfwSetWindowCloseCallback(m_Window, WindowCloseCallback);
 	glfwSetScrollCallback(m_Window, ScrollCallback);
 }
+****/
 
 void WindowsWindow::SetCallbacksHazelDev()
 {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Hazel/Renderer/RendererContext.h"
-#include "Hazel/Renderer/GraphicsContext.h"
 
 #include "Core/Window.h"
 
@@ -60,7 +59,7 @@ public:
 	static void WindowCloseCallback(GLFWwindow* window);
 	static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
-	void SetCallbacks(); // Obsolete after adding GLFW callbacks to Init() method
+	// void SetCallbacks(); // Obsolete after adding GLFW callbacks to Init() method
 	void SetCallbacksHazelDev();
 
 	virtual inline void SetEventLogging(bool enabled) override { m_EventLoggingEnabled = enabled; }
@@ -84,11 +83,12 @@ private:
 	};
 
 	WindowData m_Data;
-	Hazel::Ref<Hazel::GraphicsContext> m_Context;
+	Hazel::Ref<Hazel::RendererContext> m_RendererContext;
 
 	/**** END Window Hazel version - a platform independent Window interface ****/
 
 	// GLFWwindow* glfwWindow;
+
 
 	bool keys[1024];
 	bool buttons[32];
@@ -114,6 +114,5 @@ private:
 
 	bool m_EventLoggingEnabled;
 
-	Hazel::Ref<Hazel::RendererContext> m_RendererContext;
 
 };
