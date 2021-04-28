@@ -12,27 +12,17 @@
 
 
 /**** BEGIN Hazel properties and methods ****/
-static bool s_GLFWInitialized = false;
 
 static void GLFWErrorCallback(int error, const char* description)
 {
 	Log::GetLogger()->error("GLFW Error ({0}) : {1}", error, description);
 }
 
+static bool s_GLFWInitialized = false;
+
 Window* Window::Create(const WindowProps& props)
 {
 	return new WindowsWindow(props);
-}
-
-void WindowsWindow::SetTitle(std::string title)
-{
-	m_Data.Title = title;
-	glfwSetWindowTitle(m_Window, m_Data.Title.c_str());
-}
-
-std::string WindowsWindow::GetTitle()
-{
-	return m_Data.Title;
 }
 
 WindowsWindow::WindowsWindow(const WindowProps& props)
@@ -111,23 +101,11 @@ void WindowsWindow::Init(const WindowProps& props)
 	}
 
 	m_RendererContext = Hazel::Ref<Hazel::RendererContext>(Hazel::RendererContext::Create(m_Window));
+	m_RendererContext->Create();
 
 	// Set context for GLEW to use
-	glfwMakeContextCurrent(m_Window);
 	glfwSetWindowUserPointer(m_Window, &m_Data);
 	SetVSync(true);
-
-	// Allow modern extension features
-	glewExperimental = GL_TRUE;
-
-	if (glewInit() != GLEW_OK)
-	{
-		glfwDestroyWindow(m_Window);
-		glfwTerminate();
-		throw std::runtime_error("GLEW initialization failed!");
-	}
-
-	Log::GetLogger()->info("GLEW initialized.");
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -145,20 +123,28 @@ void WindowsWindow::Shutdown()
 {
 	glfwDestroyWindow(m_Window);
 	glfwTerminate();
+	s_GLFWInitialized = false;
 }
 
-void WindowsWindow::OnUpdate()
+inline std::pair<float, float> WindowsWindow::GetWindowPos() const
 {
-	// Get and handle user input events
+	int x, y;
+	glfwGetWindowPos(m_Window, &x, &y);
+	return { x, y };
+}
+
+void WindowsWindow::ProcessEvents()
+{
 	glfwPollEvents();
 
-	// Swap buffers
-	glfwSwapBuffers(m_Window);
+	//ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
+	//glfwSetCursor(m_Window, m_ImGuiMouseCursors[imgui_cursor] ? m_ImGuiMouseCursors[imgui_cursor] : m_ImGuiMouseCursors[ImGuiMouseCursor_Arrow]);
+	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)
+void WindowsWindow::SwapBuffers()
 {
-	m_Data.EventCallback = callback;
+	m_RendererContext->SwapBuffers();
 }
 
 void WindowsWindow::SetVSync(bool enabled)
@@ -175,9 +161,35 @@ bool WindowsWindow::IsVSync() const
 {
 	return m_Data.VSync;
 }
+
+void WindowsWindow::Maximize()
+{
+	glfwMaximizeWindow(m_Window);
+}
+
+void WindowsWindow::SetTitle(std::string title)
+{
+	m_Data.Title = title;
+	glfwSetWindowTitle(m_Window, m_Data.Title.c_str());
+}
+
 /**** END Hazel properties and methods ****/
 
 int WindowsWindow::m_ActionPrev;
+
+void WindowsWindow::OnUpdate()
+{
+	// Get and handle user input events
+	glfwPollEvents(); // TODO: move to WindowsWindow::ProcessEvents()
+
+	// Swap buffers
+	glfwSwapBuffers(m_Window); // TODO: move to WindowsWindow::SwapBuffers() / OpenGLContext::SwapBuffers()
+}
+
+void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)
+{
+	m_Data.EventCallback = callback;
+}
 
 GLfloat WindowsWindow::getXChange()
 {

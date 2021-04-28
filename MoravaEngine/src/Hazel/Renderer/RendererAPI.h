@@ -10,6 +10,14 @@ namespace Hazel {
 
 	using RendererID = uint32_t;
 
+	enum class RendererAPIType
+	{
+		None,
+		OpenGL,
+		Vulkan,
+	};
+
+	// TODO: move into separate header
 	enum class PrimitiveType
 	{
 		None = 0, Triangles, Lines
@@ -29,18 +37,6 @@ namespace Hazel {
 	class RendererAPI
 	{
 	public:
-		enum class RendererAPIType
-		{
-			None,
-			Vulkan,
-			OpenGL,
-		};
-
-	public:
-
-
-		static void InitAPI();
-
 		static void Init();
 		static void Shutdown();
 

@@ -38,9 +38,6 @@ namespace Hazel {
 
 		Log::GetLogger()->info("GLEW initialized.");
 
-
-		Log::GetLogger()->info("GLEW initialized.");
-
 		Log::GetLogger()->info("OpenGL Info:");
 		Log::GetLogger()->info("  Vendor: {0}", glGetString(GL_VENDOR));
 		Log::GetLogger()->info("  Renderer: {0}", glGetString(GL_RENDERER));

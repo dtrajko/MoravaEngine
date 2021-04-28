@@ -29,7 +29,7 @@ namespace Hazel {
 
 	void VulkanContext::Create()
 	{
-		HZ_CORE_INFO("VulkanContext::Create");
+		Log::GetLogger()->info("VulkanContext::Create");
 
 		HZ_CORE_ASSERT(glfwVulkanSupported(), "GLFW must support Vulkan!");
 

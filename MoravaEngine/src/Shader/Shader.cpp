@@ -59,11 +59,11 @@ Hazel::Ref<Shader> Shader::Create(const char* vertexLocation, const char* fragme
 
 	switch (Hazel::RendererAPI::Current())
 	{
-	case Hazel::RendererAPI::RendererAPIType::None: return Hazel::Ref<Shader>();
-	case Hazel::RendererAPI::RendererAPIType::OpenGL:
+	case Hazel::RendererAPIType::None: return Hazel::Ref<Shader>();
+	case Hazel::RendererAPIType::OpenGL:
 		result = Hazel::Ref<Shader>::Create(vertexLocation, fragmentLocation, forceCompile);
 		break;
-	case Hazel::RendererAPI::RendererAPIType::Vulkan:
+	case Hazel::RendererAPIType::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
 		break;
 	}
@@ -77,11 +77,11 @@ Hazel::Ref<Shader> Shader::Create(const char* vertexLocation, const char* geomet
 
 	switch (Hazel::RendererAPI::Current())
 	{
-	case Hazel::RendererAPI::RendererAPIType::None: return Hazel::Ref<Shader>();
-	case Hazel::RendererAPI::RendererAPIType::OpenGL:
+	case Hazel::RendererAPIType::None: return Hazel::Ref<Shader>();
+	case Hazel::RendererAPIType::OpenGL:
 		result = Hazel::Ref<Shader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
 		break;
-	case Hazel::RendererAPI::RendererAPIType::Vulkan:
+	case Hazel::RendererAPIType::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
 		break;
 	}
@@ -95,11 +95,11 @@ Hazel::Ref<Shader> Shader::Create(const char* computeLocation, bool forceCompile
 
 	switch (Hazel::RendererAPI::Current())
 	{
-	case Hazel::RendererAPI::RendererAPIType::None: return Hazel::Ref<Shader>();
-	case Hazel::RendererAPI::RendererAPIType::OpenGL:
+	case Hazel::RendererAPIType::None: return Hazel::Ref<Shader>();
+	case Hazel::RendererAPIType::OpenGL:
 		result = Hazel::Ref<Shader>::Create(computeLocation, forceCompile);
 		break;
-	case Hazel::RendererAPI::RendererAPIType::Vulkan:
+	case Hazel::RendererAPIType::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
 		break;
 	}

@@ -21,9 +21,9 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-		case RendererAPI::RendererAPIType::None: return Ref<HazelMaterial>();
-		case RendererAPI::RendererAPIType::Vulkan: return Ref<VulkanMaterial>::Create(shader, name);
-		case RendererAPI::RendererAPIType::OpenGL: return Ref<OpenGLMaterial>::Create(shader, name);
+		case RendererAPIType::None: return Ref<HazelMaterial>();
+		case RendererAPIType::Vulkan: return Ref<VulkanMaterial>::Create(shader, name);
+		case RendererAPIType::OpenGL: return Ref<OpenGLMaterial>::Create(shader, name);
 		}
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<HazelMaterial>();

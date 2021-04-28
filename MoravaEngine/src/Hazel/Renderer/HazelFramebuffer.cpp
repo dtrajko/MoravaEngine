@@ -11,8 +11,8 @@ namespace Hazel {
 
 		switch (RendererAPI::Current())
 		{
-			case RendererAPI::RendererAPIType::None:		return Ref<HazelFramebuffer>();
-			case RendererAPI::RendererAPIType::OpenGL:	result = Ref<OpenGLFramebuffer>::Create(spec);
+			case RendererAPIType::None:		return Ref<HazelFramebuffer>();
+			case RendererAPIType::OpenGL:	result = Ref<OpenGLFramebuffer>::Create(spec);
 		}
 		FramebufferPool::GetGlobal()->Add(result);
 		return result;

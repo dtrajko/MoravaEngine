@@ -152,6 +152,7 @@ int main()
 {
 	Log::Init();
 
+	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::OpenGL);
 	Application::Get()->InitWindow(WindowProps(windowTitle, WIDTH, HEIGHT));
 
 #if defined(SPIR_ENABLED)

@@ -1,3 +1,5 @@
+
+
 #pragma once
 
 #include "Hazel/Renderer/RendererContext.h"
@@ -12,16 +14,32 @@ public:
 	WindowsWindow(const WindowProps& props);
 	virtual ~WindowsWindow();
 
-	void OnUpdate() override;
+	virtual void ProcessEvents() override;
+	virtual void SwapBuffers() override;
 
 	inline uint32_t GetWidth() const override { return m_Data.Width; };
 	inline uint32_t GetHeight() const override { return m_Data.Height; };
 
+	virtual std::pair<uint32_t, uint32_t> GetSize() const override { return { m_Data.Width, m_Data.Height }; }
+	virtual std::pair<float, float> GetWindowPos() const override;
+
 	// Window attributes
-	void SetEventCallback(const EventCallbackFn& callback) override;
-	void SetVSync(bool enabled) override;
-	bool IsVSync() const override;
+	virtual void SetEventCallback(const EventCallbackFn& callback) override;
+	virtual void SetVSync(bool enabled) override;
+	virtual bool IsVSync() const override;
+
+	virtual void Maximize() override;
+
+	virtual const std::string& GetTitle() const override { return m_Data.Title; }
+	virtual void SetTitle(std::string title) override;
+
+	inline void* GetNativeWindow() const { return m_Window; }
+
+	virtual Hazel::Ref<Hazel::RendererContext> GetRenderContext() override { return m_RendererContext; }
+
 	void SetInputMode(bool cursorEnabled) override;
+
+	void OnUpdate() override;
 
 private:
 	virtual void Init(const WindowProps& props);
@@ -46,7 +64,6 @@ public:
 
 	bool* getKeysPrev() { return keys_prev; }; // previous states of keys
 	bool* getMouseButtonsPrev() { return buttons_prev; }; // previos states of mouse buttons
-	// void SwapBuffers();
 
 	bool IsMouseButtonReleased(int mouseButton);
 
@@ -64,11 +81,6 @@ public:
 
 	virtual inline void SetEventLogging(bool enabled) override { m_EventLoggingEnabled = enabled; }
 	virtual inline const bool GetEventLogging() const override { return m_EventLoggingEnabled; }
-
-	virtual void SetTitle(std::string title) override;
-	virtual std::string GetTitle() override;
-
-	virtual Hazel::Ref<Hazel::RendererContext> GetRenderContext() override { return m_RendererContext; }
 
 private:
 	/**** BEGIN Window Hazel version - a platform independent Window interface ****/

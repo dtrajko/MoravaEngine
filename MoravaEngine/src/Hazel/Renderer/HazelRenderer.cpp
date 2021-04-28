@@ -7,7 +7,7 @@
 
 namespace Hazel {
 
-	RendererAPI::RendererAPIType RendererAPI::s_CurrentRendererAPI = RendererAPI::RendererAPIType::OpenGL;
+	RendererAPIType RendererAPI::s_CurrentRendererAPI = RendererAPIType::OpenGL;
 
 	void RendererAPI::SetAPI(RendererAPIType api)
 	{
