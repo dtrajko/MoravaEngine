@@ -35,7 +35,7 @@ namespace Hazel {
 
 		if (!selectedPhysicalDevice)
 		{
-			HZ_CORE_TRACE("Could not find discrete GPU.");
+			Log::GetLogger()->trace("Could not find discrete GPU.");
 			selectedPhysicalDevice = physicalDevices.back();
 		}
 
@@ -58,11 +58,11 @@ namespace Hazel {
 			std::vector<VkExtensionProperties> extensions(extCount);
 			if (vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extCount, &extensions.front()) == VK_SUCCESS)
 			{
-				HZ_CORE_TRACE("Selected physical device has {0} extensions", extensions.size());
+				Log::GetLogger()->trace("Selected physical device has {0} extensions", extensions.size());
 				for (const auto& ext : extensions)
 				{
 					m_SupportedExtensions.emplace(ext.extensionName);
-					HZ_CORE_TRACE("  {0}", ext.extensionName);
+					Log::GetLogger()->trace("  {0}", ext.extensionName);
 				}
 			}
 		}

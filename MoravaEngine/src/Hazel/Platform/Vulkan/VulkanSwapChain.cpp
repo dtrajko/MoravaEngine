@@ -55,7 +55,7 @@ namespace Hazel {
 		VkPhysicalDevice physicalDevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
 
 		// glfwCreateWindowSurface(m_Instance, windowHandle, nullptr, &m_Surface);
-		Log::GetLogger()->error("error C3861: 'glfwCreateWindowSurface': identifier not found");
+		// Log::GetLogger()->error("error C3861: 'glfwCreateWindowSurface': identifier not found");
 
 		// Get available queue family properties
 		uint32_t queueCount;

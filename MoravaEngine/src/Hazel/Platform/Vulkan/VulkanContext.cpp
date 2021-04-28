@@ -70,10 +70,10 @@ namespace Hazel {
 			std::vector<VkLayerProperties> instanceLayerProperties(instanceLayerCount);
 			vkEnumerateInstanceLayerProperties(&instanceLayerCount, instanceLayerProperties.data());
 			bool validationLayerPresent = false;
-			HZ_CORE_TRACE("Vulkan Instance Layers:");
+			Log::GetLogger()->trace("Vulkan Instance Layers:");
 			for (const VkLayerProperties& layer : instanceLayerProperties)
 			{
-				HZ_CORE_TRACE("  {0}", layer.layerName);
+				Log::GetLogger()->trace("  {0}", layer.layerName);
 				if (strcmp(layer.layerName, validationLayerName) == 0)
 				{
 					validationLayerPresent = true;
@@ -87,10 +87,9 @@ namespace Hazel {
 			}
 			else
 			{
-				HZ_CORE_ERROR("Validation layer VK_LAYER_LUNARG_standard_validation not present, validation is disabled");
+				Log::GetLogger()->error("Validation layer VK_LAYER_LUNARG_standard_validation not present, validation is disabled");
 			}
 		}
-
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Instance and Surface Creation
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

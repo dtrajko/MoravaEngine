@@ -93,6 +93,11 @@ void WindowsWindow::Init(const WindowProps& props)
 	// Allow forward compatibility
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
+
+	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan) {
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	}
+
 	m_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
 	if (!m_Window)
 	{
@@ -149,10 +154,15 @@ void WindowsWindow::SwapBuffers()
 
 void WindowsWindow::SetVSync(bool enabled)
 {
-	if (enabled)
-		glfwSwapInterval(1);
-	else
-		glfwSwapInterval(0);
+	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+	{
+		if (enabled) {
+			glfwSwapInterval(1);
+		}
+		else {
+			glfwSwapInterval(0);
+		}
+	}
 
 	m_Data.VSync = enabled;
 }
