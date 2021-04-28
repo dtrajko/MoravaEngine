@@ -3,9 +3,6 @@
 #include "Core/CommonValues.h"
 #include "Core/Log.h"
 
-#include <GLFW/glfw3.h>
-#include <glm/gtc/quaternion.hpp>
-
 
 PlayerController::PlayerController()
 {

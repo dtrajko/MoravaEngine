@@ -1,9 +1,8 @@
 #include "VulkanSwapChain.h"
 
+#include "Core/CommonValues.h"
 #include "Core/Log.h"
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 
 // Macro to get a procedure address based on a vulkan instance
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                        \
@@ -54,7 +53,7 @@ namespace Hazel {
 	{
 		VkPhysicalDevice physicalDevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
 
-		// glfwCreateWindowSurface(m_Instance, windowHandle, nullptr, &m_Surface);
+		glfwCreateWindowSurface(m_Instance, windowHandle, nullptr, &m_Surface);
 		// Log::GetLogger()->error("error C3861: 'glfwCreateWindowSurface': identifier not found");
 
 		// Get available queue family properties

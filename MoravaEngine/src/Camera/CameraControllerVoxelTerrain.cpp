@@ -5,9 +5,6 @@
 #include "Core/CommonValues.h"
 #include "Core/Timer.h"
 
-#include <GLFW/glfw3.h>
-#include <glm/gtc/quaternion.hpp>
-
 
 CameraControllerVoxelTerrain::CameraControllerVoxelTerrain()
 	: CameraControllerVoxelTerrain(nullptr, nullptr, 16 / 9.0f, 2.0f, 0.1f, 10.0f)

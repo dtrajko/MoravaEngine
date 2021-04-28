@@ -1,16 +1,11 @@
 #include "Camera/CameraController.h"
 
 #include "Core/Application.h"
+#include "Core/CommonValues.h"
 #include "Core/Input.h"
 #include "Core/Log.h"
 #include "Core/Timer.h"
 #include "ImGui/ImGuiWrapper.h"
-
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include "glm/glm.hpp"
-#include "glm/gtx/compatibility.hpp"
-#include "glm/gtc/matrix_transform.hpp"
 
 #include <cstdio>
 

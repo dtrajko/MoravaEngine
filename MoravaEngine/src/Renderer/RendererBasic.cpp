@@ -27,7 +27,8 @@ glm::mat4 RendererBasic::s_ProjectionMatrix;
 std::map<std::string, Shader*> RendererBasic::s_Shaders;
 std::map<std::string, int> RendererBasic::s_Uniforms;
 glm::vec4 RendererBasic::s_BgColor;
-bool RendererBasic::s_SpirV_Enabled;
+// bool RendererBasic::s_SpirV_Enabled;
+
 
 RendererBasic::RendererBasic()
 {
@@ -81,6 +82,13 @@ void RendererBasic::Clear(float r, float g, float b, float a)
 void RendererBasic::SetLineThickness(float thickness)
 {
 	glLineWidth(thickness);
+}
+
+bool RendererBasic::GetVulkanSupported()
+{
+	bool vulkanSupported = glfwVulkanSupported();
+	Log::GetLogger()->info("Vulkan supported: {0}", vulkanSupported);
+	return vulkanSupported;
 }
 
 void RendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)

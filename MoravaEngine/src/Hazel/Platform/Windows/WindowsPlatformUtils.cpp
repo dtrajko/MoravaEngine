@@ -2,6 +2,7 @@
 
 #include "Core/Application.h"
 
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 #if defined(HZ_PLATFORM_WINDOWS)

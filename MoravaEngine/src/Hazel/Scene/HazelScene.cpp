@@ -155,8 +155,9 @@ namespace Hazel {
 
 	void HazelScene::Init()
 	{
-		if (RendererBasic::GetSpirVEnabled()) {
-			auto skyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox"); // Spir-V method
+		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan) {
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl", true);
+			auto skyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox"); // Spir-V method // Pre-load shaders in order to use Get
 			m_SkyboxMaterial = HazelMaterial::Create(skyboxShader);
 		}
 		else {
@@ -287,7 +288,7 @@ namespace Hazel {
 		// RENDER 3D SCENE
 		/////////////////////////////////////////////////////////////////////
 
-		if (RendererBasic::GetSpirVEnabled())
+		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
 		{
 			m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
 

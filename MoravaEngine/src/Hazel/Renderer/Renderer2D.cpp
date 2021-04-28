@@ -134,7 +134,7 @@ namespace Hazel {
 			for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 				samplers[i] = i;
 
-			if (RendererBasic::GetSpirVEnabled()) {
+			if (RendererBasic::GetVulkanSupported()) {
 				s_Data.TextureHazelShader = HazelShader::Create("assets/shaders/Renderer2D.glsl"); // not in use, only for constructor testing
 			}
 
@@ -153,7 +153,7 @@ namespace Hazel {
 
 		// Lines
 		{
-			if (RendererBasic::GetSpirVEnabled()) {
+			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan) {
 				s_Data.LineHazelShader = HazelShader::Create("assets/shaders/Renderer2D_Line.glsl"); // not in use, only for constructor testing
 			}
 

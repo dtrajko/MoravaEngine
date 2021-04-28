@@ -14,7 +14,7 @@ namespace Hazel {
 		: m_Shader(shader), m_Name(name)
 	{
 		m_Shader->AddShaderReloadedCallback(std::bind(&OpenGLMaterial::OnShaderReloaded, this));
-		if (RendererBasic::GetSpirVEnabled()) {
+		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan) {
 			AllocateStorage();
 		}
 

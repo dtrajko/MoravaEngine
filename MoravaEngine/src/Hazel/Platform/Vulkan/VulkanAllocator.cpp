@@ -23,7 +23,7 @@ namespace Hazel {
 		HZ_CORE_ASSERT(m_Device);
 
 		// TODO: Tracking
-		HZ_CORE_TRACE("VulkanAllocator ({0}): allocating {1} bytes", m_Tag, requirements.size);
+		Log::GetLogger()->trace("VulkanAllocator ({0}): allocating {1} bytes", m_Tag, requirements.size);
 
 		VkMemoryAllocateInfo memAlloc = {};
 		memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;

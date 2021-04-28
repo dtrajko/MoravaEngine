@@ -4,7 +4,7 @@
 
 #include "Hazel/Core/Assert.h"
 
-#include <GLFW/glfw3.h>
+#include "Core/CommonValues.h"
 
 
 namespace Hazel {

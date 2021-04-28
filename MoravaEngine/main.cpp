@@ -11,7 +11,6 @@
 #define APIENTRY
 #endif // !_WIN32
 
-// #define SPIR_ENABLED
 
 // #define SCENE_COTTAGE
 // #define SCENE_EIFFEL
@@ -155,11 +154,11 @@ int main()
 	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::OpenGL);
 	Application::Get()->InitWindow(WindowProps(windowTitle, WIDTH, HEIGHT));
 
-#if defined(SPIR_ENABLED)
-	RendererBasic::SetSpirVEnabled(true);
-#else
-	RendererBasic::SetSpirVEnabled(false);
-#endif
+	// #if defined(SPIR_ENABLED)
+	//	RendererBasic::SetSpirVEnabled(true);
+	// #else
+	//	RendererBasic::SetSpirVEnabled(false);
+	// #endif
 
 	LOG_INFO("OpenGL Info:");
 	LOG_INFO("   Vendor: {0}",   glGetString(GL_VENDOR));

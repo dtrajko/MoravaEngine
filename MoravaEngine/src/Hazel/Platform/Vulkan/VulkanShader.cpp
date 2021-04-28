@@ -164,13 +164,13 @@ namespace Hazel {
 			buffer.Name = name;
 			buffer.ShaderStage = shaderStage;
 
-			HZ_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
-			HZ_CORE_TRACE("  Member Count: {0}", memberCount);
-			HZ_CORE_TRACE("  Size: {0}", size);
-			HZ_CORE_TRACE("-------------------");
+			Log::GetLogger()->trace("  {0} ({1}, {2})", name, descriptorSet, binding);
+			Log::GetLogger()->trace("  Member Count: {0}", memberCount);
+			Log::GetLogger()->trace("  Size: {0}", size);
+			Log::GetLogger()->trace("-------------------");
 		}
 
-		HZ_CORE_TRACE("Push Constant Buffers:");
+		Log::GetLogger()->trace("Push Constant Buffers:");
 		for (const auto& resource : resources.push_constant_buffers)
 		{
 			const auto& bufferName = resource.name;
@@ -194,9 +194,9 @@ namespace Hazel {
 			buffer.Name = bufferName;
 			buffer.Size = bufferSize - bufferOffset;
 
-			HZ_CORE_TRACE("  Name: {0}", bufferName);
-			HZ_CORE_TRACE("  Member Count: {0}", memberCount);
-			HZ_CORE_TRACE("  Size: {0}", bufferSize);
+			Log::GetLogger()->trace("  Name: {0}", bufferName);
+			Log::GetLogger()->trace("  Member Count: {0}", memberCount);
+			Log::GetLogger()->trace("  Size: {0}", bufferSize);
 
 			for (int i = 0; i < memberCount; i++)
 			{
@@ -210,7 +210,7 @@ namespace Hazel {
 			}
 		}
 
-		HZ_CORE_TRACE("Sampled Images:");
+		Log::GetLogger()->trace("Sampled Images:");
 		for (const auto& resource : resources.sampled_images)
 		{
 			const auto& name = resource.name;
@@ -228,10 +228,10 @@ namespace Hazel {
 
 			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
 
-			HZ_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
+			Log::GetLogger()->trace("  {0} ({1}, {2})", name, descriptorSet, binding);
 		}
 
-		HZ_CORE_TRACE("Storage Images:");
+		Log::GetLogger()->trace("Storage Images:");
 		for (const auto& resource : resources.storage_images)
 		{
 			const auto& name = resource.name;
@@ -249,10 +249,10 @@ namespace Hazel {
 
 			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
 
-			HZ_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
+			Log::GetLogger()->trace("  {0} ({1}, {2})", name, descriptorSet, binding);
 		}
 
-		HZ_CORE_TRACE("===========================");
+		Log::GetLogger()->trace("===========================");
 
 
 	}

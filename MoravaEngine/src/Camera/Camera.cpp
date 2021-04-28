@@ -1,9 +1,6 @@
 #include "Camera.h"
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include "glm/gtx/compatibility.hpp"
-#include "glm/gtc/matrix_transform.hpp"
+#include "Core/CommonValues.h"
 
 
 Camera::Camera() : Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f)

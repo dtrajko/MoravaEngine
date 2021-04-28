@@ -32,9 +32,9 @@ namespace Hazel {
 	{
 		s_Data.m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
 
-		Log::GetLogger()->debug("RendererBasic::GetSpirVEnabled(): {0}", RendererBasic::GetSpirVEnabled());
+		Log::GetLogger()->debug("RendererBasic::GetVulkanSupported(): {0}", RendererBasic::GetVulkanSupported());
 
-		if (RendererBasic::GetSpirVEnabled()) {
+		if (RendererAPI::Current() == RendererAPIType::Vulkan) {
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");

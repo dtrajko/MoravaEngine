@@ -2,10 +2,8 @@
 
 #include "Hazel/Core/Assert.h"
 
+#include "Core/CommonValues.h"
 #include "Core/Log.h"
-
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
 
 namespace Hazel {

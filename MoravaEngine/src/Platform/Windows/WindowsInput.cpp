@@ -1,8 +1,7 @@
 #include "Core/Input.h"
 
+#include "Core/CommonValues.h"
 #include "Core/Application.h"
-
-#include <GLFW/glfw3.h>
 
 
 bool Input::IsKeyPressed(KeyCode key)

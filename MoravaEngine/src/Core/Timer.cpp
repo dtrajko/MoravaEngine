@@ -1,6 +1,6 @@
 #include "Core/Timer.h"
 
-#include <GLFW/glfw3.h>
+#include "Core/CommonValues.h"
 
 #include <stdio.h>
 
