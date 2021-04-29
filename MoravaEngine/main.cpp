@@ -136,7 +136,7 @@
 
 
 // Window dimensions
-const char* windowTitle = "3D Graphics Engine (C++/OpenGL)";
+const char* WINDOW_TITLE = "3D Graphics Engine";
 const int WIDTH = 1280;
 const int HEIGHT = 720;
 
@@ -152,18 +152,16 @@ int main()
 	Log::Init();
 
 	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::OpenGL);
+
+	std::string windowTitle = WINDOW_TITLE;
+	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL) {
+		windowTitle += " [Renderer: OpenGL]";
+	}
+	else if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan) {
+		windowTitle += " [Renderer: Vulkan]";
+	}
+
 	Application::Get()->InitWindow(WindowProps(windowTitle, WIDTH, HEIGHT));
-
-	// #if defined(SPIR_ENABLED)
-	//	RendererBasic::SetSpirVEnabled(true);
-	// #else
-	//	RendererBasic::SetSpirVEnabled(false);
-	// #endif
-
-	LOG_INFO("OpenGL Info:");
-	LOG_INFO("   Vendor: {0}",   glGetString(GL_VENDOR));
-	LOG_INFO("   Renderer: {0}", glGetString(GL_RENDERER));
-	LOG_INFO("   Version: {0}",  glGetString(GL_VERSION));
 
 #if defined(SCENE_COTTAGE)
 	scene = new SceneCottage();

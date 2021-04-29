@@ -22,6 +22,44 @@
 
 namespace Hazel {
 
+	namespace Utils {
+
+		static const char* GetCacheDirectory()
+		{
+			// TODO: make sure the assets directory is valid
+			return "assets/cache/shader/vulkan";
+		}
+
+		static void CreateCacheDirectoryIfNeeded()
+		{
+			std::string cacheDirectory = GetCacheDirectory();
+			if (!std::filesystem::exists(cacheDirectory))
+				std::filesystem::create_directories(cacheDirectory);
+		}
+
+		static ShaderUniformType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
+		{
+			switch (type.basetype)
+			{
+			case spirv_cross::SPIRType::Boolean:  return ShaderUniformType::Bool;
+			case spirv_cross::SPIRType::Int:      return ShaderUniformType::Int;
+			case spirv_cross::SPIRType::UInt:     return ShaderUniformType::UInt;
+			case spirv_cross::SPIRType::Float:
+				if (type.vecsize == 1)            return ShaderUniformType::Float;
+				if (type.vecsize == 2)            return ShaderUniformType::Vec2;
+				if (type.vecsize == 3)            return ShaderUniformType::Vec3;
+				if (type.vecsize == 4)            return ShaderUniformType::Vec4;
+
+				if (type.columns == 3)            return ShaderUniformType::Mat3;
+				if (type.columns == 4)            return ShaderUniformType::Mat4;
+				break;
+			}
+			HZ_CORE_ASSERT(false, "Unknown type!");
+			return ShaderUniformType::None;
+		}
+
+	}
+
 	static ShaderUniformType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
 	{
 		switch (type.basetype)
@@ -80,19 +118,27 @@ namespace Hazel {
 
 	void VulkanShader::Reload(bool forceCompile)
 	{
-		Ref<VulkanShader> instance = this;
-		HazelRenderer::Submit([instance, forceCompile]() mutable
-		{
-		});
+		//	Ref<VulkanShader> instance = this;
+		//	HazelRenderer::Submit([instance, forceCompile]() mutable
+		//	{
+		//		// Vertex and Fragment for now
+		//		std::string source = ReadShaderFromFile(instance->m_AssetPath);
+		//		instance->m_ShaderSource = instance->PreProcess(source);
+		//		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
+		//		instance->CompileOrGetVulkanBinary(shaderData, forceCompile);
+		//		instance->LoadAndCreateShaders(shaderData);
+		//		instance->ReflectAllShaderStages(shaderData);
+		//		instance->CreateDescriptors();
+		//	});
 
 		// Vertex and Fragment for now
-		std::string source = ReadShaderFromFile(instance->m_AssetPath);
-		instance->m_ShaderSource = instance->PreProcess(source);
+		std::string source = ReadShaderFromFile(m_AssetPath);
+		m_ShaderSource = PreProcess(source);
 		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
-		instance->CompileOrGetVulkanBinary(shaderData, forceCompile);
-		instance->LoadAndCreateShaders(shaderData);
-		instance->ReflectAllShaderStages(shaderData);
-		instance->CreateDescriptors();
+		CompileOrGetVulkanBinary(shaderData, forceCompile);
+		LoadAndCreateShaders(shaderData);
+		ReflectAllShaderStages(shaderData);
+		CreateDescriptors();
 	}
 
 	size_t VulkanShader::GetHash() const
@@ -551,6 +597,7 @@ namespace Hazel {
 
 	void VulkanShader::CompileOrGetVulkanBinary(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile)
 	{
+		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
 		for (auto [stage, source] : m_ShaderSource)
 		{
 			auto extension = VkShaderStageCachedFileExtension(stage);

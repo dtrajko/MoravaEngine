@@ -62,7 +62,7 @@ void WindowsWindow::Init(const WindowProps& props)
 	mouseFirstMoved = true;
 	mouseCursorAboveWindow = false;
 
-	Log::GetLogger()->info("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
+	Log::GetLogger()->info("Creating window {0} [{1}x{2}]", props.Title, props.Width, props.Height);
 
 	// Initialize GLFW
 	if (!s_GLFWInitialized)
