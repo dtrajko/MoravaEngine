@@ -190,10 +190,12 @@ int WindowsWindow::m_ActionPrev;
 void WindowsWindow::OnUpdate()
 {
 	// Get and handle user input events
-	glfwPollEvents(); // TODO: move to WindowsWindow::ProcessEvents()
+	// glfwPollEvents(); // TODO: move to WindowsWindow::ProcessEvents()
+	ProcessEvents();
 
 	// Swap buffers
-	glfwSwapBuffers(m_Window); // TODO: move to WindowsWindow::SwapBuffers() / OpenGLContext::SwapBuffers()
+	// glfwSwapBuffers(m_Window); // TODO: move to WindowsWindow::SwapBuffers() / OpenGLContext::SwapBuffers()
+	SwapBuffers();
 }
 
 void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)
