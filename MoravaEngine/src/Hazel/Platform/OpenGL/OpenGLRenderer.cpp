@@ -116,7 +116,7 @@ namespace Hazel {
 
 				auto& caps = s_Data->RenderCaps;
 				caps.Vendor = (const char*)glGetString(GL_VENDOR);
-				caps.Renderer = (const char*)glGetString(GL_RENDERER);
+				caps.Device = (const char*)glGetString(GL_RENDERER);
 				caps.Version = (const char*)glGetString(GL_VERSION);
 
 				glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);
@@ -297,7 +297,7 @@ namespace Hazel {
 
 		HazelRenderer::Submit([envFilteringShader, envUnfiltered, envFiltered, cubemapSize]() {
 			const float deltaRoughness = 1.0f / glm::max((float)(envFiltered->GetMipLevelCount() - 1.0f), 1.0f);
-			for (int level = 1, size = cubemapSize / 2; level < envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
+			for (int level = 1, size = cubemapSize / 2; level < (int)envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
 			{
 				glBindImageTexture(0, envFiltered->GetRendererID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 				GLint roughnessUniformLocation = glGetUniformLocation(envFilteringShader->GetRendererID(), "u_Uniforms.Roughness");

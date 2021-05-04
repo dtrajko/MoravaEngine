@@ -2,7 +2,7 @@
 
 #include "Hazel/Core/Buffer.h"
 #include "Hazel/Core/Ref.h"
-#include "Hazel/Renderer/RendererAPI.h"
+#include "Hazel/Renderer/RendererTypes.h"
 #include "Hazel/Renderer/ShaderUniform.h"
 
 #include <glm/glm.hpp>
@@ -217,7 +217,8 @@ namespace Hazel
 		Ref<HazelShader>& Get(const std::string& name);
 
 	private:
-		std::unordered_map<std::string, Ref<HazelShader>> m_Shaders;
+		std::unordered_map<std::string, Ref<HazelShader>> m_Shaders = std::unordered_map<std::string, Ref<HazelShader>>();
+
 	};
 
 }

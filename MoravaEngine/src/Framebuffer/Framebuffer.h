@@ -65,8 +65,8 @@ public:
 
 	static Hazel::Ref<Framebuffer> Create(const FramebufferSpecification& spec);
 
-	inline const uint32_t GetWidth() const { return m_FramebufferSpecs.Width; };
-	inline const uint32_t GetHeight() const { return m_FramebufferSpecs.Height; };
+	inline uint32_t GetWidth() const { return m_FramebufferSpecs.Width; };
+	inline uint32_t GetHeight() const { return m_FramebufferSpecs.Height; };
 	inline const uint32_t GetID() const { return m_FBO; };
 
 	void Clear();
@@ -79,10 +79,16 @@ public:
 	virtual void Bind() const override;
 	virtual void Unbind() const override;
 	virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate) override;
-	virtual void BindTexture(uint32_t slot = 0) const override;
+	virtual void AddResizeCallback(const std::function<void(Hazel::Ref<Hazel::HazelFramebuffer>)>& func) override;
+	virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const override;
 	virtual Hazel::RendererID GetRendererID() const override;
-	virtual Hazel::RendererID GetColorAttachmentRendererID() const override;
-	virtual Hazel::RendererID GetDepthAttachmentRendererID() const override;
+
+	virtual Hazel::Ref<Hazel::HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const override;
+	virtual Hazel::Ref<Hazel::HazelImage2D> GetDepthImage() const override;
+
+	// virtual Hazel::RendererID GetColorAttachmentRendererID() const override;
+	// virtual Hazel::RendererID GetDepthAttachmentRendererID() const override;
+
 	virtual const Hazel::HazelFramebufferSpecification& GetSpecification() const override;
 
 private:

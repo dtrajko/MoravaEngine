@@ -18,16 +18,40 @@ namespace Hazel {
 		RGBA16F = 2
 	};
 
+	struct HazelFramebufferTextureSpecification
+	{
+		HazelFramebufferTextureSpecification() = default;
+		HazelFramebufferTextureSpecification(HazelImageFormat format) : Format(format) {}
+
+		HazelImageFormat Format;
+		// TODO: filtering/wrap
+	};
+
+	struct HazelFramebufferAttachmentSpecification
+	{
+		HazelFramebufferAttachmentSpecification() = default;
+		HazelFramebufferAttachmentSpecification(const std::initializer_list<HazelFramebufferTextureSpecification>& attachments)
+			: Attachments(attachments) {}
+
+		std::vector<HazelFramebufferTextureSpecification> Attachments;
+	};
+
 	struct HazelFramebufferSpecification
 	{
-		uint32_t Width = 1280;
-		uint32_t Height = 720;
-		glm::vec4 ClearColor;
-		FramebufferFormat Format = FramebufferFormat::RGBA8;
+		float Scale = 1.0f;
+		uint32_t Width = 0;
+		uint32_t Height = 0;
+		glm::vec4 ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+		HazelFramebufferAttachmentSpecification Attachments;
 		uint32_t Samples = 1; // multisampling
-		
+
+		// TODO: Temp, needs scale
+		bool NoResize = false;
+
 		// SwapChainTarget = screen buffer (i.e. no framebuffer)
 		bool SwapChainTarget = false;
+
+		std::string DebugName;
 	};
 
 	class HazelFramebuffer : public RefCounted
@@ -38,12 +62,17 @@ namespace Hazel {
 		virtual void Unbind() const = 0;
 
 		virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) = 0;
+		virtual void AddResizeCallback(const std::function<void(Ref<HazelFramebuffer>)>& func) = 0;
 
-		virtual void BindTexture(uint32_t slot = 0) const = 0;
+		virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const = 0;
+
+		virtual uint32_t GetWidth() const = 0;
+		virtual uint32_t GetHeight() const = 0;
 
 		virtual RendererID GetRendererID() const = 0;
-		virtual RendererID GetColorAttachmentRendererID() const = 0;
-		virtual RendererID GetDepthAttachmentRendererID() const = 0;
+
+		virtual Ref<HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const = 0;
+		virtual Ref<HazelImage2D> GetDepthImage() const = 0;
 
 		virtual const HazelFramebufferSpecification& GetSpecification() const = 0;
 
@@ -51,11 +80,11 @@ namespace Hazel {
 
 	};
 
-	class FramebufferPool final
+	class HazelFramebufferPool final
 	{
 	public:
-		FramebufferPool(uint32_t maxFBs = 32);
-		~FramebufferPool();
+		HazelFramebufferPool(uint32_t maxFBs = 32);
+		~HazelFramebufferPool();
 
 		std::weak_ptr<HazelFramebuffer> AllocateBuffer();
 		void Add(const Ref<HazelFramebuffer>& framebuffer);
@@ -63,11 +92,11 @@ namespace Hazel {
 		std::vector<Ref<HazelFramebuffer>>& GetAll() { return m_Pool; }
 		const std::vector<Ref<HazelFramebuffer>>& GetAll() const { return m_Pool; }
 
-		inline static FramebufferPool* GetGlobal() { return s_Instance; }
+		inline static HazelFramebufferPool* GetGlobal() { return s_Instance; }
 	private:
 		std::vector<Ref<HazelFramebuffer>> m_Pool;
 
-		static FramebufferPool* s_Instance;
+		static HazelFramebufferPool* s_Instance;
 	};
 
 }

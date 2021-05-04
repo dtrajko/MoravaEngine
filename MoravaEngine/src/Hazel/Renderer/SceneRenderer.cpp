@@ -25,9 +25,43 @@ namespace Hazel {
 
 		Ref<HazelTexture2D> BRDFLUT;
 		Ref<HazelShader> CompositeShader;
+		Ref<Shader> BloomBlurShader;
+		Ref<Shader> BloomBlendShader;
 
 		Ref<RenderPass> GeoPass;
 		Ref<RenderPass> CompositePass;
+		Ref<RenderPass> BloomBlurPass[2];
+		Ref<RenderPass> BloomBlendPass;
+
+		Ref<Shader> ShadowMapShader, ShadowMapAnimShader;
+		Ref<RenderPass> ShadowMapRenderPass[4];
+		float ShadowMapSize = 20.0f;
+		float LightDistance = 0.1f;
+		glm::mat4 LightViewMatrix;
+		float CascadeSplitLambda = 0.91f;
+		glm::vec4 CascadeSplits;
+		float CascadeFarPlaneOffset = 15.0f, CascadeNearPlaneOffset = -15.0f;
+		bool ShowCascades = false;
+		bool SoftShadows = true;
+		float LightSize = 0.25f;
+		float MaxShadowDistance = 200.0f;
+		float ShadowFade = 25.0f;
+		float CascadeTransitionFade = 1.0f;
+		bool CascadeFading = true;
+
+		bool EnableBloom = false;
+		float BloomThreshold = 1.5f;
+
+		glm::vec2 FocusPoint = { 0.5f, 0.5f };
+
+		RendererID ShadowMapSampler;
+		Ref<Material> CompositeMaterial;
+
+		Ref<Pipeline> GeometryPipeline;
+		Ref<Pipeline> CompositePipeline;
+		Ref<Pipeline> ShadowPassPipeline;
+		Ref<Pipeline> SkyboxPipeline;
+		Ref<Material> SkyboxMaterial;
 
 		struct DrawCommand
 		{
@@ -46,10 +80,12 @@ namespace Hazel {
 		SceneRendererOptions Options;
 	};
 
-	static SceneRendererData s_Data;
+	static SceneRendererData* s_Data;
 
 	void SceneRenderer::Init()
 	{
+		s_Data = new SceneRendererData();
+
 		HazelFramebufferSpecification geoFramebufferSpec;
 		geoFramebufferSpec.Width = 1280;
 		geoFramebufferSpec.Height = 720;
@@ -59,7 +95,7 @@ namespace Hazel {
 
 		RenderPassSpecification geoRenderPassSpec;
 		geoRenderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(geoFramebufferSpec);
-		s_Data.GeoPass = RenderPass::Create(geoRenderPassSpec);
+		s_Data->GeoPass = RenderPass::Create(geoRenderPassSpec);
 
 		HazelFramebufferSpecification compFramebufferSpec;
 		compFramebufferSpec.Width = 1280;
@@ -69,48 +105,53 @@ namespace Hazel {
 
 		RenderPassSpecification compRenderPassSpec;
 		compRenderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(compFramebufferSpec);
-		s_Data.CompositePass = RenderPass::Create(compRenderPassSpec);
+		s_Data->CompositePass = RenderPass::Create(compRenderPassSpec);
 
-		s_Data.CompositeShader = HazelRenderer::GetShaderLibrary()->Get("SceneComposite");
-		s_Data.BRDFLUT = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
+		s_Data->CompositeShader = HazelRenderer::GetShaderLibrary()->Get("SceneComposite");
+		s_Data->BRDFLUT = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
 
 		// Grid
-		s_Data.GridShader = HazelRenderer::GetShaderLibrary()->Get("Grid");
+		s_Data->GridShader = HazelRenderer::GetShaderLibrary()->Get("Grid");
 		const float gridScale = 16.025f;
 		const float gridSize = 0.025f;
-		s_Data.GridShader->Bind();
-		s_Data.GridShader->SetUniform("u_Settings.Scale", gridScale);
-		s_Data.GridShader->SetUniform("u_Settings.Size", gridSize);
+		s_Data->GridShader->Bind();
+		s_Data->GridShader->SetUniform("u_Settings.Scale", gridScale);
+		s_Data->GridShader->SetUniform("u_Settings.Size", gridSize);
 
 		// Outline
 		auto outlineShader = HazelRenderer::GetShaderLibrary()->Get("Outline");
-		s_Data.OutlineMaterial = HazelMaterial::Create(outlineShader);
-		s_Data.OutlineMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
+		s_Data->OutlineMaterial = HazelMaterial::Create(outlineShader);
+		s_Data->OutlineMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
+	}
+
+	void SceneRenderer::Shutdown()
+	{
+		delete s_Data;
 	}
 
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		s_Data.GeoPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-		s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
+		s_Data->GeoPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+		s_Data->CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
 	}
 
 	void SceneRenderer::BeginScene(const HazelScene* scene, const SceneRendererCamera& camera)
 	{
-		HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+		HZ_CORE_ASSERT(!s_Data->ActiveScene, "");
 
-		s_Data.ActiveScene = scene;
+		s_Data->ActiveScene = scene;
 
-		s_Data.SceneData.SceneCamera = camera;
-		s_Data.SceneData.SkyboxMaterial = scene->m_SkyboxMaterial;
-		s_Data.SceneData.SceneEnvironment = scene->m_Environment;
-		s_Data.SceneData.ActiveLight = scene->m_Light;
+		s_Data->SceneData.SceneCamera = camera;
+		s_Data->SceneData.SkyboxMaterial = scene->m_SkyboxMaterial;
+		s_Data->SceneData.SceneEnvironment = scene->m_Environment;
+		s_Data->SceneData.ActiveLight = scene->m_Light;
 	}
 
 	void SceneRenderer::EndScene()
 	{
-		HZ_CORE_ASSERT(s_Data.ActiveScene, "");
+		HZ_CORE_ASSERT(s_Data->ActiveScene, "");
 
-		s_Data.ActiveScene = nullptr;
+		s_Data->ActiveScene = nullptr;
 
 		FlushDrawList();
 	}
@@ -128,12 +169,12 @@ namespace Hazel {
 	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Material> overrideMaterial)
 	{
 		// TODO: Culling, sorting, etc.
-		s_Data.DrawList.push_back({ mesh, overrideMaterial, transform });
+		s_Data->DrawList.push_back({ mesh, overrideMaterial, transform });
 	}
 
 	void SceneRenderer::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform)
 	{
-		s_Data.SelectedMeshDrawList.push_back({ mesh, Ref<HazelMaterial>(), transform });
+		s_Data->SelectedMeshDrawList.push_back({ mesh, Ref<HazelMaterial>(), transform });
 	}
 
 	static Ref<HazelShader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
@@ -204,7 +245,7 @@ namespace Hazel {
 
 	void SceneRenderer::GeometryPass()
 	{
-		bool outline = false && s_Data.SelectedMeshDrawList.size() > 0;
+		bool outline = false && s_Data->SelectedMeshDrawList.size() > 0;
 
 		if (outline)
 		{
@@ -217,7 +258,7 @@ namespace Hazel {
 			}
 		}
 
-		HazelRenderer::BeginRenderPass(s_Data.GeoPass);
+		HazelRenderer::BeginRenderPass(s_Data->GeoPass);
 
 		if (outline)
 		{
@@ -227,8 +268,8 @@ namespace Hazel {
 			});
 		}
 
-		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
-		glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
+		auto viewProjection = s_Data->SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data->SceneData.SceneCamera.ViewMatrix;
+		glm::vec3 cameraPosition = glm::inverse(s_Data->SceneData.SceneCamera.ViewMatrix)[3];
 
 		struct EnvironmentUB
 		{
@@ -238,34 +279,34 @@ namespace Hazel {
 		};
 
 		EnvironmentUB environmentUB;
-		environmentUB.lights = s_Data.SceneData.ActiveLight;
+		environmentUB.lights = s_Data->SceneData.ActiveLight;
 		environmentUB.u_CameraPosition = cameraPosition;
-		s_Data.GridShader->SetUniformBuffer("Environment", &environmentUB, sizeof(EnvironmentUB));
+		s_Data->GridShader->SetUniformBuffer("Environment", &environmentUB, sizeof(EnvironmentUB));
 
 		// Skybox
-		auto skyboxShader = s_Data.SceneData.SkyboxMaterial->GetShader();
+		auto skyboxShader = s_Data->SceneData.SkyboxMaterial->GetShader();
 		auto inverseVP = glm::inverse(viewProjection);
 		skyboxShader->SetUniformBuffer("Camera", &inverseVP, sizeof(glm::mat4));
-		HazelRenderer::SubmitFullscreenQuad(s_Data.SceneData.SkyboxMaterial);
+		HazelRenderer::SubmitFullscreenQuad(s_Data->SkyboxPipeline, s_Data->SceneData.SkyboxMaterial);
 
 		// Set uniform buffers
-		s_Data.GridShader->SetUniformBuffer("Camera", &viewProjection, sizeof(glm::mat4));
+		s_Data->GridShader->SetUniformBuffer("Camera", &viewProjection, sizeof(glm::mat4));
 
 #if 0
 		// Render entities
-		for (auto& dc : s_Data.DrawList)
+		for (auto& dc : s_Data->DrawList)
 		{
 			auto baseMaterial = dc.Mesh->GetMaterial();
 			baseMaterial->Set("u_ViewProjectionMatrix", viewProjection);
 			baseMaterial->Set("u_CameraPosition", cameraPosition);
 
 			// Environment (TODO: don't do this per mesh)
-			baseMaterial->Set("u_EnvRadianceTex", s_Data.SceneData.SceneEnvironment.RadianceMap);
-			baseMaterial->Set("u_EnvIrradianceTex", s_Data.SceneData.SceneEnvironment.IrradianceMap);
-			baseMaterial->Set("u_BRDFLUTTexture", s_Data.BRDFLUT);
+			baseMaterial->Set("u_EnvRadianceTex", s_Data->SceneData.SceneEnvironment.RadianceMap);
+			baseMaterial->Set("u_EnvIrradianceTex", s_Data->SceneData.SceneEnvironment.IrradianceMap);
+			baseMaterial->Set("u_BRDFLUTTexture", s_Data->BRDFLUT);
 
 			// Set lights (TODO: move to light environment and don't do per mesh)
-			baseMaterial->Set("lights", s_Data.SceneData.ActiveLight);
+			baseMaterial->Set("lights", s_Data->SceneData.ActiveLight);
 
 			auto overrideMaterial = nullptr; // dc.Material;
 			HazelRenderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
@@ -282,19 +323,19 @@ namespace Hazel {
 			}
 		}
 
-		for (auto& dc : s_Data.SelectedMeshDrawList)
+		for (auto& dc : s_Data->SelectedMeshDrawList)
 		{
 			auto baseMaterial = dc.Mesh->GetMaterial();
 			baseMaterial->Set("u_ViewProjectionMatrix", viewProjection);
 			baseMaterial->Set("u_CameraPosition", cameraPosition);
 
 			// Environment (TODO: don't do this per mesh)
-			baseMaterial->Set("u_EnvRadianceTex", s_Data.SceneData.SceneEnvironment.RadianceMap);
-			baseMaterial->Set("u_EnvIrradianceTex", s_Data.SceneData.SceneEnvironment.IrradianceMap);
-			baseMaterial->Set("u_BRDFLUTTexture", s_Data.BRDFLUT);
+			baseMaterial->Set("u_EnvRadianceTex", s_Data->SceneData.SceneEnvironment.RadianceMap);
+			baseMaterial->Set("u_EnvIrradianceTex", s_Data->SceneData.SceneEnvironment.IrradianceMap);
+			baseMaterial->Set("u_BRDFLUTTexture", s_Data->BRDFLUT);
 
 			// Set lights (TODO: move to light environment and don't do per mesh)
-			baseMaterial->Set("lights", s_Data.SceneData.ActiveLight);
+			baseMaterial->Set("lights", s_Data->SceneData.ActiveLight);
 
 			auto overrideMaterial = nullptr; // dc.Material;
 			HazelRenderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
@@ -318,10 +359,10 @@ namespace Hazel {
 			}
 
 			// Draw outline here
-			s_Data.OutlineMaterial->Set("u_ViewProjection", viewProjection);
-			for (auto& dc : s_Data.SelectedMeshDrawList)
+			s_Data->OutlineMaterial->Set("u_ViewProjection", viewProjection);
+			for (auto& dc : s_Data->SelectedMeshDrawList)
 			{
-				HazelRenderer::SubmitMesh(dc.Mesh, dc.Transform, s_Data.OutlineMaterial);
+				HazelRenderer::SubmitMesh(dc.Mesh, dc.Transform, s_Data->OutlineMaterial);
 			}
 
 			HazelRenderer::Submit([]()
@@ -329,9 +370,9 @@ namespace Hazel {
 				glPointSize(10);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 			});
-			for (auto& dc : s_Data.SelectedMeshDrawList)
+			for (auto& dc : s_Data->SelectedMeshDrawList)
 			{
-				HazelRenderer::SubmitMesh(dc.Mesh, dc.Transform, s_Data.OutlineMaterial);
+				HazelRenderer::SubmitMesh(dc.Mesh, dc.Transform, s_Data->OutlineMaterial);
 			}
 
 			HazelRenderer::Submit([]()
@@ -346,18 +387,18 @@ namespace Hazel {
 		// Grid
 		if (GetOptions().ShowGrid)
 		{
-			// s_Data.GridMaterial->Set("u_ViewProjection", viewProjection);
+			// s_Data->GridMaterial->Set("u_ViewProjection", viewProjection);
 
 			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f));
-			s_Data.GridShader->Bind();
-			s_Data.GridShader->SetUniform("u_VertexUniforms.Transform", transform);
+			s_Data->GridShader->Bind();
+			s_Data->GridShader->SetUniform("u_VertexUniforms.Transform", transform);
 			HazelRenderer::SubmitQuad(Ref<HazelMaterial>());
 		}
 
 		if (GetOptions().ShowBoundingBoxes)
 		{
 			Renderer2D::BeginScene(viewProjection, true);
-			for (auto& dc : s_Data.DrawList)
+			for (auto& dc : s_Data->DrawList)
 				HazelRenderer::DrawAABB(dc.Mesh, dc.Transform);
 			Renderer2D::EndScene();
 		}
@@ -367,49 +408,49 @@ namespace Hazel {
 
 	void SceneRenderer::CompositePass()
 	{
-		HazelRenderer::BeginRenderPass(s_Data.CompositePass);
+		HazelRenderer::BeginRenderPass(s_Data->CompositePass);
 
-		float exposure = s_Data.SceneData.SceneCamera.Camera.GetExposure();
-		int textureSamples = s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples;
+		float exposure = s_Data->SceneData.SceneCamera.Camera.GetExposure();
+		int textureSamples = s_Data->GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples;
 
-		s_Data.CompositeShader->Bind();
-		s_Data.CompositeShader->SetUniform("u_Uniforms.Exposure", exposure);
-		s_Data.CompositeShader->SetUniform("u_Uniforms.TextureSamples", textureSamples);
-		s_Data.GeoPass->GetSpecification().TargetFramebuffer->BindTexture();
-		HazelRenderer::SubmitFullscreenQuad(Ref<HazelMaterial>());
+		s_Data->CompositeShader->Bind();
+		s_Data->CompositeShader->SetUniform("u_Uniforms.Exposure", exposure);
+		s_Data->CompositeShader->SetUniform("u_Uniforms.TextureSamples", textureSamples);
+		s_Data->GeoPass->GetSpecification().TargetFramebuffer->BindTexture();
+		HazelRenderer::SubmitFullscreenQuad(s_Data->CompositePipeline, s_Data->CompositeMaterial);
 		HazelRenderer::EndRenderPass();
 	}
 
 	void SceneRenderer::FlushDrawList()
 	{
-		HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+		HZ_CORE_ASSERT(!s_Data->ActiveScene, "");
 
 		GeometryPass();
 		CompositePass();
 
-		s_Data.DrawList.clear();
-		s_Data.SelectedMeshDrawList.clear();
-		s_Data.SceneData = {};
+		s_Data->DrawList.clear();
+		s_Data->SelectedMeshDrawList.clear();
+		s_Data->SceneData = {};
 	}
 
 	Ref<HazelTexture2D> SceneRenderer::GetFinalColorBuffer()
 	{
-		return s_Data.CompositePass->GetSpecification().TargetFramebuffer;
+		return s_Data->CompositePass->GetSpecification().TargetFramebuffer;
 	}
 
 	Ref<RenderPass> SceneRenderer::GetFinalRenderPass()
 	{
-		return s_Data.CompositePass;
+		return s_Data->CompositePass;
 	}
 
 	uint32_t SceneRenderer::GetFinalColorBufferRendererID()
 	{
-		return s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID();
+		return s_Data->CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID();
 	}
 
 	SceneRendererOptions& SceneRenderer::GetOptions()
 	{
-		return s_Data.Options;
+		return s_Data->Options;
 	}
 
 }

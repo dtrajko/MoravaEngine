@@ -51,6 +51,10 @@ namespace Hazel {
 	// Texture2D
 	//////////////////////////////////////////////////////////////////////////////////
 
+	VulkanTexture2D::VulkanTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data)
+	{
+	}
+
 	VulkanTexture2D::VulkanTexture2D(const std::string& path, bool srgb)
 		: m_Path(path)
 	{

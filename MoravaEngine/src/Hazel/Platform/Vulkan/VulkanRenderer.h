@@ -2,10 +2,9 @@
 
 #include "Hazel/Renderer/RendererAPI.h"
 
-
 namespace Hazel {
 
-	class OpenGLRenderer : public RendererAPI
+	class VulkanRenderer : public RendererAPI
 	{
 	public:
 		virtual void Init() override;
@@ -26,7 +25,7 @@ namespace Hazel {
 		virtual void RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
 		virtual void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
 		virtual void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform) override;
-
+		
 	};
 
 }

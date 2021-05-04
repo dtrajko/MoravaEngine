@@ -1,10 +1,23 @@
 #include "HazelTexture.h"
 
 #include "RendererAPI.h"
-#include "../Platform/OpenGL/OpenGLTexture.h"
+#include "Hazel/Platform/OpenGL/OpenGLTexture.h"
+#include "Hazel/Platform/Vulkan/VulkanTexture.h"
 
 
 namespace Hazel {
+
+	Ref<HazelTexture2D> HazelTexture2D::Create(HazelImageFormat format, uint32_t width, uint32_t height, const void* data)
+	{
+		switch (RendererAPI::Current())
+		{
+		case RendererAPIType::None: return Ref<HazelTexture2D>();
+		case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(format, width, height, data);
+		case RendererAPIType::Vulkan: return Ref<VulkanTexture2D>::Create(format, width, height, data);
+		}
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+		return Ref<HazelTexture2D>();
+	}
 
 	Ref<HazelTexture2D> HazelTexture2D::Create(HazelImageFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap)
 	{
@@ -26,13 +39,15 @@ namespace Hazel {
 		return Ref<HazelTexture2D>();
 	}
 
-	Ref<HazelTextureCube> HazelTextureCube::Create(HazelImageFormat format, uint32_t width, uint32_t height)
+	Ref<HazelTextureCube> HazelTextureCube::Create(HazelImageFormat format, uint32_t width, uint32_t height, const void* data)
 	{
 		switch (RendererAPI::Current())
 		{
 		case RendererAPIType::None: return Ref<HazelTextureCube>();
-		case RendererAPIType::OpenGL: return Ref<OpenGLTextureCube>::Create(format, width, height);
+		case RendererAPIType::OpenGL: return Ref<OpenGLTextureCube>::Create(format, width, height, data);
+		case RendererAPIType::Vulkan: return Ref<VulkanTextureCube>::Create(format, width, height, data);
 		}
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<HazelTextureCube>();
 	}
 

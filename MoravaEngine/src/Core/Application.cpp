@@ -1,7 +1,7 @@
 #include "Core/Application.h"
 
 #include "Hazel/Core/Base.h"
-#include "Hazel/Renderer/RendererAPI.h"
+#include "Hazel/Renderer/HazelRenderer.h"
 
 #include "Core/Timer.h"
 
@@ -155,9 +155,9 @@ void Application::OnImGuiRender()
 {
 	ImGui::Begin("Renderer");
 	{
-		auto& caps = Hazel::RendererAPI::GetCapabilities();
+		auto& caps = Hazel::HazelRenderer::GetCapabilities();
 		ImGui::Text("Vendor: %s", caps.Vendor.c_str());
-		ImGui::Text("Renderer: %s", caps.Renderer.c_str());
+		ImGui::Text("Device: %s", caps.Device.c_str());
 		ImGui::Text("Version: %s", caps.Version.c_str());
 		ImGui::Text("Frame Time: %.2fms\n", Timer::Get()->GetDeltaTime() * 1000.0f);
 	}

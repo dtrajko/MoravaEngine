@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Hazel/Core/Base.h"
 #include "Hazel/Core/Math/AABB.h"
-#include "Hazel/Renderer/IndexBuffer.h"
 #include "Hazel/Renderer/Pipeline.h"
-#include "Hazel/Renderer/VertexBuffer.h"
+#include "Hazel/Renderer/IndexBuffer.h"
+// #include "Hazel/Core/Base.h"
+// #include "Hazel/Renderer/VertexBuffer.h"
+// #include "Hazel/Renderer/Pipeline.h"
 
 #include "Core/Log.h"
 #include "EnvMap/EnvMapMaterial.h"
@@ -200,6 +201,9 @@ namespace Hazel {
 		std::vector<glm::mat4> m_BoneTransforms;
 		std::vector<Submesh> m_Submeshes;
 
+		// Materials
+		Ref<Shader> m_MeshShader;
+
 	private:
 		std::unique_ptr<Assimp::Importer> m_Importer;
 
@@ -214,7 +218,6 @@ namespace Hazel {
 		std::unordered_map<std::string, uint32_t> m_BoneMapping;
 
 		// Materials
-		Ref<Shader> m_MeshShader;
 		Ref<HazelMaterial> m_BaseMaterial;
 		Ref<Texture> m_BaseTexture;
 		std::vector<Ref<Texture>> m_Textures;

@@ -11,6 +11,12 @@ namespace Hazel {
 
 	class HazelShaderLibrary;
 
+	struct RendererConfig
+	{
+		// "Experimental" features
+		bool ComputeEnvironmentMaps = false;
+	};
+
 	class HazelRenderer
 	{
 	public:
@@ -22,18 +28,21 @@ namespace Hazel {
 		}
 
 		// Commands
-		static void Clear();
-		static void Clear(float r, float g, float b, float a = 1.0f);
-		static void SetClearColor(float r, float g, float b, float a);
+		// static void Clear();
+		// static void Clear(float r, float g, float b, float a = 1.0f);
+		// static void SetClearColor(float r, float g, float b, float a);
 
-		static void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest = true);
+		// static void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest = true);
 
 		// For OpenGL
-		static void SetLineThickness(float thickness);
+		// static void SetLineThickness(float thickness);
 
-		static void ClearMagenta();
+		// static void ClearMagenta();
 
 		static void Init();
+		static void Shutdown();
+
+		static RendererCapabilities& GetCapabilities();
 
 		static Ref<HazelShaderLibrary>& GetShaderLibrary();
 
@@ -70,16 +79,50 @@ namespace Hazel {
 		static void BeginRenderPass(Ref<RenderPass> renderPass, bool clear = true);
 		static void EndRenderPass();
 
+		static void BeginFrame();
+		static void EndFrame();
+
+		static void SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow);
+		static std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);
+
+		static void RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform);
+		static void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform);
+		static void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform);
+		static void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material);
+
 		static void SubmitQuad(Ref<HazelMaterial> material, const glm::mat4& transform = glm::mat4(1.0f));
-		static void SubmitFullscreenQuad(Ref<HazelMaterial> material);
 		static void SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterial> materialoverrideMaterial = Ref<HazelMaterial>());
+
 
 		static void DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		static void DrawAABB(const Ref<Mesh>& mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+
+		static Ref<HazelTexture2D> GetWhiteTexture();
+		static Ref<HazelTextureCube> GetBlackCubeTexture();
+		static Ref<Environment> GetEmptyEnvironment();
+
+		static void RegisterShaderDependency(Ref<HazelShader> shader, Ref<Pipeline> pipeline);
+		static void RegisterShaderDependency(Ref<HazelShader> shader, Ref<HazelMaterial> material);
+		static void OnShaderReloaded(size_t hash);
+
+		static RendererConfig& GetConfig();
 
 	private:
 		static RenderCommandQueue& GetRenderCommandQueue();
 
 	};
+
+	namespace Utils {
+
+		inline void DumpGPUInfo()
+		{
+			auto& caps = HazelRenderer::GetCapabilities();
+			Log::GetLogger()->trace("GPU Info:");
+			Log::GetLogger()->trace("  Vendor: {0}", caps.Vendor);
+			Log::GetLogger()->trace("  Device: {0}", caps.Device);
+			Log::GetLogger()->trace("  Version: {0}", caps.Version);
+		}
+
+	}
 
 }

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../Core/Base.h"
-#include "../Core/Ref.h"
-#include "../Renderer/HazelTexture.h"
-#include "../Renderer/HazelShader.h"
+#include "Hazel/Core/Base.h"
+#include "Hazel/Core/Ref.h"
+#include "Hazel/Renderer/HazelTexture.h"
+#include "Hazel/Renderer/HazelShader.h"
 
 #include "Core/Log.h"
 

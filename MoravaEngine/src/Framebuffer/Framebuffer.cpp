@@ -353,7 +353,12 @@ void Framebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate)
 	Resize(width, height, false);
 }
 
-void Framebuffer::BindTexture(uint32_t slot) const
+void Framebuffer::AddResizeCallback(const std::function<void(Hazel::Ref<Hazel::HazelFramebuffer>)>& func)
+{
+	// m_ResizeCallbacks.push_back(func);
+}
+
+void Framebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slot) const
 {
 }
 
@@ -362,15 +367,25 @@ Hazel::RendererID Framebuffer::GetRendererID() const
 	return m_FBO;
 }
 
-Hazel::RendererID Framebuffer::GetColorAttachmentRendererID() const
+Hazel::Ref<Hazel::HazelImage2D> Framebuffer::GetImage(uint32_t attachmentIndex) const
 {
-	return Hazel::RendererID();
+	return Hazel::Ref<Hazel::HazelImage2D>();
 }
 
-Hazel::RendererID Framebuffer::GetDepthAttachmentRendererID() const
+Hazel::Ref<Hazel::HazelImage2D> Framebuffer::GetDepthImage() const
 {
-	return Hazel::RendererID();
+	return Hazel::Ref<Hazel::HazelImage2D>();
 }
+
+//	Hazel::RendererID Framebuffer::GetColorAttachmentRendererID() const
+//	{
+//		return Hazel::RendererID();
+//	}
+
+//	Hazel::RendererID Framebuffer::GetDepthAttachmentRendererID() const
+//	{
+//		return Hazel::RendererID();
+//	}
 
 const Hazel::HazelFramebufferSpecification& Framebuffer::GetSpecification() const
 {

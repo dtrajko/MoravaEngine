@@ -16,10 +16,10 @@ namespace Hazel {
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
-		virtual void BindTexture(uint32_t slot = 0) const override;
+		virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const override;
 
 		virtual RendererID GetRendererID() const { return m_RendererID; }
-		virtual RendererID GetColorAttachmentRendererID() const { return m_ColorAttachment; }
+		virtual RendererID GetColorAttachmentRendererID(int index = 0) const { return m_ColorAttachments[index]; }
 		virtual RendererID GetDepthAttachmentRendererID() const { return m_DepthAttachment; }
 
 		virtual const HazelFramebufferSpecification& GetSpecification() const override { return m_Specification; }
@@ -27,7 +27,15 @@ namespace Hazel {
 	private:
 		HazelFramebufferSpecification m_Specification;
 		RendererID m_RendererID = 0;
-		RendererID m_ColorAttachment = 0, m_DepthAttachment = 0;
+
+		std::vector<Ref<HazelImage2D>> m_ColorAttachments;
+		Ref<HazelImage2D> m_DepthAttachment;
+
+		std::vector<HazelImageFormat> m_ColorAttachmentFormats;
+		HazelImageFormat m_DepthAttachmentFormat = HazelImageFormat::None;
+
+		uint32_t m_Width = 0, m_Height = 0;
+
 	};
 
 }

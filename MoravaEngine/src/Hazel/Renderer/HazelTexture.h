@@ -55,12 +55,12 @@ namespace Hazel {
 		virtual void SetData(void* data, uint32_t size);
 		static uint32_t GetBPP(HazelImageFormat format);
 		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);
-
 	};
 
 	class HazelTexture2D : public HazelTexture
 	{
 	public:
+		static Ref<HazelTexture2D> Create(HazelImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
 		static Ref<HazelTexture2D> Create(HazelImageFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
 		static Ref<HazelTexture2D> Create(const std::string& path, bool srgb = false, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
 
@@ -84,7 +84,7 @@ namespace Hazel {
 	class HazelTextureCube : public HazelTexture
 	{
 	public:
-		static Ref<HazelTextureCube> Create(HazelImageFormat format, uint32_t width, uint32_t height);
+		static Ref<HazelTextureCube> Create(HazelImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
 		static Ref<HazelTextureCube> Create(const std::string& path);
 
 		virtual const std::string& GetPath() const = 0;

@@ -1,5 +1,7 @@
 #include "OpenGLTexture.h"
 
+#include "Hazel/Renderer/HazelRenderer.h"
+
 #include "Core/Log.h"
 #include "Core/Util.h"
 
@@ -23,6 +25,17 @@ namespace Hazel {
 	//////////////////////////////////////////////////////////////////////////////////
 	// Texture2D
 	//////////////////////////////////////////////////////////////////////////////////
+
+	OpenGLTexture2D::OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data)
+		: m_Width(width), m_Height(height)
+	{
+		m_Image = HazelImage2D::Create(format, width, height, data);
+		HazelRenderer::Submit([=]()
+		{
+		});
+
+		m_Image->Invalidate();
+	}
 
 	OpenGLTexture2D::OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap)
 		: m_Format(format), m_Width(width), m_Height(height), m_Wrap(wrap)

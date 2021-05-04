@@ -1,8 +1,9 @@
 #pragma once
 
-#include "../Core/Ref.h"
+#include "Hazel/Core/Ref.h"
 #include "HazelShader.h"
 #include "VertexBuffer.h"
+#include "RenderPass.h"
 
 
 namespace Hazel {
@@ -11,6 +12,9 @@ namespace Hazel {
 	{
 		Ref<HazelShader> Shader;
 		VertexBufferLayout Layout;
+		Ref<RenderPass> RenderPass;
+
+		std::string DebugName;
 	};
 
 	class Pipeline : public RefCounted

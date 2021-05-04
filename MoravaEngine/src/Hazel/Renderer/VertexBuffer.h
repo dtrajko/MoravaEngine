@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../Core/Base.h"
-#include "../Core/Assert.h"
-#include "../Core/Ref.h"
+#include "Hazel/Core/Base.h"
+#include "Hazel/Core/Assert.h"
+#include "Hazel/Core/Ref.h"
 #include "RendererAPI.h"
 
 #include "Core/Log.h"

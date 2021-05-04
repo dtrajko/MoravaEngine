@@ -26,6 +26,7 @@ namespace Hazel {
 	{
 	public:
 		static void Init();
+		static void Shutdown();
 
 		static void SetViewportSize(uint32_t width, uint32_t height);
 

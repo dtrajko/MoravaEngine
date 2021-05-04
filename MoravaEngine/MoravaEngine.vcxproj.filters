@@ -453,9 +453,6 @@
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLPipeline.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLRendererAPI.cpp">
-      <Filter>Hazel\Platform\OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLRenderPass.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
@@ -663,13 +660,13 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanDescriptorSet.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Vulkan\VulkanIndexBuffer.cpp">
+    <ClCompile Include="src\Platform\Vulkan\MoravaVulkanIndexBuffer.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanUniformBuffer.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Vulkan\VulkanVertexBuffer.cpp">
+    <ClCompile Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanDevic.cpp">
@@ -733,6 +730,27 @@
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanBuffer.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLRenderer.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanRenderer.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanIndexBuffer.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanComputePipeline.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\imgui_impl_vulkan_with_textures.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanDiagnostics.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1491,13 +1509,13 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanDescriptorSet.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\Vulkan\VulkanIndexBuffer.h">
+    <ClInclude Include="src\Platform\Vulkan\MoravaVulkanIndexBuffer.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanUniformBuffer.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\Vulkan\VulkanVertexBuffer.h">
+    <ClInclude Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanDevice.h">
@@ -1565,6 +1583,30 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanBuffer.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLRenderer.h">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRenderer.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanIndexBuffer.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanComputePipeline.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\imgui_impl_vulkan_with_textures.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanDiagnostics.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Core\Timer.h">
+      <Filter>Hazel\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

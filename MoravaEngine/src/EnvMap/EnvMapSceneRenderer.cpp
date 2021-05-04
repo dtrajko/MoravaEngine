@@ -186,7 +186,7 @@ void EnvMapSceneRenderer::SetupShaders()
 Hazel::Environment EnvMapSceneRenderer::Load(const std::string& filepath)
 {
     auto [radiance, irradiance] = CreateEnvironmentMap(filepath);
-    return { "", radiance, irradiance };
+    return { radiance, irradiance };
 }
 
 void EnvMapSceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
