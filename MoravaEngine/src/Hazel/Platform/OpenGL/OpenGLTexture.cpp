@@ -220,7 +220,7 @@ namespace Hazel {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_REPEAT);
 	}
 
-	OpenGLTextureCube::OpenGLTextureCube(HazelImageFormat format, uint32_t width, uint32_t height)
+	OpenGLTextureCube::OpenGLTextureCube(HazelImageFormat format, uint32_t width, uint32_t height, bool notUsed)
 	{
 		m_Width = width;
 		m_Height = height;

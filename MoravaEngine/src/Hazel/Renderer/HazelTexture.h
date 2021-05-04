@@ -87,6 +87,9 @@ namespace Hazel {
 		static Ref<HazelTextureCube> Create(HazelImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
 		static Ref<HazelTextureCube> Create(const std::string& path);
 
+		// Used only by the OpenGL EnvMap scene. Scheduled for removal.
+		static Ref<HazelTextureCube> Create(HazelImageFormat format, uint32_t width, uint32_t height, bool notUsed);
+
 		virtual const std::string& GetPath() const = 0;
 
 		virtual HazelTextureType GetType() const override { return HazelTextureType::TextureCube; }

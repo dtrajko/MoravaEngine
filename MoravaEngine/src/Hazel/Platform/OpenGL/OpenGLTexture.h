@@ -68,7 +68,7 @@ namespace Hazel {
 	{
 	public:
 		OpenGLTextureCube(HazelImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
-		OpenGLTextureCube(HazelImageFormat format, uint32_t width, uint32_t height);
+		OpenGLTextureCube(HazelImageFormat format, uint32_t width, uint32_t height, bool notUsed);
 		OpenGLTextureCube(const std::string& path);
 		virtual ~OpenGLTextureCube();
 

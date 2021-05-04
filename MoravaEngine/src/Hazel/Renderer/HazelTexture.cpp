@@ -61,6 +61,18 @@ namespace Hazel {
 		return Ref<HazelTextureCube>();
 	}
 
+	// Used only by the OpenGL EnvMap scene. Scheduled for removal.
+	Ref<HazelTextureCube> HazelTextureCube::Create(HazelImageFormat format, uint32_t width, uint32_t height, bool notUsed)
+	{
+		switch (RendererAPI::Current())
+		{
+		case RendererAPIType::None: return Ref<HazelTextureCube>();
+		case RendererAPIType::OpenGL: return Ref<OpenGLTextureCube>::Create(format, width, height, true);
+		case RendererAPIType::Vulkan: return Ref<VulkanTextureCube>::Create(format, width, height, nullptr);
+		}
+		return Ref<HazelTextureCube>();
+	}
+
 	void HazelTexture::SetData(void* data, uint32_t size)
 	{
 	}
