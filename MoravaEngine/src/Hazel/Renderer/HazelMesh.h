@@ -169,6 +169,10 @@ namespace Hazel {
 		inline const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const;
 
+		Ref<VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
+		Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
+		const VertexBufferLayout& GetVertexBufferLayout() const { return m_VertexBufferLayout; }
+
 		// Setters
 		inline void SetBaseMaterial(Ref<HazelMaterial> baseMaterial) { m_BaseMaterial = baseMaterial; }
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
@@ -197,6 +201,7 @@ namespace Hazel {
 		Ref<Pipeline> m_Pipeline;
 		Ref<VertexBuffer> m_VertexBuffer;
 		Ref<IndexBuffer> m_IndexBuffer;
+		VertexBufferLayout m_VertexBufferLayout;
 
 		std::vector<glm::mat4> m_BoneTransforms;
 		std::vector<Submesh> m_Submeshes;

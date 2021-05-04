@@ -12,4 +12,3 @@ namespace Hazel::Utils {
 	void SetVulkanCheckpoint(VkCommandBuffer commandBuffer, const std::string& data);
 
 }
-

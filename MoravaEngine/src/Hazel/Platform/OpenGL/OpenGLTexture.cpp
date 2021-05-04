@@ -1,6 +1,7 @@
 #include "OpenGLTexture.h"
 
 #include "Hazel/Renderer/HazelRenderer.h"
+#include "OpenGLImage.h"
 
 #include "Core/Log.h"
 #include "Core/Util.h"
@@ -179,6 +180,46 @@ namespace Hazel {
 	// TextureCube
 	//////////////////////////////////////////////////////////////////////////////////
 
+	OpenGLTextureCube::OpenGLTextureCube(HazelImageFormat format, uint32_t width, uint32_t height, const void* data)
+	{
+		m_Width = width;
+		m_Height = height;
+		m_Format = format;
+
+		if (data)
+		{
+			uint32_t size = width * height * 4 * 6; // six layers
+			m_LocalStorage = Buffer::Copy(data, size);
+		}
+
+		uint32_t levels = Utils::CalculateMipCount(width, height);
+		Ref<OpenGLTextureCube> instance = this;
+		//	HazelRenderer::Submit([instance, levels]() mutable
+		//	{
+		//		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &instance->m_RendererID);
+		//		glTextureStorage2D(instance->m_RendererID, levels, Utils::OpenGLImageInternalFormat(instance->m_Format), instance->m_Width, instance->m_Height);
+		//		if (instance->m_LocalStorage.Data)
+		//			glTextureSubImage3D(instance->m_RendererID, 0, 0, 0, 0, instance->m_Width, instance->m_Height, 6, Utils::OpenGLImageFormat(instance->m_Format), Utils::OpenGLFormatDataType(instance->m_Format),			//  instance>m_LocalStorage.Data);
+		//		
+		//		glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+		//		glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		//		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		//		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		//		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_REPEAT);
+		//	});
+
+		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &instance->m_RendererID);
+		glTextureStorage2D(instance->m_RendererID, levels, Utils::OpenGLImageInternalFormat(instance->m_Format), instance->m_Width, instance->m_Height);
+		if (instance->m_LocalStorage.Data)
+			glTextureSubImage3D(instance->m_RendererID, 0, 0, 0, 0, instance->m_Width, instance->m_Height, 6, Utils::OpenGLImageFormat(instance->m_Format), Utils::OpenGLFormatDataType(instance->m_Format), instance->m_LocalStorage.Data);
+
+		glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+		glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_REPEAT);
+	}
+
 	OpenGLTextureCube::OpenGLTextureCube(HazelImageFormat format, uint32_t width, uint32_t height)
 	{
 		m_Width = width;
@@ -187,10 +228,10 @@ namespace Hazel {
 
 		uint32_t levels = HazelTexture::CalculateMipMapCount(width, height);
 
-		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_ID);
-		glTextureStorage2D(m_ID, levels, HazelToOpenGLTextureFormat(m_Format), width, height);
-		glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-		glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_RendererID);
+		glTextureStorage2D(m_RendererID, levels, HazelToOpenGLTextureFormat(m_Format), width, height);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -259,8 +300,8 @@ namespace Hazel {
 			faceIndex++;
 		}
 
-		glGenTextures(1, &m_ID);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);
+		glGenTextures(1, &m_RendererID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererID);
 
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -269,7 +310,7 @@ namespace Hazel {
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-		glTextureParameterf(m_ID, GL_TEXTURE_MAX_ANISOTROPY, m_MaxAnisotropy);
+		glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, m_MaxAnisotropy);
 
 		auto format = HazelToOpenGLTextureFormat(m_Format);
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, format, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[2]);
@@ -294,12 +335,12 @@ namespace Hazel {
 	OpenGLTextureCube::~OpenGLTextureCube()
 	{
 		auto self = this;
-		glDeleteTextures(1, &m_ID);
+		glDeleteTextures(1, &m_RendererID);
 	}
 
 	void OpenGLTextureCube::Bind(uint32_t slot) const
 	{
-		glBindTextureUnit(slot, m_ID);
+		glBindTextureUnit(slot, m_RendererID);
 	}
 
 	uint32_t OpenGLTextureCube::GetMipLevelCount() const

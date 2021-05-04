@@ -1,23 +1,13 @@
 #include "VulkanShader.h"
 
 #include "Hazel/Renderer/HazelRenderer.h"
-#include "Hazel/Renderer/ShaderUniform.h"
-#include "Hazel/Platform/Vulkan/Vulkan.h"
+
 #include "Hazel/Platform/Vulkan/VulkanContext.h"
 
-#include "Core/Log.h"
-
-#include <string>
-#include <sstream>
-#include <limits>
-#include <fstream>
-#include <filesystem>
-
-#include <glm/gtc/type_ptr.hpp>
-
 #include <shaderc/shaderc.hpp>
-
 #include <spirv_glsl.hpp>
+
+#include <filesystem>
 
 
 namespace Hazel {
@@ -60,26 +50,7 @@ namespace Hazel {
 
 	}
 
-	static ShaderUniformType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
-	{
-		switch (type.basetype)
-		{
-		case spirv_cross::SPIRType::Boolean:  return ShaderUniformType::Bool;
-		case spirv_cross::SPIRType::Int:      return ShaderUniformType::Int;
-		case spirv_cross::SPIRType::UInt:     return ShaderUniformType::UInt;
-		case spirv_cross::SPIRType::Float:
-			if (type.vecsize == 1)            return ShaderUniformType::Float;
-			if (type.vecsize == 2)            return ShaderUniformType::Vec2;
-			if (type.vecsize == 3)            return ShaderUniformType::Vec3;
-			if (type.vecsize == 4)            return ShaderUniformType::Vec4;
-
-			if (type.columns == 3)            return ShaderUniformType::Mat3;
-			if (type.columns == 4)            return ShaderUniformType::Mat4;
-			break;
-		}
-		HZ_CORE_ASSERT(false, "Unknown type!");
-		return ShaderUniformType::None;
-	}
+	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
 
 	VulkanShader::VulkanShader(const std::string& path, bool forceCompile)
 		: m_AssetPath(path)
@@ -95,6 +66,11 @@ namespace Hazel {
 
 	VulkanShader::~VulkanShader()
 	{
+	}
+
+	void VulkanShader::ClearUniformBuffers()
+	{
+		s_UniformBuffers.clear();
 	}
 
 	static std::string ReadShaderFromFile(const std::string& filepath)
@@ -118,27 +94,32 @@ namespace Hazel {
 
 	void VulkanShader::Reload(bool forceCompile)
 	{
-		//	Ref<VulkanShader> instance = this;
-		//	HazelRenderer::Submit([instance, forceCompile]() mutable
-		//	{
-		//		// Vertex and Fragment for now
-		//		std::string source = ReadShaderFromFile(instance->m_AssetPath);
-		//		instance->m_ShaderSource = instance->PreProcess(source);
-		//		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
-		//		instance->CompileOrGetVulkanBinary(shaderData, forceCompile);
-		//		instance->LoadAndCreateShaders(shaderData);
-		//		instance->ReflectAllShaderStages(shaderData);
-		//		instance->CreateDescriptors();
-		//	});
+		Ref<VulkanShader> instance = this;
+		HazelRenderer::Submit([instance, forceCompile]() mutable
+		{
+			// Clear old shader
+			instance->m_ShaderDescriptorSets.clear();
+			instance->m_Resources.clear();
+			instance->m_PushConstantRanges.clear();
+			instance->m_PipelineShaderStageCreateInfos.clear();
+			instance->m_DescriptorSetLayouts.clear();
+			instance->m_ShaderSource.clear();
+			instance->m_Buffers.clear();
+			instance->m_TypeCounts.clear();
 
-		// Vertex and Fragment for now
-		std::string source = ReadShaderFromFile(m_AssetPath);
-		m_ShaderSource = PreProcess(source);
-		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
-		CompileOrGetVulkanBinary(shaderData, forceCompile);
-		LoadAndCreateShaders(shaderData);
-		ReflectAllShaderStages(shaderData);
-		CreateDescriptors();
+			Utils::CreateCacheDirectoryIfNeeded();
+			
+			// Vertex and Fragment for now
+			std::string source = ReadShaderFromFile(instance->m_AssetPath);
+			instance->m_ShaderSource = instance->PreProcess(source);
+			std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
+			instance->CompileOrGetVulkanBinary(shaderData, forceCompile);
+			instance->LoadAndCreateShaders(shaderData);
+			instance->ReflectAllShaderStages(shaderData);
+			instance->CreateDescriptors();
+
+			HazelRenderer::OnShaderReloaded(instance->GetHash());
+		});
 	}
 
 	size_t VulkanShader::GetHash() const
@@ -184,52 +165,71 @@ namespace Hazel {
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-		Log::GetLogger()->trace("===========================");
-		Log::GetLogger()->trace(" Vulkan Shader Reflection");
-		Log::GetLogger()->trace(" {0}", m_AssetPath);
-		Log::GetLogger()->trace("===========================");
+		HZ_CORE_TRACE("===========================");
+		HZ_CORE_TRACE(" Vulkan Shader Reflection");
+		HZ_CORE_TRACE(" {0}", m_AssetPath);
+		HZ_CORE_TRACE("===========================");
 
 		spirv_cross::Compiler compiler(shaderData);
 		auto resources = compiler.get_shader_resources();
 
-		Log::GetLogger()->trace("Uniform Buffers:");
+		HZ_CORE_TRACE("Uniform Buffers:");
 		for (const auto& resource : resources.uniform_buffers)
 		{
 			const auto& name = resource.name;
 			auto& bufferType = compiler.get_type(resource.base_type_id);
-			size_t memberCount = bufferType.member_types.size();
+			int memberCount = (int)bufferType.member_types.size();
 			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 			uint32_t size = (uint32_t)compiler.get_declared_struct_size(bufferType);
 
 			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
-			HZ_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end());
-			UniformBuffer& buffer = shaderDescriptorSet.UniformBuffers[binding];
-			buffer.BindingPoint = binding;
-			buffer.Size = size;
-			buffer.Name = name;
-			buffer.ShaderStage = shaderStage;
+			//HZ_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end());
+			if (s_UniformBuffers[descriptorSet].find(binding) == s_UniformBuffers[descriptorSet].end())
+			{
+				UniformBuffer* uniformBuffer = new UniformBuffer();
+				uniformBuffer->BindingPoint = binding;
+				uniformBuffer->Size = size;
+				uniformBuffer->Name = name;
+				uniformBuffer->ShaderStage = shaderStage;
+				s_UniformBuffers.at(descriptorSet)[binding] = uniformBuffer;
 
-			Log::GetLogger()->trace("  {0} ({1}, {2})", name, descriptorSet, binding);
-			Log::GetLogger()->trace("  Member Count: {0}", memberCount);
-			Log::GetLogger()->trace("  Size: {0}", size);
-			Log::GetLogger()->trace("-------------------");
+				AllocateUniformBuffer(*uniformBuffer);
+			}
+			else
+			{
+				UniformBuffer* uniformBuffer = s_UniformBuffers.at(descriptorSet).at(binding);
+				if (size > uniformBuffer->Size)
+				{
+					HZ_CORE_TRACE("Resizing uniform buffer (binding = {0}, set = {1}) to {2} bytes", binding, descriptorSet, size);
+					uniformBuffer->Size = size;
+					AllocateUniformBuffer(*uniformBuffer);
+				}
+				
+			}
+
+			shaderDescriptorSet.UniformBuffers[binding] = s_UniformBuffers.at(descriptorSet).at(binding);
+
+			HZ_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
+			HZ_CORE_TRACE("  Member Count: {0}", memberCount);
+			HZ_CORE_TRACE("  Size: {0}", size);
+			HZ_CORE_TRACE("-------------------");
 		}
 
-		Log::GetLogger()->trace("Push Constant Buffers:");
+		HZ_CORE_TRACE("Push Constant Buffers:");
 		for (const auto& resource : resources.push_constant_buffers)
 		{
 			const auto& bufferName = resource.name;
 			auto& bufferType = compiler.get_type(resource.base_type_id);
-			auto bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
-			size_t memberCount = bufferType.member_types.size();
+			auto bufferSize = compiler.get_declared_struct_size(bufferType);
+			int memberCount = (int)bufferType.member_types.size();
 			uint32_t bufferOffset = 0;
 			if (m_PushConstantRanges.size())
 				bufferOffset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
 
 			auto& pushConstantRange = m_PushConstantRanges.emplace_back();
 			pushConstantRange.ShaderStage = shaderStage;
-			pushConstantRange.Size = bufferSize;
+			pushConstantRange.Size = (uint32_t)bufferSize;
 			pushConstantRange.Offset = bufferOffset;
 
 			// Skip empty push constant buffers - these are for the renderer only
@@ -238,11 +238,11 @@ namespace Hazel {
 
 			ShaderBuffer& buffer = m_Buffers[bufferName];
 			buffer.Name = bufferName;
-			buffer.Size = bufferSize - bufferOffset;
+			buffer.Size = (uint32_t)bufferSize - bufferOffset;
 
-			Log::GetLogger()->trace("  Name: {0}", bufferName);
-			Log::GetLogger()->trace("  Member Count: {0}", memberCount);
-			Log::GetLogger()->trace("  Size: {0}", bufferSize);
+			HZ_CORE_TRACE("  Name: {0}", bufferName);
+			HZ_CORE_TRACE("  Member Count: {0}", memberCount);
+			HZ_CORE_TRACE("  Size: {0}", bufferSize);
 
 			for (int i = 0; i < memberCount; i++)
 			{
@@ -252,11 +252,11 @@ namespace Hazel {
 				auto offset = compiler.type_struct_member_offset(bufferType, i) - bufferOffset;
 
 				std::string uniformName = bufferName + "." + memberName;
-				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), (uint32_t)size, offset);
+				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, Utils::SPIRTypeToShaderUniformType(type), (uint32_t)size, offset);
 			}
 		}
 
-		Log::GetLogger()->trace("Sampled Images:");
+		HZ_CORE_TRACE("Sampled Images:");
 		for (const auto& resource : resources.sampled_images)
 		{
 			const auto& name = resource.name;
@@ -274,10 +274,10 @@ namespace Hazel {
 
 			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
 
-			Log::GetLogger()->trace("  {0} ({1}, {2})", name, descriptorSet, binding);
+			HZ_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 		}
 
-		Log::GetLogger()->trace("Storage Images:");
+		HZ_CORE_TRACE("Storage Images:");
 		for (const auto& resource : resources.storage_images)
 		{
 			const auto& name = resource.name;
@@ -295,12 +295,12 @@ namespace Hazel {
 
 			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
 
-			Log::GetLogger()->trace("  {0} ({1}, {2})", name, descriptorSet, binding);
+			HZ_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 		}
 
-		Log::GetLogger()->trace("===========================");
+		HZ_CORE_TRACE("===========================");
 
-
+	
 	}
 
 	void VulkanShader::CreateDescriptors()
@@ -348,26 +348,27 @@ namespace Hazel {
 			//////////////////////////////////////////////////////////////////////
 			// Descriptor Set Layout
 			//////////////////////////////////////////////////////////////////////
-
-
+		
+		
 			std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
 			for (auto& [binding, uniformBuffer] : shaderDescriptorSet.UniformBuffers)
 			{
 				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
 				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				layoutBinding.descriptorCount = 1;
-				layoutBinding.stageFlags = uniformBuffer.ShaderStage;
+				layoutBinding.stageFlags = uniformBuffer->ShaderStage;
 				layoutBinding.pImmutableSamplers = nullptr;
 				layoutBinding.binding = binding;
 
-				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[uniformBuffer.Name];
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[uniformBuffer->Name];
 				set = {};
 				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				set.descriptorType = layoutBinding.descriptorType;
 				set.descriptorCount = 1;
 				set.dstBinding = layoutBinding.binding;
 
-				AllocateUniformBuffer(uniformBuffer);
+				//if (!uniformBuffer->Memory)
+				//	AllocateUniformBuffer(*uniformBuffer);
 			}
 
 			for (auto& [binding, imageSampler] : shaderDescriptorSet.ImageSamplers)
@@ -418,10 +419,10 @@ namespace Hazel {
 			descriptorLayout.bindingCount = (uint32_t)layoutBindings.size();
 			descriptorLayout.pBindings = layoutBindings.data();
 
-			Log::GetLogger()->info("Creating descriptor set {0} with {1} ubos, {2} samplers and {3} storage images", set,
-				shaderDescriptorSet.UniformBuffers.size(),
-				shaderDescriptorSet.ImageSamplers.size(),
-				shaderDescriptorSet.StorageImages.size());
+			HZ_CORE_INFO("Creating descriptor set {0} with {1} ubos, {2} samplers and {3} storage images", set,
+			shaderDescriptorSet.UniformBuffers.size(),
+			shaderDescriptorSet.ImageSamplers.size(),
+			shaderDescriptorSet.StorageImages.size());
 			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayouts[set]));
 		}
 	}
@@ -518,7 +519,7 @@ namespace Hazel {
 		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
 		if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
 		{
-			Log::GetLogger()->warn("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+			HZ_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
 			return nullptr;
 		}
 		return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
@@ -553,7 +554,7 @@ namespace Hazel {
 		// This buffer will be used as a uniform buffer
 		bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
-		VulkanAllocator allocator(std::string("UniformBuffer"));
+		VulkanAllocator allocator(device, "UniformBuffer");
 
 		// Create a new buffer
 		VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &uniformBuffer.Buffer));
@@ -575,9 +576,9 @@ namespace Hazel {
 	{
 		switch (stage)
 		{
-		case VK_SHADER_STAGE_VERTEX_BIT:    return ".cached_vulkan.vert";
-		case VK_SHADER_STAGE_FRAGMENT_BIT:  return ".cached_vulkan.frag";
-		case VK_SHADER_STAGE_COMPUTE_BIT:   return ".cached_vulkan.comp";
+			case VK_SHADER_STAGE_VERTEX_BIT:    return ".cached_vulkan.vert";
+			case VK_SHADER_STAGE_FRAGMENT_BIT:  return ".cached_vulkan.frag";
+			case VK_SHADER_STAGE_COMPUTE_BIT:   return ".cached_vulkan.comp";
 		}
 		HZ_CORE_ASSERT(false);
 		return "";
@@ -587,9 +588,9 @@ namespace Hazel {
 	{
 		switch (stage)
 		{
-		case VK_SHADER_STAGE_VERTEX_BIT:    return shaderc_vertex_shader;
-		case VK_SHADER_STAGE_FRAGMENT_BIT:  return shaderc_fragment_shader;
-		case VK_SHADER_STAGE_COMPUTE_BIT:   return shaderc_compute_shader;
+			case VK_SHADER_STAGE_VERTEX_BIT:    return shaderc_vertex_shader;
+			case VK_SHADER_STAGE_FRAGMENT_BIT:  return shaderc_fragment_shader;
+			case VK_SHADER_STAGE_COMPUTE_BIT:   return shaderc_compute_shader;
 		}
 		HZ_CORE_ASSERT(false);
 		return (shaderc_shader_kind)0;
@@ -604,7 +605,7 @@ namespace Hazel {
 			if (!forceCompile)
 			{
 				std::filesystem::path p = m_AssetPath;
-				auto path = p.parent_path() / "cached" / (p.filename().string() + extension);
+				auto path = cacheDirectory / (p.filename().string() + extension);
 				std::string cachedFilePath = path.string();
 
 				FILE* f = fopen(cachedFilePath.c_str(), "rb");
@@ -651,7 +652,7 @@ namespace Hazel {
 				// Cache compiled shader
 				{
 					std::filesystem::path p = m_AssetPath;
-					auto path = p.parent_path() / "cached" / (p.filename().string() + extension);
+					auto path = cacheDirectory / (p.filename().string() + extension);
 					std::string cachedFilePath = path.string();
 
 					FILE* f = fopen(cachedFilePath.c_str(), "wb");
@@ -736,6 +737,16 @@ namespace Hazel {
 	{
 	}
 
+	void VulkanShader::SetUniform(const std::string& fullname, uint32_t value)
+	{
+
+	}
+
+	void VulkanShader::SetUInt(const std::string& name, uint32_t value)
+	{
+
+	}
+
 	void VulkanShader::SetFloat(const std::string& name, float value)
 	{
 	}
@@ -744,7 +755,7 @@ namespace Hazel {
 	{
 	}
 
-	void VulkanShader::SetBool(const std::string& name, bool value)
+	void VulkanShader::SetFloat2(const std::string& name, const glm::vec2& value)
 	{
 	}
 
@@ -775,18 +786,24 @@ namespace Hazel {
 
 	void* VulkanShader::MapUniformBuffer(uint32_t bindingPoint, uint32_t set)
 	{
-		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		HZ_CORE_ASSERT(s_UniformBuffers.find(set) != s_UniformBuffers.end());
+		HZ_CORE_ASSERT(s_UniformBuffers.at(set).find(bindingPoint) != s_UniformBuffers.at(set).end());
+		HZ_CORE_ASSERT(s_UniformBuffers.at(set).at(bindingPoint));
 
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 		uint8_t* pData;
-		VK_CHECK_RESULT(vkMapMemory(device, m_ShaderDescriptorSets.at(set).UniformBuffers[bindingPoint].Memory, 0, m_ShaderDescriptorSets.at(set).UniformBuffers[bindingPoint].Size, 0, (void**)&pData));
+		VK_CHECK_RESULT(vkMapMemory(device, s_UniformBuffers.at(set).at(bindingPoint)->Memory, 0, s_UniformBuffers.at(set).at(bindingPoint)->Size, 0, (void**)&pData));
 		return pData;
 	}
 
 	void VulkanShader::UnmapUniformBuffer(uint32_t bindingPoint, uint32_t set)
 	{
-		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
+		HZ_CORE_ASSERT(s_UniformBuffers.find(set) != s_UniformBuffers.end());
+		HZ_CORE_ASSERT(s_UniformBuffers.at(set).find(bindingPoint) != s_UniformBuffers.at(set).end());
+		HZ_CORE_ASSERT(s_UniformBuffers.at(set).at(bindingPoint));
+		
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-		vkUnmapMemory(device, m_ShaderDescriptorSets.at(set).UniformBuffers[bindingPoint].Memory);
+		vkUnmapMemory(device, s_UniformBuffers.at(set).at(bindingPoint)->Memory);
 	}
+
 }

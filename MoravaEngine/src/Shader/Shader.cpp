@@ -343,6 +343,13 @@ void Shader::SetUniform(const std::string& fullname, float value)
 	glUniform1f(location, value);
 }
 
+void Shader::SetUniform(const std::string& fullname, uint32_t value)
+{
+	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	GLint location = m_UniformLocations.at(fullname);
+	glUniform1ui(location, value);
+}
+
 void Shader::SetUniform(const std::string& fullname, int value)
 {
 	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
@@ -395,6 +402,12 @@ void Shader::SetFloat(const std::string& name, float value)
 		Log::GetLogger()->error("Uniform '{0}' not found!", name);
 }
 
+void Shader::SetUInt(const std::string& name, uint32_t value)
+{
+	int32_t location = GetUniformLocation(name);
+	glUniform1ui(location, value);
+}
+
 void Shader::SetInt(const std::string& name, int value)
 {
 	int32_t location = GetUniformLocation(name);
@@ -407,14 +420,28 @@ void Shader::SetBool(const std::string& name, bool value)
 	glUniform1i(location, value);
 }
 
+void Shader::SetFloat2(const std::string& name, const glm::vec2& value)
+{
+	glUseProgram(programID);
+	auto location = glGetUniformLocation(programID, name.c_str());
+	if (location != -1) {
+		glUniform2f(location, value.x, value.y);
+	}
+	else {
+		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+	}
+}
+
 void Shader::SetFloat3(const std::string& name, const glm::vec3& value)
 {
 	glUseProgram(programID);
 	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1)
+	if (location != -1) {
 		glUniform3f(location, value.x, value.y, value.z);
-	else
+	}
+	else {
 		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+	}
 }
 
 void Shader::SetMat4(const std::string& name, const glm::mat4& value)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Hazel/Renderer/RendererTypes.h"
 #include "Hazel/Renderer/HazelTexture.h"
 
 
@@ -27,7 +28,6 @@ namespace Hazel {
 		virtual void Lock() override;
 		virtual void Unlock() override;
 
-		virtual void Resize(uint32_t width, uint32_t height) override;
 		virtual Buffer GetWriteableBuffer() override;
 
 		virtual const std::string& GetPath() const override { return m_FilePath; }
@@ -43,6 +43,7 @@ namespace Hazel {
 
 		virtual uint32_t GetID() const override { return m_ID; }
 		virtual uint32_t GetRendererID() const override { return m_ID; }
+		void Resize(uint32_t width, uint32_t height);
 
 	private:
 		Ref<HazelImage2D> m_Image;
@@ -66,6 +67,7 @@ namespace Hazel {
 	class OpenGLTextureCube : public HazelTextureCube
 	{
 	public:
+		OpenGLTextureCube(HazelImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
 		OpenGLTextureCube(HazelImageFormat format, uint32_t width, uint32_t height);
 		OpenGLTextureCube(const std::string& path);
 		virtual ~OpenGLTextureCube();
@@ -81,23 +83,25 @@ namespace Hazel {
 
 		virtual const std::string& GetPath() const override { return m_FilePath; }
 
-		virtual uint32_t GetID() const override { return m_ID; }
-		virtual uint32_t GetRendererID() const override { return m_ID; }
+		virtual uint32_t GetID() const override { return m_RendererID; }
+		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
-		virtual uint64_t GetHash() const { return (uint64_t)m_ID; }
+		virtual uint64_t GetHash() const { return (uint64_t)m_RendererID; }
 
 		virtual bool operator==(const HazelTexture& other) const override
 		{
-			return m_ID == ((OpenGLTextureCube&)other).m_ID;
+			return m_RendererID == ((OpenGLTextureCube&)other).m_RendererID;
 		}
 	private:
-		uint32_t m_ID;
+		RendererID m_RendererID;
 		HazelImageFormat m_Format;
 		uint32_t m_Width, m_Height;
 
-		unsigned char* m_ImageData;
+		Buffer m_LocalStorage;
 
 		std::string m_FilePath;
+
+		unsigned char* m_ImageData;
 
 		float m_MaxAnisotropy = 16.0f;
 

@@ -151,7 +151,7 @@ int main()
 {
 	Log::Init();
 
-	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::Vulkan);
+	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::OpenGL);
 
 	std::string windowTitle = WINDOW_TITLE;
 	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL) {

@@ -86,6 +86,7 @@ namespace Hazel {
 	{
 		s_Data = new SceneRendererData();
 
+#if 0
 		HazelFramebufferSpecification geoFramebufferSpec;
 		geoFramebufferSpec.Width = 1280;
 		geoFramebufferSpec.Height = 720;
@@ -122,6 +123,14 @@ namespace Hazel {
 		auto outlineShader = HazelRenderer::GetShaderLibrary()->Get("Outline");
 		s_Data->OutlineMaterial = HazelMaterial::Create(outlineShader);
 		s_Data->OutlineMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
+#endif
+
+#if 0
+		s_Data->CompositeShader = Shader::Create("assets/shaders/SceneComposite.glsl");
+		s_Data->BloomBlurShader = Shader::Create("assets/shaders/BloomBlur.glsl");
+		s_Data->BloomBlendShader = Shader::Create("assets/shaders/BloomBlend.glsl");
+#endif
+
 	}
 
 	void SceneRenderer::Shutdown()
@@ -166,13 +175,13 @@ namespace Hazel {
 		SubmitSelectedMesh(meshComponent.Mesh, transformComponent.GetTransform());
 	}
 
-	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Material> overrideMaterial)
+	void SceneRenderer::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<Material> overrideMaterial)
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data->DrawList.push_back({ mesh, overrideMaterial, transform });
 	}
 
-	void SceneRenderer::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform)
+	void SceneRenderer::SubmitSelectedMesh(Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
 		s_Data->SelectedMeshDrawList.push_back({ mesh, Ref<HazelMaterial>(), transform });
 	}
@@ -445,7 +454,7 @@ namespace Hazel {
 
 	uint32_t SceneRenderer::GetFinalColorBufferRendererID()
 	{
-		return s_Data->CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID();
+		return s_Data->CompositePass->GetSpecification().TargetFramebuffer->GetImage();
 	}
 
 	SceneRendererOptions& SceneRenderer::GetOptions()

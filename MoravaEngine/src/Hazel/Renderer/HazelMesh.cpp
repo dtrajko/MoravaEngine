@@ -590,39 +590,49 @@ namespace Hazel {
 		}
 
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Buffer...");
-		VertexBufferLayout vertexLayout;
+
 		if (m_IsAnimated)
 		{
 			m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), (uint32_t)m_AnimatedVertices.size() * sizeof(AnimatedVertex));
-			vertexLayout = {
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float3, "a_Normal" },
-				{ ShaderDataType::Float3, "a_Tangent" },
-				{ ShaderDataType::Float3, "a_Binormal" },
-				{ ShaderDataType::Float2, "a_TexCoord" },
-				{ ShaderDataType::Int4,   "a_BoneIDs" },
-				{ ShaderDataType::Float4, "a_BoneWeights" },
+
+			m_VertexBufferLayout = {
+							{ ShaderDataType::Float3, "a_Position" },
+							{ ShaderDataType::Float3, "a_Normal" },
+							{ ShaderDataType::Float3, "a_Tangent" },
+							{ ShaderDataType::Float3, "a_Binormal" },
+							{ ShaderDataType::Float2, "a_TexCoord" },
+							{ ShaderDataType::Int4, "a_BoneIDs" },
+							{ ShaderDataType::Float4, "a_BoneWeights" },
 			};
 		}
 		else
 		{
 			m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), (uint32_t)m_StaticVertices.size() * sizeof(Vertex));
-			vertexLayout = {
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float3, "a_Normal" },
-				{ ShaderDataType::Float3, "a_Tangent" },
-				{ ShaderDataType::Float3, "a_Binormal" },
-				{ ShaderDataType::Float2, "a_TexCoord" },
+
+			m_VertexBufferLayout = {
+							{ ShaderDataType::Float3, "a_Position" },
+							{ ShaderDataType::Float3, "a_Normal" },
+							{ ShaderDataType::Float3, "a_Tangent" },
+							{ ShaderDataType::Float3, "a_Binormal" },
+							{ ShaderDataType::Float2, "a_TexCoord" },
 			};
 		}
 
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
 		PipelineSpecification pipelineSpecification;
-		pipelineSpecification.Layout = vertexLayout;
+		pipelineSpecification.Layout = m_VertexBufferLayout;
 		m_Pipeline = Pipeline::Create(pipelineSpecification);
 
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating an Index Buffer...");
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
+
+		m_VertexBufferLayout = {
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float3, "a_Normal" },
+			{ ShaderDataType::Float3, "a_Tangent" },
+			{ ShaderDataType::Float3, "a_Binormal" },
+			{ ShaderDataType::Float2, "a_TexCoord" },
+		};
 
 		Log::GetLogger()->info("Hazel::HazelMesh: Total vertices: {0}", m_IsAnimated ? m_StaticVertices.size() : m_AnimatedVertices.size());
 		Log::GetLogger()->info("Hazel::HazelMesh: Total indices: {0}", m_Indices.size());

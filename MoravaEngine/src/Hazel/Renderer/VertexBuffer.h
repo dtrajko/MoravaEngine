@@ -89,6 +89,7 @@ namespace Hazel {
 
 		inline uint32_t GetStride() const { return m_Stride; }
 		inline const std::vector<VertexBufferElement>& GetElements() const { return m_Elements; }
+		uint32_t GetElementCount() const { return (uint32_t)m_Elements.size(); }
 
 		std::vector<VertexBufferElement>::iterator begin() { return m_Elements.begin(); }
 		std::vector<VertexBufferElement>::iterator end() { return m_Elements.end(); }

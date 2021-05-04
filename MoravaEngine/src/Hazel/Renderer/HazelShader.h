@@ -153,7 +153,9 @@ namespace Hazel
 
 		// NEW shader system
 		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) = 0;
+
 		virtual void SetUniform(const std::string& fullname, float value) = 0;
+		virtual void SetUniform(const std::string& fullname, uint32_t value) = 0;
 		virtual void SetUniform(const std::string& fullname, int value) = 0;
 		virtual void SetUniform(const std::string& fullname, const glm::vec2& value) = 0;
 		virtual void SetUniform(const std::string& fullname, const glm::vec3& value) = 0;
@@ -163,8 +165,10 @@ namespace Hazel
 
 		// Temporary while we don't have materials
 		virtual void SetFloat(const std::string& name, float value) = 0;
+		virtual void SetUInt(const std::string& name, uint32_t value) = 0;
 		virtual void SetInt(const std::string& name, int value) = 0;
-		virtual void SetBool(const std::string& name, bool value) = 0;
+		// virtual void SetBool(const std::string& name, bool value) = 0;
+		virtual void SetFloat2(const std::string& name, const glm::vec2& value) = 0;
 		virtual void SetFloat3(const std::string& name, const glm::vec3& value) = 0;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
 		virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) = 0;
@@ -193,14 +197,6 @@ namespace Hazel
 		bool HasPSMaterialUniformBuffer();
 		Buffer GetVSMaterialUniformBuffer();
 		Buffer GetPSMaterialUniformBuffer();
-
-		virtual const ShaderUniformBufferList& GetVSRendererUniforms() const = 0;
-		virtual const ShaderUniformBufferList& GetPSRendererUniforms() const = 0;
-		virtual bool HasVSMaterialUniformBuffer() const = 0;
-		virtual bool HasPSMaterialUniformBuffer() const = 0;
-		virtual const ShaderUniformBufferDeclaration& GetVSMaterialUniformBuffer() const = 0;
-		virtual const ShaderUniformBufferDeclaration& GetPSMaterialUniformBuffer() const = 0;
-
 	};
 
 	// This should be eventually handled by the Asset Manager

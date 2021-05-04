@@ -232,7 +232,7 @@ namespace Hazel { namespace Script {
 
 	void* Hazel_Texture2D_Constructor(uint32_t width, uint32_t height)
 	{
-		auto result = HazelTexture2D::Create(HazelImageFormat::RGBA, width, height);
+		auto result = HazelTexture2D::Create(HazelImageFormat::RGBA, width, height, nullptr);
 		return new Ref<HazelTexture2D>(result);
 	}
 

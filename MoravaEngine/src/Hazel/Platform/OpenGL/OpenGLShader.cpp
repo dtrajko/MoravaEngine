@@ -667,6 +667,16 @@ namespace Hazel {
 		});
 	}
 
+	void OpenGLShader::SetUniform(const std::string& fullname, uint32_t value)
+	{
+		HazelRenderer::Submit([=]()
+		{
+			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+			GLint location = m_UniformLocations.at(fullname);
+			glUniform1ui(location, value);
+		});
+	}
+
 	void OpenGLShader::SetUniform(const std::string& fullname, int value)
 	{
 		HazelRenderer::Submit([=]()
@@ -727,6 +737,13 @@ namespace Hazel {
 		});
 	}
 
+	void OpenGLShader::SetUInt(const std::string& name, uint32_t value)
+	{
+		HazelRenderer::Submit([=]() {
+			UploadUniformUInt(name, value);
+		});
+	}
+
 	void OpenGLShader::SetFloat(const std::string& name, float value)
 	{
 		HazelRenderer::Submit([=]() {
@@ -741,10 +758,23 @@ namespace Hazel {
 		});
 	}
 
+	void OpenGLShader::UploadUniformUInt(const std::string& name, uint32_t value)
+	{
+		int32_t location = GetUniformLocation(name);
+		glUniform1ui(location, value);
+	}
+
 	void OpenGLShader::SetBool(const std::string& name, bool value)
 	{
 		HazelRenderer::Submit([=]() {
 			UploadUniformInt(name, value);
+		});
+	}
+
+	void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value)
+	{
+		HazelRenderer::Submit([=]() {
+		UploadUniformFloat2(name, value);
 		});
 	}
 
@@ -856,6 +886,18 @@ namespace Hazel {
 			glUniform1f(location, value);
 		else
 			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
+	}
+
+	void OpenGLShader::UploadUniformFloat2(const std::string& name, const glm::vec2& values)
+	{
+		glUseProgram(m_RendererID);
+		auto location = glGetUniformLocation(m_RendererID, name.c_str());
+		if (location != -1) {
+			glUniform2f(location, values.x, values.y);
+		}
+		else {
+			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
+		}
 	}
 
 	void OpenGLShader::UploadUniformFloat3(const std::string& name, const glm::vec3& values)

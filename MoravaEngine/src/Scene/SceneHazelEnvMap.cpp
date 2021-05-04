@@ -123,7 +123,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_Grid = new Grid(20);
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 
-    Hazel::RendererAPI::Init();
+    // Hazel::RendererAPI::Init();
 }
 
 SceneHazelEnvMap::~SceneHazelEnvMap()

@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+// #define _CRT_SECURE_NO_WARNINGS
 
 #include "VulkanDiagnostics.h"
 
@@ -13,8 +13,8 @@ namespace Hazel::Utils {
 		s_CheckpointStorageIndex = (s_CheckpointStorageIndex + 1) % 1024;
 		VulkanCheckpointData& checkpoint = s_CheckpointStorage[s_CheckpointStorageIndex];
 		memset(checkpoint.Data, 0, sizeof(checkpoint.Data));
-		strcpy(checkpoint.Data, data.data());
-		vkCmdSetCheckpointNV(commandBuffer, &checkpoint);
+		strcpy_s(checkpoint.Data, data.data());
+		// vkCmdSetCheckpointNV(commandBuffer, &checkpoint);
 	}
 
 }

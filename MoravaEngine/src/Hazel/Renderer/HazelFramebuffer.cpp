@@ -14,29 +14,29 @@ namespace Hazel {
 			case RendererAPIType::None:		return Ref<HazelFramebuffer>();
 			case RendererAPIType::OpenGL:	result = Ref<OpenGLFramebuffer>::Create(spec);
 		}
-		FramebufferPool::GetGlobal()->Add(result);
+		HazelFramebufferPool::GetGlobal()->Add(result);
 		return result;
 	}
 
-	FramebufferPool* FramebufferPool::s_Instance = new FramebufferPool;
+	HazelFramebufferPool* HazelFramebufferPool::s_Instance = new HazelFramebufferPool;
 
-	FramebufferPool::FramebufferPool(uint32_t maxFBs /* = 32 */)
+	HazelFramebufferPool::HazelFramebufferPool(uint32_t maxFBs /* = 32 */)
 	{
 
 	}
 
-	FramebufferPool::~FramebufferPool()
+	HazelFramebufferPool::~HazelFramebufferPool()
 	{
 		
 	}
 
-	std::weak_ptr<HazelFramebuffer> FramebufferPool::AllocateBuffer()
+	std::weak_ptr<HazelFramebuffer> HazelFramebufferPool::AllocateBuffer()
 	{
 		// m_Pool.push_back();
 		return std::weak_ptr<HazelFramebuffer>();
 	}
 
-	void FramebufferPool::Add(const Ref<HazelFramebuffer>& framebuffer)
+	void HazelFramebufferPool::Add(const Ref<HazelFramebuffer>& framebuffer)
 	{
 		m_Pool.push_back(framebuffer);
 	}

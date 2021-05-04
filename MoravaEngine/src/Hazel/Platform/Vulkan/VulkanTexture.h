@@ -14,6 +14,7 @@ namespace Hazel {
 	public:
 		VulkanTexture2D(const std::string& path, bool srgb = false);
 		VulkanTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
+
 		virtual ~VulkanTexture2D();
 
 		void Invalidate();
@@ -43,6 +44,12 @@ namespace Hazel {
 		{
 			throw std::logic_error("The method or operation is not implemented.");
 		}
+
+		// abstract methods in HazelTexture
+		virtual uint32_t GetID() const override { return uint32_t(); /* Not implemented */ }
+		virtual uint32_t GetRendererID() const override { return uint32_t(); /* Not implemented */ }
+		// virtual void Resize(uint32_t width, uint32_t height) override { /* Not implemented */ };
+
 	private:
 		std::string m_Path;
 		uint32_t m_Width;
@@ -80,6 +87,12 @@ namespace Hazel {
 		VkImageView CreateImageViewSingleMip(uint32_t mip);
 
 		void GenerateMips(bool readonly = false);
+
+		// abstract methods in HazelTexture
+		virtual uint32_t GetID() const override { return uint32_t(); /* Not implemented */ }
+		virtual uint32_t GetRendererID() const override { return uint32_t(); /* Not implemented */ }
+		// virtual void Resize(uint32_t width, uint32_t height) override { /* Not implemented */ };
+
 	private:
 		void Invalidate();
 	private:

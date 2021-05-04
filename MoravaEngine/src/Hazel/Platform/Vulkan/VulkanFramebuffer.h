@@ -23,12 +23,15 @@ namespace Hazel {
 
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
+
 		virtual RendererID GetRendererID() const { return m_RendererID; }
-		virtual RendererID GetColorAttachmentRendererID() const { return 0; }
-		virtual RendererID GetDepthAttachmentRendererID() const { return 0; }
 
 		virtual Ref<HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const override { HZ_CORE_ASSERT(attachmentIndex < m_Attachments.size()); return m_Attachments[attachmentIndex]; }
 		virtual Ref<HazelImage2D> GetDepthImage() const override { return m_DepthAttachment; }
+
+		virtual RendererID GetColorAttachmentRendererID() const { return 0; }
+		virtual RendererID GetDepthAttachmentRendererID() const { return 0; }
+
 		size_t GetColorAttachmentCount() const { return m_Attachments.size(); }
 		VkRenderPass GetRenderPass() const { return m_RenderPass; }
 		VkFramebuffer GetVulkanFramebuffer() const { return m_Framebuffer; }

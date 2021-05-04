@@ -34,22 +34,29 @@ public:
 	virtual Hazel::RendererID GetRendererID() const override;
 	virtual size_t GetHash() const override;
 	virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
+
 	virtual void SetUniform(const std::string& fullname, float value) override;
+	virtual void SetUniform(const std::string& fullname, uint32_t value) override;
 	virtual void SetUniform(const std::string& fullname, int value) override;
 	virtual void SetUniform(const std::string& fullname, const glm::vec2& value) override;
 	virtual void SetUniform(const std::string& fullname, const glm::vec3& value) override;
 	virtual void SetUniform(const std::string& fullname, const glm::vec4& value) override;
 	virtual void SetUniform(const std::string& fullname, const glm::mat3& value) override;
 	virtual void SetUniform(const std::string& fullname, const glm::mat4& value) override;
+
 	virtual void SetFloat(const std::string& name, float value) override;
+	virtual void SetUInt(const std::string& name, uint32_t value) override;
 	virtual void SetInt(const std::string& name, int value) override;
-	virtual void SetBool(const std::string& name, bool value) override;
+	void SetBool(const std::string& name, bool value);
+	virtual void SetFloat2(const std::string& name, const glm::vec2& value) override;
 	virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
 	virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 	virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) override;
+
 	virtual const std::string& GetName() const override;
 	virtual const std::unordered_map<std::string, Hazel::ShaderBuffer>& GetShaderBuffers() const override;
 	virtual const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& GetResources() const override;
+
 	virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
 
 	void UploadUniformMat4(const std::string& name, const glm::mat4& values);
@@ -111,13 +118,13 @@ private:
 
 	const char* GetShaderTypeNameFromEnum(const GLenum shaderType);
 
-	// Vulkan Week Day 1
-	virtual const Hazel::ShaderUniformBufferList& GetVSRendererUniforms() const override { return m_VSRendererUniformBuffers; }
-	virtual const Hazel::ShaderUniformBufferList& GetPSRendererUniforms() const override { return m_PSRendererUniformBuffers; }
-	virtual bool HasVSMaterialUniformBuffer() const override { return (bool)m_VSMaterialUniformBuffer; }
-	virtual bool HasPSMaterialUniformBuffer() const override { return (bool)m_PSMaterialUniformBuffer; }
-	virtual const Hazel::ShaderUniformBufferDeclaration& GetVSMaterialUniformBuffer() const override { return *m_VSMaterialUniformBuffer; }
-	virtual const Hazel::ShaderUniformBufferDeclaration& GetPSMaterialUniformBuffer() const override { return *m_PSMaterialUniformBuffer; }
+	// Vulkan Week Day 1 (removed later)
+	// virtual const Hazel::ShaderUniformBufferList& GetVSRendererUniforms() const override { return m_VSRendererUniformBuffers; }
+	// virtual const Hazel::ShaderUniformBufferList& GetPSRendererUniforms() const override { return m_PSRendererUniformBuffers; }
+	// virtual bool HasVSMaterialUniformBuffer() const override { return (bool)m_VSMaterialUniformBuffer; }
+	// virtual bool HasPSMaterialUniformBuffer() const override { return (bool)m_PSMaterialUniformBuffer; }
+	// virtual const Hazel::ShaderUniformBufferDeclaration& GetVSMaterialUniformBuffer() const override { return *m_VSMaterialUniformBuffer; }
+	// virtual const Hazel::ShaderUniformBufferDeclaration& GetPSMaterialUniformBuffer() const override { return *m_PSMaterialUniformBuffer; }
 	// virtual const ShaderResourceList& GetResources() const override { return m_Resources; }
 
 protected:

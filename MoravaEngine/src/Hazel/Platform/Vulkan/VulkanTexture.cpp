@@ -51,10 +51,6 @@ namespace Hazel {
 	// Texture2D
 	//////////////////////////////////////////////////////////////////////////////////
 
-	VulkanTexture2D::VulkanTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data)
-	{
-	}
-
 	VulkanTexture2D::VulkanTexture2D(const std::string& path, bool srgb)
 		: m_Path(path)
 	{
@@ -77,7 +73,7 @@ namespace Hazel {
 		m_Width = width;
 		m_Height = height;
 
-		HZ_CORE_ASSERT(m_Format != HazelImageFormat::None);
+		// HZ_CORE_ASSERT(m_Format != ImageFormat::None);
 
 		Ref<VulkanTexture2D> instance = this;
 		HazelRenderer::Submit([instance]() mutable
@@ -85,14 +81,13 @@ namespace Hazel {
 			instance->Invalidate();
 		});
 	}
-
 	VulkanTexture2D::VulkanTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data, HazelTextureWrap wrap)
 		: m_Format(format)
 	{
 		m_Width = width;
 		m_Height = height;
 
-		HZ_CORE_ASSERT(format == HazelImageFormat::RGBA);
+		// HZ_CORE_ASSERT(format == ImageFormat::RGBA);
 		uint32_t size = width * height * 4;
 
 		m_ImageData = Buffer::Copy(data, size);

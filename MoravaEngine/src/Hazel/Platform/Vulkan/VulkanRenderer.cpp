@@ -153,7 +153,7 @@ namespace Hazel {
 					material->GetDescriptorSet().DescriptorSets[0],
 					s_Data->RendererDescriptorSet.DescriptorSets[0]
 				};
-				vkCmdBindDescriptorSets(s_Data->ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, descriptorSets.size(), descriptorSets.data(), 0, nullptr);
+				vkCmdBindDescriptorSets(s_Data->ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)descriptorSets.size(), descriptorSets.data(), 0, nullptr);
 
 				glm::mat4 worldTransform = transform * submesh.Transform;
 
@@ -305,7 +305,7 @@ namespace Hazel {
 			writeDescriptors[3].pImageInfo = &shadowImageInfo;
 
 			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			vkUpdateDescriptorSets(vulkanDevice, writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
+			vkUpdateDescriptorSets(vulkanDevice, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 		});
 	}
 
@@ -362,7 +362,7 @@ namespace Hazel {
 
 			const auto& clearValues = framebuffer->GetVulkanClearValues();
 			
-			renderPassBeginInfo.clearValueCount = clearValues.size();
+			renderPassBeginInfo.clearValueCount = (uint32_t)clearValues.size();
 			renderPassBeginInfo.pClearValues = clearValues.data();
 			renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
 
@@ -433,8 +433,8 @@ namespace Hazel {
 			writeDescriptors[1].dstSet = descriptorSet.DescriptorSets[0]; // Should this be set inside the shader?
 			writeDescriptors[1].pImageInfo = &envEquirectVK->GetVulkanDescriptorInfo();
 
-			vkUpdateDescriptorSets(device, writeDescriptors.size(), writeDescriptors.data(), 0, NULL);
-			equirectangularConversionPipeline->Execute(descriptorSet.DescriptorSets.data(), descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
+			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, NULL);
+			equirectangularConversionPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
 
 			envUnfilteredCubemap->GenerateMips(true);
 		});
@@ -469,7 +469,7 @@ namespace Hazel {
 				writeDescriptors[i * 2 + 1].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
 			}
 
-			vkUpdateDescriptorSets(device, writeDescriptors.size(), writeDescriptors.data(), 0, NULL);
+			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, NULL);
 
 			environmentMipFilterPipeline->Begin(); // begin compute pass
 			const float deltaRoughness = 1.0f / glm::max((float)envFiltered->GetMipLevelCount() - 1.0f, 1.0f);
@@ -506,8 +506,8 @@ namespace Hazel {
 			writeDescriptors[1].dstSet = descriptorSet.DescriptorSets[0];
 			writeDescriptors[1].pImageInfo = &envFilteredCubemap->GetVulkanDescriptorInfo();
 
-			vkUpdateDescriptorSets(device, writeDescriptors.size(), writeDescriptors.data(), 0, NULL);
-			environmentIrradiancePipeline->Execute(descriptorSet.DescriptorSets.data(), descriptorSet.DescriptorSets.size(), irradianceMap->GetWidth() / 32, irradianceMap->GetHeight() / 32, 6);
+			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, NULL);
+			environmentIrradiancePipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), irradianceMap->GetWidth() / 32, irradianceMap->GetHeight() / 32, 6);
 
 			irradianceCubemap->GenerateMips();
 		});

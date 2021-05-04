@@ -121,7 +121,7 @@ namespace Hazel {
 			s_Data.QuadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.MaxIndices);
 			delete[] quadIndices;
 
-			s_Data.WhiteTexture = HazelTexture2D::Create(HazelImageFormat::RGBA, 1, 1);
+			s_Data.WhiteTexture = HazelTexture2D::Create(HazelImageFormat::RGBA, 1, 1, nullptr);
 			uint32_t whiteTextureData = 0xffffffff;
 			s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
@@ -228,7 +228,7 @@ namespace Hazel {
 			s_Data.QuadPipeline->Bind();
 			s_Data.QuadIndexBuffer->Bind();
 
-			HazelRenderer::DrawIndexed(s_Data.QuadIndexCount, PrimitiveType::Triangles, s_Data.DepthTest);
+			// HazelRenderer::DrawIndexed(s_Data.QuadIndexCount, PrimitiveType::Triangles, s_Data.DepthTest);
 			s_Data.Stats.DrawCalls++;
 		}
 
@@ -245,7 +245,7 @@ namespace Hazel {
 			s_Data.LineIndexBuffer->Bind();
 
 			// HazelRenderer::SetLineThickness(2.0f);
-			HazelRenderer::DrawIndexed(s_Data.LineIndexCount, PrimitiveType::Lines, s_Data.DepthTest);
+			// HazelRenderer::DrawIndexed(s_Data.LineIndexCount, PrimitiveType::Lines, s_Data.DepthTest);
 			s_Data.Stats.DrawCalls++;
 		}
 
