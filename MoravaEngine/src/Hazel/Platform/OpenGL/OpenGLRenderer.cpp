@@ -87,7 +87,6 @@ namespace Hazel {
 				break;
 			}
 		}
-
 	}
 
 	void OpenGLRenderer::Init()

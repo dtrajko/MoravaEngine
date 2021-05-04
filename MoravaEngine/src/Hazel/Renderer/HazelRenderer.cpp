@@ -73,19 +73,22 @@ namespace Hazel {
 
 		s_Data->m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
 
-		// Compute shaders
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl");
+		if (RendererAPI::Current() == RendererAPIType::Vulkan)
+		{
+			// Compute shaders
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl");
 
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
-		//Renderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
-		//Renderer::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ShadowMap.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
+			//Renderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
+			//Renderer::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ShadowMap.glsl");
+		}
 
 		// Compile shaders
 		HazelRenderer::WaitAndRender();
