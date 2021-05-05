@@ -1,6 +1,6 @@
 #include "HazelFramebuffer.h"
 
-#include "../Platform/OpenGL/OpenGLFramebuffer.h"
+#include "Hazel/Platform/OpenGL/OpenGLFramebuffer.h"
 
 
 namespace Hazel {

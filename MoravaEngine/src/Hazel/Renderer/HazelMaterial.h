@@ -29,6 +29,8 @@ namespace Hazel {
 		static Ref<HazelMaterial> Create(const Ref<HazelShader>& shader, const std::string& name = "");
 		virtual ~HazelMaterial() {};
 
+		virtual void Invalidate() = 0;
+
 		virtual void Set(const std::string& name, float value) = 0;
 		virtual void Set(const std::string& name, int value) = 0;
 		virtual void Set(const std::string& name, uint32_t value) = 0;

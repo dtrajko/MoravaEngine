@@ -40,6 +40,7 @@ namespace Hazel {
 		// static void ClearMagenta();
 
 		static void Init();
+		static void InitObsolete(); // remove when ready to switch to Init()
 		static void Shutdown();
 
 		static RendererCapabilities& GetCapabilities();

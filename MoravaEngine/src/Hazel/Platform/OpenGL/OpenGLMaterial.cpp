@@ -26,6 +26,10 @@ namespace Hazel {
 	{
 	}
 
+	void OpenGLMaterial::Invalidate()
+	{
+	}
+
 	void OpenGLMaterial::AllocateStorage()
 	{
 		const auto& shaderBuffers = m_Shader->GetShaderBuffers();

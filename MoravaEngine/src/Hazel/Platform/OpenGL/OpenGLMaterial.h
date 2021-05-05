@@ -13,6 +13,8 @@ namespace Hazel {
 		OpenGLMaterial(const Ref<HazelShader>& shader, const std::string& name = "");
 		virtual ~OpenGLMaterial();
 
+		virtual void Invalidate() override;
+
 		virtual void Set(const std::string& name, float value) override;
 		virtual void Set(const std::string& name, int value) override;
 		virtual void Set(const std::string& name, uint32_t value) override;

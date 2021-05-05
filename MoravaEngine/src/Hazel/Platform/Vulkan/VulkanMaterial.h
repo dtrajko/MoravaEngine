@@ -13,6 +13,8 @@ namespace Hazel {
 		VulkanMaterial(const Ref<HazelShader>& shader, const std::string& name = "");
 		virtual ~VulkanMaterial();
 
+		virtual void Invalidate() override;
+
 		virtual void Set(const std::string& name, float value) override;
 		virtual void Set(const std::string& name, int value) override;
 		virtual void Set(const std::string& name, uint32_t value) override;
@@ -113,6 +115,7 @@ namespace Hazel {
 
 		const VulkanShader::ShaderMaterialDescriptorSet& GetDescriptorSet() { return m_DescriptorSet; }
 	private:
+		void Init();
 		void AllocateStorage();
 		void OnShaderReloaded();
 
@@ -135,10 +138,13 @@ namespace Hazel {
 		{
 			PendingDescriptorType Type = PendingDescriptorType::None;
 			VkWriteDescriptorSet WDS;
+			VkDescriptorImageInfo ImageInfo{};
 			Ref<HazelTexture> Texture;
 			Ref<HazelImage> Image;
+			VkDescriptorImageInfo SubmittedImageInfo{};
 		};
-		std::vector<PendingDescriptor> m_PendingDescriptors;
+		std::vector<std::shared_ptr<PendingDescriptor>> m_ResidentDescriptors; // TODO: should this be a map (binding point)?
+		std::vector<std::shared_ptr<PendingDescriptor>> m_PendingDescriptors;  // TODO: weak ref
 
 		uint32_t m_MaterialFlags = 0;
 

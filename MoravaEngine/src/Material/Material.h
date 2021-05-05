@@ -55,6 +55,8 @@ public:
 
 	/**** BEGIN virtual methods defined in HazelMaterial ****/
 
+	virtual void Invalidate() override {};
+
 	virtual void Set(const std::string& name, float value) override {};
 	virtual void Set(const std::string& name, int value) override {};
 	virtual void Set(const std::string& name, uint32_t value) override {};

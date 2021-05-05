@@ -92,44 +92,80 @@ namespace Hazel {
 	void OpenGLRenderer::Init()
 	{
 		s_Data = new OpenGLRendererData();
-		HazelRenderer::Submit([]()
-			{
-				glDebugMessageCallback(Utils::OpenGLLogMessage, nullptr);
-				glEnable(GL_DEBUG_OUTPUT);
-				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		//	HazelRenderer::Submit([]()
+		//	{
+		//		glDebugMessageCallback(Utils::OpenGLLogMessage, nullptr);
+		//		glEnable(GL_DEBUG_OUTPUT);
+		//		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		//	
+		//		unsigned int vao;
+		//		glGenVertexArrays(1, &vao);
+		//		glBindVertexArray(vao);
+		//	
+		//		glEnable(GL_DEPTH_TEST);
+		//		//glEnable(GL_CULL_FACE);
+		//		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+		//		glFrontFace(GL_CCW);
+		//	
+		//		glEnable(GL_BLEND);
+		//		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//	
+		//		glEnable(GL_MULTISAMPLE);
+		//		glEnable(GL_STENCIL_TEST);
+		//	
+		//		auto& caps = s_Data->RenderCaps;
+		//		caps.Vendor = (const char*)glGetString(GL_VENDOR);
+		//		caps.Device = (const char*)glGetString(GL_RENDERER);
+		//		caps.Version = (const char*)glGetString(GL_VERSION);
+		//	
+		//		glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);
+		//		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.MaxAnisotropy);
+		//	
+		//		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &caps.MaxTextureUnits);
+		//	
+		//		GLenum error = glGetError();
+		//		while (error != GL_NO_ERROR)
+		//		{
+		//			HZ_CORE_ERROR("OpenGL Error {0}", error);
+		//			error = glGetError();
+		//		}
+		//	});
 
-				unsigned int vao;
-				glGenVertexArrays(1, &vao);
-				glBindVertexArray(vao);
-
-				glEnable(GL_DEPTH_TEST);
-				//glEnable(GL_CULL_FACE);
-				glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-				glFrontFace(GL_CCW);
-
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-				glEnable(GL_MULTISAMPLE);
-				glEnable(GL_STENCIL_TEST);
-
-				auto& caps = s_Data->RenderCaps;
-				caps.Vendor = (const char*)glGetString(GL_VENDOR);
-				caps.Device = (const char*)glGetString(GL_RENDERER);
-				caps.Version = (const char*)glGetString(GL_VERSION);
-
-				glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);
-				glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.MaxAnisotropy);
-
-				glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &caps.MaxTextureUnits);
-
-				GLenum error = glGetError();
-				while (error != GL_NO_ERROR)
-				{
-					HZ_CORE_ERROR("OpenGL Error {0}", error);
-					error = glGetError();
-				}
-			});
+		glDebugMessageCallback(Utils::OpenGLLogMessage, nullptr);
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		
+		unsigned int vao;
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+		
+		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_CULL_FACE);
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+		glFrontFace(GL_CCW);
+		
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		
+		glEnable(GL_MULTISAMPLE);
+		glEnable(GL_STENCIL_TEST);
+		
+		auto& caps = s_Data->RenderCaps;
+		caps.Vendor = (const char*)glGetString(GL_VENDOR);
+		caps.Device = (const char*)glGetString(GL_RENDERER);
+		caps.Version = (const char*)glGetString(GL_VERSION);
+		
+		glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.MaxAnisotropy);
+		
+		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &caps.MaxTextureUnits);
+		
+		GLenum error = glGetError();
+		while (error != GL_NO_ERROR)
+		{
+			HZ_CORE_ERROR("OpenGL Error {0}", error);
+			error = glGetError();
+		}
 
 		// Create fullscreen quad
 		float x = -1;

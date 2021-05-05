@@ -156,9 +156,22 @@ void Application::OnImGuiRender()
 	ImGui::Begin("Renderer");
 	{
 		auto& caps = Hazel::HazelRenderer::GetCapabilities();
-		ImGui::Text("Vendor: %s", caps.Vendor.c_str());
-		ImGui::Text("Device: %s", caps.Device.c_str());
-		ImGui::Text("Version: %s", caps.Version.c_str());
+
+		const char* vendor = "N/A";
+		const char* device = "N/A";
+		const char* version = "N/A";
+
+		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+		{
+			vendor = (const char*)glGetString(GL_VENDOR);
+			device = (const char*)glGetString(GL_RENDERER);
+			version = (const char*)glGetString(GL_VERSION);
+		}
+
+		ImGui::Text("Vendor: %s", vendor);
+		ImGui::Text("Device: %s", device);
+		ImGui::Text("Version: %s", version);
+
 		ImGui::Text("Frame Time: %.2fms\n", Timer::Get()->GetDeltaTime() * 1000.0f);
 	}
 	ImGui::End();

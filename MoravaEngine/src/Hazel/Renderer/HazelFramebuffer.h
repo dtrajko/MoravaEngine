@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Core/Ref.h"
-#include "RendererAPI.h"
+#include "Hazel/Core/Ref.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 #include <glm/glm.hpp>
 
