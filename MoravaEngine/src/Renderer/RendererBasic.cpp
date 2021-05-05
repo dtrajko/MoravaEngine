@@ -2,26 +2,8 @@
 
 #include "Core/Application.h"
 #include "Core/CommonValues.h"
+#include "Core/Util.h"
 
-
-static void OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
-{
-	switch (severity)
-	{
-	case GL_DEBUG_SEVERITY_HIGH:
-		Log::GetLogger()->error("[OpenGL Debug HIGH] {0}", message);
-		break;
-	case GL_DEBUG_SEVERITY_MEDIUM:
-		Log::GetLogger()->warn("[OpenGL Debug MEDIUM] {0}", message);
-		break;
-	case GL_DEBUG_SEVERITY_LOW:
-		Log::GetLogger()->info("[OpenGL Debug LOW] {0}", message);
-		break;
-	case GL_DEBUG_SEVERITY_NOTIFICATION:
-		Log::GetLogger()->trace("[OpenGL Debug NOTIFICATION] {0}", message);
-		break;
-	}
-}
 
 glm::mat4 RendererBasic::s_ProjectionMatrix;
 std::map<std::string, Shader*> RendererBasic::s_Shaders;
@@ -103,7 +85,7 @@ void RendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int heigh
 
 void RendererBasic::InitDebug()
 {
-	glDebugMessageCallback(OpenGLLogMessage, nullptr);
+	glDebugMessageCallback(Util::OpenGLLogMessage, nullptr);
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 }

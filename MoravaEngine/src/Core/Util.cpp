@@ -119,7 +119,6 @@ void Util::OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severi
 		Log::GetLogger()->trace("[OpenGL Debug NOTIFICATION] {0}", message);
 		break;
 	}
-
 }
 
 std::string Util::SpaceToUnderscore(std::string text)

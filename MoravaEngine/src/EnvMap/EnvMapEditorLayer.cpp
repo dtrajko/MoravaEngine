@@ -198,7 +198,7 @@ void EnvMapEditorLayer::SetupRenderFramebuffer()
 
     m_RenderFramebuffer = Hazel::Ref<Framebuffer>::Create(width, height);
     m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
-    m_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
+    m_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Depth);
     m_RenderFramebuffer->Generate(width, height);
 }
 
