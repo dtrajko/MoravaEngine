@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Hazel/Renderer/RendererAPI.h"
+
 #include "Core/Log.h"
 #include "Core/Window.h"
 #include "Scene/Scene.h"
@@ -48,6 +50,9 @@ public:
 	static void Clear(float r, float g, float b, float a);
 
 	static void SetLineThickness(float thickness); // RendererAPI::SetLineThickness
+
+	// Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
+	static void DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest);
 
 	// static void SetSpirVEnabled(bool enabled) { s_SpirV_Enabled = enabled; }
 	static bool GetVulkanSupported();

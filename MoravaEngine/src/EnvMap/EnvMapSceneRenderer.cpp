@@ -551,7 +551,7 @@ void EnvMapSceneRenderer::GeometryPass()
 
     Hazel::Renderer2D::BeginScene(viewProj, true);
     {
-        // RendererBasic::SetLineThickness(2.0f);
+        RendererBasic::SetLineThickness(2.0f);
 
         if (EnvMapSharedData::s_DisplayRay)
         {

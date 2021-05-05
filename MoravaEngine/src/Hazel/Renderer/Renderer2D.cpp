@@ -228,7 +228,8 @@ namespace Hazel {
 			s_Data.QuadPipeline->Bind();
 			s_Data.QuadIndexBuffer->Bind();
 
-			// HazelRenderer::DrawIndexed(s_Data.QuadIndexCount, PrimitiveType::Triangles, s_Data.DepthTest);
+			RendererBasic::SetLineThickness(2.0f);
+			RendererBasic::DrawIndexed(s_Data.QuadIndexCount, PrimitiveType::Triangles, s_Data.DepthTest);
 			s_Data.Stats.DrawCalls++;
 		}
 
@@ -244,8 +245,8 @@ namespace Hazel {
 			s_Data.LinePipeline->Bind();
 			s_Data.LineIndexBuffer->Bind();
 
-			// HazelRenderer::SetLineThickness(2.0f);
-			// HazelRenderer::DrawIndexed(s_Data.LineIndexCount, PrimitiveType::Lines, s_Data.DepthTest);
+			RendererBasic::SetLineThickness(2.0f);
+			RendererBasic::DrawIndexed(s_Data.LineIndexCount, PrimitiveType::Lines, s_Data.DepthTest);
 			s_Data.Stats.DrawCalls++;
 		}
 

@@ -34,6 +34,10 @@ RendererBasic::RendererBasic()
 {
 }
 
+RendererBasic::~RendererBasic()
+{
+}
+
 void RendererBasic::Init(Scene* scene)
 {
 	SetUniforms();
@@ -187,6 +191,30 @@ void RendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* s
 	s_ProjectionMatrix = *projectionMatrix;
 }
 
-RendererBasic::~RendererBasic()
+// Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
+void RendererBasic::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest)
 {
+	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+	{
+		if (!depthTest) {
+			glDisable(GL_DEPTH_TEST);
+		}
+
+		GLenum glPrimitiveType = 0;
+		switch (type)
+		{
+		case Hazel::PrimitiveType::Triangles:
+			glPrimitiveType = GL_TRIANGLES;
+			break;
+		case Hazel::PrimitiveType::Lines:
+			glPrimitiveType = GL_LINES;
+			break;
+		}
+
+		glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
+
+		if (!depthTest) {
+			glEnable(GL_DEPTH_TEST);
+		}
+	}
 }
