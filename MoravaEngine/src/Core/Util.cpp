@@ -8,6 +8,26 @@
 #include <algorithm>
 
 
+void Util::OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+{
+	switch (severity)
+	{
+	case GL_DEBUG_SEVERITY_HIGH:
+		Log::GetLogger()->error("[OpenGL Debug HIGH] {0}", message);
+		HZ_CORE_ASSERT(false, "GL_DEBUG_SEVERITY_HIGH");
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		Log::GetLogger()->warn("[OpenGL Debug MEDIUM] {0}", message);
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+		Log::GetLogger()->info("[OpenGL Debug LOW] {0}", message);
+		break;
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		Log::GetLogger()->trace("[OpenGL Debug NOTIFICATION] {0}", message);
+		break;
+	}
+}
+
 char* Util::printTime()
 {
 	// Declaring argument for time() 
@@ -98,26 +118,6 @@ void Util::CheckOpenGLErrors(const std::string& label)
 	{
 		Log::GetLogger()->error("[{0}] OpenGL Error code: {1}, Message: '{2}'", label, error, errorString);
 		error = glGetError();
-	}
-}
-
-void Util::OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
-{
-	switch (severity)
-	{
-	case GL_DEBUG_SEVERITY_HIGH:
-		Log::GetLogger()->error("[OpenGL Debug HIGH] {0}", message);
-		// HZ_CORE_ASSERT(false, "GL_DEBUG_SEVERITY_HIGH");
-		break;
-	case GL_DEBUG_SEVERITY_MEDIUM:
-		Log::GetLogger()->warn("[OpenGL Debug MEDIUM] {0}", message);
-		break;
-	case GL_DEBUG_SEVERITY_LOW:
-		Log::GetLogger()->info("[OpenGL Debug LOW] {0}", message);
-		break;
-	case GL_DEBUG_SEVERITY_NOTIFICATION:
-		Log::GetLogger()->trace("[OpenGL Debug NOTIFICATION] {0}", message);
-		break;
 	}
 }
 

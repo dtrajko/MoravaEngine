@@ -73,4 +73,6 @@ protected:
 
 	const aiScene* m_Scene; // Moved from HazelMesh
 
+	uint32_t m_VertexAttribArrayCount = 0;
+
 };
