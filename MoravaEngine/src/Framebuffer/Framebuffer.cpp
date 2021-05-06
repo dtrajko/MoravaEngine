@@ -208,7 +208,7 @@ void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int 
 	m_TextureAttachmentsColor.push_back(texture);
 
 	Log::GetLogger()->info("Framebuffer::CreateTextureAttachmentColor [ID={0}, Multisample: {1}, {2}x{3}]",
-		texture->GetID(), texture->GetWidth(), texture->GetHeight());
+		texture->GetID(), isMultisample, texture->GetWidth(), texture->GetHeight());
 }
 
 void Framebuffer::CreateAttachmentDepth(unsigned int width, unsigned int height, bool isMultisample,
