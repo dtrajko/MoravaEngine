@@ -222,6 +222,7 @@
     <ClCompile Include="src\Hazel\Script\ScriptEngine.cpp" />
     <ClCompile Include="src\Hazel\Script\ScriptEngineRegistry.cpp" />
     <ClCompile Include="src\Hazel\Script\ScriptWrappers.cpp" />
+    <ClCompile Include="src\Hazel\Utilities\StringUtils.cpp" />
     <ClCompile Include="src\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\ImGui\ImGuiWrapper.cpp" />
     <ClCompile Include="src\LearnOpenGL\MeshJoey.cpp" />
@@ -504,6 +505,8 @@
     <ClInclude Include="src\Hazel\Script\ScriptEngine.h" />
     <ClInclude Include="src\Hazel\Script\ScriptEngineRegistry.h" />
     <ClInclude Include="src\Hazel\Script\ScriptWrappers.h" />
+    <ClInclude Include="src\Hazel\Utilities\FileSystem.h" />
+    <ClInclude Include="src\Hazel\Utilities\StringUtils.h" />
     <ClInclude Include="src\Hazel\Utils\PlatformUtils.h" />
     <ClInclude Include="src\ImGui\ImGuiWrapper.h" />
     <ClInclude Include="src\LearnOpenGL\camera.h" />

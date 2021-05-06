@@ -156,7 +156,7 @@ namespace Hazel {
 	void HazelScene::Init()
 	{
 		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan) {
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl", true);
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
 			auto skyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox"); // Spir-V method // Pre-load shaders in order to use Get
 			m_SkyboxMaterial = HazelMaterial::Create(skyboxShader);
 		}

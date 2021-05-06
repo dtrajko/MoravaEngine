@@ -93,19 +93,28 @@ namespace Hazel {
 
 		s_Data->m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
 
-		// Compute shaders
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl");
+		// Tests loading shaders
 
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
-		//Renderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
-		//Renderer::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ShadowMap.glsl");
+		HazelShader::Create("assets/shaders/Renderer2D.glsl"); // OK
+
+		// HazelShader::Create("assets/shaders/Grid.glsl"); // NOT OK
+		// HazelShader::Create("assets/shaders/Skybox.glsl"); // NOT OK
+		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl"); // NOT OK
+		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Renderer2D.glsl"); // NOT OK
+
+		//	// Compute shaders
+		//	HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl");
+		//	HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl");
+		//	HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl");
+		//	
+		//	HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
+		//	HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
+		//	HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
+		//	//Renderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
+		//	//Renderer::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
+		//	HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
+		//	HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
+		//	HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ShadowMap.glsl");
 
 		// Compile shaders
 		HazelRenderer::WaitAndRender();
@@ -120,101 +129,6 @@ namespace Hazel {
 
 		s_RendererAPI->Init();
 		SceneRenderer::Init();
-	}
-
-	void HazelRenderer::InitObsolete()
-	{
-		s_Data = new RendererData();
-		s_CommandQueue = new RenderCommandQueue();
-		s_RendererAPI = InitRendererAPI();
-
-		s_Data->m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
-
-		Log::GetLogger()->debug("RendererBasic::GetVulkanSupported(): {0}", RendererBasic::GetVulkanSupported());
-
-		//	if (RendererAPI::Current() == RendererAPIType::Vulkan)
-		//	{
-		//		// Compute shaders
-		//		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl");
-		//		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl");
-		//		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl");
-		//	
-		//		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
-		//		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
-		//		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
-		//		//Renderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
-		//		//Renderer::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
-		//		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
-		//		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
-		//		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ShadowMap.glsl");
-		//	}
-
-		{ // BEGIN old code InitObsolete
-
-			// SceneRenderer::Init(); // TODO
-
-			// Create fullscreen quad
-			float x = -1;
-			float y = -1;
-			float width = 2, height = 2;
-
-			struct QuadVertex
-			{
-				glm::vec3 Position;
-				glm::vec2 TexCoord;
-			};
-
-			QuadVertex* data = new QuadVertex[4];
-
-			data[0].Position = glm::vec3(x, y, 0.1f);
-			data[0].TexCoord = glm::vec2(0, 0);
-
-			data[1].Position = glm::vec3(x + width, y, 0.1f);
-			data[1].TexCoord = glm::vec2(1, 0);
-
-			data[2].Position = glm::vec3(x + width, y + height, 0.1f);
-			data[2].TexCoord = glm::vec2(1, 1);
-
-			data[3].Position = glm::vec3(x, y + height, 0.1f);
-			data[3].TexCoord = glm::vec2(0, 1);
-
-			PipelineSpecification pipelineSpecification;
-			pipelineSpecification.Layout = {
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float2, "a_TexCoord" }
-			};
-			s_Data->m_FullscreenQuadPipeline = Pipeline::Create(pipelineSpecification);
-
-			s_Data->m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
-			s_Data->m_FullscreenQuadVertexBuffer->SetLayout(pipelineSpecification.Layout);
-
-			uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
-			s_Data->m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
-
-			Renderer2D::Init();
-
-		} // END old code InitObsolete
-
-		{ // BEGIN new code Init
-
-			/****
-			// Compile shaders
-			HazelRenderer::WaitAndRender();
-		
-			uint32_t whiteTextureData = 0xffffffff;
-			s_Data->WhiteTexture = HazelTexture2D::Create(HazelImageFormat::RGBA, 1, 1, &whiteTextureData);
-		
-			uint32_t blackTextureData[6] = { 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000 };
-			s_Data->BlackCubeTexture = HazelTextureCube::Create(HazelImageFormat::RGBA, 1, 1, &blackTextureData);
-		
-			s_Data->EmptyEnvironment = Ref<Environment>::Create(s_Data->BlackCubeTexture, s_Data->BlackCubeTexture);
-		
-			s_RendererAPI->Init();
-			SceneRenderer::Init();
-			****/
-
-		} // END new code Init
-
 	}
 
 	void HazelRenderer::Shutdown()

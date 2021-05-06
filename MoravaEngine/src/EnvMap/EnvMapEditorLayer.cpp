@@ -134,7 +134,7 @@ void EnvMapEditorLayer::Init()
     // Hazel::ScriptEngine::Init(""); // TODO Assembly path
 
     // Temporary code Hazel LIVE! #004
-    Hazel::HazelRenderer::InitObsolete();
+    Hazel::HazelRenderer::Init();
 
     bool depthTest = true;
     Hazel::Renderer2D::Init();

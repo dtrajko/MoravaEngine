@@ -753,6 +753,9 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanDiagnostics.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Utilities\StringUtils.cpp">
+      <Filter>Hazel\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -1608,6 +1611,12 @@
     <ClInclude Include="src\Hazel\Core\Timer.h">
       <Filter>Hazel\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Utilities\FileSystem.h">
+      <Filter>Hazel\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Utilities\StringUtils.h">
+      <Filter>Hazel\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1798,6 +1807,9 @@
     </Filter>
     <Filter Include="Resources\Shaders\OGLdev\tutorial35">
       <UniqueIdentifier>{1111f9db-5bae-40a8-84a4-0d2d37e8727b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Utilities">
+      <UniqueIdentifier>{fa67dff0-a132-4634-8470-f07ec0efd85c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

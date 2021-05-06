@@ -11,6 +11,9 @@
 #include <shaderc/shaderc.hpp>
 #include <filesystem>
 
+#include "Hazel/Utilities/FileSystem.h"
+
+
 namespace Hazel {
 
 #define UNIFORM_LOGGING 0
@@ -22,12 +25,26 @@ namespace Hazel {
 
 #define PRINT_SHADERS 1
 
+	namespace Utils {
+
+		static const char* GetCacheDirectory()
+		{
+			// TODO: make sure the assets directory is valid
+			return "assets/cache/shader/opengl";
+		}
+
+		static void CreateCacheDirectoryIfNeeded()
+		{
+			std::string cacheDirectory = GetCacheDirectory();
+			if (!std::filesystem::exists(cacheDirectory))
+				std::filesystem::create_directories(cacheDirectory);
+		}
+
+	}
+
 	OpenGLShader::OpenGLShader(const std::string& filepath, bool forceRecompile)
 		: m_AssetPath(filepath)
 	{
-		m_Buffers = std::unordered_map<std::string, ShaderBuffer>();
-		m_Buffers.reserve(0);
-
 		size_t found = filepath.find_last_of("/\\");
 		m_Name = found != std::string::npos ? filepath.substr(found + 1) : filepath;
 		found = m_Name.find_last_of(".");
@@ -52,29 +69,29 @@ namespace Hazel {
 	void OpenGLShader::Load(const std::string& source, bool forceCompile)
 	{
 		m_ShaderSource = PreProcess(source);
+		Utils::CreateCacheDirectoryIfNeeded();
+		Ref<OpenGLShader> instance = this;
+		HazelRenderer::Submit([instance, forceCompile]() mutable
+		{
+			std::array<std::vector<uint32_t>, 2> vulkanBinaries;
+			std::unordered_map<uint32_t, std::vector<uint32_t>> shaderData;
+			instance->CompileOrGetVulkanBinary(shaderData, forceCompile);
+			instance->CompileOrGetOpenGLBinary(shaderData, forceCompile);
+		});
+	}
 
-		//	Ref<OpenGLShader> instance = this;
-		//	HazelRenderer::Submit([instance, forceCompile]() mutable
-		//	{
-		//		std::array<std::vector<uint32_t>, 2> vulkanBinaries;
-		//		std::unordered_map<uint32_t, std::vector<uint32_t>> shaderData;
-		//		instance->CompileOrGetVulkanBinary(shaderData, forceCompile);
-		//		instance->CompileOrGetOpenGLBinary(shaderData, forceCompile);
-		//	});
-
-		std::array<std::vector<uint32_t>, 2> vulkanBinaries;
-		std::unordered_map<uint32_t, std::vector<uint32_t>> shaderData;
-		CompileOrGetVulkanBinary(shaderData, forceCompile);
-		CompileOrGetOpenGLBinary(shaderData, forceCompile);
+	void OpenGLShader::ClearUniformBuffers()
+	{
+		s_UniformBuffers.clear();
 	}
 
 	static const char* GLShaderStageCachedVulkanFileExtension(uint32_t stage)
 	{
 		switch (stage)
 		{
-			case GL_VERTEX_SHADER:    return ".cached_vulkan.vert";
-			case GL_FRAGMENT_SHADER:  return ".cached_vulkan.frag";
-			case GL_COMPUTE_SHADER:   return ".cached_vulkan.comp";
+		case GL_VERTEX_SHADER:    return ".cached_vulkan.vert";
+		case GL_FRAGMENT_SHADER:  return ".cached_vulkan.frag";
+		case GL_COMPUTE_SHADER:   return ".cached_vulkan.comp";
 		}
 		HZ_CORE_ASSERT(false);
 		return "";
@@ -96,9 +113,9 @@ namespace Hazel {
 	{
 		switch (stage)
 		{
-			case GL_VERTEX_SHADER:    return shaderc_vertex_shader;
-			case GL_FRAGMENT_SHADER:  return shaderc_fragment_shader;
-			case GL_COMPUTE_SHADER:   return shaderc_compute_shader;
+		case GL_VERTEX_SHADER:    return shaderc_vertex_shader;
+		case GL_FRAGMENT_SHADER:  return shaderc_fragment_shader;
+		case GL_COMPUTE_SHADER:   return shaderc_compute_shader;
 		}
 		HZ_CORE_ASSERT(false);
 		return (shaderc_shader_kind)0;
@@ -108,9 +125,9 @@ namespace Hazel {
 	{
 		switch (stage)
 		{
-			case GL_VERTEX_SHADER:    return "Vertex";
-			case GL_FRAGMENT_SHADER:  return "Fragment";
-			case GL_COMPUTE_SHADER:   return "Compute";
+		case GL_VERTEX_SHADER:    return "Vertex";
+		case GL_FRAGMENT_SHADER:  return "Fragment";
+		case GL_COMPUTE_SHADER:   return "Compute";
 		}
 		HZ_CORE_ASSERT(false);
 		return "";
@@ -118,13 +135,15 @@ namespace Hazel {
 
 	void OpenGLShader::CompileOrGetVulkanBinary(std::unordered_map<uint32_t, std::vector<uint32_t>>& outputBinary, bool forceCompile)
 	{
+		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
 		for (auto [stage, source] : m_ShaderSource)
 		{
 			auto extension = GLShaderStageCachedVulkanFileExtension(stage);
+			std::filesystem::path p = m_AssetPath;
 			if (!forceCompile)
 			{
 				std::filesystem::path p = m_AssetPath;
-				auto path = p.parent_path() / "cached" / (p.filename().string() + extension);
+				auto path = cacheDirectory / (p.filename().string() + extension);
 				std::string cachedFilePath = path.string();
 
 				FILE* f = fopen(cachedFilePath.c_str(), "rb");
@@ -145,7 +164,7 @@ namespace Hazel {
 				shaderc::Compiler compiler;
 				shaderc::CompileOptions options;
 				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-
+				options.AddMacroDefinition("OPENGL");
 				const bool optimize = false;
 				if (optimize)
 					options.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -171,7 +190,7 @@ namespace Hazel {
 				// Cache compiled shader
 				{
 					std::filesystem::path p = m_AssetPath;
-					auto path = p.parent_path() / "cached" / (p.filename().string() + extension);
+					auto path = cacheDirectory / (p.filename().string() + extension);
 					std::string cachedFilePath = path.string();
 
 					FILE* f = fopen(cachedFilePath.c_str(), "wb");
@@ -193,6 +212,8 @@ namespace Hazel {
 		std::vector<GLuint> shaderRendererIDs;
 		shaderRendererIDs.reserve(vulkanBinaries.size());
 
+		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
+
 		m_ConstantBufferOffset = 0;
 		std::vector<std::vector<uint32_t>> shaderData;
 		for (auto [stage, binary] : vulkanBinaries)
@@ -206,7 +227,7 @@ namespace Hazel {
 				ParseConstantBuffers(glsl);
 
 				std::filesystem::path p = m_AssetPath;
-				auto path = p.parent_path() / "cached" / (p.filename().string() + GLShaderStageCachedOpenGLFileExtension(stage));
+				auto path = cacheDirectory / (p.filename().string() + GLShaderStageCachedOpenGLFileExtension(stage));
 				std::string cachedFilePath = path.string();
 
 				std::vector<uint32_t>& shaderStageData = shaderData.emplace_back();
@@ -224,7 +245,7 @@ namespace Hazel {
 						fclose(f);
 					}
 				}
-				
+
 				if (!shaderStageData.size())
 				{
 					std::string source = glsl.compile();
@@ -245,7 +266,7 @@ namespace Hazel {
 
 					{
 						std::filesystem::path p = m_AssetPath;
-						auto path = p.parent_path() / "cached" / (p.filename().string() + GLShaderStageCachedOpenGLFileExtension(stage));
+						auto path = cacheDirectory / (p.filename().string() + GLShaderStageCachedOpenGLFileExtension(stage));
 						std::string cachedFilePath = path.string();
 						FILE* f = fopen(cachedFilePath.c_str(), "wb");
 						fwrite(shaderStageData.data(), sizeof(uint32_t), shaderStageData.size(), f);
@@ -254,12 +275,10 @@ namespace Hazel {
 				}
 
 				GLuint shaderID = glCreateShader(stage);
-				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderStageData.data(), (GLsizei)shaderStageData.size() * sizeof(uint32_t));
-
-				Util::CheckOpenGLErrors("OpenGLShader::CompileOrGetOpenGLBinary glShaderBinary");
-
+				glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, shaderStageData.data(), static_cast<GLsizei>(shaderStageData.size()) * sizeof(uint32_t));
 				glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
 				glAttachShader(program, shaderID);
+
 				shaderRendererIDs.emplace_back(shaderID);
 			}
 		}
@@ -292,19 +311,15 @@ namespace Hazel {
 			glDetachShader(program, id);
 
 		// Get uniform locations
-		glUseProgram(m_RendererID);
-
 		for (auto& [bufferName, buffer] : m_Buffers)
 		{
 			for (auto& [name, uniform] : buffer.Uniforms)
 			{
 				GLint location = glGetUniformLocation(m_RendererID, name.c_str());
-				if (location == -1) {
-					Log::GetLogger()->warn("{0}: could not find uniform location {0}", name);
-				}
-				else {
-					m_UniformLocations[name] = location;
-				}
+				if (location == -1)
+					HZ_CORE_WARN("{0}: could not find uniform location {0}", name);
+
+				m_UniformLocations[name] = location;
 			}
 		}
 
@@ -335,7 +350,7 @@ namespace Hazel {
 
 	void OpenGLShader::Compile(const std::vector<uint32_t>& vertexBinary, const std::vector<uint32_t>& fragmentBinary)
 	{
-		
+
 	}
 
 	void OpenGLShader::ParseConstantBuffers(const spirv_cross::CompilerGLSL& compiler)
@@ -350,15 +365,15 @@ namespace Hazel {
 			// Skip empty push constant buffers - these are for the renderer only
 			if (bufferName.empty() || bufferName == "u_Renderer")
 			{
-				m_ConstantBufferOffset += (uint32_t)bufferSize;
+				m_ConstantBufferOffset += static_cast<uint32_t>(bufferSize);
 				continue;
 			}
 
 			auto location = compiler.get_decoration(resource.id, spv::DecorationLocation);
-			int memberCount = (int)bufferType.member_types.size();
+			int memberCount = static_cast<int>(bufferType.member_types.size());
 			ShaderBuffer& buffer = m_Buffers[bufferName];
 			buffer.Name = bufferName;
-			buffer.Size = (uint32_t)bufferSize - m_ConstantBufferOffset;
+			buffer.Size = static_cast<uint32_t>(bufferSize) - m_ConstantBufferOffset;
 			for (int i = 0; i < memberCount; i++)
 			{
 				auto type = compiler.get_type(bufferType.member_types[i]);
@@ -367,10 +382,10 @@ namespace Hazel {
 				auto offset = compiler.type_struct_member_offset(bufferType, i) - m_ConstantBufferOffset;
 
 				std::string uniformName = bufferName + "." + memberName;
-				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), (uint32_t)size, offset);
+				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), static_cast<uint32_t>(size), offset);
 			}
 
-			m_ConstantBufferOffset += (uint32_t)bufferSize;
+			m_ConstantBufferOffset += static_cast<uint32_t>(bufferSize);
 		}
 	}
 
@@ -379,9 +394,9 @@ namespace Hazel {
 		spirv_cross::Compiler comp(data);
 		spirv_cross::ShaderResources res = comp.get_shader_resources();
 
-		Log::GetLogger()->trace("OpenGLShader::Reflect - {0}", m_AssetPath);
-		Log::GetLogger()->trace("   {0} Uniform Buffers", res.uniform_buffers.size());
-		Log::GetLogger()->trace("   {0} Resources", res.sampled_images.size());
+		MORAVA_CORE_TRACE("OpenGLShader::Reflect - {0}", m_AssetPath);
+		MORAVA_CORE_TRACE("   {0} Uniform Buffers", res.uniform_buffers.size());
+		MORAVA_CORE_TRACE("   {0} Resources", res.sampled_images.size());
 
 		glUseProgram(m_RendererID);
 
@@ -389,16 +404,17 @@ namespace Hazel {
 		for (const spirv_cross::Resource& resource : res.uniform_buffers)
 		{
 			auto& bufferType = comp.get_type(resource.base_type_id);
-			int memberCount = (int)bufferType.member_types.size();
+			int memberCount = static_cast<int>(bufferType.member_types.size());
 			uint32_t bindingPoint = comp.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t bufferSize = static_cast<uint32_t>(comp.get_declared_struct_size(bufferType));
 
 			if (s_UniformBuffers.find(bindingPoint) == s_UniformBuffers.end())
 			{
 				ShaderUniformBuffer& buffer = s_UniformBuffers[bindingPoint];
 				buffer.Name = resource.name;
 				buffer.BindingPoint = bindingPoint;
-				buffer.Size = (uint32_t)comp.get_declared_struct_size(bufferType);
-			 
+				buffer.Size = bufferSize;
+
 #if 0
 				buffer.Uniforms.reserve(memberCount);
 				for (int i = 0; i < memberCount; i++)
@@ -417,9 +433,27 @@ namespace Hazel {
 				glBufferData(GL_UNIFORM_BUFFER, buffer.Size, nullptr, GL_DYNAMIC_DRAW);
 				glBindBufferBase(GL_UNIFORM_BUFFER, buffer.BindingPoint, buffer.RendererID);
 
-				Log::GetLogger()->trace("Created Uniform Buffer at binding point {0} with name '{1}', size is {2} bytes", buffer.BindingPoint, buffer.Name, buffer.Size);
+				MORAVA_CORE_TRACE("Created Uniform Buffer at binding point {0} with name '{1}', size is {2} bytes", buffer.BindingPoint, buffer.Name, buffer.Size);
 
 				glBindBuffer(GL_UNIFORM_BUFFER, 0);
+			}
+			else
+			{
+				// Validation
+				ShaderUniformBuffer& buffer = s_UniformBuffers.at(bindingPoint);
+				HZ_CORE_ASSERT(buffer.Name == resource.name); // Must be the same buffer
+				if (bufferSize > buffer.Size) // Resize buffer if needed
+				{
+					buffer.Size = bufferSize;
+
+					glDeleteBuffers(1, &buffer.RendererID);
+					glCreateBuffers(1, &buffer.RendererID);
+					glBindBuffer(GL_UNIFORM_BUFFER, buffer.RendererID);
+					glBufferData(GL_UNIFORM_BUFFER, buffer.Size, nullptr, GL_DYNAMIC_DRAW);
+					glBindBufferBase(GL_UNIFORM_BUFFER, buffer.BindingPoint, buffer.RendererID);
+
+					MORAVA_CORE_TRACE("Resized Uniform Buffer at binding point {0} with name '{1}', size is {2} bytes", buffer.BindingPoint, buffer.Name, buffer.Size);
+				}
 			}
 		}
 
@@ -432,7 +466,7 @@ namespace Hazel {
 			uint32_t dimension = type.image.dim;
 
 			GLint location = glGetUniformLocation(m_RendererID, name.c_str());
-			// HZ_CORE_ASSERT(location != -1);
+			//HZ_CORE_ASSERT(location != -1);
 			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
 			glUniform1i(location, binding);
 		}
@@ -521,73 +555,27 @@ namespace Hazel {
 		return FindToken(string.c_str(), token);
 	}
 
-	std::vector<std::string> SplitString(const std::string& string, const std::string& delimiters)
-	{
-		size_t start = 0;
-		size_t end = string.find_first_of(delimiters);
-
-		std::vector<std::string> result;
-
-		while (end <= std::string::npos)
-		{
-			std::string token = string.substr(start, end - start);
-			if (!token.empty())
-				result.push_back(token);
-
-			if (end == std::string::npos)
-				break;
-
-			start = end + 1;
-			end = string.find_first_of(delimiters, start);
-		}
-
-		return result;
-	}
-
-	std::vector<std::string> SplitString(const std::string& string, const char delimiter)
-	{
-		return SplitString(string, std::string(1, delimiter));
-	}
-
-	std::vector<std::string> Tokenize(const std::string& string)
-	{
-		return SplitString(string, " \t\n");
-	}
-
-	std::vector<std::string> GetLines(const std::string& string)
-	{
-		return SplitString(string, "\n");
-	}
-
 	std::string GetBlock(const char* str, const char** outPosition)
 	{
 		const char* end = strstr(str, "}");
-
-		if (!end) {
+		if (!end)
 			return str;
-		}
 
-		if (outPosition) {
+		if (outPosition)
 			*outPosition = end;
-		}
-
-		uint32_t length = (uint32_t)(end - str + 1);
+		uint32_t length = static_cast<uint32_t>(end - str + 1);
 		return std::string(str, length);
 	}
 
 	std::string GetStatement(const char* str, const char** outPosition)
 	{
 		const char* end = strstr(str, ";");
-
-		if (!end) {
+		if (!end)
 			return str;
-		}
 
-		if (outPosition) {
+		if (outPosition)
 			*outPosition = end;
-		}
-
-		uint32_t length = (uint32_t)(end - str + 1);
+		uint32_t length = static_cast<uint32_t>(end - str + 1);
 		return std::string(str, length);
 	}
 
@@ -598,6 +586,7 @@ namespace Hazel {
 
 	static bool IsTypeStringResource(const std::string& type)
 	{
+		if (type == "sampler1D")		return true;
 		if (type == "sampler2D")		return true;
 		if (type == "sampler2DMS")		return true;
 		if (type == "samplerCube")		return true;
@@ -633,28 +622,19 @@ namespace Hazel {
 
 	void OpenGLShader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size)
 	{
-		uint8_t* buffer = new uint8_t[size];
-		memcpy(buffer, data, size);
-
-		Ref<OpenGLShader> instance = this;
-		HazelRenderer::Submit([=]()
+		ShaderUniformBuffer* uniformBuffer = nullptr;
+		for (auto& [bindingPoint, ub] : s_UniformBuffers)
 		{
-			ShaderUniformBuffer* uniformBuffer = nullptr;
-			for (auto& [bindingPoint, ub] : s_UniformBuffers)
+			if (ub.Name == name)
 			{
-				if (ub.Name == name)
-				{
-					uniformBuffer = &ub;
-					break;
-				}
+				uniformBuffer = &ub;
+				break;
 			}
+		}
 
-			HZ_CORE_ASSERT(uniformBuffer);
-			HZ_CORE_ASSERT(uniformBuffer->Size >= size);
-			glNamedBufferSubData(uniformBuffer->RendererID, 0, size, buffer);
-
-			delete[] buffer;
-		});
+		HZ_CORE_ASSERT(uniformBuffer);
+		HZ_CORE_ASSERT(uniformBuffer->Size >= size);
+		glNamedBufferSubData(uniformBuffer->RendererID, 0, size, data);
 	}
 
 	void OpenGLShader::SetUniform(const std::string& fullname, float value)
@@ -758,23 +738,10 @@ namespace Hazel {
 		});
 	}
 
-	void OpenGLShader::UploadUniformUInt(const std::string& name, uint32_t value)
-	{
-		int32_t location = GetUniformLocation(name);
-		glUniform1ui(location, value);
-	}
-
-	void OpenGLShader::SetBool(const std::string& name, bool value)
-	{
-		HazelRenderer::Submit([=]() {
-			UploadUniformInt(name, value);
-		});
-	}
-
 	void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value)
 	{
 		HazelRenderer::Submit([=]() {
-		UploadUniformFloat2(name, value);
+			UploadUniformFloat2(name, value);
 		});
 	}
 
@@ -817,7 +784,7 @@ namespace Hazel {
 	{
 		if (m_Resources.find(name) == m_Resources.end())
 			return nullptr;
-		
+
 		return &m_Resources.at(name);
 	}
 
@@ -825,6 +792,7 @@ namespace Hazel {
 	{
 		glUniform1i(location, value);
 	}
+
 
 	void OpenGLShader::UploadUniformIntArray(uint32_t location, int32_t* values, int32_t count)
 	{
@@ -872,6 +840,12 @@ namespace Hazel {
 		glUniform1i(location, value);
 	}
 
+	void OpenGLShader::UploadUniformUInt(const std::string& name, uint32_t value)
+	{
+		int32_t location = GetUniformLocation(name);
+		glUniform1ui(location, value);
+	}
+
 	void OpenGLShader::UploadUniformIntArray(const std::string& name, int32_t* values, uint32_t count)
 	{
 		int32_t location = GetUniformLocation(name);
@@ -892,13 +866,12 @@ namespace Hazel {
 	{
 		glUseProgram(m_RendererID);
 		auto location = glGetUniformLocation(m_RendererID, name.c_str());
-		if (location != -1) {
+		if (location != -1)
 			glUniform2f(location, values.x, values.y);
-		}
-		else {
+		else
 			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
-		}
 	}
+
 
 	void OpenGLShader::UploadUniformFloat3(const std::string& name, const glm::vec3& values)
 	{

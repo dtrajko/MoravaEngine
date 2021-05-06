@@ -125,18 +125,18 @@ namespace Hazel {
 			uint32_t whiteTextureData = 0xffffffff;
 			s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
-			// Working on Hazel LIVE! #004
-			// s_Data.WhiteTexture->Lock();
-			// s_Data.WhiteTexture->GetWriteableBuffer().Write(&whiteTextureData, sizeof(uint32_t));
-			// s_Data.WhiteTexture->Unlock();
+			//	Working on Hazel LIVE! #004
+			//	s_Data.WhiteTexture->Lock();
+			//	s_Data.WhiteTexture->GetWriteableBuffer().Write(&whiteTextureData, sizeof(uint32_t));
+			//	s_Data.WhiteTexture->Unlock();
 
 			int32_t samplers[s_Data.MaxTextureSlots];
 			for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 				samplers[i] = i;
 
-			if (RendererBasic::GetVulkanSupported()) {
-				s_Data.TextureHazelShader = HazelShader::Create("assets/shaders/Renderer2D.glsl"); // not in use, only for constructor testing
-			}
+			//	if (RendererBasic::GetVulkanSupported()) {
+			//		s_Data.TextureHazelShader = HazelShader::Create("assets/shaders/Renderer2D.glsl"); // not in use, only for constructor testing
+			//	}
 
 			s_Data.TextureShader = new Shader("Shaders/Hazel/Renderer2D.vs", "Shaders/Hazel/Renderer2D.fs");
 			s_Data.TextureShader->Bind();
