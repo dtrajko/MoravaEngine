@@ -142,6 +142,10 @@ private:
 	Hazel::Ref<Shader> m_ShaderShadow;
 	Hazel::Ref<Shader> m_ShaderOmniShadow;
 	Hazel::Ref<Shader> m_ShaderPostProcessing;
+	Hazel::Ref<Shader> m_ShaderBloomBlur;
+
+	int m_PostProcessingEffect = 0;
+	bool m_PostProcessingEnabled = false;
 
 	Hazel::Ref<Hazel::HazelTextureCube> m_SkyboxTexture;
 

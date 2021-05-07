@@ -307,12 +307,16 @@ void EnvMapEditorLayer::SetupShaders()
     m_ShaderPostProcessing = Shader::Create("Shaders/env_map_post_processing.vert", "Shaders/env_map_post_processing.frag");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderPostProcessing compiled [programID={0}]", m_ShaderPostProcessing->GetProgramID());
 
+    m_ShaderBloomBlur = Shader::Create("Shaders/env_map_post_processing_bloom_blur.vert", "Shaders/env_map_post_processing_bloom_blur.frag");
+    Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderBloomBlur compiled [programID={0}]", m_ShaderBloomBlur->GetProgramID());
+
     ResourceManager::AddShader("Hazel/HazelPBR_Static", shaderHazelPBR_Static);
     ResourceManager::AddShader("Hazel/HazelPBR_Anim", shaderHazelPBR_Anim);
     ResourceManager::AddShader("Hazel/Renderer2D_Line", shaderRenderer2D_Line);
     ResourceManager::AddShader("Hazel/Outline", EnvMapSharedData::s_ShaderOutline);
     ResourceManager::AddShader("directional_shadow_map", m_ShaderShadow);
     ResourceManager::AddShader("env_map_post_processing", m_ShaderPostProcessing);
+    ResourceManager::AddShader("env_map_post_processing_bloom_blur", m_ShaderBloomBlur);
 
     ShaderLibrary::Add(shaderHazelPBR_Static);
     ShaderLibrary::Add(shaderHazelPBR_Anim);
@@ -320,6 +324,7 @@ void EnvMapEditorLayer::SetupShaders()
     ShaderLibrary::Add(EnvMapSharedData::s_ShaderOutline);
     ShaderLibrary::Add(m_ShaderShadow);
     ShaderLibrary::Add(m_ShaderPostProcessing);
+    ShaderLibrary::Add(m_ShaderBloomBlur);
 }
 
 void EnvMapEditorLayer::UpdateUniforms()
@@ -785,6 +790,27 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     }
     ImGui::End();
 
+    ImGui::Begin("Post Processing Effects");
+    {
+        if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::Checkbox("Post Processing Enabled", &m_PostProcessingEnabled);
+
+            ImGui::Separator();
+
+            ImGui::RadioButton("Default colors", &m_PostProcessingEffect, 0);
+            ImGui::RadioButton("Invert colors",  &m_PostProcessingEffect, 1);
+            ImGui::RadioButton("Grayscale",      &m_PostProcessingEffect, 2);
+            ImGui::RadioButton("Nightvision",    &m_PostProcessingEffect, 3);
+            ImGui::RadioButton("Kernel sharpen", &m_PostProcessingEffect, 4);
+            ImGui::RadioButton("Kernel blur",    &m_PostProcessingEffect, 5);
+            ImGui::RadioButton("Shades of gray", &m_PostProcessingEffect, 6);
+            ImGui::RadioButton("8-bit Colors",   &m_PostProcessingEffect, 7);
+            ImGui::RadioButton("Gaussian Blur",  &m_PostProcessingEffect, 8);            
+        }
+    }
+    ImGui::End();
+
     Application::Get()->OnImGuiRender();
 
     // ImGui::ShowMetricsWindow();
@@ -922,8 +948,13 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         ResizeViewport(viewportPanelSize, m_RenderFramebuffer);
         ResizeViewport(viewportPanelSize, m_PostProcessingFramebuffer);
 
-        // uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
-        uint64_t textureID = m_PostProcessingFramebuffer->GetTextureAttachmentColor()->GetID();
+        uint64_t textureID;
+        if (m_PostProcessingEnabled) {
+            textureID = m_PostProcessingFramebuffer->GetTextureAttachmentColor()->GetID();
+        }
+        else {
+            textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
+        }
         ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportMainSize.x, m_ViewportMainSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
         UpdateImGuizmo(mainWindow);
@@ -2079,6 +2110,8 @@ void EnvMapEditorLayer::OnRender(Window* mainWindow)
 
 void EnvMapEditorLayer::PostProcessing(Window* mainWindow)
 {
+    if (!m_PostProcessingEnabled) return;
+
     /**** BEGIN Render to Main Viewport ****/
     m_PostProcessingFramebuffer->Bind();
     m_PostProcessingFramebuffer->Clear(); // Clear the window
@@ -2087,17 +2120,39 @@ void EnvMapEditorLayer::PostProcessing(Window* mainWindow)
 
     EnvMapSceneRenderer::GetGeoPass()->GetSpecification().TargetFramebuffer = m_PostProcessingFramebuffer;
 
+    m_RenderFramebuffer->GetTextureAttachmentColor()->Bind(1);
+
     // render to post processing framebuffer here
 
-    m_ShaderPostProcessing->Bind();
+    {
+        // learnopengl post processing
+        m_ShaderPostProcessing->Bind();
+        m_ShaderPostProcessing->setInt("u_AlbedoMap", 1);
+        m_ShaderPostProcessing->setInt("u_Effect", m_PostProcessingEffect);
 
-    m_RenderFramebuffer->GetTextureAttachmentColor()->Bind(1);
-    m_ShaderPostProcessing->setInt("u_AlbedoMap", 1);
+        // 0: Default Colors
+        // 1: Invert Colors
+        // 2: Grayscale
+        // 3: Nightvision
+        // 4: Kernel(kernel_sharpen)
+        // 5: Kernel(kernel_blur)
+        // 6: Shades Of Gray
+        // 7: 8-Bit Colors
+        // 8: Gaussian Blur
+    }
+
+    {
+        // Hazel bloom blur post processing
+        // m_ShaderBloomBlur->Bind();
+        // m_ShaderBloomBlur->setInt("u_Texture", 1);
+        // m_ShaderBloomBlur->setBool("u_Horizontal", false);
+    }
 
     glBindVertexArray(GeometryFactory::Quad::GetVAO());
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     m_ShaderPostProcessing->Unbind();
+    m_ShaderBloomBlur->Unbind();
 
     m_PostProcessingFramebuffer->Unbind();
 }
