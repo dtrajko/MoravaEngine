@@ -38,6 +38,12 @@ void RendererECS::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 pro
 	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 }
 
+void RendererECS::PostProcessing(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	std::string passType = "post_processing";
+	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+}
+
 void RendererECS::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
@@ -47,6 +53,8 @@ void RendererECS::Render(float deltaTime, Window* mainWindow, Scene* scene, glm:
 	RenderOmniShadows(mainWindow, scene, projectionMatrix);
 
 	RenderPassMain(mainWindow, scene, projectionMatrix);
+
+	PostProcessing(mainWindow, scene, projectionMatrix);
 }
 
 RendererECS::~RendererECS()

@@ -196,6 +196,11 @@ void EnvMapEditorLayer::SetupRenderFramebuffer()
     m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
     m_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Depth);
     m_RenderFramebuffer->Generate(width, height);
+
+    // post processing framebuffer
+    m_PostProcessingFramebuffer = Hazel::Ref<Framebuffer>::Create(width, height);
+    m_PostProcessingFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
+    m_PostProcessingFramebuffer->Generate(width, height);
 }
 
 Hazel::Entity EnvMapEditorLayer::CreateEntity(const std::string& name)
@@ -826,6 +831,9 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         ImGui::Text("Viewport");
         ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
 
+        ImGui::Text("Post Processing");
+        ImGui::Image((void*)(intptr_t)m_PostProcessingFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+
         ImGui::Text("Equirectangular");
         ImGui::Image((void*)(intptr_t)EnvMapSceneRenderer::GetEnvEquirect()->GetID(), imageSize);
 
@@ -902,6 +910,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         glm::vec2 viewportPanelSize = glm::vec2(viewportSize.x, viewportSize.y);
 
         ResizeViewport(viewportPanelSize, m_RenderFramebuffer);
+        ResizeViewport(viewportPanelSize, m_PostProcessingFramebuffer);
 
         uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
         ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportMainSize.x, m_ViewportMainSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
@@ -1936,20 +1945,6 @@ std::vector<glm::mat4> EnvMapEditorLayer::CalculateLightTransform(glm::mat4 ligh
     return lightMatrices;
 }
 
-void EnvMapEditorLayer::OnRender(Window* mainWindow)
-{
-    /**** BEGIN Render to Main Viewport ****/
-    m_RenderFramebuffer->Bind();
-    m_RenderFramebuffer->Clear(); // Clear the window
-
-    EnvMapSceneRenderer::GetGeoPass()->GetSpecification().TargetFramebuffer = m_RenderFramebuffer;
-
-    OnRenderEditor();
-    // OnRenderRuntime()
-
-    m_RenderFramebuffer->Unbind();
-}
-
 void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
 {
     EnvMapSharedData::s_ShadowMapDirLight->BindForWriting();
@@ -2055,6 +2050,33 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<Shader> shader)
             }
         }
     }
+}
+
+void EnvMapEditorLayer::OnRender(Window* mainWindow)
+{
+    /**** BEGIN Render to Main Viewport ****/
+    m_RenderFramebuffer->Bind();
+    m_RenderFramebuffer->Clear(); // Clear the window
+
+    EnvMapSceneRenderer::GetGeoPass()->GetSpecification().TargetFramebuffer = m_RenderFramebuffer;
+
+    OnRenderEditor();
+    // OnRenderRuntime()
+
+    m_RenderFramebuffer->Unbind();
+}
+
+void EnvMapEditorLayer::PostProcessing(Window* mainWindow)
+{
+    /**** BEGIN Render to Main Viewport ****/
+    m_PostProcessingFramebuffer->Bind();
+    m_PostProcessingFramebuffer->Clear(); // Clear the window
+
+    EnvMapSceneRenderer::GetGeoPass()->GetSpecification().TargetFramebuffer = m_PostProcessingFramebuffer;
+
+    // render to post processing framebuffer here
+
+    m_PostProcessingFramebuffer->Unbind();
 }
 
 void EnvMapEditorLayer::OnRenderEditor()

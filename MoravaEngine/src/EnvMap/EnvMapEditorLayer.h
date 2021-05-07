@@ -37,12 +37,15 @@ public:
 	void OnScenePlay();
 	void OnSceneStop();
 
-	void OnRender(Window* mainWindow);
 	void OnRenderShadow(Window* mainWindow);
-	void OnRenderShadowOmni(Window* mainWindow);
-
-	void RenderShadowOmniSingleLight(Window* mainWindow, Hazel::Entity lightEntity, Hazel::Ref<OmniShadowMap> omniShadowMap);
 	void RenderSubmeshesShadowPass(Hazel::Ref<Shader> shader);
+
+	void OnRenderShadowOmni(Window* mainWindow);
+	void RenderShadowOmniSingleLight(Window* mainWindow, Hazel::Entity lightEntity, Hazel::Ref<OmniShadowMap> omniShadowMap);
+
+	void OnRender(Window* mainWindow);
+
+	void PostProcessing(Window* mainWindow);
 
 	void OnRenderEditor();
 	void OnRenderRuntime();
@@ -133,6 +136,7 @@ public:
 	glm::vec2 m_ImGuiViewportMain;
 	glm::vec2 m_ViewportMainSize;
 	Hazel::Ref<Framebuffer> m_RenderFramebuffer;
+	Hazel::Ref<Framebuffer> m_PostProcessingFramebuffer;
 
 private:
 	Hazel::Ref<Shader> m_ShaderShadow;

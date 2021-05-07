@@ -254,4 +254,8 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
     if (passType == "main") {
         m_EnvMapEditorLayer->OnRender(mainWindow);
     }
+
+    if (passType == "post_processing") {
+        m_EnvMapEditorLayer->PostProcessing(mainWindow);
+    }
 }
