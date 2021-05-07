@@ -130,7 +130,6 @@ public:
 	bool m_AllowViewportCameraEvents = true; // EditorLayer (Raypicking)
 
 	// viewports public
-	bool m_IsViewportEnabled;
 	glm::vec2 m_ImGuiViewportMain;
 	glm::vec2 m_ViewportMainSize;
 	Hazel::Ref<Framebuffer> m_RenderFramebuffer;

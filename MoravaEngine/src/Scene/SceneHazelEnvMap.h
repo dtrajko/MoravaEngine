@@ -51,43 +51,10 @@ private:
 	virtual void OnEntitySelected(Hazel::Entity entity) override;
 
 private:
-	EnvMapEditorLayer* m_EnvMapEditorLayer;
+	std::unique_ptr<EnvMapEditorLayer> m_EnvMapEditorLayer;
 
 	Hazel::Ref<Shader> m_ShaderBackground;
 	Hazel::Ref<Shader> m_ShaderBasic;
-
-	struct Entity {
-
-		struct Transform {
-			glm::vec3 Translation;
-			glm::quat Rotation;
-			glm::vec3 Scale;
-			glm::mat4 Transform;
-		} Transform;
-
-		struct Init {
-			struct Transform {
-				glm::vec3 Scale;
-			} Transform;
-			struct AABBTransform {
-				struct Transform {
-					glm::vec3 Scale;
-				} Transform;
-			} AABB;
-		} Init;
-
-		struct AABBTransform {
-			glm::vec3 Translation;
-			glm::quat Rotation;
-			glm::vec3 Scale;
-			glm::mat4 Transform;
-		} AABBTransform;
-
-		AABB AABBox;
-		glm::vec3 OriginOffset;
-		bool Intersecting;
-		bool Enabled;
-	};
 
 	Grid* m_Grid;
 	Pivot* m_PivotScene;

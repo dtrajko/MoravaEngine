@@ -115,7 +115,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupMaterials();
     SetupFramebuffers();
 
-    m_EnvMapEditorLayer = new EnvMapEditorLayer("Textures/HDR/umhlanga_sunrise_4k.hdr", this);
+    m_EnvMapEditorLayer = std::make_unique<EnvMapEditorLayer>("Textures/HDR/umhlanga_sunrise_4k.hdr", this);
 
     SetupMeshes();
     SetupModels();
@@ -128,7 +128,6 @@ SceneHazelEnvMap::SceneHazelEnvMap()
 
 SceneHazelEnvMap::~SceneHazelEnvMap()
 {
-    delete m_EnvMapEditorLayer;
 }
 
 void SceneHazelEnvMap::SetupShaders()
@@ -192,11 +191,6 @@ void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
 
 void SceneHazelEnvMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
-    if (!m_EnvMapEditorLayer->m_IsViewportEnabled) {
-        Scene::ShowExampleAppDockSpace(p_open, mainWindow);
-        return;
-    }
-
     m_EnvMapEditorLayer->ShowExampleAppDockSpace(p_open, mainWindow);
 }
 

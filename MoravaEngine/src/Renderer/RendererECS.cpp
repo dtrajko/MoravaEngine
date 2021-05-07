@@ -34,14 +34,6 @@ void RendererECS::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 
 
 void RendererECS::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
-
-	// Clear the window
-	RendererBasic::Clear(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
-
-	// ...
-
-	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
 	std::string passType = "main";
 	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
 }

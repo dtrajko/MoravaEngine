@@ -103,8 +103,6 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     Scene::s_ImGuizmoTransform = nullptr; // &GetMeshEntity()->Transform();
     Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
-    m_IsViewportEnabled = true;
-
     m_ResizeViewport = { 0.0f, 1.0f };
 
     SetupRenderFramebuffer();
@@ -191,8 +189,6 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
 
 void EnvMapEditorLayer::SetupRenderFramebuffer()
 {
-    if (!m_IsViewportEnabled) return;
-
     uint32_t width = Application::Get()->GetWindow()->GetWidth();
     uint32_t height = Application::Get()->GetWindow()->GetHeight();
 
@@ -827,147 +823,130 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     {
         ImVec2 imageSize(96.0f, 96.0f);
 
-        if (m_IsViewportEnabled)
-        {
-            ImGui::Text("Viewport");
-            ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+        ImGui::Text("Viewport");
+        ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
 
-            ImGui::Text("Equirectangular");
-            ImGui::Image((void*)(intptr_t)EnvMapSceneRenderer::GetEnvEquirect()->GetID(), imageSize);
+        ImGui::Text("Equirectangular");
+        ImGui::Image((void*)(intptr_t)EnvMapSceneRenderer::GetEnvEquirect()->GetID(), imageSize);
 
-            ImGui::Text("Shadow Map");
-            ImGui::Image((void*)(intptr_t)EnvMapSharedData::s_ShadowMapDirLight->GetTextureID(), imageSize);
-            // ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
-        }
+        ImGui::Text("Shadow Map");
+        ImGui::Image((void*)(intptr_t)EnvMapSharedData::s_ShadowMapDirLight->GetTextureID(), imageSize);
+        // ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
     }
     ImGui::End();
 
-    if (m_IsViewportEnabled)
+    ImGui::Begin("Viewport Info");
     {
-        ImGui::Begin("Viewport Info");
-        {
-            glm::ivec2 colorAttachmentSize = glm::ivec2(
-                m_RenderFramebuffer->GetTextureAttachmentColor()->GetWidth(),
-                m_RenderFramebuffer->GetTextureAttachmentColor()->GetHeight());
-            glm::ivec2 depthAttachmentSize = glm::ivec2(
-                m_RenderFramebuffer->GetAttachmentDepth()->GetWidth(),
-                m_RenderFramebuffer->GetAttachmentDepth()->GetHeight());
+        glm::ivec2 colorAttachmentSize = glm::ivec2(
+            m_RenderFramebuffer->GetTextureAttachmentColor()->GetWidth(),
+            m_RenderFramebuffer->GetTextureAttachmentColor()->GetHeight());
+        glm::ivec2 depthAttachmentSize = glm::ivec2(
+            m_RenderFramebuffer->GetAttachmentDepth()->GetWidth(),
+            m_RenderFramebuffer->GetAttachmentDepth()->GetHeight());
 
-            ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
-            ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
-        }
-        ImGui::End();
-
-        ImGui::Begin("Viewport Environment Map Info");
-        {
-            Hazel::Ref<Framebuffer> targetFramebuffer = EnvMapSceneRenderer::GetCompositePass()->GetSpecification().TargetFramebuffer;
-            glm::ivec2 colorAttachmentSize = glm::ivec2(
-                targetFramebuffer->GetTextureAttachmentColor()->GetWidth(),
-                targetFramebuffer->GetTextureAttachmentColor()->GetHeight());
-            glm::ivec2 depthAttachmentSize = glm::ivec2(
-                targetFramebuffer->GetAttachmentDepth()->GetWidth(),
-                targetFramebuffer->GetAttachmentDepth()->GetHeight());
-
-            ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
-            ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
-        }
-        ImGui::End();
+        ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
+        ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
     }
+    ImGui::End();
 
-    if (!m_IsViewportEnabled)
+    ImGui::Begin("Viewport Environment Map Info");
     {
-        ImGui::Begin("ImGuizmo");
-        {
-            UpdateImGuizmo(mainWindow);
-        }
-        ImGui::End();
-    }
+        Hazel::Ref<Framebuffer> targetFramebuffer = EnvMapSceneRenderer::GetCompositePass()->GetSpecification().TargetFramebuffer;
+        glm::ivec2 colorAttachmentSize = glm::ivec2(
+            targetFramebuffer->GetTextureAttachmentColor()->GetWidth(),
+            targetFramebuffer->GetTextureAttachmentColor()->GetHeight());
+        glm::ivec2 depthAttachmentSize = glm::ivec2(
+            targetFramebuffer->GetAttachmentDepth()->GetWidth(),
+            targetFramebuffer->GetAttachmentDepth()->GetHeight());
 
-    if (m_IsViewportEnabled)
+        ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
+        ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
+    }
+    ImGui::End();
+
+    // TheCherno ImGui Viewport displaying the framebuffer content
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+
+    ImGui::Begin("Viewport");
     {
-        // TheCherno ImGui Viewport displaying the framebuffer content
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+        m_ViewportPanelMouseOver = ImGui::IsWindowHovered();
+        m_ViewportPanelFocused = ImGui::IsWindowFocused();
 
-        ImGui::Begin("Viewport");
-        {
-            m_ViewportPanelMouseOver = ImGui::IsWindowHovered();
-            m_ViewportPanelFocused = ImGui::IsWindowFocused();
+        ImGuiWrapper::SetViewportEnabled(true);
+        ImGuiWrapper::SetViewportHovered(m_ViewportPanelMouseOver);
+        ImGuiWrapper::SetViewportFocused(m_ViewportPanelFocused);
 
-            ImGuiWrapper::SetViewportEnabled(true);
-            ImGuiWrapper::SetViewportHovered(m_ViewportPanelMouseOver);
-            ImGuiWrapper::SetViewportFocused(m_ViewportPanelFocused);
+        // Calculate Viewport bounds (used in EnvMapEditorLayer::CastRay)
+        auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
+        auto viewportSize = ImGui::GetContentRegionAvail();
 
-            // Calculate Viewport bounds (used in EnvMapEditorLayer::CastRay)
-            auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
-            auto viewportSize = ImGui::GetContentRegionAvail();
-            //  Hazel::EnvMapSceneRenderer::SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-            //  EnvMapSharedData::s_EditorScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-            //  if (s_RuntimeScene) {
-            //      s_RuntimeScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-            //  }
-            //  
-            //  s_EditorCamera->SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
-            //  s_EditorCamera->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-            //  ImGui::Image((void*)Hazel::EnvMapSceneRenderer::GetFinalColorBufferID(), viewportSize, { 0, 1 }, { 1, 0 });
+        //  Hazel::EnvMapSceneRenderer::SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+        //  EnvMapSharedData::s_EditorScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+        //  if (s_RuntimeScene) {
+        //      s_RuntimeScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+        //  }
+        //  
+        //  s_EditorCamera->SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
+        //  s_EditorCamera->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+        //  ImGui::Image((void*)Hazel::EnvMapSceneRenderer::GetFinalColorBufferID(), viewportSize, { 0, 1 }, { 1, 0 });
 
-            ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+        ImVec2 screen_pos = ImGui::GetCursorScreenPos();
 
-            m_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportMain.x);
-            m_ImGuiViewport.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportMain.y);
-            m_ImGuiViewport.Width = (int)ImGui::GetWindowWidth();
-            m_ImGuiViewport.Height = (int)ImGui::GetWindowHeight();
-            m_ImGuiViewport.MouseX = (int)ImGui::GetMousePos().x;
-            m_ImGuiViewport.MouseY = (int)ImGui::GetMousePos().y;
+        m_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportMain.x);
+        m_ImGuiViewport.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportMain.y);
+        m_ImGuiViewport.Width = (int)ImGui::GetWindowWidth();
+        m_ImGuiViewport.Height = (int)ImGui::GetWindowHeight();
+        m_ImGuiViewport.MouseX = (int)ImGui::GetMousePos().x;
+        m_ImGuiViewport.MouseY = (int)ImGui::GetMousePos().y;
 
-            glm::vec2 viewportPanelSize = glm::vec2(viewportSize.x, viewportSize.y);
+        glm::vec2 viewportPanelSize = glm::vec2(viewportSize.x, viewportSize.y);
 
-            ResizeViewport(viewportPanelSize, m_RenderFramebuffer);
+        ResizeViewport(viewportPanelSize, m_RenderFramebuffer);
 
-            uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
-            ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportMainSize.x, m_ViewportMainSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+        uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
+        ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportMainSize.x, m_ViewportMainSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
-            UpdateImGuizmo(mainWindow);
+        UpdateImGuizmo(mainWindow);
 
-            auto windowSize = ImGui::GetWindowSize();
-            ImVec2 minBound = ImGui::GetWindowPos();
+        auto windowSize = ImGui::GetWindowSize();
+        ImVec2 minBound = ImGui::GetWindowPos();
 
-            minBound.x += viewportOffset.x;
-            // minBound.y += viewportOffset.y;
+        minBound.x += viewportOffset.x;
+        // minBound.y += viewportOffset.y;
 
-            ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
-            m_ViewportBounds[0] = { minBound.x, minBound.y };
-            m_ViewportBounds[1] = { maxBound.x, maxBound.y };
+        ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
+        m_ViewportBounds[0] = { minBound.x, minBound.y };
+        m_ViewportBounds[1] = { maxBound.x, maxBound.y };
 
-            SetViewportBounds(m_ViewportBounds);
-            m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound); // EditorLayer
-        }
-        ImGui::End();
-
-        ImGui::Begin("Viewport Environment Map");
-        {
-            m_ImGuiViewportEnvMap.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportEnvMapX);
-            m_ImGuiViewportEnvMap.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportEnvMapY);
-            m_ImGuiViewportEnvMap.Width = (int)ImGui::GetWindowWidth();
-            m_ImGuiViewportEnvMap.Height = (int)ImGui::GetWindowHeight();
-            m_ImGuiViewportEnvMap.MouseX = (int)ImGui::GetMousePos().x;
-            m_ImGuiViewportEnvMap.MouseY = (int)ImGui::GetMousePos().y;
-
-            m_ViewportEnvMapFocused = ImGui::IsWindowFocused(); // Not in use, use m_ViewportPanelFocused instead
-            m_ViewportEnvMapHovered = ImGui::IsWindowHovered(); // Not in use, use m_ViewportPanelMouseOver instead
-
-            ImVec2 viewportPanelSizeImGuiEnvMap = ImGui::GetContentRegionAvail();
-            glm::vec2 viewportPanelSizeEnvMap = glm::vec2(viewportPanelSizeImGuiEnvMap.x, viewportPanelSizeImGuiEnvMap.y);
-
-            // Currently resize can only work with a single (main) viewport
-            // ResizeViewport(viewportPanelSizeEnvMap, m_EnvMapEditorLayer->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer);
-            Hazel::Ref<Framebuffer> targetFramebuffer = EnvMapSceneRenderer::GetCompositePass()->GetSpecification().TargetFramebuffer;
-            uint64_t textureID = targetFramebuffer->GetTextureAttachmentColor()->GetID();
-            ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportEnvMapSize.x, m_ViewportEnvMapSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-        }
-        ImGui::End();
-
-        ImGui::PopStyleVar();
+        SetViewportBounds(m_ViewportBounds);
+        m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound); // EditorLayer
     }
+    ImGui::End();
+
+    ImGui::Begin("Viewport Environment Map");
+    {
+        m_ImGuiViewportEnvMap.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportEnvMapX);
+        m_ImGuiViewportEnvMap.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportEnvMapY);
+        m_ImGuiViewportEnvMap.Width = (int)ImGui::GetWindowWidth();
+        m_ImGuiViewportEnvMap.Height = (int)ImGui::GetWindowHeight();
+        m_ImGuiViewportEnvMap.MouseX = (int)ImGui::GetMousePos().x;
+        m_ImGuiViewportEnvMap.MouseY = (int)ImGui::GetMousePos().y;
+
+        m_ViewportEnvMapFocused = ImGui::IsWindowFocused(); // Not in use, use m_ViewportPanelFocused instead
+        m_ViewportEnvMapHovered = ImGui::IsWindowHovered(); // Not in use, use m_ViewportPanelMouseOver instead
+
+        ImVec2 viewportPanelSizeImGuiEnvMap = ImGui::GetContentRegionAvail();
+        glm::vec2 viewportPanelSizeEnvMap = glm::vec2(viewportPanelSizeImGuiEnvMap.x, viewportPanelSizeImGuiEnvMap.y);
+
+        // Currently resize can only work with a single (main) viewport
+        // ResizeViewport(viewportPanelSizeEnvMap, m_EnvMapEditorLayer->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer);
+        Hazel::Ref<Framebuffer> targetFramebuffer = EnvMapSceneRenderer::GetCompositePass()->GetSpecification().TargetFramebuffer;
+        uint64_t textureID = targetFramebuffer->GetTextureAttachmentColor()->GetID();
+        ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportEnvMapSize.x, m_ViewportEnvMapSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+    }
+    ImGui::End();
+
+    ImGui::PopStyleVar();
 
     uint32_t id = 0;
     auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
@@ -1960,28 +1939,15 @@ std::vector<glm::mat4> EnvMapEditorLayer::CalculateLightTransform(glm::mat4 ligh
 void EnvMapEditorLayer::OnRender(Window* mainWindow)
 {
     /**** BEGIN Render to Main Viewport ****/
-    {
-        if (m_IsViewportEnabled)
-        {
-            m_RenderFramebuffer->Bind();
-            m_RenderFramebuffer->Clear(); // Clear the window
-        }
-        else
-        {
-            // configure the viewport to the original framebuffer's screen dimensions
-            RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
-        }
-    }
+    m_RenderFramebuffer->Bind();
+    m_RenderFramebuffer->Clear(); // Clear the window
 
     EnvMapSceneRenderer::GetGeoPass()->GetSpecification().TargetFramebuffer = m_RenderFramebuffer;
 
     OnRenderEditor();
     // OnRenderRuntime()
 
-    if (m_IsViewportEnabled)
-    {
-        m_RenderFramebuffer->Unbind();
-    }
+    m_RenderFramebuffer->Unbind();
 }
 
 void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
