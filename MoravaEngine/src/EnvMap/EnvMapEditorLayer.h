@@ -141,6 +141,7 @@ public:
 private:
 	Hazel::Ref<Shader> m_ShaderShadow;
 	Hazel::Ref<Shader> m_ShaderOmniShadow;
+	Hazel::Ref<Shader> m_ShaderPostProcessing;
 
 	Hazel::Ref<Hazel::HazelTextureCube> m_SkyboxTexture;
 

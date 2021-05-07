@@ -14,6 +14,7 @@
 #include "ImGui/ImGuiWrapper.h"
 #include "Light/PointLight.h"
 #include "Material/MaterialLibrary.h"
+#include "Mesh/GeometryFactory.h"
 #include "Renderer/RendererBasic.h"
 #include "Scene/SceneHazelEnvMap.h"
 #include "Shader/ShaderLibrary.h"
@@ -121,6 +122,8 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 
     EnvMapSharedData::s_OmniShadowMapSpotLight = Hazel::Ref<OmniShadowMap>::Create();
     EnvMapSharedData::s_OmniShadowMapSpotLight->Init(scene->GetSettings().omniShadowMapWidth, scene->GetSettings().omniShadowMapHeight);
+
+    GeometryFactory::Quad::Create();
 }
 
 void EnvMapEditorLayer::Init()
@@ -136,6 +139,16 @@ void EnvMapEditorLayer::Init()
 
     bool depthTest = true;
     Hazel::Renderer2D::Init();
+}
+
+EnvMapEditorLayer::~EnvMapEditorLayer()
+{
+    MaterialLibrary::Cleanup();
+
+    delete EnvMapSharedData::s_RuntimeCamera;
+    delete EnvMapSharedData::s_EditorCamera;
+
+    GeometryFactory::Quad::Destroy();
 }
 
 void EnvMapEditorLayer::SetupContextData(Scene* scene)
@@ -291,17 +304,22 @@ void EnvMapEditorLayer::SetupShaders()
     m_ShaderOmniShadow = Shader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderOmniShadow compiled [programID={0}]", m_ShaderOmniShadow->GetProgramID());
 
+    m_ShaderPostProcessing = Shader::Create("Shaders/env_map_post_processing.vert", "Shaders/env_map_post_processing.frag");
+    Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderPostProcessing compiled [programID={0}]", m_ShaderPostProcessing->GetProgramID());
+
     ResourceManager::AddShader("Hazel/HazelPBR_Static", shaderHazelPBR_Static);
     ResourceManager::AddShader("Hazel/HazelPBR_Anim", shaderHazelPBR_Anim);
     ResourceManager::AddShader("Hazel/Renderer2D_Line", shaderRenderer2D_Line);
     ResourceManager::AddShader("Hazel/Outline", EnvMapSharedData::s_ShaderOutline);
     ResourceManager::AddShader("directional_shadow_map", m_ShaderShadow);
+    ResourceManager::AddShader("env_map_post_processing", m_ShaderPostProcessing);
 
     ShaderLibrary::Add(shaderHazelPBR_Static);
     ShaderLibrary::Add(shaderHazelPBR_Anim);
     ShaderLibrary::Add(shaderRenderer2D_Line);
     ShaderLibrary::Add(EnvMapSharedData::s_ShaderOutline);
     ShaderLibrary::Add(m_ShaderShadow);
+    ShaderLibrary::Add(m_ShaderPostProcessing);
 }
 
 void EnvMapEditorLayer::UpdateUniforms()
@@ -331,14 +349,6 @@ void EnvMapEditorLayer::SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox)
 {
     m_SkyboxTexture = skybox;
     m_SkyboxTexture->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-}
-
-EnvMapEditorLayer::~EnvMapEditorLayer()
-{
-    MaterialLibrary::Cleanup();
-
-    delete EnvMapSharedData::s_RuntimeCamera;
-    delete EnvMapSharedData::s_EditorCamera;
 }
 
 void EnvMapEditorLayer::OnUpdate(float timestep)
@@ -912,7 +922,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         ResizeViewport(viewportPanelSize, m_RenderFramebuffer);
         ResizeViewport(viewportPanelSize, m_PostProcessingFramebuffer);
 
-        uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
+        // uint64_t textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
+        uint64_t textureID = m_PostProcessingFramebuffer->GetTextureAttachmentColor()->GetID();
         ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportMainSize.x, m_ViewportMainSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
         UpdateImGuizmo(mainWindow);
@@ -2072,9 +2083,21 @@ void EnvMapEditorLayer::PostProcessing(Window* mainWindow)
     m_PostProcessingFramebuffer->Bind();
     m_PostProcessingFramebuffer->Clear(); // Clear the window
 
+    RendererBasic::Clear(0.0f, 1.0f, 1.0f, 1.0f);
+
     EnvMapSceneRenderer::GetGeoPass()->GetSpecification().TargetFramebuffer = m_PostProcessingFramebuffer;
 
     // render to post processing framebuffer here
+
+    m_ShaderPostProcessing->Bind();
+
+    m_RenderFramebuffer->GetTextureAttachmentColor()->Bind(1);
+    m_ShaderPostProcessing->setInt("u_AlbedoMap", 1);
+
+    glBindVertexArray(GeometryFactory::Quad::GetVAO());
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    m_ShaderPostProcessing->Unbind();
 
     m_PostProcessingFramebuffer->Unbind();
 }
