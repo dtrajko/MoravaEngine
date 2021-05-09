@@ -7,6 +7,7 @@
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/RenderPass.h"
 #include "Hazel/Renderer/SceneEnvironment.h"
+#include "Hazel/Renderer/SceneRenderer.h"
 #include "Hazel/Scene/Entity.h"
 
 #include "Camera/Camera.h"
@@ -18,25 +19,11 @@
 class SceneRendererHazelVulkan
 {
 public:
-	struct SceneRendererOptions
-	{
-		bool ShowGrid = true;
-		bool ShowBoundingBoxes = false;
-	};
-
-	struct SceneRendererCamera
-	{
-		Hazel::HazelCamera Camera;
-		glm::mat4 ViewMatrix;
-		float Near, Far;
-		float FOV;
-	};
-
 	static void Init(std::string filepath, Hazel::HazelScene* scene);
 
 	static void SetViewportSize(uint32_t width, uint32_t height);
 
-	static void BeginScene(Hazel::HazelScene* scene, const SceneRendererCamera& camera);
+	static void BeginScene(Hazel::HazelScene* scene, const Hazel::SceneRendererCamera& camera);
 	static void EndScene();
 
 	static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<Hazel::HazelMaterial> overrideMaterial = nullptr);
@@ -50,7 +37,7 @@ public:
 	// TODO: Temp
 	static uint32_t GetFinalColorBufferRendererID();
 
-	static SceneRendererOptions& GetOptions();
+	static Hazel::SceneRendererOptions& GetOptions();
 
 	// Temporary methods from EnvMapEditorLayer
 	static Hazel::Ref<Hazel::HazelTextureCube> GetRadianceMap();
@@ -69,7 +56,7 @@ public:
 	static Hazel::Ref<Shader> GetShaderGrid() { return s_ShaderGrid; }
 	static Hazel::Ref<Hazel::HazelTexture2D> GetEnvEquirect() { return s_EnvEquirect; }
 	static void SetupShaders();
-	static SceneRendererCamera& GetCamera();
+	static Hazel::SceneRendererCamera& GetCamera();
 
 	static void SubmitEntity(Hazel::Entity entity);
 

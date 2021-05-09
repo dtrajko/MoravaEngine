@@ -35,7 +35,7 @@ struct EnvMapSceneRendererData
     const Hazel::HazelScene* ActiveScene = nullptr;
     struct SceneInfo
     {
-        EnvMapSceneRenderer::SceneRendererCamera SceneCamera;
+        Hazel::SceneRendererCamera SceneCamera;
 
         // Resources
         Ref<Hazel::HazelMaterial> HazelSkyboxMaterial;
@@ -68,7 +68,7 @@ struct EnvMapSceneRendererData
     // Ref<Shader> GridShader;
     Ref<Hazel::HazelMaterial> OutlineMaterial;
 
-    EnvMapSceneRenderer::SceneRendererOptions Options;
+    Hazel::SceneRendererOptions Options;
 
     // Renderer data
     Hazel::RenderCommandQueue* m_CommandQueue;
@@ -195,7 +195,7 @@ void EnvMapSceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
     s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height, true);
 }
 
-void EnvMapSceneRenderer::BeginScene(Hazel::HazelScene* scene, const SceneRendererCamera& camera)
+void EnvMapSceneRenderer::BeginScene(Hazel::HazelScene* scene, const Hazel::SceneRendererCamera& camera)
 {
     // HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
@@ -233,7 +233,7 @@ void EnvMapSceneRenderer::SubmitEntity(Hazel::Entity entity)
     // TODO: s_Data.DrawList.push_back({ mesh, entity->GetMaterial(), entity->GetTransform() });
 }
 
-EnvMapSceneRenderer::SceneRendererCamera& EnvMapSceneRenderer::GetCamera()
+Hazel::SceneRendererCamera& EnvMapSceneRenderer::GetCamera()
 {
     return s_Data.SceneData.SceneCamera;
 }
@@ -630,7 +630,7 @@ uint32_t EnvMapSceneRenderer::GetFinalColorBufferRendererID()
     return (uint32_t)s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
 }
 
-EnvMapSceneRenderer::SceneRendererOptions& EnvMapSceneRenderer::GetOptions()
+Hazel::SceneRendererOptions& EnvMapSceneRenderer::GetOptions()
 {
     return s_Data.Options;
 }

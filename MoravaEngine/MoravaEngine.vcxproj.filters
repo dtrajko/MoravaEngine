@@ -768,9 +768,6 @@
     <ClCompile Include="src\HazelVulkan\MaterialHazelVulkan.cpp">
       <Filter>HazelVulkan</Filter>
     </ClCompile>
-    <ClCompile Include="src\HazelVulkan\RenderPassHazelVulkan.cpp">
-      <Filter>HazelVulkan</Filter>
-    </ClCompile>
     <ClCompile Include="src\HazelVulkan\SceneRendererHazelVulkan.cpp">
       <Filter>HazelVulkan</Filter>
     </ClCompile>
@@ -1648,9 +1645,6 @@
       <Filter>HazelVulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\HazelVulkan\MaterialHazelVulkan.h">
-      <Filter>HazelVulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelVulkan\RenderPassHazelVulkan.h">
       <Filter>HazelVulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\HazelVulkan\SceneRendererHazelVulkan.h">

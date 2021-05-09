@@ -35,7 +35,7 @@ struct SceneRendererHazelVulkanData
     const Hazel::HazelScene* ActiveScene = nullptr;
     struct SceneInfo
     {
-        SceneRendererHazelVulkan::SceneRendererCamera SceneCamera;
+        Hazel::SceneRendererCamera SceneCamera;
 
         // Resources
         Ref<Hazel::HazelMaterial> HazelSkyboxMaterial;
@@ -68,7 +68,7 @@ struct SceneRendererHazelVulkanData
     // Ref<Shader> GridShader;
     Ref<Hazel::HazelMaterial> OutlineMaterial;
 
-    SceneRendererHazelVulkan::SceneRendererOptions Options;
+    Hazel::SceneRendererOptions Options;
 
     // Renderer data
     Hazel::RenderCommandQueue* m_CommandQueue;
@@ -195,7 +195,7 @@ void SceneRendererHazelVulkan::SetViewportSize(uint32_t width, uint32_t height)
     s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height, true);
 }
 
-void SceneRendererHazelVulkan::BeginScene(Hazel::HazelScene* scene, const SceneRendererCamera& camera)
+void SceneRendererHazelVulkan::BeginScene(Hazel::HazelScene* scene, const Hazel::SceneRendererCamera& camera)
 {
     // HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
@@ -233,7 +233,7 @@ void SceneRendererHazelVulkan::SubmitEntity(Hazel::Entity entity)
     // TODO: s_Data.DrawList.push_back({ mesh, entity->GetMaterial(), entity->GetTransform() });
 }
 
-SceneRendererHazelVulkan::SceneRendererCamera& SceneRendererHazelVulkan::GetCamera()
+Hazel::SceneRendererCamera& SceneRendererHazelVulkan::GetCamera()
 {
     return s_Data.SceneData.SceneCamera;
 }
@@ -630,7 +630,7 @@ uint32_t SceneRendererHazelVulkan::GetFinalColorBufferRendererID()
     return (uint32_t)s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
 }
 
-SceneRendererHazelVulkan::SceneRendererOptions& SceneRendererHazelVulkan::GetOptions()
+Hazel::SceneRendererOptions& SceneRendererHazelVulkan::GetOptions()
 {
     return s_Data.Options;
 }
