@@ -154,16 +154,17 @@ namespace Hazel {
 		caps.Vendor = (const char*)glGetString(GL_VENDOR);
 		caps.Device = (const char*)glGetString(GL_RENDERER);
 		caps.Version = (const char*)glGetString(GL_VERSION);
-		
+
 		glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.MaxAnisotropy);
-		
+
 		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &caps.MaxTextureUnits);
-		
+
 		GLenum error = glGetError();
 		while (error != GL_NO_ERROR)
 		{
-			HZ_CORE_ERROR("OpenGL Error {0}", error);
+			// HZ_CORE_ERROR("OpenGL Error {0}", error);
+			Log::GetLogger()->error("OpenGL Error {0}", error);
 			error = glGetError();
 		}
 

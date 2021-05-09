@@ -15,7 +15,7 @@
 #include "Mesh/HazelFullscreenQuad.h"
 
 
-class EnvMapSceneRenderer
+class SceneRendererHazelVulkan
 {
 public:
 	struct SceneRendererOptions

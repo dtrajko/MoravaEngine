@@ -10,6 +10,7 @@ namespace Hazel {
 	struct RenderPassSpecification
 	{
 		Ref<HazelFramebuffer> TargetFramebuffer;
+		std::string DebugName;
 	};
 
 	class RenderPass : public RefCounted

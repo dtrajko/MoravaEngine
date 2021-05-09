@@ -95,7 +95,7 @@ namespace Hazel {
 
 		// Tests loading shaders
 
-		HazelShader::Create("assets/shaders/Renderer2D.glsl"); // OK
+		// HazelShader::Create("assets/shaders/Renderer2D.glsl"); // OK
 
 		// HazelShader::Create("assets/shaders/Grid.glsl"); // NOT OK
 		// HazelShader::Create("assets/shaders/Skybox.glsl"); // NOT OK

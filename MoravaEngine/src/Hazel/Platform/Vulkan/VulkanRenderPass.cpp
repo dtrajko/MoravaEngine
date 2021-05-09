@@ -3,7 +3,8 @@
 
 namespace Hazel {
 
-	VulkanRenderPass::VulkanRenderPass()
+	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecification& spec)
+		: m_Specification(spec)
 	{
 	}
 

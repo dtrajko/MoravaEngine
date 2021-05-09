@@ -36,7 +36,8 @@
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
 // #define SCENE_ANIM_PBR
-#define SCENE_HAZEL_ENV_MAP
+// #define SCENE_HAZEL_ENV_MAP
+#define SCENE_HAZEL_VULKAN
 
 #include "Hazel/Core/Base.h"
 #include "Hazel/Events/Event.h"
@@ -128,6 +129,9 @@
 #elif defined(SCENE_HAZEL_ENV_MAP)
 #include "Scene/SceneHazelEnvMap.h"
 #include "Renderer/RendererECS.h"
+#elif defined(SCENE_HAZEL_VULKAN)
+#include "Scene/SceneHazelVulkan.h"
+#include "Renderer/RendererHazelVulkan.h"
 #endif
 
 #include <GL/glew.h>
@@ -238,6 +242,9 @@ int main()
 #elif defined(SCENE_HAZEL_ENV_MAP)
 	scene = new SceneHazelEnvMap();
 	renderer = static_cast<RendererBasic*>(new RendererECS());
+#elif defined(SCENE_HAZEL_VULKAN)
+	scene = new SceneHazelVulkan();
+	renderer = static_cast<RendererBasic*>(new RendererHazelVulkan());
 #else
 		throw std::runtime_error("Scene and Renderer could not be loaded!");
 #endif

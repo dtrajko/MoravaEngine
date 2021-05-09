@@ -149,6 +149,11 @@
     <ClCompile Include="src\Framebuffer\OmniShadowMap.cpp" />
     <ClCompile Include="src\Framebuffer\Renderbuffer.cpp" />
     <ClCompile Include="src\Framebuffer\ShadowMap.cpp" />
+    <ClCompile Include="src\HazelVulkan\EditorLayerHazelVulkan.cpp" />
+    <ClCompile Include="src\HazelVulkan\MaterialHazelVulkan.cpp" />
+    <ClCompile Include="src\HazelVulkan\RenderPassHazelVulkan.cpp" />
+    <ClCompile Include="src\HazelVulkan\SceneRendererHazelVulkan.cpp" />
+    <ClCompile Include="src\HazelVulkan\SharedDataHazelVulkan.cpp" />
     <ClCompile Include="src\Hazel\Core\HazelLog.cpp" />
     <ClCompile Include="src\Hazel\Core\Layer.cpp" />
     <ClCompile Include="src\Hazel\Core\LayerStack.cpp" />
@@ -294,6 +299,7 @@
     <ClCompile Include="src\Renderer\RendererDeferredOGL.cpp" />
     <ClCompile Include="src\Renderer\RendererECS.cpp" />
     <ClCompile Include="src\Renderer\RendererEditor.cpp" />
+    <ClCompile Include="src\Renderer\RendererHazelVulkan.cpp" />
     <ClCompile Include="src\Renderer\RendererOmniShadows.cpp" />
     <ClCompile Include="src\Renderer\RendererPBR.cpp" />
     <ClCompile Include="src\Renderer\RendererTrivial.cpp" />
@@ -312,6 +318,7 @@
     <ClCompile Include="src\Scene\SceneEiffel.cpp" />
     <ClCompile Include="src\Scene\SceneFramebuffers.cpp" />
     <ClCompile Include="src\Scene\SceneHazelEnvMap.cpp" />
+    <ClCompile Include="src\Scene\SceneHazelVulkan.cpp" />
     <ClCompile Include="src\Scene\SceneInstanced.cpp" />
     <ClCompile Include="src\Scene\SceneJoey.cpp" />
     <ClCompile Include="src\Scene\SceneMarchingCubes.cpp" />
@@ -412,6 +419,11 @@
     <ClInclude Include="src\Framebuffer\OmniShadowMap.h" />
     <ClInclude Include="src\Framebuffer\Renderbuffer.h" />
     <ClInclude Include="src\Framebuffer\ShadowMap.h" />
+    <ClInclude Include="src\HazelVulkan\EditorLayerHazelVulkan.h" />
+    <ClInclude Include="src\HazelVulkan\MaterialHazelVulkan.h" />
+    <ClInclude Include="src\HazelVulkan\RenderPassHazelVulkan.h" />
+    <ClInclude Include="src\HazelVulkan\SceneRendererHazelVulkan.h" />
+    <ClInclude Include="src\HazelVulkan\SharedDataHazelVulkan.h" />
     <ClInclude Include="src\Hazel\Asset\Asset.h" />
     <ClInclude Include="src\Hazel\Core\Assert.h" />
     <ClInclude Include="src\Hazel\Core\Base.h" />
@@ -583,6 +595,7 @@
     <ClInclude Include="src\Renderer\RendererDeferredOGL.h" />
     <ClInclude Include="src\Renderer\RendererECS.h" />
     <ClInclude Include="src\Renderer\RendererEditor.h" />
+    <ClInclude Include="src\Renderer\RendererHazelVulkan.h" />
     <ClInclude Include="src\Renderer\RendererOmniShadows.h" />
     <ClInclude Include="src\Renderer\RendererPBR.h" />
     <ClInclude Include="src\Renderer\RendererTrivial.h" />
@@ -601,6 +614,7 @@
     <ClInclude Include="src\Scene\SceneEiffel.h" />
     <ClInclude Include="src\Scene\SceneFramebuffers.h" />
     <ClInclude Include="src\Scene\SceneHazelEnvMap.h" />
+    <ClInclude Include="src\Scene\SceneHazelVulkan.h" />
     <ClInclude Include="src\Scene\SceneInstanced.h" />
     <ClInclude Include="src\Scene\SceneJoey.h" />
     <ClInclude Include="src\Scene\SceneMarchingCubes.h" />

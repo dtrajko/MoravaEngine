@@ -756,6 +756,27 @@
     <ClCompile Include="src\Hazel\Utilities\StringUtils.cpp">
       <Filter>Hazel\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="src\Scene\SceneHazelVulkan.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\RendererHazelVulkan.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelVulkan\EditorLayerHazelVulkan.cpp">
+      <Filter>HazelVulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelVulkan\MaterialHazelVulkan.cpp">
+      <Filter>HazelVulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelVulkan\RenderPassHazelVulkan.cpp">
+      <Filter>HazelVulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelVulkan\SceneRendererHazelVulkan.cpp">
+      <Filter>HazelVulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelVulkan\SharedDataHazelVulkan.cpp">
+      <Filter>HazelVulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -1617,6 +1638,27 @@
     <ClInclude Include="src\Hazel\Utilities\StringUtils.h">
       <Filter>Hazel\Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="src\Scene\SceneHazelVulkan.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\RendererHazelVulkan.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelVulkan\EditorLayerHazelVulkan.h">
+      <Filter>HazelVulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelVulkan\MaterialHazelVulkan.h">
+      <Filter>HazelVulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelVulkan\RenderPassHazelVulkan.h">
+      <Filter>HazelVulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelVulkan\SceneRendererHazelVulkan.h">
+      <Filter>HazelVulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelVulkan\SharedDataHazelVulkan.h">
+      <Filter>HazelVulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1810,6 +1852,9 @@
     </Filter>
     <Filter Include="Hazel\Utilities">
       <UniqueIdentifier>{fa67dff0-a132-4634-8470-f07ec0efd85c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HazelVulkan">
+      <UniqueIdentifier>{b7257be0-34e9-4612-9c63-03c744fcae83}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

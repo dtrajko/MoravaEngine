@@ -11,6 +11,7 @@
 struct EnvMapRenderPassSpecification : public Hazel::RenderPassSpecification
 {
 	Hazel::Ref<Framebuffer> TargetFramebuffer;
+	std::string DebugName;
 };
 
 class EnvMapRenderPass : public Hazel::RenderPass
@@ -21,6 +22,8 @@ public:
 
 	virtual EnvMapRenderPassSpecification& GetSpecification() override { return m_Specification; }
 	virtual const EnvMapRenderPassSpecification& GetSpecification() const override { return m_Specification; }
+
+	static Hazel::Ref<EnvMapRenderPass> Create(const EnvMapRenderPassSpecification& spec);
 
 private:
 	EnvMapRenderPassSpecification m_Specification;

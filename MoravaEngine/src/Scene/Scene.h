@@ -132,9 +132,9 @@ private:
 public:
 	static glm::mat4* s_ImGuizmoTransform;
 	static int s_ImGuizmoType;
+	static SceneSettings sceneSettings;
 
 protected:
-	static SceneSettings sceneSettings;
 
 	float m_FOV;
 	float m_AspectRatio;

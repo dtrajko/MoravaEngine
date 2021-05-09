@@ -1,4 +1,4 @@
-#include "EnvMapSceneRenderer.h"
+#include "SceneRendererHazelVulkan.h"
 
 #include "Hazel/Core/Assert.h"
 #include "Hazel/Platform/OpenGL/OpenGLRenderPass.h"
@@ -15,27 +15,27 @@
 #include "Shader/ShaderLibrary.h"
 
 
-Hazel::Ref<Shader> EnvMapSceneRenderer::s_ShaderEquirectangularConversion;
-Hazel::Ref<Shader> EnvMapSceneRenderer::s_ShaderEnvFiltering;
-Hazel::Ref<Shader> EnvMapSceneRenderer::s_ShaderEnvIrradiance;
-Hazel::Ref<Shader> EnvMapSceneRenderer::s_ShaderGrid;
-Hazel::Ref<Shader> EnvMapSceneRenderer::s_ShaderSkybox;
-Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::s_EnvUnfiltered;
-Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::s_EnvEquirect;
-Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::s_EnvFiltered;
-Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::s_IrradianceMap;
-float EnvMapSceneRenderer::s_GridScale = 16.025f;
-float EnvMapSceneRenderer::s_GridSize = 0.025f;
-uint32_t EnvMapSceneRenderer::s_FramebufferWidth = 1280;
-uint32_t EnvMapSceneRenderer::s_FramebufferHeight = 720;
+Hazel::Ref<Shader> SceneRendererHazelVulkan::s_ShaderEquirectangularConversion;
+Hazel::Ref<Shader> SceneRendererHazelVulkan::s_ShaderEnvFiltering;
+Hazel::Ref<Shader> SceneRendererHazelVulkan::s_ShaderEnvIrradiance;
+Hazel::Ref<Shader> SceneRendererHazelVulkan::s_ShaderGrid;
+Hazel::Ref<Shader> SceneRendererHazelVulkan::s_ShaderSkybox;
+Hazel::Ref<Hazel::HazelTextureCube> SceneRendererHazelVulkan::s_EnvUnfiltered;
+Hazel::Ref<Hazel::HazelTexture2D> SceneRendererHazelVulkan::s_EnvEquirect;
+Hazel::Ref<Hazel::HazelTextureCube> SceneRendererHazelVulkan::s_EnvFiltered;
+Hazel::Ref<Hazel::HazelTextureCube> SceneRendererHazelVulkan::s_IrradianceMap;
+float SceneRendererHazelVulkan::s_GridScale = 16.025f;
+float SceneRendererHazelVulkan::s_GridSize = 0.025f;
+uint32_t SceneRendererHazelVulkan::s_FramebufferWidth = 1280;
+uint32_t SceneRendererHazelVulkan::s_FramebufferHeight = 720;
 
 
-struct EnvMapSceneRendererData
+struct SceneRendererHazelVulkanData
 {
     const Hazel::HazelScene* ActiveScene = nullptr;
     struct SceneInfo
     {
-        EnvMapSceneRenderer::SceneRendererCamera SceneCamera;
+        SceneRendererHazelVulkan::SceneRendererCamera SceneCamera;
 
         // Resources
         Ref<Hazel::HazelMaterial> HazelSkyboxMaterial;
@@ -68,15 +68,15 @@ struct EnvMapSceneRendererData
     // Ref<Shader> GridShader;
     Ref<Hazel::HazelMaterial> OutlineMaterial;
 
-    EnvMapSceneRenderer::SceneRendererOptions Options;
+    SceneRendererHazelVulkan::SceneRendererOptions Options;
 
     // Renderer data
     Hazel::RenderCommandQueue* m_CommandQueue;
 };
 
-static EnvMapSceneRendererData s_Data;
+static SceneRendererHazelVulkanData s_Data;
 
-void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
+void SceneRendererHazelVulkan::Init(std::string filepath, Hazel::HazelScene* scene)
 {
     SetupShaders();
 
@@ -154,25 +154,25 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
     s_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
 }
 
-void EnvMapSceneRenderer::SetupShaders()
+void SceneRendererHazelVulkan::SetupShaders()
 {
     s_Data.CompositeShader = Shader::Create("Shaders/Hazel/SceneComposite.vs", "Shaders/Hazel/SceneComposite.fs");
-    Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderComposite compiled [programID={0}]", s_Data.CompositeShader->GetProgramID());
+    Log::GetLogger()->info("SceneRendererHazelVulkan: s_ShaderComposite compiled [programID={0}]", s_Data.CompositeShader->GetProgramID());
 
     s_ShaderEquirectangularConversion = Shader::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
-    Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderEquirectangularConversion compiled [programID={0}]", s_ShaderEquirectangularConversion->GetProgramID());
+    Log::GetLogger()->info("SceneRendererHazelVulkan: s_ShaderEquirectangularConversion compiled [programID={0}]", s_ShaderEquirectangularConversion->GetProgramID());
 
     s_ShaderEnvFiltering = Shader::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
-    Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderEnvFiltering compiled [programID={0}]", s_ShaderEnvFiltering->GetProgramID());
+    Log::GetLogger()->info("SceneRendererHazelVulkan: s_ShaderEnvFiltering compiled [programID={0}]", s_ShaderEnvFiltering->GetProgramID());
 
     s_ShaderEnvIrradiance = Shader::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
-    Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderEnvIrradiance compiled [programID={0}]", s_ShaderEnvIrradiance->GetProgramID());
+    Log::GetLogger()->info("SceneRendererHazelVulkan: s_ShaderEnvIrradiance compiled [programID={0}]", s_ShaderEnvIrradiance->GetProgramID());
 
     s_ShaderSkybox = Shader::Create("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
-    Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderSkybox compiled [programID={0}]", s_ShaderSkybox->GetProgramID());
+    Log::GetLogger()->info("SceneRendererHazelVulkan: s_ShaderSkybox compiled [programID={0}]", s_ShaderSkybox->GetProgramID());
 
     s_ShaderGrid = Shader::Create("Shaders/Hazel/Grid.vs", "Shaders/Hazel/Grid.fs");
-    Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderGrid compiled [programID={0}]", s_ShaderGrid->GetProgramID());
+    Log::GetLogger()->info("SceneRendererHazelVulkan: s_ShaderGrid compiled [programID={0}]", s_ShaderGrid->GetProgramID());
 
     ResourceManager::AddShader("Hazel/SceneComposite", s_Data.CompositeShader);
     ResourceManager::AddShader("Hazel/EquirectangularToCubeMap", s_ShaderEquirectangularConversion.Raw());
@@ -183,19 +183,19 @@ void EnvMapSceneRenderer::SetupShaders()
 }
 
 // Moved from EnvironmentMap
-Hazel::Environment EnvMapSceneRenderer::Load(const std::string& filepath)
+Hazel::Environment SceneRendererHazelVulkan::Load(const std::string& filepath)
 {
     auto [radiance, irradiance] = CreateEnvironmentMap(filepath);
     return { radiance, irradiance };
 }
 
-void EnvMapSceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
+void SceneRendererHazelVulkan::SetViewportSize(uint32_t width, uint32_t height)
 {
     s_Data.GeoPass->GetSpecification().TargetFramebuffer->Resize(width, height, true);
     s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height, true);
 }
 
-void EnvMapSceneRenderer::BeginScene(Hazel::HazelScene* scene, const SceneRendererCamera& camera)
+void SceneRendererHazelVulkan::BeginScene(Hazel::HazelScene* scene, const SceneRendererCamera& camera)
 {
     // HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
@@ -204,7 +204,7 @@ void EnvMapSceneRenderer::BeginScene(Hazel::HazelScene* scene, const SceneRender
     s_Data.SceneData.SceneCamera = camera;
 }
 
-void EnvMapSceneRenderer::EndScene()
+void SceneRendererHazelVulkan::EndScene()
 {
     HZ_CORE_ASSERT(s_Data.ActiveScene, "");
 
@@ -213,15 +213,15 @@ void EnvMapSceneRenderer::EndScene()
     FlushDrawList();
 }
 
-void EnvMapSceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Hazel::HazelMaterial> overrideMaterial)
+void SceneRendererHazelVulkan::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<Hazel::HazelMaterial> overrideMaterial)
 {
 }
 
-void EnvMapSceneRenderer::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform)
+void SceneRendererHazelVulkan::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform)
 {
 }
 
-void EnvMapSceneRenderer::SubmitEntity(Hazel::Entity entity)
+void SceneRendererHazelVulkan::SubmitEntity(Hazel::Entity entity)
 {
     // TODO: Culling, sorting, etc.
 
@@ -233,7 +233,7 @@ void EnvMapSceneRenderer::SubmitEntity(Hazel::Entity entity)
     // TODO: s_Data.DrawList.push_back({ mesh, entity->GetMaterial(), entity->GetTransform() });
 }
 
-EnvMapSceneRenderer::SceneRendererCamera& EnvMapSceneRenderer::GetCamera()
+SceneRendererHazelVulkan::SceneRendererCamera& SceneRendererHazelVulkan::GetCamera()
 {
     return s_Data.SceneData.SceneCamera;
 }
@@ -241,13 +241,13 @@ EnvMapSceneRenderer::SceneRendererCamera& EnvMapSceneRenderer::GetCamera()
 static Ref<Hazel::HazelShader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
 
 // Moved from EnvironmentMap
-void EnvMapSceneRenderer::SetEnvironment(Hazel::Environment environment)
+void SceneRendererHazelVulkan::SetEnvironment(Hazel::Environment environment)
 {
     s_Data.SceneData.SceneEnvironment = environment;
 }
 
 // Moved from EnvironmentMap
-std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> EnvMapSceneRenderer::CreateEnvironmentMap(const std::string& filepath)
+std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> SceneRendererHazelVulkan::CreateEnvironmentMap(const std::string& filepath)
 {
     const uint32_t cubemapSize = 512;
     const uint32_t irradianceMapSize = 32;
@@ -295,18 +295,18 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
     return { s_EnvFiltered, s_IrradianceMap };
 }
 
-void EnvMapSceneRenderer::RenderSkybox()
+void SceneRendererHazelVulkan::RenderSkybox()
 {
     RendererBasic::DisableCulling();
     RendererBasic::DisableDepthTest();
 
     // render skybox (render as last to prevent overdraw)
-    EnvMapSceneRenderer::s_ShaderSkybox->Bind();
+    SceneRendererHazelVulkan::s_ShaderSkybox->Bind();
 
-    EnvMapSceneRenderer::GetRadianceMap()->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
+    SceneRendererHazelVulkan::GetRadianceMap()->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
 
     glm::mat4 viewProj = GetViewProjection();
-    EnvMapSceneRenderer::s_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProj));
+    SceneRendererHazelVulkan::s_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProj));
 
     s_ShaderSkybox->setInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
     s_ShaderSkybox->setFloat("u_TextureLod", EnvMapSharedData::s_EditorScene->GetSkyboxLod());
@@ -314,10 +314,10 @@ void EnvMapSceneRenderer::RenderSkybox()
 
     EnvMapSharedData::s_SkyboxCube->Render();
 
-    EnvMapSceneRenderer::s_ShaderSkybox->Unbind();
+    SceneRendererHazelVulkan::s_ShaderSkybox->Unbind();
 }
 
-void EnvMapSceneRenderer::RenderHazelGrid()
+void SceneRendererHazelVulkan::RenderHazelGrid()
 {
     // Grid
     // -- Shaders/Hazel/Grid.vs
@@ -328,8 +328,8 @@ void EnvMapSceneRenderer::RenderHazelGrid()
     // ---- uniform float u_Res;
 
     s_ShaderGrid->Bind();
-    s_ShaderGrid->setFloat("u_Scale", EnvMapSceneRenderer::s_GridScale);
-    s_ShaderGrid->setFloat("u_Res", EnvMapSceneRenderer::s_GridSize);
+    s_ShaderGrid->setFloat("u_Scale", SceneRendererHazelVulkan::s_GridScale);
+    s_ShaderGrid->setFloat("u_Res", SceneRendererHazelVulkan::s_GridSize);
 
     glm::mat4 viewProj = GetViewProjection();
     s_ShaderGrid->setMat4("u_ViewProjection", viewProj);
@@ -347,7 +347,7 @@ void EnvMapSceneRenderer::RenderHazelGrid()
     RendererBasic::EnableMSAA();
 }
 
-void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh)
+void SceneRendererHazelVulkan::RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh)
 {
     if (!EnvMapSharedData::s_DisplayOutline) return;
 
@@ -364,7 +364,7 @@ void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity
     }
 }
 
-void EnvMapSceneRenderer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPBR, Hazel::Ref<EnvMapMaterial> envMapMaterial)
+void SceneRendererHazelVulkan::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPBR, Hazel::Ref<EnvMapMaterial> envMapMaterial)
 {
     /**** BEGIN Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
 
@@ -409,9 +409,9 @@ void EnvMapSceneRenderer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazel
     shaderHazelPBR->setInt("u_BRDFLUTTexture", EnvMapSharedData::s_SamplerSlots.at("BRDF_LUT"));
 
     // Set lights (TODO: move to light environment and don't do per mesh)
-    shaderHazelPBR->setVec3("lights.Direction", EnvMapSceneRenderer::GetActiveLight().Direction);
-    shaderHazelPBR->setVec3("lights.Radiance", EnvMapSceneRenderer::GetActiveLight().Radiance);
-    shaderHazelPBR->setFloat("lights.Multiplier", EnvMapSceneRenderer::GetActiveLight().Multiplier);
+    shaderHazelPBR->setVec3("lights.Direction", SceneRendererHazelVulkan::GetActiveLight().Direction);
+    shaderHazelPBR->setVec3("lights.Radiance", SceneRendererHazelVulkan::GetActiveLight().Radiance);
+    shaderHazelPBR->setFloat("lights.Multiplier", SceneRendererHazelVulkan::GetActiveLight().Multiplier);
 
     shaderHazelPBR->setInt("pointLightCount", 1);
     shaderHazelPBR->setInt("spotLightCount", 1);
@@ -454,14 +454,14 @@ void EnvMapSceneRenderer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazel
     /**** END Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
 }
 
-glm::mat4 EnvMapSceneRenderer::GetViewProjection()
+glm::mat4 SceneRendererHazelVulkan::GetViewProjection()
 {
     glm::mat4 viewProjECS = EnvMapEditorLayer::GetMainCameraComponent().Camera.GetViewProjection();
     glm::mat4 viewProj = EnvMapSharedData::s_ActiveCamera->GetViewProjection();
     return viewProj;
 }
 
-void EnvMapSceneRenderer::GeometryPass()
+void SceneRendererHazelVulkan::GeometryPass()
 {
     RendererBasic::EnableTransparency();
     RendererBasic::EnableMSAA();
@@ -579,7 +579,7 @@ void EnvMapSceneRenderer::GeometryPass()
     GetGeoPass()->GetSpecification().TargetFramebuffer->Bind();
 }
 
-void EnvMapSceneRenderer::CompositePass()
+void SceneRendererHazelVulkan::CompositePass()
 {
     // Hazel::HazelRenderer::BeginRenderPass(s_Data.CompositePass, false); // should we clear the framebuffer at this stage?
 
@@ -595,7 +595,7 @@ void EnvMapSceneRenderer::CompositePass()
     // Hazel::HazelRenderer::EndRenderPass();
 }
 
-void EnvMapSceneRenderer::SubmitEntityEnvMap(Hazel::Entity entity)
+void SceneRendererHazelVulkan::SubmitEntityEnvMap(Hazel::Entity entity)
 {
     auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
     if (!mesh) {
@@ -608,7 +608,7 @@ void EnvMapSceneRenderer::SubmitEntityEnvMap(Hazel::Entity entity)
     AddToDrawList(name, mesh, entity, transform);
 }
 
-void EnvMapSceneRenderer::FlushDrawList()
+void SceneRendererHazelVulkan::FlushDrawList()
 {
     // HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
@@ -625,50 +625,50 @@ void EnvMapSceneRenderer::FlushDrawList()
     //  m_Data.SceneData = {};   // TODO: make SceneData update every tick
 }
 
-uint32_t EnvMapSceneRenderer::GetFinalColorBufferRendererID()
+uint32_t SceneRendererHazelVulkan::GetFinalColorBufferRendererID()
 {
     return (uint32_t)s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
 }
 
-EnvMapSceneRenderer::SceneRendererOptions& EnvMapSceneRenderer::GetOptions()
+SceneRendererHazelVulkan::SceneRendererOptions& SceneRendererHazelVulkan::GetOptions()
 {
     return s_Data.Options;
 }
 
-Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::GetRadianceMap()
+Hazel::Ref<Hazel::HazelTextureCube> SceneRendererHazelVulkan::GetRadianceMap()
 {
     return s_Data.SceneData.SceneEnvironment.RadianceMap;
 }
 
-Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::GetIrradianceMap()
+Hazel::Ref<Hazel::HazelTextureCube> SceneRendererHazelVulkan::GetIrradianceMap()
 {
     return s_Data.SceneData.SceneEnvironment.IrradianceMap;
 }
 
-Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::GetBRDFLUT()
+Hazel::Ref<Hazel::HazelTexture2D> SceneRendererHazelVulkan::GetBRDFLUT()
 {
     return s_Data.BRDFLUT;
 }
 
-Hazel::Ref<Shader> EnvMapSceneRenderer::GetShaderComposite()
+Hazel::Ref<Shader> SceneRendererHazelVulkan::GetShaderComposite()
 {
     return s_Data.CompositeShader;
 }
 
-Hazel::Ref<EnvMapRenderPass> EnvMapSceneRenderer::GetGeoPass()
+Hazel::Ref<EnvMapRenderPass> SceneRendererHazelVulkan::GetGeoPass()
 {
     return s_Data.GeoPass;
 }
 
-Hazel::Ref<EnvMapRenderPass> EnvMapSceneRenderer::GetCompositePass()
+Hazel::Ref<EnvMapRenderPass> SceneRendererHazelVulkan::GetCompositePass()
 {
     return s_Data.CompositePass;
 }
 
-void EnvMapSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, Hazel::HazelMesh* mesh)
+void SceneRendererHazelVulkan::CreateDrawCommand(std::string fileNameNoExt, Hazel::HazelMesh* mesh)
 {
     // s_Data.DrawList.clear(); // doesn't work for multiple meshes on the scene
-    EnvMapSceneRendererData::DrawCommand drawCommand;
+    SceneRendererHazelVulkanData::DrawCommand drawCommand;
 
     drawCommand.Name = fileNameNoExt;
     drawCommand.MeshPtr = mesh;
@@ -677,27 +677,27 @@ void EnvMapSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, Hazel::Ha
     s_Data.DrawList.push_back(drawCommand);
 }
 
-Hazel::HazelLight& EnvMapSceneRenderer::GetActiveLight()
+Hazel::HazelLight& SceneRendererHazelVulkan::GetActiveLight()
 {
     return s_Data.SceneData.ActiveLight;
 }
 
-void EnvMapSceneRenderer::SetActiveLight(Hazel::HazelLight& light)
+void SceneRendererHazelVulkan::SetActiveLight(Hazel::HazelLight& light)
 {
     s_Data.SceneData.ActiveLight = light;
 }
 
-void EnvMapSceneRenderer::AddToDrawList(std::string name, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, glm::mat4 transform)
+void SceneRendererHazelVulkan::AddToDrawList(std::string name, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, glm::mat4 transform)
 {
     s_Data.DrawList.push_back({ name, mesh.Raw(), entity.GetMaterial(), transform });
 }
 
-Hazel::Ref<Hazel::RenderPass> EnvMapSceneRenderer::GetFinalRenderPass()
+Hazel::Ref<Hazel::RenderPass> SceneRendererHazelVulkan::GetFinalRenderPass()
 {
     return s_Data.CompositePass;
 }
 
-FramebufferTexture* EnvMapSceneRenderer::GetFinalColorBuffer()
+FramebufferTexture* SceneRendererHazelVulkan::GetFinalColorBuffer()
 {
     return s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor();
 }

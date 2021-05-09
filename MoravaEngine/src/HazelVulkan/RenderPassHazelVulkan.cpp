@@ -1,4 +1,4 @@
-#include "EnvMapRenderPass.h"
+#include "RenderPassHazelVulkan.h"
 
 #include "Hazel/Core/Assert.h"
 #include "Hazel/Renderer/RendererAPI.h"
@@ -10,20 +10,20 @@
 #include "Core/Log.h"
 
 
-EnvMapRenderPass::EnvMapRenderPass(const EnvMapRenderPassSpecification& spec)
+RenderPassHazelVulkan::RenderPassHazelVulkan(const RenderPassSpecificationHazelVulkan& spec)
 	: m_Specification(spec)
 {
 }
 
-Hazel::Ref<EnvMapRenderPass> EnvMapRenderPass::Create(const EnvMapRenderPassSpecification& spec)
+Hazel::Ref<RenderPassHazelVulkan> RenderPassHazelVulkan::Create(const RenderPassSpecificationHazelVulkan& spec)
 {
 	switch (Hazel::RendererAPI::Current())
 	{
-	case Hazel::RendererAPIType::None:    HZ_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return Hazel::Ref<EnvMapRenderPass>();
+	case Hazel::RendererAPIType::None:    HZ_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return Hazel::Ref<RenderPassHazelVulkan>();
 	case Hazel::RendererAPIType::Vulkan:  return Hazel::Ref<Hazel::VulkanRenderPass>::Create(spec);
 	case Hazel::RendererAPIType::OpenGL:  return Hazel::Ref<Hazel::OpenGLRenderPass>::Create(spec);
 	}
 
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI!");
-	return Hazel::Ref<EnvMapRenderPass>();
+	return Hazel::Ref<RenderPassHazelVulkan>();
 }
