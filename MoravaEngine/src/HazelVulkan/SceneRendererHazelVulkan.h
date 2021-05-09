@@ -11,7 +11,6 @@
 #include "Hazel/Scene/Entity.h"
 
 #include "Camera/Camera.h"
-#include "EnvMap/EnvMapRenderPass.h"
 #include "EnvMap/EnvMapSharedData.h"
 #include "Mesh/HazelFullscreenQuad.h"
 
@@ -44,8 +43,8 @@ public:
 	static Hazel::Ref<Hazel::HazelTextureCube> GetIrradianceMap();
 	static Hazel::Ref<Hazel::HazelTexture2D> GetBRDFLUT();
 	static Hazel::Ref<Shader> GetShaderComposite();
-	static Hazel::Ref<EnvMapRenderPass> GetGeoPass();
-	static Hazel::Ref<EnvMapRenderPass> GetCompositePass();
+	static Hazel::Ref<Hazel::RenderPass> GetGeoPass();
+	static Hazel::Ref<Hazel::RenderPass> GetCompositePass();
 	static void CreateDrawCommand(std::string fileNameNoExt, Hazel::HazelMesh* mesh);
 	static Hazel::HazelLight& GetActiveLight();
 	static void SetActiveLight(Hazel::HazelLight& light);

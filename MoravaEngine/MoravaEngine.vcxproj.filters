@@ -30,9 +30,6 @@
     <ClCompile Include="src\EnvMap\EnvMapMaterial.cpp">
       <Filter>EnvMap</Filter>
     </ClCompile>
-    <ClCompile Include="src\EnvMap\EnvMapRenderPass.cpp">
-      <Filter>EnvMap</Filter>
-    </ClCompile>
     <ClCompile Include="src\EnvMap\EnvMapSceneRenderer.cpp">
       <Filter>EnvMap</Filter>
     </ClCompile>
@@ -814,9 +811,6 @@
       <Filter>EnvMap</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMap\EnvMapMaterial.h">
-      <Filter>EnvMap</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EnvMap\EnvMapRenderPass.h">
       <Filter>EnvMap</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMap\EnvMapSceneRenderer.h">

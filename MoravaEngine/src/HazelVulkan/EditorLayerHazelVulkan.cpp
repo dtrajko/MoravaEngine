@@ -9,7 +9,6 @@
 
 #include "Core/MousePicker.h"
 #include "Core/Util.h"
-#include "EnvMap/EnvMapRenderPass.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
 #include "ImGui/ImGuiWrapper.h"
 #include "Light/PointLight.h"

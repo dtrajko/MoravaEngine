@@ -48,9 +48,9 @@ struct SceneRendererHazelVulkanData
 
     Hazel::Ref<Shader> CompositeShader;
 
-    Hazel::Ref<EnvMapRenderPass> GeoPass;
-    Hazel::Ref<EnvMapRenderPass> CompositePass;
-    Hazel::Ref<EnvMapRenderPass> ActiveRenderPass;
+    Hazel::Ref<Hazel::RenderPass> GeoPass;
+    Hazel::Ref<Hazel::RenderPass> CompositePass;
+    Hazel::Ref<Hazel::RenderPass> ActiveRenderPass;
 
     struct DrawCommand
     {
@@ -118,15 +118,18 @@ void SceneRendererHazelVulkan::Init(std::string filepath, Hazel::HazelScene* sce
     geoFramebufferDepthSpec.attachmentType = AttachmentType::Texture;
     geoFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth_24_Stencil_8;
 
-    EnvMapRenderPassSpecification geoRenderPassSpec;
+    Hazel::RenderPassSpecification geoRenderPassSpec;
     geoRenderPassSpec.TargetFramebuffer = Framebuffer::Create(geoFramebufferSpec);
-    geoRenderPassSpec.TargetFramebuffer->AddColorAttachment(geoFramebufferSpec);
-    geoRenderPassSpec.TargetFramebuffer->AddDepthAttachment(geoFramebufferDepthSpec);
+
+    auto targetFramebufferGeo = static_cast<Hazel::Ref<Framebuffer>>(geoRenderPassSpec.TargetFramebuffer);
+
+    targetFramebufferGeo->AddColorAttachment(geoFramebufferSpec);
+    targetFramebufferGeo->AddDepthAttachment(geoFramebufferDepthSpec);
     Log::GetLogger()->debug("Generating the GEO RenderPass framebuffer with AttachmentFormat::RGBA16F");
 
-    geoRenderPassSpec.TargetFramebuffer->Generate(geoFramebufferSpec.Width, geoFramebufferSpec.Height);
+    targetFramebufferGeo->Generate(geoFramebufferSpec.Width, geoFramebufferSpec.Height);
 
-    s_Data.GeoPass = Hazel::Ref<EnvMapRenderPass>::Create(geoRenderPassSpec);
+    s_Data.GeoPass = Hazel::RenderPass::Create(geoRenderPassSpec);
 
     FramebufferSpecification compFramebufferSpec;
     compFramebufferSpec.Width = s_FramebufferWidth;
@@ -137,19 +140,22 @@ void SceneRendererHazelVulkan::Init(std::string filepath, Hazel::HazelScene* sce
 
     isMultisample = compFramebufferSpec.Samples > 1;
 
-    EnvMapRenderPassSpecification compRenderPassSpec;
+    Hazel::RenderPassSpecification compRenderPassSpec;
     compRenderPassSpec.TargetFramebuffer = Framebuffer::Create(compFramebufferSpec);
-    compRenderPassSpec.TargetFramebuffer->AddColorAttachment(compFramebufferSpec);
+
+    auto targetFramebufferComp = static_cast<Hazel::Ref<Framebuffer>>(compRenderPassSpec.TargetFramebuffer);
+
+    targetFramebufferComp->AddColorAttachment(compFramebufferSpec);
 
     FramebufferSpecification compFramebufferDepthSpec;
     compFramebufferDepthSpec = compFramebufferSpec;
     compFramebufferDepthSpec.attachmentType = AttachmentType::Renderbuffer;
     compFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth;
-    compRenderPassSpec.TargetFramebuffer->AddDepthAttachment(compFramebufferDepthSpec);
+    targetFramebufferComp->AddDepthAttachment(compFramebufferDepthSpec);
 
     Log::GetLogger()->debug("Generating the COMPOSITE RenderPass framebuffer with AttachmentFormat::RGBA");
-    compRenderPassSpec.TargetFramebuffer->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
-    s_Data.CompositePass = Hazel::Ref<EnvMapRenderPass>::Create(compRenderPassSpec);
+    targetFramebufferComp->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
+    s_Data.CompositePass = Hazel::RenderPass::Create(compRenderPassSpec);
 
     s_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
 }
@@ -585,7 +591,9 @@ void SceneRendererHazelVulkan::CompositePass()
 
     s_Data.CompositeShader->Bind();
 
-    s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
+    auto targetFramebuffer = static_cast<Hazel::Ref<Framebuffer>>(s_Data.GeoPass->GetSpecification().TargetFramebuffer);
+
+    targetFramebuffer->GetTextureAttachmentColor()->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
     s_Data.CompositeShader->setInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
     s_Data.CompositeShader->setFloat("u_Exposure", EnvMapEditorLayer::GetMainCameraComponent().Camera.GetExposure()); // s_Data.SceneData.SceneCamera.Camera
     s_Data.CompositeShader->setInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
@@ -627,7 +635,9 @@ void SceneRendererHazelVulkan::FlushDrawList()
 
 uint32_t SceneRendererHazelVulkan::GetFinalColorBufferRendererID()
 {
-    return (uint32_t)s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor()->GetID();
+    auto targetFramebuffer = static_cast<Hazel::Ref<Framebuffer>>(s_Data.CompositePass->GetSpecification().TargetFramebuffer);
+
+    return targetFramebuffer->GetTextureAttachmentColor()->GetID();
 }
 
 Hazel::SceneRendererOptions& SceneRendererHazelVulkan::GetOptions()
@@ -655,12 +665,12 @@ Hazel::Ref<Shader> SceneRendererHazelVulkan::GetShaderComposite()
     return s_Data.CompositeShader;
 }
 
-Hazel::Ref<EnvMapRenderPass> SceneRendererHazelVulkan::GetGeoPass()
+Hazel::Ref<Hazel::RenderPass> SceneRendererHazelVulkan::GetGeoPass()
 {
     return s_Data.GeoPass;
 }
 
-Hazel::Ref<EnvMapRenderPass> SceneRendererHazelVulkan::GetCompositePass()
+Hazel::Ref<Hazel::RenderPass> SceneRendererHazelVulkan::GetCompositePass()
 {
     return s_Data.CompositePass;
 }
@@ -699,5 +709,7 @@ Hazel::Ref<Hazel::RenderPass> SceneRendererHazelVulkan::GetFinalRenderPass()
 
 FramebufferTexture* SceneRendererHazelVulkan::GetFinalColorBuffer()
 {
-    return s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetTextureAttachmentColor();
+    auto targetFramebuffer = static_cast<Hazel::Ref<Framebuffer>>(s_Data.CompositePass->GetSpecification().TargetFramebuffer);
+
+    return targetFramebuffer->GetTextureAttachmentColor();
 }

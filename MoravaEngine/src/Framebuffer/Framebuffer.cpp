@@ -238,14 +238,19 @@ void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned i
 		m_AttachmentDepthAndStencil = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
 }
 
-void Framebuffer::Bind()
+void Framebuffer::Bind() const
 {
-	Bind(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+	glViewport(0, 0, m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
 }
 
-void Framebuffer::Unbind()
+void Framebuffer::Unbind() const
 {
-	Unbind(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
+	// unbind custom framebuffer and make the default framebuffer active
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
 }
 
 void Framebuffer::Bind(unsigned int width, unsigned int height)
@@ -253,9 +258,7 @@ void Framebuffer::Bind(unsigned int width, unsigned int height)
 	m_FramebufferSpecs.Width = width;
 	m_FramebufferSpecs.Height = height;
 
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
-	glViewport(0, 0, m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
+	Bind();
 }
 
 void Framebuffer::Unbind(unsigned int width, unsigned int height)
@@ -263,10 +266,7 @@ void Framebuffer::Unbind(unsigned int width, unsigned int height)
 	m_FramebufferSpecs.Width = width;
 	m_FramebufferSpecs.Height = height;
 
-	// unbind custom framebuffer and make the default framebuffer active
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
+	Unbind();
 }
 
 bool Framebuffer::CheckStatus()
@@ -336,16 +336,6 @@ void Framebuffer::Resize(uint32_t width, uint32_t height)
 	m_FramebufferSpecs.Height = height;
 
 	Generate(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
-}
-
-void Framebuffer::Bind() const
-{
-	Bind();
-}
-
-void Framebuffer::Unbind() const
-{
-	Unbind();
 }
 
 void Framebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate)

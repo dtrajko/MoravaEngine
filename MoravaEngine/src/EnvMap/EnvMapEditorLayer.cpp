@@ -1,6 +1,7 @@
 #include "EnvMapEditorLayer.h"
 
 #include "Hazel/Renderer/RendererAPI.h"
+#include "Hazel/Renderer/RenderPass.h"
 #include "Hazel/Scene/SceneSerializer.h"
 #include "Hazel/Script/ScriptEngine.h"
 #include "Hazel/Utils/PlatformUtils.h"
@@ -9,7 +10,6 @@
 
 #include "Core/MousePicker.h"
 #include "Core/Util.h"
-#include "EnvMap/EnvMapRenderPass.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
 #include "ImGui/ImGuiWrapper.h"
 #include "Light/PointLight.h"

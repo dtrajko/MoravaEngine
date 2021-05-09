@@ -34,8 +34,8 @@ public:
 	Framebuffer(FramebufferSpecification spec);
 	~Framebuffer();
 
-	void Bind();
-	void Unbind();
+	virtual void Unbind() const override;
+	virtual void Bind() const override;
 
 	void Bind(unsigned int width, unsigned int height);
 	void Unbind(unsigned int width, unsigned int height);
@@ -76,8 +76,6 @@ public:
 	void Resize(uint32_t width, uint32_t height);
 
 	// HazelFramebuffer abstract methods
-	virtual void Bind() const override;
-	virtual void Unbind() const override;
 	virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate) override;
 	virtual void AddResizeCallback(const std::function<void(Hazel::Ref<Hazel::HazelFramebuffer>)>& func) override;
 	virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const override;
