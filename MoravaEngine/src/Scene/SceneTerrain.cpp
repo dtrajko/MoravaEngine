@@ -83,7 +83,8 @@ void SceneTerrain::SetupModels()
 
 void SceneTerrain::Update(float timestep, Window* mainWindow)
 {
-	m_Camera->OnUpdate(timestep);
+	Scene::Update(timestep, mainWindow);
+
 	m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
 }
 

@@ -27,7 +27,7 @@ SceneDeferredOGL::~SceneDeferredOGL()
 
 void SceneDeferredOGL::Update(float timestep, Window* mainWindow)
 {
-    m_Camera->OnUpdate(timestep);
+    Scene::Update(timestep, mainWindow);
 }
 
 void SceneDeferredOGL::UpdateImGui(float timestep, Window* mainWindow)

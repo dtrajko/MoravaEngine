@@ -243,7 +243,7 @@ void SceneBullet::BulletSimulation(float timestep)
 
 void SceneBullet::Update(float timestep, Window* mainWindow)
 {
-	m_Camera->OnUpdate(timestep);
+	Scene::Update(timestep, mainWindow);
 
 	if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_LEFT])
 	{

@@ -250,7 +250,7 @@ void SceneJoey::SetupLights()
 
 void SceneJoey::Update(float timestep, Window* mainWindow)
 {
-	m_Camera->OnUpdate(timestep);
+	Scene::Update(timestep, mainWindow);
 
 	if (m_HDRI_Edit != m_HDRI_Edit_Prev || m_BlurLevel != m_BlurLevelPrev)
 	{

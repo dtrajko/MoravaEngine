@@ -87,7 +87,7 @@ public:
 	Scene();
 	virtual ~Scene();
 
-	virtual void Update(float timestep, Window* mainWindow) = 0;
+	virtual void Update(float timestep, Window* mainWindow);
 	virtual void OnWindowResize(WindowResizeEvent& e);
 	virtual void UpdateImGui(float timestep, Window* mainWindow) = 0;
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
@@ -170,5 +170,7 @@ private:
 	unsigned int omniShadowMapHeight;
 
 	bool m_WireframeEnabled;
+
+	EventCooldown m_KeyPressCooldown;
 
 };

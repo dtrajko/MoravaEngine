@@ -124,7 +124,7 @@ void SceneCottage::SetupModels()
 
 void SceneCottage::Update(float timestep, Window* mainWindow)
 {
-	m_Camera->OnUpdate(timestep);
+	Scene::Update(timestep, mainWindow);
 }
 
 void SceneCottage::UpdateImGui(float timestep, Window* mainWindow)

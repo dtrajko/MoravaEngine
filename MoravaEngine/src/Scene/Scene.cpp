@@ -6,6 +6,9 @@
 #include "Mesh/MeshData.h"
 #include "Mesh/Tile2D.h"
 #include "Texture/TextureLoader.h"
+#include "Core/Timer.h"
+#include "Core/Input.h"
+#include "Core/MousePicker.h"
 
 
 SceneSettings Scene::sceneSettings;
@@ -139,12 +142,20 @@ Scene::Scene()
 
 	m_WireframeEnabled = false;
 
+	// Key cooldown time (emulate onKeyReleased)
+	m_KeyPressCooldown = { 0.0f, 0.2f };
+
 	// SetLightManager();
 	SetupFramebuffers();
 	SetupTextures();
 	SetupTextureSlots();
 	SetupMaterials();
 	SetupMeshes();
+}
+
+void Scene::Update(float timestep, Window* mainWindow)
+{
+	m_Camera->OnUpdate(timestep);
 }
 
 void Scene::OnWindowResize(WindowResizeEvent& e)

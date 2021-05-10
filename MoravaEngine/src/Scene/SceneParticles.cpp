@@ -71,7 +71,7 @@ void SceneParticles::SetupParticles()
 
 void SceneParticles::Update(float timestep, Window* mainWindow)
 {
-    m_Camera->OnUpdate(timestep);
+    Scene::Update(timestep, mainWindow);
 
     // Update Particle System
     if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_1])

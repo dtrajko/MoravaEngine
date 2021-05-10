@@ -403,6 +403,8 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window* mainWindow)
 
 void SceneVoxelTerrain::Update(float timestep, Window* mainWindow)
 {
+    Scene::Update(timestep, mainWindow);
+
     MousePicker::Get()->GetPointOnRay(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(), MousePicker::Get()->m_RayRange);
 
     Dig(mainWindow->getKeys(), timestep);

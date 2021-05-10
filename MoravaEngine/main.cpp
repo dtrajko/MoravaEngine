@@ -17,7 +17,7 @@
 // #define SCENE_SPONZA
 // #define SCENE_TERRAIN
 // #define SCENE_PBR
-// #define SCENE_LEARN_OPEN_GL
+// #define SCENE_LEARN_OPENGL
 // #define SCENE_BULLET
 // #define SCENE_INSTANCED
 // #define SCENE_ASTEROIDS
@@ -69,7 +69,7 @@
 #elif defined(SCENE_PBR)
 #include "Scene/ScenePBR.h"
 #include "Renderer/RendererPBR.h"
-#elif defined(SCENE_LEARN_OPEN_GL)
+#elif defined(SCENE_LEARN_OPENGL)
 #include "Scene/SceneJoey.h"
 #include "Renderer/RendererTrivial.h"
 #elif defined(SCENE_BULLET)
@@ -182,7 +182,7 @@ int main()
 #elif defined(SCENE_PBR)
 	scene = new ScenePBR();
 	renderer = static_cast<RendererBasic*>(new RendererPBR());
-#elif defined(SCENE_LEARN_OPEN_GL)
+#elif defined(SCENE_LEARN_OPENGL)
 	scene = new SceneJoey();
 	renderer = static_cast<RendererBasic*>(new RendererTrivial());
 #elif defined(SCENE_BULLET)

@@ -1508,7 +1508,7 @@ void SceneEditorImGuizmo::ShowExampleAppDockSpace(bool* p_open, Window* mainWind
 
 void SceneEditorImGuizmo::Update(float timestep, Window* mainWindow)
 {
-    m_Camera->OnUpdate(timestep);
+    Scene::Update(timestep, mainWindow);
 
     m_CurrentTimestamp = timestep;
 

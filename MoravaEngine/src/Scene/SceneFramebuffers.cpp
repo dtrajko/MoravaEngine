@@ -90,7 +90,7 @@ void SceneFramebuffers::SetGeometry()
 
 void SceneFramebuffers::Update(float timestep, Window* mainWindow)
 {
-	m_Camera->OnUpdate(timestep);
+	Scene::Update(timestep, mainWindow);
 }
 
 void SceneFramebuffers::UpdateImGui(float timestep, Window* mainWindow)

@@ -180,6 +180,8 @@ void SceneHazelEnvMap::SetupUniforms()
 
 void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 {
+    Scene::Update(timestep, mainWindow);
+
     float deltaTime = Timer::Get()->GetDeltaTime();
     m_EnvMapEditorLayer->OnUpdate(deltaTime);
 }

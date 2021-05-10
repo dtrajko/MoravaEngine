@@ -86,7 +86,7 @@ void SceneNanosuit::InitNanosuitUniforms()
 
 void SceneNanosuit::Update(float timestep, Window* mainWindow)
 {
-	m_Camera->OnUpdate(timestep);
+	Scene::Update(timestep, mainWindow);
 
 	float deltaTime = Timer::Get()->GetDeltaTime();
 	m_ModelRotationY = m_IsRotating ? m_ModelRotationY + m_RotationSpeed * deltaTime : 0.0f;

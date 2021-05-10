@@ -1325,7 +1325,7 @@ void SceneEditor::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 
 void SceneEditor::Update(float timestep, Window* mainWindow)
 {
-    m_Camera->OnUpdate(timestep);
+    Scene::Update(timestep, mainWindow);
 
     m_CurrentTimestamp = timestep;
 
