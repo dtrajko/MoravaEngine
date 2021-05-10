@@ -30,14 +30,15 @@
 // #define SCENE_PROCEDURAL_LANDMASS
 // #define SCENE_VOXEL_TERRAIN_SL
 // #define SCENE_MARCHING_CUBES
-// #define SCENE_SSAO
+#define SCENE_SSAO
+// #define SCENE_BLOOM
 // #define SCENE_DEFERRED
 // #define SCENE_DEFERRED_OGL
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
 // #define SCENE_ANIM_PBR
 // #define SCENE_HAZEL_ENV_MAP
-#define SCENE_HAZEL_VULKAN
+// #define SCENE_HAZEL_VULKAN
 
 #include "Hazel/Core/Base.h"
 #include "Hazel/Events/Event.h"
@@ -110,6 +111,9 @@
 #include "Renderer/RendererVoxelTerrain.h"
 #elif defined(SCENE_SSAO)
 #include "Scene/SceneSSAO.h"
+#include "Renderer/RendererTrivial.h"
+#elif defined(SCENE_BLOOM)
+#include "Scene/SceneBloom.h"
 #include "Renderer/RendererTrivial.h"
 #elif defined(SCENE_DEFERRED)
 #include "Scene/SceneDeferred.h"
@@ -223,6 +227,9 @@ int main()
 	renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
 #elif defined(SCENE_SSAO)
 	scene = new SceneSSAO();
+	renderer = static_cast<RendererBasic*>(new RendererTrivial());
+#elif defined(SCENE_BLOOM)
+	scene = new SceneBloom();
 	renderer = static_cast<RendererBasic*>(new RendererTrivial());
 #elif defined(SCENE_ANIM_PBR)
 	scene = new SceneAnimPBR();

@@ -24,6 +24,7 @@ void ResourceManager::Init()
     s_TextureInfo.insert(std::make_pair("semi_transparent", "Textures/semi_transparent.png"));
     s_TextureInfo.insert(std::make_pair("texture_checker", "Textures/texture_checker.png"));
     s_TextureInfo.insert(std::make_pair("wood", "Textures/wood.png"));
+    s_TextureInfo.insert(std::make_pair("container2", "Textures/container/container2.png"));
     s_TextureInfo.insert(std::make_pair("plank", "Textures/texture_plank.png"));
     s_TextureInfo.insert(std::make_pair("rock", "Textures/rock.png"));
     s_TextureInfo.insert(std::make_pair("pyramid", "Textures/pyramid.png"));

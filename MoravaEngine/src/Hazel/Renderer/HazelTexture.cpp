@@ -25,6 +25,7 @@ namespace Hazel {
 		{
 		case RendererAPIType::None: return Ref<HazelTexture2D>();
 		case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(format, width, height, wrap);
+		// case RendererAPIType::Vulkan: return Ref<VulkanTexture2D>::Create(format, width, height, wrap);
 		}
 		return Ref<HazelTexture2D>();
 	}
@@ -35,6 +36,7 @@ namespace Hazel {
 		{
 		case RendererAPIType::None: return Ref<HazelTexture2D>();
 		case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(path, srgb, wrap);
+		// case RendererAPIType::Vulkan: return Ref<VulkanTexture2D>::Create(path, srgb, wrap);
 		}
 		return Ref<HazelTexture2D>();
 	}
@@ -57,6 +59,7 @@ namespace Hazel {
 		{
 		case RendererAPIType::None: return Ref<HazelTextureCube>();
 		case RendererAPIType::OpenGL: return Ref<OpenGLTextureCube>::Create(path);
+		case RendererAPIType::Vulkan: return Ref<VulkanTextureCube>::Create(path);
 		}
 		return Ref<HazelTextureCube>();
 	}

@@ -306,6 +306,7 @@
     <ClCompile Include="src\Scene\Scene.cpp" />
     <ClCompile Include="src\Scene\SceneAnimPBR.cpp" />
     <ClCompile Include="src\Scene\SceneAsteroids.cpp" />
+    <ClCompile Include="src\Scene\SceneBloom.cpp" />
     <ClCompile Include="src\Scene\SceneBullet.cpp" />
     <ClCompile Include="src\Scene\SceneCottage.cpp" />
     <ClCompile Include="src\Scene\SceneCubemaps.cpp" />
@@ -600,6 +601,7 @@
     <ClInclude Include="src\Scene\Scene.h" />
     <ClInclude Include="src\Scene\SceneAnimPBR.h" />
     <ClInclude Include="src\Scene\SceneAsteroids.h" />
+    <ClInclude Include="src\Scene\SceneBloom.h" />
     <ClInclude Include="src\Scene\SceneBullet.h" />
     <ClInclude Include="src\Scene\SceneCottage.h" />
     <ClInclude Include="src\Scene\SceneCubemaps.h" />

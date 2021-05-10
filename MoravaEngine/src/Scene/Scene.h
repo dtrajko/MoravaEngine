@@ -125,8 +125,9 @@ private:
 	virtual void SetupMaterials();
 	virtual void SetupMeshes();
 	virtual void SetupParticles();
-	virtual void SetupFramebuffers();
 	virtual void SetupModels();
+	virtual void SetupFramebuffers();
+	virtual void SetupShaders();
 	virtual void SetSkybox();
 
 public:

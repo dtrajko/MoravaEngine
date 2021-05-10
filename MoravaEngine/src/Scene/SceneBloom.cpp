@@ -1,4 +1,4 @@
-#include "Scene/SceneSSAO.h"
+#include "Scene/SceneBloom.h"
 
 #include "Core/Application.h"
 #include "Mesh/Block.h"
@@ -6,7 +6,7 @@
 #include "Mesh/QuadSSAO.h"
 
 
-SceneSSAO::SceneSSAO()
+SceneBloom::SceneBloom()
 {
     sceneSettings.cameraPosition = glm::vec3(0.0f, 5.0f, 10.0f);
     sceneSettings.cameraStartYaw = -90.0f;
@@ -29,6 +29,7 @@ SceneSSAO::SceneSSAO()
     SetupTextureSlots();
     SetupTextures();
     SetupFramebuffers();
+    SetupShaders();
     SetupMeshes();
     SetupModels();
     SetupSSAO();
@@ -36,13 +37,18 @@ SceneSSAO::SceneSSAO()
     m_RenderTarget = (int)RenderTarget::SSAO_Composite;
 }
 
-void SceneSSAO::SetupTextures()
+void SceneBloom::SetupTextures()
 {
-    ResourceManager::LoadTexture("crate",       "Textures/crate.png");
-    ResourceManager::LoadTexture("crateNormal", "Textures/crateNormal.png");
+    std::string filepathWood = "Textures/wood.png";
+    Hazel::Ref<Hazel::HazelTexture2D> textureWood = Hazel::HazelTexture2D::Create(filepathWood, true, Hazel::HazelTextureWrap::Clamp);
+    Log::GetLogger()->info("SceneBloom: HazelTexture2D loaded '{0}'", filepathWood);
+
+    std::string filepathContainer = "Textures/container/container2.png";
+    Hazel::Ref<Hazel::HazelTexture2D> textureContainer = Hazel::HazelTexture2D::Create(filepathContainer, true, Hazel::HazelTextureWrap::Clamp);
+    Log::GetLogger()->info("SceneBloom: HazelTexture2D loaded '{0}'", filepathContainer);
 }
 
-void SceneSSAO::SetupTextureSlots()
+void SceneBloom::SetupTextureSlots()
 {
     textureSlots.insert(std::make_pair("diffuse",    1));
     textureSlots.insert(std::make_pair("normal",     2));
@@ -54,36 +60,110 @@ void SceneSSAO::SetupTextureSlots()
     textureSlots.insert(std::make_pair("DuDv",       8));
 }
 
-void SceneSSAO::SetupMeshes()
+void SceneBloom::SetupMeshes()
 {
     // SSAO meshes
     Cube* cube = new Cube();
     meshes.insert(std::make_pair("cube", cube));
 }
 
-void SceneSSAO::SetupModels()
+void SceneBloom::SetupModels()
 {
     ModelSSAO* gladiator = new ModelSSAO("Models/Gladiator/Gladiator.fbx", "IgnoreTextures");
     modelsSSAO.insert(std::make_pair("gladiator", gladiator));
 }
 
-void SceneSSAO::SetupFramebuffers()
+void SceneBloom::SetupFramebuffers()
 {
+    GLsizei scrWidth = static_cast<GLsizei>(Application::Get()->GetWindow()->GetWidth());
+    GLsizei scrHeight = static_cast<GLsizei>(Application::Get()->GetWindow()->GetHeight());
+
+    // configure (floating point) framebuffers
+    // ---------------------------------------
+    unsigned int hdrFBO;
+    glGenFramebuffers(1, &hdrFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+
+    // create 2 floating point color buffers (1 for normal rendering, other for brightness threshold values)
+    unsigned int colorBuffers[2];
+    glGenTextures(2, colorBuffers);
+
+    for (unsigned int i = 0; i < 2; i++)
+    {
+        glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, scrWidth, scrHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        // attach texture to framebuffer
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
+    }
+
+    // create and attach depth buffer (renderbuffer)
+    unsigned int rboDepth;
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, scrWidth, scrHeight);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+    // tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+    unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, attachments);
+    // finally check if framebuffer is complete
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cout << "Framebuffer not complete!" << std::endl;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // ping-pong-framebuffer for blurring
+    unsigned int pingpongFBO[2];
+    unsigned int pingpongColorbuffers[2];
+    glGenFramebuffers(2, pingpongFBO);
+    glGenTextures(2, pingpongColorbuffers);
+    for (unsigned int i = 0; i < 2; i++)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
+        glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, scrWidth, scrHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongColorbuffers[i], 0);
+        // also check if framebuffers are complete (no need for depth buffer)
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            std::cout << "Framebuffer not complete!" << std::endl;
+    }
 }
 
-void SceneSSAO::SetupSSAO()
+void SceneBloom::SetupShaders()
+{
+    m_ShaderBloom = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/7.bloom.vs", "Shaders/LearnOpenGL/7.bloom.fs");
+    Log::GetLogger()->info("SceneBloom: m_ShaderBloom compiled [programID={0}]", m_ShaderBloom->GetProgramID());
+
+    m_ShaderLightBox = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/7.bloom.vs", "Shaders/LearnOpenGL/7.light_box.fs");
+    Log::GetLogger()->info("SceneBloom: m_ShaderLightBox compiled [programID={0}]", m_ShaderLightBox->GetProgramID());
+
+    m_ShaderBlur = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/7.blur.vs", "Shaders/LearnOpenGL/7.blur.fs");
+    Log::GetLogger()->info("SceneBloom: m_ShaderBlur compiled [programID={0}]", m_ShaderBlur->GetProgramID());
+
+    m_ShaderBloomFinal = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/7.bloom_final.vs", "Shaders/LearnOpenGL/7.bloom_final.fs");
+    Log::GetLogger()->info("SceneBloom: m_ShaderBloomFinal compiled [programID={0}]", m_ShaderBloomFinal->GetProgramID());
+}
+
+void SceneBloom::SetupSSAO()
 {
     m_SSAO.Init();
 }
 
-void SceneSSAO::Update(float timestep, Window* mainWindow)
+void SceneBloom::Update(float timestep, Window* mainWindow)
 {
     Scene::Update(timestep, mainWindow);
 
     m_SSAO.Update();
 }
 
-void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
+void SceneBloom::UpdateImGui(float timestep, Window* mainWindow)
 {
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
@@ -147,7 +227,7 @@ void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
     ImGui::End();
 }
 
-void SceneSSAO::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
+void SceneBloom::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     m_SSAO.Render(projectionMatrix, m_Camera->GetViewMatrix(), meshes, &modelsSSAO);
@@ -190,7 +270,7 @@ void SceneSSAO::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
     }
 }
 
-SceneSSAO::~SceneSSAO()
+SceneBloom::~SceneBloom()
 {
     delete meshes["block"];
     delete meshes["floor"];

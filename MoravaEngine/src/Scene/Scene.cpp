@@ -240,6 +240,10 @@ void Scene::SetupFramebuffers()
 {
 }
 
+void Scene::SetupShaders()
+{
+}
+
 void Scene::SetupModels()
 {
 }
