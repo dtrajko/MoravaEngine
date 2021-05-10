@@ -38,6 +38,9 @@ public:
 	static void DisableMSAA();
 	static void EnableBlend();
 	static void DisableBlend();
+	static void EnableWireframe();
+	static void DisableWireframe();
+
 	static inline glm::mat4 GetProjectionMatrix() { return s_ProjectionMatrix; };
 	static inline void SetProjectionMatrix(glm::mat4 projectionMatrix) { s_ProjectionMatrix = projectionMatrix; };
 	static void SetDefaultFramebuffer(unsigned int width, unsigned int height);

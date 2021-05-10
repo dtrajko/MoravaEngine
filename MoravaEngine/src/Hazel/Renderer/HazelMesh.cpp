@@ -1181,7 +1181,7 @@ namespace Hazel {
 
 		glm::vec3 translation, rotation, scale;
 		Math::DecomposeTransform(entityTransform * Transform, translation, rotation, scale);
-		scale *= 1.2f;
+		// scale *= 1.2f;
 		glm::mat4 outlineTransform = Math::CreateTransform(translation, glm::quat(rotation), scale);
 
 		shader->Bind();

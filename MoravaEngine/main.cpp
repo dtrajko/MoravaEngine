@@ -277,39 +277,6 @@ int main()
 	// Loop until window closed
 	while (!Application::Get()->GetWindow()->GetShouldClose())
 	{
-		Timer::Get()->Update();
-
-		scene->GetCameraController()->Update();
-
-		MousePicker::Get()->Update(scene->GetCamera()->GetViewMatrix());
-
-		if (ImGuiWrapper::CanViewportReceiveEvents())
-		{
-			// Toggle wireframe mode
-			if (Input::IsKeyPressed(Key::R))
-			{
-				if (Timer::Get()->GetCurrentTimestamp() - keyPressCooldown.lastTime > keyPressCooldown.cooldown)
-				{
-					scene->SetWireframeEnabled(!scene->IsWireframeEnabled());
-					keyPressCooldown.lastTime = Timer::Get()->GetCurrentTimestamp();
-				}
-			}
-
-			// Flashlight toggle key
-			if (Input::IsKeyPressed(Key::F))
-			{
-				LightManager::spotLights[2].GetBasePL()->Toggle();
-				// Application::Get()->GetWindow()->getKeys()[GLFW_KEY_L] = false;
-			}
-		}
-
-		if (scene->IsWireframeEnabled()) {
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		}
-		else {
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		}
-
 		ImGuiWrapper::Begin();
 
 		{
@@ -332,8 +299,6 @@ int main()
 
 		ImGuiWrapper::End();
 
-		glDisable(GL_BLEND);
-
 		// Swap buffers and poll events
 		Application::Get()->GetWindow()->OnUpdate();
 	}
@@ -342,6 +307,5 @@ int main()
 
 	// delete scene;
 	delete renderer;
-
 	return 0;
 }

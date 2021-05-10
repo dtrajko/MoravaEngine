@@ -152,6 +152,16 @@ void RendererBasic::EnableBlend()
 	glEnable(GL_BLEND);
 }
 
+void RendererBasic::EnableWireframe()
+{
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+}
+
+void RendererBasic::DisableWireframe()
+{
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
 void RendererBasic::DisableBlend()
 {
 	glDisable(GL_BLEND);

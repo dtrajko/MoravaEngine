@@ -85,19 +85,10 @@ void Kernel(float kernel[9])
 void ShadesOfGray()
 {
     vec4 TextureColor = texture(u_AlbedoMap, vTexCoord);
-    if (TextureColor.x + TextureColor.y + TextureColor.z < 0.5) {
-        FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-    } else if (TextureColor.x + TextureColor.y + TextureColor.z < 1.0) {
-        FragColor = vec4(0.2, 0.2, 0.2, 1.0);
-    } else if (TextureColor.x + TextureColor.y + TextureColor.z < 1.5) {
-        FragColor = vec4(0.4, 0.4, 0.4, 1.0);
-    } else if (TextureColor.x + TextureColor.y + TextureColor.z < 2.0) {
-        FragColor = vec4(0.6, 0.6, 0.6, 1.0);
-    } else if (TextureColor.x + TextureColor.y + TextureColor.z < 2.5) {
-        FragColor = vec4(0.8, 0.8, 0.8, 1.0);
-    } else {
-        FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-    }
+
+    int levels = 4;
+    float gray = round((TextureColor.x + TextureColor.y + TextureColor.z) * levels) / (3 * levels);
+    FragColor = vec4(gray, gray, gray, 1.0);
 }
 
 void Colors8Bit()

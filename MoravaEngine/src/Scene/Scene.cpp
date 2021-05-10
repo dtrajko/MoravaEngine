@@ -3,6 +3,7 @@
 #include "Hazel/Events/ApplicationEvent.h"
 #include "Hazel/Scene/Components.h"
 
+#include "Core/Application.h"
 #include "Mesh/MeshData.h"
 #include "Mesh/Tile2D.h"
 #include "Texture/TextureLoader.h"
@@ -155,7 +156,39 @@ Scene::Scene()
 
 void Scene::Update(float timestep, Window* mainWindow)
 {
+	Timer::Get()->Update();
+
 	m_Camera->OnUpdate(timestep);
+	m_CameraController->Update();
+
+	MousePicker::Get()->Update(m_Camera->GetViewMatrix());
+
+	if (ImGuiWrapper::CanViewportReceiveEvents())
+	{
+		// Toggle wireframe mode
+		if (Input::IsKeyPressed(Key::R))
+		{
+			if (Timer::Get()->GetCurrentTimestamp() - m_KeyPressCooldown.lastTime > m_KeyPressCooldown.cooldown)
+			{
+				m_WireframeEnabled = !m_WireframeEnabled;
+				m_KeyPressCooldown.lastTime = Timer::Get()->GetCurrentTimestamp();
+			}
+		}
+
+		// Flashlight toggle key
+		if (Input::IsKeyPressed(Key::F))
+		{
+			LightManager::spotLights[2].GetBasePL()->Toggle();
+			// Application::Get()->GetWindow()->getKeys()[GLFW_KEY_L] = false;
+		}
+	}
+
+	if (m_WireframeEnabled) {
+		RendererBasic::EnableWireframe();
+	}
+	else {
+		RendererBasic::DisableWireframe();
+	}
 }
 
 void Scene::OnWindowResize(WindowResizeEvent& e)
