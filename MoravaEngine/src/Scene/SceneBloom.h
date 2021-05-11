@@ -56,6 +56,8 @@ private:
 	unsigned int m_HDR_FBO;
 	unsigned int m_ColorBuffers[2];
 
+	unsigned int m_RBO_Depth;
+
 	unsigned int m_PingPongFBO[2];
 	unsigned int m_PingPongColorbuffers[2];
 
