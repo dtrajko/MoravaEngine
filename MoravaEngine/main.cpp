@@ -30,8 +30,8 @@
 // #define SCENE_PROCEDURAL_LANDMASS
 // #define SCENE_VOXEL_TERRAIN_SL
 // #define SCENE_MARCHING_CUBES
-#define SCENE_SSAO
-// #define SCENE_BLOOM
+// #define SCENE_SSAO
+#define SCENE_BLOOM
 // #define SCENE_DEFERRED
 // #define SCENE_DEFERRED_OGL
 // #define SCENE_EDITOR
@@ -253,7 +253,7 @@ int main()
 	scene = new SceneHazelVulkan();
 	renderer = static_cast<RendererBasic*>(new RendererHazelVulkan());
 #else
-		throw std::runtime_error("Scene and Renderer could not be loaded!");
+	throw std::runtime_error("Scene and Renderer could not be loaded!");
 #endif
 
 	Application::Get()->SetScene(scene);

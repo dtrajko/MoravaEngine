@@ -1,9 +1,7 @@
 #include "Scene/SceneBloom.h"
 
 #include "Core/Application.h"
-#include "Mesh/Block.h"
-#include "Mesh/Cube.h"
-#include "Mesh/QuadSSAO.h"
+#include "Core/Input.h"
 
 
 SceneBloom::SceneBloom()
@@ -28,112 +26,36 @@ SceneBloom::SceneBloom()
     SetLightManager();
     SetupTextureSlots();
     SetupTextures();
-    SetupFramebuffers();
     SetupShaders();
+    SetupFramebuffers();
+    SetupLights();
     SetupMeshes();
     SetupModels();
-    SetupSSAO();
+}
 
-    m_RenderTarget = (int)RenderTarget::SSAO_Composite;
+SceneBloom::~SceneBloom()
+{
+    Release();
 }
 
 void SceneBloom::SetupTextures()
 {
-    std::string filepathWood = "Textures/wood.png";
-    Hazel::Ref<Hazel::HazelTexture2D> textureWood = Hazel::HazelTexture2D::Create(filepathWood, true, Hazel::HazelTextureWrap::Clamp);
-    Log::GetLogger()->info("SceneBloom: HazelTexture2D loaded '{0}'", filepathWood);
+    // m_TextureWood = Hazel::HazelTexture2D::Create("Textures/wood.png", true, Hazel::HazelTextureWrap::Clamp);
 
-    std::string filepathContainer = "Textures/container/container2.png";
-    Hazel::Ref<Hazel::HazelTexture2D> textureContainer = Hazel::HazelTexture2D::Create(filepathContainer, true, Hazel::HazelTextureWrap::Clamp);
-    Log::GetLogger()->info("SceneBloom: HazelTexture2D loaded '{0}'", filepathContainer);
+    m_TextureWood = loadTexture("Textures/wood.png", true); // note that we're loading the texture as an SRGB texture
+    m_TextureContainer = loadTexture("Textures/container/container2.png", true); // note that we're loading the texture as an SRGB texture
 }
 
 void SceneBloom::SetupTextureSlots()
 {
-    textureSlots.insert(std::make_pair("diffuse",    1));
-    textureSlots.insert(std::make_pair("normal",     2));
-    textureSlots.insert(std::make_pair("shadow",     3));
-    textureSlots.insert(std::make_pair("omniShadow", 4));
-    textureSlots.insert(std::make_pair("reflection", 5));
-    textureSlots.insert(std::make_pair("refraction", 6));
-    textureSlots.insert(std::make_pair("depth",      7));
-    textureSlots.insert(std::make_pair("DuDv",       8));
 }
 
 void SceneBloom::SetupMeshes()
 {
-    // SSAO meshes
-    Cube* cube = new Cube();
-    meshes.insert(std::make_pair("cube", cube));
 }
 
 void SceneBloom::SetupModels()
 {
-    ModelSSAO* gladiator = new ModelSSAO("Models/Gladiator/Gladiator.fbx", "IgnoreTextures");
-    modelsSSAO.insert(std::make_pair("gladiator", gladiator));
-}
-
-void SceneBloom::SetupFramebuffers()
-{
-    GLsizei scrWidth = static_cast<GLsizei>(Application::Get()->GetWindow()->GetWidth());
-    GLsizei scrHeight = static_cast<GLsizei>(Application::Get()->GetWindow()->GetHeight());
-
-    // configure (floating point) framebuffers
-    // ---------------------------------------
-    unsigned int hdrFBO;
-    glGenFramebuffers(1, &hdrFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-
-    // create 2 floating point color buffers (1 for normal rendering, other for brightness threshold values)
-    unsigned int colorBuffers[2];
-    glGenTextures(2, colorBuffers);
-
-    for (unsigned int i = 0; i < 2; i++)
-    {
-        glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, scrWidth, scrHeight, 0, GL_RGBA, GL_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        // attach texture to framebuffer
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
-    }
-
-    // create and attach depth buffer (renderbuffer)
-    unsigned int rboDepth;
-    glGenRenderbuffers(1, &rboDepth);
-    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, scrWidth, scrHeight);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
-    // tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-    unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-    glDrawBuffers(2, attachments);
-    // finally check if framebuffer is complete
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cout << "Framebuffer not complete!" << std::endl;
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // ping-pong-framebuffer for blurring
-    unsigned int pingpongFBO[2];
-    unsigned int pingpongColorbuffers[2];
-    glGenFramebuffers(2, pingpongFBO);
-    glGenTextures(2, pingpongColorbuffers);
-    for (unsigned int i = 0; i < 2; i++)
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
-        glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, scrWidth, scrHeight, 0, GL_RGBA, GL_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongColorbuffers[i], 0);
-        // also check if framebuffers are complete (no need for depth buffer)
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            std::cout << "Framebuffer not complete!" << std::endl;
-    }
 }
 
 void SceneBloom::SetupShaders()
@@ -149,18 +71,44 @@ void SceneBloom::SetupShaders()
 
     m_ShaderBloomFinal = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/7.bloom_final.vs", "Shaders/LearnOpenGL/7.bloom_final.fs");
     Log::GetLogger()->info("SceneBloom: m_ShaderBloomFinal compiled [programID={0}]", m_ShaderBloomFinal->GetProgramID());
+
+    m_ShaderBloom->Bind();
+    m_ShaderBloom->setInt("diffuseTexture", 0);
+    m_ShaderBlur->Bind();
+    m_ShaderBlur->setInt("image", 0);
+    m_ShaderBloomFinal->Bind();
+    m_ShaderBloomFinal->setInt("scene", 0);
+    m_ShaderBloomFinal->setInt("bloomBlur", 1);
 }
 
-void SceneBloom::SetupSSAO()
+void SceneBloom::SetupFramebuffers()
 {
-    m_SSAO.Init();
+    GenerateConditional();
+}
+
+void SceneBloom::SetupLights()
+{
+    // lighting info
+    // -------------
+
+    // positions
+    m_LightPositions.push_back(glm::vec3(0.0f, 0.5f, 1.5f));
+    m_LightPositions.push_back(glm::vec3(-4.0f, 0.5f, -3.0f));
+    m_LightPositions.push_back(glm::vec3(3.0f, 0.5f, 1.0f));
+    m_LightPositions.push_back(glm::vec3(-.8f, 2.4f, -1.0f));
+
+    // colors
+    m_LightColors.push_back(glm::vec3(5.0f, 5.0f, 5.0f));
+    m_LightColors.push_back(glm::vec3(10.0f, 0.0f, 0.0f));
+    m_LightColors.push_back(glm::vec3(0.0f, 0.0f, 15.0f));
+    m_LightColors.push_back(glm::vec3(0.0f, 5.0f, 0.0f));
 }
 
 void SceneBloom::Update(float timestep, Window* mainWindow)
 {
     Scene::Update(timestep, mainWindow);
 
-    m_SSAO.Update();
+    GenerateConditional();
 }
 
 void SceneBloom::UpdateImGui(float timestep, Window* mainWindow)
@@ -172,57 +120,24 @@ void SceneBloom::UpdateImGui(float timestep, Window* mainWindow)
     {
         ImVec2 imageSize(96.0f, 96.0f);
 
-        ImGui::Text("gPosition");
-        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferPosition, imageSize);
+        ImGui::Text("Color Buffer 0");
+        ImGui::Image((void*)(intptr_t)m_ColorBuffers[0], imageSize);
 
-        ImGui::Text("gNormal");
-        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferNormal, imageSize);
+        ImGui::Text("Color Buffer 1");
+        ImGui::Image((void*)(intptr_t)m_ColorBuffers[1], imageSize);
 
-        ImGui::Text("gAlbedo");
-        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferAlbedo, imageSize);
+        ImGui::Text("Ping Pong\nColor Buffer 0");
+        ImGui::Image((void*)(intptr_t)m_PingPongColorbuffers[0], imageSize);
 
-        ImGui::Text("gTexCoord");
-        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferTexCoord, imageSize);
-
-        ImGui::Text("m_SSAO_ColorBuffer");
-        ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBuffer, imageSize);
-
-        if (m_SSAO.m_BlurEnabled)
-        {
-            ImGui::Text("m_SSAO_ColorBufferBlur");
-            ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBufferBlur, imageSize);
-        }
-
-        ImGui::Text("m_NoiseTexture");
-        ImGui::Image((void*)(intptr_t)m_SSAO.m_NoiseTexture, imageSize);
+        ImGui::Text("Ping Pong\nColor Buffer 1");
+        ImGui::Image((void*)(intptr_t)m_PingPongColorbuffers[1], imageSize);
     }
     ImGui::End();
 
-    ImGui::Begin("SSAO Settings");
+    ImGui::Begin("Settings");
     {
-        ImGui::SliderFloat3("Light Position", glm::value_ptr(m_SSAO.m_LightPos), -10.0f, 10.0f);
-        ImGui::SliderInt("KernelSize", (int*)&m_SSAO.m_KernelSize, 0, 128);
-        ImGui::SliderFloat("Radius", &m_SSAO.m_KernelRadius, 0.0f, 10.0f);
-        ImGui::SliderFloat("Bias", &m_SSAO.m_KernelBias, -1.0f, 1.0f);
-        if (ImGui::Checkbox("Blur Enabled", &m_SSAO.m_BlurEnabled)) {
-            if (m_RenderTarget == (int)RenderTarget::SSAO_ColorBuffer || m_RenderTarget == (int)RenderTarget::SSAO_ColorBufferBlur) {
-                m_RenderTarget = m_SSAO.m_BlurEnabled ? (int)RenderTarget::SSAO_ColorBufferBlur : (int)RenderTarget::SSAO_ColorBuffer;
-            }
-        }
-
-        ImGui::Separator();
-
-        ImGui::Text("Render Targets");
-        ImGui::RadioButton("SSAO Composite",    &m_RenderTarget, (int)RenderTarget::SSAO_Composite);
-        ImGui::RadioButton("G-Buffer Position", &m_RenderTarget, (int)RenderTarget::GBuffer_Position);
-        ImGui::RadioButton("G-Buffer Normal",   &m_RenderTarget, (int)RenderTarget::GBuffer_Normal);
-        ImGui::RadioButton("G-Buffer Albedo",   &m_RenderTarget, (int)RenderTarget::GBuffer_Albedo);
-        ImGui::RadioButton("G-Buffer TexCoord", &m_RenderTarget, (int)RenderTarget::GBuffer_TexCoord);
-        ImGui::RadioButton("SSAO Color",        &m_RenderTarget, (int)RenderTarget::SSAO_ColorBuffer);
-        if (m_SSAO.m_BlurEnabled)
-        {
-            ImGui::RadioButton("SSAO Color Blur", &m_RenderTarget, (int)RenderTarget::SSAO_ColorBufferBlur);
-        }
+        ImGui::Checkbox("Bloom Enabled", &m_BloomEnabled);
+        ImGui::DragFloat("Exposure", &m_Exposure, 0.01f, 0.0f, 4.0f);
     }
     ImGui::End();
 }
@@ -230,50 +145,367 @@ void SceneBloom::UpdateImGui(float timestep, Window* mainWindow)
 void SceneBloom::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
-    m_SSAO.Render(projectionMatrix, m_Camera->GetViewMatrix(), meshes, &modelsSSAO);
+    if (m_Width == 0 || m_Height == 0) return;
 
-    if (m_RenderTarget != (int)RenderTarget::SSAO_Composite)
+    // 1. render scene into floating point framebuffer
+    // -----------------------------------------------
+    glBindFramebuffer(GL_FRAMEBUFFER, m_HDR_FBO);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float)m_Width / (float)m_Height, 0.1f, 1000.0f);
+    glm::mat4 view = m_Camera->GetViewMatrix();
+    glm::mat4 model = glm::mat4(1.0f);
+    m_ShaderBloom->Bind();
+    m_ShaderBloom->setMat4("projection", projection);
+    m_ShaderBloom->setMat4("view", view);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_TextureWood);
+
+    // set lighting uniforms
+    for (unsigned int i = 0; i < m_LightPositions.size(); i++)
     {
-        if (m_RenderTarget == (int)RenderTarget::GBuffer_Position)
-        {
-            m_SSAO.m_GBufferSSAO.BindForReading();
-            m_SSAO.m_GBufferSSAO.SetReadBuffer((int)RenderTarget::GBuffer_Position);
+        m_ShaderBloom->setVec3("lights[" + std::to_string(i) + "].Position", m_LightPositions[i]);
+        m_ShaderBloom->setVec3("lights[" + std::to_string(i) + "].Color", m_LightColors[i]);
+    }
+
+    m_ShaderBloom->setVec3("viewPos", m_Camera->GetPosition());
+
+    // create one large cube that acts as the floor
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0));
+    model = glm::scale(model, glm::vec3(12.5f, 0.5f, 12.5f));
+    m_ShaderBloom->setMat4("model", model);
+    renderCube();
+
+    // then create multiple cubes as the scenery
+    glBindTexture(GL_TEXTURE_2D, m_TextureContainer);
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
+    model = glm::scale(model, glm::vec3(0.5f));
+    m_ShaderBloom->setMat4("model", model);
+    renderCube();
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
+    model = glm::scale(model, glm::vec3(0.5f));
+    m_ShaderBloom->setMat4("model", model);
+    renderCube();
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-1.0f, -1.0f, 2.0));
+    model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+    m_ShaderBloom->setMat4("model", model);
+    renderCube();
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 2.7f, 4.0));
+    model = glm::rotate(model, glm::radians(23.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+    model = glm::scale(model, glm::vec3(1.25));
+    m_ShaderBloom->setMat4("model", model);
+    renderCube();
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-2.0f, 1.0f, -3.0));
+    model = glm::rotate(model, glm::radians(124.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+    m_ShaderBloom->setMat4("model", model);
+    renderCube();
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-3.0f, 0.0f, 0.0));
+    model = glm::scale(model, glm::vec3(0.5f));
+    m_ShaderBloom->setMat4("model", model);
+    renderCube();
+
+    // finally show all the light sources as bright cubes
+    m_ShaderLightBox->Bind();
+    m_ShaderLightBox->setMat4("projection", projection);
+    m_ShaderLightBox->setMat4("view", view);
+
+    for (unsigned int i = 0; i < m_LightPositions.size(); i++)
+    {
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(m_LightPositions[i]));
+        model = glm::scale(model, glm::vec3(0.25f));
+        m_ShaderLightBox->setMat4("model", model);
+        m_ShaderLightBox->setVec3("lightColor", m_LightColors[i]);
+        renderCube();
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // 2. blur bright fragments with two-pass Gaussian Blur 
+    // --------------------------------------------------
+    bool horizontal = true, first_iteration = true;
+    unsigned int amount = 10;
+    m_ShaderBlur->Bind();
+    for (unsigned int i = 0; i < amount; i++)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, m_PingPongFBO[horizontal]);
+        m_ShaderBlur->setInt("horizontal", horizontal);
+        glBindTexture(GL_TEXTURE_2D, first_iteration ? m_ColorBuffers[1] : m_PingPongColorbuffers[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
+        renderQuad();
+        horizontal = !horizontal;
+        if (first_iteration) {
+            first_iteration = false;
         }
-        else if (m_RenderTarget == (int)RenderTarget::GBuffer_Normal)
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // 3. now render floating point color buffer to 2D quad and tonemap HDR colors to default framebuffer's (clamped) color range
+    // --------------------------------------------------------------------------------------------------------------------------
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    m_ShaderBloomFinal->Bind();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_ColorBuffers[0]);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_PingPongColorbuffers[!horizontal]);
+
+    m_ShaderBloomFinal->setInt("bloom", m_BloomEnabled);
+    m_ShaderBloomFinal->setFloat("exposure", m_Exposure);
+
+    renderQuad();
+}
+
+void SceneBloom::renderCube()
+{
+    // initialize (if necessary)
+    if (m_CubeVAO == 0)
+    {
+        float vertices[] = {
+            // back face
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+             1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+            -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+            // front face
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+            -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+            // left face
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            // right face
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+            // bottom face
+            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+             1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+            -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+            // top face
+            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+             1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+             1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+             1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+            -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+        };
+
+        glGenVertexArrays(1, &m_CubeVAO);
+        glGenBuffers(1, &m_CubeVBO);
+
+        // fill buffer
+        glBindBuffer(GL_ARRAY_BUFFER, m_CubeVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        // link vertex attributes
+        glBindVertexArray(m_CubeVAO);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+    // render Cube
+    glBindVertexArray(m_CubeVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+}
+
+void SceneBloom::renderQuad()
+{
+    if (m_QuadVAO == 0)
+    {
+        float quadVertices[] = {
+            // positions        // texture Coords
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        };
+        // setup plane VAO
+        glGenVertexArrays(1, &m_QuadVAO);
+        glGenBuffers(1, &m_QuadVBO);
+        glBindVertexArray(m_QuadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, m_QuadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    }
+    glBindVertexArray(m_QuadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+}
+
+unsigned int SceneBloom::loadTexture(char const* path, bool gammaCorrection)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum internalFormat;
+        GLenum dataFormat;
+        if (nrComponents == 1)
         {
-            m_SSAO.m_GBufferSSAO.BindForReading();
-            m_SSAO.m_GBufferSSAO.SetReadBuffer((int)RenderTarget::GBuffer_Normal);
+            internalFormat = dataFormat = GL_RED;
         }
-        else if (m_RenderTarget == (int)RenderTarget::GBuffer_Albedo)
+        else if (nrComponents == 3)
         {
-            m_SSAO.m_GBufferSSAO.BindForReading();
-            m_SSAO.m_GBufferSSAO.SetReadBuffer((int)RenderTarget::GBuffer_Albedo);
+            internalFormat = gammaCorrection ? GL_SRGB : GL_RGB;
+            dataFormat = GL_RGB;
         }
-        else if (m_RenderTarget == (int)RenderTarget::GBuffer_TexCoord)
+        else if (nrComponents == 4)
         {
-            m_SSAO.m_GBufferSSAO.BindForReading();
-            m_SSAO.m_GBufferSSAO.SetReadBuffer((int)RenderTarget::GBuffer_TexCoord);
-        }
-        else if (m_RenderTarget == (int)RenderTarget::SSAO_ColorBuffer)
-        {
-            m_SSAO.BindFramebufferSSAO();
-            m_SSAO.BindColorAttachment();
-        }
-        else if (m_RenderTarget == (int)RenderTarget::SSAO_ColorBufferBlur)
-        {
-            m_SSAO.BindFramebufferSSAOBlur();
-            m_SSAO.BindColorAttachment();
+            internalFormat = gammaCorrection ? GL_SRGB_ALPHA : GL_RGBA;
+            dataFormat = GL_RGBA;
         }
 
-        glBlitFramebuffer(0, 0, m_SSAO.m_GBufferSSAO.GetWidth(), m_SSAO.m_GBufferSSAO.GetHeight(),
-            0, 0, m_SSAO.m_GBufferSSAO.GetWidth(), m_SSAO.m_GBufferSSAO.GetHeight(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Texture failed to load at path: " << path << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
+}
+
+void SceneBloom::GenerateConditional()
+{
+    m_Width = Application::Get()->GetWindow()->GetWidth();
+    m_Height = Application::Get()->GetWindow()->GetHeight();
+
+    if (m_Width != m_WidthPrev || m_Height != m_HeightPrev)
+    {
+        Generate();
+
+        m_WidthPrev = m_Width;
+        m_HeightPrev = m_Height;
     }
 }
 
-SceneBloom::~SceneBloom()
+void SceneBloom::Generate()
 {
-    delete meshes["block"];
-    delete meshes["floor"];
-    delete meshes["cube"];
-    delete modelsSSAO["gladiator"];
+    // configure (floating point) framebuffers
+    // ---------------------------------------
+    glGenFramebuffers(1, &m_HDR_FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_HDR_FBO);
+
+    // create 2 floating point color buffers (1 for normal rendering, other for brightness threshold values)
+    glGenTextures(2, m_ColorBuffers);
+
+    for (unsigned int i = 0; i < 2; i++)
+    {
+        glBindTexture(GL_TEXTURE_2D, m_ColorBuffers[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_Width, m_Height, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        // attach texture to framebuffer
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_ColorBuffers[i], 0);
+    }
+
+    // create and attach depth buffer (renderbuffer)
+    unsigned int rboDepth;
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_Width, m_Height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+    // tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+    unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, attachments);
+    // finally check if framebuffer is complete
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cout << "Framebuffer not complete!" << std::endl;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // ping-pong-framebuffer for blurring
+    glGenFramebuffers(2, m_PingPongFBO);
+    glGenTextures(2, m_PingPongColorbuffers);
+    for (unsigned int i = 0; i < 2; i++)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, m_PingPongFBO[i]);
+        glBindTexture(GL_TEXTURE_2D, m_PingPongColorbuffers[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_Width, m_Height, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_PingPongColorbuffers[i], 0);
+        // also check if framebuffers are complete (no need for depth buffer)
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            std::cout << "Framebuffer not complete!" << std::endl;
+        }
+    }
+}
+
+void SceneBloom::Release()
+{
+    glDeleteFramebuffers(1, &m_HDR_FBO);
+
+    for (unsigned int i = 0; i < 2; i++)
+    {
+        glDeleteFramebuffers(1, &m_PingPongFBO[i]);
+
+        glDeleteTextures(1, &m_ColorBuffers[i]);
+        glDeleteTextures(1, &m_PingPongColorbuffers[i]);
+    }
+
+    ResetHandlers();
+}
+
+void SceneBloom::ResetHandlers()
+{
+    m_HDR_FBO = 0;
+
+    for (unsigned int i = 0; i < 2; i++)
+    {
+        m_PingPongFBO[i] = 0;
+
+        m_ColorBuffers[i] = 0;
+        m_PingPongColorbuffers[i] = 0;
+    }
 }

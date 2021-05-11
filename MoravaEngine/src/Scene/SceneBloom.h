@@ -27,29 +27,51 @@ private:
 	virtual void SetupModels() override;
 	virtual void SetupFramebuffers() override;
 	virtual void SetupShaders() override;
-	void SetupSSAO();
+	void SetupLights();
+
+	void renderCube();
+	void renderQuad();
+	unsigned int loadTexture(char const* path, bool gammaCorrection);
+
+	void GenerateConditional();
+	void Generate();
+	void Release();
+	void ResetHandlers();
 
 private:
-	SSAO m_SSAO;
-	std::map<std::string, ModelSSAO*> modelsSSAO;
-
 	Hazel::Ref<Shader> m_ShaderBloom;
 	Hazel::Ref<Shader> m_ShaderLightBox;
 	Hazel::Ref<Shader> m_ShaderBlur;
 	Hazel::Ref<Shader> m_ShaderBloomFinal;
 
-	enum class RenderTarget
-	{
-		GBuffer_Position     = 0,
-		GBuffer_Normal       = 1,
-		GBuffer_Albedo       = 2,
-		GBuffer_TexCoord     = 3,
-		SSAO_Composite       = 4,
-		SSAO_ColorBuffer     = 5,
-		SSAO_ColorBufferBlur = 6,
-	};
+	// Hazel::Ref<Hazel::HazelTexture2D> m_TextureWood;
+	// Hazel::Ref<Hazel::HazelTexture2D> m_TextureContainer;
 
-private:
-	int m_RenderTarget;
+	unsigned int m_TextureWood;
+	unsigned int m_TextureContainer;
+
+	std::vector<glm::vec3> m_LightPositions;
+	std::vector<glm::vec3> m_LightColors;
+
+	unsigned int m_HDR_FBO;
+	unsigned int m_ColorBuffers[2];
+
+	unsigned int m_PingPongFBO[2];
+	unsigned int m_PingPongColorbuffers[2];
+
+	unsigned int m_CubeVAO = 0;
+	unsigned int m_CubeVBO = 0;
+
+	unsigned int m_QuadVAO = 0;
+	unsigned int m_QuadVBO = 0;
+
+	bool m_BloomEnabled = true;
+	float m_Exposure = 1.0f;
+
+	uint32_t m_Width = 0;
+	uint32_t m_Height = 0;
+
+	uint32_t m_WidthPrev = 0;
+	uint32_t m_HeightPrev = 0;
 
 };
