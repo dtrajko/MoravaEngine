@@ -94,7 +94,8 @@ void WindowsWindow::Init(const WindowProps& props)
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan) {
+	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+	{
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	}
 
@@ -112,10 +113,13 @@ void WindowsWindow::Init(const WindowProps& props)
 	glfwSetWindowUserPointer(m_Window, &m_Data);
 	SetVSync(true);
 
-	glEnable(GL_DEPTH_TEST);
+	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+	{
+		glEnable(GL_DEPTH_TEST);
 
-	// Setup Viewport size
-	glViewport(0, 0, m_Data.Width, m_Data.Height);
+		// Setup Viewport size
+		glViewport(0, 0, m_Data.Width, m_Data.Height);
+	}
 
 	// The old MoravaEngine method of handling events
 	// not working with the new Hazel GLFW callbacks
@@ -207,16 +211,18 @@ void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)
 GLfloat WindowsWindow::getXChange()
 {
 	float theChange = 0.0f;
-	if (std::abs(xChange) > m_CursorIgnoreLimit)
+	if (std::abs(xChange) > m_CursorIgnoreLimit) {
 		theChange = xChange;
+	}
 	return theChange;
 }
 
 GLfloat WindowsWindow::getYChange()
 {
 	float theChange = 0.0f;
-	if (std::abs(yChange) > m_CursorIgnoreLimit)
+	if (std::abs(yChange) > m_CursorIgnoreLimit) {
 		theChange = yChange;
+	}
 	return theChange;
 }
 

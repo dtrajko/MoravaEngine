@@ -23,25 +23,25 @@ void RendererHazelVulkan::RenderPassOmniShadow(PointLight* light, Window* mainWi
 void RendererHazelVulkan::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     std::string passType = "shadow";
-    scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+    scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
 void RendererHazelVulkan::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	std::string passType = "shadow_omni";
-	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
 void RendererHazelVulkan::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
 void RendererHazelVulkan::PostProcessing(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	std::string passType = "post_processing";
-	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
 void RendererHazelVulkan::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)

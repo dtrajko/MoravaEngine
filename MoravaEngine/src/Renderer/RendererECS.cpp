@@ -23,25 +23,25 @@ void RendererECS::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Sc
 void RendererECS::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     std::string passType = "shadow";
-    scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+    scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
 void RendererECS::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	std::string passType = "shadow_omni";
-	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
 void RendererECS::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
 void RendererECS::PostProcessing(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	std::string passType = "post_processing";
-	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
 void RendererECS::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)

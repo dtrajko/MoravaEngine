@@ -12,12 +12,12 @@
 
 class Scene;
 
-class RendererBasic
+class OpenGLRendererBasic
 {
 
 public:
-	RendererBasic();
-	virtual ~RendererBasic();
+	OpenGLRendererBasic();
+	virtual ~OpenGLRendererBasic();
 
 	virtual void Init(Scene* scene); // Scene param here could be a mistake
 	virtual void SetUniforms();
@@ -41,14 +41,14 @@ public:
 	static void EnableWireframe();
 	static void DisableWireframe();
 
-	static glm::mat4 GetProjectionMatrix();
-	static void SetProjectionMatrix(glm::mat4 projectionMatrix);
+	static inline glm::mat4 GetProjectionMatrix() { return s_ProjectionMatrix; }
+	static inline void SetProjectionMatrix(glm::mat4 projectionMatrix) { s_ProjectionMatrix = projectionMatrix; }
 	static void SetDefaultFramebuffer(unsigned int width, unsigned int height);
 
-	static std::map<std::string, Shader*>& GetShaders();
-	static std::map<std::string, int>& GetUniforms();
+	static std::map<std::string, Shader*>& GetShaders() { return s_Shaders; }
+	static std::map<std::string, int>& GetUniforms() { return s_Uniforms; }
 
-	static glm::vec4 GetBgColor();
+	static glm::vec4 GetBgColor() { return s_BgColor; }
 
 	static void RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow);
 	static void Cleanup();
@@ -65,5 +65,12 @@ public:
 
 protected:
 	static void UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene);
+
+public:
+	static glm::mat4 s_ProjectionMatrix;
+	static std::map<std::string, Shader*> s_Shaders;
+	static std::map<std::string, int> s_Uniforms;
+	static glm::vec4 s_BgColor;
+	// static bool s_SpirV_Enabled;
 
 };

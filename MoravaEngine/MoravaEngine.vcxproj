@@ -275,6 +275,7 @@
     <ClCompile Include="src\Particle\ParticleSystemThinMatrix.cpp" />
     <ClCompile Include="src\Particle\ParticleTexture.cpp" />
     <ClCompile Include="src\Physics\SpartanPhysics.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLRendererBasic.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandPool.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanDescriptorSet.cpp" />
@@ -572,6 +573,7 @@
     <ClInclude Include="src\Particle\ParticleTexture.h" />
     <ClInclude Include="src\PerlinNoise\PerlinNoise.hpp" />
     <ClInclude Include="src\Physics\SpartanPhysics.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLRendererBasic.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanCommandBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanCommandPool.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanDescriptorSet.h" />

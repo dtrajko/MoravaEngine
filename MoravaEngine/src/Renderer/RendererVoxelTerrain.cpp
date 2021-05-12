@@ -16,27 +16,27 @@ void RendererVoxelTerrain::Init(Scene* scene)
 void RendererVoxelTerrain::SetShaders()
 {
 	Shader* shaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
-	s_Shaders.insert(std::make_pair("main", shaderMain));
+	RendererBasic::GetShaders().insert(std::make_pair("main", shaderMain));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderMain compiled [programID={0}]", shaderMain->GetProgramID());
 
 	Shader* shaderRenderInstanced  = new Shader("Shaders/render_instanced.vs", "Shaders/render_instanced.fs");
-	s_Shaders.insert(std::make_pair("render_instanced", shaderRenderInstanced));
+	RendererBasic::GetShaders().insert(std::make_pair("render_instanced", shaderRenderInstanced));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderRenderInstanced compiled [programID={0}]", shaderRenderInstanced->GetProgramID());
 
 	Shader* shaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
-	s_Shaders.insert(std::make_pair("basic", shaderBasic));
+	RendererBasic::GetShaders().insert(std::make_pair("basic", shaderBasic));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderBasic compiled [programID={0}]", shaderBasic->GetProgramID());
 
 	Shader* shaderMarchingCubes = new Shader("Shaders/marching_cubes.vs", "Shaders/marching_cubes.fs");
-	s_Shaders.insert(std::make_pair("marching_cubes", shaderMarchingCubes));
+	RendererBasic::GetShaders().insert(std::make_pair("marching_cubes", shaderMarchingCubes));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderMarchingCubes compiled [programID={0}]", shaderMarchingCubes->GetProgramID());
 
 	Shader* shaderShadowMap = new Shader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
-	s_Shaders.insert(std::make_pair("shadow_map", shaderShadowMap));
+	RendererBasic::GetShaders().insert(std::make_pair("shadow_map", shaderShadowMap));
 	Log::GetLogger()->info("RendererEditor: shaderShadowMap compiled [programID={0}]", shaderShadowMap->GetProgramID());
 
 	Shader* shaderOmniShadow = new Shader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
-	s_Shaders.insert(std::make_pair("omniShadow", shaderOmniShadow));
+	RendererBasic::GetShaders().insert(std::make_pair("omniShadow", shaderOmniShadow));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderOmniShadow compiled [programID={0}]", shaderOmniShadow->GetProgramID());
 }
 
@@ -46,7 +46,7 @@ void RendererVoxelTerrain::RenderPassShadow(Window* mainWindow, Scene* scene, gl
 	if (!LightManager::directionalLight.GetEnabled()) return;
 	if (LightManager::directionalLight.GetShadowMap() == nullptr) return;
 
-	Shader* shaderShadowMap = s_Shaders["shadow_map"];
+	Shader* shaderShadowMap = RendererBasic::GetShaders()["shadow_map"];
 	shaderShadowMap->Bind();
 
 	DirectionalLight* light = &LightManager::directionalLight;
@@ -64,7 +64,7 @@ void RendererVoxelTerrain::RenderPassShadow(Window* mainWindow, Scene* scene, gl
 
 	DisableCulling();
 	std::string passType = "shadow_dir";
-	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -86,7 +86,7 @@ void RendererVoxelTerrain::RenderPassOmniShadow(PointLight* light, Window* mainW
 {
 	if (!scene->GetSettings().enableOmniShadows) return;
 
-	s_Shaders["omniShadow"]->Bind();
+	RendererBasic::GetShaders()["omniShadow"]->Bind();
 
 	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
@@ -95,17 +95,17 @@ void RendererVoxelTerrain::RenderPassOmniShadow(PointLight* light, Window* mainW
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_BLEND);
 
-	s_Shaders["omniShadow"]->setVec3("lightPosition", light->GetPosition());
-	s_Shaders["omniShadow"]->setFloat("farPlane", light->GetFarPlane());
+	RendererBasic::GetShaders()["omniShadow"]->setVec3("lightPosition", light->GetPosition());
+	RendererBasic::GetShaders()["omniShadow"]->setFloat("farPlane", light->GetFarPlane());
 	std::vector<glm::mat4> lightMatrices = light->CalculateLightTransform();
 	for (unsigned int i = 0; i < lightMatrices.size(); i++) {
-		s_Shaders["omniShadow"]->setMat4("lightMatrices[" + std::to_string(i) + "]", lightMatrices[i]);
+		RendererBasic::GetShaders()["omniShadow"]->setMat4("lightMatrices[" + std::to_string(i) + "]", lightMatrices[i]);
 	}
-	s_Shaders["omniShadow"]->Validate();
+	RendererBasic::GetShaders()["omniShadow"]->Validate();
 
 	EnableCulling();
 	std::string passType = "shadow_omni";
-	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -115,11 +115,10 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 
 	// Clear the window
-	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	RendererBasic::Clear();
 
 	/**** BEGIN shaderMain ****/
-	Shader* shaderMain = (Shader*)s_Shaders["main"];
+	Shader* shaderMain = (Shader*)RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
 	shaderMain->setMat4("model", glm::mat4(1.0f));
@@ -194,7 +193,7 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	/**** END shaderMain ****/
 
 	/**** BEGIN shaderMarchingCubes ****/
-	Shader* shaderMarchingCubes = (Shader*)s_Shaders["marching_cubes"];
+	Shader* shaderMarchingCubes = (Shader*)RendererBasic::GetShaders()["marching_cubes"];
 	shaderMarchingCubes->Bind();
 
 	shaderMarchingCubes->setMat4("model", glm::mat4(1.0f));
@@ -266,7 +265,7 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	/**** END shaderMarchingCubes ****/
 
 	/**** BEGIN shaderRenderInstanced ****/
-	Shader* shaderRenderInstanced = (Shader*)s_Shaders["render_instanced"];
+	Shader* shaderRenderInstanced = (Shader*)RendererBasic::GetShaders()["render_instanced"];
 	shaderRenderInstanced->Bind();
 
 	shaderRenderInstanced->setMat4("projection", projectionMatrix);
@@ -286,7 +285,7 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	/**** END shaderRenderInstanced ****/
 
 	/**** BEGIN shaderBasic ****/
-	Shader* shaderBasic = s_Shaders["basic"];
+	Shader* shaderBasic = RendererBasic::GetShaders()["basic"];
 	shaderBasic->Bind();
 	shaderBasic->setMat4("projection", projectionMatrix);
 	shaderBasic->setMat4("view", scene->GetCamera()->GetViewMatrix());
@@ -295,7 +294,7 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
 	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
 void RendererVoxelTerrain::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)

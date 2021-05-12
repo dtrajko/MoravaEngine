@@ -128,7 +128,7 @@ void SceneFramebuffers::Render(Window* mainWindow, glm::mat4 projectionMatrix, s
 		m_Framebuffer->Bind(SCR_WIDTH, SCR_HEIGHT);
 
 		// Clear the window
-		glm::vec4 bgColor = RendererBasic::s_BgColor;
+		glm::vec4 bgColor = RendererBasic::GetBgColor();
 		glClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

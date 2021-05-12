@@ -37,8 +37,8 @@
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
 // #define SCENE_ANIM_PBR
-// #define SCENE_HAZEL_ENV_MAP
-#define SCENE_HAZEL_VULKAN
+#define SCENE_HAZEL_ENV_MAP
+// #define SCENE_HAZEL_VULKAN
 
 #include "Hazel/Core/Base.h"
 #include "Hazel/Events/Event.h"
@@ -159,7 +159,7 @@ int main()
 {
 	Log::Init();
 
-	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::Vulkan);
+	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::OpenGL);
 
 	std::string windowTitle = WINDOW_TITLE;
 	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL) {

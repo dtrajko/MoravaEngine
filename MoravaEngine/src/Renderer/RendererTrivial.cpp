@@ -25,17 +25,15 @@ void RendererTrivial::RenderPassOmniShadow(PointLight* light, Window* mainWindow
 void RendererTrivial::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
-	
-	// Clear the window
-	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// Clear the window
+	RendererBasic::Clear();
 
 	// ...
 
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
 	std::string passType = "main";
-	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
 void RendererTrivial::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)

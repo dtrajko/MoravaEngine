@@ -107,6 +107,9 @@ SceneHazelVulkan::SceneHazelVulkan()
     sceneSettings.nearPlane = 0.01f;
     sceneSettings.farPlane = 2000.0f;
 
+    m_VulkanTestLayer = std::make_unique<VulkanTestLayer>();
+    m_VulkanTestLayer->OnAttach();
+
     SetCamera();
     SetLightManager();
     SetupShaders();
@@ -114,9 +117,9 @@ SceneHazelVulkan::SceneHazelVulkan()
     SetupTextures();
     SetupMaterials();
     SetupFramebuffers();
-
     SetupMeshes();
     SetupModels();
+
 
     // m_Grid = new Grid(20);
     // m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));

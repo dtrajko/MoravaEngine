@@ -18,56 +18,56 @@ void RendererPBR::Init(Scene* scene)
 void RendererPBR::SetUniforms()
 {
 	// common
-	s_Uniforms.insert(std::make_pair("model", 0));
-	s_Uniforms.insert(std::make_pair("view", 0));
-	s_Uniforms.insert(std::make_pair("projection", 0));
-	s_Uniforms.insert(std::make_pair("nearPlane", 0));
-	s_Uniforms.insert(std::make_pair("farPlane", 0));
-	s_Uniforms.insert(std::make_pair("dirLightTransform", 0));
-	s_Uniforms.insert(std::make_pair("normalMap", 0));
-	s_Uniforms.insert(std::make_pair("lightPosition", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("model", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("view", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("projection", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("nearPlane", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("farPlane", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("dirLightTransform", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("normalMap", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("lightPosition", 0));
 
 	// main
-	s_Uniforms.insert(std::make_pair("eyePosition", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("eyePosition", 0));
 
 	// water
-	s_Uniforms.insert(std::make_pair("reflectionTexture", 0));
-	s_Uniforms.insert(std::make_pair("refractionTexture", 0));
-	s_Uniforms.insert(std::make_pair("dudvMap", 0));
-	s_Uniforms.insert(std::make_pair("depthMap", 0));
-	s_Uniforms.insert(std::make_pair("moveFactor", 0));
-	s_Uniforms.insert(std::make_pair("cameraPosition", 0));
-	s_Uniforms.insert(std::make_pair("lightColor", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("reflectionTexture", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("refractionTexture", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("dudvMap", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("depthMap", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("moveFactor", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("cameraPosition", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("lightColor", 0));
 
 	// PBR - physically based rendering
-	s_Uniforms.insert(std::make_pair("albedo", 0));
-	s_Uniforms.insert(std::make_pair("metallic", 0));
-	s_Uniforms.insert(std::make_pair("roughness", 0));
-	s_Uniforms.insert(std::make_pair("ao", 0));
-	s_Uniforms.insert(std::make_pair("albedoMap", 0));
-	s_Uniforms.insert(std::make_pair("normalMap", 0));
-	s_Uniforms.insert(std::make_pair("metallicMap", 0));
-	s_Uniforms.insert(std::make_pair("roughnessMap", 0));
-	s_Uniforms.insert(std::make_pair("aoMap", 0));
-	s_Uniforms.insert(std::make_pair("camPos", 0));
-	s_Uniforms.insert(std::make_pair("ambientIntensity", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("albedo", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("metallic", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("roughness", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("ao", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("albedoMap", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("normalMap", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("metallicMap", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("roughnessMap", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("aoMap", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("camPos", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("ambientIntensity", 0));
 
 	// cubemap shader
-	s_Uniforms.insert(std::make_pair("equirectangularMap", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("equirectangularMap", 0));
 
 	// skybox Joey shader
-	s_Uniforms.insert(std::make_pair("environmentMap", 0));
+	RendererBasic::GetUniforms().insert(std::make_pair("environmentMap", 0));
 }
 
 void RendererPBR::SetShaders()
 {
 	ShaderMain* shaderMain = new ShaderMain();
 	shaderMain->CreateFromFiles("Shaders/shader.vert", "Shaders/shader.frag");
-	s_Shaders.insert(std::make_pair("main", shaderMain));
+	RendererBasic::GetShaders().insert(std::make_pair("main", shaderMain));
 	printf("Renderer: Main shader compiled [programID=%d]\n", shaderMain->GetProgramID());
 
 	Shader* shaderDirectionalShadow = new Shader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
-	s_Shaders.insert(std::make_pair("directionalShadow", shaderDirectionalShadow));
+	RendererBasic::GetShaders().insert(std::make_pair("directionalShadow", shaderDirectionalShadow));
 	printf("Renderer: Shadow shader compiled [programID=%d]\n", shaderDirectionalShadow->GetProgramID());
 
 	static const char* vertShaderOmniShadowMap = "Shaders/omni_shadow_map.vert";
@@ -75,16 +75,16 @@ void RendererPBR::SetShaders()
 	static const char* fragShaderOmniShadowMap = "Shaders/omni_shadow_map.frag";
 	Shader* shaderOmniShadow = new Shader();
 	shaderOmniShadow->CreateFromFiles(vertShaderOmniShadowMap, geomShaderOmniShadowMap, fragShaderOmniShadowMap);
-	s_Shaders.insert(std::make_pair("omniShadow", shaderOmniShadow));
+	RendererBasic::GetShaders().insert(std::make_pair("omniShadow", shaderOmniShadow));
 	printf("Renderer: OmniShadow shader compiled [programID=%d]\n", shaderOmniShadow->GetProgramID());
 
 	Shader* shaderWater = new Shader("Shaders/water.vert", "Shaders/water.frag");
-	s_Shaders.insert(std::make_pair("water", shaderWater));
+	RendererBasic::GetShaders().insert(std::make_pair("water", shaderWater));
 	printf("Renderer: Water shader compiled [programID=%d]\n", shaderWater->GetProgramID());
 
 	ShaderPBR* shaderPBR = new ShaderPBR();
 	shaderPBR->CreateFromFiles("Shaders/PBR.vert", "Shaders/PBR.frag");
-	s_Shaders.insert(std::make_pair("pbr", shaderPBR));
+	RendererBasic::GetShaders().insert(std::make_pair("pbr", shaderPBR));
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
 }
 
@@ -95,8 +95,7 @@ void RendererPBR::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 pro
 	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 
 	// Clear the window
-	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	RendererBasic::Clear();
 
 	if (scene->GetSettings().enableSkybox)
 	{
@@ -106,15 +105,15 @@ void RendererPBR::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 pro
 		scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->GetViewMatrix(), projectionMatrix);
 	}
 
-	ShaderMain* shaderMain = (ShaderMain*)s_Shaders["main"];
+	ShaderMain* shaderMain = (ShaderMain*)RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
-	s_Uniforms["model"]       = shaderMain->GetUniformLocation("model");
-	s_Uniforms["projection"]  = shaderMain->GetUniformLocation("projection");
-	s_Uniforms["view"]        = shaderMain->GetUniformLocation("view");
-	s_Uniforms["eyePosition"] = shaderMain->GetUniformLocation("eyePosition");
-	s_Uniforms["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
-	s_Uniforms["shininess"]         = shaderMain->GetUniformLocationMaterialShininess();
+	RendererBasic::GetUniforms()["model"]       = shaderMain->GetUniformLocation("model");
+	RendererBasic::GetUniforms()["projection"]  = shaderMain->GetUniformLocation("projection");
+	RendererBasic::GetUniforms()["view"]        = shaderMain->GetUniformLocation("view");
+	RendererBasic::GetUniforms()["eyePosition"] = shaderMain->GetUniformLocation("eyePosition");
+	RendererBasic::GetUniforms()["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
+	RendererBasic::GetUniforms()["shininess"]         = shaderMain->GetUniformLocationMaterialShininess();
 
 	shaderMain->setMat4("view", scene->GetCamera()->GetViewMatrix());
 	shaderMain->setMat4("projection", projectionMatrix);
@@ -138,29 +137,29 @@ void RendererPBR::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 pro
 	std::string passType = "main";
 
 	EnableCulling();
-	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 
 	shaderMain->Unbind();
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	Shader* shaderWater = s_Shaders["water"];
+	Shader* shaderWater = RendererBasic::GetShaders()["water"];
 	shaderWater->Bind();
-	s_Uniforms["model"]             = shaderWater->GetUniformLocation("model");
-	s_Uniforms["projection"]        = shaderWater->GetUniformLocation("projection");
-	s_Uniforms["view"]              = shaderWater->GetUniformLocation("view");
-	s_Uniforms["reflectionTexture"] = shaderWater->GetUniformLocation("reflectionTexture");
-	s_Uniforms["refractionTexture"] = shaderWater->GetUniformLocation("refractionTexture");
-	s_Uniforms["dudvMap"]           = shaderWater->GetUniformLocation("dudvMap");
-	s_Uniforms["normalMap"]         = shaderWater->GetUniformLocation("normalMap");
-	s_Uniforms["depthMap"]          = shaderWater->GetUniformLocation("depthMap");
-	s_Uniforms["moveFactor"]        = shaderWater->GetUniformLocation("moveFactor");
-	s_Uniforms["cameraPosition"]    = shaderWater->GetUniformLocation("cameraPosition");
-	s_Uniforms["lightColor"]        = shaderWater->GetUniformLocation("lightColor");
-	s_Uniforms["lightPosition"]     = shaderWater->GetUniformLocation("lightPosition");
-	s_Uniforms["nearPlane"]         = shaderWater->GetUniformLocation("nearPlane");
-	s_Uniforms["farPlane"]          = shaderWater->GetUniformLocation("farPlane");
+	RendererBasic::GetUniforms()["model"]             = shaderWater->GetUniformLocation("model");
+	RendererBasic::GetUniforms()["projection"]        = shaderWater->GetUniformLocation("projection");
+	RendererBasic::GetUniforms()["view"]              = shaderWater->GetUniformLocation("view");
+	RendererBasic::GetUniforms()["reflectionTexture"] = shaderWater->GetUniformLocation("reflectionTexture");
+	RendererBasic::GetUniforms()["refractionTexture"] = shaderWater->GetUniformLocation("refractionTexture");
+	RendererBasic::GetUniforms()["dudvMap"]           = shaderWater->GetUniformLocation("dudvMap");
+	RendererBasic::GetUniforms()["normalMap"]         = shaderWater->GetUniformLocation("normalMap");
+	RendererBasic::GetUniforms()["depthMap"]          = shaderWater->GetUniformLocation("depthMap");
+	RendererBasic::GetUniforms()["moveFactor"]        = shaderWater->GetUniformLocation("moveFactor");
+	RendererBasic::GetUniforms()["cameraPosition"]    = shaderWater->GetUniformLocation("cameraPosition");
+	RendererBasic::GetUniforms()["lightColor"]        = shaderWater->GetUniformLocation("lightColor");
+	RendererBasic::GetUniforms()["lightPosition"]     = shaderWater->GetUniformLocation("lightPosition");
+	RendererBasic::GetUniforms()["nearPlane"]         = shaderWater->GetUniformLocation("nearPlane");
+	RendererBasic::GetUniforms()["farPlane"]          = shaderWater->GetUniformLocation("farPlane");
 
 	shaderWater->setMat4("model",      glm::mat4(1.0f));
 	shaderWater->setMat4("view",       scene->GetCamera()->GetViewMatrix());
@@ -183,23 +182,23 @@ void RendererPBR::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 pro
 
 	EnableCulling();
 	passType = "main";
-	scene->RenderWater(projectionMatrix, passType, s_Shaders, s_Uniforms);
+	scene->RenderWater(projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 	shaderWater->Unbind();
 
-	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(s_Shaders["pbr"]);
+	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(RendererBasic::GetShaders()["pbr"]);
 
 	shaderPBR->Bind();
-	s_Uniforms["model"]      = shaderPBR->GetUniformLocation("model");
-	s_Uniforms["projection"] = shaderPBR->GetUniformLocation("projection");
-	s_Uniforms["view"]       = shaderPBR->GetUniformLocation("view");
-	s_Uniforms["camPos"]     = shaderPBR->GetUniformLocation("camPos");
+	RendererBasic::GetUniforms()["model"]      = shaderPBR->GetUniformLocation("model");
+	RendererBasic::GetUniforms()["projection"] = shaderPBR->GetUniformLocation("projection");
+	RendererBasic::GetUniforms()["view"]       = shaderPBR->GetUniformLocation("view");
+	RendererBasic::GetUniforms()["camPos"]     = shaderPBR->GetUniformLocation("camPos");
 	shaderPBR->setMat4("model", glm::mat4(1.0f));
 	shaderPBR->setMat4("projection", projectionMatrix);
 	shaderPBR->setMat4("view", scene->GetCamera()->GetViewMatrix());
 	shaderPBR->setVec3("camPos", scene->GetCamera()->GetPosition());
 
 	DisableCulling();
-	scene->Render(mainWindow, projectionMatrix, passType, s_Shaders, s_Uniforms);
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
 void RendererPBR::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
