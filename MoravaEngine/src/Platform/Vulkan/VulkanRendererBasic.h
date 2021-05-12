@@ -12,12 +12,12 @@
 
 class Scene;
 
-class OpenGLRendererBasic
+class VulkanRendererBasic
 {
 
 public:
-	OpenGLRendererBasic();
-	virtual ~OpenGLRendererBasic();
+	VulkanRendererBasic();
+	virtual ~VulkanRendererBasic();
 
 	virtual void Init(Scene* scene); // Scene param here could be a mistake
 	virtual void SetUniforms();

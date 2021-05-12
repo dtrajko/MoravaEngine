@@ -7,7 +7,7 @@
 #include "Core/Util.h"
 
 #include "Platform/OpenGL/OpenGLRendererBasic.h"
-
+#include "Platform/Vulkan/VulkanRendererBasic.h"
 
 RendererBasic::RendererBasic()
 {
@@ -49,7 +49,7 @@ void RendererBasic::RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Win
 	{
 	case Hazel::RendererAPIType::None: return;
 	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::RenderPassMain(scene, projectionMatrix, mainWindow);
-	// case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::RenderPassMain(scene, projectionMatrix, mainWindow);
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::RenderPassMain(scene, projectionMatrix, mainWindow);
 	}
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
@@ -60,7 +60,7 @@ glm::vec4 RendererBasic::GetBgColor()
 	{
 	case Hazel::RendererAPIType::None: return glm::vec4();
 	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::GetBgColor();
-	// case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetBgColor();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetBgColor();
 	}
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 
@@ -73,7 +73,7 @@ void RendererBasic::Clear()
 	{
 	case Hazel::RendererAPIType::None: return;
 	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::Clear();
-		// case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::Clear();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::Clear();
 	}
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
@@ -84,14 +84,20 @@ void RendererBasic::Clear(float r, float g, float b, float a)
 	{
 	case Hazel::RendererAPIType::None: return;
 	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::Clear(r, g, b, a);
-	// case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::Clear(r, g, b, a);
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::Clear(r, g, b, a);
 	}
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::SetLineThickness(float thickness)
 {
-	glLineWidth(thickness);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::SetLineThickness(thickness);
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::SetLineThickness(thickness);
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 bool RendererBasic::GetVulkanSupported()
@@ -103,87 +109,178 @@ bool RendererBasic::GetVulkanSupported()
 
 void RendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::SetDefaultFramebuffer(width, height);
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::SetDefaultFramebuffer(width, height);
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::InitDebug()
 {
-	glDebugMessageCallback(Util::OpenGLLogMessage, nullptr);
-	glEnable(GL_DEBUG_OUTPUT);
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::InitDebug();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::InitDebug();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::EnableCulling()
 {
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::EnableCulling();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableCulling();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::DisableCulling()
 {
-	glDisable(GL_CULL_FACE);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::DisableCulling();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableCulling();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::EnableTransparency()
 {
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::EnableTransparency();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableTransparency();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::DisableTransparency()
 {
-	glDisable(GL_BLEND);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::DisableTransparency();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableTransparency();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::EnableDepthBuffer()
 {
-	glEnable(GL_DEPTH);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::EnableDepthBuffer();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableDepthBuffer();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::DisableDepthBuffer()
 {
-	glDisable(GL_DEPTH);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::DisableDepthBuffer();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableDepthBuffer();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::ClearDepthBuffer()
 {
-	glClear(GL_DEPTH_BUFFER_BIT);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::ClearDepthBuffer();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::ClearDepthBuffer();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::EnableDepthTest()
 {
-	glEnable(GL_DEPTH_TEST);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::EnableDepthTest();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableDepthTest();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::DisableDepthTest()
 {
-	glDisable(GL_DEPTH_TEST);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::DisableDepthTest();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableDepthTest();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::EnableMSAA()
 {
-	glEnable(GL_MULTISAMPLE);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::EnableMSAA();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableMSAA();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::DisableMSAA()
 {
-	glDisable(GL_MULTISAMPLE);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::DisableMSAA();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableMSAA();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::EnableBlend()
 {
-	glEnable(GL_BLEND);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::EnableBlend();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableBlend();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::EnableWireframe()
 {
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::EnableWireframe();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableWireframe();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::DisableWireframe()
 {
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::DisableWireframe();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableWireframe();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 glm::mat4 RendererBasic::GetProjectionMatrix()
@@ -192,7 +289,7 @@ glm::mat4 RendererBasic::GetProjectionMatrix()
 	{
 	case Hazel::RendererAPIType::None: return glm::mat4();
 	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::GetProjectionMatrix();
-	// case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetProjectionMatrix();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetProjectionMatrix();
 	}
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 
@@ -205,7 +302,7 @@ void RendererBasic::SetProjectionMatrix(glm::mat4 projectionMatrix)
 	{
 	case Hazel::RendererAPIType::None: return;
 	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::SetProjectionMatrix(projectionMatrix);
-	// case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::SetProjectionMatrix(projectionMatrix);
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::SetProjectionMatrix(projectionMatrix);
 	}
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
@@ -216,7 +313,7 @@ std::map<std::string, Shader*>& RendererBasic::GetShaders()
 	{
 	case Hazel::RendererAPIType::None: return std::map<std::string, Shader*>();
 	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::GetShaders();
-	// case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetShaders();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetShaders();
 	}
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 
@@ -229,7 +326,7 @@ std::map<std::string, int>& RendererBasic::GetUniforms()
 	{
 	case Hazel::RendererAPIType::None: return std::map<std::string, int>();
 	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::GetUniforms();
-	// case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetUniforms();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetUniforms();
 	}
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 
@@ -238,7 +335,13 @@ std::map<std::string, int>& RendererBasic::GetUniforms()
 
 void RendererBasic::DisableBlend()
 {
-	glDisable(GL_BLEND);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::DisableBlend();
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableBlend();
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::Cleanup()
@@ -260,27 +363,11 @@ void RendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* s
 // Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
 void RendererBasic::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest)
 {
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+	switch (Hazel::RendererAPI::Current())
 	{
-		if (!depthTest) {
-			glDisable(GL_DEPTH_TEST);
-		}
-
-		GLenum glPrimitiveType = 0;
-		switch (type)
-		{
-		case Hazel::PrimitiveType::Triangles:
-			glPrimitiveType = GL_TRIANGLES;
-			break;
-		case Hazel::PrimitiveType::Lines:
-			glPrimitiveType = GL_LINES;
-			break;
-		}
-
-		glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
-
-		if (!depthTest) {
-			glEnable(GL_DEPTH_TEST);
-		}
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::DrawIndexed(count, type, depthTest);
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DrawIndexed(count, type, depthTest);
 	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }

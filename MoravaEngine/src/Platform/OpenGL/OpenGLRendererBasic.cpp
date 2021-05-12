@@ -76,13 +76,6 @@ void OpenGLRendererBasic::SetLineThickness(float thickness)
 	glLineWidth(thickness);
 }
 
-bool OpenGLRendererBasic::GetVulkanSupported()
-{
-	bool vulkanSupported = glfwVulkanSupported();
-	Log::GetLogger()->info("Vulkan supported: {0}", vulkanSupported);
-	return vulkanSupported;
-}
-
 void OpenGLRendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -192,27 +185,24 @@ void OpenGLRendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Sc
 // Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
 void OpenGLRendererBasic::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest)
 {
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+	if (!depthTest) {
+		glDisable(GL_DEPTH_TEST);
+	}
+
+	GLenum glPrimitiveType = 0;
+	switch (type)
 	{
-		if (!depthTest) {
-			glDisable(GL_DEPTH_TEST);
-		}
+	case Hazel::PrimitiveType::Triangles:
+		glPrimitiveType = GL_TRIANGLES;
+		break;
+	case Hazel::PrimitiveType::Lines:
+		glPrimitiveType = GL_LINES;
+		break;
+	}
 
-		GLenum glPrimitiveType = 0;
-		switch (type)
-		{
-		case Hazel::PrimitiveType::Triangles:
-			glPrimitiveType = GL_TRIANGLES;
-			break;
-		case Hazel::PrimitiveType::Lines:
-			glPrimitiveType = GL_LINES;
-			break;
-		}
+	glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
 
-		glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
-
-		if (!depthTest) {
-			glEnable(GL_DEPTH_TEST);
-		}
+	if (!depthTest) {
+		glEnable(GL_DEPTH_TEST);
 	}
 }

@@ -780,6 +780,9 @@
     <ClCompile Include="src\Platform\OpenGL\OpenGLRendererBasic.cpp">
       <Filter>Platform\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanRendererBasic.cpp">
+      <Filter>Platform\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -1664,6 +1667,9 @@
     </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLRendererBasic.h">
       <Filter>Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanRendererBasic.h">
+      <Filter>Platform\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
