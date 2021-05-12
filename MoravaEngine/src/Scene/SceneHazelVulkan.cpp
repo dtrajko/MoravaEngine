@@ -115,13 +115,11 @@ SceneHazelVulkan::SceneHazelVulkan()
     SetupMaterials();
     SetupFramebuffers();
 
-    m_EnvMapEditorLayer = std::make_unique<EnvMapEditorLayer>("Textures/HDR/umhlanga_sunrise_4k.hdr", this);
-
     SetupMeshes();
     SetupModels();
 
-    m_Grid = new Grid(20);
-    m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
+    // m_Grid = new Grid(20);
+    // m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 
     // Hazel::RendererAPI::Init();
 }
@@ -132,14 +130,14 @@ SceneHazelVulkan::~SceneHazelVulkan()
 
 void SceneHazelVulkan::SetupShaders()
 {
-    m_ShaderBackground = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
-    Log::GetLogger()->info("SceneHazelVulkan: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
-
-    m_ShaderBasic = Hazel::Ref<Shader>::Create("Shaders/basic.vs", "Shaders/basic.fs");
-    Log::GetLogger()->info("SceneHazelVulkan: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
-
-    ResourceManager::AddShader("LearnOpenGL/2.2.2.background", m_ShaderBackground);
-    ResourceManager::AddShader("basic", m_ShaderBasic);
+    // m_ShaderBackground = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    // Log::GetLogger()->info("SceneHazelVulkan: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
+    // 
+    // m_ShaderBasic = Hazel::Ref<Shader>::Create("Shaders/basic.vs", "Shaders/basic.fs");
+    // Log::GetLogger()->info("SceneHazelVulkan: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
+    // 
+    // ResourceManager::AddShader("LearnOpenGL/2.2.2.background", m_ShaderBackground);
+    // ResourceManager::AddShader("basic", m_ShaderBasic);
 }
 
 void SceneHazelVulkan::SetLightManager()
@@ -183,81 +181,32 @@ void SceneHazelVulkan::Update(float timestep, Window* mainWindow)
     Scene::Update(timestep, mainWindow);
 
     float deltaTime = Timer::Get()->GetDeltaTime();
-    m_EnvMapEditorLayer->OnUpdate(deltaTime);
+    m_VulkanTestLayer->OnUpdate(deltaTime);
 }
 
 void SceneHazelVulkan::UpdateImGui(float timestep, Window* mainWindow)
 {
-    m_EnvMapEditorLayer->OnImGuiRender(mainWindow, this);
+    m_VulkanTestLayer->OnImGuiRender(mainWindow, this);
 }
 
 void SceneHazelVulkan::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
-    m_EnvMapEditorLayer->ShowExampleAppDockSpace(p_open, mainWindow);
+    m_VulkanTestLayer->ShowExampleAppDockSpace(p_open, mainWindow);
 }
 
 bool SceneHazelVulkan::OnKeyPressed(KeyPressedEvent& e)
 {
-    // Shortcuts
-    if (e.GetRepeatCount() > 0) {
-        return false;
-    }
-
-    bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-    bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
-
-    switch (e.GetKeyCode())
-    {
-        case (int)Key::N:
-        {
-            if (control)
-            {
-                m_EnvMapEditorLayer->NewScene();
-            }
-            break;
-        }
-        case (int)Key::O:
-        {
-            if (control)
-            {
-                m_EnvMapEditorLayer->OpenScene();
-            }
-            break;
-        }
-        case (int)Key::S:
-        {
-            if (control && shift)
-            {
-                m_EnvMapEditorLayer->SaveSceneAs();
-            }
-            break;
-        }
-    }
-    return true;
+    return false;
 }
 
 void SceneHazelVulkan::OnEntitySelected(Hazel::Entity entity)
 {
-    // auto& tc = entity.GetComponent<Hazel::TransformComponent>();
-    // m_EnvMapEditorLayer->SetMeshEntity(entity);
 }
 
 void SceneHazelVulkan::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
-    if (passType == "shadow" && sceneSettings.enableShadows) {
-        m_EnvMapEditorLayer->OnRenderShadow(mainWindow);
-    }
-
-    if (passType == "shadow_omni" && sceneSettings.enableOmniShadows) {
-        m_EnvMapEditorLayer->OnRenderShadowOmni(mainWindow);
-    }
-
     if (passType == "main") {
-        m_EnvMapEditorLayer->OnRender(mainWindow);
-    }
-
-    if (passType == "post_processing") {
-        m_EnvMapEditorLayer->PostProcessing(mainWindow);
+        m_VulkanTestLayer->OnRender(mainWindow);
     }
 }

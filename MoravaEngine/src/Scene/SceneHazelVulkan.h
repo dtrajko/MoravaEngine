@@ -7,8 +7,8 @@
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Scene/Entity.h"
 
-#include "EnvMap/EnvMapEditorLayer.h"
 #include "Framebuffer/Framebuffer.h"
+#include "HazelVulkan/VulkanTestLayer.h"
 #include "Mesh/Grid.h"
 #include "Texture/Texture.h"
 
@@ -51,7 +51,7 @@ private:
 	virtual void OnEntitySelected(Hazel::Entity entity) override;
 
 private:
-	std::unique_ptr<EnvMapEditorLayer> m_EnvMapEditorLayer;
+	std::unique_ptr<VulkanTestLayer> m_VulkanTestLayer;
 
 	Hazel::Ref<Shader> m_ShaderBackground;
 	Hazel::Ref<Shader> m_ShaderBasic;

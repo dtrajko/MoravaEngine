@@ -31,14 +31,14 @@
 // #define SCENE_VOXEL_TERRAIN_SL
 // #define SCENE_MARCHING_CUBES
 // #define SCENE_SSAO
-#define SCENE_BLOOM
+// #define SCENE_BLOOM
 // #define SCENE_DEFERRED
 // #define SCENE_DEFERRED_OGL
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
 // #define SCENE_ANIM_PBR
 // #define SCENE_HAZEL_ENV_MAP
-// #define SCENE_HAZEL_VULKAN
+#define SCENE_HAZEL_VULKAN
 
 #include "Hazel/Core/Base.h"
 #include "Hazel/Events/Event.h"
@@ -159,7 +159,7 @@ int main()
 {
 	Log::Init();
 
-	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::OpenGL);
+	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::Vulkan);
 
 	std::string windowTitle = WINDOW_TITLE;
 	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL) {
@@ -284,7 +284,10 @@ int main()
 	// Loop until window closed
 	while (!Application::Get()->GetWindow()->GetShouldClose())
 	{
-		ImGuiWrapper::Begin();
+		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+		{
+			ImGuiWrapper::Begin();
+		}
 
 		{
 			Profiler profiler("Scene::Update");
@@ -304,7 +307,10 @@ int main()
 
 		scene->GetProfilerResults()->clear();
 
-		ImGuiWrapper::End();
+		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+		{
+			ImGuiWrapper::End();
+		}
 
 		// Swap buffers and poll events
 		Application::Get()->GetWindow()->OnUpdate();

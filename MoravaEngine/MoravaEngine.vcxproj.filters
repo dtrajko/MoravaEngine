@@ -774,6 +774,9 @@
     <ClCompile Include="src\Scene\SceneBloom.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\HazelVulkan\VulkanTestLayer.cpp">
+      <Filter>HazelVulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -1652,6 +1655,9 @@
     </ClInclude>
     <ClInclude Include="src\Scene\SceneBloom.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelVulkan\VulkanTestLayer.h">
+      <Filter>HazelVulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

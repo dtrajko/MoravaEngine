@@ -156,16 +156,19 @@ namespace Hazel {
 	void HazelScene::Init()
 	{
 		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan) {
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
-			auto skyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox"); // Spir-V method // Pre-load shaders in order to use Get
-			m_SkyboxMaterial = HazelMaterial::Create(skyboxShader);
+			// auto skyboxShader = HazelShader::Create("assets/shaders/Renderer2D.glsl");
+
+			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
+			// auto skyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox"); // Spir-V method // Pre-load shaders in order to use Get
+			// m_SkyboxMaterial = HazelMaterial::Create(skyboxShader);
+			// m_SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
 		}
 		else {
 			auto skyboxShader = Shader::Create("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
 			m_SkyboxMaterial = Material::Create(skyboxShader);
+			m_SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
 		}
 
-		m_SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
 	}
 
 	// Merge OnUpdate/Render into one function?

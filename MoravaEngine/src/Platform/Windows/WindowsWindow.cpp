@@ -195,6 +195,7 @@ void WindowsWindow::OnUpdate()
 
 	// Swap buffers
 	// glfwSwapBuffers(m_Window); // TODO: move to WindowsWindow::SwapBuffers() / OpenGLContext::SwapBuffers()
+
 	SwapBuffers();
 }
 

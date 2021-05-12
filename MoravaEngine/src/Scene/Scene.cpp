@@ -222,10 +222,13 @@ void Scene::SetupTextureSlots()
 
 void Scene::SetupMaterials()
 {
-	materials.insert(std::make_pair("shiny",      new Material(1.0f,  128.0f)));
-	materials.insert(std::make_pair("dull",       new Material(1.0f,   64.0f)));
-	materials.insert(std::make_pair("superShiny", new Material(1.0f, 1024.0f)));
-	materials.insert(std::make_pair("superDull",  new Material(1.0f,   16.0f)));
+	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+	{
+		materials.insert(std::make_pair("shiny",      new Material(1.0f,  128.0f)));
+		materials.insert(std::make_pair("dull",       new Material(1.0f,   64.0f)));
+		materials.insert(std::make_pair("superShiny", new Material(1.0f, 1024.0f)));
+		materials.insert(std::make_pair("superDull",  new Material(1.0f,   16.0f)));
+	}
 }
 
 void Scene::SetupMeshes()
@@ -254,10 +257,13 @@ void Scene::SetSkybox()
 
 void Scene::SetupTextures()
 {
-	textures.insert(std::make_pair("normalMapDefault", TextureLoader::Get()->GetTexture("Textures/normal_map_default.png", false, false)));
-	textures.insert(std::make_pair("shadowMapDefault", TextureLoader::Get()->GetTexture("Textures/shadow_map_default.png", false, false)));
-	textures.insert(std::make_pair("waterDuDv",        TextureLoader::Get()->GetTexture("Textures/water/waterDuDv.png", false, false)));
-	textures.insert(std::make_pair("waterNormal",      TextureLoader::Get()->GetTexture("Textures/water/waterNormal.png", false, false)));
+	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+	{
+		textures.insert(std::make_pair("normalMapDefault", TextureLoader::Get()->GetTexture("Textures/normal_map_default.png", false, false)));
+		textures.insert(std::make_pair("shadowMapDefault", TextureLoader::Get()->GetTexture("Textures/shadow_map_default.png", false, false)));
+		textures.insert(std::make_pair("waterDuDv", TextureLoader::Get()->GetTexture("Textures/water/waterDuDv.png", false, false)));
+		textures.insert(std::make_pair("waterNormal", TextureLoader::Get()->GetTexture("Textures/water/waterNormal.png", false, false)));
+	}
 }
 
 void Scene::SetCamera()
