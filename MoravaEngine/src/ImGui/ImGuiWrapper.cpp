@@ -149,16 +149,17 @@ void ImGuiWrapper::Begin()
 	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
 	{
 		ImGui_ImplOpenGL3_NewFrame();
+
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		ImGuizmo::BeginFrame();
+
 	}
 	else if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
 	{
 		ImGui_ImplVulkan_NewFrame();
 	}
-
-	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
-
-	ImGuizmo::BeginFrame();
 }
 
 void ImGuiWrapper::End()
@@ -168,17 +169,22 @@ void ImGuiWrapper::End()
 	io.DisplaySize = ImVec2((float)s_Window->GetWidth(), (float)s_Window->GetHeight());
 
 	// Rendering
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
 	{
-		GLFWwindow* backup_current_context = glfwGetCurrentContext();
-		ImGui::UpdatePlatformWindows();
-		ImGui::RenderPlatformWindowsDefault();
-		glfwMakeContextCurrent(backup_current_context);
-	}
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
+		}
+	}
+	else if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+	{
+	}
 }
 
 void ImGuiWrapper::Cleanup()

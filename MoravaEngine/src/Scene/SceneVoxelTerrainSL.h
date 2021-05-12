@@ -3,9 +3,9 @@
 #include "Scene/Scene.h"
 
 #include "Core/Raycast.h"
+#include "Instancing/RenderInstanced.h"
 #include "Player/Player.h"
 #include "Player/PlayerController.h"
-#include "Renderer/RenderInstanced.h"
 #include "Terrain/MapGenerator.h"
 #include "Terrain/TerrainSL.h"
 #include "Terrain/TerrainVoxel.h"

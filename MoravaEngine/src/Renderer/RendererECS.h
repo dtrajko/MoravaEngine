@@ -11,6 +11,10 @@ public:
 	~RendererECS();
 
 	virtual void Init(Scene* scene) override;
+
+	virtual void BeginFrame() override;
+	virtual void WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
+
 	virtual void SetShaders() override;
 
 	void RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix);
@@ -19,6 +23,5 @@ public:
 	void RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 	void PostProcessing(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 
-	virtual void Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
 
 };

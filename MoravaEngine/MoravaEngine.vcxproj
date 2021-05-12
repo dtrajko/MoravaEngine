@@ -148,10 +148,7 @@
     <ClCompile Include="src\Framebuffer\OmniShadowMap.cpp" />
     <ClCompile Include="src\Framebuffer\Renderbuffer.cpp" />
     <ClCompile Include="src\Framebuffer\ShadowMap.cpp" />
-    <ClCompile Include="src\HazelVulkan\EditorLayerHazelVulkan.cpp" />
-    <ClCompile Include="src\HazelVulkan\MaterialHazelVulkan.cpp" />
-    <ClCompile Include="src\HazelVulkan\SceneRendererHazelVulkan.cpp" />
-    <ClCompile Include="src\HazelVulkan\SharedDataHazelVulkan.cpp" />
+    <ClCompile Include="src\HazelVulkan\VulkanWeekRenderer.cpp" />
     <ClCompile Include="src\HazelVulkan\VulkanTestLayer.cpp" />
     <ClCompile Include="src\Hazel\Core\HazelLog.cpp" />
     <ClCompile Include="src\Hazel\Core\Layer.cpp" />
@@ -229,6 +226,7 @@
     <ClCompile Include="src\Hazel\Utilities\StringUtils.cpp" />
     <ClCompile Include="src\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\ImGui\ImGuiWrapper.cpp" />
+    <ClCompile Include="src\Instancing\RenderInstanced.cpp" />
     <ClCompile Include="src\LearnOpenGL\MeshJoey.cpp" />
     <ClCompile Include="src\LearnOpenGL\MeshSSAO.cpp" />
     <ClCompile Include="src\LearnOpenGL\ModelJoey.cpp" />
@@ -305,7 +303,6 @@
     <ClCompile Include="src\Renderer\RendererPBR.cpp" />
     <ClCompile Include="src\Renderer\RendererTrivial.cpp" />
     <ClCompile Include="src\Renderer\RendererVoxelTerrain.cpp" />
-    <ClCompile Include="src\Renderer\RenderInstanced.cpp" />
     <ClCompile Include="src\Scene\Scene.cpp" />
     <ClCompile Include="src\Scene\SceneAnimPBR.cpp" />
     <ClCompile Include="src\Scene\SceneAsteroids.cpp" />
@@ -375,6 +372,7 @@
     <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
+    <ClInclude Include="main.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="src\Camera\Camera.h" />
     <ClInclude Include="src\Camera\CameraController.h" />
@@ -420,10 +418,7 @@
     <ClInclude Include="src\Framebuffer\OmniShadowMap.h" />
     <ClInclude Include="src\Framebuffer\Renderbuffer.h" />
     <ClInclude Include="src\Framebuffer\ShadowMap.h" />
-    <ClInclude Include="src\HazelVulkan\EditorLayerHazelVulkan.h" />
-    <ClInclude Include="src\HazelVulkan\MaterialHazelVulkan.h" />
-    <ClInclude Include="src\HazelVulkan\SceneRendererHazelVulkan.h" />
-    <ClInclude Include="src\HazelVulkan\SharedDataHazelVulkan.h" />
+    <ClInclude Include="src\HazelVulkan\VulkanWeekRenderer.h" />
     <ClInclude Include="src\HazelVulkan\VulkanTestLayer.h" />
     <ClInclude Include="src\Hazel\Asset\Asset.h" />
     <ClInclude Include="src\Hazel\Core\Assert.h" />
@@ -522,6 +517,7 @@
     <ClInclude Include="src\Hazel\Utilities\StringUtils.h" />
     <ClInclude Include="src\Hazel\Utils\PlatformUtils.h" />
     <ClInclude Include="src\ImGui\ImGuiWrapper.h" />
+    <ClInclude Include="src\Instancing\RenderInstanced.h" />
     <ClInclude Include="src\LearnOpenGL\camera.h" />
     <ClInclude Include="src\LearnOpenGL\LearnOpenGLStructs.h" />
     <ClInclude Include="src\LearnOpenGL\MeshJoey.h" />
@@ -603,7 +599,6 @@
     <ClInclude Include="src\Renderer\RendererPBR.h" />
     <ClInclude Include="src\Renderer\RendererTrivial.h" />
     <ClInclude Include="src\Renderer\RendererVoxelTerrain.h" />
-    <ClInclude Include="src\Renderer\RenderInstanced.h" />
     <ClInclude Include="src\Scene\Scene.h" />
     <ClInclude Include="src\Scene\SceneAnimPBR.h" />
     <ClInclude Include="src\Scene\SceneAsteroids.h" />

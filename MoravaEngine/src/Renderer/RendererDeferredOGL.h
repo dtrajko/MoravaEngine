@@ -15,7 +15,10 @@ public:
 	~RendererDeferredOGL();
 
 	virtual void Init(Scene* scene) override;
-	virtual void Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
+
+	virtual void BeginFrame() override;
+	virtual void WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
+
 	void ForwardPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 
 	virtual void SetShaders() override;

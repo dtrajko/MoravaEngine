@@ -5,6 +5,10 @@ RendererTrivial::RendererTrivial()
 {
 }
 
+RendererTrivial::~RendererTrivial()
+{
+}
+
 void RendererTrivial::Init(Scene* scene)
 {
 	SetShaders();
@@ -36,13 +40,15 @@ void RendererTrivial::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4
 	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
-void RendererTrivial::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererTrivial::BeginFrame()
 {
+}
+
+void RendererTrivial::WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	// In Hazel: s_Data.m_CommandQueue.Execute()
+
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
 	RenderPassMain(mainWindow, scene, projectionMatrix);
-}
-
-RendererTrivial::~RendererTrivial()
-{
 }

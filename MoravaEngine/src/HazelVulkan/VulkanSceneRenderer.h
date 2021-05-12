@@ -15,7 +15,7 @@
 #include "Mesh/HazelFullscreenQuad.h"
 
 
-class SceneRendererHazelVulkan
+class VulkanSceneRenderer
 {
 public:
 	static void Init(std::string filepath, Hazel::HazelScene* scene);

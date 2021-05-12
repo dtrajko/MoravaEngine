@@ -22,7 +22,9 @@ public:
 	virtual void Init(Scene* scene); // Scene param here could be a mistake
 	virtual void SetUniforms();
 	virtual void SetShaders();
-	virtual void Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix) = 0;
+
+	virtual void BeginFrame() = 0;
+	virtual void WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix) = 0;
 
 	static void InitDebug();
 	static void EnableCulling();

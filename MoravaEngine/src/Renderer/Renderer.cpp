@@ -10,6 +10,10 @@ Renderer::Renderer()
 {
 }
 
+Renderer::~Renderer()
+{
+}
+
 void Renderer::Init(Scene* scene)
 {
 	SetUniforms();
@@ -380,7 +384,11 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 	shaderWater->Unbind();
 }
 
-void Renderer::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void Renderer::BeginFrame()
+{
+}
+
+void Renderer::WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
@@ -388,8 +396,4 @@ void Renderer::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::ma
 	RenderOmniShadows(mainWindow, scene, projectionMatrix);
 	RenderWaterEffects(deltaTime, mainWindow, scene, projectionMatrix);
 	RenderPassMain(mainWindow, scene, projectionMatrix);
-}
-
-Renderer::~Renderer()
-{
 }

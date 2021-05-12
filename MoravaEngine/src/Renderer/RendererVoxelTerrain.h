@@ -11,9 +11,12 @@ public:
 	~RendererVoxelTerrain();
 
 	virtual void Init(Scene* scene) override;
+
+	virtual void BeginFrame() override;
+	virtual void WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
+
 	virtual void SetShaders() override;
 
-	virtual void Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix) override;
 	void RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 	void RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix);
 	void RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix);

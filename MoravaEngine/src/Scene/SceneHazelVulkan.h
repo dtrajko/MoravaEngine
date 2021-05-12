@@ -8,6 +8,7 @@
 #include "Hazel/Scene/Entity.h"
 
 #include "Framebuffer/Framebuffer.h"
+#include "HazelVulkan/VulkanWeekRenderer.h"
 #include "HazelVulkan/VulkanTestLayer.h"
 #include "Mesh/Grid.h"
 #include "Texture/Texture.h"

@@ -13,6 +13,10 @@ RendererDeferredOGL::RendererDeferredOGL()
 	SetupMeshes();
 }
 
+RendererDeferredOGL::~RendererDeferredOGL()
+{
+}
+
 void RendererDeferredOGL::Init(Scene* scene)
 {
 	CreateBuffers();
@@ -61,27 +65,6 @@ void RendererDeferredOGL::SetupTextures()
 void RendererDeferredOGL::SetupMeshes()
 {
 	m_MeshBlock = Hazel::Ref<Block>::Create(glm::vec3(1.0f, 1.0f, 1.0f));
-}
-
-void RendererDeferredOGL::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
-{
-	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
-
-	SceneDeferredOGL* sceneOGL = (SceneDeferredOGL*)scene;
-
-	if (sceneOGL->GetRenderTarget() == (int)SceneDeferredOGL::RenderTarget::Forward)
-	{
-		// Forward rendering
-		ForwardPass(mainWindow, scene, projectionMatrix);
-	}
-	else
-	{
-		// Deferred rendering
-		CreateBuffers();
-
-		GeometryPass(mainWindow, scene, projectionMatrix);
-		LightPass(mainWindow, scene, projectionMatrix);
-	}
 }
 
 void RendererDeferredOGL::ForwardPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -163,6 +146,27 @@ void RendererDeferredOGL::LightPass(Window* mainWindow, Scene* scene, glm::mat4 
 		0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }
 
-RendererDeferredOGL::~RendererDeferredOGL()
+void RendererDeferredOGL::BeginFrame()
 {
+}
+
+void RendererDeferredOGL::WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
+
+	SceneDeferredOGL* sceneOGL = (SceneDeferredOGL*)scene;
+
+	if (sceneOGL->GetRenderTarget() == (int)SceneDeferredOGL::RenderTarget::Forward)
+	{
+		// Forward rendering
+		ForwardPass(mainWindow, scene, projectionMatrix);
+	}
+	else
+	{
+		// Deferred rendering
+		CreateBuffers();
+
+		GeometryPass(mainWindow, scene, projectionMatrix);
+		LightPass(mainWindow, scene, projectionMatrix);
+	}
 }

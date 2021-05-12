@@ -81,9 +81,6 @@
     <ClCompile Include="src\Renderer\RendererVoxelTerrain.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\RenderInstanced.cpp">
-      <Filter>Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Particle\Particle.cpp">
       <Filter>Particle</Filter>
     </ClCompile>
@@ -759,29 +756,23 @@
     <ClCompile Include="src\Renderer\RendererHazelVulkan.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\HazelVulkan\EditorLayerHazelVulkan.cpp">
-      <Filter>HazelVulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelVulkan\MaterialHazelVulkan.cpp">
-      <Filter>HazelVulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelVulkan\SceneRendererHazelVulkan.cpp">
-      <Filter>HazelVulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelVulkan\SharedDataHazelVulkan.cpp">
-      <Filter>HazelVulkan</Filter>
-    </ClCompile>
     <ClCompile Include="src\Scene\SceneBloom.cpp">
       <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelVulkan\VulkanTestLayer.cpp">
-      <Filter>HazelVulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLRendererBasic.cpp">
       <Filter>Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanRendererBasic.cpp">
       <Filter>Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Instancing\RenderInstanced.cpp">
+      <Filter>Instancing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelVulkan\VulkanWeekRenderer.cpp">
+      <Filter>HazelVulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelVulkan\VulkanTestLayer.cpp">
+      <Filter>HazelVulkan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -877,9 +868,6 @@
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererVoxelTerrain.h">
-      <Filter>Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Renderer\RenderInstanced.h">
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Particle\Particle.h">
@@ -1647,23 +1635,8 @@
     <ClInclude Include="src\Renderer\RendererHazelVulkan.h">
       <Filter>Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\HazelVulkan\EditorLayerHazelVulkan.h">
-      <Filter>HazelVulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelVulkan\MaterialHazelVulkan.h">
-      <Filter>HazelVulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelVulkan\SceneRendererHazelVulkan.h">
-      <Filter>HazelVulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelVulkan\SharedDataHazelVulkan.h">
-      <Filter>HazelVulkan</Filter>
-    </ClInclude>
     <ClInclude Include="src\Scene\SceneBloom.h">
       <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelVulkan\VulkanTestLayer.h">
-      <Filter>HazelVulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLRendererBasic.h">
       <Filter>Platform\OpenGL</Filter>
@@ -1671,6 +1644,16 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanRendererBasic.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="src\Instancing\RenderInstanced.h">
+      <Filter>Instancing</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelVulkan\VulkanWeekRenderer.h">
+      <Filter>HazelVulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelVulkan\VulkanTestLayer.h">
+      <Filter>HazelVulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1870,6 +1853,9 @@
     </Filter>
     <Filter Include="Platform\OpenGL">
       <UniqueIdentifier>{4d8994d9-f496-48d5-b144-74f08a3d3b14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Instancing">
+      <UniqueIdentifier>{669491ea-2cbc-40e0-8685-ea3969a776e9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

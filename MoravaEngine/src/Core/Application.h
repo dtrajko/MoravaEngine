@@ -15,11 +15,14 @@ public:
 	Application();
 	virtual ~Application();
 
+	static void Init();    // TODO: move initialization code from main.cpp here
+	static void Run();     // TODO: move game loop from main.cpp here
+	static void Cleanup(); // TODO: move cleanup code from main.cpp here
+
 	static Application* Get();
 
 	void InitWindow(const WindowProps& props);
 
-	static void Run();
 
 	void OnEvent(Event& e);
 

@@ -14,6 +14,10 @@ RendererEditor::RendererEditor()
 {
 }
 
+RendererEditor::~RendererEditor()
+{
+}
+
 void RendererEditor::Init(Scene* scene)
 {
     m_IsViewportEnabled = ((SceneEditor*)scene)->m_IsViewportEnabled;
@@ -685,7 +689,11 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     /**** End glass ****/
 }
 
-void RendererEditor::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererEditor::BeginFrame()
+{
+}
+
+void RendererEditor::WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     float aspectRatio = scene->GetCameraController()->GetAspectRatio();
     projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio,
@@ -714,8 +722,4 @@ void RendererEditor::Render(float deltaTime, Window* mainWindow, Scene* scene, g
         RenderPassMain(mainWindow, scene, projectionMatrix);
         scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
     }
-}
-
-RendererEditor::~RendererEditor()
-{
 }

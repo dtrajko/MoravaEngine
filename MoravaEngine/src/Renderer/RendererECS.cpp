@@ -7,6 +7,10 @@ RendererECS::RendererECS()
 {
 }
 
+RendererECS::~RendererECS()
+{
+}
+
 void RendererECS::Init(Scene* scene)
 {
 	SetShaders();
@@ -44,7 +48,11 @@ void RendererECS::PostProcessing(Window* mainWindow, Scene* scene, glm::mat4 pro
 	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
-void RendererECS::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererECS::BeginFrame()
+{
+}
+
+void RendererECS::WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
@@ -55,8 +63,4 @@ void RendererECS::Render(float deltaTime, Window* mainWindow, Scene* scene, glm:
 	RenderPassMain(mainWindow, scene, projectionMatrix);
 
 	PostProcessing(mainWindow, scene, projectionMatrix);
-}
-
-RendererECS::~RendererECS()
-{
 }

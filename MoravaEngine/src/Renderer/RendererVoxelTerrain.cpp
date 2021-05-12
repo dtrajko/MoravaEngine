@@ -9,6 +9,10 @@ RendererVoxelTerrain::RendererVoxelTerrain()
 	SetShaders();
 }
 
+RendererVoxelTerrain::~RendererVoxelTerrain()
+{
+}
+
 void RendererVoxelTerrain::Init(Scene* scene)
 {
 }
@@ -297,7 +301,11 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
-void RendererVoxelTerrain::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererVoxelTerrain::BeginFrame()
+{
+}
+
+void RendererVoxelTerrain::WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	{
 		Profiler profiler("RVT::RenderPassShadow");
@@ -312,8 +320,4 @@ void RendererVoxelTerrain::Render(float deltaTime, Window* mainWindow, Scene* sc
 		RenderPassMain(mainWindow, scene, projectionMatrix);
 		scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 	}
-}
-
-RendererVoxelTerrain::~RendererVoxelTerrain()
-{
 }

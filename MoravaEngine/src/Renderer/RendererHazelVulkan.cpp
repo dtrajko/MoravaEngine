@@ -7,6 +7,10 @@ RendererHazelVulkan::RendererHazelVulkan()
 {
 }
 
+RendererHazelVulkan::~RendererHazelVulkan()
+{
+}
+
 void RendererHazelVulkan::Init(Scene* scene)
 {
 	SetShaders();
@@ -44,7 +48,11 @@ void RendererHazelVulkan::PostProcessing(Window* mainWindow, Scene* scene, glm::
 	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
-void RendererHazelVulkan::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererHazelVulkan::BeginFrame()
+{
+}
+
+void RendererHazelVulkan::WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
@@ -55,8 +63,4 @@ void RendererHazelVulkan::Render(float deltaTime, Window* mainWindow, Scene* sce
 	RenderPassMain(mainWindow, scene, projectionMatrix);
 
 	PostProcessing(mainWindow, scene, projectionMatrix);
-}
-
-RendererHazelVulkan::~RendererHazelVulkan()
-{
 }

@@ -6,6 +6,10 @@ RendererOmniShadows::RendererOmniShadows()
 	SetShaders();
 }
 
+RendererOmniShadows::~RendererOmniShadows()
+{
+}
+
 void RendererOmniShadows::Init(Scene* scene)
 {
 }
@@ -19,12 +23,6 @@ void RendererOmniShadows::SetShaders()
 	Shader* shaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("main", shaderMain));
 	Log::GetLogger()->info("RendererOmniShadows: shaderMain compiled [programID={0}]", shaderMain->GetProgramID());
-}
-
-void RendererOmniShadows::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
-{
-	RenderOmniShadows(mainWindow, scene, projectionMatrix);
-	RenderPassMain(mainWindow, scene, projectionMatrix);
 }
 
 void RendererOmniShadows::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -150,6 +148,12 @@ void RendererOmniShadows::RenderPassMain(Window* mainWindow, Scene* scene, glm::
 	shaderMain->Unbind();
 }
 
-RendererOmniShadows::~RendererOmniShadows()
+void RendererOmniShadows::BeginFrame()
 {
+}
+
+void RendererOmniShadows::WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	RenderOmniShadows(mainWindow, scene, projectionMatrix);
+	RenderPassMain(mainWindow, scene, projectionMatrix);
 }

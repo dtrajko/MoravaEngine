@@ -17,11 +17,10 @@ namespace Hazel {
 		virtual ~VulkanContext();
 
 		virtual void Create() override;
+		virtual void BeginFrame() override;
 		virtual void SwapBuffers() override;
 
 		virtual void OnResize(uint32_t width, uint32_t height) override;
-
-		virtual void BeginFrame() override;
 
 		Ref<VulkanDevice> GetDevice() { return m_Device; }
 		VulkanSwapChain& GetSwapChain() { return m_SwapChain; }

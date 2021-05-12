@@ -20,6 +20,33 @@ Application::Application()
 {
 }
 
+// TODO: move initialization code from main.cpp here
+void Application::Init()
+{
+}
+
+// TODO: move game loop from main.cpp here
+void Application::Run()
+{
+	WindowResizeEvent e(1280, 720);
+	Log::GetLogger()->debug(e);
+
+	if (e.IsInCategory(EventCategoryApplication))
+	{
+		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryApplication'");
+	}
+
+	if (e.IsInCategory(EventCategoryInput))
+	{
+		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryInput'");
+	}
+}
+
+// TODO: move cleanup code from main.cpp here
+void Application::Cleanup()
+{
+}
+
 void Application::InitWindow(const WindowProps& props)
 {
 	m_Window = Window::Create(props);
@@ -55,22 +82,6 @@ void Application::OnEvent(Event& e)
 		(*--it)->OnEvent(e);
 		if (e.Handled)
 			break;
-	}
-}
-
-void Application::Run()
-{
-	WindowResizeEvent e(1280, 720);
-	Log::GetLogger()->debug(e);
-
-	if (e.IsInCategory(EventCategoryApplication))
-	{
-		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryApplication'");
-	}
-
-	if (e.IsInCategory(EventCategoryInput))
-	{
-		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryInput'");
 	}
 }
 

@@ -209,6 +209,8 @@ void SceneHazelVulkan::OnEntitySelected(Hazel::Entity entity)
 void SceneHazelVulkan::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
+    VulkanWeekRenderer::WaitAndRender();
+
     if (passType == "main") {
         m_VulkanTestLayer->OnRender(mainWindow);
     }

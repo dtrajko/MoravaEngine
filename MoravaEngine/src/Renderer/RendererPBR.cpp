@@ -9,6 +9,10 @@ RendererPBR::RendererPBR()
 {
 }
 
+RendererPBR::~RendererPBR()
+{
+}
+
 void RendererPBR::Init(Scene* scene)
 {
 	SetUniforms();
@@ -201,13 +205,13 @@ void RendererPBR::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 pro
 	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
-void RendererPBR::Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+void RendererPBR::BeginFrame()
+{
+}
+
+void RendererPBR::WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
 	RenderPassMain(mainWindow, scene, projectionMatrix);
-}
-
-RendererPBR::~RendererPBR()
-{
 }
