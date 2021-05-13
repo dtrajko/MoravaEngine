@@ -40,6 +40,31 @@ void Application::Run()
 	{
 		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryInput'");
 	}
+
+	// Loop until window closed
+	while (!Application::Get()->GetWindow()->GetShouldClose())
+	{
+		Application::Get()->GetWindow()->ProcessEvents(); // Hazel Vulkan: m_Window->ProcessEvents() (currently in Window()->OnUpdate)
+
+		s_Instance->m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
+
+		s_Instance->m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow()); // TODO deltaTime obsolete
+
+		// Render ImGui on render thread
+		ImGuiWrapper::Begin();
+
+		// On Render thread (Hazel Vulkan)
+		Application::Get()->GetWindow()->GetRenderContext()->BeginFrame();
+
+		s_Instance->m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), Application::Get()->GetWindow(), s_Instance->m_Scene, RendererBasic::GetProjectionMatrix());
+
+		s_Instance->m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow());
+
+		ImGuiWrapper::End();
+
+		// Swap buffers and poll events
+		Application::Get()->GetWindow()->SwapBuffers(); // previously Application::Get()->GetWindow()->OnUpdate();
+	}
 }
 
 // TODO: move cleanup code from main.cpp here

@@ -114,9 +114,6 @@ int main()
 	Application::Get()->SetScene(scene);
 	Application::Get()->SetRenderer(renderer);
 
-	// experimental, testing Hazel event system
-	Application::Run(); // move the entire game loop from main.cpp to Application::Run?
-
 	// Projection matrix
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
 		(float)Application::Get()->GetWindow()->GetWidth() / (float)Application::Get()->GetWindow()->GetHeight(),
@@ -136,32 +133,9 @@ int main()
 	float targetUpdateRate = 24.0f;
 	Timer timer(targetFPS, targetUpdateRate);
 
-	// Loop until window closed
-	while (!Application::Get()->GetWindow()->GetShouldClose())
-	{
-		Application::Get()->GetWindow()->ProcessEvents(); // Hazel Vulkan: m_Window->ProcessEvents() (currently in Window()->OnUpdate)
+	Application::Init();
 
-		renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
-
-		scene->Update(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow()); // TODO deltaTime obsolete
-
-		// Render ImGui on render thread
-		ImGuiWrapper::Begin();
-
-		// On Render thread (Hazel Vulkan)
-		Application::Get()->GetWindow()->GetRenderContext()->BeginFrame();
-
-		renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), Application::Get()->GetWindow(), scene, projectionMatrix); // TODO deltaTime obsolete
-
-		scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow());
-
-		// scene->GetProfilerResults()->clear();
-
-		ImGuiWrapper::End();
-
-		// Swap buffers and poll events
-		Application::Get()->GetWindow()->SwapBuffers(); // previously Application::Get()->GetWindow()->OnUpdate();
-	}
+	Application::Run();
 
 	ImGuiWrapper::Cleanup();
 
