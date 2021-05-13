@@ -5,6 +5,7 @@
 #include "Hazel/Events/Event.h"
 
 #include "Core/Log.h"
+#include "Core/SceneProperties.h"
 #include "Core/Window.h"
 #include "Renderer/RendererBasic.h"
 
@@ -15,14 +16,13 @@ public:
 	Application();
 	virtual ~Application();
 
-	static void Init(Scene* scene, RendererBasic* renderer); // TODO: move initialization code from main.cpp here
-	static void Run();     // TODO: move game loop from main.cpp here
-	static void Cleanup(); // TODO: move cleanup code from main.cpp here
+	static void OnInit(SceneProperties sceneProperties);
+	static void Run();
+	static void OnShutdown();
 
 	static Application* Get();
 
-	void InitWindow(const WindowProps& props);
-
+	void InitWindow(WindowProps& props);
 
 	void OnEvent(Event& e);
 

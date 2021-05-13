@@ -20,6 +20,11 @@ VulkanRendererBasic::~VulkanRendererBasic()
 {
 }
 
+void VulkanRendererBasic::RendererInfo(std::string& windowTitle)
+{
+	windowTitle += " [Renderer: Vulkan]";
+}
+
 void VulkanRendererBasic::Init(Scene* scene)
 {
 	SetUniforms();

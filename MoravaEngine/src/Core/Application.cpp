@@ -20,12 +20,10 @@ Application::Application()
 {
 }
 
-void Application::Init(Scene* scene, RendererBasic* renderer) // OnInit() in Hazel
+void Application::OnInit(SceneProperties sceneProperties) // OnInit() in Hazel
 {
-	Application::Get(); // make sure the instance is initialized
-
-	s_Instance->m_Scene = scene;
-	s_Instance->m_Renderer = renderer;
+	s_Instance->m_Scene = sceneProperties.Scene;
+	s_Instance->m_Renderer = sceneProperties.Renderer;
 
 	// Projection matrix
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
@@ -94,14 +92,18 @@ void Application::Run()
 	}
 }
 
-// TODO: move cleanup code from main.cpp here
-void Application::Cleanup()
+void Application::OnShutdown()
 {
 	ImGuiWrapper::Cleanup();
+
+	// delete scene;
+	delete s_Instance->m_Renderer;
 }
 
-void Application::InitWindow(const WindowProps& props)
+void Application::InitWindow(WindowProps& props)
 {
+	RendererBasic::AppendRendererInfo(props.Title);
+
 	m_Window = Window::Create(props);
 	m_Window->SetEventCallback(APP_BIND_EVENT_FN(OnEvent));
 }

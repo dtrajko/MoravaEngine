@@ -20,6 +20,11 @@ OpenGLRendererBasic::~OpenGLRendererBasic()
 {
 }
 
+void OpenGLRendererBasic::RendererInfo(std::string& windowTitle)
+{
+	windowTitle += " [Renderer: OpenGL]";
+}
+
 void OpenGLRendererBasic::Init(Scene* scene)
 {
 	SetUniforms();

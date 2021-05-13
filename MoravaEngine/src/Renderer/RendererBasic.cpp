@@ -9,6 +9,7 @@
 #include "Platform/OpenGL/OpenGLRendererBasic.h"
 #include "Platform/Vulkan/VulkanRendererBasic.h"
 
+
 RendererBasic::RendererBasic()
 {
 }
@@ -17,12 +18,33 @@ RendererBasic::~RendererBasic()
 {
 }
 
+void RendererBasic::AppendRendererInfo(std::string& windowTitle)
+{
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::RendererInfo(windowTitle);
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::RendererInfo(windowTitle);
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+}
+
 void RendererBasic::Init(Scene* scene)
 {
 	SetUniforms();
 	SetShaders();
 
-	OpenGLRendererBasic::s_BgColor = glm::vec4(0.0, 0.0, 0.0, 1.0);
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None: return;
+	case Hazel::RendererAPIType::OpenGL:
+		OpenGLRendererBasic::s_BgColor = glm::vec4(0.0, 0.0, 0.0, 1.0);
+		return;
+	case Hazel::RendererAPIType::Vulkan:
+		VulkanRendererBasic::s_BgColor = glm::vec4(0.0, 0.0, 0.0, 1.0);
+		return;
+	}
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 
 	InitDebug();
 }

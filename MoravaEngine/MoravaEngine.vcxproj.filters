@@ -1654,6 +1654,9 @@
       <Filter>HazelVulkan</Filter>
     </ClInclude>
     <ClInclude Include="main.h" />
+    <ClInclude Include="src\Core\SceneProperties.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

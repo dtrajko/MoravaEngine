@@ -26,6 +26,7 @@ public:
 	virtual void BeginFrame() = 0;
 	virtual void WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix) = 0;
 
+	static void AppendRendererInfo(std::string& windowTitle);
 	static void InitDebug();
 	static void EnableCulling();
 	static void DisableCulling();

@@ -168,7 +168,6 @@ namespace Hazel {
 			m_SkyboxMaterial = Material::Create(skyboxShader);
 			m_SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
 		}
-
 	}
 
 	// Merge OnUpdate/Render into one function?

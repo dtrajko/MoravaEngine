@@ -24,6 +24,7 @@ public:
 	virtual void SetShaders();
 	virtual void Render(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix) = 0;
 
+	static void RendererInfo(std::string& windowTitle);
 	static void InitDebug();
 	static void EnableCulling();
 	static void DisableCulling();

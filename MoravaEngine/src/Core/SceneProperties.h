@@ -1,0 +1,45 @@
+#pragma once
+
+
+class Scene;
+class RendererBasic;
+
+
+enum class SceneName
+{
+	NONE = 0,
+	COTTAGE,
+	EIFFEL,
+	SPONZA,
+	TERRAIN,
+	PBR,
+	LEARN_OPENGL,
+	BULLET,
+	INSTANCED,
+	ASTEROIDS,
+	NANOSUIT,
+	FRAMEBUFFERS,
+	CUBEMAPS,
+	PARTICLES,
+	OMNI_SHADOWS,
+	VOXEL_TERRAIN,
+	PROCEDURAL_LANDMASS,
+	VOXEL_TERRAIN_SL,
+	MARCHING_CUBES,
+	SSAO,
+	BLOOM,
+	DEFERRED,
+	DEFERRED_OGL,
+	EDITOR,
+	EDITOR_IMGUIZMO,
+	ANIM_PBR,
+	HAZEL_ENV_MAP,
+	HAZEL_VULKAN,
+};
+
+struct SceneProperties
+{
+	Scene* Scene;
+	RendererBasic* Renderer;
+	SceneName Name;
+};
