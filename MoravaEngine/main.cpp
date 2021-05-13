@@ -111,33 +111,14 @@ int main()
 	throw std::runtime_error("Scene and Renderer could not be loaded!");
 #endif
 
-	Application::Get()->SetScene(scene);
-	Application::Get()->SetRenderer(renderer);
+	// Application::Get()->SetScene(scene);
+	// Application::Get()->SetRenderer(renderer);
 
-	// Projection matrix
-	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
-		(float)Application::Get()->GetWindow()->GetWidth() / (float)Application::Get()->GetWindow()->GetHeight(),
-		Scene::GetSettings().nearPlane, Scene::GetSettings().farPlane);
-
-	RendererBasic::SetProjectionMatrix(projectionMatrix);
-
-	scene->SetCamera();
-	scene->SetLightManager();
-	scene->SetWaterManager((int)Application::Get()->GetWindow()->GetWidth(), (int)Application::Get()->GetWindow()->GetHeight());
-
-	renderer->Init(scene);
-
-	ImGuiWrapper::Init(Application::Get()->GetWindow());
-
-	float targetFPS = 60.0f;
-	float targetUpdateRate = 24.0f;
-	Timer timer(targetFPS, targetUpdateRate);
-
-	Application::Init();
+	Application::Init(scene, renderer);
 
 	Application::Run();
 
-	ImGuiWrapper::Cleanup();
+	Application::Cleanup();
 
 	// delete scene;
 	delete renderer;

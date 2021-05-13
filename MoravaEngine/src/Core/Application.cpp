@@ -20,9 +20,31 @@ Application::Application()
 {
 }
 
-// TODO: move initialization code from main.cpp here
-void Application::Init()
+void Application::Init(Scene* scene, RendererBasic* renderer) // OnInit() in Hazel
 {
+	Application::Get(); // make sure the instance is initialized
+
+	s_Instance->m_Scene = scene;
+	s_Instance->m_Renderer = renderer;
+
+	// Projection matrix
+	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
+		(float)Application::Get()->GetWindow()->GetWidth() / (float)Application::Get()->GetWindow()->GetHeight(),
+		Scene::GetSettings().nearPlane, Scene::GetSettings().farPlane);
+
+	RendererBasic::SetProjectionMatrix(projectionMatrix);
+
+	s_Instance->m_Scene->SetCamera();
+	s_Instance->m_Scene->SetLightManager();
+	s_Instance->m_Scene->SetWaterManager((int)Application::Get()->GetWindow()->GetWidth(), (int)Application::Get()->GetWindow()->GetHeight());
+
+	s_Instance->m_Renderer->Init(s_Instance->m_Scene);
+
+	ImGuiWrapper::Init(Application::Get()->GetWindow());
+
+	float targetFPS = 60.0f;
+	float targetUpdateRate = 24.0f;
+	Timer timer(targetFPS, targetUpdateRate);
 }
 
 // TODO: move game loop from main.cpp here
@@ -41,35 +63,41 @@ void Application::Run()
 		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryInput'");
 	}
 
+	// OnInit(); // TODO
+
 	// Loop until window closed
-	while (!Application::Get()->GetWindow()->GetShouldClose())
+	while (s_Instance->m_Running = !Application::Get()->GetWindow()->GetShouldClose())
 	{
 		Application::Get()->GetWindow()->ProcessEvents(); // Hazel Vulkan: m_Window->ProcessEvents() (currently in Window()->OnUpdate)
 
-		s_Instance->m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
+		if (!s_Instance->m_Minimized)
+		{
+			s_Instance->m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
 
-		s_Instance->m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow()); // TODO deltaTime obsolete
+			s_Instance->m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow()); // TODO deltaTime obsolete
 
-		// Render ImGui on render thread
-		ImGuiWrapper::Begin();
+			// Render ImGui on render thread
+			ImGuiWrapper::Begin();
 
-		// On Render thread (Hazel Vulkan)
-		Application::Get()->GetWindow()->GetRenderContext()->BeginFrame();
+			// On Render thread (Hazel Vulkan)
+			Application::Get()->GetWindow()->GetRenderContext()->BeginFrame();
 
-		s_Instance->m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), Application::Get()->GetWindow(), s_Instance->m_Scene, RendererBasic::GetProjectionMatrix());
+			s_Instance->m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), Application::Get()->GetWindow(), s_Instance->m_Scene, RendererBasic::GetProjectionMatrix());
 
-		s_Instance->m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow());
+			s_Instance->m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow());
 
-		ImGuiWrapper::End();
+			ImGuiWrapper::End();
 
-		// Swap buffers and poll events
-		Application::Get()->GetWindow()->SwapBuffers(); // previously Application::Get()->GetWindow()->OnUpdate();
+			// Swap buffers and poll events
+			Application::Get()->GetWindow()->SwapBuffers(); // previously Application::Get()->GetWindow()->OnUpdate();
+		}
 	}
 }
 
 // TODO: move cleanup code from main.cpp here
 void Application::Cleanup()
 {
+	ImGuiWrapper::Cleanup();
 }
 
 void Application::InitWindow(const WindowProps& props)
@@ -236,4 +264,3 @@ const char* Application::GetPlatformName()
 	return "N/A";
 #endif
 }
-
