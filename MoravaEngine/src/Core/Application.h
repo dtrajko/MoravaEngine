@@ -26,6 +26,9 @@ public:
 
 	void OnEvent(Event& e);
 
+	void RenderImGui(); // Hazel Vulkan Week Day 4 1:26
+	static void ClassifyEvents();
+
 	// getters
 	inline Window* GetWindow() { return m_Window; }
 	inline Scene* GetScene() { return m_Scene; }

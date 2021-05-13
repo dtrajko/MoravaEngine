@@ -5,7 +5,7 @@ int main()
 {
 	Log::Init();
 
-	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::OpenGL);
+	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::Vulkan);
 
 	Application::Get()->InitWindow(WindowProps(WINDOW_TITLE, WIDTH, HEIGHT));
 

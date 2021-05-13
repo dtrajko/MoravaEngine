@@ -120,7 +120,6 @@ SceneHazelVulkan::SceneHazelVulkan()
     SetupMeshes();
     SetupModels();
 
-
     // m_Grid = new Grid(20);
     // m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 
@@ -182,9 +181,6 @@ void SceneHazelVulkan::SetupUniforms()
 void SceneHazelVulkan::Update(float timestep, Window* mainWindow)
 {
     Scene::Update(timestep, mainWindow);
-
-    float deltaTime = Timer::Get()->GetDeltaTime();
-    m_VulkanTestLayer->OnUpdate(deltaTime);
 }
 
 void SceneHazelVulkan::UpdateImGui(float timestep, Window* mainWindow)
@@ -209,6 +205,9 @@ void SceneHazelVulkan::OnEntitySelected(Hazel::Entity entity)
 void SceneHazelVulkan::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
+    float deltaTime = Timer::Get()->GetDeltaTime();
+    m_VulkanTestLayer->OnUpdate(deltaTime);
+
     VulkanWeekRenderer::WaitAndRender();
 
     if (passType == "main") {

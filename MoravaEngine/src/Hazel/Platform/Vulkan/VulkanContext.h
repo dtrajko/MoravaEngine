@@ -1,12 +1,13 @@
 #pragma once
 
-#include "Hazel/Platform/Vulkan/VulkanDevice.h"
-#include "Hazel/Platform/Vulkan/VulkanSwapChain.h"
 #include "Hazel/Renderer/HazelRenderer.h"
-#include "Hazel/Renderer/RendererContext.h"
 
-#include <vulkan/vulkan.h>
+#include "Vulkan.h"
+#include "VulkanDevice.h"
+#include "VulkanAllocator.h"
+#include "VulkanSwapChain.h"
 
+struct GLFWwindow;
 
 namespace Hazel {
 
@@ -17,10 +18,11 @@ namespace Hazel {
 		virtual ~VulkanContext();
 
 		virtual void Create() override;
-		virtual void BeginFrame() override;
 		virtual void SwapBuffers() override;
 
 		virtual void OnResize(uint32_t width, uint32_t height) override;
+
+		virtual void BeginFrame() override;
 
 		Ref<VulkanDevice> GetDevice() { return m_Device; }
 		VulkanSwapChain& GetSwapChain() { return m_SwapChain; }
@@ -39,7 +41,7 @@ namespace Hazel {
 		// Vulkan instance
 		inline static VkInstance s_VulkanInstance;
 		VkDebugReportCallbackEXT m_DebugReportCallback = VK_NULL_HANDLE;
-		VkPipelineCache m_PipelineCache = nullptr;
+		VkPipelineCache m_PipelineCache;
 
 		VulkanAllocator m_Allocator;
 		VulkanSwapChain m_SwapChain;

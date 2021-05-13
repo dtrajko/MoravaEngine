@@ -48,46 +48,36 @@ void Application::OnInit(SceneProperties sceneProperties) // OnInit() in Hazel
 // TODO: move game loop from main.cpp here
 void Application::Run()
 {
-	WindowResizeEvent e(1280, 720);
-	Log::GetLogger()->debug(e);
-
-	if (e.IsInCategory(EventCategoryApplication))
-	{
-		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryApplication'");
-	}
-
-	if (e.IsInCategory(EventCategoryInput))
-	{
-		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryInput'");
-	}
+	ClassifyEvents();
 
 	// OnInit(); // TODO
 
 	// Loop until window closed
-	while (s_Instance->m_Running = !Application::Get()->GetWindow()->GetShouldClose())
+	while (s_Instance->m_Running = !s_Instance->m_Window->GetShouldClose())
 	{
-		Application::Get()->GetWindow()->ProcessEvents(); // Hazel Vulkan: m_Window->ProcessEvents() (currently in Window()->OnUpdate)
+		s_Instance->m_Window->ProcessEvents(); // Hazel Vulkan: m_Window->ProcessEvents() (currently in Window()->OnUpdate)
 
 		if (!s_Instance->m_Minimized)
 		{
 			s_Instance->m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
 
-			s_Instance->m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow()); // TODO deltaTime obsolete
+			s_Instance->m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), s_Instance->m_Window); // TODO deltaTime obsolete
 
 			// Render ImGui on render thread
+			// Hazel::HazelRenderer::Submit([]() { s_Instance->RenderImGui(); }); // Vulkan Week Day 4 1:27
 			ImGuiWrapper::Begin();
 
 			// On Render thread (Hazel Vulkan)
-			Application::Get()->GetWindow()->GetRenderContext()->BeginFrame();
+			s_Instance->m_Window->GetRenderContext()->BeginFrame();
 
-			s_Instance->m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), Application::Get()->GetWindow(), s_Instance->m_Scene, RendererBasic::GetProjectionMatrix());
+			s_Instance->m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), s_Instance->m_Window, s_Instance->m_Scene, RendererBasic::GetProjectionMatrix());
 
-			s_Instance->m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), Application::Get()->GetWindow());
+			s_Instance->m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), s_Instance->m_Window);
 
 			ImGuiWrapper::End();
 
 			// Swap buffers and poll events
-			Application::Get()->GetWindow()->SwapBuffers(); // previously Application::Get()->GetWindow()->OnUpdate();
+			s_Instance->m_Window->SwapBuffers(); // previously s_Instance->m_Window->OnUpdate();
 		}
 	}
 }
@@ -124,6 +114,41 @@ Application* Application::Get()
 	}
 
 	return s_Instance;
+}
+
+void Application::RenderImGui()
+{
+	//	m_ImGuiLayer->Begin();
+
+	ImGui::Begin("Renderer");
+	auto& caps = Hazel::HazelRenderer::GetCapabilities();
+	ImGui::Text("Vendor: %s", caps.Vendor.c_str());
+	ImGui::Text("Device: %s", caps.Device.c_str());
+	ImGui::Text("Version: %s", caps.Version.c_str());
+	ImGui::Text("Frame Time: %.2fms", 0.0f /* m_TimeStep.GetMilliseconds() */);
+	ImGui::End();
+
+	//	for (Layer* layer : m_LayerStack)
+	//		layer->OnImGuiRender();
+
+	//	m_ImGuiLayer->End();
+}
+
+// Event handling code extracted from Application::Run()
+void Application::ClassifyEvents()
+{
+	WindowResizeEvent e(1280, 720);
+	Log::GetLogger()->debug(e);
+
+	if (e.IsInCategory(EventCategoryApplication))
+	{
+		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryApplication'");
+	}
+
+	if (e.IsInCategory(EventCategoryInput))
+	{
+		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryInput'");
+	}
 }
 
 void Application::OnEvent(Event& e)

@@ -1,11 +1,7 @@
 #include "VulkanContext.h"
-
 #include "Vulkan.h"
 
-#include "Hazel/Core/Assert.h"
-
-#include "Core/CommonValues.h"
-
+#include <glfw/glfw3.h>
 
 namespace Hazel {
 
@@ -14,7 +10,7 @@ namespace Hazel {
 	static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
 	{
 		(void)flags; (void)object; (void)location; (void)messageCode; (void)pUserData; (void)pLayerPrefix; // Unused arguments
-		HZ_CORE_WARN("VulkanDebugCallback:\n  Object Type: {0}\n  Message: {1}", objectType, pMessage);
+		MORAVA_CORE_WARN("VulkanDebugCallback:\n  Object Type: {0}\n  Message: {1}", objectType, pMessage);
 		return VK_FALSE;
 	}
 
@@ -29,7 +25,7 @@ namespace Hazel {
 
 	void VulkanContext::Create()
 	{
-		Log::GetLogger()->info("VulkanContext::Create");
+		MORAVA_CORE_INFO("VulkanContext::Create");
 
 		HZ_CORE_ASSERT(glfwVulkanSupported(), "GLFW must support Vulkan!");
 
@@ -70,10 +66,10 @@ namespace Hazel {
 			std::vector<VkLayerProperties> instanceLayerProperties(instanceLayerCount);
 			vkEnumerateInstanceLayerProperties(&instanceLayerCount, instanceLayerProperties.data());
 			bool validationLayerPresent = false;
-			Log::GetLogger()->trace("Vulkan Instance Layers:");
+			MORAVA_CORE_TRACE("Vulkan Instance Layers:");
 			for (const VkLayerProperties& layer : instanceLayerProperties)
 			{
-				Log::GetLogger()->trace("  {0}", layer.layerName);
+				MORAVA_CORE_TRACE("  {0}", layer.layerName);
 				if (strcmp(layer.layerName, validationLayerName) == 0)
 				{
 					validationLayerPresent = true;
@@ -87,9 +83,10 @@ namespace Hazel {
 			}
 			else
 			{
-				Log::GetLogger()->error("Validation layer VK_LAYER_LUNARG_standard_validation not present, validation is disabled");
+				MORAVA_CORE_ERROR("Validation layer VK_LAYER_LUNARG_standard_validation not present, validation is disabled");
 			}
 		}
+
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Instance and Surface Creation
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -116,7 +113,7 @@ namespace Hazel {
 
 		// Why is this here?
 		m_Allocator = VulkanAllocator(m_Device, "Default");
-
+		
 		m_SwapChain.Init(s_VulkanInstance, m_Device);
 		m_SwapChain.InitSurface(m_WindowHandle);
 

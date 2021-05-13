@@ -53,107 +53,107 @@ void VulkanRendererBasic::SetShaders()
 
 void VulkanRendererBasic::RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow)
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::RenderPassMain: Method not yet supported!");
 }
 
 void VulkanRendererBasic::Clear()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::Clear(): Method not yet supported!");
 }
 
 void VulkanRendererBasic::Clear(float r, float g, float b, float a)
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	// Log::GetLogger()->warn("VulkanRendererBasic::Clear(r, g, b, a): Method not yet supported!");
 }
 
 void VulkanRendererBasic::SetLineThickness(float thickness)
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::SetLineThickness: Method not yet supported!");
 }
 
 void VulkanRendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::SetDefaultFramebuffer: Method not yet supported!");
 }
 
 void VulkanRendererBasic::InitDebug()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::InitDebug: Method not yet supported!");
 }
 
 void VulkanRendererBasic::EnableCulling()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::EnableCulling: Method not yet supported!");
 }
 
 void VulkanRendererBasic::DisableCulling()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::DisableCulling: Method not yet supported!");
 }
 
 void VulkanRendererBasic::EnableTransparency()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::EnableTransparency: Method not yet supported!");
 }
 
 void VulkanRendererBasic::DisableTransparency()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::DisableTransparency: Method not yet supported!");
 }
 
 void VulkanRendererBasic::EnableDepthBuffer()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::EnableDepthBuffer: Method not yet supported!");
 }
 
 void VulkanRendererBasic::DisableDepthBuffer()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::DisableDepthBuffer: Method not yet supported!");
 }
 
 void VulkanRendererBasic::ClearDepthBuffer()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::ClearDepthBuffer: Method not yet supported!");
 }
 
 void VulkanRendererBasic::EnableDepthTest()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::EnableDepthTest: Method not yet supported!");
 }
 
 void VulkanRendererBasic::DisableDepthTest()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::DisableDepthTest: Method not yet supported!");
 }
 
 void VulkanRendererBasic::EnableMSAA()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::EnableMSAA: Method not yet supported!");
 }
 
 void VulkanRendererBasic::DisableMSAA()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::DisableMSAA: Method not yet supported!");
 }
 
 void VulkanRendererBasic::EnableBlend()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::EnableBlend: Method not yet supported!");
 }
 
 void VulkanRendererBasic::EnableWireframe()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::EnableBlend: Method not yet supported!");
 }
 
 void VulkanRendererBasic::DisableWireframe()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	// Log::GetLogger()->warn("VulkanRendererBasic::DisableWireframe: Method not yet supported!");
 }
 
 void VulkanRendererBasic::DisableBlend()
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::DisableBlend: Method not yet supported!");
 }
 
 void VulkanRendererBasic::Cleanup()
@@ -175,5 +175,5 @@ void VulkanRendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Sc
 // Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
 void VulkanRendererBasic::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest)
 {
-	Log::GetLogger()->warn("Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::DrawIndexed: Method not yet supported!");
 }

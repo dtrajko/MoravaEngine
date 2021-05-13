@@ -1,7 +1,8 @@
 #include "VulkanSwapChain.h"
 
-#include "Core/CommonValues.h"
 #include "Core/Log.h"
+
+#include <GLFW/glfw3.h>
 
 
 // Macro to get a procedure address based on a vulkan instance
@@ -48,13 +49,12 @@ namespace Hazel {
 		GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfaceFormatsKHR);
 		GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfacePresentModesKHR);
 	}
-
+	
 	void VulkanSwapChain::InitSurface(GLFWwindow* windowHandle)
 	{
 		VkPhysicalDevice physicalDevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
 
 		glfwCreateWindowSurface(m_Instance, windowHandle, nullptr, &m_Surface);
-		// Log::GetLogger()->error("error C3861: 'glfwCreateWindowSurface': identifier not found");
 
 		// Get available queue family properties
 		uint32_t queueCount;
@@ -330,8 +330,6 @@ namespace Hazel {
 
 		CreateDepthStencil();
 
-		VkFormat depthFormat = m_Device->GetPhysicalDevice()->GetDepthFormat();
-
 		// Render Pass
 		std::array<VkAttachmentDescription, 2> attachments = {};
 		// Color attachment
@@ -344,7 +342,7 @@ namespace Hazel {
 		attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 		// Depth attachment
-		attachments[1].format = depthFormat;
+		attachments[1].format = m_DepthBufferFormat;
 		attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
 		attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -365,7 +363,7 @@ namespace Hazel {
 		subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpassDescription.colorAttachmentCount = 1;
 		subpassDescription.pColorAttachments = &colorReference;
-		//subpassDescription.pDepthStencilAttachment = &depthReference;
+		subpassDescription.pDepthStencilAttachment = &depthReference;
 		subpassDescription.inputAttachmentCount = 0;
 		subpassDescription.pInputAttachments = nullptr;
 		subpassDescription.preserveAttachmentCount = 0;
@@ -382,7 +380,7 @@ namespace Hazel {
 
 		VkRenderPassCreateInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = 1;// static_cast<uint32_t>(attachments.size());
+		renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 		renderPassInfo.pAttachments = attachments.data();
 		renderPassInfo.subpassCount = 1;
 		renderPassInfo.pSubpasses = &subpassDescription;
@@ -396,12 +394,35 @@ namespace Hazel {
 
 	void VulkanSwapChain::CreateDepthStencil()
 	{
-		VkFormat depthFormat = m_Device->GetPhysicalDevice()->GetDepthFormat();
+		// Since all depth formats may be optional, we need to find a suitable depth format to use
+		// Start with the highest precision packed format
+		std::vector<VkFormat> depthFormats = {
+			VK_FORMAT_D32_SFLOAT_S8_UINT,
+			VK_FORMAT_D32_SFLOAT,
+			VK_FORMAT_D24_UNORM_S8_UINT,
+			VK_FORMAT_D16_UNORM_S8_UINT,
+			VK_FORMAT_D16_UNORM
+		};
+
+		// TODO: Move to VulkanPhysicalDevice
+		for (auto& format : depthFormats)
+		{
+			VkFormatProperties formatProps;
+			vkGetPhysicalDeviceFormatProperties(m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice(), format, &formatProps);
+			// Format must support depth stencil attachment for optimal tiling
+			if (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+			{
+				m_DepthBufferFormat = format;
+				break;
+			}
+		}
+
+		HZ_CORE_ASSERT(m_DepthBufferFormat);
 
 		VkImageCreateInfo imageCI{};
 		imageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageCI.imageType = VK_IMAGE_TYPE_2D;
-		imageCI.format = depthFormat;
+		imageCI.format = m_DepthBufferFormat;
 		imageCI.extent = { m_Width, m_Height, 1 };
 		imageCI.mipLevels = 1;
 		imageCI.arrayLayers = 1;
@@ -420,14 +441,14 @@ namespace Hazel {
 		imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		imageViewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		imageViewCI.image = m_DepthStencil.Image;
-		imageViewCI.format = depthFormat;
+		imageViewCI.format = m_DepthBufferFormat;
 		imageViewCI.subresourceRange.baseMipLevel = 0;
 		imageViewCI.subresourceRange.levelCount = 1;
 		imageViewCI.subresourceRange.baseArrayLayer = 0;
 		imageViewCI.subresourceRange.layerCount = 1;
 		imageViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 		// Stencil aspect should only be set on depth + stencil formats (VK_FORMAT_D16_UNORM_S8_UINT..VK_FORMAT_D32_SFLOAT_S8_UINT
-		if (depthFormat >= VK_FORMAT_D16_UNORM_S8_UINT)
+		if (m_DepthBufferFormat >= VK_FORMAT_D16_UNORM_S8_UINT)
 			imageViewCI.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
 		VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCI, nullptr, &m_DepthStencil.ImageView));
@@ -435,6 +456,7 @@ namespace Hazel {
 
 	void VulkanSwapChain::CreateFramebuffer()
 	{
+		// TODO: Maybe move into VulkanSwapChain
 		// Setup Framebuffer
 		VkImageView ivAttachments[2];
 
@@ -445,7 +467,7 @@ namespace Hazel {
 		frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		frameBufferCreateInfo.pNext = NULL;
 		frameBufferCreateInfo.renderPass = m_RenderPass;
-		frameBufferCreateInfo.attachmentCount = 1;
+		frameBufferCreateInfo.attachmentCount = 2;
 		frameBufferCreateInfo.pAttachments = ivAttachments;
 		frameBufferCreateInfo.width = m_Width;
 		frameBufferCreateInfo.height = m_Height;
@@ -482,7 +504,7 @@ namespace Hazel {
 
 	void VulkanSwapChain::OnResize(uint32_t width, uint32_t height)
 	{
-		HZ_CORE_WARN("VulkanContext::OnResize");
+		MORAVA_CORE_WARN("VulkanContext::OnResize");
 		auto device = m_Device->GetVulkanDevice();
 
 		vkDeviceWaitIdle(device);

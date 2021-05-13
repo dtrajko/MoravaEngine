@@ -1,5 +1,9 @@
 #include "VulkanTestLayer.h"
 
+#include "Hazel/Platform/Vulkan/VulkanContext.h"
+
+#include "Core/Application.h"
+
 
 VulkanTestLayer::VulkanTestLayer()
 {
@@ -11,6 +15,7 @@ VulkanTestLayer::~VulkanTestLayer()
 
 void VulkanTestLayer::OnAttach()
 {
+	// BuildCommandBuffer({ 0.0f, 0.0f, 0.0f, 0.0f });
 }
 
 void VulkanTestLayer::OnDetach()
@@ -19,14 +24,16 @@ void VulkanTestLayer::OnDetach()
 
 void VulkanTestLayer::OnUpdate(Hazel::Timestep ts)
 {
-	static glm::vec4 clearColor = {0.0f, 0.0f, 0.0f, 0.0f };
-	static float delta = 0.0002f;
+	static glm::vec4 clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+	static float delta = 0.5f;
 	if (clearColor.r > 1.0f || clearColor.r < 0.0f) {
 		delta = -delta;
 	}
 
-	clearColor.r += delta;
-	clearColor.b += delta;
+	clearColor.r += delta * ts * 0.05f;
+	clearColor.b += delta * ts * 0.05f;
+
+	// Log::GetLogger()->info("VulkanTestLayer::OnRender clearColor[{0}, {1}, {2}, {3}]", clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 
 	BuildCommandBuffer(clearColor);
 }
@@ -45,13 +52,17 @@ void VulkanTestLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 
 void VulkanTestLayer::OnRender(Window* mainWindow)
 {
-	RendererBasic::Clear(1.0f, 0.0f, 1.0f, 1.0f);
-
+	// RendererBasic::Clear(1.0f, 0.0f, 1.0f, 1.0f);
 }
 
 void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 {
-	/****
+	Hazel::HazelRenderer::Submit([clearColor]() {
+	});
+
+	Hazel::Ref<Hazel::VulkanContext> context = Hazel::Ref<Hazel::VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
+	Hazel::VulkanSwapChain& swapChain = context->GetSwapChain();
+
 	VkCommandBufferBeginInfo cmdBufInfo = {};
 	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	cmdBufInfo.pNext = nullptr;
@@ -62,7 +73,7 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 	clearValues[0].color = { {clearColor.r, clearColor.g, clearColor.b, clearColor.a } };
 	clearValues[1].depthStencil = { 1.0f, 0 };
 
-	uint32_t width = swapChain.GetWidth();
+	uint32_t width  = swapChain.GetWidth();
 	uint32_t height = swapChain.GetHeight();
 
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
@@ -79,6 +90,43 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 	// Set target frame buffer
 	renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
 
+	{
+		VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
+		VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
+
+		// Start the first sub pass specified in our default render pass setup by the base class
+		// This will clear the color and depth attachment
+		vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		// Update dynamic viewport state
+		VkViewport viewport = {};
+		viewport.x = 0.0f;
+		viewport.y = (float)height;
+		viewport.height = -(float)height;
+		viewport.width = (float)width;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(drawCommandBuffer, 0, 1, &viewport);
+
+		// Update dynamic scissor state
+		VkRect2D scissor = {};
+		scissor.extent.width = width;
+		scissor.extent.height = height;
+		scissor.offset.x = 0;
+		scissor.offset.y = 0;
+		vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
+
+		// DRAW GEO HERE
+
+		vkCmdEndRenderPass(drawCommandBuffer);
+
+		// Ending the render pass will add an implicit barrier transitioning the frame buffer color attachment to
+		// VK_IMAGE_LAYOUT_PRESENT_SRC_KHR for presenting it to the windowing system
+
+		VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
+	}
+
+	/****
 	{
 		void* ubPtr = shader->MapUniformBuffer(0);
 		glm::mat4 viewProj = camera.GetViewProjection();

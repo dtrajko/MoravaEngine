@@ -39,8 +39,8 @@
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
 // #define SCENE_ANIM_PBR
-#define SCENE_HAZEL_ENV_MAP
-// #define SCENE_HAZEL_VULKAN
+// #define SCENE_HAZEL_ENV_MAP
+#define SCENE_HAZEL_VULKAN
 
 #include "Hazel/Core/Base.h"
 #include "Hazel/Events/Event.h"
@@ -144,6 +144,12 @@
 #include <GL/glew.h>
 
 #include <memory>
+
+
+// Window properties
+const char* WINDOW_TITLE = "Morava Engine";
+const int WIDTH = 1280;
+const int HEIGHT = 720;
 
 
 SceneProperties SetSceneProperties()
@@ -267,8 +273,3 @@ SceneProperties SetSceneProperties()
 
 	return sceneProperties;
 }
-
-// Window properties
-const char* WINDOW_TITLE = "Morava Engine";
-const int WIDTH = 1280;
-const int HEIGHT = 720;
