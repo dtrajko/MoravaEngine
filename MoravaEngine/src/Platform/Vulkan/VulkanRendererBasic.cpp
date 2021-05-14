@@ -53,6 +53,7 @@ void VulkanRendererBasic::SetShaders()
 
 void VulkanRendererBasic::RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow)
 {
+	// throw std::logic_error("The method or operation is not implemented.");
 	Log::GetLogger()->warn("VulkanRendererBasic::RenderPassMain: Method not yet supported!");
 }
 
@@ -88,6 +89,7 @@ void VulkanRendererBasic::EnableCulling()
 
 void VulkanRendererBasic::DisableCulling()
 {
+	// throw std::logic_error("The method or operation is not implemented.");
 	Log::GetLogger()->warn("VulkanRendererBasic::DisableCulling: Method not yet supported!");
 }
 
@@ -148,6 +150,7 @@ void VulkanRendererBasic::EnableWireframe()
 
 void VulkanRendererBasic::DisableWireframe()
 {
+	// throw std::logic_error("The method or operation is not implemented.");
 	// Log::GetLogger()->warn("VulkanRendererBasic::DisableWireframe: Method not yet supported!");
 }
 
@@ -175,5 +178,6 @@ void VulkanRendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Sc
 // Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
 void VulkanRendererBasic::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest)
 {
+	// throw std::logic_error("The method or operation is not implemented.");
 	Log::GetLogger()->warn("VulkanRendererBasic::DrawIndexed: Method not yet supported!");
 }
