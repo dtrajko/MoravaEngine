@@ -627,9 +627,6 @@
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLMaterial.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanMaterial.cpp">
-      <Filter>Hazel\Platform\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Renderer\HazelImage.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
@@ -728,9 +725,6 @@
     </ClCompile>
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLRenderer.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanRenderer.cpp">
-      <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
@@ -1491,9 +1485,6 @@
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLMaterial.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanMaterial.h">
-      <Filter>Hazel\Platform\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Renderer\HazelImage.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
@@ -1601,9 +1592,6 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLRenderer.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRenderer.h">
-      <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.h">
       <Filter>Hazel\Platform\Vulkan</Filter>

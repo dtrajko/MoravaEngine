@@ -182,11 +182,9 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanImage.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanImGuiLayer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanIndexBuffer.cpp" />
-    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanMaterial.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanMemory.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanPipeline.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanRenderCommandBuffer.cpp" />
-    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanRenderer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanRendererAPI.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanRenderPass.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanShader.cpp" />
@@ -470,11 +468,9 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanImage.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanImGuiLayer.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanIndexBuffer.h" />
-    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanMaterial.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanMemory.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanPipeline.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRenderCommandBuffer.h" />
-    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRenderer.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRendererAPI.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRenderPass.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanShader.h" />

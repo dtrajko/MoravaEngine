@@ -2,32 +2,15 @@
 
 #include "VulkanShader.h"
 #include "VulkanContext.h"
-#include "VulkanFramebuffer.h"
 
 #include "Hazel/Renderer/HazelRenderer.h"
 
 namespace Hazel {
 
-	static VkFormat ShaderDataTypeToVulkanFormat(ShaderDataType type)
-	{
-		switch (type)
-		{
-			case ShaderDataType::Float:     return VK_FORMAT_R32_SFLOAT;
-			case ShaderDataType::Float2:    return VK_FORMAT_R32G32_SFLOAT;
-			case ShaderDataType::Float3:    return VK_FORMAT_R32G32B32_SFLOAT;
-			case ShaderDataType::Float4:    return VK_FORMAT_R32G32B32A32_SFLOAT;
-		}
-		HZ_CORE_ASSERT(false);
-		return VK_FORMAT_UNDEFINED;
-	}
-
 	VulkanPipeline::VulkanPipeline(const PipelineSpecification& spec)
 		: m_Specification(spec)
 	{
-		HZ_CORE_ASSERT(spec.Shader);
-		HZ_CORE_ASSERT(spec.RenderPass);
 		Invalidate();
-		HazelRenderer::RegisterShaderDependency(spec.Shader, Ref<Pipeline>(this));
 	}
 
 	VulkanPipeline::~VulkanPipeline()
@@ -40,13 +23,15 @@ namespace Hazel {
 		Ref<VulkanPipeline> instance = this;
 		HazelRenderer::Submit([instance]() mutable
 		{
+		});
+
+		{
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
 			HZ_CORE_ASSERT(instance->m_Specification.Shader);
 			Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(instance->m_Specification.Shader);
-			Ref<VulkanFramebuffer> framebuffer = instance->m_Specification.RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
 
-			auto descriptorSetLayouts = vulkanShader->GetAllDescriptorSetLayouts();
+			VkDescriptorSetLayout descriptorSetLayout = vulkanShader->GetDescriptorSetLayout();
 
 			const auto& pushConstantRanges = vulkanShader->GetPushConstantRanges();
 
@@ -67,8 +52,8 @@ namespace Hazel {
 			VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
 			pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 			pPipelineLayoutCreateInfo.pNext = nullptr;
-			pPipelineLayoutCreateInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-			pPipelineLayoutCreateInfo.pSetLayouts = descriptorSetLayouts.data();
+			pPipelineLayoutCreateInfo.setLayoutCount = 1;
+			pPipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
 			pPipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(vulkanPushConstantRanges.size());
 			pPipelineLayoutCreateInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
 
@@ -84,7 +69,7 @@ namespace Hazel {
 			// The layout used for this pipeline (can be shared among multiple pipelines using the same layout)
 			pipelineCreateInfo.layout = instance->m_PipelineLayout;
 			// Renderpass this pipeline is attached to
-			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
+			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
 
 			// Construct the differnent states making up the pipeline
 
@@ -107,24 +92,13 @@ namespace Hazel {
 
 			// Color blend state describes how blend factors are calculated (if used)
 			// We need one blend attachment state per color attachment (even if blending is not used)
-			size_t colorAttachmentCount = framebuffer->GetColorAttachmentCount();
-			std::vector<VkPipelineColorBlendAttachmentState> blendAttachmentStates(colorAttachmentCount);
-			for (size_t i = 0; i < colorAttachmentCount; i++)
-			{
-				blendAttachmentStates[i].colorWriteMask = 0xf;
-				blendAttachmentStates[i].blendEnable = VK_TRUE;
-				blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-				blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-				blendAttachmentStates[i].colorBlendOp = VK_BLEND_OP_ADD;
-				blendAttachmentStates[i].alphaBlendOp = VK_BLEND_OP_ADD;
-				blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-				blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-			}
-			
+			VkPipelineColorBlendAttachmentState blendAttachmentState[1] = {};
+			blendAttachmentState[0].colorWriteMask = 0xf;
+			blendAttachmentState[0].blendEnable = VK_FALSE;
 			VkPipelineColorBlendStateCreateInfo colorBlendState = {};
 			colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-			colorBlendState.attachmentCount = static_cast<uint32_t>(blendAttachmentStates.size());
-			colorBlendState.pAttachments = blendAttachmentStates.data();
+			colorBlendState.attachmentCount = 1;
+			colorBlendState.pAttachments = blendAttachmentState;
 
 			// Viewport state sets the number of viewports and scissor used in this pipeline
 			// Note: This is actually overriden by the dynamic states (see below)
@@ -166,28 +140,48 @@ namespace Hazel {
 			multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 			multisampleState.pSampleMask = nullptr;
 
-			// Vertex input descriptor
+			// Vertex input descriptions
+			// Specifies the vertex input parameters for a pipeline
 
-			VertexBufferLayout& layout = instance->m_Specification.Layout;
-
+			//struct ExampleVertex
+			//{
+			//	glm::vec3 Position;
+			//	glm::vec4 Color;
+			//};
+			// Vertex input binding
+			// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
 			VkVertexInputBindingDescription vertexInputBinding = {};
 			vertexInputBinding.binding = 0;
-			vertexInputBinding.stride = layout.GetStride();
+			vertexInputBinding.stride = sizeof(Vertex);
 			vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 			// Inpute attribute bindings describe shader attribute locations and memory layouts
-			std::vector<VkVertexInputAttributeDescription> vertexInputAttributs(layout.GetElementCount());
+			std::array<VkVertexInputAttributeDescription, 5> vertexInputAttributs;
 
-			uint32_t location = 0;
-			for (auto element : layout)
-			{
-				vertexInputAttributs[location].binding = 0;
-				vertexInputAttributs[location].location = location;
-				vertexInputAttributs[location].format = ShaderDataTypeToVulkanFormat(element.Type);
-				vertexInputAttributs[location].offset = element.Offset;
+			vertexInputAttributs[0].binding = 0;
+			vertexInputAttributs[0].location = 0;
+			vertexInputAttributs[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+			vertexInputAttributs[0].offset = offsetof(Vertex, Position);
 
-				location++;
-			}
+			vertexInputAttributs[1].binding = 0;
+			vertexInputAttributs[1].location = 1;
+			vertexInputAttributs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+			vertexInputAttributs[1].offset = offsetof(Vertex, Normal);
+
+			vertexInputAttributs[2].binding = 0;
+			vertexInputAttributs[2].location = 2;
+			vertexInputAttributs[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+			vertexInputAttributs[2].offset = offsetof(Vertex, Tangent);
+
+			vertexInputAttributs[3].binding = 0;
+			vertexInputAttributs[3].location = 3;
+			vertexInputAttributs[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+			vertexInputAttributs[3].offset = offsetof(Vertex, Binormal);
+
+			vertexInputAttributs[4].binding = 0;
+			vertexInputAttributs[4].location = 4;
+			vertexInputAttributs[4].format = VK_FORMAT_R32G32_SFLOAT;
+			vertexInputAttributs[4].offset = offsetof(Vertex, Texcoord);
 
 			// Vertex input state used for pipeline creation
 			VkPipelineVertexInputStateCreateInfo vertexInputState = {};
@@ -211,7 +205,7 @@ namespace Hazel {
 			pipelineCreateInfo.pMultisampleState = &multisampleState;
 			pipelineCreateInfo.pViewportState = &viewportState;
 			pipelineCreateInfo.pDepthStencilState = &depthStencilState;
-			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
+			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
 			pipelineCreateInfo.pDynamicState = &dynamicState;
 
 			// What is this pipeline cache?
@@ -226,30 +220,7 @@ namespace Hazel {
 			// Shader modules are no longer needed once the graphics pipeline has been created
 			// vkDestroyShaderModule(device, shaderStages[0].module, nullptr);
 			// vkDestroyShaderModule(device, shaderStages[1].module, nullptr);
-
-			// Write default descriptor set... this overlaps materials somewhat, definitely requires more thought
-			instance->m_DescriptorSet = vulkanShader->CreateDescriptorSets();
-			std::vector<VkWriteDescriptorSet> writeDescriptors;
-
-			const auto& shaderDescriptorSets = vulkanShader->GetShaderDescriptorSets();
-			for (auto&& [set, shaderDescriptorSet] : shaderDescriptorSets)
-			{
-				for (auto&& [binding, uniformBuffer] : shaderDescriptorSet.UniformBuffers)
-				{
-					VkWriteDescriptorSet writeDescriptorSet = {};
-					writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					writeDescriptorSet.descriptorCount = 1;
-					writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-					writeDescriptorSet.pBufferInfo = &uniformBuffer->Descriptor;
-					writeDescriptorSet.dstBinding = binding;
-					writeDescriptorSet.dstSet = instance->m_DescriptorSet.DescriptorSets[0];
-					writeDescriptors.push_back(writeDescriptorSet);
-				}
-			}
-
-			HZ_CORE_WARN("VulkanPipeline - Updating {0} descriptor sets", writeDescriptors.size());
-			vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptors.size()), writeDescriptors.data(), 0, nullptr);
-		});
+		}
 	}
 
 	void VulkanPipeline::Bind()

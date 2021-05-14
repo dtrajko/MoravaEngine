@@ -7,7 +7,7 @@
 #include "Renderer/RendererBasic.h"
 
 #include "Hazel/Platform/OpenGL/OpenGLRenderer.h"
-#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+// #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
 
 namespace Hazel {
 
@@ -79,7 +79,7 @@ namespace Hazel {
 		switch (RendererAPI::Current())
 		{
 		case RendererAPIType::OpenGL: return new OpenGLRenderer();
-		case RendererAPIType::Vulkan: return new VulkanRenderer();
+		// case RendererAPIType::Vulkan: return new VulkanRenderer();
 		}
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
