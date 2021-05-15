@@ -128,6 +128,7 @@ namespace Hazel {
 		void Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData);
 
 		void CreateDescriptors();
+		void CreateDescriptorsVulkanWeek(); // Simplified version of CreateDescriptors() for drawing a triangle, Vulkan Week
 
 		void AllocateUniformBuffer(UniformBuffer& dst);
 

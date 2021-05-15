@@ -76,7 +76,7 @@ namespace Hazel {
 		CompileOrGetVulkanBinary(shaderData, false);
 		LoadAndCreateVertexShader(m_ShaderStages[0], shaderData[0]);
 		LoadAndCreateFragmentShader(m_ShaderStages[1], shaderData[1]);
-		CreateDescriptors();
+		CreateDescriptorsVulkanWeek(); // Simplified version of CreateDescriptors() for drawing a triangle, Vulkan Week
 
 		/**** BEGIN more advanced shader setup ****
 
@@ -211,8 +211,43 @@ namespace Hazel {
 		}
 
 		HZ_CORE_TRACE("===========================");
+	}
 
-	
+	// Simplified version of CreateDescriptors() for drawing a triangle, Vulkan Week
+	void VulkanShader::CreateDescriptorsVulkanWeek()
+	{
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+		// Descriptor Pool
+
+		VkDescriptorPoolSize typeCounts[1];
+		typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		typeCounts[0].descriptorCount = 1;
+
+		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
+		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		descriptorPoolInfo.pNext = nullptr;
+		descriptorPoolInfo.poolSizeCount = 1;
+		descriptorPoolInfo.pPoolSizes = typeCounts;
+		descriptorPoolInfo.maxSets = 1;
+
+		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool));
+
+		// Descriptor Set Layout
+
+		VkDescriptorSetLayoutBinding layoutBinding = {};
+		layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		layoutBinding.descriptorCount = 1;
+		layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		layoutBinding.pImmutableSamplers = nullptr;
+
+		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
+		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		descriptorLayout.pNext = nullptr;
+		descriptorLayout.bindingCount = 1;
+		descriptorLayout.pBindings = &layoutBinding;
+
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayout));
 	}
 
 	void VulkanShader::CreateDescriptors()
