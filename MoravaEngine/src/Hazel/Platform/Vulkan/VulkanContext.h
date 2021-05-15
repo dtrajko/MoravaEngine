@@ -31,6 +31,7 @@ namespace Hazel {
 
 		static Ref<VulkanContext> Get() { return Ref<VulkanContext>(HazelRenderer::GetContext()); }
 		static Ref<VulkanDevice> GetCurrentDevice() { return Get()->GetDevice(); }
+
 	private:
 		GLFWwindow* m_WindowHandle;
 

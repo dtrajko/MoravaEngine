@@ -172,6 +172,7 @@
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLTexture.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLVertexBuffer.cpp" />
+    <ClCompile Include="src\Hazel\Platform\Vulkan\Vulkan.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanAllocator.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanBuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanComputePipeline.cpp" />

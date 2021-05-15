@@ -117,6 +117,12 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 		vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
 		// DRAW GEO HERE
+		// vkCmdBindVertexBuffers ?
+		// vkCmdBindIndexBuffer ?
+		// vkCmdBindPipeline ?
+		// vkCmdBindDescriptorSets ?
+		// vkCmdPushConstants ?
+		// vkCmdDrawIndexed ?
 
 		vkCmdEndRenderPass(drawCommandBuffer);
 

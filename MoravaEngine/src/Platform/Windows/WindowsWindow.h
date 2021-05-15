@@ -84,6 +84,7 @@ public:
 
 private:
 	/**** BEGIN Window Hazel version - a platform independent Window interface ****/
+
 	GLFWwindow* m_Window;
 	struct WindowData
 	{

@@ -768,6 +768,9 @@
     <ClCompile Include="src\HazelVulkan\VulkanTestLayer.cpp">
       <Filter>HazelVulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\Vulkan.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
