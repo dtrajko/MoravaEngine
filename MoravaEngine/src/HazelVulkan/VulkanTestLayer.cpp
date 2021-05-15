@@ -1,8 +1,11 @@
 #include "VulkanTestLayer.h"
 
 #include "Hazel/Platform/Vulkan/VulkanContext.h"
+#include "Hazel/Platform/Vulkan/VulkanVertexBuffer.h"
+#include "Hazel/Platform/Vulkan/VulkanIndexBuffer.h"
 
 #include "Core/Application.h"
+#include "HazelVulkan/ExampleVertex.h"
 
 
 VulkanTestLayer::VulkanTestLayer()
@@ -19,6 +22,18 @@ void VulkanTestLayer::OnAttach()
 	Hazel::PipelineSpecification pipelineSpecification;
 	pipelineSpecification.Shader = m_Shader;
 	m_Pipeline = Hazel::Pipeline::Create(pipelineSpecification);
+
+	ExampleVertex vertices[3] = {
+		{{ -0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0 }},
+		{{  0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0 }},
+		{{  0.0f,  0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0 }},
+	};
+
+	m_VertexBuffer = Hazel::VertexBuffer::Create(vertices, sizeof(vertices));
+
+	uint32_t indices[3] = { 0, 1, 2 };
+
+	m_IndexBuffer = Hazel::IndexBuffer::Create(indices, sizeof(indices));
 }
 
 void VulkanTestLayer::OnDetach()
@@ -62,7 +77,11 @@ void VulkanTestLayer::OnRender(Window* mainWindow)
 void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 {
 	auto pipeline = m_Pipeline;
-	Hazel::HazelRenderer::Submit([clearColor, pipeline]() {
+	auto vulkanVB = Hazel::Ref<Hazel::VulkanVertexBuffer>(m_VertexBuffer);
+	auto vulkanIB = Hazel::Ref<Hazel::VulkanIndexBuffer>(m_IndexBuffer);
+
+	Hazel::HazelRenderer::Submit([clearColor, pipeline, vulkanVB, vulkanIB]() mutable
+	{
 	});
 
 	Hazel::Ref<Hazel::VulkanContext> context = Hazel::Ref<Hazel::VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
@@ -125,6 +144,16 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 		vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
 
 		// DRAW GEO HERE
+
+		VkBuffer vbBuffer = vulkanVB->GetVulkanBuffer();
+		VkDeviceSize offsets[1] = { 0 };
+		vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, &vbBuffer, offsets);
+
+		VkBuffer ibBuffer = vulkanIB->GetVulkanBuffer();
+		vkCmdBindIndexBuffer(drawCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+		vkCmdDrawIndexed(drawCommandBuffer, 3, 1, 0, 0, 1);
+
 		// vkCmdBindVertexBuffers ?
 		// vkCmdBindIndexBuffer ?
 		// vkCmdBindDescriptorSets ?

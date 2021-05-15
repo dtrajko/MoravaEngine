@@ -56,7 +56,7 @@ namespace Hazel {
 		VkMemoryRequirements memoryRequirements;
 		vkGetBufferMemoryRequirements(device, m_VulkanBuffer, &memoryRequirements);
 
-		VulkanAllocator allocator(device, "IndexBuffer");
+		VulkanAllocator allocator(std::string("IndexBuffer"));
 		allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		void* dstBuffer;

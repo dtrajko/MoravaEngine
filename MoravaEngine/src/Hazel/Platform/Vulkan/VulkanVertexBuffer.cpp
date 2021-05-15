@@ -58,7 +58,7 @@ namespace Hazel {
 		VkMemoryRequirements memoryRequirements;
 		vkGetBufferMemoryRequirements(device, m_VulkanBuffer, &memoryRequirements);
 
-		VulkanAllocator allocator(device, "VertexBuffer");
+		VulkanAllocator allocator(std::string("VertexBuffer"));
 		allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		void* dstBuffer;

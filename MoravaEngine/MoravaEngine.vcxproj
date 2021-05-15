@@ -417,6 +417,7 @@
     <ClInclude Include="src\Framebuffer\OmniShadowMap.h" />
     <ClInclude Include="src\Framebuffer\Renderbuffer.h" />
     <ClInclude Include="src\Framebuffer\ShadowMap.h" />
+    <ClInclude Include="src\HazelVulkan\ExampleVertex.h" />
     <ClInclude Include="src\HazelVulkan\VulkanWeekRenderer.h" />
     <ClInclude Include="src\HazelVulkan\VulkanTestLayer.h" />
     <ClInclude Include="src\Hazel\Asset\Asset.h" />

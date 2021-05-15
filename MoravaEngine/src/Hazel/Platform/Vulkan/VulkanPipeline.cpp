@@ -2,8 +2,10 @@
 
 #include "VulkanShader.h"
 #include "VulkanContext.h"
-
 #include "Hazel/Renderer/HazelRenderer.h"
+
+#include "HazelVulkan/ExampleVertex.h"
+
 
 namespace Hazel {
 
@@ -156,27 +158,17 @@ namespace Hazel {
 			// Vertex input descriptions
 			// Specifies the vertex input parameters for a pipeline
 
-			//struct ExampleVertex
-			//{
-			//	glm::vec3 Position;
-			//	glm::vec4 Color;
-			//};
+			/**** BEGIN simple vertex input layout ****/
+
 			// Vertex input binding
 			// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
 			VkVertexInputBindingDescription vertexInputBinding = {};
 			vertexInputBinding.binding = 0;
-			vertexInputBinding.stride = sizeof(Vertex);
+			vertexInputBinding.stride = sizeof(ExampleVertex);
 			vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-			/**** BEGIN simple vertex input layout ****/
 			// Inpute attribute bindings describe shader attribute locations and memory layouts
 			std::array<VkVertexInputAttributeDescription, 2> vertexInputAttributs;
-
-			struct ExampleVertex
-			{
-				glm::vec3 Position;
-				glm::vec4 Color;
-			};
 
 			vertexInputAttributs[0].binding = 0;
 			vertexInputAttributs[0].location = 0;
@@ -191,6 +183,13 @@ namespace Hazel {
 			/**** END simple vertex input layout ****/
 
 			/**** BEGIN more advanced vertex input layout ****
+
+			// Vertex input binding
+			// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
+			VkVertexInputBindingDescription vertexInputBinding = {};
+			vertexInputBinding.binding = 0;
+			vertexInputBinding.stride = sizeof(Vertex);
+			vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 			// Inpute attribute bindings describe shader attribute locations and memory layouts
 			std::array<VkVertexInputAttributeDescription, 5> vertexInputAttributs;

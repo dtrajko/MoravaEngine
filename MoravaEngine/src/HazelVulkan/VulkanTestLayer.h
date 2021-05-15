@@ -33,4 +33,7 @@ private:
 	Hazel::Ref<Hazel::HazelShader> m_Shader;
 	Hazel::Ref<Hazel::Pipeline> m_Pipeline;
 
+	Hazel::Ref<Hazel::VertexBuffer> m_VertexBuffer;
+	Hazel::Ref<Hazel::IndexBuffer> m_IndexBuffer;
+
 };

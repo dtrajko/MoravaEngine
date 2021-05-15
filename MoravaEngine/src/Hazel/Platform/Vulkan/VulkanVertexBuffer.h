@@ -26,6 +26,7 @@ namespace Hazel {
 		virtual RendererID GetRendererID() const override { return 0; }
 
 		VkBuffer GetVulkanBuffer() { return m_VulkanBuffer; }
+
 	private:
 		uint32_t m_Size = 0;
 		Buffer m_LocalData;
