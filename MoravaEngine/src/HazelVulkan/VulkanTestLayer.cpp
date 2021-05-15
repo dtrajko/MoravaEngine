@@ -16,8 +16,9 @@ VulkanTestLayer::~VulkanTestLayer()
 void VulkanTestLayer::OnAttach()
 {
 	m_Shader = Hazel::HazelShader::Create("assets/shaders/VulkanWeekTriangle.glsl");
-
-	// BuildCommandBuffer({ 0.0f, 0.0f, 0.0f, 0.0f });
+	Hazel::PipelineSpecification pipelineSpecification;
+	pipelineSpecification.Shader = m_Shader;
+	m_Pipeline = Hazel::Pipeline::Create(pipelineSpecification);
 }
 
 void VulkanTestLayer::OnDetach()
@@ -26,17 +27,18 @@ void VulkanTestLayer::OnDetach()
 
 void VulkanTestLayer::OnUpdate(Hazel::Timestep ts)
 {
-	static glm::vec4 clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-	static float delta = 0.5f;
-	if (clearColor.r > 1.0f || clearColor.r < 0.0f) {
-		delta = -delta;
-	}
-
-	clearColor.r += delta * ts * 0.05f;
-	clearColor.b += delta * ts * 0.05f;
+	// static glm::vec4 clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+	// static float delta = 0.5f;
+	// if (clearColor.r > 1.0f || clearColor.r < 0.0f) {
+	// 	delta = -delta;
+	// }
+	// 
+	// clearColor.r += delta * ts * 0.05f;
+	// clearColor.b += delta * ts * 0.05f;
 
 	// Log::GetLogger()->info("VulkanTestLayer::OnRender clearColor[{0}, {1}, {2}, {3}]", clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 
+	glm::vec4 clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 	BuildCommandBuffer(clearColor);
 }
 
@@ -59,7 +61,8 @@ void VulkanTestLayer::OnRender(Window* mainWindow)
 
 void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 {
-	Hazel::HazelRenderer::Submit([clearColor]() {
+	auto pipeline = m_Pipeline;
+	Hazel::HazelRenderer::Submit([clearColor, pipeline]() {
 	});
 
 	Hazel::Ref<Hazel::VulkanContext> context = Hazel::Ref<Hazel::VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
@@ -118,10 +121,12 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 		scissor.offset.y = 0;
 		vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
+		Hazel::Ref<Hazel::VulkanPipeline> vulkanPipeline = Hazel::Ref<Hazel::VulkanPipeline>(pipeline);
+		vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
+
 		// DRAW GEO HERE
 		// vkCmdBindVertexBuffers ?
 		// vkCmdBindIndexBuffer ?
-		// vkCmdBindPipeline ?
 		// vkCmdBindDescriptorSets ?
 		// vkCmdPushConstants ?
 		// vkCmdDrawIndexed ?

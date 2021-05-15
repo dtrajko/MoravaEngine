@@ -20,16 +20,16 @@ namespace Hazel {
 
 	void VulkanPipeline::Invalidate()
 	{
-		Ref<VulkanPipeline> instance = this;
-		HazelRenderer::Submit([instance]() mutable
-		{
-		});
+		//	Ref<VulkanPipeline> instance = this;
+		//	HazelRenderer::Submit([instance]() mutable
+		//	{
+		//	});
 
 		{
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-			HZ_CORE_ASSERT(instance->m_Specification.Shader);
-			Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(instance->m_Specification.Shader);
+			HZ_CORE_ASSERT(m_Specification.Shader);
+			Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(m_Specification.Shader);
 
 			VkDescriptorSetLayout descriptorSetLayout = vulkanShader->GetDescriptorSetLayout();
 
@@ -52,25 +52,14 @@ namespace Hazel {
 			VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
 			pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 			pPipelineLayoutCreateInfo.pNext = nullptr;
-
-			/**** BEGIN simple setup triangle ****/
-
-			pPipelineLayoutCreateInfo.setLayoutCount = 0;
-			pPipelineLayoutCreateInfo.pSetLayouts = nullptr;
-
-			/**** END simple setup triangle ****/
-
-			/**** BEGIN more advanced setup ****
-
 			pPipelineLayoutCreateInfo.setLayoutCount = 1;
 			pPipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
-
-			**** END more advanced setup ****/
-
 			pPipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(vulkanPushConstantRanges.size());
 			pPipelineLayoutCreateInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
 
-			VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &instance->m_PipelineLayout));
+			/**** BEGIN more advanced setup ****/
+			VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &m_PipelineLayout));
+			/**** END more advanced setup ****/
 
 			// Create the graphics pipeline used in this example
 			// Vulkan uses the concept of rendering pipelines to encapsulate fixed states, replacing OpenGL's complex state machine
@@ -80,9 +69,20 @@ namespace Hazel {
 			VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
 			pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 			// The layout used for this pipeline (can be shared among multiple pipelines using the same layout)
-			pipelineCreateInfo.layout = instance->m_PipelineLayout;
+
+			/**** BEGIN simple setup ****
+			pipelineCreateInfo.layout = nullptr;
+			**** END simple setup ****/
+
+			/**** BEGIN more advanced setup ****/
+			pipelineCreateInfo.layout = m_PipelineLayout;
+			/**** END more advanced setup ****/
+
 			// Renderpass this pipeline is attached to
 			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
+
+			// Change line width and raster polygon mode
+			// pipelineCreateInfo.pRasterizationState = VK_POLYGON_MODE_POINT | VK_POLYGON_MODE_LINE | VK_POLYGON_MODE_FILL
 
 			// Construct the differnent states making up the pipeline
 
@@ -230,7 +230,8 @@ namespace Hazel {
 			vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributs.size());
 			vertexInputState.pVertexAttributeDescriptions = vertexInputAttributs.data();
 
-			const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos();
+			const auto& shaderStages = vulkanShader->GetShaderStages(); // used in Vulkan Week
+			// const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos(); // used in more recent versions
 
 			// Set pipeline shader stage info
 			pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
@@ -254,7 +255,7 @@ namespace Hazel {
 			VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
 
 			// Create rendering pipeline using the specified states
-			VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &instance->m_VulkanPipeline));
+			VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &m_VulkanPipeline));
 
 			// Shader modules are no longer needed once the graphics pipeline has been created
 			// vkDestroyShaderModule(device, shaderStages[0].module, nullptr);

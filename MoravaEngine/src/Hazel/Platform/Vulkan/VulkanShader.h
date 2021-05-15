@@ -71,8 +71,8 @@ namespace Hazel {
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
 
 		// Vulkan-specific
-		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
-		const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages() const { return m_ShaderStages; }
+		const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages() const { return m_ShaderStages; } // used in Vulkan Week
+		// const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; } // Used in more recent versions
 
 		void* MapUniformBuffer(uint32_t bindingPoint);
 		void UnmapUniformBuffer(uint32_t bindingPoint);

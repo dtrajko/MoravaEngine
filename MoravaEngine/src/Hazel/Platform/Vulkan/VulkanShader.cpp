@@ -52,29 +52,38 @@ namespace Hazel {
 
 	void VulkanShader::Reload(bool forceCompile)
 	{
-		Ref<VulkanShader> instance = this;
-		HazelRenderer::Submit([instance]() mutable
-		{
-		});
+		//	Ref<VulkanShader> instance = this;
+		//	HazelRenderer::Submit([instance]() mutable
+		//	{
+		//		// Vertex and Fragment for now
+		//		std::string source = ReadShaderFromFile(instance->m_AssetPath);
+		//		instance->m_ShaderSource = instance->PreProcess(source);
+		//		instance->m_ShaderStages.resize(2);
+		//		std::array<std::vector<uint32_t>, 2> shaderData;
+		//		instance->CompileOrGetVulkanBinary(shaderData, false);
+		//		instance->LoadAndCreateVertexShader(instance->m_ShaderStages[0], shaderData[0]);
+		//		instance->LoadAndCreateFragmentShader(instance->m_ShaderStages[1], shaderData[1]);
+		//		instance->Reflect(VK_SHADER_STAGE_VERTEX_BIT, shaderData[0]);
+		//		instance->Reflect(VK_SHADER_STAGE_FRAGMENT_BIT, shaderData[1]);
+		//		instance->CreateDescriptors();
+		//	});
 
-		{
-			// Vertex and Fragment for now
-			std::string source = ReadShaderFromFile(instance->m_AssetPath);
-			instance->m_ShaderSource = instance->PreProcess(source);
-			instance->m_ShaderStages.resize(2);
-			std::array<std::vector<uint32_t>, 2> shaderData;
-			instance->CompileOrGetVulkanBinary(shaderData, false);
-			instance->LoadAndCreateVertexShader(instance->m_ShaderStages[0], shaderData[0]);
-			instance->LoadAndCreateFragmentShader(instance->m_ShaderStages[1], shaderData[1]);
+		// Vertex and Fragment for now
+		std::string source = ReadShaderFromFile(m_AssetPath);
+		m_ShaderSource = PreProcess(source);
+		m_ShaderStages.resize(2);
+		std::array<std::vector<uint32_t>, 2> shaderData;
+		CompileOrGetVulkanBinary(shaderData, false);
+		LoadAndCreateVertexShader(m_ShaderStages[0], shaderData[0]);
+		LoadAndCreateFragmentShader(m_ShaderStages[1], shaderData[1]);
+		CreateDescriptors();
 
-			/**** BEGIN more advanced shader setup ****
+		/**** BEGIN more advanced shader setup ****
 
-			instance->Reflect(VK_SHADER_STAGE_VERTEX_BIT, shaderData[0]);
-			instance->Reflect(VK_SHADER_STAGE_FRAGMENT_BIT, shaderData[1]);
-			instance->CreateDescriptors();
+		instance->Reflect(VK_SHADER_STAGE_VERTEX_BIT, shaderData[0]);
+		instance->Reflect(VK_SHADER_STAGE_FRAGMENT_BIT, shaderData[1]);
 
-			**** END more advanced shader setup ****/
-		}
+		**** END more advanced shader setup ****/
 	}
 
 	size_t VulkanShader::GetHash() const

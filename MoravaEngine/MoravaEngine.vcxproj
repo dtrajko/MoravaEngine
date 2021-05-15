@@ -175,7 +175,6 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\Vulkan.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanAllocator.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanBuffer.cpp" />
-    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanComputePipeline.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanDevice.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanDiagnostics.cpp" />
@@ -461,7 +460,6 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\Vulkan.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanAllocator.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanBuffer.h" />
-    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanComputePipeline.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanContext.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanDevice.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanDiagnostics.h" />
