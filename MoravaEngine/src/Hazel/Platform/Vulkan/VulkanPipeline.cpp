@@ -52,8 +52,21 @@ namespace Hazel {
 			VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
 			pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 			pPipelineLayoutCreateInfo.pNext = nullptr;
+
+			/**** BEGIN simple setup triangle ****/
+
+			pPipelineLayoutCreateInfo.setLayoutCount = 0;
+			pPipelineLayoutCreateInfo.pSetLayouts = nullptr;
+
+			/**** END simple setup triangle ****/
+
+			/**** BEGIN more advanced setup ****
+
 			pPipelineLayoutCreateInfo.setLayoutCount = 1;
 			pPipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+
+			**** END more advanced setup ****/
+
 			pPipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(vulkanPushConstantRanges.size());
 			pPipelineLayoutCreateInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
 
@@ -155,6 +168,30 @@ namespace Hazel {
 			vertexInputBinding.stride = sizeof(Vertex);
 			vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
+			/**** BEGIN simple vertex input layout ****/
+			// Inpute attribute bindings describe shader attribute locations and memory layouts
+			std::array<VkVertexInputAttributeDescription, 2> vertexInputAttributs;
+
+			struct ExampleVertex
+			{
+				glm::vec3 Position;
+				glm::vec4 Color;
+			};
+
+			vertexInputAttributs[0].binding = 0;
+			vertexInputAttributs[0].location = 0;
+			vertexInputAttributs[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+			vertexInputAttributs[0].offset = offsetof(ExampleVertex, Position);
+
+			vertexInputAttributs[1].binding = 0;
+			vertexInputAttributs[1].location = 1;
+			vertexInputAttributs[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+			vertexInputAttributs[1].offset = offsetof(ExampleVertex, Color);
+
+			/**** END simple vertex input layout ****/
+
+			/**** BEGIN more advanced vertex input layout ****
+
 			// Inpute attribute bindings describe shader attribute locations and memory layouts
 			std::array<VkVertexInputAttributeDescription, 5> vertexInputAttributs;
 
@@ -182,6 +219,8 @@ namespace Hazel {
 			vertexInputAttributs[4].location = 4;
 			vertexInputAttributs[4].format = VK_FORMAT_R32G32_SFLOAT;
 			vertexInputAttributs[4].offset = offsetof(Vertex, Texcoord);
+
+			**** END more advanced vertex input layout ****/
 
 			// Vertex input state used for pipeline creation
 			VkPipelineVertexInputStateCreateInfo vertexInputState = {};

@@ -15,6 +15,8 @@ VulkanTestLayer::~VulkanTestLayer()
 
 void VulkanTestLayer::OnAttach()
 {
+	m_Shader = Hazel::HazelShader::Create("assets/shaders/VulkanWeekTriangle.glsl");
+
 	// BuildCommandBuffer({ 0.0f, 0.0f, 0.0f, 0.0f });
 }
 

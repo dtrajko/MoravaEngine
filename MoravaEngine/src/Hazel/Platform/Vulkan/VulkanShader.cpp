@@ -66,9 +66,14 @@ namespace Hazel {
 			instance->CompileOrGetVulkanBinary(shaderData, false);
 			instance->LoadAndCreateVertexShader(instance->m_ShaderStages[0], shaderData[0]);
 			instance->LoadAndCreateFragmentShader(instance->m_ShaderStages[1], shaderData[1]);
+
+			/**** BEGIN more advanced shader setup ****
+
 			instance->Reflect(VK_SHADER_STAGE_VERTEX_BIT, shaderData[0]);
 			instance->Reflect(VK_SHADER_STAGE_FRAGMENT_BIT, shaderData[1]);
 			instance->CreateDescriptors();
+
+			**** END more advanced shader setup ****/
 		}
 	}
 
