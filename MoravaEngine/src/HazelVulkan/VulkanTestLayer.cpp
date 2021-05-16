@@ -45,6 +45,7 @@ void VulkanTestLayer::OnAttach()
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Primitives/sphere.obj");
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere_hq.obj");
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere.obj");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/tree.obj");
 	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/Sphere1m.fbx");
 
 	/**** END mesh geometry ****/
