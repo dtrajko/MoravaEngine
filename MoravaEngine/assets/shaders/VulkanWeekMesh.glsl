@@ -29,5 +29,13 @@ layout(location = 0) out vec4 finalColor;
 
 void main()
 {
-	finalColor = vec4(v_Normal, 1.0);
+	float ambient = 0.2;
+	vec3 lightDir = vec3(-0.4, 0.8, 0.4);
+	float a = dot(lightDir, v_Normal);
+	float intensity = clamp(a, ambient, 1.0);
+
+	finalColor = vec4(0.0, 1.0, 1.0, 1.0);
+	finalColor.rgb *= intensity;
+
+	// finalColor.rgb = v_Normal * 0.5 + 0.5;
 }

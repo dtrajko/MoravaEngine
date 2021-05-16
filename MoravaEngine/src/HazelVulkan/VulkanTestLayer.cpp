@@ -42,9 +42,10 @@ void VulkanTestLayer::OnAttach()
 	/**** BEGIN mesh geometry ****/
 
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/suzanne.obj");
-	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Primitives/sphere.obj");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Primitives/sphere.obj");
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere_hq.obj");
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere.obj");
+	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/Sphere1m.fbx");
 
 	/**** END mesh geometry ****/
 }
@@ -159,7 +160,7 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 
 		// DRAW GEO HERE
 
-		/**** BEGIN triangle geometry ****/
+		/**** BEGIN triangle geometry ****
 		{
 			vulkanVB = Hazel::Ref<Hazel::VulkanVertexBuffer>(m_VertexBuffer);
 			vulkanIB = Hazel::Ref<Hazel::VulkanIndexBuffer>(m_IndexBuffer);
@@ -177,7 +178,7 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 
 			vkCmdDrawIndexed(drawCommandBuffer, 3, 1, 0, 0, 0);
 		}
-		/**** END triangle geometry ****/
+		**** END triangle geometry ****/
 
 		/**** BEGIN mesh geometry ****/
 		{

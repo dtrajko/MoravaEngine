@@ -625,15 +625,6 @@ namespace Hazel {
 			};
 		}
 
-		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
-		{
-			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
-
-			PipelineSpecification pipelineSpecification;
-			pipelineSpecification.Layout = m_VertexBufferLayout;
-			m_Pipeline = Pipeline::Create(pipelineSpecification);
-		}
-
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating an Index Buffer...");
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
 
@@ -644,6 +635,15 @@ namespace Hazel {
 			{ ShaderDataType::Float3, "a_Binormal" },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 		};
+
+		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+		{
+			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
+
+			PipelineSpecification pipelineSpecification;
+			pipelineSpecification.Layout = m_VertexBufferLayout;
+			m_Pipeline = Pipeline::Create(pipelineSpecification);
+		}
 
 		size_t totalVertices = m_IsAnimated ? m_AnimatedVertices.size() : m_StaticVertices.size();
 
