@@ -30,9 +30,9 @@ private:
 	void BuildCommandBuffer(const glm::vec4& clearColor);
 
 private:
+	Hazel::Ref<Hazel::HazelMesh> m_Mesh;
 	Hazel::Ref<Hazel::HazelShader> m_Shader;
 	Hazel::Ref<Hazel::Pipeline> m_Pipeline;
-
 	Hazel::Ref<Hazel::VertexBuffer> m_VertexBuffer;
 	Hazel::Ref<Hazel::IndexBuffer> m_IndexBuffer;
 

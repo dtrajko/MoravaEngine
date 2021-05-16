@@ -158,7 +158,7 @@ namespace Hazel {
 			// Vertex input descriptions
 			// Specifies the vertex input parameters for a pipeline
 
-			/**** BEGIN simple vertex input layout ****/
+			/**** BEGIN simple vertex input layout ****
 
 			// Vertex input binding
 			// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
@@ -168,21 +168,21 @@ namespace Hazel {
 			vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 			// Inpute attribute bindings describe shader attribute locations and memory layouts
-			std::array<VkVertexInputAttributeDescription, 2> vertexInputAttributs;
+			std::array<VkVertexInputAttributeDescription, 2> vertexInputAttributes;
 
-			vertexInputAttributs[0].binding = 0;
-			vertexInputAttributs[0].location = 0;
-			vertexInputAttributs[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-			vertexInputAttributs[0].offset = offsetof(ExampleVertex, Position);
+			vertexInputAttributes[0].binding = 0;
+			vertexInputAttributes[0].location = 0;
+			vertexInputAttributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+			vertexInputAttributes[0].offset = offsetof(ExampleVertex, Position);
 
-			vertexInputAttributs[1].binding = 0;
-			vertexInputAttributs[1].location = 1;
-			vertexInputAttributs[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-			vertexInputAttributs[1].offset = offsetof(ExampleVertex, Color);
+			vertexInputAttributes[1].binding = 0;
+			vertexInputAttributes[1].location = 1;
+			vertexInputAttributes[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+			vertexInputAttributes[1].offset = offsetof(ExampleVertex, Color);
 
-			/**** END simple vertex input layout ****/
+			**** END simple vertex input layout ****/
 
-			/**** BEGIN more advanced vertex input layout ****
+			/**** BEGIN more advanced vertex input layout ****/
 
 			// Vertex input binding
 			// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
@@ -192,42 +192,42 @@ namespace Hazel {
 			vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 			// Inpute attribute bindings describe shader attribute locations and memory layouts
-			std::array<VkVertexInputAttributeDescription, 5> vertexInputAttributs;
+			std::array<VkVertexInputAttributeDescription, 5> vertexInputAttributes;
 
-			vertexInputAttributs[0].binding = 0;
-			vertexInputAttributs[0].location = 0;
-			vertexInputAttributs[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-			vertexInputAttributs[0].offset = offsetof(Vertex, Position);
+			vertexInputAttributes[0].binding = 0;
+			vertexInputAttributes[0].location = 0;
+			vertexInputAttributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+			vertexInputAttributes[0].offset = offsetof(Vertex, Position);
 
-			vertexInputAttributs[1].binding = 0;
-			vertexInputAttributs[1].location = 1;
-			vertexInputAttributs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-			vertexInputAttributs[1].offset = offsetof(Vertex, Normal);
+			vertexInputAttributes[1].binding = 0;
+			vertexInputAttributes[1].location = 1;
+			vertexInputAttributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+			vertexInputAttributes[1].offset = offsetof(Vertex, Normal);
 
-			vertexInputAttributs[2].binding = 0;
-			vertexInputAttributs[2].location = 2;
-			vertexInputAttributs[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-			vertexInputAttributs[2].offset = offsetof(Vertex, Tangent);
+			vertexInputAttributes[2].binding = 0;
+			vertexInputAttributes[2].location = 2;
+			vertexInputAttributes[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+			vertexInputAttributes[2].offset = offsetof(Vertex, Tangent);
 
-			vertexInputAttributs[3].binding = 0;
-			vertexInputAttributs[3].location = 3;
-			vertexInputAttributs[3].format = VK_FORMAT_R32G32B32_SFLOAT;
-			vertexInputAttributs[3].offset = offsetof(Vertex, Binormal);
+			vertexInputAttributes[3].binding = 0;
+			vertexInputAttributes[3].location = 3;
+			vertexInputAttributes[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+			vertexInputAttributes[3].offset = offsetof(Vertex, Binormal);
 
-			vertexInputAttributs[4].binding = 0;
-			vertexInputAttributs[4].location = 4;
-			vertexInputAttributs[4].format = VK_FORMAT_R32G32_SFLOAT;
-			vertexInputAttributs[4].offset = offsetof(Vertex, Texcoord);
+			vertexInputAttributes[4].binding = 0;
+			vertexInputAttributes[4].location = 4;
+			vertexInputAttributes[4].format = VK_FORMAT_R32G32_SFLOAT;
+			vertexInputAttributes[4].offset = offsetof(Vertex, Texcoord);
 
-			**** END more advanced vertex input layout ****/
+			/**** END more advanced vertex input layout ****/
 
 			// Vertex input state used for pipeline creation
 			VkPipelineVertexInputStateCreateInfo vertexInputState = {};
 			vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 			vertexInputState.vertexBindingDescriptionCount = 1;
 			vertexInputState.pVertexBindingDescriptions = &vertexInputBinding;
-			vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributs.size());
-			vertexInputState.pVertexAttributeDescriptions = vertexInputAttributs.data();
+			vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributes.size());
+			vertexInputState.pVertexAttributeDescriptions = vertexInputAttributes.data();
 
 			const auto& shaderStages = vulkanShader->GetShaderStages(); // used in Vulkan Week
 			// const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos(); // used in more recent versions
