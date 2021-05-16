@@ -152,13 +152,10 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 		VkBuffer ibBuffer = vulkanIB->GetVulkanBuffer();
 		vkCmdBindIndexBuffer(drawCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		vkCmdDrawIndexed(drawCommandBuffer, 3, 1, 0, 0, 1);
+		// vkCmdBindDescriptorSets
+		// vkCmdPushConstants
 
-		// vkCmdBindVertexBuffers ?
-		// vkCmdBindIndexBuffer ?
-		// vkCmdBindDescriptorSets ?
-		// vkCmdPushConstants ?
-		// vkCmdDrawIndexed ?
+		vkCmdDrawIndexed(drawCommandBuffer, 3, 1, 0, 0, 1);
 
 		vkCmdEndRenderPass(drawCommandBuffer);
 
