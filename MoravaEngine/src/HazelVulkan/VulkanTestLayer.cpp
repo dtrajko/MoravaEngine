@@ -26,8 +26,8 @@ void VulkanTestLayer::OnAttach()
 	/**** BEGIN triangle geometry ****/
 
 	Hazel::Vertex vertices[3] = {
-		{{ -0.5f,  0.0f, 0.0f }, { 0.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f }},
-		{{  0.5f,  0.0f, 0.0f }, { 1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f }},
+		{{ -0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f }},
+		{{  0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f }},
 		{{  0.0f,  0.5f, 0.0f }, { 1.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f }},
 	};
 
@@ -41,7 +41,10 @@ void VulkanTestLayer::OnAttach()
 
 	/**** BEGIN mesh geometry ****/
 
-	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/suzanne.obj");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/suzanne.obj");
+	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Primitives/sphere.obj");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere_hq.obj");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere.obj");
 
 	/**** END mesh geometry ****/
 }
@@ -89,8 +92,9 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 	auto pipeline = m_Pipeline;
 	auto vulkanVB = Hazel::Ref<Hazel::VulkanVertexBuffer>(m_VertexBuffer);
 	auto vulkanIB = Hazel::Ref<Hazel::VulkanIndexBuffer>(m_IndexBuffer);
+	auto mesh = m_Mesh;
 
-	Hazel::HazelRenderer::Submit([clearColor, pipeline, vulkanVB, vulkanIB]() mutable
+	Hazel::HazelRenderer::Submit([=]() mutable
 	{
 	});
 
@@ -155,44 +159,42 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 
 		// DRAW GEO HERE
 
-		/**** BEGIN triangle geometry ****
+		/**** BEGIN triangle geometry ****/
+		{
+			vulkanVB = Hazel::Ref<Hazel::VulkanVertexBuffer>(m_VertexBuffer);
+			vulkanIB = Hazel::Ref<Hazel::VulkanIndexBuffer>(m_IndexBuffer);
 
-		vulkanVB = Hazel::Ref<Hazel::VulkanVertexBuffer>(m_VertexBuffer);
-		vulkanIB = Hazel::Ref<Hazel::VulkanIndexBuffer>(m_IndexBuffer);
+			VkBuffer vbBuffer = vulkanVB->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, &vbBuffer, offsets);
 
-		VkBuffer vbBuffer = vulkanVB->GetVulkanBuffer();
-		VkDeviceSize offsets[1] = { 0 };
-		vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, &vbBuffer, offsets);
+			VkBuffer ibBuffer = vulkanIB->GetVulkanBuffer();
+			vkCmdBindIndexBuffer(drawCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
+			uint32_t indexCount = vulkanIB->GetCount();
 
-		VkBuffer ibBuffer = vulkanIB->GetVulkanBuffer();
-		vkCmdBindIndexBuffer(drawCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
-		uint32_t indexCount = vulkanIB->GetCount();
+			// vkCmdBindDescriptorSets
+			// vkCmdPushConstants
 
-		// vkCmdBindDescriptorSets
-		// vkCmdPushConstants
-
-		vkCmdDrawIndexed(drawCommandBuffer, 3, 1, 0, 0, 1);
-
-		**** END triangle geometry ****/
+			vkCmdDrawIndexed(drawCommandBuffer, 3, 1, 0, 0, 0);
+		}
+		/**** END triangle geometry ****/
 
 		/**** BEGIN mesh geometry ****/
+		{
+			auto vulkanMeshVB = Hazel::Ref<Hazel::VulkanVertexBuffer>(mesh->GetVertexBuffer());
+			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
 
-		vulkanVB = Hazel::Ref<Hazel::VulkanVertexBuffer>(m_Mesh->GetVertexBuffer());
-		vulkanIB = Hazel::Ref<Hazel::VulkanIndexBuffer>(m_Mesh->GetIndexBuffer());
+			auto vulkanMeshIB = Hazel::Ref<Hazel::VulkanIndexBuffer>(mesh->GetIndexBuffer());
+			VkBuffer ibMeshBuffer = vulkanMeshIB->GetVulkanBuffer();
+			vkCmdBindIndexBuffer(drawCommandBuffer, ibMeshBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		VkBuffer vbBuffer = vulkanVB->GetVulkanBuffer();
-		VkDeviceSize offsets[1] = { 0 };
-		vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, &vbBuffer, offsets);
+			// vkCmdBindDescriptorSets
+			// vkCmdPushConstants
 
-		VkBuffer ibBuffer = vulkanIB->GetVulkanBuffer();
-		vkCmdBindIndexBuffer(drawCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
-		uint32_t indexCount = vulkanIB->GetCount();
-
-		// vkCmdBindDescriptorSets
-		// vkCmdPushConstants
-
-		vkCmdDrawIndexed(drawCommandBuffer, indexCount, 1, 0, 0, 1);
-
+			vkCmdDrawIndexed(drawCommandBuffer, vulkanMeshIB->GetCount(), 1, 0, 0, 0);
+		}
 		/**** END mesh geometry ****/
 
 		vkCmdEndRenderPass(drawCommandBuffer);
