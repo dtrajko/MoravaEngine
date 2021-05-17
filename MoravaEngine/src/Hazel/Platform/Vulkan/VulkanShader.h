@@ -126,13 +126,15 @@ namespace Hazel {
 		void LoadAndCreateVertexShader(VkPipelineShaderStageCreateInfo& shaderStage, const std::vector<uint32_t>& shaderData);
 		void LoadAndCreateFragmentShader(VkPipelineShaderStageCreateInfo& shaderStage, const std::vector<uint32_t>& shaderData);
 
-		void ReflectVulkanWeek();
+		void ReflectVulkanWeek(); // similar to CreateDescriptorsVulkanWeek (Descriptor Pool and Descriptor Sets)
 		void Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData);
 
 		void CreateDescriptors();
-		void CreateDescriptorsVulkanWeek(); // Simplified version of CreateDescriptors() for drawing a triangle, Vulkan Week
 
 		void AllocateUniformBuffer(UniformBuffer& dst);
+
+		// temporary for Vulkan Week 4 (remove later)
+		UniformBuffer CreateUniformBuffer(uint32_t size);
 
 	private:
 		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageCreateInfos;
@@ -152,6 +154,7 @@ namespace Hazel {
 		VkDescriptorSetLayout m_DescriptorSetLayout;
 		VkDescriptorSet m_DescriptorSet;
 		VkDescriptorPool m_DescriptorPool;
+
 	};
 
 }

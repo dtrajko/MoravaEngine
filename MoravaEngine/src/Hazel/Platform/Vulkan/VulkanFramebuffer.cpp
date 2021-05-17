@@ -78,7 +78,7 @@ namespace Hazel {
 						//instance->m_Attachments.clear();
 					}
 
-					VulkanAllocator allocator(device, "Framebuffer");
+					VulkanAllocator allocator(std::string("Framebuffer"));
 
 					std::vector<VkAttachmentDescription> attachmentDescriptions;
 					attachmentDescriptions.reserve(instance->m_Attachments.size());

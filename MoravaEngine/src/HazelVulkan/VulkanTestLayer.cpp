@@ -3,6 +3,8 @@
 #include "Hazel/Platform/Vulkan/VulkanContext.h"
 #include "Hazel/Platform/Vulkan/VulkanVertexBuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanIndexBuffer.h"
+#include "Hazel/Platform/Vulkan/VulkanShader.h"
+#include "Hazel/Platform/Vulkan/VulkanSwapChain.h"
 
 #include "Core/Application.h"
 #include "HazelVulkan/ExampleVertex.h"
@@ -102,6 +104,16 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor)
 
 	Hazel::Ref<Hazel::VulkanContext> context = Hazel::Ref<Hazel::VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
 	Hazel::VulkanSwapChain& swapChain = context->GetSwapChain();
+
+	Hazel::Ref<Hazel::VulkanShader> shader = Hazel::Ref<Hazel::VulkanShader>(pipeline->GetSpecification().Shader);
+	void* ubPtr = shader->MapUniformBuffer(0);
+
+	glm::mat4 proj = glm::perspectiveFov(45.0f, (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.01f, 1000.0f);
+	glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -4.0f)));
+	glm::mat4 viewProj = proj * view;
+	memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
+
+	shader->UnmapUniformBuffer(0);
 
 	VkCommandBufferBeginInfo cmdBufInfo = {};
 	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

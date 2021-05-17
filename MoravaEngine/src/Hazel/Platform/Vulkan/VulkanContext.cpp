@@ -112,7 +112,7 @@ namespace Hazel {
 		m_Device = Ref<VulkanDevice>::Create(m_PhysicalDevice, enabledFeatures);
 
 		// Why is this here?
-		m_Allocator = VulkanAllocator(m_Device, "Default");
+		m_Allocator = VulkanAllocator(m_Device, std::string("Default"));
 		
 		m_SwapChain.Init(s_VulkanInstance, m_Device);
 		m_SwapChain.InitSurface(m_WindowHandle);

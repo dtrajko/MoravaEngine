@@ -76,7 +76,7 @@ namespace Hazel {
 		CompileOrGetVulkanBinary(shaderData, false);
 		LoadAndCreateVertexShader(m_ShaderStages[0], shaderData[0]);
 		LoadAndCreateFragmentShader(m_ShaderStages[1], shaderData[1]);
-		CreateDescriptorsVulkanWeek(); // Simplified version of CreateDescriptors() for drawing a triangle, Vulkan Week
+		ReflectVulkanWeek(); // very similar to CreateDescriptorsVulkanWeek, Vulkan Week 4
 
 		/**** BEGIN more advanced shader setup ****
 
@@ -129,6 +129,7 @@ namespace Hazel {
 		shaderStage.pName = "main";
 	}
 
+	// very similar to CreateDescriptorsVulkanWeek (DescriptorPool and DescriptorSetLayout)
 	void VulkanShader::ReflectVulkanWeek()
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
@@ -139,13 +140,60 @@ namespace Hazel {
 		layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 		layoutBinding.pImmutableSamplers = nullptr;
 
-		VkDescriptorSetLayoutCreateInfo descriptorLayout;
+		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
 		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		descriptorLayout.pNext = nullptr;
 		descriptorLayout.bindingCount = 1;
 		descriptorLayout.pBindings = &layoutBinding;
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayout));
+
+		// Create uniform buffer (temporary code Vulkan Week 4)
+		const uint32_t UNIFORM_BUFFER_SIZE = sizeof(glm::mat4);
+		UniformBuffer uniformBuffer = CreateUniformBuffer(UNIFORM_BUFFER_SIZE);
+		m_UniformBuffers.insert(std::pair(0, uniformBuffer));
+
+		// We need to tell the API the number of max. requested descriptors per type
+		VkDescriptorPoolSize typeCounts[1];
+		typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		typeCounts[0].descriptorCount = 1;
+
+		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
+		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		descriptorPoolInfo.pNext = nullptr;
+		descriptorPoolInfo.poolSizeCount = 1;
+		descriptorPoolInfo.pPoolSizes = typeCounts;
+		descriptorPoolInfo.maxSets = 1;
+
+		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool));
+
+		// Descriptor set - this shouldn't be in the shader class
+
+		// Allocate a new descriptor set from the global descriptor pool
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = m_DescriptorPool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &m_DescriptorSetLayout;
+
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &m_DescriptorSet));
+
+		// Update the descriptor set determining the shader binding points
+		// For every binding point used in a shader there needs to be one
+		// descriptor set matching that binding point
+		
+		VkWriteDescriptorSet writeDescriptorSet = {};
+
+		// Binding 0 : Uniform buffer
+		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSet.dstSet = m_DescriptorSet;
+		writeDescriptorSet.descriptorCount = 1;
+		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		writeDescriptorSet.pBufferInfo = &m_UniformBuffers[0].Descriptor;
+		// Binds this uniform buffer to binding point 0
+		writeDescriptorSet.dstBinding = 0;
+
+		vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
 	}
 
 	void VulkanShader::Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData)
@@ -230,43 +278,6 @@ namespace Hazel {
 		}
 
 		HZ_CORE_TRACE("===========================");
-	}
-
-	// Simplified version of CreateDescriptors() for drawing a triangle, Vulkan Week
-	void VulkanShader::CreateDescriptorsVulkanWeek()
-	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-		// Descriptor Pool
-
-		VkDescriptorPoolSize typeCounts[1];
-		typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		typeCounts[0].descriptorCount = 1;
-
-		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
-		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		descriptorPoolInfo.pNext = nullptr;
-		descriptorPoolInfo.poolSizeCount = 1;
-		descriptorPoolInfo.pPoolSizes = typeCounts;
-		descriptorPoolInfo.maxSets = 1;
-
-		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool));
-
-		// Descriptor Set Layout
-
-		VkDescriptorSetLayoutBinding layoutBinding = {};
-		layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		layoutBinding.descriptorCount = 1;
-		layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-		layoutBinding.pImmutableSamplers = nullptr;
-
-		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
-		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorLayout.pNext = nullptr;
-		descriptorLayout.bindingCount = 1;
-		descriptorLayout.pBindings = &layoutBinding;
-
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayout));
 	}
 
 	void VulkanShader::CreateDescriptors()
@@ -434,7 +445,7 @@ namespace Hazel {
 		// This buffer will be used as a uniform buffer
 		bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
-		VulkanAllocator allocator(device, "UniformBuffer");
+		VulkanAllocator allocator(std::string("UniformBuffer"));
 
 		// Create a new buffer
 		VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &uniformBuffer.Buffer));
@@ -450,6 +461,50 @@ namespace Hazel {
 		uniformBuffer.Descriptor.buffer = uniformBuffer.Buffer;
 		uniformBuffer.Descriptor.offset = 0;
 		uniformBuffer.Descriptor.range = uniformBuffer.Size;
+	}
+
+	// temporary for Vulkan Week 4 (remove later, use AllocateUniformBuffer instead)
+	VulkanShader::UniformBuffer VulkanShader::CreateUniformBuffer(uint32_t size)
+	{
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+		UniformBuffer uniformBuffer;
+		uniformBuffer.Size = size;
+
+		// Prepare and initialize an uniform buffer block containing shader uniforms
+		// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
+		VkMemoryRequirements memoryRequirements;
+
+		// Vertex shader uniform buffer block
+		VkBufferCreateInfo bufferInfo = {};
+		VkMemoryAllocateInfo allocInfo = {};
+
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.pNext = nullptr;
+		allocInfo.allocationSize = 0;
+		allocInfo.memoryTypeIndex = 0;
+
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = size;
+		// This buffer will be used as an uniform buffer
+		bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+		VulkanAllocator allocator(std::string("UniformBuffer"));
+
+		// Create a new buffer
+		VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &uniformBuffer.Buffer));
+		vkGetBufferMemoryRequirements(device, uniformBuffer.Buffer, &memoryRequirements);
+		allocInfo.allocationSize = memoryRequirements.size;
+
+		allocator.Allocate(memoryRequirements, &uniformBuffer.Memory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		VK_CHECK_RESULT(vkBindBufferMemory(device, uniformBuffer.Buffer, uniformBuffer.Memory, 0));
+
+		// Store information in the uniforms's descriptor that is used by the descriptor set
+		uniformBuffer.Descriptor.buffer = uniformBuffer.Buffer;
+		uniformBuffer.Descriptor.offset = 0;
+		uniformBuffer.Descriptor.range = size;
+
+		return uniformBuffer;
 	}
 
 	void VulkanShader::CompileOrGetVulkanBinary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile)
@@ -689,12 +744,12 @@ namespace Hazel {
 
 	const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanShader::GetShaderBuffers() const
 	{
-		return {};
+		return std::unordered_map<std::string, Hazel::ShaderBuffer>();
 	}
 
 	const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& VulkanShader::GetResources() const
 	{
-		return {};
+		return std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>();
 	}
 
 	void VulkanShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)
@@ -713,6 +768,7 @@ namespace Hazel {
 	void VulkanShader::UnmapUniformBuffer(uint32_t bindingPoint)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
 		vkUnmapMemory(device, m_UniformBuffers[bindingPoint].Memory);
 	}
 

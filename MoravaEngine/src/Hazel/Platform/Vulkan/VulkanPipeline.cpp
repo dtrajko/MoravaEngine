@@ -4,8 +4,6 @@
 #include "VulkanContext.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 
-#include "HazelVulkan/ExampleVertex.h"
-
 
 namespace Hazel {
 
@@ -72,13 +70,7 @@ namespace Hazel {
 			pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 			// The layout used for this pipeline (can be shared among multiple pipelines using the same layout)
 
-			/**** BEGIN simple setup ****
-			pipelineCreateInfo.layout = nullptr;
-			**** END simple setup ****/
-
-			/**** BEGIN more advanced setup ****/
 			pipelineCreateInfo.layout = m_PipelineLayout;
-			/**** END more advanced setup ****/
 
 			// Renderpass this pipeline is attached to
 			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
@@ -158,32 +150,6 @@ namespace Hazel {
 			// Vertex input descriptions
 			// Specifies the vertex input parameters for a pipeline
 
-			/**** BEGIN simple vertex input layout ****
-
-			// Vertex input binding
-			// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
-			VkVertexInputBindingDescription vertexInputBinding = {};
-			vertexInputBinding.binding = 0;
-			vertexInputBinding.stride = sizeof(ExampleVertex);
-			vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-			// Inpute attribute bindings describe shader attribute locations and memory layouts
-			std::array<VkVertexInputAttributeDescription, 2> vertexInputAttributes;
-
-			vertexInputAttributes[0].binding = 0;
-			vertexInputAttributes[0].location = 0;
-			vertexInputAttributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-			vertexInputAttributes[0].offset = offsetof(ExampleVertex, Position);
-
-			vertexInputAttributes[1].binding = 0;
-			vertexInputAttributes[1].location = 1;
-			vertexInputAttributes[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-			vertexInputAttributes[1].offset = offsetof(ExampleVertex, Color);
-
-			**** END simple vertex input layout ****/
-
-			/**** BEGIN more advanced vertex input layout ****/
-
 			// Vertex input binding
 			// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
 			VkVertexInputBindingDescription vertexInputBinding = {};
@@ -218,8 +184,6 @@ namespace Hazel {
 			vertexInputAttributes[4].location = 4;
 			vertexInputAttributes[4].format = VK_FORMAT_R32G32_SFLOAT;
 			vertexInputAttributes[4].offset = offsetof(Vertex, Texcoord);
-
-			/**** END more advanced vertex input layout ****/
 
 			// Vertex input state used for pipeline creation
 			VkPipelineVertexInputStateCreateInfo vertexInputState = {};

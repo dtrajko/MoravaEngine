@@ -35,7 +35,7 @@ namespace Hazel {
 	{
 		m_Instance = instance;
 		m_Device = device;
-		m_Allocator = VulkanAllocator(device, "SwapChain");
+		m_Allocator = VulkanAllocator(m_Device, std::string("SwapChain"));
 
 		VkDevice vulkanDevice = m_Device->GetVulkanDevice();
 		GET_DEVICE_PROC_ADDR(vulkanDevice, CreateSwapchainKHR);
