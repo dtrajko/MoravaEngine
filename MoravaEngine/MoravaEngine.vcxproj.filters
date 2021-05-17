@@ -2369,5 +2369,11 @@
     <None Include="Shaders\LearnOpenGL\ssao_lighting.fs">
       <Filter>Resources\Shaders\LearnOpenGL</Filter>
     </None>
+    <None Include="assets\shaders\VulkanWeekMesh.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="assets\shaders\VulkanWeekTriangle.glsl">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

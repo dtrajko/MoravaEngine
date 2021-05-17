@@ -78,6 +78,8 @@ namespace Hazel {
 		void UnmapUniformBuffer(uint32_t bindingPoint);
 
 		VkDescriptorSet GetDescriptorSet() { return m_DescriptorSet; }
+		VkDescriptorSetLayout GetDescriptorSetLayout() { return m_DescriptorSetLayout; }
+
 		std::vector<VkDescriptorSetLayout> GetAllDescriptorSetLayouts();
 		UniformBuffer& GetUniformBuffer(uint32_t binding = 0, uint32_t set = 0)
 		{
@@ -91,7 +93,6 @@ namespace Hazel {
 
 			return (uint32_t)m_ShaderDescriptorSets.at(set).UniformBuffers.size();
 		}
-		VkDescriptorSetLayout GetDescriptorSetLayout() { return m_DescriptorSetLayout; }
 
 		struct ShaderDescriptorSet
 		{

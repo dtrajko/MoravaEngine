@@ -19,8 +19,8 @@ layout (std140, binding = 0) uniform Camera
 
 void main()
 {
-	gl_Position = vec4(a_Position, 1.0);
-	// gl_Position = ViewProj * vec4(a_Position, 1.0);
+	// gl_Position = vec4(a_Position, 1.0);
+	gl_Position = ViewProj * vec4(a_Position, 1.0);
 	v_TexCoord = a_TexCoord;
 	v_Normal = a_Normal;
 }
@@ -37,11 +37,9 @@ void main()
 {
 	float ambient = 0.2;
 	vec3 lightDir = vec3(-0.4, 0.8, 0.4);
-	float a = dot(lightDir, v_Normal);
-	float intensity = clamp(a, ambient, 1.0);
+	float intensity = clamp(dot(lightDir, v_Normal), ambient, 1.0);
 
-	finalColor = vec4(0.0, 1.0, 1.0, 1.0);
-	finalColor.rgb *= intensity;
-
+	finalColor = vec4(1.0, 0.0, 1.0, 1.0);
 	// finalColor.rgb = v_Normal * 0.5 + 0.5;
+	finalColor.rgb *= intensity;
 }

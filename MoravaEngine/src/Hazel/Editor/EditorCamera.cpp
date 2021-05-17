@@ -2,6 +2,7 @@
 
 #include "Hazel/Core/KeyCodes.h"
 #include "Hazel/Core/MouseCodes.h"
+#include "Hazel/Events/ApplicationEvent.h"
 
 #include "Core/Input.h"
 
@@ -132,6 +133,15 @@ namespace Hazel {
 	{
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<MouseScrolledEvent>(HZ_BIND_EVENT_FN(EditorCamera::OnMouseScroll));
+
+		if (e.GetEventType() == EventType::WindowResize)
+		{
+			WindowResizeEvent& event = (WindowResizeEvent&)e;
+			if (event.GetWidth() != 0 && event.GetHeight() != 0)
+			{
+				SetViewportSize((float)event.GetWidth(), (float)event.GetHeight());
+			}
+		}
 	}
 
 	void EditorCamera::SetViewportSize(float width, float height)
@@ -141,6 +151,7 @@ namespace Hazel {
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 
+		UpdateView();
 		UpdateProjection();
 	}
 

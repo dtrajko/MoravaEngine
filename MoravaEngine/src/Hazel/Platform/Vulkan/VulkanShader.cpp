@@ -473,7 +473,6 @@ namespace Hazel {
 
 		// Prepare and initialize an uniform buffer block containing shader uniforms
 		// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
-		VkMemoryRequirements memoryRequirements;
 
 		// Vertex shader uniform buffer block
 		VkBufferCreateInfo bufferInfo = {};
@@ -493,6 +492,8 @@ namespace Hazel {
 
 		// Create a new buffer
 		VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &uniformBuffer.Buffer));
+
+		VkMemoryRequirements memoryRequirements;
 		vkGetBufferMemoryRequirements(device, uniformBuffer.Buffer, &memoryRequirements);
 		allocInfo.allocationSize = memoryRequirements.size;
 

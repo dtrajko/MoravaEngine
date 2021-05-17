@@ -24,8 +24,8 @@
 
 SceneHazelVulkan::SceneHazelVulkan()
 {
-    sceneSettings.cameraPosition     = glm::vec3(-24.0f, 5.0f, 0.0f);
-    sceneSettings.cameraStartYaw     = 0.0f;
+    sceneSettings.cameraPosition     = glm::vec3(0.0f, 100.0f, 300.0f);
+    sceneSettings.cameraStartYaw     = -90.0f;
     sceneSettings.cameraStartPitch   = 0.0f;
     sceneSettings.cameraMoveSpeed    = 2.0f;
     sceneSettings.waterHeight        = 0.0f;
@@ -206,7 +206,7 @@ void SceneHazelVulkan::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
     std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     float deltaTime = Timer::Get()->GetDeltaTime();
-    m_VulkanTestLayer->OnUpdate(deltaTime);
+    m_VulkanTestLayer->OnUpdate(deltaTime, m_Camera->GetViewMatrix());
 
     VulkanWeekRenderer::WaitAndRender();
 

@@ -18,7 +18,7 @@ public:
 	void OnAttach();
 	void OnDetach();
 
-	void OnUpdate(Hazel::Timestep ts);
+	void OnUpdate(Hazel::Timestep ts, glm::mat4 viewMatrix);
 	void OnImGuiRender(Window* mainWindow, Scene* scene);
 
 	void OnEvent(Event& event);
@@ -27,7 +27,7 @@ public:
 	void OnRender(Window* mainWindow);
 
 private:
-	void BuildCommandBuffer(const glm::vec4& clearColor);
+	void BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 viewMatrix);
 
 private:
 	Hazel::Ref<Hazel::HazelMesh> m_Mesh;
@@ -35,5 +35,7 @@ private:
 	Hazel::Ref<Hazel::Pipeline> m_Pipeline;
 	Hazel::Ref<Hazel::VertexBuffer> m_VertexBuffer;
 	Hazel::Ref<Hazel::IndexBuffer> m_IndexBuffer;
+
+	Hazel::EditorCamera m_Camera;
 
 };
