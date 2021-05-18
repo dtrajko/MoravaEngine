@@ -119,31 +119,6 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 
 	Hazel::Ref<Hazel::VulkanShader> shader = Hazel::Ref<Hazel::VulkanShader>(pipeline->GetSpecification().Shader);
 	Hazel::VulkanSwapChain& swapChain = context->GetSwapChain();
 
-	{
-		// uniform buffer binding 0 uniform Camera
-
-		void* ubPtr = shader->MapUniformBuffer(0);
-
-		glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
-		// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
-		glm::mat4 viewProj = proj * viewMatrix; // Runtime camera
-		// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
-		memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
-
-		shader->UnmapUniformBuffer(0);
-	}
-
-	{
-		// uniform buffer binding 1 uniform Transform
-
-		void* ubPtrTransform = shader->MapUniformBuffer(1);
-
-		glm::mat4 transform = glm::scale(glm::mat4(1.0f), glm::vec3(10.0f, 2.0f, 10.0f));
-		memcpy(ubPtrTransform, &transform, sizeof(glm::mat4));
-
-		shader->UnmapUniformBuffer(1);
-	}
-
 	VkCommandBufferBeginInfo cmdBufInfo = {};
 	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	cmdBufInfo.pNext = nullptr;
@@ -213,6 +188,17 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 
 			VkBuffer ibMeshBuffer = vulkanMeshIB->GetVulkanBuffer();
 			vkCmdBindIndexBuffer(drawCommandBuffer, ibMeshBuffer, 0, VK_INDEX_TYPE_UINT32);
 
+			{
+				// uniform buffer binding 0 uniform Camera
+				void* ubPtr = shader->MapUniformBuffer(0);
+				glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
+				// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
+				glm::mat4 viewProj = proj * viewMatrix; // Runtime camera
+				// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
+				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
+				shader->UnmapUniformBuffer(0);
+			}
+
 			auto& submeshes = mesh->GetSubmeshes();
 			for (Hazel::Submesh& submesh : submeshes)
 			{
@@ -223,8 +209,15 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 
 				VkDescriptorSet descriptorSet = shader->GetDescriptorSet();
 				vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &descriptorSet, 0, nullptr);
 
+				{
+					// uniform buffer binding 1 uniform Transform
+					void* ubPtr = shader->MapUniformBuffer(1);
+					memcpy(ubPtr, &submesh.Transform, sizeof(glm::mat4));
+					shader->UnmapUniformBuffer(1);
+				}
+
 				// Push Constants
-				glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+				glm::vec4 color = { 0.0f, 1.0f, 0.0f, 1.0f };
 				// vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
 				// vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
 

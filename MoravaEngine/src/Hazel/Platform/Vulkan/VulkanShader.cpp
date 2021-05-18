@@ -134,6 +134,9 @@ namespace Hazel {
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
+		//////////////////////////////////////////////////////////////////////
+		// Descriptor Set Layout
+		//////////////////////////////////////////////////////////////////////
 		std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
 		layoutBindings.resize(2);
 
@@ -157,9 +160,14 @@ namespace Hazel {
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayout));
 
+		//////////////////////////////////////////////////////////////////////
+		// Uniform Buffers
+		//////////////////////////////////////////////////////////////////////
+
 		// Create uniform buffer (temporary code Vulkan Week 4) binding 0 uniform Camera
 		const uint32_t UNIFORM_BUFFER_SIZE = sizeof(glm::mat4);
 		UniformBuffer uniformBuffers[2] = {};
+
 		uniformBuffers[0] = CreateUniformBuffer(UNIFORM_BUFFER_SIZE);
 		m_UniformBuffers.insert(std::pair(0, uniformBuffers[0]));
 
@@ -167,10 +175,15 @@ namespace Hazel {
 		uniformBuffers[1] = CreateUniformBuffer(UNIFORM_BUFFER_SIZE);
 		m_UniformBuffers.insert(std::pair(1, uniformBuffers[1]));
 
+		//////////////////////////////////////////////////////////////////////
+		// Descriptor Pool
+		//////////////////////////////////////////////////////////////////////
+
 		// We need to tell the API the number of max. requested descriptors per type
 		VkDescriptorPoolSize typeCounts[1];
+
 		typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		typeCounts[0].descriptorCount = 1;
+		typeCounts[0].descriptorCount = 2;
 
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -181,7 +194,9 @@ namespace Hazel {
 
 		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool));
 
-		// Descriptor set - this shouldn't be in the shader class
+		//////////////////////////////////////////////////////////////////////
+		// Descriptor Sets - these shouldn't be in the shader class
+		//////////////////////////////////////////////////////////////////////
 
 		// Allocate a new descriptor set from the global descriptor pool
 		VkDescriptorSetAllocateInfo allocInfo = {};
@@ -191,6 +206,10 @@ namespace Hazel {
 		allocInfo.pSetLayouts = &m_DescriptorSetLayout;
 
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &m_DescriptorSet));
+
+		//////////////////////////////////////////////////////////////////////
+		// Write Descriptor Sets - these shouldn't be in the shader class
+		//////////////////////////////////////////////////////////////////////
 
 		// Update the descriptor set determining the shader binding points
 		// For every binding point used in a shader there needs to be one
@@ -396,7 +415,7 @@ namespace Hazel {
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = m_DescriptorPool;
-		allocInfo.descriptorSetCount = 1;
+		allocInfo.descriptorSetCount = 2;
 		allocInfo.pSetLayouts = &m_DescriptorSetLayout;
 
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
