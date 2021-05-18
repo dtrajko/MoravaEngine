@@ -65,27 +65,12 @@ namespace Hazel {
 				glm::mat4 Transform;
 			};
 
-			struct PushConstantRange
-			{
-				VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
-				uint32_t Offset = 0;
-				uint32_t Size = 0;
-			};
+			VkPushConstantRange vulkanPushConstantRange = {};
+			vulkanPushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+			vulkanPushConstantRange.offset = 0;
+			vulkanPushConstantRange.size = sizeof(PushBlock);
 
-			const std::vector<PushConstantRange> pushConstantRanges;
 			std::vector<VkPushConstantRange> vulkanPushConstantRanges;
-
-			PushConstantRange pushConstantRange;
-			pushConstantRange.ShaderStage = VK_SHADER_STAGE_VERTEX_BIT;
-			pushConstantRange.Offset = 0;
-			pushConstantRange.Size = sizeof(PushBlock);
-
-			VkPushConstantRange vulkanPushConstantRange;
-
-			vulkanPushConstantRange.stageFlags = pushConstantRange.ShaderStage;
-			vulkanPushConstantRange.offset = pushConstantRange.Offset;
-			vulkanPushConstantRange.size = pushConstantRange.Size;
-
 			vulkanPushConstantRanges.push_back(vulkanPushConstantRange);
 
 			pPipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(vulkanPushConstantRanges.size());
@@ -94,9 +79,7 @@ namespace Hazel {
 			// pPipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(vulkanPushConstantRanges.size());
 			// pPipelineLayoutCreateInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
 
-			/**** BEGIN more advanced setup ****/
 			VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &m_PipelineLayout));
-			/**** END more advanced setup ****/
 
 			// Create the graphics pipeline used in this example
 			// Vulkan uses the concept of rendering pipelines to encapsulate fixed states, replacing OpenGL's complex state machine
