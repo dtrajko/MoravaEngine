@@ -59,7 +59,7 @@ namespace Hazel {
 		// TODO: Extract all validation into separate class
 		if (s_Validation)
 		{
-			const char* validationLayerName = "VK_LAYER_KHRONOS_validation";
+			const char* validationLayerName = "VK_LAYER_KHRONOS_validation"; // VK_LAYER_LUNARG_standard_validation
 			// Check if this layer is available at instance level
 			uint32_t instanceLayerCount;
 			vkEnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);

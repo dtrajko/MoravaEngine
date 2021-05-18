@@ -181,7 +181,6 @@ namespace Hazel {
 
 		// We need to tell the API the number of max. requested descriptors per type
 		VkDescriptorPoolSize typeCounts[1];
-
 		typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		typeCounts[0].descriptorCount = 2;
 

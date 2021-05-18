@@ -58,11 +58,11 @@ namespace Hazel {
 			std::vector<VkExtensionProperties> extensions(extCount);
 			if (vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extCount, &extensions.front()) == VK_SUCCESS)
 			{
-				Log::GetLogger()->trace("Selected physical device has {0} extensions", extensions.size());
+				MORAVA_CORE_TRACE("Selected physical device has {0} extensions", extensions.size());
 				for (const auto& ext : extensions)
 				{
 					m_SupportedExtensions.emplace(ext.extensionName);
-					Log::GetLogger()->trace("  {0}", ext.extensionName);
+					MORAVA_CORE_TRACE("  {0}", ext.extensionName);
 				}
 			}
 		}

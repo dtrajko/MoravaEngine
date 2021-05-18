@@ -217,9 +217,9 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 
 				}
 
 				// Push Constants
+				vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
 				glm::vec4 color = { 0.0f, 1.0f, 0.0f, 1.0f };
-				// vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
-				// vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
+				// vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
 
 				vkCmdDrawIndexed(drawCommandBuffer, submesh.IndexCount, 1, submesh.BaseIndex, submesh.BaseVertex, 0);
 				// vkCmdDrawIndexed(drawCommandBuffer, vulkanMeshIB->GetCount(), 1, 0, 0, 0);

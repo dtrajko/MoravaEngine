@@ -17,15 +17,15 @@ layout (std140, binding = 0) uniform Camera
 	mat4 u_ViewProj;
 };
 
-layout (std140, binding = 1) uniform Transform
+layout (std140, binding = 1) uniform UBTransform
+{
+	mat4 u_UBTransform;
+};
+
+layout (push_constant) uniform Transform
 {
 	mat4 u_Transform;
 };
-
-layout(push_constant) uniform PushConstants
-{
-	mat4 pc_Transform;
-} push_constants;
 
 void main()
 {
@@ -43,10 +43,10 @@ layout(location = 0) out vec4 finalColor;
 layout (location = 0) in vec3 v_Normal;
 layout (location = 1) in vec2 v_TexCoord;
 
-layout(push_constant) uniform PushConstants
-{
-	vec4 pc_Color;
-} push_constants;
+//	layout (push_constant) uniform Color
+//	{
+//		vec4 u_Color;
+//	};
 
 void main()
 {
