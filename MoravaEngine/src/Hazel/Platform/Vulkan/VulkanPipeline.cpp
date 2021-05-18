@@ -72,12 +72,24 @@ namespace Hazel {
 				uint32_t Size = 0;
 			};
 
-			std::vector<VkPushConstantRange> pushConstantRanges;
-			VkPushConstantRange pushConstantRange { VK_SHADER_STAGE_VERTEX_BIT, sizeof(PushBlock), 0 };
-			pushConstantRanges.push_back(pushConstantRange);
+			const std::vector<PushConstantRange> pushConstantRanges;
+			std::vector<VkPushConstantRange> vulkanPushConstantRanges;
 
-			pPipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
-			pPipelineLayoutCreateInfo.pPushConstantRanges = pushConstantRanges.data();
+			PushConstantRange pushConstantRange;
+			pushConstantRange.ShaderStage = VK_SHADER_STAGE_VERTEX_BIT;
+			pushConstantRange.Offset = 0;
+			pushConstantRange.Size = sizeof(PushBlock);
+
+			VkPushConstantRange vulkanPushConstantRange;
+
+			vulkanPushConstantRange.stageFlags = pushConstantRange.ShaderStage;
+			vulkanPushConstantRange.offset = pushConstantRange.Offset;
+			vulkanPushConstantRange.size = pushConstantRange.Size;
+
+			vulkanPushConstantRanges.push_back(vulkanPushConstantRange);
+
+			pPipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(vulkanPushConstantRanges.size());
+			pPipelineLayoutCreateInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
 
 			// pPipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(vulkanPushConstantRanges.size());
 			// pPipelineLayoutCreateInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
