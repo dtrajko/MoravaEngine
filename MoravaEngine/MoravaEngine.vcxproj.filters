@@ -660,7 +660,7 @@
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Vulkan\MoravaVulkanDevic.cpp">
+    <ClCompile Include="src\Platform\Vulkan\MoravaVulkanDevice.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanShader.cpp">

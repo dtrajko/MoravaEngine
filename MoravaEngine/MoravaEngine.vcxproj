@@ -275,7 +275,7 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandPool.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanDescriptorSet.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\MoravaVulkanDevic.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\MoravaVulkanDevice.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanFramebuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanIndexBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanPipeline.cpp" />

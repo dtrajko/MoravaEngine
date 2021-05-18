@@ -21,7 +21,11 @@ VulkanTestLayer::~VulkanTestLayer()
 
 void VulkanTestLayer::OnAttach()
 {
+	// Shaders
 	m_Shader = Hazel::HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl");
+	m_ShaderHazelPBR_Static = Hazel::HazelShader::Create("assets/shaders/VulkanWeekHazelPBR_Static.glsl");
+
+	// Graphics Pipeline
 	Hazel::PipelineSpecification pipelineSpecification;
 	pipelineSpecification.Shader = m_Shader;
 	m_Pipeline = Hazel::Pipeline::Create(pipelineSpecification);
@@ -44,15 +48,16 @@ void VulkanTestLayer::OnAttach()
 
 	/**** BEGIN mesh geometry ****/
 
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/suzanne.obj");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Primitives/sphere.obj");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere.obj");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/tree.obj");
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/Sphere1m.fbx");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/barrel.obj");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/boulder.obj");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/suzanne.obj");
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere_hq.obj");
-	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Gladiator/Gladiator.fbx");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/tree.obj");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/barrel.obj");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Old_Stove/udmheheqx_LOD0.fbx");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ShaderBall/shaderBall.fbx");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/Cerberus_LP.FBX");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Gladiator/Gladiator.fbx");
+	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/TestScene.fbx");
 
 	/**** END mesh geometry ****/
 }
@@ -114,15 +119,30 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 
 	Hazel::Ref<Hazel::VulkanShader> shader = Hazel::Ref<Hazel::VulkanShader>(pipeline->GetSpecification().Shader);
 	Hazel::VulkanSwapChain& swapChain = context->GetSwapChain();
 
-	void* ubPtr = shader->MapUniformBuffer(0);
+	{
+		// uniform buffer binding 0 uniform Camera
 
-	glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
-	// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
-	glm::mat4 viewProj = proj * viewMatrix; // Runtime camera
-	// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
-	memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
+		void* ubPtr = shader->MapUniformBuffer(0);
 
-	shader->UnmapUniformBuffer(0);
+		glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
+		// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
+		glm::mat4 viewProj = proj * viewMatrix; // Runtime camera
+		// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
+		memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
+
+		shader->UnmapUniformBuffer(0);
+	}
+
+	{
+		// uniform buffer binding 1 uniform Transform
+
+		void* ubPtrTransform = shader->MapUniformBuffer(1);
+
+		glm::mat4 transform = glm::scale(glm::mat4(1.0f), glm::vec3(10.0f, 2.0f, 10.0f));
+		memcpy(ubPtrTransform, &transform, sizeof(glm::mat4));
+
+		shader->UnmapUniformBuffer(1);
+	}
 
 	VkCommandBufferBeginInfo cmdBufInfo = {};
 	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -196,12 +216,14 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 
 			auto& submeshes = mesh->GetSubmeshes();
 			for (Hazel::Submesh& submesh : submeshes)
 			{
+				// Descriptor Sets (Uniform buffers)
 				// Bind descriptor sets describing shader binding points
 				// VkDescriptorSet* descriptorSet = (VkDescriptorSet*)m_Mesh->GetDescriptorSet();
 				VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
 				VkDescriptorSet descriptorSet = shader->GetDescriptorSet();
 				vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &descriptorSet, 0, nullptr);
 
+				// Push Constants
 				glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 				// vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
 				// vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);

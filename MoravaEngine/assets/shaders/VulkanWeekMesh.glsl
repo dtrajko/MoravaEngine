@@ -14,13 +14,18 @@ layout (location = 1) out vec2 v_TexCoord;
 
 layout (std140, binding = 0) uniform Camera
 {
-	mat4 ViewProj;
+	mat4 u_ViewProj;
+};
+
+layout (std140, binding = 1) uniform Transform
+{
+	mat4 u_Transform;
 };
 
 void main()
 {
 	// gl_Position = vec4(a_Position, 1.0);
-	gl_Position = ViewProj * vec4(a_Position, 1.0);
+	gl_Position = u_ViewProj * u_Transform * vec4(a_Position, 1.0);
 	v_TexCoord = a_TexCoord;
 	v_Normal = a_Normal;
 }

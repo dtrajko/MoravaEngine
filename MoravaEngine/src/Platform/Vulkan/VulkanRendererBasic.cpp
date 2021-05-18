@@ -145,7 +145,8 @@ void VulkanRendererBasic::EnableBlend()
 
 void VulkanRendererBasic::EnableWireframe()
 {
-	Log::GetLogger()->warn("VulkanRendererBasic::EnableBlend: Method not yet supported!");
+	// throw std::logic_error("The method or operation is not implemented.");
+	// Log::GetLogger()->warn("VulkanRendererBasic::EnableWireframe: Method not yet supported!");
 }
 
 void VulkanRendererBasic::DisableWireframe()
