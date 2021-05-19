@@ -156,6 +156,7 @@ namespace Hazel {
 			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
 			MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
 			MORAVA_CORE_TRACE("  Size: {0}", size);
+			MORAVA_CORE_TRACE("--------------------------");
 		}
 
 		MORAVA_CORE_TRACE("Push Constant Buffers:");
@@ -165,12 +166,13 @@ namespace Hazel {
 			auto& bufferType = compiler.get_type(resource.base_type_id);
 			auto bufferSize = compiler.get_declared_struct_size(bufferType);
 			int memberCount = static_cast<int>(bufferType.member_types.size());
-			uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
 
 			MORAVA_CORE_TRACE("  Name: {0}", name);
 			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
-			MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
-			MORAVA_CORE_TRACE("  Size: {0}", bufferSize);
+			// MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
+			MORAVA_CORE_TRACE("  Size: {0}", size);
+			MORAVA_CORE_TRACE("--------------------------");
 
 			for (int i = 0; i < memberCount; i++)
 			{
@@ -283,6 +285,29 @@ namespace Hazel {
 		writeDescriptorSets[1].pBufferInfo = &m_UniformBuffers[1].Descriptor;
 		// Binds this uniform buffer to binding point 1
 		writeDescriptorSets[1].dstBinding = 1;
+
+		/****
+		// Setup a descriptor image info for the current texture to be used as a combined image sampler
+		struct Texture {
+			VkImageView view;
+			VkSampler sampler;
+			VkImageLayout imageLayout;
+		} texture;
+
+		VkDescriptorImageInfo textureDescriptor;
+		textureDescriptor.imageView = texture.view;
+		textureDescriptor.sampler = texture.sampler;
+		textureDescriptor.imageLayout = texture.imageLayout;
+
+		// Binding 2 : Fragment shader texture sampler
+		writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSets[2].dstSet = m_DescriptorSet;
+		writeDescriptorSets[2].descriptorCount = 1;
+		writeDescriptorSets[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writeDescriptorSets[2].pImageInfo = &textureDescriptor;
+		// Binds this image sampler to binding point 2
+		writeDescriptorSets[2].dstBinding = 2;
+		****/
 
 		vkUpdateDescriptorSets(device, 2, writeDescriptorSets, 0, nullptr);
 	}
