@@ -60,6 +60,17 @@ void VulkanTestLayer::OnAttach()
 	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/TestScene.fbx");
 
 	/**** END mesh geometry ****/
+
+	// Random RGB values
+	srand(static_cast<unsigned>(time(0)));
+	for (uint32_t i = 0; i < 10; i++)
+	{
+		glm::vec4 randomColor = glm::vec4{ 1.0f };
+		randomColor.r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+		randomColor.g = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+		randomColor.b = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+		m_RandomColors.push_back(randomColor);
+	}
 }
 
 void VulkanTestLayer::OnDetach()
@@ -199,6 +210,7 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 
 				shader->UnmapUniformBuffer(0);
 			}
 
+			uint32_t submeshIndex = 0;
 			auto& submeshes = mesh->GetSubmeshes();
 			for (Hazel::Submesh& submesh : submeshes)
 			{
@@ -218,8 +230,7 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 
 
 				// Push Constants
 				vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
-				glm::vec4 color = { 0.0f, 1.0f, 0.0f, 1.0f };
-				// vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
+				vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &m_RandomColors[submeshIndex++]);
 
 				vkCmdDrawIndexed(drawCommandBuffer, submesh.IndexCount, 1, submesh.BaseIndex, submesh.BaseVertex, 0);
 				// vkCmdDrawIndexed(drawCommandBuffer, vulkanMeshIB->GetCount(), 1, 0, 0, 0);

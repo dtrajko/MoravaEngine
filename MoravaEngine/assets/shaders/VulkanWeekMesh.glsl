@@ -43,18 +43,18 @@ layout(location = 0) out vec4 finalColor;
 layout (location = 0) in vec3 v_Normal;
 layout (location = 1) in vec2 v_TexCoord;
 
-//	layout (push_constant) uniform Color
-//	{
-//		vec4 u_Color;
-//	};
+layout (push_constant) uniform Color
+{
+	layout(offset = 64) vec4 u_Color;
+};
 
 void main()
 {
 	float ambient = 0.2;
-	vec3 lightDir = vec3(-0.4, 0.8, 0.4);
+	vec3 lightDir = vec3(0.4, -0.8, 0.8);
 	float intensity = clamp(dot(lightDir, v_Normal), ambient, 1.0);
 
-	finalColor = vec4(1.0, 0.0, 1.0, 1.0);
+	finalColor = u_Color; // vec4(0.0, 1.0, 1.0, 1.0);
 	// finalColor.rgb = v_Normal * 0.5 + 0.5;
 	finalColor.rgb *= intensity;
 }

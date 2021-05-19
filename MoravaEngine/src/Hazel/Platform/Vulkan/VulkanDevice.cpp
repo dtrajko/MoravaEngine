@@ -42,6 +42,13 @@ namespace Hazel {
 		HZ_CORE_ASSERT(selectedPhysicalDevice, "Could not find any physical devices!");
 		m_PhysicalDevice = selectedPhysicalDevice;
 
+		// Device info
+		MORAVA_CORE_TRACE("=======================================");
+		MORAVA_CORE_TRACE(" Device info");
+		MORAVA_CORE_TRACE("   Device count: {0}", gpuCount);
+		MORAVA_CORE_TRACE("   Physical Device: {0}", m_Properties.deviceName);
+		MORAVA_CORE_TRACE("=======================================");
+
 		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_Features);
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);
 

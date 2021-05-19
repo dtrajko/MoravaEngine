@@ -39,4 +39,6 @@ private:
 
 	Hazel::EditorCamera m_Camera;
 
+	std::vector<glm::vec4> m_RandomColors;
+
 };

@@ -76,7 +76,7 @@ namespace Hazel {
 		CompileOrGetVulkanBinary(shaderData, false);
 		LoadAndCreateVertexShader(m_ShaderStages[0], shaderData[0]);
 		LoadAndCreateFragmentShader(m_ShaderStages[1], shaderData[1]);
-		ReflectVulkanWeek(); // very similar to CreateDescriptorsVulkanWeek, Vulkan Week 4
+		ReflectVulkanWeek(shaderData); // very similar to CreateDescriptorsVulkanWeek, Vulkan Week 4
 
 		/**** BEGIN more advanced shader setup ****
 
@@ -130,9 +130,59 @@ namespace Hazel {
 	}
 
 	// very similar to CreateDescriptorsVulkanWeek (DescriptorPool and DescriptorSetLayout)
-	void VulkanShader::ReflectVulkanWeek()
+	void VulkanShader::ReflectVulkanWeek(std::array<std::vector<uint32_t>, 2>& shaderData)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+		MORAVA_CORE_TRACE("==========================");
+		MORAVA_CORE_TRACE(" Vulkan Shader Reflection");
+		MORAVA_CORE_TRACE(" {0}", m_AssetPath);
+		MORAVA_CORE_TRACE("==========================");
+
+		// Vertex Shader
+		spirv_cross::Compiler compiler(shaderData[0]);
+		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+
+		MORAVA_CORE_TRACE("Uniform Buffers:");
+		for (const spirv_cross::Resource& resource : resources.uniform_buffers)
+		{
+			const auto& name = resource.name;
+			auto& bufferType = compiler.get_type(resource.base_type_id);
+			int memberCount = static_cast<uint32_t>(bufferType.member_types.size());
+			uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
+
+			MORAVA_CORE_TRACE("  Name: {0}", name);
+			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
+			MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
+			MORAVA_CORE_TRACE("  Size: {0}", size);
+		}
+
+		MORAVA_CORE_TRACE("Push Constant Buffers:");
+		for (const auto& resource : resources.push_constant_buffers)
+		{
+			const auto& name = resource.name;
+			auto& bufferType = compiler.get_type(resource.base_type_id);
+			auto bufferSize = compiler.get_declared_struct_size(bufferType);
+			int memberCount = static_cast<int>(bufferType.member_types.size());
+			uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
+
+			MORAVA_CORE_TRACE("  Name: {0}", name);
+			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
+			MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
+			MORAVA_CORE_TRACE("  Size: {0}", bufferSize);
+
+			for (int i = 0; i < memberCount; i++)
+			{
+				auto type = compiler.get_type(bufferType.member_types[i]);
+				const auto& memberName = compiler.get_member_name(bufferType.self, i);
+				auto size = compiler.get_declared_struct_member_size(bufferType, i);
+				auto offset = compiler.type_struct_member_offset(bufferType, i);
+
+			}
+		}
+
+		MORAVA_CORE_TRACE("==========================");
 
 		//////////////////////////////////////////////////////////////////////
 		// Descriptor Set Layout
