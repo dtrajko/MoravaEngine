@@ -76,7 +76,7 @@ namespace Hazel {
 		CompileOrGetVulkanBinary(shaderData, false);
 		LoadAndCreateVertexShader(m_ShaderStages[0], shaderData[0]);
 		LoadAndCreateFragmentShader(m_ShaderStages[1], shaderData[1]);
-		ReflectVulkanWeek(shaderData); // very similar to CreateDescriptorsVulkanWeek, Vulkan Week 4
+		ReflectVulkanWeek(shaderData); // very similar to CreateDescriptors()
 
 		/**** BEGIN more advanced shader setup ****
 
@@ -94,6 +94,7 @@ namespace Hazel {
 	void VulkanShader::LoadAndCreateVertexShader(VkPipelineShaderStageCreateInfo& shaderStage, const std::vector<uint32_t>& shaderData)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
 		HZ_CORE_ASSERT(shaderData.size());
 		// Create a new shader module that will be used for pipeline creation
 		VkShaderModuleCreateInfo moduleCreateInfo{};
@@ -113,6 +114,7 @@ namespace Hazel {
 	void VulkanShader::LoadAndCreateFragmentShader(VkPipelineShaderStageCreateInfo& shaderStage, const std::vector<uint32_t>& shaderData)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
 		HZ_CORE_ASSERT(shaderData.size());
 		// Create a new shader module that will be used for pipeline creation
 		VkShaderModuleCreateInfo moduleCreateInfo{};
@@ -129,7 +131,7 @@ namespace Hazel {
 		shaderStage.pName = "main";
 	}
 
-	// very similar to CreateDescriptorsVulkanWeek (DescriptorPool and DescriptorSetLayout)
+	// very similar to CreateDescriptors (Descriptor Pool, Descriptor Sets etc)
 	void VulkanShader::ReflectVulkanWeek(std::array<std::vector<uint32_t>, 2>& shaderData)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();

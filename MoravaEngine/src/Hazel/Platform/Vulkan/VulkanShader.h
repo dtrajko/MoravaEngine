@@ -127,7 +127,7 @@ namespace Hazel {
 		void LoadAndCreateVertexShader(VkPipelineShaderStageCreateInfo& shaderStage, const std::vector<uint32_t>& shaderData);
 		void LoadAndCreateFragmentShader(VkPipelineShaderStageCreateInfo& shaderStage, const std::vector<uint32_t>& shaderData);
 
-		void ReflectVulkanWeek(std::array<std::vector<uint32_t>, 2>& shaderData); // similar to CreateDescriptorsVulkanWeek (Descriptor Pool and Descriptor Sets)
+		void ReflectVulkanWeek(std::array<std::vector<uint32_t>, 2>& shaderData); // very similar to CreateDescriptors (Descriptor Pool, Descriptor Sets etc)
 		void Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData);
 
 		void CreateDescriptors();

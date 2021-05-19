@@ -14,42 +14,44 @@ namespace Hazel {
 	public:
 		VulkanTexture2D(const std::string& path, bool srgb = false);
 		VulkanTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
-
+		VulkanTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
 		virtual ~VulkanTexture2D();
 
 		void Invalidate();
 
-		virtual HazelImageFormat GetFormat() const override { return m_Format; }
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 
 		virtual void Bind(uint32_t slot = 0) const override;
 
 		virtual Ref<HazelImage2D> GetImage() const override { return m_Image; }
-		const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_Image.As<VulkanImage2D>()->GetDescriptor(); }
+		const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_DescriptorImageInfo; }
 
 		void Lock() override;
+
 		void Unlock() override;
 
+		void Resize(uint32_t width, uint32_t height) override;
+
 		Buffer GetWriteableBuffer() override;
+
 		bool Loaded() const override;
+
 		const std::string& GetPath() const override;
+
+		HazelImageFormat GetFormat() const override;
+
 		uint32_t GetMipLevelCount() const override;
 
-		void GenerateMips();
-
 		virtual uint64_t GetHash() const { return (uint64_t)m_Image; }
+		RendererID GetRendererID() const override;
 
 		bool operator ==(const HazelTexture& other) const override
 		{
 			throw std::logic_error("The method or operation is not implemented.");
 		}
 
-		// abstract methods in HazelTexture
 		virtual uint32_t GetID() const override { return uint32_t(); /* Not implemented */ }
-		virtual uint32_t GetRendererID() const override { return uint32_t(); /* Not implemented */ }
-		// virtual void Resize(uint32_t width, uint32_t height) override { /* Not implemented */ };
-
 	private:
 		std::string m_Path;
 		uint32_t m_Width;
@@ -57,9 +59,12 @@ namespace Hazel {
 
 		Buffer m_ImageData;
 
-		Ref<HazelImage2D> m_Image;
+		VkDeviceMemory m_DeviceMemory;
+		VkImage m_Image;
 
 		HazelImageFormat m_Format = HazelImageFormat::None;
+
+		VkDescriptorImageInfo m_DescriptorImageInfo = {};
 	};
 
 	class VulkanTextureCube : public HazelTextureCube
