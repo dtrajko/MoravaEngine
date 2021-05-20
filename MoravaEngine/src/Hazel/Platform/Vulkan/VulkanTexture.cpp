@@ -55,6 +55,7 @@ namespace Hazel {
 		HZ_CORE_ASSERT(m_ImageData.Data, "Failed to load image!");
 		m_Width = width;
 		m_Height = height;
+		m_Channels = channels;
 
 		if (channels != 4 && channels != 3) {
 			return;

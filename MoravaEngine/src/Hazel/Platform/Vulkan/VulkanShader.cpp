@@ -18,7 +18,8 @@ namespace Hazel {
 	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
 
 	// Very temporary attribute in Vulkan Week Day 5 Part 1
-	Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_Texture;
+	Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_TextureAlbedo;
+	Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_TextureNormal;
 
 	VulkanShader::VulkanShader(const std::string& path, bool forceCompile)
 		: m_AssetPath(path)
@@ -213,7 +214,7 @@ namespace Hazel {
 		// Descriptor Set Layout
 		//////////////////////////////////////////////////////////////////////
 		std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
-		layoutBindings.resize(3);
+		layoutBindings.resize(4);
 
 		layoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		layoutBindings[0].descriptorCount = 1;
@@ -233,6 +234,12 @@ namespace Hazel {
 		layoutBindings[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		layoutBindings[2].pImmutableSamplers = nullptr;
 		layoutBindings[2].binding = 2;
+
+		layoutBindings[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		layoutBindings[3].descriptorCount = 1;
+		layoutBindings[3].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		layoutBindings[3].pImmutableSamplers = nullptr;
+		layoutBindings[3].binding = 3;
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
 		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -269,7 +276,7 @@ namespace Hazel {
 		typeCounts[0].descriptorCount = 2;
 
 		typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		typeCounts[1].descriptorCount = 1;
+		typeCounts[1].descriptorCount = 2;
 
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -301,7 +308,7 @@ namespace Hazel {
 		// For every binding point used in a shader there needs to be one
 		// descriptor set matching that binding point
 		
-		VkWriteDescriptorSet writeDescriptorSets[3] = {};
+		VkWriteDescriptorSet writeDescriptorSets[4] = {};
 
 		// Binding 0 : Uniform buffer
 		writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -323,28 +330,31 @@ namespace Hazel {
 
 		// Setup a descriptor image info for the current texture to be used as a combined image sampler
 
-		/****
-		struct Texture {
-			VkImageView view;
-			VkSampler sampler;
-			VkImageLayout imageLayout;
-		} texture{ 0 };
-		*****/
+		Hazel::Ref<Hazel::VulkanTexture2D> vulkanTexture2DAlbedo = Hazel::Ref<Hazel::VulkanTexture2D>(s_TextureAlbedo);
+		const VkDescriptorImageInfo& textureDescriptorAlbedo = vulkanTexture2DAlbedo->GetVulkanDescriptorInfo();
 
-		Hazel::Ref<Hazel::VulkanTexture2D> vulkanTexture2D = Hazel::Ref<Hazel::VulkanTexture2D>(s_Texture);
-		VkDescriptorImageInfo textureDescriptor = vulkanTexture2D->GetVulkanDescriptorInfo();
-
-		// Binding 2 : Fragment shader texture sampler
+		// Binding 2 : Fragment shader texture sampler ALBEDO MAP
 		writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[2].dstSet = m_DescriptorSet;
 		writeDescriptorSets[2].descriptorCount = 1;
 		writeDescriptorSets[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		// writeDescriptorSets[2].pBufferInfo = &m_UniformBuffers[2].Descriptor; // TODO
-		writeDescriptorSets[2].pImageInfo = &textureDescriptor;
+		writeDescriptorSets[2].pImageInfo = &textureDescriptorAlbedo;
 		// Binds this image sampler to binding point 2
 		writeDescriptorSets[2].dstBinding = 2;
 
-		vkUpdateDescriptorSets(device, 3, writeDescriptorSets, 0, nullptr);
+		Hazel::Ref<Hazel::VulkanTexture2D> vulkanTexture2DNormal = Hazel::Ref<Hazel::VulkanTexture2D>(s_TextureNormal);
+		const VkDescriptorImageInfo& textureDescriptorNormal = vulkanTexture2DNormal->GetVulkanDescriptorInfo();
+
+		// Binding 3 : Fragment shader texture sampler NORMAL MAP
+		writeDescriptorSets[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSets[3].dstSet = m_DescriptorSet;
+		writeDescriptorSets[3].descriptorCount = 1;
+		writeDescriptorSets[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writeDescriptorSets[3].pImageInfo = &textureDescriptorNormal;
+		// Binds this image sampler to binding point 3
+		writeDescriptorSets[3].dstBinding = 3;
+
+		vkUpdateDescriptorSets(device, 4, writeDescriptorSets, 0, nullptr);
 	}
 
 	void VulkanShader::Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData)

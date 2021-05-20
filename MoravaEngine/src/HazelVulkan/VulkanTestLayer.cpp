@@ -21,7 +21,11 @@ VulkanTestLayer::~VulkanTestLayer()
 
 void VulkanTestLayer::OnAttach()
 {
-	Hazel::VulkanShader::s_Texture = Hazel::HazelTexture2D::Create("Textures/texture_checker.png", false, Hazel::HazelTextureWrap::Clamp);
+	// Hazel::VulkanShader::s_Texture = Hazel::HazelTexture2D::Create("Textures/texture_checker.png", false, Hazel::HazelTextureWrap::Clamp);
+	// Hazel::VulkanShader::s_Texture = Hazel::HazelTexture2D::Create("Textures/default_material_albedo.png", false, Hazel::HazelTextureWrap::Clamp);
+
+	Hazel::VulkanShader::s_TextureAlbedo = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_A.tga", false, Hazel::HazelTextureWrap::Clamp);
+	Hazel::VulkanShader::s_TextureNormal = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_N.tga", false, Hazel::HazelTextureWrap::Clamp);
 
 	// Shaders
 	m_Shader = Hazel::HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl");
@@ -57,9 +61,9 @@ void VulkanTestLayer::OnAttach()
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/barrel.obj");
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Old_Stove/udmheheqx_LOD0.fbx");
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ShaderBall/shaderBall.fbx");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/Cerberus_LP.FBX");
+	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/Cerberus_LP.FBX");
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Gladiator/Gladiator.fbx");
-	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/TestScene.fbx");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/TestScene.fbx");
 
 	// m_Texture = Hazel::HazelTexture2D::Create("Textures/texture_checker.png", false, Hazel::HazelTextureWrap::Clamp);
 

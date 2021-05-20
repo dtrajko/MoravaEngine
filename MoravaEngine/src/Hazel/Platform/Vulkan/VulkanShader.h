@@ -160,7 +160,8 @@ namespace Hazel {
 
 		public:
 			// Very temporary attribute for Vulkan Week Day 5 Part 1
-			static Hazel::Ref<Hazel::HazelTexture2D> s_Texture;
+			static Hazel::Ref<Hazel::HazelTexture2D> s_TextureAlbedo;
+			static Hazel::Ref<Hazel::HazelTexture2D> s_TextureNormal;
 
 	};
 

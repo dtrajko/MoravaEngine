@@ -27,6 +27,7 @@ namespace Hazel {
 		case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(format, width, height, wrap);
 		case RendererAPIType::Vulkan: return Ref<VulkanTexture2D>::Create(format, width, height, wrap);
 		}
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<HazelTexture2D>();
 	}
 
@@ -38,6 +39,7 @@ namespace Hazel {
 		case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(path, srgb, wrap);
 		case RendererAPIType::Vulkan: return Ref<VulkanTexture2D>::Create(path, srgb, wrap);
 		}
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<HazelTexture2D>();
 	}
 
@@ -61,6 +63,7 @@ namespace Hazel {
 		case RendererAPIType::OpenGL: return Ref<OpenGLTextureCube>::Create(path);
 		case RendererAPIType::Vulkan: return Ref<VulkanTextureCube>::Create(path);
 		}
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<HazelTextureCube>();
 	}
 
@@ -73,6 +76,7 @@ namespace Hazel {
 		case RendererAPIType::OpenGL: return Ref<OpenGLTextureCube>::Create(format, width, height, true);
 		case RendererAPIType::Vulkan: return Ref<VulkanTextureCube>::Create(format, width, height, nullptr);
 		}
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<HazelTextureCube>();
 	}
 
