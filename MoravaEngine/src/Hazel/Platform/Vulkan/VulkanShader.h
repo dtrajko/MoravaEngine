@@ -132,10 +132,10 @@ namespace Hazel {
 
 		void CreateDescriptors();
 
-		void AllocateUniformBuffer(UniformBuffer& dst);
 
 		// temporary for Vulkan Week Day 4 (remove later)
-		UniformBuffer CreateUniformBuffer(uint32_t size);
+		void AllocateUniformBuffer(UniformBuffer& dst);
+		// void AllocateUniformBuffer(UniformBuffer& dst);
 
 	private:
 		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageCreateInfos;

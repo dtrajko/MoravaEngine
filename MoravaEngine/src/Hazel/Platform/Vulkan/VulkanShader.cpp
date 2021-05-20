@@ -81,7 +81,8 @@ namespace Hazel {
 		CompileOrGetVulkanBinary(shaderData, false);
 		LoadAndCreateVertexShader(m_ShaderStages[0], shaderData[0]);
 		LoadAndCreateFragmentShader(m_ShaderStages[1], shaderData[1]);
-		ReflectVulkanWeek(shaderData); // very similar to CreateDescriptors()
+		ReflectVulkanWeek(shaderData); // very similar to CreateDescriptors(), vertex shader only
+		// ReflectVulkanWeek(shaderData); // TODO: reflection for fragment shader
 
 		/**** BEGIN more advanced shader setup ****
 
@@ -159,6 +160,13 @@ namespace Hazel {
 			uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
 
+			//	HZ_CORE_ASSERT(m_UniformBuffers.find(bindingPoint) == m_UniformBuffers.end());
+			//	UniformBuffer& buffer = m_UniformBuffers[bindingPoint];
+			//	buffer.BindingPoint = bindingPoint;
+			//	buffer.Size = size;
+			//	buffer.Name = name;
+			//	buffer.ShaderStage = VK_SHADER_STAGE_VERTEX_BIT; // TODO: fix hard-coded vertex shader
+
 			MORAVA_CORE_TRACE("  Name: {0}", name);
 			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
 			MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
@@ -187,7 +195,6 @@ namespace Hazel {
 				const auto& memberName = compiler.get_member_name(bufferType.self, i);
 				auto size = compiler.get_declared_struct_member_size(bufferType, i);
 				auto offset = compiler.type_struct_member_offset(bufferType, i);
-
 			}
 		}
 
@@ -195,59 +202,23 @@ namespace Hazel {
 		for (const auto& resource : resources.sampled_images)
 		{
 			const auto& name = resource.name;
-			auto& bufferType = compiler.get_type(resource.base_type_id);
-			int memberCount = static_cast<int>(bufferType.member_types.size());
-			uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
-			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
-			uint32_t dimension = bufferType.image.dim;
+			auto& type = compiler.get_type(resource.base_type_id);
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t dimension = type.image.dim;
+
+			// auto& imageSampler = m_ImageSamplers[binding];
+			// imageSampler.BindingPoint = binding;
+			// imageSampler.Name = name;
+			// imageSampler.ShaderStage = VK_SHADER_STAGE_FRAGMENT_BIT;
 
 			MORAVA_CORE_TRACE("  Name: {0}", name);
-			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
-			MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
-			MORAVA_CORE_TRACE("  Size: {0}", size);
+			// MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
+			MORAVA_CORE_TRACE("  Binding Point: {0}", binding);
+			// MORAVA_CORE_TRACE("  Size: {0}", size);
 			MORAVA_CORE_TRACE("--------------------------");
 		}
 
 		MORAVA_CORE_TRACE("==========================");
-
-		//////////////////////////////////////////////////////////////////////
-		// Descriptor Set Layout
-		//////////////////////////////////////////////////////////////////////
-		std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
-		layoutBindings.resize(4);
-
-		layoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		layoutBindings[0].descriptorCount = 1;
-		layoutBindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-		layoutBindings[0].pImmutableSamplers = nullptr;
-		layoutBindings[0].binding = 0;
-
-		// This is how we add more than one Uniform Buffer (in vertex shader)
-		layoutBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		layoutBindings[1].descriptorCount = 1;
-		layoutBindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-		layoutBindings[1].pImmutableSamplers = nullptr;
-		layoutBindings[1].binding = 1;
-
-		layoutBindings[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		layoutBindings[2].descriptorCount = 1;
-		layoutBindings[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-		layoutBindings[2].pImmutableSamplers = nullptr;
-		layoutBindings[2].binding = 2;
-
-		layoutBindings[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		layoutBindings[3].descriptorCount = 1;
-		layoutBindings[3].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-		layoutBindings[3].pImmutableSamplers = nullptr;
-		layoutBindings[3].binding = 3;
-
-		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
-		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorLayout.pNext = nullptr;
-		descriptorLayout.bindingCount = static_cast<uint32_t>(layoutBindings.size());
-		descriptorLayout.pBindings = layoutBindings.data();
-
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayout));
 
 		//////////////////////////////////////////////////////////////////////
 		// Uniform Buffers
@@ -257,12 +228,31 @@ namespace Hazel {
 		const uint32_t UNIFORM_BUFFER_SIZE = sizeof(glm::mat4);
 		UniformBuffer uniformBuffers[2] = {};
 
-		uniformBuffers[0] = CreateUniformBuffer(UNIFORM_BUFFER_SIZE);
+		uniformBuffers[0].Size = UNIFORM_BUFFER_SIZE;
+		AllocateUniformBuffer(uniformBuffers[0]);
+		uniformBuffers[0].BindingPoint = 0;
 		m_UniformBuffers.insert(std::pair(0, uniformBuffers[0]));
 
 		// 2nd uniform buffer, binding 1 uniform Transform
-		uniformBuffers[1] = CreateUniformBuffer(UNIFORM_BUFFER_SIZE);
+		uniformBuffers[1].Size = UNIFORM_BUFFER_SIZE;
+		AllocateUniformBuffer(uniformBuffers[1]);
+		uniformBuffers[1].BindingPoint = 1;
 		m_UniformBuffers.insert(std::pair(1, uniformBuffers[1]));
+
+		// Create image samplers (temporary code Vulkan Week 4)
+		// layout(binding = 2) uniform sampler2D u_AlbedoTexture;
+		// layout(binding = 3) uniform sampler2D u_NormalTexture;
+
+		m_ImageSamplers.clear();
+		ImageSampler imageSamplers[2] = {};
+
+		imageSamplers[0].BindingPoint = 2;
+		imageSamplers[0].ShaderStage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		m_ImageSamplers.insert(std::pair(2, imageSamplers[0]));
+
+		imageSamplers[1].BindingPoint = 3;
+		imageSamplers[1].ShaderStage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		m_ImageSamplers.insert(std::pair(3, imageSamplers[1]));
 
 		//////////////////////////////////////////////////////////////////////
 		// Descriptor Pool
@@ -270,13 +260,88 @@ namespace Hazel {
 
 		// We need to tell the API the number of max. requested descriptors per type
 		std::vector<VkDescriptorPoolSize> typeCounts;
-		typeCounts.resize(2);
 
-		typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		typeCounts[0].descriptorCount = 2;
+		//	typeCounts.resize(2);
+		//	
+		//	typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		//	typeCounts[0].descriptorCount = 2;
+		//	
+		//	typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		//	typeCounts[1].descriptorCount = 2;
 
-		typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		typeCounts[1].descriptorCount = 2;
+		if (m_UniformBuffers.size())
+		{
+			VkDescriptorPoolSize& typeCount = typeCounts.emplace_back();
+			typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			typeCount.descriptorCount = static_cast<uint32_t>(m_UniformBuffers.size());
+		}
+
+		if (m_ImageSamplers.size())
+		{
+			VkDescriptorPoolSize& typeCount = typeCounts.emplace_back();
+			typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			typeCount.descriptorCount = static_cast<uint32_t>(m_ImageSamplers.size());
+		}
+
+		//////////////////////////////////////////////////////////////////////
+		// Descriptor Set Layout
+		//////////////////////////////////////////////////////////////////////
+		std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
+
+		for (auto& [binding, uniformBuffer] : m_UniformBuffers)
+		{
+			auto& layoutBinding = layoutBindings.emplace_back();
+			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			layoutBinding.descriptorCount = 1;
+			layoutBinding.stageFlags = uniformBuffer.ShaderStage;
+			layoutBinding.pImmutableSamplers = nullptr;
+			layoutBinding.binding = binding;
+		}
+
+		for (auto& [binding, imageSampler] : m_ImageSamplers)
+		{
+			auto& layoutBinding = layoutBindings.emplace_back();
+			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			layoutBinding.descriptorCount = 1;
+			layoutBinding.stageFlags = imageSampler.ShaderStage;
+			layoutBinding.pImmutableSamplers = nullptr;
+			layoutBinding.binding = binding;
+		}
+
+		//	layoutBindings.resize(4);
+		//	
+		//	layoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		//	layoutBindings[0].descriptorCount = 1;
+		//	layoutBindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		//	layoutBindings[0].pImmutableSamplers = nullptr;
+		//	layoutBindings[0].binding = 0;
+		//	
+		//	// This is how we add more than one Uniform Buffer (in vertex shader)
+		//	layoutBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		//	layoutBindings[1].descriptorCount = 1;
+		//	layoutBindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		//	layoutBindings[1].pImmutableSamplers = nullptr;
+		//	layoutBindings[1].binding = 1;
+		//	
+		//	layoutBindings[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		//	layoutBindings[2].descriptorCount = 1;
+		//	layoutBindings[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		//	layoutBindings[2].pImmutableSamplers = nullptr;
+		//	layoutBindings[2].binding = 2;
+		//	
+		//	layoutBindings[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		//	layoutBindings[3].descriptorCount = 1;
+		//	layoutBindings[3].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		//	layoutBindings[3].pImmutableSamplers = nullptr;
+		//	layoutBindings[3].binding = 3;
+
+		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
+		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		descriptorLayout.pNext = nullptr;
+		descriptorLayout.bindingCount = static_cast<uint32_t>(layoutBindings.size());
+		descriptorLayout.pBindings = layoutBindings.data();
+
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayout));
 
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -317,7 +382,7 @@ namespace Hazel {
 		writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		writeDescriptorSets[0].pBufferInfo = &m_UniformBuffers[0].Descriptor;
 		// Binds this uniform buffer to binding point 0
-		writeDescriptorSets[0].dstBinding = 0;
+		writeDescriptorSets[0].dstBinding = m_UniformBuffers[0].BindingPoint; // 0;
 
 		// Binding 1 : Uniform buffer
 		writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -326,7 +391,7 @@ namespace Hazel {
 		writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		writeDescriptorSets[1].pBufferInfo = &m_UniformBuffers[1].Descriptor;
 		// Binds this uniform buffer to binding point 1
-		writeDescriptorSets[1].dstBinding = 1;
+		writeDescriptorSets[1].dstBinding = m_UniformBuffers[1].BindingPoint; // 1;
 
 		// Setup a descriptor image info for the current texture to be used as a combined image sampler
 
@@ -342,7 +407,7 @@ namespace Hazel {
 		writeDescriptorSets[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		writeDescriptorSets[2].pImageInfo = &albedoTextureDescriptor;
 		// Binds this image sampler to binding point 2
-		writeDescriptorSets[2].dstBinding = 2;
+		writeDescriptorSets[2].dstBinding = m_ImageSamplers[2].BindingPoint; // 2
 
 		const VkDescriptorImageInfo& normalTextureDescriptor = normalTexture->GetVulkanDescriptorInfo();
 
@@ -353,7 +418,7 @@ namespace Hazel {
 		writeDescriptorSets[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		writeDescriptorSets[3].pImageInfo = &normalTextureDescriptor;
 		// Binds this image sampler to binding point 3
-		writeDescriptorSets[3].dstBinding = 3;
+		writeDescriptorSets[3].dstBinding = m_ImageSamplers[3].BindingPoint; // 3
 
 		vkUpdateDescriptorSets(device, 4, writeDescriptorSets, 0, nullptr);
 	}
@@ -452,12 +517,14 @@ namespace Hazel {
 
 		// We need to tell the API the number of max. requested descriptors per type
 		std::vector<VkDescriptorPoolSize> typeCounts;
+
 		if (m_UniformBuffers.size())
 		{
 			VkDescriptorPoolSize& typeCount = typeCounts.emplace_back();
 			typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			typeCount.descriptorCount = static_cast<uint32_t>(m_UniformBuffers.size());
 		}
+
 		if (m_ImageSamplers.size())
 		{
 			VkDescriptorPoolSize& typeCount = typeCounts.emplace_back();
@@ -588,6 +655,7 @@ namespace Hazel {
 		return result;
 	}
 
+	/****
 	void VulkanShader::AllocateUniformBuffer(UniformBuffer& dst)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
@@ -624,14 +692,14 @@ namespace Hazel {
 		uniformBuffer.Descriptor.offset = 0;
 		uniformBuffer.Descriptor.range = uniformBuffer.Size;
 	}
+	****/
 
 	// temporary for Vulkan Week 4 (remove later, use AllocateUniformBuffer instead)
-	VulkanShader::UniformBuffer VulkanShader::CreateUniformBuffer(uint32_t size)
+	void VulkanShader::AllocateUniformBuffer(UniformBuffer& dst)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-		UniformBuffer uniformBuffer = {};
-		uniformBuffer.Size = size;
+		UniformBuffer& uniformBuffer = dst;
 
 		// Prepare and initialize an uniform buffer block containing shader uniforms
 		// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
@@ -646,7 +714,7 @@ namespace Hazel {
 		allocInfo.memoryTypeIndex = 0;
 
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = size;
+		bufferInfo.size = uniformBuffer.Size;
 		// This buffer will be used as an uniform buffer
 		bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
@@ -665,9 +733,7 @@ namespace Hazel {
 		// Store information in the uniforms's descriptor that is used by the descriptor set
 		uniformBuffer.Descriptor.buffer = uniformBuffer.Buffer;
 		uniformBuffer.Descriptor.offset = 0;
-		uniformBuffer.Descriptor.range = size;
-
-		return uniformBuffer;
+		uniformBuffer.Descriptor.range = uniformBuffer.Size;
 	}
 
 	void VulkanShader::CompileOrGetVulkanBinary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile)
