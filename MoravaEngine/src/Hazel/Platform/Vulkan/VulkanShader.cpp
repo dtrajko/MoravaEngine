@@ -18,8 +18,8 @@ namespace Hazel {
 	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
 
 	// Very temporary attribute in Vulkan Week Day 5 Part 1
-	Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_TextureAlbedo;
-	Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_TextureNormal;
+	Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_AlbedoTexture;
+	Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_NormalTexture;
 
 	VulkanShader::VulkanShader(const std::string& path, bool forceCompile)
 		: m_AssetPath(path)
@@ -330,27 +330,28 @@ namespace Hazel {
 
 		// Setup a descriptor image info for the current texture to be used as a combined image sampler
 
-		Hazel::Ref<Hazel::VulkanTexture2D> vulkanTexture2DAlbedo = Hazel::Ref<Hazel::VulkanTexture2D>(s_TextureAlbedo);
-		const VkDescriptorImageInfo& textureDescriptorAlbedo = vulkanTexture2DAlbedo->GetVulkanDescriptorInfo();
+		Hazel::Ref<Hazel::VulkanTexture2D> albedoTexture = Hazel::Ref<Hazel::VulkanTexture2D>(s_AlbedoTexture);
+		Hazel::Ref<Hazel::VulkanTexture2D> normalTexture = Hazel::Ref<Hazel::VulkanTexture2D>(s_NormalTexture);
+
+		const VkDescriptorImageInfo& albedoTextureDescriptor = albedoTexture->GetVulkanDescriptorInfo();
 
 		// Binding 2 : Fragment shader texture sampler ALBEDO MAP
 		writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[2].dstSet = m_DescriptorSet;
 		writeDescriptorSets[2].descriptorCount = 1;
 		writeDescriptorSets[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		writeDescriptorSets[2].pImageInfo = &textureDescriptorAlbedo;
+		writeDescriptorSets[2].pImageInfo = &albedoTextureDescriptor;
 		// Binds this image sampler to binding point 2
 		writeDescriptorSets[2].dstBinding = 2;
 
-		Hazel::Ref<Hazel::VulkanTexture2D> vulkanTexture2DNormal = Hazel::Ref<Hazel::VulkanTexture2D>(s_TextureNormal);
-		const VkDescriptorImageInfo& textureDescriptorNormal = vulkanTexture2DNormal->GetVulkanDescriptorInfo();
+		const VkDescriptorImageInfo& normalTextureDescriptor = normalTexture->GetVulkanDescriptorInfo();
 
 		// Binding 3 : Fragment shader texture sampler NORMAL MAP
 		writeDescriptorSets[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[3].dstSet = m_DescriptorSet;
 		writeDescriptorSets[3].descriptorCount = 1;
 		writeDescriptorSets[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		writeDescriptorSets[3].pImageInfo = &textureDescriptorNormal;
+		writeDescriptorSets[3].pImageInfo = &normalTextureDescriptor;
 		// Binds this image sampler to binding point 3
 		writeDescriptorSets[3].dstBinding = 3;
 

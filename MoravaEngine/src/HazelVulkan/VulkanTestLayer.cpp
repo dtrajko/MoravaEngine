@@ -21,15 +21,16 @@ VulkanTestLayer::~VulkanTestLayer()
 
 void VulkanTestLayer::OnAttach()
 {
-	// Hazel::VulkanShader::s_Texture = Hazel::HazelTexture2D::Create("Textures/texture_checker.png", false, Hazel::HazelTextureWrap::Clamp);
-	// Hazel::VulkanShader::s_Texture = Hazel::HazelTexture2D::Create("Textures/default_material_albedo.png", false, Hazel::HazelTextureWrap::Clamp);
+	// Hazel::VulkanShader::s_AlbedoTexture = Hazel::HazelTexture2D::Create("Textures/texture_checker.png", false, Hazel::HazelTextureWrap::Clamp);
+	// Hazel::VulkanShader::s_AlbedoTexture = Hazel::HazelTexture2D::Create("Textures/default_material_albedo.png", false, Hazel::HazelTextureWrap::Clamp);
 
-	Hazel::VulkanShader::s_TextureAlbedo = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_A.tga", false, Hazel::HazelTextureWrap::Clamp);
-	Hazel::VulkanShader::s_TextureNormal = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_N.tga", false, Hazel::HazelTextureWrap::Clamp);
+	Hazel::VulkanShader::s_AlbedoTexture = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_A.tga", false, Hazel::HazelTextureWrap::Clamp);
+	// Hazel::VulkanShader::s_AlbedoTexture = Hazel::HazelTexture2D::Create("Textures/PBR/silver/albedo.png", false, Hazel::HazelTextureWrap::Clamp);
+	Hazel::VulkanShader::s_NormalTexture = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_N.tga", false, Hazel::HazelTextureWrap::Clamp);
 
 	// Shaders
-	m_Shader = Hazel::HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl");
-	// m_ShaderHazelPBR_Static = Hazel::HazelShader::Create("assets/shaders/VulkanWeekHazelPBR_Static.glsl");
+	m_Shader = Hazel::HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
+	// m_ShaderHazelPBR_Static = Hazel::HazelShader::Create("assets/shaders/VulkanWeekHazelPBR_Static.glsl", true);
 
 	// Graphics Pipeline
 	Hazel::PipelineSpecification pipelineSpecification;
