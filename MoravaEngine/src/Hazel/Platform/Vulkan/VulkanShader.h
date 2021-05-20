@@ -134,7 +134,7 @@ namespace Hazel {
 
 		void AllocateUniformBuffer(UniformBuffer& dst);
 
-		// temporary for Vulkan Week 4 (remove later)
+		// temporary for Vulkan Week Day 4 (remove later)
 		UniformBuffer CreateUniformBuffer(uint32_t size);
 
 	private:
@@ -157,6 +157,10 @@ namespace Hazel {
 		VkDescriptorPool m_DescriptorPool;
 
 		std::unordered_map<std::string, ShaderBuffer> m_Buffers;
+
+		public:
+			// Very temporary attribute for Vulkan Week Day 5 Part 1
+			static Hazel::Ref<Hazel::HazelTexture2D> s_Texture;
 
 	};
 

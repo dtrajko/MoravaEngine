@@ -12,7 +12,7 @@ namespace Hazel {
 	class VulkanTexture2D : public HazelTexture2D
 	{
 	public:
-		VulkanTexture2D(const std::string& path, bool srgb = false);
+		VulkanTexture2D(const std::string& path, bool srgb = false, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
 		VulkanTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
 		VulkanTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
 		virtual ~VulkanTexture2D();

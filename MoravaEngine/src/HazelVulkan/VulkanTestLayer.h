@@ -4,6 +4,7 @@
 #include "Hazel/Events/Event.h"
 #include "Hazel/Platform/Vulkan/VulkanPipeline.h"
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
+#include "Hazel/Platform/Vulkan/VulkanTexture.h"
 
 #include "Core/Window.h"
 #include "Scene/Scene.h"
@@ -31,6 +32,7 @@ private:
 
 private:
 	Hazel::Ref<Hazel::HazelMesh> m_Mesh;
+	Hazel::Ref<Hazel::HazelTexture2D> m_Texture;
 	Hazel::Ref<Hazel::HazelShader> m_Shader;
 	Hazel::Ref<Hazel::HazelShader> m_ShaderHazelPBR_Static;
 	Hazel::Ref<Hazel::Pipeline> m_Pipeline;

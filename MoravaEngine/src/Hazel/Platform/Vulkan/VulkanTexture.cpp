@@ -45,7 +45,7 @@ namespace Hazel {
 
 	}
 
-	VulkanTexture2D::VulkanTexture2D(const std::string& path, bool srgb)
+	VulkanTexture2D::VulkanTexture2D(const std::string& path, bool srgb, HazelTextureWrap wrap)
 		: m_Path(path)
 	{
 		int width, height, channels;
@@ -56,11 +56,14 @@ namespace Hazel {
 		m_Width = width;
 		m_Height = height;
 
-		if (channels != 4)
+		if (channels != 4 && channels != 3) {
 			return;
-		HZ_CORE_ASSERT(channels == 4);
+		}
 
-		Ref<VulkanTexture2D> instance = this;
+		HZ_CORE_ASSERT(channels == 4 || channels == 3);
+		// HZ_CORE_ASSERT(channels == 4);
+
+		//	Ref<VulkanTexture2D> instance = this;
 		//	HazelRenderer::Submit([instance]() mutable
 		//	{
 		//		instance->Invalidate();
@@ -81,7 +84,7 @@ namespace Hazel {
 		m_ImageData = Buffer::Copy(data, size);
 		memcpy(m_ImageData.Data, data, m_ImageData.Size);
 
-		Ref<VulkanTexture2D> instance = this;
+		//	Ref<VulkanTexture2D> instance = this;
 		//	HazelRenderer::Submit([instance]() mutable
 		//	{
 		//		instance->Invalidate();

@@ -21,9 +21,11 @@ VulkanTestLayer::~VulkanTestLayer()
 
 void VulkanTestLayer::OnAttach()
 {
+	Hazel::VulkanShader::s_Texture = Hazel::HazelTexture2D::Create("Textures/texture_checker.png", false, Hazel::HazelTextureWrap::Clamp);
+
 	// Shaders
 	m_Shader = Hazel::HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl");
-	m_ShaderHazelPBR_Static = Hazel::HazelShader::Create("assets/shaders/VulkanWeekHazelPBR_Static.glsl");
+	// m_ShaderHazelPBR_Static = Hazel::HazelShader::Create("assets/shaders/VulkanWeekHazelPBR_Static.glsl");
 
 	// Graphics Pipeline
 	Hazel::PipelineSpecification pipelineSpecification;
@@ -58,6 +60,8 @@ void VulkanTestLayer::OnAttach()
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/Cerberus_LP.FBX");
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Gladiator/Gladiator.fbx");
 	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/TestScene.fbx");
+
+	// m_Texture = Hazel::HazelTexture2D::Create("Textures/texture_checker.png", false, Hazel::HazelTextureWrap::Clamp);
 
 	/**** END mesh geometry ****/
 
