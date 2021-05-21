@@ -81,15 +81,9 @@ namespace Hazel {
 		CompileOrGetVulkanBinary(shaderData, false);
 		LoadAndCreateVertexShader(m_ShaderStages[0], shaderData[0]);
 		LoadAndCreateFragmentShader(m_ShaderStages[1], shaderData[1]);
-		ReflectVulkanWeek(shaderData); // very similar to CreateDescriptors(), vertex shader only
-		// ReflectVulkanWeek(shaderData); // TODO: reflection for fragment shader
-
-		/**** BEGIN more advanced shader setup ****
-
-		instance->Reflect(VK_SHADER_STAGE_VERTEX_BIT, shaderData[0]);
-		instance->Reflect(VK_SHADER_STAGE_FRAGMENT_BIT, shaderData[1]);
-
-		**** END more advanced shader setup ****/
+		ReflectVulkanWeek(VK_SHADER_STAGE_VERTEX_BIT, shaderData[0]); // vertex shader method similar to CreateDescriptors()
+		ReflectVulkanWeek(VK_SHADER_STAGE_FRAGMENT_BIT, shaderData[1]); // fragment shader, method similar to CreateDescriptors()
+		CreateDescriptorsVulkanWeek();
 	}
 
 	size_t VulkanShader::GetHash() const
@@ -138,7 +132,7 @@ namespace Hazel {
 	}
 
 	// very similar to CreateDescriptors (Descriptor Pool, Descriptor Sets etc)
-	void VulkanShader::ReflectVulkanWeek(std::array<std::vector<uint32_t>, 2>& shaderData)
+	void VulkanShader::ReflectVulkanWeek(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
@@ -148,7 +142,7 @@ namespace Hazel {
 		MORAVA_CORE_TRACE("==========================");
 
 		// Vertex Shader
-		spirv_cross::Compiler compiler(shaderData[0]);
+		spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
 		MORAVA_CORE_TRACE("Uniform Buffers:");
@@ -160,12 +154,12 @@ namespace Hazel {
 			uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
 
-			//	HZ_CORE_ASSERT(m_UniformBuffers.find(bindingPoint) == m_UniformBuffers.end());
-			//	UniformBuffer& buffer = m_UniformBuffers[bindingPoint];
-			//	buffer.BindingPoint = bindingPoint;
-			//	buffer.Size = size;
-			//	buffer.Name = name;
-			//	buffer.ShaderStage = VK_SHADER_STAGE_VERTEX_BIT; // TODO: fix hard-coded vertex shader
+			HZ_CORE_ASSERT(m_UniformBuffers.find(bindingPoint) == m_UniformBuffers.end());
+			UniformBuffer& buffer = m_UniformBuffers[bindingPoint];
+			buffer.BindingPoint = bindingPoint;
+			buffer.Size = size;
+			buffer.Name = name;
+			buffer.ShaderStage = shaderStage;
 
 			MORAVA_CORE_TRACE("  Name: {0}", name);
 			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
@@ -206,10 +200,10 @@ namespace Hazel {
 			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			uint32_t dimension = type.image.dim;
 
-			// auto& imageSampler = m_ImageSamplers[binding];
-			// imageSampler.BindingPoint = binding;
-			// imageSampler.Name = name;
-			// imageSampler.ShaderStage = VK_SHADER_STAGE_FRAGMENT_BIT;
+			auto& imageSampler = m_ImageSamplers[binding];
+			imageSampler.BindingPoint = binding;
+			imageSampler.Name = name;
+			imageSampler.ShaderStage = shaderStage;
 
 			MORAVA_CORE_TRACE("  Name: {0}", name);
 			// MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
@@ -219,13 +213,22 @@ namespace Hazel {
 		}
 
 		MORAVA_CORE_TRACE("==========================");
+	}
+
+	void VulkanShader::CreateDescriptorsVulkanWeek()
+	{
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
 		//////////////////////////////////////////////////////////////////////
 		// Uniform Buffers
 		//////////////////////////////////////////////////////////////////////
 
+		/****/
+
 		// Create uniform buffer (temporary code Vulkan Week 4) binding 0 uniform Camera
 		const uint32_t UNIFORM_BUFFER_SIZE = sizeof(glm::mat4);
+
+		m_UniformBuffers.clear();
 		UniformBuffer uniformBuffers[2] = {};
 
 		uniformBuffers[0].Size = UNIFORM_BUFFER_SIZE;
@@ -253,6 +256,8 @@ namespace Hazel {
 		imageSamplers[1].BindingPoint = 3;
 		imageSamplers[1].ShaderStage = VK_SHADER_STAGE_FRAGMENT_BIT;
 		m_ImageSamplers.insert(std::pair(3, imageSamplers[1]));
+
+		/****/
 
 		//////////////////////////////////////////////////////////////////////
 		// Descriptor Pool
@@ -372,7 +377,7 @@ namespace Hazel {
 		// Update the descriptor set determining the shader binding points
 		// For every binding point used in a shader there needs to be one
 		// descriptor set matching that binding point
-		
+
 		VkWriteDescriptorSet writeDescriptorSets[4] = {};
 
 		// Binding 0 : Uniform buffer
