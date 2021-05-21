@@ -33,15 +33,21 @@ namespace Hazel {
 
 			VkDescriptorSetLayout descriptorSetLayout = vulkanShader->GetDescriptorSetLayout();
 
-			// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
-			// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
-			VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
-			pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-			pPipelineLayoutCreateInfo.pNext = nullptr;
+			//////////////////////////////////////////////////////////////////////
+			// Push Constants
+			//////////////////////////////////////////////////////////////////////
 
-			// Descriptor Set Layouts
-			pPipelineLayoutCreateInfo.setLayoutCount = 1;
-			pPipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+			struct PushBlock
+			{
+				glm::mat4 Transform;
+			};
+
+			// ------------------ BEGIN Push Constant Ranges CHERNO ------------------ //
+
+			const auto& pushConstantRanges = vulkanShader->GetPushConstantRanges();
+
+			// TODO: should come from shader
+			// std::vector<VkPushConstantRange> vulkanPushConstantRanges(pushConstantRanges.size());
 
 			//	const auto& pushConstantRanges = vulkanShader->GetPushConstantRanges();
 			//	
@@ -57,34 +63,40 @@ namespace Hazel {
 			//		vulkanPushConstantRange.size = pushConstantRange.Size;
 			//	}
 
-			//////////////////////////////////////////////////////////////////////
-			// Push Constants
-			//////////////////////////////////////////////////////////////////////
-			struct PushBlock
+			// ------------------ END Push Constant Ranges CHERNO ------------------ //
+
+			// ------------------ BEGIN Push Constant Ranges TEMPORARY ------------------ //
+
+			std::vector<VkPushConstantRange> vulkanPushConstantRanges;
+
 			{
-				glm::mat4 Transform;
-			};
+				VkPushConstantRange& vulkanPushConstantRange = vulkanPushConstantRanges.emplace_back();
+				vulkanPushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+				vulkanPushConstantRange.offset = 0;
+				vulkanPushConstantRange.size = sizeof(PushBlock);
+			}
 
-			const uint32_t pushConstantRangeCount = 2;
-			VkPushConstantRange vulkanPushConstantRanges[pushConstantRangeCount] = {};
+			{
+				VkPushConstantRange& vulkanPushConstantRange = vulkanPushConstantRanges.emplace_back();
+				vulkanPushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+				vulkanPushConstantRange.offset = sizeof(PushBlock);
+				vulkanPushConstantRange.size = sizeof(PushBlock);
+			}
 
-			vulkanPushConstantRanges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-			vulkanPushConstantRanges[0].offset = 0;
-			vulkanPushConstantRanges[0].size = sizeof(PushBlock);
+			// ------------------ END Push Constant Ranges TEMPORARY ------------------ //
 
-			vulkanPushConstantRanges[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-			vulkanPushConstantRanges[1].offset = sizeof(PushBlock);
-			vulkanPushConstantRanges[1].size = sizeof(PushBlock);
+			// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
+			// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
+			VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
+			pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+			pPipelineLayoutCreateInfo.pNext = nullptr;
 
-			// vulkanPushConstantRanges[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-			// vulkanPushConstantRanges[1].offset = sizeof(PushBlock);
-			// vulkanPushConstantRanges[1].size = sizeof(glm::vec4);
+			// Descriptor Set Layouts
+			pPipelineLayoutCreateInfo.setLayoutCount = 1;
+			pPipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
 
-			pPipelineLayoutCreateInfo.pushConstantRangeCount = pushConstantRangeCount;
-			pPipelineLayoutCreateInfo.pPushConstantRanges = vulkanPushConstantRanges;
-
-			// pPipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(vulkanPushConstantRanges.size());
-			// pPipelineLayoutCreateInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
+			pPipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(vulkanPushConstantRanges.size());
+			pPipelineLayoutCreateInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
 
 			VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &m_PipelineLayout));
 
