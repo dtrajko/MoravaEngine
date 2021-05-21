@@ -80,6 +80,6 @@ void main()
 	vec3 lightDir = vec3(-1.0, 1.0, 0.0);
 	float intensity = clamp(dot(lightDir, m_Params.Normal), ambient, 1.0);
 
-	finalColor = vec4(m_Params.Albedo, 1.0);
+	finalColor = vec4(m_Params.Albedo, 1.0) * u_Color;
 	finalColor.rgb *= intensity;
 }
