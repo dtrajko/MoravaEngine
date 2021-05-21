@@ -37,53 +37,39 @@ namespace Hazel {
 			// Push Constants
 			//////////////////////////////////////////////////////////////////////
 
+			const auto& pushConstantRanges = vulkanShader->GetPushConstantRanges();
+
+			// TODO: should come from shader
+			std::vector<VkPushConstantRange> vulkanPushConstantRanges(pushConstantRanges.size());
+			for (uint32_t i = 0; i < pushConstantRanges.size(); i++)
+			{
+				const auto& pushConstantRange = pushConstantRanges[i];
+				auto& vulkanPushConstantRange = vulkanPushConstantRanges[i];
+
+				vulkanPushConstantRange.stageFlags = pushConstantRange.ShaderStage;
+				vulkanPushConstantRange.offset = pushConstantRange.Offset;
+				vulkanPushConstantRange.size = pushConstantRange.Size;
+			}
+
+			/******************** BEGIN Push Constant Ranges BEFORE REFLECTION ********************
 			struct PushBlock
 			{
 				glm::mat4 Transform;
 			};
-
-			// ------------------ BEGIN Push Constant Ranges CHERNO ------------------ //
-
-			const auto& pushConstantRanges = vulkanShader->GetPushConstantRanges();
-
-			// TODO: should come from shader
-			// std::vector<VkPushConstantRange> vulkanPushConstantRanges(pushConstantRanges.size());
-
-			//	const auto& pushConstantRanges = vulkanShader->GetPushConstantRanges();
-			//	
-			//	// TODO: should come from shader
-			//	std::vector<VkPushConstantRange> vulkanPushConstantRanges(pushConstantRanges.size());
-			//	for (uint32_t i = 0; i < pushConstantRanges.size(); i++)
-			//	{
-			//		const auto& pushConstantRange = pushConstantRanges[i];
-			//		auto& vulkanPushConstantRange = vulkanPushConstantRanges[i];
-			//	
-			//		vulkanPushConstantRange.stageFlags = pushConstantRange.ShaderStage;
-			//		vulkanPushConstantRange.offset = pushConstantRange.Offset;
-			//		vulkanPushConstantRange.size = pushConstantRange.Size;
-			//	}
-
-			// ------------------ END Push Constant Ranges CHERNO ------------------ //
-
-			// ------------------ BEGIN Push Constant Ranges TEMPORARY ------------------ //
-
 			std::vector<VkPushConstantRange> vulkanPushConstantRanges;
-
 			{
 				VkPushConstantRange& vulkanPushConstantRange = vulkanPushConstantRanges.emplace_back();
 				vulkanPushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 				vulkanPushConstantRange.offset = 0;
 				vulkanPushConstantRange.size = sizeof(PushBlock);
 			}
-
 			{
 				VkPushConstantRange& vulkanPushConstantRange = vulkanPushConstantRanges.emplace_back();
 				vulkanPushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 				vulkanPushConstantRange.offset = sizeof(PushBlock);
 				vulkanPushConstantRange.size = sizeof(PushBlock);
 			}
-
-			// ------------------ END Push Constant Ranges TEMPORARY ------------------ //
+			/******************** END Push Constant Ranges BEFORE REFLECTION ********************/
 
 			// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
 			// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
