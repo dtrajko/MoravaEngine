@@ -154,12 +154,19 @@ namespace Hazel {
 			uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
 
-			HZ_CORE_ASSERT(m_UniformBuffers.find(bindingPoint) == m_UniformBuffers.end());
-			UniformBuffer& buffer = m_UniformBuffers[bindingPoint];
-			buffer.BindingPoint = bindingPoint;
-			buffer.Size = size;
-			buffer.Name = name;
-			buffer.ShaderStage = shaderStage;
+			// HZ_CORE_ASSERT(m_UniformBuffers.find(bindingPoint) == m_UniformBuffers.end());
+			// UniformBuffer& buffer = m_UniformBuffers[bindingPoint];
+			// buffer.BindingPoint = bindingPoint;
+			// buffer.Size = size;
+			// buffer.Name = name;
+			// buffer.ShaderStage = shaderStage;
+
+			UniformBuffer uniformBuffer;
+			uniformBuffer.Size = size;
+			AllocateUniformBuffer(uniformBuffer);
+			uniformBuffer.BindingPoint = bindingPoint;
+			uniformBuffer.ShaderStage = shaderStage;
+			m_UniformBuffers.insert(std::pair(bindingPoint, uniformBuffer));
 
 			MORAVA_CORE_TRACE("  Name: {0}", name);
 			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
@@ -200,10 +207,15 @@ namespace Hazel {
 			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			uint32_t dimension = type.image.dim;
 
-			auto& imageSampler = m_ImageSamplers[binding];
+			// auto& imageSampler = m_ImageSamplers[binding];
+			// imageSampler.BindingPoint = binding;
+			// imageSampler.Name = name;
+			// imageSampler.ShaderStage = shaderStage;
+
+			ImageSampler imageSampler;
 			imageSampler.BindingPoint = binding;
-			imageSampler.Name = name;
 			imageSampler.ShaderStage = shaderStage;
+			m_ImageSamplers.insert(std::pair(binding, imageSampler));
 
 			MORAVA_CORE_TRACE("  Name: {0}", name);
 			// MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
@@ -225,37 +237,37 @@ namespace Hazel {
 
 		/****/
 
-		// Create uniform buffer (temporary code Vulkan Week 4) binding 0 uniform Camera
-		const uint32_t UNIFORM_BUFFER_SIZE = sizeof(glm::mat4);
-
-		m_UniformBuffers.clear();
-		UniformBuffer uniformBuffers[2] = {};
-
-		uniformBuffers[0].Size = UNIFORM_BUFFER_SIZE;
-		AllocateUniformBuffer(uniformBuffers[0]);
-		uniformBuffers[0].BindingPoint = 0;
-		m_UniformBuffers.insert(std::pair(0, uniformBuffers[0]));
-
-		// 2nd uniform buffer, binding 1 uniform Transform
-		uniformBuffers[1].Size = UNIFORM_BUFFER_SIZE;
-		AllocateUniformBuffer(uniformBuffers[1]);
-		uniformBuffers[1].BindingPoint = 1;
-		m_UniformBuffers.insert(std::pair(1, uniformBuffers[1]));
+		//	// Create uniform buffer (temporary code Vulkan Week 4) binding 0 uniform Camera
+		//	const uint32_t UNIFORM_BUFFER_SIZE = sizeof(glm::mat4);
+		//
+		//	m_UniformBuffers.clear();
+		//	UniformBuffer uniformBuffers[2] = {};
+		//	
+		//	uniformBuffers[0].Size = UNIFORM_BUFFER_SIZE;
+		//	AllocateUniformBuffer(uniformBuffers[0]);
+		//	uniformBuffers[0].BindingPoint = 0;
+		//	m_UniformBuffers.insert(std::pair(0, uniformBuffers[0]));
+		//	
+		//	// 2nd uniform buffer, binding 1 uniform Transform
+		//	uniformBuffers[1].Size = UNIFORM_BUFFER_SIZE;
+		//	AllocateUniformBuffer(uniformBuffers[1]);
+		//	uniformBuffers[1].BindingPoint = 1;
+		//	m_UniformBuffers.insert(std::pair(1, uniformBuffers[1]));
 
 		// Create image samplers (temporary code Vulkan Week 4)
 		// layout(binding = 2) uniform sampler2D u_AlbedoTexture;
 		// layout(binding = 3) uniform sampler2D u_NormalTexture;
 
-		m_ImageSamplers.clear();
-		ImageSampler imageSamplers[2] = {};
-
-		imageSamplers[0].BindingPoint = 2;
-		imageSamplers[0].ShaderStage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		m_ImageSamplers.insert(std::pair(2, imageSamplers[0]));
-
-		imageSamplers[1].BindingPoint = 3;
-		imageSamplers[1].ShaderStage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		m_ImageSamplers.insert(std::pair(3, imageSamplers[1]));
+		//	m_ImageSamplers.clear();
+		//	ImageSampler imageSamplers[2] = {};
+		//	
+		//	imageSamplers[0].BindingPoint = 2;
+		//	imageSamplers[0].ShaderStage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		//	m_ImageSamplers.insert(std::pair(2, imageSamplers[0]));
+		//	
+		//	imageSamplers[1].BindingPoint = 3;
+		//	imageSamplers[1].ShaderStage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		//	m_ImageSamplers.insert(std::pair(3, imageSamplers[1]));
 
 		/****/
 
