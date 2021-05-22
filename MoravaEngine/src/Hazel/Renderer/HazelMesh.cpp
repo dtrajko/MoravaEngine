@@ -113,22 +113,11 @@ namespace Hazel {
 		m_IsAnimated = scene->mAnimations != nullptr;
 		// m_MaterialInstance = std::make_shared<MaterialInstance>(m_BaseMaterial);
 
-		/************ BEGIN Creating a Shader OLD **************/
-
-		// Refactor to HazelRenderer::GetShaderLibrary()->Get()
-		if (!m_MeshShader)
-		{
-			m_MeshShader = m_IsAnimated ? ShaderLibrary::Get("HazelPBR_Anim") : ShaderLibrary::Get("HazelPBR_Static");
-		}
-
-		/************ END Creating a Shader OLD **************/
-
-		/************ BEGIN Creating a Shader NEW **************
-
 		if (!m_MeshShader)
 		{
 			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
 			{
+				// Refactor to HazelRenderer::GetShaderLibrary()->Get()
 				m_MeshShader = m_IsAnimated ? ShaderLibrary::Get("HazelPBR_Anim") : ShaderLibrary::Get("HazelPBR_Static");
 			}
 			else if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
@@ -137,8 +126,6 @@ namespace Hazel {
 				m_MeshShader = Ref<Shader>(hazelShader);
 			}
 		}
-
-		/************ END Creating a Shader NEW **************/
 
 		m_InverseTransform = glm::inverse(Math::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
 
@@ -652,24 +639,12 @@ namespace Hazel {
 
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
 
-		/************ BEGIN Creating a Graphics Pipeline OLD **************/
-
-		PipelineSpecification pipelineSpecification;
-		pipelineSpecification.Layout = m_VertexBufferLayout;
-		m_Pipeline = Pipeline::Create(pipelineSpecification);
-
-		/************ END Creating a Graphics Pipeline OLD **************/
-
-		/************ BEGIN Creating a Graphics Pipeline NEW **************
-
 		PipelineSpecification pipelineSpecification;
 		pipelineSpecification.Shader = m_MeshShader; // HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
 		// m_ShaderHazelPBR_Static = Hazel::HazelShader::Create("assets/shaders/VulkanWeekHazelPBR_Static.glsl", true);
 
 		pipelineSpecification.Layout = m_VertexBufferLayout;
 		m_Pipeline = Pipeline::Create(pipelineSpecification);
-
-		/************ END Creating a Graphics Pipeline NEW **************/
 
 		size_t totalVertices = m_IsAnimated ? m_AnimatedVertices.size() : m_StaticVertices.size();
 
@@ -877,7 +852,7 @@ namespace Hazel {
 	{
 		if (!m_BaseTexture) {
 			try {
-				m_BaseTexture = new Texture("Textures/plain.png");
+				m_BaseTexture = Ref<Texture>::Create("Textures/plain.png");
 			}
 			catch (...) {
 				Log::GetLogger()->warn("Failed to load the base texture!");
