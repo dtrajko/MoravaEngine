@@ -180,6 +180,8 @@ namespace Hazel {
 		void DeleteSubmesh(Submesh submesh);
 		void CloneSubmesh(Submesh submesh);
 
+		Ref<Pipeline> GetPipeline() { return m_Pipeline; }
+
 	private:
 		void BoneTransform(float time);
 		void ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
@@ -196,6 +198,7 @@ namespace Hazel {
 		glm::vec3 InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim);
 		void SetupDefaultBaseMaterial();
 		Ref<Texture> LoadBaseTexture();
+
 
 	public:
 		Ref<Pipeline> m_Pipeline;

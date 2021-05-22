@@ -1,5 +1,9 @@
 #include "Core/Application.h"
 
+#include "../main.h" // use a dedicated include for scene selection
+
+#include "Core/SceneProperties.h"
+
 #include "Hazel/Core/Base.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 
@@ -20,10 +24,10 @@ Application::Application()
 {
 }
 
-void Application::OnInit(SceneProperties sceneProperties) // OnInit() in Hazel
+void Application::OnInit()
 {
-	s_Instance->m_Scene = sceneProperties.Scene;
-	s_Instance->m_Renderer = sceneProperties.Renderer;
+	SceneProperties sceneProperties = Application::SetSceneProperties();
+	InitializeScene(sceneProperties);
 
 	// Projection matrix
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
@@ -95,7 +99,7 @@ void Application::InitWindow(WindowProps& props)
 	RendererBasic::AppendRendererInfo(props.Title);
 
 	m_Window = Window::Create(props);
-	m_Window->SetEventCallback(APP_BIND_EVENT_FN(OnEvent));
+	m_Window->SetEventCallback(APP_BIND_EVENT_FN(Application::OnEvent));
 }
 
 Application::~Application()
@@ -114,6 +118,12 @@ Application* Application::Get()
 	}
 
 	return s_Instance;
+}
+
+void Application::InitializeScene(SceneProperties sceneProperties)
+{
+	s_Instance->m_Scene = sceneProperties.Scene;
+	s_Instance->m_Renderer = sceneProperties.Renderer;
 }
 
 void Application::RenderImGui()
@@ -290,4 +300,126 @@ const char* Application::GetPlatformName()
 	// #error Undefined platform?
 	return "N/A";
 #endif
+}
+
+SceneProperties Application::SetSceneProperties()
+{
+	SceneProperties sceneProperties;
+
+#if defined(SCENE_COTTAGE)
+	sceneProperties.Scene = new SceneCottage();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new Renderer());
+	sceneProperties.Name = SceneName::COTTAGE;
+#elif defined(SCENE_EIFFEL)
+	sceneProperties.Scene = new SceneEiffel();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new Renderer());
+	sceneProperties.Name = SceneName::EIFFEL;
+#elif defined(SCENE_SPONZA)
+	sceneProperties.Scene = new SceneSponza();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new Renderer());
+	sceneProperties.Name = SceneName::SPONZA;
+#elif defined(SCENE_TERRAIN)
+	sceneProperties.Scene = new SceneTerrain();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new Renderer());
+	sceneProperties.Name = SceneName::TERRAIN;
+#elif defined(SCENE_PBR)
+	sceneProperties.Scene = new ScenePBR();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererPBR());
+	sceneProperties.Name = SceneName::PBR;
+#elif defined(SCENE_LEARN_OPENGL)
+	sceneProperties.Scene = new SceneJoey();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
+	sceneProperties.Name = SceneName::LEARN_OPENGL;
+#elif defined(SCENE_BULLET)
+	sceneProperties.Scene = new SceneBullet();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new Renderer());
+	sceneProperties.Name = SceneName::BULLET;
+#elif defined(SCENE_INSTANCED)
+	sceneProperties.Scene = new SceneInstanced();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
+	sceneProperties.Name = SceneName::INSTANCED;
+#elif defined(SCENE_ASTEROIDS)
+	sceneProperties.Scene = new SceneAsteroids();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
+	sceneProperties.Name = SceneName::ASTEROIDS;
+#elif defined(SCENE_NANOSUIT)
+	sceneProperties.Scene = new SceneNanosuit();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
+	sceneProperties.Name = SceneName::NANOSUIT;
+#elif defined(SCENE_FRAMEBUFFERS)
+	sceneProperties.Scene = new SceneFramebuffers();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
+	sceneProperties.Name = SceneName::FRAMEBUFFERS;
+#elif defined(SCENE_CUBEMAPS)
+	sceneProperties.Scene = new SceneCubemaps();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
+	sceneProperties.Name = SceneName::CUBEMAPS;
+#elif defined(SCENE_PARTICLES)
+	sceneProperties.Scene = new SceneParticles();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
+	sceneProperties.Name = SceneName::PARTICLES;
+#elif defined(SCENE_OMNI_SHADOWS)
+	sceneProperties.Scene = new SceneOmniShadows();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererOmniShadows());
+	sceneProperties.Name = SceneName::OMNI_SHADOWS;
+#elif defined(SCENE_PROCEDURAL_LANDMASS)
+	sceneProperties.Scene = new SceneProceduralLandmass();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
+	sceneProperties.Name = SceneName::PROCEDURAL_LANDMASS;
+#elif defined(SCENE_VOXEL_TERRAIN)
+	sceneProperties.Scene = new SceneVoxelTerrain();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
+	sceneProperties.Name = SceneName::VOXEL_TERRAIN;
+#elif defined(SCENE_VOXEL_TERRAIN_SL)
+	sceneProperties.Scene = new SceneVoxelTerrainSL();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
+	sceneProperties.Name = SceneName::VOXEL_TERRAIN_SL;
+#elif defined(SCENE_MARCHING_CUBES)
+	sceneProperties.Scene = new SceneMarchingCubes();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
+	sceneProperties.Name = SceneName::MARCHING_CUBES;
+#elif defined(SCENE_SSAO)
+	sceneProperties.Scene = new SceneSSAO();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
+	sceneProperties.Name = SceneName::SSAO;
+#elif defined(SCENE_BLOOM)
+	sceneProperties.Scene = new SceneBloom();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
+	sceneProperties.Name = SceneName::BLOOM;
+#elif defined(SCENE_ANIM_PBR)
+	sceneProperties.Scene = new SceneAnimPBR();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
+	sceneProperties.Name = SceneName::ANIM_PBR;
+#elif defined(SCENE_DEFERRED)
+	sceneProperties.Scene = new SceneDeferred();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
+	sceneProperties.Name = SceneName::DEFERRED;
+#elif defined(SCENE_DEFERRED_OGL)
+	sceneProperties.Scene = new SceneDeferredOGL();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererDeferredOGL());
+	sceneProperties.Name = SceneName::DEFERRED_OGL;
+#elif defined(SCENE_EDITOR)
+	sceneProperties.Scene = new SceneEditor();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererEditor());
+	sceneProperties.Name = SceneName::EDITOR;
+#elif defined(SCENE_EDITOR_IMGUIZMO)
+	sceneProperties.Scene = new SceneEditorImGuizmo();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererEditor());
+	sceneProperties.Name = SceneName::EDITOR_IMGUIZMO;
+#elif defined(SCENE_HAZEL_ENV_MAP)
+	sceneProperties.Scene = new SceneHazelEnvMap();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererECS());
+	sceneProperties.Name = SceneName::HAZEL_ENV_MAP;
+#elif defined(SCENE_HAZEL_VULKAN)
+	sceneProperties.Scene = new SceneHazelVulkan();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererHazelVulkan());
+	sceneProperties.Name = SceneName::HAZEL_VULKAN;
+#else
+	sceneProperties.Scene = nullptr;
+	sceneProperties.Renderer = nullptr;
+	sceneProperties.Name = SceneName::NONE;
+	throw std::runtime_error("Scene and Renderer could not be loaded!");
+#endif
+
+	return sceneProperties;
 }

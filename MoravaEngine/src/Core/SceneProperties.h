@@ -42,4 +42,5 @@ struct SceneProperties
 	Scene* Scene;
 	RendererBasic* Renderer;
 	SceneName Name;
+	// Hazel::RendererAPIType RendererAPI;
 };

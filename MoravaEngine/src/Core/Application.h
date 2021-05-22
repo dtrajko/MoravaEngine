@@ -16,13 +16,16 @@ public:
 	Application();
 	virtual ~Application();
 
-	static void OnInit(SceneProperties sceneProperties);
-	static void Run();
-	static void OnShutdown();
-
 	static Application* Get();
 
 	void InitWindow(WindowProps& props);
+
+	static void OnInit();
+	static void Run();
+	static void OnShutdown();
+
+	static SceneProperties Application::SetSceneProperties();
+	static void InitializeScene(SceneProperties sceneProperties); // TODO: Initialize Scene and Renderer here
 
 	void OnEvent(Event& e);
 

@@ -28,6 +28,8 @@ void VulkanTestLayer::OnAttach()
 	// Hazel::VulkanShader::s_AlbedoTexture = Hazel::HazelTexture2D::Create("Textures/PBR/silver/albedo.png", false, Hazel::HazelTextureWrap::Clamp);
 	Hazel::VulkanShader::s_NormalTexture = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_N.tga", false, Hazel::HazelTextureWrap::Clamp);
 
+	/************ BEGIN Creating a Graphics Pipeline and a Shader **************
+
 	// Shaders
 	m_Shader = Hazel::HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
 	// m_ShaderHazelPBR_Static = Hazel::HazelShader::Create("assets/shaders/VulkanWeekHazelPBR_Static.glsl", true);
@@ -36,6 +38,8 @@ void VulkanTestLayer::OnAttach()
 	Hazel::PipelineSpecification pipelineSpecification;
 	pipelineSpecification.Shader = m_Shader;
 	m_Pipeline = Hazel::Pipeline::Create(pipelineSpecification);
+
+	/************ END Creating a Graphics Pipeline and a Shader **************/
 
 	/**** BEGIN triangle geometry ****/
 
@@ -62,9 +66,9 @@ void VulkanTestLayer::OnAttach()
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/barrel.obj");
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Old_Stove/udmheheqx_LOD0.fbx");
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ShaderBall/shaderBall.fbx");
-	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/Cerberus_LP.FBX");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/Cerberus_LP.FBX");
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Gladiator/Gladiator.fbx");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/TestScene.fbx");
+	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/TestScene.fbx");
 
 	// m_Texture = Hazel::HazelTexture2D::Create("Textures/texture_checker.png", false, Hazel::HazelTextureWrap::Clamp);
 
@@ -125,10 +129,11 @@ void VulkanTestLayer::OnRender(Window* mainWindow)
 
 void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 viewMatrix)
 {
-	auto pipeline = m_Pipeline;
+	auto mesh = m_Mesh;
+	auto pipeline = m_Mesh->GetPipeline();
+
 	// auto vulkanVB = Hazel::Ref<Hazel::VulkanVertexBuffer>(m_VertexBuffer);
 	// auto vulkanIB = Hazel::Ref<Hazel::VulkanIndexBuffer>(m_IndexBuffer);
-	auto mesh = m_Mesh;
 
 	Hazel::HazelRenderer::Submit([=]() mutable
 	{
@@ -192,9 +197,6 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 
 		scissor.offset.y = 0;
 		vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
-		VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
-		vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
 		// DRAW GEO HERE
 
 		/**** BEGIN mesh geometry ****/
@@ -223,6 +225,9 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 
 			auto& submeshes = mesh->GetSubmeshes();
 			for (Hazel::Submesh& submesh : submeshes)
 			{
+				VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
+				vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
 				// Descriptor Sets (Uniform buffers)
 				// Bind descriptor sets describing shader binding points
 				// VkDescriptorSet* descriptorSet = (VkDescriptorSet*)m_Mesh->GetDescriptorSet();
