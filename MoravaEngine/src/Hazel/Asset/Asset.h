@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Hazel/Core/UUID.h"
+#include "Hazel/Core/Ref.h"
 
 #include <entt.hpp>
 

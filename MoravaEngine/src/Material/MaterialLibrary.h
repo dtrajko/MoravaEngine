@@ -1,9 +1,11 @@
+#define _CRT_SECURE_NO_WARNINGS
+
+#pragma once
+
 /**
  * Contains all relevant info about all materials loaded through Assimp or some other asset loader
  * Manages relations between materials and submeshes
  */
-
-#pragma once
 
 #include "Hazel/Core/Ref.h"
 #include "Hazel/Renderer/HazelMaterial.h"

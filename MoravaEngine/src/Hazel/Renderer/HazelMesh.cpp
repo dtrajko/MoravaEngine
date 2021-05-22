@@ -356,7 +356,7 @@ namespace Hazel {
 							texture = LoadBaseTexture();
 						}
 
-						if (texture && texture->IsLoaded())
+						if (texture.Raw() != nullptr && texture->IsLoaded())
 						{
 							m_Textures[i] = texture;
 							m_MeshShader->setInt("u_AlbedoTexture", m_Textures[i]->GetID());
@@ -398,7 +398,7 @@ namespace Hazel {
 							texture = Ref<Texture>::Create("Textures/normal_map_default.png");
 						}
 
-						if (texture->IsLoaded())
+						if (texture.Raw() != nullptr && texture.Raw() != nullptr && texture->IsLoaded())
 						{
 							m_MeshShader->setInt("u_NormalTexture", texture->GetID());
 							m_MeshShader->setFloat("u_MaterialUniforms.NormalTexToggle", 1.0f);
@@ -436,7 +436,7 @@ namespace Hazel {
 							texture = LoadBaseTexture();
 						}
 
-						if (texture->IsLoaded())
+						if (texture.Raw() != nullptr && texture.Raw() != nullptr && texture->IsLoaded())
 						{
 							HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
 							m_MeshShader->setInt("u_RoughnessTexture", texture->GetID());
@@ -474,7 +474,7 @@ namespace Hazel {
 							texture = LoadBaseTexture();
 						}
 
-						if (texture->IsLoaded())
+						if (texture.Raw() != nullptr && texture.Raw() != nullptr && texture->IsLoaded())
 						{
 							HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
 							m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
@@ -575,7 +575,7 @@ namespace Hazel {
 									texture = LoadBaseTexture();
 								}
 
-								if (texture->IsLoaded())
+								if (texture.Raw() != nullptr && texture.Raw() != nullptr && texture->IsLoaded())
 								{
 									m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
 									m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);

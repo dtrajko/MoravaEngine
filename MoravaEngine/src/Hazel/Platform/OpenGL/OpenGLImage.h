@@ -1,4 +1,7 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
+
 
 #include "Hazel/Renderer/HazelImage.h"
 #include "Hazel/Renderer/RendererTypes.h"

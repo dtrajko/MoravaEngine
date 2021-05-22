@@ -1,8 +1,11 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
 #include "Hazel/Core/Ref.h"
 
 struct GLFWwindow;
+
 
 namespace Hazel {
 

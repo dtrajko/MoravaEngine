@@ -370,6 +370,7 @@
     <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
+    <ClInclude Include="config.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="src\Camera\Camera.h" />
@@ -389,7 +390,6 @@
     <ClInclude Include="src\Core\Random.h" />
     <ClInclude Include="src\Core\Raycast.h" />
     <ClInclude Include="src\Core\ResourceManager.h" />
-    <ClInclude Include="src\Core\SceneProperties.h" />
     <ClInclude Include="src\Core\Timer.h" />
     <ClInclude Include="src\Core\Transform.h" />
     <ClInclude Include="src\Core\Util.h" />

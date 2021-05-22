@@ -1,6 +1,8 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
-#include "../../Renderer/Pipeline.h"
+#include "Hazel/Renderer/Pipeline.h"
 
 
 namespace Hazel {

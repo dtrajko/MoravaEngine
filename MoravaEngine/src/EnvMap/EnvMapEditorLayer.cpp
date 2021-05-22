@@ -16,7 +16,6 @@
 #include "Material/MaterialLibrary.h"
 #include "Mesh/GeometryFactory.h"
 #include "Renderer/RendererBasic.h"
-#include "Scene/SceneHazelEnvMap.h"
 #include "Shader/ShaderLibrary.h"
 
 #include <filesystem>

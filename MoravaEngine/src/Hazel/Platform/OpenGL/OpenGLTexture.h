@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
 #include "Hazel/Renderer/RendererTypes.h"
@@ -42,7 +44,7 @@ namespace Hazel {
 		}
 
 		virtual uint32_t GetID() const override { return m_ID; }
-		virtual uint32_t GetRendererID() const override { return m_ID; }
+		virtual RendererID GetRendererID() const override { return m_ID; }
 		void Resize(uint32_t width, uint32_t height);
 
 	private:
@@ -84,7 +86,7 @@ namespace Hazel {
 		virtual const std::string& GetPath() const override { return m_FilePath; }
 
 		virtual uint32_t GetID() const override { return m_RendererID; }
-		virtual uint32_t GetRendererID() const override { return m_RendererID; }
+		virtual RendererID GetRendererID() const override { return m_RendererID; }
 
 		virtual uint64_t GetHash() const { return (uint64_t)m_RendererID; }
 

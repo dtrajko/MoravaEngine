@@ -1,8 +1,11 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
 #include "Hazel/Renderer/HazelImage.h"
 
 #include "vulkan/vulkan.h"
+
 
 namespace Hazel {
 

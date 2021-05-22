@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
 #include "Hazel/Renderer/HazelTexture.h"
@@ -44,7 +46,7 @@ namespace Hazel {
 		uint32_t GetMipLevelCount() const override;
 
 		virtual uint64_t GetHash() const { return (uint64_t)m_Image; }
-		RendererID GetRendererID() const override;
+		virtual RendererID GetRendererID() const override;
 
 		bool operator ==(const HazelTexture& other) const override
 		{
@@ -96,7 +98,7 @@ namespace Hazel {
 
 		// abstract methods in HazelTexture
 		virtual uint32_t GetID() const override { return uint32_t(); /* Not implemented */ }
-		virtual uint32_t GetRendererID() const override { return uint32_t(); /* Not implemented */ }
+		virtual RendererID GetRendererID() const override { return uint32_t(); /* Not implemented */ }
 		// virtual void Resize(uint32_t width, uint32_t height) override { /* Not implemented */ };
 
 	private:

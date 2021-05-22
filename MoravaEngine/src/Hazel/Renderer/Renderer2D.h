@@ -1,11 +1,13 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
-#include "../Core/Base.h"
-#include "../Renderer/HazelCamera.h"
-#include "../Renderer/HazelTexture.h"
-#include "../Renderer/VertexArray.h"
-#include "../Renderer/Pipeline.h"
-#include "../Renderer/HazelShader.h"
+#include "Hazel/Core/Base.h"
+#include "Hazel/Renderer/HazelCamera.h"
+#include "Hazel/Renderer/HazelTexture.h"
+#include "Hazel/Renderer/VertexArray.h"
+#include "Hazel/Renderer/Pipeline.h"
+#include "Hazel/Renderer/HazelShader.h"
 
 
 namespace Hazel {

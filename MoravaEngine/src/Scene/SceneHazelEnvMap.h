@@ -1,22 +1,19 @@
 #pragma once
 
-#include "Scene/Scene.h"
-
-#include "Hazel/Editor/SceneHierarchyPanel.h"
 #include "Hazel/Events/KeyEvent.h"
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Scene/Entity.h"
 
-#include "EnvMap/EnvMapEditorLayer.h"
 #include "Framebuffer/Framebuffer.h"
 #include "Mesh/Grid.h"
+#include "Scene/Scene.h"
 #include "Texture/Texture.h"
 
 #include <map>
 #include <string>
 
 
-const int MAX_LIGHTS_ENV_MAP = 4 + 4; // (4 x point lights) + (4 x spot lights)
+class EnvMapEditorLayer;
 
 
 class SceneHazelEnvMap : public Scene

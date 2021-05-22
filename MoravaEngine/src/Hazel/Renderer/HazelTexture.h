@@ -1,10 +1,13 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
-#include "Hazel/Core/Base.h"
-#include "Hazel/Core/Ref.h"
-#include "Hazel/Core/Buffer.h"
-#include "Hazel/Renderer/HazelImage.h"
 #include "Hazel/Asset/Asset.h"
+#include "Hazel/Core/Base.h"
+#include "Hazel/Core/Buffer.h"
+#include "Hazel/Core/Ref.h"
+#include "Hazel/Renderer/HazelImage.h"
+#include "Hazel/Renderer/RendererTypes.h"
 
 
 namespace Hazel {
@@ -50,7 +53,7 @@ namespace Hazel {
 		virtual bool operator==(const HazelTexture& other) const = 0;
 
 		virtual uint32_t GetID() const = 0;
-		virtual uint32_t GetRendererID() const = 0;
+		virtual RendererID GetRendererID() const = 0;
 
 		virtual void SetData(void* data, uint32_t size);
 		static uint32_t GetBPP(HazelImageFormat format);

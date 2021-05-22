@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
 #include "Hazel/Renderer/VertexBuffer.h"
@@ -5,6 +7,7 @@
 #include "Hazel/Core/Buffer.h"
 
 #include "VulkanAllocator.h"
+
 
 namespace Hazel {
 

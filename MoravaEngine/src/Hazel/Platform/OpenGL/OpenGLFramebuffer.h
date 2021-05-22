@@ -1,6 +1,9 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
-#include "../../Renderer/HazelFramebuffer.h"
+
+#include "Hazel/Renderer/HazelFramebuffer.h"
 
 
 namespace Hazel {

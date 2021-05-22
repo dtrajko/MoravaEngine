@@ -1,6 +1,9 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
 #include "Hazel/Renderer/HazelShader.h"
+#include "Hazel/Renderer/HazelTexture.h"
 
 #include "Vulkan.h"
 

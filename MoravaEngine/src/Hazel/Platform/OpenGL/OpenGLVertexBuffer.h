@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Core/Buffer.h"
-#include "../../Renderer/VertexBuffer.h"
+#include "Hazel/Core/Buffer.h"
+#include "Hazel/Renderer/VertexBuffer.h"
 
 #include "Core/Log.h"
 
@@ -31,7 +31,8 @@ namespace Hazel {
 		virtual void SetLayout(const VertexBufferLayout& layout) override { m_Layout = layout; }
 
 		virtual uint32_t GetSize() const { return m_Size; }
-		virtual uint32_t GetRendererID() const { return m_RendererID; }
+		virtual RendererID GetRendererID() const { return m_RendererID; }
+
 	private:
 		uint32_t m_RendererID = 0;
 		uint32_t m_Size;

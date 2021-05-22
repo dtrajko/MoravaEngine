@@ -1,9 +1,5 @@
 #include "Core/Application.h"
 
-#include "../main.h" // use a dedicated include for scene selection
-
-#include "Core/SceneProperties.h"
-
 #include "Hazel/Core/Base.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 

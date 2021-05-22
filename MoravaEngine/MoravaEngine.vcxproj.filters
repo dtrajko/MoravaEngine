@@ -1638,13 +1638,11 @@
     <ClInclude Include="src\HazelVulkan\VulkanTestLayer.h">
       <Filter>HazelVulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\SceneProperties.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="src\HazelVulkan\ExampleVertex.h">
       <Filter>HazelVulkan</Filter>
     </ClInclude>
     <ClInclude Include="main.h" />
+    <ClInclude Include="config.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

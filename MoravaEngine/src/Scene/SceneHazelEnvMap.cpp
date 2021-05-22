@@ -13,6 +13,7 @@
 #include "Core/Math.h"
 #include "Core/Timer.h"
 #include "Core/Util.h"
+#include "EnvMap/EnvMapEditorLayer.h"
 #include "Mesh/Block.h"
 #include "Shader/Shader.h"
 

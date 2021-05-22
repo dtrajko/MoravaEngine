@@ -2,6 +2,7 @@
 
 #include "VulkanContext.h"
 #include "VulkanDiagnostics.h"
+#include "Hazel/Renderer/HazelRenderer.h"
 
 
 namespace Hazel::Utils {
@@ -50,6 +51,20 @@ namespace Hazel::Utils {
 			}
 		}
 		__debugbreak();
+	}
+
+	void VulkanCheckResult(VkResult result)
+	{
+		if (result != VK_SUCCESS)
+		{
+			HZ_CORE_ERROR("VkResult is '{0}' in {1}:{2}", ::Hazel::Utils::VKResultToString(result), __FILE__, __LINE__);
+			if (result == VK_ERROR_DEVICE_LOST)
+			{
+				::Hazel::Utils::RetrieveDiagnosticCheckpoints();
+				::Hazel::Utils::DumpGPUInfo();
+			}
+			HZ_CORE_ASSERT(result == VK_SUCCESS);
+		}
 	}
 
 }

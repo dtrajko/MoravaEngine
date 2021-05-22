@@ -1,9 +1,12 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
+#include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Renderer/Pipeline.h"
 
 #include "Vulkan.h"
-#include "VulkanShader.h"
+
 
 namespace Hazel {
 

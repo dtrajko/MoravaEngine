@@ -1,8 +1,9 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
 #include "Hazel/Core/HazelLog.h"
 #include "Hazel/Core/Assert.h"
-#include "Hazel/Renderer/HazelRenderer.h"
 
 #include <vulkan/vulkan.h>
 
@@ -58,19 +59,8 @@ namespace Hazel::Utils {
 
 	void RetrieveDiagnosticCheckpoints();
 
-	inline void VulkanCheckResult(VkResult result)
-	{
-		if (result != VK_SUCCESS)
-		{
-			HZ_CORE_ERROR("VkResult is '{0}' in {1}:{2}", ::Hazel::Utils::VKResultToString(result), __FILE__, __LINE__);
-			if (result == VK_ERROR_DEVICE_LOST)
-			{
-				::Hazel::Utils::RetrieveDiagnosticCheckpoints();
-				::Hazel::Utils::DumpGPUInfo();
-			}
-			HZ_CORE_ASSERT(result == VK_SUCCESS);
-		}
-	}
+	void VulkanCheckResult(VkResult result);
+
 }
 
 #define VK_CHECK_RESULT(f)											             \

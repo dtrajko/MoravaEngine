@@ -1,10 +1,11 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
 #include "../../../pch.h"
 
 #include "Hazel/Renderer/RendererContext.h"
-
-#include "Core/Application.h"
+#include "Hazel/Renderer/RenderCommandQueue.h"
 
 
 namespace Hazel {
@@ -22,10 +23,7 @@ namespace Hazel {
 	public:
 		typedef void(*RenderCommandFn)(void*);
 
-		static Ref<RendererContext> GetContext()
-		{
-			return Application::Get()->GetWindow()->GetRenderContext();
-		}
+		static Ref<RendererContext> GetContext();
 
 		// Commands
 		// static void Clear();
@@ -112,15 +110,8 @@ namespace Hazel {
 	};
 
 	namespace Utils {
-
-		inline void DumpGPUInfo()
-		{
-			auto& caps = HazelRenderer::GetCapabilities();
-			Log::GetLogger()->trace("GPU Info:");
-			Log::GetLogger()->trace("  Vendor: {0}", caps.Vendor);
-			Log::GetLogger()->trace("  Device: {0}", caps.Device);
-			Log::GetLogger()->trace("  Version: {0}", caps.Version);
-		}
+	
+		void DumpGPUInfo();
 
 	}
 

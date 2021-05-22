@@ -1,7 +1,9 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
-#include "../../Core/Buffer.h"
-#include "../../Renderer/IndexBuffer.h"
+#include "Hazel/Core/Buffer.h"
+#include "Hazel/Renderer/IndexBuffer.h"
 
 #include "Core/Log.h"
 
@@ -30,7 +32,7 @@ namespace Hazel {
 		virtual uint32_t GetCount() const { return m_Size / sizeof(uint32_t); }
 
 		virtual uint32_t GetSize() const { return m_Size; }
-		virtual uint32_t GetRendererID() const { return m_RendererID; }
+		virtual RendererID GetRendererID() const { return m_RendererID; }
 	private:
 		uint32_t m_RendererID = 0;
 		uint32_t m_Size;

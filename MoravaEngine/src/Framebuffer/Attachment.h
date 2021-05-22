@@ -38,7 +38,7 @@ public:
 	virtual ~Attachment();
 
 	inline uint32_t GetID() const { return m_ID; };
-	inline uint32_t GetRendererID() const { return m_ID; };
+	inline Hazel::RendererID GetRendererID() const { return m_ID; };
 	inline virtual uint32_t GetWidth() const override { return m_Width; };
 	inline virtual uint32_t GetHeight() const override { return m_Height; };
 

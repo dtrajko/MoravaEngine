@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
 #include "Hazel/Core/Base.h"
@@ -129,7 +131,7 @@ namespace Hazel {
 		virtual void SetLayout(const VertexBufferLayout& layout) = 0;
 
 		virtual uint32_t GetSize() const = 0;
-		virtual uint32_t GetRendererID() const = 0;
+		virtual RendererID GetRendererID() const = 0;
 
 		static Ref<VertexBuffer> Create(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
 		static Ref<VertexBuffer> Create(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);

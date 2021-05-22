@@ -20,9 +20,11 @@
 const int MAX_LIGHTS_ENV_MAP = 4 + 4; // (4 x point lights) + (4 x spot lights)
 
 
+class VulkanTestLayer;
+
+
 class SceneHazelVulkan : public Scene
 {
-
 public:
 	SceneHazelVulkan();
 	virtual ~SceneHazelVulkan() override;

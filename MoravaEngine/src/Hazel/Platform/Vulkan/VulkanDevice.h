@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
 #include "Hazel/Core/Ref.h"
@@ -5,6 +7,7 @@
 #include "Vulkan.h"
 
 #include <unordered_set>
+
 
 namespace Hazel {
 	
