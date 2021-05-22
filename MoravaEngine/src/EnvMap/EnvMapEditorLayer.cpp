@@ -2086,6 +2086,12 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<Shader> shader)
 
                     shader->setMat4("model", entityTransform * submesh.Transform);
 
+                    for (size_t i = 0; i < meshComponent.Mesh->m_BoneTransforms.size(); i++)
+                    {
+                        std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+                        shader->setMat4(uniformName, meshComponent.Mesh->m_BoneTransforms[i]);
+                    }
+
                     glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
                 }
             }
