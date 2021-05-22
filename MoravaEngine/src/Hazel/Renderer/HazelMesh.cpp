@@ -113,7 +113,17 @@ namespace Hazel {
 		m_IsAnimated = scene->mAnimations != nullptr;
 		// m_MaterialInstance = std::make_shared<MaterialInstance>(m_BaseMaterial);
 
-		/************ BEGIN Creating a Shader **************/
+		/************ BEGIN Creating a Shader OLD **************/
+
+		// Refactor to HazelRenderer::GetShaderLibrary()->Get()
+		if (!m_MeshShader)
+		{
+			m_MeshShader = m_IsAnimated ? ShaderLibrary::Get("HazelPBR_Anim") : ShaderLibrary::Get("HazelPBR_Static");
+		}
+
+		/************ END Creating a Shader OLD **************/
+
+		/************ BEGIN Creating a Shader NEW **************
 
 		if (!m_MeshShader)
 		{
@@ -128,7 +138,7 @@ namespace Hazel {
 			}
 		}
 
-		/************ END Creating a Shader **************/
+		/************ END Creating a Shader NEW **************/
 
 		m_InverseTransform = glm::inverse(Math::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
 
@@ -291,8 +301,9 @@ namespace Hazel {
 			}
 		}
 
-		// Materials
-		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+		/**** BEGIN Materials ****/
+
+		if (RendererAPI::Current() == RendererAPIType::OpenGL)
 		{
 			if (scene->HasMaterials())
 			{
@@ -356,7 +367,7 @@ namespace Hazel {
 							texture = LoadBaseTexture();
 						}
 
-						if (texture.Raw() != nullptr && texture->IsLoaded())
+						if (texture && texture->IsLoaded())
 						{
 							m_Textures[i] = texture;
 							m_MeshShader->setInt("u_AlbedoTexture", m_Textures[i]->GetID());
@@ -398,7 +409,7 @@ namespace Hazel {
 							texture = Ref<Texture>::Create("Textures/normal_map_default.png");
 						}
 
-						if (texture.Raw() != nullptr && texture.Raw() != nullptr && texture->IsLoaded())
+						if (texture->IsLoaded())
 						{
 							m_MeshShader->setInt("u_NormalTexture", texture->GetID());
 							m_MeshShader->setFloat("u_MaterialUniforms.NormalTexToggle", 1.0f);
@@ -436,7 +447,7 @@ namespace Hazel {
 							texture = LoadBaseTexture();
 						}
 
-						if (texture.Raw() != nullptr && texture.Raw() != nullptr && texture->IsLoaded())
+						if (texture->IsLoaded())
 						{
 							HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
 							m_MeshShader->setInt("u_RoughnessTexture", texture->GetID());
@@ -474,7 +485,7 @@ namespace Hazel {
 							texture = LoadBaseTexture();
 						}
 
-						if (texture.Raw() != nullptr && texture.Raw() != nullptr && texture->IsLoaded())
+						if (texture->IsLoaded())
 						{
 							HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
 							m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
@@ -575,7 +586,7 @@ namespace Hazel {
 									texture = LoadBaseTexture();
 								}
 
-								if (texture.Raw() != nullptr && texture.Raw() != nullptr && texture->IsLoaded())
+								if (texture->IsLoaded())
 								{
 									m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
 									m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
@@ -605,6 +616,8 @@ namespace Hazel {
 			}
 		}
 
+		/**** END Materials ****/
+
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Vertex Buffer...");
 
 		if (m_IsAnimated)
@@ -617,7 +630,7 @@ namespace Hazel {
 							{ ShaderDataType::Float3, "a_Tangent" },
 							{ ShaderDataType::Float3, "a_Binormal" },
 							{ ShaderDataType::Float2, "a_TexCoord" },
-							{ ShaderDataType::Int4, "a_BoneIDs" },
+							{ ShaderDataType::Int4,   "a_BoneIDs" },
 							{ ShaderDataType::Float4, "a_BoneWeights" },
 			};
 		}
@@ -637,17 +650,17 @@ namespace Hazel {
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating an Index Buffer...");
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
 
-		m_VertexBufferLayout = {
-			{ ShaderDataType::Float3, "a_Position" },
-			{ ShaderDataType::Float3, "a_Normal" },
-			{ ShaderDataType::Float3, "a_Tangent" },
-			{ ShaderDataType::Float3, "a_Binormal" },
-			{ ShaderDataType::Float2, "a_TexCoord" },
-		};
-
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
 
-		/************ BEGIN Creating a Graphics Pipeline **************/
+		/************ BEGIN Creating a Graphics Pipeline OLD **************/
+
+		PipelineSpecification pipelineSpecification;
+		pipelineSpecification.Layout = m_VertexBufferLayout;
+		m_Pipeline = Pipeline::Create(pipelineSpecification);
+
+		/************ END Creating a Graphics Pipeline OLD **************/
+
+		/************ BEGIN Creating a Graphics Pipeline NEW **************
 
 		PipelineSpecification pipelineSpecification;
 		pipelineSpecification.Shader = m_MeshShader; // HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
@@ -656,7 +669,7 @@ namespace Hazel {
 		pipelineSpecification.Layout = m_VertexBufferLayout;
 		m_Pipeline = Pipeline::Create(pipelineSpecification);
 
-		/************ END Creating a Graphics Pipeline **************/
+		/************ END Creating a Graphics Pipeline NEW **************/
 
 		size_t totalVertices = m_IsAnimated ? m_AnimatedVertices.size() : m_StaticVertices.size();
 
