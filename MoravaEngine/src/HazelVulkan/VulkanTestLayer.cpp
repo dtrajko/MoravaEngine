@@ -21,58 +21,11 @@ VulkanTestLayer::~VulkanTestLayer()
 
 void VulkanTestLayer::OnAttach()
 {
-	// Hazel::VulkanShader::s_AlbedoTexture = Hazel::HazelTexture2D::Create("Textures/texture_checker.png", false, Hazel::HazelTextureWrap::Clamp);
-	// Hazel::VulkanShader::s_AlbedoTexture = Hazel::HazelTexture2D::Create("Textures/default_material_albedo.png", false, Hazel::HazelTextureWrap::Clamp);
-
 	Hazel::VulkanShader::s_AlbedoTexture = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_A.tga", false, Hazel::HazelTextureWrap::Clamp);
-	// Hazel::VulkanShader::s_AlbedoTexture = Hazel::HazelTexture2D::Create("Textures/PBR/silver/albedo.png", false, Hazel::HazelTextureWrap::Clamp);
 	Hazel::VulkanShader::s_NormalTexture = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_N.tga", false, Hazel::HazelTextureWrap::Clamp);
 
-	/************ BEGIN Creating a Graphics Pipeline and a Shader **************
-
-	// Shaders
-	m_Shader = Hazel::HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
-	// m_ShaderHazelPBR_Static = Hazel::HazelShader::Create("assets/shaders/VulkanWeekHazelPBR_Static.glsl", true);
-
-	// Graphics Pipeline
-	Hazel::PipelineSpecification pipelineSpecification;
-	pipelineSpecification.Shader = m_Shader;
-	m_Pipeline = Hazel::Pipeline::Create(pipelineSpecification);
-
-	/************ END Creating a Graphics Pipeline and a Shader **************/
-
-	/**** BEGIN triangle geometry ****/
-
-	Hazel::Vertex vertices[3] = {
-		{{ -0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f }},
-		{{  0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f }},
-		{{  0.0f,  0.5f, 0.0f }, { 1.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f }},
-	};
-
-	m_VertexBuffer = Hazel::VertexBuffer::Create(vertices, sizeof(vertices));
-
-	uint32_t indices[3] = { 0, 1, 2 };
-
-	m_IndexBuffer = Hazel::IndexBuffer::Create(indices, sizeof(indices));
-
-	/**** END triangle geometry ****/
-
-	/**** BEGIN mesh geometry ****/
-
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/Sphere1m.fbx");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/suzanne.obj");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere_hq.obj");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/tree.obj");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/barrel.obj");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Old_Stove/udmheheqx_LOD0.fbx");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ShaderBall/shaderBall.fbx");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/Cerberus_LP.FBX");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Gladiator/Gladiator.fbx");
-	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/TestScene.fbx");
-
-	// m_Texture = Hazel::HazelTexture2D::Create("Textures/texture_checker.png", false, Hazel::HazelTextureWrap::Clamp);
-
-	/**** END mesh geometry ****/
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/TestScene.fbx");
+	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/Cerberus_LP.FBX");
 
 	// Random RGB values
 	srand(static_cast<unsigned>(time(0)));
@@ -90,23 +43,12 @@ void VulkanTestLayer::OnDetach()
 {
 }
 
-void VulkanTestLayer::OnUpdate(Hazel::Timestep ts, glm::mat4 viewMatrix)
+void VulkanTestLayer::OnUpdate(Hazel::Timestep ts, Hazel::HazelCamera* camera) // const Hazel::EditorCamera& camera
 {
 	m_Camera.OnUpdate(ts);
 
-	// static glm::vec4 clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-	// static float delta = 0.5f;
-	// if (clearColor.r > 1.0f || clearColor.r < 0.0f) {
-	// 	delta = -delta;
-	// }
-	// 
-	// clearColor.r += delta * ts * 0.05f;
-	// clearColor.b += delta * ts * 0.05f;
-
-	// Log::GetLogger()->info("VulkanTestLayer::OnRender clearColor[{0}, {1}, {2}, {3}]", clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-
 	glm::vec4 clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
-	BuildCommandBuffer(clearColor, viewMatrix);
+	Render(clearColor, camera);
 }
 
 void VulkanTestLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
@@ -127,21 +69,17 @@ void VulkanTestLayer::OnRender(Window* mainWindow)
 	// RendererBasic::Clear(1.0f, 0.0f, 1.0f, 1.0f);
 }
 
-void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 viewMatrix)
+void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* camera) // const Hazel::EditorCamera& camera
 {
 	auto mesh = m_Mesh;
-	auto pipeline = m_Mesh->GetPipeline();
-
-	// auto vulkanVB = Hazel::Ref<Hazel::VulkanVertexBuffer>(m_VertexBuffer);
-	// auto vulkanIB = Hazel::Ref<Hazel::VulkanIndexBuffer>(m_IndexBuffer);
 
 	Hazel::HazelRenderer::Submit([=]() mutable
 	{
 	});
 
 	Hazel::Ref<Hazel::VulkanContext> context = Hazel::Ref<Hazel::VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
-	Hazel::Ref<Hazel::VulkanPipeline> vulkanPipeline = Hazel::Ref<Hazel::VulkanPipeline>(pipeline);
-	Hazel::Ref<Hazel::VulkanShader> shader = Hazel::Ref<Hazel::VulkanShader>(pipeline->GetSpecification().Shader);
+	Hazel::Ref<Hazel::VulkanPipeline> vulkanPipeline = m_Mesh->GetPipeline().As<Hazel::VulkanPipeline>();
+	Hazel::Ref<Hazel::VulkanShader> shader = vulkanPipeline->GetSpecification().Shader.As<Hazel::VulkanShader>();
 	Hazel::VulkanSwapChain& swapChain = context->GetSwapChain();
 
 	VkCommandBufferBeginInfo cmdBufInfo = {};
@@ -201,7 +139,7 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 
 
 		/**** BEGIN mesh geometry ****/
 		{
-			auto vulkanMeshVB = Hazel::Ref<Hazel::VulkanVertexBuffer>(mesh->GetVertexBuffer());
+			auto vulkanMeshVB = mesh->GetVertexBuffer().As<Hazel::VulkanVertexBuffer>();
 			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
 			VkDeviceSize offsets[1] = { 0 };
 			vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
@@ -215,7 +153,7 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 
 				void* ubPtr = shader->MapUniformBuffer(0);
 				glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
 				// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
-				glm::mat4 viewProj = proj * viewMatrix; // Runtime camera
+				glm::mat4 viewProj = proj * camera->GetViewMatrix(); // Runtime camera
 				// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
 				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
 				shader->UnmapUniformBuffer(0);
@@ -244,7 +182,8 @@ void VulkanTestLayer::BuildCommandBuffer(const glm::vec4& clearColor, glm::mat4 
 
 				// Push Constants
 				vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
-				vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &m_RandomColors[submeshIndex++]);
+				glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+				vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color); // &m_RandomColors[submeshIndex++]
 
 				vkCmdDrawIndexed(drawCommandBuffer, submesh.IndexCount, 1, submesh.BaseIndex, submesh.BaseVertex, 0);
 				// vkCmdDrawIndexed(drawCommandBuffer, vulkanMeshIB->GetCount(), 1, 0, 0, 0);

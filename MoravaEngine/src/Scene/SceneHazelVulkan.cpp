@@ -206,7 +206,7 @@ void SceneHazelVulkan::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
     std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
     float deltaTime = Timer::Get()->GetDeltaTime();
-    m_VulkanTestLayer->OnUpdate(deltaTime, m_Camera->GetViewMatrix());
+    m_VulkanTestLayer->OnUpdate(deltaTime, (Hazel::HazelCamera*)m_Camera); // const Hazel::EditorCamera& camera
 
     VulkanWeekRenderer::WaitAndRender();
 

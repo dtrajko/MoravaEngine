@@ -171,6 +171,8 @@ namespace Hazel {
 
 		Ref<VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
 		Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
+		Ref<Pipeline> GetPipeline() { return m_Pipeline; }
+
 		const VertexBufferLayout& GetVertexBufferLayout() const { return m_VertexBufferLayout; }
 
 		// Setters
@@ -180,7 +182,6 @@ namespace Hazel {
 		void DeleteSubmesh(Submesh submesh);
 		void CloneSubmesh(Submesh submesh);
 
-		Ref<Pipeline> GetPipeline() { return m_Pipeline; }
 
 	private:
 		void BoneTransform(float time);
