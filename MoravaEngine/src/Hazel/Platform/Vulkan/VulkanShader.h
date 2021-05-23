@@ -119,7 +119,7 @@ namespace Hazel {
 		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set = 0);
 		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set, uint32_t numberOfSets);
 		VkWriteDescriptorSet GetDescriptorSet(const std::string& name) const; // Vulkan Week version
-		const VkWriteDescriptorSet* GetDescriptorSet(const std::string& name, uint32_t set = 0) const; // most recent version
+		// const VkWriteDescriptorSet* GetDescriptorSet(const std::string& name, uint32_t set = 0) const; // most recent version
 
 		static void ClearUniformBuffers();
 		VkDescriptorSet CreateDescriptorSet();

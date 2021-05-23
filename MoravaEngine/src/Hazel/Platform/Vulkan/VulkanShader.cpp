@@ -575,6 +575,18 @@ namespace Hazel {
 		return m_WriteDescriptorSets.at(name);
 	}
 
+	//	// TODO: does not exist in Vulkan Week version, added later
+	//	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
+	//	{
+	//		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
+	//		if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
+	//		{
+	//			MORAVA_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+	//			return nullptr;
+	//		}
+	//		return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
+	//	}
+
 	// TODO: does not exist in Vulkan Week version, added later
 	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set)
 	{
@@ -589,18 +601,6 @@ namespace Hazel {
 		Log::GetLogger()->warn("VulkanShader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets): Method not yet implemented!");
 
 		return VulkanShader::ShaderMaterialDescriptorSet();
-	}
-
-	// TODO: does not exist in Vulkan Week version, added later
-	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
-	{
-		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
-		if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
-		{
-			MORAVA_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
-			return nullptr;
-		}
-		return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
 	}
 
 	// does not exist in Vulkan Week version, added later
