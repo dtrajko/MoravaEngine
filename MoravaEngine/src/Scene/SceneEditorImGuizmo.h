@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Hazel/Editor/SceneHierarchyPanel.h"
-
 #include "Core/Raycast.h"
 #include "Editor/Gizmo.h"
 #include "Editor/SceneObjectParticleSystem.h"
@@ -202,6 +200,6 @@ private:
 	glm::vec3 m_DirLightSourcePosition;
 
 	// Panels
-	Hazel::SceneHierarchyPanel m_SceneHierarchyPanel;
+	// Hazel::SceneHierarchyPanel m_SceneHierarchyPanel;
 
 };

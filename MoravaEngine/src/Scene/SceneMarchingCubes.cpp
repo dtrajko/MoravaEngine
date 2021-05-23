@@ -841,7 +841,8 @@ void SceneMarchingCubes::Render(Window* mainWindow, glm::mat4 projectionMatrix, 
         if (passType == "shadow_dir") {
             shaderShadowMap->Bind();
             shaderShadowMap->setMat4("model", model);
-            shaderShadowMap->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+            shaderShadowMap->setMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+            shaderShadowMap->setBool("u_Animated", false);
         }
         else {
             shaderMain->Bind();
@@ -859,12 +860,15 @@ void SceneMarchingCubes::Render(Window* mainWindow, glm::mat4 projectionMatrix, 
     if (m_RenderTerrainMarchingCubes)
     {
         /**** BEGIN Render Marching Cubes ****/
-        if (passType == "shadow_dir") {
+        if (passType == "shadow_dir")
+        {
             shaderShadowMap->Bind();
             shaderShadowMap->setMat4("model", glm::mat4(1.0f));
-            shaderShadowMap->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+            shaderShadowMap->setMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+            shaderShadowMap->setBool("u_Animated", false);
         }
-        else {
+        else
+        {
             shaderMarchingCubes->Bind();
             shaderMarchingCubes->setMat4("projection", projectionMatrix);
             shaderMarchingCubes->setMat4("view", m_Camera->GetViewMatrix());

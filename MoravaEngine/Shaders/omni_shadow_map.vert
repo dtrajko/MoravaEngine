@@ -13,15 +13,24 @@ uniform mat4 model;
 const int MAX_BONES = 100;
 uniform mat4 u_BoneTransforms[MAX_BONES];
 
+uniform bool u_Animated;
+
 
 void main()
 {
-    mat4 boneTransform = u_BoneTransforms[a_BoneIndices[0]] * a_BoneWeights[0];
-    boneTransform += u_BoneTransforms[a_BoneIndices[1]] * a_BoneWeights[1];
-    boneTransform += u_BoneTransforms[a_BoneIndices[2]] * a_BoneWeights[2];
-    boneTransform += u_BoneTransforms[a_BoneIndices[3]] * a_BoneWeights[3];
+    if (u_Animated)
+    {
+        mat4 boneTransform = u_BoneTransforms[a_BoneIndices[0]] * a_BoneWeights[0];
+        boneTransform += u_BoneTransforms[a_BoneIndices[1]] * a_BoneWeights[1];
+        boneTransform += u_BoneTransforms[a_BoneIndices[2]] * a_BoneWeights[2];
+        boneTransform += u_BoneTransforms[a_BoneIndices[3]] * a_BoneWeights[3];
 
-    vec4 localPosition = boneTransform * vec4(a_Position, 1.0);
+        vec4 localPosition = boneTransform * vec4(a_Position, 1.0);
 
-	gl_Position = model * localPosition;
+	    gl_Position = model * localPosition;
+    }
+    else
+    {
+        gl_Position = model * vec4(a_Position, 1.0);
+    }
 }

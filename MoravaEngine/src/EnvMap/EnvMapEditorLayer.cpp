@@ -1998,7 +1998,7 @@ void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
 
     m_ShaderShadow->Bind();
 
-    m_ShaderShadow->setMat4("dirLightTransform", EnvMapSharedData::s_DirLightTransform);
+    m_ShaderShadow->setMat4("u_DirLightTransform", EnvMapSharedData::s_DirLightTransform);
 
     RenderSubmeshesShadowPass(m_ShaderShadow);
 
@@ -2091,6 +2091,8 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<Shader> shader)
                         std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
                         shader->setMat4(uniformName, meshComponent.Mesh->m_BoneTransforms[i]);
                     }
+
+                    shader->setBool("u_Animated", meshComponent.Mesh->IsAnimated());
 
                     glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
                 }

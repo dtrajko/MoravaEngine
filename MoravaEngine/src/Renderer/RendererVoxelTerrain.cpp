@@ -62,7 +62,8 @@ void RendererVoxelTerrain::RenderPassShadow(Window* mainWindow, Scene* scene, gl
 	glDisable(GL_BLEND);
 
 	/**** BEGIN shadow_map ****/
-	shaderShadowMap->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+	shaderShadowMap->setMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+	shaderShadowMap->setBool("u_Animated", false);
 	shaderShadowMap->Validate();
 	/**** END shadow_map ****/
 

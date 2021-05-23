@@ -9,21 +9,29 @@ layout (location = 5) in ivec4 a_BoneIndices;
 layout (location = 6) in vec4  a_BoneWeights;
 
 uniform mat4 model;
-uniform mat4 dirLightTransform;
+uniform mat4 u_DirLightTransform;
 
 const int MAX_BONES = 100;
 uniform mat4 u_BoneTransforms[MAX_BONES];
 
+uniform bool u_Animated;
+
 
 void main()
 {
-    mat4 boneTransform = u_BoneTransforms[a_BoneIndices[0]] * a_BoneWeights[0];
-    boneTransform += u_BoneTransforms[a_BoneIndices[1]] * a_BoneWeights[1];
-    boneTransform += u_BoneTransforms[a_BoneIndices[2]] * a_BoneWeights[2];
-    boneTransform += u_BoneTransforms[a_BoneIndices[3]] * a_BoneWeights[3];
+    if (u_Animated)
+    {
+        mat4 boneTransform = u_BoneTransforms[a_BoneIndices[0]] * a_BoneWeights[0];
+        boneTransform += u_BoneTransforms[a_BoneIndices[1]] * a_BoneWeights[1];
+        boneTransform += u_BoneTransforms[a_BoneIndices[2]] * a_BoneWeights[2];
+        boneTransform += u_BoneTransforms[a_BoneIndices[3]] * a_BoneWeights[3];
 
-    vec4 localPosition = boneTransform * vec4(a_Position, 1.0);
+        vec4 localPosition = boneTransform * vec4(a_Position, 1.0);
 
-	gl_Position = dirLightTransform * model * localPosition;
-
+        gl_Position = u_DirLightTransform * model * localPosition;
+    }
+    else
+    {
+        gl_Position = u_DirLightTransform * model * vec4(a_Position, 1.0);
+    }
 }

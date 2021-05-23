@@ -117,7 +117,9 @@ void Renderer::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 proj
 	glDisable(GL_BLEND);
 
 	RendererBasic::GetUniforms()["model"] = RendererBasic::GetShaders()["directionalShadow"]->GetUniformLocation("model");
-	RendererBasic::GetShaders()["directionalShadow"]->setMat4("dirLightTransform", light->CalculateLightTransform());
+	RendererBasic::GetShaders()["directionalShadow"]->setMat4("u_DirLightTransform", light->CalculateLightTransform());
+	RendererBasic::GetShaders()["directionalShadow"]->setBool("u_Animated", false);
+
 	RendererBasic::GetShaders()["directionalShadow"]->Validate();
 
 	DisableCulling();
@@ -158,6 +160,7 @@ void Renderer::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Scene
 	RendererBasic::GetShaders()["omniShadow"]->setVec3("lightPosition", light->GetPosition());
 	RendererBasic::GetShaders()["omniShadow"]->setFloat("farPlane", light->GetFarPlane());
 	RendererBasic::GetShaders()["omniShadow"]->SetLightMatrices(light->CalculateLightTransform());
+	RendererBasic::GetShaders()["omniShadow"]->setBool("u_Animated", false);
 	RendererBasic::GetShaders()["omniShadow"]->Validate();
 
 	EnableCulling();

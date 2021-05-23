@@ -932,7 +932,8 @@ void SceneAnimPBR::SetupUniforms()
     m_ShaderMain->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
     m_ShaderMain->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
 
-    m_ShaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    m_ShaderMain->setMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    m_ShaderMain->setBool("u_Animated", false);
 
     m_ShaderMain->setInt("albedoMap", textureSlots["diffuse"]);
     m_ShaderMain->setInt("normalMap", textureSlots["normal"]);

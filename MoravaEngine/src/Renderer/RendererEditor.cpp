@@ -122,7 +122,8 @@ void RendererEditor::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDisable(GL_BLEND);
 
-    shaderShadowMap->setMat4("dirLightTransform", light->CalculateLightTransform());
+    shaderShadowMap->setMat4("u_DirLightTransform", light->CalculateLightTransform());
+    shaderShadowMap->setBool("u_Animated", false);
     shaderShadowMap->Validate();
 
     DisableCulling();
@@ -613,7 +614,8 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     /**** Begin shadow_map ****/
     Shader* shaderShadowMap = RendererBasic::GetShaders()["shadow_map"];
     shaderShadowMap->Bind();
-    shaderShadowMap->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderShadowMap->setMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderShadowMap->setBool("u_Animated", false);
     /**** End shadow_map ****/
 
     /**** Begin omni_shadow_map ****/
