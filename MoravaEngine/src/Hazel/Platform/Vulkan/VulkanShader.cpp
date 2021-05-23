@@ -331,6 +331,7 @@ namespace Hazel {
 		VkWriteDescriptorSet writeDescriptorSets[4] = {};
 
 		// Binding 0 : Uniform buffer
+		// layout (std140, binding = 0) uniform Camera { mat4 u_ViewProj; }
 		writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[0].dstSet = m_DescriptorSet;
 		writeDescriptorSets[0].descriptorCount = 1;
@@ -340,6 +341,7 @@ namespace Hazel {
 		writeDescriptorSets[0].dstBinding = m_UniformBuffers[0].BindingPoint; // 0;
 
 		// Binding 1 : Uniform buffer
+		// layout (std140, binding = 1) uniform UBTransform { mat4 u_UBTransform; }
 		writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[1].dstSet = m_DescriptorSet;
 		writeDescriptorSets[1].descriptorCount = 1;
@@ -348,6 +350,7 @@ namespace Hazel {
 		// Binds this uniform buffer to binding point 1
 		writeDescriptorSets[1].dstBinding = m_UniformBuffers[1].BindingPoint; // 1;
 
+		// Material samplers - should be owned by mesh
 		// Setup a descriptor image info for the current texture to be used as a combined image sampler
 
 		Hazel::Ref<Hazel::VulkanTexture2D> albedoTexture = Hazel::Ref<Hazel::VulkanTexture2D>(s_AlbedoTexture);
@@ -355,7 +358,8 @@ namespace Hazel {
 
 		const VkDescriptorImageInfo& albedoTextureDescriptor = albedoTexture->GetVulkanDescriptorInfo();
 
-		// Binding 2 : Fragment shader texture sampler ALBEDO MAP
+		// Binding 2 : Fragment shader texture sampler
+		// layout (binding = 2) uniform sampler2D u_AlbedoTexture)
 		writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[2].dstSet = m_DescriptorSet;
 		writeDescriptorSets[2].descriptorCount = 1;
@@ -366,7 +370,8 @@ namespace Hazel {
 
 		const VkDescriptorImageInfo& normalTextureDescriptor = normalTexture->GetVulkanDescriptorInfo();
 
-		// Binding 3 : Fragment shader texture sampler NORMAL MAP
+		// Binding 3 : Fragment shader texture sampler
+		// layout (binding = 3) uniform sampler2D u_NormalTexture
 		writeDescriptorSets[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[3].dstSet = m_DescriptorSet;
 		writeDescriptorSets[3].descriptorCount = 1;
