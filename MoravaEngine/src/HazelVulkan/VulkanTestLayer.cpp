@@ -80,6 +80,8 @@ void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* ca
 	Hazel::Ref<Hazel::VulkanContext> context = Hazel::Ref<Hazel::VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
 	Hazel::Ref<Hazel::VulkanPipeline> vulkanPipeline = m_Mesh->GetPipeline().As<Hazel::VulkanPipeline>();
 	Hazel::Ref<Hazel::VulkanShader> shader = vulkanPipeline->GetSpecification().Shader.As<Hazel::VulkanShader>();
+	VkPipelineLayout pipelineLayout = vulkanPipeline->GetVulkanPipelineLayout();
+	VkDescriptorSet descriptorSet = shader->GetDescriptorSet();
 	Hazel::VulkanSwapChain& swapChain = context->GetSwapChain();
 
 	VkCommandBufferBeginInfo cmdBufInfo = {};
@@ -169,9 +171,7 @@ void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* ca
 				// Descriptor Sets (Uniform buffers)
 				// Bind descriptor sets describing shader binding points
 				// VkDescriptorSet* descriptorSet = (VkDescriptorSet*)m_Mesh->GetDescriptorSet();
-				VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
-				VkDescriptorSet descriptorSet = shader->GetDescriptorSet();
-				vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &descriptorSet, 0, nullptr);
+				vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
 				{
 					// uniform buffer binding 1 uniform Transform
@@ -181,9 +181,9 @@ void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* ca
 				}
 
 				// Push Constants
-				vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
+				vkCmdPushConstants(drawCommandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
 				glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
-				vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color); // &m_RandomColors[submeshIndex++]
+				vkCmdPushConstants(drawCommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color); // &m_RandomColors[submeshIndex++]
 
 				vkCmdDrawIndexed(drawCommandBuffer, submesh.IndexCount, 1, submesh.BaseIndex, submesh.BaseVertex, 0);
 				// vkCmdDrawIndexed(drawCommandBuffer, vulkanMeshIB->GetCount(), 1, 0, 0, 0);

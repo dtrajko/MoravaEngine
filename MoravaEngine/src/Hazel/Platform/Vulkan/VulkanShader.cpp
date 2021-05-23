@@ -298,8 +298,12 @@ namespace Hazel {
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayout));
 
+		// Create the global descriptor pool
+		// All descriptors used in this example are allocated from this pool
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		// Once you bind a descriptor set and use it in a vkCmdDraw() function, you can no longer modify it unless you specify the
+		descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
 		descriptorPoolInfo.pNext = nullptr;
 		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(typeCounts.size());
 		descriptorPoolInfo.pPoolSizes = typeCounts.data();
@@ -311,14 +315,7 @@ namespace Hazel {
 		// Descriptor Sets - these shouldn't be in the shader class
 		//////////////////////////////////////////////////////////////////////
 
-		// Allocate a new descriptor set from the global descriptor pool
-		VkDescriptorSetAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = m_DescriptorPool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &m_DescriptorSetLayout;
-
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &m_DescriptorSet));
+		m_DescriptorSet = CreateDescriptorSet();
 
 		//////////////////////////////////////////////////////////////////////
 		// Write Descriptor Sets - these shouldn't be in the shader class
@@ -328,7 +325,7 @@ namespace Hazel {
 		// For every binding point used in a shader there needs to be one
 		// descriptor set matching that binding point
 
-		VkWriteDescriptorSet writeDescriptorSets[4] = {};
+		std::vector<VkWriteDescriptorSet> writeDescriptorSets(4);
 
 		// Binding 0 : Uniform buffer
 		// layout (std140, binding = 0) uniform Camera { mat4 u_ViewProj; }
@@ -380,7 +377,7 @@ namespace Hazel {
 		// Binds this image sampler to binding point 3
 		writeDescriptorSets[3].dstBinding = m_ImageSamplers[3].BindingPoint; // 3
 
-		vkUpdateDescriptorSets(device, 4, writeDescriptorSets, 0, nullptr);
+		vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
 	}
 
 	void VulkanShader::Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData)
@@ -496,6 +493,8 @@ namespace Hazel {
 		// All descriptors used in this example are allocated from this pool
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		// Once you bind a descriptor set and use it in a vkCmdDraw() function, you can no longer modify it unless you specify the
+		descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
 		descriptorPoolInfo.pNext = nullptr;
 		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(typeCounts.size());
 		descriptorPoolInfo.pPoolSizes = typeCounts.data();
@@ -562,7 +561,7 @@ namespace Hazel {
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = m_DescriptorPool;
-		allocInfo.descriptorSetCount = 2;
+		allocInfo.descriptorSetCount = 1;
 		allocInfo.pSetLayouts = &m_DescriptorSetLayout;
 
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));

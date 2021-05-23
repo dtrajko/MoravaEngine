@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "HazelMesh.h"
 
 #include <GL/glew.h>
@@ -16,7 +18,9 @@
 #include <assimp/LogStream.hpp>
 
 #include "Hazel/Scene/Entity.h"
+#include "Hazel/Platform/Vulkan/VulkanContext.h"
 
+#include "Core/Log.h"
 #include "Core/Math.h"
 #include "Core/Util.h"
 #include "EnvMap/EnvMapEditorLayer.h"
@@ -36,6 +40,11 @@ namespace Hazel {
 #else
 	#define HZ_MESH_LOG(...)
 #endif
+
+	static VkDescriptorSet s_DescriptorSet;
+	static std::vector<VkWriteDescriptorSet> s_WriteDescriptorSets;
+
+	// glm::mat4 Mat4FromAssimpMat4(const aiMatrix4x4& matrix) moved to Math class
 
 	static const uint32_t s_MeshImportFlags =
 		aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
@@ -645,6 +654,16 @@ namespace Hazel {
 
 		pipelineSpecification.Layout = m_VertexBufferLayout;
 		m_Pipeline = Pipeline::Create(pipelineSpecification);
+
+		// HazelRenderer::Submit([&]()
+		// {
+		// });
+
+		auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+		MORAVA_CORE_WARN("Updating {0} descriptor sets", s_WriteDescriptorSets.size());
+		vkUpdateDescriptorSets(vulkanDevice, static_cast<uint32_t>(s_WriteDescriptorSets.size()), s_WriteDescriptorSets.data(), 0, nullptr);
+
 
 		size_t totalVertices = m_IsAnimated ? m_AnimatedVertices.size() : m_StaticVertices.size();
 
