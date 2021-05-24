@@ -278,6 +278,15 @@ namespace Hazel {
 			layoutBinding.stageFlags = uniformBuffer.ShaderStage;
 			layoutBinding.pImmutableSamplers = nullptr;
 			layoutBinding.binding = binding;
+
+			VkWriteDescriptorSet& set = m_WriteDescriptorSets[uniformBuffer.Name];
+			set = {};
+			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+			set.descriptorCount = 1;
+			set.dstBinding = layoutBinding.binding;
+
+			AllocateUniformBuffer(uniformBuffer);
 		}
 
 		for (auto& [binding, imageSampler] : m_ImageSamplers)
@@ -288,6 +297,14 @@ namespace Hazel {
 			layoutBinding.stageFlags = imageSampler.ShaderStage;
 			layoutBinding.pImmutableSamplers = nullptr;
 			layoutBinding.binding = binding;
+
+			VkWriteDescriptorSet& set = m_WriteDescriptorSets[imageSampler.Name];
+			set = {};
+			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+			set.descriptorCount = 1;
+			set.dstBinding = layoutBinding.binding;
+			set.dstBinding = layoutBinding.binding;
 		}
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
@@ -518,7 +535,7 @@ namespace Hazel {
 			VkWriteDescriptorSet& set = m_WriteDescriptorSets[uniformBuffer.Name];
 			set = {};
 			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			set.descriptorType = layoutBinding.descriptorType;
+			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 			set.descriptorCount = 1;
 			set.dstBinding = layoutBinding.binding;
 
@@ -537,7 +554,7 @@ namespace Hazel {
 			VkWriteDescriptorSet& set = m_WriteDescriptorSets[imageSampler.Name];
 			set = {};
 			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			set.descriptorType = layoutBinding.descriptorType;
+			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 			set.descriptorCount = 1;
 			set.dstBinding = layoutBinding.binding;
 		}

@@ -18,7 +18,6 @@
 #include <assimp/LogStream.hpp>
 
 #include "Hazel/Scene/Entity.h"
-#include "Hazel/Platform/Vulkan/VulkanContext.h"
 
 #include "Core/Log.h"
 #include "Core/Math.h"
@@ -30,6 +29,12 @@
 #include "imgui.h"
 
 #include <filesystem>
+
+// TEMPORARY VULKAN INCLUDES
+#include "Hazel/Platform/Vulkan/VulkanContext.h"
+#include "Hazel/Platform/Vulkan/VulkanPipeline.h"
+#include "Hazel/Platform/Vulkan/VulkanShader.h"
+#include "Hazel/Platform/Vulkan/VulkanTexture.h"
 
 
 namespace Hazel {
@@ -290,39 +295,42 @@ namespace Hazel {
 		//	s_WriteDescriptorSets.push_back(writeDescriptorSet);
 
 		// Bones
-		for (size_t m = 0; m < scene->mNumMeshes; m++)
+		if (m_IsAnimated)
 		{
-			aiMesh* mesh = scene->mMeshes[m];
-			Submesh& submesh = m_Submeshes[m];
-
-			for (size_t i = 0; i < mesh->mNumBones; i++)
+			for (size_t m = 0; m < scene->mNumMeshes; m++)
 			{
-				aiBone* bone = mesh->mBones[i];
-				std::string boneName(bone->mName.data);
-				int boneIndex = 0;
+				aiMesh* mesh = scene->mMeshes[m];
+				Submesh& submesh = m_Submeshes[m];
 
-				if (m_BoneMapping.find(boneName) == m_BoneMapping.end())
+				for (size_t i = 0; i < mesh->mNumBones; i++)
 				{
-					// Allocate an index for a new bone
-					boneIndex = m_BoneCount;
-					m_BoneCount++;
-					BoneInfo bi;
-					m_BoneInfo.push_back(bi);
-					m_BoneInfo[boneIndex].BoneOffset = Math::Mat4FromAssimpMat4(bone->mOffsetMatrix);
-					m_BoneMapping[boneName] = boneIndex;
-				}
-				else
-				{
-					Log::GetLogger()->info("Found existing bone in map");
-					boneIndex = m_BoneMapping[boneName];
-				}
+					aiBone* bone = mesh->mBones[i];
+					std::string boneName(bone->mName.data);
+					int boneIndex = 0;
 
-				for (size_t j = 0; j < bone->mNumWeights; j++)
-				{
-					int VertexID = submesh.BaseVertex + bone->mWeights[j].mVertexId;
-					float Weight = bone->mWeights[j].mWeight;
-					if (m_AnimatedVertices.size() > VertexID) {
-						m_AnimatedVertices[VertexID].AddBoneData(boneIndex, Weight);
+					if (m_BoneMapping.find(boneName) == m_BoneMapping.end())
+					{
+						// Allocate an index for a new bone
+						boneIndex = m_BoneCount;
+						m_BoneCount++;
+						BoneInfo bi;
+						m_BoneInfo.push_back(bi);
+						m_BoneInfo[boneIndex].BoneOffset = Math::Mat4FromAssimpMat4(bone->mOffsetMatrix);
+						m_BoneMapping[boneName] = boneIndex;
+					}
+					else
+					{
+						Log::GetLogger()->info("Found existing bone in map");
+						boneIndex = m_BoneMapping[boneName];
+					}
+
+					for (size_t j = 0; j < bone->mNumWeights; j++)
+					{
+						int VertexID = submesh.BaseVertex + bone->mWeights[j].mVertexId;
+						float Weight = bone->mWeights[j].mWeight;
+						if (m_AnimatedVertices.size() > VertexID) {
+							m_AnimatedVertices[VertexID].AddBoneData(boneIndex, Weight);
+						}
 					}
 				}
 			}
@@ -399,15 +407,19 @@ namespace Hazel {
 							m_Textures[i] = texture;
 							m_MeshShader->setInt("u_AlbedoTexture", m_Textures[i]->GetID());
 
-							//	HazelRenderer::Submit([instance, shader, texture]() mutable
-							//	{
-							//	});
-
-							VkWriteDescriptorSet wds = shader.As<VulkanShader>()->GetDescriptorSet("u_AlbedoTexture");
-							wds.dstSet = s_DescriptorSet;
-							auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-							wds.pImageInfo = &imageInfo;
-							s_WriteDescriptorSets.push_back(wds);
+							if (RendererAPI::Current() == RendererAPIType::Vulkan)
+							{
+								// HazelRenderer::Submit([instance, shader, texture]() mutable
+								// {
+								// });
+								{
+									VkWriteDescriptorSet wds = shader.As<VulkanShader>()->GetDescriptorSet("u_AlbedoTexture");
+									wds.dstSet = s_DescriptorSet;
+									auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+									wds.pImageInfo = &imageInfo;
+									s_WriteDescriptorSets.push_back(wds);
+								}
+							}
 
 							m_MeshShader->setFloat("u_MaterialUniforms.AlbedoTexToggle", 1.0f);
 
@@ -451,15 +463,19 @@ namespace Hazel {
 						{
 							m_MeshShader->setInt("u_NormalTexture", texture->GetID());
 
-							//	HazelRenderer::Submit([instance, shader, texture]() mutable
-							//	{
-							//	});
-
-							VkWriteDescriptorSet wds = shader.As<VulkanShader>()->GetDescriptorSet("u_NormalTexture");
-							wds.dstSet = s_DescriptorSet;
-							auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-							wds.pImageInfo = &imageInfo;
-							s_WriteDescriptorSets.push_back(wds);
+							if (RendererAPI::Current() == RendererAPIType::Vulkan)
+							{
+								// HazelRenderer::Submit([instance, shader, texture]() mutable
+								// {
+								// });
+								{
+									VkWriteDescriptorSet wds = shader.As<VulkanShader>()->GetDescriptorSet("u_NormalTexture"); // contains binding point etc
+									wds.dstSet = s_DescriptorSet;
+									auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+									wds.pImageInfo = &imageInfo;
+									s_WriteDescriptorSets.push_back(wds);
+								}
+							}
 
 							m_MeshShader->setFloat("u_MaterialUniforms.NormalTexToggle", 1.0f);
 
@@ -706,14 +722,19 @@ namespace Hazel {
 		// m_ShaderHazelPBR_Static = Hazel::HazelShader::Create("assets/shaders/VulkanWeekHazelPBR_Static.glsl", true);
 		m_Pipeline = Pipeline::Create(pipelineSpecification);
 
-		// HazelRenderer::Submit([&]()
-		// {
-		// });
+		if (RendererAPI::Current() == RendererAPIType::Vulkan)
+		{
+			// HazelRenderer::Submit([&]()
+			// {
+			// });
 
-		auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			{
+				auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-		// MORAVA_CORE_WARN("Updating {0} descriptor sets", s_WriteDescriptorSets.size());
-		// vkUpdateDescriptorSets(vulkanDevice, static_cast<uint32_t>(s_WriteDescriptorSets.size()), s_WriteDescriptorSets.data(), 0, nullptr);
+				MORAVA_CORE_WARN("Updating {0} descriptor sets", s_WriteDescriptorSets.size());
+				// vkUpdateDescriptorSets(vulkanDevice, static_cast<uint32_t>(s_WriteDescriptorSets.size()), s_WriteDescriptorSets.data(), 0, nullptr);
+			}
+		}
 
 		size_t totalVertices = m_IsAnimated ? m_AnimatedVertices.size() : m_StaticVertices.size();
 
