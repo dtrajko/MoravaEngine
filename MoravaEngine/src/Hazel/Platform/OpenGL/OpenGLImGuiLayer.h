@@ -2,23 +2,21 @@
 
 #include "Hazel/Core/Layer.h"
 
-#include "Vulkan.h"
-
 // ImGui includes
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
-#include <imgui_impl_vulkan_with_textures.h>
+#include <imgui_impl_opengl3.h>
 #include <imgui_internal.h>
 
 
 namespace Hazel {
 
-	class VulkanImGuiLayer : public Layer
+	class OpenGLImGuiLayer : public Layer
 	{
 	public:
-		VulkanImGuiLayer();
-		VulkanImGuiLayer(const std::string& name);
-		~VulkanImGuiLayer();
+		OpenGLImGuiLayer();
+		OpenGLImGuiLayer(const std::string& name);
+		~OpenGLImGuiLayer();
 
 		virtual void Begin();
 		virtual void End();
@@ -26,7 +24,7 @@ namespace Hazel {
 		virtual void OnAttach();
 		virtual void OnDetach();
 		virtual void OnImGuiRender();
-
+	
 	private:
 		float m_Time = 0.0f;
 

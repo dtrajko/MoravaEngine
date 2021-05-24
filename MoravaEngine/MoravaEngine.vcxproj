@@ -157,11 +157,13 @@
     <ClCompile Include="src\Hazel\Core\UUID.cpp" />
     <ClCompile Include="src\Hazel\Editor\EditorCamera.cpp" />
     <ClCompile Include="src\Hazel\Editor\SceneHierarchyPanel.cpp" />
+    <ClCompile Include="src\Hazel\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Hazel\Physics\Physics.cpp" />
     <ClCompile Include="src\Hazel\Physics\PhysicsActor.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLFramebuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLImage.cpp" />
+    <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLImGuiLayer.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLIndexBuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLMaterial.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLPipeline.cpp" />
@@ -444,11 +446,13 @@
     <ClInclude Include="src\Hazel\Events\KeyEvent.h" />
     <ClInclude Include="src\Hazel\Events\MouseEvent.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGui.h" />
+    <ClInclude Include="src\Hazel\ImGui\ImGuiLayer.h" />
     <ClInclude Include="src\Hazel\Physics\Physics.h" />
     <ClInclude Include="src\Hazel\Physics\PhysicsActor.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLFramebuffer.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLImage.h" />
+    <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLImGuiLayer.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLIndexBuffer.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLMaterial.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLPipeline.h" />
