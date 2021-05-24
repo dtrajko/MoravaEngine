@@ -53,7 +53,7 @@ namespace Hazel {
 			throw std::logic_error("The method or operation is not implemented.");
 		}
 
-		virtual uint32_t GetID() const override { return uint32_t(); /* Not implemented */ }
+		virtual uint32_t GetID() const override { return uint32_t(0); /* Not implemented */ }
 	private:
 		std::string m_Path;
 		uint32_t m_Width;

@@ -157,17 +157,14 @@ namespace Hazel {
 			HZ_CORE_ASSERT(m_UniformBuffers.find(bindingPoint) == m_UniformBuffers.end());
 
 			// UniformBuffer& buffer = m_UniformBuffers[bindingPoint];
-			// buffer.BindingPoint = bindingPoint;
-			// buffer.Size = size;
-			// buffer.Name = name;
-			// buffer.ShaderStage = shaderStage;
 
-			UniformBuffer uniformBuffer;
-			uniformBuffer.Size = size;
-			AllocateUniformBuffer(uniformBuffer);
-			uniformBuffer.BindingPoint = bindingPoint;
-			uniformBuffer.ShaderStage = shaderStage;
-			m_UniformBuffers.insert(std::pair(bindingPoint, uniformBuffer));
+			UniformBuffer buffer;
+			buffer.Size = size;
+			AllocateUniformBuffer(buffer);
+			buffer.BindingPoint = bindingPoint;
+			buffer.ShaderStage = shaderStage;
+			buffer.Name = name;
+			m_UniformBuffers.insert(std::pair(bindingPoint, buffer));
 
 			MORAVA_CORE_TRACE("  Name: {0}", name);
 			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
@@ -221,13 +218,11 @@ namespace Hazel {
 			HZ_CORE_ASSERT(m_ImageSamplers.find(bindingPoint) == m_ImageSamplers.end());
 
 			// auto& imageSampler = m_ImageSamplers[binding];
-			// imageSampler.BindingPoint = binding;
-			// imageSampler.Name = name;
-			// imageSampler.ShaderStage = shaderStage;
 
 			ImageSampler imageSampler;
 			imageSampler.BindingPoint = bindingPoint;
 			imageSampler.ShaderStage = shaderStage;
+			imageSampler.Name = name;
 			m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
 
 			MORAVA_CORE_TRACE("  Name: {0}", name);
@@ -474,8 +469,8 @@ namespace Hazel {
 
 			auto& imageSampler = m_ImageSamplers[binding];
 			imageSampler.BindingPoint = binding;
-			imageSampler.Name = name;
 			imageSampler.ShaderStage = shaderStage;
+			imageSampler.Name = name;
 		}
 
 		HZ_CORE_TRACE("===========================");
@@ -949,12 +944,16 @@ namespace Hazel {
 
 	const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanShader::GetShaderBuffers() const
 	{
-		return std::unordered_map<std::string, Hazel::ShaderBuffer>();
+		auto shaderBuffers = std::unordered_map<std::string, Hazel::ShaderBuffer>();
+		shaderBuffers.empty();
+		return shaderBuffers;
 	}
 
 	const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& VulkanShader::GetResources() const
 	{
-		return std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>();
+		auto resources = std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>();
+		resources.empty();
+		return resources;
 	}
 
 	void VulkanShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)

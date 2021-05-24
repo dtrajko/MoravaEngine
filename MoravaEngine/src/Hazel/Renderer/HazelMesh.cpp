@@ -338,347 +338,387 @@ namespace Hazel {
 
 		/**** BEGIN Materials ****/
 
-		if (RendererAPI::Current() == RendererAPIType::OpenGL)
+		if (scene->HasMaterials())
 		{
-			if (scene->HasMaterials())
+			Log::GetLogger()->info("---- Materials - {0} ----", m_FilePath);
+
+			m_MeshShader->Bind();
+
+			m_Textures.resize(scene->mNumMaterials);
+			m_Materials.resize(scene->mNumMaterials);
+			for (uint32_t i = 0; i < scene->mNumMaterials; i++)
 			{
-				Log::GetLogger()->info("---- Materials - {0} ----", m_FilePath);
+				auto aiMaterial = scene->mMaterials[i];
+				auto aiMaterialName = aiMaterial->GetName();
 
-				m_MeshShader->Bind();
+				// auto mi = Ref<HazelMaterial>::Create(m_BaseMaterial, aiMaterialName.data);
 
-				m_Textures.resize(scene->mNumMaterials);
-				m_Materials.resize(scene->mNumMaterials);
-				for (uint32_t i = 0; i < scene->mNumMaterials; i++)
+				auto mi = HazelMaterial::Create(m_MeshShader, aiMaterialName.data);
+
+				m_Materials[i] = mi;
+
+				Submesh* submeshPtr = nullptr;
+				if (i < m_Submeshes.size()) {
+					submeshPtr = &m_Submeshes[i];
+				}
+
+				Hazel::Ref<MaterialData> materialData = Hazel::Ref<MaterialData>();
+
+				if (RendererAPI::Current() == RendererAPIType::OpenGL)
 				{
-					auto aiMaterial = scene->mMaterials[i];
-					auto aiMaterialName = aiMaterial->GetName();
+					materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
+				}
 
-					// auto mi = Ref<HazelMaterial>::Create(m_BaseMaterial, aiMaterialName.data);
+				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
+				aiString aiTexPath;
+				uint32_t textureCount = aiMaterial->GetTextureCount(aiTextureType_DIFFUSE);
+				HZ_MESH_LOG("    TextureCount = {0}", textureCount);
 
-					auto mi = HazelMaterial::Create(m_MeshShader, aiMaterialName.data);
+				aiColor3D aiColor;
+				aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor);
 
-					m_Materials[i] = mi;
+				float shininess, metalness;
+				aiMaterial->Get(AI_MATKEY_SHININESS, shininess);
+				aiMaterial->Get(AI_MATKEY_REFLECTIVITY, metalness);
 
-					Submesh* submeshPtr = nullptr;
-					if (i < m_Submeshes.size()) {
-						submeshPtr = &m_Submeshes[i];
+				// float roughness = 1.0f - shininess * 0.01f;
+				// roughness *= roughness;
+				float roughness = 1.0f - glm::sqrt(shininess / 100.0f);
+				HZ_MESH_LOG("    COLOR = {0}, {1}, {2}", aiColor.r, aiColor.g, aiColor.b);
+				HZ_MESH_LOG("    ROUGHNESS = {0}", roughness);
+				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
+				if (hasAlbedoMap)
+				{
+					// TODO: Temp - this should be handled by Hazel's filesystem
+					std::filesystem::path path = m_FilePath;
+					auto parentPath = path.parent_path();
+					parentPath /= std::string(aiTexPath.data);
+					std::string texturePath = parentPath.string();
+					Log::GetLogger()->info("    Albedo map path = {0}", texturePath);
+
+					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
+					try {
+						texture = HazelTexture2D::Create(texturePath.c_str(), false);
+					}
+					catch (...) {
+						Log::GetLogger()->warn("The ALBEDO map failed to load. Loading the default texture placeholder instead.");
+						texture = LoadBaseTexture();
 					}
 
-					Hazel::Ref<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
-
-					Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
-					aiString aiTexPath;
-					uint32_t textureCount = aiMaterial->GetTextureCount(aiTextureType_DIFFUSE);
-					HZ_MESH_LOG("    TextureCount = {0}", textureCount);
-
-					aiColor3D aiColor;
-					aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor);
-
-					float shininess, metalness;
-					aiMaterial->Get(AI_MATKEY_SHININESS, shininess);
-					aiMaterial->Get(AI_MATKEY_REFLECTIVITY, metalness);
-
-					// float roughness = 1.0f - shininess * 0.01f;
-					// roughness *= roughness;
-					float roughness = 1.0f - glm::sqrt(shininess / 100.0f);
-					HZ_MESH_LOG("    COLOR = {0}, {1}, {2}", aiColor.r, aiColor.g, aiColor.b);
-					HZ_MESH_LOG("    ROUGHNESS = {0}", roughness);
-					bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
-					if (hasAlbedoMap)
+					if (texture && texture->Loaded())
 					{
-						// TODO: Temp - this should be handled by Hazel's filesystem
-						std::filesystem::path path = m_FilePath;
-						auto parentPath = path.parent_path();
-						parentPath /= std::string(aiTexPath.data);
-						std::string texturePath = parentPath.string();
-						Log::GetLogger()->info("    Albedo map path = {0}", texturePath);
+						m_Textures[i] = texture;
 
-						Ref<Texture> texture = Ref<Texture>();
-						try {
-							texture = Ref<Texture>::Create(texturePath.c_str(), false);
-						}
-						catch (...) {
-							Log::GetLogger()->warn("The ALBEDO map failed to load. Loading the default texture placeholder instead.");
-							texture = LoadBaseTexture();
-						}
-
-						if (texture && texture->IsLoaded())
+						if (RendererAPI::Current() == RendererAPIType::OpenGL)
 						{
-							m_Textures[i] = texture;
 							m_MeshShader->setInt("u_AlbedoTexture", m_Textures[i]->GetID());
-
-							if (RendererAPI::Current() == RendererAPIType::Vulkan)
-							{
-								// HazelRenderer::Submit([instance, shader, texture]() mutable
-								// {
-								// });
-								{
-									VkWriteDescriptorSet wds = shader.As<VulkanShader>()->GetDescriptorSet("u_AlbedoTexture");
-									wds.dstSet = s_DescriptorSet;
-									auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-									wds.pImageInfo = &imageInfo;
-									s_WriteDescriptorSets.push_back(wds);
-								}
-							}
-
 							m_MeshShader->setFloat("u_MaterialUniforms.AlbedoTexToggle", 1.0f);
-
 							MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Albedo, texturePath, materialData->EnvMapMaterialRef);
 						}
-						else
+
+						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
-							Log::GetLogger()->error("Could not load texture: {0}", texturePath);
-							// Fallback to albedo color
-							m_MeshShader->setVec3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
-							HZ_MESH_LOG("Mesh has no Albedo map.");
+							// HazelRenderer::Submit([instance, shader, texture]() mutable
+							// {
+							// });
+							{
+								VkWriteDescriptorSet wds = shader.As<VulkanShader>()->GetDescriptorSet("u_AlbedoTexture");
+								wds.dstSet = s_DescriptorSet;
+								auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+								wds.pImageInfo = &imageInfo;
+								s_WriteDescriptorSets.push_back(wds);
+							}
 						}
+
 					}
 					else
+					{
+						Log::GetLogger()->error("Could not load texture: {0}", texturePath);
+
+						// Fallback to albedo color
+						if (RendererAPI::Current() == RendererAPIType::OpenGL)
+						{
+							m_MeshShader->setVec3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
+						}
+
+						HZ_MESH_LOG("Mesh has no Albedo map.");
+					}
+				}
+				else
+				{
+					if (RendererAPI::Current() == RendererAPIType::OpenGL)
 					{
 						m_MeshShader->setVec3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
-						Log::GetLogger()->info("    No albedo map");
 					}
 
-					// Normal maps
+					Log::GetLogger()->info("    No albedo map");
+				}
+
+				// Normal maps
+				if (RendererAPI::Current() == RendererAPIType::OpenGL)
+				{
 					m_MeshShader->setFloat("u_MaterialUniforms.NormalTexToggle", 0.0f);
-					if (aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &aiTexPath) == AI_SUCCESS)
+				}
+
+				if (aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &aiTexPath) == AI_SUCCESS)
+				{
+					// TODO: Temp - this should be handled by Hazel's filesystem
+					std::filesystem::path path = m_FilePath;
+					auto parentPath = path.parent_path();
+					parentPath /= std::string(aiTexPath.data);
+					std::string texturePath = parentPath.string();
+					HZ_MESH_LOG("    Normal map path = {0}", texturePath);
+
+					Ref<Texture> texture = Ref<Texture>();
+					try {
+						texture = Ref<Texture>::Create(texturePath.c_str(), false);
+						// m_Textures.push_back(texture);
+					}
+					catch (...) {
+						Log::GetLogger()->warn("The NORMAL map failed to load. Loading the default texture placeholder instead.");
+						texture = Ref<Texture>::Create("Textures/normal_map_default.png");
+					}
+
+					if (texture->IsLoaded())
 					{
-						// TODO: Temp - this should be handled by Hazel's filesystem
-						std::filesystem::path path = m_FilePath;
-						auto parentPath = path.parent_path();
-						parentPath /= std::string(aiTexPath.data);
-						std::string texturePath = parentPath.string();
-						HZ_MESH_LOG("    Normal map path = {0}", texturePath);
-
-						Ref<Texture> texture = Ref<Texture>();
-						try {
-							texture = Ref<Texture>::Create(texturePath.c_str(), false);
-						}
-						catch (...) {
-							Log::GetLogger()->warn("The NORMAL map failed to load. Loading the default texture placeholder instead.");
-							texture = Ref<Texture>::Create("Textures/normal_map_default.png");
-						}
-
-						if (texture->IsLoaded())
+						if (RendererAPI::Current() == RendererAPIType::OpenGL)
 						{
 							m_MeshShader->setInt("u_NormalTexture", texture->GetID());
-
-							if (RendererAPI::Current() == RendererAPIType::Vulkan)
-							{
-								// HazelRenderer::Submit([instance, shader, texture]() mutable
-								// {
-								// });
-								{
-									VkWriteDescriptorSet wds = shader.As<VulkanShader>()->GetDescriptorSet("u_NormalTexture"); // contains binding point etc
-									wds.dstSet = s_DescriptorSet;
-									auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-									wds.pImageInfo = &imageInfo;
-									s_WriteDescriptorSets.push_back(wds);
-								}
-							}
-
 							m_MeshShader->setFloat("u_MaterialUniforms.NormalTexToggle", 1.0f);
-
 							MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Normal, texturePath, materialData->EnvMapMaterialRef);
 						}
-						else
+
+						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
-							Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
+							// HazelRenderer::Submit([instance, shader, texture]() mutable
+							// {
+							// });
+							{
+								VkWriteDescriptorSet wds = shader.As<VulkanShader>()->GetDescriptorSet("u_NormalTexture"); // contains binding point etc
+								wds.dstSet = s_DescriptorSet;
+								auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+								wds.pImageInfo = &imageInfo;
+								s_WriteDescriptorSets.push_back(wds);
+							}
 						}
+
 					}
 					else
 					{
-						Log::GetLogger()->info("    No normal map");
+						Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
+					}
+				}
+				else
+				{
+					Log::GetLogger()->info("    No normal map");
+				}
+
+				// Roughness map
+				// m_MeshShader->setFloat("u_MaterialUniforms.Roughness", 1.0f);
+				// m_MeshShader->setFloat("u_MaterialUniforms.RoughnessTexToggle", 0.0f);
+				if (aiMaterial->GetTexture(aiTextureType_SHININESS, 0, &aiTexPath) == AI_SUCCESS)
+				{
+					// TODO: Temp - this should be handled by Hazel's filesystem
+					std::filesystem::path path = m_FilePath;
+					auto parentPath = path.parent_path();
+					parentPath /= std::string(aiTexPath.data);
+					std::string texturePath = parentPath.string();
+					// HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
+
+					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
+					try {
+						texture = HazelTexture2D::Create(texturePath.c_str(), false);
+					}
+					catch (...) {
+						Log::GetLogger()->warn("The ROUGHNESS map failed to load. Loading the default texture placeholder instead.");
+						texture = LoadBaseTexture();
 					}
 
-					// Roughness map
-					// m_MeshShader->setFloat("u_MaterialUniforms.Roughness", 1.0f);
-					// m_MeshShader->setFloat("u_MaterialUniforms.RoughnessTexToggle", 0.0f);
-					if (aiMaterial->GetTexture(aiTextureType_SHININESS, 0, &aiTexPath) == AI_SUCCESS)
+					if (texture->Loaded())
 					{
-						// TODO: Temp - this should be handled by Hazel's filesystem
-						std::filesystem::path path = m_FilePath;
-						auto parentPath = path.parent_path();
-						parentPath /= std::string(aiTexPath.data);
-						std::string texturePath = parentPath.string();
-						// HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
+						HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
 
-						Ref<Texture> texture = Ref<Texture>();
-						try {
-							texture = Ref<Texture>::Create(texturePath.c_str(), false);
-						}
-						catch (...) {
-							Log::GetLogger()->warn("The ROUGHNESS map failed to load. Loading the default texture placeholder instead.");
-							texture = LoadBaseTexture();
-						}
-
-						if (texture->IsLoaded())
+						if (RendererAPI::Current() == RendererAPIType::OpenGL)
 						{
-							HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
 							m_MeshShader->setInt("u_RoughnessTexture", texture->GetID());
 							m_MeshShader->setFloat("u_MaterialUniforms.RoughnessTexToggle", 1.0f);
-
 							MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Roughness, texturePath, materialData->EnvMapMaterialRef);
 						}
-						else
-						{
-							Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
-						}
+
 					}
 					else
 					{
-						Log::GetLogger()->info("    No roughness map");
+						Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
+					}
+				}
+				else
+				{
+					Log::GetLogger()->info("    No roughness map");
+
+					if (RendererAPI::Current() == RendererAPIType::OpenGL)
+					{
 						m_MeshShader->setFloat("u_MaterialUniforms.Roughness", roughness);
 					}
+				}
 
-	#if 0
-					// Metalness map (or is it??)
-					if (aiMaterial->Get("$raw.ReflectionFactor|file", aiPTI_String, 0, aiTexPath) == AI_SUCCESS)
+#if 0
+				// Metalness map (or is it??)
+				if (aiMaterial->Get("$raw.ReflectionFactor|file", aiPTI_String, 0, aiTexPath) == AI_SUCCESS)
+				{
+					// TODO: Temp - this should be handled by Hazel's filesystem
+					std::filesystem::path path = m_FilePath;
+					auto parentPath = path.parent_path();
+					parentPath /= std::string(aiTexPath.data);
+					std::string texturePath = parentPath.string();
+
+					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
+					try {
+						texture = HazelTexture2D::Create(texturePath.c_str(), false);
+					}
+					catch (...) {
+						Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
+						texture = LoadBaseTexture();
+					}
+
+					if (texture->Loaded())
 					{
-						// TODO: Temp - this should be handled by Hazel's filesystem
-						std::filesystem::path path = m_FilePath;
-						auto parentPath = path.parent_path();
-						parentPath /= std::string(aiTexPath.data);
-						std::string texturePath = parentPath.string();
-
-						Texture* texture = nullptr;
-						try {
-							texture = new Texture(texturePath.c_str(), false);
-						}
-						catch (...) {
-							Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
-							texture = LoadBaseTexture();
-						}
-
-						if (texture->IsLoaded())
-						{
-							HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
-							m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
-							m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
-						}
-						else
-						{
-							Log::GetLogger()->error("Could not load texture: {0}", texturePath);
-						}
+						HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
+						m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
+						m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
 					}
 					else
 					{
-						Log::GetLogger()->info("    No metalness texture");
-						m_MeshShader->setFloat("u_MaterialUniforms.Metalness", metalness);
+						Log::GetLogger()->error("Could not load texture: {0}", texturePath);
 					}
-	#endif
+				}
+				else
+				{
+					Log::GetLogger()->info("    No metalness texture");
+					m_MeshShader->setFloat("u_MaterialUniforms.Metalness", metalness);
+				}
+#endif
 
-					bool metalnessTextureFound = false;
-					for (uint32_t i = 0; i < aiMaterial->mNumProperties; i++)
+				bool metalnessTextureFound = false;
+				for (uint32_t i = 0; i < aiMaterial->mNumProperties; i++)
+				{
+					auto prop = aiMaterial->mProperties[i];
+
+#if DEBUG_PRINT_ALL_PROPS
+					HZ_MESH_LOG("Material Property:");
+					HZ_MESH_LOG("  Name = {0}", prop->mKey.data);
+					// HZ_MESH_LOG("  Type = {0}", prop->mType);
+					// HZ_MESH_LOG("  Size = {0}", prop->mDataLength);
+					float data = *(float*)prop->mData;
+					HZ_MESH_LOG("  Value = {0}", data);
+
+					switch (prop->mSemantic)
 					{
-						auto prop = aiMaterial->mProperties[i];
+					case aiTextureType_NONE:
+						HZ_MESH_LOG("  Semantic = aiTextureType_NONE");
+						break;
+					case aiTextureType_DIFFUSE:
+						HZ_MESH_LOG("  Semantic = aiTextureType_DIFFUSE");
+						break;
+					case aiTextureType_SPECULAR:
+						HZ_MESH_LOG("  Semantic = aiTextureType_SPECULAR");
+						break;
+					case aiTextureType_AMBIENT:
+						HZ_MESH_LOG("  Semantic = aiTextureType_AMBIENT");
+						break;
+					case aiTextureType_EMISSIVE:
+						HZ_MESH_LOG("  Semantic = aiTextureType_EMISSIVE");
+						break;
+					case aiTextureType_HEIGHT:
+						HZ_MESH_LOG("  Semantic = aiTextureType_HEIGHT");
+						break;
+					case aiTextureType_NORMALS:
+						HZ_MESH_LOG("  Semantic = aiTextureType_NORMALS");
+						break;
+					case aiTextureType_SHININESS:
+						HZ_MESH_LOG("  Semantic = aiTextureType_SHININESS");
+						break;
+					case aiTextureType_OPACITY:
+						HZ_MESH_LOG("  Semantic = aiTextureType_OPACITY");
+						break;
+					case aiTextureType_DISPLACEMENT:
+						HZ_MESH_LOG("  Semantic = aiTextureType_DISPLACEMENT");
+						break;
+					case aiTextureType_LIGHTMAP:
+						HZ_MESH_LOG("  Semantic = aiTextureType_LIGHTMAP");
+						break;
+					case aiTextureType_REFLECTION:
+						HZ_MESH_LOG("  Semantic = aiTextureType_REFLECTION");
+						break;
+					case aiTextureType_UNKNOWN:
+						HZ_MESH_LOG("  Semantic = aiTextureType_UNKNOWN");
+						break;
+					}
+#endif
 
-	#if DEBUG_PRINT_ALL_PROPS
-						HZ_MESH_LOG("Material Property:");
-						HZ_MESH_LOG("  Name = {0}", prop->mKey.data);
-						// HZ_MESH_LOG("  Type = {0}", prop->mType);
-						// HZ_MESH_LOG("  Size = {0}", prop->mDataLength);
-						float data = *(float*)prop->mData;
-						HZ_MESH_LOG("  Value = {0}", data);
+					if (prop->mType == aiPTI_String)
+					{
+						uint32_t strLength = *(uint32_t*)prop->mData;
+						std::string str(prop->mData + 4, strLength);
 
-						switch (prop->mSemantic)
+						std::string key = prop->mKey.data;
+						if (key == "$raw.ReflectionFactor|file")
 						{
-						case aiTextureType_NONE:
-							HZ_MESH_LOG("  Semantic = aiTextureType_NONE");
-							break;
-						case aiTextureType_DIFFUSE:
-							HZ_MESH_LOG("  Semantic = aiTextureType_DIFFUSE");
-							break;
-						case aiTextureType_SPECULAR:
-							HZ_MESH_LOG("  Semantic = aiTextureType_SPECULAR");
-							break;
-						case aiTextureType_AMBIENT:
-							HZ_MESH_LOG("  Semantic = aiTextureType_AMBIENT");
-							break;
-						case aiTextureType_EMISSIVE:
-							HZ_MESH_LOG("  Semantic = aiTextureType_EMISSIVE");
-							break;
-						case aiTextureType_HEIGHT:
-							HZ_MESH_LOG("  Semantic = aiTextureType_HEIGHT");
-							break;
-						case aiTextureType_NORMALS:
-							HZ_MESH_LOG("  Semantic = aiTextureType_NORMALS");
-							break;
-						case aiTextureType_SHININESS:
-							HZ_MESH_LOG("  Semantic = aiTextureType_SHININESS");
-							break;
-						case aiTextureType_OPACITY:
-							HZ_MESH_LOG("  Semantic = aiTextureType_OPACITY");
-							break;
-						case aiTextureType_DISPLACEMENT:
-							HZ_MESH_LOG("  Semantic = aiTextureType_DISPLACEMENT");
-							break;
-						case aiTextureType_LIGHTMAP:
-							HZ_MESH_LOG("  Semantic = aiTextureType_LIGHTMAP");
-							break;
-						case aiTextureType_REFLECTION:
-							HZ_MESH_LOG("  Semantic = aiTextureType_REFLECTION");
-							break;
-						case aiTextureType_UNKNOWN:
-							HZ_MESH_LOG("  Semantic = aiTextureType_UNKNOWN");
-							break;
-						}
-	#endif
+							metalnessTextureFound = true;
 
-						if (prop->mType == aiPTI_String)
-						{
-							uint32_t strLength = *(uint32_t*)prop->mData;
-							std::string str(prop->mData + 4, strLength);
+							// TODO: Temp - this should be handled by Hazel's filesystem
+							std::filesystem::path path = m_FilePath;
+							auto parentPath = path.parent_path();
+							parentPath /= str;
+							std::string texturePath = parentPath.string();
+							HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
 
-							std::string key = prop->mKey.data;
-							if (key == "$raw.ReflectionFactor|file")
+							Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
+							try {
+								texture = HazelTexture2D::Create(texturePath.c_str(), false);
+							}
+							catch (...) {
+								Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
+								texture = LoadBaseTexture();
+							}
+
+							if (texture->Loaded())
 							{
-								metalnessTextureFound = true;
-
-								// TODO: Temp - this should be handled by Hazel's filesystem
-								std::filesystem::path path = m_FilePath;
-								auto parentPath = path.parent_path();
-								parentPath /= str;
-								std::string texturePath = parentPath.string();
-								HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
-
-								Ref<Texture> texture = Ref<Texture>();
-								try {
-									texture = Ref<Texture>::Create(texturePath.c_str(), false);
-								}
-								catch (...) {
-									Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
-									texture = LoadBaseTexture();
-								}
-
-								if (texture->IsLoaded())
+								if (RendererAPI::Current() == RendererAPIType::OpenGL)
 								{
 									m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
 									m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
 
 									MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Metalness, texturePath, materialData->EnvMapMaterialRef);
 								}
-								else
+
+							}
+							else
+							{
+								Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
+
+								if (RendererAPI::Current() == RendererAPIType::OpenGL)
 								{
-									Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
 									m_MeshShader->setFloat("u_MaterialUniforms.Metalness", metalness);
 									m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 0.0f);
 								}
-								break;
 							}
+							break;
 						}
 					}
+				}
 
-					if (!metalnessTextureFound)
+				if (!metalnessTextureFound)
+				{
+					Log::GetLogger()->info("    No metalness map");
+
+					if (RendererAPI::Current() == RendererAPIType::OpenGL)
 					{
-						Log::GetLogger()->info("    No metalness map");
-
 						m_MeshShader->setFloat("u_MaterialUniforms.Metalness", metalness);
 						m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 0.0f);
 					}
 				}
-				HZ_MESH_LOG("------------------------");
 			}
+			HZ_MESH_LOG("------------------------");
 		}
 
 		/**** END Materials ****/
@@ -938,11 +978,11 @@ namespace Hazel {
 		m_BaseMaterial = Hazel::Ref<Material>::Create(textureInfoDefault, 0.0f, 0.0f);
 	}
 
-	Ref<Texture> HazelMesh::LoadBaseTexture()
+	Ref<HazelTexture2D> HazelMesh::LoadBaseTexture()
 	{
 		if (!m_BaseTexture) {
 			try {
-				m_BaseTexture = Ref<Texture>::Create("Textures/plain.png");
+				m_BaseTexture = HazelTexture2D::Create("Textures/plain.png");
 			}
 			catch (...) {
 				Log::GetLogger()->warn("Failed to load the base texture!");
@@ -1170,10 +1210,17 @@ namespace Hazel {
 			for (size_t i = 0; i < m_BoneTransforms.size(); i++)
 			{
 				std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-				m_MeshShader->setMat4(uniformName, m_BoneTransforms[i]);
+
+				if (RendererAPI::Current() == RendererAPIType::OpenGL)
+				{
+					m_MeshShader->setMat4(uniformName, m_BoneTransforms[i]);
+				}
 			}
 
-			m_MeshShader->setMat4("u_Transform", transform * submesh.Transform);
+			if (RendererAPI::Current() == RendererAPIType::OpenGL)
+			{
+				m_MeshShader->setMat4("u_Transform", transform * submesh.Transform);
+			}
 
 			// Manage materials (PBR texture binding)
 			if (m_BaseMaterial) {

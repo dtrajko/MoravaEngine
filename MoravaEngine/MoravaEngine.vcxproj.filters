@@ -768,6 +768,9 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\Vulkan.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanMaterial.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
@@ -1643,6 +1646,9 @@
     </ClInclude>
     <ClInclude Include="main.h" />
     <ClInclude Include="config.h" />
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanMaterial.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

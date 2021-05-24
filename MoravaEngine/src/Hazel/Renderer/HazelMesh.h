@@ -3,6 +3,7 @@
 #include "Hazel/Core/Math/AABB.h"
 #include "Hazel/Renderer/Pipeline.h"
 #include "Hazel/Renderer/IndexBuffer.h"
+#include "Hazel/Renderer/HazelTexture.h"
 // #include "Hazel/Core/Base.h"
 // #include "Hazel/Renderer/VertexBuffer.h"
 // #include "Hazel/Renderer/Pipeline.h"
@@ -159,12 +160,12 @@ namespace Hazel {
 		std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
 		const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
 
-		// Ref<HazelShader> GetMeshShader() { return m_MeshShader; }
+		Ref<HazelShader> GetMeshShader() { return m_MeshShader; }
 		Ref<HazelMaterial> GetMaterial() { return m_BaseMaterial; }
 		std::vector<Ref<HazelMaterial>>& GetMaterials() { return m_Materials; }
 		const std::vector<Ref<HazelMaterial>>& GetMaterials() const { return m_Materials; }
-		inline std::vector<Ref<Texture>>& GetTextures() { return m_Textures; }
-		inline const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
+		inline std::vector<Ref<HazelTexture2D>>& GetTextures() { return m_Textures; }
+		inline const std::vector<Ref<HazelTexture2D>>& GetTextures() const { return m_Textures; }
 		inline bool& IsAnimated() { return m_IsAnimated; }
 		inline const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const;
@@ -198,7 +199,7 @@ namespace Hazel {
 		glm::quat InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim);
 		glm::vec3 InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim);
 		void SetupDefaultBaseMaterial();
-		Ref<Texture> LoadBaseTexture();
+		Ref<HazelTexture2D> LoadBaseTexture();
 
 
 	public:
@@ -228,9 +229,9 @@ namespace Hazel {
 
 		// Materials
 		Ref<HazelMaterial> m_BaseMaterial;
-		Ref<Texture> m_BaseTexture;
-		std::vector<Ref<Texture>> m_Textures;
-		std::vector<Ref<Texture>> m_NormalMaps;
+		Ref<HazelTexture2D> m_BaseTexture;
+		std::vector<Ref<HazelTexture2D>> m_Textures;
+		std::vector<Ref<HazelTexture2D>> m_NormalMaps;
 		std::vector<Ref<HazelMaterial>> m_Materials;
 
 		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
