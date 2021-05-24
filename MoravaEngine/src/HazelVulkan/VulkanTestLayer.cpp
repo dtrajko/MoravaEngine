@@ -81,7 +81,7 @@ void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* ca
 	Hazel::Ref<Hazel::VulkanPipeline> vulkanPipeline = m_Mesh->GetPipeline().As<Hazel::VulkanPipeline>();
 	Hazel::Ref<Hazel::VulkanShader> shader = vulkanPipeline->GetSpecification().Shader.As<Hazel::VulkanShader>();
 	VkPipelineLayout pipelineLayout = vulkanPipeline->GetVulkanPipelineLayout();
-	VkDescriptorSet descriptorSet = shader->GetDescriptorSet();
+	// VkDescriptorSet descriptorSet = shader->GetDescriptorSet();
 	Hazel::VulkanSwapChain& swapChain = context->GetSwapChain();
 
 	VkCommandBufferBeginInfo cmdBufInfo = {};
@@ -171,6 +171,7 @@ void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* ca
 				// Descriptor Sets (Uniform buffers)
 				// Bind descriptor sets describing shader binding points
 				// VkDescriptorSet* descriptorSet = (VkDescriptorSet*)m_Mesh->GetDescriptorSet();
+				VkDescriptorSet descriptorSet = m_Mesh->GetMeshShader().As<Hazel::VulkanShader>()->GetDescriptorSet();
 				vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
 				{

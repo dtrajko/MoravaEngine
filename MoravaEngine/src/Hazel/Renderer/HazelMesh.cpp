@@ -767,7 +767,6 @@ namespace Hazel {
 			// HazelRenderer::Submit([&]()
 			// {
 			// });
-
 			{
 				auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
@@ -1344,4 +1343,10 @@ namespace Hazel {
 
 		shader->Unbind();
 	}
+
+	void* HazelMesh::GetDescriptorSet()
+	{
+		return s_DescriptorSet;
+	}
+
 }

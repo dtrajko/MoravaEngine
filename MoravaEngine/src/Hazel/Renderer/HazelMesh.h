@@ -174,6 +174,8 @@ namespace Hazel {
 		Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
 		Ref<Pipeline> GetPipeline() { return m_Pipeline; }
 
+		void* GetDescriptorSet();
+
 		const VertexBufferLayout& GetVertexBufferLayout() const { return m_VertexBufferLayout; }
 
 		// Setters

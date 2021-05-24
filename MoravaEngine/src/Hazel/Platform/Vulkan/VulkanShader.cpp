@@ -363,8 +363,6 @@ namespace Hazel {
 		// Setup a descriptor image info for the current texture to be used as a combined image sampler
 
 		Hazel::Ref<Hazel::VulkanTexture2D> albedoTexture = Hazel::Ref<Hazel::VulkanTexture2D>(s_AlbedoTexture);
-		Hazel::Ref<Hazel::VulkanTexture2D> normalTexture = Hazel::Ref<Hazel::VulkanTexture2D>(s_NormalTexture);
-
 		const VkDescriptorImageInfo& albedoTextureDescriptor = albedoTexture->GetVulkanDescriptorInfo();
 
 		// Binding 2 : Fragment shader texture sampler
@@ -377,6 +375,7 @@ namespace Hazel {
 		// Binds this image sampler to binding point 2
 		writeDescriptorSets[2].dstBinding = m_ImageSamplers[2].BindingPoint; // 2
 
+		Hazel::Ref<Hazel::VulkanTexture2D> normalTexture = Hazel::Ref<Hazel::VulkanTexture2D>(s_NormalTexture);
 		const VkDescriptorImageInfo& normalTextureDescriptor = normalTexture->GetVulkanDescriptorInfo();
 
 		// Binding 3 : Fragment shader texture sampler
