@@ -51,26 +51,6 @@ namespace Hazel {
 				vulkanPushConstantRange.size = pushConstantRange.Size;
 			}
 
-			/******************** BEGIN Push Constant Ranges BEFORE REFLECTION ********************
-			struct PushBlock
-			{
-				glm::mat4 Transform;
-			};
-			std::vector<VkPushConstantRange> vulkanPushConstantRanges;
-			{
-				VkPushConstantRange& vulkanPushConstantRange = vulkanPushConstantRanges.emplace_back();
-				vulkanPushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-				vulkanPushConstantRange.offset = 0;
-				vulkanPushConstantRange.size = sizeof(PushBlock);
-			}
-			{
-				VkPushConstantRange& vulkanPushConstantRange = vulkanPushConstantRanges.emplace_back();
-				vulkanPushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-				vulkanPushConstantRange.offset = sizeof(PushBlock);
-				vulkanPushConstantRange.size = sizeof(PushBlock);
-			}
-			/******************** END Push Constant Ranges BEFORE REFLECTION ********************/
-
 			// Create the pipeline layout that is used to generate the rendering pipelines that are based on this descriptor set layout
 			// In a more complex scenario you would have different pipeline layouts for different descriptor set layouts that could be reused
 			VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
@@ -93,8 +73,8 @@ namespace Hazel {
 
 			VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
 			pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-			// The layout used for this pipeline (can be shared among multiple pipelines using the same layout)
 
+			// The layout used for this pipeline (can be shared among multiple pipelines using the same layout)
 			pipelineCreateInfo.layout = m_PipelineLayout;
 
 			// Renderpass this pipeline is attached to

@@ -274,7 +274,6 @@ namespace Hazel {
 		// Descriptor Set Layout
 		//////////////////////////////////////////////////////////////////////
 		std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
-
 		for (auto& [binding, uniformBuffer] : m_UniformBuffers)
 		{
 			auto& layoutBinding = layoutBindings.emplace_back();
@@ -309,7 +308,6 @@ namespace Hazel {
 			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 			set.descriptorCount = 1;
 			set.dstBinding = layoutBinding.binding;
-			set.dstBinding = layoutBinding.binding;
 		}
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
@@ -343,45 +341,6 @@ namespace Hazel {
 	{
 		HZ_CORE_ASSERT(m_WriteDescriptorSets.find(name) != m_WriteDescriptorSets.end());
 		return m_WriteDescriptorSets.at(name);
-	}
-
-	//	// TODO: does not exist in Vulkan Week version, added later
-	//	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
-	//	{
-	//		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
-	//		if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
-	//		{
-	//			MORAVA_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
-	//			return nullptr;
-	//		}
-	//		return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
-	//	}
-
-	// TODO: does not exist in Vulkan Week version, added later
-	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set)
-	{
-		Log::GetLogger()->warn("VulkanShader::CreateDescriptorSets(uint32_t set): Method not yet implemented!");
-
-		return VulkanShader::ShaderMaterialDescriptorSet();
-	}
-
-	// TODO: does not exist in Vulkan Week version, added later
-	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets)
-	{
-		Log::GetLogger()->warn("VulkanShader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets): Method not yet implemented!");
-
-		return VulkanShader::ShaderMaterialDescriptorSet();
-	}
-
-	// does not exist in Vulkan Week version, added later
-	std::vector<VkDescriptorSetLayout> VulkanShader::GetAllDescriptorSetLayouts()
-	{
-		std::vector<VkDescriptorSetLayout> result;
-		result.reserve(m_DescriptorSetLayouts.size());
-		for (auto [set, layout] : m_DescriptorSetLayouts)
-			result.emplace_back(layout);
-
-		return result;
 	}
 
 	// temporary for Vulkan Week 4 (remove later, use AllocateUniformBuffer instead)
@@ -424,6 +383,45 @@ namespace Hazel {
 		uniformBuffer.Descriptor.buffer = uniformBuffer.Buffer;
 		uniformBuffer.Descriptor.offset = 0;
 		uniformBuffer.Descriptor.range = uniformBuffer.Size;
+	}
+
+	//	// TODO: does not exist in Vulkan Week version, added later
+	//	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
+	//	{
+	//		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
+	//		if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
+	//		{
+	//			MORAVA_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+	//			return nullptr;
+	//		}
+	//		return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
+	//	}
+
+	// TODO: does not exist in Vulkan Week version, added later
+	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set)
+	{
+		Log::GetLogger()->warn("VulkanShader::CreateDescriptorSets(uint32_t set): Method not yet implemented!");
+
+		return VulkanShader::ShaderMaterialDescriptorSet();
+	}
+
+	// TODO: does not exist in Vulkan Week version, added later
+	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets)
+	{
+		Log::GetLogger()->warn("VulkanShader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets): Method not yet implemented!");
+
+		return VulkanShader::ShaderMaterialDescriptorSet();
+	}
+
+	// does not exist in Vulkan Week version, added later
+	std::vector<VkDescriptorSetLayout> VulkanShader::GetAllDescriptorSetLayouts()
+	{
+		std::vector<VkDescriptorSetLayout> result;
+		result.reserve(m_DescriptorSetLayouts.size());
+		for (auto [set, layout] : m_DescriptorSetLayouts)
+			result.emplace_back(layout);
+
+		return result;
 	}
 
 	void VulkanShader::CompileOrGetVulkanBinary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile)

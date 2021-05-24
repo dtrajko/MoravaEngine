@@ -76,7 +76,7 @@ namespace Hazel {
 
 	void VulkanMaterial::AllocateStorage()
 	{
-		Log::GetLogger()->error("VulkanMaterial::AllocateStorage: method not yet implemented!"); return;
+		Log::GetLogger()->warn("VulkanMaterial::AllocateStorage: method not yet implemented!"); return;
 
 		const auto& shaderBuffers = m_Shader->GetShaderBuffers();
 

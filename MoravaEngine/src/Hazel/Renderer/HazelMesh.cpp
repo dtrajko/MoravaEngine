@@ -93,7 +93,8 @@ namespace Hazel {
 	{
 		m_FilePath = filename;
 
-		if (!m_BaseMaterial) {
+		if (!m_BaseMaterial)
+		{
 			SetupDefaultBaseMaterial();
 		}
 
@@ -275,6 +276,7 @@ namespace Hazel {
 		//	});
 
 		s_DescriptorSet = m_MeshShader.As<VulkanShader>()->CreateDescriptorSet(); // depends on m_DescriptorPool and m_DescriptorSetLayout
+
 		//	
 		//	// EXAMPLE:
 		//	// std::vector<VkWriteDescriptorSet> writeDescriptorSets = HazelRenderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
@@ -356,7 +358,6 @@ namespace Hazel {
 				// auto mi = Ref<HazelMaterial>::Create(m_BaseMaterial, aiMaterialName.data);
 
 				auto mi = HazelMaterial::Create(m_MeshShader, aiMaterialName.data);
-
 				m_Materials[i] = mi;
 
 				Submesh* submeshPtr = nullptr;
@@ -470,17 +471,17 @@ namespace Hazel {
 					std::string texturePath = parentPath.string();
 					HZ_MESH_LOG("    Normal map path = {0}", texturePath);
 
-					Ref<Texture> texture = Ref<Texture>();
+					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
 					try {
-						texture = Ref<Texture>::Create(texturePath.c_str(), false);
-						// m_Textures.push_back(texture);
+						texture = HazelTexture2D::Create(texturePath.c_str(), false);
+						m_Textures.push_back(texture);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The NORMAL map failed to load. Loading the default texture placeholder instead.");
-						texture = Ref<Texture>::Create("Textures/normal_map_default.png");
+						texture = HazelTexture2D::Create("Textures/normal_map_default.png");
 					}
 
-					if (texture->IsLoaded())
+					if (texture->Loaded())
 					{
 						if (RendererAPI::Current() == RendererAPIType::OpenGL)
 						{
@@ -523,7 +524,7 @@ namespace Hazel {
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					// HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
+					// HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
 
 					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
 					try {
@@ -536,7 +537,7 @@ namespace Hazel {
 
 					if (texture->Loaded())
 					{
-						HZ_MESH_LOG("  Roughness map path = '{0}'", texturePath);
+						HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
 
 						if (RendererAPI::Current() == RendererAPIType::OpenGL)
 						{
@@ -1342,7 +1343,7 @@ namespace Hazel {
 		shader->Unbind();
 	}
 
-	void* HazelMesh::GetDescriptorSet()
+	VkDescriptorSet& HazelMesh::GetDescriptorSet()
 	{
 		return s_DescriptorSet;
 	}

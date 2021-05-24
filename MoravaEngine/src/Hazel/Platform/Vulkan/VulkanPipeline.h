@@ -25,7 +25,6 @@ namespace Hazel {
 
 		VkPipeline GetVulkanPipeline() { return m_VulkanPipeline; }
 		VkPipelineLayout GetVulkanPipelineLayout() { return m_PipelineLayout; }
-		VkDescriptorSet GetDescriptorSet() { return m_DescriptorSet.DescriptorSets[0]; }
 
 	private:
 		PipelineSpecification m_Specification;

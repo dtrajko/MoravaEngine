@@ -18,11 +18,6 @@ layout (std140, binding = 0) uniform Camera
 	mat4 u_ViewProj;
 };
 
-layout (std140, binding = 1) uniform UBTransform
-{
-	mat4 u_UBTransform;
-};
-
 layout (push_constant) uniform Transform
 {
 	mat4 u_Transform;
@@ -46,10 +41,10 @@ layout (location = 0) in vec3 v_Normal;
 layout (location = 1) in vec2 v_TexCoord;
 layout (location = 2) in mat3 v_WorldNormals;
 
-layout (binding = 2) uniform sampler2D u_AlbedoTexture;
-layout (binding = 3) uniform sampler2D u_NormalTexture;
+layout (binding = 1) uniform sampler2D u_AlbedoTexture;
+layout (binding = 2) uniform sampler2D u_NormalTexture;
 
-layout (push_constant) uniform Color
+layout (push_constant) uniform Material
 {
 	layout(offset = 64) vec4 u_Color;
 };

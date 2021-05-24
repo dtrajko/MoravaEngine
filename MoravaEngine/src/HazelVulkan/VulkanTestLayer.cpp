@@ -25,18 +25,19 @@ void VulkanTestLayer::OnAttach()
 	// Hazel::VulkanShader::s_NormalTexture = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_N.tga", false, Hazel::HazelTextureWrap::Clamp);
 
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/TestScene.fbx");
-	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/Cerberus_LP.FBX");
+	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/Cerberus_LP.FBX");
+	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx");
 
-	// Random RGB values
-	srand(static_cast<unsigned>(time(0)));
-	for (uint32_t i = 0; i < 10; i++)
-	{
-		glm::vec4 randomColor = glm::vec4{ 1.0f };
-		randomColor.r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-		randomColor.g = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-		randomColor.b = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-		m_RandomColors.push_back(randomColor);
-	}
+	//	// Random RGB values
+	//	srand(static_cast<unsigned>(time(0)));
+	//	for (uint32_t i = 0; i < 10; i++)
+	//	{
+	//		glm::vec4 randomColor = glm::vec4{ 1.0f };
+	//		randomColor.r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	//		randomColor.g = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	//		randomColor.b = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	//		m_RandomColors.push_back(randomColor);
+	//	}
 }
 
 void VulkanTestLayer::OnDetach()
@@ -71,7 +72,7 @@ void VulkanTestLayer::OnRender(Window* mainWindow)
 
 void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* camera) // const Hazel::EditorCamera& camera
 {
-	auto mesh = m_Mesh;
+	// auto mesh = m_Mesh;
 
 	Hazel::HazelRenderer::Submit([=]() mutable
 	{
@@ -80,8 +81,6 @@ void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* ca
 	Hazel::Ref<Hazel::VulkanContext> context = Hazel::Ref<Hazel::VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
 	Hazel::Ref<Hazel::VulkanPipeline> vulkanPipeline = m_Mesh->GetPipeline().As<Hazel::VulkanPipeline>();
 	Hazel::Ref<Hazel::VulkanShader> shader = vulkanPipeline->GetSpecification().Shader.As<Hazel::VulkanShader>();
-	VkPipelineLayout pipelineLayout = vulkanPipeline->GetVulkanPipelineLayout();
-	// VkDescriptorSet descriptorSet = shader->GetDescriptorSet();
 	Hazel::VulkanSwapChain& swapChain = context->GetSwapChain();
 
 	VkCommandBufferBeginInfo cmdBufInfo = {};
@@ -148,46 +147,38 @@ void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* ca
 		scissor.offset.y = 0;
 		vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
+		VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
 		// DRAW GEO HERE
 
 		/**** BEGIN mesh geometry ****/
 		{
-			auto vulkanMeshVB = mesh->GetVertexBuffer().As<Hazel::VulkanVertexBuffer>();
+			auto vulkanMeshVB = m_Mesh->GetVertexBuffer().As<Hazel::VulkanVertexBuffer>();
 			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
 			VkDeviceSize offsets[1] = { 0 };
 			vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
 
-			auto vulkanMeshIB = Hazel::Ref<Hazel::VulkanIndexBuffer>(mesh->GetIndexBuffer());
+			auto vulkanMeshIB = Hazel::Ref<Hazel::VulkanIndexBuffer>(m_Mesh->GetIndexBuffer());
 			VkBuffer ibMeshBuffer = vulkanMeshIB->GetVulkanBuffer();
 			vkCmdBindIndexBuffer(drawCommandBuffer, ibMeshBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-			uint32_t submeshIndex = 0;
-			auto& submeshes = mesh->GetSubmeshes();
+			auto& submeshes = m_Mesh->GetSubmeshes();
 			for (Hazel::Submesh& submesh : submeshes)
 			{
 				VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
 				vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-				// Descriptor Sets (Uniform buffers)
 				// Bind descriptor sets describing shader binding points
-				VkDescriptorSet* descriptorSet = (VkDescriptorSet*)m_Mesh->GetDescriptorSet();
-				// VkDescriptorSet* descriptorSet = (VkDescriptorSet*)m_Mesh->GetMeshShader().As<Hazel::VulkanShader>()->GetDescriptorSet();
-				vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet, 0, nullptr);
-
-				{
-					// uniform buffer binding 1 uniform Transform
-					void* ubPtr = shader->MapUniformBuffer(1);
-					memcpy(ubPtr, &submesh.Transform, sizeof(glm::mat4));
-					shader->UnmapUniformBuffer(1);
-				}
+				VkDescriptorSet descriptorSet = m_Mesh->GetDescriptorSet();
+				vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &descriptorSet, 0, nullptr);
 
 				// Push Constants
-				vkCmdPushConstants(drawCommandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
+				vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
+
 				glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
-				vkCmdPushConstants(drawCommandBuffer, pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color); // &m_RandomColors[submeshIndex++]
+				vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
 
 				vkCmdDrawIndexed(drawCommandBuffer, submesh.IndexCount, 1, submesh.BaseIndex, submesh.BaseVertex, 0);
-				// vkCmdDrawIndexed(drawCommandBuffer, vulkanMeshIB->GetCount(), 1, 0, 0, 0);
 			}
 		}
 
