@@ -31,7 +31,8 @@ namespace Hazel {
 		Ref<VulkanShader> vulkanShader = m_Shader.As<VulkanShader>();
 		for (uint32_t i = 0; i < vulkanShader->GetUniformBufferCount(); i++)
 		{
-			auto& uniformBuffer = vulkanShader->GetUniformBuffer(i);
+			// auto& uniformBuffer = vulkanShader->GetUniformBuffer(i);
+			auto& uniformBuffer = vulkanShader->GetUniformBuffer();
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			writeDescriptorSet.descriptorCount = 1;
@@ -57,7 +58,8 @@ namespace Hazel {
 		Ref<VulkanShader> vulkanShader = m_Shader.As<VulkanShader>();
 		for (uint32_t i = 0; i < vulkanShader->GetUniformBufferCount(); i++)
 		{
-			auto& uniformBuffer = vulkanShader->GetUniformBuffer(i);
+			// auto& uniformBuffer = vulkanShader->GetUniformBuffer(i);
+			auto& uniformBuffer = vulkanShader->GetUniformBuffer();
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			writeDescriptorSet.descriptorCount = 1;

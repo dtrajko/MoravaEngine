@@ -21,8 +21,8 @@ VulkanTestLayer::~VulkanTestLayer()
 
 void VulkanTestLayer::OnAttach()
 {
-	Hazel::VulkanShader::s_AlbedoTexture = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_A.tga", false, Hazel::HazelTextureWrap::Clamp);
-	Hazel::VulkanShader::s_NormalTexture = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_N.tga", false, Hazel::HazelTextureWrap::Clamp);
+	// Hazel::VulkanShader::s_AlbedoTexture = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_A.tga", false, Hazel::HazelTextureWrap::Clamp);
+	// Hazel::VulkanShader::s_NormalTexture = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_N.tga", false, Hazel::HazelTextureWrap::Clamp);
 
 	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/TestScene.fbx");
 	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/Cerberus_LP.FBX");
@@ -112,6 +112,17 @@ void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* ca
 	renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
 
 	{
+		// uniform buffer binding 0 uniform Camera
+		void* ubPtr = shader->MapUniformBuffer(0);
+		glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
+		// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
+		glm::mat4 viewProj = proj * camera->GetViewMatrix(); // Runtime camera
+		// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
+		memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
+		shader->UnmapUniformBuffer(0);
+	}
+
+	{
 		VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 		VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
 
@@ -150,17 +161,6 @@ void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* ca
 			VkBuffer ibMeshBuffer = vulkanMeshIB->GetVulkanBuffer();
 			vkCmdBindIndexBuffer(drawCommandBuffer, ibMeshBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-			{
-				// uniform buffer binding 0 uniform Camera
-				void* ubPtr = shader->MapUniformBuffer(0);
-				glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
-				// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
-				glm::mat4 viewProj = proj * camera->GetViewMatrix(); // Runtime camera
-				// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
-				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
-				shader->UnmapUniformBuffer(0);
-			}
-
 			uint32_t submeshIndex = 0;
 			auto& submeshes = mesh->GetSubmeshes();
 			for (Hazel::Submesh& submesh : submeshes)
@@ -171,15 +171,15 @@ void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* ca
 				// Descriptor Sets (Uniform buffers)
 				// Bind descriptor sets describing shader binding points
 				// VkDescriptorSet* descriptorSet = (VkDescriptorSet*)m_Mesh->GetDescriptorSet();
-				VkDescriptorSet descriptorSet = m_Mesh->GetMeshShader().As<Hazel::VulkanShader>()->GetDescriptorSet();
-				vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+				VkDescriptorSet* descriptorSet = (VkDescriptorSet*)m_Mesh->GetMeshShader().As<Hazel::VulkanShader>()->GetDescriptorSet();
+				vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet, 0, nullptr);
 
-				{
-					// uniform buffer binding 1 uniform Transform
-					void* ubPtr = shader->MapUniformBuffer(1);
-					memcpy(ubPtr, &submesh.Transform, sizeof(glm::mat4));
-					shader->UnmapUniformBuffer(1);
-				}
+				//	{
+				//		// uniform buffer binding 1 uniform Transform
+				//		void* ubPtr = shader->MapUniformBuffer(1);
+				//		memcpy(ubPtr, &submesh.Transform, sizeof(glm::mat4));
+				//		shader->UnmapUniformBuffer(1);
+				//	}
 
 				// Push Constants
 				vkCmdPushConstants(drawCommandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);

@@ -83,12 +83,20 @@ namespace Hazel {
 		VkDescriptorSet GetDescriptorSet() { return m_DescriptorSet; }
 		VkDescriptorSetLayout GetDescriptorSetLayout() { return m_DescriptorSetLayout; }
 
+		UniformBuffer& GetUniformBuffer() { return m_UniformBuffers[0]; }
+		const std::vector<PushConstantRange>& GetPushConstantRanges() const { return m_PushConstantRanges; }
+
+		VkDescriptorSet CreateDescriptorSet();
+		VkWriteDescriptorSet GetDescriptorSet(const std::string& name) const; // Vulkan Week version
+		// const VkWriteDescriptorSet* GetDescriptorSet(const std::string& name, uint32_t set = 0) const; // most recent version
+
+
 		std::vector<VkDescriptorSetLayout> GetAllDescriptorSetLayouts();
-		UniformBuffer& GetUniformBuffer(uint32_t binding = 0, uint32_t set = 0)
-		{
-			HZ_CORE_ASSERT(m_ShaderDescriptorSets.at(set).UniformBuffers.size() > binding);
-			return *m_ShaderDescriptorSets.at(set).UniformBuffers[binding];
-		}
+		//	UniformBuffer& GetUniformBuffer(uint32_t binding = 0, uint32_t set = 0)
+		//	{
+		//		HZ_CORE_ASSERT(m_ShaderDescriptorSets.at(set).UniformBuffers.size() > binding);
+		//		return *m_ShaderDescriptorSets.at(set).UniformBuffers[binding];
+		//	}
 		uint32_t GetUniformBufferCount(uint32_t set = 0)
 		{
 			if (m_ShaderDescriptorSets.find(set) == m_ShaderDescriptorSets.end())
@@ -107,9 +115,6 @@ namespace Hazel {
 		};
 		const std::unordered_map<uint32_t, ShaderDescriptorSet>& GetShaderDescriptorSets() const { return m_ShaderDescriptorSets; }
 		
-		UniformBuffer& GetUniformBuffer() { return m_UniformBuffers[0]; }
-		const std::vector<PushConstantRange>& GetPushConstantRanges() const { return m_PushConstantRanges; }
-
 		struct ShaderMaterialDescriptorSet
 		{
 			VkDescriptorPool Pool;
@@ -118,11 +123,8 @@ namespace Hazel {
 
 		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set = 0);
 		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set, uint32_t numberOfSets);
-		VkWriteDescriptorSet GetDescriptorSet(const std::string& name) const; // Vulkan Week version
-		// const VkWriteDescriptorSet* GetDescriptorSet(const std::string& name, uint32_t set = 0) const; // most recent version
 
 		static void ClearUniformBuffers();
-		VkDescriptorSet CreateDescriptorSet();
 
 	private:
 		std::unordered_map<VkShaderStageFlagBits, std::string> PreProcess(const std::string& source);
@@ -130,16 +132,10 @@ namespace Hazel {
 		void LoadAndCreateVertexShader(VkPipelineShaderStageCreateInfo& shaderStage, const std::vector<uint32_t>& shaderData);
 		void LoadAndCreateFragmentShader(VkPipelineShaderStageCreateInfo& shaderStage, const std::vector<uint32_t>& shaderData);
 
-		void ReflectVulkanWeek(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData); // very similar to CreateDescriptors (Descriptor Pool, Descriptor Sets etc)
-		void CreateDescriptorsVulkanWeek();
+		void Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData); // same as Reflect()
+		void CreateDescriptors(); // same as CreateDescriptorsVulkanWeek();
 
-		void Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData);
-		void CreateDescriptors();
-
-
-		// temporary for Vulkan Week Day 4 (remove later)
 		void AllocateUniformBuffer(UniformBuffer& dst);
-		// void AllocateUniformBuffer(UniformBuffer& dst);
 
 	private:
 		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageCreateInfos;
@@ -164,8 +160,8 @@ namespace Hazel {
 
 		public:
 			// Very temporary attribute for Vulkan Week Day 5 Part 1
-			static Hazel::Ref<Hazel::HazelTexture2D> s_AlbedoTexture;
-			static Hazel::Ref<Hazel::HazelTexture2D> s_NormalTexture;
+			// static Hazel::Ref<Hazel::HazelTexture2D> s_AlbedoTexture;
+			// static Hazel::Ref<Hazel::HazelTexture2D> s_NormalTexture;
 
 	};
 

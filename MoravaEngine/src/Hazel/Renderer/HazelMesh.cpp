@@ -264,19 +264,21 @@ namespace Hazel {
 		TraverseNodes(scene->mRootNode);
 
 		PipelineSpecification pipelineSpecification;
+		pipelineSpecification.Shader = m_MeshShader; // HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
+		// m_ShaderHazelPBR_Static = Hazel::HazelShader::Create("assets/shaders/VulkanWeekHazelPBR_Static.glsl", true);
 
 		// Ref<Mesh> instance = this;
-		Hazel::Ref<Shader> shader = m_MeshShader;
+		// Hazel::Ref<Shader> shader = m_MeshShader;
 
 		//	HazelRenderer::Submit([instance, shader]() mutable
 		//	{
 		//	});
 
-		//	s_DescriptorSet = shader.As<VulkanShader>()->CreateDescriptorSet(); // depends on m_DescriptorPool and m_DescriptorSetLayout
+		s_DescriptorSet = m_MeshShader.As<VulkanShader>()->CreateDescriptorSet(); // depends on m_DescriptorPool and m_DescriptorSetLayout
 		//	
 		//	// EXAMPLE:
 		//	// std::vector<VkWriteDescriptorSet> writeDescriptorSets = HazelRenderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
-		//	auto& ub = shader.As<VulkanShader>()->GetUniformBuffer(0);
+		auto& ub = m_MeshShader.As<VulkanShader>()->GetUniformBuffer();
 		//	/*std::vector<VkWriteDescriptorSet> writeDescriptorSets(1);
 		//	writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		//	writeDescriptorSets[0].dstSet = s_DescriptorSet;
@@ -284,15 +286,15 @@ namespace Hazel {
 		//	writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		//	writeDescriptorSets[0].pBufferInfo = &ub.Descriptor;
 		//	writeDescriptorSets[0].dstBinding = 0;*/
-		//	
-		//	VkWriteDescriptorSet writeDescriptorSet = {};
-		//	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		//	writeDescriptorSet.dstSet = s_DescriptorSet;
-		//	writeDescriptorSet.descriptorCount = 1;
-		//	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		//	writeDescriptorSet.pBufferInfo = &ub.Descriptor; // the "ub" UniformBuffer needs to be created first
-		//	writeDescriptorSet.dstBinding = 0;
-		//	s_WriteDescriptorSets.push_back(writeDescriptorSet);
+
+		VkWriteDescriptorSet writeDescriptorSet = {};
+		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSet.dstSet = s_DescriptorSet;
+		writeDescriptorSet.descriptorCount = 1;
+		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		writeDescriptorSet.pBufferInfo = &ub.Descriptor; // the "ub" UniformBuffer needs to be created first
+		writeDescriptorSet.dstBinding = 0;
+		s_WriteDescriptorSets.push_back(writeDescriptorSet);
 
 		// Bones
 		if (m_IsAnimated)
@@ -422,14 +424,13 @@ namespace Hazel {
 							// {
 							// });
 							{
-								VkWriteDescriptorSet wds = shader.As<VulkanShader>()->GetDescriptorSet("u_AlbedoTexture");
+								VkWriteDescriptorSet wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_AlbedoTexture");
 								wds.dstSet = s_DescriptorSet;
 								auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
 								wds.pImageInfo = &imageInfo;
 								s_WriteDescriptorSets.push_back(wds);
 							}
 						}
-
 					}
 					else
 					{
@@ -494,14 +495,13 @@ namespace Hazel {
 							// {
 							// });
 							{
-								VkWriteDescriptorSet wds = shader.As<VulkanShader>()->GetDescriptorSet("u_NormalTexture"); // contains binding point etc
+								VkWriteDescriptorSet wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_NormalTexture"); // contains binding point etc
 								wds.dstSet = s_DescriptorSet;
 								auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
 								wds.pImageInfo = &imageInfo;
 								s_WriteDescriptorSets.push_back(wds);
 							}
 						}
-
 					}
 					else
 					{
@@ -758,8 +758,6 @@ namespace Hazel {
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
 
 		pipelineSpecification.Layout = m_VertexBufferLayout;
-		pipelineSpecification.Shader = m_MeshShader; // HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
-		// m_ShaderHazelPBR_Static = Hazel::HazelShader::Create("assets/shaders/VulkanWeekHazelPBR_Static.glsl", true);
 		m_Pipeline = Pipeline::Create(pipelineSpecification);
 
 		if (RendererAPI::Current() == RendererAPIType::Vulkan)
@@ -771,7 +769,7 @@ namespace Hazel {
 				auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
 				MORAVA_CORE_WARN("Updating {0} descriptor sets", s_WriteDescriptorSets.size());
-				// vkUpdateDescriptorSets(vulkanDevice, static_cast<uint32_t>(s_WriteDescriptorSets.size()), s_WriteDescriptorSets.data(), 0, nullptr);
+				vkUpdateDescriptorSets(vulkanDevice, static_cast<uint32_t>(s_WriteDescriptorSets.size()), s_WriteDescriptorSets.data(), 0, nullptr);
 			}
 		}
 

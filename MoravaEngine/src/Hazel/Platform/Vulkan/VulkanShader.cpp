@@ -18,8 +18,8 @@ namespace Hazel {
 	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
 
 	// Very temporary attribute in Vulkan Week Day 5 Part 1
-	Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_AlbedoTexture;
-	Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_NormalTexture;
+	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_AlbedoTexture;
+	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_NormalTexture;
 
 	VulkanShader::VulkanShader(const std::string& path, bool forceCompile)
 		: m_AssetPath(path)
@@ -81,9 +81,9 @@ namespace Hazel {
 		CompileOrGetVulkanBinary(shaderData, false);
 		LoadAndCreateVertexShader(m_ShaderStages[0], shaderData[0]);
 		LoadAndCreateFragmentShader(m_ShaderStages[1], shaderData[1]);
-		ReflectVulkanWeek(VK_SHADER_STAGE_VERTEX_BIT, shaderData[0]); // vertex shader method similar to CreateDescriptors()
-		ReflectVulkanWeek(VK_SHADER_STAGE_FRAGMENT_BIT, shaderData[1]); // fragment shader, method similar to CreateDescriptors()
-		CreateDescriptorsVulkanWeek();
+		Reflect(VK_SHADER_STAGE_VERTEX_BIT, shaderData[0]); // vertex shader method similar to CreateDescriptors()
+		Reflect(VK_SHADER_STAGE_FRAGMENT_BIT, shaderData[1]); // fragment shader, method similar to CreateDescriptors()
+		CreateDescriptors();
 	}
 
 	size_t VulkanShader::GetHash() const
@@ -131,8 +131,7 @@ namespace Hazel {
 		shaderStage.pName = "main";
 	}
 
-	// very similar to CreateDescriptors (Descriptor Pool, Descriptor Sets etc)
-	void VulkanShader::ReflectVulkanWeek(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData)
+	void VulkanShader::Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
@@ -156,15 +155,14 @@ namespace Hazel {
 
 			HZ_CORE_ASSERT(m_UniformBuffers.find(bindingPoint) == m_UniformBuffers.end());
 
-			// UniformBuffer& buffer = m_UniformBuffers[bindingPoint];
-
-			UniformBuffer buffer;
-			buffer.Size = size;
-			AllocateUniformBuffer(buffer);
+			UniformBuffer& buffer = m_UniformBuffers[bindingPoint];
+			// UniformBuffer buffer;
 			buffer.BindingPoint = bindingPoint;
-			buffer.ShaderStage = shaderStage;
+			buffer.Size = size;
+			// AllocateUniformBuffer(buffer);
 			buffer.Name = name;
-			m_UniformBuffers.insert(std::pair(bindingPoint, buffer));
+			buffer.ShaderStage = shaderStage;
+			// m_UniformBuffers.insert(std::pair(bindingPoint, buffer));
 
 			MORAVA_CORE_TRACE("  Name: {0}", name);
 			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
@@ -212,267 +210,26 @@ namespace Hazel {
 		{
 			const auto& name = resource.name;
 			auto& type = compiler.get_type(resource.base_type_id);
-			uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			uint32_t dimension = type.image.dim;
 
-			HZ_CORE_ASSERT(m_ImageSamplers.find(bindingPoint) == m_ImageSamplers.end());
+			// HZ_CORE_ASSERT(m_ImageSamplers.find(binding) == m_ImageSamplers.end());
 
-			// auto& imageSampler = m_ImageSamplers[binding];
-
-			ImageSampler imageSampler;
-			imageSampler.BindingPoint = bindingPoint;
-			imageSampler.ShaderStage = shaderStage;
+			auto& imageSampler = m_ImageSamplers[binding];
+			// ImageSampler imageSampler;
+			imageSampler.BindingPoint = binding;
 			imageSampler.Name = name;
-			m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
+			imageSampler.ShaderStage = shaderStage;
+			// m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
 
 			MORAVA_CORE_TRACE("  Name: {0}", name);
 			// MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
-			MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
+			MORAVA_CORE_TRACE("  Binding Point: {0}", binding);
 			// MORAVA_CORE_TRACE("  Size: {0}", size);
 			MORAVA_CORE_TRACE("--------------------------");
 		}
 
 		MORAVA_CORE_TRACE("==========================");
-	}
-
-	void VulkanShader::CreateDescriptorsVulkanWeek()
-	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-		//////////////////////////////////////////////////////////////////////
-		// Descriptor Pool
-		//////////////////////////////////////////////////////////////////////
-
-		// We need to tell the API the number of max. requested descriptors per type
-		std::vector<VkDescriptorPoolSize> typeCounts;
-
-		if (m_UniformBuffers.size())
-		{
-			VkDescriptorPoolSize& typeCount = typeCounts.emplace_back();
-			typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			typeCount.descriptorCount = static_cast<uint32_t>(m_UniformBuffers.size());
-		}
-
-		if (m_ImageSamplers.size())
-		{
-			VkDescriptorPoolSize& typeCount = typeCounts.emplace_back();
-			typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			typeCount.descriptorCount = static_cast<uint32_t>(m_ImageSamplers.size());
-		}
-
-		//////////////////////////////////////////////////////////////////////
-		// Descriptor Set Layout
-		//////////////////////////////////////////////////////////////////////
-		std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
-
-		for (auto& [binding, uniformBuffer] : m_UniformBuffers)
-		{
-			auto& layoutBinding = layoutBindings.emplace_back();
-			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			layoutBinding.descriptorCount = 1;
-			layoutBinding.stageFlags = uniformBuffer.ShaderStage;
-			layoutBinding.pImmutableSamplers = nullptr;
-			layoutBinding.binding = binding;
-
-			VkWriteDescriptorSet& set = m_WriteDescriptorSets[uniformBuffer.Name];
-			set = {};
-			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-			set.descriptorCount = 1;
-			set.dstBinding = layoutBinding.binding;
-
-			AllocateUniformBuffer(uniformBuffer);
-		}
-
-		for (auto& [binding, imageSampler] : m_ImageSamplers)
-		{
-			auto& layoutBinding = layoutBindings.emplace_back();
-			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			layoutBinding.descriptorCount = 1;
-			layoutBinding.stageFlags = imageSampler.ShaderStage;
-			layoutBinding.pImmutableSamplers = nullptr;
-			layoutBinding.binding = binding;
-
-			VkWriteDescriptorSet& set = m_WriteDescriptorSets[imageSampler.Name];
-			set = {};
-			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-			set.descriptorCount = 1;
-			set.dstBinding = layoutBinding.binding;
-			set.dstBinding = layoutBinding.binding;
-		}
-
-		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
-		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorLayout.pNext = nullptr;
-		descriptorLayout.bindingCount = static_cast<uint32_t>(layoutBindings.size());
-		descriptorLayout.pBindings = layoutBindings.data();
-
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayout));
-
-		// Create the global descriptor pool
-		// All descriptors used in this example are allocated from this pool
-		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
-		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		// Once you bind a descriptor set and use it in a vkCmdDraw() function, you can no longer modify it unless you specify the
-		descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
-		descriptorPoolInfo.pNext = nullptr;
-		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(typeCounts.size());
-		descriptorPoolInfo.pPoolSizes = typeCounts.data();
-		descriptorPoolInfo.maxSets = 1;
-
-		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool));
-
-		//////////////////////////////////////////////////////////////////////
-		// Descriptor Sets - these shouldn't be in the shader class
-		//////////////////////////////////////////////////////////////////////
-
-		m_DescriptorSet = CreateDescriptorSet();
-
-		//////////////////////////////////////////////////////////////////////
-		// Write Descriptor Sets - these shouldn't be in the shader class
-		//////////////////////////////////////////////////////////////////////
-
-		// Update the descriptor set determining the shader binding points
-		// For every binding point used in a shader there needs to be one
-		// descriptor set matching that binding point
-
-		std::vector<VkWriteDescriptorSet> writeDescriptorSets(4);
-
-		// Binding 0 : Uniform buffer
-		// layout (std140, binding = 0) uniform Camera { mat4 u_ViewProj; }
-		writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSets[0].dstSet = m_DescriptorSet;
-		writeDescriptorSets[0].descriptorCount = 1;
-		writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		writeDescriptorSets[0].pBufferInfo = &m_UniformBuffers[0].Descriptor;
-		// Binds this uniform buffer to binding point 0
-		writeDescriptorSets[0].dstBinding = m_UniformBuffers[0].BindingPoint; // 0;
-
-		// Binding 1 : Uniform buffer
-		// layout (std140, binding = 1) uniform UBTransform { mat4 u_UBTransform; }
-		writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSets[1].dstSet = m_DescriptorSet;
-		writeDescriptorSets[1].descriptorCount = 1;
-		writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		writeDescriptorSets[1].pBufferInfo = &m_UniformBuffers[1].Descriptor;
-		// Binds this uniform buffer to binding point 1
-		writeDescriptorSets[1].dstBinding = m_UniformBuffers[1].BindingPoint; // 1;
-
-		// Material samplers - should be owned by mesh
-		// Setup a descriptor image info for the current texture to be used as a combined image sampler
-
-		Hazel::Ref<Hazel::VulkanTexture2D> albedoTexture = Hazel::Ref<Hazel::VulkanTexture2D>(s_AlbedoTexture);
-		const VkDescriptorImageInfo& albedoTextureDescriptor = albedoTexture->GetVulkanDescriptorInfo();
-
-		// Binding 2 : Fragment shader texture sampler
-		// layout (binding = 2) uniform sampler2D u_AlbedoTexture)
-		writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSets[2].dstSet = m_DescriptorSet;
-		writeDescriptorSets[2].descriptorCount = 1;
-		writeDescriptorSets[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		writeDescriptorSets[2].pImageInfo = &albedoTextureDescriptor;
-		// Binds this image sampler to binding point 2
-		writeDescriptorSets[2].dstBinding = m_ImageSamplers[2].BindingPoint; // 2
-
-		Hazel::Ref<Hazel::VulkanTexture2D> normalTexture = Hazel::Ref<Hazel::VulkanTexture2D>(s_NormalTexture);
-		const VkDescriptorImageInfo& normalTextureDescriptor = normalTexture->GetVulkanDescriptorInfo();
-
-		// Binding 3 : Fragment shader texture sampler
-		// layout (binding = 3) uniform sampler2D u_NormalTexture
-		writeDescriptorSets[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSets[3].dstSet = m_DescriptorSet;
-		writeDescriptorSets[3].descriptorCount = 1;
-		writeDescriptorSets[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		writeDescriptorSets[3].pImageInfo = &normalTextureDescriptor;
-		// Binds this image sampler to binding point 3
-		writeDescriptorSets[3].dstBinding = m_ImageSamplers[3].BindingPoint; // 3
-
-		vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
-	}
-
-	void VulkanShader::Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData)
-	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-		HZ_CORE_TRACE("===========================");
-		HZ_CORE_TRACE(" Vulkan Shader Reflection");
-		HZ_CORE_TRACE(" {0}", m_AssetPath);
-		HZ_CORE_TRACE("===========================");
-
-		// Vertex Shader
-		spirv_cross::Compiler compiler(shaderData);
-		auto resources = compiler.get_shader_resources();
-
-		HZ_CORE_TRACE("Uniform Buffers:");
-		for (const auto& resource : resources.uniform_buffers)
-		{
-			const auto& name = resource.name;
-			auto& bufferType = compiler.get_type(resource.base_type_id);
-			int memberCount = static_cast<int>(bufferType.member_types.size());
-			uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
-			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
-
-			HZ_CORE_ASSERT(m_UniformBuffers.find(bindingPoint) == m_UniformBuffers.end());
-			UniformBuffer& buffer = m_UniformBuffers[bindingPoint];
-			buffer.BindingPoint = bindingPoint;
-			buffer.Size = size;
-			buffer.Name = name;
-			buffer.ShaderStage = shaderStage;
-
-			HZ_CORE_TRACE("  Name: {0}", name);
-			HZ_CORE_TRACE("  Member Count: {0}", memberCount);
-			HZ_CORE_TRACE("  Binding Point: {0}", bindingPoint);
-			HZ_CORE_TRACE("  Size: {0}", size);
-			HZ_CORE_TRACE("-------------------");
-		}
-
-		HZ_CORE_TRACE("Push Constant Buffers:");
-		for (const auto& resource : resources.push_constant_buffers)
-		{
-			const auto& name = resource.name;
-			auto& bufferType = compiler.get_type(resource.base_type_id);
-			auto bufferSize = compiler.get_declared_struct_size(bufferType);
-			int memberCount = static_cast<int>(bufferType.member_types.size());
-			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
-			uint32_t offset = 0;
-			if (m_PushConstantRanges.size())
-				offset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
-
-			auto& pushConstantRange = m_PushConstantRanges.emplace_back();
-			pushConstantRange.ShaderStage = shaderStage;
-			pushConstantRange.Size = static_cast<uint32_t>(bufferSize);
-			pushConstantRange.Offset = offset;
-
-			HZ_CORE_TRACE("  Name: {0}", name);
-			HZ_CORE_TRACE("  Member Count: {0}", memberCount);
-			HZ_CORE_TRACE("  Size: {0}", size);
-
-			for (int i = 0; i < memberCount; i++)
-			{
-				auto type = compiler.get_type(bufferType.member_types[i]);
-				const auto& memberName = compiler.get_member_name(bufferType.self, i);
-				auto size = compiler.get_declared_struct_member_size(bufferType, i);
-				auto offset = compiler.type_struct_member_offset(bufferType, i);
-
-			}
-		}
-
-		HZ_CORE_TRACE("Sampled Images:");
-		for (const auto& resource : resources.sampled_images)
-		{
-			const auto& name = resource.name;
-			auto& type = compiler.get_type(resource.base_type_id);
-			auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-			uint32_t dimension = type.image.dim;
-
-			auto& imageSampler = m_ImageSamplers[binding];
-			imageSampler.BindingPoint = binding;
-			imageSampler.ShaderStage = shaderStage;
-			imageSampler.Name = name;
-		}
-
-		HZ_CORE_TRACE("===========================");
 	}
 
 	void VulkanShader::CreateDescriptors()
@@ -517,6 +274,7 @@ namespace Hazel {
 		// Descriptor Set Layout
 		//////////////////////////////////////////////////////////////////////
 		std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
+
 		for (auto& [binding, uniformBuffer] : m_UniformBuffers)
 		{
 			auto& layoutBinding = layoutBindings.emplace_back();
@@ -550,6 +308,7 @@ namespace Hazel {
 			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 			set.descriptorCount = 1;
+			set.dstBinding = layoutBinding.binding;
 			set.dstBinding = layoutBinding.binding;
 		}
 
@@ -624,45 +383,6 @@ namespace Hazel {
 
 		return result;
 	}
-
-	/****
-	void VulkanShader::AllocateUniformBuffer(UniformBuffer& dst)
-	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-		UniformBuffer& uniformBuffer = dst;
-
-		// Vertex shader uniform buffer block
-		VkBufferCreateInfo bufferInfo = {};
-		VkMemoryAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.pNext = nullptr;
-		allocInfo.allocationSize = 0;
-		allocInfo.memoryTypeIndex = 0;
-
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = uniformBuffer.Size;
-		// This buffer will be used as a uniform buffer
-		bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-		VulkanAllocator allocator(std::string("UniformBuffer"));
-
-		// Create a new buffer
-		VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &uniformBuffer.Buffer));
-
-		VkMemoryRequirements memoryRequirements;
-		vkGetBufferMemoryRequirements(device, uniformBuffer.Buffer, &memoryRequirements);
-		allocInfo.allocationSize = memoryRequirements.size;
-
-		allocator.Allocate(memoryRequirements, &uniformBuffer.Memory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		VK_CHECK_RESULT(vkBindBufferMemory(device, uniformBuffer.Buffer, uniformBuffer.Memory, 0));
-
-		// Store information in the uniform's descriptor that is used by the descriptor set
-		uniformBuffer.Descriptor.buffer = uniformBuffer.Buffer;
-		uniformBuffer.Descriptor.offset = 0;
-		uniformBuffer.Descriptor.range = uniformBuffer.Size;
-	}
-	****/
 
 	// temporary for Vulkan Week 4 (remove later, use AllocateUniformBuffer instead)
 	void VulkanShader::AllocateUniformBuffer(UniformBuffer& dst)
@@ -943,16 +663,12 @@ namespace Hazel {
 
 	const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanShader::GetShaderBuffers() const
 	{
-		auto shaderBuffers = std::unordered_map<std::string, Hazel::ShaderBuffer>();
-		shaderBuffers.empty();
-		return shaderBuffers;
+		return {};
 	}
 
 	const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& VulkanShader::GetResources() const
 	{
-		auto resources = std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>();
-		resources.empty();
-		return resources;
+		return {};
 	}
 
 	void VulkanShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)
