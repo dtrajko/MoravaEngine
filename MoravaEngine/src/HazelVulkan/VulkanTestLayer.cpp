@@ -170,16 +170,16 @@ void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* ca
 
 				// Descriptor Sets (Uniform buffers)
 				// Bind descriptor sets describing shader binding points
-				// VkDescriptorSet* descriptorSet = (VkDescriptorSet*)m_Mesh->GetDescriptorSet();
-				VkDescriptorSet* descriptorSet = (VkDescriptorSet*)m_Mesh->GetMeshShader().As<Hazel::VulkanShader>()->GetDescriptorSet();
+				VkDescriptorSet* descriptorSet = (VkDescriptorSet*)m_Mesh->GetDescriptorSet();
+				// VkDescriptorSet* descriptorSet = (VkDescriptorSet*)m_Mesh->GetMeshShader().As<Hazel::VulkanShader>()->GetDescriptorSet();
 				vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, descriptorSet, 0, nullptr);
 
-				//	{
-				//		// uniform buffer binding 1 uniform Transform
-				//		void* ubPtr = shader->MapUniformBuffer(1);
-				//		memcpy(ubPtr, &submesh.Transform, sizeof(glm::mat4));
-				//		shader->UnmapUniformBuffer(1);
-				//	}
+				{
+					// uniform buffer binding 1 uniform Transform
+					void* ubPtr = shader->MapUniformBuffer(1);
+					memcpy(ubPtr, &submesh.Transform, sizeof(glm::mat4));
+					shader->UnmapUniformBuffer(1);
+				}
 
 				// Push Constants
 				vkCmdPushConstants(drawCommandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
