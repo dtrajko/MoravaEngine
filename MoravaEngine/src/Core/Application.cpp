@@ -38,7 +38,8 @@ void Application::OnInit()
 
 	s_Instance->m_Renderer->Init(s_Instance->m_Scene);
 
-	ImGuiWrapper::Init(Application::Get()->GetWindow());
+	s_Instance->m_ImGuiLayer = Hazel::ImGuiLayer::Create(); // ImGui NEW version
+	ImGuiWrapper::Init(Application::Get()->GetWindow()); // ImGui OLD version
 
 	float targetFPS = 60.0f;
 	float targetUpdateRate = 24.0f;

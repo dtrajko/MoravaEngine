@@ -1,27 +1,21 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
-#include "Hazel/Core/Layer.h"
-
-#include "Vulkan.h"
-
-// ImGui includes
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_vulkan_with_textures.h>
-#include <imgui_internal.h>
+#include "Hazel/ImGui/ImGuiLayer.h"
 
 
 namespace Hazel {
 
-	class VulkanImGuiLayer : public Layer
+	class VulkanImGuiLayer : public ImGuiLayer
 	{
 	public:
 		VulkanImGuiLayer();
 		VulkanImGuiLayer(const std::string& name);
 		~VulkanImGuiLayer();
 
-		virtual void Begin();
-		virtual void End();
+		virtual void Begin() override;
+		virtual void End() override;
 
 		virtual void OnAttach();
 		virtual void OnDetach();

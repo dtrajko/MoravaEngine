@@ -228,17 +228,8 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
     std::string fileName = Util::GetFileNameFromFullPath(fullPath);
     std::string fileNameNoExt = Util::StripExtensionFromFileName(fileName);
 
-    // A bit unfortunate hard-coded mesh type selection by model name
-    // TODO: detect automatically mesh type in HazelMesh constructor
-    bool isAnimated;
-    if (fileNameNoExt == "m1911") {
-        isAnimated = true;
-        EnvMapSharedData::s_ShaderHazelPBR = ShaderLibrary::Get("HazelPBR_Anim");
-    }
-    else {
-        isAnimated = false;
-        EnvMapSharedData::s_ShaderHazelPBR = ShaderLibrary::Get("HazelPBR_Static");
-    }
+    bool isAnimated = false;
+    EnvMapSharedData::s_ShaderHazelPBR = ShaderLibrary::Get("HazelPBR_Static");
 
     Log::GetLogger()->debug("EnvMapEditorLayer::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 

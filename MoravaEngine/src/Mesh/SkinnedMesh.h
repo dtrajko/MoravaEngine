@@ -89,7 +89,7 @@ private:
     unsigned int FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
     unsigned int FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
     const aiNodeAnim* FindNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
-    void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
+    void ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
     bool InitFromScene(const aiScene* pScene, const std::string& Filename, const std::string& TexturesDir);
     void InitMesh(unsigned int MeshIndex, const aiMesh* paiMesh,
         std::vector<glm::vec3>& Positions, std::vector<glm::vec3>& Normals, std::vector<glm::vec2>& TexCoords,

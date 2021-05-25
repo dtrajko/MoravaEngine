@@ -1,30 +1,26 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
-#include "Hazel/Core/Layer.h"
-
-// ImGui includes
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
-#include <imgui_internal.h>
+#include "Hazel/ImGui/ImGuiLayer.h"
 
 
 namespace Hazel {
 
-	class OpenGLImGuiLayer : public Layer
+	class OpenGLImGuiLayer : public ImGuiLayer
 	{
 	public:
 		OpenGLImGuiLayer();
 		OpenGLImGuiLayer(const std::string& name);
-		~OpenGLImGuiLayer();
+		virtual ~OpenGLImGuiLayer();
 
-		virtual void Begin();
-		virtual void End();
+		virtual void Begin() override;
+		virtual void End() override;
 
-		virtual void OnAttach();
-		virtual void OnDetach();
-		virtual void OnImGuiRender();
-	
+		virtual void OnAttach() override;
+		virtual void OnDetach() override;
+		virtual void OnImGuiRender() override;
+
 	private:
 		float m_Time = 0.0f;
 

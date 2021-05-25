@@ -1,42 +1,38 @@
 #include "VulkanImGuiLayer.h"
 
+// ImGui includes
+#if !defined(IMGUI_IMPL_API)
+	#define IMGUI_IMPL_API
+#endif
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan_with_textures.h"
+
+#include "ImGuizmo.h"
+
+#include "Core/Application.h"
+
+#include <GLFW/glfw3.h>
+
+#include "Hazel/Renderer/HazelRenderer.h"
+#include "Vulkan.h"
+
 
 namespace Hazel {
 
 	VulkanImGuiLayer::VulkanImGuiLayer()
 	{
+		Log::GetLogger()->info("VulkanImGuiLayer created!");
 	}
 
 	VulkanImGuiLayer::VulkanImGuiLayer(const std::string& name)
 	{
+		Log::GetLogger()->info("VulkanImGuiLayer('{0}') created!", name);
 	}
 
 	VulkanImGuiLayer::~VulkanImGuiLayer()
 	{
-	}
-
-	void VulkanImGuiLayer::Begin()
-	{
-		ImGuiIO& io = ImGui::GetIO();
-
-		float time = (float)glfwGetTime();
-		io.DeltaTime = m_Time > 0.0f ? (time - m_Time) : (1.0f / 60.0f);
-		m_Time = time;
-
-		// ImGui Start the Dear ImGui frame
-
-		ImGui_ImplVulkan_NewFrame();
-	}
-
-	void VulkanImGuiLayer::End()
-	{
-		// ImGui Rendering
-		ImGuiIO& io = ImGui::GetIO();
-		// io.DisplaySize = ImVec2((float)s_Window->GetWidth(), (float)s_Window->GetHeight());
-
-		// Rendering
-
-		// TODO
+		Log::GetLogger()->info("VulkanImGuiLayer destroyed!");
 	}
 
 	void VulkanImGuiLayer::OnAttach()
@@ -49,8 +45,8 @@ namespace Hazel {
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
-		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+		//io.ConfigViewportsNoAutoMerge = true;
+		//io.ConfigViewportsNoTaskBarIcon = true;
 
 		// Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array.
 		io.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB;
@@ -118,14 +114,14 @@ namespace Hazel {
 		// VK_CHECK(vkCreateDescriptorPool(_device, &pool_info, nullptr, &imguiPool));
 
 		//this initializes imgui for Vulkan
-		ImGui_ImplVulkan_InitInfo init_info = {};
+		// ImGui_ImplVulkan_InitInfo init_info = {};
 		// init_info.Instance = _instance;
 		// init_info.PhysicalDevice = _chosenGPU;
 		// init_info.Device = _device;
 		// init_info.Queue = _graphicsQueue;
 		// init_info.DescriptorPool = imguiPool;
-		init_info.MinImageCount = 3;
-		init_info.ImageCount = 3;
+		// init_info.MinImageCount = 3;
+		// init_info.ImageCount = 3;
 
 		// ImGui_ImplVulkan_Init(&init_info, _renderPass);
 
@@ -151,6 +147,30 @@ namespace Hazel {
 
 	void VulkanImGuiLayer::OnDetach()
 	{
+	}
+
+	void VulkanImGuiLayer::Begin()
+	{
+		ImGuiIO& io = ImGui::GetIO();
+
+		float time = (float)glfwGetTime();
+		io.DeltaTime = m_Time > 0.0f ? (time - m_Time) : (1.0f / 60.0f);
+		m_Time = time;
+
+		// ImGui Start the Dear ImGui frame
+
+		ImGui_ImplVulkan_NewFrame();
+	}
+
+	void VulkanImGuiLayer::End()
+	{
+		// ImGui Rendering
+		ImGuiIO& io = ImGui::GetIO();
+		// io.DisplaySize = ImVec2((float)s_Window->GetWidth(), (float)s_Window->GetHeight());
+
+		// Rendering
+
+		// TODO
 	}
 
 	void VulkanImGuiLayer::OnImGuiRender()

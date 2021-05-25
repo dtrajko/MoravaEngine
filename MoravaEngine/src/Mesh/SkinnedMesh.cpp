@@ -400,7 +400,7 @@ void SkinnedMesh::VertexBoneData::AddBoneData(unsigned int BoneID, float Weight)
     // assert(0);
 }
 
-void SkinnedMesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform)
+void SkinnedMesh::ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform)
 {
     std::string NodeName(pNode->mName.data);
 
@@ -443,7 +443,7 @@ void SkinnedMesh::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, co
     }
 
     for (unsigned int i = 0; i < pNode->mNumChildren; i++) {
-        ReadNodeHeirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
+        ReadNodeHierarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
     }
 }
 
@@ -456,7 +456,7 @@ void SkinnedMesh::BoneTransform(float TimeInSeconds, std::vector<glm::mat4>& Tra
     float TimeInTicks = TimeInSeconds * TicksPerSecond * m_TimeMultiplier;
     float AnimationTime = (float)fmod(TimeInTicks, m_pScene->mAnimations[0]->mDuration);
 
-    ReadNodeHeirarchy(AnimationTime, m_pScene->mRootNode, Identity);
+    ReadNodeHierarchy(AnimationTime, m_pScene->mRootNode, Identity);
 
     Transforms.resize(m_NumBones);
 

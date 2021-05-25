@@ -5,6 +5,7 @@
 #include "Hazel/Core/LayerStack.h"
 #include "Hazel/Events/ApplicationEvent.h"
 #include "Hazel/Events/Event.h"
+#include "Hazel/ImGui/ImGuiLayer.h"
 
 #include "Core/Log.h"
 #include "Core/Window.h"
@@ -64,5 +65,7 @@ private:
 	bool m_Running = true;
 	bool m_Minimized = false;
 	LayerStack m_LayerStack;
+
+	Hazel::ImGuiLayer* m_ImGuiLayer;
 
 };
