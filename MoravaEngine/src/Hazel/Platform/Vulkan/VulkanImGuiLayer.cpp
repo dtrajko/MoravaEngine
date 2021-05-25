@@ -57,8 +57,8 @@ namespace Hazel {
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-		//io.ConfigViewportsNoAutoMerge = true;
-		//io.ConfigViewportsNoTaskBarIcon = true;
+		// io.ConfigViewportsNoAutoMerge = true;
+		// io.ConfigViewportsNoTaskBarIcon = true;
 
 		// Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array.
 		io.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB;
@@ -98,90 +98,106 @@ namespace Hazel {
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
-		Application* app = Application::Get();
-		GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow()->GetHandle());
+		// HazelRenderer::Submit([]{
+		// });
 
-		auto vulkanContext = VulkanContext::Get();
-		auto currentDevice = VulkanContext::GetCurrentDevice();
-		auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-		VkDescriptorPool descriptorPool;
-
-		// Create Descriptor Pool
 		{
-			VkDescriptorPoolSize pool_sizes[] =
+			Application* app = Application::Get();
+			GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow()->GetHandle());
+
+			auto vulkanContext = VulkanContext::Get();
+			auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+			auto currentDevice = VulkanContext::GetCurrentDevice();
+			VkDescriptorPool descriptorPool;
+
+			// Create Descriptor Pool
 			{
-				{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-				{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
-			};
-			VkDescriptorPoolCreateInfo pool_info = {};
-			pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-			pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
-			pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
-			pool_info.pPoolSizes = pool_sizes;
-			VkResult err = vkCreateDescriptorPool(device, &pool_info, nullptr, &descriptorPool);
-			check_vk_result(err);
+				VkDescriptorPoolSize pool_sizes[] =
+				{
+					{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+					{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+					{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+					{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+					{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+					{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+					{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+					{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+					{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+					{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+					{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+				};
+				VkDescriptorPoolCreateInfo pool_info = {};
+				pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+				pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+				pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
+				pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
+				pool_info.pPoolSizes = pool_sizes;
+				VkResult err = vkCreateDescriptorPool(device, &pool_info, nullptr, &descriptorPool);
+				check_vk_result(err);
+			}
+
+			// Setup Platform/Renderer bindings
+			ImGui_ImplGlfw_InitForVulkan(window, true);
+			ImGui_ImplVulkan_InitInfo init_info = {};
+			init_info.Instance = VulkanContext::GetInstance();
+			init_info.PhysicalDevice = currentDevice->GetPhysicalDevice()->GetVulkanPhysicalDevice();
+			init_info.Device = currentDevice->GetVulkanDevice();
+			init_info.QueueFamily = currentDevice->GetPhysicalDevice()->GetQueueFamilyIndices().Graphics;
+			init_info.Queue = currentDevice->GetQueue();
+			init_info.PipelineCache = nullptr;
+			init_info.DescriptorPool = descriptorPool;
+			init_info.Allocator = nullptr;
+			init_info.MinImageCount = 2; // vulkanContext->GetSwapChain().GetImageCount();
+			init_info.ImageCount = vulkanContext->GetSwapChain().GetImageCount();
+			init_info.CheckVkResultFn = check_vk_result;
+			ImGui_ImplVulkan_Init(&init_info, vulkanContext->GetSwapChain().GetRenderPass());
+
+			// Load Fonts
+			// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
+			// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
+			// - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
+			// - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
+			// - Read 'docs/FONTS.md' for more instructions and details.
+			// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
+			// io.Fonts->AddFontDefault();
+			// io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
+			// io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
+			// io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
+			// io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
+			// ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+			// IM_ASSERT(font != NULL);
+
+			// Upload Fonts
+			{
+				// Use any command queue
+
+				m_CommandBuffer = vulkanContext->GetCurrentDevice()->GetCommandBuffer(true);
+				ImGui_ImplVulkan_CreateFontsTexture(m_CommandBuffer);
+				vulkanContext->GetCurrentDevice()->FlushCommandBuffer(m_CommandBuffer);
+
+				VkResult err = vkDeviceWaitIdle(device);
+				check_vk_result(err);
+				ImGui_ImplVulkan_DestroyFontUploadObjects();
+			}
 		}
-
-		// Setup Platform/Renderer bindings
-		ImGui_ImplGlfw_InitForVulkan(window, true);
-		ImGui_ImplVulkan_InitInfo init_info = {};
-		init_info.Instance = VulkanContext::GetInstance();
-		init_info.PhysicalDevice = currentDevice->GetPhysicalDevice()->GetVulkanPhysicalDevice();
-		init_info.Device = currentDevice->GetVulkanDevice();
-		init_info.QueueFamily = currentDevice->GetPhysicalDevice()->GetQueueFamilyIndices().Graphics;
-		init_info.Queue = currentDevice->GetQueue();
-		init_info.PipelineCache = nullptr;
-		init_info.DescriptorPool = descriptorPool;
-		init_info.Allocator = nullptr;
-		init_info.MinImageCount = 2;
-		init_info.ImageCount = vulkanContext->GetSwapChain().GetImageCount();
-		init_info.CheckVkResultFn = check_vk_result;
-		ImGui_ImplVulkan_Init(&init_info, vulkanContext->GetSwapChain().GetRenderPass());
-
-		//this initializes imgui for Vulkan
-		// ImGui_ImplVulkan_InitInfo init_info = {};
-		// init_info.Instance = _instance;
-		// init_info.PhysicalDevice = _chosenGPU;
-		// init_info.Device = _device;
-		// init_info.Queue = _graphicsQueue;
-		// init_info.DescriptorPool = imguiPool;
-		// init_info.MinImageCount = 3;
-		// init_info.ImageCount = 3;
-
-		// ImGui_ImplVulkan_Init(&init_info, _renderPass);
-
-		// execute a gpu command to upload imgui font textures
-		//	immediate_submit([&](VkCommandBuffer cmd) {
-		//		ImGui_ImplVulkan_CreateFontsTexture(cmd);
-		//	});
-
-		// clear font textures from cpu data
-		ImGui_ImplVulkan_DestroyFontUploadObjects();
-
-		//add the destroy the imgui created structures
-		//	_mainDeletionQueue.push_function([=]() {
-		//	
-		//		vkDestroyDescriptorPool(_device, imguiPool, nullptr);
-		//		ImGui_ImplVulkan_Shutdown();
-		//	});
-
-		// ----------------------------
-
-		// ImGui_ImplGlfw_InitForVulkan(window->GetHandle(), true);
 	}
 
 	void VulkanImGuiLayer::OnDetach()
 	{
+		// HazelRenderer::Submit([] {
+		// });
+		{
+			auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+			auto err = vkDeviceWaitIdle(device);
+			check_vk_result(err);
+
+			// ImGui Cleanup
+			ImGui_ImplVulkan_Shutdown();
+			ImGui_ImplGlfw_Shutdown();
+			ImGui::DestroyContext();
+		}
 	}
 
 	void VulkanImGuiLayer::Begin()
@@ -193,19 +209,29 @@ namespace Hazel {
 		m_Time = time;
 
 		// ImGui Start the Dear ImGui frame
-
-		ImGui_ImplVulkan_NewFrame();
+		// ImGui_ImplVulkan_NewFrame();
+		// ImGui_ImplGlfw_NewFrame();
+		// ImGui::NewFrame();
+		// ImGuizmo::BeginFrame();
 	}
 
 	void VulkanImGuiLayer::End()
 	{
-		// ImGui Rendering
 		ImGuiIO& io = ImGui::GetIO();
-		// io.DisplaySize = ImVec2((float)s_Window->GetWidth(), (float)s_Window->GetHeight());
+		Application* app = Application::Get();
+		io.DisplaySize = ImVec2((float)app->GetWindow()->GetWidth(), (float)app->GetWindow()->GetHeight());
 
 		// Rendering
+		// ImGui::Render();
+		// ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_CommandBuffer);
 
-		// TODO
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			// ImGui::UpdatePlatformWindows();
+			// ImGui::RenderPlatformWindowsDefault();
+			// glfwMakeContextCurrent(backup_current_context);
+		}
 	}
 
 	void VulkanImGuiLayer::OnImGuiRender()

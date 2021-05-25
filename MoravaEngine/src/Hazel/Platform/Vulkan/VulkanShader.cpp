@@ -257,6 +257,7 @@ namespace Hazel {
 			typeCount.descriptorCount = static_cast<uint32_t>(m_ImageSamplers.size());
 		}
 
+		// TODO: Move this to the centralized renderer
 		// Create the global descriptor pool
 		// All descriptors used in this example are allocated from this pool
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};

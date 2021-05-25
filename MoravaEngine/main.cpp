@@ -30,7 +30,5 @@ int main()
 
 	Application::Run();
 
-	Application::OnShutdown();
-
 	return 0;
 }

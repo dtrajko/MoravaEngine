@@ -26,7 +26,7 @@ enum class PropertyFlag
 class ImGuiWrapper
 {
 public:
-	static void Init(Window* window);
+	static void Init();
 	static void Begin();
 	static void End();
 	static void Cleanup();
@@ -63,7 +63,6 @@ public:
 	static bool const CanViewportReceiveEvents();
 
 private:
-	static Window* s_Window;
 	static float s_Time;
 
 	static std::string s_MaterialNameNew;

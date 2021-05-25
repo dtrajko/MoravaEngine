@@ -36,6 +36,8 @@ namespace Hazel {
 
 	void OpenGLImGuiLayer::OnAttach()
 	{
+		return; // TODO: disable it until we switch from ImGuiWrapper::Init() to ImGuiLayer::OnAttach()
+
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -73,6 +75,8 @@ namespace Hazel {
 
 	void OpenGLImGuiLayer::OnDetach()
 	{
+		return; // TODO: disable it until we switch from ImGuiWrapper::Cleanup() to ImGuiLayer::OnDetach()
+
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -80,6 +84,10 @@ namespace Hazel {
 
 	void OpenGLImGuiLayer::Begin()
 	{
+		return; // TODO: disable it until we switch from ImGuiWrapper::Begin() to ImGuiLayer::Begin()
+
+		ImGuiIO& io = ImGui::GetIO();
+
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -88,6 +96,8 @@ namespace Hazel {
 
 	void OpenGLImGuiLayer::End()
 	{
+		return; // TODO: disable it until we switch from ImGuiWrapper::End() to ImGuiLayer::End()
+
 		ImGuiIO& io = ImGui::GetIO();
 		Application* app = Application::Get();
 		io.DisplaySize = ImVec2(static_cast<float>(app->GetWindow()->GetWidth()), static_cast<float>(app->GetWindow()->GetHeight()));
