@@ -50,20 +50,18 @@ void Application::OnInit()
 
 void Application::RenderImGui()
 {
-	return; // currently disabled (not working)
-
-	m_ImGuiLayer->Begin();
-
-	ImGui::Begin("Renderer");
-	auto& caps = Hazel::HazelRenderer::GetCapabilities();
-	ImGui::Text("Vendor: %s", caps.Vendor.c_str());
-	ImGui::Text("Device: %s", caps.Device.c_str());
-	ImGui::Text("Version: %s", caps.Version.c_str());
-	ImGui::Text("Frame Time: %.2fms", 0.0f /* m_TimeStep.GetMilliseconds() */);
-	ImGui::End();
-
-	for (Layer* layer : m_LayerStack)
-		layer->OnImGuiRender();
+	// ImGui::Begin("Renderer");
+	// auto& caps = Hazel::HazelRenderer::GetCapabilities(); // TODO: 's_RendererAPI was nullptr'
+	// ImGui::Text("Vendor: %s", caps.Vendor.c_str());
+	// ImGui::Text("Device: %s", caps.Device.c_str());
+	// ImGui::Text("Version: %s", caps.Version.c_str());
+	// ImGui::Text("Frame Time: %.2fms", 0.0f /* m_TimeStep.GetMilliseconds() */);
+	// ImGui::End();
+	// 
+	// for (Layer* layer : m_LayerStack)
+	// {
+	// 	layer->OnImGuiRender();
+	// }
 
 	m_ImGuiLayer->End();
 }
@@ -80,23 +78,22 @@ void Application::Run()
 
 		if (!s_Instance->m_Minimized)
 		{
+			Hazel::HazelRenderer::Submit([=]() { s_Instance->m_ImGuiLayer->Begin(); });
+
 			s_Instance->m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
 
 			s_Instance->m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), s_Instance->m_Window); // TODO deltaTime obsolete
-
-			// Render ImGui on render thread
-			Application* app = s_Instance;
-			Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); }); // Vulkan Week Day 4 1:27
-
-			s_Instance->m_ImGuiLayer->Begin();
 
 			// On Render thread (Hazel Vulkan)
 			s_Instance->m_Window->GetRenderContext()->BeginFrame();
 			s_Instance->m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), s_Instance->m_Window, s_Instance->m_Scene, RendererBasic::GetProjectionMatrix());
 
 			s_Instance->m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), s_Instance->m_Window);
-
-			s_Instance->m_ImGuiLayer->End();
+  
+			// Render ImGui on render thread
+			Application* app = s_Instance;
+			Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
+			// s_Instance->m_ImGuiLayer->End();
 
 			// Swap buffers and poll events
 			s_Instance->m_Window->SwapBuffers(); // previously s_Instance->m_Window->OnUpdate();

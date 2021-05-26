@@ -7,7 +7,8 @@
 #include "Renderer/RendererBasic.h"
 
 #include "Hazel/Platform/OpenGL/OpenGLRenderer.h"
-// #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+
 
 namespace Hazel {
 

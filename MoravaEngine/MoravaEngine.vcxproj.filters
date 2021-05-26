@@ -2,27 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="..\vendor\ImGui\imgui.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\vendor\ImGui\imgui_impl_dx11.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapEditorLayer.cpp">
       <Filter>EnvMap</Filter>
@@ -546,9 +525,6 @@
     <ClCompile Include="src\Hazel\Script\ScriptWrappers.cpp">
       <Filter>Hazel\Script</Filter>
     </ClCompile>
-    <ClCompile Include="src\ImGui\ImGuiBuild.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
     <ClCompile Include="src\ImGui\ImGuiWrapper.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
@@ -732,9 +708,6 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanIndexBuffer.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="..\vendor\ImGui\imgui_impl_vulkan_with_textures.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanDiagnostics.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
@@ -777,41 +750,41 @@
     <ClCompile Include="src\Hazel\ImGui\ImGuiLayer.cpp">
       <Filter>Hazel\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_vulkan.cpp">
+      <Filter>Vendors\ImGui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_dx11.cpp">
+      <Filter>Vendors\ImGui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_glfw.cpp">
+      <Filter>Vendors\ImGui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_opengl3.cpp">
+      <Filter>Vendors\ImGui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_win32.cpp">
+      <Filter>Vendors\ImGui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\imgui.cpp">
+      <Filter>Vendors\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp">
+      <Filter>Vendors\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp">
+      <Filter>Vendors\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp">
+      <Filter>Vendors\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp">
+      <Filter>Vendors\ImGuizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_dx12.cpp">
+      <Filter>Vendors\ImGui\backends</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\vendor\ImGui\imconfig.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\vendor\ImGui\imgui.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\vendor\ImGui\imgui_impl_dx11.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\vendor\ImGui\imgui_impl_glfw.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\vendor\ImGui\imgui_impl_opengl3.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\vendor\ImGui\imgui_impl_win32.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\vendor\ImGui\imgui_internal.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\vendor\ImGui\imstb_textedit.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\vendor\ImGui\imstb_truetype.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="pch.h" />
     <ClInclude Include="src\EnvMap\EnvMapEditorLayer.h">
       <Filter>EnvMap</Filter>
@@ -1608,9 +1581,6 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanIndexBuffer.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="..\vendor\ImGui\imgui_impl_vulkan_with_textures.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanDiagnostics.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
@@ -1660,6 +1630,45 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\ImGui\ImGuiLayer.h">
       <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan.h">
+      <Filter>Vendors\ImGui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_dx11.h">
+      <Filter>Vendors\ImGui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_glfw.h">
+      <Filter>Vendors\ImGui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_opengl3.h">
+      <Filter>Vendors\ImGui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_win32.h">
+      <Filter>Vendors\ImGui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\imconfig.h">
+      <Filter>Vendors\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\imgui.h">
+      <Filter>Vendors\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\imgui_internal.h">
+      <Filter>Vendors\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h">
+      <Filter>Vendors\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\imstb_textedit.h">
+      <Filter>Vendors\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\imstb_truetype.h">
+      <Filter>Vendors\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h">
+      <Filter>Vendors\ImGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_dx12.h">
+      <Filter>Vendors\ImGui\backends</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1863,6 +1872,21 @@
     </Filter>
     <Filter Include="Instancing">
       <UniqueIdentifier>{669491ea-2cbc-40e0-8685-ea3969a776e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendors">
+      <UniqueIdentifier>{f36e2cf0-7915-4a03-b277-1214cf3da7db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendors\ImGui">
+      <UniqueIdentifier>{7fcfc96c-4c98-4532-b843-6ffbfb59b405}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendors\ImGui\backends">
+      <UniqueIdentifier>{00ef5fdc-947e-4a1e-adea-dd38e49bc4e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendors\ImGui\examples">
+      <UniqueIdentifier>{61ec46df-85d3-44ac-8d73-f22af228d671}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendors\ImGuizmo">
+      <UniqueIdentifier>{f53b9175-4036-4c31-b324-8758066de1d3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

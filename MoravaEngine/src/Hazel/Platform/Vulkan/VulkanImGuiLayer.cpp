@@ -5,8 +5,8 @@
 	#define IMGUI_IMPL_API
 #endif
 #include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_vulkan_with_textures.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_vulkan.h"
 
 #include "ImGuizmo.h"
 
@@ -230,6 +230,12 @@ namespace Hazel {
 	void VulkanImGuiLayer::End()
 	{
 		ImGuiIO& io = ImGui::GetIO();
+		Application* app = Application::Get();
+		io.DisplaySize = ImVec2(static_cast<float>(app->GetWindow()->GetWidth()), static_cast<float>(app->GetWindow()->GetHeight()));
+
+		// Rendering here only in OpenGL version (?)
+		// ImGui::Render();
+		// ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_CommandBuffer);
 
 		// Update and Render additional Platform Windows
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

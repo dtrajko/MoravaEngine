@@ -97,12 +97,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp" />
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_dx11.cpp" />
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_dx12.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp" />
-    <ClCompile Include="..\vendor\ImGui\imgui_impl_dx11.cpp" />
-    <ClCompile Include="..\vendor\ImGui\imgui_impl_vulkan_with_textures.cpp" />
-    <ClCompile Include="..\vendor\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -225,7 +230,6 @@
     <ClCompile Include="src\Hazel\Script\ScriptEngineRegistry.cpp" />
     <ClCompile Include="src\Hazel\Script\ScriptWrappers.cpp" />
     <ClCompile Include="src\Hazel\Utilities\StringUtils.cpp" />
-    <ClCompile Include="src\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\ImGui\ImGuiWrapper.cpp" />
     <ClCompile Include="src\Instancing\RenderInstanced.cpp" />
     <ClCompile Include="src\LearnOpenGL\MeshJoey.cpp" />
@@ -362,13 +366,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h" />
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_dx11.h" />
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_dx12.h" />
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_glfw.h" />
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan.h" />
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_win32.h" />
     <ClInclude Include="..\vendor\ImGui\imconfig.h" />
     <ClInclude Include="..\vendor\ImGui\imgui.h" />
-    <ClInclude Include="..\vendor\ImGui\imgui_impl_dx11.h" />
-    <ClInclude Include="..\vendor\ImGui\imgui_impl_glfw.h" />
-    <ClInclude Include="..\vendor\ImGui\imgui_impl_opengl3.h" />
-    <ClInclude Include="..\vendor\ImGui\imgui_impl_vulkan_with_textures.h" />
-    <ClInclude Include="..\vendor\ImGui\imgui_impl_win32.h" />
     <ClInclude Include="..\vendor\ImGui\imgui_internal.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
