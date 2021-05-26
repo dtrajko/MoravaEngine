@@ -23,6 +23,15 @@
 
 namespace Hazel {
 
+	static void check_vk_result(VkResult err)
+	{
+		if (err == 0)
+			return;
+		fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
+		if (err < 0)
+			abort();
+	}
+
 	VulkanImGuiLayer::VulkanImGuiLayer()
 	{
 		Log::GetLogger()->info("VulkanImGuiLayer created!");
@@ -36,15 +45,17 @@ namespace Hazel {
 	VulkanImGuiLayer::~VulkanImGuiLayer()
 	{
 		Log::GetLogger()->info("VulkanImGuiLayer destroyed!");
-	}
 
-	static void check_vk_result(VkResult err)
-	{
-		if (err == 0)
-			return;
-		fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
-		if (err < 0)
-			abort();
+		auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+		// Cleanup
+		VkResult err = vkDeviceWaitIdle(device);
+		check_vk_result(err);
+		ImGui_ImplVulkan_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
+		// ImGui_ImplVulkanH_DestroyWindow(VulkanContext::GetInstance(), device, &g_MainWindowData, nullptr);
+		vkDestroyDescriptorPool(device, m_DescriptorPool, nullptr);
 	}
 
 	void VulkanImGuiLayer::OnAttach()
@@ -109,7 +120,6 @@ namespace Hazel {
 			auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
 			auto currentDevice = VulkanContext::GetCurrentDevice();
-			VkDescriptorPool descriptorPool;
 
 			// Create Descriptor Pool
 			{
@@ -133,7 +143,7 @@ namespace Hazel {
 				pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
 				pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
 				pool_info.pPoolSizes = pool_sizes;
-				VkResult err = vkCreateDescriptorPool(device, &pool_info, nullptr, &descriptorPool);
+				VkResult err = vkCreateDescriptorPool(device, &pool_info, nullptr, &m_DescriptorPool);
 				check_vk_result(err);
 			}
 
@@ -146,7 +156,7 @@ namespace Hazel {
 			init_info.QueueFamily = currentDevice->GetPhysicalDevice()->GetQueueFamilyIndices().Graphics;
 			init_info.Queue = currentDevice->GetQueue();
 			init_info.PipelineCache = nullptr;
-			init_info.DescriptorPool = descriptorPool;
+			init_info.DescriptorPool = m_DescriptorPool;
 			init_info.Allocator = nullptr;
 			init_info.MinImageCount = 2; // vulkanContext->GetSwapChain().GetImageCount();
 			init_info.ImageCount = vulkanContext->GetSwapChain().GetImageCount();
@@ -208,11 +218,12 @@ namespace Hazel {
 		io.DeltaTime = m_Time > 0.0f ? (time - m_Time) : (1.0f / 60.0f);
 		m_Time = time;
 
-		// ImGui Start the Dear ImGui frame
-		// ImGui_ImplVulkan_NewFrame();
+		// Start the Dear ImGui frame
+		ImGui_ImplVulkan_NewFrame();
 		// ImGui_ImplGlfw_NewFrame();
 		// ImGui::NewFrame();
 		// ImGuizmo::BeginFrame();
+		// ImGui::ShowDemoWindow();
 	}
 
 	void VulkanImGuiLayer::End()
@@ -223,15 +234,34 @@ namespace Hazel {
 
 		// Rendering
 		// ImGui::Render();
-		// ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_CommandBuffer);
+
+		/****
+		ImDrawData* main_draw_data = ImGui::GetDrawData();
+		const bool main_is_minimized = (main_draw_data->DisplaySize.x <= 0.0f || main_draw_data->DisplaySize.y <= 0.0f);
+		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+		memcpy(&wd->ClearValue.color.float32[0], &clear_color, 4 * sizeof(float));
+		if (!main_is_minimized)
+			FrameRender(wd, main_draw_data);
+
+		// Update and Render additional Platform Windows
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+		}
+
+		// Present Main Platform Window
+		if (!main_is_minimized)
+			FramePresent(wd);
 
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			GLFWwindow* backup_current_context = glfwGetCurrentContext();
-			// ImGui::UpdatePlatformWindows();
-			// ImGui::RenderPlatformWindowsDefault();
-			// glfwMakeContextCurrent(backup_current_context);
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
 		}
+		****/
 	}
 
 	void VulkanImGuiLayer::OnImGuiRender()

@@ -182,6 +182,14 @@ void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* ca
 			}
 		}
 
+		// TODO: Move to VulkanImGuiLayer
+		// Rendering
+		// ImGui::Render();
+
+		// ImGui record commands to command buffer
+		ImDrawData* main_draw_data = ImGui::GetDrawData();
+		// ImGui_ImplVulkan_RenderDrawData(main_draw_data, drawCommandBuffer);
+
 		vkCmdEndRenderPass(drawCommandBuffer);
 
 		// Ending the render pass will add an implicit barrier transitioning the frame buffer color attachment to

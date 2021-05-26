@@ -6,127 +6,137 @@
 #include "../../ImGuizmo/ImGuizmo.h"
 
 
-float ImGuiWrapper::s_Time;
-std::string ImGuiWrapper::s_MaterialNameNew;
-
 bool ImGuiWrapper::s_ViewportEnabled = false;
 bool ImGuiWrapper::s_ViewportHovered = true;
 bool ImGuiWrapper::s_ViewportFocused = true;
 bool ImGuiWrapper::s_CanViewportReceiveEvents = true;
 
-// TODO: this method needs to be replaced with ImGuiLayer::Create() and ImGuiLayer::OnAttach() and removed from ImGuiWrapper
-void ImGuiWrapper::Init()
-{
-	Application* app = Application::Get();
-	GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow()->GetHandle());
+//	Moved to ImGuiLayer
+//	void ImGuiWrapper::Create()
+//	{
+//	}
 
-	// Setup Dear ImGui context
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
-	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
+//	Moved to ImGuiLayer
+//	void ImGuiWrapper::Destroy()
+//	{
+//		Log::GetLogger()->info("ImGuiWrapper destroyed!");
+//	
+//		// ImGui Cleanup
+//		ImGui_ImplOpenGL3_Shutdown();
+//		ImGui_ImplGlfw_Shutdown();
+//		ImGui::DestroyContext();
+//	}
 
-	// Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array.
-	io.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB;
-	io.KeyMap[ImGuiKey_LeftArrow] = GLFW_KEY_LEFT;
-	io.KeyMap[ImGuiKey_RightArrow] = GLFW_KEY_RIGHT;
-	io.KeyMap[ImGuiKey_UpArrow] = GLFW_KEY_UP;
-	io.KeyMap[ImGuiKey_DownArrow] = GLFW_KEY_DOWN;
-	io.KeyMap[ImGuiKey_PageUp] = GLFW_KEY_PAGE_UP;
-	io.KeyMap[ImGuiKey_PageDown] = GLFW_KEY_PAGE_DOWN;
-	io.KeyMap[ImGuiKey_Home] = GLFW_KEY_HOME;
-	io.KeyMap[ImGuiKey_End] = GLFW_KEY_END;
-	io.KeyMap[ImGuiKey_Insert] = GLFW_KEY_INSERT;
-	io.KeyMap[ImGuiKey_Delete] = GLFW_KEY_DELETE;
-	io.KeyMap[ImGuiKey_Backspace] = GLFW_KEY_BACKSPACE;
-	io.KeyMap[ImGuiKey_Space] = GLFW_KEY_SPACE;
-	io.KeyMap[ImGuiKey_Enter] = GLFW_KEY_ENTER;
-	io.KeyMap[ImGuiKey_Escape] = GLFW_KEY_ESCAPE;
-	io.KeyMap[ImGuiKey_KeyPadEnter] = GLFW_KEY_KP_ENTER;
-	io.KeyMap[ImGuiKey_A] = GLFW_KEY_A;
-	io.KeyMap[ImGuiKey_C] = GLFW_KEY_C;
-	io.KeyMap[ImGuiKey_V] = GLFW_KEY_V;
-	io.KeyMap[ImGuiKey_X] = GLFW_KEY_X;
-	io.KeyMap[ImGuiKey_Y] = GLFW_KEY_Y;
-	io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
+//	Moved to ImGuiLayer
+//	void ImGuiWrapper::OnAttach()
+//	{
+//		Application* app = Application::Get();
+//		GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow()->GetHandle());
+//	
+//		// Setup Dear ImGui context
+//		IMGUI_CHECKVERSION();
+//		ImGui::CreateContext();
+//		ImGuiIO& io = ImGui::GetIO(); (void)io;
+//		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+//		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+//		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+//		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+//		// io.ConfigViewportsNoAutoMerge = true;
+//		// io.ConfigViewportsNoTaskBarIcon = true;
+//	
+//		// Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array.
+//		io.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB;
+//		io.KeyMap[ImGuiKey_LeftArrow] = GLFW_KEY_LEFT;
+//		io.KeyMap[ImGuiKey_RightArrow] = GLFW_KEY_RIGHT;
+//		io.KeyMap[ImGuiKey_UpArrow] = GLFW_KEY_UP;
+//		io.KeyMap[ImGuiKey_DownArrow] = GLFW_KEY_DOWN;
+//		io.KeyMap[ImGuiKey_PageUp] = GLFW_KEY_PAGE_UP;
+//		io.KeyMap[ImGuiKey_PageDown] = GLFW_KEY_PAGE_DOWN;
+//		io.KeyMap[ImGuiKey_Home] = GLFW_KEY_HOME;
+//		io.KeyMap[ImGuiKey_End] = GLFW_KEY_END;
+//		io.KeyMap[ImGuiKey_Insert] = GLFW_KEY_INSERT;
+//		io.KeyMap[ImGuiKey_Delete] = GLFW_KEY_DELETE;
+//		io.KeyMap[ImGuiKey_Backspace] = GLFW_KEY_BACKSPACE;
+//		io.KeyMap[ImGuiKey_Space] = GLFW_KEY_SPACE;
+//		io.KeyMap[ImGuiKey_Enter] = GLFW_KEY_ENTER;
+//		io.KeyMap[ImGuiKey_Escape] = GLFW_KEY_ESCAPE;
+//		io.KeyMap[ImGuiKey_KeyPadEnter] = GLFW_KEY_KP_ENTER;
+//		io.KeyMap[ImGuiKey_A] = GLFW_KEY_A;
+//		io.KeyMap[ImGuiKey_C] = GLFW_KEY_C;
+//		io.KeyMap[ImGuiKey_V] = GLFW_KEY_V;
+//		io.KeyMap[ImGuiKey_X] = GLFW_KEY_X;
+//		io.KeyMap[ImGuiKey_Y] = GLFW_KEY_Y;
+//		io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
+//	
+//		io.Fonts->AddFontFromFileTTF("Fonts/opensans/OpenSans-Bold.ttf", 16.0f);
+//		io.FontDefault = io.Fonts->AddFontFromFileTTF("Fonts/opensans/OpenSans-Regular.ttf", 16.0f);
+//	
+//		// Setup Dear ImGui style
+//		ImGui::StyleColorsDark();
+//		//ImGui::StyleColorsClassic();
+//	
+//		// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+//		ImGuiStyle& style = ImGui::GetStyle();
+//		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+//		{
+//			style.WindowRounding = 0.0f;
+//			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+//		}
+//		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.15f, 0.15f, 0.15f, style.Colors[ImGuiCol_WindowBg].w);
+//	
+//		// Setup Platform/Renderer bindings
+//		ImGui_ImplGlfw_InitForOpenGL(window, true);
+//		ImGui_ImplOpenGL3_Init("#version 410");
+//	}
 
-	io.Fonts->AddFontFromFileTTF("Fonts/opensans/OpenSans-Bold.ttf", 16.0f);
-	io.FontDefault = io.Fonts->AddFontFromFileTTF("Fonts/opensans/OpenSans-Regular.ttf", 16.0f);
+//	Moved to ImGuiLayer
+//	void ImGuiWrapper::OnDetach()
+//	{
+//		ImGui_ImplOpenGL3_Shutdown();
+//		ImGui_ImplGlfw_Shutdown();
+//		ImGui::DestroyContext();
+//	}
 
-	// Setup Dear ImGui style
-	ImGui::StyleColorsDark();
+//	Moved to ImGuiLayer
+//	void ImGuiWrapper::Begin()
+//	{
+//		ImGuiIO& io = ImGui::GetIO();
+//	
+//		float time = (float)glfwGetTime();
+//		io.DeltaTime = s_Time > 0.0f ? (time - s_Time) : (1.0f / 60.0f);
+//		s_Time = time;
+//	
+//		ImGui_ImplOpenGL3_NewFrame();
+//		ImGui_ImplGlfw_NewFrame();
+//		ImGui::NewFrame();
+//		ImGuizmo::BeginFrame();
+//	}
 
-	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-	ImGuiStyle& style = ImGui::GetStyle();
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		style.WindowRounding = 0.0f;
-		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-	}
+//	Moved to ImGuiLayer
+//	void ImGuiWrapper::End()
+//	{
+//		ImGuiIO& io = ImGui::GetIO();
+//		Application* app = Application::Get();
+//		io.DisplaySize = ImVec2(static_cast<float>(app->GetWindow()->GetWidth()), static_cast<float>(app->GetWindow()->GetHeight()));
+//	
+//		// Rendering
+//		ImGui::Render();
+//		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+//	
+//		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+//		{
+//			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+//			ImGui::UpdatePlatformWindows();
+//			ImGui::RenderPlatformWindowsDefault();
+//			glfwMakeContextCurrent(backup_current_context);
+//		}
+//	}
 
-	// Setup Platform/Renderer bindings
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
-	{
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 330");
-	}
-}
+//	Moved to ImGuiLayer
+//	void ImGuiWrapper::OnImGuiRender()
+//	{
+//	}
 
-// TODO: this method needs to be replaced with ImGuiLayer::Begin() and removed from ImGuiWrapper
-void ImGuiWrapper::Begin()
-{
-	ImGuiIO& io = ImGui::GetIO();
-
-	float time = (float)glfwGetTime();
-	io.DeltaTime = s_Time > 0.0f ? (time - s_Time) : (1.0f / 60.0f);
-	s_Time = time;
-
-	// ImGui Start the Dear ImGui frame
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
-	{
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		ImGuizmo::BeginFrame();
-	}
-}
-
-// TODO: this method needs to be replaced with ImGuiLayer::End() and removed from ImGuiWrapper
-void ImGuiWrapper::End()
-{
-	ImGuiIO& io = ImGui::GetIO();
-	Application* app = Application::Get();
-	io.DisplaySize = ImVec2((float)app->GetWindow()->GetWidth(), (float)app->GetWindow()->GetHeight());
-
-	// Rendering
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
-	{
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		{
-			GLFWwindow* backup_current_context = glfwGetCurrentContext();
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(backup_current_context);
-		}
-	}
-}
-
-// TODO: this method needs to be replaced with ImGuiLayer::~ImGuiLayer() and removed from ImGuiWrapper
-void ImGuiWrapper::Cleanup()
-{
-	// ImGui Cleanup
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-}
 
 bool ImGuiWrapper::DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue, float columnWidth)
 {
@@ -284,29 +294,6 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		materialName = std::string(buffer);
 		material->SetName(materialName);
 	}
-
-	/**** 
-	// Rename material
-	std::string materialNameOld = material->GetName();
-	
-	char buffer[256];
-	memset(buffer, 0, 256);
-	memcpy(buffer, material->GetName().c_str(), material->GetName().length());
-	if (ImGui::InputText("##MaterialName", buffer, 256))
-	{
-		s_MaterialNameNew = std::string(buffer);
-	}
-
-	ImGui::SameLine();
-	
-	std::string buttonName = "Rename";
-	if (ImGui::Button(buttonName.c_str())) {
-		if (s_MaterialNameNew != materialNameOld) {
-			EnvMapEditorLayer::RenameMaterial(material, s_MaterialNameNew);
-			s_MaterialNameNew = "";
-		}
-	}
-	****/
 
 	// Tiling Factor
 	// ImGui::SliderFloat("Tiling Factor", &material->GetTilingFactor(), 0.0f, 20.0f);

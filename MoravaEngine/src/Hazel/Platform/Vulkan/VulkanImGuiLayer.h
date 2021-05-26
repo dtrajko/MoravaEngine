@@ -25,6 +25,7 @@ namespace Hazel {
 		float m_Time = 0.0f;
 
 		VkCommandBuffer m_CommandBuffer;
+		VkDescriptorPool m_DescriptorPool;
 
 	};
 

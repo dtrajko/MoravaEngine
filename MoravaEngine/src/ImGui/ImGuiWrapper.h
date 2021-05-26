@@ -26,10 +26,14 @@ enum class PropertyFlag
 class ImGuiWrapper
 {
 public:
-	static void Init();
-	static void Begin();
-	static void End();
-	static void Cleanup();
+	// Moved to ImGuiLayer
+	// static void Create();
+	// static void OnAttach();
+	// static void OnDetach();
+	// static void Begin();
+	// static void End();
+	// static void OnImGuiRender();
+	// static void Destroy();
 
 	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 	static void DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture);
@@ -63,10 +67,6 @@ public:
 	static bool const CanViewportReceiveEvents();
 
 private:
-	static float s_Time;
-
-	static std::string s_MaterialNameNew;
-
 	static bool s_ViewportEnabled;
 	static bool s_ViewportHovered;
 	static bool s_ViewportFocused;

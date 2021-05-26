@@ -34,14 +34,14 @@ void Application::OnInit()
 
 	s_Instance->m_Scene->SetCamera();
 	s_Instance->m_Scene->SetLightManager();
-	s_Instance->m_Scene->SetWaterManager((int)Application::Get()->GetWindow()->GetWidth(), (int)Application::Get()->GetWindow()->GetHeight());
+	s_Instance->m_Scene->SetWaterManager(
+		(int)Application::Get()->GetWindow()->GetWidth(),
+		(int)Application::Get()->GetWindow()->GetHeight());
 
 	s_Instance->m_Renderer->Init(s_Instance->m_Scene);
 
-	s_Instance->m_ImGuiLayer = Hazel::ImGuiLayer::Create(); // ImGui the NEW version
-	s_Instance->m_ImGuiLayer->OnAttach();                   // ImGui the NEW version
-
-	ImGuiWrapper::Init(); // ImGui the OLD version TODO: this method needs to be replaced with ImGuiLayer::Create() and ImGuiLayer::OnAttach() and removed
+	s_Instance->m_ImGuiLayer = Hazel::ImGuiLayer::Create();
+	s_Instance->m_ImGuiLayer->OnAttach();
 
 	float targetFPS = 60.0f;
 	float targetUpdateRate = 24.0f;
@@ -71,9 +71,7 @@ void Application::RenderImGui()
 // TODO: move game loop from main.cpp here
 void Application::Run()
 {
-	ClassifyEvents();
-
-	// OnInit(); // TODO
+	OnInit();
 
 	// Loop until window closed
 	while (s_Instance->m_Running = !s_Instance->m_Window->GetShouldClose())
@@ -90,8 +88,7 @@ void Application::Run()
 			Application* app = s_Instance;
 			Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); }); // Vulkan Week Day 4 1:27
 
-			s_Instance->m_ImGuiLayer->Begin(); // ImGui the NEW version
-			ImGuiWrapper::Begin(); // ImGui the OLD version TODO: this method needs to be replaced with ImGuiLayer::Begin() and removed
+			s_Instance->m_ImGuiLayer->Begin();
 
 			// On Render thread (Hazel Vulkan)
 			s_Instance->m_Window->GetRenderContext()->BeginFrame();
@@ -99,8 +96,7 @@ void Application::Run()
 
 			s_Instance->m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), s_Instance->m_Window);
 
-			s_Instance->m_ImGuiLayer->End(); // ImGui the NEW version
-			ImGuiWrapper::End(); // ImGui the OLD version TODO: this method needs to be replaced with ImGuiLayer::End() and removed
+			s_Instance->m_ImGuiLayer->End();
 
 			// Swap buffers and poll events
 			s_Instance->m_Window->SwapBuffers(); // previously s_Instance->m_Window->OnUpdate();
@@ -112,8 +108,7 @@ void Application::Run()
 
 void Application::OnShutdown()
 {
-	delete s_Instance->m_ImGuiLayer; // ImGui the NEW version
-	ImGuiWrapper::Cleanup(); // ImGui the OLD version TODO: this method needs to be replaced with ImGuiLayer::~ImGuiLayer() and removed
+	delete s_Instance->m_ImGuiLayer;
 
 	// delete scene;
 	delete s_Instance->m_Renderer;
@@ -151,7 +146,7 @@ void Application::InitializeScene(SceneProperties sceneProperties)
 	s_Instance->m_Renderer = sceneProperties.Renderer;
 }
 
-// Event handling code extracted from Application::Run()
+// Event handling code extracted and removed from Application::Run(). Currently not in use.
 void Application::ClassifyEvents()
 {
 	WindowResizeEvent e(1280, 720);

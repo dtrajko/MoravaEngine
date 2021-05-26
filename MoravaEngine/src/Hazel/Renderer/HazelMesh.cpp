@@ -856,7 +856,6 @@ namespace Hazel {
 		return 0;
 	}
 
-
 	uint32_t HazelMesh::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
 		if (pNodeAnim->mNumScalingKeys <= 0)
@@ -870,7 +869,6 @@ namespace Hazel {
 
 		return 0;
 	}
-
 
 	glm::vec3 HazelMesh::InterpolateTranslation(float animationTime, const aiNodeAnim* nodeAnim)
 	{
@@ -901,7 +899,6 @@ namespace Hazel {
 		auto aiVec = Start + Factor * Delta;
 		return { aiVec.x, aiVec.y, aiVec.z };
 	}
-
 
 	glm::quat HazelMesh::InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim)
 	{
@@ -934,7 +931,6 @@ namespace Hazel {
 		q = q.Normalize();
 		return glm::quat(q.w, q.x, q.y, q.z);
 	}
-
 
 	glm::vec3 HazelMesh::InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim)
 	{
