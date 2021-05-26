@@ -220,10 +220,10 @@ namespace Hazel {
 
 		// Start the Dear ImGui frame
 		ImGui_ImplVulkan_NewFrame();
-		// ImGui_ImplGlfw_NewFrame();
-		// ImGui::NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
 		// ImGuizmo::BeginFrame();
-		// ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 	}
 
 	void VulkanImGuiLayer::End()
@@ -253,6 +253,7 @@ namespace Hazel {
 		// Present Main Platform Window
 		if (!main_is_minimized)
 			FramePresent(wd);
+		****/
 
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
@@ -261,7 +262,6 @@ namespace Hazel {
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent(backup_current_context);
 		}
-		****/
 	}
 
 	void VulkanImGuiLayer::OnImGuiRender()
