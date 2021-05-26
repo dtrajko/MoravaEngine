@@ -329,18 +329,19 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 			}
 			ImGui::SameLine();
 			ImGui::BeginGroup();
-
-			std::string checkboxLabel = "Use##" + material->GetName() + "AlbedoMap";
-			ImGui::Checkbox(checkboxLabel.c_str(), &material->GetAlbedoInput().UseTexture);
-
-			std::string checkboxLabelSRGB = "sRGB##" + material->GetName() + "AlbedoMap";
-			if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material->GetAlbedoInput().SRGB))
 			{
-				if (material->GetAlbedoInput().TextureMap)
-					material->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(
-						material->GetAlbedoInput().TextureMap->GetPath(),
-						material->GetAlbedoInput().SRGB,
-						Hazel::HazelTextureWrap::Repeat);
+				std::string checkboxLabel = "Use##" + material->GetName() + "AlbedoMap";
+				ImGui::Checkbox(checkboxLabel.c_str(), &material->GetAlbedoInput().UseTexture);
+
+				std::string checkboxLabelSRGB = "sRGB##" + material->GetName() + "AlbedoMap";
+				if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material->GetAlbedoInput().SRGB))
+				{
+					if (material->GetAlbedoInput().TextureMap)
+						material->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(
+							material->GetAlbedoInput().TextureMap->GetPath(),
+							material->GetAlbedoInput().SRGB,
+							Hazel::HazelTextureWrap::Repeat);
+				}
 			}
 			ImGui::EndGroup();
 			ImGui::SameLine();
@@ -412,7 +413,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 			ImGui::SameLine();
 			std::string checkboxLabel = "Use##" + material->GetName() + "MetalnessMap";
 			ImGui::Checkbox(checkboxLabel.c_str(), &material->GetMetalnessInput().UseTexture);
-			ImGui::SameLine();
+			// ImGui::SameLine();
 			std::string sliderLabel = "Value##" + material->GetName() + "MetalnessInput";
 			ImGui::SliderFloat(sliderLabel.c_str(), &material->GetMetalnessInput().Value, 0.0f, 1.0f);
 		}
@@ -448,7 +449,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 			ImGui::SameLine();
 			std::string checkboxLabel = "Use##" + material->GetName() + "RoughnessMap";
 			ImGui::Checkbox(checkboxLabel.c_str(), &material->GetRoughnessInput().UseTexture);
-			ImGui::SameLine();
+			// ImGui::SameLine();
 			std::string sliderLabel = "Value##" + material->GetName() + "RoughnessInput";
 			ImGui::SliderFloat(sliderLabel.c_str(), &material->GetRoughnessInput().Value, 0.0f, 1.0f);
 		}
@@ -484,7 +485,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 			ImGui::SameLine();
 			std::string checkboxLabel = "Use##" + material->GetName() + "AOMap";
 			ImGui::Checkbox(checkboxLabel.c_str(), &material->GetAOInput().UseTexture);
-			ImGui::SameLine();
+			// ImGui::SameLine();
 			std::string sliderLabel = "Value##" + material->GetName() + "AOInput";
 			ImGui::SliderFloat(sliderLabel.c_str(), &material->GetAOInput().Value, 0.0f, 1.0f);
 		}
@@ -519,23 +520,23 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 			}
 			ImGui::SameLine();
 			ImGui::BeginGroup();
-
-			std::string checkboxLabel = "Use##" + material->GetName() + "EmissiveMap";
-			ImGui::Checkbox(checkboxLabel.c_str(), &material->GetEmissiveInput().UseTexture);
-			ImGui::SameLine();
-			std::string sliderLabel = "Value##" + material->GetName() + "EmissiveInput";
-			ImGui::SliderFloat(sliderLabel.c_str(), &material->GetEmissiveInput().Value, 0.0f, 1.0f);
-
-			std::string checkboxLabelSRGB = "sRGB##" + material->GetName() + "EmissiveMap";
-			if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material->GetEmissiveInput().SRGB))
 			{
-				if (material->GetEmissiveInput().TextureMap)
-					material->GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(
-						material->GetEmissiveInput().TextureMap->GetPath(),
-						material->GetEmissiveInput().SRGB,
-						Hazel::HazelTextureWrap::Repeat);
+				std::string checkboxLabel = "Use##" + material->GetName() + "EmissiveMap";
+				ImGui::Checkbox(checkboxLabel.c_str(), &material->GetEmissiveInput().UseTexture);
+				std::string checkboxLabelSRGB = "sRGB##" + material->GetName() + "EmissiveMap";
+				if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material->GetEmissiveInput().SRGB))
+				{
+					if (material->GetEmissiveInput().TextureMap)
+						material->GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(
+							material->GetEmissiveInput().TextureMap->GetPath(),
+							material->GetEmissiveInput().SRGB,
+							Hazel::HazelTextureWrap::Repeat);
+				}
 			}
 			ImGui::EndGroup();
+			// ImGui::SameLine();
+			std::string sliderLabel = "Value##" + material->GetName() + "EmissiveInput";
+			ImGui::SliderFloat(sliderLabel.c_str(), &material->GetEmissiveInput().Value, 0.0f, 1.0f);
 		}
 	}
 	// END PBR Textures

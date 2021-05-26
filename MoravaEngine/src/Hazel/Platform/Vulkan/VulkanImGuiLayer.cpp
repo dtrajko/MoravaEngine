@@ -137,6 +137,7 @@ namespace Hazel {
 					{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
 					{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
 				};
+
 				VkDescriptorPoolCreateInfo pool_info = {};
 				pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 				pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
@@ -229,32 +230,8 @@ namespace Hazel {
 	void VulkanImGuiLayer::End()
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		Application* app = Application::Get();
-		io.DisplaySize = ImVec2((float)app->GetWindow()->GetWidth(), (float)app->GetWindow()->GetHeight());
-
-		// Rendering
-		// ImGui::Render();
-
-		/****
-		ImDrawData* main_draw_data = ImGui::GetDrawData();
-		const bool main_is_minimized = (main_draw_data->DisplaySize.x <= 0.0f || main_draw_data->DisplaySize.y <= 0.0f);
-		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-		memcpy(&wd->ClearValue.color.float32[0], &clear_color, 4 * sizeof(float));
-		if (!main_is_minimized)
-			FrameRender(wd, main_draw_data);
 
 		// Update and Render additional Platform Windows
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		{
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-		}
-
-		// Present Main Platform Window
-		if (!main_is_minimized)
-			FramePresent(wd);
-		****/
-
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			GLFWwindow* backup_current_context = glfwGetCurrentContext();

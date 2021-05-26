@@ -1457,17 +1457,17 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     }
     ImGui::End();
 
-    ImGui::SetNextWindowSize({ 0.0f, 22.0f }, {});
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 10, 5 });
-    ImGui::Begin("Status bar");
-    {
-        char buffer[100];
-        snprintf(buffer, sizeof(buffer), "Frame Time: %.2fms\n", Timer::Get()->GetDeltaTime() * 1000.0f);
-        m_StatusBarMessage = buffer;
-        ImGui::Text(buffer);
-    }
-    ImGui::End();
-    ImGui::PopStyleVar();
+    //  ImGui::SetNextWindowSize({ 0.0f, 22.0f }, {});
+    //  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 10, 5 });
+    //  ImGui::Begin("Status bar");
+    //  {
+    //      char buffer[100];
+    //      snprintf(buffer, sizeof(buffer), "Frame Time: %.2fms\n", Timer::Get()->GetDeltaTime() * 1000.0f);
+    //      m_StatusBarMessage = buffer;
+    //      ImGui::Text(buffer);
+    //  }
+    //  ImGui::End();
+    //  ImGui::PopStyleVar();
 
     m_SceneHierarchyPanel->OnImGuiRender();
 

@@ -106,6 +106,41 @@ void Application::Run()
 	OnShutdown();
 }
 
+void Application::OnEvent(Event& e)
+{
+	EventDispatcher dispatcher(e);
+	dispatcher.Dispatch<WindowCloseEvent>(APP_BIND_EVENT_FN(OnWindowClose));
+	dispatcher.Dispatch<WindowResizeEvent>(APP_BIND_EVENT_FN(OnWindowResize));
+
+	for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
+	{
+		(*--it)->OnEvent(e);
+		if (e.Handled)
+			break;
+	}
+}
+
+bool Application::OnWindowResize(WindowResizeEvent& e)
+{
+	if (e.GetWidth() == 0 || e.GetHeight() == 0)
+	{
+		m_Minimized = true;
+		return false;
+	}
+
+	m_Minimized = false;
+
+	m_Scene->OnWindowResize(e);
+
+	return false;
+}
+
+bool Application::OnWindowClose(WindowCloseEvent& e)
+{
+	m_Running = false;
+	return true;
+}
+
 void Application::OnShutdown()
 {
 	delete s_Instance->m_ImGuiLayer;
@@ -163,20 +198,6 @@ void Application::ClassifyEvents()
 	}
 }
 
-void Application::OnEvent(Event& e)
-{
-	EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<WindowCloseEvent>(APP_BIND_EVENT_FN(OnWindowClose));
-	dispatcher.Dispatch<WindowResizeEvent>(APP_BIND_EVENT_FN(OnWindowResize));
-
-	for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
-	{
-		(*--it)->OnEvent(e);
-		if (e.Handled)
-			break;
-	}
-}
-
 std::string Application::OpenFile(const char* filter) const
 {
 
@@ -231,27 +252,6 @@ std::string Application::SaveFile(const char* filter) const
 #endif
 
 	return std::string();
-}
-
-bool Application::OnWindowClose(WindowCloseEvent& e)
-{
-	m_Running = false;
-	return true;
-}
-
-bool Application::OnWindowResize(WindowResizeEvent& e)
-{
-	if (e.GetWidth() == 0 || e.GetHeight() == 0)
-	{
-		m_Minimized = true;
-		return false;
-	}
-
-	m_Minimized = false;
-
-	m_Scene->OnWindowResize(e);
-
-	return false;
 }
 
 void Application::OnImGuiRender()
