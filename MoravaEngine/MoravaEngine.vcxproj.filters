@@ -783,6 +783,9 @@
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_dx12.cpp">
       <Filter>Vendors\ImGui\backends</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanRenderer.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1669,6 +1672,9 @@
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_dx12.h">
       <Filter>Vendors\ImGui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRenderer.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

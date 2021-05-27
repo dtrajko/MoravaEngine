@@ -26,7 +26,7 @@ int main()
 
 	Application::Get()->InitWindow(WindowProps(WINDOW_TITLE, WIDTH, HEIGHT));
 
-	Application::Run();
+	Application::Get()->Run();
 
 	return 0;
 }
