@@ -40,6 +40,8 @@ namespace Hazel {
 		VkFramebuffer GetCurrentFramebuffer() { return GetFramebuffer(m_CurrentBufferIndex); }
 		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentBufferIndex); }
 
+		VkFormat GetColorFormat() { return m_ColorFormat; }
+
 		uint32_t GetCurrentBufferIndex() const { return m_CurrentBufferIndex; }
 		VkFramebuffer GetFramebuffer(uint32_t index)
 		{
