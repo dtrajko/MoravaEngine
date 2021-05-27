@@ -55,15 +55,13 @@ void Application::RenderImGui()
 {
 	m_ImGuiLayer->Begin();
 
-	ImGui::Begin("Renderer");
-
+	// ImGui::Begin("Renderer");S
 	// auto& caps = Hazel::HazelRenderer::GetCapabilities(); // TODO: 's_RendererAPI was nullptr'
 	// ImGui::Text("Vendor: %s", caps.Vendor.c_str());
 	// ImGui::Text("Device: %s", caps.Device.c_str());
 	// ImGui::Text("Version: %s", caps.Version.c_str());
 	// ImGui::Text("Frame Time: %.2fms", 0.0f /* m_TimeStep.GetMilliseconds() */);
-
-	ImGui::End();
+	// ImGui::End();
 
 	for (Layer* layer : m_LayerStack)
 	{
@@ -90,26 +88,29 @@ void Application::Run()
 				layer->OnUpdate(m_Timestep);
 			}
 
-			m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), m_Window); // TODO deltaTime obsolete
-
-			Hazel::HazelRenderer::Submit([=]() { });
-
-			// Render ImGui on render thread
-			Application* app = this;
-			Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
-
-			// m_ImGuiLayer->Begin();
-			// m_ImGuiLayer->End();
-
-			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
-
-			Hazel::VulkanRenderer::Draw();
-
 			// m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
+			m_Renderer->BeginFrame();
+
+			m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), m_Window); // TODO deltaTime obsoletes
 
 			// On Render thread (Hazel Vulkan)
 			m_Window->GetRenderContext()->BeginFrame();
 			m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
+
+			// Hazel::HazelRenderer::Submit([=]() { });
+
+			// Render ImGui on render thread
+			Application* app = this;
+			// Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
+
+			// m_ImGuiLayer->Begin();
+
+			// m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
+
+			// Hazel::VulkanRenderer::Draw();
+
+			// m_ImGuiLayer->End();
+
 			// Swap buffers and poll events
 			m_Window->SwapBuffers(); // previously m_Window->OnUpdate();
 		}
