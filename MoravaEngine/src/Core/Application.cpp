@@ -5,16 +5,13 @@
 
 #include "Core/Timer.h"
 
-#include <imgui.h>
-
 #if defined(HZ_PLATFORM_WINDOWS)
 	#define GLFW_EXPOSE_NATIVE_WIN32
 	#include <GLFW/glfw3native.h>
 	#include <Windows.h>
 #endif
 
-#include "HazelVulkan/VulkanTestLayer.h"
-#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+#include <imgui.h>
 
 
 Application* Application::s_Instance = nullptr;
@@ -25,7 +22,7 @@ Application::Application()
 
 void Application::OnInit()
 {
-	SceneProperties sceneProperties = SetSceneProperties();
+	SceneProperties sceneProperties = Application::SetSceneProperties();
 	InitializeScene(sceneProperties);
 
 	// Projection matrix
@@ -35,16 +32,16 @@ void Application::OnInit()
 
 	RendererBasic::SetProjectionMatrix(projectionMatrix);
 
-	m_Scene->SetCamera();
-	m_Scene->SetLightManager();
-	m_Scene->SetWaterManager(
+	s_Instance->m_Scene->SetCamera();
+	s_Instance->m_Scene->SetLightManager();
+	s_Instance->m_Scene->SetWaterManager(
 		(int)Application::Get()->GetWindow()->GetWidth(),
 		(int)Application::Get()->GetWindow()->GetHeight());
 
-	m_Renderer->Init(m_Scene);
+	s_Instance->m_Renderer->Init(s_Instance->m_Scene);
 
-	m_ImGuiLayer = Hazel::ImGuiLayer::Create();
-	m_ImGuiLayer->OnAttach();
+	s_Instance->m_ImGuiLayer = Hazel::ImGuiLayer::Create();
+	s_Instance->m_ImGuiLayer->OnAttach();
 
 	float targetFPS = 60.0f;
 	float targetUpdateRate = 24.0f;
@@ -53,22 +50,20 @@ void Application::OnInit()
 
 void Application::RenderImGui()
 {
-	m_ImGuiLayer->Begin();
-
-	// ImGui::Begin("Renderer");S
+	// ImGui::Begin("Renderer");
 	// auto& caps = Hazel::HazelRenderer::GetCapabilities(); // TODO: 's_RendererAPI was nullptr'
 	// ImGui::Text("Vendor: %s", caps.Vendor.c_str());
 	// ImGui::Text("Device: %s", caps.Device.c_str());
 	// ImGui::Text("Version: %s", caps.Version.c_str());
 	// ImGui::Text("Frame Time: %.2fms", 0.0f /* m_TimeStep.GetMilliseconds() */);
 	// ImGui::End();
+	// 
+	// for (Layer* layer : m_LayerStack)
+	// {
+	// 	layer->OnImGuiRender();
+	// }
 
-	for (Layer* layer : m_LayerStack)
-	{
-		layer->OnImGuiRender();
-	}
-
-	// m_ImGuiLayer->End();
+	m_ImGuiLayer->End();
 }
 
 // TODO: move game loop from main.cpp here
@@ -77,47 +72,32 @@ void Application::Run()
 	OnInit();
 
 	// Loop until window closed
-	while (m_Running = !m_Window->GetShouldClose())
+	while (s_Instance->m_Running = !s_Instance->m_Window->GetShouldClose())
 	{
-		m_Window->ProcessEvents(); // Hazel Vulkan: m_Window->ProcessEvents() (currently in Window()->OnUpdate)
+		s_Instance->m_Window->ProcessEvents(); // Hazel Vulkan: m_Window->ProcessEvents() (currently in Window()->OnUpdate)
 
-		if (!m_Minimized)
+		if (!s_Instance->m_Minimized)
 		{
-			for (Layer* layer : m_LayerStack)
-			{
-				layer->OnUpdate(m_Timestep);
-			}
+			Hazel::HazelRenderer::Submit([=]() { s_Instance->m_ImGuiLayer->Begin(); });
 
-			// m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
-			m_Renderer->BeginFrame();
+			s_Instance->m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
 
-			m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), m_Window); // TODO deltaTime obsoletes
+			s_Instance->m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), s_Instance->m_Window); // TODO deltaTime obsolete
 
 			// On Render thread (Hazel Vulkan)
-			m_Window->GetRenderContext()->BeginFrame();
-			m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
+			s_Instance->m_Window->GetRenderContext()->BeginFrame();
+			s_Instance->m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), s_Instance->m_Window, s_Instance->m_Scene, RendererBasic::GetProjectionMatrix());
 
-			// Hazel::HazelRenderer::Submit([=]() { });
-
+			s_Instance->m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), s_Instance->m_Window);
+  
 			// Render ImGui on render thread
-			Application* app = this;
-			// Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
-
-			// m_ImGuiLayer->Begin();
-
-			// m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
-
-			// Hazel::VulkanRenderer::Draw();
-
-			// m_ImGuiLayer->End();
+			Application* app = s_Instance;
+			Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
+			// s_Instance->m_ImGuiLayer->End();
 
 			// Swap buffers and poll events
-			m_Window->SwapBuffers(); // previously m_Window->OnUpdate();
+			s_Instance->m_Window->SwapBuffers(); // previously s_Instance->m_Window->OnUpdate();
 		}
-
-		float time = Timer::Get()->GetDeltaTime();
-		m_Timestep = time - m_LastFrameTime;
-		m_LastFrameTime = time;
 	}
 
 	OnShutdown();
@@ -160,10 +140,10 @@ bool Application::OnWindowClose(WindowCloseEvent& e)
 
 void Application::OnShutdown()
 {
-	delete m_ImGuiLayer;
+	delete s_Instance->m_ImGuiLayer;
 
 	// delete scene;
-	delete m_Renderer;
+	delete s_Instance->m_Renderer;
 }
 
 void Application::InitWindow(WindowProps& props)
@@ -194,8 +174,8 @@ Application* Application::Get()
 
 void Application::InitializeScene(SceneProperties sceneProperties)
 {
-	m_Scene = sceneProperties.Scene;
-	m_Renderer = sceneProperties.Renderer;
+	s_Instance->m_Scene = sceneProperties.Scene;
+	s_Instance->m_Renderer = sceneProperties.Renderer;
 }
 
 // Event handling code extracted and removed from Application::Run(). Currently not in use.

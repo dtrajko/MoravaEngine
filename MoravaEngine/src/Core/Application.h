@@ -22,17 +22,17 @@ public:
 
 	void InitWindow(WindowProps& props);
 
-	void OnInit();
-	void Run();
-	void OnShutdown();
+	static void OnInit();
+	static void Run();
+	static void OnShutdown();
 
-	SceneProperties Application::SetSceneProperties();
-	void InitializeScene(SceneProperties sceneProperties); // TODO: Initialize Scene and Renderer here
+	static SceneProperties Application::SetSceneProperties();
+	static void InitializeScene(SceneProperties sceneProperties); // TODO: Initialize Scene and Renderer here
 
 	void OnEvent(Event& e);
 
 	void RenderImGui(); // Hazel Vulkan Week Day 4 1:26
-	void ClassifyEvents();
+	static void ClassifyEvents();
 
 	// getters
 	inline Window* GetWindow() { return m_Window; }
@@ -67,8 +67,5 @@ private:
 	LayerStack m_LayerStack;
 
 	Hazel::ImGuiLayer* m_ImGuiLayer;
-
-	float m_Timestep;
-	float m_LastFrameTime;
 
 };
