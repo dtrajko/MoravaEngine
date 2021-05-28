@@ -9,7 +9,7 @@ namespace Hazel {
 	{
 	public:
 		static void Draw();
-		
+
 	};
 
 }

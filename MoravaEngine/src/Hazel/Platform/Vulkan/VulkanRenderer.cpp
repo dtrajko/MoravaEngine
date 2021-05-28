@@ -84,7 +84,6 @@ namespace Hazel {
 
 				// DRAW GEO HERE
 
-				/**** BEGIN mesh geometry ****/
 
 				// TODO: Move to VulkanImGuiLayer
 				// Rendering

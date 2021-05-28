@@ -1335,6 +1335,14 @@ namespace Hazel {
 		shader->Bind();
 		shader->setMat4("u_Transform", outlineTransform);
 
+		for (size_t i = 0; i < parentMesh->m_BoneTransforms.size(); i++)
+		{
+			std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+			shader->setMat4(uniformName, parentMesh->m_BoneTransforms[i]);
+		}
+
+		shader->setBool("u_Animated", parentMesh->IsAnimated());
+
 		RendererBasic::DisableDepthTest();
 
 		glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);

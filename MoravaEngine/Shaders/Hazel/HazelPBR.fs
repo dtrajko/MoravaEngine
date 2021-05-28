@@ -540,7 +540,10 @@ vec4 SRGBtoLINEAR(vec4 srgbIn)
 void main()
 {
 	// Standard PBR inputs
-	m_Params.Albedo    = u_MaterialUniforms.AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord * u_TilingFactor).rgb : u_MaterialUniforms.AlbedoColor; 
+	// m_Params.Albedo    = u_MaterialUniforms.AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord * u_TilingFactor).rgb : u_MaterialUniforms.AlbedoColor;
+	m_Params.Albedo    = u_MaterialUniforms.AlbedoTexToggle > 0.5 ?
+		texture(u_AlbedoTexture, vs_Input.TexCoord * u_TilingFactor).rgb * u_MaterialUniforms.AlbedoColor :
+		u_MaterialUniforms.AlbedoColor;
 	m_Params.Metalness = u_MaterialUniforms.MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, vs_Input.TexCoord * u_TilingFactor).r : u_MaterialUniforms.Metalness;
 	m_Params.Roughness = u_MaterialUniforms.RoughnessTexToggle > 0.5 ? texture(u_RoughnessTexture, vs_Input.TexCoord * u_TilingFactor).r : u_MaterialUniforms.Roughness;
     m_Params.Roughness = max(m_Params.Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight

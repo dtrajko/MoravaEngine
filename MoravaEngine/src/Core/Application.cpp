@@ -2,6 +2,7 @@
 
 #include "Hazel/Core/Base.h"
 #include "Hazel/Renderer/HazelRenderer.h"
+#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
 
 #include "Core/Timer.h"
 
@@ -32,16 +33,16 @@ void Application::OnInit()
 
 	RendererBasic::SetProjectionMatrix(projectionMatrix);
 
-	s_Instance->m_Scene->SetCamera();
-	s_Instance->m_Scene->SetLightManager();
-	s_Instance->m_Scene->SetWaterManager(
+	m_Scene->SetCamera();
+	m_Scene->SetLightManager();
+	m_Scene->SetWaterManager(
 		(int)Application::Get()->GetWindow()->GetWidth(),
 		(int)Application::Get()->GetWindow()->GetHeight());
 
-	s_Instance->m_Renderer->Init(s_Instance->m_Scene);
+	m_Renderer->Init(m_Scene);
 
-	s_Instance->m_ImGuiLayer = Hazel::ImGuiLayer::Create();
-	s_Instance->m_ImGuiLayer->OnAttach();
+	m_ImGuiLayer = Hazel::ImGuiLayer::Create();
+	m_ImGuiLayer->OnAttach();
 
 	float targetFPS = 60.0f;
 	float targetUpdateRate = 24.0f;
@@ -50,6 +51,8 @@ void Application::OnInit()
 
 void Application::RenderImGui()
 {
+	// m_ImGuiLayer->Begin();
+
 	// ImGui::Begin("Renderer");
 	// auto& caps = Hazel::HazelRenderer::GetCapabilities(); // TODO: 's_RendererAPI was nullptr'
 	// ImGui::Text("Vendor: %s", caps.Vendor.c_str());
@@ -57,11 +60,11 @@ void Application::RenderImGui()
 	// ImGui::Text("Version: %s", caps.Version.c_str());
 	// ImGui::Text("Frame Time: %.2fms", 0.0f /* m_TimeStep.GetMilliseconds() */);
 	// ImGui::End();
-	// 
-	// for (Layer* layer : m_LayerStack)
-	// {
-	// 	layer->OnImGuiRender();
-	// }
+
+	for (Layer* layer : m_LayerStack)
+	{
+		layer->OnImGuiRender();
+	}
 
 	m_ImGuiLayer->End();
 }
@@ -72,32 +75,42 @@ void Application::Run()
 	OnInit();
 
 	// Loop until window closed
-	while (s_Instance->m_Running = !s_Instance->m_Window->GetShouldClose())
+	while (m_Running = !m_Window->GetShouldClose())
 	{
-		s_Instance->m_Window->ProcessEvents(); // Hazel Vulkan: m_Window->ProcessEvents() (currently in Window()->OnUpdate)
+		m_Window->ProcessEvents(); // Hazel Vulkan: m_Window->ProcessEvents() (currently in Window()->OnUpdate)
 
-		if (!s_Instance->m_Minimized)
+		if (!m_Minimized)
 		{
-			Hazel::HazelRenderer::Submit([=]() { s_Instance->m_ImGuiLayer->Begin(); });
+			for (Layer* layer : m_LayerStack)
+			{
+				layer->OnUpdate(m_TimeStep);
+			}
 
-			s_Instance->m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
+			Hazel::HazelRenderer::Submit([=]() { m_ImGuiLayer->Begin(); });
 
-			s_Instance->m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), s_Instance->m_Window); // TODO deltaTime obsolete
+			m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
+
+			m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), m_Window); // TODO deltaTime obsolete
 
 			// On Render thread (Hazel Vulkan)
-			s_Instance->m_Window->GetRenderContext()->BeginFrame();
-			s_Instance->m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), s_Instance->m_Window, s_Instance->m_Scene, RendererBasic::GetProjectionMatrix());
+			m_Window->GetRenderContext()->BeginFrame();
+			m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
+			// Hazel::VulkanRenderer::Draw();
 
-			s_Instance->m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), s_Instance->m_Window);
-  
+			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
+ 
 			// Render ImGui on render thread
-			Application* app = s_Instance;
+			Application* app = this;
 			Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
-			// s_Instance->m_ImGuiLayer->End();
+			// m_ImGuiLayer->End();
 
 			// Swap buffers and poll events
-			s_Instance->m_Window->SwapBuffers(); // previously s_Instance->m_Window->OnUpdate();
+			m_Window->SwapBuffers(); // previously m_Window->OnUpdate();
 		}
+
+		float time = Timer::Get()->GetCurrentTimestamp();
+		m_TimeStep = time - m_LastFrameTime;
+		m_LastFrameTime = time;
 	}
 
 	OnShutdown();
@@ -140,10 +153,10 @@ bool Application::OnWindowClose(WindowCloseEvent& e)
 
 void Application::OnShutdown()
 {
-	delete s_Instance->m_ImGuiLayer;
+	delete m_ImGuiLayer;
 
 	// delete scene;
-	delete s_Instance->m_Renderer;
+	delete m_Renderer;
 }
 
 void Application::InitWindow(WindowProps& props)
@@ -174,8 +187,8 @@ Application* Application::Get()
 
 void Application::InitializeScene(SceneProperties sceneProperties)
 {
-	s_Instance->m_Scene = sceneProperties.Scene;
-	s_Instance->m_Renderer = sceneProperties.Renderer;
+	m_Scene = sceneProperties.Scene;
+	m_Renderer = sceneProperties.Renderer;
 }
 
 // Event handling code extracted and removed from Application::Run(). Currently not in use.
