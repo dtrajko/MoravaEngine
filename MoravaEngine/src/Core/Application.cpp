@@ -41,14 +41,35 @@ void Application::OnInit()
 
 	m_Renderer->Init(m_Scene);
 
-	Hazel::VulkanRenderer::Init();
-
 	m_ImGuiLayer = Hazel::ImGuiLayer::Create();
-	m_ImGuiLayer->OnAttach();
+	PushOverlay(m_ImGuiLayer);
+
+	Hazel::HazelRenderer::Init();
+	// Hazel::VulkanRenderer::Init();
+	Hazel::HazelRenderer::WaitAndRender();
+
+	// PushLayer(new VulkanTestLayer());
 
 	float targetFPS = 60.0f;
 	float targetUpdateRate = 24.0f;
 	Timer timer(targetFPS, targetUpdateRate);
+}
+
+Application::~Application()
+{
+	delete m_Window;
+}
+
+void Application::PushLayer(Layer* layer)
+{
+	m_LayerStack.PushLayer(layer);
+	layer->OnAttach();
+}
+
+void Application::PushOverlay(Layer* layer)
+{
+	m_LayerStack.PushOverlay(layer);
+	layer->OnAttach();
 }
 
 void Application::RenderImGui()
@@ -102,7 +123,7 @@ void Application::Run()
 			m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
 
 			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
- 
+
 			// Hazel::VulkanRenderer::Draw();
 
 			m_ImGuiLayer->End();
@@ -168,11 +189,6 @@ void Application::InitWindow(WindowProps& props)
 
 	m_Window = Window::Create(props);
 	m_Window->SetEventCallback(APP_BIND_EVENT_FN(Application::OnEvent));
-}
-
-Application::~Application()
-{
-	delete m_Window;
 }
 
 Application* Application::Get()

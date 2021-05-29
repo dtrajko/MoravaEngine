@@ -27,23 +27,24 @@ namespace Hazel {
 		static Ref<RendererContext> GetContext();
 
 		// Commands
-		// static void Clear();
-		// static void Clear(float r, float g, float b, float a = 1.0f);
-		// static void SetClearColor(float r, float g, float b, float a);
+		static void Clear();
+		static void Clear(float r, float g, float b, float a = 1.0f);
+		static void SetClearColor(float r, float g, float b, float a);
 
 		static void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest = true);
 
 		// For OpenGL
 		static void SetLineThickness(float thickness);
 
-		// static void ClearMagenta();
+		static void ClearMagenta();
 
 		static void Init();
+
+		static Ref<HazelShaderLibrary>& GetShaderLibrary();
+
 		static void Shutdown();
 
 		static RenderAPICapabilities& GetCapabilities();
-
-		static Ref<HazelShaderLibrary>& GetShaderLibrary();
 
 		template<typename FuncT>
 		static void Submit(FuncT&& func)
@@ -82,15 +83,16 @@ namespace Hazel {
 		static void EndFrame();
 
 		static void SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow);
+
 		static std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);
 
 		static void RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform);
 		static void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform);
 		static void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform);
-		static void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material);
+		static void SubmitFullscreenQuad(/* Ref<Pipeline> pipeline, */Ref<HazelMaterial> material);
 
 		static void SubmitQuad(Ref<HazelMaterial> material, const glm::mat4& transform = glm::mat4(1.0f));
-		static void SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterial> materialoverrideMaterial = Ref<HazelMaterial>());
+		static void SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial = Ref<HazelMaterialInstance>());
 
 		static void DrawAABB(Ref<HazelMesh> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		static void DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));

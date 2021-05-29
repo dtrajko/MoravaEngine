@@ -45,6 +45,53 @@ namespace Hazel {
 		return result;
 	}
 
+	HazelShaderLibrary::HazelShaderLibrary()
+	{
+	}
+
+	HazelShaderLibrary::~HazelShaderLibrary()
+	{
+	}
+
+	void HazelShaderLibrary::Add(const Ref<HazelShader>& shader)
+	{
+		auto& name = shader->GetName();
+		HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
+		m_Shaders[name] = shader;
+
+		// m_Shaders.insert(std::make_pair(name, shader));
+	}
+
+	void HazelShaderLibrary::Load(const std::string& path, bool forceCompile)
+	{
+		Log::GetLogger()->info("HazelShaderLibrary::Load(path: '{0}')", path);
+
+		auto shader = Ref<HazelShader>(HazelShader::Create(path, forceCompile));
+		auto& name = shader->GetName();
+		HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
+		m_Shaders[name] = shader;
+
+		// m_Shaders.insert(std::make_pair(name, shader));
+	}
+
+	void HazelShaderLibrary::Load(const std::string& name, const std::string& path)
+	{
+		Log::GetLogger()->info("HazelShaderLibrary::Load(name: '{0}', path: '{1}')", name, path);
+
+		HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
+		m_Shaders[name] = Ref<HazelShader>(HazelShader::Create(path, true));
+
+		// m_Shaders.insert(std::make_pair(name, shader));
+	}
+
+	const Ref<HazelShader>& HazelShaderLibrary::Get(const std::string& name) const
+	{
+		HZ_CORE_ASSERT(m_Shaders.find(name) != m_Shaders.end());
+		return m_Shaders.at(name);
+	}
+
+	// ---------------------------------------------------------------
+
 	bool HazelShader::HasVSMaterialUniformBuffer()
 	{
 		Log::GetLogger()->warn("HazelShader::HasVSMaterialUniformBuffer - Method not implemented!");
@@ -67,49 +114,6 @@ namespace Hazel {
 	{
 		Log::GetLogger()->warn("HazelShader::GetPSMaterialUniformBuffer - Method not implemented!");
 		return Buffer();
-	}
-
-	HazelShaderLibrary::HazelShaderLibrary()
-	{
-	}
-
-	HazelShaderLibrary::~HazelShaderLibrary()
-	{
-	}
-
-	void HazelShaderLibrary::Add(const Ref<HazelShader>& shader)
-	{
-		auto& name = shader->GetName();
-		HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
-		// m_Shaders[name] = shader;
-		m_Shaders.insert(std::make_pair(name, shader));
-	}
-
-	void HazelShaderLibrary::Load(const std::string& path, bool forceCompile)
-	{
-		Log::GetLogger()->info("HazelShaderLibrary::Load(path: '{0}')", path);
-
-		auto shader = HazelShader::Create(path, forceCompile);
-		auto& name = shader->GetName();
-		// HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
-		m_Shaders.insert(std::make_pair(name, shader));
-	}
-
-	void HazelShaderLibrary::Load(const std::string& name, const std::string& path)
-	{
-		Log::GetLogger()->info("HazelShaderLibrary::Load(name: '{0}', path: '{1}')", name, path);
-
-		auto shader = HazelShader::Create(path);
-
-		HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
-		// m_Shaders[name] = shader;
-		m_Shaders.insert(std::make_pair(name, shader));
-	}
-
-	Ref<HazelShader>& HazelShaderLibrary::Get(const std::string& name)
-	{
-		HZ_CORE_ASSERT(m_Shaders.find(name) != m_Shaders.end());
-		return m_Shaders.at(name);
 	}
 
 	ShaderUniform::ShaderUniform(const std::string& name, ShaderUniformType type, uint32_t size, uint32_t offset)

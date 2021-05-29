@@ -296,7 +296,7 @@ namespace Hazel {
 		auto skyboxShader = s_Data->SceneData.SkyboxMaterial->GetShader();
 		auto inverseVP = glm::inverse(viewProjection);
 		skyboxShader->SetUniformBuffer("Camera", &inverseVP, sizeof(glm::mat4));
-		HazelRenderer::SubmitFullscreenQuad(s_Data->SkyboxPipeline, s_Data->SceneData.SkyboxMaterial);
+		HazelRenderer::SubmitFullscreenQuad(/*s_Data->SkyboxPipeline,*/s_Data->SceneData.SkyboxMaterial);
 
 		// Set uniform buffers
 		s_Data->GridShader->SetUniformBuffer("Camera", &viewProjection, sizeof(glm::mat4));
@@ -426,7 +426,7 @@ namespace Hazel {
 		s_Data->CompositeShader->SetUniform("u_Uniforms.Exposure", exposure);
 		s_Data->CompositeShader->SetUniform("u_Uniforms.TextureSamples", textureSamples);
 		s_Data->GeoPass->GetSpecification().TargetFramebuffer->BindTexture();
-		HazelRenderer::SubmitFullscreenQuad(s_Data->CompositePipeline, s_Data->CompositeMaterial);
+		HazelRenderer::SubmitFullscreenQuad(/*s_Data->CompositePipeline,*/s_Data->CompositeMaterial);
 		HazelRenderer::EndRenderPass();
 	}
 

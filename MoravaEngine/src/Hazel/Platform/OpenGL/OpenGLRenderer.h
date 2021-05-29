@@ -10,10 +10,10 @@ namespace Hazel {
 	class OpenGLRenderer : public RendererAPI
 	{
 	public:
-		virtual void Init() override;
-		virtual void Shutdown() override;
+		// virtual void Init() override;
+		// virtual void Shutdown() override;
 
-		virtual RenderAPICapabilities& GetCapabilities() override;
+		// virtual RenderAPICapabilities& GetCapabilities() override;
 
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;

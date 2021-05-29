@@ -31,6 +31,9 @@ public:
 
 	void OnEvent(Event& e);
 
+	void PushLayer(Layer* layer);
+	void PushOverlay(Layer* layer);
+
 	void RenderImGui(); // Hazel Vulkan Week Day 4 1:26
 	void ClassifyEvents();
 

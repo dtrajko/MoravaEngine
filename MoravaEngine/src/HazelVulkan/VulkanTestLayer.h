@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Hazel/Core/Layer.h"
 #include "Hazel/Core/Timestep.h"
 #include "Hazel/Events/Event.h"
 #include "Hazel/Platform/Vulkan/VulkanPipeline.h"
@@ -12,7 +13,7 @@
 #include "Scene/Scene.h"
 
 
-class VulkanTestLayer
+class VulkanTestLayer : public Layer
 {
 public:
 	VulkanTestLayer();

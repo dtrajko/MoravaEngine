@@ -14,7 +14,7 @@ void Util::OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severi
 	{
 	case GL_DEBUG_SEVERITY_HIGH:
 		Log::GetLogger()->error("[OpenGL Debug HIGH] {0}", message);
-		HZ_CORE_ASSERT(false, "GL_DEBUG_SEVERITY_HIGH");
+		// HZ_CORE_ASSERT(false, "GL_DEBUG_SEVERITY_HIGH");
 		break;
 	case GL_DEBUG_SEVERITY_MEDIUM:
 		Log::GetLogger()->warn("[OpenGL Debug MEDIUM] {0}", message);

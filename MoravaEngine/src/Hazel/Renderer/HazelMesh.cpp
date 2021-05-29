@@ -265,8 +265,8 @@ namespace Hazel {
 		TraverseNodes(scene->mRootNode);
 
 		PipelineSpecification pipelineSpecification;
-		pipelineSpecification.Shader = m_MeshShader; // HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
-		// m_ShaderHazelPBR_Static = Hazel::HazelShader::Create("assets/shaders/VulkanWeekHazelPBR_Static.glsl", true);
+		auto shader = m_MeshShader; // Shader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
+		pipelineSpecification.Shader = m_MeshShader;
 
 		if (RendererAPI::Current() == RendererAPIType::Vulkan)
 		{

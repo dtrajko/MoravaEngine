@@ -21,23 +21,7 @@ VulkanTestLayer::~VulkanTestLayer()
 
 void VulkanTestLayer::OnAttach()
 {
-	// Hazel::VulkanShader::s_AlbedoTexture = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_A.tga", false, Hazel::HazelTextureWrap::Clamp);
-	// Hazel::VulkanShader::s_NormalTexture = Hazel::HazelTexture2D::Create("Models/Cerberus/Textures/Cerberus_N.tga", false, Hazel::HazelTextureWrap::Clamp);
-
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Hazel/TestScene.fbx");
-	// m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/Cerberus_LP.FBX");
 	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx");
-
-	//	// Random RGB values
-	//	srand(static_cast<unsigned>(time(0)));
-	//	for (uint32_t i = 0; i < 10; i++)
-	//	{
-	//		glm::vec4 randomColor = glm::vec4{ 1.0f };
-	//		randomColor.r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-	//		randomColor.g = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-	//		randomColor.b = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-	//		m_RandomColors.push_back(randomColor);
-	//	}
 }
 
 void VulkanTestLayer::OnDetach()

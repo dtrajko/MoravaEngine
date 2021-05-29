@@ -68,7 +68,7 @@ namespace Hazel {
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 		virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) override;
 		virtual void SetIntArray(const std::string& name, int* values, uint32_t size) override;
-		virtual const std::string& GetName() const override;
+		virtual const std::string& GetName() const override { return m_Name; }
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const override;
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override;
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;

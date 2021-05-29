@@ -89,6 +89,8 @@ namespace Hazel {
 		}
 	}
 
+#if 0
+
 	void OpenGLRenderer::Init()
 	{
 		s_Data = new OpenGLRendererData();
@@ -208,6 +210,7 @@ namespace Hazel {
 	{
 		return s_Data->RenderCaps;
 	}
+#endif
 
 	void OpenGLRenderer::BeginFrame()
 	{
@@ -252,11 +255,12 @@ namespace Hazel {
 		s_Data->m_FullscreenQuadVertexBuffer->Bind();
 		pipeline->Bind();
 		s_Data->m_FullscreenQuadIndexBuffer->Bind();
-		HazelRenderer::Submit([depthTest]()
-			{
-				Utils::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
-			});
-
+		// HazelRenderer::Submit([depthTest]()
+		// {
+		// });
+		{
+			Utils::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
+		}
 	}
 
 	void OpenGLRenderer::SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow)
@@ -264,37 +268,39 @@ namespace Hazel {
 		if (!environment)
 			environment = HazelRenderer::GetEmptyEnvironment();
 
-		HazelRenderer::Submit([environment, shadow]() mutable
+		// HazelRenderer::Submit([environment, shadow]() mutable
+		// {
+		// });
+		{
+			auto shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
+			Ref<OpenGLShader> pbrShader = shader.As<OpenGLShader>();
+
+			if (auto resource = pbrShader->GetShaderResource("u_EnvRadianceTex"))
 			{
-				auto shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
-				Ref<OpenGLShader> pbrShader = shader.As<OpenGLShader>();
+				Ref<OpenGLTextureCube> radianceMap = environment->RadianceMap.As<OpenGLTextureCube>();
+				glBindTextureUnit(resource->GetRegister(), radianceMap->GetRendererID());
+			}
 
-				if (auto resource = pbrShader->GetShaderResource("u_EnvRadianceTex"))
-				{
-					Ref<OpenGLTextureCube> radianceMap = environment->RadianceMap.As<OpenGLTextureCube>();
-					glBindTextureUnit(resource->GetRegister(), radianceMap->GetRendererID());
-				}
+			if (auto resource = pbrShader->GetShaderResource("u_EnvIrradianceTex"))
+			{
+				Ref<OpenGLTextureCube> irradianceMap = environment->IrradianceMap.As<OpenGLTextureCube>();
+				glBindTextureUnit(resource->GetRegister(), irradianceMap->GetRendererID());
+			}
 
-				if (auto resource = pbrShader->GetShaderResource("u_EnvIrradianceTex"))
-				{
-					Ref<OpenGLTextureCube> irradianceMap = environment->IrradianceMap.As<OpenGLTextureCube>();
-					glBindTextureUnit(resource->GetRegister(), irradianceMap->GetRendererID());
-				}
+			if (auto resource = pbrShader->GetShaderResource("u_BRDFLUTTexture"))
+			{
+				Ref<OpenGLImage2D> brdfLUTImage = s_Data->BRDFLut->GetImage();
+				glBindSampler(resource->GetRegister(), brdfLUTImage->GetSamplerRendererID());
+				glBindTextureUnit(resource->GetRegister(), brdfLUTImage->GetRendererID());
+			}
 
-				if (auto resource = pbrShader->GetShaderResource("u_BRDFLUTTexture"))
-				{
-					Ref<OpenGLImage2D> brdfLUTImage = s_Data->BRDFLut->GetImage();
-					glBindSampler(resource->GetRegister(), brdfLUTImage->GetSamplerRendererID());
-					glBindTextureUnit(resource->GetRegister(), brdfLUTImage->GetRendererID());
-				}
-
-				if (auto resource = pbrShader->GetShaderResource("u_ShadowMapTexture"))
-				{
-					Ref<OpenGLImage2D> shadowMapTexture = shadow.As<OpenGLTexture2D>();
-					glBindSampler(resource->GetRegister(), shadowMapTexture->GetSamplerRendererID());
-					glBindTextureUnit(resource->GetRegister(), shadowMapTexture->GetRendererID());
-				}
-			});
+			if (auto resource = pbrShader->GetShaderResource("u_ShadowMapTexture"))
+			{
+				Ref<OpenGLImage2D> shadowMapTexture = shadow.As<OpenGLTexture2D>();
+				glBindSampler(resource->GetRegister(), shadowMapTexture->GetSamplerRendererID());
+				glBindTextureUnit(resource->GetRegister(), shadowMapTexture->GetRendererID());
+			}
+		}
 	}
 
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> OpenGLRenderer::CreateEnvironmentMap(const std::string& filepath)
