@@ -5,11 +5,12 @@
 #include "Vulkan.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Platform/Vulkan/VulkanContext.h"
-#include "Hazel/Platform/Vulkan/VulkanPipeline.h"
-#include "Hazel/Platform/Vulkan/VulkanVertexBuffer.h"
+#include "Hazel/Platform/Vulkan/VulkanFramebuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanIndexBuffer.h"
+#include "Hazel/Platform/Vulkan/VulkanPipeline.h"
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Platform/Vulkan/VulkanTexture.h"
+#include "Hazel/Platform/Vulkan/VulkanVertexBuffer.h"
 
 #if !defined(IMGUI_IMPL_API)
 	#define IMGUI_IMPL_API
@@ -19,6 +20,47 @@
 
 
 namespace Hazel {
+
+	static VkCommandBuffer s_ImGuiCommandBuffer;
+	static VkCommandBuffer s_CompositeCommandBuffer;
+
+	static Ref<HazelFramebuffer> s_Framebuffer;
+	static Ref<Pipeline> s_MeshPipeline;
+	static Ref<Pipeline> s_CompositePipeline;
+	static Ref<VertexBuffer> s_QuadVertexBuffer;
+	static Ref<IndexBuffer> s_QuadIndexBuffer;
+	static VkDescriptorSet s_QuadDescriptorSet;
+
+	static std::vector<Ref<HazelMesh>> s_Meshes;
+
+	void VulkanRenderer::SubmitMesh(const Ref<HazelMesh>& mesh)
+	{
+		s_Meshes.push_back(mesh);
+	}
+
+	void VulkanRenderer::OnResize(uint32_t width, uint32_t height)
+	{
+		// HazelRenderer::Submit([=]() {
+		// });
+		{
+			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
+
+			VkWriteDescriptorSet writeDesriptorSet = {};
+			writeDesriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDesriptorSet.dstSet = s_QuadDescriptorSet;
+			writeDesriptorSet.descriptorCount = 1;
+			writeDesriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			writeDesriptorSet.pImageInfo = &framebuffer->GetVulkanDescriptorInfo();
+			writeDesriptorSet.dstBinding = 0;
+
+			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDesriptorSet, 0, nullptr);
+		}
+	}
+
+	void VulkanRenderer::Init()
+	{
+	}
 
 	void VulkanRenderer::Draw()
 	{
