@@ -107,8 +107,8 @@ SceneHazelVulkan::SceneHazelVulkan()
     sceneSettings.nearPlane = 0.01f;
     sceneSettings.farPlane = 2000.0f;
 
-    // m_VulkanTestLayer = std::make_unique<VulkanTestLayer>();
-    // m_VulkanTestLayer->OnAttach();
+    m_VulkanTestLayer = std::make_unique<VulkanTestLayer>();
+    m_VulkanTestLayer->OnAttach();
 
     SetCamera();
     SetLightManager();
@@ -207,7 +207,7 @@ void SceneHazelVulkan::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 {
     if (passType == "main") {
         float deltaTime = Timer::Get()->GetDeltaTime();
-        // m_VulkanTestLayer->OnUpdate(deltaTime, (Hazel::HazelCamera*)m_Camera); // const Hazel::EditorCamera& camera
+        m_VulkanTestLayer->OnUpdateMorava(deltaTime, (Hazel::HazelCamera*)m_Camera); // const Hazel::EditorCamera& camera
         // VulkanWeekRenderer::WaitAndRender();
         // m_VulkanTestLayer->OnRender(mainWindow);
     }

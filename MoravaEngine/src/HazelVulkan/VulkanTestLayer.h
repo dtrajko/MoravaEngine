@@ -22,9 +22,10 @@ public:
 	void OnAttach();
 	void OnDetach();
 
-	// void OnUpdate(Hazel::Timestep ts, Hazel::HazelCamera* camera); // const Hazel::EditorCamera& camera
 	void OnUpdate(Hazel::Timestep ts);
 	void OnImGuiRender(Window* mainWindow, Scene* scene);
+
+	void OnUpdateMorava(Hazel::Timestep ts, Hazel::HazelCamera* camera); // const Hazel::EditorCamera& camera
 
 	void OnEvent(Event& event);
 
@@ -32,8 +33,8 @@ public:
 	void OnRender(Window* mainWindow);
 
 private:
-	// void Render(const glm::vec4& clearColor, Hazel::HazelCamera* camera); // const Hazel::EditorCamera& camera
 	void Render(const glm::vec4& clearColor, const Hazel::EditorCamera& camera);
+	void RenderMorava(const glm::vec4& clearColor, Hazel::HazelCamera* camera); // const Hazel::EditorCamera& camera
 
 private:
 	Hazel::Ref<Hazel::HazelMesh> m_Mesh;

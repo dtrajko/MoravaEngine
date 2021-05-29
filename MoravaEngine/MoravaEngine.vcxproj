@@ -173,6 +173,7 @@
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLMaterial.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLPipeline.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLRenderer.cpp" />
+    <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLRendererAPI.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLRenderPass.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLShader.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLShaderUniform.cpp" />

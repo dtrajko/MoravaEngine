@@ -786,6 +786,9 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanRenderer.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLRendererAPI.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

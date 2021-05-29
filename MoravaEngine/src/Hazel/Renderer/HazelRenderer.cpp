@@ -134,7 +134,7 @@ namespace Hazel {
 		// HazelRenderer::Submit([=]() {
 		// });
 		{
-			RendererAPI::DrawIndexed(count, type, depthTest);
+			// RendererAPI::DrawIndexed(count, type, depthTest);
 		}
 	}
 
@@ -146,7 +146,7 @@ namespace Hazel {
 		// });
 
 		{
-			RendererAPI::SetLineThickness(thickness);
+			// RendererAPI::SetLineThickness(thickness);
 		}
 	}
 
@@ -170,7 +170,7 @@ namespace Hazel {
 			// {
 			// });
 			{
-				RendererAPI::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+				// RendererAPI::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 			}
 		}
 	}

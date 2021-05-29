@@ -189,8 +189,6 @@ void Scene::Update(float timestep, Window* mainWindow)
 	else {
 		RendererBasic::DisableWireframe();
 	}
-
-	UpdateImGui(Timer::Get()->GetCurrentTimestamp(), mainWindow);
 }
 
 void Scene::OnWindowResize(WindowResizeEvent& e)

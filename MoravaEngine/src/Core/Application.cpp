@@ -4,6 +4,8 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
 
+#include "HazelVulkan/VulkanTestLayer.h"
+
 #include "Core/Timer.h"
 
 #if defined(HZ_PLATFORM_WINDOWS)
@@ -114,13 +116,16 @@ void Application::Run()
 			}
 
 			m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), m_Window); // TODO deltaTime obsolete
+
 			// m_Renderer->BeginFrame();
 
 			// Render ImGui on render thread
 			Application* app = this;
 			// Hazel::HazelRenderer::Submit([=]() { m_ImGuiLayer->Begin(); });
 			app->RenderImGui(); // Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
-			Hazel::VulkanRenderer::Draw();
+			// Hazel::VulkanRenderer::Draw();
+
+			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
 			m_ImGuiLayer->End();
 
 			// On Render thread (Hazel Vulkan)
