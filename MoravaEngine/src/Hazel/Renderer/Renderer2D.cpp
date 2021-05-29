@@ -245,19 +245,20 @@ namespace Hazel {
 			s_Data.LinePipeline->Bind();
 			s_Data.LineIndexBuffer->Bind();
 
-			// RendererBasic::SetLineThickness(2.0f);
+			// HazelRenderer::SetLineThickness(2.0f);
+
 			RendererBasic::DrawIndexed(s_Data.LineIndexCount, PrimitiveType::Lines, s_Data.DepthTest);
 			s_Data.Stats.DrawCalls++;
 		}
 
-#if OLD
+#if 1 // OLD
 		Flush();
 #endif
 	}
 
 	void Renderer2D::Flush()
 	{
-#if OLD
+#if 1 // OLD
 		if (s_Data.QuadIndexCount == 0)
 			return; // Nothing to draw
 
@@ -265,11 +266,11 @@ namespace Hazel {
 		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
 			s_Data.TextureSlots[i]->Bind(i);
 
-		s_Data.LineVertexBuffer->Bind();
-		s_Data.LinePipeline->Bind();
-		// s_Data.LineIndexBuffer->Bind();
+		s_Data.QuadVertexBuffer->Bind();
+		s_Data.QuadPipeline->Bind();
+		s_Data.QuadIndexBuffer->Bind();
 
-		Renderer::DrawIndexed(s_Data.QuadIndexCount, false);
+		HazelRenderer::DrawIndexed(s_Data.QuadIndexCount, PrimitiveType::Triangles, false);
 		s_Data.Stats.DrawCalls++;
 #endif
 	}

@@ -147,7 +147,7 @@ namespace Hazel {
 		delete s_CommandQueue;
 	}
 
-	RendererCapabilities& HazelRenderer::GetCapabilities()
+	RenderAPICapabilities& HazelRenderer::GetCapabilities()
 	{
 		return s_RendererAPI->GetCapabilities();
 	}
@@ -361,12 +361,12 @@ namespace Hazel {
 	void HazelRenderer::SetClearColor(float r, float g, float b, float a)
 	{
 	}
+#endif
 
 	void HazelRenderer::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
 	{
-		HazelRenderer::Submit([=]() {
-		});
-	
+		// HazelRenderer::Submit([=]() {
+		// });
 		{
 			RendererAPI::DrawIndexed(count, type, depthTest);
 		}
@@ -374,16 +374,15 @@ namespace Hazel {
 
 	void HazelRenderer::SetLineThickness(float thickness)
 	{
-		HazelRenderer::Submit([=]() {
-		});
-	
+		Log::GetLogger()->warn("HazelRenderer::SetLineThickness({0}): method not implemented!", thickness);
+
+		// HazelRenderer::Submit([=]() {
+		// });
+
 		{
 			RendererAPI::SetLineThickness(thickness);
 		}
 	}
-
-#endif
-
 }
 
 

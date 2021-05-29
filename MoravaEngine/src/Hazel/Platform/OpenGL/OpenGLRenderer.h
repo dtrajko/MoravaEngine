@@ -13,7 +13,7 @@ namespace Hazel {
 		virtual void Init() override;
 		virtual void Shutdown() override;
 
-		virtual RendererCapabilities& GetCapabilities() override;
+		virtual RenderAPICapabilities& GetCapabilities() override;
 
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;

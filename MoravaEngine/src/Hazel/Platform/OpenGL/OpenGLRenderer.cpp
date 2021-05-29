@@ -14,7 +14,7 @@ namespace Hazel {
 
 	struct OpenGLRendererData
 	{
-		RendererCapabilities RenderCaps;
+		RenderAPICapabilities RenderCaps;
 
 		Ref<VertexBuffer> m_FullscreenQuadVertexBuffer;
 		Ref<IndexBuffer> m_FullscreenQuadIndexBuffer;
@@ -204,7 +204,7 @@ namespace Hazel {
 		delete s_Data;
 	}
 
-	RendererCapabilities& OpenGLRenderer::GetCapabilities()
+	RenderAPICapabilities& OpenGLRenderer::GetCapabilities()
 	{
 		return s_Data->RenderCaps;
 	}

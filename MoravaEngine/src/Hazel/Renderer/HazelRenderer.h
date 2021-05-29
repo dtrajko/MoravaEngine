@@ -6,6 +6,7 @@
 
 #include "Hazel/Renderer/RendererContext.h"
 #include "Hazel/Renderer/RenderCommandQueue.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 
 namespace Hazel {
@@ -30,17 +31,17 @@ namespace Hazel {
 		// static void Clear(float r, float g, float b, float a = 1.0f);
 		// static void SetClearColor(float r, float g, float b, float a);
 
-		// static void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest = true);
+		static void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest = true);
 
 		// For OpenGL
-		// static void SetLineThickness(float thickness);
+		static void SetLineThickness(float thickness);
 
 		// static void ClearMagenta();
 
 		static void Init();
 		static void Shutdown();
 
-		static RendererCapabilities& GetCapabilities();
+		static RenderAPICapabilities& GetCapabilities();
 
 		static Ref<HazelShaderLibrary>& GetShaderLibrary();
 
