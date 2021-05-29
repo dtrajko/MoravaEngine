@@ -60,6 +60,24 @@ namespace Hazel {
 
 	void VulkanRenderer::Init()
 	{
+		// HazelRenderer::Submit([=]() {
+		// });
+		{
+			s_ImGuiCommandBuffer = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
+			s_CompositeCommandBuffer = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
+		}
+
+		{
+			HazelFramebufferSpecification spec;
+			spec.Width = Application::Get()->GetWindow()->GetWidth();
+			spec.Height = Application::Get()->GetWindow()->GetHeight();
+			s_Framebuffer = HazelFramebuffer::Create(spec);
+
+			PipelineSpecification pipelineSpecification;
+			pipelineSpecification.Layout = {
+				
+			};
+		}
 	}
 
 	void VulkanRenderer::Draw()

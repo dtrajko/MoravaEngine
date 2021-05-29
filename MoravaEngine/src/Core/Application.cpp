@@ -41,6 +41,8 @@ void Application::OnInit()
 
 	m_Renderer->Init(m_Scene);
 
+	Hazel::VulkanRenderer::Init();
+
 	m_ImGuiLayer = Hazel::ImGuiLayer::Create();
 	m_ImGuiLayer->OnAttach();
 
@@ -51,7 +53,7 @@ void Application::OnInit()
 
 void Application::RenderImGui()
 {
-	// m_ImGuiLayer->Begin();
+	m_ImGuiLayer->Begin();
 
 	// ImGui::Begin("Renderer");
 	// auto& caps = Hazel::HazelRenderer::GetCapabilities(); // TODO: 's_RendererAPI was nullptr'
@@ -66,7 +68,7 @@ void Application::RenderImGui()
 		layer->OnImGuiRender();
 	}
 
-	m_ImGuiLayer->End();
+	// m_ImGuiLayer->End();
 }
 
 // TODO: move game loop from main.cpp here
@@ -86,7 +88,10 @@ void Application::Run()
 				layer->OnUpdate(m_TimeStep);
 			}
 
-			Hazel::HazelRenderer::Submit([=]() { m_ImGuiLayer->Begin(); });
+			// Render ImGui on render thread
+			Application* app = this;
+			// Hazel::HazelRenderer::Submit([=]() { m_ImGuiLayer->Begin(); });
+			Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
 
 			m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
 
@@ -95,14 +100,12 @@ void Application::Run()
 			// On Render thread (Hazel Vulkan)
 			m_Window->GetRenderContext()->BeginFrame();
 			m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
-			// Hazel::VulkanRenderer::Draw();
 
 			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
  
-			// Render ImGui on render thread
-			Application* app = this;
-			Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
-			// m_ImGuiLayer->End();
+			// Hazel::VulkanRenderer::Draw();
+
+			m_ImGuiLayer->End();
 
 			// Swap buffers and poll events
 			m_Window->SwapBuffers(); // previously m_Window->OnUpdate();
