@@ -337,14 +337,20 @@ namespace Hazel {
 		return descriptorSet;
 	}
 
-	// Vulkan Week version
-	VkWriteDescriptorSet VulkanShader::GetDescriptorSet(const std::string& name) const
+	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
 	{
 		HZ_CORE_ASSERT(m_WriteDescriptorSets.find(name) != m_WriteDescriptorSets.end());
-		return m_WriteDescriptorSets.at(name);
+		return &m_WriteDescriptorSets.at(name);
+
+		//	HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
+		//	if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
+		//	{
+		//		MORAVA_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+		//		return nullptr;
+		//	}
+		//	return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
 	}
 
-	// temporary for Vulkan Week 4 (remove later, use AllocateUniformBuffer instead)
 	void VulkanShader::AllocateUniformBuffer(UniformBuffer& dst)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
@@ -385,18 +391,6 @@ namespace Hazel {
 		uniformBuffer.Descriptor.offset = 0;
 		uniformBuffer.Descriptor.range = uniformBuffer.Size;
 	}
-
-	//	// TODO: does not exist in Vulkan Week version, added later
-	//	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
-	//	{
-	//		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
-	//		if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
-	//		{
-	//			MORAVA_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
-	//			return nullptr;
-	//		}
-	//		return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
-	//	}
 
 	// TODO: does not exist in Vulkan Week version, added later
 	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set)

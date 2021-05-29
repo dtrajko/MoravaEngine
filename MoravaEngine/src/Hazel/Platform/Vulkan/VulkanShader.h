@@ -87,9 +87,8 @@ namespace Hazel {
 		const std::vector<PushConstantRange>& GetPushConstantRanges() const { return m_PushConstantRanges; }
 
 		VkDescriptorSet CreateDescriptorSet();
-		VkWriteDescriptorSet GetDescriptorSet(const std::string& name) const; // Vulkan Week version
-		// const VkWriteDescriptorSet* GetDescriptorSet(const std::string& name, uint32_t set = 0) const; // most recent version
-
+		// VkWriteDescriptorSet GetDescriptorSet(const std::string& name) const; // obsolete
+		const VkWriteDescriptorSet* GetDescriptorSet(const std::string& name, uint32_t set = 0) const;
 
 		std::vector<VkDescriptorSetLayout> GetAllDescriptorSetLayouts();
 		//	UniformBuffer& GetUniformBuffer(uint32_t binding = 0, uint32_t set = 0)

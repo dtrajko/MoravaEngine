@@ -428,11 +428,15 @@ namespace Hazel {
 							// {
 							// });
 							{
-								VkWriteDescriptorSet wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_AlbedoTexture");
-								wds.dstSet = s_DescriptorSet;
-								auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-								wds.pImageInfo = &imageInfo;
-								s_WriteDescriptorSets.push_back(wds);
+								const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_AlbedoTexture");
+								if (wds)
+								{
+									VkWriteDescriptorSet descriptorSet = *wds;
+									descriptorSet.dstSet = s_DescriptorSet;
+									auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+									descriptorSet.pImageInfo = &imageInfo;
+									s_WriteDescriptorSets.push_back(descriptorSet);
+								}
 							}
 						}
 					}
@@ -499,11 +503,15 @@ namespace Hazel {
 							// {
 							// });
 							{
-								VkWriteDescriptorSet wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_NormalTexture"); // contains binding point etc
-								wds.dstSet = s_DescriptorSet;
-								auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-								wds.pImageInfo = &imageInfo;
-								s_WriteDescriptorSets.push_back(wds);
+								const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_NormalTexture"); // contains binding point etc
+								if (wds)
+								{
+									VkWriteDescriptorSet descriptorSet = *wds;
+									descriptorSet.dstSet = s_DescriptorSet;
+									auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+									descriptorSet.pImageInfo = &imageInfo;
+									s_WriteDescriptorSets.push_back(descriptorSet);
+								}
 							}
 						}
 					}

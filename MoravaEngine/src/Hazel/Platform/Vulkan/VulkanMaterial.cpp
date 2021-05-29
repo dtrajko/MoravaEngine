@@ -138,7 +138,7 @@ namespace Hazel {
 			m_Textures.resize(resource->GetRegister() + 1);
 		m_Textures[resource->GetRegister()] = texture;
 
-		const VkWriteDescriptorSet* wds = &m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
+		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
 		HZ_CORE_ASSERT(wds);
 		m_ResidentDescriptors.push_back(std::make_shared<PendingDescriptor>(PendingDescriptor{ PendingDescriptorType::Texture2D, *wds, {}, texture.As<HazelTexture>() /*, nullptr */ }));
 		m_PendingDescriptors.push_back(m_ResidentDescriptors.back());
@@ -158,7 +158,7 @@ namespace Hazel {
 			m_Textures.resize(resource->GetRegister() + 1);
 		m_Textures[resource->GetRegister()] = texture;
 
-		const VkWriteDescriptorSet* wds = &m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
+		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
 		HZ_CORE_ASSERT(wds);
 		m_ResidentDescriptors.push_back(std::make_shared<PendingDescriptor>(PendingDescriptor{ PendingDescriptorType::TextureCube, *wds, {}, texture.As<HazelTexture>() /*, nullptr */ }));
 		m_PendingDescriptors.push_back(m_ResidentDescriptors.back());
@@ -166,7 +166,7 @@ namespace Hazel {
 
 	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const VkDescriptorImageInfo& imageInfo)
 	{
-		const VkWriteDescriptorSet* wds = &m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
+		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
 		HZ_CORE_ASSERT(wds);
 
 		if (m_ImageInfos.find(name) != m_ImageInfos.end())
@@ -196,7 +196,7 @@ namespace Hazel {
 		m_Images[resource->GetRegister()] = image;
 		m_ImageHashes[resource->GetRegister()] = image->GetHash();
 
-		const VkWriteDescriptorSet* wds = &m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
+		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
 		HZ_CORE_ASSERT(wds);
 		// m_ResidentDescriptors.push_back(std::make_shared<PendingDescriptor>(PendingDescriptor{ PendingDescriptorType::TextureCube, *wds, {}, texture.As<HazelTexture>() /* , nullptr */ }));
 		m_PendingDescriptors.push_back(m_ResidentDescriptors.back());

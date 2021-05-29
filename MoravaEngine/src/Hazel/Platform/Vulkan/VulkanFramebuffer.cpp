@@ -74,10 +74,10 @@ namespace Hazel {
 
 						VK_CHECK_RESULT(vkCreateImage(device, &imageCreateInfo, nullptr, &instance->m_ColorAttachment.image));
 
-						VkMemoryRequirements memReqs;
-						vkGetImageMemoryRequirements(device, instance->m_ColorAttachment.image, &memReqs);
+						VkMemoryRequirements memoryRequirements;
+						vkGetImageMemoryRequirements(device, instance->m_ColorAttachment.image, &memoryRequirements);
 
-						allocator.Allocate(memReqs, &instance->m_ColorAttachment.mem);
+						allocator.Allocate(memoryRequirements, &instance->m_ColorAttachment.mem);
 
 						VK_CHECK_RESULT(vkBindImageMemory(device, instance->m_ColorAttachment.image, instance->m_ColorAttachment.mem, 0));
 
@@ -123,8 +123,59 @@ namespace Hazel {
 					}
 
 					// DEPTH ATTACHMENT
+					VkFormat depthFormat = VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetDepthFormat();
 
+					VkImageCreateInfo imageCreateInfo = {};
+					imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+					imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+					imageCreateInfo.format = depthFormat;
+					imageCreateInfo.extent.width = width;
+					imageCreateInfo.extent.height = height;
+					imageCreateInfo.extent.depth = 1;
+					imageCreateInfo.mipLevels = 1;
+					imageCreateInfo.arrayLayers = 1;
+					imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+					imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+					// We will sample directly from the depth attachment
+					imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+					VK_CHECK_RESULT(vkCreateImage(device, &imageCreateInfo, nullptr, &instance->m_DepthAttachment.image));
+					VkMemoryRequirements memoryRequirements;
+					vkGetImageMemoryRequirements(device, instance->m_DepthAttachment.image, &memoryRequirements);
+					allocator.Allocate(memoryRequirements, &instance->m_DepthAttachment.mem);
+
+					VK_CHECK_RESULT(vkBindImageMemory(device, instance->m_DepthAttachment.image, instance->m_DepthAttachment.mem, 0));
+
+					VkImageViewCreateInfo depthStencilImageViewCreateInfo = {};
+					depthStencilImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+					depthStencilImageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+					depthStencilImageViewCreateInfo.format = depthFormat;
+					depthStencilImageViewCreateInfo.flags = 0;
+					depthStencilImageViewCreateInfo.subresourceRange = {};
+					depthStencilImageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+					depthStencilImageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+					depthStencilImageViewCreateInfo.subresourceRange.levelCount = 1;
+					depthStencilImageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+					depthStencilImageViewCreateInfo.subresourceRange.layerCount = 1;
+					depthStencilImageViewCreateInfo.image = instance->m_DepthAttachment.image;
+					VK_CHECK_RESULT(vkCreateImageView(device, &depthStencilImageViewCreateInfo, nullptr, &instance->m_DepthAttachment.view));
+
+					// Depth attachment
+					attachmentDescriptions[1].flags = 0;
+					attachmentDescriptions[1].format = depthFormat;
+					attachmentDescriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
+					attachmentDescriptions[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+					attachmentDescriptions[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+					attachmentDescriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					attachmentDescriptions[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+					attachmentDescriptions[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+					attachmentDescriptions[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				}
+
+				VkAttachmentReference colorReference = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+				VkAttachmentReference depthReference = { 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+
+				// TODO
 			}
 
 		}
