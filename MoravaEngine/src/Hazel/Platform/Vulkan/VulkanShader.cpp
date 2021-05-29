@@ -15,6 +15,27 @@
 
 namespace Hazel {
 
+	static ShaderUniformType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
+	{
+		switch (type.basetype)
+		{
+		case spirv_cross::SPIRType::Boolean:  return ShaderUniformType::Bool;
+		case spirv_cross::SPIRType::Int:      return ShaderUniformType::Int;
+		case spirv_cross::SPIRType::Float:
+			if (type.vecsize == 1)            return ShaderUniformType::Float;
+			if (type.vecsize == 2)            return ShaderUniformType::Vec2;
+			if (type.vecsize == 3)            return ShaderUniformType::Vec3;
+			if (type.vecsize == 4)            return ShaderUniformType::Vec4;
+
+			if (type.columns == 3)            return ShaderUniformType::Mat3;
+			if (type.columns == 4)            return ShaderUniformType::Mat4;
+			break;
+		}
+		HZ_CORE_ASSERT(false, "Unknown type!");
+		return ShaderUniformType::None;
+	}
+
+
 	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
 
 	// Very temporary attribute in Vulkan Week Day 5 Part 1
@@ -24,16 +45,17 @@ namespace Hazel {
 	VulkanShader::VulkanShader(const std::string& path, bool forceCompile)
 		: m_AssetPath(path)
 	{
+		// TODO: This should be more "general"
+		size_t found = path.find_last_of("/\\");
+		m_Name = found != std::string::npos ? path.substr(found + 1) : path;
+		found = m_Name.find_last_of(".");
+		m_Name = found != std::string::npos ? m_Name.substr(0, found) : m_Name;
+
 		Reload();
 	}
 
 	VulkanShader::~VulkanShader()
 	{
-	}
-
-	void VulkanShader::ClearUniformBuffers()
-	{
-		s_UniformBuffers.clear();
 	}
 
 	static std::string ReadShaderFromFile(const std::string& filepath)
@@ -57,38 +79,23 @@ namespace Hazel {
 
 	void VulkanShader::Reload(bool forceCompile)
 	{
-		//	Ref<VulkanShader> instance = this;
-		//	HazelRenderer::Submit([instance]() mutable
-		//	{
-		//		// Vertex and Fragment for now
-		//		std::string source = ReadShaderFromFile(instance->m_AssetPath);
-		//		instance->m_ShaderSource = instance->PreProcess(source);
-		//		instance->m_ShaderStages.resize(2);
-		//		std::array<std::vector<uint32_t>, 2> shaderData;
-		//		instance->CompileOrGetVulkanBinary(shaderData, false);
-		//		instance->LoadAndCreateVertexShader(instance->m_ShaderStages[0], shaderData[0]);
-		//		instance->LoadAndCreateFragmentShader(instance->m_ShaderStages[1], shaderData[1]);
-		//		instance->Reflect(VK_SHADER_STAGE_VERTEX_BIT, shaderData[0]);
-		//		instance->Reflect(VK_SHADER_STAGE_FRAGMENT_BIT, shaderData[1]);
-		//		instance->CreateDescriptors();
-		//	});
-
-		// Vertex and Fragment for now
-		std::string source = ReadShaderFromFile(m_AssetPath);
-		m_ShaderSource = PreProcess(source);
-		m_ShaderStages.resize(2);
-		std::array<std::vector<uint32_t>, 2> shaderData;
-		CompileOrGetVulkanBinary(shaderData, false);
-		LoadAndCreateVertexShader(m_ShaderStages[0], shaderData[0]);
-		LoadAndCreateFragmentShader(m_ShaderStages[1], shaderData[1]);
-		Reflect(VK_SHADER_STAGE_VERTEX_BIT, shaderData[0]); // vertex shader method similar to CreateDescriptors()
-		Reflect(VK_SHADER_STAGE_FRAGMENT_BIT, shaderData[1]); // fragment shader, method similar to CreateDescriptors()
-		CreateDescriptors();
-	}
-
-	size_t VulkanShader::GetHash() const
-	{
-		return std::hash<std::string>{}(m_AssetPath);
+		// Ref<VulkanShader> instance = this;
+		// HazelRenderer::Submit([instance]() mutable
+		// {
+		// });
+		{
+			// Vertex and Fragment for now
+			std::string source = ReadShaderFromFile(m_AssetPath);
+			m_ShaderSource = PreProcess(source);
+			m_ShaderStages.resize(2);
+			std::array<std::vector<uint32_t>, 2> shaderData;
+			CompileOrGetVulkanBinary(shaderData, false);
+			LoadAndCreateVertexShader(m_ShaderStages[0], shaderData[0]);
+			LoadAndCreateFragmentShader(m_ShaderStages[1], shaderData[1]);
+			Reflect(VK_SHADER_STAGE_VERTEX_BIT, shaderData[0]); // vertex shader method similar to CreateDescriptors()
+			Reflect(VK_SHADER_STAGE_FRAGMENT_BIT, shaderData[1]); // fragment shader, method similar to CreateDescriptors()
+			CreateDescriptors();
+		}
 	}
 
 	void VulkanShader::LoadAndCreateVertexShader(VkPipelineShaderStageCreateInfo& shaderStage, const std::vector<uint32_t>& shaderData)
@@ -303,6 +310,8 @@ namespace Hazel {
 			layoutBinding.pImmutableSamplers = nullptr;
 			layoutBinding.binding = binding;
 
+			HZ_CORE_ASSERT(m_UniformBuffers.find(binding) == m_UniformBuffers.end(), "Binding is already present!");
+
 			VkWriteDescriptorSet& set = m_WriteDescriptorSets[imageSampler.Name];
 			set = {};
 			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -337,14 +346,20 @@ namespace Hazel {
 		return descriptorSet;
 	}
 
-	// Vulkan Week version
-	VkWriteDescriptorSet VulkanShader::GetDescriptorSet(const std::string& name) const
+	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
 	{
 		HZ_CORE_ASSERT(m_WriteDescriptorSets.find(name) != m_WriteDescriptorSets.end());
-		return m_WriteDescriptorSets.at(name);
+		return &m_WriteDescriptorSets.at(name);
+
+		//	HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
+		//	if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
+		//	{
+		//		MORAVA_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+		//		return nullptr;
+		//	}
+		//	return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
 	}
 
-	// temporary for Vulkan Week 4 (remove later, use AllocateUniformBuffer instead)
 	void VulkanShader::AllocateUniformBuffer(UniformBuffer& dst)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
@@ -385,18 +400,6 @@ namespace Hazel {
 		uniformBuffer.Descriptor.offset = 0;
 		uniformBuffer.Descriptor.range = uniformBuffer.Size;
 	}
-
-	//	// TODO: does not exist in Vulkan Week version, added later
-	//	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
-	//	{
-	//		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
-	//		if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
-	//		{
-	//			MORAVA_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
-	//			return nullptr;
-	//		}
-	//		return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
-	//	}
 
 	// TODO: does not exist in Vulkan Week version, added later
 	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set)
@@ -587,6 +590,16 @@ namespace Hazel {
 		return 0;
 	}
 
+	void VulkanShader::ClearUniformBuffers()
+	{
+		s_UniformBuffers.clear();
+	}
+
+	size_t VulkanShader::GetHash() const
+	{
+		return std::hash<std::string>{}(m_AssetPath);
+	}
+
 	void VulkanShader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size)
 	{
 	}
@@ -653,11 +666,6 @@ namespace Hazel {
 
 	void VulkanShader::SetIntArray(const std::string& name, int* values, uint32_t size)
 	{
-	}
-
-	const std::string& VulkanShader::GetName() const
-	{
-		return m_AssetPath;
 	}
 
 	const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanShader::GetShaderBuffers() const

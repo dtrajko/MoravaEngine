@@ -265,40 +265,59 @@ namespace Hazel {
 		TraverseNodes(scene->mRootNode);
 
 		PipelineSpecification pipelineSpecification;
-		pipelineSpecification.Shader = m_MeshShader; // HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
-		// m_ShaderHazelPBR_Static = Hazel::HazelShader::Create("assets/shaders/VulkanWeekHazelPBR_Static.glsl", true);
+		auto shader = m_MeshShader; // Shader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
+		pipelineSpecification.Shader = m_MeshShader;
 
 		if (RendererAPI::Current() == RendererAPIType::Vulkan)
 		{
-			// Ref<Mesh> instance = this;
-			// Hazel::Ref<Shader> shader = m_MeshShader;
+			HazelRenderer::Submit([/*instance, shader*/]() mutable
+			{
+			});
+			{
+				s_DescriptorSet = m_MeshShader.As<VulkanShader>()->CreateDescriptorSet(); // depends on m_DescriptorPool and m_DescriptorSetLayout
 
-			//	HazelRenderer::Submit([instance, shader]() mutable
-			//	{
-			//	});
+				// EXAMPLE:
+				// std::vector<VkWriteDescriptorSet> writeDescriptorSets = HazelRenderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
+				auto& ub = m_MeshShader.As<VulkanShader>()->GetUniformBuffer();
+				//	/*std::vector<VkWriteDescriptorSet> writeDescriptorSets(1);
+				//	writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				//	writeDescriptorSets[0].dstSet = s_DescriptorSet;
+				//	writeDescriptorSets[0].descriptorCount = 1;
+				//	writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				//	writeDescriptorSets[0].pBufferInfo = &ub.Descriptor;
+				//	writeDescriptorSets[0].dstBinding = 0;*/
 
-			s_DescriptorSet = m_MeshShader.As<VulkanShader>()->CreateDescriptorSet(); // depends on m_DescriptorPool and m_DescriptorSetLayout
+				VkWriteDescriptorSet writeDescriptorSet = {};
+				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				writeDescriptorSet.dstSet = s_DescriptorSet;
+				writeDescriptorSet.descriptorCount = 1;
+				writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				writeDescriptorSet.pBufferInfo = &ub.Descriptor; // the "ub" UniformBuffer needs to be created first
+				writeDescriptorSet.dstBinding = 0;
+				s_WriteDescriptorSets.push_back(writeDescriptorSet);
 
-			//	
-			//	// EXAMPLE:
-			//	// std::vector<VkWriteDescriptorSet> writeDescriptorSets = HazelRenderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
-			auto& ub = m_MeshShader.As<VulkanShader>()->GetUniformBuffer();
-			//	/*std::vector<VkWriteDescriptorSet> writeDescriptorSets(1);
-			//	writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			//	writeDescriptorSets[0].dstSet = s_DescriptorSet;
-			//	writeDescriptorSets[0].descriptorCount = 1;
-			//	writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			//	writeDescriptorSets[0].pBufferInfo = &ub.Descriptor;
-			//	writeDescriptorSets[0].dstBinding = 0;*/
+				/**** BEGIN version 080a7edc, Sep 25th ****
+				// std::vector<VkWriteDescriptorSet> writeDescriptorSets = Renderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
+				auto& ub0 = shader.As<VulkanShader>()->GetUniformBuffer();
+				VkWriteDescriptorSet writeDescriptorSet = {};
+				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				writeDescriptorSet.dstSet = s_DescriptorSet;
+				writeDescriptorSet.descriptorCount = 1;
+				writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				writeDescriptorSet.pBufferInfo = &ub0.Descriptor;
+				writeDescriptorSet.dstBinding = 0;
+				s_WriteDescriptorSets.push_back(writeDescriptorSet);
 
-			VkWriteDescriptorSet writeDescriptorSet = {};
-			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = s_DescriptorSet;
-			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			writeDescriptorSet.pBufferInfo = &ub.Descriptor; // the "ub" UniformBuffer needs to be created first
-			writeDescriptorSet.dstBinding = 0;
-			s_WriteDescriptorSets.push_back(writeDescriptorSet);
+				auto& ub1 = shader.As<VulkanShader>()->GetUniformBuffer();
+				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				writeDescriptorSet.dstSet = s_DescriptorSet;
+				writeDescriptorSet.descriptorCount = 1;
+				writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				writeDescriptorSet.pBufferInfo = &ub1.Descriptor;
+				writeDescriptorSet.dstBinding = 1;
+				s_WriteDescriptorSets.push_back(writeDescriptorSet);
+				**** END version 080a7edc, Sep 25th ****/
+			}
 		}
 
 		// Bones
@@ -358,22 +377,10 @@ namespace Hazel {
 				auto aiMaterial = scene->mMaterials[i];
 				auto aiMaterialName = aiMaterial->GetName();
 
-				// auto mi = Ref<HazelMaterial>::Create(m_BaseMaterial, aiMaterialName.data);
-
 				auto mi = HazelMaterial::Create(m_MeshShader, aiMaterialName.data);
+				// auto mi = HazelMaterial::Create(m_BaseMaterial, aiMaterialName.data);
+				// auto mi = Ref<HazelMaterialInstance>::Create(m_BaseMaterial, aiMaterialName.data);
 				m_Materials[i] = mi;
-
-				Submesh* submeshPtr = nullptr;
-				if (i < m_Submeshes.size()) {
-					submeshPtr = &m_Submeshes[i];
-				}
-
-				Hazel::Ref<MaterialData> materialData = Hazel::Ref<MaterialData>();
-
-				if (RendererAPI::Current() == RendererAPIType::OpenGL)
-				{
-					materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
-				}
 
 				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
 				aiString aiTexPath;
@@ -392,6 +399,21 @@ namespace Hazel {
 				float roughness = 1.0f - glm::sqrt(shininess / 100.0f);
 				HZ_MESH_LOG("    COLOR = {0}, {1}, {2}", aiColor.r, aiColor.g, aiColor.b);
 				HZ_MESH_LOG("    ROUGHNESS = {0}", roughness);
+
+				// BEGIN the material data section
+				Hazel::Ref<MaterialData> materialData = Hazel::Ref<MaterialData>();
+
+				Submesh* submeshPtr = nullptr;
+				if (i < m_Submeshes.size()) {
+					submeshPtr = &m_Submeshes[i];
+				}
+
+				if (RendererAPI::Current() == RendererAPIType::OpenGL)
+				{
+					materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
+				}
+				// END the material data section
+
 				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
 				if (hasAlbedoMap)
 				{
@@ -428,11 +450,15 @@ namespace Hazel {
 							// {
 							// });
 							{
-								VkWriteDescriptorSet wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_AlbedoTexture");
-								wds.dstSet = s_DescriptorSet;
-								auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-								wds.pImageInfo = &imageInfo;
-								s_WriteDescriptorSets.push_back(wds);
+								const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_AlbedoTexture");
+								if (wds)
+								{
+									VkWriteDescriptorSet descriptorSet = *wds;
+									descriptorSet.dstSet = s_DescriptorSet;
+									auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+									descriptorSet.pImageInfo = &imageInfo;
+									s_WriteDescriptorSets.push_back(descriptorSet);
+								}
 							}
 						}
 					}
@@ -499,11 +525,15 @@ namespace Hazel {
 							// {
 							// });
 							{
-								VkWriteDescriptorSet wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_NormalTexture"); // contains binding point etc
-								wds.dstSet = s_DescriptorSet;
-								auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-								wds.pImageInfo = &imageInfo;
-								s_WriteDescriptorSets.push_back(wds);
+								const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_NormalTexture"); // contains binding point etc
+								if (wds)
+								{
+									VkWriteDescriptorSet descriptorSet = *wds;
+									descriptorSet.dstSet = s_DescriptorSet;
+									auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+									descriptorSet.pImageInfo = &imageInfo;
+									s_WriteDescriptorSets.push_back(descriptorSet);
+								}
 							}
 						}
 					}
@@ -759,10 +789,9 @@ namespace Hazel {
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating an Index Buffer...");
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
 
-		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
-
-		pipelineSpecification.Layout = m_VertexBufferLayout;
-		m_Pipeline = Pipeline::Create(pipelineSpecification);
+		// Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
+		// pipelineSpecification.Layout = m_VertexBufferLayout;
+		// m_Pipeline = Pipeline::Create(pipelineSpecification);
 
 		if (RendererAPI::Current() == RendererAPIType::Vulkan)
 		{
@@ -1244,6 +1273,7 @@ namespace Hazel {
 				envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 5);
 			}
 
+			// Ref<HazelMaterialInstance> material = Ref<HazelMaterialInstance>();
 			Ref<HazelMaterial> material = Ref<HazelMaterial>();
 			if (m_Materials.size()) {
 				material = m_Materials[submesh.MaterialIndex];
@@ -1334,6 +1364,14 @@ namespace Hazel {
 
 		shader->Bind();
 		shader->setMat4("u_Transform", outlineTransform);
+
+		for (size_t i = 0; i < parentMesh->m_BoneTransforms.size(); i++)
+		{
+			std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+			shader->setMat4(uniformName, parentMesh->m_BoneTransforms[i]);
+		}
+
+		shader->setBool("u_Animated", parentMesh->IsAnimated());
 
 		RendererBasic::DisableDepthTest();
 

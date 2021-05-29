@@ -29,6 +29,9 @@ namespace Hazel {
 
 		virtual void SetViewportSize(float width, float height) override;
 
+		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+		glm::mat4 GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }
+
 		glm::vec3 GetUpDirection() const;
 		glm::vec3 GetRightDirection() const;
 		glm::vec3 GetForwardDirection() const;

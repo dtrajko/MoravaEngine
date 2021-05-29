@@ -1,11 +1,25 @@
 #include "VulkanPipeline.h"
 
-#include "VulkanShader.h"
 #include "VulkanContext.h"
+#include "VulkanFramebuffer.h"
+#include "VulkanShader.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 
 
 namespace Hazel {
+
+	static VkFormat ShaderDataTypeToVulkanFormat(ShaderDataType type)
+	{
+		switch (type)
+		{
+		case ShaderDataType::Float:     return VK_FORMAT_R32_SFLOAT;
+		case ShaderDataType::Float2:    return VK_FORMAT_R32G32_SFLOAT;
+		case ShaderDataType::Float3:    return VK_FORMAT_R32G32B32_SFLOAT;
+		case ShaderDataType::Float4:    return VK_FORMAT_R32G32B32A32_SFLOAT;
+		}
+		HZ_CORE_ASSERT(false);
+		return VK_FORMAT_UNDEFINED;
+	}
 
 	VulkanPipeline::VulkanPipeline(const PipelineSpecification& spec)
 		: m_Specification(spec)
@@ -30,6 +44,7 @@ namespace Hazel {
 
 			HZ_CORE_ASSERT(m_Specification.Shader);
 			Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(m_Specification.Shader);
+			Ref<VulkanFramebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
 
 			VkDescriptorSetLayout descriptorSetLayout = vulkanShader->GetDescriptorSetLayout();
 
@@ -78,7 +93,8 @@ namespace Hazel {
 			pipelineCreateInfo.layout = m_PipelineLayout;
 
 			// Renderpass this pipeline is attached to
-			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
+			// pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
+			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
 
 			// Change line width and raster polygon mode
 			// pipelineCreateInfo.pRasterizationState = VK_POLYGON_MODE_POINT | VK_POLYGON_MODE_LINE | VK_POLYGON_MODE_FILL
@@ -152,43 +168,27 @@ namespace Hazel {
 			multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 			multisampleState.pSampleMask = nullptr;
 
-			// Vertex input descriptions
-			// Specifies the vertex input parameters for a pipeline
+			// Vertex input descriptor
+			VertexBufferLayout& layout = m_Specification.Layout;
 
-			// Vertex input binding
-			// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
 			VkVertexInputBindingDescription vertexInputBinding = {};
 			vertexInputBinding.binding = 0;
-			vertexInputBinding.stride = sizeof(Vertex);
+			vertexInputBinding.stride = layout.GetStride();
 			vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 			// Inpute attribute bindings describe shader attribute locations and memory layouts
-			std::array<VkVertexInputAttributeDescription, 5> vertexInputAttributes;
+			std::vector<VkVertexInputAttributeDescription> vertexInputAttributes(layout.GetElementCount());
 
-			vertexInputAttributes[0].binding = 0;
-			vertexInputAttributes[0].location = 0;
-			vertexInputAttributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-			vertexInputAttributes[0].offset = offsetof(Vertex, Position);
+			uint32_t location = 0;
+			for (auto element : layout)
+			{
+				vertexInputAttributes[location].binding = 0;
+				vertexInputAttributes[location].location = location;
+				vertexInputAttributes[location].format = ShaderDataTypeToVulkanFormat(element.Type);
+				vertexInputAttributes[location].offset = element.Offset;
 
-			vertexInputAttributes[1].binding = 0;
-			vertexInputAttributes[1].location = 1;
-			vertexInputAttributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-			vertexInputAttributes[1].offset = offsetof(Vertex, Normal);
-
-			vertexInputAttributes[2].binding = 0;
-			vertexInputAttributes[2].location = 2;
-			vertexInputAttributes[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-			vertexInputAttributes[2].offset = offsetof(Vertex, Tangent);
-
-			vertexInputAttributes[3].binding = 0;
-			vertexInputAttributes[3].location = 3;
-			vertexInputAttributes[3].format = VK_FORMAT_R32G32B32_SFLOAT;
-			vertexInputAttributes[3].offset = offsetof(Vertex, Binormal);
-
-			vertexInputAttributes[4].binding = 0;
-			vertexInputAttributes[4].location = 4;
-			vertexInputAttributes[4].format = VK_FORMAT_R32G32_SFLOAT;
-			vertexInputAttributes[4].offset = offsetof(Vertex, Texcoord);
+				location++;
+			}
 
 			// Vertex input state used for pipeline creation
 			VkPipelineVertexInputStateCreateInfo vertexInputState = {};
@@ -213,7 +213,8 @@ namespace Hazel {
 			pipelineCreateInfo.pMultisampleState = &multisampleState;
 			pipelineCreateInfo.pViewportState = &viewportState;
 			pipelineCreateInfo.pDepthStencilState = &depthStencilState;
-			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
+			// pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
+			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
 			pipelineCreateInfo.pDynamicState = &dynamicState;
 
 			// What is this pipeline cache?

@@ -2,7 +2,6 @@
 
 #include "Hazel/Platform/OpenGL/OpenGLMaterial.h"
 #include "Hazel/Platform/Vulkan/VulkanMaterial.h"
-
 #include "Hazel/Renderer/RendererAPI.h"
 
 
@@ -40,16 +39,6 @@ namespace Hazel {
 			const ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
 			m_UniformStorageBuffer.Allocate(buffer.Size);
 			m_UniformStorageBuffer.ZeroInitialize();
-		}
-	}
-
-	void HazelMaterial::BindTextures()
-	{
-		for (size_t i = 0; i < m_Textures.size(); i++)
-		{
-			auto& texture = m_Textures[i];
-			if (texture)
-				texture->Bind((uint32_t)i);
 		}
 	}
 
@@ -123,6 +112,37 @@ namespace Hazel {
 		BindTextures();
 	}
 
+	void HazelMaterial::BindTextures()
+	{
+		for (size_t i = 0; i < m_Textures.size(); i++)
+		{
+			auto& texture = m_Textures[i];
+			if (texture)
+				texture->Bind((uint32_t)i);
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////
+	// MaterialInstance
+	//////////////////////////////////////////////////////////////////////////////////
+
+	Ref<HazelMaterialInstance> HazelMaterialInstance::Create(const Ref<HazelMaterial>& material)
+	{
+		return Ref<HazelMaterialInstance>::Create(material);
+	}
+
+	HazelMaterialInstance::HazelMaterialInstance(const Ref<HazelMaterial>& material, const std::string& name)
+		: m_Material(material), m_Name(name)
+	{
+		m_Material->m_MaterialInstances.insert(this);
+		AllocateStorage();
+	}
+
+	HazelMaterialInstance::~HazelMaterialInstance()
+	{
+		m_Material->m_MaterialInstances.erase(this);
+	}
+
 	void HazelMaterialInstance::AllocateStorage()
 	{
 		const auto& shaderBuffers = GetShader()->GetShaderBuffers();
@@ -135,6 +155,10 @@ namespace Hazel {
 			m_UniformStorageBuffer.Allocate(buffer.Size);
 			m_UniformStorageBuffer.ZeroInitialize();
 		}
+	}
+
+	void HazelMaterialInstance::SetFlag(HazelMaterialFlag flag, bool value)
+	{
 	}
 
 	void HazelMaterialInstance::Bind()
