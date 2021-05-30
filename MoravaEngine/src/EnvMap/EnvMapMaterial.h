@@ -46,7 +46,7 @@ private:
 	{
 		glm::vec3 Color = { 0.972f, 0.96f, 0.915f }; // Silver, from https://docs.unrealengine.com/en-us/Engine/Rendering/Materials/PhysicallyBased
 		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
-		bool SRGB = true;
+		bool SRGB = false;
 		bool UseTexture = false;
 	};
 	AlbedoInput m_AlbedoInput;

@@ -46,11 +46,14 @@ void Application::OnInit()
 	PushOverlay(m_ImGuiLayer);
 
 	Hazel::HazelRenderer::Init();
+
 	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
 	{
 		Hazel::VulkanRenderer::Init(); // TODO: call in Hazel::HazelRenderer::Init
 		// PushLayer(new VulkanTestLayer());
 	}
+
+	// Hazel::HazelRenderer::WaitAndRender();
 
 	float targetFPS = 60.0f;
 	float targetUpdateRate = 24.0f;
@@ -158,7 +161,9 @@ void Application::OnEvent(Event& e)
 
 bool Application::OnWindowResize(WindowResizeEvent& e)
 {
-	if (e.GetWidth() == 0 || e.GetHeight() == 0)
+	int width = e.GetWidth(), height = e.GetHeight();
+
+	if (width == 0 || height == 0)
 	{
 		m_Minimized = true;
 		return false;
@@ -167,6 +172,9 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	m_Minimized = false;
 
 	m_Scene->OnWindowResize(e);
+
+	// TODO: TEMP
+	// Hazel::VulkanRenderer::OnResize(width, height);
 
 	return false;
 }

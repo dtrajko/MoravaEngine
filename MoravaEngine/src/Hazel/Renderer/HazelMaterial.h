@@ -106,7 +106,8 @@ namespace Hazel {
 
 	private:
 		Ref<HazelShader> m_Shader;
-		std::unordered_set<HazelMaterial*> m_MaterialInstances;
+		// std::unordered_set<HazelMaterial*> m_MaterialInstances;
+		std::unordered_set<HazelMaterialInstance*> m_MaterialInstances;
 
 		Buffer m_VSUniformStorageBuffer;
 		Buffer m_PSUniformStorageBuffer;
