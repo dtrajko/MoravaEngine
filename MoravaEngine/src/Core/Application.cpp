@@ -3,7 +3,7 @@
 #include "Hazel/Core/Base.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
-#include "HazelVulkan/VulkanTestLayer.h"
+#include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
 
 #include "Core/Timer.h"
 
@@ -50,7 +50,7 @@ void Application::OnInit()
 	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
 	{
 		Hazel::VulkanRenderer::Init(); // TODO: call in Hazel::HazelRenderer::Init
-		// PushLayer(new VulkanTestLayer());
+		PushLayer(new Hazel::VulkanTestLayer());
 	}
 
 	// Hazel::HazelRenderer::WaitAndRender();
@@ -65,13 +65,13 @@ Application::~Application()
 	delete m_Window;
 }
 
-void Application::PushLayer(Layer* layer)
+void Application::PushLayer(Hazel::Layer* layer)
 {
 	m_LayerStack.PushLayer(layer);
 	layer->OnAttach();
 }
 
-void Application::PushOverlay(Layer* layer)
+void Application::PushOverlay(Hazel::Layer* layer)
 {
 	m_LayerStack.PushOverlay(layer);
 	layer->OnAttach();
@@ -89,7 +89,7 @@ void Application::RenderImGui()
 	// ImGui::Text("Frame Time: %.2fms", 0.0f /* m_TimeStep.GetMilliseconds() */);
 	// ImGui::End();
 
-	for (Layer* layer : m_LayerStack)
+	for (Hazel::Layer* layer : m_LayerStack)
 	{
 		layer->OnImGuiRender();
 	}
@@ -109,7 +109,7 @@ void Application::Run()
 
 		if (!m_Minimized)
 		{
-			for (Layer* layer : m_LayerStack)
+			for (Hazel::Layer* layer : m_LayerStack)
 			{
 				layer->OnUpdate(m_TimeStep);
 			}
@@ -136,7 +136,7 @@ void Application::Run()
 
 			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
 
-			m_ImGuiLayer->End();
+			Hazel::HazelRenderer::Submit([=]() { m_ImGuiLayer->End(); });
 
 			// Swap buffers and poll events
 			m_Window->SwapBuffers(); // previously m_Window->OnUpdate();

@@ -107,8 +107,8 @@ SceneHazelVulkan::SceneHazelVulkan()
     sceneSettings.nearPlane = 0.01f;
     sceneSettings.farPlane = 2000.0f;
 
-    m_VulkanTestLayer = std::make_unique<VulkanTestLayer>();
-    m_VulkanTestLayer->OnAttach();
+    // m_VulkanTestLayer = std::make_unique<Hazel::VulkanTestLayer>();
+    // m_VulkanTestLayer->OnAttach();
 
     SetCamera();
     SetLightManager();
@@ -185,12 +185,12 @@ void SceneHazelVulkan::Update(float timestep, Window* mainWindow)
 
 void SceneHazelVulkan::UpdateImGui(float timestep, Window* mainWindow)
 {
-    m_VulkanTestLayer->OnImGuiRender(mainWindow, this);
+    // m_VulkanTestLayer->OnImGuiRender(mainWindow, this);
 }
 
 void SceneHazelVulkan::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
-    m_VulkanTestLayer->ShowExampleAppDockSpace(p_open, mainWindow);
+    // m_VulkanTestLayer->ShowExampleAppDockSpace(p_open, mainWindow);
 }
 
 bool SceneHazelVulkan::OnKeyPressed(KeyPressedEvent& e)
@@ -205,8 +205,9 @@ void SceneHazelVulkan::OnEntitySelected(Hazel::Entity entity)
 void SceneHazelVulkan::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
     std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
 {
-    if (passType == "main") {
-        float deltaTime = Timer::Get()->GetDeltaTime();
+    if (passType == "main")
+    {
+        // float deltaTime = Timer::Get()->GetDeltaTime();
         // m_VulkanTestLayer->OnUpdate(deltaTime, (Hazel::HazelCamera*)m_Camera); // const Hazel::EditorCamera& camera
         // VulkanWeekRenderer::WaitAndRender();
         // m_VulkanTestLayer->OnRender(mainWindow);

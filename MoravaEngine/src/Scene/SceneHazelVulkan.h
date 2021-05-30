@@ -4,12 +4,12 @@
 
 #include "Hazel/Editor/SceneHierarchyPanel.h"
 #include "Hazel/Events/KeyEvent.h"
+#include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Scene/Entity.h"
 
 #include "Framebuffer/Framebuffer.h"
 #include "HazelVulkan/VulkanWeekRenderer.h"
-#include "HazelVulkan/VulkanTestLayer.h"
 #include "Mesh/Grid.h"
 #include "Texture/Texture.h"
 
@@ -54,7 +54,7 @@ private:
 	virtual void OnEntitySelected(Hazel::Entity entity) override;
 
 public:
-	std::unique_ptr<VulkanTestLayer> m_VulkanTestLayer;
+	// std::unique_ptr<Hazel::VulkanTestLayer> m_VulkanTestLayer;
 
 private:
 	Hazel::Ref<Shader> m_ShaderBackground;

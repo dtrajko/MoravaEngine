@@ -31,8 +31,8 @@ public:
 
 	void OnEvent(Event& e);
 
-	void PushLayer(Layer* layer);
-	void PushOverlay(Layer* layer);
+	void PushLayer(Hazel::Layer* layer);
+	void PushOverlay(Hazel::Layer* layer);
 
 	void RenderImGui(); // Hazel Vulkan Week Day 4 1:26
 	void ClassifyEvents();
@@ -67,7 +67,7 @@ private:
 	Window* m_Window;
 	bool m_Running = true;
 	bool m_Minimized = false;
-	LayerStack m_LayerStack;
+	Hazel::LayerStack m_LayerStack;
 
 	Hazel::ImGuiLayer* m_ImGuiLayer;
 

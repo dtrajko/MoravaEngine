@@ -735,9 +735,6 @@
     <ClCompile Include="src\HazelVulkan\VulkanWeekRenderer.cpp">
       <Filter>HazelVulkan</Filter>
     </ClCompile>
-    <ClCompile Include="src\HazelVulkan\VulkanTestLayer.cpp">
-      <Filter>HazelVulkan</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Vulkan\Vulkan.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
@@ -788,6 +785,9 @@
     </ClCompile>
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLRendererAPI.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1620,9 +1620,6 @@
     <ClInclude Include="src\HazelVulkan\VulkanWeekRenderer.h">
       <Filter>HazelVulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\HazelVulkan\VulkanTestLayer.h">
-      <Filter>HazelVulkan</Filter>
-    </ClInclude>
     <ClInclude Include="src\HazelVulkan\ExampleVertex.h">
       <Filter>HazelVulkan</Filter>
     </ClInclude>
@@ -1677,6 +1674,9 @@
       <Filter>Vendors\ImGui\backends</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRenderer.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>

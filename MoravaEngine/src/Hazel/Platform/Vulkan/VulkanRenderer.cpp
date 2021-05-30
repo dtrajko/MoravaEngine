@@ -142,8 +142,8 @@ namespace Hazel {
 		}
 
 		// TODO: This is a temporary code that shouldn't be in VulkanRenderer. SubmitMesh() should be called by the client code
-		Ref<HazelMesh> mesh = Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx");
-		SubmitMesh(mesh);
+		// Ref<HazelMesh> mesh = Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx");
+		// SubmitMesh(mesh);
 	}
 
 	void VulkanRenderer::OnResize(uint32_t width, uint32_t height)
@@ -377,6 +377,14 @@ namespace Hazel {
 				// ImGui record commands to command buffer
 				ImDrawData* main_draw_data = ImGui::GetDrawData();
 				ImGui_ImplVulkan_RenderDrawData(main_draw_data, drawCommandBuffer); // 3rd optional param vulkanPipeline->GetVulkanPipeline()
+
+				//	TODO: render all meshes in the collection, not only the first one (s_Meshes[0])
+				for (auto& mesh : s_Meshes)
+				{
+					// RenderMesh(mesh, drawCommandBuffer);
+				}
+
+				s_Meshes.clear();
 
 				vkCmdEndRenderPass(drawCommandBuffer);
 

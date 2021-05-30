@@ -154,7 +154,6 @@
     <ClCompile Include="src\Framebuffer\Renderbuffer.cpp" />
     <ClCompile Include="src\Framebuffer\ShadowMap.cpp" />
     <ClCompile Include="src\HazelVulkan\VulkanWeekRenderer.cpp" />
-    <ClCompile Include="src\HazelVulkan\VulkanTestLayer.cpp" />
     <ClCompile Include="src\Hazel\Core\HazelLog.cpp" />
     <ClCompile Include="src\Hazel\Core\Layer.cpp" />
     <ClCompile Include="src\Hazel\Core\LayerStack.cpp" />
@@ -199,6 +198,7 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanRenderPass.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanShader.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanSwapChain.cpp" />
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTexture.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanUtils.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.cpp" />
@@ -429,7 +429,6 @@
     <ClInclude Include="src\Framebuffer\ShadowMap.h" />
     <ClInclude Include="src\HazelVulkan\ExampleVertex.h" />
     <ClInclude Include="src\HazelVulkan\VulkanWeekRenderer.h" />
-    <ClInclude Include="src\HazelVulkan\VulkanTestLayer.h" />
     <ClInclude Include="src\Hazel\Asset\Asset.h" />
     <ClInclude Include="src\Hazel\Core\Assert.h" />
     <ClInclude Include="src\Hazel\Core\Base.h" />
@@ -489,6 +488,7 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRenderPass.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanShader.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanSwapChain.h" />
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTexture.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUtils.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.h" />
