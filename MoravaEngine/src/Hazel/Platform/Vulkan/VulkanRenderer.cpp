@@ -166,9 +166,9 @@ namespace Hazel {
 		}
 	}
 
-	static void RenderMesh(Ref<HazelMesh> mesh, VkCommandBuffer commandBuffer)
+	static void RenderMesh(Ref<HazelMesh> mesh, VkCommandBuffer commandBuffer, HazelCamera* camera) // TODO: remove the HazelCamera parameter
 	{
-		Ref<VulkanPipeline> vulkanPipeline = s_MeshPipeline.As<VulkanPipeline>();
+		Ref<VulkanPipeline> vulkanPipeline = mesh->GetPipeline().As<VulkanPipeline>();
 
 		VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
 
@@ -188,12 +188,15 @@ namespace Hazel {
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 			// Bind descriptor sets describing shader binding points
-			VkDescriptorSet* descriptorSet = (VkDescriptorSet*)mesh->GetDescriptorSet();
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, descriptorSet, 0, nullptr);
+			VkDescriptorSet descriptorSet = mesh->GetDescriptorSet();
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &descriptorSet, 0, nullptr);
 
+			// Push Constants
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
+
 			glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
+
 			vkCmdDrawIndexed(commandBuffer, submesh.IndexCount, 1, submesh.BaseIndex, submesh.BaseVertex, 0);
 		}
 	}
@@ -260,16 +263,14 @@ namespace Hazel {
 	// TODO: remove parameters
 	void VulkanRenderer::Draw(HazelCamera* camera)
 	{
-		// Hazel::HazelRenderer::Submit([=]() mutable
+		// HazelRenderer::Submit([=]() mutable
 		// {
 		// });
 		{
-			auto mesh = s_Meshes[0]; // temporarily hard-coded to a single mesh created in VulkanRenderer::Init()
-
-			Hazel::Ref<Hazel::VulkanContext> context = Hazel::Ref<Hazel::VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
-			Hazel::Ref<Hazel::VulkanPipeline> vulkanPipeline = mesh->GetPipeline().As<Hazel::VulkanPipeline>();
-			Hazel::Ref<Hazel::VulkanShader> shader = vulkanPipeline->GetSpecification().Shader.As<Hazel::VulkanShader>();
-			Hazel::VulkanSwapChain& swapChain = context->GetSwapChain();
+			Ref<VulkanContext> context = Ref<VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
+			// Ref<VulkanPipeline> vulkanPipeline = mesh->GetPipeline().As<VulkanPipeline>();
+			// Ref<VulkanShader> shader = vulkanPipeline->GetSpecification().Shader.As<VulkanShader>();
+			VulkanSwapChain& swapChain = context->GetSwapChain();
 
 			VkCommandBufferBeginInfo cmdBufInfo = {};
 			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -299,17 +300,6 @@ namespace Hazel {
 			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
 
 			{
-				// uniform buffer binding 0 uniform Camera
-				void* ubPtr = shader->MapUniformBuffer(0);
-				glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
-				// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
-				glm::mat4 viewProj = proj * camera->GetViewMatrix(); // Runtime camera
-				// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
-				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
-				shader->UnmapUniformBuffer(0);
-			}
-
-			{
 				VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 				VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
 
@@ -335,41 +325,18 @@ namespace Hazel {
 				scissor.offset.y = 0;
 				vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
-				VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
-
 				// DRAW GEO HERE
 
-				/**** BEGIN mesh geometry ****/
+				/**** BEGIN rendering meshes ****/
+				for (auto& mesh : s_Meshes)
 				{
-					auto vulkanMeshVB = mesh->GetVertexBuffer().As<VulkanVertexBuffer>();
-					VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
-					VkDeviceSize offsets[1] = { 0 };
-					vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
-
-					auto vulkanMeshIB = Hazel::Ref<Hazel::VulkanIndexBuffer>(mesh->GetIndexBuffer());
-					VkBuffer ibMeshBuffer = vulkanMeshIB->GetVulkanBuffer();
-					vkCmdBindIndexBuffer(drawCommandBuffer, ibMeshBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-					auto& submeshes = mesh->GetSubmeshes();
-					for (Hazel::Submesh& submesh : submeshes)
-					{
-						VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
-						vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
-						// Bind descriptor sets describing shader binding points
-						VkDescriptorSet descriptorSet = mesh->GetDescriptorSet();
-						vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &descriptorSet, 0, nullptr);
-
-						// Push Constants
-						vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
-
-						glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
-						vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
-
-						vkCmdDrawIndexed(drawCommandBuffer, submesh.IndexCount, 1, submesh.BaseIndex, submesh.BaseVertex, 0);
-					}
+					RenderMesh(mesh, drawCommandBuffer, camera);
 				}
 
+				s_Meshes.clear();
+				/**** END rendering meshes ****/
+
+				/**** BEGIN ImGui render ****/
 				// TODO: Move to VulkanImGuiLayer
 				// Rendering
 				ImGui::Render();
@@ -377,14 +344,7 @@ namespace Hazel {
 				// ImGui record commands to command buffer
 				ImDrawData* main_draw_data = ImGui::GetDrawData();
 				ImGui_ImplVulkan_RenderDrawData(main_draw_data, drawCommandBuffer); // 3rd optional param vulkanPipeline->GetVulkanPipeline()
-
-				//	TODO: render all meshes in the collection, not only the first one (s_Meshes[0])
-				for (auto& mesh : s_Meshes)
-				{
-					// RenderMesh(mesh, drawCommandBuffer);
-				}
-
-				s_Meshes.clear();
+				/**** END ImGui render ****/
 
 				vkCmdEndRenderPass(drawCommandBuffer);
 

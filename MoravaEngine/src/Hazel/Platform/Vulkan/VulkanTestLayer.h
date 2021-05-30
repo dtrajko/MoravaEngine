@@ -35,7 +35,7 @@ namespace Hazel {
 		void Render(const glm::vec4& clearColor, const EditorCamera& camera);
 
 	private:
-		Ref<HazelMesh> m_Mesh;
+		std::vector<Ref<HazelMesh>> m_Meshes;
 		Ref<HazelTexture2D> m_Texture;
 
 		EditorCamera m_Camera;

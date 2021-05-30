@@ -24,7 +24,8 @@ namespace Hazel {
 
 	void VulkanTestLayer::OnAttach()
 	{
-		m_Mesh = Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx");
+		m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Gladiator/Gladiator.fbx"));
 	}
 
 	void VulkanTestLayer::OnDetach()
@@ -37,7 +38,10 @@ namespace Hazel {
 
 		glm::vec4 clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 		Render(clearColor, m_Camera);
-		VulkanRenderer::SubmitMesh(m_Mesh);
+		for (Ref<HazelMesh> mesh : m_Meshes)
+		{
+			VulkanRenderer::SubmitMesh(mesh);
+		}
 	}
 
 	void VulkanTestLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
@@ -46,7 +50,6 @@ namespace Hazel {
 
 	void VulkanTestLayer::OnEvent(Event& event)
 	{
-#if 0
 		m_Camera.OnEvent(event);
 
 		if (event.GetEventType() == EventType::WindowResize)
@@ -58,7 +61,6 @@ namespace Hazel {
 				m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)e.GetWidth(), (float)e.GetHeight(), 0.1f, 10000.0f));
 			}
 		}
-#endif
 	}
 
 	void VulkanTestLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
@@ -72,17 +74,16 @@ namespace Hazel {
 
 	void VulkanTestLayer::Render(const glm::vec4& clearColor, const EditorCamera& camera)
 	{
-#if 0 // moved to VulkanRenderer::Draw()
-
+		auto mesh = m_Meshes[0];
 		// HazelRenderer::Submit([=]() mutable
 		// {
 		// });
 		{
 			Ref<VulkanContext> context = Ref<VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
-			Ref<VulkanPipeline> vulkanPipeline = m_Mesh->GetPipeline().As<VulkanPipeline>();
-			Ref<VulkanShader> shader = vulkanPipeline->GetSpecification().Shader.As<VulkanShader>();
+			Ref<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
 			VulkanSwapChain& swapChain = context->GetSwapChain();
 
+#if 0
 			VkCommandBufferBeginInfo cmdBufInfo = {};
 			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			cmdBufInfo.pNext = nullptr;
@@ -109,18 +110,18 @@ namespace Hazel {
 
 			// Set target frame buffer
 			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
-
+#endif
 			{
 				// uniform buffer binding 0 uniform Camera
 				void* ubPtr = shader->MapUniformBuffer(0);
 				glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
 				// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
-				glm::mat4 viewProj = proj * camera->GetViewMatrix(); // Runtime camera
+				glm::mat4 viewProj = proj * camera.GetViewMatrix();  // Runtime camera
 				// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
 				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
 				shader->UnmapUniformBuffer(0);
 			}
-
+#if 0
 			{
 				VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 				VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
@@ -147,48 +148,9 @@ namespace Hazel {
 				scissor.offset.y = 0;
 				vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
-				VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+				// VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
 
 				// DRAW GEO HERE
-
-				/**** BEGIN mesh geometry ****/
-				{
-					auto vulkanMeshVB = m_Mesh->GetVertexBuffer().As<VulkanVertexBuffer>();
-					VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
-					VkDeviceSize offsets[1] = { 0 };
-					vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
-
-					auto vulkanMeshIB = Ref<VulkanIndexBuffer>(m_Mesh->GetIndexBuffer());
-					VkBuffer ibMeshBuffer = vulkanMeshIB->GetVulkanBuffer();
-					vkCmdBindIndexBuffer(drawCommandBuffer, ibMeshBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-					auto& submeshes = m_Mesh->GetSubmeshes();
-					for (Submesh& submesh : submeshes)
-					{
-						VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
-						vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
-						// Bind descriptor sets describing shader binding points
-						VkDescriptorSet descriptorSet = m_Mesh->GetDescriptorSet();
-						vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &descriptorSet, 0, nullptr);
-
-						// Push Constants
-						vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
-
-						glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
-						vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
-
-						vkCmdDrawIndexed(drawCommandBuffer, submesh.IndexCount, 1, submesh.BaseIndex, submesh.BaseVertex, 0);
-					}
-				}
-
-				// TODO: Move to VulkanImGuiLayer
-				// Rendering
-				ImGui::Render();
-
-				// ImGui record commands to command buffer
-				ImDrawData* main_draw_data = ImGui::GetDrawData();
-				ImGui_ImplVulkan_RenderDrawData(main_draw_data, drawCommandBuffer); // 3rd optional param vulkanPipeline->GetVulkanPipeline()
 
 				vkCmdEndRenderPass(drawCommandBuffer);
 
@@ -197,8 +159,7 @@ namespace Hazel {
 
 				VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 			}
-		}
 #endif
+		}
 	}
-
 }
