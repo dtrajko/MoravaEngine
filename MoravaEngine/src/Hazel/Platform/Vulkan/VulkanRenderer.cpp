@@ -140,6 +140,10 @@ namespace Hazel {
 			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
 		}
+
+		// TODO: This is a temporary code that shouldn't be in VulkanRenderer. SubmitMesh() should be called by the client code
+		Ref<HazelMesh> mesh = Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx");
+		SubmitMesh(mesh);
 	}
 
 	void VulkanRenderer::OnResize(uint32_t width, uint32_t height)
@@ -253,82 +257,20 @@ namespace Hazel {
 		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 	}
 
-	void VulkanRenderer::Draw()
+	// TODO: remove parameters
+	void VulkanRenderer::Draw(HazelCamera* camera)
 	{
-		// HazelRenderer::Submit([=]()
+		// Hazel::HazelRenderer::Submit([=]() mutable
 		// {
 		// });
 		{
-			Ref<VulkanContext> context = VulkanContext::Get();
-			VulkanSwapChain& swapChain = context->GetSwapChain();
+			auto mesh = s_Meshes[0]; // temporarily hard-coded to a single mesh created in VulkanRenderer::Init()
 
-			VkCommandBufferBeginInfo cmdBufInfo = {};
-			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			cmdBufInfo.pNext = nullptr;
+			Hazel::Ref<Hazel::VulkanContext> context = Hazel::Ref<Hazel::VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
+			Hazel::Ref<Hazel::VulkanPipeline> vulkanPipeline = mesh->GetPipeline().As<Hazel::VulkanPipeline>();
+			Hazel::Ref<Hazel::VulkanShader> shader = vulkanPipeline->GetSpecification().Shader.As<Hazel::VulkanShader>();
+			Hazel::VulkanSwapChain& swapChain = context->GetSwapChain();
 
-			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
-			VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
-
-			Ref<VulkanFramebuffer> framebuffer = s_Framebuffer.As<VulkanFramebuffer>();
-
-			uint32_t width = framebuffer->GetSpecification().Width;
-			uint32_t height = framebuffer->GetSpecification().Height;
-
-			VkRenderPassBeginInfo renderPassBeginInfo = {};
-			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassBeginInfo.pNext = nullptr;
-			renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
-			renderPassBeginInfo.renderArea.offset.x = 0;
-			renderPassBeginInfo.renderArea.offset.y = 0;
-			renderPassBeginInfo.renderArea.extent.width = width;
-			renderPassBeginInfo.renderArea.extent.height = height;
-
-			VkClearValue clearValues[2];
-			clearValues[0].color = { { 0.1f, 0.1f, 0.1f, 1.0f } };
-			clearValues[1].depthStencil = { 1.0f, 0 };
-			renderPassBeginInfo.clearValueCount = 2; // Color + Depth
-			renderPassBeginInfo.pClearValues = clearValues;
-			renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
-
-			vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-			// Update dynamic viewport state
-			VkViewport viewport = {};
-			viewport.x = 0.0f;
-			viewport.y = 0.0f;
-			viewport.height = (float)height;
-			viewport.width = (float)width;
-			viewport.minDepth = 0.0f;
-			viewport.maxDepth = 1.0f;
-			vkCmdSetViewport(drawCommandBuffer, 0, 1, &viewport);
-
-			// Update dynamic scissor state
-			VkRect2D scissor = {};
-			scissor.extent.width = width;
-			scissor.extent.height = height;
-			scissor.offset.x = 0;
-			scissor.offset.y = 0;
-			vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
-
-			for (auto& mesh : s_Meshes)
-			{
-				RenderMesh(mesh, drawCommandBuffer);
-			}
-
-			s_Meshes.clear();
-
-			vkCmdEndRenderPass(drawCommandBuffer);
-		}
-
-		// HazelRenderer::Submit([=]()
-		// {
-		// });
-		{
-			// Ref<VulkanContext> context = Ref<VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
-			Ref<VulkanContext> context = VulkanContext::Get();
-			VulkanSwapChain& swapChain = context->GetSwapChain();
-
-#if ORIGINAL
 			VkCommandBufferBeginInfo cmdBufInfo = {};
 			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			cmdBufInfo.pNext = nullptr;
@@ -357,6 +299,17 @@ namespace Hazel {
 			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
 
 			{
+				// uniform buffer binding 0 uniform Camera
+				void* ubPtr = shader->MapUniformBuffer(0);
+				glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
+				// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
+				glm::mat4 viewProj = proj * camera->GetViewMatrix(); // Runtime camera
+				// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
+				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
+				shader->UnmapUniformBuffer(0);
+			}
+
+			{
 				VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 				VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
 
@@ -382,6 +335,41 @@ namespace Hazel {
 				scissor.offset.y = 0;
 				vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
+				VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+				// DRAW GEO HERE
+
+				/**** BEGIN mesh geometry ****/
+				{
+					auto vulkanMeshVB = mesh->GetVertexBuffer().As<VulkanVertexBuffer>();
+					VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
+					VkDeviceSize offsets[1] = { 0 };
+					vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
+
+					auto vulkanMeshIB = Hazel::Ref<Hazel::VulkanIndexBuffer>(mesh->GetIndexBuffer());
+					VkBuffer ibMeshBuffer = vulkanMeshIB->GetVulkanBuffer();
+					vkCmdBindIndexBuffer(drawCommandBuffer, ibMeshBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+					auto& submeshes = mesh->GetSubmeshes();
+					for (Hazel::Submesh& submesh : submeshes)
+					{
+						VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
+						vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+						// Bind descriptor sets describing shader binding points
+						VkDescriptorSet descriptorSet = mesh->GetDescriptorSet();
+						vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &descriptorSet, 0, nullptr);
+
+						// Push Constants
+						vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
+
+						glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+						vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
+
+						vkCmdDrawIndexed(drawCommandBuffer, submesh.IndexCount, 1, submesh.BaseIndex, submesh.BaseVertex, 0);
+					}
+				}
+
 				// TODO: Move to VulkanImGuiLayer
 				// Rendering
 				ImGui::Render();
@@ -397,86 +385,6 @@ namespace Hazel {
 
 				VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 			}
-#endif
-
-			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
-
-			VkClearValue clearValues[2];
-			clearValues[0].color = { { 0.1f, 0.1f, 0.1f, 1.0f } };
-			clearValues[1].depthStencil = { 1.0f, 0 };
-
-			uint32_t width = swapChain.GetWidth();
-			uint32_t height = swapChain.GetHeight();
-
-			VkRenderPassBeginInfo renderPassBeginInfo = {};
-			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassBeginInfo.pNext = nullptr;
-			renderPassBeginInfo.renderPass = swapChain.GetRenderPass();
-			renderPassBeginInfo.renderArea.offset.x = 0;
-			renderPassBeginInfo.renderArea.offset.y = 0;
-			renderPassBeginInfo.renderArea.extent.width = width;
-			renderPassBeginInfo.renderArea.extent.height = height;
-			renderPassBeginInfo.clearValueCount = 2; // Color + Depth
-			renderPassBeginInfo.pClearValues = clearValues;
-			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
-
-			{
-				vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-
-				VkCommandBufferInheritanceInfo inheritanceInfo = {};
-				inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-				inheritanceInfo.renderPass = swapChain.GetRenderPass();
-				inheritanceInfo.framebuffer = swapChain.GetCurrentFramebuffer();
-
-				std::vector<VkCommandBuffer> commandBuffers;
-				CompositeRenderPass(inheritanceInfo);
-				commandBuffers.push_back(s_CompositeCommandBuffer);
-
-				// ImGui Pass
-				{
-					VkCommandBufferBeginInfo cmdBufInfo = {};
-					cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-					cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-					cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
-
-					VK_CHECK_RESULT(vkBeginCommandBuffer(s_ImGuiCommandBuffer, &cmdBufInfo));
-
-					// Update dynamic viewport state
-					VkViewport viewport = {};
-					viewport.x = 0.0f;
-					viewport.y = (float)height;
-					viewport.height = -(float)height;
-					viewport.width = (float)width;
-					viewport.minDepth = 0.0f;
-					viewport.maxDepth = 1.0f;
-					vkCmdSetViewport(s_ImGuiCommandBuffer, 0, 1, &viewport);
-
-					// Update dynamic scissor state
-					VkRect2D scissor = {};
-					scissor.extent.width = width;
-					scissor.extent.height = height;
-					scissor.offset.x = 0;
-					scissor.offset.y = 0;
-					vkCmdSetScissor(s_ImGuiCommandBuffer, 0, 1, &scissor);
-
-					// TODO: Move to VulkanImGuiLayer
-					// Rendering
-					ImGui::Render();
-
-					ImDrawData* main_draw_data = ImGui::GetDrawData();
-					ImGui_ImplVulkan_RenderDrawData(main_draw_data, s_ImGuiCommandBuffer);
-
-					VK_CHECK_RESULT(vkEndCommandBuffer(s_ImGuiCommandBuffer));
-
-					commandBuffers.push_back(s_ImGuiCommandBuffer);
-				}
-
-				vkCmdExecuteCommands(drawCommandBuffer, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
-
-				vkCmdEndRenderPass(drawCommandBuffer);
-			}
-
-			VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 		}
 	}
 }

@@ -207,7 +207,7 @@ void SceneHazelVulkan::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 {
     if (passType == "main") {
         float deltaTime = Timer::Get()->GetDeltaTime();
-        m_VulkanTestLayer->OnUpdate(deltaTime, (Hazel::HazelCamera*)m_Camera); // const Hazel::EditorCamera& camera
+        // m_VulkanTestLayer->OnUpdate(deltaTime, (Hazel::HazelCamera*)m_Camera); // const Hazel::EditorCamera& camera
         // VulkanWeekRenderer::WaitAndRender();
         // m_VulkanTestLayer->OnRender(mainWindow);
     }

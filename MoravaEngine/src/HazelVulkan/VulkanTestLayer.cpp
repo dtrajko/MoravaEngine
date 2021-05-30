@@ -22,7 +22,9 @@ VulkanTestLayer::~VulkanTestLayer()
 
 void VulkanTestLayer::OnAttach()
 {
+#if 0
 	m_Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx");
+#endif
 }
 
 void VulkanTestLayer::OnDetach()
@@ -31,11 +33,13 @@ void VulkanTestLayer::OnDetach()
 
 void VulkanTestLayer::OnUpdate(Hazel::Timestep ts, Hazel::HazelCamera* camera) // const Hazel::EditorCamera& camera
 {
+#if 0
 	m_Camera.OnUpdate(ts);
 
 	glm::vec4 clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 	Render(clearColor, camera);
 	// Hazel::VulkanRenderer::SubmitMesh(m_Mesh);
+#endif
 }
 
 void VulkanTestLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
@@ -44,6 +48,7 @@ void VulkanTestLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
 void VulkanTestLayer::OnEvent(Event& event)
 {
+#if 0
 	m_Camera.OnEvent(event);
 
 	if (event.GetEventType() == EventType::WindowResize)
@@ -55,6 +60,7 @@ void VulkanTestLayer::OnEvent(Event& event)
 			m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)e.GetWidth(), (float)e.GetHeight(), 0.1f, 10000.0f));
 		}
 	}
+#endif
 }
 
 void VulkanTestLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
@@ -68,6 +74,8 @@ void VulkanTestLayer::OnRender(Window* mainWindow)
 
 void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* camera) // const Hazel::EditorCamera& camera
 {
+#if 0 // moved to VulkanRenderer::Draw()
+
 	// Hazel::HazelRenderer::Submit([=]() mutable
 	// {
 	// });
@@ -192,4 +200,6 @@ void VulkanTestLayer::Render(const glm::vec4& clearColor, Hazel::HazelCamera* ca
 			VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 		}
 	}
+#endif
+
 }

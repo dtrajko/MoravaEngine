@@ -30,7 +30,6 @@ public:
 	void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 	void OnRender(Window* mainWindow);
 
-private:
 	void Render(const glm::vec4& clearColor, Hazel::HazelCamera* camera); // const Hazel::EditorCamera& camera
 
 private:

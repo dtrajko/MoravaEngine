@@ -53,9 +53,10 @@ private:
 	// Temporary/experimental
 	virtual void OnEntitySelected(Hazel::Entity entity) override;
 
-private:
+public:
 	std::unique_ptr<VulkanTestLayer> m_VulkanTestLayer;
 
+private:
 	Hazel::Ref<Shader> m_ShaderBackground;
 	Hazel::Ref<Shader> m_ShaderBasic;
 

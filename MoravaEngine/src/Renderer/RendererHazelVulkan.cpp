@@ -56,11 +56,13 @@ void RendererHazelVulkan::WaitAndRender(float deltaTime, Window* mainWindow, Sce
 {
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
-	RenderPassShadow(mainWindow, scene, projectionMatrix);
+	// RenderPassShadow(mainWindow, scene, projectionMatrix);
 
-	RenderOmniShadows(mainWindow, scene, projectionMatrix);
+	// RenderOmniShadows(mainWindow, scene, projectionMatrix);
 
+#if 0
 	RenderPassMain(mainWindow, scene, projectionMatrix);
+#endif
 
-	PostProcessing(mainWindow, scene, projectionMatrix);
+	// PostProcessing(mainWindow, scene, projectionMatrix);
 }

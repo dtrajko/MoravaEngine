@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Hazel/Renderer/HazelMesh.h"
+#include "Hazel/Renderer/HazelCamera.h"
 
 
 namespace Hazel {
@@ -14,7 +15,7 @@ namespace Hazel {
 
 		static void OnResize(uint32_t width, uint32_t height);
 		static void Init();
-		static void Draw();
+		static void Draw(HazelCamera* camera); // TODO: there should be no parameters
 	};
 
 }

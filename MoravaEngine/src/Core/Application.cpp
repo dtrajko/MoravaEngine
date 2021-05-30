@@ -119,17 +119,22 @@ void Application::Run()
 			// Hazel::HazelRenderer::Submit([=]() { m_ImGuiLayer->Begin(); });
 			Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
 
-			m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
+			// m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
 
 			m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), m_Window); // TODO deltaTime obsolete
 
 			// On Render thread (Hazel Vulkan)
 			m_Window->GetRenderContext()->BeginFrame();
+
 			m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
 
-			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
+			if(Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+			{
+				// static_cast<SceneHazelVulkan*>(m_Scene)->m_VulkanTestLayer->Render({ 0.1f, 0.1f, 0.1f, 1.0f }, m_Scene->GetCamera());
+				Hazel::VulkanRenderer::Draw(m_Scene->GetCamera()); // previously done by VulkanTestLayer->Render()
+			}
 
-			// Hazel::VulkanRenderer::Draw();
+			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
 
 			m_ImGuiLayer->End();
 
