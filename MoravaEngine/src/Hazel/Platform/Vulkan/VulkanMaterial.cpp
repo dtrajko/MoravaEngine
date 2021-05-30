@@ -42,12 +42,14 @@ namespace Hazel {
 			m_WriteDescriptors.push_back(writeDescriptorSet);
 		}
 
-		Ref<VulkanMaterial> instance = this;
-		HazelRenderer::Submit([instance]() mutable
+		// Ref<VulkanMaterial> instance = this;
+		// HazelRenderer::Submit([=]() mutable
+		// {
+		// });
 		{
-			auto shader = instance->GetShader().As<VulkanShader>();
-			instance->m_DescriptorSet = shader->CreateDescriptorSets();
-		});
+			auto shader = GetShader().As<VulkanShader>();
+			m_DescriptorSet = shader->CreateDescriptorSets();
+		}
 	}
 
 	void VulkanMaterial::Invalidate()
@@ -330,7 +332,7 @@ namespace Hazel {
 
 	void VulkanMaterial::UpdateForRendering()
 	{
-		Ref<VulkanMaterial> instance = this;
+		// Ref<VulkanMaterial> instance = this;
 		std::vector<VkWriteDescriptorSet>& writeDescriptors = m_WriteDescriptors;
 		auto& pendingDescriptors = m_PendingDescriptors;
 		auto& residentDescriptors = m_ResidentDescriptors;
@@ -380,7 +382,7 @@ namespace Hazel {
 				if (writeDescriptors.size())
 				{
 					for (auto& writeDescriptor : writeDescriptors)
-						writeDescriptor.dstSet = instance->m_DescriptorSet.DescriptorSets[0];
+						writeDescriptor.dstSet = m_DescriptorSet.DescriptorSets[0];
 
 					HZ_CORE_WARN("Updating {0} descriptor sets", writeDescriptors.size());
 					vkUpdateDescriptorSets(vulkanDevice, writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
@@ -389,59 +391,61 @@ namespace Hazel {
 		pendingDescriptors.clear();
 		writeDescriptors.clear();
 #else
-		HazelRenderer::Submit([instance]() mutable
+		// HazelRenderer::Submit([/*instance*/]() mutable
+		// {
+		// });
+		{
+			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+			for (auto& descriptor : m_ResidentDescriptors)
 			{
-				auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-				for (auto& descriptor : instance->m_ResidentDescriptors)
+				if (descriptor->Type == PendingDescriptorType::Image2D)
 				{
-					if (descriptor->Type == PendingDescriptorType::Image2D)
+					Ref<VulkanImage2D> image = descriptor->Image.As<VulkanImage2D>();
+					if (descriptor->WDS.pImageInfo && image->GetImageInfo().ImageView != descriptor->WDS.pImageInfo->imageView)
 					{
-						Ref<VulkanImage2D> image = descriptor->Image.As<VulkanImage2D>();
-						if (descriptor->WDS.pImageInfo && image->GetImageInfo().ImageView != descriptor->WDS.pImageInfo->imageView)
-						{
-							HZ_CORE_WARN("Found out of date Image2D descriptor ({0} vs. {1})", (void*)image->GetImageInfo().ImageView, (void*)descriptor->WDS.pImageInfo->imageView);
-							instance->m_PendingDescriptors.emplace_back(descriptor);
-						}
+						HZ_CORE_WARN("Found out of date Image2D descriptor ({0} vs. {1})", (void*)image->GetImageInfo().ImageView, (void*)descriptor->WDS.pImageInfo->imageView);
+						m_PendingDescriptors.emplace_back(descriptor);
 					}
 				}
+			}
 
-				for (auto& pd : instance->m_PendingDescriptors)
+			for (auto& pd : m_PendingDescriptors)
+			{
+				if (pd->Type == PendingDescriptorType::Texture2D)
 				{
-					if (pd->Type == PendingDescriptorType::Texture2D)
-					{
-						Ref<VulkanTexture2D> texture = pd->Texture.As<VulkanTexture2D>();
-						pd->ImageInfo = texture->GetVulkanDescriptorInfo();
-						pd->WDS.pImageInfo = &pd->ImageInfo;
-					}
-					else if (pd->Type == PendingDescriptorType::TextureCube)
-					{
-						Ref<VulkanTextureCube> texture = pd->Texture.As<VulkanTextureCube>();
-						pd->ImageInfo = texture->GetVulkanDescriptorInfo();
-						pd->WDS.pImageInfo = &pd->ImageInfo;
-					}
-					else if (pd->Type == PendingDescriptorType::Image2D)
-					{
-						Ref<VulkanImage2D> image = pd->Image.As<VulkanImage2D>();
-						pd->ImageInfo = image->GetDescriptor();
-						pd->WDS.pImageInfo = &pd->ImageInfo;
-					}
-
-					instance->m_WriteDescriptors.push_back(pd->WDS);
+					Ref<VulkanTexture2D> texture = pd->Texture.As<VulkanTexture2D>();
+					pd->ImageInfo = texture->GetVulkanDescriptorInfo();
+					pd->WDS.pImageInfo = &pd->ImageInfo;
+				}
+				else if (pd->Type == PendingDescriptorType::TextureCube)
+				{
+					Ref<VulkanTextureCube> texture = pd->Texture.As<VulkanTextureCube>();
+					pd->ImageInfo = texture->GetVulkanDescriptorInfo();
+					pd->WDS.pImageInfo = &pd->ImageInfo;
+				}
+				else if (pd->Type == PendingDescriptorType::Image2D)
+				{
+					Ref<VulkanImage2D> image = pd->Image.As<VulkanImage2D>();
+					pd->ImageInfo = image->GetDescriptor();
+					pd->WDS.pImageInfo = &pd->ImageInfo;
 				}
 
-				if (instance->m_WriteDescriptors.size())
-				{
-					for (auto& writeDescriptor : instance->m_WriteDescriptors)
-						writeDescriptor.dstSet = instance->m_DescriptorSet.DescriptorSets[0];
+				m_WriteDescriptors.push_back(pd->WDS);
+			}
 
-					HZ_CORE_WARN("VulkanMaterial - Updating {0} descriptor sets", instance->m_WriteDescriptors.size());
-					vkUpdateDescriptorSets(vulkanDevice, static_cast<uint32_t>(instance->m_WriteDescriptors.size()), instance->m_WriteDescriptors.data(), 0, nullptr);
-				}
+			if (m_WriteDescriptors.size())
+			{
+				for (auto& writeDescriptor : m_WriteDescriptors)
+					writeDescriptor.dstSet = m_DescriptorSet.DescriptorSets[0];
 
-				instance->m_PendingDescriptors.clear();
-				instance->m_WriteDescriptors.clear();
-			});
+				HZ_CORE_WARN("VulkanMaterial - Updating {0} descriptor sets", m_WriteDescriptors.size());
+				vkUpdateDescriptorSets(vulkanDevice, static_cast<uint32_t>(m_WriteDescriptors.size()), m_WriteDescriptors.data(), 0, nullptr);
+			}
+
+			m_PendingDescriptors.clear();
+			m_WriteDescriptors.clear();
+		}
 #endif
 
 	}

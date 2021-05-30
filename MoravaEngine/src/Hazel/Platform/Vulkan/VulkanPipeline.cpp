@@ -1,11 +1,25 @@
 #include "VulkanPipeline.h"
 
-#include "VulkanShader.h"
 #include "VulkanContext.h"
+#include "VulkanFramebuffer.h"
+#include "VulkanShader.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 
 
 namespace Hazel {
+
+	static VkFormat ShaderDataTypeToVulkanFormat(ShaderDataType type)
+	{
+		switch (type)
+		{
+		case ShaderDataType::Float:     return VK_FORMAT_R32_SFLOAT;
+		case ShaderDataType::Float2:    return VK_FORMAT_R32G32_SFLOAT;
+		case ShaderDataType::Float3:    return VK_FORMAT_R32G32B32_SFLOAT;
+		case ShaderDataType::Float4:    return VK_FORMAT_R32G32B32A32_SFLOAT;
+		}
+		HZ_CORE_ASSERT(false);
+		return VK_FORMAT_UNDEFINED;
+	}
 
 	VulkanPipeline::VulkanPipeline(const PipelineSpecification& spec)
 		: m_Specification(spec)
@@ -30,6 +44,7 @@ namespace Hazel {
 
 			HZ_CORE_ASSERT(m_Specification.Shader);
 			Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(m_Specification.Shader);
+			// Ref<VulkanFramebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
 
 			VkDescriptorSetLayout descriptorSetLayout = vulkanShader->GetDescriptorSetLayout();
 
@@ -79,6 +94,7 @@ namespace Hazel {
 
 			// Renderpass this pipeline is attached to
 			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
+			// pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
 
 			// Change line width and raster polygon mode
 			// pipelineCreateInfo.pRasterizationState = VK_POLYGON_MODE_POINT | VK_POLYGON_MODE_LINE | VK_POLYGON_MODE_FILL
@@ -155,6 +171,9 @@ namespace Hazel {
 			// Vertex input descriptions
 			// Specifies the vertex input parameters for a pipeline
 
+			// Vertex input descriptor
+			VertexBufferLayout& layout = m_Specification.Layout;
+
 			// Vertex input binding
 			// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
 			VkVertexInputBindingDescription vertexInputBinding = {};
@@ -164,6 +183,7 @@ namespace Hazel {
 
 			// Inpute attribute bindings describe shader attribute locations and memory layouts
 			std::array<VkVertexInputAttributeDescription, 5> vertexInputAttributes;
+			// std::vector<VkVertexInputAttributeDescription> vertexInputAttributes(layout.GetElementCount());
 
 			vertexInputAttributes[0].binding = 0;
 			vertexInputAttributes[0].location = 0;
@@ -214,6 +234,7 @@ namespace Hazel {
 			pipelineCreateInfo.pViewportState = &viewportState;
 			pipelineCreateInfo.pDepthStencilState = &depthStencilState;
 			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
+			// pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
 			pipelineCreateInfo.pDynamicState = &dynamicState;
 
 			// What is this pipeline cache?
@@ -233,7 +254,6 @@ namespace Hazel {
 
 	void VulkanPipeline::Bind()
 	{
-
 	}
 
 }

@@ -38,26 +38,6 @@ namespace Hazel {
 		s_Meshes.push_back(mesh);
 	}
 
-	void VulkanRenderer::OnResize(uint32_t width, uint32_t height)
-	{
-		// HazelRenderer::Submit([=]() {
-		// });
-		{
-			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
-
-			VkWriteDescriptorSet writeDesriptorSet = {};
-			writeDesriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDesriptorSet.dstSet = s_QuadDescriptorSet;
-			writeDesriptorSet.descriptorCount = 1;
-			writeDesriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			writeDesriptorSet.pImageInfo = &framebuffer->GetVulkanDescriptorInfo();
-			writeDesriptorSet.dstBinding = 0;
-
-			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDesriptorSet, 0, nullptr);
-		}
-	}
-
 	void VulkanRenderer::Init()
 	{
 		// HazelRenderer::Submit([=]() {
@@ -156,6 +136,26 @@ namespace Hazel {
 
 			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
+		}
+	}
+
+	void VulkanRenderer::OnResize(uint32_t width, uint32_t height)
+	{
+		// HazelRenderer::Submit([=]() {
+		// });
+		{
+			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
+
+			VkWriteDescriptorSet writeDesriptorSet = {};
+			writeDesriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDesriptorSet.dstSet = s_QuadDescriptorSet;
+			writeDesriptorSet.descriptorCount = 1;
+			writeDesriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			writeDesriptorSet.pImageInfo = &framebuffer->GetVulkanDescriptorInfo();
+			writeDesriptorSet.dstBinding = 0;
+
+			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDesriptorSet, 0, nullptr);
 		}
 	}
 

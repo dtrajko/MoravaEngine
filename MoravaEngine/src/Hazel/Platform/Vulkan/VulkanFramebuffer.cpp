@@ -41,15 +41,15 @@ namespace Hazel {
 
 		if (!m_Specification.SwapChainTarget)
 		{
-			Ref<VulkanFramebuffer> instance = this;
-			//	HazelRenderer::Submit([instance, width, height]() mutable
-			//	{
-			//	});
+			// Ref<VulkanFramebuffer> instance = this;
+			// HazelRenderer::Submit([instance, width, height]() mutable
+			// {
+			// });
 			{
 				auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-				if (instance->m_Framebuffer) {
-					vkDestroyFramebuffer(device, instance->m_Framebuffer, nullptr);
+				if (m_Framebuffer) {
+					vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
 				}
 
 				VulkanAllocator allocator(std::string("Framebuffer"));
@@ -74,14 +74,14 @@ namespace Hazel {
 					// We will sample directly from the color attachment
 					imageCreateInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
-					VK_CHECK_RESULT(vkCreateImage(device, &imageCreateInfo, nullptr, &instance->m_ColorAttachment.image));
+					VK_CHECK_RESULT(vkCreateImage(device, &imageCreateInfo, nullptr, &m_ColorAttachment.image));
 
 					VkMemoryRequirements memoryRequirements;
-					vkGetImageMemoryRequirements(device, instance->m_ColorAttachment.image, &memoryRequirements);
+					vkGetImageMemoryRequirements(device, m_ColorAttachment.image, &memoryRequirements);
 
-					allocator.Allocate(memoryRequirements, &instance->m_ColorAttachment.mem);
+					allocator.Allocate(memoryRequirements, &m_ColorAttachment.mem);
 
-					VK_CHECK_RESULT(vkBindImageMemory(device, instance->m_ColorAttachment.image, instance->m_ColorAttachment.mem, 0));
+					VK_CHECK_RESULT(vkBindImageMemory(device, m_ColorAttachment.image, m_ColorAttachment.mem, 0));
 
 					VkImageViewCreateInfo colorImageViewCreateInfo = {};
 					colorImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -93,8 +93,8 @@ namespace Hazel {
 					colorImageViewCreateInfo.subresourceRange.levelCount = 1;
 					colorImageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
 					colorImageViewCreateInfo.subresourceRange.layerCount = 1;
-					colorImageViewCreateInfo.image = instance->m_ColorAttachment.image;
-					VK_CHECK_RESULT(vkCreateImageView(device, &colorImageViewCreateInfo, nullptr, &instance->m_ColorAttachment.view));
+					colorImageViewCreateInfo.image = m_ColorAttachment.image;
+					VK_CHECK_RESULT(vkCreateImageView(device, &colorImageViewCreateInfo, nullptr, &m_ColorAttachment.view));
 
 					// Create sampler to sample from the attachment in the fragment shader
 					VkSamplerCreateInfo samplerCreateInfo = {};
@@ -111,7 +111,7 @@ namespace Hazel {
 					samplerCreateInfo.minLod = 0.0f;
 					samplerCreateInfo.maxLod = 1.0f;
 					samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-					VK_CHECK_RESULT(vkCreateSampler(device, &samplerCreateInfo, nullptr, &instance->m_ColorAttachmentSampler));
+					VK_CHECK_RESULT(vkCreateSampler(device, &samplerCreateInfo, nullptr, &m_ColorAttachmentSampler));
 
 					attachmentDescriptions[0].flags = 0;
 					attachmentDescriptions[0].format = COLOR_BUFFER_FORMAT;
@@ -142,12 +142,12 @@ namespace Hazel {
 					// We will sample directly from the depth attachment
 					imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-					VK_CHECK_RESULT(vkCreateImage(device, &imageCreateInfo, nullptr, &instance->m_DepthAttachment.image));
+					VK_CHECK_RESULT(vkCreateImage(device, &imageCreateInfo, nullptr, &m_DepthAttachment.image));
 					VkMemoryRequirements memoryRequirements;
-					vkGetImageMemoryRequirements(device, instance->m_DepthAttachment.image, &memoryRequirements);
-					allocator.Allocate(memoryRequirements, &instance->m_DepthAttachment.mem);
+					vkGetImageMemoryRequirements(device, m_DepthAttachment.image, &memoryRequirements);
+					allocator.Allocate(memoryRequirements, &m_DepthAttachment.mem);
 
-					VK_CHECK_RESULT(vkBindImageMemory(device, instance->m_DepthAttachment.image, instance->m_DepthAttachment.mem, 0));
+					VK_CHECK_RESULT(vkBindImageMemory(device, m_DepthAttachment.image, m_DepthAttachment.mem, 0));
 
 					VkImageViewCreateInfo depthStencilImageViewCreateInfo = {};
 					depthStencilImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -160,8 +160,8 @@ namespace Hazel {
 					depthStencilImageViewCreateInfo.subresourceRange.levelCount = 1;
 					depthStencilImageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
 					depthStencilImageViewCreateInfo.subresourceRange.layerCount = 1;
-					depthStencilImageViewCreateInfo.image = instance->m_DepthAttachment.image;
-					VK_CHECK_RESULT(vkCreateImageView(device, &depthStencilImageViewCreateInfo, nullptr, &instance->m_DepthAttachment.view));
+					depthStencilImageViewCreateInfo.image = m_DepthAttachment.image;
+					VK_CHECK_RESULT(vkCreateImageView(device, &depthStencilImageViewCreateInfo, nullptr, &m_DepthAttachment.view));
 
 					// Depth attachment
 					attachmentDescriptions[1].flags = 0;
@@ -213,27 +213,27 @@ namespace Hazel {
 				renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 				renderPassInfo.pDependencies = dependencies.data();
 
-				VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &instance->m_RenderPass));
+				VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass));
 
 				VkImageView attachments[2];
-				attachments[0] = instance->m_ColorAttachment.view;
-				attachments[1] = instance->m_DepthAttachment.view;
+				attachments[0] = m_ColorAttachment.view;
+				attachments[1] = m_DepthAttachment.view;
 
 				VkFramebufferCreateInfo framebufferCreateInfo = {};
 				framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-				framebufferCreateInfo.renderPass = instance->m_RenderPass;
+				framebufferCreateInfo.renderPass = m_RenderPass;
 				framebufferCreateInfo.attachmentCount = 2;
 				framebufferCreateInfo.pAttachments = attachments;
 				framebufferCreateInfo.width = width;
 				framebufferCreateInfo.height = height;
 				framebufferCreateInfo.layers = 1;
 
-				VK_CHECK_RESULT(vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &instance->m_Framebuffer));
+				VK_CHECK_RESULT(vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &m_Framebuffer));
 
 				// Fill a descriptor for later use in a descriptor set
-				instance->m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				instance->m_DescriptorImageInfo.imageView = instance->m_ColorAttachment.view;
-				instance->m_DescriptorImageInfo.sampler = instance->m_ColorAttachmentSampler;
+				m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				m_DescriptorImageInfo.imageView = m_ColorAttachment.view;
+				m_DescriptorImageInfo.sampler = m_ColorAttachmentSampler;
 			}
 		}
 		else

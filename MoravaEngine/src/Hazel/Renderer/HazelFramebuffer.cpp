@@ -24,12 +24,10 @@ namespace Hazel {
 
 	HazelFramebufferPool::HazelFramebufferPool(uint32_t maxFBs /* = 32 */)
 	{
-
 	}
 
 	HazelFramebufferPool::~HazelFramebufferPool()
 	{
-		
 	}
 
 	std::weak_ptr<HazelFramebuffer> HazelFramebufferPool::AllocateBuffer()

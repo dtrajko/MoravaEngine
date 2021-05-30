@@ -5,6 +5,7 @@
 #include "Hazel/Platform/Vulkan/VulkanIndexBuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Platform/Vulkan/VulkanSwapChain.h"
+#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
 
 #include "Core/Application.h"
 #include "HazelVulkan/ExampleVertex.h"
@@ -34,6 +35,7 @@ void VulkanTestLayer::OnUpdate(Hazel::Timestep ts, Hazel::HazelCamera* camera) /
 
 	glm::vec4 clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 	Render(clearColor, camera);
+	// Hazel::VulkanRenderer::SubmitMesh(m_Mesh);
 }
 
 void VulkanTestLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
@@ -43,6 +45,16 @@ void VulkanTestLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 void VulkanTestLayer::OnEvent(Event& event)
 {
 	m_Camera.OnEvent(event);
+
+	if (event.GetEventType() == EventType::WindowResize)
+	{
+		WindowResizeEvent& e = (WindowResizeEvent&)event;
+		if (e.GetWidth() != 0 && e.GetHeight() != 0)
+		{
+			m_Camera.SetViewportSize((float)e.GetWidth(), (float)e.GetHeight());
+			m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)e.GetWidth(), (float)e.GetHeight(), 0.1f, 10000.0f));
+		}
+	}
 }
 
 void VulkanTestLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)

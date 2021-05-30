@@ -310,6 +310,8 @@ namespace Hazel {
 			layoutBinding.pImmutableSamplers = nullptr;
 			layoutBinding.binding = binding;
 
+			HZ_CORE_ASSERT(m_UniformBuffers.find(binding) == m_UniformBuffers.end(), "Binding is already present!");
+
 			VkWriteDescriptorSet& set = m_WriteDescriptorSets[imageSampler.Name];
 			set = {};
 			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

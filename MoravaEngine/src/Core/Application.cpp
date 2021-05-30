@@ -3,6 +3,7 @@
 #include "Hazel/Core/Base.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+#include "HazelVulkan/VulkanTestLayer.h"
 
 #include "Core/Timer.h"
 
@@ -45,10 +46,11 @@ void Application::OnInit()
 	PushOverlay(m_ImGuiLayer);
 
 	Hazel::HazelRenderer::Init();
-	// Hazel::VulkanRenderer::Init();
-	Hazel::HazelRenderer::WaitAndRender();
-
-	// PushLayer(new VulkanTestLayer());
+	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+	{
+		Hazel::VulkanRenderer::Init(); // TODO: call in Hazel::HazelRenderer::Init
+		// PushLayer(new VulkanTestLayer());
+	}
 
 	float targetFPS = 60.0f;
 	float targetUpdateRate = 24.0f;
