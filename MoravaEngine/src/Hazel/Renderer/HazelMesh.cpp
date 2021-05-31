@@ -791,28 +791,35 @@ namespace Hazel {
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating an Index Buffer...");
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
 
-		/**** BEGIN Create pipeline ****
+		/**** BEGIN Create pipeline ****/
 		{
 			// TODO Pipeline creation should be moved to VulkanRenderer(s_MeshPipeline)
 
 			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
 
-			// pipelineSpecification.Layout = m_VertexBufferLayout;
-			// m_Pipeline = Pipeline::Create(pipelineSpecification);
+			if (RendererAPI::Current() == RendererAPIType::OpenGL)
+			{
+				pipelineSpecification.Layout = m_VertexBufferLayout;
+				m_Pipeline = Pipeline::Create(pipelineSpecification);
+			}
+			else if (RendererAPI::Current() == RendererAPIType::Vulkan)
+			{
+				/**** BEGIN Create vulkan pipeline (moved to VulkanRenderer) ****
+				HazelFramebufferSpecification spec;
+				spec.Width = Application::Get()->GetWindow()->GetWidth();
+				spec.Height = Application::Get()->GetWindow()->GetHeight();
 
-			HazelFramebufferSpecification spec;
-			spec.Width = Application::Get()->GetWindow()->GetWidth();
-			spec.Height = Application::Get()->GetWindow()->GetHeight();
+				PipelineSpecification pipelineSpecification;
+				pipelineSpecification.Layout = m_VertexBufferLayout;
+				pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
 
-			PipelineSpecification pipelineSpecification;
-			pipelineSpecification.Layout = m_VertexBufferLayout;
-			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
+				RenderPassSpecification renderPassSpec;
+				renderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(spec);
+				pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
 
-			RenderPassSpecification renderPassSpec;
-			renderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(spec);
-			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
-
-			m_Pipeline = Pipeline::Create(pipelineSpecification);
+				m_Pipeline = Pipeline::Create(pipelineSpecification);
+				/**** END Create vulkan pipeline (moved to VulkanRenderer) ****/
+			}
 		}
 		/**** END Create pipeline ****/
 
