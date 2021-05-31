@@ -176,12 +176,8 @@ namespace Hazel {
 		Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
 		Ref<Pipeline> GetPipeline() { return m_Pipeline; }
 
-		/**** BEGIN Non-composite ****/
-		VkDescriptorSet& GetDescriptorSet();
-		/**** END Non-composite ****/
-		/**** BEGIN Composite ****
+		// VkDescriptorSet& GetDescriptorSet();
 		void* GetDescriptorSet();
-		/**** END Composite ****/
 
 		const VertexBufferLayout& GetVertexBufferLayout() const { return m_VertexBufferLayout; }
 

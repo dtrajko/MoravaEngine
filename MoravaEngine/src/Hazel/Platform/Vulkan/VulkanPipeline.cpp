@@ -43,11 +43,7 @@ namespace Hazel {
 
 			HZ_CORE_ASSERT(m_Specification.Shader);
 			Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(m_Specification.Shader);
-			/**** BEGIN Non-composite ****/
-			/**** END Non-composite ****/
-			/**** BEGIN Composite ****
 			Ref<VulkanFramebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
-			/**** END Composite ****/
 
 			VkDescriptorSetLayout descriptorSetLayout = vulkanShader->GetDescriptorSetLayout();
 
@@ -96,10 +92,10 @@ namespace Hazel {
 			pipelineCreateInfo.layout = m_PipelineLayout;
 
 			// Renderpass this pipeline is attached to
-			/**** BEGIN Non-composite ****/
+			/**** BEGIN Non-composite ****
 			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
 			/**** END Non-composite ****/
-			/**** BEGIN Composite ****
+			/**** BEGIN Composite ****/
 			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
 			/**** END Composite ****/
 
@@ -186,32 +182,19 @@ namespace Hazel {
 			// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
 			VkVertexInputBindingDescription vertexInputBinding = {};
 			vertexInputBinding.binding = 0;
-			/**** BEGIN Non-composite ****/
+			/**** BEGIN Non-composite ****
 			vertexInputBinding.stride = sizeof(Vertex);
 			/**** END Non-composite ****/
-			/**** BEGIN Composite ****
+			/**** BEGIN Composite ****/
 			vertexInputBinding.stride = layout.GetStride();
 			/**** END Composite ****/
 			vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 			// Input attribute bindings describe shader attribute locations and memory layouts
-			std::array<VkVertexInputAttributeDescription, 5> vertexInputAttributes;
-			// std::vector<VkVertexInputAttributeDescription> vertexInputAttributes(layout.GetElementCount());
+			// std::array<VkVertexInputAttributeDescription, 5> vertexInputAttributes;
+			std::vector<VkVertexInputAttributeDescription> vertexInputAttributes(layout.GetElementCount());
 
-			/****
-			uint32_t location = 0;
-			for (auto element : layout)
-			{
-				vertexInputAttributes[location].binding = 0;
-				vertexInputAttributes[location].location = location;
-				vertexInputAttributes[location].format = ShaderDataTypeToVulkanFormat(element.Type);
-				vertexInputAttributes[location].offset = element.Offset;
-
-				location++;
-			}
-			****/
-
-			/****/
+			/**** BEGIN Non-composite ****
 			vertexInputAttributes[0].binding = 0;
 			vertexInputAttributes[0].location = 0;
 			vertexInputAttributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -236,7 +219,20 @@ namespace Hazel {
 			vertexInputAttributes[4].location = 4;
 			vertexInputAttributes[4].format = VK_FORMAT_R32G32_SFLOAT;
 			vertexInputAttributes[4].offset = offsetof(Vertex, Texcoord);
-			/****/
+			/**** END Non-composite ****/
+
+			/**** BEGIN Composite ****/
+			uint32_t location = 0;
+			for (auto element : layout)
+			{
+				vertexInputAttributes[location].binding = 0;
+				vertexInputAttributes[location].location = location;
+				vertexInputAttributes[location].format = ShaderDataTypeToVulkanFormat(element.Type);
+				vertexInputAttributes[location].offset = element.Offset;
+
+				location++;
+			}
+			/**** END Composite ****/
 
 			// Vertex input state used for pipeline creation
 			VkPipelineVertexInputStateCreateInfo vertexInputState = {};
@@ -261,10 +257,10 @@ namespace Hazel {
 			pipelineCreateInfo.pMultisampleState = &multisampleState;
 			pipelineCreateInfo.pViewportState = &viewportState;
 			pipelineCreateInfo.pDepthStencilState = &depthStencilState;
-			/**** BEGIN Non-composite ****/
+			/**** BEGIN Non-composite ****
 			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
 			/**** END Non-composite ****/
-			/**** BEGIN Composite ****
+			/**** BEGIN Composite ****/
 			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
 			/**** END Composite ****/
 			pipelineCreateInfo.pDynamicState = &dynamicState;

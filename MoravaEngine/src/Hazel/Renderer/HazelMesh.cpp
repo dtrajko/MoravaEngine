@@ -137,7 +137,7 @@ namespace Hazel {
 			}
 			else if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
 			{
-				auto hazelShader = HazelShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
+				auto hazelShader = HazelShader::Create("assets/shaders/HazelPBR_Static.glsl", true);
 				m_MeshShader = Ref<Shader>(hazelShader);
 			}
 		}
@@ -276,27 +276,30 @@ namespace Hazel {
 			{
 				s_DescriptorSet = m_MeshShader.As<VulkanShader>()->CreateDescriptorSet(); // depends on m_DescriptorPool and m_DescriptorSetLayout
 
+				/**** BEGIN Non-composite ****/
+				//	// EXAMPLE:
+				//	// std::vector<VkWriteDescriptorSet> writeDescriptorSets = HazelRenderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
+				//	auto& ub = m_MeshShader.As<VulkanShader>()->GetUniformBuffer();
+				//	//	/*std::vector<VkWriteDescriptorSet> writeDescriptorSets(1);
+				//	//	writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				//	//	writeDescriptorSets[0].dstSet = s_DescriptorSet;
+				//	//	writeDescriptorSets[0].descriptorCount = 1;
+				//	//	writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				//	//	writeDescriptorSets[0].pBufferInfo = &ub.Descriptor;
+				//	//	writeDescriptorSets[0].dstBinding = 0;*/
+				//	
+				//	VkWriteDescriptorSet writeDescriptorSet = {};
+				//	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				//	writeDescriptorSet.dstSet = s_DescriptorSet;
+				//	writeDescriptorSet.descriptorCount = 1;
+				//	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				//	writeDescriptorSet.pBufferInfo = &ub.Descriptor; // the "ub" UniformBuffer needs to be created first
+				//	writeDescriptorSet.dstBinding = 0;
+				//	s_WriteDescriptorSets.push_back(writeDescriptorSet);
+				/**** END Non-composite ****/
+
+				/**** BEGIN Composite version 080a7edc, Sep 25th ****/
 				// EXAMPLE:
-				// std::vector<VkWriteDescriptorSet> writeDescriptorSets = HazelRenderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
-				auto& ub = m_MeshShader.As<VulkanShader>()->GetUniformBuffer();
-				//	/*std::vector<VkWriteDescriptorSet> writeDescriptorSets(1);
-				//	writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				//	writeDescriptorSets[0].dstSet = s_DescriptorSet;
-				//	writeDescriptorSets[0].descriptorCount = 1;
-				//	writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				//	writeDescriptorSets[0].pBufferInfo = &ub.Descriptor;
-				//	writeDescriptorSets[0].dstBinding = 0;*/
-
-				VkWriteDescriptorSet writeDescriptorSet = {};
-				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				writeDescriptorSet.dstSet = s_DescriptorSet;
-				writeDescriptorSet.descriptorCount = 1;
-				writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				writeDescriptorSet.pBufferInfo = &ub.Descriptor; // the "ub" UniformBuffer needs to be created first
-				writeDescriptorSet.dstBinding = 0;
-				s_WriteDescriptorSets.push_back(writeDescriptorSet);
-
-				/**** BEGIN version 080a7edc, Sep 25th ****
 				// std::vector<VkWriteDescriptorSet> writeDescriptorSets = Renderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
 				auto& ub0 = shader.As<VulkanShader>()->GetUniformBuffer();
 				VkWriteDescriptorSet writeDescriptorSet = {};
@@ -316,7 +319,7 @@ namespace Hazel {
 				writeDescriptorSet.pBufferInfo = &ub1.Descriptor;
 				writeDescriptorSet.dstBinding = 1;
 				s_WriteDescriptorSets.push_back(writeDescriptorSet);
-				**** END version 080a7edc, Sep 25th ****/
+				/**** END Composite 080a7edc, Sep 25th ****/
 			}
 		}
 
@@ -788,13 +791,30 @@ namespace Hazel {
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating an Index Buffer...");
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
 
-		/**** BEGIN Non-composite ****/
-		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
-		pipelineSpecification.Layout = m_VertexBufferLayout;
-		m_Pipeline = Pipeline::Create(pipelineSpecification);
-		/**** END Non-composite ****/
-		/**** BEGIN Composite ****/
-		/**** END Composite ****/
+		/**** BEGIN Create pipeline ****
+		{
+			// TODO Pipeline creation should be moved to VulkanRenderer(s_MeshPipeline)
+
+			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
+
+			// pipelineSpecification.Layout = m_VertexBufferLayout;
+			// m_Pipeline = Pipeline::Create(pipelineSpecification);
+
+			HazelFramebufferSpecification spec;
+			spec.Width = Application::Get()->GetWindow()->GetWidth();
+			spec.Height = Application::Get()->GetWindow()->GetHeight();
+
+			PipelineSpecification pipelineSpecification;
+			pipelineSpecification.Layout = m_VertexBufferLayout;
+			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
+
+			RenderPassSpecification renderPassSpec;
+			renderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(spec);
+			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
+
+			m_Pipeline = Pipeline::Create(pipelineSpecification);
+		}
+		/**** END Create pipeline ****/
 
 		if (RendererAPI::Current() == RendererAPIType::Vulkan)
 		{
@@ -1383,17 +1403,9 @@ namespace Hazel {
 		shader->Unbind();
 	}
 
-	/**** BEGIN Non-composite ****/
-	VkDescriptorSet& HazelMesh::GetDescriptorSet()
-	{
-		return s_DescriptorSet;
-	}
-	/**** END Non-composite ****/
-	/**** BEGIN Composite ****
 	void* HazelMesh::GetDescriptorSet()
 	{
 		return &s_DescriptorSet;
 	}
-	/**** END Composite ****/
 
 }

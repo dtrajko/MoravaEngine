@@ -91,7 +91,7 @@ layout (std140, binding = 1) uniform Environment
 
 // PBR texture inputs
 layout (binding = 2) uniform sampler2D u_AlbedoTexture;
-//layout (binding = 3) uniform sampler2D u_NormalTexture;
+layout (binding = 3) uniform sampler2D u_NormalTexture;
 //layout (binding = 4) uniform sampler2D u_MetalnessTexture;
 //layout (binding = 5) uniform sampler2D u_RoughnessTexture;
 
