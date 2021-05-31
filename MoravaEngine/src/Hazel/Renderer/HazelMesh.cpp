@@ -788,10 +788,13 @@ namespace Hazel {
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating an Index Buffer...");
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
 
+		/**** BEGIN Non-composite ****/
 		Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
-
 		pipelineSpecification.Layout = m_VertexBufferLayout;
 		m_Pipeline = Pipeline::Create(pipelineSpecification);
+		/**** END Non-composite ****/
+		/**** BEGIN Composite ****/
+		/**** END Composite ****/
 
 		if (RendererAPI::Current() == RendererAPIType::Vulkan)
 		{
@@ -1380,9 +1383,17 @@ namespace Hazel {
 		shader->Unbind();
 	}
 
+	/**** BEGIN Non-composite ****/
 	VkDescriptorSet& HazelMesh::GetDescriptorSet()
 	{
 		return s_DescriptorSet;
 	}
+	/**** END Non-composite ****/
+	/**** BEGIN Composite ****
+	void* HazelMesh::GetDescriptorSet()
+	{
+		return &s_DescriptorSet;
+	}
+	/**** END Composite ****/
 
 }

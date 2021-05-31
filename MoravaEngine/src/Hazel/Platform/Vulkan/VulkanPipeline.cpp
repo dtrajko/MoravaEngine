@@ -12,10 +12,10 @@ namespace Hazel {
 	{
 		switch (type)
 		{
-		case ShaderDataType::Float:     return VK_FORMAT_R32_SFLOAT;
-		case ShaderDataType::Float2:    return VK_FORMAT_R32G32_SFLOAT;
-		case ShaderDataType::Float3:    return VK_FORMAT_R32G32B32_SFLOAT;
-		case ShaderDataType::Float4:    return VK_FORMAT_R32G32B32A32_SFLOAT;
+			case ShaderDataType::Float:     return VK_FORMAT_R32_SFLOAT;
+			case ShaderDataType::Float2:    return VK_FORMAT_R32G32_SFLOAT;
+			case ShaderDataType::Float3:    return VK_FORMAT_R32G32B32_SFLOAT;
+			case ShaderDataType::Float4:    return VK_FORMAT_R32G32B32A32_SFLOAT;
 		}
 		HZ_CORE_ASSERT(false);
 		return VK_FORMAT_UNDEFINED;
@@ -38,13 +38,16 @@ namespace Hazel {
 		//	HazelRenderer::Submit([instance]() mutable
 		//	{
 		//	});
-
 		{
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
 			HZ_CORE_ASSERT(m_Specification.Shader);
 			Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(m_Specification.Shader);
-			// Ref<VulkanFramebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
+			/**** BEGIN Non-composite ****/
+			/**** END Non-composite ****/
+			/**** BEGIN Composite ****
+			Ref<VulkanFramebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
+			/**** END Composite ****/
 
 			VkDescriptorSetLayout descriptorSetLayout = vulkanShader->GetDescriptorSetLayout();
 
@@ -93,8 +96,12 @@ namespace Hazel {
 			pipelineCreateInfo.layout = m_PipelineLayout;
 
 			// Renderpass this pipeline is attached to
+			/**** BEGIN Non-composite ****/
 			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
-			// pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
+			/**** END Non-composite ****/
+			/**** BEGIN Composite ****
+			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
+			/**** END Composite ****/
 
 			// Change line width and raster polygon mode
 			// pipelineCreateInfo.pRasterizationState = VK_POLYGON_MODE_POINT | VK_POLYGON_MODE_LINE | VK_POLYGON_MODE_FILL
@@ -172,19 +179,39 @@ namespace Hazel {
 			// Specifies the vertex input parameters for a pipeline
 
 			// Vertex input descriptor
+
 			VertexBufferLayout& layout = m_Specification.Layout;
 
 			// Vertex input binding
 			// This example uses a single vertex input binding at binding point 0 (see vkCmdBindVertexBuffers)
 			VkVertexInputBindingDescription vertexInputBinding = {};
 			vertexInputBinding.binding = 0;
+			/**** BEGIN Non-composite ****/
 			vertexInputBinding.stride = sizeof(Vertex);
+			/**** END Non-composite ****/
+			/**** BEGIN Composite ****
+			vertexInputBinding.stride = layout.GetStride();
+			/**** END Composite ****/
 			vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-			// Inpute attribute bindings describe shader attribute locations and memory layouts
+			// Input attribute bindings describe shader attribute locations and memory layouts
 			std::array<VkVertexInputAttributeDescription, 5> vertexInputAttributes;
 			// std::vector<VkVertexInputAttributeDescription> vertexInputAttributes(layout.GetElementCount());
 
+			/****
+			uint32_t location = 0;
+			for (auto element : layout)
+			{
+				vertexInputAttributes[location].binding = 0;
+				vertexInputAttributes[location].location = location;
+				vertexInputAttributes[location].format = ShaderDataTypeToVulkanFormat(element.Type);
+				vertexInputAttributes[location].offset = element.Offset;
+
+				location++;
+			}
+			****/
+
+			/****/
 			vertexInputAttributes[0].binding = 0;
 			vertexInputAttributes[0].location = 0;
 			vertexInputAttributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -209,6 +236,7 @@ namespace Hazel {
 			vertexInputAttributes[4].location = 4;
 			vertexInputAttributes[4].format = VK_FORMAT_R32G32_SFLOAT;
 			vertexInputAttributes[4].offset = offsetof(Vertex, Texcoord);
+			/****/
 
 			// Vertex input state used for pipeline creation
 			VkPipelineVertexInputStateCreateInfo vertexInputState = {};
@@ -233,8 +261,12 @@ namespace Hazel {
 			pipelineCreateInfo.pMultisampleState = &multisampleState;
 			pipelineCreateInfo.pViewportState = &viewportState;
 			pipelineCreateInfo.pDepthStencilState = &depthStencilState;
+			/**** BEGIN Non-composite ****/
 			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
-			// pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
+			/**** END Non-composite ****/
+			/**** BEGIN Composite ****
+			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
+			/**** END Composite ****/
 			pipelineCreateInfo.pDynamicState = &dynamicState;
 
 			// What is this pipeline cache?

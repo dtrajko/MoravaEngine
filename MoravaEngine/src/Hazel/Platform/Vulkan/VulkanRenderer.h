@@ -16,6 +16,7 @@ namespace Hazel {
 		static void OnResize(uint32_t width, uint32_t height);
 		static void Init();
 		static void Draw(HazelCamera* camera); // TODO: there should be no parameters
+		static void DrawComposite(HazelCamera* camera); // TODO: Temporary method until composite rendering is enabled
 	};
 
 }

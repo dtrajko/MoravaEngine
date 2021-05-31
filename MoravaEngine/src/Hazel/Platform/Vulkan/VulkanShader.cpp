@@ -19,17 +19,17 @@ namespace Hazel {
 	{
 		switch (type.basetype)
 		{
-		case spirv_cross::SPIRType::Boolean:  return ShaderUniformType::Bool;
-		case spirv_cross::SPIRType::Int:      return ShaderUniformType::Int;
-		case spirv_cross::SPIRType::Float:
-			if (type.vecsize == 1)            return ShaderUniformType::Float;
-			if (type.vecsize == 2)            return ShaderUniformType::Vec2;
-			if (type.vecsize == 3)            return ShaderUniformType::Vec3;
-			if (type.vecsize == 4)            return ShaderUniformType::Vec4;
+			case spirv_cross::SPIRType::Boolean:  return ShaderUniformType::Bool;
+			case spirv_cross::SPIRType::Int:      return ShaderUniformType::Int;
+			case spirv_cross::SPIRType::Float:
+				if (type.vecsize == 1)            return ShaderUniformType::Float;
+				if (type.vecsize == 2)            return ShaderUniformType::Vec2;
+				if (type.vecsize == 3)            return ShaderUniformType::Vec3;
+				if (type.vecsize == 4)            return ShaderUniformType::Vec4;
 
-			if (type.columns == 3)            return ShaderUniformType::Mat3;
-			if (type.columns == 4)            return ShaderUniformType::Mat4;
-			break;
+				if (type.columns == 3)            return ShaderUniformType::Mat3;
+				if (type.columns == 4)            return ShaderUniformType::Mat4;
+				break;
 		}
 		HZ_CORE_ASSERT(false, "Unknown type!");
 		return ShaderUniformType::None;
@@ -181,14 +181,15 @@ namespace Hazel {
 		MORAVA_CORE_TRACE("Push Constant Buffers:");
 		for (const auto& resource : resources.push_constant_buffers)
 		{
-			const auto& name = resource.name;
+			const auto& bufferName = resource.name;
 			auto& bufferType = compiler.get_type(resource.base_type_id);
 			auto bufferSize = compiler.get_declared_struct_size(bufferType);
 			int memberCount = static_cast<int>(bufferType.member_types.size());
 			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
 
 			uint32_t offset = 0;
-			if (m_PushConstantRanges.size()) {
+			if (m_PushConstantRanges.size())
+			{
 				offset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
 			}
 
@@ -197,7 +198,15 @@ namespace Hazel {
 			pushConstantRange.Size = static_cast<uint32_t>(bufferSize);
 			pushConstantRange.Offset = offset;
 
-			MORAVA_CORE_TRACE("  Name: {0}", name);
+			// Skip empty push constant buffers - these are for the renderer only
+			if (bufferName.empty())
+				continue;
+
+			ShaderBuffer& buffer = m_Buffers[bufferName];
+			buffer.Name = bufferName;
+			buffer.Size = static_cast<uint32_t>(bufferSize);
+
+			MORAVA_CORE_TRACE("  Name: {0}", bufferName);
 			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
 			// MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
 			MORAVA_CORE_TRACE("  Size: {0}", size);
@@ -209,6 +218,9 @@ namespace Hazel {
 				const auto& memberName = compiler.get_member_name(bufferType.self, i);
 				auto size = compiler.get_declared_struct_member_size(bufferType, i);
 				auto offset = compiler.type_struct_member_offset(bufferType, i);
+
+				std::string uniformName = bufferName + "." + memberName;
+				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), static_cast<uint32_t>(size), offset);
 			}
 		}
 
@@ -270,7 +282,7 @@ namespace Hazel {
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		// Once you bind a descriptor set and use it in a vkCmdDraw() function, you can no longer modify it unless you specify the
-		descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+		// descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
 		descriptorPoolInfo.pNext = nullptr;
 		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(typeCounts.size());
 		descriptorPoolInfo.pPoolSizes = typeCounts.data();
@@ -348,7 +360,12 @@ namespace Hazel {
 
 	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
 	{
-		HZ_CORE_ASSERT(m_WriteDescriptorSets.find(name) != m_WriteDescriptorSets.end());
+		// HZ_CORE_ASSERT(m_WriteDescriptorSets.find(name) != m_WriteDescriptorSets.end());
+		if (m_WriteDescriptorSets.find(name) == m_WriteDescriptorSets.end())
+		{
+			HZ_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+			return nullptr;
+		}
 		return &m_WriteDescriptorSets.at(name);
 
 		//	HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
@@ -395,7 +412,7 @@ namespace Hazel {
 		allocator.Allocate(memoryRequirements, &uniformBuffer.Memory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		VK_CHECK_RESULT(vkBindBufferMemory(device, uniformBuffer.Buffer, uniformBuffer.Memory, 0));
 
-		// Store information in the uniforms's descriptor that is used by the descriptor set
+		// Store information in the uniform's descriptor that is used by the descriptor set
 		uniformBuffer.Descriptor.buffer = uniformBuffer.Buffer;
 		uniformBuffer.Descriptor.offset = 0;
 		uniformBuffer.Descriptor.range = uniformBuffer.Size;
