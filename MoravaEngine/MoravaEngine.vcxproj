@@ -103,7 +103,10 @@
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_vulkan.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_vulkan_with_textures.cpp" />
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_win32.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp" />
@@ -372,7 +375,10 @@
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_dx12.h" />
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_glfw.h" />
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_opengl3.h" />
-    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan.h" />
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan_with_textures.h" />
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_win32.h" />
     <ClInclude Include="..\vendor\ImGui\imconfig.h" />
     <ClInclude Include="..\vendor\ImGui\imgui.h" />

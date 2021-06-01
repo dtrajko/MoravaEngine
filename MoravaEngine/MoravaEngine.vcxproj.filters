@@ -789,6 +789,9 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_vulkan_with_textures.cpp">
+      <Filter>Vendors\ImGui\backends</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1678,6 +1681,9 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan_with_textures.h">
+      <Filter>Vendors\ImGui\backends</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

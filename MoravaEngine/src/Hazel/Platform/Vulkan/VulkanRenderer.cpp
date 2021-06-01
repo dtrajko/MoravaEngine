@@ -16,7 +16,7 @@
 	#define IMGUI_IMPL_API
 #endif
 #include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_vulkan.h"
+#include "backends/imgui_impl_vulkan_with_textures.h"
 
 
 namespace Hazel {
@@ -30,6 +30,7 @@ namespace Hazel {
 	static Ref<VertexBuffer> s_QuadVertexBuffer;
 	static Ref<IndexBuffer> s_QuadIndexBuffer;
 	static VkDescriptorSet s_QuadDescriptorSet;
+	static ImTextureID s_TextureID;
 
 	static std::vector<Ref<HazelMesh>> s_Meshes;
 
@@ -159,6 +160,10 @@ namespace Hazel {
 
 			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
+
+			auto vulkanFB = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
+			const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
+			s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 		}
 	}
 
@@ -486,7 +491,8 @@ namespace Hazel {
 					vkCmdSetScissor(s_ImGuiCommandBuffer, 0, 1, &scissor);
 
 					ImGui::Begin("Viewport");
-					ImGui::Button("Hello");
+
+					ImGui::Image(s_TextureID, { 1280.0f, 720.0f }, { 0, 1 }, { 1, 0 });
 					ImGui::End();
 
 					// TODO: Move to VulkanImGuiLayer
