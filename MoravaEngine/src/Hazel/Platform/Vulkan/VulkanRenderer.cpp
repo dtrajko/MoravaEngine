@@ -73,6 +73,16 @@ namespace Hazel {
 			spec.Width = Application::Get()->GetWindow()->GetWidth();
 			spec.Height = Application::Get()->GetWindow()->GetHeight();
 			s_Framebuffer = HazelFramebuffer::Create(spec);
+			s_Framebuffer->AddResizeCallback([](Ref<HazelFramebuffer> framebuffer) {
+				// HazelRenderer::Submit([framebuffer]() mutable
+				// {
+				// });
+				{
+					auto vulkanFB = framebuffer.As<VulkanFramebuffer>();
+					const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
+					s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+				}
+			});
 
 			PipelineSpecification pipelineSpecification;
 			pipelineSpecification.Layout = {
@@ -161,7 +171,7 @@ namespace Hazel {
 			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
 
-			auto vulkanFB = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
+			auto vulkanFB = s_Framebuffer.As<VulkanFramebuffer>();
 			const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
 			s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 		}

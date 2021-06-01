@@ -77,7 +77,9 @@ public:
 
 	// HazelFramebuffer abstract methods
 	virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate) override;
-	virtual void AddResizeCallback(const std::function<void(Hazel::Ref<Hazel::HazelFramebuffer>)>& func) override;
+
+	virtual void AddResizeCallback(const std::function<void(Hazel::Ref<Hazel::HazelFramebuffer>)>& func) override {};
+
 	virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const override;
 	virtual Hazel::RendererID GetRendererID() const override;
 

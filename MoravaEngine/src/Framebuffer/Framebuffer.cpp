@@ -340,16 +340,14 @@ void Framebuffer::Resize(uint32_t width, uint32_t height)
 
 void Framebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate)
 {
-	Resize(width, height, false);
-}
-
-void Framebuffer::AddResizeCallback(const std::function<void(Hazel::Ref<Hazel::HazelFramebuffer>)>& func)
-{
-	// m_ResizeCallbacks.push_back(func);
+	Resize(width, height);
 }
 
 void Framebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slot) const
 {
+	if (attachmentIndex >= m_TextureAttachmentsColor.size()) return;
+
+	m_TextureAttachmentsColor.at(attachmentIndex)->Bind(slot);
 }
 
 Hazel::RendererID Framebuffer::GetRendererID() const

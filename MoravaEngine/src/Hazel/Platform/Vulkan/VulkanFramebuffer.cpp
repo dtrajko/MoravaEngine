@@ -241,11 +241,15 @@ namespace Hazel {
 			VulkanSwapChain& swapChain = VulkanContext::Get()->GetSwapChain();
 			m_RenderPass = swapChain.GetRenderPass();
 		}
+
+		for (auto& callback : m_ResizeCallbacks)
+		{
+			callback(this);
+		}
 	}
 
 	void VulkanFramebuffer::AddResizeCallback(const std::function<void(Ref<HazelFramebuffer>)>& func)
 	{
 		m_ResizeCallbacks.push_back(func);
 	}
-
 }

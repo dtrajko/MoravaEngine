@@ -14,6 +14,7 @@ namespace Hazel {
 		virtual ~VulkanFramebuffer();
 
 		virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) override;
+
 		virtual void AddResizeCallback(const std::function<void(Ref<HazelFramebuffer>)>& func) override;
 
 		virtual void Bind() const override {}
@@ -48,6 +49,7 @@ namespace Hazel {
 		std::vector<Ref<HazelImage2D>> m_Attachments;
 
 		std::vector<VkClearValue> m_ClearValues;
+
 		std::vector<std::function<void(Ref<HazelFramebuffer>)>> m_ResizeCallbacks;
 
 		struct FrameBufferAttachment
