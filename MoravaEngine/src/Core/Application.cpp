@@ -178,8 +178,17 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 
 	m_Scene->OnWindowResize(e);
 
-	// TODO: TEMP
-	// Hazel::VulkanRenderer::OnResize(width, height);
+	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+	{
+		auto& fbs = Hazel::HazelFramebufferPool::GetGlobal()->GetAll();
+		for (auto& fb : fbs)
+		{
+			fb->Resize(width, height);
+		}
+
+		// TODO: TEMP
+		Hazel::VulkanRenderer::OnResize(width, height);
+	}
 
 	return false;
 }

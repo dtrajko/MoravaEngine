@@ -80,7 +80,8 @@ namespace Hazel {
 				{
 					auto vulkanFB = framebuffer.As<VulkanFramebuffer>();
 					const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
-					s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+					// s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+					s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 				}
 			});
 

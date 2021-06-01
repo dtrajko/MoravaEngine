@@ -517,7 +517,9 @@ namespace Hazel {
 		CreateDepthStencil();
 
 		for (auto& framebuffer : m_Framebuffers)
+		{
 			vkDestroyFramebuffer(device, framebuffer, nullptr);
+		}
 
 		CreateFramebuffer();
 
