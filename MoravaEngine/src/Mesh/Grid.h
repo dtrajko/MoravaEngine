@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include <glm/glm.hpp>
 
@@ -12,7 +12,7 @@ class Grid
 public:
 	Grid();
 	Grid(int size);
-	void Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
+	void Draw(MoravaShader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 	~Grid();
 
 private:

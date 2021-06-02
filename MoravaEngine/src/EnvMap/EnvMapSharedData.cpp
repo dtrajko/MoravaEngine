@@ -22,8 +22,8 @@ bool EnvMapSharedData::s_DisplayRay;
 glm::vec3 EnvMapSharedData::s_NewRay;
 Hazel::Ref<ShadowMap> EnvMapSharedData::s_ShadowMapDirLight;
 
-Hazel::Ref<Shader> EnvMapSharedData::s_ShaderHazelPBR;
-Hazel::Ref<Shader> EnvMapSharedData::s_ShaderOutline;
+Hazel::Ref<MoravaShader> EnvMapSharedData::s_ShaderHazelPBR;
+Hazel::Ref<MoravaShader> EnvMapSharedData::s_ShaderOutline;
 
 Hazel::Entity EnvMapSharedData::s_PointLightEntity;
 Hazel::Ref<OmniShadowMap> EnvMapSharedData::s_OmniShadowMapPointLight;

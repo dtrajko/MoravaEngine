@@ -19,27 +19,27 @@ void RendererVoxelTerrain::Init(Scene* scene)
 
 void RendererVoxelTerrain::SetShaders()
 {
-	Shader* shaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
+	MoravaShader* shaderMain = new MoravaShader("Shaders/shader.vert", "Shaders/shader.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("main", shaderMain));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderMain compiled [programID={0}]", shaderMain->GetProgramID());
 
-	Shader* shaderRenderInstanced  = new Shader("Shaders/render_instanced.vs", "Shaders/render_instanced.fs");
+	MoravaShader* shaderRenderInstanced  = new MoravaShader("Shaders/render_instanced.vs", "Shaders/render_instanced.fs");
 	RendererBasic::GetShaders().insert(std::make_pair("render_instanced", shaderRenderInstanced));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderRenderInstanced compiled [programID={0}]", shaderRenderInstanced->GetProgramID());
 
-	Shader* shaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
+	MoravaShader* shaderBasic = new MoravaShader("Shaders/basic.vs", "Shaders/basic.fs");
 	RendererBasic::GetShaders().insert(std::make_pair("basic", shaderBasic));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderBasic compiled [programID={0}]", shaderBasic->GetProgramID());
 
-	Shader* shaderMarchingCubes = new Shader("Shaders/marching_cubes.vs", "Shaders/marching_cubes.fs");
+	MoravaShader* shaderMarchingCubes = new MoravaShader("Shaders/marching_cubes.vs", "Shaders/marching_cubes.fs");
 	RendererBasic::GetShaders().insert(std::make_pair("marching_cubes", shaderMarchingCubes));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderMarchingCubes compiled [programID={0}]", shaderMarchingCubes->GetProgramID());
 
-	Shader* shaderShadowMap = new Shader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+	MoravaShader* shaderShadowMap = new MoravaShader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("shadow_map", shaderShadowMap));
 	Log::GetLogger()->info("RendererEditor: shaderShadowMap compiled [programID={0}]", shaderShadowMap->GetProgramID());
 
-	Shader* shaderOmniShadow = new Shader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+	MoravaShader* shaderOmniShadow = new MoravaShader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("omniShadow", shaderOmniShadow));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderOmniShadow compiled [programID={0}]", shaderOmniShadow->GetProgramID());
 }
@@ -50,7 +50,7 @@ void RendererVoxelTerrain::RenderPassShadow(Window* mainWindow, Scene* scene, gl
 	if (!LightManager::directionalLight.GetEnabled()) return;
 	if (LightManager::directionalLight.GetShadowMap() == nullptr) return;
 
-	Shader* shaderShadowMap = RendererBasic::GetShaders()["shadow_map"];
+	MoravaShader* shaderShadowMap = RendererBasic::GetShaders()["shadow_map"];
 	shaderShadowMap->Bind();
 
 	DirectionalLight* light = &LightManager::directionalLight;
@@ -123,7 +123,7 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	RendererBasic::Clear();
 
 	/**** BEGIN shaderMain ****/
-	Shader* shaderMain = (Shader*)RendererBasic::GetShaders()["main"];
+	MoravaShader* shaderMain = (MoravaShader*)RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
 	shaderMain->setMat4("model", glm::mat4(1.0f));
@@ -198,7 +198,7 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	/**** END shaderMain ****/
 
 	/**** BEGIN shaderMarchingCubes ****/
-	Shader* shaderMarchingCubes = (Shader*)RendererBasic::GetShaders()["marching_cubes"];
+	MoravaShader* shaderMarchingCubes = (MoravaShader*)RendererBasic::GetShaders()["marching_cubes"];
 	shaderMarchingCubes->Bind();
 
 	shaderMarchingCubes->setMat4("model", glm::mat4(1.0f));
@@ -270,7 +270,7 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	/**** END shaderMarchingCubes ****/
 
 	/**** BEGIN shaderRenderInstanced ****/
-	Shader* shaderRenderInstanced = (Shader*)RendererBasic::GetShaders()["render_instanced"];
+	MoravaShader* shaderRenderInstanced = (MoravaShader*)RendererBasic::GetShaders()["render_instanced"];
 	shaderRenderInstanced->Bind();
 
 	shaderRenderInstanced->setMat4("projection", projectionMatrix);
@@ -290,7 +290,7 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	/**** END shaderRenderInstanced ****/
 
 	/**** BEGIN shaderBasic ****/
-	Shader* shaderBasic = RendererBasic::GetShaders()["basic"];
+	MoravaShader* shaderBasic = RendererBasic::GetShaders()["basic"];
 	shaderBasic->Bind();
 	shaderBasic->setMat4("projection", projectionMatrix);
 	shaderBasic->setMat4("view", scene->GetCamera()->GetViewMatrix());

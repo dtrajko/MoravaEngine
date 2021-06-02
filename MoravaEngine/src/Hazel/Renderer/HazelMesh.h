@@ -12,7 +12,7 @@
 #include "EnvMap/EnvMapMaterial.h"
 #include "Material/Material.h"
 #include "Mesh/Mesh.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 #include "Texture/Texture.h"
 
 #include <glm/glm.hpp>
@@ -125,9 +125,9 @@ namespace Hazel {
 	class Submesh : public Mesh
 	{
 	public:
-		void Render(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
+		void Render(Ref<HazelMesh> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
 			const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity);
-		void RenderOutline(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& entityTransform, Entity entity);
+		void RenderOutline(Ref<HazelMesh> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, Entity entity);
 
 	public:
 		uint32_t BaseVertex;
@@ -145,7 +145,7 @@ namespace Hazel {
 	{
 	public:
 		HazelMesh(const std::string& filename);
-		HazelMesh(const std::string& filename, Ref<Shader> shader, Ref<HazelMaterial> material, bool isAnimated);
+		HazelMesh(const std::string& filename, Ref<MoravaShader> shader, Ref<HazelMaterial> material, bool isAnimated);
 		virtual ~HazelMesh() override;
 
 		virtual void Create() override;
@@ -217,7 +217,7 @@ namespace Hazel {
 		std::vector<Submesh> m_Submeshes;
 
 		// Materials
-		Ref<Shader> m_MeshShader;
+		Ref<MoravaShader> m_MeshShader;
 
 	private:
 		std::unique_ptr<Assimp::Importer> m_Importer;

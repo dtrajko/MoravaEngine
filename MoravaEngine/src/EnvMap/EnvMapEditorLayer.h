@@ -38,7 +38,7 @@ public:
 	void OnSceneStop();
 
 	void OnRenderShadow(Window* mainWindow);
-	void RenderSubmeshesShadowPass(Hazel::Ref<Shader> shader);
+	void RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shader);
 
 	void OnRenderShadowOmni(Window* mainWindow);
 	void RenderShadowOmniSingleLight(Window* mainWindow, Hazel::Entity lightEntity, Hazel::Ref<OmniShadowMap> omniShadowMap);
@@ -84,8 +84,8 @@ public:
 	void SetSkyboxLOD(float LOD);
 
 	// Getters
-	Hazel::Ref<Shader> GetShaderPBR_Anim();
-	Hazel::Ref<Shader> GetShaderPBR_Static();
+	Hazel::Ref<MoravaShader> GetShaderPBR_Anim();
+	Hazel::Ref<MoravaShader> GetShaderPBR_Static();
 	inline std::map<std::string, unsigned int>& GetSamplerSlots() { return EnvMapSharedData::s_SamplerSlots; }
 	inline bool& GetRadiancePrefilter() { return EnvMapSharedData::s_RadiancePrefilter; }
 	inline float& GetEnvMapRotation() { return EnvMapSharedData::s_EnvMapRotation; }
@@ -139,10 +139,10 @@ public:
 	Hazel::Ref<Framebuffer> m_PostProcessingFramebuffer;
 
 private:
-	Hazel::Ref<Shader> m_ShaderShadow;
-	Hazel::Ref<Shader> m_ShaderOmniShadow;
-	Hazel::Ref<Shader> m_ShaderPostProcessing;
-	Hazel::Ref<Shader> m_ShaderBloomBlur;
+	Hazel::Ref<MoravaShader> m_ShaderShadow;
+	Hazel::Ref<MoravaShader> m_ShaderOmniShadow;
+	Hazel::Ref<MoravaShader> m_ShaderPostProcessing;
+	Hazel::Ref<MoravaShader> m_ShaderBloomBlur;
 
 	int m_PostProcessingEffect = 0;
 	bool m_PostProcessingEnabled = false;

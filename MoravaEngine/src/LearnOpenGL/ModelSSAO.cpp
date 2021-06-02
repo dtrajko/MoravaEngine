@@ -2,7 +2,7 @@
 
 #include "TextureJoey.h"
 
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -29,7 +29,7 @@ ModelSSAO::~ModelSSAO()
 }
 
 // draws the model, and thus all its meshes
-void ModelSSAO::Draw(Shader* shader)
+void ModelSSAO::Draw(MoravaShader* shader)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].Draw(shader);

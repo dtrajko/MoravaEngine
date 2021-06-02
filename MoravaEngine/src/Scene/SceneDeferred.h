@@ -17,7 +17,7 @@ public:
 
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms) override;
 
 private:
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
@@ -44,9 +44,9 @@ private:
 	int m_WidthPrev;
 	int m_HeightPrev;
 
-	Shader* m_ShaderGeometryPass;
-	Shader* m_ShaderLightingPass;
-	Shader* m_ShaderLightBox;
+	MoravaShader* m_ShaderGeometryPass;
+	MoravaShader* m_ShaderLightingPass;
+	MoravaShader* m_ShaderLightBox;
 
 	ModelSSAO* m_Backpack;
 	std::vector<glm::vec3> m_ObjectPositions;

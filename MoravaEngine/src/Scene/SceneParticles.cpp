@@ -22,10 +22,10 @@ SceneParticles::SceneParticles()
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
     m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
 
-    m_ShaderFBScene = new Shader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
+    m_ShaderFBScene = new MoravaShader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
     printf("SceneParticles: m_ShaderFBScene compiled [programID=%d]\n", m_ShaderFBScene->GetProgramID());
 
-    m_ShaderBackground = new Shader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    m_ShaderBackground = new MoravaShader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
     Log::GetLogger()->info("SceneParticles: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
 }
 
@@ -111,7 +111,7 @@ void SceneParticles::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneParticles::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
     // Skybox shaderBackground
 /* Begin backgroundShader */

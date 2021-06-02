@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 
-class ShaderPBR : public Shader
+class ShaderPBR : public MoravaShader
 {
 public:
 	ShaderPBR();

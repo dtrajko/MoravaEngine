@@ -12,14 +12,14 @@
 #include "EnvMap/EnvMapEditorLayer.h"
 #include "Material/MaterialLibrary.h"
 #include "Renderer/RendererBasic.h"
-#include "Shader/ShaderLibrary.h"
+#include "Shader/MoravaShaderLibrary.h"
 
 
-Hazel::Ref<Shader> EnvMapSceneRenderer::s_ShaderEquirectangularConversion;
-Hazel::Ref<Shader> EnvMapSceneRenderer::s_ShaderEnvFiltering;
-Hazel::Ref<Shader> EnvMapSceneRenderer::s_ShaderEnvIrradiance;
-Hazel::Ref<Shader> EnvMapSceneRenderer::s_ShaderGrid;
-Hazel::Ref<Shader> EnvMapSceneRenderer::s_ShaderSkybox;
+Hazel::Ref<MoravaShader> EnvMapSceneRenderer::s_ShaderEquirectangularConversion;
+Hazel::Ref<MoravaShader> EnvMapSceneRenderer::s_ShaderEnvFiltering;
+Hazel::Ref<MoravaShader> EnvMapSceneRenderer::s_ShaderEnvIrradiance;
+Hazel::Ref<MoravaShader> EnvMapSceneRenderer::s_ShaderGrid;
+Hazel::Ref<MoravaShader> EnvMapSceneRenderer::s_ShaderSkybox;
 Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::s_EnvUnfiltered;
 Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::s_EnvEquirect;
 Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::s_EnvFiltered;
@@ -46,7 +46,7 @@ struct EnvMapSceneRendererData
 
     Hazel::Ref<Hazel::HazelTexture2D> BRDFLUT;
 
-    Hazel::Ref<Shader> CompositeShader;
+    Hazel::Ref<MoravaShader> CompositeShader;
 
     Hazel::Ref<Hazel::RenderPass> GeoPass;
     Hazel::Ref<Hazel::RenderPass> CompositePass;
@@ -65,7 +65,7 @@ struct EnvMapSceneRendererData
     // Grid
     Material* GridMaterial;
     // Ref<HazelShader> HazelGridShader;
-    // Ref<Shader> GridShader;
+    // Ref<MoravaShader> GridShader;
     Ref<Hazel::HazelMaterial> OutlineMaterial;
 
     Hazel::SceneRendererOptions Options;
@@ -162,22 +162,22 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
 
 void EnvMapSceneRenderer::SetupShaders()
 {
-    s_Data.CompositeShader = Shader::Create("Shaders/Hazel/SceneComposite.vs", "Shaders/Hazel/SceneComposite.fs");
+    s_Data.CompositeShader = MoravaShader::Create("Shaders/Hazel/SceneComposite.vs", "Shaders/Hazel/SceneComposite.fs");
     Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderComposite compiled [programID={0}]", s_Data.CompositeShader->GetProgramID());
 
-    s_ShaderEquirectangularConversion = Shader::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
+    s_ShaderEquirectangularConversion = MoravaShader::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
     Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderEquirectangularConversion compiled [programID={0}]", s_ShaderEquirectangularConversion->GetProgramID());
 
-    s_ShaderEnvFiltering = Shader::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
+    s_ShaderEnvFiltering = MoravaShader::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
     Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderEnvFiltering compiled [programID={0}]", s_ShaderEnvFiltering->GetProgramID());
 
-    s_ShaderEnvIrradiance = Shader::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
+    s_ShaderEnvIrradiance = MoravaShader::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
     Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderEnvIrradiance compiled [programID={0}]", s_ShaderEnvIrradiance->GetProgramID());
 
-    s_ShaderSkybox = Shader::Create("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
+    s_ShaderSkybox = MoravaShader::Create("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
     Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderSkybox compiled [programID={0}]", s_ShaderSkybox->GetProgramID());
 
-    s_ShaderGrid = Shader::Create("Shaders/Hazel/Grid.vs", "Shaders/Hazel/Grid.fs");
+    s_ShaderGrid = MoravaShader::Create("Shaders/Hazel/Grid.vs", "Shaders/Hazel/Grid.fs");
     Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderGrid compiled [programID={0}]", s_ShaderGrid->GetProgramID());
 
     ResourceManager::AddShader("Hazel/SceneComposite", s_Data.CompositeShader);
@@ -353,7 +353,7 @@ void EnvMapSceneRenderer::RenderHazelGrid()
     RendererBasic::EnableMSAA();
 }
 
-void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh)
+void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh)
 {
     if (!EnvMapSharedData::s_DisplayOutline) return;
 
@@ -370,7 +370,7 @@ void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity
     }
 }
 
-void EnvMapSceneRenderer::UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPBR, Hazel::Ref<EnvMapMaterial> envMapMaterial)
+void EnvMapSceneRenderer::UpdateShaderPBRUniforms(Hazel::Ref<MoravaShader> shaderHazelPBR, Hazel::Ref<EnvMapMaterial> envMapMaterial)
 {
     /**** BEGIN Shaders/Hazel/HazelPBR_Anim / Shaders/Hazel/HazelPBR_Static ***/
 
@@ -504,7 +504,7 @@ void EnvMapSceneRenderer::GeometryPass()
                     entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
                 }
 
-                EnvMapSharedData::s_ShaderHazelPBR = meshComponent.Mesh->IsAnimated() ? ShaderLibrary::Get("HazelPBR_Anim") : ShaderLibrary::Get("HazelPBR_Static");
+                EnvMapSharedData::s_ShaderHazelPBR = meshComponent.Mesh->IsAnimated() ? MoravaShaderLibrary::Get("HazelPBR_Anim") : MoravaShaderLibrary::Get("HazelPBR_Static");
 
                 EnvMapSharedData::s_ShaderHazelPBR->Bind();
 
@@ -660,7 +660,7 @@ Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::GetBRDFLUT()
     return s_Data.BRDFLUT;
 }
 
-Hazel::Ref<Shader> EnvMapSceneRenderer::GetShaderComposite()
+Hazel::Ref<MoravaShader> EnvMapSceneRenderer::GetShaderComposite()
 {
     return s_Data.CompositeShader;
 }

@@ -5,7 +5,7 @@
 #include "Core/Log.h"
 #include "Core/Window.h"
 #include "Scene/Scene.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include "glm/glm.hpp"
 
@@ -48,7 +48,7 @@ public:
 	static void SetProjectionMatrix(glm::mat4 projectionMatrix);
 	static void SetDefaultFramebuffer(unsigned int width, unsigned int height);
 
-	static std::map<std::string, Shader*>& GetShaders();
+	static std::map<std::string, MoravaShader*>& GetShaders();
 	static std::map<std::string, int>& GetUniforms();
 
 	static glm::vec4 GetBgColor();

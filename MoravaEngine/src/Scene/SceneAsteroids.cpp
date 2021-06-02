@@ -24,10 +24,10 @@ SceneAsteroids::SceneAsteroids()
 
 void SceneAsteroids::SetupShaders()
 {
-	m_ShaderPlanet = new Shader("Shaders/asteroids_planet.vs", "Shaders/asteroids.fs");
+	m_ShaderPlanet = new MoravaShader("Shaders/asteroids_planet.vs", "Shaders/asteroids.fs");
 	printf("SceneAsteroids: m_ShaderPlanet shader compiled [programID=%d]\n", m_ShaderPlanet->GetProgramID());
 
-	m_ShaderAsteroids = new Shader("Shaders/asteroids.vs", "Shaders/asteroids.fs");
+	m_ShaderAsteroids = new MoravaShader("Shaders/asteroids.vs", "Shaders/asteroids.fs");
 	printf("SceneAsteroids: m_ShaderAsteroids shader compiled [programID=%d]\n", m_ShaderAsteroids->GetProgramID());
 }
 
@@ -127,7 +127,7 @@ void SceneAsteroids::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneAsteroids::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
 	// Override the Projection matrix (update FOV)
 	projectionMatrix = glm::perspective(glm::radians(m_FOV),

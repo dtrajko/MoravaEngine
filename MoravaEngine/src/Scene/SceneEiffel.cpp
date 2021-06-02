@@ -176,7 +176,7 @@ void SceneEiffel::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
 	ShaderMain* shaderMain = (ShaderMain*)shaders["main"];
 
@@ -288,11 +288,11 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 }
 
 void SceneEiffel::RenderWater(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
 	if (!sceneSettings.enableWaterEffects) return;
 
-	Shader* shaderWater = shaders["water"];
+	MoravaShader* shaderWater = shaders["water"];
 
 	/* Water Tile */
 	shaderWater->Bind();

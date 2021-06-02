@@ -60,16 +60,16 @@ void SceneBloom::SetupModels()
 
 void SceneBloom::SetupShaders()
 {
-    m_ShaderBloom = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/7.bloom.vs", "Shaders/LearnOpenGL/7.bloom.fs");
+    m_ShaderBloom = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/7.bloom.vs", "Shaders/LearnOpenGL/7.bloom.fs");
     Log::GetLogger()->info("SceneBloom: m_ShaderBloom compiled [programID={0}]", m_ShaderBloom->GetProgramID());
 
-    m_ShaderLightBox = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/7.bloom.vs", "Shaders/LearnOpenGL/7.light_box.fs");
+    m_ShaderLightBox = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/7.bloom.vs", "Shaders/LearnOpenGL/7.light_box.fs");
     Log::GetLogger()->info("SceneBloom: m_ShaderLightBox compiled [programID={0}]", m_ShaderLightBox->GetProgramID());
 
-    m_ShaderBlur = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/7.blur.vs", "Shaders/LearnOpenGL/7.blur.fs");
+    m_ShaderBlur = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/7.blur.vs", "Shaders/LearnOpenGL/7.blur.fs");
     Log::GetLogger()->info("SceneBloom: m_ShaderBlur compiled [programID={0}]", m_ShaderBlur->GetProgramID());
 
-    m_ShaderBloomFinal = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/7.bloom_final.vs", "Shaders/LearnOpenGL/7.bloom_final.fs");
+    m_ShaderBloomFinal = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/7.bloom_final.vs", "Shaders/LearnOpenGL/7.bloom_final.fs");
     Log::GetLogger()->info("SceneBloom: m_ShaderBloomFinal compiled [programID={0}]", m_ShaderBloomFinal->GetProgramID());
 
     m_ShaderBloom->Bind();
@@ -218,7 +218,7 @@ void SceneBloom::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneBloom::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
     if (m_Width == 0 || m_Height == 0) return;
 

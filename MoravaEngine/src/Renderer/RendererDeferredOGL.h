@@ -39,8 +39,8 @@ private:
 
 	uint32_t m_TextureSlot_Diffuse;
 
-	Hazel::Ref<Shader> m_ShaderForwardBasic;
-	Hazel::Ref<Shader> m_ShaderGeometryPass;
+	Hazel::Ref<MoravaShader> m_ShaderForwardBasic;
+	Hazel::Ref<MoravaShader> m_ShaderGeometryPass;
 
 	Hazel::Ref<Mesh> m_MeshBlock;
 

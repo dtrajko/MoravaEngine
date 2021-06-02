@@ -17,9 +17,9 @@ public:
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms) override;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms) override;
 
 private:
 	virtual void SetupMaterials() override;
@@ -41,11 +41,11 @@ public:
 	float m_RotationFactor;
 
 private:
-	Hazel::Ref<Shader> m_Shader_PBR;
-	Hazel::Ref<Shader> m_Shader_PBR_MRE;
-	Hazel::Ref<Shader> m_ShaderBackground;
-	Hazel::Ref<Shader> m_ShaderBlurHorizontal;
-	Hazel::Ref<Shader> m_ShaderBlurVertical;
+	Hazel::Ref<MoravaShader> m_Shader_PBR;
+	Hazel::Ref<MoravaShader> m_Shader_PBR_MRE;
+	Hazel::Ref<MoravaShader> m_ShaderBackground;
+	Hazel::Ref<MoravaShader> m_ShaderBlurHorizontal;
+	Hazel::Ref<MoravaShader> m_ShaderBlurVertical;
 
 	glm::vec3 m_CameraPosition;
 	glm::vec3 m_LightPositionOffset[SCENE_JOEY_LIGHT_COUNT];

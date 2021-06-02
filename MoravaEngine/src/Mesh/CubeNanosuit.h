@@ -15,7 +15,7 @@ public:
 	MeshJoey* processMesh();
 	std::vector<TextureData> loadMaterialTextures(std::string fileName, std::string typeName);
 	inline MeshJoey* GetMesh() { return m_Mesh; };
-	void Draw(Shader* shader);
+	void Draw(MoravaShader* shader);
 	virtual ~CubeNanosuit();
 
 private:

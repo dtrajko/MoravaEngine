@@ -6,7 +6,7 @@
 
 
 glm::mat4 OpenGLRendererBasic::s_ProjectionMatrix;
-std::map<std::string, Shader*> OpenGLRendererBasic::s_Shaders;
+std::map<std::string, MoravaShader*> OpenGLRendererBasic::s_Shaders;
 std::map<std::string, int> OpenGLRendererBasic::s_Uniforms;
 glm::vec4 OpenGLRendererBasic::s_BgColor;
 // bool RendererBasic::s_SpirV_Enabled;

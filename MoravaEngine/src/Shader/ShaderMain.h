@@ -3,10 +3,10 @@
 #include "Light/DirectionalLight.h"
 #include "Light/PointLight.h"
 #include "Light/SpotLight.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 
-class ShaderMain : public Shader
+class ShaderMain : public MoravaShader
 {
 public:
 	ShaderMain();

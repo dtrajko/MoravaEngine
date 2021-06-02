@@ -23,7 +23,7 @@ public:
     ModelJoey(std::string const& path, std::string const& textureDirectory = "", bool gamma = false);
     virtual ~ModelJoey();
 
-    virtual void Draw(Shader* shader) override;
+    virtual void Draw(MoravaShader* shader) override;
     inline std::vector<MeshJoey> GetMeshes() { return meshes; };
 
 protected:

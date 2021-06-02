@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Mesh/Mesh.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 #include "Texture/Texture.h"
 
 #include <assimp/Importer.hpp>

@@ -6,7 +6,7 @@
 
 
 glm::mat4 VulkanRendererBasic::s_ProjectionMatrix;
-std::map<std::string, Shader*> VulkanRendererBasic::s_Shaders;
+std::map<std::string, MoravaShader*> VulkanRendererBasic::s_Shaders;
 std::map<std::string, int> VulkanRendererBasic::s_Uniforms;
 glm::vec4 VulkanRendererBasic::s_BgColor;
 // bool RendererBasic::s_SpirV_Enabled;

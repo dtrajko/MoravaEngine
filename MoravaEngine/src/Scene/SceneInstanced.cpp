@@ -18,7 +18,7 @@ SceneInstanced::SceneInstanced()
 
 void SceneInstanced::SetupShaders()
 {
-	m_ShaderInstanced = new Shader("Shaders/instanced.vert", "Shaders/instanced.frag");
+	m_ShaderInstanced = new MoravaShader("Shaders/instanced.vert", "Shaders/instanced.frag");
 	printf("SceneInstanced: m_ShaderInstanced compiled [programID=%d]\n", m_ShaderInstanced->GetProgramID());
 }
 
@@ -94,7 +94,7 @@ void SceneInstanced::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneInstanced::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
 	m_ShaderInstanced->Bind();
 

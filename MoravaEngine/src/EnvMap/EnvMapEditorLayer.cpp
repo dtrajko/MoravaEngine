@@ -16,7 +16,7 @@
 #include "Material/MaterialLibrary.h"
 #include "Mesh/GeometryFactory.h"
 #include "Renderer/RendererBasic.h"
-#include "Shader/ShaderLibrary.h"
+#include "Shader/MoravaShaderLibrary.h"
 
 #include <filesystem>
 
@@ -229,7 +229,7 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
     std::string fileNameNoExt = Util::StripExtensionFromFileName(fileName);
 
     bool isAnimated = false;
-    EnvMapSharedData::s_ShaderHazelPBR = ShaderLibrary::Get("HazelPBR_Static");
+    EnvMapSharedData::s_ShaderHazelPBR = MoravaShaderLibrary::Get("HazelPBR_Static");
 
     Log::GetLogger()->debug("EnvMapEditorLayer::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
@@ -276,28 +276,28 @@ void EnvMapEditorLayer::ShowBoundingBoxes(bool showBoundingBoxes, bool showBound
 
 void EnvMapEditorLayer::SetupShaders()
 {
-    Hazel::Ref<Shader> shaderHazelPBR_Static = Shader::Create("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
+    Hazel::Ref<MoravaShader> shaderHazelPBR_Static = MoravaShader::Create("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Static compiled [programID={0}]", shaderHazelPBR_Static->GetProgramID());
 
-    Hazel::Ref<Shader> shaderHazelPBR_Anim = Shader::Create("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
+    Hazel::Ref<MoravaShader> shaderHazelPBR_Anim = MoravaShader::Create("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Anim compiled [programID={0}]", shaderHazelPBR_Anim->GetProgramID());
 
-    Hazel::Ref<Shader> shaderRenderer2D_Line = Shader::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
+    Hazel::Ref<MoravaShader> shaderRenderer2D_Line = MoravaShader::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderRenderer2D_Line compiled [programID={0}]", shaderRenderer2D_Line->GetProgramID());
 
-    EnvMapSharedData::s_ShaderOutline = Shader::Create("Shaders/Hazel/Outline.vs", "Shaders/Hazel/Outline.fs");
+    EnvMapSharedData::s_ShaderOutline = MoravaShader::Create("Shaders/Hazel/Outline.vs", "Shaders/Hazel/Outline.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: shaderOutline compiled [programID={0}]", EnvMapSharedData::s_ShaderOutline->GetProgramID());
 
-    m_ShaderShadow = Shader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+    m_ShaderShadow = MoravaShader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderShadow compiled [programID={0}]", m_ShaderShadow->GetProgramID());
 
-    m_ShaderOmniShadow = Shader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+    m_ShaderOmniShadow = MoravaShader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderOmniShadow compiled [programID={0}]", m_ShaderOmniShadow->GetProgramID());
 
-    m_ShaderPostProcessing = Shader::Create("Shaders/env_map_post_processing.vert", "Shaders/env_map_post_processing.frag");
+    m_ShaderPostProcessing = MoravaShader::Create("Shaders/env_map_post_processing.vert", "Shaders/env_map_post_processing.frag");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderPostProcessing compiled [programID={0}]", m_ShaderPostProcessing->GetProgramID());
 
-    m_ShaderBloomBlur = Shader::Create("Shaders/env_map_post_processing_bloom_blur.vert", "Shaders/env_map_post_processing_bloom_blur.frag");
+    m_ShaderBloomBlur = MoravaShader::Create("Shaders/env_map_post_processing_bloom_blur.vert", "Shaders/env_map_post_processing_bloom_blur.frag");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderBloomBlur compiled [programID={0}]", m_ShaderBloomBlur->GetProgramID());
 
     ResourceManager::AddShader("Hazel/HazelPBR_Static", shaderHazelPBR_Static);
@@ -308,13 +308,13 @@ void EnvMapEditorLayer::SetupShaders()
     ResourceManager::AddShader("env_map_post_processing", m_ShaderPostProcessing);
     ResourceManager::AddShader("env_map_post_processing_bloom_blur", m_ShaderBloomBlur);
 
-    ShaderLibrary::Add(shaderHazelPBR_Static);
-    ShaderLibrary::Add(shaderHazelPBR_Anim);
-    ShaderLibrary::Add(shaderRenderer2D_Line);
-    ShaderLibrary::Add(EnvMapSharedData::s_ShaderOutline);
-    ShaderLibrary::Add(m_ShaderShadow);
-    ShaderLibrary::Add(m_ShaderPostProcessing);
-    ShaderLibrary::Add(m_ShaderBloomBlur);
+    MoravaShaderLibrary::Add(shaderHazelPBR_Static);
+    MoravaShaderLibrary::Add(shaderHazelPBR_Anim);
+    MoravaShaderLibrary::Add(shaderRenderer2D_Line);
+    MoravaShaderLibrary::Add(EnvMapSharedData::s_ShaderOutline);
+    MoravaShaderLibrary::Add(m_ShaderShadow);
+    MoravaShaderLibrary::Add(m_ShaderPostProcessing);
+    MoravaShaderLibrary::Add(m_ShaderBloomBlur);
 }
 
 void EnvMapEditorLayer::UpdateUniforms()
@@ -661,14 +661,14 @@ void EnvMapEditorLayer::SetSkyboxLOD(float LOD)
     EnvMapSharedData::s_EditorScene->SetSkyboxLod(LOD);
 }
 
-Hazel::Ref<Shader> EnvMapEditorLayer::GetShaderPBR_Anim()
+Hazel::Ref<MoravaShader> EnvMapEditorLayer::GetShaderPBR_Anim()
 {
-    return ShaderLibrary::Get("HazelPBR_Anim");
+    return MoravaShaderLibrary::Get("HazelPBR_Anim");
 }
 
-Hazel::Ref<Shader> EnvMapEditorLayer::GetShaderPBR_Static()
+Hazel::Ref<MoravaShader> EnvMapEditorLayer::GetShaderPBR_Static()
 {
-    return ShaderLibrary::Get("HazelPBR_Static");
+    return MoravaShaderLibrary::Get("HazelPBR_Static");
 }
 
 void EnvMapEditorLayer::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest)
@@ -2049,7 +2049,7 @@ void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, Hazel::E
     RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
 }
 
-void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<Shader> shader)
+void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shader)
 {
     // Rendering all meshes (submeshes) on the scene to a shadow framebuffer
     auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();

@@ -14,7 +14,7 @@ ParticleRendererInstanced::ParticleRendererInstanced(int maxInstances)
 {
 	m_MaxInstances = maxInstances;
 
-	m_Shader = new Shader("Shaders/ThinMatrix/particle_instanced.vs", "Shaders/ThinMatrix/particle_instanced.fs");
+	m_Shader = new MoravaShader("Shaders/ThinMatrix/particle_instanced.vs", "Shaders/ThinMatrix/particle_instanced.fs");
 	printf("ParticleRenderer: m_Shader compiled [programID=%d]\n", m_Shader->GetProgramID());
 
 	m_Mesh = new QuadInstanced();

@@ -4,7 +4,7 @@
 #include "Hazel/Renderer/HazelMaterial.h"
 #include "Hazel/Renderer/HazelShader.h"
 
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 #include "Texture/Texture.h"
 
 #include <glm/glm.hpp>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Framebuffer/Framebuffer.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 #include "Texture/Texture.h"
 
 
@@ -42,8 +42,8 @@ private:
 	int m_Height;
 	int m_TextureID;
 
-	Shader* m_ShaderHorizontalBlur;
-	Shader* m_ShaderVerticalBlur;
+	MoravaShader* m_ShaderHorizontalBlur;
+	MoravaShader* m_ShaderVerticalBlur;
 
 	int m_OriginalTextureSlot;
 

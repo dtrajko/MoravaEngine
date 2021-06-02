@@ -4,7 +4,7 @@
 #include "Mesh/QuadInstanced.h"
 #include "Particle/Particle.h"
 #include "Particle/ParticleRenderer.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 
 class ParticleRendererInstanced : public ParticleRenderer

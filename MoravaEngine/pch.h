@@ -39,7 +39,7 @@
 #include "Material/Material.h"
 #include "Mesh/Mesh.h"
 #include "Scene/Scene.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 #include "Texture/TextureCubemap.h"
 
 // GLM

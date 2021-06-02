@@ -29,7 +29,7 @@ public:
 	void UpdateImGuizmo(Window* mainWindow);
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms) override;
     inline Framebuffer* GetRenderFramebuffer() { return m_RenderFramebuffer; };
 
 private:
@@ -43,9 +43,9 @@ private:
 	// void SetupECS();
 
 	void AddLightsToSceneObjects();
-	void RenderLightSources(Shader* shader);
-	void RenderSkybox(Shader* shader);
-	void RenderLineElements(Shader* shader, glm::mat4 projectionMatrix);
+	void RenderLightSources(MoravaShader* shader);
+	void RenderSkybox(MoravaShader* shader);
+	void RenderLineElements(MoravaShader* shader, glm::mat4 projectionMatrix);
 	void SetGeometry();
 	void CleanupGeometry();
 	inline Raycast* GetRaycast() const { return m_Raycast; };
@@ -61,11 +61,11 @@ private:
 	Mesh* CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* name);
 	Model* AddNewModel(int modelID, glm::vec3 scale);
 	SceneObjectParticleSystem* AddNewSceneObjectParticleSystem(int objectTypeID, glm::vec3 scale);
-	void SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Hazel::Ref<Material> material, SceneObject* sceneObject);
-	void SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject);
-	void SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject, float runningTime);
-	void SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Texture* texture, SceneObject* sceneObject, float runningTime);
-	void SetUniformsShaderWater(Shader* shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix);
+	void SetUniformsShaderEditorPBR(MoravaShader* shaderEditorPBR, Texture* texture, Hazel::Ref<Material> material, SceneObject* sceneObject);
+	void SetUniformsShaderEditor(MoravaShader* shaderEditor, Texture* texture, SceneObject* sceneObject);
+	void SetUniformsShaderSkinning(MoravaShader* shaderSkinning, SceneObject* sceneObject, float runningTime);
+	void SetUniformsShaderHybridAnimPBR(MoravaShader* shaderHybridAnimPBR, Texture* texture, SceneObject* sceneObject, float runningTime);
+	void SetUniformsShaderWater(MoravaShader* shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix);
 	void SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix);
 	virtual bool IsWaterOnScene() override;
 	void UpdateLightManager();

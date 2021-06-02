@@ -1,4 +1,4 @@
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include "Hazel/Core/Assert.h"
 #include "Hazel/Renderer/RendererAPI.h"
@@ -7,9 +7,9 @@
 #include "Core/Util.h"
 
 
-std::vector<Hazel::Ref<Shader>> Shader::s_AllShaders;
+std::vector<Hazel::Ref<MoravaShader>> MoravaShader::s_AllShaders;
 
-Shader::Shader()
+MoravaShader::MoravaShader()
 {
 	shaderID = 0;
 
@@ -18,8 +18,8 @@ Shader::Shader()
 	m_UniformLocations = std::map<std::string, int>();
 }
 
-Shader::Shader(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
-	: Shader()
+MoravaShader::MoravaShader(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
+	: MoravaShader()
 {
 	m_ShaderFilepath_Vertex = vertexLocation;
 	m_ShaderFilepath_Fragment = fragmentLocation;
@@ -29,8 +29,8 @@ Shader::Shader(const char* vertexLocation, const char* fragmentLocation, bool fo
 	CreateFromFiles(vertexLocation, fragmentLocation);
 }
 
-Shader::Shader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
-	: Shader()
+MoravaShader::MoravaShader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
+	: MoravaShader()
 {
 	m_ShaderFilepath_Vertex = vertexLocation;
 	m_ShaderFilepath_Geometry = geometryLocation;
@@ -41,8 +41,8 @@ Shader::Shader(const char* vertexLocation, const char* geometryLocation, const c
 	CreateFromFiles(vertexLocation, geometryLocation, fragmentLocation);
 }
 
-Shader::Shader(const char* computeLocation, bool forceCompile)
-	: Shader()
+MoravaShader::MoravaShader(const char* computeLocation, bool forceCompile)
+	: MoravaShader()
 {
 	m_ShaderFilepath_Compute = computeLocation;
 
@@ -53,15 +53,15 @@ Shader::Shader(const char* computeLocation, bool forceCompile)
 	CompileProgram();
 }
 
-Hazel::Ref<Shader> Shader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
+Hazel::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
 {
-	Hazel::Ref<Shader> result = Hazel::Ref<Shader>();
+	Hazel::Ref<MoravaShader> result = Hazel::Ref<MoravaShader>();
 
 	switch (Hazel::RendererAPI::Current())
 	{
-	case Hazel::RendererAPIType::None: return Hazel::Ref<Shader>();
+	case Hazel::RendererAPIType::None: return Hazel::Ref<MoravaShader>();
 	case Hazel::RendererAPIType::OpenGL:
-		result = Hazel::Ref<Shader>::Create(vertexLocation, fragmentLocation, forceCompile);
+		result = Hazel::Ref<MoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
 		break;
 	case Hazel::RendererAPIType::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
@@ -71,15 +71,15 @@ Hazel::Ref<Shader> Shader::Create(const char* vertexLocation, const char* fragme
 	return result;
 }
 
-Hazel::Ref<Shader> Shader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
+Hazel::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
 {
-	Hazel::Ref<Shader> result = Hazel::Ref<Shader>();
+	Hazel::Ref<MoravaShader> result = Hazel::Ref<MoravaShader>();
 
 	switch (Hazel::RendererAPI::Current())
 	{
-	case Hazel::RendererAPIType::None: return Hazel::Ref<Shader>();
+	case Hazel::RendererAPIType::None: return Hazel::Ref<MoravaShader>();
 	case Hazel::RendererAPIType::OpenGL:
-		result = Hazel::Ref<Shader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
+		result = Hazel::Ref<MoravaShader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
 		break;
 	case Hazel::RendererAPIType::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
@@ -89,15 +89,15 @@ Hazel::Ref<Shader> Shader::Create(const char* vertexLocation, const char* geomet
 	return result;
 }
 
-Hazel::Ref<Shader> Shader::Create(const char* computeLocation, bool forceCompile)
+Hazel::Ref<MoravaShader> MoravaShader::Create(const char* computeLocation, bool forceCompile)
 {
-	Hazel::Ref<Shader> result = Hazel::Ref<Shader>();
+	Hazel::Ref<MoravaShader> result = Hazel::Ref<MoravaShader>();
 
 	switch (Hazel::RendererAPI::Current())
 	{
-	case Hazel::RendererAPIType::None: return Hazel::Ref<Shader>();
+	case Hazel::RendererAPIType::None: return Hazel::Ref<MoravaShader>();
 	case Hazel::RendererAPIType::OpenGL:
-		result = Hazel::Ref<Shader>::Create(computeLocation, forceCompile);
+		result = Hazel::Ref<MoravaShader>::Create(computeLocation, forceCompile);
 		break;
 	case Hazel::RendererAPIType::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
@@ -107,12 +107,12 @@ Hazel::Ref<Shader> Shader::Create(const char* computeLocation, bool forceCompile
 	return result;
 }
 
-void Shader::CreateFromString(const char* vertexCode, const char* fragmentCode)
+void MoravaShader::CreateFromString(const char* vertexCode, const char* fragmentCode)
 {
 	CompileShader(vertexCode, fragmentCode);
 }
 
-void Shader::CreateFromFiles(const char* vertexLocation, const char* fragmentLocation)
+void MoravaShader::CreateFromFiles(const char* vertexLocation, const char* fragmentLocation)
 {
 	std::string vertexString = ReadFile(vertexLocation);
 	std::string fragmentString = ReadFile(fragmentLocation);
@@ -121,7 +121,7 @@ void Shader::CreateFromFiles(const char* vertexLocation, const char* fragmentLoc
 	CompileShader(vertexCode, fragmentCode);
 }
 
-void Shader::CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation)
+void MoravaShader::CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation)
 {
 	std::string vertexString = ReadFile(vertexLocation);
 	std::string geometryString = ReadFile(geometryLocation);
@@ -132,35 +132,35 @@ void Shader::CreateFromFiles(const char* vertexLocation, const char* geometryLoc
 	CompileShader(vertexCode, geometryCode, fragmentCode);
 }
 
-void Shader::CreateFromFileVertex(const char* vertexLocation)
+void MoravaShader::CreateFromFileVertex(const char* vertexLocation)
 {
 	std::string vertexString = ReadFile(vertexLocation);
 	const char* vertexCode = vertexString.c_str();
 	AddShaderVertex(vertexCode);
 }
 
-void Shader::CreateFromFileFragment(const char* fragmentLocation)
+void MoravaShader::CreateFromFileFragment(const char* fragmentLocation)
 {
 	std::string fragmentString = ReadFile(fragmentLocation);
 	const char* fragmentCode = fragmentString.c_str();
 	AddShaderFragment(fragmentCode);
 }
 
-void Shader::CreateFromFileGeometry(const char* geometryLocation)
+void MoravaShader::CreateFromFileGeometry(const char* geometryLocation)
 {
 	std::string geometryString = ReadFile(geometryLocation);
 	const char* geometryCode = geometryString.c_str();
 	AddShaderGeometry(geometryCode);
 }
 
-void Shader::CreateFromFileCompute(const char* computeLocation)
+void MoravaShader::CreateFromFileCompute(const char* computeLocation)
 {
 	std::string computeString = ReadFile(computeLocation);
 	const char* computeCode = computeString.c_str();
 	AddShaderCompute(computeCode);
 }
 
-std::string Shader::ReadFile(const char* fileLocation)
+std::string MoravaShader::ReadFile(const char* fileLocation)
 {
 	std::string content;
 	std::ifstream fileStream(fileLocation, std::ios::in);
@@ -185,7 +185,7 @@ std::string Shader::ReadFile(const char* fileLocation)
 	return content;
 }
 
-void Shader::Validate()
+void MoravaShader::Validate()
 {
 	if (m_Validated) return;
 
@@ -206,78 +206,78 @@ void Shader::Validate()
 	m_Validated = true;
 }
 
-GLuint Shader::GetProgramID()
+GLuint MoravaShader::GetProgramID()
 {
 	return programID;
 }
 
 // utility uniform functions
-void Shader::setBool(const std::string& name, bool value)
+void MoravaShader::setBool(const std::string& name, bool value)
 {
 	glUniform1i(GetUniformLocation(name), (int)value);
 }
 
-void Shader::setInt(const std::string& name, int value)
+void MoravaShader::setInt(const std::string& name, int value)
 {
 	glUniform1i(GetUniformLocation(name), value);
 }
 
-void Shader::setFloat(const std::string& name, float value)
+void MoravaShader::setFloat(const std::string& name, float value)
 {
 	auto uniformLocation = GetUniformLocation(name);
 	glUniform1f(GetUniformLocation(name), value);
 
-	// Log::GetLogger()->debug("Shader::setFloat name: '{0}', value: '{1}', uniformLocation: '{2}'", name, value, uniformLocation);
+	// Log::GetLogger()->debug("MoravaShader::setFloat name: '{0}', value: '{1}', uniformLocation: '{2}'", name, value, uniformLocation);
 }
 
-void Shader::setVec2(const std::string& name, const glm::vec2& value)
+void MoravaShader::setVec2(const std::string& name, const glm::vec2& value)
 {
 	glUniform2fv(GetUniformLocation(name), 1, &value[0]);
 }
 
-void Shader::setVec2(const std::string& name, float x, float y)
+void MoravaShader::setVec2(const std::string& name, float x, float y)
 {
 	glUniform2f(GetUniformLocation(name), x, y);
 }
-void Shader::setVec3(const std::string& name, const glm::vec3& value)
+void MoravaShader::setVec3(const std::string& name, const glm::vec3& value)
 {
 	auto uniformLocation = GetUniformLocation(name);
 	glUniform3fv(GetUniformLocation(name), 1, &value[0]);
 
-	// Log::GetLogger()->debug("Shader::setFloat name: '{0}', value: [{1} {2} {3}], uniformLocation: '{4}'", name, value.x, value.y, value.z, uniformLocation);
+	// Log::GetLogger()->debug("MoravaShader::setFloat name: '{0}', value: [{1} {2} {3}], uniformLocation: '{4}'", name, value.x, value.y, value.z, uniformLocation);
 }
 
-void Shader::setVec3(const std::string& name, float x, float y, float z)
+void MoravaShader::setVec3(const std::string& name, float x, float y, float z)
 {
 	glUniform3f(GetUniformLocation(name), x, y, z);
 }
 
-void Shader::setVec4(const std::string& name, const glm::vec4& value)
+void MoravaShader::setVec4(const std::string& name, const glm::vec4& value)
 {
 	glUniform4fv(GetUniformLocation(name), 1, &value[0]);
 }
 
-void Shader::setVec4(const std::string& name, float x, float y, float z, float w)
+void MoravaShader::setVec4(const std::string& name, float x, float y, float z, float w)
 {
 	glUniform4f(GetUniformLocation(name), x, y, z, w);
 }
 
-void Shader::setMat2(const std::string& name, const glm::mat2& mat)
+void MoravaShader::setMat2(const std::string& name, const glm::mat2& mat)
 {
 	glUniformMatrix2fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
-void Shader::setMat3(const std::string& name, const glm::mat3& mat)
+void MoravaShader::setMat3(const std::string& name, const glm::mat3& mat)
 {
 	glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
-void Shader::setMat4(const std::string& name, const glm::mat4& mat)
+void MoravaShader::setMat4(const std::string& name, const glm::mat4& mat)
 {
 	glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
-GLint Shader::GetUniformLocation(const std::string& name)
+GLint MoravaShader::GetUniformLocation(const std::string& name)
 {
 	std::map<std::string, int>::const_iterator it;
 	it = m_UniformLocations.find(name.c_str());
@@ -294,17 +294,17 @@ GLint Shader::GetUniformLocation(const std::string& name)
 	}
 }
 
-void Shader::SetIntArray(const std::string& name, int* values, uint32_t size)
+void MoravaShader::SetIntArray(const std::string& name, int* values, uint32_t size)
 {
 	glUniform1iv(GetUniformLocation(name), size, values);
 }
 
-const std::string& Shader::GetName() const
+const std::string& MoravaShader::GetName() const
 {
 	return std::string();
 }
 
-const std::unordered_map<std::string, Hazel::ShaderBuffer>& Shader::GetShaderBuffers() const
+const std::unordered_map<std::string, Hazel::ShaderBuffer>& MoravaShader::GetShaderBuffers() const
 {
 	// OpenGLMaterial::FindUniformDeclaration requires at least 2 shader buffers
 	std::unordered_map<std::string, Hazel::ShaderBuffer> shaderBuffers = std::unordered_map<std::string, Hazel::ShaderBuffer>();
@@ -313,86 +313,86 @@ const std::unordered_map<std::string, Hazel::ShaderBuffer>& Shader::GetShaderBuf
 	return shaderBuffers;
 }
 
-const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& Shader::GetResources() const
+const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& MoravaShader::GetResources() const
 {
 	return std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>();
 }
 
-void Shader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)
+void MoravaShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)
 {
 }
 
-uint32_t Shader::GetRendererID() const
+uint32_t MoravaShader::GetRendererID() const
 {
 	return programID;
 }
 
-size_t Shader::GetHash() const
+size_t MoravaShader::GetHash() const
 {
 	return std::hash<std::string>{}(m_ShaderFilepath_Vertex + m_ShaderFilepath_Compute + m_ShaderFilepath_Fragment);
 }
 
-void Shader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size)
+void MoravaShader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size)
 {
 }
 
-void Shader::SetUniform(const std::string& fullname, float value)
+void MoravaShader::SetUniform(const std::string& fullname, float value)
 {
 	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniform1f(location, value);
 }
 
-void Shader::SetUniform(const std::string& fullname, uint32_t value)
+void MoravaShader::SetUniform(const std::string& fullname, uint32_t value)
 {
 	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniform1ui(location, value);
 }
 
-void Shader::SetUniform(const std::string& fullname, int value)
+void MoravaShader::SetUniform(const std::string& fullname, int value)
 {
 	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniform1i(location, value);
 }
 
-void Shader::SetUniform(const std::string& fullname, const glm::vec2& value)
+void MoravaShader::SetUniform(const std::string& fullname, const glm::vec2& value)
 {
 	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniform2fv(location, 1, glm::value_ptr(value));
 }
 
-void Shader::SetUniform(const std::string& fullname, const glm::vec3& value)
+void MoravaShader::SetUniform(const std::string& fullname, const glm::vec3& value)
 {
 	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniform3fv(location, 1, glm::value_ptr(value));
 }
 
-void Shader::SetUniform(const std::string& fullname, const glm::vec4& value)
+void MoravaShader::SetUniform(const std::string& fullname, const glm::vec4& value)
 {
 	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniform4fv(location, 1, glm::value_ptr(value));
 }
 
-void Shader::SetUniform(const std::string& fullname, const glm::mat3& value)
+void MoravaShader::SetUniform(const std::string& fullname, const glm::mat3& value)
 {
 	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void Shader::SetUniform(const std::string& fullname, const glm::mat4& value)
+void MoravaShader::SetUniform(const std::string& fullname, const glm::mat4& value)
 {
 	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void Shader::SetFloat(const std::string& name, float value)
+void MoravaShader::SetFloat(const std::string& name, float value)
 {
 	glUseProgram(programID);
 	auto location = glGetUniformLocation(programID, name.c_str());
@@ -402,25 +402,25 @@ void Shader::SetFloat(const std::string& name, float value)
 		Log::GetLogger()->error("Uniform '{0}' not found!", name);
 }
 
-void Shader::SetUInt(const std::string& name, uint32_t value)
+void MoravaShader::SetUInt(const std::string& name, uint32_t value)
 {
 	int32_t location = GetUniformLocation(name);
 	glUniform1ui(location, value);
 }
 
-void Shader::SetInt(const std::string& name, int value)
+void MoravaShader::SetInt(const std::string& name, int value)
 {
 	int32_t location = GetUniformLocation(name);
 	glUniform1i(location, value);
 }
 
-void Shader::SetBool(const std::string& name, bool value)
+void MoravaShader::SetBool(const std::string& name, bool value)
 {
 	int32_t location = GetUniformLocation(name);
 	glUniform1i(location, value);
 }
 
-void Shader::SetFloat2(const std::string& name, const glm::vec2& value)
+void MoravaShader::SetFloat2(const std::string& name, const glm::vec2& value)
 {
 	glUseProgram(programID);
 	auto location = glGetUniformLocation(programID, name.c_str());
@@ -432,7 +432,7 @@ void Shader::SetFloat2(const std::string& name, const glm::vec2& value)
 	}
 }
 
-void Shader::SetFloat3(const std::string& name, const glm::vec3& value)
+void MoravaShader::SetFloat3(const std::string& name, const glm::vec3& value)
 {
 	glUseProgram(programID);
 	auto location = glGetUniformLocation(programID, name.c_str());
@@ -444,7 +444,7 @@ void Shader::SetFloat3(const std::string& name, const glm::vec3& value)
 	}
 }
 
-void Shader::SetMat4(const std::string& name, const glm::mat4& value)
+void MoravaShader::SetMat4(const std::string& name, const glm::mat4& value)
 {
 	glUseProgram(programID);
 	auto location = glGetUniformLocation(programID, name.c_str());
@@ -454,7 +454,7 @@ void Shader::SetMat4(const std::string& name, const glm::mat4& value)
 		Log::GetLogger()->error("Uniform '{0}' not found!", name);
 }
 
-void Shader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind)
+void MoravaShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind)
 {
 	if (bind)
 	{
@@ -468,7 +468,7 @@ void Shader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& v
 	}
 }
 
-void Shader::UploadUniformMat4(const std::string& name, const glm::mat4& values)
+void MoravaShader::UploadUniformMat4(const std::string& name, const glm::mat4& values)
 {
 	glUseProgram(programID);
 	auto location = glGetUniformLocation(programID, name.c_str());
@@ -478,12 +478,12 @@ void Shader::UploadUniformMat4(const std::string& name, const glm::mat4& values)
 		Log::GetLogger()->error("Uniform '{0}' not found!", name);
 }
 
-void Shader::UploadUniformMat4(uint32_t location, const glm::mat4& value)
+void MoravaShader::UploadUniformMat4(uint32_t location, const glm::mat4& value)
 {
 	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void Shader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
+void MoravaShader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
 {
 	for (GLuint i = 0; i < 6; i++)
 	{
@@ -491,7 +491,7 @@ void Shader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
 	}
 }
 
-void Shader::setLightMat4(std::vector<glm::mat4> lightMatrices)
+void MoravaShader::setLightMat4(std::vector<glm::mat4> lightMatrices)
 {
 	for (GLuint i = 0; i < 6; i++)
 	{
@@ -500,12 +500,12 @@ void Shader::setLightMat4(std::vector<glm::mat4> lightMatrices)
 	}
 }
 
-void Shader::Bind()
+void MoravaShader::Bind()
 {
 	glUseProgram(programID);
 }
 
-void Shader::Reload(bool forceCompile)
+void MoravaShader::Reload(bool forceCompile)
 {
 	ClearShader();
 
@@ -530,12 +530,12 @@ void Shader::Reload(bool forceCompile)
 	CompileProgram();
 }
 
-void Shader::Unbind()
+void MoravaShader::Unbind()
 {
 	glUseProgram(0);
 }
 
-void Shader::ClearShader()
+void MoravaShader::ClearShader()
 {
 	if (programID > 0)
 	{
@@ -546,12 +546,12 @@ void Shader::ClearShader()
 	m_UniformLocations.clear();
 }
 
-Shader::~Shader()
+MoravaShader::~MoravaShader()
 {
 	ClearShader();
 }
 
-void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
+void MoravaShader::CompileShader(const char* vertexCode, const char* fragmentCode)
 {
 	programID = glCreateProgram();
 
@@ -567,7 +567,7 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 	CompileProgram();
 }
 
-void Shader::CompileShader(const char* vertexCode, const char* geometryCode, const char* fragmentCode)
+void MoravaShader::CompileShader(const char* vertexCode, const char* geometryCode, const char* fragmentCode)
 {
 	programID = glCreateProgram();
 
@@ -584,7 +584,7 @@ void Shader::CompileShader(const char* vertexCode, const char* geometryCode, con
 	CompileProgram();
 }
 
-void Shader::AddShaderVertex(const char* vertexCode)
+void MoravaShader::AddShaderVertex(const char* vertexCode)
 {
 	if (programID == -1) {
 		programID = glCreateProgram();
@@ -599,7 +599,7 @@ void Shader::AddShaderVertex(const char* vertexCode)
 	AddShader(programID, vertexCode, GL_VERTEX_SHADER);
 }
 
-void Shader::AddShaderFragment(const char* fragmentCode)
+void MoravaShader::AddShaderFragment(const char* fragmentCode)
 {
 	if (programID == -1) {
 		programID = glCreateProgram();
@@ -614,7 +614,7 @@ void Shader::AddShaderFragment(const char* fragmentCode)
 	AddShader(programID, fragmentCode, GL_FRAGMENT_SHADER);
 }
 
-void Shader::AddShaderGeometry(const char* geometryCode)
+void MoravaShader::AddShaderGeometry(const char* geometryCode)
 {
 	if (programID == -1) {
 		programID = glCreateProgram();
@@ -629,7 +629,7 @@ void Shader::AddShaderGeometry(const char* geometryCode)
 	AddShader(programID, geometryCode, GL_GEOMETRY_SHADER);
 }
 
-void Shader::AddShaderCompute(const char* computeCode)
+void MoravaShader::AddShaderCompute(const char* computeCode)
 {
 	if (programID == -1) {
 		programID = glCreateProgram();
@@ -644,7 +644,7 @@ void Shader::AddShaderCompute(const char* computeCode)
 	AddShader(programID, computeCode, GL_COMPUTE_SHADER);
 }
 
-const char* Shader::GetShaderTypeNameFromEnum(const GLenum shaderType)
+const char* MoravaShader::GetShaderTypeNameFromEnum(const GLenum shaderType)
 {
 	const char* shaderTypeName = "Unknown";
 	if (shaderType == GL_VERTEX_SHADER)               shaderTypeName = "Vertex";
@@ -656,7 +656,7 @@ const char* Shader::GetShaderTypeNameFromEnum(const GLenum shaderType)
 	return shaderTypeName;
 }
 
-void Shader::AddShader(GLuint programID, const char* shaderCode, GLenum shaderType)
+void MoravaShader::AddShader(GLuint programID, const char* shaderCode, GLenum shaderType)
 {
 	const char* shaderTypeName = GetShaderTypeNameFromEnum(shaderType);
 
@@ -692,7 +692,7 @@ void Shader::AddShader(GLuint programID, const char* shaderCode, GLenum shaderTy
 	return;
 }
 
-void Shader::CompileProgram()
+void MoravaShader::CompileProgram()
 {
 	GLint result = 0;
 	GLchar eLog[1024] = { 0 };
@@ -712,7 +712,7 @@ void Shader::CompileProgram()
 	GetUniformLocations();
 }
 
-void Shader::GetUniformLocations()
+void MoravaShader::GetUniformLocations()
 {
 	for (unsigned int i = 0; i < 6; i++)
 	{

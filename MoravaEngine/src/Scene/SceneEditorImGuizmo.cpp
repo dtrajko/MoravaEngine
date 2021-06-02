@@ -25,7 +25,7 @@
 #include "Mesh/Tile2D.h"
 #include "Particle/ParticleMaster.h"
 #include "PerlinNoise/PerlinNoise.hpp"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 #include "Terrain/TerrainHeightMap.h"
 #include "Texture/TextureLoader.h"
 
@@ -468,7 +468,7 @@ void SceneEditorImGuizmo::LoadScene()
 
     printf("LoadScene: Loading objects...\n");
 
-    std::string sceneFileContent = Shader::ReadFile(m_SceneFilename);
+    std::string sceneFileContent = MoravaShader::ReadFile(m_SceneFilename);
 
     std::vector<std::string> lines;
     std::istringstream iss(sceneFileContent);
@@ -1743,7 +1743,7 @@ Mesh* SceneEditorImGuizmo::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::s
         *name = "drone";
         break;
     case MESH_TYPE_M1911:
-        mesh = new Hazel::HazelMesh("Models/M1911/m1911.fbx", Hazel::Ref<Shader>(RendererBasic::GetShaders()["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
+        mesh = new Hazel::HazelMesh("Models/M1911/m1911.fbx", Hazel::Ref<MoravaShader>(RendererBasic::GetShaders()["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
         *name = "M1911";
         break;
     default:
@@ -2110,7 +2110,7 @@ SceneObjectParticleSystem* SceneEditorImGuizmo::AddNewSceneObjectParticleSystem(
     return particle_system;
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderEditor(Shader* shaderEditor, Texture* texture, SceneObject* sceneObject)
+void SceneEditorImGuizmo::SetUniformsShaderEditor(MoravaShader* shaderEditor, Texture* texture, SceneObject* sceneObject)
 {
     shaderEditor->Bind();
 
@@ -2143,7 +2143,7 @@ void SceneEditorImGuizmo::SetUniformsShaderEditor(Shader* shaderEditor, Texture*
     shaderEditor->setInt("shadowMap", 2);
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Texture* texture, Hazel::Ref<Material> material, SceneObject* sceneObject)
+void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(MoravaShader* shaderEditorPBR, Texture* texture, Hazel::Ref<Material> material, SceneObject* sceneObject)
 {
     shaderEditorPBR->Bind();
 
@@ -2171,7 +2171,7 @@ void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(Shader* shaderEditorPBR, Te
     shaderEditorPBR->setInt("shadowMap", 8);
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderSkinning(Shader* shaderSkinning, SceneObject* sceneObject, float runningTime)
+void SceneEditorImGuizmo::SetUniformsShaderSkinning(MoravaShader* shaderSkinning, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
 
@@ -2194,7 +2194,7 @@ void SceneEditorImGuizmo::SetUniformsShaderSkinning(Shader* shaderSkinning, Scen
     }
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAnimPBR, Texture* texture, SceneObject* sceneObject, float runningTime)
+void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(MoravaShader* shaderHybridAnimPBR, Texture* texture, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
 
@@ -2267,7 +2267,7 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Shader* shaderHybridAni
     }
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderWater(Shader* shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix)
+void SceneEditorImGuizmo::SetUniformsShaderWater(MoravaShader* shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix)
 {
     RendererBasic::EnableTransparency();
 
@@ -2445,7 +2445,7 @@ void SceneEditorImGuizmo::AddLightsToSceneObjects()
     }
 }
 
-void SceneEditorImGuizmo::RenderLightSources(Shader* shaderGizmo)
+void SceneEditorImGuizmo::RenderLightSources(MoravaShader* shaderGizmo)
 {
     shaderGizmo->Bind();
 
@@ -2485,7 +2485,7 @@ void SceneEditorImGuizmo::RenderLightSources(Shader* shaderGizmo)
     }
 }
 
-void SceneEditorImGuizmo::RenderSkybox(Shader* shaderBackground)
+void SceneEditorImGuizmo::RenderSkybox(MoravaShader* shaderBackground)
 {
     m_BlurEffect->Render();
 
@@ -2523,7 +2523,7 @@ void SceneEditorImGuizmo::RenderSkybox(Shader* shaderBackground)
     m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
 }
 
-void SceneEditorImGuizmo::RenderLineElements(Shader* shaderBasic, glm::mat4 projectionMatrix)
+void SceneEditorImGuizmo::RenderLineElements(MoravaShader* shaderBasic, glm::mat4 projectionMatrix)
 {
     if (!m_DisplayLineElements) return;
 
@@ -2557,7 +2557,7 @@ void SceneEditorImGuizmo::RenderLineElements(Shader* shaderBasic, glm::mat4 proj
 }
 
 void SceneEditorImGuizmo::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
     m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui
 

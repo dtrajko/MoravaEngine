@@ -8,7 +8,7 @@
 #include "Core/MousePicker.h"
 #include "Core/Timer.h"
 #include "Mesh/Block.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include "../../ImGuizmo/ImGuizmo.h"
 
@@ -201,25 +201,25 @@ void SceneAnimPBR::SetupMaterials()
 
 void SceneAnimPBR::SetupShaders()
 {
-    m_ShaderMain = Hazel::Ref<Shader>::Create("Shaders/shader.vert", "Shaders/shader.frag");
+    m_ShaderMain = Hazel::Ref<MoravaShader>::Create("Shaders/shader.vert", "Shaders/shader.frag");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderMain compiled [programID={0}]", m_ShaderMain->GetProgramID());
 
-    m_ShaderBackground = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    m_ShaderBackground = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
 
-    m_ShaderHybridAnimPBR = Hazel::Ref<Shader>::Create("Shaders/HybridAnimPBR.vs", "Shaders/HybridAnimPBR.fs");
+    m_ShaderHybridAnimPBR = Hazel::Ref<MoravaShader>::Create("Shaders/HybridAnimPBR.vs", "Shaders/HybridAnimPBR.fs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderHybridAnimPBR compiled [programID={0}]", m_ShaderHybridAnimPBR->GetProgramID());
 
-    m_ShaderEquirectangularConversion = Hazel::Ref<Shader>::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
+    m_ShaderEquirectangularConversion = Hazel::Ref<MoravaShader>::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderEquirectangularConversion compiled [programID={0}]", m_ShaderEquirectangularConversion->GetProgramID());
 
-    m_ShaderEnvFiltering = Hazel::Ref<Shader>::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
+    m_ShaderEnvFiltering = Hazel::Ref<MoravaShader>::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderEnvFiltering compiled [programID={0}]", m_ShaderEnvFiltering->GetProgramID());
 
-    m_ShaderEnvIrradiance = Hazel::Ref<Shader>::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
+    m_ShaderEnvIrradiance = Hazel::Ref<MoravaShader>::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderEnvIrradiance compiled [programID={0}]", m_ShaderEnvIrradiance->GetProgramID());
 
-    m_ShaderBasic = Hazel::Ref<Shader>::Create("Shaders/basic.vs", "Shaders/basic.fs");
+    m_ShaderBasic = Hazel::Ref<MoravaShader>::Create("Shaders/basic.vs", "Shaders/basic.fs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
 }
 
@@ -950,7 +950,7 @@ SceneAnimPBR::~SceneAnimPBR()
 }
 
 void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
     if (m_IsViewportEnabled)
     {

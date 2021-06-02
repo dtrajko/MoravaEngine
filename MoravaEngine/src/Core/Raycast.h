@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include <glm/glm.hpp>
 
@@ -16,7 +16,7 @@ class Raycast
 {
 public:
 	Raycast();
-	void Draw(glm::vec3 start, glm::vec3 end, glm::vec4 color, Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
+	void Draw(glm::vec3 start, glm::vec3 end, glm::vec4 color, MoravaShader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 	~Raycast();
 
 public:

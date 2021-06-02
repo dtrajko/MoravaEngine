@@ -30,8 +30,8 @@ public:
 	static bool s_DisplayRay;
 	static glm::vec3 s_NewRay;
 
-	static Hazel::Ref<Shader> s_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
-	static Hazel::Ref<Shader> s_ShaderOutline;
+	static Hazel::Ref<MoravaShader> s_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
+	static Hazel::Ref<MoravaShader> s_ShaderOutline;
 
 	static Hazel::Entity s_PointLightEntity; // temporary, for experimental use
 	static Hazel::Ref<OmniShadowMap> s_OmniShadowMapPointLight;

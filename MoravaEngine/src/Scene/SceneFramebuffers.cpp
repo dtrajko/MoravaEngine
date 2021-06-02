@@ -35,10 +35,10 @@ void SceneFramebuffers::SetupTextures()
 
 void SceneFramebuffers::SetupShaders()
 {
-	m_ShaderFramebuffersScene = new Shader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
+	m_ShaderFramebuffersScene = new MoravaShader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
 	printf("SceneFramebuffers: m_ShaderFramebuffersScene compiled [programID=%d]\n", m_ShaderFramebuffersScene->GetProgramID());
 
-	m_ShaderFramebuffersScreen = new Shader("Shaders/framebuffers_screen.vs", "Shaders/framebuffers_screen.fs");
+	m_ShaderFramebuffersScreen = new MoravaShader("Shaders/framebuffers_screen.vs", "Shaders/framebuffers_screen.fs");
 	printf("SceneFramebuffers: m_ShaderFramebuffersScreen compiled [programID=%d]\n", m_ShaderFramebuffersScreen->GetProgramID());
 
 	// shader configuration
@@ -121,7 +121,7 @@ void SceneFramebuffers::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneFramebuffers::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
 	{
 		// -- BEGIN First Render Pass render target m_Framebuffer

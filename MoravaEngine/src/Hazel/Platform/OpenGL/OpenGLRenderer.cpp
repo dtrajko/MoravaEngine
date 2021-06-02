@@ -309,7 +309,7 @@ namespace Hazel {
 		const uint32_t irradianceMapSize = 32;
 
 		Ref<OpenGLTextureCube> envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCube>();
-		Ref<Shader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap");
+		Ref<MoravaShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap");
 		Ref<HazelTexture2D> envEquirect = HazelTexture2D::Create(filepath);
 		HZ_CORE_ASSERT(envEquirect->GetFormat() == HazelImageFormat::RGBA32F, "Texture is not HDR!");
 
@@ -323,7 +323,7 @@ namespace Hazel {
 				glGenerateTextureMipmap(envUnfiltered->GetRendererID());
 			});
 
-		Ref<Shader> envFilteringShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentMipFilter");
+		Ref<MoravaShader> envFilteringShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentMipFilter");
 
 		Ref<OpenGLTextureCube> envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCube>();
 
@@ -352,7 +352,7 @@ namespace Hazel {
 			}
 			});
 
-		Ref<Shader> envIrradianceShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentIrradiance");
+		Ref<MoravaShader> envIrradianceShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentIrradiance");
 
 		Ref<OpenGLTextureCube> irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA32F, irradianceMapSize, irradianceMapSize).As<OpenGLTextureCube>();
 		envIrradianceShader->Bind();

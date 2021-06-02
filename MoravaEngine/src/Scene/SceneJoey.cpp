@@ -72,19 +72,19 @@ SceneJoey::SceneJoey()
 
 void SceneJoey::SetupShaders()
 {
-	m_Shader_PBR = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/2.2.2.pbr.vs", "Shaders/LearnOpenGL/2.2.2.pbr.fs");
+	m_Shader_PBR = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/2.2.2.pbr.vs", "Shaders/LearnOpenGL/2.2.2.pbr.fs");
 	printf("RendererJoey: m_Shader_PBR compiled [programID=%d]\n", m_Shader_PBR->GetProgramID());
 
-	m_Shader_PBR_MRE = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/2.2.2.pbr.vs", "Shaders/LearnOpenGL/2.2.3.pbr.fs");
+	m_Shader_PBR_MRE = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/2.2.2.pbr.vs", "Shaders/LearnOpenGL/2.2.3.pbr.fs");
 	printf("RendererJoey: m_Shader_PBR_MRE compiled [programID=%d]\n", m_Shader_PBR_MRE->GetProgramID());
 
-	m_ShaderBackground = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+	m_ShaderBackground = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
 	printf("RendererJoey: m_ShaderBackground compiled [programID=%d]\n", m_ShaderBackground->GetProgramID());
 
-	m_ShaderBlurHorizontal = Hazel::Ref<Shader>::Create("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs");
+	m_ShaderBlurHorizontal = Hazel::Ref<MoravaShader>::Create("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs");
 	printf("RendererJoey: m_ShaderBlurHorizontal compiled [programID=%d]\n", m_ShaderBlurHorizontal->GetProgramID());
 
-	m_ShaderBlurVertical = Hazel::Ref<Shader>::Create("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs");
+	m_ShaderBlurVertical = Hazel::Ref<MoravaShader>::Create("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs");
 	printf("RendererJoey: m_ShaderBlurVertical compiled [programID=%d]\n", m_ShaderBlurVertical->GetProgramID());
 
 	m_Shader_PBR->Bind();
@@ -386,7 +386,7 @@ void SceneJoey::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
@@ -555,6 +555,6 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 }
 
 void SceneJoey::RenderWater(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
 }

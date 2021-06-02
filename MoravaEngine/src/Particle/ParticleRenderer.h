@@ -3,7 +3,7 @@
 #include "Camera/CameraController.h"
 #include "Mesh/Quad.h"
 #include "Particle/Particle.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 
 class Particle;
@@ -23,6 +23,6 @@ public:
 
 protected:
 	Mesh* m_Mesh;
-	Shader* m_Shader;
+	MoravaShader* m_Shader;
 
 };

@@ -25,15 +25,15 @@ namespace Hazel {
 
 		Ref<HazelTexture2D> BRDFLUT;
 		Ref<HazelShader> CompositeShader;
-		Ref<Shader> BloomBlurShader;
-		Ref<Shader> BloomBlendShader;
+		Ref<MoravaShader> BloomBlurShader;
+		Ref<MoravaShader> BloomBlendShader;
 
 		Ref<RenderPass> GeoPass;
 		Ref<RenderPass> CompositePass;
 		Ref<RenderPass> BloomBlurPass[2];
 		Ref<RenderPass> BloomBlendPass;
 
-		Ref<Shader> ShadowMapShader, ShadowMapAnimShader;
+		Ref<MoravaShader> ShadowMapShader, ShadowMapAnimShader;
 		Ref<RenderPass> ShadowMapRenderPass[4];
 		float ShadowMapSize = 20.0f;
 		float LightDistance = 0.1f;
@@ -126,9 +126,9 @@ namespace Hazel {
 #endif
 
 #if 0
-		s_Data->CompositeShader = Shader::Create("assets/shaders/SceneComposite.glsl");
-		s_Data->BloomBlurShader = Shader::Create("assets/shaders/BloomBlur.glsl");
-		s_Data->BloomBlendShader = Shader::Create("assets/shaders/BloomBlend.glsl");
+		s_Data->CompositeShader = MoravaShader::Create("assets/shaders/SceneComposite.glsl");
+		s_Data->BloomBlurShader = MoravaShader::Create("assets/shaders/BloomBlur.glsl");
+		s_Data->BloomBlendShader = MoravaShader::Create("assets/shaders/BloomBlend.glsl");
 #endif
 
 	}

@@ -45,7 +45,7 @@ public:
 	static Hazel::Ref<Hazel::HazelTextureCube> GetRadianceMap();
 	static Hazel::Ref<Hazel::HazelTextureCube> GetIrradianceMap();
 	static Hazel::Ref<Hazel::HazelTexture2D> GetBRDFLUT();
-	static Hazel::Ref<Shader> GetShaderComposite();
+	static Hazel::Ref<MoravaShader> GetShaderComposite();
 	static Hazel::Ref<Hazel::RenderPass> GetGeoPass();
 	static Hazel::Ref<Hazel::RenderPass> GetCompositePass();
 	static void CreateDrawCommand(std::string fileNameNoExt, Hazel::HazelMesh* mesh);
@@ -54,8 +54,8 @@ public:
 	static void AddToDrawList(std::string name, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, glm::mat4 transform);
 	static Hazel::Environment Load(const std::string& filepath);
 	static void SetEnvironment(Hazel::Environment environment);
-	static Hazel::Ref<Shader> GetShaderSkybox() { return s_ShaderSkybox; }
-	static Hazel::Ref<Shader> GetShaderGrid() { return s_ShaderGrid; }
+	static Hazel::Ref<MoravaShader> GetShaderSkybox() { return s_ShaderSkybox; }
+	static Hazel::Ref<MoravaShader> GetShaderGrid() { return s_ShaderGrid; }
 	static Hazel::Ref<Hazel::HazelTexture2D> GetEnvEquirect() { return s_EnvEquirect; }
 	static void SetupShaders();
 	static Hazel::SceneRendererCamera& GetCamera();
@@ -76,16 +76,16 @@ public:
 private:
 	static void RenderSkybox();
 	static void RenderHazelGrid();
-	static void RenderOutline(Hazel::Ref<Shader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh);
-	static void UpdateShaderPBRUniforms(Hazel::Ref<Shader> shaderHazelPBR, Hazel::Ref<EnvMapMaterial> envMapMaterial);
+	static void RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh);
+	static void UpdateShaderPBRUniforms(Hazel::Ref<MoravaShader> shaderHazelPBR, Hazel::Ref<EnvMapMaterial> envMapMaterial);
 
 public:
 	// From EnvironmentMap
-	static Hazel::Ref<Shader> s_ShaderEquirectangularConversion;
-	static Hazel::Ref<Shader> s_ShaderEnvFiltering;
-	static Hazel::Ref<Shader> s_ShaderEnvIrradiance;
-	static Hazel::Ref<Shader> s_ShaderGrid;
-	static Hazel::Ref<Shader> s_ShaderSkybox;
+	static Hazel::Ref<MoravaShader> s_ShaderEquirectangularConversion;
+	static Hazel::Ref<MoravaShader> s_ShaderEnvFiltering;
+	static Hazel::Ref<MoravaShader> s_ShaderEnvIrradiance;
+	static Hazel::Ref<MoravaShader> s_ShaderGrid;
+	static Hazel::Ref<MoravaShader> s_ShaderSkybox;
 
 	// Intermediate textures
 	static Hazel::Ref<Hazel::HazelTextureCube> s_EnvUnfiltered;

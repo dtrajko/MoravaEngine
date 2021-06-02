@@ -7,7 +7,7 @@
 #include "Mesh/Mesh.h"
 #include "Mesh/Ring.h"
 #include "Scene/Scene.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include <glm/ext/quaternion_float.hpp>
 
@@ -37,7 +37,7 @@ public:
 	Gizmo();
 	void Update(glm::vec3 cameraPosition, Window* mainWindow);
 	void UpdateActive(glm::vec3 cameraPosition, Window* mainWindow);
-	void Render(Shader* shader);
+	void Render(MoravaShader* shader);
 	void CreateObjects();
 	void ChangeMode(int mode);
 	void ToggleMode();

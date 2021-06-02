@@ -10,7 +10,7 @@
 #include "Hazel/Renderer/SceneEnvironment.h"
 #include "Hazel/Scene/SceneCamera.h"
 
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include "entt.hpp"
 
@@ -126,7 +126,7 @@ namespace Hazel {
 
 		Environment m_Environment;
 		Ref<Hazel::HazelTextureCube> m_SkyboxTexture;
-		Shader* m_ShaderSkybox;
+		MoravaShader* m_ShaderSkybox;
 
 		Ref<HazelMaterial> m_SkyboxMaterial;
 

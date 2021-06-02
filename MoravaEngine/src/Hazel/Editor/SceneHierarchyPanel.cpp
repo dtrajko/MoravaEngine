@@ -584,7 +584,7 @@ namespace Hazel
 			{
 				std::string file = Application::Get()->OpenFile();
 				if (!file.empty()) {
-					mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(file, Hazel::Ref<Shader>(), Hazel::Ref<Hazel::HazelMaterial>(), false);
+					mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(file, Hazel::Ref<MoravaShader>(), Hazel::Ref<Hazel::HazelMaterial>(), false);
 
 					auto materialDataVector = MaterialLibrary::s_MaterialData;
 					for (auto materialData : materialDataVector) {

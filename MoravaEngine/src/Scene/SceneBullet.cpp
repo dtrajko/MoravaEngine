@@ -328,7 +328,7 @@ void SceneBullet::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneBullet::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
 	glm::mat4 model;
 	btTransform sphereTrans;

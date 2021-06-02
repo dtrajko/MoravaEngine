@@ -12,7 +12,7 @@ public:
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms) override;
 	inline std::map<std::string, ModelJoey*> GetModels() const { return models; };
 	inline float GetFOV() { return m_FOV; };
 	virtual ~SceneAsteroids() override;
@@ -25,8 +25,8 @@ private:
 	void SetupGeometry();
 
 private:
-	Shader* m_ShaderAsteroids;
-	Shader* m_ShaderPlanet;
+	MoravaShader* m_ShaderAsteroids;
+	MoravaShader* m_ShaderPlanet;
 
 	unsigned int quadVAO;
 	unsigned int quadVBO;

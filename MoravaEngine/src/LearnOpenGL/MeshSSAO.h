@@ -1,7 +1,7 @@
 #pragma once
 
 #include "LearnOpenGL/LearnOpenGLStructs.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include <string>
 
@@ -19,7 +19,7 @@ class MeshSSAO
 public:
     MeshSSAO();
     MeshSSAO(std::vector<VertexSSAO> vertices, std::vector<unsigned int> indices, std::vector<TextureData> textures);
-    void Draw(Shader* shader);
+    void Draw(MoravaShader* shader);
     inline unsigned int GetVAO() const { return VAO; };
     inline std::vector<unsigned int> GetIndices() const { return indices; };
 

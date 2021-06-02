@@ -33,7 +33,7 @@ public:
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms) override;
 	void SetupUniforms();
 
 private:
@@ -57,8 +57,8 @@ public:
 	// std::unique_ptr<Hazel::VulkanTestLayer> m_VulkanTestLayer;
 
 private:
-	Hazel::Ref<Shader> m_ShaderBackground;
-	Hazel::Ref<Shader> m_ShaderBasic;
+	Hazel::Ref<MoravaShader> m_ShaderBackground;
+	Hazel::Ref<MoravaShader> m_ShaderBasic;
 
 	Grid* m_Grid;
 	Pivot* m_PivotScene;

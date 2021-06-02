@@ -32,47 +32,47 @@ void RendererEditor::SetUniforms()
 
 void RendererEditor::SetShaders()
 {
-    Shader* shaderEditor = new Shader("Shaders/editor_object.vs", "Shaders/editor_object.fs");
+    MoravaShader* shaderEditor = new MoravaShader("Shaders/editor_object.vs", "Shaders/editor_object.fs");
     RendererBasic::GetShaders().insert(std::make_pair("editor_object", shaderEditor));
     Log::GetLogger()->info("RendererEditor: shaderEditor compiled [programID={0}]", shaderEditor->GetProgramID());
 
-    Shader* shaderEditorPBR = new Shader("Shaders/editor_object.vs", "Shaders/PBR/editor_object_pbr.fs");
+    MoravaShader* shaderEditorPBR = new MoravaShader("Shaders/editor_object.vs", "Shaders/PBR/editor_object_pbr.fs");
     RendererBasic::GetShaders().insert(std::make_pair("editor_object_pbr", shaderEditorPBR));
     Log::GetLogger()->info("RendererEditor: shaderEditorPBR compiled [programID={0}]", shaderEditorPBR->GetProgramID());
 
-    Shader* shaderSkinning = new Shader("Shaders/OGLdev/skinning.vs", "Shaders/OGLdev/skinning.fs");
+    MoravaShader* shaderSkinning = new MoravaShader("Shaders/OGLdev/skinning.vs", "Shaders/OGLdev/skinning.fs");
     RendererBasic::GetShaders().insert(std::make_pair("skinning", shaderSkinning));
     Log::GetLogger()->info("RendererEditor: shaderSkinning compiled [programID={0}]", shaderSkinning->GetProgramID());
 
-    Shader* shaderHybridAnimPBR = new Shader("Shaders/HybridAnimPBR.vs", "Shaders/HybridAnimPBR.fs");
+    MoravaShader* shaderHybridAnimPBR = new MoravaShader("Shaders/HybridAnimPBR.vs", "Shaders/HybridAnimPBR.fs");
     RendererBasic::GetShaders().insert(std::make_pair("hybrid_anim_pbr", shaderHybridAnimPBR));
     Log::GetLogger()->info("RendererEditor: shaderHybridAnimPBR compiled [programID={0}]", shaderHybridAnimPBR->GetProgramID());
 
-    Shader* shaderShadowMap = new Shader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+    MoravaShader* shaderShadowMap = new MoravaShader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
     RendererBasic::GetShaders().insert(std::make_pair("shadow_map", shaderShadowMap));
     Log::GetLogger()->info("RendererEditor: shaderShadowMap compiled [programID={0}]", shaderShadowMap->GetProgramID());
 
-    Shader* shaderOmniShadowMap = new Shader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+    MoravaShader* shaderOmniShadowMap = new MoravaShader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
     RendererBasic::GetShaders().insert(std::make_pair("omni_shadow_map", shaderOmniShadowMap));
     Log::GetLogger()->info("RendererEditor: shaderOmniShadowMap compiled [programID={0}]", shaderOmniShadowMap->GetProgramID());
 
-    Shader* shaderWater = new Shader("Shaders/water.vert", "Shaders/water.frag");
+    MoravaShader* shaderWater = new MoravaShader("Shaders/water.vert", "Shaders/water.frag");
     RendererBasic::GetShaders().insert(std::make_pair("water", shaderWater));
     Log::GetLogger()->info("RendererEditor: shaderWater compiled [programID={0}]", shaderWater->GetProgramID());
 
-    Shader* shaderBackground = new Shader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    MoravaShader* shaderBackground = new MoravaShader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
     RendererBasic::GetShaders().insert(std::make_pair("background", shaderBackground));
     Log::GetLogger()->info("RendererEditor: shaderBackground compiled [programID={0}]", shaderBackground->GetProgramID());
 
-    Shader* shaderBasic = new Shader("Shaders/basic.vs", "Shaders/basic.fs");
+    MoravaShader* shaderBasic = new MoravaShader("Shaders/basic.vs", "Shaders/basic.fs");
     RendererBasic::GetShaders().insert(std::make_pair("basic", shaderBasic));
     Log::GetLogger()->info("RendererEditor: shaderBasic compiled [programID={0}]", shaderBasic->GetProgramID());
 
-    Shader* shaderGizmo = new Shader("Shaders/gizmo.vs", "Shaders/gizmo.fs");
+    MoravaShader* shaderGizmo = new MoravaShader("Shaders/gizmo.vs", "Shaders/gizmo.fs");
     RendererBasic::GetShaders().insert(std::make_pair("gizmo", shaderGizmo));
     Log::GetLogger()->info("RendererEditor: shaderGizmo compiled [programID={0}]", shaderGizmo->GetProgramID());
 
-    Shader* shaderGlass = new Shader("Shaders/glass.vs", "Shaders/glass.fs");
+    MoravaShader* shaderGlass = new MoravaShader("Shaders/glass.vs", "Shaders/glass.fs");
     RendererBasic::GetShaders().insert(std::make_pair("glass", shaderGlass));
     Log::GetLogger()->info("RendererEditor: shaderGlass compiled [programID={0}]", shaderGlass->GetProgramID());
 
@@ -110,7 +110,7 @@ void RendererEditor::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat
     if (!LightManager::directionalLight.GetEnabled()) return;
     if (LightManager::directionalLight.GetShadowMap() == nullptr) return;
 
-    Shader* shaderShadowMap = RendererBasic::GetShaders()["shadow_map"];
+    MoravaShader* shaderShadowMap = RendererBasic::GetShaders()["shadow_map"];
     shaderShadowMap->Bind();
 
     DirectionalLight* light = &LightManager::directionalLight;
@@ -137,7 +137,7 @@ void RendererEditor::RenderPassOmniShadow(PointLight* light, Window* mainWindow,
 {
     if (!scene->GetSettings().enableOmniShadows) return;
 
-    Shader* shaderOmniShadow = RendererBasic::GetShaders()["omni_shadow_map"];
+    MoravaShader* shaderOmniShadow = RendererBasic::GetShaders()["omni_shadow_map"];
     shaderOmniShadow->Bind();
 
     glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
@@ -171,7 +171,7 @@ void RendererEditor::RenderPassWaterReflection(Window* mainWindow, Scene* scene,
     // Clear the window
     RendererBasic::Clear();
 
-    Shader* shaderEditor = RendererBasic::GetShaders()["editor_object"];
+    MoravaShader* shaderEditor = RendererBasic::GetShaders()["editor_object"];
     shaderEditor->Bind();
     shaderEditor->setMat4("view", scene->GetCamera()->GetViewMatrix());
     shaderEditor->setMat4("projection", projectionMatrix);
@@ -179,7 +179,7 @@ void RendererEditor::RenderPassWaterReflection(Window* mainWindow, Scene* scene,
     shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditor->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
     
-    Shader* shaderEditorPBR = RendererBasic::GetShaders()["editor_object_pbr"];
+    MoravaShader* shaderEditorPBR = RendererBasic::GetShaders()["editor_object_pbr"];
     shaderEditorPBR->Bind();
     shaderEditorPBR->setMat4("view", scene->GetCamera()->GetViewMatrix());
     shaderEditorPBR->setMat4("projection", projectionMatrix);
@@ -187,13 +187,13 @@ void RendererEditor::RenderPassWaterReflection(Window* mainWindow, Scene* scene,
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
 
-    Shader* shaderSkinning = RendererBasic::GetShaders()["skinning"];
+    MoravaShader* shaderSkinning = RendererBasic::GetShaders()["skinning"];
     shaderSkinning->Bind();
     shaderSkinning->setMat4("view", scene->GetCamera()->GetViewMatrix());
     shaderSkinning->setMat4("projection", projectionMatrix);
     shaderSkinning->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
 
-    Shader* shaderHybridAnimPBR = RendererBasic::GetShaders()["hybrid_anim_pbr"];
+    MoravaShader* shaderHybridAnimPBR = RendererBasic::GetShaders()["hybrid_anim_pbr"];
     shaderHybridAnimPBR->Bind();
     shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", projectionMatrix * scene->GetCamera()->GetViewMatrix());
 
@@ -217,7 +217,7 @@ void RendererEditor::RenderPassWaterRefraction(Window* mainWindow, Scene* scene,
     // Clear the window
     RendererBasic::Clear();
 
-    Shader* shaderEditor = RendererBasic::GetShaders()["editor_object"];
+    MoravaShader* shaderEditor = RendererBasic::GetShaders()["editor_object"];
     shaderEditor->Bind();
     shaderEditor->setMat4("view", scene->GetCamera()->GetViewMatrix());
     shaderEditor->setMat4("projection", projectionMatrix);
@@ -225,7 +225,7 @@ void RendererEditor::RenderPassWaterRefraction(Window* mainWindow, Scene* scene,
     shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditor->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
 
-    Shader* shaderEditorPBR = RendererBasic::GetShaders()["editor_object_pbr"];
+    MoravaShader* shaderEditorPBR = RendererBasic::GetShaders()["editor_object_pbr"];
     shaderEditorPBR->Bind();
     shaderEditorPBR->setMat4("view", scene->GetCamera()->GetViewMatrix());
     shaderEditorPBR->setMat4("projection", projectionMatrix);
@@ -233,13 +233,13 @@ void RendererEditor::RenderPassWaterRefraction(Window* mainWindow, Scene* scene,
     shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
 
-    Shader* shaderSkinning = RendererBasic::GetShaders()["skinning"];
+    MoravaShader* shaderSkinning = RendererBasic::GetShaders()["skinning"];
     shaderSkinning->Bind();
     shaderSkinning->setMat4("view", scene->GetCamera()->GetViewMatrix());
     shaderSkinning->setMat4("projection", projectionMatrix);
     shaderSkinning->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
 
-    Shader* shaderHybridAnimPBR = RendererBasic::GetShaders()["hybrid_anim_pbr"];
+    MoravaShader* shaderHybridAnimPBR = RendererBasic::GetShaders()["hybrid_anim_pbr"];
     shaderHybridAnimPBR->Bind();
     shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", projectionMatrix * scene->GetCamera()->GetViewMatrix());
 
@@ -363,7 +363,7 @@ void RendererEditor::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 
 void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionMatrix)
 {
     /**** Begin editor_object ****/
-    Shader* shaderEditor = RendererBasic::GetShaders()["editor_object"];
+    MoravaShader* shaderEditor = RendererBasic::GetShaders()["editor_object"];
     shaderEditor->Bind();
 
     shaderEditor->setMat4("model", glm::mat4(1.0f));
@@ -471,7 +471,7 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
 
     /**** Begin editor_object_pbr ****/
     // Init shaderEditorPBR
-    Shader* shaderEditorPBR = RendererBasic::GetShaders()["editor_object_pbr"];
+    MoravaShader* shaderEditorPBR = RendererBasic::GetShaders()["editor_object_pbr"];
     shaderEditorPBR->Bind();
 
     // initialize static shader uniforms before rendering
@@ -559,7 +559,7 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     /**** End editor_object_pbr ****/
 
     /**** Begin skinning ****/
-    Shader* shaderSkinning = RendererBasic::GetShaders()["skinning"];
+    MoravaShader* shaderSkinning = RendererBasic::GetShaders()["skinning"];
     shaderSkinning->Bind();
 
     shaderSkinning->setMat4("view", scene->GetCamera()->GetViewMatrix());
@@ -583,7 +583,7 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     /**** End skinning ****/
 
     /**** Begin Hybrid Anim PBR ****/
-    Shader* shaderHybridAnimPBR = RendererBasic::GetShaders()["hybrid_anim_pbr"];
+    MoravaShader* shaderHybridAnimPBR = RendererBasic::GetShaders()["hybrid_anim_pbr"];
     shaderHybridAnimPBR->Bind();
     shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", *projectionMatrix * scene->GetCamera()->GetViewMatrix());
     shaderHybridAnimPBR->setVec3("u_CameraPosition", scene->GetCamera()->GetPosition());
@@ -612,21 +612,21 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     /**** End Hybrid Anim PBR ****/
 
     /**** Begin shadow_map ****/
-    Shader* shaderShadowMap = RendererBasic::GetShaders()["shadow_map"];
+    MoravaShader* shaderShadowMap = RendererBasic::GetShaders()["shadow_map"];
     shaderShadowMap->Bind();
     shaderShadowMap->setMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     shaderShadowMap->setBool("u_Animated", false);
     /**** End shadow_map ****/
 
     /**** Begin omni_shadow_map ****/
-    Shader* shaderOmniShadowMap = RendererBasic::GetShaders()["omni_shadow_map"];
+    MoravaShader* shaderOmniShadowMap = RendererBasic::GetShaders()["omni_shadow_map"];
     shaderOmniShadowMap->Bind();
     shaderOmniShadowMap->setVec3("lightPosition", LightManager::directionalLight.GetPosition());
     shaderOmniShadowMap->setFloat("farPlane", scene->GetSettings().farPlane);
     /**** End omni_shadow_map ****/
 
     /**** Begin shaderWater ****/
-    Shader* shaderWater = RendererBasic::GetShaders()["water"];
+    MoravaShader* shaderWater = RendererBasic::GetShaders()["water"];
     shaderWater->Bind();
 
     shaderWater->setMat4("projection", *projectionMatrix);
@@ -643,21 +643,21 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     /**** End shaderWater ****/
 
     /**** Begin Background shader ****/
-    Shader* shaderBackground = RendererBasic::GetShaders()["background"];
+    MoravaShader* shaderBackground = RendererBasic::GetShaders()["background"];
     shaderBackground->Bind();
     shaderBackground->setMat4("projection", *projectionMatrix);
     shaderBackground->setMat4("view", scene->GetCamera()->GetViewMatrix());
     /**** End Background shader ****/
 
     /**** Begin of shaderBasic ****/
-    Shader* shaderBasic = RendererBasic::GetShaders()["basic"];
+    MoravaShader* shaderBasic = RendererBasic::GetShaders()["basic"];
     shaderBasic->Bind();
     shaderBasic->setMat4("projection", *projectionMatrix);
     shaderBasic->setMat4("view", scene->GetCamera()->GetViewMatrix());
     /**** End of shaderBasic ****/
 
     /**** Begin gizmo shader ****/
-    Shader* shaderGizmo = RendererBasic::GetShaders()["gizmo"];
+    MoravaShader* shaderGizmo = RendererBasic::GetShaders()["gizmo"];
     shaderGizmo->Bind();
     // shaderGizmo->setMat4("projection", *projectionMatrix);
 
@@ -683,7 +683,7 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     /**** End gizmo shader ****/
 
     /**** Begin glass ****/
-    Shader* shaderGlass = RendererBasic::GetShaders()["glass"];
+    MoravaShader* shaderGlass = RendererBasic::GetShaders()["glass"];
     shaderGlass->Bind();
     shaderGlass->setMat4("view", scene->GetCamera()->GetViewMatrix());
     shaderGlass->setMat4("projection", *projectionMatrix);

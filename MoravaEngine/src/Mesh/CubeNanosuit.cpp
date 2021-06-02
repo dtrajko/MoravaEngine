@@ -1,7 +1,7 @@
 #include "Mesh/CubeNanosuit.h"
 
 #include "LearnOpenGL/TextureJoey.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include "GL/glew.h"
 
@@ -78,7 +78,7 @@ CubeNanosuit::~CubeNanosuit()
 }
 
 // draws the model, and thus all its meshes
-void CubeNanosuit::Draw(Shader* shader)
+void CubeNanosuit::Draw(MoravaShader* shader)
 {
     m_Mesh->Draw(shader);
 }

@@ -2,7 +2,7 @@
 
 #include "Hazel/Core/Ref.h"
 
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 #include "Deferred/GBuffer.h"
 #include "Mesh/QuadSSAO.h"
 
@@ -37,7 +37,7 @@ private:
 
 	uint32_t m_NoiseTexture;
 
-	Hazel::Ref<Shader> m_ShaderSSAO;
+	Hazel::Ref<MoravaShader> m_ShaderSSAO;
 
 	Hazel::Ref<QuadSSAO> m_QuadSSAO;
 

@@ -2,7 +2,7 @@
 
 #include "Mesh/CubeSkybox.h"
 #include "Mesh/Quad.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include <string>
 
@@ -63,12 +63,12 @@ private:
 	unsigned int m_BRDF_LUT_Texture;
 
 	// Shaders
-	Shader* m_ShaderEquirectangularToCubemap;
-	Shader* m_ShaderIrradiance;
-	Shader* m_ShaderPrefilter;
-	Shader* m_ShaderBRDF;
-	Shader* m_ShaderHorizontalBlur;
-	Shader* m_ShaderVerticalBlur;
+	MoravaShader* m_ShaderEquirectangularToCubemap;
+	MoravaShader* m_ShaderIrradiance;
+	MoravaShader* m_ShaderPrefilter;
+	MoravaShader* m_ShaderBRDF;
+	MoravaShader* m_ShaderHorizontalBlur;
+	MoravaShader* m_ShaderVerticalBlur;
 
 	uint32_t m_BlurLevel;
 	int m_HDR_Map_Width;

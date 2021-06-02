@@ -148,7 +148,7 @@ void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneSSAO::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
     m_SSAO.Render(projectionMatrix, m_Camera->GetViewMatrix(), meshes, &modelsSSAO);
 

@@ -32,7 +32,7 @@ SceneNanosuit::SceneNanosuit()
 
 void SceneNanosuit::SetupShaders()
 {
-	m_ShaderNanosuit = new Shader("Shaders/nanosuit.vs", "Shaders/nanosuit.fs");
+	m_ShaderNanosuit = new MoravaShader("Shaders/nanosuit.vs", "Shaders/nanosuit.fs");
 	printf("SceneNanosuit: m_ShaderNanosuit compiled [programID=%d]\n", m_ShaderNanosuit->GetProgramID());
 }
 
@@ -131,7 +131,7 @@ void SceneNanosuit::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneNanosuit::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
 	// Clear the window
 	glClearColor(m_BgColor.r, m_BgColor.g, m_BgColor.b, m_BgColor.a);

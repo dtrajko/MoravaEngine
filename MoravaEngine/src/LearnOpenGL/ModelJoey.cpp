@@ -7,7 +7,7 @@
 #include "MeshJoey.h"
 #include "TextureJoey.h"
 
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include <string>
 
@@ -30,7 +30,7 @@ ModelJoey::~ModelJoey()
 }
 
 // draws the model, and thus all its meshes
-void ModelJoey::Draw(Shader* shader)
+void ModelJoey::Draw(MoravaShader* shader)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].Draw(shader);

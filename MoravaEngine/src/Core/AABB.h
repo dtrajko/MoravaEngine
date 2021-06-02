@@ -1,7 +1,7 @@
 #ifndef _AABB_H
 #define _AABB_H
 
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext/quaternion_float.hpp>

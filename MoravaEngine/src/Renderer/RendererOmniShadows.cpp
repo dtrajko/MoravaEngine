@@ -16,11 +16,11 @@ void RendererOmniShadows::Init(Scene* scene)
 
 void RendererOmniShadows::SetShaders()
 {
-	Shader* shaderOmniShadow = new Shader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+	MoravaShader* shaderOmniShadow = new MoravaShader("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("omniShadow", shaderOmniShadow));
 	Log::GetLogger()->info("RendererOmniShadows: shaderOmniShadow compiled [programID={0}]", shaderOmniShadow->GetProgramID());
 
-	Shader* shaderMain = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
+	MoravaShader* shaderMain = new MoravaShader("Shaders/shader.vert", "Shaders/shader.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("main", shaderMain));
 	Log::GetLogger()->info("RendererOmniShadows: shaderMain compiled [programID={0}]", shaderMain->GetProgramID());
 }
@@ -71,7 +71,7 @@ void RendererOmniShadows::RenderPassMain(Window* mainWindow, Scene* scene, glm::
 	// Clear the window
 	RendererBasic::Clear();
 
-	Shader* shaderMain = (Shader*)RendererBasic::GetShaders()["main"];
+	MoravaShader* shaderMain = (MoravaShader*)RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
 	shaderMain->setMat4("model", glm::mat4(1.0f));

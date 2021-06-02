@@ -1,7 +1,7 @@
 #include "ShaderMain.h"
 
 
-ShaderMain::ShaderMain() : Shader()
+ShaderMain::ShaderMain() : MoravaShader()
 {
 	pointLightCount = 0;
 	spotLightCount = 0;
@@ -105,7 +105,7 @@ void ShaderMain::GetUniformLocations()
 {
 	printf("ShaderMain::GetUniformLocations\n");
 
-	Shader::GetUniformLocations();
+	MoravaShader::GetUniformLocations();
 
 	uniformDirectionalLight.uniformColor = glGetUniformLocation(programID, "directionalLight.base.color");
 	uniformDirectionalLight.uniformAmbientIntensity = glGetUniformLocation(programID, "directionalLight.base.ambientIntensity");

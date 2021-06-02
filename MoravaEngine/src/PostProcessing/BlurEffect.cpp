@@ -44,12 +44,12 @@ void BlurEffect::Init(int width, int height, int textureID)
 void BlurEffect::SetupShaders()
 {
 	if (!m_ShaderHorizontalBlur) {
-		m_ShaderHorizontalBlur = new Shader("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs");
+		m_ShaderHorizontalBlur = new MoravaShader("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs");
 		Log::GetLogger()->info("BlurEffect: m_ShaderHorizontalBlur compiled [programID={0}]", m_ShaderHorizontalBlur->GetProgramID());
 	}
 
 	if (!m_ShaderVerticalBlur) {
-		m_ShaderVerticalBlur = new Shader("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs");
+		m_ShaderVerticalBlur = new MoravaShader("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs");
 		Log::GetLogger()->info("BlurEffect: m_ShaderVerticalBlur compiled [programID={0}]", m_ShaderVerticalBlur->GetProgramID());
 	}
 }

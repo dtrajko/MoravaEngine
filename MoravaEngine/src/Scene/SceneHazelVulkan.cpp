@@ -14,7 +14,7 @@
 #include "Core/Timer.h"
 #include "Core/Util.h"
 #include "Mesh/Block.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
@@ -132,10 +132,10 @@ SceneHazelVulkan::~SceneHazelVulkan()
 
 void SceneHazelVulkan::SetupShaders()
 {
-    // m_ShaderBackground = Hazel::Ref<Shader>::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    // m_ShaderBackground = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
     // Log::GetLogger()->info("SceneHazelVulkan: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
     // 
-    // m_ShaderBasic = Hazel::Ref<Shader>::Create("Shaders/basic.vs", "Shaders/basic.fs");
+    // m_ShaderBasic = Hazel::Ref<MoravaShader>::Create("Shaders/basic.vs", "Shaders/basic.fs");
     // Log::GetLogger()->info("SceneHazelVulkan: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
     // 
     // ResourceManager::AddShader("LearnOpenGL/2.2.2.background", m_ShaderBackground);
@@ -203,7 +203,7 @@ void SceneHazelVulkan::OnEntitySelected(Hazel::Entity entity)
 }
 
 void SceneHazelVulkan::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
     if (passType == "main")
     {

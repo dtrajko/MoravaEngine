@@ -195,10 +195,10 @@
     <ClCompile Include="src\Mesh\Ring90.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="src\Shader\Shader.cpp">
+    <ClCompile Include="src\Shader\MoravaShader.cpp">
       <Filter>Shader</Filter>
     </ClCompile>
-    <ClCompile Include="src\Shader\ShaderLibrary.cpp">
+    <ClCompile Include="src\Shader\MoravaShaderLibrary.cpp">
       <Filter>Shader</Filter>
     </ClCompile>
     <ClCompile Include="src\Shader\ShaderMain.cpp">
@@ -993,10 +993,10 @@
     <ClInclude Include="src\Mesh\Ring90.h">
       <Filter>Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="src\Shader\Shader.h">
+    <ClInclude Include="src\Shader\MoravaShader.h">
       <Filter>Shader</Filter>
     </ClInclude>
-    <ClInclude Include="src\Shader\ShaderLibrary.h">
+    <ClInclude Include="src\Shader\MoravaShaderLibrary.h">
       <Filter>Shader</Filter>
     </ClInclude>
     <ClInclude Include="src\Shader\ShaderMain.h">

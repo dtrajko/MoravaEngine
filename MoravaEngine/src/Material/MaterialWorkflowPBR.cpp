@@ -97,32 +97,32 @@ void MaterialWorkflowPBR::SetGlobalRenderState()
 void MaterialWorkflowPBR::SetupShaders()
 {
 	if (!m_ShaderEquirectangularToCubemap) {
-		m_ShaderEquirectangularToCubemap = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/equirectangular_to_cubemap.fs");
+		m_ShaderEquirectangularToCubemap = new MoravaShader("Shaders/PBR/cubemap.vs", "Shaders/PBR/equirectangular_to_cubemap.fs");
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderEquirectangularToCubemap compiled [programID={0}]", m_ShaderEquirectangularToCubemap->GetProgramID());
 	}
 
 	if (!m_ShaderIrradiance) {
-		m_ShaderIrradiance = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/irradiance_convolution.fs");
+		m_ShaderIrradiance = new MoravaShader("Shaders/PBR/cubemap.vs", "Shaders/PBR/irradiance_convolution.fs");
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderIrradiance compiled [programID={0}]", m_ShaderIrradiance->GetProgramID());
 	}
 
 	if (!m_ShaderPrefilter) {
-		m_ShaderPrefilter = new Shader("Shaders/PBR/cubemap.vs", "Shaders/PBR/prefilter.fs");
+		m_ShaderPrefilter = new MoravaShader("Shaders/PBR/cubemap.vs", "Shaders/PBR/prefilter.fs");
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderPrefilter compiled [programID={0}]", m_ShaderPrefilter->GetProgramID());
 	}
 
 	if (!m_ShaderBRDF) {
-		m_ShaderBRDF = new Shader("Shaders/PBR/brdf.vs", "Shaders/PBR/brdf.fs");
+		m_ShaderBRDF = new MoravaShader("Shaders/PBR/brdf.vs", "Shaders/PBR/brdf.fs");
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderBRDF compiled [programID={0}]", m_ShaderBRDF->GetProgramID());
 	}
 
 	if (!m_ShaderHorizontalBlur) {
-		m_ShaderHorizontalBlur = new Shader("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs");
+		m_ShaderHorizontalBlur = new MoravaShader("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs");
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderHorizontalBlur compiled [programID={0}]", m_ShaderHorizontalBlur->GetProgramID());
 	}
 
 	if (!m_ShaderVerticalBlur) {
-		m_ShaderVerticalBlur = new Shader("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs");
+		m_ShaderVerticalBlur = new MoravaShader("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs");
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderVerticalBlur compiled [programID={0}]", m_ShaderVerticalBlur->GetProgramID());
 	}
 }

@@ -24,7 +24,7 @@
 #include "Core/Util.h"
 #include "EnvMap/EnvMapEditorLayer.h"
 #include "Material/MaterialLibrary.h"
-#include "Shader/ShaderLibrary.h"
+#include "Shader/MoravaShaderLibrary.h"
 
 #include "imgui.h"
 
@@ -88,7 +88,7 @@ namespace Hazel {
 		Create();
 	}
 
-	HazelMesh::HazelMesh(const std::string& filename, Ref<Shader> shader, Ref<HazelMaterial> material, bool isAnimated)
+	HazelMesh::HazelMesh(const std::string& filename, Ref<MoravaShader> shader, Ref<HazelMaterial> material, bool isAnimated)
 		: m_MeshShader(shader), m_BaseMaterial(material), m_IsAnimated(isAnimated)
 	{
 		m_FilePath = filename;
@@ -133,12 +133,12 @@ namespace Hazel {
 			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
 			{
 				// Refactor to HazelRenderer::GetShaderLibrary()->Get()
-				m_MeshShader = m_IsAnimated ? ShaderLibrary::Get("HazelPBR_Anim") : ShaderLibrary::Get("HazelPBR_Static");
+				m_MeshShader = m_IsAnimated ? MoravaShaderLibrary::Get("HazelPBR_Anim") : MoravaShaderLibrary::Get("HazelPBR_Static");
 			}
 			else if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
 			{
 				auto hazelShader = HazelShader::Create("assets/shaders/HazelPBR_Static.glsl", true);
-				m_MeshShader = Ref<Shader>(hazelShader);
+				m_MeshShader = Ref<MoravaShader>(hazelShader);
 			}
 		}
 
@@ -265,7 +265,7 @@ namespace Hazel {
 		TraverseNodes(scene->mRootNode);
 
 		PipelineSpecification pipelineSpecification;
-		auto shader = m_MeshShader; // Shader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
+		auto shader = m_MeshShader; // MoravaShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
 		pipelineSpecification.Shader = m_MeshShader;
 
 		if (RendererAPI::Current() == RendererAPIType::Vulkan)
@@ -1326,7 +1326,7 @@ namespace Hazel {
 		}
 	}
 
-	void Submesh::Render(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
+	void Submesh::Render(Ref<HazelMesh> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
 		const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity)
 	{
 		Ref<EnvMapMaterial> envMapMaterial = Ref<EnvMapMaterial>();
@@ -1381,7 +1381,7 @@ namespace Hazel {
 		shader->Unbind();
 	}
 
-	void Submesh::RenderOutline(Ref<HazelMesh> parentMesh, Ref<Shader> shader, const glm::mat4& entityTransform, Entity entity)
+	void Submesh::RenderOutline(Ref<HazelMesh> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, Entity entity)
 	{
 		parentMesh->m_VertexBuffer->Bind();
 		parentMesh->m_Pipeline->Bind();

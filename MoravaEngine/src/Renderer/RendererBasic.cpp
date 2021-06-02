@@ -329,17 +329,17 @@ void RendererBasic::SetProjectionMatrix(glm::mat4 projectionMatrix)
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
-std::map<std::string, Shader*>& RendererBasic::GetShaders()
+std::map<std::string, MoravaShader*>& RendererBasic::GetShaders()
 {
 	switch (Hazel::RendererAPI::Current())
 	{
-	case Hazel::RendererAPIType::None: return std::map<std::string, Shader*>();
+	case Hazel::RendererAPIType::None: return std::map<std::string, MoravaShader*>();
 	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::GetShaders();
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetShaders();
 	}
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 
-	return std::map<std::string, Shader*>();
+	return std::map<std::string, MoravaShader*>();
 }
 
 std::map<std::string, int>& RendererBasic::GetUniforms()

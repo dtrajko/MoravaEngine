@@ -64,13 +64,13 @@ void SceneDeferred::SetupFramebuffers()
 
 void SceneDeferred::SetupShaders()
 {
-    m_ShaderGeometryPass = new Shader("Shaders/LearnOpenGL/8.2.g_buffer.vs", "Shaders/LearnOpenGL/8.2.g_buffer.fs");
+    m_ShaderGeometryPass = new MoravaShader("Shaders/LearnOpenGL/8.2.g_buffer.vs", "Shaders/LearnOpenGL/8.2.g_buffer.fs");
     Log::GetLogger()->info("SceneDeferred: m_ShaderGeometryPass compiled [programID={0}]", m_ShaderGeometryPass->GetProgramID());
 
-    m_ShaderLightingPass = new Shader("Shaders/LearnOpenGL/8.2.deferred_shading.vs", "Shaders/LearnOpenGL/8.2.deferred_shading.fs");
+    m_ShaderLightingPass = new MoravaShader("Shaders/LearnOpenGL/8.2.deferred_shading.vs", "Shaders/LearnOpenGL/8.2.deferred_shading.fs");
     Log::GetLogger()->info("SceneDeferred: m_ShaderLightingPass compiled [programID={0}]", m_ShaderLightingPass->GetProgramID());
 
-    m_ShaderLightBox = new Shader("Shaders/LearnOpenGL/8.2.deferred_light_box.vs", "Shaders/LearnOpenGL/8.2.deferred_light_box.fs");
+    m_ShaderLightBox = new MoravaShader("Shaders/LearnOpenGL/8.2.deferred_light_box.vs", "Shaders/LearnOpenGL/8.2.deferred_light_box.fs");
     Log::GetLogger()->info("SceneDeferred: m_ShaderLightBox compiled [programID={0}]", m_ShaderLightBox->GetProgramID());
 
     m_ShaderLightingPass->Bind();
@@ -298,7 +298,7 @@ void SceneDeferred::RenderPassForward(glm::mat4 projectionMatrix)
 }
 
 void SceneDeferred::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
     m_Width = (int)Application::Get()->GetWindow()->GetWidth();
     m_Height = (int)Application::Get()->GetWindow()->GetHeight();

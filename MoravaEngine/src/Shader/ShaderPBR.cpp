@@ -4,7 +4,7 @@
 const unsigned int ShaderPBR::lightCount;
 
 
-ShaderPBR::ShaderPBR() : Shader()
+ShaderPBR::ShaderPBR() : MoravaShader()
 {
 	for (int i = 0; i < lightCount; i++)
 	{
@@ -36,7 +36,7 @@ void ShaderPBR::GetUniformLocations()
 {
 	printf("ShaderWater::GetUniformLocations\n");
 
-	Shader::GetUniformLocations();
+	MoravaShader::GetUniformLocations();
 
 	for (int i = 0; i < lightCount; i++)
 	{

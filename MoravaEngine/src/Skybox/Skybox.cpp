@@ -8,7 +8,7 @@ Skybox::Skybox()
 Skybox::Skybox(std::vector<std::string> faceLocations, bool flipVert)
 {
 	// Shader setup
-	skyShader = new Shader();
+	skyShader = new MoravaShader();
 	skyShader->CreateFromFiles("Shaders/skybox.vert", "Shaders/skybox.frag");
 
 	// Texture setup

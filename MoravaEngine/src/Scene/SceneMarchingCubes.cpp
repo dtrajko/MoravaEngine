@@ -800,16 +800,16 @@ void SceneMarchingCubes::Dig(bool* keys, float timestep)
 }
 
 void SceneMarchingCubes::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
 {
     m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui
 
-    Shader* shaderMain = shaders["main"];
-    Shader* shaderShadowMap = shaders["shadow_map"];
-    Shader* shaderOmniShadow = shaders["omniShadow"];
-    Shader* shaderRenderInstanced = shaders["render_instanced"];
-    Shader* shaderBasic = shaders["basic"];
-    Shader* shaderMarchingCubes = shaders["marching_cubes"];
+    MoravaShader* shaderMain = shaders["main"];
+    MoravaShader* shaderShadowMap = shaders["shadow_map"];
+    MoravaShader* shaderOmniShadow = shaders["omniShadow"];
+    MoravaShader* shaderRenderInstanced = shaders["render_instanced"];
+    MoravaShader* shaderBasic = shaders["basic"];
+    MoravaShader* shaderMarchingCubes = shaders["marching_cubes"];
 
     RendererBasic::EnableTransparency();
 

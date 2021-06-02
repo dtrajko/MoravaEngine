@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 
 #include <glm/glm.hpp>
 
@@ -21,6 +21,6 @@ public:
 	Pivot(glm::vec3 position, glm::vec3 scale);
 	void UpdatePosition(glm::vec3 position);
 	void Update(glm::vec3 position, glm::vec3 scale);
-	void Draw(Shader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
+	void Draw(MoravaShader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 	virtual ~Pivot();
 };

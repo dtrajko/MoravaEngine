@@ -4,7 +4,7 @@
 #include "LearnOpenGL/ModelSSAO.h"
 #include "Mesh/Cube.h"
 #include "Mesh/QuadSSAO.h"
-#include "Shader/Shader.h"
+#include "Shader/MoravaShader.h"
 #include "SSAO/GBufferSSAO.h"
 
 
@@ -50,10 +50,10 @@ public:
 	GBufferSSAO m_GBufferSSAO;
 
 	// Shaders
-	Hazel::Ref<Shader> m_ShaderGeometryPass;
-	Hazel::Ref<Shader> m_ShaderLightingPass;
-	Hazel::Ref<Shader> m_ShaderSSAO;
-	Hazel::Ref<Shader> m_ShaderSSAOBlur;
+	Hazel::Ref<MoravaShader> m_ShaderGeometryPass;
+	Hazel::Ref<MoravaShader> m_ShaderLightingPass;
+	Hazel::Ref<MoravaShader> m_ShaderSSAO;
+	Hazel::Ref<MoravaShader> m_ShaderSSAOBlur;
 
 	// SSAO processing stage
 	unsigned int m_SSAO_FBO;

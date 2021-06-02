@@ -26,7 +26,7 @@ public:
 	void UpdateImGuizmo(Window* mainWindow);
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Shader*> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms) override;
 	void SetupUniforms();
 
 private:
@@ -58,14 +58,14 @@ private:
 		int MouseY;
 	} m_ImGuiViewport;
 
-	Hazel::Ref<Shader> m_ShaderMain;
-	Hazel::Ref<Shader> m_ShaderBackground;
-	Hazel::Ref<Shader> m_ShaderHybridAnimPBR;
-	Hazel::Ref<Shader> m_ShaderHDR;
-	Hazel::Ref<Shader> m_ShaderEquirectangularConversion;
-	Hazel::Ref<Shader> m_ShaderEnvFiltering;
-	Hazel::Ref<Shader> m_ShaderEnvIrradiance;
-	Hazel::Ref<Shader> m_ShaderBasic;
+	Hazel::Ref<MoravaShader> m_ShaderMain;
+	Hazel::Ref<MoravaShader> m_ShaderBackground;
+	Hazel::Ref<MoravaShader> m_ShaderHybridAnimPBR;
+	Hazel::Ref<MoravaShader> m_ShaderHDR;
+	Hazel::Ref<MoravaShader> m_ShaderEquirectangularConversion;
+	Hazel::Ref<MoravaShader> m_ShaderEnvFiltering;
+	Hazel::Ref<MoravaShader> m_ShaderEnvIrradiance;
+	Hazel::Ref<MoravaShader> m_ShaderBasic;
 
 	Hazel::Ref<Hazel::HazelMesh> m_MeshAnimPBR_M1911;
 	Hazel::Ref<Hazel::HazelMesh> m_MeshAnimPBR_BobLamp;

@@ -341,8 +341,8 @@
     <ClCompile Include="src\Scene\SceneTerrain.cpp" />
     <ClCompile Include="src\Scene\SceneVoxelTerrain.cpp" />
     <ClCompile Include="src\Scene\SceneVoxelTerrainSL.cpp" />
-    <ClCompile Include="src\Shader\Shader.cpp" />
-    <ClCompile Include="src\Shader\ShaderLibrary.cpp" />
+    <ClCompile Include="src\Shader\MoravaShader.cpp" />
+    <ClCompile Include="src\Shader\MoravaShaderLibrary.cpp" />
     <ClCompile Include="src\Shader\ShaderMain.cpp" />
     <ClCompile Include="src\Shader\ShaderPBR.cpp" />
     <ClCompile Include="src\Skybox\Skybox.cpp" />
@@ -644,8 +644,8 @@
     <ClInclude Include="src\Scene\SceneTerrain.h" />
     <ClInclude Include="src\Scene\SceneVoxelTerrain.h" />
     <ClInclude Include="src\Scene\SceneVoxelTerrainSL.h" />
-    <ClInclude Include="src\Shader\Shader.h" />
-    <ClInclude Include="src\Shader\ShaderLibrary.h" />
+    <ClInclude Include="src\Shader\MoravaShader.h" />
+    <ClInclude Include="src\Shader\MoravaShaderLibrary.h" />
     <ClInclude Include="src\Shader\ShaderMain.h" />
     <ClInclude Include="src\Shader\ShaderPBR.h" />
     <ClInclude Include="src\Skybox\Skybox.h" />

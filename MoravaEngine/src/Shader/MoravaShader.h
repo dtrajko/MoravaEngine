@@ -13,17 +13,17 @@
 #include <map>
 
 
-class Shader : public Hazel::HazelShader
+class MoravaShader : public Hazel::HazelShader
 {
 public:
-	Shader();
-	Shader(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
-	Shader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
-	Shader(const char* computeLocation, bool forceCompile = false);
+	MoravaShader();
+	MoravaShader(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
+	MoravaShader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
+	MoravaShader(const char* computeLocation, bool forceCompile = false);
 
-	static Hazel::Ref<Shader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
-	static Hazel::Ref<Shader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
-	static Hazel::Ref<Shader> Create(const char* computeLocation, bool forceCompile = false);
+	static Hazel::Ref<MoravaShader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
+	static Hazel::Ref<MoravaShader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
+	static Hazel::Ref<MoravaShader> Create(const char* computeLocation, bool forceCompile = false);
 
 	// virtual methods
 	virtual void Bind() override;
@@ -94,7 +94,7 @@ public:
 
 	void Unbind();
 	void ClearShader();
-	~Shader();
+	~MoravaShader();
 
 	GLuint GetProgramID();
 
@@ -154,7 +154,7 @@ private:
 	std::string m_ShaderFilepath_TessEvaluation;
 
 	// Temporary, before we have an asset manager
-	static std::vector<Hazel::Ref<Shader>> s_AllShaders;
+	static std::vector<Hazel::Ref<MoravaShader>> s_AllShaders;
 
 	// Vulkan Week Day 1
 	Hazel::ShaderUniformBufferList m_VSRendererUniformBuffers;
