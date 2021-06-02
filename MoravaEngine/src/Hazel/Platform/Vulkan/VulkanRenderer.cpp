@@ -38,6 +38,14 @@ namespace Hazel {
 
 	static std::vector<Ref<HazelMesh>> s_Meshes;
 
+	struct VulkanRendererData
+	{
+		VkCommandBuffer ActiveCommandBuffer = nullptr;
+	};
+
+	static VulkanRendererData s_Data;
+
+
 	void VulkanRenderer::SubmitMesh(const Ref<HazelMesh>& mesh)
 	{
 		s_Meshes.push_back(mesh);
@@ -553,102 +561,129 @@ namespace Hazel {
 		}
 	}
 
-#if 0
-	void VulkanRenderer::DrawOld(HazelCamera* camera)
+	void VulkanRenderer::BeginFrame()
 	{
-		// HazelRenderer::Submit([=]() mutable
-		// {
-		// });
+		//	HazelRenderer::Submit([]()
+		//	{
+		//	});
 		{
-			Ref<VulkanContext> context = Ref<VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
-			// Ref<VulkanPipeline> vulkanPipeline = mesh->GetPipeline().As<VulkanPipeline>();
-			// Ref<VulkanShader> shader = vulkanPipeline->GetSpecification().Shader.As<VulkanShader>();
+			Ref<VulkanContext> context = VulkanContext::Get();
 			VulkanSwapChain& swapChain = context->GetSwapChain();
 
 			VkCommandBufferBeginInfo cmdBufInfo = {};
 			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			cmdBufInfo.pNext = nullptr;
 
-			// Set clear values for all framebuffer attachments with loadOp set to clear
-			// We use two attachments (color and depth) that are cleared at the start of the subpass and as such we need to set clear values for both
-			VkClearValue clearValues[2];
-			clearValues[0].color = { { 0.1f, 0.1f, 0.1f, 1.0f } };
-			clearValues[1].depthStencil = { 1.0f, 0 };
+			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
+			s_Data.ActiveCommandBuffer = drawCommandBuffer;
+			VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
+		}
+	}
 
-			uint32_t width = swapChain.GetWidth();
-			uint32_t height = swapChain.GetHeight();
+	void VulkanRenderer::EndFrame()
+	{
+		//	HazelRenderer::Submit([]()
+		//	{
+		//	});
+		{
+			VK_CHECK_RESULT(vkEndCommandBuffer(s_Data.ActiveCommandBuffer));
+		}
+	}
+
+	void VulkanRenderer::BeginRenderPass(const Ref<RenderPass>& renderPass)
+	{
+		//	HazelRenderer::Submit([renderPass]()
+		//	{
+		//	});
+		{
+			BeginFrame();
+
+			// Ref<VulkanFramebuffer> framebuffer = s_Framebuffer.As<VulkanFramebuffer>();
+			auto fb = renderPass->GetSpecification().TargetFramebuffer;
+			Ref<VulkanFramebuffer> framebuffer = fb.As<VulkanFramebuffer>();
+			const auto& fbSpec = framebuffer->GetSpecification();
+
+			uint32_t width = framebuffer->GetWidth();
+			uint32_t height = framebuffer->GetHeight();
 
 			VkRenderPassBeginInfo renderPassBeginInfo = {};
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderPassBeginInfo.pNext = nullptr;
-			renderPassBeginInfo.renderPass = swapChain.GetRenderPass();
+			renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
 			renderPassBeginInfo.renderArea.offset.x = 0;
 			renderPassBeginInfo.renderArea.offset.y = 0;
 			renderPassBeginInfo.renderArea.extent.width = width;
 			renderPassBeginInfo.renderArea.extent.height = height;
-			renderPassBeginInfo.clearValueCount = 2;
+
+			// TODO: Does out framebuffer has a depth attachment?
+			VkClearValue clearValues[2];
+			clearValues[0].color = { { fbSpec.ClearColor.r, fbSpec.ClearColor.g, fbSpec.ClearColor.b, fbSpec.ClearColor.a } };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+			renderPassBeginInfo.clearValueCount = 2; // Color + depth
 			renderPassBeginInfo.pClearValues = clearValues;
+			renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
 
-			// Set target frame buffer
-			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
+			vkCmdBeginRenderPass(s_Data.ActiveCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			{
-				VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
-				VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
+			// Update dynamic viewport state
+			VkViewport viewport = {};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			viewport.height = (float)height;
+			viewport.width = (float)width;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport(s_Data.ActiveCommandBuffer, 0, 1, &viewport);
 
-				// Start the first sub pass specified in our default render pass setup by the base class
-				// This will clear the color and depth attachment
-				vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-				// Update dynamic viewport state
-				VkViewport viewport = {};
-				viewport.x = 0.0f;
-				viewport.y = (float)height;
-				viewport.height = -(float)height;
-				viewport.width = (float)width;
-				viewport.minDepth = 0.0f;
-				viewport.maxDepth = 1.0f;
-				vkCmdSetViewport(drawCommandBuffer, 0, 1, &viewport);
-
-				// Update dynamic scissor state
-				VkRect2D scissor = {};
-				scissor.extent.width = width;
-				scissor.extent.height = height;
-				scissor.offset.x = 0;
-				scissor.offset.y = 0;
-				vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
-
-				// DRAW GEO HERE
-
-				/**** BEGIN rendering meshes ****/
-				for (auto& mesh : s_Meshes)
-				{
-					RenderMesh(mesh, drawCommandBuffer, camera);
-				}
-
-				s_Meshes.clear();
-				/**** END rendering meshes ****/
-
-				/**** BEGIN ImGui render ****/
-				// TODO: Move to VulkanImGuiLayer
-				// Rendering
-				ImGui::Render();
-
-				// ImGui record commands to command buffer
-				ImDrawData* main_draw_data = ImGui::GetDrawData();
-				ImGui_ImplVulkan_RenderDrawData(main_draw_data, drawCommandBuffer); // 3rd optional param vulkanPipeline->GetVulkanPipeline()
-				/**** END ImGui render ****/
-
-				vkCmdEndRenderPass(drawCommandBuffer);
-
-				// Ending the render pass will add an implicit barrier transitioning the frame buffer color attachment to
-				// VK_IMAGE_LAYOUT_PRESENT_SRC_KHR for presenting it to the windowing system
-
-				VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
-			}
+			// Update dynamic scissor state
+			VkRect2D scissor = {};
+			scissor.extent.width = width;
+			scissor.extent.height = height;
+			scissor.offset.x = 0;
+			scissor.offset.y = 0;
+			vkCmdSetScissor(s_Data.ActiveCommandBuffer, 0, 1, &scissor);
 		}
 	}
-#endif
+
+	void VulkanRenderer::EndRenderPass()
+	{
+		//	HazelRenderer::Submit([]()
+		//	{
+		//	});
+		{
+			vkCmdEndRenderPass(s_Data.ActiveCommandBuffer);
+			s_Data.ActiveCommandBuffer = nullptr;
+		}
+	}
+
+	void VulkanRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<Material> material)
+	{
+		//	HazelRenderer::Submit([]()
+		//	{
+		//	});
+		{
+			Ref<VulkanPipeline> vulkanPipeline = s_CompositePipeline.As<VulkanPipeline>();
+
+			VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+			auto vulkanMeshVB = s_QuadVertexBuffer.As<VulkanVertexBuffer>();
+			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(s_Data.ActiveCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
+
+			auto vulkanMeshIB = s_QuadIndexBuffer.As<VulkanIndexBuffer>();
+			VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
+			vkCmdBindIndexBuffer(s_Data.ActiveCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
+			vkCmdBindPipeline(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+			// Bind descriptor sets describing shader binding points
+			vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &s_QuadDescriptorSet, 0, nullptr);
+
+			vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+		}
+	}
 
 	//-----------------------------------------------------------------------------
 	// [SECTION] Example App: Docking, DockSpace / ShowExampleAppDockSpace()

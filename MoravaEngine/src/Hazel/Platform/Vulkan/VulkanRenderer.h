@@ -18,7 +18,13 @@ namespace Hazel {
 		static void OnResize(uint32_t width, uint32_t height);
 		static void Init();
 		static void Draw(HazelCamera* camera); // TODO: there should be no parameters
-		// static void DrawOld(HazelCamera* camera); // TODO: Temporary method until composite rendering is enabled
+
+		static void BeginFrame();
+		static void EndFrame();
+
+		static void BeginRenderPass(const Ref<RenderPass>& renderPass);
+		static void EndRenderPass();
+		static void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<Material> material);
 
 		static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
 		static void UpdateImGuizmo(Window* mainWindow);
