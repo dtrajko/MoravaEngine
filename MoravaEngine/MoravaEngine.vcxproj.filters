@@ -639,9 +639,6 @@
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanDevice.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Vulkan\MoravaVulkanShader.cpp">
-      <Filter>Platform\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanSwapchain.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
@@ -791,6 +788,12 @@
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_vulkan_with_textures.cpp">
       <Filter>Vendors\ImGui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaShader.cpp">
+      <Filter>Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanMoravaShader.cpp">
+      <Filter>Platform\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1518,9 +1521,6 @@
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanDevice.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\Vulkan\MoravaVulkanShader.h">
-      <Filter>Platform\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanSwapchain.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
@@ -1684,6 +1684,12 @@
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan_with_textures.h">
       <Filter>Vendors\ImGui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaShader.h">
+      <Filter>Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanMoravaShader.h">
+      <Filter>Platform\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

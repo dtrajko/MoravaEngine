@@ -283,6 +283,7 @@
     <ClCompile Include="src\Particle\ParticleSystemThinMatrix.cpp" />
     <ClCompile Include="src\Particle\ParticleTexture.cpp" />
     <ClCompile Include="src\Physics\SpartanPhysics.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaShader.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLRendererBasic.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandPool.cpp" />
@@ -292,9 +293,9 @@
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanIndexBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanPipeline.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanRenderPass.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\MoravaVulkanShader.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanSwapchain.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanTexture.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanMoravaShader.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanRendererBasic.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanUniformBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.cpp" />
@@ -587,6 +588,7 @@
     <ClInclude Include="src\Particle\ParticleTexture.h" />
     <ClInclude Include="src\PerlinNoise\PerlinNoise.hpp" />
     <ClInclude Include="src\Physics\SpartanPhysics.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaShader.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLRendererBasic.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanCommandBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanCommandPool.h" />
@@ -596,9 +598,9 @@
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanIndexBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanPipeline.h" />
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanRenderPass.h" />
-    <ClInclude Include="src\Platform\Vulkan\MoravaVulkanShader.h" />
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanSwapchain.h" />
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanTexture.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanMoravaShader.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanRendererBasic.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanUniformBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.h" />
