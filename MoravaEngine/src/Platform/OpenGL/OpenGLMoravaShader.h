@@ -77,7 +77,7 @@ public:
 
 	// generic setter methods for uniform location variables
 	void setBool(const std::string& name, bool value);
-	void setInt(const std::string& name, int value);
+	virtual void setInt(const std::string& name, int value) override;
 	void setFloat(const std::string& name, float value);
 	void setVec2(const std::string& name, const glm::vec2& value);
 	void setVec2(const std::string& name, float x, float y);
@@ -89,7 +89,7 @@ public:
 	void setMat3(const std::string& name, const glm::mat3& mat);
 	void setMat4(const std::string& name, const glm::mat4& mat);
 	void setLightMat4(std::vector<glm::mat4> lightMatrices);
-	GLint GetUniformLocation(const std::string& name);
+	virtual GLint GetUniformLocation(const std::string& name) override;
 
 	inline std::string GetName() { return m_Name; }
 
@@ -106,7 +106,6 @@ protected:
 	void CompileProgram();
 	virtual void GetUniformLocations();
 
-private:
 	void CompileShader(const char* vertexCode, const char* fragmentCode);
 	void CompileShader(const char* vertexCode, const char* geometryCode, const char* fragmentCode);
 
@@ -118,49 +117,5 @@ private:
 	void AddShader(GLuint programID, const char* shaderCode, GLenum shaderType);
 
 	const char* GetShaderTypeNameFromEnum(const GLenum shaderType);
-
-	// Vulkan Week Day 1 (removed later)
-	// virtual const Hazel::ShaderUniformBufferList& GetVSRendererUniforms() const override { return m_VSRendererUniformBuffers; }
-	// virtual const Hazel::ShaderUniformBufferList& GetPSRendererUniforms() const override { return m_PSRendererUniformBuffers; }
-	// virtual bool HasVSMaterialUniformBuffer() const override { return (bool)m_VSMaterialUniformBuffer; }
-	// virtual bool HasPSMaterialUniformBuffer() const override { return (bool)m_PSMaterialUniformBuffer; }
-	// virtual const Hazel::ShaderUniformBufferDeclaration& GetVSMaterialUniformBuffer() const override { return *m_VSMaterialUniformBuffer; }
-	// virtual const Hazel::ShaderUniformBufferDeclaration& GetPSMaterialUniformBuffer() const override { return *m_PSMaterialUniformBuffer; }
-	// virtual const ShaderResourceList& GetResources() const override { return m_Resources; }
-
-protected:
-	GLuint programID = -1;
-	GLint shaderID = -1;
-
-private:
-	std::map<std::string, int> m_UniformLocations;
-	bool m_Validated = false;
-
-	// omni shadow map
-	GLint uniformLightMatrices[6];
-
-	struct
-	{
-		GLuint shadowMap;
-		GLuint farPlane;
-	} uniformOmniShadowMap[MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS];
-
-	std::string m_Name;
-
-	std::string m_ShaderFilepath_Vertex;
-	std::string m_ShaderFilepath_Fragment;
-	std::string m_ShaderFilepath_Compute;
-	std::string m_ShaderFilepath_Geometry;
-	std::string m_ShaderFilepath_TessControl;
-	std::string m_ShaderFilepath_TessEvaluation;
-
-	// Temporary, before we have an asset manager
-	static std::vector<Hazel::Ref<OpenGLMoravaShader>> s_AllShaders;
-
-	// Vulkan Week Day 1
-	Hazel::ShaderUniformBufferList m_VSRendererUniformBuffers;
-	Hazel::ShaderUniformBufferList m_PSRendererUniformBuffers;
-	Ref<Hazel::ShaderUniformBufferDeclaration> m_VSMaterialUniformBuffer;
-	Ref<Hazel::ShaderUniformBufferDeclaration> m_PSMaterialUniformBuffer;
 
 };

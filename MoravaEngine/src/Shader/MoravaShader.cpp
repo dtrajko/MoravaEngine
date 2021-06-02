@@ -11,6 +11,24 @@
 
 std::vector<Hazel::Ref<MoravaShader>> MoravaShader::s_AllShaders;
 
+
+// the ultimate Create method that can create both MoravaShader and HazelShader shader types
+Hazel::Ref<MoravaShader> MoravaShader::Create(MoravaShaderSpecification moravaShaderSpecification)
+{
+	Hazel::Ref<MoravaShader> moravaShader = Hazel::Ref<MoravaShader>();
+
+	if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::MoravaShader)
+	{
+		moravaShader = OpenGLMoravaShader::Create(moravaShaderSpecification.VertexShaderPath.c_str(), moravaShaderSpecification.FragmentShaderPath.c_str(), moravaShaderSpecification.ForceCompile);
+	}
+	else if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::HazelShader)
+	{
+		moravaShader = Hazel::Ref<MoravaShader>(HazelShader::Create(moravaShaderSpecification.HazelShaderPath, moravaShaderSpecification.ForceCompile));
+	}
+
+	return moravaShader;
+}
+
 MoravaShader::MoravaShader()
 {
 	shaderID = 0;

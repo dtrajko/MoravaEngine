@@ -7,8 +7,6 @@
 #include "Core/Util.h"
 
 
-std::vector<Hazel::Ref<OpenGLMoravaShader>> OpenGLMoravaShader::s_AllShaders;
-
 OpenGLMoravaShader::OpenGLMoravaShader()
 {
 	shaderID = 0;

@@ -130,16 +130,33 @@ namespace Hazel {
 
 		if (!m_MeshShader)
 		{
+			/**** BEGIN MoravaShader the new API ****/
 			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
 			{
-				// Refactor to HazelRenderer::GetShaderLibrary()->Get()
-				m_MeshShader = m_IsAnimated ? MoravaShaderLibrary::Get("HazelPBR_Anim") : MoravaShaderLibrary::Get("HazelPBR_Static");
+				MoravaShaderSpecification moravaShaderSpecificationStatic;
+				moravaShaderSpecificationStatic.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
+				moravaShaderSpecificationStatic.VertexShaderPath = "Shaders/Hazel/HazelPBR_Static.vs";
+				moravaShaderSpecificationStatic.FragmentShaderPath = "Shaders/Hazel/HazelPBR.fs";
+				moravaShaderSpecificationStatic.ForceCompile = false;
+
+				MoravaShaderSpecification moravaShaderSpecificationAnim;
+				moravaShaderSpecificationAnim.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
+				moravaShaderSpecificationAnim.VertexShaderPath = "Shaders/Hazel/HazelPBR_Anim.vs";
+				moravaShaderSpecificationAnim.FragmentShaderPath = "Shaders/Hazel/HazelPBR.fs";
+				moravaShaderSpecificationAnim.ForceCompile = false;
+
+				m_MeshShader = m_IsAnimated ? MoravaShader::Create(moravaShaderSpecificationAnim) : MoravaShader::Create(moravaShaderSpecificationStatic);
 			}
 			else if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
 			{
-				auto hazelShader = HazelShader::Create("assets/shaders/HazelPBR_Static.glsl", true);
-				m_MeshShader = Ref<MoravaShader>(hazelShader);
+				MoravaShaderSpecification moravaShaderSpecificationHazelVulkan;
+				moravaShaderSpecificationHazelVulkan.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
+				moravaShaderSpecificationHazelVulkan.HazelShaderPath = "assets/shaders/HazelPBR_Static.glsl";
+				moravaShaderSpecificationHazelVulkan.ForceCompile = true;
+
+				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelVulkan);
 			}
+			/**** END MoravaShader the new API ****/
 		}
 
 		m_InverseTransform = glm::inverse(Math::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
@@ -404,16 +421,12 @@ namespace Hazel {
 				HZ_MESH_LOG("    ROUGHNESS = {0}", roughness);
 
 				// BEGIN the material data section
-				Hazel::Ref<MaterialData> materialData = Hazel::Ref<MaterialData>();
-				if (RendererAPI::Current() == RendererAPIType::OpenGL)
-				{
-					Submesh* submeshPtr = nullptr;
-					if (i < m_Submeshes.size()) {
-						submeshPtr = &m_Submeshes[i];
-					}
-
-					materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
+				Submesh* submeshPtr = nullptr;
+				if (i < m_Submeshes.size()) {
+					submeshPtr = &m_Submeshes[i];
 				}
+
+				Hazel::Ref<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
 				// END the material data section
 
 				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
@@ -439,12 +452,10 @@ namespace Hazel {
 					{
 						m_Textures[i] = texture;
 
-						if (RendererAPI::Current() == RendererAPIType::OpenGL)
-						{
-							m_MeshShader->setInt("u_AlbedoTexture", m_Textures[i]->GetID());
-							m_MeshShader->setFloat("u_MaterialUniforms.AlbedoTexToggle", 1.0f);
-							MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Albedo, texturePath, materialData->EnvMapMaterialRef);
-						}
+						m_MeshShader->SetInt("u_AlbedoTexture", m_Textures[i]->GetID());
+						m_MeshShader->SetFloat("u_MaterialUniforms.AlbedoTexToggle", 1.0f);
+
+						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Albedo, texturePath, materialData->EnvMapMaterialRef);
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
@@ -469,29 +480,20 @@ namespace Hazel {
 						Log::GetLogger()->error("Could not load texture: {0}", texturePath);
 
 						// Fallback to albedo color
-						if (RendererAPI::Current() == RendererAPIType::OpenGL)
-						{
-							m_MeshShader->setVec3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
-						}
+						m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
 
 						HZ_MESH_LOG("Mesh has no Albedo map.");
 					}
 				}
 				else
 				{
-					if (RendererAPI::Current() == RendererAPIType::OpenGL)
-					{
-						m_MeshShader->setVec3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
-					}
+					m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
 
 					Log::GetLogger()->info("    No albedo map");
 				}
 
 				// Normal maps
-				if (RendererAPI::Current() == RendererAPIType::OpenGL)
-				{
-					m_MeshShader->setFloat("u_MaterialUniforms.NormalTexToggle", 0.0f);
-				}
+				m_MeshShader->SetFloat("u_MaterialUniforms.NormalTexToggle", 0.0f);
 
 				if (aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &aiTexPath) == AI_SUCCESS)
 				{
@@ -514,12 +516,10 @@ namespace Hazel {
 
 					if (texture->Loaded())
 					{
-						if (RendererAPI::Current() == RendererAPIType::OpenGL)
-						{
-							m_MeshShader->setInt("u_NormalTexture", texture->GetID());
-							m_MeshShader->setFloat("u_MaterialUniforms.NormalTexToggle", 1.0f);
-							MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Normal, texturePath, materialData->EnvMapMaterialRef);
-						}
+						m_MeshShader->SetInt("u_NormalTexture", texture->GetID());
+						m_MeshShader->SetFloat("u_MaterialUniforms.NormalTexToggle", 1.0f);
+
+						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Normal, texturePath, materialData->EnvMapMaterialRef);
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
@@ -550,8 +550,8 @@ namespace Hazel {
 				}
 
 				// Roughness map
-				// m_MeshShader->setFloat("u_MaterialUniforms.Roughness", 1.0f);
-				// m_MeshShader->setFloat("u_MaterialUniforms.RoughnessTexToggle", 0.0f);
+				// m_MeshShader->SetFloat("u_MaterialUniforms.Roughness", 1.0f);
+				// m_MeshShader->SetFloat("u_MaterialUniforms.RoughnessTexToggle", 0.0f);
 				if (aiMaterial->GetTexture(aiTextureType_SHININESS, 0, &aiTexPath) == AI_SUCCESS)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
@@ -574,13 +574,10 @@ namespace Hazel {
 					{
 						HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
 
-						if (RendererAPI::Current() == RendererAPIType::OpenGL)
-						{
-							m_MeshShader->setInt("u_RoughnessTexture", texture->GetID());
-							m_MeshShader->setFloat("u_MaterialUniforms.RoughnessTexToggle", 1.0f);
-							MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Roughness, texturePath, materialData->EnvMapMaterialRef);
-						}
+						m_MeshShader->SetInt("u_RoughnessTexture", texture->GetID());
+						m_MeshShader->SetFloat("u_MaterialUniforms.RoughnessTexToggle", 1.0f);
 
+						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Roughness, texturePath, materialData->EnvMapMaterialRef);
 					}
 					else
 					{
@@ -591,10 +588,7 @@ namespace Hazel {
 				{
 					Log::GetLogger()->info("    No roughness map");
 
-					if (RendererAPI::Current() == RendererAPIType::OpenGL)
-					{
-						m_MeshShader->setFloat("u_MaterialUniforms.Roughness", roughness);
-					}
+					m_MeshShader->SetFloat("u_MaterialUniforms.Roughness", roughness);
 				}
 
 #if 0
@@ -619,8 +613,8 @@ namespace Hazel {
 					if (texture->Loaded())
 					{
 						HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
-						m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
-						m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
+						m_MeshShader->SetInt("u_MetalnessTexture", texture->GetID());
+						m_MeshShader->SetFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
 					}
 					else
 					{
@@ -630,7 +624,7 @@ namespace Hazel {
 				else
 				{
 					Log::GetLogger()->info("    No metalness texture");
-					m_MeshShader->setFloat("u_MaterialUniforms.Metalness", metalness);
+					m_MeshShader->SetFloat("u_MaterialUniforms.Metalness", metalness);
 				}
 #endif
 
@@ -719,24 +713,17 @@ namespace Hazel {
 
 							if (texture->Loaded())
 							{
-								if (RendererAPI::Current() == RendererAPIType::OpenGL)
-								{
-									m_MeshShader->setInt("u_MetalnessTexture", texture->GetID());
-									m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
+								m_MeshShader->SetInt("u_MetalnessTexture", texture->GetID());
+								m_MeshShader->SetFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
 
-									MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Metalness, texturePath, materialData->EnvMapMaterialRef);
-								}
-
+								MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Metalness, texturePath, materialData->EnvMapMaterialRef);
 							}
 							else
 							{
 								Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
 
-								if (RendererAPI::Current() == RendererAPIType::OpenGL)
-								{
-									m_MeshShader->setFloat("u_MaterialUniforms.Metalness", metalness);
-									m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 0.0f);
-								}
+								m_MeshShader->SetFloat("u_MaterialUniforms.Metalness", metalness);
+								m_MeshShader->SetFloat("u_MaterialUniforms.MetalnessTexToggle", 0.0f);
 							}
 							break;
 						}
@@ -747,11 +734,8 @@ namespace Hazel {
 				{
 					Log::GetLogger()->info("    No metalness map");
 
-					if (RendererAPI::Current() == RendererAPIType::OpenGL)
-					{
-						m_MeshShader->setFloat("u_MaterialUniforms.Metalness", metalness);
-						m_MeshShader->setFloat("u_MaterialUniforms.MetalnessTexToggle", 0.0f);
-					}
+					m_MeshShader->SetFloat("u_MaterialUniforms.Metalness", metalness);
+					m_MeshShader->SetFloat("u_MaterialUniforms.MetalnessTexToggle", 0.0f);
 				}
 			}
 			HZ_MESH_LOG("------------------------");
@@ -793,32 +777,14 @@ namespace Hazel {
 
 		/**** BEGIN Create pipeline ****/
 		{
-			// TODO Pipeline creation should be moved to VulkanRenderer(s_MeshPipeline)
-
+			// Temporary and only for OpenGL.
+			// In Vulkan, the Pipeline is created in VulkanRenderer
 			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
 
 			if (RendererAPI::Current() == RendererAPIType::OpenGL)
 			{
 				pipelineSpecification.Layout = m_VertexBufferLayout;
 				m_Pipeline = Pipeline::Create(pipelineSpecification);
-			}
-			else if (RendererAPI::Current() == RendererAPIType::Vulkan)
-			{
-				/**** BEGIN Create vulkan pipeline (moved to VulkanRenderer) ****
-				HazelFramebufferSpecification spec;
-				spec.Width = Application::Get()->GetWindow()->GetWidth();
-				spec.Height = Application::Get()->GetWindow()->GetHeight();
-
-				PipelineSpecification pipelineSpecification;
-				pipelineSpecification.Layout = m_VertexBufferLayout;
-				pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
-
-				RenderPassSpecification renderPassSpec;
-				renderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(spec);
-				pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
-
-				m_Pipeline = Pipeline::Create(pipelineSpecification);
-				/**** END Create vulkan pipeline (moved to VulkanRenderer) ****/
 			}
 		}
 		/**** END Create pipeline ****/
@@ -1267,16 +1233,10 @@ namespace Hazel {
 			{
 				std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
 
-				if (RendererAPI::Current() == RendererAPIType::OpenGL)
-				{
-					m_MeshShader->setMat4(uniformName, m_BoneTransforms[i]);
-				}
+				m_MeshShader->SetMat4(uniformName, m_BoneTransforms[i]);
 			}
 
-			if (RendererAPI::Current() == RendererAPIType::OpenGL)
-			{
-				m_MeshShader->setMat4("u_Transform", transform * submesh.Transform);
-			}
+			m_MeshShader->SetMat4("u_Transform", transform * submesh.Transform);
 
 			// Manage materials (PBR texture binding)
 			if (m_BaseMaterial) {

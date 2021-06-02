@@ -8,8 +8,11 @@ Skybox::Skybox()
 Skybox::Skybox(std::vector<std::string> faceLocations, bool flipVert)
 {
 	// Shader setup
-	skyShader = new MoravaShader();
-	skyShader->CreateFromFiles("Shaders/skybox.vert", "Shaders/skybox.frag");
+	MoravaShaderSpecification moravaShaderSpecification;
+	moravaShaderSpecification.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
+	moravaShaderSpecification.VertexShaderPath = "Shaders/skybox.vert";
+	moravaShaderSpecification.FragmentShaderPath = "Shaders/skybox.frag";
+	m_SkyShader = MoravaShader::Create(moravaShaderSpecification);
 
 	// Texture setup
 	glGenTextures(1, &textureID);
@@ -99,16 +102,16 @@ void Skybox::Draw(glm::mat4 modelMatrix, glm::mat4 viewMatrix, glm::mat4 project
 
 	glDepthMask(GL_FALSE);
 
-	skyShader->Bind();
+	m_SkyShader->Bind();
 
-	skyShader->setMat4("model", modelMatrix);
-	skyShader->setMat4("view", viewMatrix);
-	skyShader->setMat4("projection", projectionMatrix);
+	m_SkyShader->setMat4("model", modelMatrix);
+	m_SkyShader->setMat4("view", viewMatrix);
+	m_SkyShader->setMat4("projection", projectionMatrix);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
-	skyShader->Validate();
+	m_SkyShader->Validate();
 
 	skyMesh->Render();
 

@@ -13,9 +13,32 @@
 #include <map>
 
 
+struct MoravaShaderSpecification
+{
+	enum class ShaderType
+	{
+		None = 0,
+		MoravaShader,
+		HazelShader,
+	};
+	ShaderType ShaderType = ShaderType::None;
+	// MoravaShader
+	std::string VertexShaderPath = "";
+	std::string FragmentShaderPath = "";
+	std::string GeometryShaderPath = "";
+	std::string ComputeShaderPath = "";
+	// HazelShader
+	std::string HazelShaderPath = "";
+	bool ForceCompile = false;
+};
+
+
 class MoravaShader : public Hazel::HazelShader
 {
 public:
+	// the ultimate Create method that can create both MoravaShader and HazelShader shader types
+	static Hazel::Ref<MoravaShader> Create(MoravaShaderSpecification moravaShaderSpecification);
+
 	MoravaShader();
 	MoravaShader(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
 	MoravaShader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
@@ -76,7 +99,7 @@ public:
 
 	// generic setter methods for uniform location variables
 	void setBool(const std::string& name, bool value);
-	void setInt(const std::string& name, int value);
+	virtual void setInt(const std::string& name, int value);
 	void setFloat(const std::string& name, float value);
 	void setVec2(const std::string& name, const glm::vec2& value);
 	void setVec2(const std::string& name, float x, float y);
@@ -88,7 +111,7 @@ public:
 	void setMat3(const std::string& name, const glm::mat3& mat);
 	void setMat4(const std::string& name, const glm::mat4& mat);
 	void setLightMat4(std::vector<glm::mat4> lightMatrices);
-	GLint GetUniformLocation(const std::string& name);
+	virtual GLint GetUniformLocation(const std::string& name);
 
 	inline std::string GetName() { return m_Name; }
 
@@ -105,7 +128,6 @@ protected:
 	void CompileProgram();
 	virtual void GetUniformLocations();
 
-private:
 	void CompileShader(const char* vertexCode, const char* fragmentCode);
 	void CompileShader(const char* vertexCode, const char* geometryCode, const char* fragmentCode);
 
@@ -131,7 +153,6 @@ protected:
 	GLuint programID = -1;
 	GLint shaderID = -1;
 
-private:
 	std::map<std::string, int> m_UniformLocations;
 	bool m_Validated = false;
 

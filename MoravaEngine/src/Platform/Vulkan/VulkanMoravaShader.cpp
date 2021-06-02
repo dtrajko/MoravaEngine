@@ -7,8 +7,6 @@
 #include "Core/Util.h"
 
 
-std::vector<Hazel::Ref<VulkanMoravaShader>> VulkanMoravaShader::s_AllShaders;
-
 VulkanMoravaShader::VulkanMoravaShader()
 {
 	shaderID = 0;
