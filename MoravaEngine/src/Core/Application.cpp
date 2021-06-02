@@ -105,7 +105,7 @@ void Application::Run()
 	// Loop until window closed
 	while (m_Running = !m_Window->GetShouldClose())
 	{
-		m_Window->ProcessEvents(); // Hazel Vulkan: m_Window->ProcessEvents() (currently in Window()->OnUpdate)
+		m_Window->ProcessEvents();
 
 		if (!m_Minimized)
 		{
@@ -116,22 +116,18 @@ void Application::Run()
 
 			// Render ImGui on render thread
 			Application* app = this;
-			// Hazel::HazelRenderer::Submit([=]() { m_ImGuiLayer->Begin(); });
 			Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
 
-			// m_Renderer->BeginFrame(); // HazelVulkan: Renderer::BeginFrame();
+			m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), m_Window);
 
-			m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), m_Window); // TODO deltaTime obsolete
-
-			// On Render thread (Hazel Vulkan)
+			// On Render thread
 			m_Window->GetRenderContext()->BeginFrame();
 
 			m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
 
 			if(Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
 			{
-				// static_cast<SceneHazelVulkan*>(m_Scene)->m_VulkanTestLayer->Render({ 0.1f, 0.1f, 0.1f, 1.0f }, m_Scene->GetCamera());
-				Hazel::VulkanRenderer::Draw(m_Scene->GetCamera()); // previously done by VulkanTestLayer->Render()
+				Hazel::VulkanRenderer::Draw(m_Scene->GetCamera());
 			}
 
 			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
@@ -139,7 +135,7 @@ void Application::Run()
 			Hazel::HazelRenderer::Submit([=]() { m_ImGuiLayer->End(); });
 
 			// Swap buffers and poll events
-			m_Window->SwapBuffers(); // previously m_Window->OnUpdate();
+			m_Window->SwapBuffers();
 		}
 
 		float time = Timer::Get()->GetCurrentTimestamp();
@@ -175,15 +171,21 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	}
 
 	m_Minimized = false;
+	Hazel::HazelRenderer::Submit([=]() { glViewport(0, 0, width, height); });
 
 	m_Scene->OnWindowResize(e);
+	m_Window->GetRenderContext()->OnResize(width, height);
 
 	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
 	{
 		auto& fbs = Hazel::HazelFramebufferPool::GetGlobal()->GetAll();
 		for (auto& fb : fbs)
 		{
-			fb->Resize(width, height);
+			const auto& spec = fb->GetSpecification();
+			if (spec.Width == 0 || spec.Height == 0)
+			{
+				fb->Resize((uint32_t)(width * spec.Scale), (uint32_t)(height * spec.Scale));
+			}
 		}
 
 		// TODO: TEMP

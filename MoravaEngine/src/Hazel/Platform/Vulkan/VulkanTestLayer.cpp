@@ -34,6 +34,8 @@ namespace Hazel {
 
 	void VulkanTestLayer::OnUpdate(Timestep ts)
 	{
+		m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)VulkanRenderer::GetViewportWidth(), (float)VulkanRenderer::GetViewportHeight(), 0.01f, 1000.0f));
+
 		m_Camera.OnUpdate(ts);
 
 		glm::vec4 clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };

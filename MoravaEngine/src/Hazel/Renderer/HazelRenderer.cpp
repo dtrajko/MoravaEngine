@@ -53,7 +53,6 @@ namespace Hazel {
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
 		}
 
-#if NOT_YET
 		SceneRenderer::Init();
 
 		// Create fullscreen quad
@@ -85,14 +84,15 @@ namespace Hazel {
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoord" }
 		};
-		s_Data.m_FullscreenQuadPipeline = Pipeline::Create(pipelineSpecification);
+
+		// Missing pipelineSpecification.Shader
+		// s_Data.m_FullscreenQuadPipeline = Pipeline::Create(pipelineSpecification);
 
 		s_Data.m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 		s_Data.m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 
-		Renderer2D::Init();
-#endif
+		// Renderer2D::Init();
 	}
 
 	Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()

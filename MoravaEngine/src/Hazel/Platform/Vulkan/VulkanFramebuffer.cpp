@@ -27,7 +27,16 @@ namespace Hazel {
 	VulkanFramebuffer::VulkanFramebuffer(const HazelFramebufferSpecification& spec)
 		: m_Specification(spec)
 	{
-		Resize(spec.Width, spec.Height, true);
+		if (spec.Width == 0 || spec.Height == 0)
+		{
+			auto width = Application::Get()->GetWindow()->GetWidth();
+			auto height = Application::Get()->GetWindow()->GetHeight();
+			Resize((uint32_t)(width * spec.Scale), (uint32_t)(height * spec.Scale), true);
+		}
+		else
+		{
+			Resize(spec.Width, spec.Height, true);
+		}
 	}
 
 	VulkanFramebuffer::~VulkanFramebuffer()
@@ -36,8 +45,8 @@ namespace Hazel {
 
 	void VulkanFramebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate)
 	{
-		m_Specification.Width = width;
-		m_Specification.Height = height;
+		m_Width = width;
+		m_Height = height;
 
 		if (!m_Specification.SwapChainTarget)
 		{

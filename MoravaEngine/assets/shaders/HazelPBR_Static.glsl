@@ -336,6 +336,23 @@ void main()
 	//
 	//color = vec4(lightContribution + iblContribution, 1.0);
 
-	vec3 albedo = texture(u_AlbedoTexture, Input.TexCoord).rgb; 
+	vec3 albedo = texture(u_AlbedoTexture, Input.TexCoord).rgb;
 	color = vec4(albedo, 1);
+
+
+	/**** BEGIN main() from VulkanWeekMesh ****/
+	m_Params.Albedo = texture(u_AlbedoTexture, Input.TexCoord).rgb;
+
+	// Normals (either from vertex or map)
+	m_Params.Normal = normalize(2.0 * texture(u_NormalTexture, Input.TexCoord).rgb - 1.0);
+	m_Params.Normal = normalize(Input.WorldNormals * m_Params.Normal);
+
+	float ambient = 0.2;
+	vec3 lightDir = vec3(-1.0, 1.0, 0.0);
+	float intensity = clamp(dot(lightDir, m_Params.Normal), ambient, 1.0);
+
+	color = vec4(m_Params.Albedo, 1.0);
+	color.rgb *= intensity;
+
+	/**** END main() from VulkanWeekMesh ****/
 }

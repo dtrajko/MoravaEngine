@@ -18,6 +18,8 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan_with_textures.h"
 
+#include "../../ImGuizmo/ImGuizmo.h"
+
 
 namespace Hazel {
 
@@ -31,6 +33,8 @@ namespace Hazel {
 	static Ref<IndexBuffer> s_QuadIndexBuffer;
 	static VkDescriptorSet s_QuadDescriptorSet;
 	static ImTextureID s_TextureID;
+	static uint32_t s_ViewportWidth = 1280;
+	static uint32_t s_ViewportHeight = 720;
 
 	static std::vector<Ref<HazelMesh>> s_Meshes;
 
@@ -70,8 +74,8 @@ namespace Hazel {
 
 		{
 			HazelFramebufferSpecification spec;
-			spec.Width = Application::Get()->GetWindow()->GetWidth();
-			spec.Height = Application::Get()->GetWindow()->GetHeight();
+			spec.Width = s_ViewportWidth;
+			spec.Height = s_ViewportHeight;
 			s_Framebuffer = HazelFramebuffer::Create(spec);
 			s_Framebuffer->AddResizeCallback([](Ref<HazelFramebuffer> framebuffer) {
 				// HazelRenderer::Submit([framebuffer]() mutable
@@ -296,8 +300,8 @@ namespace Hazel {
 
 			Ref<VulkanFramebuffer> framebuffer = s_Framebuffer.As<VulkanFramebuffer>();
 
-			uint32_t width = framebuffer->GetSpecification().Width;
-			uint32_t height = framebuffer->GetSpecification().Height;
+			uint32_t width = framebuffer->GetWidth();
+			uint32_t height = framebuffer->GetHeight();
 
 			VkRenderPassBeginInfo renderPassBeginInfo = {};
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -501,10 +505,32 @@ namespace Hazel {
 					scissor.offset.y = 0;
 					vkCmdSetScissor(s_ImGuiCommandBuffer, 0, 1, &scissor);
 
-					ImGui::Begin("Viewport");
+					// ImGui Dockspace
+					bool p_open = true;
+					ShowExampleAppDockSpace(&p_open);
 
-					ImGui::Image(s_TextureID, { 1280.0f, 720.0f }, { 0, 1 }, { 1, 0 });
+					ImGui::Begin("Scene Hierarchy");
 					ImGui::End();
+
+					// TEMP: Render Viewport
+					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+					ImGui::Begin("Viewport");
+					auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
+					auto viewportSize = ImGui::GetContentRegionAvail();
+					ImGui::Image(s_TextureID, viewportSize, { 0, 1 }, { 1, 0 });
+
+					if (s_ViewportWidth != viewportSize.x || s_ViewportHeight != viewportSize.y)
+					{
+						s_ViewportWidth = (uint32_t)viewportSize.x;
+						s_ViewportHeight = (uint32_t)viewportSize.y;
+						// s_Framebuffer->Resize(s_ViewportWidth, s_ViewportHeight, true);
+					}
+
+					Window* mainWindow = Application::Get()->GetWindow();
+					UpdateImGuizmo(mainWindow);
+
+					ImGui::End();
+					ImGui::PopStyleVar();
 
 					// TODO: Move to VulkanImGuiLayer
 					// Rendering
@@ -527,7 +553,7 @@ namespace Hazel {
 		}
 	}
 
-	// TODO: remove parameters
+#if 0
 	void VulkanRenderer::DrawOld(HazelCamera* camera)
 	{
 		// HazelRenderer::Submit([=]() mutable
@@ -622,4 +648,174 @@ namespace Hazel {
 			}
 		}
 	}
+#endif
+
+	//-----------------------------------------------------------------------------
+	// [SECTION] Example App: Docking, DockSpace / ShowExampleAppDockSpace()
+	//-----------------------------------------------------------------------------
+
+	// Demonstrate using DockSpace() to create an explicit docking node within an existing window.
+	// Note that you already dock windows into each others _without_ a DockSpace() by just moving windows
+	// from their title bar (or by holding SHIFT if io.ConfigDockingWithShift is set).
+	// DockSpace() is only useful to construct to a central location for your application.
+	void VulkanRenderer::ShowExampleAppDockSpace(bool* p_open)
+	{
+		static bool opt_fullscreen_persistant = true;
+		bool opt_fullscreen = opt_fullscreen_persistant;
+		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+		// because it would be confusing to have two docking targets within each others.
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		if (opt_fullscreen)
+		{
+			ImGuiViewport* viewport = ImGui::GetMainViewport();
+			ImGui::SetNextWindowPos(viewport->GetWorkPos());
+			ImGui::SetNextWindowSize(viewport->GetWorkSize());
+			ImGui::SetNextWindowViewport(viewport->ID);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+		}
+
+		// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background 
+		// and handle the pass-thru hole, so we ask Begin() to not render a background.
+		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+			window_flags |= ImGuiWindowFlags_NoBackground;
+
+		// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+		// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
+		// all active windows docked into it will lose their parent and become undocked.
+		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
+		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("DockSpace Demo", p_open, window_flags);
+		ImGui::PopStyleVar();
+
+		if (opt_fullscreen)
+			ImGui::PopStyleVar(2);
+
+		// DockSpace
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+		}
+		else
+		{
+			// ShowDockingDisabledMessage();
+		}
+
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("Docking"))
+			{
+				// Disabling fullscreen would allow the window to be moved to the front of other windows,
+				// which we can't undo at the moment without finer window depth/z control.
+				//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
+
+				if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))                 dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
+				if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
+				if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
+				if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))     dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
+				if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
+				ImGui::Separator();
+				if (ImGui::MenuItem("Close DockSpace", NULL, false, p_open != NULL))
+					*p_open = false;
+				ImGui::EndMenu();
+			}
+			/****
+			HelpMarker(
+				"When docking is enabled, you can ALWAYS dock MOST window into another! Try it now!" "\n\n"
+				" > if io.ConfigDockingWithShift==false (default):" "\n"
+				"   drag windows from title bar to dock" "\n"
+				" > if io.ConfigDockingWithShift==true:" "\n"
+				"   drag windows from anywhere and hold Shift to dock" "\n\n"
+				"This demo app has nothing to do with it!" "\n\n"
+				"This demo app only demonstrate the use of ImGui::DockSpace() which allows you to manually create a docking node _within_ another window. This is useful so you can decorate your main application window (e.g. with a menu bar)." "\n\n"
+				"ImGui::DockSpace() comes with one hard constraint: it needs to be submitted _before_ any window which may be docked into it. Therefore, if you use a dock spot as the central point of your application, you'll probably want it to be part of the very first window you are submitting to imgui every frame." "\n\n"
+				"(NB: because of this constraint, the implicit \"Debug\" window can not be docked into an explicit DockSpace() node, because that window is submitted as part of the NewFrame() call. An easy workaround is that you can create your own implicit \"Debug##2\" window after calling DockSpace() and leave it in the window stack for anyone to use.)"
+			);
+			****/
+
+			ImGui::EndMenuBar();
+		}
+
+		ImGui::End();
+	}
+
+	void VulkanRenderer::UpdateImGuizmo(Window* mainWindow)
+	{
+		// BEGIN ImGuizmo
+
+		// ImGizmo switching modes
+		if (Input::IsKeyPressed(Key::D1))
+			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+		if (Input::IsKeyPressed(Key::D2))
+			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
+
+		if (Input::IsKeyPressed(Key::D3))
+			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
+
+		if (Input::IsKeyPressed(Key::D4))
+			Scene::s_ImGuizmoType = -1;
+
+		// ImGuizmo
+		if (Scene::s_ImGuizmoType != -1)
+		{
+			float rw = (float)ImGui::GetWindowWidth();
+			float rh = (float)ImGui::GetWindowHeight();
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
+
+			// Entity transform
+			glm::mat4 entityTransform = glm::mat4(1.0f); // Connect to model transform
+
+			// Snapping
+			bool snap = Input::IsKeyPressed(Key::LeftControl);
+			float snapValue = 1.0f; // Snap to 0.5m for translation/scale
+			// Snap to 45 degrees for rotation
+			if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE) {
+				snapValue = 45.0f;
+			}
+
+			float snapValues[3] = { snapValue, snapValue, snapValue };
+
+			if (true) // TODO: specify display criteria here
+			{
+				ImGuizmo::Manipulate(
+					glm::value_ptr(glm::mat4(1.0f)),
+					glm::value_ptr(glm::mat4(1.0f)),
+					(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+					ImGuizmo::LOCAL,
+					glm::value_ptr(entityTransform),
+					nullptr,
+					snap ? snapValues : nullptr);
+
+				if (ImGuizmo::IsUsing())
+				{
+					glm::vec3 translation, rotation, scale;
+					Math::DecomposeTransform(entityTransform, translation, rotation, scale);
+
+					glm::vec3 deltaRotation = glm::vec3(0.0f); // TODO: add rotation delta here
+				}
+			}
+		}
+		// END ImGuizmo
+	}
+
+	uint32_t VulkanRenderer::GetViewportWidth()
+	{
+		return s_ViewportWidth;
+	}
+
+	uint32_t VulkanRenderer::GetViewportHeight()
+	{
+		return s_ViewportHeight;
+	}
+
 }
